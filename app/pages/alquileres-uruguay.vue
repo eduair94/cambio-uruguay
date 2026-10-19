@@ -683,6 +683,19 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             :filters="filterChips.map(chip => chip.label)"
             class="mt-6"
           />
+          <!--
+            La pregunta de quien llegó al final de los resultados. Sólo en el cliente (recuerda si ya
+            la respondió) y debajo de lo que se está mirando: no mueve nada ni pesa en la carga.
+            Español: la encuesta a la que lleva es sólo en español.
+          -->
+          <ClientOnly>
+            <RentalsFeedbackMicroSurvey
+              v-if="locale === 'es'"
+              :surface="view === 'mapa' ? 'mapa' : 'directorio'"
+              :filters="filterChips.map(chip => chip.label)"
+              class="mt-6"
+            />
+          </ClientOnly>
         </section>
       </div>
     </div>

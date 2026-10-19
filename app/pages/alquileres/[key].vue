@@ -1107,6 +1107,14 @@ useHead(() => ({
           </li>
         </ul>
       </section>
+      <ClientOnly>
+        <RentalsFeedbackMicroSurvey
+          surface="ficha"
+          :property-key="property?.key ?? null"
+          :snooze-days="14"
+          class="rental-page__feedback"
+        />
+      </ClientOnly>
       <nav class="rental-page__help" :aria-label="t('helpTitle')">
         <h2>{{ t('helpTitle') }}</h2>
         <NuxtLink :to="localePath('/alquilar-en-uruguay')">{{ t('guide') }}</NuxtLink
@@ -1753,6 +1761,11 @@ useHead(() => ({
 .rental-page__similar,
 .rental-page__help {
   grid-column: 1 / -1;
+}
+/* The "¿Te sirvió esta ficha?" card: full row, but a reading width, not stretched across 1280px. */
+.rental-page__feedback {
+  grid-column: 1 / -1;
+  max-width: 720px;
 }
 .rental-page__similar ul {
   display: grid;

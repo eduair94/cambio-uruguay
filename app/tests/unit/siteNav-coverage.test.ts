@@ -141,6 +141,8 @@ describe('the navigation model has no dead links', () => {
       '/estadisticas-de-busqueda',
       '/estadisticas-por-pagina',
       '/offline',
+      '/opinion-alquileres',
+      '/opiniones-alquileres',
       '/ranking-usuarios-charruadevs',
       '/widget',
     ])

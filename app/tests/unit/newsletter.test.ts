@@ -63,7 +63,8 @@ describe('buildDailyEmail', () => {
       const out = buildDailyEmail(data, lang, unsub)
       const links = [...out.html.matchAll(/href="([^"]+)"/g)].map(m => m[1]!.replace(/&amp;/g, '&'))
       const editorial = links.filter(link => new URL(link).searchParams.has('utm_source'))
-      expect(editorial).toHaveLength(2)
+      // The site, the internal news link and, in the Spanish issue, the rentals survey.
+      expect(editorial).toHaveLength(lang === 'es' ? 3 : 2)
       for (const link of editorial) {
         const url = new URL(link)
         expect(url.searchParams.get('utm_source')).toBe('newsletter')
@@ -82,6 +83,21 @@ describe('buildDailyEmail', () => {
       expect(data.news[0]!.link).toBe(internal)
     }
   )
+
+  it('asks Spanish readers for the rentals survey, with the issue attribution', () => {
+    const unsub = 'https://cambio-uruguay.com/api/newsletter/unsubscribe?token=abc'
+    const es = buildDailyEmail(sample, 'es', unsub)
+    const survey = [...es.html.matchAll(/href="([^"]+)"/g)]
+      .map(m => m[1]!.replace(/&amp;/g, '&'))
+      .find(link => link.includes('/opinion-alquileres'))!
+    const url = new URL(survey)
+    expect(url.searchParams.get('origen')).toBe('newsletter')
+    expect(url.searchParams.get('utm_source')).toBe('newsletter')
+    expect(es.text).toContain(survey)
+    // The survey is in Spanish: the other issues do not link it.
+    expect(buildDailyEmail(sample, 'en', unsub).html).not.toContain('/opinion-alquileres')
+    expect(buildDailyEmail(sample, 'pt', unsub).text).not.toContain('/opinion-alquileres')
+  })
 
   it('keeps account actions and other delivery channels free of email attribution', () => {
     const confirm = 'https://cambio-uruguay.com/api/newsletter/confirm?token=abc'

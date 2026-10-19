@@ -215,6 +215,9 @@ const NOINDEXED = [
   'motos-usadas-uruguay/index.vue',
   'newsletter/archivo.vue',
   'offline.vue',
+  // La encuesta de alquileres (se llega desde los correos) y su panel privado de respuestas.
+  'opinion-alquileres.vue',
+  'opiniones-alquileres.vue',
   // Index the used-car opportunity list itself; filter combinations opt out.
   'oportunidades-autos-usados-uruguay.vue',
   // Index the opportunity directory itself; query combinations opt out like rental filters.

@@ -1226,6 +1226,9 @@ export default defineNuxtConfig({
       '/estadisticas-de-busqueda',
       // El ranking privado de páginas por visita: misma lógica que el tablero de Search Console.
       '/estadisticas-por-pagina',
+      // La encuesta de alquileres (se llega desde los correos) y su panel privado de respuestas.
+      '/opinion-alquileres',
+      '/opiniones-alquileres',
       // Lista de autores de r/CharruaDevs con nombre propio: noindex en la pagina y fuera del
       // rastreo. Los mismos datos, agregados y sin nombres, estan en /mercado-it-uruguay.
       '/ranking-usuarios-charruadevs',
@@ -1320,6 +1323,8 @@ export default defineNuxtConfig({
       '/api-reference',
       '/estadisticas-de-busqueda',
       '/estadisticas-por-pagina',
+      '/opinion-alquileres',
+      '/opiniones-alquileres',
       '/descuentos-con-tarjeta-uruguay/cerca-de-mi',
       '/ranking-usuarios-charruadevs',
       '/*/offline',
@@ -1329,6 +1334,8 @@ export default defineNuxtConfig({
       '/*/api-reference',
       '/*/estadisticas-de-busqueda',
       '/*/estadisticas-por-pagina',
+      '/*/opinion-alquileres',
+      '/*/opiniones-alquileres',
       '/*/descuentos-con-tarjeta-uruguay/cerca-de-mi',
       '/*/ranking-usuarios-charruadevs',
     ],

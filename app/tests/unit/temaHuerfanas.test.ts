@@ -63,6 +63,8 @@ const FUERA_DE_TEMA_POR_DISENO = [
   '/mapa-del-sitio',
   '/mi-lista', // vive en el navegador de quien la abre
   '/offline', // fallback de la PWA, noindex
+  '/opinion-alquileres', // encuesta, se llega desde los correos; noindex
+  '/opiniones-alquileres', // privada, noindex
   '/paginas-mas-visitadas', // sobre el propio sitio, como /estadisticas-del-sitio
   '/preguntas-frecuentes', // sobre el propio sitio
   '/privacidad',

@@ -1,5 +1,13 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Opiniones de quienes lo usan — 19 de octubre de 2026
+
+Al final de los resultados y de la ficha, «¿Encontraste lo que buscabas?» (Sí / En parte / No → qué
+faltó → comentario) y «Dejar una sugerencia» en la misma tarjeta; la encuesta de cinco preguntas en
+`/opinion-alquileres`, enlazada desde los correos de alertas de alquiler (con la zona de la alerta) y
+desde el newsletter. Todo va a la colección `rentalfeedbacks` y se lee en `/opiniones-alquileres`
+(privada). Detalle, reglas y cómo leerlas para iterar: [RENTAL_FEEDBACK.md](RENTAL_FEEDBACK.md).
+
 ## Facebook frena las listas de categoría aparte de las búsquedas — 15 de octubre de 2026
 
 Desde las 05:2x del 15/10, en la completa y tras unas 7.000 tarjetas de categoría (las bandas de
