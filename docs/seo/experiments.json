@@ -1476,6 +1476,25 @@
         "laudo consejo de salarios uruguay"
       ],
       "hypothesis": "La pagina estaba fuera de TODO tema, asi que no dibujaba \"Mas sobre este tema\" y -como el vinculo del tema es reciproco por construccion, armado con hub.resources- tampoco recibia un solo enlace de ese bloque desde ninguna otra pagina: solo llegaba desde el menu, que no es una relacion entre paginas. Entra a sueldo-trabajo-e-impuestos-uruguay, donde ya vive la guia salario-minimo-uruguay-cuanto-es: el hub publicaba el SMN y nunca decia que el SMN no es el minimo de quien lo lee, que es justo lo que esta pagina contesta -el minimo exigible es el laudo del grupo, subgrupo y categoria que fija el Consejo de Salarios, y se consulta gratis en el MTSS-. Pasa de 0 enlaces de tema a un bloque con los otros 19 recursos del tema, a recibir ese bloque desde cada miembro del tema y a una tarjeta en /temas/sueldo-trabajo-e-impuestos-uruguay. Es del tramo contenido, que rinde 8x el promedio del sitio, y era una de las dos unicas de las 19 huerfanas con la ruta libre de toda ventana abierta (npm run seo_debt). No se escribio ni se reescribio una sola linea de la pagina ni de su snippet: solo su pertenencia al tema."
+    },
+    {
+      "id": "ruidos-molestos-el-numero-de-la-noche",
+      "shippedOn": "2026-10-19",
+      "routes": ["/denunciar-ruidos-molestos-uruguay"],
+      "queries": [
+        "denuncia por ruidos molestos",
+        "ruidos molestos imm",
+        "teléfono para denunciar ruidos molestos montevideo",
+        "se puede llamar al 911 por ruidos molestos"
+      ],
+      "hypothesis": "LEER ANTES DEL VEREDICTO: la ventana anterior (22/9-19/10) contiene 17 dias (24/9-10/10) en que la pagina casi no aparecio en Google -0 a 9 impresiones por dia contra unas 100 antes y despues, misma posicion 8 al volver el 11/10-, un hueco que ninguna otra pagina del sitio con 10+ impresiones diarias tuvo y que ninguna otra URL propia absorbio; no es demanda ni estacion, y su causa no se ve en los datos (ningun deploy toco la pagina). Ese hueco hace que cualquier cosa parezca ganar: el contraste honesto es contra 18/8-23/9. La pagina decia que para un vecino no habia canal y daba un solo telefono, una oficina de dias habiles, mientras mas de una de cada diez impresiones busca un numero ('telefono', 'a donde llamar', '911'). Hay dos, con fuente: la central de Convivencia de la Intendencia, 1950 5000, que atiende denuncias las 24 horas y que el 25/8/2026 informo denuncias respondidas por fiestas en fincas particulares, y el 911, porque la Ley 17.852 art. 13 obliga a la Policia a hacer cesar el ruido de una actividad extraordinaria. Entran como los dos primeros canales, con boton de llamada, tres preguntas nuevas (el numero, el 911, hasta que hora) y el snippet empieza por la respuesta: titulo 'Denuncia por ruidos molestos: 1950 5000' y descripcion con el numero, el 911 y los dos limites en dB(A). La propia historia de la pagina sostiene el snippet: con los dB en la descripcion (18/8-4/9) el CTR fue de 2,2 %, con la descripcion generica (5/9-23/9) de 1,1 %, mientras la posicion solo paso de 8,1 a 8,5."
+    },
+    {
+      "id": "importar-cosmeticos-reglas-al-dia",
+      "shippedOn": "2026-10-19",
+      "routes": ["/importar/cosmeticos-y-perfumeria"],
+      "queries": ["importar cosméticos a uruguay", "importar perfumes a uruguay"],
+      "hypothesis": "La caida de clics no es de esta ficha sola: entre 18/8-14/9 y 15/9-12/10 la familia /importar/* (16 fichas publicadas el 15/8) perdio cerca de un tercio de las impresiones con la posicion quieta mientras el sitio crecia, que es el pico de lanzamiento apagandose; cosmeticos perdio mas clics porque en las semanas de lanzamiento tuvo un CTR anormalmente alto, y casi todas sus consultas llegan anonimizadas, asi que no hay una consulta perdida que nombrar ni otra URL propia que se la haya quedado. El titulo y la descripcion NO se tocan: se imprimen en /importar, que esta en ventana hasta el 28/10. Lo que cambia es que la ficha vuelve a decir la norma vigente: el registro de vendedores con la RG 26/2026 (alta por el operador postal, lista publicada, y las dos fechas que la DNA no hace coincidir), las ocho subcategorias del codigo J de la RG 30/2026 (vigente 12/10), la regla del MSP citada de la pagina del MSP y no de un articulo del reglamento de medicamentos que no la dice, y lo que el art. 27 del Decreto 96/990 tambien grava (pestañas y uñas postizas, brochas de maquillaje, máquinas de afeitar), con fecha de contraste 19/10/2026. Expectativa baja: la ventana anterior tiene menos de 10 clics y el job probablemente dictamine 'sin datos'."
     }
   ]
 }

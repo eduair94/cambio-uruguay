@@ -12,17 +12,24 @@
               {{ t('heading') }}
             </h1>
             <p class="text-body-1 noise-lead">
-              Guía paso a paso para denunciar ruidos molestos: qué límite en decibeles rige, qué
-              datos te piden, qué canales no tienen costo y qué conviene resolver antes de
-              denunciar. Incluye una plantilla lista para completar y enviar.
+              Si el ruido está pasando ahora, en Montevideo la Intendencia recibe denuncias las 24
+              horas en el <strong>{{ nightLine }}</strong
+              >, también por fiestas o reuniones en una vivienda. Si es una fiesta que no para, la
+              ley obliga a la Policía a hacerla cesar: llamá al <strong>911</strong>. Abajo, el
+              límite en decibeles, qué datos te piden, qué canales no tienen costo y una plantilla
+              lista para completar y enviar.
             </p>
             <nav :aria-label="t('navigation')" class="noise-navigation d-flex flex-wrap ga-2 mt-4">
               <VBtn
-                href="#plantilla-denuncia"
+                :href="`tel:${nightLine.replace(/\s/g, '')}`"
                 color="primary"
                 variant="flat"
-                data-cta="noise_prepare_complaint"
+                prepend-icon="mdi-phone"
+                data-cta="noise_call_night_line"
               >
+                {{ t('callNightLine', { phone: nightLine }) }}
+              </VBtn>
+              <VBtn href="#plantilla-denuncia" variant="tonal" data-cta="noise_prepare_complaint">
                 {{ t('useTemplate') }}
               </VBtn>
               <VBtn href="#donde-denunciar" variant="tonal">{{ t('where') }}</VBtn>
@@ -128,18 +135,20 @@
                     </td>
                     <td data-label="Para qué">{{ channel.scope }}</td>
                     <td data-label="Cómo">{{ channel.how }}</td>
-                    <td data-label="Costo">{{ channel.free ? 'Sin costo' : 'Con costo' }}</td>
+                    <td data-label="Costo">{{ noiseChannelCost(channel) }}</td>
                   </tr>
                 </tbody>
               </table>
             </div>
             <VAlert type="warning" variant="tonal" density="comfortable" class="mt-4">
               <p class="mb-0 text-body-2">
-                El trámite que publica la Intendencia de Montevideo está redactado para
+                El trámite de medición que publica la Intendencia de Montevideo está redactado para
                 <strong>locales comerciales e industriales</strong>. Para un vecino particular no
-                existe un trámite equivalente publicado. Si el ruido viene de una vivienda, consultá
-                en tu Centro Comunal Zonal cuál es la vía y revisá antes el reglamento de
-                copropiedad si vivís en un edificio.
+                existe un trámite de medición equivalente publicado. Mientras el ruido está pasando,
+                sí tenés dos vías: la central de Convivencia ({{ nightLine }}), que recibe denuncias
+                las 24 horas, también por fiestas o reuniones en viviendas, y el 911 si es una
+                fiesta o un evento puntual. Si el problema se repite, consultá en tu Centro Comunal
+                Zonal cuál es la vía y revisá el reglamento de copropiedad si vivís en un edificio.
               </p>
             </VAlert>
           </section>
@@ -368,6 +377,7 @@ import {
   NOISE_CHANNELS,
   NOISE_FAQS,
   NOISE_LIMITS,
+  NOISE_NIGHT_LINE,
   NOISE_SOURCES,
   NOISE_STEPS,
   NOISE_TIPS,
@@ -375,6 +385,7 @@ import {
   buildNoiseComplaintText,
   emptyNoiseComplaint,
   missingRequiredFields,
+  noiseChannelCost,
 } from '~/utils/noiseComplaint'
 
 const localePath = useLocalePath()
@@ -386,6 +397,7 @@ const steps = NOISE_STEPS
 const tips = NOISE_TIPS
 const faqs = NOISE_FAQS.filter(faq => faq.q !== '¿Puedo denunciar de forma anónima?')
 const sources = NOISE_SOURCES
+const nightLine = NOISE_NIGHT_LINE
 
 const form = ref(emptyNoiseComplaint())
 const complaintText = computed(() => buildNoiseComplaintText(form.value))
@@ -405,10 +417,11 @@ async function copyText() {
 /**
  * Where the denuncia can be sent.
  *
- * The SIME inbox is the only address any source publishes for this matter, so it
- * is the only recipient pre-filled. The two free municipal channels are web
- * forms and counters: the component stages the text on the clipboard and opens
- * the page, because neither accepts a body over a URL.
+ * Two inboxes are published for this matter: the SIME, which measures, and the
+ * Convivencia Departamental central, which takes denuncias at any hour. Those
+ * are the only recipients pre-filled. The free municipal channels are web forms
+ * and counters: the component stages the text on the clipboard and opens the
+ * page, because neither accepts a body over a URL.
  */
 const sendActions = computed<SendAction[]>(() => [
   {
@@ -417,6 +430,13 @@ const sendActions = computed<SendAction[]>(() => [
     to: 'sime@imm.gub.uy',
     subject: 'Denuncia por ruidos molestos',
     note: 'Es la oficina que mide el ruido.',
+  },
+  {
+    channel: 'email',
+    label: 'Correo a Convivencia Departamental (Intendencia de Montevideo)',
+    to: 'denuncias.convivencia@imm.gub.uy',
+    subject: 'Denuncia por ruidos molestos',
+    note: 'Es la central de denuncias que atiende las 24 horas.',
   },
   {
     channel: 'link',

@@ -3,6 +3,7 @@ import {
   NOISE_CHANNELS,
   NOISE_FAQS,
   NOISE_LIMITS,
+  NOISE_NIGHT_LINE,
   NOISE_SOURCES,
   NOISE_STEPS,
   NOISE_TIPS,
@@ -10,6 +11,7 @@ import {
   buildNoiseComplaintText,
   emptyNoiseComplaint,
   missingRequiredFields,
+  noiseChannelCost,
   type NoiseComplaintInput,
 } from '../../utils/noiseComplaint'
 
@@ -85,6 +87,36 @@ describe('the sourced content', () => {
     )
     expect(text).toMatch(/vecino particular/i)
     expect(text).toMatch(/comercial/i)
+  })
+
+  // The first version told a neighbour there was no channel at all and listed one
+  // weekday office phone, while the searches that reach the page ask for a number
+  // to call now. Both channels that answer at night are sourced, and neither may
+  // drift away from the source that states it.
+  it('leads with the two channels that answer while the noise is happening', () => {
+    const [first, second] = NOISE_CHANNELS
+    expect(first?.contact).toContain(NOISE_NIGHT_LINE)
+    expect(first?.how).toMatch(/24 horas/)
+    expect(NOISE_SOURCES[first!.sourceIndex]?.url).toMatch(/montevideo\.gub\.uy/)
+    expect(second?.contact).toBe('911')
+    expect(NOISE_SOURCES[second!.sourceIndex]?.url).toMatch(/17852-2004\/13$/)
+  })
+
+  it('answers the number and the 911 questions in the FAQ', () => {
+    const text = NOISE_FAQS.map(faq => `${faq.q} ${faq.a}`).join(' ')
+    expect(text).toContain(NOISE_NIGHT_LINE)
+    expect(text).toMatch(/911/)
+    expect(text).toMatch(/artículo 13/)
+  })
+
+  // A channel whose cost no source states must not be printed as free.
+  it('words the cost column from what the source says, and only that', () => {
+    const unstated = NOISE_CHANNELS.filter(channel => channel.free === null)
+    expect(unstated.length).toBeGreaterThan(0)
+    for (const channel of unstated) expect(noiseChannelCost(channel)).not.toMatch(/sin costo/i)
+    for (const channel of NOISE_CHANNELS.filter(c => c.free === true)) {
+      expect(noiseChannelCost(channel)).toBe('Sin costo')
+    }
   })
 
   it('warns that a phone app is not a measurement', () => {
