@@ -150,7 +150,6 @@ const DEUDA_SIN_ENLACE = [
   '/alternativa-a-bankos-uruguay',
   '/apostillar-un-documento-uruguay',
   '/apps-utiles-uruguay',
-  '/cambios-de-precio-uruguay',
   '/certificado-unico-dgi-uruguay',
   '/cheques-uruguay',
   '/cortes-de-luz-por-barrio-uruguay',
@@ -166,6 +165,16 @@ const DEUDA_SIN_ENLACE = [
 ]
 
 /** El trinquete. Sólo puede bajar: subirlo es publicar una página que nadie enlaza. */
+// 16 → 15 con el cambio de `/ciberlunes-y-black-friday-uruguay` que se mergea desde el 2026-10-30
+// (fila `ciberlunes-black-friday-2026-fechas`): `/cambios-de-precio-uruguay` recibe su primer
+// enlace de contenido. Las dos reservas están libres ese día: la del origen
+// (`descripciones-del-tramo-dato-vivo`) cierra el 29/10 y la del destino
+// (`cambios-de-precio-por-aviso`) el 24/10. Y el lector lo necesita de verdad: la pregunta de
+// fondo de un CyberLunes es si la tienda subió el precio la semana anterior para después
+// «rebajarlo», y la página de los cambios es la que publica, aviso por aviso, qué subió y qué bajó
+// en los últimos días contra su propio precio anterior. Va dentro del paso «Antes, fijate el
+// precio de hoy» de «Cómo usarla», no en el bloque de relacionadas del pie.
+//
 // SIGUE EN 16 el 2026-10-19, y las dos candidatas del día quedaron por el ORIGEN, no por el
 // destino: `npm run seo_debt` imprimió `/cheques-uruguay` y `/alternativa-a-bankos-uruguay` como
 // las dos rutas libres de este pozo, pero la reserva también alcanza a la página donde se
@@ -244,7 +253,7 @@ const DEUDA_SIN_ENLACE = [
 // cambios, y la reserva que la nota de arriba describe no se rompe: lo que esas filas miden es su
 // propia descripción, y el enlace entrante nace en una página publicada hoy, sin tráfico todavía.
 // Es además lo que ya hace cada página nueva del repo con su bloque de relacionadas.
-const DEUDA_MAXIMA = 16
+const DEUDA_MAXIMA = 15
 
 describe('ninguna página de lectura queda sin un enlace de contexto', () => {
   it('las páginas sin enlace son exactamente las declaradas', () => {
