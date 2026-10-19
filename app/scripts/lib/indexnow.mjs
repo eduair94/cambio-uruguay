@@ -134,8 +134,12 @@ export function filterApexUrls(urls, host = INDEXNOW_HOST) {
  * spam"). El protocolo admite 10.000 por POST, pero re-anunciar todo el sitio en cada deploy es
  * exactamente lo que el receptor castiga. Ahora se anuncia sólo lo que no se anunció antes, de a
  * lo sumo esta cantidad; el resto sale en los deploys siguientes.
+ *
+ * Era 100 y bajó a 25 el 19/10/2026: con 100 se aceptaron cinco tandas y la sexta volvió 429, con
+ * 3.377 URLs viejas todavía en cola. A 25 por deploy el atraso tarda más, pero el atraso no es lo
+ * que importa: una página nueva sale primero (ver `planSubmission`), y es la que Bing no conoce.
  */
-export const INDEXNOW_MAX_NEW_PER_RUN = 100
+export const INDEXNOW_MAX_NEW_PER_RUN = 25
 
 /**
  * Cuánto callar después de un 429. Medido el 22/9/2026: tras dos envíos de 3.691 URLs, el tercero
@@ -147,37 +151,58 @@ export const INDEXNOW_BACKOFF_MS = 24 * 60 * 60 * 1000
 
 /**
  * Qué mandar en esta corrida: las URLs del sitemap que no figuran en el estado guardado (lo que ya
- * se anunció), en el orden del sitemap, recortadas al tope. Devuelve también el estado que habría
- * que guardar SI el envío sale bien (lo anunciado antes más lo de ahora), para que un rechazo no
- * marque como anunciado lo que no llegó. El estado es sólo un conjunto de URLs; una URL que
- * desaparece del sitemap deja de contar sola.
+ * se anunció), recortadas al tope. Devuelve también el estado que habría que guardar SI el envío
+ * sale bien (lo anunciado antes más lo de ahora), para que un rechazo no marque como anunciado lo
+ * que no llegó. Una URL que desaparece del sitemap deja de contar sola.
+ *
+ * Primero va lo RECIÉN PUBLICADO: las URLs que no estaban en ningún sitemap anterior (`known`).
+ * Antes iba todo en el orden del sitemap, así que una página publicada hoy esperaba detrás de
+ * 3.377 URLs viejas que Bing ya conoce por el sitemap, a 100 por deploy y con un 429 cada tanto:
+ * semanas para avisar justo lo único que el aviso adelanta. Sin `known` (un estado de antes de esta
+ * regla) no se puede separar lo nuevo del atraso: esa corrida va en orden y deja `known` armado
+ * con el sitemap entero, así que desde la siguiente lo nuevo pasa adelante. Lo recién publicado que
+ * no entró por el tope NO se marca como conocido, para que siga teniendo prioridad.
  */
-export function planSubmission(urls, previous = [], cap = INDEXNOW_MAX_NEW_PER_RUN) {
-  const seen = new Set(previous)
-  const fresh = urls.filter(url => !seen.has(url))
-  const toSend = fresh.slice(0, cap)
+export function planSubmission(urls, previous = [], cap = INDEXNOW_MAX_NEW_PER_RUN, known = null) {
+  const announced = new Set(previous)
+  const fresh = urls.filter(url => !announced.has(url))
+  const knownSet = known ? new Set(known) : null
+  const brandNew = knownSet ? fresh.filter(url => !knownSet.has(url)) : []
+  const backlog = knownSet ? fresh.filter(url => knownSet.has(url)) : fresh
+  const toSend = [...brandNew, ...backlog].slice(0, cap)
   const current = new Set(urls)
   const nextState = [...previous.filter(url => current.has(url)), ...toSend]
-  return { toSend, pending: fresh.length - toSend.length, nextState }
+  const nextKnown = [...new Set([...(known ?? urls), ...toSend])].filter(url => current.has(url))
+  return {
+    toSend,
+    pending: fresh.length - toSend.length,
+    brandNew: brandNew.length,
+    nextState,
+    nextKnown,
+  }
 }
 
 /**
- * El archivo de estado: `{ submittedAt, urls: [...], blockedUntil? }`. Cualquier cosa ilegible
- * vale "nunca se anunció nada y no hay castigo vigente".
+ * El archivo de estado: `{ submittedAt, urls: [...], known?: [...], blockedUntil? }`. `urls` es lo
+ * anunciado; `known`, todo lo que alguna vez estuvo en el sitemap (`null` si el estado es de antes
+ * de que existiera). Cualquier cosa ilegible vale "nunca se anunció nada y no hay castigo vigente".
  */
 export function parseState(text) {
-  const empty = { urls: [], blockedUntil: null }
+  const empty = { urls: [], known: null, blockedUntil: null }
   try {
     const parsed = JSON.parse(text)
     if (!parsed || typeof parsed !== 'object') return empty
     const urls = Array.isArray(parsed.urls)
       ? parsed.urls.filter(url => typeof url === 'string')
       : []
+    const known = Array.isArray(parsed.known)
+      ? parsed.known.filter(url => typeof url === 'string')
+      : null
     const blockedUntil =
       typeof parsed.blockedUntil === 'string' && !Number.isNaN(Date.parse(parsed.blockedUntil))
         ? parsed.blockedUntil
         : null
-    return { urls, blockedUntil }
+    return { urls, known, blockedUntil }
   } catch {
     return empty
   }
@@ -346,11 +371,13 @@ export async function runIndexNow({
       return { status: 'aborted', reason: collected.reason, ...EMPTY }
     }
     let previous = []
+    let known = null
     let blockedUntil = null
     try {
       const text = state && typeof state.read === 'function' ? state.read() : null
       const saved = text ? parseState(text) : parseState('')
       previous = saved.urls
+      known = saved.known
       blockedUntil = saved.blockedUntil
     } catch (error) {
       log(
@@ -361,10 +388,11 @@ export async function runIndexNow({
       log(`indexnow: backing off after a 429 until ${blockedUntil}; no POST.`)
       return { status: 'backoff', urls: 0, chunks: 0, responses: [] }
     }
-    const plan = planSubmission(collected.urls, previous, maxNewPerRun)
+    const plan = planSubmission(collected.urls, previous, maxNewPerRun, known)
     log(
       `indexnow: ${collected.urls.length} URLs in ${collected.childUrl}, ${previous.length} already announced, ` +
         `${plan.toSend.length} new to send now` +
+        (plan.brandNew ? ` (${plan.brandNew} first published since the last run go first)` : '') +
         (plan.pending ? `, ${plan.pending} left for the next deploy` : '') +
         (collected.dropped.length ? `; ${collected.dropped.length} off-host/duplicate dropped` : '')
     )
@@ -398,11 +426,14 @@ export async function runIndexNow({
       // Sólo un envío aceptado marca URLs como anunciadas; un 429 no marca nada pero sí deja
       // escrito hasta cuándo callar, para que el deploy siguiente no vuelva a pegar.
       try {
+        // `known` en el 429 queda como estaba (o, si no existía, el sitemap de hoy): lo recién
+        // publicado que no llegó sigue siendo nuevo para la próxima corrida.
         const next = allOk
-          ? { submittedAt: now(), urls: plan.nextState }
+          ? { submittedAt: now(), urls: plan.nextState, known: plan.nextKnown }
           : {
               submittedAt: null,
               urls: previous,
+              known: known ?? collected.urls,
               blockedUntil: new Date(Date.parse(now()) + INDEXNOW_BACKOFF_MS).toISOString(),
             }
         state.write(JSON.stringify(next))
