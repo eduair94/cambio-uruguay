@@ -35,7 +35,7 @@
     <template v-else>
       <div class="rental-feedback__head">
         <div class="rental-feedback__intro">
-          <h2 :id="titleId" class="rental-feedback__title">{{ question }}</h2>
+          <h3 :id="titleId" class="rental-feedback__title">{{ question }}</h3>
           <p class="rental-feedback__text">
             Tu respuesta es anónima y nos dice qué arreglar primero.
           </p>
@@ -292,7 +292,7 @@ async function submit() {
   background: rgba(var(--v-theme-on-surface), 0.03);
   color: rgb(var(--v-theme-on-surface));
 }
-.rental-feedback :is(p, h2, fieldset, legend) {
+.rental-feedback :is(p, h3, fieldset, legend) {
   margin: 0;
 }
 .rental-feedback__head {
