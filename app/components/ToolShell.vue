@@ -16,7 +16,7 @@
             <VIcon size="32" color="primary">{{ tool.icon }}</VIcon>
           </VAvatar>
           <div>
-            <h1 class="text-h5 text-md-h4 font-weight-bold text-white mb-1">{{ tool.title }}</h1>
+            <h1 class="text-h5 text-md-h4 font-weight-bold text-white mb-1">{{ headingText }}</h1>
             <p class="text-body-1 text-grey-lighten-2 mb-0 tool-intro">{{ tool.description }}</p>
           </div>
         </div>
@@ -184,12 +184,19 @@ const props = defineProps<{
    */
   seoTitle?: string
   seoDescription?: string
+  /**
+   * Overrides the catalogue's title in the `<h1>` only. The catalogue title also feeds the
+   * `/herramientas` index, the "Más herramientas" chips of every other tool and the OG image, so a
+   * page that wants a different heading (the words people search) changes it here, not there.
+   */
+  heading?: string
 }>()
 
 const localePath = useLocalePath()
 const slots = useSlots()
 
 const tool = computed(() => getTool(props.slug))
+const headingText = computed(() => props.heading || tool.value?.title)
 const hasContent = computed(() => Boolean(slots.content))
 const hasTips = computed(() => Boolean(slots.tips))
 const asideLayout = computed(() => props.contentLayout !== 'below')

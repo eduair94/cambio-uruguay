@@ -1,5 +1,11 @@
 <template>
-  <ToolShell slug="calculadora-sueldo-liquido" :faq="faq" :sources="sources">
+  <ToolShell
+    slug="calculadora-sueldo-liquido"
+    :faq="faq"
+    :sources="sources"
+    :seo-title="snippet.title"
+    :seo-description="snippet.description"
+  >
     <VCard class="pa-4 pa-sm-6">
       <!-- Mode -->
       <VBtnToggle v-model="mode" mandatory density="comfortable" class="mb-5 mode-toggle">
@@ -308,8 +314,14 @@ import { computed, ref } from 'vue'
 import { computePayroll, nominalForLiquido, PAYROLL_UY } from '~/utils/payroll'
 import { URUGUAY } from '~/utils/calculators'
 import { formatUYU } from '~/utils/format'
+import { toolSnippetSueldoLiquido } from '~/utils/toolSnippets'
 
 const localePath = useLocalePath()
+
+// "$ 50.000 nominales son $ 40.200 en mano en 2026": el ejemplo sale de `computePayroll`, el mismo
+// cálculo que la herramienta, así que no puede separarse de lo que la página muestra. Ver
+// `utils/toolSnippets.ts`.
+const snippet = toolSnippetSueldoLiquido()
 
 const mode = ref<'nominal' | 'liquido'>('nominal')
 const nominalInput = ref(80000)

@@ -1495,6 +1495,57 @@
       "routes": ["/importar/cosmeticos-y-perfumeria"],
       "queries": ["importar cosméticos a uruguay", "importar perfumes a uruguay"],
       "hypothesis": "La caida de clics no es de esta ficha sola: entre 18/8-14/9 y 15/9-12/10 la familia /importar/* (16 fichas publicadas el 15/8) perdio cerca de un tercio de las impresiones con la posicion quieta mientras el sitio crecia, que es el pico de lanzamiento apagandose; cosmeticos perdio mas clics porque en las semanas de lanzamiento tuvo un CTR anormalmente alto, y casi todas sus consultas llegan anonimizadas, asi que no hay una consulta perdida que nombrar ni otra URL propia que se la haya quedado. El titulo y la descripcion NO se tocan: se imprimen en /importar, que esta en ventana hasta el 28/10. Lo que cambia es que la ficha vuelve a decir la norma vigente: el registro de vendedores con la RG 26/2026 (alta por el operador postal, lista publicada, y las dos fechas que la DNA no hace coincidir), las ocho subcategorias del codigo J de la RG 30/2026 (vigente 12/10), la regla del MSP citada de la pagina del MSP y no de un articulo del reglamento de medicamentos que no la dice, y lo que el art. 27 del Decreto 96/990 tambien grava (pestañas y uñas postizas, brochas de maquillaje, máquinas de afeitar), con fecha de contraste 19/10/2026. Expectativa baja: la ventana anterior tiene menos de 10 clics y el job probablemente dictamine 'sin datos'."
+    },
+    {
+      "id": "bpc-valor-2026-con-decreto-y-multiplos",
+      "shippedOn": "2026-10-19",
+      "routes": ["/indicadores/bpc"],
+      "queries": [
+        "bpc",
+        "valor bpc",
+        "1 bpc",
+        "bpc uruguay",
+        "valor bpc hoy",
+        "2 bpc cuanto es"
+      ],
+      "hypothesis": "La BPC ya tenia el valor en el titulo desde setiembre ('Valor de la BPC hoy: $ 6.864') y en 28 dias (20/9-17/10) junto 2.286 impresiones y 1 clic, posicion ~10 en 'valor bpc', '1 bpc' y '2 bpc cuanto es'. A diferencia de la UR, su valor cambia una vez por ano: el ano es la senal de vigencia y el decreto la prueba. Titulo 'Valor de la BPC 2026: 1 BPC = $ 6.864'; descripcion con 'rige desde el 1 de enero de 2026 (Decreto 11/026)' y los multiplos que la gente escribe (2, 3, 5 y 10 BPC); en la pagina, desde cuando rige, el decreto con promulgacion y publicacion, el valor de 2025 y los dos cortes del sueldo (7 BPC de IRPF, 2,5 BPC de FONASA). El glosario /glosario/bpc ya le cede el valor desde el 22/9 (mismo mecanismo que la UR) y no se toca. Si funciona, sube la porcion de clics de /indicadores/bpc sin que caiga la del glosario."
+    },
+    {
+      "id": "calculadora-iva-contesta-la-tasa",
+      "shippedOn": "2026-10-19",
+      "routes": ["/herramientas/calculadora-iva"],
+      "queries": [
+        "cuanto es el iva en uruguay",
+        "iva uruguay",
+        "calculadora de iva",
+        "calcular iva",
+        "cuanto es el iva",
+        "cuánto es el iva en uruguay"
+      ],
+      "hypothesis": "La calculadora junta ~7.300 impresiones en 90 dias en posicion 8-10 con 9 clics, y ninguno en los ultimos 28. Su titulo y descripcion eran los del catalogo ('Calculadora de IVA en Uruguay (22% y 10%)', 'Suma o desconta el IVA...'). Pasan a contestar primero la consulta mas grande ('cuanto es el iva en uruguay'): titulo 'IVA en Uruguay: 22 % y 10 % (calculadora)' y descripcion con la tasa basica, que va a la minima (pan blanco, carne, medicamentos, art. 36 del Titulo 10) y el ejemplo $ 1.000 + IVA = $ 1.220. La pagina suma las fuentes (T.O. 2023 Titulo 10 arts. 34 y 36, DGI) y el explicativo nombra que va a la tasa minima. La logica de la calculadora y el H1 no cambian."
+    },
+    {
+      "id": "calculadora-sueldo-liquido-con-ejemplo",
+      "shippedOn": "2026-10-19",
+      "routes": ["/herramientas/calculadora-sueldo-liquido"],
+      "queries": [
+        "nominal a liquido",
+        "salario liquido uruguay",
+        "sueldo liquido uruguay",
+        "sueldo nominal"
+      ],
+      "hypothesis": "~1.400 impresiones en 90 dias en posicion ~10 ('nominal a liquido' 9,3; 'salario liquido uruguay' 11,2) con 2 clics. El titulo del catalogo se cortaba en el SERP (77 caracteres con la marca) y la descripcion era generica. Titulo 'Sueldo liquido 2026: de nominal a liquido' y descripcion con el dato: '$ 50.000 nominales son $ 40.200 en mano en 2026 (sin hijos): 15 % jubilatorio, 4,5 % FONASA y 0,1 % FRL; IRPF, cero', calculado con la misma funcion que la herramienta. La logica de la calculadora y el H1 no cambian."
+    },
+    {
+      "id": "calculadora-inflacion-con-la-ui-a-12-meses",
+      "shippedOn": "2026-10-19",
+      "routes": ["/herramientas/calculadora-inflacion"],
+      "queries": [
+        "calculadora de inflacion uruguay",
+        "calculadora inflación uruguay",
+        "calculadora inflacion uruguay"
+      ],
+      "hypothesis": "Las tres consultas que traen impresiones dicen 'uruguay' y el titulo no ('Calculadora de inflacion y poder de compra'); posicion ~8,4 y 2 clics en 90 dias. Titulo y H1 pasan a 'Calculadora de inflacion en Uruguay' y la descripcion lleva el dato vivo: la variacion a 12 meses de la UI segun el BCU (la misma serie de /indicadores/unidad-indexada, que se ajusta por el IPC), solo cuando la lectura fue viva. La logica de la calculadora no cambia."
     }
   ]
 }

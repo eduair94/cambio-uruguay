@@ -1,5 +1,12 @@
 <template>
-  <ToolShell slug="calculadora-inflacion" :faq="faq" hide-disclaimer>
+  <ToolShell
+    slug="calculadora-inflacion"
+    :faq="faq"
+    :seo-title="snippet.title"
+    :seo-description="snippet.description"
+    :heading="snippet.heading"
+    hide-disclaimer
+  >
     <VCard class="pa-4 pa-sm-6">
       <VRow class="g-input">
         <VCol cols="12" sm="5">
@@ -62,6 +69,14 @@
 
     <template #content>
       <h2>El dinero y la inflación</h2>
+      <p v-if="uiChange" data-testid="inflacion-ui-12m">
+        <strong>Dato de hoy:</strong> la
+        <NuxtLink :to="localePath('/indicadores/unidad-indexada')">Unidad Indexada</NuxtLink>, que
+        se ajusta por el IPC, {{ uiChange.pct >= 0 ? 'subió' : 'bajó' }}
+        <strong>{{ formatNumber(Math.abs(uiChange.pct), 2) }} %</strong> en los últimos 12 meses
+        según el BCU{{ uiChangeDay ? ` (dato del ${uiChangeDay})` : '' }}. Podés usarlo como
+        referencia en «Inflación anual».
+      </p>
       <p>
         La <strong>inflación</strong> hace que la misma cantidad de pesos compre menos cosas con el
         paso del tiempo. Esta herramienta muestra dos caras: cuánto costaría en el futuro algo que
@@ -87,9 +102,25 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { adjustByInflation } from '~/utils/calculators'
-import { formatUYU } from '~/utils/format'
+import { formatNumber, formatUYU } from '~/utils/format'
+import { dayLabelEs, type EvolutionPoint } from '~/utils/indicators'
+import { toolSnippetInflacion, uiYearChange } from '~/utils/toolSnippets'
 
 const localePath = useLocalePath()
+const { getEvolutionData } = useApiService()
+
+// La variación a 12 meses de la UI del BCU, la misma lectura que /indicadores/unidad-indexada,
+// reducida EN EL SERVIDOR a un número y una fecha (la serie diaria son ~400 puntos). Sólo una lectura
+// viva llega a la descripción: si falla, `null` y la página vuelve a la del catálogo, sin cifra.
+const { data: uiChange } = await useAsyncData('calculadora-inflacion-ui-12m', async () => {
+  const res = await getEvolutionData('bcu', 'UI', undefined, 13)
+  const points = (res?.data as { evolution?: EvolutionPoint[] } | null)?.evolution ?? []
+  return uiYearChange(points)
+})
+
+const uiChangeDay = computed(() => (uiChange.value ? dayLabelEs(uiChange.value.date) : null))
+const snippet = computed(() => toolSnippetInflacion(uiChange.value ?? null))
+
 const amount = ref(100000)
 const inflationPct = ref(7)
 const years = ref(5)

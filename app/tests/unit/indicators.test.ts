@@ -1,19 +1,26 @@
 import { describe, expect, it } from 'vitest'
 import type { ExchangeRate } from '../../types/api'
+import { URUGUAY } from '../../utils/calculators'
 import {
   EQUIVALENCE_AMOUNTS,
+  STATIC_SNIPPET_UNITS,
   changeOverDays,
   currentIndicatorValue,
   dayLabelEs,
   equivalenceTable,
   indicatorFromSlug,
   indicators,
+  isoDayLabelEs,
   listIndicatorSlugs,
   liveIndicatorReading,
   monthLabelEs,
   montevideoMonthKey,
+  montevideoYear,
   monthlyHistory,
+  staticIndicatorSnippet,
+  staticValueIsCurrent,
 } from '../../utils/indicators'
+import { BPC_2025, BPC_2026 } from '../../utils/irpfCasos'
 
 const row = (origin: string, code: string, value: number): ExchangeRate => ({
   origin,
@@ -226,5 +233,74 @@ describe('date labels', () => {
     // 01:00 UTC on the 16th is still the 15th in Montevideo.
     expect(dayLabelEs('2026-09-16T01:00:00.000Z')).toBe('15 de setiembre de 2026')
     expect(dayLabelEs('nope')).toBeNull()
+  })
+})
+
+// La BPC es el único indicador de valor fijo: un decreto por año. Lo que estos tests cuidan es que
+// el número que va al título sea el del decreto vigente, el mismo que usan las calculadoras, y que
+// el 1° de enero deje de llamarse "el de hoy" hasta que alguien cargue el nuevo.
+describe('BPC: el valor del decreto vigente', () => {
+  const bpc = indicatorFromSlug('bpc')!
+  const in2026 = new Date('2026-10-19T15:00:00.000Z')
+
+  it('es el mismo número en el indicador, la calculadora de sueldo y los casos de IRPF', () => {
+    expect(bpc.referenceValue).toBe(BPC_2026)
+    expect(bpc.referenceValue).toBe(URUGUAY.bpc)
+    expect(bpc.legal?.previous.value).toBe(BPC_2025)
+  })
+
+  it('cita el decreto con su vigencia, y el aumento que declara cierra con los dos valores', () => {
+    const legal = bpc.legal!
+    expect(legal.act).toBe('Decreto N° 11/026')
+    expect(legal.url).toBe('https://www.impo.com.uy/bases/decretos/11-2026')
+    expect(legal.validFrom).toBe('2026-01-01')
+    expect(legal.promulgated < legal.published).toBe(true)
+    const change = (bpc.referenceValue / legal.previous.value - 1) * 100
+    expect(change).toBeCloseTo(legal.previous.changePct, 2)
+  })
+
+  it('es el vigente sólo durante el año del decreto, en hora de Montevideo', () => {
+    expect(staticValueIsCurrent(bpc, in2026)).toBe(true)
+    // 31/12 a las 23:59 en Montevideo sigue siendo 2026; la medianoche ya es 2027.
+    expect(staticValueIsCurrent(bpc, new Date('2027-01-01T02:59:00.000Z'))).toBe(true)
+    expect(staticValueIsCurrent(bpc, new Date('2027-01-01T03:00:00.000Z'))).toBe(false)
+    expect(montevideoYear(new Date('2027-01-01T02:59:00.000Z'))).toBe(2026)
+    // Los de valor vivo nunca pasan por acá.
+    expect(staticValueIsCurrent(indicatorFromSlug('unidad-reajustable')!, in2026)).toBe(false)
+  })
+
+  it('arma el snippet con el año, el decreto y los múltiplos que la gente busca', () => {
+    const snippet = staticIndicatorSnippet(bpc, in2026)!
+    expect(snippet.title).toBe('Valor de la BPC 2026: 1 BPC = $ 6.864')
+    expect(`${snippet.title} | Cambio Uruguay`.length).toBeLessThanOrEqual(60)
+    expect(snippet.description.length).toBeLessThanOrEqual(155)
+    expect(snippet.description).toContain('rige desde el 1° de enero de 2026 (Decreto 11/026)')
+    for (const n of STATIC_SNIPPET_UNITS) {
+      const pesos = Math.round(n * bpc.referenceValue).toLocaleString('es-UY')
+      expect(snippet.description).toContain(`${n} BPC = $ ${pesos}`)
+    }
+  })
+
+  it('no publica snippet con cifra cuando el decreto ya no es el del año', () => {
+    expect(staticIndicatorSnippet(bpc, new Date('2027-02-01T12:00:00.000Z'))).toBeNull()
+    expect(staticIndicatorSnippet(indicatorFromSlug('unidad-indexada')!, in2026)).toBeNull()
+  })
+
+  it('la tabla tiene los montos que se buscan (2, 3, 4 y 5 BPC) y los cortes del sueldo', () => {
+    for (const n of [2, 2.5, 3, 4, 5, 7, 10]) expect(EQUIVALENCE_AMOUNTS.bpc).toContain(n)
+  })
+
+  it('las cifras de las preguntas frecuentes salen del mismo valor', () => {
+    const text = bpc.faqs.map(f => f.answer).join(' ')
+    for (const n of [1, 2, 3, 5, 7, 10]) {
+      expect(text).toContain(`$ ${Math.round(n * BPC_2026).toLocaleString('es-UY')}`)
+    }
+    expect(text).toContain(`$ ${BPC_2025.toLocaleString('es-UY')}`)
+  })
+
+  it('fecha un día del calendario sin correrlo de zona', () => {
+    expect(isoDayLabelEs('2026-01-01')).toBe('1° de enero de 2026')
+    expect(isoDayLabelEs('2026-01-29')).toBe('29 de enero de 2026')
+    expect(isoDayLabelEs('2026-01')).toBeNull()
   })
 })
