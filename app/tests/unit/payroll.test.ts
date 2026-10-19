@@ -47,18 +47,39 @@ describe('computePayroll — reference case: $80.000 nominal, sin dependientes',
   it('sums aportes to 15.680', () => {
     expect(r.aportes).toBe(15680)
   })
-  it('computes IRPF gross from the franjas, then the 14% deduction credit', () => {
-    // 0% up to 7 BPC (48.048); 10% on 48.048->68.640; 15% on 68.640->80.000
-    expect(r.irpf.grossTax).toBeCloseTo(3763.2, 1)
+  it('computes IRPF gross from the franjas on nominal + 6 %, then the 14% deduction credit', () => {
+    // 80.000 > 10 BPC (68.640) → computable 84.800 (Decreto 148/007 art. 63).
+    // 0% up to 7 BPC (48.048); 10% on 48.048->68.640; 15% on 68.640->84.800
+    expect(r.irpf.incrementApplied).toBe(true)
+    expect(r.irpf.computable).toBe(84800)
+    expect(r.irpf.grossTax).toBeCloseTo(4483.2, 1)
     expect(r.irpf.creditRate).toBe(14) // 80.000 < 15 BPC (102.960)
     expect(r.irpf.deductionsMonthly).toBe(15680) // aportes are themselves deductible
     expect(r.irpf.credit).toBeCloseTo(2195.2, 1)
-    expect(r.irpf.tax).toBeCloseTo(1568, 1)
+    expect(r.irpf.tax).toBeCloseTo(2288, 1)
   })
-  it('lands on a líquido that matches the published reference (~$63.000)', () => {
-    expect(r.liquido).toBeCloseTo(62752, 0)
-    expect(r.totalDescuentos).toBeCloseTo(17248, 0)
-    expect(r.descuentoPct).toBeCloseTo(21.6, 1)
+  it('lands on the same líquido as the DGI-simulator arithmetic of irpfCasos.ts', () => {
+    // Until 2026-10-19 the 6 % was skipped: tax 1.568 and líquido 62.752, $ 720 too high.
+    expect(r.liquido).toBeCloseTo(62032, 0)
+    expect(r.totalDescuentos).toBeCloseTo(17968, 0)
+    expect(r.descuentoPct).toBeCloseTo(22.5, 1)
+  })
+})
+
+describe('computePayroll — the 6 % increment starts above 10 BPC', () => {
+  it('does not apply at or below 10 BPC ($ 68.640)', () => {
+    const r = computePayroll({ nominal: 68640 })
+    expect(r.irpf.incrementApplied).toBe(false)
+    expect(r.irpf.computable).toBe(68640)
+  })
+  it('applies just above it, and agrees with estimateMonthlyWithholding for a no-children worker', async () => {
+    const { estimateMonthlyWithholding } = await import('../../utils/irpfCasos')
+    for (const nominal of [70000, 80000, 120000]) {
+      const r = computePayroll({ nominal })
+      expect(r.irpf.incrementApplied).toBe(true)
+      expect(r.irpf.computable).toBe(Math.round(nominal * 1.06))
+      expect(r.irpf.tax).toBeCloseTo(estimateMonthlyWithholding(nominal).withholding, 0)
+    }
   })
 })
 
@@ -113,8 +134,8 @@ describe('computePayroll — IRPF edges', () => {
   })
 
   it('a big credit floors IRPF at zero rather than going negative', () => {
-    // At $90.000 a disabled child generates more credit than the gross tax.
-    const r = computePayroll({ nominal: 90000, hijosDiscapacidad: 1 })
+    // At $60.000 (below 10 BPC, no 6 % increment) a disabled child generates more credit than the gross tax.
+    const r = computePayroll({ nominal: 60000, hijosDiscapacidad: 1 })
     expect(r.irpf.credit).toBeGreaterThan(r.irpf.grossTax)
     expect(r.irpf.tax).toBe(0)
   })
