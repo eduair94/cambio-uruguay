@@ -1023,6 +1023,12 @@ export const guideHubs: readonly GuideHub[] = [
     ],
     resources: [
       {
+        label: 'Cuánto me tienen que pagar',
+        description:
+          'Tu mínimo es el laudo de tu grupo y categoría, no el Salario Mínimo Nacional.',
+        to: '/cuanto-me-tienen-que-pagar-uruguay',
+      },
+      {
         label: 'Calculadora de sueldo líquido',
         description: 'Del nominal al líquido, con aportes.',
         to: '/herramientas/calculadora-sueldo-liquido',

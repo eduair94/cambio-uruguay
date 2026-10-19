@@ -166,6 +166,28 @@ const DEUDA_SIN_ENLACE = [
 ]
 
 /** El trinquete. Sólo puede bajar: subirlo es publicar una página que nadie enlaza. */
+// SIGUE EN 16 el 2026-10-19, y las dos candidatas del día quedaron por el ORIGEN, no por el
+// destino: `npm run seo_debt` imprimió `/cheques-uruguay` y `/alternativa-a-bankos-uruguay` como
+// las dos rutas libres de este pozo, pero la reserva también alcanza a la página donde se
+// escribe el enlace, porque ahí sí se le toca el contenido a una ruta medida.
+//
+// `/cheques-uruguay` tiene la vecina identificada y es el caso de `/donde-conseguir-monedas-uruguay`
+// otra vez: la página YA enlaza a `/salir-del-clearing` de ida sola, y el lector de ésa la
+// necesita de verdad —abre diciendo que «no es un solo registro: son DOS cosas distintas» (el
+// Clearing de Informes privado y la Central de Riesgos del BCU) y nunca nombra el tercero, el
+// registro de infractores del BCU del art. 66 del Decreto-Ley 14.412, que es el que te alcanza si
+// lo que rebotó fue un cheque; y de ése no se sale por tiempo como de los otros dos, sino con una
+// rehabilitación que hay que pedir y que el BCU concede «en los casos debidamente justificados»
+// (art. 64), o sea nunca sola—. `/salir-del-clearing` está reservada hasta el 2026-10-21 por la
+// fila `clearing-que-pasa-y-categorias-bcu`, así que el enlace entra ese día.
+//
+// `/alternativa-a-bankos-uruguay` espera al 2026-10-27: la única página cuyo lector compara apps
+// de beneficios y que ya nombra a Bankos es `/apps-de-beneficios-uruguay`, reservada por
+// `tarjetas-y-pagos-entran-a-su-tema`. Las dos rutas libres que la enlazarían hoy
+// (`/descuentos-con-tarjeta-uruguay` y `/que-banco-tiene-mas-descuentos-uruguay`) son las dos a
+// las que ESA página manda con sus botones, y su lector ya está usando nuestro mapa: devolverlo a
+// la comparativa es relleno, que es justo lo que el encabezado de este archivo no cuenta como
+// arreglo aunque ponga el test en verde.
 // 17 → 16 el 2026-10-18, y es la única de las diecisiete con la ruta libre de toda ventana de
 // medición abierta: `npm run seo_debt` imprimió ese día UNA fila libre entre las 58 de los tres
 // trinquetes con lista, y era ésta.
