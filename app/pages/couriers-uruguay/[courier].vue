@@ -20,11 +20,27 @@
                 <VIcon start size="small">mdi-star</VIcon>
                 {{ page.ratingLabel }} / 5 en reseñas
               </VChip>
+              <VChip size="small" variant="outlined">
+                <VIcon start size="small">mdi-calendar-check-outline</VIcon>
+                Datos del {{ page.verifiedLabel }}
+              </VChip>
             </div>
             <h1 class="text-h4 text-md-h3 font-weight-bold mb-3">{{ page.heading }}</h1>
             <p class="text-body-1 entity-lead mb-0">{{ page.lead }}</p>
             <ShareButtons class="mt-4" :url="canonicalUrl" :text="page.heading" />
           </header>
+
+          <!-- What the courier's own site announces, before any price -->
+          <VAlert
+            v-if="page.notice"
+            type="warning"
+            variant="tonal"
+            density="comfortable"
+            class="mb-8"
+            icon="mdi-airplane-off"
+          >
+            <strong>{{ page.name }}, al {{ page.verifiedLabel }}.</strong> {{ page.notice }}
+          </VAlert>
 
           <!-- Tariff and conditions, straight from the catalogue row -->
           <section class="mb-8" aria-labelledby="courier-tarifa">
@@ -38,11 +54,37 @@
             <p class="text-caption text-medium-emphasis mt-3 mb-0">{{ page.verificationNote }}</p>
           </section>
 
-          <!-- Worked parcel: only when the courier publishes a per-kg tariff -->
+          <!-- Worked parcel: only when the courier has a per-kg tariff. With a weight range, it is
+               a calculator: whole kilos inside the tier the rate belongs to, never past it. -->
           <section v-if="page.reference" class="mb-8" aria-labelledby="courier-paquete">
-            <h2 id="courier-paquete" class="text-h5 font-weight-bold mb-3">
-              Cuánto sale un paquete de {{ page.reference.kg }} kilos
+            <h2 id="courier-paquete" class="text-h5 font-weight-bold mb-2">
+              {{
+                page.estimator
+                  ? `Calculá tu envío con ${page.name}`
+                  : `Cuánto sale un paquete de ${page.reference.kg} kilos`
+              }}
             </h2>
+            <template v-if="page.estimator">
+              <p class="text-body-2 text-medium-emphasis mt-0 mb-3">
+                Elegí el peso. La cuenta usa
+                {{
+                  page.rateSource === 'calculadora'
+                    ? 'lo que cobra su calculadora'
+                    : 'su tarifa publicada'
+                }}
+                por kilo, de {{ page.estimator.minKg }} a {{ page.estimator.maxKg }} kilos: el tramo
+                en que ese precio por kilo vale.
+              </p>
+              <VSelect
+                v-model="kg"
+                :items="kgItems"
+                label="Peso del paquete"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+                class="courier-kg mb-4"
+              />
+            </template>
             <div class="table-scroll">
               <table class="entity-table cu-mobile-cards">
                 <thead>
@@ -53,7 +95,7 @@
                 </thead>
                 <tbody>
                   <tr
-                    v-for="row in page.reference.rows"
+                    v-for="row in parcelRows"
                     :key="row.label"
                     :class="{
                       'total-row': row.kind === 'total',
@@ -78,6 +120,51 @@
           >
             {{ page.quoteNote }}
           </VAlert>
+
+          <!-- The courier's own calculator: what it printed on the check date, and the way to it -->
+          <section v-if="page.calculatorUrl" class="mb-8" aria-labelledby="courier-calculadora">
+            <h2 id="courier-calculadora" class="text-h5 font-weight-bold mb-2">
+              La calculadora de {{ page.name }}
+            </h2>
+            <template v-if="page.calculator">
+              <p class="text-body-2 entity-prose mt-0 mb-3">
+                Lo que devolvió el {{ page.verifiedLabel }}, con {{ page.calculator.inputs }}.
+              </p>
+              <div class="table-scroll">
+                <table class="entity-table cu-mobile-cards">
+                  <thead>
+                    <tr>
+                      <th>Peso</th>
+                      <th class="num">Total que mostró</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="reading in page.calculator.readings" :key="reading.kg">
+                      <td data-label="">{{ reading.label }}</td>
+                      <td class="num" data-label="Total">{{ reading.value }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="text-body-2 entity-prose mt-3 mb-0">{{ page.calculatorNote }}</p>
+            </template>
+            <p v-else class="text-body-2 entity-prose mt-0 mb-0">
+              Para un peso fuera del rango de arriba, o con otro destino, el presupuesto exacto lo
+              da su calculadora.
+            </p>
+            <VBtn
+              :href="page.calculatorUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              color="primary"
+              variant="tonal"
+              size="large"
+              class="mt-4"
+              append-icon="mdi-open-in-new"
+            >
+              Abrir la calculadora de {{ page.name }}
+            </VBtn>
+          </section>
 
           <!-- Reputation -->
           <section v-if="page.reviewsNote" class="mb-8" aria-labelledby="courier-opiniones">
@@ -232,7 +319,7 @@
 </template>
 
 <script setup lang="ts">
-import { getCourierPage } from '~/utils/courierPages'
+import { courierEstimate, getCourierPage } from '~/utils/courierPages'
 import { entityIdForSlug } from '~/utils/entityPageSlugs'
 import { starParts } from '~/utils/reviews'
 
@@ -253,6 +340,21 @@ if (!page.value) {
 }
 
 const stars = computed(() => starParts(page.value?.rating ?? null))
+
+// The calculator: SSR renders the reference parcel; picking another weight reprices it in place.
+const kg = ref(page.value?.reference?.kg ?? 2)
+const kgItems = computed(() =>
+  (page.value?.estimator?.options ?? []).map(value => ({
+    title: value === 1 ? '1 kilo' : `${value} kilos`,
+    value,
+  }))
+)
+const parcelRows = computed(() => {
+  const model = page.value
+  if (!model?.reference) return []
+  if (!model.estimator || kg.value === model.reference.kg) return model.reference.rows
+  return courierEstimate(model.id, kg.value)?.rows ?? model.reference.rows
+})
 const canonicalUrl = computed(() => `https://cambio-uruguay.com${page.value?.path ?? ''}`)
 
 defineOgImageComponent('Cambio', {
@@ -360,6 +462,11 @@ useHead({
 
 .table-scroll {
   overflow-x: auto;
+}
+
+/* The weight picker reads as part of the table it drives, not as a full-width form. */
+.courier-kg {
+  max-width: 260px;
 }
 .entity-table {
   width: 100%;

@@ -25,6 +25,31 @@
             <ShareButtons class="mt-4" :url="canonicalUrl" :text="heading" />
           </header>
 
+          <!-- Each side's own page, linked by its name: whoever searched for ONE of the two and
+               landed on the comparison gets there in one tap. -->
+          <section v-if="entityLinks.length" class="mb-8" aria-labelledby="comparativa-fichas">
+            <h2 id="comparativa-fichas" class="text-h6 font-weight-bold mb-1">
+              Cada {{ family.singular }} por separado
+            </h2>
+            <p class="text-body-2 text-medium-emphasis mt-0 mb-3">
+              Tarifa con su fecha, dónde está el casillero, cómo retirás el paquete y una
+              calculadora por peso.
+            </p>
+            <div class="d-flex flex-wrap ga-3">
+              <VBtn
+                v-for="link in entityLinks"
+                :key="link.to"
+                :to="localePath(link.to)"
+                color="primary"
+                variant="tonal"
+                size="large"
+                append-icon="mdi-arrow-right"
+              >
+                {{ link.name }}
+              </VBtn>
+            </div>
+          </section>
+
           <!-- Scores side by side -->
           <section v-if="comparison.rows.length" class="mb-8">
             <h2 class="text-h5 font-weight-bold mb-3">Eje por eje</h2>
@@ -184,7 +209,9 @@
 import {
   TIE_MARGIN,
   comparativaDescription,
+  comparativaEntityLinks,
   comparativaHeading,
+  comparativaPageTitle,
   comparativaSummary,
   compareEntities,
   getComparativaFamily,
@@ -264,6 +291,7 @@ const sources = computed<ComparableSource[]>(() => {
 })
 
 const related = computed(() => (pair.value ? relatedPairs(pair.value) : []))
+const entityLinks = computed(() => (pair.value ? comparativaEntityLinks(pair.value) : []))
 
 const canonicalUrl = computed(
   () => `https://cambio-uruguay.com/comparativas/${familySlug.value}/${parSlug.value}`
@@ -276,8 +304,7 @@ defineOgImageComponent('Cambio', {
 })
 
 useSeoMeta({
-  title: () =>
-    `${pair.value ? `${pair.value.a.shortName} vs ${pair.value.b.shortName}` : ''} | Cambio Uruguay`,
+  title: () => `${pair.value ? comparativaPageTitle(pair.value) : ''} | Cambio Uruguay`,
   description: () => description.value,
   ogTitle: () => heading.value,
   ogDescription: () => description.value,

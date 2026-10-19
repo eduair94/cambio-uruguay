@@ -6,8 +6,10 @@ import {
   TIE_MARGIN,
   allComparativaPairs,
   comparativaDescription,
+  comparativaEntityLinks,
   comparativaFamilySlugs,
   comparativaHeading,
+  comparativaPageTitle,
   comparativaPaths,
   comparativaSummary,
   comparativaTitle,
@@ -22,10 +24,15 @@ import {
   type ComparableEntity,
   type ComparativaPair,
 } from '../../utils/comparativas'
+import { courierOperating, verifiedCourier } from '../../utils/courierChecks'
 import { allCourierPages } from '../../utils/courierPages'
-import { COURIERS, courierParcelQuote } from '../../utils/courierShipping'
+import { COURIERS, courierParcelQuote, type Courier } from '../../utils/courierShipping'
+import { courierPagePath } from '../../utils/entityPageSlugs'
 
 const allPairs = allComparativaPairs()
+/** The row a pair page prices: the catalogue with the courier site's reading on top. */
+const verifiedById = (id: string): Courier =>
+  verifiedCourier(COURIERS.find(candidate => candidate.id === id)!)
 
 describe('families', () => {
   it('exposes one meta per declared family, in order', () => {
@@ -235,7 +242,7 @@ describe('courier arithmetic', () => {
     const entities = COMPARATIVA_FAMILY_META.find(f => f.slug === 'couriers')?.entities ?? []
     expect(entities.length).toBeGreaterThan(0)
     for (const entity of entities) {
-      const courier = COURIERS.find(candidate => candidate.id === entity.id)!
+      const courier = verifiedById(entity.id)
       expect(courierReferenceCost(entity), entity.id).toBe(
         courierParcelQuote(courier, COURIER_REFERENCE_KG)?.totalUsd ?? null
       )
@@ -281,8 +288,7 @@ describe('courier pairs show the parcel exactly like the courier pages', () => {
   const detailPages = allCourierPages()
   const usd = (value: number) =>
     `USD ${value.toLocaleString('es-UY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-  const courierOf = (entity: ComparableEntity) =>
-    COURIERS.find(courier => courier.id === entity.id)!
+  const courierOf = (entity: ComparableEntity) => verifiedById(entity.id)
   const entityOf = (id: string) => courierFamily.entities.find(entity => entity.id === id)!
   const parcelFact = (entity: ComparableEntity) =>
     entity.facts.find(fact => fact.label === `Paquete de ${COURIER_REFERENCE_KG} kg`)?.value ?? ''
@@ -361,6 +367,63 @@ describe('courier pairs show the parcel exactly like the courier pages', () => {
         ...pair.b.facts.map(fact => fact.value),
       ].join(' ')
       expect(text, pair.slug).not.toContain('caso a caso')
+    }
+  })
+})
+
+// The searches that reached the courier head-to-heads were for ONE courier's name. The pair page
+// says it is a comparison and hands the reader to each courier's own page, by name.
+describe('courier pairs send the name search to the courier’s own page', () => {
+  const courierPairs = allPairs.filter(pair => pair.family === 'couriers')
+
+  it('frames the title as a choice, inside the SERP budget, never the bare name alone', () => {
+    const titles = courierPairs.map(comparativaPageTitle)
+    expect(new Set(titles).size).toBe(courierPairs.length)
+    for (const [i, pair] of courierPairs.entries()) {
+      const title = titles[i]!
+      expect(title.startsWith(`${pair.a.shortName} vs ${pair.b.shortName}`)).toBe(true)
+      if (title.includes(':')) expect(`${title} | Cambio Uruguay`.length).toBeLessThanOrEqual(60)
+    }
+    expect(titles.filter(title => title.endsWith(': cuál conviene')).length).toBeGreaterThan(
+      courierPairs.length / 2
+    )
+  })
+
+  it('keeps the other families’ titles as they were', () => {
+    for (const pair of allPairs.filter(p => p.family !== 'couriers')) {
+      expect(comparativaPageTitle(pair)).toBe(`${pair.a.shortName} vs ${pair.b.shortName}`)
+      expect(comparativaEntityLinks(pair)).toEqual([])
+    }
+  })
+
+  it('links both couriers’ pages with the name as the text', () => {
+    for (const pair of courierPairs) {
+      expect(comparativaEntityLinks(pair)).toEqual([
+        { to: courierPagePath(pair.a.id), name: pair.a.shortName },
+        { to: courierPagePath(pair.b.id), name: pair.b.shortName },
+      ])
+    }
+  })
+
+  it('opens the description with the choice and the 2 kg verdict, inside 160 characters', () => {
+    for (const pair of courierPairs) {
+      const description = comparativaDescription(pair)
+      expect(description.startsWith(`${pair.a.shortName} o ${pair.b.shortName}: `)).toBe(true)
+      expect(description.length, description).toBeLessThanOrEqual(160)
+      expect(description).toMatch(/2 kg/)
+    }
+  })
+
+  it('never crowns a courier whose site says it is not flying', () => {
+    const grounded = courierPairs.filter(
+      pair => !courierOperating(pair.a.id) || !courierOperating(pair.b.id)
+    )
+    expect(grounded.length).toBeGreaterThan(0)
+    for (const pair of grounded) {
+      const summary = comparativaSummary(pair)
+      expect(summary, pair.slug).toContain('suspendió los vuelos')
+      expect(summary, pair.slug).not.toContain('sale más barato')
+      expect(comparativaDescription(pair), pair.slug).toContain('suspendió sus vuelos')
     }
   })
 })

@@ -35,6 +35,7 @@ import {
   computeOverall as cardOverall,
   type CardProgram,
 } from './cardRewards'
+import { courierCheck, courierOperating, verifiedCourier } from './courierChecks'
 import {
   COURIERS,
   POSTAL_SURCHARGE,
@@ -43,6 +44,7 @@ import {
   type CourierExtraFee,
   type CourierParcelQuote,
 } from './courierShipping'
+import { courierPagePath } from './entityPageSlugs'
 import {
   DEBIT_CARDS,
   DEBIT_RUBRIC,
@@ -323,9 +325,34 @@ function courierParcelFact(courier: Courier, quote: CourierParcelQuote): string 
   return total
 }
 
+/** `19/10/2026`. */
+function dateEs(iso: string): string {
+  const [yyyy, mm, dd] = iso.split('-')
+  return `${dd}/${mm}/${yyyy}`
+}
+
+/** What a courier's own calculator printed for the reference parcel, as a sentence fragment. */
+function courierCalculatorText(courier: Courier): string | null {
+  const check = courierCheck(courier.id)
+  const reading = check?.calculator?.readings.find(entry => entry.kg === COURIER_REFERENCE_KG)
+  if (!check?.calculator || !reading) return null
+  return `USD ${money(reading.totalUsd)} por ${COURIER_REFERENCE_KG} kg el ${dateEs(check.checkedAt)}, con ${check.calculator.inputs}`
+}
+
+/** `Su sitio avisa que suspendió los vuelos…`, dated, for a courier that says it is not flying. */
+function courierNoticeText(courier: Courier): string | null {
+  const check = courierCheck(courier.id)
+  if (courierOperating(courier.id) || !check?.notice) return null
+  return `${check.notice.replace(/\.$/, '')} (leído el ${dateEs(check.checkedAt)})`
+}
+
 function courierEntity(courier: Courier): ComparableEntity {
   const quote = courierParcelQuote(courier, COURIER_REFERENCE_KG)
+  const check = courierCheck(courier.id)
+  const notice = courierNoticeText(courier)
+  const calculatorText = courier.perKgUsd === null ? courierCalculatorText(courier) : null
   const facts: ComparableFact[] = [
+    ...(notice ? [{ label: 'Aviso del courier', value: notice }] : []),
     { label: 'Modalidad', value: courier.modality },
     {
       label: 'Tarifa de referencia',
@@ -345,9 +372,21 @@ function courierEntity(courier: Courier): ComparableEntity {
     // pair page shows both sides' totals, and they are the ones those pages show.
     {
       label: `Paquete de ${COURIER_REFERENCE_KG} kg`,
-      value: quote ? courierParcelFact(courier, quote) : 'Sin tarifa publicada para calcularlo',
+      value: quote
+        ? courierParcelFact(courier, quote)
+        : calculatorText
+          ? `Sin tarifa publicada para calcularlo; su calculadora devolvió ${calculatorText}`
+          : 'Sin tarifa publicada para calcularlo',
     },
   ]
+  if (check?.origins.length) {
+    facts.push({
+      label: 'Dónde está el casillero',
+      value: check.origins
+        .map(origin => (origin.transit ? `${origin.place} (${origin.transit})` : origin.place))
+        .join(' · '),
+    })
+  }
   if (courier.extraFees?.length) {
     facts.push({
       label: 'Otros cargos que publica',
@@ -395,11 +434,14 @@ function courierEntity(courier: Courier): ComparableEntity {
 /** Reference parcel used for the worked courier comparison. */
 export const COURIER_REFERENCE_KG = 2
 
-/** The courier behind a comparable entity, or `undefined` for another family. */
+/**
+ * The courier behind a comparable entity, or `undefined` for another family. It is the row as the
+ * courier's site read on its check date (utils/courierChecks.ts), the same one its own page prices.
+ */
 function courierFor(entity: ComparableEntity): Courier | undefined {
-  return entity.family === 'couriers'
-    ? COURIERS.find(courier => courier.id === entity.id)
-    : undefined
+  if (entity.family !== 'couriers') return undefined
+  const courier = COURIERS.find(candidate => candidate.id === entity.id)
+  return courier ? verifiedCourier(courier) : undefined
 }
 
 /**
@@ -531,7 +573,9 @@ export const COMPARATIVA_FAMILY_META: readonly ComparativaFamilyMeta[] = Object.
     pairQuestion: 'con cuál te conviene traer el paquete',
     dimensions: [],
     entities: disambiguateShortNames(
-      COURIERS.map(courierEntity).sort((a, b) => a.name.localeCompare(b.name, 'es'))
+      COURIERS.map(courier => courierEntity(verifiedCourier(courier))).sort((a, b) =>
+        a.name.localeCompare(b.name, 'es')
+      )
     ),
     hub: '/couriers-uruguay',
   },
@@ -804,11 +848,26 @@ function courierSummary(pair: ComparativaPair): string {
   const nameA = sideA.entity.shortName
   const nameB = sideB.entity.shortName
 
+  // A courier whose site says it is not flying is said first, and never crowned on price.
+  const grounded = sides.filter(side => !courierOperating(side.courier.id))
+  for (const side of grounded) {
+    const notice = courierNoticeText(side.courier)
+    if (notice) parts.push(`${side.entity.shortName}: ${lowerFirst(notice)}.`)
+  }
+
   if (sideA.quote && sideB.quote) {
     const costA = sideA.quote.totalUsd
     const costB = sideB.quote.totalUsd
     const incomplete = sides.filter(side => side.quote && !side.quote.complete)
-    if (incomplete.length) {
+    if (grounded.length) {
+      parts.push(
+        `Para un paquete de ${kg} kilos: USD ${money(costA)} con ${nameA} y USD ${money(costB)} con ${nameB}.`
+      )
+      parts.push(...incomplete.map(courierPendingSentence))
+      parts.push(
+        'Con un courier que no está volando, esta comparación no declara un ganador por precio: el que hoy te trae el paquete es el otro.'
+      )
+    } else if (incomplete.length) {
       parts.push(
         `Para un paquete de ${kg} kilos: USD ${money(costA)} con ${nameA} y USD ${money(costB)} con ${nameB}.`
       )
@@ -845,13 +904,20 @@ function courierSummary(pair: ComparativaPair): string {
     )
     const pending = courierPendingSentence(quoted)
     if (pending) parts.push(pending)
+    const reading = courierCalculatorText(other.courier)
     parts.push(
-      `${other.entity.shortName} no publica precio por kilo y cotiza cada envío por su calculadora, así que la comparación directa hay que hacerla con el presupuesto en la mano.`
+      reading
+        ? `${other.entity.shortName} no publica precio por kilo: su calculadora devolvió ${reading}. Esa cifra sale de otra cuenta que la de ${quoted.entity.shortName}, así que la comparación justa es con los dos presupuestos en la mano.`
+        : `${other.entity.shortName} no publica precio por kilo y cotiza cada envío por su calculadora, así que la comparación directa hay que hacerla con el presupuesto en la mano.`
     )
   } else {
     parts.push(
       `Ni ${nameA} ni ${nameB} publican una tarifa por kilo: los dos cotizan cada envío en su sitio. Compará los dos presupuestos por el mismo paquete antes de decidir.`
     )
+    for (const side of sides) {
+      const reading = courierCalculatorText(side.courier)
+      if (reading) parts.push(`La calculadora de ${side.entity.shortName} devolvió ${reading}.`)
+    }
   }
 
   // What each total includes, said once per courier and only as its own note says it.
@@ -918,8 +984,124 @@ function courierSummary(pair: ComparativaPair): string {
   return parts.join(' ')
 }
 
+/** What a `<title>` may spend before ` | Cambio Uruguay`; see utils/entityPages.ts. */
+const PAIR_TITLE_BUDGET = 43
+
+/**
+ * The `<title>` of a pair page, before the brand suffix.
+ *
+ * A courier pair carries the comparison in its title, not just the two names: in the 90 days to
+ * 2026-10-17 the courier head-to-heads drew their impressions almost only from searches for ONE
+ * courier's name ("usx cargo", "urubox", "soycourier"), which the courier's own page answers, and
+ * none from a "<a> vs <b>" search. A bare "USX Cargo vs EXUR Envíos" read like a page about either
+ * name; "…: cuál conviene" reads like what it is. Other families keep the bare pair.
+ */
+export function comparativaPageTitle(pair: ComparativaPair): string {
+  const bare = `${pair.a.shortName} vs ${pair.b.shortName}`
+  if (pair.family !== 'couriers') return bare
+  const framed = `${bare}: cuál conviene`
+  return framed.length <= PAIR_TITLE_BUDGET ? framed : bare
+}
+
+/** A side of a pair that has its own page, linked by its name. */
+export interface ComparativaEntityLink {
+  to: string
+  name: string
+}
+
+/**
+ * The two sides' own pages, for the "each one on its own" links of a pair page.
+ *
+ * Only couriers so far: a search for one courier's name should end on that courier's page, and
+ * the pair page is where the reader who landed on the comparison instead finds it. The link text is
+ * the name alone, because that is the query it answers.
+ */
+export function comparativaEntityLinks(pair: ComparativaPair): ComparativaEntityLink[] {
+  if (pair.family !== 'couriers') return []
+  return [pair.a, pair.b].flatMap(side => {
+    const to = courierPagePath(side.id)
+    return to ? [{ to, name: side.shortName }] : []
+  })
+}
+
+/** `para 2 kg sale menos X: USD a contra USD b de Y` — the courier verdict, short enough for a SERP. */
+function courierVerdictShort(pair: ComparativaPair): string {
+  const kg = COURIER_REFERENCE_KG
+  const sides = [pair.a, pair.b].flatMap(entity => {
+    const courier = courierFor(entity)
+    return courier ? [{ entity, courier, quote: courierParcelQuote(courier, kg) }] : []
+  })
+  const [sideA, sideB] = sides
+  if (!sideA || !sideB) return ''
+  const grounded = sides.find(side => !courierOperating(side.courier.id))
+  const priced = (side: (typeof sides)[number]) => {
+    if (side.quote) return `USD ${money(side.quote.totalUsd)} con ${side.entity.shortName}`
+    const calculated = calculatorTotal(side.courier)
+    return calculated === null
+      ? `${side.entity.shortName} cotiza en su sitio`
+      : `${side.entity.shortName} no publica tarifa y su calculadora cobró USD ${money(calculated)}`
+  }
+  if (grounded) {
+    const other = sides.find(side => side !== grounded)!
+    return `${grounded.entity.shortName} suspendió sus vuelos; para ${kg} kg, ${priced(other)}`
+  }
+  if (sideA.quote && sideB.quote) {
+    const costA = sideA.quote.totalUsd
+    const costB = sideB.quote.totalUsd
+    if (!sideA.quote.complete || !sideB.quote.complete) {
+      return `para ${kg} kg, ${priced(sideA)} y ${priced(sideB)}, sin cargos que se cobran aparte`
+    }
+    if (Math.abs(costA - costB) < 1) {
+      return `para ${kg} kg salen casi lo mismo: USD ${money(costA)} y USD ${money(costB)}`
+    }
+    const [cheap, dear] = costA < costB ? [sideA, sideB] : [sideB, sideA]
+    return `para ${kg} kg sale menos ${cheap.entity.shortName}: USD ${money(
+      cheap.quote!.totalUsd
+    )} contra USD ${money(dear.quote!.totalUsd)} de ${dear.entity.shortName}`
+  }
+  // At most one side has a quote here: lead with it, the calculator or "cotiza" side after.
+  const [first, second] = sideB.quote && !sideA.quote ? [sideB, sideA] : [sideA, sideB]
+  const calculated = calculatorTotal(second.courier)
+  const secondText =
+    calculated === null
+      ? `${second.entity.shortName} cotiza en su sitio`
+      : `la calculadora de ${second.entity.shortName} cobró USD ${money(calculated)}`
+  return first.quote
+    ? `para ${kg} kg, USD ${money(first.quote.totalUsd)} con ${first.entity.shortName}; ${secondText}`
+    : `para ${kg} kg, ${priced(first)} y ${priced(second)}`
+}
+
+/** The calculator's total for the reference parcel, when it was asked about that weight. */
+function calculatorTotal(courier: Courier): number | null {
+  return (
+    courierCheck(courier.id)?.calculator?.readings.find(
+      reading => reading.kg === COURIER_REFERENCE_KG
+    )?.totalUsd ?? null
+  )
+}
+
+/**
+ * A courier pair's meta description: the price verdict for the reference parcel first, then what
+ * else the page compares. It opens with the two names joined by "o", the shape of a choice.
+ */
+function courierDescription(pair: ComparativaPair): string {
+  const head = `${pair.a.shortName} o ${pair.b.shortName}: ${courierVerdictShort(pair)}.`
+  const dates = [pair.a, pair.b]
+    .map(entity => courierCheck(entity.id)?.checkedAt)
+    .filter((date): date is string => Boolean(date))
+  const dated = dates.length ? ` Datos del ${dateEs(dates.sort()[0]!)}.` : ''
+  const candidates = [
+    `${head} Demora, recargo de ley y la ficha de cada uno.${dated}`,
+    `${head} Demora, recargo de ley y la ficha de cada uno.`,
+    `${head} Demora y la ficha de cada uno.`,
+    head,
+  ]
+  return candidates.find(text => text.length <= 160) ?? head
+}
+
 /** Meta description: the verdict, trimmed to a length a SERP will show. */
 export function comparativaDescription(pair: ComparativaPair): string {
+  if (pair.family === 'couriers') return courierDescription(pair)
   const comparison = compareEntities(pair)
   const family = getComparativaFamily(pair.family)
 
