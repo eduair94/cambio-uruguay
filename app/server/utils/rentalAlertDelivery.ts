@@ -8,6 +8,7 @@ import {
   type RentalAlertKind,
 } from '../../utils/rentalAlerts'
 import { isListingAlertKind, listingAlertPath } from '../../utils/listingAlerts'
+import { rentalSurveyUrl } from '../../utils/rentalFeedback'
 import { rentalValidKey } from '../../utils/rentals'
 import { adminAuth } from './firebaseAdmin'
 import { connectDb } from './db'
@@ -245,10 +246,20 @@ export function rentalAlertEmail(
   const note = [c.note, ...(alert.kind === 'rental-opportunity' ? [c.comparison] : [])].join(' ')
   const intro = hasDrops ? INTRO_UPDATES[locale] : c.intro
   const count = rentalAlertCountLine(locale, candidates)
+  // The survey of the people who get these alerts (/opinion-alquileres, in Spanish): the alert's id
+  // lets the answer keep the alert's zone, and grants nothing else — the cancel link keeps its token.
+  const surveyUrl =
+    locale === 'es' && !listing ? rentalSurveyUrl(ORIGIN, 'alerta', String(alert._id)) : ''
+  const surveyHtml = surveyUrl
+    ? `<p><strong>¿Te están sirviendo estas alertas?</strong> <a href="${html(surveyUrl)}">Contanos en un minuto</a>: con lo que nos digas decidimos qué mejorar.</p>`
+    : ''
+  const surveyText = surveyUrl
+    ? `¿Te están sirviendo estas alertas? Contanos en un minuto: ${surveyUrl}\n\n`
+    : ''
   return {
     subject,
-    html: `<h1>${subject}</h1><p>${intro}</p><p>${count}</p><ul>${cards.map(card => card.html).join('')}</ul><p><a href="${html(searchUrl)}">${c.browse}</a></p><p>${html(note)}</p><p><a href="${html(unsubscribeUrl)}">${c.cancel}</a></p>`,
-    text: `${subject}\n\n${intro}\n${count}\n\n${cards.map(card => card.text).join('\n\n')}\n\n${c.browse}: ${searchUrl}\n\n${note}\n\n${c.cancel}: ${unsubscribeUrl}`,
+    html: `<h1>${subject}</h1><p>${intro}</p><p>${count}</p><ul>${cards.map(card => card.html).join('')}</ul><p><a href="${html(searchUrl)}">${c.browse}</a></p><p>${html(note)}</p>${surveyHtml}<p><a href="${html(unsubscribeUrl)}">${c.cancel}</a></p>`,
+    text: `${subject}\n\n${intro}\n${count}\n\n${cards.map(card => card.text).join('\n\n')}\n\n${c.browse}: ${searchUrl}\n\n${note}\n\n${surveyText}${c.cancel}: ${unsubscribeUrl}`,
     listUnsubscribeUrl: unsubscribeUrl,
     messageId: `<rental-${createHash('sha256').update(deliveryId).digest('hex')}@cambio-uruguay.com>`,
   }

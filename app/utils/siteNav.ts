@@ -4563,6 +4563,10 @@ export const EXCLUDED_ROUTES: readonly string[] = Object.freeze([
   '/estadisticas-de-busqueda',
   // El ranking privado de páginas por visita (GA4): la lista de trabajo del sitio, no contenido.
   '/estadisticas-por-pagina',
+  // La encuesta de quienes usan los alquileres: se llega desde los correos y desde la pregunta al
+  // final de los resultados, no es contenido para buscadores. Y su panel privado de lectura.
+  '/opinion-alquileres',
+  '/opiniones-alquileres',
   // "¿Tengo descuento acá?": una herramienta cuya respuesta depende de dónde está parado quien la
   // abre. No hay nada que indexar; se llega desde el mapa.
   '/descuentos-con-tarjeta-uruguay/cerca-de-mi',

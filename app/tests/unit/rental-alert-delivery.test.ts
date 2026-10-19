@@ -130,6 +130,33 @@ describe('rental alert transport without network sends', () => {
     expect(result.listUnsubscribeUrl).toContain('/api/rental-alerts/unsubscribe?token=')
     expect(result.messageId).toMatch(/^<rental-[a-f0-9]{64}@cambio-uruguay.com>$/)
   })
+  it('asks Spanish rental subscribers for the survey, by the alert id and never by its token', () => {
+    const id = '6512aa0b1c2d3e4f5a6b7c8d'
+    const survey = (doc: RentalAlertDoc) => {
+      const out = rentalAlertEmail(doc, [candidate], 'd1')
+      const link = [...out.html.matchAll(/href="([^"]+)"/g)]
+        .map(m => m[1]!.replace(/&amp;/g, '&'))
+        .find(href => href.includes('/opinion-alquileres'))
+      return { out, link }
+    }
+    const es = survey({ ...alert, _id: id } as unknown as RentalAlertDoc)
+    expect(es.link).toBe(`https://cambio-uruguay.com/opinion-alquileres?origen=alerta&a=${id}`)
+    expect(es.out.text).toContain(es.link!)
+    expect(es.link).not.toContain(alert.unsubscribeToken)
+    // The survey is in Spanish and about rentals: not for other locales, not for car/moto/sale alerts.
+    expect(
+      survey({ ...alert, _id: id, locale: 'en' } as unknown as RentalAlertDoc).link
+    ).toBeUndefined()
+    expect(
+      survey({
+        ...alert,
+        _id: id,
+        kind: 'car-search',
+        filters: { brand: 'citroen' },
+      } as unknown as RentalAlertDoc).link
+    ).toBeUndefined()
+  })
+
   it('describes a used-car drop with the previous price and links the car page', () => {
     const car = {
       id: 'car:ml-MLU123456~drop~USD~9000~10000',

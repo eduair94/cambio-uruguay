@@ -113,6 +113,8 @@ const SIN_LECTOR_QUE_LA_NECESITE = [
   '/mapa-de-temas', // ES el índice de temas
   '/mi-lista', // vive en el navegador de quien la abre
   '/offline', // fallback de la PWA, noindex
+  '/opinion-alquileres', // la encuesta: se llega desde los correos y la pregunta, noindex
+  '/opiniones-alquileres', // privada, requireAdmin
   '/preguntas-frecuentes', // sobre el propio sitio
   '/terminos',
   '/widget', // para embeber, noindex

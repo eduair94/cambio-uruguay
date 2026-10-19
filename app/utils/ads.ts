@@ -44,6 +44,10 @@ const NO_ADS = [
   '/estadisticas-de-busqueda',
   // El ranking privado de páginas: mismo lector, misma razón.
   '/estadisticas-por-pagina',
+  // La encuesta de alquileres: una conversación de un minuto, no una página para monetizar. Y su
+  // panel privado.
+  '/opinion-alquileres',
+  '/opiniones-alquileres',
   // El media kit: la página ES la conversión (un anunciante leyendo condiciones), y un anuncio de
   // AdSense al lado de "qué no vendemos" es exactamente lo que no vendemos.
   '/publicidad',

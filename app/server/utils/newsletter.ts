@@ -4,6 +4,7 @@ import { randomBytes } from 'node:crypto'
 import { fetchNews } from './news'
 import { sanitizeAi } from './ai'
 import { aiMarkdownToEmailHtml, cleanAiCommentary } from '../../utils/newsletterIssue'
+import { rentalSurveyUrl } from '../../utils/rentalFeedback'
 
 export type NewsletterLang = 'es' | 'en' | 'pt'
 
@@ -277,6 +278,14 @@ export function buildDailyEmail(
 ): BuiltEmail {
   const L = LABELS[lang] ?? LABELS.es
   const site = dailyEmailLink('https://cambio-uruguay.com', data.date)
+  // The rentals survey is in Spanish, so only the Spanish issue asks for it.
+  const survey =
+    lang === 'es'
+      ? dailyEmailLink(rentalSurveyUrl('https://cambio-uruguay.com', 'newsletter'), data.date)
+      : ''
+  const surveyHtml = survey
+    ? `<p style="margin:16px 0 0;text-align:center;font-size:14px;color:#444;">¿Buscás alquiler? <a href="${esc(survey)}" style="color:#1565c0;font-weight:700;">Ayudanos a mejorar el buscador en un minuto</a></p>`
+    : ''
   const news = data.news.map(n => ({ ...n, link: dailyEmailLink(n.link, data.date) }))
 
   const rows = data.currencies
@@ -335,6 +344,7 @@ ${news.map(n => `<li><a href="${esc(n.link)}" style="color:#1565c0;">${esc(n.tit
     <div style="margin:24px 0 0;text-align:center;">
       <a href="${esc(site)}" style="display:inline-block;background:#16c784;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:700;">cambio-uruguay.com</a>
     </div>
+    ${surveyHtml}
   </td></tr>
   <tr><td style="padding:16px 24px;background:#fafafa;border-top:1px solid #eee;font-size:12px;color:#999;text-align:center;">
     ${L.footer}<br>
@@ -357,6 +367,9 @@ ${news.map(n => `<li><a href="${esc(n.link)}" style="color:#1565c0;">${esc(n.tit
     ...news.map(n => `- ${n.title} (${n.source}) ${n.link}`),
     '',
     site,
+    ...(survey
+      ? ['', `¿Buscás alquiler? Ayudanos a mejorar el buscador en un minuto: ${survey}`]
+      : []),
     '',
     `${L.unsubscribe}: ${unsubUrl}`,
   ].join('\n')
