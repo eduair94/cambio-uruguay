@@ -162,7 +162,8 @@ onBeforeUnmount(() => {
 
 /* Reserved heights match the responsive units AdSense serves at these widths.
    Bigger than the real ad is worse than smaller: it leaves a gap. */
-.cu-ad--content-end {
+.cu-ad--content-end,
+.cu-ad--after-tool {
   min-height: 300px;
 }
 
@@ -172,6 +173,7 @@ onBeforeUnmount(() => {
 
 @media (min-width: 960px) {
   .cu-ad--content-end,
+  .cu-ad--after-tool,
   .cu-ad--in-article {
     min-height: 280px;
   }

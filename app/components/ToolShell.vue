@@ -84,6 +84,14 @@
       </slot>
     </VAlert>
 
+    <!-- La única unidad manual de una calculadora: DESPUÉS del resultado, del texto que lo explica y
+         de su advertencia, nunca entre los campos y el resultado. Inerte por defecto: sin
+         NUXT_PUBLIC_ADS_TOOLS la ruta es `none` (utils/ads.ts) y AdSlot no dibuja nada. Con el
+         interruptor, el cierre del layout no se dibuja en estas rutas (useAds.ts), así que es UNA. -->
+    <ClientOnly>
+      <AdSlot placement="after-tool" />
+    </ClientOnly>
+
     <!-- Sources / fuentes -->
     <VCard v-if="sources && sources.length" variant="flat" class="tool-section mt-4 pa-5">
       <h2 class="text-subtitle-2 font-weight-bold mb-2">

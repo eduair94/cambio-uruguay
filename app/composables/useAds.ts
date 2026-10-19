@@ -1,8 +1,14 @@
 // app/composables/useAds.ts
-import { adDensityForPath, maxAdSlots, type AdDensity } from '~/utils/ads'
+import {
+  adDensityForPath,
+  adsFlagOn,
+  isCalculatorPath,
+  maxAdSlots,
+  type AdDensity,
+} from '~/utils/ads'
 
 /**
- * The three places an ad is allowed to be.
+ * The places an ad is allowed to be.
  *   - `content-end`  after the article, before the footer. Rendered by the
  *                    default layout on every route that allows ads.
  *   - `in-article`   one unit inside a long read, dropped by the page itself at
@@ -17,21 +23,32 @@ import { adDensityForPath, maxAdSlots, type AdDensity } from '~/utils/ads'
  *                    only, and inert until `NUXT_PUBLIC_ADSENSE_SLOT_SIDEBAR`
  *                    exists: with no slot id the modifier class is never
  *                    applied and the layout is what shipped before the rail.
+ *   - `after-tool`   the ONE unit of a calculator (`/herramientas/<x>`), drawn
+ *                    by `components/ToolShell.vue` after the result, its
+ *                    explainer and its disclaimer — never between the inputs
+ *                    and the result. Only with `NUXT_PUBLIC_ADS_TOOLS` on
+ *                    (utils/ads.ts: without it a calculator is `none` and
+ *                    carries no loader). On those routes the layout close does
+ *                    not render, so the page keeps the `light` budget of one.
+ *                    Its id is `NUXT_PUBLIC_ADSENSE_SLOT_TOOLS` when it exists
+ *                    — a line of its own in AdSense's per-unit report — and
+ *                    the closing unit's id otherwise.
  * The rail sticks (top: 80px) while the reader scrolls the column. It is the
  * one sticky format kept, and only because it never covers content: it lives
  * in a column of its own. There is still no overlay, no anchor over the text
  * and no interstitial: those are the formats that cost sessions, and sessions
  * are the traffic.
  */
-export type AdPlacement = 'content-end' | 'in-article' | 'sidebar'
+export type AdPlacement = 'content-end' | 'in-article' | 'sidebar' | 'after-tool'
 
 /** Keys of `runtimeConfig.public.adsenseSlots` (nuxt.config.ts). */
-type AdSlotKey = 'contentEnd' | 'inArticle' | 'sidebar'
+type AdSlotKey = 'contentEnd' | 'inArticle' | 'sidebar' | 'tools'
 
 const SLOT_KEY: Record<AdPlacement, AdSlotKey> = {
   'content-end': 'contentEnd',
   'in-article': 'inArticle',
   sidebar: 'sidebar',
+  'after-tool': 'tools',
 }
 
 /**
@@ -61,11 +78,15 @@ export function useAds() {
   const publicConfig = useRuntimeConfig().public
   const pubId = (publicConfig.adsensePubId as string) || ''
   const slots = (publicConfig.adsenseSlots ?? {}) as Partial<Record<AdSlotKey, string>>
+  // Off unless the owner set NUXT_PUBLIC_ADS_TOOLS, and only AFTER excluding the calculators from
+  // Auto Ads in the console (utils/ads.ts → isCalculator).
+  const toolsAds = adsFlagOn(publicConfig.adsTools)
 
   // `definePageMeta({ ads: false })` wins over the route table.
   const density = computed<AdDensity>(() =>
-    route.meta.ads === false ? 'none' : adDensityForPath(route.path)
+    route.meta.ads === false ? 'none' : adDensityForPath(route.path, { toolsAds })
   )
+  const onCalculator = computed(() => isCalculatorPath(route.path))
 
   const maxSlots = computed(() => maxAdSlots(density.value))
 
@@ -76,7 +97,10 @@ export function useAds() {
    */
   const scriptAllowed = computed(() => Boolean(pubId) && density.value !== 'none')
 
-  const slotIdFor = (placement: AdPlacement) => slots[SLOT_KEY[placement]] || ''
+  // The calculators' unit falls back to the closing unit's id: the same responsive format, so a
+  // dedicated id only buys a separate line in the per-unit report, not a different ad.
+  const slotIdFor = (placement: AdPlacement) =>
+    slots[SLOT_KEY[placement]] || (placement === 'after-tool' ? slots.contentEnd : '') || ''
 
   /**
    * A manual unit renders only when its ad-unit id is configured. Empty by
@@ -86,6 +110,11 @@ export function useAds() {
   const canRender = (placement: AdPlacement) => {
     if (!pubId || !slotIdFor(placement)) return false
     if (density.value === 'none') return false
+    // A calculator's one unit is ToolShell's, right after the result and its explainer. The layout
+    // close would be a second unit, below "Más herramientas" and "Seguí leyendo", where a visitor
+    // who already has the number never scrolls.
+    if (onCalculator.value) return placement === 'after-tool'
+    if (placement === 'after-tool') return false
     // The article unit and the rail are for long reads only: on a `light`
     // route (a quote, a map, a calculator result) the one unit after the
     // content is the whole budget.

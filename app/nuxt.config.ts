@@ -1541,7 +1541,18 @@ export default defineNuxtConfig({
         // BUILD (el build corre en el servidor), así que tiene que estar en app/.env del host antes
         // de `nuxt build`, no sólo al arrancar pm2.
         sidebar: process.env.NUXT_PUBLIC_ADSENSE_SLOT_SIDEBAR || '',
+        // La unidad de las calculadoras (`placement="after-tool"`, components/ToolShell.vue).
+        // Opcional: vacío → usa el id de `contentEnd`. Con id propio la unidad sale en una fila
+        // aparte del informe por unidad de AdSense y se mide sin mezclarse con los cierres.
+        tools: process.env.NUXT_PUBLIC_ADSENSE_SLOT_TOOLS || '',
       },
+      // Interruptor de anuncios en las calculadoras (`/herramientas/<x>`, no el índice). APAGADO por
+      // defecto: sin él las calculadoras no cargan el loader de AdSense (utils/ads.ts). Prenderlo
+      // (`1`) sólo DESPUÉS de excluir esas URL de "Anuncios automáticos" en la consola de AdSense:
+      // con el loader en la página y sin la exclusión, Google vuelve a meter anuncios entre los
+      // campos y el resultado. Pasos en docs/seo/adsense-growth-loop.md. Igual que los ids de
+      // unidad, se lee al BUILD: va en app/.env del host antes de `nuxt build`.
+      adsTools: process.env.NUXT_PUBLIC_ADS_TOOLS || '',
       // Patrocinios (/publicidad): el id de `utils/sponsorships.ts` que ocupa la fila patrocinada
       // de la home. Vacío por defecto A PROPÓSITO: sin id la fila no existe en el DOM, y un id que
       // no está en el registro tampoco dibuja nada (composables/useSponsorships.ts). Un patrocinio
