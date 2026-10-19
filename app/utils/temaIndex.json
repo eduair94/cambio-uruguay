@@ -929,6 +929,10 @@
       "icon": "mdi-briefcase-outline",
       "resources": [
         {
+          "to": "/cuanto-me-tienen-que-pagar-uruguay",
+          "label": "Cuánto me tienen que pagar"
+        },
+        {
           "to": "/herramientas/calculadora-sueldo-liquido",
           "label": "Calculadora de sueldo líquido"
         },

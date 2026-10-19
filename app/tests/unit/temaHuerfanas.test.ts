@@ -109,7 +109,6 @@ const DEUDA_SIN_TEMA = [
   '/cambiar-de-mutualista-uruguay',
   '/cambios-de-precio-uruguay',
   '/comparar-plataformas-dolar-uruguay',
-  '/cuanto-me-tienen-que-pagar-uruguay',
   '/cuanto-sale-la-partida-de-nacimiento-uruguay',
   '/declarar-dinero-en-efectivo-uruguay',
   '/factura-de-ose-uruguay',
@@ -125,8 +124,29 @@ const DEUDA_SIN_TEMA = [
   '/trabajo-para-menores-de-edad-uruguay',
 ]
 
-/** El trinquete. Este número sólo puede bajar: subirlo es publicar una página huérfana. */
-const DEUDA_MAXIMA = 19
+/**
+ * 19 → 18 el 2026-10-19: `/cuanto-me-tienen-que-pagar-uruguay` entra a
+ * `sueldo-trabajo-e-impuestos-uruguay`, y es una de las DOS únicas de las diecinueve con la ruta
+ * libre de toda ventana de medición abierta (`npm run seo_debt`: 4 libres entre las 57 de los tres
+ * trinquetes con lista, y de esas cuatro sólo dos son de este pozo).
+ *
+ * El tema no se eligió por afinidad temática sino por la misma regla que las cinco del 30/9 —a
+ * donde ya vivía su vecina más cercana—, y acá la vecina es literal: el hub ya lleva la guía
+ * `salario-minimo-uruguay-cuanto-es`, o sea publica el SMN y nunca decía que el SMN NO es el
+ * mínimo de quien lo lee. Esta página es la que contesta eso (el mínimo exigible es el laudo del
+ * grupo, subgrupo y categoría del Consejo de Salarios), así que el hueco que tapa está dentro del
+ * tema, no al lado.
+ *
+ * La otra libre, `/factura-de-ose-uruguay`, NO entró, y no por falta de tiempo: su propio
+ * encabezado declara que sus dos hermanas son `/factura-de-ute-uruguay` y
+ * `/que-pasa-si-no-pago-antel` —«los tres servicios del hogar con la misma gramática»—, las dos
+ * también en esta lista y reservadas hasta el 21 y el 25/10. Entrar sola partiría el racimo en dos
+ * filas del libro de cambios medidas por separado, que es lo contrario de lo que hicieron las
+ * tandas de septiembre.
+ *
+ * Sólo puede bajar: subirlo es publicar una página huérfana.
+ */
+const DEUDA_MAXIMA = 18
 
 describe('ninguna página de lectura queda fuera de todos los temas', () => {
   const sinTema = rootRoutes.filter(route => temasDeRuta(route).length === 0)
