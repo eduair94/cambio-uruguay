@@ -1476,6 +1476,56 @@
         "laudo consejo de salarios uruguay"
       ],
       "hypothesis": "La pagina estaba fuera de TODO tema, asi que no dibujaba \"Mas sobre este tema\" y -como el vinculo del tema es reciproco por construccion, armado con hub.resources- tampoco recibia un solo enlace de ese bloque desde ninguna otra pagina: solo llegaba desde el menu, que no es una relacion entre paginas. Entra a sueldo-trabajo-e-impuestos-uruguay, donde ya vive la guia salario-minimo-uruguay-cuanto-es: el hub publicaba el SMN y nunca decia que el SMN no es el minimo de quien lo lee, que es justo lo que esta pagina contesta -el minimo exigible es el laudo del grupo, subgrupo y categoria que fija el Consejo de Salarios, y se consulta gratis en el MTSS-. Pasa de 0 enlaces de tema a un bloque con los otros 19 recursos del tema, a recibir ese bloque desde cada miembro del tema y a una tarjeta en /temas/sueldo-trabajo-e-impuestos-uruguay. Es del tramo contenido, que rinde 8x el promedio del sitio, y era una de las dos unicas de las 19 huerfanas con la ruta libre de toda ventana abierta (npm run seo_debt). No se escribio ni se reescribio una sola linea de la pagina ni de su snippet: solo su pertenencia al tema."
+    },
+    {
+      "id": "aguinaldo-temporada-licencia-dias-tres-meses",
+      "shippedOn": "2026-10-30",
+      "routes": ["/cuando-se-cobra-el-aguinaldo-uruguay"],
+      "queries": [
+        "cuantos dias aguinaldo",
+        "cuantos dias aguinaldo corresponden por año",
+        "puedo recibir aguinaldo si llevo 3 meses trabajando",
+        "puedo recibir aguinaldo si estoy con licencia",
+        "puedo recibir aguinaldo si estoy incapacitado",
+        "quien paga el aguinaldo cuando estás incapacitado",
+        "que pasa si no pagan aguinaldo a tiempo"
+      ],
+      "hypothesis": "Segunda tanda de temporada, lista antes del pico de noviembre y diciembre. La cola de autocompletado seguia marcando con cobertura baja preguntas que la pagina contestaba con otras palabras o a medias. Los dias ahora dan la equivalencia (con el mismo sueldo todo el año, un sueldo mensual: aritmetica del art. 2 de la Ley 12.840, no una regla nueva); la de tres meses contesta tambien a quien sigue trabajando (cuota de diciembre del Decreto 113/026); la de incapacidad se titula como se busca (quien paga); y entra una nueva sobre cobrarlo estando de licencia, con lo que es razonamiento marcado como razonamiento. El calendario suma el antecedente de los funcionarios publicos (Decreto 270/025, desde el 15/12/2025) porque el de 2026 no salio, y lo fechado 'al 22 de setiembre' pasa a la relectura del 19/10. Titulo y descripcion sin cambios. Deberia sumar impresiones y clics en esas consultas de cola larga, donde arriba hay foros, y sostener la porcion de clics de la pagina en diciembre."
+    },
+    {
+      "id": "monotributo-deuda-vieja-y-exceso-de-facturacion",
+      "shippedOn": "2026-10-30",
+      "routes": ["/facturar-en-monotributo-uruguay"],
+      "queries": [
+        "que pasa si debo monotributo",
+        "que pasa si tengo monotributo y no facturo",
+        "qué pasa si me excedo en la facturación del monotributo",
+        "quien paga el monotributo el empleado o el empleador",
+        "cuanto es la facturación anual del monotributo social"
+      ],
+      "hypothesis": "La seccion 'Que pasa si' del 23/9 contestaba la deuda corriente y no la vieja, y la cola de demanda seguia trayendo 'que pasa si debo monotributo'. Se agrega la prescripcion de las cuotas de BPS (Codigo Tributario art. 38) con lo que dice el instructivo de BPS y casi nadie cuenta: no es automatica (tramite 'Prescripcion de adeudos'), pedir un convenio sobre una deuda prescrita es renuncia tacita, lo pagado no se devuelve y con sentencia firme el plazo pasa a veinte años. Ademas, la segunda lectura de 'no facturo' (vendo sin boleta: el monotributo no exime de documentar; lo exceptuado por monto va en el comprobante diario global), la pregunta del tope titulada como se busca ('me excedo en la facturacion') y el tope anual del Mides llevado a promedio mensual sin presentarlo como tope. Titulo y descripcion sin cambios. Deberia sumar impresiones y clics en esas consultas, donde arriba hay hilos de Reddit."
+    },
+    {
+      "id": "fonasa-cesante-bonos-respuesta-primero",
+      "shippedOn": "2026-10-30",
+      "routes": ["/guias/me-quede-sin-trabajo-mutualista-fonasa-uruguay"],
+      "queries": [
+        "puedo comprar bonos fonasa si estoy cesante",
+        "si dejo de trabajar pierdo fonasa",
+        "cuanto tiempo dura fonasa después de quedar sin trabajo"
+      ],
+      "hypothesis": "La pregunta del autocompletado tenia respuesta en el cuarto lugar del FAQ y con otras palabras. Pasa a ser la primera, con las palabras con que se busca y el camino uruguayo entero antes de la aclaracion chilena: en el seguro de paro seguis cubierto, sin el, hasta el ultimo dia del mes del cese, y despues ASSE (gratis bajo 62 UR mas 2,5 por integrante, enlazado al valor de la UR del mes) o socio individual. Se releyeron BPS 23321, BPS 4802 (actualizada el 28/9/2026, mismas cifras) y ASSE. Titulo y descripcion sin cambios. Riesgo declarado: 'cesante' y 'bonos' son vocabulario chileno, asi que la consulta puede ser de Chile; el objetivo no es ganarla sino que el lector uruguayo que la escribe encuentre la respuesta en el FAQ. Si la porcion no se mueve, es una lectura esperable."
+    },
+    {
+      "id": "irpf-sin-ingresos-no-declara",
+      "shippedOn": "2026-10-30",
+      "routes": ["/declaracion-de-irpf-uruguay"],
+      "queries": [
+        "estoy obligado a presnetar declaracion de irpf en uruguay si no tuve ingresos un año?",
+        "como saber si tengo que hacer declaracion jurada irpf",
+        "declaracion de irpf"
+      ],
+      "hypothesis": "La consulta que mas impresiones le trae a la pagina en Search Console (20/9 al 17/10/2026: 'estoy obligado a presentar declaracion de irpf en uruguay si no tuve ingresos un año?', posicion 5,3, cero clics) no tenia respuesta en ningun lado: ni en la descripcion, que hablaba de retencion, ni en el cuerpo. Se contesta arriba, en la seccion de obligados (no: todos los supuestos con que DGI define la obligacion en la campaña 2026 parten de haber cobrado algo; el independiente inscripto sin actividad presenta el 1302 'sin actividad' solo si declaro rentas fuera de la dependencia), en el FAQ con schema y en la descripcion, que abre con esa respuesta; el titulo no cambia. El caso del 3100 suma el minimo no imponible de la campaña. No se toca la seccion de ejercicios anteriores ni sus limites sobre creditos viejos. Deberia subir el CTR de esa consulta desde la misma posicion."
     }
   ]
 }

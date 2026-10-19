@@ -294,7 +294,7 @@ export const OBLIGATION_CASES: readonly ObligationCase[] = Object.freeze([
     kind: 'dependiente',
     situation: 'Tuviste ingresos simultáneos y no presentaste el formulario 3100',
     detail:
-      'El 3100 es el que le avisa a un empleador que tenés otro ingreso para que retenga bien. Sin él, la retención queda mal y se corrige declarando.',
+      'El 3100 es el que le avisa a un empleador que tenés otro ingreso para que retenga bien. Sin él, la retención queda mal y se corrige declarando. Aun por debajo del tope, obliga si la suma superó el mínimo no imponible del año: en la campaña 2026, $ 552.384 de ingresos de 2025.',
   },
   {
     kind: 'dependiente',
@@ -318,6 +318,47 @@ export const OBLIGATION_CASES: readonly ObligationCase[] = Object.freeze([
 /** El caso que NO obliga. Se publica explícito porque es la mayoría de la gente. */
 export const NOT_OBLIGATED =
   'Trabajador dependiente con un solo empleador, ingresos por debajo del tope y que cobró en diciembre: el ajuste anual ya se hizo en el recibo y no hay que presentar nada.'
+
+/**
+ * «¿Estoy obligado a presentar la declaración de IRPF si no tuve ingresos un año?» es la consulta
+ * que más impresiones le trae a /declaracion-de-irpf-uruguay en Search Console (20/9–17/10/2026,
+ * posición 5,3, ningún clic): la página tenía los casos que obligan y no decía en ningún lado qué
+ * pasa con el que no cobró nada.
+ *
+ * NO HAY UNA FRASE DE DGI QUE LO DIGA ASÍ, y la respuesta no la inventa: sale de que los tres
+ * grupos con que DGI define la obligación en la campaña 2026 (dependientes, independientes, rentas
+ * de capital) parten todos de haber obtenido algo en el año —superar el tope, tener más de un
+ * pagador, «haber prestado servicios personales», «haber obtenido rentas de capital»—, y de la
+ * lista de no obligados de 2025. Para el inscripto como independiente sin actividad hay además una
+ * regla escrita: el formulario 1302 «sin actividad» sólo se exige si en el IRPF se declararon
+ * rentas fuera de la relación de dependencia. Todo leído el 2026-10-19.
+ */
+export const IRPF_NO_INCOME_VERIFIED_AT = '2026-10-19'
+
+export const IRPF_NO_INCOME = Object.freeze({
+  heading: '¿Y si no tuviste ingresos en todo el año? Tampoco',
+  short:
+    'No: sin ingresos en el año no se da ninguno de los casos con que DGI define la obligación.',
+  detail: [
+    'Los tres grupos de obligados que publica DGI para la campaña 2026 parten de haber cobrado algo en el año: el dependiente que superó el tope sin cobrar en diciembre o con más de un empleador, el que tuvo dos pagadores a la vez sin el formulario 3100 o el que optó por la reducción del 5 %; el independiente que «haya prestado servicios personales» fuera de la relación de dependencia; y quien obtuvo rentas de capital sin retención. Sin sueldo, sin facturación y sin rentas, no entrás en ninguno.',
+    'Si estás inscripto como profesional o independiente y no trabajaste en todo el año, tampoco: DGI pide el formulario 1302 de IVA «sin actividad» sólo a quien declaró en el IRPF rentas fuera de la relación de dependencia. Ojo con dos cosas que no son «sin ingresos»: haber cobrado sólo parte del año (si superaste el tope y no cobraste en diciembre, sí declarás) y tus aportes al BPS o a una caja paraestatal, que tienen sus propias reglas y no salen de esta página.',
+  ],
+  sources: [
+    {
+      label: 'DGI — Quiénes están obligados a presentar la declaración de IRPF (12/05/2026)',
+      url: 'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/estan-obligados-presentar-declaracion-irpf',
+    },
+    {
+      label: 'DGI — No obligados a presentar declaración jurada de IRPF 2025 (26/01/2026)',
+      url: 'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/obligados-presentar-declaracion-jurada-irpf-2025',
+    },
+    {
+      label:
+        'DGI — Aspectos generales de la tributación del IRPF de los servicios personales: el 1302 «sin actividad» (PDF)',
+      url: 'https://www.gub.uy/direccion-general-impositiva/sites/direccion-general-impositiva/files/documentos/publicaciones/Aspectos%20generales%20de%20la%20tributaci%C3%B3n%20del%20IRPF.pdf',
+    },
+  ],
+})
 
 export interface IrpfForm {
   code: string
@@ -672,6 +713,12 @@ export const DGI_FAQ: readonly DgiFaq[] = Object.freeze([
     short: 'La mayoría no. El caso típico que sí es haber tenido más de un empleador.',
     answer:
       'La propia DGI aclara que la mayoría de las personas no están obligadas. Si sos dependiente, tuviste un solo empleador, cobraste en diciembre y no superaste el tope del año, el ajuste anual ya se hizo en tu recibo y no tenés que hacer nada. Estás obligado si tuviste más de un empleador y superaste el tope, si superaste el tope y no cobraste en diciembre, si tuviste ingresos simultáneos y no presentaste el formulario 3100, si optaste por la reducción del 5 % por núcleo familiar, si prestaste servicios personales fuera de relación de dependencia, o si tuviste rentas de capital sin retención.',
+  },
+  {
+    question: '¿Estoy obligado a presentar la declaración de IRPF si no tuve ingresos en el año?',
+    short: 'No: sin ingresos no se da ninguno de los casos que obligan.',
+    answer:
+      'No. Todos los casos con que DGI define la obligación en la campaña 2026 parten de haber cobrado algo en el año: superar el tope con más de un empleador o sin cobrar en diciembre, tener dos pagadores a la vez sin el formulario 3100, haber prestado servicios personales por tu cuenta o haber tenido rentas de capital sin retención. Si estás inscripto como independiente y no trabajaste, DGI pide el formulario 1302 «sin actividad» sólo a quien declaró en el IRPF rentas fuera de la relación de dependencia. Dos cosas no cuentan como «sin ingresos»: haber cobrado sólo una parte del año (si superaste el tope y no cobraste en diciembre, declarás) y tus aportes al BPS o a una caja, que tienen reglas propias.',
   },
   {
     question: '¿Cuándo cobro la devolución?',

@@ -80,6 +80,31 @@
         </div>
       </VCard>
 
+      <!-- La consulta que más impresiones trae: sin ingresos en el año. Respuesta primero. -->
+      <VCard id="sin-ingresos" variant="flat" class="ok-card pa-5 mb-5">
+        <div class="d-flex align-start">
+          <VIcon icon="mdi-cash-remove" color="success" class="mr-3 mt-1" />
+          <div>
+            <h3 class="text-subtitle-1 font-weight-bold mt-0 mb-1">{{ IRPF_NO_INCOME.heading }}</h3>
+            <p class="mt-0 mb-2 font-weight-medium">{{ IRPF_NO_INCOME.short }}</p>
+            <p
+              v-for="(d, i) in IRPF_NO_INCOME.detail"
+              :key="i"
+              class="mt-0 mb-2 text-medium-emphasis"
+            >
+              {{ d }}
+            </p>
+            <p class="text-caption text-medium-emphasis mt-0 mb-0">
+              Leído el {{ noIncomeVerifiedAt }} en
+              <template v-for="(s, i) in IRPF_NO_INCOME.sources" :key="s.url">
+                <a :href="s.url" target="_blank" rel="noopener noreferrer">{{ s.label }}</a
+                ><span v-if="i < IRPF_NO_INCOME.sources.length - 1"> · </span>
+              </template>
+            </p>
+          </div>
+        </div>
+      </VCard>
+
       <VRow>
         <VCol v-for="(c, i) in OBLIGATION_CASES" :key="i" cols="12" md="6">
           <VCard variant="flat" class="case-card pa-5 h-100">
@@ -720,6 +745,8 @@ import {
   GOOD_HISTORY_RELIEF,
   IRPF_CAMPAIGN,
   IRPF_FORMS,
+  IRPF_NO_INCOME,
+  IRPF_NO_INCOME_VERIFIED_AT,
   IRPF_PROCEDURES_VERIFIED_AT,
   IRPF_PROCEDURE_SOURCES,
   irpfPastYearsCopy,
@@ -806,11 +833,15 @@ const fmtDay = (iso: string) =>
   new Date(iso).toLocaleDateString('es-UY', { day: 'numeric', month: 'long', timeZone: 'UTC' })
 const verifiedAt = fmt(DGI_VERIFIED_AT)
 const casosVerifiedAt = fmt(IRPF_CASOS_VERIFIED_AT)
+const noIncomeVerifiedAt = fmt(IRPF_NO_INCOME_VERIFIED_AT)
 
 const canonicalUrl = 'https://cambio-uruguay.com/declaracion-de-irpf-uruguay'
 const title = 'IRPF 2026: cuánto te retienen y quién debe'
+// La descripción abre con la consulta que más impresiones trae (Search Console 20/9–17/10/2026:
+// «¿estoy obligado a presentar la declaración si no tuve ingresos un año?», posición 5,3, cero
+// clics), que la versión anterior no contestaba; las cifras de retención y la deuda quedan detrás.
 const description =
-  'Con la BPC de $ 6.864 no te retienen hasta $ 48.048 al mes. Si la declaración da negativo es devolución; si da a pagar, 5 cuotas, mora y convenio con DGI.'
+  'Sin ingresos en el año no declarás, y la mayoría tampoco. Hasta $ 48.048 al mes no te retienen; si da negativo es devolución y si da a pagar, 5 cuotas.'
 
 defineOgImageComponent('Cambio', {
   title: 'IRPF 2026: cuánto te retienen',
@@ -836,7 +867,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'declaracion jurada irpf uruguay, quienes estan obligados irpf, formulario 1102, formulario 1103, formulario 1101, devolucion irpf cuando cobro, irpf dos empleadores, formulario 3100, multa por mora dgi, articulo 94 codigo tributario, campaña irpf 2026, credito fiscal alquiler, irpf alquiler, deducir alquiler irpf, 8 por ciento alquiler irpf, arrendamiento irpf, cuanto irpf me tienen que quitar, cuanto me descuentan de irpf, escala irpf 2026, bpc 2026, minimo no imponible irpf, que pasa si el irpf sale negativo, irpf negativo, que pasa si debo irpf, cuotas irpf dgi, convenio dgi irpf, recargo por mora dgi, puedo cobrar irpf de años anteriores, devolucion irpf años anteriores',
+        'declaracion jurada irpf uruguay, quienes estan obligados irpf, obligado a presentar irpf si no tuve ingresos, irpf sin ingresos en el año, formulario 1102, formulario 1103, formulario 1101, devolucion irpf cuando cobro, irpf dos empleadores, formulario 3100, multa por mora dgi, articulo 94 codigo tributario, campaña irpf 2026, credito fiscal alquiler, irpf alquiler, deducir alquiler irpf, 8 por ciento alquiler irpf, arrendamiento irpf, cuanto irpf me tienen que quitar, cuanto me descuentan de irpf, escala irpf 2026, bpc 2026, minimo no imponible irpf, que pasa si el irpf sale negativo, irpf negativo, que pasa si debo irpf, cuotas irpf dgi, convenio dgi irpf, recargo por mora dgi, puedo cobrar irpf de años anteriores, devolucion irpf años anteriores',
     },
   ],
   script: [
@@ -874,6 +905,7 @@ useHead(() => ({
 
 <style scoped>
 #ejercicios-anteriores,
+#sin-ingresos,
 #cuanto-me-retienen,
 #sale-negativo,
 #debo-irpf {

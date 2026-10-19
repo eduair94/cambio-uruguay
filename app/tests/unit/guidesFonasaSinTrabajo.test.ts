@@ -42,7 +42,8 @@ describe('guía me-quede-sin-trabajo-mutualista-fonasa-uruguay (reescritura 2026
       expect(s.url).toMatch(/^https:\/\//)
       expect(s.publisher).toBeTruthy()
     }
-    expect(g.updatedAt).toBe('2026-09-22')
+    // Segunda tanda: relectura del 2026-10-19 (BPS 23321 y 4802, ASSE), para mergear desde el 30/10.
+    expect(g.updatedAt).toBe('2026-10-19')
     expect(text()).not.toMatch(/\*\*|^#|\n- /m)
     expect(text()).not.toMatch(/septiembre/i)
   })
@@ -103,5 +104,25 @@ describe('guía me-quede-sin-trabajo-mutualista-fonasa-uruguay (reescritura 2026
     expect(tos).toContain('/devolucion-fonasa-uruguay')
     expect(tos).toContain('/cambiar-de-mutualista-uruguay')
     expect(tos).toContain('/tickets-mutualistas-uruguay')
+  })
+
+  // La consulta del autocompletado es «puedo comprar bonos fonasa si estoy cesante». Va primera,
+  // con sus palabras, y la respuesta uruguaya completa antes de la aclaración chilena.
+  it('el FAQ abre con la pregunta como se busca y contesta el camino uruguayo entero', () => {
+    const first = g.faqs![0]!
+    expect(first.q).toBe('¿Puedo comprar bonos FONASA si estoy cesante?')
+    expect(first.a).toMatch(/^No:/)
+    expect(first.a).toMatch(/seguro de paro/)
+    expect(first.a).toMatch(/último día del mes/)
+    expect(first.a).toMatch(/62 UR/)
+    expect(first.a).toMatch(/socio individual/)
+    expect(first.a.indexOf('Chile')).toBeGreaterThan(first.a.indexOf('ASSE'))
+    // Una sola pregunta de «bonos si estoy cesante», no dos que compitan.
+    expect(g.faqs!.filter(f => /cesante/i.test(f.q))).toHaveLength(1)
+  })
+
+  it('el tope de ASSE en UR enlaza al valor del mes', () => {
+    const tos = g.sections.flatMap(s => (s.links ?? []).map(l => l.to))
+    expect(tos).toContain('/indicadores/unidad-reajustable')
   })
 })
