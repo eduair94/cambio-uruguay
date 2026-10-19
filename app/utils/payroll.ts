@@ -21,7 +21,11 @@
 //     The 2,5 BPC test uses monthly remuneration EXCLUDING aguinaldo.
 //   - FRL (Fondo de Reconversión Laboral): 0,10%.
 //   - IRPF: franjas mensuales en BPC (see `URUGUAY.irpfBracketsBpc`), tax computed on
-//     the NOMINAL, then reduced by a credit = deducciones x tasa.
+//     the NOMINAL, then reduced by a credit = deducciones x tasa. When the month's
+//     nominal exceeds 10 BPC the taxable base is the nominal + 6 % (Decreto 148/007
+//     art. 63, the same rule `irpfCasos.ts` and DGI's own simulator apply). Until
+//     2026-10-19 this module skipped it: $ 80.000 nominales withheld $ 1.568 instead
+//     of $ 2.288 and the líquido came out $ 720 too high.
 //     Tasa del crédito: 14% si los ingresos nominales anuales (excluido aguinaldo y
 //     salario vacacional) son < 180 BPC; 8% en otro caso. (180 BPC/año == 15 BPC/mes.)
 //   - Deducciones admitidas (DGI, "Deducciones admitidas en la liquidación del IRPF"):
@@ -55,6 +59,10 @@ export const PAYROLL_UY = Object.freeze({
   creditRateHigh: 8,
   /** Threshold for the credit rate, in BPC of MONTHLY nominal (180 BPC/year / 12). */
   creditThresholdBpcMonthly: 15,
+  /** Above this monthly nominal (in BPC) the IRPF base is increased by `irpfIncrementPct`. */
+  irpfIncrementAboveBpc: 10,
+  /** Decreto 148/007 art. 63: +6 % on the taxable base above 10 BPC. */
+  irpfIncrementPct: 6,
 })
 
 export interface PayrollInput {
@@ -88,7 +96,11 @@ export interface PayrollResult {
   /** jubilatorio + fonasa + frl */
   aportes: number
   irpf: {
-    /** Tax from the progressive franjas, before the deduction credit. */
+    /** Taxable base: the nominal, plus 6 % when it exceeds 10 BPC. */
+    computable: number
+    /** Whether the 6 % increment applied. */
+    incrementApplied: boolean
+    /** Tax from the progressive franjas on `computable`, before the deduction credit. */
     grossTax: number
     brackets: BracketDetail[]
     /** Monthly total of admitted deductions. */
@@ -144,8 +156,12 @@ export function computePayroll(input: PayrollInput): PayrollResult {
 
   const aportes = round(jubilatorio + fonasa + frl)
 
-  // --- IRPF: tax on the nominal, then reduced by the deduction credit ---
-  const gross = progressiveTax(nominal, irpfBracketsUyu(bpc))
+  // --- IRPF: tax on the nominal (+6 % above 10 BPC), then reduced by the deduction credit ---
+  const incrementApplied = nominal > PAYROLL_UY.irpfIncrementAboveBpc * bpc
+  const computable = incrementApplied
+    ? round(nominal * (1 + PAYROLL_UY.irpfIncrementPct / 100))
+    : nominal
+  const gross = progressiveTax(computable, irpfBracketsUyu(bpc))
 
   const hijosDeduccionAnual =
     hijos * PAYROLL_UY.hijoDeduccionBpc * bpc +
@@ -184,6 +200,8 @@ export function computePayroll(input: PayrollInput): PayrollResult {
     frl: { rate: PAYROLL_UY.frlRate, amount: frl },
     aportes,
     irpf: {
+      computable: round(computable),
+      incrementApplied,
       grossTax: round(gross.total),
       brackets: gross.detail,
       deductionsMonthly,

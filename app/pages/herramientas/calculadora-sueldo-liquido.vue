@@ -222,13 +222,17 @@
           </VExpansionPanelTitle>
           <VExpansionPanelText class="px-0">
             <p class="text-body-2 mb-3">
-              El IRPF se calcula por franjas sobre el <strong>nominal</strong>, y después se le
-              resta un <strong>crédito</strong> igual a tus deducciones por
+              El IRPF se calcula por franjas sobre el <strong>nominal</strong> (más un 6 % si supera
+              10 BPC), y después se le resta un <strong>crédito</strong> igual a tus deducciones por
               {{ r.irpf.creditRate }}%. Nunca da negativo.
             </p>
             <div class="irpf-lines">
+              <div v-if="r.irpf.incrementApplied" class="irpf-line">
+                <span>Base del impuesto: nominal + 6 % (supera 10 BPC)</span>
+                <span>{{ formatUYU(r.irpf.computable) }}</span>
+              </div>
               <div class="irpf-line">
-                <span>Impuesto por franjas (sobre el nominal)</span>
+                <span>{{ grossTaxLabel }}</span>
                 <span>{{ formatUYU(r.irpf.grossTax) }}</span>
               </div>
               <div class="irpf-line">
@@ -351,6 +355,11 @@ const effectiveNominal = computed(() =>
 )
 
 const r = computed(() => computePayroll({ ...opts.value, nominal: effectiveNominal.value }))
+const grossTaxLabel = computed(() =>
+  r.value.irpf.incrementApplied
+    ? 'Impuesto por franjas (sobre la base con el 6 %)'
+    : 'Impuesto por franjas (sobre el nominal)'
+)
 
 const checkResult = computed(() => {
   const got = recibido.value
@@ -399,7 +408,7 @@ const faq = [
   },
   {
     q: '¿Por qué el IRPF no es simplemente la tasa de la franja?',
-    a: 'Porque el impuesto se calcula por franjas sobre el nominal y después se le resta un crédito: la suma de tus deducciones (aportes jubilatorios, FONASA, FRL, hijos, cuota hipotecaria...) multiplicada por 14% si tu nominal mensual es menor a 15 BPC, u 8% si es mayor. El resultado nunca es negativo.',
+    a: 'Porque el impuesto se calcula por franjas sobre el nominal (si el nominal del mes supera 10 BPC, sobre el nominal más un 6 %, Decreto 148/007 art. 63) y después se le resta un crédito: la suma de tus deducciones (aportes jubilatorios, FONASA, FRL, hijos, cuota hipotecaria...) multiplicada por 14% si tu nominal mensual es menor a 15 BPC, u 8% si es mayor. El resultado nunca es negativo.',
   },
   {
     q: '¿Cuánto deduzco por hijo?',
