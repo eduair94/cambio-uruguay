@@ -1498,7 +1498,7 @@
     },
     {
       "id": "bpc-valor-2026-con-decreto-y-multiplos",
-      "shippedOn": "2026-10-20",
+      "shippedOn": "2026-10-19",
       "routes": ["/indicadores/bpc"],
       "queries": [
         "bpc",
@@ -1512,7 +1512,7 @@
     },
     {
       "id": "calculadora-iva-contesta-la-tasa",
-      "shippedOn": "2026-10-20",
+      "shippedOn": "2026-10-19",
       "routes": ["/herramientas/calculadora-iva"],
       "queries": [
         "cuanto es el iva en uruguay",
@@ -1526,7 +1526,7 @@
     },
     {
       "id": "calculadora-sueldo-liquido-con-ejemplo",
-      "shippedOn": "2026-10-20",
+      "shippedOn": "2026-10-19",
       "routes": ["/herramientas/calculadora-sueldo-liquido"],
       "queries": [
         "nominal a liquido",
@@ -1538,7 +1538,7 @@
     },
     {
       "id": "calculadora-inflacion-con-la-ui-a-12-meses",
-      "shippedOn": "2026-10-20",
+      "shippedOn": "2026-10-19",
       "routes": ["/herramientas/calculadora-inflacion"],
       "queries": [
         "calculadora de inflacion uruguay",
