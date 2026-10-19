@@ -11,7 +11,8 @@
               </v-avatar>
               <div>
                 <h1 class="text-h5 text-md-h4 font-weight-bold text-white mb-1">
-                  Valor de la {{ indicator.name }} ({{ indicator.abbr }}) hoy en Uruguay
+                  Valor de la {{ indicator.name }} ({{ indicator.abbr }})
+                  {{ staticYear ? `${staticYear} en Uruguay` : 'hoy en Uruguay' }}
                 </h1>
                 <p class="text-body-1 text-grey-lighten-2 mb-0 indicador-intro">
                   {{ indicator.shortDef }}
@@ -26,6 +27,13 @@
                 <div class="text-overline text-grey">1 {{ indicator.abbr }} equivale a</div>
                 <div class="text-h4 font-weight-bold text-primary">{{ formattedValue }}</div>
                 <div class="text-caption text-grey">{{ valueLabel }}</div>
+                <div v-if="indicator.legal" class="text-caption text-grey indicador-note">
+                  Fuente:
+                  <a :href="indicator.legal.url" target="_blank" rel="noopener noreferrer">{{
+                    indicator.legal.act
+                  }}</a>
+                  (IMPO), publicado el {{ isoDayLabelEs(indicator.legal.published) }}
+                </div>
               </div>
               <v-spacer class="d-none d-sm-flex" />
               <ShareButtons :url="canonicalUrl" :text="`Valor de la ${indicator.name} hoy`" />
@@ -131,6 +139,22 @@
                 >conversor de UI a pesos</NuxtLink
               >.
             </p>
+            <p
+              v-else-if="indicator.legal && publishedValue !== null"
+              class="text-body-2 mt-3 mb-0 indicador-note"
+              data-testid="indicador-bpc-uses"
+            >
+              En el sueldo la BPC marca dos cortes: hasta 7 BPC por mes ({{
+                formatPesos(7 * publishedValue, 0)
+              }}) no se retiene IRPF, y el FONASA cambia de tasa por encima de 2,5 BPC ({{
+                formatPesos(2.5 * publishedValue, 0)
+              }}). Para ver cuánto te queda en mano, usá la
+              <NuxtLink :to="localePath('/herramientas/calculadora-sueldo-liquido')"
+                >calculadora de sueldo líquido</NuxtLink
+              >
+              o la de
+              <NuxtLink :to="localePath('/herramientas/calculadora-irpf')">IRPF</NuxtLink>.
+            </p>
           </v-card-text>
         </v-card>
       </v-col>
@@ -204,10 +228,35 @@
         <v-card class="h-100">
           <v-card-title class="d-flex align-center py-3">
             <v-icon start>mdi-update</v-icon>
-            ¿Cómo se actualiza?
+            {{ indicator.legal ? '¿Desde cuándo rige?' : '¿Cómo se actualiza?' }}
           </v-card-title>
           <v-card-text>
             <p class="text-body-1 indicador-prose mb-0">{{ indicator.howUpdated }}</p>
+            <dl v-if="indicator.legal" class="indicador-legal mt-4" data-testid="indicador-legal">
+              <dt>Rige desde</dt>
+              <dd>el {{ isoDayLabelEs(indicator.legal.validFrom) }}</dd>
+              <dt>La fija</dt>
+              <dd>
+                el {{ indicator.legal.act }}, promulgado el
+                {{ isoDayLabelEs(indicator.legal.promulgated) }} y publicado en el Diario Oficial el
+                {{ isoDayLabelEs(indicator.legal.published) }}
+              </dd>
+              <dt>Año anterior</dt>
+              <dd>
+                {{ formatPesos(indicator.legal.previous.value, indicator.decimals) }}
+                ({{ indicator.legal.previous.act }}): subió
+                {{ formatNumber(indicator.legal.previous.changePct, 2) }} %
+              </dd>
+              <dt>Por qué cambia</dt>
+              <dd>{{ indicator.legal.basis }}</dd>
+            </dl>
+            <p v-if="indicator.legal" class="text-caption text-grey mt-3 mb-0 indicador-note">
+              Leer el
+              <a :href="indicator.legal.url" target="_blank" rel="noopener noreferrer">{{
+                indicator.legal.act
+              }}</a>
+              en IMPO (consultado el {{ isoDayLabelEs(indicator.legal.seenOn) }}).
+            </p>
           </v-card-text>
         </v-card>
       </v-col>
@@ -272,10 +321,14 @@ import {
   dayLabelEs,
   equivalenceTable,
   indicatorFromSlug,
+  isoDayLabelEs,
   liveIndicatorReading,
   monthLabelEs,
   montevideoMonthKey,
+  montevideoYear,
   monthlyHistory,
+  staticIndicatorSnippet,
+  staticValueIsCurrent,
   type EvolutionPoint,
 } from '~/utils/indicators'
 
@@ -329,12 +382,25 @@ const formatPesos = (n: number, decimals: number): string =>
   })
 
 /**
- * The number this page may PUBLISH (title, description, table): the live reading for UI/UR, the
- * yearly legal value for the BPC, and nothing when the live read failed.
+ * The yearly legal value (BPC) is "the current one" only during the year its decree applies to.
+ * Read once per render: SSR and hydration see the same year.
  */
-const publishedValue = computed<number | null>(() =>
-  indicator.value!.code ? (live.value?.value ?? null) : indicator.value!.referenceValue
+const staticCurrent = computed(() => staticValueIsCurrent(indicator.value!))
+
+/** `'2026'` for the BPC while its decree is the one in force; `null` for UI/UR or when stale. */
+const staticYear = computed(() =>
+  staticCurrent.value ? indicator.value!.legal!.validFrom.slice(0, 4) : null
 )
+
+/**
+ * The number this page may PUBLISH (title, description, table): the live reading for UI/UR, the
+ * yearly legal value for the BPC while its year is this year, and nothing otherwise.
+ */
+const publishedValue = computed<number | null>(() => {
+  const ind = indicator.value!
+  if (ind.code) return live.value?.value ?? null
+  return staticCurrent.value ? ind.referenceValue : null
+})
 
 // The calculator still needs a number to multiply when the read failed; it is labelled as such.
 const currentValue = computed(() => publishedValue.value ?? indicator.value!.referenceValue)
@@ -359,6 +425,12 @@ const whenSuffix = computed(() =>
 
 const valueLabel = computed(() => {
   const ind = indicator.value!
+  if (!ind.code && ind.legal) {
+    const since = isoDayLabelEs(ind.legal.validFrom)
+    return staticCurrent.value
+      ? `Vigente desde el ${since}`
+      : `Valor vigente desde el ${since}: el de ${montevideoYear()} todavía no está cargado acá`
+  }
   if (!ind.code) return ind.referenceLabel
   if (!live.value) return 'Valor de referencia: no pudimos leer el valor de hoy'
   return liveWhen.value
@@ -445,11 +517,19 @@ const liveFormatted = computed(() =>
 
 const EXAMPLE_UNITS: Record<string, number> = { UI: 1000, UR: 10 }
 
+/**
+ * The BPC's snippet (2026-10-19): "Valor de la BPC 2026: 1 BPC = $ 6.864" and, in the description,
+ * the decree and the multiples people type ("2 bpc cuanto es", "cuanto es 3 bpc en uruguay"). See
+ * `staticIndicatorSnippet`. `null` for UI/UR and for a BPC whose year is not this one.
+ */
+const staticSnippet = computed(() => staticIndicatorSnippet(indicator.value!))
+
 const seoDescription = computed(() => {
   const ind = indicator.value!
+  if (!ind.code) return staticSnippet.value?.description ?? ind.shortDef
   const value = publishedValue.value
   if (value === null || !liveFormatted.value) return ind.shortDef
-  let when = ind.code ? ' hoy' : ` en ${new Date().getFullYear()}`
+  let when = ' hoy'
   if (liveWhen.value) {
     when =
       liveWhen.value.prefix === 'en'
@@ -460,20 +540,24 @@ const seoDescription = computed(() => {
   const change = pct == null ? '' : `, ${pct > 0 ? '+' : ''}${formatNumber(pct, 2)} % en 12 meses`
   const units = EXAMPLE_UNITS[ind.code ?? ''] ?? 10
   const example = `${formatUnits(units)} ${ind.abbr} = ${formatPesos(Math.round(units * value * 100) / 100, 2)}`
-  const tail = ind.code ? 'Tabla de equivalencias y valor mes a mes.' : 'Tabla de equivalencias.'
+  const tail = 'Tabla de equivalencias y valor mes a mes.'
   return `La ${ind.name} (${ind.abbr}) vale ${liveFormatted.value}${when}${change}. ${example}. ${tail}`
 })
 
 useSeoMeta({
-  title: () =>
-    liveFormatted.value
+  title: () => {
+    if (staticSnippet.value) return `${staticSnippet.value.title} | Cambio Uruguay`
+    return liveFormatted.value && indicator.value!.code
       ? `Valor de la ${indicator.value!.abbr} hoy: ${liveFormatted.value} | Cambio Uruguay`
-      : `Valor de la ${indicator.value!.name} (${indicator.value!.abbr}) Hoy | Cambio Uruguay`,
+      : `Valor de la ${indicator.value!.name} (${indicator.value!.abbr}) Hoy | Cambio Uruguay`
+  },
   description: () => seoDescription.value,
-  ogTitle: () =>
-    liveFormatted.value
+  ogTitle: () => {
+    if (staticSnippet.value) return staticSnippet.value.title
+    return liveFormatted.value && indicator.value!.code
       ? `${indicator.value!.abbr} hoy: ${liveFormatted.value}`
-      : `Valor de la ${indicator.value!.name} (${indicator.value!.abbr}) hoy`,
+      : `Valor de la ${indicator.value!.name} (${indicator.value!.abbr}) hoy`
+  },
   ogDescription: () => indicator.value!.shortDef,
   ogType: 'website',
   ogUrl: () => canonicalUrl.value,
@@ -559,5 +643,20 @@ useHead({
 }
 .indicador-note a {
   color: rgb(var(--v-theme-primary));
+}
+.indicador-legal {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.indicador-legal dt {
+  margin-top: 10px;
+  font-weight: 700;
+}
+.indicador-legal dt:first-child {
+  margin-top: 0;
+}
+.indicador-legal dd {
+  margin: 2px 0 0;
 }
 </style>

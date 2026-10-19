@@ -26,6 +26,28 @@ export interface IndicatorLink {
   to: string
 }
 
+/**
+ * The official act behind a statically-valued indicator (the BPC): what the page cites when it
+ * says "desde cuándo rige". Every field was read at the source on `seenOn`.
+ */
+export interface IndicatorLegalSource {
+  /** e.g. `'Decreto N° 11/026'`. */
+  act: string
+  /** The act's text at IMPO. */
+  url: string
+  /** ISO date from which the value applies. Its year is the year the value is valid for. */
+  validFrom: string
+  /** ISO dates of promulgation and of publication in the Diario Oficial. */
+  promulgated: string
+  published: string
+  /** The rule behind the yearly update, as the act itself cites it (one sentence, no period). */
+  basis: string
+  /** The value it replaced, with its own act and the change the act states. */
+  previous: { value: number; act: string; changePct: number }
+  /** ISO date we read the act. */
+  seenOn: string
+}
+
 /** A complete economic indicator, addressable at `/indicadores/{slug}`. */
 export interface Indicator {
   /** URL-safe identifier, e.g. `'unidad-indexada'`. */
@@ -58,6 +80,8 @@ export interface Indicator {
   referenceLabel: string
   /** Decimal places used to display the value. */
   decimals: number
+  /** Only for statically-valued indicators: the act that fixes {@link referenceValue}. */
+  legal?: IndicatorLegalSource
   /** Frequently-asked questions (also emitted as FAQPage JSON-LD). */
   faqs: IndicatorFaq[]
   /** Related internal links. */
@@ -65,6 +89,20 @@ export interface Indicator {
   /** ISO date (`YYYY-MM-DD`) of last editorial review. */
   updatedAt: string
 }
+
+/**
+ * BPC 2026, read at IMPO on 2026-10-19 (Decreto N° 11/026): "Fíjase el valor de la Base de
+ * Prestaciones y Contribuciones a partir del 1° de enero de 2026, en $ 6.864". Promulgated
+ * 2026-01-20, published 2026-01-29. Its considerando cites the 2025 value ($ 6.576, Decreto N°
+ * 5/025) and the 4,38 % adjustment by the IPC that Ley 17.856 allows, "con un margen de hasta
+ * 20% en exceso". The same figure lives in `irpfCasos.ts` (`BPC_2026`) and `calculators.ts`
+ * (`URUGUAY.bpc`); `indicators.test.ts` keeps the three together.
+ */
+const BPC_2026 = 6864
+const BPC_2025 = 6576
+
+/** `13728` → `'$ 13.728'`: whole pesos, the way a decree or a payslip prints them. */
+const wholePesos = (n: number): string => `$ ${Math.round(n).toLocaleString('es-UY')}`
 
 /**
  * The catalogue of indicators, in the order shown on `/indicadores`.
@@ -191,44 +229,58 @@ export const indicators: readonly Indicator[] = Object.freeze([
     whatItIs:
       'La Base de Prestaciones y Contribuciones (BPC) es un valor de referencia que fija el Estado uruguayo una vez al año y que se usa para expresar montos en muchas normas: tributos, multas, prestaciones sociales, asignaciones familiares y, muy especialmente, las franjas del IRPF. Al estar expresados en BPC, esos montos se actualizan automáticamente cada año cuando se fija el nuevo valor.',
     usedFor: [
-      'Franjas y mínimos no imponibles del IRPF',
+      'Franjas y mínimo no imponible del IRPF (hasta 7 BPC por mes no se retiene)',
+      'La tasa del FONASA, que cambia por encima de 2,5 BPC',
       'Multas y tributos expresados en BPC',
       'Prestaciones sociales y asignaciones familiares',
-      'Topes y referencias en normativa estatal',
     ],
     howUpdated:
-      'El valor de la BPC se fija una vez al año, con vigencia desde el 1° de enero, mediante decreto del Poder Ejecutivo.',
-    referenceValue: 6864,
+      'La fija el Poder Ejecutivo por decreto una vez al año, con vigencia desde el 1° de enero, ajustándola según la variación del Índice de Precios al Consumo (Ley N° 17.856). La de 2026 la fijó el Decreto N° 11/026.',
+    referenceValue: BPC_2026,
     referenceLabel: 'Vigente en 2026',
     decimals: 0,
+    legal: {
+      act: 'Decreto N° 11/026',
+      url: 'https://www.impo.com.uy/bases/decretos/11-2026',
+      validFrom: '2026-01-01',
+      promulgated: '2026-01-20',
+      published: '2026-01-29',
+      basis:
+        'la Ley N° 17.856 (arts. 2 y 3) permite ajustarla según la variación del IPC, con un margen de hasta 20 % en exceso',
+      previous: { value: BPC_2025, act: 'Decreto N° 5/025', changePct: 4.38 },
+      seenOn: '2026-10-19',
+    },
     faqs: [
       {
         question: '¿Cuánto vale la BPC en 2026?',
-        answer:
-          'La BPC vigente en 2026 es de $6.864, fijada por decreto con vigencia desde el 1° de enero. El valor se actualiza una vez al año.',
+        answer: `La BPC vale ${wholePesos(BPC_2026)} desde el 1° de enero de 2026 y rige todo el año. La fijó el Decreto N° 11/026, publicado en el Diario Oficial el 29 de enero de 2026.`,
+      },
+      {
+        question: '¿Cuánto valía la BPC en 2025?',
+        answer: `${wholePesos(BPC_2025)}, según el Decreto N° 5/025. La de 2026 es 4,38 % más alta: la Ley N° 17.856 le permite al Poder Ejecutivo ajustarla según la variación del IPC, con un margen de hasta 20 % en exceso.`,
       },
       {
         question: '¿Para qué sirve la BPC?',
-        answer:
-          'La BPC se usa como unidad de referencia en tributos, multas, prestaciones sociales y, sobre todo, en las franjas del IRPF, que se expresan en cantidades de BPC.',
+        answer: `Para expresar montos que se actualizan solos cada año: las franjas del IRPF (hasta 7 BPC por mes, ${wholePesos(7 * BPC_2026)} en 2026, no se retiene), el cambio de tasa del FONASA a partir de 2,5 BPC, multas, tributos y prestaciones sociales.`,
       },
       {
         question: '¿Cómo paso un monto en BPC a pesos?',
-        answer:
-          'Multiplicá la cantidad de BPC por el valor vigente. Por ejemplo, 10 BPC en 2026 equivalen a $68.640 (10 × $6.864).',
+        answer: `Multiplicá la cantidad de BPC por ${wholePesos(BPC_2026)}. En 2026, 2 BPC son ${wholePesos(2 * BPC_2026)}, 3 BPC ${wholePesos(3 * BPC_2026)}, 5 BPC ${wholePesos(5 * BPC_2026)} y 10 BPC ${wholePesos(10 * BPC_2026)}.`,
       },
       {
         question: '¿Cada cuánto cambia la BPC?',
         answer:
-          'La BPC se actualiza una vez al año, con vigencia desde el 1° de enero, por lo que conviene verificar el valor del año en curso.',
+          'Una vez al año. El decreto que la fija rige desde el 1° de enero aunque se publique después: el de 2026 se promulgó el 20 de enero y salió en el Diario Oficial el 29.',
       },
     ],
     related: [
+      { label: 'Calculadora de sueldo líquido', to: '/herramientas/calculadora-sueldo-liquido' },
       { label: 'Calculadora de IRPF', to: '/herramientas/calculadora-irpf' },
       { label: 'Calculadora de aguinaldo', to: '/herramientas/calculadora-aguinaldo' },
+      { label: 'UI, UR y BPC: diferencias', to: '/guias/ui-ur-bpc-diferencias' },
       { label: 'Unidad Indexada (UI)', to: '/indicadores/unidad-indexada' },
     ],
-    updatedAt: '2026-06-20',
+    updatedAt: '2026-10-19',
   },
 ])
 
@@ -306,7 +358,10 @@ export function liveIndicatorReading(
 export const EQUIVALENCE_AMOUNTS: Readonly<Record<string, readonly number[]>> = Object.freeze({
   'unidad-indexada': [1, 10, 20, 50, 100, 500, 1000, 1500, 5000, 10000, 100000],
   'unidad-reajustable': [1, 1.25, 5, 10, 12, 15, 20, 25, 30, 50, 100],
-  bpc: [0.5, 1, 2, 5, 7, 10, 15, 20, 30, 50],
+  // 2, 3, 4 and 5 are what people type for the BPC (Search Console, 2026-07-20..10-17: "2 bpc
+  // cuanto es", "cuanto es 3 bpc en uruguay", "4 bpc cuanto es", "5 bpc cuanto es"); 2,5 is the
+  // FONASA threshold and 7/10/15/30/50 the IRPF bracket edges.
+  bpc: [0.5, 1, 2, 2.5, 3, 4, 5, 7, 10, 15, 20, 30, 50],
 })
 
 export interface EquivalenceRow {
@@ -360,6 +415,79 @@ export function montevideoMonthKey(iso: string): string | null {
   const t = Date.parse(iso)
   if (Number.isNaN(t)) return null
   return new Date(t - MONTEVIDEO_OFFSET_MS).toISOString().slice(0, 7)
+}
+
+/** The calendar year in Montevideo at `now`. */
+export function montevideoYear(now: Date = new Date()): number {
+  return Number(new Date(now.getTime() - MONTEVIDEO_OFFSET_MS).toISOString().slice(0, 4))
+}
+
+/** `'2026-01-01'` → `'1° de enero de 2026'`, read as a calendar day (no timezone shift). */
+export function isoDayLabelEs(iso: string): string | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso)
+  if (!match) return null
+  const [, y, m, d] = match
+  const date = new Date(Date.UTC(Number(y), Number(m) - 1, Number(d)))
+  // The full date, not the month alone: ICU capitalises a stand-alone month in es-UY ("Enero").
+  const label = date.toLocaleDateString('es-UY', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
+  return Number(d) === 1 ? label.replace(/^1 /, '1° ') : label
+}
+
+/**
+ * Whether a statically-valued indicator (the BPC) may be published as the value in force today:
+ * the year its act applies to is this year in Montevideo.
+ *
+ * The same guard UI/UR get from `liveIndicatorReading`, for a number that changes once a year. On
+ * January 1st, until someone loads the new decree, the page stops putting last year's BPC in the
+ * `<title>` as the current one — the decree comes out weeks later (2026's was promulgated on
+ * January 20th) and the old number would otherwise sit there as "hoy" with no error anywhere.
+ */
+export function staticValueIsCurrent(ind: Indicator, now: Date = new Date()): boolean {
+  if (ind.code || !ind.legal) return false
+  return Number(ind.legal.validFrom.slice(0, 4)) === montevideoYear(now)
+}
+
+/** The multiples the BPC description lists: the ones people search ("2 bpc cuanto es", …). */
+export const STATIC_SNIPPET_UNITS: readonly number[] = Object.freeze([2, 3, 5, 10])
+
+export interface IndicatorSnippet {
+  /** Without the brand: `app.vue`'s `titleTemplate` appends " | Cambio Uruguay". */
+  title: string
+  description: string
+}
+
+/**
+ * `<title>` and meta description of a statically-valued indicator while its value is current, or
+ * `null` (the page then falls back to the copy without numbers).
+ *
+ * Why this shape and not the UR's ("Valor de la UR hoy: $ X"): the BPC page had exactly that
+ * title since September and 2.286 impressions with one click in 28 days (Search Console,
+ * 2026-09-20..10-17), at position ~10 for "valor bpc", "1 bpc" and "2 bpc cuanto es". For a value
+ * that changes once a year the year IS the freshness signal, and the multiples people type go in
+ * the description, next to the act that fixes it.
+ */
+export function staticIndicatorSnippet(
+  ind: Indicator,
+  now: Date = new Date()
+): IndicatorSnippet | null {
+  if (!ind.legal || !staticValueIsCurrent(ind, now)) return null
+  const year = ind.legal.validFrom.slice(0, 4)
+  const value = wholePesos(ind.referenceValue)
+  const since = isoDayLabelEs(ind.legal.validFrom) ?? year
+  const multiples = STATIC_SNIPPET_UNITS.map(
+    n => `${n} ${ind.abbr} = ${wholePesos(n * ind.referenceValue)}`
+  )
+  const listed = `${multiples.slice(0, -1).join(', ')} y ${multiples[multiples.length - 1]}`
+  const act = ind.legal.act.replace('N° ', '')
+  return {
+    title: `Valor de la ${ind.abbr} ${year}: 1 ${ind.abbr} = ${value}`,
+    description: `La ${ind.abbr} vale ${value}: rige desde el ${since} (${act}). ${listed}.`,
+  }
 }
 
 /**
