@@ -8,14 +8,20 @@ import {
   getComparativaPair,
 } from '../../utils/comparativas'
 import {
+  COURIER_CHECKS,
+  COURIER_CHECKED_AT,
+  courierCheck,
+  verifiedCourier,
+} from '../../utils/courierChecks'
+import {
   allCourierPages,
+  courierEstimate,
   courierReferenceTable,
   getCourierPage,
   type CourierPageModel,
 } from '../../utils/courierPages'
 import {
   COURIERS,
-  COURIER_RATES_VERIFIED_AT,
   POSTAL_SURCHARGE,
   courierParcelQuote,
   type Courier,
@@ -34,9 +40,18 @@ import { IVA_TASA_BASICA } from '../../utils/ivaTarjeta'
 const APP = join(__dirname, '..', '..')
 const PAGES = join(APP, 'pages')
 const pages = allCourierPages()
-const courierOf = (page: CourierPageModel) => COURIERS.find(courier => courier.id === page.id)!
-const courier = (id: string): Courier => COURIERS.find(candidate => candidate.id === id)!
+/** The row each page prices: the catalogue with its site's reading on top. */
+const courierOf = (page: CourierPageModel) =>
+  verifiedCourier(COURIERS.find(courier => courier.id === page.id)!)
+const courier = (id: string): Courier =>
+  verifiedCourier(COURIERS.find(candidate => candidate.id === id)!)
 const pageOf = (id: string) => pages.find(page => page.id === id)!
+/** `usxcargo.com` and `https://usxcargo.com/` are one page. */
+const bareUrl = (url: string) =>
+  url
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/\/+$/, '')
 
 /** A link target the router can answer: a page file, or a family of the comparativas. */
 function routeExists(path: string): boolean {
@@ -99,8 +114,25 @@ describe('every courier gets a page', () => {
       expect(page.description.length, page.description).toBeGreaterThanOrEqual(80)
       expect(page.description.startsWith(page.name)).toBe(true)
       expect(page.heading).toContain(page.name)
-      // The figure opens the description, so it is what survives the SERP's cut.
-      if (page.reference) expect(page.description.indexOf('US$'), page.description).toBeLessThan(45)
+      // The figure opens the description, so it is what survives the SERP's cut. A courier that is
+      // not flying opens with that instead: a price for a service it is not giving is not news.
+      if (page.reference && page.operating) {
+        expect(page.description.indexOf('US$'), page.description).toBeLessThan(45)
+      }
+      if (!page.operating) expect(page.description).toContain('suspendió sus vuelos')
+    }
+  })
+
+  // "usx cargo", "urubox", "soycourier": the name is the query, the price is why the result wins.
+  it('puts the figure in the title of every courier that is flying, right after the name', () => {
+    for (const page of pages.filter(p => p.operating)) {
+      expect(page.title, page.title).toMatch(new RegExp(`^${page.name}: .*US\\$ \\d`))
+    }
+  })
+
+  it('dates every description with the day the courier’s site was read', () => {
+    for (const page of pages) {
+      expect(page.description, page.id).toContain(dateLabel(COURIER_CHECKED_AT))
     }
   })
 
@@ -122,7 +154,8 @@ describe('every courier gets a page', () => {
   })
 })
 
-// The typed fields restate each note; they may never say more than it does.
+// The typed fields restate each note; they may never say more than it does. The catalogue rows are
+// pinned to their notes below; the readings in utils/courierChecks.ts get their own block.
 describe('the note-derived courier fields match their notes', () => {
   it('marks a rate all-inclusive exactly when its note says "todo incluido"', () => {
     for (const c of COURIERS) {
@@ -166,13 +199,24 @@ describe('the worked parcel follows each courier’s own note', () => {
     }
   })
 
-  it('adds nothing on top of an all-inclusive rate (SoyCourier)', () => {
+  // Its FAQ calls US$ 14,99 a kilo all-inclusive; its calculator, read on 2026-10-19, adds US$ 9,99
+  // of handling and a delivery charge that depends on how you receive it. The page follows both:
+  // no surcharge on top, the handling fee in, the delivery next to the total and no ranking.
+  it('adds nothing on top of an all-inclusive rate, but adds what its calculator charges (SoyCourier)', () => {
     const c = courier('soycourier')
     const page = pageOf('soycourier')
     expect(page.reference?.surchargeUsd).toBe(0)
-    expect(page.reference?.totalUsd).toBeCloseTo(c.perKgUsd! * COURIER_REFERENCE_KG, 9)
+    expect(page.reference?.totalUsd).toBeCloseTo(c.perKgUsd! * COURIER_REFERENCE_KG + c.baseUsd!, 9)
+    expect(page.reference?.complete).toBe(false)
+    expect(page.reference?.rank).toBeNull()
+    expect(page.reference!.rows.filter(row => row.kind === 'aside').map(row => row.value)).toEqual([
+      formatUsd(1.99),
+      formatUsd(4.99),
+    ])
+    // With the pick-up charge, the worked total is exactly what its calculator printed.
+    expect(page.reference!.totalUsd + 1.99).toBeCloseTo(page.calculator!.referenceUsd!, 9)
     expect(page.surcharge.included).toBe(true)
-    expect(page.description).toContain('todo incluido')
+    expect(page.description).toContain('cargo de entrega')
     expect(page.description).not.toContain(`${POSTAL_SURCHARGE.ratePct}% de`)
     const faq = page.faq.find(item => item.id === 'recargo-de-ley')
     expect(faq?.question).not.toContain('que se suma')
@@ -213,7 +257,7 @@ describe('the worked parcel follows each courier’s own note', () => {
     )
   })
 
-  it.each(['usxcargo', 'starbox'])(
+  it.each(['usxcargo', 'puntomio'])(
     'shows an optional fee next to the total without adding it or unranking (%s)',
     id => {
       const c = courier(id)
@@ -242,7 +286,7 @@ describe('the worked parcel follows each courier’s own note', () => {
 
   it('ranks only complete prices: ties share a place and the cheapest is first', () => {
     const table = courierReferenceTable()
-    for (const page of pages.filter(p => p.reference?.complete)) {
+    for (const page of pages.filter(p => p.reference?.complete && p.operating)) {
       expect(page.reference!.of).toBe(table.length)
       expect(page.reference!.rank).toBeGreaterThanOrEqual(1)
       expect(page.reference!.rank).toBeLessThanOrEqual(table.length)
@@ -255,8 +299,13 @@ describe('the worked parcel follows each courier’s own note', () => {
     expect(quoteOnly.length).toBeGreaterThan(0)
     for (const page of quoteOnly) {
       expect(page.reference).toBeNull()
+      expect(page.estimator).toBeNull()
       expect(page.quoteNote).toBeTruthy()
-      expect(page.description).not.toContain('US$')
+      // The only dollar figures it may print are the ones its own calculator printed.
+      const printed = page.calculator?.readings.map(reading => reading.value) ?? []
+      for (const amount of page.description.match(/US\$ [\d.,]+\d/g) ?? []) {
+        expect(printed, page.description).toContain(amount)
+      }
       const perKg = page.facts.find(fact => fact.label.startsWith('Tarifa por kilo'))
       expect(perKg?.value).not.toContain('US$')
       const ids = page.faq.map(item => item.id)
@@ -274,10 +323,11 @@ describe('the worked parcel follows each courier’s own note', () => {
     }
   })
 
-  it('dates the figures with the module verification date', () => {
+  it('dates the figures with the day each courier’s site was read', () => {
     for (const page of pages) {
-      expect(page.verifiedAt).toBe(COURIER_RATES_VERIFIED_AT)
-      expect(page.verifiedLabel).toBe(dateLabel(COURIER_RATES_VERIFIED_AT))
+      const checkedAt = courierCheck(page.id)!.checkedAt
+      expect(page.verifiedAt).toBe(checkedAt)
+      expect(page.verifiedLabel).toBe(dateLabel(checkedAt))
       expect(page.verificationNote).toContain(page.verifiedLabel)
     }
   })
@@ -309,7 +359,10 @@ describe('the FAQ asks only what the catalogue can answer', () => {
       const c = courierOf(page)
       const ids = page.faq.map(item => item.id)
       expect(ids.includes('paquete-de-referencia')).toBe(c.perKgUsd !== null)
-      expect(ids.includes('mas-barato')).toBe(Boolean(page.reference?.complete))
+      expect(ids.includes('mas-barato')).toBe(page.reference?.rank != null)
+      expect(ids.includes('casillero')).toBe(Boolean(page.originsText))
+      expect(ids.includes('calculadora')).toBe(Boolean(page.calculatorUrl))
+      expect(ids.includes('pago')).toBe(Boolean(page.payment))
       expect(ids.includes('opiniones')).toBe(Boolean(c.reviewsNote))
     }
   })
@@ -356,13 +409,155 @@ describe('links', () => {
     }
   })
 
-  it('cites the courier and the law behind the surcharge', () => {
+  it('cites the courier, every page read on the check date and the law behind the surcharge', () => {
     for (const page of pages) {
       const urls = page.sources.map(source => source.url)
-      expect(urls).toContain(courierOf(page).source)
+      const bare = urls.map(bareUrl)
+      expect(bare, page.id).toContain(bareUrl(courierOf(page).source))
+      for (const read of courierCheck(page.id)!.sources) expect(urls).toContain(read)
       expect(urls).toContain(POSTAL_SURCHARGE.sourceUrl)
-      expect(new Set(urls).size).toBe(urls.length)
+      expect(new Set(bare).size, page.id).toBe(bare.length)
       for (const url of urls) expect(url).toMatch(/^https:\/\//)
+    }
+  })
+})
+
+describe('each courier’s site, as read on the check date', () => {
+  it('has a reading for every catalogue courier and none for an unknown one', () => {
+    expect(Object.keys(COURIER_CHECKS).sort()).toEqual(COURIERS.map(c => c.id).sort())
+    for (const check of Object.values(COURIER_CHECKS)) {
+      expect(check.checkedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+      expect(check.sources.length).toBeGreaterThan(0)
+      for (const url of [...check.sources, check.calculatorUrl ?? 'https://x']) {
+        expect(url).toMatch(/^https:\/\//)
+      }
+      expect(check.origins.length).toBeGreaterThan(0)
+    }
+  })
+
+  // An override is a contradiction the site showed that day. One that restates the catalogue is
+  // noise that would survive the day the catalogue is corrected.
+  it('only overrides what the site contradicted', () => {
+    for (const [id, check] of Object.entries(COURIER_CHECKS)) {
+      const row = COURIERS.find(c => c.id === id)!
+      for (const [field, value] of Object.entries(check.tariff ?? {})) {
+        expect(JSON.stringify(value), `${id}.${field}`).not.toBe(
+          JSON.stringify(row[field as keyof Courier])
+        )
+      }
+    }
+  })
+
+  it('pins the overridden typed fields to the overridden note, like the catalogue', () => {
+    for (const id of Object.keys(COURIER_CHECKS)) {
+      const c = courier(id)
+      const note = c.note ?? ''
+      expect(Boolean(c.rateIncludesSurcharge), id).toBe(/todo incluido/i.test(note))
+      expect(Boolean(c.baseIvaExcluded), id).toBe(/manejo US\$\s*[\d,]+\s*\+\s*IVA/i.test(note))
+      for (const fee of c.extraFees ?? []) {
+        expect(note, `${id}: ${fee.label}`).toContain(`US$${formatNumberEs(fee.usd)}`)
+        expect(Boolean(fee.approximate), `${id}: ${fee.label}`).toBe(
+          note.includes(`~US$${formatNumberEs(fee.usd)}`)
+        )
+      }
+    }
+  })
+
+  it('records each calculator answer with its own breakdown, adding up to what it printed', () => {
+    for (const [id, check] of Object.entries(COURIER_CHECKS)) {
+      if (!check.calculator) continue
+      expect(check.calculatorUrl, id).toBeTruthy()
+      const reference = check.calculator.readings.find(r => r.kg === COURIER_REFERENCE_KG)
+      expect(reference, id).toBeDefined()
+      const sum = check.calculator.lines.reduce((total, line) => total + line.usd, 0)
+      expect(sum, id).toBeCloseTo(reference!.totalUsd, 9)
+    }
+  })
+
+  // A per-kilo rate read off a calculator has to give back what the calculator printed, at every
+  // weight it was asked about: plus, at most, the optional fees the calculator also included.
+  it('derives a calculator-sourced rate that reproduces every reading', () => {
+    for (const [id, check] of Object.entries(COURIER_CHECKS)) {
+      if (check.rateSource !== 'calculadora') continue
+      const c = courier(id)
+      const optional = (c.extraFees ?? [])
+        .filter(fee => fee.kind === 'optional')
+        .reduce((total, fee) => total + fee.usd, 0)
+      for (const reading of check.calculator!.readings) {
+        const flat = c.perKgUsd! * reading.kg + (c.baseUsd ?? 0)
+        const matches = [flat, flat + optional].some(
+          candidate => Math.abs(candidate - reading.totalUsd) < 0.005
+        )
+        expect(matches, `${id} ${reading.kg} kg`).toBe(true)
+      }
+    }
+  })
+
+  // An office is where to pick up a parcel; a phone number or an inbox is a contact, and contacts
+  // are not copied here.
+  it('carries addresses but no phone number, e-mail or WhatsApp', () => {
+    const text = JSON.stringify(COURIER_CHECKS)
+    expect(text).not.toMatch(/@|whatsapp|\+598|\+1 ?\(/i)
+    expect(text).not.toMatch(/\b\d{4} ?\d{4}\b/)
+    expect(text).not.toMatch(/\b09\d ?\d{3} ?\d{3}\b/)
+  })
+})
+
+describe('the calculator by weight', () => {
+  it('offers whole kilos inside the tier, always including the reference parcel', () => {
+    for (const page of pages) {
+      if (!page.estimator) continue
+      expect(page.estimator.options[0]).toBe(page.estimator.minKg)
+      expect(page.estimator.options.at(-1)).toBe(page.estimator.maxKg)
+      expect(page.estimator.options).toContain(COURIER_REFERENCE_KG)
+    }
+  })
+
+  it('prices the reference weight exactly like the worked parcel', () => {
+    for (const page of pages.filter(p => p.estimator)) {
+      const estimate = courierEstimate(page.id, COURIER_REFERENCE_KG)!
+      expect(estimate.totalUsd).toBeCloseTo(page.reference!.totalUsd, 9)
+      expect(estimate.rows).toEqual(page.reference!.rows)
+    }
+  })
+
+  it('refuses a weight outside the tier or between kilos', () => {
+    for (const page of pages.filter(p => p.estimator)) {
+      const { minKg, maxKg } = page.estimator!
+      expect(courierEstimate(page.id, minKg - 1)).toBeNull()
+      expect(courierEstimate(page.id, maxKg + 1)).toBeNull()
+      expect(courierEstimate(page.id, minKg + 0.5)).toBeNull()
+      const top = courierEstimate(page.id, maxKg)!
+      expect(top.rows.find(row => row.kind === 'total')?.value).toBe(formatUsd(top.totalUsd))
+    }
+    expect(courierEstimate('no-existe', 2)).toBeNull()
+  })
+
+  it('has one for every courier that is flying with a per-kilo rate', () => {
+    for (const page of pages) {
+      expect(Boolean(page.estimator), page.id).toBe(page.operating && page.perKgUsd !== null)
+    }
+  })
+})
+
+describe('a courier that says it is not flying', () => {
+  const grounded = pages.filter(page => !page.operating)
+
+  it('exists in the readings, and is said first: title, heading, notice', () => {
+    expect(grounded.map(page => page.id)).toEqual(['uruguaycargo'])
+    for (const page of grounded) {
+      expect(page.title).toContain('vuelos suspendidos')
+      expect(page.heading).toContain('vuelos suspendidos')
+      expect(page.notice).toBeTruthy()
+      expect(page.facts[0]?.label).toBe('Aviso del courier')
+    }
+  })
+
+  it('is never ranked on price', () => {
+    for (const page of grounded) {
+      expect(page.reference?.rank).toBeNull()
+      expect(courierReferenceTable().some(row => row.courier.id === page.id)).toBe(false)
+      expect(page.reference?.position).toContain('suspendió los vuelos')
     }
   })
 })

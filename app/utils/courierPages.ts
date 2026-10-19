@@ -1,14 +1,19 @@
 // One page per courier: `/couriers-uruguay/<slug>`.
 //
-// "usx cargo" drew 289 Search Console impressions with no page of its own to land on, and Reddit
-// asks about specific couriers by name (USX Cargo, Gripper, Aerobox) week after week. Everything a
-// courier page needs is already in utils/courierShipping.ts: the tariff each courier publishes, the
-// date it was verified, its reputation and the sources behind it. This module turns ONE row into
-// ONE page model without adding a fact. Every figure is the catalogue's, every sentence is
-// assembled from its fields, and a field the catalogue lacks is said to be unpublished, never
-// filled in.
+// The search for a courier by NAME is most of what this family exists for: in the 90 days to
+// 2026-10-17, "usx cargo", "urubox", "soycourier", "usx", "exur" and their variants drew several
+// thousand impressions, and Google showed one of the head-to-heads (`/comparativas/couriers/*`, up
+// to 22 different ones for "usx cargo") far more often than the courier's own page. So the page
+// leads with what someone typing the name wants to know, in the order they want it: the price per
+// kilo with the date it was read, where the warehouse is, how the parcel reaches them in Uruguay,
+// how long it takes, and a calculator by weight.
 //
-// The worked 2 kg parcel comes from `courierParcelQuote`, which follows each courier's own note: a
+// Every figure comes from utils/courierShipping.ts with what the courier's own site said on the day
+// it was read laid on top (utils/courierChecks.ts, `verifiedCourier`). This module turns ONE row
+// into ONE page model without adding a fact: every sentence is assembled from fields, and a field
+// that is missing is said to be unpublished, never filled in.
+//
+// The worked parcel comes from `courierParcelQuote`, which follows each courier's own note: a
 // rate published "todo incluido" gets nothing added on top, a handling fee published "+IVA" gets its
 // IVA, and a fee the note lists on top is shown next to the total. When that fee depends on
 // something a generic parcel does not fix, the total is shown as a floor and the courier is left
@@ -19,12 +24,20 @@
 
 import { COURIER_REFERENCE_KG } from './comparativas'
 import {
+  courierCheck,
+  courierOperating,
+  verifiedCourier,
+  verifiedCouriers,
+  type CourierOrigin,
+} from './courierChecks'
+import {
   COURIERS,
   COURIER_RATES_VERIFIED_AT,
   POSTAL_SURCHARGE,
   courierParcelQuote,
   type Courier,
   type CourierExtraFee,
+  type CourierParcelQuote,
 } from './courierShipping'
 import { ENTITY_PAGE_ROUTES, courierPagePath, entityIdForSlug } from './entityPageSlugs'
 import {
@@ -34,6 +47,7 @@ import {
   ensurePeriod,
   fitDescription,
   fitTitle,
+  formatNumberEs,
   formatRating,
   formatUsd,
   hostOf,
@@ -101,6 +115,36 @@ export interface CourierSurcharge {
   included: boolean
 }
 
+/** The weights the page's calculator offers: whole kilos inside the tier the rate belongs to. */
+export interface CourierEstimator {
+  minKg: number
+  maxKg: number
+  options: number[]
+}
+
+/** The courier's own calculator, as it answered on the day it was read. */
+export interface CourierCalculatorView {
+  url: string
+  host: string
+  /** What was typed in besides the weight. */
+  inputs: string
+  /** Its breakdown for the reference parcel, formatted. */
+  lines: CourierParcelRow[]
+  /** Its totals by weight, formatted. */
+  readings: Array<{ kg: number; totalUsd: number; label: string; value: string }>
+  excludes: string | null
+  /** The total it printed for the reference parcel, when it was asked about that weight. */
+  referenceUsd: number | null
+}
+
+/** One weight priced with the courier's tariff: what the calculator on the page shows. */
+export interface CourierEstimate {
+  kg: number
+  totalUsd: number
+  complete: boolean
+  rows: CourierParcelRow[]
+}
+
 export interface CourierPageModel {
   id: string
   slug: string
@@ -112,6 +156,8 @@ export interface CourierPageModel {
   website: string
   websiteHost: string
   perKgUsd: number | null
+  /** `calculadora` when the per-kilo rate is the courier's calculator output, not a price list. */
+  rateSource: 'tarifario' | 'calculadora'
   title: string
   description: string
   heading: string
@@ -120,8 +166,23 @@ export interface CourierPageModel {
   verifiedLabel: string
   /** Dates the figures and says where they come from. */
   verificationNote: string
+  /** `false` when the courier's own site says it is not flying. */
+  operating: boolean
+  /** What the courier's site announces that a reader must see first. */
+  notice: string | null
+  /** Where purchases are received abroad, as a sentence fragment: `Miami, Florida (3 a 7 días)`. */
+  originsText: string | null
+  /** How the parcel reaches the reader in Uruguay. */
+  inUruguay: string | null
+  payment: string | null
   facts: EntityFact[]
   reference: CourierReferenceParcel | null
+  estimator: CourierEstimator | null
+  calculator: CourierCalculatorView | null
+  /** How to read the calculator's totals next to this page's arithmetic. */
+  calculatorNote: string | null
+  /** The courier's own calculator, when it has one, even if it was not asked about a weight. */
+  calculatorUrl: string | null
   /** For a courier with no per-kg tariff: how it quotes instead. */
   quoteNote: string | null
   rating: number | null
@@ -144,14 +205,18 @@ interface ReferenceRow {
 /**
  * The couriers whose reference parcel has a complete price, cheapest first. A courier that only
  * quotes through its own calculator has no row (there is nothing published to compute from), and
- * neither does one whose note lists a fee a generic parcel cannot price: ranking it on the part it
- * can price would put it above couriers that are actually cheaper.
+ * neither does one whose note lists a fee a generic parcel cannot price — ranking it on the part it
+ * can price would put it above couriers that are actually cheaper — or one whose site says it is
+ * not flying.
  */
 export function courierReferenceTable(): ReferenceRow[] {
-  return COURIERS.flatMap(courier => {
-    const quote = courierParcelQuote(courier, COURIER_REFERENCE_KG)
-    return quote?.complete ? [{ courier, totalUsd: quote.totalUsd }] : []
-  }).sort((a, b) => a.totalUsd - b.totalUsd || a.courier.name.localeCompare(b.courier.name, 'es'))
+  return verifiedCouriers()
+    .filter(courier => courierOperating(courier.id))
+    .flatMap(courier => {
+      const quote = courierParcelQuote(courier, COURIER_REFERENCE_KG)
+      return quote?.complete ? [{ courier, totalUsd: quote.totalUsd }] : []
+    })
+    .sort((a, b) => a.totalUsd - b.totalUsd || a.courier.name.localeCompare(b.courier.name, 'es'))
 }
 
 /** `Despacho de aduana (hasta 800)`: a fee's label with the note's own qualifier. */
@@ -184,22 +249,21 @@ function baseValue(courier: Courier): string {
   return `${formatUsd(courier.baseUsd)}${courier.baseIvaExcluded ? ' + IVA' : ''}`
 }
 
-function referenceParcel(
-  courier: Courier,
-  table: readonly ReferenceRow[]
-): CourierReferenceParcel | null {
-  const kg = COURIER_REFERENCE_KG
-  const quote = courierParcelQuote(courier, kg)
-  const perKg = courier.perKgUsd
-  if (!quote || perKg === null) return null
+/** `2 kilos`, `1 kilo`. */
+function kilos(kg: number): string {
+  return `${formatNumberEs(kg)} ${kg === 1 ? 'kilo' : 'kilos'}`
+}
 
+/** The worked rows for one quote: weight, handling fee, surcharge, IVA, total and the fees aside. */
+function parcelRows(courier: Courier, quote: CourierParcelQuote): CourierParcelRow[] {
   const { label: surchargeLabel, ratePct } = POSTAL_SURCHARGE
-  const optional = quote.pendingFees.filter(fee => fee.kind === 'optional')
   const conditional = quote.pendingFees.filter(fee => fee.kind === 'conditional')
   const conditionalLabels = [...new Set(conditional.map(fee => lowerFirst(fee.label)))]
-
-  const rows: CourierParcelRow[] = [
-    { label: `${kg} kilos a ${formatUsd(perKg)} el kilo`, value: formatUsd(quote.weightUsd) },
+  return [
+    {
+      label: `${kilos(quote.kg)} a ${formatUsd(courier.perKgUsd ?? 0)} el kilo`,
+      value: formatUsd(quote.weightUsd),
+    },
     { label: 'Cargo fijo por envío', value: baseValue(courier) },
     { label: 'Tarifa del envío', value: formatUsd(quote.tariffUsd) },
     {
@@ -227,6 +291,20 @@ function referenceParcel(
       kind: 'aside' as const,
     })),
   ]
+}
+
+function referenceParcel(
+  courier: Courier,
+  table: readonly ReferenceRow[]
+): CourierReferenceParcel | null {
+  const kg = COURIER_REFERENCE_KG
+  const quote = courierParcelQuote(courier, kg)
+  if (!quote) return null
+
+  const { label: surchargeLabel, ratePct } = POSTAL_SURCHARGE
+  const optional = quote.pendingFees.filter(fee => fee.kind === 'optional')
+  const conditional = quote.pendingFees.filter(fee => fee.kind === 'conditional')
+  const rows = parcelRows(courier, quote)
 
   const mine = table.find(row => row.courier.id === courier.id)
   const cheapest = table[0]
@@ -254,6 +332,9 @@ function referenceParcel(
         tied.length ? `, empatado con ${joinSpanishList(tied)}` : ''
       }. El más barato para ese paquete es ${cheapest.courier.name}, con ${formatUsd(cheapest.totalUsd)}.`
     }
+  } else if (!courierOperating(courier.id)) {
+    position =
+      'No entra en el orden por precio: su sitio avisa que suspendió los vuelos, así que hoy no es una opción para traer un paquete.'
   } else {
     position = `No entra en el orden por precio: su tarifa publica además ${feesText(conditional)}, que no se puede asignar a un paquete genérico. El total de arriba es un piso, no un precio.`
   }
@@ -296,11 +377,59 @@ function referenceParcel(
   }
 }
 
-/** Build the page model for one courier. Throws for a courier with no slug: CI catches it. */
-export function buildCourierPage(courier: Courier): CourierPageModel {
-  const path = courierPagePath(courier.id)
-  if (!path) throw new Error(`El courier ${courier.id} no tiene slug en utils/entityPageSlugs.ts`)
+/**
+ * One weight priced with a courier's tariff, for the calculator on its page. `null` outside the
+ * whole kilos the tariff's tier covers: a flat `base + kilo × rate` past a tier boundary would
+ * print a price the courier does not charge.
+ */
+export function courierEstimate(id: string, kg: number): CourierEstimate | null {
+  const row = COURIERS.find(candidate => candidate.id === id)
+  const range = courierCheck(id)?.estimatorKg
+  if (!row || !range || !Number.isInteger(kg) || kg < range.min || kg > range.max) return null
+  const courier = verifiedCourier(row)
+  const quote = courierParcelQuote(courier, kg)
+  if (!quote) return null
+  return {
+    kg,
+    totalUsd: quote.totalUsd,
+    complete: quote.complete,
+    rows: parcelRows(courier, quote),
+  }
+}
 
+/** `Miami, Florida (3 a 7 días) y Madrid, España (9 a 15 días)`. */
+function originsText(origins: readonly CourierOrigin[]): string | null {
+  if (!origins.length) return null
+  return joinSpanishList(
+    origins.map(origin => (origin.transit ? `${origin.place} (${origin.transit})` : origin.place))
+  )
+}
+
+/** `usxcargo.com`, `puntomio.uy/calculadora`: a URL as a reader would type it. */
+function displayUrl(url: string): string {
+  return url
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/\/+$/, '')
+}
+
+/** Two spellings of the same page: with or without `www.` and the trailing slash. */
+function sameUrl(a: string, b: string): boolean {
+  return displayUrl(a) === displayUrl(b)
+}
+
+/** `Miami y Madrid`: just the cities, for the title-length places of the copy. */
+function originCities(origins: readonly CourierOrigin[]): string {
+  return joinSpanishList(origins.map(origin => origin.place.split(',')[0]?.trim() ?? origin.place))
+}
+
+/** Build the page model for one courier. Throws for a courier with no slug: CI catches it. */
+export function buildCourierPage(row: Courier): CourierPageModel {
+  const path = courierPagePath(row.id)
+  if (!path) throw new Error(`El courier ${row.id} no tiene slug en utils/entityPageSlugs.ts`)
+
+  const courier = verifiedCourier(row)
+  const check = courierCheck(courier.id)
   const name = courier.name
   const perKg = courier.perKgUsd
   const base = courier.baseUsd
@@ -310,7 +439,8 @@ export function buildCourierPage(courier: Courier): CourierPageModel {
   const ratingLabel = rating === null ? null : formatRating(rating)
   const reviewSources = [...(courier.reviewSources ?? [])]
   const hasOpinions = rating !== null || reviewSources.length > 0
-  const verifiedLabel = dateLabel(COURIER_RATES_VERIFIED_AT)
+  const verifiedAt = check?.checkedAt ?? COURIER_RATES_VERIFIED_AT
+  const verifiedLabel = dateLabel(verifiedAt)
   const websiteHost = hostOf(courier.website)
   const table = courierReferenceTable()
   const reference = referenceParcel(courier, table)
@@ -319,61 +449,170 @@ export function buildCourierPage(courier: Courier): CourierPageModel {
   const extraFees = courier.extraFees ?? []
   const conditional = extraFees.filter(fee => fee.kind === 'conditional')
   const ivaOnBase = Boolean(courier.baseIvaExcluded && base)
+  const operating = courierOperating(courier.id)
+  const notice = check?.notice ?? null
+  const origins = check?.origins ?? []
+  const where = originsText(origins)
+  const cities = origins.length ? originCities(origins) : null
+  const inUruguay = check?.inUruguay ?? null
+  const payment = check?.payment ?? null
+  const rateSource = check?.rateSource ?? 'tarifario'
+  const calculatorUrl = check?.calculatorUrl ?? null
+  const kg = COURIER_REFERENCE_KG
 
+  const calculatorCheck = check?.calculator
+  const calculator: CourierCalculatorView | null =
+    calculatorCheck && calculatorUrl
+      ? {
+          url: calculatorUrl,
+          host: hostOf(calculatorUrl),
+          inputs: calculatorCheck.inputs,
+          lines: calculatorCheck.lines.map(line => ({
+            label: line.label,
+            value: formatUsd(line.usd),
+          })),
+          readings: calculatorCheck.readings.map(reading => ({
+            kg: reading.kg,
+            totalUsd: reading.totalUsd,
+            label: kilos(reading.kg),
+            value: formatUsd(reading.totalUsd),
+          })),
+          excludes: calculatorCheck.excludes ?? null,
+          referenceUsd:
+            calculatorCheck.readings.find(reading => reading.kg === kg)?.totalUsd ?? null,
+        }
+      : null
+
+  const range = check?.estimatorKg
+  // A courier that is not flying gets no calculator: there is nothing to send.
+  const estimator: CourierEstimator | null =
+    perKg !== null && range && operating
+      ? {
+          minKg: range.min,
+          maxKg: range.max,
+          options: Array.from({ length: range.max - range.min + 1 }, (_, i) => range.min + i),
+        }
+      : null
+  const hasCalculator = Boolean(estimator || calculatorUrl)
+
+  // A calculator total and this page's arithmetic can differ, and neither is wrong: the page applies
+  // one rule to every courier, the calculator shows what the courier chose to show.
+  const calculatorNote = !calculator
+    ? null
+    : normalizeSpaces(
+        [
+          calculator.lines.length
+            ? `Su desglose para ${kilos(kg)}: ${calculator.lines
+                .map(line => `${lowerFirst(line.label)}, ${line.value}`)
+                .join('; ')}.`
+            : '',
+          calculator.excludes
+            ? `Según la propia calculadora, no incluye ${calculator.excludes}.`
+            : '',
+          perKg !== null
+            ? `Puede no coincidir con la cuenta de arriba, que aplica a todos los couriers el mismo criterio: suma el ${POSTAL_SURCHARGE.ratePct}% de ${POSTAL_SURCHARGE.label} salvo que la tarifa se publique como todo incluido, y muestra aparte los cargos que dependen de cómo recibís el paquete. Lo que vale es lo que diga tu factura.`
+            : 'Es lo que mostró la calculadora ese día con esos datos: para tu paquete, pedí el presupuesto con su peso y su valor reales.',
+        ].join(' ')
+      )
+
+  // Titles: the name first, then the figure people search the name for. The calculator rung goes
+  // first because "<courier> calculadora" is the most common modifier after the bare name.
   const title = fitTitle(
-    perKg !== null
-      ? [
-          transit && hasOpinions && `${name}: tarifa por kilo, demora y opiniones`,
-          hasOpinions && `${name}: tarifa por kilo y opiniones`,
-          transit && `${name}: tarifa por kilo y demora`,
-          `${name}: tarifa por kilo`,
-          name,
-        ]
-      : [hasOpinions && `${name}: tarifas y opiniones`, `${name}: tarifas y condiciones`, name]
+    !operating
+      ? [`${name}: vuelos suspendidos y tarifa`, `${name}: vuelos suspendidos`, name]
+      : perKg !== null
+        ? [
+            hasCalculator && `${name}: ${formatUsd(perKg)} el kilo y calculadora`,
+            `${name}: ${formatUsd(perKg)} el kilo`,
+            name,
+          ]
+        : calculator?.referenceUsd != null
+          ? [
+              `${name}: ${kg} kg por ${formatUsd(calculator.referenceUsd)} y calculadora`,
+              `${name}: ${kg} kg por ${formatUsd(calculator.referenceUsd)}`,
+              name,
+            ]
+          : [hasOpinions && `${name}: tarifas y opiniones`, `${name}: tarifas y condiciones`, name]
   )
 
   const questions = [
-    perKg !== null ? 'cuánto cobra por kilo' : 'cómo cotiza',
-    transit ? 'cuánto demora' : '',
-    hasOpinions ? 'qué dicen los usuarios' : '',
+    perKg !== null
+      ? 'cuánto cobra por kilo'
+      : calculator
+        ? 'cuánto cobra su calculadora'
+        : 'cómo cotiza',
+    where ? 'dónde está el casillero' : '',
+    transit ? 'cuánto demora' : hasOpinions ? 'qué dicen los usuarios' : '',
   ].filter(Boolean)
   if (questions.length === 1 && note) questions.push('qué condiciones publica')
-  const heading = `${name}: ${joinSpanishList(questions)}`
+  const heading = operating
+    ? `${name}: ${joinSpanishList(questions)}`
+    : `${name}: vuelos suspendidos, tarifa y casillero`
 
   // The description leads with the figure people search for, so the part the SERP keeps is the
-  // price. Each rung drops the least important clause until it fits.
+  // price and its date. Each rung drops the least important clause until it fits.
   const baseWords =
     base === null
       ? ', sin cargo fijo publicado'
       : base === 0
         ? ', sin cargo fijo'
         : ` más ${formatUsd(base)}${ivaOnBase ? ' + IVA' : ''} de cargo fijo`
+  const whereWords = cities ? `Casillero en ${cities}${transit ? `, demora ${transit}` : ''}.` : ''
+  const whereShort = cities ? `Casillero en ${cities}.` : ''
+  const calculatorWords = estimator ? 'Calculá tu envío por peso.' : ''
   let description: string
-  if (reference && perKg !== null && reference.complete) {
-    const totalWords = courier.rateIncludesSurcharge
-      ? 'con su tarifa todo incluido'
-      : `con el ${rate}% de ${surchargeLabel}${ivaOnBase ? ' y el IVA del cargo fijo' : ''}`
-    const opening = `${name}: un paquete de ${reference.kg} kg sale ${formatUsd(reference.totalUsd)} ${totalWords}.`
+  if (!operating) {
+    const opening = `${name} suspendió sus vuelos hasta nuevo aviso, según su sitio al ${verifiedLabel}.`
+    const tariff = perKg !== null ? `Su tarifa: ${formatUsd(perKg)} el kilo${baseWords}.` : ''
     description = fitDescription([
-      `${opening} ${formatUsd(perKg)} el kilo${baseWords}${transit ? `, ${transit} de demora` : ''}. Tarifa del ${verifiedLabel}.`,
-      `${opening} ${formatUsd(perKg)} el kilo${baseWords}. Tarifa del ${verifiedLabel}.`,
-      `${opening} ${formatUsd(perKg)} el kilo${baseWords}.`,
-      `${opening} Tarifa del ${verifiedLabel}.`,
+      `${opening} ${tariff} Couriers que sí vuelan, con precio.`,
+      `${opening} ${tariff}`,
       opening,
     ])
   } else if (reference && perKg !== null) {
-    const pendingLabels = joinSpanishList([
-      ...new Set(conditional.map(fee => lowerFirst(fee.label))),
-    ])
-    const amounts = joinSpanishList(
-      conditional.map(fee => feeAmount(fee)),
-      'o'
-    )
-    const opening = `${name}: ${formatUsd(perKg)} el kilo${baseWords}; un paquete de ${reference.kg} kg sale ${formatUsd(reference.totalUsd)} sin ${pendingLabels}, que va aparte (${amounts}).`
+    let opening: string
+    if (rateSource === 'calculadora' && calculator?.referenceUsd != null) {
+      // The rate IS the calculator's: quote what it printed, not this page's arithmetic on top.
+      opening = `${name}: ${formatUsd(perKg)} el kilo${baseWords} según su calculadora, que el ${verifiedLabel} devolvió ${formatUsd(calculator.referenceUsd)} por ${kg} kg.`
+    } else if (reference.complete) {
+      const totalWords = courier.rateIncludesSurcharge
+        ? 'con su tarifa todo incluido'
+        : `con el ${rate}% de ${surchargeLabel}${ivaOnBase ? ' y el IVA del cargo fijo' : ''}`
+      opening = `${name}: ${formatUsd(perKg)} el kilo${baseWords}, tarifa del ${verifiedLabel}. ${kg} kg salen ${formatUsd(reference.totalUsd)} ${totalWords}.`
+    } else {
+      const pendingLabels = joinSpanishList([
+        ...new Set(conditional.map(fee => lowerFirst(fee.label))),
+      ])
+      const amounts = joinSpanishList(
+        conditional.map(fee => feeAmount(fee)),
+        'o'
+      )
+      opening = `${name}: ${formatUsd(perKg)} el kilo${baseWords}, tarifa del ${verifiedLabel}. ${kg} kg salen ${formatUsd(reference.totalUsd)} sin ${pendingLabels}, que va aparte (${amounts}).`
+    }
+    const bare = `${name}: ${formatUsd(perKg)} el kilo${baseWords}, ${rateSource === 'calculadora' ? 'según su calculadora' : 'tarifa'} del ${verifiedLabel}.`
     description = fitDescription([
-      `${opening} Tarifa del ${verifiedLabel}.`,
+      `${opening} ${whereWords} ${calculatorWords}`,
+      `${opening} ${whereWords}`,
+      `${opening} ${whereShort} ${calculatorWords}`,
+      `${opening} ${whereShort}`,
+      `${opening} ${calculatorWords}`,
       opening,
-      `${name}: ${formatUsd(perKg)} el kilo${baseWords}; ${pendingLabels} aparte (${amounts}).`,
+      `${bare} ${whereShort}`,
+      bare,
+    ])
+  } else if (calculator?.referenceUsd != null) {
+    const short = `${name}: su calculadora cobró ${formatUsd(calculator.referenceUsd)} por ${kg} kg el ${verifiedLabel}`
+    const others = calculator.readings.filter(reading => reading.kg !== kg)
+    const withOthers = others.length
+      ? `${short} (${joinSpanishList(others.map(reading => `${reading.value} por ${reading.kg} kg`))}).`
+      : `${short}.`
+    const ratingWords = ratingLabel ? `${ratingLabel} sobre 5 en reseñas públicas.` : ''
+    description = fitDescription([
+      `${withOthers} ${whereWords} ${ratingWords}`,
+      `${withOthers} ${whereWords}`,
+      withOthers,
+      `${short}. ${whereWords}`,
+      `${short}.`,
     ])
   } else {
     description = fitDescription([
@@ -395,31 +634,44 @@ export function buildCourierPage(courier: Courier): CourierPageModel {
   const lead = normalizeSpaces(
     [
       `${name} es un courier puerta a puerta que funciona como ${lowerFirst(courier.modality)}.`,
+      !operating && notice ? `${ensurePeriod(notice)}` : '',
       perKg !== null
-        ? `Publica una tarifa de referencia de ${formatUsd(perKg)} por kilo en la escala de paquete chico${baseLead}${
+        ? `${rateSource === 'calculadora' ? 'Su calculadora cobra' : 'Su tarifa de referencia cobra'} ${formatUsd(perKg)} por kilo en la escala de paquete chico${baseLead}${
             courier.rateIncludesSurcharge ? ', y la presenta como todo incluido' : ''
           }.`
-        : `No publica una tarifa fija por kilo: cada envío se cotiza en ${websiteHost}.`,
-      transit ? `La demora que declara es de ${transit}.` : 'No publica una demora típica.',
+        : calculator?.referenceUsd != null
+          ? `No publica una tarifa fija por kilo; su calculadora cobró ${formatUsd(calculator.referenceUsd)} por un paquete de ${kg} kilos.`
+          : `No publica una tarifa fija por kilo: cada envío se cotiza en ${websiteHost}.`,
+      where ? `Recibe tus compras en ${where}.` : '',
+      transit && !origins.some(origin => origin.transit)
+        ? `La demora que declara es de ${transit}.`
+        : !transit && !origins.some(origin => origin.transit)
+          ? 'No publica una demora típica.'
+          : '',
       ratingLabel ? `En reseñas públicas promedia ${ratingLabel} sobre 5.` : '',
     ].join(' ')
   )
 
-  const verificationNote = `Datos revisados el ${verifiedLabel} contra lo que ${name} publica en su sitio. Las tarifas cambian seguido: confirmá el precio con el courier antes de comprar.`
+  const verificationNote = `Datos leídos el ${verifiedLabel} en el sitio de ${name}. Las tarifas cambian seguido: confirmá el precio con el courier antes de comprar.`
 
   const quoteNote =
     perKg === null
-      ? `${name} no publica una tarifa fija por kilo: cada envío se cotiza en ${websiteHost}. Por eso esta página no muestra un precio por kilo ni un paquete de ejemplo: pedí el presupuesto con el peso real antes de comprar.`
+      ? `${name} no publica una tarifa fija por kilo: cada envío se cotiza en ${websiteHost}. Por eso esta página no hace la cuenta por kilo${
+          calculator ? ' y muestra lo que devolvió su calculadora' : ''
+        }: pedí el presupuesto con el peso real antes de comprar.`
       : null
 
   const facts: EntityFact[] = [
+    ...(notice ? [{ label: 'Aviso del courier', value: ensurePeriod(notice) }] : []),
     { label: 'Modalidad', value: courier.modality },
     {
       label: 'Tarifa por kilo (referencia)',
       value:
         perKg === null
           ? 'No publica tarifa fija: cotiza cada envío en su sitio'
-          : `${formatUsd(perKg)}, escala de paquete chico`,
+          : `${formatUsd(perKg)}, escala de paquete chico${
+              rateSource === 'calculadora' ? ', según su calculadora' : ''
+            }`,
     },
     { label: 'Cargo fijo por envío', value: baseValue(courier) },
     ...(extraFees.length
@@ -430,8 +682,12 @@ export function buildCourierPage(courier: Courier): CourierPageModel {
           },
         ]
       : []),
+    ...(where ? [{ label: 'Dónde está el casillero', value: where }] : []),
     { label: 'Demora típica', value: transit ?? 'No la publica' },
+    ...(inUruguay ? [{ label: 'Retiro y entrega en Uruguay', value: inUruguay }] : []),
+    ...(payment ? [{ label: 'Cómo se paga', value: payment }] : []),
     ...(note ? [{ label: 'Letra chica', value: note }] : []),
+    ...(check?.alsoPublishes ? [{ label: 'Además publica', value: check.alsoPublishes }] : []),
     {
       label: 'Recargo de ley',
       value: courier.rateIncludesSurcharge
@@ -476,7 +732,9 @@ export function buildCourierPage(courier: Courier): CourierPageModel {
       id: 'precio-por-kilo',
       question: `¿Cuánto cobra ${name} por kilo?`,
       answer: normalizeSpaces(
-        `Según su tarifa publicada, verificada el ${verifiedLabel}, ${name} cobra ${formatUsd(perKg)} por kilo en la escala de paquete chico${baseClause}. ${
+        `${!operating && notice ? ensurePeriod(notice) : ''} ${
+          rateSource === 'calculadora' ? 'Según su calculadora' : 'Según su tarifa publicada'
+        }, leída el ${verifiedLabel}, ${name} cobra ${formatUsd(perKg)} por kilo en la escala de paquete chico${baseClause}. ${
           note ? `La letra chica que publica: ${lowerFirst(ensurePeriod(note))}` : ''
         } ${
           courier.rateIncludesSurcharge
@@ -489,7 +747,13 @@ export function buildCourierPage(courier: Courier): CourierPageModel {
     faq.push({
       id: 'precio-por-kilo',
       question: `¿Cuánto cobra ${name} por kilo?`,
-      answer: `${name} no publica una tarifa fija por kilo: cotiza cada envío desde su sitio (${websiteHost}). Por eso acá no figura un precio: pedí el presupuesto con el peso real del paquete antes de comprar.`,
+      answer: normalizeSpaces(
+        `${name} no publica una tarifa fija por kilo: cotiza cada envío desde su sitio (${websiteHost}). ${
+          calculator?.referenceUsd != null
+            ? `El ${verifiedLabel} su calculadora devolvió ${formatUsd(calculator.referenceUsd)} por ${kg} kilos, con ${calculator.inputs}; para otro peso o destino, pedí el presupuesto en su calculadora.`
+            : 'Por eso acá no figura un precio: pedí el presupuesto con el peso real del paquete antes de comprar.'
+        }`
+      ),
     })
   }
 
@@ -520,11 +784,58 @@ export function buildCourierPage(courier: Courier): CourierPageModel {
     }
   }
 
+  if (where) {
+    faq.push({
+      id: 'casillero',
+      question: `¿Dónde está el casillero de ${name} y dónde retiro el paquete?`,
+      answer: normalizeSpaces(
+        `${name} recibe tus compras en ${where}. ${
+          inUruguay ? ensurePeriod(inUruguay) : ''
+        } Es lo que publica su sitio al ${verifiedLabel}.`
+      ),
+    })
+  }
+
+  if (calculatorUrl) {
+    const host = hostOf(calculatorUrl)
+    faq.push({
+      id: 'calculadora',
+      question: `¿${name} tiene calculadora de envío?`,
+      answer: normalizeSpaces(
+        `Sí, en ${host}: ahí pedís el presupuesto con el peso y el valor reales de tu compra. ${
+          calculator?.referenceUsd != null
+            ? `El ${verifiedLabel}, para ${kg} kilos y con ${calculator.inputs}, devolvió ${formatUsd(calculator.referenceUsd)}.`
+            : ''
+        } ${
+          estimator
+            ? `En esta página podés calcular de ${kilos(estimator.minKg)} a ${kilos(estimator.maxKg)} con su tarifa${
+                rateSource === 'calculadora' ? '' : ' publicada'
+              }, con el mismo criterio que el paquete de ejemplo.`
+            : ''
+        }`
+      ),
+    })
+  }
+
   if (transit) {
+    // One warehouse: its demora. Several with their own: each one, by where it ships from.
+    const timed = origins.filter(origin => origin.transit)
+    const declared =
+      timed.length > 1
+        ? joinSpanishList(timed.map(origin => `${origin.transit} desde ${origin.place}`))
+        : transit
     faq.push({
       id: 'demora',
       question: `¿Cuánto demora ${name}?`,
-      answer: `${name} declara una demora típica de ${transit}. Es la demora que publica el propio courier, no una medición nuestra.`,
+      answer: `${name} declara una demora típica de ${declared}. Es la demora que publica el propio courier, no una medición nuestra.`,
+    })
+  }
+
+  if (payment) {
+    faq.push({
+      id: 'pago',
+      question: `¿Cómo se paga ${name}?`,
+      answer: `${ensurePeriod(payment)} Es lo que publica su sitio al ${verifiedLabel}.`,
     })
   }
 
@@ -568,7 +879,9 @@ export function buildCourierPage(courier: Courier): CourierPageModel {
           .filter(candidate => typeof candidate.rating === 'number')
           .sort((a, b) => (b.rating as number) - (a.rating as number)),
         ...others.filter(candidate => typeof candidate.rating !== 'number'),
-      ].slice(0, SIBLING_LIMIT)
+      ]
+        .map(verifiedCourier)
+        .slice(0, SIBLING_LIMIT)
   const siblings: EntityLink[] = siblingCouriers.flatMap(candidate => {
     const to = courierPagePath(candidate.id)
     if (!to) return []
@@ -599,9 +912,22 @@ export function buildCourierPage(courier: Courier): CourierPageModel {
     },
   ]
 
+  // The pages read on the check date come first, with that date; the catalogue's own source and
+  // site follow only when they are a different page.
+  const read: EntitySource[] = (check?.sources ?? []).map(url => ({
+    label: `${name}: ${displayUrl(url)} (leída el ${verifiedLabel})`,
+    url,
+  }))
+  const unread = (url: string) => !read.some(source => sameUrl(source.url, url))
   const sources = uniqueSources([
-    { label: `${name}: tarifa publicada`, url: courier.source },
-    { label: `${name}: sitio oficial`, url: courier.website },
+    ...read,
+    ...(unread(courier.source)
+      ? [{ label: `${name}: tarifa publicada`, url: courier.source }]
+      : []),
+    ...(unread(courier.website) ? [{ label: `${name}: sitio oficial`, url: courier.website }] : []),
+    ...(calculatorUrl && unread(calculatorUrl)
+      ? [{ label: `${name}: calculadora de envío`, url: calculatorUrl }]
+      : []),
     ...reviewSources.map(source => ({ label: source.label, url: source.url })),
     { label: POSTAL_SURCHARGE.source, url: POSTAL_SURCHARGE.sourceUrl },
   ])
@@ -617,15 +943,25 @@ export function buildCourierPage(courier: Courier): CourierPageModel {
     website: courier.website,
     websiteHost,
     perKgUsd: perKg,
+    rateSource,
     title,
     description,
     heading,
     lead,
-    verifiedAt: COURIER_RATES_VERIFIED_AT,
+    verifiedAt,
     verifiedLabel,
     verificationNote,
+    operating,
+    notice,
+    originsText: where,
+    inUruguay,
+    payment,
     facts,
     reference,
+    estimator,
+    calculator,
+    calculatorNote,
+    calculatorUrl,
     quoteNote,
     rating,
     ratingLabel,

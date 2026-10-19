@@ -1546,6 +1546,52 @@
         "calculadora inflacion uruguay"
       ],
       "hypothesis": "Las tres consultas que traen impresiones dicen 'uruguay' y el titulo no ('Calculadora de inflacion y poder de compra'); posicion ~8,4 y 2 clics en 90 dias. Titulo y H1 pasan a 'Calculadora de inflacion en Uruguay' y la descripcion lleva el dato vivo: la variacion a 12 meses de la UI segun el BCU (la misma serie de /indicadores/unidad-indexada, que se ajusta por el IPC), solo cuando la lectura fue viva. La logica de la calculadora no cambia."
+    },
+    {
+      "id": "fichas-de-courier-la-busqueda-por-marca",
+      "shippedOn": "2026-10-19",
+      "routes": [
+        "/couriers-uruguay/*",
+        "/en/couriers-uruguay/*",
+        "/pt/couriers-uruguay/*"
+      ],
+      "queries": [
+        "usx cargo",
+        "usx",
+        "usx uruguay",
+        "usxcargo",
+        "usx miami",
+        "usx cargo uruguay",
+        "usx calculadora",
+        "urubox",
+        "urubox uruguay",
+        "soycourier",
+        "exur",
+        "exur envios",
+        "exur miami",
+        "exur calculadora",
+        "miami box",
+        "miami box uruguay",
+        "punto mio calculadora",
+        "puntomio calculadora",
+        "buybox tarifas",
+        "grinbox",
+        "starbox uruguay",
+        "aerobox uruguay",
+        "casilla mia",
+        "uruguay cargo"
+      ],
+      "hypothesis": "La busqueda por MARCA de un courier aterrizaba en las comparativas X vs Y y no en la ficha del courier: en 90 dias 'usx cargo' (1020 impresiones, posicion 10,9) se repartio entre 22 URLs y la que mas aparecia era /comparativas/couriers/exur-vs-usxcargo; 'urubox' (966, 9,1) igual con 22; 'soycourier' (532, 6,3) con 20; casi cero clics en todo. Las fichas ahora empiezan por la marca y por la cifra que se busca con la marca: titulo 'USX Cargo: US$ 17,50 el kilo y calculadora', descripcion con la tarifa y la fecha en que se leyo, H1 con donde esta el casillero y cuanto demora. Agregan lo que la ficha no tenia: casillero y demora por origen, retiro y entrega en Uruguay con su costo, como se paga cuando el courier lo publica, una calculadora por peso (kilos enteros dentro del tramo de la tarifa) y lo que devolvio la calculadora propia del courier. Los quince sitios se releyeron el 19/10/2026 (utils/courierChecks.ts) y la relectura corrigio datos: SoyCourier suma manejo y entrega a su tarifa 'todo incluido', Punto Mio cobra 16 y no 18 el kilo, la demora de USX desde Miami es 3-7 dias (9-15 era la de Madrid), Miami Box ya cotiza por kilo, UruguayCargo suspendio los vuelos. La apuesta: mas porcion de clics del sitio para las fichas, porque la consulta de marca encuentra una pagina sobre esa marca con su precio fechado. Los espejos /en y /pt sirven el mismo contenido y se declaran juntos."
+    },
+    {
+      "id": "comparativas-de-courier-ceden-la-marca",
+      "shippedOn": "2026-10-19",
+      "routes": [
+        "/comparativas/couriers/*",
+        "/en/comparativas/couriers/*",
+        "/pt/comparativas/couriers/*"
+      ],
+      "hypothesis": "Las 105 comparativas de couriers no recibian ninguna busqueda 'X vs Y' en 90 dias: todo lo que les llegaba era la busqueda de UNA marca, que no contestan. Ahora el titulo dice que es una eleccion ('USX Cargo vs EXUR Envios: cual conviene' cuando entra en 43 caracteres), la descripcion abre con 'X o Y:' y el veredicto del paquete de 2 kg, y debajo del H1 cada comparativa enlaza las dos fichas con la marca como texto del enlace ('Cada courier por separado'). Lo que se espera es que estas paginas PIERDAN porcion en las consultas de marca y la ganen las fichas (fila fichas-de-courier-la-busqueda-por-marca, que es la que declara esas consultas: declararlas en las dos haria que se pisen). Si las dos filas suben o bajan juntas, el efecto es del tema y no del cambio."
     }
   ]
 }
