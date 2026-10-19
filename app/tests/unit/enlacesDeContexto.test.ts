@@ -157,7 +157,6 @@ const DEUDA_SIN_ENLACE = [
   '/fondo-de-solidaridad-uruguay',
   '/grabacion-sin-consentimiento-uruguay',
   '/impuesto-temu-uruguay',
-  '/jubilacion-por-incapacidad-uruguay',
   '/llevar-el-auto-a-brasil-o-argentina',
   '/precio-del-boleto-montevideo',
   '/reconocer-anos-trabajados-uruguay',
@@ -166,6 +165,20 @@ const DEUDA_SIN_ENLACE = [
 ]
 
 /** El trinquete. Sólo puede bajar: subirlo es publicar una página que nadie enlaza. */
+// 16 → 15 el 2026-10-19, sin ir a buscarlo, como el 15 y el 18/10: la página nueva
+// `/prestamos-para-jubilados-uruguay` necesita a `/jubilacion-por-incapacidad-uruguay` en su propio
+// contenido. Desde la Resolución de Gerencia General 403/2024 el BPS no da préstamos sociales nuevos
+// a quien cobra el subsidio transitorio por incapacidad parcial —es una prestación de actividad, no
+// de pasividad—, y la página de la incapacidad es la que explica qué es ese subsidio y cuánto
+// dura; el enlace está en la frase que lo excluye, que es donde el lector lo necesita. La ruta
+// medida tiene fila abierta hasta el 14/11 y la reserva no se rompe: el enlace nace en una página
+// publicada hoy, sin tráfico todavía, y al archivo de la página medida no se lo tocó.
+//
+// El enlace de ENTRADA de la página nueva sale de `/embargo-de-sueldo-uruguay`, que no tiene
+// ninguna fila en el libro de cambios y cuyo lector lo necesita: la mitad de esa página habla de
+// pasividades —el piso de la Ley 17.829 y el orden de prelación, con el Crédito Social del BROU en
+// el literal C— y el jubilado que llega ahí suele tener en el recibo el descuento de un préstamo
+// del BPS o del BROU.
 // SIGUE EN 16 el 2026-10-19, y las dos candidatas del día quedaron por el ORIGEN, no por el
 // destino: `npm run seo_debt` imprimió `/cheques-uruguay` y `/alternativa-a-bankos-uruguay` como
 // las dos rutas libres de este pozo, pero la reserva también alcanza a la página donde se
@@ -244,7 +257,7 @@ const DEUDA_SIN_ENLACE = [
 // cambios, y la reserva que la nota de arriba describe no se rompe: lo que esas filas miden es su
 // propia descripción, y el enlace entrante nace en una página publicada hoy, sin tráfico todavía.
 // Es además lo que ya hace cada página nueva del repo con su bloque de relacionadas.
-const DEUDA_MAXIMA = 16
+const DEUDA_MAXIMA = 15
 
 describe('ninguna página de lectura queda sin un enlace de contexto', () => {
   it('las páginas sin enlace son exactamente las declaradas', () => {

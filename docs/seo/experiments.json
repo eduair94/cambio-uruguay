@@ -1592,6 +1592,23 @@
         "/pt/comparativas/couriers/*"
       ],
       "hypothesis": "Las 105 comparativas de couriers no recibian ninguna busqueda 'X vs Y' en 90 dias: todo lo que les llegaba era la busqueda de UNA marca, que no contestan. Ahora el titulo dice que es una eleccion ('USX Cargo vs EXUR Envios: cual conviene' cuando entra en 43 caracteres), la descripcion abre con 'X o Y:' y el veredicto del paquete de 2 kg, y debajo del H1 cada comparativa enlaza las dos fichas con la marca como texto del enlace ('Cada courier por separado'). Lo que se espera es que estas paginas PIERDAN porcion en las consultas de marca y la ganen las fichas (fila fichas-de-courier-la-busqueda-por-marca, que es la que declara esas consultas: declararlas en las dos haria que se pisen). Si las dos filas suben o bajan juntas, el efecto es del tema y no del cambio."
+    },
+    {
+      "id": "pagina-prestamos-para-jubilados",
+      "shippedOn": "2026-10-19",
+      "routes": [
+        "/prestamos-para-jubilados-uruguay"
+      ],
+      "queries": [
+        "prestamos para jubilados",
+        "prestamos para jubilados brou",
+        "cuando empiezan los prestamos para jubilados en el brou",
+        "prestamo social bps",
+        "prestamos bps jubilados y pensionistas",
+        "prestamos para pensionistas",
+        "cuanto me pueden descontar de la jubilacion"
+      ],
+      "hypothesis": "Pagina nueva. La pidio la cola de demanda (currency-search-demand, autocompletado uruguayo): \"cuando empiezan los prestamos para jubilados en el brou\" con foros arriba en el SERP, o sea sin una pagina que lo conteste. El sitio tenia cero impresiones para consultas de prestamos a jubilados en los 90 dias al 2026-10-17 (gsc-pagequery: ninguna fila con jubilado/pensionista/pasividad/prestamo bps), y lo unico que tocaba el tema era un recuadro de tres vinetas dentro de /prestamo-sin-recibo-de-sueldo-uruguay y una pregunta del FAQ de /mejores-prestamos-uruguay. El prestamo social del BPS, el que mas jubilados toman, no aparecia en ninguna pagina. El angulo propio son tres cosas que salen de leer las fuentes en vez de resumirlas: (1) las dos tablas de cuotas no miden lo mismo: la del BPS se reproduce entera con su tasa sola (32 celdas al peso) y la del BROU solo cierra sumandole el IVA y un mes de interes por el diferimiento de 31 dias que el propio PDF declara (24 celdas dentro del peso); puestas en el mismo pie, el BPS queda entre el BROU por eBROU con tasa preferencial y el de sucursal con tasa estandar; (2) el tope de cuota del BPS es 45 % en la ficha y 40 % en el reglamento que esa ficha enlaza, y se publican los dos; (3) los seis haberes que promete la ficha solo entran en 18 y 24 cuotas: en 6 y 12 la cuota de seis haberes pasa del 45 % del haber, y la calculadora de la pagina dice que limita en cada plazo. El calendario (renovacion anticipada del 1 al 31/10, tasa diferencial desde el 1/11 por 90 dias, campana de pasivos del BROU sin fecha 2026 anunciada al 19/10) se calcula con la fecha del dia en vez de quedar escrito. El tope de usura sale de la grilla viva del BCU y de la lectura fechada que ya mantiene loanNoPayslip.ts; el piso del 35 % y el orden de prelacion, de salaryGarnishment.ts. Lo que no se publica, con el motivo en la pagina: las fechas 2026 del BROU (no anunciadas), si la tasa del BPS lleva IVA (la ficha no lo dice), la lista completa de cooperativas y financieras con retencion (el BPS no publica registro) y la cuota con la tasa diferencial (el BPS no publico tabla). El enlace de entrada sale de /embargo-de-sueldo-uruguay, sin fila en este libro, cuyo lector es el jubilado con un descuento de prestamo en el recibo."
     }
   ]
 }

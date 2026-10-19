@@ -1212,6 +1212,31 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // La pidió la cola de demanda: «cuando empiezan los préstamos para jubilados en el brou»
+        // traía foros arriba en el SERP, y el préstamo social del BPS —el que más jubilados toman—
+        // no aparecía en ninguna página del sitio. El ángulo propio: las tablas de cuotas del BPS y
+        // del BROU no miden lo mismo (la del banco trae IVA y un mes de diferimiento), y el tope de
+        // cuota del BPS es uno en la ficha (45 %) y otro en su reglamento (40 %).
+        to: '/prestamos-para-jubilados-uruguay',
+        labelKey: 'nav.prestamosJubilados',
+        icon: 'mdi-account-cane',
+        priority: 0.7,
+        changefreq: 'weekly',
+        fresh: true,
+        keywords: [
+          'prestamos para jubilados',
+          'prestamos para jubilados brou',
+          'cuando empiezan los prestamos para jubilados en el brou',
+          'prestamos para pasivos brou',
+          'prestamo social bps',
+          'prestamos bps jubilados y pensionistas',
+          'prestamos para pensionistas',
+          'cuanto me pueden descontar de la jubilacion',
+          'renovacion anticipada prestamo bps',
+          'prestamo bps protesis lentes audifonos',
+        ],
+      },
+      {
         to: '/prestamos-p2p-uruguay',
         labelKey: 'nav.prestamosP2p',
         icon: 'mdi-account-switch-outline',
