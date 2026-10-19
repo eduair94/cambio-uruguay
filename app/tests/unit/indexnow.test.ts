@@ -441,20 +441,38 @@ describe('only what is new, capped per run, remembered between deploys', () => {
     expect(planSubmission(urls, ['b'], 2)).toEqual({
       toSend: ['a', 'c'],
       pending: 1,
+      brandNew: 0,
       nextState: ['b', 'a', 'c'],
+      // Sin `known` previo: la corrida arma el conocido con el sitemap entero.
+      nextKnown: ['a', 'b', 'c', 'd'],
     })
     // Una URL que ya no está en el sitemap sale del estado sola.
     expect(planSubmission(['a'], ['zz', 'a']).nextState).toEqual(['a'])
     expect(INDEXNOW_MAX_NEW_PER_RUN).toBeLessThan(INDEXNOW_MAX_URLS_PER_POST)
   })
 
+  // 19/10/2026: una página publicada hoy esperaba detrás de 3.377 URLs viejas que Bing ya conoce.
+  it('planSubmission puts URLs first published since the last run ahead of the backlog', () => {
+    const urls = ['old1', 'old2', 'old3', 'nueva-a', 'nueva-b']
+    const plan = planSubmission(urls, [], 3, ['old1', 'old2', 'old3'])
+    expect(plan.toSend).toEqual(['nueva-a', 'nueva-b', 'old1'])
+    expect(plan.brandNew).toBe(2)
+    // Lo nuevo que no entró por el tope no pasa a "conocido": sigue adelante la próxima vez.
+    const tight = planSubmission(urls, [], 1, ['old1', 'old2', 'old3'])
+    expect(tight.toSend).toEqual(['nueva-a'])
+    expect(tight.nextKnown).toEqual(['old1', 'old2', 'old3', 'nueva-a'])
+    expect(planSubmission(urls, ['nueva-a'], 1, tight.nextKnown).toSend).toEqual(['nueva-b'])
+  })
+
   it('parseState tolerates garbage and only keeps string URLs and a valid blockedUntil', () => {
-    expect(parseState('not json')).toEqual({ urls: [], blockedUntil: null })
-    expect(parseState('{"urls":"x"}')).toEqual({ urls: [], blockedUntil: null })
+    expect(parseState('not json')).toEqual({ urls: [], known: null, blockedUntil: null })
+    expect(parseState('{"urls":"x"}')).toEqual({ urls: [], known: null, blockedUntil: null })
     expect(parseState('{"urls":["a",1,"b"],"blockedUntil":"garbage"}')).toEqual({
       urls: ['a', 'b'],
+      known: null,
       blockedUntil: null,
     })
+    expect(parseState('{"urls":[],"known":["a",2]}').known).toEqual(['a'])
     expect(parseState('{"urls":[],"blockedUntil":"2026-09-23T22:28:00.000Z"}').blockedUntil).toBe(
       '2026-09-23T22:28:00.000Z'
     )
@@ -481,6 +499,7 @@ describe('only what is new, capped per run, remembered between deploys', () => {
     expect(JSON.parse(state.text!)).toEqual({
       submittedAt: null,
       urls: [],
+      known: APEX_URLS,
       blockedUntil: '2026-09-23T22:28:00.000Z',
     })
     // Un deploy dos horas después: nada de red hacia el endpoint.
@@ -530,6 +549,7 @@ describe('only what is new, capped per run, remembered between deploys', () => {
     expect(JSON.parse(state.text!)).toEqual({
       submittedAt: '2026-09-22T22:00:00.000Z',
       urls: APEX_URLS.slice(0, 2),
+      known: APEX_URLS,
     })
   })
 
