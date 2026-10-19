@@ -1479,7 +1479,7 @@
     },
     {
       "id": "ruidos-molestos-el-numero-de-la-noche",
-      "shippedOn": "2026-10-20",
+      "shippedOn": "2026-10-19",
       "routes": ["/denunciar-ruidos-molestos-uruguay"],
       "queries": [
         "denuncia por ruidos molestos",
@@ -1491,7 +1491,7 @@
     },
     {
       "id": "importar-cosmeticos-reglas-al-dia",
-      "shippedOn": "2026-10-20",
+      "shippedOn": "2026-10-19",
       "routes": ["/importar/cosmeticos-y-perfumeria"],
       "queries": ["importar cosméticos a uruguay", "importar perfumes a uruguay"],
       "hypothesis": "La caida de clics no es de esta ficha sola: entre 18/8-14/9 y 15/9-12/10 la familia /importar/* (16 fichas publicadas el 15/8) perdio cerca de un tercio de las impresiones con la posicion quieta mientras el sitio crecia, que es el pico de lanzamiento apagandose; cosmeticos perdio mas clics porque en las semanas de lanzamiento tuvo un CTR anormalmente alto, y casi todas sus consultas llegan anonimizadas, asi que no hay una consulta perdida que nombrar ni otra URL propia que se la haya quedado. El titulo y la descripcion NO se tocan: se imprimen en /importar, que esta en ventana hasta el 28/10. Lo que cambia es que la ficha vuelve a decir la norma vigente: el registro de vendedores con la RG 26/2026 (alta por el operador postal, lista publicada, y las dos fechas que la DNA no hace coincidir), las ocho subcategorias del codigo J de la RG 30/2026 (vigente 12/10), la regla del MSP citada de la pagina del MSP y no de un articulo del reglamento de medicamentos que no la dice, y lo que el art. 27 del Decreto 96/990 tambien grava (pestañas y uñas postizas, brochas de maquillaje, máquinas de afeitar), con fecha de contraste 19/10/2026. Expectativa baja: la ventana anterior tiene menos de 10 clics y el job probablemente dictamine 'sin datos'."
