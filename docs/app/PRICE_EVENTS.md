@@ -5,7 +5,9 @@ Plan D, escrito 2026-09-17. Compara el precio de HOY de cada oferta propia (`pri
 contra una banda de mercado, que es lo que ya publican `/equipar-casa-uruguay`,
 `/sillas-escritorio-uruguay` y (desde el rebase de plan C, 2026-09-17) `/celulares-uruguay`.
 `sync_price_events.ts` (raíz) sólo LEE `pricewatchoffers` (lo escriben
-`sync_equipar.ts`/`sync_chairs.ts`/`sync_phones.ts`) y publica en APP DB `priceeventsnapshots`, que
+`sync_equipar.ts`/`sync_chairs.ts`/`sync_phones.ts` y, desde que existe, `sync_movilidad.ts` — el
+detector de verticales la sumó solo; la página la nombra y enlaza sus filas a
+`/monopatines-electricos-uruguay`/`/bicicletas-electricas-uruguay` desde el 2026-10-30) y publica en APP DB `priceeventsnapshots`, que
 sirve `GET /api/price-events` (Nuxt) a la página del mismo nombre. El código puro vive en
 `classes/priceevents/` (`types.ts`, `analyze.ts`, `aggregate.ts`, `calendar.ts`, `refresh.ts`,
 `store.ts`); el mismo calendario se replica a mano en `app/utils/priceEvents.ts` porque un test de la
@@ -189,12 +191,16 @@ cuanto ese job escribe `pricewatchoffers` con `vertical: "celulares"` este featu
 código, y desde el rebase de plan C ese job ya vive en esta rama) para que el punto de hoy de cada
 vertical ya esté escrito cuando esto lee.
 
-Un evento "activo" es una fila del calendario cuyo rango cubre `today` — incluida la edición de
-noviembre 2026 SIN fecha publicada, que activa una **ventana adivinada 2026-11-01..2026-11-08**
-(`UNCONFIRMED_WINDOW_START/END` en `calendar.ts`) para que el job horario empiece a recalcular ANTES de
-que la CEDU confirme la fecha real, en vez de quedarse dormido hasta que alguien la cargue a mano. Si
-dos ventanas se solapan, gana la CONFIRMADA (`resolveActiveEvent`, probado con datos sintéticos aparte
-de `activeEvent` para no depender de que el calendario real algún día tenga dos ediciones que se pisen).
+Un evento "activo" es una fila del calendario cuyo rango cubre `today`. Una edición SIN fecha
+publicada activa en su lugar una **ventana adivinada** (`UNCONFIRMED_WINDOW_START/END` en
+`calendar.ts`, hoy 2026-11-01..2026-11-08) para que el job horario empiece a recalcular ANTES de que
+la CEDU confirme la fecha real, en vez de quedarse dormido hasta que alguien la cargue a mano. Desde
+el 2026-10-19 **ninguna edición la usa**: era la de CyberLunes noviembre 2026, que la CEDU fechó el
+16/9/2026 (lunes 2 a miércoles 4), y la ventana quedó escrita para esa edición — antes de cargar otra
+sin fecha hay que moverla a la suya; `tests/priceevents/calendar.test.ts` falla a propósito si aparece
+una edición sin confirmar. Si dos ventanas se solapan, gana la CONFIRMADA (`resolveActiveEvent`,
+probado con datos sintéticos aparte de `activeEvent` para no depender de que el calendario real algún
+día tenga dos ediciones que se pisen).
 
 **`noDataYet` (revisión final, hallazgo M1).** Dentro de una ventana activa, el horario corre cada
 hora — incluida la de las 00:19 UTC, ANTES de que `sync_equipar.ts`/`sync_chairs.ts` (~12:xx UTC)
@@ -208,18 +214,28 @@ siempre. Ver `tests/priceevents/dry_run.test.ts`, describe "M1".
 
 ## El calendario, con fuentes (`classes/priceevents/calendar.ts` / `app/utils/priceEvents.ts`)
 
-Verificado 16–17/9/2026:
+Verificado 16–17/9/2026 y de nuevo el 19/10/2026:
 
 | id | fechas | confirmado | fuente |
 |---|---|---|---|
 | `ciberlunes-2025-11` | 2025-11-03 a 05 | sí | [cuti.org.uy](https://cuti.org.uy/en/destacados/noviembre-comienza-con-una-nueva-edicion-de-ciberlunes-con-hasta-70-off/) |
 | `ciberlunes-2026-06` | 2026-06-01 a 03 | sí | [sodimac.com.uy](https://www.sodimac.com.uy/sodimac-uy/content/Ciberlunes/) |
-| `ciberlunes-2026-11` | sin fecha (`start`/`end` `null`) | **no** | [cedu.org.uy/ciberlunes](https://www.cedu.org.uy/ciberlunes/) — "Al 17 de setiembre de 2026 la CEDU no había publicado la fecha." (fechado a propósito, revisión final I4 — ver "Cuándo revisar la fecha de noviembre" abajo) |
-| `black-friday-2026` | 2026-11-27 a 30 | sí | sin URL — nota: "Del viernes 27 al lunes 30 de noviembre (Cyber Monday de EE.UU.)." |
+| `ciberlunes-2026-11` | 2026-11-02 a 04 (lunes a miércoles) | sí | [nota de la CEDU del 16/9/2026](https://www.cedu.org.uy/camara-de-la-economia-digital-del-uruguay-invita-a-empresas-a-sumarse-al-ciberlunes/): "la próxima edición del CIBERLUNES®, que se realizará del lunes 2 al miércoles 4 de noviembre". Lo repite [ciberlunes.uy](https://ciberlunes.uy/) (título "Ciberlunes \| Noviembre 2026", banner "2, 3 y 4 de noviembre", cuenta regresiva a "November 02, 2026 12:00 am"), leído el 19/10/2026 |
+| `black-friday-2026` | 2026-11-27 a 30 | sí | [OPM, feriados federales de EE.UU.](https://www.opm.gov/policy-data-oversight/pay-leave/federal-holidays/): Thanksgiving Day 2026 = jueves 26 de noviembre, así que Black Friday es el viernes 27; la ventana sigue hasta el lunes 30, el Cyber Monday de EE.UU. Leído el 19/10/2026 |
 
-CyberLunes lo organiza la CEDU dos veces por año (junio y noviembre); Black Friday sigue el calendario
-de EE.UU. (viernes después de Acción de Gracias) sin una fuente uruguaya puntual que fechar. **Nunca
-inventar una fecha** para completar esta lista mientras la CEDU no publique la de noviembre 2026.
+CyberLunes lo organiza la CEDU dos veces por año, junio y noviembre ([cedu.org.uy/ciberlunes](https://www.cedu.org.uy/ciberlunes/):
+"Se realizan dos ediciones por año en Uruguay, una en junio y otra en noviembre"). Black Friday sigue
+el calendario de EE.UU.; el 19/10/2026 no se encontró ningún organizador ni fecha propia en Uruguay, ni
+una "Cyber Week" uruguaya aparte: el evento local con fecha y organizador es el CyberLunes, que la
+propia CEDU presenta como "el evento de descuentos en compras online más importante del país". **Nunca
+inventar una fecha**: una edición anunciada sin fecha va con `start`/`end` en `null` y
+`confirmed: false` (y antes hay que mover la ventana adivinada, ver arriba).
+
+**Nota sobre el 17/9/2026.** La nota de la CEDU con la fecha de noviembre tiene fecha de publicación
+16/9/2026 a las 19:33 UTC; el calendario se escribió el 16–17/9 y la dio por "no publicada". La
+edición de noviembre estuvo un mes como "a confirmar" en la página teniendo ya fecha oficial: cuando
+se revise una edición pendiente, mirar las novedades de cedu.org.uy (categoría CIBERLUNES) y no sólo
+la página fija `/ciberlunes/`, que no lleva fechas.
 
 ## Qué NO se publica, y por qué
 
@@ -235,7 +251,8 @@ inventar una fecha** para completar esta lista mientras la CEDU no publique la d
   anuncia, no del comprador) — citados así, sin agregar un umbral que la ley uruguaya no tiene.
 - **Historial sólo desde lo que observamos, y se dice desde cuándo.** El "tachado por encima" es
   contra lo que ESTE sitio vio, con las tiendas que releva para `/equipar-casa-uruguay`,
-  `/sillas-escritorio-uruguay` y `/celulares-uruguay` — nunca una afirmación sobre el mercado
+  `/sillas-escritorio-uruguay`, `/celulares-uruguay`, `/monopatines-electricos-uruguay` y
+  `/bicicletas-electricas-uruguay` — nunca una afirmación sobre el mercado
   completo. La FAQ "¿desde cuándo tienen este historial?" (sólo aparece si `trackingSince` no es
   `null`) y "¿por qué no aparecen todas las tiendas?" existen para que esa limitación quede
   explícita, no implícita.
@@ -304,16 +321,36 @@ adentro ni un reloj que tickea en el cliente — SSR e hidratación tienen que c
 - **`in-progress`**: `start < today <= end`, incluido el ÚLTIMO día del evento. Esto arregló un bug real:
   clampear `daysUntilStart` a 0 con `Math.max(0, …)` hacía que CUALQUIER día de un evento de varios
   días (28 y 29 de noviembre, no sólo el 27) mostrara "Hoy es el primer día de Black Friday".
-- **`undated`**: no hay evento confirmado activo ni por venir, pero la edición sin fecha (CyberLunes
-  noviembre 2026) todavía cae dentro de su ventana adivinada (2026-11-01..08).
+- **`undated`**: no hay evento confirmado activo ni por venir, pero una edición sin fecha todavía cae
+  dentro de su ventana adivinada (fue el caso de CyberLunes noviembre 2026 hasta que se cargó su
+  fecha; hoy no hay ninguna, y la rama se prueba con un calendario sintético —`priceEventCountdown`,
+  `priceEventOtherUnconfirmed`, `priceEventPastEditions` y `priceEventFaq` toman un `calendar`
+  opcional sólo para eso—).
 - **`none`**: ni un evento confirmado ni la ventana adivinada de la edición sin fecha siguen vigentes.
   Arregla el segundo bug: sin este estado, la página seguía anunciando "CyberLunes noviembre 2026: a
   confirmar por la CEDU" en diciembre, cuando esa ventana ya había cerrado sin que nadie cargara la
   fecha real — una edición vencida nunca es "la próxima".
 
-`priceEventOtherUnconfirmed()` es la segunda línea aparte: cuando Black Friday (fecha fija) gana el
-titular pero CyberLunes noviembre (sin fecha) en la práctica podría venir antes, esa función decide si
-todavía vale la pena mostrarlo como nota — mismas reglas de ventana vencida que `none`.
+`priceEventOtherUnconfirmed()` es la segunda línea aparte: cuando un evento con fecha gana el titular
+pero una edición sin fecha en la práctica podría venir antes, esa función decide si todavía vale la
+pena mostrarla como nota — mismas reglas de ventana vencida que `none`.
+
+**Debajo del titular van TODAS las ediciones confirmadas que faltan** (`priceEventUpcomingEditions`,
+desde el 2026-10-30), cada una con su rango con días de la semana (`priceEventRangeLabel`: "Del lunes
+2 al miércoles 4 de noviembre de 2026"), su nota y su fuente. El titular elige una sola —a fines de
+octubre, CyberLunes—, y casi todo el que llega desde Google buscó "cuándo es el Black Friday 2026":
+sin la lista, esa fecha no aparecía en la página hasta que pasara el CyberLunes.
+
+**El `<title>` y la descripción son literales con las fechas** ("Black Friday 2026: 27/11, CyberLunes
+2-4/11"), porque así los miden `seoTitleBudget`/`seoDescriptionBudget`; lo que los ata al calendario es
+un test de `priceEvents.test.ts` que arma las mismas cadenas con `priceEventShortRange` /
+`priceEventRangeLabel` / `priceEventDayLabelLong`. **Cuando se cargue la edición siguiente, cambiar el
+título y la descripción en el mismo commit** (y declarar la fila del libro de cambios): ese test falla
+si no.
+
+**La FAQ abre con las dos preguntas de fecha** ("¿Cuándo es el Black Friday 2026 en Uruguay?", "¿Cuándo
+es el CyberLunes noviembre 2026?"), armadas desde la edición confirmada más reciente de cada familia
+(`priceEventLatestEdition`), así que se actualizan solas al cargar la del año siguiente.
 
 **`today` es la fecha calendario de Montevideo, no la UTC del servidor** (revisión final, hallazgo M4,
 `priceEventMontevideoToday()`). El job (raíz) sigue usando UTC porque escribe un `day:` que tiene que
@@ -338,13 +375,17 @@ de nuevo en el cliente.
 - **La sección legal se enmarca como general** (hallazgo M10): una línea aclara que la cita de la ley
   es el marco general y la tabla de arriba no acusa a ninguna tienda puntual de incumplirla.
 
-## Cómo cargar la fecha de noviembre cuando la CEDU la publique
+## Cómo cargar una edición nueva (o la fecha de una que estaba sin fecha)
+
+Hecho por última vez el 2026-10-19 con CyberLunes noviembre 2026 (2 a 4 de noviembre, CEDU) para
+mergear desde el 2026-10-30, cuando cerraba la ventana de medición abierta sobre la página.
 
 1. Editar el array `PRICE_EVENTS`/`PRICE_EVENT_CALENDAR` en **LOS DOS** archivos —
    `classes/priceevents/calendar.ts` (raíz) y `app/utils/priceEvents.ts` (app) — con el MISMO id
    (`ciberlunes-2026-11`), mismo `label`, mismo `start`/`end` (`YYYY-MM-DD`), `confirmed: true`, la
-   URL real que anuncia la fecha en `source`, y `note: ''` (mismo patrón que las otras ediciones
-   confirmadas).
+   URL real que anuncia la fecha en `source`, y en `note` lo que la fecha sola no dice (quién la
+   organiza, de dónde sale), o `''`. Después, el título y la descripción de la página (ver "La
+   cuenta regresiva", arriba).
 2. `app/tests/unit/priceEventsCalendarParity.test.ts` compara los dos arrays campo a campo — importa
    `classes/priceevents/calendar.ts` directamente porque es un TEST del suite del app, no build de
    producción (un archivo de `app/` nunca puede importarse desde un test o módulo de la raíz, y
@@ -373,7 +414,10 @@ de nuevo en el cliente.
    (`/tiendas-online-uruguay/<key>`, mismo patrón que sillas/equipar) que esta misma rama diferí hasta
    tener `storeDirectory.ts`/`useStoreProfileKeys.ts` disponibles después del rebase.
 
-### Recordatorio fechado (revisión final, hallazgo M11)
+### Recordatorio fechado (revisión final, hallazgo M11) — RESUELTO el 2026-10-19
+
+La CEDU había publicado la fecha el 16/9/2026 (lunes 2 a miércoles 4 de noviembre) y se cargó el
+19/10; lo que sigue queda como procedimiento para la próxima edición anunciada sin fecha.
 
 **Si al 25 de octubre de 2026 la CEDU no publicó la fecha de CyberLunes noviembre 2026**, revisar
 [cedu.org.uy/ciberlunes](https://www.cedu.org.uy/ciberlunes/) a mano: si para entonces sigue sin

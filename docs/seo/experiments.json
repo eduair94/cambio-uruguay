@@ -1476,6 +1476,28 @@
         "laudo consejo de salarios uruguay"
       ],
       "hypothesis": "La pagina estaba fuera de TODO tema, asi que no dibujaba \"Mas sobre este tema\" y -como el vinculo del tema es reciproco por construccion, armado con hub.resources- tampoco recibia un solo enlace de ese bloque desde ninguna otra pagina: solo llegaba desde el menu, que no es una relacion entre paginas. Entra a sueldo-trabajo-e-impuestos-uruguay, donde ya vive la guia salario-minimo-uruguay-cuanto-es: el hub publicaba el SMN y nunca decia que el SMN no es el minimo de quien lo lee, que es justo lo que esta pagina contesta -el minimo exigible es el laudo del grupo, subgrupo y categoria que fija el Consejo de Salarios, y se consulta gratis en el MTSS-. Pasa de 0 enlaces de tema a un bloque con los otros 19 recursos del tema, a recibir ese bloque desde cada miembro del tema y a una tarjeta en /temas/sueldo-trabajo-e-impuestos-uruguay. Es del tramo contenido, que rinde 8x el promedio del sitio, y era una de las dos unicas de las 19 huerfanas con la ruta libre de toda ventana abierta (npm run seo_debt). No se escribio ni se reescribio una sola linea de la pagina ni de su snippet: solo su pertenencia al tema."
+    },
+    {
+      "id": "ciberlunes-black-friday-2026-fechas",
+      "shippedOn": "2026-10-30",
+      "routes": ["/ciberlunes-y-black-friday-uruguay"],
+      "queries": [
+        "black friday 2026 uruguay",
+        "cuando es el black friday en uruguay 2026",
+        "cuando es el black friday 2026 en uruguay",
+        "black friday uruguay 2026",
+        "black friday noviembre 2026",
+        "ciberlunes noviembre 2026",
+        "cyber noviembre 2026",
+        "cyberlunes 2026"
+      ],
+      "hypothesis": "La pagina tuvo 264 impresiones y cero clics del 20/9 al 17/10, y casi todas eran la misma pregunta: cuando es el Black Friday 2026 en Uruguay (black friday 2026 uruguay, 116 en posicion 9,3; cuando es el black friday en uruguay 2026, 48 en 8,5; la misma con el orden cambiado, 25 en 9,8; black friday uruguay 2026, 21; black friday noviembre 2026, 18). El titulo -CyberLunes y Black Friday: descuento real?- no tenia la fecha que esas consultas piden, y el calendario todavia daba a CyberLunes noviembre como 'a confirmar' aunque la CEDU lo habia fechado el 16/9/2026 (lunes 2 al miercoles 4, nota de cedu.org.uy y ciberlunes.uy, leidas el 19/10). Ahora el titulo y la descripcion llevan las dos fechas (Black Friday viernes 27/11, el dia siguiente al Dia de Accion de Gracias que la OPM fija el jueves 26), un test las ata al calendario, la FAQ -que tambien es el FAQPage- abre con las dos preguntas de fecha, el bloque Cuando es lista todas las ediciones que faltan y no solo la proxima (a fines de octubre el titular es CyberLunes y la fecha de Black Friday, que es la que la gente busca, no aparecia), y una seccion nueva dice que hacer antes del evento (mirar el precio de hoy en cada aviso, guardar lo de la casa en la lista de equipar, cambios de precio) y que se ve aca esos dias. Es la apuesta que gano con UR/UI: el dato que la consulta pide, adentro del snippet. Para leer el veredicto: la ventana de 28 dias cae entera sobre la temporada de estas consultas, que crecen solas en noviembre, asi que la porcion de clics puede subir aunque el cambio no haga nada; lo que lo separa de la estacion es el CTR a igual posicion, que hoy es cero."
+    },
+    {
+      "id": "cambios-de-precio-enlace-desde-ciberlunes",
+      "shippedOn": "2026-10-30",
+      "routes": ["/cambios-de-precio-uruguay"],
+      "hypothesis": "Primer enlace de contenido hacia /cambios-de-precio-uruguay, que era una de las 16 paginas de lectura que ninguna otra enlazaba (enlacesDeContexto: 16 a 15). Sale del paso 'Antes, fijate el precio de hoy' de /ciberlunes-y-black-friday-uruguay y no del bloque de relacionadas del pie: el lector de esa pagina trae justo la pregunta que esta contesta -si la tienda subio el precio la semana anterior para despues rebajarlo- y aca ve, aviso por aviso, que subio y que bajo en los ultimos dias contra su propio precio anterior. Se espera que empiece a recibir lectores desde la pagina de CyberLunes durante noviembre, la temporada en que esa pagina crece. No se toco su snippet ni su cuerpo: solo recibe el enlace."
     }
   ]
 }
