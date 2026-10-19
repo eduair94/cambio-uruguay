@@ -26,11 +26,13 @@
                  /historico/itau y /historico/prex). La variante de tres segmentos
                  (/historico/brou/usd) sí lo tenía; ésta se había quedado atrás. `ma-0` mantiene
                  el layout exacto: el margen por defecto rompería el flex del v-card-title. -->
+            <!-- Ésta es la página de MARCA de la casa (utils/casaBrandPage.ts): la que Google ya
+                 elige para «cambio principal» o «cotización brou». El encabezado lo dice igual
+                 que el título, y en el idioma de la página: antes era un literal en castellano
+                 también en /en y /pt. -->
             <h1 class="text-h5 text-md-h4 ma-0" :class="{ 'text-wrap': isBcu }">
               {{
-                isBcu
-                  ? bcuText.hubHeading
-                  : `Cotizaciones de ${formatOriginName(route.params.origin as string)}`
+                isBcu ? bcuText.hubHeading : $t('historical.originHeading', { origin: originName })
               }}
             </h1>
             <v-spacer />
@@ -39,9 +41,6 @@
             </ClientOnly>
           </v-card-title>
 
-          <!-- Hub cross-link: funnels this high-traffic history page into the
-               comprehensive /casa page (rate + branches + reputation), which is
-               the page positioned to rank for "cambio X" brand queries. -->
           <v-card-text v-if="isBcu" class="pt-0 pb-2">
             <p class="mb-3">{{ bcuText.hubIntro }}</p>
             <div class="d-flex flex-wrap ga-3">
@@ -61,16 +60,31 @@
               {{ bcuText.dualNote }}
             </p>
           </v-card-text>
+          <!-- Antes, un único «Ver todo sobre X: cotización de hoy, sucursales y opiniones» hacia
+               /casa/<casa>: la página de marca le cedía la marca a otra URL con la misma tabla.
+               Ahora cada enlace nombra su intención — las sucursales y la ficha de la casa — y la
+               marca se queda acá. -->
           <v-card-text v-else class="pt-0 pb-2">
-            <NuxtLink
-              :to="localePath(`/casa/${route.params.origin}`)"
-              class="casa-hub-link d-inline-flex align-center ga-1"
+            <nav
+              class="brand-page-links d-flex flex-wrap"
+              :aria-label="$t('historical.originHeading', { origin: originName })"
+              data-testid="brand-page-links"
             >
-              <v-icon size="small">mdi-bank-outline</v-icon>
-              Ver todo sobre {{ formatOriginName(route.params.origin as string) }}: cotización de
-              hoy, sucursales y opiniones
-              <v-icon size="small">mdi-arrow-right</v-icon>
-            </NuxtLink>
+              <NuxtLink
+                :to="localePath(`/sucursales/${route.params.origin}`)"
+                class="casa-hub-link d-inline-flex align-center ga-1"
+              >
+                <v-icon size="small">mdi-map-marker-multiple</v-icon>
+                {{ $t('historical.branchesLink', { origin: originName }) }}
+              </NuxtLink>
+              <NuxtLink
+                :to="localePath(`/casa/${route.params.origin}`)"
+                class="casa-hub-link d-inline-flex align-center ga-1"
+              >
+                <v-icon size="small">mdi-bank-outline</v-icon>
+                {{ $t('historical.fichaLink', { origin: originName }) }}
+              </NuxtLink>
+            </nav>
           </v-card-text>
           <!-- Filtros -->
           <v-card-text>
@@ -129,6 +143,7 @@
             ]"
             class="elevation-1"
             :sort-by="[{ key: 'code', order: 'asc' }]"
+            :custom-key-sort="{ code: compareBrandTableCodes }"
           >
             <!-- Celda de Moneda con enlace -->
             <template #item.code="{ item }">
@@ -223,6 +238,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify'
 import { originHeadlineRates, pickOriginRate } from '@/utils/rateSource'
+import { compareBrandTableCodes } from '@/utils/casaBrandPage'
 import {
   BCU_HISTORY_SOURCE,
   bcuHistoryCopy,
@@ -617,8 +633,11 @@ if (items.value.length > 0 && !items.value.some(item => item.origin === route.pa
 }
 
 // Today's USD cash quote for this casa (SSR — items come from useAsyncData), so
-// the SERP snippet leads with the actual number ("Dólar en BROU hoy: compra $X,
-// venta $Y…") instead of a generic sentence. Bank/casa cotización queries carry
+// the SERP snippet leads with the actual number ("BROU hoy: dólar $X compra, $Y
+// venta…") instead of a generic sentence. La frase arranca por la MARCA y no por
+// «Dólar en BROU hoy»: ésa es la de /historico/<casa>/usd, y que las dos páginas
+// abrieran igual era una de las señales que repartían la consulta de marca entre
+// ellas (ver utils/casaBrandPage.ts). Bank/casa cotización queries carry
 // huge impressions but near-zero CTR precisely because the snippet showed no price.
 // `items` holds every casa's rows, so the origin filter is load-bearing: without
 // it every casa page quotes the first USD row in the market. Origins that publish
@@ -674,6 +693,10 @@ const seoDescription = computed(() => {
   return base
 })
 
+// El título es el de la página de marca: «Cambio Principal: cotizaciones de hoy». Ya no dice
+// «histórico», que esta página no tiene (la serie vive en /historico/<casa>/<moneda>, cuyo título
+// sí lo lleva), ni «todas las monedas, cotización y…», que lo empujaba por encima de los 60
+// caracteres en las casas de nombre largo.
 useSeoMeta({
   title: () =>
     isBcu.value
@@ -791,7 +814,11 @@ useHead(() => ({
   padding: 0;
 }
 
+.brand-page-links {
+  column-gap: 1.5rem;
+}
 .casa-hub-link {
+  min-height: 44px;
   color: rgb(var(--v-theme-link));
   font-weight: 600;
   text-decoration: none;

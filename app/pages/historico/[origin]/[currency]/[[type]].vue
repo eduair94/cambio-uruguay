@@ -172,7 +172,7 @@
                 {{ $t('mirror.body', { casa: exchangeHouseName, source: mirror.sourceName }) }}
               </p>
               <VBtn
-                :to="localePath(`/casa/${mirror.source}`)"
+                :to="localePath(mirrorSourcePath(mirror))"
                 size="small"
                 variant="tonal"
                 density="comfortable"
@@ -549,11 +549,11 @@
       :heading="$t('faq.title')"
     />
 
-    <!-- Up-link to the casa hub. This leaf is the site's highest-impression
-         page; /casa/[origin] is the page meant to win the "cambio {casa}" brand
-         query and had almost no inbound internal links. Worded differently from
-         the up-links on /historico/[origin] and /sucursales/[origin] so three
-         pages do not repeat one anchor. -->
+    <!-- Enlace a la página de MARCA de la casa (utils/casaBrandPage.ts), con el nombre de la
+         casa en el ancla. Esta página es la del dólar —o la del real, o la del euro— de esa casa:
+         su título arranca por la moneda («Dólar en BROU hoy») para no disputarle a la de marca la
+         consulta que trae sólo el nombre. Antes este botón mandaba a /casa/<casa>, la ficha que
+         ahora declara canónica a la página de marca. -->
     <v-row class="mt-6">
       <v-col v-if="evolutionData?.localData" cols="12" class="text-center">
         <v-btn
@@ -562,10 +562,10 @@
           color="primary"
           variant="tonal"
           size="large"
-          :to="localePath(isBcu ? '/historico/bcu' : `/casa/${route.params.origin}`)"
+          :to="localePath(brandHubPath)"
         >
           <v-icon start>mdi-storefront-outline</v-icon>
-          {{ isBcu ? bcuText.hubLink : $t('casaPage.fromHistorico', { casa: exchangeHouseName }) }}
+          {{ isBcu ? bcuText.hubLink : $t('historical.brandLink', { origin: exchangeHouseName }) }}
         </v-btn>
       </v-col>
       <v-col cols="12" class="text-center">
@@ -613,7 +613,8 @@ import {
   formatBcuReference,
   hasSingleBcuReference,
 } from '~/utils/bcuHistory'
-import { mirrorOf } from '~/utils/rateMirrors'
+import { mirrorOf, mirrorSourcePath } from '~/utils/rateMirrors'
+import { casaBrandPath, casaHubPath } from '~/utils/casaBrandPage'
 import { computePageRecords, sanitizeSeries } from '~/utils/rateStats'
 import { currencyDisplayName, currencyFromSlug, type CurrencyLang } from '~/utils/currencyPages'
 import {
@@ -990,6 +991,16 @@ const answerFacts = computed(() => {
     : null
   // A missing BCU type is not evidence for the last date/value of another type.
   return isBcu.value ? fromRows : (fromRows ?? rateAnswerFacts(payload?.statistics))
+})
+
+// A dónde va el botón con el nombre de la casa: su página de marca. Con la misma regla de frescura
+// que la descripción «Live» de abajo: si la última cotización no es de hoy, la casa puede no estar
+// en el tablero del día y su página de marca responde 404 (`cambio_minas`, 19/10/2026), así que el
+// botón cae en la ficha, que existe siempre. El BCU tiene su propia página y no pasa por la regla.
+const brandHubPath = computed(() => {
+  const origin = String(route.params.origin)
+  if (isBcu.value) return casaBrandPath(origin)
+  return casaHubPath(origin, (answerFacts.value?.ageDays ?? Number.POSITIVE_INFINITY) < 1)
 })
 
 /** Render an ISO date as `DD/MM/AAAA` in Montevideo. */
@@ -1482,6 +1493,11 @@ const foldedAlternates = computed(() =>
 // asked for. The rate lives in the description, never the <title>: a title is
 // cached in the SERP for weeks and would go stale, while Google refreshes a
 // description. Falls back to the generic sentence when the payload is short.
+//
+// El título arranca por la MONEDA («Dólar en BROU hoy: cotización e histórico»), no por la casa:
+// «Cambio Principal Real hoy» le disputaba a la página de marca la consulta «cambio principal» —
+// 1.684 impresiones de esa consulta sola en 28 días cayeron en /historico/cambio_principal/brl—.
+// Ver utils/casaBrandPage.ts.
 const seoTitle = computed(() =>
   isBcu.value
     ? bcuText.value.detailTitle(currencyLabel.value)

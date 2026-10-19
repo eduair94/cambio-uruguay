@@ -1609,6 +1609,78 @@
         "cuanto me pueden descontar de la jubilacion"
       ],
       "hypothesis": "Pagina nueva. La pidio la cola de demanda (currency-search-demand, autocompletado uruguayo): \"cuando empiezan los prestamos para jubilados en el brou\" con foros arriba en el SERP, o sea sin una pagina que lo conteste. El sitio tenia cero impresiones para consultas de prestamos a jubilados en los 90 dias al 2026-10-17 (gsc-pagequery: ninguna fila con jubilado/pensionista/pasividad/prestamo bps), y lo unico que tocaba el tema era un recuadro de tres vinetas dentro de /prestamo-sin-recibo-de-sueldo-uruguay y una pregunta del FAQ de /mejores-prestamos-uruguay. El prestamo social del BPS, el que mas jubilados toman, no aparecia en ninguna pagina. El angulo propio son tres cosas que salen de leer las fuentes en vez de resumirlas: (1) las dos tablas de cuotas no miden lo mismo: la del BPS se reproduce entera con su tasa sola (32 celdas al peso) y la del BROU solo cierra sumandole el IVA y un mes de interes por el diferimiento de 31 dias que el propio PDF declara (24 celdas dentro del peso); puestas en el mismo pie, el BPS queda entre el BROU por eBROU con tasa preferencial y el de sucursal con tasa estandar; (2) el tope de cuota del BPS es 45 % en la ficha y 40 % en el reglamento que esa ficha enlaza, y se publican los dos; (3) los seis haberes que promete la ficha solo entran en 18 y 24 cuotas: en 6 y 12 la cuota de seis haberes pasa del 45 % del haber, y la calculadora de la pagina dice que limita en cada plazo. El calendario (renovacion anticipada del 1 al 31/10, tasa diferencial desde el 1/11 por 90 dias, campana de pasivos del BROU sin fecha 2026 anunciada al 19/10) se calcula con la fecha del dia en vez de quedar escrito. El tope de usura sale de la grilla viva del BCU y de la lectura fechada que ya mantiene loanNoPayslip.ts; el piso del 35 % y el orden de prelacion, de salaryGarnishment.ts. Lo que no se publica, con el motivo en la pagina: las fechas 2026 del BROU (no anunciadas), si la tasa del BPS lleva IVA (la ficha no lo dice), la lista completa de cooperativas y financieras con retencion (el BPS no publica registro) y la cuota con la tasa diferencial (el BPS no publico tabla). El enlace de entrada sale de /embargo-de-sueldo-uruguay, sin fila en este libro, cuyo lector es el jubilado con un descuento de prestamo en el recibo."
+    },
+    {
+      "id": "marca-casa-una-pagina-por-marca-historico",
+      "shippedOn": "2026-10-25",
+      "routes": ["/historico/*", "/en/historico/*", "/pt/historico/*"],
+      "queries": [
+        "cambio principal",
+        "cotizacion brou",
+        "brou cotizaciones",
+        "cotizaciones brou",
+        "cotización brou",
+        "brou cotización",
+        "cotización brou hoy",
+        "cambio fenix",
+        "fenix cambio",
+        "cambio fénix",
+        "cambio gales",
+        "cambio gales cotizacion",
+        "cambio matriz",
+        "cambio misiones",
+        "cambio varlix",
+        "cambio indumex",
+        "indumex",
+        "cambio la favorita",
+        "cambio 18",
+        "cambio oriental",
+        "cambio maiorano",
+        "cambio pernas",
+        "itau cotizaciones",
+        "dolar brou",
+        "dolar brou hoy",
+        "precio dolar brou hoy",
+        "cotización del dólar brou",
+        "cotizacion dolar brou"
+      ],
+      "hypothesis": "Una pagina por marca. La consulta que trae solo el nombre de una casa se repartia entre cuatro familias que se presentaban como la de su marca y abrian la descripcion con la misma frase (\"Dolar en X hoy: compra...\"): \"cambio principal\" aparecia con doce URLs propias entre la posicion 4 y la 10 (GSC 20/9-17/10), y la curva de CTR del sitio paga el clic hasta la cuarta. La pagina de marca pasa a ser /historico/<casa>, la que Google ya elegia (consultas de marca sola, 90 dias: 28.090 impresiones, 184 clics, posicion 6,8, contra 8.723 / 33 / 8,5 de /casa/<casa>; gana en 12 a 15 casas contra 2 a 4). Su titulo dice marca + hoy (\"Cambio Principal: cotizaciones de hoy\", sin el \"historico\" que no tiene), su H1 \"Cotizaciones de X hoy\", su descripcion arranca por la marca y la tabla pone el dolar primero. /historico/<casa>/<moneda> arranca por la moneda (\"Dolar en BROU hoy: cotizacion e historico\") y su boton manda a la pagina de marca con el nombre como ancla. Se espera que la marca suba de la quinta-sexta posicion y que la porcion de clics de la familia y de estas consultas crezca; el reparto entre /casa y /historico deja de ser ruido. Se mide junto con marca-casa-la-ficha-cede-la-marca y marca-casa-sucursales-dicen-su-intencion, del mismo deploy."
+    },
+    {
+      "id": "marca-casa-la-ficha-cede-la-marca",
+      "shippedOn": "2026-10-25",
+      "routes": ["/casa/*", "/en/casa/*", "/pt/casa/*"],
+      "queries": [
+        "santander horarios",
+        "horario banco santander",
+        "horario santander",
+        "santander horario",
+        "horarios santander",
+        "horario scotiabank",
+        "horario itau",
+        "banco itau horarios"
+      ],
+      "hypothesis": "La ficha /casa/<casa> muestra la misma pizarra de hoy que /historico/<casa> y le disputaba la consulta de la marca con el titulo \"X: cotizacion dolar hoy, sucursales y opiniones\". Ahora declara canonica a la pagina de marca (cada idioma a su espejo, con los hreflang re-apuntados) y sale del sitemap; se queda canonica de si misma solo si la casa no cotiza hoy, porque entonces la pagina de marca responde 404. Las paginas de intencion (/casa/<casa>/horarios, /telefono, /opiniones, monedas) no cambian de titulo y mandan su \"Todo sobre X\", su \"X: cotizacion de hoy\" y el padre de sus migas a la pagina de marca. Analisis de casa-fichas-accesos (14/9, -35 %): la base era chica (26 clics a 13 en castellano, ventanas de 28 dias antes y despues) y lo que se perdio no fue a las subpaginas -las impresiones de consultas sin palabra de intencion en ellas bajaron de 1.383 a 1.038; la excepcion es Cambio Principal, cuya pagina de horarios paso de 14 a 260 impresiones de \"cambio principal\"- sino que la marca roto entre /casa, /historico y /sucursales (\"cambio matriz\" se fue a /sucursales/matriz, \"fenix cambio\" a /historico/cambio_fenix). Se espera que el hub /casa/<casa> pierda impresiones A PROPOSITO, que las paginas de intencion conserven sus consultas de horario y telefono, y que la marca gane en marca-casa-una-pagina-por-marca-historico."
+    },
+    {
+      "id": "marca-casa-sucursales-dicen-su-intencion",
+      "shippedOn": "2026-10-25",
+      "routes": ["/sucursales/*", "/en/sucursales/*", "/pt/sucursales/*"],
+      "queries": [
+        "oca maldonado",
+        "oca sucursales",
+        "sucursales oca",
+        "oca paysandu",
+        "oca salto",
+        "oca rivera",
+        "itau sucursales",
+        "sucursales itau",
+        "cambio principal rivera",
+        "cambio fenix rivera",
+        "brou montevideo shopping",
+        "sucursales brou abiertas hoy"
+      ],
+      "hypothesis": "Las paginas de sucursales ya decian su intencion en el titulo (\"Sucursales de X en <departamento>\"); lo que cambia es que su enlace de marca deja de mandar \"Ver todo sobre X\" a /casa/<casa> y manda \"Todas las cotizaciones de X hoy\" a la pagina de marca, y que un departamento con UN local deja de titularse \"Sucursales de Cambio Principal en Rivera: 1 locales\" (764 impresiones de \"cambio principal\" en esa URL en 28 dias) y pasa a \"Sucursal de Cambio Principal en Rivera: telefono y horario\". OCA (\"oca maldonado\" posicion 10,3 en 90 dias) ya cae en la URL correcta de su intencion: su problema es la posicion, no el reparto, y no se toca su snippet. Se espera que las sucursales conserven sus consultas de marca + lugar y que los locales unicos ganen CTR por el titulo en singular."
     }
   ]
 }

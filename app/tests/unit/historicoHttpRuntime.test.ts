@@ -9,6 +9,7 @@ import * as serverRenderer from 'vue/server-renderer'
 import * as h3 from 'h3'
 import * as ufo from 'ufo'
 import * as rates from '../../utils/rateSource'
+import * as brandPage from '../../utils/casaBrandPage'
 import { expect, it } from 'vitest'
 
 // Exercise Nuxt's installed error boundary and renderer without starting jobs,
@@ -88,6 +89,7 @@ it('returns HTTP 404 through app.vue and the installed Nuxt SSR runtime after hi
       vuetify: { useDisplay: () => ({ smAndDown: vue.ref(false) }) },
       '@/utils/rateSource': rates,
       '@/utils/bcuHistory': bcuHistory,
+      '@/utils/casaBrandPage': brandPage,
     },
     {
       useLocalePath: () => (path: string) => path,
