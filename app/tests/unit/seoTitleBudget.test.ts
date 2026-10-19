@@ -257,7 +257,12 @@ function staticTitle(source: string): string | null {
 // que publica la página.
 // 179 → 180 el 2026-10-14: `/pagar-el-alquiler-en-efectivo-uruguay`, apretado en el mismo commit
 // que publica la página.
-const MEASURABLE = 180
+// 180 → 181 el 2026-10-19: `/alquiler-de-temporada-uruguay`, en el mismo commit que publica la
+// página. Su título entra acá porque es un literal de la página y no una cadena armada desde
+// `utils/seasonalRental.ts`: el plazo de 120 días que imprime es la definición legal del contrato
+// y no se mueve con el día, y que no se despegue de la constante lo vigila
+// `seasonalRental.test.ts`.
+const MEASURABLE = 181
 // 44 → 33 el 2026-09-07: once de los títulos más largos reescritos a 43 caracteres o menos. Los
 // once perdían la cola en el SERP, y la cola era el dato — «2 puntos o 9», «mora y 72 h», «1 mes
 // por año», «6 países», «13 temas», «ChauDeudas o MiDeuda» —, así que en cada uno se conservó la

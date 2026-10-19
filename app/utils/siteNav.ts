@@ -3235,6 +3235,31 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El otro régimen de alquiler, el que no es el de vivienda permanente. Todo el racimo de
+        // alquiler de este archivo habla del contrato común; el de temporada tiene plazo máximo,
+        // desalojo propio y hasta una excepción para pactar en moneda extranjera, y la norma que lo
+        // define hoy —la Ley 20.352, de setiembre de 2024— no aparecía en ninguna página: su único
+        // rastro era un párrafo al pie de la calculadora de costo de vida.
+        to: '/alquiler-de-temporada-uruguay',
+        labelKey: 'nav.alquilerDeTemporada',
+        icon: 'mdi-beach',
+        priority: 0.7,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'alquiler de temporada uruguay',
+          'contrato de alquiler por temporada',
+          'alquiler temporada punta del este',
+          'alquilar por temporada requisitos',
+          'ley 20352 alojamiento turistico',
+          'registro de operadores turisticos mintur',
+          'desalojo alquiler de temporada',
+          'alquiler por temporada en dolares',
+          'airbnb uruguay hay que registrarse',
+          'cuantos dias dura un alquiler de temporada',
+        ],
+      },
+      {
         to: '/comprar-o-alquilar-uruguay',
         labelKey: 'nav.comprarOAlquilar',
         icon: 'mdi-home-search-outline',

@@ -511,6 +511,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/por-que-no-baja-el-alquiler-uruguay',
       },
       {
+        label: 'Alquiler de temporada',
+        description: 'El plazo de 120 días que lo define y el desalojo de quince.',
+        to: '/alquiler-de-temporada-uruguay',
+      },
+      {
         label: 'Costo de vida',
         description: 'Cuánto necesitás para vivir donde querés.',
         to: '/herramientas/costo-de-vida',

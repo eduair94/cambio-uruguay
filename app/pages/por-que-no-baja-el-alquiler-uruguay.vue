@@ -62,7 +62,11 @@
       <VAlert type="info" variant="tonal" density="comfortable" class="mt-4">
         Montevideo es el departamento con <strong>menos</strong> vivienda vacía del país: 9,6 %, con
         el 90,4 % de las viviendas ocupadas. El promedio nacional lo empujan Maldonado (45,2 %) y
-        Rocha (42,1 %), donde la vivienda vacía es casa de temporada.
+        Rocha (42,1 %), donde la vivienda vacía es casa de temporada. Esas casas se alquilan bajo
+        otro régimen: el
+        <NuxtLink :to="localePath('/alquiler-de-temporada-uruguay')" class="cu-link">
+          contrato por temporada </NuxtLink
+        >, que la ley define por el lugar y por un plazo máximo de 120 días.
       </VAlert>
     </section>
 

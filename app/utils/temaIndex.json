@@ -483,6 +483,10 @@
           "label": "¿Por qué no baja el alquiler?"
         },
         {
+          "to": "/alquiler-de-temporada-uruguay",
+          "label": "Alquiler de temporada"
+        },
+        {
           "to": "/herramientas/costo-de-vida",
           "label": "Costo de vida"
         },

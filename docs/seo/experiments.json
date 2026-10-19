@@ -1449,6 +1449,22 @@
         "cambiar un billete de 2000 uruguay"
       ],
       "hypothesis": "La pagina no recibia un solo enlace desde el contenido de otra pagina ni chip en ninguna barra de familia: era la ultima de las 17 de enlacesDeContexto.test.ts con la ruta libre de toda ventana abierta, y la unica fila libre que imprimio npm run seo_debt entre las 58 de los tres trinquetes con lista. La nota anterior la daba por bloqueada por /precio-del-boleto-montevideo y /guias/propinas-en-uruguay, las dos con fila abierta; la vecina que faltaba mirar es /retirar-efectivo-uruguay, a la que esta pagina YA enlaza de ida sola y que no tiene ninguna fila en las 97 del libro. Su seccion de seguridad le dice al lector, en los tres idiomas, que pida billetes chicos porque los de 1.000 y 2.000 cuestan de cambiar, o sea nombra el problema entero y nunca dijo donde se resuelve; la de las monedas es la que contesta, sobre todo por la negativa, que es la parte cara: el cajero entrega billetes y nunca monedas, el kiosco no fracciona un billete grande y la casa de cambio cambia divisas pero no fracciona moneda nacional. El enlace NO va en el bloque de relacionadas del pie, que el rastreo del 2026-09-21 midio a 11.341 px de una pagina de 15.868: va dentro de la tarjeta de esa seccion, debajo de la vineta que crea la pregunta, con un campo link nuevo y opcional en WithdrawSection que solo lleva la seccion que deja algo sin contestar. Se espera que la pagina empiece a recibir lectores y rastreo que antes solo llegaban por el bloque del tema, al pie."
+    },
+    {
+      "id": "pagina-alquiler-de-temporada",
+      "shippedOn": "2026-10-19",
+      "routes": ["/alquiler-de-temporada-uruguay"],
+      "queries": [
+        "alquiler de temporada uruguay",
+        "contrato de alquiler por temporada",
+        "alquiler temporada punta del este",
+        "cuantos dias dura un alquiler de temporada",
+        "ley 20352 alojamiento turistico",
+        "registro de operadores turisticos mintur",
+        "desalojo alquiler de temporada",
+        "alquiler por temporada en dolares"
+      ],
+      "hypothesis": "Pagina nueva, publicada antes del pico de noviembre a enero. Todo el racimo de alquiler del sitio -garantia, deposito, desalojo, clearing, pagar en efectivo, el credito fiscal, los portales- habla del alquiler de vivienda permanente, y el contrato de temporada es OTRO regimen: la norma que lo define hoy, la Ley 20.352 de setiembre de 2024, no aparecia en ninguna pagina y su unico rastro en el repositorio era un parrafo al pie de la calculadora de costo de vida. El angulo propio son dos cosas que la caja de respuestas de Google no da. Primera: lo que convierte un alquiler en de temporada no es el verano ni el nombre del contrato, sino el art. 28 lit. A del Decreto-Ley 14.219 con la redaccion del art. 5 de la Ley 20.352 -inmueble en zona turistica y plazo que no supere los 120 dias-, y de ahi cuelgan el desalojo de quince dias, la responsabilidad por retencion indebida, la condena preceptiva al ARRENDADOR que usa el contrato para disfrazar una vivienda permanente y la excepcion del art. 76 lit. E que permite pactar en moneda extranjera con turistas extranjeros. Segunda: la Ley 20.352 rige desde el 27/9/2024 y su reglamento todavia se espera, y eso se publica con fechas en vez de resolverlo para un lado -el art. 6 encarga la reglamentacion al Poder Ejecutivo, el Ministerio de Turismo comunico el 24/11/2025 que presento el proyecto de decreto, y su propio tramite de inscripcion, actualizado el 2/3/2026, todavia no lista una categoria de vivienda turistica-. Cuatro cosas quedan deliberadamente afuera con el motivo escrito en la pagina: el monto de las multas (la ley no lo fija y no hay decreto publicado; las cifras que circulan son de notas de prensa sobre un proyecto), la fecha de entrada en vigencia del registro, la lista de zonas turisticas (el texto vigente no enumera ninguna) y la tasa de IRPF del arrendamiento, que ya trata la guia de alquiler temporario. El enlace de entrada sale de /por-que-no-baja-el-alquiler-uruguay, cuya ruta no tiene ventana abierta y cuyo lector lo necesita: esa pagina explica que el 45,2 % de la vivienda vacia de Maldonado son casas cerradas nueve meses al ano y nunca decia bajo que contrato se alquilan esos tres meses."
     }
   ]
 }

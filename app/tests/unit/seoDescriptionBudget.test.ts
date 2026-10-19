@@ -161,7 +161,11 @@ const measured = pageFiles()
 // pago de diciembre y el reparto contra Semana de Turismo son la regla de la ficha del BPS y no una
 // cifra del día. Lo que esa página NO congela en un literal es el monto —depende de las nóminas del
 // trabajador— ni la fecha exacta del pago, que el BPS anuncia por edición.
-const RESOLVED = 162
+// 162 → 163 el 2026-10-19: `/alquiler-de-temporada-uruguay`, apretado en el mismo commit que
+// publica la página. Su descripción entra acá porque es literal: los 120 días de plazo y los 15 de
+// desalojo son el texto del art. 28, lit. A del Decreto-Ley 14.219 y no una cifra del día. Lo que
+// esa página NO congela en un literal es ningún monto de multa, que la Ley 20.352 no fija.
+const RESOLVED = 163
 // 121 → 96 el 2026-09-20, la primera medición: veinte hubs (la home de cada directorio, las de
 // descuentos y las de guías) más las cinco peores de todas, entre 376 y 464 caracteres. En las
 // cinco largas el recorte no fue podar la cola: la cifra que las distingue se movió al frente
