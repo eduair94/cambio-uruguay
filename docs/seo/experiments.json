@@ -2241,6 +2241,24 @@
         "/guias/me-deben-el-sueldo-uruguay"
       ],
       "hypothesis": "Las siete guias que quedaban libres del pozo de titulos pasados de 60 (guideSnippetBudget.test.ts: 10 -> 3, y los tres que quedan son dos reservados y el glosario). Iban de 78 a 61 caracteres publicados y el defecto es el de las ocho tandas anteriores: cinco eran la etiqueta del tema seguida del indice de la guia y dos devolvian la pregunta sin contestarla, asi que la respuesta caia del lado que el SERP recorta. Ahora cada titulo entra entero y contesta: la hora extra vale el doble y 150 % en feriado, en una compra de Amazon el IVA es todo o nada, el estudio de cobranza no te retiene el sueldo, por llegar tarde te pueden sancionar pero no multar, la indemnizacion del mensual es un mes por ano, al sueldo impago se le reclama un 10 % mas y no hay un abogado gratis sino una puerta por problema. Ninguna cifra es nueva y donde el cuerpo hedgea el titulo no afirma: el de Amazon no publica los USD 200 porque la condicion del vendedor registrado esta fechada y ya se postergo dos veces, el de despido no publica el tope de seis porque es solo del mensual, y el de llegar tarde dice sanciones si y multas no porque el cuerpo afirma que el poder disciplinario existe. Es el tramo contenido, que rinde 8x el promedio del sitio, asi que un titulo cortado cuesta mas caro aca. Se espera mas CTR a igual posicion, como midio la primera tanda. Las tres correcciones del buscador propio quedan anotadas en el test."
+    },
+    {
+      "id": "ciberlunes-black-friday-2026-fechas",
+      "shippedOn": "2026-10-31",
+      "routes": [
+        "/ciberlunes-y-black-friday-uruguay"
+      ],
+      "queries": [
+        "black friday 2026 uruguay",
+        "cuando es el black friday en uruguay 2026",
+        "cuando es el black friday 2026 en uruguay",
+        "black friday uruguay 2026",
+        "black friday noviembre 2026",
+        "ciberlunes noviembre 2026",
+        "cyber noviembre 2026",
+        "cyberlunes 2026"
+      ],
+      "hypothesis": "La pagina tuvo 264 impresiones y cero clics del 20/9 al 17/10, y casi todas eran la misma pregunta: cuando es el Black Friday 2026 en Uruguay (black friday 2026 uruguay, 116 en posicion 9,3; cuando es el black friday en uruguay 2026, 48 en 8,5; la misma con el orden cambiado, 25 en 9,8; black friday uruguay 2026, 21; black friday noviembre 2026, 18). El titulo -CyberLunes y Black Friday: descuento real?- no tenia la fecha que esas consultas piden, y el calendario todavia daba a CyberLunes noviembre como 'a confirmar' aunque la CEDU lo habia fechado el 16/9/2026 (lunes 2 al miercoles 4, nota de cedu.org.uy y ciberlunes.uy, leidas el 19/10). Ahora el titulo y la descripcion llevan las dos fechas (Black Friday viernes 27/11, el dia siguiente al Dia de Accion de Gracias que la OPM fija el jueves 26), un test las ata al calendario, la FAQ -que tambien es el FAQPage- abre con las dos preguntas de fecha, el bloque Cuando es lista todas las ediciones que faltan y no solo la proxima (a fines de octubre el titular es CyberLunes y la fecha de Black Friday, que es la que la gente busca, no aparecia), y una seccion nueva dice que hacer antes del evento (mirar el precio de hoy en cada aviso, guardar lo de la casa en la lista de equipar, cambios de precio) y que se ve aca esos dias. Es la apuesta que gano con UR/UI: el dato que la consulta pide, adentro del snippet. Para leer el veredicto: la ventana de 28 dias cae entera sobre la temporada de estas consultas, que crecen solas en noviembre, asi que la porcion de clics puede subir aunque el cambio no haga nada; lo que lo separa de la estacion es el CTR a igual posicion, que hoy es cero."
     }
   ]
 }
