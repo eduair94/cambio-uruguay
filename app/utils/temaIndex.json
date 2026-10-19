@@ -868,6 +868,10 @@
           "label": "Préstamo sin recibo de sueldo"
         },
         {
+          "to": "/prestamos-para-jubilados-uruguay",
+          "label": "Préstamos para jubilados"
+        },
+        {
           "to": "/ley-de-usura-uruguay",
           "label": "Ley de usura"
         },

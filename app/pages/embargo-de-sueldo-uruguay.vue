@@ -279,6 +279,13 @@
         <VBtn :to="localePath('/pension-alimenticia-uruguay')" variant="tonal" size="small">
           Cuánto es la pensión alimenticia
         </VBtn>
+        <!-- La mitad de esta página habla de pasividades —el piso de la Ley 17.829 y el orden de
+             prelación, con el Crédito Social del BROU en el literal C—, y el jubilado que llega
+             acá suele tener el descuento de un préstamo del BPS o del BROU en el recibo. Lo que
+             cuesta cada uno, y cuánto le prestan, está en la página de préstamos para jubilados. -->
+        <VBtn :to="localePath('/prestamos-para-jubilados-uruguay')" variant="tonal" size="small">
+          Préstamos para jubilados
+        </VBtn>
       </div>
     </section>
 

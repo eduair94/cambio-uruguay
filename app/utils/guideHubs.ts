@@ -956,6 +956,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/prestamo-sin-recibo-de-sueldo-uruguay',
       },
       {
+        label: 'Préstamos para jubilados',
+        description: 'El préstamo social del BPS, el BROU y cuánto te pueden descontar.',
+        to: '/prestamos-para-jubilados-uruguay',
+      },
+      {
         label: 'Ley de usura',
         description: 'Los topes de interés que fija la ley y cómo se calculan.',
         to: '/ley-de-usura-uruguay',
