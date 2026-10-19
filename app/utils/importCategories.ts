@@ -2285,6 +2285,8 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       'protector solar',
       'pasta dental y cepillos de dientes',
       'tintura, decolorante y fijador para el pelo',
+      'pestañas y uñas postizas',
+      'brochas y esponjas de maquillaje',
     ],
     notIncluded: [
       'medicamentos dermatológicos con receta: van por la categoría de medicamentos, con la puerta del MSP',
@@ -2412,17 +2414,17 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       {
         title: 'Exoneración por origen con acuerdo comercial (hasta US$ 200)',
         detail:
-          'Dentro de la franquicia, los envíos de hasta US$ 200 con origen amparado en un acuerdo comercial (EE.UU./TIFA) están exonerados; la residencia fiscal del vendedor se acredita con la factura. Sirve para la cosmética que sí puede entrar por el régimen. Desde el 1/10/2026 el emisor de la factura tiene que estar registrado ante la DNA o la exoneración no se aplica.',
-        norm: 'Decreto 50/026 art. 3; RG DNA 09/2026, prorrogada por las RG 12 y 21/2026',
-        url: 'https://www.impo.com.uy/bases/decretos/50-2026',
+          'Dentro de la franquicia, los envíos de hasta US$ 200 que vienen de un país con acuerdo comercial (EE.UU., por el TIFA) están exonerados de IVA, siempre que el vendedor que emite la factura figure en el registro de empresas extranjeras de la DNA. Desde el 5/10/2026 el operador postal puede pedir que se agregue un vendedor que falta, la DNA analiza el pedido en 48 horas hábiles y publica la lista en su sitio (RG 26/2026). Las fechas no coinciden: la RG 21/2026 lo hizo exigible desde el 1/10/2026 y la página de franquicia de la DNA lo anuncia "a partir del 3 de noviembre", cuando arranca la validación automática. Contá con que ya se exige. Sirve sólo para la cosmética que sí puede entrar por el régimen.',
+        norm: 'Decreto 50/026 art. 3; RG DNA 09/2026, prorrogada por la RG 21/2026 y modificada por la RG 26/2026',
+        url: 'https://www.aduanas.gub.uy/innovaportal/file/28724/1/rg-26-2026-exoneracion-iva-encomiendas-postales.pdf',
       },
     ],
     procedures: [
       {
         organism: 'MSP',
-        when: 'Los cosméticos son productos de salud bajo control del MSP. La regla publicada es que el MSP no autoriza el ingreso al país de productos de salud del exterior por particulares (Decreto 18/020, reglamento anexo, art. 19). No existe una franja general de "uso personal" que te dispense del control, y no encontramos un trámite publicado dirigido a persona física para traer cosméticos.',
-        how: 'No encontramos un trámite que una persona física pueda iniciar para su propio pedido de cosmética. Los trámites del MSP-DGS para personas físicas que sí existen son otros: el de ingreso de medicamentos no registrados y el de productos médicos no registrados. Si la Aduana te retiene el envío por control del MSP, el art. 7 del Decreto 50/026 deja la mercadería fuera de los dos regímenes cuando requiere autorización y no la tiene, y podés devolverla a origen a tu costo dentro de los 30 días.',
-        url: 'https://www.gub.uy/ministerio-salud-publica/',
+        when: 'Los cosméticos son productos de salud bajo control del MSP: el ministerio los nombra entre los productos que evalúa antes de que se vendan. Y publica la regla sin vueltas: "El MSP no autoriza el ingreso al país de productos de salud del exterior por particulares". No existe una franja general de "uso personal" que te dispense del control, y no encontramos un trámite publicado dirigido a persona física para traer cosméticos.',
+        how: 'La única excepción que publica el MSP es para un producto de salud no registrado, con prescripción médica específica, responsabilidad del médico tratante, consentimiento informado y sin equivalente registrado en el país; el artículo que la sostiene (Decreto 18/020, reglamento anexo, art. 19) es del reglamento de medicamentos, no de cosmética. Los trámites del MSP-DGS para personas físicas que sí existen son el de ingreso de medicamentos no registrados y el de productos médicos no registrados. Si la Aduana te retiene el envío por control del MSP, el art. 7 del Decreto 50/026 deja la mercadería fuera de los dos regímenes cuando requiere autorización y no la tiene, y podés devolverla a origen a tu costo dentro de los 30 días, si todavía no se despachó.',
+        url: 'https://www.gub.uy/ministerio-salud-publica/Puedo-ingresar-al-pa%C3%ADs-productos-de-salud-desde-el-exterior',
       },
     ],
     declare: {
@@ -2443,7 +2445,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
         },
         {
           name: 'Fijá el tipo de envío en la declaración',
-          text: 'La declaración aduanera lleva un campo "Tipo de envío" (RG DNA 11/2026 num. 28 lit. c): "G" es franquicia y "H" es prestación única del 60%. Si venís por courier, el operador declara por vos: pedile por escrito que vaya como "G". Los códigos J son para envíos exceptuados de tributos por su contenido —J/01 material de la Ley 15.913 (libros), J/02 medicamentos de uso personal, J/03 numismática, J/04 valija diplomática— y ninguno cubre cosmética.',
+          text: 'La declaración aduanera lleva un campo "Tipo de envío" (RG DNA 11/2026 num. 28): "G" es franquicia y "H" es prestación única del 60%. Si venís por courier, el operador declara por vos: pedile por escrito que vaya como "G". El código "J" es para envíos exceptuados de tributos y, desde el 12/10/2026 (RG DNA 30/2026), tiene ocho subcategorías —material de la Ley 15.913 (libros), medicamentos de uso personal, numismática, valija diplomática, retorno de paquetería, muestras sin valor comercial, objetos olvidados en aeropuerto y otros específicamente autorizados—: ninguna corresponde a una compra de cosmética.',
         },
         {
           name: 'Si llega por Correo Uruguayo, declaralo vos primero',
@@ -2469,6 +2471,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
     },
     considerations: [
       'La pregunta que decide todo es una sola: ¿tu producto está gravado por IMESI? Si sí, no hay régimen postal. Si no, es un envío común que paga IVA 22%.',
+      'La lista del IMESI no es sólo de frascos. El Decreto 96/990 art. 27 grava también los "artículos artificiales o naturales aplicados a partes del cuerpo humano para su exclusivo embellecimiento" —pestañas o uñas postizas encajan en esa definición—, los adminículos para aplicar cosméticos, como brochas y esponjas de maquillaje, y las máquinas de afeitar. Por eso tampoco entran por el régimen postal. Las brochas y cremas para afeitar son la excepción: el mismo artículo las deja fuera del impuesto.',
       'El aerosol es un problema aparte del impuesto: el Correo Uruguayo no admite gases comprimidos ni aerosoles como mercancía peligrosa, por el envase y no por la función. Un desodorante en aerosol o un fijador en spray pueden quedar frenados aunque tributariamente estén limpios.',
       'El piso de US$ 20 de IVA hace que los pedidos chicos de cosmética rindan mal: por debajo de US$ 90,91 de factura pagás el mínimo, no el 22%. Juntar el pedido en un envío más grande baja el costo efectivo por producto.',
       'El protector solar sólo sale del IMESI si está registrado ante el MSP. Si comprás una marca que no se vende en Uruguay, esa condición es la que puede fallar.',
@@ -2495,7 +2498,11 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       },
       {
         q: '¿El MSP me puede frenar el paquete de cosmética?',
-        a: 'Los cosméticos son productos de salud bajo control del MSP, y la regla publicada por el ministerio es que no autoriza el ingreso al país de productos de salud del exterior por particulares (Decreto 18/020, reglamento anexo, art. 19). No existe una franja general de "uso personal" que te dispense del control, y no encontramos un trámite en VUCE pensado para que una persona física traiga su propia cosmética. Si el envío queda retenido por ese motivo, el art. 7 del Decreto 50/026 lo deja fuera de los dos regímenes y la salida publicada es devolverlo a origen a tu costo dentro de los 30 días. Cuánto de esto se aplica en el mostrador es práctica de la Aduana, no norma escrita.',
+        a: 'Los cosméticos son productos de salud bajo control del MSP: el ministerio los nombra entre los productos que evalúa, y la regla que publica es que "no autoriza el ingreso al país de productos de salud del exterior por particulares". No existe una franja general de "uso personal" que te dispense del control, y no encontramos un trámite en VUCE pensado para que una persona física traiga su propia cosmética. Si el envío queda retenido por ese motivo, el art. 7 del Decreto 50/026 lo deja fuera de los dos regímenes y la salida publicada es devolverlo a origen a tu costo dentro de los 30 días. Cuánto de esto se aplica en el mostrador es práctica de la Aduana, no norma escrita.',
+      },
+      {
+        q: '¿Y las pestañas postizas, las brochas o una máquina de afeitar?',
+        a: 'También están gravadas por IMESI, así que no entran por el régimen postal. El art. 27 del Decreto 96/990 suma a la lista gravada, además de cosméticos y perfumería, los artículos que se aplican al cuerpo "para su exclusivo embellecimiento", las máquinas de afeitar y los "adminículos utilizados para la aplicación de cosméticos". La lista orientativa de la Aduana nombra expresamente las máquinas de afeitar. La excepción son las brochas y las cremas para afeitar, que el mismo artículo deja fuera del impuesto.',
       },
       {
         q: '¿Y si es un regalo que me manda un familiar del exterior?',
@@ -2536,7 +2543,32 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       {
         label: 'RG DNA 11/2026',
         url: 'https://www.aduanas.gub.uy/innovaportal/file/28447/1/rg-11_2026.pdf',
-        note: 'Num. 27 repite el mínimo de US$ 20; num. 28 lit. c define los códigos de tipo de envío G, H y J.',
+        note: 'Num. 27 repite el mínimo de US$ 20; num. 28 define los códigos de tipo de envío G, H y J.',
+      },
+      {
+        label: 'RG DNA 30/2026 (5/10/2026, vigente desde el 12/10/2026)',
+        url: 'https://www.aduanas.gub.uy/innovaportal/file/28860/1/rg-30-2026.pdf',
+        note: 'Nueva redacción del num. 28 lit. c de la RG 11/2026: las ocho subcategorías del código J.',
+      },
+      {
+        label: 'RG DNA 26/2026 (13/08/2026, vigente desde el 5/10/2026)',
+        url: 'https://www.aduanas.gub.uy/innovaportal/file/28724/1/rg-26-2026-exoneracion-iva-encomiendas-postales.pdf',
+        note: 'Registro de empresas extranjeras: alta de oficio y a pedido del operador postal, lista publicada por la DNA, y la validación automática corrida al 3/11/2026.',
+      },
+      {
+        label: 'DNA — régimen de franquicia',
+        url: 'https://www.aduanas.gub.uy/innovaportal/v/28221/1/innova.front/',
+        note: 'Anuncia el registro del emisor de la factura "a partir del 3 de noviembre" y enlaza la lista de vendedores registrados.',
+      },
+      {
+        label: 'DNA — qué mercadería no puedo traer por encomiendas postales',
+        url: 'https://www.aduanas.gub.uy/innovaportal/v/25107/3/innova.front/que-mercaderia-no-puedo-traer-bajo-el-regimen-de-encomiendas-postales-internacionales.html',
+        note: 'Lista orientativa y no taxativa: nombra cosméticos, perfumería, artículos para embellecimiento y máquinas de afeitar entre lo gravado por IMESI.',
+      },
+      {
+        label: 'MSP — ¿Puedo ingresar al país productos de salud desde el exterior?',
+        url: 'https://www.gub.uy/ministerio-salud-publica/Puedo-ingresar-al-pa%C3%ADs-productos-de-salud-desde-el-exterior',
+        note: 'Nombra a los cosméticos entre los productos de salud y publica que no autoriza su ingreso por particulares.',
       },
       {
         label: 'DNA — preguntas frecuentes del régimen 2026',
@@ -2546,10 +2578,10 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       {
         label: 'Correo Uruguayo — cómo declarar su compra u obsequio',
         url: 'https://www.correo.com.uy/como-declarar-su-compra-u-obsequio',
-        note: 'Formulario web de declaración. Atención: su paso 3 todavía publica los topes derogados de US$ 50 y US$ 200.',
+        note: 'Formulario web de declaración. Atención: la página, actualizada el 03/08/2026, todavía publica en su paso 3 los topes derogados de US$ 50 y US$ 200.',
       },
     ],
-    verifiedAt: '2026-08-15',
+    verifiedAt: '2026-10-19',
   },
   {
     slug: 'alimentos',

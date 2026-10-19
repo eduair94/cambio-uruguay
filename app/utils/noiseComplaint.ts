@@ -20,13 +20,24 @@
 // source states, this file does not claim. Two real gaps are stated as gaps
 // rather than papered over:
 //
-//   1. The Intendencia de Montevideo procedure is written for COMMERCIAL and
-//      INDUSTRIAL premises. No equivalent published procedure exists for a
-//      private neighbour, and pretending otherwise sends the reader to a form
-//      that does not fit the case.
+//   1. The Intendencia de Montevideo MEASUREMENT procedure (SIME) is written for
+//      COMMERCIAL and INDUSTRIAL premises. No equivalent measurement procedure is
+//      published for a private neighbour, and pretending otherwise sends the
+//      reader to a form that does not fit the case.
 //   2. The Ministerio de Ambiente complaint form does not list noise among its
 //      subjects, even though Ley 17.852 makes the ministry competent for
 //      acoustic quality standards.
+//
+// WHAT THE FIRST VERSION GOT WRONG (fixed 2026-10-19). It said a neighbour had no
+// channel at all, and the page listed one phone number, a weekday office. Two
+// channels do exist for the noise that is happening NOW, and they are what the
+// searches ask for ("teléfono", "a dónde llamar", "911"): the Intendencia's
+// Convivencia Departamental central takes denuncias 24 hours a day on 1950 5000,
+// and its own report of 25/08/2026 lists "fiestas o reuniones en fincas
+// particulares" among the denuncias it answered; and Ley 17.852 art. 13 obliges
+// the Policía Nacional to act at once against the noise of an extraordinary or
+// non-permanent activity — a party — which is what 911 is for. Gap 1 above still
+// stands: neither channel is a measurement.
 
 /** An external source backing a claim on the page. */
 export interface NoiseSource {
@@ -62,10 +73,42 @@ export const NOISE_SOURCES: readonly NoiseSource[] = Object.freeze([
     url: 'https://www.gub.uy/tramites/denuncias-ambiente',
     publisher: 'Ministerio de Ambiente',
   },
+  // Appended, never inserted: `sourceIndex` points into this list by position.
+  {
+    label: 'Servicio de Convivencia Departamental — Central de Radio, denuncias las 24 horas',
+    url: 'https://montevideo.gub.uy/institucional/dependencias/servicio-de-convivencia-departamental',
+    publisher: 'Intendencia de Montevideo',
+  },
+  {
+    label:
+      'Noche de la Nostalgia: la central de Convivencia respondió denuncias por ruidos molestos y por fiestas en fincas particulares (25/08/2026)',
+    url: 'https://montevideo.gub.uy/noticias/noche-de-la-nostalgia-2546-vehiculos-fiscalizados-y-129-inspecciones',
+    publisher: 'Intendencia de Montevideo',
+  },
+  {
+    label:
+      'Ley 17.852, art. 13 — la Policía tiene que hacer cesar el ruido de una actividad extraordinaria',
+    url: 'https://www.impo.com.uy/bases/leyes/17852-2004/13',
+    publisher: 'IMPO — Centro de Información Oficial',
+  },
+  {
+    label: 'Ley 17.852, art. 10 — los límites alcanzan también a las actividades domésticas',
+    url: 'https://www.impo.com.uy/bases/leyes/17852-2004/10',
+    publisher: 'IMPO — Centro de Información Oficial',
+  },
+  {
+    label:
+      'Guía de Recursos 2025 — 9-1-1 Emergencia Policial: gratuita, incluso sin saldo, las 24 horas',
+    url: 'https://www.gub.uy/ministerio-interior/sites/ministerio-interior/files/documentos/publicaciones/GuiaDeRecursos2025finalizado.pdf',
+    publisher: 'Ministerio del Interior',
+  },
 ])
 
 /** Date the norms and procedures on this page were checked against their source. */
-export const NOISE_VERIFIED_AT = '2026-08-17'
+export const NOISE_VERIFIED_AT = '2026-10-19'
+
+/** The Intendencia de Montevideo line that takes denuncias at any hour (source index 5). */
+export const NOISE_NIGHT_LINE = '1950 5000'
 
 /** One noise limit, with the source that states it. */
 export interface NoiseLimit {
@@ -130,8 +173,12 @@ export interface NoiseChannel {
   scope: string
   /** How to reach it. */
   how: string
-  /** `true` when the channel has no cost. */
-  free: boolean
+  /**
+   * `true` when a source says the channel has no cost, `false` when a source says
+   * it has one, `null` when no source says either. The last one is printed as
+   * such: a phone line is not "sin costo" just because nobody published a fee.
+   */
+  free: boolean | null
   /** Contact string (phone or email), or `''`. */
   contact: string
   /** Public URL of the procedure. */
@@ -139,13 +186,44 @@ export interface NoiseChannel {
   sourceIndex: number
 }
 
+/** The cost column, worded from {@link NoiseChannel.free}. */
+export function noiseChannelCost(channel: NoiseChannel): string {
+  if (channel.free === true) return 'Sin costo'
+  if (channel.free === false) return 'Con costo'
+  return 'No lo publica'
+}
+
 /**
  * Where a denuncia goes.
  *
- * Ordered by how most readers will use them: the free municipal channels first,
- * the paid counter after, the national environmental route last.
+ * Ordered by how most readers will use them: the two lines that answer while the
+ * noise is happening first (that is what "teléfono" and "911" searches ask), then
+ * the free municipal channels, the paid measurement counter, and the national
+ * environmental route last.
  */
 export const NOISE_CHANNELS: readonly NoiseChannel[] = Object.freeze([
+  {
+    id: 'convivencia',
+    authority: 'Convivencia Departamental (Intendencia de Montevideo)',
+    scope:
+      'Ruido que está pasando ahora, a cualquier hora: fiestas o reuniones en una vivienda, locales y vía pública',
+    how: 'Por teléfono, las 24 horas, o por correo',
+    free: null,
+    contact: '1950 5000 · denuncias.convivencia@imm.gub.uy',
+    url: 'https://montevideo.gub.uy/institucional/dependencias/servicio-de-convivencia-departamental',
+    sourceIndex: 5,
+  },
+  {
+    id: 'policia',
+    authority: 'Policía (Ministerio del Interior)',
+    scope:
+      'Una fiesta o un evento puntual que no para. La ley obliga a la Policía a actuar de inmediato para hacer cesar el ruido',
+    how: 'Por teléfono, al 911, las 24 horas',
+    free: true,
+    contact: '911',
+    url: 'https://www.impo.com.uy/bases/leyes/17852-2004/13',
+    sourceIndex: 7,
+  },
   {
     id: 'buzon',
     authority: 'Intendencia de Montevideo',
@@ -214,7 +292,7 @@ export const NOISE_STEPS: readonly NoiseStep[] = Object.freeze([
   },
   {
     name: 'Elegí el canal que corresponde',
-    text: 'Si el ruido viene de un local comercial o industrial, denunciá ante la Intendencia. El buzón ciudadano y el Centro Comunal Zonal no tienen costo.',
+    text: 'Si el ruido está pasando ahora, llamá a la central de Convivencia de la Intendencia de Montevideo, al 1950 5000, que atiende las 24 horas. Si es una fiesta o un evento puntual que no para, llamá al 911. Si el ruido viene de un local comercial o industrial y se repite, pedí la medición ante la Intendencia: el buzón ciudadano y el Centro Comunal Zonal no tienen costo.',
   },
   {
     name: 'Presentá la denuncia con los tres datos obligatorios',
@@ -252,7 +330,7 @@ export const NOISE_TIPS: readonly NoiseTip[] = Object.freeze([
   },
   {
     title: 'Fijate quién genera el ruido',
-    body: 'El trámite de la Intendencia está escrito para locales comerciales e industriales. Si el ruido viene de un vecino particular, ese formulario no encaja. Consultá en tu Centro Comunal Zonal cuál es la vía en tu caso.',
+    body: 'El trámite de medición de la Intendencia está escrito para locales comerciales e industriales. Si el ruido viene de un vecino particular, ese formulario no encaja. Lo que sí encaja es el momento: mientras el ruido está pasando, la central de Convivencia (1950 5000) recibe denuncias las 24 horas, también por fiestas o reuniones en viviendas. Si el problema se repite, consultá en tu Centro Comunal Zonal cuál es la vía en tu caso.',
   },
   {
     title: 'Si vivís en un edificio, leé el reglamento de copropiedad',
@@ -272,24 +350,36 @@ export interface NoiseFaq {
 
 export const NOISE_FAQS: readonly NoiseFaq[] = Object.freeze([
   {
+    q: '¿A qué número llamo por ruidos molestos en Montevideo?',
+    a: 'Al 1950 5000. Es la central de denuncias de Convivencia Departamental de la Intendencia de Montevideo y atiende las 24 horas. También recibe denuncias por correo, en denuncias.convivencia@imm.gub.uy. El 25 de agosto de 2026 la Intendencia informó que esa central recibió y respondió denuncias por ruidos molestos y por fiestas o reuniones en fincas particulares. El 1950 a secas es la atención general de la Intendencia, en horario de oficina. Si es una fiesta que no para, también podés llamar al 911.',
+  },
+  {
+    q: '¿Puedo llamar al 911 por ruidos molestos?',
+    a: 'Sí, si es una fiesta o un evento puntual que no para. La Ley 17.852, en su artículo 13, obliga a la Policía Nacional a actuar de inmediato para hacer cesar el ruido de una actividad extraordinaria o no permanente que perturba la tranquilidad. La llamada al 911 es gratuita, incluso sin saldo, según el Ministerio del Interior. Si el ruido se repite todas las semanas, armá además el registro de episodios y presentá la denuncia ante la Intendencia.',
+  },
+  {
+    q: '¿Hasta qué hora se puede hacer ruido?',
+    a: 'No hay una hora a partir de la cual el ruido pasa a estar permitido: el límite rige todo el día. En Montevideo es 45 dB(A) de 7.00 a 22.00 horas y 39 dB(A) de 22.00 a 7.00 horas, medido dentro de la vivienda de quien denuncia. Las 22.00 no son la hora desde la que se puede denunciar: son la hora en que el límite baja. La Ley 17.852, en su artículo 10, aplica los límites también a las actividades domésticas. En otro departamento rige la norma de su Intendencia.',
+  },
+  {
     q: '¿Cuánto ruido es legal en Montevideo?',
-    a: 'La Intendencia de Montevideo considera ruido molesto el que supera 45 dB(A) entre las 7.00 y las 22.00 horas, y 39 dB(A) entre las 22.00 y las 7.00 horas. El límite se mide dentro de la vivienda de quien denuncia, no en la calle ni en el local que genera el ruido.',
+    a: 'La Intendencia de Montevideo considera ruido molesto el que supera 45 dB(A) entre las 7.00 y las 22.00 horas, y 39 dB(A) entre las 22.00 y las 7.00 horas. El límite se mide dentro de la vivienda de quien denuncia, no en la calle ni en el local que genera el ruido. Si el ruido de fondo, con la fuente apagada, ya supera esos valores, el límite pasa a ser ese fondo: con la fuente encendida no lo puede superar.',
   },
   {
     q: '¿La denuncia por ruidos molestos tiene costo?',
-    a: 'Depende del canal. El buzón ciudadano en línea y el Centro Comunal Zonal no tienen costo. El trámite en persona ante el SIME sí lo tiene. Consultá el valor vigente en el portal de trámites antes de ir.',
+    a: 'Depende del canal. El buzón ciudadano en línea y el Centro Comunal Zonal no tienen costo. El trámite en persona ante el SIME sí lo tiene: la Intendencia publica $ 329 a agosto de 2024 y lo actualiza con la Unidad Reajustable, así que consultá el valor vigente antes de ir. La llamada al 911 es gratuita, según el Ministerio del Interior. La central de Convivencia (1950 5000) no publica un costo por la denuncia.',
   },
   {
     q: '¿Puedo denunciar de forma anónima?',
-    a: 'Ante el Ministerio de Ambiente sí: el trámite indica que la denuncia puede ser anónima y que los datos del denunciante son opcionales. Ante la Intendencia de Montevideo no: el trámite pide tu dirección y tu teléfono, porque la medición se hace dentro de tu vivienda.',
+    a: 'Ante el Ministerio de Ambiente sí: el trámite indica que la denuncia puede ser anónima y que los datos del denunciante son opcionales. Ante la Intendencia de Montevideo, el trámite que termina en una medición no: pide tu dirección y tu teléfono, porque la medición se hace dentro de tu vivienda.',
   },
   {
     q: '¿Qué datos me van a pedir?',
-    a: 'La Intendencia de Montevideo pide tres datos: la calle y el número del local denunciado, tu dirección y tu teléfono, y el motivo de la denuncia. Llevá además tu registro de episodios con fechas y horas.',
+    a: 'Para el trámite de medición, la Intendencia de Montevideo pide tres datos: la calle y el número del local denunciado, tu dirección y tu teléfono, y el motivo de la denuncia. Llevá además tu registro de episodios con fechas y horas.',
   },
   {
     q: '¿Y si el ruido viene de un vecino y no de un local?',
-    a: 'El trámite publicado por la Intendencia de Montevideo está redactado para locales comerciales e industriales. Para un vecino particular no hay un trámite equivalente publicado. Consultá en tu Centro Comunal Zonal cuál es la vía en tu caso, y si vivís en un edificio revisá primero el reglamento de copropiedad.',
+    a: 'El trámite de medición publicado por la Intendencia de Montevideo está redactado para locales comerciales e industriales. Para un vecino particular no hay un trámite de medición equivalente publicado. Mientras el ruido está pasando, sí tenés dos vías: la central de Convivencia (1950 5000), que recibe denuncias las 24 horas, también por fiestas o reuniones en viviendas, y el 911 si es una fiesta o un evento puntual. Si el problema se repite, consultá en tu Centro Comunal Zonal cuál es la vía en tu caso, y si vivís en un edificio revisá el reglamento de copropiedad.',
   },
   {
     q: '¿Sirve grabar el ruido con el celular?',
