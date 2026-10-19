@@ -565,6 +565,21 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Letras de Regulación Monetaria para /letras-de-regulacion-monetaria-uruguay: la planilla
+      // oficial «Operaciones BCU y MEF local.xlsx» (todas las licitaciones desde 2019) más el
+      // calendario tentativo de las dos semanas siguientes → APP DB `lrmsnapshots`. Dos veces por
+      // día: el BCU licita de lunes a viernes a las 14:00 y sube la planilla a última hora (la del
+      // 16/10/2026 dice 22:32 UTC), así que 23:31 UTC la agarra el mismo día y 11:31 UTC, a la
+      // mañana siguiente, si llegó tarde. Minuto 31: fuera de todas las grillas horarias. Needs
+      // APP_MONGO_URI.
+      name: "currency-lrm",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_lrm.js",
+      cron_restart: "31 11,23 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Daily AI directional lean + external forecast comparison per live currency, for the
       // PricePredictionCard on /historico. Writes `pricepredictions` in the NUXT APP's database
       // (classes/appdb.ts, APP_MONGO_URI) — the SAME collection

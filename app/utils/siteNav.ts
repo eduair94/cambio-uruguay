@@ -1523,6 +1523,29 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // La deuda del BCU en pesos: el sitio la nombraba en prosa en cinco páginas y ninguna
+        // decía a qué tasa cortó la última licitación ni cuándo es la próxima. La tasa la lee
+        // `currency-lrm` de la planilla oficial del BCU dos veces por día.
+        to: '/letras-de-regulacion-monetaria-uruguay',
+        labelKey: 'nav.letrasRegulacionMonetaria',
+        icon: 'mdi-bank-outline',
+        priority: 0.7,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'letras de regulacion monetaria',
+          'tasas lrm uruguay',
+          'lrm bcu',
+          'licitacion lrm',
+          'como comprar letras de regulacion monetaria',
+          'letras del bcu',
+          'proxima licitacion bcu',
+          'lrm o plazo fijo',
+          'lrm pagan irpf',
+          'notas del tesoro en ui',
+        ],
+      },
+      {
         to: '/declaracion-de-irpf-uruguay',
         labelKey: 'nav.declaracionIrpf',
         icon: 'mdi-file-document-edit-outline',

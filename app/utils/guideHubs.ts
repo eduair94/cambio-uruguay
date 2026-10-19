@@ -1265,6 +1265,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/herramientas/calculadora-plazo-fijo',
       },
       {
+        label: 'Letras de Regulación Monetaria',
+        description: 'La tasa de la última licitación del BCU y si le gana al plazo fijo.',
+        to: '/letras-de-regulacion-monetaria-uruguay',
+      },
+      {
         label: 'Calculadora de impuestos a inversiones',
         description: 'El IRPF de tus rentas de capital.',
         to: '/herramientas/calculadora-impuestos-inversiones',

@@ -1146,6 +1146,10 @@
           "label": "Calculadora de plazo fijo"
         },
         {
+          "to": "/letras-de-regulacion-monetaria-uruguay",
+          "label": "Letras de Regulación Monetaria"
+        },
+        {
           "to": "/herramientas/calculadora-impuestos-inversiones",
           "label": "Calculadora de impuestos a inversiones"
         },
