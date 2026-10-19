@@ -25,15 +25,18 @@
             </v-chip>
           </v-card-title>
 
-          <!-- Hub cross-link into the comprehensive /casa page (rate + branches
-               + reputation) so it gains internal links to rank for "cambio X". -->
+          <!-- Enlace a la página de MARCA de la casa (utils/casaBrandPage.ts), con el nombre de
+               la casa en el ancla. Esta página es la de las sucursales y lo dice en el título; la
+               consulta que trae sólo el nombre es de la otra. Antes mandaba «Ver todo sobre X:
+               cotización de hoy, sucursales y opiniones» a /casa/<casa>, la ficha que ahora
+               declara canónica a la página de marca. -->
           <v-card-text class="pt-0 pb-2">
             <NuxtLink
-              :to="localePath(`/casa/${origin}`)"
+              :to="localePath(casaHubPath(origin, Boolean(usdToday)))"
               class="casa-hub-link d-inline-flex align-center ga-1"
             >
               <v-icon size="small">mdi-bank-outline</v-icon>
-              Ver todo sobre {{ exchangeHouseName }}: cotización de hoy, sucursales y opiniones
+              {{ $t('historical.brandLink', { origin: exchangeHouseName }) }}
               <v-icon size="small">mdi-arrow-right</v-icon>
             </NuxtLink>
           </v-card-text>
@@ -223,6 +226,7 @@
 import LocationsMap from '~/components/map/LocationsMap.vue'
 import { deptKey, deptLabel, humaniseOrigin, type BranchPage } from '~/utils/branches'
 import { applyBranchCorrections, type BranchFieldSources } from '~/utils/branchCorrections'
+import { casaHubPath } from '~/utils/casaBrandPage'
 
 interface BranchDirectory {
   branches: BranchPage[]
@@ -401,21 +405,30 @@ const seoTitle = computed(() => {
       ? `${t('seo.sucursalesTitle', { origin: name })} - ${locationLabel.value}`
       : t('seo.sucursalesTitle', { origin: name })
   }
+  // Un solo local tiene su propia clave, y no un plural de vue-i18n: el «|» de un mensaje lo
+  // prohíbe `i18nMessagePipes.test.ts`. Antes el título decía «Sucursales de Cambio Principal en
+  // Rivera: 1 locales» — la página de sucursales de la consulta «cambio principal rivera».
+  const one = count === 1
   return location
-    ? t('seo.sucursalesInLocation', { origin: name, location: locationLabel.value, count })
-    : t('seo.sucursalesWithCount', { origin: name, count })
+    ? t(one ? 'seo.sucursalesInLocationOne' : 'seo.sucursalesInLocation', {
+        origin: name,
+        location: locationLabel.value,
+        count,
+      })
+    : t(one ? 'seo.sucursalesWithCountOne' : 'seo.sucursalesWithCount', { origin: name, count })
 })
 
 const seoDescription = computed(() => {
   const name = exchangeHouseName.value
   const count = branchCount.value
+  const one = count === 1
   const base = location
-    ? t('seo.sucursalesLocationDescription', {
+    ? t(one ? 'seo.sucursalesLocationDescriptionOne' : 'seo.sucursalesLocationDescription', {
         origin: name,
         location: locationLabel.value,
         count,
       })
-    : t('seo.sucursalesDescription', { origin: name, count })
+    : t(one ? 'seo.sucursalesDescriptionOne' : 'seo.sucursalesDescription', { origin: name, count })
 
   // Lead with the number when we have it: the pages whose description carries
   // today's buy/sell are the only ones on this site clearing 1% CTR.

@@ -604,10 +604,11 @@ export default defineEventHandler(async _event => {
     sucursalesOrigins.forEach(origin => addUrlsForAllLocales(`/sucursales/${origin}`, 0.8))
     sucursalesLocationPairs.forEach(pair => addUrlsForAllLocales(`/sucursales/${pair}`, 0.7))
     departmentSlugs.forEach(slug => addUrlsForAllLocales(`/dolar/${slug}`, 0.7, 'daily', today))
-    // /casa/:origin origins come from localData keys, same source as sucursales.
-    sucursalesOrigins.forEach(origin =>
-      addUrlsForAllLocales(`/casa/${origin}`, 0.7, 'daily', today)
-    )
+    // /casa/:origin ya NO va al sitemap: la ficha declara canónica a la página de marca de la casa,
+    // /historico/:origin (ver utils/casaBrandPage.ts), y un sitemap que declara la URL no canónica
+    // le contradice a Google la etiqueta. La excepción —una casa sin cotización hoy, cuya ficha se
+    // queda canónica de sí misma— no tiene /historico/:origin y no compensa un caso aparte: la ficha
+    // sigue enlazada desde la portada, la comparativa y la pizarra.
 
     // --- /precio/<slug>: un articulo del SIPC por pagina --------------------
     // Los precios viven en la Mongo del BACKEND, no en la del app, asi que esto

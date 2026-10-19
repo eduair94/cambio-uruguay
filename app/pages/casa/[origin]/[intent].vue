@@ -4,12 +4,7 @@
       <VRow justify="center">
         <VCol cols="12" md="10" lg="9">
           <div class="mb-4">
-            <VBtn
-              :to="localePath(`/casa/${origin}`)"
-              variant="text"
-              size="small"
-              class="cu-btn-flush"
-            >
+            <VBtn :to="localePath(brandPath)" variant="text" size="small" class="cu-btn-flush">
               <VIcon start size="small">mdi-arrow-left</VIcon>
               Todo sobre {{ facts.name }}
             </VBtn>
@@ -437,13 +432,7 @@
           <VCard variant="flat" class="casa-related pa-5">
             <h2 class="text-subtitle-1 font-weight-bold mb-3">Seguí leyendo</h2>
             <div class="d-flex flex-wrap ga-2">
-              <VChip
-                :to="localePath(`/casa/${origin}`)"
-                color="primary"
-                variant="tonal"
-                size="small"
-                link
-              >
+              <VChip :to="localePath(brandPath)" color="primary" variant="tonal" size="small" link>
                 <VIcon start size="small">mdi-bank-outline</VIcon>
                 {{ facts.name }}: cotización de hoy
               </VChip>
@@ -457,16 +446,6 @@
               >
                 <VIcon start size="small">mdi-map-marker-multiple</VIcon>
                 Todas las sucursales
-              </VChip>
-              <VChip
-                :to="localePath(`/historico/${origin}`)"
-                color="primary"
-                variant="tonal"
-                size="small"
-                link
-              >
-                <VIcon start size="small">mdi-chart-line</VIcon>
-                Histórico
               </VChip>
               <VChip
                 :to="localePath('/mejor-casa-de-cambio')"
@@ -500,6 +479,7 @@
 import type { ExchangeRate } from '~/types/api'
 import { displayableHours, telHref, weeklyHoursTable, type BranchPage } from '~/utils/branches'
 import { buildUsdComparison, CASAS_REPUTATION } from '~/utils/casasDirectory'
+import { casaHubPath } from '~/utils/casaBrandPage'
 import {
   CASA_INTENT_META,
   availableIntents,
@@ -694,6 +674,17 @@ const siblingIntents = computed(() =>
   facts.value ? availableIntents(facts.value).filter(slug => slug !== intent.value) : []
 )
 
+// La página de MARCA de la casa (utils/casaBrandPage.ts): a donde van el «Todo sobre X» de arriba,
+// el «X: cotización de hoy» de abajo y el padre de las migas. Antes los tres iban a /casa/<casa>, la
+// ficha que ahora declara canónica a la página de marca. Una casa sin cotización hoy no tiene página
+// de marca que responda, así que esos enlaces caen en la ficha.
+const brandPath = computed(() =>
+  casaHubPath(
+    origin.value,
+    Boolean(facts.value?.usd) || (facts.value?.quotedCurrencies.length ?? 0) > 0
+  )
+)
+
 const heading = computed(() => (facts.value ? intentHeading(intent.value, facts.value) : ''))
 const description = computed(() =>
   facts.value ? intentDescription(intent.value, facts.value) : ''
@@ -846,7 +837,7 @@ useHead({
                   '@type': 'ListItem',
                   position: 2,
                   name: facts.value?.name,
-                  item: `https://cambio-uruguay.com/casa/${origin.value}`,
+                  item: `https://cambio-uruguay.com${brandPath.value}`,
                 },
                 {
                   '@type': 'ListItem',

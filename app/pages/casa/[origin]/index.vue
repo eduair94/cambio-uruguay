@@ -150,6 +150,18 @@
               </template>
             </v-data-table>
 
+            <!-- La página de marca de la casa, con su nombre en el ancla: es la canónica de esta
+                 ficha (utils/casaBrandPage.ts). -->
+            <v-card-text v-if="rates.length" class="pt-3 pb-1">
+              <NuxtLink
+                :to="localePath(brandPath)"
+                class="casa-details-link"
+                data-testid="casa-brand-link"
+              >
+                {{ $t('historical.brandLink', { origin: casaName }) }}
+              </NuxtLink>
+            </v-card-text>
+
             <!-- No rates -->
             <v-card-text v-else class="text-center pa-8" data-testid="casa-empty">
               <v-icon size="64" color="grey-lighten-1" class="mb-4">mdi-cash-remove</v-icon>
@@ -245,9 +257,9 @@
         </v-col>
       </v-row>
 
-      <!-- Espejo de otra pizarra. Este hub es la página canónica de la marca, así que el hecho va
-           acá y no sólo en el leaf de moneda: alguien que compara y ve cuatro casas con el mismo
-           precio no está viendo un empate de mercado, está viendo una pizarra repetida. -->
+      <!-- Espejo de otra pizarra. El hecho va en la ficha y no sólo en el leaf de moneda: alguien
+           que compara y ve cuatro casas con el mismo precio no está viendo un empate de mercado,
+           está viendo una pizarra repetida. -->
       <v-row v-if="mirror" class="mt-2">
         <v-col cols="12">
           <VAlert type="info" variant="tonal" density="comfortable">
@@ -258,7 +270,7 @@
               {{ $t('mirror.body', { casa: casaName, source: mirror.sourceName }) }}
             </p>
             <VBtn
-              :to="localePath(`/casa/${mirror.source}`)"
+              :to="localePath(mirrorSourcePath(mirror))"
               size="small"
               variant="tonal"
               density="comfortable"
@@ -309,7 +321,9 @@ import type { ExchangeRate } from '~/types/api'
 import { slugifyDepartment, type LocalDataMap } from '~/utils/departments'
 import { ratesForOrigin, type CasaRate } from '~/utils/currencyPages'
 import { pickOriginRate } from '~/utils/rateSource'
-import { mirrorOf } from '~/utils/rateMirrors'
+import { mirrorOf, mirrorSourcePath } from '~/utils/rateMirrors'
+import { casaHubPath } from '~/utils/casaBrandPage'
+import { hreflangLinksFor } from '~/utils/historyCanonical'
 import { computePageRecords } from '~/utils/rateStats'
 import type { BranchPage } from '~/utils/branches'
 import { intentsFor } from '~/utils/casaIntents'
@@ -536,7 +550,29 @@ const formatRate = (value: number | null): string => {
   })
 }
 
-const canonicalUrl = computed(() => `https://cambio-uruguay.com/casa/${origin.value}`)
+// La canónica de la ficha es la página de MARCA de la casa (utils/casaBrandPage.ts). Las dos
+// muestran la misma pizarra de hoy, moneda por moneda, y Google ya había elegido la otra para la
+// consulta del nombre: 90 días al 17/10/2026, consultas de marca sola, /historico/<casa> 28.090
+// impresiones y 184 clics en posición 6,8 contra 8.723 y 33 en posición 8,5 de esta ficha. Repartir
+// la marca entre dos URLs con la misma tabla es lo que la dejaba en la quinta posición. La ficha
+// sigue sirviendo a quien llega desde la portada o la comparativa; sólo cede la señal.
+//
+// Sin cotizaciones hoy se queda canónica de sí misma: la página de marca responde 404 cuando el
+// tablero no trae ninguna fila de la casa. Cada idioma apunta a su propio espejo (`localePath`), que
+// es lo que ya hacen /historico y /sucursales; antes la canónica era SIEMPRE la versión en español.
+const brandPath = computed(() => casaHubPath(origin.value, rates.value.length > 0))
+const yieldsToBrandPage = computed(() => brandPath.value !== `/casa/${origin.value}`)
+const canonicalUrl = computed(() => `https://cambio-uruguay.com${localePath(brandPath.value)}`)
+
+// Una canónica hacia otra URL no alcanza: el layout emite los siete `hreflang` para la URL
+// VISITADA, y Google ignora el hreflang de una página no canónica — la contradicción le resta al
+// grupo entero. Mismo arreglo que las variantes plegadas de /historico/<casa>/<moneda>/<tipo>
+// (`foldedAlternates`): los mismos `id` del layout, re-apuntados al grupo de la página de marca.
+const brandAlternates = computed(() =>
+  yieldsToBrandPage.value
+    ? hreflangLinksFor(code => `https://cambio-uruguay.com${localePath(brandPath.value, code)}`)
+    : []
+)
 
 // Branded OG image for the casa page.
 defineOgImageComponent('Cambio', {
@@ -546,8 +582,8 @@ defineOgImageComponent('Cambio', {
   tag: 'CASA',
 })
 
-// This page is the canonical hub for the "cambio {casa}" brand query, so its
-// snippet leads with the casa's own dollar rate. Falls back to the generic
+// The snippet leads with the casa's own dollar rate (the ficha yields the brand query to the brand
+// page through its canonical, but keeps a useful description for the reader). Falls back to the generic
 // sentence for the origins that publish no USD quote (BCU quotes UI/UR/UP only)
 // rather than borrowing another casa's number.
 const seoDescription = computed(() => {
@@ -573,9 +609,14 @@ useSeoMeta({
   twitterDescription: () => seoDescription.value,
 })
 
-// FinancialService + BreadcrumbList JSON-LD for rich results.
+// La canónica y, cuando la ficha cede a la página de marca, los `hreflang` re-apuntados.
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl.value }, ...brandAlternates.value],
+}))
+
+// FinancialService + BreadcrumbList JSON-LD for rich results. La entidad vive en la canónica
+// (`canonicalUrl`), o sea en la página de marca cuando la ficha le cede la señal.
 useHead({
-  link: [{ rel: 'canonical', href: canonicalUrl }],
   script: [
     {
       type: 'application/ld+json',

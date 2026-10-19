@@ -17,6 +17,7 @@ import * as faq from '../../utils/faqAnswers'
 import * as canonical from '../../utils/historyCanonical'
 import * as answer from '../../utils/rateAnswer'
 import * as mirrors from '../../utils/rateMirrors'
+import * as brandPage from '../../utils/casaBrandPage'
 import * as stats from '../../utils/rateStats'
 
 const filename = resolve(__dirname, '../../pages/historico/[origin]/[currency]/[[type]].vue')
@@ -114,6 +115,7 @@ function setupHistory(
     '~/utils/attribution': attribution,
     '~/utils/historyCanonical': canonical,
     '~/utils/rateMirrors': mirrors,
+    '~/utils/casaBrandPage': brandPage,
     '~/utils/rateStats': stats,
     '~/utils/currencyPages': currencies,
     '~/utils/rateAnswer': answer,
@@ -487,5 +489,34 @@ describe('últimos cambios de esta casa en esta moneda', () => {
     const page = (await bcu.setup) as any
     expect(recentCall(bcu.fetchCalls)?.options.immediate).toBe(false)
     expect(page.recentChangeRows.value).toEqual([])
+  })
+})
+
+// El botón «Todas las cotizaciones de <casa> hoy» es el enlace con la marca como ancla hacia la
+// página de marca (utils/casaBrandPage.ts). Una casa con el scraper caído no está en el tablero del
+// día y su página de marca responde 404, así que con una cotización vieja el botón cae en la ficha.
+describe('el botón con el nombre de la casa va a su página de marca', () => {
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Montevideo' })
+
+  it('con la cotización de hoy, a /historico/<casa>', async () => {
+    const { setup } = setupHistory(undefined, false, false, {
+      evolution: [bcuRow(today, '', 39, 41)],
+    })
+    expect(((await setup) as any).brandHubPath.value).toBe('/historico/brou')
+  })
+
+  it('con una cotización vieja, a la ficha, que existe para toda casa', async () => {
+    const { setup } = setupHistory(undefined, false, false, {
+      evolution: [bcuRow('2026-01-05', '', 39, 41)],
+    })
+    expect(((await setup) as any).brandHubPath.value).toBe('/casa/brou')
+  })
+
+  it('el BCU va a su propia página aunque su último dato sea de otro día', async () => {
+    const { setup } = setupHistory(undefined, false, false, {
+      origin: 'bcu',
+      evolution: [bcuRow('2026-01-05')],
+    })
+    expect(((await setup) as any).brandHubPath.value).toBe('/historico/bcu')
   })
 })

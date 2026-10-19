@@ -84,7 +84,10 @@ describe('sitemap with a healthy API', () => {
     const locs = new Set(urls.map(u => u.loc))
     expect(locs.has('/')).toBe(true)
     expect(locs.has('/historico/brou')).toBe(true)
-    expect(locs.has('/casa/brou')).toBe(true)
+    // La ficha declara canónica a la página de marca (utils/casaBrandPage.ts): el sitemap ya no la
+    // declara, para no contradecir la etiqueta. Sus páginas de intención siguen (/casa/brou/horarios…).
+    expect(locs.has('/casa/brou')).toBe(false)
+    expect(locs.has('/en/casa/brou')).toBe(false)
     expect(locs.has('/dolar/montevideo')).toBe(true)
     expect(locs.has('/dolar/treinta-y-tres')).toBe(true)
   })

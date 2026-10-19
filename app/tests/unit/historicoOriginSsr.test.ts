@@ -9,6 +9,7 @@ import * as vue from 'vue'
 import { describe, expect, it, vi } from 'vitest'
 import * as format from '../../utils/format'
 import * as rates from '../../utils/rateSource'
+import * as brandPage from '../../utils/casaBrandPage'
 
 // Run the real page setup: an exception in its items computed used to turn the
 // intended 404 into an undefined .filter() while Unhead evaluated the SEO tags.
@@ -48,6 +49,7 @@ function setupHistory(origin: string, payload: unknown) {
       if (name === 'vuetify') return { useDisplay: () => ({ smAndDown: vue.ref(false) }) }
       if (name === '@/utils/rateSource') return rates
       if (name === '@/utils/bcuHistory') return bcuHistory
+      if (name === '@/utils/casaBrandPage') return brandPage
       throw new Error(`Unexpected import: ${name}`)
     },
     useApiService: () => ({ getExchangeData: async () => payload }),

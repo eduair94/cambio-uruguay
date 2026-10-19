@@ -39,7 +39,8 @@ describe('la lista de espejos', () => {
   it('un espejo no publica estadísticas propias', () => {
     for (const m of RATE_MIRRORS) {
       expect(publishesOwnStats(m.origin)).toBe(false)
-      expect(mirrorSourcePath(m)).toBe(`/casa/${m.source}`)
+      // El aviso nombra a la fuente («Ver BROU»): va a su página de marca, no a la ficha.
+      expect(mirrorSourcePath(m)).toBe(`/historico/${m.source}`)
     }
   })
 
