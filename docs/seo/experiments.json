@@ -1625,6 +1625,34 @@
         "licitacion lrm bcu"
       ],
       "hypothesis": "Pagina nueva. La cola de demanda traia 'tasas lrm uruguay' con cobertura cero y un SERP de texto normativo crudo del BCU, y el sitio nombraba las LRM solo en prosa en cinco paginas sin decir a que tasa corto la ultima licitacion ni cuando es la proxima. En Search Console (20/7-17/10) las consultas de LRM sumaban 34 filas y 83 impresiones repartidas entre el glosario (posiciones 5 a 54) y /inversiones-uruguay, con 2 clics. El angulo propio son dos cosas que nadie publica juntas. Primera: la tasa de corte de cada plazo leida dos veces por dia de la planilla OFICIAL del BCU con todas las licitaciones desde 2019 (job nuevo currency-lrm, sin LLM, con guardas por fila, por serie y contra la foto anterior), la comparacion con la misma licitacion de hace un ano y el calendario tentativo que el BCU reemplaza cada viernes. Segunda: la cuenta contra el plazo fijo con las tarifas publicadas -BROU cobra 1,5/1/0,5 % anual sobre el nominal con un minimo de $ 2.500; Itau, 2 puntos de la tasa- y la pizarra e-BROU neta de IRPF: con las tasas del 13-15/10/2026, por el BROU la letra le gana al plazo fijo recien desde $ 1.760.000 a 30 dias y $ 850.000 a 90, y por Itau no le gana nunca. La exoneracion de IRPF sale del art. 38-T7 lit. A y de la Consulta DGI 6.322. Valor vivo en titulo y descripcion. Se espera que la pagina tome las consultas de LRM que hoy caen en el glosario y la de 'como comprar' que cae en /inversiones-uruguay, que no se toco."
+    },
+    {
+      "id": "importar-fichas-reglas-de-aduana-al-dia",
+      "shippedOn": "2026-10-19",
+      "routes": [
+        "/importar/libros",
+        "/importar/celulares-y-radiofrecuencia",
+        "/importar/electronica",
+        "/importar/ropa-y-calzado",
+        "/importar/juguetes",
+        "/importar/medicamentos",
+        "/importar/suplementos-y-vitaminas",
+        "/importar/productos-medicos-y-opticos",
+        "/importar/alimentos",
+        "/importar/plantas-semillas-y-fertilizantes",
+        "/importar/bebidas-alcoholicas-y-tabaco",
+        "/importar/vehiculos-y-repuestos",
+        "/importar/armas-y-replicas",
+        "/importar/productos-prohibidos",
+        "/importar/otros-productos"
+      ],
+      "queries": [
+        "se puede traer repuestos de autos del exterior",
+        "importar ropa",
+        "importacion de ropa",
+        "como traer medicamentos del extranjero"
+      ],
+      "hypothesis": "Correccion de contenido, no de snippet. Titulo y descripcion de las 15 fichas no se tocan porque se imprimen en /importar (ventana hasta el 28/10), y cosmeticos queda afuera porque tiene su propia fila desde el 19/10: se declaran las 15 rutas exactas y no /importar/, que tambien atraparia al indice y a cosmeticos. Lo que cambia es que las fichas vuelven a decir la norma vigente, leida el 19/10/2026: el registro de vendedores de EE.UU. con la RG 26/2026 (la factura sola ya no alcanza, el operador postal puede pedir el alta y las dos fechas que la DNA no hace coincidir) en las siete fichas que ofrecen la exoneracion por origen; el codigo J con sus ocho subcategorias (RG 30/2026, vigente desde el 12/10; las fichas decian cuatro y la RG 11 original ya traia siete) en las nueve que las enumeraban; la cita de los codigos G y H corregida a num. 28 (son los lit. b y a, no el c); la regla del MSP enlazada a la pagina propia del MSP y no a la raiz del sitio ni al art. 19 del reglamento de medicamentos; y en electronica, que la afeitadora paga IMESI (Decreto 96/990 art. 27 lit. d) y por eso queda fuera del regimen postal. Cada ficha publica la fecha de la correccion parcial sin mover la del contraste entero, y el dateModified del JSON-LD toma la nueva. Expectativa baja: entre el 20/9 y el 17/10 estas 15 fichas sumaron unas 50 impresiones y ningun clic, asi que el job probablemente dictamine 'sin datos'; la fila existe para que el cambio quede fechado y no contamine otra medicion de estas rutas."
     }
   ]
 }

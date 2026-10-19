@@ -16,6 +16,82 @@
 
 import { IMPORT_PRODUCT_TYPES, type Organism } from './importProductTypes'
 
+// ── Lo que se repite en varias fichas, escrito una sola vez ─────────────────────────────────────
+//
+// Corregido contra fuente primaria el 2026-10-19 (RG DNA 09, 21, 26 y 30/2026; página de franquicia
+// de la DNA; página del MSP). La ficha de cosmética NO usa estas constantes: tiene su propia
+// redacción, publicada ese mismo día y en medición hasta el 16/11/2026, y no se toca.
+
+/**
+ * La condición del registro de vendedores para la exoneración de EE.UU., tal como rige desde
+ * octubre de 2026. La factura sigue acompañando el envío (Decreto 50/026 art. 3), pero el país de
+ * procedencia es el de residencia del emisor REGISTRADO ante la DNA (RG 09/2026 Anexo I nums. 3 y 10);
+ * la RG 26/2026 derogó la leyenda que la factura tenía que traer (nums. 5 y 6) y abrió el alta a
+ * pedido del operador postal. Las dos fechas se publican porque la DNA no las hace coincidir: la
+ * lectura conservadora es la misma que usa el calculador (`SELLER_REGISTRY_ENFORCED_FROM`).
+ */
+const SELLER_REGISTRY_RULE =
+  'La factura sola ya no alcanza: el vendedor que la emite tiene que figurar en el registro de empresas extranjeras de la DNA (RG 09/2026), y si el envío trae facturas de varios vendedores tienen que figurar todos. Desde el 5/10/2026 el operador postal puede pedir que se agregue un vendedor que falta, la DNA analiza el pedido en 48 horas hábiles y tiene que publicar la lista en su sitio (RG 26/2026). Las fechas no coinciden: la RG 21/2026 lo hizo exigible desde el 1/10/2026 y la página de franquicia de la DNA lo anuncia "a partir del 3 de noviembre", cuando arranca la validación automática. Contá con que ya se exige.'
+
+/** La misma condición, en una frase, para las listas de cosas a considerar. */
+const SELLER_REGISTRY_SHORT =
+  'siempre que ese vendedor figure en el registro de empresas extranjeras de la DNA: se exige desde el 1/10/2026 (la DNA anuncia el 3 de noviembre, cuando arranca la validación automática) y, si falta, el operador postal puede pedir que lo agreguen (RG 26/2026).'
+
+const SELLER_REGISTRY_NORM =
+  'Decreto 50/026 art. 3; RG DNA 09/2026, prorrogada por las RG 12 y 21/2026 y modificada por la RG 26/2026'
+
+const RG_26_URL =
+  'https://www.aduanas.gub.uy/innovaportal/file/28724/1/rg-26-2026-exoneracion-iva-encomiendas-postales.pdf'
+
+/**
+ * Las subcategorías del código "J" del campo "Tipo de envío": RG DNA 11/2026 num. 28 lit. c, en la
+ * redacción de la RG 30/2026 (vigente desde el 12/10/2026), que sumó la 07. Las fichas decían que
+ * eran cuatro: la RG 11 original ya traía siete (01 a 06 y 99).
+ */
+const J_SUBCATEGORIES =
+  'J/01 material de la Ley 15.913 (libros), J/02 medicamentos de uso personal, J/03 numismática, J/04 valija diplomática, J/05 retorno de paquetería, J/06 muestras sin valor comercial, J/07 objetos olvidados en aeropuerto y J/99 otros específicamente autorizados'
+
+/** La página del MSP que publica la regla para particulares (no un artículo de decreto). */
+const MSP_HEALTH_PRODUCTS_URL =
+  'https://www.gub.uy/ministerio-salud-publica/Puedo-ingresar-al-pa%C3%ADs-productos-de-salud-desde-el-exterior'
+
+const SOURCE_RG_26: CategorySource = {
+  label: 'RG DNA 26/2026 (13/08/2026, vigente desde el 5/10/2026)',
+  url: RG_26_URL,
+  note: 'Registro de empresas extranjeras: alta de oficio y a pedido del operador postal, lista publicada por la DNA, derogación de la leyenda que tenía que traer la factura y validación automática corrida al 3/11/2026.',
+}
+
+const SOURCE_DNA_FRANQUICIA: CategorySource = {
+  label: 'DNA — régimen de franquicia',
+  url: 'https://www.aduanas.gub.uy/innovaportal/v/28221/1/innova.front/',
+  note: 'Exoneración de hasta US$ 200 por envío desde EE.UU.; anuncia el registro del emisor de la factura "a partir del 3 de noviembre".',
+}
+
+const SOURCE_RG_30: CategorySource = {
+  label: 'RG DNA 30/2026 (5/10/2026, vigente desde el 12/10/2026)',
+  url: 'https://www.aduanas.gub.uy/innovaportal/file/28860/1/rg-30-2026.pdf',
+  note: 'Nueva redacción del num. 28 lit. c de la RG 11/2026: suma los objetos olvidados en aeropuerto y deja ocho subcategorías del código J.',
+}
+
+const SOURCE_MSP_HEALTH_PRODUCTS: CategorySource = {
+  label: 'MSP — ¿Puedo ingresar al país productos de salud desde el exterior?',
+  url: MSP_HEALTH_PRODUCTS_URL,
+  note: 'Publica que "el MSP no autoriza el ingreso al país de productos de salud del exterior por particulares", nombra cuáles son productos de salud y la única excepción: producto no registrado, con prescripción médica específica.',
+}
+
+/** Decreto 96/990 art. 27: la lista de lo que grava el IMESI en perfumería y tocador. */
+const SOURCE_IMESI_ART_27: CategorySource = {
+  label: 'Decreto 96/990 art. 27 (redacción del Decreto 396/012)',
+  url: 'https://www.impo.com.uy/bases/decretos/96-1990/27',
+  note: 'Lit. d: grava las "máquinas de afeitar", definidas como "instrumento que se usa para rasurar, con el aditamento o no de un elemento cortante".',
+}
+
+const SOURCE_DNA_IMESI_LIST: CategorySource = {
+  label: 'DNA — qué mercadería no puedo traer por encomiendas postales',
+  url: 'https://www.aduanas.gub.uy/innovaportal/v/25107/3/innova.front/que-mercaderia-no-puedo-traer-bajo-el-regimen-de-encomiendas-postales-internacionales.html',
+  note: 'Lista orientativa y no taxativa: nombra las máquinas de afeitar entre lo gravado por IMESI, que queda fuera del régimen.',
+}
+
 /** Una referencia primaria: norma, resolución o página oficial. */
 export interface CategorySource {
   label: string
@@ -110,6 +186,14 @@ export interface ImportCategory {
   sources: CategorySource[]
   /** Fecha en que se contrastó con las fuentes de arriba (YYYY-MM-DD). */
   verifiedAt: string
+  /**
+   * Una corrección parcial posterior a `verifiedAt`: CUÁNDO y QUÉ temas se volvieron a leer contra
+   * la norma vigente. Va aparte a propósito: `verifiedAt` dice que la ficha ENTERA se contrastó ese
+   * día, y moverlo por una corrección de dos o tres temas afirmaría una relectura que no se hizo
+   * (la misma disciplina que los sellos parciales de `aduanaFaq.ts`). La página publica los dos y
+   * el `dateModified` del JSON-LD toma esta fecha.
+   */
+  revised?: { at: string; topics: string[] }
 }
 
 /**
@@ -268,7 +352,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
     ],
     declare: {
       intro:
-        'Acá está el dato que casi nadie te dice: un libro no se declara como franquicia. La RG DNA 11/2026 num. 28 lit. c define un campo "Tipo de envío" donde G es franquicia, H es prestación única (60%) y J son los envíos exceptuados del pago de tributos. Los libros van en J, subcategoría 01, "Material al amparo de la Ley N.º 15.913/87". El default del operador es G: si no pedís el J/01, el envío entra como franquicia y te consume cupo.',
+        'Acá está el dato que casi nadie te dice: un libro no se declara como franquicia. La RG DNA 11/2026 num. 28 define un campo "Tipo de envío" donde G es franquicia, H es prestación única (60%) y J son los envíos exceptuados del pago de tributos. Los libros van en J, subcategoría 01, "Material al amparo de la Ley N.º 15.913/87". El default del operador es G: si no pedís el J/01, el envío entra como franquicia y te consume cupo.',
       steps: [
         {
           name: 'Guardá la factura antes de que salga el paquete',
@@ -365,6 +449,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
         url: 'https://www.aduanas.gub.uy/innovaportal/file/28447/1/rg-11_2026.pdf',
         note: 'Tipos de envío G / H / J-01; excepción de los libros a los US$ 800 y a los 3 envíos; mínimo de US$ 20 de IVA y su excepción.',
       },
+      SOURCE_RG_30,
       {
         label: 'Decreto 50/026 (arts. 4, 5, 8, 9, 14 y Anexo art. 9 lit. g)',
         url: 'https://www.impo.com.uy/bases/decretos/50-2026',
@@ -392,6 +477,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       },
     ],
     verifiedAt: '2026-08-15',
+    revised: { at: '2026-10-19', topics: ['los códigos de tipo de envío'] },
   },
   {
     slug: 'celulares-y-radiofrecuencia',
@@ -501,10 +587,9 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
     benefits: [
       {
         title: 'Exoneración por origen: hasta US$ 200 desde EE.UU.',
-        detail:
-          'Dentro de la franquicia, los envíos de hasta US$ 200 provenientes de países con acuerdo comercial (EE.UU., por el TIFA) están exonerados. La residencia fiscal del vendedor se acredita con la factura. Desde el 1/10/2026 el emisor de la factura tiene que estar registrado ante la DNA; si no lo está, no se aplica la exoneración.',
-        norm: 'Decreto 50/026 art. 3',
-        url: 'https://www.impo.com.uy/bases/decretos/50-2026',
+        detail: `Dentro de la franquicia, los envíos de hasta US$ 200 provenientes de países con acuerdo comercial (EE.UU., por el TIFA) están exonerados. ${SELLER_REGISTRY_RULE}`,
+        norm: SELLER_REGISTRY_NORM,
+        url: RG_26_URL,
       },
       {
         title: 'Obsequio familiar entre personas físicas',
@@ -547,7 +632,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
         },
         {
           name: 'Elegí el régimen: es un campo de la declaración',
-          text: 'El declarante tiene que determinar el régimen aduanero aplicable al envío. La declaración lleva un campo "Tipo de envío" con códigos: "G" es franquicia y "H" es prestación única del 60%. Para un celular te conviene G. Los códigos J son para envíos exceptuados del pago de tributos (J/01 libros, J/02 medicamentos de uso personal): tu celular no va por ahí.',
+          text: 'El declarante tiene que determinar el régimen aduanero aplicable al envío. La declaración lleva un campo "Tipo de envío" con códigos: "G" es franquicia y "H" es prestación única del 60%. Para un celular te conviene G. Los códigos J son para envíos exceptuados del pago de tributos (entre ellos J/01 libros y J/02 medicamentos de uso personal): tu celular no va por ahí.',
         },
         {
           name: 'Declaralo vos (Correo) o controlá al courier',
@@ -577,7 +662,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       'No está publicado cuánto tiempo vale el certificado ni si sirve para más de un envío. Si pensás traer dos equipos, no asumas que uno solo alcanza.',
       'El Correo Uruguayo, por política propia, no admite baterías de litio en envíos internacionales, y las restricciones aéreas de IATA/OACI las decide cada aerolínea u operador. No es una prohibición aduanera uruguaya y no existe cifra oficial uruguaya de Wh: verificá con el operador que vas a usar antes de comprar.',
       'Para esta categoría la franquicia es igual o mejor que el 60% si cumplís sus requisitos (persona física mayor de edad con documento uruguayo, uso personal, tarjeta propia, cupo disponible): 22% contra 60% sobre la misma base. Sólo empatan por debajo de US$ 33,33, donde las dos caen en el piso de US$ 20.',
-      'Si el vendedor tiene residencia fiscal en EE.UU. y la factura no pasa de US$ 200, el envío queda exonerado dentro de la franquicia. Desde el 1/10/2026 ese vendedor va a tener que estar registrado ante la DNA para que valga.',
+      `Si el vendedor tiene residencia fiscal en EE.UU. y la factura no pasa de US$ 200, el envío queda exonerado dentro de la franquicia, ${SELLER_REGISTRY_SHORT}`,
       'El cupo se imputa por fecha de desaduanamiento, no de compra: un celular comprado en diciembre que despacha en enero consume el cupo del año nuevo.',
     ],
     faqs: [
@@ -635,8 +720,10 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       {
         label: 'RG DNA 11/2026',
         url: 'https://www.aduanas.gub.uy/innovaportal/file/28447/1/rg-11_2026.pdf',
-        note: 'Num. 27 (piso de IVA) y num. 28 lit. c: los códigos del campo "Tipo de envío" — G franquicia, H prestación única, J exceptuados.',
+        note: 'Num. 27 (piso de IVA) y num. 28: los códigos del campo "Tipo de envío" — H prestación única (lit. a), G franquicia (lit. b) y J exceptuados (lit. c).',
       },
+      SOURCE_RG_26,
+      SOURCE_DNA_FRANQUICIA,
       {
         label: 'DNA — preguntas frecuentes del régimen 2026',
         url: 'https://www.aduanas.gub.uy/innovaportal/v/28231/1/innova.front/',
@@ -654,6 +741,10 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       },
     ],
     verifiedAt: '2026-08-15',
+    revised: {
+      at: '2026-10-19',
+      topics: ['el registro de vendedores de EE.UU.', 'los códigos de tipo de envío'],
+    },
   },
   {
     slug: 'electronica',
@@ -678,6 +769,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       'Routers con módem celular, GPS, handies y cámaras con conexión celular: también van con URSEC',
       'Drones con radioenlace propietario (los que sólo usan Wi-Fi o Bluetooth en 2,4/5,8 GHz sí entran acá)',
       'Vaporizadores y cigarrillos electrónicos: importación prohibida, incluidos accesorios y repuestos',
+      'Afeitadoras y máquinas de afeitar: pagan IMESI y por eso no entran por el régimen postal',
     ],
     regimes: {
       franquicia: {
@@ -787,7 +879,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
     ],
     declare: {
       intro:
-        'La electrónica no tiene un canal propio: se declara como cualquier compra, con tipo de envío "G" (franquicia) o "H" (prestación única). Los códigos "J" de envíos exceptuados del pago de tributos son para material amparado en la Ley 15.913, medicamentos de uso personal, numismática y valija diplomática, así que acá el trabajo es asegurarte de que te declaren el régimen que elegiste y con el valor correcto.',
+        'La electrónica no tiene un canal propio: se declara como cualquier compra, con tipo de envío "G" (franquicia) o "H" (prestación única). Los códigos "J" de envíos exceptuados del pago de tributos —ocho desde el 12/10/2026 (RG 30/2026), de los libros y los medicamentos de uso personal a los objetos olvidados en aeropuerto— no cubren una compra de electrónica, así que acá el trabajo es asegurarte de que te declaren el régimen que elegiste y con el valor correcto.',
       steps: [
         {
           name: 'Confirmá que el equipo no lleva radio licenciada',
@@ -829,7 +921,8 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       'Los US$ 800 de valor de factura y los 20 kg por envío son topes independientes. Con electrónica voluminosa —un monitor, un gabinete, una impresora— te pasás de peso mucho antes que de plata.',
       'Baterías de litio: no hay prohibición aduanera uruguaya. Es una restricción de transporte aéreo (IATA/OACI) y la decide cada aerolínea u operador; el Correo Uruguayo, por política propia, no las admite en envíos internacionales. No existe cifra oficial uruguaya de Wh: los 100 Wh o 160 Wh que circulan no salen de ninguna norma nacional.',
       'El cupo se imputa por fecha de desaduanamiento, no de compra: si comprás en diciembre y el envío se desaduana en enero, consume el cupo del año siguiente.',
-      'Si el vendedor tiene residencia fiscal en EE.UU. (acuerdo TIFA), los envíos de hasta US$ 200 están exonerados dentro de la franquicia; se acredita con la factura. Desde el 1/10/2026 el emisor de la factura tiene que estar registrado ante la DNA o no se aplica la exoneración.',
+      `Si el vendedor tiene residencia fiscal en EE.UU. (acuerdo TIFA), los envíos de hasta US$ 200 están exonerados dentro de la franquicia, ${SELLER_REGISTRY_SHORT}`,
+      'Una afeitadora no es electrónica común para la Aduana. El art. 27 del Decreto 96/990 grava con IMESI las "máquinas de afeitar", que define como "instrumento que se usa para rasurar, con el aditamento o no de un elemento cortante", sin distinguir si es eléctrica o no; la lista orientativa de la DNA las nombra entre lo gravado. Y lo gravado por IMESI queda fuera del régimen postal "en ningún caso" (Ley 20.446 art. 633): ni franquicia ni 60%.',
       'Antes de comparar precios contra plaza, hacé la cuenta completa: producto + flete + 22% de IVA (o el piso de US$ 20 si la compra es chica) + lo que cobre el operador postal por su gestión.',
     ],
     faqs: [
@@ -886,8 +979,13 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       {
         label: 'RG DNA 11/2026 (PDF)',
         url: 'https://www.aduanas.gub.uy/innovaportal/file/28447/1/rg-11_2026.pdf',
-        note: 'Num. 27 repite el mínimo de US$ 20 de IVA; num. 28 lit. c define los códigos de tipo de envío G, H y J.',
+        note: 'Num. 27 repite el mínimo de US$ 20 de IVA; num. 28 define los códigos de tipo de envío: H prestación única (lit. a), G franquicia (lit. b) y J exceptuados (lit. c).',
       },
+      SOURCE_RG_30,
+      SOURCE_RG_26,
+      SOURCE_DNA_FRANQUICIA,
+      SOURCE_IMESI_ART_27,
+      SOURCE_DNA_IMESI_LIST,
       {
         label: 'URSEC / VUCE — certificado de ingreso de equipos radioeléctricos (persona física)',
         url: 'https://www.gub.uy/tramites/certificado-para-habilitar-ingreso-al-pais-equipos-radioelectricos-bajo-regimen-franquicia-persona-fisica',
@@ -910,6 +1008,14 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       },
     ],
     verifiedAt: '2026-08-15',
+    revised: {
+      at: '2026-10-19',
+      topics: [
+        'el registro de vendedores de EE.UU.',
+        'los códigos de tipo de envío',
+        'la lista del IMESI',
+      ],
+    },
   },
   {
     slug: 'ropa-y-calzado',
@@ -1027,10 +1133,9 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       },
       {
         title: 'Origen con acuerdo comercial: hasta US$ 200 exonerados',
-        detail:
-          'Dentro de la franquicia, los envíos de hasta US$ 200 provenientes de un país con acuerdo comercial (el caso del TIFA con Estados Unidos) están exonerados. La residencia fiscal del vendedor se acredita con la factura. Desde el 1/10/2026 el emisor de la factura tiene que estar registrado ante la DNA; si no lo está, la exoneración no se aplica.',
-        norm: 'Decreto 50/026 art. 3 y RG DNA 09/2026 (prorrogada por las RG 12 y 21/2026)',
-        url: 'https://www.impo.com.uy/bases/decretos/50-2026',
+        detail: `Dentro de la franquicia, los envíos de hasta US$ 200 provenientes de un país con acuerdo comercial (el caso del TIFA con Estados Unidos) están exonerados. ${SELLER_REGISTRY_RULE}`,
+        norm: SELLER_REGISTRY_NORM,
+        url: RG_26_URL,
       },
       {
         title: 'Obsequio familiar: exento de todo tributo',
@@ -1065,7 +1170,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
         },
         {
           name: 'Confirmá que el tipo de envío sea G',
-          text: 'La RG DNA 11/2026 num. 28 lit. c define el campo Tipo de envío: G para franquicia, H para la prestación única del 60%. Los códigos J son para envíos exceptuados del pago de tributos (material de la Ley 15.913, medicamentos de uso personal, numismática, valija diplomática) y no alcanzan a la ropa. El default del operador es G; si querés que sea otro, o querés asegurarte de que quede en G, decilo antes de que presente la declaración.',
+          text: `La RG DNA 11/2026 num. 28 define el campo Tipo de envío: G para franquicia, H para la prestación única del 60%. Los códigos J son para envíos exceptuados del pago de tributos y desde el 12/10/2026 son ocho (RG 30/2026): ${J_SUBCATEGORIES}. Ninguno alcanza a una compra de ropa. El default del operador es G; si querés que sea otro, o querés asegurarte de que quede en G, decilo antes de que presente la declaración.`,
         },
         {
           name: 'Registrate ante la DNA si querés adelantarte',
@@ -1095,7 +1200,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       'Entre franquicia y prestación única, para ropa la cuenta no tiene vuelta: 22% contra 60% sobre el mismo valor. La única razón sensata para pagar el 60% es guardar los envíos de franquicia para una compra más cara o ya haber consumido el cupo.',
       'Los 20 kg se llenan rápido con abrigo y calzado. Es un tope por envío, independiente del de US$ 800: podés quedarte corto de plata y largo de peso, o al revés.',
       'El valor incluye todos los conceptos que figuren adicionados en la factura. Si la tienda te factura el envío en la misma factura, ese envío suma al valor y también al cupo.',
-      'Si comprás en Estados Unidos y el total no pasa de US$ 200, el envío puede quedar exonerado por acuerdo comercial. Guardá la factura donde figure el vendedor: la residencia fiscal se acredita con ella, y desde el 1/10/2026 además hay que mirar que el emisor esté registrado ante la DNA.',
+      `Si comprás en Estados Unidos y el total no pasa de US$ 200, el envío puede quedar exonerado por acuerdo comercial, ${SELLER_REGISTRY_SHORT}`,
       'La franquicia es para uso personal sin fines comerciales: traer un lote de ropa para revender no entra por ahí. Y el IVA que pagás como particular es definitivo: no se deduce ni se recupera.',
     ],
     faqs: [
@@ -1158,8 +1263,11 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       {
         label: 'RG DNA 11/2026 (PDF)',
         url: 'https://www.aduanas.gub.uy/innovaportal/file/28447/1/rg-11_2026.pdf',
-        note: 'Num. 28 lit. c: los códigos del campo Tipo de envío (G franquicia, H prestación única, J exceptuados). Num. 27 repite el mínimo de US$ 20.',
+        note: 'Num. 28: los códigos del campo Tipo de envío, H prestación única (lit. a), G franquicia (lit. b) y J exceptuados (lit. c). Num. 27 repite el mínimo de US$ 20.',
       },
+      SOURCE_RG_30,
+      SOURCE_RG_26,
+      SOURCE_DNA_FRANQUICIA,
       {
         label: 'DNA — preguntas frecuentes del régimen 2026',
         url: 'https://www.aduanas.gub.uy/innovaportal/v/28231/1/innova.front/',
@@ -1172,6 +1280,10 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       },
     ],
     verifiedAt: '2026-08-15',
+    revised: {
+      at: '2026-10-19',
+      topics: ['el registro de vendedores de EE.UU.', 'los códigos de tipo de envío'],
+    },
   },
   {
     slug: 'juguetes',
@@ -1289,10 +1401,9 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       },
       {
         title: 'Origen con acuerdo comercial: hasta US$ 200 exonerados',
-        detail:
-          'Los envíos de hasta US$ 200 provenientes de países con acuerdo comercial (el caso del TIFA con Estados Unidos) están exonerados dentro de la franquicia. La residencia fiscal del vendedor se acredita con la factura. Desde el 1/10/2026 el emisor de la factura tiene que estar registrado ante la DNA; si no lo está, no se aplica la exoneración.',
-        norm: 'Decreto 50/026 art. 3',
-        url: 'https://www.impo.com.uy/bases/decretos/50-2026',
+        detail: `Los envíos de hasta US$ 200 provenientes de países con acuerdo comercial (el caso del TIFA con Estados Unidos) están exonerados dentro de la franquicia. ${SELLER_REGISTRY_RULE}`,
+        norm: SELLER_REGISTRY_NORM,
+        url: RG_26_URL,
       },
       {
         title: 'Franquicia anual: sin aranceles',
@@ -1338,7 +1449,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
         },
         {
           name: 'Verificá el tipo de envío que declara el operador',
-          text: 'La declaración aduanera lleva un campo "Tipo de envío": "G" es franquicia y "H" es prestación única del 60%. El grupo "J" es para envíos exceptuados del pago de tributos y sus subcategorías publicadas son J/01 (material al amparo de la Ley 15.913), J/02 (medicamentos de uso personal), J/03 (numismática) y J/04 (valija diplomática): ningún juguete entra ahí. Pedile al operador que confirme cuál declaró. No hay norma ni FAQ que diga si el régimen se puede cambiar después de presentada la declaración: asumí que no.',
+          text: `La declaración aduanera lleva un campo "Tipo de envío": "G" es franquicia y "H" es prestación única del 60%. El grupo "J" es para envíos exceptuados del pago de tributos y, desde el 12/10/2026, tiene ocho subcategorías (RG 30/2026): ${J_SUBCATEGORIES}. Ninguna corresponde a una compra de juguetes. Pedile al operador que confirme cuál declaró. No hay norma ni FAQ que diga si el régimen se puede cambiar después de presentada la declaración: asumí que no.`,
         },
         {
           name: 'Elegí el rubro correcto',
@@ -1424,6 +1535,9 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
         url: 'https://www.aduanas.gub.uy/innovaportal/file/28447/1/rg-11_2026.pdf',
         note: 'Códigos de tipo de envío G (franquicia), H (60%) y J (exceptuados, con J/03 numismática), y el mínimo de US$ 20 en el numeral 27 del Anexo I.',
       },
+      SOURCE_RG_30,
+      SOURCE_RG_26,
+      SOURCE_DNA_FRANQUICIA,
       {
         label: 'URSEC — certificado de ingreso de equipos radioeléctricos (persona física)',
         url: 'https://www.gub.uy/tramites/certificado-para-habilitar-ingreso-al-pais-equipos-radioelectricos-bajo-regimen-franquicia-persona-fisica',
@@ -1441,6 +1555,10 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       },
     ],
     verifiedAt: '2026-08-15',
+    revised: {
+      at: '2026-10-19',
+      topics: ['el registro de vendedores de EE.UU.', 'los códigos de tipo de envío'],
+    },
   },
   {
     slug: 'medicamentos',
@@ -1701,7 +1819,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       },
       {
         label: 'MSP — ¿puedo ingresar productos de salud desde el exterior?',
-        url: 'https://www.gub.uy/ministerio-salud-publica/',
+        url: MSP_HEALTH_PRODUCTS_URL,
         note: 'Fuente de la afirmación de que el MSP no autoriza el ingreso por particulares, salvo la excepción del producto no registrado.',
       },
       {
@@ -1721,6 +1839,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       },
     ],
     verifiedAt: '2026-08-15',
+    revised: { at: '2026-10-19', topics: ['la regla del MSP'] },
   },
   {
     slug: 'suplementos-y-vitaminas',
@@ -1831,10 +1950,9 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
     benefits: [
       {
         title: 'Origen con acuerdo comercial: hasta US$ 200 exonerados',
-        detail:
-          'Dentro de la franquicia, los envíos de hasta US$ 200 provenientes de países con acuerdo comercial (EE.UU./TIFA) están exonerados. Pesa mucho acá, porque la mayoría de los suplementos se compran en tiendas estadounidenses. La residencia fiscal del vendedor se acredita con la factura. Desde el 1/10/2026 el emisor de la factura tiene que estar registrado ante la DNA; si no lo está, no se aplica la exoneración. No te libera del control del MSP.',
-        norm: 'Decreto 50/026 art. 3 (RG DNA 09/2026, prorrogada por las RG 12 y 21/2026)',
-        url: 'https://www.impo.com.uy/bases/decretos/50-2026',
+        detail: `Dentro de la franquicia, los envíos de hasta US$ 200 provenientes de países con acuerdo comercial (EE.UU./TIFA) están exonerados. Pesa mucho acá, porque la mayoría de los suplementos se compran en tiendas estadounidenses. ${SELLER_REGISTRY_RULE} No te libera del control del MSP.`,
+        norm: SELLER_REGISTRY_NORM,
+        url: RG_26_URL,
       },
       {
         title: 'Obsequio familiar',
@@ -1876,7 +1994,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
         },
         {
           name: 'Pedí el tipo de envío que corresponde: "G"',
-          text: 'La opción de régimen es un campo de la declaración y la RG DNA 11/2026 num. 28 lit. c codifica el tipo de envío: "G" es franquicia y "H" es prestación única del 60%. Los códigos "J" son para envíos exceptuados del pago de tributos, y el J/02 está rotulado "Medicamentos de uso personal": un suplemento que no está registrado como medicamento no encaja en esa etiqueta, y ninguna norma ni FAQ dice qué pasa si se declara igual. Pedile al operador postal el "G" y no inventes un J.',
+          text: 'La opción de régimen es un campo de la declaración y la RG DNA 11/2026 num. 28 codifica el tipo de envío: "G" es franquicia y "H" es prestación única del 60%. Los códigos "J" son para envíos exceptuados del pago de tributos, y el J/02 está rotulado "Medicamentos de uso personal": un suplemento que no está registrado como medicamento no encaja en esa etiqueta, y ninguna norma ni FAQ dice qué pasa si se declara igual. Pedile al operador postal el "G" y no inventes un J.',
         },
         {
           name: 'Si llega por Correo Uruguayo, declaralo vos primero',
@@ -1904,7 +2022,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       'El piso de US$ 20 de IVA cambia toda la matemática de esta categoría: un frasco de US$ 25 paga US$ 20, o sea casi un 80% efectivo. Por debajo de US$ 90,91 de factura siempre pagás el piso y no el 22%. Consolidar en un envío grande, y no en tres chicos, es la palanca más directa que tenés.',
       'Los suplementos consumen cupo como cualquier otra compra: 3 envíos y US$ 800 por año civil. No están entre las excepciones (esas son libros y medicamentos con autorización del MSP). Y el cupo se imputa por fecha de desaduanamiento, no por fecha de compra.',
       'El peso importa tanto como el monto: el tope de 20 kg por envío es independiente del de US$ 800. Con polvos de proteína o packs grandes se llega antes al kilaje que al dinero.',
-      'Si comprás en EE.UU. y el envío no pasa de US$ 200, corre la exoneración por origen dentro de la franquicia. Lo que la norma no resuelve es cómo se combina con el piso de US$ 20 de IVA, porque no hay ejemplo oficial publicado. Desde el 1/10/2026 el emisor de la factura tiene que estar registrado ante la DNA: si no lo está, no hay exoneración.',
+      'Si comprás en EE.UU. y el envío no pasa de US$ 200, corre la exoneración por origen dentro de la franquicia. Lo que la norma no resuelve es cómo se combina con el piso de US$ 20 de IVA, porque no hay ejemplo oficial publicado. Y el vendedor que emite la factura tiene que figurar en el registro de empresas extranjeras de la DNA: se exige desde el 1/10/2026 (la DNA anuncia el 3 de noviembre, cuando arranca la validación automática) y, si falta, el operador postal puede pedir que lo agreguen (RG 26/2026).',
       'El riesgo grande no es el impuesto, es el control sanitario. Si el producto necesita autorización del MSP y no la tenés, el envío queda afuera de los dos regímenes y la única salida publicada es devolverlo a origen pagando vos. Ese es el escenario que hay que sopesar antes de comprar, no después.',
       'Fijate qué tiene adentro además del principio activo. Los alimentos de origen animal están prohibidos por encomienda o correo, y los productos vegetales acondicionados al detalle lo están en envases de más de 500 gramos. La nómina del MGAP no es taxativa.',
       'No hay ningún ejemplo numérico oficial de una compra con franquicia que pague IVA. Presupuestá con el piso incluido y no te sorprendas si la cifra que te cotiza el operador no coincide con lo que leíste en una FAQ.',
@@ -1964,11 +2082,13 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       {
         label: 'RG DNA 11/2026',
         url: 'https://www.aduanas.gub.uy/innovaportal/file/28447/1/rg-11_2026.pdf',
-        note: 'Num. 27 (piso de US$ 20 de IVA) y num. 28 lit. c (códigos de tipo de envío: G franquicia, H prestación única, J exceptuados).',
+        note: 'Num. 27 (piso de US$ 20 de IVA) y num. 28, los códigos de tipo de envío: H prestación única (lit. a), G franquicia (lit. b) y J exceptuados (lit. c).',
       },
+      SOURCE_RG_26,
+      SOURCE_DNA_FRANQUICIA,
       {
         label: 'MSP — ¿puedo ingresar productos de salud desde el exterior?',
-        url: 'https://www.gub.uy/ministerio-salud-publica/',
+        url: MSP_HEALTH_PRODUCTS_URL,
         note: 'El MSP no autoriza el ingreso de productos de salud por particulares; la excepción es sólo para productos no registrados con prescripción médica.',
       },
       {
@@ -1983,6 +2103,14 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       },
     ],
     verifiedAt: '2026-08-15',
+    revised: {
+      at: '2026-10-19',
+      topics: [
+        'el registro de vendedores de EE.UU.',
+        'los códigos de tipo de envío',
+        'la regla del MSP',
+      ],
+    },
   },
   {
     slug: 'productos-medicos-y-opticos',
@@ -2118,7 +2246,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
         organism: 'MSP',
         when: 'Siempre que compres anteojos graduados, lentes de contacto, cristales o armazones. No hay excepción de uso personal ni monto que la habilite.',
         how: 'No hay trámite para vos. El Comunicado del MSP del 26/08/2024, que invoca el Decreto 474/968 y el Decreto 03/008, dice que estos productos no pueden ingresar a nombre de una persona física: sólo por empresas habilitadas ante el MSP. Si lo comprás igual, el envío llega sin la autorización que el MSP exige, y el art. 7 del Decreto 50/026 deja fuera del régimen a la mercadería que requiere autorización y carece de ella: se puede devolver a origen a costo del interesado dentro de los 30 días.',
-        url: 'https://www.gub.uy/ministerio-salud-publica/',
+        url: MSP_HEALTH_PRODUCTS_URL,
       },
       {
         organism: 'MSP',
@@ -2130,7 +2258,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
         organism: 'MSP',
         when: 'Cuando el producto médico no está registrado en Uruguay. Si está registrado, rige la regla general y el MSP no autoriza el ingreso de productos de salud por particulares.',
         how: 'Trámite de la Dirección General de la Salud para personas físicas, gratuito, que pide la factura, el folleto del producto y una nota declarando que no se consiguió en plaza. Conviene tenerlo aprobado antes de que llegue el envío: sin el certificado previo la DNA no inicia el trámite del envío retenido.',
-        url: 'https://www.gub.uy/ministerio-salud-publica/',
+        url: MSP_HEALTH_PRODUCTS_URL,
       },
       {
         organism: 'URSEC',
@@ -2161,7 +2289,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
         },
         {
           name: 'Decidí el régimen antes de que el operador declare',
-          text: 'La declaración lleva un campo Tipo de envío (RG DNA 11/2026 num. 28 lit. c): G es franquicia y H es prestación única del 60%. Los códigos J son para envíos exceptuados del pago de tributos y ninguno de los cuatro publicados corresponde a productos médicos: el J/02 es medicamentos de uso personal. Si viene por courier, avisale al operador qué régimen querés; si viene por Correo Uruguayo, lo declarás vos en el formulario web con el tracking de 13 caracteres y los datos idénticos a los de tu cédula. No hay norma ni FAQ que diga si el régimen se puede cambiar después de presentada la declaración.',
+          text: 'La declaración lleva un campo Tipo de envío (RG DNA 11/2026 num. 28): G es franquicia y H es prestación única del 60%. Los códigos J son para envíos exceptuados del pago de tributos, son ocho desde el 12/10/2026 (RG 30/2026) y ninguno corresponde a productos médicos: el J/02 es medicamentos de uso personal. Si viene por courier, avisale al operador qué régimen querés; si viene por Correo Uruguayo, lo declarás vos en el formulario web con el tracking de 13 caracteres y los datos idénticos a los de tu cédula. No hay norma ni FAQ que diga si el régimen se puede cambiar después de presentada la declaración.',
         },
         {
           name: 'Si te corresponde el 10%, preparate para tener que reclamarlo',
@@ -2248,11 +2376,12 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       {
         label: 'RG DNA 11/2026',
         url: 'https://www.aduanas.gub.uy/innovaportal/file/28447/1/rg-11_2026.pdf',
-        note: 'Num. 26 (excepción de cupo sólo para libros y medicamentos), Anexo I num. 27 (mínimo de IVA) y num. 28 lit. c (códigos G, H y J del campo Tipo de envío).',
+        note: 'Num. 26 (excepción de cupo sólo para libros y medicamentos), Anexo I num. 27 (mínimo de IVA) y num. 28 (códigos H, G y J del campo Tipo de envío, lits. a, b y c).',
       },
+      SOURCE_RG_30,
       {
         label: 'MSP — ¿puedo ingresar productos de salud desde el exterior?',
-        url: 'https://www.gub.uy/ministerio-salud-publica/',
+        url: MSP_HEALTH_PRODUCTS_URL,
         note: 'El MSP no autoriza el ingreso de productos de salud por particulares; la excepción es el producto no registrado. De acá salen también el comunicado sobre óptica graduada y la liberación por única vez de hasta 2 lentes de sol.',
       },
       {
@@ -2267,6 +2396,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       },
     ],
     verifiedAt: '2026-08-15',
+    revised: { at: '2026-10-19', topics: ['los códigos de tipo de envío', 'la regla del MSP'] },
   },
   {
     slug: 'cosmeticos-y-perfumeria',
@@ -2755,7 +2885,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
         },
         {
           name: 'Decile al operador qué tipo de envío declarar',
-          text: 'La declaración aduanera tiene un campo "Tipo de envío": G es régimen de franquicia y H es prestación única del 60%. Los alimentos no tienen código propio de excepción: los J/01 y J/02 son sólo para material de la Ley 15.913 (libros) y medicamentos de uso personal con autorización del MSP. El default del operador es G. Si querés el otro régimen, pedilo por escrito al courier o al operador postal antes del arribo: ninguna norma ni FAQ dice si se puede cambiar después de presentada la declaración.',
+          text: 'La declaración aduanera tiene un campo "Tipo de envío": G es régimen de franquicia y H es prestación única del 60%. Los alimentos no tienen código propio de excepción: de las ocho subcategorías del código J (RG 30/2026, vigente desde el 12/10/2026), ninguna corresponde a una compra de comida; la más cercana, J/02, es para medicamentos de uso personal con autorización del MSP. El default del operador es G. Si querés el otro régimen, pedilo por escrito al courier o al operador postal antes del arribo: ninguna norma ni FAQ dice si se puede cambiar después de presentada la declaración.',
         },
         {
           name: 'Pagá con tu propia tarjeta o dinero electrónico',
@@ -2853,8 +2983,9 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       {
         label: 'RG DNA 11/2026 — procedimiento del régimen',
         url: 'https://www.aduanas.gub.uy/innovaportal/file/28447/1/rg-11_2026.pdf',
-        note: 'Anexo I num. 27 repite el mínimo de US$ 20; num. 28 lit. c define los códigos de tipo de envío G, H y J.',
+        note: 'Anexo I num. 27 repite el mínimo de US$ 20; num. 28 define los códigos de tipo de envío: H prestación única (lit. a), G franquicia (lit. b) y J exceptuados (lit. c).',
       },
+      SOURCE_RG_30,
       {
         label: 'Correo Uruguayo — cómo declarar su compra u obsequio',
         url: 'https://www.correo.com.uy/como-declarar-su-compra-u-obsequio',
@@ -2862,6 +2993,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       },
     ],
     verifiedAt: '2026-08-15',
+    revised: { at: '2026-10-19', topics: ['los códigos de tipo de envío'] },
   },
   {
     slug: 'plantas-semillas-y-fertilizantes',
@@ -3009,7 +3141,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
         },
         {
           name: 'Si el envío igual puede viajar, pedile al operador el tipo de envío correcto',
-          text: 'La declaración aduanera lleva un campo Tipo de envío: G es franquicia y H es prestación única del 60% (RG DNA 11/2026 num. 28 lit. c). Las subcategorías J, para envíos exceptuados del pago de tributos, son cuatro y ninguna es agro: J/01 material de la Ley 15.913, J/02 medicamentos de uso personal, J/03 numismática y J/04 valija diplomática. No hay un código J para pedir la exoneración del fertilizante: si el envío entra, entra como G o como H.',
+          text: `La declaración aduanera lleva un campo Tipo de envío: G es franquicia y H es prestación única del 60% (RG DNA 11/2026 num. 28). Las subcategorías J, para envíos exceptuados del pago de tributos, son ocho desde el 12/10/2026 (RG 30/2026) y ninguna es agro: ${J_SUBCATEGORIES}. No hay un código J para pedir la exoneración del fertilizante: si el envío entra, entra como G o como H.`,
         },
         {
           name: 'Documentá el valor y el medio de pago',
@@ -3112,8 +3244,9 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       {
         label: 'RG DNA 11/2026',
         url: 'https://www.aduanas.gub.uy/innovaportal/file/28447/1/rg-11_2026.pdf',
-        note: 'Num. 28 lit. c: códigos de tipo de envío G, H y J. Ninguna subcategoría J corresponde a esta mercadería.',
+        note: 'Num. 28: códigos de tipo de envío H prestación única (lit. a), G franquicia (lit. b) y J exceptuados (lit. c). Ninguna subcategoría J corresponde a esta mercadería.',
       },
+      SOURCE_RG_30,
       {
         label: 'DNA — productos que requieren permisos o no pueden ingresar',
         url: 'https://www.aduanas.gub.uy/innovaportal/v/28229/1/innova.front/',
@@ -3121,6 +3254,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       },
     ],
     verifiedAt: '2026-08-15',
+    revised: { at: '2026-10-19', topics: ['los códigos de tipo de envío'] },
   },
   {
     slug: 'bebidas-alcoholicas-y-tabaco',
@@ -3234,7 +3368,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
         },
         {
           name: 'Descartá el canal postal antes de pagar',
-          text: 'La declaración aduanera del régimen postal lleva un campo Tipo de envío con los códigos de la RG DNA 11/2026 num. 28 lit. c: G es franquicia, H es la prestación única del 60%, y J son los envíos exceptuados de tributos, con sus cuatro subcategorías (J/01 material de la Ley 15.913, J/02 medicamentos de uso personal, J/03 numismática, J/04 valija diplomática). Ninguno ampara bebidas alcohólicas ni tabaco. Si el vendedor te ofrece declararlo como otra cosa, te está proponiendo una declaración falsa del contenido: no es un atajo, es lo que después deja el paquete retenido.',
+          text: `La declaración aduanera del régimen postal lleva un campo Tipo de envío con los códigos de la RG DNA 11/2026 num. 28: G es franquicia, H es la prestación única del 60%, y J son los envíos exceptuados de tributos, con ocho subcategorías desde el 12/10/2026 (RG 30/2026): ${J_SUBCATEGORIES}. Ninguno ampara bebidas alcohólicas ni tabaco. Si el vendedor te ofrece declararlo como otra cosa, te está proponiendo una declaración falsa del contenido: no es un atajo, es lo que después deja el paquete retenido.`,
         },
         {
           name: 'Si igual lo querés traer, es despacho formal',
@@ -3343,10 +3477,12 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       {
         label: 'RG DNA 11/2026',
         url: 'https://www.aduanas.gub.uy/innovaportal/file/28447/1/rg-11_2026.pdf',
-        note: 'Num. 28 lit. c: códigos de Tipo de envío G, H y J/01 a J/04. Ninguno ampara alcohol ni tabaco',
+        note: 'Num. 28: códigos de Tipo de envío H prestación única (lit. a), G franquicia (lit. b) y J exceptuados (lit. c). Ninguno ampara alcohol ni tabaco.',
       },
+      SOURCE_RG_30,
     ],
     verifiedAt: '2026-08-15',
+    revised: { at: '2026-10-19', topics: ['los códigos de tipo de envío'] },
   },
   {
     slug: 'vehiculos-y-repuestos',
@@ -3464,10 +3600,9 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       },
       {
         title: 'Repuesto de origen EE.UU. hasta US$ 200: exonerado',
-        detail:
-          'Dentro de la franquicia, los envíos de hasta US$ 200 originados en un país con acuerdo comercial (EE.UU./TIFA) están exonerados. La residencia fiscal del vendedor se acredita con la factura. Desde el 1/10/2026 el emisor de la factura tiene que estar registrado ante la DNA; si no lo está, no se aplica la exoneración.',
-        norm: 'Decreto 50/026, art. 3',
-        url: 'https://www.impo.com.uy/bases/decretos/50-2026',
+        detail: `Dentro de la franquicia, los envíos de hasta US$ 200 originados en un país con acuerdo comercial (EE.UU./TIFA) están exonerados. ${SELLER_REGISTRY_RULE}`,
+        norm: SELLER_REGISTRY_NORM,
+        url: RG_26_URL,
       },
     ],
     procedures: [
@@ -3500,7 +3635,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
         },
         {
           name: 'Pedile al operador el tipo de envío correcto: G o H',
-          text: 'La RG DNA 11/2026 num. 28 lit. c define los códigos: "G" para franquicia y "H" para prestación única (60%). Los códigos "J" son para envíos exceptuados de tributos —J/01 material de la Ley 15.913, J/02 medicamentos de uso personal, J/03 numismática, J/04 valija diplomática— y ninguno corresponde a autopartes: no pidas J. Decile además que el rubro del Anexo es "Autopartes y accesorios de vehículos".',
+          text: `La RG DNA 11/2026 num. 28 define los códigos: "G" para franquicia y "H" para prestación única (60%). Los códigos "J" son para envíos exceptuados de tributos —ocho desde el 12/10/2026 (RG 30/2026): ${J_SUBCATEGORIES}— y ninguno corresponde a una compra de autopartes: no pidas J. Decile además que el rubro del Anexo es "Autopartes y accesorios de vehículos".`,
         },
         {
           name: 'Si viene por Correo Uruguayo, declaralo vos primero',
@@ -3517,7 +3652,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
         'Declarar el repuesto por menos de lo que salió: la Ley 20.446 art. 632 manda multa igual al doble de los tributos que debían pagarse, perdés la franquicia de esa operación y la reincidencia dentro de 12 meses te prohíbe operar en el régimen por un año.',
         'Comprar el GPS o la alarma celular y recién después averiguar lo de URSEC: el certificado es previo, y sin él la Aduana puede retener y tenés que ir personalmente.',
         'Dejar que el operador declare "G" por defecto cuando ya no te queda cupo, o "H" cuando sí te queda: el régimen es un campo de la declaración y no hay norma ni FAQ que diga si se puede cambiar una vez presentada.',
-        'Pedir que el envío se marque como exceptuado de tributos: los códigos J son para libros, medicamentos, numismática y valija diplomática, no para autopartes.',
+        'Pedir que el envío se marque como exceptuado de tributos: los códigos J son para libros, medicamentos de uso personal, numismática, valija diplomática, retorno de paquetería, muestras sin valor comercial, objetos olvidados en aeropuerto y casos específicamente autorizados, no para autopartes.',
       ],
     },
     considerations: [
@@ -3589,8 +3724,11 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       {
         label: 'RG DNA 11/2026',
         url: 'https://www.aduanas.gub.uy/innovaportal/file/28447/1/rg-11_2026.pdf',
-        note: 'Num. 27 el piso de IVA; num. 28 lit. c los códigos de tipo de envío G, H y J.',
+        note: 'Num. 27 el piso de IVA; num. 28 los códigos de tipo de envío: H prestación única (lit. a), G franquicia (lit. b) y J exceptuados (lit. c).',
       },
+      SOURCE_RG_30,
+      SOURCE_RG_26,
+      SOURCE_DNA_FRANQUICIA,
       {
         label: 'Ley 19.535, art. 265 (tasa consular)',
         url: 'https://www.impo.com.uy/bases/leyes/19535-2017/265',
@@ -3603,6 +3741,10 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       },
     ],
     verifiedAt: '2026-08-15',
+    revised: {
+      at: '2026-10-19',
+      topics: ['el registro de vendedores de EE.UU.', 'los códigos de tipo de envío'],
+    },
   },
   {
     slug: 'armas-y-replicas',
@@ -3726,7 +3868,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
         },
         {
           name: 'No dejes que el operador marque el tipo de envío a ciegas',
-          text: 'La declaración lleva un campo "Tipo de envío" (RG DNA 11/2026 num. 28 lit. c): "G" es franquicia, "H" es prestación única del 60%, "J" son los envíos exceptuados del pago de tributos. Ninguno de los tres es una autorización de organismo: marcar "H" y pagar el 60% no compra un permiso.',
+          text: 'La declaración lleva un campo "Tipo de envío" (RG DNA 11/2026 num. 28): "G" es franquicia, "H" es prestación única del 60%, "J" son los envíos exceptuados del pago de tributos. Ninguno de los tres es una autorización de organismo: marcar "H" y pagar el 60% no compra un permiso.',
         },
         {
           name: 'Si el envío queda retenido, andá preparado',
@@ -3816,7 +3958,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       {
         label: 'RG DNA 11/2026',
         url: 'https://www.aduanas.gub.uy/innovaportal/file/28447/1/rg-11_2026.pdf',
-        note: 'Num. 28 lit. c: códigos del campo "Tipo de envío" (G franquicia, H prestación única, J exceptuados). Num. 27: piso de US$ 20 de IVA.',
+        note: 'Num. 28: códigos del campo "Tipo de envío", H prestación única (lit. a), G franquicia (lit. b) y J exceptuados (lit. c). Num. 27: piso de US$ 20 de IVA.',
       },
       {
         label: 'Título 10 T.O. 2023 art. 34 (tasas del IVA)',
@@ -3835,6 +3977,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       },
     ],
     verifiedAt: '2026-08-15',
+    revised: { at: '2026-10-19', topics: ['los códigos de tipo de envío'] },
   },
   {
     slug: 'productos-prohibidos',
@@ -3948,8 +4091,8 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       },
       {
         organism: 'MSP',
-        when: 'Aplica a productos de salud en general —medicamentos, cosméticos, productos médicos—. El MSP no autoriza el ingreso al país de productos de salud del exterior por particulares (Decreto 18/020 art. 19). No existe una franja general de uso personal. Los anteojos graduados, lentes de contacto, cristales y armazones directamente no pueden ingresar a nombre de una persona física.',
-        how: 'La única excepción es el ingreso de productos no registrados con prescripción médica específica, consentimiento informado y sin equivalente registrado en el país. Va por correo electrónico a farmacovigilancia@msp.gub.uy, no por VUCE, y es gratuito.',
+        when: 'Aplica a productos de salud en general: el MSP nombra entre ellos a los medicamentos, los productos médicos, los cosméticos, los suplementos, los productos de higiene y los artículos ópticos. Y publica la regla sin vueltas: "el MSP no autoriza el ingreso al país de productos de salud del exterior por particulares". No existe una franja general de uso personal. Los anteojos graduados, lentes de contacto, cristales y armazones directamente no pueden ingresar a nombre de una persona física.',
+        how: 'La única excepción que publica el MSP es el ingreso de un producto no registrado, con prescripción médica específica, consentimiento informado y sin equivalente registrado en el país; para medicamentos la sostiene el art. 19 del reglamento aprobado por el Decreto 18/020. El trámite de medicamentos va por correo electrónico a farmacovigilancia@msp.gub.uy, no por VUCE, y es gratuito.',
         url: 'https://www.gub.uy/tramites/ingreso-medicamentos-no-registrados-ciudadanos-uruguayos',
       },
     ],
@@ -3971,7 +4114,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
         },
         {
           name: 'Mirá qué código de tipo de envío va a usar el operador',
-          text: 'La RG DNA 11/2026 num. 28 lit. c define el campo "Tipo de envío": G para franquicia, H para prestación única, y J para lo exceptuado del pago de tributos, con J/01 material al amparo de la Ley 15.913 (libros), J/02 medicamentos de uso personal, J/03 numismática y J/04 valija diplomática. Ninguno de esos códigos describe mercadería prohibida ni reemplaza un permiso. Pedir J/02 para un medicamento que el MSP no autorizó no habilita nada.',
+          text: `La RG DNA 11/2026 num. 28 define el campo "Tipo de envío": G para franquicia, H para prestación única, y J para lo exceptuado del pago de tributos, con ocho subcategorías desde el 12/10/2026 (RG 30/2026): ${J_SUBCATEGORIES}. Ninguno de esos códigos describe mercadería prohibida ni reemplaza un permiso. Pedir J/02 para un medicamento que el MSP no autorizó no habilita nada.`,
         },
         {
           name: 'Si ya está retenido, andá con turno y en papel',
@@ -4074,8 +4217,10 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       {
         label: 'RG DNA 11/2026',
         url: 'https://www.aduanas.gub.uy/innovaportal/file/28447/1/rg-11_2026.pdf',
-        note: 'Num. 28 lit. c: códigos de tipo de envío G, H y J/01 a J/04.',
+        note: 'Num. 28: códigos de tipo de envío H prestación única (lit. a), G franquicia (lit. b) y J exceptuados (lit. c).',
       },
+      SOURCE_RG_30,
+      SOURCE_MSP_HEALTH_PRODUCTS,
       {
         label: 'DNA — productos que requieren permisos o no pueden ingresar',
         url: 'https://www.aduanas.gub.uy/innovaportal/v/28229/1/innova.front/',
@@ -4088,6 +4233,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       },
     ],
     verifiedAt: '2026-08-15',
+    revised: { at: '2026-10-19', topics: ['los códigos de tipo de envío', 'la regla del MSP'] },
   },
   {
     slug: 'otros-productos',
@@ -4208,10 +4354,9 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
     benefits: [
       {
         title: 'Origen con acuerdo comercial: hasta US$ 200 exonerados',
-        detail:
-          'Dentro de la franquicia, los envíos provenientes de un país con acuerdo comercial (el caso de Estados Unidos, por el TIFA) están exonerados hasta US$ 200. La residencia fiscal del vendedor se acredita con la factura. Desde el 1/10/2026 el emisor de la factura tiene que estar registrado ante la DNA (RG 09/2026, prorrogada por las RG 12 y 21/2026): si no lo está, no se aplica la exoneración.',
-        norm: 'Decreto 50/026 art. 3',
-        url: 'https://www.impo.com.uy/bases/decretos/50-2026',
+        detail: `Dentro de la franquicia, los envíos provenientes de un país con acuerdo comercial (el caso de Estados Unidos, por el TIFA) están exonerados hasta US$ 200. ${SELLER_REGISTRY_RULE}`,
+        norm: SELLER_REGISTRY_NORM,
+        url: RG_26_URL,
       },
       {
         title: 'Obsequio familiar: exento de todo tributo',
@@ -4246,7 +4391,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
         },
         {
           name: 'Decile al operador qué régimen querés: G o H',
-          text: 'La declaración aduanera lleva un campo "Tipo de envío" (RG DNA 11/2026 num. 28 lit. c): "G" es franquicia y "H" es prestación única del 60%. Para un producto común querés G mientras te quede cupo. Pedilo al courier o al operador postal por escrito, antes de que declaren, y guardá el mensaje.',
+          text: 'La declaración aduanera lleva un campo "Tipo de envío" (RG DNA 11/2026 num. 28): "G" es franquicia y "H" es prestación única del 60%. Para un producto común querés G mientras te quede cupo. Pedilo al courier o al operador postal por escrito, antes de que declaren, y guardá el mensaje.',
         },
         {
           name: 'Si viene por Correo Uruguayo, declaralo vos primero',
@@ -4340,8 +4485,10 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       {
         label: 'RG DNA 11/2026',
         url: 'https://www.aduanas.gub.uy/innovaportal/file/28447/1/rg-11_2026.pdf',
-        note: 'Num. 27 repite el mínimo de US$ 20 de IVA; num. 28 lit. c define los códigos de tipo de envío G, H y J.',
+        note: 'Num. 27 repite el mínimo de US$ 20 de IVA; num. 28 define los códigos de tipo de envío: H prestación única (lit. a), G franquicia (lit. b) y J exceptuados (lit. c).',
       },
+      SOURCE_RG_26,
+      SOURCE_DNA_FRANQUICIA,
       {
         label: 'DNA — preguntas frecuentes del régimen 2026',
         url: 'https://www.aduanas.gub.uy/innovaportal/v/28231/1/innova.front/',
@@ -4354,6 +4501,10 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       },
     ],
     verifiedAt: '2026-08-15',
+    revised: {
+      at: '2026-10-19',
+      topics: ['el registro de vendedores de EE.UU.', 'los códigos de tipo de envío'],
+    },
   },
 ]
 
