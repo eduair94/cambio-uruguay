@@ -929,12 +929,14 @@ export const CUSTODY_INSOLVENCY: Readonly<{
 //     paginación pendiente) y su Metodología (`nuevametodologia.pdf`), que confirman que esa
 //     publicación es del lado activo (Ley 18.212 art. 12).
 //   - BROU — "PIZARRAS DE PLAZO FIJO E-BROU Y SUCURSALES", tasas de personas con vigencia 01 de
-//     julio de 2026. Su nota iv. abre las vigencias POR MONEDA y no coinciden con la del
-//     documento: pesos y dólares rigen desde el 26/03/2026 y lo que se movió el 01/07/2026 fue la
-//     pizarra de unidades indexadas. Por eso cada serie lleva su `vigenciaMoneda` y la página la
-//     muestra: decir "vigente al 01/07/2026" en pesos sugiere un cambio de precio que no hubo.
+//     octubre de 2026 (releído el 2026-10-19: la pizarra en PESOS y la de Ahorro en Sueldo se
+//     movieron ese día, +0,20 puntos en e-BROU en todos los tramos). Su nota iv. abre las
+//     vigencias POR MONEDA y no coinciden con la del documento: dólares rigen desde el
+//     26/03/2026, unidades indexadas desde el 01/07/2026 y pesos desde el 01/10/2026. Por eso
+//     cada serie lleva su `vigenciaMoneda` y la página la muestra: decir "vigente al 01/10/2026"
+//     en dólares sugiere un cambio de precio que no hubo.
 //   - BROU — el mismo PDF, bajo el mismo título, publica un producto en pesos que NO es un plazo
-//     fijo: "AHORRO EN SUELDO" (pizarra actual: 5,50%; con primas, 6,33% y 6,88%). Al renovar se
+//     fijo: "AHORRO EN SUELDO" (pizarra actual: 5,70%; con primas, 6,56% y 7,13%). Al renovar se
 //     aplica la pizarra vigente en ese momento, no una tasa futura garantizada hoy. Va en
 //     `ahorroEnSueldo` con sus condiciones, leídas de la ficha del producto
 //     (brou.com.uy/personas/inversiones/ahorro-en-sueldo): depósitos mensuales de $500 a $50.000
@@ -1189,7 +1191,7 @@ export interface SalarySavingsPlan {
   year2: number
   /** Pizarra revisada más prima del 3er año; al renovar se recalcula con la tasa entonces vigente. */
   year3: number
-  /** La prima es un % SOBRE la tasa, no puntos: 5,50 × 1,15 = 6,33 y 5,50 × 1,25 = 6,88. */
+  /** La prima es un % SOBRE la tasa, no puntos: 5,70 × 1,15 = 6,56 y 5,70 × 1,25 = 7,13. */
   primaPct2: number
   primaPct3: number
   term: string
@@ -1208,7 +1210,7 @@ export interface SalarySavingsPlan {
  * promedio de plaza: sirve para poner en la calculadora un número que se puede contratar hoy.
  *
  * El dato que más mueve la aguja no es el nivel sino el canal: en pesos, a 732–1096 días, la
- * pizarra e-BROU paga 5,50% y la de sucursales 4,13% por el mismo depósito. Y la nota ii. del
+ * pizarra e-BROU paga 5,70% y la de sucursales 4,28% por el mismo depósito. Y la nota ii. del
  * PDF aclara que la pizarra e-brou sólo aplica a personas físicas.
  *
  * `vigencia` es la del DOCUMENTO; la vigencia real es por moneda y vive en `vigenciaMoneda`
@@ -1227,7 +1229,7 @@ export const BROU_DEPOSIT_BOARD: Readonly<{
 }> = Object.freeze({
   bank: 'BROU',
   documentTitle: 'Pizarras de plazo fijo e-BROU y sucursales (personas)',
-  vigencia: '01 de julio de 2026',
+  vigencia: '01 de octubre de 2026',
   pageUrl: 'https://www.brou.com.uy/personas/inversiones/plazo-fijo',
   pdfUrl: 'https://www.brou.com.uy/documents/20182/112235/tasas-pf-personas.pdf',
   notes: [
@@ -1242,14 +1244,14 @@ export const BROU_DEPOSIT_BOARD: Readonly<{
       minimum: '$ 5.000',
       minimumPeriodic: '$ 10.000',
       periodicity: 'mensual',
-      vigenciaMoneda: '26/03/2026',
+      vigenciaMoneda: '01/10/2026',
       tranches: [
         {
           label: '30 – 59',
           minDays: 30,
           maxDays: 59,
-          online: 4.5,
-          branch: 3.38,
+          online: 4.7,
+          branch: 3.53,
           onlinePeriodic: null,
           branchPeriodic: null,
         },
@@ -1257,8 +1259,8 @@ export const BROU_DEPOSIT_BOARD: Readonly<{
           label: '60 – 90',
           minDays: 60,
           maxDays: 90,
-          online: 5.0,
-          branch: 3.75,
+          online: 5.2,
+          branch: 3.9,
           onlinePeriodic: null,
           branchPeriodic: null,
         },
@@ -1266,46 +1268,46 @@ export const BROU_DEPOSIT_BOARD: Readonly<{
           label: '91 – 180',
           minDays: 91,
           maxDays: 180,
-          online: 5.2,
-          branch: 3.9,
-          onlinePeriodic: 4.68,
-          branchPeriodic: 3.51,
-        },
-        {
-          label: '181 – 366',
-          minDays: 181,
-          maxDays: 366,
           online: 5.4,
           branch: 4.05,
           onlinePeriodic: 4.86,
           branchPeriodic: 3.65,
         },
         {
+          label: '181 – 366',
+          minDays: 181,
+          maxDays: 366,
+          online: 5.6,
+          branch: 4.2,
+          onlinePeriodic: 5.04,
+          branchPeriodic: 3.78,
+        },
+        {
           label: '367 – 546',
           minDays: 367,
           maxDays: 546,
-          online: 5.5,
-          branch: 4.13,
-          onlinePeriodic: 4.95,
-          branchPeriodic: 3.71,
+          online: 5.7,
+          branch: 4.28,
+          onlinePeriodic: 5.13,
+          branchPeriodic: 3.85,
         },
         {
           label: '547 – 731',
           minDays: 547,
           maxDays: 731,
-          online: 5.5,
-          branch: 4.13,
-          onlinePeriodic: 4.95,
-          branchPeriodic: 3.71,
+          online: 5.7,
+          branch: 4.28,
+          onlinePeriodic: 5.13,
+          branchPeriodic: 3.85,
         },
         {
           label: '732 – 1096',
           minDays: 732,
           maxDays: 1096,
-          online: 5.5,
-          branch: 4.13,
-          onlinePeriodic: 4.95,
-          branchPeriodic: 3.71,
+          online: 5.7,
+          branch: 4.28,
+          onlinePeriodic: 5.13,
+          branchPeriodic: 3.85,
         },
       ],
     }),
@@ -1433,16 +1435,16 @@ export const BROU_DEPOSIT_BOARD: Readonly<{
     currency: 'UYU',
     minMonthly: 500,
     maxMonthly: 50_000,
-    year1: 5.5,
-    year2: 6.33,
-    year3: 6.88,
+    year1: 5.7,
+    year2: 6.56,
+    year3: 7.13,
     primaPct2: 15,
     primaPct3: 25,
     term: 'contrato de un año, renovable hasta por otros dos períodos de un año',
     channel: 'contratación exclusiva por e-BROU y AppBROU',
     requirement:
       'El BROU no publica que haya que cobrar el sueldo en el banco: la ficha del producto sólo pide una cuenta vista propia de donde debitar el depósito mensual.',
-    vigencia: '26/03/2026',
+    vigencia: '01/10/2026',
     productUrl: 'https://www.brou.com.uy/personas/inversiones/ahorro-en-sueldo',
   }),
   eur: Object.freeze({

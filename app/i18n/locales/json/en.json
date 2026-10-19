@@ -1780,6 +1780,7 @@
     "limiteEfectivo": "Cash payment limit (Law 19,210)",
     "cheques": "Cheques: deadlines and bounces",
     "cuentaRemunerada": "Interest-bearing accounts (idle balance yield)",
+    "letrasRegulacionMonetaria": "BCU monetary regulation bills (LRM)",
     "pagarTodoConCredito": "Should you put everything on the credit card?",
     "millaItau": "What is an Itaú mile worth?",
     "adelantoEfectivo": "Credit-card cash advance",

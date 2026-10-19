@@ -41,6 +41,7 @@ import { MotoMarketSnapshotModel } from "../../classes/models/MotoMarketSnapshot
 import { CompetitorMonitorModel } from "../../classes/models/CompetitorMonitor";
 import { CompetitorMonitorStateModel } from "../../classes/models/CompetitorMonitorState";
 import { UsefulAppsSnapshotModel } from "../../classes/models/UsefulAppsSnapshot";
+import { LrmSnapshotModel } from "../../classes/models/LrmSnapshot";
 
 const appModel = (name: string): string =>
   fs.readFileSync(path.join(__dirname, "..", "..", "app", "server", "models", `${name}.ts`), "utf8");
@@ -334,5 +335,13 @@ describe("app-Mongo schema parity", () => {
       appFields(appModel("UsefulAppsSnapshot")).sort()
     );
     expect(UsefulAppsSnapshotModel.collection.name).toBe("usefulappssnapshots");
+  });
+
+  it("LrmSnapshot declares exactly the app's top-level fields", () => {
+    // Las licitaciones de LRM para /letras-de-regulacion-monetaria-uruguay: si el app no declara
+    // `calendar`, la página se queda sin «próxima licitación» y cae al calendario horneado sin
+    // que nada falle.
+    expect(Object.keys(LrmSnapshotModel.schema.obj).sort()).toEqual(appFields(appModel("LrmSnapshot")).sort());
+    expect(LrmSnapshotModel.collection.name).toBe("lrmsnapshots");
   });
 });

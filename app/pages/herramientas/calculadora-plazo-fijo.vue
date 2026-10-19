@@ -367,6 +367,14 @@
             {{ formatNumber(1 + hl.largoTaxPct / 100, 3) }}, que da
             {{ pct(hl.largoOnline / (1 + hl.largoTaxPct / 100)) }} y sobrestima el neto.
           </p>
+          <!-- El instrumento en pesos a menos de un año que NO paga este impuesto, y la única razón
+               por la que no le gana siempre al plazo fijo: se compra con comisión. -->
+          <p>
+            En pesos y a menos de un año, lo que compite con el plazo fijo sin pagar IRPF son las
+            <NuxtLink :to="localePath('/letras-de-regulacion-monetaria-uruguay')">
+              Letras de Regulación Monetaria del BCU</NuxtLink
+            >: deuda pública exenta, que se compra por un banco o un corredor que cobra comisión.
+          </p>
         </section>
 
         <section>
@@ -426,6 +434,7 @@ import {
   type DepositCurrency,
 } from '~/utils/investments'
 
+const localePath = useLocalePath()
 const currency = ref<DepositCurrency>('UYU')
 const principal = ref(100000)
 const months = ref(12)
@@ -505,7 +514,7 @@ const hl = {
   largoRango: `${largoUyu?.minDays ?? 0} a ${largoUyu?.maxDays ?? 0}`,
   largoOnline: largoUyu?.online ?? 0,
   largoBranch: largoUyu?.branch ?? 0,
-  /** La brecha de canal, restada y no estimada a ojo: 5,50 − 4,13 = 1,37 puntos, no "un punto y medio". */
+  /** La brecha de canal, restada y no estimada a ojo: 5,70 − 4,28 = 1,42 puntos, no "un punto y medio". */
   largoGap: (largoUyu?.online ?? 0) - (largoUyu?.branch ?? 0),
   largoPeriodic: largoUyu?.onlinePeriodic ?? 0,
   largoBranchPeriodic: largoUyu?.branchPeriodic ?? 0,

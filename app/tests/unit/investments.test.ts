@@ -691,10 +691,11 @@ describe('valores de referencia del plazo fijo', () => {
   })
 
   // LEVE: la vigencia se publicaba una sola vez, la del documento, para las TRES monedas. La
-  // nota iv. del PDF la abre por moneda: pesos y dólares rigen desde el 26/03/2026 y lo que
-  // cambió el 01/07/2026 fue la pizarra de unidades indexadas.
+  // nota iv. del PDF la abre por moneda: en el documento del 01/10/2026 los dólares rigen desde
+  // el 26/03/2026, las unidades indexadas desde el 01/07/2026 y lo que cambió el 01/10/2026 fue la
+  // pizarra de pesos.
   it('cada moneda lleva su vigencia y no la del documento', () => {
-    expect(BROU_DEPOSIT_BOARD.series.UYU.vigenciaMoneda).toBe('26/03/2026')
+    expect(BROU_DEPOSIT_BOARD.series.UYU.vigenciaMoneda).toBe('01/10/2026')
     expect(BROU_DEPOSIT_BOARD.series.USD.vigenciaMoneda).toBe('26/03/2026')
     expect(BROU_DEPOSIT_BOARD.series.UI.vigenciaMoneda).toBe('01/07/2026')
     // Que dos monedas NO se hayan movido con el documento es el dato: si alguien las iguala a la
