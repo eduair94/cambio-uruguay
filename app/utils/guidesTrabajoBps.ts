@@ -26,7 +26,13 @@ export const trabajoBpsGuides: readonly Guide[] = [
     description:
       'Si te despiden, renunciás o termina el seguro de paro, FONASA cubre hasta el último día de ese mes; tus hijos, 12 meses más. Qué opciones quedan en 2026.',
     tag: 'FONASA',
-    updatedAt: '2026-09-22',
+    // 2026-10-19: segunda tanda (mergear desde el 2026-10-30). La pregunta del autocompletado
+    // «puedo comprar bonos fonasa si estoy cesante» pasa a ser la primera del FAQ, con las
+    // palabras con que se busca y la respuesta uruguaya completa (seguro de paro → último día
+    // del mes → ASSE o socio individual) antes de la aclaración chilena; el tope de ASSE en UR
+    // enlaza al valor del mes. Relectura del día: BPS 23321 (15/09/2025), BPS 4802 (actualizada
+    // el 28/09/2026, mismos topes y plazos) y ASSE (62 UR más 2,5 UR por integrante).
+    updatedAt: '2026-10-19',
     sections: [
       {
         heading: 'Respuesta corta: hasta el último día del mes',
@@ -90,6 +96,10 @@ export const trabajoBpsGuides: readonly Guide[] = [
           ],
         },
         links: [
+          {
+            label: 'Cuánto vale hoy la UR (para el tope de ASSE gratis)',
+            to: '/indicadores/unidad-reajustable',
+          },
           { label: 'Cambiar de mutualista o pasarte a ASSE', to: '/cambiar-de-mutualista-uruguay' },
           { label: 'Tickets y órdenes: cuánto cuestan', to: '/tickets-mutualistas-uruguay' },
         ],
@@ -130,6 +140,10 @@ export const trabajoBpsGuides: readonly Guide[] = [
     ],
     faqs: [
       {
+        q: '¿Puedo comprar bonos FONASA si estoy cesante?',
+        a: 'No: en Uruguay el FONASA no vende bonos ni admite la afiliación voluntaria de desempleados —no hay ninguna categoría así en la lista de beneficiarios del BPS ni en la Ley 18.211—. Lo que tenés depende de dónde estés parado. Si cobrás el seguro de paro, seguís con FONASA, porque del subsidio se descuenta el aporte. Si no, la cobertura llega hasta el último día del mes en que te desvinculaste o en que terminó el subsidio, según la pregunta frecuente del BPS actualizada el 15 de setiembre de 2025. Después, las salidas son ASSE —gratis si los ingresos del hogar no superan 62 UR más 2,5 UR por integrante, o pagando la Cuota ASSE— o quedarte en tu mutualista como socio individual. La única cuota que un particular le paga al FONASA es la de los hijos de 18 a 21 años, $ 3.513 por mes desde julio de 2026 según el cuadro del MSP. Los «bonos» de esa búsqueda son los Bonos de Atención de Salud del FONASA de Chile, que es otro sistema.',
+      },
+      {
         q: '¿Cuántos días duran los bonos de FONASA?',
         a: 'Esa pregunta es del FONASA de Chile: sus Bonos de Atención de Salud duran 30 días desde que se compran, según fonasa.gob.cl. En Uruguay el FONASA no emite bonos; lo que se paga en la mutualista son tickets y órdenes, con un tope de $ 880 por tasa moderadora fijado por decreto.',
       },
@@ -140,10 +154,6 @@ export const trabajoBpsGuides: readonly Guide[] = [
       {
         q: '¿Estando en seguro de paro sigo teniendo FONASA?',
         a: 'Sí. Mientras dura el subsidio mantenés la cobertura del SNIS y del propio subsidio se descuentan los aportes al FONASA. Por despido son 6 meses o 72 jornales, y los mayores de 50 años tienen hasta 6 meses más; por suspensión, 4 meses o 48 jornales. Pedilo dentro de los 30 días corridos desde el egreso.',
-      },
-      {
-        q: '¿Puedo comprar bonos o pagar FONASA por mi cuenta si estoy cesante?',
-        a: 'No. El FONASA uruguayo no vende bonos ni admite la afiliación voluntaria de desempleados: no hay ninguna categoría así en la lista de beneficiarios del BPS ni en la Ley 18.211. La única cuota que un particular le paga al FONASA es la de los hijos de 18 a 21 años, $ 3.513 por mes desde julio de 2026 según el cuadro del MSP. Las salidas son ASSE, gratis o con cuota, y la afiliación individual a una mutualista.',
       },
       {
         q: '¿Qué pasa con mis hijos y mi pareja cuando pierdo FONASA?',
@@ -167,7 +177,7 @@ export const trabajoBpsGuides: readonly Guide[] = [
       },
       {
         label:
-          'Subsidio por desempleo por despido — cobertura del SNIS durante el amparo, duración, plazo de 30 días, topes 2026 (actualizado el 26/01/2026, leído el 22/09/2026)',
+          'Subsidio por desempleo por despido — cobertura del SNIS durante el amparo, duración, plazo de 30 días, topes 2026 (actualizado el 28/09/2026, releído el 19/10/2026 con las mismas cifras)',
         url: 'https://www.bps.gub.uy/4802/subsidio-por-desempleo-por-despido.html',
         publisher: 'BPS',
       },

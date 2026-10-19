@@ -11,6 +11,8 @@ import {
   INTERRUPTION_WARNING,
   IRPF_CAMPAIGN,
   IRPF_FORMS,
+  IRPF_NO_INCOME,
+  IRPF_NO_INCOME_VERIFIED_AT,
   MORA_FACILIDADES_PCT,
   MORA_TIERS,
   NOT_OBLIGATED,
@@ -395,5 +397,43 @@ describe('integridad', () => {
     for (const art of ['/1', '/38', '/39', '/94']) {
       expect(urls).toContain(`14306-1974${art}`)
     }
+  })
+})
+
+// Segunda tanda (2026-10-19, para mergear desde el 2026-10-30): la consulta que más impresiones le
+// trae a la página es «¿estoy obligado a presentar la declaración si no tuve ingresos un año?», y la
+// página no la contestaba. No hay una frase de DGI que lo diga así: la respuesta sale de que todos
+// los supuestos de obligación parten de haber cobrado algo, y lo dice con esas palabras.
+describe('sin ingresos en el año', () => {
+  it('contesta primero, con su propia fecha y fuentes de DGI', () => {
+    expect(IRPF_NO_INCOME.short).toMatch(/^No:/)
+    expect(IRPF_NO_INCOME_VERIFIED_AT).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    expect(IRPF_NO_INCOME.sources.length).toBeGreaterThanOrEqual(2)
+    for (const s of IRPF_NO_INCOME.sources) {
+      expect(s.url).toMatch(/^https:\/\/www\.gub\.uy\/direccion-general-impositiva\//)
+    }
+  })
+
+  it('cubre los tres grupos de obligados y al independiente inscripto sin actividad', () => {
+    const all = IRPF_NO_INCOME.detail.join(' ')
+    expect(all).toMatch(/dependiente/)
+    expect(all).toMatch(/servicios personales/)
+    expect(all).toMatch(/rentas de capital/)
+    expect(all).toMatch(/1302/)
+    // Y no confunde «sin ingresos» con «cobré parte del año».
+    expect(all).toMatch(/sólo parte del año/)
+  })
+
+  it('está también en el FAQ (y así en el FAQPage), sin caer en el filtro de la página de prescripción', () => {
+    const faq = DGI_FAQ.find(f => /no tuve ingresos/.test(f.question))!
+    expect(faq).toBeDefined()
+    expect(faq.short).toMatch(/^No/)
+    expect(faq.question).not.toMatch(/prescrib|patente|interrumpe/i)
+  })
+
+  it('el caso del 3100 lleva el mínimo no imponible de la campaña, con su año', () => {
+    const c = OBLIGATION_CASES.find(o => /3100/.test(o.situation))!
+    expect(c.detail).toMatch(/mínimo no imponible/)
+    expect(c.detail).toMatch(/\$ 552\.384 de ingresos de 2025/)
   })
 })

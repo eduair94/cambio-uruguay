@@ -387,10 +387,12 @@
     <section id="que-pasa-si" class="mb-12">
       <h2 class="section-title">Qué pasa si…</h2>
       <p class="section-intro">
-        Lo que se pregunta cuando el monotributo ya está abierto: no facturé, me pasé del tope, debo
-        cuotas, quiero sacar el FONASA o cambiar de mutualista, quién lo paga, y qué es el
-        Monotributo Social Mides. Verificado el {{ casosVerifiedAt }} contra BPS, DGI, MIDES y los
-        textos vigentes de IMPO; cada respuesta lleva sus fuentes abajo.
+        Lo que se pregunta cuando el monotributo ya está abierto: no facturé, me excedí en la
+        facturación, debo cuotas (también las viejas), quiero sacar el FONASA o cambiar de
+        mutualista, quién lo paga, y qué es el Monotributo Social Mides. Verificado el
+        {{ casosVerifiedAt }} contra BPS, DGI, MIDES y los textos vigentes de IMPO, y ampliado el
+        {{ casosExtendedAt }}; cada respuesta lleva sus fuentes abajo, con la fecha en que se leyó
+        cada una.
       </p>
 
       <VRow>
@@ -429,6 +431,8 @@
                 <template v-for="(s, i) in c.sources" :key="s.url">
                   <a :href="s.url" target="_blank" rel="noopener noreferrer" class="source-link">
                     {{ s.label }}</a
+                  ><span v-if="s.seenOn !== MONO_CASOS_VERIFIED_AT">
+                    (vista el {{ longDate(s.seenOn) }})</span
                   ><span v-if="i < c.sources.length - 1"> · </span>
                 </template>
               </div>
@@ -615,6 +619,13 @@
           Declaración de IRPF
         </VBtn>
         <VBtn
+          :to="localePath('/prescripcion-de-deudas-con-el-estado-uruguay')"
+          variant="tonal"
+          size="small"
+        >
+          ¿Prescriben las deudas con el Estado?
+        </VBtn>
+        <VBtn
           :to="localePath('/temas/sueldo-trabajo-e-impuestos-uruguay')"
           variant="tonal"
           size="small"
@@ -653,6 +664,7 @@ import {
   FIGURES,
   LEYENDAS,
   MONO_APORTES_2026,
+  MONO_CASOS_EXTENDED_AT,
   MONO_CASOS_VERIFIED_AT,
   MONO_INVOICING_VERIFIED_AT,
   MONO_TOPES_UI,
@@ -776,6 +788,7 @@ const longDate = (iso: string) =>
 const verifiedAt = longDate(MONO_INVOICING_VERIFIED_AT)
 const aportesVerifiedAt = longDate(MONO_APORTES_2026.verifiedAt)
 const casosVerifiedAt = longDate(MONO_CASOS_VERIFIED_AT)
+const casosExtendedAt = longDate(MONO_CASOS_EXTENDED_AT)
 
 const canonicalUrl = 'https://cambio-uruguay.com/facturar-en-monotributo-uruguay'
 const title = 'Facturar en Monotributo y Monotributo MIDES'

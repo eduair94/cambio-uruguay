@@ -34,6 +34,8 @@
 //   - Decreto-Ley 14.525 (27/05/1976) — faculta el pago en dos etapas.
 //   - Decreto 113/026 (29/05/2026) — el decreto del año: junio y hasta el 20 de diciembre de 2026.
 //   - Decreto 122/026 (03/06/2026) — el aguinaldo de junio de los funcionarios públicos (DL 14.360).
+//   - Decreto 270/025 (25/11/2025) — el de diciembre de 2025 de los funcionarios públicos, desde el
+//     15/12. Se publica como antecedente: el de diciembre de 2026 no había salido al 2026-10-19.
 //   - Ley 18.572 (2009), art. 29 — recargo del 10 % por la mora en cualquier crédito laboral.
 //   - Ley 18.091 (2007) — prescripción: un año desde el cese, cinco desde la exigibilidad.
 //   - Decreto-Ley 14.407, art. 28, y Ley 19.161, arts. 6 y 9 — la cuota parte de aguinaldo en los
@@ -51,6 +53,20 @@ export interface AguinaldoSource {
 
 /** Fecha en la que se contrastó todo lo de este archivo contra las fuentes oficiales. */
 export const AGUINALDO_VERIFIED_AT = '2026-09-22'
+
+/**
+ * La relectura de temporada, antes de diciembre. NO reemplaza a `AGUINALDO_VERIFIED_AT`: ese día se
+ * contrastó TODO el archivo; éste sólo lo que la cola de demanda de octubre preguntaba y lo que
+ * tenía fecha de vencimiento. Leído el 2026-10-19: el Decreto 113/026 y los arts. 1 a 4 de la Ley
+ * 12.840 en IMPO; el Decreto 270/025 (el aguinaldo de diciembre de 2025 de los funcionarios
+ * públicos, el antecedente inmediato del de 2026, que todavía no salió); la lista de noticias del
+ * MTSS (ningún comunicado de diciembre); las preguntas frecuentes del MTSS en materia laboral; y
+ * las páginas del BPS de la partida de fin de año y del pago de la construcción, que siguen siendo
+ * las ediciones de 2025. Las respuestas nuevas —cuántos días equivale, si se cobra estando de
+ * licencia, si corresponde llevando tres meses— salen de esas lecturas o son aritmética del art. 2;
+ * lo que es razonamiento y no cita va dicho como razonamiento.
+ */
+export const AGUINALDO_SEASON_CHECKED_AT = '2026-10-19'
 
 // ---------------------------------------------------------------------------
 // Las dos fechas
@@ -141,8 +157,9 @@ export const AGUINALDO_2026_CALENDAR: readonly AguinaldoCalendarRow[] = [
   {
     who: 'Funcionarios públicos (incisos del Presupuesto Nacional)',
     june: 'Desde el 18 de junio de 2026: la doceava parte de lo cobrado con montepío del 1.º de diciembre de 2025 al 31 de mayo de 2026',
-    december: 'La cuota de diciembre de 2026 todavía no tiene decreto (al 22 de setiembre de 2026)',
-    norm: 'Decreto-Ley 14.360; Decreto 122/026',
+    december:
+      'La cuota de diciembre de 2026 todavía no tiene decreto (al 19 de octubre de 2026). La de 2025 la fijó el Decreto 270/025, del 25 de noviembre: «a partir del 15 de diciembre», por lo cobrado con montepío del 1.º de junio al 30 de noviembre',
+    norm: 'Decreto-Ley 14.360; Decreto 122/026; Decreto 270/025 (diciembre de 2025)',
   },
   {
     who: 'Construcción (trabajadores de la Ley 14.411)',
@@ -447,7 +464,7 @@ export const AGUINALDO_FAQ: readonly AguinaldoFaq[] = [
     question: '¿Hasta cuándo pueden pagar el aguinaldo de diciembre de 2026?',
     short: 'Hasta el 20 de diciembre de 2026 (Decreto 113/026), que es domingo',
     answer:
-      'Hasta el 20 de diciembre de 2026, según el artículo 1 del Decreto 113/026 (promulgado el 29 de mayo de 2026). La Ley 12.840 fija como techo los diez días anteriores al 24 de diciembre, pero el decreto anual lo adelanta: un pago el 22 de diciembre cumple la ley y no el decreto. Al 22 de setiembre de 2026 no hay un comunicado del MTSS específico de diciembre; cuando lo haya, la fecha que manda sigue siendo la del decreto.',
+      'Hasta el 20 de diciembre de 2026, según el artículo 1 del Decreto 113/026 (promulgado el 29 de mayo de 2026). La Ley 12.840 fija como techo los diez días anteriores al 24 de diciembre, pero el decreto anual lo adelanta: un pago el 22 de diciembre cumple la ley y no el decreto. Al 19 de octubre de 2026 el MTSS no había publicado un comunicado específico de diciembre —el del 16 de junio ya anunciaba las dos fechas—; si lo publica, la fecha que manda sigue siendo la del decreto. Es la fecha del sector privado: la de los funcionarios públicos sale de otro decreto, que en 2025 fijó el cobro desde el 15 de diciembre (Decreto 270/025).',
   },
   {
     question: '¿Cómo se calcula el aguinaldo?',
@@ -480,16 +497,28 @@ export const AGUINALDO_FAQ: readonly AguinaldoFaq[] = [
       'La Ley 12.840 alcanza a todo empleado de un patrono privado o de una persona pública no estatal que cobra un salario en dinero, con cualquier antigüedad. Los funcionarios públicos también lo cobran, pero por otra norma (Decreto-Ley 14.360) y con decreto propio: en 2026, el Decreto 122/026 fijó el cobro de la cuota de junio desde el 18 de junio. Los jubilados y pensionistas no cobran aguinaldo.',
   },
   {
-    question: '¿Me corresponde aguinaldo si trabajé sólo 3 meses?',
-    short: 'Sí, la doceava parte de lo cobrado en esos 3 meses',
+    // La cola de demanda lo pregunta en presente («si llevo 3 meses trabajando»): quien sigue en
+    // la empresa no espera a irse, lo cobra en la cuota del decreto. Se contestan los dos casos.
+    question: '¿Me corresponde aguinaldo si llevo 3 meses trabajando?',
+    short: 'Sí: la doceava parte de lo cobrado en esos 3 meses, sin antigüedad mínima',
     answer:
-      'Sí. La Ley 12.840 no exige una antigüedad mínima: el trabajador cobra el aguinaldo «en proporción al tiempo de permanencia en la empresa» (art. 3). La exigencia de un año existió sólo para el aguinaldo de 1960 (art. 6), así que el empleador que la invoca hoy está equivocado. Si trabajaste 3 meses del semestre, te corresponde la doceava parte de lo que cobraste en dinero en esos 3 meses, no un aguinaldo completo.',
+      'Sí. La Ley 12.840 no exige una antigüedad mínima: el trabajador cobra el aguinaldo «en proporción al tiempo de permanencia en la empresa» (art. 3). La exigencia de un año existió sólo para el aguinaldo de 1960 (art. 6), así que el empleador que la invoca hoy está equivocado. Si seguís trabajando, lo cobrás en la cuota de diciembre con todos los demás: la doceava parte de lo que cobraste en dinero desde que entraste (o desde el 1.º de junio, si entraste antes) hasta el 30 de noviembre, porque eso es lo que el Decreto 113/026 manda pagar hasta el 20 de diciembre de 2026; lo que cobres en diciembre entra en la cuota de junio siguiente. Si te vas antes, la parte proporcional va en la liquidación. Con 3 meses te corresponde la doceava parte de esos 3 meses, no un aguinaldo completo.',
   },
   {
-    question: '¿Y si estuve incapacitado, con subsidio por enfermedad?',
-    short: 'El BPS paga la cuota parte de aguinaldo del tiempo en subsidio',
+    question: '¿Quién paga el aguinaldo si estoy incapacitado o certificado por enfermedad?',
+    short:
+      'El BPS paga la cuota parte del tiempo en subsidio; el empleador, la de los días trabajados',
     answer:
       'La paga el BPS, no tu empleador. El Decreto-Ley 14.407 (art. 28) manda pagar al beneficiario una parte proporcional del aguinaldo por el tiempo en subsidio, y la página del BPS de subsidio por enfermedad (actualizada el 8 de setiembre de 2026) lo confirma: 70 % de la materia gravada, tope $ 67.754 (valor 01/2026), más la cuota parte de aguinaldo. Los días que trabajaste los liquida el empleador como siempre. Si estás en el BSE por accidente de trabajo, ninguna fuente primaria dice quién liquida esa cuota parte: consultalo en el BSE o el BPS.',
+  },
+  {
+    question: '¿Puedo recibir el aguinaldo si estoy de licencia?',
+    short: 'Sí: el pago no depende de que estés trabajando ese día',
+    // Lo que se afirma sale de la letra de la ley y del decreto; lo que es razonamiento (que el
+    // jornal de licencia integra la base) va dicho como razonamiento, igual que en la fila de
+    // licencia de AGUINALDO_LEAVE_CASES: no hay una página oficial que lo diga.
+    answer:
+      'Sí. La Ley 12.840 obliga a todo patrono a pagar a sus empleados dentro del plazo (art. 1) y el Decreto 113/026 fija la fecha —hasta el 20 de diciembre de 2026— sin ninguna condición de estar trabajando ese día: lo que te debe el empleador te lo paga igual, aunque estés de licencia. Quién paga cada parte depende de qué licencia sea. En la licencia anual, el empleador, y esos días cuentan para la base como cualquier otro: esto es razonamiento y no cita, porque el jornal de licencia se cobra en dinero y no hay una página oficial que lo diga; lo que no entra es el salario vacacional (Decreto 49/000). En la licencia médica con subsidio por enfermedad, el BPS paga la cuota parte de esos días (Decreto-Ley 14.407, art. 28) y el empleador la de los días trabajados. En la licencia por maternidad o paternidad, el subsidio del BPS ya incluye la cuota parte de aguinaldo (Ley 19.161, arts. 6 y 9).',
   },
   {
     question: '¿El seguro de paro genera aguinaldo?',
@@ -510,10 +539,12 @@ export const AGUINALDO_FAQ: readonly AguinaldoFaq[] = [
       'Desde el día en que venció corre automáticamente un recargo del 10 % sobre lo adeudado a tu favor (Ley 18.572, art. 29), y el empleador queda expuesto a una multa equivalente al doble del monto del sueldo anual complementario (Ley 12.840, art. 7), que cobra el Estado, no vos. Con vínculo vigente denunciás en la Inspección General del Trabajo del MTSS (Oficina 108, Juncal 1511); si el atraso es del semestre pasado, en la División Consultas de DINATRA; si ya te fuiste, en el Centro de Asesoramiento del MTSS. Tenés un año desde el cese para reclamar.',
   },
   {
-    question: '¿Cuántos días de aguinaldo me corresponden?',
-    short: 'El aguinaldo no se cuenta en días: es dinero, no días de licencia',
+    question: '¿Cuántos días de aguinaldo me corresponden por año?',
+    short: 'No se cuenta en días: con el mismo sueldo todo el año, equivale a un sueldo mensual',
+    // La equivalencia es aritmética del art. 2 (doce meses ÷ 12), no una regla nueva: por eso se
+    // dice con el sueldo constante y se aclara qué pasa cuando cambia.
     answer:
-      'El aguinaldo no se mide en días: es la doceava parte de todo lo que cobraste en dinero durante los doce meses anteriores al 1.º de diciembre (o durante los meses que trabajaste, si fue menos de un año). Los «15 días de sueldo» son de la ley mexicana y las cuentas por días, del marco argentino. Si la pregunta es por días, probablemente te referís a la licencia anual, que es un beneficio distinto con sus propias reglas de antigüedad.',
+      'El aguinaldo no se mide en días sino en plata: es la doceava parte de todo lo que cobraste en dinero durante los doce meses anteriores al 1.º de diciembre (Ley 12.840, art. 2). De ahí sale la equivalencia: si cobraste el mismo sueldo mensual los doce meses, el aguinaldo del año es un sueldo entero —medio en la cuota de junio y medio en la de diciembre—; si el sueldo cambió por aumentos u horas extra, es el promedio mensual de lo cobrado. Si cobrás por jornal, es la doceava parte de los jornales cobrados: 240 jornales del mismo valor en el año dan el equivalente a 20 jornales de aguinaldo. Con menos de un año, la doceava parte de lo cobrado en los meses que trabajaste. Los «15 días de sueldo» son de la ley mexicana y las cuentas por días, del marco argentino. Si la pregunta es por días de descanso, es la licencia anual, que es un beneficio distinto con sus propias reglas de antigüedad.',
   },
 ]
 
@@ -542,6 +573,11 @@ export const AGUINALDO_SOURCES: readonly AguinaldoSource[] = [
     label:
       'Decreto 122/026 (03/06/2026) — aguinaldo de junio de 2026 de los funcionarios públicos: desde el 18 de junio, período 1/12/2025–31/5/2026',
     url: 'https://www.impo.com.uy/bases/decretos/122-2026',
+  },
+  {
+    label:
+      'Decreto 270/025 (25/11/2025) — aguinaldo de diciembre de 2025 de los funcionarios públicos: a partir del 15 de diciembre, período 1/6–30/11/2025 (el de diciembre de 2026 no había salido al 19/10/2026)',
+    url: 'https://www.impo.com.uy/bases/decretos/270-2025',
   },
   {
     label:
