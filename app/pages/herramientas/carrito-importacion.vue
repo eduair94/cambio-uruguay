@@ -207,6 +207,12 @@
           </div>
         </VCol>
       </VRow>
+      <!-- La unidad de las calculadoras (las demás la reciben de ToolShell, que esta página no usa):
+           después del carrito, de su total y de su advertencia, nunca entre ellos. Inerte sin
+           NUXT_PUBLIC_ADS_TOOLS (utils/ads.ts). -->
+      <ClientOnly>
+        <AdSlot placement="after-tool" />
+      </ClientOnly>
     </VContainer>
   </div>
 </template>

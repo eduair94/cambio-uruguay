@@ -77,9 +77,44 @@ const NO_ADS_EXACT = ['/newsletter'] as const
  * easiest thing to mis-tap. `light` would not help: density only changes how
  * many MANUAL units render, and while the loader is on the page the automatic
  * ones are Google's call. Only `none` keeps the loader off.
+ *
+ * The switch (`NUXT_PUBLIC_ADS_TOOLS`, {@link AdPolicyOptions.toolsAds}) is the
+ * way back, and it is OFF by default. It only makes sense once the owner has
+ * excluded these URLs from Auto Ads in the AdSense console — there is no API
+ * for that, so code cannot check it. With the exclusion in place the loader
+ * serves only the manual unit the site placed: ONE, rendered by
+ * `components/ToolShell.vue` after the result and its explainer, never between
+ * the inputs and the result. Turning the switch on without the exclusion is
+ * exactly the August problem again. See docs/seo/adsense-growth-loop.md.
  */
 function isCalculator(path: string): boolean {
   return path.startsWith('/herramientas/')
+}
+
+/** True on a calculator page (`/herramientas/<x>`, any locale), never on the `/herramientas` index. */
+export function isCalculatorPath(path: string): boolean {
+  return !isBareRoute(path) && isCalculator(normalizeAdPath(path))
+}
+
+/** What the public runtime config can change in this policy. Every option defaults to off. */
+export interface AdPolicyOptions {
+  /**
+   * `NUXT_PUBLIC_ADS_TOOLS`: the calculators go from `none` to `light` — the loader plus one
+   * manual unit. Only after their URLs are excluded from Auto Ads in the console (see
+   * {@link isCalculator}).
+   */
+  toolsAds?: boolean
+}
+
+/**
+ * Reads an on/off switch from the public runtime config. Baked at build it arrives as the raw
+ * string (`'1'`); overridden at runtime Nitro parses the env with `destr`, so the same `1` arrives
+ * as the number 1 and `true` as the boolean. Anything else — empty, `0`, a typo — is off.
+ */
+export function adsFlagOn(value: unknown): boolean {
+  if (value === true || value === 1) return true
+  if (typeof value !== 'string') return false
+  return ['1', 'true', 'on', 'yes', 'si', 'sí'].includes(value.trim().toLowerCase())
 }
 
 /**
@@ -145,19 +180,19 @@ function matches(path: string, list: readonly string[]): boolean {
  * How heavily `path` may be monetised. Content pages default to `normal`: they
  * are the long reads where an in-flow unit is ordinary and expected.
  */
-export function adDensityForPath(path: string): AdDensity {
+export function adDensityForPath(path: string, options: AdPolicyOptions = {}): AdDensity {
   if (isBareRoute(path)) return 'none'
   const clean = normalizeAdPath(path)
   if (NO_ADS_EXACT.includes(clean as (typeof NO_ADS_EXACT)[number])) return 'none'
   if (matches(clean, NO_ADS)) return 'none'
-  if (isCalculator(clean)) return 'none'
+  if (isCalculator(clean)) return options.toolsAds ? 'light' : 'none'
   if (clean === '/' || matches(clean, LIGHT)) return 'light'
   return 'normal'
 }
 
 /** True when the route may load the AdSense loader script at all. */
-export function adsAllowed(path: string): boolean {
-  return adDensityForPath(path) !== 'none'
+export function adsAllowed(path: string, options: AdPolicyOptions = {}): boolean {
+  return adDensityForPath(path, options) !== 'none'
 }
 
 /**
