@@ -21,6 +21,12 @@
 // arriba: ahí el riesgo era publicar dos filas que se pisan, acá es gastar la corrida averiguando
 // que no había nada que publicar.
 //
+// Desde el 2026-10-20 los CINCO pozos declaran su lista y el informe cruza las 99 rutas, no 53. Los
+// dos que faltaban declaraban sólo un número, así que para esos tres contadores la respuesta vivía
+// en el comentario del presupuesto, en prosa y con la fecha de liberación a mano. Medido ese día:
+// 3 libres de 99, y las 46 agregadas estaban todas reservadas — o sea que la corrida anterior sacó
+// esa misma conclusión a mano, que es exactamente el gasto que describe el párrafo de arriba.
+//
 // LA REGLA, Y DE DÓNDE SALE. El test de solape marca un par cuando `|Δfecha| ≤ 28`, o sea que una
 // fila nueva es segura recién al día 29. Por eso la reserva es `EXPERIMENT_WINDOW_DAYS + 1` y no la
 // ventana: 28 días es cuánto mide el libro, 29 es a partir de cuándo se puede declarar otra cosa

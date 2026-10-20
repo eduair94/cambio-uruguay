@@ -503,6 +503,40 @@ const MEASURED = 146
  *
  * SÓLO PUEDE BAJAR.
  */
+/**
+ * Las guías cuyo título, con la marca puesta, no entra en los 60 caracteres. **SÓLO PUEDE BAJAR.**
+ *
+ * La lista no estaba y el presupuesto de abajo sí, y esa asimetría tenía un costo concreto: para
+ * saber CUÁL de las dieciséis se podía tocar hoy había que levantar el catálogo, medir los 146
+ * títulos y cruzar cada slug contra las filas del libro de cambios a mano. `npm run seo_debt`
+ * nombra las rutas de los otros tres pozos justamente para no hacer eso, y no podía nombrar éste
+ * porque acá no había ningún nombre escrito — sólo un número. Declarados, los lee
+ * `scripts/oneoff/seo_debt_report.ts` como lee los otros tres (2026-10-20).
+ *
+ * Y de paso el trinquete deja de ser sólo una cota: el test de abajo exige que los pasados de
+ * presupuesto sean EXACTAMENTE éstos, que es lo que `temaHuerfanas.test.ts` y
+ * `enlacesDeContexto.test.ts` ya hacían con sus listas. Un número solo admite que se arregle una
+ * guía y se rompa otra sin que nada avise; una lista exacta, no.
+ */
+const DEUDA_TITULO_LARGO = [
+  'abogado-gratis-uruguay',
+  'aguinaldo-casos-especiales-uruguay',
+  'casarse-por-civil-uruguay',
+  'certificado-unico-departamental-uruguay',
+  'comprar-en-amazon-desde-uruguay',
+  'despido-y-liquidacion-uruguay',
+  'estudio-de-cobranza-uruguay',
+  'glosario-terminos-cambiarios',
+  'horas-extra-en-uruguay',
+  'llegar-tarde-tolerancia-y-sanciones-uruguay',
+  'me-certifique-subsidio-por-enfermedad-uruguay',
+  'me-deben-el-sueldo-uruguay',
+  'me-quede-sin-trabajo-mutualista-fonasa-uruguay',
+  'no-pagar-prestamo-e-irse-del-pais-uruguay',
+  'trabajar-para-el-exterior-desde-uruguay',
+  'ui-ur-bpc-diferencias',
+]
+
 const TITLE_OVER_BUDGET = 16
 
 /**
@@ -640,6 +674,37 @@ const TITLE_OVER_BUDGET = 16
  *
  * Ninguna cifra es nueva: las cuatro ya estaban en la descripción vieja o en el cuerpo de su guía.
  */
+/**
+ * Las guías cuya descripción pasa de 155 caracteres, o sea a las que el SERP les come la cola —que
+ * es donde está la cifra—. **SÓLO PUEDE BAJAR.** Misma razón que `DEUDA_TITULO_LARGO`: declarada
+ * para que `npm run seo_debt` pueda decir cuál se puede reescribir hoy sin pisar una ventana de
+ * medición abierta, y exigida exacta para que el contador no se compense solo.
+ */
+const DEUDA_DESCRIPCION_LARGA = [
+  'cajeros-automaticos-uruguay-turistas',
+  'cambiar-monedas-poco-comunes-uruguay',
+  'casarse-por-civil-uruguay',
+  'cedula-uruguaya-para-argentinos',
+  'comision-inmobiliaria-uruguay',
+  'comprar-online-exterior-impuestos',
+  'criptomonedas-regulacion-impuestos-uruguay',
+  'devolucion-iva-turistas-uruguay',
+  'dolar-cripto-usdt-uruguay',
+  'dolares-deteriorados-billetes-rechazados-uruguay',
+  'elegir-tarjeta-credito-beneficios-uruguay',
+  'enviar-recibir-dinero-exterior',
+  'garantias-de-alquiler-uruguay',
+  'hacer-un-testamento-uruguay',
+  'horarios-casas-de-cambio-uruguay',
+  'importar-de-aliexpress-a-uruguay',
+  'precio-del-oro-en-uruguay',
+  'proyeccion-dolar-uruguay-se-puede-predecir',
+  'reforma-jubilatoria-uruguay-que-cambia',
+  'tarjeta-debito-vs-credito-uruguay',
+  'tipo-de-cambio-fiscal-dgi-uruguay',
+  'ui-ur-bpc-diferencias',
+]
+
 const DESCRIPTION_OVER_BUDGET = 22
 
 describe('los snippets de las guías entran en el SERP', () => {
@@ -664,6 +729,15 @@ describe('los snippets de las guías entran en el SERP', () => {
     expect(offenders).toEqual([])
   })
 
+  const titulosLargos = guides
+    .filter(guide => rendered(guide.title).length > MAX_TITLE)
+    .map(guide => guide.slug)
+    .sort()
+  const descripcionesLargas = guides
+    .filter(guide => guide.description.length > MAX_DESCRIPTION)
+    .map(guide => guide.slug)
+    .sort()
+
   it(`tiene como mucho ${TITLE_OVER_BUDGET} títulos pasados de ${MAX_TITLE} caracteres`, () => {
     const offenders = guides
       .map(guide => ({ slug: guide.slug, title: rendered(guide.title) }))
@@ -679,6 +753,25 @@ describe('los snippets de las guías entran en el SERP', () => {
       .map(guide => `${guide.description.length} ${guide.slug}: ${guide.description}`)
       .sort()
     expect(offenders.length, offenders.join('\n')).toBeLessThanOrEqual(DESCRIPTION_OVER_BUDGET)
+  })
+
+  // Las dos deudas, por nombre y no por número. Es lo que hace que `npm run seo_debt` pueda
+  // nombrarlas, y lo que impide que arreglar una guía y pasarse con otra deje el contador igual.
+  it('las guías con el título pasado son exactamente las declaradas', () => {
+    expect(titulosLargos).toEqual([...DEUDA_TITULO_LARGO].sort())
+  })
+
+  it('las guías con la descripción pasada son exactamente las declaradas', () => {
+    expect(descripcionesLargas).toEqual([...DEUDA_DESCRIPCION_LARGA].sort())
+  })
+
+  // Una guía renombrada o borrada dejaría su slug viejo en la lista y el cruce del informe
+  // quedaría apuntando a una ruta que no existe, que es el modo de fallar que
+  // `experiments_routes.test.ts` ataja en el libro de cambios.
+  it('ninguna de las dos listas nombra una guía que no existe', () => {
+    const existen = new Set(guides.map(guide => guide.slug))
+    for (const slug of [...DEUDA_TITULO_LARGO, ...DEUDA_DESCRIPCION_LARGA])
+      expect(existen.has(slug), slug).toBe(true)
   })
 
   // Dos guías con el mismo título o la misma descripción se disputan la misma intención y Google
