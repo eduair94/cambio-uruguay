@@ -1295,6 +1295,12 @@ export default defineNuxtConfig({
     // robots.txt terminaba anunciando las dos URLs para el mismo archivo.
     sitemap: 'https://cambio-uruguay.com/sitemap_index.xml',
     credits: false,
+    // No X-Robots-Tag. The module computes it from the rules above, which know
+    // nothing about a page's own `robots` meta, so it said `index, follow` on
+    // every used-car advert, every sale dossier outside the pilot and every
+    // filtered directory while their meta said `noindex` (measured 2026-10-20).
+    // The meta tag is the one each page controls.
+    header: false,
   },
 
   // Sitemap Configuration
@@ -1340,6 +1346,7 @@ export default defineNuxtConfig({
       '/opiniones-alquileres',
       '/descuentos-con-tarjeta-uruguay/cerca-de-mi',
       '/ranking-usuarios-charruadevs',
+      '/equipar-casa-uruguay/mi-lista',
       '/*/offline',
       '/*/widget',
       '/*/cuenta',
@@ -1351,6 +1358,7 @@ export default defineNuxtConfig({
       '/*/opiniones-alquileres',
       '/*/descuentos-con-tarjeta-uruguay/cerca-de-mi',
       '/*/ranking-usuarios-charruadevs',
+      '/*/equipar-casa-uruguay/mi-lista',
     ],
   },
 

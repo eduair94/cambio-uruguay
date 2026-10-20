@@ -1,4 +1,4 @@
-import type { BranchPage } from '../../../utils/branches'
+import { deptKey, type BranchPage } from '../../../utils/branches'
 import { intentsFor } from '../../../utils/casaIntents'
 import { casaTypePaths } from '../../../utils/casasDirectory'
 import { comparativaFamilySlugs, comparativaPaths } from '../../../utils/comparativas'
@@ -86,6 +86,9 @@ export default defineEventHandler(async _event => {
   ) => {
     // Explicit per-language sitemap filtering happens before the module builds
     // alternates. Preserve reciprocal translations on dynamic URLs at the source.
+    // Emitted for every route; server/plugins/sitemap-locales.ts then drops the
+    // /en and /pt variants (and these alternates) of Spanish-only routes, whose
+    // canonical is the Spanish URL. `utils/localizedRoutes.ts` decides which.
     const alternatives = [
       { hreflang: 'es-ES', href: path },
       { hreflang: 'en-US', href: `/en${path}` },
@@ -481,6 +484,13 @@ export default defineEventHandler(async _event => {
   //
   // The slugs come from the SAME cached `/api/branches` route the pages and the
   // directory read, so the sitemap can never advertise a slug the page 404s.
+  //
+  // The /sucursales/<casa>/<departamento> pairs come from it too: that page 404s a
+  // department where the casa has no branch in this feed, and `localData` (the
+  // source these pairs used to come from) still listed ten such pairs on
+  // 2026-10-20. Null when the feed is unavailable: the pairs then fall back to
+  // localData below rather than leaving the sitemap.
+  let branchLocationPairs: Set<string> | null = null
   try {
     const directory = await $fetch<{
       branches: BranchPage[]
@@ -498,6 +508,20 @@ export default defineEventHandler(async _event => {
       })
     })
     if (branches.length) console.log(`- Branch pages: ${branches.length} routes`)
+
+    // First branch wins, in feed order: the page's canonical spells the department
+    // the same way (`directoryBranches[0].dept`).
+    if (branches.length) {
+      const seenDepartments = new Set<string>()
+      branchLocationPairs = new Set()
+      for (const branch of branches) {
+        if (!branch.origin || !branch.dept || !directory?.casas?.[branch.origin]) continue
+        const key = `${branch.origin}|${deptKey(branch.dept)}`
+        if (seenDepartments.has(key)) continue
+        seenDepartments.add(key)
+        branchLocationPairs.add(`${branch.origin}/${branch.dept.toLocaleLowerCase('es')}`)
+      }
+    }
 
     // Per-casa intent pages, gated by the SAME availability rule the route guard
     // uses. Submitting `/casa/x/telefono` for a casa with no published phone
@@ -591,11 +615,14 @@ export default defineEventHandler(async _event => {
         // (e.g. "TREINTA%2520Y%2520TRES"), which Google never indexed.
         // En minúscula por lo mismo que las monedas: el departamento llega en mayúscula
         // ("MONTEVIDEO") y las dos grafías respondían 200 autocanonizándose.
-        sucursalesLocationPairs.add(`${origin}/${department.toLocaleLowerCase('es')}`)
+        if (!branchLocationPairs) {
+          sucursalesLocationPairs.add(`${origin}/${department.toLocaleLowerCase('es')}`)
+        }
         const deptSlug = slugifyDepartment(department)
         if (deptSlug) departmentSlugs.add(deptSlug)
       })
     })
+    branchLocationPairs?.forEach(pair => sucursalesLocationPairs.add(pair))
 
     origins.forEach(origin => addUrlsForAllLocales(`/historico/${origin}`, 0.8, 'daily', today))
     originCurrencyPairs.forEach(pair =>

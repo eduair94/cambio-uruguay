@@ -11,7 +11,8 @@ import { beforeAll, describe, expect, it, vi } from 'vitest'
 type Meta = { name?: string; content?: string }
 let config: {
   app: { head: { meta: Meta[] } }
-  sitemap: { sitemaps: Record<string, { sources?: unknown[] }> }
+  robots: { header?: boolean }
+  sitemap: { sitemaps: Record<string, { sources?: unknown[] }>; exclude: string[] }
 }
 
 beforeAll(async () => {
@@ -44,6 +45,31 @@ describe('robots meta contract', () => {
       .map(entry => join(ROOT, entry))
       .flatMap(path => (statSync(path).isDirectory() ? sourceFiles(path) : [path]))
       .filter(file => /name:\s*['"](?:googlebot|bingbot)['"]/i.test(readFileSync(file, 'utf8')))
+    expect(offenders).toEqual([])
+  })
+
+  // The module's X-Robots-Tag follows robots.txt rules, not the page: it said
+  // `index, follow` next to every page-level `noindex`.
+  it('sends no X-Robots-Tag header that could contradict the page meta', () => {
+    expect(config.robots.header).toBe(false)
+  })
+
+  // The module discovers static pages by itself; a page that is always noindex
+  // must be excluded explicitly, in Spanish and under the locale prefixes.
+  it('keeps every always-noindex static page out of the sitemap', () => {
+    const offenders = sourceFiles(join(ROOT, 'pages'))
+      .filter(file => !file.includes('['))
+      .filter(file => /robots:\s*'noindex/.test(readFileSync(file, 'utf8')))
+      .map(file =>
+        file
+          .slice(join(ROOT, 'pages').length)
+          .replace(/\\/g, '/')
+          .replace(/(?:\/index)?\.vue$/, '')
+      )
+      .filter(
+        route =>
+          !config.sitemap.exclude.includes(route) || !config.sitemap.exclude.includes(`/*${route}`)
+      )
     expect(offenders).toEqual([])
   })
 
