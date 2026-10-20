@@ -101,6 +101,43 @@ describe('sitemap with a healthy API', () => {
     expect(locs.has('/sucursal')).toBe(true)
   })
 
+  // /sucursales/<casa>/<departamento> 404s unless the casa has a branch there in
+  // /api/branches. localData listed departments the feed did not (ten 404s in the
+  // sitemap on 2026-10-20), so the pairs come from the feed, spelled like the
+  // page's canonical: the first branch's department, lower-cased.
+  it('declares a casa/department pair only where the branch feed has a branch', async () => {
+    const urls = await runHandler(async url => {
+      if (url === '/api/branches') {
+        return {
+          branches: [
+            { slug: 'brou-1', origin: 'brou', dept: 'MONTEVIDEO' },
+            { slug: 'brou-2', origin: 'brou', dept: 'Montevideo' },
+            { slug: 'ghost-1', origin: 'ghost', dept: 'SALTO' },
+          ],
+          casas: { brou: {} },
+        }
+      }
+      return HEALTHY(url)
+    })
+    const locs = new Set(urls.map(u => u.loc))
+    expect(locs.has('/sucursales/brou/montevideo')).toBe(true)
+    expect(locs.has('/sucursales/brou/treinta y tres')).toBe(false)
+    expect(locs.has('/sucursales/ghost/salto')).toBe(false)
+    expect([...locs].filter(loc => loc.startsWith('/sucursales/brou/'))).toEqual([
+      '/sucursales/brou/montevideo',
+    ])
+  })
+
+  it('falls back to localData pairs when the branch feed is unavailable', async () => {
+    const urls = await runHandler(async url => {
+      if (url === '/api/branches') throw new Error('branch feed down')
+      return HEALTHY(url)
+    })
+    const locs = new Set(urls.map(u => u.loc))
+    expect(locs.has('/sucursales/brou/montevideo')).toBe(true)
+    expect(locs.has('/sucursales/brou/treinta y tres')).toBe(true)
+  })
+
   it('keeps the priority and changefreq the hand-written list used to emit', async () => {
     const urls = await runHandler(HEALTHY)
     const byLoc = new Map(urls.map(u => [u.loc, u]))

@@ -52,6 +52,12 @@ export interface NavEntry {
   changefreq?: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never'
   /** Backed by live data: emit today's `lastmod` as a re-crawl hint. */
   fresh?: boolean
+  /**
+   * The page is translated and its /en and /pt URLs are canonical of themselves. Without it the
+   * page is Spanish-only: /en/<to> and /pt/<to> still render, but their canonical is the Spanish
+   * URL, so the sitemap lists only the Spanish one. See `utils/localizedRoutes.ts`.
+   */
+  localized?: boolean
 }
 
 /** A titled group of navigation entries. `id` doubles as the search-result group key. */
@@ -97,6 +103,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/pizarra',
+        localized: true,
         labelKey: 'nav.pizarra',
         icon: 'mdi-view-headline',
         priority: 0.9,
@@ -114,6 +121,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/historico',
+        localized: true,
         labelKey: 'historico',
         icon: 'mdi-chart-line',
         priority: 0.9,
@@ -124,6 +132,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/comparar',
+        localized: true,
         labelKey: 'compare.nav',
         icon: 'mdi-chart-multiple',
         priority: 0.8,
@@ -191,6 +200,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/comparar-plataformas-dolar-uruguay',
+        localized: true,
         labelKey: 'platformComparison.nav',
         icon: 'mdi-scale-balance',
         priority: 0.7,
@@ -347,6 +357,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
     entries: [
       {
         to: '/sucursales',
+        localized: true,
         labelKey: 'sucursalesMenu',
         icon: 'mdi-bank-outline',
         priority: 0.9,
@@ -373,6 +384,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/mapa',
+        localized: true,
         labelKey: 'map.nav',
         icon: 'mdi-map-marker-radius',
         priority: 0.8,
@@ -382,6 +394,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/casas-de-cambio',
+        localized: true,
         labelKey: 'nav.casasDirectory',
         icon: 'mdi-store-outline',
         priority: 0.8,
@@ -424,6 +437,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/casa-de-cambio-cerca-de-mi',
+        localized: true,
         labelKey: 'nav.nearby',
         icon: 'mdi-map-marker-account',
         priority: 0.8,
@@ -449,6 +463,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/casas-de-cambio-abiertas-fin-de-semana',
+        localized: true,
         labelKey: 'nav.weekendOpen',
         icon: 'mdi-calendar-weekend',
         priority: 0.8,
@@ -679,6 +694,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/preguntas-frecuentes',
+        localized: true,
         labelKey: 'faq.nav',
         icon: 'mdi-frequently-asked-questions',
         priority: 0.7,
@@ -733,6 +749,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/noticias',
+        localized: true,
         labelKey: 'noticias.nav',
         icon: 'mdi-newspaper-variant-outline',
         priority: 0.7,
@@ -742,6 +759,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/economia-uruguay',
+        localized: true,
         labelKey: 'economia.nav',
         icon: 'mdi-chart-box-outline',
         priority: 0.7,
@@ -816,6 +834,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/sillas-escritorio-uruguay',
+        localized: true,
         labelKey: 'nav.chairTiers',
         icon: 'mdi-chair-rolling',
         priority: 0.7,
@@ -2256,6 +2275,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/tickets-mutualistas-uruguay',
+        localized: true,
         labelKey: 'nav.ticketsMutualistas',
         icon: 'mdi-receipt-text-outline',
         priority: 0.8,
@@ -2922,6 +2942,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/primer-alquiler-uruguay',
+        localized: true,
         labelKey: 'nav.primerAlquiler',
         icon: 'mdi-home-account',
         priority: 0.8,
@@ -2940,6 +2961,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/equipar-casa-uruguay',
+        localized: true,
         labelKey: 'nav.equiparCasa',
         icon: 'mdi-fridge-outline',
         priority: 0.8,
@@ -3018,6 +3040,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/fletes-mudanzas-uruguay',
+        localized: true,
         labelKey: 'nav.mudanzas',
         icon: 'mdi-truck-outline',
         priority: 0.8,
@@ -3094,6 +3117,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/analisis-alquileres-uruguay',
+        localized: true,
         labelKey: 'nav.rentalAnalysis',
         icon: 'mdi-chart-box-outline',
         priority: 0.8,
@@ -3136,6 +3160,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/alquileres-uruguay',
+        localized: true,
         labelKey: 'nav.alquileres',
         icon: 'mdi-home-city-outline',
         // Updated by a cron and re-indexed often: it is the only page here whose CONTENT changes
@@ -3193,6 +3218,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/alquiler-ideal-uruguay',
+        localized: true,
         labelKey: 'nav.rentalFit',
         icon: 'mdi-home-account',
         priority: 0.7,
@@ -3210,6 +3236,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/barrios-alquileres-uruguay',
+        localized: true,
         labelKey: 'nav.rentalZones',
         icon: 'mdi-map-search-outline',
         priority: 0.7,
@@ -3224,6 +3251,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/venta-viviendas-uruguay',
+        localized: true,
         labelKey: 'nav.propertySales',
         icon: 'mdi-home-search-outline',
         priority: 0.8,
@@ -3256,6 +3284,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/inmobiliarias-uruguay',
+        localized: true,
         labelKey: 'nav.realEstateAgencies',
         icon: 'mdi-office-building-outline',
         priority: 0.7,
@@ -3271,6 +3300,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/oportunidades-inmobiliarias-uruguay',
+        localized: true,
         labelKey: 'nav.propertyOpportunities',
         icon: 'mdi-home-search-outline',
         priority: 0.8,
@@ -3656,6 +3686,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/retirar-efectivo-uruguay',
+        localized: true,
         labelKey: 'nav.retirar',
         icon: 'mdi-cash-multiple',
         priority: 0.8,
@@ -3750,6 +3781,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/donde-conseguir-monedas-uruguay',
+        localized: true,
         labelKey: 'nav.monedas',
         icon: 'mdi-hand-coin-outline',
         priority: 0.7,
@@ -4387,6 +4419,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
     entries: [
       {
         to: '/conectar',
+        localized: true,
         labelKey: 'conectar.nav',
         icon: 'mdi-connection',
         priority: 0.6,
@@ -4434,6 +4467,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/desarrolladores',
+        localized: true,
         labelKey: 'dev.nav',
         icon: 'mdi-api',
         priority: 0.6,
@@ -4510,6 +4544,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/newsletter',
+        localized: true,
         labelKey: 'newsletter.nav',
         icon: 'mdi-email-newsletter',
         priority: 0.6,
