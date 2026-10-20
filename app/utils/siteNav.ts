@@ -3406,6 +3406,37 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // La pregunta que sigue a las tres de al lado: quien no llega al alquiler con su ingreso no
+        // pregunta por otra garantía, pregunta si el Estado pone algo. La palabra «subsidio de
+        // alquiler» no aparecía en NINGÚN archivo del sitio.
+        //
+        // Va al lado de la garantía porque es la confusión que hay que deshacer: la garantía
+        // respalda un contrato privado y este programa es una vivienda pública con subsidio
+        // adentro, a la que se entra por llamado y sorteo. El ángulo propio es el mismo lever de
+        // `/cooperativas-de-vivienda-uruguay` y `/garantia-de-alquiler-uruguay` —los topes del MVOT
+        // están sólo en UR y el sitio tiene la UR del día; la propia ficha manda a buscar la UR a
+        // la DGI— más uno nuevo: la tabla general NO es la que rige, y el único llamado publicado
+        // pidió 13 UR de alquiler donde la ficha topea en 10.
+        to: '/subsidio-de-alquiler-uruguay',
+        labelKey: 'nav.subsidioAlquiler',
+        icon: 'mdi-home-heart',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'subsidio de alquiler uruguay',
+          'abriendo puertas alquiler mvot',
+          'subsidio de alquiler mvot requisitos',
+          'como pedir subsidio de alquiler',
+          'llamado alquiler mvot',
+          'alquiler social uruguay',
+          'vivienda publica en alquiler uruguay',
+          'tope de alquiler en ur mvot',
+          'ingresos para subsidio de alquiler',
+          'subsidio de alquiler para jovenes uruguay',
+        ],
+      },
+      {
         // El otro lado del contrato: `/garantia-de-alquiler-uruguay` contesta qué se firma al
         // entrar, y nada contestaba qué pasa al dejar de pagar. La respuesta vivía en dos renglones
         // de un acordeón de `/alquilar-en-uruguay`, donde quien busca "desalojo por falta de pago"

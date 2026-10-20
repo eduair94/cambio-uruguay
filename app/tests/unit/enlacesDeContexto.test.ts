@@ -156,7 +156,6 @@ const DEUDA_SIN_ENLACE = [
   '/cortes-de-luz-por-barrio-uruguay',
   '/fondo-de-solidaridad-uruguay',
   '/grabacion-sin-consentimiento-uruguay',
-  '/impuesto-temu-uruguay',
   '/llevar-el-auto-a-brasil-o-argentina',
   '/precio-del-boleto-montevideo',
   '/reconocer-anos-trabajados-uruguay',
@@ -165,6 +164,23 @@ const DEUDA_SIN_ENLACE = [
 ]
 
 /** El trinquete. Sólo puede bajar: subirlo es publicar una página que nadie enlaza. */
+// 15 → 14 el 2026-10-20, y por primera vez con el ORIGEN libre, que es lo que bloqueó a las dos
+// candidatas de ayer: `/impuesto-temu-uruguay` recibe su enlace de
+// `/importar-para-revender-uruguay`, que no tiene ninguna fila en el libro de cambios. Es la única
+// de las quince que hoy estaba libre en los dos pozos —acá y en `temaHuerfanas.test.ts`—, así que
+// la página queda con tema y con enlace en la misma corrida.
+//
+// El lector lo necesita de verdad y la frase ya existía a medias: la pregunta «¿Puedo hacer muchos
+// envíos de US$ 800 en el año?» advierte que fraccionar un pedido «es la clase de maniobra que la
+// Aduana mira» y nunca dice que, antes del riesgo, hay una cuenta — el mínimo de US$ 20 es POR
+// ENVÍO (Ley 20.446 art. 627 para la prestación única, art. 660 para el IVA de la franquicia), así
+// que una caja de menos de US$ 20 paga más de impuesto que de mercadería. La página del impuesto
+// Temu es la que resuelve esos cuatro casos con el mismo motor que la calculadora, y es además la
+// única que dice desde dónde factura cada plataforma, que es lo que decide si la exoneración del
+// TIFA le alcanza al revendedor o no.
+//
+// Las dos de ayer siguen esperando a su origen: `/cheques-uruguay` al 21/10 (`/salir-del-clearing`)
+// y `/alternativa-a-bankos-uruguay` al 27/10 (`/apps-de-beneficios-uruguay`).
 // 16 → 15 el 2026-10-19, sin ir a buscarlo, como el 15 y el 18/10: la página nueva
 // `/prestamos-para-jubilados-uruguay` necesita a `/jubilacion-por-incapacidad-uruguay` en su propio
 // contenido. Desde la Resolución de Gerencia General 403/2024 el BPS no da préstamos sociales nuevos
@@ -257,7 +273,7 @@ const DEUDA_SIN_ENLACE = [
 // cambios, y la reserva que la nota de arriba describe no se rompe: lo que esas filas miden es su
 // propia descripción, y el enlace entrante nace en una página publicada hoy, sin tráfico todavía.
 // Es además lo que ya hace cada página nueva del repo con su bloque de relacionadas.
-const DEUDA_MAXIMA = 15
+const DEUDA_MAXIMA = 14
 
 describe('ninguna página de lectura queda sin un enlace de contexto', () => {
   it('las páginas sin enlace son exactamente las declaradas', () => {

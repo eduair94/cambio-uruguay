@@ -538,6 +538,16 @@
         corresponde, cuánto es, y por qué puerta se pide. Todos los montos que siguen están
         publicados por BPS, MIDES, UTE u OSE, con su fecha de vigencia.
       </p>
+      <p class="section-intro text-medium-emphasis mb-5">
+        Hay uno que no está en esta lista y conviene decir por qué, porque es el gasto más grande de
+        la tabla de arriba: el alquiler. El MVOT subsidia alquileres, pero no el contrato que ya
+        tenés — lo hace sobre viviendas propias, por llamado y sorteo, y pide un ingreso del hogar
+        de
+        <strong>15 UR como mínimo</strong>, que para un sueldo solo de este tamaño es casi todo el
+        líquido. No es un monto que se cobre ni una puerta que esté abierta todos los meses, así que
+        no entra en la cuenta: cómo funciona y cuándo mirar está en
+        <NuxtLink :to="localePath('/subsidio-de-alquiler-uruguay')">subsidio de alquiler</NuxtLink>.
+      </p>
 
       <VCard variant="flat" class="calc-card pa-5 pa-md-6 mb-6">
         <VRow dense>

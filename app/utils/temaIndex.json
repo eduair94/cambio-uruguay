@@ -169,6 +169,10 @@
       "icon": "mdi-package-variant-closed",
       "resources": [
         {
+          "to": "/impuesto-temu-uruguay",
+          "label": "Impuesto Temu: la cuenta de cada compra"
+        },
+        {
           "to": "/declarar-compra-exterior-uruguay",
           "label": "Cómo declarar una compra del exterior"
         },
@@ -417,6 +421,10 @@
         {
           "to": "/analisis-alquileres-uruguay",
           "label": "Análisis del alquiler"
+        },
+        {
+          "to": "/subsidio-de-alquiler-uruguay",
+          "label": "Subsidio de alquiler"
         },
         {
           "to": "/evolucion-precio-alquileres-uruguay",

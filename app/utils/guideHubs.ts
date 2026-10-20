@@ -206,6 +206,14 @@ export const guideHubs: readonly GuideHub[] = [
     ],
     resources: [
       {
+        // El nombre con el que la gente busca este régimen. La guía homónima del catálogo lo
+        // EXPLICA; esta página lo CALCULA (cuatro compras resueltas por el mismo motor que la
+        // calculadora), así que las etiquetas se separan a propósito.
+        label: 'Impuesto Temu: la cuenta de cada compra',
+        description: 'Cuatro compras calculadas y el mínimo de US$ 20 de IVA por envío postal.',
+        to: '/impuesto-temu-uruguay',
+      },
+      {
         label: 'Cómo declarar una compra del exterior',
         description: 'Correo, courier, Amazon Global, Temu y régimen general.',
         to: '/declarar-compra-exterior-uruguay',
@@ -428,6 +436,12 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Análisis del alquiler',
         description: 'Cuánto se pide por zona, tipo y dormitorios, calculado cada semana.',
         to: '/analisis-alquileres-uruguay',
+      },
+      {
+        label: 'Subsidio de alquiler',
+        description:
+          'Lo que el MVOT paga y lo que no: topes de 8 a 12 UR, llamado y sorteo, no tu contrato.',
+        to: '/subsidio-de-alquiler-uruguay',
       },
       {
         label: 'Evolución del alquiler',

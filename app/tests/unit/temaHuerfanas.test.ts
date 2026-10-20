@@ -116,7 +116,6 @@ const DEUDA_SIN_TEMA = [
   '/garantia-de-alquiler-uruguay',
   '/grabacion-sin-consentimiento-uruguay',
   '/importar-a-uruguay-siendo-extranjero',
-  '/impuesto-temu-uruguay',
   '/prestamo-hipotecario-uruguay',
   '/que-pasa-si-no-pago-antel',
   '/temas-de-dinero-reddit',
@@ -124,6 +123,25 @@ const DEUDA_SIN_TEMA = [
   '/trabajo-para-menores-de-edad-uruguay',
 ]
 
+/**
+ * 18 → 17 el 2026-10-20: `/impuesto-temu-uruguay` entra a `importaciones-y-aduana-uruguay`, y es
+ * la ÚNICA de las dieciocho que hoy está libre en los dos pozos a la vez —sin tema y sin enlace de
+ * contexto—, así que las dos deudas de esa página se cierran en la misma corrida en vez de dejarla
+ * medio arreglada. De las otras dos rutas libres del día, `/factura-de-ose-uruguay` sigue esperando
+ * por lo que dice la nota de abajo (su racimo se libera el 21 y el 25/10) y la tercera no es de este
+ * pozo.
+ *
+ * El tema es el suyo sin discusión: el hub ya lleva la GUÍA homónima del catálogo
+ * (`guideSlugs: ['impuesto-temu-uruguay', …]`) y la página, que es la que calcula los cuatro casos,
+ * no figuraba en ningún `resources`. Las etiquetas se separan a propósito —la guía explica, la
+ * página calcula— porque son dos URLs sobre el mismo nombre popular.
+ *
+ * Y eso deja a la vista una deuda que este trinquete no mide y que hoy no se puede tocar: el
+ * título de la guía («Impuesto Temu: qué es y cuánto pagás») y el de la página («Impuesto Temu:
+ * cuánto pagás en Uruguay») se disputan la misma consulta. Re-angular la guía es un cambio de
+ * snippet y su ruta está reservada hasta el 2026-11-05 por
+ * `descripciones-de-las-guias-respuesta-primero-2`.
+ */
 /**
  * 19 → 18 el 2026-10-19: `/cuanto-me-tienen-que-pagar-uruguay` entra a
  * `sueldo-trabajo-e-impuestos-uruguay`, y es una de las DOS únicas de las diecinueve con la ruta
@@ -146,7 +164,7 @@ const DEUDA_SIN_TEMA = [
  *
  * Sólo puede bajar: subirlo es publicar una página huérfana.
  */
-const DEUDA_MAXIMA = 18
+const DEUDA_MAXIMA = 17
 
 describe('ninguna página de lectura queda fuera de todos los temas', () => {
   const sinTema = rootRoutes.filter(route => temasDeRuta(route).length === 0)

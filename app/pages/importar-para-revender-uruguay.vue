@@ -492,7 +492,7 @@ const faqs = [
   },
   {
     q: '¿Puedo hacer muchos envíos de US$ 800 en el año?',
-    a: 'Ni el Decreto 50/026 ni la lista de requisitos que publica la DNA establecen un tope anual o un cupo de envíos para la prestación única: los límites que publican son <strong>por envío</strong> (US$ 800 de factura y 20 kg). Lo que sí tiene tope anual es la franquicia (US$ 800 en hasta 3 envíos), y esa no la vas a usar igual. Dicho eso, fraccionar artificialmente un mismo pedido para esquivar el tope es la clase de maniobra que la Aduana mira: si tu proveedor te factura 2.400 y llegan tres cajas el mismo día, no es lo mismo que tres compras distintas.',
+    a: 'Ni el Decreto 50/026 ni la lista de requisitos que publica la DNA establecen un tope anual o un cupo de envíos para la prestación única: los límites que publican son <strong>por envío</strong> (US$ 800 de factura y 20 kg). Lo que sí tiene tope anual es la franquicia (US$ 800 en hasta 3 envíos), y esa no la vas a usar igual. Dicho eso, fraccionar artificialmente un mismo pedido para esquivar el tope es la clase de maniobra que la Aduana mira: si tu proveedor te factura 2.400 y llegan tres cajas el mismo día, no es lo mismo que tres compras distintas. Y antes del riesgo hay una cuenta: el mínimo de US$ 20 también es <strong>por envío</strong>, así que una caja de menos de US$ 20 paga más de impuesto que de mercadería — está <a href="/impuesto-temu-uruguay">calculado compra por compra acá</a>, con lo que cambia según desde dónde factura la plataforma.',
   },
   {
     q: '¿Por qué el 60% suele salir más barato que el DUA si el arancel es mucho menor?',

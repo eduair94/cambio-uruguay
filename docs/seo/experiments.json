@@ -1670,6 +1670,32 @@
         "sommier o colchon"
       ],
       "hypothesis": "Dos paginas nuevas. La pregunta llego tal cual a r/uruguay el 2026-10-19 (cuanto gastar en un sommier de 2 plazas, hasta cuando es inversion y cuando dinero mal gastado) y el sitio no tenia nada que la contestara: la cosecha de equipar no media el sommier y la fila del colchon se quedaba con todos los conjuntos 'sommier + colchon', porque todos dicen 'colchon'. Desde este cambio el sommier tiene su propia fila (tier C, fuera de las canastas para no contar el colchon dos veces) y su ficha /equipar-casa-uruguay/sommier, y /cuanto-gastar-en-un-sommier-uruguay contesta con la banda del dia (la misma de la ficha), que compra cada tramo de precio segun el titulo de sus avisos (pocket, Bonnell, espuma, capa de confort), cuanto mas piden los que dicen 'ortopedico', cuantos tachan un precio por encima del p90 de lo que cobra el mercado y el precio repartido por noche. Se espera que las dos ganen porcion en consultas de precio y de decision de sommier, donde el sitio no tenia ninguna pagina. El enlace de entrada sale del hub /equipar-casa-uruguay (Segui leyendo) y de la ficha del colchon, ninguno con fila abierta en este libro."
+    },
+    {
+      "id": "pagina-subsidio-de-alquiler",
+      "shippedOn": "2026-10-20",
+      "routes": ["/subsidio-de-alquiler-uruguay"],
+      "queries": [
+        "subsidio de alquiler uruguay",
+        "subsidio de alquiler mvot",
+        "abriendo puertas alquiler",
+        "como pedir subsidio de alquiler uruguay",
+        "alquiler social uruguay",
+        "ayuda del estado para alquilar uruguay"
+      ],
+      "hypothesis": "Pagina nueva. La palabra 'subsidio de alquiler' no aparecia en ningun archivo del sitio con el racimo de alquiler entero construido alrededor (alquilar-en-uruguay, garantia-de-alquiler-uruguay, alquilar-estando-en-clearing, alquilar-sin-recibo-de-sueldo, credito-fiscal-por-alquiler-uruguay y el directorio), y es la pregunta que sigue a las que el sitio ya contesta: quien no llega al alquiler con su ingreso no pregunta por otra garantia, pregunta si el Estado pone algo. Lo primero que dice la pagina es un no, que es lo mas util: el MVOT no subsidia el contrato que ya tenes, pone en alquiler viviendas propias y el subsidio viaja con la vivienda, por llamado y sorteo. El angulo propio son dos cosas que las fichas oficiales no hacen: (1) los dos topes estan solo en UR -la propia ficha manda a buscar el valor a la DGI- y el sitio publica la lectura del BCU del dia, el mismo lever de cooperativas-de-vivienda-uruguay y garantia-de-alquiler-uruguay; (2) la tabla general NO es la que rige, y el unico llamado publicado lo prueba: pidio 13 UR de alquiler donde la ficha topea los 2 dormitorios en 10, y movio el piso de ingreso de 15 UR a 20, 25 y 30. Las dos tablas se publican enteras en vez de arbitrar, como las dos tablas discordantes de las cooperativas. No publica cuanto quedarias pagando: la ficha no dice que porcentaje del ingreso es la 'afectacion'. Se espera ganar porcion en las consultas de marca del programa y en las de 'subsidio de alquiler', donde el sitio no tenia ninguna pagina. El enlace de entrada sale de vivir-con-25000-pesos-uruguay, en su seccion 'Lo que el Estado pone, y casi nadie pide', que no tiene fila en este libro."
+    },
+    {
+      "id": "impuesto-temu-tema-y-enlace",
+      "shippedOn": "2026-10-20",
+      "routes": ["/impuesto-temu-uruguay"],
+      "queries": [
+        "impuesto temu uruguay",
+        "impuesto temu",
+        "cuanto pago por comprar en temu",
+        "temu impuestos uruguay"
+      ],
+      "hypothesis": "La pagina del nombre popular del regimen de envios postales estaba huerfana por los dos lados a la vez: no figuraba en los 'resources' de ningun tema (asi que no recibia ni un enlace del bloque 'Mas sobre este tema', que es reciproco por construccion) y ninguna pagina la enlazaba desde su contenido. Era la unica de las dieciocho rutas sin tema que hoy tambien estaba libre en el pozo de enlaces de contexto, asi que las dos deudas se cierran juntas: entra a importaciones-y-aduana-uruguay -donde ya vivia la guia homonima del catalogo- y recibe un enlace de importar-para-revender-uruguay, que no tiene fila en este libro. El enlace esta en la frase que el lector necesita: la pregunta sobre hacer muchos envios de US$ 800 advertia que fraccionar un pedido es la maniobra que la Aduana mira y nunca decia que antes del riesgo hay una cuenta -el minimo de US$ 20 es POR ENVIO, asi que una caja de menos de US$ 20 paga mas de impuesto que de mercaderia-. Se espera recuperar porcion en las consultas del nombre popular. Queda declarada una deuda que este cambio NO toca: el titulo de la guia /guias/impuesto-temu-uruguay y el de esta pagina se disputan la misma consulta, y la ruta de la guia esta reservada hasta el 2026-11-05."
     }
   ]
 }
