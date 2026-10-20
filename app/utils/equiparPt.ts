@@ -5,7 +5,7 @@ export const equiparPt: EquiparCopy = {
   title: 'Quanto custa mobiliar uma casa vazia no Uruguai',
   shortTitle: 'Mobiliar a casa',
   description:
-    'O que comprar primeiro para uma casa sem móveis e quanto custa hoje: 38 categorias com preços de lojas uruguaias, Mercado Livre e Facebook Marketplace, ordenadas por necessidade e com três orçamentos já somados.',
+    'O que comprar primeiro para uma casa sem móveis e quanto custa hoje: 39 categorias com preços de lojas uruguaias, Mercado Livre e Facebook Marketplace, ordenadas por necessidade e com três orçamentos já somados.',
   intro:
     'Você conseguiu o aluguel e ele está vazio. Esta página ordena o que comprar primeiro, com o preço de mercado de hoje ao lado de cada coisa, o preço de usado quando existe, e três cestas já somadas para você não ter de fazer a conta.',
   navLabel: 'Seções da página',
@@ -133,6 +133,11 @@ export const equiparPt: EquiparCopy = {
       hint: 'Custos e trâmites da assinatura',
     },
     { to: '/alquileres-uruguay', label: 'Aluguéis', hint: 'O diretório de anúncios' },
+    {
+      to: '/cuanto-gastar-en-un-sommier-uruguay',
+      label: 'Quanto gastar num sommier',
+      hint: 'Onde pagar mais deixa de comprar algo (em espanhol)',
+    },
     { to: '/plan-de-vida-uruguay', label: 'Plano de vida', hint: 'A ordem de cada peso' },
     {
       to: '/sillas-escritorio-uruguay',

@@ -49,6 +49,7 @@ export function matchesCategory(category: EquiparCategory, title: string, contex
   const normalisedTitle = norm(title);
   if (NOT_A_PRODUCT.test(haystack)) return false;
   if (!category.include.test(normalisedTitle)) return false;
+  if (category.titleExclude?.test(normalisedTitle)) return false;
   if (category.exclude?.test(haystack)) return false;
   return true;
 }

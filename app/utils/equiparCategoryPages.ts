@@ -38,6 +38,12 @@ export interface EquiparCategoryPage {
   planRedondo: string | null
   /** Sólo estufa/ventilador: W de ejemplo para el costo por hora. */
   wattsExample: number | null
+  /**
+   * Una página que contesta la decisión de compra de esta categoría, no su precio: la ficha la
+   * enlaza al pie de "Qué mirar al comprar". Hoy sólo el colchón y el sommier la tienen
+   * (/cuanto-gastar-en-un-sommier-uruguay).
+   */
+  decisionGuide?: { to: string; label: string }
 }
 
 /** Fuente y fecha de verificación de todo lo que dice `planRedondo` en este archivo. */
@@ -117,6 +123,10 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
     ],
     planRedondo: null,
     wattsExample: null,
+    decisionGuide: {
+      to: '/cuanto-gastar-en-un-sommier-uruguay',
+      label: '¿Colchón solo o sommier, y cuánto gastar?',
+    },
   },
   {
     key: 'lavarropas',
@@ -484,6 +494,31 @@ export const EQUIPAR_CATEGORY_PAGES: readonly EquiparCategoryPage[] = [
     wattsExample: null,
   },
   {
+    key: 'sommier',
+    label: 'Sommier',
+    plural: 'sommiers',
+    h1: 'Precio de sommiers en Uruguay',
+    description:
+      'Precios de sommiers (base + colchón) en Uruguay por medida, con la mediana relevada en tiendas y Mercado Libre y por qué no conviene comprarlo usado.',
+    room: 'dormitorio',
+    tier: 'C',
+    usedOk: false,
+    usedNote:
+      'El conjunto trae colchón, y un colchón usado es lo que no se recomienda: chinches, ácaros y un hundimiento que no se ve hasta que dormís encima.',
+    guide: [
+      'Un sommier es la base más el colchón. Confirmá que el precio incluya los dos: «base sommier» o «cama box» sola es otro producto, mucho más barato.',
+      'Lo que se siente al dormir es el colchón; la base le da altura y un apoyo parejo. Si el presupuesto no alcanza para los dos buenos, el que importa es el colchón.',
+      'Medidas habituales: 2 plazas 140 × 190 cm, queen 160 × 200 cm, king 200 × 200 cm, las mismas del colchón. Confirmá la de tu dormitorio antes de comprar.',
+      'Pedí la garantía por escrito, con qué cubre (hundimiento, resortes, base) y por cuántos años.',
+    ],
+    planRedondo: null,
+    wattsExample: null,
+    decisionGuide: {
+      to: '/cuanto-gastar-en-un-sommier-uruguay',
+      label: '¿Cuánto conviene gastar en un sommier?',
+    },
+  },
+  {
     key: 'sabanas',
     label: 'Juego de sábanas',
     plural: 'juegos de sábanas',
@@ -806,6 +841,7 @@ const EQUIPAR_GRAMMAR: Record<string, EquiparGrammar> = {
   tostadora: { gender: 'f', plural: false },
   cafetera: { gender: 'f', plural: false },
   'horno-electrico': { gender: 'm', plural: false },
+  sommier: { gender: 'm', plural: false },
   sabanas: { gender: 'm', plural: false },
   almohada: { gender: 'f', plural: false },
   acolchado: { gender: 'm', plural: false },

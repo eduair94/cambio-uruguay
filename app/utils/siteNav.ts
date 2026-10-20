@@ -2958,7 +2958,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         // El directorio de avisos detrás de equipar: una fila por aviso de ML, Marketplace y
-        // tiendas, con filtros. Las 38 páginas por categoría cuelgan de él (DYNAMIC_ROUTE_KEYS).
+        // tiendas, con filtros. Las 39 páginas por categoría cuelgan de él (DYNAMIC_ROUTE_KEYS).
         to: '/equipar-casa-uruguay/productos',
         labelKey: 'nav.equiparProductos',
         icon: 'mdi-view-grid-outline',
@@ -2972,6 +2972,28 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'avisos electrodomesticos uruguay',
           'muebles usados montevideo',
           'lista para amueblar la casa',
+        ],
+      },
+      {
+        // La pregunta llegó tal cual a r/uruguay el 19/10/2026: cuánto gastar en un sommier de 2
+        // plazas, y hasta dónde es inversión. La contesta la misma cosecha de equipar, que desde ese
+        // día mide el sommier en su propia fila: la banda del día, qué compra cada tramo según el
+        // título de sus avisos y cuánto se aleja el precio tachado de lo que cobra el mercado.
+        to: '/cuanto-gastar-en-un-sommier-uruguay',
+        labelKey: 'nav.sommier',
+        icon: 'mdi-bed-king-outline',
+        priority: 0.7,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'cuanto gastar en un sommier',
+          'cuanto sale un sommier 2 plazas',
+          'precio sommier 2 plazas uruguay',
+          'sommier o colchon',
+          'sommier caro vale la pena',
+          'sommier pocket o bonnell',
+          'sommier ortopedico',
+          'primera mudanza que comprar',
         ],
       },
       {

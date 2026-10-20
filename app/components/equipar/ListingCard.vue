@@ -128,7 +128,7 @@ const roomIcon = computed(() => {
     )
   )
     return 'mdi-silverware-fork-knife'
-  if (/colchon|sabanas|almohada|acolchado|ropero/.test(category)) return 'mdi-bed-outline'
+  if (/colchon|sommier|sabanas|almohada|acolchado|ropero/.test(category)) return 'mdi-bed-outline'
   if (/calefon|toallas|cortina/.test(category)) return 'mdi-shower'
   if (/lavarropas|secarropas|limpieza|tacho|plancha|aspiradora/.test(category))
     return 'mdi-washing-machine'

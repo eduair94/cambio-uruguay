@@ -75,7 +75,7 @@ export const AI_TOOLSETS: readonly AiToolset[] = Object.freeze([
     icon: 'mdi-tag-search-outline',
     url: `${MCP_ENDPOINT}/productos`,
     summary:
-      'Celulares, sillas, 38 categorías para equipar la casa, monopatines y bicicletas eléctricas, tiendas online y precios oficiales de supermercado.',
+      'Celulares, sillas, 39 categorías para equipar la casa, monopatines y bicicletas eléctricas, tiendas online y precios oficiales de supermercado.',
     tools: [
       { name: 'search_products', what: 'precio más bajo, banda nuevo/usado y dónde comprar' },
       { name: 'plan_home_setup', what: 'cuánto sale equipar la casa, restando lo que ya tenés' },

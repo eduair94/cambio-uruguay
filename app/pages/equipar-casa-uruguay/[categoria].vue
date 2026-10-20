@@ -237,6 +237,11 @@ FAMILY: Spanish only (like comparativas and sucursal): the canonical carries no 
       <ul class="guide-list">
         <li v-for="(line, index) in page.guide" :key="index">{{ line }}</li>
       </ul>
+      <p v-if="page.decisionGuide" class="section-intro">
+        <NuxtLink :to="localePath(page.decisionGuide.to)" class="cat-link">
+          {{ page.decisionGuide.label }}
+        </NuxtLink>
+      </p>
     </section>
 
     <!-- ── Plan Redondo de UTE ────────────────────────────────────────────── -->

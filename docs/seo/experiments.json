@@ -1653,6 +1653,23 @@
         "como traer medicamentos del extranjero"
       ],
       "hypothesis": "Correccion de contenido, no de snippet. Titulo y descripcion de las 15 fichas no se tocan porque se imprimen en /importar (ventana hasta el 28/10), y cosmeticos queda afuera porque tiene su propia fila desde el 19/10: se declaran las 15 rutas exactas y no /importar/, que tambien atraparia al indice y a cosmeticos. Lo que cambia es que las fichas vuelven a decir la norma vigente, leida el 19/10/2026: el registro de vendedores de EE.UU. con la RG 26/2026 (la factura sola ya no alcanza, el operador postal puede pedir el alta y las dos fechas que la DNA no hace coincidir) en las siete fichas que ofrecen la exoneracion por origen; el codigo J con sus ocho subcategorias (RG 30/2026, vigente desde el 12/10; las fichas decian cuatro y la RG 11 original ya traia siete) en las nueve que las enumeraban; la cita de los codigos G y H corregida a num. 28 (son los lit. b y a, no el c); la regla del MSP enlazada a la pagina propia del MSP y no a la raiz del sitio ni al art. 19 del reglamento de medicamentos; y en electronica, que la afeitadora paga IMESI (Decreto 96/990 art. 27 lit. d) y por eso queda fuera del regimen postal. Cada ficha publica la fecha de la correccion parcial sin mover la del contraste entero, y el dateModified del JSON-LD toma la nueva. Expectativa baja: entre el 20/9 y el 17/10 estas 15 fichas sumaron unas 50 impresiones y ningun clic, asi que el job probablemente dictamine 'sin datos'; la fila existe para que el cambio quede fechado y no contamine otra medicion de estas rutas."
+    },
+    {
+      "id": "pagina-cuanto-gastar-en-un-sommier",
+      "shippedOn": "2026-10-20",
+      "routes": [
+        "/cuanto-gastar-en-un-sommier-uruguay",
+        "/equipar-casa-uruguay/sommier"
+      ],
+      "queries": [
+        "cuanto gastar en un sommier",
+        "cuanto sale un sommier 2 plazas",
+        "precio sommier 2 plazas",
+        "sommier 2 plazas precio",
+        "precio sommier uruguay",
+        "sommier o colchon"
+      ],
+      "hypothesis": "Dos paginas nuevas. La pregunta llego tal cual a r/uruguay el 2026-10-19 (cuanto gastar en un sommier de 2 plazas, hasta cuando es inversion y cuando dinero mal gastado) y el sitio no tenia nada que la contestara: la cosecha de equipar no media el sommier y la fila del colchon se quedaba con todos los conjuntos 'sommier + colchon', porque todos dicen 'colchon'. Desde este cambio el sommier tiene su propia fila (tier C, fuera de las canastas para no contar el colchon dos veces) y su ficha /equipar-casa-uruguay/sommier, y /cuanto-gastar-en-un-sommier-uruguay contesta con la banda del dia (la misma de la ficha), que compra cada tramo de precio segun el titulo de sus avisos (pocket, Bonnell, espuma, capa de confort), cuanto mas piden los que dicen 'ortopedico', cuantos tachan un precio por encima del p90 de lo que cobra el mercado y el precio repartido por noche. Se espera que las dos ganen porcion en consultas de precio y de decision de sommier, donde el sitio no tenia ninguna pagina. El enlace de entrada sale del hub /equipar-casa-uruguay (Segui leyendo) y de la ficha del colchon, ninguno con fila abierta en este libro."
     }
   ]
 }

@@ -46,8 +46,12 @@ import { recordPricewatch } from "./classes/pricewatch/record";
  * catalogue. These two do — they are searched per term — so they take a budget, and the plan is
  * ordered by the registry, which puts the fridge, the washing machine and the mattress first. A run
  * that hits the ceiling loses the tea towels, never the line that decides the total.
+ *
+ * 72 since 2026-10-20: the sommier row brought its own two searches, and at 70 they would have come
+ * out of the tail (the daily run lost "ventilador de techo" and "estufa electrica", the hourly one
+ * "aspiradora"). Every category that was searched before is still searched, in the same run.
  */
-const ML_BUDGET = Number(process.env.EQUIPAR_ML_MAX_SCANS || 70);
+const ML_BUDGET = Number(process.env.EQUIPAR_ML_MAX_SCANS || 72);
 /**
  * Marketplace searches per run. Until 2026-10-11 the daily run read 26 of the plan's 47 and every
  * hourly run the same first 13, so the twelve categories from acolchado on had no Marketplace offer
