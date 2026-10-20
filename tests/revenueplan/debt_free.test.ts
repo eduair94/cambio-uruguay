@@ -117,12 +117,21 @@ describe("el lector de las listas del app no puede fallar en silencio", () => {
     expect(parseStringList(source, "L")).toEqual(["/uno", "/dos"]);
   });
 
-  // La prueba que importa: las tres listas de verdad, como las declara el app hoy. Si alguien
+  // La prueba que importa: las CINCO listas de verdad, como las declara el app hoy. Si alguien
   // renombra un `const` o le cambia la forma, esto se pone rojo y el informe no miente.
+  //
+  // Las tres últimas entraron el 2026-10-20, cuando `seoContract.test.ts` y
+  // `guideSnippetBudget.test.ts` pasaron de declarar sólo un número a declarar también sus
+  // miembros. Son los dos pozos que el encabezado de `seo_debt_report.ts` daba por no cubiertos, y
+  // el motivo de cubrirlos es el de siempre: la respuesta a «¿cuál puedo tocar hoy?» vivía en prosa
+  // dentro del comentario de cada presupuesto, con la fecha de liberación escrita a mano.
   it.each([
     ["temaHuerfanas.test.ts", "DEUDA_SIN_TEMA", "DEUDA_MAXIMA", "/"],
     ["temaHuerfanas.test.ts", "GUIAS_SIN_TEMA", "DEUDA_MAXIMA_GUIAS", ""],
     ["enlacesDeContexto.test.ts", "DEUDA_SIN_ENLACE", "DEUDA_MAXIMA", "/"],
+    ["seoContract.test.ts", "DEUDA_SIN_MIGAS", "BREADCRUMB_BUDGET", "/"],
+    ["guideSnippetBudget.test.ts", "DEUDA_TITULO_LARGO", "TITLE_OVER_BUDGET", ""],
+    ["guideSnippetBudget.test.ts", "DEUDA_DESCRIPCION_LARGA", "DESCRIPTION_OVER_BUDGET", ""],
   ])("lee %s → %s y cabe en su propio trinquete", (file, list, budget, prefix) => {
     const source = read(file);
     const declared = parseStringList(source, list);

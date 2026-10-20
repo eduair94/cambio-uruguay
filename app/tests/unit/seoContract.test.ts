@@ -337,7 +337,43 @@ const LEGACY_BUDGET = { seoMeta: 0, canonical: 0, structuredData: 0 }
  * ninguno el rastro se queda en dos eslabones. Un rastro con un padre inventado es peor que uno
  * corto: le promete al visitante una sección que no existe.
  */
+/**
+ * Las páginas de esa deuda, por nombre. **SÓLO PUEDE BAJAR.**
+ *
+ * El presupuesto de arriba dice CUÁNTAS son y nunca dijo cuáles, y el comentario que lo acompaña
+ * resuelve esa falta en prosa, a mano y con fecha de vencimiento escrita («las diez entran cuando
+ * su ventana cierre, la última el 2026-10-26»). Esa frase es el único lugar donde vivía la
+ * respuesta a la pregunta que abre cada corrida de SEO: de la deuda que queda, cuál se puede tocar
+ * HOY sin pisar una ventana de medición abierta del libro de cambios.
+ *
+ * `npm run seo_debt` contesta eso cruzando rutas contra `docs/seo/experiments.json`, y hasta hoy
+ * no podía incluir este pozo porque acá no había rutas que leer. El encabezado de
+ * `scripts/oneoff/seo_debt_report.ts` lo decía: «cubrirlas pide que esos dos trinquetes declaren
+ * sus miembros como los otros tres». Esto es eso (2026-10-20).
+ *
+ * Son rutas y no nombres de archivo a propósito: la ruta es la unidad del libro de cambios, y
+ * convertir archivo → ruta en el informe sería una segunda cuenta que puede separarse de ésta en
+ * silencio.
+ */
+const DEUDA_SIN_MIGAS = [
+  '/api-cotizacion-intradia',
+  '/api-cotizaciones-regionales',
+  '/cotizaciones-de-la-region',
+  '/hecho-a-pedido',
+  '/meal-prep-uruguay',
+  '/plan-de-vida-uruguay',
+  '/por-que-el-bcu-quiere-mas-pesos',
+  '/reclamo-sodimac-compra-cancelada',
+]
+
 const BREADCRUMB_BUDGET = 8
+
+/**
+ * De archivo de página a ruta: `plan-de-vida-uruguay.vue` → `/plan-de-vida-uruguay`,
+ * `importar/index.vue` → `/importar`. Mismo criterio que `enlacesDeContexto.test.ts` usa para
+ * armar sus rutas raíz.
+ */
+const routeOf = (file: string) => `/${file.replace(/\.vue$/, '').replace(/\/index$/, '')}`
 
 function missing(predicate: (source: string) => boolean): string[] {
   return OWES_OWN_SEO.filter(file => predicate(read(file))).sort()
@@ -390,14 +426,29 @@ describe('the legacy SEO debt only shrinks', () => {
     expect(offenders).toHaveLength(LEGACY_BUDGET.structuredData)
   })
 
+  const sinMigas = missing(
+    source =>
+      source.includes('application/ld+json') &&
+      !source.includes('BreadcrumbList') &&
+      !buildsSchema(source)
+  )
+
   it(`has at most ${BREADCRUMB_BUDGET} pages whose JSON-LD carries no BreadcrumbList`, () => {
-    const offenders = missing(
-      source =>
-        source.includes('application/ld+json') &&
-        !source.includes('BreadcrumbList') &&
-        !buildsSchema(source)
-    )
-    expect(offenders.length, offenders.join('\n')).toBeLessThanOrEqual(BREADCRUMB_BUDGET)
+    expect(sinMigas.length, sinMigas.join('\n')).toBeLessThanOrEqual(BREADCRUMB_BUDGET)
+  })
+
+  // Y cuáles son, no sólo cuántas: es lo que `npm run seo_debt` lee para decir qué deuda de migas
+  // se puede tocar hoy. Exacta, además, porque un número solo deja que se arregle una página y se
+  // rompa otra sin que nada avise.
+  it('las páginas sin migas son exactamente las declaradas', () => {
+    expect(sinMigas.map(routeOf).sort()).toEqual([...DEUDA_SIN_MIGAS].sort())
+  })
+
+  // Una ruta renombrada dejaría su entrada vieja acá y el informe mandaría a arreglar una página
+  // que ya no existe, igual que en `temaHuerfanas.test.ts` y `enlacesDeContexto.test.ts`.
+  it('la lista no nombra una página que no existe', () => {
+    const existen = new Set(files.map(routeOf))
+    for (const route of DEUDA_SIN_MIGAS) expect(existen.has(route), route).toBe(true)
   })
 
   // The loophole guard, and the reason excusing the shell children is safe.

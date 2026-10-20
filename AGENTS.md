@@ -134,9 +134,12 @@ Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`
   trinquetes del app declaran, cuál se puede tocar HOY y cuál está reservada por una ventana de
   medición abierta, con la fecha en que se libera y el `id` de la fila que la reserva. La reserva es
   de 29 días y no de 28 (el test de solape marca `|Δfecha| ≤ 28`, así que la fila nueva entra al día
-  29). Sin esto el cruce se hace a mano, ruta por ruta contra las 96 filas del libro: el 2026-10-17
+  29). Sin esto el cruce se hace a mano, ruta por ruta contra las filas del libro: el 2026-10-17
   las 59 rutas declaradas estaban todas reservadas y establecerlo fue el trabajo entero de la
-  corrida. No cubre las migas ni los snippets de guía, que declaran un número y no sus miembros.
+  corrida. **Desde el 2026-10-20 cubre los cinco pozos** (99 rutas): las migas de `seoContract` y
+  los dos snippets de `guideSnippetBudget` pasaron a declarar sus miembros —y a exigirlos exactos—
+  además del número, así que ya no hay que levantar el catálogo de guías ni medir el árbol de
+  páginas a mano para saber cuál se puede tocar.
 - **Este repositorio es PÚBLICO: cero cifras de ingreso en nada versionado.** Ni en código, ni en
   comentarios, ni en este archivo, ni en un mensaje de commit. La convención ya existía para los
   documentos (`docs/seo/adsense-growth-loop.md` es "público sin cifras"; los montos viven en

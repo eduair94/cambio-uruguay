@@ -5,13 +5,18 @@
 //
 // Por qué existe y cuál es la regla: `classes/revenueplan/debtFree.ts`.
 //
-// QUÉ CUBRE Y QUÉ NO. Los tres trinquetes que declaran su deuda como una lista de rutas, que son
-// los que contestan «¿cuál puedo tocar?» con un nombre propio. Los otros dos pozos de deuda de SEO
-// —las migas de `seoContract.test.ts` y los snippets de guía pasados de `guideSnippetBudget.test.ts`—
-// declaran un NÚMERO y calculan sus miembros desde el árbol de páginas y el catálogo de guías, así
-// que acá no se pueden nombrar sin reimplementar esa cuenta, y una segunda cuenta que se separe de
-// la primera en silencio es exactamente lo que este archivo existe para no hacer. Quedan afuera a
-// propósito; cubrirlas pide que esos dos trinquetes declaren sus miembros como los otros tres.
+// QUÉ CUBRE. Los CINCO pozos de deuda de SEO del app, cada uno declarado como una lista en el
+// trinquete que lo mide. Los dos últimos entraron el 2026-10-20 y son los que faltaban: las migas
+// de `seoContract.test.ts` y los dos snippets pasados de `guideSnippetBudget.test.ts` declaraban un
+// NÚMERO y nada más, así que este informe no los podía nombrar y la respuesta a «¿cuál puedo tocar
+// hoy?» para esos tres pozos vivía en prosa, dentro del comentario de cada presupuesto y con fecha
+// de vencimiento escrita a mano («las diez entran cuando su ventana cierre, la última el
+// 2026-10-26»). La salida era reimplementar la cuenta acá, que es la segunda cuenta que se separa
+// de la primera en silencio que este archivo existe para no hacer; la entrada fue la que el
+// encabezado viejo pedía: que esos dos trinquetes declararan sus miembros como los otros tres. Lo
+// hacen, y además los exigen EXACTOS, así que ahora el número no se puede compensar solo.
+//
+// Cada lista se lee como texto y no se copia, por lo que dice `classes/revenueplan/debtFree.ts`.
 import fs from "fs";
 import path from "path";
 
@@ -54,6 +59,26 @@ const POOLS: Array<{
     file: "enlacesDeContexto.test.ts",
     list: "DEUDA_SIN_ENLACE",
     budget: "DEUDA_MAXIMA",
+  },
+  {
+    pool: "sin migas",
+    file: "seoContract.test.ts",
+    list: "DEUDA_SIN_MIGAS",
+    budget: "BREADCRUMB_BUDGET",
+  },
+  {
+    pool: "título pasado de 60",
+    file: "guideSnippetBudget.test.ts",
+    list: "DEUDA_TITULO_LARGO",
+    budget: "TITLE_OVER_BUDGET",
+    toRoute: (slug) => `/guias/${slug}`,
+  },
+  {
+    pool: "descripción pasada de 155",
+    file: "guideSnippetBudget.test.ts",
+    list: "DEUDA_DESCRIPCION_LARGA",
+    budget: "DESCRIPTION_OVER_BUDGET",
+    toRoute: (slug) => `/guias/${slug}`,
   },
 ];
 
@@ -104,7 +129,8 @@ function main(): void {
   }
   console.log(
     "\nUna ruta libre acá NO es una mejora: sigue haciendo falta que el cambio le sirva a un lector.\n" +
-      "Y las migas y los snippets de guía no se cuentan acá (ver el encabezado de este archivo)."
+      "Los cinco pozos con lista están contados; las dos deudas que no son de ruta (el título y la\n" +
+      "descripción de una MISMA guía) salen como dos filas, porque se arreglan por separado."
   );
 }
 

@@ -229,11 +229,27 @@ la razón que el test de solape ya da para sus testigos. La reserva es `EXPERIME
 página sin poner CI en rojo, y la diferencia de un día es justo el día en que alguien se equivocaría.
 `tests/revenueplan/debt_free.test.ts` fija ese borde y la lectura de las tres listas reales.
 
-No cubre los otros dos pozos (las migas de `seoContract` y los snippets de guía de
-`guideSnippetBudget`): declaran un número y calculan sus miembros desde el árbol de páginas, así que
-nombrarlos pediría reimplementar esa cuenta, y una segunda cuenta que se separa de la primera en
-silencio es lo que todo este archivo evita. Cubrirlos pide que esos dos trinquetes declaren sus
-miembros como los otros tres.
+**Desde el 2026-10-20 cubre los cinco pozos**, que son 99 rutas y no 53. Los dos que faltaban —las
+migas de `seoContract` y los dos snippets pasados de `guideSnippetBudget`— declaraban un número y
+calculaban sus miembros desde el árbol de páginas y el catálogo de guías, así que nombrarlos acá
+habría pedido reimplementar esa cuenta, y una segunda cuenta que se separa de la primera en silencio
+es lo que todo este archivo evita. La salida no era reimplementarla sino la que este párrafo ya
+pedía: que esos dos trinquetes **declaren sus miembros como los otros tres**. Ahora los declaran
+(`DEUDA_SIN_MIGAS`, `DEUDA_TITULO_LARGO`, `DEUDA_DESCRIPCION_LARGA`) y además los exigen EXACTOS,
+igual que las otras tres listas, así que el presupuesto deja de poder compensarse solo: antes
+arreglar una guía y pasarse con otra dejaba el contador en 16 y nada avisaba.
+
+Lo que costaba no era el cruce sino DÓNDE vivía la respuesta. La pregunta que abre cada corrida —de
+la deuda que queda, cuál se puede tocar hoy— se contestaba para esos tres pozos leyendo el
+comentario de cada presupuesto, que la traía en prosa y con la fecha de liberación escrita a mano
+(«las diez entran cuando su ventana cierre, la última el 2026-10-26»). Una fecha a mano envejece sin
+avisar y es el mismo modo de fallar que el informe entero existe para no tener. Medido el 2026-10-20,
+la primera corrida con los cinco pozos: 3 rutas libres de 99, y las 46 que se agregaron estaban todas
+reservadas —8 migas y 38 snippets—, o sea que el día anterior esa conclusión se sacaba a mano.
+
+Sigue sin cubrir lo que no es deuda de ruta, y no hay nada que cubrir: los dos pozos nuevos son de
+`app/`, así que el guard de la raíz los lee como texto por la misma razón que los otros tres
+(`tests/revenueplan/debt_free.test.ts`).
 
 ---
 
