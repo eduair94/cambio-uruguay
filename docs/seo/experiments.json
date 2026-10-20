@@ -19,6 +19,14 @@
   ],
   "experiments": [
     {
+      "id": "inmobiliarias-fichas-en-el-sitemap",
+      "shippedOn": "2026-10-20",
+      "routes": [
+        "/inmobiliarias-uruguay/*"
+      ],
+      "hypothesis": "Las fichas de inmobiliaria indexables (725 de 788 el 20/10) no estaban en ningun sitemap y Bing las marco como paginas importantes fuera del sitemap. Con su propio sitemap (es/en/pt) se descubren e indexan antes: mas impresiones de busquedas por nombre de inmobiliaria. El hub no cambia y queda fuera de la ruta."
+    },
+    {
       "id": "conviene-comprar-dolares-enlaces-de-contexto",
       "shippedOn": "2026-10-16",
       "routes": [

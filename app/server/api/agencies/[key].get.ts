@@ -1,5 +1,5 @@
 import { loadAgencyDirectory, loadAgencyProfileContact } from '../../utils/agencies'
-import { agencyCatalogueLinks } from '../../../utils/agencies'
+import { agencyCatalogueLinks, agencyIndexable } from '../../../utils/agencies'
 import { agencyKey } from '../../../utils/propertyAdvertiser'
 export default defineEventHandler(async event => {
   setResponseHeader(event, 'cache-control', 'no-store')
@@ -24,6 +24,6 @@ export default defineEventHandler(async event => {
     ...agency,
     publicContact,
     links: agencyCatalogueLinks(key),
-    indexable: agency.listings >= 2 && agency.departments.length > 0,
+    indexable: agencyIndexable(agency),
   }
 })
