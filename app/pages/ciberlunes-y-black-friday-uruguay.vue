@@ -697,9 +697,10 @@ useHead(() => ({
 }
 
 .countdown-card {
-  border: 1px solid rgba(var(--v-border-color), 0.14);
+  /* Destacada por un fondo apenas teñido, no por una franja lateral de color. */
+  border: 1px solid rgba(var(--v-theme-primary), 0.24);
   border-radius: 12px;
-  border-left: 3px solid rgb(var(--v-theme-primary));
+  background: rgba(var(--v-theme-primary), 0.04);
 }
 .countdown-headline {
   font-size: 1.05rem;
