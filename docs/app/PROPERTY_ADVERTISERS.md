@@ -34,6 +34,24 @@ La proyección de ventas vuelve a aplicar la lista explícita de campos. Los con
 expiran a los 21 días de su **propia** lectura en el backend; una descripción no recupera contactos
 eliminados por el depurador.
 
+### Ficha de inmobiliaria y sitemap
+
+`/inmobiliarias-uruguay/<fuente>:<id>` es `index,follow` con **dos avisos vigentes o más y al menos
+un departamento** (`agencyIndexable` en `app/utils/agencies.ts`), en los tres idiomas. La API de la
+ficha y el sitemap leen esa misma función. Hasta el 20/10/2026 el sitemap no tenía ninguna: Bing
+las informó como «páginas importantes fuera del sitemap» (725 indexables medidas ese día, sobre
+788). Desde entonces van en su propio sitemap, `/__sitemap__/inmobiliarias.xml`, con es/en/pt y
+sus alternativas, y un origen cacheado una hora (`/api/__sitemap__/agencies`) que tira error en
+vez de devolver una lista vacía. Sin `lastmod`: ver un aviso de la inmobiliaria no prueba que su
+ficha haya cambiado. La clave va cruda en el `<loc>` (`infocasas:13651`), igual que la canónica:
+el módulo de sitemap codifica el camino y un `%3A` previo saldría `%253A`.
+
+Las fichas de autos usados y las de venta fuera del piloto revisado quedan fuera del sitemap a
+propósito: son `noindex`. El mismo reporte de Bing las incluía porque el `<head>` global también
+decía `googlebot`/`bingbot: index, follow` en todas las páginas, y una ficha `noindex` le decía lo
+contrario a Bingbot. Esas dos etiquetas se retiraron; `robots` habla a todos los rastreadores
+(`app/tests/unit/robotsMetaContract.test.ts`).
+
 ## Fuentes comprobadas
 
 ### InfoCasas

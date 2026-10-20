@@ -141,8 +141,13 @@ export default defineNuxtConfig({
           name: 'robots',
           content: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
         },
-        { name: 'googlebot', content: 'index, follow' },
-        { name: 'bingbot', content: 'index, follow' },
+        // No `googlebot` / `bingbot` here. A page that wants out of the index
+        // replaces `robots` above with `noindex, follow`, but a per-bot tag set
+        // site-wide stayed `index, follow` next to it: every used-car advert, every
+        // sale dossier outside the reviewed pilot and every filtered directory told
+        // Bingbot the opposite of what it told everyone else, and Bing reported them
+        // as "important pages missing from the sitemap" (2026-10-20). `robots`
+        // already speaks to every crawler. Tripwire: tests/unit/robotsMetaContract.test.ts.
         // Same value as the Referrer-Policy header on '/': other sites see only the
         // origin, never the path or query. Was 'no-referrer' until 2026-09-17, which
         // got every OSM map tile replaced by an "Access blocked" image. Checked
@@ -1305,6 +1310,14 @@ export default defineNuxtConfig({
         includeAppSources: false,
         sources: [['/api/__sitemap__/rentals', { timeout: 60_000 }]],
         chunks: 1000,
+      },
+      // Agency profiles (/inmobiliarias-uruguay/<key>) in es/en/pt, gated by the
+      // same `agencyIndexable` the profile's own robots meta uses. Own sitemap and
+      // own cached source: the directory is two aggregations over the rental and
+      // sale catalogues (~4 s live), past the module's 5 s default under load.
+      inmobiliarias: {
+        includeAppSources: false,
+        sources: [['/api/__sitemap__/agencies', { timeout: 60_000 }]],
       },
     },
     // Serve the large sitemap on demand and reuse it for one hour. This keeps

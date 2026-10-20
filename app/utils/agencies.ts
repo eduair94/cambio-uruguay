@@ -42,6 +42,15 @@ export function normalizeAgencyQuery(raw: Record<string, unknown> = {}): AgencyQ
     perPage: Math.min(48, Math.max(12, Math.trunc(Number(raw.perPage) || 24))),
   }
 }
+/**
+ * Una ficha de inmobiliaria se indexa con dos avisos vigentes o más y al menos un departamento.
+ * La API de la ficha (que decide su meta robots) y el sitemap leen ESTA función: separadas, el
+ * sitemap declararía fichas que la página marca `noindex`, o dejaría afuera las que indexa — que es
+ * lo que pasaba hasta el 20/10/2026, con 725 fichas indexables y ninguna en el sitemap.
+ */
+export function agencyIndexable(agency: Pick<AgencySummary, 'listings' | 'departments'>): boolean {
+  return agency.listings >= 2 && agency.departments.length > 0
+}
 export function agencyCatalogueLinks(key: string) {
   const agency = agencyKey(key)
   return {
