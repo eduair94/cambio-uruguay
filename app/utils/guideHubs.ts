@@ -537,6 +537,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/equipar-casa-uruguay/productos',
       },
       {
+        label: 'Cuánto gastar en un sommier',
+        description: 'Qué compra cada tramo de precio y cuándo pagar más ya no compra nada.',
+        to: '/cuanto-gastar-en-un-sommier-uruguay',
+      },
+      {
         label: 'Pensiones estudiantiles',
         description: 'Alternativas de alojamiento para estudiantes y cuánto cuestan.',
         to: '/pensiones-estudiantiles-uruguay',

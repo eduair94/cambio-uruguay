@@ -22,6 +22,18 @@ import type { EquiparCategory } from "./types";
 export const NOT_A_PRODUCT =
   /\b(funda|fundas|repuesto|repuestos|filtro|filtros|soporte|adaptador|cable|control remoto|manija|bisagra|rueda|ruedas|tapa|tapas|juguete|miniatura|casa de munecas|sticker|vinilo|iman|imanes|calcomania|termostato|resistencia|correa|kit de reparacion|manual|display|placa|modulo|sensor|valvula|burlete|goma de puerta|molde|muestra|alquiler|alquilo|permuta|reparacion|service|arreglo|no funciona|a reparar|para repuesto|para desarme|chatarra)\b/;
 
+/**
+ * What makes a title a sommier SET and not a mattress. In a Uruguayan shop "sommier" is the box base
+ * WITH its mattress ("Sommier Inducol 2 plazas" is both pieces), and the same set is also sold as
+ * "colchón y base" or "base + colchón". Until 2026-10-20 nothing measured the set and the mattress
+ * row took every one of those titles, because they all say "colchón".
+ *
+ * Shared by two categories on purpose: the mattress row refuses exactly what the sommier row claims
+ * (`colchon.titleExclude`), so a set is never counted twice and never falls between the two.
+ */
+const SOMMIER_SET =
+  /\b(sommiers?|sommieres|somiers?|somieres|box spring)\b|\b(cama box|base)\b.*(\bcon|\by|\bmas|\+) colchon|\bcolchon(es)?\b.*(\by|\bcon|\bmas|\+) (base|box|cama box)\b/;
+
 export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
   // ---------------------------------------------------------------- grandes, tier S
   {
@@ -63,6 +75,9 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
       { key: "queen", label: "Queen o King (160 cm+)", match: /\b(queen|king)\b|\b16[05] ?x ?[12]|\b18[05] ?x ?[12]|\b200 ?x ?200/, rank: 3 },
     ],
     include: /\bcolchon(es)?\b/,
+    // "Sommier + colchón 2 plazas" is the set, a different product at a different price, measured by
+    // its own row below. Title only: half the shops file every mattress under "Colchones y Sommiers".
+    titleExclude: SOMMIER_SET,
     // A supermarket catalogue sells "Yogur Calcar Colchón de Frutillas 130gr" — the yogurt with the
     // fruit layer at the bottom. El Dorado is a supermarket, so four of them at $ 70 became the
     // cheapest "2 plazas" products on the page. The grams/millilitres and the dairy aisle catch them.
@@ -567,6 +582,58 @@ export const EQUIPAR_CATEGORIES: EquiparCategory[] = [
     fbQueries: ["horno electrico", "airfryer"],
   },
   // ---------------------------------------------------------------- ropa de cama y baño
+  // The sommier sits here, ahead of the bedding, for the match order and not for priority: a set sold
+  // "con 2 almohadas de regalo" says "almohada", and the pillow row would take it. Its store query
+  // falls past the hourly run's first 24 (see budget.ts), and its two MercadoLibre searches came with
+  // two more scans of budget (sync_equipar.ts), so no category that was searched before lost one.
+  {
+    key: "sommier",
+    label: "Sommier",
+    room: "dormitorio",
+    tier: "C",
+    regime: "modelo",
+    reason:
+      "Un sommier es el colchón más la base. El colchón ya está en el tier S y con él se duerme desde la primera noche, sobre un estrado o una cama de tablas; lo que suma el conjunto es la base, y eso puede esperar. Por eso no entra en ninguna canasta: contaría el colchón dos veces.",
+    usedOk: false,
+    usedNote:
+      "El conjunto trae colchón, y un colchón usado es lo que no se recomienda: chinches, ácaros y un hundimiento que no se ve hasta que dormís encima.",
+    quantity: 1,
+    variants: [
+      // Queen first: "2 1/2 plazas" and "2 plazas y media" are a queen, and the 2-plazas pattern
+      // below would take them.
+      {
+        key: "queen",
+        label: "Queen o King (160 cm o más)",
+        match: /\b(queen|king)\b|\b2 1 2 plazas?\b|\b2 plazas y media\b|\b1[6-9]\d ?x ?[12]\d\d\b|\b200 ?x ?200\b/,
+        rank: 3,
+      },
+      // "1 1/2 plaza" normalises to "1 1 2 plaza", which the 2-plazas pattern reads as "2 plaza".
+      {
+        key: "1plaza",
+        label: "1 plaza o plaza y media",
+        match: /\b(1|una) ?plaza\b|\b1 1 2 plazas?\b|\bplaza y media\b|\b(80|88|90|100|105|110) ?x ?1\d\d\b/,
+        rank: 1,
+      },
+      {
+        key: "2plazas",
+        label: "2 plazas (130 a 150 cm)",
+        match: /\b(2|dos) ?plazas?\b|\b1[345]\d ?x ?1\d\d\b/,
+        fallback: true,
+        rank: 2,
+      },
+    ],
+    include: SOMMIER_SET,
+    // Title only, like the include: what the listing IS. A title that opens with the sheet, the
+    // pillow or the headboard sells that thing "para sommier"; one that names the base and never
+    // sells the mattress with it is the base alone, a different and much cheaper product.
+    titleExclude:
+      /^(juego de )?(sabanas?|protector(es)?|cubre\w*|acolchados?|edredon(es)?|plumon(es)?|frazadas?|almohadas?|polleras?|respaldos?|cabecer\w+|patas?|zocalos?)\b|\bsin colchon\b|\bsolo (la )?base\b|^(?!.*(\bcolchon(es)?\b.*(\by|\bcon|\bmas|\+) (base|box)|(\bcon|\by|\bmas|\+) colchon)).*\bbases?\b/,
+    exclude: /\b(para perros?|para gatos?|mascotas?|cucha|para bebe|cuna|munecas?|inflable|de juguete)\b/,
+    urlHint: /(somm?ier|cama-box|box-spring)/i,
+    storeQueries: ["sommier"],
+    mlQueries: ["sommier 2 plazas", "sommier"],
+    fbQueries: ["sommier"],
+  },
   {
     key: "sabanas",
     label: "Juego de sábanas",

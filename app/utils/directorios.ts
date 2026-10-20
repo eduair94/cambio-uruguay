@@ -214,7 +214,7 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
     queCompara:
       'Qué sale llenar una vivienda vacía, categoría por categoría, con la canasta emparejada y lo que falta.',
     icon: 'mdi-sofa-outline',
-    // Habla por categoría; el "38 categorías" de su descripción es el tamaño del registro, no una
+    // Habla por categoría; el "39 categorías" de su descripción es el tamaño del registro, no una
     // cifra que el job recalcule.
     unidad: 'categorías',
     fuente: 'sin-cifra',

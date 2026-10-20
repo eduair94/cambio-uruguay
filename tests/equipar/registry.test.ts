@@ -114,6 +114,7 @@ describe("registro de categorías", () => {
     for (const category of EQUIPAR_CATEGORIES) {
       patterns.push([`${category.key}.include`, category.include]);
       if (category.exclude) patterns.push([`${category.key}.exclude`, category.exclude]);
+      if (category.titleExclude) patterns.push([`${category.key}.titleExclude`, category.titleExclude]);
       for (const variant of category.variants) {
         if (variant.match) patterns.push([`${category.key}:${variant.key}.match`, variant.match]);
       }

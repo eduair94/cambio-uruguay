@@ -5,7 +5,7 @@ export const equiparEs: EquiparCopy = {
   title: 'Cuánto sale equipar una casa vacía en Uruguay',
   shortTitle: 'Equipar la casa',
   description:
-    'Qué comprar primero para una vivienda sin amueblar y cuánto sale hoy: 38 categorías con precios de tiendas uruguayas, Mercado Libre y Facebook Marketplace, ordenadas por necesidad y con tres presupuestos armados.',
+    'Qué comprar primero para una vivienda sin amueblar y cuánto sale hoy: 39 categorías con precios de tiendas uruguayas, Mercado Libre y Facebook Marketplace, ordenadas por necesidad y con tres presupuestos armados.',
   intro:
     'Conseguiste el alquiler y está vacío. Esta página ordena qué comprar primero, con el precio de mercado de hoy al lado de cada cosa, el precio de usado cuando existe, y tres canastas ya sumadas para que no tengas que hacer la cuenta.',
   navLabel: 'Secciones de la página',
@@ -135,6 +135,11 @@ export const equiparEs: EquiparCopy = {
       hint: 'Gastos y trámites de la firma',
     },
     { to: '/alquileres-uruguay', label: 'Alquileres', hint: 'El directorio de avisos' },
+    {
+      to: '/cuanto-gastar-en-un-sommier-uruguay',
+      label: 'Cuánto gastar en un sommier',
+      hint: 'Dónde pagar más deja de comprar algo',
+    },
     { to: '/plan-de-vida-uruguay', label: 'Plan de vida', hint: 'El orden de cada peso' },
     {
       to: '/sillas-escritorio-uruguay',
