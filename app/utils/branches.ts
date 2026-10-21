@@ -601,6 +601,78 @@ export function weeklyHoursTable(raw: string): Array<{ day: string; hours: strin
 }
 
 /**
+ * Los orígenes que son bancos o financieras.
+ *
+ * Su página de sucursales se busca por el HORARIO («horario itau», «oca horarios», «santander
+ * horarios»), no por el dólar: con la misma plantilla, en Search Console los bancos tenían 0,26 %
+ * de CTR en posición 8,9 y las casas de cambio 0,72 % en 7,2 (28 días al 12/10/2026), y la
+ * descripción de los dos grupos arrancaba con la cotización. Las casas de cambio siguen con el dólar
+ * adelante: son el control de la fila `sucursales-bancos-horario-primero`.
+ */
+export const BANK_ORIGINS: ReadonlySet<string> = new Set([
+  'brou',
+  'oca',
+  'itau',
+  'scotiabank',
+  'santander',
+  'bbva',
+  'hsbc',
+  'heritage',
+  'bandes',
+])
+
+/** El horario de lunes a viernes que comparte la mayoría de las sucursales de una lista. */
+export interface DominantWeekdayHours {
+  /** `HH:MM`, como lo devuelve {@link parseOpeningHours}. */
+  opens: string
+  closes: string
+  /** Cuántas sucursales atienden exactamente en esa franja de lunes a viernes. */
+  matching: number
+  /** Cuántas sucursales tiene la lista, se haya podido leer su horario o no. */
+  total: number
+}
+
+const WEEKDAYS = [0, 1, 2, 3, 4]
+
+/**
+ * La franja de lunes a viernes que cubre al menos la mitad de las sucursales, o `null`.
+ *
+ * Una sucursal cuenta para una franja sólo si su texto publica UNA ventana que abarca los cinco días
+ * hábiles y ninguna otra en esos días: «Lunes, Miércoles y Viernes de 13 a 18» no atiende de lunes a
+ * viernes, y un horario cortado («de 9 a 12 y de 15 a 19») no es «de 9 a 19». Lo que no se puede
+ * leer cuenta en el total y no en la franja, así que un feed ilegible da `null` en vez de una franja
+ * inventada. La mitad es el piso porque la frase que se arma con esto dice «en k de sus n
+ * sucursales», y por debajo de la mitad describe a la excepción.
+ */
+export function dominantWeekdayHours(hours: readonly string[]): DominantWeekdayHours | null {
+  const total = hours.length
+  if (!total) return null
+  const counts = new Map<string, number>()
+  for (const raw of hours) {
+    const weekday = parseOpeningHours(raw).filter(window =>
+      window.days.some(day => WEEKDAYS.includes(day))
+    )
+    if (weekday.length !== 1) continue
+    const only = weekday[0] as OpeningWindow
+    if (!WEEKDAYS.every(day => only.days.includes(day))) continue
+    const key = `${only.opens}|${only.closes}`
+    counts.set(key, (counts.get(key) ?? 0) + 1)
+  }
+  let best: [string, number] | null = null
+  for (const entry of counts) if (!best || entry[1] > best[1]) best = entry
+  if (!best || best[1] * 2 < total) return null
+  const [opens, closes] = best[0].split('|') as [string, string]
+  return { opens, closes, matching: best[1], total }
+}
+
+/** `'10:00'` -> `'10'`, `'09:30'` -> `'9:30'`: la hora como se escribe en una oración. */
+export function spokenClock(clock: string): string {
+  const [h, m] = clock.split(':')
+  const hour = String(Number(h))
+  return m && m !== '00' ? `${hour}:${m}` : hour
+}
+
+/**
  * The hours string worth showing, or `''`.
  *
  * A dozen rows carry an operator's NAME (`'ABITAB SA'`, `'Marcelo Hermida'`) or a

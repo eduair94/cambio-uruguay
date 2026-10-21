@@ -17,6 +17,7 @@ import { deudasGuides } from './guidesDeudas'
 import { importacionGuides } from './guidesImportacion'
 import { pagosGuides } from './guidesPagos'
 import { parejaGuides } from './guidesPareja'
+import { primavera2026Guides } from './guidesPrimavera2026'
 import { redditGuides } from './guidesReddit'
 import { trabajoBpsGuides } from './guidesTrabajoBps'
 import { tramitesGuides } from './guidesTramites'
@@ -1732,6 +1733,9 @@ export const guides: readonly Guide[] = [
   // Importación y aduana: el "impuesto Temu" (IVA de las compras web del exterior) y BFE Express.
   // Mismo cableado gratis; guardada por `tests/unit/guidesImportacion.test.ts`.
   ...importacionGuides,
+  // Tanda del 2026-10-21: cómo saber si tengo deudas, comprar en Shein e IRPF de alquileres.
+  // Guardadas por `tests/unit/guiasPrimavera2026*.test.ts`.
+  ...primavera2026Guides,
 ]
 
 /**

@@ -203,6 +203,7 @@ export const guideHubs: readonly GuideHub[] = [
       'impuesto-temu-uruguay',
       'importar-de-aliexpress-a-uruguay',
       'comprar-en-amazon-desde-uruguay',
+      'comprar-en-shein-desde-uruguay',
     ],
     resources: [
       {
@@ -430,6 +431,7 @@ export const guideHubs: readonly GuideHub[] = [
       'derechos-del-inquilino-uruguay',
       'que-revisar-antes-de-firmar-alquiler',
       'alquiler-temporario-uruguay',
+      'irpf-de-alquileres-uruguay',
     ],
     resources: [
       {
@@ -943,6 +945,7 @@ export const guideHubs: readonly GuideHub[] = [
       'cancelar-prestamo-antes-de-tiempo-uruguay',
       'me-compraron-la-deuda-uruguay',
       'saldo-a-favor-tarjeta-de-credito-uruguay',
+      'como-saber-si-tengo-deudas-uruguay',
     ],
     resources: [
       {
