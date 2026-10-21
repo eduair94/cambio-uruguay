@@ -107,6 +107,36 @@ export const PAGE_ADDENDA: readonly PageAddendum[] = Object.freeze([
       },
     ],
   },
+  {
+    route: '/preguntas-frecuentes-aduana-uruguay',
+    updatedAt: '2026-10-21',
+    items: [
+      {
+        question:
+          'Tengo que comprar solo un procesador para armar una PC, sin wifi ni bluetooth: ¿necesito algún permiso de URSEC o LATU además de la declaración y los impuestos?',
+        answer:
+          'No. El certificado de URSEC solo se exige para equipos que emiten radiofrecuencias usando el espectro de radiocomunicaciones (routers, cámaras, auriculares, etc.); un procesador de PC no emite nada por el aire, así que ni siquiera entra en esa categoría y no te pide ese trámite en VUCE. Te queda solamente la declaración y los tributos que ya se explican en la nota principal, sin paso adicional en URSEC.',
+        sources: [
+          {
+            title: 'gub.uy',
+            url: 'https://www.gub.uy/tramites/certificado-habilitar-ingreso-pais-equipos-radioelectricos-bajo-regimen-importacion-empresa',
+          },
+        ],
+      },
+      {
+        question:
+          'Si compro en Tiendamía, ¿el trámite de declaración ante Aduanas lo hace la plataforma, o yo igual tengo que registrar el envío como con cualquier otro courier?',
+        answer:
+          'Tiendamía está acreditada ante la Dirección Nacional de Aduanas desde el 22/04/2026 para operar la exoneración de IVA en los envíos postales que llegan desde Estados Unidos, así que es la plataforma la que gestionó esa habilitación directamente con Aduanas, no vos. Aun así, para que te aplique la exoneración la factura tiene que confirmar que el país de residencia fiscal de quien te vende es Estados Unidos, porque ese es el requisito de procedencia que pide la normativa.',
+        sources: [
+          {
+            title: 'aduanas.gub.uy',
+            url: 'https://www.aduanas.gub.uy/innovaportal/v/28435/1/innova.front/tiendamia-quedo-habilitada-para-hacer-uso-de-las-exoneraciones-impositivas-previstas-para-el-epi.html',
+          },
+        ],
+      },
+    ],
+  },
   // <<< generated-addenda >>>
 ])
 
