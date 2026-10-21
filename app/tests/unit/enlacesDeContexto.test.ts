@@ -150,8 +150,6 @@ const DEUDA_SIN_ENLACE = [
   '/alternativa-a-bankos-uruguay',
   '/apostillar-un-documento-uruguay',
   '/apps-utiles-uruguay',
-  '/certificado-unico-dgi-uruguay',
-  '/cheques-uruguay',
   '/fondo-de-solidaridad-uruguay',
   '/grabacion-sin-consentimiento-uruguay',
   '/llevar-el-auto-a-brasil-o-argentina',
@@ -162,6 +160,15 @@ const DEUDA_SIN_ENLACE = [
 ]
 
 /** El trinquete. Sólo puede bajar: subirlo es publicar una página que nadie enlaza. */
+// 12 → 10 el 2026-10-21 (segunda corrida del día), las dos desde páginas cuyo lector las necesita.
+// `/certificado-unico-dgi-uruguay` salió sin ir a buscarla: la guía nueva
+// `/guias/como-saber-si-tengo-deudas-uruguay` la necesita en la sección de BPS y DGI, porque quien
+// pregunta si tiene deudas con la DGI llega a la pregunta de cómo probar que no las tiene.
+// `/cheques-uruguay` entra el día que estaba anotado abajo, desde `/salir-del-clearing`, cuya fila
+// `clearing-que-pasa-y-categorias-bcu` cerró el 20/10: esa página dice «son dos cosas distintas» y
+// ahora nombra el tercer registro, el de infractores del BCU (Decreto-Ley 14.412, art. 66), con la
+// rehabilitación que hay que pedir (art. 64). En el mismo párrafo enlaza la guía de deudas para lo
+// que no está en ninguno de los tres registros (patente, intendencia, servicios).
 // 15 → 14 el 2026-10-20, y por primera vez con el ORIGEN libre, que es lo que bloqueó a las dos
 // candidatas de ayer: `/impuesto-temu-uruguay` recibe su enlace de
 // `/importar-para-revender-uruguay`, que no tiene ninguna fila en el libro de cambios. Es la única
@@ -299,7 +306,7 @@ const DEUDA_SIN_ENLACE = [
 // por aviso es justo lo que lista la página enlazada, y la relación ya era recíproca del otro lado:
 // `/cambios-de-precio-uruguay` cierra enlazando a las tres `/evolucion-precio-*` como «lo que sí
 // contesta el nivel del mercado». Lo que faltaba era la vuelta.
-const DEUDA_MAXIMA = 12
+const DEUDA_MAXIMA = 10
 
 describe('ninguna página de lectura queda sin un enlace de contexto', () => {
   it('las páginas sin enlace son exactamente las declaradas', () => {

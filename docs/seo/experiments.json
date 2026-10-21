@@ -1743,6 +1743,94 @@
         "subio de precio uruguay"
       ],
       "hypothesis": "La pagina estaba huerfana por los dos lados a la vez, igual que /impuesto-temu-uruguay el 20/10: no figuraba en los 'resources' de ningun tema, asi que no recibia ni un enlace del bloque 'Mas sobre este tema', y ninguna pagina la enlazaba desde su contenido (su unica mencion en todo el repo era el menu, que no es una relacion entre paginas). Es la unica de los dos pozos con la ruta libre hoy, asi que las dos deudas se cierran en la misma corrida. Entra a economia-y-mercado-uruguay, que ya lista las tres paginas /evolucion-precio-*: esas miden el NIVEL de cada cohorte y esta mide el mismo movimiento aviso por aviso, o sea que es el vecino que les faltaba y no una pagina en un tema ajeno. El enlace de contexto sale de /evolucion-precio-autos-usados-uruguay, que no tiene fila abierta y cuya seccion 'Como lo medimos' dedica una vineta entera a avisar que la mediana del modelo-ano se mueve con la mezcla publicada, sin tener a donde mandar a quien lo que quiere es el aviso. La relacion ya era reciproca del otro lado. Se espera que la pagina pase de recibir cero enlaces internos de contenido a entrar al bloque del tema y a la cola de lectura de autos."
+    },
+    {
+      "id": "sucursales-bancos-horario-primero",
+      "shippedOn": "2026-10-21",
+      "routes": [
+        "/sucursales/brou*",
+        "/sucursales/oca*",
+        "/sucursales/itau*",
+        "/sucursales/scotiabank*",
+        "/sucursales/santander*",
+        "/sucursales/bbva*",
+        "/sucursales/hsbc*",
+        "/sucursales/heritage*",
+        "/sucursales/bandes*"
+      ],
+      "queries": [
+        "itau sucursales",
+        "oca sucursales",
+        "brou sucursales montevideo",
+        "horario itau",
+        "santander horarios"
+      ],
+      "hypothesis": "Con la misma plantilla, los bancos tenian 0,26 % de CTR en posicion 8,9 y las casas de cambio 0,72 % en 7,2, y la descripcion de los dos grupos arrancaba con el dolar aunque la consulta de un banco pide el horario ('horario itau', 'oca horarios', 'santander horarios'). Ahora la descripcion de los nueve bancos y financieras se calcula con la tabla: la franja de lunes a viernes que publica al menos la mitad de sus sucursales ('Banco Itau atiende de lunes a viernes de 10 a 14 h en 16 de sus 17 sucursales'), y si ninguna llega a la mitad no se inventa una. Las casas de cambio quedan con el dolar adelante y son el control. Los titulos no cambian, salvo el singular de las paginas de un solo local, que decia '1 locales'."
+    },
+    {
+      "id": "licencia-maternal-primero-en-la-descripcion",
+      "shippedOn": "2026-10-21",
+      "routes": ["/licencia-por-maternidad-y-paternidad-uruguay"],
+      "queries": [
+        "cuanto es la licencia maternal en uruguay",
+        "licencia por maternidad uruguay 2026",
+        "licencia maternal uruguay 2026",
+        "cuanto es la prenatal en uruguay 2026"
+      ],
+      "hypothesis": "Las consultas que traen la pagina son sobre la licencia maternal (619 impresiones y 0 clics en 28 dias, posicion 9,4), pero los primeros 155 caracteres de la descripcion, que tenia mas de 300, hablaban solo de la paternal. Una descripcion de 141 caracteres que abre con los 98 dias (42 antes del parto, 56 despues) y con quien paga contesta antes del corte. El titulo no cambia."
+    },
+    {
+      "id": "guia-como-saber-si-tengo-deudas",
+      "shippedOn": "2026-10-21",
+      "routes": ["/guias/como-saber-si-tengo-deudas-uruguay"],
+      "queries": [
+        "como saber si tengo deudas en uruguay",
+        "como saber si tengo deudas con mi cedula",
+        "consulta de deudas uruguay",
+        "como saber si tengo deudas en dgi",
+        "como saber si tengo deudas en bps",
+        "consulta central de riesgos"
+      ],
+      "hypothesis": "Guia nueva. El autocompletado uruguayo ofrece 'como saber si tengo deudas en uruguay' como primera sugerencia, con variantes por cedula y por acreedor (Antel, DGI, BPS, el banco, la intendencia), y el SERP solo muestra herramientas sueltas: el primer resultado es un tramite de la CGN que no contesta la pregunta. La guia dice de entrada que no hay un registro unico, separa por acreedor con una tabla de donde se consulta y que pide cada consulta (leidas el 21/10: el BCU ahora exige registrarse con un correo y el SUCIVE busca por matricula y padron, no por cedula) y enlaza cada pagina del sitio que cubre un acreedor. Entra al tema deudas-y-credito-uruguay y recibe un enlace de contexto desde /salir-del-clearing, cuya fila cerro el 20/10."
+    },
+    {
+      "id": "guia-comprar-en-shein",
+      "shippedOn": "2026-10-21",
+      "routes": ["/guias/comprar-en-shein-desde-uruguay"],
+      "queries": [
+        "comprar en shein desde uruguay",
+        "como comprar en shein desde uruguay",
+        "shein envia a uruguay",
+        "como comprar ropa en shein desde uruguay",
+        "es seguro comprar en shein desde uruguay"
+      ],
+      "hypothesis": "Guia nueva. Siete de los diez resultados para comprar en Shein desde Uruguay son redes sociales que se contradicen sobre si Shein envia directo. La guia contesta con lo que Shein publica para Uruguay en su propia pagina de envios (leida el 21/10 con Uruguay elegido: envio estandar, 8 a 13 dias laborables, gratis desde US$ 79), separa como llega el pedido de cuanto se paga y no repite las cifras del impuesto ni de la franquicia: enlaza a /impuesto-temu-uruguay y a /franquicia-aduana-uruguay, que son las que apuntan a esas consultas. Entra al tema importaciones-y-aduana-uruguay."
+    },
+    {
+      "id": "guia-irpf-de-alquileres",
+      "shippedOn": "2026-10-21",
+      "routes": ["/guias/irpf-de-alquileres-uruguay"],
+      "queries": [
+        "irpf alquileres",
+        "irpf alquileres boleto de pago",
+        "irpf alquileres exoneracion",
+        "irpf alquileres propietarios",
+        "irpf alquileres temporarios uruguay",
+        "adelanto irpf alquileres"
+      ],
+      "hypothesis": "Guia nueva. El autocompletado pide el lado del propietario (boleto de pago, exoneracion, temporarios) y el sitio solo lo tenia como una seccion de /impuestos-inversiones-uruguay. La guia trae el anticipo del 10,5 % con el boleto 2908 codigo 111, el ejemplo y el calendario de vencimientos de 2026 que publica la DGI, cuando conviene liquidar por lo real y la exoneracion de 40 BPC calculada con la BPC vigente (las cifras salen de utils/capitalTax.ts, la misma fuente de la pagina de inversiones, asi que no se pueden contradecir). Entra al tema alquiler-y-vivienda-uruguay y recibe un enlace de contexto desde /impuestos-inversiones-uruguay, que no tiene fila abierta."
+    },
+    {
+      "id": "cheques-enlace-desde-clearing",
+      "shippedOn": "2026-10-21",
+      "routes": ["/cheques-uruguay"],
+      "queries": [
+        "cheque sin fondos uruguay",
+        "registro de infractores bcu cheques",
+        "cuantos dias tengo para depositar un cheque",
+        "rehabilitacion cheques bcu"
+      ],
+      "hypothesis": "La pagina estaba en el pozo de enlaces de contexto: ninguna otra pagina la enlazaba desde su contenido. El enlace entra desde /salir-del-clearing el dia anotado en enlacesDeContexto.test.ts (su fila cerro el 20/10), en el parrafo que ahora nombra el tercer registro que esa pagina no nombraba, el de infractores del BCU por cheques sin fondos (Decreto-Ley 14.412, art. 66), del que no se sale con el tiempo sino pidiendo la rehabilitacion (art. 64). El contenido de /cheques-uruguay no cambia; se espera que recibir un enlace interno desde una pagina de la misma familia le sume porcion en sus consultas."
     }
   ]
 }

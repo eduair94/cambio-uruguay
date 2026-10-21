@@ -840,7 +840,12 @@
     "historicalOriginLeadOther": "{origin} today: {parts}.",
     "historicalOriginPairPart": "{code} buy ${buy}, sell ${sell}",
     "historicalOriginUnitPart": "{code} ${value}",
-    "sucursalesLead": "{origin} today: dollar ${buy} buy / ${sell} sell."
+    "sucursalesLead": "{origin} today: dollar ${buy} buy / ${sell} sell.",
+    "sucursalesWhere": "in {location}",
+    "sucursalesBankHoursAll": "{origin} is open Monday to Friday from {opens} to {closes} at its {count} branches{where}. Address, phone and opening hours of each one.",
+    "sucursalesBankHoursSome": "{origin} is open Monday to Friday from {opens} to {closes} at {matching} of its {count} branches{where}. Address, phone and opening hours of each one.",
+    "sucursalesBankHoursSingle": "{origin} has one branch in {location}, open Monday to Friday from {opens} to {closes}. Address, phone and opening hours.",
+    "sucursalesBankNoHours": "{origin}: address, phone and opening hours of its {count} branches{where}."
   },
   "dolarDepto": {
     "h1": "Dollar in {department} today",

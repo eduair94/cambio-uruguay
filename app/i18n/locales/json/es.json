@@ -847,7 +847,12 @@
     "historicalOriginLeadOther": "{origin} hoy: {parts}.",
     "historicalOriginPairPart": "{code} compra ${buy}, venta ${sell}",
     "historicalOriginUnitPart": "{code} ${value}",
-    "sucursalesLead": "{origin} hoy: dólar ${buy} compra / ${sell} venta."
+    "sucursalesLead": "{origin} hoy: dólar ${buy} compra / ${sell} venta.",
+    "sucursalesWhere": "en {location}",
+    "sucursalesBankHoursAll": "{origin} atiende de lunes a viernes de {opens} a {closes} h en sus {count} sucursales{where}. Dirección, teléfono y horario de cada una.",
+    "sucursalesBankHoursSome": "{origin} atiende de lunes a viernes de {opens} a {closes} h en {matching} de sus {count} sucursales{where}. Dirección, teléfono y horario de cada una.",
+    "sucursalesBankHoursSingle": "{origin} tiene una sucursal en {location} y atiende de lunes a viernes de {opens} a {closes} h. Dirección, teléfono y horario.",
+    "sucursalesBankNoHours": "{origin}: dirección, teléfono y horario de sus {count} sucursales{where}."
   },
   "dolarDepto": {
     "h1": "Dólar en {department} hoy",

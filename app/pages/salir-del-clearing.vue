@@ -74,13 +74,32 @@
             que mira un banco antes de darte un préstamo.
           </p>
           <ul class="reg-list">
-            <li>La consulta de tu propia situación es <strong>gratis y online</strong>.</li>
+            <li>
+              La consulta de tu propia situación es <strong>gratis y online</strong>, pero primero
+              creás una cuenta con tu correo: la contraseña te llega a esa dirección.
+            </li>
             <li>Tu banco está <strong>obligado a informarte</strong> tu categoría.</li>
             <li>No es lo mismo que el Clearing: podés estar en uno y no en el otro.</li>
           </ul>
         </VCard>
       </VCol>
     </VRow>
+    <!-- Lo que no está en ninguno de los dos. El cheque es un TERCER registro, y de ése no se sale
+         con el tiempo (Decreto-Ley 14.412, arts. 64 y 66); la patente, la intendencia y los servicios
+         se consultan en cada acreedor. Los dos enlaces son los que el lector de esta página necesita
+         después de leer «son dos cosas distintas». -->
+    <p class="text-body-2 mb-6">
+      Hay deudas que no están en ninguno de los dos. Si lo que rebotó fue un cheque, el registro que
+      te alcanza es un tercero, el de infractores que lleva el Banco Central (Decreto-Ley 14.412,
+      art. 66), y de ése no se sale con el tiempo: la rehabilitación se pide y el BCU la concede «en
+      los casos debidamente justificados» (art. 64). Lo explicamos en
+      <NuxtLink :to="localePath('/cheques-uruguay')">cheques sin fondos y diferidos</NuxtLink>. Y la
+      patente, los tributos de la intendencia o las facturas de UTE, OSE y Antel se consultan en
+      cada acreedor, cada uno con su dato: dónde y con qué, en
+      <NuxtLink :to="localePath('/guias/como-saber-si-tengo-deudas-uruguay')"
+        >cómo saber si tengo deudas</NuxtLink
+      >.
+    </p>
 
     <!-- What actually happens -->
     <h2 class="section-heading mb-1">¿Qué pasa si estoy en clearing?</h2>
