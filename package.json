@@ -128,5 +128,10 @@
     "@types/node": "^22.20.4",
     "@types/swagger-jsdoc": "^6.0.4",
     "vitest": "^5.0.2"
+  },
+  "overrides": {
+    "openai": {
+      "google-auth-library": "$google-auth-library"
+    }
   }
 }
