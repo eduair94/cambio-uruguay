@@ -1096,9 +1096,9 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'ui-ur-bpc-diferencias',
-    title: 'UI, UR y BPC: qué son y en qué se diferencian',
+    title: 'UI diaria, UR mensual, BPC: la diferencia',
     description:
-      'Qué es la Unidad Indexada (UI), la Unidad Reajustable (UR) y la Base de Prestaciones y Contribuciones (BPC), cómo se ajusta cada una y para qué se usan en Uruguay.',
+      'La UI se ajusta todos los días por el IPC, la UR una vez al mes por los salarios y la BPC una vez al año por decreto. Para qué se usa cada una.',
     tag: 'INDICADORES',
     updatedAt: '2026-06-20',
     sections: [

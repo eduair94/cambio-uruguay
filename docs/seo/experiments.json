@@ -1704,6 +1704,45 @@
         "temu impuestos uruguay"
       ],
       "hypothesis": "La pagina del nombre popular del regimen de envios postales estaba huerfana por los dos lados a la vez: no figuraba en los 'resources' de ningun tema (asi que no recibia ni un enlace del bloque 'Mas sobre este tema', que es reciproco por construccion) y ninguna pagina la enlazaba desde su contenido. Era la unica de las dieciocho rutas sin tema que hoy tambien estaba libre en el pozo de enlaces de contexto, asi que las dos deudas se cierran juntas: entra a importaciones-y-aduana-uruguay -donde ya vivia la guia homonima del catalogo- y recibe un enlace de importar-para-revender-uruguay, que no tiene fila en este libro. El enlace esta en la frase que el lector necesita: la pregunta sobre hacer muchos envios de US$ 800 advertia que fraccionar un pedido es la maniobra que la Aduana mira y nunca decia que antes del riesgo hay una cuenta -el minimo de US$ 20 es POR ENVIO, asi que una caja de menos de US$ 20 paga mas de impuesto que de mercaderia-. Se espera recuperar porcion en las consultas del nombre popular. Queda declarada una deuda que este cambio NO toca: el titulo de la guia /guias/impuesto-temu-uruguay y el de esta pagina se disputan la misma consulta, y la ruta de la guia esta reservada hasta el 2026-11-05."
+    },
+    {
+      "id": "pagina-compensacion-por-corte-de-luz",
+      "shippedOn": "2026-10-21",
+      "routes": ["/compensacion-por-corte-de-luz-uruguay"],
+      "queries": [
+        "compensacion por corte de luz",
+        "reclamo por corte de luz ute",
+        "ute me tiene que compensar",
+        "cuanto compensa ute por un corte",
+        "reclamo ursea ute",
+        "se me quemo un artefacto por un corte de luz"
+      ],
+      "hypothesis": "Pagina nueva. El hueco estaba medido y anotado desde setiembre en docs/seo/2026-09-15-google-trends-oportunidades.md ('reclamo por corte de luz' +70 % en Trends, 'corte de luz: como reclamar y que compensacion corresponde' = 0 en el sitio) y seguia en cero: /cortes-de-luz-por-barrio-uruguay mide los minutos sin luz de cada barrio y /a-quien-le-reclamo-uruguay rutea a URSEA con sus 15 dias habiles, pero ninguna de las dos contestaba si te tienen que devolver algo. El angulo propio es que la respuesta es contraintuitiva y esta en la fuente: esa compensacion NO se reclama, la calcula URSEA al cierre del semestre y viaja como descuento en la factura ('No es necesario que el usuario realice tramite alguno', URSEA). Eso deja lugar para el reclamo que si existe, el del problema concreto, con el unico porcentaje que la norma escribe como numero: 30 % de la facturacion diaria promedio de los ultimos seis meses por cada dia que UTE se atrasa en contestar (art. 62). Y para la mitad que nadie cuenta: la fuerza mayor de pleno derecho (45 C, -10 C, 130 km/h, inundaciones) que UTE PIERDE si no la declara en tres dias habiles (art. 14). La pagina NO publica el umbral de horas a partir del cual nace la compensacion, y lo dice: las Tablas 1 y 2 del reglamento fueron modificadas por las Resoluciones URSEA 88/005 y 36/006 y el texto ordenado vigente que publica URSEA es un PDF escaneado sin capa de texto. Se espera ganar porcion en consultas de reclamo y de compensacion por cortes, donde el sitio no tenia ninguna pagina. Enlace de entrada desde /a-quien-le-reclamo-uruguay, que no tiene fila abierta en este libro."
+    },
+    {
+      "id": "guia-ui-ur-bpc-snippet-y-tema",
+      "shippedOn": "2026-10-21",
+      "routes": ["/guias/ui-ur-bpc-diferencias"],
+      "queries": [
+        "diferencia entre ui ur y bpc",
+        "ui ur bpc",
+        "que es la unidad reajustable",
+        "unidad indexada o unidad reajustable",
+        "como se ajusta la ui"
+      ],
+      "hypothesis": "La unica guia del catalogo que hoy estaba libre de toda ventana de medicion abierta, y estaba en TRES pozos de deuda a la vez (npm run seo_debt): titulo pasado de 60, descripcion pasada de 155 y fuera de todo tema. El titulo estaba dos caracteres pasado ('UI, UR y BPC: que son y en que se diferencian' da 62 con la marca) y esos dos caracteres se pagaban con lo de siempre: anunciaba el indice de la guia en vez de contestarla. La diferencia ES el ajuste y ya estaba en el cuerpo, asi que ahora va adelante: la UI se mueve todos los dias por el IPC, la UR una vez al mes por los salarios y la BPC una vez al ano por decreto. Titulo 58 con la marca, descripcion 143. Y la guia entra a economia-y-mercado-uruguay, cuyo intro ya anunciaba 'los indicadores que mueven todo (UI, UR, BPC)' y entre cuyas guias ya estaba unidad-indexada-explicada, asi que recibe por primera vez los enlaces del bloque del tema, que es reciproco por construccion. Ninguna cifra es nueva. Se espera ganar porcion en consultas de diferencia y de definicion de las tres unidades."
+    },
+    {
+      "id": "cambios-de-precio-tema-y-enlace",
+      "shippedOn": "2026-10-21",
+      "routes": ["/cambios-de-precio-uruguay"],
+      "queries": [
+        "cambios de precio uruguay",
+        "que bajo de precio uruguay",
+        "bajo de precio mercado libre uruguay",
+        "subio de precio uruguay"
+      ],
+      "hypothesis": "La pagina estaba huerfana por los dos lados a la vez, igual que /impuesto-temu-uruguay el 20/10: no figuraba en los 'resources' de ningun tema, asi que no recibia ni un enlace del bloque 'Mas sobre este tema', y ninguna pagina la enlazaba desde su contenido (su unica mencion en todo el repo era el menu, que no es una relacion entre paginas). Es la unica de los dos pozos con la ruta libre hoy, asi que las dos deudas se cierran en la misma corrida. Entra a economia-y-mercado-uruguay, que ya lista las tres paginas /evolucion-precio-*: esas miden el NIVEL de cada cohorte y esta mide el mismo movimiento aviso por aviso, o sea que es el vecino que les faltaba y no una pagina en un tema ajeno. El enlace de contexto sale de /evolucion-precio-autos-usados-uruguay, que no tiene fila abierta y cuya seccion 'Como lo medimos' dedica una vineta entera a avisar que la mediana del modelo-ano se mueve con la mezcla publicada, sin tener a donde mandar a quien lo que quiere es el aviso. La relacion ya era reciproca del otro lado. Se espera que la pagina pase de recibir cero enlaces internos de contenido a entrar al bloque del tema y a la cola de lectura de autos."
     }
   ]
 }

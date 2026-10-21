@@ -534,10 +534,19 @@ const DEUDA_TITULO_LARGO = [
   'me-quede-sin-trabajo-mutualista-fonasa-uruguay',
   'no-pagar-prestamo-e-irse-del-pais-uruguay',
   'trabajar-para-el-exterior-desde-uruguay',
-  'ui-ur-bpc-diferencias',
 ]
 
-const TITLE_OVER_BUDGET = 16
+/**
+ * 16 → 15 el 2026-10-21: `ui-ur-bpc-diferencias`, que era de las dos listas a la vez y la única guía
+ * del catálogo con la ruta libre de toda ventana de medición abierta (`npm run seo_debt`).
+ *
+ * Estaba dos caracteres pasada —«UI, UR y BPC: qué son y en qué se diferencian» da 62 con la marca—,
+ * y esos dos caracteres se pagaban con lo de siempre: el título anunciaba el índice de la guía («qué son y en
+ * qué se diferencian») en vez de contestarla. La diferencia ES el ajuste, y está en el cuerpo con sus
+ * artículos: la UI se mueve todos los días, la UR una vez al mes y la BPC una vez al año. Eso ahora
+ * va adelante y el título queda en 58.
+ */
+const TITLE_OVER_BUDGET = 15
 
 /**
  * 89 → 77 el 2026-10-01: las doce más largas del catálogo, de 306 a 215 caracteres.
@@ -702,10 +711,15 @@ const DEUDA_DESCRIPCION_LARGA = [
   'reforma-jubilatoria-uruguay-que-cambia',
   'tarjeta-debito-vs-credito-uruguay',
   'tipo-de-cambio-fiscal-dgi-uruguay',
-  'ui-ur-bpc-diferencias',
 ]
 
-const DESCRIPTION_OVER_BUDGET = 22
+/**
+ * 22 → 21 el 2026-10-21: la misma guía, por la misma corrida y el mismo criterio. Pasó de 163 a 143
+ * caracteres y de abrir por la definición («Qué es la Unidad Indexada (UI), la Unidad Reajustable…»,
+ * que gasta el renglón desplegando siglas que el título ya trae) a abrir por la respuesta: con qué se
+ * ajusta cada una y cada cuánto. Ninguna cifra es nueva; las tres cadencias ya estaban en su cuerpo.
+ */
+const DESCRIPTION_OVER_BUDGET = 21
 
 describe('los snippets de las guías entran en el SERP', () => {
   it(`mide las ${MEASURED} guías del catálogo`, () => {

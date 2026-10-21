@@ -61,6 +61,13 @@ FORM: página de lectura con un explorador; el estado vive en la URL.
             >viviendas en venta</NuxtLink
           >.
         </li>
+        <li>
+          Esta página mide la cohorte; si lo que buscás es el aviso,
+          <NuxtLink :to="localePath('/cambios-de-precio-uruguay')"
+            >qué bajó y qué subió de precio</NuxtLink
+          >
+          lista uno por uno los que se movieron en los últimos días.
+        </li>
       </ul>
     </section>
 

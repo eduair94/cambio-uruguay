@@ -312,6 +312,7 @@ export const guideHubs: readonly GuideHub[] = [
       'como-afecta-la-fed-al-dolar',
       'proteger-ahorros-de-la-inflacion',
       'unidad-indexada-explicada',
+      'ui-ur-bpc-diferencias',
     ],
     resources: [
       {
@@ -328,6 +329,11 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Evolución del precio de los autos',
         description: 'Cómo cambia lo que se pide por un auto usado, por modelo.',
         to: '/evolucion-precio-autos-usados-uruguay',
+      },
+      {
+        label: 'Qué bajó y qué subió de precio',
+        description: 'Los avisos que cambiaron de precio, cada uno contra el suyo de ayer.',
+        to: '/cambios-de-precio-uruguay',
       },
       {
         label: 'Histórico del dólar',
@@ -1188,6 +1194,11 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'A quién le reclamo',
         description: 'El organismo que corresponde a cada problema.',
         to: '/a-quien-le-reclamo-uruguay',
+      },
+      {
+        label: 'Compensación por corte de luz',
+        description: 'No se pide: la calcula URSEA por semestre y se descuenta de la factura.',
+        to: '/compensacion-por-corte-de-luz-uruguay',
       },
       {
         label: 'Defensa del Consumidor',

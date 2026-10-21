@@ -288,6 +288,10 @@
           "label": "Evolución del precio de los autos"
         },
         {
+          "to": "/cambios-de-precio-uruguay",
+          "label": "Qué bajó y qué subió de precio"
+        },
+        {
           "to": "/historico",
           "label": "Histórico del dólar"
         },
@@ -340,7 +344,8 @@
         "inflacion-y-dolar-uruguay",
         "como-afecta-la-fed-al-dolar",
         "proteger-ahorros-de-la-inflacion",
-        "unidad-indexada-explicada"
+        "unidad-indexada-explicada",
+        "ui-ur-bpc-diferencias"
       ],
       "terms": [
         {
@@ -1090,6 +1095,10 @@
         {
           "to": "/a-quien-le-reclamo-uruguay",
           "label": "A quién le reclamo"
+        },
+        {
+          "to": "/compensacion-por-corte-de-luz-uruguay",
+          "label": "Compensación por corte de luz"
         },
         {
           "to": "/defensa-al-consumidor-uruguay",

@@ -135,6 +135,13 @@
         <VBtn :to="localePath('/factura-de-ute-uruguay')" variant="tonal" size="small">
           Factura de UTE
         </VBtn>
+        <VBtn
+          :to="localePath('/compensacion-por-corte-de-luz-uruguay')"
+          variant="tonal"
+          size="small"
+        >
+          Compensación por corte de luz
+        </VBtn>
         <VBtn :to="localePath('/cuanto-me-tienen-que-pagar-uruguay')" variant="tonal" size="small">
           Si te pagan menos del laudo
         </VBtn>

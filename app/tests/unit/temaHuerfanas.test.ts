@@ -107,7 +107,6 @@ const DEUDA_SIN_TEMA = [
   '/accidente-de-trabajo-uruguay',
   '/apostillar-un-documento-uruguay',
   '/cambiar-de-mutualista-uruguay',
-  '/cambios-de-precio-uruguay',
   '/comparar-plataformas-dolar-uruguay',
   '/cuanto-sale-la-partida-de-nacimiento-uruguay',
   '/declarar-dinero-en-efectivo-uruguay',
@@ -164,7 +163,26 @@ const DEUDA_SIN_TEMA = [
  *
  * Sólo puede bajar: subirlo es publicar una página huérfana.
  */
-const DEUDA_MAXIMA = 17
+/**
+ * 17 → 16 el 2026-10-21: `/cambios-de-precio-uruguay` entra a `economia-y-mercado-uruguay`, y es
+ * una de las CUATRO rutas de este pozo que hoy están libres de toda ventana de medición abierta
+ * (`npm run seo_debt`). De esas cuatro es la única que además está libre en el pozo de al lado —sin
+ * enlace de contexto—, así que sus dos deudas se cierran en la misma corrida en vez de dejarla medio
+ * arreglada, que es el criterio que esta lista ya aplicó el 2026-10-20 con `/impuesto-temu-uruguay`.
+ *
+ * Las otras tres no entraron por lo que ya dice la nota de abajo: `/factura-de-ose-uruguay` y
+ * `/que-pasa-si-no-pago-antel` son dos de los «tres servicios del hogar con la misma gramática» y la
+ * tercera hermana, `/factura-de-ute-uruguay`, sigue reservada hasta el 25/10, así que entrar ahora
+ * partiría el racimo en filas del libro de cambios medidas por separado; y `/garantia-de-alquiler-uruguay`
+ * no es de este racimo pero tampoco es una página sola: su tema natural es el de alquiler, donde
+ * conviene mirarla junto con las otras páginas de garantía antes de elegirle el `resources`.
+ *
+ * El tema no se eligió por afinidad amplia sino por la regla de siempre —a donde ya vivía su vecina
+ * más cercana—: el hub ya lista las tres páginas `/evolucion-precio-*`, que miden el NIVEL de cada
+ * cohorte, y ésta es la que mide el mismo movimiento aviso por aviso. Es el vecino que le faltaba a
+ * esas tres, no una página nueva en un tema ajeno.
+ */
+const DEUDA_MAXIMA = 16
 
 describe('ninguna página de lectura queda fuera de todos los temas', () => {
   const sinTema = rootRoutes.filter(route => temasDeRuta(route).length === 0)
@@ -251,7 +269,6 @@ const GUIAS_SIN_TEMA = [
   'propinas-en-uruguay',
   'proyeccion-dolar-uruguay-se-puede-predecir',
   'tipo-de-cambio-fiscal-dgi-uruguay',
-  'ui-ur-bpc-diferencias',
 ]
 
 /**
@@ -275,7 +292,19 @@ const GUIAS_SIN_TEMA = [
  *
  * Sólo puede bajar: subirlo es publicar una guía huérfana.
  */
-const DEUDA_MAXIMA_GUIAS = 22
+/**
+ * 22 → 21 el 2026-10-21: `ui-ur-bpc-diferencias` entra a `economia-y-mercado-uruguay`, y es la única
+ * de las 22 con la ruta libre hoy (las otras 21 llevan fila abierta, de la del 29/10 a la del 13/11).
+ *
+ * El tema es el suyo sin inventar ningún padre, que es la regla que la nota de arriba dejó escrita el
+ * 15/10 al NO mover `propinas-en-uruguay`: el `intro` de este hub ya anuncia «los indicadores que
+ * mueven todo (UI, UR, BPC)», su `resources` ya lleva `/indicadores` y el conversor de UI, y entre sus
+ * guías ya estaba `unidad-indexada-explicada`. Esta guía es la que compara las tres, así que el hueco
+ * que tapa está adentro del tema y no al lado.
+ *
+ * Sólo puede bajar: subirlo es publicar una guía huérfana.
+ */
+const DEUDA_MAXIMA_GUIAS = 21
 
 describe('ninguna guía queda fuera de todos los temas', () => {
   const sinTema = guides

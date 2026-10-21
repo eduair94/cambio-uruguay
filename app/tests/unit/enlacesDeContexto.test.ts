@@ -150,10 +150,8 @@ const DEUDA_SIN_ENLACE = [
   '/alternativa-a-bankos-uruguay',
   '/apostillar-un-documento-uruguay',
   '/apps-utiles-uruguay',
-  '/cambios-de-precio-uruguay',
   '/certificado-unico-dgi-uruguay',
   '/cheques-uruguay',
-  '/cortes-de-luz-por-barrio-uruguay',
   '/fondo-de-solidaridad-uruguay',
   '/grabacion-sin-consentimiento-uruguay',
   '/llevar-el-auto-a-brasil-o-argentina',
@@ -273,7 +271,35 @@ const DEUDA_SIN_ENLACE = [
 // cambios, y la reserva que la nota de arriba describe no se rompe: lo que esas filas miden es su
 // propia descripción, y el enlace entrante nace en una página publicada hoy, sin tráfico todavía.
 // Es además lo que ya hace cada página nueva del repo con su bloque de relacionadas.
-const DEUDA_MAXIMA = 14
+// 13 → 12 el 2026-10-21, y ésta salió sin ir a buscarla, que es como salieron casi todas:
+// `/cortes-de-luz-por-barrio-uruguay` lo necesita la página nueva
+// `/compensacion-por-corte-de-luz-uruguay` en su propio contenido, porque quien acaba de leer que la
+// compensación se mide por SEMESTRE y por grupo de suministros necesita saber cuánto estuvo sin luz
+// su zona, y ese libro —los minutos por barrio integrados del mapa público de UTE— es justo el dato
+// que ninguna fuente oficial publica por barrio. La ruta medida tiene fila abierta del libro de
+// cambios hasta el 1/11 y la reserva NO se rompe, por lo mismo que el 15 y el 18/10: el enlace
+// entrante nace en una página publicada hoy, sin tráfico todavía, y al archivo de la página medida
+// no se lo tocó —ni el snippet, ni el cuerpo, ni un enlace de salida—.
+//
+// Y por eso el enlace de ENTRADA de la página nueva tampoco salió de ahí: salió de
+// `/a-quien-le-reclamo-uruguay`, que no tiene ventana abierta y cuyo lector lo necesita de verdad
+// —esa página rutea «luz y agua son URSEA, 15 días hábiles» y su bloque «el detalle de cada caso»
+// ya lleva la factura de UTE, pero nunca decía que por los cortes hay una compensación que no se
+// reclama—.
+//
+// 14 → 13 el 2026-10-21 (la otra mitad de la misma corrida): `/cambios-de-precio-uruguay`, que
+// estaba en este pozo y en el de los temas
+// a la vez y es la única de los dos con la ruta libre hoy (`npm run seo_debt`), así que se cierran
+// sus dos deudas juntas en vez de dejarla medio arreglada.
+//
+// El enlace salió de `/evolucion-precio-autos-usados-uruguay`, que no tiene ventana abierta, y lo
+// necesita su propio lector: esa página mide la COHORTE (la mediana del modelo-año, que se mueve
+// también cuando cambia la mezcla publicada) y su sección «Cómo lo medimos» dedica una viñeta entera
+// a avisar de eso, sin tener a dónde mandar a quien lo que quiere es el aviso. El movimiento aviso
+// por aviso es justo lo que lista la página enlazada, y la relación ya era recíproca del otro lado:
+// `/cambios-de-precio-uruguay` cierra enlazando a las tres `/evolucion-precio-*` como «lo que sí
+// contesta el nivel del mercado». Lo que faltaba era la vuelta.
+const DEUDA_MAXIMA = 12
 
 describe('ninguna página de lectura queda sin un enlace de contexto', () => {
   it('las páginas sin enlace son exactamente las declaradas', () => {

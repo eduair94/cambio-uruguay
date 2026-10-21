@@ -4233,6 +4233,30 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // La demanda estaba medida y anotada desde setiembre («reclamo por corte de luz» +70 % en
+        // Trends, `docs/seo/2026-09-15-google-trends-oportunidades.md`) y el sitio tenía cero: la
+        // página de cortes mide los minutos sin luz por barrio y `/a-quien-le-reclamo-uruguay`
+        // rutea a URSEA, pero ninguna contestaba si te tienen que devolver algo. El ángulo propio
+        // es que la respuesta es contraintuitiva y está en la fuente: esa compensación NO se
+        // reclama, la calcula URSEA por semestre y viaja como descuento en la factura.
+        to: '/compensacion-por-corte-de-luz-uruguay',
+        labelKey: 'nav.compensacionCorteDeLuz',
+        icon: 'mdi-flash-alert-outline',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'compensacion por corte de luz',
+          'reclamo por corte de luz ute',
+          'ute me tiene que compensar',
+          'descuento en la factura por cortes de luz',
+          'reclamo ursea ute',
+          'cuanto compensa ute por un corte',
+          'se me quemo un artefacto por un corte de luz',
+          'calidad del servicio electrico uruguay',
+        ],
+      },
+      {
         to: '/derechos-consumidor-compras-online',
         labelKey: 'nav.derechosConsumidor',
         icon: 'mdi-cart-check',
