@@ -125,6 +125,40 @@ listas curadas `/couriers-uruguay` y `/apps-utiles-uruguay` siguen en `otro` a p
 son fichas de un relevamiento propio y a una familia que no se midió no se le inventa un
 multiplicador.
 
+**Y la mitad simétrica, que es la que más páginas toca (2026-10-22).** El cotejo del 14/10 preguntó
+si cada directorio que el sitio declara está valuado como directorio. La pregunta al revés —qué pasa
+con las páginas que el sitio declara CONTENIDO— no la cotejaba nada, y la respuesta era peor:
+**de las 223 páginas raíz, 161 caían en `otro` y valían 1×** teniendo la forma del tramo que mide 8×.
+El motivo es el mismo accidente de plegado: `bucketOf` sólo pliega las familias que se abren en
+muchas URLs, así que `/guias/<x>` cae en `/guias/*` y cobra su tramo, pero una página de problema con
+ruta propia conserva su path entero y tiene que estar listada a mano en `CONTENIDO_PATHS`. Esa lista
+se llenaba desde la alerta `unclassified-families`, que sólo nombra lo que GA4 reportó CON tráfico en
+la ventana, así que una página sin muestra nunca se asomaba por ahí. La consecuencia es la de
+siempre, en el sentido contrario: una página de problema quedaba OCHO VECES por debajo de la guía
+equivalente de `/guias/*` —la misma clase de página y la misma intención de búsqueda, a un lado y al
+otro de una línea que no quiso decir nada— y 5× por encima de un directorio en vez de 40×.
+
+Lo cotejable es con QUÉ se compara, y acá hay un segundo registro que ya existía y que tiene plata de
+por medio: `adDensityForPath` (`app/utils/ads.ts`) le da a cada ruta `normal` —dos unidades EN FLUJO,
+«the long reads where an in-flow unit is ordinary and expected»— o `light` —una sola, después del
+contenido, en «tool and rate surfaces»—. No es una pista de la diferencia de RPM, es su mecanismo, y
+el `why` de `TIER_DATO_VIVO` ya razonaba desde ahí mucho antes del cotejo («cotización, conversor,
+histórico, sucursal: alrededor del promedio del sitio, **y una sola unidad de anuncio**»). Los dos
+registros coinciden donde los dos opinan: cero páginas `normal` valuadas `dato-vivo` y cero páginas
+`light` valuadas `contenido`. Lo cuida `app/tests/unit/contenidoTramoParity.test.ts`, que exige que
+toda página de lectura larga esté valuada como contenido, como directorio medido, o declarada con su
+motivo.
+
+La primera tanda entró corta a propósito, por la regla 3 de arriba: **84 de las 161**, y las otras 62
+quedan en `otro` y en la alerta como deuda que sólo puede bajar. La línea es mecánica y por eso la
+tanda es reproducible: no se promueve una página que pide un dato en vivo en su propio
+`<script setup>`, porque desde el repo una guía que muestra una cifra fresca —la de préstamos, que es
+la familia que más rinde— y una serie viva con texto alrededor se ven igual. Cinco páginas no las
+decide esa línea y llevan su motivo escrito (dos son un relevamiento y tres tienen el cuerpo hecho de
+la cifra misma), y las tres listas curadas y las doce que no son páginas de lectura quedan afuera por
+lo mismo que ya las dejaba afuera el cotejo de directorios: llevan `normal` porque es el DEFAULT de
+`ads.ts`, no porque alguien las haya juzgado lectura larga.
+
 ### Por qué el orden sobrevive a que no haya plata medida
 
 El enlace AdSense↔GA4 es del 2026-09-02 y el ingreso diario del sitio, cuando esto se escribió,
