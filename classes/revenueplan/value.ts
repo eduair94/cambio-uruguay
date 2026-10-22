@@ -276,6 +276,134 @@ export const CONTENIDO_PATHS = new Set([
   "/embargo-de-sueldo-uruguay",
   "/carne-de-salud-uruguay",
   "/denunciar-trabajo-en-negro-uruguay",
+  // 2026-10-22: las 84 que salieron del cotejo contra `app/utils/ads.ts`, que es la otra mitad del
+  // error que `value_routes.test.ts` documenta para los directorios — y la mitad que faltaba, que
+  // es la que más páginas toca.
+  //
+  // El defecto: `bucketOf` sólo pliega las familias que se abren en muchas URLs, así que una página
+  // de problema con ruta propia conserva su path entero y tiene que estar listada ACÁ o no clasifica.
+  // Las veinte de arriba entraron por la alerta `unclassified-families`, que sólo nombra lo que
+  // GA4 reportó CON tráfico en la ventana; una página de problema sin muestra todavía nunca se
+  // asomaba por ahí. Medido el 2026-10-22 sobre las 223 páginas raíz: 161 caían en `otro` y valían
+  // 1×, el promedio del sitio, teniendo la forma del tramo que mide 8×.
+  //
+  // Por qué importa y no es un número feo en un tablero: lo que ordena la cola de trabajo es
+  // `clics × multiplicador`, así que una página de problema quedaba OCHO VECES por debajo de la
+  // guía equivalente de `/guias/*` —la misma clase de página, con la misma intención de búsqueda, a
+  // un lado y al otro de una línea que es un accidente de `bucketOf`— y apenas 5× por encima de un
+  // directorio en vez de 40×. Es exactamente la decisión que este archivo existe para corregir,
+  // cometida en el otro sentido.
+  //
+  // DE DÓNDE SALE EL TRAMO, Y POR QUÉ NO ES UNA SUPOSICIÓN. No se les mide nada nuevo: se las cuenta
+  // en el tramo que su forma declara, que es lo que un tramo ES («hereda el multiplicador de su
+  // TRAMO» cuando no hay medición propia). Lo que lo hace cotejable en vez de opinable es que el
+  // sitio ya declara esa forma en otro archivo y con plata de por medio: `adDensityForPath` en
+  // `app/utils/ads.ts` le da a cada ruta `normal` —dos unidades EN FLUJO, «the long reads where an
+  // in-flow unit is ordinary and expected»— o `light` —una sola unidad, después del contenido, en
+  // «tool and rate surfaces»—. Y el `why` de `TIER_DATO_VIVO`, escrito mucho antes de este cotejo,
+  // ya razonaba desde ahí: «cotización, conversor, histórico, sucursal: alrededor del promedio del
+  // sitio, Y UNA SOLA UNIDAD DE ANUNCIO». O sea que la superficie de anuncio es el mecanismo del que
+  // vive la diferencia de RPM, no una pista de ella. Los dos registros COINCIDEN donde los dos
+  // opinan: cero páginas `normal` valuadas `dato-vivo` y cero páginas `light` valuadas `contenido`.
+  //
+  // Y se quedó corto a propósito, por la regla 3 de la cabecera («NUNCA se le inventa un
+  // multiplicador alto»): de las 161 entran 84 y las otras 62 quedan en `otro` y en la alerta, con
+  // su motivo escrito en `app/tests/unit/contenidoTramoParity.test.ts`. La línea es mecánica: una
+  // página que pide un dato en vivo en su propio `<script setup>` puede ser una guía que muestra una
+  // cifra fresca (la de préstamos, que es la que más rinde) o puede ser una serie con texto
+  // alrededor, y desde acá no se distingue — así que no se promueve ninguna y se las decide de a
+  // tandas, como se retiró la deuda de descripciones. Fuera quedan también las tres listas CURADAS
+  // (`/apps-utiles-uruguay` y sus dos hermanas), por lo mismo que la excepción que
+  // `directoriosTramoParity.test.ts` ya les escribió, y las doce que no son páginas de lectura
+  // (lo legal, lo que habla del propio sitio, la referencia para desarrolladores): ésas llevan
+  // `normal` porque es el DEFAULT de `ads.ts`, no porque alguien las haya juzgado lectura larga.
+  //
+  // Las 84 no son un tema ni un racimo: son todo lo que cumple las condiciones de arriba, que es la
+  // razón por la que esta lista se puede cotejar sola de ahora en más.
+  "/a-quien-le-reclamo-uruguay",
+  "/accidente-de-trabajo-uruguay",
+  "/alquilar-en-uruguay",
+  "/alquilar-sin-recibo-de-sueldo",
+  "/alternativa-a-bankos-uruguay",
+  "/asignacion-familiar-uruguay",
+  "/cambiar-de-mutualista-uruguay",
+  "/certificado-unico-dgi-uruguay",
+  "/certificados-bps-uruguay",
+  "/cheques-uruguay",
+  "/clonacion-de-tarjetas-uruguay",
+  "/cobrar-en-dolares-gastar-en-pesos",
+  "/cobrar-giro-del-exterior-uruguay",
+  "/comisiones-mercado-pago-uruguay",
+  "/compensacion-por-corte-de-luz-uruguay",
+  "/comprar-o-alquilar-uruguay",
+  "/contractor-en-uruguay",
+  "/contribucion-inmobiliaria-uruguay",
+  "/conviene-pagar-todo-con-credito-uruguay",
+  "/credito-fiscal-por-alquiler-uruguay",
+  "/cuando-me-puedo-jubilar-uruguay",
+  "/cuando-se-cobra-el-aguinaldo-uruguay",
+  "/cuanto-me-tienen-que-pagar-uruguay",
+  "/cuanto-sale-el-pasaporte-uruguayo",
+  "/cuanto-sale-la-cedula-de-identidad-uruguaya",
+  "/cuanto-sale-la-partida-de-nacimiento-uruguay",
+  "/cuanto-vale-una-milla-itau-uruguay",
+  "/cuenta-remunerada-uruguay",
+  "/declaracion-de-irpf-uruguay",
+  "/defensa-al-consumidor-uruguay",
+  "/derechos-consumidor-compras-online",
+  "/desalojo-de-alquiler-uruguay",
+  "/descuento-de-iva-con-tarjeta-uruguay",
+  "/desvincularme-de-la-afap-uruguay",
+  "/deuda-de-gastos-comunes-uruguay",
+  "/devolucion-fonasa-uruguay",
+  "/donde-conseguir-monedas-uruguay",
+  "/donde-te-entregan-el-paquete-uruguay",
+  "/factura-de-ose-uruguay",
+  "/factura-de-ute-uruguay",
+  "/facturar-en-monotributo-uruguay",
+  "/fecha-de-cobro-bps-uruguay",
+  "/feriados-que-se-corren-uruguay",
+  "/fondo-de-solidaridad-uruguay",
+  "/franquicia-viajero-uruguay",
+  "/grabacion-sin-consentimiento-uruguay",
+  "/horas-extras-uruguay",
+  "/impuesto-a-las-trasmisiones-patrimoniales-uruguay",
+  "/impuesto-autos-electricos-uruguay",
+  "/impuesto-de-primaria-uruguay",
+  "/impuesto-temu-uruguay",
+  "/indemnizacion-por-despido-uruguay",
+  "/invertir-en-proyectos-uruguayos",
+  "/jubilacion-por-incapacidad-uruguay",
+  "/licencia-de-la-construccion-uruguay",
+  "/licencia-por-maternidad-y-paternidad-uruguay",
+  "/licencias-especiales-uruguay",
+  "/me-cobran-algo-que-no-autorice",
+  "/mudarme-a-uruguay-residencia",
+  "/pagar-cuentas-con-tarjeta",
+  "/pagar-el-alquiler-en-efectivo-uruguay",
+  "/peajes-uruguay",
+  "/pension-a-la-vejez-uruguay",
+  "/pension-alimenticia-uruguay",
+  "/pension-por-sobrevivencia-uruguay",
+  "/por-que-el-bcu-quiere-mas-pesos",
+  "/por-que-no-baja-el-alquiler-uruguay",
+  "/preguntas-economia-personal",
+  "/preguntas-frecuentes-aduana-uruguay",
+  "/prescripcion-de-deudas-con-el-estado-uruguay",
+  "/prescripcion-de-deudas-privadas-uruguay",
+  "/primer-alquiler-uruguay",
+  "/que-empresa-abrir-uruguay",
+  "/recibir-regalos-del-exterior-uruguay",
+  "/reclamo-sodimac-compra-cancelada",
+  "/reconocer-anos-trabajados-uruguay",
+  "/renunciar-al-trabajo-uruguay",
+  "/retirar-efectivo-uruguay",
+  "/salario-vacacional-uruguay",
+  "/salir-del-clearing",
+  "/seguro-de-paro-uruguay",
+  "/suplemento-solidario-bps",
+  "/tarjetas-de-socio-uruguay",
+  "/vivir-con-25000-pesos-uruguay",
 ]);
 
 export function tierOf(bucket: string): Tier {
