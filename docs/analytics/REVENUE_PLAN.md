@@ -167,6 +167,8 @@ Detalles que costaron pensarse:
   salen del mismo documento por día.
 - **Una página nueva se mide contra cero, no con un cociente imposible.** Cero clics previos no es
   ruido: es cero de verdad, y lo único que se quería saber es si la página existe en la búsqueda.
+  También espera los 28 días archivados: alcanzar diez clics antes de cerrar la ventana muestra
+  progreso, no un veredicto. Al cerrar, diez o más clics dan «mejoró» y menos dan «sin cambio».
 - **Un cambio que toca todo el sitio no se puede declarar acá.** Sin páginas de control, el sujeto es
   el denominador y siempre da "sin cambio". La barra de familia (`ce35e4b5`) y el bloque de temas
   (`c10fb0ab`) son de ese tipo y quedaron fuera a propósito.
@@ -273,8 +275,8 @@ Sigue sin cubrir lo que no es deuda de ruta, y no hay nada que cubrir: los dos p
 | guarda | qué ataja |
 |---|---|
 | `planIsThin` | `currency-gsc` falló hoy → cola casi vacía que en la pantalla se ve igual que "no hay nada para hacer". No pisa un plan de ≥ 10 acciones con uno que trae menos del 40 %. La negativa caduca a los 7 días. |
-| `MAX_ARCHIVE_DAYS = 90` | cada documento del archivo lleva hasta 5.000 consultas y 3.000 páginas; sin tope, agregar experimentos degrada en silencio hasta un OOM. Lo que se cae es lo viejo, nunca lo recién publicado. |
-| veredictos cerrados se reusan | una ventana cerrada no cambia; releerla todos los días es leer el archivo entero para nada. `sin datos` y `esperando` sí se recalculan, porque un `--backfill` puede haber agregado justo los días que faltaban. |
+| `MAX_ARCHIVE_DAYS = 90` | cada documento del archivo lleva hasta 5.000 consultas y 3.000 páginas; sin tope, agregar experimentos degrada en silencio hasta un OOM. El rango llega como máximo a hoy: los días futuros de una fila recién publicada no consumen presupuesto ni expulsan ventanas que ya se pueden medir. Si todavía no entra todo, se prioriza lo reciente. |
+| veredictos cerrados se reusan | sólo se reusan con 28 días posteriores y cero días faltantes, además del mismo sujeto y fecha. Un veredicto legado sobre una ventana incompleta se recalcula, igual que `sin datos` y `esperando`: un `--backfill` puede haber agregado justo los días que faltaban. |
 | pisos de muestra por familia | una familia con 40 vistas y una impresión da un RPM espectacular y falso que encabezaría la cola para siempre. |
 | `PROVISIONAL_REVENUE_USD` | con centavos en la ventana, todo RPM por familia es provisional y la pantalla lo dice. |
 | desglose completo de ingreso | `fetchRevenue` pagina por `pagePath` hasta `rowCount`, con presupuesto de 100.000 filas. Las páginas sin anuncios también aportan vistas al RPM. Una página incompleta, repetida, un total cambiante o un error conserva el snapshot privado anterior; la actualización pública sigue independiente. |
@@ -293,6 +295,14 @@ saliendo del total sin filtrar, y ningún país queda excluido de nada por esto 
 por ese motivo sigue siendo una decisión de una persona, ahora con la cifra al lado. Las cifras y
 el diagnóstico detallado quedan en `docs/seo/data/revenue-2026-09-21/`, fuera del repositorio
 público.
+
+El tope de archivo limita las fechas que se pueden leer, no las ventanas teóricas completas. Una
+fila publicada hoy conserva sus 28 días posteriores para el veredicto, pero no pide esos días
+futuros ni los carga al presupuesto. El techo es hoy y no la fecha del snapshot de Search Console:
+el archivo puede tener días más nuevos aunque la actualización del tablero haya fallado. Eso no
+cierra una ventana por calendario: todo veredicto cerrado requiere los 28 días archivados.
+La lectura continúa en tandas de 10 días, y una ventana todavía enteramente futura no pide un
+rango invertido.
 
 Las caídas de una página conservan su URL desde `pageFalling`, antes de atribuir destinos a las
 consultas. Así una caída del histórico se valora como histórico y una de una guía como guía. Una

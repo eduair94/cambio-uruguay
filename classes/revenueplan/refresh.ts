@@ -80,6 +80,7 @@ export interface RefreshResult {
 export function planExperimentWork(
   specs: ExperimentSpec[],
   previous: RevenuePlanSnapshot | null,
+  today: string,
   maxDays = MAX_ARCHIVE_DAYS
 ): { measure: ExperimentSpec[]; reuse: ExperimentResult[]; from: string | null; to: string | null; dropped: ExperimentSpec[] } {
   const stored = new Map((previous?.experiments || []).map((e) => [e.id, e]));
@@ -88,7 +89,13 @@ export function planExperimentWork(
 
   for (const spec of specs) {
     const prior = stored.get(spec.id);
-    if (prior && FINAL_VERDICTS.has(prior.verdict) && signatureOf(prior) === signatureOf(spec)) {
+    if (
+      prior &&
+      FINAL_VERDICTS.has(prior.verdict) &&
+      prior.daysMissing === 0 &&
+      prior.daysAfter === EXPERIMENT_WINDOW_DAYS &&
+      signatureOf(prior) === signatureOf(spec)
+    ) {
       reuse.push({ ...prior, hypothesis: spec.hypothesis });
       continue;
     }
@@ -105,7 +112,14 @@ export function planExperimentWork(
   let to: string | null = null;
   for (const spec of measure) {
     const specFrom = dayShift(spec.shippedOn, -EXPERIMENT_WINDOW_DAYS);
-    const specTo = dayShift(spec.shippedOn, EXPERIMENT_WINDOW_DAYS);
+    // La ventana del veredicto sigue siendo de 28 días, pero el archivo no puede contener días
+    // futuros. Contarlos en el tope expulsaba cambios maduros al publicar una fila nueva.
+    const afterTo = dayShift(spec.shippedOn, EXPERIMENT_WINDOW_DAYS);
+    const specTo = afterTo < today ? afterTo : today;
+    if (specFrom > specTo) {
+      kept.push(spec);
+      continue;
+    }
     const nextFrom = from && from < specFrom ? from : specFrom;
     const nextTo = to && to > specTo ? to : specTo;
     const span = Math.round((Date.parse(`${nextTo}T00:00:00Z`) - Date.parse(`${nextFrom}T00:00:00Z`)) / 86400000) + 1;
@@ -137,7 +151,7 @@ export async function refreshRevenuePlan(options: RefreshOptions = {}): Promise<
 
   // ---- el ledger de cambios ----
   const { specs, problems, file } = loadSpecs();
-  const work = planExperimentWork(specs, previous);
+  const work = planExperimentWork(specs, previous, today);
   const accumulators = startExperiments(work.measure);
   let archiveDaysRead = 0;
   if (work.measure.length && work.from && work.to) {
