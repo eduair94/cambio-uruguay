@@ -655,8 +655,8 @@ export const DEBT_REGIMES: readonly DebtRegime[] = Object.freeze([
   {
     label: 'Deuda privada',
     who: 'Bancos, financieras, tarjetas, estudios de cobranza.',
-    rule: 'Régimen civil y comercial, con plazos distintos según el título. Nada que ver con el tributario.',
-    to: '/saldar-deudas-uruguay',
+    rule: 'Régimen civil y comercial: cinco años para ejecutar y diez para la acción personal (Código Civil, arts. 1217 y 1216), y tres si lo que firmaste es un vale. Nada que ver con el tributario.',
+    to: '/prescripcion-de-deudas-privadas-uruguay',
   },
 ])
 

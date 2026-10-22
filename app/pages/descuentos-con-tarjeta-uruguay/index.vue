@@ -392,7 +392,10 @@
         </p>
         <p class="text-caption text-medium-emphasis">
           Datos de Bankos (bankos.uy). Este sitio no está afiliado a Bankos ni a los bancos
-          mencionados.
+          mencionados. Si llegaste buscando la app, acá está
+          <NuxtLink :to="localePath('/alternativa-a-bankos-uruguay')"
+            >en qué se diferencia de este mapa</NuxtLink
+          >, incluido lo que la app hace mejor.
         </p>
       </v-card-text>
     </v-card>

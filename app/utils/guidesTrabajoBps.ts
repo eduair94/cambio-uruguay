@@ -22,7 +22,7 @@ import type { Guide } from './guides'
 export const trabajoBpsGuides: readonly Guide[] = [
   {
     slug: 'me-quede-sin-trabajo-mutualista-fonasa-uruguay',
-    title: 'FONASA sin trabajo: cuánto dura la cobertura (2026)',
+    title: 'FONASA sin trabajo: hasta fin de mes (2026)',
     description:
       'Si te despiden, renunciás o termina el seguro de paro, FONASA cubre hasta el último día de ese mes; tus hijos, 12 meses más. Qué opciones quedan en 2026.',
     tag: 'FONASA',

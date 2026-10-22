@@ -531,12 +531,27 @@ const DEUDA_TITULO_LARGO = [
   'llegar-tarde-tolerancia-y-sanciones-uruguay',
   'me-certifique-subsidio-por-enfermedad-uruguay',
   'me-deben-el-sueldo-uruguay',
-  'me-quede-sin-trabajo-mutualista-fonasa-uruguay',
   'no-pagar-prestamo-e-irse-del-pais-uruguay',
   'trabajar-para-el-exterior-desde-uruguay',
 ]
 
 /**
+ * 15 → 14 el 2026-10-22: `me-quede-sin-trabajo-mutualista-fonasa-uruguay`, de nuevo la ÚNICA de las
+ * treinta y cinco guías de los dos pozos con la ruta libre de toda ventana de medición abierta —las
+ * otras treinta y cuatro están reservadas hasta entre el 29/10 y el 7/11 por las cuatro tandas de
+ * títulos y descripciones de guías de fines de septiembre—.
+ *
+ * Estaba ocho caracteres pasada —«FONASA sin trabajo: cuánto dura la cobertura (2026)» da 68 con la
+ * marca— y los pagaba con el defecto que este archivo documenta desde la primera corrida: la segunda
+ * mitad del título ANUNCIABA la pregunta («cuánto dura la cobertura») en vez de contestarla, y la
+ * respuesta quedaba del lado que el SERP recorta. La respuesta es una sola línea y está textual en la
+ * pregunta frecuente del BPS que el cuerpo ya cita: la cobertura llega hasta el último día del mes
+ * del cese. Ahora va eso en el título («FONASA sin trabajo: hasta fin de mes (2026)»), que queda
+ * justo en 60. El año se conserva porque no es decoración: `guidesFonasaSinTrabajo.test.ts` lo exige
+ * en el título desde la reescritura del 22/9, y con razón —la guía desmiente dos plazos que
+ * circulan y que no rigen en 2026—, así que los ocho caracteres salieron todos de la mitad que
+ * anunciaba en vez de contestar.
+ *
  * 16 → 15 el 2026-10-21: `ui-ur-bpc-diferencias`, que era de las dos listas a la vez y la única guía
  * del catálogo con la ruta libre de toda ventana de medición abierta (`npm run seo_debt`).
  *
@@ -546,7 +561,7 @@ const DEUDA_TITULO_LARGO = [
  * artículos: la UI se mueve todos los días, la UR una vez al mes y la BPC una vez al año. Eso ahora
  * va adelante y el título queda en 58.
  */
-const TITLE_OVER_BUDGET = 15
+const TITLE_OVER_BUDGET = 14
 
 /**
  * 89 → 77 el 2026-10-01: las doce más largas del catálogo, de 306 a 215 caracteres.

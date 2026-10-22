@@ -108,11 +108,9 @@ const DEUDA_SIN_TEMA = [
   '/apostillar-un-documento-uruguay',
   '/cambiar-de-mutualista-uruguay',
   '/comparar-plataformas-dolar-uruguay',
-  '/cuanto-sale-la-partida-de-nacimiento-uruguay',
   '/declarar-dinero-en-efectivo-uruguay',
   '/factura-de-ose-uruguay',
   '/factura-de-ute-uruguay',
-  '/garantia-de-alquiler-uruguay',
   '/grabacion-sin-consentimiento-uruguay',
   '/importar-a-uruguay-siendo-extranjero',
   '/prestamo-hipotecario-uruguay',
@@ -164,6 +162,28 @@ const DEUDA_SIN_TEMA = [
  * Sólo puede bajar: subirlo es publicar una página huérfana.
  */
 /**
+ * 16 → 14 el 2026-10-22: las DOS rutas de este pozo que hoy están libres de toda ventana de medición
+ * abierta y que además no son de un racimo. Las otras dos libres siguen siendo
+ * `/factura-de-ose-uruguay` y `/que-pasa-si-no-pago-antel`, y siguen esperando por lo que dice la
+ * nota de más abajo: su tercera hermana, `/factura-de-ute-uruguay`, se libera el 25/10 y entrar antes
+ * partiría el racimo de «los tres servicios del hogar con la misma gramática» en filas del libro de
+ * cambios medidas por separado.
+ *
+ * `/cuanto-sale-la-partida-de-nacimiento-uruguay` entra a `tramites-y-documentos-uruguay` por la
+ * regla de siempre —a donde ya vive su vecina más cercana—, y acá la vecindad es casi literal: el hub
+ * ya publica «Cuánto sale la cédula» y «Cuánto sale el pasaporte», los otros dos documentos que se
+ * piden en la misma ventanilla de Identificación Civil, y le faltaba el tercero.
+ *
+ * `/garantia-de-alquiler-uruguay` entra a `alquiler-y-vivienda-uruguay`, que es el tema que la nota
+ * del 21/10 ya le había adjudicado dejándole pendiente «mirarla junto con las otras páginas de
+ * garantía antes de elegirle el `resources`». Mirado: el hub lleva la GUÍA homónima del catálogo
+ * (`garantias-de-alquiler-uruguay`, en plural) y además `alquilar-sin-garantia-uruguay` y
+ * `deposito-de-alquiler-uruguay`, o sea que lo que explica la garantía ya estaba y lo que faltaba es
+ * lo único que ninguna de las tres hace: el precio. Es la misma separación que esta lista declaró
+ * para `/impuesto-temu-uruguay` el 20/10 —la guía explica, la página calcula— y por eso la etiqueta
+ * dice «Cuánto cuesta la garantía» y no repite el nombre de la guía: son dos URLs sobre el mismo
+ * nombre y no se las manda a disputar la misma consulta.
+ *
  * 17 → 16 el 2026-10-21: `/cambios-de-precio-uruguay` entra a `economia-y-mercado-uruguay`, y es
  * una de las CUATRO rutas de este pozo que hoy están libres de toda ventana de medición abierta
  * (`npm run seo_debt`). De esas cuatro es la única que además está libre en el pozo de al lado —sin
@@ -182,7 +202,7 @@ const DEUDA_SIN_TEMA = [
  * cohorte, y ésta es la que mide el mismo movimiento aviso por aviso. Es el vecino que le faltaba a
  * esas tres, no una página nueva en un tema ajeno.
  */
-const DEUDA_MAXIMA = 16
+const DEUDA_MAXIMA = 14
 
 describe('ninguna página de lectura queda fuera de todos los temas', () => {
   const sinTema = rootRoutes.filter(route => temasDeRuta(route).length === 0)

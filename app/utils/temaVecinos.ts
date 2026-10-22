@@ -48,8 +48,12 @@ export const TEMA_VECINOS_MAX_GRUPOS = 2
  * 24 → 25 el 2026-10-20: `alquiler-y-vivienda-uruguay` pasó a 26 recursos con
  * `/subsidio-de-alquiler-uruguay`. Sube SÓLO para seguir el tamaño del tema más grande; no es una
  * decisión de diseño del bloque.
+ *
+ * 25 → 26 el 2026-10-22: el mismo tema pasó a 27 recursos con `/garantia-de-alquiler-uruguay`, que
+ * estaba huérfana (`temaHuerfanas.test.ts`) y cuyo tema natural es éste. Misma razón de siempre: el
+ * tope sigue al tema, no al revés.
  */
-export const TEMA_VECINOS_MAX_LINKS = 25
+export const TEMA_VECINOS_MAX_LINKS = 26
 /**
  * Los términos son un complemento, y en el orden del tema van primero los más usados. Con 12, una
  * página en dos temas llegaba a 53 enlaces (`/historico`: 29 páginas + 24 términos); las páginas no

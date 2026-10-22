@@ -372,8 +372,17 @@ describe('el error que la página existe para evitar', () => {
     expect(labels).toMatch(/nacionales/i)
     expect(labels).toMatch(/departamentales/i)
     expect(labels).toMatch(/privada/i)
-    // La deuda privada ya tiene su página: hay que mandar ahí, no re-explicarla.
-    expect(DEBT_REGIMES.find(r => /privada/i.test(r.label))?.to).toBe('/saldar-deudas-uruguay')
+    // La deuda privada ya tiene su página: hay que mandar ahí, no re-explicarla. El destino cambió
+    // el 2026-10-22 de `/saldar-deudas-uruguay` a la página nueva: la regla era mandar a la página
+    // que desarrolla ESE régimen, y la de saldar deudas explica cómo negociar, no cuándo prescribe
+    // —que es la pregunta con la que se llega a este bloque y que esta misma fila contesta ahora
+    // con los dos plazos del Código Civil—. Negociar y saldar sigue enlazada desde la página nueva.
+    expect(DEBT_REGIMES.find(r => /privada/i.test(r.label))?.to).toBe(
+      '/prescripcion-de-deudas-privadas-uruguay'
+    )
+    // Y la fila ya no puede volver a quedarse sin el plazo, que era el agujero: el lector llegaba
+    // al régimen que más se pregunta y leía «plazos distintos según el título», sin número.
+    expect(DEBT_REGIMES.find(r => /privada/i.test(r.label))?.rule).toMatch(/cinco años/)
   })
 })
 

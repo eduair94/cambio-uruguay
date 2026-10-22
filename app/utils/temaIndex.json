@@ -465,6 +465,10 @@
           "label": "Primer alquiler: gastos y trámites"
         },
         {
+          "to": "/garantia-de-alquiler-uruguay",
+          "label": "Cuánto cuesta la garantía"
+        },
+        {
           "to": "/alquilar-sin-recibo-de-sueldo",
           "label": "Alquilar sin recibo de sueldo"
         },
@@ -905,6 +909,10 @@
         {
           "to": "/prescripcion-de-deudas-con-el-estado-uruguay",
           "label": "Deudas con el Estado"
+        },
+        {
+          "to": "/prescripcion-de-deudas-privadas-uruguay",
+          "label": "Cuándo prescribe una deuda privada"
         },
         {
           "to": "/conviene-comprar-en-cuotas",
@@ -1626,6 +1634,10 @@
         {
           "to": "/cuanto-sale-el-pasaporte-uruguayo",
           "label": "Cuánto sale el pasaporte"
+        },
+        {
+          "to": "/cuanto-sale-la-partida-de-nacimiento-uruguay",
+          "label": "Cuánto sale la partida de nacimiento"
         },
         {
           "to": "/mudarme-a-uruguay-residencia",

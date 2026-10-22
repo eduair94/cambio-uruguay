@@ -1831,6 +1831,65 @@
         "rehabilitacion cheques bcu"
       ],
       "hypothesis": "La pagina estaba en el pozo de enlaces de contexto: ninguna otra pagina la enlazaba desde su contenido. El enlace entra desde /salir-del-clearing el dia anotado en enlacesDeContexto.test.ts (su fila cerro el 20/10), en el parrafo que ahora nombra el tercer registro que esa pagina no nombraba, el de infractores del BCU por cheques sin fondos (Decreto-Ley 14.412, art. 66), del que no se sale con el tiempo sino pidiendo la rehabilitacion (art. 64). El contenido de /cheques-uruguay no cambia; se espera que recibir un enlace interno desde una pagina de la misma familia le sume porcion en sus consultas."
+    },
+    {
+      "id": "prescripcion-de-deudas-privadas",
+      "shippedOn": "2026-10-22",
+      "routes": [
+        "/prescripcion-de-deudas-privadas-uruguay"
+      ],
+      "queries": [
+        "cuando prescribe una deuda uruguay",
+        "prescripcion de deudas privadas uruguay",
+        "cuando prescribe una deuda de tarjeta de credito uruguay",
+        "prescripcion de un vale uruguay",
+        "articulo 1216 codigo civil uruguay",
+        "deuda vieja estudio de cobranza uruguay"
+      ],
+      "hypothesis": "Pagina nueva. El sitio ya contestaba la prescripcion tributaria y en esa misma pagina la deuda privada figura como uno de los tres regimenes que la gente mezcla, con una sola linea y sin numero: «regimen civil y comercial, con plazos distintos segun el titulo». El plazo no estaba en ninguna parte del sitio, asi que la pagina que separa los tres regimenes dejaba al lector a mitad de camino justo en el regimen que mas se pregunta, y su boton de deuda privada lo mandaba a negociar deudas, que explica como negociar y no cuando prescribe. Esta pagina publica los seis plazos con su articulo y su cita textual, contrastados contra impo.com.uy el 22/10: ejecutar cinco anos y accion personal diez (Codigo Civil 1217 y 1216, redaccion de la Ley 19.889 art. 463), el vale tres (Decreto-Ley 14.701 art. 116 por remision del art. 125), los atrasos de intereses cuatro (art. 1222) y el cheque seis meses (Decreto-Ley 14.412 art. 68). Y las dos cosas que invierten la conclusion: que no opera de oficio (art. 1191) y que reconocer la deuda la interrumpe (art. 1240). Demanda de intencion local con respuesta de dato, no conversion: se espera porcion en las consultas de plazo, que hoy no tienen pagina propia en el sitio."
+    },
+    {
+      "id": "fonasa-sin-trabajo-respuesta-en-el-titulo",
+      "shippedOn": "2026-10-22",
+      "routes": [
+        "/guias/me-quede-sin-trabajo-mutualista-fonasa-uruguay"
+      ],
+      "queries": [
+        "fonasa sin trabajo",
+        "cuanto dura el fonasa si me despiden",
+        "hasta cuando tengo mutualista si renuncio",
+        "pierdo fonasa al terminar el seguro de paro"
+      ],
+      "hypothesis": "Solo el titulo. Estaba ocho caracteres pasado del presupuesto del SERP (68 con la marca) y los pagaba anunciando la pregunta en vez de contestarla: «cuanto dura la cobertura». La respuesta es una linea y esta textual en la pregunta frecuente del BPS que el cuerpo ya cita, la cobertura llega hasta el ultimo dia del mes del cese, asi que el titulo pasa a «FONASA sin trabajo: hasta fin de mes (2026)» y queda en 60. El ano se conserva porque la guia desmiente dos plazos que circulan y no rigen. Ni la descripcion ni el cuerpo cambian. Era la unica de las treinta y cinco guias de los dos pozos de snippet con la ruta libre de toda ventana abierta."
+    },
+    {
+      "id": "dos-huerfanas-entran-a-su-tema",
+      "shippedOn": "2026-10-22",
+      "routes": [
+        "/cuanto-sale-la-partida-de-nacimiento-uruguay",
+        "/garantia-de-alquiler-uruguay"
+      ],
+      "queries": [
+        "cuanto sale la partida de nacimiento uruguay",
+        "partida de nacimiento digital uruguay",
+        "cuanto cuesta la garantia de alquiler uruguay",
+        "garantia de alquiler contaduria general de la nacion"
+      ],
+      "hypothesis": "Enlazado interno, sin tocar contenido ni snippet de ninguna de las dos. Las dos estaban huerfanas de tema (temaHuerfanas.test.ts): una pagina sin tema no recibe NINGUN enlace del bloque «Mas sobre este tema», porque el vinculo es reciproco por construccion y ella no esta en la relacion. La partida entra a tramites-y-documentos-uruguay, donde ya viven «Cuanto sale la cedula» y «Cuanto sale el pasaporte», los otros dos documentos de la misma ventanilla. La garantia entra a alquiler-y-vivienda-uruguay, que ya lleva la guia homonima en plural y las de deposito y alquilar sin garantia: lo que explica la garantia estaba y faltaba lo unico que ninguna de las tres hace, el precio. Se espera que recibir los enlaces reciprocos del tema les sume porcion en sus propias consultas."
+    },
+    {
+      "id": "alternativa-a-bankos-enlace-desde-el-mapa",
+      "shippedOn": "2026-10-22",
+      "routes": [
+        "/alternativa-a-bankos-uruguay"
+      ],
+      "queries": [
+        "bankos",
+        "bankos uruguay",
+        "alternativa a bankos",
+        "descuentos con tarjeta sin app uruguay"
+      ],
+      "hypothesis": "Enlazado interno; el contenido de la pagina medida no cambia. Estaba en el pozo de enlaces de contexto: ninguna otra pagina la enlazaba desde su contenido. El enlace entra desde /descuentos-con-tarjeta-uruguay, que no tiene ventana abierta y cuyo lector lo necesita de la manera mas directa que hubo en ese pozo: esa pagina se presenta diciendo que los datos son de la app Bankos y nombra a Bankos dos veces en su parrafo de atribucion, sin decir nunca en que se diferencia de ella. Quien llega por el nombre de la app queda con la pregunta hecha y sin a donde ir, teniendo el sitio una pagina que la contesta y que ademas declara lo que la app hace mejor. Se agrego una frase en ese parrafo, donde Bankos ya estaba nombrado."
     }
   ]
 }

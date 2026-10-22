@@ -147,7 +147,6 @@ const SIN_LECTOR_QUE_LA_NECESITE = [
  * no cuenta como arreglo aunque ponga el test en verde.
  */
 const DEUDA_SIN_ENLACE = [
-  '/alternativa-a-bankos-uruguay',
   '/apostillar-un-documento-uruguay',
   '/apps-utiles-uruguay',
   '/fondo-de-solidaridad-uruguay',
@@ -160,6 +159,18 @@ const DEUDA_SIN_ENLACE = [
 ]
 
 /** El trinquete. Sólo puede bajar: subirlo es publicar una página que nadie enlaza. */
+// 10 → 9 el 2026-10-22: `/alternativa-a-bankos-uruguay`, la única de las diez con la ruta libre de
+// toda ventana de medición abierta (`npm run seo_debt`), y con el ORIGEN también libre, que es lo que
+// bloqueó a varias candidatas de los días anteriores.
+//
+// El enlace sale de `/descuentos-con-tarjeta-uruguay`, y lo necesita su propio lector de la manera
+// más directa que hubo en esta lista: el párrafo de atribución de esa página NOMBRA a Bankos dos
+// veces —«Datos de Bankos (bankos.uy)», «no está afiliado a Bankos»— y la página entera se presenta
+// como «los datos son de la app Bankos», sin decir nunca en qué se diferencia de ella. Quien llega
+// por el nombre de la app —que es la consulta de marca que trae a esa página— queda con la pregunta
+// hecha y sin a dónde ir, teniendo el sitio una página que la contesta y que además declara lo que
+// la app hace mejor. No se le tocó el snippet ni el resto del cuerpo: una frase en el párrafo donde
+// Bankos ya estaba nombrado.
 // 12 → 10 el 2026-10-21 (segunda corrida del día), las dos desde páginas cuyo lector las necesita.
 // `/certificado-unico-dgi-uruguay` salió sin ir a buscarla: la guía nueva
 // `/guias/como-saber-si-tengo-deudas-uruguay` la necesita en la sección de BPS y DGI, porque quien
@@ -306,7 +317,7 @@ const DEUDA_SIN_ENLACE = [
 // por aviso es justo lo que lista la página enlazada, y la relación ya era recíproca del otro lado:
 // `/cambios-de-precio-uruguay` cierra enlazando a las tres `/evolucion-precio-*` como «lo que sí
 // contesta el nivel del mercado». Lo que faltaba era la vuelta.
-const DEUDA_MAXIMA = 10
+const DEUDA_MAXIMA = 9
 
 describe('ninguna página de lectura queda sin un enlace de contexto', () => {
   it('las páginas sin enlace son exactamente las declaradas', () => {

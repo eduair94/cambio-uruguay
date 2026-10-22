@@ -1745,6 +1745,29 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // La página de al lado separa los tres regímenes de prescripción y al llegar al privado
+        // —el que más se pregunta— sólo podía decir «plazos distintos según el título», porque el
+        // plazo no estaba en ninguna parte del sitio. Esta lo contesta: los dos relojes del Código
+        // Civil (ejecutar y acción personal) más el del vale, que es el documento que se firma en
+        // una financiera y prescribe antes que los dos.
+        to: '/prescripcion-de-deudas-privadas-uruguay',
+        labelKey: 'nav.prescripcionDeudasPrivadas',
+        icon: 'mdi-file-clock-outline',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'cuando prescribe una deuda',
+          'prescripcion de deudas privadas uruguay',
+          'prescripcion deuda tarjeta de credito',
+          'prescripcion de un vale o pagare',
+          'articulo 1216 codigo civil',
+          'articulo 1217 codigo civil',
+          'deuda vieja estudio de cobranza',
+          'prescribe una deuda con el banco',
+        ],
+      },
+      {
         // Las franjas del IASS ya estaban en el sitio, pero dentro de
         // `/impuestos-inversiones-uruguay`, en una sección que su propio texto abre diciendo que
         // «el IASS no grava inversiones». El dato estaba bien y estaba donde quien lo busca no

@@ -493,6 +493,14 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/primer-alquiler-uruguay',
       },
       {
+        // La guía homónima del catálogo (`garantias-de-alquiler-uruguay`, arriba) explica los tipos;
+        // esta página es la que CALCULA el precio y convierte los topes en UR a pesos del día. Dos
+        // URLs sobre el mismo nombre, y las etiquetas se separan por eso, igual que /impuesto-temu-*.
+        label: 'Cuánto cuesta la garantía',
+        description: '3 % del alquiler por mes a cada parte y el tope de 18 UR, en pesos de hoy.',
+        to: '/garantia-de-alquiler-uruguay',
+      },
+      {
         label: 'Alquilar sin recibo de sueldo',
         description: 'Qué garantías aceptan a independientes y cómo presentarte.',
         to: '/alquilar-sin-recibo-de-sueldo',
@@ -1007,6 +1015,11 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Deudas con el Estado',
         description: 'Cuándo prescriben las deudas con organismos públicos.',
         to: '/prescripcion-de-deudas-con-el-estado-uruguay',
+      },
+      {
+        label: 'Cuándo prescribe una deuda privada',
+        description: '5 años para ejecutar, 10 para demandar y 3 si firmaste un vale.',
+        to: '/prescripcion-de-deudas-privadas-uruguay',
       },
       {
         label: '¿Cuotas o contado?',
@@ -1737,6 +1750,11 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Cuánto sale el pasaporte',
         description: 'Costo, plazos y requisitos.',
         to: '/cuanto-sale-el-pasaporte-uruguayo',
+      },
+      {
+        label: 'Cuánto sale la partida de nacimiento',
+        description: 'Digital y sin costo desde 2022; antes de eso es manuscrita y tiene arancel.',
+        to: '/cuanto-sale-la-partida-de-nacimiento-uruguay',
       },
       {
         label: 'Mudarse a Uruguay',
