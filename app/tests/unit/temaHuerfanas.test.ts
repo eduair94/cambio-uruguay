@@ -105,7 +105,6 @@ const FUERA_DE_TEMA_POR_DISENO = [
  */
 const DEUDA_SIN_TEMA = [
   '/accidente-de-trabajo-uruguay',
-  '/apostillar-un-documento-uruguay',
   '/cambiar-de-mutualista-uruguay',
   '/comparar-plataformas-dolar-uruguay',
   '/declarar-dinero-en-efectivo-uruguay',
@@ -202,7 +201,34 @@ const DEUDA_SIN_TEMA = [
  * cohorte, y ésta es la que mide el mismo movimiento aviso por aviso. Es el vecino que le faltaba a
  * esas tres, no una página nueva en un tema ajeno.
  */
-const DEUDA_MAXIMA = 14
+/**
+ * 14 → 13 el 2026-10-23: `/apostillar-un-documento-uruguay` entra a `tramites-y-documentos-uruguay`.
+ * `npm run seo_debt` imprimió 7 rutas libres entre las 85 de los cinco pozos, cinco de ellas de
+ * este pozo, y ésta es una de las DOS que además está libre en el de al lado —sin enlace de
+ * contexto—, así que sus dos deudas se cierran en la misma corrida en vez de dejarla medio
+ * arreglada, que es el criterio que esta lista aplica desde `/impuesto-temu-uruguay` el 20/10.
+ *
+ * De esas dos se eligió ésta y no `/grabacion-sin-consentimiento-uruguay` por el ORIGEN, que es lo
+ * que decide cuando el destino está libre: las dos únicas páginas del sitio que hablan de grabar
+ * —`/denunciar-ruidos-molestos-uruguay` y `/derechos-consumidor-compras-online`— están reservadas
+ * hasta el 17/11 y el 24/10, y además ninguna de las dos plantea el problema de esa página (grabar
+ * el ruido como prueba no es que te hayan grabado a vos), así que el enlace sería relleno.
+ *
+ * El tema es el de siempre —a donde ya vive su vecina más cercana— y acá la vecina es el paso
+ * siguiente: el hub ya publica los cuatro documentos que se apostillan (antecedentes judiciales,
+ * cédula, pasaporte y la partida de nacimiento que entró el 22/10) y ninguno decía qué se hace
+ * cuando el papel tiene que valer afuera. El encabezado de `utils/apostille.ts` describe el mismo
+ * hueco al revés: hasta que nació esa página, la única mención del arancel en todo el sitio era
+ * una línea del FAQ de la partida.
+ *
+ * Las otras tres libres de este pozo no entraron: `/factura-de-ose-uruguay` y
+ * `/que-pasa-si-no-pago-antel` siguen esperando a su tercera hermana `/factura-de-ute-uruguay`
+ * (reservada hasta el 25/10) por lo que dice la nota del 19/10 sobre el racimo, y
+ * `/temas-de-dinero-reddit` es una página sobre lo que se pregunta en Reddit, no sobre un tema del
+ * sitio: elegirle un hub pide mirarla junto con `/estadisticas-reddit`, que está declarada fuera de
+ * tema por diseño.
+ */
+const DEUDA_MAXIMA = 13
 
 describe('ninguna página de lectura queda fuera de todos los temas', () => {
   const sinTema = rootRoutes.filter(route => temasDeRuta(route).length === 0)

@@ -1641,6 +1641,10 @@
           "label": "Cuánto sale la partida de nacimiento"
         },
         {
+          "to": "/apostillar-un-documento-uruguay",
+          "label": "Apostillar un documento"
+        },
+        {
           "to": "/mudarme-a-uruguay-residencia",
           "label": "Mudarse a Uruguay"
         },
