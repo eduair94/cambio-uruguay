@@ -40,7 +40,13 @@
           <article class="guide-article">
             <template v-for="(section, i) in guide.sections" :key="i">
               <section class="mb-6">
-                <h2 class="text-h5 font-weight-bold mb-3">{{ section.heading }}</h2>
+                <h2
+                  :id="sectionIds[i]"
+                  class="guide-anchor text-h5 font-weight-bold mb-3"
+                  tabindex="-1"
+                >
+                  {{ section.heading }}
+                </h2>
                 <p class="text-body-1 text-grey-lighten-1 guide-prose">{{ section.body }}</p>
                 <div v-if="section.table" class="table-scroll mt-3">
                   <table class="guide-table cu-mobile-cards">
@@ -66,7 +72,11 @@
                 </div>
                 <!-- Contextual links: the tool/page this very section talks about, clickable where
                    the reader is reading about it (the body itself is plain text). -->
-                <div v-if="section.links?.length" class="d-flex flex-wrap ga-2 mt-3">
+                <div
+                  v-if="section.links?.length"
+                  class="d-flex flex-wrap ga-2 mt-3"
+                  data-link-area="guide_section"
+                >
                   <VChip
                     v-for="link in section.links"
                     :key="link.to"
@@ -81,6 +91,22 @@
                   </VChip>
                 </div>
               </section>
+              <!-- Native disclosure keeps the first answer visible and works before hydration. -->
+              <details v-if="i === 0 && contents.length > 1" class="guide-contents mb-6">
+                <summary>{{ readingT('guideReading.contents') }}</summary>
+                <nav
+                  :aria-label="readingT('guideReading.contents')"
+                  data-link-area="guide_contents"
+                >
+                  <ul>
+                    <li v-for="(item, index) in contents" :key="item.id">
+                      <a :href="`#${item.id}`" @click="trackSectionJump(item.kind, index)">
+                        {{ item.label }}
+                      </a>
+                    </li>
+                  </ul>
+                </nav>
+              </details>
               <!-- La unidad editorial, DESPUÉS de la primera sección: la respuesta de la guía va
                    primero y el anuncio se ve antes de que el lector que ya tiene lo suyo se vaya.
                    Es una por guía (más el cierre del layout = el tope de `maxAdSlots('normal')`),
@@ -106,7 +132,9 @@
 
           <!-- Procedural steps (also emitted as HowTo schema) -->
           <section v-if="guide.steps?.length" class="guide-steps mb-2">
-            <h2 class="text-h5 font-weight-bold mb-3">Paso a paso</h2>
+            <h2 id="paso-a-paso" class="guide-anchor text-h5 font-weight-bold mb-3" tabindex="-1">
+              {{ readingT('guideReading.steps') }}
+            </h2>
             <ol class="guide-steps-list">
               <li v-for="(step, i) in guide.steps" :key="i" class="mb-3">
                 <span class="font-weight-bold">{{ step.name }}.</span>
@@ -117,7 +145,13 @@
 
           <!-- FAQ (also emitted as FAQPage schema) -->
           <section v-if="guide.faqs?.length" class="guide-faqs mb-2">
-            <h2 class="text-h5 font-weight-bold mb-3">Preguntas frecuentes</h2>
+            <h2
+              id="preguntas-frecuentes"
+              class="guide-anchor text-h5 font-weight-bold mb-3"
+              tabindex="-1"
+            >
+              {{ readingT('guideReading.faqs') }}
+            </h2>
             <VExpansionPanels variant="accordion" class="guide-faq-panels">
               <VExpansionPanel v-for="(faq, i) in guide.faqs" :key="i">
                 <VExpansionPanelTitle class="font-weight-medium">
@@ -132,9 +166,13 @@
 
           <!-- Sources: primary references for any legal figure stated above -->
           <VCard v-if="guide.sources?.length" variant="flat" class="guide-sources mt-8 pa-5">
-            <h2 class="text-subtitle-1 font-weight-bold mb-3">
+            <h2
+              id="fuentes"
+              class="guide-anchor text-subtitle-1 font-weight-bold mb-3"
+              tabindex="-1"
+            >
               <VIcon start size="small" color="primary">mdi-link-variant</VIcon>
-              Fuentes
+              {{ readingT('guideReading.sources') }}
             </h2>
             <ul class="guide-sources-list">
               <li v-for="(source, i) in guide.sources" :key="i">
@@ -148,69 +186,30 @@
             </ul>
           </VCard>
 
-          <!-- CTA to the comparator -->
-          <VCard class="cta-guide my-8 pa-6 text-center" variant="flat">
-            <h2 class="text-h6 font-weight-bold mb-2 text-white">{{ t('guias.ctaTitle') }}</h2>
-            <p class="text-body-2 text-grey-lighten-1 mb-4">{{ t('guias.ctaText') }}</p>
-            <VBtn :to="localePath('/')" color="primary" variant="elevated">
-              <VIcon start>mdi-chart-line</VIcon>
-              {{ t('guias.ctaButton') }}
-            </VBtn>
-          </VCard>
-
-          <!-- Internal links: related pages -->
-          <VCard variant="flat" class="related-links pa-5">
-            <h2 class="text-subtitle-1 font-weight-bold mb-3">{{ t('guias.relatedTitle') }}</h2>
-            <div class="d-flex flex-wrap ga-2">
-              <VChip
-                v-if="hub"
-                :to="localePath(`/temas/${hub.slug}`)"
-                color="primary"
-                variant="flat"
-                size="small"
-                link
-              >
-                <VIcon start size="small">{{ hub.icon }}</VIcon>
-                Tema: {{ hub.title }}
-              </VChip>
-              <VChip :to="localePath('/')" color="primary" variant="tonal" size="small" link>
-                <VIcon start size="small">mdi-home</VIcon>
-                {{ t('guias.linkHome') }}
-              </VChip>
-              <VChip
-                :to="localePath('/comparar')"
-                color="primary"
-                variant="tonal"
-                size="small"
-                link
-              >
-                <VIcon start size="small">mdi-chart-multiple</VIcon>
-                {{ t('guias.linkComparar') }}
-              </VChip>
-              <VChip
-                :to="localePath('/dolar/montevideo')"
-                color="primary"
-                variant="tonal"
-                size="small"
-                link
-              >
-                <VIcon start size="small">mdi-map-marker</VIcon>
-                {{ t('guias.linkMontevideo') }}
-              </VChip>
-              <VChip
-                v-for="link in guide.related ?? []"
-                :key="link.to"
-                :to="localePath(link.to)"
-                color="primary"
-                variant="tonal"
-                size="small"
-                link
-              >
-                <VIcon start size="small">mdi-link-variant</VIcon>
-                {{ link.label }}
-              </VChip>
-            </div>
-          </VCard>
+          <!-- The guide's own recommendations precede its topic directory. -->
+          <nav
+            class="guide-next mt-8"
+            aria-labelledby="seguir-leyendo"
+            data-link-area="guide_next_steps"
+          >
+            <h2 id="seguir-leyendo" class="guide-anchor text-h6 font-weight-bold" tabindex="-1">
+              {{ readingT('guideReading.next') }}
+            </h2>
+            <ul v-if="nextSteps.length" class="guide-next-list">
+              <li v-for="link in nextSteps" :key="link.to">
+                <NuxtLink :to="localePath(link.to)">
+                  <span>{{ link.label }}</span>
+                  <VIcon size="18" aria-hidden="true">mdi-arrow-right</VIcon>
+                </NuxtLink>
+              </li>
+            </ul>
+            <NuxtLink v-if="hub" :to="localePath(`/temas/${hub.slug}`)" class="guide-topic-link">
+              {{ readingT('guideReading.topic', { topic: hub.title }) }}
+            </NuxtLink>
+            <NuxtLink v-else :to="localePath('/guias')" class="guide-topic-link">
+              {{ readingT('guideReading.all') }}
+            </NuxtLink>
+          </nav>
         </VCol>
       </VRow>
     </VContainer>
@@ -220,8 +219,11 @@
 <script setup lang="ts">
 import { adDensityForPath } from '~/utils/ads'
 import { authorReference } from '~/utils/authorEntity'
+import { measurementContext, measurementPath } from '~/utils/engagementMeasurement'
 import { hubOfGuide } from '~/utils/guideHubs'
 import { getGuide } from '~/utils/guides'
+import { guideNextSteps, guideSectionIds } from '~/utils/guideReading'
+import { guideReadingMessages } from '~/utils/guideReadingMessages'
 
 // Reject unknown slugs at the route guard so they 404 (on SSR and client nav)
 // without partially rendering this component. Nuxt extracts this guard into
@@ -234,6 +236,7 @@ definePageMeta({
 })
 
 const { t, locale } = useI18n()
+const { t: readingT } = useI18n({ useScope: 'local', messages: guideReadingMessages })
 const localePath = useLocalePath()
 const route = useRoute()
 
@@ -242,6 +245,37 @@ const guide = computed(() => getGuide(slug.value))
 // The topic hub this guide belongs to, if any — the spoke → hub backlink.
 const hub = computed(() => hubOfGuide(slug.value))
 const adsOn = computed(() => adDensityForPath(route.path) !== 'none')
+const sectionIds = computed(() => guideSectionIds(guide.value?.sections ?? []))
+const nextSteps = computed(() =>
+  guide.value ? guideNextSteps(guide.value, hub.value?.resources) : []
+)
+const contents = computed(() => {
+  const current = guide.value
+  if (!current) return []
+  const items = current.sections.map((section, index) => ({
+    id: sectionIds.value[index]!,
+    label: section.heading,
+    kind: 'section',
+  }))
+  if (current.steps?.length)
+    items.push({ id: 'paso-a-paso', label: readingT('guideReading.steps'), kind: 'steps' })
+  if (current.faqs?.length)
+    items.push({ id: 'preguntas-frecuentes', label: readingT('guideReading.faqs'), kind: 'faqs' })
+  if (current.sources?.length)
+    items.push({ id: 'fuentes', label: readingT('guideReading.sources'), kind: 'sources' })
+  items.push({ id: 'seguir-leyendo', label: readingT('guideReading.next'), kind: 'next_steps' })
+  return items
+})
+const track = useTrack()
+function trackSectionJump(sectionKind: string, sectionIndex: number) {
+  const path = measurementPath(route)
+  if (!path || !import.meta.client) return
+  track('guide_section_jump', {
+    ...measurementContext(path, location.origin),
+    section_kind: sectionKind,
+    section_index: sectionIndex,
+  })
+}
 
 // Belt-and-suspenders: `validate` already 404s unknown slugs, but guard the
 // setup too so the template's `v-if` never renders an undefined guide.
@@ -446,14 +480,6 @@ useHead({
   text-decoration: underline;
 }
 
-/* Readable CTA on dark theme (avoid Vuetify outlined color tinting the text) */
-.cta-guide {
-  background: rgba(33, 150, 243, 0.1);
-  border: 1px solid rgba(33, 150, 243, 0.28);
-  border-radius: 12px;
-}
-
-.related-links,
 .guide-sources {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -479,5 +505,71 @@ useHead({
 }
 .source-publisher {
   color: rgba(var(--v-theme-on-surface), 0.6);
+}
+
+.guide-anchor {
+  scroll-margin-top: 88px;
+}
+
+.guide-contents {
+  padding-block: 8px;
+  border-block: 1px solid rgba(var(--v-theme-on-surface), 0.16);
+}
+
+.guide-contents summary {
+  padding-block: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.guide-contents ul,
+.guide-next-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guide-contents a,
+.guide-next a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding-block: 10px;
+  color: rgb(var(--v-theme-link));
+  line-height: 1.5;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  overflow-wrap: anywhere;
+}
+
+.guide-contents a:focus-visible,
+.guide-contents summary:focus-visible,
+.guide-next a:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-link));
+  outline-offset: 4px;
+}
+
+.guide-next {
+  padding-block: 24px;
+  border-block: 1px solid rgba(var(--v-theme-on-surface), 0.16);
+}
+
+.guide-next h2 {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.guide-next-list a {
+  justify-content: space-between;
+  gap: 16px;
+  font-weight: 600;
+}
+
+.guide-next-list .v-icon {
+  flex-shrink: 0;
+}
+
+.guide-topic-link {
+  margin-top: 16px;
 }
 </style>

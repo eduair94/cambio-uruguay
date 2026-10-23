@@ -41,6 +41,7 @@
     "sync_search_demand": "ts-node sync_search_demand.ts",
     "probe_demand": "ts-node scripts/oneoff/probe_demand.ts",
     "ga4_probe": "ts-node scripts/oneoff/ga4_probe.ts",
+    "retention_report": "ts-node scripts/oneoff/retention_report.ts",
     "sync_chair_tiers": "ts-node sync_chair_tiers.ts",
     "sync_chairs": "ts-node sync_chairs.ts",
     "sync_motos": "ts-node sync_motos.ts",

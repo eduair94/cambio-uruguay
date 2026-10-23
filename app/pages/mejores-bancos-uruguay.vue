@@ -10,38 +10,51 @@
 
     <!-- Hero -->
     <VCard class="overflow-hidden mb-5 hero-card" elevation="8">
-      <div class="hero pa-6 pa-md-8">
+      <div class="hero on-dark pa-4 pa-md-6">
         <p class="hero-eyebrow">Tier list · Actualizada en agosto de 2026</p>
         <h1 class="hero-title">
           Los mejores bancos de Uruguay
           <span class="hero-title-accent">(y las fintech que ya les compiten)</span>
         </h1>
-        <p class="hero-lead">
-          Cada tanto en Reddit reaparece el clásico hilo de los “peores bancos de Uruguay”. En vez
-          de sumar bronca, dimos vuelta la pregunta: <strong>¿cuál conviene?</strong> Rankeamos
-          {{ BANKS.length }} bancos y fintech con datos —reseñas reales, comisiones, atención y
-          letra chica— y una rúbrica transparente que <em>vos</em> podés reconfigurar.
-        </p>
-        <div class="hero-meta">
-          <a :href="redditUrl" target="_blank" rel="noopener noreferrer" class="hero-link">
-            <VIcon size="15" class="mr-1">mdi-reddit</VIcon>Ver el hilo original en r/Burises
-          </a>
-          <div class="hero-spoiler">
-            <VIcon size="16" class="mr-2">mdi-alert-decagram-outline</VIcon>
-            <span>
-              Spoiler: con criterios parejos, <strong>ninguno llega a S</strong>. La banca uruguaya
-              tiene techo.
-            </span>
-          </div>
-        </div>
-        <div class="d-flex justify-start justify-md-end mt-4">
-          <ShareButtons text="Tier list de los mejores bancos de Uruguay 2026" />
-        </div>
+        <p class="hero-lead">{{ decisionCopy.lead }}</p>
       </div>
     </VCard>
 
+    <section class="bank-shortlist mb-5" aria-labelledby="bank-shortlist-title">
+      <div class="d-flex flex-wrap align-center justify-space-between ga-2">
+        <h2 id="bank-shortlist-title" class="text-h6">{{ decisionCopy.results }}</h2>
+        <a href="#bank-criteria" class="bank-inline-link">{{ decisionCopy.criteria }}</a>
+      </div>
+      <ol class="bank-shortlist-list">
+        <li v-for="r in rankedFichas.slice(0, 3)" :key="r.entity.id">
+          <button
+            type="button"
+            :aria-expanded="openId === r.entity.id"
+            data-cta="bank_shortlist_profile"
+            @click="openFicha(r.entity.id)"
+          >
+            <span class="bank-shortlist-name">{{ r.entity.name }}</span>
+            <span>{{ r.score }}/100</span>
+            <span class="bank-inline-link">{{ decisionCopy.details }}</span>
+          </button>
+        </li>
+      </ol>
+      <p class="text-body-2 text-medium-emphasis mt-2 mb-0">{{ decisionCopy.resultHint }}</p>
+      <div class="d-flex flex-wrap align-center justify-space-between ga-2 mt-2">
+        <a
+          :href="redditUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="bank-inline-link text-body-2"
+        >
+          Ver el hilo original en r/Burises
+        </a>
+        <ShareButtons text="Tier list de los mejores bancos de Uruguay 2026" />
+      </div>
+    </section>
+
     <!-- Controls -->
-    <VCard variant="flat" class="controls-card pa-4 pa-sm-5 mb-5">
+    <VCard id="bank-criteria" variant="flat" class="controls-card pa-4 pa-sm-5 mb-5">
       <div class="d-flex align-center ga-2 mb-2">
         <VIcon size="18" color="primary">mdi-tune-variant</VIcon>
         <span class="text-subtitle-2 font-weight-bold">Armá tu tier list</span>
@@ -138,6 +151,40 @@
           </TransitionGroup>
         </div>
       </div>
+    </section>
+
+    <section
+      class="bank-decision mb-8"
+      aria-labelledby="bank-decision-title"
+      data-link-area="bank_decision"
+    >
+      <h2 id="bank-decision-title" class="section-heading">{{ decisionCopy.decision }}</h2>
+      <p class="bank-decision-lead">{{ decisionCopy.decisionLead }}</p>
+      <div v-for="item in bankDecisionLinks" :key="item.id" class="bank-decision-row">
+        <h3 class="text-subtitle-1 font-weight-bold">{{ decisionCopy[item.id].title }}</h3>
+        <div>
+          <p>{{ decisionCopy[item.id].body }}</p>
+          <NuxtLink :to="localePath(item.to)" class="bank-inline-link">
+            {{ decisionCopy[item.id].action }}
+          </NuxtLink>
+        </div>
+      </div>
+      <details class="bank-decision-sources">
+        <summary>{{ decisionCopy.sources }}</summary>
+        <ul>
+          <li v-for="source in bankDecisionSources" :key="source.id">
+            <a
+              :href="source.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="bank-inline-link"
+            >
+              {{ decisionCopy[source.id] }}
+            </a>
+          </li>
+        </ul>
+        <p class="text-caption text-medium-emphasis">{{ decisionCopy.reviewed }}</p>
+      </details>
     </section>
 
     <!-- Methodology -->
@@ -619,7 +666,6 @@
 import { marked } from 'marked'
 import DOMPurify from 'isomorphic-dompurify'
 import {
-  BANKS,
   BANK_RUBRIC,
   PROFILE_PRESETS,
   KIND_LABELS,
@@ -634,6 +680,11 @@ import {
 } from '~/utils/bankTierlist'
 import { monoStyle, monogram, readableOn } from '~/utils/brandColors'
 import { REDDIT_BANK_IDS } from '~/utils/redditSentiment'
+import {
+  bankDecisionLinks,
+  bankDecisionSources,
+  bankDecisionMessages,
+} from '~/utils/bankDecisionGuide'
 
 const localePath = useLocalePath()
 const redditUrl = 'https://www.reddit.com/r/Burises/comments/1ut5srl/top_peores_bancos_de_uruguay/'
@@ -746,6 +797,9 @@ function emptyCaption(t: TierId): string {
 
 // --- recent news + AI analysis (client-lazy; the grounded AI call never blocks SSR) ---
 const { locale } = useI18n()
+const decisionCopy = computed(
+  () => bankDecisionMessages[locale.value as 'es' | 'en' | 'pt'] ?? bankDecisionMessages.es
+)
 
 interface BriefingHeadline {
   title: string
@@ -966,6 +1020,82 @@ useHead(() => ({
 </script>
 
 <style scoped>
+.bank-shortlist-list {
+  margin: 0.5rem 0 0;
+  padding-left: 1.5rem;
+}
+.bank-shortlist-list li {
+  padding-left: 0.25rem;
+  border-bottom: 1px solid rgba(var(--v-border-color), 0.16);
+}
+.bank-shortlist-list button {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.5rem 0;
+  text-align: left;
+}
+.bank-shortlist-name {
+  flex: 1 1 9rem;
+  font-weight: 700;
+}
+.bank-inline-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: rgb(var(--v-theme-link));
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.bank-shortlist button:focus-visible,
+.bank-inline-link:focus-visible,
+.bank-decision summary:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-link));
+  outline-offset: 4px;
+}
+#bank-criteria {
+  scroll-margin-top: 6rem;
+}
+.bank-decision-lead {
+  max-width: 70ch;
+  margin: 0.5rem 0 1.5rem;
+}
+.bank-decision-row {
+  display: grid;
+  grid-template-columns: minmax(12rem, 1fr) minmax(0, 2fr);
+  gap: 1rem 2rem;
+  padding: 1rem 0;
+  border-top: 1px solid rgba(var(--v-border-color), 0.16);
+}
+.bank-decision-row h3,
+.bank-decision-row p {
+  margin: 0;
+}
+.bank-decision-row p {
+  max-width: 70ch;
+  line-height: 1.65;
+}
+.bank-decision-sources {
+  margin-top: 1rem;
+}
+.bank-decision-sources summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding-block: 0.75rem;
+  font-weight: 600;
+}
+.bank-decision-sources ul {
+  padding-left: 1.5rem;
+}
+@media (max-width: 599px) {
+  .bank-decision-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+  }
+}
 .tierlist-page {
   overflow-x: hidden;
 }
