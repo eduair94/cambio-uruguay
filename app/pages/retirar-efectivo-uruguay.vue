@@ -246,9 +246,8 @@ const localePath = useLocalePath()
 const c = computed(() => getWithdrawContent(locale.value))
 const sources = WITHDRAW_SOURCES
 
-// Live tourist-IVA status, derived purely from today's date. The page always
-// states the currently-in-force benefits (it flips on 2026-10-01 and each
-// season) — kept honest by the withdraw:iva-check watchdog task.
+// Resolve only the encoded benefit periods. Beyond the confirmed base extension,
+// show the verification notice instead of silently assuming a future rate.
 const ivaNow = resolveIvaStatus(new Date())
 const fmtDate = (iso: string) =>
   new Date(`${iso}T00:00:00Z`).toLocaleDateString(dateLocale(c.value.lang), {
@@ -259,7 +258,9 @@ const fmtDate = (iso: string) =>
   })
 const ivaAsOf = computed(() => c.value.ivaLive.asOf.replace('{date}', fmtDate(ivaNow.date)))
 const ivaBase = computed(() =>
-  c.value.ivaLive.base.replace('{points}', String(ivaNow.baseReductionPoints))
+  ivaNow.baseReductionPoints === null
+    ? c.value.ivaLive.baseUnconfirmed
+    : c.value.ivaLive.base.replace('{points}', String(ivaNow.baseReductionPoints))
 )
 const ivaSeasonal = computed(() =>
   ivaNow.seasonalActive && ivaNow.seasonalWindow

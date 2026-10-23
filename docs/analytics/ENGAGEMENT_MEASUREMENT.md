@@ -73,24 +73,22 @@ para el resto se reconoce el área por la estructura del sitio. Un valor descono
 
 ## Cómo usar los datos después de desplegar
 
-1. En GA4 ya existen las dimensiones de evento `content_path` y `destination_path`, verificadas
-   por Admin API y por la metadata de Data API el **23/10/2026**. Faltan `link_area` y
-   `read_percent`. Se intentó crear la primera con un token válido de alcance `analytics.edit`,
-   pero Google respondió **403 PERMISSION_DENIED: The caller does not have permission**. La
-   cuenta de servicio puede leer la configuración, pero no editarla. La verificación posterior
-   confirmó que no se creó ninguna definición. No se modificaron eventos clave ni filtros.
-
-   Una persona con rol **Editor o Administrador** debe abrir **Administrar → Visualización de
-   datos → Definiciones personalizadas → Crear dimensión personalizada** y guardar estas dos:
+1. En GA4 existen las dimensiones de evento `content_path` y `destination_path`, verificadas
+   por Admin API y por la metadata de Data API el **23/10/2026**. Ese mismo día se registraron
+   `link_area` y `read_percent` desde la sesión autorizada de la interfaz de GA4, en
+   **Administrar → Visualización de datos → Definiciones personalizadas**. Las dos filas se
+   comprobaron guardadas, con alcance Evento; la lista pasó de tres a cinco definiciones.
+   El intento anterior por cuenta de servicio había devuelto `403 PERMISSION_DENIED`:
+   no se ampliaron sus permisos ni se modificaron eventos clave o filtros.
 
    | Nombre visible | Alcance | Parámetro del evento |
    | --- | --- | --- |
-   | Link area | Evento | `link_area` |
+   | Internal link area | Evento | `link_area` |
    | Reading depth percent | Evento | `read_percent` |
 
-   No convertir los eventos en eventos clave. Los nombres de evento se reciben sin estas
-   definiciones, pero faltarán las columnas para desglosarlos por área y profundidad; Google
-   indica que las definiciones pueden tardar **24–48 horas** en estar disponibles en informes.
+   No convertir los eventos en eventos clave ni volver a crear las definiciones. Guardarlas no
+   prueba que ya tengan datos: Google indica que pueden tardar **24–48 horas** en estar
+   disponibles en informes. Comprobar su metadata antes de consultar los desgloses nuevos.
    `section_kind` y `section_index` son opcionales para estudiar saltos del índice y no se
    intentó registrarlos. Referencia: [dimensiones personalizadas de evento](https://support.google.com/analytics/answer/14239696).
 2. En Exploraciones, filtrar país Uruguay y comparar móvil/escritorio y canal de sesión. Usar

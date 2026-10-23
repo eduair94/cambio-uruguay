@@ -1289,8 +1289,8 @@ export const guides: readonly Guide[] = [
         body: 'El hospedaje en hoteles y alojamientos para turistas no residentes está exonerado del IVA de forma permanente, durante todo el año. En la práctica, la factura se emite directamente sin el impuesto cuando se paga con medios electrónicos del exterior, así que no hay que pedir ninguna devolución posterior: el beneficio se aplica solo. Es uno de los incentivos turísticos más estables de Uruguay.',
       },
       {
-        heading: 'Gastronomía: reducción de IVA por temporada',
-        body: 'Para restaurantes, bares y cafeterías (independientes del hospedaje), Uruguay aplica una reducción del IVA cuando se paga con tarjeta extranjera, pero este beneficio se otorga por períodos —típicamente la temporada alta de verano— y su porcentaje y vigencia pueden cambiar de un año a otro mediante decreto. Por eso, antes de viajar conviene verificar si el beneficio está vigente en las fechas de tu visita y con qué alcance, ya que fuera del período promocional la gastronomía paga el IVA normal.',
+        heading: 'Gastronomía: reducción general y beneficios de temporada',
+        body: 'En los servicios gastronómicos comprendidos, independientes del hospedaje, la reducción general de nueve puntos de IVA alcanza a residentes y no residentes hasta el 30 de abril de 2027 (Decreto 235/026; guía DGI del 02/10/2026 consultada el 23/10/2026). Exige consumo final y pago con tarjeta de crédito, débito, dinero electrónico o instrumento análogo cuyo titular sea una persona física; si el pago es parcial, la reducción es proporcional. Es distinta de una exoneración total de temporada para no residentes: consultá a la DGI por esa posibilidad según las fechas del viaje.',
       },
       {
         heading: 'Tax Free: devolución del IVA en compras de bienes',

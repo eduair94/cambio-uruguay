@@ -364,7 +364,7 @@
     <VCard variant="flat" class="tarjetas-section mt-4 pa-5 pa-sm-6">
       <h2 class="text-subtitle-1 font-weight-bold mb-3 tarjetas-section-title">
         <VIcon start size="small" color="primary">mdi-calendar-alert</VIcon>
-        Dos beneficios que no dependen del emisor (y uno cambia el 1º de octubre)
+        Beneficios que no dependen del emisor
       </h2>
       <p class="text-body-2 mb-3">
         Buena parte de lo que se publicita como "beneficio de la tarjeta" en realidad lo da la ley y
@@ -379,10 +379,11 @@
         </li>
         <li>
           <strong>9 puntos menos de IVA en gastronomía</strong> pagando con tarjeta o dinero
-          electrónico (Ley 17.934) —hoy vigentes por el Decreto 83/026—, pero
-          <strong>desde el 1º de octubre de 2026 la reducción baja a 5 puntos</strong> (4,1% de
-          descuento para contribuyentes de IVA Mínimo, según la guía DGI del 05/05/2026). Cualquier
-          tarjeta que hoy promocione "9% de IVA en restaurantes" queda desactualizada esa semana.
+          electrónico de una persona física, para consumo final (Ley 17.934).
+          <strong>El Decreto 235/026 mantiene los nueve puntos hasta el 30 de abril de 2027</strong
+          >. La DGI publica un descuento de 7,38% del total para contribuyentes de IVA Mínimo; nueve
+          puntos no son un 9% del ticket. Alcanza a residentes y no residentes. Fuente DGI del
+          02/10/2026, consultada el 23/10/2026.
         </li>
         <li>
           <strong>Devolución de IMESI en combustible</strong>: no es un beneficio de emisor sino un
