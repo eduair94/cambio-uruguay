@@ -1758,6 +1758,15 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/cuanto-sale-la-partida-de-nacimiento-uruguay',
       },
       {
+        // El paso que viene DESPUÉS de los documentos de arriba, cuando tienen que valer afuera:
+        // la apostilla autentica una firma ya registrada ante Cancillería, así que según quién
+        // firmó el papel hay otro organismo antes. La etiqueta no repite «cuánto sale» porque lo
+        // que la página agrega al arancel es el ORDEN.
+        label: 'Apostillar un documento',
+        description: 'Apostilla o legalización, y el organismo que firma antes según quién firmó.',
+        to: '/apostillar-un-documento-uruguay',
+      },
+      {
         label: 'Mudarse a Uruguay',
         description: 'Residencia legal, paso a paso.',
         to: '/mudarme-a-uruguay-residencia',

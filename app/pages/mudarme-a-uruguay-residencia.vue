@@ -92,6 +92,16 @@
         </VCol>
       </VRow>
 
+      <p class="text-medium-emphasis mt-5 mb-0" style="max-width: 72ch">
+        Los tres listados piden los papeles «apostillado y traducido», y ahí hay una bifurcación que
+        la ficha no explica: si el documento sale de un país que no ratificó el Convenio sobre la
+        Apostilla, no hay apostilla que pedir. Ese papel va visado por el consulado uruguayo del
+        país donde se firmó y después legalizado acá, ante Cancillería, que es
+        <NuxtLink :to="localePath('/apostillar-un-documento-uruguay')"
+          >otro trámite, con otro arancel y su propia agenda</NuxtLink
+        >.
+      </p>
+
       <VCard variant="flat" class="countries-card pa-5 mt-5">
         <div class="text-overline mb-2">Países de la vía MERCOSUR y asociados</div>
         <div class="d-flex flex-wrap ga-2">

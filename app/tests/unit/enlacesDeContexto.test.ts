@@ -147,7 +147,6 @@ const SIN_LECTOR_QUE_LA_NECESITE = [
  * no cuenta como arreglo aunque ponga el test en verde.
  */
 const DEUDA_SIN_ENLACE = [
-  '/apostillar-un-documento-uruguay',
   '/apps-utiles-uruguay',
   '/fondo-de-solidaridad-uruguay',
   '/grabacion-sin-consentimiento-uruguay',
@@ -317,7 +316,26 @@ const DEUDA_SIN_ENLACE = [
 // por aviso es justo lo que lista la página enlazada, y la relación ya era recíproca del otro lado:
 // `/cambios-de-precio-uruguay` cierra enlazando a las tres `/evolucion-precio-*` como «lo que sí
 // contesta el nivel del mercado». Lo que faltaba era la vuelta.
-const DEUDA_MAXIMA = 9
+//
+// 9 → 8 el 2026-10-23: `/apostillar-un-documento-uruguay`, la otra mitad de la misma corrida que la
+// mete en su tema (`temaHuerfanas.test.ts`). Era una de las dos rutas libres de este pozo y la
+// única cuyo ORIGEN también está libre: las dos páginas que podrían enlazar a la otra
+// (`/denunciar-ruidos-molestos-uruguay`, `/derechos-consumidor-compras-online`) están reservadas.
+//
+// El enlace sale de `/mudarme-a-uruguay-residencia`, que no tiene ninguna fila en el libro de
+// cambios, y lo necesita su propio lector: las tres vías de esa página piden los papeles
+// «apostillado y traducido» —dos de los tres listados lo dicen con esas palabras— y la página nunca
+// dice qué pasa cuando no hay apostilla que pedir, que es el caso de todo documento que viene de un
+// país que no ratificó el Convenio. Ese papel va visado por el consulado uruguayo del país donde se
+// firmó y legalizado acá ante Cancillería, y la página enlazada es la única del sitio que separa los
+// dos trámites y dice cuál corresponde: su fila `legalizacion` es textual en el caso de entrada
+// —«cuando el documento viene del exterior y tiene que valer en Uruguay»—, y la misma cadena la cita
+// la ficha del BPS para la carta poder firmada afuera (`utils/guidesTrabajoBps.ts`).
+//
+// El enlace va DENTRO de la sección de las tres vías, debajo de las tarjetas que piden el requisito,
+// y no en el bloque de relacionadas del pie, que es lo que el encabezado de este archivo no cuenta
+// como arreglo. No se le tocó el snippet ni el resto del cuerpo a la página de origen.
+const DEUDA_MAXIMA = 8
 
 describe('ninguna página de lectura queda sin un enlace de contexto', () => {
   it('las páginas sin enlace son exactamente las declaradas', () => {

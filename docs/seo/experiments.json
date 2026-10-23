@@ -1926,6 +1926,18 @@
         "viandas para la semana uruguay"
       ],
       "hypothesis": "Solo el rastro de migas, sin tocar titulo, descripcion ni cuerpo de ninguna de las dos. Las dos emitian UN nodo de datos estructurados suelto (Dataset una, WebApplication la otra), asi que el contador de estructurados las daba por buenas con el rastro vacio y el renglon verde del resultado quedaba en la URL cruda. Ahora el nodo viaja dentro de un @graph con el BreadcrumbList primero, como en /dolar-hoy. El rastro se queda en DOS eslabones a proposito: ninguna de las dos le muestra al lector una pagina padre, y un eslabon intermedio inventado le prometeria una seccion que no existe. Es la segunda tanda del mismo cambio que midio «migas-en-el-renglon-verde»; eran las dos unicas de las ocho sin migas que hoy estaban libres en el libro."
+    },
+    {
+      "id": "apostillar-un-documento-en-su-tema-y-con-enlace",
+      "shippedOn": "2026-10-23",
+      "routes": ["/apostillar-un-documento-uruguay"],
+      "queries": [
+        "apostillar un documento uruguay",
+        "apostilla uruguay",
+        "cuanto sale la apostilla uruguay",
+        "legalizacion de documentos uruguay"
+      ],
+      "hypothesis": "Solo enlazado interno: no se toco titulo, descripcion ni cuerpo de la pagina medida. La pagina nacio el 24/9 y quedo huerfana en los dos pozos a la vez, sin tema (ningun `resources` la listaba, asi que el bloque «Mas sobre este tema» no la enlazaba desde ninguna pagina) y sin un solo enlace de contexto. Ahora entra a `tramites-y-documentos-uruguay`, donde ya viven los cuatro documentos que despues hay que apostillar (antecedentes judiciales, cedula, pasaporte, partida de nacimiento), y recibe un enlace dentro de la seccion de las tres vias de /mudarme-a-uruguay-residencia, que pide los papeles «apostillado y traducido» y nunca decia que pasa cuando el pais de origen no ratifico el Convenio. La fila anterior sobre esta ruta (`apostillar-documento-costo`, 24/9) midio su nacimiento y su ventana cerro justo hoy, a los 29 dias."
     }
   ]
 }
