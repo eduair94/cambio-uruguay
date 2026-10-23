@@ -212,9 +212,34 @@ Identificador opcional `NUXT_PUBLIC_ADSENSE_SLOT_TOOLS`: vacío, la unidad usa e
 
 Hipótesis: la familia `/herramientas/*` pasa de no rendir a rendir con una sola unidad después de la respuesta, sin perder uso, porque la unidad no compite con la tarea de la visita. Guarda: sesiones con interacción y el evento `tool_view` de GA4 por calculadora, y CLS de campo, siete días cerrados antes y después.
 
-Medición: informe de AdSense **por unidad** con el identificador propio (o, sin él, la fila del cierre por diferencia), visibilidad e impresiones por vista; y el ingreso por familia del tablero privado (`siterevenuesnapshots`), donde `/herramientas/*` es una familia aparte del índice y hasta hoy no tenía ninguna unidad propia. Cuando esa familia junte la muestra que pide `currency-revenue-plan` (≥ 500 vistas y ≥ 100 impresiones de anuncio), el plan valúa sus oportunidades de búsqueda con el rendimiento medido en lugar del que asume el tramo; con el interruptor apagado esa muestra no se junta. La fecha de activación es la del build con la variable en el `.env`, no la del despliegue del código: registrarla el día que se complete. **No va en `experiments.json`**: no es un cambio de tráfico, no toca el texto que mide la búsqueda y el efecto buscado es ingreso por vista.
+Medición: informe de AdSense **por unidad** con el identificador propio (sin él, el bloque de cierre mezcla herramientas con otras páginas y no permite atribución por una simple resta), visibilidad e impresiones por vista; y el ingreso por familia del tablero privado (`siterevenuesnapshots`), donde `/herramientas/*` es una familia aparte del índice y hasta hoy no tenía ninguna unidad propia. Cuando esa familia junte la muestra que pide `currency-revenue-plan` (≥ 500 vistas y ≥ 100 impresiones de anuncio), el plan valúa sus oportunidades de búsqueda con el rendimiento medido en lugar del que asume el tramo; con el interruptor apagado esa muestra no se junta. La fecha de activación es la del build con la variable en el `.env`, no la del despliegue del código: registrarla el día que se complete. **No va en `experiments.json`**: no es un cambio de tráfico, no toca el texto que mide la búsqueda y el efecto buscado es ingreso por vista.
 
 Validación local: `tests/unit/adsTools.test.ts` (apagado = sin loader ni unidad en ninguna calculadora y en ningún idioma; encendido = loader y exactamente una unidad, `after-tool`, con el cierre del layout y el riel apagados en esas rutas; el interruptor leído igual como cadena del build o valor de runtime; la unidad de ToolShell como hija directa del contenedor, después de los slots de campos, explicación y consejos y justo después de la advertencia; cada calculadora con su única unidad; el índice sin cambios), más las suites existentes de anuncios y de layout.
+
+## Comprobación de cuenta y medición: 23/10/2026
+
+La sesión autorizada de AdSense vuelve a permitir leer el informe directo del sitio en USD y
+horario de Montevideo. Se conserva la serie de siete días cerrados en el registro privado; el
+objetivo sigue sin alcanzarse. Las cifras de GA4 siguen siendo atribución, con otro corte diario.
+
+La cuenta ya tiene guardadas las tres exclusiones de **todas las páginas de la sección** para
+`/herramientas/`, `/en/herramientas/` y `/pt/herramientas/`. Los anuncios automáticos están activos,
+la optimización automática desactivada y no hay formatos de superposición habilitados. El HTML
+público de la calculadora de aguinaldo confirma `adsTools: "1"` y el slot propio vacío: usa el
+fallback de cierre. Esta revisión no cambió la configuración ni ejecutó anuncios del sitio.
+La fecha de observación **no es la fecha de activación**, que sigue sin acreditarse.
+
+Por tanto, no corresponde activar otra vez ni añadir otra unidad. Medir la familia de herramientas
+con su muestra y su período explícitos; el bloque compartido `contentEnd` no permite aislar sus
+ingresos por una simple resta. `tool_view` mide el montaje, no un cálculo completado. La muestra
+actual de la familia todavía no cumple el mínimo del plan. Conservar siete días para guardas y
+una ventana mayor con muestra suficiente antes de decidir, anotando los cambios editoriales y de
+instrumentación que se superponen.
+
+Se completó además el registro de `link_area` y `read_percent` en GA4, verificado en la lista de
+definiciones. No se cambiaron permisos, eventos clave ni filtros. Su disponibilidad en informes y
+los resultados de las mejoras de lectura del 23/10 se comprobarán después de acumular datos;
+el registro de las dimensiones no es un resultado de retención.
 
 ## Próximas decisiones
 
@@ -223,7 +248,7 @@ Validación local: `tests/unit/adsTools.test.ts` (apagado = sin loader ni unidad
 - Medir la ampliación IRPF con la ventana prevista y conservar sus límites sobre créditos antiguos. Reutilizar la investigación ya guardada antes de ampliar el alcance; la cola propone una hipótesis editorial y no demuestra volumen de adquisición.
 - Dejar los títulos y series BCU estables durante la ventana de evaluación. La revisión pública no acreditó un canal adicional de adquisición a escala: no construir otro exportador, catálogo o URL por fecha por esa sola hipótesis. Si se autoriza Bing Webmaster, obtener las consultas que faltan antes de ampliar el piloto.
 - La lectura publicitaria y de controles ya está completada. Una futura prueba de colocación requiere una alternativa observable y un control; no repetir el diagnóstico general ni aumentar densidad por baja cobertura. El límite del componente manual no es un límite global de anuncios automáticos.
-- AdSense confirma anuncios automáticos activos, optimización automática desactivada y cero exclusiones de páginas en la cuenta. El límite de `utils/ads.ts` regula las unidades manuales: **no certifica un límite global de anuncios automáticos**. No interpretar el código como prueba de la configuración de la cuenta. La unidad de las calculadoras (duodécima iteración) exige agregar las exclusiones de `/herramientas/` ANTES de prender `NUXT_PUBLIC_ADS_TOOLS`; registrar acá la fecha de cada paso.
+- La comprobación del 23/10 confirma las tres exclusiones de herramientas y el interruptor activo. Acreditar la fecha previa de activación antes de construir un antes/después. El límite de `utils/ads.ts` regula las unidades manuales: **no certifica un límite global de anuncios automáticos**. Conservar por separado la evidencia de cuenta y de código.
 - Reutilizar la comparación de formatos y ubicaciones ya guardada antes de otro experimento de visibilidad. El informe por bloque manual no suma todo el ingreso de la cuenta.
 - Revisar pérdidas de clics sobre páginas con demanda comprobada y el rendimiento de las guías/fichas publicadas el 13/9. Verificar indexación y enlaces antes de crear más URL.
 - Revisar atribuciones anómalas y separar uso propio/pruebas de audiencia real antes de invertir por volumen bruto de vistas. No bloquear países por suposición.

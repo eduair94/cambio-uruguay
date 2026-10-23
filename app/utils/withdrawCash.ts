@@ -138,6 +138,7 @@ export interface WithdrawIvaLive {
   hotel: string
   /** Base reduction line, with `{points}` placeholder. */
   base: string
+  baseUnconfirmed: string
   /** Seasonal exemption ACTIVE line, with `{end}` placeholder. */
   seasonalOn: string
   /** Seasonal exemption INACTIVE line. */
@@ -259,10 +260,12 @@ export const withdrawContent: Record<WithdrawLocale, WithdrawContent> = {
       heading: 'Beneficios de IVA vigentes hoy',
       asOf: 'Estado al {date}:',
       hotel: 'Alojamiento (hoteles y similares): 0% de IVA todo el año.',
-      base: 'Gastronomía y alquiler de autos: descuento de {points} puntos de IVA pagando con tarjeta extranjera.',
+      base: 'Gastronomía y alquiler de autos sin chofer: descuento de {points} puntos de IVA para consumo final con tarjeta de una persona física, también extranjera, hasta el 30/4/2027 (Decreto 235/026; fuente consultada el 23/10/2026).',
+      baseUnconfirmed:
+        'Gastronomía y alquiler de autos: la prórroga verificada terminó el 30/4/2027. Consultá a la DGI por la reducción vigente para la fecha de tu consumo.',
       seasonalOn: 'Exención total de IVA de verano: VIGENTE (hasta el {end}).',
       seasonalOff:
-        'Exención total de IVA de verano: fuera de temporada en este momento (rige aproximadamente de noviembre a abril).',
+        'Exención total de IVA de verano: no tenemos una ventana confirmada para esta fecha. Consultá a la DGI antes de contar con ese beneficio.',
     },
     sections: [
       {
@@ -324,13 +327,13 @@ export const withdrawContent: Record<WithdrawLocale, WithdrawContent> = {
         heading: 'Beneficio de IVA para turistas (pagando con tarjeta extranjera)',
         paragraphs: [
           'Uruguay devuelve parte del IVA a los turistas no residentes que pagan con una tarjeta emitida en el exterior. El alojamiento (hoteles y similares registrados) tiene 0% de IVA todo el año para no residentes que muestran documento extranjero y pagan con tarjeta extranjera: es un beneficio permanente.',
-          'En gastronomía (restaurantes, bares, cafés) y alquiler de autos sin chofer hay una reducción de IVA durante todo el año al pagar por medios electrónicos. A esto se suma, en temporada de verano (aproximadamente de noviembre a abril), una exención total del IVA que el gobierno renueva cada año por decreto. Como esa exención estacional se vence y se vuelve a dictar, conviene confirmar las fechas vigentes antes de tu viaje.',
+          'En gastronomía y alquiler de autos sin chofer, el Decreto 235/026 mantiene la reducción general de nueve puntos hasta el 30 de abril de 2027 para consumo final con los medios electrónicos admitidos. Una exoneración total de temporada es un beneficio distinto, sujeto a su propio decreto y fechas: la prórroga de los nueve puntos no permite darla por vigente. Consultá a la DGI antes del viaje.',
           'En todos los casos, el descuento se aplica solo: pagás con tu tarjeta extranjera y el beneficio aparece en el ticket o en el resumen de tu tarjeta. Si pagás en efectivo, lo perdés. Por eso conviene pagar hoteles y restaurantes con tarjeta y sacar menos efectivo.',
         ],
         bullets: [
           'Hoteles/alojamiento: 0% de IVA todo el año para no residentes (permanente).',
-          'Restaurantes y alquiler de autos: descuento de IVA todo el año pagando con tarjeta; exención total adicional en temporada de verano (renovable, confirmá las fechas).',
-          'Siempre con tarjeta extranjera y documento de no residente. En efectivo no aplica.',
+          'Restaurantes y alquiler de autos sin chofer: nueve puntos hasta el 30/4/2027 con los requisitos de pago electrónico. Una exoneración total de temporada requiere confirmación aparte.',
+          'Cada régimen tiene requisitos propios. Los nueve puntos generales exigen consumo final y un medio electrónico admitido a nombre de una persona física; no exigen emisión extranjera.',
         ],
       },
       {
@@ -484,7 +487,7 @@ export const withdrawContent: Record<WithdrawLocale, WithdrawContent> = {
       },
       {
         q: '¿Tengo algún descuento de impuestos como turista?',
-        a: 'Sí, pagando con tarjeta extranjera: 0% de IVA en alojamiento todo el año y una reducción de IVA en gastronomía y alquiler de autos (con una exención total adicional en temporada de verano, que se renueva por decreto). En efectivo no aplica.',
+        a: 'Sí: además del régimen de alojamiento, la reducción general de nueve puntos en gastronomía y alquiler de autos sin chofer también alcanza a no residentes hasta el 30/4/2027, con consumo final y pago electrónico de una persona física. La exoneración total de temporada requiere un decreto y fechas propios; no se deduce de esa prórroga.',
       },
       {
         q: '¿Qué hago si el cajero rechaza mi tarjeta?',
@@ -547,10 +550,12 @@ export const withdrawContent: Record<WithdrawLocale, WithdrawContent> = {
       heading: 'Tourist VAT benefits in force today',
       asOf: 'Status as of {date}:',
       hotel: 'Accommodation (hotels and similar): 0% VAT year-round.',
-      base: 'Dining and car rental: a {points}-point VAT discount when you pay with a foreign card.',
+      base: 'Dining and car rental without a driver: a {points}-point VAT reduction for final consumption paid with an individual’s card, including foreign cards, through April 30, 2027 (Decree 235/026; source checked October 23, 2026).',
+      baseUnconfirmed:
+        'Dining and car rental: the verified extension ended on April 30, 2027. Check with DGI which reduction applies on the date of your purchase.',
       seasonalOn: 'Summer full VAT exemption: ACTIVE (until {end}).',
       seasonalOff:
-        'Summer full VAT exemption: out of season right now (runs roughly November to April).',
+        'Summer full VAT exemption: we have no confirmed period for this date. Check with DGI before counting on this benefit.',
     },
     sections: [
       {
@@ -612,13 +617,13 @@ export const withdrawContent: Record<WithdrawLocale, WithdrawContent> = {
         heading: 'Tourist VAT benefit (when you pay with a foreign card)',
         paragraphs: [
           'Uruguay refunds part of the VAT to non-resident tourists who pay with a foreign-issued card. Accommodation (registered hotels and similar) is 0% VAT year-round for non-residents who show a foreign ID and pay with a foreign card — a permanent benefit.',
-          'For dining (restaurants, bars, cafés) and car rental without a driver there is a VAT reduction year-round when you pay electronically. On top of that, during the summer season (roughly November to April) the government renews, by decree, a full VAT exemption each year. Because that seasonal exemption lapses and is re-issued, confirm the dates in force before your trip.',
+          'For dining and car rental without a driver, Decree 235/026 maintains the general nine-point reduction through April 30, 2027 for final consumption paid with eligible electronic means. A seasonal full exemption is a separate benefit with its own decree and dates: extending the nine-point reduction does not confirm a full exemption. Check with DGI before travelling.',
           'In every case the discount is automatic: you pay with your foreign card and the benefit shows up on the receipt or your card statement. Pay in cash and you lose it. So it pays to put hotels and restaurants on a card and withdraw less cash.',
         ],
         bullets: [
           'Hotels/accommodation: 0% VAT year-round for non-residents (permanent).',
-          'Restaurants and car rental: VAT discount year-round when paying by card; an additional full exemption in the summer season (renewable — confirm the dates).',
-          'Always with a foreign card and a non-resident ID. Cash does not qualify.',
+          'Restaurants and car rental without a driver: nine points through April 30, 2027, subject to electronic-payment requirements. A seasonal full exemption needs separate confirmation.',
+          'Each regime has its own requirements. The general nine-point reduction requires final consumption and an eligible electronic payment method held by an individual; foreign issuance is not required.',
         ],
       },
       {
@@ -771,7 +776,7 @@ export const withdrawContent: Record<WithdrawLocale, WithdrawContent> = {
       },
       {
         q: 'Do I get a tax discount as a tourist?',
-        a: 'Yes, when paying with a foreign card: 0% VAT on accommodation year-round and a VAT reduction on dining and car rental (with an extra full exemption in the summer season, renewed by decree). Cash does not qualify.',
+        a: 'Yes: besides the accommodation regime, the general nine-point reduction on dining and car rental without a driver also covers non-residents through April 30, 2027, for final consumption paid electronically by an individual. A seasonal full exemption requires its own decree and dates; it cannot be inferred from that extension.',
       },
       {
         q: 'What if the ATM rejects my card?',
@@ -834,10 +839,12 @@ export const withdrawContent: Record<WithdrawLocale, WithdrawContent> = {
       heading: 'Benefícios de IVA em vigor hoje',
       asOf: 'Status em {date}:',
       hotel: 'Hospedagem (hotéis e similares): 0% de IVA o ano todo.',
-      base: 'Gastronomia e aluguel de carros: desconto de {points} pontos de IVA pagando com cartão estrangeiro.',
+      base: 'Gastronomia e aluguel de carros sem motorista: desconto de {points} pontos de IVA para consumo final pago com cartão de pessoa física, inclusive estrangeiro, até 30/4/2027 (Decreto 235/026; fonte consultada em 23/10/2026).',
+      baseUnconfirmed:
+        'Gastronomia e aluguel de carros: a prorrogação verificada terminou em 30/4/2027. Consulte a DGI sobre a redução vigente na data do consumo.',
       seasonalOn: 'Isenção total de IVA de verão: EM VIGOR (até {end}).',
       seasonalOff:
-        'Isenção total de IVA de verão: fora de temporada neste momento (vale aproximadamente de novembro a abril).',
+        'Isenção total de IVA de verão: não temos um período confirmado para esta data. Consulte a DGI antes de contar com esse benefício.',
     },
     sections: [
       {
@@ -899,13 +906,13 @@ export const withdrawContent: Record<WithdrawLocale, WithdrawContent> = {
         heading: 'Benefício de IVA para turistas (pagando com cartão estrangeiro)',
         paragraphs: [
           'O Uruguai devolve parte do IVA aos turistas não residentes que pagam com um cartão emitido no exterior. A hospedagem (hotéis e similares registrados) tem 0% de IVA o ano todo para não residentes que mostram documento estrangeiro e pagam com cartão estrangeiro: é um benefício permanente.',
-          'Em gastronomia (restaurantes, bares, cafés) e aluguel de carros sem motorista há uma redução de IVA o ano todo ao pagar por meios eletrônicos. A isso se soma, na temporada de verão (aproximadamente de novembro a abril), uma isenção total de IVA que o governo renova a cada ano por decreto. Como essa isenção sazonal expira e é reeditada, vale confirmar as datas em vigor antes da sua viagem.',
+          'Em gastronomia e aluguel de carros sem motorista, o Decreto 235/026 mantém a redução geral de nove pontos até 30 de abril de 2027 para consumo final pago com meios eletrônicos admitidos. Uma isenção total de temporada é um benefício distinto, sujeito a decreto e datas próprios: a prorrogação dos nove pontos não confirma essa isenção. Consulte a DGI antes da viagem.',
           'Em todos os casos, o desconto é automático: você paga com o seu cartão estrangeiro e o benefício aparece no comprovante ou na fatura do cartão. Pagando em dinheiro, você perde. Por isso vale pagar hotéis e restaurantes com cartão e sacar menos dinheiro.',
         ],
         bullets: [
           'Hotéis/hospedagem: 0% de IVA o ano todo para não residentes (permanente).',
-          'Restaurantes e aluguel de carros: desconto de IVA o ano todo pagando com cartão; isenção total adicional na temporada de verão (renovável, confirme as datas).',
-          'Sempre com cartão estrangeiro e documento de não residente. Em dinheiro não vale.',
+          'Restaurantes e aluguel de carros sem motorista: nove pontos até 30/4/2027, sujeitos aos requisitos de pagamento eletrônico. Uma isenção total de temporada exige confirmação separada.',
+          'Cada regime tem requisitos próprios. Os nove pontos gerais exigem consumo final e um meio eletrônico admitido em nome de pessoa física; não exigem emissão estrangeira.',
         ],
       },
       {
@@ -1058,7 +1065,7 @@ export const withdrawContent: Record<WithdrawLocale, WithdrawContent> = {
       },
       {
         q: 'Tenho algum desconto de impostos como turista?',
-        a: 'Sim, pagando com cartão estrangeiro: 0% de IVA na hospedagem o ano todo e uma redução de IVA em gastronomia e aluguel de carros (com uma isenção total adicional na temporada de verão, renovada por decreto). Em dinheiro não vale.',
+        a: 'Sim: além do regime de hospedagem, a redução geral de nove pontos em gastronomia e aluguel de carros sem motorista também abrange não residentes até 30/4/2027, para consumo final e pagamento eletrônico de pessoa física. A isenção total de temporada exige decreto e datas próprios; não decorre dessa prorrogação.',
       },
       {
         q: 'O que faço se o caixa recusar o meu cartão?',

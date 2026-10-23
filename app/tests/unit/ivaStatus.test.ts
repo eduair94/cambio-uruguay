@@ -15,16 +15,25 @@ describe('toISODate', () => {
   })
 })
 
-describe('resolveIvaStatus — base reduction step-down', () => {
+describe('resolveIvaStatus — confirmed base reduction', () => {
   it('is 9 points before 2026-10-01', () => {
     expect(resolveIvaStatus(d('2026-06-21')).baseReductionPoints).toBe(9)
     expect(resolveIvaStatus(d('2026-09-30')).baseReductionPoints).toBe(9)
   })
 
-  it('drops to 5 points on/after 2026-10-01', () => {
-    expect(resolveIvaStatus(d('2026-10-01')).baseReductionPoints).toBe(5)
-    expect(resolveIvaStatus(d('2027-01-01')).baseReductionPoints).toBe(5)
-  })
+  it.each(['2026-10-01', '2026-10-23', '2027-01-01', '2027-04-30'])(
+    'keeps nine points on %s under Decreto 235/026',
+    date => {
+      expect(resolveIvaStatus(d(date)).baseReductionPoints).toBe(9)
+    }
+  )
+
+  it.each(['2027-05-01', '2028-01-01'])(
+    'does not publish an unverified rate on %s after the extension expires',
+    date => {
+      expect(resolveIvaStatus(d(date)).baseReductionPoints).toBeNull()
+    }
+  )
 
   it('always reports hotel lodging at 0%', () => {
     expect(resolveIvaStatus(d('2026-06-21')).hotelPct).toBe(0)
@@ -69,6 +78,14 @@ describe('pendingSeasonStartYear', () => {
 })
 
 describe('getReverifyState', () => {
+  it('requires renewal after the base extension even with otherwise fresh research', () => {
+    const lastDay = getReverifyState(d('2027-04-30'), '2027-04-30')
+    expect(lastDay.reasons.join(' ')).not.toMatch(/Base reduction/)
+    const expired = getReverifyState(d('2027-05-01'), '2027-04-30')
+    expect(expired.needsReverify).toBe(true)
+    expect(expired.reasons).toEqual(['Base reduction extension ended on 2027-04-30'])
+  })
+
   it('does not flag in June 2026 when just researched (off-season, fresh)', () => {
     const r = getReverifyState(d('2026-06-21'), '2026-06-21')
     expect(r.needsReverify).toBe(false)

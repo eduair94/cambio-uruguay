@@ -1,6 +1,6 @@
 // The point of this suite is that the page's headline percentages are not ours.
 //
-// DGI publishes the discount on the ticket as 7,38 % today and 4,1 % from the 1st of October 2026.
+// DGI confirms 7,38 % for the nine-point extension through April 30, 2027.
 // `ivaDiscountOnTicket` derives those from the raw percentage points and the IVA rate. If the
 // derivation ever stopped landing on DGI's own numbers, either the formula or the rate on the page
 // would be wrong — and the page would be publishing an invented figure, which is the one thing this
@@ -12,8 +12,8 @@ import {
   IVA_NINE_POINTS_LAST_DAY,
   IVA_NON_RESIDENT,
   IVA_REGIMES,
-  IVA_STEP_DOWN,
-  IVA_STEP_DOWN_DATE,
+  IVA_GASTRONOMIA_PERIOD,
+  IVA_GASTRONOMIA_VERIFIED_AT,
   IVA_TARJETA_FAQ,
   IVA_TARJETA_SOURCES,
   IVA_TARJETA_VERIFIED_AT,
@@ -25,7 +25,8 @@ import {
 } from '../../utils/ivaTarjeta'
 
 describe('the discount on the ticket reproduces what DGI publishes', () => {
-  it.each(IVA_STEP_DOWN)('$points points is $dgiPublishedPct % of the total', row => {
+  it('reproduces the published percentage of the current extension', () => {
+    const row = IVA_GASTRONOMIA_PERIOD
     expect(ivaDiscountOnTicket(row.points)).toBeCloseTo(row.dgiPublishedPct, 2)
   })
 
@@ -97,37 +98,31 @@ describe('the two regimes stay distinguishable', () => {
   })
 })
 
-describe('the October 2026 step-down', () => {
-  it('goes down, never up', () => {
-    expect(IVA_STEP_DOWN).toHaveLength(2)
-    expect(IVA_STEP_DOWN[1]!.points).toBeLessThan(IVA_STEP_DOWN[0]!.points)
-    expect(IVA_STEP_DOWN[1]!.dgiPublishedPct).toBeLessThan(IVA_STEP_DOWN[0]!.dgiPublishedPct)
+describe('the confirmed gastronomía extension', () => {
+  it('covers October without inventing a new five-point period', () => {
+    expect(IVA_GASTRONOMIA_PERIOD.from).toBe('2026-10-01')
+    expect(IVA_GASTRONOMIA_PERIOD.through).toBe('2027-04-30')
+    expect(IVA_GASTRONOMIA_PERIOD.through).toBe(IVA_NINE_POINTS_LAST_DAY)
+    expect(IVA_GASTRONOMIA_PERIOD.points).toBe(9)
+    expect(IVA_GASTRONOMIA_PERIOD.decree).toBe('235/026')
   })
 
-  it('starts the day after the last day of the nine-point extension', () => {
-    // Decreto 83/026 runs to 30/9/2026; DGI puts the five points from 1/10/2026. No gap, no overlap.
-    const lastDay = new Date(`${IVA_NINE_POINTS_LAST_DAY}T00:00:00Z`)
-    const stepDown = new Date(`${IVA_STEP_DOWN_DATE}T00:00:00Z`)
-    expect(stepDown.getTime() - lastDay.getTime()).toBe(24 * 60 * 60 * 1000)
-  })
-
-  it('matches the points the gastronomía regime currently declares', () => {
-    expect(IVA_STEP_DOWN[0]!.points).toBe(IVA_REGIMES.find(r => r.id === 'gastronomia')!.points)
+  it('keeps the displayed regime aligned with the confirmed period', () => {
+    expect(IVA_GASTRONOMIA_PERIOD.points).toBe(
+      IVA_REGIMES.find(r => r.id === 'gastronomia')!.points
+    )
+    expect(IVA_GASTRONOMIA_VERIFIED_AT > IVA_GASTRONOMIA_PERIOD.from).toBe(true)
+    expect(IVA_GASTRONOMIA_VERIFIED_AT <= IVA_NINE_POINTS_LAST_DAY).toBe(true)
   })
 })
 
-describe('the non-resident block never overstates what is in force', () => {
-  it('marks the expired reintegro as unverified rather than dropping or asserting it', () => {
+describe('the non-resident block distinguishes the general extension', () => {
+  it('does not label the dated nine-point extension as a permanent benefit', () => {
     const statuses = IVA_NON_RESIDENT.map(i => i.status)
-    expect(statuses).toContain('sin-prorroga-verificada')
+    expect(statuses.filter(s => s === 'vigente-hasta')).toHaveLength(1)
     expect(statuses.filter(s => s === 'vigente')).toHaveLength(2)
-  })
-
-  it('explains itself wherever it claims no prórroga was found', () => {
-    for (const item of IVA_NON_RESIDENT.filter(i => i.status === 'sin-prorroga-verificada')) {
-      expect(item.detail).toMatch(/Decreto/)
-      expect(item.detail.length).toBeGreaterThan(80)
-    }
+    const dated = IVA_NON_RESIDENT.find(i => i.status === 'vigente-hasta')!
+    expect(dated.detail).toContain(IVA_GASTRONOMIA_PERIOD.decree)
   })
 })
 
@@ -149,7 +144,7 @@ describe('sourcing', () => {
     const urls = IVA_TARJETA_SOURCES.map(s => s.url).join(' ')
     expect(urls).toContain('17934')
     expect(urls).toContain('203-2014')
-    expect(urls).toContain('83-2026')
+    expect(urls).toContain('235-2026')
   })
 
   it('carries a verification date', () => {

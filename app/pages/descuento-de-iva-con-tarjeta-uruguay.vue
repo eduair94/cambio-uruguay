@@ -14,22 +14,21 @@
         eventos y alquiler de autos son <strong>nueve puntos</strong>, y ahí la
         <strong>tarjeta de crédito también sirve</strong>:
         <strong>{{ pct(ivaDiscountOnTicket(9)) }}</strong
-        >, el porcentaje que publica la DGI. Esa segunda rebaja
-        <strong>baja a cinco puntos el 1º de octubre de 2026</strong>.
+        >, el porcentaje que publica la DGI para IVA Mínimo. Los nueve puntos
+        <strong>siguen hasta el 30 de abril de 2027</strong>.
       </p>
 
       <VCard class="clock-card pa-5 pa-md-6" variant="flat">
         <div class="d-flex align-start">
           <VIcon icon="mdi-timer-sand" color="primary" class="mr-3 mt-1" />
           <div>
-            <div class="text-overline mb-2">El reloj que ya está corriendo</div>
+            <div class="text-overline mb-2">Prórroga confirmada</div>
             <p class="callout-text mb-0">
-              El <strong>Decreto 83/026</strong> prorrogó los nueve puntos de gastronomía y turismo
-              <strong>sólo hasta el 30 de setiembre de 2026</strong>. Desde el
-              <strong>1º de octubre de 2026</strong> la DGI publica que la reducción queda en
-              <strong>cinco puntos</strong>, y que el descuento en los locales de IVA Mínimo pasa de
-              <strong>7,38 %</strong> a <strong>4,1 %</strong> del total. La rebaja general de dos
-              puntos no se toca: ésa es permanente y no depende de ninguna prórroga.
+              El <strong>Decreto 235/026</strong> mantiene los nueve puntos de gastronomía y turismo
+              <strong>hasta el 30 de abril de 2027</strong>. No bajaron a cinco el 1º de octubre de
+              2026. Para los locales de IVA Mínimo, la DGI mantiene el descuento de
+              <strong>7,38 %</strong> del total. Esta prórroga no modifica la rebaja general de dos
+              puntos. Fuentes de gastronomía consultadas el {{ gastronomyVerifiedAt }}.
             </p>
           </div>
         </div>
@@ -92,9 +91,9 @@
           <span class="term is-result">descuento sobre el total</span>
         </div>
         <p class="formula-note text-body-2 text-medium-emphasis mb-0">
-          La prueba de que la fórmula es la buena: aplicada a nueve puntos da
-          {{ pct(ivaDiscountOnTicket(9)) }} y a cinco {{ pct(ivaDiscountOnTicket(5)) }} — los dos
-          porcentajes exactos que publica la DGI a cada lado del 1º de octubre.
+          Aplicada a nueve puntos sobre la tasa básica, la fórmula da
+          {{ pct(ivaDiscountOnTicket(9)) }} del total. Es el mismo porcentaje que la DGI publica
+          para las operaciones comprendidas realizadas a contribuyentes de IVA Mínimo.
         </p>
       </VCard>
 
@@ -152,8 +151,8 @@
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-2">Si sos turista y no residís en Uruguay</h2>
       <p class="section-intro text-medium-emphasis mb-5">
-        El régimen del no residente es otro, y hoy no está entero. Separamos lo que el Ministerio de
-        Turismo publica como vigente todo el año de lo que no pudimos verificar.
+        Los nueve puntos generales también alcanzan a no residentes. No hay que confundirlos con el
+        IVA cero del alojamiento, el Tax Free o una exoneración total de temporada.
       </p>
       <VCard
         v-for="item in IVA_NON_RESIDENT"
@@ -162,20 +161,16 @@
         class="nonres pa-5 mb-3"
       >
         <div class="d-flex align-center flex-wrap ga-2 mb-2">
-          <VChip
-            size="small"
-            variant="flat"
-            :color="item.status === 'vigente' ? 'success' : 'warning'"
-          >
-            {{ item.status === 'vigente' ? 'Vigente todo el año' : 'Sin prórroga verificada' }}
+          <VChip size="small" variant="flat" color="success">
+            {{ item.status === 'vigente' ? 'Vigente todo el año' : 'Hasta el 30/4/2027' }}
           </VChip>
           <span class="text-subtitle-2 font-weight-bold">{{ item.benefit }}</span>
         </div>
         <p class="nonres__detail text-body-2 mb-0">{{ item.detail }}</p>
       </VCard>
       <p class="nonres-note text-caption text-medium-emphasis mt-3 mb-0">
-        No publicamos el reintegro de nueve puntos como vigente porque no encontramos la norma que
-        lo prorrogue: preferimos decirlo antes que darlo por hecho.
+        La prórroga de los nueve puntos no confirma una exoneración total de temporada. Consultá a
+        la DGI por las fechas y condiciones de ese beneficio distinto.
       </p>
     </section>
 
@@ -206,9 +201,9 @@
         </li>
       </ul>
       <p class="sources-note text-caption text-medium-emphasis mt-3 mb-0">
-        Contrastado el {{ verifiedAt }}. No es asesoramiento profesional: las prórrogas de este
-        régimen se publican por decreto y cambian, así que confirmá con la DGI antes de tomar una
-        decisión de plata.
+        Revisión general del {{ verifiedAt }}; prórroga y condiciones de gastronomía consultadas el
+        {{ gastronomyVerifiedAt }}. Para operaciones posteriores al 30/4/2027, consultá la normativa
+        vigente en la DGI.
       </p>
     </VCard>
 
@@ -237,7 +232,8 @@
 import {
   IVA_NON_RESIDENT,
   IVA_REGIMES,
-  IVA_STEP_DOWN,
+  IVA_GASTRONOMIA_PERIOD,
+  IVA_GASTRONOMIA_VERIFIED_AT,
   IVA_TARJETA_FAQ,
   IVA_TARJETA_SOURCES,
   IVA_TARJETA_VERIFIED_AT,
@@ -260,13 +256,8 @@ const savingRows = computed(() =>
     { id: 'general', label: 'Compra común con débito o dinero electrónico', points: 2 },
     {
       id: 'gastro-hoy',
-      label: `Gastronomía y turismo, hasta el 30/9/2026 (crédito o débito)`,
-      points: IVA_STEP_DOWN[0]!.points,
-    },
-    {
-      id: 'gastro-oct',
-      label: `Gastronomía y turismo, desde el 1/10/2026`,
-      points: IVA_STEP_DOWN[1]!.points,
+      label: 'Gastronomía y turismo, hasta el 30/4/2027 (crédito o débito)',
+      points: IVA_GASTRONOMIA_PERIOD.points,
     },
   ].map(row => ({
     ...row,
@@ -309,15 +300,18 @@ const verifiedAt = new Date(`${IVA_TARJETA_VERIFIED_AT}T00:00:00Z`).toLocaleDate
   year: 'numeric',
   timeZone: 'UTC',
 })
+const gastronomyVerifiedAt = new Date(
+  `${IVA_GASTRONOMIA_VERIFIED_AT}T00:00:00Z`
+).toLocaleDateString('es-UY', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
 
 const canonicalUrl = 'https://cambio-uruguay.com/descuento-de-iva-con-tarjeta-uruguay'
 const title = 'Descuento de IVA con tarjeta: 2 o 9 puntos'
 const description =
-  'Con débito te sacan 2 puntos de IVA (1,64 %) y 9 en gastronomía y hotelería (7,38 %). El Decreto 83/026 rige hasta el 30/9/2026; en octubre son 5 puntos.'
+  'Con débito te sacan 2 puntos de IVA (1,64 %) y 9 en gastronomía (7,38 %). El Decreto 235/026 mantiene los nueve puntos hasta el 30/4/2027.'
 
 defineOgImageComponent('Cambio', {
   title: 'Descuento de IVA con tarjeta',
-  subtitle: '2 puntos con débito, 9 en gastronomía — y 5 desde octubre de 2026',
+  subtitle: '2 puntos con débito, 9 en gastronomía hasta el 30/4/2027',
   tag: 'IVA',
 })
 
@@ -339,7 +333,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'descuento de iva con tarjeta, 9 puntos de iva, dos puntos de iva debito, rebaja de iva ley 19210, iva gastronomia uruguay, descuento iva restaurante tarjeta, ley 17934 iva, iva minimo 7.38, decreto 83/026, iva turistas uruguay, iva cero hoteles no residentes',
+        'descuento de iva con tarjeta, 9 puntos de iva, dos puntos de iva debito, rebaja de iva ley 19210, iva gastronomia uruguay, descuento iva restaurante tarjeta, ley 17934 iva, iva minimo 7.38, decreto 235/026, iva turistas uruguay, iva cero hoteles no residentes',
     },
   ],
   script: [

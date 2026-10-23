@@ -351,3 +351,14 @@ describe('reverificación del 22/9/2026', () => {
     expect(urls).not.toContain('https://www.brou.com.uy/')
   })
 })
+
+describe('gastronomía VAT factual correction', () => {
+  it('does not retain the cancelled October 2026 step-down in any shared card copy', () => {
+    const copy = JSON.stringify([CARD_PROGRAMS, CARD_REWARDS_FAQ, CARD_REWARDS_SOURCES])
+    expect(copy).not.toMatch(/(?:baja a 5|5 puntos desde el 1\/10\/2026|5 desde el 1\/10)/)
+    expect(copy).toContain('235/026')
+    expect(copy).toContain('30/4/2027')
+    // Correcting the fiscal rule does not claim the issuers were reverified today.
+    expect(CARD_REWARDS_LAST_REVIEWED).toBe('2026-09-22')
+  })
+})

@@ -1,67 +1,209 @@
-import { expect, test } from '@playwright/test'
+import { expect, test as base, type Page } from '@playwright/test'
 
-// e2e for the "compare exchange houses over time" page. Uses the dev server
-// configured via `baseURL` in playwright.config.ts.
+type Scenario = 'success' | 'failed' | 'partial' | 'empty'
+interface ComparisonFixture {
+  scenario: Scenario
+  pageErrors: string[]
+}
+
+// The initial SSR house selector still uses the server's configured rates API.
+// Evolution responses are deterministic: this suite checks UI recovery and the
+// Chart.js lifecycle, not the availability of a live upstream history endpoint.
+const test = base.extend<{ comparison: ComparisonFixture }>({
+  comparison: async ({ page, baseURL }, use, testInfo) => {
+    const fixture: ComparisonFixture = { scenario: 'success', pageErrors: [] }
+    const responses: { origin: string; currency: string; status: number; points: number }[] = []
+    let firstOrigin: string | undefined
+    let blockedExternal = 0
+    page.on('pageerror', error => fixture.pageErrors.push(error.message))
+    page.on('console', message => {
+      if (message.type() === 'error') fixture.pageErrors.push(message.text())
+    })
+    await page.route('**/*', route => {
+      const url = new URL(route.request().url())
+      const match = /^\/evolution\/([^/]+)\/([^/]+)$/.exec(url.pathname)
+      if (match) {
+        const origin = decodeURIComponent(match[1]!)
+        const currency = decodeURIComponent(match[2]!)
+        firstOrigin ??= origin
+        const failed =
+          fixture.scenario === 'failed' ||
+          (fixture.scenario === 'partial' && origin === firstOrigin)
+        const empty = fixture.scenario === 'empty' && origin === firstOrigin
+        const evolution = empty
+          ? []
+          : ['2026-10-21', '2026-10-22'].map((date, i) => ({
+              origin,
+              code: currency,
+              type: '',
+              name: currency,
+              date,
+              buy: 40 + i,
+              sell: 42 + i,
+            }))
+        responses.push({
+          origin,
+          currency,
+          status: failed ? 503 : 200,
+          points: failed ? 0 : evolution.length,
+        })
+        return route.fulfill({
+          status: failed ? 503 : 200,
+          contentType: 'application/json',
+          headers: { 'Access-Control-Allow-Origin': '*' },
+          body: JSON.stringify(
+            failed
+              ? { message: 'Synthetic history service unavailable' }
+              : {
+                  origin,
+                  code: currency,
+                  type: null,
+                  evolution,
+                  statistics: {
+                    totalDataPoints: evolution.length,
+                    dateRange: { start: '2026-10-21', end: '2026-10-22', periodMonths: 6 },
+                    buy: { min: 40, max: 41, avg: 40.5, current: 41, change: 2.5 },
+                    sell: { min: 42, max: 43, avg: 42.5, current: 43, change: 2.38 },
+                  },
+                  localData: { name: origin, website: '', maps: '', bcu: '', departments: [] },
+                }
+          ),
+        })
+      }
+      if (url.origin !== new URL(baseURL!).origin) {
+        blockedExternal++
+        return route.abort()
+      }
+      return route.continue()
+    })
+    try {
+      await use(fixture)
+    } finally {
+      if (testInfo.status !== testInfo.expectedStatus) {
+        await testInfo.attach('comparison-diagnostics', {
+          contentType: 'application/json',
+          body: JSON.stringify(
+            {
+              url: page.url(),
+              scenario: fixture.scenario,
+              blockedExternal,
+              responses: responses.slice(-30),
+              pageErrors: fixture.pageErrors.slice(-20).map(value => value.slice(0, 400)),
+            },
+            null,
+            2
+          ),
+        })
+      }
+    }
+  },
+})
+
+test.use({ userAgent: 'CambioUruguayComparisonTest/1.0', serviceWorkers: 'block' })
+
+async function selectTwoHouses(page: Page) {
+  await page.goto('/comparar')
+  await expect(page.locator('h1')).toBeVisible()
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const root = document.getElementById('__nuxt') as HTMLElement & {
+          __vue_app__?: { config: { globalProperties: { $nuxt?: { isHydrating: boolean } } } }
+        }
+        return root?.__vue_app__?.config.globalProperties.$nuxt?.isHydrating === false
+      })
+    )
+    .toBe(true)
+  const houses = page.getByTestId('compare-houses')
+  const options = page.locator('.v-overlay .v-list-item')
+  await expect(async () => {
+    await houses.locator('input').click()
+    await expect(options.nth(1)).toBeVisible({ timeout: 5000 })
+  }).toPass({ timeout: 30_000 })
+  const names = [
+    ((await options.nth(0).locator('.v-list-item-title').textContent()) ?? '').trim(),
+    ((await options.nth(1).locator('.v-list-item-title').textContent()) ?? '').trim(),
+  ]
+  await options.nth(0).click()
+  await options.nth(1).click()
+  await page.keyboard.press('Escape')
+  await expect(houses.locator('.v-chip')).toHaveCount(2)
+  await expect.poll(() => new URL(page.url()).searchParams.get('casas')?.split(',').length).toBe(2)
+  return names
+}
+
+function expectNoChartCrash(comparison: ComparisonFixture) {
+  const crashes = comparison.pageErrors.filter(message =>
+    /reading 'save'|Cannot read properties of null/.test(message)
+  )
+  expect(crashes, `chart draw crashed: ${crashes.join(' | ')}`).toEqual([])
+}
+
 test.describe('compare exchange houses', () => {
-  // Cold Nuxt dev start compiles the route on first hit and the page waits on
-  // live evolution API calls (one per house), so allow generous time.
   test.setTimeout(120_000)
 
-  test('selects a currency + two houses and renders a chart and summary', async ({ page }) => {
-    // Picking houses unmounts/remounts the chart on each refetch. If the chart
-    // animates, an in-flight frame can outlive its destroyed instance and Chart.js
-    // throws "Cannot read properties of null (reading 'save')", leaving the canvas
-    // blank until a reload. Capture page errors so that regression fails the test
-    // (the canvas element stays visible even when the draw crashed).
-    const pageErrors: string[] = []
-    page.on('pageerror', err => pageErrors.push(err.message))
-    page.on('console', msg => {
-      if (msg.type() === 'error') pageErrors.push(msg.text())
-    })
+  test('selects a currency + two houses and renders a chart and summary', async ({
+    page,
+    comparison,
+  }) => {
+    const names = await selectTwoHouses(page)
+    await expect(page.locator('canvas').first()).toBeVisible()
+    await expect(page.getByTestId('compare-summary')).toBeVisible()
+    await expect(page.getByTestId('compare-summary-house')).toHaveText(names)
+    await expect(page.getByTestId('compare-unavailable')).toHaveCount(0)
+    expectNoChartCrash(comparison)
+  })
 
-    await page.goto('/comparar')
+  test('a total history failure offers retry and restores the selected comparison', async ({
+    page,
+    comparison,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    comparison.scenario = 'failed'
+    const names = await selectTwoHouses(page)
+    const notice = page.getByTestId('compare-unavailable')
+    await expect(notice).toBeVisible()
+    for (const name of names) await expect(notice).toContainText(name)
+    await expect(page.getByTestId('compare-summary')).toHaveCount(0)
+    await expect(page.locator('canvas')).toHaveCount(0)
+    await expect(page.getByTestId('compare-no-history')).toHaveCount(0)
+    const selectedUrl = page.url()
 
-    // The page is server-rendered; the H1 should appear quickly.
-    await expect(page.locator('h1')).toBeVisible({ timeout: 90_000 })
+    comparison.scenario = 'success'
+    await page.getByTestId('compare-retry').click()
+    await expect(page.getByTestId('compare-summary-house')).toHaveText(names)
+    await expect(page.locator('canvas').first()).toBeVisible()
+    await expect(notice).toHaveCount(0)
+    expect(page.url()).toBe(selectedUrl)
+    await expect(page.getByTestId('compare-houses').locator('.v-chip')).toHaveCount(2)
+    expectNoChartCrash(comparison)
+  })
 
-    // Currency defaults to USD; the houses autocomplete is populated from the
-    // live "today" snapshot.
-    const houses = page.getByTestId('compare-houses')
-    await expect(houses).toBeVisible({ timeout: 90_000 })
-    const housesInput = houses.locator('input')
+  test('a failed house is named while the other history stays available', async ({
+    page,
+    comparison,
+  }) => {
+    comparison.scenario = 'partial'
+    const names = await selectTwoHouses(page)
+    const notice = page.getByTestId('compare-unavailable')
+    await expect(notice).toContainText(names[0]!)
+    await expect(notice).not.toContainText(names[1]!)
+    await expect(page.getByTestId('compare-summary-house')).toHaveText([names[1]!])
+    await expect(page.locator('canvas').first()).toBeVisible()
+    await expect(page.getByTestId('compare-no-history')).toHaveCount(0)
+    expectNoChartCrash(comparison)
+  })
 
-    // Vuetify renders the menu options in an overlay outside the field. The
-    // field is server-rendered but only opens its menu once Vue has hydrated and
-    // the live house list has loaded, so retry the open-click until options
-    // appear rather than assuming the first click lands.
-    const options = page.locator('.v-overlay .v-list-item')
-    await expect(async () => {
-      await housesInput.click()
-      await expect(options.first()).toBeVisible({ timeout: 5_000 })
-    }).toPass({ timeout: 90_000 })
-
-    // With a multi-select, picking an option keeps the menu open, so select two
-    // by distinct indices.
-    await options.nth(0).click()
-    await options.nth(1).click()
-
-    // Close the overlay so it doesn't intercept later assertions.
-    await page.keyboard.press('Escape')
-
-    // A chart canvas should render once the two evolution series resolve.
-    const canvas = page.locator('canvas')
-    await expect(canvas.first()).toBeVisible({ timeout: 90_000 })
-
-    // The summary table should list both selected houses.
-    const summary = page.getByTestId('compare-summary')
-    await expect(summary).toBeVisible({ timeout: 90_000 })
-    const houseCells = summary.getByTestId('compare-summary-house')
-    await expect.poll(async () => houseCells.count(), { timeout: 90_000 }).toBeGreaterThanOrEqual(2)
-
-    // The chart must have drawn without a Chart.js lifecycle crash.
-    const chartCrash = pageErrors.filter(m =>
-      /reading 'save'|Cannot read properties of null/.test(m)
-    )
-    expect(chartCrash, `chart draw crashed: ${chartCrash.join(' | ')}`).toEqual([])
+  test('an explicitly empty history is distinguished from a failed request', async ({
+    page,
+    comparison,
+  }) => {
+    comparison.scenario = 'empty'
+    const names = await selectTwoHouses(page)
+    await expect(page.getByTestId('compare-no-history')).toContainText(names[0]!)
+    await expect(page.getByTestId('compare-unavailable')).toHaveCount(0)
+    await expect(page.getByTestId('compare-retry')).toHaveCount(0)
+    await expect(page.getByTestId('compare-summary-house')).toHaveText([names[1]!])
+    expectNoChartCrash(comparison)
   })
 })

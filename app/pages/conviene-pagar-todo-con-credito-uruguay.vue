@@ -536,7 +536,7 @@ const WINS = [
   {
     icon: 'mdi-silverware-fork-knife',
     title: 'Gastronomía y turismo',
-    body: 'El régimen de nueve puntos de la Ley 17.934 nombra a la tarjeta de crédito entre los medios habilitados, igual que al débito. Ahí no resignás nada y el flote queda limpio. Ojo con el calendario: el Decreto 83/026 los prorrogó hasta el 30 de setiembre de 2026 y desde el 1º de octubre la rebaja pasa a cinco puntos.',
+    body: 'El régimen de nueve puntos de la Ley 17.934 nombra a la tarjeta de crédito entre los medios habilitados, igual que al débito. Ahí no resignás nada y el flote queda limpio. El Decreto 235/026 mantiene los nueve puntos hasta el 30 de abril de 2027, según la guía DGI del 02/10/2026 consultada el 23/10/2026. Se mantienen los requisitos de consumo final y de titularidad del medio de pago por una persona física.',
   },
   {
     icon: 'mdi-receipt-text-outline',
