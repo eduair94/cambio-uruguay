@@ -54,6 +54,7 @@
                   density="compact"
                   variant="outlined"
                   data-testid="compare-houses"
+                  class="compare-houses"
                   :error="tooManyHouses"
                   :error-messages="tooManyHouses ? $t('compare.maxHouses') : undefined"
                 />
@@ -611,6 +612,12 @@ useHead(() => ({
 </script>
 
 <style scoped>
+/* Keep the chip selector's height when its input loses focus. Otherwise it can
+   move the retry button between pointerdown and pointerup on narrow screens. */
+.compare-houses :deep(.v-field__input > input) {
+  min-width: 64px;
+}
+
 /* Horizontal scroll container for the chart: on narrow screens the inner wrap
    keeps a minimum width so the line and its date ticks stay legible instead of
    crushing together, and the user swipes sideways to read the rest. */

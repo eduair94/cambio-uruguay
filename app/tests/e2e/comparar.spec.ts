@@ -184,6 +184,9 @@ test.describe('compare exchange houses', () => {
     await expect(page.locator('canvas')).toHaveCount(0)
     await expect(page.getByTestId('compare-no-history')).toHaveCount(0)
     const selectedUrl = page.url()
+    const houses = page.getByTestId('compare-houses')
+    await expect(houses.locator('input[type="text"]')).toBeFocused()
+    const focusedHeight = await houses.evaluate(element => element.getBoundingClientRect().height)
 
     comparison.scenario = 'success'
     comparison.phase = 'retry'
@@ -191,8 +194,14 @@ test.describe('compare exchange houses', () => {
     await expect(page.getByTestId('compare-summary-house')).toHaveText(names)
     await expect(page.locator('canvas').first()).toBeVisible()
     await expect(notice).toHaveCount(0)
+    // Blurring the chip selector must not move the button between pointerdown
+    // and pointerup. Keep the original single real click as the recovery proof.
+    await expect(houses.locator('input[type="text"]')).not.toBeFocused()
+    expect(await houses.evaluate(element => element.getBoundingClientRect().height)).toBe(
+      focusedHeight
+    )
     expect(page.url()).toBe(selectedUrl)
-    await expect(page.getByTestId('compare-houses').locator('.v-chip')).toHaveCount(2)
+    await expect(houses.locator('.v-chip')).toHaveCount(2)
     expectNoChartCrash(comparison)
   })
 
