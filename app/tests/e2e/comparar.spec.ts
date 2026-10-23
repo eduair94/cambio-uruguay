@@ -1,8 +1,10 @@
 import { expect, test as base, type Page } from '@playwright/test'
+import { mkdir, writeFile } from 'node:fs/promises'
 
 type Scenario = 'success' | 'failed' | 'partial' | 'empty'
 interface ComparisonFixture {
   scenario: Scenario
+  phase: 'selection' | 'retry'
   pageErrors: string[]
 }
 
@@ -11,8 +13,14 @@ interface ComparisonFixture {
 // Chart.js lifecycle, not the availability of a live upstream history endpoint.
 const test = base.extend<{ comparison: ComparisonFixture }>({
   comparison: async ({ page, baseURL }, use, testInfo) => {
-    const fixture: ComparisonFixture = { scenario: 'success', pageErrors: [] }
-    const responses: { origin: string; currency: string; status: number; points: number }[] = []
+    const fixture: ComparisonFixture = { scenario: 'success', phase: 'selection', pageErrors: [] }
+    const responses: {
+      origin: string
+      currency: string
+      status: number
+      points: number
+      phase: string
+    }[] = []
     let firstOrigin: string | undefined
     let blockedExternal = 0
     page.on('pageerror', error => fixture.pageErrors.push(error.message))
@@ -46,6 +54,7 @@ const test = base.extend<{ comparison: ComparisonFixture }>({
           currency,
           status: failed ? 503 : 200,
           points: failed ? 0 : evolution.length,
+          phase: fixture.phase,
         })
         return route.fulfill({
           status: failed ? 503 : 200,
@@ -80,19 +89,26 @@ const test = base.extend<{ comparison: ComparisonFixture }>({
       await use(fixture)
     } finally {
       if (testInfo.status !== testInfo.expectedStatus) {
-        await testInfo.attach('comparison-diagnostics', {
-          contentType: 'application/json',
-          body: JSON.stringify(
+        const diagnosticsPath = testInfo.outputPath('comparison-diagnostics.json')
+        await mkdir(testInfo.outputDir, { recursive: true })
+        await writeFile(
+          diagnosticsPath,
+          JSON.stringify(
             {
               url: page.url(),
               scenario: fixture.scenario,
+              phase: fixture.phase,
               blockedExternal,
               responses: responses.slice(-30),
               pageErrors: fixture.pageErrors.slice(-20).map(value => value.slice(0, 400)),
             },
             null,
             2
-          ),
+          )
+        )
+        await testInfo.attach('comparison-diagnostics', {
+          contentType: 'application/json',
+          path: diagnosticsPath,
         })
       }
     }
@@ -170,6 +186,7 @@ test.describe('compare exchange houses', () => {
     const selectedUrl = page.url()
 
     comparison.scenario = 'success'
+    comparison.phase = 'retry'
     await page.getByTestId('compare-retry').click()
     await expect(page.getByTestId('compare-summary-house')).toHaveText(names)
     await expect(page.locator('canvas').first()).toBeVisible()
