@@ -1902,6 +1902,30 @@
         "mejor banco uruguay"
       ],
       "hypothesis": "Los tres primeros resultados de la rubrica existente se muestran antes de los controles, con acceso a sus fichas. Una guia nueva para elegir cuenta por uso enlaza requisitos de apertura, transferencias del exterior y plazo fijo, con fuentes BCU y COPAB. Se espera mayor continuidad hacia fichas y guias; la porcion de clics de Search Console es un control de adquisicion, no mide por si sola retencion. Comparar tambien rebote, vistas por sesion e internal_navigation en GA4 por pais y dispositivo, con muestra suficiente. No cambian puntajes, tarifarios ni metadatos."
+    },
+    {
+      "id": "guia-asistente-personal-bps",
+      "shippedOn": "2026-10-23",
+      "routes": ["/guias/asistente-personal-bps-uruguay"],
+      "queries": [
+        "asistente personal bps",
+        "programa de asistentes personales",
+        "cuanto paga bps asistente personal",
+        "subsidio asistente personal uruguay"
+      ],
+      "hypothesis": "Guia nueva. El racimo del BPS del sitio cubre once prestaciones y esta no aparecia en ningun archivo, siendo la unica donde el beneficiario ademas se vuelve EMPLEADOR del asistente. Publica lo que la ficha oficial tiene y lo que no dice de frente: el subsidio de 4,6 BPC ($ 31.574,40) por 80 horas contra el salario nominal del asistente ($ 24.377), la franja de 30 a 79 anos que el programa deja afuera, los cuatro tramos de cobertura convertidos a pesos (estan publicados SOLO en BPC) y la indemnizacion por despido, que corre siempre por cuenta del beneficiario. Y no arbitra la ambiguedad de la propia ficha: la introduce por los ingresos del nucleo familiar pero el primer tramo dice «hasta 3 BPC por persona», y las dos lecturas dan tramos opuestos para el mismo hogar. Se espera ganar porcion en las consultas de marca de la prestacion, donde hoy el SERP es la ficha institucional sola."
+    },
+    {
+      "id": "migas-en-el-renglon-verde-2",
+      "shippedOn": "2026-10-23",
+      "routes": ["/cotizaciones-de-la-region", "/meal-prep-uruguay"],
+      "queries": [
+        "cotizaciones de la region",
+        "dolar en argentina brasil y la region",
+        "meal prep uruguay",
+        "viandas para la semana uruguay"
+      ],
+      "hypothesis": "Solo el rastro de migas, sin tocar titulo, descripcion ni cuerpo de ninguna de las dos. Las dos emitian UN nodo de datos estructurados suelto (Dataset una, WebApplication la otra), asi que el contador de estructurados las daba por buenas con el rastro vacio y el renglon verde del resultado quedaba en la URL cruda. Ahora el nodo viaja dentro de un @graph con el BreadcrumbList primero, como en /dolar-hoy. El rastro se queda en DOS eslabones a proposito: ninguna de las dos le muestra al lector una pagina padre, y un eslabon intermedio inventado le prometeria una seccion que no existe. Es la segunda tanda del mismo cambio que midio «migas-en-el-renglon-verde»; eran las dos unicas de las ocho sin migas que hoy estaban libres en el libro."
     }
   ]
 }

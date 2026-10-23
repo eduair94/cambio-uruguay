@@ -513,6 +513,15 @@ export interface Apoyo {
   requiereIcc?: boolean
   /** Advertencia que va pegada al programa (vigencia por confirmar, requisito que excluye…). */
   alerta?: string
+  /**
+   * Página propia del sitio que explica el programa entero, cuando existe.
+   *
+   * Opcional a propósito: la tarjeta de acá dice qué da y quién califica en una línea, y hay
+   * programas donde eso no alcanza para decidir —el del asistente personal tiene cuatro tramos de
+   * cobertura, un copago y un empleador— y el lector necesita la página. Campo nuevo y opcional,
+   * como el `link` de `withdrawCash.ts`.
+   */
+  to?: string
 }
 
 /**
@@ -545,6 +554,19 @@ export const APOYOS: readonly Apoyo[] = Object.freeze([
     como: 'Se solicita en BPS. Es incompatible con la asignación contributiva, y el artículo 9 deja optar por ésta en cualquier momento: si te corresponden las dos, conviene la más alta.',
     url: 'https://www.bps.gub.uy/3540/plan-de-equidad.html',
     requiereIcc: true,
+  }),
+  Object.freeze({
+    id: 'asistente-personal',
+    nombre: 'Asistente personal (dependencia severa)',
+    organismo: 'BPS + MIDES',
+    tipo: 'servicio' as ApoyoTipo,
+    puerta: 'bps' as ApoyoPuerta,
+    da: 'Subsidia hasta 4,6 BPC ($ 31.574,40) por mes para contratar un asistente personal por un mínimo de 80 horas mensuales. Cubre el total, el 67 %, el 33 % o nada según los ingresos del hogar; ese monto incluye el salario del asistente ($ 24.377, vigencia 1/2026), los aportes patronales, el aguinaldo y el salario vacacional.',
+    quien:
+      'Personas en situación de dependencia severa de hasta 29 años de edad o mayores de 80, que vivan en su domicilio particular dentro del territorio nacional, con ciudadanía natural o legal o diez años de residencia. Entre los 30 y los 79 el programa no está abierto.',
+    como: 'Se escribe a sistemadecuidados@mides.gub.uy. El MIDES visita el domicilio y determina el nivel de dependencia; después el BPS informa el porcentaje de subsidio según los ingresos del hogar y el trámite se completa en su oficina.',
+    url: 'https://www.bps.gub.uy/9973/programa-de-asistentes-personales.html',
+    to: '/guias/asistente-personal-bps-uruguay',
   }),
   Object.freeze({
     id: 'tus',
@@ -1001,6 +1023,19 @@ function resolverApoyo(apoyo: Apoyo, ctx: ResolverCtx): ApoyoResuelto {
       return hayMenores
         ? item(apoyo, 'corresponde', 0, 'Se gestiona en el centro educativo.')
         : item(apoyo, 'no-califica', 0, 'Es para escolares y estudiantes.')
+    case 'asistente-personal':
+      // No se resuelve con los datos de esta calculadora, y no es una omisión: depende del nivel
+      // de dependencia, que evalúa un equipo del MIDES en el domicilio, y del tramo de ingreso,
+      // que el BPS informa después de esa visita. La propia ficha del BPS no aclara si esas BPC se
+      // miden por persona o sobre el total del hogar, así que poner un monto acá sería inventar
+      // el tramo. Queda en «evaluar» con monto 0: no suma al total y no promete nada.
+      return item(
+        apoyo,
+        'evaluar',
+        0,
+        'Depende del nivel de dependencia que evalúa el MIDES y del tramo de ingreso que informa el BPS.'
+      )
+
     default:
       return item(apoyo, 'evaluar', 0, '')
   }

@@ -1379,6 +1379,7 @@ export const guideHubs: readonly GuideHub[] = [
       'como-evitar-estafas-financieras-uruguay',
       'educacion-financiera-para-jovenes-uruguay',
       'subsidio-expensas-funerarias-bps-uruguay',
+      'asistente-personal-bps-uruguay',
       'cobrar-jubilacion-uruguaya-desde-el-exterior',
       'canasta-fin-de-ano-bps-uruguay',
       'precio-supergas-garrafa-uruguay',

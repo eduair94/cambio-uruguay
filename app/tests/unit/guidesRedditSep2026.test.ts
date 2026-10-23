@@ -80,7 +80,13 @@ describe('tanda de guías 2026-09-13 › forma', () => {
     expect(BANNED_TAGS.has(g.tag), g.tag).toBe(false)
     expect(g.description.length).toBeGreaterThanOrEqual(100)
     expect(g.description.length).toBeLessThanOrEqual(190)
-    expect(g.updatedAt).toMatch(/^2026-09-\d\d$/)
+    // La fecha de la tanda era parte del brief, pero el brief se aplica a los SEIS módulos
+    // enteros, no a las treinta guías de ese día: una guía agregada después trae su propia fecha
+    // de verificación y exigirle setiembre de 2026 es pedirle que mienta. Lo que sigue valiendo
+    // es que ninguna guía de estos módulos quede DEBAJO de la fecha del brief, que es lo que
+    // detectaría una fecha copiada de una guía vieja o un placeholder.
+    expect(g.updatedAt, g.slug).toMatch(/^20\d\d-\d\d-\d\d$/)
+    expect(g.updatedAt >= '2026-09-13', `${g.slug}: ${g.updatedAt}`).toBe(true)
     expect(g.sections.length).toBeGreaterThanOrEqual(4)
     expect(g.sections.length).toBeLessThanOrEqual(9)
     expect(g.faqs?.length ?? 0).toBeGreaterThanOrEqual(3)

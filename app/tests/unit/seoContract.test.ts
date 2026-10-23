@@ -358,15 +358,29 @@ const LEGACY_BUDGET = { seoMeta: 0, canonical: 0, structuredData: 0 }
 const DEUDA_SIN_MIGAS = [
   '/api-cotizacion-intradia',
   '/api-cotizaciones-regionales',
-  '/cotizaciones-de-la-region',
   '/hecho-a-pedido',
-  '/meal-prep-uruguay',
   '/plan-de-vida-uruguay',
   '/por-que-el-bcu-quiere-mas-pesos',
   '/reclamo-sodimac-compra-cancelada',
 ]
 
-const BREADCRUMB_BUDGET = 8
+/**
+ * 8 → 6 el 2026-10-23: `/cotizaciones-de-la-region` y `/meal-prep-uruguay`, que son las DOS únicas
+ * de las ocho que hoy están libres en el libro de cambios (`npm run seo_debt`). Las otras seis
+ * siguen reservadas por una ventana de medición abierta sobre su propia descripción, y la primera
+ * se libera el 25/10.
+ *
+ * Las dos emitían UN nodo suelto —`Dataset` una, `WebApplication` la otra— así que el contador de
+ * `structuredData` las daba por buenas con el rastro vacío. Ahora el nodo viaja dentro de un
+ * `@graph` con el `BreadcrumbList` primero, que es la forma que ya usan `/dolar-hoy` y
+ * `/por-que-sube-el-dolar`.
+ *
+ * El rastro se queda en DOS eslabones en las dos, y eso es deliberado: ninguna de las dos le
+ * muestra al lector una página padre —la del tablero regional enlaza a `/dolar-blue-hoy` y a su
+ * propia API, que son hermanas, y la de meal prep no enlaza a ninguna—, y un eslabón intermedio
+ * inventado le promete al visitante una sección que no existe.
+ */
+const BREADCRUMB_BUDGET = 6
 
 /**
  * De archivo de página a ruta: `plan-de-vida-uruguay.vue` → `/plan-de-vida-uruguay`,

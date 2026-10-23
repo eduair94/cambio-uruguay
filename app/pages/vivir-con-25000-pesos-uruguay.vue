@@ -703,9 +703,14 @@
               <p v-if="it.apoyo.alerta" class="mb-2 text-warning">
                 <strong>Ojo.</strong> {{ it.apoyo.alerta }}
               </p>
-              <a :href="it.apoyo.url" target="_blank" rel="noopener noreferrer">
-                Ver la fuente oficial
-              </a>
+              <div class="d-flex flex-wrap ga-4">
+                <a :href="it.apoyo.url" target="_blank" rel="noopener noreferrer">
+                  Ver la fuente oficial
+                </a>
+                <NuxtLink v-if="it.apoyo.to" :to="localePath(it.apoyo.to)">
+                  Cómo funciona, tramo por tramo
+                </NuxtLink>
+              </div>
             </VExpansionPanelText>
           </VExpansionPanel>
         </VExpansionPanels>

@@ -1264,4 +1264,148 @@ export const trabajoBpsGuides: readonly Guide[] = [
       },
     ],
   },
+  {
+    // El racimo del BPS del sitio cubre once prestaciones y ésta no aparecía en ningún archivo.
+    // Es la única donde el beneficiario además se vuelve EMPLEADOR del asistente, que es la parte
+    // que las dos fichas oficiales no dicen de frente.
+    //
+    // Cifras verificadas el 2026-10-23 contra la ficha del BPS (9973, que declaraba su última
+    // actualización el 22/10/2026) y la del Sistema Nacional de Cuidados (gub.uy, node/640).
+    // Las dos cuentas NUESTRAS van declaradas como tales en el texto: pasar las BPC de los tramos
+    // a pesos con la BPC de 2026 ($ 6.864) y resolver el 67 % y el 33 % del subsidio.
+    slug: 'asistente-personal-bps-uruguay',
+    title: 'Asistente personal del BPS: hasta $ 31.574',
+    description:
+      'El BPS subsidia hasta 4,6 BPC ($ 31.574,40) por 80 horas mensuales de asistente personal: total hasta 3 BPC de ingreso, 67 % hasta 6 BPC y 33 % hasta 11.',
+    tag: 'CUIDADOS',
+    updatedAt: '2026-10-23',
+    sections: [
+      {
+        heading: '¿Cuánto paga el BPS por un asistente personal?',
+        body: 'El subsidio del Programa de Asistentes Personales es de 4,6 BPC, que el BPS publica como $ 31.574,40 por mes, por un mínimo de 80 horas mensuales. Conviene no leerlo como un sueldo: el mismo monto tiene que cubrir el salario del asistente, los aportes patronales, el aguinaldo y el salario vacacional. La propia ficha publica el salario nominal al lado, $ 24.377 por esas 80 horas con vigencia 1/2026, así que lo que queda para todo lo demás son $ 7.197,40. Y casi nadie lo cobra entero: el porcentaje que pone el programa baja con el ingreso del hogar, y lo que el programa no pone lo pone la familia.',
+        table: {
+          headers: ['Concepto', 'Monto publicado por el BPS'],
+          rows: [
+            ['Subsidio total, por mes', '4,6 BPC = $ 31.574,40'],
+            ['Salario nominal del asistente, por 80 horas', '$ 24.377 (vigencia 1/2026)'],
+            ['Resto, para aportes patronales, aguinaldo y salario vacacional', '$ 7.197,40'],
+            ['Horas mensuales que cubre', 'Un mínimo de 80'],
+          ],
+        },
+      },
+      {
+        heading: 'Quién puede pedirlo, y la franja que queda afuera',
+        body: 'Lo primero, porque descarta a mucha gente que llega buscando el trámite: la ficha del BPS acota el programa a personas con dependencia severa «de hasta 29 años de edad o mayores de 80». Entre los 30 y los 79 no hay programa, por más severa que sea la dependencia; no es un papel que falte, es una franja que la prestación deja fuera. Los otros tres requisitos son el nivel de dependencia, que determina un equipo del MIDES en una visita al domicilio y no un certificado que se presente; residir en su domicilio particular dentro del territorio nacional, lo que deja afuera a una persona institucionalizada; y tener ciudadanía natural o legal, o diez años de residencia en el país.',
+      },
+      {
+        heading: 'Cuánto te cubren según el ingreso del hogar',
+        body: 'El BPS cubre el total, el 67 %, el 33 % o nada. Los cuatro tramos están publicados sólo en BPC, así que la columna en pesos de la tabla es una cuenta nuestra con la BPC de 2026 ($ 6.864), igual que las dos últimas columnas, que son el 67 % y el 33 % de $ 31.574,40. Lo que importa de esa última columna: cuando la cobertura es parcial, el beneficiario paga la diferencia al asistente personal, y la diferencia es sobre el paquete entero, no sobre el salario. La obligación con el asistente no baja porque baje el subsidio, así que en el tramo del 33 % el hogar pone más plata que el programa.',
+        table: {
+          headers: [
+            'Ingreso del hogar',
+            'En pesos (cuenta nuestra)',
+            'Cubre el BPS',
+            'Queda a tu cargo',
+          ],
+          rows: [
+            ['Hasta 3 BPC por persona', 'Hasta $ 20.592', 'Subsidio total: $ 31.574,40', '$ 0'],
+            ['De 3 BPC a 6 BPC', '$ 20.592 a $ 41.184', '67 %: $ 21.154,85', '$ 10.419,55'],
+            ['De 6 BPC a 11 BPC', '$ 41.184 a $ 75.504', '33 %: $ 10.419,55', '$ 21.154,85'],
+            ['A partir de 11 BPC', 'Más de $ 75.504', '0 %', '$ 31.574,40'],
+          ],
+        },
+      },
+      {
+        heading: 'El dato que la ficha no resuelve: ¿por persona o por hogar?',
+        body: 'La tabla de arriba tiene un agujero que no es nuestro y que conviene conocer antes de hacer cuentas. El BPS la presenta diciendo que «el porcentaje de cobertura variará en función de los ingresos del núcleo familiar» y define ese núcleo como las «personas que vivan bajo el mismo techo», o sea el total del hogar; pero el primer tramo dice «hasta 3 BPC POR PERSONA» y los otros tres no aclaran nada. Las dos lecturas no se parecen: un hogar de cuatro personas con $ 80.000 de ingreso total está en el tramo del subsidio total si se mide por persona ($ 20.000 cada una) y en el de 0 % si se mide sobre el total, porque $ 80.000 pasa las 11 BPC. No encontramos norma que lo resuelva, así que acá no se arbitra: el nivel que vale es el que el BPS informa con los ingresos reales del hogar, después de la visita del MIDES y antes de ir a la oficina.',
+      },
+      {
+        heading: 'Quien recibe el subsidio es el empleador del asistente',
+        body: 'Es la parte que ninguna de las dos fichas dice de frente y la que más plata mueve: el subsidio no contrata a nadie, lo contrata el beneficiario, que queda como patrón del asistente personal. Por eso el monto incluye los aportes patronales, el aguinaldo y el salario vacacional, y por eso hay una obligación que el subsidio no cubre nunca, ni con cobertura total: «en caso de despido, la indemnización siempre es a cargo del beneficiario». Vale leer cuánto es esa indemnización antes de contratar, no después, y tener presente que el aguinaldo y el salario vacacional del asistente se rigen por las mismas reglas que los de cualquier trabajador.',
+        links: [
+          { label: 'Indemnización por despido', to: '/indemnizacion-por-despido-uruguay' },
+          { label: 'Salario vacacional', to: '/salario-vacacional-uruguay' },
+          {
+            label: 'Cuándo se cobra el aguinaldo',
+            to: '/cuando-se-cobra-el-aguinaldo-uruguay',
+          },
+        ],
+      },
+      {
+        heading: 'Lo que esta guía no te puede decir',
+        body: 'Tres cosas, y ninguna por falta de ganas. Si la persona califica como dependencia severa: el nivel lo determina el equipo del MIDES en el domicilio y no se publica como puntaje, así que no se puede anticipar desde una pantalla. Cuál de las dos lecturas de los tramos rige: ya está explicado arriba, y publicar una de las dos como si fuera la buena sería hacerle planificar mal a la mitad de los lectores. Y cuánto se espera: ninguna de las dos fichas oficiales publica plazos ni una lista de prioridad, y un plazo inventado es peor que ninguno cuando hay un cuidado de por medio.',
+      },
+    ],
+    steps: [
+      {
+        name: 'Escribir al Sistema Nacional de Cuidados',
+        text: 'La persona o quien la represente escribe a sistemadecuidados@mides.gub.uy. Es el único canal que la ficha oficial publica: no figura un teléfono.',
+      },
+      {
+        name: 'Recibir la visita del MIDES',
+        text: 'El Ministerio de Desarrollo Social envía un equipo al domicilio, pregunta por la situación de la persona y determina el nivel de dependencia y si corresponde el servicio.',
+      },
+      {
+        name: 'Conocer el porcentaje de subsidio',
+        text: 'Si corresponde, se informa el nivel de subsidio según los ingresos del hogar confirmados por el BPS. Ese es el número con el que se planifica.',
+      },
+      {
+        name: 'Completar el trámite en el BPS',
+        text: 'Con el subsidio informado, la persona se dirige a la oficina del BPS de su localidad y completa el trámite para acceder al registro de asistentes personales autorizados.',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Cuánto paga el BPS por un asistente personal?',
+        a: 'El subsidio total es de 4,6 BPC, que el BPS publica como $ 31.574,40 por mes, por un mínimo de 80 horas mensuales. No es el sueldo del asistente: tiene que cubrir el salario nominal ($ 24.377, vigencia 1/2026), los aportes patronales, el aguinaldo y el salario vacacional.',
+      },
+      {
+        q: '¿Quién puede pedir un asistente personal?',
+        a: 'Personas en situación de dependencia severa de hasta 29 años de edad o mayores de 80, que vivan en su domicilio particular dentro del territorio nacional, con ciudadanía natural o legal o diez años de residencia. Entre los 30 y los 79 años el programa no está abierto.',
+      },
+      {
+        q: '¿El subsidio es el mismo para todos?',
+        a: 'No. El BPS cubre el total, el 67 %, el 33 % o nada según los ingresos del núcleo familiar medidos en BPC. Cuando la cobertura es parcial, el beneficiario paga la diferencia al asistente personal, y esa diferencia es sobre el paquete entero: $ 10.419,55 en el tramo del 67 % y $ 21.154,85 en el del 33 %.',
+      },
+      {
+        q: '¿Los tramos de ingreso se miden por persona o por el total del hogar?',
+        a: 'La ficha del BPS no lo resuelve: introduce la tabla hablando de los ingresos del núcleo familiar y define el núcleo como las personas que viven bajo el mismo techo, pero el primer tramo dice «hasta 3 BPC por persona» y los otros tres no aclaran. Las dos lecturas dan resultados opuestos, así que el nivel que vale es el que el BPS informa con los ingresos reales del hogar.',
+      },
+      {
+        q: '¿Quién es el empleador del asistente personal?',
+        a: 'El beneficiario. Por eso el subsidio incluye los aportes patronales, el aguinaldo y el salario vacacional, y por eso la indemnización por despido corre siempre por cuenta del beneficiario, incluso con subsidio total.',
+      },
+      {
+        q: '¿Y si el subsidio me queda en 0 %?',
+        a: 'Según el Sistema de Cuidados, la persona igual puede acceder al registro de asistentes personales formados, autorizados y supervisados, pagando ella el servicio.',
+      },
+      {
+        q: '¿Se pueden contratar más de 80 horas?',
+        a: 'El programa cubre un mínimo de 80 horas mensuales, que se distribuyen de común acuerdo entre la persona y el asistente. Las horas que el hogar quiera agregar por encima de esas 80 no las cubre el subsidio.',
+      },
+    ],
+    related: [
+      { label: 'Jubilación por incapacidad', to: '/jubilacion-por-incapacidad-uruguay' },
+      { label: 'Pensión a la vejez', to: '/pension-a-la-vejez-uruguay' },
+      { label: 'Vivir con $ 25.000', to: '/vivir-con-25000-pesos-uruguay' },
+    ],
+    sources: [
+      {
+        label:
+          'Programa de Asistentes Personales: requisitos, horas, subsidio y tabla de cobertura',
+        url: 'https://www.bps.gub.uy/9973/programa-de-asistentes-personales.html',
+        publisher: 'BPS',
+      },
+      {
+        label: '¿Cómo postularse al Programa de Asistentes Personales?',
+        url: 'https://www.gub.uy/sistema-cuidados/node/640',
+        publisher: 'Sistema Nacional de Cuidados',
+      },
+      {
+        label: 'Ley 19.353, Sistema Nacional Integrado de Cuidados (art. 8, población objetivo)',
+        url: 'https://www.impo.com.uy/bases/leyes/19353-2015',
+        publisher: 'IMPO',
+      },
+    ],
+  },
 ]
