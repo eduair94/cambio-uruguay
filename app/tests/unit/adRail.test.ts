@@ -349,7 +349,7 @@ describe('la unidad editorial de las guías', () => {
     expect(loop.tag).toBe('template')
     expect(directive(loop, 'for')).toContain('guide.sections')
     const siblings = elementChildren(loop)
-    expect(siblings.map(sibling => sibling.tag)).toEqual(['section', 'ClientOnly'])
+    expect(siblings.map(sibling => sibling.tag)).toEqual(['section', 'details', 'ClientOnly'])
     const article = nodes.find(({ node: n }) => n === loop)!.parent!
     expect(hasClass(article, 'guide-article')).toBe(true)
   })

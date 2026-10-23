@@ -1890,6 +1890,18 @@
         "descuentos con tarjeta sin app uruguay"
       ],
       "hypothesis": "Enlazado interno; el contenido de la pagina medida no cambia. Estaba en el pozo de enlaces de contexto: ninguna otra pagina la enlazaba desde su contenido. El enlace entra desde /descuentos-con-tarjeta-uruguay, que no tiene ventana abierta y cuyo lector lo necesita de la manera mas directa que hubo en ese pozo: esa pagina se presenta diciendo que los datos son de la app Bankos y nombra a Bankos dos veces en su parrafo de atribucion, sin decir nunca en que se diferencia de ella. Quien llega por el nombre de la app queda con la pregunta hecha y sin a donde ir, teniendo el sitio una pagina que la contesta y que ademas declara lo que la app hace mejor. Se agrego una frase en ese parrafo, donde Bankos ya estaba nombrado."
+    },
+    {
+      "id": "bancos-respuesta-y-decision",
+      "shippedOn": "2026-10-23",
+      "routes": [
+        "/mejores-bancos-uruguay"
+      ],
+      "queries": [
+        "mejores bancos uruguay",
+        "mejor banco uruguay"
+      ],
+      "hypothesis": "Los tres primeros resultados de la rubrica existente se muestran antes de los controles, con acceso a sus fichas. Una guia nueva para elegir cuenta por uso enlaza requisitos de apertura, transferencias del exterior y plazo fijo, con fuentes BCU y COPAB. Se espera mayor continuidad hacia fichas y guias; la porcion de clics de Search Console es un control de adquisicion, no mide por si sola retencion. Comparar tambien rebote, vistas por sesion e internal_navigation en GA4 por pais y dispositivo, con muestra suficiente. No cambian puntajes, tarifarios ni metadatos."
     }
   ]
 }
