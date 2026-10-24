@@ -101,7 +101,8 @@ const LISTA_CURADA = [
 /**
  * La deuda: páginas de lectura larga que todavía no están en ningún tramo. **SÓLO PUEDE BAJAR.**
  *
- * 161 el 2026-10-22, antes de la primera tanda; 62 después de ella. Las 84 que salieron son todas
+ * 161 el 2026-10-22, antes de la primera tanda; 62 después de ella. Quedan 61 tras clasificar la
+ * guía catastral el 2026-10-24: la UR sólo convierte una tasa auxiliar. Las 84 iniciales son todas
  * las que cumplen una línea mecánica: su `<script setup>` no pide ningún dato en vivo, o sea que su
  * cuerpo es texto y no una serie con texto alrededor. Las que quedan son justamente las que esa
  * línea no puede decidir desde acá —una guía que muestra una cifra fresca (la de préstamos, que es
@@ -177,12 +178,11 @@ const DEUDA_SIN_TRAMO = [
   '/temas-de-dinero-reddit',
   '/tendencias-uruguay',
   '/tickets-mutualistas-uruguay',
-  '/valor-catastral-uruguay',
   '/vender-mi-auto-uruguay',
   '/vivir-con-el-salario-minimo-uruguay',
 ]
 
-const DEUDA_MAXIMA = 62
+const DEUDA_MAXIMA = 61
 
 const TRAMO_POR_NOMBRE: Record<string, unknown> = {
   contenido: TIER_CONTENIDO,
