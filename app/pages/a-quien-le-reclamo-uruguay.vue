@@ -61,6 +61,15 @@
           </VCard>
         </VCol>
       </VRow>
+      <p class="text-body-2 text-medium-emphasis mt-5 mb-0" style="max-width: 72ch">
+        Los cinco toman reclamos contra una empresa. Si del otro lado no hay una empresa sino una
+        persona —alguien publicó un video tuyo sin tu consentimiento—, ninguno de los cinco es
+        competente: ese caso va a la Unidad Reguladora y de Control de Datos Personales, que es
+        gratis y no pide abogado, y a la Fiscalía cuando además hay delito.
+        <NuxtLink :to="localePath('/grabacion-sin-consentimiento-uruguay')">
+          Cómo se pide el retiro del video y qué plazos corren</NuxtLink
+        >.
+      </p>
     </section>
 
     <!-- Deadlines -->

@@ -1272,6 +1272,11 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Dónde y cómo denunciar ruidos en tu barrio.',
         to: '/denunciar-ruidos-molestos-uruguay',
       },
+      {
+        label: 'Me grabaron y publicaron el video',
+        description: 'Qué norma te ampara, por dónde se pide el retiro y qué plazos corren.',
+        to: '/grabacion-sin-consentimiento-uruguay',
+      },
     ],
     relatedHubs: [
       'sueldo-trabajo-e-impuestos-uruguay',
