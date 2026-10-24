@@ -1154,6 +1154,10 @@
         {
           "to": "/denunciar-ruidos-molestos-uruguay",
           "label": "Denunciar ruidos molestos"
+        },
+        {
+          "to": "/grabacion-sin-consentimiento-uruguay",
+          "label": "Me grabaron y publicaron el video"
         }
       ],
       "guides": [

@@ -149,7 +149,6 @@ const SIN_LECTOR_QUE_LA_NECESITE = [
 const DEUDA_SIN_ENLACE = [
   '/apps-utiles-uruguay',
   '/fondo-de-solidaridad-uruguay',
-  '/grabacion-sin-consentimiento-uruguay',
   '/llevar-el-auto-a-brasil-o-argentina',
   '/precio-del-boleto-montevideo',
   '/reconocer-anos-trabajados-uruguay',
@@ -335,7 +334,27 @@ const DEUDA_SIN_ENLACE = [
 // El enlace va DENTRO de la sección de las tres vías, debajo de las tarjetas que piden el requisito,
 // y no en el bloque de relacionadas del pie, que es lo que el encabezado de este archivo no cuenta
 // como arreglo. No se le tocó el snippet ni el resto del cuerpo a la página de origen.
-const DEUDA_MAXIMA = 8
+// 8 → 7 el 2026-10-24: `/grabacion-sin-consentimiento-uruguay`, la otra mitad de la misma corrida
+// que la mete en su tema (`temaHuerfanas.test.ts`). Las notas del 23 y del 24/10 la daban por
+// bloqueada por el ORIGEN: buscaban quién habla de GRABAR, encontraban dos páginas reservadas y
+// ninguna que plantee su problema («grabar el ruido como prueba no es que te hayan grabado a vos»).
+//
+// El origen no era una página que hable de grabar: es la página a la que ÉSTA ya enlaza de ida
+// sola. El chip «¿A quién le reclamo?» de su bloque «Seguí leyendo» apunta a
+// `/a-quien-le-reclamo-uruguay`, que no tiene ninguna fila en el libro de cambios (fue el origen
+// libre del enlace del 21/10 a `/compensacion-por-corte-de-luz-uruguay`), así que el enlace no le
+// cambia el sujeto a ningún experimento. Es el mismo hallazgo que el 13/10 con
+// `/pension-alimenticia-uruguay`, el 18/10 con `/donde-conseguir-monedas-uruguay` y el 21/10 con
+// `/cambios-de-precio-uruguay`: lo que faltaba era la vuelta.
+//
+// Y el lector lo necesita de verdad, porque la ida sola deja un callejón: la página de la grabación
+// manda a preguntar «qué organismo corresponde a tu caso» y los cinco de esa página —DNC, URSEA,
+// URSEC, BCU y MTSS— toman reclamos contra una EMPRESA. Quien llega con un video publicado por una
+// persona no encaja en ninguno y la página no lo decía. El enlace va DENTRO de la sección
+// `#organismos`, debajo de las cinco tarjetas que crean el callejón, y no en el bloque de
+// relacionadas del pie, que es lo que el encabezado de este archivo no cuenta como arreglo. A la
+// página de origen no se le tocó el snippet ni el resto del cuerpo.
+const DEUDA_MAXIMA = 7
 
 describe('ninguna página de lectura queda sin un enlace de contexto', () => {
   it('las páginas sin enlace son exactamente las declaradas', () => {

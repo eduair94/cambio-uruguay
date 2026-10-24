@@ -1964,6 +1964,19 @@
         "ley 19160 jubilacion parcial"
       ],
       "hypothesis": "Guia nueva, y el hueco era total: «jubilacion parcial» no aparecia en ninguna de las 146 guias ni en ninguna pagina, teniendo el sitio el racimo de jubilacion entero (cuando me puedo jubilar, incapacidad, sobrevivencia, suplemento solidario y cuatro guias de AFAP y reforma). La apuesta es la VIGENCIA, no el tema: lo que se lee afuera suele ser el regimen derogado —la Ley 19.160, que el art. 208 de la Ley 20.130 derogo dejando a salvo solo las situaciones ya constituidas a su amparo—, asi que la pagina publica la jubilacion parcial flexible del art. 203 con el Decreto 231/023 y dice que la otra no rige para quien pregunta hoy. Y junta lo que la ficha oficial tiene suelto: que el recorte va de un tercio a la mitad del horario Y del sueldo, que la jubilacion se paga en ese mismo porcentaje (el ejemplo del BPS es 40 %), que mientras dura la actividad no hay ajuste al minimo ni pago del suplemento solidario, las cuatro incompatibilidades, el VF 163 que la empresa tiene que declarar y que al cesar hay que PEDIR el 100 %. Sin una sola cifra en pesos: el valor base del suplemento y la jubilacion de cada uno se mueven, y el porcentaje es toda la aritmetica que la norma fija."
+    },
+    {
+      "id": "grabacion-sin-consentimiento-en-su-tema-y-con-enlace",
+      "shippedOn": "2026-10-24",
+      "routes": ["/grabacion-sin-consentimiento-uruguay"],
+      "queries": [
+        "me grabaron sin mi consentimiento uruguay",
+        "publicaron un video mio sin permiso uruguay",
+        "grabacion sin consentimiento uruguay",
+        "como hago para que bajen un video mio",
+        "denuncia urcdp datos personales"
+      ],
+      "hypothesis": "Solo enlazado interno: no se toco titulo, descripcion ni cuerpo de la pagina medida. Estaba huerfana en los dos pozos a la vez —ningun `resources` la listaba y ninguna pagina la enlazaba desde su contenido—, o sea una pagina del tramo `contenido` sin una sola puerta de entrada interna. Entra a `derechos-y-reclamos-uruguay`, el tema que ya publica el mapa de ventanillas, Defensa del Consumidor, las estafas y los ruidos molestos, y le faltaba el unico conflicto de esa familia donde del otro lado no hay una empresa. Y recibe el enlace reciproco de `/a-quien-le-reclamo-uruguay`, al que esta pagina ya apuntaba de ida sola: esa pagina rutea cinco organismos (DNC, URSEA, URSEC, BCU y MTSS) que toman reclamos contra una EMPRESA, asi que quien llega con un video publicado por una persona no encaja en ninguno y la pagina no lo decia. El enlace va debajo de las cinco tarjetas que crean ese callejon, no en el bloque de relacionadas del pie. La ruta de origen no tiene ninguna fila en el libro de cambios."
     }
   ]
 }

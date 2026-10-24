@@ -109,7 +109,6 @@ const DEUDA_SIN_TEMA = [
   '/declarar-dinero-en-efectivo-uruguay',
   '/factura-de-ose-uruguay',
   '/factura-de-ute-uruguay',
-  '/grabacion-sin-consentimiento-uruguay',
   '/importar-a-uruguay-siendo-extranjero',
   '/prestamo-hipotecario-uruguay',
   '/que-pasa-si-no-pago-antel',
@@ -245,7 +244,30 @@ const DEUDA_SIN_TEMA = [
  *
  * Sólo puede bajar: subirlo es publicar una página huérfana.
  */
-const DEUDA_MAXIMA = 11
+/**
+ * 11 → 10 el 2026-10-24 (segunda corrida del día): `/grabacion-sin-consentimiento-uruguay` entra a
+ * `derechos-y-reclamos-uruguay`. La nota de arriba, de esta misma mañana, la había dejado afuera
+ * diciendo que «no tiene hoy una página que la necesite en prosa, que es la condición del pozo de
+ * al lado», y la del 23/10 explicaba por qué: las dos únicas páginas del sitio que hablan de GRABAR
+ * están reservadas y además ninguna plantea su problema.
+ *
+ * Las dos notas buscaban el origen por el tema del texto —quién habla de grabar— y por eso no
+ * miraban el único candidato que importaba: la página a la que ESTA página ya enlaza. El chip
+ * «¿A quién le reclamo?» de su bloque «Seguí leyendo» apunta a `/a-quien-le-reclamo-uruguay`, de
+ * ida sola, que es exactamente el caso de `/pension-alimenticia-uruguay` (13/10),
+ * `/donde-conseguir-monedas-uruguay` (18/10) y `/cambios-de-precio-uruguay` (21/10). Esa ruta no
+ * tiene ninguna fila en el libro de cambios —ya fue el origen libre del enlace del 21/10 a
+ * `/compensacion-por-corte-de-luz-uruguay`—, así que las dos deudas de esta página se cierran en la
+ * misma corrida.
+ *
+ * El tema es el de siempre —a donde ya vive su vecina más cercana—: el hub ya publica
+ * `/a-quien-le-reclamo-uruguay`, `/defensa-al-consumidor-uruguay`, `/estafas-uruguay` y
+ * `/denunciar-ruidos-molestos-uruguay`, o sea el mapa de ventanillas y los conflictos que no son de
+ * consumo, y le faltaba el único de esa familia donde del otro lado no hay una empresa.
+ *
+ * Sólo puede bajar: subirlo es publicar una página huérfana.
+ */
+const DEUDA_MAXIMA = 10
 
 describe('ninguna página de lectura queda fuera de todos los temas', () => {
   const sinTema = rootRoutes.filter(route => temasDeRuta(route).length === 0)
