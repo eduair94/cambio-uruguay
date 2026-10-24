@@ -9,6 +9,7 @@ import {
   TIER_DIRECTORIO,
   TIER_OTRO,
   UY_RPM_DIVERGENCE,
+  bucketOfUrl,
   buildValueTable,
   tierOf,
   valueOf,
@@ -66,6 +67,40 @@ describe("tramos", () => {
   it("lo que no está clasificado vale el promedio, nunca más", () => {
     // La regla que protege la cola: una página nueva no puede encabezarla por una suposición.
     expect(tierOf("/algo-que-nadie-clasifico").multiplier).toBe(1);
+  });
+});
+
+describe.each([
+  ["/valor-catastral-uruguay", "/valor-catastral-uruguay"],
+  ["/en/valor-catastral-uruguay", "/en/valor-catastral-uruguay/*"],
+  ["/pt/valor-catastral-uruguay", "/pt/valor-catastral-uruguay/*"],
+])("la guía catastral %s", (path, bucket) => {
+  it("hereda contenido aunque todavía no tenga muestra propia", () => {
+    expect(bucketOfUrl(path)).toBe(bucket);
+    expect(tierOf(bucket)).toBe(TIER_CONTENIDO);
+    expect(valueOf(buildValueTable(revenue()), bucket)).toMatchObject({
+      basis: "tramo",
+      multiplier: TIER_CONTENIDO.multiplier,
+    });
+  });
+
+  it.each([
+    [MIN_FAMILY_VIEWS - 1, MIN_FAMILY_AD_IMPRESSIONS, "tramo", TIER_CONTENIDO.multiplier],
+    [MIN_FAMILY_VIEWS, MIN_FAMILY_AD_IMPRESSIONS - 1, "tramo", TIER_CONTENIDO.multiplier],
+    [MIN_FAMILY_VIEWS, MIN_FAMILY_AD_IMPRESSIONS, "medido", 2],
+  ])("con %i vistas y %i impresiones usa %s", (views, impressions, basis, multiplier) => {
+    const snapshot = revenue();
+    const table = buildValueTable({
+      ...snapshot,
+      families: [family(bucket, {
+        screenPageViews: views,
+        adImpressions: impressions,
+        rpm: snapshot.totals.rpm * 2,
+      })],
+    });
+    const value = valueOf(table, bucket);
+    expect(value).toMatchObject({ basis, multiplier, tier: TIER_CONTENIDO.name });
+    expect(value.usdPerClick).toBeCloseTo((snapshot.totals.rpm * multiplier) / 1000, 8);
   });
 });
 

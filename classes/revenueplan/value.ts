@@ -404,6 +404,9 @@ export const CONTENIDO_PATHS = new Set([
   "/suplemento-solidario-bps",
   "/tarjetas-de-socio-uruguay",
   "/vivir-con-25000-pesos-uruguay",
+  // Revisión semántica (2026-10-24): es una guía para consultar el valor catastral. Su lectura
+  // de UR sólo convierte la tasa auxiliar del trámite; no publica padrones ni una serie de datos.
+  "/valor-catastral-uruguay",
 ]);
 
 export function tierOf(bucket: string): Tier {
