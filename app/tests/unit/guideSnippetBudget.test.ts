@@ -41,8 +41,15 @@ const GUIDE_PAGE = readFileSync(join(__dirname, '..', '..', 'pages', 'guias', '[
 /**
  * Cuántas guías tiene el catálogo. Es el contrapeso de los dos presupuestos de abajo: sin un piso,
  * borrar una guía larga bajaría la deuda sin arreglar nada.
+ *
+ * 146 → 151 el 2026-10-24, apretado en el mismo commit que publica `jubilacion-parcial-uruguay`, y
+ * los otros cuatro son de las guías publicadas desde el 1/10 sin volver acá. Es la misma disciplina
+ * que el piso de `seoDescriptionBudget.test.ts` pide con todas las letras: el piso no se afloja
+ * porque alguien lo baje, se afloja porque se publica y no se vuelve. Con cinco de holgura, borrar
+ * las cinco guías más largas del catálogo bajaba los dos presupuestos de abajo sin arreglar un solo
+ * snippet y dejaba todo en verde.
  */
-const MEASURED = 146
+const MEASURED = 151
 
 /**
  * 116 → 104 el 2026-10-02: los doce títulos más largos del catálogo, de 104 a 84 caracteres

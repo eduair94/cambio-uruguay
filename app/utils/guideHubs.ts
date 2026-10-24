@@ -1166,6 +1166,17 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/licencia-de-la-construccion-uruguay',
       },
       {
+        label: 'Accidente de trabajo',
+        description:
+          'La Ley 16.074 (art. 9) mantiene la indemnización aun con culpa grave tuya: sólo se pierde si fue a propósito.',
+        to: '/accidente-de-trabajo-uruguay',
+      },
+      {
+        label: 'Trabajar antes de los 18',
+        description: 'Desde los 15 con el carné del INAU: hasta 6 horas por día y entre 6 y 22.',
+        to: '/trabajo-para-menores-de-edad-uruguay',
+      },
+      {
         label: 'Mercado IT',
         description: 'Cómo ven el trabajo en software en r/CharruaDevs.',
         to: '/mercado-it-uruguay',
@@ -1381,6 +1392,7 @@ export const guideHubs: readonly GuideHub[] = [
       'subsidio-expensas-funerarias-bps-uruguay',
       'asistente-personal-bps-uruguay',
       'cobrar-jubilacion-uruguaya-desde-el-exterior',
+      'jubilacion-parcial-uruguay',
       'canasta-fin-de-ano-bps-uruguay',
       'precio-supergas-garrafa-uruguay',
     ],

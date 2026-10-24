@@ -1408,4 +1408,178 @@ export const trabajoBpsGuides: readonly Guide[] = [
       },
     ],
   },
+  {
+    // 2026-10-24: jubilacion-parcial-uruguay. El hueco era entero: «jubilación parcial» no aparecía
+    // en ninguna de las 146 guías ni en ninguna página, teniendo el sitio `/cuando-me-puedo-jubilar-uruguay`,
+    // `/jubilacion-por-incapacidad-uruguay`, `/pension-por-sobrevivencia-uruguay` y cuatro guías de AFAP
+    // y reforma. Y lo que se lee afuera suele ser el régimen DEROGADO: la Ley 19.160 (del 1/11/2013)
+    // la derogó el art. 208 de la Ley 20.130, así que lo vigente es la jubilación parcial flexible del
+    // art. 203 de la 20.130 con el Decreto 231/023.
+    //
+    // Verificado el 2026-10-24 contra la ficha del BPS 9776 (declara última actualización el 09/09/2026,
+    // de donde salen el rango de un tercio a la mitad, el ejemplo del 40 %, las cuatro
+    // incompatibilidades, el VF 163, el primer día hábil del mes y el 100 % al cesar), el art. 203 de
+    // la Ley 20.130 y los arts. 11 a 13 del Decreto 231/023 en IMPO, y la ficha del BPS 20886 para los
+    // pasos de la empresa. NINGUNA cifra en pesos: el valor base del suplemento solidario y la
+    // jubilación de cada uno se mueven, y el porcentaje es toda la aritmética que la norma fija.
+    slug: 'jubilacion-parcial-uruguay',
+    title: 'Jubilación parcial: cobrás lo que recortás',
+    description:
+      'Recortás entre un tercio y la mitad del horario y del sueldo, y el BPS paga la jubilación en ese mismo porcentaje: Ley 20.130, art. 203, y el VF 163.',
+    tag: 'JUBILACIÓN',
+    updatedAt: '2026-10-24',
+    sections: [
+      {
+        heading: '¿Cuánto cobrás si te jubilás a medias?',
+        body: 'La jubilación parcial flexible te deja empezar a cobrar la jubilación sin dejar el trabajo, y la aritmética es una sola: acordás con tu empleador una reducción «de entre una tercera parte y la mitad de la carga horaria semanal o mensual y de la remuneración», y el BPS te paga «una cuota parte de la jubilación total que le correspondería, que será equivalente al porcentaje en que se reduce la remuneración». La propia ficha lo ejemplifica: si reducís la remuneración en un 40 %, cobrás el 40 % del monto de la jubilación. Dos cosas que conviene leer despacio: los dos recortes van juntos —no existe bajar el horario dejando el sueldo igual ni al revés— y el porcentaje se aplica sobre la jubilación ENTERA que te correspondería, que no es tu sueldo ni se parece necesariamente a él.',
+        table: {
+          headers: ['Lo que acordás recortar', 'Sueldo que seguís cobrando', 'Lo que paga el BPS'],
+          rows: [
+            ['Un tercio, que es el mínimo', 'Dos tercios del sueldo', 'Un tercio de la jubilación'],
+            ['El 40 % del ejemplo del BPS', 'El 60 % del sueldo', 'El 40 % de la jubilación'],
+            ['La mitad, que es el máximo', 'La mitad del sueldo', 'La mitad de la jubilación'],
+          ],
+        },
+      },
+      {
+        heading: 'Lo que el porcentaje no dice: el suplemento solidario y el mínimo',
+        body: 'Acá está la parte que el ejemplo del 40 % no muestra, y es la que decide si te conviene. Mientras sigas en actividad, el BPS avisa dos cosas: en las jubilaciones por regímenes jubilatorios anteriores «no se realizará el ajuste al valor mínimo de la jubilación», y en las del Nuevo Sistema Previsional Común «no corresponderá el pago del Suplemento solidario». El decreto dice lo mismo desde el otro lado: el monto es proporcional a la reducción y «no incluirá ninguna partida adicional para alcanzar los montos mínimos de prestación jubilatoria», y la remuneración por esta actividad «será deducible en su totalidad del suplemento solidario», sin el mínimo no deducible que rige en otros casos. O sea que para quien hoy cobraría el mínimo o el suplemento, media jubilación no es la mitad de lo que esperaba: es la mitad de la prestación sin esos complementos. El mismo artículo 13 prevé un incremento del 30 % de esa proporción para las personas sin otros ingresos del literal D del artículo 177 de la Ley 20.130, y sólo cuando lo que suman los dos conceptos queda por debajo del 50 % del valor base del suplemento solidario.',
+        links: [{ label: 'Qué es el suplemento solidario', to: '/suplemento-solidario-bps' }],
+      },
+      {
+        heading: 'El acuerdo es con tu empleador, y seis meses no se toca',
+        body: 'No es un derecho que se ejerce solo: el decreto exige que la continuación en tiempo parcial «requerirá el acuerdo escrito entre empleador y afiliado», con las condiciones puestas por escrito. Si la empresa no acepta, no hay jubilación parcial flexible, y la norma no da una vía para saltearla. Lo que sí protege al que firma es el plazo: las condiciones acordadas no pueden variar dentro de los seis meses, salvo fuerza mayor o circunstancias que constituyan notoria mala conducta, y si se modifican después hay que fijarlas por un plazo similar. Y hay un detalle que cambia la cuenta de quien ya venía trabajando menos: el recorte no se mide contra lo que hacías el mes pasado sino contra la carga horaria, los días de trabajo y la remuneración del último año de servicios, debidamente actualizados.',
+      },
+      {
+        heading: 'Las cuatro incompatibilidades',
+        body: 'La ficha del BPS las lista por nombre, y conviene mirarlas antes de pedir una cita: tres de las cuatro son jubilaciones que YA tenés o estás pidiendo, no situaciones de la empresa. La cuarta es la que deja afuera a mucha gente que llega buscando esto: la jubilación parcial flexible es para trabajadores DEPENDIENTES, así que una actividad por cuenta propia o una afiliación notarial o profesional no entra, aunque recortes las horas.',
+        table: {
+          headers: ['Situación', 'Jubilación parcial flexible'],
+          rows: [
+            [
+              'Jubilación por imposibilidad física para todo trabajo, o subsidio transitorio por incapacidad parcial',
+              'Incompatible',
+            ],
+            [
+              'Jubilación en base a años de trabajo bonificados, con actividad de la misma naturaleza',
+              'Incompatible, salvo docentes',
+            ],
+            ['Jubilación anticipada por extensa carrera laboral', 'Incompatible'],
+            ['Actividad no dependiente, o afiliación notarial o profesional', 'Incompatible'],
+          ],
+        },
+      },
+      {
+        heading: 'El trámite, y el número que la empresa tiene que poner',
+        body: 'El trámite empieza como cualquier jubilación —por la solicitud de jubilación— y el acuerdo con la empresa se presenta después de iniciada, en la oficina del BPS donde se está haciendo. Recién ahí aparece la fecha: el BPS les informa a los dos por correo electrónico el momento a partir del cual se puede iniciar la reducción, «que siempre debe ser desde el primer día hábil del mes». Por eso un acuerdo firmado un 12 no arranca ese día. Lo último es de la empresa y es el error más fácil de cometer: tiene que modificar el vínculo funcional del trabajador a «163 - Jubilación parcial flexible» en Modificar actividad, y mantener ese VF 163 en la declaración mensual de nómina.',
+      },
+      {
+        heading: 'Cuando dejás de trabajar, el 100 % hay que pedirlo',
+        body: 'La prestación vive «hasta el cese de la actividad», y lo que sigue no es automático: «una vez cesante, el beneficiario debe solicitar el 100 % del monto jubilatorio». Es un trámite más, y no pedirlo es quedarse cobrando la cuota parte. La garantía que el BPS escribe al lado es la que vuelve reversible la decisión: «la asignación jubilatoria no podrá ser inferior a la que le hubiera correspondido», así que haber pasado por el régimen parcial no puede dejarte con una jubilación más baja que la que te daba jubilarte entero.',
+      },
+      {
+        heading: 'Y lo que leíste en otra parte: la Ley 19.160 está derogada',
+        body: 'Si encontraste una página que habla de «jubilación parcial» sin la palabra flexible y con un único empleador, es la Ley 19.160 del 1/11/2013, y la derogó el artículo 208 de la Ley 20.130 con una salvedad escrita: «las situaciones jurídicas constituidas a su amparo continuarán rigiéndose por sus disposiciones». O sea que sigue valiendo para quien ya estaba adentro, y no para quien pregunta hoy. Las diferencias no son de redacción: el artículo 2 de la 19.160 sólo comprendía a quien trabajaba únicamente como dependiente «para un único empleador» con afiliación «Industria y Comercio» o «Rural o Doméstico», y el artículo 3 circunscribía el régimen a la solidaridad intergeneracional del BPS y determinaba el cese de la aportación al régimen de ahorro individual obligatorio de la Ley 16.713.',
+      },
+      {
+        heading: 'Lo que esta guía no te puede decir',
+        body: 'Tres cosas, y ninguna por falta de ganas. Cuánto es tu jubilación entera: depende de tu historia laboral y de tu generación, así que el porcentaje de acá hay que aplicarlo sobre el monto que el BPS te estime, no sobre una cifra de ejemplo. Si tu empleador va a aceptar: la norma pide el acuerdo escrito y no obliga a nadie a firmarlo. Y cuánto es en pesos el incremento del 30 % del artículo 13: se mide contra el valor base del suplemento solidario, que se actualiza, y publicar un número viejo al lado de una decisión de este tamaño es peor que no publicarlo.',
+        links: [
+          { label: '¿Cuándo me puedo jubilar?', to: '/cuando-me-puedo-jubilar-uruguay' },
+          {
+            label: 'Cómo funciona la jubilación y la AFAP',
+            to: '/guias/jubilacion-y-afap-como-funciona-uruguay',
+          },
+        ],
+      },
+    ],
+    steps: [
+      {
+        name: 'Confirmar que configurás causal',
+        text: 'La jubilación parcial flexible exige configurar causal de jubilación, salvo las incompatibilidades que la ficha del BPS lista. Sin causal no hay nada que recortar.',
+      },
+      {
+        name: 'Iniciar la solicitud de jubilación',
+        text: 'El trámite empieza por la solicitud de jubilación común, no por un trámite propio: la jubilación parcial flexible se pide dentro de esa solicitud.',
+      },
+      {
+        name: 'Firmar el acuerdo con la empresa',
+        text: 'El acuerdo escrito fija la reducción del horario y de la remuneración, entre una tercera parte y la mitad, y lo firman el trabajador y la empresa. El BPS publica el formulario.',
+      },
+      {
+        name: 'Presentarlo en la oficina donde se hace la solicitud',
+        text: 'El trabajador lo entrega en la oficina del BPS donde está haciendo la solicitud de jubilación. El BPS les avisa por correo a los dos desde cuándo puede empezar la reducción.',
+      },
+      {
+        name: 'La empresa pone el VF 163',
+        text: 'Cuando la reducción empieza —siempre desde el primer día hábil de un mes—, la empresa modifica el vínculo funcional a 163 y lo mantiene en la declaración mensual de nómina.',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Puedo jubilarme y seguir trabajando en el mismo empleo?',
+        a: 'Sí, por la jubilación parcial flexible de la Ley 20.130 (art. 203): es compatible con el desempeño de actividades de la misma afiliación, para trabajadores dependientes, siempre que acordés con el empleador recortar el horario y el sueldo.',
+      },
+      {
+        q: '¿Cuánto tengo que recortar?',
+        a: 'Entre una tercera parte y la mitad, tanto de la carga horaria como de la remuneración. El mínimo de un tercio está en el art. 203 de la Ley 20.130 y el tope de la mitad lo pone el Decreto 231/023 (art. 11.1).',
+      },
+      {
+        q: '¿Qué parte de la jubilación cobro?',
+        a: 'El mismo porcentaje en que se reduce la remuneración: con un recorte del 40 % cobrás el 40 % del monto de la jubilación que te correspondería entera. No es un porcentaje del sueldo.',
+      },
+      {
+        q: '¿Me pagan el suplemento solidario mientras trabajo?',
+        a: 'No. Mientras te mantengas en actividad, en las jubilaciones del Nuevo Sistema Previsional Común no corresponde el pago del suplemento solidario, y en las de regímenes anteriores no se hace el ajuste al valor mínimo de la jubilación. El decreto agrega que la remuneración por esta actividad se deduce en su totalidad del suplemento.',
+      },
+      {
+        q: '¿Mi empleador puede decir que no?',
+        a: 'Sí. La continuación en tiempo parcial requiere el acuerdo escrito entre empleador y afiliado, y la norma no prevé una vía para acceder sin ese acuerdo. Una vez firmado, las condiciones no pueden variar dentro de los seis meses, salvo fuerza mayor o notoria mala conducta.',
+      },
+      {
+        q: '¿Qué pasa cuando dejo de trabajar?',
+        a: 'La prestación va hasta el cese de la actividad y después hay que solicitar el 100 % del monto jubilatorio: no se ajusta solo. La asignación no puede ser inferior a la que te hubiera correspondido.',
+      },
+      {
+        q: '¿Sigue vigente la jubilación parcial de la Ley 19.160?',
+        a: 'No para quien pregunta hoy: la Ley 20.130 la derogó en su art. 208, aunque las situaciones jurídicas constituidas a su amparo siguen rigiéndose por sus disposiciones. Lo vigente es la jubilación parcial flexible.',
+      },
+    ],
+    related: [
+      { label: '¿Cuándo me puedo jubilar?', to: '/cuando-me-puedo-jubilar-uruguay' },
+      { label: 'Suplemento solidario', to: '/suplemento-solidario-bps' },
+      { label: 'IASS: impuesto a las jubilaciones', to: '/iass-uruguay' },
+    ],
+    sources: [
+      {
+        label:
+          'Jubilación parcial flexible: condiciones, el ejemplo del 40 %, incompatibilidades, VF 163 y el 100 % al cesar',
+        url: 'https://www.bps.gub.uy/9776/jubilacion-parcial.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'Ley 20.130, art. 203: jubilación parcial flexible y la reducción de al menos un tercio',
+        url: 'https://www.impo.com.uy/bases/leyes/20130-2023/203',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto 231/023, arts. 11 a 13: el tope de la mitad, el acuerdo escrito, los seis meses y el monto',
+        url: 'https://www.impo.com.uy/bases/decretos/231-2023',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 19.160, derogada por el art. 208 de la Ley 20.130 (con las situaciones ya constituidas a salvo)',
+        url: 'https://www.impo.com.uy/bases/leyes/19160-2013',
+        publisher: 'IMPO',
+      },
+      {
+        label: 'Qué debe hacer la empresa: el acuerdo, el registro y el VF 163 en la nómina',
+        url: 'https://www.bps.gub.uy/20886/un-trabajador-de-mi-empresa-quiere-reducir-su-jornada-de-trabajo-y-acceder-a-una-jubilacion-parcial-flexible-que-debo-hacer.html',
+        publisher: 'BPS',
+      },
+    ],
+  },
 ]

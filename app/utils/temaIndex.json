@@ -1037,6 +1037,14 @@
           "label": "Licencia de la construcción"
         },
         {
+          "to": "/accidente-de-trabajo-uruguay",
+          "label": "Accidente de trabajo"
+        },
+        {
+          "to": "/trabajo-para-menores-de-edad-uruguay",
+          "label": "Trabajar antes de los 18"
+        },
+        {
           "to": "/mercado-it-uruguay",
           "label": "Mercado IT"
         }
@@ -1388,6 +1396,7 @@
         "subsidio-expensas-funerarias-bps-uruguay",
         "asistente-personal-bps-uruguay",
         "cobrar-jubilacion-uruguaya-desde-el-exterior",
+        "jubilacion-parcial-uruguay",
         "canasta-fin-de-ano-bps-uruguay",
         "precio-supergas-garrafa-uruguay"
       ],

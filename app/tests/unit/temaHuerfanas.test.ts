@@ -104,7 +104,6 @@ const FUERA_DE_TEMA_POR_DISENO = [
  * (`npx vitest run tests/unit/temaIndex.test.ts -u`). El vínculo queda recíproco solo.
  */
 const DEUDA_SIN_TEMA = [
-  '/accidente-de-trabajo-uruguay',
   '/cambiar-de-mutualista-uruguay',
   '/comparar-plataformas-dolar-uruguay',
   '/declarar-dinero-en-efectivo-uruguay',
@@ -116,7 +115,6 @@ const DEUDA_SIN_TEMA = [
   '/que-pasa-si-no-pago-antel',
   '/temas-de-dinero-reddit',
   '/tendencias-uruguay',
-  '/trabajo-para-menores-de-edad-uruguay',
 ]
 
 /**
@@ -228,7 +226,26 @@ const DEUDA_SIN_TEMA = [
  * sitio: elegirle un hub pide mirarla junto con `/estadisticas-reddit`, que está declarada fuera de
  * tema por diseño.
  */
-const DEUDA_MAXIMA = 13
+/**
+ * 13 → 11 el 2026-10-24: `/accidente-de-trabajo-uruguay` y `/trabajo-para-menores-de-edad-uruguay`
+ * entran a `sueldo-trabajo-e-impuestos-uruguay`. Son DOS de las siete rutas de este pozo libres hoy
+ * de toda ventana de medición abierta, y las dos únicas que además no arrastran la salvedad que las
+ * otras cinco arrastran: tres son el racimo de los servicios del hogar que todavía espera a
+ * `/factura-de-ute-uruguay` (se libera el 25/10), `/temas-de-dinero-reddit` sigue pendiente de
+ * mirarse junto con `/estadisticas-reddit` por lo que dice la nota del 23/10, y
+ * `/grabacion-sin-consentimiento-uruguay` no tiene hoy una página que la necesite en prosa, que es
+ * la condición del pozo de al lado.
+ *
+ * Entran JUNTAS y al mismo tema porque son el mismo tema: el hub ya publica `/seguro-de-paro-uruguay`,
+ * `/indemnizacion-por-despido-uruguay`, `/denunciar-trabajo-en-negro-uruguay` y la guía
+ * `me-certifique-subsidio-por-enfermedad-uruguay`, o sea todo lo que pasa cuando el trabajo se
+ * interrumpe, y le faltaban las dos puntas: la del accidente (el BSE, que es por dónde se cobra esa
+ * interrupción) y la del que recién entra al mercado. Ninguna de las dos estaba en ningún
+ * `resources`, así que el bloque «Más sobre este tema» no las enlazaba desde ninguna página.
+ *
+ * Sólo puede bajar: subirlo es publicar una página huérfana.
+ */
+const DEUDA_MAXIMA = 11
 
 describe('ninguna página de lectura queda fuera de todos los temas', () => {
   const sinTema = rootRoutes.filter(route => temasDeRuta(route).length === 0)

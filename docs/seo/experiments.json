@@ -1938,6 +1938,32 @@
         "legalizacion de documentos uruguay"
       ],
       "hypothesis": "Solo enlazado interno: no se toco titulo, descripcion ni cuerpo de la pagina medida. La pagina nacio el 24/9 y quedo huerfana en los dos pozos a la vez, sin tema (ningun `resources` la listaba, asi que el bloque «Mas sobre este tema» no la enlazaba desde ninguna pagina) y sin un solo enlace de contexto. Ahora entra a `tramites-y-documentos-uruguay`, donde ya viven los cuatro documentos que despues hay que apostillar (antecedentes judiciales, cedula, pasaporte, partida de nacimiento), y recibe un enlace dentro de la seccion de las tres vias de /mudarme-a-uruguay-residencia, que pide los papeles «apostillado y traducido» y nunca decia que pasa cuando el pais de origen no ratifico el Convenio. La fila anterior sobre esta ruta (`apostillar-documento-costo`, 24/9) midio su nacimiento y su ventana cerro justo hoy, a los 29 dias."
+    },
+    {
+      "id": "accidente-y-trabajo-adolescente-en-su-tema",
+      "shippedOn": "2026-10-24",
+      "routes": ["/accidente-de-trabajo-uruguay", "/trabajo-para-menores-de-edad-uruguay"],
+      "queries": [
+        "accidente de trabajo uruguay",
+        "banco de seguros accidente laboral",
+        "trabajo para menores de edad uruguay",
+        "carne de trabajo inau",
+        "a que edad se puede trabajar en uruguay"
+      ],
+      "hypothesis": "Solo enlazado interno: no se toco titulo, descripcion ni cuerpo de las dos paginas medidas. Las dos estaban fuera de todo tema, o sea que ningun `resources` las listaba y el bloque «Mas sobre este tema» no las enlazaba desde ninguna pagina del sitio. Entran juntas a `sueldo-trabajo-e-impuestos-uruguay`, que es el tema de las dos y que ya publica el seguro de paro, la indemnizacion por despido, denunciar trabajo en negro y la guia del subsidio por enfermedad: todo lo que pasa cuando el trabajo se interrumpe, sin la punta del accidente (el BSE, que es por donde se cobra esa interrupcion) ni la del que recien entra al mercado. El vinculo del tema es reciproco por construccion, asi que las dos quedan enlazadas desde las demas paginas del tema y no solo desde el hub. La fila anterior sobre estas dos rutas (`descripciones-que-empiezan-por-la-respuesta-3`, 25/9) midio su descripcion y su ventana cerro hoy, a los 29 dias."
+    },
+    {
+      "id": "guia-jubilacion-parcial-flexible",
+      "shippedOn": "2026-10-24",
+      "routes": ["/guias/jubilacion-parcial-uruguay"],
+      "queries": [
+        "jubilacion parcial uruguay",
+        "jubilacion parcial flexible",
+        "puedo trabajar estando jubilado uruguay",
+        "jubilarme y seguir trabajando uruguay",
+        "ley 19160 jubilacion parcial"
+      ],
+      "hypothesis": "Guia nueva, y el hueco era total: «jubilacion parcial» no aparecia en ninguna de las 146 guias ni en ninguna pagina, teniendo el sitio el racimo de jubilacion entero (cuando me puedo jubilar, incapacidad, sobrevivencia, suplemento solidario y cuatro guias de AFAP y reforma). La apuesta es la VIGENCIA, no el tema: lo que se lee afuera suele ser el regimen derogado —la Ley 19.160, que el art. 208 de la Ley 20.130 derogo dejando a salvo solo las situaciones ya constituidas a su amparo—, asi que la pagina publica la jubilacion parcial flexible del art. 203 con el Decreto 231/023 y dice que la otra no rige para quien pregunta hoy. Y junta lo que la ficha oficial tiene suelto: que el recorte va de un tercio a la mitad del horario Y del sueldo, que la jubilacion se paga en ese mismo porcentaje (el ejemplo del BPS es 40 %), que mientras dura la actividad no hay ajuste al minimo ni pago del suplemento solidario, las cuatro incompatibilidades, el VF 163 que la empresa tiene que declarar y que al cesar hay que PEDIR el 100 %. Sin una sola cifra en pesos: el valor base del suplemento y la jubilacion de cada uno se mueven, y el porcentaje es toda la aritmetica que la norma fija."
     }
   ]
 }
