@@ -107,11 +107,8 @@ const DEUDA_SIN_TEMA = [
   '/cambiar-de-mutualista-uruguay',
   '/comparar-plataformas-dolar-uruguay',
   '/declarar-dinero-en-efectivo-uruguay',
-  '/factura-de-ose-uruguay',
-  '/factura-de-ute-uruguay',
   '/importar-a-uruguay-siendo-extranjero',
   '/prestamo-hipotecario-uruguay',
-  '/que-pasa-si-no-pago-antel',
   '/temas-de-dinero-reddit',
   '/tendencias-uruguay',
 ]
@@ -224,6 +221,38 @@ const DEUDA_SIN_TEMA = [
  * `/temas-de-dinero-reddit` es una página sobre lo que se pregunta en Reddit, no sobre un tema del
  * sitio: elegirle un hub pide mirarla junto con `/estadisticas-reddit`, que está declarada fuera de
  * tema por diseño.
+ */
+/**
+ * 10 → 7 el 2026-10-25: el racimo de los servicios del hogar entero, que es la única entrada de
+ * esta lista que estaba AGENDADA. Cinco corridas seguidas —el 19, 20, 21, 22, 23 y 24/10— lo
+ * dejaron pasar escribiendo la misma razón y la misma fecha: `/factura-de-ose-uruguay` y
+ * `/que-pasa-si-no-pago-antel` estaban libres, pero su tercera hermana `/factura-de-ute-uruguay`
+ * seguía reservada «hasta el 25/10» y entrar sin ella habría partido el racimo en filas del libro
+ * de cambios medidas por separado. Hoy `npm run seo_debt` la da libre junto con las otras dos, así
+ * que las tres entran en la misma fila y por fin se mide el racimo y no sus pedazos.
+ *
+ * Son un racimo porque ellas mismas lo declaran: el encabezado `OWN-WORLD` de
+ * `/factura-de-ose-uruguay` nombra a las otras dos —«los tres servicios del hogar con la misma
+ * gramática»— y su sección «Las otras dos facturas del hogar» las enlaza. Eso es justamente lo
+ * que hacía caro el agujero: las tres se enlazaban ENTRE ELLAS y ninguna figuraba en ningún
+ * `resources`, o sea tres páginas del tramo `contenido` (las tres ya valuadas así en
+ * `classes/revenueplan/value.ts`, 8× el promedio del sitio) formando una isla a la que el bloque
+ * «Más sobre este tema» no llega desde ninguna página del sitio. Un racimo cerrado sobre sí mismo
+ * no se arregla solo: cuantas más puertas tiene hacia adentro, menos se nota que no tiene ninguna
+ * desde afuera.
+ *
+ * Las tres al MISMO tema, `finanzas-personales-y-jubilacion-uruguay`, por la regla de siempre —a
+ * donde ya vive su vecina más cercana—: el hub ya publicaba todo gasto recurrente del hogar —la
+ * guía `precio-supergas-garrafa-uruguay`, `/precios-de-supermercado-uruguay`,
+ * `/tickets-mutualistas-uruguay`, `/meal-prep-uruguay`— y además las tres páginas que reparten un
+ * sueldo entre esos gastos (`/plan-de-vida-uruguay`, `/vivir-con-25000-pesos-uruguay`,
+ * `/vivir-con-el-salario-minimo-uruguay`), y le faltaban exactamente los tres gastos que llegan
+ * como FACTURA. No fueron a `alquiler-y-vivienda-uruguay`, que es el otro candidato y tiene
+ * `/cortes-de-luz-por-barrio-uruguay`: ese hub trata la operación de alquilar —garantía, depósito,
+ * rescisión, desalojo, portales— y los cortes por barrio están ahí como señal para elegir dónde
+ * vivir, no como una factura. Estas tres las lee igual quien alquila y quien es propietario.
+ *
+ * Sólo puede bajar: subirlo es publicar una página huérfana.
  */
 /**
  * 13 → 11 el 2026-10-24: `/accidente-de-trabajo-uruguay` y `/trabajo-para-menores-de-edad-uruguay`

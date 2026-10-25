@@ -1382,6 +1382,18 @@
           "label": "Meal prep"
         },
         {
+          "to": "/factura-de-ute-uruguay",
+          "label": "Factura de UTE alta"
+        },
+        {
+          "to": "/factura-de-ose-uruguay",
+          "label": "Factura de OSE"
+        },
+        {
+          "to": "/que-pasa-si-no-pago-antel",
+          "label": "Deuda con Antel"
+        },
+        {
           "to": "/sillas-escritorio-uruguay",
           "label": "Sillas de escritorio"
         }
