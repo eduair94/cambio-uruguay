@@ -88,6 +88,13 @@ const PROGRAMMATIC_PAGES: Array<{ file: string; sitemapMarker: string }> = [
     file: 'celulares-uruguay/[modelo].vue',
     sitemapMarker: '`/celulares-uruguay/${slug}`',
   },
+  // Una página por institución del tarifario IAMC del MSP. Su hub es /tickets-mutualistas-uruguay,
+  // que es trilingüe y por eso no entra a este contrato (su marcador de sitemap no es una ruta
+  // literal); la ficha es sólo-español como las de courier, así que sí.
+  {
+    file: 'mutualista/[institucion].vue',
+    sitemapMarker: '`/mutualista/${slug}`',
+  },
 ]
 
 describe('the programmatic families exist on disk', () => {
@@ -356,12 +363,9 @@ const LEGACY_BUDGET = { seoMeta: 0, canonical: 0, structuredData: 0 }
  * silencio.
  */
 const DEUDA_SIN_MIGAS = [
-  '/api-cotizacion-intradia',
   '/api-cotizaciones-regionales',
-  '/hecho-a-pedido',
   '/plan-de-vida-uruguay',
   '/por-que-el-bcu-quiere-mas-pesos',
-  '/reclamo-sodimac-compra-cancelada',
 ]
 
 /**
@@ -379,8 +383,25 @@ const DEUDA_SIN_MIGAS = [
  * muestra al lector una página padre —la del tablero regional enlaza a `/dolar-blue-hoy` y a su
  * propia API, que son hermanas, y la de meal prep no enlaza a ninguna—, y un eslabón intermedio
  * inventado le promete al visitante una sección que no existe.
+ *
+ * 6 → 3 el 2026-10-25, y es exactamente el día que el comentario de arriba tenía anotado: las
+ * cuatro filas que reservaban `/api-cotizacion-intradia`, `/hecho-a-pedido`,
+ * `/reclamo-sodimac-compra-cancelada` y `/plan-de-vida-uruguay` se publicaron el 2026-09-26, así
+ * que hoy cumplen 29 días y salen de la ventana que `experiments_overlap.test.ts` protege (el
+ * solape es `|Δfecha| ≤ 28`). Se tocan TRES y la cuarta queda para la próxima corrida: bajar el
+ * trinquete de a poco mantiene una página libre en la cola, y una corrida que se queda sin deuda
+ * tocable es la que termina eligiendo una página reservada.
+ *
+ * Las tres tenían el `@graph` o el nodo suelto y el rastro vacío. El eslabón del medio sale, otra
+ * vez, de lo que la página YA le muestra al lector: el botón «Toda la API» de la del endpoint
+ * intradía y el `back-link` al final del caso de Sodimac, que vuelve a la guía general de derechos
+ * del consumidor. `/hecho-a-pedido` se queda en DOS eslabones porque sus tres botones
+ * (`/contacto`, GitHub, `/desarrolladores`) son hermanas, no su sección.
+ *
+ * Las tres que siguen: `/api-cotizaciones-regionales` se libera el 26/10 y
+ * `/por-que-el-bcu-quiere-mas-pesos` el 27/10; `/plan-de-vida-uruguay` ya está libre.
  */
-const BREADCRUMB_BUDGET = 6
+const BREADCRUMB_BUDGET = 3
 
 /**
  * De archivo de página a ruta: `plan-de-vida-uruguay.vue` → `/plan-de-vida-uruguay`,

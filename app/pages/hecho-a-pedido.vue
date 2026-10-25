@@ -331,21 +331,45 @@ useHead(() => ({
       type: 'application/ld+json',
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
-        '@type': 'ItemList',
-        name: title,
-        description,
-        url: canonicalUrl,
-        inLanguage: 'es-UY',
-        numberOfItems: REQUESTED_FEATURES.length,
-        itemListElement: REQUESTED_FEATURES.map((feature, index) => ({
-          '@type': 'ListItem',
-          position: index + 1,
-          name: feature.title,
-          description: feature.built,
-          url: feature.links[0]?.to
-            ? `https://cambio-uruguay.com${feature.links[0].to}`
-            : feature.links[0]?.href,
-        })),
+        '@graph': [
+          // El rastro se queda en DOS eslabones a propósito: los tres botones de la cabecera van a
+          // /contacto, a GitHub y a /desarrolladores, que son hermanas de esta página y no su
+          // sección. Un eslabón intermedio inventado le promete al visitante algo que no existe.
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: 'https://cambio-uruguay.com',
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Hecho a pedido',
+                item: canonicalUrl,
+              },
+            ],
+          },
+          {
+            '@type': 'ItemList',
+            name: title,
+            description,
+            url: canonicalUrl,
+            inLanguage: 'es-UY',
+            numberOfItems: REQUESTED_FEATURES.length,
+            itemListElement: REQUESTED_FEATURES.map((feature, index) => ({
+              '@type': 'ListItem',
+              position: index + 1,
+              name: feature.title,
+              description: feature.built,
+              url: feature.links[0]?.to
+                ? `https://cambio-uruguay.com${feature.links[0].to}`
+                : feature.links[0]?.href,
+            })),
+          },
+        ],
       }),
     },
   ],

@@ -1977,6 +1977,29 @@
         "denuncia urcdp datos personales"
       ],
       "hypothesis": "Solo enlazado interno: no se toco titulo, descripcion ni cuerpo de la pagina medida. Estaba huerfana en los dos pozos a la vez —ningun `resources` la listaba y ninguna pagina la enlazaba desde su contenido—, o sea una pagina del tramo `contenido` sin una sola puerta de entrada interna. Entra a `derechos-y-reclamos-uruguay`, el tema que ya publica el mapa de ventanillas, Defensa del Consumidor, las estafas y los ruidos molestos, y le faltaba el unico conflicto de esa familia donde del otro lado no hay una empresa. Y recibe el enlace reciproco de `/a-quien-le-reclamo-uruguay`, al que esta pagina ya apuntaba de ida sola: esa pagina rutea cinco organismos (DNC, URSEA, URSEC, BCU y MTSS) que toman reclamos contra una EMPRESA, asi que quien llega con un video publicado por una persona no encaja en ninguno y la pagina no lo decia. El enlace va debajo de las cinco tarjetas que crean ese callejon, no en el bloque de relacionadas del pie. La ruta de origen no tiene ninguna fila en el libro de cambios."
+    },
+    {
+      "id": "migas-en-el-renglon-verde-3",
+      "shippedOn": "2026-10-25",
+      "routes": [
+        "/api-cotizacion-intradia",
+        "/hecho-a-pedido",
+        "/reclamo-sodimac-compra-cancelada"
+      ],
+      "hypothesis": "Tercera tanda de migas, y las tres son las que el comentario de `BREADCRUMB_BUDGET` tenia anotadas para hoy: su unica fila anterior (`descripciones-que-empiezan-por-la-respuesta-4`, 26/9) cumple 29 dias, o sea que salio de la ventana que `experiments_overlap.test.ts` protege. Las tres emitian estructurados sin `BreadcrumbList` —un `@graph` las dos primeras, un `ItemList` suelto la de Sodimac—, asi que el renglon verde del resultado era la URL cruda en vez del rastro con nombres, que es el unico renglon del snippet que las descripciones no tocan. No se cambio titulo, descripcion ni cuerpo de ninguna. El eslabon del medio sale de lo que la pagina YA le muestra al lector: «Toda la API» hacia /desarrolladores en la del endpoint intradia, y el `back-link` del pie hacia /derechos-consumidor-compras-online en la de Sodimac. /hecho-a-pedido se queda en DOS eslabones a proposito: sus tres botones (contacto, GitHub, la API) son hermanas y no su seccion, y un eslabon inventado le promete al visitante una seccion que no existe."
+    },
+    {
+      "id": "mutualista-pagina-por-institucion",
+      "shippedOn": "2026-10-25",
+      "routes": ["/mutualista/*"],
+      "queries": [
+        "casmu precio ticket",
+        "precio ticket medicamentos casmu",
+        "comepa precio orden especialista",
+        "cuanto sale el ticket en la asociacion espanola",
+        "ticket mutualista precio uruguay"
+      ],
+      "hypothesis": "Familia nueva: 34 paginas, una por institucion del tarifario IAMC que publica el MSP, con los datos que ya estaban en el repo desde setiembre (`utils/mutualistaCosts.ts`, planilla de julio de 2026 verificada el 14/9) y sin una sola cifra nueva. El reparto es el mismo que el sitio ya hace entre /historico y /historico/<casa>: el hub compara las 34 y deja elegir concepto y regimen, pero una sola URL no puede reclamar 34 nombres propios, y la demanda ganable de este sitio es de MARCA — se busca «casmu precio ticket», no «tasas moderadoras». Cada pagina agrega dos cosas que el hub no da: el tarifario entero de UNA institucion en una pantalla (los cinco conceptos a la vez, porque no hay que elegir uno para comparar) y donde cae esa institucion entre las 34 por maximo autorizado, que es la unica comparacion que el archivo permite —el maximo del especialista va de $ 207,10 a $ 875,68, o sea 4,2x sobre el mismo archivo—. La descripcion lleva las dos cifras del tarifario y el mes, con el maximo que autoriza el MSP y no un precio elegido: por regimen se publica el RANGO de lo que el archivo imprime, nunca un importe como «el» que le toca a nadie. LIMITACION DECLARADA, porque el trinquete de solapes no la puede ver: el hub /tickets-mutualistas-uruguay esta en el dia 25 de la ventana de `huerfanas-entran-a-su-tema` (30/9), que cierra el 28/10. Las rutas no se tocan, asi que no hay solape declarable, pero tres de los veintiocho dias posteriores de ESA fila van a tener estas 34 paginas publicadas y pueden reasignarle impresiones de marca. Se deja escrito acá en vez de corregirlo a posteriori: el veredicto del hub se lee con esos tres dias en cuenta."
     }
   ]
 }

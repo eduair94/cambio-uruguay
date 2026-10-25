@@ -15,6 +15,7 @@ import { importCategoryIndexSlugs } from '../../../utils/importCategoryIndex'
 import { hubSlugs } from '../../../utils/guideHubs'
 import { guides } from '../../../utils/guides'
 import { listIndicatorSlugs } from '../../../utils/indicators'
+import { mutualistaPageSlugs } from '../../../utils/mutualistaPages'
 import { PRECIOS_MIN_OBSERVATIONS, preciosSlug } from '../../../utils/preciosCatalog'
 import { NAV_SECTIONS, UNLISTED_ROUTES } from '../../../utils/siteNav'
 import { toolSlugs } from '../../../utils/tools'
@@ -201,6 +202,13 @@ export default defineEventHandler(async _event => {
   )
   entityPageSlugs('tarjetas-de-debito').forEach(slug =>
     urls.push({ loc: `/tarjetas-de-debito-uruguay/${slug}`, changefreq: 'monthly', priority: 0.7 })
+  )
+  // Una página por institución del tarifario IAMC del MSP. Mismo catálogo puro que lee la guarda de
+  // la ruta, así que el sitemap no puede declarar un slug que 404ee, y español solamente como las
+  // comparativas y las fichas de courier: el cuerpo es prosa en español. `monthly` porque el MSP
+  // republica el tarifario por semestre, no por día.
+  mutualistaPageSlugs().forEach(slug =>
+    urls.push({ loc: `/mutualista/${slug}`, changefreq: 'monthly', priority: 0.6 })
   )
   // El índice de tiendas online: una URL fija, español solamente (como comparativas/sucursal), que
   // no depende de Mongo — a diferencia de sus fichas por tienda, que sí (más abajo, junto a chairs

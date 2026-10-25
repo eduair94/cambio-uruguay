@@ -4821,6 +4821,10 @@ export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freez
   'tarjetas-de-credito-uruguay/[programa]': 'banking',
   'tarjetas-de-debito-uruguay/[tarjeta]': 'banking',
   'casas-de-cambio/[tipo]': 'houses',
+  // Una página por institución del tarifario IAMC del MSP (/mutualista/casmu, /mutualista/comepa…).
+  // Los slugs son los del propio archivo (utils/mutualistaPages.ts), el mismo mapa puro que leen el
+  // sitemap y la guarda de la ruta; misma sección que su hub, /tickets-mutualistas-uruguay.
+  'mutualista/[institucion]': 'invest',
   'convertir/[slug]': 'tools',
   // Una página por categoría de /equipar-casa-uruguay (heladera, colchón, aire acondicionado…). Los
   // slugs son el espejo del registro en utils/equiparCategoryPages.ts; misma sección que el hub.
