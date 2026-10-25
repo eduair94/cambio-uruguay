@@ -241,6 +241,19 @@ definiciones. No se cambiaron permisos, eventos clave ni filtros. Su disponibili
 los resultados de las mejoras de lectura del 23/10 se comprobarán después de acumular datos;
 el registro de las dimensiones no es un resultado de retención.
 
+## Corrección factual: 25/10/2026
+
+La guía `/guias/casarse-por-civil-uruguay` presentaba la partida de nacimiento como
+requisito general para ambos contrayentes. La [ficha oficial del Registro Civil](https://www.gub.uy/tramites/inscripcion-matrimonio),
+consultada el 25/10 y actualizada el 29/05/2026, vincula ese documento a los hijos que
+corresponda legitimar; enumera el documento de identidad para contrayentes y testigos.
+Se corrigió el párrafo para distinguir la documentación según la situación.
+
+Es una corrección de información al lector durante la ventana existente. El título, la
+descripción y los enlaces mantienen la versión medida; el tramo final de esa ventana
+incluye esta precisión y debe interpretarse con esa salvedad. No se declara como una
+prueba de adquisición ni como una mejora de ingresos.
+
 ## Próximas decisiones
 
 - Verificar las fuentes de la excepción Cambio Principal cuando cambien los datos de origen y, como máximo, en la revisión mensual siguiente. La fecha del 14/9 es una comprobación puntual, no una vigilancia automática de la web propia. La tabla semanal no interpreta ausencia de horario como cierre.
