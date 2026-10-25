@@ -1512,6 +1512,30 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Una semana de comidas en un día de cocina, con precios del SIPC.',
         to: '/meal-prep-uruguay',
       },
+      // Los tres servicios del hogar, que entran juntos porque son un racimo: sus propias
+      // páginas se declaran hermanas («los tres servicios del hogar con la misma gramática») y se
+      // enlazan entre ellas, pero ninguna figuraba en ningún `resources`, así que el racimo era
+      // una isla que el bloque «Más sobre este tema» no alcanzaba desde ninguna página. El tema es
+      // el suyo por la vecina más cercana: acá ya estaba TODO gasto recurrente de la casa —la
+      // garrafa de supergas, la canasta del supermercado, los tickets de mutualista, la semana de
+      // comidas— menos los tres que llegan como factura.
+      {
+        label: 'Factura de UTE alta',
+        description:
+          'Qué tarifa te conviene: los escalones del kWh son progresivos y la potencia se paga sin consumir.',
+        to: '/factura-de-ute-uruguay',
+      },
+      {
+        label: 'Factura de OSE',
+        description:
+          'El saneamiento vuelve a cobrar cada metro cúbico: es el 100 % del cargo variable del agua.',
+        to: '/factura-de-ose-uruguay',
+      },
+      {
+        label: 'Deuda con Antel',
+        description: 'Corta por facturas impagas y no por días, y la reconexión no tiene cargo.',
+        to: '/que-pasa-si-no-pago-antel',
+      },
       {
         label: 'Sillas de escritorio',
         description: 'Precios por modelo en tiendas uruguayas, y qué opina r/CharruaDevs.',

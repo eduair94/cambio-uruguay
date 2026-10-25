@@ -2000,6 +2000,24 @@
         "ticket mutualista precio uruguay"
       ],
       "hypothesis": "Familia nueva: 34 paginas, una por institucion del tarifario IAMC que publica el MSP, con los datos que ya estaban en el repo desde setiembre (`utils/mutualistaCosts.ts`, planilla de julio de 2026 verificada el 14/9) y sin una sola cifra nueva. El reparto es el mismo que el sitio ya hace entre /historico y /historico/<casa>: el hub compara las 34 y deja elegir concepto y regimen, pero una sola URL no puede reclamar 34 nombres propios, y la demanda ganable de este sitio es de MARCA — se busca «casmu precio ticket», no «tasas moderadoras». Cada pagina agrega dos cosas que el hub no da: el tarifario entero de UNA institucion en una pantalla (los cinco conceptos a la vez, porque no hay que elegir uno para comparar) y donde cae esa institucion entre las 34 por maximo autorizado, que es la unica comparacion que el archivo permite —el maximo del especialista va de $ 207,10 a $ 875,68, o sea 4,2x sobre el mismo archivo—. La descripcion lleva las dos cifras del tarifario y el mes, con el maximo que autoriza el MSP y no un precio elegido: por regimen se publica el RANGO de lo que el archivo imprime, nunca un importe como «el» que le toca a nadie. LIMITACION DECLARADA, porque el trinquete de solapes no la puede ver: el hub /tickets-mutualistas-uruguay esta en el dia 25 de la ventana de `huerfanas-entran-a-su-tema` (30/9), que cierra el 28/10. Las rutas no se tocan, asi que no hay solape declarable, pero tres de los veintiocho dias posteriores de ESA fila van a tener estas 34 paginas publicadas y pueden reasignarle impresiones de marca. Se deja escrito acá en vez de corregirlo a posteriori: el veredicto del hub se lee con esos tres dias en cuenta."
+    },
+    {
+      "id": "tres-facturas-del-hogar-entran-a-su-tema",
+      "shippedOn": "2026-10-25",
+      "routes": [
+        "/factura-de-ute-uruguay",
+        "/factura-de-ose-uruguay",
+        "/que-pasa-si-no-pago-antel"
+      ],
+      "queries": [
+        "factura de ute alta",
+        "por que vino cara la factura de ute",
+        "factura de ose saneamiento",
+        "cargo fijo ose",
+        "que pasa si no pago antel",
+        "antel corte por deuda reconexion"
+      ],
+      "hypothesis": "Solo enlazado interno: no se toco titulo, descripcion ni cuerpo de ninguna de las tres paginas medidas. Las tres son el racimo de los servicios del hogar que ellas mismas declaran hermanas (el encabezado OWN-WORLD de /factura-de-ose-uruguay dice «los tres servicios del hogar con la misma gramatica» y su seccion «Las otras dos facturas del hogar» enlaza a las otras dos), y ahi estaba el problema: se enlazaban ENTRE ELLAS y ninguna figuraba en ningun `resources`, asi que eran una isla del tramo `contenido` (8x, las tres ya valuadas asi en value.ts) a la que el bloque «Mas sobre este tema» no llegaba desde ninguna pagina del sitio. Un racimo cerrado sobre si mismo no se nota: cuantas mas puertas tiene hacia adentro, menos se ve que no tiene ninguna desde afuera. Entran JUNTAS y en una sola fila porque medirlas por separado es exactamente lo que cinco corridas seguidas (19 al 24/10) evitaron dejandolas pasar hasta que se liberara la tercera hermana, hoy. Van al mismo tema, `finanzas-personales-y-jubilacion-uruguay`, por la vecina mas cercana: el hub ya publicaba todo gasto recurrente de la casa —la garrafa de supergas, la canasta del supermercado, los tickets de mutualista, la semana de comidas— y las tres paginas que reparten un sueldo entre esos gastos, y le faltaban justo los tres que llegan como FACTURA. No fueron a `alquiler-y-vivienda-uruguay`, el otro candidato: ese hub trata la operacion de alquilar y sus cortes de luz por barrio son una señal para elegir donde vivir, no una factura; estas tres las lee igual quien alquila y quien es propietario."
     }
   ]
 }
