@@ -186,6 +186,19 @@ test.describe('compare exchange houses', () => {
     const selectedUrl = page.url()
     const houses = page.getByTestId('compare-houses')
     await expect(houses.locator('input[type="text"]')).toBeFocused()
+    // The first selection animates the clear control's width, which can wrap
+    // the chips. Measure blur stability after that separate transition ends.
+    await expect
+      .poll(() =>
+        houses.locator('.v-field__clearable').evaluate(element => {
+          return (
+            element.getBoundingClientRect().width > 0 &&
+            !element.classList.contains('expand-x-transition-enter-active') &&
+            element.getAnimations().every(animation => animation.playState === 'finished')
+          )
+        })
+      )
+      .toBe(true)
     const focusedHeight = await houses.evaluate(element => element.getBoundingClientRect().height)
 
     comparison.scenario = 'success'

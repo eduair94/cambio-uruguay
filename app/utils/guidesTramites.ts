@@ -360,7 +360,7 @@ export const tramitesGuides: readonly Guide[] = [
     description:
       'Casarse por civil cuesta $1.149 en la oficina y $35.130 a domicilio (ficha de mayo de 2026): dos etapas, cuatro testigos mayores de 18 y edictos en el Diario Oficial.',
     tag: 'REGISTRO CIVIL',
-    updatedAt: '2026-09-13',
+    updatedAt: '2026-10-25',
     sections: [
       {
         heading: 'Dónde se reserva: un trámite en dos etapas',
@@ -406,7 +406,7 @@ export const tramitesGuides: readonly Guide[] = [
       },
       {
         heading: 'Qué documentos llevar',
-        body: 'La base es la misma para los dos: partida de nacimiento, documento de identidad, la agenda previa y los cuatro testigos. Si alguno está divorciado, se presenta el testimonio de la partida del matrimonio anterior con la constancia del divorcio; si el divorcio fue en el extranjero, la sentencia original legalizada o apostillada y traducida. Si es viudo o viuda, la partida de matrimonio y la de defunción. Si tienen hijos en común nacidos antes, sus partidas de nacimiento, con el reconocimiento de ambos. Para los extranjeros solteros y mayores de edad, la ficha menciona el documento de identidad y, si no hablan español, la presencia de un traductor público uruguayo; conviene confirmar en la oficina en qué forma te piden la partida de tu país. Hay además una regla que sólo alcanza a las mujeres: el artículo 112 del Código Civil no permite el nuevo casamiento hasta 301 días después de la viudez o el divorcio, salvo que hayan pasado noventa días y se presente un certificado médico que acredite que no hay embarazo.',
+        body: 'La ficha del trámite pide documento de identidad a los contrayentes y a los testigos, además de agenda previa y cuatro testigos. Si alguno está divorciado, se presenta el testimonio de la partida del matrimonio anterior con la constancia del divorcio; si el divorcio fue en el extranjero, la sentencia original legalizada o apostillada y traducida. Si es viudo o viuda, la partida de matrimonio y la de defunción. Si corresponde legitimar hijos después del matrimonio, hay que presentar sus partidas al inscribirse, con el reconocimiento de ambos padres. Para los extranjeros solteros y mayores de edad, la ficha menciona el documento de identidad y, si no hablan español, la presencia de un traductor público uruguayo. Hay además una regla que sólo alcanza a las mujeres: el artículo 112 del Código Civil no permite el nuevo casamiento hasta 301 días después de la viudez o el divorcio, salvo que hayan pasado noventa días y se presente un certificado médico que acredite que no hay embarazo.',
       },
       {
         heading: 'Edad mínima y quién no se puede casar',
