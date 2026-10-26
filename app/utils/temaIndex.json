@@ -185,12 +185,20 @@
           "label": "Franquicia de aduana"
         },
         {
+          "to": "/importar-a-uruguay-siendo-extranjero",
+          "label": "Importar siendo extranjero"
+        },
+        {
           "to": "/recibir-regalos-del-exterior-uruguay",
           "label": "Recibir regalos del exterior"
         },
         {
           "to": "/franquicia-viajero-uruguay",
           "label": "Franquicia del viajero"
+        },
+        {
+          "to": "/declarar-dinero-en-efectivo-uruguay",
+          "label": "Declarar efectivo en la Aduana"
         },
         {
           "to": "/problemas-con-la-aduana-uruguay",
