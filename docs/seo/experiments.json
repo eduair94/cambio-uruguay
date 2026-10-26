@@ -2040,6 +2040,22 @@
         "autos mas seguros uruguay"
       ],
       "hypothesis": "Pagina nueva sin una sola cifra nueva: los 124 ensayos de Latin NCAP de los 61 modelos que se venden en Uruguay ya estaban en el repo desde setiembre (`app/utils/latinNcap.ts`, verificados uno por uno en latinncap.com el 24/9/2026) pero solo se veian DENTRO de la ficha de un modelo del asesor de compra, o sea despues de declarar presupuesto, uso y prioridades. Quien busca «cuantas estrellas tiene el Onix» ya eligio el auto y pregunta por el ensayo: es demanda de MARCA, el mismo reparto que el sitio ya hace entre /historico y /historico/<casa>. La pagina publica la lista entera con el enlace al resultado oficial de cada ensayo y NO rankea, porque la estrella es de una version con sus airbags en un momento: hay 8 pares de ensayos del mismo modelo, el mismo protocolo y el mismo ano con notas distintas (el Tucson de 2022 da 0 de 5 con dos airbags y 3 de 5 con seis) y 3 modelos que se separan cinco estrellas entre sus propios ensayos. Se mide como pagina nueva: clics propios de la ruta a los 28 dias. El titulo y la descripcion se CALCULAN de la tabla (`utils/latinNcapPage.ts::ncapSeo`) para que un ensayo nuevo no deje el snippet mintiendo."
+    },
+    {
+      "id": "dos-huerfanas-de-aduana-entran-a-su-tema",
+      "shippedOn": "2026-10-26",
+      "routes": [
+        "/importar-a-uruguay-siendo-extranjero",
+        "/declarar-dinero-en-efectivo-uruguay"
+      ],
+      "queries": [
+        "importar a uruguay siendo extranjero",
+        "franquicia sin cedula uruguaya",
+        "cuanto efectivo puedo sacar de uruguay",
+        "declarar dinero en efectivo uruguay",
+        "llevar mas de 10000 dolares uruguay"
+      ],
+      "hypothesis": "Las dos paginas de aduana que no estaban en NINGUN tema entran a `importaciones-y-aduana-uruguay`, asi que pasan de cero enlaces del bloque «Mas sobre este tema» a los demas miembros del hub, en los dos sentidos y sin tocar ninguna otra pagina (el vinculo es reciproco por construccion). No es relleno: el hub ya publicaba la franquicia postal y la del viajero y no contestaba QUIEN puede usar la primera —el Decreto 50/026 exige documento nacional uruguayo, asi que un DNI o un CPF identifican ante el operador pero no habilitan la franquicia— ni que pasa con la plata en la mano en el mismo cruce, que desde la redaccion de 2026 del art. 29 de la Ley 19.574 se declara tambien por via terrestre y no solo en Carrasco. `/importar-a-uruguay-siendo-extranjero` es la mas huerfana de las siete en proporcion a su tamano: 1.224 lineas y, fuera del menu, un solo enlace de contenido entrante. Las dos son del tramo `contenido` y van en UNA fila porque son un solo hueco del mismo tema. No se toco titulo, descripcion ni cuerpo de ninguna de las dos."
     }
   ]
 }

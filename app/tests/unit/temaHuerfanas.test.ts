@@ -99,6 +99,28 @@ const FUERA_DE_TEMA_POR_DISENO = [
  * —los dos beneficios de tarjeta que el sitio mide en plata—, y los tickets de mutualista entre
  * los otros gastos fijos del mes de "Finanzas personales" (supermercado, supergas, meal prep).
  *
+ * 7 → 5 el 2026-10-26: las dos huérfanas de aduana entran a `importaciones-y-aduana-uruguay`.
+ * Hoy hay cinco de las siete con la ruta libre de toda ventana de medición abierta
+ * (`npm run seo_debt`: 6 libres entre las 71 de los cinco pozos, y cinco de esas seis son de este
+ * pozo), así que por una vez la lista no la recortó el libro de cambios sino la decisión editorial.
+ * Estas dos van juntas en UNA fila porque son UN hueco del mismo tema y no dos cambios: el hub
+ * cubría la franquicia postal y la del viajero, y no cubría ni quién puede usar la primera ni qué
+ * pasa con la plata en la mano en el mismo cruce.
+ *
+ * El tema es el suyo por la regla de siempre —a donde ya vive su vecina más cercana— y acá la
+ * vecina es literal en los dos casos: `/importar-a-uruguay-siendo-extranjero` contesta quién puede
+ * usar la franquicia que `/franquicia-aduana-uruguay` explica (el Decreto 50/026 exige documento
+ * nacional uruguayo), y `/declarar-dinero-en-efectivo-uruguay` es el otro mostrador del cruce que
+ * `/franquicia-viajero-uruguay` ya cubre de un lado. La primera es además la más huérfana de las
+ * siete en proporción a su tamaño: 1.224 líneas y, fuera del menú, un solo enlace de contenido
+ * entrante (`utils/aduanaFaq.ts`), contra los tres que ya recibe la de efectivo.
+ *
+ * De las otras tres libres de este pozo: `/cambiar-de-mutualista-uruguay` no entró porque el sitio
+ * no tiene tema de salud y su vecindario natural —las fichas `/mutualista/<institucion>` nacidas el
+ * 2026-10-25— está dentro de su propia ventana de medición abierta, así que elegirle un tema hoy es
+ * elegirlo sin el dato que falta; `/tendencias-uruguay` y `/temas-de-dinero-reddit` son radares del
+ * propio sitio y la decisión pendiente es si son páginas de lectura, no a qué tema van.
+ *
  * Para bajar este número: una entrada en `resources` del tema que corresponda
  * (`utils/guideHubs.ts`), con etiqueta y una línea de descripción, y regenerar el índice
  * (`npx vitest run tests/unit/temaIndex.test.ts -u`). El vínculo queda recíproco solo.
@@ -106,8 +128,6 @@ const FUERA_DE_TEMA_POR_DISENO = [
 const DEUDA_SIN_TEMA = [
   '/cambiar-de-mutualista-uruguay',
   '/comparar-plataformas-dolar-uruguay',
-  '/declarar-dinero-en-efectivo-uruguay',
-  '/importar-a-uruguay-siendo-extranjero',
   '/prestamo-hipotecario-uruguay',
   '/temas-de-dinero-reddit',
   '/tendencias-uruguay',

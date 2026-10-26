@@ -230,6 +230,14 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/franquicia-aduana-uruguay',
       },
       {
+        // Quién puede usar esa franquicia, que es la pregunta que la página de al lado no contesta:
+        // el Decreto 50/026 pide documento nacional uruguayo, así que un DNI, un CPF o un pasaporte
+        // identifican ante el operador pero no habilitan la franquicia.
+        label: 'Importar siendo extranjero',
+        description: 'Sin cédula uruguaya podés recibir el envío, pero no usar la franquicia.',
+        to: '/importar-a-uruguay-siendo-extranjero',
+      },
+      {
         label: 'Recibir regalos del exterior',
         description: 'Obsequios sin pagar IVA y la carta adentro del paquete.',
         to: '/recibir-regalos-del-exterior-uruguay',
@@ -238,6 +246,14 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Franquicia del viajero',
         description: 'Qué traer del exterior sin impuestos.',
         to: '/franquicia-viajero-uruguay',
+      },
+      {
+        // El otro mostrador del mismo cruce: la franquicia del viajero mide lo que traés en la
+        // valija y esto mide la plata que llevás encima. Desde la redacción de 2026 del art. 29 de
+        // la Ley 19.574 el deber de declarar alcanza también los cruces terrestres, no sólo Carrasco.
+        label: 'Declarar efectivo en la Aduana',
+        description: 'Hasta US$ 10.000 no se declara; por encima, en cualquier frontera.',
+        to: '/declarar-dinero-en-efectivo-uruguay',
       },
       {
         label: 'Problemas con la aduana',
