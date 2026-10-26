@@ -2018,6 +2018,28 @@
         "antel corte por deuda reconexion"
       ],
       "hypothesis": "Solo enlazado interno: no se toco titulo, descripcion ni cuerpo de ninguna de las tres paginas medidas. Las tres son el racimo de los servicios del hogar que ellas mismas declaran hermanas (el encabezado OWN-WORLD de /factura-de-ose-uruguay dice «los tres servicios del hogar con la misma gramatica» y su seccion «Las otras dos facturas del hogar» enlaza a las otras dos), y ahi estaba el problema: se enlazaban ENTRE ELLAS y ninguna figuraba en ningun `resources`, asi que eran una isla del tramo `contenido` (8x, las tres ya valuadas asi en value.ts) a la que el bloque «Mas sobre este tema» no llegaba desde ninguna pagina del sitio. Un racimo cerrado sobre si mismo no se nota: cuantas mas puertas tiene hacia adentro, menos se ve que no tiene ninguna desde afuera. Entran JUNTAS y en una sola fila porque medirlas por separado es exactamente lo que cinco corridas seguidas (19 al 24/10) evitaron dejandolas pasar hasta que se liberara la tercera hermana, hoy. Van al mismo tema, `finanzas-personales-y-jubilacion-uruguay`, por la vecina mas cercana: el hub ya publicaba todo gasto recurrente de la casa —la garrafa de supergas, la canasta del supermercado, los tickets de mutualista, la semana de comidas— y las tres paginas que reparten un sueldo entre esos gastos, y le faltaban justo los tres que llegan como FACTURA. No fueron a `alquiler-y-vivienda-uruguay`, el otro candidato: ese hub trata la operacion de alquilar y sus cortes de luz por barrio son una señal para elegir donde vivir, no una factura; estas tres las lee igual quien alquila y quien es propietario."
+    },
+    {
+      "id": "migas-en-el-renglon-verde-4",
+      "shippedOn": "2026-10-26",
+      "routes": [
+        "/api-cotizaciones-regionales",
+        "/plan-de-vida-uruguay"
+      ],
+      "hypothesis": "Cuarta tanda de migas, y las DOS que el cruce de `npm run seo_debt` declara libres hoy. La primera es el dia exacto que el comentario de `BREADCRUMB_BUDGET` tenia anotado (su fila `descripciones-del-tramo-dato-vivo`, del 27/9, cumple 29 dias) y la segunda es la cuarta que la corrida del 25/10 dejo a proposito en la cola para que la siguiente no se quedara sin deuda tocable. Las dos emitian estructurados con el rastro vacio —un `@graph` sin `BreadcrumbList` la del tablero regional, un `WebApplication` suelto la de como distribuir el sueldo—, asi que el renglon verde del resultado era la URL cruda en vez del rastro con nombres. No se toco titulo, descripcion ni cuerpo de ninguna de las dos: lo unico que cambia es el OTRO renglon del snippet. El eslabon del medio de la primera es el que ya le muestra al lector («Toda la API» hacia /desarrolladores, igual que /api-cotizacion-intradia); la segunda se queda en DOS eslabones porque todo lo que enlaza es hermano suyo, y un padre inventado le promete al visitante una seccion que no existe. El trinquete de `seoContract` baja de 3 a 1."
+    },
+    {
+      "id": "latin-ncap-pagina-propia",
+      "shippedOn": "2026-10-26",
+      "routes": ["/latin-ncap-uruguay"],
+      "queries": [
+        "latin ncap uruguay",
+        "latin ncap onix",
+        "latin ncap tucson",
+        "cuantas estrellas tiene mi auto",
+        "autos mas seguros uruguay"
+      ],
+      "hypothesis": "Pagina nueva sin una sola cifra nueva: los 124 ensayos de Latin NCAP de los 61 modelos que se venden en Uruguay ya estaban en el repo desde setiembre (`app/utils/latinNcap.ts`, verificados uno por uno en latinncap.com el 24/9/2026) pero solo se veian DENTRO de la ficha de un modelo del asesor de compra, o sea despues de declarar presupuesto, uso y prioridades. Quien busca «cuantas estrellas tiene el Onix» ya eligio el auto y pregunta por el ensayo: es demanda de MARCA, el mismo reparto que el sitio ya hace entre /historico y /historico/<casa>. La pagina publica la lista entera con el enlace al resultado oficial de cada ensayo y NO rankea, porque la estrella es de una version con sus airbags en un momento: hay 8 pares de ensayos del mismo modelo, el mismo protocolo y el mismo ano con notas distintas (el Tucson de 2022 da 0 de 5 con dos airbags y 3 de 5 con seis) y 3 modelos que se separan cinco estrellas entre sus propios ensayos. Se mide como pagina nueva: clics propios de la ruta a los 28 dias. El titulo y la descripcion se CALCULAN de la tabla (`utils/latinNcapPage.ts::ncapSeo`) para que un ensayo nuevo no deje el snippet mintiendo."
     }
   ]
 }

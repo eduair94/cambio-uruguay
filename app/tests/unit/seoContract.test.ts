@@ -363,8 +363,12 @@ const LEGACY_BUDGET = { seoMeta: 0, canonical: 0, structuredData: 0 }
  * silencio.
  */
 const DEUDA_SIN_MIGAS = [
-  '/api-cotizaciones-regionales',
-  '/plan-de-vida-uruguay',
+  // El comentario está DENTRO de la lista a propósito, y es el único motivo por el que sigue
+  // abierta en varias líneas con un solo elemento: el lector de `npm run seo_debt`
+  // (`classes/revenueplan/debtFree.ts::parseStringList`) exige que el `]` abra su propia línea —su
+  // forma de tirar excepción en vez de vaciarse en silencio— y prettier colapsa cualquier array que
+  // entre en 100 columnas, salvo los que llevan un comentario. Sin esto, `npm run lintfix` la
+  // aplasta y `tests/revenueplan/debt_free.test.ts` se pone rojo en el otro paquete.
   '/por-que-el-bcu-quiere-mas-pesos',
 ]
 
@@ -400,8 +404,20 @@ const DEUDA_SIN_MIGAS = [
  *
  * Las tres que siguen: `/api-cotizaciones-regionales` se libera el 26/10 y
  * `/por-que-el-bcu-quiere-mas-pesos` el 27/10; `/plan-de-vida-uruguay` ya está libre.
+ *
+ * 3 → 1 el 2026-10-26: las DOS que el cruce declara libres hoy (`npm run seo_debt`).
+ * `/api-cotizaciones-regionales` es el día exacto que el párrafo de arriba tenía anotado —su fila
+ * `descripciones-del-tramo-dato-vivo` del 27/9 cumple hoy 29 días— y
+ * `/plan-de-vida-uruguay` es la cuarta que la corrida del 25/10 dejó a propósito en la cola.
+ *
+ * Las dos emitían UN nodo suelto o un `@graph` con el rastro vacío, así que el contador de
+ * `structuredData` las daba por buenas. El eslabón del medio de la primera es el que ya le muestra
+ * al lector («Toda la API» → /desarrolladores, igual que /api-cotizacion-intradia); la segunda se
+ * queda en DOS porque todo lo que enlaza es hermano suyo.
+ *
+ * Queda UNA: `/por-que-el-bcu-quiere-mas-pesos`, que se libera mañana (27/10).
  */
-const BREADCRUMB_BUDGET = 3
+const BREADCRUMB_BUDGET = 1
 
 /**
  * De archivo de página a ruta: `plan-de-vida-uruguay.vue` → `/plan-de-vida-uruguay`,

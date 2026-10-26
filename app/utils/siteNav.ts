@@ -3994,6 +3994,29 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // Los ensayos de Latin NCAP ya estaban en el repo (`utils/latinNcap.ts`, verificados el
+        // 24/9/2026) pero sólo se veían DENTRO de la ficha de un modelo del asesor, o sea después
+        // de declarar presupuesto y prioridades. Quien busca «cuántas estrellas tiene el Onix» ya
+        // eligió el auto. Demanda de MARCA, el mismo reparto que /historico ↔ /historico/<casa>.
+        to: '/latin-ncap-uruguay',
+        labelKey: 'nav.latinNcap',
+        icon: 'mdi-shield-car',
+        priority: 0.7,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'latin ncap uruguay',
+          'latin ncap',
+          'cuantas estrellas tiene mi auto',
+          'estrellas de seguridad auto',
+          'autos mas seguros uruguay',
+          'latin ncap onix',
+          'latin ncap tucson',
+          'ensayo de choque auto uruguay',
+          'airbags auto usado uruguay',
+        ],
+      },
+      {
         to: '/vender-mi-auto-uruguay',
         labelKey: 'nav.sellUsedCar',
         icon: 'mdi-car-arrow-right',

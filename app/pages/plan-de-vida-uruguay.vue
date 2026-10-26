@@ -599,16 +599,41 @@ useHead(() => ({
       type: 'application/ld+json',
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
-        '@type': 'WebApplication',
-        name: title,
-        description,
-        url: canonicalUrl,
-        applicationCategory: 'FinanceApplication',
-        operatingSystem: 'Web',
-        inLanguage: 'es-UY',
-        isAccessibleForFree: true,
-        offers: { '@type': 'Offer', price: 0, priceCurrency: 'UYU' },
-        creator: { '@type': 'Organization', name: 'Cambio Uruguay' },
+        '@graph': [
+          // El rastro se queda en DOS eslabones a propósito: las páginas que esta le muestra al
+          // lector (/herramientas/costo-de-vida, /saldar-deudas-uruguay, las dos del pie) son
+          // hermanas y no su sección. Un eslabón intermedio inventado le promete al visitante una
+          // sección que no existe.
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: 'https://cambio-uruguay.com',
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Cómo distribuir tu sueldo',
+                item: canonicalUrl,
+              },
+            ],
+          },
+          {
+            '@type': 'WebApplication',
+            name: title,
+            description,
+            url: canonicalUrl,
+            applicationCategory: 'FinanceApplication',
+            operatingSystem: 'Web',
+            inLanguage: 'es-UY',
+            isAccessibleForFree: true,
+            offers: { '@type': 'Offer', price: 0, priceCurrency: 'UYU' },
+            creator: { '@type': 'Organization', name: 'Cambio Uruguay' },
+          },
+        ],
       }),
     },
   ],

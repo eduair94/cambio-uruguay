@@ -621,6 +621,32 @@ useHead(() => ({
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
         '@graph': [
+          // El rastro que el renglón verde del resultado imprime en vez de la URL cruda. El eslabón
+          // del medio es el que la propia página le muestra al lector («Toda la API» →
+          // /desarrolladores), igual que en /api-cotizacion-intradia, y no una sección inventada.
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: 'https://cambio-uruguay.com',
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Desarrolladores',
+                item: 'https://cambio-uruguay.com/desarrolladores',
+              },
+              {
+                '@type': 'ListItem',
+                position: 3,
+                name: 'API de cotizaciones regionales',
+                item: canonicalUrl,
+              },
+            ],
+          },
           {
             '@type': 'TechArticle',
             headline: title,

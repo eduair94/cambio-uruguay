@@ -754,6 +754,10 @@
           "label": "¿Cuánto vale mi auto?"
         },
         {
+          "to": "/latin-ncap-uruguay",
+          "label": "Latin NCAP: los ensayos"
+        },
+        {
           "to": "/evolucion-precio-autos-usados-uruguay",
           "label": "Evolución del precio de los autos"
         },

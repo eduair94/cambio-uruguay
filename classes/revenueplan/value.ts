@@ -407,6 +407,12 @@ export const CONTENIDO_PATHS = new Set([
   // Revisión semántica (2026-10-24): es una guía para consultar el valor catastral. Su lectura
   // de UR sólo convierte la tasa auxiliar del trámite; no publica padrones ni una serie de datos.
   "/valor-catastral-uruguay",
+  // Página nueva del 2026-10-26, clasificada en el mismo commit que la publica: lectura larga sobre
+  // una tabla FIJA que vive en el repo (`app/utils/latinNcap.ts`, verificada el 24/9/2026), sin un
+  // solo dato en vivo en su `<script setup>` — o sea, del lado claro de la línea mecánica que la
+  // tanda del 22/10 trazó. Sin esta línea entraría a `otro` y la cola de trabajo la ordenaría
+  // ocho veces por debajo de la guía equivalente de `/guias/*`.
+  "/latin-ncap-uruguay",
 ]);
 
 export function tierOf(bucket: string): Tier {

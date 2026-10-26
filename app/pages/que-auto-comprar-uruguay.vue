@@ -440,6 +440,13 @@
           relee cada dos semanas.
         </li>
         <li>
+          <strong>La seguridad.</strong> Los ensayos de Latin NCAP del modelo, que se muestran y no
+          puntúan: cada uno es de una versión con sus airbags y casi nunca dice desde qué año vale.
+          La lista completa de los ensayos de los modelos que se venden acá, con el enlace a cada
+          resultado oficial, está en
+          <NuxtLink :to="localePath('/latin-ncap-uruguay')">los ensayos de Latin NCAP</NuxtLink>.
+        </li>
+        <li>
           <strong>El orden.</strong> Cada opción se puntúa contra las demás que pasaron tus filtros
           en siete cosas: antigüedad, costo de tenerlo, reventa, repuestos, seguridad, espacio y
           ajuste a tu uso. Lo que marcás como importante pesa el triple. Un dato que falta vale el

@@ -825,6 +825,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/cuanto-vale-mi-auto-uruguay',
       },
       {
+        label: 'Latin NCAP: los ensayos',
+        description: 'Las estrellas de cada versión ensayada, con el enlace al resultado oficial.',
+        to: '/latin-ncap-uruguay',
+      },
+      {
         label: 'Evolución del precio de los autos',
         description: 'Cómo cambia lo que se pide por cada modelo.',
         to: '/evolucion-precio-autos-usados-uruguay',
