@@ -50,6 +50,10 @@
             :source-name="propertySaleSourceName(property.source)"
             :source-url="property.url"
           />
+          <ListingPresentationButton
+            :source="{ kind: 'sale', property, priceHistory: data.priceHistory }"
+            class="sale-detail__presentation"
+          />
           <section
             v-if="property.conditions.length"
             class="sale-detail__section sale-detail__conditions"
@@ -441,6 +445,9 @@ defineOgImageComponent('Cambio', {
 .sale-detail__main,
 .sale-detail__aside {
   min-width: 0;
+}
+.sale-detail__presentation {
+  margin-top: 16px;
 }
 /* Fija la columna lateral ENTERA, no sólo la tarjeta: con la tarjeta sola, el enlace "¿Comprar o
    alquilar?" que la sigue seguía de largo con el scroll y su flecha cruzaba por encima de la

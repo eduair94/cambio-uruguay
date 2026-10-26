@@ -55,6 +55,10 @@
               />
             </button>
           </div>
+          <ListingPresentationButton
+            :source="{ kind: 'car', car, cohort: data.cohort }"
+            class="mt-3"
+          />
         </VCol>
         <VCol cols="12" md="6">
           <h1 class="text-h5 font-weight-bold mb-2">{{ car.title }}</h1>

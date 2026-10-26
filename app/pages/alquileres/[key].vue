@@ -638,6 +638,10 @@ useHead(() => ({
           <VAlert v-if="uncertainData" type="warning" variant="tonal" class="mt-4">{{
             t('uncertainData')
           }}</VAlert>
+          <ListingPresentationButton
+            :source="{ kind: 'rental', property, offer: selectedOffer, market }"
+            class="mt-4"
+          />
         </header>
         <PropertyGallery :property="property" class="rental-page__gallery" />
         <nav class="rental-page__sections" :aria-label="t('onThisPage')">
