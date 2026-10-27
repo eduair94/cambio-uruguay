@@ -137,6 +137,44 @@ export const PAGE_ADDENDA: readonly PageAddendum[] = Object.freeze([
       },
     ],
   },
+  {
+    route: '/declaracion-de-irpf-uruguay',
+    updatedAt: '2026-10-27',
+    items: [
+      {
+        question:
+          'Tengo dos trabajos y mis ingresos superan el límite: ¿qué tengo que marcar exactamente en el Formulario 3100 y a quién se lo entrego?',
+        answer:
+          'Si la suma de tus ingresos supera las 7 BPC mensuales, en el Rubro 4 del formulario marcás SI en el casillero de "Aplicación del Mínimo no Imponible ante este Empleador", para indicarle a ese empleador que te retenga sobre la totalidad del ingreso sin aplicar el mínimo no imponible mensualizado. El formulario se presenta en 2 vías (una queda para el empleador y otra para vos) ante el empleador o empleadores correspondientes. Si tus ingresos no llegan a las 7 BPC, dejás ese casillero vacío.',
+        sources: [
+          {
+            title: 'gub.uy',
+            url: 'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/instructivo-formulario-3100',
+          },
+          {
+            title: 'memory.com.uy',
+            url: 'https://memory.com.uy/blog/obligaciones-fiscales/guia-formulario-3100-irpf-dgi/',
+          },
+        ],
+      },
+      {
+        question:
+          'Si tengo más de un empleador y me corresponde declarar, ¿cuándo y con qué formulario presento la declaración jurada?',
+        answer:
+          'Si tuviste multi-ingreso simultáneo (como tener más de un empleador) y no presentaste el Formulario 3100, quedás obligado a hacer la declaración jurada de IRPF. Se presenta con el Formulario 1102 si es individual, o con el 1103 si optás por núcleo familiar, dentro del plazo que va del 29 de junio al 31 de agosto de 2026.',
+        sources: [
+          {
+            title: 'elobservador.com.uy',
+            url: 'https://www.elobservador.com.uy/nacional/irpf-2026-quienes-estan-obligados-presentar-declaracion-jurada-la-dgi-y-cual-es-la-fecha-limite-n6044492',
+          },
+          {
+            title: 'elobservador.com.uy',
+            url: 'https://www.elobservador.com.uy/nacional/declaracion-jurada-irpf-2026-cuando-hay-que-presentarla-quienes-deben-hacerlo-y-como-realizar-el-tramite-n6047056',
+          },
+        ],
+      },
+    ],
+  },
   // <<< generated-addenda >>>
 ])
 
