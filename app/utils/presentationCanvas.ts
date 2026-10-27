@@ -11,6 +11,7 @@ import type {
   DeclaredScene,
   DropScene,
   ListingPresentation,
+  ListScene,
   OutroScene,
   PhotoScene,
   PresentationScene,
@@ -219,6 +220,56 @@ function textAnchor(frame: Frame, url: string | null): TextAnchor {
   return focus.y > 0.55 && calmTop(focus) ? 'top' : 'bottom'
 }
 
+interface Box {
+  x: number
+  y: number
+  w: number
+  h: number
+}
+
+/**
+ * Una foto mostrada entera que además lleva texto se corre para dejárselo libre: a la derecha en
+ * el video horizontal, arriba en el vertical. Centrada, el título le tapaba la parte de abajo
+ * (justo donde está el auto). Corrida, el acercamiento se achica para que nunca llegue al texto.
+ */
+const ASIDE_GROW = 0.35
+const ASIDE_MAX = 1 + (1.16 - 1) * ASIDE_GROW
+
+function containedBox(frame: Frame, image: Image, scale: number, aside: boolean): Box {
+  const { width, height, pad, u, portrait } = frame
+  if (!aside) {
+    const base = Math.min(width / image.width, height / image.height) * 0.96 * scale
+    const w = image.width * base
+    const h = image.height * base
+    return { x: (width - w) / 2, y: (height - h) / 2, w, h }
+  }
+  const grow = 1 + (Math.max(1, scale) - 1) * ASIDE_GROW
+  if (portrait) {
+    const base = Math.min((width * 0.96) / image.width, (height * 0.52) / image.height)
+    const w = image.width * base * grow
+    const h = image.height * base * grow
+    // Debajo de la píldora de la marca y con el centro a un tercio de la altura.
+    const cy = Math.max(pad + 44 * u + (image.height * base * ASIDE_MAX) / 2, height * 0.36)
+    return { x: (width - w) / 2, y: cy - h / 2, w, h }
+  }
+  const base = Math.min((height * 0.9) / image.height, (width * 0.5) / image.width)
+  const w = image.width * base * grow
+  const h = image.height * base * grow
+  const cx = width - pad - (image.width * base * ASIDE_MAX) / 2
+  return { x: cx - w / 2, y: (height - h) / 2, w, h }
+}
+
+/** Dónde se escribe el texto de una escena con foto, y si la foto se corrió para dejarle lugar. */
+function textColumn(frame: Frame, url: string | null) {
+  const full = { left: frame.pad, width: frame.width - frame.pad * 2, aside: false }
+  const image = url ? frame.images.get(url) : undefined
+  if (!image || !image.width || !image.height || !contained(frame, image)) return full
+  if (frame.portrait) return { ...full, aside: true }
+  const base = Math.min((frame.height * 0.9) / image.height, (frame.width * 0.5) / image.width)
+  const photoLeft = frame.width - frame.pad - image.width * base * ASIDE_MAX
+  return { left: frame.pad, width: photoLeft - frame.pad * 1.75, aside: true }
+}
+
 function drawPhoto(
   frame: Frame,
   url: string | null,
@@ -226,7 +277,8 @@ function drawPhoto(
   seed: number,
   dim = 0,
   targetY = 0.5,
-  maxExtraZoom = 1
+  maxExtraZoom = 1,
+  aside = false
 ) {
   const { ctx, width, height } = frame
   ctx.fillStyle = NAVY
@@ -273,15 +325,15 @@ function drawPhoto(
     drawCover(1.08, 0, 0, { x: 0.5, y: 0.5 })
     ctx.fillStyle = 'rgba(13, 26, 45, 0.72)'
     ctx.fillRect(0, 0, width, height)
-    const base = Math.min(width / image.width, height / image.height) * 0.96 * motion.scale
-    const w = image.width * base
-    const h = image.height * base
+    const box = containedBox(frame, image, motion.scale, aside)
+    // Corrida, la foto no se pasea: el paneo la llevaría hacia el texto.
+    const shift = aside ? 0 : 0.5
     ctx.drawImage(
       image,
-      (width - w) / 2 + motion.dx * w * 0.5,
-      (height - h) / 2 + motion.dy * h * 0.5,
-      w,
-      h
+      box.x + motion.dx * box.w * shift,
+      box.y + motion.dy * box.h * shift,
+      box.w,
+      box.h
     )
   } else {
     drawCover(motion.scale, motion.dx, motion.dy, { x: 0.5, y: verticalTarget })
@@ -354,8 +406,10 @@ function appear(frame: Frame, local: number, delay: number, draw: (offset: numbe
 }
 
 function drawCover(frame: Frame, scene: CoverScene, local: number) {
-  const { width, height, pad, u } = frame
+  const { height, pad, u } = frame
   const anchor = textAnchor(frame, scene.photo)
+  const column = textColumn(frame, scene.photo)
+  const left = column.left
   // Sólo se acerca de más cuando el auto está abajo y el texto pasó arriba: es el caso que lo
   // necesita, y en los demás acercar recorta un vehículo que ya llena el cuadro.
   const zoom = anchor === 'top' ? MAX_EXTRA_ZOOM : 1
@@ -366,12 +420,16 @@ function drawCover(frame: Frame, scene: CoverScene, local: number) {
     seedOf(scene),
     0,
     anchor === 'top' ? 0.68 : 0.38,
-    zoom
+    zoom,
+    column.aside
   )
-  if (anchor === 'top') topShade(frame, frame.portrait ? 0.62 : 0.7)
-  else bottomShade(frame, frame.portrait ? 0.35 : 0.28)
+  // Con la foto corrida el texto ya está sobre el fondo oscurecido: la sombra sólo la taparía.
+  if (!column.aside) {
+    if (anchor === 'top') topShade(frame, frame.portrait ? 0.62 : 0.7)
+    else bottomShade(frame, frame.portrait ? 0.35 : 0.28)
+  }
   watermark(frame)
-  const maxWidth = width - pad * 2
+  const maxWidth = column.width
   font(frame, frame.portrait ? 46 : 44, 800)
   const titleLines = lines(frame, scene.title, maxWidth, 2)
   const titleLead = (frame.portrait ? 54 : 52) * u
@@ -389,7 +447,7 @@ function drawCover(frame: Frame, scene: CoverScene, local: number) {
     const top = y
     appear(frame, local, 100, offset => {
       font(frame, 24, 600)
-      text(frame, scene.location.toUpperCase(), pad, top + 26 * u + offset, { color: ACCENT })
+      text(frame, scene.location.toUpperCase(), left, top + 26 * u + offset, { color: ACCENT })
     })
     y += blocks[0]!
   }
@@ -397,29 +455,34 @@ function drawCover(frame: Frame, scene: CoverScene, local: number) {
   appear(frame, local, 250, offset => {
     font(frame, frame.portrait ? 46 : 44, 800)
     titleLines.forEach((line, index) =>
-      text(frame, line, pad, titleTop + (index + 1) * titleLead - 10 * u + offset)
+      text(frame, line, left, titleTop + (index + 1) * titleLead - 10 * u + offset)
     )
   })
   y += blocks[1]!
   const priceTop = y
   appear(frame, local, 550, offset => {
     font(frame, 72, 800)
-    text(frame, scene.price, pad, priceTop + 72 * u + offset)
+    text(frame, scene.price, left, priceTop + 72 * u + offset)
   })
   y += blocks[2]!
   if (scene.priceNote) {
     const top = y
     appear(frame, local, 700, offset => {
       font(frame, 24, 600)
-      text(frame, scene.priceNote!, pad, top + 26 * u + offset, { alpha: 0.88 })
+      text(frame, scene.priceNote!, left, top + 26 * u + offset, { alpha: 0.88 })
     })
     y += blocks[3]!
   }
   if (scene.chips.length) {
     const top = y + 14 * u
     appear(frame, local, 850, offset => {
-      let x = pad
-      for (const chip of scene.chips) x += pill(frame, chip, x, top + offset) + 10 * u
+      let x = left
+      for (const chip of scene.chips) {
+        // Un chip que no entra en la columna se calla entero, nunca cortado.
+        font(frame, 22, 700)
+        if (x + frame.ctx.measureText(chip).width + 28 * u > left + maxWidth) break
+        x += pill(frame, chip, x, top + offset) + 10 * u
+      }
     })
   }
 }
@@ -429,9 +492,24 @@ function drawPhotoScene(frame: Frame, scene: PhotoScene, local: number) {
   const anchor = scene.label ? textAnchor(frame, scene.photo) : 'bottom'
   const targetY = !scene.label ? 0.5 : anchor === 'top' ? 0.64 : 0.42
   const zoom = scene.label && anchor === 'top' ? MAX_EXTRA_ZOOM : 1
-  drawPhoto(frame, scene.photo, local / scene.duration, seedOf(scene), 0, targetY, zoom)
-  if (scene.label && anchor === 'top') topShade(frame, 0.5)
-  else if (scene.label) bottomShade(frame, 0.5)
+  const column = scene.label
+    ? textColumn(frame, scene.photo)
+    : { left: pad, width: width - pad * 2, aside: false }
+  const left = column.left
+  drawPhoto(
+    frame,
+    scene.photo,
+    local / scene.duration,
+    seedOf(scene),
+    0,
+    targetY,
+    zoom,
+    column.aside
+  )
+  if (scene.label && !column.aside) {
+    if (anchor === 'top') topShade(frame, 0.5)
+    else bottomShade(frame, 0.5)
+  }
   watermark(frame)
   pill(frame, scene.counter, width - pad, pad - 18 * u, {
     align: 'right',
@@ -439,7 +517,7 @@ function drawPhotoScene(frame: Frame, scene: PhotoScene, local: number) {
   })
   if (!scene.label) return
   font(frame, frame.portrait ? 44 : 46, 800)
-  const labelLines = lines(frame, scene.label, width - pad * 2, 2)
+  const labelLines = lines(frame, scene.label, column.width, column.aside ? 3 : 2)
   const lead = 54 * u
   // `bottom` es la línea de base del último renglón; arriba se cuenta desde debajo de la marca:
   // primero el rótulo chico y después los renglones.
@@ -450,14 +528,14 @@ function drawPhotoScene(frame: Frame, scene: PhotoScene, local: number) {
   appear(frame, local, 200, offset => {
     font(frame, frame.portrait ? 44 : 46, 800)
     labelLines.forEach((line, index) =>
-      text(frame, line, pad, bottom - (labelLines.length - 1 - index) * lead + offset)
+      text(frame, line, left, bottom - (labelLines.length - 1 - index) * lead + offset)
     )
     if (scene.detail) {
       font(frame, 22, 700)
       text(
         frame,
         scene.detail.toUpperCase(),
-        pad,
+        left,
         bottom - labelLines.length * lead - 6 * u + offset,
         {
           color: ACCENT,
@@ -639,6 +717,58 @@ function drawDeclared(frame: Frame, scene: DeclaredScene, local: number) {
   })
 }
 
+function drawList(frame: Frame, scene: ListScene, local: number) {
+  const { width, height, pad, u } = frame
+  drawPhoto(frame, scene.photo, local / scene.duration, seedOf(scene), 0.82)
+  watermark(frame)
+  const maxWidth = width - pad * 2
+  let y = frame.portrait ? height * 0.2 : pad + 110 * u
+  const headTop = y
+  font(frame, 40, 800)
+  const heading = lines(frame, scene.heading, maxWidth, 2)
+  appear(frame, local, 100, offset => {
+    font(frame, 22, 700)
+    text(frame, scene.eyebrow.toUpperCase(), pad, headTop + offset, { color: ACCENT })
+    font(frame, 40, 800)
+    heading.forEach((line, index) =>
+      text(frame, line, pad, headTop + 52 * u + index * 48 * u + offset)
+    )
+  })
+  y += 52 * u + heading.length * 48 * u + 34 * u
+  // Dos columnas en horizontal: cuatro renglones apilados no entran en 720 px.
+  const columns = !frame.portrait && scene.rows.length > 2 ? 2 : 1
+  const gap = 40 * u
+  const cellWidth = (maxWidth - gap * (columns - 1)) / columns
+  const rowHeight = (frame.portrait ? 132 : 118) * u
+  scene.rows.forEach((row, index) => {
+    const x = pad + (index % columns) * (cellWidth + gap)
+    const top = y + Math.floor(index / columns) * rowHeight
+    appear(frame, local, 450 + index * 300, offset => {
+      font(frame, 22, 700)
+      text(frame, lines(frame, row.label.toUpperCase(), cellWidth, 1)[0] ?? '', x, top + offset, {
+        color: ACCENT,
+      })
+      font(frame, 34, 800)
+      text(frame, lines(frame, row.value, cellWidth, 1)[0] ?? '', x, top + 42 * u + offset)
+      if (row.note) {
+        font(frame, 22, 400)
+        text(frame, lines(frame, row.note, cellWidth, 1)[0] ?? '', x, top + 76 * u + offset, {
+          alpha: 0.8,
+        })
+      }
+    })
+  })
+  appear(frame, local, 600 + scene.rows.length * 300, offset => {
+    font(frame, 20, 400)
+    const note = lines(frame, scene.footnote, maxWidth, 2)
+    note.forEach((line, index) =>
+      text(frame, line, pad, height - pad - (note.length - 1 - index) * 28 * u + offset, {
+        alpha: 0.75,
+      })
+    )
+  })
+}
+
 function drawOutro(frame: Frame, scene: OutroScene, local: number) {
   const { width, height, pad, u } = frame
   drawPhoto(frame, scene.photo, local / scene.duration, seedOf(scene), 0.78)
@@ -672,6 +802,7 @@ function drawScene(frame: Frame, scene: PresentationScene, local: number) {
   else if (scene.kind === 'compare') drawCompare(frame, scene, local)
   else if (scene.kind === 'drop') drawDrop(frame, scene, local)
   else if (scene.kind === 'declared') drawDeclared(frame, scene, local)
+  else if (scene.kind === 'list') drawList(frame, scene, local)
   else drawOutro(frame, scene, local)
 }
 
@@ -705,4 +836,13 @@ export function drawPresentationFrame(
   }
   drawScene(frame, current, local)
   ctx.restore()
+}
+
+/**
+ * El milisegundo que sirve de imagen de portada: la portada con todo ya entrado (título, precio y
+ * chips aparecen hasta los ~1,4 s), antes de que el acercamiento avance demasiado.
+ */
+export function posterElapsed(presentation: Pick<ListingPresentation, 'scenes'>): number {
+  const cover = presentation.scenes[0]
+  return cover ? Math.min(cover.duration - 1, 2400) : 0
 }

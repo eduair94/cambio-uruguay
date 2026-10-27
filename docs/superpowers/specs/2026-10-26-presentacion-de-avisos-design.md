@@ -83,3 +83,26 @@ ficha; ninguna cifra inventada; sin datos de contacto.
 
 Duraciones (≈4 s por escena, más si el texto narrado es largo), tipografía del canvas (la del sitio),
 paleta (marino/papel del directorio), y el orden exacto de la cola de rótulos.
+
+## Segunda tanda (27/10/2026)
+
+- **El MP4 se arma con WebCodecs** (`utils/presentationExport.ts`, muxer `mediabunny` cargado al
+  primer uso): cuadro por cuadro en un canvas fuera de pantalla, a la velocidad de la máquina.
+  Medido en el Onix: 7 s para un video de 39 s, H.264 + AAC, 12 MB. No depende de que la pestaña
+  esté a la vista. Sin WebCodecs (o sin H.264) se vuelve a grabar el canvas en tiempo real.
+- **Música de fondo sintetizada** (`utils/presentationMusic.ts`): acordes, bajo y arpegio armados
+  con un `OfflineAudioContext`. No hay archivo ni licencia. Entra en el archivo (AAC) y se puede
+  apagar; debajo de la voz baja de volumen. La voz sigue sin poder grabarse.
+- **Escenas con datos que la ficha pide aparte**: lo que hay cerca (`/api/property-nearby`), los
+  datos del barrio (`/api/rentals/zone-profile`, sólo cifras del propio barrio y lo provisorio
+  dicho) y la comparación de la venta (`/api/property-insight`, la misma cuenta del bloque de la
+  ficha). Se piden al abrir el reproductor con 3,5 s de tope; si no llegan, la escena no existe.
+- **Foto que no llena el cuadro + texto**: se corre (derecha en horizontal, arriba en vertical) y
+  el texto va al lado, sin sombra encima de la foto.
+- **Imagen de portada** (JPG de la portada ya entera) para descargar o compartir sin grabar nada.
+- **Botón con miniatura**: la primera foto con un play, la duración y "se puede mandar por WhatsApp".
+- **CORS del CDN de InfoCasas**: manda `Access-Control-Allow-Origin` sólo si el pedido trae
+  `Origin` (`Vary: Origin`). La galería ya bajó la foto sin CORS y Chrome le da esa copia al
+  canvas. Si la carga falla, se pide otra vez con `?cu-cors=1`.
+- GA4: `record` lleva `method` (`fast`/`realtime`) y `audio`; nuevas `poster_download` y
+  `poster_share`.
