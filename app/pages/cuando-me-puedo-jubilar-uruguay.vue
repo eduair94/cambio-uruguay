@@ -122,6 +122,16 @@
           </tr>
         </tbody>
       </VTable>
+
+      <p class="body-text mt-6 mb-0">
+        Antes de dar por buena la cuenta, mirá que estén todos los años: la historia laboral del BPS
+        arranca el <strong>1/4/1996</strong> y lo trabajado antes no figura ahí ni cuenta, salvo que
+        pidas que se reconozca. La Ley 20.130 le puso a ese pedido un plazo por fecha de nacimiento
+        —el de los nacidos hasta el 1/6/1968 vence el 31/5/2027— y el cuadro entero está en
+        <NuxtLink :to="localePath('/reconocer-anos-trabajados-uruguay')"
+          >reconocer años trabajados antes de 1996</NuxtLink
+        >.
+      </p>
     </section>
 
     <!-- Régimen anterior -->

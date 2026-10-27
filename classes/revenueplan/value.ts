@@ -385,6 +385,7 @@ export const CONTENIDO_PATHS = new Set([
   "/pension-a-la-vejez-uruguay",
   "/pension-alimenticia-uruguay",
   "/pension-por-sobrevivencia-uruguay",
+  "/permiso-de-menor-para-viajar-uruguay",
   "/por-que-el-bcu-quiere-mas-pesos",
   "/por-que-no-baja-el-alquiler-uruguay",
   "/preguntas-economia-personal",

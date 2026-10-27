@@ -2906,6 +2906,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/permiso-de-menor-para-viajar-uruguay',
+        labelKey: 'nav.permisoDeMenor',
+        icon: 'mdi-airplane-check',
+        priority: 0.7,
+        changefreq: 'monthly',
+        keywords: [
+          'permiso de menor uruguay',
+          'permiso para viajar con menores uruguay',
+          'cuanto sale el permiso de menor',
+          'permiso de menor migracion uruguay',
+          'menor viaja con un solo padre uruguay',
+          'carta poder permiso de menor',
+          'salida del pais menores uruguay',
+          'permiso de menor pasaporte uruguayo',
+        ],
+      },
+      {
         to: '/declarar-dinero-en-efectivo-uruguay',
         labelKey: 'nav.declararEfectivo',
         icon: 'mdi-cash-multiple',

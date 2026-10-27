@@ -104,6 +104,18 @@
           </VCard>
         </VCol>
       </VRow>
+
+      <p class="note-text mt-6 mb-0">
+        <strong>Si el pasaporte es para un menor, el arancel no es todo lo que cambia.</strong> Un
+        chico que viaja con pasaporte uruguayo común vigente no necesita el permiso de menor que
+        Migración exige cuando viaja con cédula —el artículo 18 del Decreto 394/009 exceptúa
+        expresamente a quien va «en posesión de pasaporte uruguayo válido»—, así que el pasaporte se
+        ahorra ese otro trámite, su arancel en unidades indexadas y la firma del padre que no viaja.
+        Los dos caminos, con sus números, están en
+        <NuxtLink :to="localePath('/permiso-de-menor-para-viajar-uruguay')"
+          >permiso de menor para viajar</NuxtLink
+        >.
+      </p>
     </section>
 
     <!-- Plazos -->

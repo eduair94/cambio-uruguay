@@ -2056,6 +2056,43 @@
         "llevar mas de 10000 dolares uruguay"
       ],
       "hypothesis": "Las dos paginas de aduana que no estaban en NINGUN tema entran a `importaciones-y-aduana-uruguay`, asi que pasan de cero enlaces del bloque «Mas sobre este tema» a los demas miembros del hub, en los dos sentidos y sin tocar ninguna otra pagina (el vinculo es reciproco por construccion). No es relleno: el hub ya publicaba la franquicia postal y la del viajero y no contestaba QUIEN puede usar la primera —el Decreto 50/026 exige documento nacional uruguayo, asi que un DNI o un CPF identifican ante el operador pero no habilitan la franquicia— ni que pasa con la plata en la mano en el mismo cruce, que desde la redaccion de 2026 del art. 29 de la Ley 19.574 se declara tambien por via terrestre y no solo en Carrasco. `/importar-a-uruguay-siendo-extranjero` es la mas huerfana de las siete en proporcion a su tamano: 1.224 lineas y, fuera del menu, un solo enlace de contenido entrante. Las dos son del tramo `contenido` y van en UNA fila porque son un solo hueco del mismo tema. No se toco titulo, descripcion ni cuerpo de ninguna de las dos."
+    },
+    {
+      "id": "permiso-de-menor-pagina-propia",
+      "shippedOn": "2026-10-27",
+      "routes": ["/permiso-de-menor-para-viajar-uruguay"],
+      "queries": [
+        "permiso de menor uruguay",
+        "permiso para viajar con menores uruguay",
+        "cuanto sale el permiso de menor",
+        "menor viaja con un solo padre uruguay",
+        "carta poder permiso de menor"
+      ],
+      "hypothesis": "Pagina nueva en el unico hueco del racimo del viaje que no es de plata: el sitio ya tenia el presupuesto del viaje, cuantos dolares o reales llevar, el auto a Brasil o Argentina, el efectivo que hay que declarar, el pasaporte y la partida, y en ninguna parte decia que el chico puede quedar en el mostrador. Y la respuesta que abre la pagina no es el precio sino el documento: con pasaporte uruguayo comun vigente el permiso NO se exige (ficha de gub.uy y art. 18 del Decreto 394/009, que exceptua a quien viaja «en posesion de pasaporte uruguayo valido»), y tampoco si viaja con sus dos padres o su tutor. El arancel oficial esta en UNIDADES INDEXADAS —55,70 UI por salida y por menor, del bloque «Costos» de la ficha— asi que el monto en pesos lo calcula la pagina con el valor de la UI que el sitio ya lee del BCU y no se escribe a mano: una cifra en pesos en el repo envejeceria todos los dias. Esa conversion es la que mete el numero del dia en la descripcion, que es la regla medida del sitio. Demanda de intencion local y estacional: la ventana de 28 dias cierra justo antes del pico de enero. La pagina entra al tema `tramites-y-documentos-uruguay` y recibe un enlace de contexto desde `/cuanto-sale-el-pasaporte-uruguayo`, que es el unico lugar del sitio donde la decision se toma de verdad (si el pasaporte ya existe, este tramite desaparece). A la pagina del pasaporte no se le toco el titulo, la descripcion ni el resto del cuerpo: el parrafo nuevo esta ahi para mandar al lector aca, no para mover su propia consulta, y por eso su ruta no se declara como sujeto."
+    },
+    {
+      "id": "prestamo-hipotecario-entra-a-su-tema",
+      "shippedOn": "2026-10-27",
+      "routes": ["/prestamo-hipotecario-uruguay"],
+      "queries": [
+        "prestamo hipotecario uruguay",
+        "credito hipotecario en ui o ur",
+        "cuota hipoteca unidades indexadas",
+        "hipoteca en pesos o en dolares uruguay"
+      ],
+      "hypothesis": "La pagina que explica en que MONEDA queda la cuota de un credito para vivienda no estaba en NINGUN tema, asi que no recibia ni daba un solo enlace del bloque «Mas sobre este tema». Entra a `comprar-vivienda-uruguay`, y el tema no hubo que deducirlo del vecindario: el seoTitle del hub ES el nombre de la pagina («Comprar vivienda en Uruguay: credito hipotecario, BHU y escrituracion») y el hub ya llevaba la guia `credito-hipotecario-uruguay`, que explica el credito, mas `bhu-como-funciona`. Lo unico que no hacia ninguna de las dos es lo que esta pagina contesta: que la cuota se firma en UI o UR y nunca en dolares. De ahi que la etiqueta del hub no repita el nombre de la guia — dos URLs sobre el mismo nombre no se mandan a disputar la misma consulta, la misma separacion que el libro ya declaro para `/impuesto-temu-uruguay` y `/garantia-de-alquiler-uruguay`. Su fila anterior (`prestamo-hipotecario`, del 28/9) cumple hoy 29 dias, o sea que la ventana cerro y este cambio arranca contra el regimen que dejo el anterior. No se toco titulo, descripcion ni cuerpo."
+    },
+    {
+      "id": "reconocer-anos-trabajados-recibe-su-enlace",
+      "shippedOn": "2026-10-27",
+      "routes": ["/reconocer-anos-trabajados-uruguay"],
+      "queries": [
+        "reconocer anos trabajados bps",
+        "anos trabajados antes de 1996",
+        "historia laboral antes de 1996",
+        "plazo reconocimiento anos trabajados"
+      ],
+      "hypothesis": "La pagina del reconocimiento de anos trabajados antes del 1/4/1996 estaba en su tema pero sin un solo enlace de contexto, o sea que su unico vinculo quedaba en el bloque del pie que `docs/app/INTERCONEXIONES.md` midio a 11.341 px de una pagina de 15.868: enlazada para un rastreador e invisible para un lector. El enlace entrante nace en `/cuando-me-puedo-jubilar-uruguay`, que es el unico candidato que TIENE el problema que esta pagina resuelve: publica la escala de anos de trabajo exigidos y nunca decia que lo anterior a abril de 1996 no esta en la historia laboral, asi que un lector podia contarse treinta anos contra una tabla que su propio registro del BPS no respalda. Va DENTRO de la seccion «Si no llegas a 30 anos de trabajo», debajo de la tabla que crea el malentendido, y no en las relacionadas del pie. Las tres cifras del parrafo (1/4/1996, Ley 20.130 y el 31/5/2027 de los nacidos hasta el 1/6/1968) son las que la pagina de destino ya publica con fuente propia (BPS 20542/11452 e IMPO Ley 20.130): el enlace no estrena ninguna cifra. La ruta de origen no tiene ninguna fila en el libro y no se le toco titulo, descripcion ni el resto del cuerpo, asi que no se declara como sujeto."
     }
   ]
 }

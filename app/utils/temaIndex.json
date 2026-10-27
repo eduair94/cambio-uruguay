@@ -596,6 +596,10 @@
           "label": "Cooperativas de vivienda"
         },
         {
+          "to": "/prestamo-hipotecario-uruguay",
+          "label": "Préstamo hipotecario"
+        },
+        {
           "to": "/herramientas/calculadora-prestamo",
           "label": "Calculadora de préstamo"
         },
@@ -1680,6 +1684,10 @@
         {
           "to": "/apostillar-un-documento-uruguay",
           "label": "Apostillar un documento"
+        },
+        {
+          "to": "/permiso-de-menor-para-viajar-uruguay",
+          "label": "Permiso de menor para viajar"
         },
         {
           "to": "/mudarme-a-uruguay-residencia",

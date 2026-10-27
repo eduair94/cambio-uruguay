@@ -149,9 +149,7 @@ const SIN_LECTOR_QUE_LA_NECESITE = [
 const DEUDA_SIN_ENLACE = [
   '/apps-utiles-uruguay',
   '/fondo-de-solidaridad-uruguay',
-  '/llevar-el-auto-a-brasil-o-argentina',
   '/precio-del-boleto-montevideo',
-  '/reconocer-anos-trabajados-uruguay',
   '/ropa-por-kilo-uruguay',
   '/seguro-obligatorio-de-auto-uruguay',
 ]
@@ -354,7 +352,37 @@ const DEUDA_SIN_ENLACE = [
 // `#organismos`, debajo de las cinco tarjetas que crean el callejón, y no en el bloque de
 // relacionadas del pie, que es lo que el encabezado de este archivo no cuenta como arreglo. A la
 // página de origen no se le tocó el snippet ni el resto del cuerpo.
-const DEUDA_MAXIMA = 7
+// 7 → 6 el 2026-10-27: `/reconocer-anos-trabajados-uruguay`, que hoy es la ÚNICA de las siete con
+// la ruta libre de toda ventana de medición abierta — las otras seis llevan una fila declarada
+// entre el 30/9 y el 9/10 y la primera que se libera, `/fondo-de-solidaridad-uruguay`, entra el
+// 29/10.
+//
+// El origen es `/cuando-me-puedo-jubilar-uruguay`, y es el único candidato que tiene el problema
+// que la página contesta: publica la escala de años de trabajo exigidos y nunca decía que los años
+// anteriores al 1/4/1996 NO están en la historia laboral, así que un lector podía contarse treinta
+// años de trabajo contra una tabla que su propio registro del BPS no respalda. No se eligió por
+// afinidad temática: la vuelta tampoco existía (la página de la jubilación no la enlazaba de
+// ninguna forma) y esa ruta no tiene ninguna fila en el libro de cambios, así que el enlace no le
+// cambia el sujeto a ningún experimento.
+//
+// El enlace va DENTRO de la sección «Si no llegás a 30 años de trabajo», debajo de la tabla que
+// crea el malentendido, y no en el bloque de relacionadas del pie, que es lo que el encabezado de
+// este archivo no cuenta como arreglo. A la página de origen no se le tocó el snippet ni el resto
+// del cuerpo. Los tres datos que el párrafo nombra (1/4/1996, Ley 20.130, 31/5/2027) son los que la
+// página de destino ya publica con fuente (BPS 20542/11452 e IMPO Ley 20.130, en
+// `utils/workYearsRecognition.ts`): el enlace no estrena ninguna cifra.
+// 6 → 5 el mismo día, y esta baja no la decidió una corrida de deuda: la trajo puesta la página
+// nueva `/permiso-de-menor-para-viajar-uruguay`. Sus chips de «Antes de viajar» enlazan
+// `/llevar-el-auto-a-brasil-o-argentina`, que estaba en esta lista con su ruta reservada hasta el
+// 29/10 por la fila `llevar-el-auto-al-exterior` del 5/10.
+//
+// La reserva no se pisó y no hace falta esperarla: a esa página no se le tocó ni una línea —el
+// enlace nace del otro lado— y la fila que el libro de cambios declara hoy es la de la página
+// nueva, no una segunda fila sobre esta ruta. Lo que cambia es el hecho medido, y esta lista
+// describe hechos: dejarla declarada sabiendo que ya recibe un enlace de contexto es justo el modo
+// de fallar que el trinquete de arriba persigue —un contador inflado contra una deuda menor, con
+// lugar de sobra para que la próxima página nazca huérfana y siga en verde—.
+const DEUDA_MAXIMA = 5
 
 describe('ninguna página de lectura queda sin un enlace de contexto', () => {
   it('las páginas sin enlace son exactamente las declaradas', () => {

@@ -128,7 +128,6 @@ const FUERA_DE_TEMA_POR_DISENO = [
 const DEUDA_SIN_TEMA = [
   '/cambiar-de-mutualista-uruguay',
   '/comparar-plataformas-dolar-uruguay',
-  '/prestamo-hipotecario-uruguay',
   '/temas-de-dinero-reddit',
   '/tendencias-uruguay',
 ]
@@ -316,7 +315,31 @@ const DEUDA_SIN_TEMA = [
  *
  * Sólo puede bajar: subirlo es publicar una página huérfana.
  */
-const DEUDA_MAXIMA = 10
+/**
+ * 5 → 4 el 2026-10-27: `/prestamo-hipotecario-uruguay` entra a `comprar-vivienda-uruguay`. Su fila
+ * `prestamo-hipotecario` es del 2026-09-28, así que hoy cumple 29 días y sale de la ventana que
+ * `experiments_overlap.test.ts` protege (el solape es `|Δfecha| ≤ 28`): es la única de las cinco
+ * que se libera hoy, y la única libre que además tiene un tema evidente. De las otras tres libres,
+ * las tres siguen esperando por lo que la nota del 26/10 ya razonó —`/cambiar-de-mutualista-uruguay`
+ * por falta de un tema de salud, y los dos radares del propio sitio porque la decisión pendiente es
+ * si son páginas de lectura—, y `/comparar-plataformas-dolar-uruguay` se libera mañana.
+ *
+ * El tema es el suyo sin discusión y por una vez no hay que deducirlo del vecindario: el `seoTitle`
+ * del hub ES el nombre de la página («Comprar vivienda en Uruguay: crédito hipotecario, BHU y
+ * escrituración») y el hub ya lleva la guía `credito-hipotecario-uruguay`, que explica el crédito,
+ * más `bhu-como-funciona`. Lo único que no hacía ninguna de las dos es lo que esta página contesta:
+ * en qué MONEDA queda la cuota (UI o UR, nunca dólares). De ahí la etiqueta, que no repite el
+ * nombre de la guía — misma separación que esta lista ya declaró para `/impuesto-temu-uruguay` y
+ * para `/garantia-de-alquiler-uruguay`: dos URLs sobre el mismo nombre no se mandan a disputar la
+ * misma consulta.
+ *
+ * Y el presupuesto baja de 10 a 4, o sea hasta la deuda real. Los 10 venían de cuando la lista no
+ * existía y el trinquete era sólo un número; con la lista declarada, seis de holgura no son margen
+ * inofensivo: absorben seis páginas nuevas publicadas huérfanas sin que nada se ponga rojo, que es
+ * el único accidente que este archivo existe para atajar. Es el mismo argumento que `seoContract`
+ * escribió al bajar `canonical` de 23 a 0.
+ */
+const DEUDA_MAXIMA = 4
 
 describe('ninguna página de lectura queda fuera de todos los temas', () => {
   const sinTema = rootRoutes.filter(route => temasDeRuta(route).length === 0)

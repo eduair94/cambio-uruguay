@@ -650,6 +650,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/cooperativas-de-vivienda-uruguay',
       },
       {
+        label: 'Préstamo hipotecario',
+        description: 'Por qué la cuota se firma en UI o UR, y nunca en dólares.',
+        to: '/prestamo-hipotecario-uruguay',
+      },
+      {
         label: 'Calculadora de préstamo',
         description: 'Simulá la cuota mensual.',
         to: '/herramientas/calculadora-prestamo',
@@ -1827,6 +1832,15 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Apostillar un documento',
         description: 'Apostilla o legalización, y el organismo que firma antes según quién firmó.',
         to: '/apostillar-un-documento-uruguay',
+      },
+      {
+        // El único trámite del tema que no se arregla el día que te acordás: lo firma el padre que
+        // NO viaja. La etiqueta dice «cuándo hace falta» y no «cuánto sale» porque la mitad de las
+        // familias que lo buscan no lo necesita, y ése es el dato que la página pone adelante.
+        label: 'Permiso de menor para viajar',
+        description:
+          'Con pasaporte uruguayo no se exige; con cédula sí, y lo firma quien se queda.',
+        to: '/permiso-de-menor-para-viajar-uruguay',
       },
       {
         label: 'Mudarse a Uruguay',
