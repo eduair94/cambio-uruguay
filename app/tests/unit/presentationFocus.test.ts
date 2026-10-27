@@ -19,6 +19,9 @@ function image(width: number, height: number, paint: (x: number, y: number) => n
 
 const SKY = [200, 220, 240]
 const checker = (x: number, y: number) => ((x + y) % 2 ? [40, 40, 40] : [210, 60, 50])
+// Bloques de 3 px: un damero de 1 px tiene gradiente centrado nulo (los vecinos a ±1 son iguales).
+const blocks = (x: number, y: number) =>
+  (Math.floor(x / 3) + Math.floor(y / 3)) % 2 ? [40, 40, 40] : [210, 60, 50]
 
 describe('focusFromPixels', () => {
   it('un auto bajo un cielo liso: el foco cae abajo', () => {
@@ -36,14 +39,25 @@ describe('focusFromPixels', () => {
     expect(focusFromPixels(data, 48, 36).y).toBeGreaterThan(0.7)
   })
 
-  it('una imagen lisa devuelve el centro', () => {
+  it('una imagen lisa devuelve el centro, sin nada arriba', () => {
     expect(
       focusFromPixels(
         image(40, 30, () => SKY),
         40,
         30
       )
-    ).toEqual({ x: 0.5, y: 0.5 })
+    ).toEqual({
+      x: 0.5,
+      y: 0.5,
+      topShare: 0,
+    })
+  })
+
+  it('mide cuánto del detalle está en el tercio de arriba', () => {
+    const lowCar = image(48, 36, (x, y) => (y > 22 ? checker(x, y) : SKY))
+    const fullFrame = image(48, 36, blocks)
+    expect(focusFromPixels(lowCar, 48, 36).topShare).toBeLessThan(0.18)
+    expect(focusFromPixels(fullFrame, 48, 36).topShare).toBeGreaterThan(0.25)
   })
 
   it('el sujeto a la derecha corre el foco a la derecha, frenado por la preferencia al centro', () => {
