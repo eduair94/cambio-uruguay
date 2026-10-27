@@ -15,6 +15,7 @@ import type {
   PhotoScene,
   PresentationScene,
 } from './listingPresentation'
+import { coverPlacement, MAX_EXTRA_ZOOM, type PhotoFocus } from './presentationFocus'
 
 export type PresentationFormat = 'landscape' | 'portrait'
 
@@ -39,6 +40,8 @@ export interface FrameInput {
   width: number
   height: number
   images: ReadonlyMap<string, CanvasImageSource & { width: number; height: number }>
+  /** El punto focal de cada foto (`presentationFocus.ts`); sin él, el recorte va centrado. */
+  focus?: ReadonlyMap<string, PhotoFocus>
   reducedMotion: boolean
 }
 
@@ -182,7 +185,49 @@ function seedOf(scene: PresentationScene) {
   return hash
 }
 
-function drawPhoto(frame: Frame, url: string | null, progress: number, seed: number, dim = 0) {
+type Image = CanvasImageSource & { width: number; height: number }
+
+/**
+ * Una foto vertical en un video horizontal (o al revés) recortada "cover" pierde la mitad: se la
+ * muestra entera sobre una copia oscurecida de sí misma.
+ */
+function contained(frame: Frame, image: Image) {
+  const imageRatio = image.width / image.height
+  const canvasRatio = frame.width / frame.height
+  return Math.max(imageRatio / canvasRatio, canvasRatio / imageRatio) > 1.45
+}
+
+/**
+ * Dónde va el texto de una escena con foto. Abajo, salvo que el sujeto esté en la mitad de abajo
+ * de la foto Y arriba haya lugar libre (un auto bajo un cielo enorme, el caso típico): ahí el
+ * texto va arriba, sobre el cielo, que es lo que sobra, y la foto se encuadra con el sujeto
+ * debajo del texto. Medido sobre siete autos de Mercado Libre: con cielo libre el tercio de
+ * arriba lleva 5-14 % de la energía de bordes; con la camioneta llenando la foto, 16-33 % —y
+ * ahí el texto arriba le tapaba el techo a una Ranger.
+ */
+const TOP_TEXT_MAX_SHARE = 0.18
+
+/** Hay lugar libre arriba (cielo, pared lisa): la foto se puede mover sin cortarle nada al sujeto. */
+const calmTop = (focus: PhotoFocus) => (focus.topShare ?? 1) < TOP_TEXT_MAX_SHARE
+
+export type TextAnchor = 'top' | 'bottom'
+
+function textAnchor(frame: Frame, url: string | null): TextAnchor {
+  const image = url ? frame.images.get(url) : undefined
+  const focus = url ? frame.focus?.get(url) : undefined
+  if (!image || !focus || contained(frame, image)) return 'bottom'
+  return focus.y > 0.55 && calmTop(focus) ? 'top' : 'bottom'
+}
+
+function drawPhoto(
+  frame: Frame,
+  url: string | null,
+  progress: number,
+  seed: number,
+  dim = 0,
+  targetY = 0.5,
+  maxExtraZoom = 1
+) {
   const { ctx, width, height } = frame
   ctx.fillStyle = NAVY
   ctx.fillRect(0, 0, width, height)
@@ -203,19 +248,29 @@ function drawPhoto(frame: Frame, url: string | null, progress: number, seed: num
     return
   }
   const motion = kenBurns(progress, seed, frame.reducedMotion)
-  const imageRatio = image.width / image.height
-  const canvasRatio = width / height
-  // Una foto vertical en un video horizontal (o al revés) recortada "cover" pierde la mitad: se la
-  // muestra entera sobre una copia oscurecida de sí misma.
-  const mismatch = Math.max(imageRatio / canvasRatio, canvasRatio / imageRatio) > 1.45
-  const drawCover = (scale: number, dx: number, dy: number) => {
-    const base = Math.max(width / image.width, height / image.height) * scale
-    const w = image.width * base
-    const h = image.height * base
-    ctx.drawImage(image, (width - w) / 2 + dx * width, (height - h) / 2 + dy * height, w, h)
+  // En vertical la foto sólo se mueve si arriba hay lugar libre. Con el vehículo llenando la foto
+  // (o sin detección), subirla le cortaba el techo a una Ranger: queda el recorte de siempre, y a
+  // lo ancho sólo el corrimiento suave hacia el foco.
+  const found = url ? frame.focus?.get(url) : undefined
+  const follow = !!found && calmTop(found)
+  const focus = found ? { x: found.x, y: follow ? found.y : 0.5 } : { x: 0.5, y: 0.5 }
+  const verticalTarget = follow ? targetY : 0.5
+  const drawCover = (zoom: number, dx: number, dy: number, target: PhotoFocus) => {
+    const place = coverPlacement(
+      image.width,
+      image.height,
+      width,
+      height,
+      focus,
+      target,
+      zoom,
+      { dx, dy },
+      maxExtraZoom
+    )
+    ctx.drawImage(image, place.left, place.top, place.width, place.height)
   }
-  if (mismatch) {
-    drawCover(1.08, 0, 0)
+  if (contained(frame, image)) {
+    drawCover(1.08, 0, 0, { x: 0.5, y: 0.5 })
     ctx.fillStyle = 'rgba(13, 26, 45, 0.72)'
     ctx.fillRect(0, 0, width, height)
     const base = Math.min(width / image.width, height / image.height) * 0.96 * motion.scale
@@ -229,7 +284,7 @@ function drawPhoto(frame: Frame, url: string | null, progress: number, seed: num
       h
     )
   } else {
-    drawCover(motion.scale, motion.dx, motion.dy)
+    drawCover(motion.scale, motion.dx, motion.dy, { x: 0.5, y: verticalTarget })
   }
   if (dim > 0) {
     ctx.fillStyle = `rgba(13, 26, 45, ${dim})`
@@ -247,6 +302,17 @@ function bottomShade(frame: Frame, from = 0.42) {
   shade.addColorStop(1, 'rgba(8, 15, 28, 0.94)')
   ctx.fillStyle = shade
   ctx.fillRect(0, height * from, width, height * (1 - from))
+}
+
+/** El espejo de `bottomShade` para el texto de arriba: oscuro en el borde, se abre hacia `to`. */
+function topShade(frame: Frame, to = 0.58) {
+  const { ctx, width, height } = frame
+  const shade = ctx.createLinearGradient(0, 0, 0, height * to)
+  shade.addColorStop(0, 'rgba(8, 15, 28, 0.94)')
+  shade.addColorStop(0.6, 'rgba(8, 15, 28, 0.72)')
+  shade.addColorStop(1, 'rgba(8, 15, 28, 0)')
+  ctx.fillStyle = shade
+  ctx.fillRect(0, 0, width, height * to)
 }
 
 /** En una píldora oscura, a la altura del contador: sobre un cielo blanco el texto solo se perdía. */
@@ -289,8 +355,21 @@ function appear(frame: Frame, local: number, delay: number, draw: (offset: numbe
 
 function drawCover(frame: Frame, scene: CoverScene, local: number) {
   const { width, height, pad, u } = frame
-  drawPhoto(frame, scene.photo, local / scene.duration, seedOf(scene))
-  bottomShade(frame, frame.portrait ? 0.35 : 0.28)
+  const anchor = textAnchor(frame, scene.photo)
+  // Sólo se acerca de más cuando el auto está abajo y el texto pasó arriba: es el caso que lo
+  // necesita, y en los demás acercar recorta un vehículo que ya llena el cuadro.
+  const zoom = anchor === 'top' ? MAX_EXTRA_ZOOM : 1
+  drawPhoto(
+    frame,
+    scene.photo,
+    local / scene.duration,
+    seedOf(scene),
+    0,
+    anchor === 'top' ? 0.68 : 0.38,
+    zoom
+  )
+  if (anchor === 'top') topShade(frame, frame.portrait ? 0.62 : 0.7)
+  else bottomShade(frame, frame.portrait ? 0.35 : 0.28)
   watermark(frame)
   const maxWidth = width - pad * 2
   font(frame, frame.portrait ? 46 : 44, 800)
@@ -303,7 +382,9 @@ function drawCover(frame: Frame, scene: CoverScene, local: number) {
     scene.priceNote ? 36 * u : 0,
     scene.chips.length ? 60 * u : 0,
   ]
-  let y = height - pad - blocks.reduce((sum, value) => sum + value, 0)
+  // Arriba, el bloque arranca debajo de la píldora de la marca.
+  let y =
+    anchor === 'top' ? pad + 44 * u : height - pad - blocks.reduce((sum, value) => sum + value, 0)
   if (scene.location) {
     const top = y
     appear(frame, local, 100, offset => {
@@ -345,8 +426,12 @@ function drawCover(frame: Frame, scene: CoverScene, local: number) {
 
 function drawPhotoScene(frame: Frame, scene: PhotoScene, local: number) {
   const { width, height, pad, u } = frame
-  drawPhoto(frame, scene.photo, local / scene.duration, seedOf(scene))
-  if (scene.label) bottomShade(frame, 0.5)
+  const anchor = scene.label ? textAnchor(frame, scene.photo) : 'bottom'
+  const targetY = !scene.label ? 0.5 : anchor === 'top' ? 0.64 : 0.42
+  const zoom = scene.label && anchor === 'top' ? MAX_EXTRA_ZOOM : 1
+  drawPhoto(frame, scene.photo, local / scene.duration, seedOf(scene), 0, targetY, zoom)
+  if (scene.label && anchor === 'top') topShade(frame, 0.5)
+  else if (scene.label) bottomShade(frame, 0.5)
   watermark(frame)
   pill(frame, scene.counter, width - pad, pad - 18 * u, {
     align: 'right',
@@ -356,7 +441,12 @@ function drawPhotoScene(frame: Frame, scene: PhotoScene, local: number) {
   font(frame, frame.portrait ? 44 : 46, 800)
   const labelLines = lines(frame, scene.label, width - pad * 2, 2)
   const lead = 54 * u
-  const bottom = height - pad
+  // `bottom` es la línea de base del último renglón; arriba se cuenta desde debajo de la marca:
+  // primero el rótulo chico y después los renglones.
+  const bottom =
+    anchor === 'top'
+      ? pad + 44 * u + (scene.detail ? 34 * u : 0) + labelLines.length * lead
+      : height - pad
   appear(frame, local, 200, offset => {
     font(frame, frame.portrait ? 44 : 46, 800)
     labelLines.forEach((line, index) =>

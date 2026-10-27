@@ -19,6 +19,7 @@ import {
   sceneStart,
   type PresentationFormat,
 } from '~/utils/presentationCanvas'
+import { imageFocus, type PhotoFocus } from '~/utils/presentationFocus'
 
 const props = defineProps<{ presentation: ListingPresentation }>()
 const emit = defineEmits<{ close: [] }>()
@@ -33,6 +34,9 @@ const narrate = ref(true)
 const canvas = ref<HTMLCanvasElement | null>(null)
 const root = ref<{ $el?: HTMLElement } | null>(null)
 const images = new Map<string, HTMLImageElement>()
+// Se mide una vez por foto al cargarla, no por cuadro: son 96 px y ~1 ms, pero 60 veces por
+// segundo durante 40 s ya no sería gratis.
+const focus = new Map<string, PhotoFocus>()
 let reducedMotion = false
 let frame = 0
 let playStartedAt = 0
@@ -112,7 +116,7 @@ function draw() {
   const ctx = element?.getContext('2d')
   if (!element || !ctx || !presentation) return
   drawPresentationFrame(
-    { ctx, width: element.width, height: element.height, images, reducedMotion },
+    { ctx, width: element.width, height: element.height, images, focus, reducedMotion },
     presentation,
     elapsed.value
   )
@@ -231,8 +235,11 @@ async function prepare() {
     fonts,
     ...urls.map(async url => {
       const image = await load(url)
-      if (image) images.set(url, image)
-      else broken.add(url)
+      if (image) {
+        images.set(url, image)
+        const point = imageFocus(image)
+        if (point) focus.set(url, point)
+      } else broken.add(url)
     }),
   ])
   active.value = withoutBrokenPhotos(props.presentation, broken)
