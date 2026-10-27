@@ -2093,6 +2093,14 @@
         "plazo reconocimiento anos trabajados"
       ],
       "hypothesis": "La pagina del reconocimiento de anos trabajados antes del 1/4/1996 estaba en su tema pero sin un solo enlace de contexto, o sea que su unico vinculo quedaba en el bloque del pie que `docs/app/INTERCONEXIONES.md` midio a 11.341 px de una pagina de 15.868: enlazada para un rastreador e invisible para un lector. El enlace entrante nace en `/cuando-me-puedo-jubilar-uruguay`, que es el unico candidato que TIENE el problema que esta pagina resuelve: publica la escala de anos de trabajo exigidos y nunca decia que lo anterior a abril de 1996 no esta en la historia laboral, asi que un lector podia contarse treinta anos contra una tabla que su propio registro del BPS no respalda. Va DENTRO de la seccion «Si no llegas a 30 anos de trabajo», debajo de la tabla que crea el malentendido, y no en las relacionadas del pie. Las tres cifras del parrafo (1/4/1996, Ley 20.130 y el 31/5/2027 de los nacidos hasta el 1/6/1968) son las que la pagina de destino ya publica con fuente propia (BPS 20542/11452 e IMPO Ley 20.130): el enlace no estrena ninguna cifra. La ruta de origen no tiene ninguna fila en el libro y no se le toco titulo, descripcion ni el resto del cuerpo, asi que no se declara como sujeto."
+    },
+    {
+      "id": "migas-en-el-renglon-verde-5",
+      "shippedOn": "2026-10-27",
+      "routes": [
+        "/por-que-el-bcu-quiere-mas-pesos"
+      ],
+      "hypothesis": "Quinta y ULTIMA tanda de migas: con esta el trinquete de `seoContract` baja de 1 a 0 y el pozo queda pagado. Es la pagina que el comentario de `BREADCRUMB_BUDGET` tenia anotada desde el 29/9 como la ultima en liberarse, y se libera hoy exactamente (su fila `descripciones-respuesta-primero-10`, del 28/9, cumple 29 dias). Emitia un `Article` suelto, asi que el contador de `structuredData` la daba por buena con el rastro vacio y el renglon verde del resultado era la URL cruda en vez del rastro con nombres; ahora el `Article` va dentro de un `@graph` con el `BreadcrumbList` como primer nodo, la misma forma que ya usaban las dos del dolar. Lleva TRES eslabones, uno mas que las dos de ayer, y ninguno inventado: el boton de volver de la pagina dice «Economia» y lleva a /economia-uruguay, que es ademas el hub que la enlaza. No se toco titulo, descripcion ni cuerpo: lo unico que cambia es el OTRO renglon del snippet, asi que el sujeto es el mismo que midio la tanda de septiembre y lo que se compara es el renglon verde."
     }
   ]
 }
