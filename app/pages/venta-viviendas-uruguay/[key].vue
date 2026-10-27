@@ -607,6 +607,11 @@ defineOgImageComponent('Cambio', {
     order: 0;
     width: 100%;
   }
+  /* El botón es el video de esas fotos: va pegado a la galería. Con el `gap` de 24px de la
+     columna más su propio margen quedaba a 40px, más lejos de ella que de lo que sigue. */
+  .sale-detail__main > .sale-detail__presentation {
+    margin-top: -8px;
+  }
   .sale-detail__facts {
     padding: 16px;
     position: static;
