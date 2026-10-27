@@ -363,13 +363,18 @@ const LEGACY_BUDGET = { seoMeta: 0, canonical: 0, structuredData: 0 }
  * silencio.
  */
 const DEUDA_SIN_MIGAS = [
-  // El comentario está DENTRO de la lista a propósito, y es el único motivo por el que sigue
-  // abierta en varias líneas con un solo elemento: el lector de `npm run seo_debt`
-  // (`classes/revenueplan/debtFree.ts::parseStringList`) exige que el `]` abra su propia línea —su
-  // forma de tirar excepción en vez de vaciarse en silencio— y prettier colapsa cualquier array que
-  // entre en 100 columnas, salvo los que llevan un comentario. Sin esto, `npm run lintfix` la
-  // aplasta y `tests/revenueplan/debt_free.test.ts` se pone rojo en el otro paquete.
-  '/por-que-el-bcu-quiere-mas-pesos',
+  // POZO PAGADO el 2026-10-27: ninguna página del sitio emite estructurados con el rastro vacío.
+  //
+  // Esa marca literal es la que `classes/revenueplan/debtFree.ts::parseStringList` busca para
+  // distinguir «este pozo se terminó» de su propio modo de fallar, que es devolver `[]` cuando no
+  // entiende la forma de la lista: sin la marca, una lista vacía sigue tirando excepción, porque
+  // un `const` renombrado tiene que romper el informe y no vaciarlo en silencio.
+  //
+  // Y el comentario está DENTRO de la lista por el motivo de siempre, que ahora es el único que la
+  // mantiene abierta en varias líneas: el lector exige que el `]` abra su propia línea y prettier
+  // colapsa cualquier array que entre en 100 columnas, salvo los que llevan un comentario. Sin
+  // esto, `npm run lintfix` la aplasta y `tests/revenueplan/debt_free.test.ts` se pone rojo en el
+  // otro paquete.
 ]
 
 /**
@@ -415,9 +420,21 @@ const DEUDA_SIN_MIGAS = [
  * al lector («Toda la API» → /desarrolladores, igual que /api-cotizacion-intradia); la segunda se
  * queda en DOS porque todo lo que enlaza es hermano suyo.
  *
- * Queda UNA: `/por-que-el-bcu-quiere-mas-pesos`, que se libera mañana (27/10).
+ * 1 → 0 el 2026-10-27: entra `/por-que-el-bcu-quiere-mas-pesos`, la última, el día exacto que el
+ * párrafo de arriba tenía anotado (su fila `descripciones-respuesta-primero-10` del 28/9 cumple
+ * hoy 29 días). Emitía un `Article` suelto, así que el contador de `structuredData` la daba por
+ * buena con el rastro vacío; ahora el `Article` va dentro de un `@graph` con el `BreadcrumbList`
+ * como primer nodo, que es la forma que ya usaban las dos del dólar. Lleva TRES eslabones y
+ * ninguno inventado: el botón de volver de la página dice «Economía» y va a /economia-uruguay,
+ * que es además el hub que la enlaza.
+ *
+ * **Este es el primer pozo de deuda que llega a cero**, y por eso dejó a la vista que el lector
+ * del informe (`classes/revenueplan/debtFree.ts`) no sabía decir «pagado»: tiraba excepción ante
+ * cualquier lista vacía, porque su modo de fallar es devolver `[]` y hacer pasar un `const`
+ * renombrado por «no hay deuda». La lista de abajo lo declara ahora en voz alta y el lector
+ * reconoce esa marca; todo lo demás sigue rompiendo el informe, que es lo que tiene que hacer.
  */
-const BREADCRUMB_BUDGET = 1
+const BREADCRUMB_BUDGET = 0
 
 /**
  * De archivo de página a ruta: `plan-de-vida-uruguay.vue` → `/plan-de-vida-uruguay`,

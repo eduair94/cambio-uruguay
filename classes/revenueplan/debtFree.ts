@@ -103,6 +103,9 @@ export function reserveReport(items: DebtRoute[], specs: ExperimentSpec[], today
     .sort((a, b) => a.freeOn.localeCompare(b.freeOn) || a.pool.localeCompare(b.pool) || a.route.localeCompare(b.route));
 }
 
+/** Lo que un pozo pagado escribe dentro de su lista para que el lector no lo lea como una falla. */
+export const PAID_OFF_MARKER = "POZO PAGADO";
+
 /**
  * Las cadenas de un `const NOMBRE = [ '...', '...' ]` de un archivo TypeScript.
  *
@@ -115,6 +118,14 @@ export function reserveReport(items: DebtRoute[], specs: ExperimentSpec[], today
  * TIRA EXCEPCIÓN si no encuentra el `const` o si la lista queda vacía, y eso es la mitad del valor:
  * el modo de fallar de un lector así es devolver `[]` y declarar que no hay deuda, que se ve igual
  * que «no hay nada que hacer». Un `const` renombrado tiene que romper el informe, no vaciarlo.
+ *
+ * LA ÚNICA EXCEPCIÓN es un pozo que de verdad se terminó, y hace falta porque el 2026-10-27 pasó
+ * por primera vez: `DEUDA_SIN_MIGAS` llegó a cero y el informe entero dejó de correr, porque una
+ * lista legítimamente vacía es indistinguible de la falla contra la que esta función existe. No
+ * alcanza con mirar si el cuerpo quedó en blanco —una lista con sólo un comentario también queda
+ * en blanco al limpiarla, y ese caso TIENE que seguir rompiendo (`debt_free.test.ts` lo fija)—,
+ * así que la diferencia no se adivina: el pozo la declara en voz alta con la marca `POZO PAGADO`
+ * y el lector la busca en el cuerpo crudo. Un pozo que se vacía sin decirlo sigue siendo un error.
  */
 export function parseStringList(source: string, constName: string): string[] {
   const head = source.indexOf(`const ${constName} = [`);
@@ -122,12 +133,11 @@ export function parseStringList(source: string, constName: string): string[] {
   const open = source.indexOf("[", head);
   const close = source.indexOf("\n]", open);
   if (close === -1) throw new Error(`\`${constName}\` no cierra con un \`]\` al principio de línea`);
-  const body = source
-    .slice(open + 1, close)
-    .replace(/\/\/[^\n]*/g, "")
-    .replace(/\/\*[\s\S]*?\*\//g, "");
+  const raw = source.slice(open + 1, close);
+  const body = raw.replace(/\/\/[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, "");
   const values = [...body.matchAll(/'((?:[^'\\]|\\.)*)'/g)].map((match) => match[1]!);
-  if (!values.length) throw new Error(`\`${constName}\` quedó vacía: el lector no reconoce su forma`);
+  if (!values.length && !raw.includes(PAID_OFF_MARKER))
+    throw new Error(`\`${constName}\` quedó vacía: el lector no reconoce su forma`);
   return values;
 }
 

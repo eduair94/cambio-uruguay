@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   DebtRoute,
   RESERVE_DAYS,
+  PAID_OFF_MARKER,
   parseNumber,
   parseStringList,
   reserveOf,
@@ -112,6 +113,15 @@ describe("el lector de las listas del app no puede fallar en silencio", () => {
     );
   });
 
+  // La excepción a lo de arriba, y la única: un pozo que llegó a cero lo DICE. Sin esto, el primer
+  // trinquete que se termina de pagar rompe el informe entero, que es lo que pasó el 2026-10-27 con
+  // `DEUDA_SIN_MIGAS`. La marca tiene que ser explícita porque un cuerpo en blanco no distingue
+  // «pagado» de «no entiendo la forma»: el caso de arriba también queda en blanco al limpiarlo.
+  it("lee como vacío un pozo que se declara pagado, y sólo si lo declara", () => {
+    const pagado = ["const PAGADA = [", `  // ${PAID_OFF_MARKER} el 2026-10-27: no queda ninguna.`, "]"].join("\n");
+    expect(parseStringList(pagado, "PAGADA")).toEqual([]);
+  });
+
   it("lee las cadenas y descarta los comentarios de alrededor", () => {
     const source = ["const L = [", "  // un comentario con 'comillas'", "  '/uno',", "  '/dos',", "]"].join("\n");
     expect(parseStringList(source, "L")).toEqual(["/uno", "/dos"]);
@@ -135,7 +145,11 @@ describe("el lector de las listas del app no puede fallar en silencio", () => {
   ])("lee %s → %s y cabe en su propio trinquete", (file, list, budget, prefix) => {
     const source = read(file);
     const declared = parseStringList(source, list);
-    expect(declared.length).toBeGreaterThan(0);
+    // `toBeGreaterThan(0)` estaba acá para que una lista que se vacía en silencio no pasara por
+    // buena. Desde que `DEUDA_SIN_MIGAS` llegó a cero (2026-10-27) eso ya no se puede exigir de
+    // todos los pozos, así que lo que se exige es lo que de verdad importaba: un pozo vacío sólo
+    // vale si se declara pagado. El resto lo sigue atajando `parseStringList`, que tira excepción.
+    if (!declared.length) expect(source).toContain(PAID_OFF_MARKER);
     expect(declared.length).toBeLessThanOrEqual(parseNumber(source, budget));
     for (const value of declared) {
       expect(value.startsWith("/"), value).toBe(prefix === "/");
