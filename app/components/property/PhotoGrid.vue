@@ -158,8 +158,13 @@ watch(
 </script>
 
 <style scoped>
-.photo-grid {
+/* `:where()` deja el reset del margen de `<figure>` en especificidad cero: con `.photo-grid` empataba
+   con la clase que le pone la página y, por cargar después, la anulaba (el `margin-top: 20px` de
+   `.rental-page__gallery` valía 0 y la galería quedaba pegada al botón de la presentación). */
+:where(.photo-grid) {
   margin: 0;
+}
+.photo-grid {
   min-width: 0;
 }
 .photo-grid__tiles {
@@ -201,6 +206,13 @@ watch(
   grid-column: span 2;
   grid-row: span 2;
   aspect-ratio: auto;
+}
+/* Su foto va fuera del flujo: si no, el alto propio de la imagen (las de Mercado Libre vienen a
+   2×) estiraba las dos filas y las miniaturas, que tienen proporción fija, quedaban con un hueco
+   en el medio. Así manda el alto de las chicas y la principal lo llena. */
+.photo-grid__tile.is-lead img {
+  position: absolute;
+  inset: 0;
 }
 /* Una sola foto: ancha, como el escenario que reemplaza. */
 .photo-grid__tiles.has-1 {
@@ -284,10 +296,13 @@ watch(
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 4px;
   }
+  /* Acá la principal ocupa sola sus dos filas (las chicas van debajo), así que nada le da alto:
+     sin proporción propia, con la foto fuera del flujo, medía 4px. */
+  .photo-grid__tile.is-lead,
   .photo-grid__tiles.has-4 .is-lead {
     grid-column: span 2;
     grid-row: span 2;
-    aspect-ratio: auto;
+    aspect-ratio: 4 / 3;
   }
   .photo-grid__more {
     font-size: 1.25rem;
