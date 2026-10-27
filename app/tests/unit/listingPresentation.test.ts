@@ -3,6 +3,14 @@ import type { PublicCarListing, PublicCarMarketRow } from '../../utils/carsPubli
 import {
   buildPresentation,
   compareVerdict,
+  enrichPresentation,
+  insightCompareScene,
+  nearbyMeters,
+  nearbyScene,
+  presentationEnrichment,
+  zoneScene,
+  type ListScene,
+  type PresentationZoneProfile,
   formatPresentationLength,
   presentationFileName,
   presentationPhotos,
@@ -13,6 +21,8 @@ import {
   type CoverScene,
   type PhotoScene,
 } from '../../utils/listingPresentation'
+import type { PropertyInsight } from '../../utils/propertyInsight'
+import type { PropertyNearbyResponse } from '../../utils/propertyNearby'
 import type { PropertySaleListing } from '../../utils/propertySales'
 import type { RentalPageMarket } from '../../utils/rentalPage'
 import type { RentalOffer, RentalPublicProperty } from '../../utils/rentals'
@@ -375,5 +385,145 @@ describe('auxiliares', () => {
     expect(presentationFileName('Peugeot 208 Allure 2017 ¡Impecable!', 'mp4')).toBe(
       'peugeot-208-allure-2017-impecable-cambio-uruguay.mp4'
     )
+  })
+})
+
+describe('escenas con datos que la ficha pide aparte', () => {
+  const place = (name: string | null, distanceM: number) => ({
+    id: `n-${distanceM}`,
+    name,
+    lat: -34.9,
+    lng: -56.1,
+    distanceM,
+    pointKind: 'node' as const,
+    osmUrl: 'https://www.openstreetmap.org/node/1',
+    walkingUrl: 'https://www.google.com/maps',
+  })
+  const nearby = (
+    categories: PropertyNearbyResponse['categories'],
+    status: PropertyNearbyResponse['status'] = 'ready'
+  ) => ({ status, categories }) as PropertyNearbyResponse
+
+  it('pide servicios para viviendas, el barrio sólo con zona oficial y nada para autos', () => {
+    expect(presentationEnrichment({ kind: 'car', car: car(), cohort: null })).toEqual({
+      nearby: null,
+      zone: null,
+      insight: null,
+    })
+    const withZone = presentationEnrichment({
+      kind: 'rental',
+      property: rental({
+        officialZone: { zone: 'mvd:8', name: 'Cordón', department: 'Montevideo', evidence: 'name' },
+      }),
+    })
+    expect(withZone.nearby).toEqual({ operation: 'rent', key: 'pilot' })
+    expect(withZone.zone).toEqual({ zone: 'mvd:8', department: 'Montevideo', name: 'Cordón' })
+    expect(withZone.insight).toBeNull()
+    expect(presentationEnrichment({ kind: 'rental', property: rental() }).zone).toBeNull()
+    const forSale = presentationEnrichment({ kind: 'sale', property: sale() })
+    expect(forSale.nearby?.operation).toBe('sale')
+    expect(forSale.insight).toEqual({ operation: 'venta', key: sale().key })
+  })
+
+  it('lista lo cercano en orden fijo, de a 25 m, y calla con menos de dos', () => {
+    expect(nearbyMeters(3)).toBe(25)
+    expect(nearbyMeters(337)).toBe(325)
+    const scene = nearbyScene(
+      nearby([
+        { id: 'supermarket', items: [place('Tienda Inglesa', 412)], hasMore: false },
+        { id: 'transit', items: [place(null, 90)], hasMore: true },
+        { id: 'education', items: [], hasMore: false },
+      ]),
+      null
+    )!
+    expect(scene.rows.map(row => row.label)).toEqual(['Parada', 'Supermercado'])
+    expect(scene.rows[1]).toMatchObject({ value: 'a unos 400\u00A0m', note: 'Tienda Inglesa' })
+    expect(scene.narration).toBe('Cerca: parada a unos 100 metros, supermercado a unos 400 metros.')
+    expect(
+      nearbyScene(nearby([{ id: 'pharmacy', items: [place('F', 50)], hasMore: false }]), null)
+    ).toBeNull()
+    expect(nearbyScene(nearby([], 'unlocated'), null)).toBeNull()
+  })
+
+  const profile = (overrides: Partial<PresentationZoneProfile['utilities']> = {}) =>
+    ({
+      utilities: {
+        official: null,
+        power: {
+          geography: 'zone',
+          unplannedMinutes: 42.25,
+        },
+        water: { geography: 'zone', geographyName: 'Cordón', notices: 12, hours: 80 },
+        claims: null,
+        levels: { luz: 'low', agua: 'high' },
+        ...overrides,
+      },
+      meta: { power: { status: 'preliminary', observedDays: 9.7 } },
+    }) as unknown as PresentationZoneProfile
+
+  it('el barrio sólo con cifras del propio barrio, y lo provisorio dicho', () => {
+    const scene = zoneScene(profile(), 'Cordón', null)!
+    expect(scene.heading).toBe('Cordón')
+    expect(scene.rows[0]).toMatchObject({
+      label: 'Cortes de luz',
+      value: '42,3 min sin luz por mes',
+      note: 'Entre los barrios con menos · provisorio, 9 días medidos',
+    })
+    expect(scene.rows[1]!.value).toBe('12\u00A0avisos en 24 meses')
+    const departmentOnly = profile({
+      power: { geography: 'department' } as never,
+      water: { geography: 'department' } as never,
+    })
+    expect(zoneScene(departmentOnly, 'Cordón', null)).toBeNull()
+  })
+
+  const insight = {
+    unit: 'USD',
+    subject: { price: 150000, area: 60, currency: 'USD' },
+    scope: { kind: 'radius', radiusKm: 2 },
+    comparables: 12,
+    position: {
+      n: 12,
+      min: 100000,
+      p25: 130000,
+      median: 160000,
+      p75: 180000,
+      max: 240000,
+      cheaperShare: 0.3,
+      pricierShare: 0.6,
+      gap: -0.0625,
+      verdict: 'bajo',
+    },
+    perM2: null,
+    subjectPerM2: 2500,
+    picks: [],
+  } as unknown as PropertyInsight
+
+  it('compara la venta con la misma cuenta de la ficha', () => {
+    const scene = insightCompareScene(insight, null)!
+    expect(scene.heading).toBe('Contra 12 viviendas parecidas en venta a menos de 2\u00A0km')
+    expect(scene.verdict).toBe('6 % menos que la mediana, dentro de la mitad central')
+    expect(insightCompareScene({ ...insight, position: null }, null)).toBeNull()
+  })
+
+  it('suma las escenas antes del cierre y no repite una comparación que ya está', () => {
+    const base = buildPresentation({ kind: 'sale', property: sale() })
+    const enriched = enrichPresentation(base, {
+      insight,
+      nearby: nearby([
+        { id: 'transit', items: [place('Parada', 60)], hasMore: false },
+        { id: 'pharmacy', items: [place('Farmashop', 300)], hasMore: false },
+      ]),
+    })
+    const kinds = enriched.scenes.map(item => item.kind)
+    expect(kinds.at(-1)).toBe('outro')
+    expect(kinds.slice(-3, -1)).toEqual(['compare', 'list'])
+    expect(enriched.duration).toBe(enriched.scenes.reduce((sum, item) => sum + item.duration, 0))
+    expect(enrichPresentation(base, {})).toBe(base)
+    const rentalWithMarket = buildPresentation({ kind: 'rental', property: rental(), market })
+    const again = enrichPresentation(rentalWithMarket, { insight })
+    expect(again.scenes.filter(item => item.kind === 'compare')).toHaveLength(1)
+    const list = enriched.scenes.find((item): item is ListScene => item.kind === 'list')!
+    expect(list.photo).toBe(presentationPhotos(base)[2 % presentationPhotos(base).length])
   })
 })

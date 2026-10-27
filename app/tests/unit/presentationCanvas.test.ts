@@ -2,11 +2,12 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   drawPresentationFrame,
   kenBurns,
+  posterElapsed,
   sceneAt,
   sceneStart,
   wrapLines,
 } from '../../utils/presentationCanvas'
-import { buildPresentation } from '../../utils/listingPresentation'
+import { buildPresentation, type ListingPresentation } from '../../utils/listingPresentation'
 import type { PublicCarListing } from '../../utils/carsPublic'
 
 const scenes = [{ duration: 1000 }, { duration: 2000 }, { duration: 500 }]
@@ -133,5 +134,141 @@ describe('drawPresentationFrame', () => {
     }
     expect(calls.fillText).toBeGreaterThan(100)
     expect(calls.drawImage).toBeGreaterThan(10)
+  })
+})
+
+/** Un contexto que no dibuja: guarda cada texto y dónde cayó cada imagen. */
+function spyContext() {
+  const placed: { image: unknown; x: number; y: number; w: number; h: number }[] = []
+  const texts: { value: string; x: number }[] = []
+  const gradient = { addColorStop: vi.fn() }
+  const ctx = new Proxy(
+    {
+      measureText: (value: string) => ({ width: value.length * 12 }),
+      createLinearGradient: () => gradient,
+      createRadialGradient: () => gradient,
+      fillText: (value: string, x: number) => texts.push({ value, x }),
+      drawImage: (image: unknown, x: number, y: number, w: number, h: number) =>
+        placed.push({ image, x, y, w, h }),
+      globalAlpha: 1,
+    } as Record<string | symbol, unknown>,
+    {
+      get: (target, prop) => (prop in target ? target[prop] : () => {}),
+      set: (target, prop, value) => {
+        target[prop] = value
+        return true
+      },
+    }
+  ) as unknown as CanvasRenderingContext2D
+  return { ctx, placed, texts }
+}
+
+const TALL = 'https://http2.mlstatic.com/tall.jpg'
+const photoOnly = (label: string | null): ListingPresentation => ({
+  kind: 'car',
+  title: 'x',
+  duration: 4000,
+  scenes: [
+    {
+      id: 'photo-1',
+      kind: 'photo',
+      photo: TALL,
+      label,
+      detail: 'Caja y combustible',
+      counter: '2 / 3',
+      narration: '',
+      duration: 4000,
+    },
+  ],
+})
+
+describe('foto que no llena el cuadro', () => {
+  const tall = new Map([[TALL, { width: 600, height: 800 } as unknown as HTMLImageElement]])
+
+  it('con texto, en horizontal se corre a la derecha y el texto no la pisa', () => {
+    const { ctx, placed, texts } = spyContext()
+    drawPresentationFrame(
+      { ctx, width: 1280, height: 720, images: tall, reducedMotion: false },
+      photoOnly('Manual · Nafta'),
+      3000
+    )
+    const photo = placed.at(-1)!
+    expect(photo.x + photo.w).toBeLessThanOrEqual(1280 - 48 + 1)
+    expect(photo.x).toBeGreaterThan(640)
+    const label = texts.find(item => item.value === 'Manual · Nafta')!
+    expect(label.x + label.value.length * 12).toBeLessThan(photo.x)
+  })
+
+  it('sin texto, sigue centrada', () => {
+    const { ctx, placed } = spyContext()
+    drawPresentationFrame(
+      { ctx, width: 1280, height: 720, images: tall, reducedMotion: true },
+      photoOnly(null),
+      3000
+    )
+    const photo = placed.at(-1)!
+    expect(photo.x + photo.w / 2).toBeCloseTo(640, 0)
+  })
+
+  it('en vertical, una foto apaisada sube y deja la mitad de abajo al texto', () => {
+    const wide = new Map([[TALL, { width: 800, height: 600 } as unknown as HTMLImageElement]])
+    const { ctx, placed } = spyContext()
+    drawPresentationFrame(
+      { ctx, width: 720, height: 1280, images: wide, reducedMotion: false },
+      photoOnly('Manual · Nafta'),
+      3900
+    )
+    const photo = placed.at(-1)!
+    expect(photo.y).toBeGreaterThanOrEqual(48 + 44 - 1)
+    expect(photo.y + photo.h).toBeLessThan(1280 * 0.65)
+  })
+})
+
+describe('escena de lista', () => {
+  it('dibuja cada renglón en los dos formatos', () => {
+    const presentation: ListingPresentation = {
+      kind: 'rental',
+      title: 'x',
+      duration: 6000,
+      scenes: [
+        {
+          id: 'nearby',
+          kind: 'list',
+          photo: null,
+          eyebrow: 'A menos de 1 km',
+          heading: 'Lo que hay cerca',
+          rows: [
+            { label: 'Parada', value: 'a unos 100 m', note: null },
+            { label: 'Supermercado', value: 'a unos 400 m', note: 'Tienda Inglesa' },
+            { label: 'Farmacia', value: 'a unos 250 m', note: 'Farmashop' },
+          ],
+          footnote: 'En línea recta.',
+          narration: 'Cerca.',
+          duration: 6000,
+        },
+      ],
+    }
+    for (const [width, height] of [
+      [1280, 720],
+      [720, 1280],
+    ] as const) {
+      const { ctx, texts } = spyContext()
+      drawPresentationFrame(
+        { ctx, width, height, images: new Map(), reducedMotion: true },
+        presentation,
+        5900
+      )
+      const values = texts.map(item => item.value)
+      for (const expected of ['PARADA', 'a unos 400 m', 'Farmashop', 'En línea recta.'])
+        expect(values).toContain(expected)
+    }
+  })
+})
+
+describe('posterElapsed', () => {
+  it('toma la portada ya entera, sin pasarse de la escena', () => {
+    expect(posterElapsed({ scenes: [{ duration: 5200 }] } as never)).toBe(2400)
+    expect(posterElapsed({ scenes: [{ duration: 2000 }] } as never)).toBe(1999)
+    expect(posterElapsed({ scenes: [] } as never)).toBe(0)
   })
 })

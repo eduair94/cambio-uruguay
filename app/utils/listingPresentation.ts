@@ -25,10 +25,17 @@ import {
 import type { PublicCarListing, PublicCarMarketRow } from './carsPublic'
 import { carEquipmentGroups } from './carsSpecs'
 import type { PriceHistorySeries } from './priceHistory'
+import type { PropertyInsight } from './propertyInsight'
+import type { PropertyNearbyCategory, PropertyNearbyResponse } from './propertyNearby'
 import type { PropertySaleListing } from './propertySales'
 import { propertySaleMoney } from './propertySales'
 import { propertySaleSourceName } from './propertySalesMessages'
 import type { RentalPageMarket } from './rentalPage'
+import type {
+  RentalServiceLevel,
+  RentalServiceStatus,
+  RentalZoneUtilities,
+} from './rentalZoneTypes'
 import { rentalMoney, rentalPhotos } from './rentalPresentation'
 import {
   RENTAL_GUARANTEE_LABELS,
@@ -104,8 +111,18 @@ export interface OutroScene extends SceneBase {
   note: string
 }
 
+/** Una lista corta de datos (lo que hay cerca, los servicios del barrio), sobre una foto oscurecida. */
+export interface ListScene extends SceneBase {
+  kind: 'list'
+  photo: string | null
+  eyebrow: string
+  heading: string
+  rows: { label: string; value: string; note: string | null }[]
+  footnote: string
+}
+
 export type PresentationScene =
-  CoverScene | PhotoScene | CompareScene | DropScene | DeclaredScene | OutroScene
+  CoverScene | PhotoScene | CompareScene | DropScene | DeclaredScene | ListScene | OutroScene
 
 export interface ListingPresentation {
   kind: PresentationKind
@@ -200,6 +217,9 @@ export function compareVerdict(value: number, p25: number, median: number, p75: 
   if (value > p75) return `${versus}: más caro que 3 de cada 4 comparables`
   return `${versus}, dentro de la mitad central`
 }
+
+/** Después de dos puntos va en minúscula: "…: está en la mediana". */
+const spokenVerdict = (verdict: string) => verdict.charAt(0).toLowerCase() + verdict.slice(1)
 
 const outro = (source: string, photo: string | null): OutroScene =>
   scene<OutroScene>({
@@ -364,7 +384,7 @@ export function carPresentation(car: PublicCarListing, cohort: PublicCarMarketRo
           verdict,
           note: `Mitad central: ${formatCarUsd(cohort.p25)} a ${formatCarUsd(cohort.p75)}. Mediana de kilómetros: ${formatCarKm(cohort.kmMedian)}.`,
           narration: sentence(
-            `Comparado con ${cohort.n} avisos de ${what}: ${verdict.replace(' %', ' por ciento')}`
+            `Comparado con ${cohort.n} avisos de ${what}: ${spokenVerdict(verdict).replace(' %', ' por ciento')}`
           ),
         },
         5600
@@ -613,7 +633,7 @@ export function rentalPresentationOf(
           verdict,
           note: 'Alquiler pedido sin gastos comunes, en pesos, contra avisos vigentes del mismo tipo y dormitorios.',
           narration: sentence(
-            `Comparado con ${market.sampleSize} alquileres parecidos${zone ? ` en ${zone}` : ''}: ${verdict.replace(' %', ' por ciento')}`
+            `Comparado con ${market.sampleSize} alquileres parecidos${zone ? ` en ${zone}` : ''}: ${spokenVerdict(verdict).replace(' %', ' por ciento')}`
           ),
         },
         5600
@@ -711,6 +731,220 @@ export function buildPresentation(source: PresentationSource): ListingPresentati
   if (source.kind === 'rental')
     return rentalPresentationOf(source.property, source.offer, source.market)
   return salePresentationOf(source.property, source.priceHistory)
+}
+
+// ------------------------------------------------------------------------------- datos de afuera
+
+/**
+ * Lo que la ficha muestra recién en el navegador (servicios cerca, datos del barrio, la comparación
+ * de la venta) y por eso no viaja en `source`: el reproductor lo pide al abrirse, a las mismas
+ * rutas que ya usa la ficha. Si una falla o tarda, la presentación sale sin esa escena.
+ */
+export interface PresentationEnrichment {
+  nearby: { operation: 'rent' | 'sale'; key: string } | null
+  zone: { zone: string; department: string; name: string } | null
+  insight: { operation: 'venta'; key: string } | null
+}
+
+export function presentationEnrichment(source: PresentationSource): PresentationEnrichment {
+  if (source.kind === 'car') return { nearby: null, zone: null, insight: null }
+  if (source.kind === 'rental') {
+    const zone = source.property.officialZone
+    return {
+      nearby: { operation: 'rent', key: source.property.key },
+      zone: zone ? { zone: zone.zone, department: zone.department, name: zone.name } : null,
+      // El alquiler ya trae su comparación (`market`) en la ficha.
+      insight: null,
+    }
+  }
+  return {
+    nearby: { operation: 'sale', key: source.property.key },
+    zone: null,
+    insight: { operation: 'venta', key: source.property.key },
+  }
+}
+
+/** La forma de `/api/rentals/zone-profile` que la escena usa. */
+export interface PresentationZoneProfile {
+  utilities: RentalZoneUtilities
+  meta: { power: { status: RentalServiceStatus; observedDays: number } | null } | null
+}
+
+export interface PresentationExtras {
+  nearby?: PropertyNearbyResponse | null
+  zone?: PresentationZoneProfile | null
+  insight?: PropertyInsight | null
+}
+
+/** En singular y en orden de lo que se pregunta primero al mudarse. */
+const NEARBY_LABELS: Record<PropertyNearbyCategory, string> = {
+  transit: 'Parada',
+  supermarket: 'Supermercado',
+  pharmacy: 'Farmacia',
+  healthcare: 'Centro de salud',
+  education: 'Centro educativo',
+  grocery: 'Almacén',
+}
+const NEARBY_ORDER = Object.keys(NEARBY_LABELS) as PropertyNearbyCategory[]
+
+/** Como la ficha: el punto publicado es aproximado, así que de a 25 m y nunca menos de 25. */
+export const nearbyMeters = (value: number) => Math.max(25, Math.round(value / 25) * 25)
+
+export function nearbyScene(
+  data: PropertyNearbyResponse | null | undefined,
+  photo: string | null
+): ListScene | null {
+  if (!data || (data.status !== 'ready' && data.status !== 'stale')) return null
+  const rows = NEARBY_ORDER.flatMap(id => {
+    const item = data.categories.find(category => category.id === id)?.items[0]
+    return item ? [{ id, item }] : []
+  }).slice(0, 4)
+  // Con un solo servicio la escena no dice nada que la ficha no diga mejor.
+  if (rows.length < 2) return null
+  return scene<ListScene>(
+    {
+      id: 'nearby',
+      kind: 'list',
+      photo,
+      eyebrow: 'A menos de 1 km',
+      heading: 'Lo que hay cerca',
+      rows: rows.map(({ id, item }) => ({
+        label: NEARBY_LABELS[id],
+        value: `a unos ${grouped(nearbyMeters(item.distanceM))}\u00A0m`,
+        note: item.name,
+      })),
+      footnote: 'En línea recta desde el punto que publica el aviso. Datos de OpenStreetMap.',
+      narration: sentence(
+        `Cerca: ${rows
+          .map(
+            ({ id, item }) =>
+              `${NEARBY_LABELS[id].toLowerCase()} a unos ${grouped(nearbyMeters(item.distanceM))} metros`
+          )
+          .join(', ')}`
+      ),
+    },
+    5200
+  )
+}
+
+const LEVEL_TEXT: Record<RentalServiceLevel, string> = {
+  low: 'Entre los barrios con menos',
+  mid: 'En el medio de los barrios',
+  high: 'Entre los barrios con más',
+}
+
+const decimal = (value: number) =>
+  new Intl.NumberFormat('es-UY', { maximumFractionDigits: 1 }).format(value)
+
+export function zoneScene(
+  profile: PresentationZoneProfile | null | undefined,
+  name: string,
+  photo: string | null
+): ListScene | null {
+  if (!profile) return null
+  const { power, water, levels } = profile.utilities
+  const powerStatus = profile.meta?.power?.status
+  const rows: ListScene['rows'] = []
+  const spoken: string[] = []
+  // Sólo la cifra del propio barrio: la del departamento entero no describe a esta vivienda.
+  if (power?.geography === 'zone' && powerStatus !== 'collecting') {
+    const provisional =
+      powerStatus === 'preliminary'
+        ? `provisorio, ${Math.floor(profile.meta?.power?.observedDays ?? 0)} días medidos`
+        : null
+    rows.push({
+      label: 'Cortes de luz',
+      value: `${decimal(power.unplannedMinutes)} min sin luz por mes`,
+      note: join([levels.luz ? LEVEL_TEXT[levels.luz] : null, provisional]) || null,
+    })
+    spoken.push(`${decimal(power.unplannedMinutes)} minutos sin luz por mes`)
+  }
+  if (water?.geography === 'zone') {
+    rows.push({
+      label: 'Cortes de agua programados',
+      value: plural(water.notices, 'aviso en 24 meses', 'avisos en 24 meses'),
+      note: levels.agua ? LEVEL_TEXT[levels.agua] : null,
+    })
+    spoken.push(
+      `${plural(water.notices, 'corte', 'cortes').replace('\u00A0', ' ')} de agua programados en dos años`
+    )
+  }
+  if (!rows.length) return null
+  return scene<ListScene>(
+    {
+      id: 'zone',
+      kind: 'list',
+      photo,
+      eyebrow: 'Datos del barrio',
+      heading: name,
+      rows,
+      footnote:
+        'Luz: nuestro registro del mapa público de UTE. Agua: avisos de corte programado de OSE.',
+      narration: sentence(`En ${name}: ${spoken.join(' y ')}`),
+    },
+    5200
+  )
+}
+
+export function insightCompareScene(
+  insight: PropertyInsight | null | undefined,
+  photo: string | null
+): CompareScene | null {
+  const position = insight?.position
+  if (!insight || !position || position.n < 5 || !(insight.subject.price > 0)) return null
+  const format = (value: number) => rentalMoney(value, insight.unit)
+  const where =
+    insight.scope.kind === 'radius'
+      ? `a menos de ${insight.scope.radiusKm}\u00A0km`
+      : `en ${insight.scope.neighborhood}`
+  const spokenWhere =
+    insight.scope.kind === 'radius'
+      ? `a menos de ${insight.scope.radiusKm} ${insight.scope.radiusKm === 1 ? 'kilómetro' : 'kilómetros'}`
+      : where
+  const verdict = compareVerdict(insight.subject.price, position.p25, position.median, position.p75)
+  return scene<CompareScene>(
+    {
+      id: 'compare',
+      kind: 'compare',
+      photo,
+      heading: `Contra ${position.n} viviendas parecidas en venta ${where}`,
+      p25: position.p25,
+      median: position.median,
+      p75: position.p75,
+      value: insight.subject.price,
+      format,
+      verdict,
+      note: insight.perM2
+        ? `Por metro cuadrado: ${format(insight.perM2.subject)} contra una mediana de ${format(insight.perM2.median)}. Precio pedido, mismo tipo y dormitorios.`
+        : 'Precio pedido contra avisos vigentes del mismo tipo y dormitorios.',
+      narration: sentence(
+        `Comparado con ${position.n} viviendas parecidas en venta ${spokenWhere}: ${spokenVerdict(verdict).replace(' %', ' por ciento')}`
+      ),
+    },
+    5600
+  )
+}
+
+/** Suma las escenas de `extras` antes del cierre, que sigue siendo la última. */
+export function enrichPresentation(
+  presentation: ListingPresentation,
+  extras: PresentationExtras,
+  zoneName: string | null = null
+): ListingPresentation {
+  const photos = presentationPhotos(presentation)
+  const pick = (index: number) => photos[index % Math.max(1, photos.length)] ?? null
+  const added = [
+    presentation.scenes.some(item => item.kind === 'compare')
+      ? null
+      : insightCompareScene(extras.insight, pick(0)),
+    nearbyScene(extras.nearby, pick(2)),
+    zoneName ? zoneScene(extras.zone, zoneName, pick(3)) : null,
+  ].filter((item): item is CompareScene | ListScene => !!item)
+  if (!added.length) return presentation
+  const scenes = [...presentation.scenes]
+  const outroIndex = scenes.findIndex(item => item.kind === 'outro')
+  scenes.splice(outroIndex < 0 ? scenes.length : outroIndex, 0, ...added)
+  return finish(presentation.kind, presentation.title, scenes)
 }
 
 /** Las fotos que el reproductor tiene que precargar antes de arrancar. */

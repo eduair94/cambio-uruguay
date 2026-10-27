@@ -47,6 +47,7 @@
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",
     "marked": "^18.0.14",
+    "mediabunny": "1.61.4",
     "mongoose": "^9.10.3",
     "nodemailer": "^10.0.12",
     "nuxt-gtag": "^5.0.0",

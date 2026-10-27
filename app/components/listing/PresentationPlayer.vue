@@ -3,25 +3,39 @@ THESIS: El resumen de un aviso en 30–45 segundos, que además se puede mandar 
 FORM: Un reproductor: el cuadro arriba, una barra partida por escena, y debajo los controles y la
 transcripción. El video se arma acá mismo, en el navegador, con los datos que la ficha ya tiene:
 ni servidor, ni tokens. Ver docs/superpowers/specs/2026-10-26-presentacion-de-avisos-design.md.
+El MP4 sale cuadro por cuadro con WebCodecs (`presentationExport.ts`, segundos en vez de lo que
+dura) y con la música sintetizada de `presentationMusic.ts`; sin WebCodecs se graba el canvas.
 -->
 <script setup lang="ts">
 import {
+  enrichPresentation,
   formatPresentationLength,
   presentationFileName,
   presentationPhotos,
   withoutBrokenPhotos,
   type ListingPresentation,
+  type PresentationEnrichment,
+  type PresentationExtras,
+  type PresentationZoneProfile,
 } from '~/utils/listingPresentation'
 import {
   drawPresentationFrame,
+  posterElapsed,
   PRESENTATION_SIZE,
   sceneAt,
   sceneStart,
   type PresentationFormat,
 } from '~/utils/presentationCanvas'
+import { encodePresentation, canEncodeFast } from '~/utils/presentationExport'
 import { imageFocus, type PhotoFocus } from '~/utils/presentationFocus'
+import { renderPresentationMusic } from '~/utils/presentationMusic'
+import type { PropertyInsight } from '~/utils/propertyInsight'
+import type { PropertyNearbyResponse } from '~/utils/propertyNearby'
 
-const props = defineProps<{ presentation: ListingPresentation }>()
+const props = defineProps<{
+  presentation: ListingPresentation
+  enrichment?: PresentationEnrichment | null
+}>()
 const emit = defineEmits<{ close: [] }>()
 const track = useTrack()
 
@@ -106,6 +120,66 @@ watch(narrate, value => {
   if (!value) hush()
   else if (status.value === 'playing' && current.value && active.value)
     speak(active.value.scenes[current.value.index]!.narration)
+  if (musicGain) musicGain.gain.value = musicLevel()
+})
+
+// ------------------------------------------------------------------------------------- música
+
+const MUSIC_STORAGE = 'cu_presentation_music'
+const music = ref(true)
+const musicBuffer = shallowRef<AudioBuffer | null>(null)
+let audio: AudioContext | null = null
+let musicGain: GainNode | null = null
+let musicNode: AudioBufferSourceNode | null = null
+
+function audioContext() {
+  if (audio || !import.meta.client) return audio
+  const Context =
+    window.AudioContext ??
+    (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+  if (!Context) return null
+  audio = new Context()
+  musicGain = audio.createGain()
+  musicGain.gain.value = musicLevel()
+  musicGain.connect(audio.destination)
+  return audio
+}
+
+/** Debajo de la voz la música queda de fondo; sola, sube. */
+const musicLevel = () => (narrate.value ? 0.45 : 0.9)
+
+function startMusic(offsetMs: number) {
+  stopMusic()
+  const buffer = musicBuffer.value
+  if (!music.value || !buffer) return
+  const context = audioContext()
+  if (!context || !musicGain) return
+  void context.resume().catch(() => undefined)
+  const node = context.createBufferSource()
+  node.buffer = buffer
+  node.connect(musicGain)
+  node.start(0, Math.min(buffer.duration, offsetMs / 1000))
+  musicNode = node
+}
+
+function stopMusic() {
+  try {
+    musicNode?.stop()
+  } catch {
+    // ya había terminado
+  }
+  musicNode?.disconnect()
+  musicNode = null
+}
+
+watch(music, value => {
+  try {
+    localStorage.setItem(MUSIC_STORAGE, value ? '1' : '0')
+  } catch {
+    // preferencia de comodidad
+  }
+  if (!value) stopMusic()
+  else if (status.value === 'playing') startMusic(elapsed.value)
 })
 
 // ------------------------------------------------------------------------------------- dibujo
@@ -135,6 +209,7 @@ function tick(now: number) {
   draw()
   if (elapsed.value >= presentation.duration) {
     status.value = 'ended'
+    stopMusic()
     track('listing_presentation', { action: 'complete', kind: presentation.kind })
     if (recording.value) finishRecording()
     return
@@ -152,6 +227,7 @@ function play() {
   const { index, local } = sceneAt(presentation, elapsed.value)
   spokenScene = local < 600 ? -1 : index
   status.value = 'playing'
+  startMusic(elapsed.value)
   cancelAnimationFrame(frame)
   frame = requestAnimationFrame(tick)
 }
@@ -161,6 +237,7 @@ function pause() {
   status.value = 'paused'
   cancelAnimationFrame(frame)
   hush()
+  stopMusic()
 }
 
 function toggle() {
@@ -196,11 +273,12 @@ watch(format, value => {
   element.width = PRESENTATION_SIZE[value].width
   element.height = PRESENTATION_SIZE[value].height
   draw()
+  void makePoster()
 })
 
 // ------------------------------------------------------------------------------------- fotos
 
-function load(url: string): Promise<HTMLImageElement | null> {
+function loadOnce(src: string): Promise<HTMLImageElement | null> {
   return new Promise(resolve => {
     const image = new Image()
     // CORS o nada: una foto sin permiso mancha el canvas y la descarga del video falla entera.
@@ -216,11 +294,65 @@ function load(url: string): Promise<HTMLImageElement | null> {
       clearTimeout(timer)
       resolve(null)
     }
-    image.src = url
+    image.src = src
   })
 }
 
+/**
+ * El CDN de InfoCasas manda el permiso de CORS sólo si el pedido trae `Origin` (`Vary: Origin`).
+ * La galería de la ficha ya bajó la misma foto sin CORS, y Chrome le da esa copia al canvas, que
+ * la rechaza: medido el 27/10/2026, una venta de Pocitos perdía todas sus fotos. Si falla, se pide
+ * otra vez con un parámetro que obliga a un pedido nuevo, que sí trae el permiso.
+ */
+async function load(url: string): Promise<HTMLImageElement | null> {
+  const image = await loadOnce(url)
+  if (image) return image
+  return loadOnce(`${url}${url.includes('?') ? '&' : '?'}cu-cors=1`)
+}
+
+// ----------------------------------------------------------------------------- datos de afuera
+
+/** Lo que no llega en este tiempo se queda afuera: la presentación no espera a nadie. */
+const EXTRAS_TIMEOUT_MS = 3500
+
+function within<T>(request: Promise<T>): Promise<T | null> {
+  return Promise.race([
+    request.catch(() => null),
+    new Promise<null>(resolve => setTimeout(() => resolve(null), EXTRAS_TIMEOUT_MS)),
+  ])
+}
+
+async function loadExtras(): Promise<PresentationExtras> {
+  const want = props.enrichment
+  if (!want) return {}
+  const [nearby, zone, insight] = await Promise.all([
+    want.nearby
+      ? within(
+          $fetch<PropertyNearbyResponse>(
+            `/api/property-nearby/${want.nearby.operation}/${encodeURIComponent(want.nearby.key)}`
+          )
+        )
+      : null,
+    want.zone
+      ? within(
+          $fetch<PresentationZoneProfile>('/api/rentals/zone-profile', {
+            query: { zone: want.zone.zone, department: want.zone.department },
+          })
+        )
+      : null,
+    want.insight
+      ? within(
+          $fetch<{ insight: PropertyInsight | null }>(
+            `/api/property-insight/${want.insight.operation}/${encodeURIComponent(want.insight.key)}`
+          ).then(response => response.insight)
+        )
+      : null,
+  ])
+  return { nearby, zone, insight }
+}
+
 async function prepare() {
+  // Las escenas nuevas reusan fotos que ya están en la presentación: se cargan las mismas.
   const urls = presentationPhotos(props.presentation)
   const broken = new Set<string>()
   const fonts =
@@ -231,7 +363,8 @@ async function prepare() {
           )
         )
       : Promise.resolve()
-  await Promise.all([
+  const [extras] = await Promise.all([
+    loadExtras(),
     fonts,
     ...urls.map(async url => {
       const image = await load(url)
@@ -242,8 +375,14 @@ async function prepare() {
       } else broken.add(url)
     }),
   ])
-  active.value = withoutBrokenPhotos(props.presentation, broken)
+  const enriched = enrichPresentation(
+    props.presentation,
+    extras,
+    props.enrichment?.zone?.name ?? null
+  )
+  active.value = withoutBrokenPhotos(enriched, broken)
   elapsed.value = 0
+  musicBuffer.value = await renderPresentationMusic(active.value.duration)
   await nextTick()
   const element = canvas.value
   if (element) {
@@ -253,46 +392,189 @@ async function prepare() {
   status.value = 'ready'
   draw()
   play()
+  void makePoster()
+}
+
+// ------------------------------------------------------------------------- imagen de portada
+
+const poster = shallowRef<File | null>(null)
+
+/** La portada como JPG: más liviana que el video y en WhatsApp se ve sin tocar nada. */
+async function makePoster() {
+  const presentation = active.value
+  if (!presentation || !import.meta.client) return
+  const { width, height } = PRESENTATION_SIZE[format.value]
+  const element = document.createElement('canvas')
+  element.width = width
+  element.height = height
+  const ctx = element.getContext('2d')
+  if (!ctx) return
+  drawPresentationFrame(
+    { ctx, width, height, images, focus, reducedMotion },
+    presentation,
+    posterElapsed(presentation)
+  )
+  const blob = await new Promise<Blob | null>(resolve => element.toBlob(resolve, 'image/jpeg', 0.9))
+  poster.value = blob
+    ? new File([blob], presentationFileName(presentation.title, 'jpg'), { type: 'image/jpeg' })
+    : null
+}
+
+const canSharePoster = computed(() => {
+  const file = poster.value
+  return !!file && import.meta.client && !!navigator.canShare?.({ files: [file] })
+})
+
+function saveFile(file: File) {
+  const url = URL.createObjectURL(file)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = file.name
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 10_000)
+}
+
+function downloadPoster() {
+  if (!poster.value) return
+  saveFile(poster.value)
+  track('listing_presentation', { action: 'poster_download', kind: props.presentation.kind })
+}
+
+async function sharePoster() {
+  const file = poster.value
+  if (!file) return
+  try {
+    await navigator.share({ files: [file], title: props.presentation.title, url: location.href })
+    track('listing_presentation', { action: 'poster_share', kind: props.presentation.kind })
+  } catch {
+    // cancelado por la persona o sin permiso
+  }
 }
 
 // ---------------------------------------------------------------------------------- grabación
 
 const recording = ref(false)
+/** `fast`: WebCodecs, cuadro por cuadro. `realtime`: grabar el canvas mientras se reproduce. */
+const recordMethod = ref<'fast' | 'realtime' | null>(null)
+const recordProgress = ref(0)
 const recorded = shallowRef<File | null>(null)
-const recordedUrl = ref('')
+const recordedAudio = ref(false)
 const recordError = ref('')
 let recorder: MediaRecorder | null = null
+let recordDestination: MediaStreamAudioDestinationNode | null = null
+let encodeAbort: AbortController | null = null
 let chunks: Blob[] = []
 
-const recorderMime = computed(() => {
+const VIDEO_MIMES = [
+  'video/mp4;codecs=avc1.42E01E',
+  'video/mp4',
+  'video/webm;codecs=vp9',
+  'video/webm;codecs=vp8',
+  'video/webm',
+]
+const AUDIO_MIMES = [
+  'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+  'video/webm;codecs=vp9,opus',
+  'video/webm;codecs=vp8,opus',
+]
+
+function pickMime(withAudio: boolean) {
   if (!import.meta.client || typeof MediaRecorder === 'undefined') return null
   if (typeof HTMLCanvasElement.prototype.captureStream !== 'function') return null
   return (
-    [
-      'video/mp4;codecs=avc1.42E01E',
-      'video/mp4',
-      'video/webm;codecs=vp9',
-      'video/webm;codecs=vp8',
-      'video/webm',
-    ].find(type => MediaRecorder.isTypeSupported(type)) ?? null
+    (withAudio ? AUDIO_MIMES : VIDEO_MIMES).find(type => MediaRecorder.isTypeSupported(type)) ??
+    null
   )
-})
+}
+
+const recorderMime = computed(() => pickMime(false))
+const canRecord = computed(() => canEncodeFast() || !!recorderMime.value)
 const canShareFile = computed(() => {
   const file = recorded.value
   return !!file && import.meta.client && !!navigator.canShare?.({ files: [file] })
 })
 
-function startRecording() {
-  const element = canvas.value
-  const mime = recorderMime.value
+function keepRecording(blob: Blob, type: string, withAudio: boolean, method: 'fast' | 'realtime') {
+  const presentation = active.value ?? props.presentation
+  const extension = type === 'video/mp4' ? 'mp4' : 'webm'
+  recorded.value = new File([blob], presentationFileName(presentation.title, extension), { type })
+  recordedAudio.value = withAudio
+  track('listing_presentation', {
+    action: 'record',
+    kind: presentation.kind,
+    method,
+    audio: withAudio,
+  })
+}
+
+async function startRecording() {
   const presentation = active.value
-  if (!element || !mime || !presentation) return
+  if (!presentation || recording.value) return
   recordError.value = ''
   discardRecording()
+  pause()
+  if (canEncodeFast()) {
+    recording.value = true
+    recordMethod.value = 'fast'
+    recordProgress.value = 0
+    encodeAbort = new AbortController()
+    try {
+      const result = await encodePresentation({
+        presentation,
+        format: format.value,
+        images,
+        focus,
+        reducedMotion,
+        music: music.value ? musicBuffer.value : null,
+        onProgress: share => {
+          recordProgress.value = share
+        },
+        signal: encodeAbort.signal,
+      })
+      if (result) {
+        recording.value = false
+        keepRecording(result.blob, 'video/mp4', result.withAudio, 'fast')
+        return
+      }
+    } catch {
+      // cancelado: no hay nada que mostrar
+      recording.value = false
+      return
+    } finally {
+      encodeAbort = null
+    }
+    recording.value = false
+  }
+  startRealtimeRecording()
+}
+
+/** Donde no hay WebCodecs: se graba el canvas mientras corre, con la música en el mismo archivo. */
+function startRealtimeRecording() {
+  const element = canvas.value
+  const presentation = active.value
+  if (!element || !presentation) return
+  const context = music.value && musicBuffer.value ? audioContext() : null
+  const mime = (context && pickMime(true)) || pickMime(false)
+  if (!mime) {
+    recordError.value = 'Este navegador no pudo grabar el video. Probá con Chrome, Edge o Safari.'
+    return
+  }
+  const withAudio = !!context && AUDIO_MIMES.includes(mime)
   try {
-    const stream = element.captureStream(30)
-    recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 2_500_000 })
+    const tracks = element.captureStream(30).getVideoTracks()
+    if (withAudio && context && musicGain) {
+      recordDestination = context.createMediaStreamDestination()
+      musicGain.connect(recordDestination)
+      tracks.push(...recordDestination.stream.getAudioTracks())
+    }
+    recorder = new MediaRecorder(new MediaStream(tracks), {
+      mimeType: mime,
+      videoBitsPerSecond: 2_500_000,
+    })
   } catch {
+    releaseRecordAudio()
     recordError.value = 'Este navegador no pudo grabar el video. Probá con Chrome, Edge o Safari.'
     return
   }
@@ -306,21 +588,31 @@ function startRecording() {
     chunks = []
     recorder?.stream.getTracks().forEach(item => item.stop())
     recorder = null
+    releaseRecordAudio()
     if (!blob.size) {
       recordError.value = 'La grabación salió vacía. Probá de nuevo con la pestaña a la vista.'
       return
     }
-    const extension = type === 'video/mp4' ? 'mp4' : 'webm'
-    recorded.value = new File([blob], presentationFileName(presentation.title, extension), { type })
-    recordedUrl.value = URL.createObjectURL(blob)
+    keepRecording(blob, type, withAudio, 'realtime')
   }
   hush()
   recording.value = true
+  recordMethod.value = 'realtime'
   elapsed.value = 0
   status.value = 'paused'
   recorder.start(500)
-  track('listing_presentation', { action: 'record', kind: presentation.kind })
   play()
+}
+
+function releaseRecordAudio() {
+  if (recordDestination && musicGain) {
+    try {
+      musicGain.disconnect(recordDestination)
+    } catch {
+      // ya desconectado
+    }
+  }
+  recordDestination = null
 }
 
 function finishRecording() {
@@ -329,33 +621,33 @@ function finishRecording() {
 }
 
 function cancelRecording() {
+  if (encodeAbort) {
+    encodeAbort.abort()
+    return
+  }
   if (recorder) {
     recorder.onstop = null
     if (recorder.state !== 'inactive') recorder.stop()
     recorder.stream.getTracks().forEach(item => item.stop())
     recorder = null
   }
+  releaseRecordAudio()
   chunks = []
   recording.value = false
   status.value = 'paused'
   cancelAnimationFrame(frame)
+  stopMusic()
 }
 
 function discardRecording() {
-  if (recordedUrl.value) URL.revokeObjectURL(recordedUrl.value)
-  recordedUrl.value = ''
   recorded.value = null
+  recordedAudio.value = false
 }
 
 function download() {
   const file = recorded.value
-  if (!file || !recordedUrl.value) return
-  const link = document.createElement('a')
-  link.href = recordedUrl.value
-  link.download = file.name
-  document.body.appendChild(link)
-  link.click()
-  link.remove()
+  if (!file) return
+  saveFile(file)
   track('listing_presentation', { action: 'download', kind: props.presentation.kind })
 }
 
@@ -379,6 +671,7 @@ onMounted(() => {
   if (window.matchMedia?.('(max-aspect-ratio: 4/5)').matches) format.value = 'portrait'
   try {
     narrate.value = localStorage.getItem(VOICE_STORAGE) !== '0'
+    music.value = localStorage.getItem(MUSIC_STORAGE) !== '0'
   } catch {
     narrate.value = true
   }
@@ -395,7 +688,10 @@ onBeforeUnmount(() => {
   cancelAnimationFrame(frame)
   hush()
   synth?.removeEventListener?.('voiceschanged', pickVoice)
+  encodeAbort?.abort()
   if (recording.value) cancelRecording()
+  stopMusic()
+  void audio?.close().catch(() => undefined)
   discardRecording()
 })
 </script>
@@ -494,6 +790,16 @@ onBeforeUnmount(() => {
         :title="narrate ? 'Narración activada' : 'Narración apagada'"
         @click="narrate = !narrate"
       />
+      <VBtn
+        v-if="musicBuffer"
+        :icon="music ? 'mdi-music' : 'mdi-music-off'"
+        variant="text"
+        :aria-pressed="music"
+        :aria-label="music ? 'Apagar la música' : 'Activar la música'"
+        :title="music ? 'Música de fondo activada' : 'Música de fondo apagada'"
+        :disabled="recording"
+        @click="music = !music"
+      />
       <VBtnToggle
         v-model="format"
         mandatory
@@ -512,17 +818,28 @@ onBeforeUnmount(() => {
       </VBtnToggle>
     </div>
 
-    <div v-if="recorderMime" class="presentation__export">
+    <div class="presentation__export">
       <template v-if="recording">
         <VProgressLinear
-          :model-value="active ? (elapsed / active.duration) * 100 : 0"
+          :model-value="
+            recordMethod === 'fast'
+              ? recordProgress * 100
+              : active
+                ? (elapsed / active.duration) * 100
+                : 0
+          "
           color="primary"
           height="6"
           rounded
           class="mb-2"
         />
-        <p class="presentation__hint">
-          Grabando el video… tarda lo mismo que dura. Dejá esta pestaña a la vista.
+        <p class="presentation__hint" aria-live="polite">
+          <template v-if="recordMethod === 'fast'">
+            Creando el video… {{ Math.round(recordProgress * 100) }} %
+          </template>
+          <template v-else>
+            Grabando el video… tarda lo mismo que dura. Dejá esta pestaña a la vista.
+          </template>
           <VBtn size="small" variant="text" @click="cancelRecording">Cancelar</VBtn>
         </p>
       </template>
@@ -545,11 +862,12 @@ onBeforeUnmount(() => {
           </VBtn>
         </div>
         <p class="presentation__hint">
-          Video {{ format === 'portrait' ? 'vertical' : 'horizontal' }} sin sonido, con los datos
-          escritos: se entiende igual en WhatsApp con el volumen apagado.
+          Video {{ format === 'portrait' ? 'vertical' : 'horizontal' }}
+          {{ recordedAudio ? 'con música de fondo' : 'sin sonido' }} y con los datos escritos: se
+          entiende igual en WhatsApp con el volumen apagado.
         </p>
       </template>
-      <template v-else>
+      <template v-else-if="canRecord">
         <VBtn
           variant="outlined"
           color="primary"
@@ -564,6 +882,22 @@ onBeforeUnmount(() => {
         </p>
       </template>
       <p v-if="recordError" class="presentation__error" role="alert">{{ recordError }}</p>
+
+      <div v-if="poster && !recording" class="presentation__poster">
+        <span class="presentation__poster-label">Imagen de portada</span>
+        <VBtn size="small" variant="text" prepend-icon="mdi-image-outline" @click="downloadPoster">
+          Descargar
+        </VBtn>
+        <VBtn
+          v-if="canSharePoster"
+          size="small"
+          variant="text"
+          prepend-icon="mdi-share-variant"
+          @click="sharePoster"
+        >
+          Compartir
+        </VBtn>
+      </div>
     </div>
 
     <details v-if="transcript.length" class="presentation__transcript">
@@ -680,6 +1014,20 @@ onBeforeUnmount(() => {
   margin: 8px 0 0;
   font-size: 0.8125rem;
   opacity: 0.78;
+}
+.presentation__poster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+.presentation__poster-label {
+  font-size: 0.8125rem;
+  opacity: 0.78;
+  margin-right: 4px;
 }
 .presentation__error {
   margin: 8px 0 0;
