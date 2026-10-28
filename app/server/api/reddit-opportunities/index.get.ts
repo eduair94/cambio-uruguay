@@ -44,10 +44,12 @@ export default defineEventHandler(async event => {
     }))
   )
 
+  const offset = q.offset ?? (q.page - 1) * q.limit
+
   const [items, total, subs, families, states, meta] = await Promise.all([
     RedditOpportunityModel.find(filter)
       .sort(oppsSortOf(q.sort))
-      .skip((q.page - 1) * q.limit)
+      .skip(offset)
       .limit(q.limit)
       .select(OPP_PROJECTION)
       .lean<OppItem[]>(),
@@ -64,6 +66,7 @@ export default defineEventHandler(async event => {
     items,
     total,
     page: q.page,
+    offset,
     limit: q.limit,
     pages: Math.max(1, Math.ceil(total / q.limit)),
     facets: { subs, families, states },

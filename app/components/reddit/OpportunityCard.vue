@@ -226,7 +226,11 @@ const flags = computed<Flag[]>(() => {
   else if (i.alreadyLinked === null && i.numComments > 0)
     out.push({
       icon: 'mdi-comment-search-outline',
-      text: 'Comentarios sin revisar: mirá si ya lo contestaron.',
+      // Sin fecha de chequeo: todavía no se miró. Con fecha: se miró y no se pudo leer ninguno
+      // (borrados, o la API no contestó), y no se vuelve a mirar hasta que el hilo gane comentarios.
+      text: i.linkCheckedAt
+        ? 'No se pudieron leer los comentarios: mirá el hilo antes de contestar.'
+        : 'Comentarios sin revisar: mirá si ya lo contestaron.',
       tone: 'info',
     })
   if (i.numComments > 80)

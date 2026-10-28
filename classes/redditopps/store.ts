@@ -40,9 +40,9 @@ export interface OppsStore {
   /** Recomendados todavía abiertos y vivos, para ver si siguen en pie los que el listado no trajo. */
   openRecommendedIds(since: Date): Promise<string[]>;
   linkCheckQueue(limit: number): Promise<QueuedCheck[]>;
-  markLinkChecked(postId: string, alreadyLinked: boolean, numComments: number, now: Date): Promise<void>;
+  markLinkChecked(postId: string, alreadyLinked: boolean | null, numComments: number, now: Date): Promise<void>;
   answerCheckQueue(limit: number, now: Date): Promise<Array<{ postId: string; answerUrl: string }>>;
-  markAnswerChecked(postId: string, visible: boolean | null, now: Date): Promise<void>;
+  markAnswerChecked(postId: string, answerUrl: string, visible: boolean | null, now: Date): Promise<void>;
   rerank(now: number): Promise<number>;
   prune(before: Date): Promise<number>;
   countPending(since: Date): Promise<number>;
@@ -181,6 +181,9 @@ export const mongoOppsStore: OppsStore = {
     return rows;
   },
 
+  // `alreadyLinked: null` = se miró y no se pudieron leer comentarios (todos borrados, o la API no
+  // contestó). Se anota igual, con la cantidad de comentarios: si no, el mismo hilo encabezaría la
+  // cola de chequeo todos los días y la card diría "sin revisar" para siempre.
   async markLinkChecked(postId, alreadyLinked, numComments, now) {
     await RedditOpportunityModel.updateOne(
       { postId },
@@ -201,23 +204,45 @@ export const mongoOppsStore: OppsStore = {
       .lean<Array<{ postId: string; answerUrl: string }>>();
   },
 
-  async markAnswerChecked(postId, visible, now) {
-    await RedditOpportunityModel.updateOne({ postId }, { $set: { answerVisible: visible, answerCheckedAt: now } });
+  async markAnswerChecked(postId, answerUrl, visible, now) {
+    // El enlace va en el filtro: si la persona lo cambió mientras corría el job, el resultado del
+    // enlace viejo no se le pega al nuevo.
+    await RedditOpportunityModel.updateOne(
+      { postId, answerUrl },
+      { $set: { answerVisible: visible, answerCheckedAt: now } }
+    );
   },
 
   async rerank(now) {
     type Row = Pick<
       RedditOpportunityDoc,
-      "postId" | "confidence" | "createdAt" | "score" | "numComments" | "title" | "sub" | "permalink" | "removed" | "locked"
+      | "postId"
+      | "confidence"
+      | "createdAt"
+      | "score"
+      | "numComments"
+      | "title"
+      | "excerpt"
+      | "sub"
+      | "permalink"
+      | "removed"
+      | "locked"
+      | "state"
     >;
     const rows = await RedditOpportunityModel.find({ verdict: "recommend" })
-      .select({ postId: 1, confidence: 1, createdAt: 1, score: 1, numComments: 1, title: 1, sub: 1, permalink: 1, removed: 1, locked: 1, _id: 0 })
+      .select({
+        postId: 1, confidence: 1, createdAt: 1, score: 1, numComments: 1, title: 1, excerpt: 1, sub: 1,
+        permalink: 1, removed: 1, locked: 1, state: 1, _id: 0,
+      })
       .lean<Row[]>();
     if (!rows.length) return 0;
-    // Los duplicados se agrupan sólo entre los vivos: si la copia principal se borra, mañana manda
-    // la que sigue en pie.
-    const live = rows.filter((r) => !r.removed && !r.locked).map((r) => ({ ...r, createdAt: new Date(r.createdAt) }));
-    const groups = groupDuplicates(live);
+    // Se agrupan sólo los que la página MOSTRARÍA: vivos y sobre el umbral. Una copia borrada o de
+    // confianza baja no puede ser la principal, porque esconder la buena detrás de una que no se ve
+    // hace desaparecer el grupo entero.
+    const shown = rows
+      .filter((r) => !r.removed && !r.locked && r.confidence >= MIN_CONFIDENCE)
+      .map((r) => ({ ...r, createdAt: new Date(r.createdAt), state: r.state ?? "open" }));
+    const groups = groupDuplicates(shown);
     await RedditOpportunityModel.bulkWrite(
       rows.map((r) => {
         const group = groups.get(r.postId) ?? { duplicateOf: "", alsoIn: [] };

@@ -21,6 +21,7 @@ describe('redditOpportunities — query', () => {
     })
     expect(q).toEqual({
       page: 1,
+      offset: null,
       limit: 60,
       sub: null,
       family: null,
@@ -42,6 +43,7 @@ describe('redditOpportunities — query', () => {
     })
     expect(q).toEqual({
       page: 3,
+      offset: null,
       limit: 24,
       sub: 'AutosUy',
       family: 'autos',
@@ -69,6 +71,18 @@ describe('redditOpportunities — query', () => {
     const q = parseOppsQuery({ sub: 'uruguay', family: 'autos' })
     expect(buildOppsFilter(q, 'sub')).not.toHaveProperty('sub')
     expect(buildOppsFilter(q, 'sub')).toHaveProperty('family', 'autos')
+  })
+
+  it('el offset gana sobre la página, y se acota', () => {
+    expect(parseOppsQuery({ page: '2', offset: '21' })).toMatchObject({ page: 2, offset: 21 })
+    expect(parseOppsQuery({ offset: '-4' }).offset).toBeNull()
+    expect(parseOppsQuery({ offset: '999999' }).offset).toBe(30_000)
+  })
+
+  it('no muestra hilos fuera de la ventana de 30 días del job', () => {
+    const now = Date.UTC(2026, 9, 28)
+    const f = buildOppsFilter(parseOppsQuery({ state: 'all' }), null, now)
+    expect((f.createdAt as { $gte: Date }).$gte.toISOString()).toBe('2026-09-28T00:00:00.000Z')
   })
 
   it('escapa la búsqueda', () => {

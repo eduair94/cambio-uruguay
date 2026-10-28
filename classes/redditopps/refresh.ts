@@ -71,6 +71,8 @@ export interface OppsRunSummary {
   notes: string[];
   newRecommended: OppsNewItem[];
   aborted: boolean;
+  /** Había hilos para juzgar y no salió ningún veredicto: el juez está caído. */
+  judgeDown: boolean;
 }
 
 /** El id de comentario de un enlace a un comentario de Reddit, o `null`. */
@@ -113,6 +115,7 @@ export async function refreshRedditOpportunities(deps: OppsDeps, opts: OppsRunOp
     notes: [],
     newRecommended: [],
     aborted: false,
+    judgeDown: false,
   };
 
   // 1. Leer.
@@ -203,28 +206,33 @@ export async function refreshRedditOpportunities(deps: OppsDeps, opts: OppsRunOp
     if (!dryRun) await store.saveVerdicts(rows, deps.model, nowDate);
   }
   if (summary.judgeFailures) summary.notes.push(`${summary.judgeFailures} lotes del juez fallaron; se reintentan mañana`);
+  // Todos los lotes fallaron: sin clave, sin cuota o un modelo que ya no existe. La cola deja de
+  // crecer sin que la página lo note, así que la corrida termina como fallida (ver el entrypoint).
+  summary.judgeDown = summary.judgeFailures > 0 && summary.judged === 0;
 
   if (dryRun) return summary;
 
   // 5. ¿Alguien ya enlazó el sitio en los comentarios?
   for (const item of await store.linkCheckQueue(linkCheckMax)) {
     const bodies = await deps.fetchCommentBodies(item.sub, item.postId);
-    // Cero comentarios leídos en un hilo que tiene comentarios es una lectura fallida, no un "no".
-    if (!bodies.length && item.numComments > 0) continue;
-    await store.markLinkChecked(item.postId, bodies.some((b) => SITE_LINK.test(b)), item.numComments, nowDate);
+    // Cero comentarios leídos en un hilo que dice tener comentarios no es un "no": o la API no
+    // contestó, o están todos borrados (Reddit los cuenta igual). Se anota "no se pudo saber" con
+    // la cantidad, así se vuelve a mirar sólo si el hilo gana comentarios.
+    const linked = !bodies.length && item.numComments > 0 ? null : bodies.some((b) => SITE_LINK.test(b));
+    await store.markLinkChecked(item.postId, linked, item.numComments, nowDate);
     summary.linkChecked++;
   }
 
   // 6. ¿Se ve la respuesta que alguien marcó? Con el token anónimo, que es lo que ve cualquiera.
   const answers = await store.answerCheckQueue(answerCheckMax, nowDate);
   const withId = answers.map((a) => ({ ...a, id: commentIdOf(a.answerUrl) }));
-  for (const a of withId.filter((x) => !x.id)) await store.markAnswerChecked(a.postId, null, nowDate);
+  for (const a of withId.filter((x) => !x.id)) await store.markAnswerChecked(a.postId, a.answerUrl, null, nowDate);
   const readable = withId.filter((x) => x.id);
   if (readable.length) {
     const visible = await deps.fetchCommentsVisible(readable.map((x) => `t1_${x.id}`));
     if (visible) {
       for (const a of readable) {
-        await store.markAnswerChecked(a.postId, visible.get(`t1_${a.id}`) ?? false, nowDate);
+        await store.markAnswerChecked(a.postId, a.answerUrl, visible.get(`t1_${a.id}`) ?? false, nowDate);
         summary.answersChecked++;
       }
     }

@@ -34,7 +34,14 @@ hilo, qué página, por qué.
    candidatas o ninguna, confianza, motivo y ángulo. Se muestra con confianza ≥ 0,6.
 6. Comentarios de los recomendados: si alguien ya enlazó el sitio, "ya enlazado" (se oculta).
 7. Respuestas marcadas: el enlace que pegó la persona se relee con el token anónimo cada 3 días.
-8. Orden (`rank.ts`), poda a 35 días, meta.
+8. Orden (`rank.ts`), crossposts agrupados (`dupes.ts`), poda a 35 días, meta.
+
+Crossposts: la clave es título + comienzo del texto (dos personas con el mismo título no son el
+mismo hilo), y manda la copia que una persona ya contestó o descartó; si no, la más vieja. Elegir
+por votos hacía que la copia contestada ayer pasara a duplicado hoy y la otra volviera a pendientes.
+
+Si todos los lotes del juez fallan (clave, cuota, modelo), la corrida guarda la meta con la nota,
+avisa por Telegram y sale con 1; la página muestra el aviso.
 
 Calibración (corpus del 28/10/2026, 3.064 hilos): 1.246 pasan el filtro; 138 tienen una regla de
 intención de directorio. El resto de los que pasan sólo llega al juez si es de plata.

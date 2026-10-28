@@ -33,6 +33,10 @@
       <VAlert v-if="stale" type="warning" variant="tonal" density="compact" class="mb-3">
         La cola es del {{ asOfLabel }}: el job no corre desde hace más de un día y medio.
       </VAlert>
+      <VAlert v-if="judgeDown" type="error" variant="tonal" density="compact" class="mb-3">
+        En la última corrida el juez no devolvió ningún veredicto ({{ meta?.judgeFailures }} lotes
+        fallidos): la cola no sumó hilos nuevos. Suele ser la clave o la cuota de Gemini.
+      </VAlert>
       <VExpandTransition>
         <VCard v-if="showRun && meta" variant="outlined" class="pa-4 mb-4">
           <table class="ro-run-table">
@@ -173,7 +177,7 @@
           No se pudo cargar la página siguiente. {{ loadError }}
         </VAlert>
         <VBtn
-          v-if="loadedPage < pages"
+          v-if="hasMore"
           variant="tonal"
           :loading="loading"
           prepend-icon="mdi-chevron-down"
@@ -184,7 +188,7 @@
         <p v-else class="text-caption text-medium-emphasis">No hay más hilos.</p>
         <VPagination
           v-if="pages > 1"
-          :model-value="loadedPage"
+          :model-value="currentPage"
           :length="pages"
           :total-visible="mobile ? 5 : 7"
           density="comfortable"
@@ -244,6 +248,8 @@ interface RunMeta {
     recommended: number
   }>
   notes: string[]
+  judged: number
+  judgeFailures: number
 }
 interface OppsResponse {
   items: OppItem[]
@@ -271,7 +277,8 @@ const items = ref<OppItem[]>([])
 const total = ref(0)
 const pages = ref(1)
 const startPage = ref(initial.page)
-const loadedPage = ref(initial.page - 1)
+/** Cargas completadas. Sólo sirve para volver a mirar el centinela después de cada una. */
+const loads = ref(0)
 const facets = ref<OppsResponse['facets']>({ subs: [], families: [], states: [] })
 const meta = ref<RunMeta | null>(null)
 const hint = ref('')
@@ -286,26 +293,34 @@ const busyId = ref('')
 /** Cada carga lleva un número: una respuesta vieja que llega tarde no pisa la lista de un filtro nuevo. */
 let generation = 0
 
-function queryFor(page: number): Record<string, string | number> {
-  const q: Record<string, string | number> = {
-    page,
-    limit: OPPS_PAGE_SIZE,
-    state: state.value,
-    sort: sort.value,
-  }
+/**
+ * Desde dónde sigue la lista. Por OFFSET y no por número de página: marcar una card la saca del
+ * filtro en el servidor y de la lista acá, así que "lo que ya se ve" es la cuenta exacta de cuánto
+ * saltear. Con números de página, después de descartar tres la página 2 empezaba tres filas más
+ * adelante y esas tres no aparecían nunca.
+ */
+const nextOffset = computed(() => (startPage.value - 1) * OPPS_PAGE_SIZE + items.value.length)
+const hasMore = computed(() => nextOffset.value < total.value)
+/** La página que se marca en la paginación: hasta dónde llegó el scroll. */
+const currentPage = computed(() =>
+  Math.min(pages.value, Math.max(startPage.value, Math.ceil(nextOffset.value / OPPS_PAGE_SIZE)))
+)
+
+function filterQuery(): Record<string, string> {
+  const q: Record<string, string> = { state: state.value, sort: sort.value }
   if (sub.value) q.sub = sub.value
   if (family.value) q.family = family.value
   if (search.value?.trim()) q.q = search.value.trim()
   return q
 }
 
-async function fetchPage(page: number, replace: boolean): Promise<void> {
+async function fetchFrom(offset: number, replace: boolean): Promise<void> {
   const gen = replace ? ++generation : generation
   loading.value = true
   loadError.value = ''
   try {
     const res = await authFetch<OppsResponse>('/api/reddit-opportunities', {
-      query: queryFor(page),
+      query: { ...filterQuery(), offset, limit: OPPS_PAGE_SIZE },
     })
     if (gen !== generation) return
     const known = new Set(replace ? [] : items.value.map(i => i.postId))
@@ -314,7 +329,7 @@ async function fetchPage(page: number, replace: boolean): Promise<void> {
       : [...items.value, ...res.items.filter(i => !known.has(i.postId))]
     total.value = res.total
     pages.value = res.pages
-    loadedPage.value = page
+    loads.value++
     facets.value = res.facets
     meta.value = res.meta
     hint.value = res.hint
@@ -329,9 +344,8 @@ async function fetchPage(page: number, replace: boolean): Promise<void> {
 }
 
 function syncUrl(): void {
-  const q = queryFor(startPage.value)
-  delete q.limit
-  if (q.page === 1) delete q.page
+  const q: Record<string, string> = filterQuery()
+  if (startPage.value > 1) q.page = String(startPage.value)
   if (q.state === 'open') delete q.state
   if (q.sort === 'rank') delete q.sort
   router.replace({ query: q })
@@ -340,8 +354,9 @@ function syncUrl(): void {
 function reload(): void {
   startPage.value = 1
   items.value = []
+  snack.show = false
   syncUrl()
-  void fetchPage(1, true)
+  void fetchFrom(0, true)
 }
 
 function goToPage(page: number): void {
@@ -352,12 +367,12 @@ function goToPage(page: number): void {
   startPage.value = page
   items.value = []
   syncUrl()
-  void fetchPage(page, true)
+  void fetchFrom((page - 1) * OPPS_PAGE_SIZE, true)
 }
 
 function loadMore(): void {
-  if (loading.value || loadedPage.value >= pages.value) return
-  void fetchPage(loadedPage.value + 1, false)
+  if (loading.value || !hasMore.value) return
+  void fetchFrom(nextOffset.value, false)
 }
 
 let debounce: ReturnType<typeof setTimeout> | undefined
@@ -406,6 +421,7 @@ const asOfLabel = computed(() =>
 const stale = computed(
   () => !!meta.value && Date.now() - new Date(meta.value.asOf).getTime() > 36 * 3_600_000
 )
+const judgeDown = computed(() => !!meta.value && meta.value.judgeFailures > 0 && !meta.value.judged)
 
 // --- marcar ---------------------------------------------------------------------------------
 
@@ -415,6 +431,8 @@ interface Undo {
   index: number
   previous: OppState
   to: OppState
+  /** La carga en la que se marcó: si después cambió el filtro, la card no es de esta lista. */
+  gen: number
 }
 
 const snack = reactive<{ show: boolean; text: string; undo: Undo | null }>({
@@ -470,7 +488,12 @@ async function updateState(
         : payload.state === 'dismissed'
           ? 'Descartado'
           : 'De vuelta en pendientes'
-    toast(verb, payload.state === 'open' ? null : { item, index, previous, to: payload.state })
+    toast(
+      verb,
+      payload.state === 'open'
+        ? null
+        : { item, index, previous, to: payload.state, gen: generation }
+    )
   } catch (e: any) {
     if (leaves) {
       items.value.splice(index, 0, item)
@@ -495,7 +518,15 @@ async function undo(): Promise<void> {
   snack.show = false
   if (!pending) return
   try {
-    await postState(pending.item.postId, pending.previous)
+    // Volver a "respondido" devuelve también el enlace del comentario, que el otro estado borró.
+    const url = pending.previous === 'answered' ? pending.item.answerUrl || undefined : undefined
+    await postState(pending.item.postId, pending.previous, url)
+    // Si el filtro cambió desde que se marcó, la card no pertenece a esta lista: se relee la lista
+    // en vez de meterla donde no va y mover conteos que nunca la incluyeron.
+    if (pending.gen !== generation) {
+      reload()
+      return
+    }
     bumpCount(pending.to, -1)
     bumpCount(pending.previous, +1)
     const at = items.value.findIndex(i => i.postId === pending.item.postId)
@@ -525,7 +556,7 @@ const sentinel = ref<HTMLElement | null>(null)
 let observer: IntersectionObserver | null = null
 
 onMounted(() => {
-  void fetchPage(startPage.value, true)
+  void fetchFrom((startPage.value - 1) * OPPS_PAGE_SIZE, true)
   if (typeof IntersectionObserver === 'undefined' || !sentinel.value) return
   // 600 px antes del final: la página siguiente llega antes de que se vea el hueco.
   observer = new IntersectionObserver(
@@ -539,7 +570,7 @@ onMounted(() => {
 
 // El observador avisa al ENTRAR en vista. Si después de cargar una página el centinela sigue a la
 // vista (pantalla alta, página corta), no hay un segundo aviso y el scroll se quedaría quieto.
-watch(loadedPage, async () => {
+watch(loads, async () => {
   await nextTick()
   const el = sentinel.value
   if (!el || loadError.value) return

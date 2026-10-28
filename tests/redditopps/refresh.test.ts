@@ -27,7 +27,7 @@ function memoryStore(seed: { known?: string[]; openRecommended?: string[]; linkQ
     saved: [] as SaveRow[],
     refreshed: [] as string[],
     removed: [] as string[],
-    linkChecked: [] as Array<{ postId: string; linked: boolean }>,
+    linkChecked: [] as Array<{ postId: string; linked: boolean | null }>,
     answers: [] as Array<{ postId: string; visible: boolean | null }>,
     pruned: 0,
     meta: 0,
@@ -52,7 +52,7 @@ function memoryStore(seed: { known?: string[]; openRecommended?: string[]; linkQ
       calls.linkChecked.push({ postId, linked });
     },
     answerCheckQueue: async () => seed.answers ?? [],
-    markAnswerChecked: async (postId, visible) => {
+    markAnswerChecked: async (postId, _answerUrl, visible) => {
       calls.answers.push({ postId, visible });
     },
     prune: async () => {
@@ -127,6 +127,20 @@ describe("redditopps/refresh", () => {
     );
     expect(calls.saved).toEqual([]);
     expect(summary.judgeFailures).toBe(1);
+    // Ningún veredicto en toda la corrida: el entrypoint sale con 1 y avisa.
+    expect(summary.judgeDown).toBe(true);
+  });
+
+  it("un lote caído entre lotes buenos no marca al juez como caído", async () => {
+    const { store } = memoryStore();
+    let call = 0;
+    const posts = Array.from({ length: 15 }, (_, i) => post(`q${i}`));
+    const summary = await refreshRedditOpportunities(
+      deps({ store, fetchSub: async () => posts, judge: async (items) => (call++ === 0 ? null : yes(items)) }),
+      { now: NOW }
+    );
+    expect(summary.judgeFailures).toBe(1);
+    expect(summary.judgeDown).toBe(false);
   });
 
   it("respeta el tope del juez, empezando por lo más nuevo", async () => {
@@ -171,7 +185,7 @@ describe("redditopps/refresh", () => {
     expect(calls.removed).toEqual([]);
   });
 
-  it("detecta el enlace del sitio en los comentarios, y no confunde una lectura fallida con un no", async () => {
+  it("detecta el enlace del sitio en los comentarios, y una lectura vacía queda como «no se pudo saber»", async () => {
     const { store, calls } = memoryStore({
       linkQueue: [
         { postId: "con", sub: "uruguay", numComments: 3 },
@@ -191,6 +205,7 @@ describe("redditopps/refresh", () => {
     expect(calls.linkChecked).toEqual([
       { postId: "con", linked: true },
       { postId: "sin", linked: false },
+      { postId: "fallo", linked: null },
     ]);
   });
 

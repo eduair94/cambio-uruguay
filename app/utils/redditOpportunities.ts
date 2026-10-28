@@ -9,6 +9,8 @@ export const OPPS_PAGE_SIZE = 24
 export const OPPS_MAX_LIMIT = 60
 /** Espejo de `MIN_CONFIDENCE` en `classes/redditopps/judge.ts`: abajo de esto es un "tal vez". */
 export const OPPS_MIN_CONFIDENCE = 0.7
+/** Espejo de `OPPS_WINDOW_DAYS` en `classes/redditopps/subs.ts`. */
+export const OPPS_WINDOW_DAYS = 30
 export const OPPS_SITE_ORIGIN = 'https://cambio-uruguay.com'
 
 export const OPPS_SORTS = ['rank', 'new', 'comments', 'score'] as const
@@ -66,6 +68,12 @@ export const OPPS_SUB_NOTES: Record<string, string> = {
 
 export interface OppsQuery {
   page: number
+  /**
+   * Desde qué fila, cuando la página la manda (el scroll infinito). Gana sobre `page`: después de
+   * marcar tres cards, la "página 2" por número empezaría tres filas más adelante y esas tres no
+   * se verían nunca.
+   */
+  offset: number | null
   limit: number
   sub: string | null
   family: string | null
@@ -88,8 +96,10 @@ export function parseOppsQuery(raw: Record<string, unknown>): OppsQuery {
   const state = str(raw.state) as OppsStateFilter
   const sub = str(raw.sub)
   const family = str(raw.family)
+  const offset = int(raw.offset, -1)
   return {
     page: Math.max(1, Math.min(500, int(raw.page, 1))),
+    offset: offset >= 0 ? Math.min(offset, 30_000) : null,
     limit: Math.max(1, Math.min(OPPS_MAX_LIMIT, int(raw.limit, OPPS_PAGE_SIZE))),
     sub: /^\w{2,40}$/.test(sub) ? sub : null,
     family: family in OPPS_FAMILY_LABELS ? family : null,
@@ -107,12 +117,16 @@ const escapeRegex = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$
  */
 export function buildOppsFilter(
   q: OppsQuery,
-  omit: 'sub' | 'family' | 'state' | null = null
+  omit: 'sub' | 'family' | 'state' | null = null,
+  now: number = Date.now()
 ): Record<string, unknown> {
   const filter: Record<string, unknown> = {
     verdict: 'recommend',
     confidence: { $gte: OPPS_MIN_CONFIDENCE },
     duplicateOf: { $in: ['', null] },
+    // La ventana del job. Entre los 30 y los 35 días (la poda) un hilo ya no se refresca: sus
+    // votos, su cierre y su borrado quedan congelados, y mostrarlo como pendiente sería mentir.
+    createdAt: { $gte: new Date(now - OPPS_WINDOW_DAYS * 86_400_000) },
   }
   if (q.sub && omit !== 'sub') filter.sub = q.sub
   if (q.family && omit !== 'family') filter.family = q.family

@@ -98,7 +98,18 @@ async function main(): Promise<void> {
   if (summary.aborted) process.exit(1);
   if (dryRun) {
     console.log("[reddit-opps] DRY RUN: no se escribió nada");
-    process.exit(0);
+    process.exit(summary.judgeDown ? 1 : 0);
+  }
+
+  // Había qué juzgar y no salió ningún veredicto. La meta ya se guardó con la nota (la página lo
+  // muestra), pero sin esto la corrida terminaría en 0 y la cola dejaría de crecer en silencio.
+  if (summary.judgeDown) {
+    console.error(`[reddit-opps] el juez no devolvió nada en ${summary.judgeFailures} lotes (¿clave, cuota o modelo?)`);
+    await notifyAdmin(
+      `*Reddit: el juez de la cola no contestó* (${summary.judgeFailures} lotes, modelo ${oppsJudgeModel()}). ` +
+        "Mirá la clave y la cuota de Gemini del .env de la raíz."
+    );
+    process.exit(1);
   }
 
   // Un aviso por día, y sólo si hay algo nuevo. Un canal que repite lo mismo deja de leerse.
