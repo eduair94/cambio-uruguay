@@ -75,9 +75,10 @@
           usado a la vez.
         </p>
 
-        <div v-if="data?.items.length" class="eq-grid">
+        <div v-if="data?.items.length" ref="resultsList" class="eq-grid">
+          <FeedEdge :feed="feed" edge="top" />
           <EquiparListingCard
-            v-for="producto in data.items"
+            v-for="producto in feed.items"
             :key="producto.listingId"
             :producto="producto"
             :in-list="!hideList && lista.has(producto.listingId)"
@@ -85,6 +86,7 @@
             :hide-list="hideList"
             @toggle="toggle"
           />
+          <FeedEdge :feed="feed" edge="bottom" />
         </div>
         <p
           v-if="!hideList && lista.limited.value"
@@ -94,14 +96,18 @@
           La lista llegó a {{ EQUIPAR_LISTA_MAX }} ítems. Sacá alguno para agregar otro.
         </p>
 
-        <VPagination
-          v-if="data && data.total > data.perPage"
-          :model-value="query.page"
-          :length="Math.min(500, Math.ceil(data.total / data.perPage))"
-          :total-visible="3"
-          class="mt-6"
-          @update:model-value="page => changePage(page)"
-        />
+        <FeedControls v-if="data?.items.length" :feed="feed">
+          <template #pagination>
+            <VPagination
+              v-if="data.total > data.perPage"
+              :model-value="query.page"
+              :length="pageCount"
+              :total-visible="3"
+              class="mt-6"
+              @update:model-value="page => changePage(page)"
+            />
+          </template>
+        </FeedControls>
       </template>
     </CarsSidebarLayout>
   </div>
@@ -113,6 +119,7 @@ import {
   EQUIPAR_LISTA_MAX,
   EQUIPAR_PRODUCTOS_SORT_ITEMS,
   equiparListaFromProducto,
+  equiparProductosParams,
   type EquiparFilterChip,
   type EquiparProductoPublic,
   type EquiparProductosFacets,
@@ -179,6 +186,31 @@ function changePage(page: number) {
   emit('update', { ...props.query, page })
   scrollToPageTop(props.anchorId)
 }
+
+const pageCount = computed(() =>
+  props.data ? Math.min(500, Math.ceil(props.data.total / props.data.perPage)) : 1
+)
+// "Cargar más al bajar" (composables/useInfiniteFeed.ts). Las dos verticales contestan la misma
+// forma en rutas distintas (`server/utils/retailProductos.ts`), igual que en el composable que
+// pide la primera página.
+const resultsList = ref<HTMLElement | null>(null)
+const feed = useInfiniteFeed<EquiparProductoPublic>({
+  id: props.vertical,
+  list: resultsList,
+  items: () => props.data?.items ?? [],
+  page: () => props.query.page,
+  pageCount: () => pageCount.value,
+  perPage: () => props.data?.perPage ?? 24,
+  resetKey: () => JSON.stringify(equiparProductosParams({ ...props.query, page: 1 })),
+  fetchPage: (page, signal) =>
+    $fetch<EquiparProductosResponse>(
+      props.vertical === 'movilidad' ? '/api/movilidad/productos' : '/api/equipar/productos',
+      { query: equiparProductosParams({ ...props.query, page }), signal }
+    ).then(response => response.items),
+  enabled: () => !props.error,
+  goToPage: changePage,
+  anchorId: props.anchorId,
+})
 </script>
 
 <style scoped>

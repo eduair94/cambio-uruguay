@@ -131,17 +131,23 @@
             Hoy no hay autos que cumplan estas condiciones con esos filtros. Es un resultado válido:
             la regla es exigente a propósito.
           </p>
-          <div class="d-flex flex-column ga-4">
-            <CarsOpportunityCard v-for="item in data.items" :key="item.subject.key" :item="item" />
+          <div ref="resultsList" class="d-flex flex-column ga-4">
+            <FeedEdge :feed="feed" edge="top" />
+            <CarsOpportunityCard v-for="item in feed.items" :key="item.subject.key" :item="item" />
+            <FeedEdge :feed="feed" edge="bottom" />
           </div>
-          <VPagination
-            v-if="data.total > data.perPage"
-            :model-value="query.page"
-            :length="Math.ceil(data.total / data.perPage)"
-            :total-visible="3"
-            class="mt-6"
-            @update:model-value="page => changePage(page)"
-          />
+          <FeedControls v-if="data.items.length" :feed="feed">
+            <template #pagination>
+              <VPagination
+                v-if="data.total > data.perPage"
+                :model-value="query.page"
+                :length="Math.ceil(data.total / data.perPage)"
+                :total-visible="3"
+                class="mt-6"
+                @update:model-value="page => changePage(page)"
+              />
+            </template>
+          </FeedControls>
         </template>
       </template>
     </CarsSidebarLayout>
@@ -238,6 +244,25 @@ const { data, error } = await useAsyncData(
     }),
   { watch: [query] }
 )
+// "Cargar más al bajar" (composables/useInfiniteFeed.ts): la lista recorre `feed.items`.
+const resultsList = ref<HTMLElement | null>(null)
+const feed = useInfiniteFeed<CarOpportunitiesResponse['items'][number]>({
+  id: 'oportunidades-autos',
+  list: resultsList,
+  items: () => data.value?.items ?? [],
+  page: () => query.value.page,
+  pageCount: () => (data.value ? Math.ceil(data.value.total / data.value.perPage) : 1),
+  perPage: () => data.value?.perPage ?? 20,
+  resetKey: () => JSON.stringify(carOpportunityQueryParams({ ...query.value, page: 1 })),
+  fetchPage: (page, signal) =>
+    $fetch<CarOpportunitiesResponse>('/api/car-opportunities', {
+      query: carOpportunityQueryParams({ ...query.value, page }),
+      signal,
+    }).then(response => response.items),
+  enabled: () => !error.value,
+  goToPage: changePage,
+  anchorId: 'deal-results',
+})
 const brandItems = computed(() => [
   { title: 'Todas las marcas', value: '' },
   ...(data.value?.brands ?? []).map(brand => ({

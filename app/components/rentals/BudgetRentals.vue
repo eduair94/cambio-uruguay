@@ -165,9 +165,10 @@
             <p>{{ t('emptyHint') }}</p>
             <VBtn variant="tonal" @click="clear">{{ t('clear') }}</VBtn>
           </div>
-          <div class="budget-list">
+          <div ref="resultsList" class="budget-list">
+            <FeedEdge :feed="feed" edge="top" />
             <article
-              v-for="item in pending ? [] : data?.items || []"
+              v-for="item in feed.items"
               :key="item.key"
               class="budget-card"
               data-testid="budget-rental-card"
@@ -262,26 +263,31 @@
                 </div>
               </div>
             </article>
+            <FeedEdge :feed="feed" edge="bottom" />
           </div>
-          <nav
-            v-if="data && data.pages > 1"
-            class="budget-pagination"
-            :aria-label="t('page', { n: data.page, pages: data.pages })"
-          >
-            <VBtn
-              variant="outlined"
-              :disabled="pending || data.page <= 1"
-              @click="changePage(data.page - 1)"
-              >{{ t('previous') }}</VBtn
-            >
-            <span>{{ t('page', { n: data.page, pages: data.pages }) }}</span>
-            <VBtn
-              variant="outlined"
-              :disabled="pending || data.page >= data.pages"
-              @click="changePage(data.page + 1)"
-              >{{ t('next') }}</VBtn
-            >
-          </nav>
+          <FeedControls v-if="pageItems.length" :feed="feed">
+            <template #pagination>
+              <nav
+                v-if="data && data.pages > 1"
+                class="budget-pagination"
+                :aria-label="t('page', { n: data.page, pages: data.pages })"
+              >
+                <VBtn
+                  variant="outlined"
+                  :disabled="pending || data.page <= 1"
+                  @click="changePage(data.page - 1)"
+                  >{{ t('previous') }}</VBtn
+                >
+                <span>{{ t('page', { n: data.page, pages: data.pages }) }}</span>
+                <VBtn
+                  variant="outlined"
+                  :disabled="pending || data.page >= data.pages"
+                  @click="changePage(data.page + 1)"
+                  >{{ t('next') }}</VBtn
+                >
+              </nav>
+            </template>
+          </FeedControls>
         </template>
       </section>
       <p class="budget-note">{{ t('eligibility') }}</p>
@@ -337,6 +343,26 @@ const { data, pending, error, refresh } = await useAsyncData<RentalBudgetRespons
   () => $fetch('/api/rentals/budget', { query: availability.withRevision(params.value) }),
   { watch: [requestKey] }
 )
+const pageItems = computed(() => (pending.value ? [] : (data.value?.items ?? [])))
+// "Cargar más al bajar" (composables/useInfiniteFeed.ts): la lista recorre `feed.items`.
+const resultsList = ref<HTMLElement | null>(null)
+const feed = useInfiniteFeed<RentalBudgetResponse['items'][number]>({
+  id: 'alquiler-presupuesto',
+  list: resultsList,
+  items: () => pageItems.value,
+  page: () => query.value.page,
+  pageCount: () => data.value?.pages ?? 1,
+  perPage: () => query.value.perPage,
+  resetKey: () => JSON.stringify(rentalBudgetQueryToParams({ ...query.value, page: 1 })),
+  fetchPage: (page, signal) =>
+    $fetch<RentalBudgetResponse>('/api/rentals/budget', {
+      query: availability.withRevision(rentalBudgetQueryToParams({ ...query.value, page })),
+      signal,
+    }).then(response => response.items),
+  enabled: () => !error.value,
+  goToPage: page => void changePage(page),
+  anchorId: 'budget-results',
+})
 const open = ref(false),
   draft = ref({ ...query.value })
 const heading = ref<HTMLElement | null>(null),

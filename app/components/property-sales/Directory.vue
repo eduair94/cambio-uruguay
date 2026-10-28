@@ -120,7 +120,7 @@
           <VBtn size="small" variant="text" @click="clearFilters">{{ t('clear') }}</VBtn>
         </div>
         <div class="sales-directory__result-head">
-          <h2 ref="resultsHeading" tabindex="-1" aria-live="polite">
+          <h2 id="sales-results" ref="resultsHeading" tabindex="-1" aria-live="polite">
             {{
               savedEmpty
                 ? t('savedEmpty')
@@ -192,9 +192,10 @@
             @list="setView('lista')"
             @zone="selectZone"
           />
-          <div v-else-if="data?.items.length" class="sales-directory__grid">
+          <div v-else-if="data?.items.length" ref="resultsList" class="sales-directory__grid">
+            <FeedEdge :feed="feed" edge="top" />
             <PropertySalesListingCard
-              v-for="item in data.items"
+              v-for="item in feed.items"
               :key="item.key"
               :property="item"
               :area-basis="query.areaBasis"
@@ -203,6 +204,7 @@
               @compare="toggleCompare"
               @preview="openPreview"
             />
+            <FeedEdge :feed="feed" edge="bottom" />
           </div>
           <div v-else class="sales-directory__empty">
             <VIcon icon="mdi-home-search-outline" size="42" />
@@ -218,29 +220,36 @@
             :detail-href="preview?.detailHref || ''"
           />
         </div>
-        <nav
-          v-if="!savedEmpty && !pending && query.view === 'lista' && (data?.pages || 0) > 1"
-          class="sales-directory__pagination"
-          :aria-label="t('page', { page: data?.page, pages: data?.pages })"
+        <FeedControls
+          v-if="!savedEmpty && query.view === 'lista' && data?.items.length"
+          :feed="feed"
         >
-          <VBtn
-            :disabled="query.page <= 1"
-            variant="outlined"
-            prepend-icon="mdi-chevron-left"
-            @click="goPage(query.page - 1)"
-          >
-            {{ t('previous') }}
-          </VBtn>
-          <span>{{ t('page', { page: data?.page, pages: data?.pages }) }}</span>
-          <VBtn
-            :disabled="query.page >= (data?.pages || 1)"
-            variant="outlined"
-            append-icon="mdi-chevron-right"
-            @click="goPage(query.page + 1)"
-          >
-            {{ t('next') }}
-          </VBtn>
-        </nav>
+          <template #pagination>
+            <nav
+              v-if="!pending && (data?.pages || 0) > 1"
+              class="sales-directory__pagination"
+              :aria-label="t('page', { page: data?.page, pages: data?.pages })"
+            >
+              <VBtn
+                :disabled="query.page <= 1"
+                variant="outlined"
+                prepend-icon="mdi-chevron-left"
+                @click="goPage(query.page - 1)"
+              >
+                {{ t('previous') }}
+              </VBtn>
+              <span>{{ t('page', { page: data?.page, pages: data?.pages }) }}</span>
+              <VBtn
+                :disabled="query.page >= (data?.pages || 1)"
+                variant="outlined"
+                append-icon="mdi-chevron-right"
+                @click="goPage(query.page + 1)"
+              >
+                {{ t('next') }}
+              </VBtn>
+            </nav>
+          </template>
+        </FeedControls>
         <section id="sales-coverage" class="sales-directory__coverage">
           <h2>{{ t('coverage') }}</h2>
           <p>{{ t('coverageText') }}</p>
@@ -334,6 +343,30 @@ const { data, pending, error, refresh } = await useAsyncData(
       : $fetch<PropertySalesResponse>('/api/property-sales', { query: params.value }),
   { watch: [params, savedEmpty] }
 )
+// "Cargar más al bajar" (composables/useInfiniteFeed.ts). No en "Guardadas": esa vista trae
+// todas las guardadas en una sola página.
+const resultsList = ref<HTMLElement | null>(null)
+const feed = useInfiniteFeed<PropertySalesResponse['items'][number]>({
+  id: 'venta-viviendas',
+  list: resultsList,
+  items: () => data.value?.items ?? [],
+  page: () => query.value.page,
+  pageCount: () => data.value?.pages ?? 1,
+  perPage: () => data.value?.perPage ?? 24,
+  resetKey: () => {
+    const filters = { ...params.value }
+    delete filters.page
+    return JSON.stringify(filters)
+  },
+  fetchPage: (page, signal) =>
+    $fetch<PropertySalesResponse>('/api/property-sales', {
+      query: { ...params.value, page: String(page) },
+      signal,
+    }).then(response => response.items),
+  enabled: () => !savedOnly.value && query.value.view === 'lista' && !error.value,
+  goToPage: page => void goPage(page),
+  anchorId: 'sales-results',
+})
 const compareItems = computed(() =>
   (data.value?.items || []).filter(item => compared.value.includes(item.key))
 )

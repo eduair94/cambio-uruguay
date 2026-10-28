@@ -118,6 +118,8 @@ async function setup(name: 'sales' | 'opportunities' | 'budget', mobile = true) 
     useRouter: () => ({ push }),
     useLocalePath: () => (path: string) => path,
     useAgencySelection: () => vue.ref(''),
+    // El scroll infinito del listado (composables/useInfiniteFeed.ts) no es lo que se prueba acá.
+    useInfiniteFeed: () => vue.reactive({ active: false, items: [] }),
     useRentalAvailability: () => ({
       withRevision: (value: unknown) => value,
       watchChanges: () => {},

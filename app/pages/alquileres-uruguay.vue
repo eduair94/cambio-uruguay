@@ -351,6 +351,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
           </div>
           <div
             v-if="view === 'lista' && !error"
+            ref="resultsList"
             class="rentals-grid"
             :class="`rentals-grid--${layout}`"
             data-testid="rental-results-grid"
@@ -375,7 +376,15 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                 >{{ t(`quick-${key}`) }}</VChip
               >
             </div>
-            <article v-for="(property, index) in items" :key="property.key" class="rental-card">
+            <FeedEdge :feed="feed" edge="top" />
+            <!-- `--lead` y no `:first-of-type`: con "cargar más al bajar", el primer aviso del DOM
+                 cambia cada vez que una página sale de la ventana y la fila de atajos saltaría. -->
+            <article
+              v-for="(property, index) in feed.items"
+              :key="property.key"
+              class="rental-card"
+              :class="{ 'rental-card--lead': index === 0 && feed.atStart }"
+            >
               <div class="rental-card__visual">
                 <!-- Con fotos, un carrusel: se pasan sin salir de la búsqueda y tocar una abre el
                      visor en esa foto. Sin foto no hay nada que mirar y el destino útil sigue
@@ -640,6 +649,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                 </div>
               </div>
             </article>
+            <FeedEdge :feed="feed" edge="bottom" />
           </div>
           <PropertyPhotoLightbox
             v-model="previewOpen"
@@ -649,29 +659,33 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             :start-index="previewIndex"
             :detail-href="previewProperty ? rentalPropertyPath(previewProperty.key) : ''"
           />
-          <div v-if="pageCount > 1 && view === 'lista' && !error" class="mt-6">
-            <VPagination
-              :model-value="query.page"
-              :length="pageCount"
-              :total-visible="smAndDown ? 1 : 7"
-              @update:model-value="onPageChange"
-            >
-              <template #prev="props">
-                <VBtn v-bind="paginationLinkProps(props, query.page - 1)" />
-              </template>
-              <template #item="{ key, page, props }">
-                <VBtn v-bind="paginationLinkProps(props, typeof key === 'number' ? key : null)">
-                  {{ page }}
-                </VBtn>
-              </template>
-              <template #next="props">
-                <VBtn v-bind="paginationLinkProps(props, query.page + 1)" />
-              </template>
-            </VPagination>
-            <p v-if="smAndDown" class="text-caption text-center mt-1">
-              {{ t('pageStatus', { current: query.page, total: pageCount }) }}
-            </p>
-          </div>
+          <FeedControls v-if="view === 'lista' && !error && items.length" :feed="feed">
+            <template #pagination>
+              <div v-if="pageCount > 1" class="mt-6">
+                <VPagination
+                  :model-value="query.page"
+                  :length="pageCount"
+                  :total-visible="smAndDown ? 1 : 7"
+                  @update:model-value="onPageChange"
+                >
+                  <template #prev="props">
+                    <VBtn v-bind="paginationLinkProps(props, query.page - 1)" />
+                  </template>
+                  <template #item="{ key, page, props }">
+                    <VBtn v-bind="paginationLinkProps(props, typeof key === 'number' ? key : null)">
+                      {{ page }}
+                    </VBtn>
+                  </template>
+                  <template #next="props">
+                    <VBtn v-bind="paginationLinkProps(props, query.page + 1)" />
+                  </template>
+                </VPagination>
+                <p v-if="smAndDown" class="text-caption text-center mt-1">
+                  {{ t('pageStatus', { current: query.page, total: pageCount }) }}
+                </p>
+              </div>
+            </template>
+          </FeedControls>
           <!--
             Después de los resultados y no antes: arriba, sus 160 px más el anuncio automático dejaban
             el primer precio fuera de la primera pantalla en 320, 390 y 430 px (el e2e de
@@ -891,7 +905,7 @@ const listedNow = computed(() => new Date(renderedAt.value))
 // puede traer 24 filas.
 const priceGaps = computed(() => {
   const map = new Map<string, PortalPriceGap>()
-  for (const property of items.value) {
+  for (const property of feed.items) {
     const gap = portalPriceGap(property)
     if (gap) map.set(property.key, gap)
   }
@@ -899,7 +913,7 @@ const priceGaps = computed(() => {
 })
 const listedFor = computed(() => {
   const map = new Map<string, ReturnType<typeof rentalListedFor>>()
-  for (const property of items.value) {
+  for (const property of feed.items) {
     const listed = rentalListedFor(property, listedNow.value)
     if (listed) map.set(property.key, listed)
   }
@@ -911,6 +925,31 @@ const coverage = computed(() => data.value?.coverage ?? null)
 const medianUyu = computed(() => data.value?.medianUyu ?? 0)
 const usdUyu = computed(() => meta.value?.usdUyu ?? 0)
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / (data.value?.perPage || 24))))
+// "Cargar más al bajar": la grilla recorre `feed.items`, que en modo páginas son los mismos avisos
+// de la página y en modo scroll la ventana cargada (ver composables/useInfiniteFeed.ts).
+const resultsList = ref<HTMLElement | null>(null)
+const feedResetKey = computed(() => {
+  const filters = { ...requestParams.value }
+  delete filters.page
+  return JSON.stringify(filters)
+})
+const feed = useInfiniteFeed<RentalListItem>({
+  id: 'alquileres',
+  list: resultsList,
+  items: () => items.value,
+  page: () => query.value.page,
+  pageCount: () => pageCount.value,
+  perPage: () => data.value?.perPage || 24,
+  resetKey: () => feedResetKey.value,
+  fetchPage: (page, signal) =>
+    $fetch<RentalsResponse>('/api/rentals', {
+      query: availability.withRevision({ ...requestParams.value, page: String(page) }),
+      signal,
+    }).then(response => response.items),
+  enabled: () => view.value === 'lista' && !error.value,
+  goToPage: page => void onPageChange(page),
+  anchorId: 'rental-results',
+})
 const externalSourceKeys = computed(
   () =>
     new Set(
@@ -1825,7 +1864,7 @@ useSchemaOrg([
   }
   /* Una sola fila que se desliza, y después del primer aviso: a 320×640 el primer precio
      quedaba a 15 px del borde y la fila mide 26. */
-  .rentals-grid > article.rental-card:first-of-type {
+  .rentals-grid > article.rental-card--lead {
     order: -2;
   }
   .rentals-quick {
