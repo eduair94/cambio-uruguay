@@ -42,6 +42,8 @@ import { CompetitorMonitorModel } from "../../classes/models/CompetitorMonitor";
 import { CompetitorMonitorStateModel } from "../../classes/models/CompetitorMonitorState";
 import { UsefulAppsSnapshotModel } from "../../classes/models/UsefulAppsSnapshot";
 import { LrmSnapshotModel } from "../../classes/models/LrmSnapshot";
+import { RedditOpportunityModel } from "../../classes/models/RedditOpportunity";
+import { RedditOpportunityMetaModel } from "../../classes/models/RedditOpportunityMeta";
 
 const appModel = (name: string): string =>
   fs.readFileSync(path.join(__dirname, "..", "..", "app", "server", "models", `${name}.ts`), "utf8");
@@ -343,5 +345,22 @@ describe("app-Mongo schema parity", () => {
     // que nada falle.
     expect(Object.keys(LrmSnapshotModel.schema.obj).sort()).toEqual(appFields(appModel("LrmSnapshot")).sort());
     expect(LrmSnapshotModel.collection.name).toBe("lrmsnapshots");
+  });
+
+  it("RedditOpportunity declares exactly the app's top-level fields", () => {
+    // Dos dueños sobre el mismo documento: el job escribe el veredicto y el app el estado de
+    // trabajo. Un campo que uno de los dos no declare se pierde en silencio — el estado "respondido"
+    // que el job no conoce lo pisaría el próximo upsert si alguna vez lo tocara.
+    expect(Object.keys(RedditOpportunityModel.schema.obj).sort()).toEqual(
+      appFields(appModel("RedditOpportunity")).sort()
+    );
+    expect(RedditOpportunityModel.collection.name).toBe("redditopportunities");
+  });
+
+  it("RedditOpportunityMeta declares exactly the app's top-level fields", () => {
+    expect(Object.keys(RedditOpportunityMetaModel.schema.obj).sort()).toEqual(
+      appFields(appModel("RedditOpportunityMeta")).sort()
+    );
+    expect(RedditOpportunityMetaModel.collection.name).toBe("redditopportunitymetas");
   });
 });

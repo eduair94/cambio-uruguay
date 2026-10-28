@@ -22,7 +22,7 @@ export function measurementPath(route: MeasurementRoute): string | null {
   const plain = path.replace(/^\/(?:en|pt)(?=\/|$)/, '') || '/'
   if (
     isBareRoute(path) ||
-    /^\/(?:api|cuenta|conectar|mi-lista|estadisticas-por-pagina|estadisticas-de-busqueda)(?:\/|$)/.test(
+    /^\/(?:api|cuenta|conectar|mi-lista|estadisticas-por-pagina|estadisticas-de-busqueda|oportunidades-reddit)(?:\/|$)/.test(
       plain
     ) ||
     !/^\/(?:[\w-]+|:item)?(?:\/(?:[\w-]+|:item))*\/?$/.test(path) ||
