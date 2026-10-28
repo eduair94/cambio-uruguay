@@ -54,7 +54,7 @@
         }}</span
       ><VBtn variant="text" min-height="44" @click="clear">{{ t('clear') }}</VBtn>
     </div>
-    <section aria-live="polite" :aria-busy="pending">
+    <section id="agencies-results" aria-live="polite" :aria-busy="pending">
       <p v-if="pending">{{ t('loading') }}</p>
       <div v-else-if="error">
         <h2>{{ t('unavailable') }}</h2>
@@ -62,7 +62,11 @@
       </div>
       <template v-else-if="data?.items.length">
         <p class="agencies-count">{{ data.total.toLocaleString(locale) }} {{ t('agencies') }}</p>
-        <AgenciesAgencyCard v-for="item in data.items" :key="item.agency.key" :item="item" />
+        <div ref="resultsList">
+          <FeedEdge :feed="feed" edge="top" />
+          <AgenciesAgencyCard v-for="item in feed.items" :key="item.agency.key" :item="item" />
+          <FeedEdge :feed="feed" edge="bottom" />
+        </div>
       </template>
       <div v-else class="agencies-empty">
         <h2>{{ t('empty') }}</h2>
@@ -70,15 +74,22 @@
         <NuxtLink :to="localePath('/alquileres-uruguay')">{{ t('exploreRent') }}</NuxtLink>
       </div>
     </section>
-    <nav v-if="data && data.pages > 1" class="agencies-pagination" :aria-label="t('page')">
-      <VBtn :disabled="data.page <= 1" :to="pageLink(data.page - 1)" variant="outlined">{{
-        t('previous')
-      }}</VBtn
-      ><span>{{ data.page }} / {{ data.pages }}</span
-      ><VBtn :disabled="data.page >= data.pages" :to="pageLink(data.page + 1)" variant="outlined">{{
-        t('next')
-      }}</VBtn>
-    </nav>
+    <FeedControls v-if="data" :feed="feed">
+      <template #pagination>
+        <nav v-if="data.pages > 1" class="agencies-pagination" :aria-label="t('page')">
+          <VBtn :disabled="data.page <= 1" :to="pageLink(data.page - 1)" variant="outlined">{{
+            t('previous')
+          }}</VBtn
+          ><span>{{ data.page }} / {{ data.pages }}</span
+          ><VBtn
+            :disabled="data.page >= data.pages"
+            :to="pageLink(data.page + 1)"
+            variant="outlined"
+            >{{ t('next') }}</VBtn
+          >
+        </nav>
+      </template>
+    </FeedControls>
     <section class="agencies-about">
       <h2>{{ t('coverage') }}</h2>
       <p>{{ t('coverageHint') }}</p>
@@ -132,6 +143,26 @@ const params = (page = 1) => ({
 })
 const pageLink = (page: number) =>
   localePath({ path: '/inmobiliarias-uruguay', query: params(page) })
+// "Cargar más al bajar" (composables/useInfiniteFeed.ts): la lista recorre `feed.items`.
+const resultsList = ref<HTMLElement | null>(null)
+const feed = useInfiniteFeed<AgenciesResponse['items'][number]>({
+  id: 'inmobiliarias',
+  itemKey: item => item.agency.key,
+  list: resultsList,
+  items: () => data.value?.items ?? [],
+  page: () => query.value.page,
+  pageCount: () => data.value?.pages ?? 1,
+  perPage: () => data.value?.perPage ?? 24,
+  resetKey: () => JSON.stringify(params()),
+  fetchPage: (page, signal) =>
+    $fetch<AgenciesResponse>('/api/agencies', {
+      query: { ...query.value, page },
+      signal,
+    }).then(response => response.items),
+  enabled: () => !error.value,
+  goToPage: page => void navigateTo(pageLink(page)),
+  anchorId: 'agencies-results',
+})
 async function apply() {
   await navigateTo(
     localePath({

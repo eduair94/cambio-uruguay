@@ -218,15 +218,17 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
               >
             </div>
           </div>
-          <div v-if="!error" class="opportunities__list">
+          <div v-if="!error" ref="resultsList" class="opportunities__list">
+            <FeedEdge :feed="feed" edge="top" />
             <OpportunityCard
-              v-for="item in items"
+              v-for="item in feed.items"
               :key="item.subject.id"
               :item="item"
               :signal="query.signal"
               :stale="data?.stale"
               @preview="openPreview"
             />
+            <FeedEdge :feed="feed" edge="bottom" />
           </div>
           <PropertyPhotoLightbox
             v-model="previewOpen"
@@ -235,24 +237,28 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
             :source="preview?.source || null"
             :detail-href="preview?.detailHref || ''"
           />
-          <nav
-            v-if="!error && (data?.pages ?? 0) > 1"
-            class="opportunities__pagination"
-            :aria-label="t('page', { n: data?.page ?? 1, total: data?.pages ?? 1 })"
-          >
-            <VBtn
-              :disabled="pending || (data?.page ?? 1) <= 1"
-              variant="outlined"
-              @click="changePage((data?.page ?? 1) - 1)"
-              >{{ t('previous') }}</VBtn
-            ><span>{{ t('page', { n: data?.page ?? 1, total: data?.pages ?? 1 }) }}</span
-            ><VBtn
-              :disabled="pending || (data?.page ?? 1) >= (data?.pages ?? 1)"
-              variant="outlined"
-              @click="changePage((data?.page ?? 1) + 1)"
-              >{{ t('next') }}</VBtn
-            >
-          </nav>
+          <FeedControls v-if="!error" :feed="feed">
+            <template #pagination>
+              <nav
+                v-if="(data?.pages ?? 0) > 1"
+                class="opportunities__pagination"
+                :aria-label="t('page', { n: data?.page ?? 1, total: data?.pages ?? 1 })"
+              >
+                <VBtn
+                  :disabled="pending || (data?.page ?? 1) <= 1"
+                  variant="outlined"
+                  @click="changePage((data?.page ?? 1) - 1)"
+                  >{{ t('previous') }}</VBtn
+                ><span>{{ t('page', { n: data?.page ?? 1, total: data?.pages ?? 1 }) }}</span
+                ><VBtn
+                  :disabled="pending || (data?.page ?? 1) >= (data?.pages ?? 1)"
+                  variant="outlined"
+                  @click="changePage((data?.page ?? 1) + 1)"
+                  >{{ t('next') }}</VBtn
+                >
+              </nav>
+            </template>
+          </FeedControls>
           <!--
             Después de los resultados: arriba empujaba la comparación de la primera tarjeta fuera de
             la primera pantalla en el celular (cinco e2e de property-opportunities), como en el
@@ -371,6 +377,26 @@ const { data, pending, error, refresh } = await useAsyncData<PropertyOpportuniti
 const items = computed(() =>
   !pending.value && data.value?.operation === query.value.operation ? data.value.items : []
 )
+// "Cargar más al bajar" (composables/useInfiniteFeed.ts): la lista recorre `feed.items`.
+const resultsList = ref<HTMLElement | null>(null)
+const feed = useInfiniteFeed<PropertyOpportunitiesResponse['items'][number]>({
+  id: 'oportunidades-inmobiliarias',
+  itemKey: item => item.subject.id,
+  list: resultsList,
+  items: () => items.value,
+  page: () => query.value.page,
+  pageCount: () => data.value?.pages ?? 1,
+  perPage: () => data.value?.perPage ?? 24,
+  resetKey: () => JSON.stringify({ ...query.value, page: 1 }),
+  fetchPage: (page, signal) =>
+    $fetch<PropertyOpportunitiesResponse>('/api/property-opportunities', {
+      query: availability.withRevision({ ...query.value, page }),
+      signal,
+    }).then(response => response.items),
+  enabled: () => !budgetMode.value && !error.value,
+  goToPage: page => void changePage(page),
+  anchorId: 'opportunity-results',
+})
 availability.watchChanges(async () => {
   if (budgetMode.value) return
   await refresh()

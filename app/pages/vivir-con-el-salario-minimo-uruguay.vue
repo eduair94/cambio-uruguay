@@ -192,8 +192,9 @@
             }}. Probá con otro departamento, con otra forma o activando más decisiones.
           </template>
         </p>
-        <ul class="smn-lista" :class="{ 'smn-cargando': status === 'pending' }">
-          <li v-for="item in data.items" :key="item.key" class="smn-aviso">
+        <ul ref="resultsList" class="smn-lista" :class="{ 'smn-cargando': status === 'pending' }">
+          <FeedEdge :feed="feed" edge="top" tag="li" />
+          <li v-for="item in feed.items" :key="item.key" class="smn-aviso">
             <div class="smn-aviso__cabeza">
               <NuxtLink
                 :to="localePath(`/alquileres/${item.key}`)"
@@ -219,16 +220,21 @@
               {{ puertas(item.puertas) }}
             </p>
           </li>
+          <FeedEdge :feed="feed" edge="bottom" tag="li" />
         </ul>
-        <VPagination
-          v-if="data.pages > 1"
-          :model-value="data.page"
-          :length="data.pages"
-          :total-visible="7"
-          density="comfortable"
-          class="mt-4"
-          @update:model-value="setPage"
-        />
+        <FeedControls :feed="feed">
+          <template #pagination>
+            <VPagination
+              v-if="data.pages > 1"
+              :model-value="data.page"
+              :length="data.pages"
+              :total-visible="7"
+              density="comfortable"
+              class="mt-4"
+              @update:model-value="setPage"
+            />
+          </template>
+        </FeedControls>
         <div class="smn-acciones mt-4">
           <VBtn
             :to="localePath({ path: '/alquileres-uruguay', query: directorioQuery })"
@@ -378,6 +384,27 @@ const { data, error, status } = await useAsyncData(
   () => $fetch<MinimumWageResponse>('/api/rentals/salario-minimo', { query: params.value }),
   { watch: [paramsKey] }
 )
+
+// "Cargar más al bajar" (composables/useInfiniteFeed.ts): la lista recorre `feed.items`.
+const resultsList = ref<HTMLElement | null>(null)
+const feed = useInfiniteFeed<MinimumWageItem>({
+  id: 'salario-minimo',
+  itemKey: item => item.key,
+  list: resultsList,
+  items: () => data.value?.items ?? [],
+  page: () => state.page,
+  pageCount: () => data.value?.pages ?? 1,
+  perPage: () => 24,
+  resetKey: () => JSON.stringify(minimumWageQueryToParams({ ...state, page: 1 })),
+  fetchPage: (page, signal) =>
+    $fetch<MinimumWageResponse>('/api/rentals/salario-minimo', {
+      query: minimumWageQueryToParams({ ...state, page }),
+      signal,
+    }).then(response => response.items),
+  enabled: () => !error.value,
+  goToPage: setPage,
+  anchorId: 'avisos',
+})
 
 const REGION_LABEL: Record<SmnRegion, string> = { montevideo: 'Montevideo', interior: 'Interior' }
 const REGION_EN: Record<SmnRegion, string> = {

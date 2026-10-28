@@ -177,21 +177,27 @@
       </div>
     </div>
 
-    <div class="results">
-      <ResultCard v-for="item in data?.items ?? []" :key="item.rid" :item="item" :terms="terms" />
+    <div ref="resultsList" class="results">
+      <FeedEdge :feed="feed" edge="top" />
+      <ResultCard v-for="item in feed.items" :key="item.rid" :item="item" :terms="terms" />
+      <FeedEdge :feed="feed" edge="bottom" />
       <p v-if="data && !data.total" class="empty">
         Nada con esos filtros. Probá sacar alguno o buscar otra palabra.
       </p>
     </div>
-    <VPagination
-      v-if="pages > 1"
-      :model-value="query.page"
-      :length="pages"
-      :total-visible="smAndDown ? 3 : 6"
-      :density="smAndDown ? 'compact' : 'comfortable'"
-      class="mt-4"
-      @update:model-value="goPage"
-    />
+    <FeedControls :feed="feed">
+      <template #pagination>
+        <VPagination
+          v-if="pages > 1"
+          :model-value="query.page"
+          :length="pages"
+          :total-visible="smAndDown ? 3 : 6"
+          :density="smAndDown ? 'compact' : 'comfortable'"
+          class="mt-4"
+          @update:model-value="goPage"
+        />
+      </template>
+    </FeedControls>
   </div>
 </template>
 
@@ -208,6 +214,7 @@ import {
   normalizeSearchQuery,
   queryTerms,
   SEARCH_MAX_PAGE,
+  SEARCH_PER_PAGE,
   searchQueryToParams,
   STANCE_META,
   stanceMeta,
@@ -342,6 +349,27 @@ const yearRows = computed(() =>
 const pages = computed(() =>
   Math.min(SEARCH_MAX_PAGE, Math.ceil((data.value?.total ?? 0) / (data.value?.perPage || 20)))
 )
+const pageItems = computed(() => data.value?.items ?? [])
+// "Cargar más al bajar" (composables/useInfiniteFeed.ts): la lista recorre `feed.items`.
+const resultsList = ref<HTMLElement | null>(null)
+const feed = useInfiniteFeed<SearchResponse['items'][number]>({
+  id: 'mercado-it',
+  itemKey: item => item.rid,
+  list: resultsList,
+  items: () => pageItems.value,
+  page: () => query.value.page,
+  pageCount: () => pages.value,
+  perPage: () => data.value?.perPage ?? SEARCH_PER_PAGE,
+  resetKey: () => JSON.stringify(searchQueryToParams({ ...query.value, page: 1 })),
+  fetchPage: (page, signal) =>
+    $fetch<SearchResponse>('/api/charruadevs/search', {
+      query: searchQueryToParams({ ...query.value, page }),
+      signal,
+    }).then(response => response.items),
+  enabled: () => !error.value,
+  goToPage: page => void goPage(page),
+  anchorId: 'buscador',
+})
 </script>
 
 <style scoped>

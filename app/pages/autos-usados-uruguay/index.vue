@@ -97,18 +97,24 @@
           No hay avisos con esos filtros. Probá ampliar el año, el precio o los kilómetros.
         </p>
 
-        <div v-if="data?.items.length" class="cars-grid">
-          <CarsListingCard v-for="car in data.items" :key="car.key" :car="car" />
+        <div v-if="data?.items.length" ref="resultsList" class="cars-grid">
+          <FeedEdge :feed="feed" edge="top" />
+          <CarsListingCard v-for="car in feed.items" :key="car.key" :car="car" />
+          <FeedEdge :feed="feed" edge="bottom" />
         </div>
 
-        <VPagination
-          v-if="data && data.total > data.perPage"
-          :model-value="query.page"
-          :length="Math.min(500, Math.ceil(data.total / data.perPage))"
-          :total-visible="3"
-          class="mt-6"
-          @update:model-value="page => changePage(page)"
-        />
+        <FeedControls v-if="data" :feed="feed">
+          <template #pagination>
+            <VPagination
+              v-if="data.total > data.perPage"
+              :model-value="query.page"
+              :length="pageCount"
+              :total-visible="3"
+              class="mt-6"
+              @update:model-value="page => changePage(page)"
+            />
+          </template>
+        </FeedControls>
       </template>
     </CarsSidebarLayout>
 
@@ -206,6 +212,7 @@ import {
   type CarsQuery,
   type CarsResponse,
 } from '~/utils/cars'
+import type { PublicCarListing } from '~/utils/carsPublic'
 
 const route = useRoute()
 const router = useRouter()
@@ -234,6 +241,30 @@ const { data, error } = await useAsyncData(
   () => $fetch<CarsResponse>('/api/cars', { query: carsQueryParams(query.value) }),
   { watch: [query] }
 )
+
+const pageCount = computed(() =>
+  data.value ? Math.min(500, Math.ceil(data.value.total / data.value.perPage)) : 1
+)
+// "Cargar más al bajar" (composables/useInfiniteFeed.ts): la grilla recorre `feed.items`.
+const resultsList = ref<HTMLElement | null>(null)
+const feed = useInfiniteFeed<PublicCarListing>({
+  id: 'autos',
+  itemKey: car => car.key,
+  list: resultsList,
+  items: () => data.value?.items ?? [],
+  page: () => query.value.page,
+  pageCount: () => pageCount.value,
+  perPage: () => data.value?.perPage ?? 24,
+  resetKey: () => JSON.stringify(carsQueryParams({ ...query.value, page: 1 })),
+  fetchPage: (page, signal) =>
+    $fetch<CarsResponse>('/api/cars', {
+      query: carsQueryParams({ ...query.value, page }),
+      signal,
+    }).then(response => response.items),
+  enabled: () => !error.value,
+  goToPage: changePage,
+  anchorId: 'cars-results',
+})
 
 /** Los filtros puestos, uno por chip, para poder sacarlos de a uno sin abrir el cajón. */
 const filterChips = computed(() => carsFilterChips(query.value, data.value?.facets))

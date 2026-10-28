@@ -291,6 +291,10 @@ const place = computed(() =>
   .car-card {
     display: flex;
     flex-direction: column;
+    /* Sin esto hereda `align-items: start` de la fila: la foto mide su contenido, y una foto
+       diferida que todavía no cargó mide 0 px. La tarjeta crecía ~150 px al cargar cada foto y
+       una página de 24 avisos pasaba de 2.200 a 3.400 px después de pintada. */
+    align-items: stretch;
     padding: 0;
     gap: 0;
   }

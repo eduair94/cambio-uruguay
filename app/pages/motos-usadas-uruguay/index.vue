@@ -235,8 +235,9 @@ idioma, aunque la ruta exista bajo /en/ y /pt/ por `prefix_except_default`.
               <th class="text-right">Precio</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-for="item in payload.items" :key="item.key">
+          <tbody ref="resultsList">
+            <FeedEdge :feed="feed" edge="top" tag="tr" :colspan="6" />
+            <tr v-for="item in feed.items" :key="item.key">
               <td data-label="Moto">
                 <a
                   :href="item.permalink"
@@ -276,18 +277,23 @@ idioma, aunque la ruta exista bajo /en/ y /pt/ por `prefix_except_default`.
                 <span v-if="item.currencyInferred" class="tag">moneda estimada</span>
               </td>
             </tr>
+            <FeedEdge :feed="feed" edge="bottom" tag="tr" :colspan="6" />
           </tbody>
         </VTable>
       </div>
 
-      <VPagination
-        v-if="payload.total > payload.perPage"
-        :model-value="query.page"
-        :length="Math.min(200, Math.ceil(payload.total / payload.perPage))"
-        :total-visible="3"
-        class="mt-6"
-        @update:model-value="changePage"
-      />
+      <FeedControls :feed="feed">
+        <template #pagination>
+          <VPagination
+            v-if="payload.total > payload.perPage"
+            :model-value="query.page"
+            :length="pageCount"
+            :total-visible="3"
+            class="mt-6"
+            @update:model-value="changePage"
+          />
+        </template>
+      </FeedControls>
     </section>
 
     <!-- ── Fichas por modelo ──────────────────────────────────────────────── -->
@@ -449,6 +455,30 @@ const { data } = await useAsyncData(
 const payload = computed<MotoListResponse>(
   () => data.value ?? motoEmptyList(query.value, 'unavailable')
 )
+
+const pageCount = computed(() =>
+  Math.min(200, Math.ceil(payload.value.total / Math.max(1, payload.value.perPage)))
+)
+// "Cargar más al bajar" (composables/useInfiniteFeed.ts): las filas recorren `feed.items`.
+const resultsList = ref<HTMLElement | null>(null)
+const feed = useInfiniteFeed<MotoListResponse['items'][number]>({
+  id: 'motos',
+  itemKey: item => item.key,
+  list: resultsList,
+  items: () => payload.value.items,
+  page: () => query.value.page,
+  pageCount: () => pageCount.value,
+  perPage: () => payload.value.perPage,
+  resetKey: () => JSON.stringify(motoQueryParams({ ...query.value, page: 1 })),
+  fetchPage: (page, signal) =>
+    $fetch<MotoListResponse>('/api/motos', {
+      query: motoQueryParams({ ...query.value, page }),
+      signal,
+    }).then(response => response.items),
+  enabled: () => payload.value.items.length > 0,
+  goToPage: changePage,
+  anchorId: 'motos-resultados',
+})
 
 const readAt = computed(() => motoLongDate(payload.value.coverage?.lastReadAt || null))
 
