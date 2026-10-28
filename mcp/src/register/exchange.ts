@@ -5,6 +5,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { CambioApi } from "../api.js";
 import { bestHouse, convert, dailySummary, getEvolution, getNews, getRates, listHouses } from "../tools.js";
+import { READ_ONLY } from "./annotations.js";
 
 const fmt = (n: number, d = 2) => Number(n).toLocaleString("es-UY", { minimumFractionDigits: d, maximumFractionDigits: d });
 
@@ -23,6 +24,7 @@ export function registerExchange(server: McpServer, api: CambioApi): void {
       description:
         "Current buy/sell rates for a currency across Uruguayan exchange houses (casas de cambio): market average, best buy/sell house, lowest spread, and the full per-house list. Excludes BCU and interbank quotes. Currency is an ISO code like USD, EUR, ARS, BRL.",
       inputSchema: { currency: z.string().describe("ISO currency code, e.g. USD, EUR, ARS, BRL") },
+      annotations: READ_ONLY,
     },
     async ({ currency }) => {
       const r = await getRates(api, { currency });
@@ -46,6 +48,7 @@ export function registerExchange(server: McpServer, api: CambioApi): void {
         currency: z.string().describe("ISO currency code, e.g. USD"),
         side: z.enum(["buy", "sell"]).describe("'buy' = you buy the currency; 'sell' = you sell it"),
       },
+      annotations: READ_ONLY,
     },
     async ({ currency, side }) => {
       const r = await bestHouse(api, { currency, side });
@@ -65,6 +68,7 @@ export function registerExchange(server: McpServer, api: CambioApi): void {
         from: z.string().describe("Source ISO code, e.g. USD"),
         to: z.string().describe("Target ISO code, e.g. UYU"),
       },
+      annotations: READ_ONLY,
     },
     async ({ amount, from, to }) => {
       const r = await convert(api, { amount, from, to });
@@ -78,6 +82,7 @@ export function registerExchange(server: McpServer, api: CambioApi): void {
       title: "List exchange houses",
       description: "All Uruguayan exchange houses (casas de cambio) tracked, with display name, website, and departments served.",
       inputSchema: {},
+      annotations: READ_ONLY,
     },
     async () => {
       const houses = await listHouses(api);
@@ -97,6 +102,7 @@ export function registerExchange(server: McpServer, api: CambioApi): void {
         currency: z.string().describe("ISO currency code, e.g. USD"),
         period: z.number().int().positive().max(60).optional().describe("Months of history (default 6)"),
       },
+      annotations: READ_ONLY,
     },
     async ({ origin, currency, period }) => {
       const data = await getEvolution(api, { origin, currency, period });
@@ -110,6 +116,7 @@ export function registerExchange(server: McpServer, api: CambioApi): void {
       title: "Get market news",
       description: "Latest Uruguayan dollar/economy headlines (Google News), de-duplicated and newest first.",
       inputSchema: { limit: z.number().int().positive().max(30).optional().describe("Max headlines (default 12)") },
+      annotations: READ_ONLY,
     },
     async ({ limit }) => {
       const items = await getNews(api, { limit });
@@ -128,6 +135,7 @@ export function registerExchange(server: McpServer, api: CambioApi): void {
         lang: z.enum(["es", "en", "pt"]).optional().describe("Language (default es)"),
         currency: z.string().optional().describe("Optional ISO code for a per-currency analysis, e.g. USD"),
       },
+      annotations: READ_ONLY,
     },
     async ({ lang, currency }) => {
       const r = await dailySummary(api, { lang, currency });

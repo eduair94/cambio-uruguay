@@ -1,5 +1,7 @@
 // Rental toolset (alquileres): 8 tools over the rental directory of cambio-uruguay.com.
 // Descriptions are written for the model: units, valid values and when to use each.
+// Every client pays for these schemas on every session, so the long explanations live in
+// the skill (skills/buscador-uruguay/references/alquileres.md), not here.
 
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
@@ -11,6 +13,7 @@ import { getRental } from "../rentals/detail.js";
 import { geocodeAddress, searchRentals } from "../rentals/search.js";
 import { NEIGHBORHOOD_QUALITY, RENTAL_AMENITIES, RENTAL_GUARANTEES, RENTAL_SORTS, RENTAL_SOURCES, RENTAL_TYPES } from "../rentals/types.js";
 import type { SiteApi } from "../site.js";
+import { READ_ONLY } from "./annotations.js";
 
 export const RENTAL_TOOLS = [
   "geocode_uy_address",
@@ -23,19 +26,26 @@ export const RENTAL_TOOLS = [
   "find_property_opportunities",
 ] as const;
 
-const READ_ONLY = { readOnlyHint: true, openWorldHint: true } as const;
-const department = z.string().max(40).describe('Departamento de Uruguay con tildes, p. ej. "Montevideo", "Canelones", "Maldonado", "Colonia".');
+const department = z.string().max(40).describe('Departamento con tildes, p. ej. "Montevideo", "Maldonado".');
+const neighborhood = () => z.string().max(60).describe('Barrio como en los avisos, p. ej. "Pocitos".');
 const money = (what: string) => z.number().positive().describe(what);
+// Factories, not shared instances: a schema reused inside one tool is emitted as a $ref,
+// and not every client resolves one (Gemini function declarations did not).
+const lat = () => z.number().min(-35.5).max(-30).describe("Latitud decimal, p. ej. -34.91.");
+const lng = () => z.number().min(-58.6).max(-53).describe("Longitud decimal, p. ej. -56.16.");
+const homeType = () => z.enum(["apartamento", "casa"]);
+const page = (max: number) => z.number().int().min(1).max(max).describe("Página de resultados, desde 1.");
+const perPage = (fallback = 10) => z.number().int().min(1).max(24).describe(`Resultados por página (default ${fallback}).`);
 
 const near = z
   .object({
-    address: z.string().max(180).optional().describe('Dirección, esquina, barrio o nombre de lugar en Uruguay: "Bulevar Artigas 1234", "18 de Julio y Ejido", "Montevideo Shopping".'),
-    lat: z.number().min(-35.5).max(-30).optional(),
-    lng: z.number().min(-58.6).max(-53).optional(),
+    address: z.string().max(180).optional().describe('Dirección, esquina o lugar: "18 de Julio y Ejido", "Montevideo Shopping".'),
+    lat: lat().optional(),
+    lng: lng().optional(),
     label: z.string().max(60).optional().describe('Nombre del punto, p. ej. "Trabajo".'),
-    radiusKm: z.number().positive().max(30).optional().describe("Quedarse sólo con viviendas a esta distancia en línea recta (km). Sin radio, sólo ordena por cercanía."),
+    radiusKm: z.number().positive().max(30).optional().describe("Radio en km en línea recta. Sin radio sólo ordena."),
   })
-  .describe("Buscar cerca de un punto: ordena por distancia y, con radiusKm, filtra. Sólo cuentan avisos con ubicación propia.");
+  .describe("Ordena por distancia a un punto (address o lat/lng); con radiusKm además filtra. Sólo avisos con ubicación propia.");
 
 export function registerRentals(server: McpServer, site: SiteApi): void {
   server.registerTool(
@@ -43,9 +53,9 @@ export function registerRentals(server: McpServer, site: SiteApi): void {
     {
       title: "Ubicar una dirección en Uruguay",
       description:
-        "Convierte una dirección, esquina, barrio o nombre de lugar de Uruguay («Facultad de Ingeniería», «Tres Cruces», «Pocitos») en coordenadas con Google Maps. search_rentals y rank_rentals_for_household ya geocodifican solas si les pasás address: no hace falta llamar a esta antes.",
+        "Convierte una dirección, esquina, barrio o lugar de Uruguay («Tres Cruces», «Facultad de Ingeniería») en coordenadas (Google Maps). search_rentals y rank_rentals_for_household geocodifican solas si les pasás address.",
       inputSchema: {
-        address: z.string().min(4).max(180).describe('Calle y número ("Av. Italia 2500"), esquina ("Rivera y Soca"), barrio o nombre del lugar ("Hospital de Clínicas").'),
+        address: z.string().min(4).max(180).describe('Calle y número ("Av. Italia 2500"), esquina ("Rivera y Soca") o lugar ("Hospital de Clínicas").'),
         department: department.optional(),
       },
       annotations: READ_ONLY,
@@ -58,47 +68,47 @@ export function registerRentals(server: McpServer, site: SiteApi): void {
     {
       title: "Buscar alquileres en Uruguay",
       description:
-        "Busca viviendas en alquiler en todo Uruguay (unión de Mercado Libre, InfoCasas, Inmuebles El País, Casasweb y Facebook Marketplace, ~57.000 propiedades, avisos vistos en los últimos 10 días). " +
-        "Filtra por barrio, tipo, dormitorios, baños, m², precio (UYU o USD), TOTAL MENSUAL con gastos comunes, gastos comunes máximos, mascotas, garaje, con o sin muebles, plazo (anual o invernal), tipo de garantía (ANDA, Contaduría, seguro, depósito, BHU, propietario), comodidades, dueño directo, inmobiliaria, portal, texto libre, cercanía a un punto, calidad del barrio (pocas denuncias, pocos cortes de agua o reclamos), publicados en los últimos N días y alquileres que BAJARON de precio. " +
-        "Devuelve cada vivienda con alquiler, gastos comunes y total cuando el MISMO aviso los publica (~70 % no publica gastos comunes), link al aviso original, ficha en cambio-uruguay.com, la mediana de la búsqueda, los barrios con más oferta y un link para guardar la búsqueda o crear una alerta. Para rankear según ingresos y traslados de un hogar usá rank_rentals_for_household.",
+        "Busca viviendas en alquiler en todo Uruguay: Mercado Libre, InfoCasas, El País, Casasweb, alquileres.uy, Facebook y redes, avisos vistos en los últimos 10 días. " +
+        "Devuelve alquiler, gastos comunes y total cuando el aviso los publica (~70 % no publica gastos comunes), link al aviso y a la ficha, la mediana de la búsqueda, los barrios con más oferta y un link para guardarla o crear una alerta. " +
+        "Para rankear por ingresos y traslados de un hogar: rank_rentals_for_household.",
       inputSchema: {
         department: department.optional(),
-        neighborhoods: z.array(z.string().max(60)).max(20).optional().describe('Barrios como aparecen en los avisos: "Pocitos", "Cordón", "Punta Carretas", "Malvín"…'),
-        types: z.array(z.enum(RENTAL_TYPES)).max(5).optional().describe('"vivienda" = apartamento+casa+habitación. Default: todos los tipos (incluye locales y oficinas), así que para vivir pasá ["vivienda"] o ["apartamento"].'),
-        excludeNeighborhoods: z.array(z.string().max(60)).max(20).optional().describe('Barrios a dejar afuera: "Centro", "Cerro"…'),
-        excludeTypes: z.array(z.enum(RENTAL_TYPES)).max(5).optional().describe('Tipos a dejar afuera; se restan de types (["vivienda"] sin ["habitacion"] = casas y apartamentos).'),
-        roomsAndResidences: z.enum(["hide", "only"]).optional().describe('Habitaciones y residencias (se alquila una cama o un cuarto: residencias estudiantiles, pensiones, cuartos compartidos). "hide" las saca; "only" deja sólo ésas.'),
-        excludeSources: z.array(z.enum(RENTAL_SOURCES)).max(RENTAL_SOURCES.length).optional().describe("Portales a ocultar. Si la misma vivienda está en otro portal, sigue apareciendo con ese aviso."),
-        hidePerNightPrices: z.boolean().optional().describe("Ocultar avisos en dólares con un precio muy por debajo de lo más barato de su zona: casi siempre tarifas por noche de temporada (Punta del Este, José Ignacio). Sin esto se muestran marcados con ⚠."),
-        excludeWords: z.array(z.string().min(2).max(40)).max(10).optional().describe('Palabras que el TÍTULO no puede tener, sin importar acentos: ["temporario", "pension"].'),
-        bedrooms: z.number().int().min(0).max(10).optional().describe("Dormitorios mínimos (0 = monoambiente). Con bedroomsExact=true, exactos."),
-        bedroomsExact: z.boolean().optional(),
+        neighborhoods: z.array(z.string().max(60)).max(20).optional().describe('Barrios, p. ej. ["Pocitos", "Cordón"].'),
+        types: z.array(z.enum(RENTAL_TYPES)).max(5).optional().describe('Default: todos, con locales y oficinas. Para vivir: ["vivienda"] (apartamento + casa + habitación).'),
+        excludeNeighborhoods: z.array(z.string().max(60)).max(20).optional().describe('Barrios a excluir, p. ej. ["Centro"].'),
+        excludeTypes: z.array(z.enum(RENTAL_TYPES)).max(5).optional().describe('Tipos a restar de types, p. ej. ["habitacion"].'),
+        roomsAndResidences: z.enum(["hide", "only"]).optional().describe("Cuartos, residencias y pensiones: hide los saca, only deja sólo ésos."),
+        excludeSources: z.array(z.enum(RENTAL_SOURCES)).max(RENTAL_SOURCES.length).optional().describe("Portales a ocultar; la vivienda sigue si otro portal la publica."),
+        hidePerNightPrices: z.boolean().optional().describe("Ocultar avisos en USD muy baratos para su zona (casi siempre precio por noche). Si no, salen con ⚠."),
+        excludeWords: z.array(z.string().min(2).max(40)).max(10).optional().describe('Palabras que el título no puede tener: ["temporario", "pension"].'),
+        bedrooms: z.number().int().min(0).max(10).optional().describe("Dormitorios mínimos (0 = monoambiente)."),
+        bedroomsExact: z.boolean().optional().describe("true = exactamente bedrooms."),
         bathrooms: z.number().int().min(1).max(20).optional().describe("Baños mínimos."),
         areaMin: z.number().positive().optional().describe("m² mínimos."),
         areaMax: z.number().positive().optional().describe("m² máximos."),
-        listedCurrency: z.enum(["UYU", "USD"]).optional().describe("Sólo avisos publicados en esa moneda. NO cambia la moneda de los topes: priceMinUyu/priceMaxUyu son siempre pesos."),
-        priceMinUyu: z.number().positive().optional().describe("Alquiler mínimo en PESOS (sin gastos comunes). Si la persona habla en dólares, convertí (1 USD ≈ 41 UYU, o usá convert)."),
-        priceMaxUyu: z.number().positive().optional().describe("Alquiler máximo en PESOS (sin gastos comunes). Los avisos en dólares se comparan convertidos."),
-        monthlyMaxUyu: money("Tope del TOTAL mensual en pesos (alquiler + gastos comunes). Excluye avisos que no publican gastos comunes.").optional(),
-        expensesMaxUyu: z.number().min(0).optional().describe("Gastos comunes máximos en pesos. Excluye avisos que no los publican."),
-        pets: z.boolean().optional().describe("Sólo avisos que aceptan mascotas explícitamente."),
+        listedCurrency: z.enum(["UYU", "USD"]).optional().describe("Sólo avisos publicados en esa moneda. Los topes siguen en pesos."),
+        priceMinUyu: z.number().positive().optional().describe("Alquiler mínimo en PESOS, sin gastos comunes (1 USD ≈ 41 UYU, o usá convert)."),
+        priceMaxUyu: z.number().positive().optional().describe("Alquiler máximo en PESOS, sin gastos comunes. Los avisos en USD se comparan convertidos."),
+        monthlyMaxUyu: money("Tope del total mensual (alquiler + gastos comunes) en pesos. Excluye avisos sin gastos comunes.").optional(),
+        expensesMaxUyu: z.number().min(0).optional().describe("Gastos comunes máximos en pesos. Excluye avisos sin ese dato."),
+        pets: z.boolean().optional().describe("Sólo los que aceptan mascotas explícitamente."),
         parking: z.boolean().optional().describe("Con garaje."),
-        furnished: z.boolean().optional().describe("true = sólo avisos que dicen amueblado (incluye semi amueblado); false = sólo los que dicen sin muebles. Los que no lo aclaran quedan afuera con cualquiera de los dos."),
-        term: z.enum(["anual", "invernal"]).optional().describe('Plazo del contrato. "invernal" = alquiler de invierno (marzo a diciembre, sobre todo en la costa), con precio mensual; "anual" = todo menos los que SÓLO ofrecen invierno (incluye los que no aclaran, que son el alquiler común). Los de temporada de verano (por noche o quincena) no se publican.'),
-        guarantees: z.array(z.enum(RENTAL_GUARANTEES)).max(7).optional().describe("Garantías aceptadas (cualquiera de ellas): anda, contaduria (Contaduría General de la Nación), aseguradora (Porto, Sura, Mapfre…), propietaria (fiador propietario), deposito, bhu, aConvenir."),
-        amenities: z.array(z.enum(RENTAL_AMENITIES)).max(11).optional().describe("Comodidades que debe tener (todas)."),
-        ownerDirect: z.boolean().optional().describe("Sólo dueño directo (sin inmobiliaria)."),
-        agency: z.string().max(80).optional().describe("Clave de una inmobiliaria."),
-        source: z.enum(RENTAL_SOURCES).optional().describe("Un solo portal."),
-        text: z.string().max(80).optional().describe('Texto libre en título y descripción, p. ej. "terraza", "patio".'),
+        furnished: z.boolean().optional().describe("true = amueblado o semi; false = sin muebles. Los que no aclaran quedan afuera."),
+        term: z.enum(["anual", "invernal"]).optional().describe("invernal = sólo alquiler de invierno (marzo–diciembre, costa); anual = el resto, incluye los que no aclaran."),
+        guarantees: z.array(z.enum(RENTAL_GUARANTEES)).max(7).optional().describe("Acepta alguna de estas garantías. contaduria = CGN, aseguradora = seguro de alquiler, propietaria = fiador."),
+        amenities: z.array(z.enum(RENTAL_AMENITIES)).max(11).optional().describe("Comodidades requeridas (todas)."),
+        ownerDirect: z.boolean().optional().describe("Sólo dueño directo, sin inmobiliaria."),
+        agency: z.string().max(80).optional().describe("Inmobiliaria: el final de su URL /inmobiliarias-uruguay/<clave>."),
+        source: z.enum(RENTAL_SOURCES).optional().describe("Sólo este portal."),
+        text: z.string().max(80).optional().describe('Texto en título o descripción, p. ej. "terraza".'),
         near: near.optional(),
-        neighborhoodQuality: z.array(z.enum(NEIGHBORHOOD_QUALITY)).max(6).optional().describe("Barrios que están entre los mejores en: denuncias (menos delitos), agua (menos cortes), luz, saneamiento, limpieza, alumbrado."),
-        hideReported: z.enum(["none", "any", "multiple"]).optional().describe('Avisos que la comunidad reportó como no disponibles. Default "multiple" (oculta con 2+ reportes).'),
-        postedWithinDays: z.number().int().min(1).max(90).optional().describe("Sólo avisos publicados (o vistos por primera vez, si el portal no da la fecha) en los últimos N días: 1 = desde ayer, 7 = la última semana."),
-        priceDropped: z.boolean().optional().describe("Sólo viviendas cuyo alquiler pedido BAJÓ en los últimos 30 días (entre 1 % y 50 %, y el aviso sigue pidiendo el precio bajado). Cada resultado dice cuánto bajó, desde cuánto y cuándo."),
-        sort: z.enum(RENTAL_SORTS).optional().describe("recientes (default), precio, precio-desc, total (menor total mensual), precio-m2, metros, baja (mayor baja de precio de los últimos 30 días primero). Con near se ordena por distancia."),
-        page: z.number().int().min(1).max(200).optional(),
-        perPage: z.number().int().min(1).max(24).optional().describe("Resultados a devolver (default 10)."),
+        neighborhoodQuality: z.array(z.enum(NEIGHBORHOOD_QUALITY)).max(6).optional().describe("Barrios entre los mejores en esos rubros (denuncias = menos delitos, agua = menos cortes)."),
+        hideReported: z.enum(["none", "any", "multiple"]).optional().describe("Ocultar avisos reportados como no disponibles: any = con 1 reporte, multiple = con 2+ (default), none = mostrar."),
+        postedWithinDays: z.number().int().min(1).max(90).optional().describe("Publicados (o vistos por primera vez) en los últimos N días; 7 = última semana."),
+        priceDropped: z.boolean().optional().describe("Sólo los que bajaron el alquiler en los últimos 30 días; cada resultado dice cuánto y cuándo."),
+        sort: z.enum(RENTAL_SORTS).optional().describe("Default recientes. total = menor total mensual, baja = mayor baja de precio. Con near, por distancia."),
+        page: page(200).optional(),
+        perPage: perPage().optional(),
       },
       annotations: READ_ONLY,
     },
@@ -106,14 +116,14 @@ export function registerRentals(server: McpServer, site: SiteApi): void {
   );
 
   const destination = z.object({
-    label: z.string().max(40).describe('Nombre corto: "Trabajo", "Facultad", "Colegio de los chicos".'),
-    kind: z.enum(["work", "study", "other"]).optional(),
-    address: z.string().max(180).optional().describe("Dirección, esquina o nombre del lugar (\"Facultad de Ingeniería\", \"el Centro\"); se geocodifica sola. Alternativa: lat/lng."),
-    lat: z.number().min(-35.5).max(-30).optional(),
-    lng: z.number().min(-58.6).max(-53).optional(),
+    label: z.string().max(40).describe('Nombre corto: "Trabajo", "Facultad".'),
+    kind: z.enum(["work", "study", "other"]).optional().describe("Tipo de destino (default work)."),
+    address: z.string().max(180).optional().describe('Dirección o lugar ("Facultad de Ingeniería"), o lat/lng.'),
+    lat: lat().optional(),
+    lng: lng().optional(),
     daysPerWeek: z.number().int().min(0).max(7).optional().describe("Días por semana que va (default 5)."),
     mode: z.enum(["walking", "bicycling", "transit", "driving"]).optional().describe("Cómo va (default transit = ómnibus)."),
-    maxKm: z.number().positive().max(300).optional().describe("Distancia máxima aceptable en línea recta. Default según modo: caminando 2, bici 6, ómnibus 8, auto 15 km."),
+    maxKm: z.number().positive().max(300).optional().describe("Km máximos en línea recta (default: a pie 2, bici 6, ómnibus 8, auto 15)."),
   });
 
   server.registerTool(
@@ -121,10 +131,9 @@ export function registerRentals(server: McpServer, site: SiteApi): void {
     {
       title: "Rankear alquileres para un hogar",
       description:
-        "El buscador PERSONALIZADO: puntúa todas las viviendas vigentes (apartamentos y casas) para un hogar concreto. Cada persona puede tener ingreso, días de home office y hasta 4 destinos (trabajo, estudio) con días por semana y modo de traslado. " +
-        "Combina presupuesto (alquiler + gastos comunes vs. ingreso y otros gastos) y distancias a los destinos según la prioridad (balanced, budget, commute). " +
-        "Devuelve puntaje 0-100, total mensual, % del ingreso que se va en vivienda, lo que le queda al hogar, la distancia de cada persona a cada destino, motivos a favor y advertencias. " +
-        "Pedile a la persona lo mínimo: presupuesto, dónde trabaja/estudia cada uno, dormitorios, mascotas. Los ingresos no se guardan. Límite del sitio: ~10 consultas por minuto; la primera puede tardar hasta un minuto.",
+        "Buscador PERSONALIZADO: puntúa las viviendas vigentes para un hogar según presupuesto (alquiler + gastos comunes frente a ingresos y gastos) y distancia de cada persona a sus destinos. " +
+        "Devuelve puntaje 0-100, % del ingreso, lo que le queda al hogar, distancias y advertencias. " +
+        "Pedí lo mínimo: presupuesto, dónde va cada uno, dormitorios, mascotas. Los ingresos no se guardan. ~10 consultas por minuto; la primera tarda hasta un minuto.",
       inputSchema: {
         people: z
           .array(
@@ -132,26 +141,27 @@ export function registerRentals(server: McpServer, site: SiteApi): void {
               label: z.string().max(40).describe('"Ana", "Pareja", "Hijo"…'),
               incomeUyu: z.number().min(0).optional().describe("Ingreso mensual líquido en pesos (0 si no tiene)."),
               remoteDays: z.number().int().min(0).max(7).optional().describe("Días de home office por semana."),
-              destinations: z.array(destination).max(4).optional(),
+              destinations: z.array(destination).max(4).optional().describe("Hasta 4 lugares a los que va."),
             })
           )
           .min(1)
-          .max(8),
+          .max(8)
+          .describe("Integrantes del hogar (1 a 8)."),
         housingBudgetUyu: money("Presupuesto mensual para vivienda en pesos (alquiler + gastos comunes)."),
-        otherExpensesUyu: z.number().min(0).optional().describe("Otros gastos fijos mensuales del hogar en pesos."),
-        savingsUyu: z.number().min(0).optional().describe("Ahorro mensual que quieren mantener."),
-        transportUyu: z.number().min(0).optional().describe("Gasto mensual en transporte."),
+        otherExpensesUyu: z.number().min(0).optional().describe("Otros gastos fijos mensuales en pesos."),
+        savingsUyu: z.number().min(0).optional().describe("Ahorro mensual a mantener, en pesos."),
+        transportUyu: z.number().min(0).optional().describe("Gasto mensual en transporte, en pesos."),
         department: department.optional().describe("Departamento (default Montevideo)."),
-        types: z.array(z.enum(["apartamento", "casa"])).max(2).optional(),
-        minBedrooms: z.number().int().min(0).max(20).optional(),
+        types: z.array(homeType()).max(2).optional().describe("Default: los dos."),
+        minBedrooms: z.number().int().min(0).max(20).optional().describe("Dormitorios mínimos."),
         minArea: z.number().min(0).optional().describe("m² mínimos."),
-        pets: z.boolean().optional().describe("Necesitan que acepte mascotas."),
-        parking: z.boolean().optional(),
-        furnished: z.boolean().optional().describe("true = sólo los que el aviso dice amueblados; false = sólo los que dice sin muebles."),
-        preferredNeighborhoods: z.array(z.string().max(60)).max(20).optional().describe('Barrios preferidos ("Pocitos" o "Pocitos, Montevideo").'),
+        pets: z.boolean().optional().describe("Tiene que aceptar mascotas."),
+        parking: z.boolean().optional().describe("Con garaje."),
+        furnished: z.boolean().optional().describe("true = amueblado; false = sin muebles."),
+        preferredNeighborhoods: z.array(z.string().max(60)).max(20).optional().describe('Barrios preferidos ("Pocitos").'),
         excludedNeighborhoods: z.array(z.string().max(60)).max(20).optional().describe("Barrios a descartar."),
-        onlyPreferred: z.boolean().optional().describe("true = sólo los barrios preferidos; false = los prefiere pero no descarta otros."),
-        includeReported: z.boolean().optional().describe("Incluir avisos reportados como no disponibles (default no)."),
+        onlyPreferred: z.boolean().optional().describe("true = sólo los barrios preferidos."),
+        includeReported: z.boolean().optional().describe("Incluir avisos reportados como no disponibles."),
         includeOverBudget: z.boolean().optional().describe("Incluir los que se pasan del presupuesto (marcados)."),
         priority: z.enum(["balanced", "budget", "commute"]).optional().describe("Qué pesa más: equilibrado (default), precio o cercanía."),
         limit: z.number().int().min(1).max(24).optional().describe("Resultados a devolver (default 10)."),
@@ -166,9 +176,8 @@ export function registerRentals(server: McpServer, site: SiteApi): void {
     {
       title: "Ver un alquiler en detalle",
       description:
-        "Ficha completa de una vivienda en alquiler: todos los avisos que la publican (precio por portal e inmobiliaria), descripción, comodidades, texto de la garantía, superficies, comparación con la mediana de viviendas parecidas del mismo barrio (y cuánto por encima o debajo está), viviendas similares y perfil del barrio (denuncias, cortes de agua, reclamos de saneamiento/limpieza/alumbrado). " +
-        "Acepta la key que devuelven las otras tools o la URL https://cambio-uruguay.com/alquileres/<key>.",
-      inputSchema: { key: z.string().min(3).max(600).describe("key de la vivienda o URL de su ficha.") },
+        "Ficha completa de una vivienda en alquiler: todos los avisos que la publican (precio por portal e inmobiliaria), descripción, comodidades, garantía, superficies, comparación con la mediana de viviendas parecidas del barrio, similares y perfil del barrio (denuncias, cortes de agua, reclamos).",
+      inputSchema: { key: z.string().min(3).max(600).describe("key que devuelven las otras tools o URL https://cambio-uruguay.com/alquileres/<key>.") },
       annotations: READ_ONLY,
     },
     safe((input) => getRental(site, input))
@@ -179,13 +188,13 @@ export function registerRentals(server: McpServer, site: SiteApi): void {
     {
       title: "Cuánto cuesta alquilar",
       description:
-        "Estadísticas del mercado de alquiler: mediana y rango típico (p25–p75) del alquiler, gastos comunes, total mensual y precio por m², por departamento, barrio, tipo y dormitorios, más los barrios más accesibles y más caros. Usalo para '¿cuánto sale alquilar 2 dormitorios en Pocitos?' o '¿dónde me alcanza con $30.000?'. Son precios pedidos, no firmados.",
+        "Mercado de alquiler: mediana y rango p25–p75 del alquiler, gastos comunes, total mensual y precio por m², por departamento, barrio, tipo y dormitorios, más los barrios más accesibles y más caros. Para '¿cuánto sale un 2 dormitorios en Pocitos?' o '¿dónde me alcanza con $30.000?'. Son precios pedidos.",
       inputSchema: {
         department: department.optional(),
-        neighborhood: z.string().max(60).optional().describe("Barrio (requiere department)."),
-        type: z.enum(["apartamento", "casa"]).optional(),
-        bedrooms: z.number().int().min(0).max(10).optional(),
-        currency: z.enum(["UYU", "USD"]).optional().describe("Moneda de los avisos a analizar (default UYU: los avisos en pesos)."),
+        neighborhood: neighborhood().optional().describe("Barrio (requiere department)."),
+        type: homeType().optional().describe("Default: los dos."),
+        bedrooms: z.number().int().min(0).max(10).optional().describe("Dormitorios exactos (0 = monoambiente)."),
+        currency: z.enum(["UYU", "USD"]).optional().describe("Moneda de los avisos a analizar (default UYU)."),
       },
       annotations: READ_ONLY,
     },
@@ -197,18 +206,18 @@ export function registerRentals(server: McpServer, site: SiteApi): void {
     {
       title: "Tasar un alquiler",
       description:
-        "Estima el alquiler justo de una vivienda concreta (barrio, tipo, dormitorios, baños, m²) con avisos comparables de anunciantes distintos y, si se da askingPrice, ubica ese precio (percentil y % sobre/bajo la mediana). Sirve para '¿me están cobrando caro?' o para negociar. Casas: superficie construida.",
+        "Estima el alquiler justo de una vivienda concreta con avisos comparables de anunciantes distintos y, si se da askingPrice, ubica ese precio (percentil y % sobre o bajo la mediana). Para '¿me están cobrando caro?' o para negociar.",
       inputSchema: {
         department,
-        neighborhood: z.string().max(60),
-        type: z.enum(["apartamento", "casa"]),
-        bedrooms: z.number().int().min(0).max(10),
-        bathrooms: z.number().int().min(1).max(10),
-        areaM2: z.number().min(20).max(450).describe("Superficie en m²."),
-        areaBasis: z.enum(["built", "total"]).optional().describe("built = construida (default), total = con balcones/terrazas."),
-        currency: z.enum(["UYU", "USD"]).optional(),
-        parkingSpaces: z.number().int().min(0).max(10).optional(),
-        askingPrice: z.number().positive().optional().describe("Precio pedido a evaluar, en la moneda indicada."),
+        neighborhood: neighborhood(),
+        type: homeType().describe("apartamento o casa."),
+        bedrooms: z.number().int().min(0).max(10).describe("Dormitorios (0 = monoambiente)."),
+        bathrooms: z.number().int().min(1).max(10).describe("Baños."),
+        areaM2: z.number().min(20).max(450).describe("Superficie en m² (casas: construida)."),
+        areaBasis: z.enum(["built", "total"]).optional().describe("built = construida (default), total = con balcones y terrazas."),
+        currency: z.enum(["UYU", "USD"]).optional().describe("Moneda de la estimación y de askingPrice (default UYU)."),
+        parkingSpaces: z.number().int().min(0).max(10).optional().describe("Lugares de garaje."),
+        askingPrice: z.number().positive().optional().describe("Alquiler pedido a evaluar, en currency."),
       },
       annotations: READ_ONLY,
     },
@@ -220,15 +229,15 @@ export function registerRentals(server: McpServer, site: SiteApi): void {
     {
       title: "Comparar barrios",
       description:
-        "Compara barrios lado a lado con datos públicos: alquiler mediano y total con gastos comunes, precio por m², delitos denunciados (Ministerio del Interior, por tipo), cortes de agua (OSE), reclamos de saneamiento/limpieza/alumbrado/calles (IM), servicios cercanos (supermercados, farmacias, salud, transporte, educación) y el puesto de cada barrio entre los 62 de Montevideo. " +
-        "Pasá neighborhoods para comparar esos, o rankBy para listar los mejores (rent = más baratos, monthly = menor total, safety = menos denuncias, services = más servicios).",
+        "Compara barrios con datos públicos: alquiler mediano y total, precio por m², delitos denunciados (Ministerio del Interior), cortes de agua (OSE), reclamos a la IM, servicios cercanos y el puesto de cada barrio entre los 62 de Montevideo. " +
+        "Pasá neighborhoods para comparar esos, o rankBy para listar los mejores.",
       inputSchema: {
-        neighborhoods: z.array(z.string().max(60)).max(10).optional(),
+        neighborhoods: z.array(z.string().max(60)).max(10).optional().describe('Barrios a comparar, p. ej. ["Pocitos", "Malvín"].'),
         department: department.optional(),
-        type: z.enum(["apartamento", "casa"]).optional().describe("Precios de apartamentos (default) o casas."),
-        bedrooms: z.enum(["any", "0", "1", "2", "3", "4plus"]).optional(),
-        rankBy: z.enum(["rent", "monthly", "safety", "services"]).optional(),
-        limit: z.number().int().min(1).max(20).optional(),
+        type: homeType().optional().describe("Precios de apartamentos (default) o casas."),
+        bedrooms: z.enum(["any", "0", "1", "2", "3", "4plus"]).optional().describe("Dormitorios de los precios (default any)."),
+        rankBy: z.enum(["rent", "monthly", "safety", "services"]).optional().describe("rent = más baratos (default), monthly = menor total, safety = menos denuncias, services = más servicios."),
+        limit: z.number().int().min(1).max(20).optional().describe("Barrios a devolver al rankear (default 10)."),
       },
       annotations: READ_ONLY,
     },
@@ -240,20 +249,20 @@ export function registerRentals(server: McpServer, site: SiteApi): void {
     {
       title: "Oportunidades inmobiliarias",
       description:
-        "Viviendas pedidas por DEBAJO de avisos comparables (mismo barrio, tipo, dormitorios y superficie, varios anunciantes), con la brecha %, una brecha conservadora, cuántos comparables y anunciantes la sostienen, el nivel de evidencia y las cautelas. Alquiler compara alquiler + gastos comunes. Es una comparación de precios pedidos, no una tasación.",
+        "Viviendas pedidas por DEBAJO de avisos comparables (mismo barrio, tipo, dormitorios y superficie, varios anunciantes), con la brecha %, una brecha conservadora, cuántos comparables la sostienen y las cautelas. Alquiler compara alquiler + gastos comunes. Compara precios pedidos, no es una tasación.",
       inputSchema: {
         operation: z.enum(["rent", "sale"]).optional().describe("rent = alquiler (default), sale = venta."),
         department: department.optional(),
-        neighborhood: z.string().max(60).optional(),
-        type: z.enum(["apartamento", "casa"]).optional(),
+        neighborhood: neighborhood().optional(),
+        type: homeType().optional().describe("Default: los dos."),
         bedrooms: z.number().int().min(0).max(8).optional().describe("Dormitorios exactos."),
-        maxPrice: z.number().positive().optional().describe("Tope del precio comparado: pesos por mes en alquiler (alquiler + gastos comunes), dólares en venta."),
-        confidence: z.enum(["supported", "limited"]).optional(),
-        evidence: z.enum(["standard", "exploratory"]).optional(),
-        signal: z.enum(["total_price", "price_per_m2"]).optional(),
-        sort: z.enum(["evidence", "discount", "price", "recent"]).optional(),
-        page: z.number().int().min(1).max(100).optional(),
-        perPage: z.number().int().min(1).max(24).optional(),
+        maxPrice: z.number().positive().optional().describe("Tope: pesos por mes (alquiler + gastos comunes) en alquiler, dólares en venta."),
+        confidence: z.enum(["supported", "limited"]).optional().describe("supported = más sólida, limited = con limitaciones."),
+        evidence: z.enum(["standard", "exploratory"]).optional().describe("standard = comparación sustentada, exploratory = para explorar."),
+        signal: z.enum(["total_price", "price_per_m2"]).optional().describe("Brecha por precio total o por precio del m²."),
+        sort: z.enum(["evidence", "discount", "price", "recent"]).optional().describe("evidence = más sólidas primero, discount = mayor brecha."),
+        page: page(100).optional(),
+        perPage: perPage(8).optional(),
       },
       annotations: READ_ONLY,
     },

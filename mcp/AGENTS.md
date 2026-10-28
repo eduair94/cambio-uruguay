@@ -1,6 +1,6 @@
 # mcp/ — AGENTS
 
-Open-source MCP server (`cambio-uruguay-mcp`, published to npm) wrapping the public cambio-uruguay rates API AND the site API (rentals, used cars, products) as 26 read-only tools in 4 toolsets, plus a Claude skill; isolated package with its own build and deploy surface.
+Open-source MCP server (`cambio-uruguay-mcp`, published to npm) wrapping the public cambio-uruguay rates API AND the site API (rentals, used cars, products) as 29 read-only tools in 5 toolsets, plus a Claude skill; isolated package with its own build and deploy surface.
 
 Start with `mcp/README.md` (client configs, tool list, env table) and `mcp/DEPLOY.md` (hosted endpoint, nginx). This file = only what's beyond them.
 
@@ -64,6 +64,8 @@ at initialisation; `src/register/prompts.ts` holds 6 guided workflows.
 - **Rate convention** (baked into tool descriptions): buy a currency = house `sell` price → best is LOWEST sell; sell it = house `buy` price → best is HIGHEST buy. Getting this backwards is the classic bug.
 - **HTTP transport is stateless**: fresh `McpServer`+`StreamableHTTPServerTransport` per request (`sessionIdGenerator: undefined`), closed on `res` close. No session affinity. Behind nginx, responses are SSE — proxy must NOT buffer (`proxy_buffering off`; see DEPLOY.md).
 - Handlers `throw` on empty results (e.g. `No retail rates found for currency "X"`) — surfaced as MCP tool errors.
+- **`tools/list` is what every client pays for on every session** (~10.8k tokens for `/mcp`), and public monitors grade it (Glimind, 2026-10-28: 78/100 for undescribed params, a 2.2k-token `search_rentals` and no annotations on the exchange tools). `test/readiness.test.ts` enforces: a `.describe()` on every parameter, nested ones too (format + example); `annotations: READ_ONLY` from `src/register/annotations.ts` on every tool, all four hints spelled out (the spec defaults `destructiveHint` to true); ≤ 4,500 chars per definition, with `search_rentals` on its own ratchet (its 44 filters are ~4,150 chars of bare JSON; under the budget it would have to drop filters that `/asistente-ia` chips map onto); and no `$ref`. Long explanations go in the skill references, not in descriptions.
+- **Never reuse one zod instance twice inside a tool**: zod-to-json-schema emits the second use as a `$ref`. Shared fields are factories (`lat()`, `page(max)` in `register/rentals.ts`).
 
 ## Production
 - pm2 app **`currency-mcp`** in repo-root `../ecosystem.config.js` (fork mode, `cwd: ./mcp`, `script: dist/index.js`, env `MCP_TRANSPORT=http` / `MCP_HTTP_PORT=8788` / `API_BASE_URL`). Live at `https://mcp.cambio-uruguay.com/mcp`.
