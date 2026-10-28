@@ -50,5 +50,5 @@ MovilidadListingSchema.index({ brandKey: 1 })
 MovilidadListingSchema.index({ sellerKey: 1 })
 
 export const MovilidadListingModel: Model<EquiparListingDoc> =
-  (mongoose.models.EquiparListing as Model<EquiparListingDoc>) ||
+  (mongoose.models.MovilidadListing as Model<EquiparListingDoc>) ||
   mongoose.model<EquiparListingDoc>('MovilidadListing', MovilidadListingSchema, 'movilidadlistings')
