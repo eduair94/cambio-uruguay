@@ -9,6 +9,7 @@ import {
   monthsBetween,
   waterCutDescription,
   waterCutTitle,
+  waterCutZonesBreakdown,
   worstWaterCutRows,
 } from '../../utils/waterCutRanking'
 
@@ -132,6 +133,27 @@ describe('buildWaterCutRanking', () => {
       'Capurro, Bella Vista',
       'Sayago',
     ])
+  })
+})
+
+describe('waterCutZonesBreakdown', () => {
+  const base = buildWaterCutRanking(scores(THREE))!
+
+  it('enumera los dos tipos de zona cuando los dos tienen cifra', () => {
+    expect(waterCutZonesBreakdown(base)).toBe(
+      ' —2 barrios de Montevideo y 1 localidad del resto del país— '
+    )
+  })
+
+  it('no publica un cero en una enumeración', () => {
+    expect(waterCutZonesBreakdown({ ...base, localidades: 0 })).toBe(' —2 barrios de Montevideo— ')
+    expect(waterCutZonesBreakdown({ ...base, barrios: 0 })).toBe(
+      ' —1 localidad del resto del país— '
+    )
+  })
+
+  it('se cae sola, con su espacio, si no hay ninguno de los dos', () => {
+    expect(waterCutZonesBreakdown({ ...base, barrios: 0, localidades: 0 })).toBe(' ')
   })
 })
 

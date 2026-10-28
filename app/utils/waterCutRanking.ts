@@ -157,6 +157,26 @@ export function buildWaterCutRanking(
   }
 }
 
+/**
+ * El desglose entre barrios de Montevideo y localidades del resto del país, listo para intercalar
+ * en una frase: ` —62 barrios de Montevideo—`, ` —40 barrios de Montevideo y 12 localidades del
+ * resto del país—` o cadena vacía si no hay ninguno de los dos.
+ *
+ * Existe porque la primera corrida publicada lo midió: el 28/10/2026 el archivo tenía 62 barrios y
+ * CERO localidades, y la frase salió «62 barrios de Montevideo y 0 localidades del resto del país».
+ * Un cero en una enumeración no informa, estorba.
+ */
+export function waterCutZonesBreakdown(ranking: WaterCutRanking): string {
+  const partes: string[] = []
+  if (ranking.barrios)
+    partes.push(`${ranking.barrios} ${ranking.barrios === 1 ? 'barrio' : 'barrios'} de Montevideo`)
+  if (ranking.localidades)
+    partes.push(
+      `${ranking.localidades} ${ranking.localidades === 1 ? 'localidad' : 'localidades'} del resto del país`
+    )
+  return partes.length ? ` —${partes.join(' y ')}— ` : ' '
+}
+
 /** Las N zonas con más avisos, la peor primero. */
 export function worstWaterCutRows(ranking: WaterCutRanking, count = 10): WaterCutRow[] {
   return [...ranking.rows].reverse().slice(0, count)

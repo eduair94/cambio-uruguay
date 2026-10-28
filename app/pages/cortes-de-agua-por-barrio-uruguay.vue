@@ -27,10 +27,10 @@
       <p v-if="ranking" class="lead mb-6">
         En los <strong>{{ ranking.periodMonths }} meses</strong> que van del
         {{ formatWaterCutDay(ranking.periodFrom) }} al {{ formatWaterCutDay(ranking.periodTo) }},
-        las <strong>{{ ranking.rows.length }} zonas</strong> que algún aviso de OSE nombró por su
-        nombre —{{ ranking.barrios }} barrios de Montevideo y {{ ranking.localidades }} localidades
-        del resto del país— acumulan <strong>{{ ranking.attributedNotices }}</strong> avisos de
-        corte programado, con una mediana de
+        las <strong>{{ ranking.rows.length }} zonas</strong> que el archivo cubre{{
+          breakdown
+        }}acumulan <strong>{{ ranking.attributedNotices }}</strong> avisos de corte programado
+        atribuidos, con una mediana de
         <strong>{{ formatWaterCutsLabel(ranking.median) }}</strong> por zona. La que más tuvo es
         <strong>{{ worst[0]!.name }}</strong> con {{ formatWaterCuts(worst[0]!.notices) }}; la que
         menos, <strong>{{ best[0]!.name }}</strong> con {{ formatWaterCuts(best[0]!.notices) }}.
@@ -195,6 +195,7 @@ import {
   formatWaterCutsLabel,
   waterCutDescription,
   waterCutTitle,
+  waterCutZonesBreakdown,
   worstWaterCutRows,
   type WaterCutRow,
 } from '~/utils/waterCutRanking'
@@ -214,6 +215,9 @@ const worst = computed<WaterCutRow[]>(() => (ranking.value ? worstWaterCutRows(r
 const best = computed<WaterCutRow[]>(() => (ranking.value ? bestWaterCutRows(ranking.value) : []))
 
 const betterThanLabel = (row: WaterCutRow) => `${Math.round(row.betterThan * 100)} %`
+// Lleva sus propios espacios: una zona nombrada sola no abre guion y la frase tiene que cerrar
+// igual («las 62 zonas que el archivo cubre acumulan …»).
+const breakdown = computed(() => (ranking.value ? waterCutZonesBreakdown(ranking.value) : ' '))
 
 const title = computed(() => waterCutTitle(ranking.value))
 const description = computed(() => waterCutDescription(ranking.value))
