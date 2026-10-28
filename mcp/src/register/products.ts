@@ -8,10 +8,9 @@ import { planHomeSetup } from "../products/home.js";
 import { listDirectories, PRODUCT_VERTICALS, searchProducts } from "../products/search.js";
 import { checkOnlineStore } from "../products/stores.js";
 import type { SiteApi } from "../site.js";
+import { READ_ONLY } from "./annotations.js";
 
 export const PRODUCT_TOOLS = ["list_directories", "search_products", "plan_home_setup", "check_online_store", "supermarket_prices"] as const;
-
-const READ_ONLY = { readOnlyHint: true, openWorldHint: true } as const;
 
 export function registerProducts(server: McpServer, site: SiteApi): void {
   server.registerTool(
@@ -35,10 +34,10 @@ export function registerProducts(server: McpServer, site: SiteApi): void {
       inputSchema: {
         vertical: z.enum([...PRODUCT_VERTICALS, "todas"]).optional().describe("Directorio (default: todas)."),
         text: z.string().max(80).optional().describe('Palabras a buscar: "heladera no frost", "iphone 13", "silla ergonómica".'),
-        brand: z.string().max(40).optional(),
+        brand: z.string().max(40).optional().describe('Marca: "Samsung", "Midea".'),
         maxPriceUyu: z.number().positive().optional().describe("Precio máximo en pesos."),
         condition: z.enum(["new", "used", "any"]).optional().describe("used = sólo con banda de usados, al precio usado."),
-        limit: z.number().int().min(1).max(30).optional(),
+        limit: z.number().int().min(1).max(30).optional().describe("Resultados a devolver (default 12)."),
       },
       annotations: READ_ONLY,
     },
@@ -81,8 +80,8 @@ export function registerProducts(server: McpServer, site: SiteApi): void {
         "Precios oficiales del SIPC (MEF) por artículo (barato/mediana/caro y cuántos locales) y los supermercados más baratos de un departamento por canasta emparejada de 33 artículos (nunca por total bruto). Útil para estimar el costo de vida al mudarse.",
       inputSchema: {
         text: z.string().max(80).optional().describe('Artículo: "aceite girasol", "leche", "arroz".'),
-        department: z.string().max(40).optional(),
-        limit: z.number().int().min(1).max(25).optional(),
+        department: z.string().max(40).optional().describe('Departamento para el ranking de supermercados, p. ej. "Canelones" (default: todo el país).'),
+        limit: z.number().int().min(1).max(25).optional().describe("Artículos a devolver (default 10)."),
       },
       annotations: READ_ONLY,
     },
