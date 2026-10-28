@@ -39,6 +39,8 @@ export interface RedditOpportunityRow {
   answerUrl: string
   answerVisible: boolean | null
   answerCheckedAt: Date | null
+  duplicateOf: string
+  alsoIn: Array<{ sub: string; permalink: string }>
 }
 
 const RedditOpportunitySchema = new Schema(
@@ -75,6 +77,8 @@ const RedditOpportunitySchema = new Schema(
     answerUrl: { type: String, default: '' },
     answerVisible: { type: Boolean, default: null },
     answerCheckedAt: { type: Date, default: null },
+    duplicateOf: { type: String, default: '' },
+    alsoIn: { type: [Schema.Types.Mixed], default: [] },
   },
   { timestamps: false }
 )

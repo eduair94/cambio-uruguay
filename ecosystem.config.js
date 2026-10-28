@@ -691,6 +691,24 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // La cola de hilos de Reddit para contestar a mano (/oportunidades-reddit, privada).
+      //
+      // Lee `/new` de los 11 subs uruguayos activos hasta 30 días atrás, filtra sin red, arma
+      // candidatas (reglas de intención + brazo léxico del índice RAG, cero embeddings) y las hace
+      // juzgar por Gemini de a 10. NO PUBLICA NADA EN REDDIT y no redacta respuestas: las cuentas del
+      // sitio están suspendidas desde el 7/10/2026 y quien contesta es una persona.
+      //
+      // Diario 10:21 UTC (07:21 en Uruguay): la cola está fresca a la mañana, y el minuto no choca
+      // con los otros clientes de la API de Reddit (:06 el bot, :09 su vigilante, :48 las
+      // estadísticas). Necesita APP_MONGO_URI y las credenciales de Reddit del .env de la raíz.
+      name: "currency-reddit-opportunities",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_reddit_opportunities.js",
+      cron_restart: "21 10 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // El plan de ingreso: las oportunidades de Search Console, valuadas por lo que paga la
       // familia de página que recibiría el clic.
       //

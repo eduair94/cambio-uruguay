@@ -127,7 +127,7 @@ export const DESTINATIONS: readonly Destination[] = Object.freeze([
     title: "Autos usados en Uruguay",
     family: "autos",
     describe:
-      "Directorio de autos usados de Mercado Libre, Facebook y automotoras uruguayas, con filtros por modelo, año, kilómetros, carrocería y precio en dólares.",
+      "Directorio de autos usados de Mercado Libre, Facebook y automotoras uruguayas, con filtros por modelo, año, kilómetros, carrocería y precio en dólares, y el rango de precio de cada modelo y año.",
     patterns: [
       new RegExp(`\\b${BUY}\\b.{0,40}\\b(auto|autos|coche|camioneta|suv|pickup|vehiculo)\\b`),
       /\b(auto|autos|camioneta) (usado|usados|usada|de segunda)\b/,
@@ -140,7 +140,7 @@ export const DESTINATIONS: readonly Destination[] = Object.freeze([
     title: "Qué auto comprar",
     family: "autos",
     describe:
-      "Asesor de compra: qué auto conviene según presupuesto y uso, con costo de repuestos y depreciación medidos en el mercado uruguayo.",
+      "Asesor de compra: compara modelos y dice cuál conviene según presupuesto y uso, con precio, costo de repuestos y depreciación medidos en el mercado uruguayo.",
     patterns: [
       /\b(que|cual|cuales) (auto|autos|coche|camioneta|suv|modelo)\b/,
       /\b(recomiendan|recomendacion|conviene)\b.{0,40}\b(auto|camioneta|suv)\b/,

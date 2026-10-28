@@ -48,6 +48,8 @@ export interface RedditOpportunityDoc {
   answerUrl: string;
   answerVisible: boolean | null;
   answerCheckedAt: Date | null;
+  duplicateOf: string;
+  alsoIn: Array<{ sub: string; permalink: string }>;
 }
 
 const RedditOpportunitySchema = new Schema(
@@ -84,6 +86,8 @@ const RedditOpportunitySchema = new Schema(
     answerUrl: { type: String, default: "" },
     answerVisible: { type: Boolean, default: null },
     answerCheckedAt: { type: Date, default: null },
+    duplicateOf: { type: String, default: "" },
+    alsoIn: { type: [Schema.Types.Mixed], default: [] },
   },
   // Sin `timestamps`: `createdAt` es la fecha del HILO en Reddit, no la de la fila, y mongoose la
   // pisaría con la del insert.

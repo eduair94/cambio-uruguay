@@ -29,25 +29,49 @@ export interface Verdict {
 
 export type AskJson = <T>(prompt: string, schema: unknown, opts?: { system?: string; model?: string; temperature?: number }) => Promise<T | null>;
 
-/** Debajo de esto un "sí" del juez no se muestra: es un "tal vez", y una cola de tal veces no se lee. */
-export const MIN_CONFIDENCE = 0.6;
+/**
+ * Debajo de esto un "sí" del juez no se muestra: es un "tal vez", y una cola de tal veces no se lee.
+ *
+ * 0,7 y no 0,6 por la primera corrida real (28/10/2026, 40 hilos, flash-lite y una rúbrica sin
+ * escala): recomendó 29, y entre ellos "me hacen ir presencial teniendo unipersonal" → qué empresa
+ * abrir, que es una disputa laboral y no esa pregunta. La rúbrica ahora ancla 0,7 en "contesta una
+ * parte central"; lo tangencial queda en 0,5 o menos.
+ */
+export const MIN_CONFIDENCE = 0.7;
 export const JUDGE_BATCH = 10;
 const REASON_MAX = 160;
 const ANGLE_MAX = 200;
 const BODY_MAX = 900;
 
-/** El modelo del juez. Fijable aparte para que un cambio de los demás jobs no cambie la cola. */
+/**
+ * El modelo del juez. Fijable aparte para que un cambio de los demás jobs no cambie la cola.
+ *
+ * Un flash y no un flash-lite: es una decisión de lectura (¿esta página contesta ESTO?), no una
+ * etiqueta, y son unas pocas llamadas por día. Si el modelo elegido no contesta, el lote se reintenta
+ * una vez con {@link GEMINI_MODEL}, el que usa el resto de los jobs.
+ */
+export const DEFAULT_JUDGE_MODEL = "gemini-3.5-flash";
 export function oppsJudgeModel(): string {
-  return (process.env.REDDIT_OPPS_MODEL || GEMINI_MODEL).trim();
+  return (process.env.REDDIT_OPPS_MODEL || DEFAULT_JUDGE_MODEL).trim();
 }
 
 export const JUDGE_SYSTEM = `Sos quien decide qué hilos de Reddit de subreddits uruguayos vale la pena contestar con UN enlace de cambio-uruguay.com, un sitio uruguayo con directorios (alquileres, autos, motos, celulares, muebles y electrodomésticos), comparadores y guías de plata y trámites.
 
-Recomendás un hilo SOLO si la persona está pidiendo algo concreto y una de las páginas candidatas le da justo eso: avisos para elegir, precios, un cálculo, los pasos de un trámite. Si la página habla del tema pero no contesta lo que se pidió, no.
+Recomendás un hilo cuando la persona pide algo concreto y una de las páginas candidatas le da lo central de eso: avisos y precios para elegir, un cálculo, los requisitos y pasos de un trámite. Quien compara dos modelos de auto o de celular, o pregunta cuánto sale algo, SÍ se contesta con el directorio, porque ahí ve los precios y avisos de esos modelos. Quien pregunta por su caso de un trámite que la guía cubre (su declaración de IRPF, su pasaporte, su paquete retenido) también, aunque la guía no resuelva cada detalle de su caso.
 
-NO recomiendes: desahogos o quejas sin pregunta, noticias, política, chistes, avisos de venta o de servicios, hilos sobre la vida personal o la salud de alguien, ni hilos donde el enlace sería forzado. Ante la duda, no.
+NO recomiendes:
+- desahogos, quejas u opiniones sin un pedido concreto; noticias; política; chistes;
+- avisos de venta o de servicios, y hilos que comparten información o una experiencia sin pedir nada;
+- un conflicto de alguien con su empleador, su arrendador o la justicia, o su salud: eso lo contesta un abogado, un contador o un médico, no una guía;
+- una pregunta distinta de la que la página contesta aunque el tema sea vecino (cómo ampliar el límite de la tarjeta no se contesta con un directorio de electrodomésticos).
+Ante la duda, no.
 
-Para cada hilo devolvé: id; recommend; path (exactamente una de sus candidatas, o null); confidence de 0 a 1; reason (una línea: qué pide y por qué esa página lo contesta); angle (una línea: qué dato o paso concreto de la página aportar al responder, sin inventar cifras). Español rioplatense, sin emojis.`;
+Escala de confidence (usala, no pongas 0,9 por costumbre):
+- 0,9 a 1: la página es justo lo que la persona busca (el directorio donde elegir lo que pide, la herramienta que hace el cálculo que pide, la guía de ese trámite exacto).
+- 0,7 a 0,8: la página le da lo central de lo que pidió, aunque no conteste el detalle exacto de su caso.
+- 0,5 o menos: coincide el tema pero no la pregunta. En ese caso recommend = false.
+
+Para cada hilo devolvé: id; recommend; path (exactamente una de sus candidatas, o null); confidence; reason (una línea: qué pide y qué tiene la página que lo contesta); angle (una línea: qué dato o paso concreto de la página aportar al responder, sin inventar cifras). Español rioplatense, sin emojis.`;
 
 export const JUDGE_SCHEMA = {
   type: "OBJECT",
@@ -124,11 +148,12 @@ export function normalizeVerdict(raw: RawVerdict, allowed: ReadonlySet<string>):
  */
 export async function judgeBatch(items: readonly JudgeItem[], ask: AskJson = askJSON): Promise<Map<string, Verdict> | null> {
   if (!items.length) return new Map();
-  const res = await ask<{ verdicts?: RawVerdict[] }>(buildJudgePrompt(items), JUDGE_SCHEMA, {
-    system: JUDGE_SYSTEM,
-    model: oppsJudgeModel(),
-    temperature: 0.1,
-  });
+  const prompt = buildJudgePrompt(items);
+  const call = (model: string) =>
+    ask<{ verdicts?: RawVerdict[] }>(prompt, JUDGE_SCHEMA, { system: JUDGE_SYSTEM, model, temperature: 0.1 });
+  const primary = oppsJudgeModel();
+  let res = await call(primary);
+  if ((!res || !Array.isArray(res.verdicts)) && primary !== GEMINI_MODEL) res = await call(GEMINI_MODEL);
   if (!res || !Array.isArray(res.verdicts)) return null;
 
   const allowedFor = new Map(items.map((i) => [i.post.id, new Set(i.candidates.map((c) => c.path))] as const));
