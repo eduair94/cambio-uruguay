@@ -7,7 +7,7 @@ import { createError } from 'h3'
 import { RedditOpportunityModel } from '../../models/RedditOpportunity'
 import { connectDb } from '../../utils/db'
 import { requireAdmin } from '../../utils/requireAdmin'
-import { isCommentUrl, type OppState } from '../../../utils/redditOpportunities'
+import { isRedditCommentUrl, type OppState } from '../../../utils/redditOpportunities'
 
 const STATES: readonly OppState[] = ['open', 'answered', 'dismissed']
 
@@ -23,17 +23,19 @@ export default defineEventHandler(async event => {
   if (!/^[a-z0-9]{5,10}$/.test(postId) || !STATES.includes(state)) {
     throw createError({ statusCode: 400, statusMessage: 'postId o state inválido' })
   }
-  if (answerUrl && (state !== 'answered' || !isCommentUrl(answerUrl))) {
+  if (answerUrl && (state !== 'answered' || !isRedditCommentUrl(answerUrl))) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'El enlace tiene que ser el de un comentario de Reddit (no el del hilo ni uno corto /s/).',
+      statusMessage:
+        'El enlace tiene que ser el de un comentario de Reddit (no el del hilo ni uno corto /s/).',
     })
   }
 
   await connectDb()
   const set: Record<string, unknown> = { state, stateAt: new Date() }
   // Volver a pendiente o descartar borra el enlace y su chequeo: ya no describen nada.
-  if (state !== 'answered') Object.assign(set, { answerUrl: '', answerVisible: null, answerCheckedAt: null })
+  if (state !== 'answered')
+    Object.assign(set, { answerUrl: '', answerVisible: null, answerCheckedAt: null })
   else if (answerUrl) Object.assign(set, { answerUrl, answerVisible: null, answerCheckedAt: null })
 
   const res = await RedditOpportunityModel.updateOne({ postId }, { $set: set })

@@ -12,13 +12,13 @@ import {
   buildOppsFilter,
   OPP_PROJECTION,
   parseOppsQuery,
-  sortOf,
+  oppsSortOf,
   type OppItem,
 } from '../../../utils/redditOpportunities'
 
 type Facet = { value: string; count: number }
 
-async function facet(field: 'sub' | 'family' | 'state', match: Record<string, unknown>): Promise<Facet[]> {
+async function facet(field: 'sub' | 'family', match: Record<string, unknown>): Promise<Facet[]> {
   const rows = await RedditOpportunityModel.aggregate<{ _id: string; count: number }>([
     { $match: match },
     { $group: { _id: `$${field}`, count: { $sum: 1 } } },
@@ -35,9 +35,18 @@ export default defineEventHandler(async event => {
   const q = parseOppsQuery(getQuery(event))
   const filter = buildOppsFilter(q)
 
+  // Cada chip de estado cuenta con el MISMO filtro que mostraría al tocarlo: "pendientes" excluye
+  // cerrados, borrados y ya enlazados, así el número del chip y el total de la lista coinciden.
+  const stateCounts = Promise.all(
+    (['open', 'answered', 'dismissed'] as const).map(async state => ({
+      value: state,
+      count: await RedditOpportunityModel.countDocuments(buildOppsFilter({ ...q, state })),
+    }))
+  )
+
   const [items, total, subs, families, states, meta] = await Promise.all([
     RedditOpportunityModel.find(filter)
-      .sort(sortOf(q.sort))
+      .sort(oppsSortOf(q.sort))
       .skip((q.page - 1) * q.limit)
       .limit(q.limit)
       .select(OPP_PROJECTION)
@@ -45,10 +54,10 @@ export default defineEventHandler(async event => {
     RedditOpportunityModel.countDocuments(filter),
     facet('sub', buildOppsFilter(q, 'sub')),
     facet('family', buildOppsFilter(q, 'family')),
-    // Los conteos por estado ignoran también el "pendiente = vivo y sin enlazar": cuentan cada
-    // estado tal cual, para que los chips sumen lo que la persona marcó.
-    facet('state', buildOppsFilter(q, 'state')),
-    RedditOpportunityMetaModel.findOne({ key: 'reddit_opportunities' }).select({ _id: 0, __v: 0 }).lean(),
+    stateCounts,
+    RedditOpportunityMetaModel.findOne({ key: 'reddit_opportunities' })
+      .select({ _id: 0, __v: 0 })
+      .lean(),
   ])
 
   return {
@@ -59,6 +68,8 @@ export default defineEventHandler(async event => {
     pages: Math.max(1, Math.ceil(total / q.limit)),
     facets: { subs, families, states },
     meta: meta ?? null,
-    hint: meta ? '' : 'Todavía no corrió `currency-reddit-opportunities` (corre todos los días a las 10:21 UTC).',
+    hint: meta
+      ? ''
+      : 'Todavía no corrió `currency-reddit-opportunities` (corre todos los días a las 10:21 UTC).',
   }
 })

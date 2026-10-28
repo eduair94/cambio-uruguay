@@ -229,6 +229,8 @@ const NOINDEXED = [
   'oportunidades-autos-usados-uruguay.vue',
   // Index the opportunity directory itself; query combinations opt out like rental filters.
   'oportunidades-inmobiliarias-uruguay.vue',
+  // La cola privada de hilos de Reddit: requireAdmin y noindex, como el tablero de Search Console.
+  'oportunidades-reddit.vue',
   // La ficha por articulo del SIPC es INDEXABLE cuando la muestra alcanza; opta
   // por salir solo cuando menos de 30 locales del pais declaran ese articulo,
   // porque ahi la pagina no puede prometer la comparacion que promete su titulo.

@@ -6,7 +6,13 @@ export interface RedditOpportunityMetaRow {
   key: string
   asOf: Date
   windowDays: number
-  subs: Array<{ sub: string; fetched: number; candidates: number; judged: number; recommended: number }>
+  subs: Array<{
+    sub: string
+    fetched: number
+    candidates: number
+    judged: number
+    recommended: number
+  }>
   judged: number
   judgeFailures: number
   recommendedTotal: number

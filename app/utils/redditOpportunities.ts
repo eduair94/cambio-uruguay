@@ -9,7 +9,7 @@ export const OPPS_PAGE_SIZE = 24
 export const OPPS_MAX_LIMIT = 60
 /** Espejo de `MIN_CONFIDENCE` en `classes/redditopps/judge.ts`: abajo de esto es un "tal vez". */
 export const OPPS_MIN_CONFIDENCE = 0.7
-export const SITE_ORIGIN = 'https://cambio-uruguay.com'
+export const OPPS_SITE_ORIGIN = 'https://cambio-uruguay.com'
 
 export const OPPS_SORTS = ['rank', 'new', 'comments', 'score'] as const
 export type OppsSort = (typeof OPPS_SORTS)[number]
@@ -17,21 +17,21 @@ export const OPPS_STATES = ['open', 'answered', 'dismissed', 'all'] as const
 export type OppsStateFilter = (typeof OPPS_STATES)[number]
 export type OppState = 'open' | 'answered' | 'dismissed'
 
-export const SORT_LABELS: Record<OppsSort, string> = {
-  rank: 'Recomendados',
+export const OPPS_SORT_LABELS: Record<OppsSort, string> = {
+  rank: 'Prioridad',
   new: 'Más nuevos',
   comments: 'Más comentados',
   score: 'Más votados',
 }
 
-export const STATE_LABELS: Record<OppsStateFilter, string> = {
+export const OPPS_STATE_LABELS: Record<OppsStateFilter, string> = {
   open: 'Pendientes',
   answered: 'Respondidos',
   dismissed: 'Descartados',
   all: 'Todos',
 }
 
-export const FAMILY_LABELS: Record<string, string> = {
+export const OPPS_FAMILY_LABELS: Record<string, string> = {
   alquileres: 'Alquileres',
   viviendas: 'Comprar vivienda',
   autos: 'Autos',
@@ -54,7 +54,7 @@ export const FAMILY_LABELS: Record<string, string> = {
  * `classes/redditbot/subrules.ts` y de las memorias del bot. No bloquea: quien contesta es una
  * persona con su cuenta, no el bot.
  */
-export const SUB_NOTES: Record<string, string> = {
+export const OPPS_SUB_NOTES: Record<string, string> = {
   legaluruguay:
     'Borró en silencio un comentario con enlace (20/8/2026, medido con token anónimo). Mejor responder sin enlace, o pegar el link del comentario al marcarlo para ver si sigue visible.',
   askuruguayan:
@@ -75,7 +75,8 @@ export interface OppsQuery {
 }
 
 const first = (v: unknown): unknown => (Array.isArray(v) ? v[0] : v)
-const str = (v: unknown): string => (typeof first(v) === 'string' ? (first(v) as string).trim() : '')
+const str = (v: unknown): string =>
+  typeof first(v) === 'string' ? (first(v) as string).trim() : ''
 const int = (v: unknown, fallback: number): number => {
   const n = Number.parseInt(str(v), 10)
   return Number.isFinite(n) ? n : fallback
@@ -90,8 +91,8 @@ export function parseOppsQuery(raw: Record<string, unknown>): OppsQuery {
   return {
     page: Math.max(1, Math.min(500, int(raw.page, 1))),
     limit: Math.max(1, Math.min(OPPS_MAX_LIMIT, int(raw.limit, OPPS_PAGE_SIZE))),
-    sub: /^[A-Za-z0-9_]{2,40}$/.test(sub) ? sub : null,
-    family: family in FAMILY_LABELS ? family : null,
+    sub: /^\w{2,40}$/.test(sub) ? sub : null,
+    family: family in OPPS_FAMILY_LABELS ? family : null,
     state: (OPPS_STATES as readonly string[]).includes(state) ? state : 'open',
     q: str(raw.q).slice(0, 80),
     sort: (OPPS_SORTS as readonly string[]).includes(sort) ? sort : 'rank',
@@ -133,7 +134,7 @@ export function buildOppsFilter(
   return filter
 }
 
-export function sortOf(sort: OppsSort): Record<string, 1 | -1> {
+export function oppsSortOf(sort: OppsSort): Record<string, 1 | -1> {
   if (sort === 'new') return { createdAt: -1, postId: 1 }
   if (sort === 'comments') return { numComments: -1, createdAt: -1, postId: 1 }
   if (sort === 'score') return { score: -1, createdAt: -1, postId: 1 }
@@ -141,7 +142,7 @@ export function sortOf(sort: OppsSort): Record<string, 1 | -1> {
 }
 
 /** "hace 3 h", "hace 2 días". `now` inyectado para el test. */
-export function ageLabel(createdAt: string | Date, now: number = Date.now()): string {
+export function oppAgeLabel(createdAt: string | Date, now: number = Date.now()): string {
   const ms = Math.max(0, now - new Date(createdAt).getTime())
   const hours = Math.floor(ms / 3_600_000)
   if (hours < 1) return 'hace menos de 1 h'
@@ -217,18 +218,19 @@ export const OPP_PROJECTION: Record<keyof OppItem | '_id', 0 | 1> = {
  * El enlace a copiar en la respuesta. A un hilo en inglés le va la versión en inglés de la página
  * cuando existe como página propia; si no, la española (el sitio ya no cambia de idioma solo).
  */
-export function suggestedUrl(item: Pick<OppItem, 'path' | 'lang'>): string {
+export function oppSuggestedUrl(item: Pick<OppItem, 'path' | 'lang'>): string {
   const localized = item.lang === 'en' && isLocalizedRoute(item.path)
-  return `${SITE_ORIGIN}${localized ? `/en${item.path === '/' ? '' : item.path}` : item.path}`
+  return `${OPPS_SITE_ORIGIN}${localized ? `/en${item.path === '/' ? '' : item.path}` : item.path}`
 }
 
 /** El enlace a UN comentario de Reddit (no al hilo, no un enlace corto `/s/`). */
-export function isCommentUrl(url: string): boolean {
-  return /^https:\/\/(www\.|old\.|new\.)?reddit\.com\/r\/[^/]+\/comments\/[a-z0-9]+\/(?:comment\/|[^/]+\/)[a-z0-9]{4,12}\/?(?:[?#].*)?$/i.test(
-    url.trim()
-  )
+export function isRedditCommentUrl(url: string): boolean {
+  // `…/comments/<hilo>/<slug o "comment">/<comentario>/`: el segmento del medio es cualquiera.
+  const COMMENT =
+    /^https:\/\/(?:www\.|old\.|new\.)?reddit\.com\/r\/[^/]+\/comments\/[a-z0-9]+\/[^/]+\/[a-z0-9]{4,12}\/?(?:[?#].*)?$/i
+  return COMMENT.test(url.trim())
 }
 
-export function subNoteOf(sub: string): string | null {
-  return SUB_NOTES[sub.toLowerCase()] ?? null
+export function oppSubNoteOf(sub: string): string | null {
+  return OPPS_SUB_NOTES[sub.toLowerCase()] ?? null
 }

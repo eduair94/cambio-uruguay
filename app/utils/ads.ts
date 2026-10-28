@@ -48,6 +48,8 @@ const NO_ADS = [
   // panel privado.
   '/opinion-alquileres',
   '/opiniones-alquileres',
+  // La cola privada de hilos de Reddit: un lector, logueado, trabajando.
+  '/oportunidades-reddit',
   // El media kit: la página ES la conversión (un anunciante leyendo condiciones), y un anuncio de
   // AdSense al lado de "qué no vendemos" es exactamente lo que no vendemos.
   '/publicidad',

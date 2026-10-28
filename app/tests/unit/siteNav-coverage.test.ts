@@ -143,6 +143,7 @@ describe('the navigation model has no dead links', () => {
       '/offline',
       '/opinion-alquileres',
       '/opiniones-alquileres',
+      '/oportunidades-reddit',
       '/ranking-usuarios-charruadevs',
       '/widget',
     ])

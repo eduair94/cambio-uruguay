@@ -4833,6 +4833,9 @@ export const EXCLUDED_ROUTES: readonly string[] = Object.freeze([
   // final de los resultados, no es contenido para buscadores. Y su panel privado de lectura.
   '/opinion-alquileres',
   '/opiniones-alquileres',
+  // La cola privada de hilos de Reddit para contestar a mano: lista hilos de desconocidos como
+  // trabajo pendiente. No es contenido y publicada se leería como operación de spam.
+  '/oportunidades-reddit',
   // "¿Tengo descuento acá?": una herramienta cuya respuesta depende de dónde está parado quien la
   // abre. No hay nada que indexar; se llega desde el mapa.
   '/descuentos-con-tarjeta-uruguay/cerca-de-mi',
