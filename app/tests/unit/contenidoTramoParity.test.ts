@@ -102,7 +102,13 @@ const LISTA_CURADA = [
  * La deuda: páginas de lectura larga que todavía no están en ningún tramo. **SÓLO PUEDE BAJAR.**
  *
  * 161 el 2026-10-22, antes de la primera tanda; 62 después de ella. Quedan 61 tras clasificar la
- * guía catastral el 2026-10-24: la UR sólo convierte una tasa auxiliar. Las 84 iniciales son todas
+ * guía catastral el 2026-10-24: la UR sólo convierte una tasa auxiliar. Y 60 el 2026-10-28, cuando
+ * `/cortes-de-luz-por-barrio-uruguay` pasa a `contenido` junto con la página de cortes de agua que
+ * nace ese día: las dos son el mismo libro —un servicio del hogar contado por barrio—, piden UN
+ * dato en vivo que llena dos tablas y todo el resto de su cuerpo es explicación, así que están del
+ * lado de la lectura larga y no de la serie con texto alrededor. Las tres vecinas de hub de la de
+ * agua (`/factura-de-ute-uruguay`, `/factura-de-ose-uruguay`, `/que-pasa-si-no-pago-antel`) ya
+ * estaban clasificadas así. Las 84 iniciales son todas
  * las que cumplen una línea mecánica: su `<script setup>` no pide ningún dato en vivo, o sea que su
  * cuerpo es texto y no una serie con texto alrededor. Las que quedan son justamente las que esa
  * línea no puede decidir desde acá —una guía que muestra una cifra fresca (la de préstamos, que es
@@ -131,7 +137,6 @@ const DEUDA_SIN_TRAMO = [
   '/comparar-portales-de-alquiler-uruguay',
   '/conviene-comprar-en-cuotas',
   '/cooperativas-de-vivienda-uruguay',
-  '/cortes-de-luz-por-barrio-uruguay',
   '/cotizacion-del-bcu',
   '/cotizaciones-de-la-region',
   '/cuanto-gastar-en-un-sommier-uruguay',
@@ -182,7 +187,7 @@ const DEUDA_SIN_TRAMO = [
   '/vivir-con-el-salario-minimo-uruguay',
 ]
 
-const DEUDA_MAXIMA = 61
+const DEUDA_MAXIMA = 60
 
 const TRAMO_POR_NOMBRE: Record<string, unknown> = {
   contenido: TIER_CONTENIDO,

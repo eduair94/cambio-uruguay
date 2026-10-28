@@ -80,6 +80,10 @@
         {
           "to": "/llevar-dolares-o-reales-a-brasil",
           "label": "¿Dólares o reales para Brasil?"
+        },
+        {
+          "to": "/comparar-plataformas-dolar-uruguay",
+          "label": "Comparar plataformas de cotizaciones"
         }
       ],
       "guides": [
@@ -347,6 +351,14 @@
         {
           "to": "/herramientas/conversor-unidad-indexada",
           "label": "Conversor de Unidad Indexada"
+        },
+        {
+          "to": "/tendencias-uruguay",
+          "label": "Lo que Uruguay busca hoy"
+        },
+        {
+          "to": "/temas-de-dinero-reddit",
+          "label": "De qué habla Uruguay sobre plata"
         }
       ],
       "guides": [
@@ -1001,6 +1013,10 @@
           "label": "Devolución de FONASA"
         },
         {
+          "to": "/cambiar-de-mutualista-uruguay",
+          "label": "Cambiar de mutualista"
+        },
+        {
           "to": "/fondo-de-solidaridad-uruguay",
           "label": "Fondo de Solidaridad"
         },
@@ -1404,6 +1420,10 @@
         {
           "to": "/factura-de-ose-uruguay",
           "label": "Factura de OSE"
+        },
+        {
+          "to": "/cortes-de-agua-por-barrio-uruguay",
+          "label": "Cortes de agua por barrio"
         },
         {
           "to": "/que-pasa-si-no-pago-antel",

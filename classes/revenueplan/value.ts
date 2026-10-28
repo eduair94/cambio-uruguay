@@ -414,6 +414,17 @@ export const CONTENIDO_PATHS = new Set([
   // tanda del 22/10 trazó. Sin esta línea entraría a `otro` y la cola de trabajo la ordenaría
   // ocho veces por debajo de la guía equivalente de `/guias/*`.
   "/latin-ncap-uruguay",
+  // Tanda del 2026-10-28, y es la primera que retira dos rutas de la DEUDA mirando la pagina, que
+  // es el procedimiento que esa lista describe («cada tanda elige su tramo mirando la pagina y
+  // escribe por que»). Las dos son el libro de cortes de un servicio del hogar por barrio: piden
+  // UN dato en vivo que llena dos tablas, y el resto del cuerpo es explicacion —como se mide, que
+  // no dice el numero, donde se reclama—, o sea lectura larga y no una serie con texto alrededor.
+  // El racimo decide: sus tres vecinas de hub (`/factura-de-ute-uruguay`, `/factura-de-ose-uruguay`
+  // y `/que-pasa-si-no-pago-antel`) ya estan aca, y la de agua nace en el mismo commit que la
+  // publica. Sin estas dos lineas la cola de trabajo las ordenaria ocho veces por debajo de la
+  // guia equivalente de `/guias/*`.
+  "/cortes-de-agua-por-barrio-uruguay",
+  "/cortes-de-luz-por-barrio-uruguay",
 ]);
 
 export function tierOf(bucket: string): Tier {

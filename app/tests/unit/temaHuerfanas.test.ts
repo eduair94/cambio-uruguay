@@ -121,15 +121,44 @@ const FUERA_DE_TEMA_POR_DISENO = [
  * elegirlo sin el dato que falta; `/tendencias-uruguay` y `/temas-de-dinero-reddit` son radares del
  * propio sitio y la decisión pendiente es si son páginas de lectura, no a qué tema van.
  *
+ * 4 → 0 el 2026-10-28: el pozo queda pagado, y las cuatro entraron el mismo día porque las cuatro
+ * están libres de toda ventana de medición abierta (`npm run seo_debt`: las únicas 4 libres de las
+ * 65 de los cinco pozos son exactamente estas). Las dos decisiones que quedaban pendientes se
+ * resolvieron, y las dos en el mismo sentido:
+ *
+ * - Los dos radares SÍ son páginas de lectura. Lo que mira el sitio no es el sitio: ninguna de las
+ *   dos publica una cifra propia del tráfico de cambio-uruguay.com (eso es `/estadisticas-del-sitio`
+ *   y `/paginas-mas-visitadas`, que por eso están arriba en `FUERA_DE_TEMA_POR_DISENO`); publican
+ *   qué BUSCA y qué PREGUNTA el país sobre plata, que es materia del tema igual que `/noticias` o
+ *   `/economia-uruguay`. Las dos van a `economia-y-mercado-uruguay`, y en el caso de
+ *   `/temas-de-dinero-reddit` el tema no hubo que deducirlo: su propio botón de volver apunta a
+ *   `/economia-uruguay`, que es una página del hub, y su etiqueta de OG ya dice «ECONOMÍA».
+ * - `/cambiar-de-mutualista-uruguay` no necesitaba un tema de salud. La regla de siempre —a donde
+ *   ya vive su vecina más cercana— alcanzaba: la mitad de la página es el tope de la devolución de
+ *   FONASA, y `/devolucion-fonasa-uruguay` más la guía `me-quede-sin-trabajo-mutualista-fonasa-uruguay`
+ *   viven las dos en `sueldo-trabajo-e-impuestos-uruguay`, porque el aporte que se devuelve sale
+ *   del sueldo. Un tema nuevo para una sola página habría sido un hub de un miembro.
+ *
+ * `/comparar-plataformas-dolar-uruguay` era el único caso sin discusión y sólo esperaba la fecha:
+ * su fila de septiembre cumplió 29 días el 2026-10-27.
+ *
  * Para bajar este número: una entrada en `resources` del tema que corresponda
  * (`utils/guideHubs.ts`), con etiqueta y una línea de descripción, y regenerar el índice
  * (`npx vitest run tests/unit/temaIndex.test.ts -u`). El vínculo queda recíproco solo.
+ *
+ * Si CI falla acá, agregaste una página raíz de lectura sin tema: no hay número que subir, elegile
+ * el tema donde ya vive su vecina más cercana (o declarala en `FUERA_DE_TEMA_POR_DISENO` si no es
+ * una página de lectura, que es una afirmación y se escribe con su motivo).
  */
 const DEUDA_SIN_TEMA = [
-  '/cambiar-de-mutualista-uruguay',
-  '/comparar-plataformas-dolar-uruguay',
-  '/temas-de-dinero-reddit',
-  '/tendencias-uruguay',
+  // POZO PAGADO el 2026-10-28: ninguna página raíz de lectura queda fuera de todos los temas.
+  //
+  // Esa marca literal es la que `classes/revenueplan/debtFree.ts::parseStringList` busca para
+  // distinguir «este pozo se terminó» de su propio modo de fallar, que es devolver `[]` cuando no
+  // entiende la forma de la lista. Es el segundo pozo que la usa, después de `DEUDA_SIN_MIGAS` el
+  // 27/10, y el comentario va DENTRO de la lista por lo mismo: el lector exige que el `]` abra su
+  // propia línea y prettier colapsa cualquier array que entre en 100 columnas salvo los que llevan
+  // un comentario.
 ]
 
 /**
@@ -338,8 +367,11 @@ const DEUDA_SIN_TEMA = [
  * inofensivo: absorben seis páginas nuevas publicadas huérfanas sin que nada se ponga rojo, que es
  * el único accidente que este archivo existe para atajar. Es el mismo argumento que `seoContract`
  * escribió al bajar `canonical` de 23 a 0.
+ *
+ * Y de 4 a 0 el 2026-10-28, con la lista vacía: el trinquete pasó de contar deuda a ser un
+ * contrato. No queda número que subir.
  */
-const DEUDA_MAXIMA = 4
+const DEUDA_MAXIMA = 0
 
 describe('ninguna página de lectura queda fuera de todos los temas', () => {
   const sinTema = rootRoutes.filter(route => temasDeRuta(route).length === 0)

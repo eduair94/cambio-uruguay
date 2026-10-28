@@ -166,6 +166,12 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Qué moneda conviene llevar a Brasil y dónde cambiarla.',
         to: '/llevar-dolares-o-reales-a-brasil',
       },
+      {
+        label: 'Comparar plataformas de cotizaciones',
+        description:
+          'Cambio Uruguay, DólarAhora, Dólar Uruguay y cotizacion.uy, criterio por criterio.',
+        to: '/comparar-plataformas-dolar-uruguay',
+      },
     ],
     terms: [
       'cotizacion',
@@ -407,6 +413,17 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Conversor de Unidad Indexada',
         description: 'Pasá de UI a pesos y viceversa.',
         to: '/herramientas/conversor-unidad-indexada',
+      },
+      {
+        label: 'Lo que Uruguay busca hoy',
+        description:
+          'Las tendencias de búsqueda del día y los titulares de economía, releídos cada 3 horas.',
+        to: '/tendencias-uruguay',
+      },
+      {
+        label: 'De qué habla Uruguay sobre plata',
+        description: 'Los temas de dinero que más se repiten en Reddit Uruguay, con los hilos.',
+        to: '/temas-de-dinero-reddit',
       },
     ],
     terms: [
@@ -1126,6 +1143,12 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/devolucion-fonasa-uruguay',
       },
       {
+        label: 'Cambiar de mutualista',
+        description:
+          'El mes que te toca por el último dígito de la cédula, y a ASSE en cualquier momento.',
+        to: '/cambiar-de-mutualista-uruguay',
+      },
+      {
         label: 'Fondo de Solidaridad',
         description: 'Quién aporta, cuánto por año en pesos y hasta cuándo se paga.',
         to: '/fondo-de-solidaridad-uruguay',
@@ -1556,6 +1579,11 @@ export const guideHubs: readonly GuideHub[] = [
         description:
           'El saneamiento vuelve a cobrar cada metro cúbico: es el 100 % del cargo variable del agua.',
         to: '/factura-de-ose-uruguay',
+      },
+      {
+        label: 'Cortes de agua por barrio',
+        description: 'Cuántos cortes programados avisó OSE en cada zona, archivados uno por uno.',
+        to: '/cortes-de-agua-por-barrio-uruguay',
       },
       {
         label: 'Deuda con Antel',

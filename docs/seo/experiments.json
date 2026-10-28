@@ -2101,6 +2101,46 @@
         "/por-que-el-bcu-quiere-mas-pesos"
       ],
       "hypothesis": "Quinta y ULTIMA tanda de migas: con esta el trinquete de `seoContract` baja de 1 a 0 y el pozo queda pagado. Es la pagina que el comentario de `BREADCRUMB_BUDGET` tenia anotada desde el 29/9 como la ultima en liberarse, y se libera hoy exactamente (su fila `descripciones-respuesta-primero-10`, del 28/9, cumple 29 dias). Emitia un `Article` suelto, asi que el contador de `structuredData` la daba por buena con el rastro vacio y el renglon verde del resultado era la URL cruda en vez del rastro con nombres; ahora el `Article` va dentro de un `@graph` con el `BreadcrumbList` como primer nodo, la misma forma que ya usaban las dos del dolar. Lleva TRES eslabones, uno mas que las dos de ayer, y ninguno inventado: el boton de volver de la pagina dice «Economia» y lleva a /economia-uruguay, que es ademas el hub que la enlaza. No se toco titulo, descripcion ni cuerpo: lo unico que cambia es el OTRO renglon del snippet, asi que el sujeto es el mismo que midio la tanda de septiembre y lo que se compara es el renglon verde."
+    },
+    {
+      "id": "radares-de-economia-entran-a-su-tema",
+      "shippedOn": "2026-10-28",
+      "routes": [
+        "/tendencias-uruguay",
+        "/temas-de-dinero-reddit"
+      ],
+      "hypothesis": "Los dos radares del sitio —lo que Uruguay BUSCA (tendencias de Google) y lo que PREGUNTA sobre plata (Reddit)— no estaban en ningun tema, asi que no recibian ni daban un solo enlace del bloque «Mas sobre este tema». Las dos entran a `economia-y-mercado-uruguay` y van en UNA fila porque son UN hueco del mismo tema y no dos cambios, la misma razon por la que las dos huerfanas de aduana fueron juntas el 26/10. Lo que estaba pendiente no era el tema sino una decision: `temaHuerfanas.test.ts` las tenia anotadas como «radares del propio sitio» y la pregunta era si son paginas de lectura. Lo son: ninguna de las dos publica una cifra del trafico de este sitio —eso es /estadisticas-del-sitio y /paginas-mas-visitadas, que por eso estan fuera de todo tema por diseno—, publican que busca y que pregunta el pais, que es materia del tema igual que /noticias o /economia-uruguay. En el caso de /temas-de-dinero-reddit el tema no hubo que deducirlo: su propio boton de volver apunta a /economia-uruguay, que es una pagina del hub, y su etiqueta de OG ya decia «ECONOMIA». No se toco titulo, descripcion ni cuerpo de ninguna de las dos."
+    },
+    {
+      "id": "comparar-plataformas-entra-a-su-tema",
+      "shippedOn": "2026-10-28",
+      "routes": [
+        "/comparar-plataformas-dolar-uruguay"
+      ],
+      "hypothesis": "La comparativa de plataformas de cotizacion (Cambio Uruguay, DolarAhora, Dolar Uruguay y cotizacion.uy) estaba huerfana de tema y era el unico de los cuatro casos sin discusion: su tema es `dolar-y-casas-de-cambio-uruguay`, donde ya viven /comparar, /mejor-casa-de-cambio y /banco-o-casa-de-cambio-uruguay, o sea las otras tres paginas del sitio cuyo trabajo es elegir donde mirar el precio. Lo unico que faltaba era la fecha: su fila anterior (`comparar-plataformas-dolar`, del 28/9) cumplio 29 dias el 27/10, asi que este cambio arranca contra el regimen que dejo el anterior y no le pisa la ventana. La etiqueta del hub no repite el nombre de ninguna otra entrada, por la misma separacion que el libro ya declaro para /impuesto-temu-uruguay. No se toco titulo, descripcion ni cuerpo."
+    },
+    {
+      "id": "cambiar-de-mutualista-entra-a-su-tema",
+      "shippedOn": "2026-10-28",
+      "routes": [
+        "/cambiar-de-mutualista-uruguay"
+      ],
+      "hypothesis": "La pagina del cambio de mutualista entra a `sueldo-trabajo-e-impuestos-uruguay` y con eso el pozo «sin tema» de `temaHuerfanas.test.ts` llega a CERO. Estaba trabada por una duda escrita en ese archivo —el sitio no tiene tema de salud y su vecindario natural, las fichas /mutualista/<institucion> nacidas el 25/10, esta dentro de su propia ventana de medicion— y la duda se resolvio mirando que publica la pagina: la mitad de su cuerpo es el tope de la devolucion de FONASA, y /devolucion-fonasa-uruguay mas la guia `me-quede-sin-trabajo-mutualista-fonasa-uruguay` viven las dos en ese hub, porque el aporte que se devuelve sale del sueldo. La regla de siempre —a donde ya vive su vecina mas cercana— alcanzaba; un tema de salud nuevo habria sido un hub de un solo miembro. La entrada va pegada a la de FONASA, no al final de la lista. No se toco titulo, descripcion ni cuerpo."
+    },
+    {
+      "id": "cortes-de-agua-por-barrio-pagina-nueva",
+      "shippedOn": "2026-10-28",
+      "routes": [
+        "/cortes-de-agua-por-barrio-uruguay"
+      ],
+      "queries": [
+        "cortes de agua por barrio",
+        "ose cortes programados",
+        "corte de agua montevideo",
+        "cuantos cortes de agua tiene mi barrio",
+        "interrupciones programadas ose"
+      ],
+      "hypothesis": "Pagina nueva, y es la gemela de agua de /cortes-de-luz-por-barrio-uruguay (3/10): el dato ya estaba en el repo y no tenia pantalla. OSE publica sus interrupciones programadas aviso por aviso y los BAJA de su web cuando el corte pasa, asi que la pregunta de quien elige donde vivir («aca cortan el agua seguido?») no tiene respuesta publicada en ninguna parte; el backend archiva cada aviso con su fecha y le deriva el barrio al leerlo, y eso hoy solo se veia como una barra dentro de una tarjeta del directorio de alquileres. La pagina no releva nada nuevo ni estrena una sola cifra: lee el mismo /api/rentals/zone-scores y le da una URL propia al atributo `agua`. Lo que la hace publicable es lo que NO afirma, y son cuatro cosas escritas en `app/utils/waterCutRanking.ts` y en su seccion de metodo: se cuentan AVISOS y no horas sin agua; solo lo programado, asi que una rotura no esta (es el recorte contrario al de la pagina de luz, y por eso las dos cifras no se comparan entre si); el barrio sale del nombre que el aviso escribe y un aviso que solo enumera calles no se reparte entre los barrios que cruzan, de modo que el total publicado es el de los avisos ATRIBUIDOS y no el de todos los que publico OSE; y una zona sin dato no aparece con cero, no aparece. El titulo y la descripcion se arman en tiempo de render con la mediana y la peor zona, porque la ventana se corre todos los dias y un literal los congelaria. El enlace entrante nace en /donde-vivir-uruguay, en el mismo renglon de metodo que ya nombraba «cortes de agua de OSE» sin poder mostrarlos, y esa ruta no tiene ninguna fila abierta en el libro."
     }
   ]
 }
