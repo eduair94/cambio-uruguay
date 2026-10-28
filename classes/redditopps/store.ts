@@ -90,8 +90,25 @@ export function verdictFields(row: SaveRow, model: string, now: Date): Partial<R
   };
 }
 
-/** Lo que una persona marca y el job nunca pisa. Sólo al insertar. */
-const ON_INSERT = {
+/**
+ * Lo que una persona marca y el job nunca pisa. Sólo al insertar.
+ *
+ * Tipado y no `as const`: con `as const`, `alsoIn: []` queda `readonly []` y el `bulkWrite` de
+ * mongoose (que pide un array mutable) no compila con la config de producción.
+ */
+const ON_INSERT: Pick<
+  RedditOpportunityDoc,
+  | "state"
+  | "stateAt"
+  | "answerUrl"
+  | "answerVisible"
+  | "answerCheckedAt"
+  | "alreadyLinked"
+  | "linkCheckedAt"
+  | "linkCheckedComments"
+  | "duplicateOf"
+  | "alsoIn"
+> = {
   state: "open",
   stateAt: null,
   answerUrl: "",
@@ -104,7 +121,7 @@ const ON_INSERT = {
   // quede sin ellos si la corrida se corta antes.
   duplicateOf: "",
   alsoIn: [],
-} as const;
+};
 
 /** Lo que filtra la vista "pendientes" de la página, sin el estado. */
 const LIVE_RECOMMENDED = { verdict: "recommend", confidence: { $gte: MIN_CONFIDENCE }, removed: false, locked: false } as const;
