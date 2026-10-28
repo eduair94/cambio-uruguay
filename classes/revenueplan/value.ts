@@ -425,6 +425,38 @@ export const CONTENIDO_PATHS = new Set([
   // guia equivalente de `/guias/*`.
   "/cortes-de-agua-por-barrio-uruguay",
   "/cortes-de-luz-por-barrio-uruguay",
+  // Tanda del 2026-10-29, y la primera que usa el HUB como racimo en vez de ir ruta por ruta. El
+  // tema `deudas-y-credito-uruguay` declara quince entradas en `resources` (`app/utils/guideHubs.ts`)
+  // y estaba partido por la mitad en dos tramos que se diferencian por OCHO VECES: ocho ya estaban
+  // acá, una es la calculadora (`/herramientas/*`, dato vivo, y ahí está bien) y las seis de abajo
+  // valían 1× en la deuda de `contenidoTramoParity.test.ts`. Es el peor lugar del sitio para que
+  // pase: `REVENUE_PLAN.md` registra la guía de préstamo a sola firma como la familia de mayor
+  // multiplicador MEDIDO de todo el sitio, y dos de las ocho vecinas ya clasificadas
+  // —`/prestamos-uruguay` y `/mejores-prestamos-uruguay`— entraron por la alerta
+  // `unclassified-families`, o sea CON tráfico e ingreso medidos y no por su forma. La cola de
+  // trabajo estaba ordenando el vecindario que más rinde como si fuera la portada.
+  //
+  // Por qué las seis salen de la deuda, que es lo que esa lista pide escribir («cada tanda elige su
+  // tramo mirando la página»): las seis piden UN dato en vivo y es siempre de la misma clase —la
+  // grilla de topes de usura del BCU (`/api/bcu-rates` en cuatro de ellas), los topes de
+  // `/api/debt-relief` o las tasas de referencia de `/api/financing-rates`—, o sea el número LEGAL
+  // contra el que el texto razona, no un relevamiento propio que la página publique. El cuerpo es
+  // explicación: la ley de usura recorre los seis topes del art. 11, qué entra en la cuenta y a
+  // quién reclamarle, con la tabla viva como UNA de sus secciones; saldar deudas tiene ocho
+  // secciones y cita el tope dentro de una oración. Ninguna es una serie con texto alrededor, que
+  // es lo que la línea mecánica del 22/10 no podía distinguir desde acá.
+  //
+  // Y de paso queda escrito qué NO era la línea: los controles interactivos no sacan a una página
+  // del tramo. `/conviene-pagar-todo-con-credito-uruguay` tiene dieciocho y entró en la tanda del
+  // 22/10 sin discusión, porque no pide ningún dato en vivo. Lo único que parkeaba a estas seis era
+  // el `useFetch`, así que `/conviene-comprar-en-cuotas` y `/adelanto-de-efectivo-tarjeta-de-credito`
+  // entran por la misma puerta que su vecina: su calculadora es una sección de una lectura larga.
+  "/adelanto-de-efectivo-tarjeta-de-credito",
+  "/conviene-comprar-en-cuotas",
+  "/ley-de-usura-uruguay",
+  "/prestamo-sin-recibo-de-sueldo-uruguay",
+  "/prestamos-para-jubilados-uruguay",
+  "/saldar-deudas-uruguay",
 ]);
 
 export function tierOf(bucket: string): Tier {
