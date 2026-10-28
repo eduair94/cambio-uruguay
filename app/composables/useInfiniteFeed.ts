@@ -33,6 +33,8 @@ export interface InfiniteFeedOptions<T> {
   resetKey: () => string
   /** La página `page` de la MISMA búsqueda; el resultado se descarta salvo los avisos. */
   fetchPage: (page: number, signal: AbortSignal) => Promise<readonly T[]>
+  /** La misma clave del `v-for`: un aviso que ya está en la ventana no entra dos veces. */
+  itemKey: (item: T) => string
   /** Sólo hay scroll infinito cuando se muestra la lista (no el mapa, no un error). */
   enabled?: () => boolean
   /** Volver a la paginación parado en otra página: navegar a ella. */
@@ -142,6 +144,7 @@ export function useInfiniteFeed<T>(options: InfiniteFeedOptions<T>) {
   }
 
   function reset(list: readonly T[]) {
+    unmarkPageStarts()
     controller?.abort()
     controller = null
     inflight.clear()
@@ -164,6 +167,44 @@ export function useInfiniteFeed<T>(options: InfiniteFeedOptions<T>) {
     moving = false
     initialized = true
     schedule()
+  }
+
+  /**
+   * En una grilla, cada página arranca en la columna 1. Con 24 avisos y 5 columnas (alquileres a
+   * más de 2.100 px, o las grillas `auto-fill`) una página termina a mitad de fila; al salir la de
+   * arriba, el espaciador de ancho completo hacía que la siguiente arrancara en la columna 1 y
+   * todas sus tarjetas cambiaban de lugar. Así la página ocupa filas enteras siempre.
+   */
+  function markPageStarts(list: HTMLElement, byPage: Map<number, HTMLElement[]>) {
+    if (!getComputedStyle(list).display.endsWith('grid')) return
+    for (const own of byPage.values()) {
+      const head = own[0]
+      if (!head || head.dataset.feedPageStart !== undefined) continue
+      head.dataset.feedPageStart = ''
+      head.style.gridColumnStart = '1'
+    }
+  }
+
+  function unmarkPageStarts() {
+    const list = listElement()
+    if (!list) return
+    for (const el of list.querySelectorAll<HTMLElement>(':scope > [data-feed-page-start]')) {
+      delete el.dataset.feedPageStart
+      el.style.removeProperty('grid-column-start')
+    }
+  }
+
+  /**
+   * Una página pedida en otro momento puede repetir un aviso que ya está en la ventana (los
+   * catálogos se reordenan cada hora). Dos claves iguales en el `v-for` las mezcla Vue: el aviso
+   * se queda donde ya estaba y sale de la página que llega.
+   */
+  function admit(list: readonly T[], present: Iterable<readonly T[]>): readonly T[] {
+    const seen = new Set<string>()
+    for (const other of present) for (const item of other) seen.add(options.itemKey(item))
+    return list.some(item => seen.has(options.itemKey(item)))
+      ? list.filter(item => !seen.has(options.itemKey(item)))
+      : list
   }
 
   /** Los elementos de cada página de la ventana, por orden entre las dos marcas. */
@@ -195,7 +236,10 @@ export function useInfiniteFeed<T>(options: InfiniteFeedOptions<T>) {
     gap = Number.parseFloat(getComputedStyle(list).rowGap) || 0
     for (let page = windowStart.value; page <= windowEnd.value; page++) {
       const own = byPage.get(page)
-      if (!own?.length) continue
+      if (!own?.length) {
+        heights.set(page, 0)
+        continue
+      }
       const top = own[0]!.getBoundingClientRect().top
       const next = byPage.get(page + 1)
       if (next?.length) {
@@ -247,7 +291,7 @@ export function useInfiniteFeed<T>(options: InfiniteFeedOptions<T>) {
       last.value = page
       if (windowEnd.value === page - 1) {
         const next = new Map(pages.value)
-        next.set(page, list)
+        next.set(page, admit(list, pages.value.values()))
         pages.value = next
         windowEnd.value = page
       } else {
@@ -271,7 +315,7 @@ export function useInfiniteFeed<T>(options: InfiniteFeedOptions<T>) {
       spare.delete(page)
       // Aparece donde estaba el botón, delante de lo que se mira: es lo que se pidió ver.
       const next = new Map(pages.value)
-      next.set(page, list)
+      next.set(page, admit(list, pages.value.values()))
       pages.value = next
       first.value = page
       windowStart.value = page
@@ -311,13 +355,21 @@ export function useInfiniteFeed<T>(options: InfiniteFeedOptions<T>) {
       const anchor = pickAnchor(byPage, target)
       const next = new Map<number, readonly T[]>()
       for (const page of range(target.start, target.end)) {
-        next.set(page, pages.value.get(page) ?? spare.get(page)!)
+        const kept = pages.value.get(page)
+        if (kept) next.set(page, kept)
+      }
+      // Las que entran se filtran contra las que se quedan: lo que se está mirando no cambia.
+      for (const page of range(target.start, target.end)) {
+        if (next.has(page)) continue
+        next.set(page, admit(spare.get(page)!, [...next.values()]))
         spare.delete(page)
       }
+      const ordered = new Map<number, readonly T[]>()
+      for (const page of range(target.start, target.end)) ordered.set(page, next.get(page)!)
       for (const [page, list] of pages.value) {
         if (page < target.start || page > target.end) spare.set(page, list)
       }
-      pages.value = next
+      pages.value = ordered
       windowStart.value = target.start
       windowEnd.value = target.end
       spacers()
@@ -337,7 +389,9 @@ export function useInfiniteFeed<T>(options: InfiniteFeedOptions<T>) {
   }
 
   function sync() {
-    if (!active.value || awaitingItems || moving) return
+    // Con un error no se reintenta solo: un pedido caído volvía a salir en cada cuadro. Lo
+    // reanuda "Reintentar".
+    if (!active.value || awaitingItems || moving || status.value === 'error') return
     const byPage = pageElements()
     if (!byPage) {
       // Sin medidas: sólo agregar al acercarse al final.
@@ -345,8 +399,10 @@ export function useInfiniteFeed<T>(options: InfiniteFeedOptions<T>) {
       if (bottom - window.innerHeight < FEED_PREFETCH_MARGIN) decideAppend(0, 0, true)
       return
     }
+    markPageStarts(listElement()!, byPage)
     measure(byPage)
-    const firstEl = byPage.get(windowStart.value)?.[0]
+    // La primera página con avisos (una que quedó vacía por repetidos mide 0).
+    const firstEl = [...byPage.values()].find(own => own.length)?.[0]
     if (!firstEl) return
     const originTop =
       firstEl.getBoundingClientRect().top - (topSpace.value > 0 ? topSpace.value + gap : 0)
@@ -415,6 +471,7 @@ export function useInfiniteFeed<T>(options: InfiniteFeedOptions<T>) {
 
   function deactivate() {
     detach()
+    unmarkPageStarts()
     controller?.abort()
     controller = null
     inflight.clear()
@@ -455,12 +512,12 @@ export function useInfiniteFeed<T>(options: InfiniteFeedOptions<T>) {
     listMode.set(next, options.id)
   }
 
-  watch(
-    () => [options.resetKey(), options.page()] as const,
-    () => {
-      awaitingItems = true
-    }
-  )
+  // Dos fuentes y no un arreglo armado en el getter: ése es distinto en cada lectura y el
+  // callback corría con cualquier cambio de la ruta (un clic en un `#ancla`), dejando la lista
+  // esperando avisos que nunca llegaban.
+  watch([() => options.resetKey(), () => options.page()], ([key, page]) => {
+    awaitingItems = key !== baseKey || page !== base.value
+  })
   watch(
     () => options.items(),
     list => {
@@ -470,7 +527,11 @@ export function useInfiniteFeed<T>(options: InfiniteFeedOptions<T>) {
         reset(list)
         return
       }
-      // Los mismos filtros con datos refrescados: sólo se reemplaza la página de arranque.
+      // Los mismos filtros con datos refrescados: sólo se reemplaza la página de arranque. Una
+      // lista vacía es un pedido en vuelo (hay páginas que muestran `[]` mientras cargan), no
+      // una página vacía: vaciarla haría saltar la ventana entera.
+      if (!list.length) return
+      unmarkPageStarts()
       if (pages.value.has(base.value)) {
         const next = new Map(pages.value)
         next.set(base.value, list)
@@ -478,6 +539,9 @@ export function useInfiniteFeed<T>(options: InfiniteFeedOptions<T>) {
       } else {
         spare.set(base.value, list)
       }
+      // Arrancó sin datos (un pedido sólo del cliente): el "llegaste al final" era provisorio.
+      if (status.value === 'done' && last.value < options.pageCount()) status.value = 'idle'
+      schedule()
     }
   )
   watch(active, on => {

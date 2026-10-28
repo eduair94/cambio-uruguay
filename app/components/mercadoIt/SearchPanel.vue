@@ -185,7 +185,7 @@
         Nada con esos filtros. Probá sacar alguno o buscar otra palabra.
       </p>
     </div>
-    <FeedControls v-if="pageItems.length" :feed="feed">
+    <FeedControls :feed="feed">
       <template #pagination>
         <VPagination
           v-if="pages > 1"
@@ -354,6 +354,7 @@ const pageItems = computed(() => data.value?.items ?? [])
 const resultsList = ref<HTMLElement | null>(null)
 const feed = useInfiniteFeed<SearchResponse['items'][number]>({
   id: 'mercado-it',
+  itemKey: item => item.rid,
   list: resultsList,
   items: () => pageItems.value,
   page: () => query.value.page,

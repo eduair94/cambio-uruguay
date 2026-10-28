@@ -220,10 +220,7 @@
             :detail-href="preview?.detailHref || ''"
           />
         </div>
-        <FeedControls
-          v-if="!savedEmpty && query.view === 'lista' && data?.items.length"
-          :feed="feed"
-        >
+        <FeedControls v-if="!savedEmpty && query.view === 'lista'" :feed="feed">
           <template #pagination>
             <nav
               v-if="!pending && (data?.pages || 0) > 1"
@@ -348,6 +345,7 @@ const { data, pending, error, refresh } = await useAsyncData(
 const resultsList = ref<HTMLElement | null>(null)
 const feed = useInfiniteFeed<PropertySalesResponse['items'][number]>({
   id: 'venta-viviendas',
+  itemKey: item => item.key,
   list: resultsList,
   items: () => data.value?.items ?? [],
   page: () => query.value.page,

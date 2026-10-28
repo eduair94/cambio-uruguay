@@ -222,7 +222,7 @@
           </li>
           <FeedEdge :feed="feed" edge="bottom" tag="li" />
         </ul>
-        <FeedControls v-if="data.items.length" :feed="feed">
+        <FeedControls :feed="feed">
           <template #pagination>
             <VPagination
               v-if="data.pages > 1"
@@ -389,6 +389,7 @@ const { data, error, status } = await useAsyncData(
 const resultsList = ref<HTMLElement | null>(null)
 const feed = useInfiniteFeed<MinimumWageItem>({
   id: 'salario-minimo',
+  itemKey: item => item.key,
   list: resultsList,
   items: () => data.value?.items ?? [],
   page: () => state.page,

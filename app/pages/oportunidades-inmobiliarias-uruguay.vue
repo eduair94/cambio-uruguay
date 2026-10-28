@@ -237,7 +237,7 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
             :source="preview?.source || null"
             :detail-href="preview?.detailHref || ''"
           />
-          <FeedControls v-if="!error && items.length" :feed="feed">
+          <FeedControls v-if="!error" :feed="feed">
             <template #pagination>
               <nav
                 v-if="(data?.pages ?? 0) > 1"
@@ -381,6 +381,7 @@ const items = computed(() =>
 const resultsList = ref<HTMLElement | null>(null)
 const feed = useInfiniteFeed<PropertyOpportunitiesResponse['items'][number]>({
   id: 'oportunidades-inmobiliarias',
+  itemKey: item => item.subject.id,
   list: resultsList,
   items: () => items.value,
   page: () => query.value.page,

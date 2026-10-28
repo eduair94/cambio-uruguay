@@ -96,7 +96,7 @@
           La lista llegó a {{ EQUIPAR_LISTA_MAX }} ítems. Sacá alguno para agregar otro.
         </p>
 
-        <FeedControls v-if="data?.items.length" :feed="feed">
+        <FeedControls v-if="data" :feed="feed">
           <template #pagination>
             <VPagination
               v-if="data.total > data.perPage"
@@ -196,6 +196,7 @@ const pageCount = computed(() =>
 const resultsList = ref<HTMLElement | null>(null)
 const feed = useInfiniteFeed<EquiparProductoPublic>({
   id: props.vertical,
+  itemKey: producto => producto.listingId,
   list: resultsList,
   items: () => props.data?.items ?? [],
   page: () => props.query.page,

@@ -265,7 +265,7 @@
             </article>
             <FeedEdge :feed="feed" edge="bottom" />
           </div>
-          <FeedControls v-if="pageItems.length" :feed="feed">
+          <FeedControls :feed="feed">
             <template #pagination>
               <nav
                 v-if="data && data.pages > 1"
@@ -348,6 +348,7 @@ const pageItems = computed(() => (pending.value ? [] : (data.value?.items ?? [])
 const resultsList = ref<HTMLElement | null>(null)
 const feed = useInfiniteFeed<RentalBudgetResponse['items'][number]>({
   id: 'alquiler-presupuesto',
+  itemKey: item => item.key,
   list: resultsList,
   items: () => pageItems.value,
   page: () => query.value.page,

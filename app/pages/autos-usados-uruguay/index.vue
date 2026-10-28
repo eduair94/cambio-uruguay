@@ -103,7 +103,7 @@
           <FeedEdge :feed="feed" edge="bottom" />
         </div>
 
-        <FeedControls v-if="data?.items.length" :feed="feed">
+        <FeedControls v-if="data" :feed="feed">
           <template #pagination>
             <VPagination
               v-if="data.total > data.perPage"
@@ -249,6 +249,7 @@ const pageCount = computed(() =>
 const resultsList = ref<HTMLElement | null>(null)
 const feed = useInfiniteFeed<PublicCarListing>({
   id: 'autos',
+  itemKey: car => car.key,
   list: resultsList,
   items: () => data.value?.items ?? [],
   page: () => query.value.page,

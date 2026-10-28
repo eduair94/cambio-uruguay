@@ -282,7 +282,7 @@ idioma, aunque la ruta exista bajo /en/ y /pt/ por `prefix_except_default`.
         </VTable>
       </div>
 
-      <FeedControls v-if="payload.items.length" :feed="feed">
+      <FeedControls :feed="feed">
         <template #pagination>
           <VPagination
             v-if="payload.total > payload.perPage"
@@ -463,6 +463,7 @@ const pageCount = computed(() =>
 const resultsList = ref<HTMLElement | null>(null)
 const feed = useInfiniteFeed<MotoListResponse['items'][number]>({
   id: 'motos',
+  itemKey: item => item.key,
   list: resultsList,
   items: () => payload.value.items,
   page: () => query.value.page,

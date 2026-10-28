@@ -659,7 +659,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             :start-index="previewIndex"
             :detail-href="previewProperty ? rentalPropertyPath(previewProperty.key) : ''"
           />
-          <FeedControls v-if="view === 'lista' && !error && items.length" :feed="feed">
+          <FeedControls v-if="view === 'lista' && !error" :feed="feed">
             <template #pagination>
               <div v-if="pageCount > 1" class="mt-6">
                 <VPagination
@@ -935,6 +935,7 @@ const feedResetKey = computed(() => {
 })
 const feed = useInfiniteFeed<RentalListItem>({
   id: 'alquileres',
+  itemKey: property => property.key,
   list: resultsList,
   items: () => items.value,
   page: () => query.value.page,

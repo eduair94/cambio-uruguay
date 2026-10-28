@@ -169,7 +169,7 @@
             <CarsRiskCard v-for="item in feed.items" :key="item.subject.key" :item="item" />
             <FeedEdge :feed="feed" edge="bottom" />
           </div>
-          <FeedControls v-if="data.items.length" :feed="feed">
+          <FeedControls :feed="feed">
             <template #pagination>
               <VPagination
                 v-if="data.total > data.perPage"
@@ -289,6 +289,7 @@ const { data, error } = await useAsyncData(
 const resultsList = ref<HTMLElement | null>(null)
 const feed = useInfiniteFeed<CarRisksResponse['items'][number]>({
   id: 'autos-riesgo',
+  itemKey: item => item.subject.key,
   list: resultsList,
   items: () => data.value?.items ?? [],
   page: () => query.value.page,

@@ -114,6 +114,23 @@ en mercado IT el `const` de abajo reventaba con "Cannot access before initializa
 - Arrancando en `?page=N>1`, las páginas anteriores nunca cargadas no se piden solas (moverían lo
   que se está mirando): botón "Ver resultados anteriores" arriba.
 
+### Lo que encontró la revisión (y quedó arreglado)
+
+- Un cambio de ruta que no toca los filtros (un clic en `#cobertura`) dejaba la lista esperando
+  avisos que no llegaban: el `watch` armaba un arreglo nuevo en cada lectura. Ahora mira la clave y
+  la página por separado y sólo espera si cambiaron.
+- Un pedido caído al volver a subir se reintentaba en cada cuadro. Con error, la ventana no se
+  mueve hasta "Reintentar".
+- En una grilla de 5 o 7 columnas la página termina a mitad de fila; al salir la de arriba, las
+  tarjetas de la siguiente cambiaban de columna. Cada página arranca en la columna 1
+  (`grid-column-start`, sólo en modo scroll). Medido a 2.400 px (alquileres, 5 columnas): deriva 0
+  vertical y 0 horizontal.
+- Avisos repetidos entre páginas pedidas en momentos distintos (los catálogos se reordenan cada
+  hora): la página que llega suelta los que ya están en la ventana (`itemKey`).
+- Una lista vacía mientras se refresca no vacía la página de arranque, y un "llegaste al final"
+  provisorio (mercado IT pide sólo en el cliente) se corrige cuando llegan los datos.
+- La paginación vuelve a mostrarse con sus condiciones de siempre.
+
 ### Volver desde una ficha
 
 Caché en memoria del cliente por `feedId` (una entrada, 30 min): `resetKey`, página de arranque,
