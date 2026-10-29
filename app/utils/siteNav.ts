@@ -500,7 +500,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/feriados-2027-uruguay',
-        labelKey: 'nav.feriados2027',
+        labelKey: 'nav.feriadosDelAnio',
         icon: 'mdi-calendar-month',
         priority: 0.7,
         changefreq: 'monthly',
