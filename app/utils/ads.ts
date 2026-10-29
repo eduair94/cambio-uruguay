@@ -48,7 +48,8 @@ const NO_ADS = [
   // panel privado.
   '/opinion-alquileres',
   '/opiniones-alquileres',
-  // La cola privada de hilos de Reddit: un lector, logueado, trabajando.
+  // Los hilos de Reddit para contestar: casi todo el texto es de Reddit citado, y AdSense trata un
+  // anuncio al lado de contenido ajeno como contenido raspado — una sanción a la cuenta, no a la página.
   '/oportunidades-reddit',
   // El media kit: la página ES la conversión (un anunciante leyendo condiciones), y un anuncio de
   // AdSense al lado de "qué no vendemos" es exactamente lo que no vendemos.

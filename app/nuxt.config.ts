@@ -1234,8 +1234,6 @@ export default defineNuxtConfig({
       // La encuesta de alquileres (se llega desde los correos) y su panel privado de respuestas.
       '/opinion-alquileres',
       '/opiniones-alquileres',
-      // La cola privada de hilos de Reddit para contestar: lista hilos de desconocidos.
-      '/oportunidades-reddit',
       // Lista de autores de r/CharruaDevs con nombre propio: noindex en la pagina y fuera del
       // rastreo. Los mismos datos, agregados y sin nombres, estan en /mercado-it-uruguay.
       '/ranking-usuarios-charruadevs',

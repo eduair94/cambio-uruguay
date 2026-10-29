@@ -1,114 +1,133 @@
 <template>
   <VContainer fluid class="ro-page py-6">
-    <h1 class="text-h5 text-sm-h4 mb-1">Hilos para contestar en Reddit</h1>
-    <p class="text-body-2 text-medium-emphasis mb-4 ro-lead">
-      Panel privado. Preguntas de los últimos 30 días en los subreddits uruguayos que una página del
-      sitio contesta, con la página, el motivo y qué aportar. Lo arma el job
-      <code>currency-reddit-opportunities</code> todos los días a las 07:21; no publica nada en
-      Reddit ni escribe respuestas.
+    <div class="ro-head mb-1">
+      <h1 class="text-h5 text-sm-h4">Hilos para contestar en Reddit</h1>
+      <ShareButtons :url="shareUrl" :text="SHARE_TEXT" variant="tonal" color="primary" />
+    </div>
+    <p class="text-body-2 text-medium-emphasis mb-2 ro-lead">
+      Preguntas de los últimos 30 días en los subreddits uruguayos que una página de Cambio Uruguay
+      contesta: cuál, por qué y qué dato aportar al responder. Se actualiza todos los días a las
+      07:21 con los hilos nuevos de r/uruguay, r/monte_video, r/Uruguay_nomas, r/AutosUy y siete
+      subs más. Si contestás, que la respuesta sirva aunque nadie abra el enlace.
     </p>
+    <p v-if="isAdmin" class="text-caption text-medium-emphasis mb-4">
+      Vista de administración: podés marcar hilos como respondidos o descartados, y ver los ya
+      marcados. El resto de la gente ve sólo los pendientes.
+    </p>
+    <div v-else class="mb-4" />
 
-    <VAlert v-if="forbidden" type="error" variant="tonal" class="mb-4">
-      Esta cuenta no está en la lista de administradores.
-    </VAlert>
-    <VAlert v-else-if="loadError && !items.length" type="warning" variant="tonal" class="mb-4">
-      No se pudo leer la cola. {{ loadError }}
+    <VAlert v-if="loadError && !items.length" type="warning" variant="tonal" class="mb-4">
+      No se pudo leer la lista. {{ loadError }}
       <template #append>
         <VBtn variant="text" size="small" @click="reload">Reintentar</VBtn>
       </template>
     </VAlert>
 
-    <template v-if="!forbidden">
-      <div v-if="meta" class="ro-run mb-4">
-        <span>
-          Última corrida: <strong>{{ asOfLabel }}</strong>
-        </span>
-        <span v-if="meta.recommendedTotal !== undefined">
-          ({{ meta.recommendedTotal }} pendientes)
-        </span>
-        <VBtn variant="text" size="x-small" class="ms-1" @click="showRun = !showRun">
-          {{ showRun ? 'Ocultar' : 'Qué leyó' }}
-        </VBtn>
-      </div>
-      <VAlert v-if="stale" type="warning" variant="tonal" density="compact" class="mb-3">
-        La cola es del {{ asOfLabel }}: el job no corre desde hace más de un día y medio.
-      </VAlert>
-      <VAlert v-if="judgeDown" type="error" variant="tonal" density="compact" class="mb-3">
-        En la última corrida el juez no devolvió ningún veredicto ({{ meta?.judgeFailures }} lotes
-        fallidos): la cola no sumó hilos nuevos. Suele ser la clave o la cuota de Gemini.
-      </VAlert>
-      <VExpandTransition>
-        <VCard v-if="showRun && meta" variant="outlined" class="pa-4 mb-4">
-          <table class="ro-run-table">
-            <thead>
-              <tr>
-                <th scope="col">Sub</th>
-                <th scope="col">Leídos</th>
-                <th scope="col">Con candidatas</th>
-                <th scope="col">Juzgados</th>
-                <th scope="col">Recomendados</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="s in meta.subs" :key="s.sub">
-                <th scope="row">r/{{ s.sub }}</th>
-                <td>{{ s.fetched }}</td>
-                <td>{{ s.candidates }}</td>
-                <td>{{ s.judged }}</td>
-                <td>{{ s.recommended }}</td>
-              </tr>
-            </tbody>
-          </table>
-          <ul v-if="meta.notes.length" class="ro-notes mt-3">
-            <li v-for="note in meta.notes" :key="note">{{ note }}</li>
-          </ul>
-        </VCard>
-      </VExpandTransition>
+    <div v-if="meta" class="ro-run mb-4">
+      <span>
+        Actualizado: <strong>{{ asOfLabel }}</strong>
+      </span>
+      <span>({{ meta.recommendedTotal }} pendientes)</span>
+      <VBtn variant="text" size="x-small" class="ms-1" @click="showRun = !showRun">
+        {{ showRun ? 'Ocultar' : 'Qué se leyó' }}
+      </VBtn>
+    </div>
+    <VAlert v-if="stale" type="warning" variant="tonal" density="compact" class="mb-3">
+      La última actualización es del {{ asOfLabel }}: la de hoy todavía no corrió.
+    </VAlert>
+    <VAlert v-if="judgeDown" type="error" variant="tonal" density="compact" class="mb-3">
+      En la última corrida el juez no devolvió ningún veredicto ({{ meta?.judgeFailures }} lotes
+      fallidos): la cola no sumó hilos nuevos. Suele ser la clave o la cuota de Gemini.
+    </VAlert>
+    <VExpandTransition>
+      <VCard v-if="showRun && meta" variant="outlined" class="pa-4 mb-4">
+        <table class="ro-run-table">
+          <caption class="text-caption text-medium-emphasis text-left mb-2">
+            Lo que se leyó de cada sub en la última actualización (hilos de los últimos 30 días).
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Sub</th>
+              <th scope="col">Leídos</th>
+              <th scope="col">Con candidatas</th>
+              <th scope="col">Juzgados</th>
+              <th scope="col">Recomendados</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="s in meta.subs" :key="s.sub">
+              <th scope="row">r/{{ s.sub }}</th>
+              <td>{{ s.fetched }}</td>
+              <td>{{ s.candidates }}</td>
+              <td>{{ s.judged }}</td>
+              <td>{{ s.recommended }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <ul v-if="meta.notes?.length" class="ro-notes mt-3">
+          <li v-for="note in meta.notes" :key="note">{{ note }}</li>
+        </ul>
+      </VCard>
+    </VExpandTransition>
 
-      <div class="ro-filters mb-2">
-        <VTextField
-          v-model="search"
-          label="Buscar"
-          density="compact"
-          variant="outlined"
-          clearable
-          hide-details
-          prepend-inner-icon="mdi-magnify"
-          class="ro-filter-search"
-        />
-        <VSelect
-          v-model="sub"
-          :items="subItems"
-          label="Sub"
-          density="compact"
-          variant="outlined"
-          clearable
-          hide-details
-        />
-        <VSelect
-          v-model="family"
-          :items="familyItems"
-          label="Tema"
-          density="compact"
-          variant="outlined"
-          clearable
-          hide-details
-        />
-        <VSelect
-          v-model="sort"
-          :items="sortItems"
-          label="Orden"
-          density="compact"
-          variant="outlined"
-          hide-details
-        />
-      </div>
+    <div class="ro-filters mb-2">
+      <VTextField
+        v-model="search"
+        label="Buscar"
+        density="compact"
+        variant="outlined"
+        clearable
+        hide-details
+        prepend-inner-icon="mdi-magnify"
+        class="ro-filter-search"
+      />
+      <VSelect
+        v-model="sub"
+        :items="subItems"
+        label="Sub"
+        density="compact"
+        variant="outlined"
+        clearable
+        hide-details
+      />
+      <VSelect
+        v-model="family"
+        :items="familyItems"
+        label="Tema"
+        density="compact"
+        variant="outlined"
+        clearable
+        hide-details
+      />
+      <VSelect
+        v-model="sort"
+        :items="sortItems"
+        label="Orden"
+        density="compact"
+        variant="outlined"
+        hide-details
+      />
+    </div>
+
+    <div class="ro-chips mb-3">
+      <VChip
+        :variant="fresh ? 'flat' : 'outlined'"
+        :color="fresh ? 'primary' : undefined"
+        :prepend-icon="fresh ? 'mdi-check' : 'mdi-new-box'"
+        size="small"
+        :aria-pressed="fresh"
+        :disabled="!facets.fresh && !fresh"
+        title="Los que entraron en la última actualización"
+        @click="fresh = !fresh"
+      >
+        Sólo los nuevos<span class="ms-1 ro-count">{{ facets.fresh }}</span>
+      </VChip>
       <VChipGroup
+        v-if="isAdmin"
         v-model="state"
         mandatory
         column
         selected-class="text-primary"
-        class="mb-3"
         aria-label="Estado"
       >
         <VChip
@@ -122,82 +141,84 @@
           {{ s.title }}<span v-if="s.count !== null" class="ms-1 ro-count">{{ s.count }}</span>
         </VChip>
       </VChipGroup>
+    </div>
 
-      <p class="text-caption text-medium-emphasis mb-3" aria-live="polite">
-        <template v-if="loading && !items.length">Cargando…</template>
-        <template v-else>
-          {{ total }} {{ total === 1 ? 'hilo' : 'hilos' }}
-          <template v-if="startPage > 1"> · desde la página {{ startPage }}</template>
-        </template>
-      </p>
+    <p class="text-caption text-medium-emphasis mb-3" aria-live="polite">
+      <template v-if="loading && !items.length">Cargando…</template>
+      <template v-else>
+        {{ total }} {{ total === 1 ? 'hilo' : 'hilos' }}
+        <template v-if="startPage > 1"> · desde la página {{ startPage }}</template>
+      </template>
+    </p>
 
-      <div v-if="startPage > 1 && items.length" class="text-center mb-3">
-        <VBtn
-          variant="text"
-          size="small"
-          prepend-icon="mdi-arrow-up"
-          @click="goToPage(startPage - 1)"
-        >
-          Ver la página {{ startPage - 1 }}
-        </VBtn>
-      </div>
+    <div v-if="startPage > 1 && items.length" class="text-center mb-3">
+      <VBtn
+        variant="text"
+        size="small"
+        prepend-icon="mdi-arrow-up"
+        @click="goToPage(startPage - 1)"
+      >
+        Ver la página {{ startPage - 1 }}
+      </VBtn>
+    </div>
 
-      <VRow v-if="loading && !items.length">
-        <VCol v-for="n in 6" :key="n" cols="12" sm="6" lg="4">
-          <VSkeletonLoader type="article, actions" class="ro-skeleton" />
-        </VCol>
-      </VRow>
+    <VRow v-if="loading && !items.length">
+      <VCol v-for="n in 6" :key="n" cols="12" sm="6" lg="4">
+        <VSkeletonLoader type="article, actions" class="ro-skeleton" />
+      </VCol>
+    </VRow>
 
-      <VRow v-else-if="items.length">
-        <VCol v-for="item in items" :key="item.postId" cols="12" sm="6" lg="4">
-          <RedditOpportunityCard
-            :item="item"
-            :busy="busyId === item.postId"
-            @update-state="payload => updateState(item, payload)"
-            @copy="copy"
-          />
-        </VCol>
-      </VRow>
-
-      <div v-else-if="!loadError" class="ro-empty">
-        <VIcon icon="mdi-forum-outline" size="32" class="mb-2" />
-        <p v-if="!meta" class="mb-2">Todavía no hay cola. {{ hint }}</p>
-        <p v-else-if="hasFilters" class="mb-2">No hay hilos con estos filtros.</p>
-        <p v-else-if="state === 'open'" class="mb-2">
-          No quedan hilos pendientes. Mañana a las 07:21 llegan los nuevos.
-        </p>
-        <p v-else class="mb-2">Nada en «{{ stateLabel }}» todavía.</p>
-        <VBtn v-if="hasFilters" variant="tonal" @click="clearFilters">Limpiar filtros</VBtn>
-      </div>
-
-      <div ref="sentinel" class="ro-sentinel" aria-hidden="true" />
-
-      <div v-if="items.length" class="ro-more">
-        <VAlert v-if="loadError" type="warning" variant="tonal" density="compact" class="mb-3">
-          No se pudo cargar la página siguiente. {{ loadError }}
-        </VAlert>
-        <VBtn
-          v-if="hasMore"
-          variant="tonal"
-          :loading="loading"
-          prepend-icon="mdi-chevron-down"
-          @click="loadMore"
-        >
-          Cargar más
-        </VBtn>
-        <p v-else class="text-caption text-medium-emphasis">No hay más hilos.</p>
-        <VPagination
-          v-if="pages > 1"
-          :model-value="currentPage"
-          :length="pages"
-          :total-visible="mobile ? 5 : 7"
-          density="comfortable"
-          class="mt-2"
-          aria-label="Páginas de la cola"
-          @update:model-value="goToPage"
+    <VRow v-else-if="items.length">
+      <VCol v-for="item in items" :key="item.postId" cols="12" sm="6" lg="4">
+        <RedditOpportunityCard
+          :item="item"
+          :busy="busyId === item.postId"
+          :admin="isAdmin"
+          :is-new="isFreshOpp(item, meta?.asOf)"
+          @update-state="payload => updateState(item, payload)"
+          @copy="copy"
         />
-      </div>
-    </template>
+      </VCol>
+    </VRow>
+
+    <div v-else-if="!loadError" class="ro-empty">
+      <VIcon icon="mdi-forum-outline" size="32" class="mb-2" />
+      <p v-if="!meta" class="mb-2">Todavía no hay hilos. {{ hint }}</p>
+      <p v-else-if="hasFilters" class="mb-2">No hay hilos con estos filtros.</p>
+      <p v-else-if="state === 'open'" class="mb-2">
+        No quedan hilos pendientes. Mañana a las 07:21 llegan los nuevos.
+      </p>
+      <p v-else class="mb-2">Nada en «{{ stateLabel }}» todavía.</p>
+      <VBtn v-if="hasFilters" variant="tonal" @click="clearFilters">Limpiar filtros</VBtn>
+    </div>
+
+    <div ref="sentinel" class="ro-sentinel" aria-hidden="true" />
+
+    <div v-if="items.length" class="ro-more">
+      <VAlert v-if="loadError" type="warning" variant="tonal" density="compact" class="mb-3">
+        No se pudo cargar la página siguiente. {{ loadError }}
+      </VAlert>
+      <VBtn
+        v-if="hasMore"
+        variant="tonal"
+        :loading="loading"
+        prepend-icon="mdi-chevron-down"
+        @click="loadMore"
+      >
+        Cargar más
+      </VBtn>
+      <p v-else class="text-caption text-medium-emphasis">No hay más hilos.</p>
+      <VPagination
+        v-if="pages > 1"
+        :model-value="currentPage"
+        :length="pages"
+        :total-visible="mobile ? 5 : 7"
+        density="comfortable"
+        class="mt-2"
+        aria-label="Páginas de la lista"
+        @update:model-value="goToPage"
+      />
+    </div>
 
     <VSnackbar v-model="snack.show" :timeout="snack.undo ? 6000 : 2500" location="bottom">
       {{ snack.text }}
@@ -212,26 +233,47 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useDisplay } from 'vuetify'
 import {
+  isFreshOpp,
   OPPS_FAMILY_LABELS,
   OPPS_PAGE_SIZE,
+  OPPS_SITE_ORIGIN,
   OPPS_SORTS,
-  parseOppsQuery,
   OPPS_SORT_LABELS,
   OPPS_STATE_LABELS,
+  parseOppsQuery,
   type OppItem,
   type OppState,
   type OppsSort,
   type OppsStateFilter,
 } from '~/utils/redditOpportunities'
 
-// El login hace falta para tener token; la ruta del servidor vuelve a chequear la lista de
-// administradores, que es lo que de verdad protege la cola.
-definePageMeta({ middleware: 'auth' })
+// PÚBLICA: la lee cualquiera, con o sin sesión. Con la sesión de una cuenta de
+// `NUXT_ADMIN_EMAILS` la API devuelve además los controles y los hilos ya marcados; eso lo decide
+// el servidor (`adminOrNull`), nunca este archivo.
+//
+// `noindex, follow`: se comparte por enlace pero no se indexa. Es, casi entera, texto de Reddit
+// citado, que Google trata como contenido copiado y AdSense como contenido raspado — un problema
+// para todo el sitio, no sólo para esta página. Fuera de robots.txt igual: los bots que arman la
+// vista previa de un enlace compartido (X, Slack) respetan el Disallow y no la mostrarían.
+const CANONICAL = `${OPPS_SITE_ORIGIN}/oportunidades-reddit`
+const TITLE = 'Hilos para contestar en Reddit'
+const DESCRIPTION =
+  'Preguntas recientes de los subreddits uruguayos que una página de Cambio Uruguay contesta, con la página y qué dato aportar. Se actualiza todos los días.'
+const SHARE_TEXT = 'Preguntas de Reddit que Cambio Uruguay contesta, actualizadas cada día'
 
-useHead({
-  title: 'Hilos para contestar en Reddit — panel privado',
-  meta: [{ name: 'robots', content: 'noindex, nofollow' }],
+useSeoMeta({
+  title: () => `${TITLE} | Cambio Uruguay`,
+  description: DESCRIPTION,
+  ogTitle: TITLE,
+  ogDescription: DESCRIPTION,
+  ogType: 'website',
+  ogUrl: CANONICAL,
+  twitterCard: 'summary_large_image',
+  twitterTitle: TITLE,
+  twitterDescription: DESCRIPTION,
+  robots: 'noindex, follow',
 })
+useHead({ link: [{ rel: 'canonical', href: CANONICAL }] })
 
 interface Facet {
   value: string
@@ -247,21 +289,24 @@ interface RunMeta {
     judged: number
     recommended: number
   }>
-  notes: string[]
-  judged: number
-  judgeFailures: number
+  /** Sólo en la vista de administración. */
+  notes?: string[]
+  judged?: number
+  judgeFailures?: number
 }
 interface OppsResponse {
+  admin: boolean
   items: OppItem[]
   total: number
   page: number
   pages: number
-  facets: { subs: Facet[]; families: Facet[]; states: Facet[] }
+  facets: { subs: Facet[]; families: Facet[]; states: Facet[]; fresh: number }
   meta: RunMeta | null
   hint: string
 }
 
 const { authFetch } = useAuthFetch()
+const auth = useAuthStore()
 const route = useRoute()
 const router = useRouter()
 const { mobile } = useDisplay()
@@ -272,6 +317,7 @@ const sub = ref<string | null>(initial.sub)
 const family = ref<string | null>(initial.family)
 const state = ref<OppsStateFilter>(initial.state)
 const sort = ref<OppsSort>(initial.sort)
+const fresh = ref(initial.fresh)
 
 const items = ref<OppItem[]>([])
 const total = ref(0)
@@ -279,14 +325,12 @@ const pages = ref(1)
 const startPage = ref(initial.page)
 /** Cargas completadas. Sólo sirve para volver a mirar el centinela después de cada una. */
 const loads = ref(0)
-const facets = ref<OppsResponse['facets']>({ subs: [], families: [], states: [] })
+const facets = ref<OppsResponse['facets']>({ subs: [], families: [], states: [], fresh: 0 })
 const meta = ref<RunMeta | null>(null)
 const hint = ref('')
-// `true` desde el arranque: la primera carga sale en `onMounted` (hace falta el token del
-// navegador), y hasta entonces el SSR tiene que mostrar el esqueleto, no "no hay cola".
+const isAdmin = ref(false)
 const loading = ref(true)
 const loadError = ref('')
-const forbidden = ref(false)
 const showRun = ref(false)
 const busyId = ref('')
 
@@ -311,7 +355,25 @@ function filterQuery(): Record<string, string> {
   if (sub.value) q.sub = sub.value
   if (family.value) q.family = family.value
   if (search.value?.trim()) q.q = search.value.trim()
+  if (fresh.value) q.fresh = '1'
   return q
+}
+
+function applyResponse(res: OppsResponse, replace: boolean): void {
+  const known = new Set(replace ? [] : items.value.map(i => i.postId))
+  items.value = replace
+    ? res.items
+    : [...items.value, ...res.items.filter(i => !known.has(i.postId))]
+  total.value = res.total
+  pages.value = res.pages
+  facets.value = res.facets
+  meta.value = res.meta
+  hint.value = res.hint
+  isAdmin.value = res.admin
+  // El público ve sólo pendientes: un `?state=answered` en un enlace compartido no cambia nada,
+  // y la vista lo dice.
+  if (!res.admin) state.value = 'open'
+  loads.value++
 }
 
 async function fetchFrom(offset: number, replace: boolean): Promise<void> {
@@ -323,25 +385,43 @@ async function fetchFrom(offset: number, replace: boolean): Promise<void> {
       query: { ...filterQuery(), offset, limit: OPPS_PAGE_SIZE },
     })
     if (gen !== generation) return
-    const known = new Set(replace ? [] : items.value.map(i => i.postId))
-    items.value = replace
-      ? res.items
-      : [...items.value, ...res.items.filter(i => !known.has(i.postId))]
-    total.value = res.total
-    pages.value = res.pages
-    loads.value++
-    facets.value = res.facets
-    meta.value = res.meta
-    hint.value = res.hint
+    applyResponse(res, replace)
   } catch (e: any) {
     if (gen !== generation) return
     const status = e?.statusCode || e?.response?.status
-    forbidden.value = status === 403
     loadError.value = status ? `La ruta respondió ${status}.` : 'Sin conexión.'
   } finally {
     if (gen === generation) loading.value = false
   }
 }
+
+// La primera página sale en el SSR, con la vista pública: un enlace compartido abre con los hilos
+// ya en el HTML, sin esperar al JavaScript ni a la sesión.
+const { data: firstPage } = await useAsyncData('reddit-opportunities', () =>
+  $fetch<OppsResponse>('/api/reddit-opportunities', {
+    query: { ...filterQuery(), offset: (initial.page - 1) * OPPS_PAGE_SIZE, limit: OPPS_PAGE_SIZE },
+  }).catch(() => null)
+)
+if (firstPage.value) {
+  applyResponse(firstPage.value, true)
+  loading.value = false
+}
+
+defineOgImageComponent('Cambio', {
+  title: TITLE,
+  subtitle: firstPage.value?.total
+    ? `${firstPage.value.total} preguntas de los subreddits uruguayos, actualizadas cada día`
+    : 'Preguntas de los subreddits uruguayos, actualizadas cada día',
+  tag: 'REDDIT',
+})
+
+const shareUrl = computed(() => {
+  const q = new URLSearchParams(filterQuery())
+  if (q.get('state') === 'open' || !isAdmin.value) q.delete('state')
+  if (q.get('sort') === 'rank') q.delete('sort')
+  const qs = q.toString()
+  return qs ? `${CANONICAL}?${qs}` : CANONICAL
+})
 
 function syncUrl(): void {
   const q: Record<string, string> = filterQuery()
@@ -380,13 +460,16 @@ watch(search, () => {
   clearTimeout(debounce)
   debounce = setTimeout(reload, 300)
 })
-watch([sub, family, state, sort], reload)
+watch([sub, family, state, sort, fresh], reload)
 
-const hasFilters = computed(() => !!(sub.value || family.value || search.value?.trim()))
+const hasFilters = computed(
+  () => !!(sub.value || family.value || search.value?.trim() || fresh.value)
+)
 function clearFilters(): void {
   sub.value = null
   family.value = null
   search.value = ''
+  fresh.value = false
 }
 
 const subItems = computed(() =>
@@ -421,9 +504,9 @@ const asOfLabel = computed(() =>
 const stale = computed(
   () => !!meta.value && Date.now() - new Date(meta.value.asOf).getTime() > 36 * 3_600_000
 )
-const judgeDown = computed(() => !!meta.value && meta.value.judgeFailures > 0 && !meta.value.judged)
+const judgeDown = computed(() => isAdmin.value && !!meta.value?.judgeFailures && !meta.value.judged)
 
-// --- marcar ---------------------------------------------------------------------------------
+// --- marcar (sólo administración) -----------------------------------------------------------
 
 interface Undo {
   /** El hilo tal como estaba antes de marcarlo. */
@@ -459,6 +542,7 @@ async function updateState(
   item: OppItem,
   payload: { state: OppState; answerUrl?: string }
 ): Promise<void> {
+  if (!isAdmin.value) return
   const index = items.value.findIndex(i => i.postId === item.postId)
   if (index < 0) return
   const previous = item.state
@@ -550,27 +634,44 @@ async function copy(url: string): Promise<void> {
   }
 }
 
-// --- scroll infinito -----------------------------------------------------------------------
+// --- sesión y scroll infinito -----------------------------------------------------------------
 
 const sentinel = ref<HTMLElement | null>(null)
 let observer: IntersectionObserver | null = null
 
-onMounted(() => {
-  void fetchFrom((startPage.value - 1) * OPPS_PAGE_SIZE, true)
-  if (typeof IntersectionObserver === 'undefined' || !sentinel.value) return
-  // 600 px antes del final: la página siguiente llega antes de que se vea el hueco.
-  observer = new IntersectionObserver(
-    entries => {
-      if (entries.some(e => e.isIntersecting) && items.value.length && !loadError.value) loadMore()
-    },
-    { rootMargin: '600px 0px' }
-  )
-  observer.observe(sentinel.value)
+onMounted(async () => {
+  if (typeof IntersectionObserver !== 'undefined' && sentinel.value) {
+    // 600 px antes del final: la página siguiente llega antes de que se vea el hueco.
+    observer = new IntersectionObserver(
+      entries => {
+        if (entries.some(e => e.isIntersecting) && items.value.length && !loadError.value)
+          loadMore()
+      },
+      { rootMargin: '600px 0px' }
+    )
+    observer.observe(sentinel.value)
+  }
+  // Sin SSR (falló, o se llegó navegando y el pedido no salió), se pide acá. Con sesión, se vuelve
+  // a pedir con el token: si la cuenta administra la cola, la respuesta trae la vista completa.
+  if (!firstPage.value || (await auth.getToken())) {
+    void fetchFrom((startPage.value - 1) * OPPS_PAGE_SIZE, true)
+  }
 })
+
+// Entrar o salir de la sesión con la página abierta cambia qué vista corresponde. Se relee la
+// misma página (no la primera): un enlace a `?page=3` sigue en la 3 después de iniciar sesión.
+// Si coincide con el pedido de `onMounted`, el número de carga descarta la respuesta repetida.
+watch(
+  () => auth.isLoggedIn,
+  (now, before) => {
+    if (now !== before) void fetchFrom((startPage.value - 1) * OPPS_PAGE_SIZE, true)
+  }
+)
 
 // El observador avisa al ENTRAR en vista. Si después de cargar una página el centinela sigue a la
 // vista (pantalla alta, página corta), no hay un segundo aviso y el scroll se quedaría quieto.
 watch(loads, async () => {
+  if (import.meta.server) return
   await nextTick()
   const el = sentinel.value
   if (!el || loadError.value) return
@@ -587,8 +688,21 @@ onBeforeUnmount(() => {
 .ro-page {
   max-width: 1440px;
 }
+.ro-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
 .ro-lead {
   max-width: 72ch;
+}
+.ro-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
 }
 .ro-run {
   display: flex;

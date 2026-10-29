@@ -21,6 +21,7 @@
         <span class="ro-stat" :title="`${item.numComments} comentarios`">
           <VIcon icon="mdi-comment-outline" size="14" />{{ item.numComments }}
         </span>
+        <span v-if="isNew" class="ro-new" title="Entró en la última actualización">Nuevo</span>
         <span v-if="item.lang === 'en'" class="ro-tag">EN</span>
         <span v-if="item.flair" class="ro-flair">{{ item.flair }}</span>
       </div>
@@ -88,28 +89,30 @@
         >
           Copiar enlace
         </VBtn>
-        <VSpacer />
-        <VBtn
-          variant="text"
-          size="small"
-          prepend-icon="mdi-check"
-          :disabled="busy"
-          @click="answering = true"
-        >
-          Respondido
-        </VBtn>
-        <VBtn
-          variant="text"
-          size="small"
-          prepend-icon="mdi-close"
-          :disabled="busy"
-          @click="emit('update-state', { state: 'dismissed' })"
-        >
-          Descartar
-        </VBtn>
+        <template v-if="admin">
+          <VSpacer />
+          <VBtn
+            variant="text"
+            size="small"
+            prepend-icon="mdi-check"
+            :disabled="busy"
+            @click="answering = true"
+          >
+            Respondido
+          </VBtn>
+          <VBtn
+            variant="text"
+            size="small"
+            prepend-icon="mdi-close"
+            :disabled="busy"
+            @click="emit('update-state', { state: 'dismissed' })"
+          >
+            Descartar
+          </VBtn>
+        </template>
       </template>
 
-      <form v-else-if="answering" class="ro-answer" @submit.prevent="saveAnswer">
+      <form v-else-if="answering && admin" class="ro-answer" @submit.prevent="saveAnswer">
         <VTextField
           v-model="answerUrl"
           label="Enlace a tu comentario (opcional)"
@@ -135,7 +138,7 @@
         </div>
       </form>
 
-      <template v-else>
+      <template v-else-if="admin">
         <span class="ro-status">
           <VIcon :icon="status.icon" size="16" />
           {{ status.text }}
@@ -166,7 +169,9 @@ import {
   type OppState,
 } from '~/utils/redditOpportunities'
 
-const props = defineProps<{ item: OppItem; busy?: boolean }>()
+// `admin` sólo muestra los controles: la ruta que los ejecuta vuelve a pedir la lista de
+// administradores, que es lo que de verdad los protege.
+const props = defineProps<{ item: OppItem; busy?: boolean; admin?: boolean; isNew?: boolean }>()
 const emit = defineEmits<{
   (e: 'update-state', payload: { state: OppState; answerUrl?: string }): void
   (e: 'copy', url: string): void
@@ -322,6 +327,17 @@ const dateLabel = (iso: string) =>
   align-items: center;
   gap: 2px;
   font-variant-numeric: tabular-nums;
+}
+/* Ámbar = marca de atención (DESIGN.md). Relleno tenue y tinta de superficie: el ámbar sólido
+   con texto blanco no llega a 4,5:1 en ningún tema. */
+.ro-new {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0 8px;
+  border-radius: 999px;
+  color: rgb(var(--v-theme-on-surface));
+  background: rgba(var(--v-theme-secondary), 0.18);
+  border: 1px solid rgba(var(--v-theme-secondary), 0.6);
 }
 .ro-tag,
 .ro-flair {

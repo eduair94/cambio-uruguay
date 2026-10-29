@@ -29,3 +29,19 @@ export async function requireAdmin(event: H3Event): Promise<AuthedUser> {
   }
   return user
 }
+
+/**
+ * The same check, for a PUBLIC route that shows more to the owner: the admin, or `null`.
+ *
+ * Never throws. No token, an expired token, a non-admin account and an unset allowlist are all the
+ * same answer to a public route — the public view — so the route keeps fail-closed semantics
+ * without turning a visitor's stale session into an error page.
+ */
+export async function adminOrNull(event: H3Event): Promise<AuthedUser | null> {
+  if (!event.node.req.headers.authorization) return null
+  try {
+    return await requireAdmin(event)
+  } catch {
+    return null
+  }
+}

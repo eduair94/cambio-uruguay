@@ -1,9 +1,36 @@
 # Oportunidades en Reddit (`/oportunidades-reddit`)
 
-Página **privada** con los hilos de los últimos 30 días de los subreddits uruguayos donde una
-respuesta con un enlace del sitio le sirve a quien preguntó. La arma una vez por día el job
-`currency-reddit-opportunities` (`sync_reddit_opportunities.ts`, 10:21 UTC). Spec:
-`docs/superpowers/specs/2026-10-28-oportunidades-reddit-design.md`.
+Página **pública** (desde el 29/10/2026) con los hilos de los últimos 30 días de los subreddits
+uruguayos donde una respuesta con un enlace del sitio le sirve a quien preguntó. La arma una vez
+por día el job `currency-reddit-opportunities` (`sync_reddit_opportunities.ts`, 10:21 UTC = 07:21
+en Uruguay). Spec: `docs/superpowers/specs/2026-10-28-oportunidades-reddit-design.md`.
+
+## Pública y administrada
+
+- **Cualquiera** (con o sin sesión) ve los hilos pendientes, filtra, comparte el enlace (con los
+  filtros en la URL) y copia la página sugerida. La primera página sale en el SSR, así un enlace
+  compartido abre con contenido y con su vista previa.
+- **Las cuentas de `NUXT_ADMIN_EMAILS`** ven además los respondidos y descartados y los marcan. La
+  vista la decide el servidor (`adminOrNull` en `app/server/utils/requireAdmin.ts`); el POST de
+  estado sigue detrás de `requireAdmin`.
+- **Lo que el público no ve:** el enlace al comentario con que alguien contestó (ata una cuenta
+  personal de Reddit a la cola), los hilos ya marcados, las notas internas de la corrida y los
+  lotes fallidos del juez. Ver `toPublicOpp` y `OPP_PUBLIC_PROJECTION`.
+- **`noindex, follow`, sin anuncios y fuera del menú y del sitemap**, a propósito: la página es casi
+  entera texto de Reddit citado, que Google trata como contenido copiado y AdSense como contenido
+  raspado (una sanción a la cuenta, no a la página). Sí está fuera de `robots.txt`: los bots que
+  arman la vista previa de un enlace (X, Slack) respetan el Disallow.
+
+## Actualización diaria
+
+- pm2 la relanza todos los días a las 10:21 UTC (`cron_restart`, como el resto de los jobs).
+- Cada corrida relee los 30 días completos, así que un día perdido (Reddit caído, el juez sin
+  cuota) se recupera solo al siguiente: lo que no se juzgó no se guarda y vuelve a ser candidato.
+- Lo que entró en la última corrida lleva la marca **Nuevo** y tiene su filtro («Sólo los nuevos»):
+  `judgedAt` del hilo = `asOf` de la meta.
+- Si ningún sub devuelve hilos o el juez no devuelve ningún veredicto, la corrida avisa por
+  Telegram y sale con 1. La página avisa si la última actualización tiene más de 36 h.
+- Primera corrida en producción (28/10/2026): 3.063 hilos leídos, 421 juzgados, 90 recomendados.
 
 ## Por qué
 
@@ -15,8 +42,7 @@ hilo, qué página, por qué.
 
 - No publica nada en Reddit (ni comentarios, ni posts, ni votos).
 - No redacta respuestas: el 4/9/2026, 0 de 14 borradores de una pasada servían como salían.
-- No es pública: lista desconocidos como "hilos para contestar", y eso publicado se lee como
-  operación de spam.
+- No guarda autores: para contestar un hilo no hace falta saber quién lo escribió.
 
 ## La corrida
 
@@ -59,6 +85,9 @@ intención de directorio. El resto de los que pasan sólo llega al juez si es de
 - r/AskUruguayan baneó a la cuenta del bot por spam (18/8/2026).
 - r/CharruaDevs prohíbe bots por escrito.
 - r/uruguay, regla 2: lo propio no puede ser sólo para atraer visitas.
+
+En la página (pública) los avisos dicen cómo modera cada sub, sin la historia de la cuenta del bot:
+`OPPS_SUB_NOTES` en `app/utils/redditOpportunities.ts`, con un test que lo vigila.
 
 ## Correr a mano
 
