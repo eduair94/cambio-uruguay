@@ -13,8 +13,8 @@
         :width="width"
         :height="height"
         :viewBox="`0 0 ${width} ${height}`"
-        role="img"
-        :aria-label="summary"
+        aria-hidden="true"
+        focusable="false"
         class="compare-chart__svg"
       >
         <g class="compare-chart__grid">
@@ -89,32 +89,32 @@
           @pointermove="onHover"
           @pointerleave="hoverYear = null"
         />
-
-        <g
-          v-if="mode === 'plata' && budget !== null"
-          class="compare-chart__handle"
-          role="slider"
-          tabindex="0"
-          aria-label="Presupuesto"
-          :aria-valuemin="range.min"
-          :aria-valuemax="range.max"
-          :aria-valuenow="budget"
-          :aria-valuetext="formatCarUsd(budget)"
-          :transform="`translate(${width - HANDLE_INSET}, ${y(budget)})`"
-          @pointerdown.stop="startDrag"
-          @keydown="onKey"
-        >
-          <circle r="20" class="compare-chart__handle-hit" />
-          <circle r="9" class="compare-chart__handle-dot" />
-          <path
-            d="M-3 -2.5 0 -5.5 3 -2.5M-3 2.5 0 5.5 3 2.5"
-            class="compare-chart__handle-arrows"
-          />
-        </g>
       </svg>
-    </div>
 
-    <figcaption class="compare-chart__readout" aria-live="polite">
+      <!-- El asa es HTML y no SVG: dentro de un SVG el rol de slider no se anuncia y touch-action no
+           vale, así que en el celular arrastrar movía la página. -->
+      <button
+        v-if="mode === 'plata' && budget !== null"
+        type="button"
+        role="slider"
+        class="compare-chart__handle"
+        aria-label="Presupuesto"
+        :aria-valuemin="range.min"
+        :aria-valuemax="range.max"
+        :aria-valuenow="budget"
+        :aria-valuetext="valueText"
+        :style="{ left: `${width - HANDLE_INSET}px`, top: `${y(budget)}px` }"
+        @pointerdown="startDrag"
+        @keydown="onKey"
+      >
+        <span class="compare-chart__handle-dot" aria-hidden="true">
+          <VIcon icon="mdi-unfold-more-horizontal" size="16" />
+        </span>
+      </button>
+    </div>
+    <p class="d-sr-only">{{ summary }}</p>
+
+    <figcaption class="compare-chart__readout">
       <strong>{{ readout.title }}</strong>
       <span v-for="item in readout.items" :key="item.index" class="compare-chart__reading">
         <CarsCompareKeyMark :index="item.index" :size="10" />
@@ -196,13 +196,18 @@ const series = computed(() =>
 
 const prices = computed(() => {
   const values = visible.value.flatMap(rows => rows.map(row => row.median))
-  if (props.mode === 'plata' && props.budget !== null) values.push(props.budget)
+  // Con la misma plata el eje baja hasta el cuarto más barato de los años a la vista: si no, el
+  // asa no podía bajar del borde del gráfico aunque hubiera años más baratos.
+  if (props.mode === 'plata') {
+    values.push(...visible.value.flatMap(rows => rows.map(row => row.p25)))
+    if (props.budget !== null) values.push(props.budget)
+  }
   if (!values.length) return { min: 0, max: 10_000 }
   return { min: Math.min(...values), max: Math.max(...values) }
 })
 
 const STEPS = [500, 1_000, 2_000, 2_500, 5_000, 10_000, 20_000, 25_000, 50_000, 100_000]
-const yTicks = computed(() => {
+const liveTicks = computed(() => {
   const span = Math.max(1, prices.value.max - prices.value.min)
   const step = STEPS.find(candidate => span / candidate <= 5) ?? 100_000
   const start = Math.floor((prices.value.min * 0.96) / step) * step
@@ -211,6 +216,10 @@ const yTicks = computed(() => {
   for (let value = start; value <= end + 1e-6; value += step) ticks.push(value)
   return ticks
 })
+// Mientras se arrastra, el eje queda quieto, marcas incluidas: el presupuesto es parte del dominio, y
+// recalcularlo bajo el dedo movía la línea sola (un píxel de temblor saltaba de US$ 5.500 a 1.500).
+const frozen = ref<number[] | null>(null)
+const yTicks = computed(() => frozen.value ?? liveTicks.value)
 const yDomain = computed(() => ({
   min: yTicks.value[0] ?? 0,
   max: yTicks.value[yTicks.value.length - 1] ?? 1,
@@ -250,21 +259,28 @@ const hoverYear = ref<number | null>(null)
 let press: { x: number; y: number } | null = null
 
 function local(event: PointerEvent): { px: number; py: number } {
-  const box = (event.currentTarget as Element).closest('svg')!.getBoundingClientRect()
+  const box = frame.value!.getBoundingClientRect()
   return { px: event.clientX - box.left, py: event.clientY - box.top }
 }
-const yearAt = (px: number): number => {
+/** Los años que alguna columna tiene: tocar un hueco del eje no elige un año sin avisos. */
+const known = computed(() => [
+  ...new Set(props.columns.flatMap(column => column.variant.years.map(row => row.year))),
+])
+const yearAt = (px: number): number | null => {
   const { min, max } = years.value
   const inner = width.value - PAD.left - PAD.right
   const raw = min + ((px - PAD.left) / Math.max(1, inner)) * (max - min)
-  return Math.min(max, Math.max(min, Math.round(raw)))
+  const nearest = [...known.value].sort((a, b) => Math.abs(a - raw) - Math.abs(b - raw))[0]
+  return nearest === undefined || Math.abs(nearest - raw) > 0.75 ? null : nearest
 }
 const priceAt = (py: number): number => {
   const { min, max } = yDomain.value
   const inner = height.value - PAD.top - PAD.bottom
   const raw = min + (1 - (py - PAD.top) / Math.max(1, inner)) * (max - min)
   const rounded = Math.round(raw / 500) * 500
-  return Math.min(props.range.max, Math.max(props.range.min, rounded))
+  const floor = Math.max(props.range.min, min)
+  const ceiling = Math.min(props.range.max, max)
+  return Math.min(ceiling, Math.max(floor, rounded))
 }
 
 function onPress(event: PointerEvent) {
@@ -277,7 +293,10 @@ function onRelease(event: PointerEvent) {
   if (moved > 8) return
   const { px, py } = local(event)
   if (props.mode === 'plata') emit('budget', priceAt(py))
-  else emit('year', yearAt(px))
+  else {
+    const year = yearAt(px)
+    if (year !== null) emit('year', year)
+  }
 }
 function onHover(event: PointerEvent) {
   if (event.pointerType !== 'mouse') return
@@ -285,10 +304,12 @@ function onHover(event: PointerEvent) {
 }
 
 function startDrag(event: PointerEvent) {
-  const target = event.currentTarget as Element
+  const target = event.currentTarget as HTMLElement
   target.setPointerCapture?.(event.pointerId)
+  frozen.value = [...liveTicks.value]
   const move = (next: PointerEvent) => emit('budget', priceAt(local(next).py))
   const stop = () => {
+    frozen.value = null
     target.removeEventListener('pointermove', move as EventListener)
     target.removeEventListener('pointerup', stop)
     target.removeEventListener('pointercancel', stop)
@@ -337,6 +358,13 @@ const readout = computed(() => {
     })),
   }
 })
+
+const valueText = computed(
+  () =>
+    `${formatCarUsd(props.budget ?? 0)}: ${props.points
+      .map((point, index) => `${props.names[index]} ${point.row ? point.row.year : 'no alcanza'}`)
+      .join(', ')}`
+)
 
 const summary = computed(() =>
   `Precio pedido por año de ${props.names.join(', ')}. ${readout.value.title} ${readout.value.items
@@ -429,34 +457,33 @@ const summary = computed(() =>
   cursor: crosshair;
 }
 .compare-chart__handle {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
   cursor: ns-resize;
+  /* Arrastrar el asa mueve el presupuesto, no la página. */
   touch-action: none;
-  outline: none;
-}
-.compare-chart__handle-hit {
-  fill: transparent;
 }
 .compare-chart__handle-dot {
-  fill: rgb(var(--v-theme-on-surface));
-  stroke: rgb(var(--v-theme-surface));
-  stroke-width: 2;
-  transition: r 150ms ease-out;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: rgb(var(--v-theme-surface));
+  background: rgb(var(--v-theme-on-surface));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  transition: transform 150ms ease-out;
 }
 .compare-chart__handle:hover .compare-chart__handle-dot,
 .compare-chart__handle:focus-visible .compare-chart__handle-dot {
-  r: 11;
-}
-.compare-chart__handle:focus-visible .compare-chart__handle-hit {
-  fill: none;
-  stroke: rgb(var(--v-theme-primary));
-  stroke-width: 2;
-}
-.compare-chart__handle-arrows {
-  fill: none;
-  stroke: rgb(var(--v-theme-surface));
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  transform: scale(1.15);
 }
 .compare-chart__readout {
   display: flex;

@@ -45,7 +45,14 @@
         >
           <span class="evidence__value">
             <VIcon v-if="cell.best" icon="mdi-check-circle" size="16" class="evidence__best" />
-            <a v-if="cell.href" :href="cell.href" target="_blank" rel="noopener">{{ cell.text }}</a>
+            <a
+              v-if="cell.href"
+              :href="cell.href"
+              target="_blank"
+              rel="noopener"
+              class="evidence__link"
+              >{{ cell.text }}</a
+            >
             <template v-else>{{ cell.text }}</template>
             <span v-if="cell.best" class="d-sr-only"> (mejor de la fila)</span>
           </span>
@@ -165,6 +172,9 @@ const hiddenRows = computed(
   margin-top: 4px;
   font-size: 0.8rem;
   color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+}
+.evidence__link {
+  color: rgb(var(--v-theme-link));
 }
 .evidence__cell--best {
   background: rgba(var(--v-theme-success), 0.08);

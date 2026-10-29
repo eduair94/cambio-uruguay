@@ -41,6 +41,9 @@
 
       <div class="verdict__body">
         <template v-if="columns.length > 1">
+          <p v-if="!points[index]?.row" class="verdict__caveat">
+            {{ caveat(index) }}
+          </p>
           <h4 class="verdict__label">Por qué elegirlo</h4>
           <ul v-if="verdicts[index]?.wins.length" class="verdict__list">
             <li v-for="reason in verdicts[index]!.wins" :key="reason.key" class="verdict__item">
@@ -52,7 +55,8 @@
             </li>
           </ul>
           <p v-else class="verdict__empty">
-            Contra {{ others(index) }} no gana con diferencia clara en nada de lo que medimos.
+            En lo que decide el veredicto no le gana con diferencia clara a {{ others(index) }}. La
+            tabla de abajo tiene el detalle fila por fila.
           </p>
 
           <template v-if="verdicts[index]?.losses.length">
@@ -141,6 +145,12 @@ function missingNote(index: number): string {
   if (point.status === 'no-alcanza' && point.cheapest)
     return `el más barato arranca en ${formatCarUsd(point.cheapest.median)} (${point.cheapest.year})`
   return props.year !== null ? `no hay suficientes de ${props.year}` : ''
+}
+/** Lo que sigue en la tarjeta es del modelo, no de un auto que esta lente pueda comprar. */
+function caveat(index: number): string {
+  return props.points[index]!.status === 'no-alcanza'
+    ? 'Con este presupuesto no alcanza: lo de abajo vale si podés estirarte.'
+    : `No hay avisos suficientes de ${props.year} en esta versión: lo de abajo es del modelo.`
 }
 const others = (index: number): string => {
   const names = props.names.filter((_, other) => other !== index)
@@ -250,6 +260,13 @@ const listingsQuery = (index: number) =>
 }
 .verdict__icon--win {
   color: rgb(var(--v-theme-success));
+}
+.verdict__caveat {
+  margin: 0 0 16px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  background: rgba(var(--v-theme-warning), 0.12);
 }
 .verdict__empty {
   margin: 0;

@@ -154,8 +154,10 @@
             </span>
           </p>
           <p v-if="compareLink" class="text-body-2 mb-4">
-            <NuxtLink :to="compareLink">Comparar las tres primeras lado a lado</NuxtLink>: en qué
-            gana cada una con tu plata, el gráfico de precio por año y la tabla completa.
+            <NuxtLink :to="compareLink.to">
+              Comparar las {{ compareLink.count === 2 ? 'dos' : 'tres' }} primeras lado a
+              lado</NuxtLink
+            >: en qué gana cada una con tu plata, el gráfico de precio por año y la tabla completa.
           </p>
 
           <article
@@ -703,15 +705,18 @@ const compareLink = computed(() => {
     if (picks.length === 3) break
   }
   if (picks.length < 2 || !query.value.budget) return null
-  return localePath({
-    path: CAR_COMPARE_PATH,
-    query: carCompareQueryParams({
-      picks,
-      year: null,
-      budget: query.value.budget,
-      kmYear: query.value.kmYear,
+  return {
+    count: picks.length,
+    to: localePath({
+      path: CAR_COMPARE_PATH,
+      query: carCompareQueryParams({
+        picks,
+        year: null,
+        budget: query.value.budget,
+        kmYear: query.value.kmYear,
+      }),
     }),
-  })
+  }
 })
 
 const generatedDay = computed(() => {

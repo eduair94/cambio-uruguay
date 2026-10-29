@@ -821,7 +821,7 @@ y 2008-EcoSport-Tracker; los tres defectos que siguen pasaban los tests:
   12 %), y el que queda dentro del margen se nombra: "Parejo con 208 (6,4 L/100 km)".
 - **La misma versión para todos.** Elegir la variante más publicada de cada modelo por separado
   comparaba una Hilux diésel contra una Ranger nafta. Las columnas que la URL no fija arrancan con
-  la combinación de combustible y caja que tienen todas (la de más avisos en la que menos tiene);
+  la combinación de combustible y caja que tienen todas con más AÑOS en común (a igualdad, la de más avisos en la que menos tiene): por avisos solos, la Hilux y la Amarok arrancaban en nafta manual, cuando en diésel automática comparten siete años;
   una fijada en otra columna manda primero; sin ninguna en común, cada una la suya. Cambiar la de
   una columna fija las de todas, para que las otras no se muevan solas.
 - **Los rivales, en la versión donde compiten.** La sugerencia de rivales (misma carrocería y precio
@@ -829,6 +829,8 @@ y 2008-EcoSport-Tracker; los tres defectos que siguen pasaban los tests:
   la variante más publicada y perdía a la Amarok como rival de la Hilux; con una sola variante
   compartida (nafta manual, donde están lejos) también. Es el mínimo entre las más publicadas y cada
   combinación compartida: en diésel están a 13 %.
+
+La revisión (independiente, con casos ejecutados) encontró cinco más, todos con test: un modelo ausente quedaba en la URL y bloqueaba sumar otro (los modelos salen ahora de las columnas, y si ninguno de los pedidos está se muestra la comparación frecuente y se dice cuál faltó); arrastrar el presupuesto reescalaba el eje bajo el dedo (el dominio se congela mientras se arrastra); en "misma plata" el que no alcanza no perdía "año al que llegás" y hasta ganaba en lo demás; "negociando" miraba cualquier año más nuevo y no el siguiente, como el asesor; y el total con la caída típica del mercado le ganaba a uno con la caída medida. El asa es un botón HTML con rol de slider: dentro del SVG no se anunciaba y en el celular arrastrar movía la página.
 
 Y dos cosas que se muestran y **no deciden**: el baúl (las fichas lo miden distinto; el 208 salía con
 152 litros, la mitad del real) y Latin NCAP (la regla del asesor; se muestra el ensayo más cercano al

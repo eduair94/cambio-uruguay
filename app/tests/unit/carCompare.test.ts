@@ -440,6 +440,62 @@ describe('la comparación', () => {
     ).toBe('ensayo 2019')
   })
 
+  it('negociando es el año inmediatamente más nuevo, como en el asesor', () => {
+    // 2018 entra por mediana; 2019 no entra ni negociando; 2020 sí por su cuarto más barato, pero
+    // no es el siguiente: el asesor no lo ofrece y el comparador tampoco.
+    const gap = buildCarCompareResponse(
+      {
+        ...snapshot,
+        data: {
+          ...snapshot.data,
+          models: [
+            model({
+              marketSlug: 'a-a',
+              variants: [
+                variant({
+                  years: [
+                    { year: 2018, n: 5, p25: 13_000, median: 15_000, p75: 16_000, kmMedian: null },
+                    { year: 2019, n: 5, p25: 16_000, median: 18_000, p75: 19_000, kmMedian: null },
+                    { year: 2020, n: 5, p25: 14_000, median: 20_000, p75: 21_000, kmMedian: null },
+                  ],
+                }),
+              ],
+            }),
+          ],
+        },
+      },
+      [pick('a-a')],
+      { fuel, ncapOf: () => [] }
+    )
+    const result = compareCars(gap, query({ budget: 15_000 }))
+    expect(result.points[0]!.row?.year).toBe(2018)
+    expect(result.points[0]!.stretch).toBeNull()
+  })
+
+  it('al que no le alcanza el presupuesto pierde "año al que llegás"', () => {
+    const result = compareCars(trio, query({ budget: 10_500 }))
+    // Gol llega a 2019 (10.400); Onix y 208 no alcanzan.
+    expect(result.points.map(point => point.status)).toEqual(['no-alcanza', 'ok', 'no-alcanza'])
+    const anio = result.groups[0]!.rows.find(row => row.key === 'anio')!
+    expect(anio.cells.map(cell => cell.best)).toEqual([false, true, false])
+    expect(result.verdicts[1]!.wins[0]!.key).toBe('anio')
+    expect(result.verdicts[0]!.losses.some(reason => reason.key === 'anio')).toBe(true)
+  })
+
+  it('un total con la caída típica del mercado no compite', () => {
+    const result = compareCars(trio, query())
+    const total = result.groups.flatMap(group => group.rows).find(row => row.key === 'total')!
+    expect(result.points[2]!.dropFromMarket).toBe(true)
+    expect(total.cells[2]!.best).toBe(false)
+  })
+
+  it('si ningún modelo pedido está, muestra la comparación frecuente y dice cuál faltó', () => {
+    const response = respond([pick('fiat-147')])
+    expect(response.example).toBe(true)
+    expect(response.missing).toEqual(['fiat-147'])
+    expect(response.columns.length).toBeGreaterThan(1)
+  })
+
   it('el enlace al directorio lleva la variante, el año y el tope', () => {
     const result = compareCars(trio, query({ budget: 12_000 }))
     expect(carCompareListingsQuery(trio.columns[0]!, result.points[0]!, 12_000)).toEqual({

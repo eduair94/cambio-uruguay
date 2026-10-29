@@ -436,10 +436,14 @@ export function buildCarCompareResponse(
 ): CarCompareResponse {
   const models = new Map(usable(snapshot).map(model => [model.marketSlug, model]))
   const popular = carComparePopular(snapshot)
-  const example = requested.length === 0
+  // Sin modelos en la URL, o si ninguno de los pedidos está en la tabla (la página de precios
+  // existe para más modelos que el comparador), se muestra la comparación frecuente más grande y
+  // `missing` dice cuál faltó: nunca una página vacía, nunca un reemplazo callado.
+  const known = requested.filter(pick => models.has(pick.slug))
+  const example = known.length === 0
   const picks: CarComparePick[] = example
     ? (popular[0] ?? []).map(option => ({ slug: option.slug, fuel: null, transmission: null }))
-    : [...requested]
+    : known
   const shared = sharedVariant(
     picks
       .filter(pick => !pick.fuel || !pick.transmission)
@@ -448,13 +452,11 @@ export function buildCarCompareResponse(
     picks.filter(pick => pick.fuel && pick.transmission)
   )
   const columns: CarCompareColumn[] = []
-  const missing: string[] = []
+  const missing = requested.filter(pick => !models.has(pick.slug)).map(pick => pick.slug)
   for (const pick of picks) {
-    const model = models.get(pick.slug)
     const variant = pick.fuel && pick.transmission ? pick : (shared ?? pick)
-    const column = model ? buildCarCompareColumn(model, variant, context.ncapOf(pick.slug)) : null
+    const column = buildCarCompareColumn(models.get(pick.slug)!, variant, context.ncapOf(pick.slug))
     if (column) columns.push(column)
-    else missing.push(pick.slug)
   }
   return {
     generatedAt: snapshot.generatedAt,
@@ -631,16 +633,18 @@ function pointOf(
   input: CarCompareInput
 ): CarComparePoint {
   const years = column.variant.years
-  let row: PublicCarAdvisorYear | null = null
+  let row: PublicCarAdvisorYear | null
   let stretch: CarComparePoint['stretch'] = null
   let cheapest: PublicCarAdvisorYear | null = null
   let status: CarComparePointStatus = 'ok'
   if (mode === 'plata' && budget !== null) {
     const newestFirst = [...years].sort((a, b) => b.year - a.year)
-    row = newestFirst.find(item => item.median <= budget) ?? null
+    const index = newestFirst.findIndex(item => item.median <= budget)
+    row = index === -1 ? null : newestFirst[index]!
     if (row) {
-      const reach = newestFirst.find(item => item.year > row!.year && item.p25 <= budget)
-      stretch = reach ? { year: reach.year, p25: reach.p25 } : null
+      // La regla del asesor: sólo el año inmediatamente más nuevo con avisos, no "cualquiera".
+      const newer = index > 0 ? newestFirst[index - 1]! : null
+      stretch = newer && newer.p25 <= budget ? { year: newer.year, p25: newer.p25 } : null
     } else {
       status = 'no-alcanza'
       cheapest = [...years].sort((a, b) => a.median - b.median || b.year - a.year)[0] ?? null
@@ -960,7 +964,11 @@ export function compareCars(input: CarCompareInput, query: CarCompareQuery): Car
           label: 'Año al que llegás',
           hint: 'El más nuevo cuya mediana entra en el presupuesto.',
           better: 'high',
-          values: fromRow(row => row.year),
+          // El que no alcanza pierde esta fila: tratarlo como "dato que falta" le dejaba la
+          // victoria al otro sin decirla, y al que no alcanza ganando en todo lo demás.
+          values: points.map(point =>
+            point.row ? point.row.year : point.status === 'no-alcanza' ? 0 : null
+          ),
           cells: each((_, point) =>
             point.row
               ? {
@@ -1078,17 +1086,25 @@ export function compareCars(input: CarCompareInput, query: CarCompareQuery): Car
           : null
       ),
     },
-    costRow(
-      'total',
-      'Total por año',
-      costs => costs.annualUyu,
-      { rel: 0.08 },
-      {
-        hint: anyMarketDrop
-          ? 'Todo lo anterior. Donde dice "caída típica", la depreciación es la del mercado y no la del modelo.'
-          : 'Todo lo anterior, lo que pierde de valor incluido.',
-      }
-    ),
+    {
+      ...costRow(
+        'total',
+        'Total por año',
+        costs => costs.annualUyu,
+        { rel: 0.08 },
+        {
+          hint: anyMarketDrop
+            ? 'Todo lo anterior. Donde dice "caída típica", la depreciación es la del mercado y no la del modelo, y ese total no compite.'
+            : 'Todo lo anterior, lo que pierde de valor incluido.',
+        }
+      ),
+      // Un total que lleva la caída típica del mercado no le gana a uno con la caída medida.
+      values: each((_, point) =>
+        point.costs && !point.dropFromMarket && point.costs.depreciationKnown
+          ? point.costs.annualUyu
+          : null
+      ),
+    },
   ]
   built.push(
     rowsToGroup(

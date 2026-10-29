@@ -76,7 +76,7 @@
         </div>
 
         <p v-if="data.example" class="bench__hint">
-          Arrancamos con los tres modelos con más avisos. Cambiá cualquiera.
+          Arrancamos con el modelo con más avisos y sus rivales más publicados. Cambiá cualquiera.
         </p>
         <div
           v-if="data.rivals.length && data.columns.length < CAR_COMPARE_MAX"
@@ -381,7 +381,6 @@ const result = computed(() =>
 const budgetRange = computed(() => carCompareBudgetRange(data.value?.columns ?? []))
 
 // -- La URL sigue al estado (y el estado a la URL, si se navega hacia atrás) --------------------------
-const picksInUrl = (): CarComparePick[] => query.value.picks
 function urlFor(picks: CarComparePick[]): Record<string, string> {
   return carCompareQueryParams({
     picks,
@@ -396,32 +395,44 @@ watch(
   () => {
     if (pending) clearTimeout(pending)
     pending = setTimeout(() => {
-      const next = urlFor(picksInUrl())
+      pending = null
+      // La comparación de ejemplo no escribe modelos en la URL: sigue siendo la URL desnuda.
+      const next = urlFor(data.value?.example ? [] : currentPicks())
       if (JSON.stringify(next) !== JSON.stringify(carCompareQueryParams(query.value)))
-        router.replace({ query: next })
+        router.replace({ path: route.path, query: next })
     }, 350)
   }
 )
+// Un "Ver los avisos" dentro de los 350 ms escribía la consulta del comparador sobre el directorio.
+onBeforeUnmount(() => {
+  if (pending) clearTimeout(pending)
+})
+// Lo que manda la URL se copia entero: un enlace sin `anio` vuelve al año por defecto en vez de
+// dejar el que había quedado de antes (Atrás, o una comparación frecuente).
 watch(query, next => {
-  const mode: CarCompareMode = next.budget !== null ? 'plata' : 'anio'
-  if (mode !== state.mode) state.mode = mode
-  if (mode === 'plata' && next.budget !== state.budget) state.budget = next.budget
-  if (mode === 'anio' && next.year !== null && next.year !== state.year) state.year = next.year
-  if (next.kmYear !== state.km) state.km = next.kmYear
+  state.mode = next.budget !== null ? 'plata' : 'anio'
+  if (next.budget !== null) state.budget = next.budget
+  state.year = next.year
+  state.km = next.kmYear
 })
 
 // -- Los modelos -----------------------------------------------------------------------------------
+/**
+ * Los modelos que se están comparando, con la versión que la URL haya fijado. Salen de las columnas
+ * y no de la URL: un modelo que no está en la tabla no se arrastra al sumar o sacar otro.
+ */
 const currentPicks = (): CarComparePick[] =>
-  query.value.picks.length
-    ? query.value.picks
-    : (data.value?.columns ?? []).map(column => ({
+  (data.value?.columns ?? []).map(
+    column =>
+      query.value.picks.find(pick => pick.slug === column.slug && pick.fuel) ?? {
         slug: column.slug,
         fuel: null,
         transmission: null,
-      }))
+      }
+  )
 
 function goTo(picks: CarComparePick[]) {
-  router.replace({ query: urlFor(picks) })
+  router.replace({ path: route.path, query: urlFor(picks) })
 }
 
 const adding = ref<string | null>(null)
@@ -460,7 +471,7 @@ const addItems = computed(() => {
 const missingText = computed(() => {
   const names = (data.value?.missing ?? []).map(slug => slug.replace(/-/g, ' '))
   if (!names.length) return ''
-  return `${names.length === 1 ? `No encontramos «${names[0]}»` : `No encontramos «${names.join('», «')}»`} con avisos suficientes: el comparador usa los modelos con 12 avisos vigentes o más.`
+  return `${names.length === 1 ? `No encontramos «${names[0]}»` : `No encontramos «${names.join('», «')}»`} con avisos suficientes: el comparador usa los modelos con 12 avisos vigentes o más y alguna combinación de combustible y caja con 6 o más.`
 })
 
 // -- La lente --------------------------------------------------------------------------------------
@@ -645,7 +656,7 @@ useHead({
   align-items: center;
   gap: 8px;
   min-height: 44px;
-  padding: 0 4px 0 16px;
+  padding: 0 0 0 16px;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   border-radius: 999px;
   font-weight: 600;
@@ -662,8 +673,8 @@ useHead({
   background: transparent;
   cursor: pointer;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
   transition: background-color 150ms ease-out;
@@ -799,6 +810,9 @@ useHead({
   .bench__add {
     max-width: none;
     flex-basis: 100%;
+  }
+  .bench__rivals :deep(.v-chip) {
+    min-height: 44px;
   }
   .bench__mode {
     width: 100%;
