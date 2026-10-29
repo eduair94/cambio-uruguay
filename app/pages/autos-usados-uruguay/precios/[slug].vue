@@ -42,6 +42,14 @@
           </NuxtLink>
           ·
           <NuxtLink :to="localePath(CAR_SELL_PATH)">guía para vender</NuxtLink>
+          <template v-if="data.indexable">
+            ·
+            <NuxtLink
+              :to="localePath({ path: CAR_COMPARE_PATH, query: { modelos: data.market.slug } })"
+            >
+              compararlo con otros modelos
+            </NuxtLink>
+          </template>
         </p>
         <VAlert
           v-if="!data.indexable"
@@ -117,6 +125,7 @@
 </template>
 
 <script setup lang="ts">
+import { CAR_COMPARE_PATH } from '~/utils/carCompare'
 import { CAR_SELL_PATH, CAR_VALUATION_PATH } from '~/utils/carsValuation'
 import {
   CAR_MARKET_INDEX_MIN,

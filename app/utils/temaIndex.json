@@ -774,6 +774,10 @@
           "label": "¿Qué auto usado comprar?"
         },
         {
+          "to": "/comparar-autos-usados-uruguay",
+          "label": "Comparar autos usados"
+        },
+        {
           "to": "/cuanto-vale-mi-auto-uruguay",
           "label": "¿Cuánto vale mi auto?"
         },

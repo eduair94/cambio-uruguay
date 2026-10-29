@@ -192,6 +192,7 @@ export const DIRECTORIO_PATHS = new Set([
   "/autos-usados-uruguay",
   "/oportunidades-autos-usados-uruguay",
   "/mercado-de-autos-usados-uruguay",
+  "/comparar-autos-usados-uruguay",
   "/autos-chocados-y-con-deuda-uruguay",
   "/motos-usadas-uruguay",
   "/celulares-uruguay",

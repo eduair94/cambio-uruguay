@@ -4029,6 +4029,26 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El comparador de modelos: la misma tabla del asesor, dos o tres modelos lado a lado con un
+        // veredicto calculado. Ver docs/app/AUTOS.md, "El comparador de modelos".
+        to: '/comparar-autos-usados-uruguay',
+        labelKey: 'nav.usedCarCompare',
+        icon: 'mdi-compare-horizontal',
+        priority: 0.8,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'comparar autos usados',
+          'comparar autos',
+          'comparador de autos',
+          'cual auto es mejor',
+          'onix o 208',
+          'hilux o amarok',
+          'que auto conviene mas',
+          'comparar modelos de auto uruguay',
+        ],
+      },
+      {
         // Los ensayos de Latin NCAP ya estaban en el repo (`utils/latinNcap.ts`, verificados el
         // 24/9/2026) pero sólo se veían DENTRO de la ficha de un modelo del asesor, o sea después
         // de declarar presupuesto y prioridades. Quien busca «cuántas estrellas tiene el Onix» ya

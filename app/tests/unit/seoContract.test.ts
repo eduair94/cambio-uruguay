@@ -194,6 +194,8 @@ const NOINDEXED = [
   // la URL limpia se indexa y cada combinación de filtros se sale, igual que equipar y autos.
   'bicicletas-electricas-uruguay.vue',
   'buscar.vue',
+  // El comparador de modelos se indexa en su URL; cada combinación de modelos se sale, como el asesor.
+  'comparar-autos-usados-uruguay.vue',
   // El tasador se indexa en su URL; cada combinación de marca, modelo y año se sale.
   'cuanto-vale-mi-auto-uruguay.vue',
   'cuenta/index.vue',
