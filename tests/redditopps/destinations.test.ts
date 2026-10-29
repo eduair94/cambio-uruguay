@@ -74,6 +74,7 @@ describe("redditopps/destinations — reglas", () => {
     expect(familyOf("/motos-usadas-uruguay")).toBe("motos");
     expect(familyOf("/prestamo-hipotecario-uruguay")).toBe("viviendas");
     expect(familyOf("/guias/franquicia-de-courier")).toBe("aduana");
+    expect(familyOf("/guias/comprar-en-amazon-desde-uruguay")).toBe("aduana");
     expect(familyOf("/algo-que-no-existe")).toBe("otros");
   });
 });

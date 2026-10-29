@@ -695,6 +695,10 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   gap: 8px 16px;
 }
+/* El h1 trae un margen global de abajo que, dentro de esta fila, se sumaba al del bloque. */
+.ro-head h1 {
+  margin: 0;
+}
 .ro-lead {
   max-width: 72ch;
 }
