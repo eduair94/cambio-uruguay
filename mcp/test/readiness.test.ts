@@ -36,11 +36,10 @@ function undescribed(schema: Schema, path = ""): string[] {
   return missing;
 }
 
-// ~4 characters per token. Every client pays for the whole list on every session.
-const MAX_CHARS = 4_500;
-// 44 filters cost ~4,150 characters of bare JSON before a single description; under
-// MAX_CHARS it would have to drop filters the /asistente-ia chips map onto. Ratchet only.
-const BUDGET: Record<string, number> = { search_rentals: 7_300 };
+// ~4 characters per token; Glimind's count runs ~2.4 % above that, so 4,600 characters is
+// ~1,180 of its tokens, under the 1,200 it flags. Every client pays for the whole list on
+// every session.
+const MAX_CHARS = 4_600;
 
 describe("tools/list readiness", () => {
   it("describes every parameter, nested ones included", async () => {
@@ -56,7 +55,7 @@ describe("tools/list readiness", () => {
   it("keeps every definition inside its size budget", async () => {
     const over = (await listTools())
       .map((t) => ({ name: t.name, chars: JSON.stringify(t).length }))
-      .filter((t) => t.chars > (BUDGET[t.name] ?? MAX_CHARS));
+      .filter((t) => t.chars > MAX_CHARS);
     expect(over).toEqual([]);
   });
 

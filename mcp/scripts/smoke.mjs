@@ -34,8 +34,8 @@ async function run(name, fn) {
 
 await run("geocode_uy_address", () => geocodeAddress(site, { address: "18 de Julio 1234", department: "Montevideo" }));
 await run("search_rentals", () => searchRentals(site, { department: "Montevideo", types: ["apartamento"], bedrooms: 2, priceMaxUyu: 35000, pets: true, perPage: 3 }));
-await run("search_rentals near address", () => searchRentals(site, { department: "Montevideo", near: { address: "Avenida Rivera 2500", radiusKm: 2 }, types: ["vivienda"], perPage: 3 }));
-await run("search_rentals near point", () => searchRentals(site, { near: { lat: -34.918, lng: -56.166, label: "Facultad de Ingeniería", radiusKm: 1.5 }, types: ["vivienda"], perPage: 3 }));
+await run("search_rentals near address", () => searchRentals(site, { department: "Montevideo", near: "Avenida Rivera 2500", radiusKm: 2, types: ["vivienda"], perPage: 3 }));
+await run("search_rentals near point", () => searchRentals(site, { near: "-34.918,-56.166", radiusKm: 1.5, types: ["vivienda"], perPage: 3 }));
 const firstKey = results.search_rentals?.data.items?.[0]?.key;
 if (firstKey) await run("get_rental", () => getRental(site, { key: firstKey }));
 await run("rank_rentals_for_household", () =>
