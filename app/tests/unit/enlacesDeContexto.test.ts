@@ -149,13 +149,42 @@ const SIN_LECTOR_QUE_LA_NECESITE = [
  */
 const DEUDA_SIN_ENLACE = [
   '/apps-utiles-uruguay',
-  '/fondo-de-solidaridad-uruguay',
   '/precio-del-boleto-montevideo',
   '/ropa-por-kilo-uruguay',
   '/seguro-obligatorio-de-auto-uruguay',
 ]
 
 /** El trinquete. Sólo puede bajar: subirlo es publicar una página que nadie enlaza. */
+// 5 → 4 el 2026-10-29: `/fondo-de-solidaridad-uruguay`, que era la ÚNICA ruta libre de los cinco
+// pozos ese día (`npm run seo_debt`: 1 de 58) y que además cumplió el 2026-10-28 los 29 días de su
+// propia fila `fondo-de-solidaridad`, del 30/9.
+//
+// El enlace sale de `/declaracion-de-irpf-uruguay`, cuya última fila es del 27/9 —libre, igual que
+// el destino— y lo necesita el lector que está mirando qué le descuentan: la tarjeta «Fondo de
+// Solidaridad y aportes a cajas profesionales» de la lista de deducciones decía que se deducen si
+// se declaran en el 3100 y mandaba los valores a buscar al BPS, sin decir nunca quién lo paga. Son
+// dos cosas distintas en una tarjeta: el aporte a la caja profesional es mensual y por categoría,
+// y el Fondo es ANUAL y no lo debe todo egresado —la Ley 16.524 lo pone desde el quinto año del
+// egreso y sólo con ingresos mensuales mayores a 8 BPC—, así que quien egresó hace dos años o gana
+// por debajo del umbral puede estar buscando cómo deducir algo que no aporta. La página de destino
+// es la que contesta las dos mitades, y es además la única del sitio que publica el aporte en
+// pesos, porque la escala de la norma está en BPC y el sitio tiene la BPC del año auditada.
+//
+// Es el caso que el encabezado de `utils/solidarityFund.ts` ya dejaba escrito al nacer la página:
+// el Fondo «aparecía en nueve archivos del sitio (la calculadora de sueldo líquido, las
+// deducciones del IRPF, los gastos del hogar) SIEMPRE como un descuento que hay que meter en otra
+// cuenta, y en ninguno como la pregunta propia». Nueve menciones y ningún enlace es exactamente la
+// deuda que este trinquete mide.
+//
+// La mención de la calculadora de sueldo líquido es la más directa de las nueve —es el `hint` de
+// un campo que el lector tiene que llenar con un número que quizá no deba— y NO se tocó: esa ruta
+// está reservada hasta el 2026-11-17 por la fila `calculadora-sueldo-liquido-con-ejemplo` del
+// 19/10, y escribir el enlace ahí le cambiaría el sujeto a una ventana abierta. Entra cuando
+// cierre.
+//
+// El enlace va DENTRO de la tarjeta de la deducción (`IrpfDeduction.link`, campo nuevo y opcional,
+// calcado de `WithdrawSection.link`), no en el bloque del pie que este archivo no cuenta como
+// arreglo. `irpfCasos.test.ts` lo exige junto con el dato que lo hace seguir.
 // 10 → 9 el 2026-10-22: `/alternativa-a-bankos-uruguay`, la única de las diez con la ruta libre de
 // toda ventana de medición abierta (`npm run seo_debt`), y con el ORIGEN también libre, que es lo que
 // bloqueó a varias candidatas de los días anteriores.
@@ -383,7 +412,7 @@ const DEUDA_SIN_ENLACE = [
 // describe hechos: dejarla declarada sabiendo que ya recibe un enlace de contexto es justo el modo
 // de fallar que el trinquete de arriba persigue —un contador inflado contra una deuda menor, con
 // lugar de sobra para que la próxima página nazca huérfana y siga en verde—.
-const DEUDA_MAXIMA = 5
+const DEUDA_MAXIMA = 4
 
 describe('ninguna página de lectura queda sin un enlace de contexto', () => {
   it('las páginas sin enlace son exactamente las declaradas', () => {

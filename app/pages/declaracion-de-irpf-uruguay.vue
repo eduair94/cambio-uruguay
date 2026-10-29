@@ -177,6 +177,22 @@
           <VCard variant="flat" class="case-card pa-4 h-100">
             <h4 class="text-subtitle-2 font-weight-bold mt-0 mb-1">{{ d.label }}</h4>
             <p class="mt-0 mb-0 text-medium-emphasis">{{ d.detail }}</p>
+            <!--
+              El enlace de contexto de la tarjeta, debajo del texto que deja la pregunta abierta y
+              no en las relacionadas del pie. Ver el comentario de `IrpfDeduction.link` en
+              `utils/irpfCasos.ts`.
+            -->
+            <VBtn
+              v-if="d.link"
+              :to="localePath(d.link.to)"
+              variant="text"
+              color="primary"
+              size="small"
+              class="cu-btn-flush mt-2"
+            >
+              {{ d.link.label }}
+              <VIcon end size="small">mdi-arrow-right</VIcon>
+            </VBtn>
           </VCard>
         </VCol>
       </VRow>
