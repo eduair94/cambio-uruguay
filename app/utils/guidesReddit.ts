@@ -1404,7 +1404,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'hacer-un-testamento-uruguay',
     title: 'Cómo hacer un testamento en Uruguay',
     description:
-      'Cómo hacer un testamento en Uruguay: tipos abierto y cerrado, qué podés y qué no podés disponer por la legítima, rol del escribano, costos y cómo revocarlo.',
+      'Con hijos, la legítima ya reserva la mayor parte y sólo disponés del resto; el honorario notarial no tiene arancel único, así que se pide presupuesto.',
     tag: 'TESTAMENTO',
     updatedAt: '2026-07-18',
     sections: [

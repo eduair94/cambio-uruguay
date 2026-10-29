@@ -2156,6 +2156,31 @@
         "hilux o amarok"
       ],
       "hypothesis": "Pagina nueva para la intencion \"X o Y\" que la familia del auto no contestaba: el asesor (/que-auto-comprar-uruguay) parte del presupuesto y devuelve una lista, y la pagina de precios de cada modelo habla de uno solo, asi que quien ya duda entre dos o tres modelos no tenia donde ponerlos lado a lado. No releva nada nuevo: lee la misma tabla del asesor (caradvisorsnapshots) y el mismo calculo de costos, y le agrega un veredicto calculado par a par con margen de ruido por fila, dos lentes (al mismo ano y con la misma plata) y un grafico de precio por ano con la linea de presupuesto arrastrable. Se mide como pagina nueva: clics propios de la ruta a los 28 dias. Los enlaces entrantes nacen en el mismo commit en los resultados del asesor y en la pagina de precios de cada modelo con 30 avisos o mas."
+    },
+    {
+      "id": "feriados-2027-pagina-nueva",
+      "shippedOn": "2026-10-29",
+      "routes": [
+        "/feriados-2027-uruguay"
+      ],
+      "queries": [
+        "feriados 2027",
+        "feriados 2027 uruguay",
+        "fines de semana largos 2027",
+        "carnaval 2027",
+        "semana de turismo 2027"
+      ],
+      "hypothesis": "Pagina nueva para la consulta estacional que el sitio no contestaba. /feriados-que-se-corren-uruguay publica la REGLA y declara con todas las letras que no publica el calendario anual, porque dos de las trece fechas que la ley nombra (Carnaval y Semana de Turismo) no tienen dia del mes: la ley las nombra por su posicion respecto de la Pascua. Lo que faltaba era esa pieza, y se calcula igual que el corrimiento del articulo 1 se calcula hoy: la Pascua de 2027 cae el 28 de marzo, de ahi salen el lunes 8 y el martes 9 de febrero y el jueves 25 y el viernes 26 de marzo, y las quince fechas quedan completas sin copiar un dato de ningun lado. Ninguna cifra es nueva: las normas son las mismas que ya cita el catalogo verificado (Leyes 16.805, 17.414, 6.997 y 12.590 art. 18). El angulo propio es lo que un calendario pelado no dice: los seis fines de semana largos y los cuatro feriados que 2027 se come en sabado o domingo. Se mide como pagina nueva, clics propios de la ruta a los 28 dias; la demanda pica entre noviembre y enero, asi que se publica con margen para indexar. El enlace entrante nace en el mismo commit en /feriados-que-se-corren-uruguay, cuya unica fila del libro es de mas de 28 dias."
+    },
+    {
+      "id": "snippets-respuesta-primero-los-tres-libres",
+      "shippedOn": "2026-10-29",
+      "routes": [
+        "/fecha-de-cobro-bps-uruguay",
+        "/guias/casarse-por-civil-uruguay",
+        "/guias/hacer-un-testamento-uruguay"
+      ],
+      "hypothesis": "Las TRES unicas rutas de los pozos de snippet cortado que hoy no estan reservadas por una ventana abierta (el cruce contra este mismo archivo). /fecha-de-cobro-bps-uruguay era la ultima deuda de seoDescriptionBudget: 156 caracteres, uno de mas, reservada desde el 20/9 y libre hoy, y queda en 153 sin perder ningun dato. La guia de casamiento civil estaba en los DOS pozos a la vez: el titulo gastaba el renglon en el indice (\"tramite, testigos y costo\") y daba 72 con la marca, asi que pasa a la respuesta que decide el clic (\"Casarse por civil: $1.149 en la oficina\", 56), y la descripcion baja de 166 a 154 acortando la referencia a la ficha del Registro Civil sin borrar su fecha. La de testamento abria repitiendo el titulo y enumerando secciones; ahora arranca por la legitima y por que el honorario notarial no tiene arancel unico, 150 caracteres. Ninguna cifra es nueva y ninguna se escribe con mas firmeza que su fuente: la guia de testamento dice expresamente que no existe un arancel unico obligatorio, asi que el snippet no publica un precio."
     }
   ]
 }

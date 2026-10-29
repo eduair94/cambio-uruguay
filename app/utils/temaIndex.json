@@ -1049,6 +1049,10 @@
           "label": "Feriados que se corren al lunes"
         },
         {
+          "to": "/feriados-2027-uruguay",
+          "label": "Feriados 2027"
+        },
+        {
           "to": "/cuando-se-cobra-el-aguinaldo-uruguay",
           "label": "Cuándo se cobra el aguinaldo"
         },

@@ -1190,6 +1190,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/feriados-que-se-corren-uruguay',
       },
       {
+        label: 'Feriados 2027',
+        description: 'Las 15 fechas, los 6 fines de semana largos y los 4 que caen fin de semana.',
+        to: '/feriados-2027-uruguay',
+      },
+      {
         label: 'Cuándo se cobra el aguinaldo',
         description:
           'Hasta el 20 de diciembre de 2026 por decreto; la cuota de junio y quién paga.',

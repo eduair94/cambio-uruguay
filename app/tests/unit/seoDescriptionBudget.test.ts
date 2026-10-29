@@ -343,7 +343,17 @@ const RESOLVED = 163
 // Queda 1, y es `/fecha-de-cobro-bps-uruguay` (156, uno solo de más), RESERVADA hasta después del
 // 2026-10-18: su fila del libro de cambios está midiendo hasta esa fecha y tocarle la descripción
 // ahora le cambia el sujeto al experimento. Este número SÓLO PUEDE BAJAR.
-const OVER_BUDGET = 1
+//
+// 1 → 0 el 2026-10-29. Entra `/fecha-de-cobro-bps-uruguay`, la única que quedaba: su fila del libro
+// de cambios es del 20/9/2026, así que la ventana que la reservaba cerró hace más de un mes. Estaba
+// en 156, un carácter de más, y la cura no le saca ningún dato — «presencial, según calendario» pasa
+// a «presencial, por calendario» y la descripción queda en 153 con el SMS al 1997, los cuatro medios
+// de cobro nombrados y la regla del primer día intactos.
+//
+// **Este pozo queda pagado**: ninguna descripción escrita a mano en `pages/**/*.vue` sale cortada del
+// SERP. De acá en adelante el cero no es un trinquete que baja, es un contrato: una descripción que
+// se pase de 155 es una que se escribió hoy.
+const OVER_BUDGET = 0
 
 describe('las descripciones escritas a mano entran en el SERP', () => {
   it(`lee la descripción de ${RESOLVED} páginas sin ejecutar la app`, () => {

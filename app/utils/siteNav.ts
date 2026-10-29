@@ -499,6 +499,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/feriados-2027-uruguay',
+        labelKey: 'nav.feriados2027',
+        icon: 'mdi-calendar-month',
+        priority: 0.7,
+        changefreq: 'monthly',
+        keywords: [
+          'feriados 2027',
+          'feriados 2027 uruguay',
+          'calendario de feriados 2027',
+          'fines de semana largos 2027',
+          'carnaval 2027',
+          'semana de turismo 2027',
+          'cuando es carnaval 2027',
+          'cuantos feriados hay en 2027',
+        ],
+      },
+      {
         to: '/estado',
         labelKey: 'estado.nav',
         icon: 'mdi-heart-pulse',

@@ -528,7 +528,6 @@ const MEASURED = 151
 const DEUDA_TITULO_LARGO = [
   'abogado-gratis-uruguay',
   'aguinaldo-casos-especiales-uruguay',
-  'casarse-por-civil-uruguay',
   'certificado-unico-departamental-uruguay',
   'comprar-en-amazon-desde-uruguay',
   'despido-y-liquidacion-uruguay',
@@ -568,7 +567,24 @@ const DEUDA_TITULO_LARGO = [
  * artículos: la UI se mueve todos los días, la UR una vez al mes y la BPC una vez al año. Eso ahora
  * va adelante y el título queda en 58.
  */
-const TITLE_OVER_BUDGET = 14
+/**
+ * 14 → 13 el 2026-10-29: `casarse-por-civil-uruguay`, que vuelve a ser el caso de siempre —la ÚNICA
+ * guía del catálogo con la ruta libre de toda ventana de medición abierta, cruzada contra
+ * `docs/seo/experiments.json`— y además estaba en las DOS listas de este archivo.
+ *
+ * Estaba doce caracteres pasada: «Casarse por civil en Uruguay: trámite, testigos y costo» da 72 con
+ * la marca, y los doce se pagaban con el defecto que este archivo documenta desde la primera
+ * corrida en su forma más pura: la segunda mitad del título ANUNCIABA el índice de la guía
+ * («trámite, testigos y costo») en vez de contestar ninguna de las tres cosas. La que decide el clic
+ * es el costo, y está en el cuerpo con su fuente: la ficha del Registro Civil, actualizada el 29 de
+ * mayo de 2026, publica $1.149 si el matrimonio se celebra en la oficina. Ahora va eso y el título
+ * queda en 56.
+ *
+ * Y lleva «en la oficina» aunque sobre lugar: la misma ficha cobra $35.130 a domicilio —más de
+ * treinta veces— así que un título con el monto pelado sería cierto en un caso y falso en el otro.
+ * Los testigos y las dos etapas siguen en la descripción, que los trae completos.
+ */
+const TITLE_OVER_BUDGET = 13
 
 /**
  * 89 → 77 el 2026-10-01: las doce más largas del catálogo, de 306 a 215 caracteres.
@@ -714,7 +730,6 @@ const TITLE_OVER_BUDGET = 14
 const DEUDA_DESCRIPCION_LARGA = [
   'cajeros-automaticos-uruguay-turistas',
   'cambiar-monedas-poco-comunes-uruguay',
-  'casarse-por-civil-uruguay',
   'cedula-uruguaya-para-argentinos',
   'comision-inmobiliaria-uruguay',
   'comprar-online-exterior-impuestos',
@@ -725,7 +740,6 @@ const DEUDA_DESCRIPCION_LARGA = [
   'elegir-tarjeta-credito-beneficios-uruguay',
   'enviar-recibir-dinero-exterior',
   'garantias-de-alquiler-uruguay',
-  'hacer-un-testamento-uruguay',
   'horarios-casas-de-cambio-uruguay',
   'importar-de-aliexpress-a-uruguay',
   'precio-del-oro-en-uruguay',
@@ -741,7 +755,27 @@ const DEUDA_DESCRIPCION_LARGA = [
  * que gasta el renglón desplegando siglas que el título ya trae) a abrir por la respuesta: con qué se
  * ajusta cada una y cada cuánto. Ninguna cifra es nueva; las tres cadencias ya estaban en su cuerpo.
  */
-const DESCRIPTION_OVER_BUDGET = 21
+/**
+ * 21 → 19 el 2026-10-29: `casarse-por-civil-uruguay` y `hacer-un-testamento-uruguay`, las DOS únicas
+ * de los dos pozos con la ruta libre hoy.
+ *
+ * La primera ya arrancaba por el dato y sólo estaba larga (166): los once caracteres salen de
+ * acortar la referencia a la ficha del Registro Civil («ficha de mayo de 2026» → «mayo 2026») sin
+ * borrar su fecha, que es lo que hace sostenible el monto. Queda en 154.
+ *
+ * La segunda es el defecto de siempre: abría REPITIENDO el título («Cómo hacer un testamento en
+ * Uruguay:») y después enumeraba las secciones («tipos abierto y cerrado, qué podés y qué no podés
+ * disponer…, rol del escribano, costos y cómo revocarlo»), o sea gastaba los dos renglones del
+ * snippet sin contestar nada. Ahora arranca por lo que su propio cuerpo llama «el punto que más
+ * sorprende» —si tenés hijos, la legítima ya reserva la mayor parte y sólo disponés del resto— y la
+ * cola se la lleva la respuesta a la otra pregunta, la del precio. Queda en 150.
+ *
+ * Y el precio se publica como lo que la fuente dice y no como una cifra: la guía afirma que «no
+ * existe un arancel único obligatorio», así que la descripción dice eso y manda a pedir
+ * presupuesto. Inventarle un número al honorario notarial para que el snippet trajera un dato
+ * habría sido exactamente lo que este repo no hace.
+ */
+const DESCRIPTION_OVER_BUDGET = 19
 
 describe('los snippets de las guías entran en el SERP', () => {
   it(`mide las ${MEASURED} guías del catálogo`, () => {

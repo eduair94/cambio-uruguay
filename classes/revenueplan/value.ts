@@ -363,6 +363,7 @@ export const CONTENIDO_PATHS = new Set([
   "/factura-de-ute-uruguay",
   "/facturar-en-monotributo-uruguay",
   "/fecha-de-cobro-bps-uruguay",
+  "/feriados-2027-uruguay",
   "/feriados-que-se-corren-uruguay",
   "/fondo-de-solidaridad-uruguay",
   "/franquicia-viajero-uruguay",

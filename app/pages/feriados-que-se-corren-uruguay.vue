@@ -137,7 +137,11 @@
         Ninguna norma las obliga a cerrar en feriado ni a abrir, así que cada casa lo decide, y el
         horario de un feriado no siempre es el que figura publicado. Lo que sí sirve saber de
         antemano es <em>qué lunes</em> va a ser feriado, que es justamente lo que resuelve la tabla
-        de arriba.
+        de arriba. Si lo que buscás es el año entero ya resuelto —con Carnaval y Semana de Turismo,
+        que esta página no fecha porque la ley no les pone fecha—, está en
+        <NuxtLink :to="localePath('/feriados-2027-uruguay')" class="cu-link">
+          los feriados de 2027 y sus seis fines de semana largos </NuxtLink
+        >.
       </p>
       <div class="d-flex flex-wrap ga-2">
         <VBtn
