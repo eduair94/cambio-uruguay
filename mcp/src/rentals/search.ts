@@ -7,40 +7,25 @@ import { SiteError, TTL, type SiteApi } from "../site.js";
 import { compactRental, rentalLine, type CompactRental } from "./compact.js";
 import type { RawFacet, RawRental } from "./types.js";
 
-export interface NearInput {
-  /** Street address or intersection ("18 de Julio y Ejido"); geocoded when lat/lng are missing. */
-  address?: string;
-  lat?: number;
-  lng?: number;
-  label?: string;
-  /** Keep only homes within this straight-line distance (km). */
-  radiusKm?: number;
-}
-
 export interface RentalSearchInput {
   department?: string;
   neighborhoods?: string[];
   types?: string[];
-  /** Exclusions: barrios, types, portals and title words to leave out. */
+  /** Exclusions: barrios, portals and title words to leave out (a type is left out by not listing it). */
   excludeNeighborhoods?: string[];
-  excludeTypes?: string[];
   excludeSources?: string[];
   excludeWords?: string[];
   /** Rooms and residences (beds or rooms, not homes): hide them or keep only them. */
   roomsAndResidences?: "hide" | "only";
-  /** Hide adverts whose dollar price is probably per night (far under the zone's cheapest homes). */
-  hidePerNightPrices?: boolean;
   bedrooms?: number;
   bedroomsExact?: boolean;
   bathrooms?: number;
   areaMin?: number;
-  areaMax?: number;
   /** Only adverts published in this currency (prices are still filtered in pesos). */
   listedCurrency?: "UYU" | "USD";
   priceMinUyu?: number;
   priceMaxUyu?: number;
   monthlyMaxUyu?: number;
-  expensesMaxUyu?: number;
   pets?: boolean;
   parking?: boolean;
   /** true = only adverts that say furnished; false = only adverts that say unfurnished. */
@@ -50,12 +35,12 @@ export interface RentalSearchInput {
   guarantees?: string[];
   amenities?: string[];
   ownerDirect?: boolean;
-  agency?: string;
-  source?: string;
   text?: string;
-  near?: NearInput;
+  /** Address, intersection, place name or "lat,lng"; sorts by distance to it. */
+  near?: string;
+  /** With `near`: keep only homes within this straight-line distance (km). */
+  radiusKm?: number;
   neighborhoodQuality?: string[];
-  hideReported?: "none" | "any" | "multiple";
   /** Only adverts published (or first seen) in the last N days. */
   postedWithinDays?: number;
   /** Only properties whose asking price dropped in the last 30 days. */
@@ -180,21 +165,29 @@ export async function geocodeItems(site: SiteApi, input: GeocodeInput): Promise<
   return (await geocodeWithSource(site, input)).items;
 }
 
-/** Resolve a `near` input to a point, geocoding the address when needed. */
-export async function resolveNear(site: SiteApi, near: NearInput | undefined, department?: string) {
+/** "-34.91,-56.16" → a point; anything else is an address to geocode. */
+const COORDINATES = /^\s*(-?\d{1,2}(?:\.\d+)?)\s*,\s*(-?\d{1,2}(?:\.\d+)?)\s*$/;
+
+/** Resolve `near` to a point, geocoding it unless it already is "lat,lng". */
+export async function resolveNear(site: SiteApi, input: Pick<RentalSearchInput, "near" | "radiusKm">, department?: string) {
+  const near = input.near?.trim();
   if (!near) return undefined;
-  if (typeof near.lat === "number" && typeof near.lng === "number")
-    return { lat: near.lat, lng: near.lng, label: near.label ?? near.address ?? "", radiusKm: near.radiusKm };
-  if (!near.address) throw new UserInputError("Para buscar cerca de un punto pasá `address` o `lat` y `lng`.");
-  const [first] = await geocodeItems(site, { address: near.address, department });
+  const coordinates = COORDINATES.exec(near);
+  if (coordinates) {
+    const lat = Number(coordinates[1]);
+    const lng = Number(coordinates[2]);
+    if (lat < -35.5 || lat > -30 || lng < -58.6 || lng > -53)
+      throw new UserInputError(`"${near}" no cae en Uruguay: pasá "latitud,longitud", p. ej. "-34.91,-56.16".`);
+    return { lat, lng, label: "", radiusKm: input.radiusKm };
+  }
+  const [first] = await geocodeItems(site, { address: near, department });
   if (!first)
     throw new UserInputError(
-      `No se pudo ubicar "${near.address}". ${GEOCODE_ADVICE}`
+      `No se pudo ubicar "${near}". ${GEOCODE_ADVICE}`
     );
-  return { lat: first.lat, lng: first.lng, label: near.label ?? first.label, radiusKm: near.radiusKm };
+  return { lat: first.lat, lng: first.lng, label: first.label, radiusKm: input.radiusKm };
 }
 
-const AVAILABILITY: Record<string, string> = { any: "hide_any", multiple: "hide_multiple" };
 
 /** Tool input → the exact query names `/api/rentals` (and the /alquileres-uruguay page) accept. */
 export function rentalSearchParams(
@@ -208,21 +201,17 @@ export function rentalSearchParams(
     ...(neighborhoods.length === 1 ? { neighborhood: neighborhoods[0] } : { neighborhoods }),
     types: input.types,
     sinBarrios: input.excludeNeighborhoods?.length ? input.excludeNeighborhoods.join(",") : undefined,
-    sinTipos: input.excludeTypes?.length ? input.excludeTypes.join(",") : undefined,
     sinPortales: input.excludeSources?.length ? input.excludeSources.join(",") : undefined,
     sinPalabras: input.excludeWords?.length ? input.excludeWords.join(",") : undefined,
     residencias: input.roomsAndResidences === "hide" ? "ocultar" : input.roomsAndResidences === "only" ? "solo" : undefined,
-    sinNoche: input.hidePerNightPrices ? 1 : undefined,
     bedrooms: input.bedrooms,
     bedroomsExact: input.bedroomsExact,
     bathrooms: input.bathrooms,
     areaMin: input.areaMin,
-    areaMax: input.areaMax,
     currency: input.listedCurrency,
     priceMin: input.priceMinUyu,
     priceMax: input.priceMaxUyu,
     monthlyMax: input.monthlyMaxUyu,
-    expensesMax: input.expensesMaxUyu,
     pets: input.pets,
     parking: input.parking,
     furnished: input.furnished === true ? true : undefined,
@@ -231,11 +220,10 @@ export function rentalSearchParams(
     garantia: input.guarantees,
     comodidades: input.amenities,
     dueno: input.ownerDirect,
-    agency: input.agency,
-    source: input.source,
     q: input.text,
     servicios: input.neighborhoodQuality,
-    availability: AVAILABILITY[input.hideReported ?? "multiple"],
+    // Like the page: hide homes two or more visitors reported as gone; one report only marks them ⚠.
+    availability: "hide_multiple",
     dias: input.postedWithinDays,
     bajo: input.priceDropped,
     ...(point ? { refLat: point.lat, refLng: point.lng, refLabel: point.label?.slice(0, 60) } : {}),
@@ -257,7 +245,7 @@ const SORT_LABEL: Record<string, string> = {
 };
 
 export async function searchRentals(site: SiteApi, input: RentalSearchInput): Promise<ToolOutput> {
-  const point = await resolveNear(site, input.near, input.department);
+  const point = await resolveNear(site, input, input.department);
   // The site only SORTS by distance; the radius is applied here, so read the widest page.
   const params = rentalSearchParams(point?.radiusKm ? { ...input, perPage: 48 } : input, point);
   const res = await site.get<RentalsResponse>("/api/rentals", params, { ttlMs: TTL.search });
@@ -299,7 +287,7 @@ export async function searchRentals(site: SiteApi, input: RentalSearchInput): Pr
 
   const head =
     withinRadius !== undefined
-      ? `${withinRadius === (res.items ?? []).length ? "Al menos " : ""}${fmt(withinRadius)} viviendas a menos de ${fmt(point!.radiusKm!, 1)} km de ${point!.label || "el punto"} (de ${fmt(total)} que cumplen los demás filtros), de la más cercana a la más lejana.`
+      ? `${withinRadius === (res.items ?? []).length ? "Al menos " : ""}${fmt(withinRadius)} viviendas a menos de ${fmt(point!.radiusKm!, 1)} km ${point!.label ? `de ${point!.label}` : "del punto"} (de ${fmt(total)} que cumplen los demás filtros), de la más cercana a la más lejana.`
       : "";
   const lines = [
     head ||
