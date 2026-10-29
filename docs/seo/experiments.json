@@ -2181,6 +2181,21 @@
         "/guias/hacer-un-testamento-uruguay"
       ],
       "hypothesis": "Las TRES unicas rutas de los pozos de snippet cortado que hoy no estan reservadas por una ventana abierta (el cruce contra este mismo archivo). /fecha-de-cobro-bps-uruguay era la ultima deuda de seoDescriptionBudget: 156 caracteres, uno de mas, reservada desde el 20/9 y libre hoy, y queda en 153 sin perder ningun dato. La guia de casamiento civil estaba en los DOS pozos a la vez: el titulo gastaba el renglon en el indice (\"tramite, testigos y costo\") y daba 72 con la marca, asi que pasa a la respuesta que decide el clic (\"Casarse por civil: $1.149 en la oficina\", 56), y la descripcion baja de 166 a 154 acortando la referencia a la ficha del Registro Civil sin borrar su fecha. La de testamento abria repitiendo el titulo y enumerando secciones; ahora arranca por la legitima y por que el honorario notarial no tiene arancel unico, 150 caracteres. Ninguna cifra es nueva y ninguna se escribe con mas firmeza que su fuente: la guia de testamento dice expresamente que no existe un arancel unico obligatorio, asi que el snippet no publica un precio."
+    },
+    {
+      "id": "fondo-de-solidaridad-recibe-su-enlace",
+      "shippedOn": "2026-10-29",
+      "routes": [
+        "/fondo-de-solidaridad-uruguay"
+      ],
+      "queries": [
+        "fondo de solidaridad",
+        "quienes pagan fondo de solidaridad",
+        "cuanto se paga fondo de solidaridad",
+        "desde cuando se paga el fondo de solidaridad",
+        "fondo de solidaridad deduccion irpf"
+      ],
+      "hypothesis": "Enlazado interno; el contenido de la pagina medida no cambia. Estaba en el pozo de enlaces de contexto (enlacesDeContexto.test.ts): ninguna otra pagina la enlazaba desde su contenido, asi que su unico vinculo quedaba en el bloque del pie que docs/app/INTERCONEXIONES.md midio a 11.341 px de una pagina de 15.868 -enlazada para un rastreador e invisible para un lector-. Era la UNICA ruta libre de los cinco pozos de deuda hoy (npm run seo_debt: 1 de 58), y cumplio sus 29 dias el 28/10, asi que la fila anterior sobre esta misma ruta (fondo-de-solidaridad, del 30/9) ya cerro su ventana. El enlace entra desde /declaracion-de-irpf-uruguay, cuya ultima fila es del 27/9 -libre, igual que el destino- y cuyo lector lo necesita en el punto exacto en que esta mirando que le descuentan: la tarjeta \"Fondo de Solidaridad y aportes a cajas profesionales\" de la lista de deducciones decia que se deducen si se declaran en el 3100 y mandaba los valores a buscar al BPS, sin decir nunca quien lo paga. Son dos cosas distintas metidas en una tarjeta: el aporte a la caja profesional es mensual y por categoria, y el Fondo es ANUAL y no lo debe todo egresado -la Ley 16.524 pone la contribucion desde el quinto ano del egreso y solo con ingresos mensuales mayores a 8 BPC-, asi que quien egreso hace dos anos o gana por debajo del umbral podia estar buscando como deducir algo que no aporta. Ninguna cifra es nueva: las dos que agrega la tarjeta (quinto ano y 8 BPC) son las que la pagina de destino ya publica con fuente propia (Ley 16.524 art. 3 en la redaccion del art. 271 de la Ley 19.535). El enlace va DENTRO de la tarjeta (IrpfDeduction.link, campo nuevo y opcional calcado de WithdrawSection.link), no en las relacionadas del pie. La mencion mas directa de las nueve que el Fondo tiene en el sitio -el hint del campo de la calculadora de sueldo liquido- NO se toco: esa ruta esta reservada hasta el 17/11 por calculadora-sueldo-liquido-con-ejemplo, y entra cuando cierre."
     }
   ]
 }
