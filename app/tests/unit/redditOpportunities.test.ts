@@ -7,6 +7,11 @@ import {
   oppsSortOf,
   oppSubNoteOf,
   oppSuggestedUrl,
+  freshSinceOf,
+  isFreshOpp,
+  OPP_PUBLIC_PROJECTION,
+  toPublicOpp,
+  type OppItem,
 } from '../../utils/redditOpportunities'
 
 describe('redditOpportunities — query', () => {
@@ -28,6 +33,7 @@ describe('redditOpportunities — query', () => {
       state: 'open',
       q: '',
       sort: 'rank',
+      fresh: false,
     })
   })
 
@@ -50,6 +56,7 @@ describe('redditOpportunities — query', () => {
       state: 'answered',
       q: 'onix',
       sort: 'new',
+      fresh: false,
     })
   })
 
@@ -69,8 +76,8 @@ describe('redditOpportunities — query', () => {
   it('"todos" no filtra por estado, y la faceta omite su propia dimensión', () => {
     expect(buildOppsFilter(parseOppsQuery({ state: 'all' }))).not.toHaveProperty('state')
     const q = parseOppsQuery({ sub: 'uruguay', family: 'autos' })
-    expect(buildOppsFilter(q, 'sub')).not.toHaveProperty('sub')
-    expect(buildOppsFilter(q, 'sub')).toHaveProperty('family', 'autos')
+    expect(buildOppsFilter(q, { omit: 'sub' })).not.toHaveProperty('sub')
+    expect(buildOppsFilter(q, { omit: 'sub' })).toHaveProperty('family', 'autos')
   })
 
   it('el offset gana sobre la página, y se acota', () => {
@@ -81,7 +88,7 @@ describe('redditOpportunities — query', () => {
 
   it('no muestra hilos fuera de la ventana de 30 días del job', () => {
     const now = Date.UTC(2026, 9, 28)
-    const f = buildOppsFilter(parseOppsQuery({ state: 'all' }), null, now)
+    const f = buildOppsFilter(parseOppsQuery({ state: 'all' }), { now })
     expect((f.createdAt as { $gte: Date }).$gte.toISOString()).toBe('2026-09-28T00:00:00.000Z')
   })
 
@@ -135,7 +142,59 @@ describe('redditOpportunities — card', () => {
   })
 
   it('trae el aviso de cada sub sin importar mayúsculas', () => {
-    expect(oppSubNoteOf('LegalUruguay')).toContain('Borró en silencio')
+    expect(oppSubNoteOf('LegalUruguay')).toContain('borra en silencio')
     expect(oppSubNoteOf('Burises')).toBeNull()
+  })
+
+  it('los avisos públicos no cuentan la historia de la cuenta del bot', () => {
+    // La página es pública: un aviso que dice "baneó a la cuenta del bot" ata el sitio a una cuenta
+    // sancionada delante de cualquiera que la lea.
+    for (const sub of ['uruguay', 'LegalUruguay', 'AskUruguayan', 'CharruaDevs']) {
+      expect(oppSubNoteOf(sub)).not.toMatch(/bot|baneó|token|cuenta del/i)
+    }
+  })
+})
+
+describe('redditOpportunities — vista pública y lo nuevo del día', () => {
+  const item = {
+    postId: 'abc12',
+    state: 'answered',
+    stateAt: '2026-10-28T12:00:00.000Z',
+    answerUrl: 'https://www.reddit.com/r/uruguay/comments/abc12/x/kx9z1q/',
+    answerVisible: true,
+    answerCheckedAt: '2026-10-29T12:00:00.000Z',
+    judgedAt: '2026-10-28T10:21:00.000Z',
+  } as unknown as OppItem
+
+  it('la vista pública no trae nada de lo que marcó una persona', () => {
+    const pub = toPublicOpp(item)
+    expect(pub).toMatchObject({
+      state: 'open',
+      stateAt: null,
+      answerUrl: '',
+      answerVisible: null,
+      answerCheckedAt: null,
+    })
+    for (const key of ['state', 'stateAt', 'answerUrl', 'answerVisible', 'answerCheckedAt']) {
+      expect(OPP_PUBLIC_PROJECTION).not.toHaveProperty(key)
+    }
+    expect(OPP_PUBLIC_PROJECTION).toHaveProperty('title', 1)
+    expect(OPP_PUBLIC_PROJECTION).toHaveProperty('judgedAt', 1)
+  })
+
+  it('"nuevo" es lo que entró en la última corrida', () => {
+    expect(isFreshOpp(item, '2026-10-28T10:21:00.000Z')).toBe(true)
+    expect(isFreshOpp(item, '2026-10-29T10:21:00.000Z')).toBe(false)
+    expect(isFreshOpp(item, null)).toBe(false)
+  })
+
+  it('el filtro de nuevos sólo filtra con una corrida de referencia', () => {
+    const q = parseOppsQuery({ fresh: '1' })
+    expect(q.fresh).toBe(true)
+    expect(buildOppsFilter(q)).not.toHaveProperty('judgedAt')
+    const since = freshSinceOf('2026-10-28T10:21:00.000Z')!
+    expect(buildOppsFilter(q, { freshSince: since })).toMatchObject({ judgedAt: { $gte: since } })
+    expect(since.toISOString()).toBe('2026-10-28T10:20:00.000Z')
+    expect(parseOppsQuery({ fresh: 'si' }).fresh).toBe(false)
   })
 })

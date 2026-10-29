@@ -95,7 +95,19 @@ async function main(): Promise<void> {
     console.log(`  ${item.confidence.toFixed(2)} r/${item.sub} "${item.title.slice(0, 90)}" → ${item.path} — ${item.reason}`);
   }
 
-  if (summary.aborted) process.exit(1);
+  // Ningún sub devolvió nada: Reddit caído o las credenciales vencidas. La página pública sigue
+  // mostrando la cola de ayer con su fecha, pero la del día se perdió; sin este aviso nadie se
+  // entera hasta que alguien note que la fecha no avanza. Lo de hoy no se pierde: mañana la ventana
+  // de 30 días lo vuelve a leer.
+  if (summary.aborted) {
+    if (!dryRun) {
+      await notifyAdmin(
+        "*Reddit: la cola de hoy no se actualizó* — ningún sub devolvió hilos (¿Reddit caído o las " +
+          "credenciales REDDIT_CLIENT_ID/SECRET?). Mañana se reintenta sola."
+      );
+    }
+    process.exit(1);
+  }
   if (dryRun) {
     console.log("[reddit-opps] DRY RUN: no se escribió nada");
     process.exit(summary.judgeDown ? 1 : 0);
