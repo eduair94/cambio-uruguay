@@ -2141,6 +2141,21 @@
         "interrupciones programadas ose"
       ],
       "hypothesis": "Pagina nueva, y es la gemela de agua de /cortes-de-luz-por-barrio-uruguay (3/10): el dato ya estaba en el repo y no tenia pantalla. OSE publica sus interrupciones programadas aviso por aviso y los BAJA de su web cuando el corte pasa, asi que la pregunta de quien elige donde vivir («aca cortan el agua seguido?») no tiene respuesta publicada en ninguna parte; el backend archiva cada aviso con su fecha y le deriva el barrio al leerlo, y eso hoy solo se veia como una barra dentro de una tarjeta del directorio de alquileres. La pagina no releva nada nuevo ni estrena una sola cifra: lee el mismo /api/rentals/zone-scores y le da una URL propia al atributo `agua`. Lo que la hace publicable es lo que NO afirma, y son cuatro cosas escritas en `app/utils/waterCutRanking.ts` y en su seccion de metodo: se cuentan AVISOS y no horas sin agua; solo lo programado, asi que una rotura no esta (es el recorte contrario al de la pagina de luz, y por eso las dos cifras no se comparan entre si); el barrio sale del nombre que el aviso escribe y un aviso que solo enumera calles no se reparte entre los barrios que cruzan, de modo que el total publicado es el de los avisos ATRIBUIDOS y no el de todos los que publico OSE; y una zona sin dato no aparece con cero, no aparece. El titulo y la descripcion se arman en tiempo de render con la mediana y la peor zona, porque la ventana se corre todos los dias y un literal los congelaria. El enlace entrante nace en /donde-vivir-uruguay, en el mismo renglon de metodo que ya nombraba «cortes de agua de OSE» sin poder mostrarlos, y esa ruta no tiene ninguna fila abierta en el libro."
+    },
+    {
+      "id": "comparar-autos-usados-pagina-nueva",
+      "shippedOn": "2026-10-29",
+      "routes": [
+        "/comparar-autos-usados-uruguay"
+      ],
+      "queries": [
+        "comparar autos usados",
+        "comparador de autos",
+        "onix o 208",
+        "que auto conviene mas",
+        "hilux o amarok"
+      ],
+      "hypothesis": "Pagina nueva para la intencion \"X o Y\" que la familia del auto no contestaba: el asesor (/que-auto-comprar-uruguay) parte del presupuesto y devuelve una lista, y la pagina de precios de cada modelo habla de uno solo, asi que quien ya duda entre dos o tres modelos no tenia donde ponerlos lado a lado. No releva nada nuevo: lee la misma tabla del asesor (caradvisorsnapshots) y el mismo calculo de costos, y le agrega un veredicto calculado par a par con margen de ruido por fila, dos lentes (al mismo ano y con la misma plata) y un grafico de precio por ano con la linea de presupuesto arrastrable. Se mide como pagina nueva: clics propios de la ruta a los 28 dias. Los enlaces entrantes nacen en el mismo commit en los resultados del asesor y en la pagina de precios de cada modelo con 30 avisos o mas."
     }
   ]
 }

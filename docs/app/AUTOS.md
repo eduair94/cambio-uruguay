@@ -788,3 +788,57 @@ Gemini no busca (cero chunks): se pregunta otra vez con otra redacción y, si ta
 falla y se reintenta a la semana. 40 modelos por corrida, refresco a los 30 días; fuente caída
 conserva lo anterior. Se muestra en la ficha y en `/autos-usados-uruguay/precios/<modelo>`, con la
 fachada de `VideosEmbed` (nada de YouTube carga hasta el play).
+
+## El comparador de modelos (2026-10-28)
+
+`/comparar-autos-usados-uruguay`: dos o tres modelos lado a lado. Pedido: "una página que permita
+comparar diferentes modelos usando la información de autos usados a la venta, siguiendo las
+referencias del mercado". Las referencias (Edmunds, KBB, Cars.com, Autocosmos, Carwow) resuelven
+la ficha lado a lado, el costo de tenerlo y la reventa; acá todo sale de avisos uruguayos vigentes.
+Spec en `docs/superpowers/specs/2026-10-28-comparar-autos-usados-design.md`.
+
+**Una sola fuente, sin job nuevo.** Lee `caradvisorsnapshots` (la tabla del asesor) y calcula el
+costo con `carOwnershipCosts`, así el comparador, el asesor y la ficha de cada aviso no pueden dar
+dos cifras distintas para lo mismo. `/api/cars/compare?modelos=…` arma las columnas con TODOS los
+años de la variante elegida; el año, el presupuesto y los km los resuelve `compareCars`
+(`app/utils/carCompare.ts`, pura) en el servidor para el HTML y en el navegador para que el
+deslizador de presupuesto conteste sin pedir nada. La URL es la consulta
+(`modelos=chevrolet-onix,peugeot-208~nafta-automatica`, `anio=` o `presupuesto=`, `km=`) y sólo la
+URL desnuda se indexa.
+
+**Dos lentes.** "Al mismo año" compara lo que se pide por un año (por defecto, el que más avisos
+tienen todos: el mínimo entre columnas). "Con la misma plata" usa la regla del asesor: el año más
+nuevo cuya mediana entra en el presupuesto, y el siguiente si su cuarto más barato también entra
+("negociando").
+
+**El veredicto es calculado, y salió de leer la salida real** con Onix-Gol-208, Hilux-Amarok-Ranger
+y 2008-EcoSport-Tracker; los tres defectos que siguen pasaban los tests:
+
+- **Ganar se mide par a par.** Contra "el mejor" fabricaba victorias: con 101, 90 y 82 cv y un ruido
+  de 12 %, el de 90 quedaba "a la par del mejor" y por eso le ganaba al de 82 por 8 cv, menos que el
+  ruido. Ahora A le gana a B sólo si la diferencia entre ELLOS pasa el margen de la fila (precio
+  5 %, costo por mes 8 %, consumo 0,4 L/100 km, caída 1,5 puntos, repuestos 8 puntos, potencia
+  12 %), y el que queda dentro del margen se nombra: "Parejo con 208 (6,4 L/100 km)".
+- **La misma versión para todos.** Elegir la variante más publicada de cada modelo por separado
+  comparaba una Hilux diésel contra una Ranger nafta. Las columnas que la URL no fija arrancan con
+  la combinación de combustible y caja que tienen todas (la de más avisos en la que menos tiene);
+  una fijada en otra columna manda primero; sin ninguna en común, cada una la suya. Cambiar la de
+  una columna fija las de todas, para que las otras no se muevan solas.
+- **Los rivales, en la versión donde compiten.** La sugerencia de rivales (misma carrocería y precio
+  parecido a igual año: mediana de |log| entre años comunes < log 1,25, con tres años comunes) tomaba
+  la variante más publicada y perdía a la Amarok como rival de la Hilux; con una sola variante
+  compartida (nafta manual, donde están lejos) también. Es el mínimo entre las más publicadas y cada
+  combinación compartida: en diésel están a 13 %.
+
+Y dos cosas que se muestran y **no deciden**: el baúl (las fichas lo miden distinto; el 208 salía con
+152 litros, la mitad del real) y Latin NCAP (la regla del asesor; se muestra el ensayo más cercano al
+año comparado y avisa si queda a 4 años o más). "Pierde menos valor" sólo compite entre modelos con
+curva propia: medido el 29/10, 169 de 242 modelos usan la caída típica del mercado.
+
+**Comparaciones frecuentes** (`carComparePopular`): cada modelo con más avisos con sus dos rivales
+más publicados, sin repetir modelos entre grupos. Sin modelos en la URL, la página arranca con la
+primera (Onix, Gol y 208 el 29/10) y lo dice.
+
+Enlaces entrantes: los resultados del asesor ("comparar las tres primeras", con su versión y el
+mismo presupuesto) y la página de precios de cada modelo con 30+ avisos (la de precios existe para
+424 modelos y el comparador tiene 242: a uno chico lo mandaría a un "no encontramos").

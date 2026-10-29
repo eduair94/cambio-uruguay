@@ -858,6 +858,12 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/que-auto-comprar-uruguay',
       },
       {
+        label: 'Comparar autos usados',
+        description:
+          'Dos o tres modelos lado a lado: a qué año llegás con tu plata, cuánto cuesta tenerlo y en qué gana cada uno.',
+        to: '/comparar-autos-usados-uruguay',
+      },
+      {
         label: '¿Cuánto vale mi auto?',
         description: 'El precio de mercado de tu auto, con los avisos de hoy.',
         to: '/cuanto-vale-mi-auto-uruguay',
