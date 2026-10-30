@@ -2227,6 +2227,20 @@
         "sitios que enlazan"
       ],
       "hypothesis": "Pagina nueva e indexable, tercera hermana de /estadisticas-del-sitio y /paginas-mas-visitadas: de donde llega la gente al sitio (buscadores, asistentes de IA, redes y los sitios web que enlazan), mes a mes en 24 meses, con el patron de cada fuente (un pico de un dia, en alza, constante) y una respuesta corta arriba que dice si algun enlace trae mucha gente. Se mide si gana busquedas propias del tema y si la lista enlazada a las paginas de aterrizaje lleva lectores a ellas. Los enlaces nuevos desde las dos hermanas no se declaran: son paginas sobre el propio sitio, no paginas de lectura."
+    },
+    {
+      "id": "titulos-de-las-guias-respuesta-primero-8",
+      "shippedOn": "2026-10-30",
+      "routes": [
+        "/guias/abogado-gratis-uruguay",
+        "/guias/comprar-en-amazon-desde-uruguay",
+        "/guias/despido-y-liquidacion-uruguay",
+        "/guias/estudio-de-cobranza-uruguay",
+        "/guias/horas-extra-en-uruguay",
+        "/guias/llegar-tarde-tolerancia-y-sanciones-uruguay",
+        "/guias/me-deben-el-sueldo-uruguay"
+      ],
+      "hypothesis": "Las siete guias que quedaban libres del pozo de titulos pasados de 60 (guideSnippetBudget.test.ts: 10 -> 3, y los tres que quedan son dos reservados y el glosario). Iban de 78 a 61 caracteres publicados y el defecto es el de las ocho tandas anteriores: cinco eran la etiqueta del tema seguida del indice de la guia y dos devolvian la pregunta sin contestarla, asi que la respuesta caia del lado que el SERP recorta. Ahora cada titulo entra entero y contesta: la hora extra vale el doble y 150 % en feriado, en una compra de Amazon el IVA es todo o nada, el estudio de cobranza no te retiene el sueldo, por llegar tarde te pueden sancionar pero no multar, la indemnizacion del mensual es un mes por ano, al sueldo impago se le reclama un 10 % mas y no hay un abogado gratis sino una puerta por problema. Ninguna cifra es nueva y donde el cuerpo hedgea el titulo no afirma: el de Amazon no publica los USD 200 porque la condicion del vendedor registrado esta fechada y ya se postergo dos veces, el de despido no publica el tope de seis porque es solo del mensual, y el de llegar tarde dice sanciones si y multas no porque el cuerpo afirma que el poder disciplinario existe. Es el tramo contenido, que rinde 8x el promedio del sitio, asi que un titulo cortado cuesta mas caro aca. Se espera mas CTR a igual posicion, como midio la primera tanda. Las tres correcciones del buscador propio quedan anotadas en el test."
     }
   ]
 }

@@ -526,16 +526,9 @@ const MEASURED = 151
  * guía y se rompa otra sin que nada avise; una lista exacta, no.
  */
 const DEUDA_TITULO_LARGO = [
-  'abogado-gratis-uruguay',
   'aguinaldo-casos-especiales-uruguay',
   'certificado-unico-departamental-uruguay',
-  'comprar-en-amazon-desde-uruguay',
-  'despido-y-liquidacion-uruguay',
-  'estudio-de-cobranza-uruguay',
   'glosario-terminos-cambiarios',
-  'horas-extra-en-uruguay',
-  'llegar-tarde-tolerancia-y-sanciones-uruguay',
-  'me-deben-el-sueldo-uruguay',
 ]
 
 /**
@@ -605,8 +598,70 @@ const DEUDA_TITULO_LARGO = [
  * internación —que es del primer día— quedándose en la descripción, donde entra completa. Lo mismo
  * con el embargo y el juicio ejecutivo de la guía del préstamo y con las vías del Literal E y el
  * IRAE de la del exterior: siguen en sus descripciones, que no se tocaron.
+ *
+ * 10 → 3 el 2026-10-30, y son las SIETE que quedaban libres: la tanda anterior de este mismo día
+ * tomó las tres más pasadas de las diez que el cruce contra `docs/seo/experiments.json` declaraba
+ * libres, y estas siete son el resto exacto de esa cola. Con esto el pozo queda en tres y ninguno
+ * de los tres es deuda de longitud: dos están reservados hasta el 7 y el 10 de noviembre y el
+ * tercero es `glosario-terminos-cambiarios`, que este archivo ya explicó por qué no se toca.
+ *
+ * Iban de 61 a 44 caracteres de literal (78 a 61 publicados) y el defecto era el de siempre en sus
+ * dos formas: cinco eran la ETIQUETA DEL TEMA seguida del índice de la guía («Horas extra en
+ * Uruguay: cuándo se generan y cómo se pagan», «Comprar en Amazon desde Uruguay: courier, aduana y
+ * costo real», «Llegar tarde, tolerancia y sanciones en el trabajo (Uruguay)») y dos devolvían la
+ * pregunta sin contestarla («Abogado gratis en Uruguay: qué puerta te corresponde», «Despido y
+ * liquidación en Uruguay: qué te corresponde»).
+ *
+ * Ahora cada uno contesta: que la hora extra vale el doble y 150 % en feriado, que en una compra de
+ * Amazon el IVA es todo o nada, que el estudio de cobranza no te retiene el sueldo, que por llegar
+ * tarde te pueden sancionar pero no multar, que la indemnización del mensual es un mes por año, que
+ * al sueldo impago se le reclama un 10 % más y que no hay «un abogado gratis» sino una puerta por
+ * problema.
+ *
+ * Ninguna cifra es nueva: el 100/150 % de la Ley 15.996, el «todo o nada» de los USD 200, el piso
+ * del 35 % de la Ley 17.829, el mes de sueldo por año con tope de seis y el recargo automático del
+ * 10 % de la Ley 18.572 ya estaban en el cuerpo de su guía. Y donde el cuerpo hedgea el título no
+ * afirma, que acá decidió cuatro redacciones. El de Amazon NO publica «hasta USD 200 sin IVA»: la
+ * guía fecha el registro del vendedor el 1/10/2026 y en la misma línea avisa que esa fecha «ya se
+ * postergó dos veces», así que el título se queda con la estructura que el cuerpo sí da por
+ * categórica («es todo o nada») y los USD 200 siguen en la descripción con su condición de origen.
+ * El de despido dice «un mes por año» sin número de tope porque el tope de seis es del MENSUAL y el
+ * jornalero va por jornales con su propio máximo y su propio piso: las dos mitades ya conviven en
+ * la descripción, que no se tocó. El de llegar tarde dice «sanciones sí, multas no» y no «no te
+ * pueden sancionar», porque el cuerpo afirma lo contrario —el empleador tiene poder disciplinario y
+ * una escala válida que va de la observación al despido— y lo que enumera como nunca válido es la
+ * multa y el descuento punitivo. Y el de abogado gratis NO dice «cuatro puertas»: el cuerpo
+ * enumera cuatro en su regla corta pero nunca las cuenta ni se cierra en ellas (están además las
+ * ventanillas del BCU, URSEA y URSEC), así que el título publica lo que el cuerpo sí establece,
+ * que hay una puerta distinta por problema.
+ *
+ * Y una séptima aplicación de la regla del buscador propio, que acá rehizo tres de los siete
+ * títulos DESPUÉS de escribirlos, midiendo sobre el índice. «Cobranza: sin juicio no te tocan el
+ * sueldo» perdía la consulta «estudio de cobranza» contra `/prescripcion-de-deudas-privadas-uruguay`
+ * (38 contra 36) porque dejaba «estudio» fuera del título; quedó «Cobranza: el estudio no retiene
+ * tu sueldo», que vuelve a tener las dos palabras como inicio de palabra (62, primera) y además
+ * sube «cobranza» de 92 a 110. Y «Me deben el sueldo: el 10 % corre solo» perdía «reclamar el
+ * sueldo» contra `/preguntas-economia-personal` (42 contra 32); quedó «reclamar con 10 % más», que
+ * la conserva en 62 y lleva la misma cifra.
+ *
+ * El tercero es un modo de fallar que este archivo no tenía escrito y conviene dejar anotado,
+ * porque no es canibalización: «Llegar tarde: descuento sí, multa no» dejaba la consulta
+ * «sanciones» con CERO resultados. Ninguna otra página la servía —la guía era la única, con 62 por
+ * tener la palabra en el título— así que no se la ganaba nadie: simplemente dejaba de haber
+ * respuesta, y `didYouMean` tampoco devolvía sugerencia. Una consulta que ninguna otra página
+ * cubre se pierde sacando la palabra del único título que la tenía, y eso no se ve mirando quién
+ * queda primero. «sanciones sí, multas no» la devuelve a 62 diciendo lo mismo.
+ *
+ * Después de las tres correcciones las siete ganan su propia consulta («abogado» 80, «comprar en
+ * amazon» 80, «despido» 110, «liquidacion» 62, «cobranza» 110, «estudio de cobranza» 62, «horas
+ * extra» 80, «llegar tarde» 80, «sanciones» 62, «puntualidad» 62, «me deben el sueldo» 80,
+ * «reclamar el sueldo» 62) y ninguna página perdió una consulta que tuviera: `/couriers-uruguay`
+ * sigue ganando «amazon» (68) y «courier» (82), y `/indemnizacion-por-despido-uruguay` sigue
+ * ganando «indemnizacion» (52). La única baja es «tolerancia», de 62 a 32, que conserva el primer
+ * puesto siendo el único resultado: es el canje que la novena tanda ya dejó escrito, un título de
+ * 43 que CONTESTA no puede además repetir las tres palabras del slug.
  */
-const TITLE_OVER_BUDGET = 10
+const TITLE_OVER_BUDGET = 3
 
 /**
  * 89 → 77 el 2026-10-01: las doce más largas del catálogo, de 306 a 215 caracteres.
