@@ -19,6 +19,24 @@
   ],
   "experiments": [
     {
+      "id": "reclamos-a-la-intendencia-por-barrio-pagina-nueva",
+      "shippedOn": "2026-10-30",
+      "routes": [
+        "/reclamos-a-la-intendencia-por-barrio-uruguay"
+      ],
+      "hypothesis": "La IM publica su Sistema Unico de Reclamos como un volcado de datos abiertos (1,7 M de filas en un ZIP de 44 MB) y ninguna tabla por barrio, asi que la pregunta por el alumbrado, el saneamiento o la limpieza de una zona no tiene respuesta publicada. El backend ya agrega ese volcado por barrio INE y hoy solo se ve como tres barras dentro de una tarjeta del directorio de alquileres: con URL propia deberia captar impresiones de reclamo a la Intendencia y de barrio concreto, como las dos gemelas de luz y agua."
+    },
+    {
+      "id": "titulos-de-las-guias-respuesta-primero-7",
+      "shippedOn": "2026-10-30",
+      "routes": [
+        "/guias/me-certifique-subsidio-por-enfermedad-uruguay",
+        "/guias/no-pagar-prestamo-e-irse-del-pais-uruguay",
+        "/guias/trabajar-para-el-exterior-desde-uruguay"
+      ],
+      "hypothesis": "Las tres guias enumeraban sus secciones en el titulo (96, 81 y 82 caracteres con la marca) y la respuesta caia del lado que el SERP recorta. Con la respuesta adelante y los tres dentro de los 60 caracteres -el 70 % desde el cuarto dia, que no pagar no es delito por el art. 52 de la Constitucion y que facturar al exterior sale sin IVA- deberia subir el CTR desde la misma posicion."
+    },
+    {
       "id": "inmobiliarias-fichas-en-el-sitemap",
       "shippedOn": "2026-10-20",
       "routes": [

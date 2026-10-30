@@ -1283,6 +1283,12 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/a-quien-le-reclamo-uruguay',
       },
       {
+        label: 'Reclamos a la Intendencia por barrio',
+        description:
+          'Alumbrado, saneamiento y limpieza: cuántos reclamos registra cada barrio de Montevideo.',
+        to: '/reclamos-a-la-intendencia-por-barrio-uruguay',
+      },
+      {
         label: 'Compensación por corte de luz',
         description: 'No se pide: la calcula URSEA por semestre y se descuenta de la factura.',
         to: '/compensacion-por-corte-de-luz-uruguay',

@@ -1156,6 +1156,10 @@
           "label": "A quién le reclamo"
         },
         {
+          "to": "/reclamos-a-la-intendencia-por-barrio-uruguay",
+          "label": "Reclamos a la Intendencia por barrio"
+        },
+        {
           "to": "/compensacion-por-corte-de-luz-uruguay",
           "label": "Compensación por corte de luz"
         },

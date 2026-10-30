@@ -260,7 +260,7 @@ import type { Guide } from './guides'
 export const redditGuides: readonly Guide[] = [
   {
     slug: 'no-pagar-prestamo-e-irse-del-pais-uruguay',
-    title: '¿Qué pasa si no pago un préstamo en Uruguay (y me voy del país)?',
+    title: 'No pagar un préstamo no es delito (art. 52)',
     description:
       'No pagar un préstamo no es delito: la Constitución prohíbe la prisión por deudas (art. 52). Hay juicio ejecutivo y embargo, e irte del país no lo borra.',
     tag: 'DEUDA',
@@ -2609,7 +2609,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'trabajar-para-el-exterior-desde-uruguay',
-    title: 'Trabajar para el exterior desde Uruguay: cómo facturar y tributar',
+    title: 'Trabajar para el exterior: facturás sin IVA',
     description:
       'Facturar al exterior sale sin IVA porque la operación no está gravada: no es una «tasa cero», que en Uruguay no existe. Unipersonal, Literal E, IRAE y BPS.',
     tag: 'EXTERIOR',
@@ -4685,7 +4685,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'me-certifique-subsidio-por-enfermedad-uruguay',
-    title: 'Me certifiqué: cuánto cobro, desde qué día, quién paga, y si me pueden despedir',
+    title: 'Me certifiqué: cobro el 70 % desde el día 4',
     description:
       'El BPS paga el 70 % desde el cuarto día certificado —el primero si hay internación—, tope de $ 67.754 (01/2026). Despedirte certificado cuesta el doble.',
     tag: 'ENFERMEDAD',

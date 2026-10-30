@@ -427,6 +427,10 @@ export const CONTENIDO_PATHS = new Set([
   // guia equivalente de `/guias/*`.
   "/cortes-de-agua-por-barrio-uruguay",
   "/cortes-de-luz-por-barrio-uruguay",
+  // La tercera de esa serie (2026-10-30): los reclamos de alumbrado, saneamiento y limpieza que la
+  // IM registra por barrio. Mismo racimo y mismo motivo que las dos de arriba — es lectura larga,
+  // `ads.ts` le da dos unidades en flujo y `contenidoTramoParity.test.ts` lo exige.
+  "/reclamos-a-la-intendencia-por-barrio-uruguay",
 ]);
 
 export function tierOf(bucket: string): Tier {

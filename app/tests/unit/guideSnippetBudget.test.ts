@@ -535,10 +535,7 @@ const DEUDA_TITULO_LARGO = [
   'glosario-terminos-cambiarios',
   'horas-extra-en-uruguay',
   'llegar-tarde-tolerancia-y-sanciones-uruguay',
-  'me-certifique-subsidio-por-enfermedad-uruguay',
   'me-deben-el-sueldo-uruguay',
-  'no-pagar-prestamo-e-irse-del-pais-uruguay',
-  'trabajar-para-el-exterior-desde-uruguay',
 ]
 
 /**
@@ -584,7 +581,32 @@ const DEUDA_TITULO_LARGO = [
  * treinta veces— así que un título con el monto pelado sería cierto en un caso y falso en el otro.
  * Los testigos y las dos etapas siguen en la descripción, que los trae completos.
  */
-const TITLE_OVER_BUDGET = 13
+/**
+ * 13 → 10 el 2026-10-30: las TRES guías más pasadas de presupuesto de las diez que el cruce contra
+ * `docs/seo/experiments.json` declara libres hoy —las cuatro tandas de títulos y descripciones de
+ * fines de septiembre cumplen 29 días recién entre el 31/10 y el 10/11, así que estas diez son la
+ * primera cola holgada que una corrida encuentra desde el 21/10 y por eso se tocan tres y no una—.
+ *
+ * Las tres son el mismo defecto en su forma más cruda, el que este archivo documenta desde la
+ * primera corrida: el título ENUMERABA las secciones y la respuesta caía del lado que el SERP
+ * recorta. La del subsidio por enfermedad llegaba a 96 con la marca —treinta y seis de más, el peor
+ * título que quedaba en el catálogo— listando las cuatro preguntas de la guía («cuánto cobro, desde
+ * qué día, quién paga, y si me pueden despedir») sin contestar ninguna; ahora trae las dos que
+ * deciden el clic, el 70 % y el cuarto día, que son las que su propio cuerpo publica con el art. 14
+ * del Decreto-Ley 14.407 y la base de materia gravada de la Ley 18.725, y queda en 60. La del
+ * préstamo impago anunciaba la pregunta entera («¿Qué pasa si no pago un préstamo en Uruguay (y me
+ * voy del país)?», 81) cuando la respuesta es una línea y desarma el miedo que trae al lector: no
+ * es delito, porque el artículo 52 de la Constitución prohíbe la prisión por deudas. Y la de
+ * facturar al exterior prometía el índice («cómo facturar y tributar», 82) en lugar del dato que su
+ * cuerpo ya afirma: la exportación de servicios no está gravada, así que la factura sale sin IVA.
+ *
+ * Ninguna cifra es nueva y ninguna se escribió con más firmeza que su fuente: el «día 4» es el
+ * «cuarto día de certificación» que el art. 14 escribe y el BPS repite, con la excepción por
+ * internación —que es del primer día— quedándose en la descripción, donde entra completa. Lo mismo
+ * con el embargo y el juicio ejecutivo de la guía del préstamo y con las vías del Literal E y el
+ * IRAE de la del exterior: siguen en sus descripciones, que no se tocaron.
+ */
+const TITLE_OVER_BUDGET = 10
 
 /**
  * 89 → 77 el 2026-10-01: las doce más largas del catálogo, de 306 a 215 caracteres.

@@ -70,6 +70,15 @@
           Cómo se pide el retiro del video y qué plazos corren</NuxtLink
         >.
       </p>
+      <p class="text-body-2 text-medium-emphasis mt-4 mb-0" style="max-width: 72ch">
+        Y hay un caso que tampoco es ninguno de los cinco porque del otro lado no hay una empresa:
+        la luminaria apagada de tu cuadra, la boca de tormenta tapada o el contenedor quemado. Eso
+        lo atiende la Intendencia por su propio sistema de reclamos, con su número y su expediente.
+        <NuxtLink :to="localePath('/reclamos-a-la-intendencia-por-barrio-uruguay')">
+          Cuántos reclamos de alumbrado, saneamiento y limpieza registra cada barrio de
+          Montevideo</NuxtLink
+        >, de los datos abiertos de la propia IM.
+      </p>
     </section>
 
     <!-- Deadlines -->
