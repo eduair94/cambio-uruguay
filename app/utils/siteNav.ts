@@ -4814,6 +4814,26 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // De dónde viene la gente: buscadores, IA, redes y los sitios que enlazan
+        // (classes/site-analytics/trafficSources.ts).
+        to: '/origen-del-trafico',
+        labelKey: 'nav.origenDelTrafico',
+        icon: 'mdi-source-branch',
+        priority: 0.4,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'origen del trafico',
+          'de donde vienen las visitas',
+          'fuentes de trafico',
+          'backlinks',
+          'enlaces entrantes',
+          'sitios que enlazan',
+          'referidos',
+          'trafico desde chatgpt',
+        ],
+      },
+      {
         to: '/estadisticas-reddit',
         labelKey: 'redditStats.nav',
         icon: 'mdi-reddit',

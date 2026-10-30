@@ -5,8 +5,11 @@ import { SiteAnalyticsSnapshotModel } from "../models/SiteAnalyticsSnapshot";
 import { SiteRevenueSnapshotModel } from "../models/SiteRevenueSnapshot";
 import { SitePageRankingModel } from "../models/SitePageRanking";
 import { SiteTopPagesModel } from "../models/SiteTopPages";
+import { SiteTrafficSourcesModel } from "../models/SiteTrafficSources";
 import { TOP_PAGES_KEY } from "./publicTopPages";
 import type { PublicTopPagesSnapshot } from "./publicTopPages";
+import { TRAFFIC_SOURCES_KEY } from "./trafficSources";
+import type { TrafficSourcesSnapshot } from "./trafficSources";
 import { PAGE_RANKING_KEY } from "./pageRanking";
 import type { PageRankingSnapshot } from "./pageRanking";
 import { revenueIsEmpty, SITE_REVENUE_KEY } from "./revenue";
@@ -109,4 +112,16 @@ export async function loadPageRanking(): Promise<PageRankingSnapshot | null> {
 
 export async function saveSiteTopPages(doc: PublicTopPagesSnapshot): Promise<void> {
   await SiteTopPagesModel.updateOne({ key: TOP_PAGES_KEY }, { $set: { ...doc, key: TOP_PAGES_KEY } }, { upsert: true });
+}
+
+// ---------------------------------------------------------------------------------------------
+// De dónde viene la gente (/origen-del-trafico): público, armado campo por campo.
+// ---------------------------------------------------------------------------------------------
+
+export async function saveTrafficSources(doc: TrafficSourcesSnapshot): Promise<void> {
+  await SiteTrafficSourcesModel.updateOne(
+    { key: TRAFFIC_SOURCES_KEY },
+    { $set: { ...doc, key: TRAFFIC_SOURCES_KEY } },
+    { upsert: true }
+  );
 }

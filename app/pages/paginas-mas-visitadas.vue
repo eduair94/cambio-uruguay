@@ -286,7 +286,8 @@
           <section aria-labelledby="channels-title">
             <h2 id="channels-title" class="text-h6 font-weight-bold mb-1">Cómo llega la gente</h2>
             <p class="text-body-2 text-medium-emphasis mb-3">
-              Visitas desde Uruguay por semana, según de dónde vienen.
+              Visitas desde Uruguay por semana, según de dónde vienen. Sitio por sitio, en
+              <NuxtLink to="/origen-del-trafico">de dónde viene la gente</NuxtLink>.
             </p>
             <VTable density="compact" class="cu-mobile-cards top-pages__table">
               <thead>

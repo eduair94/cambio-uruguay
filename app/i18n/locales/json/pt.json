@@ -1837,6 +1837,7 @@
     "comparadorTransporte": "Carro, moto ou ônibus: o que compensa",
     "motosUsadas": "Preço de motos usadas",
     "paginasMasVisitadas": "Páginas mais visitadas",
+    "origenDelTrafico": "De onde vêm os visitantes",
     "fondoDeSolidaridad": "Fondo de Solidaridad (taxa de egressos)",
     "iass": "IASS (imposto sobre aposentadorias)"
   },
@@ -2434,6 +2435,7 @@
     "pagesTitle": "Páginas mais lidas",
     "pagesHint": "Os endereços são publicados sem nada depois do ponto de interrogação, então nada digitado na busca aparece aqui.",
     "fullRanking": "Ver as 100 mais visitadas a partir do Uruguai e as que estão crescendo",
+    "sourcesLink": "Ver de quais sites, redes e assistentes de IA chegam os visitantes",
     "table": {
       "page": "Página",
       "views": "Visualizações",

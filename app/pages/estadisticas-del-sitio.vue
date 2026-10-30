@@ -262,6 +262,11 @@
             <div v-if="!group.rows.length" class="text-body-2 text-medium-emphasis">
               {{ t('siteStats.noData') }}
             </div>
+            <p v-if="group.key === 'channels'" class="text-body-2 mb-3">
+              <NuxtLink :to="localePath('/origen-del-trafico')" class="stats-link">
+                {{ t('siteStats.sourcesLink') }}
+              </NuxtLink>
+            </p>
             <div v-for="row in group.rows" :key="row.label" class="share-row">
               <div class="d-flex align-center justify-space-between ga-2">
                 <span class="text-body-2">{{ group.translate(row.label) }}</span>
