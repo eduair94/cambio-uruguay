@@ -2270,7 +2270,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'despido-y-liquidacion-uruguay',
-    title: 'Despido y liquidación en Uruguay: qué te corresponde',
+    title: 'Despido y liquidación: un mes por año',
     description:
       'Un mes de sueldo por año o fracción, con tope de seis mensualidades, y el jornalero por su propio régimen en jornales. Qué entra en esa base de cálculo.',
     tag: 'DESPIDO',
@@ -3779,7 +3779,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'comprar-en-amazon-desde-uruguay',
-    title: 'Comprar en Amazon desde Uruguay: courier, aduana y costo real',
+    title: 'Comprar en Amazon: el IVA es todo o nada',
     description:
       'Hasta USD 200 de EE.UU. no pagás IVA, y es todo o nada: con USD 201 pagás sobre el total. Más la franquicia anual de USD 800 en hasta 3 envíos.',
     tag: 'IMPORTACIÓN',
@@ -4498,7 +4498,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'horas-extra-en-uruguay',
-    title: 'Horas extra en Uruguay: cuándo se generan y cómo se pagan',
+    title: 'Horas extra: el doble, y 150 % en feriado',
     description:
       'La hora extra vale 100 % más en día hábil y 150 % en descanso o feriado (Ley 15.996). Es irrenunciable y se genera pasadas las 8 diarias o 44/48 semanales.',
     tag: 'HORAS EXTRA',
@@ -4593,7 +4593,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'llegar-tarde-tolerancia-y-sanciones-uruguay',
-    title: 'Llegar tarde, tolerancia y sanciones en el trabajo (Uruguay)',
+    title: 'Llegar tarde: sanciones sí, multas no',
     description:
       'Ninguna ley obliga a dar tolerancia en el privado: la fija tu convenio. Dentro de ella no hay falta, y el descuento es proporcional, nunca una multa.',
     tag: 'PUNTUALIDAD',
@@ -4986,7 +4986,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'me-deben-el-sueldo-uruguay',
-    title: 'Me deben el sueldo: cómo reclamar en Uruguay',
+    title: 'Me deben el sueldo: reclamar con 10 % más',
     description:
       'Si cobrás por mes, pasado el día 10 corrido ya es incumplimiento (Ley 10.449) y corre solo un recargo del 10 % (Ley 18.572). Un año para reclamar.',
     tag: 'RECLAMO',
@@ -5118,7 +5118,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'abogado-gratis-uruguay',
-    title: 'Abogado gratis en Uruguay: qué puerta te corresponde',
+    title: 'Abogado gratis: cada problema, su puerta',
     description:
       'El Consultorio Jurídico atiende gratis en Montevideo hasta $ 55.000 nominales (2026); lo laboral lo asesora el MTSS y el juicio, la Defensoría Pública.',
     tag: 'ACCESO',
@@ -5227,7 +5227,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'estudio-de-cobranza-uruguay',
-    title: 'Te llama un estudio de cobranza: qué puede y qué no',
+    title: 'Cobranza: el estudio no retiene tu sueldo',
     description:
       'Un cobrador no puede retenerte el sueldo: la Ley 17.829 tasa las retenciones y deja un piso del 35 %. En el Clearing el registro dura hasta 10 años.',
     tag: 'COBRANZA',
