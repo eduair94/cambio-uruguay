@@ -79,6 +79,7 @@ const NO_ES_PAGINA_DE_LECTURA = new Map([
   ['/estadisticas-reddit', 'sobre el propio sitio'],
   ['/hecho-a-pedido', 'sobre el propio sitio'],
   ['/mapa-de-temas', 'ES el índice de temas: los enlaces salen de ella'],
+  ['/origen-del-trafico', 'sobre el propio sitio'],
   ['/paginas-mas-visitadas', 'sobre el propio sitio'],
   ['/preguntas-frecuentes', 'sobre el propio sitio'],
   ['/privacidad', 'legal'],

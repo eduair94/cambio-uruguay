@@ -1844,6 +1844,7 @@
     "comparadorTransporte": "Car, motorbike or bus: what pays off",
     "motosUsadas": "Used motorbike prices",
     "paginasMasVisitadas": "Most visited pages",
+    "origenDelTrafico": "Where visitors come from",
     "fondoDeSolidaridad": "Fondo de Solidaridad (graduate levy)",
     "iass": "IASS (pension income tax)"
   },
@@ -2441,6 +2442,7 @@
     "pagesTitle": "Most-read pages",
     "pagesHint": "Paths are published without anything after the question mark, so nothing typed into the search box can show up here.",
     "fullRanking": "See the 100 most visited pages from Uruguay, and which ones are growing",
+    "sourcesLink": "See which sites, social networks and AI assistants send visitors",
     "table": {
       "page": "Page",
       "views": "Views",
