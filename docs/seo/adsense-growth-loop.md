@@ -281,6 +281,12 @@ Cambios:
    de la explicación, en los dos diseños de `ToolShell`. Sigue sin ir nunca entre los campos y el
    resultado, que es lo que sacó a las calculadoras de los automáticos.
 
+4. **Las 78 páginas que arman sus preguntas a mano** (con `VExpansionPanels`, no con `FaqSection`;
+   entre ellas varias de las que más rinden) llevan la misma unidad, puesta en cada página antes
+   del bloque de preguntas. Medido en producción después del primer deploy: la unidad de
+   `FaqSection` no les llegaba. `faqSectionAd.test.ts` exige que todas sean de densidad `normal` y
+   que ninguna ponga dos.
+
 Ninguno agrega formatos de superposición, anclaje ni viñeta, y ninguno toca la consola: los
 automáticos siguen como estaban. Todas las unidades reservan su alto y cargan a 400 px.
 
