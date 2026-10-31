@@ -219,6 +219,12 @@
         </VCol>
       </VRow>
 
+      <!-- La unidad intermedia de la ficha, en el primer corte después de lo que la persona vino
+           a ver (fotos, precio y contacto). La ficha es densidad normal: con el cierre del layout
+           son dos, el tope de maxAdSlots. Ver docs/seo/adsense-growth-loop.md, decimotercera
+           iteración. -->
+      <AdSlot placement="in-article" />
+
       <section v-if="car.specs && hasSpecSheet" class="mt-8" data-testid="car-specs">
         <h2 class="text-h6 mb-1">Ficha técnica</h2>
         <p class="text-body-2 text-medium-emphasis mb-4">
