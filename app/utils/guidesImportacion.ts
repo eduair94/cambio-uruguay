@@ -2,7 +2,8 @@
 // de las compras web del exterior desde el Decreto 50/026.
 //
 // Las cifras (US$ 800 en tres envíos, IVA 22 %, el piso de US$ 20 por envío, la exoneración de
-// US$ 200 del acuerdo con Estados Unidos y el registro de vendedores del 1.º de octubre de 2026)
+// US$ 200 del acuerdo con Estados Unidos y el registro de vendedores, exigible desde el 1.º de
+// octubre de 2026 y abierto al pedido del operador postal por la RG DNA 26/2026)
 // están alineadas a mano con `utils/aduanaFaq.ts` y `pages/franquicia-aduana-uruguay.vue`, que son
 // la fuente de verdad del sitio para este régimen: si alguna cambia ahí, cambia acá.
 //
@@ -56,7 +57,7 @@ export const importacionGuides: readonly Guide[] = [
       },
       {
         heading: 'Cuándo no pagás',
-        body: 'Hay dos puertas de salida y las dos son estrechas. La primera: los envíos procedentes de Estados Unidos de hasta US$ 200 por envío, que la Aduana exonera de IVA por el acuerdo comercial vigente con ese país. Ojo con la fecha, porque cambia el resultado: desde el 1.º de octubre de 2026, salvo nueva prórroga, la exoneración además exige que el vendedor que emite la factura esté registrado ante la Aduana, y si no figura en la lista oficial el envío paga. La segunda puerta: los obsequios familiares genuinos, de persona física a persona física, en cantidades razonables y para uso personal, con declaración de valor. Escribir "regalo" sobre una compra comercial no la convierte en obsequio. Y acá está el detalle que descoloca a todo el mundo: no pagar no es no consumir. Un envío exonerado igual te gasta uno de los tres del año y su valor se descuenta del cupo, así que si traés US$ 198 de Estados Unidos sin IVA te quedan US$ 602 y dos envíos.',
+        body: 'Hay dos puertas de salida y las dos son estrechas. La primera: los envíos procedentes de Estados Unidos de hasta US$ 200 por envío, que la Aduana exonera de IVA por el acuerdo comercial vigente con ese país. Ojo con el registro, porque cambia el resultado: la exoneración además exige que el vendedor que emite la factura figure en el registro de empresas extranjeras de la Aduana, y si no está en la lista oficial el envío paga. Se exige desde el 1.º de octubre de 2026 (la Aduana anuncia el 3 de noviembre, cuando arranca la validación automática), y desde el 5 de octubre tu courier puede pedir que agreguen a un vendedor que falta (RG DNA 26/2026). La segunda puerta: los obsequios familiares genuinos, de persona física a persona física, en cantidades razonables y para uso personal, con declaración de valor. Escribir "regalo" sobre una compra comercial no la convierte en obsequio. Y acá está el detalle que descoloca a todo el mundo: no pagar no es no consumir. Un envío exonerado igual te gasta uno de los tres del año y su valor se descuenta del cupo, así que si traés US$ 198 de Estados Unidos sin IVA te quedan US$ 602 y dos envíos.',
       },
       {
         heading: 'La franquicia nueva: US$ 800 en tres envíos',
@@ -125,7 +126,7 @@ export const importacionGuides: readonly Guide[] = [
       },
       {
         q: '¿Conviene comprar en EE.UU.?',
-        a: 'Para valores bajos, muchas veces sí: los envíos procedentes de Estados Unidos de hasta US$ 200 por envío están exonerados de IVA. Pero desde el 1.º de octubre de 2026, salvo nueva prórroga, el vendedor que factura tiene que estar registrado ante la Aduana, y el envío igual te consume uno de los tres del año.',
+        a: 'Para valores bajos, muchas veces sí: los envíos procedentes de Estados Unidos de hasta US$ 200 por envío están exonerados de IVA. Pero el vendedor que factura tiene que figurar en el registro de la Aduana: se exige desde el 1.º de octubre de 2026 y, si falta, tu courier puede pedir que lo agreguen (RG DNA 26/2026). Y el envío igual te consume uno de los tres del año.',
       },
     ],
     related: [
@@ -147,6 +148,18 @@ export const importacionGuides: readonly Guide[] = [
         label:
           'Desde el 1.º de mayo comienza a regir el nuevo régimen de franquicias de envíos postales internacionales',
         url: 'https://www.aduanas.gub.uy/innovaportal/v/28455/1/innova.front/desde-el-1%C2%BA-de-mayo-comienza-a-regir-el-nuevo-regimen-de-franquicias-de-envios-postales-internacionales.html',
+        publisher: 'Dirección Nacional de Aduanas',
+      },
+      {
+        label:
+          'RG DNA 26/2026 — registro de empresas extranjeras: alta a pedido del operador postal y lista publicada por la DNA (vigente desde el 5/10/2026)',
+        url: 'https://www.aduanas.gub.uy/innovaportal/file/28724/1/rg-26-2026-exoneracion-iva-encomiendas-postales.pdf',
+        publisher: 'Dirección Nacional de Aduanas',
+      },
+      {
+        label:
+          'DNA — régimen de franquicia: el registro del emisor de la factura, anunciado "a partir del 3 de noviembre", y la lista de vendedores registrados',
+        url: 'https://www.aduanas.gub.uy/innovaportal/v/28221/1/innova.front/',
         publisher: 'Dirección Nacional de Aduanas',
       },
       {

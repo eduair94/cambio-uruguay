@@ -36,6 +36,12 @@ export interface GlossaryTerm {
   example?: string
   /** Related term slugs for internal linking. */
   related: string[]
+  /**
+   * The site page that goes deeper on this concept, linked from inside the definition (not from
+   * the footer blocks, which a reader never reaches). `text` leads into the link; `label` is the
+   * anchor. Only for a page that really covers the term, never as a generic "see also".
+   */
+  page?: { to: string; text: string; label: string }
 }
 
 /** The full glossary catalogue, alphabetical-ish within meaning groups. */
@@ -508,6 +514,11 @@ export const glossary: readonly GlossaryTerm[] = [
       'Las LRM son instrumentos de deuda de corto plazo que emite el Banco Central del Uruguay para regular la cantidad de dinero en la economía.',
     body: 'Al colocar LRM, el BCU retira pesos del mercado; al rescatarlas, los inyecta. Son una herramienta clave de la política monetaria y su tasa funciona como referencia para el resto de las tasas en pesos. Para el ahorrista, las tasas de las LRM ayudan a entender el rendimiento esperable de instrumentos en moneda local.',
     related: ['tasa-de-politica-monetaria', 'tasa-de-interes', 'bcu'],
+    page: {
+      to: '/letras-de-regulacion-monetaria-uruguay',
+      text: 'La tasa de corte de cada licitación por plazo, las próximas licitaciones del calendario del BCU, cómo compra una persona y la cuenta contra un plazo fijo están en',
+      label: 'la página de las Letras de Regulación Monetaria',
+    },
   },
   {
     slug: 'encaje-bancario',
