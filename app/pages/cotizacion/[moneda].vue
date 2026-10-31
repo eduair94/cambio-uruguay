@@ -376,7 +376,8 @@ const { data, pending } = await useAsyncData<CurrencyQuote[] | null>(
     // más del 3 % de la mediana (congelada o mal leída) sigue en la tabla pero no es "la mejor".
     // Sin esto, el 31/10/2026 esta página daba como mejor lugar para comprar dólares una pizarra
     // quieta desde julio (39,55 contra una mediana de 41,45), y el título vivo la habría repetido.
-    return rankUsableQuotes(quotesForCurrency(rows, code.value))
+    const localData = (result?.localData ?? {}) as Record<string, { name?: string | null }>
+    return rankUsableQuotes(quotesForCurrency(rows, code.value, localData))
   }
 )
 
