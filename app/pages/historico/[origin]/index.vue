@@ -214,6 +214,8 @@
         </v-card>
       </v-col>
     </v-row>
+
+    <CasaOwnerCta :casa="originName" :origin="String(route.params.origin ?? '')" />
   </VContainer>
 </template>
 
