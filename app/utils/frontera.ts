@@ -182,7 +182,7 @@ export function housesForFrontera(
   // Scope the rows to this department first, then reuse the shared currency
   // reducer so the best-buy/best-sell flags are computed over the local subset.
   const scoped = rows.filter(row => inDept.has(row.origin))
-  return quotesForCurrency(scoped, route.code)
+  return quotesForCurrency(scoped, route.code, localData)
 }
 
 /** The house paying the most for the currency (best place to SELL it), or null. */
