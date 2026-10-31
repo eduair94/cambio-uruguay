@@ -2336,6 +2336,23 @@
         "declaracion de irpf"
       ],
       "hypothesis": "La consulta que mas impresiones le trae a la pagina en Search Console (20/9 al 17/10/2026: 'estoy obligado a presentar declaracion de irpf en uruguay si no tuve ingresos un año?', posicion 5,3, cero clics) no tenia respuesta en ningun lado: ni en la descripcion, que hablaba de retencion, ni en el cuerpo. Se contesta arriba, en la seccion de obligados (no: todos los supuestos con que DGI define la obligacion en la campaña 2026 parten de haber cobrado algo; el independiente inscripto sin actividad presenta el 1302 'sin actividad' solo si declaro rentas fuera de la dependencia), en el FAQ con schema y en la descripcion, que abre con esa respuesta; el titulo no cambia. El caso del 3100 suma el minimo no imponible de la campaña. No se toca la seccion de ejercicios anteriores ni sus limites sobre creditos viejos. Deberia subir el CTR de esa consulta desde la misma posicion."
+    },
+    {
+      "id": "convertir-cifra-antes-del-corte",
+      "shippedOn": "2026-10-31",
+      "routes": [
+        "/convertir/*"
+      ],
+      "queries": [
+        "50000 pesos argentinos a uruguayos",
+        "1000 pesos argentinos a uruguayos",
+        "10000 pesos argentinos a uruguayos",
+        "100000 pesos argentinos a uruguayos",
+        "5000 pesos argentinos a uruguayos",
+        "50 mil pesos argentinos a uruguayos",
+        "100 mil pesos argentinos a uruguayos"
+      ],
+      "hypothesis": "Las conversiones de pesos argentinos a uruguayos juntaron miles de impresiones en posicion 6 a 8 con cero clics del 1 al 28/10 (50000 pesos argentinos a uruguayos: 1649 impresiones y 2 clics; 1000: 1553 y 0; 10000: 1497 y 0), y la familia entera de /convertir paso las cien mil impresiones con unas decenas de clics. El titulo era la pregunta del H1 con la cifra al final (Cuanto es 50.000 pesos argentinos en pesos uruguayos? = $ 1.000,00, 68 caracteres mas la marca): Google corta cerca de los 60 y lo que se perdia era justo la cifra. Ahora va la consulta tal cual se escribe y la cifra antes del corte (50.000 pesos argentinos a pesos uruguayos: $ 1.000 hoy, todas las conversiones bajo 60, con test), y la descripcion abre con lo que el conversor del propio buscador no tiene: lo que paga o cobra hoy la mejor de mas de 40 casas, no la cotizacion de referencia, que para el peso argentino es muy distinta. El H1 y el cuerpo no cambian. Se mide la porcion de clics del sitio que se lleva la familia; parte de estas impresiones son cero-clic por el conversor del buscador, asi que el techo es bajo, pero el punto de partida es cero."
     }
   ]
 }
