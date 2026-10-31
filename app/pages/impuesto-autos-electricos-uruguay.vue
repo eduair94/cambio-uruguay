@@ -214,6 +214,9 @@
     </section>
 
     <!-- Why 9% IMESI isn't 9% more expensive -->
+    <!-- La unidad intermedia, en un corte de sección a mitad de página (ver
+         docs/seo/adsense-growth-loop.md, decimotercera iteración). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <section class="mb-8">
       <h2 class="section-heading mb-1">Por qué "9 % de IMESI" no es "el auto sube 9 %"</h2>
       <VCard variant="flat" class="practica pa-5">

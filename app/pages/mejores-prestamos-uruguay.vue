@@ -462,6 +462,9 @@
     </section>
 
     <!-- Fichas -->
+    <!-- La unidad intermedia, en un corte de sección a mitad de página (ver
+         docs/seo/adsense-growth-loop.md, decimotercera iteración). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <h2 class="section-heading mb-1">Ficha de cada prestamista</h2>
     <p class="text-body-2 text-medium-emphasis mb-4">
       Ordenadas según los criterios activos. Tocá uno del tablero para saltar a su ficha.
