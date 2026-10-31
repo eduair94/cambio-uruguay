@@ -871,8 +871,8 @@ export const CUSTODY_INSOLVENCY: Readonly<{
 //   2. UNA PIZARRA CONCRETA (BROU). Precio comercial de un banco, publicado por el banco, con su
 //      fecha de vigencia. Sirve para poner un número real y contratable en la calculadora. Caduca
 //      sin aviso: por eso va con `vigencia` y con el PDF al lado.
-// Se publica una sola pizarra, no un ranking de bancos. Comparar precios comerciales de todas las
-// instituciones es otra página y otra responsabilidad.
+// Acá vive una sola pizarra, la del BROU. Las de los demás bancos —y la comparación entre ellas—
+// están en `utils/plazoFijoBancos.ts`, que lee la del BROU de este módulo en vez de copiarla.
 //
 // LO QUE EL BCU **NO** PUBLICA, y se dice en vez de rellenarlo:
 //   - NO separa banca pública de banca privada. Los tres cuadros de tasas pasivas se publican como
@@ -1505,7 +1505,7 @@ export const DEPOSIT_REFERENCE_SOURCES: readonly { label: string; url: string }[
     url: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/Tasas-Medias.aspx',
   },
   {
-    label: 'BROU — Pizarras de plazo fijo e-BROU y sucursales, vigencia 01/07/2026 (PDF)',
+    label: 'BROU — Pizarras de plazo fijo e-BROU y sucursales, vigencia 01/10/2026 (PDF)',
     url: 'https://www.brou.com.uy/documents/20182/112235/tasas-pf-personas.pdf',
   },
   {

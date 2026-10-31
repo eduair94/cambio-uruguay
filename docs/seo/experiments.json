@@ -2418,6 +2418,20 @@
         "valor do dolar hoje no uruguai"
       ],
       "hypothesis": "Las cotizaciones por moneda y por departamento rankean en posicion 7 a 11 con titulos genericos sin una sola cifra (Cotizacion del Real en Uruguay Hoy), y del 1 al 28/10 juntaron 16.512 impresiones a 0,4 % de CTR en /cotizacion/* y 4.501 en /pt/dolar/* mas /pt/cotizacion/* a 0,7 %: precio del real hoy 777 impresiones y 2 clics, valor gramo oro 18k uruguay 382 y 1 en posicion 5,3, euro hoy 303 y 2, y la familia portuguesa de Rivera (quien cruza desde Livramento) 848 impresiones y 5 clics. Es la leccion de la portada llevada a las dos familias que la siguen: el titulo lleva UNA cifra, la venta mas barata con desde (Real hoy en Uruguay: se vende desde $8,55; Dolar em Rivera hoje: desde $U 41,10; el oro, el gramo de 18k aproximado), con el separador y el simbolo de cada idioma, plantillas de la mas rica a la mas corta que entran en 60 con la marca, y vuelta al titulo de siempre sin lectura. La descripcion lleva las dos cifras con desde y hasta y cuantas casas. En el mismo cambio la corona de mejor precio de /cotizacion/* pasa a la de la portada (rankUsableQuotes) y el titulo por departamento descarta las pizarras a mas del 3 % de la mediana nacional: el 31/10 la pagina del dolar coronaba una pizarra quieta desde julio. Se mide la porcion de clics del sitio que se llevan las seis familias."
+    },
+    {
+      "id": "plazo-fijo-tasas-de-cada-banco",
+      "shippedOn": "2026-10-31",
+      "routes": ["/herramientas/calculadora-plazo-fijo"],
+      "queries": [
+        "simulador plazo fijo uruguay brou dólares",
+        "simulador plazo fijo",
+        "simulador plazo fijo en dolares",
+        "simulador plazo fijo uruguay brou",
+        "plazo fijo brou dólares simulador",
+        "simulador de plazo fijo brou"
+      ],
+      "hypothesis": "Search Console, 1 al 28/10/2026: 5.454 impresiones, 128 clics, posicion media 5,8; las consultas de arriba piden simular el plazo fijo del BROU (y en dolares) y la pagina era una calculadora de interes compuesto donde el visitante tipeaba cualquier tasa, con el BROU y la media del BCU como unica referencia. Ahora, para la moneda, el monto y el plazo de los campos, una tabla con la tasa que publica cada banco en su propia pagina (BROU, Itau, BBVA, Scotiabank y Heritage, en pesos, dolares y UI donde existe), de mayor a menor, con la fuente y la vigencia de cada fila, la fecha de consulta y un boton que carga la tasa en la calculadora; la entrada libre sigue. Las cifras viven fechadas en app/utils/plazoFijoBancos.ts y nunca se presentan como dato en vivo; Santander, BTG Pactual (ex HSBC), Bandes y BHU se nombran con el motivo por el que no estan. El resultado sube pegado a los campos. Titulo 'Simulador de plazo fijo: BROU y bancos, en pesos y dolares' y descripcion con los bancos, pesos/dolares/UI y el neto de IRPF; dos preguntas frecuentes nuevas (cuanto paga el BROU en dolares, que banco paga mas) salen de la misma tabla. Deberia subir el CTR desde la misma posicion y la posicion de las consultas con 'brou' y 'dolares' (7,8 a 10,2)."
     }
   ]
 }
