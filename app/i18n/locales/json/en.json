@@ -868,6 +868,9 @@
     "ctaButton": "Go to the comparator",
     "otherDepartments": "Dollar in other departments",
     "metaTitle": "Dollar in {department} today: USD rate",
+    "metaTitleLive": "Dollar in {department} today: from $U {sell}",
+    "metaTitleLiveShort": "Dollar in {department}: from $U {sell}",
+    "metaDescriptionLive": "Dollar in {department} today: sold from $U {sell} and bought up to $U {buy} at {count} exchange houses with a branch there. Compare them and pick where to exchange.",
     "metaDescription": "US dollar exchange rate in {department} today. Compare the buy and sell USD prices at the exchange houses with a branch in {department}, Uruguay, updated automatically.",
     "ogTitle": "Dollar in {department}",
     "ogSubtitle": "Exchange houses and USD rate"
@@ -930,6 +933,12 @@
     "faqTitle": "Frequently asked questions",
     "aboutTitle": "About the {currency} exchange rate in Uruguay",
     "metaTitle": "{currency} Exchange Rate in Uruguay Today",
+    "metaTitleLive": "{currency} in Uruguay today: from $U {sell}",
+    "metaTitleLiveShort": "{currency} today: from $U {sell}",
+    "metaTitleGold": "18k gold gram in Uruguay today: ≈ $U {gram}",
+    "metaTitleGoldShort": "18k gold today: ≈ $U {gram} a gram",
+    "metaDescriptionLive": "{currency} in Uruguay today: sold from $U {sell} and bought up to $U {buy} at {count} exchange houses. Compare them and pick where to exchange.",
+    "metaDescriptionGold": "18k gold ≈ $U {gram18} a gram and 24k ≈ $U {gram24}, from today's cheapest troy ounce ($U {sell}). Reference values, updated every 10 minutes.",
     "metaDescription": "{currency} exchange rate in Uruguay today. Compare the buy and sell {currency} prices across every exchange house, updated automatically.",
     "ogTitle": "{currency} exchange rate",
     "ogSubtitle": "Buy and sell {currency} in Uruguay today"
