@@ -5,6 +5,8 @@ import type { BcuCapRow } from '../../utils/cashAdvance'
 import {
   BCU_CAPS_IN_FORCE_SINCE,
   BCU_CAPS_PERIOD,
+  BCU_CAPS_READ_ON,
+  BCU_CAPS_SOURCE_URL,
   NOPAYSLIP_CAPS,
   NOPAYSLIP_DOORS,
   SOLO_CEDULA_LABELS,
@@ -206,8 +208,27 @@ describe('SOLO_CEDULA_LENDERS: sin comprobante no es sin clearing', () => {
 
 describe('NOPAYSLIP_CAPS: la tabla del BCU cierra con la Ley 18.212', () => {
   it('período y vigencia fechados, sin "septiembre"', () => {
-    expect(BCU_CAPS_PERIOD).toBe('mayo–julio de 2026')
-    expect(BCU_CAPS_IN_FORCE_SINCE).toBe('2026-09-01')
+    expect(BCU_CAPS_PERIOD).toBe('junio–agosto de 2026')
+    expect(BCU_CAPS_IN_FORCE_SINCE).toBe('2026-10-01')
+  })
+
+  // El PDF de la URL fija se pisa todos los meses (el 31/10/2026 ya traía la tabla del 1/11): una
+  // cifra fechada sólo la respalda la comunicación que la publicó, que no cambia de dirección.
+  it('cita la comunicación de esa tabla, no el PDF que se pisa cada mes, y fecha su lectura', () => {
+    expect(BCU_CAPS_SOURCE_URL).toBe('https://www.bcu.gub.uy/Comunicados/seggco26188.pdf')
+    expect(BCU_CAPS_READ_ON).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    expect(BCU_CAPS_READ_ON >= BCU_CAPS_IN_FORCE_SINCE).toBe(true)
+  })
+
+  // Las celdas de la Comunicación 2026/188 (16/09/2026) tal como las imprime, para que una edición
+  // futura no mezcle dos vigencias bajo una sola fecha.
+  it('trae las celdas de la tabla vigente desde el 1/10/2026', () => {
+    const cap = (id: string) => NOPAYSLIP_CAPS.find(r => r.id === id)!
+    expect(cap('sin-descuento-chico-corto').capPct).toBe(137.7485)
+    expect(cap('con-descuento-chico-corto').capPct).toBe(32.5345)
+    expect(cap('retencion-chico-corto').capPct).toBe(27.29)
+    expect(cap('nomina-chico-largo').capPct).toBe(29.26)
+    expect(cap('usd-consumo-largo').capPct).toBe(18.5225)
   })
 
   it('tope = media × 1,55 / 1,30 / 1,20 y mora = media × 1,80 según la fila', () => {
@@ -250,7 +271,7 @@ describe('NOPAYSLIP_CAPS: la tabla del BCU cierra con la Ley 18.212', () => {
     expect(fresh.moraPct).toBeCloseTo(162, 6)
     const manual = merged.find(r => r.id === 'retencion-chico-corto')!
     expect(manual.live).toBe(false)
-    expect(manual.capPct).toBe(27.37)
+    expect(manual.capPct).toBe(27.29)
     expect(NOPAYSLIP_CAPS.filter(r => r.grid).length).toBe(6)
   })
 
@@ -268,7 +289,7 @@ describe('NOPAYSLIP_CAPS: la tabla del BCU cierra con la Ley 18.212', () => {
     const merged = mergeNoPayslipCaps(NOPAYSLIP_CAPS, bad)
     const row = merged.find(r => r.id === 'sin-descuento-chico-corto')!
     expect(row.live).toBe(false)
-    expect(row.capPct).toBe(133.486)
+    expect(row.capPct).toBe(137.7485)
   })
 
   it('sin grilla viva devuelve la lectura fechada entera', () => {
