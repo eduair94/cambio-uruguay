@@ -150,7 +150,6 @@ const SIN_LECTOR_QUE_LA_NECESITE = [
 const DEUDA_SIN_ENLACE = [
   '/apps-utiles-uruguay',
   '/precio-del-boleto-montevideo',
-  '/ropa-por-kilo-uruguay',
   '/seguro-obligatorio-de-auto-uruguay',
 ]
 
@@ -412,7 +411,30 @@ const DEUDA_SIN_ENLACE = [
 // describe hechos: dejarla declarada sabiendo que ya recibe un enlace de contexto es justo el modo
 // de fallar que el trinquete de arriba persigue —un contador inflado contra una deuda menor, con
 // lugar de sobra para que la próxima página nazca huérfana y siga en verde—.
-const DEUDA_MAXIMA = 4
+// 4 → 3 el 2026-10-31: `/ropa-por-kilo-uruguay`, una de las dos únicas rutas libres de los cinco
+// pozos ese día (`npm run seo_debt`: 2 de 37) y la única de las dos cuyo ORIGEN natural también
+// estaba libre — `/importar-para-revender-uruguay` no tiene ninguna fila en el libro de cambios.
+//
+// El lector lo necesita y es el caso más fuerte que hubo en esta lista, porque el origen no le
+// contesta mal: le contesta BIEN la pregunta equivocada. Su simulador resuelve la RUTA (factura y
+// peso contra los topes de la prestación única) y, para 20 kg de ropa usada, devuelve «entra por
+// courier al 60 %: sin DUA y sin despachante», que es verdad y es una decisión comercial ruinosa.
+// Le faltan las dos mitades que la página de destino sí tiene con fuente y fecha (verificada el
+// 2026-10-02): que las prendas NUEVAS de los capítulos 61 y 62 necesitan licencia de importación de
+// la Dirección Nacional de Industrias (Decreto 8/022) sin excepción postal —que es justo el caso que
+// la FAQ «¿Y si mi producto necesita un certificado y no lo tengo?» describe con el art. 7 del
+// Decreto 50/026— mientras la usada (partida 6309) queda fuera de esa licencia; y que el flete
+// aéreo por kilo cuesta varias veces lo que vale el kilo en origen, así que el régimen entra y el
+// negocio no cierra. Su cuadro «Trámites extra, producto por producto» son accesorios de celular:
+// la ropa no estaba ahí ni en ninguna otra parte de la página.
+//
+// El enlace va en el cuerpo VISIBLE de ese cuadro y no en el acordeón de preguntas: la nota se lee
+// sin abrir nada, en la sección donde está parado quien pregunta qué trámites lleva su producto.
+// No se le restató ninguna cifra del destino —el porcentaje del flete y el precio por kilo en
+// origen envejecen con las tarifas, y un número correcto en su momento publicado como vigente es el
+// modo de fallar que este repo ya tiene escrito—: la nota nombra las normas y el orden de magnitud,
+// y el detalle lo sirve el destino.
+const DEUDA_MAXIMA = 3
 
 describe('ninguna página de lectura queda sin un enlace de contexto', () => {
   it('las páginas sin enlace son exactamente las declaradas', () => {

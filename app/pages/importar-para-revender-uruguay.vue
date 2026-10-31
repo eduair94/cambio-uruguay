@@ -291,6 +291,27 @@ FORM: Guía operativa con simulador, extensión de la familia /franquicia-aduana
         todos: un cargador de pared común <strong>no</strong> necesita autorización previa, y unos
         auriculares Bluetooth <strong>no</strong> necesitan URSEC.
       </p>
+
+      <VAlert
+        type="info"
+        variant="tonal"
+        density="comfortable"
+        icon="mdi-tshirt-crew-outline"
+        class="mb-4"
+      >
+        ¿Y si lo que vas a revender es <strong>ropa</strong>? No está en el cuadro, y es el rubro
+        donde el simulador de arriba acierta la ruta y falla el negocio. Por la norma: las prendas
+        <strong>nuevas</strong> de los capítulos 61 y 62 necesitan una licencia de importación ante
+        la <strong>Dirección Nacional de Industrias</strong> (Decreto 8/022) y esa licencia no prevé
+        excepción postal, mientras la ropa <strong>usada</strong> (partida 6309) queda fuera de
+        ella. Por la plata: el flete aéreo por kilo cuesta varias veces lo que vale en origen el
+        kilo de ropa usada, así que el envío entra por el 60 % y la cuenta igual no cierra. Las dos
+        mitades, con sus fuentes y con lo que no se pudo verificar, en
+        <NuxtLink :to="localePath('/ropa-por-kilo-uruguay')"
+          >ropa por kilo y fardos en Uruguay</NuxtLink
+        >.
+      </VAlert>
+
       <VRow>
         <VCol v-for="p in PRODUCT_CHECKS" :key="p.id" cols="12" md="6">
           <VCard variant="flat" class="check-card pa-4 h-100">

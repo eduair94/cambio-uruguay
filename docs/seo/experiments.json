@@ -2353,6 +2353,14 @@
         "100 mil pesos argentinos a uruguayos"
       ],
       "hypothesis": "Las conversiones de pesos argentinos a uruguayos juntaron miles de impresiones en posicion 6 a 8 con cero clics del 1 al 28/10 (50000 pesos argentinos a uruguayos: 1649 impresiones y 2 clics; 1000: 1553 y 0; 10000: 1497 y 0), y la familia entera de /convertir paso las cien mil impresiones con unas decenas de clics. El titulo era la pregunta del H1 con la cifra al final (Cuanto es 50.000 pesos argentinos en pesos uruguayos? = $ 1.000,00, 68 caracteres mas la marca): Google corta cerca de los 60 y lo que se perdia era justo la cifra. Ahora va la consulta tal cual se escribe y la cifra antes del corte (50.000 pesos argentinos a pesos uruguayos: $ 1.000 hoy, todas las conversiones bajo 60, con test), y la descripcion abre con lo que el conversor del propio buscador no tiene: lo que paga o cobra hoy la mejor de mas de 40 casas, no la cotizacion de referencia, que para el peso argentino es muy distinta. El H1 y el cuerpo no cambian. Se mide la porcion de clics del sitio que se lleva la familia; parte de estas impresiones son cero-clic por el conversor del buscador, asi que el techo es bajo, pero el punto de partida es cero."
+    },
+    {
+      "id": "ropa-por-kilo-recibe-su-enlace",
+      "shippedOn": "2026-10-31",
+      "routes": [
+        "/ropa-por-kilo-uruguay"
+      ],
+      "hypothesis": "Enlazado interno; el contenido de la pagina medida no cambia. Estaba en el pozo de enlaces de contexto (enlacesDeContexto.test.ts): ninguna otra pagina la enlazaba desde su contenido, asi que su unico vinculo quedaba en el bloque del pie que docs/app/INTERCONEXIONES.md midio a 11.341 px de una pagina de 15.868 -enlazada para un rastreador e invisible para un lector-. Era una de las dos unicas rutas libres de los cinco pozos hoy (npm run seo_debt: 2 de 37) y la unica cuyo origen natural tambien estaba libre: /importar-para-revender-uruguay no tiene ninguna fila en el libro de cambios. El lector lo necesita porque el origen no le contesta mal, le contesta bien la pregunta equivocada: su simulador resuelve la RUTA (factura y peso contra los topes de la prestacion unica) y para 20 kg de ropa usada devuelve -entra por courier al 60 %, sin DUA y sin despachante-, que es verdad y es una decision comercial ruinosa. La nota va en el cuerpo visible del cuadro de tramites por producto, que son accesorios de celular y no incluian la ropa, y nombra las dos mitades que el destino tiene con fuente y fecha: la licencia de importacion de textiles de la DNI para los capitulos 61 y 62 sin excepcion postal frente a la usada de la partida 6309, que queda fuera, y que el flete aereo por kilo cuesta varias veces lo que vale el kilo en origen. No se repite ninguna cifra del destino. Se mide la porcion de clics del sitio que se lleva la ruta."
     }
   ]
 }
