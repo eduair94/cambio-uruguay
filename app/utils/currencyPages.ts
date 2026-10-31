@@ -234,7 +234,7 @@ export function currencyContext(code: CurrencyCode): string {
 export interface CurrencyQuote {
   /** Exchange house id / `origin` (e.g. `'itau'`). */
   origin: string
-  /** Display name of the house, falling back to `origin` when missing. */
+  /** Display name of the house, from its `origin` (and `localData` when given), never `row.name`. */
   name: string
   /** Buy price (UYU the house pays for 1 unit), or `null` when not quoted. */
   buy: number | null
@@ -297,9 +297,52 @@ export function rankUsableQuotes(quotes: readonly CurrencyQuote[]): CurrencyQuot
   return ranked
 }
 
+/**
+ * Lo que el slug de una casa no puede reconstruir solo: siglas y tildes.
+ *
+ * El nombre visible de una casa sale de su `origin`, NUNCA de `row.name`: en la API ese campo es lo
+ * que cada casa puso en su pizarra para nombrar la moneda ("Real", "REAL", "Dólar USA" y hasta
+ * `http://rynder.com.uy/img/bra.jpg`). Hasta el 2026-10-31 `/cotizacion/<moneda>`, `/frontera/*` y
+ * `/banco-o-casa-de-cambio-uruguay` mostraban esa etiqueta como si fuera la casa ("Mejor lugar
+ * para comprar: Real"), y la frontera de Rocha publicaba la URL de una imagen.
+ */
+const ORIGIN_DISPLAY_NAMES: Readonly<Record<string, string>> = Object.freeze({
+  brou: 'BROU',
+  bcu: 'BCU',
+  itau: 'Itaú',
+  oca: 'OCA',
+  bbva: 'BBVA',
+  hsbc: 'HSBC',
+  cambio_sir: 'Cambio SIR',
+  cambio_fenix: 'Cambio Fénix',
+  cambio_ingles: 'Cambio Inglés',
+  cambio_romantico: 'Cambio Romántico',
+  mas_cambio: 'Más Cambio',
+})
+
+/**
+ * El nombre visible de una casa: el de `localData` si la página lo tiene, si no el de la tabla de
+ * arriba, si no el slug humanizado ("cambio_pando" → "Cambio Pando"). Nunca `row.name`.
+ */
+export function casaDisplayName(
+  origin: string,
+  localData?: Readonly<Record<string, { name?: string | null } | undefined>> | null
+): string {
+  const fromData = localData?.[origin]?.name
+  if (typeof fromData === 'string' && fromData.trim()) return fromData.trim()
+  const known = ORIGIN_DISPLAY_NAMES[origin]
+  if (known) return known
+  return String(origin || '')
+    .replace(/[-_]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/(^|\s)(\p{L})/gu, (_m, sep: string, ch: string) => sep + ch.toUpperCase())
+}
+
 export function quotesForCurrency(
   rows: readonly ExchangeRate[],
-  code: CurrencyCode
+  code: CurrencyCode,
+  localData?: Readonly<Record<string, { name?: string | null } | undefined>> | null
 ): CurrencyQuote[] {
   const byOrigin = new Map<string, CurrencyQuote>()
 
@@ -311,7 +354,7 @@ export function quotesForCurrency(
 
     byOrigin.set(row.origin, {
       origin: row.origin,
-      name: row.name && row.name.trim() ? row.name : row.origin,
+      name: casaDisplayName(row.origin, localData),
       buy: typeof row.buy === 'number' ? row.buy : null,
       sell: typeof row.sell === 'number' ? row.sell : null,
       bestBuy: false,
