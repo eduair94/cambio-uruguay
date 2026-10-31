@@ -863,6 +863,9 @@
     "ctaButton": "Ir para o comparador",
     "otherDepartments": "Dólar em outros departamentos",
     "metaTitle": "Dólar em {department} hoje: cotação USD",
+    "metaTitleLive": "Dólar em {department} hoje: desde $U {sell}",
+    "metaTitleLiveShort": "Dólar em {department}: desde $U {sell}",
+    "metaDescriptionLive": "Dólar em {department} hoje: vende-se a partir de $U {sell} e compra-se até $U {buy} em {count} casas de câmbio com filial no departamento. Compare e escolha onde trocar.",
     "metaDescription": "Cotação do dólar em {department} hoje. Compare o preço de compra e venda de USD nas casas de câmbio com filial em {department}, Uruguai, atualizado automaticamente.",
     "ogTitle": "Dólar em {department}",
     "ogSubtitle": "Casas de câmbio e cotação USD"
@@ -925,6 +928,12 @@
     "faqTitle": "Perguntas frequentes",
     "aboutTitle": "Sobre a cotação {prep} {currency} no Uruguai",
     "metaTitle": "Cotação {prep} {currency} no Uruguai Hoje",
+    "metaTitleLive": "{currency} no Uruguai hoje: desde $U {sell}",
+    "metaTitleLiveShort": "{currency} hoje: desde $U {sell}",
+    "metaTitleGold": "Grama de ouro 18k no Uruguai: ≈ $U {gram}",
+    "metaTitleGoldShort": "Ouro 18k hoje: grama ≈ $U {gram}",
+    "metaDescriptionLive": "{currency} hoje no Uruguai: vende-se a partir de $U {sell} e compra-se até $U {buy} em {count} casas de câmbio. Compare e escolha onde trocar.",
+    "metaDescriptionGold": "Grama de ouro 18k ≈ $U {gram18} e 24k ≈ $U {gram24}, sobre a onça troy mais barata de hoje ($U {sell}). Valores de referência, atualizados a cada 10 minutos.",
     "metaDescription": "Cotação {prep} {currency} no Uruguai hoje. Compare o preço de compra e venda {prep} {currency} em todas as casas de câmbio, atualizado automaticamente.",
     "ogTitle": "Cotação {prep} {currency}",
     "ogSubtitle": "Compra e venda de {currency} no Uruguai hoje"

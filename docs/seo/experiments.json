@@ -2392,6 +2392,32 @@
         "cuanto salen los peajes en uruguay"
       ],
       "hypothesis": "Cinco paginas de contenido en la primera pagina de Google y casi sin clics del 1 al 28/10/2026: /pension-a-la-vejez-uruguay 647 impresiones y 0 clics (pension a la vejez en posicion 10,2; cuanto es la pension a la vejez en uruguay, 9,7), /asignacion-familiar-uruguay 812 y 2 (asignacion familiar, 9,2), /renunciar-al-trabajo-uruguay 272 y 1 (cuantos dias tiene una empresa para pagar la liquidacion por renuncia, 5,8), /comisiones-mercado-pago-uruguay 534 y 2 (cuanto cobra mercado pago por venta, 5,2) y /peajes-uruguay 543 y 0 (cuanto esta el peaje en uruguay, 10,7; las motos pagan peaje en uruguay, 8,2). Las cinco consultas piden un numero o un plazo, el cuerpo lo tenia y el titulo no. Ahora el titulo lleva la respuesta antes del corte de 60 caracteres (Pension a la vejez 2026: $ 18.575 por mes; Asignacion familiar: $ 1.347 o $ 2.686,51; Liquidacion por renuncia: plazo de 10 dias; Comision de Mercado Pago: 1,15 % a 11,99 %; Peajes: auto $ 167 con TAG, motos no pagan) y la descripcion abre con la cifra y contesta la segunda consulta de cada pagina: que no es la asistencia del MIDES, hasta que edad se cobra, lo que queda de $ 1.000 cobrados por link y las tres tarifas del mismo paso. Cada cifra sale de la constante que imprime el cuerpo y snippetConLaRespuesta.test.ts las ata; el cuerpo de las cinco no cambia. /que-pasa-si-no-pago-antel quedo afuera de la tanda: tres-facturas-del-hogar-entran-a-su-tema la reserva hasta el 23/11. Es la regla de indicadores-ur-ui-valor-vivo y de la BPC: deberia subir la porcion de clics del sitio que se llevan las cinco desde la misma posicion."
+    },
+    {
+      "id": "cotizaciones-con-la-cifra-en-el-titulo",
+      "shippedOn": "2026-10-31",
+      "routes": [
+        "/cotizacion/*",
+        "/en/cotizacion/*",
+        "/pt/cotizacion/*",
+        "/dolar/*",
+        "/en/dolar/*",
+        "/pt/dolar/*"
+      ],
+      "queries": [
+        "precio del real hoy",
+        "real hoy",
+        "precio real",
+        "euro hoy",
+        "cuanto esta el euro",
+        "valor gramo oro 18k uruguay",
+        "precio del oro en uruguay",
+        "valor do dolar em rivera",
+        "cotação dolar rivera",
+        "dolar no uruguai hoje",
+        "valor do dolar hoje no uruguai"
+      ],
+      "hypothesis": "Las cotizaciones por moneda y por departamento rankean en posicion 7 a 11 con titulos genericos sin una sola cifra (Cotizacion del Real en Uruguay Hoy), y del 1 al 28/10 juntaron 16.512 impresiones a 0,4 % de CTR en /cotizacion/* y 4.501 en /pt/dolar/* mas /pt/cotizacion/* a 0,7 %: precio del real hoy 777 impresiones y 2 clics, valor gramo oro 18k uruguay 382 y 1 en posicion 5,3, euro hoy 303 y 2, y la familia portuguesa de Rivera (quien cruza desde Livramento) 848 impresiones y 5 clics. Es la leccion de la portada llevada a las dos familias que la siguen: el titulo lleva UNA cifra, la venta mas barata con desde (Real hoy en Uruguay: se vende desde $8,55; Dolar em Rivera hoje: desde $U 41,10; el oro, el gramo de 18k aproximado), con el separador y el simbolo de cada idioma, plantillas de la mas rica a la mas corta que entran en 60 con la marca, y vuelta al titulo de siempre sin lectura. La descripcion lleva las dos cifras con desde y hasta y cuantas casas. En el mismo cambio la corona de mejor precio de /cotizacion/* pasa a la de la portada (rankUsableQuotes) y el titulo por departamento descarta las pizarras a mas del 3 % de la mediana nacional: el 31/10 la pagina del dolar coronaba una pizarra quieta desde julio. Se mide la porcion de clics del sitio que se llevan las seis familias."
     }
   ]
 }
