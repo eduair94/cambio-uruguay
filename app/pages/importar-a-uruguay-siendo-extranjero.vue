@@ -398,6 +398,9 @@ FORM: Mesa de decisión editorial, extensión Read/Operate de “La Mesa de Merc
         </div>
       </section>
 
+      <!-- La unidad intermedia, antes de las preguntas: mismo corte que FaqSection (ver
+           docs/seo/adsense-growth-loop.md, 31/10/2026). Sólo dibuja en densidad normal. -->
+      <AdSlot placement="in-article" class="mb-6" />
       <section class="section-block" aria-labelledby="faq-title">
         <div class="section-intro">
           <p class="section-kicker">Dudas de una estadía temporal</p>

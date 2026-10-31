@@ -120,3 +120,41 @@ describe('ninguna página suma la unidad de FaqSection a una propia', () => {
     ).toBeGreaterThan(50)
   })
 })
+
+describe('las páginas que arman sus preguntas a mano llevan la misma unidad', () => {
+  // 78 páginas no usan FaqSection: arman el bloque con VExpansionPanels. Desde el 2026-10-31 cada
+  // una pone su propia unidad in-article antes de las preguntas. Una unidad en una ruta `light` no
+  // dibuja nada (useAds.ts): sería ruido en el código, así que tampoco se acepta.
+  const own = CANDIDATES.filter(({ file, nodes }) => {
+    const name = file.split('\\').join('/')
+    return (
+      /^pages\/[^/[\]]+\.vue$/.test(name) &&
+      nodes.some(node => node.tag === 'AdSlot' && attr(node, 'placement') === 'in-article')
+    )
+  })
+
+  it('son muchas, y todas de densidad normal', () => {
+    expect(own.length).toBeGreaterThan(60)
+    const notNormal = own
+      .map(
+        ({ file }) =>
+          '/' +
+          file
+            .split('\\')
+            .join('/')
+            .replace(/^pages\//, '')
+            .replace(/\.vue$/, '')
+      )
+      .filter(path => adDensityForPath(path) !== 'normal')
+    expect(notNormal).toEqual([])
+  })
+
+  it('cada una pone una sola', () => {
+    const many = own.filter(
+      ({ nodes }) =>
+        nodes.filter(node => node.tag === 'AdSlot' && attr(node, 'placement') === 'in-article')
+          .length > 1
+    )
+    expect(many.map(({ file }) => file)).toEqual([])
+  })
+})

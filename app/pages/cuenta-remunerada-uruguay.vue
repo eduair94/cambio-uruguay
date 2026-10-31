@@ -752,6 +752,9 @@
       </ul>
     </VCard>
 
+    <!-- La unidad intermedia, antes de las preguntas: mismo corte que FaqSection (ver
+         docs/seo/adsense-growth-loop.md, 31/10/2026). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <!-- FAQ -->
     <VCard variant="flat" class="pa-4 pa-sm-5 mb-5">
       <h2 class="text-h6 font-weight-bold mb-3">Preguntas frecuentes</h2>
