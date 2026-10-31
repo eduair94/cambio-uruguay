@@ -77,15 +77,16 @@
 
         <div v-if="data?.items.length" ref="resultsList" class="eq-grid">
           <FeedEdge :feed="feed" edge="top" />
-          <EquiparListingCard
-            v-for="producto in feed.items"
-            :key="producto.listingId"
-            :producto="producto"
-            :in-list="!hideList && lista.has(producto.listingId)"
-            :hide-category="Boolean(fixedCategoria) || hideCategory"
-            :hide-list="hideList"
-            @toggle="toggle"
-          />
+          <template v-for="(producto, index) in feed.items" :key="producto.listingId">
+            <FeedAd v-if="index === FEED_AD_AFTER" :feed="feed" />
+            <EquiparListingCard
+              :producto="producto"
+              :in-list="!hideList && lista.has(producto.listingId)"
+              :hide-category="Boolean(fixedCategoria) || hideCategory"
+              :hide-list="hideList"
+              @toggle="toggle"
+            />
+          </template>
           <FeedEdge :feed="feed" edge="bottom" />
         </div>
         <p
@@ -114,6 +115,7 @@
 </template>
 
 <script setup lang="ts">
+import { FEED_AD_AFTER } from '~/utils/ads'
 import { useDisplay } from 'vuetify'
 import {
   EQUIPAR_LISTA_MAX,

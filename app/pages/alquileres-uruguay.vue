@@ -379,276 +379,279 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             <FeedEdge :feed="feed" edge="top" />
             <!-- `--lead` y no `:first-of-type`: con "cargar más al bajar", el primer aviso del DOM
                  cambia cada vez que una página sale de la ventana y la fila de atajos saltaría. -->
-            <article
-              v-for="(property, index) in feed.items"
-              :key="property.key"
-              class="rental-card"
-              :class="{ 'rental-card--lead': index === 0 && feed.atStart }"
-            >
-              <div class="rental-card__visual">
-                <!-- Con fotos, un carrusel: se pasan sin salir de la búsqueda y tocar una abre el
-                     visor en esa foto. Sin foto no hay nada que mirar y el destino útil sigue
-                     siendo la ficha. -->
-                <div v-if="hasPhoto(property)" class="rental-card__media">
-                  <PropertyPhotoCarousel
-                    :photos="rentalCardPhotoRefs(property)"
-                    :total="property.photoCount"
-                    :source="gallerySource(property)"
-                    :title="property.title"
-                    :eager="index < 3"
-                    :raised-indicator="property.sources.length > 1"
-                    @open="openPhotoPreview(property, $event)"
-                    @failed="failedImages.add(property.key)"
-                  />
-                  <span class="rental-card__zoom" aria-hidden="true">
-                    <VIcon size="16">mdi-image-multiple-outline</VIcon>
-                    <span class="rental-card__zoom-label">{{ t('viewPhotos') }}</span>
-                  </span>
-                  <span v-if="property.sources.length > 1" class="rental-card__badge">{{
-                    t('portals', { n: property.sources.length })
-                  }}</span>
-                </div>
-                <NuxtLink
-                  v-else
-                  :to="rentalPropertyPath(property.key)"
-                  class="rental-card__media"
-                  :aria-label="`${t('detail')}: ${property.title}`"
-                  @pointerdown="rememberRentalSearch(route.fullPath)"
-                  @click="rememberRentalSearch(route.fullPath)"
-                >
-                  <span class="rental-card__noimage">
-                    <VIcon size="36">mdi-home-city-outline</VIcon>
-                    <span>{{ t('noPhoto') }}</span>
-                  </span>
-                  <span v-if="property.sources.length > 1" class="rental-card__badge">{{
-                    t('portals', { n: property.sources.length })
-                  }}</span>
-                </NuxtLink>
-                <VBtn
-                  class="rental-card__save"
-                  :icon="isFavorite(property.key) ? 'mdi-heart' : 'mdi-heart-outline'"
-                  :color="isFavorite(property.key) ? 'primary' : undefined"
-                  :aria-label="`${t(isFavorite(property.key) ? 'unfavorite' : 'favorite')}: ${property.title}`"
-                  :aria-pressed="isFavorite(property.key)"
-                  variant="flat"
-                  size="small"
-                  @click="toggleFavorite(property)"
-                />
-              </div>
-              <div class="rental-card__body">
-                <div class="rental-card__main">
-                  <div class="rental-card__overview">
-                    <p class="rental-card__where">
-                      {{
-                        [property.neighborhood, property.department].filter(Boolean).join(', ') ||
-                        t('unknown')
-                      }}
-                    </p>
-                    <p
-                      v-if="referencePoint && !pending"
-                      class="rental-card__distance"
-                      data-testid="rental-card-distance"
-                    >
-                      {{ distanceLabel(property.distanceKm) }}
-                    </p>
-                    <div class="rental-card__cost">
-                      <p class="rental-card__price" data-testid="rental-card-price">
-                        {{
-                          monthlyTotal(property) !== null
-                            ? '$ ' + numberFormat(monthlyTotal(property)!)
-                            : priceLabel(property)
-                        }}
-                      </p>
-                      <p class="rental-card__cost-label">
-                        {{ t(monthlyTotal(property) !== null ? 'rentAndExpenses' : 'rent') }}
-                      </p>
-                      <p v-if="monthlyTotal(property) !== null" class="rental-card__expenses">
-                        {{ priceLabel(property) }} {{ t('rent').toLowerCase() }} ·
-                        {{ expensesLabel(property) }}
-                      </p>
-                      <p v-else class="rental-card__expenses">{{ expensesLabel(property) }}</p>
-                      <p
-                        v-if="displayOffer(property)?.currencyInferred"
-                        class="rental-card__expenses"
-                        data-testid="rental-card-currency-inferred"
-                      >
-                        {{ t('currencyInferred') }}
-                      </p>
-                      <p
-                        v-if="displayOffer(property)?.stayPriceSuspect"
-                        class="rental-card__stay"
-                        data-testid="rental-card-stay-price"
-                        :title="t('stayPriceNote')"
-                      >
-                        <VIcon size="14" aria-hidden="true">mdi-weather-night</VIcon>
-                        {{ t('stayPriceChip') }}
-                      </p>
-                      <p
-                        v-if="priceGaps.get(property.key)"
-                        class="rental-card__gap"
-                        data-testid="rental-card-gap"
-                        :title="t('gapNote')"
-                      >
-                        <VIcon size="14" aria-hidden="true">mdi-swap-horizontal</VIcon>
-                        {{
-                          t('gapLine', {
-                            cheap: sourceLabel(priceGaps.get(property.key)!.cheapestSource),
-                            dear: sourceLabel(priceGaps.get(property.key)!.runnerUpSource),
-                            diff: '$ ' + numberFormat(priceGaps.get(property.key)!.diffUyu),
-                            pct: numberFormat(Math.round(priceGaps.get(property.key)!.diffPct)),
-                          })
-                        }}
-                      </p>
-                      <p
-                        v-if="property.priceDrop"
-                        class="rental-card__gap"
-                        data-testid="rental-card-drop"
-                        :title="t('dropNote')"
-                      >
-                        <VIcon size="14" aria-hidden="true">mdi-arrow-down</VIcon>
-                        {{
-                          t('dropLine', {
-                            pct: numberFormat(property.priceDrop.pct),
-                            from: rentalPriceLabel(
-                              property.priceDrop.from,
-                              property.priceDrop.currency,
-                              0
-                            ),
-                            date: dateLabel(property.priceDrop.at),
-                          })
-                        }}
-                      </p>
-                    </div>
-
-                    <h3>
-                      <NuxtLink
-                        :to="rentalPropertyPath(property.key)"
-                        @pointerdown="rememberRentalSearch(route.fullPath)"
-                        @click="rememberRentalSearch(route.fullPath)"
-                        >{{ property.title }}</NuxtLink
-                      >
-                    </h3>
-                    <p class="rental-card__specs">{{ specsLabel(property) }}</p>
-                    <p v-if="property.address" class="rental-card__address">
-                      {{ property.address }}
-                    </p>
-                  </div>
-                  <div class="rental-card__tags">
-                    <VChip
-                      v-if="listedFor.get(property.key)"
-                      size="small"
-                      variant="tonal"
-                      color="warning"
-                      data-testid="rental-card-listed"
-                      :title="
-                        listedFor.get(property.key)!.basis === 'observed'
-                          ? t('listedObservedNote')
-                          : undefined
-                      "
-                      >{{
-                        t(
-                          listedFor.get(property.key)!.basis === 'published'
-                            ? 'listedPublished'
-                            : 'listedObserved',
-                          { days: listedFor.get(property.key)!.days }
-                        )
-                      }}</VChip
-                    >
-                    <VChip
-                      v-if="displayOffer(property)?.ownerDirect?.declared"
-                      size="small"
-                      variant="tonal"
-                      color="primary"
-                      >{{ t('owner') }}</VChip
-                    >
-                    <VChip
-                      v-if="displayOffer(property)?.petsAllowed"
-                      size="small"
-                      variant="tonal"
-                      >{{ t('pets') }}</VChip
-                    ><VChip
-                      v-if="(displayOffer(property)?.parkingSpaces ?? 0) > 0"
-                      size="small"
-                      variant="tonal"
-                      >{{ t('parking') }}</VChip
-                    ><VChip v-if="displayOffer(property)?.furnished" size="small" variant="tonal">{{
-                      t('furnished')
-                    }}</VChip
-                    ><VChip
-                      v-if="displayOffer(property)?.furnished === false"
-                      size="small"
-                      variant="tonal"
-                      >{{ t('unfurnished') }}</VChip
-                    ><VChip
-                      v-if="displayOffer(property)?.terms?.includes('invernal')"
-                      size="small"
-                      variant="tonal"
-                      color="info"
-                      >{{ t('winter') }}</VChip
-                    ><VChip
-                      v-for="guarantee in publishedGuarantees(property)"
-                      :key="guarantee"
-                      size="small"
-                      variant="outlined"
-                      >{{ t(guarantee) }}</VChip
-                    >
-                  </div>
-                  <RentalsZoneBars
-                    :place="{
-                      zone: property.officialZone?.zone,
-                      department: property.department,
-                      neighborhood: property.neighborhood,
-                    }"
-                  />
-                  <div class="rental-card__footnote">
-                    <p class="rental-card__meta">{{ sellerLabel(property) }}</p>
-                    <RentalsAvailabilityReport
-                      :offers="property.offers"
-                      :summary="property.availability"
-                      :preferred="displayOffer(property)"
+            <template v-for="(property, index) in feed.items" :key="property.key">
+              <FeedAd v-if="index === FEED_AD_AFTER" :feed="feed" />
+              <article
+                class="rental-card"
+                :class="{ 'rental-card--lead': index === 0 && feed.atStart }"
+              >
+                <div class="rental-card__visual">
+                  <!-- Con fotos, un carrusel: se pasan sin salir de la búsqueda y tocar una abre el
+                       visor en esa foto. Sin foto no hay nada que mirar y el destino útil sigue
+                       siendo la ficha. -->
+                  <div v-if="hasPhoto(property)" class="rental-card__media">
+                    <PropertyPhotoCarousel
+                      :photos="rentalCardPhotoRefs(property)"
+                      :total="property.photoCount"
+                      :source="gallerySource(property)"
                       :title="property.title"
+                      :eager="index < 3"
+                      :raised-indicator="property.sources.length > 1"
+                      @open="openPhotoPreview(property, $event)"
+                      @failed="failedImages.add(property.key)"
                     />
-                    <p class="rental-card__meta">
-                      {{
-                        t('seen', {
-                          date: dateLabel(displayOffer(property)?.lastSeen || property.lastSeen),
-                        })
-                      }}
-                    </p>
-                  </div>
-                </div>
-                <div class="rental-card__rail">
-                  <div class="rental-card__offers">
-                    <a
-                      v-for="offer in property.offers"
-                      :key="offer.listingId"
-                      :href="offer.url"
-                      target="_blank"
-                      rel="noopener noreferrer nofollow"
-                      class="rental-card__offer"
-                      :class="{
-                        'rental-card__offer--selected':
-                          offer.listingId === displayOffer(property)?.listingId,
-                      }"
-                      ><span>{{ sourceLabel(offer.source) }}</span
-                      ><strong>{{ offerPrice(offer) }}</strong
-                      ><VIcon size="16">mdi-open-in-new</VIcon></a
-                    >
+                    <span class="rental-card__zoom" aria-hidden="true">
+                      <VIcon size="16">mdi-image-multiple-outline</VIcon>
+                      <span class="rental-card__zoom-label">{{ t('viewPhotos') }}</span>
+                    </span>
+                    <span v-if="property.sources.length > 1" class="rental-card__badge">{{
+                      t('portals', { n: property.sources.length })
+                    }}</span>
                   </div>
                   <NuxtLink
+                    v-else
                     :to="rentalPropertyPath(property.key)"
-                    class="rental-card__detail"
-                    data-testid="rental-card-detail-link"
+                    class="rental-card__media"
                     :aria-label="`${t('detail')}: ${property.title}`"
                     @pointerdown="rememberRentalSearch(route.fullPath)"
                     @click="rememberRentalSearch(route.fullPath)"
                   >
-                    {{ t('detailsAndServices') }}
-                    <VIcon size="20" aria-hidden="true">mdi-arrow-right</VIcon>
+                    <span class="rental-card__noimage">
+                      <VIcon size="36">mdi-home-city-outline</VIcon>
+                      <span>{{ t('noPhoto') }}</span>
+                    </span>
+                    <span v-if="property.sources.length > 1" class="rental-card__badge">{{
+                      t('portals', { n: property.sources.length })
+                    }}</span>
                   </NuxtLink>
+                  <VBtn
+                    class="rental-card__save"
+                    :icon="isFavorite(property.key) ? 'mdi-heart' : 'mdi-heart-outline'"
+                    :color="isFavorite(property.key) ? 'primary' : undefined"
+                    :aria-label="`${t(isFavorite(property.key) ? 'unfavorite' : 'favorite')}: ${property.title}`"
+                    :aria-pressed="isFavorite(property.key)"
+                    variant="flat"
+                    size="small"
+                    @click="toggleFavorite(property)"
+                  />
                 </div>
-              </div>
-            </article>
+                <div class="rental-card__body">
+                  <div class="rental-card__main">
+                    <div class="rental-card__overview">
+                      <p class="rental-card__where">
+                        {{
+                          [property.neighborhood, property.department].filter(Boolean).join(', ') ||
+                          t('unknown')
+                        }}
+                      </p>
+                      <p
+                        v-if="referencePoint && !pending"
+                        class="rental-card__distance"
+                        data-testid="rental-card-distance"
+                      >
+                        {{ distanceLabel(property.distanceKm) }}
+                      </p>
+                      <div class="rental-card__cost">
+                        <p class="rental-card__price" data-testid="rental-card-price">
+                          {{
+                            monthlyTotal(property) !== null
+                              ? '$ ' + numberFormat(monthlyTotal(property)!)
+                              : priceLabel(property)
+                          }}
+                        </p>
+                        <p class="rental-card__cost-label">
+                          {{ t(monthlyTotal(property) !== null ? 'rentAndExpenses' : 'rent') }}
+                        </p>
+                        <p v-if="monthlyTotal(property) !== null" class="rental-card__expenses">
+                          {{ priceLabel(property) }} {{ t('rent').toLowerCase() }} ·
+                          {{ expensesLabel(property) }}
+                        </p>
+                        <p v-else class="rental-card__expenses">{{ expensesLabel(property) }}</p>
+                        <p
+                          v-if="displayOffer(property)?.currencyInferred"
+                          class="rental-card__expenses"
+                          data-testid="rental-card-currency-inferred"
+                        >
+                          {{ t('currencyInferred') }}
+                        </p>
+                        <p
+                          v-if="displayOffer(property)?.stayPriceSuspect"
+                          class="rental-card__stay"
+                          data-testid="rental-card-stay-price"
+                          :title="t('stayPriceNote')"
+                        >
+                          <VIcon size="14" aria-hidden="true">mdi-weather-night</VIcon>
+                          {{ t('stayPriceChip') }}
+                        </p>
+                        <p
+                          v-if="priceGaps.get(property.key)"
+                          class="rental-card__gap"
+                          data-testid="rental-card-gap"
+                          :title="t('gapNote')"
+                        >
+                          <VIcon size="14" aria-hidden="true">mdi-swap-horizontal</VIcon>
+                          {{
+                            t('gapLine', {
+                              cheap: sourceLabel(priceGaps.get(property.key)!.cheapestSource),
+                              dear: sourceLabel(priceGaps.get(property.key)!.runnerUpSource),
+                              diff: '$ ' + numberFormat(priceGaps.get(property.key)!.diffUyu),
+                              pct: numberFormat(Math.round(priceGaps.get(property.key)!.diffPct)),
+                            })
+                          }}
+                        </p>
+                        <p
+                          v-if="property.priceDrop"
+                          class="rental-card__gap"
+                          data-testid="rental-card-drop"
+                          :title="t('dropNote')"
+                        >
+                          <VIcon size="14" aria-hidden="true">mdi-arrow-down</VIcon>
+                          {{
+                            t('dropLine', {
+                              pct: numberFormat(property.priceDrop.pct),
+                              from: rentalPriceLabel(
+                                property.priceDrop.from,
+                                property.priceDrop.currency,
+                                0
+                              ),
+                              date: dateLabel(property.priceDrop.at),
+                            })
+                          }}
+                        </p>
+                      </div>
+
+                      <h3>
+                        <NuxtLink
+                          :to="rentalPropertyPath(property.key)"
+                          @pointerdown="rememberRentalSearch(route.fullPath)"
+                          @click="rememberRentalSearch(route.fullPath)"
+                          >{{ property.title }}</NuxtLink
+                        >
+                      </h3>
+                      <p class="rental-card__specs">{{ specsLabel(property) }}</p>
+                      <p v-if="property.address" class="rental-card__address">
+                        {{ property.address }}
+                      </p>
+                    </div>
+                    <div class="rental-card__tags">
+                      <VChip
+                        v-if="listedFor.get(property.key)"
+                        size="small"
+                        variant="tonal"
+                        color="warning"
+                        data-testid="rental-card-listed"
+                        :title="
+                          listedFor.get(property.key)!.basis === 'observed'
+                            ? t('listedObservedNote')
+                            : undefined
+                        "
+                        >{{
+                          t(
+                            listedFor.get(property.key)!.basis === 'published'
+                              ? 'listedPublished'
+                              : 'listedObserved',
+                            { days: listedFor.get(property.key)!.days }
+                          )
+                        }}</VChip
+                      >
+                      <VChip
+                        v-if="displayOffer(property)?.ownerDirect?.declared"
+                        size="small"
+                        variant="tonal"
+                        color="primary"
+                        >{{ t('owner') }}</VChip
+                      >
+                      <VChip
+                        v-if="displayOffer(property)?.petsAllowed"
+                        size="small"
+                        variant="tonal"
+                        >{{ t('pets') }}</VChip
+                      ><VChip
+                        v-if="(displayOffer(property)?.parkingSpaces ?? 0) > 0"
+                        size="small"
+                        variant="tonal"
+                        >{{ t('parking') }}</VChip
+                      ><VChip
+                        v-if="displayOffer(property)?.furnished"
+                        size="small"
+                        variant="tonal"
+                        >{{ t('furnished') }}</VChip
+                      ><VChip
+                        v-if="displayOffer(property)?.furnished === false"
+                        size="small"
+                        variant="tonal"
+                        >{{ t('unfurnished') }}</VChip
+                      ><VChip
+                        v-if="displayOffer(property)?.terms?.includes('invernal')"
+                        size="small"
+                        variant="tonal"
+                        color="info"
+                        >{{ t('winter') }}</VChip
+                      ><VChip
+                        v-for="guarantee in publishedGuarantees(property)"
+                        :key="guarantee"
+                        size="small"
+                        variant="outlined"
+                        >{{ t(guarantee) }}</VChip
+                      >
+                    </div>
+                    <RentalsZoneBars
+                      :place="{
+                        zone: property.officialZone?.zone,
+                        department: property.department,
+                        neighborhood: property.neighborhood,
+                      }"
+                    />
+                    <div class="rental-card__footnote">
+                      <p class="rental-card__meta">{{ sellerLabel(property) }}</p>
+                      <RentalsAvailabilityReport
+                        :offers="property.offers"
+                        :summary="property.availability"
+                        :preferred="displayOffer(property)"
+                        :title="property.title"
+                      />
+                      <p class="rental-card__meta">
+                        {{
+                          t('seen', {
+                            date: dateLabel(displayOffer(property)?.lastSeen || property.lastSeen),
+                          })
+                        }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="rental-card__rail">
+                    <div class="rental-card__offers">
+                      <a
+                        v-for="offer in property.offers"
+                        :key="offer.listingId"
+                        :href="offer.url"
+                        target="_blank"
+                        rel="noopener noreferrer nofollow"
+                        class="rental-card__offer"
+                        :class="{
+                          'rental-card__offer--selected':
+                            offer.listingId === displayOffer(property)?.listingId,
+                        }"
+                        ><span>{{ sourceLabel(offer.source) }}</span
+                        ><strong>{{ offerPrice(offer) }}</strong
+                        ><VIcon size="16">mdi-open-in-new</VIcon></a
+                      >
+                    </div>
+                    <NuxtLink
+                      :to="rentalPropertyPath(property.key)"
+                      class="rental-card__detail"
+                      data-testid="rental-card-detail-link"
+                      :aria-label="`${t('detail')}: ${property.title}`"
+                      @pointerdown="rememberRentalSearch(route.fullPath)"
+                      @click="rememberRentalSearch(route.fullPath)"
+                    >
+                      {{ t('detailsAndServices') }}
+                      <VIcon size="20" aria-hidden="true">mdi-arrow-right</VIcon>
+                    </NuxtLink>
+                  </div>
+                </div>
+              </article>
+            </template>
             <FeedEdge :feed="feed" edge="bottom" />
           </div>
           <PropertyPhotoLightbox
@@ -778,6 +781,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
 </template>
 
 <script setup lang="ts">
+import { FEED_AD_AFTER } from '~/utils/ads'
 import { rentalAvailabilityCopy } from '~/utils/rentalAvailabilityMessages'
 import { useDisplay } from 'vuetify'
 import SearchFilters from '~/components/rentals/SearchFilters.vue'

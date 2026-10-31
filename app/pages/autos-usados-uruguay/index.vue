@@ -99,7 +99,10 @@
 
         <div v-if="data?.items.length" ref="resultsList" class="cars-grid">
           <FeedEdge :feed="feed" edge="top" />
-          <CarsListingCard v-for="car in feed.items" :key="car.key" :car="car" />
+          <template v-for="(car, index) in feed.items" :key="car.key">
+            <FeedAd v-if="index === FEED_AD_AFTER" :feed="feed" />
+            <CarsListingCard :car="car" />
+          </template>
           <FeedEdge :feed="feed" edge="bottom" />
         </div>
 
@@ -191,6 +194,7 @@
 </template>
 
 <script setup lang="ts">
+import { FEED_AD_AFTER } from '~/utils/ads'
 import { useDisplay } from 'vuetify'
 import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
 import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'

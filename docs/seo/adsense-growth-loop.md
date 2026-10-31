@@ -287,13 +287,24 @@ Cambios:
    `FaqSection` no les llegaba. `faqSectionAd.test.ts` exige que todas sean de densidad `normal` y
    que ninguna ponga dos.
 
+5. **Los directorios con tarjetas** (alquileres, autos, autos chocados, oportunidades de autos e
+   inmobiliarias, inmobiliarias, venta de viviendas, equipar/movilidad y alquileres por
+   presupuesto) llevan su segunda unidad **adentro de la grilla**, como una fila entera después del
+   cuarto aviso (`components/feed/Ad.vue`, `FEED_AD_AFTER`). Hasta acá gastaban una sola, la del
+   cierre, debajo de 24 tarjetas, la paginación y las tablas de precios: ~0,3 impresiones por
+   vista en autos y alquileres, la familia con más vistas después de la portada. Sólo en modo
+   páginas: con "cargar más al bajar" la lista es virtual y una celda que no es aviso le rompe la
+   cuenta al composable. Monopatines y bicicletas, que embeben el directorio de equipar, apagan la
+   unidad de `FaqSection` para no pasar de dos (`tests/unit/feedAd.test.ts`).
+
 Ninguno agrega formatos de superposición, anclaje ni viñeta, y ninguno toca la consola: los
 automáticos siguen como estaban. Todas las unidades reservan su alto y cargan a 400 px.
 
 **Medición, con control:** impresiones de anuncio por vista e ingreso por vista **por familia**
 en `siterevenuesnapshots`, catorce días cerrados antes y después del deploy. Las guías no cambian
 (control); `/` y `/herramientas/*` son familias propias, y las páginas sueltas de contenido son
-cada una su familia. Si una familia tratada sube sus impresiones por vista y las guías no, el
+cada una su familia; los directorios (`/alquileres-uruguay`, `/autos-usados-uruguay`,
+`/venta-viviendas-uruguay`…) también, y su tratamiento empieza un deploy después. Si una familia tratada sube sus impresiones por vista y las guías no, el
 efecto es de la ubicación. Guardas: sesiones con interacción y tiempo de lectura de esas familias
 en GA4, y CLS de campo. Si una guarda cae, se revierte esa unidad sola. **No va en
 `experiments.json`**: no toca el texto que mide la búsqueda.

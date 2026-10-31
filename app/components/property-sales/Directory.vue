@@ -194,16 +194,17 @@
           />
           <div v-else-if="data?.items.length" ref="resultsList" class="sales-directory__grid">
             <FeedEdge :feed="feed" edge="top" />
-            <PropertySalesListingCard
-              v-for="item in feed.items"
-              :key="item.key"
-              :property="item"
-              :area-basis="query.areaBasis"
-              :compareable="savedOnly"
-              :compared="compared.includes(item.key)"
-              @compare="toggleCompare"
-              @preview="openPreview"
-            />
+            <template v-for="(item, index) in feed.items" :key="item.key">
+              <FeedAd v-if="index === FEED_AD_AFTER" :feed="feed" />
+              <PropertySalesListingCard
+                :property="item"
+                :area-basis="query.areaBasis"
+                :compareable="savedOnly"
+                :compared="compared.includes(item.key)"
+                @compare="toggleCompare"
+                @preview="openPreview"
+              />
+            </template>
             <FeedEdge :feed="feed" edge="bottom" />
           </div>
           <div v-else class="sales-directory__empty">
@@ -279,6 +280,7 @@
   </VContainer>
 </template>
 <script setup lang="ts">
+import { FEED_AD_AFTER } from '~/utils/ads'
 import { useDisplay } from 'vuetify'
 import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
 import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'

@@ -64,7 +64,10 @@
         <p class="agencies-count">{{ data.total.toLocaleString(locale) }} {{ t('agencies') }}</p>
         <div ref="resultsList">
           <FeedEdge :feed="feed" edge="top" />
-          <AgenciesAgencyCard v-for="item in feed.items" :key="item.agency.key" :item="item" />
+          <template v-for="(item, index) in feed.items" :key="item.agency.key">
+            <FeedAd v-if="index === FEED_AD_AFTER" :feed="feed" />
+            <AgenciesAgencyCard :item="item" />
+          </template>
           <FeedEdge :feed="feed" edge="bottom" />
         </div>
       </template>
@@ -98,6 +101,7 @@
   </VContainer>
 </template>
 <script setup lang="ts">
+import { FEED_AD_AFTER } from '~/utils/ads'
 import { normalizeAgencyQuery, agencyPath, type AgenciesResponse } from '../../utils/agencies'
 import { agencyMessage } from '../../utils/agencyMessages'
 import { DIRECTORIOS_HUB, directoriosHubListItem } from '../../utils/directorios'
