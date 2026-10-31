@@ -712,6 +712,13 @@ export function mergeLenderFacts(
 //      cartilla, which is why a page that only reads the marketing page concludes "no publica".
 //   4. The lenders that advertise hardest to people in the Clearing are the ones that publish
 //      least about what they charge. That is not a coincidence, and `costoScore` is built to say so.
+
+/**
+ * When the seed facts below were read, as a page prints it. A page that shows these rates without
+ * the weekly snapshot (`/api/loan-tiers` down or empty) dates them with this, never with today.
+ */
+export const LENDER_TIERLIST_READ_ON = 'agosto de 2026'
+
 export const LENDER_TIERLIST: readonly LenderEntity[] = Object.freeze([
   // ── Bancos ────────────────────────────────────────────────────────────────
   {

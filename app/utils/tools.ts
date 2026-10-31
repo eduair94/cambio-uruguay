@@ -279,16 +279,20 @@ export const tools: readonly Tool[] = [
   },
   {
     slug: 'calculadora-prestamo',
-    title: 'Calculadora de préstamos y cuotas',
+    // Título y descripción contestan lo que se busca ("simulador de préstamos", "calcular
+    // préstamo"): la página trae la cuota con cada prestamista (utils/loanSimulator.ts).
+    title: 'Simulador de préstamos: tu cuota con cada prestamista',
     description:
-      'Calculá la cuota mensual de un préstamo por el sistema francés: ingresá monto, tasa anual y cantidad de cuotas y mirá el total a pagar.',
+      'Simulá tu préstamo en pesos: poné monto y cuotas y mirá la cuota y el total con la TEA que publica cada banco, financiera y cooperativa de Uruguay.',
     icon: 'mdi-bank-outline',
     category: 'finanzas',
     keywords: [
-      'calculadora préstamo uruguay',
+      'simulador de préstamos',
+      'calculadora de préstamos',
+      'calcular préstamo',
+      'préstamos personales simulador',
       'cuota mensual préstamo',
       'sistema francés',
-      'simulador de cuotas',
     ],
   },
   {
