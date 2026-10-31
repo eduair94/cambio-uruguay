@@ -354,6 +354,9 @@
     </VCard>
 
     <!-- AFAP editorial section -->
+    <!-- La unidad intermedia, en un corte de sección a mitad de página (ver
+         docs/seo/adsense-growth-loop.md, decimotercera iteración). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <VCard variant="flat" class="inversiones-section mb-6 pa-5 pa-sm-6">
       <h2 class="text-h6 font-weight-bold mb-3 inversiones-group-title">
         <VIcon start size="small" color="primary">mdi-piggy-bank-outline</VIcon>

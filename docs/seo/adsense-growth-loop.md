@@ -303,6 +303,13 @@ Cambios:
    los parecidos (~0,7 impresiones por vista en las fichas de autos, ~1,1 en alquileres). Son
    densidad `normal`: con el cierre llegan al tope de dos (`tests/unit/fichaAd.test.ts`).
 
+7. **Seis páginas de finanzas sin bloque de preguntas** (`/mejores-bancos-uruguay`,
+   `/inversiones-uruguay`, `/mejores-prestamos-uruguay`, `/prestamos-uruguay`,
+   `/impuestos-inversiones-uruguay`, `/impuesto-autos-electricos-uruguay`) no recibían ninguna de
+   las unidades anteriores y servían 0,6–1,0 impresiones por vista. Llevan la suya en un corte de
+   sección a mitad de página; son el tema con los anunciantes que más pagan por clic.
+   `faqSectionAd.test.ts` ya exige densidad normal y una sola por página.
+
 Ninguno agrega formatos de superposición, anclaje ni viñeta, y ninguno toca la consola: los
 automáticos siguen como estaban. Todas las unidades reservan su alto y cargan a 400 px.
 
