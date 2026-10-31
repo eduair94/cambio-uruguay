@@ -119,6 +119,53 @@ export function convertTitle(entry: ConvertEntry): string {
 }
 
 /**
+ * El monto convertido como va en el resultado del buscador: sin centavos desde 100, porque ahí
+ * importa ver la cifra y "$ 1.000,00" gasta tres caracteres que el título no tiene.
+ */
+export function convertSnippetAmount(entry: ConvertEntry, value: number): string {
+  const decimals = value >= 100 ? 0 : 2
+  return value.toLocaleString('es-UY', {
+    style: 'currency',
+    currency: entry.to,
+    // es-UY escribe "BRL 100" y "EUR 100"; en el buscador se lee "R$ 100" y "€ 100". El dólar y el
+    // peso quedan con su símbolo largo ("US$", "$"): el corto del dólar sería otro "$".
+    currencyDisplay: entry.to === 'BRL' || entry.to === 'EUR' ? 'narrowSymbol' : 'symbol',
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  })
+}
+
+/**
+ * Título del resultado del buscador: la consulta y la cifra, en ese orden y cortito.
+ *
+ * Hasta el 31/10/2026 era la pregunta del H1 con la cifra al final ("¿Cuánto es 50.000 pesos
+ * argentinos en pesos uruguayos? ≈ $ 1.000,00", 68 caracteres más la marca): Google corta cerca de
+ * los 60 y lo que se perdía era justo la cifra. Las conversiones de pesos argentinos juntaban miles
+ * de impresiones en posición 6–8 con cero clics. Ahora la cifra entra siempre antes del corte.
+ * El H1 de la página sigue siendo la pregunta ({@link convertTitle}).
+ */
+export function convertSeoTitle(entry: ConvertEntry, value: number | null): string {
+  const pair = `${amountLabel(entry.amount, entry.from)} a ${CONVERT_CURRENCIES[entry.to].plural}`
+  return value === null ? `${pair} hoy` : `${pair}: ${convertSnippetAmount(entry, value)} hoy`
+}
+
+/**
+ * Descripción del resultado del buscador. El buscador ya muestra su propio conversor con la
+ * cotización de referencia; lo que esta página tiene y el conversor no, es lo que PAGA o COBRA hoy
+ * la mejor de más de 40 casas de cambio de Uruguay. Eso va primero.
+ */
+export function convertSeoDescription(entry: ConvertEntry, value: number | null): string {
+  const amt = amountLabel(entry.amount, entry.from)
+  if (value === null) {
+    return `Cuánto es ${amt} en ${CONVERT_CURRENCIES[entry.to].plural} hoy, con la cotización en vivo de más de 40 casas de cambio de Uruguay.`
+  }
+  const shown = convertSnippetAmount(entry, value)
+  return entry.to === 'UYU'
+    ? `${amt} te dan ${shown} hoy: el mejor precio de compra de más de 40 casas de cambio de Uruguay, no la cotización de referencia.`
+    : `Con ${amt} comprás ${shown} hoy: el mejor precio de venta de más de 40 casas de cambio de Uruguay, no la cotización de referencia.`
+}
+
+/**
  * Convert `entry.amount` of `from` into `to` given the relevant UYU rate.
  *
  * `rate` is the price of ONE unit of the foreign currency in UYU (e.g. the sell
