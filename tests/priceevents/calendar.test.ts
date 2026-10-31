@@ -26,11 +26,12 @@ describe("PRICE_EVENTS", () => {
       {
         id: "ciberlunes-2026-11",
         label: "CyberLunes noviembre 2026",
-        start: null,
-        end: null,
-        confirmed: false,
-        source: "https://www.cedu.org.uy/ciberlunes/",
-        note: "Al 17 de setiembre de 2026 la CEDU no había publicado la fecha.",
+        start: "2026-11-02",
+        end: "2026-11-04",
+        confirmed: true,
+        source:
+          "https://www.cedu.org.uy/camara-de-la-economia-digital-del-uruguay-invita-a-empresas-a-sumarse-al-ciberlunes/",
+        note: "Lo organiza la Cámara de la Economía Digital del Uruguay (CEDU), que publicó la fecha el 16 de setiembre de 2026.",
       },
       {
         id: "black-friday-2026",
@@ -38,17 +39,27 @@ describe("PRICE_EVENTS", () => {
         start: "2026-11-27",
         end: "2026-11-30",
         confirmed: true,
-        source: null,
-        note: "Del viernes 27 al lunes 30 de noviembre (Cyber Monday de EE.UU.).",
+        source: "https://www.opm.gov/policy-data-oversight/pay-leave/federal-holidays/",
+        note: "Es el viernes siguiente al Día de Acción de Gracias de EE.UU. (jueves 26 de noviembre). Lo seguimos hasta el lunes 30, el Cyber Monday de EE.UU.",
       },
     ]);
   });
 
-  it("never invents a date for the unconfirmed November 2026 edition", () => {
-    const november2026 = PRICE_EVENTS.find((event) => event.id === "ciberlunes-2026-11")!;
-    expect(november2026.start).toBeNull();
-    expect(november2026.end).toBeNull();
-    expect(november2026.confirmed).toBe(false);
+  it("every confirmed edition carries the source its date was read from", () => {
+    for (const event of PRICE_EVENTS.filter((e) => e.confirmed)) {
+      expect(event.source, event.id).toMatch(/^https:\/\//);
+      expect(event.start, event.id).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(event.end, event.id).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(event.start! <= event.end!, event.id).toBe(true);
+    }
+  });
+
+  // The guessed window (UNCONFIRMED_WINDOW_START/END in calendar.ts) was written for ONE edition,
+  // CyberLunes November 2026, which CEDU dated on 2026-09-16. Any other undated edition would inherit
+  // a November-2026 window that has nothing to do with it — so this fails on purpose the day someone
+  // adds one, and the fix is to move that window to the new edition's guess in the same commit.
+  it("has no undated edition, so nobody silently inherits the November 2026 guessed window", () => {
+    expect(PRICE_EVENTS.filter((event) => !event.confirmed).map((event) => event.id)).toEqual([]);
   });
 });
 
@@ -80,18 +91,18 @@ describe("activeEvent", () => {
     expect(activeEvent("2026-12-01")).toBeNull();
   });
 
-  it("activates the wide guess window for the unconfirmed November 2026 CyberLunes, unmodified", () => {
-    expect(activeEvent("2026-10-31")).toBeNull();
-    for (const day of ["2026-11-01", "2026-11-04", "2026-11-08"]) {
+  // CEDU dated November 2026 on 2026-09-16 (Monday 2 to Wednesday 4). The hourly --event-only job
+  // used to wake up for the whole guessed window (Nov 1–8); now it runs exactly the three real days,
+  // and the days of the old guess outside them are quiet again.
+  it("is active on the confirmed CyberLunes 2026-11 boundaries, inclusive, and not on the old guess", () => {
+    expect(activeEvent("2026-11-01")).toBeNull();
+    for (const day of ["2026-11-02", "2026-11-03", "2026-11-04"]) {
       const result = activeEvent(day);
       expect(result?.id).toBe("ciberlunes-2026-11");
-      // The returned event is the real calendar entry, not a copy with the guessed window baked
-      // into start/end — the page must still say "a confirmar por la CEDU", never a fake date.
-      expect(result?.start).toBeNull();
-      expect(result?.end).toBeNull();
-      expect(result?.confirmed).toBe(false);
+      expect(result?.confirmed).toBe(true);
     }
-    expect(activeEvent("2026-11-09")).toBeNull();
+    expect(activeEvent("2026-11-05")).toBeNull();
+    expect(activeEvent("2026-11-08")).toBeNull();
   });
 });
 
@@ -118,9 +129,8 @@ describe("resolveActiveEvent (overlap rule, synthetic data)", () => {
   it("prefers the confirmed window when a confirmed and an unconfirmed window overlap", () => {
     // The unconfirmed synthetic event's guessed window (2026-11-01..08) does not naturally overlap
     // "confirmed" above, so build the overlap directly against the real wide-window constants by
-    // picking a day inside BOTH: 2026-11-01..08 (unconfirmed guess) has no confirmed sibling in the
-    // real calendar, so this test uses a synthetic confirmed event placed on top of that window
-    // instead of relying on it ever happening for real.
+    // picking a day inside BOTH. The real calendar has no undated edition any more (see the
+    // "has no undated edition" test above), so this rule is only reachable with synthetic data.
     const confirmedInNovember: PriceEvent = { ...confirmed, id: "confirmed-november", start: "2026-11-03", end: "2026-11-05" };
     expect(resolveActiveEvent([unconfirmedWide, confirmedInNovember], "2026-11-04")?.id).toBe("confirmed-november");
     // Order in the array must not matter.

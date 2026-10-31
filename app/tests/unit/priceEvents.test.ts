@@ -7,22 +7,40 @@ import { describe, expect, it } from 'vitest'
 // inventado a mano.
 import { identifyPhone } from '../../../classes/phones/identify'
 import {
+  PRICE_EVENT_CALENDAR,
   priceEventCountdown,
   priceEventCountdownHeadline,
   priceEventDayLabel,
+  priceEventDayLabelLong,
   priceEventDropRows,
   priceEventFaq,
   priceEventFormatDate,
+  priceEventLatestEdition,
   priceEventMlSharePct,
   priceEventMontevideoToday,
   priceEventOtherUnconfirmed,
   priceEventPastEditions,
   priceEventPct,
   priceEventPlural,
+  priceEventRangeLabel,
+  priceEventShortRange,
+  priceEventUpcomingEditions,
+  type PriceEventCalendarEntry,
   type PriceEventCountdown,
   type PriceEventDropDoc,
   type PriceEventSnapshotResponse,
 } from '../../utils/priceEvents'
+
+/**
+ * El calendario tal como estaba ANTES de que la CEDU fechara noviembre de 2026 (16/9/2026): la única
+ * forma de seguir probando las ramas `undated` y "otra edición sin fecha", que el calendario real ya
+ * no alcanza. La ventana adivinada de esa edición es 2026-11-01..08.
+ */
+const CALENDAR_WITH_UNDATED: readonly PriceEventCalendarEntry[] = PRICE_EVENT_CALENDAR.map(entry =>
+  entry.id === 'ciberlunes-2026-11'
+    ? { ...entry, start: null, end: null, confirmed: false, note: 'Sin fecha publicada.' }
+    : entry
+)
 
 // ---------------------------------------------------------------------------
 // priceEventCountdown
@@ -74,35 +92,165 @@ describe('priceEventCountdown', () => {
     })
   })
 
-  it('dentro de la ventana adivinada de CyberLunes noviembre (05), cae en undated sólo si NO hay confirmado activo — acá Black Friday todavía gana', () => {
-    // 2026-11-05 cae en la ventana [01, 08] que activeEvent() usa para la edición SIN fecha — pero
-    // priceEventCountdown no depende de esa ventana: Black Friday, confirmado, sigue siendo el
-    // evento a mostrar mientras no haya terminado.
-    const result = priceEventCountdown('2026-11-05')
-    expect(result.event?.id).toBe('black-friday-2026')
-    expect(result.status).toBe('upcoming')
-  })
-
-  // El segundo bug que esta fecha atrapa: el 9 de noviembre la ventana adivinada de CyberLunes
-  // [01, 08] YA CERRÓ, pero Black Friday (start 27) sigue sin empezar — el resultado tiene que
-  // seguir siendo Black Friday `upcoming`, nunca `undated` ni `none` por culpa de una ventana ajena
-  // que ya venció.
-  it('con la ventana de CyberLunes vencida (09) pero Black Friday por venir: upcoming BF, no undated ni none', () => {
-    const result = priceEventCountdown('2026-11-09')
-    expect(result).toEqual({
-      event: expect.objectContaining({ id: 'black-friday-2026' }),
+  // CyberLunes noviembre 2026, ya fechado por la CEDU (lunes 2 a miércoles 4): el día en que este
+  // cambio se publica (30/10) el titular es CyberLunes, no Black Friday.
+  it('el 30 de octubre, el titular es CyberLunes noviembre: faltan 3 días', () => {
+    expect(priceEventCountdown('2026-10-30')).toEqual({
+      event: expect.objectContaining({ id: 'ciberlunes-2026-11' }),
       status: 'upcoming',
-      daysUntilStart: 18,
+      daysUntilStart: 3,
       endsOn: null,
     })
   })
 
-  // El bug de fondo de esta ronda: sin la regla de vencimiento, esto seguía devolviendo `undated`
-  // con la edición de CyberLunes noviembre — una afirmación falsa en diciembre, con su ventana
-  // adivinada (1 al 8 de noviembre) cerrada hace semanas y ningún evento confirmado por delante.
-  it('el día después del fin de Black Friday, con la ventana de CyberLunes también vencida: none, sin evento', () => {
+  it('el 2 de noviembre empieza CyberLunes, y el 3 sigue en curso hasta el 4', () => {
+    expect(priceEventCountdown('2026-11-02').status).toBe('first-day')
+    expect(priceEventCountdown('2026-11-03')).toEqual({
+      event: expect.objectContaining({ id: 'ciberlunes-2026-11' }),
+      status: 'in-progress',
+      daysUntilStart: null,
+      endsOn: '2026-11-04',
+    })
+  })
+
+  it('terminado CyberLunes (05), el titular pasa a Black Friday', () => {
+    const result = priceEventCountdown('2026-11-05')
+    expect(result.event?.id).toBe('black-friday-2026')
+    expect(result.status).toBe('upcoming')
+    expect(result.daysUntilStart).toBe(22)
+  })
+
+  it('el día después del fin de Black Friday, sin ninguna edición cargada por delante: none', () => {
     const result = priceEventCountdown('2026-12-01')
     expect(result).toEqual({ event: null, status: 'none', daysUntilStart: null, endsOn: null })
+  })
+
+  // Las dos ramas que sólo alcanza una edición SIN fecha, con el calendario de antes del 16/9.
+  describe('con una edición sin fecha (calendario sintético)', () => {
+    it('dentro de su ventana adivinada (05), Black Friday confirmado igual gana el titular', () => {
+      const result = priceEventCountdown('2026-11-05', CALENDAR_WITH_UNDATED)
+      expect(result.event?.id).toBe('black-friday-2026')
+      expect(result.status).toBe('upcoming')
+    })
+
+    // Con la ventana adivinada de CyberLunes [01, 08] ya cerrada pero Black Friday por venir, el
+    // resultado sigue siendo Black Friday `upcoming`, nunca `undated` ni `none` por una ventana ajena.
+    it('con la ventana vencida (09) pero Black Friday por venir: upcoming BF', () => {
+      expect(priceEventCountdown('2026-11-09', CALENDAR_WITH_UNDATED)).toEqual({
+        event: expect.objectContaining({ id: 'black-friday-2026' }),
+        status: 'upcoming',
+        daysUntilStart: 18,
+        endsOn: null,
+      })
+    })
+
+    it('sin ningún confirmado por delante y dentro de la ventana: undated', () => {
+      const onlyUndated = CALENDAR_WITH_UNDATED.filter(entry => entry.id !== 'black-friday-2026')
+      expect(priceEventCountdown('2026-11-05', onlyUndated)).toEqual({
+        event: expect.objectContaining({ id: 'ciberlunes-2026-11' }),
+        status: 'undated',
+        daysUntilStart: null,
+        endsOn: null,
+      })
+    })
+
+    // Sin la regla de vencimiento, esto seguía devolviendo `undated` en diciembre, con la ventana
+    // adivinada (1 al 8 de noviembre) cerrada hace semanas y ningún evento confirmado por delante.
+    it('después de Black Friday, con la ventana también vencida: none', () => {
+      expect(priceEventCountdown('2026-12-01', CALENDAR_WITH_UNDATED).status).toBe('none')
+    })
+  })
+})
+
+describe('priceEventUpcomingEditions', () => {
+  it('a fines de octubre lista las DOS ediciones que faltan, en orden', () => {
+    expect(priceEventUpcomingEditions('2026-10-30').map(e => e.id)).toEqual([
+      'ciberlunes-2026-11',
+      'black-friday-2026',
+    ])
+  })
+
+  it('incluye la edición en curso (su último día sigue siendo hoy)', () => {
+    expect(priceEventUpcomingEditions('2026-11-04').map(e => e.id)).toEqual([
+      'ciberlunes-2026-11',
+      'black-friday-2026',
+    ])
+  })
+
+  it('terminado CyberLunes queda sólo Black Friday, y en diciembre nada', () => {
+    expect(priceEventUpcomingEditions('2026-11-05').map(e => e.id)).toEqual(['black-friday-2026'])
+    expect(priceEventUpcomingEditions('2026-12-01')).toEqual([])
+  })
+
+  it('nunca lista una edición sin fecha', () => {
+    expect(priceEventUpcomingEditions('2026-10-30', CALENDAR_WITH_UNDATED).map(e => e.id)).toEqual([
+      'black-friday-2026',
+    ])
+  })
+})
+
+describe('priceEventRangeLabel y priceEventDayLabelLong', () => {
+  const byId = (id: string) => PRICE_EVENT_CALENDAR.find(entry => entry.id === id)!
+
+  it('mismo mes: los dos días con su día de la semana, el mes y el año una sola vez', () => {
+    expect(priceEventRangeLabel(byId('ciberlunes-2026-11'))).toBe(
+      'Del lunes 2 al miércoles 4 de noviembre de 2026'
+    )
+    expect(priceEventRangeLabel(byId('black-friday-2026'))).toBe(
+      'Del viernes 27 al lunes 30 de noviembre de 2026'
+    )
+    expect(priceEventRangeLabel(byId('ciberlunes-2025-11'))).toBe(
+      'Del lunes 3 al miércoles 5 de noviembre de 2025'
+    )
+  })
+
+  it('cruza de mes: cada punta lleva el suyo', () => {
+    expect(priceEventRangeLabel({ start: '2026-05-30', end: '2026-06-01' })).toBe(
+      'Del sábado 30 de mayo al lunes 1 de junio de 2026'
+    )
+  })
+
+  it('cruza de año: cada punta lleva mes y año', () => {
+    expect(priceEventRangeLabel({ start: '2026-12-31', end: '2027-01-02' })).toBe(
+      'Del jueves 31 de diciembre de 2026 al sábado 2 de enero de 2027'
+    )
+  })
+
+  it('un solo día: "El <día> <n> de <mes> de <año>"', () => {
+    expect(priceEventRangeLabel({ start: '2026-11-27', end: '2026-11-27' })).toBe(
+      'El viernes 27 de noviembre de 2026'
+    )
+    expect(priceEventDayLabelLong('2026-09-17')).toBe('El jueves 17 de setiembre de 2026')
+  })
+
+  it('sin fecha no inventa nada', () => {
+    expect(priceEventRangeLabel({ start: null, end: null })).toBe('')
+  })
+})
+
+describe('priceEventShortRange', () => {
+  it('la forma corta del <title>: "2-4/11", "27/11", y cruzando de mes "30/5-1/6"', () => {
+    expect(priceEventShortRange({ start: '2026-11-02', end: '2026-11-04' })).toBe('2-4/11')
+    expect(priceEventShortRange({ start: '2026-11-27', end: '2026-11-27' })).toBe('27/11')
+    expect(priceEventShortRange({ start: '2026-05-30', end: '2026-06-01' })).toBe('30/5-1/6')
+    expect(priceEventShortRange({ start: null, end: null })).toBe('')
+  })
+})
+
+describe('priceEventLatestEdition', () => {
+  it('la edición confirmada más reciente de cada familia', () => {
+    expect(priceEventLatestEdition('ciberlunes-')?.id).toBe('ciberlunes-2026-11')
+    expect(priceEventLatestEdition('black-friday-')?.id).toBe('black-friday-2026')
+  })
+
+  it('salta una edición sin fecha y cae en la última que sí la tiene', () => {
+    expect(priceEventLatestEdition('ciberlunes-', CALENDAR_WITH_UNDATED)?.id).toBe(
+      'ciberlunes-2026-06'
+    )
+  })
+
+  it('null si la familia no tiene ninguna edición fechada', () => {
+    expect(priceEventLatestEdition('hot-sale-')).toBeNull()
   })
 })
 
@@ -225,22 +373,32 @@ describe('priceEventDayLabel', () => {
 // ---------------------------------------------------------------------------
 
 describe('priceEventOtherUnconfirmed', () => {
-  it('Black Friday nearer (gana el titular): la edición sin fecha se muestra aparte', () => {
-    const result = priceEventOtherUnconfirmed('2026-09-17')
-    expect(result?.id).toBe('ciberlunes-2026-11')
+  it('con el calendario real (ninguna edición sin fecha) nunca hay nada que mostrar aparte', () => {
+    for (const today of ['2026-09-17', '2026-10-30', '2026-11-05', '2026-12-01']) {
+      expect(priceEventOtherUnconfirmed(today)).toBeNull()
+    }
   })
 
-  it('todavía dentro de su ventana adivinada (05 de noviembre): se muestra aparte igual', () => {
-    const result = priceEventOtherUnconfirmed('2026-11-05')
-    expect(result?.id).toBe('ciberlunes-2026-11')
-  })
+  describe('con una edición sin fecha (calendario sintético)', () => {
+    it('Black Friday gana el titular: la edición sin fecha se muestra aparte', () => {
+      expect(priceEventOtherUnconfirmed('2026-09-17', CALENDAR_WITH_UNDATED)?.id).toBe(
+        'ciberlunes-2026-11'
+      )
+    })
 
-  it('con la ventana vencida (09 de noviembre) pero Black Friday por venir: ya no se muestra aparte', () => {
-    expect(priceEventOtherUnconfirmed('2026-11-09')).toBeNull()
-  })
+    it('todavía dentro de su ventana adivinada (05 de noviembre): se muestra aparte igual', () => {
+      expect(priceEventOtherUnconfirmed('2026-11-05', CALENDAR_WITH_UNDATED)?.id).toBe(
+        'ciberlunes-2026-11'
+      )
+    })
 
-  it('después de Black Friday, con la ventana también vencida: ninguna razón para mostrarla aparte', () => {
-    expect(priceEventOtherUnconfirmed('2026-12-01')).toBeNull()
+    it('con la ventana vencida (09 de noviembre) pero Black Friday por venir: ya no', () => {
+      expect(priceEventOtherUnconfirmed('2026-11-09', CALENDAR_WITH_UNDATED)).toBeNull()
+    })
+
+    it('después de Black Friday, con la ventana también vencida: tampoco', () => {
+      expect(priceEventOtherUnconfirmed('2026-12-01', CALENDAR_WITH_UNDATED)).toBeNull()
+    })
   })
 })
 
@@ -253,14 +411,27 @@ describe('priceEventPastEditions', () => {
     expect(priceEventPastEditions('2025-01-01')).toEqual([])
   })
 
-  it('en orden cronológico, y nunca incluye la edición sin fecha confirmada', () => {
+  it('en orden cronológico', () => {
     const result = priceEventPastEditions('2026-09-17')
     expect(result.map(e => e.id)).toEqual(['ciberlunes-2025-11', 'ciberlunes-2026-06'])
   })
 
-  it('Black Friday pasa a ser pasado después de su ventana', () => {
-    const result = priceEventPastEditions('2026-12-01')
-    expect(result.map(e => e.id)).toEqual([
+  it('CyberLunes noviembre pasa a ser pasado el 5, y Black Friday después de su ventana', () => {
+    expect(priceEventPastEditions('2026-11-05').map(e => e.id)).toEqual([
+      'ciberlunes-2025-11',
+      'ciberlunes-2026-06',
+      'ciberlunes-2026-11',
+    ])
+    expect(priceEventPastEditions('2026-12-01').map(e => e.id)).toEqual([
+      'ciberlunes-2025-11',
+      'ciberlunes-2026-06',
+      'ciberlunes-2026-11',
+      'black-friday-2026',
+    ])
+  })
+
+  it('nunca incluye una edición sin fecha, ni con su ventana vencida', () => {
+    expect(priceEventPastEditions('2026-12-01', CALENDAR_WITH_UNDATED).map(e => e.id)).toEqual([
       'ciberlunes-2025-11',
       'ciberlunes-2026-06',
       'black-friday-2026',
@@ -357,6 +528,21 @@ describe('priceEventDropRows', () => {
     expect(identity!.key).toMatch(/^[a-z0-9][a-z0-9-]{3,80}$/)
   })
 
+  it('movilidad enlaza a la página de su categoría (la clave del registro de movilidad)', () => {
+    const rows = priceEventDropRows({
+      topDrops: [
+        drop({ vertical: 'movilidad', category: 'monopatin-electrico' }),
+        drop({ listingId: 'l-2', vertical: 'movilidad', category: 'bicicleta-electrica' }),
+        drop({ listingId: 'l-3', vertical: 'movilidad', category: 'heladera' }),
+      ],
+    })
+    expect(rows.map(row => row.internalHref)).toEqual([
+      '/monopatines-electricos-uruguay',
+      '/bicicletas-electricas-uruguay',
+      null,
+    ])
+  })
+
   it('sillas siempre enlaza al hub, sin depender de category/productKey', () => {
     const [row] = priceEventDropRows({
       topDrops: [drop({ vertical: 'sillas', category: null, productKey: null })],
@@ -449,6 +635,28 @@ describe('priceEventMlSharePct', () => {
 })
 
 describe('priceEventFaq', () => {
+  // Casi todas las impresiones de la página son "cuándo es el black friday en uruguay 2026": las
+  // fechas abren la FAQ (que también es el FAQPage del JSON-LD) y salen del calendario.
+  it('abre con la fecha de Black Friday y la de CyberLunes, sacadas del calendario', () => {
+    const faq = priceEventFaq(null)
+    expect(faq.slice(0, 2).map(f => f.id)).toEqual([
+      'ciberlunes-cuando-es-black-friday',
+      'ciberlunes-cuando-es-ciberlunes',
+    ])
+    expect(faq[0]!.question).toBe('¿Cuándo es el Black Friday 2026 en Uruguay?')
+    expect(faq[0]!.answer).toMatch(/^El viernes 27 de noviembre de 2026\. /)
+    expect(faq[0]!.answer).toContain('jueves 26 de noviembre')
+    expect(faq[1]!.question).toBe('¿Cuándo es el CyberLunes noviembre 2026?')
+    expect(faq[1]!.answer).toMatch(/^Del lunes 2 al miércoles 4 de noviembre de 2026\. /)
+    expect(faq[1]!.answer).toContain('(CEDU)')
+    expect(faq[1]!.answer).toContain('en junio y en noviembre')
+  })
+
+  it('sin ninguna edición fechada, no hay pregunta de fechas (nunca se inventa una)', () => {
+    const faq = priceEventFaq(null, [])
+    expect(faq.some(f => f.id.startsWith('ciberlunes-cuando-es-'))).toBe(false)
+  })
+
   it('sin snapshot todavía explica las dos reglas base', () => {
     const faq = priceEventFaq(null)
     expect(faq.map(f => f.id)).toContain('ciberlunes-que-es-baja-real')
@@ -535,18 +743,62 @@ describe('la página /ciberlunes-y-black-friday-uruguay cumple su propio contrat
     }
   })
 
-  it('la bajada y "cómo medimos" nombran las tres verticales que releva, no sólo equipar/sillas', () => {
+  it('la bajada y "cómo medimos" nombran las cuatro verticales que releva, no sólo equipar/sillas', () => {
     // Estas dos menciones son las que la FAQ "¿por qué no aparecen todas las tiendas?" respalda
-    // (app/utils/priceEvents.ts) — las tres tienen que aparecer juntas o la limitación queda
-    // implícita para dos de cada tres verticales que el job en realidad lee.
-    const heroAndMethod = source.split('<!-- ── Sin datos suficientes')[0] ?? source
-    for (const path of [
-      '/equipar-casa-uruguay',
-      '/sillas-escritorio-uruguay',
-      '/celulares-uruguay',
-    ]) {
-      expect(heroAndMethod).toContain(path)
+    // (app/utils/priceEvents.ts) — todas tienen que aparecer juntas o la limitación queda implícita
+    // para las verticales que el job en realidad lee (movilidad se sumó sola: el detector de
+    // verticales lee `distinct("vertical")` de pricewatchoffers).
+    const method = source
+      .split('<!-- ── Cómo medimos')[1]
+      ?.split('<!-- ── Sin datos suficientes')[0]
+    const hero = source.split('<!-- ── Fechas')[0] ?? ''
+    for (const part of [hero, method ?? '']) {
+      for (const path of [
+        '/equipar-casa-uruguay',
+        '/sillas-escritorio-uruguay',
+        '/celulares-uruguay',
+        '/monopatines-electricos-uruguay',
+        '/bicicletas-electricas-uruguay',
+      ]) {
+        expect(part).toContain(path)
+      }
     }
+    expect(
+      priceEventFaq(null).find(f => f.id === 'ciberlunes-por-que-no-estan-todas-las-tiendas')
+        ?.answer
+    ).toContain('/monopatines-electricos-uruguay')
+  })
+
+  // El título y la descripción son literales (los mide seoTitleBudget/seoDescriptionBudget), así que
+  // nada los ata al calendario salvo esto: si alguien cambia una fecha en PRICE_EVENT_CALENDAR y no
+  // el snippet, el SERP publicaría una fecha que la página misma contradice.
+  it('el título y la descripción llevan las fechas del calendario', () => {
+    const byId = (id: string) => PRICE_EVENT_CALENDAR.find(entry => entry.id === id)!
+    const blackFriday = byId('black-friday-2026')
+    const ciberlunes = byId('ciberlunes-2026-11')
+    const title = source.match(/^const title = '([^']+)'/m)?.[1] ?? ''
+    expect(title).toContain(
+      `Black Friday 2026: ${priceEventShortRange({ start: blackFriday.start, end: blackFriday.start })}`
+    )
+    expect(title).toContain(`CyberLunes ${priceEventShortRange(ciberlunes)}`)
+    const description = source.match(/^const description =\s*'([^']+)'/m)?.[1] ?? ''
+    expect(description).toContain(
+      priceEventDayLabelLong(blackFriday.start!)
+        .replace(/^El /, '')
+        .replace(/ de 2026$/, '')
+    )
+    expect(description).toContain(
+      priceEventRangeLabel(ciberlunes)
+        .replace(/^Del /, 'del ')
+        .replace(/ de noviembre de 2026$/, '')
+    )
+  })
+
+  it('la sección de uso enlaza a la lista de equipar y a los descuentos con tarjeta', () => {
+    const usage = source.split('<!-- ── Cómo usarla')[1]?.split('<!-- ── Cómo medimos')[0] ?? ''
+    expect(usage).toContain('localePath(EQUIPAR_LISTA_PATH)')
+    expect(usage).toContain('localePath(EQUIPAR_PRODUCTOS_PATH)')
+    expect(usage).toContain("localePath('/descuentos-con-tarjeta-uruguay')")
   })
 
   it('el enlace de "Ver oferta" (tienda de terceros) lleva rel="nofollow noopener", como equipar/sillas', () => {

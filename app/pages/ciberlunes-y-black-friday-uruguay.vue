@@ -3,7 +3,8 @@ THESIS: "Hasta 70 % OFF" en CyberLunes y Black Friday es fácil de anunciar y di
 página no lo cree ni lo desmiente en general: mide, oferta por oferta, contra el propio historial de
 precios de las tiendas que ya relevamos para /equipar-casa-uruguay y /sillas-escritorio-uruguay.
 OWN-WORLD: hereda tipografía, superficies y azules semánticos del resto del sitio.
-STORY: primero cuándo es (con fuente), después la regla ("cómo medimos"), después los datos de hoy
+STORY: primero cuándo es (todas las ediciones que faltan, con fuente), después cómo usarla antes y
+durante el evento, después la regla ("cómo medimos"), después los datos de hoy
 —bajas reales primero, tachados por encima después, siempre con la salvedad de que sólo vemos lo que
 relevamos—, la serie de 30 días, y por último el marco legal real (sin la regla europea de 30 días que
 no rige acá) y el FAQ.
@@ -15,18 +16,18 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
     <header class="hero mb-6">
       <p class="eyebrow">CyberLunes y Black Friday · Uruguay</p>
       <h1 class="text-h4 text-md-h3 font-weight-bold mb-2">
-        CyberLunes y Black Friday en Uruguay: ¿el descuento es real?
+        CyberLunes y Black Friday 2026 en Uruguay: ¿el descuento es real?
       </h1>
       <p class="text-body-1 text-medium-emphasis mb-2">
         "Hasta 70 % OFF" es fácil de anunciar. Acá no lo damos por sentado en general: comparamos,
         oferta por oferta, el precio de hoy contra el propio historial de precios de las tiendas que
         ya relevamos todos los días para
-        <NuxtLink :to="localePath('/equipar-casa-uruguay')">/equipar-casa-uruguay</NuxtLink>,
-        <NuxtLink :to="localePath('/sillas-escritorio-uruguay')"
-          >/sillas-escritorio-uruguay</NuxtLink
-        >
-        y
-        <NuxtLink :to="localePath('/celulares-uruguay')">/celulares-uruguay</NuxtLink>.
+        <NuxtLink :to="localePath('/equipar-casa-uruguay')">equipar una casa</NuxtLink>,
+        <NuxtLink :to="localePath('/sillas-escritorio-uruguay')">sillas de escritorio</NuxtLink>,
+        <NuxtLink :to="localePath('/celulares-uruguay')">celulares</NuxtLink>,
+        <NuxtLink :to="localePath('/monopatines-electricos-uruguay')">monopatines</NuxtLink> y
+        <NuxtLink :to="localePath('/bicicletas-electricas-uruguay')">bicicletas eléctricas</NuxtLink
+        >.
       </p>
       <p v-if="current?.generatedAt" class="as-of text-caption text-medium-emphasis">
         Actualizado el {{ priceEventFormatDate(current.generatedAt) }}.
@@ -38,43 +39,49 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
       <h2 id="fechas-title" class="section-heading mb-3">Cuándo es</h2>
 
       <VCard v-if="countdown" variant="flat" class="countdown-card pa-4 pa-sm-5 mb-4">
-        <p class="countdown-headline mb-1">{{ priceEventCountdownHeadline(countdown) }}</p>
-        <p
-          v-if="countdown.status === 'upcoming' || countdown.status === 'first-day'"
-          class="text-body-2 text-medium-emphasis mb-2"
-        >
-          {{ priceEventDateRangeLabel(countdown.event) }}
-        </p>
-        <p
-          v-else-if="countdown.status === 'undated' && countdown.event.note"
-          class="text-body-2 text-medium-emphasis mb-2"
-        >
-          {{ countdown.event.note }}
-        </p>
-        <a
-          v-if="countdown.event?.source"
-          :href="countdown.event.source"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="source-link"
-        >
-          Fuente
-        </a>
-        <p
-          v-else-if="
-            countdown.status !== 'undated' && countdown.status !== 'none' && countdown.event?.note
-          "
-          class="text-caption text-medium-emphasis mb-0"
-        >
-          {{ countdown.event?.note }}
-        </p>
+        <p class="countdown-headline mb-0">{{ priceEventCountdownHeadline(countdown) }}</p>
+        <!--
+          Todas las ediciones confirmadas que faltan, no sólo la del titular: a fines de octubre el
+          titular es CyberLunes, pero casi todo el que llega desde Google buscó "cuándo es el Black
+          Friday 2026" — su fecha tiene que estar a la vista sin esperar a que pase el CyberLunes.
+        -->
+        <ul v-if="upcomingEditions.length" class="upcoming-list">
+          <li v-for="edition in upcomingEditions" :key="edition.id" class="upcoming-item">
+            <p class="upcoming-label">{{ edition.label }}</p>
+            <p class="upcoming-dates">{{ priceEventRangeLabel(edition) }}.</p>
+            <p v-if="edition.note" class="upcoming-note">{{ edition.note }}</p>
+            <a
+              v-if="edition.source"
+              :href="edition.source"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="source-link"
+            >
+              Fuente
+            </a>
+          </li>
+        </ul>
+        <template v-else-if="countdown.status === 'undated'">
+          <p v-if="countdown.event?.note" class="text-body-2 text-medium-emphasis mt-2 mb-2">
+            {{ countdown.event.note }}
+          </p>
+          <a
+            v-if="countdown.event?.source"
+            :href="countdown.event.source"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="source-link"
+          >
+            Fuente
+          </a>
+        </template>
       </VCard>
 
       <!--
-        La edición sin fecha nunca desaparece sólo porque OTRO evento (con fecha ya conocida) haya
-        ganado el titular de arriba: Black Friday tiene fecha fija y CyberLunes noviembre no, así que
-        si el titular eligió a Black Friday, esta línea es la única mención de que CyberLunes también
-        viene — "a confirmar por la CEDU" tiene que quedar visible, no perderse detrás del otro evento.
+        Una edición sin fecha nunca desaparece sólo porque OTRO evento (con fecha ya conocida) haya
+        ganado el titular de arriba: "a confirmar por la CEDU" tiene que quedar visible, no perderse
+        detrás del otro evento. Hoy el calendario no tiene ninguna sin fecha (la CEDU fechó noviembre
+        de 2026 el 16/9/2026), así que esta línea no se dibuja hasta que se cargue una.
       -->
       <p v-if="otherUnconfirmedEvent" class="text-body-2 text-medium-emphasis mb-4">
         {{ otherUnconfirmedEvent.label }}: a confirmar por la CEDU.
@@ -94,7 +101,7 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
         <ul class="past-list">
           <li v-for="edition in pastEditions" :key="edition.id">
             <span class="past-label">{{ edition.label }}</span>
-            <span class="past-dates">{{ priceEventDateRangeLabel(edition) }}</span>
+            <span class="past-dates">{{ priceEventRangeLabel(edition) }}</span>
             <a
               v-if="edition.source"
               :href="edition.source"
@@ -108,6 +115,59 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
           </li>
         </ul>
       </div>
+    </section>
+
+    <!-- ── Cómo usarla ──────────────────────────────────────────────────── -->
+    <!--
+      Para quien llega desde Google la semana anterior: lo que sirve hacer ANTES (el precio de antes
+      sólo se ve antes) y lo que va a encontrar acá esos días. Cada paso enlaza a una herramienta que
+      ya existe; ninguno promete algo que el sitio no haga.
+    -->
+    <section class="page-section" aria-labelledby="uso-title">
+      <h2 id="uso-title" class="section-heading mb-3">Cómo usarla antes y durante el evento</h2>
+      <p class="text-body-2 mb-3">
+        Un descuento sólo se juzga contra el precio de antes, y ese día la tienda te muestra el
+        suyo, tachado, no el que cobraba la semana anterior.
+      </p>
+      <ol class="howto-list">
+        <li>
+          <strong>Antes, fijate el precio de hoy.</strong> Cada aviso de
+          <NuxtLink :to="localePath('/celulares-uruguay')">celulares</NuxtLink>,
+          <NuxtLink :to="localePath('/sillas-escritorio-uruguay')">sillas de escritorio</NuxtLink>,
+          <NuxtLink :to="localePath('/monopatines-electricos-uruguay')">monopatines</NuxtLink>,
+          <NuxtLink :to="localePath('/bicicletas-electricas-uruguay')"
+            >bicicletas eléctricas</NuxtLink
+          >
+          y del
+          <NuxtLink :to="localePath(EQUIPAR_PRODUCTOS_PATH)"
+            >buscador para equipar la casa</NuxtLink
+          >
+          dice si su precio subió o bajó desde la primera vez que lo leímos. Y si te preocupa que
+          una tienda suba el precio la semana anterior para después «rebajarlo»,
+          <NuxtLink :to="localePath('/cambios-de-precio-uruguay')">cambios de precio</NuxtLink>
+          publica qué avisos subieron y cuáles bajaron en los últimos días, cada uno contra su
+          propio precio anterior.
+        </li>
+        <li>
+          <strong>Si es algo para la casa, guardalo.</strong> «Agregar a mi lista» en ese buscador
+          lo lleva a <NuxtLink :to="localePath(EQUIPAR_LISTA_PATH)">tu lista</NuxtLink>; ese día,
+          «Actualizar precios» te dice si cambió de precio o si ya no está publicado.
+        </li>
+        <li>
+          <strong>Esos días, volvé acá.</strong> La tabla de bajas reales lista las ofertas que
+          quedaron al menos 10 % debajo de su propio mínimo de 60 días, y la de tiendas cuenta
+          cuántos precios tachados quedaron por encima de lo que registramos. Además de la corrida
+          de todos los días, mientras dura cada edición el cálculo se repite cada hora.
+        </li>
+        <li>
+          <strong>Si vas a pagar con tarjeta,</strong> en
+          <NuxtLink :to="localePath('/descuentos-con-tarjeta-uruguay')"
+            >descuentos con tarjeta</NuxtLink
+          >
+          elegís las tuyas y ves las promociones vigentes; con la sesión iniciada, te avisamos
+          cuando aparece un descuento nuevo para ellas.
+        </li>
+      </ol>
     </section>
 
     <!-- ── Cómo medimos ─────────────────────────────────────────────────── -->
@@ -133,14 +193,13 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
         Una oferta recién entra a esta comparación cuando lleva al menos 21 días en nuestro
         historial y tiene al menos 10 días con precio dentro de esos 60. Y una salvedad que vale
         para toda la página: <strong>sólo vemos las tiendas que relevamos</strong> para {{ ' '
-        }}<NuxtLink :to="localePath('/equipar-casa-uruguay')">/equipar-casa-uruguay</NuxtLink>,
-        <NuxtLink :to="localePath('/sillas-escritorio-uruguay')"
-          >/sillas-escritorio-uruguay</NuxtLink
-        >
-        y
-        <NuxtLink :to="localePath('/celulares-uruguay')">/celulares-uruguay</NuxtLink>; una tienda
-        fuera de esa lista puede tener una baja real o un precio tachado por encima de su historial
-        y esta página no lo va a mostrar, simplemente porque no lo medimos.
+        }}<NuxtLink :to="localePath('/equipar-casa-uruguay')">equipar una casa</NuxtLink>,
+        <NuxtLink :to="localePath('/sillas-escritorio-uruguay')">sillas de escritorio</NuxtLink>,
+        <NuxtLink :to="localePath('/celulares-uruguay')">celulares</NuxtLink>,
+        <NuxtLink :to="localePath('/monopatines-electricos-uruguay')">monopatines</NuxtLink> y
+        <NuxtLink :to="localePath('/bicicletas-electricas-uruguay')">bicicletas eléctricas</NuxtLink
+        >; una tienda fuera de esa lista puede tener una baja real o un precio tachado por encima de
+        su historial y esta página no lo va a mostrar, simplemente porque no lo medimos.
       </p>
       <p v-if="current" class="text-body-2 text-medium-emphasis mb-0">
         {{ isToday ? 'Hoy' : `El ${snapshotDayLabel}` }} revisamos
@@ -369,6 +428,7 @@ FORM: página de lectura; sin calculadora ni estado que el visitante edite.
 
 <script setup lang="ts">
 import { scenarioById } from '~/utils/consumerRights'
+import { EQUIPAR_LISTA_PATH, EQUIPAR_PRODUCTOS_PATH } from '~/utils/equiparProductos'
 import { formatCurrency } from '~/utils/format'
 import {
   priceEventCountdown,
@@ -383,8 +443,9 @@ import {
   priceEventPastEditions,
   priceEventPct,
   priceEventPlural,
+  priceEventRangeLabel,
+  priceEventUpcomingEditions,
   type PriceEventApiResponse,
-  type PriceEventCalendarEntry,
   type PriceEventDayPoint,
   type PriceEventDropRowFields,
   type PriceEventSellerStat,
@@ -489,21 +550,12 @@ const emptyStateMessage = computed(() => {
 })
 
 const countdown = computed(() => priceEventCountdown(today.value))
+const upcomingEditions = computed(() => priceEventUpcomingEditions(today.value))
 const pastEditions = computed(() => priceEventPastEditions(today.value))
 
 // La decisión de "¿hay una edición sin fecha que además haya que mostrar?" es pura y vive en
 // priceEvents.ts (priceEventOtherUnconfirmed), probada ahí con sus ramas — acá sólo se llama.
 const otherUnconfirmedEvent = computed(() => priceEventOtherUnconfirmed(today.value))
-
-/** "Del 3 de noviembre de 2025 al 5 de noviembre de 2025." Se llama para un `countdown.event` con
- * `status` `upcoming`/`first-day` o para una edición de `pastEditions` — en la práctica siempre con
- * `start`/`end` no nulos (sólo la edición sin fecha confirmada los tiene en `null`, y esa nunca entra
- * acá) — pero el tipo sigue siendo `string | null`, así que esta función vive en el script (con un
- * `if` real) en vez de un `!` en el template. */
-function priceEventDateRangeLabel(entry: PriceEventCalendarEntry | null): string {
-  if (!entry?.start || !entry.end) return ''
-  return `Del ${priceEventFormatDate(entry.start)} al ${priceEventFormatDate(entry.end)}.`
-}
 
 const todayDropsCount = computed(() => current.value?.dropsCount ?? 0)
 
@@ -516,6 +568,7 @@ const PRICE_EVENT_VERTICAL_LABELS: Record<string, string> = {
   equipar: 'equipar una casa',
   sillas: 'sillas de escritorio',
   celulares: 'celulares',
+  movilidad: 'monopatines y bicicletas eléctricas',
 }
 const verticalStats = computed(() =>
   Object.entries(current.value?.byVertical ?? {}).map(([vertical, stats]) => ({
@@ -567,13 +620,16 @@ const chartOptions = {
 const canonicalUrl = 'https://cambio-uruguay.com/ciberlunes-y-black-friday-uruguay'
 // 43 caracteres: con " | Cambio Uruguay" (17) entra justo en el presupuesto de 60 del SERP que
 // vigila `tests/unit/seoTitleBudget.test.ts`. El H1 sí puede ser más largo y explícito.
-const title = 'CyberLunes y Black Friday: ¿descuento real?'
+// Las fechas van en el título porque casi todo lo que la página recibe de Google es "cuándo es el
+// black friday en uruguay 2026" (Search Console, 20/9–17/10/2026): sin la fecha, el snippet no
+// contesta la pregunta que lo trajo. `priceEvents.test.ts` ata estas dos cadenas al calendario.
+const title = 'Black Friday 2026: 27/11, CyberLunes 2-4/11'
 const description =
-  'Una baja cuenta si hoy está 10 % debajo del propio mínimo de 60 días del aviso, y un tachado si está 10 % encima de su máximo. Y qué exige la Ley 17.250.'
+  'Black Friday 2026: viernes 27 de noviembre. CyberLunes: del lunes 2 al miércoles 4. Esos días marcamos qué oferta quedó 10 % bajo su mínimo de 60 días.'
 
 defineOgImageComponent('Cambio', {
-  title: 'CyberLunes y Black Friday',
-  subtitle: '¿El descuento es real?',
+  title: 'CyberLunes y Black Friday 2026',
+  subtitle: 'CyberLunes 2 al 4/11 · Black Friday 27/11',
   tag: 'PRECIOS',
 })
 
@@ -641,9 +697,10 @@ useHead(() => ({
 }
 
 .countdown-card {
-  border: 1px solid rgba(var(--v-border-color), 0.14);
+  /* Destacada por un fondo apenas teñido, no por una franja lateral de color. */
+  border: 1px solid rgba(var(--v-theme-primary), 0.24);
   border-radius: 12px;
-  border-left: 3px solid rgb(var(--v-theme-primary));
+  background: rgba(var(--v-theme-primary), 0.04);
 }
 .countdown-headline {
   font-size: 1.05rem;
@@ -653,6 +710,45 @@ useHead(() => ({
   color: rgb(var(--v-theme-link));
   font-size: 0.8rem;
   text-decoration: underline;
+}
+
+/* Las ediciones que faltan, debajo del titular. Cada <p> declara su propio margen: el reset de
+   Vuetify 4 deja el `margin-block: 1em` del navegador (DESIGN.md, "The Text Block Owns Its Top
+   Margin Rule"). */
+.upcoming-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.upcoming-item {
+  padding-top: 12px;
+  border-top: 1px solid rgba(var(--v-border-color), 0.12);
+}
+.upcoming-label {
+  margin: 0;
+  font-weight: 700;
+}
+.upcoming-dates {
+  margin: 2px 0 0;
+  font-size: 0.95rem;
+}
+.upcoming-note {
+  margin: 4px 0 0;
+  font-size: 0.82rem;
+  opacity: 0.75;
+}
+
+.howto-list {
+  margin: 0;
+  padding-left: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 0.9rem;
+  line-height: 1.6;
 }
 
 .past-list {
