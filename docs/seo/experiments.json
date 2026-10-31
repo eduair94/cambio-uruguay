@@ -2291,6 +2291,51 @@
         "credencial civica sin sello"
       ],
       "hypothesis": "Pagina nueva e indexable. El sitio ya contestaba la multa de UNA eleccion (/elecciones-bps-2026, el 22/11/2026, que tiene su propio regimen por la Ley 16.241) y no tenia en ninguna pagina el regimen GENERAL: medido el 31/10/2026 con grep sobre pages/ y utils/, cero menciones de credencial civica y cero de la Ley 16.017 fuera de esa pagina. El angulo propio no es el monto sino la consecuencia que aparece anos despues: la credencial sin el sello traba OCHO actos (arts. 9, 10 y 11) -cobrar sueldo, jubilacion o pension, cobrarle al Estado, firmar escrituras, presentar un escrito, inscribirse o rendir examen, comprar pasajes al exterior, entrar a una licitacion y entrar a la Administracion Publica- y de los ocho hay UNO que la propia ley dice que pagar no desbloquea: el literal D del art. 11, 'esta prohibicion no sera subsanada con el pago de la multa prevista en el articulo 8'. Eso es lo que decide una accion distinta (justificar, que tiene plazo) y es el titular de la pagina. Ninguna cifra se invento ni se calculo: la multa va en UR porque asi la escribe el art. 8 (1 UR la primera vez, 3 UR cada siguiente, duplicadas por el art. 12 para funcionarios publicos y profesionales de la UdelaR) y los pesos se copian de la propia pagina de la Corte Electoral con la fecha en que se leyo ($ 1.740 nacionales 2024, $ 1.820 departamentales 2025, $ 1.900 BPS 2026). DOS cifras se dejaron AFUERA a proposito: la multa de la segunda omision en pesos, porque la Corte Electoral solo publica la de la primera, y el monto de cualquier eleccion futura, porque lo fija una resolucion que todavia no existe; multiplicar la UR de hoy por tres daria un numero que ninguna oficina va a cobrar. El catalogo es utils/votingFine.ts con su test, que fija el duplicado del art. 12 como el doble exacto del art. 8 y exige que el acto no subsanable siga existiendo. El enlace de contexto entra desde /elecciones-bps-2026, cuya ultima fila es del 27/9 y ya cerro su ventana; a esa pagina no se le toco el snippet ni el resto del cuerpo. No se declara una fila por ese enlace: el hecho medido es la pagina nueva."
+    },
+    {
+      "id": "aguinaldo-temporada-licencia-dias-tres-meses",
+      "shippedOn": "2026-10-31",
+      "routes": [
+        "/cuando-se-cobra-el-aguinaldo-uruguay"
+      ],
+      "queries": [
+        "cuantos dias aguinaldo",
+        "cuantos dias aguinaldo corresponden por año",
+        "puedo recibir aguinaldo si llevo 3 meses trabajando",
+        "puedo recibir aguinaldo si estoy con licencia",
+        "puedo recibir aguinaldo si estoy incapacitado",
+        "quien paga el aguinaldo cuando estás incapacitado",
+        "que pasa si no pagan aguinaldo a tiempo"
+      ],
+      "hypothesis": "Segunda tanda de temporada, lista antes del pico de noviembre y diciembre. La cola de autocompletado seguia marcando con cobertura baja preguntas que la pagina contestaba con otras palabras o a medias. Los dias ahora dan la equivalencia (con el mismo sueldo todo el año, un sueldo mensual: aritmetica del art. 2 de la Ley 12.840, no una regla nueva); la de tres meses contesta tambien a quien sigue trabajando (cuota de diciembre del Decreto 113/026); la de incapacidad se titula como se busca (quien paga); y entra una nueva sobre cobrarlo estando de licencia, con lo que es razonamiento marcado como razonamiento. El calendario suma el antecedente de los funcionarios publicos (Decreto 270/025, desde el 15/12/2025) porque el de 2026 no salio, y lo fechado 'al 22 de setiembre' pasa a la relectura del 19/10. Titulo y descripcion sin cambios. Deberia sumar impresiones y clics en esas consultas de cola larga, donde arriba hay foros, y sostener la porcion de clics de la pagina en diciembre."
+    },
+    {
+      "id": "monotributo-deuda-vieja-y-exceso-de-facturacion",
+      "shippedOn": "2026-10-31",
+      "routes": [
+        "/facturar-en-monotributo-uruguay"
+      ],
+      "queries": [
+        "que pasa si debo monotributo",
+        "que pasa si tengo monotributo y no facturo",
+        "qué pasa si me excedo en la facturación del monotributo",
+        "quien paga el monotributo el empleado o el empleador",
+        "cuanto es la facturación anual del monotributo social"
+      ],
+      "hypothesis": "La seccion 'Que pasa si' del 23/9 contestaba la deuda corriente y no la vieja, y la cola de demanda seguia trayendo 'que pasa si debo monotributo'. Se agrega la prescripcion de las cuotas de BPS (Codigo Tributario art. 38) con lo que dice el instructivo de BPS y casi nadie cuenta: no es automatica (tramite 'Prescripcion de adeudos'), pedir un convenio sobre una deuda prescrita es renuncia tacita, lo pagado no se devuelve y con sentencia firme el plazo pasa a veinte años. Ademas, la segunda lectura de 'no facturo' (vendo sin boleta: el monotributo no exime de documentar; lo exceptuado por monto va en el comprobante diario global), la pregunta del tope titulada como se busca ('me excedo en la facturacion') y el tope anual del Mides llevado a promedio mensual sin presentarlo como tope. Titulo y descripcion sin cambios. Deberia sumar impresiones y clics en esas consultas, donde arriba hay hilos de Reddit."
+    },
+    {
+      "id": "irpf-sin-ingresos-no-declara",
+      "shippedOn": "2026-10-31",
+      "routes": [
+        "/declaracion-de-irpf-uruguay"
+      ],
+      "queries": [
+        "estoy obligado a presnetar declaracion de irpf en uruguay si no tuve ingresos un año?",
+        "como saber si tengo que hacer declaracion jurada irpf",
+        "declaracion de irpf"
+      ],
+      "hypothesis": "La consulta que mas impresiones le trae a la pagina en Search Console (20/9 al 17/10/2026: 'estoy obligado a presentar declaracion de irpf en uruguay si no tuve ingresos un año?', posicion 5,3, cero clics) no tenia respuesta en ningun lado: ni en la descripcion, que hablaba de retencion, ni en el cuerpo. Se contesta arriba, en la seccion de obligados (no: todos los supuestos con que DGI define la obligacion en la campaña 2026 parten de haber cobrado algo; el independiente inscripto sin actividad presenta el 1302 'sin actividad' solo si declaro rentas fuera de la dependencia), en el FAQ con schema y en la descripcion, que abre con esa respuesta; el titulo no cambia. El caso del 3100 suma el minimo no imponible de la campaña. No se toca la seccion de ejercicios anteriores ni sus limites sobre creditos viejos. Deberia subir el CTR de esa consulta desde la misma posicion."
     }
   ]
 }

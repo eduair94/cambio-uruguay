@@ -11,6 +11,7 @@ import { pagosGuides } from '../../utils/guidesPagos'
 import { tramitesGuides } from '../../utils/guidesTramites'
 import { trabajoBpsGuides } from '../../utils/guidesTrabajoBps'
 import { viviendaGuides } from '../../utils/guidesVivienda'
+import { listIndicatorSlugs } from '../../utils/indicators'
 
 // Tanda del 2026-09-13: 30 guías minadas de Reddit y de la cola de demanda del autocompletado.
 // Estas reglas son las del brief con el que se redactaron; acá quedan ejecutables para que la
@@ -50,7 +51,10 @@ function staticRoutes(): Set<string> {
 const ROUTES = staticRoutes()
 const GUIDE_ROUTES = new Set(guides.map(g => `/guias/${g.slug}`))
 const HUB_ROUTES = new Set(hubSlugs().map(s => `/temas/${s}`))
-const resolves = (to: string) => ROUTES.has(to) || GUIDE_ROUTES.has(to) || HUB_ROUTES.has(to)
+// `pages/indicadores/[indicador].vue` es dinámica: sus rutas válidas son las del catálogo.
+const INDICATOR_ROUTES = new Set(listIndicatorSlugs().map(s => `/indicadores/${s}`))
+const resolves = (to: string) =>
+  ROUTES.has(to) || GUIDE_ROUTES.has(to) || HUB_ROUTES.has(to) || INDICATOR_ROUTES.has(to)
 
 // Palabras sueltas que, al principio de un título, entierran a la página canónica en el buscador
 // interno (ver el scorer de siteNav y `searchIndex.test.ts`).

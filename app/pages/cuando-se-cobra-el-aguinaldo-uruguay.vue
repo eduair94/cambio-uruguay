@@ -73,7 +73,7 @@
         {{ AGUINALDO_2026_DECREE.publishedOn }}) fija el calendario del sector privado.
         {{ AGUINALDO_2026_DECREE.decemberNote }} Los funcionarios públicos y la construcción tienen
         norma propia y fechas propias, así que van en filas aparte. Leído en IMPO el
-        {{ verifiedAt }}.
+        {{ seasonCheckedAt }}.
       </p>
 
       <VTable class="base-table cu-mobile-cards mb-4" density="comfortable">
@@ -107,9 +107,9 @@
           rel="noopener noreferrer"
         >
           texto del decreto </a
-        >), visto el {{ verifiedAt }}. Al cierre de esa lectura no había un comunicado del MTSS
-        específico de diciembre de 2026: cuando lo haya, la fecha que manda sigue siendo la del
-        decreto.
+        >), visto el {{ seasonCheckedAt }}. Al cierre de esa lectura no había un comunicado del MTSS
+        específico de diciembre de 2026 ni el decreto de diciembre de los funcionarios públicos: si
+        salen, la fecha del sector privado sigue siendo la del decreto.
       </p>
     </section>
 
@@ -388,9 +388,10 @@
     <section>
       <h2 class="text-h6 font-weight-bold mb-3">Fuentes</h2>
       <p class="sources-note text-body-2 text-medium-emphasis mb-3">
-        Contrastado contra IMPO, el MTSS, el BPS y la DGI el {{ verifiedAt }}. Esta página es
-        informativa: las fechas de cada año las fija el decreto del año, y ante una duda puntual
-        vale lo que resuelva el organismo o el juez del caso.
+        Contrastado contra IMPO, el MTSS, el BPS y la DGI el {{ verifiedAt }}; el calendario de
+        diciembre y las preguntas de licencia, antigüedad y días, de nuevo el {{ seasonCheckedAt }}.
+        Esta página es informativa: las fechas de cada año las fija el decreto del año, y ante una
+        duda puntual vale lo que resuelva el organismo o el juez del caso.
       </p>
       <ul class="sources-list">
         <li v-for="s in AGUINALDO_SOURCES" :key="s.url">
@@ -413,6 +414,7 @@ import {
   AGUINALDO_LEAVE_CASES,
   AGUINALDO_MILESTONES,
   AGUINALDO_RETIREES,
+  AGUINALDO_SEASON_CHECKED_AT,
   AGUINALDO_SOURCES,
   AGUINALDO_UNREGISTERED,
   AGUINALDO_VERIFIED_AT,
@@ -420,12 +422,15 @@ import {
 
 const localePath = useLocalePath()
 
-const verifiedAt = new Date(`${AGUINALDO_VERIFIED_AT}T00:00:00Z`).toLocaleDateString('es-UY', {
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric',
-  timeZone: 'UTC',
-})
+const longDate = (iso: string) =>
+  new Date(`${iso}T00:00:00Z`).toLocaleDateString('es-UY', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
+const verifiedAt = longDate(AGUINALDO_VERIFIED_AT)
+const seasonCheckedAt = longDate(AGUINALDO_SEASON_CHECKED_AT)
 
 const canonicalUrl = 'https://cambio-uruguay.com/cuando-se-cobra-el-aguinaldo-uruguay'
 const title = '¿Cuándo se cobra el aguinaldo en Uruguay?'
@@ -457,7 +462,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'aguinaldo uruguay, cuando se cobra el aguinaldo, cuando se paga el aguinaldo, aguinaldo 2026 uruguay, aguinaldo diciembre 2026, medio aguinaldo junio, segunda cuota aguinaldo diciembre, decreto 113/026, sueldo anual complementario, como se calcula el aguinaldo, aguinaldo tickets de alimentacion, aguinaldo proporcional despido, aguinaldo de la construccion, cuando pagan el aguinaldo 2026, no me pagaron el aguinaldo, aguinaldo proporcional 3 meses, aguinaldo en negro, aguinaldo seguro de paro, aguinaldo subsidio por enfermedad, aguinaldo jubilados',
+        'aguinaldo uruguay, cuando se cobra el aguinaldo, cuando se paga el aguinaldo, aguinaldo 2026 uruguay, aguinaldo diciembre 2026, medio aguinaldo junio, segunda cuota aguinaldo diciembre, decreto 113/026, sueldo anual complementario, como se calcula el aguinaldo, aguinaldo tickets de alimentacion, aguinaldo proporcional despido, aguinaldo de la construccion, cuando pagan el aguinaldo 2026, no me pagaron el aguinaldo, aguinaldo proporcional 3 meses, aguinaldo si llevo 3 meses trabajando, cuantos dias de aguinaldo corresponden por año, aguinaldo estando de licencia, quien paga el aguinaldo si estoy incapacitado, aguinaldo en negro, aguinaldo seguro de paro, aguinaldo subsidio por enfermedad, aguinaldo jubilados',
     },
   ],
   script: [
