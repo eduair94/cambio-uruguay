@@ -1740,6 +1740,10 @@
         {
           "to": "/apps-utiles-uruguay",
           "label": "Apps útiles y del Estado"
+        },
+        {
+          "to": "/multa-por-no-votar-uruguay",
+          "label": "Multa por no votar"
         }
       ],
       "guides": [

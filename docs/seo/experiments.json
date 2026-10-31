@@ -2259,6 +2259,38 @@
         "cyberlunes 2026"
       ],
       "hypothesis": "La pagina tuvo 264 impresiones y cero clics del 20/9 al 17/10, y casi todas eran la misma pregunta: cuando es el Black Friday 2026 en Uruguay (black friday 2026 uruguay, 116 en posicion 9,3; cuando es el black friday en uruguay 2026, 48 en 8,5; la misma con el orden cambiado, 25 en 9,8; black friday uruguay 2026, 21; black friday noviembre 2026, 18). El titulo -CyberLunes y Black Friday: descuento real?- no tenia la fecha que esas consultas piden, y el calendario todavia daba a CyberLunes noviembre como 'a confirmar' aunque la CEDU lo habia fechado el 16/9/2026 (lunes 2 al miercoles 4, nota de cedu.org.uy y ciberlunes.uy, leidas el 19/10). Ahora el titulo y la descripcion llevan las dos fechas (Black Friday viernes 27/11, el dia siguiente al Dia de Accion de Gracias que la OPM fija el jueves 26), un test las ata al calendario, la FAQ -que tambien es el FAQPage- abre con las dos preguntas de fecha, el bloque Cuando es lista todas las ediciones que faltan y no solo la proxima (a fines de octubre el titular es CyberLunes y la fecha de Black Friday, que es la que la gente busca, no aparecia), y una seccion nueva dice que hacer antes del evento (mirar el precio de hoy en cada aviso, guardar lo de la casa en la lista de equipar, cambios de precio) y que se ve aca esos dias. Es la apuesta que gano con UR/UI: el dato que la consulta pide, adentro del snippet. Para leer el veredicto: la ventana de 28 dias cae entera sobre la temporada de estas consultas, que crecen solas en noviembre, asi que la porcion de clics puede subir aunque el cambio no haga nada; lo que lo separa de la estacion es el CTR a igual posicion, que hoy es cero."
+    },
+    {
+      "id": "descripciones-de-las-guias-respuesta-primero-10",
+      "shippedOn": "2026-10-31",
+      "routes": [
+        "/guias/cajeros-automaticos-uruguay-turistas",
+        "/guias/cambiar-monedas-poco-comunes-uruguay",
+        "/guias/devolucion-iva-turistas-uruguay",
+        "/guias/dolar-cripto-usdt-uruguay",
+        "/guias/dolares-deteriorados-billetes-rechazados-uruguay",
+        "/guias/elegir-tarjeta-credito-beneficios-uruguay",
+        "/guias/horarios-casas-de-cambio-uruguay",
+        "/guias/importar-de-aliexpress-a-uruguay",
+        "/guias/precio-del-oro-en-uruguay",
+        "/guias/proyeccion-dolar-uruguay-se-puede-predecir"
+      ],
+      "hypothesis": "Las DIEZ guias que el cruce de npm run seo_debt declara libres del pozo de descripciones pasadas de 155 (guideSnippetBudget.test.ts: 19 -> 9; las nueve que quedan estan reservadas, la primera hasta el 1/11). Iban de 210 a 156 caracteres y el defecto es el de las nueve tandas anteriores en su forma mas pura: las diez abrian con la etiqueta del tema o anunciando el INDICE de la guia (Como sacar pesos con tarjeta extranjera: redes Banred y RedBROU, limites, comisiones y cuando conviene...; Como se forma el precio del oro, que es la onza troy, como pasar el valor a gramos...; Si se puede predecir el dolar, que muestran las expectativas...), asi que prometian las secciones y la respuesta caia del lado que el SERP corta. Esta tanda toca SOLO la descripcion: las diez ya entran en 60 caracteres de titulo desde las tandas de octubre, y el dato que entra no repite el del titulo -el de cajeros ya dice pagas dos comisiones, asi que la descripcion nombra RedBROU y Banred y los multiplos de 100; el del oro ya trae los 31,1035 g, asi que la descripcion pone la pureza (75 % el 18k, cerca del 58 % el 14k); el de AliExpress ya trae USD 800 al ano o 60 %, asi que la descripcion publica la trampa que cuesta plata, que el minimo de USD 20 es por TRACKING y AliExpress parte el pedido, mas que el USD 200 libre es solo de EE.UU.-. Ninguna cifra es nueva: todas estaban en la descripcion vieja o en el cuerpo de su guia, y donde el cuerpo hedgea la descripcion no afirma (los billetes del cajero suelen salir de 100 en 100, el dolar roto lo reciben algunos bancos, la Encuesta de Expectativas del BCU es la referencia que hay y no la unica). Los nueve puntos de IVA en gastronomia van separados del requisito de tarjeta del exterior, que es del hotel: esa reduccion (Decreto 235/026, hasta el 30/04/2027) alcanza tambien a residentes. Los limites por extraccion del cajero quedaron afuera porque el cuerpo los escribe del orden de unos pocos miles de pesos y un snippet no tiene lugar para esa salvedad. Es el tramo contenido, que rinde 8x el promedio del sitio, asi que una descripcion cortada cuesta mas caro aca. Se espera mas CTR a igual posicion, como midieron las tandas anteriores. Las ocho de estas diez que siguen fuera de todo tema (temaHuerfanas.test.ts) NO se tocan en este commit: entrar a un tema es otro cambio pensado para mover trafico y declararia una segunda fila sobre la misma ruta, que es justo lo que experiments_overlap.test.ts pone en rojo; entran cuando esta ventana cierre."
+    },
+    {
+      "id": "multa-por-no-votar-pagina-propia",
+      "shippedOn": "2026-10-31",
+      "routes": [
+        "/multa-por-no-votar-uruguay"
+      ],
+      "queries": [
+        "multa por no votar uruguay",
+        "cuanto es la multa por no votar",
+        "no vote que pasa uruguay",
+        "justificar la no emision del voto",
+        "credencial civica sin sello"
+      ],
+      "hypothesis": "Pagina nueva e indexable. El sitio ya contestaba la multa de UNA eleccion (/elecciones-bps-2026, el 22/11/2026, que tiene su propio regimen por la Ley 16.241) y no tenia en ninguna pagina el regimen GENERAL: medido el 31/10/2026 con grep sobre pages/ y utils/, cero menciones de credencial civica y cero de la Ley 16.017 fuera de esa pagina. El angulo propio no es el monto sino la consecuencia que aparece anos despues: la credencial sin el sello traba OCHO actos (arts. 9, 10 y 11) -cobrar sueldo, jubilacion o pension, cobrarle al Estado, firmar escrituras, presentar un escrito, inscribirse o rendir examen, comprar pasajes al exterior, entrar a una licitacion y entrar a la Administracion Publica- y de los ocho hay UNO que la propia ley dice que pagar no desbloquea: el literal D del art. 11, 'esta prohibicion no sera subsanada con el pago de la multa prevista en el articulo 8'. Eso es lo que decide una accion distinta (justificar, que tiene plazo) y es el titular de la pagina. Ninguna cifra se invento ni se calculo: la multa va en UR porque asi la escribe el art. 8 (1 UR la primera vez, 3 UR cada siguiente, duplicadas por el art. 12 para funcionarios publicos y profesionales de la UdelaR) y los pesos se copian de la propia pagina de la Corte Electoral con la fecha en que se leyo ($ 1.740 nacionales 2024, $ 1.820 departamentales 2025, $ 1.900 BPS 2026). DOS cifras se dejaron AFUERA a proposito: la multa de la segunda omision en pesos, porque la Corte Electoral solo publica la de la primera, y el monto de cualquier eleccion futura, porque lo fija una resolucion que todavia no existe; multiplicar la UR de hoy por tres daria un numero que ninguna oficina va a cobrar. El catalogo es utils/votingFine.ts con su test, que fija el duplicado del art. 12 como el doble exacto del art. 8 y exige que el acto no subsanable siga existiendo. El enlace de contexto entra desde /elecciones-bps-2026, cuya ultima fila es del 27/9 y ya cerro su ventana; a esa pagina no se le toco el snippet ni el resto del cuerpo. No se declara una fila por ese enlace: el hecho medido es la pagina nueva."
     }
   ]
 }

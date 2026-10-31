@@ -3594,7 +3594,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'importar-de-aliexpress-a-uruguay',
     title: 'AliExpress a Uruguay: USD 800 al año o 60 %',
     description:
-      'Cómo importar de AliExpress a Uruguay: la franquicia anual de USD 800, el 60% con mínimo de USD 20 por envío, por qué AliExpress parte tu pedido en varios trackings y qué cobra el Correo aparte del impuesto.',
+      'El mínimo de USD 20 es por tracking y AliExpress parte el pedido en varios: un carrito de USD 40 puede pagar USD 60. El «USD 200 libre» es sólo de EE.UU.',
     tag: 'IMPORTACIÓN',
     updatedAt: '2026-08-12',
     sections: [
@@ -3877,7 +3877,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'elegir-tarjeta-credito-beneficios-uruguay',
     title: 'Qué tarjeta elegir: depende de cómo gastás',
     description:
-      'Cómo comparar tarjetas de crédito en Uruguay por sus beneficios reales: la red de descuentos, la acumulación de puntos o millas, el canje, el costo anual y cómo elegir la tarjeta que rinde para cómo gastás vos.',
+      'Cinco factores deciden: red de descuentos, acumulación, canje, costo anual y flexibilidad. Para el gasto diario el descuento en la caja gana a los puntos.',
     tag: 'TARJETAS',
     updatedAt: '2026-07-18',
     sections: [

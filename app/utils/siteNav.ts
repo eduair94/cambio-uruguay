@@ -2940,6 +2940,29 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // La multa del voto obligatorio es sólo la mitad de la consulta: lo que la gente descubre
+        // años después es que la credencial sin el sello traba ocho actos (Ley 16.017, arts. 9 a
+        // 11), y uno de ellos —entrar a la Administración Pública— la propia ley dice que NO se
+        // arregla pagando. Va en este tramo porque la pregunta llega pegada a un trámite frenado,
+        // no a una elección. `/elecciones-bps-2026` cubre el comicio del 22/11/2026 y su régimen
+        // propio; esta página cubre el general.
+        to: '/multa-por-no-votar-uruguay',
+        labelKey: 'nav.multaPorNoVotar',
+        icon: 'mdi-vote-outline',
+        priority: 0.7,
+        changefreq: 'monthly',
+        keywords: [
+          'multa por no votar uruguay',
+          'cuanto es la multa por no votar',
+          'no vote que pasa uruguay',
+          'justificar la no emision del voto',
+          'credencial civica sin sello',
+          'ley 16017 voto obligatorio',
+          'pagar multa corte electoral',
+          'constancia de voto para tramites',
+        ],
+      },
+      {
         to: '/declarar-dinero-en-efectivo-uruguay',
         labelKey: 'nav.declararEfectivo',
         icon: 'mdi-cash-multiple',

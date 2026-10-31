@@ -1912,6 +1912,14 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Las que todos deberían tener y cómo reconocer la oficial en cada tienda.',
         to: '/apps-utiles-uruguay',
       },
+      {
+        // Va en este tema y no en uno de elecciones porque la consulta llega pegada a un trámite
+        // frenado: la credencial sin el sello traba ocho actos de la Ley 16.017, y uno de ellos
+        // la propia ley dice que no se arregla pagando.
+        label: 'Multa por no votar',
+        description: '1 UR la primera vez, 3 UR cada siguiente, y los 8 trámites que traba.',
+        to: '/multa-por-no-votar-uruguay',
+      },
     ],
     terms: ['residencia-fiscal', 'dgi'],
     relatedHubs: ['derechos-y-reclamos-uruguay', 'pareja-familia-y-dinero-uruguay'],

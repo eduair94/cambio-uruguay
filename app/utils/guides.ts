@@ -1064,7 +1064,7 @@ export const guides: readonly Guide[] = [
     slug: 'precio-del-oro-en-uruguay',
     title: 'Precio del oro: la onza troy es 31,1035 g',
     description:
-      'Cómo se forma el precio del oro en Uruguay, qué es la onza troy, cómo pasar el valor a gramos según los quilates y dónde comparar para comprar o vender al mejor precio.',
+      'El gramo sale de dividir la onza entre 31,1035 y ajustar por pureza: el 18k es 75 % de oro y el 14k cerca del 58 %. En pesos lo mueven el oro y el dólar.',
     tag: 'ORO',
     updatedAt: '2026-06-20',
     sections: [
@@ -1134,7 +1134,7 @@ export const guides: readonly Guide[] = [
     slug: 'cambiar-monedas-poco-comunes-uruguay',
     title: 'Cambiar yen, franco o guaraní: más spread',
     description:
-      'Dónde y cómo cambiar monedas menos habituales en Uruguay como el yen, el franco suizo, el guaraní o el peso chileno: qué casas las cotizan y cómo comparar el precio.',
+      'Cuanto menos se opera una moneda, menos casas la cotizan y más grande es el spread. Con yen, franco, guaraní o peso chileno, llamá antes por el efectivo.',
     tag: 'MONEDAS',
     updatedAt: '2026-06-20',
     sections: [
@@ -1170,7 +1170,7 @@ export const guides: readonly Guide[] = [
     slug: 'dolar-cripto-usdt-uruguay',
     title: 'Dólar cripto: USDT ≈ USD 1, no es billete',
     description:
-      'Qué es el dólar cripto y el USDT, cómo se vinculan con el dólar billete en Uruguay, para qué se usan y qué riesgos conviene tener en cuenta antes de operar.',
+      'El USDT no es efectivo ni un depósito: es un activo digital sin garantía bancaria, y su precio en pesos suma el spread y la comisión de la plataforma.',
     tag: 'CRIPTO',
     updatedAt: '2026-06-20',
     sections: [
@@ -1276,7 +1276,7 @@ export const guides: readonly Guide[] = [
     slug: 'devolucion-iva-turistas-uruguay',
     title: 'Hoteles sin IVA para turistas y Tax Free',
     description:
-      'Cómo funcionan los beneficios de IVA para turistas extranjeros en Uruguay: hoteles sin IVA todo el año, reducción en gastronomía por temporada y devolución Tax Free al salir.',
+      'El hotel va sin IVA todo el año pagando con tarjeta del exterior, nunca en efectivo, y la gastronomía lleva nueve puntos menos hasta el 30/04/2027.',
     tag: 'IMPUESTOS',
     updatedAt: '2026-06-20',
     sections: [
@@ -1381,7 +1381,7 @@ export const guides: readonly Guide[] = [
     slug: 'cajeros-automaticos-uruguay-turistas',
     title: 'Cajeros para turistas: pagás dos comisiones',
     description:
-      'Cómo sacar pesos (o dólares) con tarjeta extranjera en Uruguay: redes Banred y RedBROU, límites por extracción, comisiones y cuándo conviene una casa de cambio.',
+      'Con tarjeta del exterior pagás dos comisiones: la del cajero y la de tu banco. Las redes son RedBROU y Banred y los billetes suelen salir de 100 en 100.',
     tag: 'CAJEROS',
     updatedAt: '2026-06-20',
     sections: [
@@ -1511,7 +1511,7 @@ export const guides: readonly Guide[] = [
     slug: 'horarios-casas-de-cambio-uruguay',
     title: 'Casas de cambio: domingo casi todas cierran',
     description:
-      'A qué hora abren las casas de cambio en Uruguay, qué pasa los sábados y domingos, y dónde cambiar fuera de horario: aeropuerto de Carrasco, terminales y shoppings.',
+      'En general de 9:00 a 18:00 o 19:00 de lunes a viernes, el sábado medio día y el domingo casi todas cerradas: el precio del viernes rige hasta el lunes.',
     tag: 'HORARIOS',
     updatedAt: '2026-06-20',
     sections: [
@@ -1643,7 +1643,7 @@ export const guides: readonly Guide[] = [
     slug: 'dolares-deteriorados-billetes-rechazados-uruguay',
     title: 'Dólares rotos pagan menos; la cara chica no',
     description:
-      'Por qué algunas casas de cambio rechazan o pagan menos por dólares rotos, manchados o de serie vieja en Uruguay, y por qué el mito de la "cara chica" no aplica acá.',
+      'Lo que baja el precio es el deterioro, no el diseño: acá toda emisión es de curso legal. Algunos bancos reciben el billete roto cobrando comisión.',
     tag: 'BILLETES',
     updatedAt: '2026-06-20',
     sections: [
@@ -1678,7 +1678,7 @@ export const guides: readonly Guide[] = [
     slug: 'proyeccion-dolar-uruguay-se-puede-predecir',
     title: '¿A cuánto llega el dólar? Nadie lo predice',
     description:
-      'Si se puede predecir el dólar en Uruguay, qué muestran las expectativas del mercado y la encuesta del BCU, y por qué conviene una estrategia en lugar de adivinar el precio.',
+      'El dólar flota y nadie lo predice. La referencia que hay es la mediana de la Encuesta de Expectativas del BCU, que se ajusta mes a mes y no es garantía.',
     tag: 'PROYECCIÓN',
     updatedAt: '2026-06-20',
     sections: [

@@ -431,6 +431,13 @@ export const CONTENIDO_PATHS = new Set([
   // IM registra por barrio. Mismo racimo y mismo motivo que las dos de arriba — es lectura larga,
   // `ads.ts` le da dos unidades en flujo y `contenidoTramoParity.test.ts` lo exige.
   "/reclamos-a-la-intendencia-por-barrio-uruguay",
+  // Pagina nueva del 2026-10-31, clasificada en el mismo commit que la publica: la multa del voto
+  // obligatorio y los ocho actos que la Ley 16.017 traba. Es lectura larga de norma sobre un
+  // catalogo FIJO del repo (`app/utils/votingFine.ts`, verificado el 31/10/2026), sin un solo dato
+  // en vivo en su `<script setup>`, y `ads.ts` le da dos unidades en flujo. Sin esta linea entraria
+  // a `otro` y la cola de trabajo la ordenaria ocho veces por debajo de la guia equivalente de
+  // `/guias/*`; su vecina `/elecciones-bps-2026` tampoco esta aca, pero esa SI lee la UR viva.
+  "/multa-por-no-votar-uruguay",
 ]);
 
 export function tierOf(bucket: string): Tier {

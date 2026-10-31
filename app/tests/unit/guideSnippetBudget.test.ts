@@ -805,22 +805,12 @@ const TITLE_OVER_BUDGET = 3
  * medición abierta, y exigida exacta para que el contador no se compense solo.
  */
 const DEUDA_DESCRIPCION_LARGA = [
-  'cajeros-automaticos-uruguay-turistas',
-  'cambiar-monedas-poco-comunes-uruguay',
   'cedula-uruguaya-para-argentinos',
   'comision-inmobiliaria-uruguay',
   'comprar-online-exterior-impuestos',
   'criptomonedas-regulacion-impuestos-uruguay',
-  'devolucion-iva-turistas-uruguay',
-  'dolar-cripto-usdt-uruguay',
-  'dolares-deteriorados-billetes-rechazados-uruguay',
-  'elegir-tarjeta-credito-beneficios-uruguay',
   'enviar-recibir-dinero-exterior',
   'garantias-de-alquiler-uruguay',
-  'horarios-casas-de-cambio-uruguay',
-  'importar-de-aliexpress-a-uruguay',
-  'precio-del-oro-en-uruguay',
-  'proyeccion-dolar-uruguay-se-puede-predecir',
   'reforma-jubilatoria-uruguay-que-cambia',
   'tarjeta-debito-vs-credito-uruguay',
   'tipo-de-cambio-fiscal-dgi-uruguay',
@@ -852,7 +842,48 @@ const DEUDA_DESCRIPCION_LARGA = [
  * presupuesto. Inventarle un número al honorario notarial para que el snippet trajera un dato
  * habría sido exactamente lo que este repo no hace.
  */
-const DESCRIPTION_OVER_BUDGET = 19
+/**
+ * 19 → 9 el 2026-10-31, y son las DIEZ que el cruce contra `docs/seo/experiments.json`
+ * (`npm run seo_debt`) declara libres hoy; las nueve que quedan siguen reservadas por una ventana
+ * de medición abierta sobre su propia descripción, la primera hasta el 1/11.
+ *
+ * Iban de 210 a 156 caracteres y el defecto es el de las nueve tandas anteriores en su forma más
+ * pura: las DIEZ abrían con la etiqueta del tema o anunciando el ÍNDICE de la guía («Cómo sacar
+ * pesos (o dólares) con tarjeta extranjera en Uruguay: redes Banred y RedBROU, límites por
+ * extracción, comisiones y cuándo conviene…», «Cómo se forma el precio del oro en Uruguay, qué es
+ * la onza troy, cómo pasar el valor a gramos…», «Si se puede predecir el dólar en Uruguay, qué
+ * muestran las expectativas…»), o sea prometían las secciones y la respuesta caía del lado que el
+ * SERP corta. Ninguna de las diez tenía además el título pasado: los diez entran en 60 desde las
+ * tandas de octubre, así que esta tanda toca SÓLO la descripción.
+ *
+ * Y el dato que entra no repite el del título, que en estas diez ya contesta: el de cajeros ya
+ * dice «pagás dos comisiones», así que la descripción nombra las dos redes (RedBROU y Banred) y
+ * los múltiplos de 100; el del oro ya trae los 31,1035 g, así que la descripción pone la pureza
+ * (75 % el 18k, cerca del 58 % el 14k); el de AliExpress ya trae «USD 800 al año o 60 %», así que
+ * la descripción publica la trampa que cuesta plata —el mínimo de USD 20 es por TRACKING y
+ * AliExpress parte el pedido, así que un carrito de USD 40 puede pagar USD 60— y que el «USD 200
+ * libre» es sólo de EE.UU.
+ *
+ * Ninguna cifra es nueva: todas ya estaban en la descripción vieja o en el cuerpo de su guía. Y
+ * ninguna se escribió con más firmeza que su fuente, que acá descartó cuatro redacciones:
+ *
+ *  - Los billetes del cajero salen «suelen salir de 100 en 100» y no «salen», porque el cuerpo
+ *    dice «suelen dispensarse en múltiplos de 100».
+ *  - El billete de dólar roto lo reciben «algunos bancos» con comisión y no «un banco», porque el
+ *    cuerpo dice «algunos bancos lo reciben con una comisión por billete deteriorado».
+ *  - La proyección del dólar dice «la referencia que hay» y no «la única referencia»: el cuerpo
+ *    llama a la Encuesta de Expectativas del BCU «una referencia útil», no la única.
+ *  - Los nueve puntos de IVA en gastronomía van SEPARADOS del requisito de tarjeta del exterior,
+ *    que es del hotel: esa reducción (Decreto 235/026, hasta el 30/04/2027) alcanza también a
+ *    residentes y lo que exige es consumo final y una tarjeta cuyo titular sea persona física. La
+ *    primera redacción los juntaba en una sola condición y decía algo que la guía no dice.
+ *
+ * Los límites por extracción del cajero quedaron AFUERA aunque son lo más accionable: el cuerpo
+ * los escribe «del orden de unos pocos miles de pesos» y «unos cientos de dólares», y un snippet
+ * no tiene lugar para esa salvedad — publicar un monto a secas sería exactamente el error
+ * recurrente del repo ([[cifra-vieja-pasa-la-banda-de-plausibilidad]]).
+ */
+const DESCRIPTION_OVER_BUDGET = 9
 
 describe('los snippets de las guías entran en el SERP', () => {
   it(`mide las ${MEASURED} guías del catálogo`, () => {

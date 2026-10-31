@@ -106,6 +106,15 @@
         el valor de la UR hoy </NuxtLink
       >. El monto real es el que liquide el BPS el día del cobro.
     </p>
+    <p class="text-body-2 text-medium-emphasis mb-6" style="max-width: 68ch">
+      Y la multa no es lo único que deja una omisión: con la credencial sin el sello quedan trabados
+      ocho actos de la Ley 16.017 —cobrar un sueldo o una jubilación, firmar una escritura,
+      inscribirse en la Universidad, presentar un escrito ante el Estado—, y uno de ellos, entrar a
+      la Administración Pública, la propia ley dice que no se arregla pagando. Está en
+      <NuxtLink :to="localePath('/multa-por-no-votar-uruguay')" class="cu-link">
+        la multa por no votar y los trámites que traba </NuxtLink
+      >, que explica además el régimen general y cómo justificar en vez de pagar.
+    </p>
 
     <!-- Calendario -->
     <h2 class="text-h6 font-weight-bold mb-2">Calendario electoral</h2>
