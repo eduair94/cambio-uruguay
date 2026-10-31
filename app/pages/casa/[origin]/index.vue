@@ -296,6 +296,8 @@
           </v-card>
         </v-col>
       </v-row>
+
+      <CasaOwnerCta :casa="casaName" :origin="origin" />
     </template>
   </VContainer>
 </template>
