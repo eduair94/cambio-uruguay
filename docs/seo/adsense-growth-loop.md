@@ -254,6 +254,44 @@ descripción y los enlaces mantienen la versión medida; el tramo final de esa v
 incluye esta precisión y debe interpretarse con esa salvedad. No se declara como una
 prueba de adquisición ni como una mejora de ingresos.
 
+## Decimotercera iteración: 31/10/2026 (tres unidades donde la visita sí llega)
+
+Lectura previa (tablero privado, 2/10–29/10; montos sólo en `docs/seo/data/`): el sitio sirve
+alrededor de **una impresión de anuncio por vista**. Las guías, con su unidad `in-article`, el
+cierre y el riel, sirven unas **cinco** por vista y rinden ~4× el promedio. Tres superficies con
+mucho tráfico quedaban casi sin anuncios propios:
+
+- **La portada** (la página con más vistas): **cero** unidades propias. El layout le cedía su
+  cierre a un banner propio y lo único que veía la visita eran automáticos (~0,3 por vista).
+- **Las páginas sueltas de contenido** (la familia que más creció en búsqueda en octubre): sólo el
+  cierre del layout, al pie, después de "Seguí leyendo" y del newsletter.
+- **Las calculadoras**: su única unidad iba después de la explicación. En el teléfono la
+  explicación cae debajo de la calculadora y casi nadie llegaba (~0,1 por vista).
+
+Cambios:
+
+1. **`FaqSection` abre con una unidad `in-article`.** Es el corte de sección que comparten ~70
+   páginas de contenido. Sólo dibuja en densidad `normal`, así que una página llega a su tope de
+   `maxAdSlots('normal')` = 2 con el cierre. Una página que ya pone su propia `in-article` pasa
+   `:ad="false"` (`tests/unit/faqSectionAd.test.ts`; hoy ninguna lo necesita).
+2. **La portada gasta su presupuesto `light` (una unidad) en la página**, después de cotizaciones,
+   ranking de casas y buscador de casas cercanas, no al pie. El banner propio y la fila
+   patrocinada siguen donde estaban.
+3. **La unidad de la calculadora va pegada a la calculadora entera** (campos y resultado), antes
+   de la explicación, en los dos diseños de `ToolShell`. Sigue sin ir nunca entre los campos y el
+   resultado, que es lo que sacó a las calculadoras de los automáticos.
+
+Ninguno agrega formatos de superposición, anclaje ni viñeta, y ninguno toca la consola: los
+automáticos siguen como estaban. Todas las unidades reservan su alto y cargan a 400 px.
+
+**Medición, con control:** impresiones de anuncio por vista e ingreso por vista **por familia**
+en `siterevenuesnapshots`, catorce días cerrados antes y después del deploy. Las guías no cambian
+(control); `/` y `/herramientas/*` son familias propias, y las páginas sueltas de contenido son
+cada una su familia. Si una familia tratada sube sus impresiones por vista y las guías no, el
+efecto es de la ubicación. Guardas: sesiones con interacción y tiempo de lectura de esas familias
+en GA4, y CLS de campo. Si una guarda cae, se revierte esa unidad sola. **No va en
+`experiments.json`**: no toca el texto que mide la búsqueda.
+
 ## Próximas decisiones
 
 - Verificar las fuentes de la excepción Cambio Principal cuando cambien los datos de origen y, como máximo, en la revisión mensual siguiente. La fecha del 14/9 es una comprobación puntual, no una vigilancia automática de la web propia. La tabla semanal no interpreta ausencia de horario como cierre.

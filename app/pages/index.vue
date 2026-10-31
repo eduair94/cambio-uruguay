@@ -700,6 +700,16 @@
       </VContainer>
     </section>
 
+    <!-- La única unidad propia de la portada. La densidad de `/` es `light` (utils/ads.ts): una
+         unidad. El cierre del layout no se dibuja en la portada (layouts/default.vue), así que ésta
+         es esa una, en un corte de sección y no al pie: la portada es la página con más visitas del
+         sitio y casi nadie llega hasta el final. Va después de las cotizaciones, el ranking de
+         casas y el buscador de casas cercanas —lo que la visita vino a resolver— y nunca entre el
+         conversor y su resultado. Reserva su alto y se colapsa si AdSense no tiene qué servir. -->
+    <VContainer class="py-0">
+      <AdSlot placement="content-end" class="home-ad" />
+    </VContainer>
+
     <!-- Promo video: short branded clip, lazy + autoplay-in-view (muted), the
          visitor can tap to unmute. Sits between the rates and the how-it-works
          steps so it reinforces "compare before you change" organically. -->

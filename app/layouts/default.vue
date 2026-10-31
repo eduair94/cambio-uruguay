@@ -308,7 +308,8 @@
              the footer, never in the middle of a tool. Routes opt out through
              `utils/ads.ts` or `definePageMeta({ ads: false })`; long articles
              may add a single <AdSlot placement="in-article" /> of their own. -->
-        <!-- Home uses this space budget for ConLaTuyaBanner after its rates. -->
+        <!-- Home spends its one-unit budget in the page itself (pages/index.vue, after the rate
+             lookup and the nearby-casa finder): nobody scrolls the home page to its footer. -->
         <ClientOnly v-if="normalizeAdPath(route.path) !== '/'">
           <!-- The layout survives navigation. A new page needs its own lazy slot,
                including after an ad-free page or an unfilled response. Query and

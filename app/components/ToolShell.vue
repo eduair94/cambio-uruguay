@@ -35,6 +35,14 @@
     <VRow v-if="asideLayout">
       <VCol cols="12" :md="hasContent ? 7 : 12" :lg="hasContent ? 8 : 12">
         <slot />
+        <!-- La única unidad manual de la calculadora: DESPUÉS de la calculadora entera (campos y
+             resultado), nunca entre los campos y el resultado. En el teléfono la explicación de la
+             columna de al lado cae debajo; con la unidad después de la explicación —donde estuvo
+             hasta el 31/10/2026— casi nadie la veía (una impresión cada diez vistas). Inerte por
+             defecto: sin NUXT_PUBLIC_ADS_TOOLS la ruta es `none` (utils/ads.ts). -->
+        <ClientOnly>
+          <AdSlot placement="after-tool" />
+        </ClientOnly>
       </VCol>
 
       <!-- Explanatory content / how-it-works -->
@@ -61,6 +69,12 @@
         <slot />
       </div>
 
+      <!-- La misma unidad, en el diseño de explicación larga: después de la calculadora y antes
+           del artículo, que es lo que hacía que nadie llegara a verla. -->
+      <ClientOnly>
+        <AdSlot placement="after-tool" />
+      </ClientOnly>
+
       <!-- Long, article-length explainer: full width beneath, two editorial columns. -->
       <VCard v-if="hasContent" variant="flat" class="tool-section tool-article mt-6 pa-5 pa-md-8">
         <slot name="content" />
@@ -83,14 +97,6 @@
         operar.
       </slot>
     </VAlert>
-
-    <!-- La única unidad manual de una calculadora: DESPUÉS del resultado, del texto que lo explica y
-         de su advertencia, nunca entre los campos y el resultado. Inerte por defecto: sin
-         NUXT_PUBLIC_ADS_TOOLS la ruta es `none` (utils/ads.ts) y AdSlot no dibuja nada. Con el
-         interruptor, el cierre del layout no se dibuja en estas rutas (useAds.ts), así que es UNA. -->
-    <ClientOnly>
-      <AdSlot placement="after-tool" />
-    </ClientOnly>
 
     <!-- Sources / fuentes -->
     <VCard v-if="sources && sources.length" variant="flat" class="tool-section mt-4 pa-5">
