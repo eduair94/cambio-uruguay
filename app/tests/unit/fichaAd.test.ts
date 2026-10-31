@@ -38,7 +38,7 @@ describe('la unidad intermedia de las fichas', () => {
       const template = parse(src, { filename: file }).descriptor.template?.content ?? ''
 
       it('tiene una sola unidad in-article propia', () => {
-        expect(template.match(/<AdSlot\b[^>]*placement="in-article"/g)).toHaveLength(1)
+        expect(template.match(/<AdSlot\s[^>]*placement="in-article"/g)).toHaveLength(1)
         expect(template.match(/<AdSlot\b/g)).toHaveLength(1)
       })
 
