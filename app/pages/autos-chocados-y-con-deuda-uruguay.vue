@@ -166,7 +166,10 @@
           </p>
           <div ref="resultsList" class="d-flex flex-column ga-4">
             <FeedEdge :feed="feed" edge="top" />
-            <CarsRiskCard v-for="item in feed.items" :key="item.subject.key" :item="item" />
+            <template v-for="(item, index) in feed.items" :key="item.subject.key">
+              <FeedAd :index="index" :feed="feed" />
+              <CarsRiskCard :item="item" />
+            </template>
             <FeedEdge :feed="feed" edge="bottom" />
           </div>
           <FeedControls :feed="feed">

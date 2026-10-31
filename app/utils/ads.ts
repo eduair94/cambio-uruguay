@@ -207,3 +207,16 @@ export function maxAdSlots(density: AdDensity): number {
   if (density === 'light') return 1
   return 0
 }
+
+/**
+ * Where the one unit of a directory goes: in the grid, as a full row, after this many listings.
+ *
+ * A directory is `normal` density, but until 2026-10-31 it spent its second unit nowhere: the only
+ * ad was the layout's close, and a directory's close sits under 24 cards, the pagination and a
+ * table of prices per model. Measured on 28 days to 30/10/2026: 0,3 ad impressions per view on
+ * the cars and rentals directories against 5 on a guide. On a phone the unit comes after the
+ * first four listings, not before them: the reader saw what they came for before anything else.
+ * On a wider grid `dense` packing fills the row above it, so it always sits between two full
+ * rows. Only in page mode (components/feed/Ad.vue).
+ */
+export const FEED_AD_AFTER = 4

@@ -187,7 +187,9 @@
       </p>
     </section>
 
-    <FaqSection :items="faqItems" heading="Preguntas frecuentes" :expanded="true" />
+    <!-- `:ad="false"`: la segunda unidad de la página ya la pone el directorio, en la grilla
+         (components/feed/Ad.vue). Con las dos, la página pasaría el tope de maxAdSlots. -->
+    <FaqSection :items="faqItems" heading="Preguntas frecuentes" :expanded="true" :ad="false" />
 
     <!-- ── Otras páginas ─────────────────────────────────────────────────── -->
     <section class="movilidad-section related" aria-labelledby="related-title">
