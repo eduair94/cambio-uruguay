@@ -261,16 +261,20 @@ export const tools: readonly Tool[] = [
   },
   {
     slug: 'calculadora-plazo-fijo',
-    title: 'Calculadora de plazo fijo (interés compuesto)',
+    // Título y descripción contestan lo que se busca ("simulador plazo fijo uruguay brou
+    // dólares"): la página trae la pizarra de cada banco (utils/plazoFijoBancos.ts).
+    title: 'Simulador de plazo fijo: BROU y bancos, en pesos y dólares',
     description:
-      'Simulá cuánto rinde un plazo fijo o ahorro en pesos o dólares con interés compuesto. Ingresá capital, tasa anual y plazo.',
+      'Simulá tu plazo fijo con la tasa que publican BROU, Itaú, BBVA, Scotiabank y Heritage para tu monto y plazo, en pesos, dólares o UI, y su neto de IRPF.',
     icon: 'mdi-piggy-bank-outline',
     category: 'finanzas',
     keywords: [
+      'simulador plazo fijo uruguay',
+      'simulador plazo fijo brou dólares',
+      'plazo fijo en dólares',
+      'tasas plazo fijo bancos uruguay',
       'calculadora plazo fijo uruguay',
       'interés compuesto',
-      'rendimiento plazo fijo',
-      'simulador ahorro',
     ],
   },
   {
