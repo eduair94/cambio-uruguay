@@ -3803,7 +3803,7 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         heading: 'El cambio de octubre de 2026: el vendedor registrado',
-        body: 'Hay una condición nueva que conviene tener en el radar. A partir del 1 de octubre de 2026, para que una compra de EE.UU. mantenga la exoneración de IVA, el emisor de la factura (el vendedor o la plataforma, no el courier) tiene que estar registrado ante la Aduana, y el sistema lo valida de forma automática. Si el vendedor no está registrado, el envío pagaría IVA aunque sea de EE.UU. y esté por debajo de USD 200. Esa fecha ya se postergó dos veces, así que podría moverse de nuevo; antes de una compra grande, verificá si ya está en vigencia. Es la diferencia entre pagar o no pagar el IVA, así que no la pases por alto.',
+        body: 'Hay una condición nueva que ya corre. Para que una compra de EE.UU. mantenga la exoneración de IVA, el emisor de la factura (el vendedor o la plataforma, no el courier) tiene que figurar en el registro de empresas extranjeras de la Aduana. Las fechas no coinciden: la RG DNA 21/2026 lo hizo exigible desde el 1 de octubre de 2026, después de dos prórrogas, y la página de franquicia de la Aduana lo anuncia "a partir del 3 de noviembre", que es cuando arranca la validación automática del sistema (RG DNA 26/2026). Contá con que ya se exige. Si el vendedor no está registrado, el envío paga IVA aunque sea de EE.UU. y esté por debajo de USD 200. Desde el 5 de octubre la lista ya no depende sólo de que cada empresa se presente: la Aduana puede sumar vendedores de oficio, tu courier puede pedir el alta de uno que falta y la Aduana tiene que publicar la lista en su sitio. Antes de una compra grande, fijate que el vendedor esté en esa lista. Es la diferencia entre pagar o no pagar el IVA, así que no la pases por alto.',
       },
       {
         heading: 'Estimá el costo y desconfiá de las páginas viejas',
@@ -3840,7 +3840,7 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         q: '¿Qué es lo del "vendedor registrado" desde octubre de 2026?',
-        a: 'Desde el 1 de octubre de 2026, para conservar la exoneración de IVA en compras de EE.UU., el emisor de la factura (el vendedor o la plataforma) debe estar registrado ante la Aduana, con validación automática del sistema. Si no lo está, el envío pagaría IVA aunque sea de EE.UU. y esté por debajo de USD 200. La fecha ya se postergó dos veces y podría moverse otra vez, así que conviene verificar si ya rige antes de una compra importante.',
+        a: 'Para conservar la exoneración de IVA en compras de EE.UU., el emisor de la factura (el vendedor o la plataforma) tiene que figurar en el registro de empresas extranjeras de la Aduana. Se exige desde el 1 de octubre de 2026 (RG DNA 21/2026), y la validación automática del sistema arranca el 3 de noviembre (RG DNA 26/2026). Si no figura, el envío paga IVA aunque sea de EE.UU. y esté por debajo de USD 200. Vos no podés registrarlo, pero desde el 5 de octubre tu courier puede pedir que lo agreguen; antes de una compra importante, revisá la lista que publica la Aduana.',
       },
       {
         q: 'Si Amazon me lo manda por correo común en vez de courier, ¿cambia algo?',
@@ -3869,6 +3869,18 @@ export const redditGuides: readonly Guide[] = [
         label:
           'Resolución General 21/2026 — prórroga del registro de vendedores al 1.º de octubre de 2026',
         url: 'https://www.aduanas.gub.uy/innovaportal/file/28613/1/rg-21-2026.pdf',
+        publisher: 'Dirección Nacional de Aduanas',
+      },
+      {
+        label:
+          'Resolución General 26/2026 — alta de vendedores de oficio y a pedido del operador postal, lista publicada por la DNA y validación automática desde el 3/11/2026',
+        url: 'https://www.aduanas.gub.uy/innovaportal/file/28724/1/rg-26-2026-exoneracion-iva-encomiendas-postales.pdf',
+        publisher: 'Dirección Nacional de Aduanas',
+      },
+      {
+        label:
+          'DNA — régimen de franquicia: el registro del emisor de la factura y la lista de vendedores de EE.UU. registrados',
+        url: 'https://www.aduanas.gub.uy/innovaportal/v/28221/1/innova.front/',
         publisher: 'Dirección Nacional de Aduanas',
       },
     ],

@@ -161,3 +161,38 @@ describe("aduana baseline", () => {
     expect(isBadgeable(normaFact)).toBe(false);
   });
 });
+
+// Las mismas correcciones que el PR #158 hizo en /importar/* y en las preguntas de aduana, traídas
+// a /problemas-con-la-aduana-uruguay el 2026-10-31. Cada una ya estuvo mal publicada acá.
+describe("aduana baseline — las reglas de octubre de 2026", () => {
+  const problem = (id: string) => {
+    const p = BASELINE.problems.find((x) => x.id === id);
+    if (!p) throw new Error(`problem missing: ${id}`);
+    return p;
+  };
+
+  it("cita la regla del MSP a la página del MSP, no al art. 19 del reglamento de medicamentos", () => {
+    // El art. 19 del reglamento del Decreto 18/020 sólo sostiene la excepción del medicamento no
+    // registrado; "no autoriza el ingreso ... por particulares" lo publica el MSP en su página.
+    for (const p of BASELINE.problems) {
+      expect([p.norm, ...p.steps].join(" "), p.id).not.toMatch(/particulares \(Decreto 18\/020/);
+    }
+    expect(problem("prohibido-o-restringido").sourceIds).toContain("msp-productos-salud");
+    const msp = BASELINE.sources.find((s) => s.id === "msp-productos-salud")!;
+    expect(msp.url).toContain("Puedo-ingresar-al-pa");
+    expect(msp.kind).toBe("pagina-oficial");
+  });
+
+  it("trae el registro de vendedores al régimen de la RG 26/2026", () => {
+    const factura = problem("factura-exigida");
+    expect(factura.sourceIds).toContain("rg-dna-26-2026");
+    expect(BASELINE.sources.find((s) => s.id === "rg-dna-26-2026")?.kind).toBe("norma");
+    const text = [factura.norm, ...factura.steps, factura.deadline ?? ""].join(" ");
+    // "a partir del 1/10/2026" era futuro hasta el 30/9, y "es una decisión del vendedor" dejó de
+    // ser cierto el 5/10, cuando el operador postal pudo pedir el alta.
+    expect(text).not.toMatch(/Antes de comprar \(a partir del 1\/10\/2026\)/);
+    expect(text).not.toMatch(/Es una decisión del vendedor, no tuya/);
+    expect(text).toMatch(/operador postal/);
+    expect(text).toMatch(/3\/11\/2026/);
+  });
+});
