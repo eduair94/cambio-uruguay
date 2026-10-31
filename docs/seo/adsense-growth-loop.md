@@ -296,6 +296,12 @@ Cambios:
    páginas: con "cargar más al bajar" la lista es virtual y una celda que no es aviso le rompe la
    cuenta al composable. Monopatines y bicicletas, que embeben el directorio de equipar, apagan la
    unidad de `FaqSection` para no pasar de dos (`tests/unit/feedAd.test.ts`).
+6. **Las fichas de aviso** (auto, alquiler, venta) llevan su unidad `in-article` en el primer corte
+   después de lo que la persona vino a ver: en autos, después de fotos, precio y contacto y antes
+   de la ficha técnica; en alquiler y venta, después de la descripción y antes de la ubicación.
+   Hasta acá llegaban al pie con el cierre solo, debajo del historial de precio, la comparación y
+   los parecidos (~0,7 impresiones por vista en las fichas de autos, ~1,1 en alquileres). Son
+   densidad `normal`: con el cierre llegan al tope de dos (`tests/unit/fichaAd.test.ts`).
 
 Ninguno agrega formatos de superposición, anclaje ni viñeta, y ninguno toca la consola: los
 automáticos siguen como estaban. Todas las unidades reservan su alto y cargan a 400 px.
@@ -304,7 +310,9 @@ automáticos siguen como estaban. Todas las unidades reservan su alto y cargan a
 en `siterevenuesnapshots`, catorce días cerrados antes y después del deploy. Las guías no cambian
 (control); `/` y `/herramientas/*` son familias propias, y las páginas sueltas de contenido son
 cada una su familia; los directorios (`/alquileres-uruguay`, `/autos-usados-uruguay`,
-`/venta-viviendas-uruguay`…) también, y su tratamiento empieza un deploy después. Si una familia tratada sube sus impresiones por vista y las guías no, el
+`/venta-viviendas-uruguay`…) y las fichas (`/autos-usados-uruguay/*`, `/alquileres/*`) también,
+y su tratamiento empieza uno o dos deploys después. Si una familia tratada sube sus impresiones
+por vista y las guías no, el
 efecto es de la ubicación. Guardas: sesiones con interacción y tiempo de lectura de esas familias
 en GA4, y CLS de campo. Si una guarda cae, se revierte esa unidad sola. **No va en
 `experiments.json`**: no toca el texto que mide la búsqueda.
