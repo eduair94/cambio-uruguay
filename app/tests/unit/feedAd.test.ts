@@ -65,11 +65,13 @@ describe('FeedAd: la unidad de los directorios', () => {
     expect(FEED_AD_AFTER).toBe(4)
   })
 
-  it('el componente sólo dibuja en modo páginas', () => {
+  it('el componente sólo dibuja en modo páginas y en el aviso que le toca', () => {
     const ast = template('components/feed/Ad.vue')
     const slot = elements(ast).find(el => el.tag === 'AdSlot')
     expect(slot).toBeTruthy()
-    expect(directive(slot!, 'if')?.exp?.content).toBe('!feed.active')
+    expect(directive(slot!, 'if')?.exp?.content).toBe('shown')
+    const src = readFileSync(resolve(APP, 'components/feed/Ad.vue'), 'utf8')
+    expect(src).toContain('props.index === FEED_AD_AFTER && !props.feed.active')
     expect((slot!.props ?? []).find(p => p.name === 'placement')?.value?.content).toBe('in-article')
   })
 
@@ -88,7 +90,8 @@ describe('FeedAd: la unidad de los directorios', () => {
             (el.children ?? []).includes(ads[0]!)
         )
         expect(loop, 'la unidad tiene que ser hija directa del <template v-for>').toBeTruthy()
-        expect(directive(ads[0]!, 'if')?.exp?.content).toBe('index === FEED_AD_AFTER')
+        expect(directive(ads[0]!, 'if')).toBeUndefined()
+        expect(directive(ads[0]!, 'bind', 'index')?.exp?.content).toBe('index')
         expect(directive(ads[0]!, 'bind', 'feed')?.exp?.content).toBe('feed')
       })
 

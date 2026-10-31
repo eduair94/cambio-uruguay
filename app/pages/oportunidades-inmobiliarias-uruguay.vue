@@ -221,7 +221,7 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
           <div v-if="!error" ref="resultsList" class="opportunities__list">
             <FeedEdge :feed="feed" edge="top" />
             <template v-for="(item, index) in feed.items" :key="item.subject.id">
-              <FeedAd v-if="index === FEED_AD_AFTER" :feed="feed" />
+              <FeedAd :index="index" :feed="feed" />
               <OpportunityCard
                 :item="item"
                 :signal="query.signal"
@@ -315,7 +315,6 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
 </template>
 
 <script setup lang="ts">
-import { FEED_AD_AFTER } from '~/utils/ads'
 import { rentalAvailabilityCopy } from '~/utils/rentalAvailabilityMessages'
 import { rentalBudgetCopy } from '~/utils/rentalBudgetMessages'
 import { useDisplay } from 'vuetify'

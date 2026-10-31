@@ -380,7 +380,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             <!-- `--lead` y no `:first-of-type`: con "cargar más al bajar", el primer aviso del DOM
                  cambia cada vez que una página sale de la ventana y la fila de atajos saltaría. -->
             <template v-for="(property, index) in feed.items" :key="property.key">
-              <FeedAd v-if="index === FEED_AD_AFTER" :feed="feed" />
+              <FeedAd :index="index" :feed="feed" />
               <article
                 class="rental-card"
                 :class="{ 'rental-card--lead': index === 0 && feed.atStart }"
@@ -781,7 +781,6 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
 </template>
 
 <script setup lang="ts">
-import { FEED_AD_AFTER } from '~/utils/ads'
 import { rentalAvailabilityCopy } from '~/utils/rentalAvailabilityMessages'
 import { useDisplay } from 'vuetify'
 import SearchFilters from '~/components/rentals/SearchFilters.vue'

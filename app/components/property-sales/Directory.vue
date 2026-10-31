@@ -195,7 +195,7 @@
           <div v-else-if="data?.items.length" ref="resultsList" class="sales-directory__grid">
             <FeedEdge :feed="feed" edge="top" />
             <template v-for="(item, index) in feed.items" :key="item.key">
-              <FeedAd v-if="index === FEED_AD_AFTER" :feed="feed" />
+              <FeedAd :index="index" :feed="feed" />
               <PropertySalesListingCard
                 :property="item"
                 :area-basis="query.areaBasis"
@@ -280,7 +280,6 @@
   </VContainer>
 </template>
 <script setup lang="ts">
-import { FEED_AD_AFTER } from '~/utils/ads'
 import { useDisplay } from 'vuetify'
 import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
 import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'

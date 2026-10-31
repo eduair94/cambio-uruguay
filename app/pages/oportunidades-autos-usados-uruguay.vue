@@ -134,7 +134,7 @@
           <div ref="resultsList" class="d-flex flex-column ga-4">
             <FeedEdge :feed="feed" edge="top" />
             <template v-for="(item, index) in feed.items" :key="item.subject.key">
-              <FeedAd v-if="index === FEED_AD_AFTER" :feed="feed" />
+              <FeedAd :index="index" :feed="feed" />
               <CarsOpportunityCard :item="item" />
             </template>
             <FeedEdge :feed="feed" edge="bottom" />
@@ -201,7 +201,6 @@
 </template>
 
 <script setup lang="ts">
-import { FEED_AD_AFTER } from '~/utils/ads'
 import { useDisplay } from 'vuetify'
 import { CAR_RISKS_PATH } from '~/utils/carsRisk'
 import {

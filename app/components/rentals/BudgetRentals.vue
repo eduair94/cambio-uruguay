@@ -168,7 +168,7 @@
           <div ref="resultsList" class="budget-list">
             <FeedEdge :feed="feed" edge="top" />
             <template v-for="(item, index) in feed.items" :key="item.key">
-              <FeedAd v-if="index === FEED_AD_AFTER" :feed="feed" />
+              <FeedAd :index="index" :feed="feed" />
               <article class="budget-card" data-testid="budget-rental-card">
                 <div class="budget-card__intro">
                   <NuxtLink
@@ -310,7 +310,6 @@
 </template>
 
 <script setup lang="ts">
-import { FEED_AD_AFTER } from '~/utils/ads'
 import { VDialog } from 'vuetify/components'
 import { useDisplay } from 'vuetify'
 import { rentalBudgetMessages } from '~/utils/rentalBudgetMessages'
