@@ -2432,6 +2432,18 @@
         "simulador de plazo fijo brou"
       ],
       "hypothesis": "Search Console, 1 al 28/10/2026: 5.454 impresiones, 128 clics, posicion media 5,8; las consultas de arriba piden simular el plazo fijo del BROU (y en dolares) y la pagina era una calculadora de interes compuesto donde el visitante tipeaba cualquier tasa, con el BROU y la media del BCU como unica referencia. Ahora, para la moneda, el monto y el plazo de los campos, una tabla con la tasa que publica cada banco en su propia pagina (BROU, Itau, BBVA, Scotiabank y Heritage, en pesos, dolares y UI donde existe), de mayor a menor, con la fuente y la vigencia de cada fila, la fecha de consulta y un boton que carga la tasa en la calculadora; la entrada libre sigue. Las cifras viven fechadas en app/utils/plazoFijoBancos.ts y nunca se presentan como dato en vivo; Santander, BTG Pactual (ex HSBC), Bandes y BHU se nombran con el motivo por el que no estan. El resultado sube pegado a los campos. Titulo 'Simulador de plazo fijo: BROU y bancos, en pesos y dolares' y descripcion con los bancos, pesos/dolares/UI y el neto de IRPF; dos preguntas frecuentes nuevas (cuanto paga el BROU en dolares, que banco paga mas) salen de la misma tabla. Deberia subir el CTR desde la misma posicion y la posicion de las consultas con 'brou' y 'dolares' (7,8 a 10,2)."
+    },
+    {
+      "id": "simulador-prestamos-cuota-por-prestamista",
+      "shippedOn": "2026-10-31",
+      "routes": ["/herramientas/calculadora-prestamo"],
+      "queries": [
+        "calculadora de prestamos",
+        "simulador de prestamos",
+        "calcular prestamo",
+        "prestamos personales simulador"
+      ],
+      "hypothesis": "Search Console: 1.825 impresiones y 4 clics; 'calculadora de prestamos' en posicion 43, 'simulador de prestamos' 66, 'calcular prestamo' 47, 'prestamos personales simulador' 64. La pagina era la cuota del sistema frances con la tasa que tipeara el visitante, y lo que se busca es cuanto cobraria cada uno. Ahora, para el monto y las cuotas de los campos, una tabla con la cuota y el total con la TEA que publica cada prestamista (bancos, financieras, cooperativas y fintech del tablero de /mejores-prestamos-uruguay, con el parche semanal de /api/loan-tiers), ordenada por costo total, con la fecha de los datos y el enlace a la fuente de cada uno; si publica un rango van las dos cuentas (piso y techo) y se ordena por el techo, nunca un numero solo; el IVA sobre intereses se suma cuando va aparte; los que no publican tasa o no prestan ese monto o plazo se nombran con el motivo. El contexto de usura se enlaza a /ley-de-usura-uruguay. La calculadora libre sigue y ahora deja elegir TEA o nominal y sumar el IVA. Titulo 'Simulador de prestamos: tu cuota con cada prestamista' y descripcion con monto, cuotas y TEA de cada banco, financiera y cooperativa; una pregunta frecuente nueva (cuanto se paga por $ 200.000 en 24 cuotas) sale de la misma tabla. Desde posiciones de 40 a 66 lo esperable es subir de pagina antes que el CTR; se mide la porcion de clics del sitio."
     }
   ]
 }
