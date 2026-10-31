@@ -12,6 +12,13 @@
 -->
 <template>
   <section class="faq-section" data-testid="faq-block">
+    <!-- La unidad intermedia de las páginas de contenido: entre lo que la página explica y sus
+         preguntas, que es el corte de sección que comparten las 70 páginas que usan este bloque.
+         Sólo dibuja en densidad `normal` (useAds.ts: en `light`, en las calculadoras y en las rutas
+         sin anuncios no aparece), así que con el cierre del layout la página llega a su tope de
+         `maxAdSlots('normal')` = 2. Una página que ya pone su propia unidad `in-article` pasa
+         `:ad="false"`: faqSectionAd.test.ts lo exige. -->
+    <AdSlot v-if="ad" placement="in-article" class="faq-section__ad" />
     <h2 v-if="heading" class="text-h6 font-weight-medium mb-3">{{ heading }}</h2>
 
     <!-- Expanded: answers always in the DOM (best for AI Overviews and for reading). -->
@@ -48,8 +55,15 @@ import type { FaqItem } from '~/utils/faqAnswers'
 const localePath = useLocalePath()
 
 const props = withDefaults(
-  defineProps<{ items: FaqItem[]; heading?: string; emitSchema?: boolean; expanded?: boolean }>(),
-  { heading: '', emitSchema: true, expanded: false }
+  defineProps<{
+    items: FaqItem[]
+    heading?: string
+    emitSchema?: boolean
+    expanded?: boolean
+    /** La unidad intermedia antes de las preguntas. `false` si la página ya pone la suya. */
+    ad?: boolean
+  }>(),
+  { heading: '', emitSchema: true, expanded: false, ad: true }
 )
 
 useFaqSchema(
@@ -72,6 +86,11 @@ useFaqSchema(
   .faq-section {
     margin-block-start: 32px;
   }
+}
+
+/* La unidad abre la sección con su propio margen (32px, AdSlot.vue); el título va debajo. */
+.faq-section__ad {
+  margin-block-start: 0;
 }
 
 /* Browsers indent <dd> by ~40px by default, which reads as a broken hanging indent next to the
