@@ -303,9 +303,13 @@ const verifiedAt = new Date(`${MP_FEES_VERIFIED_AT}T00:00:00Z`).toLocaleDateStri
 })
 
 const canonicalUrl = 'https://cambio-uruguay.com/comisiones-mercado-pago-uruguay'
-const title = 'Comisiones de Mercado Pago para cobrar'
+// "Cuánto cobra Mercado Pago por venta" llega en posición 5 y no hacía clic: el título ahora dice
+// el rango y la descripción, lo que queda de $ 1.000 cobrados por link (la misma cuenta que la
+// columna "Te quedan de $ 1.000" de la tabla). Literales para que los midan los presupuestos de
+// SEO; que no se despeguen de MP_FEES y feeForSale lo vigila `snippetConLaRespuesta.test.ts`.
+const title = 'Comisión de Mercado Pago: 1,15 % a 11,99 %'
 const description =
-  'Del 1,15 % (QR con débito) al 11,99 % (Point en 12 cuotas), más IVA. Tabla por medio y plazo, cuánto te queda de cada venta y cuándo se libera la plata.'
+  'Del 1,15 % (QR con débito) al 11,99 % (Point en 12 cuotas), más IVA. Por link de pago, de $ 1.000 te quedan $ 926,92 al instante. Tabla por medio y plazo.'
 
 defineOgImageComponent('Cambio', {
   title: 'Comisiones de Mercado Pago',

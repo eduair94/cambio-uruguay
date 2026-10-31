@@ -325,9 +325,13 @@ const RELATED = [
 ]
 
 const canonicalUrl = 'https://cambio-uruguay.com/renunciar-al-trabajo-uruguay'
-const title = 'Renuncié en Uruguay: qué cobro y en 10 días'
+// Las dos consultas con más impresiones preguntan el plazo con la palabra "liquidación"
+// ("cuántos días tiene una empresa para pagar la liquidación por renuncia", posición 5,8 y cero
+// clics en octubre de 2026): el título las nombra tal cual y la descripción abre con el plazo.
+// Que el número no se despegue de PLAZO_EXIGIBILIDAD_DIAS lo vigila `snippetConLaRespuesta.test.ts`.
+const title = 'Liquidación por renuncia: plazo de 10 días'
 const description =
-  'Quien renuncia cobra licencia no gozada, salario vacacional y aguinaldo: exigible a los 10 días corridos, con recargo del 10 % si no pagan (Ley 18.572).'
+  'La empresa tiene 10 días corridos para pagarte licencia no gozada, salario vacacional y aguinaldo; después corre un recargo del 10 % (Ley 18.572).'
 
 defineOgImageComponent('Cambio', {
   title: 'Renuncié: qué me tienen que pagar',

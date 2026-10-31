@@ -2361,6 +2361,37 @@
         "/ropa-por-kilo-uruguay"
       ],
       "hypothesis": "Enlazado interno; el contenido de la pagina medida no cambia. Estaba en el pozo de enlaces de contexto (enlacesDeContexto.test.ts): ninguna otra pagina la enlazaba desde su contenido, asi que su unico vinculo quedaba en el bloque del pie que docs/app/INTERCONEXIONES.md midio a 11.341 px de una pagina de 15.868 -enlazada para un rastreador e invisible para un lector-. Era una de las dos unicas rutas libres de los cinco pozos hoy (npm run seo_debt: 2 de 37) y la unica cuyo origen natural tambien estaba libre: /importar-para-revender-uruguay no tiene ninguna fila en el libro de cambios. El lector lo necesita porque el origen no le contesta mal, le contesta bien la pregunta equivocada: su simulador resuelve la RUTA (factura y peso contra los topes de la prestacion unica) y para 20 kg de ropa usada devuelve -entra por courier al 60 %, sin DUA y sin despachante-, que es verdad y es una decision comercial ruinosa. La nota va en el cuerpo visible del cuadro de tramites por producto, que son accesorios de celular y no incluian la ropa, y nombra las dos mitades que el destino tiene con fuente y fecha: la licencia de importacion de textiles de la DNI para los capitulos 61 y 62 sin excepcion postal frente a la usada de la partida 6309, que queda fuera, y que el flete aereo por kilo cuesta varias veces lo que vale el kilo en origen. No se repite ninguna cifra del destino. Se mide la porcion de clics del sitio que se lleva la ruta."
+    },
+    {
+      "id": "respuesta-en-el-titulo-1031",
+      "shippedOn": "2026-10-31",
+      "routes": [
+        "/pension-a-la-vejez-uruguay",
+        "/asignacion-familiar-uruguay",
+        "/renunciar-al-trabajo-uruguay",
+        "/comisiones-mercado-pago-uruguay",
+        "/peajes-uruguay"
+      ],
+      "queries": [
+        "pension a la vejez",
+        "cuanto es la pensión a la vejez en uruguay",
+        "pensión a la vejez mides monto",
+        "pensión a la vejez cuanto es",
+        "asignacion familiar",
+        "cuanto es la asignación por hijo en uruguay",
+        "cuanto es la asignacion familiar por hijo",
+        "hasta que edad se cobra la asignacion familiar",
+        "cuantos dias tiene una empresa para pagar la liquidacion por renuncia",
+        "plazo para pagar liquidación por renuncia en uruguay",
+        "si renuncio a mi trabajo que me deben pagar",
+        "cuanto cobra mercado pago por venta",
+        "comisión mercado pago uruguay",
+        "que porcentaje cobra mercado pago",
+        "cuanto esta el peaje en uruguay",
+        "las motos pagan peaje en uruguay",
+        "cuanto salen los peajes en uruguay"
+      ],
+      "hypothesis": "Cinco paginas de contenido en la primera pagina de Google y casi sin clics del 1 al 28/10/2026: /pension-a-la-vejez-uruguay 647 impresiones y 0 clics (pension a la vejez en posicion 10,2; cuanto es la pension a la vejez en uruguay, 9,7), /asignacion-familiar-uruguay 812 y 2 (asignacion familiar, 9,2), /renunciar-al-trabajo-uruguay 272 y 1 (cuantos dias tiene una empresa para pagar la liquidacion por renuncia, 5,8), /comisiones-mercado-pago-uruguay 534 y 2 (cuanto cobra mercado pago por venta, 5,2) y /peajes-uruguay 543 y 0 (cuanto esta el peaje en uruguay, 10,7; las motos pagan peaje en uruguay, 8,2). Las cinco consultas piden un numero o un plazo, el cuerpo lo tenia y el titulo no. Ahora el titulo lleva la respuesta antes del corte de 60 caracteres (Pension a la vejez 2026: $ 18.575 por mes; Asignacion familiar: $ 1.347 o $ 2.686,51; Liquidacion por renuncia: plazo de 10 dias; Comision de Mercado Pago: 1,15 % a 11,99 %; Peajes: auto $ 167 con TAG, motos no pagan) y la descripcion abre con la cifra y contesta la segunda consulta de cada pagina: que no es la asistencia del MIDES, hasta que edad se cobra, lo que queda de $ 1.000 cobrados por link y las tres tarifas del mismo paso. Cada cifra sale de la constante que imprime el cuerpo y snippetConLaRespuesta.test.ts las ata; el cuerpo de las cinco no cambia. /que-pasa-si-no-pago-antel quedo afuera de la tanda: tres-facturas-del-hogar-entran-a-su-tema la reserva hasta el 23/11. Es la regla de indicadores-ur-ui-valor-vivo y de la BPC: deberia subir la porcion de clics del sitio que se llevan las cinco desde la misma posicion."
     }
   ]
 }
