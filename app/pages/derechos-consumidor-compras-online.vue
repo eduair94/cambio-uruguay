@@ -524,7 +524,9 @@ async function copyReply() {
 }
 
 // --- SEO ---
-const title = 'Derechos del consumidor en compras online'
+// La respuesta en el título: las consultas citan el art. 16 de la Ley 17.250 y el «derecho de
+// arrepentimiento», y la respuesta es el plazo (5 días hábiles en la venta a distancia).
+const title = 'Compras online: retracto de 5 días hábiles'
 const description =
   'El art. 33 de la Ley 17.250 te deja elegir cumplimiento, sustitución o devolución actualizada, y la venta a distancia tiene retracto de 5 días hábiles.'
 
