@@ -1,5 +1,10 @@
 <template>
-  <ToolShell slug="costo-de-vida" :faq="faq">
+  <ToolShell
+    slug="costo-de-vida"
+    :faq="faq"
+    :seo-title="seoTitle"
+    :seo-description="seoDescription"
+  >
     <VCard class="pa-4 pa-sm-6">
       <!-- ── Situación ── -->
       <div class="cv-section-title">Tu situación</div>
@@ -784,6 +789,38 @@ const inputs = computed(() => ({
   health: health.value,
 }))
 const result = computed(() => estimateBudget(inputs.value, model.value))
+
+// El título contesta «cuánto cuesta vivir en Uruguay» con el número que la calculadora muestra al
+// abrir: lo esencial de una persona sola alquilando en Montevideo (zona intermedia, ómnibus, estilo
+// moderado, FONASA). El ingreso no entra en ese total. Sólo con el modelo vivo: sin lectura, el
+// título y la descripción del catálogo (utils/tools.ts), como el conversor de UI.
+const headlineEssentials = computed(() => {
+  if (!live.value?.model) return null
+  return estimateBudget(
+    {
+      netIncome: 0,
+      situation: 'solo',
+      city: 'montevideo',
+      housing: 'alquila',
+      children: 0,
+      zone: 'intermedio',
+      transport: 'publico_diario',
+      lifestyle: 'moderado',
+      health: 'fonasa',
+    },
+    model.value
+  ).essentials
+})
+const seoTitle = computed(() =>
+  headlineEssentials.value === null
+    ? undefined
+    : `Costo de vida en Uruguay: ${formatUYU(Math.round(headlineEssentials.value), 0)} al mes | Cambio Uruguay`
+)
+const seoDescription = computed(() =>
+  headlineEssentials.value === null
+    ? undefined
+    : `Una persona sola alquilando en Montevideo gasta ${formatUYU(Math.round(headlineEssentials.value), 0)} al mes en lo esencial. Calculá tu caso: en pareja, con hijos o en el interior.`
+)
 const meta = computed(() => VERDICT_META[result.value.verdict])
 const tips = computed(() => realityChecks(result.value, inputs.value))
 
