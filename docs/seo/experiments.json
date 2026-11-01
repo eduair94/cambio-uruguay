@@ -2552,6 +2552,40 @@
         "cuanto es el imesi para autos en uruguay"
       ],
       "hypothesis": "Mismo patron que respuesta-en-el-titulo-1031 y multas-patente-respuesta-en-el-titulo: dos paginas cuya consulta de cabeza tiene respuesta de una linea y cuyo titulo no la daba. Embargo (1.973 impresiones en 28 dias, posicion 6,0, CTR 0,9 %): 'te pueden retener el sueldo por deuda' y 'te pueden embargar el sueldo' se contestan con el art. 381 del CGP, solo tributos y pension alimenticia; el titulo era 'cuanto te pueden sacar' y la descripcion pasaba de 300 caracteres. Ahora 'Embargo de sueldo: solo tributos y pension' y una descripcion de 148 que empieza por la deuda de tarjeta. Autos electricos (1.658, posicion 6,5, CTR 0,9 %): 'impuesto autos electricos uruguay' es la consulta de cabeza y el titulo decia 'IMESI a autos electricos en Uruguay 2027' sin las tasas; ahora 'Impuesto autos electricos 2027: 0, 5 o 9 %'. Van en una fila porque son el mismo cambio en dos paginas sin relacion entre si."
+    },
+    {
+      "id": "carne-y-sala-vip-respuesta-en-el-titulo",
+      "shippedOn": "2026-11-01",
+      "routes": [
+        "/carne-de-salud-uruguay",
+        "/sala-vip-aeropuerto-uruguay"
+      ],
+      "queries": [
+        "carnet de salud gratis asse",
+        "carne de salud gratis",
+        "dónde se saca el carnet de salud gratis",
+        "sala vip aeropuerto carrasco",
+        "vip aeropuerto carrasco",
+        "costo sala vip aeropuerto carrasco"
+      ],
+      "hypothesis": "Mismo patron que respuesta-en-el-titulo-1101. Carne de salud (1.294 impresiones en 28 dias, posicion 7,7): el titulo preguntaba 'cuando es gratis' y la consulta de cabeza, 'carnet de salud gratis asse' (134 impresiones), se contesta en la primera tarjeta de la pagina: sin costo en tu mutualista, tu seguro o ASSE si sos usuario (Decreto 274/017); ahora 'Carne de salud: gratis en mutualista o ASSE'. Sala VIP (2.300, posicion 7,8): el titulo era 'Sala VIP en el aeropuerto de Carrasco' y la pagina ya publica el ingreso suelto (US$ 90) y que varias tarjetas dan acceso sin costo; ahora 'Sala VIP de Carrasco: US$ 90 o gratis'. Una fila porque es el mismo cambio en dos paginas sin relacion entre si."
+    },
+    {
+      "id": "auto-con-deuda-y-comisiones-respuesta-en-el-titulo",
+      "shippedOn": "2026-11-01",
+      "routes": [
+        "/comprar-auto-con-deuda-uruguay",
+        "/comisiones-de-transferencia-uruguay"
+      ],
+      "queries": [
+        "que pasa si compro un auto con deuda de patentes",
+        "se puede transferir un auto con deuda de patente",
+        "se puede transferir una moto con deuda",
+        "cuanto cobra mi dinero por transferencia",
+        "cuanto cobra prex por transferencia a brou",
+        "comision de transferencia a otros bancos"
+      ],
+      "hypothesis": "Mismo patron que carne-y-sala-vip-respuesta-en-el-titulo. Auto con deuda (1.276 impresiones en 28 dias, posicion 6,4): las consultas preguntan si se puede transferir con deuda y la pagina contesta en su primera linea que no (TO SUCIVE 2026, art. 45); el titulo era 'Comprar un auto con deuda: patente y multas', ahora 'Auto con deuda de patente: no se transfiere'. Comisiones de transferencia (3.401, posicion 6,2, CTR 0,5 %): la descripcion ya decia la respuesta (entre Itau y Prex no se cobra, desde los demas bancos $ 45 o U$S 1,90) y el titulo era la etiqueta 'Comisiones de transferencia entre bancos'; ahora 'Transferencias entre bancos: gratis o $ 45'. Una fila porque es el mismo cambio en dos paginas sin relacion entre si."
     }
   ]
 }
