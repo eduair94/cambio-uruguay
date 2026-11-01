@@ -813,6 +813,7 @@
   "seo": {
     "homeTitle": "Dólar hoy: comparar +40 casas de cambio",
     "homeTitleLive": "Dólar hoy en Uruguay: desde ${sell}",
+    "homeDescriptionLive": "Dólar hoy en Uruguay: se vende desde ${sell} y se compra hasta ${buy} en {count} casas de cambio. Pizarras cada 10 minutos; también euro, real y peso argentino.",
     "homeDescription": "Cotización del dólar en Uruguay hoy actualizada cada 10 minutos. Compara precios de compra y venta en más de 40 casas de cambio. Encuentra la mejor cotización del dólar, euro, real y peso argentino en Montevideo y todo Uruguay.",
     "homeKeywords": "cotización del dólar en uruguay, cotización dólar uruguay hoy, precio del dólar en uruguay, dólar en uruguay hoy, cambio de dólar en uruguay, casas de cambio uruguay, cotización del euro en uruguay, comprar dólares uruguay, vender dólares uruguay, tipo de cambio uruguay, dólar blue uruguay, cotización peso argentino uruguay, cambio de moneda montevideo, casas de cambio montevideo, cotización del real en uruguay, dólar BROU hoy",
     "advancedTitle": "Cotizaciones avanzadas del dólar en Uruguay",

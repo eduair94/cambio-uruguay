@@ -801,6 +801,7 @@
   "seo": {
     "homeTitle": "Dólar hoje no Uruguai: compare +40 casas",
     "homeTitleLive": "Dólar hoje no Uruguai: desde $U {sell}",
+    "homeDescriptionLive": "Dólar hoje no Uruguai: compre desde $U {sell} ou venda até $U {buy} em {count} casas de câmbio, atualizado a cada 10 minutos. Também euro, real e peso argentino.",
     "homeDescription": "Cotação do dólar no Uruguai hoje atualizada a cada 10 minutos. Compare preços de compra e venda em mais de 40 casas de câmbio em Montevidéu e todo o Uruguai.",
     "homeKeywords": "cotação dólar uruguai, câmbio dólar uruguai, preço dólar uruguai hoje, casas de câmbio uruguai, tipo de câmbio uruguai, comprar dólares uruguai, vender dólares uruguai",
     "advancedTitle": "Comparador avançado de cotações do dólar no Uruguai",
