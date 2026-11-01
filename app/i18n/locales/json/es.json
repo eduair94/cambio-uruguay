@@ -1885,7 +1885,8 @@
   "home": {
     "casaHubsTitle": "Casas de cambio y bancos de Uruguay",
     "casaHubsSubtitle": "Cotización de hoy, sucursales, horarios y opiniones de cada casa.",
-    "casaHubAnchor": "{casa}: cotización y sucursales hoy"
+    "casaHubAnchor": "{casa}: cotización y sucursales hoy",
+    "heroAnswer": "Hoy {date}, el dólar estadounidense se vende desde ${sell} y se compra hasta ${buy} comparando {count} casas de cambio de Uruguay. Para comprar conviene el precio de venta más bajo; para vender, el de compra más alto. Son las pizarras de cada casa, leídas automáticamente cada ~10 minutos."
   },
   "records": {
     "max": "Máximo del período",

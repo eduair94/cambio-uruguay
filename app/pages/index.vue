@@ -1244,25 +1244,28 @@ const usdQuotes = computed(() =>
 const usdBestSell = computed(() => usdQuotes.value.find(q => q.bestSell)?.sell ?? null)
 const usdBestBuy = computed(() => usdQuotes.value.find(q => q.bestBuy)?.buy ?? null)
 
+// La respuesta del hero, en el idioma de la página (`home.heroAnswer`). Estaba escrita acá en
+// castellano y /en y /pt la mostraban tal cual, y decía que los datos "se basan en el registro del
+// BCU" cuando son las pizarras de cada casa. El separador decimal y la fecha siguen al idioma, igual
+// que el título y la descripción del head.
 const usdHeadline = computed<string | null>(() => {
   const quotes = usdQuotes.value
   if (usdBestSell.value === null || usdBestBuy.value === null) return null
+  const lang = dateLocale(locale.value)
   const fmt = (n: number) =>
-    n.toLocaleString('es-UY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  const minSell = fmt(usdBestSell.value)
-  const maxBuy = fmt(usdBestBuy.value)
-  const today = new Date().toLocaleDateString('es-UY', {
+    n.toLocaleString(lang, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const date = new Date().toLocaleDateString(lang, {
     timeZone: 'America/Montevideo',
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   })
-  return (
-    `Hoy ${today}, el dólar estadounidense se vende desde $${minSell} y se compra hasta ` +
-    `$${maxBuy} comparando ${quotes.length} casas de cambio de Uruguay. Para comprar conviene ` +
-    `el precio de venta más bajo; para vender, el de compra más alto. Los datos se basan en el ` +
-    `registro del Banco Central del Uruguay (BCU) y se actualizan automáticamente cada ~10 minutos.`
-  )
+  return t('home.heroAnswer', {
+    date,
+    sell: fmt(usdBestSell.value),
+    buy: fmt(usdBestBuy.value),
+    count: quotes.length,
+  })
 })
 
 // Branded OG image with the live USD rate (og-rate route is cached 10 min).
