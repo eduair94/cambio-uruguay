@@ -63,11 +63,13 @@ export const guideHubs: readonly GuideHub[] = [
       'conviene-comprar-dolares-hoy',
       'comprar-dolares-mejor-precio',
       'billete-cable-transferencia',
+      'comprar-dolares-online-uruguay',
       'mejor-momento-cambiar-divisas',
       'como-leer-cotizacion-dolar',
       'glosario-terminos-cambiarios',
       'casas-de-cambio-vs-bancos',
       'evitar-comisiones-cambio',
+      'billetes-y-monedas-de-uruguay',
     ],
     resources: [
       {

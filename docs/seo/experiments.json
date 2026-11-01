@@ -2473,6 +2473,23 @@
         "nucleo familiar impuesto al patrimonio"
       ],
       "hypothesis": "Guia nueva: el impuesto de TENER, que el sitio solo nombraba como keyword de /impuestos-inversiones-uruguay, que es el impuesto de lo que RINDE. Medido con el buscador propio antes de publicarla, 'impuesto al patrimonio' caia en esa pagina con 38 puntos, la banda mas debil de scoreDocs (coincidencia en el pajar, no en el titulo); en el mismo commit el keyword se saca de ahi para que la consulta tenga un solo dueno y sea el que la contesta, y con la guia publicada la gana con 110. Contesta el umbral con la cifra en el titulo y en la descripcion ($ 6.653.000 de patrimonio fiscal al 31/12/2025, $ 13.306.000 el nucleo familiar, DGI 16/01/2026) y publica las reglas de avaluo que deciden si alguien lo cruza, que es lo que nadie tiene presente: el auto cuenta 25 veces la patente del ano, un inmueble alquilado 15 veces el alquiler anual, la casa propia se deduce al 50 % con tope del propio minimo, el saldo de la AFAP no se computa y al activo se le SUMA un ficto por ajuar del 10 % hasta el doble del minimo y 20 % sobre el excedente. Deliberadamente NO publica una tasa: el art. 53 del Titulo 14 trae la escala del 0,70 % al 2,75 % y el mismo articulo la manda reducir 0,10 % anual desde 2016 con piso de 0,10 %, y ninguna publicacion oficial de la DGI imprime el resultado (ni el instructivo del ejercicio), asi que la guia explica por que no hay porcentaje y manda al simulador de la DGI. Todas las cifras salen del instructivo 2025, de la ficha de contribuyentes, de las preguntas frecuentes y de la pagina de vencimientos de la DGI, mas el texto del articulo en IMPO, citados al pie. Se mide a 28 dias como porcion de los clics propios de la ruta."
+    },
+    {
+      "id": "dos-guias-del-dolar-entran-a-su-tema",
+      "shippedOn": "2026-11-01",
+      "routes": [
+        "/guias/comprar-dolares-online-uruguay",
+        "/guias/billetes-y-monedas-de-uruguay"
+      ],
+      "queries": [
+        "comprar dolares online uruguay",
+        "comprar dolares por internet uruguay",
+        "ebrou comprar dolares",
+        "billetes de uruguay",
+        "monedas de uruguay",
+        "billete de 2000 pesos uruguayos"
+      ],
+      "hypothesis": "Las dos guias estaban fuera de TODO tema y entran a dolar-y-casas-de-cambio-uruguay: son las dos unicas de las 21 huerfanas con la ruta libre hoy (npm run seo_debt: 3 libres entre las 28 de los cinco pozos, la tercera no es de este pozo), asi que van en UNA fila porque son UN hueco del mismo tema y no dos cambios, la misma razon por la que los dos radares de economia fueron juntos el 28/10. La de online es la peor huerfana del racimo y le faltaban las DOS mitades a la vez: guideNextSteps arma «segui leyendo» con guide.related, despues con los links de las secciones y recien despues con los resources del hub, y esta guia no tiene ninguna de las tres cosas, asi que su pagina terminaba sin un solo enlace de salida; entrar al tema le da el bloque de vecinos Y tres proximos pasos de un saque. Ninguna de las dos inventa un padre: el hub ya lleva dolar-ebrou y dolar-transferencia entre sus terms y billete-cable-transferencia entre sus guias, o sea que ya explicaba la cotizacion por transferencia y nunca decia donde se opera, y la de billetes y monedas entra al lado de /donde-conseguir-monedas-uruguay, que ya es resources del hub, y del termino peso-uruguayo, que ya es uno de sus terms (sus tres related escritos a mano apuntan justamente ahi). Se mide sola porque entrar al tema no le cambia el bloque a ninguna otra pagina: temaVecinosParaRuta arma los enlaces con hub.resources y hub.terms, nunca con hub.guides. El presupuesto de guias sin tema de temaHuerfanas.test.ts baja de 21 a 19. No se toco titulo, descripcion ni cuerpo de ninguna de las dos: las dos ya abren por el dato (los billetes de 20 a 2.000 y las monedas de 1 a 50; que eBROU pide cuenta) y ninguna esta en los presupuestos de snippet largo. Se mide a 28 dias como porcion de los clics del sitio."
     }
   ]
 }

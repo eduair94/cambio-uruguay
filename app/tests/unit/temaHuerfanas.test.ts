@@ -440,12 +440,10 @@ describe('ninguna página de lectura queda fuera de todos los temas', () => {
  */
 const GUIAS_SIN_TEMA = [
   'ahorrar-en-dolares-o-pesos',
-  'billetes-y-monedas-de-uruguay',
   'cajeros-automaticos-uruguay-turistas',
   'cambiar-dolares-aeropuerto-carrasco',
   'cambiar-monedas-poco-comunes-uruguay',
   'cambiar-pesos-argentinos-uruguay',
-  'comprar-dolares-online-uruguay',
   'criptomonedas-regulacion-impuestos-uruguay',
   'devolucion-iva-turistas-uruguay',
   'documentos-para-cambiar-dolares-uruguay',
@@ -495,7 +493,30 @@ const GUIAS_SIN_TEMA = [
  *
  * Sólo puede bajar: subirlo es publicar una guía huérfana.
  */
-const DEUDA_MAXIMA_GUIAS = 21
+/**
+ * 21 → 19 el 2026-11-01: `comprar-dolares-online-uruguay` y `billetes-y-monedas-de-uruguay` entran a
+ * `dolar-y-casas-de-cambio-uruguay`, y son las DOS únicas de las 21 con la ruta libre hoy
+ * (`npm run seo_debt`: 3 libres entre las 28 de los cinco pozos, y la tercera no es de este pozo;
+ * las otras 19 llevan fila abierta, de la del 2026-11-02 a la del 2026-11-30).
+ *
+ * Ninguna de las dos inventa un padre, que es la regla que la nota del 15/10 dejó escrita al NO
+ * mover `propinas-en-uruguay`. La de online es la más literal de todo el racimo: el hub ya lleva
+ * `dolar-ebrou` y `dolar-transferencia` entre sus `terms` y la guía `billete-cable-transferencia`
+ * entre las suyas, o sea que el tema ya explicaba la cotización por transferencia y nunca decía
+ * dónde se opera. La de billetes y monedas entra al lado de `/donde-conseguir-monedas-uruguay`, que
+ * ya es `resources` de este hub, y del término `peso-uruguayo`, que ya es uno de sus `terms`: sus
+ * tres `related` escritos a mano apuntan justamente ahí (`/glosario/peso-uruguayo` y
+ * `/cotizacion/dolar`).
+ *
+ * Y la de online es además la peor huérfana de las 21, porque le faltaban las DOS mitades a la vez:
+ * `guideNextSteps` (`utils/guideReading.ts`) arma «seguí leyendo» con `guide.related`, después con
+ * los `links` de las secciones y recién después con los `resources` del hub, y esta guía no tiene
+ * ninguna de las tres cosas — sin tema, su página terminaba sin un solo enlace de salida. Entrar al
+ * tema le da el bloque de vecinos Y los tres próximos pasos de un saque.
+ *
+ * Sólo puede bajar: subirlo es publicar una guía huérfana.
+ */
+const DEUDA_MAXIMA_GUIAS = 19
 
 describe('ninguna guía queda fuera de todos los temas', () => {
   const sinTema = guides
