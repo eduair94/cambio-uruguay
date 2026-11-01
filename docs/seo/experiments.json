@@ -2505,6 +2505,21 @@
         "tarjetas de credito uruguay"
       ],
       "hypothesis": "Deshace el titulo de tarjetas-2026-refresh (22/9), que el job dictamino 'empeoro' con lift 0,29: el refresh cambio 'Mejores tarjetas de credito en Uruguay' por 'Tarjetas de credito Uruguay 2026: anualidad' y la pagina perdio la mitad de las impresiones (3.134 en 3-30/9 contra 1.702 en 1-28/10, posicion 9,78 -> 11,42) mientras el sitio entero crecia 89 %; 'mejores tarjetas de credito uruguay' paso de 8,1 a 11,7 y 'mejor tarjeta de credito uruguay' de 17 a 8 impresiones. La consulta que trae a la pagina pregunta por la MEJOR tarjeta, y el titulo dejo de decirlo. Se recupera 'Mejores' y se queda el ano (57 caracteres con la marca); la descripcion, la FAQ y las fichas reverificadas del refresh no se tocan, asi que si la porcion vuelve, lo que costo fue el titulo y no el contenido."
+    },
+    {
+      "id": "multas-patente-respuesta-en-el-titulo",
+      "shippedOn": "2026-11-01",
+      "routes": [
+        "/multas-de-transito-y-patente-uruguay"
+      ],
+      "queries": [
+        "multa por circular con deuda de patente",
+        "se puede circular con deuda de patente en uruguay",
+        "prescripcion de multas de transito",
+        "las multas de transito caducan",
+        "las multas de tránsito caducan en uruguay"
+      ],
+      "hypothesis": "La pagina recibe 4.014 impresiones en 28 dias en posicion 7,7 con 0,85 % de CTR, y sus dos consultas de cabeza son una pregunta con respuesta de una linea: 'multa por circular con deuda de patente' y 'se puede circular con deuda de patente'. El titulo era una etiqueta ('Multas y deuda de patente en Uruguay') y la descripcion prometia contar 'cuando aplica'. La respuesta ya estaba en la pagina con su norma (Texto Ordenado del SUCIVE 2026, art. 10: dos o mas cuotas vencidas, multa del 25 % de la patente anual, hasta cuatro veces por ano) y la segunda familia de consultas, si las multas caducan, tambien (prescriben a los cinco anos): las dos suben al titulo y a la descripcion, sin tocar el cuerpo. Mismo patron que respuesta-en-el-titulo-1031."
     }
   ]
 }
