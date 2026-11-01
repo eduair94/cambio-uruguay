@@ -1370,6 +1370,11 @@ export const guideHubs: readonly GuideHub[] = [
       'interes-compuesto-explicado-uruguay',
       'errores-y-estafas-al-invertir-uruguay',
       'comprar-criptomonedas-en-uruguay',
+      // El impuesto de TENER va en este tema y no en el del sueldo: este hub ya lleva como recurso
+      // `/impuestos-inversiones-uruguay`, que es el impuesto de lo que RINDE, así que acá el par
+      // queda completo. Y el lector que cruza los $ 6.653.000 llegó ahí ahorrando o comprando, que
+      // es de lo que habla el `intro` de este tema.
+      'impuesto-al-patrimonio-uruguay',
     ],
     resources: [
       {

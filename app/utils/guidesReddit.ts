@@ -392,7 +392,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'garantias-de-alquiler-uruguay',
     title: 'Garantía de alquiler: 3 % mensual o prima',
     description:
-      'Comparativa de las garantías de alquiler en Uruguay: cuánto cuesta cada una, cuánto podés alquilar y cuál acepta más rápido, con lo que publica cada proveedor.',
+      'Comparativa: las garantías de retención (Contaduría, ANDA, fondo estatal) cobran 3 % mensual y las aseguradoras no publican la prima. Topes del 30 al 40 %.',
     tag: 'GARANTÍAS',
     updatedAt: '2026-09-15',
     sections: [
@@ -3992,7 +3992,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'tarjeta-debito-vs-credito-uruguay',
     title: 'Débito gasta lo tuyo; crédito te presta',
     description:
-      'Tarjeta de débito o de crédito en Uruguay: diferencias reales, la rebaja de IVA en pagos electrónicos (Ley 19.210), protección ante fraude, cómo cuidar el presupuesto y cuándo conviene cada una.',
+      'El débito gasta lo tuyo y suma la rebaja de IVA en pagos electrónicos (Ley 19.210); el crédito da más protección ante un fraude: desconocés antes de pagar.',
     tag: 'TARJETAS',
     updatedAt: '2026-07-18',
     sections: [
@@ -4045,7 +4045,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'reforma-jubilatoria-uruguay-que-cambia',
     title: 'Reforma jubilatoria: edad por generación',
     description:
-      'Qué cambia con la reforma jubilatoria (Ley 20.130) en Uruguay: el nuevo Sistema Previsional Común, cómo sube la edad de retiro según el año en que naciste y cómo afecta tu jubilación.',
+      'La edad va a 65 por generación: antes de 1973 siguen 60 años y 30 de servicios, y 1973-1976 suben uno por año. Ley 20.130 y el Sistema Previsional Común.',
     tag: 'REFORMA',
     updatedAt: '2026-08-10',
     sections: [

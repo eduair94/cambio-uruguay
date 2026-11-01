@@ -2444,6 +2444,35 @@
         "prestamos personales simulador"
       ],
       "hypothesis": "Search Console: 1.825 impresiones y 4 clics; 'calculadora de prestamos' en posicion 43, 'simulador de prestamos' 66, 'calcular prestamo' 47, 'prestamos personales simulador' 64. La pagina era la cuota del sistema frances con la tasa que tipeara el visitante, y lo que se busca es cuanto cobraria cada uno. Ahora, para el monto y las cuotas de los campos, una tabla con la cuota y el total con la TEA que publica cada prestamista (bancos, financieras, cooperativas y fintech del tablero de /mejores-prestamos-uruguay, con el parche semanal de /api/loan-tiers), ordenada por costo total, con la fecha de los datos y el enlace a la fuente de cada uno; si publica un rango van las dos cuentas (piso y techo) y se ordena por el techo, nunca un numero solo; el IVA sobre intereses se suma cuando va aparte; los que no publican tasa o no prestan ese monto o plazo se nombran con el motivo. El contexto de usura se enlaza a /ley-de-usura-uruguay. La calculadora libre sigue y ahora deja elegir TEA o nominal y sumar el IVA. Titulo 'Simulador de prestamos: tu cuota con cada prestamista' y descripcion con monto, cuotas y TEA de cada banco, financiera y cooperativa; una pregunta frecuente nueva (cuanto se paga por $ 200.000 en 24 cuotas) sale de la misma tabla. Desde posiciones de 40 a 66 lo esperable es subir de pagina antes que el CTR; se mide la porcion de clics del sitio."
+    },
+    {
+      "id": "descripciones-de-las-guias-respuesta-primero-11",
+      "shippedOn": "2026-11-01",
+      "routes": [
+        "/guias/comision-inmobiliaria-uruguay",
+        "/guias/comprar-online-exterior-impuestos",
+        "/guias/criptomonedas-regulacion-impuestos-uruguay",
+        "/guias/enviar-recibir-dinero-exterior",
+        "/guias/garantias-de-alquiler-uruguay",
+        "/guias/reforma-jubilatoria-uruguay-que-cambia",
+        "/guias/tarjeta-debito-vs-credito-uruguay",
+        "/guias/tipo-de-cambio-fiscal-dgi-uruguay"
+      ],
+      "hypothesis": "Las ocho descripciones que quedaban pasadas de 155 caracteres en el catalogo de guias y que el cruce contra este mismo libro declaraba libres (la novena, cedula-uruguaya-para-argentinos, esta reservada hasta el 7/11 por guias-sin-indexar-reciben-enlaces). Iban de 194 a 159 caracteres, o sea que el SERP les comia la cola, que es donde estaba la cifra: seis abrian con la etiqueta del tema y seguian con el indice de la guia ('Como estan reguladas las criptomonedas en Uruguay tras la Ley de Activos Virtuales...', 'Cuanto te cuesta cobrar un pago del exterior en Uruguay: Payoneer, Wise, Prex...') y dos devolvian la pregunta sin contestarla. Ahora cada una abre por el dato: el 3,66 % con IVA a cada parte y los 1,22 alquileres del arancel de la Camara, los USD 800 y 3 envios de franquicia con el piso de USD 20 de IVA por envio, que para la cripto no hay norma y por eso no hay porcentaje, el 1,2 % a 4 % de Payoneer y los USD 22,37 por USD 1.000 de Wise, el 3 % mensual de las garantias de retencion, la edad que va a 65 por generacion, la rebaja de IVA en pagos electronicos de la Ley 19.210 y la COMPRA del BROU del dia habil anterior. Ninguna cifra es nueva: las ocho ya estaban en la descripcion vieja o en el cuerpo de su guia. Cinco se corrigieron despues de escribirlas midiendo sobre el buscador propio, porque la descripcion entra en el _hay de scoreDocs y sacarle una palabra puede dejar una consulta en cero resultados: 'regimen simplificado', 'activos virtuales', 'proteccion ante fraude' y 'Sistema Previsional Comun' volvieron al texto, y 'tipo de cambio' habia dejado a /economia-uruguay contestando una consulta cuya pagina propia es la guia. El presupuesto de descripciones largas de guideSnippetBudget.test.ts baja de 9 a 1. Se mide a 28 dias como porcion de los clics del sitio."
+    },
+    {
+      "id": "impuesto-al-patrimonio-guia-nueva",
+      "shippedOn": "2026-11-01",
+      "routes": ["/guias/impuesto-al-patrimonio-uruguay"],
+      "queries": [
+        "impuesto al patrimonio uruguay",
+        "minimo no imponible impuesto al patrimonio",
+        "desde cuanto se paga impuesto al patrimonio",
+        "impuesto al patrimonio personas fisicas",
+        "ajuar impuesto al patrimonio",
+        "nucleo familiar impuesto al patrimonio"
+      ],
+      "hypothesis": "Guia nueva: el impuesto de TENER, que el sitio solo nombraba como keyword de /impuestos-inversiones-uruguay, que es el impuesto de lo que RINDE. Medido con el buscador propio antes de publicarla, 'impuesto al patrimonio' caia en esa pagina con 38 puntos, la banda mas debil de scoreDocs (coincidencia en el pajar, no en el titulo); en el mismo commit el keyword se saca de ahi para que la consulta tenga un solo dueno y sea el que la contesta, y con la guia publicada la gana con 110. Contesta el umbral con la cifra en el titulo y en la descripcion ($ 6.653.000 de patrimonio fiscal al 31/12/2025, $ 13.306.000 el nucleo familiar, DGI 16/01/2026) y publica las reglas de avaluo que deciden si alguien lo cruza, que es lo que nadie tiene presente: el auto cuenta 25 veces la patente del ano, un inmueble alquilado 15 veces el alquiler anual, la casa propia se deduce al 50 % con tope del propio minimo, el saldo de la AFAP no se computa y al activo se le SUMA un ficto por ajuar del 10 % hasta el doble del minimo y 20 % sobre el excedente. Deliberadamente NO publica una tasa: el art. 53 del Titulo 14 trae la escala del 0,70 % al 2,75 % y el mismo articulo la manda reducir 0,10 % anual desde 2016 con piso de 0,10 %, y ninguna publicacion oficial de la DGI imprime el resultado (ni el instructivo del ejercicio), asi que la guia explica por que no hay porcentaje y manda al simulador de la DGI. Todas las cifras salen del instructivo 2025, de la ficha de contribuyentes, de las preguntas frecuentes y de la pagina de vencimientos de la DGI, mas el texto del articulo en IMPO, citados al pie. Se mide a 28 dias como porcion de los clics propios de la ruta."
     }
   ]
 }

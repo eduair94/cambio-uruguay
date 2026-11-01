@@ -1830,7 +1830,11 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'impuestos broker exterior',
           'residencia fiscal uruguay',
           'tax holiday uruguay',
-          'impuesto al patrimonio',
+          // `impuesto al patrimonio` se fue de acá el 2026-11-01: ahora lo contesta
+          // `/guias/impuesto-al-patrimonio-uruguay`, que lo tiene en el título. Dejarlo como
+          // keyword de esta página —que habla del impuesto a las RENTAS— la hacía ganar la consulta
+          // por el bono de 30 puntos de `scoreDocs` contra la que la contesta de verdad, que es la
+          // canibalización que `seoTitleBudget.test.ts` mide para el directorio de páginas.
           'irnr',
           'declaracion jurada irpf',
         ],

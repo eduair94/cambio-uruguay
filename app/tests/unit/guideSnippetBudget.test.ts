@@ -48,8 +48,12 @@ const GUIDE_PAGE = readFileSync(join(__dirname, '..', '..', 'pages', 'guias', '[
  * porque alguien lo baje, se afloja porque se publica y no se vuelve. Con cinco de holgura, borrar
  * las cinco guías más largas del catálogo bajaba los dos presupuestos de abajo sin arreglar un solo
  * snippet y dejaba todo en verde.
+ *
+ * 151 → 152 el 2026-11-01, en el mismo commit que publica `impuesto-al-patrimonio-uruguay`, que es
+ * la disciplina que el párrafo de arriba pide: el piso se mueve cuando se publica, no cuando a
+ * alguien le molesta el rojo.
  */
-const MEASURED = 151
+const MEASURED = 152
 
 /**
  * 116 → 104 el 2026-10-02: los doce títulos más largos del catálogo, de 104 a 84 caracteres
@@ -805,15 +809,12 @@ const TITLE_OVER_BUDGET = 3
  * medición abierta, y exigida exacta para que el contador no se compense solo.
  */
 const DEUDA_DESCRIPCION_LARGA = [
+  // Una sola, y queda por la reserva y no por la redacción: `guias-sin-indexar-reciben-enlaces` la
+  // declara el 2026-10-09, así que su ventana de medición cierra el 7 de noviembre. El lector de
+  // `npm run seo_debt` espera este formato multilínea con el `]` al principio de línea
+  // (`classes/revenueplan/debtFree.ts`), así que la lista no se colapsa a una sola línea aunque
+  // tenga un solo elemento.
   'cedula-uruguaya-para-argentinos',
-  'comision-inmobiliaria-uruguay',
-  'comprar-online-exterior-impuestos',
-  'criptomonedas-regulacion-impuestos-uruguay',
-  'enviar-recibir-dinero-exterior',
-  'garantias-de-alquiler-uruguay',
-  'reforma-jubilatoria-uruguay-que-cambia',
-  'tarjeta-debito-vs-credito-uruguay',
-  'tipo-de-cambio-fiscal-dgi-uruguay',
 ]
 
 /**
@@ -883,7 +884,39 @@ const DEUDA_DESCRIPCION_LARGA = [
  * no tiene lugar para esa salvedad — publicar un monto a secas sería exactamente el error
  * recurrente del repo ([[cifra-vieja-pasa-la-banda-de-plausibilidad]]).
  */
-const DESCRIPTION_OVER_BUDGET = 9
+/**
+ * 9 → 1 el 2026-11-01: las OCHO que el cruce contra `docs/seo/experiments.json` declaraba libres,
+ * que es todo el pozo menos `cedula-uruguaya-para-argentinos`, reservada hasta el 7 de noviembre
+ * por la fila `guias-sin-indexar-reciben-enlaces`. Iban de 194 a 159 caracteres.
+ *
+ * El defecto era el de las nueve corridas anteriores en sus dos formas. Seis abrían con la ETIQUETA
+ * DEL TEMA y seguían con el ÍNDICE de la guía («Cómo están reguladas las criptomonedas en Uruguay
+ * tras la Ley de Activos Virtuales…», «Cuánto te cuesta cobrar un pago del exterior en Uruguay:
+ * Payoneer, Wise, Prex…», «Comparativa de las garantías de alquiler en Uruguay: cuánto cuesta cada
+ * una…»), y dos devolvían la pregunta sin contestarla («Qué tipo de cambio se usa para facturar en
+ * dólares…», «Qué cambia con la reforma jubilatoria (Ley 20.130)…»). Ahora cada una abre por el
+ * dato: el 3,66 % con IVA a cada parte y los 1,22 alquileres del arancel de la Cámara, los USD 800
+ * y 3 envíos de franquicia con el piso de USD 20 de IVA por envío, que para la cripto no hay norma
+ * y por eso no hay porcentaje, el 1,2 % a 4 % de Payoneer y los USD 22,37 por USD 1.000 de Wise, el
+ * 3 % mensual de las garantías de retención, la edad que va a 65 por generación, la rebaja de IVA
+ * en pagos electrónicos de la Ley 19.210 y la COMPRA del BROU del día hábil anterior.
+ *
+ * Ninguna cifra es nueva: las ocho ya estaban en la descripción vieja o en el cuerpo de su guía. Y
+ * dos redacciones se descartaron por afirmar más que su fuente: la de cripto no publica una tasa
+ * —el cuerpo dice con todas las letras que «cualquier tabla que te dé una tasa exacta para cripto
+ * se está adelantando a la norma»— y la de garantías no publica la prima de las aseguradoras, que
+ * el cuerpo da como relevamiento y no como dato publicado por el proveedor.
+ *
+ * Y la regla del buscador propio corrigió cinco de las ocho DESPUÉS de escribirlas, midiendo sobre
+ * el índice: la descripción entra en el `_hay` de `scoreDocs`, así que sacarle una palabra puede
+ * dejar una consulta en CERO resultados cuando ninguna otra página la sirve. Eso le pasó a
+ * «régimen simplificado», «activos virtuales», «protección ante fraude» y «Sistema Previsional
+ * Común» —las cuatro volvieron al texto—, y «tipo de cambio» había dejado a `/economia-uruguay`
+ * contestando una consulta cuya página propia es justamente ésta. Las bajas que quedan son de
+ * posición y no de cobertura: «swift» lo sigue ganando `/recibir-transferencia-del-exterior-uruguay`
+ * y «edad de retiro» `/planificar-tu-retiro-uruguay`.
+ */
+const DESCRIPTION_OVER_BUDGET = 1
 
 describe('los snippets de las guías entran en el SERP', () => {
   it(`mide las ${MEASURED} guías del catálogo`, () => {

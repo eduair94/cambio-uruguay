@@ -16,6 +16,7 @@ import { consumoGuides } from './guidesConsumo'
 import { deudasGuides } from './guidesDeudas'
 import { importacionGuides } from './guidesImportacion'
 import { pagosGuides } from './guidesPagos'
+import { patrimonioGuides } from './guidesPatrimonio'
 import { parejaGuides } from './guidesPareja'
 import { primavera2026Guides } from './guidesPrimavera2026'
 import { redditGuides } from './guidesReddit'
@@ -308,7 +309,7 @@ export const guides: readonly Guide[] = [
     slug: 'comprar-online-exterior-impuestos',
     title: 'Compras del exterior: USD 800 al año o 60 %',
     description:
-      'Cómo funciona la franquicia courier de USD 800, cuándo pagás el 60% del régimen simplificado y cómo estimar el costo total de una compra online del exterior en Uruguay.',
+      'USD 800 al año y 3 envíos de franquicia; por fuera, el 60 % del régimen simplificado. Y un piso de USD 20 de IVA por envío que a una compra chica le pesa.',
     tag: 'IMPORTACIÓN',
     updatedAt: '2026-08-15',
     sections: [
@@ -451,7 +452,7 @@ export const guides: readonly Guide[] = [
     slug: 'enviar-recibir-dinero-exterior',
     title: 'Cobrar del exterior: el costo es al retirar',
     description:
-      'Cuánto te cuesta cobrar un pago del exterior en Uruguay: Payoneer, Wise, Prex, PayPal, SWIFT al banco y plataformas de contrato, con las tarifas que publica cada uno.',
+      'Recibir casi no cuesta; sacarlo sí: Payoneer 1,2 % a 4 % al banco, Wise USD 22,37 por USD 1.000, PayPal $ 200 y las plataformas de contrato (16/9/2026).',
     tag: 'COBRAR',
     updatedAt: '2026-09-16',
     // Los dos socios que la guía compara por nombre y con tarifas públicas. Sin URL en
@@ -1556,7 +1557,7 @@ export const guides: readonly Guide[] = [
     slug: 'tipo-de-cambio-fiscal-dgi-uruguay',
     title: 'Dólar fiscal: compra del BROU, día anterior',
     description:
-      'Qué tipo de cambio se usa para facturar en dólares y liquidar IVA e IRPF en Uruguay: la cotización de compra del Banco República del día hábil anterior. Cómo encontrarla.',
+      'El tipo de cambio para facturar es la COMPRA del BROU del día hábil anterior, no la venta ni la del día: con esa convertís a pesos el IVA y el IRPF.',
     tag: 'FACTURACIÓN',
     updatedAt: '2026-06-20',
     sections: [
@@ -1610,7 +1611,7 @@ export const guides: readonly Guide[] = [
     slug: 'criptomonedas-regulacion-impuestos-uruguay',
     title: 'Criptomonedas: activos, no moneda legal',
     description:
-      'Cómo están reguladas las criptomonedas en Uruguay tras la Ley de Activos Virtuales, qué rol tiene el Banco Central y por qué su tratamiento impositivo todavía no está resuelto. Guía informativa.',
+      'No hay norma que diga cómo tributan, así que acá no hay porcentaje: la Ley 20.345 de activos virtuales regula a los exchanges ante el BCU, no tu ganancia.',
     tag: 'CRIPTO',
     updatedAt: '2026-07-12',
     sections: [
@@ -1743,6 +1744,11 @@ export const guides: readonly Guide[] = [
   // Tanda del 2026-10-21: cómo saber si tengo deudas, comprar en Shein e IRPF de alquileres.
   // Guardadas por `tests/unit/guiasPrimavera2026*.test.ts`.
   ...primavera2026Guides,
+  // El Impuesto al Patrimonio de las personas físicas, 2026-11-01: el impuesto de TENER, que el
+  // sitio sólo nombraba como keyword de la página del impuesto a las RENTAS. Deliberadamente sin
+  // tasa —el art. 53 la manda reducir cada año y ninguna publicación de la DGI imprime el
+  // resultado—; el motivo entero está en la cabecera de `guidesPatrimonio.ts`.
+  ...patrimonioGuides,
 ]
 
 /**
