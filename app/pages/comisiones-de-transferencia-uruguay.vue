@@ -693,10 +693,11 @@ const faq: FaqItem[] = [
   },
 ]
 
-// 40 caracteres: con la marca queda en 57 y entra en el SERP sin recorte.
+// 42 caracteres: con la marca queda en 59 y entra en el SERP sin recorte.
 // Ver tests/unit/seoTitleBudget.test.ts — "en Uruguay" no cabe y vive en la
-// descripción, el H1 y la URL.
-const title = 'Comisiones de transferencia entre bancos'
+// descripción, el H1 y la URL. Lleva la respuesta (Itaú↔Prex sin costo, $ 45 el resto)
+// en vez de la etiqueta, como las demás páginas de trámite.
+const title = 'Transferencias entre bancos: gratis o $ 45'
 const description =
   'Entre Itaú y Prex no se cobra nada; desde cualquier otro banco la vuelta a pesos cuesta $ 45 o U$S 1,90. El tarifario de cada uno, con la fila textual.'
 const canonicalUrl = 'https://cambio-uruguay.com/comisiones-de-transferencia-uruguay'
