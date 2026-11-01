@@ -2699,6 +2699,52 @@
         "como sacar dinheiro no uruguai"
       ],
       "hypothesis": "Cinco titulos que pasaban de 60 caracteres con la marca y que el SERP cortaba antes de lo que distingue a la pagina. Cedula (6.444 impresiones en 28 dias, posicion 8,5, 5 clics): 'Cuanto sale la cedula de identidad uruguaya: $443' (66) pasa a 'Cuanto sale la cedula: $443, urgente $886', las dos cifras que piden las consultas. Calculadora de IRPF (1.410, posicion 8,9, 6 clics): 'Calculadora de IRPF en Uruguay (rentas del trabajo)' (68) pasa a 'Calculadora de IRPF: exento hasta $ 48.048', el minimo no imponible de 7 BPC sacado de la misma tabla de franjas, y la descripcion lo dice con las tasas. Retirar efectivo (2.748, posicion 6,4, 33 clics): 'Donde sacar efectivo en Uruguay (guia para turistas 2026)' (74) pasa a 'Cajeros en Uruguay: saca dolares o pesos', lo que la pagina pone primero, en los tres idiomas antes de la temporada de turistas. Las calculadoras de impuestos de importacion (1.478) e inversiones (390) solo se acortan a 56 y 59."
+    },
+    {
+      "id": "autos-por-modelo-precio-en-el-titulo",
+      "shippedOn": "2026-11-01",
+      "routes": [
+        "/autos-usados-uruguay/precios/"
+      ],
+      "queries": [
+        "suzuki alto 800 usado precio uruguay",
+        "chevrolet montana usada precio uruguay",
+        "volkswagen up usados uruguay",
+        "suzuki swift usado",
+        "bmw x1 precio uruguay",
+        "chevrolet onix 1.0 precio usado uruguay"
+      ],
+      "hypothesis": "224 paginas de modelo con 6.962 impresiones en 28 dias, posicion 8,0 y 93 clics (1,3 %). Las consultas piden el precio ('suzuki alto 800 usado precio uruguay') y el titulo decia 'Chevrolet Onix usado: precios en Uruguay', sin ninguno; la cifra estaba solo en la descripcion. Ahora 'Chevrolet Onix 2024 usado: US$ 14.395': el ano con mas avisos y su mediana, la misma cifra de la descripcion. Con menos de cinco avisos en ese ano, o si no entra en 60 con la marca, vuelve al titulo anterior."
+    },
+    {
+      "id": "celulares-precio-en-el-titulo",
+      "shippedOn": "2026-11-01",
+      "routes": [
+        "/celulares-uruguay/"
+      ],
+      "queries": [
+        "iphone 15 no uruguai preço",
+        "iphone 16 no uruguai preço",
+        "quanto custa um iphone 17 pro max no uruguai",
+        "cuanto sale el iphone 15",
+        "buy iphone 16 pro max"
+      ],
+      "hypothesis": "216 fichas de modelo con 2.647 impresiones en 28 dias, posicion 8,3 y 31 clics (1,2 %), buena parte de turistas brasilenos preguntando cuanto sale el iPhone en Uruguay. El titulo era 'Apple iPhone 17 Pro Max 256 GB: precio en Uruguay' (66 con la marca, cortado) y el precio solo estaba en la descripcion. Ahora el precio nuevo mas bajo, el mismo de la descripcion y del encabezado: 'Samsung Galaxy A16 128 GB: desde $7.829', o sin la marca cuando no entra ('iPhone 17 Pro Max 256 GB: desde $57.954'). Sin oferta nueva publicable vuelve al titulo anterior."
+    },
+    {
+      "id": "super-mediana-en-el-titulo",
+      "shippedOn": "2026-11-01",
+      "routes": [
+        "/precio/"
+      ],
+      "queries": [
+        "quanto custa uma coca cola no uruguai",
+        "cuanto sale una coca cola en uruguay",
+        "harina cololo 0000 precio",
+        "aceite precio lider",
+        "arroz aruba precio"
+      ],
+      "hypothesis": "320 fichas de articulo del SIPC con 3.063 impresiones en 28 dias, posicion 7,5 y 22 clics (0,7 %). Las consultas son 'cuanto sale X' y el titulo decia 'X: precio en Uruguay' sin cifra. Ahora 'Gaseosa Coca Cola: $155 de mediana', la mediana nacional de la descripcion. El minimo no va al titulo a proposito: incluye filas sospechosas y viejas que la pagina nunca deja encabezar un 'mas barato'. Los nombres que no entran con la cifra conservan el titulo anterior."
     }
   ]
 }
