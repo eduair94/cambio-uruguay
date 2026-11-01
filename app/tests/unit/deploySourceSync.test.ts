@@ -105,6 +105,34 @@ describe('deploy source synchronization', () => {
     expect(readFileSync(join(checkout, '.git/config'), 'utf8')).toBe(configBefore)
   }, 30_000)
 
+  it('never reports a negative phase time when the wall clock steps backwards', () => {
+    const { writer, checkout } = fixture()
+    write(writer, 'app/page.txt', 'updated page\n')
+    commit(writer, 'Update page')
+    git(writer, 'push', 'origin', 'main')
+    // An exported bash function shadows `date` inside the helper: every call
+    // returns one second less than the previous one, like an NTP step on CI.
+    const state = join(dirname(checkout), 'date-stub')
+    const env = {
+      ...gitEnv,
+      DATE_STUB: shellPath(state),
+      'BASH_FUNC_date%%':
+        '() { local n; n=$(cat "$DATE_STUB" 2>/dev/null || echo 5000000); echo $((n - 1000)) > "$DATE_STUB"; echo "$n"; }',
+    }
+
+    const result = spawnSync(bash, [shellPath(helper), shellPath(checkout)], {
+      cwd: repoRoot,
+      env,
+      encoding: 'utf8',
+      stdio: 'pipe',
+      timeout: 20_000,
+    })
+
+    expect(result.status, result.stderr).toBe(0)
+    expect(result.stdout).toMatch(/Fast-forward merge: \d+ ms \(exit 0\)/)
+    expect(result.stdout).not.toMatch(/: -\d+ ms/)
+  }, 30_000)
+
   it('does not fetch new tags that point at the requested branch', () => {
     const { writer, checkout } = fixture()
     write(writer, 'app/page.txt', 'tagged page\n')
