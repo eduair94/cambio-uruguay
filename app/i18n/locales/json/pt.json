@@ -1867,7 +1867,8 @@
   "home": {
     "casaHubsTitle": "Casas de câmbio e bancos do Uruguai",
     "casaHubsSubtitle": "Cotação de hoje, filiais, horários e avaliações de cada casa.",
-    "casaHubAnchor": "{casa}: cotação e filiais hoje"
+    "casaHubAnchor": "{casa}: cotação e filiais hoje",
+    "heroAnswer": "Hoje, {date}, o dólar americano é vendido a partir de $U {sell} e comprado por até $U {buy}, comparando {count} casas de câmbio do Uruguai. Para comprar, convém o menor preço de venda; para vender, o maior de compra. São as cotações de cada casa, lidas automaticamente a cada ~10 minutos."
   },
   "records": {
     "max": "Máximo do período",

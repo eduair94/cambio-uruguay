@@ -1874,7 +1874,8 @@
   "home": {
     "casaHubsTitle": "Exchange houses and banks in Uruguay",
     "casaHubsSubtitle": "Today's rate, branches, hours and reviews for each house.",
-    "casaHubAnchor": "{casa}: rate and branches today"
+    "casaHubAnchor": "{casa}: rate and branches today",
+    "heroAnswer": "Today, {date}, exchange houses in Uruguay sell US dollars from $U {sell} and buy them for up to $U {buy}, comparing {count} houses. To buy, look for the lowest selling rate; to sell, the highest buying rate. These are the boards of each house, read automatically every ~10 minutes."
   },
   "records": {
     "max": "Period high",
