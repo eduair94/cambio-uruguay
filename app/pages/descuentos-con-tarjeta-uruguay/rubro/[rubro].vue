@@ -245,6 +245,7 @@ import {
   getCategoryPage,
 } from '~/utils/bankosPages'
 import type { FaqItem } from '~/utils/faqAnswers'
+import { pickTitle } from '~/utils/liveRateSeo'
 
 definePageMeta({
   validate: route => categoryPageSlugs().includes(String(route.params.rubro ?? '')),
@@ -364,8 +365,26 @@ defineOgImageComponent('Cambio', {
   tag: 'DESCUENTOS',
 })
 
+// Como las páginas de emisor: el título dice cuántos comercios del rubro tienen descuento hoy, la
+// misma cifra de la primera tarjeta de la página. Sin lectura, o si no entra en 60 con la marca
+// (combustible y vehículos), queda el título fijo de utils/bankosPages.ts.
+const seoTitle = computed(() => {
+  const fallback = page.value?.seoTitle ?? ''
+  const brands = data.value?.totals.brands ?? 0
+  const label = page.value?.label?.toLowerCase()
+  if (!brands || !label) return fallback
+  const n = fmt(brands)
+  return pickTitle(
+    [
+      `Descuentos en ${label}: ${n} comercios con tarjeta`,
+      `Descuentos en ${label}: ${n} comercios`,
+    ],
+    fallback
+  )
+})
+
 useSeoMeta({
-  title: () => `${page.value?.seoTitle ?? ''} | Cambio Uruguay`,
+  title: () => `${seoTitle.value} | Cambio Uruguay`,
   description: () => page.value?.seoDescription ?? '',
   ogTitle: () => page.value?.h1 ?? '',
   ogDescription: () => page.value?.seoDescription ?? '',
