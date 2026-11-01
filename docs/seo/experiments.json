@@ -2490,6 +2490,21 @@
         "billete de 2000 pesos uruguayos"
       ],
       "hypothesis": "Las dos guias estaban fuera de TODO tema y entran a dolar-y-casas-de-cambio-uruguay: son las dos unicas de las 21 huerfanas con la ruta libre hoy (npm run seo_debt: 3 libres entre las 28 de los cinco pozos, la tercera no es de este pozo), asi que van en UNA fila porque son UN hueco del mismo tema y no dos cambios, la misma razon por la que los dos radares de economia fueron juntos el 28/10. La de online es la peor huerfana del racimo y le faltaban las DOS mitades a la vez: guideNextSteps arma «segui leyendo» con guide.related, despues con los links de las secciones y recien despues con los resources del hub, y esta guia no tiene ninguna de las tres cosas, asi que su pagina terminaba sin un solo enlace de salida; entrar al tema le da el bloque de vecinos Y tres proximos pasos de un saque. Ninguna de las dos inventa un padre: el hub ya lleva dolar-ebrou y dolar-transferencia entre sus terms y billete-cable-transferencia entre sus guias, o sea que ya explicaba la cotizacion por transferencia y nunca decia donde se opera, y la de billetes y monedas entra al lado de /donde-conseguir-monedas-uruguay, que ya es resources del hub, y del termino peso-uruguayo, que ya es uno de sus terms (sus tres related escritos a mano apuntan justamente ahi). Se mide sola porque entrar al tema no le cambia el bloque a ninguna otra pagina: temaVecinosParaRuta arma los enlaces con hub.resources y hub.terms, nunca con hub.guides. El presupuesto de guias sin tema de temaHuerfanas.test.ts baja de 21 a 19. No se toco titulo, descripcion ni cuerpo de ninguna de las dos: las dos ya abren por el dato (los billetes de 20 a 2.000 y las monedas de 1 a 50; que eBROU pide cuenta) y ninguna esta en los presupuestos de snippet largo. Se mide a 28 dias como porcion de los clics del sitio."
+    },
+    {
+      "id": "tarjetas-mejores-vuelve-al-titulo",
+      "shippedOn": "2026-11-01",
+      "routes": [
+        "/tarjetas-de-credito-uruguay"
+      ],
+      "queries": [
+        "mejores tarjetas de credito uruguay",
+        "mejor tarjeta de credito uruguay",
+        "cual es la mejor tarjeta de credito en uruguay",
+        "cuál es la mejor tarjeta de crédito en uruguay",
+        "tarjetas de credito uruguay"
+      ],
+      "hypothesis": "Deshace el titulo de tarjetas-2026-refresh (22/9), que el job dictamino 'empeoro' con lift 0,29: el refresh cambio 'Mejores tarjetas de credito en Uruguay' por 'Tarjetas de credito Uruguay 2026: anualidad' y la pagina perdio la mitad de las impresiones (3.134 en 3-30/9 contra 1.702 en 1-28/10, posicion 9,78 -> 11,42) mientras el sitio entero crecia 89 %; 'mejores tarjetas de credito uruguay' paso de 8,1 a 11,7 y 'mejor tarjeta de credito uruguay' de 17 a 8 impresiones. La consulta que trae a la pagina pregunta por la MEJOR tarjeta, y el titulo dejo de decirlo. Se recupera 'Mejores' y se queda el ano (57 caracteres con la marca); la descripcion, la FAQ y las fichas reverificadas del refresh no se tocan, asi que si la porcion vuelve, lo que costo fue el titulo y no el contenido."
     }
   ]
 }
