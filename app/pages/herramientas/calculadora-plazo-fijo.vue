@@ -62,110 +62,9 @@
         </VCol>
       </VRow>
 
-      <!-- Valores de referencia. Existe porque el campo "Tasa anual" no le decía a nadie qué
-           número es normal en Uruguay, y el default anterior (8%) no lo paga nada en pesos. -->
-      <VCard variant="flat" class="ref-panel mt-5 pa-4">
-        <div class="d-flex align-center flex-wrap ga-2 mb-3">
-          <VIcon size="small" color="primary">mdi-compass-outline</VIcon>
-          <h2 class="text-subtitle-2 font-weight-bold mb-0">
-            Tasas de referencia para {{ months || 0 }}
-            {{ (months || 0) === 1 ? 'mes' : 'meses' }} en
-            {{ money.name }}
-          </h2>
-        </div>
-
-        <div class="ref-grid">
-          <div class="ref-box">
-            <div class="text-overline text-grey">Media de mercado · BCU</div>
-            <template v-if="marketBucket && marketRate != null">
-              <div class="text-h6 font-weight-bold">
-                {{ pct(marketRate) }}
-                <span class="text-caption text-medium-emphasis">a personas físicas</span>
-              </div>
-              <p class="ref-note">
-                Tramo <strong>{{ marketBucket.label }}</strong
-                >, {{ BCU_DEPOSIT_RATES.period }}. Total del sistema (personas y empresas):
-                {{ marketTotal == null ? 'sin dato' : pct(marketTotal) }}.
-              </p>
-              <VBtn size="small" variant="tonal" color="primary" @click="applyRate(marketRate)">
-                Usar esta tasa
-              </VBtn>
-            </template>
-            <template v-else-if="marketBucket">
-              <div class="text-h6 font-weight-bold">Sin operaciones</div>
-              <p class="ref-note">
-                En {{ BCU_DEPOSIT_RATES.period }} el BCU informa <em>sin operaciones</em> en el
-                tramo <strong>{{ marketBucket.label }}</strong> en {{ money.name }}. No es un cero:
-                no se pactó ningún depósito a ese plazo.
-              </p>
-            </template>
-            <template v-else-if="!plazoValido">
-              <div class="text-h6 font-weight-bold">—</div>
-              <p class="ref-note">Ingresá un plazo en meses para ver la media de mercado.</p>
-            </template>
-            <template v-else>
-              <div class="text-h6 font-weight-bold">
-                {{ pct(marketSeries.promedioPersonaFisica) }}
-                <span class="text-caption text-medium-emphasis">promedio de todos los plazos</span>
-              </div>
-              <p class="ref-note">
-                El cuadro de {{ money.name }} corta en <strong>{{ ultimoTramoBcu }}</strong
-                >: no hay tramo de más de un año. Lo único publicado para este plazo es el promedio
-                general, que mezcla los depósitos cortos con los largos. Tomalo como orden de
-                magnitud, no como la tasa de un depósito a {{ months }} meses.
-              </p>
-            </template>
-          </div>
-
-          <div class="ref-box">
-            <div class="text-overline text-grey">Pizarra contratable · BROU</div>
-            <template v-if="brouTranche">
-              <div class="text-h6 font-weight-bold text-success">
-                {{ pct(brouTranche.online) }}
-                <span class="text-caption text-medium-emphasis">por e-BROU</span>
-              </div>
-              <p class="ref-note">
-                Tramo <strong>{{ brouTranche.label }} días</strong>, intereses al vencimiento,
-                mínimo {{ brouSeries.minimum }}. La misma operación en sucursal paga
-                <strong>{{ pct(brouTranche.branch) }}</strong
-                >. La pizarra de {{ money.name }} no cambia desde el
-                <strong>{{ brouSeries.vigenciaMoneda }}</strong
-                >; el documento que la publica es el vigente al {{ BROU_DEPOSIT_BOARD.vigencia }}.
-              </p>
-              <VBtn
-                size="small"
-                variant="tonal"
-                color="success"
-                @click="applyRate(brouTranche.online)"
-              >
-                Usar esta tasa
-              </VBtn>
-            </template>
-            <template v-else-if="!plazoValido">
-              <div class="text-h6 font-weight-bold">—</div>
-              <p class="ref-note">Ingresá un plazo en meses para ver la pizarra que corresponde.</p>
-            </template>
-            <template v-else>
-              <div class="text-h6 font-weight-bold">No hay tramo</div>
-              <p class="ref-note">
-                La pizarra del BROU en {{ money.name }} va de <strong>{{ brouRango }} días</strong>.
-                Para {{ months }} meses ({{ days }} días) no publica tasa.
-              </p>
-            </template>
-          </div>
-        </div>
-
-        <p class="ref-foot mt-3 mb-0">
-          Las dos son <strong>tasas efectivas anuales</strong>. La media del BCU es lo que se pactó
-          de verdad en el mes, no algo que puedas contratar; la pizarra del BROU sí se contrata, y
-          es el precio comercial de un banco entre varios. Tasas BROU y BCU verificadas el
-          {{ DEPOSIT_REFERENCE_VERIFIED_AT }}.
-        </p>
-      </VCard>
-
-      <VDivider class="my-6" />
-
-      <div class="result-grid">
+      <!-- El resultado va pegado a los campos. La tabla de bancos viene DESPUÉS: con cinco
+           bancos en el teléfono, puesta antes, empujaba el resultado dos pantallas abajo. -->
+      <div ref="resultEl" class="result-grid mt-6" aria-live="polite">
         <div class="result-box">
           <div class="text-overline text-grey">Monto final</div>
           <div class="text-h5 font-weight-bold text-success">{{ money.format(r.finalAmount) }}</div>
@@ -191,11 +90,176 @@
         class="mt-4"
         icon="mdi-alert-outline"
       >
-        Las tasas de referencia de arriba son <strong>efectivas anuales</strong>: ya incluyen el
-        efecto de la capitalización. Con capitalización <strong>{{ freqLabel }}</strong> la
-        calculadora las trata como nominales y devuelve de más. Para un plazo fijo con intereses al
-        vencimiento, elegí <strong>Anual</strong>.
+        Las tasas de los bancos y la media del BCU son <strong>efectivas anuales</strong>: ya
+        incluyen el efecto de la capitalización. Con capitalización
+        <strong>{{ freqLabel }}</strong> la calculadora las trata como nominales y devuelve de más.
+        Para un plazo fijo con intereses al vencimiento, elegí <strong>Anual</strong>.
       </VAlert>
+    </VCard>
+
+    <!-- Lo que publica cada banco para ESTE depósito: moneda, monto y plazo de los campos de
+         arriba. Las cifras son de utils/plazoFijoBancos.ts, leídas a mano y fechadas: la página
+         dice cuándo se consultaron y nunca las presenta como una cotización que se mueve sola. -->
+    <VCard variant="flat" class="ref-panel mt-6 pa-4 pa-sm-5">
+      <h2 class="ref-title">
+        Qué paga cada banco por un plazo fijo en {{ money.name }} a {{ months || 0 }}
+        {{ (months || 0) === 1 ? 'mes' : 'meses' }}
+      </h2>
+      <p class="ref-intro">
+        Para <strong>{{ amountText }}</strong> a unos {{ days }} días: la tasa que cada banco
+        publica en su propia página para ese monto y ese plazo, de mayor a menor. Tocá
+        <strong>Usar</strong> y la calculadora la toma.
+      </p>
+
+      <VTable
+        v-if="banks.offers.length"
+        density="comfortable"
+        class="bank-table cu-mobile-cards cu-roomy"
+      >
+        <thead>
+          <tr>
+            <th>Banco</th>
+            <th>Canal y monto</th>
+            <th>Plazo publicado</th>
+            <th class="text-right">Tasa efectiva anual</th>
+            <th><span class="d-sr-only">Usar la tasa</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="offer in banks.offers"
+            :key="`${offer.bankId}-${offer.channel}-${offer.bandLabel}`"
+          >
+            <td data-label="">
+              <a
+                :href="offer.sourceUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="tool-link"
+              >
+                {{ offer.bankName }}
+              </a>
+              <div class="text-caption text-medium-emphasis">
+                {{ vigenciaText(offer.vigencia) }}
+              </div>
+            </td>
+            <td data-label="Canal y monto">
+              {{ offer.channelLabel }}
+              <div class="text-caption text-medium-emphasis">{{ offer.bandLabel }}</div>
+            </td>
+            <td data-label="Plazo publicado">{{ offer.termLabel }}</td>
+            <td data-label="Tasa efectiva anual" class="text-right bank-rate">
+              {{ pct(offer.rate) }}
+            </td>
+            <td data-label="" class="text-right">
+              <VBtn
+                size="small"
+                variant="tonal"
+                color="primary"
+                :aria-label="`Usar ${pct(offer.rate)} de ${offer.bankName}, ${offer.channelLabel}`"
+                @click="applyRate(offer.rate)"
+              >
+                Usar
+              </VBtn>
+            </td>
+          </tr>
+        </tbody>
+      </VTable>
+      <p v-else class="ref-note">
+        Ningún banco de la lista publica una tasa en {{ money.name }} para {{ amountText }} a unos
+        {{ days }} días. Abajo, qué publica cada uno.
+      </p>
+
+      <template v-if="banks.misses.length">
+        <h3 class="ref-subtitle">Sin tasa para este monto y plazo</h3>
+        <ul class="ref-list">
+          <li v-for="miss in banks.misses" :key="miss.bankId">
+            <strong>{{ miss.bankName }}</strong
+            >: {{ miss.detail }}.
+          </li>
+        </ul>
+      </template>
+
+      <p class="ref-foot">
+        <strong>Son tasas publicadas, con fecha.</strong> Las leímos en la página o el documento de
+        cada banco (el enlace está en su nombre), consultadas el {{ reviewedText }}; debajo de cada
+        nombre va la vigencia que imprime el banco. Todas son efectivas anuales con intereses al
+        vencimiento. Lo que termine rindiendo tu depósito depende de las condiciones de cada banco
+        —canal, monto, ser cliente, renovación— y la pizarra cambia sin aviso: confirmala con el
+        banco antes de constituirlo.
+      </p>
+      <p class="ref-foot">
+        No figuran {{ excludedNames }}: ninguno publica hoy una pizarra de plazo fijo que se pueda
+        verificar. El motivo de cada uno está en la letra chica.
+      </p>
+
+      <details class="ref-details">
+        <summary>Letra chica de cada banco</summary>
+        <ul class="ref-list">
+          <li v-for="b in PLAZO_FIJO_BANCOS" :key="b.id">
+            <a :href="b.sourceUrl" target="_blank" rel="noopener noreferrer" class="tool-link">
+              {{ b.name }} — {{ b.sourceTitle }}</a
+            >. {{ b.notes.join(' ') }}
+          </li>
+        </ul>
+        <h3 class="ref-subtitle">Los que no están</h3>
+        <ul class="ref-list">
+          <li v-for="b in PLAZO_FIJO_BANCOS_FUERA" :key="b.id">
+            <a :href="b.sourceUrl" target="_blank" rel="noopener noreferrer" class="tool-link">{{
+              b.name
+            }}</a
+            >: {{ b.reason }}
+          </li>
+        </ul>
+      </details>
+
+      <!-- La media del BCU no se contrata: es el contexto para leer las pizarras de arriba. -->
+      <div class="ref-box">
+        <div class="text-overline text-grey">Media de mercado · BCU</div>
+        <template v-if="marketBucket && marketRate != null">
+          <div class="text-h6 font-weight-bold">
+            {{ pct(marketRate) }}
+            <span class="text-caption text-medium-emphasis">a personas físicas</span>
+          </div>
+          <p class="ref-note">
+            Tramo <strong>{{ marketBucket.label }}</strong
+            >, {{ BCU_DEPOSIT_RATES.period }}. Total del sistema (personas y empresas):
+            {{ marketTotal == null ? 'sin dato' : pct(marketTotal) }}.
+          </p>
+          <VBtn size="small" variant="tonal" color="primary" @click="applyRate(marketRate)">
+            Usar esta tasa
+          </VBtn>
+        </template>
+        <template v-else-if="marketBucket">
+          <div class="text-h6 font-weight-bold">Sin operaciones</div>
+          <p class="ref-note">
+            En {{ BCU_DEPOSIT_RATES.period }} el BCU informa <em>sin operaciones</em> en el tramo
+            <strong>{{ marketBucket.label }}</strong> en {{ money.name }}. No es un cero: no se
+            pactó ningún depósito a ese plazo.
+          </p>
+        </template>
+        <template v-else-if="!plazoValido">
+          <div class="text-h6 font-weight-bold">—</div>
+          <p class="ref-note">Ingresá un plazo en meses para ver la media de mercado.</p>
+        </template>
+        <template v-else>
+          <div class="text-h6 font-weight-bold">
+            {{ pct(marketSeries.promedioPersonaFisica) }}
+            <span class="text-caption text-medium-emphasis">promedio de todos los plazos</span>
+          </div>
+          <p class="ref-note">
+            El cuadro de {{ money.name }} corta en <strong>{{ ultimoTramoBcu }}</strong
+            >: no hay tramo de más de un año. Lo único publicado para este plazo es el promedio
+            general, que mezcla los depósitos cortos con los largos. Tomalo como orden de magnitud,
+            no como la tasa de un depósito a {{ months }} meses.
+          </p>
+        </template>
+        <p class="ref-note mb-0">
+          Es lo que se pactó de verdad en el mes en todo el sistema bancario, no algo que puedas
+          contratar: sirve para ver si una pizarra está por arriba o por debajo de plaza. Media del
+          BCU verificada el {{ DEPOSIT_REFERENCE_VERIFIED_AT }}.
+        </p>
+      </div>
     </VCard>
 
     <!-- Tabla completa por tramo, para la moneda elegida -->
@@ -329,8 +393,9 @@
             calculadora. {{ ahorro.requirement }}
           </p>
           <p>
-            Es una pizarra de un banco, no un ranking. Otros bancos publican la suya y cambian sin
-            aviso: la fecha de vigencia está al lado del número por algo.
+            Es la pizarra de un banco. Los demás publican la suya —arriba están las de
+            {{ PLAZO_FIJO_BANCOS.length }} bancos, con la fecha en que las consultamos— y cambian
+            sin aviso: la vigencia va al lado del número por algo.
           </p>
         </section>
 
@@ -404,10 +469,11 @@
       Estimación con interés compuesto sobre la tasa que ingresás. Las tasas de referencia son
       <strong>datos con fecha</strong>: la media del BCU corresponde a
       {{ BCU_DEPOSIT_RATES.period }} y la pizarra del BROU en {{ money.name }} rige desde el
-      {{ brouSeries.vigenciaMoneda }} (documento vigente al {{ BROU_DEPOSIT_BOARD.vigencia }});
-      ambas caducan sin aviso. El neto de IRPF usa las alícuotas del {{ DEPOSIT_IRPF_LAW }} y no
-      contempla comisiones ni tu situación fiscal particular. Confirmá las condiciones reales con tu
-      banco antes de constituir el depósito.
+      {{ brouSeries.vigenciaMoneda }} (documento vigente al {{ BROU_DEPOSIT_BOARD.vigencia }}), y
+      las pizarras de cada banco se consultaron el {{ reviewedText }}; todas caducan sin aviso. El
+      neto de IRPF usa las alícuotas del {{ DEPOSIT_IRPF_LAW }} y no contempla comisiones ni tu
+      situación fiscal particular. Confirmá las condiciones reales con tu banco antes de constituir
+      el depósito.
     </template>
   </ToolShell>
 </template>
@@ -433,6 +499,14 @@ import {
   pfNotBelowTotal,
   type DepositCurrency,
 } from '~/utils/investments'
+import {
+  PLAZO_FIJO_BANCOS,
+  PLAZO_FIJO_BANCOS_FUERA,
+  PLAZO_FIJO_BANCOS_REVIEWED,
+  comparePlazoFijo,
+  readOnText,
+  vigenciaText,
+} from '~/utils/plazoFijoBancos'
 
 const localePath = useLocalePath()
 const currency = ref<DepositCurrency>('UYU')
@@ -480,13 +554,27 @@ const brouTranche = computed(() => brouTrancheFor(currency.value, months.value |
 const plazoValido = computed(() => days.value > 0)
 /** El último tramo que el BCU abre en esta moneda, para no hardcodear "181 a 366 días". */
 const ultimoTramoBcu = computed(() => marketSeries.value.buckets.at(-1)?.label ?? '')
-/** Rango completo que cubre la pizarra, leído de los datos y no escrito a mano. */
-const brouRango = computed(() => {
-  const t = brouSeries.value.tranches
-  return `${t[0]?.minDays ?? 0} a ${t.at(-1)?.maxDays ?? 0}`
-})
+/**
+ * Lo que publica cada banco para el depósito de los campos: moneda, plazo y capital. La fila es
+ * la del tramo de monto del visitante, nunca la mejor del banco (utils/plazoFijoBancos.ts).
+ */
+const banks = computed(() => comparePlazoFijo(currency.value, days.value, principal.value || 0))
+const reviewedText = readOnText(PLAZO_FIJO_BANCOS_REVIEWED)
+/** El capital sin centavos: en la frase del panel, "$ 100.000,00" es ruido. */
+const amountText = computed(() => `${money.value.prefix} ${formatNumber(principal.value || 0, 0)}`)
+/** "Santander, BTG Pactual (ex HSBC), Bandes ni BHU", leído de la lista y no escrito a mano. */
+const excludedNames = (() => {
+  const names = PLAZO_FIJO_BANCOS_FUERA.map(b => b.name)
+  return names.length > 1 ? `${names.slice(0, -1).join(', ')} ni ${names.at(-1)}` : (names[0] ?? '')
+})()
 const absences = DEPOSIT_REFERENCE_ABSENCES
-const sources = [...DEPOSIT_REFERENCE_SOURCES]
+const sources = [
+  ...DEPOSIT_REFERENCE_SOURCES,
+  ...PLAZO_FIJO_BANCOS.filter(b => b.id !== 'brou').map(b => ({
+    label: `${b.name} — ${b.sourceTitle}, consultada el ${readOnText(b.readOn)}`,
+    url: b.sourceUrl,
+  })),
+]
 
 const pct = (v: number) => `${formatNumber(v)}%`
 /** Una celda de la serie del BCU: `null` es "sin operaciones", nunca un cero. */
@@ -589,10 +677,22 @@ const rateHint = computed(() => {
   return 'Efectiva anual'
 })
 
-/** Deja la tasa elegida y vuelve a capitalización anual, porque la referencia es una TEA. */
+const resultEl = ref<HTMLElement | null>(null)
+
+/**
+ * Deja la tasa elegida y vuelve a capitalización anual, porque la referencia es una TEA. Los
+ * botones están DEBAJO del resultado: si el resultado quedó fuera de la pantalla, se lo trae,
+ * para que el visitante vea el número cambiar en vez de tener que ir a buscarlo.
+ */
 function applyRate(value: number) {
   ratePct.value = value
   timesPerYear.value = 1
+  const el = resultEl.value
+  if (!el || typeof window === 'undefined') return
+  const box = el.getBoundingClientRect()
+  if (box.top >= 64 && box.bottom <= window.innerHeight) return
+  const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' })
 }
 
 /**
@@ -636,7 +736,33 @@ const referenceRows = computed(() => {
   return rows
 })
 
+/**
+ * Las dos preguntas que trae Search Console ("plazo fijo brou dólares", "simulador plazo fijo"),
+ * contestadas con la misma tabla que dibuja la página: ningún número se escribe a mano.
+ */
+const brouUsdSeries = BROU_DEPOSIT_BOARD.series.USD
+const brouUsdAnio = brouTrancheFor('USD', 12)
+const brouUsdLargo = brouUsdSeries.tranches[brouUsdSeries.tranches.length - 1]
+/** Quién encabeza un caso, nombrando a todos los empatados en la tasa más alta. */
+function leaders(offers: ReturnType<typeof comparePlazoFijo>['offers']): string {
+  const top = offers[0]
+  if (!top) return 'ningún banco de la lista'
+  const names = [...new Set(offers.filter(o => o.rate === top.rate).map(o => o.bankName))]
+  const who = names.length > 1 ? `${names.slice(0, -1).join(', ')} y ${names.at(-1)}` : names[0]
+  return `${who}, con ${pct(top.rate)}`
+}
+const leaderUyu = leaders(comparePlazoFijo('UYU', daysForMonths(12), 100_000).offers)
+const leaderUsd = leaders(comparePlazoFijo('USD', daysForMonths(12), 10_000).offers)
+
 const faq = [
+  {
+    q: '¿Cuánto paga el BROU por un plazo fijo en dólares?',
+    a: `Según su pizarra para personas (la de dólares rige desde el ${brouUsdSeries.vigenciaMoneda}), a un año —tramo de ${brouUsdAnio?.label ?? ''} días— paga ${pct(brouUsdAnio?.online ?? 0)} efectivo anual si lo constituís por e-BROU y ${pct(brouUsdAnio?.branch ?? 0)} en sucursal; de ${brouUsdLargo?.label ?? ''} días, ${pct(brouUsdLargo?.online ?? 0)} y ${pct(brouUsdLargo?.branch ?? 0)}. El mínimo es ${brouUsdSeries.minimum}. Sobre el interés en dólares el IRPF es ${irpfRowText(irpfUsd)}. Pizarra consultada el ${reviewedText}.`,
+  },
+  {
+    q: '¿Qué banco paga más por un plazo fijo en Uruguay?',
+    a: `Depende del monto, del plazo y del canal, y por eso la tabla se arma con los tuyos. Con las pizarras consultadas el ${reviewedText}, a un año: con $ 100.000 en pesos encabeza ${leaderUyu}; con USD 10.000 en dólares, ${leaderUsd}. Son tasas publicadas por cada banco: ${PLAZO_FIJO_BANCOS_FUERA[0]?.name ?? 'Santander'} no publica la suya y no entra en la comparación.`,
+  },
   {
     q: '¿Qué tasa pone un plazo fijo en Uruguay hoy?',
     a: `Según las tasas medias del BCU de ${BCU_DEPOSIT_RATES.period}, a personas físicas en pesos, ${formatNumber(BCU_DEPOSIT_RATES.series.UYU.buckets[4]!.personaFisica!)}% efectivo anual en el tramo de 181 a 366 días, y ${formatNumber(BCU_DEPOSIT_RATES.series.USD.buckets[4]!.personaFisica!)}% en dólares al mismo plazo. Es el promedio de lo que efectivamente se pactó en el mes, no una oferta: sirve para saber si lo que te ofrecen está por encima o por debajo de plaza.`,
@@ -663,7 +789,7 @@ const faq = [
   },
   {
     q: '¿Puedo comparar la tasa de todos los bancos en un cuadro oficial?',
-    a: 'No existe. El BCU publica las tasas pasivas sólo como total del sistema bancario, sin abrir por institución ni siquiera entre banca pública y privada; las únicas tasas banco por banco que publica son las de tarjeta de crédito, que son del lado de los préstamos. Para comparar plazos fijos hay que mirar la pizarra que publica cada banco por su cuenta.',
+    a: `No existe. El BCU publica las tasas pasivas sólo como total del sistema bancario, sin abrir por institución ni siquiera entre banca pública y privada; las únicas tasas banco por banco que publica son las de tarjeta de crédito, que son del lado de los préstamos. Para comparar plazos fijos hay que mirar la pizarra que publica cada banco por su cuenta, y eso es lo que junta esta calculadora: ${PLAZO_FIJO_BANCOS.map(b => b.name).join(', ')}, leídas en la página de cada uno el ${reviewedText}.`,
   },
   {
     q: '¿Cómo funciona el interés compuesto?',
@@ -673,38 +799,101 @@ const faq = [
 </script>
 
 <style scoped>
-/* Panel de referencia: mismo lenguaje visual que .tool-info-box de ToolShell, pero con su propia
-   grilla de dos tarjetas. */
+/* Panel de bancos: mismo lenguaje visual que .tool-info-box de ToolShell. Cada bloque de texto
+   declara su propio margen superior (DESIGN.md, The Text Block Owns Its Top Margin Rule). */
 .ref-panel {
   background: rgba(33, 150, 243, 0.06);
   border: 1px solid rgba(33, 150, 243, 0.22);
   border-radius: 12px;
 }
 
-.ref-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px;
+.ref-panel :where(h2, h3, p, ul) {
+  margin-top: 0;
 }
 
-.ref-box {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 16px;
+.ref-title {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.ref-intro {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  max-width: 72ch;
+  margin-bottom: 16px;
+}
+
+.bank-table {
+  background: transparent;
+}
+
+/* The Number Breathes Rule: la tasa es lo que se compara, alineada y sin cortar. */
+.bank-rate {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ref-subtitle {
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+.ref-list {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  padding-left: 16px;
+  margin-bottom: 0;
+}
+
+.ref-list li + li {
+  margin-top: 4px;
 }
 
 .ref-note {
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   line-height: 1.6;
   margin: 8px 0 12px;
   color: rgba(255, 255, 255, 0.75);
 }
 
 .ref-foot {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   line-height: 1.6;
+  margin-top: 16px;
+  margin-bottom: 0;
   color: rgba(255, 255, 255, 0.7);
+}
+
+.ref-foot + .ref-foot {
+  margin-top: 8px;
+}
+
+.ref-details {
+  margin-top: 8px;
+  font-size: 0.875rem;
+}
+
+/* 44px de alto: es un control táctil. */
+.ref-details summary {
+  min-height: 44px;
+  padding: 12px 0;
+  cursor: pointer;
+  font-weight: 600;
+  color: rgb(var(--v-theme-link));
+}
+
+.ref-box {
+  margin-top: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px;
 }
 
 .v-theme--light .ref-box {

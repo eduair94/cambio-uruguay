@@ -328,10 +328,12 @@ import {
   goldGramPrices,
   listCurrencySlugs,
   quotesForCurrency,
+  rankUsableQuotes,
   type CurrencyCode,
   type CurrencyLang,
   type CurrencyQuote,
 } from '~/utils/currencyPages'
+import { bestOf, pickDescription, pickTitle, seoRate } from '~/utils/liveRateSeo'
 import { currencyFaqIds, type FaqItem } from '~/utils/faqAnswers'
 import { fronteraRoutesForCode, type FronteraCode } from '~/utils/frontera'
 
@@ -370,7 +372,12 @@ const { data, pending } = await useAsyncData<CurrencyQuote[] | null>(
   async () => {
     const result = await getProcessedExchangeData('')
     const rows = (result?.exchangeData ?? []) as ExchangeRate[]
-    return quotesForCurrency(rows, code.value)
+    // `rankUsableQuotes` corona igual que la portada, /pizarra y /casas-de-cambio: una pizarra a
+    // más del 3 % de la mediana (congelada o mal leída) sigue en la tabla pero no es "la mejor".
+    // Sin esto, el 31/10/2026 esta página daba como mejor lugar para comprar dólares una pizarra
+    // quieta desde julio (39,55 contra una mediana de 41,45), y el título vivo la habría repetido.
+    const localData = (result?.localData ?? {}) as Record<string, { name?: string | null }>
+    return rankUsableQuotes(quotesForCurrency(rows, code.value, localData))
   }
 )
 
@@ -454,20 +461,76 @@ defineOgImageComponent('Cambio', {
   locale: locale.value as 'es' | 'en' | 'pt',
 })
 
-// SEO meta.
+// SEO meta, con la cifra del día (utils/liveRateSeo.ts): "Real hoy en Uruguay: se vende desde
+// $8,20" contesta "precio del real hoy" en el propio SERP; el genérico no. Sin lectura, el de
+// siempre. La venta y la compra son las de las filas que la tabla marca como mejores (no un
+// mínimo propio: así una cotización condicionada que la tabla no premia tampoco llega al título).
+const liveRates = computed(() => ({
+  sell: bestSell.value?.sell ?? null,
+  buy: bestBuy.value?.buy ?? null,
+  count: bestOf(quotes.value).count,
+}))
+const metaTitle = computed(() => {
+  const fallback = t('cotizacion.metaTitle', { currency: currencyName.value, prep: prep.value })
+  if (code.value === 'XAU') {
+    const g18 = goldGrams.value.find(g => g.karat === 18)
+    if (!g18) return fallback
+    const gram = seoRate(g18.pricePerGram, locale.value, 0)
+    return pickTitle(
+      [t('cotizacion.metaTitleGold', { gram }), t('cotizacion.metaTitleGoldShort', { gram })],
+      fallback
+    )
+  }
+  const sell = liveRates.value.sell
+  if (sell === null) return fallback
+  const args = { currency: currencyName.value, sell: seoRate(sell, locale.value) }
+  return pickTitle(
+    [t('cotizacion.metaTitleLive', args), t('cotizacion.metaTitleLiveShort', args)],
+    fallback
+  )
+})
+const metaDescription = computed(() => {
+  const fallback = t('cotizacion.metaDescription', {
+    currency: currencyName.value,
+    prep: prep.value,
+  })
+  const { sell, buy, count } = liveRates.value
+  if (code.value === 'XAU') {
+    const g18 = goldGrams.value.find(g => g.karat === 18)
+    const g24 = goldGrams.value.find(g => g.karat === 24)
+    if (!g18 || !g24 || sell === null) return fallback
+    return pickDescription(
+      t('cotizacion.metaDescriptionGold', {
+        gram18: seoRate(g18.pricePerGram, locale.value, 0),
+        gram24: seoRate(g24.pricePerGram, locale.value, 0),
+        sell: seoRate(sell, locale.value, 0),
+      }),
+      fallback
+    )
+  }
+  // Con una sola casa, "desde" y "hasta" mienten y "1 casas" se lee mal: el genérico.
+  if (sell === null || buy === null || count < 2) return fallback
+  return pickDescription(
+    t('cotizacion.metaDescriptionLive', {
+      currency: currencyName.value,
+      sell: seoRate(sell, locale.value),
+      buy: seoRate(buy, locale.value),
+      count,
+    }),
+    fallback
+  )
+})
+
 useSeoMeta({
-  title: () => t('cotizacion.metaTitle', { currency: currencyName.value, prep: prep.value }),
-  description: () =>
-    t('cotizacion.metaDescription', { currency: currencyName.value, prep: prep.value }),
-  ogTitle: () => t('cotizacion.metaTitle', { currency: currencyName.value, prep: prep.value }),
-  ogDescription: () =>
-    t('cotizacion.metaDescription', { currency: currencyName.value, prep: prep.value }),
+  title: () => metaTitle.value,
+  description: () => metaDescription.value,
+  ogTitle: () => metaTitle.value,
+  ogDescription: () => metaDescription.value,
   ogType: 'website',
   ogUrl: () => canonicalUrl.value,
   twitterCard: 'summary_large_image',
-  twitterTitle: () => t('cotizacion.metaTitle', { currency: currencyName.value, prep: prep.value }),
-  twitterDescription: () =>
-    t('cotizacion.metaDescription', { currency: currencyName.value, prep: prep.value }),
+  twitterTitle: () => metaTitle.value,
+  twitterDescription: () => metaDescription.value,
 })
 
 // ExchangeRateSpecification + BreadcrumbList JSON-LD for rich results.

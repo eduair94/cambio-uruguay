@@ -356,9 +356,9 @@ export const tramitesGuides: readonly Guide[] = [
   },
   {
     slug: 'casarse-por-civil-uruguay',
-    title: 'Casarse por civil en Uruguay: trámite, testigos y costo',
+    title: 'Casarse por civil: $1.149 en la oficina',
     description:
-      'Casarse por civil cuesta $1.149 en la oficina y $35.130 a domicilio (ficha de mayo de 2026): dos etapas, cuatro testigos mayores de 18 y edictos en el Diario Oficial.',
+      'Casarse por civil cuesta $1.149 en la oficina y $35.130 a domicilio (mayo 2026): dos etapas, cuatro testigos mayores de 18 y edictos en el Diario Oficial.',
     tag: 'REGISTRO CIVIL',
     updatedAt: '2026-10-25',
     sections: [

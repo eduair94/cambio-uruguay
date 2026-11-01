@@ -724,6 +724,11 @@ useHead(() => ({
             {{ t('descriptionSource', { source: source(selectedOffer) }) }}
           </p>
         </section>
+        <!-- La unidad intermedia de la ficha, en el primer corte después de lo que la persona vino
+             a ver (las características y la descripción). La ficha es densidad normal: con el
+             cierre del layout son dos, el tope de maxAdSlots. Ver
+             docs/seo/adsense-growth-loop.md, decimotercera iteración. -->
+        <AdSlot placement="in-article" />
         <section
           ref="locationSection"
           class="rental-page__section"

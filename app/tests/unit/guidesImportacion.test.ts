@@ -42,3 +42,38 @@ describe('guía impuesto-temu-uruguay', () => {
     expect(tos).toContain('/problemas-con-la-aduana-uruguay')
   })
 })
+
+// El registro de vendedores dejó de ser futuro el 1/10/2026 y la RG DNA 26/2026 (vigente desde el
+// 5/10) abrió el alta a pedido del operador postal. Las guías que lo explican lo decían en futuro y
+// con "salvo nueva prórroga"; éstas son las que se corrigieron el 2026-10-31, junto con el PR #158.
+describe('las guías de importación con el registro de vendedores vigente', () => {
+  const textOf = (slug: string) => {
+    const guide = getGuide(slug)!
+    return [
+      ...guide.sections.map(s => s.body),
+      ...(guide.faqs ?? []).map(f => f.a),
+      ...(guide.sources ?? []).map(s => s.label),
+    ].join(' ')
+  }
+
+  it.each(['impuesto-temu-uruguay', 'comprar-en-amazon-desde-uruguay'])(
+    '%s ya no lo da por futuro y cita la RG 26/2026',
+    slug => {
+      const text = textOf(slug)
+      expect(text).not.toMatch(/salvo nueva prórroga|podría moverse/)
+      expect(text).toMatch(/3 de noviembre/)
+      expect(text).toMatch(/26\/2026/)
+      expect(text).toMatch(/courier/)
+    }
+  )
+
+  it('comprar-online-exterior-impuestos cita bien el num. 28 y lo que grava el IMESI', () => {
+    const text = textOf('comprar-online-exterior-impuestos')
+    // G es el lit. b y H el lit. a del num. 28 de la RG 11/2026; el lit. c es sólo el código J.
+    expect(text).not.toMatch(/num\. 28 lit\. c \(códigos de tipo de envío: G/)
+    // El art. 27 del Decreto 96/990 grava cosméticos y máquinas de afeitar.
+    expect(text).not.toMatch(/cosmética de uso corriente no gravada/)
+    expect(text).toMatch(/máquinas de afeitar/)
+    expect(text).toMatch(/registro de empresas extranjeras/)
+  })
+})

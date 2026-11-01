@@ -99,7 +99,10 @@
 
         <div v-if="data?.items.length" ref="resultsList" class="cars-grid">
           <FeedEdge :feed="feed" edge="top" />
-          <CarsListingCard v-for="car in feed.items" :key="car.key" :car="car" />
+          <template v-for="(car, index) in feed.items" :key="car.key">
+            <FeedAd :index="index" :feed="feed" />
+            <CarsListingCard :car="car" />
+          </template>
           <FeedEdge :feed="feed" edge="bottom" />
         </div>
 

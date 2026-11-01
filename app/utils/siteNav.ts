@@ -499,6 +499,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/feriados-2027-uruguay',
+        labelKey: 'nav.feriadosDelAnio',
+        icon: 'mdi-calendar-month',
+        priority: 0.7,
+        changefreq: 'monthly',
+        keywords: [
+          'feriados 2027',
+          'feriados 2027 uruguay',
+          'calendario de feriados 2027',
+          'fines de semana largos 2027',
+          'carnaval 2027',
+          'semana de turismo 2027',
+          'cuando es carnaval 2027',
+          'cuantos feriados hay en 2027',
+        ],
+      },
+      {
         to: '/estado',
         labelKey: 'estado.nav',
         icon: 'mdi-heart-pulse',
@@ -1813,7 +1830,11 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'impuestos broker exterior',
           'residencia fiscal uruguay',
           'tax holiday uruguay',
-          'impuesto al patrimonio',
+          // `impuesto al patrimonio` se fue de acá el 2026-11-01: ahora lo contesta
+          // `/guias/impuesto-al-patrimonio-uruguay`, que lo tiene en el título. Dejarlo como
+          // keyword de esta página —que habla del impuesto a las RENTAS— la hacía ganar la consulta
+          // por el bono de 30 puntos de `scoreDocs` contra la que la contesta de verdad, que es la
+          // canibalización que `seoTitleBudget.test.ts` mide para el directorio de páginas.
           'irnr',
           'declaracion jurada irpf',
         ],
@@ -2923,6 +2944,29 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // La multa del voto obligatorio es sólo la mitad de la consulta: lo que la gente descubre
+        // años después es que la credencial sin el sello traba ocho actos (Ley 16.017, arts. 9 a
+        // 11), y uno de ellos —entrar a la Administración Pública— la propia ley dice que NO se
+        // arregla pagando. Va en este tramo porque la pregunta llega pegada a un trámite frenado,
+        // no a una elección. `/elecciones-bps-2026` cubre el comicio del 22/11/2026 y su régimen
+        // propio; esta página cubre el general.
+        to: '/multa-por-no-votar-uruguay',
+        labelKey: 'nav.multaPorNoVotar',
+        icon: 'mdi-vote-outline',
+        priority: 0.7,
+        changefreq: 'monthly',
+        keywords: [
+          'multa por no votar uruguay',
+          'cuanto es la multa por no votar',
+          'no vote que pasa uruguay',
+          'justificar la no emision del voto',
+          'credencial civica sin sello',
+          'ley 16017 voto obligatorio',
+          'pagar multa corte electoral',
+          'constancia de voto para tramites',
+        ],
+      },
+      {
         to: '/declarar-dinero-en-efectivo-uruguay',
         labelKey: 'nav.declararEfectivo',
         icon: 'mdi-cash-multiple',
@@ -3818,6 +3862,24 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/reclamos-a-la-intendencia-por-barrio-uruguay',
+        labelKey: 'nav.reclamosIntendencia',
+        icon: 'mdi-clipboard-alert-outline',
+        priority: 0.7,
+        changefreq: 'weekly',
+        fresh: true,
+        keywords: [
+          'reclamos intendencia de montevideo',
+          'sistema unico de reclamos',
+          'reclamo alumbrado montevideo',
+          'reclamo saneamiento montevideo',
+          'reclamo limpieza montevideo',
+          'foco quemado montevideo reclamo',
+          'contenedor quemado reclamo',
+          'barrios con mas reclamos montevideo',
+        ],
+      },
+      {
         to: '/que-pasa-si-no-pago-antel',
         labelKey: 'nav.deudaAntel',
         icon: 'mdi-router-wireless-off',
@@ -4026,6 +4088,26 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'mejor auto usado uruguay',
           'repuestos baratos auto',
           'patente auto usado',
+        ],
+      },
+      {
+        // El comparador de modelos: la misma tabla del asesor, dos o tres modelos lado a lado con un
+        // veredicto calculado. Ver docs/app/AUTOS.md, "El comparador de modelos".
+        to: '/comparar-autos-usados-uruguay',
+        labelKey: 'nav.usedCarCompare',
+        icon: 'mdi-compare-horizontal',
+        priority: 0.8,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'comparar autos usados',
+          'comparar autos',
+          'comparador de autos',
+          'cual auto es mejor',
+          'onix o 208',
+          'hilux o amarok',
+          'que auto conviene mas',
+          'comparar modelos de auto uruguay',
         ],
       },
       {
@@ -4759,6 +4841,26 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // De dónde viene la gente: buscadores, IA, redes y los sitios que enlazan
+        // (classes/site-analytics/trafficSources.ts).
+        to: '/origen-del-trafico',
+        labelKey: 'nav.origenDelTrafico',
+        icon: 'mdi-source-branch',
+        priority: 0.4,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'origen del trafico',
+          'de donde vienen las visitas',
+          'fuentes de trafico',
+          'backlinks',
+          'enlaces entrantes',
+          'sitios que enlazan',
+          'referidos',
+          'trafico desde chatgpt',
+        ],
+      },
+      {
         to: '/estadisticas-reddit',
         labelKey: 'redditStats.nav',
         icon: 'mdi-reddit',
@@ -4833,8 +4935,8 @@ export const EXCLUDED_ROUTES: readonly string[] = Object.freeze([
   // final de los resultados, no es contenido para buscadores. Y su panel privado de lectura.
   '/opinion-alquileres',
   '/opiniones-alquileres',
-  // La cola privada de hilos de Reddit para contestar a mano: lista hilos de desconocidos como
-  // trabajo pendiente. No es contenido y publicada se leería como operación de spam.
+  // Los hilos de Reddit para contestar: pública y para compartir por enlace, pero `noindex`. Es
+  // casi entera texto de Reddit citado, y eso no tiene lugar en el menú ni en el sitemap.
   '/oportunidades-reddit',
   // "¿Tengo descuento acá?": una herramienta cuya respuesta depende de dónde está parado quien la
   // abre. No hay nada que indexar; se llega desde el mapa.

@@ -48,8 +48,12 @@ const GUIDE_PAGE = readFileSync(join(__dirname, '..', '..', 'pages', 'guias', '[
  * porque alguien lo baje, se afloja porque se publica y no se vuelve. Con cinco de holgura, borrar
  * las cinco guías más largas del catálogo bajaba los dos presupuestos de abajo sin arreglar un solo
  * snippet y dejaba todo en verde.
+ *
+ * 151 → 152 el 2026-11-01, en el mismo commit que publica `impuesto-al-patrimonio-uruguay`, que es
+ * la disciplina que el párrafo de arriba pide: el piso se mueve cuando se publica, no cuando a
+ * alguien le molesta el rojo.
  */
-const MEASURED = 151
+const MEASURED = 152
 
 /**
  * 116 → 104 el 2026-10-02: los doce títulos más largos del catálogo, de 104 a 84 caracteres
@@ -526,20 +530,9 @@ const MEASURED = 151
  * guía y se rompa otra sin que nada avise; una lista exacta, no.
  */
 const DEUDA_TITULO_LARGO = [
-  'abogado-gratis-uruguay',
   'aguinaldo-casos-especiales-uruguay',
-  'casarse-por-civil-uruguay',
   'certificado-unico-departamental-uruguay',
-  'comprar-en-amazon-desde-uruguay',
-  'despido-y-liquidacion-uruguay',
-  'estudio-de-cobranza-uruguay',
   'glosario-terminos-cambiarios',
-  'horas-extra-en-uruguay',
-  'llegar-tarde-tolerancia-y-sanciones-uruguay',
-  'me-certifique-subsidio-por-enfermedad-uruguay',
-  'me-deben-el-sueldo-uruguay',
-  'no-pagar-prestamo-e-irse-del-pais-uruguay',
-  'trabajar-para-el-exterior-desde-uruguay',
 ]
 
 /**
@@ -568,7 +561,111 @@ const DEUDA_TITULO_LARGO = [
  * artículos: la UI se mueve todos los días, la UR una vez al mes y la BPC una vez al año. Eso ahora
  * va adelante y el título queda en 58.
  */
-const TITLE_OVER_BUDGET = 14
+/**
+ * 14 → 13 el 2026-10-29: `casarse-por-civil-uruguay`, que vuelve a ser el caso de siempre —la ÚNICA
+ * guía del catálogo con la ruta libre de toda ventana de medición abierta, cruzada contra
+ * `docs/seo/experiments.json`— y además estaba en las DOS listas de este archivo.
+ *
+ * Estaba doce caracteres pasada: «Casarse por civil en Uruguay: trámite, testigos y costo» da 72 con
+ * la marca, y los doce se pagaban con el defecto que este archivo documenta desde la primera
+ * corrida en su forma más pura: la segunda mitad del título ANUNCIABA el índice de la guía
+ * («trámite, testigos y costo») en vez de contestar ninguna de las tres cosas. La que decide el clic
+ * es el costo, y está en el cuerpo con su fuente: la ficha del Registro Civil, actualizada el 29 de
+ * mayo de 2026, publica $1.149 si el matrimonio se celebra en la oficina. Ahora va eso y el título
+ * queda en 56.
+ *
+ * Y lleva «en la oficina» aunque sobre lugar: la misma ficha cobra $35.130 a domicilio —más de
+ * treinta veces— así que un título con el monto pelado sería cierto en un caso y falso en el otro.
+ * Los testigos y las dos etapas siguen en la descripción, que los trae completos.
+ */
+/**
+ * 13 → 10 el 2026-10-30: las TRES guías más pasadas de presupuesto de las diez que el cruce contra
+ * `docs/seo/experiments.json` declara libres hoy —las cuatro tandas de títulos y descripciones de
+ * fines de septiembre cumplen 29 días recién entre el 31/10 y el 10/11, así que estas diez son la
+ * primera cola holgada que una corrida encuentra desde el 21/10 y por eso se tocan tres y no una—.
+ *
+ * Las tres son el mismo defecto en su forma más cruda, el que este archivo documenta desde la
+ * primera corrida: el título ENUMERABA las secciones y la respuesta caía del lado que el SERP
+ * recorta. La del subsidio por enfermedad llegaba a 96 con la marca —treinta y seis de más, el peor
+ * título que quedaba en el catálogo— listando las cuatro preguntas de la guía («cuánto cobro, desde
+ * qué día, quién paga, y si me pueden despedir») sin contestar ninguna; ahora trae las dos que
+ * deciden el clic, el 70 % y el cuarto día, que son las que su propio cuerpo publica con el art. 14
+ * del Decreto-Ley 14.407 y la base de materia gravada de la Ley 18.725, y queda en 60. La del
+ * préstamo impago anunciaba la pregunta entera («¿Qué pasa si no pago un préstamo en Uruguay (y me
+ * voy del país)?», 81) cuando la respuesta es una línea y desarma el miedo que trae al lector: no
+ * es delito, porque el artículo 52 de la Constitución prohíbe la prisión por deudas. Y la de
+ * facturar al exterior prometía el índice («cómo facturar y tributar», 82) en lugar del dato que su
+ * cuerpo ya afirma: la exportación de servicios no está gravada, así que la factura sale sin IVA.
+ *
+ * Ninguna cifra es nueva y ninguna se escribió con más firmeza que su fuente: el «día 4» es el
+ * «cuarto día de certificación» que el art. 14 escribe y el BPS repite, con la excepción por
+ * internación —que es del primer día— quedándose en la descripción, donde entra completa. Lo mismo
+ * con el embargo y el juicio ejecutivo de la guía del préstamo y con las vías del Literal E y el
+ * IRAE de la del exterior: siguen en sus descripciones, que no se tocaron.
+ *
+ * 10 → 3 el 2026-10-30, y son las SIETE que quedaban libres: la tanda anterior de este mismo día
+ * tomó las tres más pasadas de las diez que el cruce contra `docs/seo/experiments.json` declaraba
+ * libres, y estas siete son el resto exacto de esa cola. Con esto el pozo queda en tres y ninguno
+ * de los tres es deuda de longitud: dos están reservados hasta el 7 y el 10 de noviembre y el
+ * tercero es `glosario-terminos-cambiarios`, que este archivo ya explicó por qué no se toca.
+ *
+ * Iban de 61 a 44 caracteres de literal (78 a 61 publicados) y el defecto era el de siempre en sus
+ * dos formas: cinco eran la ETIQUETA DEL TEMA seguida del índice de la guía («Horas extra en
+ * Uruguay: cuándo se generan y cómo se pagan», «Comprar en Amazon desde Uruguay: courier, aduana y
+ * costo real», «Llegar tarde, tolerancia y sanciones en el trabajo (Uruguay)») y dos devolvían la
+ * pregunta sin contestarla («Abogado gratis en Uruguay: qué puerta te corresponde», «Despido y
+ * liquidación en Uruguay: qué te corresponde»).
+ *
+ * Ahora cada uno contesta: que la hora extra vale el doble y 150 % en feriado, que en una compra de
+ * Amazon el IVA es todo o nada, que el estudio de cobranza no te retiene el sueldo, que por llegar
+ * tarde te pueden sancionar pero no multar, que la indemnización del mensual es un mes por año, que
+ * al sueldo impago se le reclama un 10 % más y que no hay «un abogado gratis» sino una puerta por
+ * problema.
+ *
+ * Ninguna cifra es nueva: el 100/150 % de la Ley 15.996, el «todo o nada» de los USD 200, el piso
+ * del 35 % de la Ley 17.829, el mes de sueldo por año con tope de seis y el recargo automático del
+ * 10 % de la Ley 18.572 ya estaban en el cuerpo de su guía. Y donde el cuerpo hedgea el título no
+ * afirma, que acá decidió cuatro redacciones. El de Amazon NO publica «hasta USD 200 sin IVA»: la
+ * guía fecha el registro del vendedor el 1/10/2026 y en la misma línea avisa que esa fecha «ya se
+ * postergó dos veces», así que el título se queda con la estructura que el cuerpo sí da por
+ * categórica («es todo o nada») y los USD 200 siguen en la descripción con su condición de origen.
+ * El de despido dice «un mes por año» sin número de tope porque el tope de seis es del MENSUAL y el
+ * jornalero va por jornales con su propio máximo y su propio piso: las dos mitades ya conviven en
+ * la descripción, que no se tocó. El de llegar tarde dice «sanciones sí, multas no» y no «no te
+ * pueden sancionar», porque el cuerpo afirma lo contrario —el empleador tiene poder disciplinario y
+ * una escala válida que va de la observación al despido— y lo que enumera como nunca válido es la
+ * multa y el descuento punitivo. Y el de abogado gratis NO dice «cuatro puertas»: el cuerpo
+ * enumera cuatro en su regla corta pero nunca las cuenta ni se cierra en ellas (están además las
+ * ventanillas del BCU, URSEA y URSEC), así que el título publica lo que el cuerpo sí establece,
+ * que hay una puerta distinta por problema.
+ *
+ * Y una séptima aplicación de la regla del buscador propio, que acá rehizo tres de los siete
+ * títulos DESPUÉS de escribirlos, midiendo sobre el índice. «Cobranza: sin juicio no te tocan el
+ * sueldo» perdía la consulta «estudio de cobranza» contra `/prescripcion-de-deudas-privadas-uruguay`
+ * (38 contra 36) porque dejaba «estudio» fuera del título; quedó «Cobranza: el estudio no retiene
+ * tu sueldo», que vuelve a tener las dos palabras como inicio de palabra (62, primera) y además
+ * sube «cobranza» de 92 a 110. Y «Me deben el sueldo: el 10 % corre solo» perdía «reclamar el
+ * sueldo» contra `/preguntas-economia-personal` (42 contra 32); quedó «reclamar con 10 % más», que
+ * la conserva en 62 y lleva la misma cifra.
+ *
+ * El tercero es un modo de fallar que este archivo no tenía escrito y conviene dejar anotado,
+ * porque no es canibalización: «Llegar tarde: descuento sí, multa no» dejaba la consulta
+ * «sanciones» con CERO resultados. Ninguna otra página la servía —la guía era la única, con 62 por
+ * tener la palabra en el título— así que no se la ganaba nadie: simplemente dejaba de haber
+ * respuesta, y `didYouMean` tampoco devolvía sugerencia. Una consulta que ninguna otra página
+ * cubre se pierde sacando la palabra del único título que la tenía, y eso no se ve mirando quién
+ * queda primero. «sanciones sí, multas no» la devuelve a 62 diciendo lo mismo.
+ *
+ * Después de las tres correcciones las siete ganan su propia consulta («abogado» 80, «comprar en
+ * amazon» 80, «despido» 110, «liquidacion» 62, «cobranza» 110, «estudio de cobranza» 62, «horas
+ * extra» 80, «llegar tarde» 80, «sanciones» 62, «puntualidad» 62, «me deben el sueldo» 80,
+ * «reclamar el sueldo» 62) y ninguna página perdió una consulta que tuviera: `/couriers-uruguay`
+ * sigue ganando «amazon» (68) y «courier» (82), y `/indemnizacion-por-despido-uruguay` sigue
+ * ganando «indemnizacion» (52). La única baja es «tolerancia», de 62 a 32, que conserva el primer
+ * puesto siendo el único resultado: es el canje que la novena tanda ya dejó escrito, un título de
+ * 43 que CONTESTA no puede además repetir las tres palabras del slug.
+ */
+const TITLE_OVER_BUDGET = 3
 
 /**
  * 89 → 77 el 2026-10-01: las doce más largas del catálogo, de 306 a 215 caracteres.
@@ -712,27 +809,12 @@ const TITLE_OVER_BUDGET = 14
  * medición abierta, y exigida exacta para que el contador no se compense solo.
  */
 const DEUDA_DESCRIPCION_LARGA = [
-  'cajeros-automaticos-uruguay-turistas',
-  'cambiar-monedas-poco-comunes-uruguay',
-  'casarse-por-civil-uruguay',
+  // Una sola, y queda por la reserva y no por la redacción: `guias-sin-indexar-reciben-enlaces` la
+  // declara el 2026-10-09, así que su ventana de medición cierra el 7 de noviembre. El lector de
+  // `npm run seo_debt` espera este formato multilínea con el `]` al principio de línea
+  // (`classes/revenueplan/debtFree.ts`), así que la lista no se colapsa a una sola línea aunque
+  // tenga un solo elemento.
   'cedula-uruguaya-para-argentinos',
-  'comision-inmobiliaria-uruguay',
-  'comprar-online-exterior-impuestos',
-  'criptomonedas-regulacion-impuestos-uruguay',
-  'devolucion-iva-turistas-uruguay',
-  'dolar-cripto-usdt-uruguay',
-  'dolares-deteriorados-billetes-rechazados-uruguay',
-  'elegir-tarjeta-credito-beneficios-uruguay',
-  'enviar-recibir-dinero-exterior',
-  'garantias-de-alquiler-uruguay',
-  'hacer-un-testamento-uruguay',
-  'horarios-casas-de-cambio-uruguay',
-  'importar-de-aliexpress-a-uruguay',
-  'precio-del-oro-en-uruguay',
-  'proyeccion-dolar-uruguay-se-puede-predecir',
-  'reforma-jubilatoria-uruguay-que-cambia',
-  'tarjeta-debito-vs-credito-uruguay',
-  'tipo-de-cambio-fiscal-dgi-uruguay',
 ]
 
 /**
@@ -741,7 +823,100 @@ const DEUDA_DESCRIPCION_LARGA = [
  * que gasta el renglón desplegando siglas que el título ya trae) a abrir por la respuesta: con qué se
  * ajusta cada una y cada cuánto. Ninguna cifra es nueva; las tres cadencias ya estaban en su cuerpo.
  */
-const DESCRIPTION_OVER_BUDGET = 21
+/**
+ * 21 → 19 el 2026-10-29: `casarse-por-civil-uruguay` y `hacer-un-testamento-uruguay`, las DOS únicas
+ * de los dos pozos con la ruta libre hoy.
+ *
+ * La primera ya arrancaba por el dato y sólo estaba larga (166): los once caracteres salen de
+ * acortar la referencia a la ficha del Registro Civil («ficha de mayo de 2026» → «mayo 2026») sin
+ * borrar su fecha, que es lo que hace sostenible el monto. Queda en 154.
+ *
+ * La segunda es el defecto de siempre: abría REPITIENDO el título («Cómo hacer un testamento en
+ * Uruguay:») y después enumeraba las secciones («tipos abierto y cerrado, qué podés y qué no podés
+ * disponer…, rol del escribano, costos y cómo revocarlo»), o sea gastaba los dos renglones del
+ * snippet sin contestar nada. Ahora arranca por lo que su propio cuerpo llama «el punto que más
+ * sorprende» —si tenés hijos, la legítima ya reserva la mayor parte y sólo disponés del resto— y la
+ * cola se la lleva la respuesta a la otra pregunta, la del precio. Queda en 150.
+ *
+ * Y el precio se publica como lo que la fuente dice y no como una cifra: la guía afirma que «no
+ * existe un arancel único obligatorio», así que la descripción dice eso y manda a pedir
+ * presupuesto. Inventarle un número al honorario notarial para que el snippet trajera un dato
+ * habría sido exactamente lo que este repo no hace.
+ */
+/**
+ * 19 → 9 el 2026-10-31, y son las DIEZ que el cruce contra `docs/seo/experiments.json`
+ * (`npm run seo_debt`) declara libres hoy; las nueve que quedan siguen reservadas por una ventana
+ * de medición abierta sobre su propia descripción, la primera hasta el 1/11.
+ *
+ * Iban de 210 a 156 caracteres y el defecto es el de las nueve tandas anteriores en su forma más
+ * pura: las DIEZ abrían con la etiqueta del tema o anunciando el ÍNDICE de la guía («Cómo sacar
+ * pesos (o dólares) con tarjeta extranjera en Uruguay: redes Banred y RedBROU, límites por
+ * extracción, comisiones y cuándo conviene…», «Cómo se forma el precio del oro en Uruguay, qué es
+ * la onza troy, cómo pasar el valor a gramos…», «Si se puede predecir el dólar en Uruguay, qué
+ * muestran las expectativas…»), o sea prometían las secciones y la respuesta caía del lado que el
+ * SERP corta. Ninguna de las diez tenía además el título pasado: los diez entran en 60 desde las
+ * tandas de octubre, así que esta tanda toca SÓLO la descripción.
+ *
+ * Y el dato que entra no repite el del título, que en estas diez ya contesta: el de cajeros ya
+ * dice «pagás dos comisiones», así que la descripción nombra las dos redes (RedBROU y Banred) y
+ * los múltiplos de 100; el del oro ya trae los 31,1035 g, así que la descripción pone la pureza
+ * (75 % el 18k, cerca del 58 % el 14k); el de AliExpress ya trae «USD 800 al año o 60 %», así que
+ * la descripción publica la trampa que cuesta plata —el mínimo de USD 20 es por TRACKING y
+ * AliExpress parte el pedido, así que un carrito de USD 40 puede pagar USD 60— y que el «USD 200
+ * libre» es sólo de EE.UU.
+ *
+ * Ninguna cifra es nueva: todas ya estaban en la descripción vieja o en el cuerpo de su guía. Y
+ * ninguna se escribió con más firmeza que su fuente, que acá descartó cuatro redacciones:
+ *
+ *  - Los billetes del cajero salen «suelen salir de 100 en 100» y no «salen», porque el cuerpo
+ *    dice «suelen dispensarse en múltiplos de 100».
+ *  - El billete de dólar roto lo reciben «algunos bancos» con comisión y no «un banco», porque el
+ *    cuerpo dice «algunos bancos lo reciben con una comisión por billete deteriorado».
+ *  - La proyección del dólar dice «la referencia que hay» y no «la única referencia»: el cuerpo
+ *    llama a la Encuesta de Expectativas del BCU «una referencia útil», no la única.
+ *  - Los nueve puntos de IVA en gastronomía van SEPARADOS del requisito de tarjeta del exterior,
+ *    que es del hotel: esa reducción (Decreto 235/026, hasta el 30/04/2027) alcanza también a
+ *    residentes y lo que exige es consumo final y una tarjeta cuyo titular sea persona física. La
+ *    primera redacción los juntaba en una sola condición y decía algo que la guía no dice.
+ *
+ * Los límites por extracción del cajero quedaron AFUERA aunque son lo más accionable: el cuerpo
+ * los escribe «del orden de unos pocos miles de pesos» y «unos cientos de dólares», y un snippet
+ * no tiene lugar para esa salvedad — publicar un monto a secas sería exactamente el error
+ * recurrente del repo ([[cifra-vieja-pasa-la-banda-de-plausibilidad]]).
+ */
+/**
+ * 9 → 1 el 2026-11-01: las OCHO que el cruce contra `docs/seo/experiments.json` declaraba libres,
+ * que es todo el pozo menos `cedula-uruguaya-para-argentinos`, reservada hasta el 7 de noviembre
+ * por la fila `guias-sin-indexar-reciben-enlaces`. Iban de 194 a 159 caracteres.
+ *
+ * El defecto era el de las nueve corridas anteriores en sus dos formas. Seis abrían con la ETIQUETA
+ * DEL TEMA y seguían con el ÍNDICE de la guía («Cómo están reguladas las criptomonedas en Uruguay
+ * tras la Ley de Activos Virtuales…», «Cuánto te cuesta cobrar un pago del exterior en Uruguay:
+ * Payoneer, Wise, Prex…», «Comparativa de las garantías de alquiler en Uruguay: cuánto cuesta cada
+ * una…»), y dos devolvían la pregunta sin contestarla («Qué tipo de cambio se usa para facturar en
+ * dólares…», «Qué cambia con la reforma jubilatoria (Ley 20.130)…»). Ahora cada una abre por el
+ * dato: el 3,66 % con IVA a cada parte y los 1,22 alquileres del arancel de la Cámara, los USD 800
+ * y 3 envíos de franquicia con el piso de USD 20 de IVA por envío, que para la cripto no hay norma
+ * y por eso no hay porcentaje, el 1,2 % a 4 % de Payoneer y los USD 22,37 por USD 1.000 de Wise, el
+ * 3 % mensual de las garantías de retención, la edad que va a 65 por generación, la rebaja de IVA
+ * en pagos electrónicos de la Ley 19.210 y la COMPRA del BROU del día hábil anterior.
+ *
+ * Ninguna cifra es nueva: las ocho ya estaban en la descripción vieja o en el cuerpo de su guía. Y
+ * dos redacciones se descartaron por afirmar más que su fuente: la de cripto no publica una tasa
+ * —el cuerpo dice con todas las letras que «cualquier tabla que te dé una tasa exacta para cripto
+ * se está adelantando a la norma»— y la de garantías no publica la prima de las aseguradoras, que
+ * el cuerpo da como relevamiento y no como dato publicado por el proveedor.
+ *
+ * Y la regla del buscador propio corrigió cinco de las ocho DESPUÉS de escribirlas, midiendo sobre
+ * el índice: la descripción entra en el `_hay` de `scoreDocs`, así que sacarle una palabra puede
+ * dejar una consulta en CERO resultados cuando ninguna otra página la sirve. Eso le pasó a
+ * «régimen simplificado», «activos virtuales», «protección ante fraude» y «Sistema Previsional
+ * Común» —las cuatro volvieron al texto—, y «tipo de cambio» había dejado a `/economia-uruguay`
+ * contestando una consulta cuya página propia es justamente ésta. Las bajas que quedan son de
+ * posición y no de cobertura: «swift» lo sigue ganando `/recibir-transferencia-del-exterior-uruguay`
+ * y «edad de retiro» `/planificar-tu-retiro-uruguay`.
+ */
+const DESCRIPTION_OVER_BUDGET = 1
 
 describe('los snippets de las guías entran en el SERP', () => {
   it(`mide las ${MEASURED} guías del catálogo`, () => {

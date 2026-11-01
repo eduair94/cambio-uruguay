@@ -1,8 +1,12 @@
-// La cola de /oportunidades-reddit: lo que comparten la página privada y su API.
+// La cola de /oportunidades-reddit: lo que comparten la página y su API.
 //
 // Módulo puro (sin Nuxt) para que la suite lo pruebe en Node: cómo se lee la query, qué filtro de
 // Mongo sale de ella, cómo se etiqueta cada card. La cola la arma el job de backend
 // `currency-reddit-opportunities` (`classes/redditopps/`); esto sólo la muestra.
+//
+// La página es PÚBLICA desde el 29/10/2026 (la lee cualquiera, con o sin sesión) y ADMINISTRADA
+// por las cuentas de `NUXT_ADMIN_EMAILS`: sólo ellas ven los hilos ya respondidos o descartados y
+// pueden marcarlos. Lo que distingue una vista de la otra lo decide el servidor, nunca el cliente.
 import { isLocalizedRoute } from './localizedRoutes'
 
 export const OPPS_PAGE_SIZE = 24
@@ -52,18 +56,18 @@ export const OPPS_FAMILY_LABELS: Record<string, string> = {
 }
 
 /**
- * Lo que hay que saber de cada sub antes de contestar. Medido, con fecha; viene de
- * `classes/redditbot/subrules.ts` y de las memorias del bot. No bloquea: quien contesta es una
- * persona con su cuenta, no el bot.
+ * Lo que hay que saber de cada sub antes de contestar. Sale de lo medido por el bot del sitio
+ * (`classes/redditbot/subrules.ts`), escrito para cualquiera que conteste: la página es pública y
+ * estas notas no cuentan la historia de una cuenta, cuentan cómo modera el sub.
  */
 export const OPPS_SUB_NOTES: Record<string, string> = {
   legaluruguay:
-    'Borró en silencio un comentario con enlace (20/8/2026, medido con token anónimo). Mejor responder sin enlace, o pegar el link del comentario al marcarlo para ver si sigue visible.',
+    'Este sub borra en silencio comentarios con enlaces: conviene contestar con el dato y sin el enlace.',
   askuruguayan:
-    'Baneó a la cuenta del bot por spam (18/8/2026). Con una cuenta personal, enlazar sólo si el enlace es la respuesta.',
-  charruadevs: 'Sus reglas prohíben bots. Una persona sí puede contestar.',
+    'Sus moderadores sancionan lo que parece promoción: enlazar sólo si el enlace es la respuesta.',
+  charruadevs: 'Sus reglas prohíben las cuentas automatizadas; una persona sí puede contestar.',
   uruguay:
-    'Regla 2: el contenido propio no puede tener como única razón traer visitas. La respuesta tiene que servir sin el enlace.',
+    'Regla 2: lo propio no puede tener como única razón traer visitas. La respuesta tiene que servir sin el enlace.',
 }
 
 export interface OppsQuery {
@@ -80,6 +84,8 @@ export interface OppsQuery {
   state: OppsStateFilter
   q: string
   sort: OppsSort
+  /** Sólo los que trajo la última corrida del job: lo nuevo del día. */
+  fresh: boolean
 }
 
 const first = (v: unknown): unknown => (Array.isArray(v) ? v[0] : v)
@@ -106,19 +112,46 @@ export function parseOppsQuery(raw: Record<string, unknown>): OppsQuery {
     state: (OPPS_STATES as readonly string[]).includes(state) ? state : 'open',
     q: str(raw.q).slice(0, 80),
     sort: (OPPS_SORTS as readonly string[]).includes(sort) ? sort : 'rank',
+    fresh: str(raw.fresh) === '1',
   }
+}
+
+/**
+ * Un juzgado en la última corrida lleva `judgedAt` igual a la `asOf` de la meta (el job usa el
+ * mismo reloj para los dos). El minuto de margen cubre un reloj que no sea exactamente el mismo.
+ */
+const FRESH_MARGIN_MS = 60_000
+
+/** Desde cuándo cuenta "nuevo" para una corrida. */
+export function freshSinceOf(asOf: string | Date | null | undefined): Date | null {
+  if (!asOf) return null
+  const t = new Date(asOf).getTime()
+  return Number.isFinite(t) ? new Date(t - FRESH_MARGIN_MS) : null
+}
+
+/** ¿Este hilo entró a la cola en la última corrida? */
+export function isFreshOpp(
+  item: Pick<OppItem, 'judgedAt'>,
+  asOf: string | Date | null | undefined
+): boolean {
+  const since = freshSinceOf(asOf)
+  return !!since && new Date(item.judgedAt).getTime() >= since.getTime()
 }
 
 const escapeRegex = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
-/**
- * El filtro de Mongo de una query. `omit` saca una dimensión, para contar sus facetas sin que el
- * filtro de esa misma dimensión las deje en una sola opción.
- */
+export interface OppsFilterOptions {
+  /** Saca una dimensión, para contar sus facetas sin que su propio filtro las deje en una opción. */
+  omit?: 'sub' | 'family' | 'state' | null
+  now?: number
+  /** Con `q.fresh`: desde cuándo cuenta "nuevo" (ver {@link freshSinceOf}). Sin él, `fresh` no filtra. */
+  freshSince?: Date | null
+}
+
+/** El filtro de Mongo de una query. */
 export function buildOppsFilter(
   q: OppsQuery,
-  omit: 'sub' | 'family' | 'state' | null = null,
-  now: number = Date.now()
+  { omit = null, now = Date.now(), freshSince = null }: OppsFilterOptions = {}
 ): Record<string, unknown> {
   const filter: Record<string, unknown> = {
     verdict: 'recommend',
@@ -141,6 +174,7 @@ export function buildOppsFilter(
       filter.state = q.state
     }
   }
+  if (q.fresh && freshSince) filter.judgedAt = { $gte: freshSince }
   if (q.q) {
     const re = { $regex: escapeRegex(q.q), $options: 'i' }
     filter.$or = [{ title: re }, { excerpt: re }, { pageTitle: re }, { path: re }]
@@ -194,6 +228,27 @@ export interface OppItem {
   answerVisible: boolean | null
   answerCheckedAt: string | null
   alsoIn: Array<{ sub: string; permalink: string }>
+  /** Cuándo lo juzgó el job: es lo que dice si entró en la última corrida. */
+  judgedAt: string
+}
+
+/** Lo que una persona marcó: sólo lo ve quien administra la cola. */
+const ADMIN_ONLY = ['state', 'stateAt', 'answerUrl', 'answerVisible', 'answerCheckedAt'] as const
+
+/**
+ * Un hilo tal como lo ve el público. El enlace al comentario con que alguien contestó ata una
+ * cuenta personal de Reddit a la cola del sitio, y eso no se publica: la vista pública sólo trae
+ * pendientes, así que el estado se completa con lo único que puede ser.
+ */
+export function toPublicOpp(item: OppItem): OppItem {
+  return {
+    ...item,
+    state: 'open',
+    stateAt: null,
+    answerUrl: '',
+    answerVisible: null,
+    answerCheckedAt: null,
+  }
 }
 
 /** Los campos que la API proyecta: el veredicto y el modelo del juez no salen. */
@@ -226,7 +281,13 @@ export const OPP_PROJECTION: Record<keyof OppItem | '_id', 0 | 1> = {
   answerVisible: 1,
   answerCheckedAt: 1,
   alsoIn: 1,
+  judgedAt: 1,
 }
+
+/** La proyección pública: la misma, sin lo que marcó una persona. */
+export const OPP_PUBLIC_PROJECTION: Record<string, 0 | 1> = Object.fromEntries(
+  Object.entries(OPP_PROJECTION).filter(([key]) => !(ADMIN_ONLY as readonly string[]).includes(key))
+)
 
 /**
  * El enlace a copiar en la respuesta. A un hilo en inglés le va la versión en inglés de la página

@@ -153,6 +153,12 @@
               {{ excludedText }}
             </span>
           </p>
+          <p v-if="compareLink" class="text-body-2 mb-4">
+            <NuxtLink :to="compareLink.to">
+              Comparar las {{ compareLink.count === 2 ? 'dos' : 'tres' }} primeras lado a
+              lado</NuxtLink
+            >: en qué gana cada una con tu plata, el gráfico de precio por año y la tabla completa.
+          </p>
 
           <article
             v-for="(result, index) in advice.results"
@@ -491,6 +497,7 @@ import {
   PATENTE_2026,
   latinNcapLabel,
 } from '~/utils/carAdvisorFigures'
+import { CAR_COMPARE_PATH, carCompareQueryParams, type CarComparePick } from '~/utils/carCompare'
 import { PATENTE_CONSULTA_URL } from '~/utils/trafficFines'
 import {
   CAR_BODY_LABELS,
@@ -687,6 +694,30 @@ function depreciationText(result: CarAdvisorResult): string {
   if (result.costs.depreciationFromMarket) return 'caída típica del mercado'
   return `${carReportPercent(result.annualDrop, 1)} por año`
 }
+
+// Las tres primeras opciones de modelos distintos, con su versión y el mismo presupuesto, en el
+// comparador (/comparar-autos-usados-uruguay).
+const compareLink = computed(() => {
+  const picks: CarComparePick[] = []
+  for (const result of advice.value?.results ?? []) {
+    if (picks.some(pick => pick.slug === result.marketSlug)) continue
+    picks.push({ slug: result.marketSlug, fuel: result.fuel, transmission: result.transmission })
+    if (picks.length === 3) break
+  }
+  if (picks.length < 2 || !query.value.budget) return null
+  return {
+    count: picks.length,
+    to: localePath({
+      path: CAR_COMPARE_PATH,
+      query: carCompareQueryParams({
+        picks,
+        year: null,
+        budget: query.value.budget,
+        kmYear: query.value.kmYear,
+      }),
+    }),
+  }
+})
 
 const generatedDay = computed(() => {
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(advice.value?.generatedAt ?? '')

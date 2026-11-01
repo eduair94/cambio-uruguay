@@ -167,102 +167,102 @@
           </div>
           <div ref="resultsList" class="budget-list">
             <FeedEdge :feed="feed" edge="top" />
-            <article
-              v-for="item in feed.items"
-              :key="item.key"
-              class="budget-card"
-              data-testid="budget-rental-card"
-            >
-              <div class="budget-card__intro">
-                <NuxtLink
-                  :to="rentalPropertyPath(item.key)"
-                  class="budget-card__photo"
-                  tabindex="-1"
-                  aria-hidden="true"
-                >
-                  <img
-                    v-if="photo(item) && !failedImages.has(item.key)"
-                    :src="photo(item)!"
-                    alt=""
-                    width="300"
-                    height="225"
-                    loading="lazy"
-                    decoding="async"
-                    referrerpolicy="no-referrer"
-                    @error="failedImages.add(item.key)"
-                  />
-                  <span v-else><VIcon icon="mdi-home-outline" size="32" />{{ t('noImage') }}</span>
-                </NuxtLink>
-                <div>
-                  <p class="budget-card__zone">
-                    {{ [item.neighborhood, item.department].filter(Boolean).join(' · ') }}
-                  </p>
-                  <h3>
-                    <NuxtLink :to="rentalPropertyPath(item.key)">{{ item.title }}</NuxtLink>
-                  </h3>
-                  <strong class="budget-card__price">{{ money(item.budget.amountUyu) }}</strong>
-                  <p class="budget-card__basis">
-                    {{ t(query.basis === 'monthly' ? 'total' : 'rentLabel') }}
-                  </p>
-                </div>
-              </div>
-              <div class="budget-card__body">
-                <p class="budget-card__specs">{{ specs(item) }}</p>
-                <dl class="budget-card__costs">
-                  <div>
-                    <dt>{{ t('rentLabel') }}</dt>
-                    <dd>{{ money(item.budget.rentUyu) }}</dd>
-                  </div>
-                  <div>
-                    <dt>{{ t('expenses') }}</dt>
-                    <dd>
-                      {{
-                        item.budget.expensesUyu === null
-                          ? t('expensesUnknown')
-                          : money(item.budget.expensesUyu)
-                      }}
-                    </dd>
-                  </div>
-                  <div v-if="item.budget.monthlyUyu !== null">
-                    <dt>{{ t('total') }}</dt>
-                    <dd>{{ money(item.budget.monthlyUyu) }}</dd>
-                  </div>
-                </dl>
-                <p class="budget-card__source">{{ t('source', { source: source(item) }) }}</p>
-                <p v-if="offer(item)?.currency === 'USD'" class="budget-hint">
-                  {{
-                    t('originalPrice', { price: rentalMoney(offer(item)!.price, 'USD', locale) })
-                  }}
-                </p>
-                <p class="budget-hint">
-                  {{
-                    t('read', {
-                      date: rentalDate(offer(item)?.lastSeen, locale) || t('unknownDate'),
-                    })
-                  }}
-                </p>
-                <RentalsAvailabilityReport
-                  :offers="item.offers"
-                  :summary="item.availability"
-                  :preferred="offer(item)"
-                  :title="item.title"
-                />
-                <div class="budget-card__actions">
-                  <VBtn :to="rentalPropertyPath(item.key)" color="link" variant="tonal">{{
-                    t('detail')
-                  }}</VBtn>
-                  <VBtn
-                    v-if="original(item)"
-                    :href="original(item)!"
-                    target="_blank"
-                    rel="noopener noreferrer nofollow"
-                    variant="text"
-                    append-icon="mdi-open-in-new"
-                    >{{ t('original') }}</VBtn
+            <template v-for="(item, index) in feed.items" :key="item.key">
+              <FeedAd :index="index" :feed="feed" />
+              <article class="budget-card" data-testid="budget-rental-card">
+                <div class="budget-card__intro">
+                  <NuxtLink
+                    :to="rentalPropertyPath(item.key)"
+                    class="budget-card__photo"
+                    tabindex="-1"
+                    aria-hidden="true"
                   >
+                    <img
+                      v-if="photo(item) && !failedImages.has(item.key)"
+                      :src="photo(item)!"
+                      alt=""
+                      width="300"
+                      height="225"
+                      loading="lazy"
+                      decoding="async"
+                      referrerpolicy="no-referrer"
+                      @error="failedImages.add(item.key)"
+                    />
+                    <span v-else
+                      ><VIcon icon="mdi-home-outline" size="32" />{{ t('noImage') }}</span
+                    >
+                  </NuxtLink>
+                  <div>
+                    <p class="budget-card__zone">
+                      {{ [item.neighborhood, item.department].filter(Boolean).join(' · ') }}
+                    </p>
+                    <h3>
+                      <NuxtLink :to="rentalPropertyPath(item.key)">{{ item.title }}</NuxtLink>
+                    </h3>
+                    <strong class="budget-card__price">{{ money(item.budget.amountUyu) }}</strong>
+                    <p class="budget-card__basis">
+                      {{ t(query.basis === 'monthly' ? 'total' : 'rentLabel') }}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </article>
+                <div class="budget-card__body">
+                  <p class="budget-card__specs">{{ specs(item) }}</p>
+                  <dl class="budget-card__costs">
+                    <div>
+                      <dt>{{ t('rentLabel') }}</dt>
+                      <dd>{{ money(item.budget.rentUyu) }}</dd>
+                    </div>
+                    <div>
+                      <dt>{{ t('expenses') }}</dt>
+                      <dd>
+                        {{
+                          item.budget.expensesUyu === null
+                            ? t('expensesUnknown')
+                            : money(item.budget.expensesUyu)
+                        }}
+                      </dd>
+                    </div>
+                    <div v-if="item.budget.monthlyUyu !== null">
+                      <dt>{{ t('total') }}</dt>
+                      <dd>{{ money(item.budget.monthlyUyu) }}</dd>
+                    </div>
+                  </dl>
+                  <p class="budget-card__source">{{ t('source', { source: source(item) }) }}</p>
+                  <p v-if="offer(item)?.currency === 'USD'" class="budget-hint">
+                    {{
+                      t('originalPrice', { price: rentalMoney(offer(item)!.price, 'USD', locale) })
+                    }}
+                  </p>
+                  <p class="budget-hint">
+                    {{
+                      t('read', {
+                        date: rentalDate(offer(item)?.lastSeen, locale) || t('unknownDate'),
+                      })
+                    }}
+                  </p>
+                  <RentalsAvailabilityReport
+                    :offers="item.offers"
+                    :summary="item.availability"
+                    :preferred="offer(item)"
+                    :title="item.title"
+                  />
+                  <div class="budget-card__actions">
+                    <VBtn :to="rentalPropertyPath(item.key)" color="link" variant="tonal">{{
+                      t('detail')
+                    }}</VBtn>
+                    <VBtn
+                      v-if="original(item)"
+                      :href="original(item)!"
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      variant="text"
+                      append-icon="mdi-open-in-new"
+                      >{{ t('original') }}</VBtn
+                    >
+                  </div>
+                </div>
+              </article>
+            </template>
             <FeedEdge :feed="feed" edge="bottom" />
           </div>
           <FeedControls :feed="feed">

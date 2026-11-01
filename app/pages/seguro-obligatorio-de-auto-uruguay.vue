@@ -215,6 +215,9 @@
       </VTable>
     </section>
 
+    <!-- La unidad intermedia, antes de las preguntas: mismo corte que FaqSection (ver
+         docs/seo/adsense-growth-loop.md, 31/10/2026). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <section class="mb-10">
       <h2 class="text-h5 font-weight-bold mb-4">Preguntas frecuentes</h2>
       <VExpansionPanels variant="accordion">

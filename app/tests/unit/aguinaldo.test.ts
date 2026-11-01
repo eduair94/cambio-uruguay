@@ -19,6 +19,7 @@ import {
   AGUINALDO_LEAVE_CASES,
   AGUINALDO_MILESTONES,
   AGUINALDO_RETIREES,
+  AGUINALDO_SEASON_CHECKED_AT,
   AGUINALDO_SOURCES,
   AGUINALDO_UNREGISTERED,
   AGUINALDO_VERIFIED_AT,
@@ -380,5 +381,69 @@ describe('lo que dice la ley, con la palabra de la ley', () => {
     const tresMeses = AGUINALDO_FAQ.find(f => /3 meses/.test(f.question))!
     expect(tresMeses.answer).toMatch(/1960/)
     expect(tresMeses.answer).toMatch(/art\. 6/)
+  })
+})
+
+// Segunda tanda de temporada (relectura del 2026-10-19, para mergear desde el 2026-10-30): las
+// preguntas de la cola de demanda que la página contestaba a medias o con otras palabras.
+describe('segunda tanda: licencia, días, tres meses y el diciembre público', () => {
+  const byQuestion = (re: RegExp) => AGUINALDO_FAQ.find(f => re.test(f.question))!
+
+  it('la relectura tiene su propia fecha y no pisa la del archivo entero', () => {
+    expect(AGUINALDO_SEASON_CHECKED_AT).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    expect(AGUINALDO_SEASON_CHECKED_AT > AGUINALDO_VERIFIED_AT).toBe(true)
+    expect(AGUINALDO_VERIFIED_AT).toBe('2026-09-22')
+  })
+
+  it('contesta si se cobra estando de licencia, separando quién paga cada parte', () => {
+    const licencia = byQuestion(/licencia/i)
+    expect(licencia.question).toMatch(/recibir el aguinaldo si estoy de licencia/i)
+    expect(licencia.short).toMatch(/^Sí/)
+    expect(licencia.answer).toMatch(/113\/026/)
+    expect(licencia.answer).toMatch(/14\.407/)
+    expect(licencia.answer).toMatch(/19\.161/)
+    // Que el jornal de licencia integre la base no tiene página oficial: se dice como razonamiento.
+    expect(licencia.answer).toMatch(/razonamiento y no cita/)
+    expect(licencia.answer).toMatch(/49\/000/)
+  })
+
+  it('la pregunta de los días da la equivalencia aritmética, no una regla inventada', () => {
+    const dias = byQuestion(/cuántos días/i)
+    expect(dias.question).toMatch(/por año/)
+    expect(dias.short).toMatch(/un sueldo mensual/)
+    expect(dias.answer).toMatch(/art\. 2/)
+    expect(dias.answer).toMatch(/promedio/)
+    // 240 jornales ÷ 12 = 20: la cuenta del ejemplo tiene que cerrar.
+    expect(dias.answer).toMatch(/240 jornales[^.]*20 jornales/)
+    expect(240 / 12).toBe(20)
+  })
+
+  it('la de los tres meses contesta también a quien sigue trabajando, con el decreto', () => {
+    const tres = byQuestion(/3 meses/)
+    expect(tres.question).toMatch(/llevo 3 meses trabajando/)
+    expect(tres.answer).toMatch(/113\/026/)
+    expect(tres.answer).toMatch(/30 de noviembre/)
+    expect(tres.answer).toMatch(/liquidación/)
+  })
+
+  it('la de incapacidad lleva la pregunta como se busca: quién paga', () => {
+    const inc = byQuestion(/incapacitad/)
+    expect(inc.question).toMatch(/^¿Quién paga el aguinaldo/)
+    expect(inc.short).toMatch(/BPS/)
+    expect(inc.short).toMatch(/empleador/)
+  })
+
+  it('el diciembre de los públicos se publica con su antecedente fechado, no con una fecha adivinada', () => {
+    const publicos = AGUINALDO_2026_CALENDAR.find(r => /públicos/i.test(r.who))!
+    expect(publicos.december).toMatch(/no tiene decreto \(al 19 de octubre de 2026\)/)
+    expect(publicos.december).toMatch(/270\/025/)
+    expect(publicos.december).toMatch(/15 de diciembre/)
+    expect(publicos.december).not.toMatch(/diciembre de 2026[^.]*15 de diciembre/)
+    expect(AGUINALDO_SOURCES.map(s => s.url)).toContain(
+      'https://www.impo.com.uy/bases/decretos/270-2025'
+    )
+    const hasta = byQuestion(/Hasta cuándo pueden pagar/)
+    expect(hasta.answer).toMatch(/19 de octubre de 2026/)
+    expect(hasta.answer).not.toMatch(/22 de setiembre/)
   })
 })

@@ -115,7 +115,7 @@ const SIN_LECTOR_QUE_LA_NECESITE = [
   '/offline', // fallback de la PWA, noindex
   '/opinion-alquileres', // la encuesta: se llega desde los correos y la pregunta, noindex
   '/opiniones-alquileres', // privada, requireAdmin
-  '/oportunidades-reddit', // privada, requireAdmin
+  '/oportunidades-reddit', // noindex, se comparte por enlace
   '/preguntas-frecuentes', // sobre el propio sitio
   '/terminos',
   '/widget', // para embeber, noindex
@@ -149,13 +149,41 @@ const SIN_LECTOR_QUE_LA_NECESITE = [
  */
 const DEUDA_SIN_ENLACE = [
   '/apps-utiles-uruguay',
-  '/fondo-de-solidaridad-uruguay',
   '/precio-del-boleto-montevideo',
-  '/ropa-por-kilo-uruguay',
   '/seguro-obligatorio-de-auto-uruguay',
 ]
 
 /** El trinquete. Sólo puede bajar: subirlo es publicar una página que nadie enlaza. */
+// 5 → 4 el 2026-10-29: `/fondo-de-solidaridad-uruguay`, que era la ÚNICA ruta libre de los cinco
+// pozos ese día (`npm run seo_debt`: 1 de 58) y que además cumplió el 2026-10-28 los 29 días de su
+// propia fila `fondo-de-solidaridad`, del 30/9.
+//
+// El enlace sale de `/declaracion-de-irpf-uruguay`, cuya última fila es del 27/9 —libre, igual que
+// el destino— y lo necesita el lector que está mirando qué le descuentan: la tarjeta «Fondo de
+// Solidaridad y aportes a cajas profesionales» de la lista de deducciones decía que se deducen si
+// se declaran en el 3100 y mandaba los valores a buscar al BPS, sin decir nunca quién lo paga. Son
+// dos cosas distintas en una tarjeta: el aporte a la caja profesional es mensual y por categoría,
+// y el Fondo es ANUAL y no lo debe todo egresado —la Ley 16.524 lo pone desde el quinto año del
+// egreso y sólo con ingresos mensuales mayores a 8 BPC—, así que quien egresó hace dos años o gana
+// por debajo del umbral puede estar buscando cómo deducir algo que no aporta. La página de destino
+// es la que contesta las dos mitades, y es además la única del sitio que publica el aporte en
+// pesos, porque la escala de la norma está en BPC y el sitio tiene la BPC del año auditada.
+//
+// Es el caso que el encabezado de `utils/solidarityFund.ts` ya dejaba escrito al nacer la página:
+// el Fondo «aparecía en nueve archivos del sitio (la calculadora de sueldo líquido, las
+// deducciones del IRPF, los gastos del hogar) SIEMPRE como un descuento que hay que meter en otra
+// cuenta, y en ninguno como la pregunta propia». Nueve menciones y ningún enlace es exactamente la
+// deuda que este trinquete mide.
+//
+// La mención de la calculadora de sueldo líquido es la más directa de las nueve —es el `hint` de
+// un campo que el lector tiene que llenar con un número que quizá no deba— y NO se tocó: esa ruta
+// está reservada hasta el 2026-11-17 por la fila `calculadora-sueldo-liquido-con-ejemplo` del
+// 19/10, y escribir el enlace ahí le cambiaría el sujeto a una ventana abierta. Entra cuando
+// cierre.
+//
+// El enlace va DENTRO de la tarjeta de la deducción (`IrpfDeduction.link`, campo nuevo y opcional,
+// calcado de `WithdrawSection.link`), no en el bloque del pie que este archivo no cuenta como
+// arreglo. `irpfCasos.test.ts` lo exige junto con el dato que lo hace seguir.
 // 10 → 9 el 2026-10-22: `/alternativa-a-bankos-uruguay`, la única de las diez con la ruta libre de
 // toda ventana de medición abierta (`npm run seo_debt`), y con el ORIGEN también libre, que es lo que
 // bloqueó a varias candidatas de los días anteriores.
@@ -383,7 +411,30 @@ const DEUDA_SIN_ENLACE = [
 // describe hechos: dejarla declarada sabiendo que ya recibe un enlace de contexto es justo el modo
 // de fallar que el trinquete de arriba persigue —un contador inflado contra una deuda menor, con
 // lugar de sobra para que la próxima página nazca huérfana y siga en verde—.
-const DEUDA_MAXIMA = 5
+// 4 → 3 el 2026-10-31: `/ropa-por-kilo-uruguay`, una de las dos únicas rutas libres de los cinco
+// pozos ese día (`npm run seo_debt`: 2 de 37) y la única de las dos cuyo ORIGEN natural también
+// estaba libre — `/importar-para-revender-uruguay` no tiene ninguna fila en el libro de cambios.
+//
+// El lector lo necesita y es el caso más fuerte que hubo en esta lista, porque el origen no le
+// contesta mal: le contesta BIEN la pregunta equivocada. Su simulador resuelve la RUTA (factura y
+// peso contra los topes de la prestación única) y, para 20 kg de ropa usada, devuelve «entra por
+// courier al 60 %: sin DUA y sin despachante», que es verdad y es una decisión comercial ruinosa.
+// Le faltan las dos mitades que la página de destino sí tiene con fuente y fecha (verificada el
+// 2026-10-02): que las prendas NUEVAS de los capítulos 61 y 62 necesitan licencia de importación de
+// la Dirección Nacional de Industrias (Decreto 8/022) sin excepción postal —que es justo el caso que
+// la FAQ «¿Y si mi producto necesita un certificado y no lo tengo?» describe con el art. 7 del
+// Decreto 50/026— mientras la usada (partida 6309) queda fuera de esa licencia; y que el flete
+// aéreo por kilo cuesta varias veces lo que vale el kilo en origen, así que el régimen entra y el
+// negocio no cierra. Su cuadro «Trámites extra, producto por producto» son accesorios de celular:
+// la ropa no estaba ahí ni en ninguna otra parte de la página.
+//
+// El enlace va en el cuerpo VISIBLE de ese cuadro y no en el acordeón de preguntas: la nota se lee
+// sin abrir nada, en la sección donde está parado quien pregunta qué trámites lleva su producto.
+// No se le restató ninguna cifra del destino —el porcentaje del flete y el precio por kilo en
+// origen envejecen con las tarifas, y un número correcto en su momento publicado como vigente es el
+// modo de fallar que este repo ya tiene escrito—: la nota nombra las normas y el orden de magnitud,
+// y el detalle lo sirve el destino.
+const DEUDA_MAXIMA = 3
 
 describe('ninguna página de lectura queda sin un enlace de contexto', () => {
   it('las páginas sin enlace son exactamente las declaradas', () => {

@@ -260,7 +260,7 @@ import type { Guide } from './guides'
 export const redditGuides: readonly Guide[] = [
   {
     slug: 'no-pagar-prestamo-e-irse-del-pais-uruguay',
-    title: '¿Qué pasa si no pago un préstamo en Uruguay (y me voy del país)?',
+    title: 'No pagar un préstamo no es delito (art. 52)',
     description:
       'No pagar un préstamo no es delito: la Constitución prohíbe la prisión por deudas (art. 52). Hay juicio ejecutivo y embargo, e irte del país no lo borra.',
     tag: 'DEUDA',
@@ -392,7 +392,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'garantias-de-alquiler-uruguay',
     title: 'Garantía de alquiler: 3 % mensual o prima',
     description:
-      'Comparativa de las garantías de alquiler en Uruguay: cuánto cuesta cada una, cuánto podés alquilar y cuál acepta más rápido, con lo que publica cada proveedor.',
+      'Comparativa: las garantías de retención (Contaduría, ANDA, fondo estatal) cobran 3 % mensual y las aseguradoras no publican la prima. Topes del 30 al 40 %.',
     tag: 'GARANTÍAS',
     updatedAt: '2026-09-15',
     sections: [
@@ -1404,7 +1404,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'hacer-un-testamento-uruguay',
     title: 'Cómo hacer un testamento en Uruguay',
     description:
-      'Cómo hacer un testamento en Uruguay: tipos abierto y cerrado, qué podés y qué no podés disponer por la legítima, rol del escribano, costos y cómo revocarlo.',
+      'Con hijos, la legítima ya reserva la mayor parte y sólo disponés del resto; el honorario notarial no tiene arancel único, así que se pide presupuesto.',
     tag: 'TESTAMENTO',
     updatedAt: '2026-07-18',
     sections: [
@@ -2270,7 +2270,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'despido-y-liquidacion-uruguay',
-    title: 'Despido y liquidación en Uruguay: qué te corresponde',
+    title: 'Despido y liquidación: un mes por año',
     description:
       'Un mes de sueldo por año o fracción, con tope de seis mensualidades, y el jornalero por su propio régimen en jornales. Qué entra en esa base de cálculo.',
     tag: 'DESPIDO',
@@ -2609,7 +2609,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'trabajar-para-el-exterior-desde-uruguay',
-    title: 'Trabajar para el exterior desde Uruguay: cómo facturar y tributar',
+    title: 'Trabajar para el exterior: facturás sin IVA',
     description:
       'Facturar al exterior sale sin IVA porque la operación no está gravada: no es una «tasa cero», que en Uruguay no existe. Unipersonal, Literal E, IRAE y BPS.',
     tag: 'EXTERIOR',
@@ -3594,7 +3594,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'importar-de-aliexpress-a-uruguay',
     title: 'AliExpress a Uruguay: USD 800 al año o 60 %',
     description:
-      'Cómo importar de AliExpress a Uruguay: la franquicia anual de USD 800, el 60% con mínimo de USD 20 por envío, por qué AliExpress parte tu pedido en varios trackings y qué cobra el Correo aparte del impuesto.',
+      'El mínimo de USD 20 es por tracking y AliExpress parte el pedido en varios: un carrito de USD 40 puede pagar USD 60. El «USD 200 libre» es sólo de EE.UU.',
     tag: 'IMPORTACIÓN',
     updatedAt: '2026-08-12',
     sections: [
@@ -3779,7 +3779,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'comprar-en-amazon-desde-uruguay',
-    title: 'Comprar en Amazon desde Uruguay: courier, aduana y costo real',
+    title: 'Comprar en Amazon: el IVA es todo o nada',
     description:
       'Hasta USD 200 de EE.UU. no pagás IVA, y es todo o nada: con USD 201 pagás sobre el total. Más la franquicia anual de USD 800 en hasta 3 envíos.',
     tag: 'IMPORTACIÓN',
@@ -3803,7 +3803,7 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         heading: 'El cambio de octubre de 2026: el vendedor registrado',
-        body: 'Hay una condición nueva que conviene tener en el radar. A partir del 1 de octubre de 2026, para que una compra de EE.UU. mantenga la exoneración de IVA, el emisor de la factura (el vendedor o la plataforma, no el courier) tiene que estar registrado ante la Aduana, y el sistema lo valida de forma automática. Si el vendedor no está registrado, el envío pagaría IVA aunque sea de EE.UU. y esté por debajo de USD 200. Esa fecha ya se postergó dos veces, así que podría moverse de nuevo; antes de una compra grande, verificá si ya está en vigencia. Es la diferencia entre pagar o no pagar el IVA, así que no la pases por alto.',
+        body: 'Hay una condición nueva que ya corre. Para que una compra de EE.UU. mantenga la exoneración de IVA, el emisor de la factura (el vendedor o la plataforma, no el courier) tiene que figurar en el registro de empresas extranjeras de la Aduana. Las fechas no coinciden: la RG DNA 21/2026 lo hizo exigible desde el 1 de octubre de 2026, después de dos prórrogas, y la página de franquicia de la Aduana lo anuncia "a partir del 3 de noviembre", que es cuando arranca la validación automática del sistema (RG DNA 26/2026). Contá con que ya se exige. Si el vendedor no está registrado, el envío paga IVA aunque sea de EE.UU. y esté por debajo de USD 200. Desde el 5 de octubre la lista ya no depende sólo de que cada empresa se presente: la Aduana puede sumar vendedores de oficio, tu courier puede pedir el alta de uno que falta y la Aduana tiene que publicar la lista en su sitio. Antes de una compra grande, fijate que el vendedor esté en esa lista. Es la diferencia entre pagar o no pagar el IVA, así que no la pases por alto.',
       },
       {
         heading: 'Estimá el costo y desconfiá de las páginas viejas',
@@ -3840,7 +3840,7 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         q: '¿Qué es lo del "vendedor registrado" desde octubre de 2026?',
-        a: 'Desde el 1 de octubre de 2026, para conservar la exoneración de IVA en compras de EE.UU., el emisor de la factura (el vendedor o la plataforma) debe estar registrado ante la Aduana, con validación automática del sistema. Si no lo está, el envío pagaría IVA aunque sea de EE.UU. y esté por debajo de USD 200. La fecha ya se postergó dos veces y podría moverse otra vez, así que conviene verificar si ya rige antes de una compra importante.',
+        a: 'Para conservar la exoneración de IVA en compras de EE.UU., el emisor de la factura (el vendedor o la plataforma) tiene que figurar en el registro de empresas extranjeras de la Aduana. Se exige desde el 1 de octubre de 2026 (RG DNA 21/2026), y la validación automática del sistema arranca el 3 de noviembre (RG DNA 26/2026). Si no figura, el envío paga IVA aunque sea de EE.UU. y esté por debajo de USD 200. Vos no podés registrarlo, pero desde el 5 de octubre tu courier puede pedir que lo agreguen; antes de una compra importante, revisá la lista que publica la Aduana.',
       },
       {
         q: 'Si Amazon me lo manda por correo común en vez de courier, ¿cambia algo?',
@@ -3871,13 +3871,25 @@ export const redditGuides: readonly Guide[] = [
         url: 'https://www.aduanas.gub.uy/innovaportal/file/28613/1/rg-21-2026.pdf',
         publisher: 'Dirección Nacional de Aduanas',
       },
+      {
+        label:
+          'Resolución General 26/2026 — alta de vendedores de oficio y a pedido del operador postal, lista publicada por la DNA y validación automática desde el 3/11/2026',
+        url: 'https://www.aduanas.gub.uy/innovaportal/file/28724/1/rg-26-2026-exoneracion-iva-encomiendas-postales.pdf',
+        publisher: 'Dirección Nacional de Aduanas',
+      },
+      {
+        label:
+          'DNA — régimen de franquicia: el registro del emisor de la factura y la lista de vendedores de EE.UU. registrados',
+        url: 'https://www.aduanas.gub.uy/innovaportal/v/28221/1/innova.front/',
+        publisher: 'Dirección Nacional de Aduanas',
+      },
     ],
   },
   {
     slug: 'elegir-tarjeta-credito-beneficios-uruguay',
     title: 'Qué tarjeta elegir: depende de cómo gastás',
     description:
-      'Cómo comparar tarjetas de crédito en Uruguay por sus beneficios reales: la red de descuentos, la acumulación de puntos o millas, el canje, el costo anual y cómo elegir la tarjeta que rinde para cómo gastás vos.',
+      'Cinco factores deciden: red de descuentos, acumulación, canje, costo anual y flexibilidad. Para el gasto diario el descuento en la caja gana a los puntos.',
     tag: 'TARJETAS',
     updatedAt: '2026-07-18',
     sections: [
@@ -3980,7 +3992,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'tarjeta-debito-vs-credito-uruguay',
     title: 'Débito gasta lo tuyo; crédito te presta',
     description:
-      'Tarjeta de débito o de crédito en Uruguay: diferencias reales, la rebaja de IVA en pagos electrónicos (Ley 19.210), protección ante fraude, cómo cuidar el presupuesto y cuándo conviene cada una.',
+      'El débito gasta lo tuyo y suma la rebaja de IVA en pagos electrónicos (Ley 19.210); el crédito da más protección ante un fraude: desconocés antes de pagar.',
     tag: 'TARJETAS',
     updatedAt: '2026-07-18',
     sections: [
@@ -4033,7 +4045,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'reforma-jubilatoria-uruguay-que-cambia',
     title: 'Reforma jubilatoria: edad por generación',
     description:
-      'Qué cambia con la reforma jubilatoria (Ley 20.130) en Uruguay: el nuevo Sistema Previsional Común, cómo sube la edad de retiro según el año en que naciste y cómo afecta tu jubilación.',
+      'La edad va a 65 por generación: antes de 1973 siguen 60 años y 30 de servicios, y 1973-1976 suben uno por año. Ley 20.130 y el Sistema Previsional Común.',
     tag: 'REFORMA',
     updatedAt: '2026-08-10',
     sections: [
@@ -4498,7 +4510,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'horas-extra-en-uruguay',
-    title: 'Horas extra en Uruguay: cuándo se generan y cómo se pagan',
+    title: 'Horas extra: el doble, y 150 % en feriado',
     description:
       'La hora extra vale 100 % más en día hábil y 150 % en descanso o feriado (Ley 15.996). Es irrenunciable y se genera pasadas las 8 diarias o 44/48 semanales.',
     tag: 'HORAS EXTRA',
@@ -4593,7 +4605,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'llegar-tarde-tolerancia-y-sanciones-uruguay',
-    title: 'Llegar tarde, tolerancia y sanciones en el trabajo (Uruguay)',
+    title: 'Llegar tarde: sanciones sí, multas no',
     description:
       'Ninguna ley obliga a dar tolerancia en el privado: la fija tu convenio. Dentro de ella no hay falta, y el descuento es proporcional, nunca una multa.',
     tag: 'PUNTUALIDAD',
@@ -4685,7 +4697,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'me-certifique-subsidio-por-enfermedad-uruguay',
-    title: 'Me certifiqué: cuánto cobro, desde qué día, quién paga, y si me pueden despedir',
+    title: 'Me certifiqué: cobro el 70 % desde el día 4',
     description:
       'El BPS paga el 70 % desde el cuarto día certificado —el primero si hay internación—, tope de $ 67.754 (01/2026). Despedirte certificado cuesta el doble.',
     tag: 'ENFERMEDAD',
@@ -4986,7 +4998,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'me-deben-el-sueldo-uruguay',
-    title: 'Me deben el sueldo: cómo reclamar en Uruguay',
+    title: 'Me deben el sueldo: reclamar con 10 % más',
     description:
       'Si cobrás por mes, pasado el día 10 corrido ya es incumplimiento (Ley 10.449) y corre solo un recargo del 10 % (Ley 18.572). Un año para reclamar.',
     tag: 'RECLAMO',
@@ -5118,7 +5130,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'abogado-gratis-uruguay',
-    title: 'Abogado gratis en Uruguay: qué puerta te corresponde',
+    title: 'Abogado gratis: cada problema, su puerta',
     description:
       'El Consultorio Jurídico atiende gratis en Montevideo hasta $ 55.000 nominales (2026); lo laboral lo asesora el MTSS y el juicio, la Defensoría Pública.',
     tag: 'ACCESO',
@@ -5227,7 +5239,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'estudio-de-cobranza-uruguay',
-    title: 'Te llama un estudio de cobranza: qué puede y qué no',
+    title: 'Cobranza: el estudio no retiene tu sueldo',
     description:
       'Un cobrador no puede retenerte el sueldo: la Ley 17.829 tasa las retenciones y deja un piso del 35 %. En el Clearing el registro dura hasta 10 años.',
     tag: 'COBRANZA',

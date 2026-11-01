@@ -52,6 +52,11 @@
 //   Uruguay
 //   - Decreto 50/026 arts. 3 y 5 (procedencia = embarcado por el vendedor residente fiscal; valor
 //     = total de la factura)   https://www.impo.com.uy/bases/decretos/50-2026
+//   - RG DNA 09/2026 Anexo I nums. 3 y 10 (procedencia = residencia del emisor de la factura
+//     REGISTRADO ante la DNA) y RG DNA 26/2026 (alta a pedido del operador postal desde el
+//     5/10/2026), releídas el 2026-10-31
+//     https://www.aduanas.gub.uy/innovaportal/file/28428/1/resolucion-9_2026.pdf
+//     https://www.aduanas.gub.uy/innovaportal/file/28724/1/rg-26-2026-exoneracion-iva-encomiendas-postales.pdf
 //   eBay
 //   - Política de Devolución de tu dinero (excluye expresamente el reenvío por casillero)
 //     https://www.ebay.com/help/policies/ebay-money-back-guarantee-policy/ebay-money-back-guarantee-policy?id=4210
@@ -404,15 +409,28 @@ export const ROUTE_TRAITS: RouteTrait[] = [
     id: 'exoneracion-uy',
     dimension: 'Exoneración de IVA uruguaya (compras de EE.UU. hasta US$ 200)',
     byRoute: {
-      directo: 'Depende de dónde facture el vendedor, no de por dónde pase el paquete.',
+      directo:
+        'Depende de dónde facture el vendedor, no de por dónde pase el paquete, y de que ese vendedor figure en el registro de empresas extranjeras de la DNA.',
       'casillero-usa':
-        'NO la habilita. El Decreto 50/026 art. 3 pide que el envío sea "embarcado por el vendedor residente fiscal" en el país del acuerdo, y se acredita con la factura. El casillero no es el vendedor.',
+        'NO la habilita. El Decreto 50/026 art. 3 pide que el envío sea "embarcado por el vendedor residente fiscal" en el país del acuerdo, y la RG DNA 09/2026 cuenta la residencia del emisor de la factura registrado ante la DNA. El casillero no es el vendedor.',
       'casillero-ue': 'No aplica: no hay acuerdo comercial con la Unión Europea a estos efectos.',
     },
     sources: [
       {
         label: 'Decreto 50/026, art. 3',
         url: 'https://www.impo.com.uy/bases/decretos/50-2026',
+        kind: 'norma',
+      },
+      {
+        label:
+          'RG DNA 09/2026, Anexo I nums. 3 y 10 — procedencia = residencia del emisor registrado',
+        url: 'https://www.aduanas.gub.uy/innovaportal/file/28428/1/resolucion-9_2026.pdf',
+        kind: 'norma',
+      },
+      {
+        label:
+          'RG DNA 26/2026 — alta de vendedores a pedido del operador postal (desde el 5/10/2026)',
+        url: 'https://www.aduanas.gub.uy/innovaportal/file/28724/1/rg-26-2026-exoneracion-iva-encomiendas-postales.pdf',
         kind: 'norma',
       },
       {
@@ -576,11 +594,17 @@ export const ROUTE_TRAPS: RouteTrap[] = [
     id: 'miami-no-convierte',
     title: 'Pasar por Miami no vuelve estadounidense a la compra',
     detail:
-      'Es el error más repetido. La exoneración uruguaya sigue al VENDEDOR, no a la ruta: el envío tiene que ser "embarcado por el vendedor residente fiscal" en el país del acuerdo y se acredita con la factura. Un casillero no vende ni factura. El reloj sigue siendo italiano después de dormir una semana en un depósito de Doral.',
+      'Es el error más repetido. La exoneración uruguaya sigue al VENDEDOR, no a la ruta: el envío tiene que ser "embarcado por el vendedor residente fiscal" en el país del acuerdo, y desde octubre de 2026 cuenta el emisor de la factura que figura en el registro de la DNA. Un casillero no vende ni factura. El reloj sigue siendo italiano después de dormir una semana en un depósito de Doral.',
     sources: [
       {
         label: 'Decreto 50/026, art. 3',
         url: 'https://www.impo.com.uy/bases/decretos/50-2026',
+        kind: 'norma',
+      },
+      {
+        label:
+          'RG DNA 09/2026, Anexo I nums. 3 y 10 — procedencia = residencia del emisor registrado',
+        url: 'https://www.aduanas.gub.uy/innovaportal/file/28428/1/resolucion-9_2026.pdf',
         kind: 'norma',
       },
     ],
@@ -865,7 +889,7 @@ export const SHIPPING_ROUTES_SOURCES: RouteSource[] = [
 export const SHIPPING_ROUTES_FAQS: { q: string; a: string }[] = [
   {
     q: '¿Mandarlo a mi casillero de Miami no me ahorra el IVA?',
-    a: 'No. La exoneración uruguaya (compras de EE.UU. hasta US$ 200) sigue al vendedor, no al recorrido: el Decreto 50/026 art. 3 exige que el envío sea "embarcado por el vendedor residente fiscal" en el país del acuerdo, y eso se acredita con la factura. Si le comprás a un italiano, la factura es italiana y el casillero no cambia nada. Además, desde el 29/08/2025 el paquete que entra a EE.UU. ya no tiene la exención de US$ 800: paga arancel y tasas allá.',
+    a: 'No. La exoneración uruguaya (compras de EE.UU. hasta US$ 200) sigue al vendedor, no al recorrido: el Decreto 50/026 art. 3 exige que el envío sea "embarcado por el vendedor residente fiscal" en el país del acuerdo, y la Aduana cuenta la residencia del emisor de la factura que figura en su registro de empresas extranjeras (RG DNA 09/2026). Si le comprás a un italiano, la factura es italiana y el casillero no cambia nada. Además, desde el 29/08/2025 el paquete que entra a EE.UU. ya no tiene la exención de US$ 800: paga arancel y tasas allá.',
   },
   {
     q: 'Entonces, ¿el casillero en España es mejor?',

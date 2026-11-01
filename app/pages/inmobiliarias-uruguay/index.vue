@@ -64,7 +64,10 @@
         <p class="agencies-count">{{ data.total.toLocaleString(locale) }} {{ t('agencies') }}</p>
         <div ref="resultsList">
           <FeedEdge :feed="feed" edge="top" />
-          <AgenciesAgencyCard v-for="item in feed.items" :key="item.agency.key" :item="item" />
+          <template v-for="(item, index) in feed.items" :key="item.agency.key">
+            <FeedAd :index="index" :feed="feed" />
+            <AgenciesAgencyCard :item="item" />
+          </template>
           <FeedEdge :feed="feed" edge="bottom" />
         </div>
       </template>

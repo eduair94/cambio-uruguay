@@ -220,14 +220,15 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
           </div>
           <div v-if="!error" ref="resultsList" class="opportunities__list">
             <FeedEdge :feed="feed" edge="top" />
-            <OpportunityCard
-              v-for="item in feed.items"
-              :key="item.subject.id"
-              :item="item"
-              :signal="query.signal"
-              :stale="data?.stale"
-              @preview="openPreview"
-            />
+            <template v-for="(item, index) in feed.items" :key="item.subject.id">
+              <FeedAd :index="index" :feed="feed" />
+              <OpportunityCard
+                :item="item"
+                :signal="query.signal"
+                :stale="data?.stale"
+                @preview="openPreview"
+              />
+            </template>
             <FeedEdge :feed="feed" edge="bottom" />
           </div>
           <PropertyPhotoLightbox

@@ -504,7 +504,9 @@ const PATH_FAMILIES: ReadonlyArray<readonly [RegExp, Family]> = [
   [/hipotec|venta-viviendas|catastral|contribucion-inmobiliaria|comprar-o-alquilar|cooperativas-de-vivienda|trasmisiones/, "viviendas"],
   [/alquil|inmobiliaria|garantia-de-alquiler|barrio|donde-vivir|desalojo|gastos-comunes|mudanza|cortes-de-luz/, "alquileres"],
   [/auto|vehicul|latin-ncap|patente|libreta|transito/, "autos"],
-  [/aduana|courier|franquicia|importa|temu|shein|casillero|regalos-del-exterior|compra-exterior|paquete/, "aduana"],
+  // Las guías de tiendas de afuera ("comprar-en-amazon-desde-uruguay") no nombran la aduana en la
+  // ruta, y en la primera corrida (28/10/2026) salían con el tema "Otros".
+  [/aduana|courier|franquicia|importa|temu|shein|amazon|aliexpress|ebay|casillero|regalos-del-exterior|compra-exterior|compras-en-el-exterior|paquete/, "aduana"],
   [/prestamo|deuda|clearing|usura|embargo|saldar|prescripcion|adelanto-de-efectivo/, "prestamos"],
   [/tarjeta|descuento|milla|bankos|beneficios|cuenta-remunerada|banco|mercado-pago|comisiones|cheques|efectivo|transferencia/, "tarjetas"],
   [/invers|letras|plazo-fijo|cripto|ahorro/, "inversiones"],

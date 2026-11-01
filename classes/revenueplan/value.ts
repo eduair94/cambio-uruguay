@@ -192,6 +192,7 @@ export const DIRECTORIO_PATHS = new Set([
   "/autos-usados-uruguay",
   "/oportunidades-autos-usados-uruguay",
   "/mercado-de-autos-usados-uruguay",
+  "/comparar-autos-usados-uruguay",
   "/autos-chocados-y-con-deuda-uruguay",
   "/motos-usadas-uruguay",
   "/celulares-uruguay",
@@ -362,6 +363,7 @@ export const CONTENIDO_PATHS = new Set([
   "/factura-de-ute-uruguay",
   "/facturar-en-monotributo-uruguay",
   "/fecha-de-cobro-bps-uruguay",
+  "/feriados-2027-uruguay",
   "/feriados-que-se-corren-uruguay",
   "/fondo-de-solidaridad-uruguay",
   "/franquicia-viajero-uruguay",
@@ -425,7 +427,19 @@ export const CONTENIDO_PATHS = new Set([
   // guia equivalente de `/guias/*`.
   "/cortes-de-agua-por-barrio-uruguay",
   "/cortes-de-luz-por-barrio-uruguay",
-  // Tanda del 2026-10-29, y la primera que usa el HUB como racimo en vez de ir ruta por ruta. El
+  // La tercera de esa serie (2026-10-30): los reclamos de alumbrado, saneamiento y limpieza que la
+  // IM registra por barrio. Mismo racimo y mismo motivo que las dos de arriba — es lectura larga,
+  // `ads.ts` le da dos unidades en flujo y `contenidoTramoParity.test.ts` lo exige.
+  "/reclamos-a-la-intendencia-por-barrio-uruguay",
+  // Pagina nueva del 2026-10-31, clasificada en el mismo commit que la publica: la multa del voto
+  // obligatorio y los ocho actos que la Ley 16.017 traba. Es lectura larga de norma sobre un
+  // catalogo FIJO del repo (`app/utils/votingFine.ts`, verificado el 31/10/2026), sin un solo dato
+  // en vivo en su `<script setup>`, y `ads.ts` le da dos unidades en flujo. Sin esta linea entraria
+  // a `otro` y la cola de trabajo la ordenaria ocho veces por debajo de la guia equivalente de
+  // `/guias/*`; su vecina `/elecciones-bps-2026` tampoco esta aca, pero esa SI lee la UR viva.
+  "/multa-por-no-votar-uruguay",
+  // Tanda decidida el 2026-10-29 y mergeada el 11-01 (el PR esperó un re-run de CI). Es la primera
+  // que toma el HUB como racimo en vez de ir ruta por ruta, y la primera que lo deja atornillado: el
   // tema `deudas-y-credito-uruguay` declara quince entradas en `resources` (`app/utils/guideHubs.ts`)
   // y estaba partido por la mitad en dos tramos que se diferencian por OCHO VECES: ocho ya estaban
   // acá, una es la calculadora (`/herramientas/*`, dato vivo, y ahí está bien) y las seis de abajo

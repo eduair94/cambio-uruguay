@@ -13,7 +13,7 @@ export const viviendaGuides: readonly Guide[] = [
     slug: 'comision-inmobiliaria-uruguay',
     title: 'Comisión inmobiliaria: no hay tope legal',
     description:
-      'No hay tope legal: el 3 % más IVA a cada parte en la venta y un mes de alquiler más IVA sale del arancel de la Cámara Inmobiliaria. Quién paga y qué pasa si se cae.',
+      'Ninguna ley fija un tope: el 3,66 % con IVA a cada parte en la venta y 1,22 alquileres salen del arancel privado de la Cámara Inmobiliaria, de 2007.',
     tag: 'COMISIÓN',
     updatedAt: '2026-09-13',
     sections: [

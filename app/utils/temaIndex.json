@@ -90,11 +90,13 @@
         "conviene-comprar-dolares-hoy",
         "comprar-dolares-mejor-precio",
         "billete-cable-transferencia",
+        "comprar-dolares-online-uruguay",
         "mejor-momento-cambiar-divisas",
         "como-leer-cotizacion-dolar",
         "glosario-terminos-cambiarios",
         "casas-de-cambio-vs-bancos",
-        "evitar-comisiones-cambio"
+        "evitar-comisiones-cambio",
+        "billetes-y-monedas-de-uruguay"
       ],
       "terms": [
         {
@@ -774,6 +776,10 @@
           "label": "¿Qué auto usado comprar?"
         },
         {
+          "to": "/comparar-autos-usados-uruguay",
+          "label": "Comparar autos usados"
+        },
+        {
           "to": "/cuanto-vale-mi-auto-uruguay",
           "label": "¿Cuánto vale mi auto?"
         },
@@ -1045,6 +1051,10 @@
           "label": "Feriados que se corren al lunes"
         },
         {
+          "to": "/feriados-2027-uruguay",
+          "label": "Feriados 2027"
+        },
+        {
           "to": "/cuando-se-cobra-el-aguinaldo-uruguay",
           "label": "Cuándo se cobra el aguinaldo"
         },
@@ -1146,6 +1156,10 @@
         {
           "to": "/a-quien-le-reclamo-uruguay",
           "label": "A quién le reclamo"
+        },
+        {
+          "to": "/reclamos-a-la-intendencia-por-barrio-uruguay",
+          "label": "Reclamos a la Intendencia por barrio"
         },
         {
           "to": "/compensacion-por-corte-de-luz-uruguay",
@@ -1251,7 +1265,8 @@
         "conviene-ahorrar-en-dolares-uruguay",
         "interes-compuesto-explicado-uruguay",
         "errores-y-estafas-al-invertir-uruguay",
-        "comprar-criptomonedas-en-uruguay"
+        "comprar-criptomonedas-en-uruguay",
+        "impuesto-al-patrimonio-uruguay"
       ],
       "terms": [
         {
@@ -1728,6 +1743,10 @@
         {
           "to": "/apps-utiles-uruguay",
           "label": "Apps útiles y del Estado"
+        },
+        {
+          "to": "/multa-por-no-votar-uruguay",
+          "label": "Multa por no votar"
         }
       ],
       "guides": [

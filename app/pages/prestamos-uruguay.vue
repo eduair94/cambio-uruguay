@@ -207,6 +207,9 @@
     </div>
 
     <!-- Gremial / union credit -->
+    <!-- La unidad intermedia, en un corte de sección a mitad de página (ver
+         docs/seo/adsense-growth-loop.md, decimotercera iteración). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <section class="mb-6">
       <h2 class="text-h6 font-weight-bold mb-3 prestamos-group-title">
         <VIcon start size="small" color="primary">mdi-account-group-outline</VIcon>

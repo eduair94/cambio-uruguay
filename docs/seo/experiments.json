@@ -19,6 +19,24 @@
   ],
   "experiments": [
     {
+      "id": "reclamos-a-la-intendencia-por-barrio-pagina-nueva",
+      "shippedOn": "2026-10-30",
+      "routes": [
+        "/reclamos-a-la-intendencia-por-barrio-uruguay"
+      ],
+      "hypothesis": "La IM publica su Sistema Unico de Reclamos como un volcado de datos abiertos (1,7 M de filas en un ZIP de 44 MB) y ninguna tabla por barrio, asi que la pregunta por el alumbrado, el saneamiento o la limpieza de una zona no tiene respuesta publicada. El backend ya agrega ese volcado por barrio INE y hoy solo se ve como tres barras dentro de una tarjeta del directorio de alquileres: con URL propia deberia captar impresiones de reclamo a la Intendencia y de barrio concreto, como las dos gemelas de luz y agua."
+    },
+    {
+      "id": "titulos-de-las-guias-respuesta-primero-7",
+      "shippedOn": "2026-10-30",
+      "routes": [
+        "/guias/me-certifique-subsidio-por-enfermedad-uruguay",
+        "/guias/no-pagar-prestamo-e-irse-del-pais-uruguay",
+        "/guias/trabajar-para-el-exterior-desde-uruguay"
+      ],
+      "hypothesis": "Las tres guias enumeraban sus secciones en el titulo (96, 81 y 82 caracteres con la marca) y la respuesta caia del lado que el SERP recorta. Con la respuesta adelante y los tres dentro de los 60 caracteres -el 70 % desde el cuarto dia, que no pagar no es delito por el art. 52 de la Constitucion y que facturar al exterior sale sin IVA- deberia subir el CTR desde la misma posicion."
+    },
+    {
       "id": "inmobiliarias-fichas-en-el-sitemap",
       "shippedOn": "2026-10-20",
       "routes": [
@@ -2141,6 +2159,337 @@
         "interrupciones programadas ose"
       ],
       "hypothesis": "Pagina nueva, y es la gemela de agua de /cortes-de-luz-por-barrio-uruguay (3/10): el dato ya estaba en el repo y no tenia pantalla. OSE publica sus interrupciones programadas aviso por aviso y los BAJA de su web cuando el corte pasa, asi que la pregunta de quien elige donde vivir («aca cortan el agua seguido?») no tiene respuesta publicada en ninguna parte; el backend archiva cada aviso con su fecha y le deriva el barrio al leerlo, y eso hoy solo se veia como una barra dentro de una tarjeta del directorio de alquileres. La pagina no releva nada nuevo ni estrena una sola cifra: lee el mismo /api/rentals/zone-scores y le da una URL propia al atributo `agua`. Lo que la hace publicable es lo que NO afirma, y son cuatro cosas escritas en `app/utils/waterCutRanking.ts` y en su seccion de metodo: se cuentan AVISOS y no horas sin agua; solo lo programado, asi que una rotura no esta (es el recorte contrario al de la pagina de luz, y por eso las dos cifras no se comparan entre si); el barrio sale del nombre que el aviso escribe y un aviso que solo enumera calles no se reparte entre los barrios que cruzan, de modo que el total publicado es el de los avisos ATRIBUIDOS y no el de todos los que publico OSE; y una zona sin dato no aparece con cero, no aparece. El titulo y la descripcion se arman en tiempo de render con la mediana y la peor zona, porque la ventana se corre todos los dias y un literal los congelaria. El enlace entrante nace en /donde-vivir-uruguay, en el mismo renglon de metodo que ya nombraba «cortes de agua de OSE» sin poder mostrarlos, y esa ruta no tiene ninguna fila abierta en el libro."
+    },
+    {
+      "id": "comparar-autos-usados-pagina-nueva",
+      "shippedOn": "2026-10-29",
+      "routes": [
+        "/comparar-autos-usados-uruguay"
+      ],
+      "queries": [
+        "comparar autos usados",
+        "comparador de autos",
+        "onix o 208",
+        "que auto conviene mas",
+        "hilux o amarok"
+      ],
+      "hypothesis": "Pagina nueva para la intencion \"X o Y\" que la familia del auto no contestaba: el asesor (/que-auto-comprar-uruguay) parte del presupuesto y devuelve una lista, y la pagina de precios de cada modelo habla de uno solo, asi que quien ya duda entre dos o tres modelos no tenia donde ponerlos lado a lado. No releva nada nuevo: lee la misma tabla del asesor (caradvisorsnapshots) y el mismo calculo de costos, y le agrega un veredicto calculado par a par con margen de ruido por fila, dos lentes (al mismo ano y con la misma plata) y un grafico de precio por ano con la linea de presupuesto arrastrable. Se mide como pagina nueva: clics propios de la ruta a los 28 dias. Los enlaces entrantes nacen en el mismo commit en los resultados del asesor y en la pagina de precios de cada modelo con 30 avisos o mas."
+    },
+    {
+      "id": "feriados-2027-pagina-nueva",
+      "shippedOn": "2026-10-29",
+      "routes": [
+        "/feriados-2027-uruguay"
+      ],
+      "queries": [
+        "feriados 2027",
+        "feriados 2027 uruguay",
+        "fines de semana largos 2027",
+        "carnaval 2027",
+        "semana de turismo 2027"
+      ],
+      "hypothesis": "Pagina nueva para la consulta estacional que el sitio no contestaba. /feriados-que-se-corren-uruguay publica la REGLA y declara con todas las letras que no publica el calendario anual, porque dos de las trece fechas que la ley nombra (Carnaval y Semana de Turismo) no tienen dia del mes: la ley las nombra por su posicion respecto de la Pascua. Lo que faltaba era esa pieza, y se calcula igual que el corrimiento del articulo 1 se calcula hoy: la Pascua de 2027 cae el 28 de marzo, de ahi salen el lunes 8 y el martes 9 de febrero y el jueves 25 y el viernes 26 de marzo, y las quince fechas quedan completas sin copiar un dato de ningun lado. Ninguna cifra es nueva: las normas son las mismas que ya cita el catalogo verificado (Leyes 16.805, 17.414, 6.997 y 12.590 art. 18). El angulo propio es lo que un calendario pelado no dice: los seis fines de semana largos y los cuatro feriados que 2027 se come en sabado o domingo. Se mide como pagina nueva, clics propios de la ruta a los 28 dias; la demanda pica entre noviembre y enero, asi que se publica con margen para indexar. El enlace entrante nace en el mismo commit en /feriados-que-se-corren-uruguay, cuya unica fila del libro es de mas de 28 dias."
+    },
+    {
+      "id": "snippets-respuesta-primero-los-tres-libres",
+      "shippedOn": "2026-10-29",
+      "routes": [
+        "/fecha-de-cobro-bps-uruguay",
+        "/guias/casarse-por-civil-uruguay",
+        "/guias/hacer-un-testamento-uruguay"
+      ],
+      "hypothesis": "Las TRES unicas rutas de los pozos de snippet cortado que hoy no estan reservadas por una ventana abierta (el cruce contra este mismo archivo). /fecha-de-cobro-bps-uruguay era la ultima deuda de seoDescriptionBudget: 156 caracteres, uno de mas, reservada desde el 20/9 y libre hoy, y queda en 153 sin perder ningun dato. La guia de casamiento civil estaba en los DOS pozos a la vez: el titulo gastaba el renglon en el indice (\"tramite, testigos y costo\") y daba 72 con la marca, asi que pasa a la respuesta que decide el clic (\"Casarse por civil: $1.149 en la oficina\", 56), y la descripcion baja de 166 a 154 acortando la referencia a la ficha del Registro Civil sin borrar su fecha. La de testamento abria repitiendo el titulo y enumerando secciones; ahora arranca por la legitima y por que el honorario notarial no tiene arancel unico, 150 caracteres. Ninguna cifra es nueva y ninguna se escribe con mas firmeza que su fuente: la guia de testamento dice expresamente que no existe un arancel unico obligatorio, asi que el snippet no publica un precio."
+    },
+    {
+      "id": "fondo-de-solidaridad-recibe-su-enlace",
+      "shippedOn": "2026-10-29",
+      "routes": [
+        "/fondo-de-solidaridad-uruguay"
+      ],
+      "queries": [
+        "fondo de solidaridad",
+        "quienes pagan fondo de solidaridad",
+        "cuanto se paga fondo de solidaridad",
+        "desde cuando se paga el fondo de solidaridad",
+        "fondo de solidaridad deduccion irpf"
+      ],
+      "hypothesis": "Enlazado interno; el contenido de la pagina medida no cambia. Estaba en el pozo de enlaces de contexto (enlacesDeContexto.test.ts): ninguna otra pagina la enlazaba desde su contenido, asi que su unico vinculo quedaba en el bloque del pie que docs/app/INTERCONEXIONES.md midio a 11.341 px de una pagina de 15.868 -enlazada para un rastreador e invisible para un lector-. Era la UNICA ruta libre de los cinco pozos de deuda hoy (npm run seo_debt: 1 de 58), y cumplio sus 29 dias el 28/10, asi que la fila anterior sobre esta misma ruta (fondo-de-solidaridad, del 30/9) ya cerro su ventana. El enlace entra desde /declaracion-de-irpf-uruguay, cuya ultima fila es del 27/9 -libre, igual que el destino- y cuyo lector lo necesita en el punto exacto en que esta mirando que le descuentan: la tarjeta \"Fondo de Solidaridad y aportes a cajas profesionales\" de la lista de deducciones decia que se deducen si se declaran en el 3100 y mandaba los valores a buscar al BPS, sin decir nunca quien lo paga. Son dos cosas distintas metidas en una tarjeta: el aporte a la caja profesional es mensual y por categoria, y el Fondo es ANUAL y no lo debe todo egresado -la Ley 16.524 pone la contribucion desde el quinto ano del egreso y solo con ingresos mensuales mayores a 8 BPC-, asi que quien egreso hace dos anos o gana por debajo del umbral podia estar buscando como deducir algo que no aporta. Ninguna cifra es nueva: las dos que agrega la tarjeta (quinto ano y 8 BPC) son las que la pagina de destino ya publica con fuente propia (Ley 16.524 art. 3 en la redaccion del art. 271 de la Ley 19.535). El enlace va DENTRO de la tarjeta (IrpfDeduction.link, campo nuevo y opcional calcado de WithdrawSection.link), no en las relacionadas del pie. La mencion mas directa de las nueve que el Fondo tiene en el sitio -el hint del campo de la calculadora de sueldo liquido- NO se toco: esa ruta esta reservada hasta el 17/11 por calculadora-sueldo-liquido-con-ejemplo, y entra cuando cierre."
+    },
+    {
+      "id": "origen-del-trafico",
+      "shippedOn": "2026-10-30",
+      "routes": [
+        "/origen-del-trafico"
+      ],
+      "queries": [
+        "de donde viene el trafico",
+        "fuentes de trafico",
+        "sitios que enlazan"
+      ],
+      "hypothesis": "Pagina nueva e indexable, tercera hermana de /estadisticas-del-sitio y /paginas-mas-visitadas: de donde llega la gente al sitio (buscadores, asistentes de IA, redes y los sitios web que enlazan), mes a mes en 24 meses, con el patron de cada fuente (un pico de un dia, en alza, constante) y una respuesta corta arriba que dice si algun enlace trae mucha gente. Se mide si gana busquedas propias del tema y si la lista enlazada a las paginas de aterrizaje lleva lectores a ellas. Los enlaces nuevos desde las dos hermanas no se declaran: son paginas sobre el propio sitio, no paginas de lectura."
+    },
+    {
+      "id": "titulos-de-las-guias-respuesta-primero-8",
+      "shippedOn": "2026-10-30",
+      "routes": [
+        "/guias/abogado-gratis-uruguay",
+        "/guias/comprar-en-amazon-desde-uruguay",
+        "/guias/despido-y-liquidacion-uruguay",
+        "/guias/estudio-de-cobranza-uruguay",
+        "/guias/horas-extra-en-uruguay",
+        "/guias/llegar-tarde-tolerancia-y-sanciones-uruguay",
+        "/guias/me-deben-el-sueldo-uruguay"
+      ],
+      "hypothesis": "Las siete guias que quedaban libres del pozo de titulos pasados de 60 (guideSnippetBudget.test.ts: 10 -> 3, y los tres que quedan son dos reservados y el glosario). Iban de 78 a 61 caracteres publicados y el defecto es el de las ocho tandas anteriores: cinco eran la etiqueta del tema seguida del indice de la guia y dos devolvian la pregunta sin contestarla, asi que la respuesta caia del lado que el SERP recorta. Ahora cada titulo entra entero y contesta: la hora extra vale el doble y 150 % en feriado, en una compra de Amazon el IVA es todo o nada, el estudio de cobranza no te retiene el sueldo, por llegar tarde te pueden sancionar pero no multar, la indemnizacion del mensual es un mes por ano, al sueldo impago se le reclama un 10 % mas y no hay un abogado gratis sino una puerta por problema. Ninguna cifra es nueva y donde el cuerpo hedgea el titulo no afirma: el de Amazon no publica los USD 200 porque la condicion del vendedor registrado esta fechada y ya se postergo dos veces, el de despido no publica el tope de seis porque es solo del mensual, y el de llegar tarde dice sanciones si y multas no porque el cuerpo afirma que el poder disciplinario existe. Es el tramo contenido, que rinde 8x el promedio del sitio, asi que un titulo cortado cuesta mas caro aca. Se espera mas CTR a igual posicion, como midio la primera tanda. Las tres correcciones del buscador propio quedan anotadas en el test."
+    },
+    {
+      "id": "ciberlunes-black-friday-2026-fechas",
+      "shippedOn": "2026-10-31",
+      "routes": [
+        "/ciberlunes-y-black-friday-uruguay"
+      ],
+      "queries": [
+        "black friday 2026 uruguay",
+        "cuando es el black friday en uruguay 2026",
+        "cuando es el black friday 2026 en uruguay",
+        "black friday uruguay 2026",
+        "black friday noviembre 2026",
+        "ciberlunes noviembre 2026",
+        "cyber noviembre 2026",
+        "cyberlunes 2026"
+      ],
+      "hypothesis": "La pagina tuvo 264 impresiones y cero clics del 20/9 al 17/10, y casi todas eran la misma pregunta: cuando es el Black Friday 2026 en Uruguay (black friday 2026 uruguay, 116 en posicion 9,3; cuando es el black friday en uruguay 2026, 48 en 8,5; la misma con el orden cambiado, 25 en 9,8; black friday uruguay 2026, 21; black friday noviembre 2026, 18). El titulo -CyberLunes y Black Friday: descuento real?- no tenia la fecha que esas consultas piden, y el calendario todavia daba a CyberLunes noviembre como 'a confirmar' aunque la CEDU lo habia fechado el 16/9/2026 (lunes 2 al miercoles 4, nota de cedu.org.uy y ciberlunes.uy, leidas el 19/10). Ahora el titulo y la descripcion llevan las dos fechas (Black Friday viernes 27/11, el dia siguiente al Dia de Accion de Gracias que la OPM fija el jueves 26), un test las ata al calendario, la FAQ -que tambien es el FAQPage- abre con las dos preguntas de fecha, el bloque Cuando es lista todas las ediciones que faltan y no solo la proxima (a fines de octubre el titular es CyberLunes y la fecha de Black Friday, que es la que la gente busca, no aparecia), y una seccion nueva dice que hacer antes del evento (mirar el precio de hoy en cada aviso, guardar lo de la casa en la lista de equipar, cambios de precio) y que se ve aca esos dias. Es la apuesta que gano con UR/UI: el dato que la consulta pide, adentro del snippet. Para leer el veredicto: la ventana de 28 dias cae entera sobre la temporada de estas consultas, que crecen solas en noviembre, asi que la porcion de clics puede subir aunque el cambio no haga nada; lo que lo separa de la estacion es el CTR a igual posicion, que hoy es cero."
+    },
+    {
+      "id": "descripciones-de-las-guias-respuesta-primero-10",
+      "shippedOn": "2026-10-31",
+      "routes": [
+        "/guias/cajeros-automaticos-uruguay-turistas",
+        "/guias/cambiar-monedas-poco-comunes-uruguay",
+        "/guias/devolucion-iva-turistas-uruguay",
+        "/guias/dolar-cripto-usdt-uruguay",
+        "/guias/dolares-deteriorados-billetes-rechazados-uruguay",
+        "/guias/elegir-tarjeta-credito-beneficios-uruguay",
+        "/guias/horarios-casas-de-cambio-uruguay",
+        "/guias/importar-de-aliexpress-a-uruguay",
+        "/guias/precio-del-oro-en-uruguay",
+        "/guias/proyeccion-dolar-uruguay-se-puede-predecir"
+      ],
+      "hypothesis": "Las DIEZ guias que el cruce de npm run seo_debt declara libres del pozo de descripciones pasadas de 155 (guideSnippetBudget.test.ts: 19 -> 9; las nueve que quedan estan reservadas, la primera hasta el 1/11). Iban de 210 a 156 caracteres y el defecto es el de las nueve tandas anteriores en su forma mas pura: las diez abrian con la etiqueta del tema o anunciando el INDICE de la guia (Como sacar pesos con tarjeta extranjera: redes Banred y RedBROU, limites, comisiones y cuando conviene...; Como se forma el precio del oro, que es la onza troy, como pasar el valor a gramos...; Si se puede predecir el dolar, que muestran las expectativas...), asi que prometian las secciones y la respuesta caia del lado que el SERP corta. Esta tanda toca SOLO la descripcion: las diez ya entran en 60 caracteres de titulo desde las tandas de octubre, y el dato que entra no repite el del titulo -el de cajeros ya dice pagas dos comisiones, asi que la descripcion nombra RedBROU y Banred y los multiplos de 100; el del oro ya trae los 31,1035 g, asi que la descripcion pone la pureza (75 % el 18k, cerca del 58 % el 14k); el de AliExpress ya trae USD 800 al ano o 60 %, asi que la descripcion publica la trampa que cuesta plata, que el minimo de USD 20 es por TRACKING y AliExpress parte el pedido, mas que el USD 200 libre es solo de EE.UU.-. Ninguna cifra es nueva: todas estaban en la descripcion vieja o en el cuerpo de su guia, y donde el cuerpo hedgea la descripcion no afirma (los billetes del cajero suelen salir de 100 en 100, el dolar roto lo reciben algunos bancos, la Encuesta de Expectativas del BCU es la referencia que hay y no la unica). Los nueve puntos de IVA en gastronomia van separados del requisito de tarjeta del exterior, que es del hotel: esa reduccion (Decreto 235/026, hasta el 30/04/2027) alcanza tambien a residentes. Los limites por extraccion del cajero quedaron afuera porque el cuerpo los escribe del orden de unos pocos miles de pesos y un snippet no tiene lugar para esa salvedad. Es el tramo contenido, que rinde 8x el promedio del sitio, asi que una descripcion cortada cuesta mas caro aca. Se espera mas CTR a igual posicion, como midieron las tandas anteriores. Las ocho de estas diez que siguen fuera de todo tema (temaHuerfanas.test.ts) NO se tocan en este commit: entrar a un tema es otro cambio pensado para mover trafico y declararia una segunda fila sobre la misma ruta, que es justo lo que experiments_overlap.test.ts pone en rojo; entran cuando esta ventana cierre."
+    },
+    {
+      "id": "multa-por-no-votar-pagina-propia",
+      "shippedOn": "2026-10-31",
+      "routes": [
+        "/multa-por-no-votar-uruguay"
+      ],
+      "queries": [
+        "multa por no votar uruguay",
+        "cuanto es la multa por no votar",
+        "no vote que pasa uruguay",
+        "justificar la no emision del voto",
+        "credencial civica sin sello"
+      ],
+      "hypothesis": "Pagina nueva e indexable. El sitio ya contestaba la multa de UNA eleccion (/elecciones-bps-2026, el 22/11/2026, que tiene su propio regimen por la Ley 16.241) y no tenia en ninguna pagina el regimen GENERAL: medido el 31/10/2026 con grep sobre pages/ y utils/, cero menciones de credencial civica y cero de la Ley 16.017 fuera de esa pagina. El angulo propio no es el monto sino la consecuencia que aparece anos despues: la credencial sin el sello traba OCHO actos (arts. 9, 10 y 11) -cobrar sueldo, jubilacion o pension, cobrarle al Estado, firmar escrituras, presentar un escrito, inscribirse o rendir examen, comprar pasajes al exterior, entrar a una licitacion y entrar a la Administracion Publica- y de los ocho hay UNO que la propia ley dice que pagar no desbloquea: el literal D del art. 11, 'esta prohibicion no sera subsanada con el pago de la multa prevista en el articulo 8'. Eso es lo que decide una accion distinta (justificar, que tiene plazo) y es el titular de la pagina. Ninguna cifra se invento ni se calculo: la multa va en UR porque asi la escribe el art. 8 (1 UR la primera vez, 3 UR cada siguiente, duplicadas por el art. 12 para funcionarios publicos y profesionales de la UdelaR) y los pesos se copian de la propia pagina de la Corte Electoral con la fecha en que se leyo ($ 1.740 nacionales 2024, $ 1.820 departamentales 2025, $ 1.900 BPS 2026). DOS cifras se dejaron AFUERA a proposito: la multa de la segunda omision en pesos, porque la Corte Electoral solo publica la de la primera, y el monto de cualquier eleccion futura, porque lo fija una resolucion que todavia no existe; multiplicar la UR de hoy por tres daria un numero que ninguna oficina va a cobrar. El catalogo es utils/votingFine.ts con su test, que fija el duplicado del art. 12 como el doble exacto del art. 8 y exige que el acto no subsanable siga existiendo. El enlace de contexto entra desde /elecciones-bps-2026, cuya ultima fila es del 27/9 y ya cerro su ventana; a esa pagina no se le toco el snippet ni el resto del cuerpo. No se declara una fila por ese enlace: el hecho medido es la pagina nueva."
+    },
+    {
+      "id": "aguinaldo-temporada-licencia-dias-tres-meses",
+      "shippedOn": "2026-10-31",
+      "routes": [
+        "/cuando-se-cobra-el-aguinaldo-uruguay"
+      ],
+      "queries": [
+        "cuantos dias aguinaldo",
+        "cuantos dias aguinaldo corresponden por año",
+        "puedo recibir aguinaldo si llevo 3 meses trabajando",
+        "puedo recibir aguinaldo si estoy con licencia",
+        "puedo recibir aguinaldo si estoy incapacitado",
+        "quien paga el aguinaldo cuando estás incapacitado",
+        "que pasa si no pagan aguinaldo a tiempo"
+      ],
+      "hypothesis": "Segunda tanda de temporada, lista antes del pico de noviembre y diciembre. La cola de autocompletado seguia marcando con cobertura baja preguntas que la pagina contestaba con otras palabras o a medias. Los dias ahora dan la equivalencia (con el mismo sueldo todo el año, un sueldo mensual: aritmetica del art. 2 de la Ley 12.840, no una regla nueva); la de tres meses contesta tambien a quien sigue trabajando (cuota de diciembre del Decreto 113/026); la de incapacidad se titula como se busca (quien paga); y entra una nueva sobre cobrarlo estando de licencia, con lo que es razonamiento marcado como razonamiento. El calendario suma el antecedente de los funcionarios publicos (Decreto 270/025, desde el 15/12/2025) porque el de 2026 no salio, y lo fechado 'al 22 de setiembre' pasa a la relectura del 19/10. Titulo y descripcion sin cambios. Deberia sumar impresiones y clics en esas consultas de cola larga, donde arriba hay foros, y sostener la porcion de clics de la pagina en diciembre."
+    },
+    {
+      "id": "monotributo-deuda-vieja-y-exceso-de-facturacion",
+      "shippedOn": "2026-10-31",
+      "routes": [
+        "/facturar-en-monotributo-uruguay"
+      ],
+      "queries": [
+        "que pasa si debo monotributo",
+        "que pasa si tengo monotributo y no facturo",
+        "qué pasa si me excedo en la facturación del monotributo",
+        "quien paga el monotributo el empleado o el empleador",
+        "cuanto es la facturación anual del monotributo social"
+      ],
+      "hypothesis": "La seccion 'Que pasa si' del 23/9 contestaba la deuda corriente y no la vieja, y la cola de demanda seguia trayendo 'que pasa si debo monotributo'. Se agrega la prescripcion de las cuotas de BPS (Codigo Tributario art. 38) con lo que dice el instructivo de BPS y casi nadie cuenta: no es automatica (tramite 'Prescripcion de adeudos'), pedir un convenio sobre una deuda prescrita es renuncia tacita, lo pagado no se devuelve y con sentencia firme el plazo pasa a veinte años. Ademas, la segunda lectura de 'no facturo' (vendo sin boleta: el monotributo no exime de documentar; lo exceptuado por monto va en el comprobante diario global), la pregunta del tope titulada como se busca ('me excedo en la facturacion') y el tope anual del Mides llevado a promedio mensual sin presentarlo como tope. Titulo y descripcion sin cambios. Deberia sumar impresiones y clics en esas consultas, donde arriba hay hilos de Reddit."
+    },
+    {
+      "id": "irpf-sin-ingresos-no-declara",
+      "shippedOn": "2026-10-31",
+      "routes": [
+        "/declaracion-de-irpf-uruguay"
+      ],
+      "queries": [
+        "estoy obligado a presnetar declaracion de irpf en uruguay si no tuve ingresos un año?",
+        "como saber si tengo que hacer declaracion jurada irpf",
+        "declaracion de irpf"
+      ],
+      "hypothesis": "La consulta que mas impresiones le trae a la pagina en Search Console (20/9 al 17/10/2026: 'estoy obligado a presentar declaracion de irpf en uruguay si no tuve ingresos un año?', posicion 5,3, cero clics) no tenia respuesta en ningun lado: ni en la descripcion, que hablaba de retencion, ni en el cuerpo. Se contesta arriba, en la seccion de obligados (no: todos los supuestos con que DGI define la obligacion en la campaña 2026 parten de haber cobrado algo; el independiente inscripto sin actividad presenta el 1302 'sin actividad' solo si declaro rentas fuera de la dependencia), en el FAQ con schema y en la descripcion, que abre con esa respuesta; el titulo no cambia. El caso del 3100 suma el minimo no imponible de la campaña. No se toca la seccion de ejercicios anteriores ni sus limites sobre creditos viejos. Deberia subir el CTR de esa consulta desde la misma posicion."
+    },
+    {
+      "id": "convertir-cifra-antes-del-corte",
+      "shippedOn": "2026-10-31",
+      "routes": [
+        "/convertir/*"
+      ],
+      "queries": [
+        "50000 pesos argentinos a uruguayos",
+        "1000 pesos argentinos a uruguayos",
+        "10000 pesos argentinos a uruguayos",
+        "100000 pesos argentinos a uruguayos",
+        "5000 pesos argentinos a uruguayos",
+        "50 mil pesos argentinos a uruguayos",
+        "100 mil pesos argentinos a uruguayos"
+      ],
+      "hypothesis": "Las conversiones de pesos argentinos a uruguayos juntaron miles de impresiones en posicion 6 a 8 con cero clics del 1 al 28/10 (50000 pesos argentinos a uruguayos: 1649 impresiones y 2 clics; 1000: 1553 y 0; 10000: 1497 y 0), y la familia entera de /convertir paso las cien mil impresiones con unas decenas de clics. El titulo era la pregunta del H1 con la cifra al final (Cuanto es 50.000 pesos argentinos en pesos uruguayos? = $ 1.000,00, 68 caracteres mas la marca): Google corta cerca de los 60 y lo que se perdia era justo la cifra. Ahora va la consulta tal cual se escribe y la cifra antes del corte (50.000 pesos argentinos a pesos uruguayos: $ 1.000 hoy, todas las conversiones bajo 60, con test), y la descripcion abre con lo que el conversor del propio buscador no tiene: lo que paga o cobra hoy la mejor de mas de 40 casas, no la cotizacion de referencia, que para el peso argentino es muy distinta. El H1 y el cuerpo no cambian. Se mide la porcion de clics del sitio que se lleva la familia; parte de estas impresiones son cero-clic por el conversor del buscador, asi que el techo es bajo, pero el punto de partida es cero."
+    },
+    {
+      "id": "ropa-por-kilo-recibe-su-enlace",
+      "shippedOn": "2026-10-31",
+      "routes": [
+        "/ropa-por-kilo-uruguay"
+      ],
+      "hypothesis": "Enlazado interno; el contenido de la pagina medida no cambia. Estaba en el pozo de enlaces de contexto (enlacesDeContexto.test.ts): ninguna otra pagina la enlazaba desde su contenido, asi que su unico vinculo quedaba en el bloque del pie que docs/app/INTERCONEXIONES.md midio a 11.341 px de una pagina de 15.868 -enlazada para un rastreador e invisible para un lector-. Era una de las dos unicas rutas libres de los cinco pozos hoy (npm run seo_debt: 2 de 37) y la unica cuyo origen natural tambien estaba libre: /importar-para-revender-uruguay no tiene ninguna fila en el libro de cambios. El lector lo necesita porque el origen no le contesta mal, le contesta bien la pregunta equivocada: su simulador resuelve la RUTA (factura y peso contra los topes de la prestacion unica) y para 20 kg de ropa usada devuelve -entra por courier al 60 %, sin DUA y sin despachante-, que es verdad y es una decision comercial ruinosa. La nota va en el cuerpo visible del cuadro de tramites por producto, que son accesorios de celular y no incluian la ropa, y nombra las dos mitades que el destino tiene con fuente y fecha: la licencia de importacion de textiles de la DNI para los capitulos 61 y 62 sin excepcion postal frente a la usada de la partida 6309, que queda fuera, y que el flete aereo por kilo cuesta varias veces lo que vale el kilo en origen. No se repite ninguna cifra del destino. Se mide la porcion de clics del sitio que se lleva la ruta."
+    },
+    {
+      "id": "respuesta-en-el-titulo-1031",
+      "shippedOn": "2026-10-31",
+      "routes": [
+        "/pension-a-la-vejez-uruguay",
+        "/asignacion-familiar-uruguay",
+        "/renunciar-al-trabajo-uruguay",
+        "/comisiones-mercado-pago-uruguay",
+        "/peajes-uruguay"
+      ],
+      "queries": [
+        "pension a la vejez",
+        "cuanto es la pensión a la vejez en uruguay",
+        "pensión a la vejez mides monto",
+        "pensión a la vejez cuanto es",
+        "asignacion familiar",
+        "cuanto es la asignación por hijo en uruguay",
+        "cuanto es la asignacion familiar por hijo",
+        "hasta que edad se cobra la asignacion familiar",
+        "cuantos dias tiene una empresa para pagar la liquidacion por renuncia",
+        "plazo para pagar liquidación por renuncia en uruguay",
+        "si renuncio a mi trabajo que me deben pagar",
+        "cuanto cobra mercado pago por venta",
+        "comisión mercado pago uruguay",
+        "que porcentaje cobra mercado pago",
+        "cuanto esta el peaje en uruguay",
+        "las motos pagan peaje en uruguay",
+        "cuanto salen los peajes en uruguay"
+      ],
+      "hypothesis": "Cinco paginas de contenido en la primera pagina de Google y casi sin clics del 1 al 28/10/2026: /pension-a-la-vejez-uruguay 647 impresiones y 0 clics (pension a la vejez en posicion 10,2; cuanto es la pension a la vejez en uruguay, 9,7), /asignacion-familiar-uruguay 812 y 2 (asignacion familiar, 9,2), /renunciar-al-trabajo-uruguay 272 y 1 (cuantos dias tiene una empresa para pagar la liquidacion por renuncia, 5,8), /comisiones-mercado-pago-uruguay 534 y 2 (cuanto cobra mercado pago por venta, 5,2) y /peajes-uruguay 543 y 0 (cuanto esta el peaje en uruguay, 10,7; las motos pagan peaje en uruguay, 8,2). Las cinco consultas piden un numero o un plazo, el cuerpo lo tenia y el titulo no. Ahora el titulo lleva la respuesta antes del corte de 60 caracteres (Pension a la vejez 2026: $ 18.575 por mes; Asignacion familiar: $ 1.347 o $ 2.686,51; Liquidacion por renuncia: plazo de 10 dias; Comision de Mercado Pago: 1,15 % a 11,99 %; Peajes: auto $ 167 con TAG, motos no pagan) y la descripcion abre con la cifra y contesta la segunda consulta de cada pagina: que no es la asistencia del MIDES, hasta que edad se cobra, lo que queda de $ 1.000 cobrados por link y las tres tarifas del mismo paso. Cada cifra sale de la constante que imprime el cuerpo y snippetConLaRespuesta.test.ts las ata; el cuerpo de las cinco no cambia. /que-pasa-si-no-pago-antel quedo afuera de la tanda: tres-facturas-del-hogar-entran-a-su-tema la reserva hasta el 23/11. Es la regla de indicadores-ur-ui-valor-vivo y de la BPC: deberia subir la porcion de clics del sitio que se llevan las cinco desde la misma posicion."
+    },
+    {
+      "id": "cotizaciones-con-la-cifra-en-el-titulo",
+      "shippedOn": "2026-10-31",
+      "routes": [
+        "/cotizacion/*",
+        "/en/cotizacion/*",
+        "/pt/cotizacion/*",
+        "/dolar/*",
+        "/en/dolar/*",
+        "/pt/dolar/*"
+      ],
+      "queries": [
+        "precio del real hoy",
+        "real hoy",
+        "precio real",
+        "euro hoy",
+        "cuanto esta el euro",
+        "valor gramo oro 18k uruguay",
+        "precio del oro en uruguay",
+        "valor do dolar em rivera",
+        "cotação dolar rivera",
+        "dolar no uruguai hoje",
+        "valor do dolar hoje no uruguai"
+      ],
+      "hypothesis": "Las cotizaciones por moneda y por departamento rankean en posicion 7 a 11 con titulos genericos sin una sola cifra (Cotizacion del Real en Uruguay Hoy), y del 1 al 28/10 juntaron 16.512 impresiones a 0,4 % de CTR en /cotizacion/* y 4.501 en /pt/dolar/* mas /pt/cotizacion/* a 0,7 %: precio del real hoy 777 impresiones y 2 clics, valor gramo oro 18k uruguay 382 y 1 en posicion 5,3, euro hoy 303 y 2, y la familia portuguesa de Rivera (quien cruza desde Livramento) 848 impresiones y 5 clics. Es la leccion de la portada llevada a las dos familias que la siguen: el titulo lleva UNA cifra, la venta mas barata con desde (Real hoy en Uruguay: se vende desde $8,55; Dolar em Rivera hoje: desde $U 41,10; el oro, el gramo de 18k aproximado), con el separador y el simbolo de cada idioma, plantillas de la mas rica a la mas corta que entran en 60 con la marca, y vuelta al titulo de siempre sin lectura. La descripcion lleva las dos cifras con desde y hasta y cuantas casas. En el mismo cambio la corona de mejor precio de /cotizacion/* pasa a la de la portada (rankUsableQuotes) y el titulo por departamento descarta las pizarras a mas del 3 % de la mediana nacional: el 31/10 la pagina del dolar coronaba una pizarra quieta desde julio. Se mide la porcion de clics del sitio que se llevan las seis familias."
+    },
+    {
+      "id": "plazo-fijo-tasas-de-cada-banco",
+      "shippedOn": "2026-10-31",
+      "routes": ["/herramientas/calculadora-plazo-fijo"],
+      "queries": [
+        "simulador plazo fijo uruguay brou dólares",
+        "simulador plazo fijo",
+        "simulador plazo fijo en dolares",
+        "simulador plazo fijo uruguay brou",
+        "plazo fijo brou dólares simulador",
+        "simulador de plazo fijo brou"
+      ],
+      "hypothesis": "Search Console, 1 al 28/10/2026: 5.454 impresiones, 128 clics, posicion media 5,8; las consultas de arriba piden simular el plazo fijo del BROU (y en dolares) y la pagina era una calculadora de interes compuesto donde el visitante tipeaba cualquier tasa, con el BROU y la media del BCU como unica referencia. Ahora, para la moneda, el monto y el plazo de los campos, una tabla con la tasa que publica cada banco en su propia pagina (BROU, Itau, BBVA, Scotiabank y Heritage, en pesos, dolares y UI donde existe), de mayor a menor, con la fuente y la vigencia de cada fila, la fecha de consulta y un boton que carga la tasa en la calculadora; la entrada libre sigue. Las cifras viven fechadas en app/utils/plazoFijoBancos.ts y nunca se presentan como dato en vivo; Santander, BTG Pactual (ex HSBC), Bandes y BHU se nombran con el motivo por el que no estan. El resultado sube pegado a los campos. Titulo 'Simulador de plazo fijo: BROU y bancos, en pesos y dolares' y descripcion con los bancos, pesos/dolares/UI y el neto de IRPF; dos preguntas frecuentes nuevas (cuanto paga el BROU en dolares, que banco paga mas) salen de la misma tabla. Deberia subir el CTR desde la misma posicion y la posicion de las consultas con 'brou' y 'dolares' (7,8 a 10,2)."
+    },
+    {
+      "id": "simulador-prestamos-cuota-por-prestamista",
+      "shippedOn": "2026-10-31",
+      "routes": ["/herramientas/calculadora-prestamo"],
+      "queries": [
+        "calculadora de prestamos",
+        "simulador de prestamos",
+        "calcular prestamo",
+        "prestamos personales simulador"
+      ],
+      "hypothesis": "Search Console: 1.825 impresiones y 4 clics; 'calculadora de prestamos' en posicion 43, 'simulador de prestamos' 66, 'calcular prestamo' 47, 'prestamos personales simulador' 64. La pagina era la cuota del sistema frances con la tasa que tipeara el visitante, y lo que se busca es cuanto cobraria cada uno. Ahora, para el monto y las cuotas de los campos, una tabla con la cuota y el total con la TEA que publica cada prestamista (bancos, financieras, cooperativas y fintech del tablero de /mejores-prestamos-uruguay, con el parche semanal de /api/loan-tiers), ordenada por costo total, con la fecha de los datos y el enlace a la fuente de cada uno; si publica un rango van las dos cuentas (piso y techo) y se ordena por el techo, nunca un numero solo; el IVA sobre intereses se suma cuando va aparte; los que no publican tasa o no prestan ese monto o plazo se nombran con el motivo. El contexto de usura se enlaza a /ley-de-usura-uruguay. La calculadora libre sigue y ahora deja elegir TEA o nominal y sumar el IVA. Titulo 'Simulador de prestamos: tu cuota con cada prestamista' y descripcion con monto, cuotas y TEA de cada banco, financiera y cooperativa; una pregunta frecuente nueva (cuanto se paga por $ 200.000 en 24 cuotas) sale de la misma tabla. Desde posiciones de 40 a 66 lo esperable es subir de pagina antes que el CTR; se mide la porcion de clics del sitio."
+    },
+    {
+      "id": "descripciones-de-las-guias-respuesta-primero-11",
+      "shippedOn": "2026-11-01",
+      "routes": [
+        "/guias/comision-inmobiliaria-uruguay",
+        "/guias/comprar-online-exterior-impuestos",
+        "/guias/criptomonedas-regulacion-impuestos-uruguay",
+        "/guias/enviar-recibir-dinero-exterior",
+        "/guias/garantias-de-alquiler-uruguay",
+        "/guias/reforma-jubilatoria-uruguay-que-cambia",
+        "/guias/tarjeta-debito-vs-credito-uruguay",
+        "/guias/tipo-de-cambio-fiscal-dgi-uruguay"
+      ],
+      "hypothesis": "Las ocho descripciones que quedaban pasadas de 155 caracteres en el catalogo de guias y que el cruce contra este mismo libro declaraba libres (la novena, cedula-uruguaya-para-argentinos, esta reservada hasta el 7/11 por guias-sin-indexar-reciben-enlaces). Iban de 194 a 159 caracteres, o sea que el SERP les comia la cola, que es donde estaba la cifra: seis abrian con la etiqueta del tema y seguian con el indice de la guia ('Como estan reguladas las criptomonedas en Uruguay tras la Ley de Activos Virtuales...', 'Cuanto te cuesta cobrar un pago del exterior en Uruguay: Payoneer, Wise, Prex...') y dos devolvian la pregunta sin contestarla. Ahora cada una abre por el dato: el 3,66 % con IVA a cada parte y los 1,22 alquileres del arancel de la Camara, los USD 800 y 3 envios de franquicia con el piso de USD 20 de IVA por envio, que para la cripto no hay norma y por eso no hay porcentaje, el 1,2 % a 4 % de Payoneer y los USD 22,37 por USD 1.000 de Wise, el 3 % mensual de las garantias de retencion, la edad que va a 65 por generacion, la rebaja de IVA en pagos electronicos de la Ley 19.210 y la COMPRA del BROU del dia habil anterior. Ninguna cifra es nueva: las ocho ya estaban en la descripcion vieja o en el cuerpo de su guia. Cinco se corrigieron despues de escribirlas midiendo sobre el buscador propio, porque la descripcion entra en el _hay de scoreDocs y sacarle una palabra puede dejar una consulta en cero resultados: 'regimen simplificado', 'activos virtuales', 'proteccion ante fraude' y 'Sistema Previsional Comun' volvieron al texto, y 'tipo de cambio' habia dejado a /economia-uruguay contestando una consulta cuya pagina propia es la guia. El presupuesto de descripciones largas de guideSnippetBudget.test.ts baja de 9 a 1. Se mide a 28 dias como porcion de los clics del sitio."
+    },
+    {
+      "id": "impuesto-al-patrimonio-guia-nueva",
+      "shippedOn": "2026-11-01",
+      "routes": ["/guias/impuesto-al-patrimonio-uruguay"],
+      "queries": [
+        "impuesto al patrimonio uruguay",
+        "minimo no imponible impuesto al patrimonio",
+        "desde cuanto se paga impuesto al patrimonio",
+        "impuesto al patrimonio personas fisicas",
+        "ajuar impuesto al patrimonio",
+        "nucleo familiar impuesto al patrimonio"
+      ],
+      "hypothesis": "Guia nueva: el impuesto de TENER, que el sitio solo nombraba como keyword de /impuestos-inversiones-uruguay, que es el impuesto de lo que RINDE. Medido con el buscador propio antes de publicarla, 'impuesto al patrimonio' caia en esa pagina con 38 puntos, la banda mas debil de scoreDocs (coincidencia en el pajar, no en el titulo); en el mismo commit el keyword se saca de ahi para que la consulta tenga un solo dueno y sea el que la contesta, y con la guia publicada la gana con 110. Contesta el umbral con la cifra en el titulo y en la descripcion ($ 6.653.000 de patrimonio fiscal al 31/12/2025, $ 13.306.000 el nucleo familiar, DGI 16/01/2026) y publica las reglas de avaluo que deciden si alguien lo cruza, que es lo que nadie tiene presente: el auto cuenta 25 veces la patente del ano, un inmueble alquilado 15 veces el alquiler anual, la casa propia se deduce al 50 % con tope del propio minimo, el saldo de la AFAP no se computa y al activo se le SUMA un ficto por ajuar del 10 % hasta el doble del minimo y 20 % sobre el excedente. Deliberadamente NO publica una tasa: el art. 53 del Titulo 14 trae la escala del 0,70 % al 2,75 % y el mismo articulo la manda reducir 0,10 % anual desde 2016 con piso de 0,10 %, y ninguna publicacion oficial de la DGI imprime el resultado (ni el instructivo del ejercicio), asi que la guia explica por que no hay porcentaje y manda al simulador de la DGI. Todas las cifras salen del instructivo 2025, de la ficha de contribuyentes, de las preguntas frecuentes y de la pagina de vencimientos de la DGI, mas el texto del articulo en IMPO, citados al pie. Se mide a 28 dias como porcion de los clics propios de la ruta."
+    },
+    {
+      "id": "dos-guias-del-dolar-entran-a-su-tema",
+      "shippedOn": "2026-11-01",
+      "routes": [
+        "/guias/comprar-dolares-online-uruguay",
+        "/guias/billetes-y-monedas-de-uruguay"
+      ],
+      "queries": [
+        "comprar dolares online uruguay",
+        "comprar dolares por internet uruguay",
+        "ebrou comprar dolares",
+        "billetes de uruguay",
+        "monedas de uruguay",
+        "billete de 2000 pesos uruguayos"
+      ],
+      "hypothesis": "Las dos guias estaban fuera de TODO tema y entran a dolar-y-casas-de-cambio-uruguay: son las dos unicas de las 21 huerfanas con la ruta libre hoy (npm run seo_debt: 3 libres entre las 28 de los cinco pozos, la tercera no es de este pozo), asi que van en UNA fila porque son UN hueco del mismo tema y no dos cambios, la misma razon por la que los dos radares de economia fueron juntos el 28/10. La de online es la peor huerfana del racimo y le faltaban las DOS mitades a la vez: guideNextSteps arma «segui leyendo» con guide.related, despues con los links de las secciones y recien despues con los resources del hub, y esta guia no tiene ninguna de las tres cosas, asi que su pagina terminaba sin un solo enlace de salida; entrar al tema le da el bloque de vecinos Y tres proximos pasos de un saque. Ninguna de las dos inventa un padre: el hub ya lleva dolar-ebrou y dolar-transferencia entre sus terms y billete-cable-transferencia entre sus guias, o sea que ya explicaba la cotizacion por transferencia y nunca decia donde se opera, y la de billetes y monedas entra al lado de /donde-conseguir-monedas-uruguay, que ya es resources del hub, y del termino peso-uruguayo, que ya es uno de sus terms (sus tres related escritos a mano apuntan justamente ahi). Se mide sola porque entrar al tema no le cambia el bloque a ninguna otra pagina: temaVecinosParaRuta arma los enlaces con hub.resources y hub.terms, nunca con hub.guides. El presupuesto de guias sin tema de temaHuerfanas.test.ts baja de 21 a 19. No se toco titulo, descripcion ni cuerpo de ninguna de las dos: las dos ya abren por el dato (los billetes de 20 a 2.000 y las monedas de 1 a 50; que eBROU pide cuenta) y ninguna esta en los presupuestos de snippet largo. Se mide a 28 dias como porcion de los clics del sitio."
     }
   ]
 }

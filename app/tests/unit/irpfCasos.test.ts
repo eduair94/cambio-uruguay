@@ -328,6 +328,37 @@ describe('FAQ con las frases exactas de búsqueda', () => {
   })
 })
 
+describe('deducciones del recibo', () => {
+  it('cada tarjeta tiene etiqueta y detalle, y todo enlace es interno y con texto', () => {
+    expect(IRPF_DEDUCTIONS.length).toBeGreaterThanOrEqual(6)
+    for (const d of IRPF_DEDUCTIONS) {
+      expect(d.label.trim().length).toBeGreaterThan(0)
+      expect(d.detail.trim().length).toBeGreaterThan(0)
+      if (d.link) {
+        expect(d.link.label.trim().length).toBeGreaterThan(0)
+        expect(d.link.to.startsWith('/')).toBe(true)
+      }
+    }
+  })
+
+  /**
+   * El enlace de contexto de `/fondo-de-solidaridad-uruguay`, que es la única entrada de esa
+   * página en el contenido de otra (`tests/unit/enlacesDeContexto.test.ts`): si se borra, la
+   * página vuelve al pozo y ese trinquete lo delata, pero recién cuando alguien lo corra. Acá se
+   * exige además el dato que hace que el lector lo siga, porque la tarjeta dice que el Fondo se
+   * deduce y no decía quién lo paga: un egresado de hace dos años, o con ingresos por debajo del
+   * umbral, no aporta nada.
+   */
+  it('la tarjeta del Fondo de Solidaridad dice quién aporta y enlaza a su página', () => {
+    const fondo = IRPF_DEDUCTIONS.find(d => d.id === 'solidaridad')
+    expect(fondo?.link?.to).toBe('/fondo-de-solidaridad-uruguay')
+    expect(fondo?.detail).toMatch(/quinto año del egreso/)
+    expect(fondo?.detail).toMatch(/8 BPC/)
+    expect(fondo?.detail).toMatch(/anual, no mensual/)
+    expect(fondo?.detail).toMatch(/Ley 16\.524/)
+  })
+})
+
 describe('fuentes y grafía', () => {
   it('cada fuente lleva editor, URL https y fecha de lectura ISO igual a la verificación', () => {
     expect(IRPF_CASOS_VERIFIED_AT).toMatch(ISO)

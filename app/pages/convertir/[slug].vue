@@ -148,6 +148,8 @@ import {
   foreignCode,
   getConvertEntry,
   relatedAmounts,
+  convertSeoDescription,
+  convertSeoTitle,
   type ConvertCode,
 } from '~/utils/convert'
 import type { CurrencyCode } from '~/utils/currencyPages'
@@ -255,21 +257,11 @@ defineOgImageComponent('Cambio', {
   tag: 'CONVERTIR',
 })
 
-// SEO title/description lead with the live converted amount so the SERP snippet
-// shows the ANSWER (e.g. "50.000 pesos argentinos ≈ $12.345 hoy") — these pages
-// ranked well but got ~0 clicks because the snippet never showed a number. The
-// dedup titleTemplate in app.vue appends "| Cambio Uruguay"; no manual brand here.
-const seoDescription = computed(() => {
-  const amt = amountLabel(entry.value!.amount, entry.value!.from)
-  if (headlineValue.value !== null) {
-    const priceKind = entry.value!.to === 'UYU' ? 'mejor precio de compra' : 'mejor precio de venta'
-    return `${amt} ≈ ${headlineFormatted.value} hoy (${priceKind}). Convertí ${fromName.value} a ${toName.value} con la cotización en vivo de más de 40 casas de cambio en Uruguay.`
-  }
-  return `Cuánto es ${amt} en ${toName.value} hoy, con la cotización en vivo de más de 40 casas de cambio en Uruguay.`
-})
-const seoTitle = computed(() =>
-  headlineValue.value !== null ? `${title.value} ≈ ${headlineFormatted.value}` : title.value
-)
+// Título y descripción del buscador: la consulta y la cifra primero, y lo que el conversor del
+// propio buscador no tiene —lo que paga o cobra hoy la mejor casa—. Ver convertSeoTitle en
+// utils/convert.ts. El titleTemplate de app.vue agrega "| Cambio Uruguay".
+const seoDescription = computed(() => convertSeoDescription(entry.value!, headlineValue.value))
+const seoTitle = computed(() => convertSeoTitle(entry.value!, headlineValue.value))
 
 useSeoMeta({
   title: () => seoTitle.value,

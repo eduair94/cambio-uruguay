@@ -221,3 +221,25 @@ describe('la disciplina de fuentes', () => {
     }
   })
 })
+
+// La RG DNA 09/2026 (Anexo I nums. 3 y 10) cuenta la residencia del emisor de la factura
+// REGISTRADO ante la DNA, y desde el 1/10/2026 se exige; "se acredita con la factura" sola, que es
+// lo que dice el Decreto 50/026 art. 3, dejó de describir lo que pasa en la Aduana. Mismo criterio
+// que `importCategories.test.ts` (PR #158).
+describe('la exoneración de EE.UU. con el registro de vendedores', () => {
+  it('no presenta la factura como prueba suficiente de la residencia del vendedor', () => {
+    const texts = [
+      ...ROUTE_TRAITS.flatMap(t => Object.values(t.byRoute)),
+      ...ROUTE_TRAPS.map(t => t.detail),
+      ...SHIPPING_ROUTES_FAQS.map(f => f.a),
+    ]
+    for (const text of texts) expect(text).not.toMatch(/se acredita con la factura/)
+  })
+
+  it('cita la RG 09/2026 y la RG 26/2026 donde explica la exoneración', () => {
+    const trait = ROUTE_TRAITS.find(t => t.id === 'exoneracion-uy')!
+    const urls = trait.sources.map(s => s.url).join(' ')
+    expect(urls).toContain('resolucion-9_2026.pdf')
+    expect(urls).toContain('rg-26-2026')
+  })
+})

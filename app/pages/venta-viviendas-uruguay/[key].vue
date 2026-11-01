@@ -87,6 +87,11 @@
             />
             <p v-else>{{ t('noDescription') }}</p>
           </section>
+          <!-- La unidad intermedia de la ficha, en el primer corte después de lo
+               que la persona vino a ver (las condiciones y la descripción). La ficha
+               es densidad normal: con el cierre del layout son dos, el tope de
+               maxAdSlots. Ver docs/seo/adsense-growth-loop.md, decimotercera iteración. -->
+          <AdSlot placement="in-article" />
           <section v-if="property.amenities.length" class="sale-detail__section">
             <h2>{{ t('amenities') }}</h2>
             <ul class="sale-detail__amenities">

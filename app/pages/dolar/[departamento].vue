@@ -163,6 +163,9 @@ import {
   type LocalDataMap,
 } from '~/utils/departments'
 import { pickOriginRate } from '~/utils/rateSource'
+import { bestOf, pickDescription, pickTitle, seoRate } from '~/utils/liveRateSeo'
+import { quotesForCurrency } from '~/utils/currencyPages'
+import { offMarketDetector } from '~/utils/marketOutlier'
 
 // Validate the slug against the live department list BEFORE rendering. Running in
 // the route guard yields a real 404 status (on SSR and client navigation) and,
@@ -208,6 +211,12 @@ interface DepartmentPageData {
   departmentName: string
   houses: DepartmentHouseRow[]
   related: DepartmentEntry[]
+  /**
+   * Casas cuya pizarra de dólar está a más del 3 % de la mediana NACIONAL (congelada o mal
+   * leída). Un departamento tiene pocas casas, menos que la muestra mínima del detector, así que
+   * se las juzga contra el país. Siguen en la tabla; sólo no llegan al título ni a la descripción.
+   */
+  offMarket: string[]
 }
 
 // SSR fetch: localData (for the department -> houses mapping) + today's quotes
@@ -244,7 +253,11 @@ const { data, pending } = await useAsyncData<DepartmentPageData | null>(
       .filter(d => d.name !== departmentName)
       .slice(0, MAX_RELATED)
 
-    return { departmentName, houses, related }
+    const national = quotesForCurrency(rows, 'USD')
+    const isOffMarket = offMarketDetector(national)
+    const offMarket = national.filter(q => isOffMarket(q)).map(q => q.origin)
+
+    return { departmentName, houses, related, offMarket }
   }
 )
 
@@ -297,16 +310,48 @@ defineOgImageComponent('Cambio', {
 })
 
 // SEO meta.
+// Título y descripción con la cifra del día (utils/liveRateSeo.ts): "/pt/dolar/rivera" recibe
+// "valor do dolar em rivera" de quien cruza desde Livramento, y el genérico no contestaba. Sin
+// lectura, o con una sola casa en el departamento, el de siempre.
+const liveRates = computed(() => {
+  const offMarket = new Set(data.value?.offMarket ?? [])
+  return bestOf(houses.value.filter(house => !offMarket.has(house.origin)))
+})
+const metaTitle = computed(() => {
+  const fallback = t('dolarDepto.metaTitle', { department: departmentTitle.value })
+  const { sell } = liveRates.value
+  if (sell === null) return fallback
+  const args = { department: departmentTitle.value, sell: seoRate(sell, locale.value) }
+  return pickTitle(
+    [t('dolarDepto.metaTitleLive', args), t('dolarDepto.metaTitleLiveShort', args)],
+    fallback
+  )
+})
+const metaDescription = computed(() => {
+  const fallback = t('dolarDepto.metaDescription', { department: departmentTitle.value })
+  const { sell, buy, count } = liveRates.value
+  if (sell === null || buy === null || count < 2) return fallback
+  return pickDescription(
+    t('dolarDepto.metaDescriptionLive', {
+      department: departmentTitle.value,
+      sell: seoRate(sell, locale.value),
+      buy: seoRate(buy, locale.value),
+      count,
+    }),
+    fallback
+  )
+})
+
 useSeoMeta({
-  title: () => t('dolarDepto.metaTitle', { department: departmentTitle.value }),
-  description: () => t('dolarDepto.metaDescription', { department: departmentTitle.value }),
-  ogTitle: () => t('dolarDepto.metaTitle', { department: departmentTitle.value }),
-  ogDescription: () => t('dolarDepto.metaDescription', { department: departmentTitle.value }),
+  title: () => metaTitle.value,
+  description: () => metaDescription.value,
+  ogTitle: () => metaTitle.value,
+  ogDescription: () => metaDescription.value,
   ogType: 'website',
   ogUrl: () => canonicalUrl.value,
   twitterCard: 'summary_large_image',
-  twitterTitle: () => t('dolarDepto.metaTitle', { department: departmentTitle.value }),
-  twitterDescription: () => t('dolarDepto.metaDescription', { department: departmentTitle.value }),
+  twitterTitle: () => metaTitle.value,
+  twitterDescription: () => metaDescription.value,
 })
 
 // Place + BreadcrumbList JSON-LD for rich results.

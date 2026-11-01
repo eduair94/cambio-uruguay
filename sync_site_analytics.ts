@@ -13,10 +13,12 @@
 // `--allow-empty` flag lets an all-zero snapshot be written, and that exists purely so a brand-new
 // property can be seeded on purpose.
 //
-// Four writes, each in its own guard: the public snapshot, the private ad revenue
+// Five writes, each in its own guard: the public snapshot, the private ad revenue
 // (`siterevenuesnapshots`), the private page ranking (`sitepagerankings`, served to
-// /estadisticas-por-pagina — see classes/site-analytics/pageRanking.ts) and its public projection
-// (`sitetoppages`, served to /paginas-mas-visitadas — classes/site-analytics/publicTopPages.ts).
+// /estadisticas-por-pagina — see classes/site-analytics/pageRanking.ts), its public projection
+// (`sitetoppages`, served to /paginas-mas-visitadas — classes/site-analytics/publicTopPages.ts) and
+// where visitors come from (`sitetrafficsources`, served to /origen-del-trafico —
+// classes/site-analytics/trafficSources.ts).
 import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";
@@ -25,12 +27,14 @@ import { refreshSiteAnalytics, snapshotIsEmpty } from "./classes/site-analytics/
 import { fetchRevenue, revenueIsEmpty } from "./classes/site-analytics/revenue";
 import { pageRankingIsEmpty, refreshPageRanking } from "./classes/site-analytics/pageRanking";
 import { buildPublicTopPages, publicTopPagesIsThin } from "./classes/site-analytics/publicTopPages";
+import { refreshTrafficSources, trafficSourcesIsThin } from "./classes/site-analytics/trafficSources";
 import {
   revenueWouldRegress,
   savePageRanking,
   saveSiteAnalytics,
   saveSiteTopPages,
   saveSiteRevenue,
+  saveTrafficSources,
 } from "./classes/site-analytics/store";
 
 async function main(): Promise<void> {
@@ -131,6 +135,25 @@ async function main(): Promise<void> {
     } catch (e: any) {
       const detail = e?.response?.data ? JSON.stringify(e.response.data) : e?.message || String(e);
       console.warn(`[site-analytics] no se pudo armar el ranking por página: ${detail}`);
+    }
+
+    // De dónde viene la gente (/origen-del-trafico). Público y en su propio try: no depende del
+    // ranking, y si falla los otros cuatro documentos ya quedaron escritos.
+    try {
+      const sources = await refreshTrafficSources(new Date(snapshot.asOf));
+      if (trafficSourcesIsThin(sources)) {
+        console.warn("[site-analytics] origen del tráfico: sin sesiones o sin fuentes — se conserva el anterior.");
+      } else {
+        await saveTrafficSources(sources);
+        console.log(
+          `[site-analytics] origen del tráfico: ${sources.totals.sessions} sesiones en ${sources.range.days} días ` +
+            `(${sources.totals.sessionsUy} desde Uruguay), ${sources.sources.length} fuentes con nombre, ` +
+            `${sources.others.count} chicas, ${sources.referrers.length} páginas que enlazan`
+        );
+      }
+    } catch (e: any) {
+      const detail = e?.response?.data ? JSON.stringify(e.response.data) : e?.message || String(e);
+      console.warn(`[site-analytics] no se pudo armar el origen del tráfico: ${detail}`);
     }
 
     console.log(

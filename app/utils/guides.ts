@@ -16,6 +16,7 @@ import { consumoGuides } from './guidesConsumo'
 import { deudasGuides } from './guidesDeudas'
 import { importacionGuides } from './guidesImportacion'
 import { pagosGuides } from './guidesPagos'
+import { patrimonioGuides } from './guidesPatrimonio'
 import { parejaGuides } from './guidesPareja'
 import { primavera2026Guides } from './guidesPrimavera2026'
 import { redditGuides } from './guidesReddit'
@@ -308,7 +309,7 @@ export const guides: readonly Guide[] = [
     slug: 'comprar-online-exterior-impuestos',
     title: 'Compras del exterior: USD 800 al año o 60 %',
     description:
-      'Cómo funciona la franquicia courier de USD 800, cuándo pagás el 60% del régimen simplificado y cómo estimar el costo total de una compra online del exterior en Uruguay.',
+      'USD 800 al año y 3 envíos de franquicia; por fuera, el 60 % del régimen simplificado. Y un piso de USD 20 de IVA por envío que a una compra chica le pesa.',
     tag: 'IMPORTACIÓN',
     updatedAt: '2026-08-15',
     sections: [
@@ -330,7 +331,7 @@ export const guides: readonly Guide[] = [
       },
       {
         heading: 'La franquicia anual de USD 800',
-        body: 'Desde mayo de 2026 rige una franquicia anual de hasta USD 800 por persona, que se puede usar hasta 3 veces al año, con un máximo de 20 kg por envío. Lo que entra dentro de la franquicia queda exento de aranceles, pero igual paga IVA: 22% para la mayoría de los productos, 10% para los que están en la tasa mínima (los medicamentos, por ejemplo) y nada para los que están exonerados, como los libros y el material educativo, que por el artículo 41 del Título 10 y el artículo 8 literal C de la Ley 15.913 están libres de todo tributo nacional, gravámenes aduaneros y tasas consulares. A eso se suman dos casos exentos de todo tributo: las compras de origen estadounidense de hasta USD 200 (acuerdo TIFA) y los obsequios familiares. Ojo con el piso, porque cambia la cuenta: el IVA de un envío postal no puede ser inferior a USD 20 por envío (Título 10 del T.O. 2023, art. 13 literal B, inciso agregado por el art. 660 de la Ley 20.446, y RG DNA 11/2026), salvo que el envío esté integrado exclusivamente por bienes exonerados. O sea que con franquicia una compra chica no paga "22% y listo": por debajo de USD 90,91 a la tasa básica —o de USD 200 a la mínima— pagás igual los USD 20. Hay que decirlo con todas las letras porque ni el MEF ni la Aduana lo mencionan al explicar la franquicia en sus preguntas frecuentes: ahí el mínimo aparece sólo asociado al 60%. La franquicia exige además ser mayor de edad, con documento uruguayo, para uso personal y pagando con una tarjeta internacional o dinero electrónico cuyo titular seas vos y que además seas el destinatario. Y no todo consume cupo: los libros y los medicamentos de uso personal —estos últimos, con la debida autorización del Ministerio de Salud Pública— quedan fuera del tope de USD 800 y de los 3 envíos (Decreto 50/026 art. 4 y RG DNA 11/2026 num. 26). Eso no sale solo: la declaración lleva un campo de tipo de envío y los libros van por el código J/01, "Material al amparo de la Ley N.º 15.913/87" (RG DNA 11/2026 num. 28 lit. c), mientras que lo que marca el operador por defecto es la franquicia. Y preparate para pelearla, porque la excepción no aparece en las preguntas frecuentes del MEF ni en las de la Aduana, y una noticia oficial de la propia Aduana de abril de 2026 dice, sin mencionarla, que todos los envíos de franquicia consumen tanto el cupo en dólares como el de los 3 envíos. La clave es que es anual: conviene administrarla y no agotarla en una compra chica si pensás traer más cosas.',
+        body: 'Desde mayo de 2026 rige una franquicia anual de hasta USD 800 por persona, que se puede usar hasta 3 veces al año, con un máximo de 20 kg por envío. Lo que entra dentro de la franquicia queda exento de aranceles, pero igual paga IVA: 22% para la mayoría de los productos, 10% para los que están en la tasa mínima (los medicamentos, por ejemplo) y nada para los que están exonerados, como los libros y el material educativo, que por el artículo 41 del Título 10 y el artículo 8 literal C de la Ley 15.913 están libres de todo tributo nacional, gravámenes aduaneros y tasas consulares. A eso se suman dos casos exentos de todo tributo: las compras de origen estadounidense de hasta USD 200 (acuerdo TIFA), siempre que el vendedor que factura figure en el registro de empresas extranjeras de la Aduana, y los obsequios familiares. Ojo con el piso, porque cambia la cuenta: el IVA de un envío postal no puede ser inferior a USD 20 por envío (Título 10 del T.O. 2023, art. 13 literal B, inciso agregado por el art. 660 de la Ley 20.446, y RG DNA 11/2026), salvo que el envío esté integrado exclusivamente por bienes exonerados. O sea que con franquicia una compra chica no paga "22% y listo": por debajo de USD 90,91 a la tasa básica —o de USD 200 a la mínima— pagás igual los USD 20. Hay que decirlo con todas las letras porque ni el MEF ni la Aduana lo mencionan al explicar la franquicia en sus preguntas frecuentes: ahí el mínimo aparece sólo asociado al 60%. La franquicia exige además ser mayor de edad, con documento uruguayo, para uso personal y pagando con una tarjeta internacional o dinero electrónico cuyo titular seas vos y que además seas el destinatario. Y no todo consume cupo: los libros y los medicamentos de uso personal —estos últimos, con la debida autorización del Ministerio de Salud Pública— quedan fuera del tope de USD 800 y de los 3 envíos (Decreto 50/026 art. 4 y RG DNA 11/2026 num. 26). Eso no sale solo: la declaración lleva un campo de tipo de envío y los libros van por el código J/01, "Material al amparo de la Ley N.º 15.913/87" (RG DNA 11/2026 num. 28 lit. c), mientras que lo que marca el operador por defecto es la franquicia. Y preparate para pelearla, porque la excepción no aparece en las preguntas frecuentes del MEF ni en las de la Aduana, y una noticia oficial de la propia Aduana de abril de 2026 dice, sin mencionarla, que todos los envíos de franquicia consumen tanto el cupo en dólares como el de los 3 envíos. La clave es que es anual: conviene administrarla y no agotarla en una compra chica si pensás traer más cosas.',
       },
       {
         heading: 'El régimen simplificado: 60% sobre el valor',
@@ -373,7 +374,7 @@ export const guides: readonly Guide[] = [
       },
       {
         q: '¿Qué no puedo traer por este régimen?',
-        a: 'Nada gravado por IMESI: bebidas alcohólicas, bebidas concentradas sin alcohol y suplementos concentrados, tabaco y cigarrillos, aceites y grasas lubricantes, vehículos y perfumería. Cuidado con meter toda la cosmética en la misma bolsa: el Decreto 96/990 (art. 27) deja expresamente fuera del IMESI al jabón de tocador, la pasta dentífrica, el desodorante, el talco, el champú, el agua colonia y el protector solar registrado ante el MSP, así que esos productos no quedan afuera del régimen postal por ese motivo. Tampoco podés traer por correo semillas, plantas, frutas y verduras frescas, animales vivos, alimentos de origen animal, fertilizantes ni plaguicidas: la Resolución MGAP 1.720/021 los prohíbe en encomienda o correo, sin franja de uso personal y sin ningún trámite que una persona física pueda hacer para habilitarlos. Sumá lo prohibido por seguridad (inflamables, gases comprimidos, explosivos, corrosivos) y las armas, que según la Aduana no entran por este canal. Las baterías de litio sueltas son otra cosa: no hay prohibición aduanera uruguaya, es una restricción del transporte aéreo (IATA/OACI) y una política propia del Correo Uruguayo, que no las admite en envíos internacionales. Y hay casos con trámite previo: los lentes de sol se limitan a dos unidades por única vez, con trámite pago en VUCE y declaración jurada de un técnico óptico habilitado. Por encima de 20 kg o de USD 800 el envío sale del régimen y necesita despachante de aduana.',
+        a: 'Nada gravado por IMESI: bebidas alcohólicas, bebidas concentradas sin alcohol y suplementos concentrados, tabaco y cigarrillos, aceites y grasas lubricantes, vehículos, perfumería, cosméticos como el maquillaje y máquinas de afeitar (Decreto 96/990, art. 27). Cuidado con meter toda la cosmética en la misma bolsa: ese mismo artículo deja expresamente fuera del IMESI al jabón de tocador, la pasta dentífrica, el desodorante, el talco, el champú, el agua colonia y el protector solar registrado ante el MSP, así que esos productos no quedan afuera del régimen postal por ese motivo. Tampoco podés traer por correo semillas, plantas, frutas y verduras frescas, animales vivos, alimentos de origen animal, fertilizantes ni plaguicidas: la Resolución MGAP 1.720/021 los prohíbe en encomienda o correo, sin franja de uso personal y sin ningún trámite que una persona física pueda hacer para habilitarlos. Sumá lo prohibido por seguridad (inflamables, gases comprimidos, explosivos, corrosivos) y las armas, que según la Aduana no entran por este canal. Las baterías de litio sueltas son otra cosa: no hay prohibición aduanera uruguaya, es una restricción del transporte aéreo (IATA/OACI) y una política propia del Correo Uruguayo, que no las admite en envíos internacionales. Y hay casos con trámite previo: los lentes de sol se limitan a dos unidades por única vez, con trámite pago en VUCE y declaración jurada de un técnico óptico habilitado. Por encima de 20 kg o de USD 800 el envío sale del régimen y necesita despachante de aduana.',
       },
       {
         q: '¿Qué pasa si no declaro o no pago?',
@@ -406,13 +407,20 @@ export const guides: readonly Guide[] = [
       },
       {
         label:
-          'RG DNA 11/2026 — num. 26 (libros y medicamentos fuera del cupo), num. 27 (mínimo de USD 20 de IVA) y num. 28 lit. c (códigos de tipo de envío: G franquicia, H prestación única, J exceptuados)',
+          'RG DNA 11/2026 — num. 26 (libros y medicamentos fuera del cupo), num. 27 (mínimo de USD 20 de IVA) y num. 28 (códigos de tipo de envío: H prestación única, lit. a; G franquicia, lit. b; J exceptuados, lit. c)',
         url: 'https://www.aduanas.gub.uy/innovaportal/file/28447/1/rg-11_2026.pdf',
         publisher: 'Dirección Nacional de Aduanas',
       },
       {
-        label: 'Decreto 96/990 art. 27 — cosmética de uso corriente no gravada por IMESI',
-        url: 'https://www.impo.com.uy/bases/decretos/96-1990',
+        label:
+          'RG DNA 26/2026 — registro de empresas extranjeras de EE.UU.: alta de oficio y a pedido del operador postal, lista publicada por la DNA (vigente desde el 5/10/2026)',
+        url: 'https://www.aduanas.gub.uy/innovaportal/file/28724/1/rg-26-2026-exoneracion-iva-encomiendas-postales.pdf',
+        publisher: 'Dirección Nacional de Aduanas',
+      },
+      {
+        label:
+          'Decreto 96/990 art. 27 — grava cosméticos, perfumería y máquinas de afeitar; no grava jabón de tocador, dentífrico, desodorante, champú ni protector solar registrado',
+        url: 'https://www.impo.com.uy/bases/decretos/96-1990/27',
         publisher: 'IMPO',
       },
       {
@@ -444,7 +452,7 @@ export const guides: readonly Guide[] = [
     slug: 'enviar-recibir-dinero-exterior',
     title: 'Cobrar del exterior: el costo es al retirar',
     description:
-      'Cuánto te cuesta cobrar un pago del exterior en Uruguay: Payoneer, Wise, Prex, PayPal, SWIFT al banco y plataformas de contrato, con las tarifas que publica cada uno.',
+      'Recibir casi no cuesta; sacarlo sí: Payoneer 1,2 % a 4 % al banco, Wise USD 22,37 por USD 1.000, PayPal $ 200 y las plataformas de contrato (16/9/2026).',
     tag: 'COBRAR',
     updatedAt: '2026-09-16',
     // Los dos socios que la guía compara por nombre y con tarifas públicas. Sin URL en
@@ -1064,7 +1072,7 @@ export const guides: readonly Guide[] = [
     slug: 'precio-del-oro-en-uruguay',
     title: 'Precio del oro: la onza troy es 31,1035 g',
     description:
-      'Cómo se forma el precio del oro en Uruguay, qué es la onza troy, cómo pasar el valor a gramos según los quilates y dónde comparar para comprar o vender al mejor precio.',
+      'El gramo sale de dividir la onza entre 31,1035 y ajustar por pureza: el 18k es 75 % de oro y el 14k cerca del 58 %. En pesos lo mueven el oro y el dólar.',
     tag: 'ORO',
     updatedAt: '2026-06-20',
     sections: [
@@ -1134,7 +1142,7 @@ export const guides: readonly Guide[] = [
     slug: 'cambiar-monedas-poco-comunes-uruguay',
     title: 'Cambiar yen, franco o guaraní: más spread',
     description:
-      'Dónde y cómo cambiar monedas menos habituales en Uruguay como el yen, el franco suizo, el guaraní o el peso chileno: qué casas las cotizan y cómo comparar el precio.',
+      'Cuanto menos se opera una moneda, menos casas la cotizan y más grande es el spread. Con yen, franco, guaraní o peso chileno, llamá antes por el efectivo.',
     tag: 'MONEDAS',
     updatedAt: '2026-06-20',
     sections: [
@@ -1170,7 +1178,7 @@ export const guides: readonly Guide[] = [
     slug: 'dolar-cripto-usdt-uruguay',
     title: 'Dólar cripto: USDT ≈ USD 1, no es billete',
     description:
-      'Qué es el dólar cripto y el USDT, cómo se vinculan con el dólar billete en Uruguay, para qué se usan y qué riesgos conviene tener en cuenta antes de operar.',
+      'El USDT no es efectivo ni un depósito: es un activo digital sin garantía bancaria, y su precio en pesos suma el spread y la comisión de la plataforma.',
     tag: 'CRIPTO',
     updatedAt: '2026-06-20',
     sections: [
@@ -1276,7 +1284,7 @@ export const guides: readonly Guide[] = [
     slug: 'devolucion-iva-turistas-uruguay',
     title: 'Hoteles sin IVA para turistas y Tax Free',
     description:
-      'Cómo funcionan los beneficios de IVA para turistas extranjeros en Uruguay: hoteles sin IVA todo el año, reducción en gastronomía por temporada y devolución Tax Free al salir.',
+      'El hotel va sin IVA todo el año pagando con tarjeta del exterior, nunca en efectivo, y la gastronomía lleva nueve puntos menos hasta el 30/04/2027.',
     tag: 'IMPUESTOS',
     updatedAt: '2026-06-20',
     sections: [
@@ -1381,7 +1389,7 @@ export const guides: readonly Guide[] = [
     slug: 'cajeros-automaticos-uruguay-turistas',
     title: 'Cajeros para turistas: pagás dos comisiones',
     description:
-      'Cómo sacar pesos (o dólares) con tarjeta extranjera en Uruguay: redes Banred y RedBROU, límites por extracción, comisiones y cuándo conviene una casa de cambio.',
+      'Con tarjeta del exterior pagás dos comisiones: la del cajero y la de tu banco. Las redes son RedBROU y Banred y los billetes suelen salir de 100 en 100.',
     tag: 'CAJEROS',
     updatedAt: '2026-06-20',
     sections: [
@@ -1511,7 +1519,7 @@ export const guides: readonly Guide[] = [
     slug: 'horarios-casas-de-cambio-uruguay',
     title: 'Casas de cambio: domingo casi todas cierran',
     description:
-      'A qué hora abren las casas de cambio en Uruguay, qué pasa los sábados y domingos, y dónde cambiar fuera de horario: aeropuerto de Carrasco, terminales y shoppings.',
+      'En general de 9:00 a 18:00 o 19:00 de lunes a viernes, el sábado medio día y el domingo casi todas cerradas: el precio del viernes rige hasta el lunes.',
     tag: 'HORARIOS',
     updatedAt: '2026-06-20',
     sections: [
@@ -1549,7 +1557,7 @@ export const guides: readonly Guide[] = [
     slug: 'tipo-de-cambio-fiscal-dgi-uruguay',
     title: 'Dólar fiscal: compra del BROU, día anterior',
     description:
-      'Qué tipo de cambio se usa para facturar en dólares y liquidar IVA e IRPF en Uruguay: la cotización de compra del Banco República del día hábil anterior. Cómo encontrarla.',
+      'El tipo de cambio para facturar es la COMPRA del BROU del día hábil anterior, no la venta ni la del día: con esa convertís a pesos el IVA y el IRPF.',
     tag: 'FACTURACIÓN',
     updatedAt: '2026-06-20',
     sections: [
@@ -1603,7 +1611,7 @@ export const guides: readonly Guide[] = [
     slug: 'criptomonedas-regulacion-impuestos-uruguay',
     title: 'Criptomonedas: activos, no moneda legal',
     description:
-      'Cómo están reguladas las criptomonedas en Uruguay tras la Ley de Activos Virtuales, qué rol tiene el Banco Central y por qué su tratamiento impositivo todavía no está resuelto. Guía informativa.',
+      'No hay norma que diga cómo tributan, así que acá no hay porcentaje: la Ley 20.345 de activos virtuales regula a los exchanges ante el BCU, no tu ganancia.',
     tag: 'CRIPTO',
     updatedAt: '2026-07-12',
     sections: [
@@ -1643,7 +1651,7 @@ export const guides: readonly Guide[] = [
     slug: 'dolares-deteriorados-billetes-rechazados-uruguay',
     title: 'Dólares rotos pagan menos; la cara chica no',
     description:
-      'Por qué algunas casas de cambio rechazan o pagan menos por dólares rotos, manchados o de serie vieja en Uruguay, y por qué el mito de la "cara chica" no aplica acá.',
+      'Lo que baja el precio es el deterioro, no el diseño: acá toda emisión es de curso legal. Algunos bancos reciben el billete roto cobrando comisión.',
     tag: 'BILLETES',
     updatedAt: '2026-06-20',
     sections: [
@@ -1678,7 +1686,7 @@ export const guides: readonly Guide[] = [
     slug: 'proyeccion-dolar-uruguay-se-puede-predecir',
     title: '¿A cuánto llega el dólar? Nadie lo predice',
     description:
-      'Si se puede predecir el dólar en Uruguay, qué muestran las expectativas del mercado y la encuesta del BCU, y por qué conviene una estrategia en lugar de adivinar el precio.',
+      'El dólar flota y nadie lo predice. La referencia que hay es la mediana de la Encuesta de Expectativas del BCU, que se ajusta mes a mes y no es garantía.',
     tag: 'PROYECCIÓN',
     updatedAt: '2026-06-20',
     sections: [
@@ -1736,6 +1744,11 @@ export const guides: readonly Guide[] = [
   // Tanda del 2026-10-21: cómo saber si tengo deudas, comprar en Shein e IRPF de alquileres.
   // Guardadas por `tests/unit/guiasPrimavera2026*.test.ts`.
   ...primavera2026Guides,
+  // El Impuesto al Patrimonio de las personas físicas, 2026-11-01: el impuesto de TENER, que el
+  // sitio sólo nombraba como keyword de la página del impuesto a las RENTAS. Deliberadamente sin
+  // tasa —el art. 53 la manda reducir cada año y ninguna publicación de la DGI imprime el
+  // resultado—; el motivo entero está en la cabecera de `guidesPatrimonio.ts`.
+  ...patrimonioGuides,
 ]
 
 /**

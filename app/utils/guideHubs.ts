@@ -63,11 +63,13 @@ export const guideHubs: readonly GuideHub[] = [
       'conviene-comprar-dolares-hoy',
       'comprar-dolares-mejor-precio',
       'billete-cable-transferencia',
+      'comprar-dolares-online-uruguay',
       'mejor-momento-cambiar-divisas',
       'como-leer-cotizacion-dolar',
       'glosario-terminos-cambiarios',
       'casas-de-cambio-vs-bancos',
       'evitar-comisiones-cambio',
+      'billetes-y-monedas-de-uruguay',
     ],
     resources: [
       {
@@ -858,6 +860,12 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/que-auto-comprar-uruguay',
       },
       {
+        label: 'Comparar autos usados',
+        description:
+          'Dos o tres modelos lado a lado: a qué año llegás con tu plata, cuánto cuesta tenerlo y en qué gana cada uno.',
+        to: '/comparar-autos-usados-uruguay',
+      },
+      {
         label: '¿Cuánto vale mi auto?',
         description: 'El precio de mercado de tu auto, con los avisos de hoy.',
         to: '/cuanto-vale-mi-auto-uruguay',
@@ -1184,6 +1192,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/feriados-que-se-corren-uruguay',
       },
       {
+        label: 'Feriados 2027',
+        description: 'Las 15 fechas, los 6 fines de semana largos y los 4 que caen fin de semana.',
+        to: '/feriados-2027-uruguay',
+      },
+      {
         label: 'Cuándo se cobra el aguinaldo',
         description:
           'Hasta el 20 de diciembre de 2026 por decreto; la cuota de junio y quién paga.',
@@ -1272,6 +1285,12 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/a-quien-le-reclamo-uruguay',
       },
       {
+        label: 'Reclamos a la Intendencia por barrio',
+        description:
+          'Alumbrado, saneamiento y limpieza: cuántos reclamos registra cada barrio de Montevideo.',
+        to: '/reclamos-a-la-intendencia-por-barrio-uruguay',
+      },
+      {
         label: 'Compensación por corte de luz',
         description: 'No se pide: la calcula URSEA por semestre y se descuenta de la factura.',
         to: '/compensacion-por-corte-de-luz-uruguay',
@@ -1353,6 +1372,11 @@ export const guideHubs: readonly GuideHub[] = [
       'interes-compuesto-explicado-uruguay',
       'errores-y-estafas-al-invertir-uruguay',
       'comprar-criptomonedas-en-uruguay',
+      // El impuesto de TENER va en este tema y no en el del sueldo: este hub ya lleva como recurso
+      // `/impuestos-inversiones-uruguay`, que es el impuesto de lo que RINDE, así que acá el par
+      // queda completo. Y el lector que cruza los $ 6.653.000 llegó ahí ahorrando o comprando, que
+      // es de lo que habla el `intro` de este tema.
+      'impuesto-al-patrimonio-uruguay',
     ],
     resources: [
       {
@@ -1894,6 +1918,14 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Apps útiles y del Estado',
         description: 'Las que todos deberían tener y cómo reconocer la oficial en cada tienda.',
         to: '/apps-utiles-uruguay',
+      },
+      {
+        // Va en este tema y no en uno de elecciones porque la consulta llega pegada a un trámite
+        // frenado: la credencial sin el sello traba ocho actos de la Ley 16.017, y uno de ellos
+        // la propia ley dice que no se arregla pagando.
+        label: 'Multa por no votar',
+        description: '1 UR la primera vez, 3 UR cada siguiente, y los 8 trámites que traba.',
+        to: '/multa-por-no-votar-uruguay',
       },
     ],
     terms: ['residencia-fiscal', 'dgi'],

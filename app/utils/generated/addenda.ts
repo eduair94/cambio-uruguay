@@ -175,6 +175,31 @@ export const PAGE_ADDENDA: readonly PageAddendum[] = Object.freeze([
       },
     ],
   },
+  {
+    route: '/alquilar-sin-recibo-de-sueldo',
+    updatedAt: '2026-11-01',
+    items: [
+      {
+        question: 'Soy argentino, ¿qué tengo que hacer para conseguir la cédula uruguaya?',
+        answer:
+          'Tenés que iniciar la Residencia Permanente Mercosur en gub.uy (se puede empezar 100% online). Te piden documento de identidad vigente, foto carné, certificado de antecedentes penales del país donde viviste los últimos 5 años (si residiste ahí más de 6 meses) y el certificado de vacunas uruguayo vigente. El trámite cuesta 557,30 UI más 55,70 UI del certificado migratorio para la cédula en la DNIC, y mientras no te otorguen la residencia, cada vez que salís del país tenés que pagar un permiso de reingreso de 225,60 UI.',
+        sources: [
+          {
+            title: 'gub.uy',
+            url: 'https://www.gub.uy/tramites/residencia-legal-permanente-mercosur',
+          },
+        ],
+      },
+      {
+        question: '¿Qué pide MAPFRE puntualmente para la garantía si soy empleado en blanco?',
+        answer:
+          'Si sos dependiente, Mapfre te exige una antigüedad laboral mínima de 3 meses. Como comprobante de ingresos pide el último recibo de sueldo si tu ingreso es fijo, o los últimos 6 recibos si es variable. Además, si no llegás sola/o al monto exigido, podés sumar ingresos de hasta 5 personas.',
+        sources: [
+          { title: 'mapfre.com.uy', url: 'https://www.mapfre.com.uy/seguros-garantia-alquiler/' },
+        ],
+      },
+    ],
+  },
   // <<< generated-addenda >>>
 ])
 
