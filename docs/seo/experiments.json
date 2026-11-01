@@ -2586,6 +2586,37 @@
         "comision de transferencia a otros bancos"
       ],
       "hypothesis": "Mismo patron que carne-y-sala-vip-respuesta-en-el-titulo. Auto con deuda (1.276 impresiones en 28 dias, posicion 6,4): las consultas preguntan si se puede transferir con deuda y la pagina contesta en su primera linea que no (TO SUCIVE 2026, art. 45); el titulo era 'Comprar un auto con deuda: patente y multas', ahora 'Auto con deuda de patente: no se transfiere'. Comisiones de transferencia (3.401, posicion 6,2, CTR 0,5 %): la descripcion ya decia la respuesta (entre Itau y Prex no se cobra, desde los demas bancos $ 45 o U$S 1,90) y el titulo era la etiqueta 'Comisiones de transferencia entre bancos'; ahora 'Transferencias entre bancos: gratis o $ 45'. Una fila porque es el mismo cambio en dos paginas sin relacion entre si."
+    },
+    {
+      "id": "compras-online-retracto-en-el-titulo",
+      "shippedOn": "2026-11-01",
+      "routes": [
+        "/derechos-consumidor-compras-online"
+      ],
+      "queries": [
+        "artículo 16 de la ley 17.250",
+        "derecho de arrepentimiento",
+        "arrepentimiento de compra online",
+        "ley de devolucion de compras",
+        "derechos del consumidor devoluciones"
+      ],
+      "hypothesis": "Mismo patron que las respuestas en el titulo del 1/11. 1.002 impresiones en 28 dias en posicion 7,2 y 4 clics: la consulta de cabeza cita el art. 16 de la Ley 17.250 y las demas preguntan por el arrepentimiento o la devolucion, que la pagina ya contesta (venta a distancia: retracto de 5 dias habiles, con las excepciones del 16-BIS). El titulo era la etiqueta 'Derechos del consumidor en compras online'; ahora 'Compras online: retracto de 5 dias habiles'. La descripcion, que ya nombraba el plazo y el art. 33, no se toca."
+    },
+    {
+      "id": "feriados-que-se-corren-respuesta-en-el-titulo",
+      "shippedOn": "2026-11-01",
+      "routes": [
+        "/feriados-que-se-corren-uruguay"
+      ],
+      "queries": [
+        "el lunes es feriado",
+        "lunes feriado",
+        "lunes es feriado",
+        "este lunes es feriado",
+        "lunes es feriado en uruguay",
+        "que feriado es el lunes"
+      ],
+      "hypothesis": "2.279 impresiones en 28 dias en posicion 9,1 y 2 clics, casi todas de 'el lunes es feriado' y variantes (185 + 71 + 54 + ...). El titulo era la etiqueta 'Feriados que se corren al lunes en Uruguay' y la respuesta, que son solo tres (19 de abril, 18 de mayo y 12 de octubre, Ley 16.805 art. 2), estaba en la descripcion y en el H1. Ahora 'Feriados que se corren al lunes: solo 3'. Ojo al medir: estas consultas se disparan la semana de cada feriado corrido y en noviembre no hay ninguno, asi que la ventana de 28 dias puede salir 'sin datos'."
     }
   ]
 }
