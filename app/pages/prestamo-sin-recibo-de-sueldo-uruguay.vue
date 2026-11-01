@@ -209,8 +209,9 @@
       <p class="text-caption text-medium-emphasis mb-4">
         Fuente: BCU — Tasas medias de interés,
         <a :href="BCU_CAPS_SOURCE_URL" target="_blank" rel="noopener noreferrer">comunicación</a>
-        2026/188 (PDF), visto el {{ fmtDate(BCU_CAPS_READ_ON) }}. En dólares el BCU publica una sola
-        celda de consumo, sin partir por tramo de UI ni por autorización de descuento.
+        {{ BCU_CAPS_COMUNICACION }} (PDF), visto el {{ fmtDate(BCU_CAPS_READ_ON) }}. En dólares el
+        BCU publica una sola celda de consumo, sin partir por tramo de UI ni por autorización de
+        descuento.
       </p>
 
       <VCard variant="flat" class="pa-4 pa-sm-5 mb-4 door-card">
@@ -360,6 +361,7 @@ import { computed } from 'vue'
 import { BCU_CAPS, BCU_IN_FORCE_SINCE, type BcuCapRow } from '~/utils/cashAdvance'
 import type { FaqItem } from '~/utils/faqAnswers'
 import {
+  BCU_CAPS_COMUNICACION,
   BCU_CAPS_PERIOD,
   BCU_CAPS_READ_ON,
   BCU_CAPS_SOURCE_URL,
