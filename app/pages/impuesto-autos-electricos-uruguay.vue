@@ -601,7 +601,9 @@ const lastResearchedLabel = new Date(`${LAST_RESEARCHED}T00:00:00Z`).toLocaleDat
 
 // --- SEO ---
 const canonicalUrl = 'https://cambio-uruguay.com/impuesto-autos-electricos-uruguay'
-const title = 'IMESI a autos eléctricos en Uruguay 2027'
+// La respuesta en el título, con la palabra que se busca («impuesto autos eléctricos»): las tres
+// tasas de 2027. IMESI, el nombre del impuesto, sigue en la descripción y en el H1.
+const title = 'Impuesto autos eléctricos 2027: 0, 5 o 9 %'
 const description =
   'Desde el 1°/1/2027 los eléctricos pagan 0, 5 o 9 % de IMESI según el valor en aduana (corte en US$ 19.000 y US$ 27.000). Matriz del Decreto 147/026.'
 
