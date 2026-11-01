@@ -349,6 +349,11 @@
       </v-row>
     </template>
 
+    <!-- La unidad intermedia, después del mapa (lo que la persona vino a usar) y no arriba de las
+         preguntas, que quedan debajo de marcas, bancos y rubros: la página daba 1,06 impresiones
+         por vista (28 días al 30/10/2026). FaqSection va con :ad="false": el tope sigue en dos. -->
+    <AdSlot placement="in-article" class="mt-8" />
+
     <!-- Marcas con descuento. Server-rendered a propósito: es lo único de esta página que el
          buscador puede leer, porque el mapa depende de una selección que sólo existe en el
          navegador de cada quien. -->
@@ -481,6 +486,7 @@
       :items="BANKOS_FAQ"
       heading="Preguntas frecuentes sobre descuentos con tarjeta"
       :expanded="true"
+      :ad="false"
     />
   </v-container>
 </template>

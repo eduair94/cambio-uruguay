@@ -378,6 +378,11 @@
       </VCol>
     </VRow>
 
+    <!-- La unidad intermedia, después del asesor y su resultado (lo que la persona vino a usar) y
+         no arriba de las preguntas: la página daba 0,47 impresiones por vista (28 días al
+         30/10/2026). FaqSection va con :ad="false": el tope sigue en dos. -->
+    <AdSlot placement="in-article" class="mt-10" />
+
     <section class="mt-10">
       <h2 class="text-h5 mb-3">Antes de señar</h2>
       <ol class="advisor-checklist pl-5">
@@ -469,7 +474,12 @@
       </p>
     </section>
 
-    <FaqSection :items="[...CAR_ADVISOR_FAQ]" heading="Preguntas frecuentes" :expanded="true" />
+    <FaqSection
+      :items="[...CAR_ADVISOR_FAQ]"
+      heading="Preguntas frecuentes"
+      :expanded="true"
+      :ad="false"
+    />
 
     <AssistantCta topic="autos" :filters="assistantFilters" class="mt-8" />
   </VContainer>
