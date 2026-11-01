@@ -329,6 +329,7 @@ import { BANKOS_BANK_BY_ID, BANKOS_CARD_PAGE_ANCHORS, dayRestrictionLabel } from
 import type { BrandRow, OfferTier } from '~/utils/bankosBrands'
 import type { BankosAnalysis } from '~/utils/bankosAnalysis'
 import { formatUYU } from '~/utils/format'
+import { pickTitle } from '~/utils/liveRateSeo'
 import {
   MERCADO_PAGO_PROMOS,
   MERCADO_PAGO_PROMOS_REVIEWED,
@@ -600,8 +601,24 @@ defineOgImageComponent('Cambio', {
   tag: 'DESCUENTOS',
 })
 
+// El título dice cuántos comercios tiene hoy el emisor, la cifra que la página ya muestra arriba de
+// todo y lo que pregunta quien llega («comercios adheridos a anda», «tiendas con descuento itau»).
+// Sale de la misma lectura que esos números; si no vino o no entra en 60 con la marca, queda el
+// título fijo del emisor (utils/bankosPages.ts).
+const seoTitle = computed(() => {
+  const fallback = page.value?.seoTitle ?? ''
+  const brands = data.value?.totals.brands ?? 0
+  const name = bank.value?.name
+  if (!brands || !name) return fallback
+  const n = fmt(brands)
+  return pickTitle(
+    [`Descuentos ${name}: ${n} comercios adheridos`, `Descuentos ${name}: ${n} comercios`],
+    fallback
+  )
+})
+
 useSeoMeta({
-  title: () => `${page.value?.seoTitle ?? ''} | Cambio Uruguay`,
+  title: () => `${seoTitle.value} | Cambio Uruguay`,
   description: () => page.value?.seoDescription ?? '',
   ogTitle: () => page.value?.h1 ?? '',
   ogDescription: () => page.value?.seoDescription ?? '',
