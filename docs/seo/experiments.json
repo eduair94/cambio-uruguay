@@ -2617,6 +2617,31 @@
         "que feriado es el lunes"
       ],
       "hypothesis": "2.279 impresiones en 28 dias en posicion 9,1 y 2 clics, casi todas de 'el lunes es feriado' y variantes (185 + 71 + 54 + ...). El titulo era la etiqueta 'Feriados que se corren al lunes en Uruguay' y la respuesta, que son solo tres (19 de abril, 18 de mayo y 12 de octubre, Ley 16.805 art. 2), estaba en la descripcion y en el H1. Ahora 'Feriados que se corren al lunes: solo 3'. Ojo al medir: estas consultas se disparan la semana de cada feriado corrido y en noviembre no hay ninguno, asi que la ventana de 28 dias puede salir 'sin datos'."
+    },
+    {
+      "id": "descuentos-por-emisor-cuantos-comercios",
+      "shippedOn": "2026-11-01",
+      "routes": [
+        "/descuentos-con-tarjeta-uruguay/itau",
+        "/descuentos-con-tarjeta-uruguay/brou",
+        "/descuentos-con-tarjeta-uruguay/santander",
+        "/descuentos-con-tarjeta-uruguay/scotiabank",
+        "/descuentos-con-tarjeta-uruguay/bbva",
+        "/descuentos-con-tarjeta-uruguay/oca",
+        "/descuentos-con-tarjeta-uruguay/anda",
+        "/descuentos-con-tarjeta-uruguay/club-el-pais",
+        "/descuentos-con-tarjeta-uruguay/mercado-pago",
+        "/descuentos-con-tarjeta-uruguay/prex"
+      ],
+      "queries": [
+        "comercios adheridos a anda montevideo",
+        "anda comercios",
+        "descuentos anda",
+        "tarjeta anda comercios adheridos",
+        "tiendas con descuento itau",
+        "descuentos itau"
+      ],
+      "hypothesis": "Las diez paginas de descuentos por emisor suman ~4.500 impresiones en 28 dias en posicion 8-9 con menos de 1 % de CTR (ANDA 1.352, Itau 1.000, OCA 752, BBVA 564, Santander 470), y la consulta de cabeza pregunta por los comercios ('comercios adheridos a anda montevideo', 'anda comercios', 'tiendas con descuento itau'). La pagina ya muestra arriba de todo cuantas marcas tiene hoy el emisor, leido del mismo catalogo, y el titulo era fijo ('Descuentos ANDA: comercios adheridos y con que tarjeta'). Ahora 'Descuentos ANDA: 150 comercios adheridos' con la cifra viva (o la version sin 'adheridos' si no entra en 60; sin lectura, el titulo fijo). Mismo patron que la cifra en el titulo de /indicadores (mejoro 1,82) y de /cotizacion."
     }
   ]
 }
