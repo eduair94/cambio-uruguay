@@ -2642,6 +2642,22 @@
         "descuentos itau"
       ],
       "hypothesis": "Las diez paginas de descuentos por emisor suman ~4.500 impresiones en 28 dias en posicion 8-9 con menos de 1 % de CTR (ANDA 1.352, Itau 1.000, OCA 752, BBVA 564, Santander 470), y la consulta de cabeza pregunta por los comercios ('comercios adheridos a anda montevideo', 'anda comercios', 'tiendas con descuento itau'). La pagina ya muestra arriba de todo cuantas marcas tiene hoy el emisor, leido del mismo catalogo, y el titulo era fijo ('Descuentos ANDA: comercios adheridos y con que tarjeta'). Ahora 'Descuentos ANDA: 150 comercios adheridos' con la cifra viva (o la version sin 'adheridos' si no entra en 60; sin lectura, el titulo fijo). Mismo patron que la cifra en el titulo de /indicadores (mejoro 1,82) y de /cotizacion."
+    },
+    {
+      "id": "costo-de-vida-cifra-en-el-titulo",
+      "shippedOn": "2026-11-01",
+      "routes": [
+        "/herramientas/costo-de-vida"
+      ],
+      "queries": [
+        "costo de vida en uruguay",
+        "cuanto cuesta vivir en uruguay",
+        "costo de vida uruguay",
+        "costo de vida en uruguay 2026",
+        "cuanto cuesta vivir en uruguay en dólares",
+        "cuanto se necesita para vivir en uruguay"
+      ],
+      "hypothesis": "4.409 impresiones en 28 dias en posicion 5,9 y 63 clics (1,4 %). El titulo del catalogo era 'Calculadora de costo de vida y presupuesto en Uruguay', 70 caracteres con la marca, asi que el SERP lo cortaba, y no contestaba la pregunta de las consultas ('cuanto cuesta vivir en uruguay'). Ahora, con el modelo vivo de /api/cost-of-living, 'Costo de vida en Uruguay: $ X al mes': lo esencial de una persona sola alquilando en Montevideo, que es exactamente el escenario y el numero que la calculadora muestra al abrir; la descripcion aclara el escenario. Sin lectura vuelve al titulo del catalogo. Mismo patron que el conversor de UI (cifra viva en el titulo)."
     }
   ]
 }
