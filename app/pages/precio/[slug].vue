@@ -426,6 +426,7 @@ import {
   type PreciosSortDir,
   type PreciosStoreSortKey,
 } from '~/utils/preciosTable'
+import { pickTitle } from '~/utils/liveRateSeo'
 
 const route = useRoute()
 const localePath = useLocalePath()
@@ -723,8 +724,17 @@ const description = computed(() => {
   return `${articleName.value} cuesta entre $${stats.value.min} y $${stats.value.max} según el local, con mediana de $${stats.value.p50} sobre ${stats.value.n} supermercados. Datos oficiales del SIPC, con la fecha de cada góndola.`
 })
 
+// La mediana de la descripción, en el título. El mínimo NO: `stats.min` incluye las filas marcadas
+// `suspect` y las viejas, que la página nunca deja encabezar un "más barato" (docs/app/PRECIOS.md),
+// y el título las encabezaría. Un nombre que no entra con la cifra vuelve al título sin cifra.
+const seoTitle = computed(() => {
+  const median = stats.value?.p50
+  if (!median) return title.value
+  return pickTitle([`${articleName.value}: $${median} de mediana`], title.value)
+})
+
 useSeoMeta({
-  title: () => `${title.value} | Cambio Uruguay`,
+  title: () => `${seoTitle.value} | Cambio Uruguay`,
   description,
   ogTitle: title,
   ogDescription: description,

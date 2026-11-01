@@ -310,6 +310,7 @@ hay un precio para hoy).
 <script setup lang="ts">
 import { LAST_RESEARCHED } from '~/utils/importRules'
 import { dateLocale } from '~/utils/format'
+import { pickTitle } from '~/utils/liveRateSeo'
 import type { FaqItem } from '~/utils/faqAnswers'
 import { storeSlugForSeller } from '~/utils/storeDirectory'
 import {
@@ -654,8 +655,22 @@ defineOgImageComponent('Cambio', {
   tag: 'CELULARES · PRECIOS',
 })
 
+// El precio de la descripción, en el título. Los nombres largos ("Apple iPhone 17 Pro Max 256 GB")
+// no entran con la marca y la cifra: el último candidato saca la primera palabra, que es la marca.
+const seoTitle = computed(() => {
+  if (!headline.value) return title.value
+  const price = phoneMoney(headline.value.priceUyu)
+  const name = model.value.name
+  const words = name.split(' ')
+  const short = words.length > 2 ? words.slice(1).join(' ') : name
+  return pickTitle(
+    [`${name} nuevo: desde ${price}`, `${name}: desde ${price}`, `${short}: desde ${price}`],
+    title.value
+  )
+})
+
 useSeoMeta({
-  title: () => `${title.value} | Cambio Uruguay`,
+  title: () => `${seoTitle.value} | Cambio Uruguay`,
   description,
   ogTitle: title,
   ogDescription: description,
