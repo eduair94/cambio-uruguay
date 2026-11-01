@@ -2535,6 +2535,23 @@
         "dolar hoy uruguay"
       ],
       "hypothesis": "La descripcion viva de la home estaba escrita en castellano dentro de pages/index.vue: /en y /pt la servian igual ('se vende desde $40.63' en la pagina inglesa, con un '$' pelado que un lector anglo lee como dolares) y en los tres idiomas decia 'Datos del BCU' cuando las cifras son las pizarras de las casas. Ademas medía ~195 caracteres, asi que Google la cortaba antes de terminar. Pasa a una plantilla por idioma (seo.homeDescriptionLive) que entra en 160 con cifras de tres digitos y dice de donde salen los numeros. La ruta medida es la home en castellano, que es la que mueve el volumen (152 mil impresiones en 28 dias); /pt suma 782 y /en 431, demasiado poco para un veredicto propio."
+    },
+    {
+      "id": "respuesta-en-el-titulo-1101",
+      "shippedOn": "2026-11-01",
+      "routes": [
+        "/embargo-de-sueldo-uruguay",
+        "/impuesto-autos-electricos-uruguay"
+      ],
+      "queries": [
+        "te pueden retener el sueldo por deuda",
+        "retención de sueldo por deudas uruguay",
+        "te pueden embargar el sueldo en uruguay",
+        "impuesto autos electricos uruguay",
+        "impuestos autos electricos uruguay",
+        "cuanto es el imesi para autos en uruguay"
+      ],
+      "hypothesis": "Mismo patron que respuesta-en-el-titulo-1031 y multas-patente-respuesta-en-el-titulo: dos paginas cuya consulta de cabeza tiene respuesta de una linea y cuyo titulo no la daba. Embargo (1.973 impresiones en 28 dias, posicion 6,0, CTR 0,9 %): 'te pueden retener el sueldo por deuda' y 'te pueden embargar el sueldo' se contestan con el art. 381 del CGP, solo tributos y pension alimenticia; el titulo era 'cuanto te pueden sacar' y la descripcion pasaba de 300 caracteres. Ahora 'Embargo de sueldo: solo tributos y pension' y una descripcion de 148 que empieza por la deuda de tarjeta. Autos electricos (1.658, posicion 6,5, CTR 0,9 %): 'impuesto autos electricos uruguay' es la consulta de cabeza y el titulo decia 'IMESI a autos electricos en Uruguay 2027' sin las tasas; ahora 'Impuesto autos electricos 2027: 0, 5 o 9 %'. Van en una fila porque son el mismo cambio en dos paginas sin relacion entre si."
     }
   ]
 }
