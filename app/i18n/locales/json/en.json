@@ -806,6 +806,7 @@
   "seo": {
     "homeTitle": "Dollar today in Uruguay: compare 40+ rates",
     "homeTitleLive": "Dollar in Uruguay today: from $U {sell}",
+    "homeDescriptionLive": "Dollar in Uruguay today: buy from $U {sell} or sell for up to $U {buy} at {count} exchange houses, updated every 10 minutes. Also euro, real and Argentine peso.",
     "homeDescription": "Dollar exchange rate in Uruguay today updated every 10 minutes. Compare buy and sell prices from over 40 exchange houses. Find the best USD, EUR, BRL, and ARS rates in Montevideo and all of Uruguay.",
     "homeKeywords": "dollar exchange rate uruguay, USD to UYU, currency exchange uruguay, exchange houses uruguay, buy dollars uruguay, sell dollars uruguay, dollar rate montevideo, BROU exchange rate, best exchange rate uruguay",
     "advancedTitle": "Advanced dollar exchange comparison in Uruguay",

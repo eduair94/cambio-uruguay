@@ -2516,14 +2516,20 @@ const fmtRate = (value: number) =>
  *
  * Falls back to the translated copy whenever the market payload is missing, so
  * an upstream outage degrades to the old description rather than to a stub.
+ *
+ * La plantilla vive en i18n (`seo.homeDescriptionLive`), como el título. Estuvo escrita acá en
+ * castellano y /en y /pt la servían tal cual —"se vende desde $40.63" en la página inglesa, con
+ * un "$" pelado que un lector anglo toma por dólares—, y decía "Datos del BCU" cuando las cifras
+ * son las pizarras de las casas: el BCU no publica la cotización de ninguna. Cada idioma pone su
+ * símbolo y entra en 160 con cifras de tres dígitos (`homeDescriptionLive.test.ts`).
  */
 const homeDescription = computed(() => {
   if (usdBestSell.value === null || usdBestBuy.value === null) return t('seo.homeDescription')
-  return (
-    `Dólar hoy en Uruguay: se vende desde $${fmtRate(usdBestSell.value)} y se compra hasta ` +
-    `$${fmtRate(usdBestBuy.value)} comparando ${usdQuotes.value.length} casas de cambio. ` +
-    `Datos del BCU actualizados cada 10 minutos. También euro, real y peso argentino.`
-  ).slice(0, 300)
+  return t('seo.homeDescriptionLive', {
+    sell: fmtRate(usdBestSell.value),
+    buy: fmtRate(usdBestBuy.value),
+    count: usdQuotes.value.length,
+  })
 })
 
 /**

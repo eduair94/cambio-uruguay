@@ -2520,6 +2520,21 @@
         "las multas de tránsito caducan en uruguay"
       ],
       "hypothesis": "La pagina recibe 4.014 impresiones en 28 dias en posicion 7,7 con 0,85 % de CTR, y sus dos consultas de cabeza son una pregunta con respuesta de una linea: 'multa por circular con deuda de patente' y 'se puede circular con deuda de patente'. El titulo era una etiqueta ('Multas y deuda de patente en Uruguay') y la descripcion prometia contar 'cuando aplica'. La respuesta ya estaba en la pagina con su norma (Texto Ordenado del SUCIVE 2026, art. 10: dos o mas cuotas vencidas, multa del 25 % de la patente anual, hasta cuatro veces por ano) y la segunda familia de consultas, si las multas caducan, tambien (prescriben a los cinco anos): las dos suben al titulo y a la descripcion, sin tocar el cuerpo. Mismo patron que respuesta-en-el-titulo-1031."
+    },
+    {
+      "id": "home-descripcion-por-idioma",
+      "shippedOn": "2026-11-01",
+      "routes": [
+        "/"
+      ],
+      "queries": [
+        "dolar hoy",
+        "precio del dolar",
+        "cotizacion del dolar",
+        "cuanto esta el dolar",
+        "dolar hoy uruguay"
+      ],
+      "hypothesis": "La descripcion viva de la home estaba escrita en castellano dentro de pages/index.vue: /en y /pt la servian igual ('se vende desde $40.63' en la pagina inglesa, con un '$' pelado que un lector anglo lee como dolares) y en los tres idiomas decia 'Datos del BCU' cuando las cifras son las pizarras de las casas. Ademas medía ~195 caracteres, asi que Google la cortaba antes de terminar. Pasa a una plantilla por idioma (seo.homeDescriptionLive) que entra en 160 con cifras de tres digitos y dice de donde salen los numeros. La ruta medida es la home en castellano, que es la que mueve el volumen (152 mil impresiones en 28 dias); /pt suma 782 y /en 431, demasiado poco para un veredicto propio."
     }
   ]
 }
