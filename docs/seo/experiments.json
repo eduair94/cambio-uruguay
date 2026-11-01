@@ -2673,6 +2673,32 @@
         "descuentos comida"
       ],
       "hypothesis": "Continuacion de descuentos-por-emisor-cuantos-comercios en las paginas de rubro: restaurantes suma 1.708 impresiones en 28 dias en posicion 7,8 con 7 clics. El titulo era fijo ('Descuentos en restaurantes Uruguay: que banco conviene', 71 caracteres con la marca, cortado en el SERP) y la pagina muestra arriba cuantas marcas del rubro tienen descuento hoy. Ahora 'Descuentos en restaurantes: 437 comercios con tarjeta' o la version corta si no entra; los rubros de nombre largo (combustible y vehiculos, librerias y papelerias, viajes y hoteleria) vuelven al titulo fijo. Se declara la familia /rubro/ entera porque es el mismo cambio en todas."
+    },
+    {
+      "id": "titulos-cortados-con-la-respuesta",
+      "shippedOn": "2026-11-01",
+      "routes": [
+        "/cuanto-sale-la-cedula-de-identidad-uruguaya",
+        "/herramientas/calculadora-irpf",
+        "/herramientas/calculadora-impuestos-importacion",
+        "/herramientas/calculadora-impuestos-inversiones",
+        "/retirar-efectivo-uruguay",
+        "/en/retirar-efectivo-uruguay",
+        "/pt/retirar-efectivo-uruguay"
+      ],
+      "queries": [
+        "cuanto sale la cedula en uruguay",
+        "costo cedula de identidad",
+        "cuanto cuesta renovar la cedula en uruguay",
+        "cuanto sale la cedula urgente",
+        "calculadora irpf",
+        "calculadora de irpf",
+        "calcular irpf",
+        "simulador irpf 2026",
+        "se puede sacar dólares del cajero",
+        "como sacar dinheiro no uruguai"
+      ],
+      "hypothesis": "Cinco titulos que pasaban de 60 caracteres con la marca y que el SERP cortaba antes de lo que distingue a la pagina. Cedula (6.444 impresiones en 28 dias, posicion 8,5, 5 clics): 'Cuanto sale la cedula de identidad uruguaya: $443' (66) pasa a 'Cuanto sale la cedula: $443, urgente $886', las dos cifras que piden las consultas. Calculadora de IRPF (1.410, posicion 8,9, 6 clics): 'Calculadora de IRPF en Uruguay (rentas del trabajo)' (68) pasa a 'Calculadora de IRPF: exento hasta $ 48.048', el minimo no imponible de 7 BPC sacado de la misma tabla de franjas, y la descripcion lo dice con las tasas. Retirar efectivo (2.748, posicion 6,4, 33 clics): 'Donde sacar efectivo en Uruguay (guia para turistas 2026)' (74) pasa a 'Cajeros en Uruguay: saca dolares o pesos', lo que la pagina pone primero, en los tres idiomas antes de la temporada de turistas. Las calculadoras de impuestos de importacion (1.478) e inversiones (390) solo se acortan a 56 y 59."
     }
   ]
 }

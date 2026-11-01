@@ -1,5 +1,10 @@
 <template>
-  <ToolShell slug="calculadora-impuestos-inversiones" :faq="faq" :sources="sources">
+  <ToolShell
+    slug="calculadora-impuestos-inversiones"
+    :faq="faq"
+    :sources="sources"
+    seo-title="Calculadora de impuestos sobre inversiones | Cambio Uruguay"
+  >
     <VCard class="pa-4 pa-sm-6">
       <VTabs v-model="tab" class="mb-4" grow>
         <VTab value="instrumento" data-testid="tab-instrumento">
