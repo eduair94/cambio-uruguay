@@ -250,20 +250,23 @@ export const SOLO_CEDULA_LENDERS: readonly SoloCedulaLender[] = Object.freeze([
 // media + 55 %; crédito de nómina + 20 %; retención de haberes + 30 %; mora + 80 %.
 //
 // La lectura fechada sale de la COMUNICACIÓN que publica cada tabla y no del PDF de la URL fija:
-// ese archivo se pisa todos los meses, y el 31/10/2026 ya traía la tabla de julio–setiembre que
-// rige desde el 1/11. La comunicación queda en su dirección y sigue diciendo lo mismo, así que es
-// la única fuente que respalda una cifra fechada. Las doce filas cierran con la regla de arriba.
+// ese archivo se pisa todos los meses (el 31/10/2026 ya traía la tabla de julio–setiembre que
+// rige desde el 1/11, y el 1/11/2026 seguía trayéndola). La comunicación queda en su dirección y
+// sigue diciendo lo mismo, así que es la única fuente que respalda una cifra fechada. Las doce
+// filas cierran con la regla de arriba.
 
 /** Período de la tabla leída a mano y su vigencia, tal como los imprime la comunicación. */
-export const BCU_CAPS_PERIOD = 'junio–agosto de 2026'
-export const BCU_CAPS_IN_FORCE_SINCE = '2026-10-01'
-/** Comunicación BCU 2026/188 (16/09/2026, RR-SSF-2026-601): tasas medias junio–agosto de 2026. */
-export const BCU_CAPS_SOURCE_URL = 'https://www.bcu.gub.uy/Comunicados/seggco26188.pdf'
+export const BCU_CAPS_PERIOD = 'julio–setiembre de 2026'
+export const BCU_CAPS_IN_FORCE_SINCE = '2026-11-01'
+/** Comunicación BCU 2026/212 (22/10/2026, RR-SSF-2026-682): tasas medias julio–setiembre de 2026. */
+export const BCU_CAPS_SOURCE_URL = 'https://www.bcu.gub.uy/Comunicados/seggco26212.pdf'
+/** Número de la comunicación, para el pie de la tabla: que no quede escrito a mano en la página. */
+export const BCU_CAPS_COMUNICACION = '2026/212'
 /**
  * Cuándo se leyó esa comunicación. Aparte de `SOLO_CEDULA_REVIEWED` a propósito: la tabla del BCU
  * se volvió a leer ese día y las páginas de los prestamistas no.
  */
-export const BCU_CAPS_READ_ON = '2026-10-31'
+export const BCU_CAPS_READ_ON = '2026-11-01'
 
 export interface NoPayslipCapRow {
   id: string
@@ -286,9 +289,9 @@ export const NOPAYSLIP_CAPS: readonly NoPayslipCapRow[] = Object.freeze([
     segment: 'Consumo sin autorización de descuento, menos de 10.000 UI',
     plazo: 'hasta 366 días',
     currency: 'UYU',
-    meanPct: 88.87,
-    capPct: 137.7485,
-    moraPct: 159.966,
+    meanPct: 92.09,
+    capPct: 142.7395,
+    moraPct: 165.762,
     grid: 'menor10kUI|corto|UYU',
   },
   {
@@ -296,9 +299,9 @@ export const NOPAYSLIP_CAPS: readonly NoPayslipCapRow[] = Object.freeze([
     segment: 'Consumo sin autorización de descuento, menos de 10.000 UI',
     plazo: '367 días o más',
     currency: 'UYU',
-    meanPct: 91.17,
-    capPct: 141.3135,
-    moraPct: 164.106,
+    meanPct: 87.4,
+    capPct: 135.47,
+    moraPct: 157.32,
     grid: 'menor10kUI|largo|UYU',
   },
   {
@@ -306,9 +309,9 @@ export const NOPAYSLIP_CAPS: readonly NoPayslipCapRow[] = Object.freeze([
     segment: 'Consumo sin autorización de descuento, 10.000 UI o más',
     plazo: 'hasta 366 días',
     currency: 'UYU',
-    meanPct: 39.74,
-    capPct: 61.597,
-    moraPct: 71.532,
+    meanPct: 35.57,
+    capPct: 55.1335,
+    moraPct: 64.026,
     grid: 'mayor10kUI|corto|UYU',
   },
   {
@@ -316,9 +319,9 @@ export const NOPAYSLIP_CAPS: readonly NoPayslipCapRow[] = Object.freeze([
     segment: 'Consumo sin autorización de descuento, 10.000 UI o más',
     plazo: '367 días o más',
     currency: 'UYU',
-    meanPct: 57.1,
-    capPct: 88.505,
-    moraPct: 102.78,
+    meanPct: 51.74,
+    capPct: 80.197,
+    moraPct: 93.132,
     grid: 'mayor10kUI|largo|UYU',
   },
   {
@@ -326,50 +329,50 @@ export const NOPAYSLIP_CAPS: readonly NoPayslipCapRow[] = Object.freeze([
     segment: 'Consumo con autorización de descuento, menos de 10.000 UI',
     plazo: 'hasta 366 días',
     currency: 'UYU',
-    meanPct: 20.99,
-    capPct: 32.5345,
-    moraPct: 37.782,
+    meanPct: 20.3,
+    capPct: 31.465,
+    moraPct: 36.54,
   },
   {
     id: 'con-descuento-chico-largo',
     segment: 'Consumo con autorización de descuento, menos de 10.000 UI',
     plazo: '367 días o más',
     currency: 'UYU',
-    meanPct: 24.38,
-    capPct: 37.789,
-    moraPct: 43.884,
+    meanPct: 24.27,
+    capPct: 37.6185,
+    moraPct: 43.686,
   },
   {
     id: 'retencion-chico-corto',
     segment: 'Crédito con retención de haberes (tope 30 %), menos de 10.000 UI',
     plazo: 'hasta 366 días',
     currency: 'UYU',
-    meanPct: 20.99,
-    capPct: 27.29,
+    meanPct: 20.3,
+    capPct: 26.39,
   },
   {
     id: 'retencion-chico-largo',
     segment: 'Crédito con retención de haberes (tope 30 %), menos de 10.000 UI',
     plazo: '367 días o más',
     currency: 'UYU',
-    meanPct: 24.38,
-    capPct: 31.69,
+    meanPct: 24.27,
+    capPct: 31.55,
   },
   {
     id: 'nomina-chico-corto',
     segment: 'Crédito de nómina (tope 20 %), menos de 10.000 UI',
     plazo: 'hasta 366 días',
     currency: 'UYU',
-    meanPct: 20.99,
-    capPct: 25.19,
+    meanPct: 20.3,
+    capPct: 24.36,
   },
   {
     id: 'nomina-chico-largo',
     segment: 'Crédito de nómina (tope 20 %), menos de 10.000 UI',
     plazo: '367 días o más',
     currency: 'UYU',
-    meanPct: 24.38,
-    capPct: 29.26,
+    meanPct: 24.27,
+    capPct: 29.12,
   },
   // En dólares el PDF publica UNA sola celda de consumo, sin partir por autorización de descuento ni
   // por tramo de UI: no existe un tope en dólares "sin descuento bajo 10.000 UI".
@@ -378,9 +381,9 @@ export const NOPAYSLIP_CAPS: readonly NoPayslipCapRow[] = Object.freeze([
     segment: 'Consumo en dólares (única categoría)',
     plazo: 'hasta 366 días',
     currency: 'USD',
-    meanPct: 7.32,
-    capPct: 11.346,
-    moraPct: 13.176,
+    meanPct: 7.27,
+    capPct: 11.2685,
+    moraPct: 13.086,
     grid: 'menor10kUI|corto|USD',
   },
   {
@@ -388,9 +391,9 @@ export const NOPAYSLIP_CAPS: readonly NoPayslipCapRow[] = Object.freeze([
     segment: 'Consumo en dólares (única categoría)',
     plazo: '367 días o más',
     currency: 'USD',
-    meanPct: 11.95,
-    capPct: 18.5225,
-    moraPct: 21.51,
+    meanPct: 11.47,
+    capPct: 17.7785,
+    moraPct: 20.646,
     grid: 'menor10kUI|largo|USD',
   },
 ])
