@@ -3,6 +3,7 @@
     slug="calculadora-impuestos-importacion"
     :faq="faq"
     :sources="sources"
+    seo-title="Calculadora de impuestos de importación | Cambio Uruguay"
     content-layout="below"
   >
     <VCard class="pa-4 pa-sm-6">

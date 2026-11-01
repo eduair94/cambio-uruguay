@@ -282,6 +282,7 @@ import {
   recargoUrgente,
   sobreprecioPrimeraVez,
 } from '~/utils/idCard'
+import { pickTitle } from '~/utils/liveRateSeo'
 
 const localePath = useLocalePath()
 
@@ -314,7 +315,13 @@ const RELATED = [
 ]
 
 const canonicalUrl = 'https://cambio-uruguay.com/cuanto-sale-la-cedula-de-identidad-uruguaya'
-const title = `Cuánto sale la cédula de identidad uruguaya: ${pesos(renovacion.arancel)}`
+// Con la marca tiene que entrar en 60: «Cuánto sale la cédula de identidad uruguaya: $443» se
+// pasaba (66) y Google lo cortaba justo antes del urgente, que es la otra mitad de la consulta.
+// El día que el urgente llegue a cinco caracteres y no entren los dos, queda la renovación sola.
+const title = pickTitle(
+  [`Cuánto sale la cédula: ${pesos(renovacion.arancel)}, urgente ${pesos(urgente.arancel)}`],
+  `Cuánto sale la cédula: ${pesos(renovacion.arancel)}`
+)
 // 156 caracteres: entra entera en el snippet, y los tres importes van adelante porque son lo
 // único que separa a esta descripción de la de cualquier otra guía de trámites.
 const description = `Renovar la cédula uruguaya sale ${pesos(renovacion.arancel)} y el urgente ${pesos(urgente.arancel)}, el doble. Primera vez, ${pesos(primera.arancel)}. Perderla no es un trámite aparte, y con denuncia de rapiña sale gratis.`

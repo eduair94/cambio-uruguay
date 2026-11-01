@@ -219,7 +219,7 @@ export const withdrawContent: Record<WithdrawLocale, WithdrawContent> = {
     locale: 'es',
     lang: 'es-UY',
     title: 'Dónde sacar efectivo en Uruguay: cajeros, comisiones y zonas turísticas',
-    metaTitle: 'Dónde sacar efectivo en Uruguay (guía para turistas 2026)',
+    metaTitle: 'Cajeros en Uruguay: sacá dólares o pesos',
     description:
       'Cómo y dónde retirar efectivo en Uruguay siendo turista: cajeros que dan dólares y pesos, comisiones, límites, el truco de la conversión de moneda (DCC) y los mejores lugares para sacar plata en el aeropuerto, Montevideo, Punta del Este y Colonia.',
     keywords:
@@ -509,7 +509,7 @@ export const withdrawContent: Record<WithdrawLocale, WithdrawContent> = {
     locale: 'en',
     lang: 'en-US',
     title: 'Where to withdraw cash in Uruguay: ATMs, fees and tourist hotspots',
-    metaTitle: 'Where to withdraw cash in Uruguay (2026 tourist guide)',
+    metaTitle: 'ATMs in Uruguay: withdraw dollars or pesos',
     description:
       'How and where to get cash in Uruguay as a tourist: ATMs that dispense both US dollars and pesos, fees, withdrawal limits, the currency-conversion (DCC) trap, and the best places to withdraw at the airport, Montevideo, Punta del Este and Colonia.',
     keywords:
@@ -798,7 +798,7 @@ export const withdrawContent: Record<WithdrawLocale, WithdrawContent> = {
     locale: 'pt',
     lang: 'pt-BR',
     title: 'Onde sacar dinheiro no Uruguai: caixas eletrônicos, taxas e zonas turísticas',
-    metaTitle: 'Onde sacar dinheiro no Uruguai (guia para turistas 2026)',
+    metaTitle: 'Caixas no Uruguai: saque dólares ou pesos',
     description:
       'Como e onde sacar dinheiro no Uruguai sendo turista: caixas que entregam dólares e pesos, taxas, limites de saque, a armadilha da conversão de moeda (DCC) e os melhores lugares para sacar no aeroporto, Montevidéu, Punta del Este e Colonia.',
     keywords:
