@@ -4,9 +4,9 @@ export const finesNavigationMessages = {
   es: {
     ...guideDiscoveryMessages.es,
     heading: 'Multas de tránsito y deuda de patente en Uruguay',
-    title: 'Multas y deuda de patente en Uruguay',
+    title: 'Patente vencida: multa del 25 % al circular',
     description:
-      'Multa por circular con deuda de patente: cuándo aplica y cómo consultar tu deuda en SUCIVE. Plazos para reclamar multas, convenios de pago y prescripción.',
+      'Circular con 2 o más cuotas de patente vencidas: multa del 25 % de la patente anual, hasta 4 veces por año. Las multas de tránsito prescriben a los 5 años.',
     navigation: 'Ir a una sección de multas y patente',
     drivingFine: 'Multa por circular con deuda',
     drivingFineHeading: 'Multa por circular con deuda de patente',
@@ -29,9 +29,9 @@ export const finesNavigationMessages = {
   en: {
     ...guideDiscoveryMessages.en,
     heading: 'Traffic fines and vehicle tax debt in Uruguay',
-    title: 'Fines and vehicle tax debt in Uruguay',
+    title: 'Overdue vehicle tax: 25% fine for driving',
     description:
-      'Fines for driving with overdue vehicle tax: when they apply and how to check SUCIVE debt. Fine appeal deadlines, payment plans and limitation periods.',
+      'Driving with 2 or more overdue vehicle tax instalments: a fine of 25% of the annual tax, up to 4 times a year. Traffic fines lapse after 5 years.',
     navigation: 'Jump to a section on fines and vehicle tax',
     drivingFine: 'Driving with overdue vehicle tax',
     drivingFineHeading: 'Fine for driving with overdue vehicle tax',
@@ -54,9 +54,9 @@ export const finesNavigationMessages = {
   pt: {
     ...guideDiscoveryMessages.pt,
     heading: 'Multas de trânsito e dívida de patente no Uruguai',
-    title: 'Multas e dívida de patente no Uruguai',
+    title: 'Patente vencida: multa de 25 % ao circular',
     description:
-      'Multa por circular com patente vencida: quando se aplica e como consultar a dívida no SUCIVE. Prazos para recorrer de multas, parcelamento e prescrição.',
+      'Circular com 2 ou mais parcelas de patente vencidas: multa de 25 % da patente anual, até 4 vezes por ano. As multas de trânsito prescrevem em 5 anos.',
     navigation: 'Ir a uma seção sobre multas e patente',
     drivingFine: 'Multa por circular com dívida',
     drivingFineHeading: 'Multa por circular com dívida de patente',
