@@ -14,6 +14,7 @@ import {
   tierOf,
 } from '../../../classes/revenueplan/value'
 import { adDensityForPath } from '../../utils/ads'
+import { guideHubs } from '../../utils/guideHubs'
 
 /**
  * Que cada página que el sitio MONETIZA COMO LECTURA LARGA esté valuada como contenido en el plan
@@ -102,6 +103,17 @@ const LISTA_CURADA = [
 /**
  * La deuda: páginas de lectura larga que todavía no están en ningún tramo. **SÓLO PUEDE BAJAR.**
  *
+ * 54 el 2026-10-29, cuando sale el racimo del hub `deudas-y-credito-uruguay`: ese tema declaraba
+ * quince entradas partidas por la mitad entre dos tramos que se diferencian por ocho veces —ocho ya
+ * eran contenido, una es la calculadora (`/herramientas/*`, dato vivo) y seis estaban acá—, y es el
+ * peor vecindario del sitio para tener ese error, porque dos de las ocho clasificadas entraron por
+ * la alerta `unclassified-families`, o sea con tráfico e ingreso MEDIDOS. Las seis piden un dato en
+ * vivo de una sola clase, el tope legal del BCU contra el que su texto razona, y ninguna publica un
+ * relevamiento propio; el motivo por página está en `classes/revenueplan/value.ts`. Esa tanda
+ * también deja escrito qué no era la línea del 22/10: los controles interactivos no sacan del
+ * tramo —`/conviene-pagar-todo-con-credito-uruguay` tiene dieciocho y entró entonces—, lo único que
+ * parkeaba era el `useFetch`.
+ *
  * 161 el 2026-10-22, antes de la primera tanda; 62 después de ella. Quedan 61 tras clasificar la
  * guía catastral el 2026-10-24: la UR sólo convierte una tasa auxiliar. Y 60 el 2026-10-28, cuando
  * `/cortes-de-luz-por-barrio-uruguay` pasa a `contenido` junto con la página de cortes de agua que
@@ -126,7 +138,6 @@ const LISTA_CURADA = [
  * la portada.
  */
 const DEUDA_SIN_TRAMO = [
-  '/adelanto-de-efectivo-tarjeta-de-credito',
   '/advertencias-bcu',
   '/analisis-alquileres-uruguay',
   '/apostillar-un-documento-uruguay',
@@ -136,7 +147,6 @@ const DEUDA_SIN_TRAMO = [
   '/casas-de-cambio-abiertas-fin-de-semana',
   '/certificado-de-antecedentes-judiciales-uruguay',
   '/comparar-portales-de-alquiler-uruguay',
-  '/conviene-comprar-en-cuotas',
   '/cooperativas-de-vivienda-uruguay',
   '/cotizacion-del-bcu',
   '/cotizaciones-de-la-region',
@@ -158,7 +168,6 @@ const DEUDA_SIN_TRAMO = [
   '/importar-a-uruguay-siendo-extranjero',
   '/impuestos-inversiones-uruguay',
   '/letras-de-regulacion-monetaria-uruguay',
-  '/ley-de-usura-uruguay',
   '/libreta-de-conducir-uruguay',
   '/llevar-dolares-o-reales-a-brasil',
   '/llevar-el-auto-a-brasil-o-argentina',
@@ -170,14 +179,11 @@ const DEUDA_SIN_TRAMO = [
   '/precio-de-la-nafta-uruguay',
   '/precio-del-boleto-montevideo',
   '/prestamo-hipotecario-uruguay',
-  '/prestamo-sin-recibo-de-sueldo-uruguay',
   '/prestamos-p2p-uruguay',
-  '/prestamos-para-jubilados-uruguay',
   '/problemas-con-la-aduana-uruguay',
   '/que-auto-comprar-uruguay',
   '/que-banco-tiene-mas-descuentos-uruguay',
   '/ropa-por-kilo-uruguay',
-  '/saldar-deudas-uruguay',
   '/salud-financiera',
   '/seguro-obligatorio-de-auto-uruguay',
   '/subsidio-de-alquiler-uruguay',
@@ -188,7 +194,7 @@ const DEUDA_SIN_TRAMO = [
   '/vivir-con-el-salario-minimo-uruguay',
 ]
 
-const DEUDA_MAXIMA = 60
+const DEUDA_MAXIMA = 54
 
 const TRAMO_POR_NOMBRE: Record<string, unknown> = {
   contenido: TIER_CONTENIDO,
@@ -333,5 +339,66 @@ describe('las páginas que el sitio monetiza como lectura larga están valuadas 
       expect(tierOf(bucketOf(ruta)), ruta).toBe(TIER_CONTENIDO)
       expect(pideDatoVivo(ruta), ruta).toBe(true)
     }
+  })
+})
+
+/**
+ * El racimo de deudas y crédito, que es el vecindario más caro del sitio para tener una página
+ * valuada al promedio.
+ *
+ * La deuda de arriba se retira de a tandas y hasta el 2026-10-28 cada tanda se eligió ruta por ruta.
+ * Lo que mostró la del 29 es que el HUB ya es el racimo: `deudas-y-credito-uruguay` declara quince
+ * entradas en `resources` y estaba partido por la mitad entre dos tramos que se diferencian por OCHO
+ * VECES, sin que nada de eso respondiera a una diferencia entre las páginas — ocho eran contenido,
+ * seis estaban en deuda por pedir un dato en vivo y la que queda es la calculadora.
+ *
+ * Por qué este hub y no los veintitantos: dos de sus miembros (`/prestamos-uruguay` y
+ * `/mejores-prestamos-uruguay`) entraron al tramo por la alerta `unclassified-families`, o sea con
+ * tráfico e ingreso MEDIDOS, y `docs/analytics/REVENUE_PLAN.md` registra la guía de préstamo a sola
+ * firma como la familia de mayor multiplicador medido de todo el sitio. O sea que acá el tramo no es
+ * una hipótesis sobre la forma de la página: hay medición propia al lado.
+ *
+ * Lo que este trinquete compra es la página que viene. Una entrada nueva en el hub —la clase de
+ * página que este vecindario produce seguido— nace sin estar en `CONTENIDO_PATHS` y la cola de
+ * trabajo la ordena ocho veces por debajo de sus catorce vecinas sin que nada se ponga rojo. Ahora
+ * sí: o entra al tramo, o se declara acá como la calculadora, con su motivo.
+ */
+describe('el hub de deudas y crédito está entero en un tramo', () => {
+  const hub = guideHubs.find(entrada => entrada.slug === 'deudas-y-credito-uruguay')
+
+  /**
+   * La única entrada del hub que NO es contenido, con su motivo. Es una herramienta y no una
+   * lectura, y los dos registros lo dicen más fuerte que en cualquier otro caso de este archivo:
+   * `bucketOf` la pliega en `/herramientas/*`, que ya está en `DATO_VIVO_BUCKETS`, y `ads.ts` no le
+   * da `light` sino `none` —una calculadora no lleva NINGÚN anuncio salvo que se active `toolsAds`—,
+   * así que no entra siquiera en el cotejo de lectura larga de arriba.
+   */
+  const NO_ES_LECTURA = new Map([
+    ['/herramientas/calculadora-prestamo', 'es la calculadora: una herramienta, no una lectura'],
+  ])
+
+  it('el hub existe y tiene sus entradas', () => {
+    expect(hub).toBeDefined()
+    expect(hub!.resources?.length).toBeGreaterThan(10)
+  })
+
+  it('cada entrada es contenido, o está declarada como lo que no es una lectura', () => {
+    const sinTramo = (hub!.resources ?? [])
+      .map(recurso => recurso.to)
+      .filter(ruta => !NO_ES_LECTURA.has(ruta) && tierOf(bucketOf(ruta)) !== TIER_CONTENIDO)
+    expect(sinTramo, sinTramo.join('\n')).toEqual([])
+  })
+
+  it('la excepción declarada sigue siendo la herramienta que dice ser', () => {
+    for (const ruta of NO_ES_LECTURA.keys()) {
+      expect(tierOf(bucketOf(ruta)), ruta).toBe(TIER_DATO_VIVO)
+      expect(adDensityForPath(ruta), ruta).toBe('none')
+      expect(adDensityForPath(ruta, { toolsAds: true }), ruta).toBe('light')
+    }
+  })
+
+  it('ninguna entrada declarada como no-lectura quedó fuera del hub', () => {
+    const rutas = new Set((hub!.resources ?? []).map(recurso => recurso.to))
+    for (const ruta of NO_ES_LECTURA.keys()) expect(rutas.has(ruta), ruta).toBe(true)
   })
 })
