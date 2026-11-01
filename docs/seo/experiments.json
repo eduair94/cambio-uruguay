@@ -2658,6 +2658,21 @@
         "cuanto se necesita para vivir en uruguay"
       ],
       "hypothesis": "4.409 impresiones en 28 dias en posicion 5,9 y 63 clics (1,4 %). El titulo del catalogo era 'Calculadora de costo de vida y presupuesto en Uruguay', 70 caracteres con la marca, asi que el SERP lo cortaba, y no contestaba la pregunta de las consultas ('cuanto cuesta vivir en uruguay'). Ahora, con el modelo vivo de /api/cost-of-living, 'Costo de vida en Uruguay: $ X al mes': lo esencial de una persona sola alquilando en Montevideo, que es exactamente el escenario y el numero que la calculadora muestra al abrir; la descripcion aclara el escenario. Sin lectura vuelve al titulo del catalogo. Mismo patron que el conversor de UI (cifra viva en el titulo)."
+    },
+    {
+      "id": "descuentos-por-rubro-cuantos-comercios",
+      "shippedOn": "2026-11-01",
+      "routes": [
+        "/descuentos-con-tarjeta-uruguay/rubro/"
+      ],
+      "queries": [
+        "descuentos en restaurantes uruguay",
+        "descuentos bbva restaurantes montevideo",
+        "descuento en restaurantes con tarjeta de crédito",
+        "restaurantes con descuento bbva",
+        "descuentos comida"
+      ],
+      "hypothesis": "Continuacion de descuentos-por-emisor-cuantos-comercios en las paginas de rubro: restaurantes suma 1.708 impresiones en 28 dias en posicion 7,8 con 7 clics. El titulo era fijo ('Descuentos en restaurantes Uruguay: que banco conviene', 71 caracteres con la marca, cortado en el SERP) y la pagina muestra arriba cuantas marcas del rubro tienen descuento hoy. Ahora 'Descuentos en restaurantes: 437 comercios con tarjeta' o la version corta si no entra; los rubros de nombre largo (combustible y vehiculos, librerias y papelerias, viajes y hoteleria) vuelven al titulo fijo. Se declara la familia /rubro/ entera porque es el mismo cambio en todas."
     }
   ]
 }
