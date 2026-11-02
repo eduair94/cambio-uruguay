@@ -5,7 +5,7 @@
 //
 // Por qué existe y cuál es la regla: `classes/revenueplan/debtFree.ts`.
 //
-// QUÉ CUBRE. Los CINCO pozos de deuda de SEO del app, cada uno declarado como una lista en el
+// QUÉ CUBRE. Los SEIS pozos de deuda de SEO del app, cada uno declarado como una lista en el
 // trinquete que lo mide. Los dos últimos entraron el 2026-10-20 y son los que faltaban: las migas
 // de `seoContract.test.ts` y los dos snippets pasados de `guideSnippetBudget.test.ts` declaraban un
 // NÚMERO y nada más, así que este informe no los podía nombrar y la respuesta a «¿cuál puedo tocar
@@ -80,6 +80,20 @@ const POOLS: Array<{
     budget: "DESCRIPTION_OVER_BUDGET",
     toRoute: (slug) => `/guias/${slug}`,
   },
+  // El sexto, desde el 2026-11-02. Es el pozo que nació de un AGUJERO y no de una deuda que alguien
+  // decidiera dejar para después: `seoDescriptionBudget.test.ts` medía sólo las descripciones
+  // escritas con comillas, así que las 13 que se escriben con una PLANTILLA no las veía nadie y
+  // cuatro ya salían cortadas del SERP —la peor con 498 caracteres, en una página del tramo que
+  // rinde 8×—. El trinquete viejo decía «pozo pagado: 0» y era verdad de lo que medía, que es el
+  // mismo modo de fallar de una ruta mal tipeada en `value.ts`: no hay rojo, hay una medición que
+  // no alcanza a la página. Las plantillas se miden por PISO (su texto fijo, ignorando los
+  // `${...}`, que sólo pueden agregar), así que este pozo condena y no absuelve.
+  {
+    pool: "descripción de plantilla pasada de 155",
+    file: "seoDescriptionBudget.test.ts",
+    list: "DEUDA_DESCRIPCION_PLANTILLA",
+    budget: "TEMPLATE_OVER_BUDGET",
+  },
 ];
 
 /** Hoy en UTC, o el día que pida `--today=YYYY-MM-DD` (para mirar la cola desde otra fecha). */
@@ -129,7 +143,7 @@ function main(): void {
   }
   console.log(
     "\nUna ruta libre acá NO es una mejora: sigue haciendo falta que el cambio le sirva a un lector.\n" +
-      "Los cinco pozos con lista están contados; las dos deudas que no son de ruta (el título y la\n" +
+      "Los seis pozos con lista están contados; las dos deudas que no son de ruta (el título y la\n" +
       "descripción de una MISMA guía) salen como dos filas, porque se arreglan por separado."
   );
 }

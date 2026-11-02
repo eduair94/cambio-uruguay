@@ -27,6 +27,12 @@
 // 3 libres de 99, y las 46 agregadas estaban todas reservadas — o sea que la corrida anterior sacó
 // esa misma conclusión a mano, que es exactamente el gasto que describe el párrafo de arriba.
 //
+// Y desde el 2026-11-02 son SEIS. El sexto no es deuda que alguien dejara para después: es un
+// AGUJERO de medición. `seoDescriptionBudget.test.ts` declaró su pozo pagado en 0, y era verdad de
+// lo que medía —sólo cadenas entre comillas—, así que las 13 descripciones escritas con PLANTILLA
+// no las veía nadie y cuatro ya salían cortadas del SERP contando sólo su texto fijo. Las
+// plantillas se miden por PISO (su texto fijo), que condena y no absuelve.
+//
 // LA REGLA, Y DE DÓNDE SALE. El test de solape marca un par cuando `|Δfecha| ≤ 28`, o sea que una
 // fila nueva es segura recién al día 29. Por eso la reserva es `EXPERIMENT_WINDOW_DAYS + 1` y no la
 // ventana: 28 días es cuánto mide el libro, 29 es a partir de cuándo se puede declarar otra cosa

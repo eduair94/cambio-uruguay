@@ -92,7 +92,7 @@ const highlights = computed(() =>
 )
 
 const title = 'Comparativas: cuál conviene entre dos'
-const description = `${total} comparaciones uno contra uno entre bancos, fintechs, tarjetas de crédito, tarjetas de débito y couriers en Uruguay, con los mismos criterios y datos verificados para los dos lados.`
+const description = `${total} comparaciones uno contra uno con los mismos criterios y datos verificados para los dos lados: bancos, fintechs, tarjetas y couriers de Uruguay.`
 
 defineOgImageComponent('Cambio', { title, subtitle: description, tag: 'COMPARATIVAS' })
 

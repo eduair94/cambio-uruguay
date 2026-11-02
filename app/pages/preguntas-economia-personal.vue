@@ -350,7 +350,7 @@ function formatDate(iso: string): string {
 const lastReviewedLabel = formatDate(PERSONAL_FAQ_CONTENT_UPDATED_AT)
 const canonicalUrl = 'https://cambio-uruguay.com/preguntas-economia-personal'
 const title = 'Dinero en Uruguay: preguntas frecuentes'
-const description = `${PERSONAL_FAQS.length} respuestas verificadas sobre dólar, ahorro, alquiler, deudas, créditos, bancos, derechos del consumidor, reclamos, trabajo, impuestos, empresas, AFAP y cripto en Uruguay.`
+const description = `${PERSONAL_FAQS.length} respuestas sobre dólar, ahorro, alquiler, deudas, bancos, trabajo, impuestos y AFAP en Uruguay, cada una con la norma o el dato oficial al lado.`
 
 defineOgImageComponent('Cambio', {
   title: 'Dinero en Uruguay: preguntas frecuentes',
