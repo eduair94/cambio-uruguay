@@ -10,10 +10,18 @@ import fs from "fs";
 import path from "path";
 import { describe, expect, it } from "vitest";
 import { parseSpecs } from "../../classes/revenueplan/experiments";
-// Pure module (no Nuxt): the list of locale prefixes the app's router serves.
-import { LOCALE_PREFIX_RE } from "../../app/utils/locales";
 
 const PAGES = path.join(__dirname, "..", "..", "app", "pages");
+
+// Los prefijos de idioma que sirve el router del app. Se leen del TEXTO de app/utils/locales.ts y no
+// con un import: importar un .ts de app/ hace que Vite cargue app/tsconfig.json, que extiende el de
+// `.nuxt/`, y la suite del backend corre sin `nuxt prepare` ("Tsconfig not found" en CI, 2/11/2026).
+const EXTRA_LOCALE_CODES = [
+  ...fs
+    .readFileSync(path.join(__dirname, "..", "..", "app", "utils", "locales.ts"), "utf8")
+    .matchAll(/\bcode: '([a-z-]+)'/g),
+].map((match) => match[1]);
+const LOCALE_PREFIX_RE = new RegExp(`^/(?:en|pt|${EXTRA_LOCALE_CODES.join("|")})(?=/|$)`);
 const EXPERIMENTS = path.join(__dirname, "..", "..", "docs", "seo", "experiments.json");
 
 /**
@@ -91,6 +99,14 @@ describe("las rutas del libro de cambios existen", () => {
     // Una fecha futura deja la ventana anterior vacía y el veredicto congelado en "esperando".
     const today = new Date().toISOString().slice(0, 10);
     expect(specs.filter((s) => s.shippedOn > today).map((s) => s.id)).toEqual([]);
+  });
+
+  it("lee los idiomas del app", () => {
+    // Sin esto, un cambio de forma en app/utils/locales.ts dejaría la lista vacía y el regex
+    // aceptaría sólo /en y /pt sin avisar.
+    expect(EXTRA_LOCALE_CODES.length).toBeGreaterThan(20);
+    expect(LOCALE_PREFIX_RE.test("/fr/mapa")).toBe(true);
+    expect(LOCALE_PREFIX_RE.test("/casa/brou")).toBe(false);
   });
 
   it("el detector de rutas inventadas funciona", () => {
