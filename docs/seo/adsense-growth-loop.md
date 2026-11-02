@@ -318,11 +318,34 @@ en `siterevenuesnapshots`, catorce días cerrados antes y después del deploy. L
 (control); `/` y `/herramientas/*` son familias propias, y las páginas sueltas de contenido son
 cada una su familia; los directorios (`/alquileres-uruguay`, `/autos-usados-uruguay`,
 `/venta-viviendas-uruguay`…) y las fichas (`/autos-usados-uruguay/*`, `/alquileres/*`) también,
-y su tratamiento empieza uno o dos deploys después. Si una familia tratada sube sus impresiones
-por vista y las guías no, el
-efecto es de la ubicación. Guardas: sesiones con interacción y tiempo de lectura de esas familias
-en GA4, y CLS de campo. Si una guarda cae, se revierte esa unidad sola. **No va en
+y su tratamiento empieza uno o dos deploys después. Registrar la fecha efectiva por familia antes
+de formar las ventanas. Si una familia tratada sube sus impresiones por vista y las guías no,
+es una señal compatible con la ubicación, no una atribución causal por sí sola: también pueden
+cambiar la procedencia de las visitas, los textos y la mezcla de páginas. Guardas: sesiones con
+interacción y tiempo de lectura de esas familias en GA4, y CLS de campo. Si una guarda cae,
+se revierte esa unidad sola. **No va en
 `experiments.json`**: no toca el texto que mide la búsqueda.
+
+## Diagnóstico de la cola de demanda: 2/11/2026
+
+La cola privada confundía dos situaciones: un candidato fuera del presupuesto de consultas y
+un intento que falló recibían la misma explicación. La próxima corrida conserva por candidato
+si se clasificó, falló o no se intentó; distingue presupuesto y etapa omitida. El resumen guarda
+fechas UTC, límite, intentos, fallos por categoría y códigos HTTP, y cuenta todo el conjunto
+antes de recortar la tabla a cuarenta filas. `probed` sigue contando sólo clasificaciones.
+
+Los documentos anteriores no permiten reconstruir ese diagnóstico. El tablero los muestra como
+«sin diagnóstico» y conserva sus evaluaciones válidas; no interpreta la ausencia como fallo ni
+como agotamiento del presupuesto. Los logs nuevos contienen categorías y conteos, sin consultas,
+respuestas del proveedor ni errores completos. Los datos de demanda siguen detrás del acceso
+de administrador, fuera del sitemap y sin caché pública.
+
+La última corrida semanal disponible volvió a clasificar candidatos; este cambio mejora la
+lectura de futuras corridas, no acredita una reparación del proveedor. No cambia el horario,
+el presupuesto, el puntaje ni publica contenido. Las pruebas simulan las respuestas sin consumir
+consultas reales. El primer diagnóstico persistido se comprobará después de la siguiente corrida
+ordinaria; no se relanza para obtenerlo. No va en `experiments.json`: es instrumentación privada,
+sin una intervención de adquisición que medir.
 
 ## Próximas decisiones
 

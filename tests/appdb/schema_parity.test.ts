@@ -157,6 +157,13 @@ describe("app-Mongo schema parity", () => {
     );
   });
 
+  it("SearchDemandQueue no inventa un resumen para los snapshots anteriores", () => {
+    const field = SearchDemandQueueModel.schema.path("serpRun");
+    expect(field).toBeDefined();
+    expect(field.options.default).toBeUndefined();
+    expect(field.options.required).not.toBe(true);
+  });
+
   it("RevenuePlanSnapshot declares exactly the app's top-level fields", () => {
     // El plan de ingreso. Mismo riesgo que sus dos vecinos y uno propio: si el app no declara
     // `families`, la tabla que dice qué familia consume tráfico sin pagarlo se renderiza vacía y
