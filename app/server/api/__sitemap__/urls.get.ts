@@ -1,4 +1,10 @@
 import { deptKey, type BranchPage } from '../../../utils/branches'
+import {
+  CORE_LOCALES,
+  DEFAULT_LOCALE,
+  EXTRA_LOCALES,
+  hasExtraLocales,
+} from '../../../utils/locales'
 import { intentsFor } from '../../../utils/casaIntents'
 import { casaTypePaths } from '../../../utils/casasDirectory'
 import { comparativaFamilySlugs, comparativaPaths } from '../../../utils/comparativas'
@@ -46,8 +52,8 @@ interface SitemapUrl {
   alternatives?: Array<{ hreflang: string; href: string }>
 }
 
-const LOCALES = ['es', 'en', 'pt']
-const DEFAULT_LOCALE = 'es'
+// hreflang per core locale (nuxt.config `language`); the extra locales carry their own.
+const CORE_HREFLANG: Record<string, string> = { es: 'es-ES', en: 'en-US', pt: 'pt-PT' }
 
 /**
  * Only submit per-casa currency-history pages for currencies with real search
@@ -90,15 +96,26 @@ export default defineEventHandler(async _event => {
     // Emitted for every route; server/plugins/sitemap-locales.ts then drops the
     // /en and /pt variants (and these alternates) of Spanish-only routes, whose
     // canonical is the Spanish URL. `utils/localizedRoutes.ts` decides which.
+    // The extra locales (utils/locales.ts) exist only on `EXTRA_LOCALE_ROUTES`.
+    const localeHref = (code: string) => (code === DEFAULT_LOCALE ? path : `/${code}${path}`)
+    const locales = [
+      ...CORE_LOCALES.map(code => ({ code, hreflang: CORE_HREFLANG[code]! })),
+      ...(hasExtraLocales(path)
+        ? EXTRA_LOCALES.map(({ code, language }) => ({ code, hreflang: language }))
+        : []),
+    ]
     const alternatives = [
-      { hreflang: 'es-ES', href: path },
-      { hreflang: 'en-US', href: `/en${path}` },
-      { hreflang: 'pt-PT', href: `/pt${path}` },
+      ...locales.map(({ code, hreflang }) => ({ hreflang, href: localeHref(code) })),
       { hreflang: 'x-default', href: path },
     ]
-    LOCALES.forEach(locale => {
-      const loc = locale === DEFAULT_LOCALE ? path : `/${locale}${path}`
-      urls.push({ loc, changefreq, priority, alternatives, ...(lastmod ? { lastmod } : {}) })
+    locales.forEach(({ code }) => {
+      urls.push({
+        loc: localeHref(code),
+        changefreq,
+        priority,
+        alternatives,
+        ...(lastmod ? { lastmod } : {}),
+      })
     })
   }
 
@@ -681,7 +698,7 @@ export default defineEventHandler(async _event => {
       `\n- Precio article pages: ${precioArticleSlugs} routes`,
       `\n- Cotizacion currency pages: ${currencySlugs.length} routes`,
       `\n- Casa pages: ${sucursalesOrigins.size} routes`,
-      `\n- Total across ${LOCALES.length} locales: ${urls.length} URLs`
+      `\n- Total across ${CORE_LOCALES.length + EXTRA_LOCALES.length} locales: ${urls.length} URLs`
     )
   } catch (error) {
     console.error('Error adding API-derived sitemap URLs:', error)

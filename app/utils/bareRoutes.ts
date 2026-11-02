@@ -10,11 +10,13 @@
 //
 // PURE (no Vue/Nuxt imports) so plugins and tests can both use it.
 
+import { PREFIXED_LOCALE_CODES } from './locales'
+
 /** Path prefixes, locale-prefixed variants included (`/en/pizarra`). */
 const BARE_PATHS = ['/widget', '/pizarra'] as const
 
-/** Locale prefixes the router can put in front of a path. */
-const LOCALE_PREFIXES = ['/en', '/pt'] as const
+/** Locale prefixes the router can put in front of a path, the machine-translated ones included. */
+const LOCALE_PREFIXES = PREFIXED_LOCALE_CODES.map(code => `/${code}`)
 
 /**
  * True when `path` is a chrome-free route that must not load third-party

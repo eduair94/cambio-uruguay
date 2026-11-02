@@ -1,0 +1,546 @@
+{
+  "title": [
+    "1229e1ce",
+    "On retirar diners en efectiu a l'Uruguai: caixers automàtics, comissions i punts turístics"
+  ],
+  "metaTitle": [
+    "3e82d293",
+    "Caixers automàtics a l'Uruguai: retirar dòlars o pesos"
+  ],
+  "description": [
+    "3eb63bbe",
+    "Com i on aconseguir diners en efectiu a l'Uruguai com a turista: caixers automàtics que distribueixen dòlars americans i pesos, comissions, límits de retirada, la trampa de conversió de moneda (DCC) i els millors llocs per retirar diners a l'aeroport, Montevideo, Punta del Este i Colonia."
+  ],
+  "keywords": [
+    "4acfb17e",
+    "retirar diners en efectiu uruguai, retirar diners uruguai, caixer automàtic uruguai turístic, dòlars de caixer automàtic uruguai, canviar diners uruguai, comissions caixer automàtic uruguai, cases de canvi uruguai"
+  ],
+  "tldr.0": [
+    "5f1561fe",
+    "Els caixers automàtics uruguaians distribueixen tant dòlars americans com pesos, un avantatge regional poc freqüent (a l'Argentina és gairebé impossible)."
+  ],
+  "tldr.1": [
+    "7b41d73f",
+    "Hi ha dues xarxes: RedBROU i Banred. Si una falla, prova l'altra; porta tant una Visa com una Mastercard."
+  ],
+  "tldr.2": [
+    "c5aa36e3",
+    "Quan el caixer automàtic us ofereixi cobrar en la vostra moneda local, trieu sempre la moneda local: la \"conversió\" amaga un mal tipus de canvi."
+  ],
+  "tldr.3": [
+    "b73d4126",
+    "Eviteu canviar grans quantitats de diners a l'aeroport o a les terminals de ferris: les seves tarifes són notablement pitjors."
+  ],
+  "tldr.4": [
+    "83b2ff36",
+    "Paga en hotels i restaurants amb una targeta estrangera: a més del benefici de l'IVA, portes menys diners en efectiu."
+  ],
+  "ui.backToTools": [
+    "950196fc",
+    "Eines"
+  ],
+  "ui.tldrTitle": [
+    "799c628c",
+    "En resum"
+  ],
+  "ui.networksTitle": [
+    "90dd37e5",
+    "Les dues xarxes de caixers automàtics: RedBROU i Banred"
+  ],
+  "ui.tableNetwork": [
+    "6974ad65",
+    "Xarxa"
+  ],
+  "ui.tableReach": [
+    "c549e23b",
+    "Cobertura"
+  ],
+  "ui.tableUsd": [
+    "47b34a69",
+    "Límit de retirada en dòlars EUA"
+  ],
+  "ui.tableUyu": [
+    "7d4e5b12",
+    "Límit $U / retirada"
+  ],
+  "ui.tableNote": [
+    "0ff01b6a",
+    "Notes"
+  ],
+  "ui.zonesTitle": [
+    "126f8827",
+    "On obtenir diners en efectiu per zona turística"
+  ],
+  "ui.zonesIntro": [
+    "e4c560b0",
+    "Referències a nivell de zona i punt de referència (no adreces exactes, que canvien). Els caixers automàtics solen ser dins de bancs, centres comercials o punts de venda Abitab i Redpagos."
+  ],
+  "ui.stepsTitle": [
+    "3e1ff2e0",
+    "Com retirar diners en efectiu, pas a pas"
+  ],
+  "ui.faqTitle": [
+    "e466bfa9",
+    "Preguntes freqüents"
+  ],
+  "ui.sourcesTitle": [
+    "105bfcc3",
+    "Fonts i referències"
+  ],
+  "ui.relatedTitle": [
+    "ac7a8ccc",
+    "Continua llegint"
+  ],
+  "ui.ctaTitle": [
+    "60dda6a1",
+    "Compara abans d'intercanviar"
+  ],
+  "ui.ctaText": [
+    "fe6b01a6",
+    "Consulta el tipus de canvi del dòlar a més de 40 cases de canvi, actualitzat cada 10 minuts, i tria el millor lloc per operar."
+  ],
+  "ui.ctaButton": [
+    "9efd557a",
+    "Obre el comparador"
+  ],
+  "ui.mapButton": [
+    "4e8c8db6",
+    "Veure punts de retirada al mapa"
+  ],
+  "ui.disclaimer": [
+    "b166cfce",
+    "Informació de referència per a turistes, no assessorament financer. Les comissions, els límits i els beneficis fiscals canvien: confirmeu-los a l'arribada i amb l'emissor de la vostra targeta. No estem afiliats als bancs ni a les cases de canvi esmentades."
+  ],
+  "ui.lastChecked": [
+    "9182e108",
+    "Darrera comprovació: juny de 2026"
+  ],
+  "ivaLive.heading": [
+    "5af716c3",
+    "Beneficis de l'IVA turístic vigents avui"
+  ],
+  "ivaLive.asOf": [
+    "dd801240",
+    "Estat a partir de {date}:"
+  ],
+  "ivaLive.hotel": [
+    "152a8c47",
+    "Allotjament (hotels i similars): 0% IVA tot l'any."
+  ],
+  "ivaLive.base": [
+    "9856855a",
+    "Restaurants i lloguer de cotxes sense conductor: una reducció de l'IVA de {points} punts per al consum final pagat amb la targeta d'una persona física, incloses les targetes estrangeres, fins al 30 d'abril de 2027 (Decret 235/026; font consultada el 23 d'octubre de 2026)."
+  ],
+  "ivaLive.baseUnconfirmed": [
+    "d65944df",
+    "Restaurant i lloguer de cotxes: la pròrroga verificada va finalitzar el 30 d'abril de 2027. Consulteu amb DGI quina reducció s'aplica a la data de la vostra compra."
+  ],
+  "ivaLive.seasonalOn": [
+    "41748da1",
+    "Exempció total de l'IVA d'estiu: ACTIVA (fins a {end})."
+  ],
+  "ivaLive.seasonalOff": [
+    "015a1161",
+    "Exempció total de l'IVA a l'estiu: no tenim cap període confirmat per a aquesta data. Consulteu amb la DGI abans de comptar amb aquest benefici."
+  ],
+  "sections.0.heading": [
+    "90dd37e5",
+    "Les dues xarxes de caixers automàtics: RedBROU i Banred"
+  ],
+  "sections.0.paragraphs.0": [
+    "0f52a7fe",
+    "L'Uruguai té dues xarxes de caixers automàtics: RedBROU, gestionada pel banc estatal (BROU), i Banred, la xarxa dels bancs privats. Les dues estan interconnectades i connectades a les xarxes internacionals (Cirrus/Maestro de Mastercard i Plus de Visa), de manera que una targeta estrangera funciona en totes dues."
+  ],
+  "sections.0.paragraphs.1": [
+    "208b768b",
+    "Per assegurar-vos que un caixer automàtic accepti la vostra targeta, busqueu els logotips de Visa, Mastercard, Cirrus, Plus o Maestro a la màquina. Consell pràctic: porteu una Visa i una Mastercard de comptes diferents; si una targeta o màquina falla, proveu l'altra xarxa."
+  ],
+  "sections.1.heading": [
+    "612974f0",
+    "Dòlars o pesos? A l'Uruguai pots portar tots dos"
+  ],
+  "sections.1.paragraphs.0": [
+    "d9928d31",
+    "A diferència de l'Argentina, molts caixers automàtics a l'Uruguai distribueixen dòlars americans a més de pesos uruguaians. Això és un avantatge real si voleu dòlars en efectiu sense anar a una casa de canvi. Els dòlars solen sortir en bitllets de 100 dòlars americans, cosa que, combinada amb els límits per retirada, pot significar que només rebeu un bitllet a la vegada."
+  ],
+  "sections.1.paragraphs.1": [
+    "cd694b7a",
+    "Regla senzilla: només cal agafar pesos per a les despeses diàries (taxis, mercats, botigues petites) i dòlars si realment els necessiteu en efectiu. Per a la majoria de pagaments importants, una targeta és millor que l'efectiu."
+  ],
+  "sections.2.heading": [
+    "9ce97b34",
+    "Comissions i límits de retirada"
+  ],
+  "sections.2.paragraphs.0": [
+    "e28a7f0e",
+    "El recàrrec que un caixer automàtic uruguaià cobra a una targeta estrangera és baix en comparació amb molts països (de l'ordre d'uns quants dòlars per retirada). El cost més elevat sol ser del vostre propi banc: la comissió per transacció a l'estranger (normalment de l'1 al 3%) més, de vegades, una comissió fixa per retirada internacional. Una targeta de viatge sense comissió de divises us estalvia gairebé tot això."
+  ],
+  "sections.2.paragraphs.1": [
+    "154c6f01",
+    "Els límits per retirada de targetes estrangeres els estableixen les xarxes locals, no el vostre banc, i són baixos. El vostre banc també aplica el seu propi límit diari. Truqueu al vostre banc abans de viatjar per augmentar el límit i retireu el màxim per transacció per distribuir la comissió fixa entre més efectiu."
+  ],
+  "sections.2.bullets.0": [
+    "befd8df3",
+    "Recàrrec per retirada local: aproximat, de l'ordre d'uns quants dòlars (comproveu l'import que apareix a la pantalla abans de confirmar)."
+  ],
+  "sections.2.bullets.1": [
+    "0f872d39",
+    "La comissió del banc/emissor: normalment és la més elevada; comproveu si la vostra targeta cobra una comissió per transaccions a l'estranger."
+  ],
+  "sections.2.bullets.2": [
+    "8301e954",
+    "Límit per retirada: al voltant de 200–300 dòlars americans o 5.000 dòlars australians, depenent de la xarxa (aproximat, pot canviar)."
+  ],
+  "sections.2.bullets.3": [
+    "4aacdc05",
+    "Límit diari: el fixa el teu banc; notifica'l abans de viatjar per augmentar-lo."
+  ],
+  "sections.3.heading": [
+    "6bd46a0c",
+    "La trampa de la conversió de moneda (DCC): trieu sempre la moneda local"
+  ],
+  "sections.3.paragraphs.0": [
+    "29fe4c81",
+    "Molts caixers automàtics i terminals de targetes ofereixen \"carregar en la teva moneda local\" en comptes de pesos o dòlars uruguaians. Sembla pràctic (\"veure quant hi ha als teus diners\"), però aquesta conversió dinàmica de moneda (DCC) aplica un tipus de canvi inflat més una comissió oculta. Gairebé sempre perds."
+  ],
+  "sections.3.paragraphs.1": [
+    "34380f1f",
+    "Trieu sempre \"sense conversió\" o la moneda local: pesos uruguaians quan accepteu pesos, dòlars quan accepteu dòlars. Deixeu que el vostre banc faci la conversió; el seu tipus de canvi sol ser millor."
+  ],
+  "sections.4.heading": [
+    "cc573fd8",
+    "Cases de canvi, caixers automàtics o bancs: què és el millor?"
+  ],
+  "sections.4.paragraphs.0": [
+    "1116ae4f",
+    "Les cases de canvi (cases de canvi com ara Varlix, Indumex, Gales, Aspen, Cambio Sir, Cambio Inglés i Global Exchange) són la manera clàssica de canviar diners en efectiu. Ofereixen els millors tipus de canvi per al dòlar, amb un diferencial petit i sense comissions; l'euro és la segona millor moneda, el real brasiler és acceptable i el peso argentí és la pitjor. Normalment demanen el passaport."
+  ],
+  "sections.4.paragraphs.1": [
+    "b7c83296",
+    "Horari: les sucursals al carrer obren de dilluns a divendres (cap a les 9 a les 19) i els dissabtes al matí; moltes tanquen els diumenges. Les sucursals dins dels centres comercials obren cada dia i més tard. Per comparar la tarifa del dia entre diferents establiments, utilitzeu el nostre comparador i la pàgina de sucursals."
+  ],
+  "sections.5.heading": [
+    "f8b82759",
+    "Quants diners en efectiu portar i quina moneda portar"
+  ],
+  "sections.5.paragraphs.0": [
+    "e22fd664",
+    "L'Uruguai és molt favorable a l'ús de targetes: s'accepten Visa i Mastercard gairebé a tot arreu, i els pagaments sense contacte i amb codi QR (Mercado Pago) són molt comuns. Només cal portar uns quants pesos en efectiu per a compres petites i pagar quantitats més grans amb targeta."
+  ],
+  "sections.5.paragraphs.1": [
+    "f9b88276",
+    "Si porteu diners en efectiu per canviar, el dòlar americà és la millor moneda (amb els millors tipus de canvi, acceptats a totes les cases). L'euro és el segon. Si veniu de l'Argentina, porteu dòlars, no pesos argentins: el peso canvia molt malament a l'Uruguai. Des del Brasil, el real funciona, sobretot a prop de la frontera, tot i que els dòlars encara són més convenients."
+  ],
+  "sections.6.heading": [
+    "97a59b72",
+    "Benefici de l'IVA turístic (quan pagueu amb una targeta estrangera)"
+  ],
+  "sections.6.paragraphs.0": [
+    "88ea76fc",
+    "L'Uruguai reemborsa part de l'IVA als turistes no residents que paguen amb una targeta emesa a l'estranger. L'allotjament (hotels registrats i similars) té un IVA del 0% durant tot l'any per als no residents que mostren un document d'identitat estranger i paguen amb una targeta estrangera, un benefici permanent."
+  ],
+  "sections.6.paragraphs.1": [
+    "7f51f9e2",
+    "Per a restaurants i lloguer de cotxes sense conductor, el Decret 235/026 manté la reducció general de nou punts fins al 30 d'abril de 2027 per al consum final pagat amb mitjans electrònics elegibles. Una exempció total estacional és un benefici separat amb el seu propi decret i dates: l'ampliació de la reducció de nou punts no confirma una exempció total. Consulteu amb la DGI abans de viatjar."
+  ],
+  "sections.6.paragraphs.2": [
+    "f963de1e",
+    "En tots els casos, el descompte és automàtic: pagues amb la teva targeta estrangera i el benefici apareix al rebut o a l'extracte de la targeta. Si pagues en efectiu, el perds. Per tant, val la pena incloure hotels i restaurants en una targeta i retirar menys diners."
+  ],
+  "sections.6.bullets.0": [
+    "fc6c4026",
+    "Hotels/allotjament: 0% IVA tot l'any per a no residents (permanents)."
+  ],
+  "sections.6.bullets.1": [
+    "02f7d683",
+    "Restaurants i lloguer de cotxes sense conductor: nou punts fins al 30 d'abril de 2027, subjectes als requisits de pagament electrònic. Una exempció total estacional necessita una confirmació per separat."
+  ],
+  "sections.6.bullets.2": [
+    "bf5ed0b5",
+    "Cada règim té els seus propis requisits. La reducció general de nou punts requereix el consum final i un mètode de pagament electrònic elegible en poder d'una persona física; no cal emissió estrangera."
+  ],
+  "sections.7.heading": [
+    "84fbae56",
+    "Consells de seguretat a l'hora de retirar diners en efectiu"
+  ],
+  "sections.7.paragraphs.0": [
+    "e227f80c",
+    "L'Uruguai és un dels països més segurs de la regió, però hi ha petits robatoris, sobretot a la Ciutat Vella de Montevideo, la zona portuària i els balnearis en temporada alta. Feu servir els caixers automàtics de l'interior dels bancs, centres comercials o vestíbuls de vidre, preferiblement a la llum del dia, i estigueu atents al vostre entorn."
+  ],
+  "sections.7.bullets.0": [
+    "d234b5e4",
+    "Retirar diners a la llum del dia i en caixers automàtics dins de recintes tancats, no al carrer a la nit."
+  ],
+  "sections.7.bullets.1": [
+    "f9f5f149",
+    "Porta dues targetes de comptes diferents i guarda els diners en efectiu en més d'un lloc."
+  ],
+  "sections.7.bullets.2": [
+    "aa71ad4f",
+    "Demana bitllets petits (100, 200, 500): els bitllets de 1.000 i 2.000 són difícils de trencar."
+  ],
+  "sections.7.bullets.3": [
+    "d7920a67",
+    "Desplaça't amb Uber, Cabify o taxis registrats; no deixis objectes de valor al cotxe."
+  ],
+  "sections.7.link.label": [
+    "d8570bac",
+    "Ja tinc una gran nota: on puc aconseguir canvi i monedes"
+  ],
+  "networkRows.0.network": [
+    "7ee344a0",
+    "RedBROU"
+  ],
+  "networkRows.0.reach": [
+    "4a5d053e",
+    "Xarxa del banc estatal BROU; més de 400 caixers automàtics a tot el país, a més d'Abitab i Redpagos."
+  ],
+  "networkRows.0.usdPerTxn": [
+    "f41a726d",
+    "≈ 200 dòlars americans"
+  ],
+  "networkRows.0.uyuPerTxn": [
+    "255d9345",
+    "≈ 5.000 dòlars australians"
+  ],
+  "networkRows.0.note": [
+    "786a7e5f",
+    "Moltes màquines expeneuen dòlars. Els límits són aproximats per a targetes estrangeres."
+  ],
+  "networkRows.1.network": [
+    "6823b06d",
+    "Banred"
+  ],
+  "networkRows.1.reach": [
+    "331e78b2",
+    "Xarxa de bancs privats; més de 370 punts en els 19 departaments."
+  ],
+  "networkRows.1.usdPerTxn": [
+    "75830c42",
+    "≈ 300 dòlars americans"
+  ],
+  "networkRows.1.uyuPerTxn": [
+    "255d9345",
+    "≈ 5.000 dòlars australians"
+  ],
+  "networkRows.1.note": [
+    "9f2f1329",
+    "Interconnectat amb RedBROU. Si una xarxa rebutja la teva targeta, prova amb l'altra."
+  ],
+  "zones.0.name": [
+    "8a4dc608",
+    "Aeroport de Carrasco (MVD), Montevideo"
+  ],
+  "zones.0.summary": [
+    "462aaacd",
+    "Les oficines de canvi globals obren les 24 hores, els caixers automàtics a la terminal (s'ha confirmat que és un caixer de Santander) i una sucursal bancària."
+  ],
+  "zones.0.tips.0": [
+    "d6202725",
+    "El canvi a l'aeroport paga notablement menys: canvi només el que cal per arribar a la ciutat."
+  ],
+  "zones.0.tips.1": [
+    "99e81ace",
+    "Si necessiteu diners en efectiu immediatament, retireu una petita quantitat al caixer automàtic i canvieu la resta al centre."
+  ],
+  "zones.1.name": [
+    "034a744d",
+    "Montevideo (Centre, Ciutat Vella i el port)"
+  ],
+  "zones.1.summary": [
+    "04c221eb",
+    "Les cases de canvi s'agrupen a l'Avinguda 18 de Julio (Centre) i a través de Ciutat Vella. La terminal de creuers es troba al costat de Ciutat Vella, amb canvi i caixers automàtics."
+  ],
+  "zones.1.tips.0": [
+    "a26e5af3",
+    "Al Centre i a la Ciutat Vella trobareu diverses cases de canvi per comparar."
+  ],
+  "zones.1.tips.1": [
+    "4139b3e5",
+    "Els passatgers de creuers tenen canvi de moneda dins del port i caixers automàtics a poca distància a peu, en direcció al Mercat del Port."
+  ],
+  "zones.2.name": [
+    "3fa606f9",
+    "Punta del Este"
+  ],
+  "zones.2.summary": [
+    "880d1f96",
+    "Cases de canvi al llarg de l'Avinguda Gorlero, el carrer principal. En temporada alta hi pot haver cues i caixers automàtics que s'esgoten els dòlars."
+  ],
+  "zones.2.tips.0": [
+    "1063deb8",
+    "A l'estiu i la setmana de Pasqua, els caixers automàtics s'buiden ràpidament: retireu els diners amb antelació i manteniu un marge de seguretat."
+  ],
+  "zones.2.tips.1": [
+    "e4c20d9e",
+    "Recolza't en pagaments amb targeta i codi QR per no dependre només d'efectiu."
+  ],
+  "zones.3.name": [
+    "2ed532f4",
+    "Colònia del Sacramento"
+  ],
+  "zones.3.summary": [
+    "764221b5",
+    "Caixers automàtics al Barri Històric i a la terminal de ferris, a pocs passos del barri antic, on arriben els excursionistes de Buenos Aires."
+  ],
+  "zones.3.tips.0": [
+    "d7ebee8b",
+    "Retirar una petita quantitat de pesos a l'arribada i pagar la resta amb targeta."
+  ],
+  "zones.3.tips.1": [
+    "e09f3851",
+    "Moltes botigues turístiques accepten dòlars, tot i que a un preu desfavorable."
+  ],
+  "zones.4.name": [
+    "ed7917f9",
+    "Terminals de ferri (Buquebus / Colonia Express)"
+  ],
+  "zones.4.summary": [
+    "ac18ddf9",
+    "Hi ha caixers automàtics a les terminals de Montevideo i Colonia. El canvi de moneda dins de les terminals i a bord sol oferir preus baixos."
+  ],
+  "zones.4.tips.0": [
+    "b5a97e0f",
+    "Eviteu canviar grans quantitats de diners a la terminal o a bord: els tipus d'interès són dolents."
+  ],
+  "zones.4.tips.1": [
+    "91b3c105",
+    "Millor fer servir un caixer automàtic o canviar en una casa de canvi de la ciutat."
+  ],
+  "zones.5.name": [
+    "66cc7244",
+    "L'interior i els pobles més petits"
+  ],
+  "zones.5.summary": [
+    "fc9a5afd",
+    "Fora de les principals ciutats i els principals centres turístics, els caixers automàtics són escassos."
+  ],
+  "zones.5.tips.0": [
+    "48821abe",
+    "Fes provisions de diners a Montevideo, Punta del Este o Colonia abans de dirigir-te cap a l'interior."
+  ],
+  "zones.5.tips.1": [
+    "02573d37",
+    "A la costa de Rocha, recarrega en pobles més grans com Chuy o La Paloma."
+  ],
+  "steps.0.name": [
+    "aa213b75",
+    "Troba un caixer automàtic que accepti la teva targeta"
+  ],
+  "steps.0.text": [
+    "2f5d9e7c",
+    "Busqueu els logotips de Visa, Mastercard, Cirrus, Plus o Maestro; preferiu els caixers automàtics dins de bancs o centres comercials."
+  ],
+  "steps.1.name": [
+    "4209811a",
+    "Tria dòlars o pesos"
+  ],
+  "steps.1.text": [
+    "f338ade4",
+    "Emporta pesos per a les despeses diàries i dòlars només si els necessites en efectiu; els dòlars surten en bitllets de 100 dòlars."
+  ],
+  "steps.2.name": [
+    "24d1a5da",
+    "Rebutja la conversió a la teva moneda"
+  ],
+  "steps.2.text": [
+    "3f2be811",
+    "Quan s'ofereixi que es cobri en la vostra moneda local, trieu \"sense conversió\" o la moneda local per evitar el marge de benefici DCC."
+  ],
+  "steps.3.name": [
+    "4e44a3f9",
+    "Retirar el màxim per transacció"
+  ],
+  "steps.3.text": [
+    "831b2ec9",
+    "Com que hi ha una comissió fixa per retirada, aprofita el límit permès per distribuir el cost entre més diners en efectiu."
+  ],
+  "steps.4.name": [
+    "6fcb61ed",
+    "Guarda el rebut i compta els diners en efectiu"
+  ],
+  "steps.4.text": [
+    "30d70c06",
+    "Comproveu l'import dispensat, conserveu el comprovant i repartiu els diners en efectiu en més d'un lloc abans de sortir del caixer automàtic."
+  ],
+  "faq.0.q": [
+    "e44ca992",
+    "Puc retirar dòlars americans de caixers automàtics a l'Uruguai?"
+  ],
+  "faq.0.a": [
+    "eb6339a1",
+    "Sí. A diferència de l'Argentina, molts caixers automàtics uruguaians distribueixen dòlars i també pesos, normalment en bitllets de 100 dòlars. Els límits per retirada per a targetes estrangeres són baixos."
+  ],
+  "faq.1.q": [
+    "33423670",
+    "Quant cobren els caixers automàtics en comissions a les targetes estrangeres?"
+  ],
+  "faq.1.a": [
+    "68121602",
+    "El recàrrec local és baix (de l'ordre d'uns quants dòlars per retirada). El cost més elevat sol ser la comissió per transaccions a l'estranger del vostre banc (l'1–3% és habitual)."
+  ],
+  "faq.2.q": [
+    "bf2fe8ff",
+    "Quin és el màxim que puc retirar per transacció?"
+  ],
+  "faq.2.a": [
+    "7a64ef6d",
+    "Aproximadament entre 200 i 300 dòlars americans o 5.000 dòlars australians per retirada, depenent de la xarxa (RedBROU o Banred). El vostre banc també estableix el seu propi límit diari, així que notifiqueu-lo abans de viatjar."
+  ],
+  "faq.3.q": [
+    "66601510",
+    "Hauria de canviar diners a l'aeroport?"
+  ],
+  "faq.3.a": [
+    "82d5704c",
+    "No per grans quantitats: l'aeroport i les terminals de ferris paguen notablement menys. Canvieu només la quantitat necessària per arribar a la ciutat i després feu servir una casa de canvi o un caixer automàtic del centre."
+  ],
+  "faq.4.q": [
+    "44d07e17",
+    "Efectiu o targeta a l'Uruguai?"
+  ],
+  "faq.4.a": [
+    "11ded5ec",
+    "L'Uruguai és molt favorable per a les targetes (Visa i Mastercard gairebé a tot arreu, sense contacte i amb codi QR). Porta alguns pesos en efectiu per a compres petites i paga quantitats més grans amb targeta."
+  ],
+  "faq.5.q": [
+    "2d0dd094",
+    "Quina moneda he de portar?"
+  ],
+  "faq.5.a": [
+    "cc8484ac",
+    "Efectiu en dòlars americans: millors tipus de canvi i acceptats a totes les cases de canvi. L'euro és el segon. Si veniu de l'Argentina, porteu dòlars, no pesos argentins."
+  ],
+  "faq.6.q": [
+    "b71d8d92",
+    "Puc obtenir un descompte fiscal com a turista?"
+  ],
+  "faq.6.a": [
+    "49712ab8",
+    "Sí: a més del règim d'allotjament, la reducció general de nou punts en restaurants i lloguer de cotxes sense conductor també cobreix els no residents fins al 30 d'abril de 2027, per al consum final pagat electrònicament per un particular. Una exempció total estacional requereix el seu propi decret i dates; no es pot deduir d'aquesta pròrroga."
+  ],
+  "faq.7.q": [
+    "04fb59ce",
+    "Què passa si el caixer automàtic rebutja la meva targeta?"
+  ],
+  "faq.7.a": [
+    "15f0167b",
+    "Prova amb una altra targeta i l'altra xarxa (RedBROU i Banred estan interconnectades, però és útil tenir-les totes dues). Comprova que el caixer automàtic mostri els logotips de Visa/Mastercard/Cirrus/Plus i digues al teu banc que l'utilitzaràs a l'Uruguai."
+  ],
+  "related.0.label": [
+    "9371cd8d",
+    "Dòlars per viatjar"
+  ],
+  "related.1.label": [
+    "89470d17",
+    "Comprant dòlars al millor preu"
+  ],
+  "related.2.label": [
+    "7b531a45",
+    "Cases de canvi i sucursals"
+  ],
+  "related.3.label": [
+    "574f3e27",
+    "Compara tarifes"
+  ]
+}

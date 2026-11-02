@@ -1,0 +1,546 @@
+{
+  "title": [
+    "1229e1ce",
+    "Mistä nostaa käteistä Uruguayssa: pankkiautomaatit, maksut ja turistikohteet"
+  ],
+  "metaTitle": [
+    "3e82d293",
+    "Pankkiautomaatit Uruguayssa: nosta dollareita tai pesoja"
+  ],
+  "description": [
+    "3eb63bbe",
+    "Miten ja mistä saa käteistä Uruguayssa turistina: pankkiautomaatit, jotka antavat sekä Yhdysvaltain dollareita että pesoja, maksut, nostorajat, valuuttamuunnosloukku (DCC) ja parhaat nostopaikat lentokentällä, Montevideossa, Punta del Estessä ja Coloniassa."
+  ],
+  "keywords": [
+    "4acfb17e",
+    "nosta käteistä uruguay, nosta rahaa uruguay, pankkiautomaatti uruguay-turisti, dollareita pankkiautomaatista uruguay, rahanvaihto uruguay, pankkiautomaattimaksut uruguay, casas de cambio uruguay"
+  ],
+  "tldr.0": [
+    "5f1561fe",
+    "Uruguayn pankkiautomaatit antavat sekä Yhdysvaltain dollareita että pesoja – harvinainen alueellinen etu (Argentiinassa se on lähes mahdotonta)."
+  ],
+  "tldr.1": [
+    "7b41d73f",
+    "Verkkoja on kaksi: RedBROU ja Banred. Jos toinen ei toimi, kokeile toista; pidä mukanasi sekä Visa- että Mastercard-kortti."
+  ],
+  "tldr.2": [
+    "c5aa36e3",
+    "Kun pankkiautomaatti tarjoaa veloitusta kotimaan valuutassasi, valitse aina paikallinen valuutta: \"muunnos\" kätkee alleen huonon vaihtokurssin."
+  ],
+  "tldr.3": [
+    "b73d4126",
+    "Vältä suurten summien vaihtamista lentokentällä tai lauttaterminaaleissa – niiden hinnat ovat huomattavasti huonommat."
+  ],
+  "tldr.4": [
+    "83b2ff36",
+    "Maksa hotelleissa ja ravintoloissa ulkomaisella kortilla: ALV-edun lisäksi sinulla on vähemmän käteistä mukanasi."
+  ],
+  "ui.backToTools": [
+    "950196fc",
+    "Työkalut"
+  ],
+  "ui.tldrTitle": [
+    "799c628c",
+    "Lyhyesti sanottuna"
+  ],
+  "ui.networksTitle": [
+    "90dd37e5",
+    "Kaksi pankkiautomaattiverkkoa: RedBROU ja Banred"
+  ],
+  "ui.tableNetwork": [
+    "6974ad65",
+    "Verkko"
+  ],
+  "ui.tableReach": [
+    "c549e23b",
+    "Kattavuus"
+  ],
+  "ui.tableUsd": [
+    "47b34a69",
+    "Nostokatto (USD) / nosto"
+  ],
+  "ui.tableUyu": [
+    "7d4e5b12",
+    "Noston enimmäismäärä $U / nosto"
+  ],
+  "ui.tableNote": [
+    "0ff01b6a",
+    "Muistiinpanoja"
+  ],
+  "ui.zonesTitle": [
+    "126f8827",
+    "Mistä saa käteistä turistialueella"
+  ],
+  "ui.zonesIntro": [
+    "e4c560b0",
+    "Vyöhyke- ja maamerkkitason viitteet (eivät tarkkoja osoitteita, jotka muuttuvat). Pankkiautomaatit sijaitsevat yleensä pankkien, ostoskeskusten tai Abitab- ja Redpagos-myymälöiden sisällä."
+  ],
+  "ui.stepsTitle": [
+    "3e1ff2e0",
+    "Kuinka nostaa käteistä askel askeleelta"
+  ],
+  "ui.faqTitle": [
+    "e466bfa9",
+    "Usein kysytyt kysymykset"
+  ],
+  "ui.sourcesTitle": [
+    "105bfcc3",
+    "Lähteet ja viitteet"
+  ],
+  "ui.relatedTitle": [
+    "ac7a8ccc",
+    "Jatka lukemista"
+  ],
+  "ui.ctaTitle": [
+    "60dda6a1",
+    "Vertaile ennen vaihtoa"
+  ],
+  "ui.ctaText": [
+    "fe6b01a6",
+    "Katso dollarin kurssi yli 40 valuutanvaihtopisteessä, päivittyen 10 minuutin välein, ja valitse paras toimipaikka."
+  ],
+  "ui.ctaButton": [
+    "9efd557a",
+    "Avaa vertailuikkuna"
+  ],
+  "ui.mapButton": [
+    "4e8c8db6",
+    "Katso noutopisteet kartalta"
+  ],
+  "ui.disclaimer": [
+    "b166cfce",
+    "Tietoa matkailijoille, ei taloudellista neuvontaa. Maksut, rajoitukset ja veroedut muuttuvat: varmista ne saapuessasi ja kortin myöntäjältäsi. Emme ole sidoksissa mainittuihin pankkeihin tai valuutanvaihtoihin."
+  ],
+  "ui.lastChecked": [
+    "9182e108",
+    "Viimeksi tarkistettu: kesäkuu 2026"
+  ],
+  "ivaLive.heading": [
+    "5af716c3",
+    "Turistien arvonlisäveroedut voimassa tänään"
+  ],
+  "ivaLive.asOf": [
+    "dd801240",
+    "Tila {date}:n mukaan:"
+  ],
+  "ivaLive.hotel": [
+    "152a8c47",
+    "Majoitus (hotellit ja vastaavat): 0 % alv ympäri vuoden."
+  ],
+  "ivaLive.base": [
+    "9856855a",
+    "Ruokailu ja autonvuokraus ilman kuljettajaa: {points}-pisteen arvonlisäveroalennus yksityishenkilön kortilla, mukaan lukien ulkomaiset kortit, maksetulle loppukulutukselle 30. huhtikuuta 2027 asti (asetus 235/026; lähde tarkistettu 23. lokakuuta 2026)."
+  ],
+  "ivaLive.baseUnconfirmed": [
+    "d65944df",
+    "Ruokailu ja autonvuokraus: vahvistettu jatkoaika päättyi 30. huhtikuuta 2027. Tarkista DGI:ltä, mikä alennus on voimassa ostopäivänäsi."
+  ],
+  "ivaLive.seasonalOn": [
+    "41748da1",
+    "Kesän täysi ALV-vapautus: AKTIIVINEN ({end}:aan asti)."
+  ],
+  "ivaLive.seasonalOff": [
+    "015a1161",
+    "Kesän täysi ALV-vapautus: tälle päivämäärälle ei ole vahvistettua ajanjaksoa. Tarkista DGI:ltä ennen kuin lasket tämän edun hyväksi."
+  ],
+  "sections.0.heading": [
+    "90dd37e5",
+    "Kaksi pankkiautomaattiverkkoa: RedBROU ja Banred"
+  ],
+  "sections.0.paragraphs.0": [
+    "0f52a7fe",
+    "Uruguayssa on kaksi pankkiautomaattiverkostoa: valtionpankin (BROU) ylläpitämä RedBROU ja yksityisten pankkien Banred. Nämä kaksi ovat yhteydessä toisiinsa ja linkittyneet kansainvälisiin verkkoihin (Mastercardin Cirrus/Maestro ja Visan Plus), joten ulkomainen kortti toimii molemmissa."
+  ],
+  "sections.0.paragraphs.1": [
+    "208b768b",
+    "Varmistaaksesi, että pankkiautomaatti hyväksyy korttisi, etsi laitteesta Visa-, Mastercard-, Cirrus-, Plus- tai Maestro-logot. Käytännön vinkki: pidä mukanasi eri tilien Visa- ja Mastercard-kortteja; jos toinen kortti tai laite lakkaa toimimasta, kokeile toista verkkoa."
+  ],
+  "sections.1.heading": [
+    "612974f0",
+    "Dollaria vai pesoa? Uruguayssa voi ottaa molemmat."
+  ],
+  "sections.1.paragraphs.0": [
+    "d9928d31",
+    "Toisin kuin Argentiinassa, monet Uruguayn pankkiautomaatit antavat Yhdysvaltain dollareita sekä Uruguayn pesoja. Tämä on todellinen etu, jos haluat käteistä dollareita menemättä vaihtopisteeseen. Dollarit annetaan yleensä 100 Yhdysvaltain dollarin seteleinä, mikä yhdistettynä nostokertarajoituksiin voi tarkoittaa, että saat vain yhden setelin kerrallaan."
+  ],
+  "sections.1.paragraphs.1": [
+    "cd694b7a",
+    "Yksinkertainen sääntö: ota pesoja mukaan päivittäisiin menoihin (taksit, markkinat, pienet kaupat) ja dollareita vain, jos todella tarvitset niitä käteisenä. Useimmissa suuremmissa maksuissa kortti on käteistä parempi."
+  ],
+  "sections.2.heading": [
+    "9ce97b34",
+    "Maksut ja nostorajat"
+  ],
+  "sections.2.paragraphs.0": [
+    "e28a7f0e",
+    "Uruguaylaisen pankkiautomaatin ulkomaisesta kortista veloittama lisämaksu on pieni verrattuna moniin maihin (muutaman dollarin luokkaa nostoa kohden). Suurempi kustannus on yleensä oma pankkisi: ulkomaanmaksutapahtumamaksu (tyypillisesti 1–3 %) ja joskus kiinteä kansainvälisten nostojen maksu. Matkakortti ilman valuuttamaksua säästää lähes kaiken tämän."
+  ],
+  "sections.2.paragraphs.1": [
+    "154c6f01",
+    "Ulkomaisten korttien nostokohtaiset ylärajat asettavat paikalliset verkot, eivät pankkisi, ja ne ovat alhaiset. Pankkisi soveltaa myös omaa päivittäistä ylärajaansa. Soita pankkiisi ennen matkaa nostaaksesi ylärajaa ja nosta tapahtumakohtainen enimmäismäärä jakaaksesi kiinteän maksun suuremmalle määrälle käteistä."
+  ],
+  "sections.2.bullets.0": [
+    "befd8df3",
+    "Paikallinen nostomaksu: arvio, muutaman dollarin luokkaa (tarkista näytöllä näkyvä summa ennen vahvistamista)."
+  ],
+  "sections.2.bullets.1": [
+    "0f872d39",
+    "Pankkisi/kortin myöntäjän maksu: yleensä suurempi maksu; tarkista, veloittaako korttisi ulkomaanmaksutapahtumamaksun."
+  ],
+  "sections.2.bullets.2": [
+    "8301e954",
+    "Nostokatto: noin 200–300 USD tai 5 000 UAH verkosta riippuen (arvio, voi muuttua)."
+  ],
+  "sections.2.bullets.3": [
+    "4aacdc05",
+    "Päiväraja: pankkisi asettama; ilmoita pankkillesi ennen matkaa korottaaksesi sitä."
+  ],
+  "sections.3.heading": [
+    "6bd46a0c",
+    "Valuuttamuunnoksen (DCC) ansa: valitse aina paikallinen valuutta"
+  ],
+  "sections.3.paragraphs.0": [
+    "29fe4c81",
+    "Monet pankkiautomaatit ja korttipäätteet tarjoavat \"veloitusta kotimaan valuutassasi\" Uruguayn pesojen tai dollarien sijaan. Se kuulostaa kätevältä (\"katso, kuinka paljon se on sinun rahoissasi\"), mutta dynaaminen valuutanmuunnos (DCC) käyttää korotettua vaihtokurssia ja piilokuluja. Lähes aina häviät."
+  ],
+  "sections.3.paragraphs.1": [
+    "34380f1f",
+    "Valitse aina \"ilman muuntoa\" tai paikallinen valuutta: Uruguayn peso pesoja käyttäessäsi ja dollareita dollareita käyttäessäsi. Anna oman pankkisi suorittaa muunto – sen kurssi on yleensä parempi."
+  ],
+  "sections.4.heading": [
+    "cc573fd8",
+    "Valuuttapörssit, pankkiautomaatit vai pankit: kumpi on parempi?"
+  ],
+  "sections.4.paragraphs.0": [
+    "1116ae4f",
+    "Vaihtopisteet (casas de cambio, kuten Varlix, Indumex, Gales, Aspen, Cambio Sir, Cambio Inglés ja Global Exchange) ovat klassinen tapa vaihtaa rahaa. Ne tarjoavat parhaat kurssit dollarille pienellä erolla ja ilman palkkioita; euro on toiseksi paras valuutta, Brasilian real on hyväksyttävä ja Argentiinan peso on huonoin. He yleensä pyytävät passia."
+  ],
+  "sections.4.paragraphs.1": [
+    "b7c83296",
+    "Aukioloajat: katutoimistot ovat avoinna maanantaista perjantaihin (noin klo 9–19) ja lauantaiaamuisin; monet sulkeutuvat sunnuntaisin. Ostoskeskusten konttorit ovat avoinna joka päivä ja myöhemmin. Voit vertailla päivän hintaa eri talojen välillä käyttämällä vertailuamme ja konttorisivua."
+  ],
+  "sections.5.heading": [
+    "f8b82759",
+    "Kuinka paljon käteistä ja mitä valuuttaa ottaa mukaan"
+  ],
+  "sections.5.paragraphs.0": [
+    "e22fd664",
+    "Uruguay on erittäin korttiystävällinen: Visa ja Mastercard käyvät maksuvälineinä lähes kaikkialla, ja lähimaksut ja QR-maksut (Mercado Pago) ovat yleisiä. Ota käteistä mukaan vain muutama peso pieniä ostoksia varten ja maksa suuremmat summat kortilla."
+  ],
+  "sections.5.paragraphs.1": [
+    "f9b88276",
+    "Jos otat mukaan käteistä vaihtorahaksi, Yhdysvaltain dollari on paras valuutta (parhaat kurssit, käyvät jokaisessa talossa). Euro on toisena. Argentiinasta tullessa kannattaa tuoda dollareita, ei Argentiinan pesoja – peso vaihtuu Uruguayssa erittäin huonosti. Brasiliasta tullessa käy oikea peso, etenkin rajan lähellä, vaikka dollari onkin silti kätevämpi."
+  ],
+  "sections.6.heading": [
+    "97a59b72",
+    "Turistien arvonlisäveroetu (kun maksat ulkomaisella kortilla)"
+  ],
+  "sections.6.paragraphs.0": [
+    "88ea76fc",
+    "Uruguay palauttaa osan arvonlisäverosta ulkomailla asuville turisteille, jotka maksavat ulkomaisella kortilla. Majoitus (rekisteröidyt hotellit ja vastaavat) on 0 %:n arvonlisäveroa ympäri vuoden ulkomailla asuville turisteille, jotka esittävät ulkomaisen henkilöllisyystodistuksen ja maksavat ulkomaisella kortilla – pysyvä etu."
+  ],
+  "sections.6.paragraphs.1": [
+    "7f51f9e2",
+    "Ruokailun ja autonvuokrauksen osalta asetuksella 235/026 säilytetään yleinen yhdeksän prosenttiyksikön alennus 30. huhtikuuta 2027 asti hyväksytyillä sähköisillä maksuvälineillä maksetusta loppukulutuksesta. Kausittainen täysi verovapaus on erillinen etu, jolla on oma asetus ja päivämäärät: yhdeksän prosenttiyksikön alennuksen jatkaminen ei vahvista täyttä verovapautusta. Tarkista asia DGI:ltä ennen matkaa."
+  ],
+  "sections.6.paragraphs.2": [
+    "f963de1e",
+    "Alennus on joka tapauksessa automaattinen: maksat ulkomaisella kortillasi ja etu näkyy kuitissa tai korttiotteessasi. Jos maksat käteisellä, menetät sen. Joten kannattaa laittaa hotellit ja ravintolat kortille ja nostaa vähemmän käteistä."
+  ],
+  "sections.6.bullets.0": [
+    "fc6c4026",
+    "Hotellit/majoitus: 0 % ALV ympäri vuoden muille kuin vakituisille asukkaille."
+  ],
+  "sections.6.bullets.1": [
+    "02f7d683",
+    "Ravintolat ja autonvuokraus ilman kuljettajaa: yhdeksän pistettä 30. huhtikuuta 2027 asti, edellyttäen, että sähköisiä maksuja suoritetaan. Kausiluonteinen täysi vapautus vaatii erillisen vahvistuksen."
+  ],
+  "sections.6.bullets.2": [
+    "bf5ed0b5",
+    "Jokaisella järjestelmällä on omat vaatimuksensa. Yleinen yhdeksän pisteen alennus edellyttää loppukulutusta ja yksilön hallussa olevaa hyväksyttyä sähköistä maksutapaa; ulkomaista liikkeeseenlaskua ei vaadita."
+  ],
+  "sections.7.heading": [
+    "84fbae56",
+    "Turvallisuusvinkkejä käteisen nostamiseen"
+  ],
+  "sections.7.paragraphs.0": [
+    "e227f80c",
+    "Uruguay on yksi alueen turvallisimmista maista, mutta näpistyksiä esiintyy, erityisesti Montevideon Ciudad Viejassa, satama-alueella ja rantakohteissa sesonkiaikana. Käytä pankkien, ostoskeskusten tai lasiseinäisten aulojen sisällä olevia pankkiautomaatteja, mieluiten päivänvalossa, ja ole tietoinen ympäristöstäsi."
+  ],
+  "sections.7.bullets.0": [
+    "d234b5e4",
+    "Nosta rahaa päivänvalossa ja pankkiautomaateista suljetuissa tiloissa, älä kadulla yöllä."
+  ],
+  "sections.7.bullets.1": [
+    "f9f5f149",
+    "Kanna kahta korttia eri tileiltä ja säilytä käteistä useammassa kuin yhdessä paikassa."
+  ],
+  "sections.7.bullets.2": [
+    "aa71ad4f",
+    "Pyydä pieniä seteleitä (100, 200, 500): 1 000 ja 2 000 seteleitä on vaikea rikkoa."
+  ],
+  "sections.7.bullets.3": [
+    "d7920a67",
+    "Liiku Uberilla, Cabifylla tai rekisteröidyillä takseilla; älä jätä arvoesineitä autoon."
+  ],
+  "sections.7.link.label": [
+    "d8570bac",
+    "Jo jumissa ison viestin kanssa: mistä saa pikkurahoja ja kolikoita"
+  ],
+  "networkRows.0.network": [
+    "7ee344a0",
+    "RedBROU"
+  ],
+  "networkRows.0.reach": [
+    "4a5d053e",
+    "Valtionpankin BROUn verkosto; yli 400 pankkiautomaattia valtakunnallisesti sekä Abitab ja Redpagos."
+  ],
+  "networkRows.0.usdPerTxn": [
+    "f41a726d",
+    "≈ 200 Yhdysvaltain dollaria"
+  ],
+  "networkRows.0.uyuPerTxn": [
+    "255d9345",
+    "≈ 5 000 Yhdysvaltain dollaria"
+  ],
+  "networkRows.0.note": [
+    "786a7e5f",
+    "Monet automaatit antavat dollareita. Ulkomaisten korttien luottorajat ovat likimääräisiä."
+  ],
+  "networkRows.1.network": [
+    "6823b06d",
+    "Kielletty"
+  ],
+  "networkRows.1.reach": [
+    "331e78b2",
+    "Yksityispankkien verkosto; yli 370 pistettä kaikissa 19 osastossa."
+  ],
+  "networkRows.1.usdPerTxn": [
+    "75830c42",
+    "≈ 300 Yhdysvaltain dollaria"
+  ],
+  "networkRows.1.uyuPerTxn": [
+    "255d9345",
+    "≈ 5 000 Yhdysvaltain dollaria"
+  ],
+  "networkRows.1.note": [
+    "9f2f1329",
+    "Yhdistetty RedBROU-verkkoon. Jos toinen verkko hylkää korttisi, kokeile toista."
+  ],
+  "zones.0.name": [
+    "8a4dc608",
+    "Carrascon lentoasema (MVD), Montevideo"
+  ],
+  "zones.0.summary": [
+    "462aaacd",
+    "Valuutanvaihtopisteet ovat avoinna 24 tuntia vuorokaudessa, terminaalissa on pankkiautomaatteja (Santanderin pankkiautomaatti on vahvistettu) ja pankkikonttori."
+  ],
+  "zones.0.tips.0": [
+    "d6202725",
+    "Lentokentän vaihto maksaa huomattavasti vähemmän: vaihda rahaa vain sen verran, että pääset kaupunkiin."
+  ],
+  "zones.0.tips.1": [
+    "99e81ace",
+    "Jos tarvitset käteistä heti, nosta pieni summa pankkiautomaatista ja vaihda loput keskustassa."
+  ],
+  "zones.1.name": [
+    "034a744d",
+    "Montevideo (Centro, Ciudad Vieja ja satama)"
+  ],
+  "zones.1.summary": [
+    "04c221eb",
+    "Valuutanvaihtopisteitä on Avenida 18 de Juliolla (Centro) ja Ciudad Viejan läpi. Risteilyterminaali sijaitsee Ciudad Viejan vieressä, ja siellä on valuutanvaihtopisteitä ja pankkiautomaatteja."
+  ],
+  "zones.1.tips.0": [
+    "a26e5af3",
+    "Centrossa ja Ciudad Viejassa on useita vertailtavia vaihtoyrityksiä."
+  ],
+  "zones.1.tips.1": [
+    "4139b3e5",
+    "Risteilymatkustajilla on valuutanvaihto satamassa ja pankkiautomaatit ovat lyhyen kävelymatkan päässä Mercado del Puerton suuntaan."
+  ],
+  "zones.2.name": [
+    "3fa606f9",
+    "Punta del Este"
+  ],
+  "zones.2.summary": [
+    "880d1f96",
+    "Valuutanvaihtopisteitä on Avenida Gorleron, pääkadun, varrella. Sesonkiaikana voi olla jonoja ja pankkiautomaateista voi loppua dollari."
+  ],
+  "zones.2.tips.0": [
+    "1063deb8",
+    "Kesällä ja pääsiäisviikolla pankkiautomaatit tyhjenevät nopeasti: nosta rahaa etukäteen ja pidä puskuria."
+  ],
+  "zones.2.tips.1": [
+    "e4c20d9e",
+    "Turvaudu kortteihin ja QR-maksuihin, jotta et ole riippuvainen pelkästään käteisestä."
+  ],
+  "zones.3.name": [
+    "2ed532f4",
+    "Colonia del Sacramento"
+  ],
+  "zones.3.summary": [
+    "764221b5",
+    "Pankkiautomaatteja Barrio Historicossa ja lauttaterminaalissa, vain muutaman askeleen päässä vanhastakaupungista, jonne päiväretkeläiset saapuvat Buenos Airesista."
+  ],
+  "zones.3.tips.0": [
+    "d7ebee8b",
+    "Nosta pieni summa pesoja saapuessasi ja maksa loput kortilla."
+  ],
+  "zones.3.tips.1": [
+    "e09f3851",
+    "Monet turistikohteet ottavat vastaan dollareita, tosin epäedulliseen hintaan."
+  ],
+  "zones.4.name": [
+    "ed7917f9",
+    "Lauttaterminaalit (Buquebus / Colonia Express)"
+  ],
+  "zones.4.summary": [
+    "ac18ddf9",
+    "Montevideon ja Colonian terminaaleissa on pankkiautomaatteja. Terminaalien sisällä ja junassa tapahtuva rahanvaihto tarjoaa yleensä huonoja hintoja."
+  ],
+  "zones.4.tips.0": [
+    "b5a97e0f",
+    "Vältä suurten summien vaihtamista terminaalissa tai junassa – hinnat ovat huonot."
+  ],
+  "zones.4.tips.1": [
+    "91b3c105",
+    "On parempi käyttää pankkiautomaattia tai vaihtaa rahaa kaupungin valuutanvaihtopisteessä."
+  ],
+  "zones.5.name": [
+    "66cc7244",
+    "Sisämaa ja pienemmät kaupungit"
+  ],
+  "zones.5.summary": [
+    "fc9a5afd",
+    "Suurten kaupunkien ja lomakohteiden ulkopuolella pankkiautomaatteja on harvassa."
+  ],
+  "zones.5.tips.0": [
+    "48821abe",
+    "Varastoi käteistä Montevideossa, Punta del Estessä tai Coloniassa ennen kuin suuntaat sisämaahan."
+  ],
+  "zones.5.tips.1": [
+    "02573d37",
+    "Rochan rannikolla tankkaa suuremmissa kaupungeissa, kuten Chuyssa tai La Palomassa."
+  ],
+  "steps.0.name": [
+    "aa213b75",
+    "Etsi pankkiautomaatti, joka hyväksyy korttisi"
+  ],
+  "steps.0.text": [
+    "2f5d9e7c",
+    "Etsi Visa-, Mastercard-, Cirrus-, Plus- tai Maestro-logoja; mieluiten pankkiautomaatteja pankkien tai ostoskeskusten sisällä."
+  ],
+  "steps.1.name": [
+    "4209811a",
+    "Valitse dollareita tai pesoja"
+  ],
+  "steps.1.text": [
+    "f338ade4",
+    "Ota pesoja päivittäisiin kuluihin ja dollareita vain, jos tarvitset niitä käteisenä; dollareita saa 100 Yhdysvaltain dollarin seteleinä."
+  ],
+  "steps.2.name": [
+    "24d1a5da",
+    "Hylkää muunto omaan valuuttaasi"
+  ],
+  "steps.2.text": [
+    "3f2be811",
+    "Kun maksusi tarjotaan veloitettavaksi kotimaan valuutassasi, valitse \"ilman muuntoa\" tai paikallinen valuutta välttääksesi DCC-merkinnän."
+  ],
+  "steps.3.name": [
+    "4e44a3f9",
+    "Nosta enimmäismäärä tapahtumaa kohden"
+  ],
+  "steps.3.text": [
+    "831b2ec9",
+    "Koska nostokulut ovat kiinteät, käytä sallittua ylärajaa jakaaksesi kustannukset suuremmalle käteissummalle."
+  ],
+  "steps.4.name": [
+    "6fcb61ed",
+    "Säilytä kuitti ja laske käteinen"
+  ],
+  "steps.4.text": [
+    "30d70c06",
+    "Tarkista nostettu summa, säilytä kuitti ja jaa käteinen useampaan kuin yhteen paikkaan ennen kuin poistut pankkiautomaatista."
+  ],
+  "faq.0.q": [
+    "e44ca992",
+    "Voinko nostaa Yhdysvaltain dollareita pankkiautomaateista Uruguayssa?"
+  ],
+  "faq.0.a": [
+    "eb6339a1",
+    "Kyllä. Toisin kuin Argentiinassa, monet Uruguayn pankkiautomaatit antavat dollareita pesojen lisäksi, yleensä 100 Yhdysvaltain dollarin seteleinä. Ulkomaisten korttien nostokertakohtaiset ylärajat ovat alhaiset."
+  ],
+  "faq.1.q": [
+    "33423670",
+    "Paljonko pankkiautomaatit veloittavat ulkomaisista korteista maksuja?"
+  ],
+  "faq.1.a": [
+    "68121602",
+    "Paikallinen lisämaksu on alhainen (muutaman dollarin luokkaa nostoa kohden). Suurempi kustannus on yleensä oman pankkisi ulkomaanmaksutapahtumamaksu (yleinen 1–3 %)."
+  ],
+  "faq.2.q": [
+    "bf2fe8ff",
+    "Mikä on enimmäismäärä, jonka voin nostaa per tapahtuma?"
+  ],
+  "faq.2.a": [
+    "7a64ef6d",
+    "Noin 200–300 Yhdysvaltain dollaria tai 5 000 Australian dollaria nostoa kohden verkosta (RedBROU tai Banred) riippuen. Myös pankkisi asettaa oman päivittäisen rajansa, joten ilmoita siitä sille ennen matkaa."
+  ],
+  "faq.3.q": [
+    "66601510",
+    "Pitäisikö minun vaihtaa rahaa lentokentällä?"
+  ],
+  "faq.3.a": [
+    "82d5704c",
+    "Ei suurille summille: lentokenttä- ja lauttaterminaalit maksavat huomattavasti vähemmän. Vaihda rahaa vain sen verran kuin tarvitset kaupunkiin, ja käytä sitten keskustan valuutanvaihtopistettä tai pankkiautomaattia."
+  ],
+  "faq.4.q": [
+    "44d07e17",
+    "Käteinen vai kortti Uruguayssa?"
+  ],
+  "faq.4.a": [
+    "11ded5ec",
+    "Uruguay on erittäin korttiystävällinen (Visa ja Mastercard lähes kaikkialla, lähimaksu ja QR-kortti). Pidä mukanasi pesoja käteistä pienempiä ostoksia varten ja maksa suuremmat summat kortilla."
+  ],
+  "faq.5.q": [
+    "2d0dd094",
+    "Minkä valuutan minun pitäisi ottaa mukaan?"
+  ],
+  "faq.5.a": [
+    "cc8484ac",
+    "Käteinen Yhdysvaltain dollareina: parhaat hinnat ja käyvät kaikissa valuutanvaihtopisteissä. Euro on toissijainen valuutta. Jos olet Argentiinasta, ota mukaan dollareita, älä Argentiinan pesoja."
+  ],
+  "faq.6.q": [
+    "b71d8d92",
+    "Saanko turistina verovähennystä?"
+  ],
+  "faq.6.a": [
+    "49712ab8",
+    "Kyllä: majoitusjärjestelmän lisäksi yleinen yhdeksän prosenttiyksikön alennus ruokailusta ja autonvuokrauksesta ilman kuljettajaa koskee myös ulkomaalaisia 30. huhtikuuta 2027 asti, kun yksityishenkilö maksaa loppukulutuksen sähköisesti. Kausittaista täyttä verovapautusta varten tarvitaan oma asetus ja päivämäärät; sitä ei voida päätellä tästä pidennyksestä."
+  ],
+  "faq.7.q": [
+    "04fb59ce",
+    "Mitä jos pankkiautomaatti hylkää korttini?"
+  ],
+  "faq.7.a": [
+    "15f0167b",
+    "Kokeile toista korttia ja toista verkkoa (RedBROU ja Banred ovat yhteydessä toisiinsa, mutta molempien käyttäminen on hyödyllistä). Tarkista, että pankkiautomaatissa näkyy Visa/Mastercard/Cirrus/Plus-logot ja kerro pankillesi, että aiot käyttää sitä Uruguayssa."
+  ],
+  "related.0.label": [
+    "9371cd8d",
+    "Dollaria matkustamiseen"
+  ],
+  "related.1.label": [
+    "89470d17",
+    "Dollarin ostaminen parhaaseen hintaan"
+  ],
+  "related.2.label": [
+    "7b531a45",
+    "Vaihtopisteet ja sivukonttorit"
+  ],
+  "related.3.label": [
+    "574f3e27",
+    "Vertaile hintoja"
+  ]
+}

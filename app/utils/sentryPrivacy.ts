@@ -1,4 +1,5 @@
 import type { Event, EventHint, StackFrame } from '@sentry/nuxt'
+import { LOCALE_PREFIX_RE } from './locales'
 
 export interface SentryErrorConfig {
   dsn?: string
@@ -159,8 +160,7 @@ export function sentryRouteCategory(value: unknown): string {
   let path: string
   try {
     path =
-      new URL(value, 'https://cambio-uruguay.com').pathname.replace(/^\/(?:en|pt)(?=\/|$)/, '') ||
-      '/'
+      new URL(value, 'https://cambio-uruguay.com').pathname.replace(LOCALE_PREFIX_RE, '') || '/'
   } catch {
     return '/other'
   }
@@ -171,7 +171,7 @@ export function sentryRouteCategory(value: unknown): string {
   if (ogRoute) {
     const page = (ogRoute[2] || '/')
       .replace(/\/og\.(?:png|jpe?g|webp|svg|json|html)$/, '')
-      .replace(/^\/(?:en|pt)(?=\/|$)/, '')
+      .replace(LOCALE_PREFIX_RE, '')
     return `/__og-image__/${ogRoute[1]}${pageRouteCategory(page || '/')}`
   }
   return pageRouteCategory(path)

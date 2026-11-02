@@ -1,0 +1,518 @@
+{
+  "title": [
+    "1229e1ce",
+    "Địa điểm rút tiền mặt tại Uruguay: Máy ATM, phí và các điểm du lịch nổi bật"
+  ],
+  "metaTitle": [
+    "3e82d293",
+    "Máy ATM tại Uruguay: rút đô la hoặc peso"
+  ],
+  "description": [
+    "3eb63bbe",
+    "Cách thức và địa điểm rút tiền mặt ở Uruguay dành cho khách du lịch: Máy ATM rút cả đô la Mỹ và peso, phí, hạn mức rút tiền, bẫy chuyển đổi ngoại tệ (DCC), và những địa điểm tốt nhất để rút tiền tại sân bay, Montevideo, Punta del Este và Colonia."
+  ],
+  "keywords": [
+    "4acfb17e",
+    "rút tiền mặt uruguay, rút tiền uruguay, ATM du lịch uruguay, đô la từ ATM uruguay, đổi tiền uruguay, phí ATM uruguay, casas de cambio uruguay"
+  ],
+  "tldr.0": [
+    "5f1561fe",
+    "Các máy ATM ở Uruguay có thể rút cả đô la Mỹ và peso — một lợi thế hiếm có trong khu vực (ở Argentina thì điều này gần như không thể)."
+  ],
+  "tldr.1": [
+    "7b41d73f",
+    "Có hai mạng: RedBROU và Banred. Nếu mạng này không hoạt động, hãy thử mạng kia; nhớ mang theo cả thẻ Visa và Mastercard."
+  ],
+  "tldr.2": [
+    "c5aa36e3",
+    "Khi máy ATM đề nghị tính phí bằng đơn vị tiền tệ của nước bạn, hãy luôn chọn đơn vị tiền tệ địa phương: \"việc chuyển đổi\" che giấu tỷ giá hối đoái không tốt."
+  ],
+  "tldr.3": [
+    "b73d4126",
+    "Tránh đổi số tiền lớn tại sân bay hoặc bến phà — tỷ giá ở đó cao hơn đáng kể."
+  ],
+  "tldr.4": [
+    "83b2ff36",
+    "Thanh toán khách sạn và nhà hàng bằng thẻ nước ngoài: ngoài lợi ích về thuế VAT, bạn còn mang ít tiền mặt hơn."
+  ],
+  "ui.backToTools": [
+    "950196fc",
+    "Công cụ"
+  ],
+  "ui.tldrTitle": [
+    "799c628c",
+    "Tóm lại"
+  ],
+  "ui.networksTitle": [
+    "90dd37e5",
+    "Hai mạng lưới ATM: RedBROU và Banred"
+  ],
+  "ui.tableNetwork": [
+    "6974ad65",
+    "Mạng"
+  ],
+  "ui.tableReach": [
+    "c549e23b",
+    "Phạm vi phủ sóng"
+  ],
+  "ui.tableUsd": [
+    "47b34a69",
+    "Giới hạn USD / rút tiền"
+  ],
+  "ui.tableUyu": [
+    "7d4e5b12",
+    "Giới hạn $U / rút tiền"
+  ],
+  "ui.tableNote": [
+    "0ff01b6a",
+    "Ghi chú"
+  ],
+  "ui.zonesTitle": [
+    "126f8827",
+    "Nơi đổi tiền mặt theo khu du lịch"
+  ],
+  "ui.zonesIntro": [
+    "e4c560b0",
+    "Thông tin tham khảo ở cấp khu vực và địa điểm (không phải địa chỉ chính xác, vì địa chỉ có thể thay đổi). Máy ATM thường được đặt bên trong các ngân hàng, trung tâm thương mại hoặc cửa hàng Abitab và Redpagos."
+  ],
+  "ui.stepsTitle": [
+    "3e1ff2e0",
+    "Hướng dẫn rút tiền mặt từng bước"
+  ],
+  "ui.faqTitle": [
+    "e466bfa9",
+    "Câu hỏi thường gặp"
+  ],
+  "ui.sourcesTitle": [
+    "105bfcc3",
+    "Nguồn và tài liệu tham khảo"
+  ],
+  "ui.relatedTitle": [
+    "ac7a8ccc",
+    "Tiếp tục đọc"
+  ],
+  "ui.ctaTitle": [
+    "60dda6a1",
+    "Hãy so sánh trước khi trao đổi."
+  ],
+  "ui.ctaText": [
+    "fe6b01a6",
+    "Xem tỷ giá đô la tại hơn 40 sàn giao dịch, được cập nhật 10 phút một lần, và chọn nơi tốt nhất để giao dịch."
+  ],
+  "ui.ctaButton": [
+    "9efd557a",
+    "Mở bộ so sánh"
+  ],
+  "ui.mapButton": [
+    "4e8c8db6",
+    "Xem các điểm rút tiền trên bản đồ"
+  ],
+  "ui.disclaimer": [
+    "b166cfce",
+    "Thông tin tham khảo dành cho khách du lịch, không phải lời khuyên tài chính. Phí, hạn mức và ưu đãi thuế có thể thay đổi: vui lòng xác nhận khi đến nơi và với tổ chức phát hành thẻ của bạn. Chúng tôi không liên kết với các ngân hàng hoặc công ty đổi tiền được đề cập."
+  ],
+  "ivaLive.heading": [
+    "5af716c3",
+    "Ưu đãi thuế VAT dành cho khách du lịch có hiệu lực từ hôm nay."
+  ],
+  "ivaLive.asOf": [
+    "dd801240",
+    "Tình trạng tính đến thời điểm {date}:"
+  ],
+  "ivaLive.hotel": [
+    "152a8c47",
+    "Chỗ ở (khách sạn và các loại hình tương tự): Thuế VAT 0% quanh năm."
+  ],
+  "ivaLive.seasonalOn": [
+    "41748da1",
+    "Miễn thuế VAT toàn phần mùa hè: CÓ HIỆU LỰC (đến {end})."
+  ],
+  "ivaLive.seasonalOff": [
+    "015a1161",
+    "Miễn thuế VAT toàn phần mùa hè: hiện chưa có thời gian cụ thể nào được xác nhận cho chương trình này. Vui lòng liên hệ với DGI trước khi dựa vào ưu đãi này."
+  ],
+  "sections.0.heading": [
+    "90dd37e5",
+    "Hai mạng lưới ATM: RedBROU và Banred"
+  ],
+  "sections.0.paragraphs.0": [
+    "0f52a7fe",
+    "Uruguay có hai mạng lưới ATM: RedBROU, do ngân hàng nhà nước (BROU) điều hành, và Banred, mạng lưới của các ngân hàng tư nhân. Hai mạng lưới này được kết nối với nhau và liên kết với các mạng lưới quốc tế (Cirrus/Maestro của Mastercard và Plus của Visa), vì vậy thẻ nước ngoài có thể sử dụng được trên cả hai."
+  ],
+  "sections.0.paragraphs.1": [
+    "208b768b",
+    "Để chắc chắn máy ATM chấp nhận thẻ của bạn, hãy tìm logo Visa, Mastercard, Cirrus, Plus hoặc Maestro trên máy. Mẹo hữu ích: mang theo thẻ Visa và Mastercard từ hai tài khoản khác nhau; nếu một thẻ hoặc máy ATM không hoạt động, hãy thử với mạng ATM khác."
+  ],
+  "sections.1.heading": [
+    "612974f0",
+    "Đô la hay peso? Ở Uruguay, bạn có thể dùng cả hai."
+  ],
+  "sections.1.paragraphs.0": [
+    "d9928d31",
+    "Không giống như Argentina, nhiều máy ATM ở Uruguay cung cấp cả đô la Mỹ và peso Uruguay. Đó là một lợi thế thực sự nếu bạn muốn rút tiền mặt đô la mà không cần đến điểm đổi tiền. Đô la thường được rút ra dưới dạng tờ 100 đô la Mỹ, và cùng với giới hạn mỗi lần rút, có nghĩa là bạn chỉ nhận được một tờ tiền mỗi lần."
+  ],
+  "sections.1.paragraphs.1": [
+    "cd694b7a",
+    "Nguyên tắc đơn giản: mang theo peso cho chi tiêu hàng ngày (taxi, chợ, cửa hàng nhỏ) và chỉ mang đô la khi thực sự cần tiền mặt. Đối với hầu hết các khoản thanh toán lớn, thẻ tín dụng sẽ tiện lợi hơn tiền mặt."
+  ],
+  "sections.2.heading": [
+    "9ce97b34",
+    "Phí và giới hạn rút tiền"
+  ],
+  "sections.2.paragraphs.0": [
+    "e28a7f0e",
+    "Phí phụ thu mà máy ATM Uruguay tính cho thẻ nước ngoài khá thấp so với nhiều quốc gia khác (khoảng vài đô la cho mỗi lần rút tiền). Chi phí lớn hơn thường đến từ ngân hàng của bạn: phí giao dịch quốc tế (thường là 1-3%) cộng thêm đôi khi là phí rút tiền quốc tế cố định. Thẻ du lịch không tính phí ngoại hối giúp bạn tiết kiệm gần như toàn bộ các chi phí đó."
+  ],
+  "sections.2.paragraphs.1": [
+    "154c6f01",
+    "Giới hạn rút tiền mỗi lần đối với thẻ nước ngoài được thiết lập bởi các mạng lưới giao dịch địa phương, chứ không phải ngân hàng của bạn, và mức giới hạn này khá thấp. Ngân hàng của bạn cũng áp dụng giới hạn rút tiền hàng ngày riêng. Hãy gọi cho ngân hàng của bạn trước khi đi du lịch để yêu cầu tăng giới hạn và rút số tiền tối đa cho mỗi giao dịch để phân bổ phí cố định cho nhiều khoản tiền mặt hơn."
+  ],
+  "sections.2.bullets.0": [
+    "befd8df3",
+    "Phí rút tiền nội địa: ước tính, khoảng vài đô la (vui lòng kiểm tra số tiền hiển thị trên màn hình trước khi xác nhận)."
+  ],
+  "sections.2.bullets.1": [
+    "0f872d39",
+    "Phí ngân hàng/tổ chức phát hành thẻ: thường là khoản phí lớn hơn; hãy kiểm tra xem thẻ của bạn có tính phí giao dịch quốc tế hay không."
+  ],
+  "sections.2.bullets.2": [
+    "8301e954",
+    "Giới hạn rút tiền mỗi lần: khoảng 200-300 USD hoặc 5.000 USD tùy thuộc vào mạng lưới (ước tính, có thể thay đổi)."
+  ],
+  "sections.2.bullets.3": [
+    "4aacdc05",
+    "Hạn mức hàng ngày: do ngân hàng của bạn quy định; hãy thông báo cho ngân hàng trước khi đi du lịch để yêu cầu tăng hạn mức."
+  ],
+  "sections.3.heading": [
+    "6bd46a0c",
+    "Cạm bẫy chuyển đổi tiền tệ (DCC): luôn chọn tiền tệ địa phương."
+  ],
+  "sections.3.paragraphs.0": [
+    "29fe4c81",
+    "Nhiều máy ATM và máy thanh toán thẻ cung cấp tùy chọn \"thanh toán bằng tiền tệ của quốc gia bạn\" thay vì bằng peso Uruguay hoặc đô la Mỹ. Nghe có vẻ tiện lợi (\"xem số tiền tương ứng với tiền của bạn là bao nhiêu\"), nhưng tỷ giá chuyển đổi động (DCC) này áp dụng tỷ giá hối đoái cao hơn mức thực tế cộng thêm một khoản phí ẩn. Bạn gần như luôn luôn bị thiệt."
+  ],
+  "sections.3.paragraphs.1": [
+    "34380f1f",
+    "Luôn chọn \"không chuyển đổi\" hoặc đơn vị tiền tệ địa phương: peso Uruguay khi bạn đổi sang peso, đô la khi bạn đổi sang đô la. Hãy để ngân hàng của bạn thực hiện việc chuyển đổi — tỷ giá của họ thường tốt hơn."
+  ],
+  "sections.4.heading": [
+    "cc573fd8",
+    "Các điểm đổi tiền, máy ATM hay ngân hàng: lựa chọn nào tốt nhất?"
+  ],
+  "sections.4.paragraphs.0": [
+    "1116ae4f",
+    "Các điểm đổi tiền (như Varlix, Indumex, Gales, Aspen, Cambio Sir, Cambio Inglés và Global Exchange) là cách truyền thống để đổi tiền mặt. Họ cung cấp tỷ giá tốt nhất cho đô la Mỹ, với mức chênh lệch nhỏ và không tính phí hoa hồng; euro là loại tiền tệ tốt thứ hai, đồng real Brazil cũng được chấp nhận, và đồng peso Argentina là loại tiền tệ tệ nhất. Họ thường yêu cầu xem hộ chiếu của bạn."
+  ],
+  "sections.4.paragraphs.1": [
+    "b7c83296",
+    "Giờ mở cửa: Các chi nhánh trên phố mở cửa từ thứ Hai đến thứ Sáu (khoảng 9 giờ đến 19 giờ) và sáng thứ Bảy; nhiều chi nhánh đóng cửa vào Chủ nhật. Các chi nhánh bên trong trung tâm thương mại mở cửa hàng ngày và muộn hơn. Để so sánh giá trong ngày giữa các nhà cung cấp dịch vụ, hãy sử dụng công cụ so sánh và trang chi nhánh của chúng tôi."
+  ],
+  "sections.5.heading": [
+    "f8b82759",
+    "Nên mang theo bao nhiêu tiền mặt và loại tiền tệ nào?"
+  ],
+  "sections.5.paragraphs.0": [
+    "e22fd664",
+    "Uruguay rất thân thiện với thẻ tín dụng: Visa và Mastercard được chấp nhận ở hầu hết mọi nơi, cùng với thanh toán không tiếp xúc và thanh toán bằng mã QR (Mercado Pago) rất phổ biến. Chỉ cần mang theo một ít tiền mặt peso cho những giao dịch nhỏ và thanh toán số tiền lớn hơn bằng thẻ."
+  ],
+  "sections.5.paragraphs.1": [
+    "f9b88276",
+    "Nếu bạn mang theo tiền mặt để đổi, đô la Mỹ là lựa chọn tốt nhất (tỷ giá tốt nhất, được chấp nhận ở mọi nơi). Euro đứng thứ hai. Nếu đến từ Argentina, hãy mang theo đô la, chứ không phải peso Argentina — peso đổi rất ít tiền ở Uruguay. Nếu đến từ Brazil, real Brazil có thể dùng được, đặc biệt là gần biên giới, mặc dù đô la vẫn tiện lợi hơn."
+  ],
+  "sections.6.heading": [
+    "97a59b72",
+    "Ưu đãi thuế VAT dành cho khách du lịch (khi thanh toán bằng thẻ nước ngoài)"
+  ],
+  "sections.6.paragraphs.2": [
+    "f963de1e",
+    "Trong mọi trường hợp, khoản giảm giá là tự động: bạn thanh toán bằng thẻ nước ngoài và ưu đãi sẽ hiển thị trên hóa đơn hoặc sao kê thẻ của bạn. Thanh toán bằng tiền mặt thì bạn sẽ mất ưu đãi đó. Vì vậy, việc thanh toán bằng thẻ cho khách sạn và nhà hàng và rút ít tiền mặt hơn sẽ có lợi."
+  ],
+  "sections.6.bullets.0": [
+    "fc6c4026",
+    "Khách sạn/nơi lưu trú: Miễn thuế VAT 0% quanh năm cho người không cư trú (thường trú)."
+  ],
+  "sections.6.bullets.2": [
+    "bf5ed0b5",
+    "Mỗi chế độ có những yêu cầu riêng. Việc giảm chín điểm chung yêu cầu tiêu dùng cuối cùng và phương thức thanh toán điện tử hợp lệ do cá nhân sở hữu; không yêu cầu phát hành ở nước ngoài."
+  ],
+  "sections.7.heading": [
+    "84fbae56",
+    "Mẹo an toàn khi rút tiền mặt"
+  ],
+  "sections.7.paragraphs.0": [
+    "e227f80c",
+    "Uruguay nằm trong số những quốc gia an toàn nhất trong khu vực, nhưng nạn trộm cắp vặt vẫn tồn tại, đặc biệt là ở khu phố cổ Ciudad Vieja của Montevideo, khu vực cảng và các khu nghỉ dưỡng ven biển vào mùa cao điểm. Hãy sử dụng máy ATM bên trong ngân hàng, trung tâm thương mại hoặc sảnh kính, tốt nhất là vào ban ngày, và luôn cảnh giác với môi trường xung quanh."
+  ],
+  "sections.7.bullets.0": [
+    "d234b5e4",
+    "Nên rút tiền vào ban ngày và từ các máy ATM bên trong các tòa nhà có mái che, không nên rút tiền trên đường phố vào ban đêm."
+  ],
+  "sections.7.bullets.1": [
+    "f9f5f149",
+    "Mang theo hai thẻ từ hai tài khoản khác nhau và cất tiền mặt ở nhiều nơi khác nhau."
+  ],
+  "sections.7.bullets.2": [
+    "aa71ad4f",
+    "Hãy yêu cầu đổi tiền lẻ với mệnh giá nhỏ (100, 200, 500): Tiền 1.000 và 2.000 rất khó đổi."
+  ],
+  "sections.7.bullets.3": [
+    "d7920a67",
+    "Hãy sử dụng Uber, Cabify hoặc taxi đã đăng ký để di chuyển; đừng để đồ vật có giá trị trong xe."
+  ],
+  "sections.7.link.label": [
+    "d8570bac",
+    "Đang bị kẹt với tờ tiền mệnh giá lớn: tìm tiền lẻ và tiền xu ở đâu?"
+  ],
+  "networkRows.0.network": [
+    "7ee344a0",
+    "RedBROU"
+  ],
+  "networkRows.0.reach": [
+    "4a5d053e",
+    "Mạng lưới của ngân hàng nhà nước BROU: hơn 400 máy ATM trên toàn quốc, cộng thêm Abitab và Redpagos."
+  ],
+  "networkRows.0.usdPerTxn": [
+    "f41a726d",
+    "≈ 200 đô la Mỹ"
+  ],
+  "networkRows.0.uyuPerTxn": [
+    "255d9345",
+    "≈ 5.000 USD"
+  ],
+  "networkRows.0.note": [
+    "786a7e5f",
+    "Nhiều máy bán hàng tự động trả tiền đô la. Giới hạn trả tiền đối với thẻ nước ngoài chỉ mang tính chất ước lượng."
+  ],
+  "networkRows.1.network": [
+    "6823b06d",
+    "Bị cấm"
+  ],
+  "networkRows.1.reach": [
+    "331e78b2",
+    "Mạng lưới của các ngân hàng tư nhân; hơn 370 điểm giao dịch trên khắp 19 bộ phận."
+  ],
+  "networkRows.1.usdPerTxn": [
+    "75830c42",
+    "≈ 300 đô la Mỹ"
+  ],
+  "networkRows.1.uyuPerTxn": [
+    "255d9345",
+    "≈ 5.000 USD"
+  ],
+  "networkRows.1.note": [
+    "9f2f1329",
+    "Được kết nối với RedBROU. Nếu một mạng từ chối thẻ của bạn, hãy thử mạng khác."
+  ],
+  "zones.0.name": [
+    "8a4dc608",
+    "Sân bay Carrasco (MVD), Montevideo"
+  ],
+  "zones.0.summary": [
+    "462aaacd",
+    "Các điểm đổi ngoại tệ toàn cầu mở cửa 24 giờ, máy ATM tại nhà ga (đã xác nhận có máy ATM của Santander) và một chi nhánh ngân hàng."
+  ],
+  "zones.0.tips.0": [
+    "d6202725",
+    "Việc đổi tiền ở sân bay có tỷ giá thấp hơn đáng kể: chỉ đủ tiền thừa để đến thành phố."
+  ],
+  "zones.0.tips.1": [
+    "99e81ace",
+    "Nếu cần tiền mặt ngay, hãy rút một ít tại máy ATM và đổi phần còn lại ở trung tâm thành phố."
+  ],
+  "zones.1.name": [
+    "034a744d",
+    "Montevideo (Trung tâm, Ciudad Vieja và cảng)"
+  ],
+  "zones.1.summary": [
+    "04c221eb",
+    "Các điểm đổi tiền tập trung dọc theo Đại lộ 18 de Julio (Trung tâm) và xuyên suốt khu Ciudad Vieja. Bến tàu du lịch nằm cạnh Ciudad Vieja, cũng có các điểm đổi tiền và máy ATM."
+  ],
+  "zones.1.tips.0": [
+    "a26e5af3",
+    "Tại Centro và Ciudad Vieja, bạn sẽ tìm thấy một số điểm đổi tiền để so sánh."
+  ],
+  "zones.1.tips.1": [
+    "4139b3e5",
+    "Hành khách đi tàu du lịch có thể đổi tiền bên trong cảng và sử dụng máy ATM cách đó một đoạn đi bộ ngắn, hướng về phía Mercado del Puerto."
+  ],
+  "zones.2.name": [
+    "3fa606f9",
+    "Punta del Este"
+  ],
+  "zones.2.summary": [
+    "880d1f96",
+    "Các điểm đổi tiền nằm dọc theo đại lộ Gorlero, con phố chính. Vào mùa cao điểm, có thể có hàng dài người xếp hàng và máy ATM hết tiền đô la."
+  ],
+  "zones.2.tips.0": [
+    "1063deb8",
+    "Vào mùa hè và tuần lễ Phục Sinh, máy ATM thường hết tiền rất nhanh: hãy rút tiền trước và giữ một khoản dự phòng."
+  ],
+  "zones.2.tips.1": [
+    "e4c20d9e",
+    "Hãy sử dụng thẻ và thanh toán bằng mã QR để không chỉ phụ thuộc vào tiền mặt."
+  ],
+  "zones.3.name": [
+    "2ed532f4",
+    "Colonia del Sacramento"
+  ],
+  "zones.3.summary": [
+    "764221b5",
+    "Các máy ATM nằm ở khu Barrio Histórico và tại bến phà, cách khu phố cổ vài bước chân, nơi du khách đến từ Buenos Aires trong ngày."
+  ],
+  "zones.3.tips.0": [
+    "d7ebee8b",
+    "Khi đến nơi, hãy rút một lượng nhỏ tiền peso và thanh toán phần còn lại bằng thẻ."
+  ],
+  "zones.3.tips.1": [
+    "e09f3851",
+    "Nhiều cửa hàng lưu niệm dành cho khách du lịch chấp nhận đô la Mỹ, mặc dù với tỷ giá không thuận lợi."
+  ],
+  "zones.4.name": [
+    "ed7917f9",
+    "Bến phà (Buquebus / Colonia Express)"
+  ],
+  "zones.4.summary": [
+    "ac18ddf9",
+    "Có máy ATM tại các nhà ga Montevideo và Colonia. Tỷ giá hối đoái tại các nhà ga và trên máy bay thường không tốt."
+  ],
+  "zones.4.tips.0": [
+    "b5a97e0f",
+    "Tránh đổi số tiền lớn tại sân bay hoặc trên máy bay — tỷ giá hối đoái rất bất lợi."
+  ],
+  "zones.4.tips.1": [
+    "91b3c105",
+    "Tốt hơn hết là nên sử dụng máy ATM hoặc đổi tiền tại các điểm đổi tiền trong thành phố."
+  ],
+  "zones.5.name": [
+    "66cc7244",
+    "Vùng nội địa và các thị trấn nhỏ hơn"
+  ],
+  "zones.5.summary": [
+    "fc9a5afd",
+    "Bên ngoài các thành phố lớn và khu nghỉ dưỡng chính, máy ATM rất hiếm."
+  ],
+  "zones.5.tips.0": [
+    "48821abe",
+    "Hãy đổi đủ tiền mặt ở Montevideo, Punta del Este hoặc Colonia trước khi đi vào nội địa."
+  ],
+  "zones.5.tips.1": [
+    "02573d37",
+    "Trên bờ biển Rocha, bạn có thể đổ đầy bình xăng ở các thị trấn lớn hơn như Chuy hoặc La Paloma."
+  ],
+  "steps.0.name": [
+    "aa213b75",
+    "Tìm máy ATM chấp nhận thẻ của bạn"
+  ],
+  "steps.0.text": [
+    "2f5d9e7c",
+    "Hãy tìm kiếm các logo của Visa, Mastercard, Cirrus, Plus hoặc Maestro; nên chọn các máy ATM đặt bên trong ngân hàng hoặc trung tâm thương mại."
+  ],
+  "steps.1.name": [
+    "4209811a",
+    "Chọn đô la hoặc peso"
+  ],
+  "steps.1.text": [
+    "f338ade4",
+    "Hãy mang theo peso cho chi tiêu hàng ngày và chỉ mang theo đô la khi cần tiền mặt; đô la thường được rút ra dưới dạng tờ 100 đô la Mỹ."
+  ],
+  "steps.2.name": [
+    "24d1a5da",
+    "Từ chối chuyển đổi sang đơn vị tiền tệ của bạn"
+  ],
+  "steps.2.text": [
+    "3f2be811",
+    "Khi được yêu cầu thanh toán bằng đơn vị tiền tệ của quốc gia bạn, hãy chọn \"không chuyển đổi\" hoặc đơn vị tiền tệ địa phương để tránh phí phụ thu của DCC."
+  ],
+  "steps.3.name": [
+    "4e44a3f9",
+    "Rút số tiền tối đa cho mỗi giao dịch."
+  ],
+  "steps.3.text": [
+    "831b2ec9",
+    "Vì có phí rút tiền cố định, hãy tận dụng mức rút tiền tối đa cho phép để dàn trải chi phí trên nhiều khoản tiền hơn."
+  ],
+  "steps.4.name": [
+    "6fcb61ed",
+    "Giữ lại biên lai và đếm tiền mặt."
+  ],
+  "steps.4.text": [
+    "30d70c06",
+    "Kiểm tra số tiền đã rút, giữ lại biên lai và chia tiền mặt ra nhiều nơi trước khi rời khỏi máy ATM."
+  ],
+  "faq.0.q": [
+    "e44ca992",
+    "Tôi có thể rút đô la Mỹ từ máy ATM ở Uruguay không?"
+  ],
+  "faq.0.a": [
+    "eb6339a1",
+    "Đúng vậy. Không giống như Argentina, nhiều máy ATM ở Uruguay cung cấp cả đô la Mỹ và peso, thường là mệnh giá 100 đô la Mỹ. Giới hạn rút tiền mỗi lần đối với thẻ nước ngoài khá thấp."
+  ],
+  "faq.1.q": [
+    "33423670",
+    "Máy ATM tính phí bao nhiêu cho thẻ nước ngoài?"
+  ],
+  "faq.1.a": [
+    "68121602",
+    "Phí phụ thu địa phương thấp (khoảng vài đô la cho mỗi lần rút tiền). Chi phí lớn hơn thường là phí giao dịch quốc tế của ngân hàng bạn (thường là 1-3%)."
+  ],
+  "faq.2.q": [
+    "bf2fe8ff",
+    "Số tiền tối đa tôi có thể rút mỗi giao dịch là bao nhiêu?"
+  ],
+  "faq.2.a": [
+    "7a64ef6d",
+    "Khoảng 200-300 USD hoặc 5.000 USD mỗi lần rút tiền tùy thuộc vào mạng lưới (RedBROU hoặc Banred). Ngân hàng của bạn cũng có giới hạn rút tiền hàng ngày riêng, vì vậy hãy thông báo cho họ trước khi đi du lịch."
+  ],
+  "faq.3.q": [
+    "66601510",
+    "Tôi có nên đổi tiền ở sân bay không?"
+  ],
+  "faq.3.a": [
+    "82d5704c",
+    "Không nên đổi số tiền lớn: sân bay và bến phà trả ít hơn đáng kể. Chỉ nên đổi đủ tiền để đến thành phố, sau đó sử dụng điểm đổi tiền hoặc máy ATM ở trung tâm thành phố."
+  ],
+  "faq.4.q": [
+    "44d07e17",
+    "Dùng tiền mặt hay thẻ ở Uruguay?"
+  ],
+  "faq.4.a": [
+    "11ded5ec",
+    "Uruguay rất thân thiện với thẻ thanh toán (Visa và Mastercard hầu như ở khắp mọi nơi, thanh toán không tiếp xúc và mã QR). Hãy mang theo một ít tiền mặt peso để mua sắm những món đồ nhỏ và thanh toán những khoản lớn hơn bằng thẻ."
+  ],
+  "faq.5.q": [
+    "2d0dd094",
+    "Tôi nên mang loại tiền tệ nào?"
+  ],
+  "faq.5.a": [
+    "cc8484ac",
+    "Tiền mặt đô la Mỹ: tỷ giá tốt nhất và được chấp nhận tại mọi điểm đổi tiền. Euro đứng thứ hai. Nếu đến từ Argentina, hãy mang theo đô la, không phải peso Argentina."
+  ],
+  "faq.6.q": [
+    "b71d8d92",
+    "Tôi có được giảm thuế với tư cách là khách du lịch không?"
+  ],
+  "faq.7.q": [
+    "04fb59ce",
+    "Nếu máy ATM từ chối thẻ của tôi thì sao?"
+  ],
+  "faq.7.a": [
+    "15f0167b",
+    "Hãy thử một thẻ khác và mạng khác (RedBROU và Banred có liên kết với nhau, nhưng mang theo cả hai sẽ tiện hơn). Kiểm tra xem máy ATM có hiển thị logo Visa/Mastercard/Cirrus/Plus hay không và thông báo cho ngân hàng của bạn rằng bạn sẽ sử dụng thẻ ở Uruguay."
+  ],
+  "related.0.label": [
+    "9371cd8d",
+    "Đô la cho du lịch"
+  ],
+  "related.1.label": [
+    "89470d17",
+    "Mua đô la với giá tốt nhất"
+  ],
+  "related.2.label": [
+    "7b531a45",
+    "Các điểm giao dịch và chi nhánh"
+  ],
+  "related.3.label": [
+    "574f3e27",
+    "So sánh giá cả"
+  ]
+}

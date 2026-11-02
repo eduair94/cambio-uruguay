@@ -1,0 +1,542 @@
+{
+  "title": [
+    "1229e1ce",
+    "Kde vybrat hotovost v Uruguayi: bankomaty, poplatky a turistické atrakce"
+  ],
+  "metaTitle": [
+    "3e82d293",
+    "Bankomaty v Uruguayi: výběr dolarů nebo pesos"
+  ],
+  "description": [
+    "3eb63bbe",
+    "Jak a kde získat hotovost v Uruguayi jako turista: bankomaty, které vydávají americké dolary i pesos, poplatky, limity pro výběry, past s konverzí měn (DCC) a nejlepší místa pro výběr na letišti, v Montevideu, Punta del Este a Colonii."
+  ],
+  "keywords": [
+    "4acfb17e",
+    "vybrat hotovost uruguay, vybrat peníze uruguay, bankomat uruguay turista, dolary z bankomatu uruguay, směnit peníze uruguay, poplatky za bankomat uruguay, casas de cambio uruguay"
+  ],
+  "tldr.0": [
+    "5f1561fe",
+    "Uruguayské bankomaty vydávají americké dolary i pesos – což je vzácná regionální výhoda (v Argentině je to téměř nemožné)."
+  ],
+  "tldr.1": [
+    "7b41d73f",
+    "Existují dvě sítě: RedBROU a Banred. Pokud jedna selže, zkuste druhou; mějte s sebou karty Visa i Mastercard."
+  ],
+  "tldr.2": [
+    "c5aa36e3",
+    "Když vám bankomat nabídne platbu ve vaší domácí měně, vždy si vyberte místní měnu: „konverze“ skrývá špatný směnný kurz."
+  ],
+  "tldr.3": [
+    "b73d4126",
+    "Vyhněte se směně velkých částek na letišti nebo trajektových terminálech – jejich kurzy jsou znatelně horší."
+  ],
+  "tldr.4": [
+    "83b2ff36",
+    "Plaťte v hotelech a restauracích zahraniční kartou: kromě výhody DPH s sebou nosíte méně hotovosti."
+  ],
+  "ui.backToTools": [
+    "950196fc",
+    "Nástroje"
+  ],
+  "ui.tldrTitle": [
+    "799c628c",
+    "Stručně řečeno"
+  ],
+  "ui.networksTitle": [
+    "90dd37e5",
+    "Dvě sítě bankomatů: RedBROU a Banred"
+  ],
+  "ui.tableNetwork": [
+    "6974ad65",
+    "Síť"
+  ],
+  "ui.tableReach": [
+    "c549e23b",
+    "Krytí"
+  ],
+  "ui.tableUsd": [
+    "47b34a69",
+    "Limit USD / výběr"
+  ],
+  "ui.tableUyu": [
+    "7d4e5b12",
+    "Limit $U / výběr"
+  ],
+  "ui.tableNote": [
+    "0ff01b6a",
+    "Poznámky"
+  ],
+  "ui.zonesTitle": [
+    "126f8827",
+    "Kde získat hotovost v turistické zóně"
+  ],
+  "ui.zonesIntro": [
+    "e4c560b0",
+    "Referenční údaje na úrovni zón a orientačních bodů (ne přesné adresy, které se mění). Bankomaty se obvykle nacházejí uvnitř bank, obchodních center nebo prodejen Abitab a Redpagos."
+  ],
+  "ui.stepsTitle": [
+    "3e1ff2e0",
+    "Jak vybrat hotovost, krok za krokem"
+  ],
+  "ui.faqTitle": [
+    "e466bfa9",
+    "Často kladené otázky"
+  ],
+  "ui.sourcesTitle": [
+    "105bfcc3",
+    "Zdroje a reference"
+  ],
+  "ui.relatedTitle": [
+    "ac7a8ccc",
+    "Čtěte dál"
+  ],
+  "ui.ctaTitle": [
+    "60dda6a1",
+    "Porovnejte před výměnou"
+  ],
+  "ui.ctaText": [
+    "fe6b01a6",
+    "Sledujte kurz dolaru ve více než 40 směnárnách, aktualizovaný každých 10 minut, a vyberte si nejlepší místo pro podnikání."
+  ],
+  "ui.ctaButton": [
+    "9efd557a",
+    "Otevřít porovnávač"
+  ],
+  "ui.mapButton": [
+    "4e8c8db6",
+    "Zobrazit odběrná místa na mapě"
+  ],
+  "ui.disclaimer": [
+    "b166cfce",
+    "Informace pro turisty, nikoli finanční poradenství. Poplatky, limity a daňové výhody se mění: ověřte si je při příjezdu a u vydavatele vaší karty. Nejsme přidruženi k uvedeným bankám ani směnárnám."
+  ],
+  "ui.lastChecked": [
+    "9182e108",
+    "Naposledy kontrolováno: červen 2026"
+  ],
+  "ivaLive.heading": [
+    "5af716c3",
+    "Dnes platí turistické zvýhodnění pro DPH"
+  ],
+  "ivaLive.asOf": [
+    "dd801240",
+    "Stav k {date}:"
+  ],
+  "ivaLive.hotel": [
+    "152a8c47",
+    "Ubytování (hotely a podobné): 0% DPH celoročně."
+  ],
+  "ivaLive.base": [
+    "9856855a",
+    "Stravování a pronájem auta bez řidiče: snížení DPH o body {points} pro konečnou spotřebu placenou kartou jednotlivce, včetně zahraničních karet, do 30. dubna 2027 (vyhláška 235/026; zdroj ověřen 23. října 2026)."
+  ],
+  "ivaLive.baseUnconfirmed": [
+    "d65944df",
+    "Stravování a pronájem aut: ověřené prodloužení skončilo 30. dubna 2027. Ověřte si u DGI, která sleva platí v den vašeho nákupu."
+  ],
+  "ivaLive.seasonalOn": [
+    "41748da1",
+    "Úplné osvobození od DPH v létě: AKTIVNÍ (do {end})."
+  ],
+  "ivaLive.seasonalOff": [
+    "015a1161",
+    "Úplné osvobození od DPH v létě: pro toto datum nemáme potvrzené žádné období. Než se na tuto výhodu spolehnete, ověřte si to u DGI."
+  ],
+  "sections.0.heading": [
+    "90dd37e5",
+    "Dvě sítě bankomatů: RedBROU a Banred"
+  ],
+  "sections.0.paragraphs.0": [
+    "0f52a7fe",
+    "Uruguay má dvě sítě bankomatů: RedBROU, provozovanou státní bankou (BROU), a Banred, síť soukromých bank. Obě jsou propojeny a napojeny na mezinárodní sítě (Cirrus/Maestro od Mastercard a Plus od Visa), takže zahraniční karta funguje v obou."
+  ],
+  "sections.0.paragraphs.1": [
+    "208b768b",
+    "Abyste se ujistili, že bankomat vaši kartu přijme, hledejte na bankomatu loga Visa, Mastercard, Cirrus, Plus nebo Maestro. Praktický tip: mějte s sebou kartu Visa a Mastercard z různých účtů; pokud jedna karta nebo bankomat selže, zkuste platbu v jiné síti."
+  ],
+  "sections.1.heading": [
+    "612974f0",
+    "Dolary nebo pesos? V Uruguayi si můžete vzít obojí."
+  ],
+  "sections.1.paragraphs.0": [
+    "d9928d31",
+    "Na rozdíl od Argentiny mnoho bankomatů v Uruguayi vydává americké dolary i uruguayská pesa. To je skutečná výhoda, pokud chcete hotovost, aniž byste museli chodit do směnárny. Dolary se obvykle vydávají ve formě bankovek v hodnotě 100 amerických dolarů, což v kombinaci s limity pro výběr na jeden dolar může znamenat, že dostanete pouze jednu bankovku najednou."
+  ],
+  "sections.1.paragraphs.1": [
+    "cd694b7a",
+    "Jednoduché pravidlo: pesos si berte na každodenní útraty (taxi, trhy, malé obchody) a dolary pouze tehdy, pokud je skutečně potřebujete v hotovosti. Pro většinu větších plateb je karta lepší než hotovost."
+  ],
+  "sections.2.heading": [
+    "9ce97b34",
+    "Poplatky a limity pro výběry"
+  ],
+  "sections.2.paragraphs.0": [
+    "e28a7f0e",
+    "Příplatek, který si uruguayský bankomat účtuje za výběr z cizí karty, je ve srovnání s mnoha zeměmi nízký (řádově několik dolarů za výběr). Vyšší náklady obvykle představuje vaše vlastní banka: poplatek za zahraniční transakci (obvykle 1–3 %) plus někdy paušální poplatek za výběr z mezinárodního bankovnictví. Cestovní karta bez poplatku za směnu peněz vám ušetří téměř vše."
+  ],
+  "sections.2.paragraphs.1": [
+    "154c6f01",
+    "Limity pro výběry u zahraničních karet stanovují místní sítě, nikoli vaše banka, a jsou nízké. Vaše banka si také uplatňuje vlastní denní limit. Před cestou zavolejte své bance, abyste limit zvýšili, a vyberte maximální částku za transakci, abyste si fixní poplatek rozložili mezi více hotovosti."
+  ],
+  "sections.2.bullets.0": [
+    "befd8df3",
+    "Příplatek za výběr v místě bydliště: přibližný, řádově několik dolarů (před potvrzením zkontrolujte částku na obrazovce)."
+  ],
+  "sections.2.bullets.1": [
+    "0f872d39",
+    "Poplatek vaší banky/vydavatele: obvykle vyšší cena; ověřte si, zda si vaše karta účtuje poplatek za zahraniční transakce."
+  ],
+  "sections.2.bullets.2": [
+    "8301e954",
+    "Limit na výběr: přibližně 200–300 USD nebo 5 000 USD v závislosti na síti (přibližně, může se lišit)."
+  ],
+  "sections.2.bullets.3": [
+    "4aacdc05",
+    "Denní limit: stanovený vaší bankou; před cestou ji informujte o jeho zvýšení."
+  ],
+  "sections.3.heading": [
+    "6bd46a0c",
+    "Past směny měn (DCC): vždy si vyberte místní měnu"
+  ],
+  "sections.3.paragraphs.0": [
+    "29fe4c81",
+    "Mnoho bankomatů a kartových terminálů nabízí „účtování ve vaší domácí měně“ místo v uruguayských pesos nebo dolarech. Zní to pohodlně („podívejte se, kolik máte ve svých penězích“), ale dynamická konverze měn (DCC) uplatňuje nadsazený směnný kurz plus skrytý poplatek. Téměř vždy prohrajete."
+  ],
+  "sections.3.paragraphs.1": [
+    "34380f1f",
+    "Vždy zvolte „bez přepočtu“ nebo místní měnu: uruguayská pesa, když platíte pesy, dolary, když platíte dolary. Přepočet nechte provést ve vaší bance – její kurz je obvykle lepší."
+  ],
+  "sections.4.heading": [
+    "cc573fd8",
+    "Směnárny, bankomaty nebo banky: co je lepší?"
+  ],
+  "sections.4.paragraphs.0": [
+    "1116ae4f",
+    "Směnárny (casas de cambio jako Varlix, Indumex, Gales, Aspen, Cambio Sir, Cambio Inglés a Global Exchange) jsou klasickým způsobem, jak směnit hotovost. Nabízejí nejlepší kurzy za dolar s malým rozpětím a bez provize; euro je druhou nejlepší měnou, brazilský real je akceptovatelný a argentinské peso je nejhorší. Obvykle po vás požadují cestovní pas."
+  ],
+  "sections.4.paragraphs.1": [
+    "b7c83296",
+    "Otevírací doba: pobočky na ulici jsou otevřeny od pondělí do pátku (kolem 9 až 19 hodin) a v sobotu ráno; mnoho z nich je v neděli zavřeno. Pobočky v obchodních centrech jsou otevřeny každý den i déle. Chcete-li porovnat denní sazby v různých domech, použijte náš srovnávač a stránku s pobočkami."
+  ],
+  "sections.5.heading": [
+    "f8b82759",
+    "Kolik hotovosti si s sebou vzít a jakou měnu si vzít"
+  ],
+  "sections.5.paragraphs.0": [
+    "e22fd664",
+    "Uruguay je velmi vstřícný k platbám kartami: karty Visa a Mastercard jsou akceptovány téměř všude, bezkontaktní platby a platby QR kartou (Mercado Pago) jsou rozšířené. Noste s sebou hotovost pouze na malé nákupy a větší částky plaťte kartou."
+  ],
+  "sections.5.paragraphs.1": [
+    "f9b88276",
+    "Pokud si s sebou berete hotovost na rozdávání, nejlepší měnou je americký dolar (nejlepší kurzy, akceptované v každém domě). Euro je na druhém místě. Z Argentiny si vezměte dolary, ne argentinská pesa – pesa se v Uruguayi mění velmi špatně. Z Brazílie fungují realy, zejména blízko hranic, i když dolary jsou stále pohodlnější."
+  ],
+  "sections.6.heading": [
+    "97a59b72",
+    "Zvýhodnění turistické DPH (při platbě zahraniční kartou)"
+  ],
+  "sections.6.paragraphs.0": [
+    "88ea76fc",
+    "Uruguay vrací část DPH nerezidentním turistům, kteří platí kartou vydanou v zahraničí. Ubytování (registrované hotely a podobné) je pro nerezidenty, kteří předloží zahraniční průkaz totožnosti a platí zahraniční kartou, celoročně s 0% DPH – což je trvalá výhoda."
+  ],
+  "sections.6.paragraphs.1": [
+    "7f51f9e2",
+    "Pro stravování a pronájem automobilu bez řidiče zachovává vyhláška 235/026 obecnou devítibodovou slevu do 30. dubna 2027 pro konečnou spotřebu placenou způsobilými elektronickými prostředky. Sezónní úplné osvobození je samostatná výhoda s vlastní vyhláškou a daty: prodloužení devítibodové slevy nepotvrzuje plné osvobození. Před cestou se informujte u DGI."
+  ],
+  "sections.6.paragraphs.2": [
+    "f963de1e",
+    "Ve všech případech je sleva automatická: platíte zahraniční kartou a výhoda se objeví na účtence nebo výpisu z karty. Platíte hotově a o ni přijdete. Proto se vyplatí platit v hotelech a restauracích kartou a vybírat méně hotovosti."
+  ],
+  "sections.6.bullets.0": [
+    "fc6c4026",
+    "Hotely/ubytování: 0% DPH celoročně pro nerezidenty (trvalé)."
+  ],
+  "sections.6.bullets.1": [
+    "02f7d683",
+    "Restaurace a autopůjčovny bez řidiče: devět míst do 30. dubna 2027, s výhradou požadavků na elektronické platby. Sezónní úplné osvobození vyžaduje samostatné potvrzení."
+  ],
+  "sections.6.bullets.2": [
+    "bf5ed0b5",
+    "Každý režim má své vlastní požadavky. Obecné snížení o devět bodů vyžaduje konečnou spotřebu a způsobilý elektronický způsob platby, který má jednotlivec; zahraniční vydání není vyžadováno."
+  ],
+  "sections.7.heading": [
+    "84fbae56",
+    "Bezpečnostní tipy při výběru hotovosti"
+  ],
+  "sections.7.paragraphs.0": [
+    "e227f80c",
+    "Uruguay patří mezi nejbezpečnější země v regionu, ale drobné krádeže se vyskytují, zejména v Ciudad Vieja v Montevideu, v přístavní oblasti a v plážových letoviscích v hlavní sezóně. Používejte bankomaty uvnitř bank, obchodních center nebo prosklených hal, nejlépe za denního světla, a buďte si vědomi svého okolí."
+  ],
+  "sections.7.bullets.0": [
+    "d234b5e4",
+    "Vybírejte za denního světla a z bankomatů v uzavřených prostorách, ne na ulici v noci."
+  ],
+  "sections.7.bullets.1": [
+    "f9f5f149",
+    "Noste dvě karty z různých účtů a hotovost mějte na více než jednom místě."
+  ],
+  "sections.7.bullets.2": [
+    "aa71ad4f",
+    "Požádejte o malé bankovky (100, 200, 500): Bankovky v hodnotě 1 000 a 2 000 se těžko rozbíjejí."
+  ],
+  "sections.7.bullets.3": [
+    "d7920a67",
+    "Dopravujte se Uberem, Cabify nebo registrovanými taxíky; nenechávejte cennosti v autě."
+  ],
+  "sections.7.link.label": [
+    "d8570bac",
+    "Už jsem uvízl s velkou poznámkou: kde sehnat drobné a mince"
+  ],
+  "networkRows.0.network": [
+    "7ee344a0",
+    "RedBROU"
+  ],
+  "networkRows.0.reach": [
+    "4a5d053e",
+    "Síť státní banky BROU; více než 400 bankomatů po celé zemi, plus Abitab a Redpagos."
+  ],
+  "networkRows.0.usdPerTxn": [
+    "f41a726d",
+    "≈ 200 USD"
+  ],
+  "networkRows.0.uyuPerTxn": [
+    "255d9345",
+    "≈ 5 000 USD"
+  ],
+  "networkRows.0.note": [
+    "786a7e5f",
+    "Mnoho automatů vydává dolary. Limity pro zahraniční karty jsou přibližné."
+  ],
+  "networkRows.1.network": [
+    "6823b06d",
+    "Zakázáno"
+  ],
+  "networkRows.1.reach": [
+    "331e78b2",
+    "Síť soukromých bank; více než 370 bodů ve všech 19 odděleních."
+  ],
+  "networkRows.1.usdPerTxn": [
+    "75830c42",
+    "≈ 300 USD"
+  ],
+  "networkRows.1.uyuPerTxn": [
+    "255d9345",
+    "≈ 5 000 USD"
+  ],
+  "networkRows.1.note": [
+    "9f2f1329",
+    "Propojeno s RedBROU. Pokud jedna síť vaši kartu odmítne, zkuste druhou."
+  ],
+  "zones.0.name": [
+    "8a4dc608",
+    "Letiště Carrasco (MVD), Montevideo"
+  ],
+  "zones.0.summary": [
+    "462aaacd",
+    "Směnárny jsou otevřené 24 hodin denně, bankomaty jsou v terminálu (bankomat Santander je potvrzen) a pobočka banky."
+  ],
+  "zones.0.tips.0": [
+    "d6202725",
+    "Směnárna na letišti se vyplatí znatelně méně: drobné jenom tolik, abyste se dostali do města."
+  ],
+  "zones.0.tips.1": [
+    "99e81ace",
+    "Pokud potřebujete hotovost ihned, vyberte si malou částku z bankomatu a zbytek rozměňte v centru města."
+  ],
+  "zones.1.name": [
+    "034a744d",
+    "Montevideo (Centro, Ciudad Vieja a přístav)"
+  ],
+  "zones.1.summary": [
+    "04c221eb",
+    "Směnárny se shlukují na Avenida 18 de Julio (Centro) a procházejí Ciudad Vieja. Terminál výletních lodí se nachází hned vedle Ciudad Vieja a je zde směnárna a bankomaty."
+  ],
+  "zones.1.tips.0": [
+    "a26e5af3",
+    "V centru města a Ciudad Vieja najdete několik směnáren, které můžete porovnat."
+  ],
+  "zones.1.tips.1": [
+    "4139b3e5",
+    "Cestující na výletních lodích mají směnárnu uvnitř přístavu a bankomaty jsou kousek pěšky odtud, směrem k Mercado del Puerto."
+  ],
+  "zones.2.name": [
+    "3fa606f9",
+    "Punta del Este"
+  ],
+  "zones.2.summary": [
+    "880d1f96",
+    "Směnárny podél hlavní třídy Avenida Gorlero. V hlavní sezóně se tam mohou tvořit fronty a v bankomatech docházejí dolary."
+  ],
+  "zones.2.tips.0": [
+    "1063deb8",
+    "V létě a během velikonočního týdne se bankomaty rychle vyprazdňují: vyberte si peníze předem a mějte rezervu."
+  ],
+  "zones.2.tips.1": [
+    "e4c20d9e",
+    "Spolehněte se na karty a QR platby, abyste nebyli závislí pouze na hotovosti."
+  ],
+  "zones.3.name": [
+    "2ed532f4",
+    "Kolonie del Sacramento"
+  ],
+  "zones.3.summary": [
+    "764221b5",
+    "Bankomaty v historické čtvrti Barrio Histórico a u trajektového terminálu, jen pár kroků od staré čtvrti, kam přijíždějí výletníci z Buenos Aires."
+  ],
+  "zones.3.tips.0": [
+    "d7ebee8b",
+    "Při příjezdu si vyberte malou částku pesos a zbytek doplaťte kartou."
+  ],
+  "zones.3.tips.1": [
+    "e09f3851",
+    "Mnoho turistických obchodů přijímá dolary, i když za nevýhodný kurz."
+  ],
+  "zones.4.name": [
+    "ed7917f9",
+    "Trajektové terminály (Buquebus / Colonia Express)"
+  ],
+  "zones.4.summary": [
+    "ac18ddf9",
+    "V terminálech Montevideo a Colonia jsou bankomaty. Směnárny uvnitř terminálů a na palubě obvykle nabízejí nízké kurzy."
+  ],
+  "zones.4.tips.0": [
+    "b5a97e0f",
+    "Vyhněte se směňování velkých částek na terminálu nebo na palubě – kurzy jsou nízké."
+  ],
+  "zones.4.tips.1": [
+    "91b3c105",
+    "Lepší je použít bankomat nebo směnit peníze ve směnárně ve městě."
+  ],
+  "zones.5.name": [
+    "66cc7244",
+    "Vnitrozemí a menší města"
+  ],
+  "zones.5.summary": [
+    "fc9a5afd",
+    "Mimo velká města a hlavní letoviska je bankomatů málo."
+  ],
+  "zones.5.tips.0": [
+    "48821abe",
+    "Než se vydáte do vnitrozemí, zásobte se hotovostí v Montevideu, Punta del Este nebo Colonii."
+  ],
+  "zones.5.tips.1": [
+    "02573d37",
+    "Na pobřeží Rocha doplňujte palivo ve větších městech, jako je Chuy nebo La Paloma."
+  ],
+  "steps.0.name": [
+    "aa213b75",
+    "Najděte bankomat, který přijímá vaši kartu"
+  ],
+  "steps.0.text": [
+    "2f5d9e7c",
+    "Hledejte loga Visa, Mastercard, Cirrus, Plus nebo Maestro; dejte přednost bankomatům uvnitř bank nebo obchodních center."
+  ],
+  "steps.1.name": [
+    "4209811a",
+    "Vyberte si dolary nebo pesos"
+  ],
+  "steps.2.name": [
+    "24d1a5da",
+    "Odmítnout konverzi do vaší měny"
+  ],
+  "steps.2.text": [
+    "3f2be811",
+    "Pokud je nabídnuta platba ve vaší domácí měně, zvolte možnost „bez konverze“ nebo místní měnu, abyste se vyhnuli přirážce DCC."
+  ],
+  "steps.3.name": [
+    "4e44a3f9",
+    "Vyberte maximální částku na transakci"
+  ],
+  "steps.3.text": [
+    "831b2ec9",
+    "Protože je poplatek za výběr fixní, použijte povolený limit, abyste si náklady rozložili na více hotovosti."
+  ],
+  "steps.4.name": [
+    "6fcb61ed",
+    "Uschovejte si účtenku a spočítejte hotovost"
+  ],
+  "steps.4.text": [
+    "30d70c06",
+    "Zkontrolujte vydanou částku, uschovejte si účtenku a před opuštěním bankomatu rozdělte hotovost na více míst."
+  ],
+  "faq.0.q": [
+    "e44ca992",
+    "Mohu si v Uruguayi vybrat americké dolary z bankomatů?"
+  ],
+  "faq.0.a": [
+    "eb6339a1",
+    "Ano. Na rozdíl od Argentiny mnoho uruguayských bankomatů vydává dolary i pesos, obvykle v bankovkách v hodnotě 100 USD. Limity pro výběr hotovosti u zahraničních karet jsou nízké."
+  ],
+  "faq.1.q": [
+    "33423670",
+    "Kolik si bankomaty účtují na poplatcích za zahraniční karty?"
+  ],
+  "faq.1.a": [
+    "68121602",
+    "Místní příplatek je nízký (řádově několik dolarů za výběr). Vyšší poplatek je obvykle poplatek vaší banky za zahraniční transakce (běžně 1–3 %)."
+  ],
+  "faq.2.q": [
+    "bf2fe8ff",
+    "Jaká je maximální částka, kterou mohu vybrat na jednu transakci?"
+  ],
+  "faq.2.a": [
+    "7a64ef6d",
+    "Zhruba 200–300 USD nebo 5 000 USD za výběr v závislosti na síti (RedBROU nebo Banred). Vaše banka si také stanovuje vlastní denní limit, proto ji o tom před cestou informujte."
+  ],
+  "faq.3.q": [
+    "66601510",
+    "Mám si na letišti vyměnit peníze?"
+  ],
+  "faq.3.a": [
+    "82d5704c",
+    "Nejde o velké částky: na letišti a trajektových terminálech platíte znatelně méně. Vyměňte jen tolik, abyste se dostali do města, a pak použijte směnárnu nebo bankomat v centru města."
+  ],
+  "faq.4.q": [
+    "44d07e17",
+    "Hotovost nebo karta v Uruguayi?"
+  ],
+  "faq.4.a": [
+    "11ded5ec",
+    "Uruguay je velmi dobře uznáván při placení kartami (Visa a Mastercard téměř všude, bezkontaktní a QR). Noste s sebou hotovost na malé nákupy a větší částky plaťte kartou."
+  ],
+  "faq.5.q": [
+    "2d0dd094",
+    "Jakou měnu si mám vzít s sebou?"
+  ],
+  "faq.5.a": [
+    "cc8484ac",
+    "Hotovostní americké dolary: nejlepší kurzy a akceptovány v každé směnárně. Euro je na druhém místě. Pokud cestujete z Argentiny, vezměte si s sebou dolary, ne argentinská pesa."
+  ],
+  "faq.6.q": [
+    "b71d8d92",
+    "Mám jako turista slevu na dani?"
+  ],
+  "faq.6.a": [
+    "49712ab8",
+    "Ano: kromě ubytovacího režimu se obecná devítibodová sleva na stravování a pronájem automobilu bez řidiče vztahuje i na nerezidenty do 30. dubna 2027, a to na konečnou spotřebu placenou elektronicky jednotlivcem. Sezónní úplné osvobození vyžaduje vlastní vyhlášku a data; nelze jej z tohoto prodloužení odvodit."
+  ],
+  "faq.7.q": [
+    "04fb59ce",
+    "Co když bankomat odmítne mou kartu?"
+  ],
+  "faq.7.a": [
+    "15f0167b",
+    "Zkuste jinou kartu a jinou síť (RedBROU a Banred jsou propojené, ale je lepší mít s sebou obě). Zkontrolujte, zda bankomat zobrazuje loga Visa/Mastercard/Cirrus/Plus, a sdělte své bance, že jej budete používat v Uruguayi."
+  ],
+  "related.0.label": [
+    "9371cd8d",
+    "Dolary na cestování"
+  ],
+  "related.1.label": [
+    "89470d17",
+    "Nákup dolarů za nejlepší cenu"
+  ],
+  "related.2.label": [
+    "7b531a45",
+    "Směnárny a pobočky"
+  ],
+  "related.3.label": [
+    "574f3e27",
+    "Porovnat ceny"
+  ]
+}

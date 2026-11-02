@@ -49,6 +49,8 @@ function setup(environment: string) {
         },
       },
       './utils/consent': { CONSENT_STRICT_REGIONS },
+      './utils/locales': { EXTRA_LOCALES: [] },
+      './i18n/extraMessagesVersion': { extraMessagesVersion: () => 'analytics-test' },
     },
     {
       defineNuxtConfig: (value: unknown) => value,

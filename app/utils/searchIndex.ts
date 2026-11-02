@@ -33,6 +33,7 @@ import { guideHubs } from './guideHubs'
 import { guides } from './guides'
 import { IMPORT_CATEGORY_INDEX } from './importCategoryIndex'
 import { indicators } from './indicators'
+import { isExtraLocale } from './locales'
 import { fold, makeDoc, navToDocs, type SearchDoc } from './siteNav'
 import { toolPath, tools } from './tools'
 import { VIDEO_TOPIC_PAGES } from './videoTopics'
@@ -73,7 +74,9 @@ export interface SearchIndexContext {
  */
 export function buildSearchIndex(ctx: SearchIndexContext): SearchDoc[] {
   const { locale, t, themeMode = 'dark' } = ctx
-  const lang: CurrencyLang = locale === 'en' || locale === 'pt' ? locale : 'es'
+  // Currency names exist in es/en/pt; the machine-translated locales get the English ones.
+  const lang: CurrencyLang =
+    locale === 'en' || locale === 'pt' ? locale : isExtraLocale(locale) ? 'en' : 'es'
   const docs: SearchDoc[] = navToDocs(t, locale, themeMode)
 
   for (const tool of tools) {

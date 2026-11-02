@@ -1,0 +1,542 @@
+{
+  "title": [
+    "1229e1ce",
+    "Var man kan ta ut kontanter i Uruguay: bankomater, avgifter och turistattraktioner"
+  ],
+  "metaTitle": [
+    "3e82d293",
+    "Bankomater i Uruguay: ta ut dollar eller pesos"
+  ],
+  "description": [
+    "3eb63bbe",
+    "Hur och var man som turist kan ta ut kontanter i Uruguay: bankomater som ger ut både amerikanska dollar och pesos, avgifter, uttagsgränser, valutaväxlingsfällan (DCC) och de bästa ställena att ta ut pengar på flygplatsen i Montevideo, Punta del Este och Colonia."
+  ],
+  "keywords": [
+    "4acfb17e",
+    "ta ut kontanter uruguay, ta ut pengar uruguay, bankomat uruguay turist, dollar från bankomat uruguay, växla pengar uruguay, bankomatavgifter uruguay, casas de cambio uruguay"
+  ],
+  "tldr.0": [
+    "5f1561fe",
+    "Uruguayanska bankomater ger tillgång till både amerikanska dollar och pesos – en sällsynt regional fördel (i Argentina är det nästan omöjligt)."
+  ],
+  "tldr.1": [
+    "7b41d73f",
+    "Det finns två nätverk: RedBROU och Banred. Om det ena misslyckas, prova det andra; ha med dig både Visa och Mastercard."
+  ],
+  "tldr.2": [
+    "c5aa36e3",
+    "När bankomaten erbjuder sig att debitera dig i din lokala valuta, välj alltid den lokala valutan: \"omräkningen\" döljer en dålig växelkurs."
+  ],
+  "tldr.3": [
+    "b73d4126",
+    "Undvik att växla stora summor på flygplatsen eller färjeterminalerna – deras priser är märkbart sämre."
+  ],
+  "tldr.4": [
+    "83b2ff36",
+    "Betala hotell och restauranger med ett utländskt kort: förutom momsförmånen bär du med dig mindre kontanter."
+  ],
+  "ui.backToTools": [
+    "950196fc",
+    "Verktyg"
+  ],
+  "ui.tldrTitle": [
+    "799c628c",
+    "Kort sagt"
+  ],
+  "ui.networksTitle": [
+    "90dd37e5",
+    "De två bankomatnätverken: RedBROU och Banred"
+  ],
+  "ui.tableNetwork": [
+    "6974ad65",
+    "Nätverk"
+  ],
+  "ui.tableReach": [
+    "c549e23b",
+    "Rapportering"
+  ],
+  "ui.tableUsd": [
+    "47b34a69",
+    "Kap USD/uttag"
+  ],
+  "ui.tableUyu": [
+    "7d4e5b12",
+    "Kap $U / uttag"
+  ],
+  "ui.tableNote": [
+    "0ff01b6a",
+    "Anteckningar"
+  ],
+  "ui.zonesTitle": [
+    "126f8827",
+    "Var man kan få kontanter per turistzon"
+  ],
+  "ui.zonesIntro": [
+    "e4c560b0",
+    "Referenser på zon- och landmärkesnivå (inte exakta adresser, som ändras). Bankomater finns vanligtvis i banker, köpcentra eller Abitab- och Redpagos-butiker."
+  ],
+  "ui.stepsTitle": [
+    "3e1ff2e0",
+    "Hur man tar ut pengar, steg för steg"
+  ],
+  "ui.faqTitle": [
+    "e466bfa9",
+    "Vanliga frågor"
+  ],
+  "ui.sourcesTitle": [
+    "105bfcc3",
+    "Källor och referenser"
+  ],
+  "ui.relatedTitle": [
+    "ac7a8ccc",
+    "Fortsätt läsa"
+  ],
+  "ui.ctaTitle": [
+    "60dda6a1",
+    "Jämför innan du byter"
+  ],
+  "ui.ctaText": [
+    "fe6b01a6",
+    "Se dollarkursen på fler än 40 växlingskontor, uppdaterad var 10:e minut, och välj det bästa stället att verka på."
+  ],
+  "ui.ctaButton": [
+    "9efd557a",
+    "Öppna jämföraren"
+  ],
+  "ui.mapButton": [
+    "4e8c8db6",
+    "Se uttagsställen på kartan"
+  ],
+  "ui.disclaimer": [
+    "b166cfce",
+    "Referensinformation för turister, inte ekonomisk rådgivning. Avgifter, gränser och skatteförmåner ändras: bekräfta dem vid ankomst och med din kortutgivare. Vi är inte anslutna till de nämnda bankerna eller växlingshusen."
+  ],
+  "ui.lastChecked": [
+    "9182e108",
+    "Senast kontrollerad: juni 2026"
+  ],
+  "ivaLive.heading": [
+    "5af716c3",
+    "Turistmomsförmåner som gäller idag"
+  ],
+  "ivaLive.asOf": [
+    "dd801240",
+    "Status från och med {date}:"
+  ],
+  "ivaLive.hotel": [
+    "152a8c47",
+    "Boende (hotell och liknande): 0 % moms året runt."
+  ],
+  "ivaLive.base": [
+    "9856855a",
+    "Mat och hyrbil utan förare: en momsreduktion med {points}-poäng för slutkonsumtion betald med en persons kort, inklusive utländska kort, till och med den 30 april 2027 (dekret 235/026; källkontrollerad 23 oktober 2026)."
+  ],
+  "ivaLive.baseUnconfirmed": [
+    "d65944df",
+    "Mat och biluthyrning: den verifierade förlängningen upphörde den 30 april 2027. Kontrollera med DGI vilken rabatt som gäller på ditt inköpsdatum."
+  ],
+  "ivaLive.seasonalOn": [
+    "41748da1",
+    "Sommarens fullständiga momsbefrielse: AKTIV (till och med {end})."
+  ],
+  "ivaLive.seasonalOff": [
+    "015a1161",
+    "Sommarens fullständiga momsbefrielse: vi har ingen bekräftad period för detta datum. Kontrollera med DGI innan du utnyttjar denna förmån."
+  ],
+  "sections.0.heading": [
+    "90dd37e5",
+    "De två bankomatnätverken: RedBROU och Banred"
+  ],
+  "sections.0.paragraphs.0": [
+    "0f52a7fe",
+    "Uruguay har två bankomatnätverk: RedBROU, som drivs av statsbanken (BROU), och Banred, nätverket av privatbanker. De två är sammankopplade och länkade till de internationella nätverken (Mastercards Cirrus/Maestro och Visas Plus), så ett utländskt kort fungerar på båda."
+  ],
+  "sections.0.paragraphs.1": [
+    "208b768b",
+    "För att säkerställa att en bankomat tar emot ditt kort, leta efter Visa-, Mastercard-, Cirrus-, Plus- eller Maestro-logotyperna på maskinen. Praktiskt tips: bär med dig ett Visa- och Mastercard-kort från olika konton; om ett kort eller en maskin går sönder, prova det andra nätverket."
+  ],
+  "sections.1.heading": [
+    "612974f0",
+    "Dollar eller pesos? I Uruguay kan man ta båda"
+  ],
+  "sections.1.paragraphs.0": [
+    "d9928d31",
+    "Till skillnad från Argentina ger många bankomater i Uruguay ut både amerikanska dollar och uruguayanska pesos. Det är en verklig fördel om du vill ha kontanter utan att behöva gå till ett växlingskontor. Dollar tas vanligtvis ut i 100-dollarsedlar, vilket i kombination med gränserna för uttag kan innebära att du bara får en sedel åt gången."
+  ],
+  "sections.1.paragraphs.1": [
+    "cd694b7a",
+    "Enkel regel: ta pesos för dagliga utgifter (taxibilar, marknader, små butiker) och dollar bara om du verkligen behöver dem kontant. För de flesta större betalningar är kort bättre än kontanter."
+  ],
+  "sections.2.heading": [
+    "9ce97b34",
+    "Avgifter och uttagsgränser"
+  ],
+  "sections.2.paragraphs.0": [
+    "e28a7f0e",
+    "Tilläggsavgiften som en uruguayansk bankomat tar ut för ett utländskt kort är låg jämfört med många länder (i storleksordningen några dollar per uttag). Den större kostnaden är vanligtvis din egen bank: avgiften för utländska transaktioner (vanligtvis 1–3 %) plus ibland en fast avgift för internationella uttag. Ett resekort utan valutaavgift sparar dig nästan allt detta."
+  ],
+  "sections.2.paragraphs.1": [
+    "154c6f01",
+    "Uttagstak för utländska kort sätts av de lokala nätverken, inte din bank, och de är låga. Din bank tillämpar också sin egen dagliga gräns. Ring din bank innan du reser för att höja gränsen och ta ut maxbeloppet per transaktion för att fördela den fasta avgiften över mer kontanter."
+  ],
+  "sections.2.bullets.0": [
+    "befd8df3",
+    "Lokal uttagsavgift: ungefärlig, i storleksordningen några dollar (kontrollera beloppet på skärmen innan du bekräftar)."
+  ],
+  "sections.2.bullets.1": [
+    "0f872d39",
+    "Din bank-/utgivares avgift: vanligtvis den större kostnaden; kontrollera om ditt kort tar ut en avgift för utländska transaktioner."
+  ],
+  "sections.2.bullets.2": [
+    "8301e954",
+    "Gränstak per uttag: cirka 200–300 USD eller U 5 000 USD beroende på nätverk (ungefärligt, kan ändras)."
+  ],
+  "sections.2.bullets.3": [
+    "4aacdc05",
+    "Daglig gräns: fastställd av din bank; meddela banken innan du reser för att höja den."
+  ],
+  "sections.3.heading": [
+    "6bd46a0c",
+    "Valutakonverteringsfällan (DCC): välj alltid lokal valuta"
+  ],
+  "sections.3.paragraphs.0": [
+    "29fe4c81",
+    "Många bankomater och kortterminaler erbjuder att \"debitera i din hemvaluta\" istället för i uruguayanska pesos eller dollar. Det låter bekvämt (\"se hur mycket det är i dina pengar\"), men den dynamiska valutakonverteringen (DCC) tillämpar en uppblåst växelkurs plus en dold avgift. Du förlorar nästan alltid."
+  ],
+  "sections.3.paragraphs.1": [
+    "34380f1f",
+    "Välj alltid \"utan växling\" eller den lokala valutan: uruguayanska pesos när du tar emot pesos, dollar när du tar emot dollar. Låt din egen bank göra växlingen – deras kurs är oftast bättre."
+  ],
+  "sections.4.heading": [
+    "cc573fd8",
+    "Växlingskontor, bankomater eller banker: vilket är bäst?"
+  ],
+  "sections.4.paragraphs.0": [
+    "1116ae4f",
+    "Växlingskontor (casas de cambio som Varlix, Indumex, Gales, Aspen, Cambio Sir, Cambio Inglés och Global Exchange) är det klassiska sättet att växla kontanter. De ger de bästa kurserna för dollarn, med en liten spread och ingen provision; euron är den näst bästa valutan, den brasilianska realen är acceptabel och den argentinska peson är den sämsta. De brukar be om ditt pass."
+  ],
+  "sections.4.paragraphs.1": [
+    "b7c83296",
+    "Öppettider: gatubutiker öppna måndag till fredag (runt 9 till 19) och lördag morgon; många stänger på söndagar. Filialer inne i köpcentra öppnar varje dag och senare. För att jämföra dagspriset mellan olika hus, använd vår jämförelsetjänst och filialsidan."
+  ],
+  "sections.5.heading": [
+    "f8b82759",
+    "Hur mycket kontanter man ska ta med sig och vilken valuta man ska ta med sig"
+  ],
+  "sections.5.paragraphs.0": [
+    "e22fd664",
+    "Uruguay är mycket kortvänligt: Visa och Mastercard accepteras nästan överallt, och kontaktlösa betalningar och QR-betalningar (Mercado Pago) är utbredda. Bär bara några pesos kontant för små inköp och betala större belopp med kort."
+  ],
+  "sections.5.paragraphs.1": [
+    "f9b88276",
+    "Om du tar med kontanter för att växla är amerikanska dollar den bästa valutan (bästa kursen, accepteras i alla hus). Euron kommer på andra plats. Om du kommer från Argentina, ta med dollar, inte argentinska pesos – peson växlar mycket dåligt i Uruguay. Från Brasilien fungerar den riktiga valutan, särskilt nära gränsen, även om dollar fortfarande är mer praktiskt."
+  ],
+  "sections.6.heading": [
+    "97a59b72",
+    "Turistmomsförmån (när du betalar med ett utländskt kort)"
+  ],
+  "sections.6.paragraphs.0": [
+    "88ea76fc",
+    "Uruguay återbetalar en del av momsen till utländska turister som betalar med ett utländskt kort. Boende (registrerade hotell och liknande) har 0 % moms året runt för utländska turister som visar upp utländsk ID och betalar med ett utländskt kort – en permanent förmån."
+  ],
+  "sections.6.paragraphs.1": [
+    "7f51f9e2",
+    "För restauranger och biluthyrning utan förare bibehåller dekret 235/026 den allmänna nio-poängsrabatten till och med den 30 april 2027 för slutkonsumtion som betalas med berättigade elektroniska medel. Ett säsongsbetonat fullständigt undantag är en separat förmån med ett eget dekret och datum: förlängning av nio-poängsrabatten bekräftar inte ett fullständigt undantag. Kontrollera med DGI innan du reser."
+  ],
+  "sections.6.paragraphs.2": [
+    "f963de1e",
+    "I samtliga fall är rabatten automatisk: du betalar med ditt utländska kort och förmånen syns på kvittot eller ditt kortutdrag. Betala kontant och du förlorar den. Så det lönar sig att registrera hotell och restauranger på ett kort och ta ut mindre kontanter."
+  ],
+  "sections.6.bullets.0": [
+    "fc6c4026",
+    "Hotell/boende: 0 % moms året runt för icke-residenter (permanent bosatta)."
+  ],
+  "sections.6.bullets.1": [
+    "02f7d683",
+    "Restauranger och biluthyrning utan chaufför: nio poäng till och med den 30 april 2027, med förbehåll för krav på elektronisk betalning. Ett säsongsbetonat fullständigt undantag kräver separat bekräftelse."
+  ],
+  "sections.6.bullets.2": [
+    "bf5ed0b5",
+    "Varje system har sina egna krav. Den allmänna niopunktsreduktionen kräver slutlig konsumtion och en godkänd elektronisk betalningsmetod som innehas av en individ; utländsk utgivning krävs inte."
+  ],
+  "sections.7.heading": [
+    "84fbae56",
+    "Säkerhetstips vid kontantuttag"
+  ],
+  "sections.7.paragraphs.0": [
+    "e227f80c",
+    "Uruguay är bland de säkraste länderna i regionen, men småstölder förekommer, särskilt i Montevideos Ciudad Vieja, hamnområdet och badorterna under högsäsong. Använd bankomater i banker, köpcentra eller glashallar, helst i dagsljus, och var uppmärksam på din omgivning."
+  ],
+  "sections.7.bullets.0": [
+    "d234b5e4",
+    "Ta ut pengar i dagsljus och från bankomater inomhus, inte på gatan på natten."
+  ],
+  "sections.7.bullets.1": [
+    "f9f5f149",
+    "Bär med dig två kort från olika konton och förvara kontanter på mer än ett ställe."
+  ],
+  "sections.7.bullets.2": [
+    "aa71ad4f",
+    "Be om små sedlar (100, 200, 500): 1 000- och 2 000-sedlar är svåra att bryta."
+  ],
+  "sections.7.bullets.3": [
+    "d7920a67",
+    "Ta dig runt med Uber, Cabify eller registrerade taxibilar; lämna inte värdesaker i bilen."
+  ],
+  "sections.7.link.label": [
+    "d8570bac",
+    "Redan fast med en stor sedel: var man kan få tag på småpengar och mynt"
+  ],
+  "networkRows.0.network": [
+    "7ee344a0",
+    "RedBROU"
+  ],
+  "networkRows.0.reach": [
+    "4a5d053e",
+    "Statsbanken BROUs nätverk; 400+ bankomater över hela landet, plus Abitab och Redpagos."
+  ],
+  "networkRows.0.usdPerTxn": [
+    "f41a726d",
+    "≈ 200 USD"
+  ],
+  "networkRows.0.uyuPerTxn": [
+    "255d9345",
+    "≈ 5 000 USD"
+  ],
+  "networkRows.0.note": [
+    "786a7e5f",
+    "Många automater ger ut dollar. Taken för utländska kort är ungefärliga."
+  ],
+  "networkRows.1.network": [
+    "6823b06d",
+    "Förbjuden"
+  ],
+  "networkRows.1.reach": [
+    "331e78b2",
+    "Privatbankernas nätverk; 370+ poäng fördelade på alla 19 avdelningar."
+  ],
+  "networkRows.1.usdPerTxn": [
+    "75830c42",
+    "≈ 300 USD"
+  ],
+  "networkRows.1.uyuPerTxn": [
+    "255d9345",
+    "≈ 5 000 USD"
+  ],
+  "networkRows.1.note": [
+    "9f2f1329",
+    "Sammankopplad med RedBROU. Om ett nätverk avvisar ditt kort, prova det andra."
+  ],
+  "zones.0.name": [
+    "8a4dc608",
+    "Carrasco flygplats (MVD), Montevideo"
+  ],
+  "zones.0.tips.0": [
+    "d6202725",
+    "Växling på flygplatsen ger betydligt mindre pengar: växla bara tillräckligt för att nå staden."
+  ],
+  "zones.0.tips.1": [
+    "99e81ace",
+    "Om du behöver kontanter direkt, ta ut ett litet belopp i en bankomat och växla resten i centrum."
+  ],
+  "zones.1.name": [
+    "034a744d",
+    "Montevideo (Centro, Ciudad Vieja och hamnen)"
+  ],
+  "zones.1.summary": [
+    "04c221eb",
+    "Växlingskontor ligger samlade på Avenida 18 de Julio (Centro) och genom Ciudad Vieja. Kryssningsterminalen ligger bredvid Ciudad Vieja, med växling och bankomater."
+  ],
+  "zones.1.tips.0": [
+    "a26e5af3",
+    "I Centro och Ciudad Vieja hittar du flera växlingshus att jämföra."
+  ],
+  "zones.1.tips.1": [
+    "4139b3e5",
+    "Kryssningspassagerare har växlingsmöjligheter inne i hamnen och bankomater ligger en kort promenad bort, mot Mercado del Puerto."
+  ],
+  "zones.2.name": [
+    "3fa606f9",
+    "Punta del Este"
+  ],
+  "zones.2.summary": [
+    "880d1f96",
+    "Byt hus längs Avenida Gorlero, huvudgatan. Under högsäsong kan det vara köer och bankomaterna får slut på dollar."
+  ],
+  "zones.2.tips.0": [
+    "1063deb8",
+    "Under sommaren och påskveckan töms bankomaterna snabbt: ta ut pengar i förväg och ha en buffert."
+  ],
+  "zones.2.tips.1": [
+    "e4c20d9e",
+    "Förlita dig på kort- och QR-betalningar så att du inte enbart är beroende av kontanter."
+  ],
+  "zones.3.name": [
+    "2ed532f4",
+    "Colonia del Sacramento"
+  ],
+  "zones.3.summary": [
+    "764221b5",
+    "Bankomater i Barrio Histórico och vid färjeterminalen, bara några steg från den gamla stadsdelen dit dagsturister anländer från Buenos Aires."
+  ],
+  "zones.3.tips.0": [
+    "d7ebee8b",
+    "Ta ut ett litet belopp i pesos vid ankomst och betala resten med kort."
+  ],
+  "zones.3.tips.1": [
+    "e09f3851",
+    "Många turistbutiker tar dollar, dock till en ogynnsam kurs."
+  ],
+  "zones.4.name": [
+    "ed7917f9",
+    "Färjeterminaler (Buquebus / Colonia Express)"
+  ],
+  "zones.4.summary": [
+    "ac18ddf9",
+    "Det finns bankomater vid terminalerna i Montevideo och Colonia. Växlingskurser inom terminalerna och ombord brukar vara låga."
+  ],
+  "zones.4.tips.0": [
+    "b5a97e0f",
+    "Undvik att växla stora summor vid terminalen eller ombord – kurserna är dåliga."
+  ],
+  "zones.4.tips.1": [
+    "91b3c105",
+    "Bättre att använda en bankomat eller växla på ett växlingskontor i staden."
+  ],
+  "zones.5.name": [
+    "66cc7244",
+    "Inlandet och mindre städer"
+  ],
+  "zones.5.summary": [
+    "fc9a5afd",
+    "Utanför de större städerna och de största semesterorterna är bankomater sällsynta."
+  ],
+  "zones.5.tips.0": [
+    "48821abe",
+    "Bunkra upp med kontanter i Montevideo, Punta del Este eller Colonia innan du beger dig inåt landet."
+  ],
+  "zones.5.tips.1": [
+    "02573d37",
+    "På Rocha-kusten, fyll på i större städer som Chuy eller La Paloma."
+  ],
+  "steps.0.name": [
+    "aa213b75",
+    "Hitta en bankomat som tar ditt kort"
+  ],
+  "steps.0.text": [
+    "2f5d9e7c",
+    "Leta efter Visa-, Mastercard-, Cirrus-, Plus- eller Maestro-logotyperna; föredra bankomater inne i banker eller köpcentra."
+  ],
+  "steps.1.name": [
+    "4209811a",
+    "Välj dollar eller pesos"
+  ],
+  "steps.1.text": [
+    "f338ade4",
+    "Ta med pesos för dagliga utgifter och dollar endast om du behöver dem kontant; dollar tas ut i 100-dollarsedlar."
+  ],
+  "steps.2.name": [
+    "24d1a5da",
+    "Avböj konvertering till din valuta"
+  ],
+  "steps.2.text": [
+    "3f2be811",
+    "När det erbjuds att debiteras i din lokala valuta, välj \"utan växling\" eller lokal valuta för att undvika DCC-påslaget."
+  ],
+  "steps.3.name": [
+    "4e44a3f9",
+    "Ta ut det maximala beloppet per transaktion"
+  ],
+  "steps.3.text": [
+    "831b2ec9",
+    "Eftersom det finns en fast uttagsavgift, utnyttja det tillåtna taket för att fördela kostnaden över mer kontanter."
+  ],
+  "steps.4.name": [
+    "6fcb61ed",
+    "Spara kvittot och räkna kontanterna"
+  ],
+  "steps.4.text": [
+    "30d70c06",
+    "Kontrollera det utbetalda beloppet, spara kvittot och fördela kontanterna på mer än ett ställe innan du lämnar bankomaten."
+  ],
+  "faq.0.q": [
+    "e44ca992",
+    "Kan jag ta ut amerikanska dollar från bankomater i Uruguay?"
+  ],
+  "faq.0.a": [
+    "eb6339a1",
+    "Ja. Till skillnad från Argentina betalar många uruguayanska bankomater med både dollar och pesos, vanligtvis i 100-dollarsedlar. Taken per uttag för utländska kort är låga."
+  ],
+  "faq.1.q": [
+    "33423670",
+    "Hur mycket tar bankomater ut utländska kort i avgifter?"
+  ],
+  "faq.1.a": [
+    "68121602",
+    "Den lokala avgiften är låg (i storleksordningen några dollar per uttag). Den större kostnaden är vanligtvis din egen banks avgift för utländska transaktioner (1–3 % är vanligt)."
+  ],
+  "faq.2.q": [
+    "bf2fe8ff",
+    "Vad är det maximala uttaget jag kan göra per transaktion?"
+  ],
+  "faq.2.a": [
+    "7a64ef6d",
+    "Ungefär 200–300 USD eller U 5 000 USD per uttag beroende på nätverket (RedBROU eller Banred). Din bank sätter också sin egen dagliga gräns, så meddela den innan du reser."
+  ],
+  "faq.3.q": [
+    "66601510",
+    "Ska jag växla pengar på flygplatsen?"
+  ],
+  "faq.3.a": [
+    "82d5704c",
+    "Inte för stora summor: flygplatsen och färjeterminalerna betalar märkbart mindre. Växla bara tillräckligt för att nå staden, använd sedan en växlingsstation eller bankomat i centrum."
+  ],
+  "faq.4.q": [
+    "44d07e17",
+    "Kontanter eller kort i Uruguay?"
+  ],
+  "faq.4.a": [
+    "11ded5ec",
+    "Uruguay är mycket kortvänligt (Visa och Mastercard nästan överallt, kontaktlöst och QR). Bär några pesos kontant för småköp och betala större belopp med kort."
+  ],
+  "faq.5.q": [
+    "2d0dd094",
+    "Vilken valuta ska jag ta med mig?"
+  ],
+  "faq.5.a": [
+    "cc8484ac",
+    "Kontanter i amerikanska dollar: bästa kurser och accepteras på alla växlingsställen. Euron är näst bäst. Kommer du från Argentina, ta med dollar, inte argentinska pesos."
+  ],
+  "faq.6.q": [
+    "b71d8d92",
+    "Får jag skatterabatt som turist?"
+  ],
+  "faq.6.a": [
+    "49712ab8",
+    "Ja: förutom boendesystemet omfattar den allmänna nioprocentiga rabatten på måltider och biluthyrning utan chaufför även icke-bosatta till och med den 30 april 2027, för slutkonsumtion som betalas elektroniskt av en individ. Ett säsongsbetonat fullständigt undantag kräver ett eget dekret och datum; det kan inte härledas från den förlängningen."
+  ],
+  "faq.7.q": [
+    "04fb59ce",
+    "Vad händer om bankomaten avvisar mitt kort?"
+  ],
+  "faq.7.a": [
+    "15f0167b",
+    "Prova ett annat kort och det andra nätverket (RedBROU och Banred är sammankopplade, men det är bra att ha båda med sig). Kontrollera att bankomaten visar Visa/Mastercard/Cirrus/Plus-logotyperna och berätta för din bank att du kommer att använda det i Uruguay."
+  ],
+  "related.0.label": [
+    "9371cd8d",
+    "Dollar för resor"
+  ],
+  "related.1.label": [
+    "89470d17",
+    "Köpa dollar till bästa pris"
+  ],
+  "related.2.label": [
+    "7b531a45",
+    "Börshus och filialer"
+  ],
+  "related.3.label": [
+    "574f3e27",
+    "Jämför priser"
+  ]
+}

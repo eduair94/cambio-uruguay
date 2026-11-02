@@ -1,0 +1,542 @@
+{
+  "title": [
+    "1229e1ce",
+    "Dove prelevare contanti in Uruguay: sportelli automatici, commissioni e punti di interesse turistico"
+  ],
+  "metaTitle": [
+    "3e82d293",
+    "Bancomat in Uruguay: preleva dollari o pesos"
+  ],
+  "description": [
+    "3eb63bbe",
+    "Come e dove prelevare contanti in Uruguay da turista: sportelli automatici che erogano sia dollari statunitensi che pesos, commissioni, limiti di prelievo, la trappola del cambio valuta (DCC) e i posti migliori per prelevare all'aeroporto, a Montevideo, Punta del Este e Colonia."
+  ],
+  "keywords": [
+    "4acfb17e",
+    "prelevare contanti uruguay, prelevare denaro uruguay, bancomat uruguay turistico, dollari da bancomat uruguay, cambiare denaro uruguay, commissioni bancomat uruguay, casas de cambio uruguay"
+  ],
+  "tldr.0": [
+    "5f1561fe",
+    "Gli sportelli automatici uruguaiani erogano sia dollari statunitensi che pesos, un raro vantaggio a livello regionale (in Argentina è quasi impossibile)."
+  ],
+  "tldr.1": [
+    "7b41d73f",
+    "Esistono due circuiti: RedBROU e Banred. Se uno non funziona, prova l'altro; porta sempre con te sia una carta Visa che una Mastercard."
+  ],
+  "tldr.2": [
+    "c5aa36e3",
+    "Quando il bancomat ti offre la possibilità di prelevare nella tua valuta nazionale, scegli sempre la valuta locale: la \"conversione\" nasconde un tasso di cambio sfavorevole."
+  ],
+  "tldr.3": [
+    "b73d4126",
+    "Evitate di cambiare grosse somme di denaro in aeroporto o ai terminal dei traghetti: i tassi di cambio sono decisamente meno vantaggiosi."
+  ],
+  "tldr.4": [
+    "83b2ff36",
+    "Pagare hotel e ristoranti con una carta estera: oltre al vantaggio dell'IVA, si porta con sé meno contanti."
+  ],
+  "ui.backToTools": [
+    "950196fc",
+    "Utensili"
+  ],
+  "ui.tldrTitle": [
+    "799c628c",
+    "Insomma"
+  ],
+  "ui.networksTitle": [
+    "90dd37e5",
+    "Le due reti ATM: RedBROU e Banred"
+  ],
+  "ui.tableNetwork": [
+    "6974ad65",
+    "Rete"
+  ],
+  "ui.tableReach": [
+    "c549e23b",
+    "Copertura"
+  ],
+  "ui.tableUsd": [
+    "47b34a69",
+    "Limite massimo di prelievo in dollari USA"
+  ],
+  "ui.tableUyu": [
+    "7d4e5b12",
+    "Limite massimo $U / prelievo"
+  ],
+  "ui.tableNote": [
+    "0ff01b6a",
+    "Note"
+  ],
+  "ui.zonesTitle": [
+    "126f8827",
+    "Dove prelevare contanti nella zona turistica"
+  ],
+  "ui.zonesIntro": [
+    "e4c560b0",
+    "Riferimenti a livello di zona e di punto di riferimento (non indirizzi esatti, che cambiano). Gli sportelli automatici si trovano solitamente all'interno di banche, centri commerciali o punti vendita Abitab e Redpagos."
+  ],
+  "ui.stepsTitle": [
+    "3e1ff2e0",
+    "Come prelevare contanti, passo dopo passo"
+  ],
+  "ui.faqTitle": [
+    "e466bfa9",
+    "Domande frequenti"
+  ],
+  "ui.sourcesTitle": [
+    "105bfcc3",
+    "Fonti e riferimenti"
+  ],
+  "ui.relatedTitle": [
+    "ac7a8ccc",
+    "Continua a leggere"
+  ],
+  "ui.ctaTitle": [
+    "60dda6a1",
+    "Confronta prima di effettuare lo scambio"
+  ],
+  "ui.ctaText": [
+    "fe6b01a6",
+    "Consulta il tasso di cambio del dollaro presso oltre 40 uffici di cambio, aggiornato ogni 10 minuti, e scegli il luogo più conveniente per operare."
+  ],
+  "ui.ctaButton": [
+    "9efd557a",
+    "Apri il comparatore"
+  ],
+  "ui.mapButton": [
+    "4e8c8db6",
+    "Consulta i punti di ritiro sulla mappa."
+  ],
+  "ui.disclaimer": [
+    "b166cfce",
+    "Informazioni di riferimento per i turisti, non consulenza finanziaria. Commissioni, limiti e agevolazioni fiscali sono soggetti a modifiche: si prega di verificarli all'arrivo e con l'emittente della carta. Non siamo affiliati con le banche o gli uffici di cambio menzionati."
+  ],
+  "ui.lastChecked": [
+    "9182e108",
+    "Ultimo controllo: giugno 2026"
+  ],
+  "ivaLive.heading": [
+    "5af716c3",
+    "Agevolazioni IVA per i turisti in vigore da oggi"
+  ],
+  "ivaLive.asOf": [
+    "dd801240",
+    "Stato al {date}:"
+  ],
+  "ivaLive.hotel": [
+    "152a8c47",
+    "Alloggi (hotel e simili): IVA 0% tutto l'anno."
+  ],
+  "ivaLive.base": [
+    "9856855a",
+    "Ristorazione e noleggio auto senza conducente: detrazione IVA di {points} punti per i consumi finali pagati con carta personale, comprese le carte estere, fino al 30 aprile 2027 (Decreto 235/026; fonte verificata il 23 ottobre 2026)."
+  ],
+  "ivaLive.baseUnconfirmed": [
+    "d65944df",
+    "Ristorazione e noleggio auto: la proroga verificata è terminata il 30 aprile 2027. Verifica con DGI quale riduzione si applica alla data del tuo acquisto."
+  ],
+  "ivaLive.seasonalOn": [
+    "41748da1",
+    "Esenzione IVA totale per il periodo estivo: ATTIVA (fino al {end})."
+  ],
+  "ivaLive.seasonalOff": [
+    "015a1161",
+    "Esenzione IVA totale per il periodo estivo: non abbiamo una data confermata per questa data. Si prega di contattare DGI prima di fare affidamento su questo beneficio."
+  ],
+  "sections.0.heading": [
+    "90dd37e5",
+    "Le due reti ATM: RedBROU e Banred"
+  ],
+  "sections.0.paragraphs.0": [
+    "0f52a7fe",
+    "In Uruguay esistono due reti di sportelli automatici: RedBROU, gestita dalla banca centrale (BROU), e Banred, la rete delle banche private. Le due reti sono interconnesse e collegate ai circuiti internazionali (Mastercard Cirrus/Maestro e Visa Plus), pertanto una carta straniera funziona su entrambe."
+  ],
+  "sections.0.paragraphs.1": [
+    "208b768b",
+    "Per assicurarti che un bancomat accetti la tua carta, cerca i loghi Visa, Mastercard, Cirrus, Plus o Maestro sul dispositivo. Un consiglio pratico: porta con te una carta Visa e una Mastercard di conti diversi; se una carta o un bancomat non funziona, prova con l'altro circuito."
+  ],
+  "sections.1.heading": [
+    "612974f0",
+    "Dollari o pesos? In Uruguay puoi portare entrambi"
+  ],
+  "sections.1.paragraphs.0": [
+    "d9928d31",
+    "A differenza dell'Argentina, molti sportelli automatici in Uruguay erogano sia dollari statunitensi che pesos uruguaiani. Questo rappresenta un vero vantaggio se si desidera prelevare dollari in contanti senza dover andare in un ufficio di cambio. I dollari vengono solitamente erogati in banconote da 100 dollari, il che, unito ai limiti di prelievo, significa che si può prelevare una sola banconota alla volta."
+  ],
+  "sections.1.paragraphs.1": [
+    "cd694b7a",
+    "Regola semplice: porta pesos per le spese quotidiane (taxi, mercati, piccoli negozi) e dollari solo se ne hai effettivamente bisogno in contanti. Per la maggior parte dei pagamenti più consistenti, la carta è preferibile ai contanti."
+  ],
+  "sections.2.heading": [
+    "9ce97b34",
+    "Commissioni e limiti di prelievo"
+  ],
+  "sections.2.paragraphs.0": [
+    "e28a7f0e",
+    "La commissione che un bancomat uruguaiano applica a una carta straniera è bassa rispetto a molti altri Paesi (dell'ordine di pochi dollari per prelievo). Il costo maggiore è solitamente a carico della propria banca: la commissione per le transazioni estere (in genere dall'1% al 3%) più a volte una commissione fissa per i prelievi internazionali. Una carta di viaggio senza commissioni sul cambio valuta permette di risparmiare quasi tutto questo."
+  ],
+  "sections.2.paragraphs.1": [
+    "154c6f01",
+    "I limiti di prelievo per le carte estere sono stabiliti dai circuiti locali, non dalla tua banca, e sono bassi. La tua banca applica anche un proprio limite giornaliero. Chiama la tua banca prima di partire per aumentare il limite e preleva il massimo importo possibile per transazione, in modo da ripartire la commissione fissa su una somma maggiore."
+  ],
+  "sections.2.bullets.0": [
+    "befd8df3",
+    "Commissione per il prelievo locale: approssimativa, dell'ordine di pochi dollari (verificare l'importo visualizzato sullo schermo prima di confermare)."
+  ],
+  "sections.2.bullets.1": [
+    "0f872d39",
+    "La commissione della tua banca/emittente: di solito rappresenta il costo maggiore; verifica se la tua carta applica commissioni per le transazioni estere."
+  ],
+  "sections.2.bullets.2": [
+    "8301e954",
+    "Limite massimo di prelievo: circa 200-300 dollari USA o 5.000 dollari statunitensi a seconda del circuito (valore approssimativo, soggetto a variazioni)."
+  ],
+  "sections.2.bullets.3": [
+    "4aacdc05",
+    "Limite giornaliero: stabilito dalla tua banca; avvisala prima di partire per richiederne l'aumento."
+  ],
+  "sections.3.heading": [
+    "6bd46a0c",
+    "La trappola della conversione di valuta (DCC): scegli sempre la valuta locale"
+  ],
+  "sections.3.paragraphs.0": [
+    "29fe4c81",
+    "Molti sportelli automatici e terminali di pagamento offrono la possibilità di \"addebitare nella propria valuta locale\" anziché in pesos o dollari uruguaiani. Sembra comodo (\"vedi subito a quanto corrisponde nella tua valuta\"), ma questa conversione dinamica di valuta (DCC) applica un tasso di cambio maggiorato più una commissione nascosta. Quasi sempre ci rimetti."
+  ],
+  "sections.3.paragraphs.1": [
+    "34380f1f",
+    "Scegli sempre \"senza conversione\" o la valuta locale: pesos uruguaiani se prelevi pesos, dollari se prelevi dollari. Lascia che sia la tua banca a effettuare la conversione: di solito offre un tasso di cambio migliore."
+  ],
+  "sections.4.heading": [
+    "cc573fd8",
+    "Uffici di cambio, sportelli automatici o banche: qual è la scelta migliore?"
+  ],
+  "sections.4.paragraphs.0": [
+    "1116ae4f",
+    "Le case di cambio (come Varlix, Indumex, Gales, Aspen, Cambio Sir, Cambio Inglés e Global Exchange) sono il metodo classico per cambiare denaro. Offrono i tassi migliori per il dollaro, con uno spread minimo e senza commissioni; l'euro è la seconda valuta più conveniente, il real brasiliano è accettabile, mentre il peso argentino è la meno adatta. Di solito richiedono il passaporto."
+  ],
+  "sections.4.paragraphs.1": [
+    "b7c83296",
+    "Orari: le filiali in strada sono aperte dal lunedì al venerdì (dalle 9 alle 19 circa) e il sabato mattina; molte sono chiuse la domenica. Le filiali all'interno dei centri commerciali sono aperte tutti i giorni e fino a tardi. Per confrontare le tariffe giornaliere tra le diverse filiali, utilizza il nostro comparatore e la pagina dedicata alle filiali."
+  ],
+  "sections.5.heading": [
+    "f8b82759",
+    "Quanti contanti portare con sé e quale valuta."
+  ],
+  "sections.5.paragraphs.0": [
+    "e22fd664",
+    "L'Uruguay è un paese molto favorevole all'uso delle carte di credito: Visa e Mastercard sono accettate quasi ovunque, e i pagamenti contactless e tramite codice QR (Mercado Pago) sono ampiamente diffusi. Portate con voi solo una piccola quantità di pesos in contanti per gli acquisti di piccolo importo e pagate le somme più consistenti con la carta."
+  ],
+  "sections.5.paragraphs.1": [
+    "f9b88276",
+    "Se portate contanti da cambiare, il dollaro statunitense è la valuta migliore (tassi di cambio più vantaggiosi, accettato ovunque). L'euro è la seconda migliore. Se venite dall'Argentina, portate dollari, non pesos argentini: il peso cambia molto male in Uruguay. Se venite dal Brasile, il real funziona bene, soprattutto vicino al confine, anche se i dollari rimangono comunque più convenienti."
+  ],
+  "sections.6.heading": [
+    "97a59b72",
+    "Vantaggio IVA per i turisti (quando si paga con carta estera)"
+  ],
+  "sections.6.paragraphs.1": [
+    "7f51f9e2",
+    "Per i pasti e il noleggio auto senza conducente, il Decreto 235/026 mantiene la riduzione generale di nove punti fino al 30 aprile 2027 per i consumi finali pagati con mezzi elettronici idonei. L'esenzione totale stagionale è un beneficio separato con un proprio decreto e date: la proroga della riduzione di nove punti non garantisce l'esenzione totale. Si consiglia di verificare con la DGI prima di viaggiare."
+  ],
+  "sections.6.paragraphs.2": [
+    "f963de1e",
+    "In ogni caso lo sconto è automatico: paghi con la tua carta estera e il vantaggio viene applicato automaticamente sulla ricevuta o sull'estratto conto. Se paghi in contanti, invece, lo perdi. Quindi conviene pagare hotel e ristoranti con la carta e prelevare meno contanti."
+  ],
+  "sections.6.bullets.0": [
+    "fc6c4026",
+    "Hotel/alloggi: IVA 0% tutto l'anno per i non residenti (permanenti)."
+  ],
+  "sections.6.bullets.1": [
+    "02f7d683",
+    "Ristoranti e autonoleggio senza conducente: nove punti fino al 30 aprile 2027, soggetti ai requisiti di pagamento elettronico. L'esenzione totale stagionale richiede una conferma separata."
+  ],
+  "sections.6.bullets.2": [
+    "bf5ed0b5",
+    "Ciascun regime ha i propri requisiti. La riduzione generale di nove punti richiede il consumo finale e un metodo di pagamento elettronico idoneo detenuto da un individuo; l'emissione estera non è richiesta."
+  ],
+  "sections.7.heading": [
+    "84fbae56",
+    "Consigli di sicurezza per il prelievo di contanti"
+  ],
+  "sections.7.paragraphs.0": [
+    "e227f80c",
+    "L'Uruguay è tra i paesi più sicuri della regione, ma i piccoli furti sono frequenti, soprattutto nella Ciudad Vieja di Montevideo, nella zona portuale e nelle località balneari durante l'alta stagione. Utilizzate gli sportelli automatici all'interno di banche, centri commerciali o hall con vetrine, preferibilmente di giorno, e prestate sempre attenzione a ciò che vi circonda."
+  ],
+  "sections.7.bullets.0": [
+    "d234b5e4",
+    "Prelevate denaro di giorno e dagli sportelli automatici situati all'interno di locali chiusi, non per strada di notte."
+  ],
+  "sections.7.bullets.1": [
+    "f9f5f149",
+    "Porta con te due carte di credito di conti diversi e tieni i contanti in più di un posto."
+  ],
+  "sections.7.bullets.2": [
+    "aa71ad4f",
+    "Chiedete banconote di piccolo taglio (100, 200, 500): le banconote da 1.000 e 2.000 sono difficili da cambiare."
+  ],
+  "sections.7.bullets.3": [
+    "d7920a67",
+    "Utilizzate Uber, Cabify o taxi autorizzati per spostarvi; non lasciate oggetti di valore in auto."
+  ],
+  "sections.7.link.label": [
+    "d8570bac",
+    "Ho già una banconota di grosso taglio: dove posso trovare spiccioli e monete?"
+  ],
+  "networkRows.0.network": [
+    "7ee344a0",
+    "Rosso Marrone"
+  ],
+  "networkRows.0.reach": [
+    "4a5d053e",
+    "La rete della banca statale BROU; oltre 400 sportelli automatici in tutto il paese, oltre ad Abitab e Redpagos."
+  ],
+  "networkRows.0.usdPerTxn": [
+    "f41a726d",
+    "≈ 200 dollari USA"
+  ],
+  "networkRows.0.uyuPerTxn": [
+    "255d9345",
+    "≈ 5.000 dollari"
+  ],
+  "networkRows.0.note": [
+    "786a7e5f",
+    "Molti sportelli automatici erogano dollari. I limiti per le carte estere sono approssimativi."
+  ],
+  "networkRows.1.network": [
+    "6823b06d",
+    "vietato"
+  ],
+  "networkRows.1.reach": [
+    "331e78b2",
+    "Rete di banche private: oltre 370 punti in tutti i 19 dipartimenti."
+  ],
+  "networkRows.1.usdPerTxn": [
+    "75830c42",
+    "≈ 300 dollari USA"
+  ],
+  "networkRows.1.uyuPerTxn": [
+    "255d9345",
+    "≈ 5.000 dollari"
+  ],
+  "networkRows.1.note": [
+    "9f2f1329",
+    "Interconnesso con RedBROU. Se una rete rifiuta la tua carta, prova l'altra."
+  ],
+  "zones.0.name": [
+    "8a4dc608",
+    "Aeroporto di Carrasco (MVD), Montevideo"
+  ],
+  "zones.0.summary": [
+    "462aaacd",
+    "Gli uffici di cambio valuta di Global Exchange sono aperti 24 ore su 24, sono presenti sportelli bancomat nel terminal (è confermato un bancomat Santander) e una filiale bancaria."
+  ],
+  "zones.0.tips.0": [
+    "d6202725",
+    "Cambiare denaro in aeroporto rende decisamente meno: cambia solo la somma necessaria per raggiungere la città."
+  ],
+  "zones.0.tips.1": [
+    "99e81ace",
+    "Se hai bisogno di contanti subito, preleva una piccola somma al bancomat e cambia il resto in centro."
+  ],
+  "zones.1.name": [
+    "034a744d",
+    "Montevideo (Centro, Ciudad Vieja e il porto)"
+  ],
+  "zones.1.summary": [
+    "04c221eb",
+    "Gli uffici di cambio si concentrano su Avenida 18 de Julio (Centro) e nella Ciudad Vieja. Il terminal crociere si trova accanto alla Ciudad Vieja, con uffici di cambio e sportelli bancomat."
+  ],
+  "zones.1.tips.0": [
+    "a26e5af3",
+    "Nel centro e nella Ciudad Vieja troverete diverse case di scambio da confrontare."
+  ],
+  "zones.1.tips.1": [
+    "4139b3e5",
+    "I passeggeri delle navi da crociera possono cambiare i soldi all'interno del porto e trovare sportelli bancomat a pochi passi di distanza, in direzione del Mercado del Puerto."
+  ],
+  "zones.2.name": [
+    "3fa606f9",
+    "Punta del Este"
+  ],
+  "zones.2.summary": [
+    "880d1f96",
+    "Uffici di cambio lungo Avenida Gorlero, la via principale. In alta stagione si possono formare code e i bancomat possono rimanere senza dollari."
+  ],
+  "zones.2.tips.0": [
+    "1063deb8",
+    "In estate e durante la settimana di Pasqua, gli sportelli automatici si svuotano rapidamente: prelevate in anticipo e tenete da parte una somma di denaro."
+  ],
+  "zones.2.tips.1": [
+    "e4c20d9e",
+    "Affidati ai pagamenti con carte e codici QR per non dipendere esclusivamente dal contante."
+  ],
+  "zones.3.name": [
+    "2ed532f4",
+    "Colonia del Sacramento"
+  ],
+  "zones.3.summary": [
+    "764221b5",
+    "Bancomat nel Barrio Histórico e al terminal dei traghetti, a pochi passi dal centro storico dove arrivano i turisti da Buenos Aires."
+  ],
+  "zones.3.tips.0": [
+    "d7ebee8b",
+    "All'arrivo, prelevate una piccola somma di pesos e pagate il resto con la carta."
+  ],
+  "zones.3.tips.1": [
+    "e09f3851",
+    "Molti negozi per turisti accettano dollari, sebbene a un tasso di cambio sfavorevole."
+  ],
+  "zones.4.name": [
+    "ed7917f9",
+    "Terminal dei traghetti (Buquebus / Colonia Express)"
+  ],
+  "zones.4.summary": [
+    "ac18ddf9",
+    "Sono presenti sportelli bancomat presso i terminal di Montevideo e Colonia. Il cambio valuta all'interno dei terminal e a bordo tende ad offrire tassi di cambio sfavorevoli."
+  ],
+  "zones.4.tips.0": [
+    "b5a97e0f",
+    "Evitate di cambiare grosse somme al terminal o a bordo: i tassi di cambio sono sfavorevoli."
+  ],
+  "zones.4.tips.1": [
+    "91b3c105",
+    "È meglio utilizzare un bancomat o cambiare i soldi presso un ufficio di cambio in città."
+  ],
+  "zones.5.name": [
+    "66cc7244",
+    "L'entroterra e le città più piccole"
+  ],
+  "zones.5.summary": [
+    "fc9a5afd",
+    "Al di fuori delle principali città e delle località turistiche più frequentate, gli sportelli automatici sono rari."
+  ],
+  "zones.5.tips.0": [
+    "48821abe",
+    "Prima di dirigervi verso l'entroterra, fate scorta di contanti a Montevideo, Punta del Este o Colonia."
+  ],
+  "zones.5.tips.1": [
+    "02573d37",
+    "Sulla costa di Rocha, fate rifornimento nelle città più grandi come Chuy o La Paloma."
+  ],
+  "steps.0.name": [
+    "aa213b75",
+    "Trova un bancomat che accetti la tua carta"
+  ],
+  "steps.0.text": [
+    "2f5d9e7c",
+    "Cerca i loghi Visa, Mastercard, Cirrus, Plus o Maestro; prediligi gli sportelli automatici all'interno di banche o centri commerciali."
+  ],
+  "steps.1.name": [
+    "4209811a",
+    "Scegli dollari o pesos"
+  ],
+  "steps.1.text": [
+    "f338ade4",
+    "Porta con te pesos per le spese quotidiane e dollari solo se ne hai bisogno in contanti; i dollari vengono erogati in banconote da 100 dollari."
+  ],
+  "steps.2.name": [
+    "24d1a5da",
+    "Rifiuta la conversione nella tua valuta"
+  ],
+  "steps.2.text": [
+    "3f2be811",
+    "Quando ti viene offerto di addebitare l'importo nella tua valuta locale, seleziona \"senza conversione\" o la valuta locale per evitare il ricarico del DCC."
+  ],
+  "steps.3.name": [
+    "4e44a3f9",
+    "Prelevare l'importo massimo per transazione"
+  ],
+  "steps.3.text": [
+    "831b2ec9",
+    "Poiché è prevista una commissione fissa per il prelievo, è consigliabile utilizzare il limite massimo consentito per ripartire il costo su una somma maggiore."
+  ],
+  "steps.4.name": [
+    "6fcb61ed",
+    "Conserva la ricevuta e conta i contanti"
+  ],
+  "steps.4.text": [
+    "30d70c06",
+    "Controlla l'importo erogato, conserva la ricevuta e dividi il contante in più punti prima di lasciare il bancomat."
+  ],
+  "faq.0.q": [
+    "e44ca992",
+    "Posso prelevare dollari statunitensi dagli sportelli automatici in Uruguay?"
+  ],
+  "faq.0.a": [
+    "eb6339a1",
+    "Sì. A differenza dell'Argentina, molti sportelli automatici uruguaiani erogano dollari oltre che pesos, di solito in banconote da 100 dollari. I limiti di prelievo per le carte straniere sono bassi."
+  ],
+  "faq.1.q": [
+    "33423670",
+    "Quanto costa prelevare contanti dagli sportelli automatici con carte straniere in commissioni?"
+  ],
+  "faq.1.a": [
+    "68121602",
+    "La commissione locale è bassa (dell'ordine di pochi dollari per prelievo). Il costo maggiore è solitamente rappresentato dalla commissione per le transazioni estere applicata dalla propria banca (in genere tra l'1% e il 3%)."
+  ],
+  "faq.2.q": [
+    "bf2fe8ff",
+    "Qual è l'importo massimo che posso prelevare per transazione?"
+  ],
+  "faq.2.a": [
+    "7a64ef6d",
+    "Il costo per prelievo si aggira intorno ai 200-300 dollari USA o 5.000 dollari statunitensi, a seconda del circuito (RedBROU o Banred). Anche la tua banca stabilisce un limite giornaliero, quindi informala prima di partire."
+  ],
+  "faq.3.q": [
+    "66601510",
+    "Mi conviene cambiare i soldi in aeroporto?"
+  ],
+  "faq.3.a": [
+    "82d5704c",
+    "Non per grosse somme: all'aeroporto e ai terminal dei traghetti i tassi di cambio sono notevolmente inferiori. Cambia solo la quantità di denaro necessaria per raggiungere la città, poi usa un ufficio di cambio o un bancomat in centro."
+  ],
+  "faq.4.q": [
+    "44d07e17",
+    "Contanti o carta in Uruguay?"
+  ],
+  "faq.4.a": [
+    "11ded5ec",
+    "In Uruguay è molto facile usare le carte di credito (Visa e Mastercard sono accettate praticamente ovunque, sono accettati pagamenti contactless e tramite codice QR). Portate con voi un po' di pesos in contanti per i piccoli acquisti e pagate importi maggiori con la carta."
+  ],
+  "faq.5.q": [
+    "2d0dd094",
+    "Quale valuta devo portare?"
+  ],
+  "faq.5.a": [
+    "cc8484ac",
+    "Contanti in dollari statunitensi: tassi di cambio migliori e accettati in tutti gli uffici di cambio. L'euro è la seconda valuta più accettata. Se venite dall'Argentina, portate dollari, non pesos argentini."
+  ],
+  "faq.6.q": [
+    "b71d8d92",
+    "Ho diritto a uno sconto fiscale in quanto turista?"
+  ],
+  "faq.6.a": [
+    "49712ab8",
+    "Sì: oltre al regime per gli alloggi, la riduzione generale di nove punti su ristorazione e noleggio auto senza conducente si applica anche ai non residenti fino al 30 aprile 2027, per i consumi finali pagati elettronicamente da una persona fisica. Un'esenzione totale stagionale richiede un decreto e date specifici; non può essere dedotta da tale proroga."
+  ],
+  "faq.7.q": [
+    "04fb59ce",
+    "Cosa succede se il bancomat rifiuta la mia carta?"
+  ],
+  "faq.7.a": [
+    "15f0167b",
+    "Prova un'altra carta e un altro circuito (RedBROU e Banred sono interconnessi, ma è utile averle entrambe). Verifica che il bancomat mostri i loghi Visa/Mastercard/Cirrus/Plus e comunica alla tua banca che la utilizzerai in Uruguay."
+  ],
+  "related.0.label": [
+    "9371cd8d",
+    "Dollari per viaggiare"
+  ],
+  "related.1.label": [
+    "89470d17",
+    "Acquistare dollari al miglior prezzo"
+  ],
+  "related.2.label": [
+    "7b531a45",
+    "Uffici e filiali di cambio"
+  ],
+  "related.3.label": [
+    "574f3e27",
+    "Confronta le tariffe"
+  ]
+}
