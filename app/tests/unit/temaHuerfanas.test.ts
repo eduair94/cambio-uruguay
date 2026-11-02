@@ -446,7 +446,6 @@ const GUIAS_SIN_TEMA = [
   'cambiar-pesos-argentinos-uruguay',
   'criptomonedas-regulacion-impuestos-uruguay',
   'devolucion-iva-turistas-uruguay',
-  'documentos-para-cambiar-dolares-uruguay',
   'dolar-cripto-usdt-uruguay',
   'dolares-deteriorados-billetes-rechazados-uruguay',
   'dolares-para-viajar',
@@ -514,9 +513,21 @@ const GUIAS_SIN_TEMA = [
  * ninguna de las tres cosas — sin tema, su página terminaba sin un solo enlace de salida. Entrar al
  * tema le da el bloque de vecinos Y los tres próximos pasos de un saque.
  *
+ * 19 → 18 el 2026-11-02: `documentos-para-cambiar-dolares-uruguay` entra a
+ * `dolar-y-casas-de-cambio-uruguay`, y era la ÚNICA de las diecinueve con la ruta libre de toda
+ * ventana de medición abierta (`npm run seo_debt`: 3 de 26 libres, y de esas tres sólo ésta es una
+ * guía). Las otras dieciocho siguen reservadas, la primera hasta el 2026-11-03.
+ *
+ * El tema NO es inventado, que es la regla que dejó a `propinas-en-uruguay` afuera dos veces: el
+ * hub ya reúne la mecánica de ir al mostrador —`comprar-dolares-mejor-precio`,
+ * `casas-de-cambio-vs-bancos`, `evitar-comisiones-cambio`— y esta guía contesta qué hay que llevar
+ * a ese mismo mostrador (sin documento por debajo del orden de USD 3.000 diarios, cédula o
+ * pasaporte por encima, declaración en aduana desde USD 10.000). Quien está comparando dónde
+ * cambiar la necesita antes de salir de casa, y sus vecinos del bloque le contestan algo.
+ *
  * Sólo puede bajar: subirlo es publicar una guía huérfana.
  */
-const DEUDA_MAXIMA_GUIAS = 19
+const DEUDA_MAXIMA_GUIAS = 18
 
 describe('ninguna guía queda fuera de todos los temas', () => {
   const sinTema = guides

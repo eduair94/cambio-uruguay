@@ -2791,6 +2791,21 @@
         "乌拉圭 汇率"
       ],
       "hypothesis": "32 idiomas nuevos (fr, de, it, ru, zh, ja...) traducidos por maquina con tr-file desde los mensajes en ingles, solo en las paginas que quedan sin texto en espanol (EXTRA_LOCALE_ROUTES en app/utils/locales.ts): pizarra, historico, comparar, sucursales, mapa, casa de cambio cerca de mi, conectar y newsletter (sillas salio el mismo dia: en produccion la pagina carga resumenes y citas de Reddit en espanol). Antes no existian: un turista que busca donde cambiar plata o la cotizacion en su idioma no tenia ninguna URL del sitio en su idioma. Se espera que las paginas /<idioma>/* sumen impresiones y clics propios sin restar a las de es/en/pt, que conservan su canonica. La home, retirar efectivo, monedas y comparar plataformas entran cuando venzan sus reservas (15/11 a 29/11)."
+    },
+    {
+      "id": "guia-tasa-de-politica-monetaria",
+      "shippedOn": "2026-11-02",
+      "routes": [
+        "/guias/tasa-de-politica-monetaria-uruguay"
+      ],
+      "queries": [
+        "tasa de politica monetaria uruguay",
+        "tasa del banco central uruguay",
+        "copom bcu",
+        "cuanto esta la tasa del bcu",
+        "tpm uruguay"
+      ],
+      "hypothesis": "La TPM estaba en el sitio desde antes, pero SIEMPRE como parametro de otra cuenta y nunca como la pregunta: es la tasa por defecto de la calculadora de /cuenta-remunerada-uruguay, el ancla de /conviene-pagar-todo-con-credito-uruguay, la referencia del fondo en /cuanto-vale-una-milla-itau-uruguay y el piso con el que financingData descarta una LRM al 8,54 %. Cuatro archivos la usaban y ninguna URL contestaba en cuanto esta ni quien la mueve, que es el mismo caso del Fondo de Solidaridad. Y tenia la segunda mitad del problema: una cifra sin duenio envejece sin que nada avise, asi que el COPOM la subio de 5,75 % a 6 % el 8/10/2026 y tres paginas del sitio publicaron 5,75 % hasta el 2/11. La guia publica el nivel vigente, el comunicado que lo fijo, las siete reuniones del anio y las cuatro tasas que no son esta (tope de usura, plazo fijo, cuenta remunerada, LRM), con el cuerpo armado por plantilla sobre utils/monetaryPolicyRate.ts para que no vuelva a quedar vieja. Se espera que capture la consulta institucional de marca (tasa del BCU, COPOM), que hoy contestan el propio BCU y la prensa, sin restarle nada a /por-que-el-bcu-quiere-mas-pesos, que explica la desdolarizacion y no publica la tasa."
     }
   ]
 }

@@ -147,11 +147,7 @@ const SIN_LECTOR_QUE_LA_NECESITE = [
  * en la barra de su familia (`utils/familiaNav.ts`) si pertenece a una. Un enlace que nadie seguiría
  * no cuenta como arreglo aunque ponga el test en verde.
  */
-const DEUDA_SIN_ENLACE = [
-  '/apps-utiles-uruguay',
-  '/precio-del-boleto-montevideo',
-  '/seguro-obligatorio-de-auto-uruguay',
-]
+const DEUDA_SIN_ENLACE = ['/seguro-obligatorio-de-auto-uruguay']
 
 /** El trinquete. Sólo puede bajar: subirlo es publicar una página que nadie enlaza. */
 // 5 → 4 el 2026-10-29: `/fondo-de-solidaridad-uruguay`, que era la ÚNICA ruta libre de los cinco
@@ -434,7 +430,27 @@ const DEUDA_SIN_ENLACE = [
 // origen envejecen con las tarifas, y un número correcto en su momento publicado como vigente es el
 // modo de fallar que este repo ya tiene escrito—: la nota nombra las normas y el orden de magnitud,
 // y el detalle lo sirve el destino.
-const DEUDA_MAXIMA = 3
+// 3 → 1 el 2026-11-02: las DOS que `npm run seo_debt` declara libres hoy (3 de 26 rutas libres en
+// los cinco pozos, y dos de esas tres son estas). La tercera, `/seguro-obligatorio-de-auto-uruguay`,
+// sigue reservada por su fila `pagina-seguro-obligatorio-de-auto` hasta el 2026-11-07. Las dos
+// tienen además el ORIGEN libre, que es lo que bloqueó a varias candidatas de los días anteriores.
+//
+// `/precio-del-boleto-montevideo` recibe el suyo de `/conviene-auto-moto-o-omnibus-uruguay`, y es
+// el caso más directo que hubo en esta lista: el boleto es la PRIMERA fila de la tabla de cifras
+// vivas de esa página y lo que su propio aviso declara imprescindible («sin el precio del boleto no
+// hay contra qué comparar: se publican los costos de cada modo, pero no el veredicto»), y la grilla
+// que reúne «las páginas que la cuenta USA pero no compara» tenía la de la nafta —el otro precio
+// que la cuenta consume— y no la del boleto. El enlace es además de vuelta: la página del boleto ya
+// enlazaba a la de la comparación.
+//
+// `/apps-utiles-uruguay` lo recibe de la página del boleto, dentro de la tarjeta donde ya se
+// publica el mínimo de recarga de la tarjeta STM, que es la frase que deja al lector buscando una
+// app. Lo que el destino le agrega no está en ningún otro lado del sitio: cuál es la oficial. La
+// app del STM de la Intendencia se llama «Cómo ir» y la MÁS DESCARGADA, «STM Montevideo», no es de
+// la IM —la hace un desarrollador independiente con los datos abiertos—, así que el lector que baja
+// la primera que aparece baja la que no es. No se copió ninguna cifra del destino: la nota nombra
+// las dos apps y su desarrollador, y las notas de cada tienda las sirve el destino.
+const DEUDA_MAXIMA = 1
 
 describe('ninguna página de lectura queda sin un enlace de contexto', () => {
   it('las páginas sin enlace son exactamente las declaradas', () => {

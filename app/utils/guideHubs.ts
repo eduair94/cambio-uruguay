@@ -70,6 +70,7 @@ export const guideHubs: readonly GuideHub[] = [
       'casas-de-cambio-vs-bancos',
       'evitar-comisiones-cambio',
       'billetes-y-monedas-de-uruguay',
+      'documentos-para-cambiar-dolares-uruguay',
     ],
     resources: [
       {
@@ -338,6 +339,7 @@ export const guideHubs: readonly GuideHub[] = [
       'proteger-ahorros-de-la-inflacion',
       'unidad-indexada-explicada',
       'ui-ur-bpc-diferencias',
+      'tasa-de-politica-monetaria-uruguay',
     ],
     resources: [
       {

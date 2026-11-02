@@ -615,8 +615,8 @@ const SOURCES = [
     url: 'https://www.mercadopago.com.uy/ayuda/retirar-para-cuenta-bancaria_273',
   },
   {
-    label: 'BCU — el COPOM mantiene la Tasa de Política Monetaria en 5,75 %',
-    url: 'https://www.bcu.gub.uy/Comunicaciones/Paginas/Comunicado-COPOM.aspx',
+    label: 'BCU — el COPOM incrementa la Tasa de Política Monetaria a 6 % (8/10/2026)',
+    url: 'https://www.bcu.gub.uy/Comunicaciones/Paginas/Detalle-Noticia.aspx?noticia=554&title=El-BCU-incrementa-la-Tasa-de-Pol%C3%ADtica-Monetaria-en-25-puntos-b%C3%A1sicos-hasta-6',
   },
 ]
 

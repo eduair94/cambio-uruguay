@@ -1237,6 +1237,12 @@ if (import.meta.client) {
  */
 const enlaces = [
   {
+    to: '/precio-del-boleto-montevideo',
+    icon: 'mdi-bus',
+    label: 'Precio del boleto',
+    note: 'La tarifa de la IM que esta cuenta usa como término de comparación, con tarjeta y en efectivo.',
+  },
+  {
     to: '/precio-de-la-nafta-uruguay',
     icon: 'mdi-gas-station',
     label: 'Precio de la nafta',

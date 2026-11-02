@@ -34,6 +34,14 @@
             >. Las tres cosas están publicadas al lado de la tabla de tarifas, no en una letra chica
             aparte.
           </p>
+          <p class="note-text mt-3 mb-0">
+            <strong>Dónde recargarla, desde el teléfono.</strong> La app oficial del STM es «Cómo
+            ir», de la propia Intendencia; la más descargada se llama «STM Montevideo» y no es de la
+            IM —la hace un desarrollador independiente con los datos abiertos del sistema— y es la
+            que ubica los puntos de recarga. Las dos están, con el desarrollador que declara cada
+            tienda, en
+            <NuxtLink :to="localePath('/apps-utiles-uruguay')">apps útiles de Uruguay</NuxtLink>.
+          </p>
         </div>
       </div>
     </VCard>

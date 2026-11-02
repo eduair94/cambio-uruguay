@@ -25,18 +25,31 @@
 export const YIELD_LAST_REVIEWED = '2026-08-19'
 
 /** BCU monetary policy rate, in % per year — the anchor these funds track. */
-export const TPM_PCT = 5.75
+export const TPM_PCT = 6
 /**
  * Date of a COPOM communiqué we actually read confirming that level — NOT the
  * date the rate was first set there. The 21/4/2026 statement said the TPM
  * "continúe en 5,75%", so it was already there beforehand and we have no sourced
  * start date. Saying "desde" would be inventing one.
  *
- * Updated to the 18/8/2026 meeting, which held it there for the third time in a
- * row. That date is the whole answer to "¿es verdad que el mes que viene baja?":
- * the thing that would make it drop met yesterday and did nothing.
+ * Acá el comunicado del 8/10/2026 SÍ es la fecha en que empezó, porque es el que
+ * la movió: «el Directorio resolvió por unanimidad un incremento en la TPM de 25
+ * puntos básicos hasta 6%». El nombre de la constante igual no cambia: lo que
+ * prueba sigue siendo un comunicado leído, y la próxima reunión puede volver a
+ * ser de las que mantienen.
  */
-export const TPM_CONFIRMED = '2026-08-18'
+export const TPM_CONFIRMED = '2026-10-08'
+/**
+ * La fecha en que se leyó ESE comunicado, y la única cifra de este archivo que se
+ * reverificó en esa pasada.
+ *
+ * Va aparte de `YIELD_LAST_REVIEWED` por el mismo motivo que `V_EXPORT` en
+ * `utils/companyTypes.ts`: mover la fecha global diría que se volvieron a verificar
+ * las comisiones, los mínimos y el IPC de todos los productos de abajo, y no se
+ * hizo. Una fecha de verificación que viaja con una cifra que no verificó es la
+ * misma clase de defecto que una cita que no sostiene su afirmación.
+ */
+export const TPM_REVIEWED = '2026-11-02'
 
 /** INE headline inflation, last 12 months, in %. The bar a yield must clear. */
 export const IPC_INTERANUAL_PCT = 4.27
@@ -235,7 +248,7 @@ export const YIELD_PRODUCTS: readonly YieldProduct[] = Object.freeze([
       'Según la prensa especializada que reportó la autorización del fondo, el reglamento habilita una comisión de cobro diario de hasta 3 % anual más IVA (3,66 % con IVA). Es un TOPE, no necesariamente lo que se cobra, y se descuenta dentro del fondo: el rendimiento que ves ya está neto. Importa igual, porque sobre un rendimiento bruto cercano a la TPM el costo se lleva una parte grande.',
     publishedRatePct: null,
     rateNote:
-      'Mercado Pago no publica una tasa. Comunicó que la referencia es la Tasa de Política Monetaria del BCU, en 5,75 % anual al momento del lanzamiento. Es una referencia del papel que compra el fondo, no una tasa prometida.',
+      'Mercado Pago no publica una tasa. Comunicó que la referencia es la Tasa de Política Monetaria del BCU, en 5,75 % anual al momento del lanzamiento; desde el 8/10/2026 esa tasa está en 6 %. Es una referencia del papel que compra el fondo, no una tasa prometida.',
     liquidity:
       'Los rendimientos se acreditan todos los días hábiles según la valuación diaria del fondo. El capital sigue disponible para pagar, transferir o comprar en cualquier momento.',
     taxNote:
@@ -367,10 +380,10 @@ export const RATE_MYTHS: readonly RateMyth[] = Object.freeze([
   {
     figure: '20,81 % TNA',
     belongsTo: 'la cuenta remunerada de Prex ARGENTINA, en pesos argentinos',
-    why: 'Circula en notas que mezclan los dos países. Es imposible en Uruguay: la Tasa de Política Monetaria del BCU está en 5,75 % anual y estos fondos compran papel del BCU y del Estado uruguayo, así que su rendimiento se mueve cerca de esa tasa, no cuatro veces por encima.',
+    why: 'Circula en notas que mezclan los dos países. Es imposible en Uruguay: la Tasa de Política Monetaria del BCU está en 6 % anual y estos fondos compran papel del BCU y del Estado uruguayo, así que su rendimiento se mueve cerca de esa tasa, no tres veces por encima.',
     source: {
-      label: 'BCU — el COPOM mantiene la Tasa de Política Monetaria en 5,75 %',
-      url: 'https://www.bcu.gub.uy/Comunicaciones/Paginas/Detalle-Noticia.aspx?noticia=504&title=El-BCU-mantiene-la-Tasa-de-Pol%C3%ADtica-Monetaria-en-5,75%25',
+      label: 'BCU — el COPOM incrementa la Tasa de Política Monetaria a 6 % (8/10/2026)',
+      url: 'https://www.bcu.gub.uy/Comunicaciones/Paginas/Detalle-Noticia.aspx?noticia=554&title=El-BCU-incrementa-la-Tasa-de-Pol%C3%ADtica-Monetaria-en-25-puntos-b%C3%A1sicos-hasta-6',
       publisher: 'Banco Central del Uruguay',
     },
   },
@@ -397,6 +410,7 @@ export const COPOM_MEETINGS_2026: readonly string[] = Object.freeze([
   '2026-05-26',
   '2026-07-01',
   '2026-08-18',
+  '2026-10-08',
 ])
 
 export interface PickCriterion {
@@ -475,12 +489,12 @@ export interface YieldDriver {
 export const YIELD_DRIVERS: readonly YieldDriver[] = Object.freeze([
   {
     id: 'tpm',
-    what: 'La Tasa de Política Monetaria del BCU. Es lo que rinde el papel que estos fondos compran, así que cuando el COPOM la baja, el rendimiento baja solo, sin que ninguna fintech anuncie nada.',
+    what: 'La Tasa de Política Monetaria del BCU. Es lo que rinde el papel que estos fondos compran, así que cuando el COPOM la mueve, el rendimiento se mueve solo, sin que ninguna fintech anuncie nada.',
     status:
-      'El 18 de agosto de 2026 el COPOM la mantuvo en 5,75 % anual. Es la sexta reunión del año y la tercera seguida sin cambios. Las fechas de las próximas las publica el BCU.',
+      'El 8 de octubre de 2026 el COPOM la SUBIÓ 25 puntos básicos, de 5,75 % a 6 % anual, por unanimidad. Es la séptima reunión del año y el primer cambio desde marzo, después de cuatro seguidas sin tocarla. Las fechas de las próximas las publica el BCU.',
     source: {
-      label: 'BCU — el COPOM mantiene la TPM en 5,75 % (18/8/2026)',
-      url: 'https://www.bcu.gub.uy/Politica-Economica-y-Mercados/Paginas/Copom.aspx',
+      label: 'BCU — el COPOM incrementa la TPM a 6 % (8/10/2026)',
+      url: 'https://www.bcu.gub.uy/Comunicaciones/Paginas/Detalle-Noticia.aspx?noticia=554&title=El-BCU-incrementa-la-Tasa-de-Pol%C3%ADtica-Monetaria-en-25-puntos-b%C3%A1sicos-hasta-6',
       publisher: 'Banco Central del Uruguay',
     },
   },

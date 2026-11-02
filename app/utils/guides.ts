@@ -17,6 +17,7 @@ import { deudasGuides } from './guidesDeudas'
 import { importacionGuides } from './guidesImportacion'
 import { pagosGuides } from './guidesPagos'
 import { patrimonioGuides } from './guidesPatrimonio'
+import { politicaMonetariaGuides } from './guidesPoliticaMonetaria'
 import { parejaGuides } from './guidesPareja'
 import { primavera2026Guides } from './guidesPrimavera2026'
 import { redditGuides } from './guidesReddit'
@@ -1749,6 +1750,11 @@ export const guides: readonly Guide[] = [
   // tasa —el art. 53 la manda reducir cada año y ninguna publicación de la DGI imprime el
   // resultado—; el motivo entero está en la cabecera de `guidesPatrimonio.ts`.
   ...patrimonioGuides,
+  // La Tasa de Política Monetaria del BCU, 2026-11-02: la cifra que cuatro archivos del sitio
+  // usaban como parámetro de otra cuenta y ninguno contestaba. Su cuerpo se arma con plantillas
+  // sobre `utils/monetaryPolicyRate.ts` porque el número escrito a mano ya envejeció una vez: el
+  // COPOM lo subió el 8/10/2026 y tres páginas publicaron 5,75 % hasta hoy.
+  ...politicaMonetariaGuides,
 ]
 
 /**

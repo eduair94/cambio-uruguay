@@ -11,6 +11,7 @@ import {
   RATE_MYTHS,
   TPM_CONFIRMED,
   TPM_PCT,
+  TPM_REVIEWED,
   YIELD_DRIVERS,
   YIELD_LAST_REVIEWED,
   YIELD_PRODUCTS,
@@ -155,7 +156,15 @@ describe('yieldAccounts - macro anchors', () => {
     // The 21/4/2026 COPOM statement says the TPM "continúe en 5,75%", so there is
     // no sourced "since" date. The constant is named for what it actually proves.
     expect(TPM_CONFIRMED).toMatch(/^\d{4}-\d{2}-\d{2}$/)
-    expect(TPM_CONFIRMED < YIELD_LAST_REVIEWED).toBe(true)
+    // Se compara contra `TPM_REVIEWED` y NO contra `YIELD_LAST_REVIEWED`, que es la
+    // fecha de revisión de TODO el archivo. El 8/10/2026 el COPOM subió la TPM y ese
+    // comunicado se leyó el 2/11/2026: con la comparación vieja, la única forma de
+    // poner la tasa al día era mover la fecha global, o sea declarar reverificadas
+    // las comisiones y los mínimos de cada producto sin haberlos mirado. El par
+    // separado es el mismo recurso que `V_EXPORT` en `utils/companyTypes.ts`.
+    expect(TPM_REVIEWED).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    expect(TPM_CONFIRMED <= TPM_REVIEWED).toBe(true)
+    expect(TPM_REVIEWED >= YIELD_LAST_REVIEWED).toBe(true)
   })
 
   it('carries a review date and general sources', () => {
@@ -204,7 +213,8 @@ describe('yieldAccounts - estimateYield', () => {
     })
     expect(r.netRatePct).toBe(TPM_PCT)
     expect(r.feeUyu).toBe(0)
-    expect(r.netUyu).toBeCloseTo(5750, 0)
+    // 100.000 al 6 % anual: la cifra sigue a `TPM_PCT`, que el COPOM subió el 8/10/2026.
+    expect(r.netUyu).toBeCloseTo(6000, 0)
     expect(r.realUyu).toBeGreaterThan(0)
     expect(r.realRatePct).toBeGreaterThan(0)
     expect(r.realRatePct).toBeLessThan(2)

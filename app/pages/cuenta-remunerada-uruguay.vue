@@ -666,8 +666,10 @@
       </VAlert>
 
       <p class="text-caption text-disabled mt-3 mb-0">
-        Estimación educativa. La tasa por defecto es la Tasa de Política Monetaria del BCU, en
-        {{ fmtNum(TPM_PCT) }}% anual: el COPOM la mantuvo en ese nivel en su comunicado del
+        Estimación educativa. La tasa por defecto es la
+        <NuxtLink :to="localePath('/guias/tasa-de-politica-monetaria-uruguay')"
+          >Tasa de Política Monetaria del BCU</NuxtLink
+        >, en {{ fmtNum(TPM_PCT) }}% anual: el COPOM la dejó en ese nivel en su comunicado del
         {{ fmtDate(TPM_CONFIRMED) }}. Es la referencia del papel que compran estos fondos, no una
         tasa que alguien te prometa. No es asesoramiento financiero.
       </p>
@@ -973,11 +975,11 @@ const faqs = [
   },
   {
     q: '¿Cuánto paga exactamente?',
-    a: 'Ninguno de los dos publica una tasa. Mercado Pago comunicó que la <strong>referencia</strong> es la Tasa de Política Monetaria del BCU, en 5,75 % anual al lanzamiento; Prex muestra en la app una <strong>tasa indicativa</strong> calculada sobre el desempeño del fondo en los últimos 30 días. Ambas se mueven todos los días. Cualquier número fijo que veas publicado en otro lado conviene chequearlo contra la app.',
+    a: 'Ninguno de los dos publica una tasa. Mercado Pago comunicó que la <strong>referencia</strong> es la Tasa de Política Monetaria del BCU, en 5,75 % anual al lanzamiento —desde el 8/10/2026 está en 6 %—; Prex muestra en la app una <strong>tasa indicativa</strong> calculada sobre el desempeño del fondo en los últimos 30 días. Ambas se mueven todos los días. Cualquier número fijo que veas publicado en otro lado conviene chequearlo contra la app.',
   },
   {
     q: '¿Y el 20,81 % de TNA que leí?',
-    a: 'Es de <strong>Prex Argentina</strong>, en pesos argentinos. Aparece en notas de medios argentinos que cubren el producto del otro país. En Uruguay es imposible: la TPM está en 5,75 % anual y estos fondos compran papel del BCU y del Estado uruguayo.',
+    a: 'Es de <strong>Prex Argentina</strong>, en pesos argentinos. Aparece en notas de medios argentinos que cubren el producto del otro país. En Uruguay es imposible: la TPM está en 6 % anual y estos fondos compran papel del BCU y del Estado uruguayo.',
   },
   {
     q: '¿Me conviene contra un plazo fijo?',
