@@ -141,7 +141,13 @@ Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`
   corrida. **Desde el 2026-10-20 cubre los cinco pozos** (99 rutas): las migas de `seoContract` y
   los dos snippets de `guideSnippetBudget` pasaron a declarar sus miembros —y a exigirlos exactos—
   además del número, así que ya no hay que levantar el catálogo de guías ni medir el árbol de
-  páginas a mano para saber cuál se puede tocar.
+  páginas a mano para saber cuál se puede tocar. **Y desde el 2026-11-02 son seis**: el sexto no
+  nació de una deuda que alguien dejara para después sino de un AGUJERO —
+  `seoDescriptionBudget.test.ts` decía «pozo pagado: 0» y era verdad de lo que medía, porque sólo
+  leía las descripciones escritas con comillas y las 13 que se escriben con PLANTILLA no las veía
+  nadie; cuatro ya salían cortadas del SERP contando sólo su texto fijo, la peor con 498 caracteres
+  en una página del tramo que rinde 8×. Es el modo de fallar de una ruta mal tipeada en `value.ts`:
+  no hay rojo, hay una medición que no alcanza a la página.
 - **Este repositorio es PÚBLICO: cero cifras de ingreso en nada versionado.** Ni en código, ni en
   comentarios, ni en este archivo, ni en un mensaje de commit. La convención ya existía para los
   documentos (`docs/seo/adsense-growth-loop.md` es "público sin cifras"; los montos viven en

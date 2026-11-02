@@ -1422,7 +1422,7 @@ const censusDate = fmtDate(BOARD_CENSUS.fecha)
 
 const canonicalUrl = 'https://cambio-uruguay.com/vivir-con-25000-pesos-uruguay'
 const title = 'Vivir con 25.000 pesos en Uruguay'
-const description = `Guía para vivir con un sueldo de 25.000 a 30.000 pesos en Uruguay. Qué dice la ley de la jornada y del mínimo (${SMN_VIGENTE} pesos desde julio de 2026), cuánto queda líquido, cuánto sale una pensión o una habitación, y sobre todo qué ingreso le corresponde a ese hogar además del sueldo: asignación familiar del BPS y del Plan de Equidad, Tarjeta Uruguay Social, el Bono Social de UTE que descuenta hasta el 90 % de la luz, la tarifa social de OSE y los comedores del INDA, con montos oficiales y cómo se piden.`
+const description = `El mínimo es $ ${SMN_VIGENTE.toLocaleString('es-UY')} desde julio de 2026, y a ese sueldo se le suman asignación familiar del BPS, Tarjeta Uruguay Social y Bono Social de UTE.`
 
 defineOgImageComponent('Cambio', {
   title: '¿Se puede vivir con 25.000 por 9 horas?',

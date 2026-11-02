@@ -404,3 +404,163 @@ describe('las descripciones escritas a mano entran en el SERP', () => {
     expect(staticDescription(dynamic)).toBeNull()
   })
 })
+
+// ---------------------------------------------------------------------------------------------
+// La otra forma de escribir una descripción, que este archivo no miraba
+// ---------------------------------------------------------------------------------------------
+//
+// EL AGUJERO. El renglón de arriba dice, textual, que «ninguna descripción escrita a mano en
+// `pages/**/*.vue` sale cortada del SERP» y que de acá en adelante el cero es un contrato. No lo
+// era: `literalChain` sólo reconoce cadenas entre comillas simples unidas con `+`, así que una
+// descripción escrita con una PLANTILLA (acento invertido) no la ve nadie — `staticDescription`
+// devuelve `null` y la página se cae del conteo sin aparecer en ninguna lista de deuda. Medido el
+// 2026-11-02: 13 descripciones se escriben así y **4 ya pasaban los 155 contando sólo su texto
+// fijo**, la peor con 498 caracteres en `/vivir-con-25000-pesos-uruguay`, que es del tramo
+// `contenido` (8× el promedio del sitio). O sea el mismo modo de fallar que
+// `/sillas-de-escritorio-uruguay` en `classes/revenueplan/value.ts`: no una medición en rojo, una
+// medición que no alcanza a la página y por eso se lee igual que «acá no hay deuda».
+//
+// Y el alcance de arriba explica por qué el agujero era invisible: las plantillas quedaron afuera
+// con un argumento que es bueno para la mayoría —«llevan la cifra del día, y su largo depende del
+// dato»— pero que no se verifica solo. En las cuatro que sobran el dato es un número de cinco
+// dígitos metido en un párrafo de medio kilo de caracteres: el largo no dependía del dato, dependía
+// de la prosa.
+//
+// LA MEDICIÓN ES UN PISO, Y SÓLO CONDENA. De una plantilla se cuenta su texto fijo y se ignoran los
+// `${...}`, que en tiempo de render sólo pueden AGREGAR caracteres. Así que un piso pasado de 155
+// es un veredicto firme —la descripción sale cortada con cualquier dato— y un piso por debajo no
+// absuelve a nadie: `/cobrar-giro-del-exterior-uruguay` tiene 147 fijos y cuatro huecos, y bien
+// puede pasarse al renderizar. Este trinquete no reemplaza la medición exacta de arriba ni declara
+// pagado el pozo de las plantillas; cierra la mitad que se puede afirmar leyendo el archivo.
+//
+// Se leen también las plantillas envueltas en `() =>`, que es como `useSeoMeta` toma una
+// descripción reactiva. Hoy no hay ninguna (13 de 13 son plantillas desnudas), y justamente por eso
+// entran: sin ellas, sacar una página de este control sería agregarle cinco caracteres.
+const ARROW = /^\(\)\s*=>([\s\S]*)$/
+
+/**
+ * El texto FIJO de una plantilla, o `null` si la expresión no es una. Los `${...}` se descartan: ver
+ * «la medición es un piso» arriba.
+ */
+function templateFloor(expression: string): string | null {
+  const unwrapped = (ARROW.exec(expression.trim())?.[1] ?? expression).trim()
+  if (!unwrapped.startsWith('`') || !unwrapped.endsWith('`') || unwrapped.length < 2) return null
+  const inner = unwrapped.slice(1, -1)
+  if (inner.includes('`')) return null
+  return inner.split(/\$\{[^}]*\}/g).join('')
+}
+
+/** Igual que `staticDescription` pero para plantillas, y devolviendo el piso. */
+function templateDescriptionFloor(source: string): string | null {
+  const lines = source.split('\n')
+  const block = seoMetaLines(lines)
+  if (block.length === 0) return null
+  const expression = entryExpression(block, 'description')
+  if (expression === null) return null
+
+  const direct = templateFloor(expression)
+  if (direct !== null) return direct
+
+  const identifier = expression.match(/^([A-Z_$][\w$]*)$/i)
+  if (!identifier) return null
+  const declaration = constantExpression(lines, identifier[1]!)
+  return declaration === null ? null : templateFloor(declaration)
+}
+
+/** De `pages/x.vue` y `pages/x/index.vue` a la ruta del sitio, como en `contenidoTramoParity`. */
+const routeOf = (file: string) =>
+  file === 'index.vue' ? '/' : `/${file.replace(/\/index\.vue$/, '').replace(/\.vue$/, '')}`
+
+const templated = pageFiles()
+  .map(file => ({
+    route: routeOf(file),
+    floor: templateDescriptionFloor(readFileSync(join(PAGES_DIR, file), 'utf8')),
+  }))
+  .filter((page): page is { route: string; floor: string } => page.floor !== null)
+
+// 13 el 2026-11-02, el conteo real y por el mismo motivo que `RESOLVED`: si el piso fuera más bajo,
+// una descripción nueva podría dejar de leerse acá sin poner nada en rojo. Sube con cada plantilla
+// nueva y baja sólo si alguien vuelve ilegible una que hoy se mide, que es lo que tiene que delatar.
+const RESOLVED_TEMPLATE = 13
+
+/**
+ * Las plantillas cuyo texto fijo ya pasa los 155. **SÓLO PUEDE BAJAR.**
+ *
+ * 4 el 2026-11-02, la primera medición: `/vivir-con-25000-pesos-uruguay` (498),
+ * `/pension-alimenticia-uruguay` (272), `/comparativas` (181) y `/preguntas-economia-personal`
+ * (171). Las tres que no están acá se curaron en el mismo commit que estrena este trinquete, con el
+ * criterio de las nueve corridas de arriba: la cifra o el nombre propio al frente y afuera la
+ * etiqueta de género. Las tres fallaban igual — abrían por lo que la página ES («Guía para vivir
+ * con un sueldo de…», «N comparaciones uno contra uno entre bancos, fintechs, tarjetas de crédito,
+ * tarjetas de débito y couriers», «N respuestas verificadas sobre» y doce rubros) y dejaban del
+ * lado cortado lo único que decide el clic: que a ese sueldo se le suman asignación familiar del
+ * BPS, Tarjeta Uruguay Social y Bono Social de UTE; que las dos puntas se comparan con los mismos
+ * criterios; y que cada respuesta trae la norma o el dato oficial al lado. Ninguna cifra es nueva:
+ * todas estaban en la descripción vieja o en el cuerpo de su página, y lo que salió del snippet
+ * —Plan de Equidad, tarifa social de OSE, comedores del INDA— sigue en el cuerpo.
+ *
+ * Queda una y está RESERVADA: `/pension-alimenticia-uruguay` tiene la fila
+ * `pension-alimenticia-enlaces-de-contexto` del 2026-10-13 midiendo, así que tocarle la descripción
+ * ahora le cambia el sujeto al experimento. Se libera el 2026-11-11 y desde entonces
+ * `npm run seo_debt` la nombra sola: este pozo se declara como los otros cinco y el informe lo lee.
+ */
+const DEUDA_DESCRIPCION_PLANTILLA = [
+  // El comentario va DENTRO de la lista por lo que `DEUDA_SIN_ENLACE` en `enlacesDeContexto.test.ts`
+  // deja escrito: `classes/revenueplan/debtFree.ts::parseStringList` corta en el primer `\n]`, o sea
+  // exige que el cierre abra su propia línea, y prettier aplasta a una sola línea cualquier array
+  // que entre en 100 columnas salvo los que llevan un comentario. Con una sola entrada entra
+  // holgado, así que sin esto `npm run lintfix` lo colapsa y el informe deja de leer este pozo.
+  '/pension-alimenticia-uruguay',
+]
+
+const TEMPLATE_OVER_BUDGET = 1
+
+describe('las descripciones escritas con plantilla también entran en el SERP', () => {
+  it(`lee el piso de ${RESOLVED_TEMPLATE} páginas sin ejecutar la app`, () => {
+    expect(templated.length).toBeGreaterThanOrEqual(RESOLVED_TEMPLATE)
+  })
+
+  it(`tiene como mucho ${TEMPLATE_OVER_BUDGET} pisos pasados de ${MAX_DESCRIPTION} caracteres`, () => {
+    const offenders = templated
+      .filter(page => page.floor.length > MAX_DESCRIPTION)
+      .map(page => `${page.floor.length} ${page.route}: ${page.floor}`)
+      .sort()
+    expect(offenders.length, offenders.join('\n')).toBeLessThanOrEqual(TEMPLATE_OVER_BUDGET)
+  })
+
+  // La deuda dice la verdad, como en `contenidoTramoParity.test.ts`: una entrada que ya se curó
+  // tiene que delatarse acá en vez de inflar el presupuesto y dejar que la próxima descripción
+  // nazca cortada contra un contador que sobra.
+  it('cada ruta en deuda sigue pasada, y la deuda nombra a todas las que lo están', () => {
+    const over = templated
+      .filter(page => page.floor.length > MAX_DESCRIPTION)
+      .map(page => page.route)
+      .sort()
+    expect(over).toEqual([...DEUDA_DESCRIPCION_PLANTILLA].sort())
+  })
+
+  it('ninguna ruta en deuda es inventada', () => {
+    const known = templated.map(page => page.route)
+    expect(DEUDA_DESCRIPCION_PLANTILLA.filter(route => !known.includes(route))).toEqual([])
+  })
+
+  it('lee la plantilla desnuda, la envuelta en una flecha, y nada más', () => {
+    expect(templateFloor('`Hoy a $${price} y nada más.`')).toBe('Hoy a $ y nada más.')
+    expect(templateFloor('() => `Son ${n} casas.`')).toBe('Son  casas.')
+    expect(templateFloor("'una cadena común'")).toBeNull()
+    expect(templateFloor('description')).toBeNull()
+  })
+
+  /**
+   * El contrapeso del piso: una plantilla que no pasa los 155 fijos NO queda absuelta, así que este
+   * archivo no puede declarar pagado el pozo de las plantillas. Se fija acá para que nadie lo lea
+   * como un cero: hay páginas con el piso bajo y varios huecos que al renderizar pueden pasarse.
+   */
+  it('el piso no absuelve: quedan plantillas con huecos cuyo largo real no se mide acá', () => {
+    const conHuecos = pageFiles().filter(file => {
+      const floor = templateDescriptionFloor(readFileSync(join(PAGES_DIR, file), 'utf8'))
+      return floor !== null && floor.length <= MAX_DESCRIPTION
+    })
+    expect(conHuecos.length).toBeGreaterThan(0)
+  })
+})

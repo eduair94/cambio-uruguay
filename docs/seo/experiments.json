@@ -2806,6 +2806,23 @@
         "tpm uruguay"
       ],
       "hypothesis": "La TPM estaba en el sitio desde antes, pero SIEMPRE como parametro de otra cuenta y nunca como la pregunta: es la tasa por defecto de la calculadora de /cuenta-remunerada-uruguay, el ancla de /conviene-pagar-todo-con-credito-uruguay, la referencia del fondo en /cuanto-vale-una-milla-itau-uruguay y el piso con el que financingData descarta una LRM al 8,54 %. Cuatro archivos la usaban y ninguna URL contestaba en cuanto esta ni quien la mueve, que es el mismo caso del Fondo de Solidaridad. Y tenia la segunda mitad del problema: una cifra sin duenio envejece sin que nada avise, asi que el COPOM la subio de 5,75 % a 6 % el 8/10/2026 y tres paginas del sitio publicaron 5,75 % hasta el 2/11. La guia publica el nivel vigente, el comunicado que lo fijo, las siete reuniones del anio y las cuatro tasas que no son esta (tope de usura, plazo fijo, cuenta remunerada, LRM), con el cuerpo armado por plantilla sobre utils/monetaryPolicyRate.ts para que no vuelva a quedar vieja. Se espera que capture la consulta institucional de marca (tasa del BCU, COPOM), que hoy contestan el propio BCU y la prensa, sin restarle nada a /por-que-el-bcu-quiere-mas-pesos, que explica la desdolarizacion y no publica la tasa."
+    },
+    {
+      "id": "descripciones-de-plantilla-respuesta-primero",
+      "shippedOn": "2026-11-02",
+      "routes": [
+        "/vivir-con-25000-pesos-uruguay",
+        "/comparativas",
+        "/preguntas-economia-personal"
+      ],
+      "queries": [
+        "se puede vivir con 25000 pesos uruguay",
+        "cuanto queda liquido de 25000",
+        "preguntas frecuentes dinero uruguay",
+        "cual conviene brou o itau",
+        "que banco conviene uruguay"
+      ],
+      "hypothesis": "Las nueve corridas de descripciones de septiembre dejaron el trinquete en 0 y escribieron que de ahi en adelante el cero era un contrato, pero median solo las descripciones escritas con comillas: las 13 que se escriben con plantilla no las veia nadie, y cuatro ya pasaban los 155 contando solo su texto fijo. Estas tres se curan con el criterio de esas nueve corridas y fallaban igual, abriendo por lo que la pagina ES (Guia para vivir con un sueldo de, N comparaciones uno contra uno entre bancos fintechs tarjetas de credito tarjetas de debito y couriers, N respuestas verificadas sobre mas doce rubros) y dejando del lado cortado lo unico que decide el clic: que a ese sueldo se le suman asignacion familiar del BPS, Tarjeta Uruguay Social y Bono Social de UTE; que las dos puntas se comparan con los mismos criterios; y que cada respuesta trae la norma o el dato oficial al lado. Ninguna cifra es nueva. La cuarta, /pension-alimenticia-uruguay, queda reservada hasta el 2026-11-11 por su propia fila. Se espera mas CTR desde la misma posicion, que es el efecto medido de las tandas anteriores."
     }
   ]
 }

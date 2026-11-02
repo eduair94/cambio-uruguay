@@ -287,6 +287,24 @@ Sigue sin cubrir lo que no es deuda de ruta, y no hay nada que cubrir: los dos p
 `app/`, así que el guard de la raíz los lee como texto por la misma razón que los otros tres
 (`tests/revenueplan/debt_free.test.ts`).
 
+**Y desde el 2026-11-02 son SEIS, por un motivo distinto a los cinco anteriores.** Los cinco
+primeros son deuda que alguien midió y dejó para después. El sexto salió de un AGUJERO en la
+medición: `app/tests/unit/seoDescriptionBudget.test.ts` cerró su pozo en 0 el 2026-10-29 y escribió
+que de ahí en adelante el cero era un contrato —«una descripción que se pase de 155 es una que se
+escribió hoy»—, pero su lector sólo reconoce cadenas entre comillas unidas con `+`. Las
+descripciones escritas con una PLANTILLA (acento invertido) devolvían `null` y se caían del conteo
+sin aparecer en ninguna lista: son 13, y **4 ya pasaban los 155 contando sólo su texto fijo**, la
+peor con 498 caracteres en `/vivir-con-25000-pesos-uruguay`, que es del tramo `contenido` (8×). Es
+exactamente el modo de fallar de `/sillas-de-escritorio-uruguay` en `value.ts`, un nivel más arriba:
+no una medición en rojo, una medición que no alcanza a la página, y por eso se lee igual que «acá no
+hay deuda».
+
+Las plantillas se miden por **PISO**: su texto fijo, ignorando los `${...}`, que en tiempo de render
+sólo pueden agregar caracteres. Así que el piso **condena y no absuelve** —un piso pasado de 155
+sale cortado con cualquier dato, y un piso por debajo no prueba nada: hay páginas con 147 fijos y
+cuatro huecos—. Por eso este pozo no se declara pagado, y el test lo fija con un caso propio para
+que su cero no se lea como un contrato igual que el de arriba.
+
 ---
 
 ## Qué NO hace
