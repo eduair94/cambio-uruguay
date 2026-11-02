@@ -15,9 +15,13 @@
 // PURE (no Vue/Nuxt imports) so the layout, plugins and tests all share it.
 
 import { isBareRoute } from './bareRoutes'
+import { PREFIXED_LOCALE_CODES } from './locales'
 
-/** Locale prefixes the router can put in front of a path. */
-const LOCALE_PREFIXES = ['/en', '/pt'] as const
+/**
+ * Locale prefixes the router can put in front of a path — every one of them, the
+ * machine-translated locales included: `/fr/pizarra` must keep the pizarra's no-ads rule.
+ */
+const LOCALE_PREFIXES = PREFIXED_LOCALE_CODES.map(code => `/${code}`)
 
 /**
  * Routes that carry no ads at all.

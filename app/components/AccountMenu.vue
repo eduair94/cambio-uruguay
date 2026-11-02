@@ -47,6 +47,7 @@
 
 <script setup lang="ts">
 import { fbAuth, isSignInWithEmailLink, signInWithEmailLink } from '~/stores/firebaseAuthApi'
+import { isExtraLocale } from '~/utils/locales'
 
 const store = useAuthStore()
 const localePath = useLocalePath()
@@ -74,7 +75,14 @@ const logoutCopy = computed(() => {
       close: 'Fechar',
     },
   }
-  return messages[locale.value === 'en' || locale.value === 'pt' ? locale.value : 'es']
+  // The machine-translated locales read English: closer to them than Spanish.
+  return messages[
+    locale.value === 'en' || locale.value === 'pt'
+      ? locale.value
+      : isExtraLocale(locale.value)
+        ? 'en'
+        : 'es'
+  ]
 })
 
 async function logout() {

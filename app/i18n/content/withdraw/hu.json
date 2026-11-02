@@ -1,0 +1,526 @@
+{
+  "title": [
+    "1229e1ce",
+    "Hol lehet készpénzt felvenni Uruguayban: ATM-ek, díjak és turisztikai látványosságok"
+  ],
+  "metaTitle": [
+    "3e82d293",
+    "ATM-ek Uruguayban: dollár vagy peso felvétele"
+  ],
+  "description": [
+    "3eb63bbe",
+    "Hogyan és hol lehet készpénzhez jutni Uruguayban turistaként: olyan ATM-ek, amelyek amerikai dollárt és pesót is kiadnak, díjak, felvételi limitek, a valutaátváltási csapda (DCC), valamint a legjobb felvételi helyek a repülőtéren, Montevideóban, Punta del Estében és Coloniában."
+  ],
+  "keywords": [
+    "4acfb17e",
+    "készpénzfelvétel uruguay, pénzfelvétel uruguay, ATM uruguayi turista, dollár uruguayi ATM-ből, pénzváltás uruguay, ATM díjak uruguay, casas de cambio uruguay"
+  ],
+  "tldr.0": [
+    "5f1561fe",
+    "Az uruguayi ATM-ek amerikai dollárt és pesót is kiadnak – ez ritka regionális előny (Argentínában szinte lehetetlen)."
+  ],
+  "tldr.1": [
+    "7b41d73f",
+    "Két hálózat létezik: a RedBROU és a Banred. Ha az egyik nem működik, próbáld ki a másikat; legyen nálad Visa és Mastercard is."
+  ],
+  "tldr.2": [
+    "c5aa36e3",
+    "Amikor az ATM felajánlja, hogy a helyi pénznemben terhel, mindig a helyi pénznemet válaszd: az „átváltás” rossz árfolyamot rejt."
+  ],
+  "tldr.3": [
+    "b73d4126",
+    "Kerüld a nagy összegek váltását a repülőtéren vagy a kompterminálokon – ott az árfolyamok érezhetően rosszabbak."
+  ],
+  "tldr.4": [
+    "83b2ff36",
+    "Fizessen szállodákban és éttermekben külföldi kártyával: az áfa-előny mellett kevesebb készpénzt is hord magánál."
+  ],
+  "ui.backToTools": [
+    "950196fc",
+    "Eszközök"
+  ],
+  "ui.tldrTitle": [
+    "799c628c",
+    "Röviden"
+  ],
+  "ui.networksTitle": [
+    "90dd37e5",
+    "A két ATM-hálózat: a RedBROU és a Banred"
+  ],
+  "ui.tableNetwork": [
+    "6974ad65",
+    "Hálózat"
+  ],
+  "ui.tableReach": [
+    "c549e23b",
+    "Lefedettség"
+  ],
+  "ui.tableUsd": [
+    "47b34a69",
+    "Kivét összegének felső határa (USD)"
+  ],
+  "ui.tableUyu": [
+    "7d4e5b12",
+    "Kifizetési limit U dolláronként"
+  ],
+  "ui.tableNote": [
+    "0ff01b6a",
+    "Megjegyzések"
+  ],
+  "ui.zonesTitle": [
+    "126f8827",
+    "Hol lehet készpénzt felvenni turisztikai övezetben"
+  ],
+  "ui.zonesIntro": [
+    "e4c560b0",
+    "Zóna- és nevezetesség szintű hivatkozások (nem pontos címek, amelyek változnak). A bankautomaták általában bankokban, bevásárlóközpontokban vagy az Abitab és Redpagos üzletekben találhatók."
+  ],
+  "ui.stepsTitle": [
+    "3e1ff2e0",
+    "Hogyan vehetünk fel készpénzt, lépésről lépésre"
+  ],
+  "ui.faqTitle": [
+    "e466bfa9",
+    "Gyakran ismételt kérdések"
+  ],
+  "ui.sourcesTitle": [
+    "105bfcc3",
+    "Források és hivatkozások"
+  ],
+  "ui.relatedTitle": [
+    "ac7a8ccc",
+    "Olvass tovább"
+  ],
+  "ui.ctaTitle": [
+    "60dda6a1",
+    "Hasonlítsa össze csere előtt"
+  ],
+  "ui.ctaText": [
+    "fe6b01a6",
+    "Tekintse meg a dollár árfolyamát több mint 40 tőzsdén, 10 percenként frissítve, és válassza ki a legjobb helyet a működéshez."
+  ],
+  "ui.ctaButton": [
+    "9efd557a",
+    "Nyissa meg az összehasonlítót"
+  ],
+  "ui.mapButton": [
+    "4e8c8db6",
+    "Tekintse meg a kivételi pontokat a térképen"
+  ],
+  "ui.disclaimer": [
+    "b166cfce",
+    "Tájékoztató információk turistáknak, nem pénzügyi tanácsadás. A díjak, limitek és adókedvezmények változnak: érkezéskor és a kártyakibocsátónál ellenőrizze őket. Nem állunk kapcsolatban a fent említett bankokkal vagy pénzváltókkal."
+  ],
+  "ui.lastChecked": [
+    "9182e108",
+    "Utolsó ellenőrzés: 2026. június"
+  ],
+  "ivaLive.heading": [
+    "5af716c3",
+    "Ma érvényes turisztikai áfa-kedvezmények"
+  ],
+  "ivaLive.asOf": [
+    "dd801240",
+    "{date} állapota:"
+  ],
+  "ivaLive.hotel": [
+    "152a8c47",
+    "Szállás (szállodák és hasonlók): 0% ÁFA egész évben."
+  ],
+  "ivaLive.base": [
+    "9856855a",
+    "Étkezés és autókölcsönzés sofőr nélkül: {points} pont áfakedvezmény a magánszemély kártyájával, beleértve a külföldi kártyákat is, 2027. április 30-ig fizetett végső fogyasztásra (235/026. sz. rendelet; forrás ellenőrizve: 2026. október 23.)."
+  ],
+  "ivaLive.baseUnconfirmed": [
+    "d65944df",
+    "Étkezés és autókölcsönzés: az ellenőrzött hosszabbítás 2027. április 30-án lejárt. Érdeklődjön a DGI-nél, hogy melyik kedvezmény érvényes a vásárlás napján."
+  ],
+  "ivaLive.seasonalOn": [
+    "41748da1",
+    "Nyári teljes áfamentesség: AKTÍV ({end}-ig)."
+  ],
+  "ivaLive.seasonalOff": [
+    "015a1161",
+    "Nyári teljes áfamentesség: erre a dátumra nincs megerősített időszakunk. Mielőtt igénybe venné ezt a kedvezményt, érdeklődjön a DGI-nál."
+  ],
+  "sections.0.heading": [
+    "90dd37e5",
+    "A két ATM-hálózat: a RedBROU és a Banred"
+  ],
+  "sections.0.paragraphs.0": [
+    "0f52a7fe",
+    "Uruguaynak két ATM-hálózata van: a RedBROU, amelyet az állami bank (BROU) üzemeltet, és a Banred, a magánbankok hálózata. A kettő össze van kötve és kapcsolódik a nemzetközi hálózatokhoz (a Mastercard Cirrus/Maestro és a Visa Plus), így egy külföldi kártya mindkettőn működik."
+  ],
+  "sections.0.paragraphs.1": [
+    "208b768b",
+    "Annak érdekében, hogy megbizonyosodjon arról, hogy az ATM elfogadja a kártyáját, keresse a Visa, Mastercard, Cirrus, Plus vagy Maestro logót a gépen. Gyakorlati tipp: vigyen magával különböző számlákhoz tartozó Visa és Mastercard kártyákat; ha az egyik kártya vagy gép meghibásodik, próbálja ki a másik hálózatot."
+  ],
+  "sections.1.heading": [
+    "612974f0",
+    "Dollár vagy peso? Uruguayban mindkettőt elfogadhatod."
+  ],
+  "sections.1.paragraphs.0": [
+    "d9928d31",
+    "Argentínával ellentétben Uruguayban sok ATM amerikai dollárt és uruguayi pesót is kiad. Ez valódi előnyt jelent, ha készpénzre van szüksége anélkül, hogy pénzváltóba kellene mennie. A dollárokat általában 100 dolláros bankjegyekben adják ki, ami a készpénzfelvételi limitekkel együtt azt jelentheti, hogy egyszerre csak egy bankjegyet kaphat."
+  ],
+  "sections.1.paragraphs.1": [
+    "cd694b7a",
+    "Egyszerű szabály: a mindennapi kiadásokra (taxi, piac, kisboltok) vigyél magaddal pesót, és csak akkor, ha valóban szükséged van rá készpénzben. A legtöbb nagyobb fizetésnél a kártya jobb, mint a készpénz."
+  ],
+  "sections.2.heading": [
+    "9ce97b34",
+    "Díjak és kifizetési limitek"
+  ],
+  "sections.2.paragraphs.0": [
+    "e28a7f0e",
+    "Az uruguayi ATM-ek külföldi kártyák esetén felszámított felára sok más országhoz képest alacsony (felvételenként néhány dollár nagyságrendű). A nagyobb költséget általában a saját bankod okozza: a külföldi tranzakciós díj (jellemzően 1–3%), plusz néha egy fix nemzetközi kifizetési díj. Egy devizadíj nélküli utazási kártyával szinte ezt az egészet megspórolhatod."
+  ],
+  "sections.2.paragraphs.1": [
+    "154c6f01",
+    "A külföldi kártyák kifizetésenkénti limitjét a helyi hálózatok határozzák meg, nem a bankod, és ezek az limitek alacsonyak. A bankod saját napi limitet is alkalmaz. Utazás előtt hívd fel a bankod, hogy megemeld a limitet, és a tranzakciónkénti maximumot vedd fel, hogy a fix díjat több készpénzre oszd el."
+  ],
+  "sections.2.bullets.0": [
+    "befd8df3",
+    "Helyi készpénzfelvételi felár: hozzávetőleges, néhány dollár nagyságrendű (a megerősítés előtt ellenőrizze a képernyőn megjelenő összeget)."
+  ],
+  "sections.2.bullets.1": [
+    "0f872d39",
+    "Banki/kibocsátói díj: általában a nagyobb költség; ellenőrizze, hogy a kártyája felszámít-e külföldi tranzakciós díjat."
+  ],
+  "sections.2.bullets.3": [
+    "4aacdc05",
+    "Napi limit: a bankod határozza meg; utazás előtt értesítsd őket a limit emeléséről."
+  ],
+  "sections.3.heading": [
+    "6bd46a0c",
+    "A valutaátváltás (DCC) csapdája: mindig a helyi pénznemet válaszd"
+  ],
+  "sections.3.paragraphs.0": [
+    "29fe4c81",
+    "Sok ATM és kártyaterminál felajánlja, hogy „a saját pénznemében terhelhet” uruguayi peso vagy dollár helyett. Ez kényelmesnek hangzik („nézd meg, mennyi a pénzedben”), de a dinamikus valutaátváltás (DCC) felfújt árfolyamot és egy rejtett díjat alkalmaz. Szinte mindig veszítesz."
+  ],
+  "sections.3.paragraphs.1": [
+    "34380f1f",
+    "Mindig válaszd az „átváltás nélküli” opciót, vagy a helyi pénznemet: uruguayi pesót, ha pesót, dollárt, ha dollárt. Bízd a saját bankodra az átváltást – az ő árfolyamuk általában jobb."
+  ],
+  "sections.4.heading": [
+    "cc573fd8",
+    "Pénzváltók, ATM-ek vagy bankok: melyik a jobb?"
+  ],
+  "sections.4.paragraphs.0": [
+    "1116ae4f",
+    "A pénzváltók (casas de cambio, mint például a Varlix, Indumex, Gales, Aspen, Cambio Sir, Cambio Inglés és Global Exchange) a klasszikus módjai a készpénzváltásnak. Ők kínálják a legjobb árfolyamokat a dollárért, kis különbséggel és jutalék nélkül; az euró a második legjobb valuta, a brazil real elfogadható, az argentin peso pedig a legrosszabb. Általában útlevelet kérnek."
+  ],
+  "sections.4.paragraphs.1": [
+    "b7c83296",
+    "Nyitvatartás: az utcai fiókok hétfőtől péntekig (9 és 19 óra között) és szombat délelőtt is nyitva tartanak; sokuk vasárnap zárva tart. A bevásárlóközpontokban található fiókok minden nap és később is nyitva tartanak. A napi díjak összehasonlításához a házak között használja az összehasonlító oldalunkat és a fiókok oldalát."
+  ],
+  "sections.5.heading": [
+    "f8b82759",
+    "Mennyi készpénzt vigyünk magunkkal, és milyen valutát vigyünk magunkkal"
+  ],
+  "sections.5.paragraphs.0": [
+    "e22fd664",
+    "Uruguay nagyon kártyabarát: a Visa és a Mastercard kártyákat szinte mindenhol elfogadják, az érintésmentes és QR-kártyás fizetés (Mercado Pago) is elterjedt. Kisebb vásárlásokhoz csak néhány pesót vigyen magával készpénzben, a nagyobb összegeket pedig fizesse kártyával."
+  ],
+  "sections.5.paragraphs.1": [
+    "f9b88276",
+    "Ha készpénzt viszel magaddal visszajárónak, az amerikai dollár a legjobb fizetőeszköz (a legjobb árfolyam, minden házban elfogadják). Az euró a második helyen áll. Argentínából érkezve dollárt hozz, ne argentin pesót – a peso Uruguayban nagyon rosszul változik. Brazíliából az igazi érvényesül, különösen a határ közelében, bár a dollár továbbra is kényelmesebb."
+  ],
+  "sections.6.heading": [
+    "97a59b72",
+    "Turisztikai áfakedvezmény (külföldi kártyával történő fizetés esetén)"
+  ],
+  "sections.6.paragraphs.0": [
+    "88ea76fc",
+    "Uruguay az áfa egy részét visszatéríti a külföldi állampolgárságú turistáknak, akik külföldi kártyával fizetnek. A szálláshelyek (regisztrált szállodák és hasonlók) 0%-os áfát tartalmaznak egész évben a külföldi állampolgárságúak számára, akik külföldi személyazonosító okmányt mutatnak fel és külföldi kártyával fizetnek – ez állandó előny."
+  ],
+  "sections.6.paragraphs.1": [
+    "7f51f9e2",
+    "A sofőr nélküli étkezés és autókölcsönzés esetén a 235/026. számú rendelet fenntartja az általános kilenc pontos kedvezményt 2027. április 30-ig a jogosult elektronikus eszközökkel fizetett végső fogyasztásra. Az idényjellegű teljes mentesség egy külön juttatás, amelynek saját rendelete és dátumai vannak: a kilenc pontos kedvezmény meghosszabbítása nem erősíti meg a teljes mentességet. Utazás előtt érdeklődjön a DGI-nél."
+  ],
+  "sections.6.paragraphs.2": [
+    "f963de1e",
+    "A kedvezmény minden esetben automatikus: külföldi kártyával fizetsz, és a kedvezmény megjelenik a nyugtán vagy a kártyakivonatodon. Készpénzes fizetés esetén elveszíted a kedvezményt. Ezért érdemes szállodákat és éttermeket kártyára tenni, és kevesebb készpénzt kivenni."
+  ],
+  "sections.6.bullets.0": [
+    "fc6c4026",
+    "Szállodák/szálláshelyek: 0% ÁFA egész évben nem állandó lakosoknak."
+  ],
+  "sections.6.bullets.1": [
+    "02f7d683",
+    "Éttermek és autókölcsönzés sofőr nélkül: kilenc pont 2027. április 30-ig, az elektronikus fizetési követelmények függvényében. Szezonális teljes mentességhez külön megerősítés szükséges."
+  ],
+  "sections.6.bullets.2": [
+    "bf5ed0b5",
+    "Minden rendszernek megvannak a saját követelményei. Az általános kilenc pontos csökkentés előfeltétele a végső fogyasztás és a magánszemély által birtokolt, jogosult elektronikus fizetési mód; külföldi kibocsátás nem szükséges."
+  ],
+  "sections.7.heading": [
+    "84fbae56",
+    "Biztonsági tippek készpénzfelvételkor"
+  ],
+  "sections.7.paragraphs.0": [
+    "e227f80c",
+    "Uruguay a régió egyik legbiztonságosabb országa, de előfordulnak apró lopások, különösen Montevideo Ciudad Vieja negyedében, a kikötői területen és a főszezonban található tengerparti üdülőhelyeken. Használja a bankokban, bevásárlóközpontokban vagy üveg előcsarnokokban található ATM-eket, lehetőleg nappal, és figyeljen a környezetére."
+  ],
+  "sections.7.bullets.0": [
+    "d234b5e4",
+    "Nappal és zárt helyiségben lévő ATM-ekből vegyen fel pénzt, ne éjszaka az utcán."
+  ],
+  "sections.7.bullets.1": [
+    "f9f5f149",
+    "Két különböző számláról származó kártyát hordj magaddal, és a készpénzt több helyen is tartsd."
+  ],
+  "sections.7.bullets.3": [
+    "d7920a67",
+    "Uberrel, Cabify-jal vagy regisztrált taxikkal közlekedj; ne hagyj értéktárgyakat az autóban."
+  ],
+  "sections.7.link.label": [
+    "d8570bac",
+    "Már elakadt egy nagy cetli: hol lehet aprópénzt és aprópénzt szerezni"
+  ],
+  "networkRows.0.network": [
+    "7ee344a0",
+    "RedBROU"
+  ],
+  "networkRows.0.reach": [
+    "4a5d053e",
+    "Az állami bank BROU hálózata; több mint 400 ATM országszerte, valamint Abitab és Redpagos."
+  ],
+  "networkRows.0.usdPerTxn": [
+    "f41a726d",
+    "≈ 200 USD"
+  ],
+  "networkRows.0.note": [
+    "786a7e5f",
+    "Sok automata dollárt ad ki. A külföldi kártyák esetében a limitek hozzávetőlegesek."
+  ],
+  "networkRows.1.network": [
+    "6823b06d",
+    "Tiltott"
+  ],
+  "networkRows.1.reach": [
+    "331e78b2",
+    "Magánbankok hálózata; több mint 370 pont mind a 19 részlegen."
+  ],
+  "networkRows.1.usdPerTxn": [
+    "75830c42",
+    "≈ 300 USD"
+  ],
+  "networkRows.1.note": [
+    "9f2f1329",
+    "Összekapcsolva a RedBROU-val. Ha az egyik hálózat elutasítja a kártyádat, próbáld ki a másikat."
+  ],
+  "zones.0.name": [
+    "8a4dc608",
+    "Carrasco repülőtér (MVD), Montevideo"
+  ],
+  "zones.0.summary": [
+    "462aaacd",
+    "A globális pénzváltó irodák a nap 24 órájában nyitva tartanak, ATM-ek találhatók a terminálban (egy Santander ATM is megerősítést nyert), és egy bankfiók is található."
+  ],
+  "zones.0.tips.0": [
+    "d6202725",
+    "A repülőtéri pénzváltás érezhetően kevesebbe kerül: csak annyit kell váltani, amennyivel el lehet jutni a városba."
+  ],
+  "zones.0.tips.1": [
+    "99e81ace",
+    "Ha azonnal szükséged van készpénzre, vegyél fel egy kis összeget az ATM-ből, a többit pedig váltsd be a belvárosban."
+  ],
+  "zones.1.name": [
+    "034a744d",
+    "Montevideo (Centro, Ciudad Vieja és a kikötő)"
+  ],
+  "zones.1.summary": [
+    "04c221eb",
+    "A pénzváltók az Avenida 18 de Julio (Centro) úton és Ciudad Vieján keresztül találhatók. A hajóterminál Ciudad Vieja mellett található, pénzváltóval és ATM-ekkel."
+  ],
+  "zones.1.tips.0": [
+    "a26e5af3",
+    "A Centro és Ciudad Vieja negyedekben számos csereházat találhatsz összehasonlításra."
+  ],
+  "zones.1.tips.1": [
+    "4139b3e5",
+    "A hajóutasok a kikötőben válthatnak pénzt, az ATM-ek pedig egy rövid sétára találhatók, a Mercado del Puerto felé."
+  ],
+  "zones.2.name": [
+    "3fa606f9",
+    "Punta del Este"
+  ],
+  "zones.2.summary": [
+    "880d1f96",
+    "Pénzváltók az Avenida Gorlero főutcáján. Főszezonban sorban állások lehetnek, és az ATM-ekből kifogyhatnak a dollárok."
+  ],
+  "zones.2.tips.0": [
+    "1063deb8",
+    "Nyáron és húsvét hetében az ATM-ek gyorsan kiürülnek: vegyen fel előre pénzt, és legyen tartaléka."
+  ],
+  "zones.2.tips.1": [
+    "e4c20d9e",
+    "Támaszkodj a kártyákra és a QR-kódos fizetésekre, hogy ne csak a készpénzre támaszkodj."
+  ],
+  "zones.3.name": [
+    "2ed532f4",
+    "Colonia del Sacramento"
+  ],
+  "zones.3.summary": [
+    "764221b5",
+    "Bankautomaták a Barrio Históricóban és a kompkikötőben, pár lépésre a régi negyedtől, ahová a Buenos Airesből érkező egynapos kirándulók érkeznek."
+  ],
+  "zones.3.tips.0": [
+    "d7ebee8b",
+    "Érkezéskor vegyen ki egy kis összegű pesót, a fennmaradó összeget pedig fizesse ki kártyával."
+  ],
+  "zones.3.tips.1": [
+    "e09f3851",
+    "Sok turisztikai üzlet elfogad dollárt, bár kedvezőtlen árfolyamon."
+  ],
+  "zones.4.name": [
+    "ed7917f9",
+    "Kompterminálok (Buquebus / Colonia Express)"
+  ],
+  "zones.4.summary": [
+    "ac18ddf9",
+    "A Montevideo és Colonia terminálokon találhatók ATM-ek. A terminálokon belüli és a fedélzeti pénzváltás általában alacsony árfolyamokat kínál."
+  ],
+  "zones.4.tips.0": [
+    "b5a97e0f",
+    "Kerüld a nagy összegek váltását a terminálon vagy a fedélzeten – az árfolyamok rosszak."
+  ],
+  "zones.4.tips.1": [
+    "91b3c105",
+    "Jobb, ha ATM-et használsz, vagy egy városi pénzváltóban váltasz pénzt."
+  ],
+  "zones.5.name": [
+    "66cc7244",
+    "A belső területek és a kisebb városok"
+  ],
+  "zones.5.summary": [
+    "fc9a5afd",
+    "A nagyobb városokon és üdülőhelyeken kívül ritkák az ATM-ek."
+  ],
+  "zones.5.tips.0": [
+    "48821abe",
+    "Mielőtt a szárazföld belseje felé indulnál, halmozz fel készpénzt Montevideóban, Punta del Estében vagy Coloniában."
+  ],
+  "zones.5.tips.1": [
+    "02573d37",
+    "A Rocha parton nagyobb városokban, például Chuyban vagy La Palomában érdemes tankolni."
+  ],
+  "steps.0.name": [
+    "aa213b75",
+    "Keressen egy ATM-et, amely elfogadja a kártyáját"
+  ],
+  "steps.0.text": [
+    "2f5d9e7c",
+    "Keresse a Visa, Mastercard, Cirrus, Plus vagy Maestro logókat; előnyben részesítse a bankokban vagy bevásárlóközpontokban található ATM-eket."
+  ],
+  "steps.1.name": [
+    "4209811a",
+    "Válasszon dollárt vagy pesót"
+  ],
+  "steps.1.text": [
+    "f338ade4",
+    "Napi kiadásokra vigyél magaddal pesót, és csak akkor dollárt, ha készpénzre van szükséged; a dollárok 100 dolláros bankjegyekben kaphatók."
+  ],
+  "steps.2.name": [
+    "24d1a5da",
+    "Az Ön pénznemére való átváltás elutasítása"
+  ],
+  "steps.2.text": [
+    "3f2be811",
+    "Amikor a helyi pénznemében történő fizetést kínálják fel, válaszd az „átváltás nélküli” opciót vagy a helyi pénznemet a DCC felár elkerülése érdekében."
+  ],
+  "steps.3.name": [
+    "4e44a3f9",
+    "Tranzakciónként maximum felvehető összeg"
+  ],
+  "steps.3.text": [
+    "831b2ec9",
+    "Mivel fix kifizetési díj van, használd ki a megengedett limitet, hogy a költséget több készpénzre oszd el."
+  ],
+  "steps.4.name": [
+    "6fcb61ed",
+    "Őrizd meg a nyugtát és számold meg a pénzt"
+  ],
+  "steps.4.text": [
+    "30d70c06",
+    "Ellenőrizze a kifizetett összeget, őrizze meg a bizonylatot, és a készpénzt több helyre ossza szét, mielőtt elhagyja az ATM-et."
+  ],
+  "faq.0.q": [
+    "e44ca992",
+    "Felvehetek amerikai dollárt Uruguayban ATM-ekből?"
+  ],
+  "faq.0.a": [
+    "eb6339a1",
+    "Igen. Argentínával ellentétben sok uruguayi ATM dollárt is kiad a peso mellett, általában 100 dolláros bankjegyekben. A külföldi kártyák esetében alacsony a készpénzfelvételi limit."
+  ],
+  "faq.1.q": [
+    "33423670",
+    "Mennyi díjat számítanak fel a külföldi kártyák ATM-jei?"
+  ],
+  "faq.1.a": [
+    "68121602",
+    "A helyi felár alacsony (felvételenként néhány dollár nagyságrendű). A nagyobb költség általában a saját bankod külföldi tranzakciós díja (1–3% az általános)."
+  ],
+  "faq.2.q": [
+    "bf2fe8ff",
+    "Mi a maximális összeg, amit tranzakciónként kivehetek?"
+  ],
+  "faq.3.q": [
+    "66601510",
+    "Kell pénzt váltanom a repülőtéren?"
+  ],
+  "faq.3.a": [
+    "82d5704c",
+    "Nem nagy összegekért: a repülőtér és a kompterminálok érezhetően kevesebbet fizetnek. Csak annyit válts, amennyi a városba esik, utána használj egy belvárosi pénzváltót vagy ATM-et."
+  ],
+  "faq.4.q": [
+    "44d07e17",
+    "Készpénz vagy kártya Uruguayban?"
+  ],
+  "faq.4.a": [
+    "11ded5ec",
+    "Uruguay nagyon kártyabarát (Visa és Mastercard szinte mindenhol, érintésmentes és QR-kártyák). Kisebb vásárlásokhoz vigyél magaddal pesót készpénzben, nagyobb összegeket pedig fizess kártyával."
+  ],
+  "faq.5.q": [
+    "2d0dd094",
+    "Milyen valutát vigyek magammal?"
+  ],
+  "faq.5.a": [
+    "cc8484ac",
+    "Készpénzes amerikai dollár: a legjobb árfolyamok és minden pénzváltó elfogadja. Az euró a második helyen áll. Argentínából érkezve dollárt hozzon magával, ne argentin pesót."
+  ],
+  "faq.6.q": [
+    "b71d8d92",
+    "Kapok-e adókedvezményt turistaként?"
+  ],
+  "faq.6.a": [
+    "49712ab8",
+    "Igen: a szállásra vonatkozó szabályozás mellett az étkezésre és a sofőr nélküli autóbérlésre vonatkozó általános kilenc pontos kedvezmény a nem rezidensekre is vonatkozik 2027. április 30-ig, a magánszemély által elektronikusan fizetett végső fogyasztás esetén. A szezonális teljes mentességhez külön rendelet és dátumok szükségesek; nem lehet ebből a kiterjesztésből levezetni."
+  ],
+  "faq.7.q": [
+    "04fb59ce",
+    "Mi van, ha az ATM elutasítja a kártyámat?"
+  ],
+  "faq.7.a": [
+    "15f0167b",
+    "Próbálj ki egy másik kártyát és a másik hálózatot (a RedBROU és a Banred össze vannak kötve, de mindkettő segít). Ellenőrizd, hogy az ATM-en látható-e a Visa/Mastercard/Cirrus/Plus logó, és mondd meg a bankodnak, hogy Uruguayban fogod használni."
+  ],
+  "related.0.label": [
+    "9371cd8d",
+    "Dollár utazásra"
+  ],
+  "related.1.label": [
+    "89470d17",
+    "Dollárt vásárol a legjobb áron"
+  ],
+  "related.2.label": [
+    "7b531a45",
+    "Tőzsdeházak és fiókok"
+  ],
+  "related.3.label": [
+    "574f3e27",
+    "Árak összehasonlítása"
+  ]
+}

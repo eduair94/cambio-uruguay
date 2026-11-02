@@ -83,6 +83,7 @@
 // buscador. No repite lo que ya mostró el bloque de directorios.
 import { directorioAnalisisParaRuta } from '~/utils/directorioAnalisis'
 import { familiaNavRutas } from '~/utils/familiaNav'
+import { isExtraLocale } from '~/utils/locales'
 import { temaVecinosParaRuta } from '~/utils/temaVecinos'
 
 /** Páginas visibles por tema, en el orden del tema; las demás quedan en un desplegable. */
@@ -90,15 +91,19 @@ const VISIBLE = 6
 
 const route = useRoute()
 const localePath = useLocalePath()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const track = useTrack()
 
 // Sin lo que ya enlazan la barra "En esta sección" (arriba) y el bloque directorio ↔ análisis.
+// Nada en los idiomas traducidos por máquina (utils/locales.ts): el nombre del tema y sus
+// páginas son castellano (`guideHubs.ts`), y sería el único texto en español de la página.
 const grupos = computed(() =>
-  temaVecinosParaRuta(route.path, [
-    ...familiaNavRutas(route.path),
-    ...(directorioAnalisisParaRuta(route.path)?.links.map(link => link.to) ?? []),
-  ])
+  isExtraLocale(locale.value)
+    ? []
+    : temaVecinosParaRuta(route.path, [
+        ...familiaNavRutas(route.path),
+        ...(directorioAnalisisParaRuta(route.path)?.links.map(link => link.to) ?? []),
+      ])
 )
 
 function trackClick(destination: string) {

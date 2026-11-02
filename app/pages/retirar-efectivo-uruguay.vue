@@ -238,12 +238,19 @@ import {
   WITHDRAW_SOURCES,
 } from '~/utils/withdrawCash'
 import { resolveIvaStatus } from '~/utils/ivaStatus'
+import { isExtraLocale } from '~/utils/locales'
 
 const { locale } = useI18n()
 const localePath = useLocalePath()
 
-// Localized content tree for the active UI locale (falls back to es).
-const c = computed(() => getWithdrawContent(locale.value))
+// Localized content tree for the active UI locale (falls back to es). The extra locales read
+// the English tree with its machine translation laid over it (useContentTranslation).
+const translation = await useContentTranslation('withdraw')
+const c = computed(() =>
+  isExtraLocale(locale.value)
+    ? translatedTree(getWithdrawContent('en'), locale.value, translation.value)
+    : getWithdrawContent(locale.value)
+)
 const sources = WITHDRAW_SOURCES
 
 // Resolve only the encoded benefit periods. Beyond the confirmed base extension,
@@ -277,7 +284,7 @@ const ogImageUrl = computed(
 
 // Short uppercase OG tag, localized.
 const ogTag = computed(
-  () => ({ es: 'EFECTIVO', en: 'CASH', pt: 'DINHEIRO' })[locale.value] ?? 'EFECTIVO'
+  () => ({ es: 'EFECTIVO', en: 'CASH', pt: 'DINHEIRO' })[locale.value] ?? 'CASH'
 )
 
 defineOgImageComponent('Cambio', {

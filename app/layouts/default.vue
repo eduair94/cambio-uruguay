@@ -343,6 +343,7 @@
 import { useLocalePath } from '#imports'
 import { useLoadingStore } from '~/stores/loading'
 import { normalizeAdPath } from '~/utils/ads'
+import { LOCALE_PREFIX_RE } from '~/utils/locales'
 import { authorReference } from '~/utils/authorEntity'
 import { NAV_SECTIONS, type NavEntry, type NavSection } from '~/utils/siteNav'
 
@@ -411,8 +412,9 @@ watch(
 // Methods
 const isActiveRoute = (path: string) => {
   if (path === '/') {
+    // The home in any locale: `/`, `/es`, `/en`, `/fr`…
     return (
-      route.path === '/' || route.path === '/es' || route.path === '/en' || route.path === '/pt'
+      route.path === '/' || route.path === '/es' || route.path.replace(LOCALE_PREFIX_RE, '') === ''
     )
   }
   return route.path.startsWith(path)
@@ -543,11 +545,22 @@ onUnmounted(() => window.removeEventListener('keydown', onGlobalKeydown))
 // useHead below to avoid clobbering the existing canonical/meta/JSON-LD.
 // Unhead deduplicates `id`; i18n's legacy default `hid` is no longer recognized.
 const i18nHead = useLocaleHead()
-useHead(() => ({
-  htmlAttrs: i18nHead.value.htmlAttrs ?? {},
-  link: i18nHead.value.link ?? [],
-  meta: i18nHead.value.meta ?? [],
-}))
+useHead(() => {
+  const head = i18nHead.value
+  // i18n emits an og:locale:alternate for EVERY configured locale, page or no page — with the
+  // machine-translated locales (utils/locales.ts) that was 34 tags on every Spanish-only page.
+  // Keep the ones whose hreflang link exists, which i18n only emits for routes that exist.
+  const linked = new Set(
+    (head.link ?? []).map(link => String(link.hreflang ?? '').replace(/-/g, '_'))
+  )
+  return {
+    htmlAttrs: head.htmlAttrs ?? {},
+    link: head.link ?? [],
+    meta: (head.meta ?? []).filter(
+      meta => meta.property !== 'og:locale:alternate' || linked.has(String(meta.content))
+    ),
+  }
+})
 
 // Head configuration
 //

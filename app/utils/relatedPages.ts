@@ -22,10 +22,11 @@
 // exercise the ranking directly — same contract as `siteNav.ts` and `ads.ts`.
 
 import { isBareRoute } from './bareRoutes'
+import { PREFIXED_LOCALE_CODES } from './locales'
 import { NAV_SECTIONS, tokenize } from './siteNav'
 
-/** Locale prefixes the router can put in front of a path. */
-const LOCALE_PREFIXES = ['/en', '/pt'] as const
+/** Locale prefixes the router can put in front of a path, the machine-translated ones included. */
+const LOCALE_PREFIXES = PREFIXED_LOCALE_CODES.map(code => `/${code}`)
 
 /**
  * Routes that show no "what to read next" block.

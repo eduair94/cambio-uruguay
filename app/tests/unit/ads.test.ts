@@ -9,6 +9,13 @@ describe('normalizeAdPath', () => {
     expect(normalizeAdPath('/en')).toBe('/')
     expect(normalizeAdPath('/')).toBe('/')
   })
+
+  it('drops the machine-translated locale prefixes too, so their pages keep the route rules', () => {
+    expect(normalizeAdPath('/fr/pizarra')).toBe('/pizarra')
+    expect(normalizeAdPath('/zh')).toBe('/')
+    expect(adDensityForPath('/ja/pizarra')).toBe(adDensityForPath('/pizarra'))
+    expect(normalizeAdPath('/casa/brou')).toBe('/casa/brou')
+  })
 })
 
 describe('adDensityForPath', () => {

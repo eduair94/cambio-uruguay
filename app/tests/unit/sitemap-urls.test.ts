@@ -9,6 +9,8 @@ import { join, relative, resolve, sep } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { installNitroGlobals } from './helpers/nitro'
+import { EXTRA_LOCALE_CODES, LOCALE_PREFIX_RE, hasExtraLocales } from '../../utils/locales'
+import { splitLocalePath } from '../../utils/localizedRoutes'
 
 // This file needs more than the default 5s per test, and that is a property of
 // what it does rather than something to optimise away. Every scenario calls
@@ -179,7 +181,32 @@ describe('sitemap with a healthy API', () => {
       expect(locs.has(`${prefix}/herramientas/alquiler-ideal-uruguay`)).toBe(false)
     }
   })
+
+  it('emits the machine-translated locales only on their routes, with reciprocal hreflang', async () => {
+    const urls = await runHandler(HEALTHY)
+    const extra = urls.filter(url => {
+      const { locale } = splitLocalePath(url.loc)
+      return EXTRA_LOCALE_CODES.includes(locale)
+    })
+    for (const url of extra) {
+      expect(hasExtraLocales(splitLocalePath(url.loc).path), url.loc).toBe(true)
+    }
+    const mapa = urls.find(url => url.loc === '/fr/mapa')
+    expect(mapa).toBeTruthy()
+    expect(mapa!.alternatives).toEqual(
+      expect.arrayContaining([
+        { hreflang: 'fr', href: '/fr/mapa' },
+        { hreflang: 'zh-CN', href: '/zh/mapa' },
+        { hreflang: 'es-ES', href: '/mapa' },
+      ])
+    )
+    const guias = urls.find(url => url.loc === '/guias')
+    expect(guias?.alternatives?.some(alt => alt.hreflang === 'fr')).toBe(false)
+    expect(locsOf(urls).has('/fr/guias')).toBe(false)
+  })
 })
+
+const locsOf = (urls: SitemapUrl[]) => new Set(urls.map(url => url.loc))
 
 describe('sitemap when the API is down', () => {
   it('still serves the full static backbone instead of an empty sitemap', async () => {
@@ -325,12 +352,12 @@ describe('cada URL que el sitemap declara existe en el router', () => {
   it('no declara ninguna URL que el router no resuelva', async () => {
     const urls = await runHandler(HEALTHY)
     // Los prefijos de idioma los agrega el emisor sobre la misma ruta española, así que se miden
-    // una vez: comprobar `/en/x` y `/pt/x` repetiría el mismo hallazgo tres veces.
+    // una vez: comprobar `/en/x`, `/pt/x` o `/fr/x` repetiría el mismo hallazgo en cada idioma.
     const broken = [
       ...new Set(
         urls
           .map(url => url.loc)
-          .filter(loc => !/^\/(?:en|pt)(?:\/|$)/.test(loc))
+          .filter(loc => !LOCALE_PREFIX_RE.test(loc))
           .filter(loc => !resolvesInRouter(loc))
       ),
     ].sort()

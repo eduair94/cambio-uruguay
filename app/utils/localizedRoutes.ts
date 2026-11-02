@@ -1,3 +1,4 @@
+import { LOCALE_PREFIX_RE } from './locales'
 import { NAV_SECTIONS } from './siteNav'
 
 /**
@@ -31,11 +32,14 @@ const LOCALIZED_NAV = new Set(
   )
 )
 
-/** `/en/guias/x` → `{ locale: 'en', path: '/guias/x' }`; Spanish paths come back as they are. */
-export function splitLocalePath(path: string): { locale: 'es' | 'en' | 'pt'; path: string } {
-  const match = /^\/(en|pt)(?=\/|$)/.exec(path)
+/**
+ * `/en/guias/x` → `{ locale: 'en', path: '/guias/x' }` (any prefixed locale, utils/locales.ts);
+ * Spanish paths come back as they are.
+ */
+export function splitLocalePath(path: string): { locale: string; path: string } {
+  const match = LOCALE_PREFIX_RE.exec(path)
   if (!match) return { locale: 'es', path: path || '/' }
-  return { locale: match[1] as 'en' | 'pt', path: path.slice(match[0].length) || '/' }
+  return { locale: match[1]!, path: path.slice(match[0].length) || '/' }
 }
 
 /** Whether `path` (Spanish, without locale prefix) has its own /en and /pt pages. */

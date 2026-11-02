@@ -32,6 +32,8 @@
 //
 // PURE (sin h3, sin Nitro) para poder probarlo con las cadenas reales que manda el servidor.
 
+import { PREFIXED_LOCALE_CODES } from './locales'
+
 /** El nombre de la cookie que escribe @nuxtjs/i18n (`detectBrowserLanguage.cookieKey`). */
 export const LANG_COOKIE = 'lang'
 
@@ -39,7 +41,7 @@ export const LANG_COOKIE = 'lang'
 export const DEFAULT_LOCALE = 'es'
 
 /** Los idiomas que el router pone como prefijo de ruta (`strategy: 'prefix_except_default'`). */
-export const PREFIXED_LOCALES = ['en', 'pt'] as const
+export const PREFIXED_LOCALES: readonly string[] = PREFIXED_LOCALE_CODES
 
 /**
  * El idioma que la URL YA dice, y que por lo tanto la cookie no agrega.
@@ -55,7 +57,7 @@ export const PREFIXED_LOCALES = ['en', 'pt'] as const
 export function redundantLangLocale(path: string): string {
   const clean = String(path || '/').split('?')[0] ?? '/'
   const first = clean.split('/')[1] ?? ''
-  return (PREFIXED_LOCALES as readonly string[]).includes(first) ? first : DEFAULT_LOCALE
+  return PREFIXED_LOCALES.includes(first) ? first : DEFAULT_LOCALE
 }
 
 /** True si esta cabecera `Set-Cookie` es la del idioma por defecto y nada más. */

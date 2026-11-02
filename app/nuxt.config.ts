@@ -1,6 +1,13 @@
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { CONSENT_STRICT_REGIONS } from './utils/consent'
+import { EXTRA_LOCALES } from './utils/locales'
+import { extraMessagesVersion } from './i18n/extraMessagesVersion'
+
+// The machine-translated messages, served as public JSON (i18n/locales/extra.ts explains why
+// they are not bundled). The hash goes in their URL so a deploy with new copy is a new URL.
+const EXTRA_MESSAGES_DIR = fileURLToPath(new URL('./i18n/extra', import.meta.url))
+const extraLocalesVersion = extraMessagesVersion(EXTRA_MESSAGES_DIR)
 
 // Read only this checkout: app remains a self-contained deploy surface. PM2
 // need not load .env again; Nuxt serializes these build defaults into runtimeConfig.
@@ -832,6 +839,9 @@ export default defineNuxtConfig({
       gzip: true,
       brotli: true,
     },
+    // /i18n-messages/<code>.json — the extra locales' messages (i18n/locales/extra.ts). A day
+    // of cache is safe: the loader asks for `?v=<hash of the files>`.
+    publicAssets: [{ baseURL: '/i18n-messages', dir: EXTRA_MESSAGES_DIR, maxAge: 60 * 60 * 24 }],
     // Client assets stay minified by Vite. Minifying the private Node server
     // bundle adds substantial CPU/RAM cost without reducing browser payloads.
     minify: false,
@@ -1310,8 +1320,16 @@ export default defineNuxtConfig({
     // catalogue. Explicit locale filters replace the module's automatic mapping.
     sitemaps: {
       'en-US': { includeAppSources: true, include: ['/en/**'] },
-      'es-ES': { includeAppSources: true, exclude: ['/en/**', '/pt/**'] },
+      'es-ES': {
+        includeAppSources: true,
+        exclude: ['/en/**', '/pt/**', ...EXTRA_LOCALES.map(({ code }) => `/${code}/**`)],
+      },
       'pt-PT': { includeAppSources: true, include: ['/pt/**'] },
+      // Every machine-translated locale in one file: ~10 pages each (utils/locales.ts).
+      translations: {
+        includeAppSources: true,
+        include: EXTRA_LOCALES.map(({ code }) => `/${code}/**`),
+      },
       rentals: {
         includeAppSources: false,
         sources: [['/api/__sitemap__/rentals', { timeout: 60_000 }]],
@@ -1394,6 +1412,14 @@ export default defineNuxtConfig({
       { code: 'en', language: 'en-US', name: 'English', file: 'en.ts' },
       { code: 'es', language: 'es-ES', name: 'Español', file: 'es.ts' },
       { code: 'pt', language: 'pt-PT', name: 'Português', file: 'pt.ts' },
+      // Machine-translated (scripts/i18n/translate.mjs) and present only on the routes in
+      // `EXTRA_LOCALE_ROUTES` — modules/extra-locales.ts prunes the rest. See utils/locales.ts.
+      ...EXTRA_LOCALES.map(({ code, language, name }) => ({
+        code,
+        language,
+        name,
+        file: { path: 'extra.ts', cache: false },
+      })),
     ],
     defaultLocale: 'es',
     strategy: 'prefix_except_default',
@@ -1404,6 +1430,8 @@ export default defineNuxtConfig({
     // URL (`switchLocalePath`) y las versiones /en y /pt siguen indexadas por hreflang, así que
     // quien quiere otro idioma lo encuentra; Googlebot no manda Accept-Language, no cambia nada.
     detectBrowserLanguage: false,
+    // fallbackLocale for the extra locales (see the file).
+    vueI18n: './i18n.config.ts',
     // imports: false, // Disable vue-i18n composable auto-imports (removed, not supported)
   },
 
@@ -1521,6 +1549,7 @@ export default defineNuxtConfig({
     },
     // Public keys (exposed to client-side)
     public: {
+      extraLocalesVersion,
       // DSN is the public ingestion address, never an auth token. Runtime
       // overrides are NUXT_PUBLIC_SENTRY_* / NUXT_SENTRY_* respectively.
       sentry: {

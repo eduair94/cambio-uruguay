@@ -1,0 +1,546 @@
+{
+  "title": [
+    "1229e1ce",
+    "Tempat untuk mengeluarkan wang tunai di Uruguay: ATM, yuran dan tempat tumpuan pelancong"
+  ],
+  "metaTitle": [
+    "3e82d293",
+    "ATM di Uruguay: keluarkan dolar atau peso"
+  ],
+  "description": [
+    "3eb63bbe",
+    "Bagaimana dan di mana untuk mendapatkan wang tunai di Uruguay sebagai pelancong: ATM yang mengeluarkan dolar AS dan peso, yuran, had pengeluaran, perangkap penukaran mata wang (DCC), dan tempat terbaik untuk mengeluarkan wang di lapangan terbang, Montevideo, Punta del Este dan Colonia."
+  ],
+  "keywords": [
+    "4acfb17e",
+    "keluarkan tunai uruguay, keluarkan wang uruguay, pelancong uruguay ATM, dolar dari uruguay ATM, tukar wang uruguay, yuran ATM uruguay, casas de cambio uruguay"
+  ],
+  "tldr.0": [
+    "5f1561fe",
+    "ATM Uruguay mengeluarkan kedua-dua dolar AS dan peso — satu kelebihan serantau yang jarang berlaku (di Argentina ia hampir mustahil)."
+  ],
+  "tldr.1": [
+    "7b41d73f",
+    "Terdapat dua rangkaian: RedBROU dan Banred. Jika salah satu gagal, cuba yang lain; bawalah kedua-dua Visa dan Mastercard."
+  ],
+  "tldr.2": [
+    "c5aa36e3",
+    "Apabila ATM menawarkan untuk mengenakan bayaran dalam mata wang tempatan anda, sentiasa pilih mata wang tempatan: \"penukaran\" menyembunyikan kadar pertukaran yang buruk."
+  ],
+  "tldr.3": [
+    "b73d4126",
+    "Elakkan menukar sejumlah besar wang di lapangan terbang atau terminal feri — kadarnya jauh lebih rendah."
+  ],
+  "tldr.4": [
+    "83b2ff36",
+    "Bayar hotel dan restoran dengan kad asing: selain faedah VAT, anda membawa kurang wang tunai."
+  ],
+  "ui.backToTools": [
+    "950196fc",
+    "Alatan"
+  ],
+  "ui.tldrTitle": [
+    "799c628c",
+    "Pendek kata"
+  ],
+  "ui.networksTitle": [
+    "90dd37e5",
+    "Dua rangkaian ATM: RedBROU dan Banred"
+  ],
+  "ui.tableNetwork": [
+    "6974ad65",
+    "Rangkaian"
+  ],
+  "ui.tableReach": [
+    "c549e23b",
+    "Liputan"
+  ],
+  "ui.tableUsd": [
+    "47b34a69",
+    "Had AS$ / pengeluaran"
+  ],
+  "ui.tableUyu": [
+    "7d4e5b12",
+    "Had $U / pengeluaran"
+  ],
+  "ui.tableNote": [
+    "0ff01b6a",
+    "Nota"
+  ],
+  "ui.zonesTitle": [
+    "126f8827",
+    "Di mana untuk mendapatkan wang tunai melalui zon pelancongan"
+  ],
+  "ui.zonesIntro": [
+    "e4c560b0",
+    "Rujukan peringkat zon dan mercu tanda (bukan alamat yang tepat, yang berubah). ATM biasanya berada di dalam bank, pusat membeli-belah atau cawangan Abitab dan Redpagos."
+  ],
+  "ui.stepsTitle": [
+    "3e1ff2e0",
+    "Cara mengeluarkan wang tunai, langkah demi langkah"
+  ],
+  "ui.faqTitle": [
+    "e466bfa9",
+    "Soalan lazim"
+  ],
+  "ui.sourcesTitle": [
+    "105bfcc3",
+    "Sumber & rujukan"
+  ],
+  "ui.relatedTitle": [
+    "ac7a8ccc",
+    "Teruskan membaca"
+  ],
+  "ui.ctaTitle": [
+    "60dda6a1",
+    "Bandingkan sebelum anda menukar"
+  ],
+  "ui.ctaText": [
+    "fe6b01a6",
+    "Lihat kadar dolar merentasi 40+ rumah pertukaran, dikemas kini setiap 10 minit dan pilih tempat terbaik untuk beroperasi."
+  ],
+  "ui.ctaButton": [
+    "9efd557a",
+    "Buka pembanding"
+  ],
+  "ui.mapButton": [
+    "4e8c8db6",
+    "Lihat titik pengeluaran pada peta"
+  ],
+  "ui.disclaimer": [
+    "b166cfce",
+    "Maklumat rujukan untuk pelancong, bukan nasihat kewangan. Yuran, had dan faedah cukai berubah: sahkannya semasa ketibaan dan dengan penerbit kad anda. Kami tidak bergabung dengan bank atau rumah pertukaran yang dinyatakan."
+  ],
+  "ui.lastChecked": [
+    "9182e108",
+    "Semakan terakhir: Jun 2026"
+  ],
+  "ivaLive.heading": [
+    "5af716c3",
+    "Faedah VAT Pelancong berkuat kuasa hari ini"
+  ],
+  "ivaLive.asOf": [
+    "dd801240",
+    "Status setakat {date}:"
+  ],
+  "ivaLive.hotel": [
+    "152a8c47",
+    "Penginapan (hotel dan yang serupa): 0% VAT sepanjang tahun."
+  ],
+  "ivaLive.base": [
+    "9856855a",
+    "Makan dan sewa kereta tanpa pemandu: pengurangan VAT mata {points} untuk penggunaan akhir yang dibayar dengan kad individu, termasuk kad asing, sehingga 30 April 2027 (Dekri 235/026; sumber disemak pada 23 Oktober 2026)."
+  ],
+  "ivaLive.baseUnconfirmed": [
+    "d65944df",
+    "Tempat makan dan sewa kereta: lanjutan yang disahkan tamat pada 30 April 2027. Semak dengan DGI pengurangan yang terpakai pada tarikh pembelian anda."
+  ],
+  "ivaLive.seasonalOn": [
+    "41748da1",
+    "Pengecualian VAT penuh musim panas: AKTIF (sehingga {end})."
+  ],
+  "ivaLive.seasonalOff": [
+    "015a1161",
+    "Pengecualian VAT penuh musim panas: kami tiada tempoh yang disahkan untuk tarikh ini. Semak dengan DGI sebelum bergantung pada faedah ini."
+  ],
+  "sections.0.heading": [
+    "90dd37e5",
+    "Dua rangkaian ATM: RedBROU dan Banred"
+  ],
+  "sections.0.paragraphs.0": [
+    "0f52a7fe",
+    "Uruguay mempunyai dua rangkaian ATM: RedBROU, yang dikendalikan oleh bank negeri (BROU), dan Banred, rangkaian bank swasta. Kedua-duanya saling berkaitan dan dihubungkan ke rangkaian antarabangsa (Mastercard Cirrus/Maestro dan Visa Plus), jadi kad asing berfungsi pada kedua-duanya."
+  ],
+  "sections.0.paragraphs.1": [
+    "208b768b",
+    "Untuk memastikan ATM mengambil kad anda, cari logo Visa, Mastercard, Cirrus, Plus atau Maestro pada mesin tersebut. Petua praktikal: bawa Visa dan Mastercard daripada akaun yang berbeza; jika satu kad atau mesin rosak, cuba rangkaian yang lain."
+  ],
+  "sections.1.heading": [
+    "612974f0",
+    "Dolar atau peso? Di Uruguay anda boleh mengambil kedua-duanya"
+  ],
+  "sections.1.paragraphs.0": [
+    "d9928d31",
+    "Tidak seperti Argentina, banyak ATM di Uruguay mengeluarkan dolar AS serta peso Uruguay. Itu adalah kelebihan sebenar jika anda mahukan wang tunai tanpa perlu pergi ke rumah pertukaran. Dolar biasanya dikeluarkan dalam bentuk wang kertas AS$100 yang, digabungkan dengan had setiap pengeluaran, bermakna anda hanya mendapat satu wang kertas pada satu masa."
+  ],
+  "sections.1.paragraphs.1": [
+    "cd694b7a",
+    "Peraturan mudah: ambil peso untuk perbelanjaan harian (teksi, pasar, kedai kecil) dan dolar hanya jika anda benar-benar memerlukannya secara tunai. Untuk kebanyakan pembayaran yang lebih besar, kad mengatasi wang tunai."
+  ],
+  "sections.2.heading": [
+    "9ce97b34",
+    "Yuran dan had pengeluaran"
+  ],
+  "sections.2.paragraphs.0": [
+    "e28a7f0e",
+    "Caj tambahan yang dikenakan oleh ATM Uruguay pada kad asing adalah rendah berbanding dengan kebanyakan negara (dengan jumlah beberapa dolar setiap pengeluaran). Kos yang lebih besar biasanya adalah dari bank anda sendiri: yuran transaksi asing (biasanya 1–3%) ditambah kadangkala caj pengeluaran antarabangsa yang tetap. Kad perjalanan tanpa yuran FX menjimatkan hampir semua itu."
+  ],
+  "sections.2.paragraphs.1": [
+    "154c6f01",
+    "Had setiap pengeluaran untuk kad asing ditetapkan oleh rangkaian tempatan, bukan bank anda, dan had tersebut adalah rendah. Bank anda juga mengenakan had hariannya sendiri. Hubungi bank anda sebelum melancong untuk menaikkan had tersebut dan keluarkan had maksimum setiap transaksi untuk mengagihkan yuran tetap kepada lebih banyak wang tunai."
+  ],
+  "sections.2.bullets.0": [
+    "befd8df3",
+    "Caj tambahan pengeluaran tempatan: anggaran, dalam lingkungan beberapa dolar (semak jumlah pada skrin sebelum mengesahkan)."
+  ],
+  "sections.2.bullets.1": [
+    "0f872d39",
+    "Yuran bank/pengeluar anda: biasanya kos yang lebih besar; semak sama ada kad anda mengenakan yuran transaksi asing."
+  ],
+  "sections.2.bullets.2": [
+    "8301e954",
+    "Had setiap pengeluaran: sekitar US$ 200–300 atau $U 5,000 bergantung pada rangkaian (anggaran, mungkin berubah)."
+  ],
+  "sections.2.bullets.3": [
+    "4aacdc05",
+    "Had harian: ditetapkan oleh bank anda; maklumkan sebelum melancong untuk menaikkannya."
+  ],
+  "sections.3.heading": [
+    "6bd46a0c",
+    "Perangkap penukaran mata wang (DCC): sentiasa pilih mata wang tempatan"
+  ],
+  "sections.3.paragraphs.0": [
+    "29fe4c81",
+    "Banyak ATM dan terminal kad menawarkan untuk \"mengecas dalam mata wang tempatan anda\" dan bukannya dalam peso atau dolar Uruguay. Ia kedengaran mudah (\"lihat berapa banyak wang anda\"), tetapi penukaran mata wang dinamik (DCC) itu mengenakan kadar pertukaran yang melambung ditambah yuran tersembunyi. Anda hampir selalu rugi."
+  ],
+  "sections.3.paragraphs.1": [
+    "34380f1f",
+    "Sentiasa pilih \"tanpa penukaran\" atau mata wang tempatan: Peso Uruguay apabila anda mengambil peso, dolar apabila anda mengambil dolar. Biar bank anda sendiri yang melakukan penukaran — kadarnya biasanya lebih baik."
+  ],
+  "sections.4.heading": [
+    "cc573fd8",
+    "Rumah pertukaran, ATM atau bank: yang mana terbaik?"
+  ],
+  "sections.4.paragraphs.0": [
+    "1116ae4f",
+    "Rumah pertukaran (casas de cambio seperti Varlix, Indumex, Gales, Aspen, Cambio Sir, Cambio Inglés dan Global Exchange) adalah cara klasik untuk menukar wang tunai. Mereka memberikan kadar terbaik untuk dolar, dengan sedikit spread dan tiada komisen; euro adalah mata wang kedua terbaik, real Brazil boleh diterima, dan peso Argentina adalah yang terburuk. Mereka biasanya meminta pasport anda."
+  ],
+  "sections.4.paragraphs.1": [
+    "b7c83296",
+    "Waktu Operasi: cawangan jalanan dibuka Isnin hingga Jumaat (sekitar 9 hingga 19 pagi) dan Sabtu; kebanyakannya ditutup pada hari Ahad. Cawangan di dalam pusat beli-belah dibuka setiap hari dan kemudian. Untuk membandingkan kadar harian merentas rumah, gunakan pembanding kami dan halaman cawangan."
+  ],
+  "sections.5.heading": [
+    "f8b82759",
+    "Berapa banyak wang tunai yang perlu dibawa dan mata wang yang perlu dibawa"
+  ],
+  "sections.5.paragraphs.0": [
+    "e22fd664",
+    "Uruguay sangat mesra kad: Visa dan Mastercard diterima hampir di mana-mana, dengan pembayaran tanpa sentuh dan QR (Mercado Pago) yang meluas. Hanya bawa beberapa peso tunai untuk pembelian kecil dan bayar jumlah yang lebih besar dengan kad."
+  ],
+  "sections.5.paragraphs.1": [
+    "f9b88276",
+    "Jika anda membawa wang tunai untuk menukar, dolar AS adalah mata wang terbaik (kadar terbaik, diterima di setiap rumah). Euro adalah mata wang kedua. Datang dari Argentina, bawalah dolar, bukan peso Argentina — peso berubah dengan sangat teruk di Uruguay. Dari Brazil, wang sebenar berfungsi, terutamanya berhampiran sempadan, walaupun dolar masih lebih mudah."
+  ],
+  "sections.6.heading": [
+    "97a59b72",
+    "Faedah VAT Pelancong (apabila anda membayar dengan kad asing)"
+  ],
+  "sections.6.paragraphs.0": [
+    "88ea76fc",
+    "Uruguay membayar balik sebahagian daripada VAT kepada pelancong bukan pemastautin yang membayar dengan kad yang dikeluarkan oleh negara asing. Penginapan (hotel berdaftar dan yang serupa) dikenakan VAT 0% sepanjang tahun untuk bukan pemastautin yang menunjukkan kad pengenalan asing dan membayar dengan kad asing — faedah kekal."
+  ],
+  "sections.6.paragraphs.1": [
+    "7f51f9e2",
+    "Bagi tempat makan dan sewa kereta tanpa pemandu, Dekri 235/026 mengekalkan pengurangan sembilan mata umum sehingga 30 April 2027 untuk penggunaan akhir yang dibayar dengan cara elektronik yang layak. Pengecualian penuh bermusim adalah faedah berasingan dengan dekri dan tarikhnya sendiri: melanjutkan pengurangan sembilan mata tidak mengesahkan pengecualian penuh. Semak dengan DGI sebelum melancong."
+  ],
+  "sections.6.paragraphs.2": [
+    "f963de1e",
+    "Dalam setiap kes, diskaun adalah automatik: anda membayar dengan kad asing anda dan faedahnya akan dipaparkan pada resit atau penyata kad anda. Bayar secara tunai dan anda akan kehilangannya. Jadi, adalah berbaloi untuk meletakkan hotel dan restoran pada kad dan mengeluarkan wang tunai yang lebih sedikit."
+  ],
+  "sections.6.bullets.0": [
+    "fc6c4026",
+    "Hotel/penginapan: VAT 0% sepanjang tahun untuk bukan pemastautin (tetap)."
+  ],
+  "sections.6.bullets.1": [
+    "02f7d683",
+    "Restoran dan sewaan kereta tanpa pemandu: sembilan mata sehingga 30 April 2027, tertakluk kepada keperluan pembayaran elektronik. Pengecualian penuh bermusim memerlukan pengesahan berasingan."
+  ],
+  "sections.6.bullets.2": [
+    "bf5ed0b5",
+    "Setiap rejim mempunyai keperluannya sendiri. Pengurangan sembilan mata umum memerlukan penggunaan akhir dan kaedah pembayaran elektronik yang layak dipegang oleh individu; pengeluaran asing tidak diperlukan."
+  ],
+  "sections.7.heading": [
+    "84fbae56",
+    "Petua keselamatan semasa mengeluarkan wang tunai"
+  ],
+  "sections.7.paragraphs.0": [
+    "e227f80c",
+    "Uruguay merupakan antara negara paling selamat di rantau ini, tetapi kecurian kecil-kecilan masih berlaku, terutamanya di Ciudad Vieja, Montevideo, kawasan pelabuhan, dan pusat peranginan pantai pada musim puncak. Gunakan ATM di dalam bank, pusat membeli-belah atau lobi kaca, sebaik-baiknya pada waktu siang, dan sentiasa peka dengan persekitaran anda."
+  ],
+  "sections.7.bullets.0": [
+    "d234b5e4",
+    "Pengeluaran wang pada waktu siang dan dari ATM di dalam premis tertutup, bukan di jalanan pada waktu malam."
+  ],
+  "sections.7.bullets.1": [
+    "f9f5f149",
+    "Bawa dua kad daripada akaun yang berbeza dan simpan wang tunai di lebih daripada satu tempat."
+  ],
+  "sections.7.bullets.2": [
+    "aa71ad4f",
+    "Minta wang kertas kecil (100, 200, 500): wang kertas 1,000 dan 2,000 sukar untuk dipecahkan."
+  ],
+  "sections.7.bullets.3": [
+    "d7920a67",
+    "Gunakan Uber, Cabify atau teksi berdaftar; jangan tinggalkan barang berharga di dalam kereta."
+  ],
+  "sections.7.link.label": [
+    "d8570bac",
+    "Sudah tersekat dengan wang kertas besar: di mana hendak mendapatkan wang syiling dan duit syiling kecil"
+  ],
+  "networkRows.0.network": [
+    "7ee344a0",
+    "RedBROU"
+  ],
+  "networkRows.0.reach": [
+    "4a5d053e",
+    "Rangkaian bank negeri BROU; 400+ ATM di seluruh negara, serta Abitab dan Redpagos."
+  ],
+  "networkRows.0.usdPerTxn": [
+    "f41a726d",
+    "≈ AS$200"
+  ],
+  "networkRows.0.uyuPerTxn": [
+    "255d9345",
+    "≈ $U 5,000"
+  ],
+  "networkRows.0.note": [
+    "786a7e5f",
+    "Banyak mesin mengeluarkan dolar. Had adalah anggaran untuk kad asing."
+  ],
+  "networkRows.1.network": [
+    "6823b06d",
+    "Dilarang"
+  ],
+  "networkRows.1.reach": [
+    "331e78b2",
+    "Rangkaian bank swasta; 370+ mata merentasi semua 19 jabatan."
+  ],
+  "networkRows.1.usdPerTxn": [
+    "75830c42",
+    "≈ AS$300"
+  ],
+  "networkRows.1.uyuPerTxn": [
+    "255d9345",
+    "≈ $U 5,000"
+  ],
+  "networkRows.1.note": [
+    "9f2f1329",
+    "Berkaitan dengan RedBROU. Jika satu rangkaian menolak kad anda, cuba rangkaian yang lain."
+  ],
+  "zones.0.name": [
+    "8a4dc608",
+    "Lapangan Terbang Carrasco (MVD), Montevideo"
+  ],
+  "zones.0.summary": [
+    "462aaacd",
+    "Biro Pertukaran Global dibuka 24 jam, ATM di terminal (ATM Santander disahkan), dan cawangan bank."
+  ],
+  "zones.0.tips.0": [
+    "d6202725",
+    "Pertukaran lapangan terbang membayar dengan ketara kurang: pertukaran hanya cukup untuk sampai ke bandar."
+  ],
+  "zones.0.tips.1": [
+    "99e81ace",
+    "Jika anda memerlukan wang tunai dengan segera, keluarkan sedikit wang di ATM dan tukarkan selebihnya di pusat bandar."
+  ],
+  "zones.1.name": [
+    "034a744d",
+    "Montevideo (Centro, Ciudad Vieja dan pelabuhan)"
+  ],
+  "zones.1.summary": [
+    "04c221eb",
+    "Rumah pertukaran berkelompok di Avenida 18 de Julio (Centro) dan melalui Ciudad Vieja. Terminal pelayaran terletak bersebelahan dengan Ciudad Vieja, dengan pusat pertukaran dan ATM."
+  ],
+  "zones.1.tips.0": [
+    "a26e5af3",
+    "Di Centro dan Ciudad Vieja, anda akan menemui beberapa rumah pertukaran untuk dibandingkan."
+  ],
+  "zones.1.tips.1": [
+    "4139b3e5",
+    "Penumpang kapal persiaran mempunyai pertukaran di dalam pelabuhan dan ATM yang terletak tidak jauh dari sini, menuju ke Mercado del Puerto."
+  ],
+  "zones.2.name": [
+    "3fa606f9",
+    "Punta del Este"
+  ],
+  "zones.2.summary": [
+    "880d1f96",
+    "Rumah pertukaran di sepanjang Avenida Gorlero, jalan utama. Pada musim puncak, terdapat barisan yang beratur dan ATM yang kehabisan wang."
+  ],
+  "zones.2.tips.0": [
+    "1063deb8",
+    "Pada musim panas dan minggu Easter, ATM cepat kosong: keluarkan wang terlebih dahulu dan kekalkan penimbal."
+  ],
+  "zones.2.tips.1": [
+    "e4c20d9e",
+    "Gunakan kad dan pembayaran QR supaya anda tidak bergantung pada wang tunai sahaja."
+  ],
+  "zones.3.name": [
+    "2ed532f4",
+    "Colonia del Sacramento"
+  ],
+  "zones.3.summary": [
+    "764221b5",
+    "ATM di Barrio Histórico dan di terminal feri, beberapa langkah dari kawasan lama tempat pelancong harian tiba dari Buenos Aires."
+  ],
+  "zones.3.tips.0": [
+    "d7ebee8b",
+    "Keluarkan sedikit peso semasa ketibaan dan bayar selebihnya dengan kad."
+  ],
+  "zones.3.tips.1": [
+    "e09f3851",
+    "Banyak kedai pelancongan menerima bayaran dolar, walaupun pada kadar yang tidak menguntungkan."
+  ],
+  "zones.4.name": [
+    "ed7917f9",
+    "Terminal feri (Buquebus / Colonia Express)"
+  ],
+  "zones.4.summary": [
+    "ac18ddf9",
+    "Terdapat ATM di terminal Montevideo dan Colonia. Pertukaran wang di dalam terminal dan di atas kapal cenderung menawarkan kadar yang rendah."
+  ],
+  "zones.4.tips.0": [
+    "b5a97e0f",
+    "Elakkan menukar sejumlah besar wang di terminal atau di atas kapal — kadarnya teruk."
+  ],
+  "zones.4.tips.1": [
+    "91b3c105",
+    "Lebih baik menggunakan ATM atau menukar wang di rumah pertukaran wang bandar."
+  ],
+  "zones.5.name": [
+    "66cc7244",
+    "Pedalaman dan bandar-bandar kecil"
+  ],
+  "zones.5.summary": [
+    "fc9a5afd",
+    "Di luar bandar-bandar utama dan pusat peranginan utama, ATM adalah terhad."
+  ],
+  "zones.5.tips.0": [
+    "48821abe",
+    "Dapatkan stok wang tunai di Montevideo, Punta del Este atau Colonia sebelum menuju ke pedalaman."
+  ],
+  "zones.5.tips.1": [
+    "02573d37",
+    "Di pantai Rocha, isi semula makanan di bandar-bandar besar seperti Chuy atau La Paloma."
+  ],
+  "steps.0.name": [
+    "aa213b75",
+    "Cari ATM yang menerima kad anda"
+  ],
+  "steps.0.text": [
+    "2f5d9e7c",
+    "Cari logo Visa, Mastercard, Cirrus, Plus atau Maestro; lebih suka ATM di dalam bank atau pusat membeli-belah."
+  ],
+  "steps.1.name": [
+    "4209811a",
+    "Pilih dolar atau peso"
+  ],
+  "steps.1.text": [
+    "f338ade4",
+    "Ambil peso untuk perbelanjaan harian dan dolar hanya jika anda memerlukannya secara tunai; dolar dikeluarkan dalam bentuk wang kertas AS$100."
+  ],
+  "steps.2.name": [
+    "24d1a5da",
+    "Tolak penukaran kepada mata wang anda"
+  ],
+  "steps.2.text": [
+    "3f2be811",
+    "Apabila ditawarkan untuk dicaj dalam mata wang tempatan anda, pilih \"tanpa penukaran\" atau mata wang tempatan untuk mengelakkan penambahan DCC."
+  ],
+  "steps.3.name": [
+    "4e44a3f9",
+    "Keluarkan maksimum setiap transaksi"
+  ],
+  "steps.3.text": [
+    "831b2ec9",
+    "Oleh kerana terdapat yuran pengeluaran tetap, gunakan had yang dibenarkan untuk mengagihkan kos tersebut kepada lebih banyak wang tunai."
+  ],
+  "steps.4.name": [
+    "6fcb61ed",
+    "Simpan resit dan kira wang tunai"
+  ],
+  "steps.4.text": [
+    "30d70c06",
+    "Periksa jumlah yang dikeluarkan, simpan slip tersebut dan bahagikan wang tunai di lebih daripada satu tempat sebelum meninggalkan ATM."
+  ],
+  "faq.0.q": [
+    "e44ca992",
+    "Bolehkah saya mengeluarkan dolar AS dari ATM di Uruguay?"
+  ],
+  "faq.0.a": [
+    "eb6339a1",
+    "Ya. Tidak seperti Argentina, banyak ATM Uruguay mengeluarkan dolar serta peso, biasanya dalam wang kertas AS$100. Had setiap pengeluaran untuk kad asing adalah rendah."
+  ],
+  "faq.1.q": [
+    "33423670",
+    "Berapakah caj yang dikenakan oleh ATM ke atas kad asing?"
+  ],
+  "faq.1.a": [
+    "68121602",
+    "Surcaj tempatan adalah rendah (kira-kira beberapa dolar setiap pengeluaran). Kos yang lebih besar biasanya ialah yuran transaksi asing bank anda sendiri (1–3% adalah perkara biasa)."
+  ],
+  "faq.2.q": [
+    "bf2fe8ff",
+    "Berapakah had maksimum yang boleh saya keluarkan untuk setiap transaksi?"
+  ],
+  "faq.2.a": [
+    "7a64ef6d",
+    "Kira-kira US$ 200–300 atau $U 5,000 setiap pengeluaran bergantung pada rangkaian (RedBROU atau Banred). Bank anda juga menetapkan had hariannya sendiri, jadi maklumkan sebelum melancong."
+  ],
+  "faq.3.q": [
+    "66601510",
+    "Patutkah saya menukar wang di lapangan terbang?"
+  ],
+  "faq.3.a": [
+    "82d5704c",
+    "Bukan untuk jumlah yang besar: lapangan terbang dan terminal feri membayar dengan ketara lebih rendah. Tukar wang hanya secukupnya untuk sampai ke bandar, kemudian gunakan rumah pertukaran wang di pusat bandar atau ATM."
+  ],
+  "faq.4.q": [
+    "44d07e17",
+    "Tunai atau kad di Uruguay?"
+  ],
+  "faq.4.a": [
+    "11ded5ec",
+    "Uruguay sangat mesra kad (Visa dan Mastercard hampir di mana-mana, tanpa sentuh dan QR). Bawalah sejumlah peso tunai untuk pembelian kecil dan bayar jumlah yang lebih besar dengan kad."
+  ],
+  "faq.5.q": [
+    "2d0dd094",
+    "Mata wang apa yang perlu saya bawa?"
+  ],
+  "faq.5.a": [
+    "cc8484ac",
+    "Dolar AS tunai: kadar terbaik dan diterima di setiap rumah pertukaran. Euro adalah yang kedua. Datang dari Argentina, bawa dolar, bukan peso Argentina."
+  ],
+  "faq.6.q": [
+    "b71d8d92",
+    "Adakah saya mendapat diskaun cukai sebagai pelancong?"
+  ],
+  "faq.6.a": [
+    "49712ab8",
+    "Ya: selain rejim penginapan, pengurangan sembilan mata umum ke atas makan dan sewa kereta tanpa pemandu juga meliputi bukan pemastautin sehingga 30 April 2027, untuk penggunaan akhir yang dibayar secara elektronik oleh individu. Pengecualian penuh bermusim memerlukan dekri dan tarikhnya sendiri; ia tidak boleh disimpulkan daripada lanjutan itu."
+  ],
+  "faq.7.q": [
+    "04fb59ce",
+    "Bagaimana jika ATM menolak kad saya?"
+  ],
+  "faq.7.a": [
+    "15f0167b",
+    "Cuba kad lain dan rangkaian yang lain (RedBROU dan Banred saling berkaitan, tetapi ia membantu untuk membawa kedua-duanya). Pastikan ATM menunjukkan logo Visa/Mastercard/Cirrus/Plus dan beritahu bank anda bahawa anda akan menggunakannya di Uruguay."
+  ],
+  "related.0.label": [
+    "9371cd8d",
+    "Dolar untuk perjalanan"
+  ],
+  "related.1.label": [
+    "89470d17",
+    "Membeli dolar pada harga terbaik"
+  ],
+  "related.2.label": [
+    "7b531a45",
+    "Rumah & cawangan pertukaran"
+  ],
+  "related.3.label": [
+    "574f3e27",
+    "Bandingkan kadar"
+  ]
+}

@@ -1,4 +1,5 @@
 import { isBareRoute } from './bareRoutes'
+import { LOCALE_PREFIX_RE } from './locales'
 import guideMeasurementSlugs from './guideMeasurementSlugs.json'
 
 // Generated from the catalog, with a snapshot parity test. Do not load the full
@@ -19,7 +20,7 @@ export function measurementPath(route: MeasurementRoute): string | null {
   const pattern = route.matched.at(-1)?.path
   if (!pattern || pattern.includes('.*')) return null // Includes unknown/404 routes.
   const path = pattern.replace(/:[a-z_]\w*(?:\([^)]*\))?[?*+]?/gi, ':item')
-  const plain = path.replace(/^\/(?:en|pt)(?=\/|$)/, '') || '/'
+  const plain = path.replace(LOCALE_PREFIX_RE, '') || '/'
   if (
     isBareRoute(path) ||
     /^\/(?:api|cuenta|conectar|mi-lista|estadisticas-por-pagina|estadisticas-de-busqueda)(?:\/|$)/.test(

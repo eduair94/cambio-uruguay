@@ -16,6 +16,8 @@ const context: Record<string, any> = {
   fileURLToPath,
   URL,
   CONSENT_STRICT_REGIONS: [],
+  EXTRA_LOCALES: [],
+  extraMessagesVersion: () => 'worker-test',
   defineNuxtConfig: (config: unknown) => config,
 }
 runInNewContext(

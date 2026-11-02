@@ -1,0 +1,534 @@
+{
+  "title": [
+    "1229e1ce",
+    "Kje dvigniti gotovino v Urugvaju: bankomati, provizije in turistične točke"
+  ],
+  "metaTitle": [
+    "3e82d293",
+    "Bankomati v Urugvaju: dvig dolarjev ali pesov"
+  ],
+  "description": [
+    "3eb63bbe",
+    "Kako in kje dobiti gotovino v Urugvaju kot turist: bankomati, ki izdajajo ameriške dolarje in pese, provizije, omejitve dviga, past za pretvorbo valut (DCC) in najboljša mesta za dvig na letališču, v Montevideu, Punta del Este in Coloniji."
+  ],
+  "keywords": [
+    "4acfb17e",
+    "dvig gotovine urugvaj, dvig denarja urugvaj, bankomat urugvaj turist, dolarji iz bankomata urugvaj, menjava denarja urugvaj, provizije bankomatov urugvaj, casas de cambio urugvaj"
+  ],
+  "tldr.0": [
+    "5f1561fe",
+    "Urugvajski bankomati izdajajo tako ameriške dolarje kot pesose – kar je redka regionalna prednost (v Argentini je to skoraj nemogoče)."
+  ],
+  "tldr.1": [
+    "7b41d73f",
+    "Obstajata dve omrežji: RedBROU in Banred. Če eno ne uspe, poskusite z drugim; imejte s seboj tako Visa kot Mastercard."
+  ],
+  "tldr.2": [
+    "c5aa36e3",
+    "Ko vam bankomat ponudi bremenitev v vaši domači valuti, vedno izberite lokalno valuto: »konverzija« skriva slab menjalni tečaj."
+  ],
+  "tldr.3": [
+    "b73d4126",
+    "Izogibajte se menjavi večjih vsot na letališču ali trajektnih terminalih – tam so tečaji opazno slabši."
+  ],
+  "tldr.4": [
+    "83b2ff36",
+    "Plačujte v hotelih in restavracijah s tujo kartico: poleg ugodnosti pri DDV imate s seboj manj gotovine."
+  ],
+  "ui.backToTools": [
+    "950196fc",
+    "Orodja"
+  ],
+  "ui.tldrTitle": [
+    "799c628c",
+    "Skratka"
+  ],
+  "ui.networksTitle": [
+    "90dd37e5",
+    "Dve mreži bankomatov: RedBROU in Banred"
+  ],
+  "ui.tableNetwork": [
+    "6974ad65",
+    "Omrežje"
+  ],
+  "ui.tableReach": [
+    "c549e23b",
+    "Pokritost"
+  ],
+  "ui.tableUsd": [
+    "47b34a69",
+    "Zgornja meja USD / dvig"
+  ],
+  "ui.tableUyu": [
+    "7d4e5b12",
+    "Zgornja meja $U / dvig"
+  ],
+  "ui.tableNote": [
+    "0ff01b6a",
+    "Opombe"
+  ],
+  "ui.zonesTitle": [
+    "126f8827",
+    "Kje dobiti gotovino v turističnih conah"
+  ],
+  "ui.zonesIntro": [
+    "e4c560b0",
+    "Reference na ravni območij in znamenitosti (ne natančni naslovi, ki se spreminjajo). Bankomati so običajno v bankah, nakupovalnih središčih ali poslovalnicah Abitab in Redpagos."
+  ],
+  "ui.stepsTitle": [
+    "3e1ff2e0",
+    "Kako dvigniti gotovino, korak za korakom"
+  ],
+  "ui.faqTitle": [
+    "e466bfa9",
+    "Pogosto zastavljena vprašanja"
+  ],
+  "ui.sourcesTitle": [
+    "105bfcc3",
+    "Viri in reference"
+  ],
+  "ui.relatedTitle": [
+    "ac7a8ccc",
+    "Nadaljujte z branjem"
+  ],
+  "ui.ctaTitle": [
+    "60dda6a1",
+    "Primerjajte pred zamenjavo"
+  ],
+  "ui.ctaText": [
+    "fe6b01a6",
+    "Oglejte si tečaj dolarja v več kot 40 menjalnicah, ki se posodablja vsakih 10 minut, in izberite najboljše mesto za poslovanje."
+  ],
+  "ui.ctaButton": [
+    "9efd557a",
+    "Odprite primerjalnik"
+  ],
+  "ui.mapButton": [
+    "4e8c8db6",
+    "Oglejte si odjemna mesta na zemljevidu"
+  ],
+  "ui.disclaimer": [
+    "b166cfce",
+    "Referenčne informacije za turiste, ne finančni nasvet. Pristojbine, omejitve in davčne ugodnosti se spreminjajo: preverite jih ob prihodu in pri izdajatelju kartice. Nismo povezani z omenjenimi bankami ali menjalnicami."
+  ],
+  "ui.lastChecked": [
+    "9182e108",
+    "Nazadnje preverjeno: junij 2026"
+  ],
+  "ivaLive.heading": [
+    "5af716c3",
+    "Danes veljajo turistične ugodnosti DDV"
+  ],
+  "ivaLive.asOf": [
+    "dd801240",
+    "Stanje od {date}:"
+  ],
+  "ivaLive.hotel": [
+    "152a8c47",
+    "Nastanitev (hoteli in podobno): 0 % DDV skozi vse leto."
+  ],
+  "ivaLive.base": [
+    "9856855a",
+    "Obroki in najem avtomobila brez voznika: znižanje DDV v višini točk {points} za končno porabo, plačano s kartico posameznika, vključno s tujimi karticami, do 30. aprila 2027 (Odlok 235/026; vir preverjen 23. oktobra 2026)."
+  ],
+  "ivaLive.baseUnconfirmed": [
+    "d65944df",
+    "Restavracije in najem avtomobila: preverjeno podaljšanje se je končalo 30. aprila 2027. Pri DGI preverite, katero znižanje velja na dan nakupa."
+  ],
+  "ivaLive.seasonalOn": [
+    "41748da1",
+    "Poletna polna oprostitev DDV: AKTIVNA (do {end})."
+  ],
+  "ivaLive.seasonalOff": [
+    "015a1161",
+    "Popolna poletna oprostitev DDV: za ta datum nimamo potrjenega obdobja. Preden se odločite za to ugodnost, se posvetujte z DGI."
+  ],
+  "sections.0.heading": [
+    "90dd37e5",
+    "Dve mreži bankomatov: RedBROU in Banred"
+  ],
+  "sections.0.paragraphs.0": [
+    "0f52a7fe",
+    "Urugvaj ima dve mreži bankomatov: RedBROU, ki jo upravlja državna banka (BROU), in Banred, omrežje zasebnih bank. Obe sta med seboj povezani in se povezujeta z mednarodnima omrežjema (Cirrus/Maestro pri Mastercardu in Plus pri Visi), zato tuja kartica deluje v obeh."
+  ],
+  "sections.0.paragraphs.1": [
+    "208b768b",
+    "Če želite zagotoviti, da bankomat sprejme vašo kartico, poiščite logotipe Visa, Mastercard, Cirrus, Plus ali Maestro na bankomatu. Praktičen nasvet: imejte s seboj Viso in Mastercard iz različnih računov; če ena kartica ali bankomat ne deluje, poskusite z drugim omrežjem."
+  ],
+  "sections.1.heading": [
+    "612974f0",
+    "Dolarji ali pesosi? V Urugvaju lahko vzamete oboje."
+  ],
+  "sections.1.paragraphs.0": [
+    "d9928d31",
+    "Za razliko od Argentine številni bankomati v Urugvaju izdajajo ameriške dolarje in urugvajske pese. To je resnična prednost, če želite gotovino, ne da bi morali iti v menjalnico. Dolarji se običajno izdajo v bankovcih za 100 ameriških dolarjev, kar lahko v kombinaciji z omejitvami dviga pomeni, da lahko naenkrat dobite le en bankovec."
+  ],
+  "sections.1.paragraphs.1": [
+    "cd694b7a",
+    "Preprosto pravilo: za vsakodnevne stroške (taksiji, tržnice, majhne trgovine) imejte s seboj pesose, dolarje pa le, če jih resnično potrebujete v gotovini. Za večino večjih plačil je kartica boljša od gotovine."
+  ],
+  "sections.2.heading": [
+    "9ce97b34",
+    "Provizije in omejitve dviga"
+  ],
+  "sections.2.paragraphs.0": [
+    "e28a7f0e",
+    "Provizija, ki jo urugvajski bankomat zaračuna tuji kartici, je v primerjavi z mnogimi drugimi državami nizka (približno nekaj dolarjev na dvig). Večji strošek je običajno vaša banka: provizija za tuje transakcije (običajno 1–3 %) in včasih pavšalna provizija za mednarodni dvig. Potovalna kartica brez provizije za devizno poslovanje vam prihrani skoraj vse to."
+  ],
+  "sections.2.paragraphs.1": [
+    "154c6f01",
+    "Zgornje meje dviga za tuje kartice določajo lokalna omrežja, ne vaša banka, in so nizke. Tudi vaša banka uporablja svojo dnevno omejitev. Pred potovanjem pokličite svojo banko, da zvišate omejitev, in dvignite najvišji znesek na transakcijo, da fiksno provizijo porazdelite med več gotovine."
+  ],
+  "sections.2.bullets.0": [
+    "befd8df3",
+    "Lokalna provizija za dvig: približna, nekaj dolarjev (pred potrditvijo preverite znesek na zaslonu)."
+  ],
+  "sections.2.bullets.1": [
+    "0f872d39",
+    "Provizija vaše banke/izdajatelja: običajno višji strošek; preverite, ali vaša kartica zaračunava provizijo za tuje transakcije."
+  ],
+  "sections.2.bullets.3": [
+    "4aacdc05",
+    "Dnevna omejitev: določi vaša banka; pred potovanjem jo obvestite, da jo zvišate."
+  ],
+  "sections.3.heading": [
+    "6bd46a0c",
+    "Past pretvorbe valut (DCC): vedno izberite lokalno valuto"
+  ],
+  "sections.3.paragraphs.0": [
+    "29fe4c81",
+    "Številni bankomati in kartični terminali ponujajo \"bremenitev v vaši domači valuti\" namesto v urugvajskih pesih ali dolarjih. Sliši se priročno (\"poglejte, koliko je v vašem denarju\"), vendar dinamična pretvorba valut (DCC) uporabi napihnjen menjalni tečaj in skrito provizijo. Skoraj vedno izgubite."
+  ],
+  "sections.3.paragraphs.1": [
+    "34380f1f",
+    "Vedno izberite »brez konverzije« ali lokalno valuto: urugvajske pese, če sprejemate pese, dolarje, če sprejemate dolarje. Pretvorbo naj opravi vaša banka – njen tečaj je običajno ugodnejši."
+  ],
+  "sections.4.heading": [
+    "cc573fd8",
+    "Menjalnice, bankomati ali banke: kaj je boljše?"
+  ],
+  "sections.4.paragraphs.0": [
+    "1116ae4f",
+    "Menjalnice (casas de cambio, kot so Varlix, Indumex, Gales, Aspen, Cambio Sir, Cambio Inglés in Global Exchange) so klasičen način za menjavo gotovine. Ponujajo najboljše tečaje za dolar, z majhnim razmikom in brez provizije; evro je druga najboljša valuta, brazilski real je sprejemljiv, argentinski peso pa je najslabši. Običajno zahtevajo potni list."
+  ],
+  "sections.4.paragraphs.1": [
+    "b7c83296",
+    "Uradne ure: poslovalnice na ulici so odprte od ponedeljka do petka (okoli 9. do 19. ure) in ob sobotah zjutraj; mnoge so ob nedeljah zaprte. Poslovalnice v nakupovalnih središčih so odprte vsak dan in kasneje. Za primerjavo dnevne cene v različnih poslovalnicah uporabite naš primerjalnik in stran s poslovalnicami."
+  ],
+  "sections.5.heading": [
+    "f8b82759",
+    "Koliko gotovine s seboj in katero valuto vzeti s seboj"
+  ],
+  "sections.5.paragraphs.0": [
+    "e22fd664",
+    "Urugvaj je zelo prijazen do plačil s karticami: Visa in Mastercard sprejemajo skoraj povsod, brezstična in QR plačila (Mercado Pago) pa so zelo razširjena. Za manjše nakupe imejte s seboj le nekaj pesov gotovine, večje zneske pa plačujte s kartico."
+  ],
+  "sections.5.paragraphs.1": [
+    "f9b88276",
+    "Če s seboj prinesete gotovino za drobiž, je ameriški dolar najboljša valuta (najboljši tečaji, sprejemajo ga v vsaki hiši). Evro je na drugem mestu. Če prihajate iz Argentine, prinesite dolarje, ne argentinskih pesov – peso se v Urugvaju zelo slabo menja. Iz Brazilije deluje real, zlasti blizu meje, čeprav so dolarji še vedno bolj priročni."
+  ],
+  "sections.6.heading": [
+    "97a59b72",
+    "Ugodnost turističnega DDV (pri plačilu s tujo kartico)"
+  ],
+  "sections.6.paragraphs.1": [
+    "7f51f9e2",
+    "Za prehranjevanje in najem avtomobila brez voznika Odlok 235/026 ohranja splošno devettočkovno znižanje do 30. aprila 2027 za končno porabo, plačano z upravičenimi elektronskimi sredstvi. Sezonska popolna oprostitev je ločena ugodnost s svojim odlokom in datumi: podaljšanje devettočkovnega znižanja ne potrjuje popolne oprostitve. Pred potovanjem se posvetujte z DGI."
+  ],
+  "sections.6.paragraphs.2": [
+    "f963de1e",
+    "V vsakem primeru je popust samodejen: plačate s tujo kartico in ugodnost se prikaže na računu ali izpisku kartice. Če plačate z gotovino, jo izgubite. Zato se splača hotele in restavracije vezati na kartico in dvigovati manj gotovine."
+  ],
+  "sections.6.bullets.0": [
+    "fc6c4026",
+    "Hoteli/nastanitve: 0 % DDV skozi vse leto za nerezidente (stalne)."
+  ],
+  "sections.6.bullets.1": [
+    "02f7d683",
+    "Restavracije in najem avtomobilov brez voznika: devet točk do 30. aprila 2027, pod pogojem, da veljajo zahteve za elektronsko plačevanje. Za sezonsko popolno izjemo je potrebna ločena potrditev."
+  ],
+  "sections.6.bullets.2": [
+    "bf5ed0b5",
+    "Vsak režim ima svoje zahteve. Splošno znižanje za devet točk zahteva končno porabo in upravičen elektronski način plačila, ki ga ima posameznik; tuja izdaja ni potrebna."
+  ],
+  "sections.7.heading": [
+    "84fbae56",
+    "Varnostni nasveti pri dvigovanju gotovine"
+  ],
+  "sections.7.paragraphs.0": [
+    "e227f80c",
+    "Urugvaj je med najvarnejšimi državami v regiji, vendar se pojavljajo manjše tatvine, zlasti v montevidejski Ciudad Vieji, pristaniškem območju in obmorskih letoviščih v glavni sezoni. Uporabljajte bankomate v bankah, nakupovalnih središčih ali steklenih avlah, po možnosti podnevi, in bodite pozorni na svojo okolico."
+  ],
+  "sections.7.bullets.0": [
+    "d234b5e4",
+    "Dvigujte gotovino podnevi in na bankomatih v zaprtih prostorih, ne ponoči na ulici."
+  ],
+  "sections.7.bullets.1": [
+    "f9f5f149",
+    "Nosite dve kartici z različnih računov in hranite gotovino na več kot enem mestu."
+  ],
+  "sections.7.bullets.2": [
+    "aa71ad4f",
+    "Zahtevajte majhne bankovce (100, 200, 500): bankovce za 1.000 in 2.000 je težko razbiti."
+  ],
+  "sections.7.bullets.3": [
+    "d7920a67",
+    "Prevažajte se z Uberjem, Cabifyjem ali registriranimi taksiji; ne puščajte dragocenosti v avtomobilu."
+  ],
+  "sections.7.link.label": [
+    "d8570bac",
+    "Že obtičal z veliko bankovcem: kje dobiti drobiž in kovance"
+  ],
+  "networkRows.0.network": [
+    "7ee344a0",
+    "RedBROU"
+  ],
+  "networkRows.0.reach": [
+    "4a5d053e",
+    "Omrežje državne banke BROU; več kot 400 bankomatov po vsej državi, plus Abitab in Redpagos."
+  ],
+  "networkRows.0.usdPerTxn": [
+    "f41a726d",
+    "≈ 200 ameriških dolarjev"
+  ],
+  "networkRows.0.uyuPerTxn": [
+    "255d9345",
+    "≈ 5.000 USD"
+  ],
+  "networkRows.0.note": [
+    "786a7e5f",
+    "Mnogi avtomati izdajajo dolarje. Zgornje meje so približne za tuje kartice."
+  ],
+  "networkRows.1.network": [
+    "6823b06d",
+    "Prepovedano"
+  ],
+  "networkRows.1.reach": [
+    "331e78b2",
+    "Mreža zasebnih bank; več kot 370 točk v vseh 19 oddelkih."
+  ],
+  "networkRows.1.usdPerTxn": [
+    "75830c42",
+    "≈ 300 ameriških dolarjev"
+  ],
+  "networkRows.1.uyuPerTxn": [
+    "255d9345",
+    "≈ 5.000 USD"
+  ],
+  "networkRows.1.note": [
+    "9f2f1329",
+    "Povezano z RedBROU. Če eno omrežje zavrne vašo kartico, poskusite z drugim."
+  ],
+  "zones.0.name": [
+    "8a4dc608",
+    "Letališče Carrasco (MVD), Montevideo"
+  ],
+  "zones.0.summary": [
+    "462aaacd",
+    "Menjalnice so odprte 24 ur na dan, bankomati so v terminalu (potrjen je bankomat Santander) in bančna poslovalnica."
+  ],
+  "zones.0.tips.0": [
+    "d6202725",
+    "Menjava na letališču se izplača opazno manj: drobiž je le toliko, da pridete do mesta."
+  ],
+  "zones.0.tips.1": [
+    "99e81ace",
+    "Če gotovino potrebujete takoj, dvignite majhen znesek na bankomatu in preostanek zamenjajte v centru mesta."
+  ],
+  "zones.1.name": [
+    "034a744d",
+    "Montevideo (Centro, Ciudad Vieja in pristanišče)"
+  ],
+  "zones.1.summary": [
+    "04c221eb",
+    "Menjalnice so združene na aveniji Avenida 18 de Julio (Centro) in skozi Ciudad Viejo. Terminal za križarke se nahaja poleg Ciudad Vieje, kjer sta tudi menjalnica in bankomati."
+  ],
+  "zones.1.tips.0": [
+    "a26e5af3",
+    "V centru in Ciudad Vieji boste našli več menjalnic za primerjavo."
+  ],
+  "zones.1.tips.1": [
+    "4139b3e5",
+    "Potniki na križarkah imajo menjalnico v pristanišču, bankomati pa so le kratek sprehod stran, proti tržnici Mercado del Puerto."
+  ],
+  "zones.2.name": [
+    "3fa606f9",
+    "Punta del Este"
+  ],
+  "zones.2.summary": [
+    "880d1f96",
+    "Menjalnice vzdolž glavne ulice Avenida Gorlero. V glavni sezoni so lahko vrste in bankomati brez denarja."
+  ],
+  "zones.2.tips.0": [
+    "1063deb8",
+    "Poleti in med velikonočnim tednom se bankomati hitro izpraznijo: dvignite gotovino vnaprej in imejte rezervo."
+  ],
+  "zones.2.tips.1": [
+    "e4c20d9e",
+    "Zanesite se na kartice in plačila s QR kodami, da ne boste odvisni samo od gotovine."
+  ],
+  "zones.3.name": [
+    "2ed532f4",
+    "Kolonija del Sacramento"
+  ],
+  "zones.3.summary": [
+    "764221b5",
+    "Bankomati v zgodovinskem predelu Barrio Histórico in na trajektnem terminalu, le nekaj korakov od starega mestnega jedra, kamor prihajajo dnevni izletniki iz Buenos Airesa."
+  ],
+  "zones.3.tips.0": [
+    "d7ebee8b",
+    "Ob prihodu dvignite majhen znesek pesov in preostanek plačajte s kartico."
+  ],
+  "zones.3.tips.1": [
+    "e09f3851",
+    "Številne turistične trgovine sprejemajo dolarje, čeprav po neugodnem tečaju."
+  ],
+  "zones.4.name": [
+    "ed7917f9",
+    "Trajektni terminali (Buquebus / Colonia Express)"
+  ],
+  "zones.4.summary": [
+    "ac18ddf9",
+    "Bankomati so na terminalih Montevideo in Colonia. Menjalnice v terminalih in na krovu običajno ponujajo nizke tečaje."
+  ],
+  "zones.4.tips.0": [
+    "b5a97e0f",
+    "Izogibajte se menjavi večjih vsot na terminalu ali na krovu – tečaji so nizki."
+  ],
+  "zones.4.tips.1": [
+    "91b3c105",
+    "Bolje je uporabiti bankomat ali zamenjati denar v mestni menjalnici."
+  ],
+  "zones.5.name": [
+    "66cc7244",
+    "Notranjost in manjša mesta"
+  ],
+  "zones.5.summary": [
+    "fc9a5afd",
+    "Zunaj večjih mest in glavnih letovišč je bankomatov malo."
+  ],
+  "zones.5.tips.0": [
+    "48821abe",
+    "Preden se odpravite v notranjost, si v Montevideu, Punta del Este ali Coloniji priskrbite gotovino."
+  ],
+  "zones.5.tips.1": [
+    "02573d37",
+    "Na obali Rocha dolijte gorivo v večjih mestih, kot sta Chuy ali La Paloma."
+  ],
+  "steps.0.name": [
+    "aa213b75",
+    "Poiščite bankomat, ki sprejema vašo kartico"
+  ],
+  "steps.0.text": [
+    "2f5d9e7c",
+    "Iščite logotipe Visa, Mastercard, Cirrus, Plus ali Maestro; raje uporabljajte bankomate v bankah ali nakupovalnih središčih."
+  ],
+  "steps.1.name": [
+    "4209811a",
+    "Izberite dolarje ali pesose"
+  ],
+  "steps.1.text": [
+    "f338ade4",
+    "Za vsakodnevno porabo imejte s seboj pesose, dolarje pa le, če jih potrebujete v gotovini; dolarji so izdani v bankovcih po 100 ameriških dolarjev."
+  ],
+  "steps.2.name": [
+    "24d1a5da",
+    "Zavrni pretvorbo v svojo valuto"
+  ],
+  "steps.2.text": [
+    "3f2be811",
+    "Ko vam je na voljo plačilo v vaši domači valuti, izberite »brez konverzije« ali lokalno valuto, da se izognete pribitku DCC."
+  ],
+  "steps.3.name": [
+    "4e44a3f9",
+    "Dvignite najvišji znesek na transakcijo"
+  ],
+  "steps.3.text": [
+    "831b2ec9",
+    "Ker je provizija za dvig fiksna, izkoristite dovoljeno zgornjo mejo, da stroške razporedite na več gotovine."
+  ],
+  "steps.4.name": [
+    "6fcb61ed",
+    "Shranite račun in preštejte gotovino"
+  ],
+  "steps.4.text": [
+    "30d70c06",
+    "Preverite izplačani znesek, shranite potrdilo in gotovino razdelite na več mest, preden zapustite bankomat."
+  ],
+  "faq.0.q": [
+    "e44ca992",
+    "Ali lahko dvignem ameriške dolarje na bankomatih v Urugvaju?"
+  ],
+  "faq.0.a": [
+    "eb6339a1",
+    "Da. Za razliko od Argentine mnogi urugvajski bankomati izdajajo dolarje in pese, običajno v bankovcih po 100 ameriških dolarjev. Omejitve na dvig za tuje kartice so nizke."
+  ],
+  "faq.1.q": [
+    "33423670",
+    "Koliko provizij zaračunavajo bankomati za tuje kartice?"
+  ],
+  "faq.1.a": [
+    "68121602",
+    "Lokalna doplačila so nizka (približno nekaj dolarjev na dvig). Večji strošek je običajno provizija vaše banke za tuje transakcije (običajno 1–3 %)."
+  ],
+  "faq.2.q": [
+    "bf2fe8ff",
+    "Kolikšen je najvišji znesek, ki ga lahko dvignem na transakcijo?"
+  ],
+  "faq.3.q": [
+    "66601510",
+    "Ali naj zamenjam denar na letališču?"
+  ],
+  "faq.3.a": [
+    "82d5704c",
+    "Ne za velike vsote: na letališču in trajektnih terminalih plačate opazno manj. Vračilo denarja opravite le toliko, da pridete do mesta, nato pa uporabite menjalnico ali bankomat v središču mesta."
+  ],
+  "faq.4.q": [
+    "44d07e17",
+    "Gotovina ali kartica v Urugvaju?"
+  ],
+  "faq.4.a": [
+    "11ded5ec",
+    "Urugvaj je zelo prijazen do plačilnih kartic (Visa in Mastercard skoraj povsod, brezstično in QR). Za manjše nakupe imejte s seboj nekaj gotovine za pesose, večje zneske pa plačujte s kartico."
+  ],
+  "faq.5.q": [
+    "2d0dd094",
+    "Katero valuto naj prinesem s seboj?"
+  ],
+  "faq.5.a": [
+    "cc8484ac",
+    "Gotovina ameriških dolarjev: najboljši tečaji in sprejemajo v vsaki menjalnici. Evro je na drugem mestu. Če prihajate iz Argentine, prinesite dolarje, ne argentinskih pesov."
+  ],
+  "faq.6.q": [
+    "b71d8d92",
+    "Ali dobim davčni popust kot turist?"
+  ],
+  "faq.6.a": [
+    "49712ab8",
+    "Da: poleg nastanitvenega režima splošno devettočkovno znižanje cen za prehrano in najem avtomobila brez voznika velja tudi za nerezidente do 30. aprila 2027 za končno porabo, ki jo elektronsko plača posameznik. Za sezonsko popolno oprostitev je potreben lasten odlok in datumi; iz te razširitve je ni mogoče sklepati."
+  ],
+  "faq.7.q": [
+    "04fb59ce",
+    "Kaj pa, če bankomat zavrne mojo kartico?"
+  ],
+  "faq.7.a": [
+    "15f0167b",
+    "Poskusite z drugo kartico in drugim omrežjem (RedBROU in Banred sta medsebojno povezani, vendar je koristno, če imate s seboj obe). Preverite, ali bankomat prikazuje logotipe Visa/Mastercard/Cirrus/Plus, in banki povejte, da ga boste uporabljali v Urugvaju."
+  ],
+  "related.0.label": [
+    "9371cd8d",
+    "Dolarji za potovanja"
+  ],
+  "related.1.label": [
+    "89470d17",
+    "Nakup dolarjev po najboljši ceni"
+  ],
+  "related.2.label": [
+    "7b531a45",
+    "Menjalnice in poslovalnice"
+  ],
+  "related.3.label": [
+    "574f3e27",
+    "Primerjajte cene"
+  ]
+}

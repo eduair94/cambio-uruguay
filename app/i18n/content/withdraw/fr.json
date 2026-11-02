@@ -1,0 +1,546 @@
+{
+  "title": [
+    "1229e1ce",
+    "Où retirer de l'argent en Uruguay : distributeurs automatiques, frais et zones touristiques incontournables"
+  ],
+  "metaTitle": [
+    "3e82d293",
+    "Distributeurs automatiques de billets en Uruguay : retirez des dollars ou des pesos"
+  ],
+  "description": [
+    "3eb63bbe",
+    "Comment et où retirer de l'argent liquide en Uruguay en tant que touriste : distributeurs automatiques de billets qui délivrent à la fois des dollars américains et des pesos, frais, limites de retrait, le piège de la conversion de devises (DCC) et les meilleurs endroits pour retirer de l'argent à l'aéroport, à Montevideo, à Punta del Este et à Colonia."
+  ],
+  "keywords": [
+    "4acfb17e",
+    "retirer de l'argent en Uruguay, retirer de l'argent en Uruguay, ATM touristique Uruguay, dollars depuis un guichet automatique Uruguay, échanger de l'argent en Uruguay, frais de guichet automatique en Uruguay, casas de cambio Uruguay"
+  ],
+  "tldr.0": [
+    "5f1561fe",
+    "Les distributeurs automatiques de billets uruguayens distribuent à la fois des dollars américains et des pesos — un avantage régional rare (en Argentine, c'est quasiment impossible)."
+  ],
+  "tldr.1": [
+    "7b41d73f",
+    "Il existe deux réseaux : RedBROU et Banred. Si l’un ne fonctionne pas, essayez l’autre ; ayez toujours sur vous une carte Visa et une Mastercard."
+  ],
+  "tldr.2": [
+    "c5aa36e3",
+    "Lorsque le distributeur automatique vous propose de vous débiter dans votre devise nationale, choisissez toujours la devise locale : la « conversion » masque un taux de change défavorable."
+  ],
+  "tldr.3": [
+    "b73d4126",
+    "Évitez de changer de grosses sommes d'argent à l'aéroport ou dans les gares maritimes — leurs taux sont nettement moins avantageux."
+  ],
+  "tldr.4": [
+    "83b2ff36",
+    "Payez les hôtels et restaurants avec une carte étrangère : outre l’avantage de la TVA, vous transportez moins d’argent liquide."
+  ],
+  "ui.backToTools": [
+    "950196fc",
+    "Outils"
+  ],
+  "ui.tldrTitle": [
+    "799c628c",
+    "En bref"
+  ],
+  "ui.networksTitle": [
+    "90dd37e5",
+    "Les deux réseaux de guichets automatiques : RedBROU et Banred"
+  ],
+  "ui.tableNetwork": [
+    "6974ad65",
+    "Réseau"
+  ],
+  "ui.tableReach": [
+    "c549e23b",
+    "Couverture"
+  ],
+  "ui.tableUsd": [
+    "47b34a69",
+    "Plafond en dollars américains / retrait"
+  ],
+  "ui.tableUyu": [
+    "7d4e5b12",
+    "Plafond $U / retrait"
+  ],
+  "ui.tableNote": [
+    "0ff01b6a",
+    "Notes"
+  ],
+  "ui.zonesTitle": [
+    "126f8827",
+    "Où retirer de l'argent près de la zone touristique"
+  ],
+  "ui.zonesIntro": [
+    "e4c560b0",
+    "Les distributeurs automatiques de billets sont généralement situés à l'intérieur des banques, des centres commerciaux ou des agences Abita et Redpagos. Les références se font par zone ou point de repère (et non par adresse précise, car celle-ci peut varier)."
+  ],
+  "ui.stepsTitle": [
+    "3e1ff2e0",
+    "Comment retirer de l'argent, étape par étape"
+  ],
+  "ui.faqTitle": [
+    "e466bfa9",
+    "Foire aux questions"
+  ],
+  "ui.sourcesTitle": [
+    "105bfcc3",
+    "Sources et références"
+  ],
+  "ui.relatedTitle": [
+    "ac7a8ccc",
+    "Continuez à lire"
+  ],
+  "ui.ctaTitle": [
+    "60dda6a1",
+    "Comparez avant d'échanger"
+  ],
+  "ui.ctaText": [
+    "fe6b01a6",
+    "Consultez le taux de change du dollar dans plus de 40 bureaux de change, mis à jour toutes les 10 minutes, et choisissez le meilleur endroit pour effectuer vos opérations."
+  ],
+  "ui.ctaButton": [
+    "9efd557a",
+    "Ouvrir le comparateur"
+  ],
+  "ui.mapButton": [
+    "4e8c8db6",
+    "Consultez les points de retrait sur la carte"
+  ],
+  "ui.disclaimer": [
+    "b166cfce",
+    "Informations destinées aux touristes, ne constituent pas un conseil financier. Les frais, les limites et les avantages fiscaux sont susceptibles de changer : veuillez les vérifier à votre arrivée et auprès de l’émetteur de votre carte. Nous ne sommes affiliés ni aux banques ni aux bureaux de change mentionnés."
+  ],
+  "ui.lastChecked": [
+    "9182e108",
+    "Dernière vérification : juin 2026"
+  ],
+  "ivaLive.heading": [
+    "5af716c3",
+    "Avantages de TVA touristiques en vigueur aujourd'hui"
+  ],
+  "ivaLive.asOf": [
+    "dd801240",
+    "Statut à la date {date} :"
+  ],
+  "ivaLive.hotel": [
+    "152a8c47",
+    "Hébergement (hôtels et similaires) : TVA à 0 % toute l'année."
+  ],
+  "ivaLive.base": [
+    "9856855a",
+    "Restauration et location de voiture sans chauffeur : une réduction de TVA de {points}-points pour la consommation finale payée avec la carte d’un particulier, y compris les cartes étrangères, jusqu’au 30 avril 2027 (Décret 235/026 ; source vérifiée le 23 octobre 2026)."
+  ],
+  "ivaLive.baseUnconfirmed": [
+    "d65944df",
+    "Restauration et location de voitures : la prolongation vérifiée a pris fin le 30 avril 2027. Vérifiez auprès de la DGI quelle réduction s’applique à la date de votre achat."
+  ],
+  "ivaLive.seasonalOn": [
+    "41748da1",
+    "Exonération totale de TVA pour l'été : ACTIVE (jusqu'à {end})."
+  ],
+  "ivaLive.seasonalOff": [
+    "015a1161",
+    "Exonération totale de TVA pendant l'été : la période n'est pas encore confirmée. Veuillez vous renseigner auprès de la DGI avant de compter sur cet avantage."
+  ],
+  "sections.0.heading": [
+    "90dd37e5",
+    "Les deux réseaux de guichets automatiques : RedBROU et Banred"
+  ],
+  "sections.0.paragraphs.0": [
+    "0f52a7fe",
+    "L'Uruguay possède deux réseaux de distributeurs automatiques de billets : RedBROU, géré par la banque d'État (BROU), et Banred, le réseau des banques privées. Ces deux réseaux sont interconnectés et connectés aux réseaux internationaux (Cirrus/Maestro de Mastercard et Plus de Visa), ce qui permet d'utiliser une carte étrangère sur les deux."
+  ],
+  "sections.0.paragraphs.1": [
+    "208b768b",
+    "Pour vous assurer qu'un distributeur automatique accepte votre carte, recherchez les logos Visa, Mastercard, Cirrus, Plus ou Maestro. Conseil pratique : ayez toujours sur vous une carte Visa et une Mastercard de comptes différents ; si une carte ou un distributeur ne fonctionne pas, essayez l'autre réseau."
+  ],
+  "sections.1.heading": [
+    "612974f0",
+    "Dollars ou pesos ? En Uruguay, vous pouvez prendre les deux."
+  ],
+  "sections.1.paragraphs.0": [
+    "d9928d31",
+    "Contrairement à l'Argentine, de nombreux distributeurs automatiques de billets en Uruguay délivrent aussi bien des dollars américains que des pesos uruguayens. C'est un véritable avantage si vous souhaitez obtenir des dollars en espèces sans passer par un bureau de change. Les dollars sont généralement distribués en billets de 100 $ US, ce qui, combiné aux plafonds de retrait, peut signifier que vous ne recevrez qu'un seul billet à la fois."
+  ],
+  "sections.1.paragraphs.1": [
+    "cd694b7a",
+    "Règle simple : prenez des pesos pour vos dépenses quotidiennes (taxis, marchés, petits commerces) et des dollars uniquement si vous en avez vraiment besoin en espèces. Pour la plupart des paiements importants, la carte est plus pratique que l’argent liquide."
+  ],
+  "sections.2.heading": [
+    "9ce97b34",
+    "Frais et limites de retrait"
+  ],
+  "sections.2.paragraphs.0": [
+    "e28a7f0e",
+    "Les frais appliqués par les distributeurs automatiques uruguayens pour une carte étrangère sont faibles comparés à ceux de nombreux pays (quelques dollars par retrait). Le coût principal provient généralement de votre banque : les frais de transaction à l’étranger (généralement de 1 à 3 %) auxquels s’ajoutent parfois des frais fixes pour les retraits internationaux. Une carte de voyage sans frais de change vous permet d’économiser la quasi-totalité de ces frais."
+  ],
+  "sections.2.paragraphs.1": [
+    "154c6f01",
+    "Les plafonds de retrait par carte à l'étranger sont fixés par les réseaux locaux, et non par votre banque, et ils sont bas. Votre banque applique également sa propre limite quotidienne. Avant de partir en voyage, contactez votre banque pour augmenter cette limite et retirez le montant maximum par transaction afin de répartir les frais fixes sur une plus grande somme d'argent."
+  ],
+  "sections.2.bullets.0": [
+    "befd8df3",
+    "Frais de retrait local : approximatifs, de l’ordre de quelques dollars (vérifiez le montant affiché à l’écran avant de confirmer)."
+  ],
+  "sections.2.bullets.1": [
+    "0f872d39",
+    "Frais bancaires/de l'émetteur : généralement le coût le plus important ; vérifiez si votre carte facture des frais de transaction à l'étranger."
+  ],
+  "sections.2.bullets.2": [
+    "8301e954",
+    "Plafond par retrait : environ 200 à 300 $ US ou 5 000 $ US selon le réseau (montant approximatif, susceptible de changer)."
+  ],
+  "sections.2.bullets.3": [
+    "4aacdc05",
+    "Limite journalière : fixée par votre banque ; veuillez la contacter avant votre voyage pour la relever."
+  ],
+  "sections.3.heading": [
+    "6bd46a0c",
+    "Le piège de la conversion de devises (DCC) : choisissez toujours la devise locale"
+  ],
+  "sections.3.paragraphs.0": [
+    "29fe4c81",
+    "De nombreux distributeurs automatiques et terminaux de paiement proposent de débiter dans votre devise locale plutôt qu'en pesos uruguayens ou en dollars. L'idée paraît pratique (« voyez le montant dans votre devise »), mais cette conversion dynamique des devises (CDD) applique un taux de change majoré et des frais cachés. Vous y perdez presque toujours."
+  ],
+  "sections.3.paragraphs.1": [
+    "34380f1f",
+    "Choisissez toujours l'option « sans conversion » ou la devise locale : pesos uruguayens si vous payez en pesos, dollars si vous payez en dollars. Laissez votre banque effectuer la conversion ; son taux est généralement plus avantageux."
+  ],
+  "sections.4.heading": [
+    "cc573fd8",
+    "Bureaux de change, distributeurs automatiques ou banques : lequel est le meilleur ?"
+  ],
+  "sections.4.paragraphs.0": [
+    "1116ae4f",
+    "Les bureaux de change (comme Varlix, Indumex, Gales, Aspen, Cambio Sir, Cambio Inglés et Global Exchange) sont la solution classique pour changer de l'argent. Ils offrent les meilleurs taux pour le dollar, avec une marge très faible et sans commission ; l'euro est la deuxième meilleure devise, le real brésilien est acceptable et le peso argentin est le moins avantageux. On vous demandera généralement votre passeport."
+  ],
+  "sections.4.paragraphs.1": [
+    "b7c83296",
+    "Horaires : les agences de rue sont ouvertes du lundi au vendredi (de 9 h à 19 h environ) et le samedi matin ; la plupart sont fermées le dimanche. Les agences situées dans les centres commerciaux sont ouvertes tous les jours et plus tard. Pour comparer les tarifs journaliers des différentes maisons, utilisez notre comparateur et consultez la page des agences."
+  ],
+  "sections.5.heading": [
+    "f8b82759",
+    "Combien d'argent liquide emporter et quelle devise ?"
+  ],
+  "sections.5.paragraphs.0": [
+    "e22fd664",
+    "L'Uruguay est un pays où les cartes bancaires sont très répandues : Visa et Mastercard sont acceptées presque partout, et les paiements sans contact et par QR code (Mercado Pago) sont très courants. Pour les petits achats, il est conseillé de n'avoir que quelques pesos en espèces et de payer les montants plus importants par carte."
+  ],
+  "sections.5.paragraphs.1": [
+    "f9b88276",
+    "Si vous prévoyez d'apporter du liquide à changer, le dollar américain est la meilleure devise (meilleurs taux de change, accepté partout). L'euro arrive en deuxième position. Si vous venez d'Argentine, apportez des dollars, et non des pesos argentins : le peso se change très mal en Uruguay. Depuis le Brésil, le real est accepté, surtout près de la frontière, même si le dollar reste plus pratique."
+  ],
+  "sections.6.heading": [
+    "97a59b72",
+    "Avantage TVA touristique (lorsque vous payez avec une carte étrangère)"
+  ],
+  "sections.6.paragraphs.0": [
+    "88ea76fc",
+    "L'Uruguay rembourse une partie de la TVA aux touristes non-résidents qui règlent avec une carte bancaire étrangère. L'hébergement (hôtels enregistrés et établissements similaires) bénéficie d'une exonération de TVA à 0 % toute l'année pour les non-résidents sur présentation d'une pièce d'identité étrangère et paiement par carte bancaire étrangère – un avantage permanent."
+  ],
+  "sections.6.paragraphs.1": [
+    "7f51f9e2",
+    "Pour les repas au restaurant et la location de voiture sans chauffeur, le décret 235/026 maintient la réduction générale de neuf points jusqu'au 30 avril 2027 pour les consommations réglées par voie électronique. L'exonération totale saisonnière constitue un avantage distinct, régi par son propre décret et assorti de ses propres dates : la prolongation de la réduction de neuf points ne vaut pas exonération totale. Renseignez-vous auprès de la DGI avant votre voyage."
+  ],
+  "sections.6.paragraphs.2": [
+    "f963de1e",
+    "Dans tous les cas, la réduction est automatique : vous payez avec votre carte étrangère et l’avantage apparaît sur le reçu ou votre relevé de carte. Si vous payez en espèces, vous perdez l’avantage. Il est donc avantageux de régler vos hôtels et restaurants par carte et de retirer moins d’espèces."
+  ],
+  "sections.6.bullets.0": [
+    "fc6c4026",
+    "Hôtels/hébergement : TVA à 0 % toute l'année pour les non-résidents (permanents)."
+  ],
+  "sections.6.bullets.1": [
+    "02f7d683",
+    "Restaurants et location de voitures sans chauffeur : neuf points jusqu’au 30 avril 2027, sous réserve du paiement électronique. Une exemption complète saisonnière nécessite une confirmation séparée."
+  ],
+  "sections.6.bullets.2": [
+    "bf5ed0b5",
+    "Chaque régime a ses propres conditions. La réduction générale de neuf points exige une consommation finale et la possession d'un moyen de paiement électronique admissible détenu par un particulier ; l'émission à l'étranger n'est pas requise."
+  ],
+  "sections.7.heading": [
+    "84fbae56",
+    "Conseils de sécurité lors du retrait d'espèces"
+  ],
+  "sections.7.paragraphs.0": [
+    "e227f80c",
+    "L'Uruguay figure parmi les pays les plus sûrs de la région, mais les vols à la tire existent, notamment dans la Ciudad Vieja de Montevideo, la zone portuaire et les stations balnéaires en haute saison. Privilégiez les distributeurs automatiques situés à l'intérieur des banques, des centres commerciaux ou des halls vitrés, de préférence en journée, et restez vigilant."
+  ],
+  "sections.7.bullets.0": [
+    "d234b5e4",
+    "Retirez de l'argent en journée et aux distributeurs automatiques situés à l'intérieur de locaux fermés, et non dans la rue la nuit."
+  ],
+  "sections.7.bullets.1": [
+    "f9f5f149",
+    "Ayez deux cartes de comptes différents et conservez de l'argent liquide à plusieurs endroits."
+  ],
+  "sections.7.bullets.2": [
+    "aa71ad4f",
+    "Demandez des petites coupures (100, 200, 500) : les billets de 1 000 et 2 000 sont difficiles à casser."
+  ],
+  "sections.7.bullets.3": [
+    "d7920a67",
+    "Utilisez Uber, Cabify ou les taxis officiels pour vos déplacements ; ne laissez pas d’objets de valeur dans la voiture."
+  ],
+  "sections.7.link.label": [
+    "d8570bac",
+    "Je suis déjà coincé avec un gros billet : où trouver de la monnaie et des pièces de monnaie ?"
+  ],
+  "networkRows.0.network": [
+    "7ee344a0",
+    "RedBROU"
+  ],
+  "networkRows.0.reach": [
+    "4a5d053e",
+    "Le réseau de la banque d'État BROU ; plus de 400 distributeurs automatiques de billets à l'échelle nationale, ainsi qu'Abitab et Redpagos."
+  ],
+  "networkRows.0.usdPerTxn": [
+    "f41a726d",
+    "≈ 200 $ US"
+  ],
+  "networkRows.0.uyuPerTxn": [
+    "255d9345",
+    "≈ 5 000 $U"
+  ],
+  "networkRows.0.note": [
+    "786a7e5f",
+    "De nombreux distributeurs acceptent les dollars. Les plafonds pour les cartes étrangères sont approximatifs."
+  ],
+  "networkRows.1.network": [
+    "6823b06d",
+    "Interdit"
+  ],
+  "networkRows.1.reach": [
+    "331e78b2",
+    "Réseau de banques privées ; plus de 370 points répartis dans les 19 départements."
+  ],
+  "networkRows.1.usdPerTxn": [
+    "75830c42",
+    "≈ 300 $ US"
+  ],
+  "networkRows.1.uyuPerTxn": [
+    "255d9345",
+    "≈ 5 000 $U"
+  ],
+  "networkRows.1.note": [
+    "9f2f1329",
+    "Compatible avec RedBROU. Si un réseau refuse votre carte, essayez l'autre."
+  ],
+  "zones.0.name": [
+    "8a4dc608",
+    "Aéroport Carrasco (MVD), Montevideo"
+  ],
+  "zones.0.summary": [
+    "462aaacd",
+    "Les bureaux de Global Exchange sont ouverts 24h/24, le terminal dispose de distributeurs automatiques de billets (dont un distributeur Santander confirmé) et d'une agence bancaire."
+  ],
+  "zones.0.tips.0": [
+    "d6202725",
+    "Le change à l'aéroport paie nettement moins bien : la monnaie n'est rendue que pour se rendre en ville."
+  ],
+  "zones.0.tips.1": [
+    "99e81ace",
+    "Si vous avez besoin d'argent liquide immédiatement, retirez une petite somme au distributeur automatique et changez le reste en ville."
+  ],
+  "zones.1.name": [
+    "034a744d",
+    "Montevideo (Centro, Ciudad Vieja et le port)"
+  ],
+  "zones.1.summary": [
+    "04c221eb",
+    "Les bureaux de change sont concentrés sur l'Avenida 18 de Julio (Centro) et dans la Ciudad Vieja. Le terminal de croisière, avec ses bureaux de change et ses distributeurs automatiques de billets, se trouve à proximité de la Ciudad Vieja."
+  ],
+  "zones.1.tips.0": [
+    "a26e5af3",
+    "Dans le Centro et la Ciudad Vieja, vous trouverez plusieurs bureaux de change à comparer."
+  ],
+  "zones.1.tips.1": [
+    "4139b3e5",
+    "Les passagers de croisière ont accès à des bureaux de change à l'intérieur du port et à des distributeurs automatiques de billets à quelques pas, en direction du Mercado del Puerto."
+  ],
+  "zones.2.name": [
+    "3fa606f9",
+    "Punta del Este"
+  ],
+  "zones.2.summary": [
+    "880d1f96",
+    "Les bureaux de change se trouvent le long de l'avenue Gorlero, l'artère principale. En haute saison, il peut y avoir des files d'attente et les distributeurs automatiques de billets peuvent être à court de dollars."
+  ],
+  "zones.2.tips.0": [
+    "1063deb8",
+    "En été et pendant la semaine de Pâques, les distributeurs automatiques de billets se vident rapidement : retirez de l’argent à l’avance et gardez une réserve."
+  ],
+  "zones.2.tips.1": [
+    "e4c20d9e",
+    "Privilégiez les cartes et les paiements par QR code pour ne pas dépendre uniquement des espèces."
+  ],
+  "zones.3.name": [
+    "2ed532f4",
+    "Colonia del Sacramento"
+  ],
+  "zones.3.summary": [
+    "764221b5",
+    "Des distributeurs automatiques de billets se trouvent dans le Barrio Histórico et au terminal des ferries, à deux pas du vieux quartier où arrivent les excursionnistes venant de Buenos Aires."
+  ],
+  "zones.3.tips.0": [
+    "d7ebee8b",
+    "Retirez une petite somme en pesos à votre arrivée et payez le reste par carte."
+  ],
+  "zones.3.tips.1": [
+    "e09f3851",
+    "De nombreuses boutiques pour touristes acceptent les dollars, mais à un taux défavorable."
+  ],
+  "zones.4.name": [
+    "ed7917f9",
+    "Gares maritimes (Buquebus / Colonia Express)"
+  ],
+  "zones.4.summary": [
+    "ac18ddf9",
+    "Des distributeurs automatiques de billets sont disponibles aux terminaux de Montevideo et de Colonia. Les taux de change pratiqués à l'intérieur des terminaux et à bord sont généralement peu avantageux."
+  ],
+  "zones.4.tips.0": [
+    "b5a97e0f",
+    "Évitez de changer de grosses sommes au terminal ou à bord — les taux sont défavorables."
+  ],
+  "zones.4.tips.1": [
+    "91b3c105",
+    "Il est préférable d'utiliser un distributeur automatique de billets ou de changer sa monnaie dans un bureau de change en ville."
+  ],
+  "zones.5.name": [
+    "66cc7244",
+    "L'intérieur des terres et les petites villes"
+  ],
+  "zones.5.summary": [
+    "fc9a5afd",
+    "En dehors des grandes villes et des principales stations balnéaires, les distributeurs automatiques de billets sont rares."
+  ],
+  "zones.5.tips.0": [
+    "48821abe",
+    "Faites le plein d'argent liquide à Montevideo, Punta del Este ou Colonia avant de vous diriger vers l'intérieur des terres."
+  ],
+  "zones.5.tips.1": [
+    "02573d37",
+    "Sur la côte de Rocha, faites le plein dans des villes plus importantes comme Chuy ou La Paloma."
+  ],
+  "steps.0.name": [
+    "aa213b75",
+    "Trouvez un distributeur automatique de billets qui accepte votre carte."
+  ],
+  "steps.0.text": [
+    "2f5d9e7c",
+    "Recherchez les logos Visa, Mastercard, Cirrus, Plus ou Maestro ; privilégiez les distributeurs automatiques situés à l’intérieur des banques ou des centres commerciaux."
+  ],
+  "steps.1.name": [
+    "4209811a",
+    "Choisissez dollars ou pesos"
+  ],
+  "steps.1.text": [
+    "f338ade4",
+    "Prenez des pesos pour vos dépenses quotidiennes et des dollars seulement si vous en avez besoin en espèces ; les dollars sont distribués en billets de 100 dollars américains."
+  ],
+  "steps.2.name": [
+    "24d1a5da",
+    "Refuser la conversion dans votre devise"
+  ],
+  "steps.2.text": [
+    "3f2be811",
+    "Lorsqu'il vous est proposé d'être facturé dans votre devise locale, choisissez « sans conversion » ou la devise locale pour éviter la majoration DCC."
+  ],
+  "steps.3.name": [
+    "4e44a3f9",
+    "Retirez le maximum par transaction"
+  ],
+  "steps.3.text": [
+    "831b2ec9",
+    "Comme il y a des frais de retrait fixes, prenez le plafond autorisé pour répartir le coût sur une plus grande somme d'argent."
+  ],
+  "steps.4.name": [
+    "6fcb61ed",
+    "Conservez le reçu et comptez l'argent."
+  ],
+  "steps.4.text": [
+    "30d70c06",
+    "Vérifiez le montant distribué, conservez le ticket et répartissez l'argent en plusieurs endroits avant de quitter le distributeur automatique."
+  ],
+  "faq.0.q": [
+    "e44ca992",
+    "Puis-je retirer des dollars américains aux distributeurs automatiques en Uruguay ?"
+  ],
+  "faq.0.a": [
+    "eb6339a1",
+    "Oui. Contrairement à l'Argentine, de nombreux distributeurs automatiques uruguayens délivrent des dollars en plus des pesos, généralement en billets de 100 dollars américains. Les plafonds de retrait par carte étrangère sont bas."
+  ],
+  "faq.1.q": [
+    "33423670",
+    "Quels sont les frais appliqués par les distributeurs automatiques de billets pour les cartes étrangères ?"
+  ],
+  "faq.1.a": [
+    "68121602",
+    "Les frais locaux sont faibles (de l'ordre de quelques dollars par retrait). Le coût le plus important correspond généralement aux frais de transaction à l'étranger facturés par votre banque (1 à 3 % en moyenne)."
+  ],
+  "faq.2.q": [
+    "bf2fe8ff",
+    "Quel est le montant maximum que je peux retirer par transaction ?"
+  ],
+  "faq.2.a": [
+    "7a64ef6d",
+    "Environ 200 à 300 dollars américains ou 5 000 dollars américains par retrait selon le réseau (RedBROU ou Banred). Votre banque fixe également sa propre limite quotidienne ; veuillez donc l’en informer avant votre voyage."
+  ],
+  "faq.3.q": [
+    "66601510",
+    "Dois-je changer de l'argent à l'aéroport ?"
+  ],
+  "faq.3.a": [
+    "82d5704c",
+    "Évitez de changer de grosses sommes : les aéroports et les gares maritimes offrent des taux nettement inférieurs. Ne changez que le nécessaire pour rejoindre la ville, puis utilisez un bureau de change ou un distributeur automatique en centre-ville."
+  ],
+  "faq.4.q": [
+    "44d07e17",
+    "Espèces ou carte en Uruguay ?"
+  ],
+  "faq.4.a": [
+    "11ded5ec",
+    "L'Uruguay accepte très bien les cartes bancaires (Visa et Mastercard presque partout, sans contact et par QR code). Prévoyez un peu d'argent liquide pour les petits achats et payez les montants plus importants par carte."
+  ],
+  "faq.5.q": [
+    "2d0dd094",
+    "Quelle devise dois-je apporter ?"
+  ],
+  "faq.5.a": [
+    "cc8484ac",
+    "Dollars américains en espèces : taux de change avantageux et acceptés dans tous les bureaux de change. L’euro arrive en deuxième position. Si vous venez d’Argentine, apportez des dollars, pas des pesos argentins."
+  ],
+  "faq.6.q": [
+    "b71d8d92",
+    "Ai-je droit à une réduction de taxe en tant que touriste ?"
+  ],
+  "faq.6.a": [
+    "49712ab8",
+    "Oui : outre le régime d’hébergement, la réduction générale de neuf points sur les repas et la location de voiture sans chauffeur s’applique également aux non-résidents jusqu’au 30 avril 2027, pour les consommations finales réglées par voie électronique par un particulier. Une exemption totale saisonnière nécessite un décret et des dates spécifiques ; elle ne peut être déduite de cette prolongation."
+  ],
+  "faq.7.q": [
+    "04fb59ce",
+    "Que se passe-t-il si le distributeur automatique refuse ma carte ?"
+  ],
+  "faq.7.a": [
+    "15f0167b",
+    "Essayez une autre carte et un autre réseau (RedBROU et Banred sont interconnectés, mais il est préférable d'avoir les deux). Vérifiez que le distributeur automatique affiche les logos Visa/Mastercard/Cirrus/Plus et informez votre banque que vous l'utiliserez en Uruguay."
+  ],
+  "related.0.label": [
+    "9371cd8d",
+    "Dollars pour les voyages"
+  ],
+  "related.1.label": [
+    "89470d17",
+    "Acheter des dollars au meilleur prix"
+  ],
+  "related.2.label": [
+    "7b531a45",
+    "Bureaux de change et succursales"
+  ],
+  "related.3.label": [
+    "574f3e27",
+    "Comparer les tarifs"
+  ]
+}

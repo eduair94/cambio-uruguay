@@ -5,6 +5,7 @@ import { fetchNews } from './news'
 import { sanitizeAi } from './ai'
 import { aiMarkdownToEmailHtml, cleanAiCommentary } from '../../utils/newsletterIssue'
 import { rentalSurveyUrl } from '../../utils/rentalFeedback'
+import { isExtraLocale } from '../../utils/locales'
 
 export type NewsletterLang = 'es' | 'en' | 'pt'
 
@@ -24,7 +25,9 @@ export function newToken(): string {
 
 export function normalizeNewsletterLang(x?: string): NewsletterLang {
   const base = (x || '').slice(0, 2).toLowerCase()
-  return base === 'en' || base === 'pt' ? base : 'es'
+  if (base === 'en' || base === 'pt') return base
+  // The issue is written in es/en/pt; a reader who subscribed from /fr or /ja gets English.
+  return isExtraLocale(base) || isExtraLocale((x || '').toLowerCase()) ? 'en' : 'es'
 }
 
 // ---- Digest data ------------------------------------------------------------

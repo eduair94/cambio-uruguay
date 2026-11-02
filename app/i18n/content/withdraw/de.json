@@ -1,0 +1,534 @@
+{
+  "title": [
+    "1229e1ce",
+    "Wo man in Uruguay Bargeld abheben kann: Geldautomaten, Gebühren und touristische Hotspots"
+  ],
+  "metaTitle": [
+    "3e82d293",
+    "Geldautomaten in Uruguay: Dollar oder Pesos abheben"
+  ],
+  "description": [
+    "3eb63bbe",
+    "Wie und wo man als Tourist in Uruguay an Bargeld kommt: Geldautomaten, die sowohl US-Dollar als auch Pesos ausgeben, Gebühren, Abhebungslimits, die Währungsumrechnungsfalle (DCC-Falle) und die besten Abhebungsorte am Flughafen, in Montevideo, Punta del Este und Colonia."
+  ],
+  "keywords": [
+    "4acfb17e",
+    "Bargeld abheben in Uruguay, Geld abheben in Uruguay, Geldautomaten in Uruguay für Touristen, Dollars am Geldautomaten in Uruguay, Geld wechseln in Uruguay, Geldautomatengebühren in Uruguay, Casas de Cambio in Uruguay"
+  ],
+  "tldr.0": [
+    "5f1561fe",
+    "Uruguayische Geldautomaten geben sowohl US-Dollar als auch Pesos aus – ein seltener regionaler Vorteil (in Argentinien ist das nahezu unmöglich)."
+  ],
+  "tldr.1": [
+    "7b41d73f",
+    "Es gibt zwei Netzwerke: RedBROU und Banred. Falls eines nicht funktioniert, versuchen Sie es mit dem anderen; führen Sie sowohl eine Visa- als auch eine Mastercard mit sich."
+  ],
+  "tldr.2": [
+    "c5aa36e3",
+    "Wenn Ihnen der Geldautomat anbietet, in Ihrer Heimatwährung abzurechnen, wählen Sie immer die Landeswährung: Die „Umrechnung“ verbirgt einen ungünstigen Wechselkurs."
+  ],
+  "tldr.3": [
+    "b73d4126",
+    "Vermeiden Sie es, größere Geldbeträge am Flughafen oder an Fährterminals zu wechseln – deren Wechselkurse sind deutlich schlechter."
+  ],
+  "tldr.4": [
+    "83b2ff36",
+    "Bezahlen Sie Hotels und Restaurants mit einer ausländischen Karte: Neben dem Mehrwertsteuervorteil müssen Sie auch weniger Bargeld mit sich führen."
+  ],
+  "ui.backToTools": [
+    "950196fc",
+    "Werkzeuge"
+  ],
+  "ui.tldrTitle": [
+    "799c628c",
+    "Zusamenfassend"
+  ],
+  "ui.networksTitle": [
+    "90dd37e5",
+    "Die beiden Geldautomatennetzwerke: RedBROU und Banred"
+  ],
+  "ui.tableNetwork": [
+    "6974ad65",
+    "Netzwerk"
+  ],
+  "ui.tableReach": [
+    "c549e23b",
+    "Abdeckung"
+  ],
+  "ui.tableUsd": [
+    "47b34a69",
+    "Höchstgrenze US$ / Auszahlung"
+  ],
+  "ui.tableUyu": [
+    "7d4e5b12",
+    "Auszahlungslimit $U / Auszahlung"
+  ],
+  "ui.tableNote": [
+    "0ff01b6a",
+    "Anmerkungen"
+  ],
+  "ui.zonesTitle": [
+    "126f8827",
+    "Wo man in der Nähe der Touristenzone Bargeld abheben kann"
+  ],
+  "ui.zonesIntro": [
+    "e4c560b0",
+    "Es werden Angaben zu Zonen und Sehenswürdigkeiten gemacht (keine genauen Adressen, da diese sich ändern können). Geldautomaten befinden sich üblicherweise in Banken, Einkaufszentren oder Filialen von Abitab und Redpagos."
+  ],
+  "ui.stepsTitle": [
+    "3e1ff2e0",
+    "So heben Sie Schritt für Schritt Bargeld ab"
+  ],
+  "ui.faqTitle": [
+    "e466bfa9",
+    "Häufig gestellte Fragen"
+  ],
+  "ui.sourcesTitle": [
+    "105bfcc3",
+    "Quellen & Referenzen"
+  ],
+  "ui.relatedTitle": [
+    "ac7a8ccc",
+    "Lesen Sie weiter"
+  ],
+  "ui.ctaTitle": [
+    "60dda6a1",
+    "Vergleichen Sie, bevor Sie umtauschen"
+  ],
+  "ui.ctaText": [
+    "fe6b01a6",
+    "Sehen Sie den Dollarkurs von über 40 Wechselstuben, der alle 10 Minuten aktualisiert wird, und wählen Sie den besten Ort für Ihre Geschäfte aus."
+  ],
+  "ui.ctaButton": [
+    "9efd557a",
+    "Öffne den Komparator"
+  ],
+  "ui.mapButton": [
+    "4e8c8db6",
+    "Siehe die Abholpunkte auf der Karte"
+  ],
+  "ui.disclaimer": [
+    "b166cfce",
+    "Diese Informationen dienen als Orientierungshilfe für Touristen und stellen keine Finanzberatung dar. Gebühren, Limits und Steuervorteile können sich ändern: Bitte informieren Sie sich bei Ihrer Ankunft und bei Ihrem Kartenaussteller. Wir stehen in keiner Verbindung zu den genannten Banken oder Wechselstuben."
+  ],
+  "ui.lastChecked": [
+    "9182e108",
+    "Letzte Überprüfung: Juni 2026"
+  ],
+  "ivaLive.heading": [
+    "5af716c3",
+    "Touristische Mehrwertsteuervorteile gelten ab heute"
+  ],
+  "ivaLive.asOf": [
+    "dd801240",
+    "Status vom {date}:"
+  ],
+  "ivaLive.hotel": [
+    "152a8c47",
+    "Unterkunft (Hotels und ähnliches): 0 % Mehrwertsteuer das ganze Jahr über."
+  ],
+  "ivaLive.base": [
+    "9856855a",
+    "Speisen und Mietwagen ohne Fahrer: Mehrwertsteuerermäßigung von {points}-Punkten für den Endverbrauch bei Zahlung mit einer individuellen Karte, einschließlich ausländischer Karten, bis zum 30. April 2027 (Dekret 235/026; Quelle geprüft am 23. Oktober 2026)."
+  ],
+  "ivaLive.baseUnconfirmed": [
+    "d65944df",
+    "Gastronomie und Mietwagen: Die bestätigte Verlängerung endete am 30. April 2027. Erkundigen Sie sich bei DGI, welche Ermäßigung zum Zeitpunkt Ihres Kaufs gilt."
+  ],
+  "ivaLive.seasonalOn": [
+    "41748da1",
+    "Sommerliche vollständige Mehrwertsteuerbefreiung: AKTIV (bis {end})."
+  ],
+  "ivaLive.seasonalOff": [
+    "015a1161",
+    "Vollständige Mehrwertsteuerbefreiung im Sommer: Für diesen Zeitraum liegt uns noch kein bestätigter Termin vor. Bitte wenden Sie sich an DGI, bevor Sie mit dieser Vergünstigung rechnen."
+  ],
+  "sections.0.heading": [
+    "90dd37e5",
+    "Die beiden Geldautomatennetzwerke: RedBROU und Banred"
+  ],
+  "sections.0.paragraphs.0": [
+    "0f52a7fe",
+    "Uruguay verfügt über zwei Geldautomatennetze: RedBROU, betrieben von der staatlichen Bank BROU, und Banred, das Netz der Privatbanken. Beide sind miteinander verbunden und an internationale Netzwerke (Mastercard Cirrus/Maestro und Visa Plus) angebunden, sodass ausländische Karten an beiden Netzen funktionieren."
+  ],
+  "sections.0.paragraphs.1": [
+    "208b768b",
+    "Um sicherzustellen, dass ein Geldautomat Ihre Karte akzeptiert, achten Sie auf die Logos von Visa, Mastercard, Cirrus, Plus oder Maestro. Praktischer Tipp: Führen Sie eine Visa- und eine Mastercard von unterschiedlichen Konten mit sich. Sollte eine Karte oder ein Automat nicht funktionieren, versuchen Sie es mit dem anderen Netzwerk."
+  ],
+  "sections.1.heading": [
+    "612974f0",
+    "Dollar oder Pesos? In Uruguay können Sie beides mitnehmen."
+  ],
+  "sections.1.paragraphs.0": [
+    "d9928d31",
+    "Im Gegensatz zu Argentinien geben viele Geldautomaten in Uruguay sowohl US-Dollar als auch uruguayische Pesos aus. Das ist ein echter Vorteil, wenn man US-Dollar in bar abheben möchte, ohne eine Wechselstube aufsuchen zu müssen. Die Dollar werden üblicherweise in 100-Dollar-Scheinen ausgegeben, was in Verbindung mit den Abhebungslimits bedeuten kann, dass man jeweils nur einen Schein erhält."
+  ],
+  "sections.1.paragraphs.1": [
+    "cd694b7a",
+    "Einfache Regel: Nehmen Sie Pesos für alltägliche Ausgaben (Taxis, Märkte, kleine Läden) und Dollar nur dann mit, wenn Sie sie wirklich in bar benötigen. Für die meisten größeren Zahlungen ist eine Karte Bargeld vorzuziehen."
+  ],
+  "sections.2.heading": [
+    "9ce97b34",
+    "Gebühren und Auszahlungslimits"
+  ],
+  "sections.2.paragraphs.0": [
+    "e28a7f0e",
+    "Die Gebühr, die uruguayische Geldautomaten für ausländische Karten erheben, ist im Vergleich zu vielen anderen Ländern niedrig (etwa wenige Dollar pro Abhebung). Die höheren Kosten entstehen in der Regel bei Ihrer eigenen Bank: die Gebühr für Auslandstransaktionen (typischerweise 1–3 %) zuzüglich einer gegebenenfalls anfallenden Pauschalgebühr für internationale Abhebungen. Mit einer Reisekreditkarte ohne Fremdwährungsgebühr sparen Sie fast all diese Kosten."
+  ],
+  "sections.2.paragraphs.1": [
+    "154c6f01",
+    "Die Abhebungslimits für ausländische Karten werden von den jeweiligen Kartenanbietern und nicht von Ihrer Bank festgelegt und sind niedrig. Ihre Bank hat zusätzlich ein eigenes Tageslimit. Rufen Sie vor Ihrer Reise Ihre Bank an, um das Limit zu erhöhen, und heben Sie den maximal zulässigen Betrag pro Transaktion ab, um die Gebühr auf mehr Bargeld zu verteilen."
+  ],
+  "sections.2.bullets.0": [
+    "befd8df3",
+    "Lokale Abhebungsgebühr: ungefähr, in der Größenordnung von einigen Dollar (überprüfen Sie den angezeigten Betrag vor der Bestätigung)."
+  ],
+  "sections.2.bullets.1": [
+    "0f872d39",
+    "Die Gebühr Ihrer Bank/Ihres Kartenausstellers: in der Regel der höhere Kostenfaktor; prüfen Sie, ob für Ihre Karte eine Gebühr für Auslandstransaktionen anfällt."
+  ],
+  "sections.2.bullets.2": [
+    "8301e954",
+    "Auszahlungslimit: ca. 200–300 US-Dollar bzw. 5.000 britische Dollar, abhängig vom Netzwerk (ungefähre Angaben, können sich ändern)."
+  ],
+  "sections.2.bullets.3": [
+    "4aacdc05",
+    "Tageslimit: wird von Ihrer Bank festgelegt; benachrichtigen Sie diese vor Reiseantritt, um das Limit zu erhöhen."
+  ],
+  "sections.3.heading": [
+    "6bd46a0c",
+    "Die Währungsumrechnungsfalle: Wählen Sie immer die Landeswährung."
+  ],
+  "sections.3.paragraphs.0": [
+    "29fe4c81",
+    "Viele Geldautomaten und Kartenterminals bieten die Möglichkeit, in Ihrer Heimatwährung statt in uruguayischen Pesos oder Dollar abzurechnen. Das klingt verlockend („Sehen Sie, wie viel es in Ihrer Währung ist“), doch diese dynamische Währungsumrechnung (DCC) verwendet einen überhöhten Wechselkurs zuzüglich einer versteckten Gebühr. Sie verlieren fast immer."
+  ],
+  "sections.3.paragraphs.1": [
+    "34380f1f",
+    "Wählen Sie immer „ohne Umrechnung“ oder die Landeswährung: Uruguayische Pesos, wenn Sie Pesos mitnehmen, Dollar, wenn Sie Dollar mitnehmen. Lassen Sie Ihre Hausbank die Umrechnung vornehmen – deren Kurs ist in der Regel besser."
+  ],
+  "sections.4.heading": [
+    "cc573fd8",
+    "Wechselstuben, Geldautomaten oder Banken: Was ist am besten?"
+  ],
+  "sections.4.paragraphs.0": [
+    "1116ae4f",
+    "Wechselstuben (wie Varlix, Indumex, Gales, Aspen, Cambio Sir, Cambio Inglés und Global Exchange) sind der klassische Weg, Geld zu tauschen. Sie bieten die besten Kurse für US-Dollar mit geringem Aufschlag und ohne Gebühren. Der Euro ist die zweitbeste Währung, der brasilianische Real wird akzeptiert, der argentinische Peso hingegen am schlechtesten. In der Regel wird Ihr Reisepass verlangt."
+  ],
+  "sections.4.paragraphs.1": [
+    "b7c83296",
+    "Öffnungszeiten: Filialen in der Straße sind montags bis freitags (ca. 9 bis 19 Uhr) und samstagvormittags geöffnet; viele sind sonntags geschlossen. Filialen in Einkaufszentren haben täglich und länger geöffnet. Um die Tagespreise verschiedener Filialen zu vergleichen, nutzen Sie unseren Preisvergleich und die Filialseite."
+  ],
+  "sections.5.heading": [
+    "f8b82759",
+    "Wie viel Bargeld sollte man mitnehmen und welche Währung?"
+  ],
+  "sections.5.paragraphs.0": [
+    "e22fd664",
+    "Uruguay ist sehr kartenfreundlich: Visa und Mastercard werden fast überall akzeptiert, kontaktloses Bezahlen und QR-Code-Zahlungen (Mercado Pago) sind weit verbreitet. Nehmen Sie nur wenige Pesos Bargeld für kleinere Einkäufe mit und bezahlen Sie größere Beträge mit Karte."
+  ],
+  "sections.5.paragraphs.1": [
+    "f9b88276",
+    "Wenn Sie Bargeld zum Wechseln mitbringen, ist der US-Dollar die beste Währung (bester Wechselkurs, wird überall akzeptiert). Der Euro ist die zweitbeste Option. Wenn Sie aus Argentinien kommen, bringen Sie Dollar mit, keine argentinischen Pesos – der Peso hat in Uruguay einen sehr schlechten Wechselkurs. Aus Brasilien kommend, funktioniert der Real, insbesondere in Grenznähe, obwohl Dollar dennoch praktischer sind."
+  ],
+  "sections.6.heading": [
+    "97a59b72",
+    "Touristischer Mehrwertsteuervorteil (bei Zahlung mit ausländischer Karte)"
+  ],
+  "sections.6.paragraphs.1": [
+    "7f51f9e2",
+    "Für Restaurantbesuche und Mietwagen ohne Fahrer gilt gemäß Dekret 235/026 weiterhin die allgemeine Ermäßigung von neun Punkten bis zum 30. April 2027 für den Endverbrauch bei Zahlung mit zulässigen elektronischen Zahlungsmitteln. Eine saisonale Vollbefreiung ist eine separate Regelung mit eigenem Dekret und eigenem Gültigkeitszeitraum: Die Verlängerung der Ermäßigung von neun Punkten bedeutet keine Vollbefreiung. Bitte informieren Sie sich vor Reiseantritt bei der DGI."
+  ],
+  "sections.6.paragraphs.2": [
+    "f963de1e",
+    "Der Rabatt wird in jedem Fall automatisch gutgeschrieben: Sie zahlen mit Ihrer ausländischen Karte, und der Vorteil wird auf dem Beleg oder Ihrer Kartenabrechnung angezeigt. Bei Barzahlung geht der Rabatt verloren. Daher lohnt es sich, Hotel- und Restaurantbesuche mit Karte zu bezahlen und weniger Bargeld abzuheben."
+  ],
+  "sections.6.bullets.0": [
+    "fc6c4026",
+    "Hotels/Unterkünfte: 0 % Mehrwertsteuer das ganze Jahr über für Nichtansässige (ständige Einwohner)."
+  ],
+  "sections.6.bullets.1": [
+    "02f7d683",
+    "Restaurantbesuche und Mietwagen ohne Fahrer: neun Punkte bis zum 30. April 2027, vorbehaltlich der Einhaltung der elektronischen Zahlungspflicht. Eine saisonale Vollbefreiung bedarf einer separaten Bestätigung."
+  ],
+  "sections.6.bullets.2": [
+    "bf5ed0b5",
+    "Jedes System hat seine eigenen Anforderungen. Die allgemeine Neun-Punkte-Ermäßigung setzt den Endverbrauch und ein zulässiges elektronisches Zahlungsmittel im Besitz einer Privatperson voraus; eine ausländische Emission ist nicht erforderlich."
+  ],
+  "sections.7.heading": [
+    "84fbae56",
+    "Sicherheitstipps beim Abheben von Bargeld"
+  ],
+  "sections.7.paragraphs.0": [
+    "e227f80c",
+    "Uruguay zählt zu den sichersten Ländern der Region, doch Kleinkriminalität kommt vor, insbesondere in Montevideos Altstadt (Ciudad Vieja), im Hafengebiet und in den Badeorten während der Hochsaison. Nutzen Sie Geldautomaten in Banken, Einkaufszentren oder verglasten Eingangshallen, vorzugsweise tagsüber, und achten Sie auf Ihre Umgebung."
+  ],
+  "sections.7.bullets.0": [
+    "d234b5e4",
+    "Heben Sie Geld bei Tageslicht und an Geldautomaten in geschlossenen Räumen ab, nicht nachts auf der Straße."
+  ],
+  "sections.7.bullets.1": [
+    "f9f5f149",
+    "Führen Sie zwei Karten von verschiedenen Konten mit sich und bewahren Sie Bargeld an mehreren Orten auf."
+  ],
+  "sections.7.bullets.3": [
+    "d7920a67",
+    "Nutzen Sie Uber, Cabify oder registrierte Taxis; lassen Sie keine Wertsachen im Auto."
+  ],
+  "sections.7.link.label": [
+    "d8570bac",
+    "Ich stecke schon mit einem großen Problem fest: Wo bekomme ich Kleingeld und Münzen?"
+  ],
+  "networkRows.0.network": [
+    "7ee344a0",
+    "RedBROU"
+  ],
+  "networkRows.0.reach": [
+    "4a5d053e",
+    "Das Netzwerk der staatlichen Bank BROU umfasst mehr als 400 Geldautomaten landesweit sowie Abitab und Redpagos."
+  ],
+  "networkRows.0.usdPerTxn": [
+    "f41a726d",
+    "≈ 200 US-Dollar"
+  ],
+  "networkRows.0.uyuPerTxn": [
+    "255d9345",
+    "≈ $U 5.000"
+  ],
+  "networkRows.0.note": [
+    "786a7e5f",
+    "Viele Automaten geben Dollar aus. Die Höchstbeträge für ausländische Karten sind Richtwerte."
+  ],
+  "networkRows.1.network": [
+    "6823b06d",
+    "Verboten"
+  ],
+  "networkRows.1.reach": [
+    "331e78b2",
+    "Netzwerk der Privatbanken; über 370 Standorte in allen 19 Abteilungen."
+  ],
+  "networkRows.1.usdPerTxn": [
+    "75830c42",
+    "≈ 300 US-Dollar"
+  ],
+  "networkRows.1.uyuPerTxn": [
+    "255d9345",
+    "≈ $U 5.000"
+  ],
+  "networkRows.1.note": [
+    "9f2f1329",
+    "Mit RedBROU verbunden. Falls ein Netzwerk Ihre Karte ablehnt, versuchen Sie es mit dem anderen."
+  ],
+  "zones.0.name": [
+    "8a4dc608",
+    "Flughafen Carrasco (MVD), Montevideo"
+  ],
+  "zones.0.tips.0": [
+    "d6202725",
+    "Beim Geldwechsel am Flughafen zahlt man deutlich weniger: Man sollte nur so viel Geld wechseln, wie für die Fahrt in die Stadt nötig ist."
+  ],
+  "zones.0.tips.1": [
+    "99e81ace",
+    "Wenn Sie sofort Bargeld benötigen, heben Sie einen kleinen Betrag am Geldautomaten ab und wechseln Sie den Rest in der Innenstadt."
+  ],
+  "zones.1.name": [
+    "034a744d",
+    "Montevideo (Centro, Ciudad Vieja und der Hafen)"
+  ],
+  "zones.1.summary": [
+    "04c221eb",
+    "Wechselstuben konzentrieren sich auf der Avenida 18 de Julio (Centro) und in der Altstadt (Ciudad Vieja). Das Kreuzfahrtterminal mit Wechselstuben und Geldautomaten befindet sich direkt neben der Altstadt."
+  ],
+  "zones.1.tips.0": [
+    "a26e5af3",
+    "Im Centro und in der Ciudad Vieja finden Sie mehrere Wechselstuben zum Vergleichen."
+  ],
+  "zones.1.tips.1": [
+    "4139b3e5",
+    "Kreuzfahrtpassagiere können innerhalb des Hafens Geld wechseln und Geldautomaten befinden sich in kurzer Entfernung in Richtung Mercado del Puerto."
+  ],
+  "zones.2.name": [
+    "3fa606f9",
+    "Punta del Este"
+  ],
+  "zones.2.summary": [
+    "880d1f96",
+    "Entlang der Avenida Gorlero, der Hauptstraße, befinden sich Wechselstuben. In der Hochsaison kann es zu Warteschlangen kommen und Geldautomaten können leer sein."
+  ],
+  "zones.2.tips.0": [
+    "1063deb8",
+    "Im Sommer und in der Osterwoche sind die Geldautomaten schnell leer: Heben Sie vorher Geld ab und halten Sie einen Puffer bereit."
+  ],
+  "zones.2.tips.1": [
+    "e4c20d9e",
+    "Setzen Sie auf Kartenzahlung und QR-Code-Zahlungen, damit Sie nicht allein auf Bargeld angewiesen sind."
+  ],
+  "zones.3.name": [
+    "2ed532f4",
+    "Colonia del Sacramento"
+  ],
+  "zones.3.summary": [
+    "764221b5",
+    "Geldautomaten befinden sich im Barrio Histórico und am Fährterminal, nur wenige Schritte von der Altstadt entfernt, wo die Tagesausflügler aus Buenos Aires ankommen."
+  ],
+  "zones.3.tips.0": [
+    "d7ebee8b",
+    "Heben Sie bei der Ankunft einen kleinen Betrag in Pesos ab und bezahlen Sie den Rest mit Karte."
+  ],
+  "zones.3.tips.1": [
+    "e09f3851",
+    "Viele Touristengeschäfte akzeptieren Dollar, allerdings zu einem ungünstigen Wechselkurs."
+  ],
+  "zones.4.name": [
+    "ed7917f9",
+    "Fährterminals (Buquebus / Colonia Express)"
+  ],
+  "zones.4.summary": [
+    "ac18ddf9",
+    "An den Terminals in Montevideo und Colonia gibt es Geldautomaten. Der Geldwechsel innerhalb der Terminals und an Bord bietet in der Regel ungünstige Wechselkurse."
+  ],
+  "zones.4.tips.0": [
+    "b5a97e0f",
+    "Vermeiden Sie es, größere Geldbeträge am Terminal oder an Bord zu wechseln – die Wechselkurse sind schlecht."
+  ],
+  "zones.4.tips.1": [
+    "91b3c105",
+    "Besser ist es, einen Geldautomaten zu benutzen oder in einer Wechselstube in der Stadt Geld zu wechseln."
+  ],
+  "zones.5.name": [
+    "66cc7244",
+    "Das Landesinnere und kleinere Städte"
+  ],
+  "zones.5.summary": [
+    "fc9a5afd",
+    "Außerhalb der größeren Städte und der wichtigsten Ferienorte sind Geldautomaten rar."
+  ],
+  "zones.5.tips.0": [
+    "48821abe",
+    "Decken Sie sich in Montevideo, Punta del Este oder Colonia mit Bargeld ein, bevor Sie ins Landesinnere fahren."
+  ],
+  "zones.5.tips.1": [
+    "02573d37",
+    "An der Rocha-Küste sollten Sie in größeren Orten wie Chuy oder La Paloma tanken."
+  ],
+  "steps.0.name": [
+    "aa213b75",
+    "Suchen Sie einen Geldautomaten, der Ihre Karte akzeptiert."
+  ],
+  "steps.0.text": [
+    "2f5d9e7c",
+    "Achten Sie auf die Logos von Visa, Mastercard, Cirrus, Plus oder Maestro; bevorzugen Sie Geldautomaten in Banken oder Einkaufszentren."
+  ],
+  "steps.1.name": [
+    "4209811a",
+    "Wählen Sie zwischen Dollar oder Pesos."
+  ],
+  "steps.1.text": [
+    "f338ade4",
+    "Nehmen Sie Pesos für den täglichen Bedarf mit und Dollar nur, wenn Sie Bargeld benötigen; Dollar werden in 100-US-Dollar-Scheinen ausgegeben."
+  ],
+  "steps.2.name": [
+    "24d1a5da",
+    "Währungsumrechnung ablehnen"
+  ],
+  "steps.2.text": [
+    "3f2be811",
+    "Wenn Ihnen die Abrechnung in Ihrer Heimatwährung angeboten wird, wählen Sie „ohne Umrechnung“ oder „Landeswährung“, um den DCC-Aufschlag zu vermeiden."
+  ],
+  "steps.3.name": [
+    "4e44a3f9",
+    "Heben Sie den maximalen Betrag pro Transaktion ab."
+  ],
+  "steps.3.text": [
+    "831b2ec9",
+    "Da eine feste Abhebungsgebühr anfällt, sollten Sie den zulässigen Höchstbetrag ausschöpfen, um die Kosten auf mehr Bargeld zu verteilen."
+  ],
+  "steps.4.name": [
+    "6fcb61ed",
+    "Bewahren Sie den Kassenbon auf und zählen Sie das Bargeld."
+  ],
+  "steps.4.text": [
+    "30d70c06",
+    "Prüfen Sie den ausgezahlten Betrag, bewahren Sie den Beleg auf und verteilen Sie das Geld auf mehrere Stellen, bevor Sie den Geldautomaten verlassen."
+  ],
+  "faq.0.q": [
+    "e44ca992",
+    "Kann ich in Uruguay US-Dollar an Geldautomaten abheben?"
+  ],
+  "faq.0.a": [
+    "eb6339a1",
+    "Ja. Im Gegensatz zu Argentinien geben viele uruguayische Geldautomaten neben Pesos auch US-Dollar aus, üblicherweise in 100-Dollar-Scheinen. Die Abhebungslimits für ausländische Karten sind niedrig."
+  ],
+  "faq.1.q": [
+    "33423670",
+    "Wie hoch sind die Gebühren, die Geldautomaten für ausländische Karten erheben?"
+  ],
+  "faq.1.a": [
+    "68121602",
+    "Die lokale Gebühr ist gering (in der Größenordnung von wenigen Dollar pro Abhebung). Die höheren Kosten entstehen üblicherweise durch die Auslandstransaktionsgebühr Ihrer Bank (1–3 % sind üblich)."
+  ],
+  "faq.2.q": [
+    "bf2fe8ff",
+    "Wie hoch ist der maximale Betrag, den ich pro Transaktion abheben kann?"
+  ],
+  "faq.2.a": [
+    "7a64ef6d",
+    "Die Abhebungsgebühr beträgt je nach Netzwerk (RedBROU oder Banred) etwa 200–300 US-Dollar bzw. 5.000 britische Pfund. Ihre Bank legt zudem ein eigenes Tageslimit fest; informieren Sie sich daher vor Reiseantritt."
+  ],
+  "faq.3.q": [
+    "66601510",
+    "Soll ich am Flughafen Geld wechseln?"
+  ],
+  "faq.3.a": [
+    "82d5704c",
+    "Nicht für große Summen: An Flughäfen und Fährterminals zahlt man deutlich weniger. Wechseln Sie nur so viel, wie Sie für die Fahrt in die Stadt benötigen, und nutzen Sie dann eine Wechselstube oder einen Geldautomaten im Stadtzentrum."
+  ],
+  "faq.4.q": [
+    "44d07e17",
+    "In Uruguay wird bar oder mit Karte bezahlt?"
+  ],
+  "faq.4.a": [
+    "11ded5ec",
+    "Uruguay ist sehr kartenfreundlich (Visa und Mastercard fast überall, kontaktlos und per QR-Code). Nehmen Sie etwas Bargeld in Pesos für kleinere Einkäufe mit und bezahlen Sie größere Beträge mit Karte."
+  ],
+  "faq.5.q": [
+    "2d0dd094",
+    "Welche Währung soll ich mitbringen?"
+  ],
+  "faq.5.a": [
+    "cc8484ac",
+    "Bargeld in US-Dollar: Beste Kurse und überall akzeptiert. Euro wird an zweiter Stelle akzeptiert. Bei Anreise aus Argentinien bitte US-Dollar, keine argentinischen Pesos, mitbringen."
+  ],
+  "faq.6.q": [
+    "b71d8d92",
+    "Erhalte ich als Tourist eine Steuerermäßigung?"
+  ],
+  "faq.6.a": [
+    "49712ab8",
+    "Ja: Neben der Regelung für Unterkünfte gilt die allgemeine Ermäßigung von neun Punkten auf Restaurantbesuche und Mietwagen ohne Fahrer bis zum 30. April 2027 auch für Nichtansässige, sofern die Zahlung elektronisch durch eine Einzelperson erfolgt. Eine saisonale Vollbefreiung bedarf einer gesonderten Verordnung und eines eigenen Zeitraums; sie lässt sich nicht aus dieser Verlängerung ableiten."
+  ],
+  "faq.7.q": [
+    "04fb59ce",
+    "Was passiert, wenn der Geldautomat meine Karte ablehnt?"
+  ],
+  "faq.7.a": [
+    "15f0167b",
+    "Versuchen Sie es mit einer anderen Karte und einem anderen Netzwerk (RedBROU und Banred sind zwar miteinander verbunden, es ist aber hilfreich, beide Karten dabei zu haben). Vergewissern Sie sich, dass der Geldautomat das Visa-/Mastercard-/Cirrus-/Plus-Logo anzeigt, und informieren Sie Ihre Bank, dass Sie ihn in Uruguay verwenden werden."
+  ],
+  "related.0.label": [
+    "9371cd8d",
+    "Dollar für Reisen"
+  ],
+  "related.1.label": [
+    "89470d17",
+    "Dollar zum besten Preis kaufen"
+  ],
+  "related.2.label": [
+    "7b531a45",
+    "Wechselstuben und Filialen"
+  ],
+  "related.3.label": [
+    "574f3e27",
+    "Preise vergleichen"
+  ]
+}

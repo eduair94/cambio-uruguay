@@ -10,6 +10,8 @@ import fs from "fs";
 import path from "path";
 import { describe, expect, it } from "vitest";
 import { parseSpecs } from "../../classes/revenueplan/experiments";
+// Pure module (no Nuxt): the list of locale prefixes the app's router serves.
+import { LOCALE_PREFIX_RE } from "../../app/utils/locales";
 
 const PAGES = path.join(__dirname, "..", "..", "app", "pages");
 const EXPERIMENTS = path.join(__dirname, "..", "..", "docs", "seo", "experiments.json");
@@ -68,9 +70,10 @@ describe("las rutas del libro de cambios existen", () => {
         // sirve TODA página bajo esos prefijos desde el mismo archivo. Una fila que mide un espejo
         // (`/en/historico/*`) declara una ruta real, y `routeMatches` ya la coteja tal cual contra
         // las URLs de Search Console; lo único que la rechazaba era este cotejo contra el árbol.
+        // Lo mismo los idiomas traducidos por máquina (`/fr/*`, app/utils/locales.ts).
         const route =
           raw
-            .replace(/^\/(?:en|pt)(?=\/|$)/, "")
+            .replace(LOCALE_PREFIX_RE, "")
             .replace(/[*]$/, "")
             .replace(/\/$/, "") || "/";
         if (!pageExists(route)) missing.push(`${spec.id} → ${raw}`);
