@@ -7,7 +7,7 @@
 import { SITE_TOPICS } from "../gaps/topics";
 import { loadIndex } from "../rag/store";
 import { SiteRetriever } from "../rag/retrieve";
-import { buildQueue, isUruguayan, type Candidate, type ScoredCandidate } from "./classify";
+import { buildQueue, isUruguayan, type Candidate, type ScoredCandidate, type SerpFailureReason } from "./classify";
 import { coverageOf } from "./coverage";
 import { buildSeeds, harvest, type Suggestion } from "./harvest";
 import { loadKnownQueries } from "./known";
@@ -20,6 +20,17 @@ const COVERAGE_HITS = 5;
 /** Pausa entre consultas al SERP: el servidor es propio pero Google del otro lado no. */
 const SERP_GAP_MS = 1500;
 
+/** Resumen de toda la etapa, antes del filtro y del top 40 de la cola. */
+export interface SerpRun {
+  startedAt: string;
+  finishedAt: string;
+  budget: number;
+  attempted: number;
+  failures: Partial<Record<SerpFailureReason, number>>;
+  httpStatuses: Record<string, number>;
+  notAttempted: { budget: number; disabled: number };
+}
+
 export interface DemandQueue {
   key: string;
   asOf: string;
@@ -31,6 +42,8 @@ export interface DemandQueue {
   inScope: number;
   /** Cuántas se clasificaron mirando el SERP. */
   probed: number;
+  /** Ausente en snapshots anteriores: no equivale a cero intentos. */
+  serpRun?: SerpRun;
   items: ScoredCandidate[];
 }
 
@@ -168,28 +181,55 @@ export async function refreshDemandQueue(options: RefreshOptions = {}): Promise<
 
   // Los mejores por hueco y frecuencia van al SERP, que es la etapa cara. Los que no entran en el
   // presupuesto igual llegan a la cola, sin clasificar y con menos puntaje: ver `scoreCandidate`.
+  const requestedBudget = options.serpBudget ?? SERP_BUDGET;
+  const budget = Number.isFinite(requestedBudget)
+    ? Math.max(0, Math.floor(requestedBudget))
+    : SERP_BUDGET;
   const promise = (c: Candidate) => (1 - c.coverage) * Math.max(0, 10 - c.rank);
   const shortlist = candidates
     .slice()
     .sort((a, b) => promise(b) - promise(a) || a.query.localeCompare(b.query, "es"))
-    .slice(0, options.serpBudget ?? SERP_BUDGET);
+    .slice(0, budget);
 
+  const serpStarted = Date.now();
+  const serpRun: SerpRun = {
+    startedAt: new Date(serpStarted).toISOString(),
+    finishedAt: "",
+    budget,
+    attempted: 0,
+    failures: {},
+    httpStatuses: {},
+    notAttempted: { budget: 0, disabled: 0 },
+  };
+  for (const c of candidates) {
+    c.serpCheck = { status: "not-attempted", reason: options.skipSerp ? "disabled" : "budget" };
+  }
   let probed = 0;
   if (!options.skipSerp) {
-    const serpStarted = Date.now();
     for (const c of shortlist) {
+      serpRun.attempted++;
       const probe = await probeSerp(c.query);
-      if (probe) {
+      if (probe.status === "classified") {
         c.serp = probe.assessment;
+        c.serpCheck = { status: "classified" };
         probed++;
+      } else {
+        c.serpCheck = probe;
+        serpRun.failures[probe.reason] = (serpRun.failures[probe.reason] ?? 0) + 1;
+        if (probe.reason === "http" && probe.httpStatus !== undefined) {
+          const status = String(probe.httpStatus);
+          serpRun.httpStatuses[status] = (serpRun.httpStatuses[status] ?? 0) + 1;
+        }
       }
       await new Promise((r) => setTimeout(r, SERP_GAP_MS));
     }
-    // Cuántas contestaron importa tanto como cuánto tardó: un servidor de SERP que devuelve null
-    // deja a todos los candidatos "sin clasificar", y la cola sigue sirviendo pero hay que
-    // mirarla entera a mano en vez de leer las primeras cinco.
-    stage(`${probed} de ${shortlist.length} SERP clasificados`, serpStarted);
   }
+  for (const c of candidates) {
+    if (c.serpCheck?.status === "not-attempted") serpRun.notAttempted[c.serpCheck.reason]++;
+  }
+  serpRun.finishedAt = new Date().toISOString();
+  // Sólo fechas, categorías y conteos. Nunca consultas, URLs ni respuestas del proveedor.
+  console.log(`[demand] SERP ${JSON.stringify({ ...serpRun, classified: probed })}`);
 
   return {
     key: "demand_queue",
@@ -198,6 +238,7 @@ export async function refreshDemandQueue(options: RefreshOptions = {}): Promise<
     local: local.length,
     inScope: inScope.length,
     probed,
+    serpRun,
     items: buildQueue(candidates),
   };
 }
