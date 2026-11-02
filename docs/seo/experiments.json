@@ -2790,7 +2790,7 @@
         "курс доллара уругвай",
         "乌拉圭 汇率"
       ],
-      "hypothesis": "32 idiomas nuevos (fr, de, it, ru, zh, ja...) traducidos por maquina con tr-file desde los mensajes en ingles, solo en las paginas que quedan sin texto en espanol (EXTRA_LOCALE_ROUTES en app/utils/locales.ts): pizarra, historico, comparar, sucursales, mapa, casa de cambio cerca de mi, conectar, newsletter y sillas. Antes no existian: un turista que busca donde cambiar plata o la cotizacion en su idioma no tenia ninguna URL del sitio en su idioma. Se espera que las paginas /<idioma>/* sumen impresiones y clics propios sin restar a las de es/en/pt, que conservan su canonica. La home, retirar efectivo, monedas y comparar plataformas entran cuando venzan sus reservas (15/11 a 29/11)."
+      "hypothesis": "32 idiomas nuevos (fr, de, it, ru, zh, ja...) traducidos por maquina con tr-file desde los mensajes en ingles, solo en las paginas que quedan sin texto en espanol (EXTRA_LOCALE_ROUTES en app/utils/locales.ts): pizarra, historico, comparar, sucursales, mapa, casa de cambio cerca de mi, conectar y newsletter (sillas salio el mismo dia: en produccion la pagina carga resumenes y citas de Reddit en espanol). Antes no existian: un turista que busca donde cambiar plata o la cotizacion en su idioma no tenia ninguna URL del sitio en su idioma. Se espera que las paginas /<idioma>/* sumen impresiones y clics propios sin restar a las de es/en/pt, que conservan su canonica. La home, retirar efectivo, monedas y comparar plataformas entran cuando venzan sus reservas (15/11 a 29/11)."
     }
   ]
 }

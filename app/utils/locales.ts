@@ -116,6 +116,9 @@ export const LOCALE_PREFIX_RE = new RegExp(`^/(${PREFIXED_LOCALE_CODES.join('|')
  * - `/tickets-mutualistas-uruguay` and the rental family: their copy lives in component-local
  *   dictionaries (es/en/pt), which fall back to English.
  * - `/economia-uruguay`, `/noticias`: the body is Spanish headlines.
+ * - `/sillas-escritorio-uruguay`: shipped in the first batch and pulled the same day. Rendered
+ *   locally (no database) it looked clean; in production the tier list carries the Reddit
+ *   summaries and quotes, 164 Spanish lines on the French page.
  */
 export const EXTRA_LOCALE_ROUTES: readonly string[] = Object.freeze([
   '/pizarra',
@@ -126,7 +129,6 @@ export const EXTRA_LOCALE_ROUTES: readonly string[] = Object.freeze([
   '/casa-de-cambio-cerca-de-mi',
   '/conectar',
   '/newsletter',
-  '/sillas-escritorio-uruguay',
 ])
 
 export function hasExtraLocales(path: string): boolean {
