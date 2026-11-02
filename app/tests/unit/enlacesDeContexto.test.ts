@@ -147,7 +147,16 @@ const SIN_LECTOR_QUE_LA_NECESITE = [
  * en la barra de su familia (`utils/familiaNav.ts`) si pertenece a una. Un enlace que nadie seguiría
  * no cuenta como arreglo aunque ponga el test en verde.
  */
-const DEUDA_SIN_ENLACE = ['/seguro-obligatorio-de-auto-uruguay']
+const DEUDA_SIN_ENLACE = [
+  // El comentario va DENTRO de la lista y no arriba, por el mismo motivo que `DEUDA_SIN_MIGAS` en
+  // `seoContract.test.ts` deja escrito: `classes/revenueplan/debtFree.ts::parseStringList` corta en
+  // el primer `\n]`, o sea exige que el cierre abra su propia línea, y prettier colapsa a una sola
+  // línea cualquier array que entre en 100 columnas salvo los que llevan un comentario. Con una
+  // sola entrada entra holgado, así que sin esto `npm run lintfix` la aplasta y
+  // `tests/revenueplan/debt_free.test.ts` se pone rojo en el OTRO paquete — que es exactamente lo
+  // que pasó al bajar el trinquete de 3 a 1 (run 41405643945, 2026-11-02).
+  '/seguro-obligatorio-de-auto-uruguay',
+]
 
 /** El trinquete. Sólo puede bajar: subirlo es publicar una página que nadie enlaza. */
 // 5 → 4 el 2026-10-29: `/fondo-de-solidaridad-uruguay`, que era la ÚNICA ruta libre de los cinco
