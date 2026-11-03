@@ -24,6 +24,7 @@ import { EquiparListingModel } from "../../classes/models/EquiparListing";
 import { MovilidadItemModel } from "../../classes/models/MovilidadItem";
 import { MovilidadMetaModel } from "../../classes/models/MovilidadMeta";
 import { MovilidadListingModel } from "../../classes/models/MovilidadListing";
+import { MovilidadSpecSnapshotModel } from "../../classes/models/MovilidadSpecSnapshot";
 import { CharruaTextModel } from "../../classes/models/CharruaText";
 import { CharruaSnapshotModel } from "../../classes/models/CharruaSnapshot";
 import { CarCatalogMetaModel } from "../../classes/models/CarCatalogMeta";
@@ -223,6 +224,14 @@ describe("app-Mongo schema parity", () => {
       appFields(appModel("MovilidadListing")).sort()
     );
     expect(MovilidadListingModel.collection.name).toBe("movilidadlistings");
+  });
+
+  it("MovilidadSpecSnapshot declares exactly the app's top-level fields", () => {
+    // Candidatos del asesor y medianas por tipo de /monopatines-electricos-uruguay.
+    expect(Object.keys(MovilidadSpecSnapshotModel.schema.obj).sort()).toEqual(
+      appFields(appModel("MovilidadSpecSnapshot")).sort()
+    );
+    expect(MovilidadSpecSnapshotModel.collection.name).toBe("movilidadspecsnapshots");
   });
 
   it("CharruaText declares exactly the app's top-level fields", () => {
