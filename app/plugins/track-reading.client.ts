@@ -1,6 +1,7 @@
 import {
   contentScrollPercent,
   createReadingProgress,
+  findReadingPage,
   measurementContext,
   measurementPath,
 } from '~/utils/engagementMeasurement'
@@ -47,10 +48,7 @@ export default defineNuxtPlugin(nuxtApp => {
       if (!visible() || performance.now() - scrollIntentAt > 1500) return
       // FamiliaNav and layout-tail are siblings of the routed page; neither is
       // part of the read depth. Selecting direct children also excludes rails.
-      const container = document.querySelector('.container_custom')
-      const page = Array.from(container?.children ?? []).find(child =>
-        child.matches('.v-container, :has(> .v-container)')
-      )
+      const page = findReadingPage(document.querySelector('.container_custom'))
       if (!page) return
       const rect = page.getBoundingClientRect()
       const percent = contentScrollPercent(rect.top, rect.height, window.innerHeight)

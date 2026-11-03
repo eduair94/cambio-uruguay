@@ -4,6 +4,7 @@ import { getGuide } from '../../utils/guides'
 import {
   contentScrollPercent,
   createReadingProgress,
+  findReadingPage,
   measurementContext,
   measurementLinkArea,
   measurementPath,
@@ -173,7 +174,11 @@ function browser() {
       return vi.fn()
     },
   }
-  const page = { matches: () => true, getBoundingClientRect: () => ({ top: -1000, height: 2000 }) }
+  const page = {
+    classList: { contains: (token: string) => token === 'v-container' },
+    children: [],
+    getBoundingClientRect: () => ({ top: -1000, height: 2000 }),
+  }
   const document = {
     ...surface(),
     visibilityState: 'visible',
@@ -305,5 +310,63 @@ describe('delegated navigation clicks', () => {
     runtime.navigate('/a')
     click('/b')
     expect(runtime.gtag).toHaveBeenCalledTimes(3)
+  })
+})
+
+describe('reading page selection', () => {
+  interface FakeNode {
+    name: string
+    classList: { contains(token: string): boolean }
+    children: FakeNode[]
+    matches(selector: string): boolean
+  }
+  // Firefox < 121 and Safari < 15.4 have no `:has()`: the whole selector list
+  // is invalid there and `matches()` throws instead of returning false.
+  const node = (name: string, classes: string[] = [], children: FakeNode[] = []): FakeNode => ({
+    name,
+    classList: { contains: token => classes.includes(token) },
+    children,
+    matches(selector) {
+      if (selector.includes(':has(')) throw new SyntaxError(`'${selector}' is not a valid selector`)
+      return selector.split(',').some(part => classes.includes(part.trim().replace(/^\./, '')))
+    },
+  })
+
+  it('picks the routed v-container and skips its layout siblings', () => {
+    const container = node(
+      'layout',
+      ['container_custom'],
+      [
+        node('familia-nav', ['familia-nav']),
+        node('page', ['v-container']),
+        node('layout-tail', ['layout-tail']),
+      ]
+    )
+    expect(findReadingPage(container)?.name).toBe('page')
+  })
+
+  it('picks a page wrapper whose direct child is the v-container', () => {
+    const container = node(
+      'layout',
+      [],
+      [
+        node('familia-nav', [], [node('chip')]),
+        node('wrapper', ['temas-page'], [node('inner', ['v-container'])]),
+      ]
+    )
+    expect(findReadingPage(container)?.name).toBe('wrapper')
+  })
+
+  it('does not reach past a direct child, matching `:has(> .v-container)`', () => {
+    const container = node(
+      'layout',
+      [],
+      [node('rail', [], [node('deep', [], [node('nested', ['v-container'])])])]
+    )
+    expect(findReadingPage(container)).toBeUndefined()
+  })
+
+  it('has nothing to measure without the layout container', () => {
+    expect(findReadingPage(null)).toBeUndefined()
   })
 })
