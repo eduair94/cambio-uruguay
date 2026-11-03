@@ -581,35 +581,99 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'deposito-de-alquiler-uruguay',
-    title: 'Depósito de alquiler: es tuyo y se devuelve',
+    title: 'Depósito de alquiler: monto y devolución',
     description:
-      'Qué es el depósito de alquiler en Uruguay, cuánto suele ser, para qué puede usarlo el propietario y cómo reclamar su devolución.',
+      'Depósito de alquiler en Uruguay: topes según destino, cuenta en UI, comisión del BHU y retiro con autorización o por orden judicial.',
     tag: 'DEPÓSITO',
-    updatedAt: '2026-07-18',
+    updatedAt: '2026-11-03',
     sections: [
       {
-        heading: 'Qué es el depósito y qué no es',
-        body: 'El depósito es una suma de dinero que entregás al inicio del alquiler como respaldo frente a posibles deudas o daños. Es tuyo: no es un pago a fondo perdido ni un mes de alquiler adelantado. Queda retenido durante el contrato y te lo tienen que devolver al final si no dejaste deudas ni daños que superen el desgaste normal. Ojo con no confundirlo: el depósito en garantía es distinto de la garantía de alquileres (Contaduría General de la Nación, ANDA, seguro de fianza) y también de los depósitos que a veces piden UTE u OSE para habilitar servicios. Cada uno tiene su propia lógica y su propia devolución.',
+        heading: 'Qué garantiza y de quién es el dinero',
+        body: 'El depósito respalda posibles adeudos del alquiler. En la cuenta del BHU el dinero pertenece al depositante, que puede ser el inquilino u otra persona que aporte los fondos. El beneficiario puede ser el arrendador, administrador o propietario que figure en la cuenta. Tener el dinero a tu nombre no permite retirarlo libremente: hay condiciones para liberarlo. Esta guía explica el depósito comprendido en el Decreto-Ley 14.219 y, por separado, el trámite del BHU. El alquiler adelantado, los seguros de fianza, las garantías personales y el régimen especial de alquiler sin garantía tienen reglas diferentes.',
       },
       {
-        heading: 'Cuánto suele ser',
-        body: 'En el mercado uruguayo el depósito equivale con frecuencia a uno o más meses de alquiler, según lo que se pacte y el tipo de garantía que uses. La normativa vigente fija un tope máximo para el depósito en garantía de vivienda, del orden de varios meses de alquiler, así que conviene verificar el límite actual en el Banco Hipotecario del Uruguay (BHU) o con un profesional; dentro de ese margen no hay un monto único fijo y el número sale del acuerdo entre las partes y figura en el contrato. Cuando el depósito funciona como garantía principal, el efectivo suele constituirse en el BHU en Unidades Indexadas, según prevé la normativa. Antes de firmar, dejá claro por escrito cuánto entregás, en qué concepto y bajo qué condiciones se devuelve. Que quede documentado es lo que te va a permitir reclamarlo después sin discusiones sobre si existió o cuánto fue.',
+        heading: 'Cuánto pueden pedir y en qué moneda',
+        body: 'El artículo 38 del Decreto-Ley 14.219 fija estos máximos para el depósito en garantía. El monto concreto se acuerda: cinco meses no es un mínimo obligatorio. La Ley 18.795, artículo 25, establece que estos depósitos se realizan en Unidades Indexadas y no generan intereses. También habilita a bancos y cooperativas de intermediación financiera a recibirlos; no establece exclusividad del BHU. Si tu contrato pertenece a un régimen especial, verificá su encuadre antes de aplicar esta regla.',
+        table: {
+          headers: ['Destino', 'Máximo del depósito'],
+          rows: [
+            ['Vivienda', 'Cinco meses de alquiler'],
+            ['Otros destinos', 'Diez meses de alquiler'],
+          ],
+        },
       },
       {
-        heading: 'Para qué puede usarlo el propietario',
-        body: 'El propietario puede descontar del depósito lo que legítimamente le debas al terminar el contrato: alquileres o gastos comunes impagos, servicios pendientes a tu nombre y daños en la vivienda que excedan el desgaste normal del uso. Eso último es clave: paredes marcadas por el paso del tiempo, pintura gastada o cosas propias del uso razonable no son daños que puedas pagar vos. Sí lo son roturas, faltantes o deterioros claros. Lo que el propietario no puede hacer es quedarse con el depósito porque sí, ni usarlo para financiar mejoras que le suman valor a su propiedad más allá de reparar lo que rompiste.',
+        heading: 'Qué cobra el BHU y qué documentación pide',
+        body: 'Según la documentación del BHU consultada el 3/11/2026, la comisión de constitución es del 5% sobre los montos depositados, no gravada por IVA. Ese costo es distinto del dinero que queda como garantía. La cuenta no tiene mantenimiento administrativo y permite acordar hasta diez cuotas con el arrendador. Para la apertura pide identificación vigente y constancias de domicilio e ingresos; las especificaciones detallan alternativas según quién intervenga. Consultá los requisitos antes de iniciar la solicitud. Al retirar puede haber cargos por el medio de pago: el BHU publica 10 UI para transferencias y 100 UI para letras de cambio.',
       },
       {
-        heading: 'El inventario de entrada y salida',
-        body: 'Tu mejor defensa es documentar el estado de la vivienda al entrar y al salir. Al mudarte, hacé un inventario con fotos y, si podés, un acta firmada por las dos partes que describa el estado de pisos, paredes, artefactos, aberturas y cualquier detalle. Al irte, repetí el registro. Con esa comparación es difícil que te imputen daños que ya existían o que son desgaste normal. Sin inventario, quedás expuesto a la palabra del propietario. Guardá todo con fecha. Este simple hábito es lo que más discusiones evita a la hora de recuperar tu plata.',
+        heading: 'Cómo retirar cuando hay acuerdo',
+        body: 'Para retirar total o parcialmente en el BHU, el depositante necesita autorización expresa del beneficiario. Coordiná la cita y el formulario FO.AHR.39 de autorización de retiro, y llevá documento vigente. Si algún firmante no concurre, el formulario requiere certificación notarial de su firma; poderes y fallecimientos tienen requisitos propios. El final del contrato no libera automáticamente la cuenta. Revisá también el medio de cobro y sus cargos antes de concurrir.',
       },
       {
-        heading: 'Cómo reclamar la devolución',
-        body: 'Al finalizar, entregá la vivienda limpia y las llaves, y pedí por escrito la constancia de que no quedan deudas. El depósito debería devolverse una vez verificado que está todo en orden y saldados los servicios. Si el propietario se demora o retiene sin justificación, reclamá primero por escrito de forma fehaciente (telegrama colacionado), detallando el monto y el concepto. Si aun así no lo devuelve, tené presente que en Uruguay los conflictos de arrendamiento suelen exigir una instancia de conciliación o mediación previa (Centro de Mediación del Poder Judicial) antes de la vía judicial ante el Juzgado de Paz competente por la ubicación del inmueble. Un abogado puede ayudarte a encauzar el reclamo. Tener el contrato, el comprobante del depósito y los inventarios convierte tu reclamo en algo sólido y demostrable.',
+        heading: 'Qué ocurre si hay deudas o desacuerdo',
+        body: 'El contrato del BHU prevé que, por adeudos derivados de la ocupación, se entreguen al beneficiario los fondos que el depositante autorice expresamente. Si no hay acuerdo, el retiro se tramita ante el juzgado competente y se realiza con la orden judicial correspondiente. No alcanza con que una parte decida cuánto descontar. Pedí el detalle de lo reclamado y sus comprobantes, conservá tu documentación y consultá asesoramiento para tu caso; existen supuestos especiales, como un embargo, que requieren revisar las reglas aplicables. Los Centros de Mediación del Poder Judicial ofrecen una vía gratuita y voluntaria de diálogo: no son una mediación obligatoria ni sustituyen el trámite judicial que corresponda.',
       },
       {
-        heading: 'Información general, no asesoramiento',
-        body: 'Esta guía te explica cómo funciona en general el depósito, pero cada contrato define sus propias condiciones y el resultado depende de lo que hayas firmado y documentado, además de la normativa vigente. No sustituye el consejo de un profesional. Si el monto retenido es importante o hay desacuerdo sobre daños, consultá con un abogado antes de resignar tu plata, y recordá que los arrendamientos se tramitan ante el Juzgado de Paz y que suele exigirse una instancia de mediación previa ante el Poder Judicial. Guardá siempre copia del contrato, el recibo del depósito y los inventarios: son la base de cualquier reclamo.',
+        heading: 'Qué guardar para discutir daños o saldos',
+        body: 'Guardá contrato, comprobantes de cada depósito, pagos y constancia de entrega de llaves. Documentá con inventario y fotos fechadas el estado al entrar y al salir. El Código Civil distingue el deterioro por tiempo y uso legítimo de los daños que correspondan al inquilino; no toda marca permite un descuento ni toda rotura queda exenta. Si el contrato no describe el estado inicial, el artículo 1827 establece una presunción de buena conservación, salvo prueba en contrario. La comparación documentada ayuda a discutir hechos concretos. Esta guía no fija un plazo universal de devolución ni resuelve la responsabilidad por un daño particular.',
+      },
+    ],
+    sources: [
+      {
+        label: 'Artículo 38: máximo del depósito según el destino del inmueble',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/14219-1974/38',
+        publisher: 'IMPO — Decreto-Ley 14.219',
+      },
+      {
+        label: 'Artículo 25: depósitos en UI, sin intereses e instituciones habilitadas',
+        url: 'https://www.impo.com.uy/bases/leyes/18795-2011/25',
+        publisher: 'IMPO — Ley 18.795',
+      },
+      {
+        label: 'Garantía de alquiler: agenda, requisitos y documentos vigentes',
+        url: 'https://www.bhu.com.uy/ahorro/garantia-de-alquiler',
+        publisher: 'BHU',
+      },
+      {
+        label: 'Preguntas frecuentes: arancel y mantenimiento de la cuenta',
+        url: 'https://www.bhu.com.uy/garantia-de-alquiler',
+        publisher: 'BHU',
+      },
+      {
+        label: 'Especificaciones ES.AHR.04, versión 21: titulares, costos y retiros',
+        url: 'https://www.bhu.com.uy/sites/default/files/2023-04/ES.AHR.04.pdf',
+        publisher: 'BHU',
+      },
+      {
+        label: 'Contrato FO.AHR.04, versión 13: liberación y ejecución de la garantía',
+        url: 'https://www.bhu.com.uy/sites/default/files/2023-04/FO.AHR.04_-_Contrato_de_dep_sito_en_garant_a_de_alquiler_-_reducido_menor_a_5MB.pdf',
+        publisher: 'BHU',
+      },
+      {
+        label: 'Formulario FO.AHR.39: autorización para retirar la garantía',
+        url: 'https://bhu.com.uy/sites/default/files/2023-04/FO.AHR.39_Autorizaci_n_para_retiro_de_garant_a_de_alquiler.pdf',
+        publisher: 'BHU',
+      },
+      {
+        label: 'Comisiones aplicables por retiro: transferencias y letras de cambio',
+        url: 'https://bhu.com.uy/comisiones-aplicables-por-retiro',
+        publisher: 'BHU',
+      },
+      {
+        label: 'Artículo 1819: deterioros por tiempo y uso legítimo',
+        url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/1819',
+        publisher: 'IMPO — Código Civil',
+      },
+      {
+        label: 'Artículo 1827: estado de entrega y devolución del inmueble',
+        url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/1827',
+        publisher: 'IMPO — Código Civil',
+      },
+      {
+        label: 'Centros de Mediación: servicio gratuito y voluntario',
+        url: 'https://www.poderjudicial.gub.uy/institucional/centros-de-mediacion',
+        publisher: 'Poder Judicial',
       },
     ],
     related: [
@@ -619,24 +683,24 @@ export const redditGuides: readonly Guide[] = [
     ],
     steps: [
       {
-        name: 'Documentá al entrar',
-        text: 'Hacé un inventario con fotos fechadas del estado de la vivienda y, si podés, un acta firmada por las dos partes.',
+        name: 'Identificá el depósito',
+        text: 'Revisá quién figura como depositante y beneficiario, dónde está la cuenta y cuánto se integró.',
       },
       {
-        name: 'Guardá el comprobante',
-        text: 'Que el contrato o un recibo digan cuánto entregaste, en qué concepto y bajo qué condiciones se devuelve el depósito.',
+        name: 'Documentá el cierre',
+        text: 'Conservá la entrega de llaves, el inventario de salida y los comprobantes de pagos o saldos reclamados.',
       },
       {
-        name: 'Entregá y registrá la salida',
-        text: 'Devolvé la vivienda limpia y las llaves, y repetí el inventario con fotos para probar el estado en que la dejás.',
+        name: 'Acordá el retiro',
+        text: 'Si hay acuerdo, definí el importe que se liberará y coordiná con la contraparte la autorización requerida por el BHU.',
       },
       {
-        name: 'Pedí la constancia sin deudas',
-        text: 'Solicitá por escrito que no quedan alquileres, común ni servicios pendientes, y coordiná la devolución del depósito.',
+        name: 'Consultá los requisitos',
+        text: 'Revisá la agenda, el formulario FO.AHR.39, la identificación, las firmas y el costo del medio de retiro.',
       },
       {
-        name: 'Reclamá si no te lo devuelven',
-        text: 'Enviá un reclamo fehaciente por telegrama colacionado; si persiste, pasá por la mediación previa y la vía judicial ante el Juzgado de Paz, idealmente con asesoramiento de un abogado.',
+        name: 'Si hay desacuerdo',
+        text: 'Pedí asesoramiento sobre el trámite judicial para la liberación de los fondos; la mediación es una opción voluntaria.',
       },
     ],
   },
