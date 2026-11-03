@@ -176,7 +176,12 @@ export function monopatinFichaFacetsFrom(
       slug => slug === selected
     )
   return {
-    autonomia: numeric('autonomia', MONOPATIN_AUTONOMIA_OPCIONES, monopatinAutonomiaLabel, ficha.autonomia),
+    autonomia: numeric(
+      'autonomia',
+      MONOPATIN_AUTONOMIA_OPCIONES,
+      monopatinAutonomiaLabel,
+      ficha.autonomia
+    ),
     velocidad: ranged('velocidad', MONOPATIN_VELOCIDAD_RANGOS, ficha.velocidad),
     potencia: ranged('potencia', MONOPATIN_POTENCIA_RANGOS, ficha.potencia),
     carga: numeric('carga', MONOPATIN_CARGA_OPCIONES, monopatinCargaLabel, ficha.carga),

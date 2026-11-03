@@ -39,8 +39,7 @@ export const EQUIPAR_PRODUCTOS_SORTS = ['precio_asc', 'precio_desc', 'reciente']
 /** Sólo el directorio de monopatines: equipar los normaliza a `precio_asc`. */
 export const MOVILIDAD_PRODUCTOS_SORTS = ['autonomia_desc', 'precio_km', 'peso_asc'] as const
 export type EquiparProductosSort =
-  | (typeof EQUIPAR_PRODUCTOS_SORTS)[number]
-  | (typeof MOVILIDAD_PRODUCTOS_SORTS)[number]
+  (typeof EQUIPAR_PRODUCTOS_SORTS)[number] | (typeof MOVILIDAD_PRODUCTOS_SORTS)[number]
 /** `short` is what the mobile toolbar button says; `title`, what the menu says. */
 export const EQUIPAR_PRODUCTOS_SORT_ITEMS: ReadonlyArray<{
   title: string
@@ -232,9 +231,7 @@ export interface EquiparProductosQuery {
 
 /** Una clave que un chip puede sacar: un campo de la consulta o uno de la ficha. */
 export type EquiparQueryKey =
-  | keyof EquiparProductosQuery
-  | `ficha.${MovilidadFichaKey}`
-  | `ficha.rasgos.${MonopatinRasgo}`
+  keyof EquiparProductosQuery | `ficha.${MovilidadFichaKey}` | `ficha.rasgos.${MonopatinRasgo}`
 
 const EQUIPAR_Q_MAX = 80
 const SLUG = /^[a-z0-9-]{1,60}$/
@@ -477,7 +474,8 @@ function fichaChips(ficha: MovilidadFichaQuery): EquiparFilterChip[] {
   if (ficha.peso !== null) add('ficha.peso', monopatinPesoLabel(ficha.peso))
   if (ficha.rueda)
     add('ficha.rueda', `Ruedas: ${MONOPATIN_RUEDA_RANGOS[ficha.rueda].label.toLowerCase()}`)
-  for (const rasgo of ficha.rasgos) add(`ficha.rasgos.${rasgo}`, MONOPATIN_RASGO_CAMPOS[rasgo].label)
+  for (const rasgo of ficha.rasgos)
+    add(`ficha.rasgos.${rasgo}`, MONOPATIN_RASGO_CAMPOS[rasgo].label)
   if (ficha.soloFicha) add('ficha.soloFicha', 'Sólo con ficha técnica')
   return chips
 }

@@ -86,6 +86,90 @@
       variant="outlined"
       hide-details
     />
+    <!-- Sólo monopatines: la ficha técnica que declara el vendedor (currency-movilidad-specs). -->
+    <fieldset v-if="fichaFacets" class="eq-filters__ficha">
+      <legend class="eq-filters__legend">Ficha técnica</legend>
+      <VSelect
+        v-model="draft.autonomia"
+        :items="fichaItems('autonomia', draft.autonomia, monopatinAutonomiaLabel)"
+        label="Autonomía declarada"
+        density="comfortable"
+        variant="outlined"
+        hide-details
+      />
+      <VSelect
+        v-model="draft.velocidad"
+        :items="fichaItems('velocidad', draft.velocidad)"
+        label="Velocidad máxima"
+        density="comfortable"
+        variant="outlined"
+        hide-details
+      />
+      <VSelect
+        v-model="draft.potencia"
+        :items="fichaItems('potencia', draft.potencia)"
+        label="Potencia del motor"
+        density="comfortable"
+        variant="outlined"
+        hide-details
+      />
+      <VSelect
+        v-model="draft.carga"
+        :items="fichaItems('carga', draft.carga, monopatinCargaLabel)"
+        label="Peso que soporta"
+        density="comfortable"
+        variant="outlined"
+        hide-details
+      />
+      <VSelect
+        v-model="draft.peso"
+        :items="fichaItems('peso', draft.peso, monopatinPesoLabel)"
+        label="Peso del monopatín"
+        density="comfortable"
+        variant="outlined"
+        hide-details
+      />
+      <VSelect
+        v-model="draft.rueda"
+        :items="fichaItems('rueda', draft.rueda)"
+        label="Ruedas"
+        density="comfortable"
+        variant="outlined"
+        hide-details
+      />
+      <div
+        v-if="rasgoItems.length"
+        class="eq-filters__checks"
+        role="group"
+        aria-label="Características"
+      >
+        <VCheckbox
+          v-for="rasgo in rasgoItems"
+          :key="rasgo.value"
+          v-model="draft.rasgos"
+          :value="rasgo.value"
+          :label="rasgo.title"
+          density="compact"
+          hide-details
+        />
+      </div>
+      <VSwitch
+        v-model="draft.soloFicha"
+        label="Sólo avisos con ficha técnica"
+        color="primary"
+        density="compact"
+        hide-details
+        inset
+      />
+      <p class="text-caption text-medium-emphasis mb-0">
+        La ficha es lo que declara el vendedor.
+        <template v-if="total !== null">
+          {{ fichaFacets.conFicha.toLocaleString('es-UY') }} de
+          {{ total.toLocaleString('es-UY') }} avisos de esta búsqueda la tienen;
+        </template>
+        un aviso que no declara un dato no cumple ese filtro.
+      </p>
+    </fieldset>
     <p class="text-caption text-medium-emphasis mb-0">
       Los precios en dólares se filtran por su equivalente en pesos a la cotización del día. Un
       aviso de Marketplace es usado salvo que el vendedor diga que es nuevo.
@@ -94,6 +178,11 @@
 </template>
 
 <script setup lang="ts">
+import {
+  monopatinAutonomiaLabel,
+  monopatinCargaLabel,
+  monopatinPesoLabel,
+} from '~/utils/monopatinFicha'
 import {
   EQUIPAR_CONDICION_LABELS,
   EQUIPAR_FUENTE_LABELS,
@@ -135,6 +224,16 @@ const toDraft = (query: EquiparProductosQuery) => ({
   marca: query.marca,
   precioMin: query.precioMin?.toString() ?? '',
   precioMax: query.precioMax?.toString() ?? '',
+  autonomia: query.ficha?.autonomia?.toString() ?? '',
+  velocidad: query.ficha?.velocidad ?? '',
+  potencia: query.ficha?.potencia ?? '',
+  // Sin campo propio en el panel: la pide el asesor, y aplicar otro filtro no la tiene que perder.
+  potenciaMin: query.ficha?.potenciaMin?.toString() ?? '',
+  carga: query.ficha?.carga?.toString() ?? '',
+  peso: query.ficha?.peso?.toString() ?? '',
+  rueda: query.ficha?.rueda ?? '',
+  rasgos: [...(query.ficha?.rasgos ?? [])] as string[],
+  soloFicha: query.ficha?.soloFicha ?? false,
 })
 const draft = reactive(toDraft(props.query))
 watch(
@@ -179,6 +278,32 @@ const vendedorItems = computed(() => [
   ...facet(props.facets.vendedores),
 ])
 
+type FichaFacetKey = 'autonomia' | 'velocidad' | 'potencia' | 'carga' | 'peso' | 'rueda'
+
+const fichaFacets = computed(() => props.facets.ficha ?? null)
+
+/**
+ * Las opciones de una faceta de ficha con su conteo. Un valor que pidió el asesor y no está entre
+ * las opciones del panel (16 km) se agrega, para que el campo no se vea vacío con el filtro puesto.
+ */
+function fichaItems(key: FichaFacetKey, current: string, label?: (value: number) => string) {
+  const rows = (fichaFacets.value?.[key] ?? []).map(row => ({
+    title: `${row.name} (${row.count})`,
+    value: row.slug,
+  }))
+  if (current && !rows.some(row => row.value === current)) {
+    rows.unshift({ title: label ? label(Number(current)) : current, value: current })
+  }
+  return [{ title: 'Cualquiera', value: '' }, ...rows]
+}
+
+const rasgoItems = computed(() =>
+  (fichaFacets.value?.rasgos ?? []).map(row => ({
+    title: `${row.name} (${row.count})`,
+    value: row.slug,
+  }))
+)
+
 function apply() {
   // VTextField `clearable` sets the model to null; the normalizer only reads strings.
   emit(
@@ -186,6 +311,8 @@ function apply() {
     equiparProductosNormalize(
       {
         ...draft,
+        rasgos: draft.rasgos.join(','),
+        ficha: draft.soloFicha ? '1' : '',
         q: draft.q ?? '',
         categoria: props.fixedCategoria || draft.categoria,
         orden: props.query.orden,
@@ -206,6 +333,27 @@ function clear() {
 </script>
 
 <style scoped>
+.eq-filters__ficha {
+  display: grid;
+  gap: 12px;
+  margin: 8px 0 0;
+  padding: 0;
+  border: 0;
+}
+/* La leyenda no es un hijo del grid del fieldset: su separación va declarada (DESIGN.md). */
+.eq-filters__legend {
+  margin-bottom: 4px;
+  padding: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.0333em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+.eq-filters__checks {
+  display: grid;
+  gap: 0;
+}
 .eq-filters__pair {
   display: grid;
   grid-template-columns: 1fr 1fr;

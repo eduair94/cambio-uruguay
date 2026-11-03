@@ -45,6 +45,13 @@
       <p v-if="priceMove" class="eq-card__move" :class="priceMove.down ? 'is-down' : 'is-up'">
         {{ priceMove.text }}
       </p>
+      <!-- Sólo monopatines: la ficha técnica declarada (currency-movilidad-specs). Una fila de
+           equipar no trae `specs`, así que esta tarjeta sale igual que siempre allá. -->
+      <MovilidadSpecStrip
+        v-if="producto.specs"
+        :specs="producto.specs"
+        :uyu-per-km="producto.uyuPerKm ?? null"
+      />
       <p class="eq-card__facts">{{ facts }}</p>
       <p class="eq-card__source">
         {{ producto.sellerName

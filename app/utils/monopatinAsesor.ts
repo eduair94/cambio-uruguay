@@ -212,7 +212,12 @@ export function recomendarMonopatines(
   const pick = (kind: AsesorPickKind, candidato: MonopatinCandidato | undefined) => {
     if (!candidato || taken.has(candidato.id)) return
     taken.add(candidato.id)
-    picks.push({ kind, titulo: PICK_TITULOS[kind], candidato, porque: porque(candidato, input, requisitos, kind) })
+    picks.push({
+      kind,
+      titulo: PICK_TITULOS[kind],
+      candidato,
+      porque: porque(candidato, input, requisitos, kind),
+    })
   }
   const rest = () => cumplen.filter(c => !taken.has(c.id))
   const minBy = (rows: MonopatinCandidato[], value: (c: MonopatinCandidato) => number | null) =>
@@ -221,9 +226,20 @@ export function recomendarMonopatines(
       .sort((a, b) => value(a)! - value(b)! || a.priceUyu - b.priceUyu)[0]
 
   pick('barato', cumplen[0])
-  pick('autonomia', minBy(rest(), c => (c.specs.rangeKm ? c.priceUyu / c.specs.rangeKm : null)))
-  if (input.loCarga || input.terreno === 'llano') pick('liviano', minBy(rest(), c => c.specs.weightKg))
-  else pick('subidas', minBy(rest(), c => (c.specs.motorW === null ? null : -c.specs.motorW)))
+  pick(
+    'autonomia',
+    minBy(rest(), c => (c.specs.rangeKm ? c.priceUyu / c.specs.rangeKm : null))
+  )
+  if (input.loCarga || input.terreno === 'llano')
+    pick(
+      'liviano',
+      minBy(rest(), c => c.specs.weightKg)
+    )
+  else
+    pick(
+      'subidas',
+      minBy(rest(), c => (c.specs.motorW === null ? null : -c.specs.motorW))
+    )
 
   return { requisitos, cumplen, picks, descartes, aflojar, universo: universo.length }
 }

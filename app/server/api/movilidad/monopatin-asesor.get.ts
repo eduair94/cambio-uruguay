@@ -33,6 +33,10 @@ export default defineEventHandler(async (event): Promise<MonopatinAsesorResponse
     }
   } catch (error) {
     setResponseHeader(event, 'cache-control', 'no-store')
-    throw createError({ statusCode: 503, statusMessage: 'El asesor se está actualizando', cause: error })
+    throw createError({
+      statusCode: 503,
+      statusMessage: 'El asesor se está actualizando',
+      cause: error,
+    })
   }
 })

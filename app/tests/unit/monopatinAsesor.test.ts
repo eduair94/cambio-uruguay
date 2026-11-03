@@ -54,7 +54,10 @@ const candidato = (
   ...extra,
 })
 
-const input = (over: Partial<AsesorInput> = {}): AsesorInput => ({ ...MONOPATIN_ASESOR_DEFAULT, ...over })
+const input = (over: Partial<AsesorInput> = {}): AsesorInput => ({
+  ...MONOPATIN_ASESOR_DEFAULT,
+  ...over,
+})
 
 describe('asesorRequisitos', () => {
   it('10 km por día y 75 kg piden 16 km declarados y 85 kg de carga', () => {
@@ -68,8 +71,16 @@ describe('asesorRequisitos', () => {
   })
 
   it('con más de 90 kg la autonomía real baja al 55 % y con muchas subidas pide 500 W', () => {
-    const requisitos = asesorRequisitos(input({ kmDia: 11, pesoKg: 100, terreno: 'muchas', loCarga: true }))
-    expect(requisitos).toMatchObject({ autonomiaDeclaradaMin: 20, factorReal: 0.55, cargaMin: 110, potenciaMin: 500, pesoMax: 15 })
+    const requisitos = asesorRequisitos(
+      input({ kmDia: 11, pesoKg: 100, terreno: 'muchas', loCarga: true })
+    )
+    expect(requisitos).toMatchObject({
+      autonomiaDeclaradaMin: 20,
+      factorReal: 0.55,
+      cargaMin: 110,
+      potenciaMin: 500,
+      pesoMax: 15,
+    })
   })
 
   it('en llano no pide potencia', () => {
@@ -82,7 +93,13 @@ describe('recomendarMonopatines', () => {
     candidato('barato', 15_000, { rangeKm: 20, maxLoadKg: 100, motorW: 350, weightKg: 13 }),
     candidato('rinde', 22_000, { rangeKm: 45, maxLoadKg: 120, motorW: 500, weightKg: 18 }),
     candidato('liviano', 25_000, { rangeKm: 25, maxLoadKg: 100, motorW: 350, weightKg: 11 }),
-    candidato('potente', 40_000, { rangeKm: 40, maxLoadKg: 150, motorW: 1000, weightKg: 24, maxSpeedKmh: 45 }),
+    candidato('potente', 40_000, {
+      rangeKm: 40,
+      maxLoadKg: 150,
+      motorW: 1000,
+      weightKg: 24,
+      maxSpeedKmh: 45,
+    }),
     candidato('corto', 9_000, { rangeKm: 8, maxLoadKg: 100, motorW: 350 }),
     candidato('sin-carga', 12_000, { rangeKm: 30, motorW: 350 }),
     candidato('usado', 5_000, { rangeKm: 30, maxLoadKg: 120, motorW: 350 }, { condition: 'used' }),

@@ -62,7 +62,9 @@ export function monopatinSpecsPublic(raw: unknown): MonopatinSpecsPublic | null 
   }
   specs.brakes = typeof value.brakes === 'string' && value.brakes ? value.brakes.slice(0, 80) : null
   specs.ipRating =
-    typeof value.ipRating === 'string' && /^IP[X0-9]\d$/.test(value.ipRating) ? value.ipRating : null
+    typeof value.ipRating === 'string' && /^IP[X0-9]\d$/.test(value.ipRating)
+      ? value.ipRating
+      : null
   if (specs.brakes || specs.ipRating) any = true
   if (!any) return null
   const from =
@@ -177,7 +179,12 @@ export function monopatinFichaNormalize(raw: Record<string, unknown>): Movilidad
   const rasgosRaw = Array.isArray(raw.rasgos) ? raw.rasgos[0] : raw.rasgos
   const rasgos =
     typeof rasgosRaw === 'string'
-      ? MONOPATIN_RASGOS.filter(rasgo => rasgosRaw.split(',').map(s => s.trim()).includes(rasgo))
+      ? MONOPATIN_RASGOS.filter(rasgo =>
+          rasgosRaw
+            .split(',')
+            .map(s => s.trim())
+            .includes(rasgo)
+        )
       : []
   const ficha = Array.isArray(raw.ficha) ? raw.ficha[0] : raw.ficha
   return {
@@ -193,7 +200,9 @@ export function monopatinFichaNormalize(raw: Record<string, unknown>): Movilidad
   }
 }
 
-export function monopatinFichaParams(ficha: MovilidadFichaQuery | undefined): Record<string, string> {
+export function monopatinFichaParams(
+  ficha: MovilidadFichaQuery | undefined
+): Record<string, string> {
   const params: Record<string, string> = {}
   if (!ficha) return params
   if (ficha.autonomia !== null) params.autonomia = String(ficha.autonomia)

@@ -29,7 +29,11 @@ const movilidad = (raw: Record<string, unknown>) =>
 
 describe('la consulta de ficha técnica', () => {
   it('equipar no cambia: no aparece ningún campo de ficha ni orden nuevo', () => {
-    const query = equiparProductosNormalize({ autonomia: '30', rasgos: 'plegable', orden: 'precio_km' })
+    const query = equiparProductosNormalize({
+      autonomia: '30',
+      rasgos: 'plegable',
+      orden: 'precio_km',
+    })
     expect(query).not.toHaveProperty('ficha')
     expect(query.orden).toBe('precio_asc')
   })
@@ -68,7 +72,11 @@ describe('la consulta de ficha técnica', () => {
   it('ida y vuelta por la URL', () => {
     const query = movilidad({ autonomia: '45', rasgos: 'suspension,app', orden: 'autonomia_desc' })
     const params = equiparProductosParams(query)
-    expect(params).toMatchObject({ autonomia: '45', rasgos: 'suspension,app', orden: 'autonomia_desc' })
+    expect(params).toMatchObject({
+      autonomia: '45',
+      rasgos: 'suspension,app',
+      orden: 'autonomia_desc',
+    })
     expect(equiparProductosNormalize(params, 'movilidad').ficha).toEqual(query.ficha)
     expect(equiparProductosParams(movilidad({}))).toEqual({ categoria: 'monopatin-electrico' })
   })
@@ -78,7 +86,11 @@ describe('la consulta de ficha técnica', () => {
     expect(equiparProductosFiltered(query, ['categoria'])).toBe(true)
     expect(equiparProductosFiltered(movilidad({}), ['categoria'])).toBe(false)
     const chips = equiparProductosChips(query, undefined, 'monopatin-electrico')
-    expect(chips.map(chip => chip.label)).toEqual(['30 km o más', 'Soporta 120 kg o más', 'Plegable'])
+    expect(chips.map(chip => chip.label)).toEqual([
+      '30 km o más',
+      'Soporta 120 kg o más',
+      'Plegable',
+    ])
   })
 
   it('cada chip saca sólo lo suyo', () => {
@@ -95,10 +107,13 @@ describe('potencia mínima (la que pide el asesor)', () => {
     const query = movilidad({ potenciaMin: '350' })
     expect(query.ficha?.potenciaMin).toBe(350)
     expect(equiparProductosParams(query)).toMatchObject({ potenciaMin: '350' })
-    expect(equiparProductosChips(query, undefined, 'monopatin-electrico').map(c => c.label)).toEqual([
-      'Potencia desde 350 W',
-    ])
-    const match = equiparProductosMatch(movilidad({ potenciaMin: '400', potencia: '350-500' }), CUTOFF)
+    expect(
+      equiparProductosChips(query, undefined, 'monopatin-electrico').map(c => c.label)
+    ).toEqual(['Potencia desde 350 W'])
+    const match = equiparProductosMatch(
+      movilidad({ potenciaMin: '400', potencia: '350-500' }),
+      CUTOFF
+    )
     expect(match['specs.motorW']).toEqual({ $gt: 350, $lte: 500, $gte: 400 })
     expect(movilidad({ potenciaMin: '20' }).ficha?.potenciaMin).toBeNull()
   })
@@ -180,7 +195,14 @@ describe('la fila pública', () => {
         from: { rangeKm: 'ficha' },
       },
     } as never)
-    expect(row.specs).toMatchObject({ rangeKm: 30, maxSpeedKmh: 25, motorW: 350, weightKg: null, foldable: true, fromFicha: true })
+    expect(row.specs).toMatchObject({
+      rangeKm: 30,
+      maxSpeedKmh: 25,
+      motorW: 350,
+      weightKg: null,
+      foldable: true,
+      fromFicha: true,
+    })
     expect(row.specs).not.toHaveProperty('from')
     expect(row.specs).not.toHaveProperty('secreto')
     expect(row.uyuPerKm).toBe(800)
@@ -193,7 +215,9 @@ describe('la fila pública', () => {
   })
 
   it('una ficha que sólo salió del título no es "de ficha"', () => {
-    expect(monopatinSpecsPublic({ rangeKm: 40, from: { rangeKm: 'titulo' } })?.fromFicha).toBe(false)
+    expect(monopatinSpecsPublic({ rangeKm: 40, from: { rangeKm: 'titulo' } })?.fromFicha).toBe(
+      false
+    )
     expect(monopatinSpecsPublic({ from: {} })).toBeNull()
   })
 })
@@ -201,7 +225,15 @@ describe('la fila pública', () => {
 describe('formato', () => {
   it('la franja de la tarjeta: autonomía, velocidad, potencia y peso', () => {
     expect(
-      monopatinSpecChips({ ...monopatinSpecsPublic({ rangeKm: 45, maxSpeedKmh: 25, motorW: 800, weightKg: 26.3, from: { rangeKm: 'ficha' } })! })
+      monopatinSpecChips({
+        ...monopatinSpecsPublic({
+          rangeKm: 45,
+          maxSpeedKmh: 25,
+          motorW: 800,
+          weightKg: 26.3,
+          from: { rangeKm: 'ficha' },
+        })!,
+      })
     ).toEqual(['45 km', '25 km/h', '800 W', '26,3 kg'])
   })
 
