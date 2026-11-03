@@ -5,7 +5,9 @@
 // currency-rentals-ml-detail; delcar y superbikers (WooCommerce) imprimen su tabla como texto; una
 // tienda Shopify publica `<producto>.json` con el `body_html`. Facebook no se lee nunca.
 import { fetchText, type FetchOptions } from "../../rentals/net";
-import { decodeEntities, hasAnySpecs, mergeSpecs, mlDescription, mlSpecRows, specsFromRows, specsFromText } from "./parse";
+import { ML_API_BASE } from "../../retail/sources/mercadolibre";
+import { decodeEntities, hasAnySpecs, mergeSpecs, specsFromRows, specsFromText } from "./parse";
+import { mlProductId } from "./queue";
 import type { MonopatinSpecs } from "./types";
 
 export const MOVILIDAD_SPECS_USER_AGENT =
@@ -32,7 +34,6 @@ export interface FichaRead {
 export type Fetcher = (url: string, options?: FetchOptions) => Promise<string | null>;
 
 const GONE_STATUS = /^HTTP (404|410)$/;
-const CLOSED = /"item_status":"(closed|inactive|paused|under_review)"/;
 /** Donde termina la ficha y empiezan las de otros productos. */
 const RELATED = /productos relacionados|related products|tambi[eé]n te puede interesar|quiz[aá]s te interese|te puede interesar/i;
 
@@ -72,21 +73,57 @@ async function get(url: string, fetcher: Fetcher): Promise<{ body: string | null
 
 const withSpecs = (specs: MonopatinSpecs): MonopatinSpecs | null => (hasAnySpecs(specs) ? specs : null);
 
+interface BridgeProduct {
+  brand?: string | null;
+  model?: string | null;
+  description?: string | null;
+  specifications?: Array<{ attributes?: Array<{ name?: string; id?: string; value?: string }> }>;
+}
+
+/**
+ * La ficha de un aviso de Mercado Libre, por el puente propio (:9656, `/product/<id>`).
+ *
+ * Medido en producción el 3/11/2026 a las 23:40 UTC, en la primera corrida del job: desde la IP del
+ * VPS toda página de producto de ML (`/up/MLUU…`, `/p/MLU…`, `articulo.…/MLU-…`) redirige a
+ * `/gz/account-verification`, el muro de login; los clasificados (`auto.`, `casa.`) siguen abiertos,
+ * por eso currency-autos-detail y currency-rentals-ml-detail no lo vieron. El puente es la vía que el
+ * repo ya usa para leer ML y contesta la misma tabla (`specifications`) y la descripción. No se rodea
+ * el muro con otra IP. Un aviso sin id de producto (`articulo.…`, el 1,5 % medido) no lo puede leer
+ * el puente y la cola ni lo intenta (`mlProductId`).
+ */
+async function readMlFromBridge(target: FichaTarget, fetcher: Fetcher): Promise<FichaRead> {
+  const id = mlProductId(target.url);
+  if (!id) return nothing({ failure: "aviso sin id de producto" });
+  const { body, failure } = await get(`${ML_API_BASE}/product/${id}?country=UY`, fetcher);
+  if (!body) return nothing({ gone: GONE_STATUS.test(failure), failure });
+  let product: BridgeProduct;
+  try {
+    product = JSON.parse(body) as BridgeProduct;
+  } catch {
+    return nothing({ failure: "respuesta del puente ilegible" });
+  }
+  const rows: Record<string, string> = {};
+  for (const group of product.specifications ?? []) {
+    for (const attribute of group.attributes ?? []) {
+      const label = String(attribute.name ?? attribute.id ?? "").trim();
+      const value = String(attribute.value ?? "").trim();
+      if (label && value && !(label in rows)) rows[label] = value;
+    }
+  }
+  const specs = mergeSpecs(specsFromRows(rows), specsFromText(product.description ?? "", "descripcion"));
+  return {
+    ok: true,
+    gone: false,
+    specs: withSpecs(specs),
+    brand: product.brand?.trim() || rows["Marca"] || null,
+    model: product.model?.trim() || rows["Modelo"] || null,
+  };
+}
+
 export async function readFicha(target: FichaTarget, fetcher: Fetcher = fetchText): Promise<FichaRead> {
   const clean = target.url.split("#")[0]!;
 
-  if (target.source === "mercadolibre") {
-    const { body, failure } = await get(clean, fetcher);
-    if (!body) return nothing({ gone: GONE_STATUS.test(failure), failure });
-    if (CLOSED.test(body)) return nothing({ gone: true });
-    // Una página 200 sin ninguna marca de ficha no es un aviso borrado: es un desafío anti-bot o una
-    // página de búsqueda. Contarla como "borrado" la mandaría 7 días afuera sin que el corte por
-    // fallas seguidas se entere — el síntoma mentiría, como el de Casasweb (9-10/10/2026).
-    if (!/ui-pdp|ui-vpp|andes-table/.test(body)) return nothing({ failure: "página sin ficha (¿desafío anti-bot?)" });
-    const rows = mlSpecRows(body);
-    const specs = mergeSpecs(specsFromRows(rows), specsFromText(mlDescription(body), "descripcion"));
-    return { ok: true, gone: false, specs: withSpecs(specs), brand: rows["Marca"] ?? null, model: rows["Modelo"] ?? null };
-  }
+  if (target.source === "mercadolibre") return readMlFromBridge(target, fetcher);
 
   if (/\/products\//.test(clean)) {
     const { body, failure } = await get(`${clean.split("?")[0]!.replace(/\/+$/, "")}.json`, fetcher);

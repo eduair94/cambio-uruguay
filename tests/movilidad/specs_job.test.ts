@@ -47,7 +47,11 @@ describe("orderTargets", () => {
   const row = (listingId: string, source: FichaQueueRow["source"]): FichaQueueRow => ({
     listingId,
     source,
-    url: `https://x/${listingId}`,
+    // Un aviso de ML necesita un id de producto para que la cola lo pida al puente (`mlProductId`).
+    url:
+      source === "mercadolibre"
+        ? `https://www.mercadolibre.com.uy/x/up/MLUU${[...listingId].map((char) => char.charCodeAt(0)).join("")}`
+        : `https://x/${listingId}`,
   });
 
   it("tiendas primero, después ML nunca leídos, después los vencidos; nunca Facebook", () => {
@@ -71,40 +75,9 @@ describe("orderTargets", () => {
   });
 });
 
-const fixtureRow = (label: string, value: string) =>
-  `<div class="andes-table__header__container">${label}</div></th><td class="x"><span id="v" class="andes-table__column--value">${value}</span>`;
-
 describe("readFicha", () => {
-  it("lee la tabla y la descripción de una ficha de ML, sin el fragmento de la URL", async () => {
-    const urls: string[] = [];
-    const html = `<div class="ui-pdp-container">${fixtureRow("Marca", "Xiaomi")}${fixtureRow("Modelo", "4 Pro")}${fixtureRow("Autonomía", "45 km")}</div><p class="ui-pdp-description__content">Velocidad máxima 25 km/h</p>`;
-    const read = await readFicha(
-      { listingId: "ml:1", url: "https://www.mercadolibre.com.uy/x/up/MLUU1#position=2", source: "mercadolibre" },
-      async (url) => {
-        urls.push(url);
-        return html;
-      }
-    );
-    expect(urls).toEqual(["https://www.mercadolibre.com.uy/x/up/MLUU1"]);
-    expect(read).toMatchObject({ ok: true, gone: false, brand: "Xiaomi", model: "4 Pro" });
-    expect(read.specs).toMatchObject({ rangeKm: 45, maxSpeedKmh: 25 });
-  });
-
-  it("un 404 o una ficha cerrada es un aviso que ya no existe, no una falla", async () => {
-    const notFound = await readFicha({ listingId: "ml:1", url: "https://x/1", source: "mercadolibre" }, async (_url, options) => {
-      options?.onFailure?.("HTTP 404");
-      return null;
-    });
-    expect(notFound).toMatchObject({ ok: false, gone: true });
-    const closed = await readFicha(
-      { listingId: "ml:1", url: "https://x/1", source: "mercadolibre" },
-      async () => '<div class="ui-pdp-container">"item_status":"closed"</div>'
-    );
-    expect(closed).toMatchObject({ ok: false, gone: true });
-  });
-
-  it("sin respuesta es una falla, no un aviso muerto", async () => {
-    const read = await readFicha({ listingId: "ml:1", url: "https://x/1", source: "mercadolibre" }, async (_url, options) => {
+  it("sin respuesta del puente es una falla, no un aviso muerto", async () => {
+    const read = await readFicha({ listingId: "ml:1", url: "https://www.mercadolibre.com.uy/x/up/MLUU1", source: "mercadolibre" }, async (_url, options) => {
       options?.onFailure?.("tiempo agotado (20000 ms)");
       return null;
     });
@@ -221,26 +194,19 @@ describe("arreglos de la revisión final", () => {
     expect(gone.$set).toMatchObject({ gone: true });
   });
 
-  it("una página 200 sin ficha (un desafío anti-bot) es una falla, no un aviso borrado", async () => {
-    const read = await readFicha({ listingId: "ml:1", url: "https://x/1", source: "mercadolibre" }, async () => "<html><body>Verificá que no sos un robot</body></html>");
+  it("un aviso de ML sin id de producto no se le pide al puente", async () => {
+    let called = false;
+    const read = await readFicha({ listingId: "ml:1", url: "https://articulo.mercadolibre.com.uy/MLU-1-x-_JM", source: "mercadolibre" }, async () => {
+      called = true;
+      return "{}";
+    });
+    expect(called).toBe(false);
     expect(read).toMatchObject({ ok: false, gone: false });
-    expect(read.failure).toMatch(/sin ficha/);
   });
 
   it("un aviso abandonado vuelve a probarse a los 30 días", () => {
     const abandoned: StoredFichaDoc = { listingId: "a", ok: false, failures: 4, readAt: null, lastTriedAt: daysAgo(20) };
     expect(fichaDue(abandoned, NOW)).toBe(false);
     expect(fichaDue({ ...abandoned, lastTriedAt: daysAgo(31) }, NOW)).toBe(true);
-  });
-});
-
-describe("horario del job", () => {
-  it("no corre en el minuto de ningún otro lector de fichas de Mercado Libre", async () => {
-    const { readFileSync } = await import("node:fs");
-    const eco = readFileSync(require.resolve("../../ecosystem.config.js"), "utf8");
-    const block = /name: "currency-movilidad-specs"[\s\S]*?cron_restart: "([^"]+)"/.exec(eco)!;
-    const minute = Number(block[1]!.split(" ")[0]);
-    // autos-detail :11, rentals-ml-detail :35 (hasta 10 min): ninguno dentro de los 10 min siguientes.
-    for (const other of [11, 35]) expect((minute - other + 60) % 60).toBeGreaterThanOrEqual(11);
   });
 });

@@ -1,5 +1,5 @@
 // La ficha técnica de los monopatines de /monopatines-electricos-uruguay (pm2
-// `currency-movilidad-specs`, cada hora a los :49).
+// `currency-movilidad-specs`, cada hora a los :01).
 //
 // La tarjeta de búsqueda de Mercado Libre llega sin atributos y la de las tiendas sólo con título y
 // precio, así que el directorio no podía filtrar por autonomía, velocidad, potencia, peso ni carga
@@ -12,8 +12,9 @@
 // frescas de monopatín con la misma función que usa la horaria de movilidad; (3) guarda el snapshot
 // del asesor y de las medianas por tipo, que es lo único que la página lee.
 //
-// Mercado Libre se lee por la misma IP que currency-autos-detail (:11) y currency-rentals-ml-detail
-// (:35, hasta 10 min); a los :49, 90 fichas a 2,5 s son ~4 min.
+// La ficha de Mercado Libre se pide al puente propio (:9656, `/product/<id>`): desde la IP del VPS la
+// página de producto redirige al muro de login (medido 3/11/2026, ver classes/movilidad/specs/read.ts).
+// A los :01, en el hueco de los consumidores horarios del puente, 60 fichas a 3 s son ~4 min.
 import dotenv from "dotenv";
 import "dotenv/config";
 dotenv.config({ path: "app/.env", quiet: true });
@@ -66,10 +67,10 @@ export async function main(): Promise<void> {
   const queue: FichaQueueRow[] = rows
     .filter((row) => !row.suspect)
     .map((row) => ({ listingId: row.listingId, url: row.url, source: row.source }));
-  const targets = orderTargets(queue, stored, now, number("MOVILIDAD_SPECS_MAX", 90));
+  const targets = orderTargets(queue, stored, now, number("MOVILIDAD_SPECS_MAX", 60));
 
   const summary = { fresh: rows.length, targets: targets.length, read: 0, withSpecs: 0, gone: 0, failed: 0, note: "" };
-  const gapMs = number("MOVILIDAD_SPECS_GAP_MS", 2_500);
+  const gapMs = number("MOVILIDAD_SPECS_GAP_MS", 3_000);
   const deadline = Date.now() + number("MOVILIDAD_SPECS_MINUTES", 8) * 60_000;
   let networkFailures = 0;
 
