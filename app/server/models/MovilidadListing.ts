@@ -39,6 +39,9 @@ const MovilidadListingSchema = new Schema(
     observedAt: { type: String, required: true },
     firstSeen: { type: String, required: true },
     lastSeen: { type: String, required: true },
+    // Ficha técnica de un monopatín (classes/movilidad/specs/) y precio por km de autonomía.
+    specs: { type: Schema.Types.Mixed, default: null },
+    uyuPerKm: { type: Number, default: null },
   },
   { timestamps: true }
 )
