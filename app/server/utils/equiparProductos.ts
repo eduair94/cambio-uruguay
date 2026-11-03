@@ -4,7 +4,9 @@ import {
   type EquiparProductoPublic,
   type EquiparProductosQuery,
   type EquiparProductosSort,
+  type EquiparQueryKey,
 } from '../../utils/equiparProductos'
+import { monopatinFichaMatch, monopatinSpecsPublic } from '../../utils/monopatinFicha'
 
 /** Same freshness window as `/api/equipar`: a listing not seen in 4 days is not on sale today. */
 export const EQUIPAR_PRODUCTOS_STALE_DAYS = 4
@@ -24,9 +26,9 @@ export const equiparEscapeRegex = (value: string): string =>
 export function equiparProductosMatch(
   query: EquiparProductosQuery,
   cutoff: string,
-  ignore: ReadonlyArray<keyof EquiparProductosQuery> = []
+  ignore: ReadonlyArray<EquiparQueryKey> = []
 ): Record<string, unknown> {
-  const skip = (key: keyof EquiparProductosQuery) => ignore.includes(key)
+  const skip = (key: EquiparQueryKey) => ignore.includes(key)
   const match: Record<string, unknown> = { suspect: false, lastSeen: { $gte: cutoff } }
   if (query.categoria && !skip('categoria')) match.category = query.categoria
   if (query.categoria && query.variante && !skip('variante')) match.variant = query.variante
@@ -42,6 +44,16 @@ export function equiparProductosMatch(
     if (Object.keys(range).length) match.priceUyu = range
   }
   if (query.q && !skip('q')) match.title = { $regex: equiparEscapeRegex(query.q), $options: 'i' }
+  // Sólo monopatines (la vertical de movilidad): la ficha técnica, y los órdenes que no tienen
+  // sentido sin el dato dejan afuera a quien no lo tiene, en vez de ponerlo primero.
+  if (query.ficha && !skip('ficha')) Object.assign(match, monopatinFichaMatch(query.ficha, ignore))
+  if (query.orden === 'precio_km') match.uyuPerKm = { $type: 'number' }
+  if (query.orden === 'peso_asc') {
+    match['specs.weightKg'] = {
+      ...((match['specs.weightKg'] as Record<string, unknown>) ?? {}),
+      $type: 'number',
+    }
+  }
   return match
 }
 
@@ -51,6 +63,13 @@ export function equiparProductosSort(orden: EquiparProductosSort): Record<string
       return { priceUyu: -1, listingId: 1 }
     case 'reciente':
       return { observedAt: -1, listingId: 1 }
+    // Mongo pone los nulos al final en un orden descendente: un aviso sin autonomía va al fondo.
+    case 'autonomia_desc':
+      return { 'specs.rangeKm': -1, priceUyu: 1, listingId: 1 }
+    case 'precio_km':
+      return { uyuPerKm: 1, listingId: 1 }
+    case 'peso_asc':
+      return { 'specs.weightKg': 1, priceUyu: 1, listingId: 1 }
     default:
       return { priceUyu: 1, listingId: 1 }
   }
@@ -81,10 +100,21 @@ export const EQUIPAR_PRODUCTOS_PROJECTION = {
   location: 1,
   freeShipping: 1,
   lastSeen: 1,
+  specs: 1,
+  uyuPerKm: 1,
 } as const
 
-export function equiparProductoPublic(row: Partial<EquiparListingDoc>): EquiparProductoPublic {
+export function equiparProductoPublic(
+  row: Partial<EquiparListingDoc> & { specs?: unknown; uyuPerKm?: unknown }
+): EquiparProductoPublic {
+  const specs = monopatinSpecsPublic(row.specs)
+  const uyuPerKm =
+    typeof row.uyuPerKm === 'number' && row.uyuPerKm > 0 ? Math.round(row.uyuPerKm) : null
+  const extra: Pick<EquiparProductoPublic, 'specs' | 'uyuPerKm'> = {}
+  if (specs) extra.specs = specs
+  if (uyuPerKm !== null) extra.uyuPerKm = uyuPerKm
   return {
+    ...extra,
     listingId: String(row.listingId ?? ''),
     category: String(row.category ?? ''),
     categoryLabel: String(row.categoryLabel ?? ''),

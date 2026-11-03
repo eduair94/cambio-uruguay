@@ -34,7 +34,7 @@
         <CarsToolbar
           v-if="smAndDown"
           :sort="query.orden"
-          :items="EQUIPAR_PRODUCTOS_SORT_ITEMS"
+          :items="sortItems"
           :active-count="chips.length"
           :open="filtersOpen"
           @open="filtersOpen = true"
@@ -57,7 +57,7 @@
           <VSelect
             v-if="!smAndDown"
             :model-value="query.orden"
-            :items="EQUIPAR_PRODUCTOS_SORT_ITEMS"
+            :items="sortItems"
             label="Ordenar"
             density="compact"
             variant="outlined"
@@ -119,6 +119,7 @@ import { useDisplay } from 'vuetify'
 import {
   EQUIPAR_LISTA_MAX,
   EQUIPAR_PRODUCTOS_SORT_ITEMS,
+  MOVILIDAD_PRODUCTOS_SORT_ITEMS,
   equiparListaFromProducto,
   equiparProductosParams,
   type EquiparFilterChip,
@@ -127,6 +128,7 @@ import {
   type EquiparProductosQuery,
   type EquiparProductosResponse,
   type EquiparProductosSort,
+  type EquiparQueryKey,
   type RetailProductosVertical,
 } from '~/utils/equiparProductos'
 
@@ -160,11 +162,17 @@ const props = withDefaults(
 )
 const emit = defineEmits<{
   update: [query: EquiparProductosQuery]
-  remove: [keys: ReadonlyArray<keyof EquiparProductosQuery>]
+  remove: [keys: ReadonlyArray<EquiparQueryKey>]
   clear: []
 }>()
 
 const { smAndDown } = useDisplay()
+// Los órdenes por ficha técnica sólo existen para monopatines (la única categoría con ficha leída).
+const sortItems = computed(() =>
+  props.vertical === 'movilidad' && props.fixedCategoria === 'monopatin-electrico'
+    ? MOVILIDAD_PRODUCTOS_SORT_ITEMS
+    : EQUIPAR_PRODUCTOS_SORT_ITEMS
+)
 const filtersOpen = ref(false)
 // The drawer is mobile-only: if the window grows with it open, the column already shows the filters.
 watch(smAndDown, mobile => {

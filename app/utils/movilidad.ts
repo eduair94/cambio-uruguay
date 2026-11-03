@@ -1,3 +1,4 @@
+import type { MonopatinSpecsPublic } from './monopatinFicha'
 import type { PriceHistorySeries } from './priceHistory'
 // Shapes and helpers for /monopatines-electricos-uruguay and /bicicletas-electricas-uruguay.
 //
@@ -76,6 +77,8 @@ export interface MovilidadProduct {
   offers: MovilidadOffer[]
   bestPriceUyu: number
   sellers: number
+  /** Sólo monopatín: la ficha técnica de la primera oferta suya que la tenga. */
+  specs?: MonopatinSpecsPublic
 }
 
 export interface MovilidadItemDoc {
@@ -124,6 +127,33 @@ export interface MovilidadCategoryResponse {
   usdUyu: number | null
   sources: MovilidadCategorySource[]
   items: MovilidadItemDoc[]
+  /** Sólo monopatín: las medianas de la ficha por tipo (snapshot de currency-movilidad-specs). */
+  specStats?: MonopatinSpecStats | null
+}
+
+/** Medianas de la ficha técnica declarada de un tipo (classes/movilidad/specs/snapshot.ts). */
+export interface MonopatinSpecStatsRow {
+  variant: string
+  label: string
+  /** Avisos del tipo, tengan o no ficha. */
+  n: number
+  rangeKm: number | null
+  maxSpeedKmh: number | null
+  motorW: number | null
+  weightKg: number | null
+  maxLoadKg: number | null
+  chargeHours: number | null
+  batteryWh: number | null
+  wheelInches: number | null
+}
+
+export interface MonopatinSpecStats {
+  byVariant: MonopatinSpecStatsRow[]
+  all: MonopatinSpecStatsRow
+  withFicha: number
+  total: number
+  withSpeed: number
+  over25: number
 }
 
 /** Raw shape of one `MovilidadMeta.runs[]` entry, mirroring `EquiparSourceRun` (`classes/equipar/

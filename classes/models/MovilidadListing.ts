@@ -46,6 +46,11 @@ const MovilidadListingSchema = new Schema(
     observedAt: { type: String, required: true },
     firstSeen: { type: String, required: true },
     lastSeen: { type: String, required: true },
+    // La ficha técnica de un monopatín y su precio por km de autonomía declarada. Las escriben
+    // `sync_movilidad.ts` y `sync_movilidad_specs.ts` con la misma función (classes/movilidad/specs/
+    // enrich.ts); sin declararlas acá, mongoose las descartaría en silencio al escribir.
+    specs: { type: Schema.Types.Mixed, default: null },
+    uyuPerKm: { type: Number, default: null },
   },
   { timestamps: true }
 );

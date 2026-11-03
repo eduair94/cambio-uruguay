@@ -23,6 +23,23 @@ vi.mock('../../server/models/MovilidadMeta', () => ({
 }))
 vi.mock('../../server/models/MovilidadItem', () => ({ MovilidadItemModel: { find: findMock } }))
 
+// La ficha técnica de los modelos de monopatín (`attachMonopatinSpecs`): un `$in` sobre
+// movilidadlistings y el snapshot de currency-movilidad-specs.
+const { listingLeanMock, snapshotLeanMock } = vi.hoisted(() => ({
+  listingLeanMock: vi.fn(),
+  snapshotLeanMock: vi.fn(),
+}))
+vi.mock('../../server/models/MovilidadListing', () => ({
+  MovilidadListingModel: {
+    find: () => ({ select: () => ({ maxTimeMS: () => ({ lean: listingLeanMock }) }) }),
+  },
+}))
+vi.mock('../../server/models/MovilidadSpecSnapshot', () => ({
+  MovilidadSpecSnapshotModel: {
+    findOne: () => ({ select: () => ({ maxTimeMS: () => ({ lean: snapshotLeanMock }) }) }),
+  },
+}))
+
 vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
 vi.stubGlobal('getRouterParam', (event: any, key: string) => event[key])
 vi.stubGlobal('setResponseHeader', (_event: unknown, name: string, value: string) =>
@@ -40,10 +57,113 @@ beforeEach(() => {
   leanOneMock.mockReset()
   findMock.mockClear()
   leanMock.mockReset()
+  listingLeanMock.mockReset()
+  listingLeanMock.mockResolvedValue([])
+  snapshotLeanMock.mockReset()
+  snapshotLeanMock.mockResolvedValue(null)
   headers.length = 0
 })
 
 afterAll(() => vi.unstubAllGlobals())
+
+describe('la ficha técnica de los modelos de monopatín', () => {
+  const item = (products: unknown[]) => ({
+    key: 'monopatin-electrico:urbano',
+    category: 'monopatin-electrico',
+    categoryLabel: 'Monopatín eléctrico',
+    variant: 'urbano',
+    variantLabel: 'Urbano o estándar',
+    room: 'movilidad',
+    tier: 'B',
+    rank: 0,
+    variantRank: 2,
+    image: null,
+    regime: 'modelo',
+    reason: 'transporte',
+    usedOk: true,
+    quantity: 1,
+    newBand: null,
+    usedBand: null,
+    usedSavingPct: null,
+    products,
+    offers: [],
+    suspectDropped: 0,
+    observedAt: null,
+    firstSeen: '2026-01-01',
+    lastSeen: '2026-01-01',
+  })
+  const offer = (listingId: string) => ({
+    listingId,
+    seller: 'Tienda',
+    title: 'Monopatín',
+    url: 'https://example.com',
+    price: 20_000,
+    currency: 'UYU',
+    priceUyu: 20_000,
+    condition: 'new',
+    source: 'mercadolibre',
+    observedAt: '2026-11-03',
+  })
+
+  it('pega a cada modelo la ficha de su primera oferta leída y las medianas por tipo', async () => {
+    connectDb.mockResolvedValue(undefined)
+    leanOneMock.mockResolvedValue(null)
+    leanMock.mockResolvedValue([
+      item([
+        {
+          slug: 'xiaomi-6',
+          name: 'Xiaomi 6',
+          brand: 'Xiaomi',
+          model: '6',
+          image: null,
+          offers: [offer('ml:2'), offer('ml:1')],
+          bestPriceUyu: 20_000,
+          sellers: 2,
+        },
+        {
+          slug: 'otro',
+          name: 'Otro',
+          brand: 'X',
+          model: 'y',
+          image: null,
+          offers: [offer('ml:9')],
+          bestPriceUyu: 20_000,
+          sellers: 1,
+        },
+      ]),
+    ])
+    listingLeanMock.mockResolvedValue([
+      { listingId: 'ml:1', specs: { rangeKm: 45, motorW: 800, from: { rangeKm: 'ficha' } } },
+      // Sólo del título: no alcanza para mostrarla como la ficha del modelo.
+      { listingId: 'ml:9', specs: { rangeKm: 20, from: { rangeKm: 'titulo' } } },
+    ])
+    const stats = {
+      byVariant: [],
+      all: { variant: 'todos', label: 'Todos', n: 3 },
+      withFicha: 1,
+      total: 3,
+      withSpeed: 0,
+      over25: 0,
+    }
+    snapshotLeanMock.mockResolvedValue({ stats })
+
+    const result = await handler({ categoria: 'monopatin-electrico' } as any)
+    const [xiaomi, otro] = result.items[0]!.products as Array<{ specs?: unknown }>
+    expect(xiaomi!.specs).toMatchObject({ rangeKm: 45, motorW: 800, fromFicha: true })
+    expect(otro).not.toHaveProperty('specs')
+    expect(result.specStats).toEqual(stats)
+  })
+
+  it('las bicicletas no consultan ficha ni snapshot', async () => {
+    connectDb.mockResolvedValue(undefined)
+    leanOneMock.mockResolvedValue(null)
+    leanMock.mockResolvedValue([])
+    const result = await handler({ categoria: 'bicicleta-electrica' } as any)
+    expect(listingLeanMock).not.toHaveBeenCalled()
+    expect(snapshotLeanMock).not.toHaveBeenCalled()
+    expect(result).not.toHaveProperty('specStats')
+  })
+})
 
 describe('GET /api/movilidad/[categoria]', () => {
   it('rechaza una categoría desconocida con 404 y nunca toca la base', async () => {
@@ -91,6 +211,8 @@ describe('GET /api/movilidad/[categoria]', () => {
       usdUyu: 40,
       sources: [{ label: 'Mercado Libre', ok: true, listings: 12 }],
       items: [],
+      // Sólo monopatín: sin snapshot todavía, la página no dibuja "Qué esperar de cada tipo".
+      specStats: null,
     })
     expect(findMock).toHaveBeenCalledWith(
       expect.objectContaining({ category: 'monopatin-electrico', lastSeen: expect.anything() })

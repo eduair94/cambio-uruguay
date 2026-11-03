@@ -471,6 +471,100 @@ la tabla de modelos), nunca `AggregateRating`.
   tiendas (`classes/stores/registry.ts`) Y que ya tiene perfil escrito (`GET /api/stores`,
   `hasProfile`) — las dos condiciones son necesarias, ver [TIENDAS_ONLINE.md](TIENDAS_ONLINE.md).
 
+## Ficha técnica, filtros por especificación y asesor (3/11/2026)
+
+`/monopatines-electricos-uruguay` contestaba "cuánto sale" pero no lo que decide la compra y lo que
+cualquier tienda de monopatines pone arriba de la ficha: autonomía, velocidad, potencia, peso que
+soporta, peso del aparato, tiempo de carga, ruedas, frenos, plegable. Medido el 3/11/2026: la tarjeta
+de búsqueda de Mercado Libre llega con `attributes: []` (por eso la faceta de marca tenía 7 avisos con
+marca de 782), pero **la ficha propia de ML trae la tabla entera** (`ui-vpp-striped-specs`) y las
+tiendas la escriben como texto rotulado. Sobre 22 avisos reales leídos con el código nuevo: 22 de 22
+leídos, autonomía en 21, ruedas en 20, potencia en 19, velocidad y carga soportada en 18, peso y
+tiempo de carga en 14. Con la primera corrida sobre una copia local de los 783 avisos, la faceta de
+marca pasó de 7 avisos con marca a 486 (Xiaomi 237, Atom 46, Mistyle 39…).
+
+**Sólo monopatín.** El código es genérico; bicicletas queda para después.
+
+### El job `currency-movilidad-specs` (`sync_movilidad_specs.ts`, `49 * * * *`)
+
+1. Cola (`classes/movilidad/specs/queue.ts`): monopatines frescos (4 días) y no sospechosos, nunca
+   Facebook (la ficha de Marketplace exige la sesión; lo único público es el título). Tiendas primero,
+   después ML nunca leídos, después relecturas. 90 por corrida a 2,5 s, tope 8 min
+   (`MOVILIDAD_SPECS_MAX` / `_GAP_MS` / `_MINUTES`). Directo a mercadolibre.com.uy por la misma IP que
+   currency-autos-detail (:11) y currency-rentals-ml-detail (:35, hasta 10 min), por eso a los :49; no
+   usa el puente :9656.
+2. **Toda lectura se guarda**, buena o mala, en la colección privada `movilidadspecs`. La mala vuelve
+   con espera de 1, 3 y 7 días y a la cuarta falla seguida se abandona por un mes; un aviso que ya no
+   existe (404/410, `item_status` cerrado) espera 7 días y no cuenta como falla. Una página 200 SIN
+   ficha es falla y no "borrado": es el aspecto de un desafío anti-bot, y contarlo como borrado mandaría
+   la cola entera 7 días afuera sin que el corte se entere. Es la
+   lección de Casasweb (9-10/10/2026): no guardar la falla + orden determinista + corte por fallas
+   seguidas = cola trabada para siempre. Cortan cinco pedidos seguidos sin respuesta o sin ficha. Una
+   relectura que falla, o que carga pero no trae ficha, no borra la ficha buena anterior
+   (`write.ts`); si la mitad de las leídas no trae datos, el log avisa `ALERTA`. Ficha buena se relee a
+   los 45 días.
+3. Lectura (`read.ts`): ML = URL del aviso sin fragmento → tabla + descripción del vendedor; Shopify =
+   `<producto>.json` (`body_html`, `vendor` como marca); resto de tiendas = HTML sin scripts, cortado en
+   "Productos relacionados". UA propia `MOVILIDAD_SPECS_USER_AGENT`.
+4. Reaplica la ficha a TODAS las filas frescas de `movilidadlistings` con `enrichMovilidadRow`
+   (`enrich.ts`), la misma función que usa `sync_movilidad.ts` antes de guardar: si sólo la aplicara
+   este job, la horaria de movilidad volvería a dejar la marca vacía cada hora. Si la colección de
+   fichas no se puede leer, `sync_movilidad.ts` guarda las filas sin `specs`/`uyuPerKm` en el `$set`
+   (lo guardado sobrevive).
+5. Guarda el snapshot `movilidadspecsnapshots` (`key: monopatin-electrico`): candidatos del asesor
+   (sólo avisos con ficha propia, no sospechosos, nunca Facebook) y medianas por tipo. Las medianas
+   cuentan sólo lo que dijo la ficha o la descripción, nunca el título, y exigen 5 datos.
+
+### El parser (`parse.ts`, puro)
+
+- Tabla de ML (`mlSpecRows`, HTML o JSON escapado) → `specsFromRows`; texto → `specsFromText` en tres
+  pasadas: pares con dos puntos ("Ruedas: 8,5”", una tabla) antes que pares sueltos ("Rodado 10") y los
+  dos antes que la prosa ("45 km de autonomía"). Superbikers dice "rodado 10”" en la prosa y "Ruedas:
+  8,5”" en su tabla: gana la tabla.
+- Rangos hacia el lado conservador del filtro: autonomía y carga soportada toman el extremo bajo
+  ("20–25 km" → 20); peso del aparato, tiempo de carga y velocidad, el alto.
+- "Potencia máxima"/"pico" va a `motorPeakW`, nunca a `motorW` ("motor de 600 W (potencia máxima)").
+- Millas, mph y libras se convierten sólo con la unidad escrita.
+- Bandas de cordura (`SPEC_BANDS`): fuera de banda el campo queda en `null`, no se corrige ("Largo =
+  100 m" en una ficha real de un infantil).
+- Título (`specsFromTitle`): lo mismo, más "45km" suelto como autonomía (en un título sólo puede ser
+  eso; "25 km/h" no). Procedencia por campo en `specs.from` (`ficha` | `descripcion` | `titulo`).
+- Marca (`brands.ts`): la de la ficha salvo genéricos ("Monopatin", "Genérica"); si no, la primera
+  marca conocida del título ("Go Green Mod. Zero" es Gogreen, por eso Zero no está en la lista).
+
+### Directorio: filtros, facetas y órdenes
+
+Sólo con `vertical: 'movilidad'` (equipar normaliza exactamente como antes; el `toEqual` de su test
+no cambió): `autonomia` (mínimo km), `velocidad` (`hasta-25`|`25-35`|`mas-35`), `potencia` (tramos),
+`potenciaMin` (la que pide el asesor: un tramo no puede decir "350 W o más"), `carga` (mínimo kg),
+`peso` (máximo kg), `rueda`, `rasgos` (`plegable,suspension,disco,app`), `ficha=1`. Órdenes nuevos sólo
+para monopatín: mayor autonomía, menor precio por km (`uyuPerKm`, sólo con autonomía de ficha) y más
+liviano — estos dos dejan afuera a los avisos sin el dato en vez de ponerlos primero. Facetas
+(`server/utils/monopatinFichaFacets.ts`): un `$group` con `$cond` por opción, cada dimensión sin su
+propio filtro; **toda condición va con `$isNumber`**, porque en agregación `null` es menor que
+cualquier número y "hasta 25 km/h" contaría a todos los que no declaran velocidad. Un aviso sin el
+dato no cumple ese filtro, y el panel lo dice con el conteo de los que tienen ficha.
+
+### El asesor "¿Cuál te conviene?" (`utils/monopatinAsesor.ts`)
+
+Corre en el navegador sobre `/api/movilidad/monopatin-asesor` (sólo lee el snapshot, caché 300 s,
+`server: false`): los controles responden en el acto, como el comparador de transporte. Reglas
+publicadas en la página: autonomía real 65 % de la declarada (55 % sobre 90 kg), carga soportada ≥
+peso + 10 kg, 350 W con algunas subidas y 500 W con muchas, liviano ≤ 15 kg. Tres elecciones con nombre
+y porqué: la más barata que cumple, más kilómetros por tu plata, y la más liviana (si lo carga o es llano)
+o la más potente. Si declara más de 25 km/h lo dice contra la norma de Montevideo y San José, nunca
+"ilegal". Si nadie cumple, nombra el requisito que más deja afuera. El botón lleva los mismos
+requisitos al directorio (`asesorQueryFicha`).
+
+### En la página
+
+Asesor después de "Cuánto sale hoy, por tipo"; columna "Ficha técnica" en la tabla de modelos (la
+ficha de la primera oferta del modelo con ficha propia, `$in` acotado en `/api/movilidad/<categoria>`);
+franja de ficha en cada tarjeta del directorio (`MovilidadSpecStrip`, sólo si el aviso trae `specs`:
+equipar no cambia); "Qué esperar de cada tipo" con las medianas y el costo de una carga (batería
+mediana × UTE simple 101–600 kWh con IVA + 15 % de pérdida del cargador); "Cómo elegir" y cuatro
+preguntas frecuentes con esas cifras; `Product.additionalProperty` en el JSON-LD.
+
 ## Tests
 
 - `tests/movilidad/registry.test.ts` — forma del registro (claves sin colisión con equipar, room

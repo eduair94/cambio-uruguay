@@ -22,6 +22,27 @@ import type { EquiparListingRow } from "../equipar/listings";
 import { storeSnapshotBytes, storeSnapshotRows, STORE_SNAPSHOT_MAX_BYTES } from "../equipar/storeSnapshot";
 import type { EquiparItem } from "../equipar/types";
 import type { MovilidadMeta } from "./types";
+import { appConnection } from "../appdb";
+import type { StoredFicha } from "./specs/enrich";
+
+/** Colección privada de fichas leídas (`sync_movilidad_specs.ts`). Nunca sale a una API. */
+export const MOVILIDAD_SPECS_COLLECTION = "movilidadspecs";
+
+/**
+ * Las fichas guardadas con dato para esos avisos. Una lectura que falló después de una buena no
+ * borra la buena (el job guarda la falla aparte), así que alcanza con pedir `specs` no nulo.
+ */
+export async function loadFichaByListingId(ids: readonly string[]): Promise<Map<string, StoredFicha>> {
+  if (!ids.length) return new Map();
+  const rows = (await appConnection()
+    .collection(MOVILIDAD_SPECS_COLLECTION)
+    .find(
+      { listingId: { $in: [...ids] }, specs: { $ne: null } },
+      { projection: { _id: 0, listingId: 1, specs: 1, brand: 1, model: 1 } }
+    )
+    .toArray()) as unknown as StoredFicha[];
+  return new Map(rows.map((row) => [row.listingId, row]));
+}
 
 export const MOVILIDAD_META_KEY = "movilidad-electrica-uruguay";
 export const MOVILIDAD_STORE_SNAPSHOT_KEY = "movilidad-store-listings";

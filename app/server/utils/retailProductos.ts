@@ -1,6 +1,7 @@
 import type { Model } from 'mongoose'
 import { connectDb } from './db'
 import { pricewatchHistory } from './priceHistory'
+import { monopatinFichaFacets } from './monopatinFichaFacets'
 import {
   EQUIPAR_PRODUCTOS_PROJECTION,
   equiparProductoPublic,
@@ -138,51 +139,64 @@ export async function retailProductosResponse(
 
     const cutoff = equiparProductosCutoff()
     const match = equiparProductosMatch(query, cutoff)
-    const [total, rows, suspect, categorias, variantes, marcas, vendedores, fuentes, condiciones] =
-      await Promise.all([
-        model.countDocuments(match).maxTimeMS(FACET_MS),
-        model
-          .find(match)
-          .select(EQUIPAR_PRODUCTOS_PROJECTION)
-          .sort(equiparProductosSort(query.orden))
-          .skip((query.page - 1) * EQUIPAR_PRODUCTOS_PER_PAGE)
-          .limit(EQUIPAR_PRODUCTOS_PER_PAGE)
-          .maxTimeMS(FACET_MS)
-          .lean(),
-        model.countDocuments({ ...match, suspect: true }).maxTimeMS(FACET_MS),
-        facet(
-          model,
-          equiparProductosMatch(query, cutoff, ['categoria', 'variante']),
-          'category',
-          'categoryLabel',
-          40
-        ),
-        query.categoria
-          ? facet(
-              model,
-              equiparProductosMatch(query, cutoff, ['variante']),
-              'variant',
-              'variantLabel',
-              12
-            )
-          : Promise.resolve([]),
-        facet(model, equiparProductosMatch(query, cutoff, ['marca']), 'brandKey', 'brand', 40),
-        facet(
-          model,
-          equiparProductosMatch(query, cutoff, ['vendedor']),
-          'sellerKey',
-          'sellerName',
-          40
-        ),
-        facet(model, equiparProductosMatch(query, cutoff, ['fuente']), 'source', 'source', 3),
-        facet(
-          model,
-          equiparProductosMatch(query, cutoff, ['condicion']),
-          'condition',
-          'condition',
-          2
-        ),
-      ])
+    // Sólo el directorio de monopatines tiene ficha técnica (classes/movilidad/specs/).
+    const wantsFicha = vertical === 'movilidad' && query.categoria === 'monopatin-electrico'
+    const [
+      total,
+      rows,
+      suspect,
+      categorias,
+      variantes,
+      marcas,
+      vendedores,
+      fuentes,
+      condiciones,
+      ficha,
+    ] = await Promise.all([
+      model.countDocuments(match).maxTimeMS(FACET_MS),
+      model
+        .find(match)
+        .select(EQUIPAR_PRODUCTOS_PROJECTION)
+        .sort(equiparProductosSort(query.orden))
+        .skip((query.page - 1) * EQUIPAR_PRODUCTOS_PER_PAGE)
+        .limit(EQUIPAR_PRODUCTOS_PER_PAGE)
+        .maxTimeMS(FACET_MS)
+        .lean(),
+      model.countDocuments({ ...match, suspect: true }).maxTimeMS(FACET_MS),
+      facet(
+        model,
+        equiparProductosMatch(query, cutoff, ['categoria', 'variante']),
+        'category',
+        'categoryLabel',
+        40
+      ),
+      query.categoria
+        ? facet(
+            model,
+            equiparProductosMatch(query, cutoff, ['variante']),
+            'variant',
+            'variantLabel',
+            12
+          )
+        : Promise.resolve([]),
+      facet(model, equiparProductosMatch(query, cutoff, ['marca']), 'brandKey', 'brand', 40),
+      facet(
+        model,
+        equiparProductosMatch(query, cutoff, ['vendedor']),
+        'sellerKey',
+        'sellerName',
+        40
+      ),
+      facet(model, equiparProductosMatch(query, cutoff, ['fuente']), 'source', 'source', 3),
+      facet(
+        model,
+        equiparProductosMatch(query, cutoff, ['condicion']),
+        'condition',
+        'condition',
+        2
+      ),
+      wantsFicha ? monopatinFichaFacets(model, query, cutoff) : Promise.resolve(undefined),
+    ])
 
     setResponseHeader(event, 'cache-control', `public, max-age=${maxAge}, s-maxage=${maxAge}`)
     return {
@@ -215,6 +229,7 @@ export async function retailProductosResponse(
             name: EQUIPAR_CONDICION_LABELS[row.slug === 'used' ? 'usado' : 'nuevo'],
             count: row.count,
           })),
+        ...(ficha ? { ficha } : {}),
       },
       suspect,
     }
