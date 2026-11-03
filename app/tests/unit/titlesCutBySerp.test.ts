@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 import { irpfBracketsUyu, URUGUAY } from '../../utils/calculators'
 import { formatUYU } from '../../utils/format'
 import { ID_CARD_BY_KEY } from '../../utils/idCard'
+import { LENDERS } from '../../utils/loans'
 import { titleFits } from '../../utils/liveRateSeo'
 import { getWithdrawContent } from '../../utils/withdrawCash'
 
@@ -57,6 +58,25 @@ describe('títulos que entran en el SERP', () => {
       expect(titleFits(title)).toBe(true)
       expect(page('herramientas', file)).toContain(`seo-title="${title} | Cambio Uruguay"`)
     }
+  })
+
+  // El peor título del sitio hasta el 2026-11-03: 94 caracteres con la marca, de los cuales el SERP
+  // publicaba 60 y cortaba en «…bancos, financieras y c». No lo medía nadie —`staticTitle` de
+  // `seoTitleBudget` se queda en la línea del `title:` y prettier había partido ésta justamente por
+  // ser larga—, así que entra acá con su cifra puesta y arriba queda el trinquete que lo delata.
+  it('préstamos: el título lleva cuántos prestadores hay y entra con la cifra puesta', () => {
+    const title = (lenders: number) => `Préstamos en Uruguay: ${lenders} prestadores`
+    expect(titleFits(title(LENDERS.length))).toBe(true)
+    // Y sigue entrando si el catálogo pasa de los 99, que es el único crecimiento que lo alargaría.
+    expect(titleFits(title(123))).toBe(true)
+
+    // La cifra se cuenta sobre la lista que la página publica, no se congela en el título: es la
+    // misma regla con la que `/descuentos-con-tarjeta-uruguay/*` dice cuántos comercios tiene hoy.
+    const source = page('prestamos-uruguay.vue')
+    expect(source).toContain(
+      'const title = computed(() => `Préstamos en Uruguay: ${lenders.value.length} prestadores`)'
+    )
+    expect(source).toContain('title: () => `${title.value} | Cambio Uruguay`')
   })
 
   it('retirar efectivo: los tres idiomas entran', () => {

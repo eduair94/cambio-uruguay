@@ -5,9 +5,9 @@
 //
 // Por qué existe y cuál es la regla: `classes/revenueplan/debtFree.ts`.
 //
-// QUÉ CUBRE. Los SEIS pozos de deuda de SEO del app, cada uno declarado como una lista en el
-// trinquete que lo mide. Los dos últimos entraron el 2026-10-20 y son los que faltaban: las migas
-// de `seoContract.test.ts` y los dos snippets pasados de `guideSnippetBudget.test.ts` declaraban un
+// QUÉ CUBRE. Los SIETE pozos de deuda de SEO del app, cada uno declarado como una lista en el
+// trinquete que lo mide. El cuarto y el quinto entraron el 2026-10-20 y eran los que faltaban: las
+// migas de `seoContract.test.ts` y los dos snippets pasados de `guideSnippetBudget.test.ts` declaraban un
 // NÚMERO y nada más, así que este informe no los podía nombrar y la respuesta a «¿cuál puedo tocar
 // hoy?» para esos tres pozos vivía en prosa, dentro del comentario de cada presupuesto y con fecha
 // de vencimiento escrita a mano («las diez entran cuando su ventana cierre, la última el
@@ -94,6 +94,20 @@ const POOLS: Array<{
     list: "DEUDA_DESCRIPCION_PLANTILLA",
     budget: "TEMPLATE_OVER_BUDGET",
   },
+  // El séptimo, desde el 2026-11-03, y nació del mismo agujero que el sexto pero del lado del
+  // TÍTULO, que es la línea sobre la que se hace clic. `seoTitleBudget.test.ts` ya barría las
+  // páginas, pero su lector se queda en la línea del `title:` — y cuando el título es largo
+  // prettier parte esa línea, así que el punto ciego estaba CORRELACIONADO con el defecto: el
+  // título que no entra en el SERP es el que tiende a no entrar en una línea. Resolvía 190 de las 300
+  // páginas que declaran un `title:` y entre las 110 que no leía había una de 94 caracteres, del
+  // tramo que rinde 8×. El lector nuevo llega a 247 y mide el PISO (los `${...}` que no resuelven
+  // aportan vacío), así que condena y no absuelve.
+  {
+    pool: "piso de título pasado de 60",
+    file: "seoTitleBudget.test.ts",
+    list: "DEUDA_TITULO_PISO",
+    budget: "TITLE_FLOOR_OVER_BUDGET",
+  },
 ];
 
 /** Hoy en UTC, o el día que pida `--today=YYYY-MM-DD` (para mirar la cola desde otra fecha). */
@@ -143,7 +157,7 @@ function main(): void {
   }
   console.log(
     "\nUna ruta libre acá NO es una mejora: sigue haciendo falta que el cambio le sirva a un lector.\n" +
-      "Los seis pozos con lista están contados; las dos deudas que no son de ruta (el título y la\n" +
+      "Los siete pozos con lista están contados; las dos deudas que no son de ruta (el título y la\n" +
       "descripción de una MISMA guía) salen como dos filas, porque se arreglan por separado."
   );
 }

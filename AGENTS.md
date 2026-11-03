@@ -147,7 +147,15 @@ Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`
   leía las descripciones escritas con comillas y las 13 que se escriben con PLANTILLA no las veía
   nadie; cuatro ya salían cortadas del SERP contando sólo su texto fijo, la peor con 498 caracteres
   en una página del tramo que rinde 8×. Es el modo de fallar de una ruta mal tipeada en `value.ts`:
-  no hay rojo, hay una medición que no alcanza a la página.
+  no hay rojo, hay una medición que no alcanza a la página. **Y desde el 2026-11-03 son siete**: el
+  mismo agujero del lado del TÍTULO, que es la línea sobre la que se hace clic. `seoTitleBudget`
+  barría las páginas desde el 2026-09-04 y su `OVER_BUDGET` estaba en 0 declarado contrato, pero su
+  lector saca la expresión de la LÍNEA del `title:` — y cuando el título es largo prettier parte esa
+  línea, así que el punto ciego estaba **correlacionado con el defecto**: el título que no entra en el
+  SERP es justo el que tiende a no entrar en una línea. Resolvía 190 de las 300 páginas que declaran
+  un `title:`, y entre las 110 que no leía había uno de 94 caracteres (`/prestamos-uruguay`, tramo
+  8×) y otros cuatro pasados de 60. El lector nuevo mide el PISO —los `${...}` que no resuelven
+  aportan vacío—, así que condena y no absuelve, y el viejo y su cero se quedan donde están.
 - **Este repositorio es PÚBLICO: cero cifras de ingreso en nada versionado.** Ni en código, ni en
   comentarios, ni en este archivo, ni en un mensaje de commit. La convención ya existía para los
   documentos (`docs/seo/adsense-growth-loop.md` es "público sin cifras"; los montos viven en
