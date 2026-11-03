@@ -274,3 +274,12 @@ describe("marcas", () => {
     expect(cleanBrand("Marca Rara")).toBe("Marca Rara");
   });
 });
+
+describe("potencia máxima sola", () => {
+  it("una potencia rotulada como máxima nunca pasa por nominal", () => {
+    const specs = specsFromText("Potencia máxima: 600 W", "descripcion");
+    expect(specs.motorPeakW).toBe(600);
+    expect(specs.motorW).toBeNull();
+    expect(specsFromText("Potencia pico 1200W, motor brushless", "descripcion").motorW).toBeNull();
+  });
+});

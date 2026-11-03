@@ -273,12 +273,13 @@ module.exports = {
       // soportada, tiempo de carga…) a la colección privada movilidadspecs, la reaplica a
       // movilidadlistings y guarda el snapshot del asesor (movilidadspecsnapshots). Directo a
       // mercadolibre.com.uy, como currency-autos-detail (:11) y currency-rentals-ml-detail (:35)
-      // desde la misma IP: a los :41, 90 fichas a 2,5 s (~4 min). No usa el puente de ML.
+      // desde la misma IP: a los :49, cuando currency-rentals-ml-detail (hasta 10 min desde :35) ya
+      // terminó, 90 fichas a 2,5 s (~4 min). No usa el puente de ML.
       name: "currency-movilidad-specs",
       autorestart: false,
       exec_mode: "fork",
       script: "dist/sync_movilidad_specs.js",
-      cron_restart: "41 * * * *",
+      cron_restart: "49 * * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {

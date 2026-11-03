@@ -181,6 +181,7 @@
 import {
   monopatinAutonomiaLabel,
   monopatinCargaLabel,
+  monopatinFichaPanelVisible,
   monopatinPesoLabel,
 } from '~/utils/monopatinFicha'
 import {
@@ -280,7 +281,9 @@ const vendedorItems = computed(() => [
 
 type FichaFacetKey = 'autonomia' | 'velocidad' | 'potencia' | 'carga' | 'peso' | 'rueda'
 
-const fichaFacets = computed(() => props.facets.ficha ?? null)
+const fichaFacets = computed(() =>
+  monopatinFichaPanelVisible(props.facets.ficha, props.query.ficha) ? props.facets.ficha! : null
+)
 
 /**
  * Las opciones de una faceta de ficha con su conteo. Un valor que pidió el asesor y no está entre

@@ -485,19 +485,24 @@ marca pasó de 7 avisos con marca a 486 (Xiaomi 237, Atom 46, Mistyle 39…).
 
 **Sólo monopatín.** El código es genérico; bicicletas queda para después.
 
-### El job `currency-movilidad-specs` (`sync_movilidad_specs.ts`, `41 * * * *`)
+### El job `currency-movilidad-specs` (`sync_movilidad_specs.ts`, `49 * * * *`)
 
 1. Cola (`classes/movilidad/specs/queue.ts`): monopatines frescos (4 días) y no sospechosos, nunca
    Facebook (la ficha de Marketplace exige la sesión; lo único público es el título). Tiendas primero,
    después ML nunca leídos, después relecturas. 90 por corrida a 2,5 s, tope 8 min
    (`MOVILIDAD_SPECS_MAX` / `_GAP_MS` / `_MINUTES`). Directo a mercadolibre.com.uy por la misma IP que
-   currency-autos-detail (:11) y currency-rentals-ml-detail (:35); no usa el puente :9656.
+   currency-autos-detail (:11) y currency-rentals-ml-detail (:35, hasta 10 min), por eso a los :49; no
+   usa el puente :9656.
 2. **Toda lectura se guarda**, buena o mala, en la colección privada `movilidadspecs`. La mala vuelve
-   con espera de 1, 3 y 7 días y a la cuarta falla seguida se abandona; un aviso que ya no existe
-   (404/410, `item_status` cerrado, página sin ficha) espera 7 días y no cuenta como falla. Es la
+   con espera de 1, 3 y 7 días y a la cuarta falla seguida se abandona por un mes; un aviso que ya no
+   existe (404/410, `item_status` cerrado) espera 7 días y no cuenta como falla. Una página 200 SIN
+   ficha es falla y no "borrado": es el aspecto de un desafío anti-bot, y contarlo como borrado mandaría
+   la cola entera 7 días afuera sin que el corte se entere. Es la
    lección de Casasweb (9-10/10/2026): no guardar la falla + orden determinista + corte por fallas
-   seguidas = cola trabada para siempre. Sólo cortan cinco pedidos seguidos SIN respuesta. Una
-   relectura que falla no borra la ficha buena anterior. Ficha buena se relee a los 45 días.
+   seguidas = cola trabada para siempre. Cortan cinco pedidos seguidos sin respuesta o sin ficha. Una
+   relectura que falla, o que carga pero no trae ficha, no borra la ficha buena anterior
+   (`write.ts`); si la mitad de las leídas no trae datos, el log avisa `ALERTA`. Ficha buena se relee a
+   los 45 días.
 3. Lectura (`read.ts`): ML = URL del aviso sin fragmento → tabla + descripción del vendedor; Shopify =
    `<producto>.json` (`body_html`, `vendor` como marca); resto de tiendas = HTML sin scripts, cortado en
    "Productos relacionados". UA propia `MOVILIDAD_SPECS_USER_AGENT`.
@@ -546,7 +551,7 @@ Corre en el navegador sobre `/api/movilidad/monopatin-asesor` (sólo lee el snap
 `server: false`): los controles responden en el acto, como el comparador de transporte. Reglas
 publicadas en la página: autonomía real 65 % de la declarada (55 % sobre 90 kg), carga soportada ≥
 peso + 10 kg, 350 W con algunas subidas y 500 W con muchas, liviano ≤ 15 kg. Tres elecciones con nombre
-y porqué: la más barata que cumple, más autonomía por peso, y la más liviana (si lo carga o es llano)
+y porqué: la más barata que cumple, más kilómetros por tu plata, y la más liviana (si lo carga o es llano)
 o la más potente. Si declara más de 25 km/h lo dice contra la norma de Montevideo y San José, nunca
 "ilegal". Si nadie cumple, nombra el requisito que más deja afuera. El botón lleva los mismos
 requisitos al directorio (`asesorQueryFicha`).

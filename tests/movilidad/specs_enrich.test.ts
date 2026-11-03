@@ -105,3 +105,14 @@ describe("esquema de movilidadlistings", () => {
     expect(Object.keys(MovilidadListingModel.schema.obj)).toEqual(expect.arrayContaining(["specs", "uyuPerKm"]));
   });
 });
+
+describe("la clave de marca es un slug que el filtro acepta", () => {
+  it("K'nex y una marca de dos palabras quedan filtrables", () => {
+    const knex = enrichMovilidadRow(row({ title: "Monopatin Eléctrico Plegable K'nex 1600w" }), undefined);
+    expect(knex.brand).toBe("K'nex");
+    expect(knex.brandKey).toBe("knex");
+    const sep = enrichMovilidadRow(row({ title: "Monopatín" }), ficha({}, { brand: "SEP Importaciones" }));
+    expect(sep.brandKey).toBe("sep-importaciones");
+    expect(/^[a-z0-9:_.-]{1,80}$/.test(sep.brandKey)).toBe(true);
+  });
+});

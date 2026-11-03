@@ -196,3 +196,66 @@ describe('GET /api/movilidad/monopatin-asesor', () => {
     expect(route).not.toMatch(/MovilidadListingModel/)
   })
 })
+
+describe('arreglos de la revisión final', () => {
+  const pool = [
+    candidato('a', 30_000, { rangeKm: 60, maxLoadKg: 120, motorW: 350 }),
+    // Cada uno falla dos requisitos distintos: sacar uno solo no deja pasar a nadie.
+    candidato('b', 12_000, { rangeKm: 20, maxLoadKg: 150, motorW: 300 }),
+    candidato('c', 20_000, { rangeKm: 70, maxLoadKg: 100, motorW: 1000 }),
+  ]
+
+  it('si nadie cumple y ningún requisito solo destraba, nombra el que más deja afuera', () => {
+    const result = recomendarMonopatines(
+      pool,
+      input({ kmDia: 30, pesoKg: 130, presupuesto: 15_000, terreno: 'muchas' })
+    )
+    expect(result.cumplen).toEqual([])
+    expect(result.aflojar).not.toBeNull()
+    expect(result.porRequisito).toEqual({ autonomia: 2, carga: 1, potencia: 1, presupuesto: 1 })
+    expect(result.aflojar).toBe('carga')
+  })
+
+  it('el consejo de potencia propone el tramo de abajo del que está elegido', async () => {
+    const { asesorConsejo } = await import('../../utils/monopatinAsesor')
+    expect(asesorConsejo('potencia', input({ terreno: 'muchas' }))).toContain('"Algunas"')
+    expect(asesorConsejo('potencia', input({ terreno: 'algunas' }))).toContain('"Ninguna"')
+  })
+
+  it('la elección de rendimiento habla de plata, no de peso', () => {
+    const result = recomendarMonopatines(
+      [
+        candidato('x', 10_000, { rangeKm: 30, maxLoadKg: 120, motorW: 500 }),
+        candidato('y', 20_000, { rangeKm: 90, maxLoadKg: 120, motorW: 500 }),
+      ],
+      input()
+    )
+    expect(result.picks[1]!.titulo).toBe('Más kilómetros por tu plata')
+  })
+})
+
+describe('accesibilidad del asesor', () => {
+  it('los sliders tienen nombre y sólo el resumen se anuncia', async () => {
+    const { readFileSync } = await import('node:fs')
+    const { join } = await import('node:path')
+    const vue = readFileSync(
+      join(__dirname, '..', '..', 'components', 'movilidad', 'MovilidadMonopatinAsesor.vue'),
+      'utf8'
+    )
+    expect(vue).toContain('name="Kilómetros por día"')
+    expect(vue).toContain('name="Tu peso"')
+    expect(vue).not.toContain('<div class="asesor__results" aria-live="polite">')
+    expect(vue).toMatch(/<p class="asesor__count"[^>]*aria-live="polite"/)
+  })
+})
+
+describe('el consejo no pide lo que ya está puesto', () => {
+  it('sin tope de presupuesto no dice "subí el presupuesto"; con usados no dice "mirá los usados"', async () => {
+    const { asesorConsejo } = await import('../../utils/monopatinAsesor')
+    expect(asesorConsejo('carga', input({ presupuesto: null }))).not.toContain('presupuesto')
+    expect(asesorConsejo('carga', input({ usados: true, presupuesto: null }))).not.toContain(
+      'usados'
+    )
+    expect(asesorConsejo('carga', input({ presupuesto: 15_000 }))).toContain('presupuesto')
+  })
+})

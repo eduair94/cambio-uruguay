@@ -78,7 +78,11 @@ export async function readFicha(target: FichaTarget, fetcher: Fetcher = fetchTex
   if (target.source === "mercadolibre") {
     const { body, failure } = await get(clean, fetcher);
     if (!body) return nothing({ gone: GONE_STATUS.test(failure), failure });
-    if (CLOSED.test(body) || !/ui-pdp|ui-vpp|andes-table/.test(body)) return nothing({ gone: true });
+    if (CLOSED.test(body)) return nothing({ gone: true });
+    // Una página 200 sin ninguna marca de ficha no es un aviso borrado: es un desafío anti-bot o una
+    // página de búsqueda. Contarla como "borrado" la mandaría 7 días afuera sin que el corte por
+    // fallas seguidas se entere — el síntoma mentiría, como el de Casasweb (9-10/10/2026).
+    if (!/ui-pdp|ui-vpp|andes-table/.test(body)) return nothing({ failure: "página sin ficha (¿desafío anti-bot?)" });
     const rows = mlSpecRows(body);
     const specs = mergeSpecs(specsFromRows(rows), specsFromText(mlDescription(body), "descripcion"));
     return { ok: true, gone: false, specs: withSpecs(specs), brand: rows["Marca"] ?? null, model: rows["Modelo"] ?? null };

@@ -19,7 +19,7 @@ describe("fichaDue", () => {
     expect(fichaDue({ ...ok, readAt: daysAgo(46), lastTriedAt: daysAgo(46) }, NOW)).toBe(true);
   });
 
-  it("una falla espera 1, 3 y 7 días y a la cuarta se abandona", () => {
+  it("una falla espera 1, 3 y 7 días y a la cuarta se abandona por un mes", () => {
     const failed = (failures: number, days: number): StoredFichaDoc => ({
       listingId: "a",
       ok: false,
@@ -33,7 +33,7 @@ describe("fichaDue", () => {
     expect(fichaDue(failed(2, 3.1), NOW)).toBe(true);
     expect(fichaDue(failed(3, 6), NOW)).toBe(false);
     expect(fichaDue(failed(3, 7.1), NOW)).toBe(true);
-    expect(fichaDue(failed(4, 300), NOW)).toBe(false);
+    expect(fichaDue(failed(4, 20), NOW)).toBe(false);
   });
 
   it("un aviso que ya no existe vuelve a mirarse a los 7 días", () => {
@@ -195,5 +195,52 @@ describe("buildSpecSnapshot", () => {
 describe("modelo del snapshot", () => {
   it("vive en movilidadspecsnapshots", () => {
     expect(MovilidadSpecSnapshotModel.collection.name).toBe("movilidadspecsnapshots");
+  });
+});
+
+describe("arreglos de la revisión final", () => {
+  it("una relectura que no trae ficha no borra la ficha buena guardada", async () => {
+    const { fichaUpdate } = await import("../../classes/movilidad/specs/write");
+    const empty = fichaUpdate({ listingId: "ml:1", url: "https://x", source: "mercadolibre" }, { ok: true, gone: false, specs: null, brand: null, model: null }, "2026-11-03T12:00:00Z");
+    expect(empty.$set).not.toHaveProperty("specs");
+    expect(empty.$set).not.toHaveProperty("brand");
+    expect(empty.$set).toMatchObject({ ok: true, failures: 0, lastTriedAt: "2026-11-03T12:00:00Z" });
+    const good = fichaUpdate({ listingId: "ml:1", url: "https://x", source: "mercadolibre" }, { ok: true, gone: false, specs: specsFromRows({ Autonomía: "30 km" }), brand: "Xiaomi", model: "4" }, "2026-11-03T12:00:00Z");
+    expect(good.$set).toMatchObject({ brand: "Xiaomi", readAt: "2026-11-03T12:00:00Z" });
+    expect(good.$set.specs).toMatchObject({ rangeKm: 30 });
+  });
+
+  it("una falla suma una falla y no toca la ficha; un aviso borrado no suma", async () => {
+    const { fichaUpdate } = await import("../../classes/movilidad/specs/write");
+    const target = { listingId: "ml:1", url: "https://x", source: "mercadolibre" as const };
+    const failed = fichaUpdate(target, { ok: false, gone: false, specs: null, brand: null, model: null, failure: "HTTP 500" }, "t");
+    expect(failed.$inc).toEqual({ failures: 1 });
+    expect(failed.$set).not.toHaveProperty("specs");
+    const gone = fichaUpdate(target, { ok: false, gone: true, specs: null, brand: null, model: null }, "t");
+    expect(gone.$inc).toBeUndefined();
+    expect(gone.$set).toMatchObject({ gone: true });
+  });
+
+  it("una página 200 sin ficha (un desafío anti-bot) es una falla, no un aviso borrado", async () => {
+    const read = await readFicha({ listingId: "ml:1", url: "https://x/1", source: "mercadolibre" }, async () => "<html><body>Verificá que no sos un robot</body></html>");
+    expect(read).toMatchObject({ ok: false, gone: false });
+    expect(read.failure).toMatch(/sin ficha/);
+  });
+
+  it("un aviso abandonado vuelve a probarse a los 30 días", () => {
+    const abandoned: StoredFichaDoc = { listingId: "a", ok: false, failures: 4, readAt: null, lastTriedAt: daysAgo(20) };
+    expect(fichaDue(abandoned, NOW)).toBe(false);
+    expect(fichaDue({ ...abandoned, lastTriedAt: daysAgo(31) }, NOW)).toBe(true);
+  });
+});
+
+describe("horario del job", () => {
+  it("no corre en el minuto de ningún otro lector de fichas de Mercado Libre", async () => {
+    const { readFileSync } = await import("node:fs");
+    const eco = readFileSync(require.resolve("../../ecosystem.config.js"), "utf8");
+    const block = /name: "currency-movilidad-specs"[\s\S]*?cron_restart: "([^"]+)"/.exec(eco)!;
+    const minute = Number(block[1]!.split(" ")[0]);
+    // autos-detail :11, rentals-ml-detail :35 (hasta 10 min): ninguno dentro de los 10 min siguientes.
+    for (const other of [11, 35]) expect((minute - other + 60) % 60).toBeGreaterThanOrEqual(11);
   });
 });

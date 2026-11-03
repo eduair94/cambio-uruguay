@@ -36,7 +36,12 @@ export function enrichMovilidadRow<T extends EquiparListingRow>(row: T, ficha: S
     const found = cleanBrand(ficha?.brand) ?? brandFromTitle(row.title);
     if (found) {
       brand = found;
-      brandKey = norm(found).trim();
+      // Un slug, porque es lo que acepta el filtro de marca (`/^[a-z0-9:_.-]{1,80}$/`): "K'nex" con su
+      // apóstrofo aparecía como opción y no filtraba nada (revisión final, 3/11/2026).
+      brandKey = norm(found)
+        .replace(/'/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
     }
   }
 

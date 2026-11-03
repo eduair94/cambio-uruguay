@@ -285,3 +285,33 @@ describe('las facetas de la ficha', () => {
     expect(facets.conFicha).toBe(61)
   })
 })
+
+describe('arreglos de la revisión final', () => {
+  it('los órdenes que dejan afuera a quien no tiene el dato lo dicen', async () => {
+    const { MOVILIDAD_PRODUCTOS_SORT_ITEMS } = await import('../../utils/equiparProductos')
+    const titles = Object.fromEntries(
+      MOVILIDAD_PRODUCTOS_SORT_ITEMS.map(item => [item.value, item.title])
+    )
+    expect(titles.peso_asc).toMatch(/sólo con peso declarado/)
+    expect(titles.precio_km).toMatch(/sólo con autonomía declarada/)
+  })
+
+  it('sin ninguna ficha y sin filtro de ficha, el panel no muestra el grupo', async () => {
+    const { monopatinFichaPanelVisible } = await import('../../utils/monopatinFicha')
+    const empty = {
+      autonomia: [],
+      velocidad: [],
+      potencia: [],
+      carga: [],
+      peso: [],
+      rueda: [],
+      rasgos: [],
+      conFicha: 0,
+    }
+    expect(monopatinFichaPanelVisible(empty, movilidad({}).ficha)).toBe(false)
+    expect(monopatinFichaPanelVisible(undefined, movilidad({}).ficha)).toBe(false)
+    // Con un filtro puesto tiene que poder sacarlo, aunque el resultado sea cero.
+    expect(monopatinFichaPanelVisible(empty, movilidad({ autonomia: '30' }).ficha)).toBe(true)
+    expect(monopatinFichaPanelVisible({ ...empty, conFicha: 3 }, movilidad({}).ficha)).toBe(true)
+  })
+})

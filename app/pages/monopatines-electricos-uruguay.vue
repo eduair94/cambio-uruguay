@@ -67,7 +67,7 @@
       <h2 id="asesor-title">¿Cuál te conviene?</h2>
       <p class="section-intro">
         Contanos cómo lo vas a usar y elegimos entre los monopatines con ficha técnica leída: el más
-        barato que cumple, el que da más kilómetros por cada peso y el más liviano o el más potente.
+        barato que cumple, el que da más kilómetros por tu plata y el más liviano o el más potente.
         Las reglas están a la vista, abajo.
       </p>
       <MovilidadMonopatinAsesor @ver="verDesdeAsesor" />

@@ -102,13 +102,16 @@ export interface AsesorResultado {
   descartes: Record<AsesorRequisito, number> & { sinDato: number }
   /** Si nadie cumple: el requisito que, sacado, deja pasar a más. */
   aflojar: AsesorRequisito | null
+  /** Cuántos cumplen cada requisito por separado (con el dato y llegando), para decir dónde está la traba. */
+  porRequisito: Record<AsesorRequisito, number>
   /** Sobre cuántos avisos se buscó (nuevos, o nuevos y usados). */
   universo: number
 }
 
 const PICK_TITULOS: Record<AsesorPickKind, string> = {
   barato: 'La más barata que cumple',
-  autonomia: 'Más autonomía por peso',
+  // "Por peso" se leía como por kilo al lado del control "Tu peso" (revisión final, 3/11/2026).
+  autonomia: 'Más kilómetros por tu plata',
   liviano: 'La más liviana',
   subidas: 'Más potencia para subidas',
 }
@@ -195,6 +198,10 @@ export function recomendarMonopatines(
     .map(({ candidato }) => candidato)
     .sort((a, b) => a.priceUyu - b.priceUyu || a.id.localeCompare(b.id))
 
+  const porRequisito = Object.fromEntries(
+    REQUISITOS.map(req => [req, evaluated.filter(({ v }) => v[req] === 'ok').length])
+  ) as Record<AsesorRequisito, number>
+
   let aflojar: AsesorRequisito | null = null
   if (!cumplen.length && evaluated.length) {
     let best = 0
@@ -204,6 +211,12 @@ export function recomendarMonopatines(
         best = count
         aflojar = req
       }
+    }
+    // Ningún requisito solo destraba: se nombra el que menos cumplen, que es la traba más grande.
+    if (!aflojar) {
+      aflojar = REQUISITOS.reduce((worst, req) =>
+        porRequisito[req] < porRequisito[worst] ? req : worst
+      )
     }
   }
 
@@ -241,7 +254,7 @@ export function recomendarMonopatines(
       minBy(rest(), c => (c.specs.motorW === null ? null : -c.specs.motorW))
     )
 
-  return { requisitos, cumplen, picks, descartes, aflojar, universo: universo.length }
+  return { requisitos, cumplen, picks, descartes, aflojar, porRequisito, universo: universo.length }
 }
 
 /** Los requisitos del asesor como filtros del directorio, para "ver los que cumplen". */
@@ -263,5 +276,28 @@ export function asesorQueryFicha(
     },
     precioMax: input.presupuesto,
     condicion: input.usados ? '' : 'nuevo',
+  }
+}
+
+/** Qué cambiar cuando nadie cumple, con el tramo de abajo del que está elegido. */
+export function asesorConsejo(req: AsesorRequisito, input: AsesorInput): string {
+  switch (req) {
+    case 'autonomia':
+      return 'Lo que más deja afuera es la autonomía: probá con menos kilómetros, o contá sólo la ida si podés cargarlo en el destino.'
+    case 'carga': {
+      const salidas = [
+        ...(input.usados ? [] : ['mirá también los usados']),
+        ...(input.presupuesto ? ['subí el presupuesto'] : []),
+      ]
+      return salidas.length
+        ? `Lo que más deja afuera es el peso que soportan: ${salidas.join(' o ')}.`
+        : 'Lo que más deja afuera es el peso que soportan: pocos monopatines declaran soportar tanto.'
+    }
+    case 'potencia':
+      return input.terreno === 'muchas'
+        ? 'Lo que más deja afuera es la potencia: si las subidas no son tantas, probá con "Algunas".'
+        : 'Lo que más deja afuera es la potencia: si el trayecto es casi llano, probá con "Ninguna".'
+    case 'presupuesto':
+      return 'Lo que más deja afuera es el presupuesto: probá con el tramo siguiente.'
   }
 }

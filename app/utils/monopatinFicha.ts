@@ -220,6 +220,16 @@ export function monopatinFichaParams(
 export const monopatinFichaActive = (ficha: MovilidadFichaQuery | undefined): boolean =>
   Boolean(ficha && Object.keys(monopatinFichaParams(ficha)).length)
 
+/**
+ * El grupo "Ficha técnica" del panel sólo aparece si algún aviso de la consulta tiene ficha, o si el
+ * lector puso un filtro de ficha (ahí tiene que poder sacarlo aunque el resultado sea cero). Antes de
+ * la primera corrida del job mostraba seis listas vacías y un interruptor que vaciaba el directorio.
+ */
+export const monopatinFichaPanelVisible = (
+  facets: { conFicha: number } | null | undefined,
+  ficha: MovilidadFichaQuery | undefined
+): boolean => Boolean(facets && (facets.conFicha > 0 || monopatinFichaActive(ficha)))
+
 /** Campos con dato de ficha que cuentan para "sólo con ficha técnica". */
 const FICHA_FIELDS = ['rangeKm', 'maxSpeedKmh', 'motorW', 'maxLoadKg', 'weightKg', 'chargeHours']
 

@@ -17,6 +17,7 @@
           <VSlider
             :id="`${uid}-km`"
             v-model="input.kmDia"
+            name="Kilómetros por día"
             :min="2"
             :max="40"
             :step="1"
@@ -34,6 +35,7 @@
           <VSlider
             :id="`${uid}-peso`"
             v-model="input.pesoKg"
+            name="Tu peso"
             :min="40"
             :max="140"
             :step="5"
@@ -90,7 +92,7 @@
         </div>
       </form>
 
-      <div class="asesor__results" aria-live="polite">
+      <div class="asesor__results">
         <p class="asesor__needs">
           Buscamos al menos <strong>{{ requisitos.autonomiaDeclaradaMin }} km</strong> de autonomía
           declarada (≈ {{ input.kmDia }} km reales), que soporte
@@ -144,11 +146,20 @@
             <p>
               Ninguno de los {{ resultado.universo.toLocaleString('es-UY') }} monopatines con ficha
               cumple todo a la vez.
-              <template v-if="resultado.aflojar">{{ AFLOJAR[resultado.aflojar] }}</template>
+              <template v-if="resultado.aflojar">{{
+                asesorConsejo(resultado.aflojar, input)
+              }}</template>
             </p>
+            <ul class="asesor__reqs" aria-label="Cuántos cumplen cada requisito">
+              <li v-for="req in requisitoLineas" :key="req.key">
+                {{ req.label }}: <strong>{{ req.count.toLocaleString('es-UY') }}</strong>
+              </li>
+            </ul>
           </div>
 
-          <p class="asesor__count">
+          <!-- Sólo el resumen se anuncia: si la zona viva fuera el bloque entero, el lector de
+               pantalla releería las tres elecciones a cada paso del slider. -->
+          <p class="asesor__count" aria-live="polite">
             {{ cumplenTexto }}
             <template v-if="resultado.descartes.sinDato">
               {{ resultado.descartes.sinDato.toLocaleString('es-UY') }} no declaran alguno de los
@@ -192,7 +203,7 @@
         </li>
         <li>
           <strong>Las tres elecciones:</strong> la más barata que cumple todo; la que da más
-          kilómetros de autonomía por cada peso; y la más liviana (si lo vas a cargar o no hay
+          kilómetros de autonomía por tu plata; y la más liviana (si lo vas a cargar o no hay
           subidas) o la más potente (si hay subidas).
         </li>
         <li>
@@ -212,6 +223,7 @@ import {
   MONOPATIN_MARGEN_CARGA_KG,
   MONOPATIN_PESADO_KG,
   MONOPATIN_POTENCIA_SUBIDAS,
+  asesorConsejo,
   asesorQueryFicha,
   asesorRequisitos,
   recomendarMonopatines,
@@ -237,15 +249,6 @@ const PRESUPUESTOS = [
   })),
 ]
 
-const AFLOJAR: Record<AsesorRequisito, string> = {
-  autonomia:
-    'Lo que más deja afuera es la autonomía: probá con menos kilómetros, o contá sólo la ida si podés cargarlo en el destino.',
-  carga:
-    'Lo que más deja afuera es el peso que soportan: mirá también los usados o subí el presupuesto.',
-  potencia: 'Lo que más deja afuera es la potencia: si las subidas son pocas, probá con "Algunas".',
-  presupuesto: 'Lo que más deja afuera es el presupuesto: probá con el tramo siguiente.',
-}
-
 const input = reactive<AsesorInput>({ ...MONOPATIN_ASESOR_DEFAULT })
 
 // Sólo en el navegador: la lista no hace falta en el HTML (no es contenido para el buscador) y
@@ -261,6 +264,32 @@ const loading = computed(() => status.value === 'idle' || status.value === 'pend
 const candidatos = computed(() => data.value?.candidates ?? [])
 const requisitos = computed(() => asesorRequisitos(input))
 const resultado = computed(() => recomendarMonopatines(candidatos.value, input))
+
+/** Cuántos cumplen cada requisito por separado, cuando ninguno cumple todos. */
+const requisitoLineas = computed(() => {
+  const r = resultado.value
+  const lines: Array<{ key: AsesorRequisito; label: string; count: number }> = [
+    {
+      key: 'autonomia',
+      label: `Llegan a ${r.requisitos.autonomiaDeclaradaMin} km de autonomía`,
+      count: r.porRequisito.autonomia,
+    },
+    { key: 'carga', label: `Soportan ${r.requisitos.cargaMin} kg`, count: r.porRequisito.carga },
+  ]
+  if (r.requisitos.potenciaMin)
+    lines.push({
+      key: 'potencia',
+      label: `Tienen ${r.requisitos.potenciaMin} W o más`,
+      count: r.porRequisito.potencia,
+    })
+  if (input.presupuesto)
+    lines.push({
+      key: 'presupuesto',
+      label: 'Entran en el presupuesto',
+      count: r.porRequisito.presupuesto,
+    })
+  return lines
+})
 
 const cumplenTexto = computed(() => {
   const count = resultado.value.cumplen.length
@@ -421,6 +450,12 @@ function verEnDirectorio() {
 }
 .asesor__why li + li {
   margin-top: 2px;
+}
+.asesor__reqs {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 .asesor__none p {
   margin: 16px 0 0;

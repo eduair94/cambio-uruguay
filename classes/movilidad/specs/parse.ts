@@ -231,7 +231,10 @@ const BARE: ReadonlyArray<{ field: NumericSpecField; pattern: RegExp; pick: Pick
   },
   {
     field: "motorW",
-    pattern: /(?:^|[^a-z0-9.])(\d{3,5}) ?(?:w|watts?)(?![a-z0-9])(?!\s*\(?\s*(?:de )?potencia (?:maxima|max|pico))/g,
+    // Ni el número que sigue a un rótulo de potencia máxima ("Potencia máxima: 600 W") ni el que lo
+    // precede ("800 W de potencia máxima"): el pico nunca pasa por nominal (revisión final, 3/11).
+    pattern:
+      /(?<!potencia (?:maxima|max\.?|pico)\s*[:=]?\s*(?:(?:de|hasta)\s+)*)(?:^|[^a-z0-9.])(\d{3,5}) ?(?:w|watts?)(?![a-z0-9])(?!\s*\(?\s*(?:de )?potencia (?:maxima|max|pico))/g,
     pick: "low",
   },
   { field: "maxSpeedKmh", pattern: /(\d+(?:\.\d+)?) ?(km ?\/ ?h|kmh|mph)(?![a-z])/g, pick: "high", unitGroup: 2 },

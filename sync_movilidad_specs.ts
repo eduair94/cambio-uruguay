@@ -1,5 +1,5 @@
 // La ficha técnica de los monopatines de /monopatines-electricos-uruguay (pm2
-// `currency-movilidad-specs`, cada hora a los :41).
+// `currency-movilidad-specs`, cada hora a los :49).
 //
 // La tarjeta de búsqueda de Mercado Libre llega sin atributos y la de las tiendas sólo con título y
 // precio, así que el directorio no podía filtrar por autonomía, velocidad, potencia, peso ni carga
@@ -13,7 +13,7 @@
 // del asesor y de las medianas por tipo, que es lo único que la página lee.
 //
 // Mercado Libre se lee por la misma IP que currency-autos-detail (:11) y currency-rentals-ml-detail
-// (:35); a los :41, 90 fichas a 2,5 s son ~4 min.
+// (:35, hasta 10 min); a los :49, 90 fichas a 2,5 s son ~4 min.
 import dotenv from "dotenv";
 import "dotenv/config";
 dotenv.config({ path: "app/.env", quiet: true });
@@ -24,6 +24,7 @@ import { MovilidadSpecSnapshotModel } from "./classes/models/MovilidadSpecSnapsh
 import { enrichMovilidadRow, MONOPATIN_CATEGORY } from "./classes/movilidad/specs/enrich";
 import { orderTargets, type FichaQueueRow, type StoredFichaDoc } from "./classes/movilidad/specs/queue";
 import { readFicha } from "./classes/movilidad/specs/read";
+import { fichaUpdate } from "./classes/movilidad/specs/write";
 import { buildSpecSnapshot, MONOPATIN_SNAPSHOT_KEY, type SnapshotRow } from "./classes/movilidad/specs/snapshot";
 import { loadFichaByListingId, MOVILIDAD_SPECS_COLLECTION } from "./classes/movilidad/store";
 import type { EquiparListingRow } from "./classes/equipar/listings";
@@ -80,57 +81,29 @@ export async function main(): Promise<void> {
     // Sólo cuentan las fallas sin respuesta: un aviso borrado es una respuesta, y cortar por eso es
     // exactamente la traba de Casasweb.
     if (networkFailures >= 5) {
-      summary.note = "cinco pedidos seguidos sin respuesta";
+      summary.note = "cinco pedidos seguidos sin respuesta o sin ficha";
       break;
     }
-    const read = await readFicha({ listingId: target.listingId, url: target.url, source: target.source as "mercadolibre" | "store" });
+    const target2 = { listingId: target.listingId, url: target.url, source: target.source as "mercadolibre" | "store" };
+    const read = await readFicha(target2);
     const triedAt = new Date().toISOString();
     if (read.ok) {
       networkFailures = 0;
       summary.read++;
       if (read.specs) summary.withSpecs++;
-      if (!dryRun) {
-        await specsCollection.updateOne(
-          { listingId: target.listingId },
-          {
-            $set: {
-              listingId: target.listingId,
-              url: target.url,
-              source: target.source,
-              ok: true,
-              gone: false,
-              failures: 0,
-              readAt: triedAt,
-              lastTriedAt: triedAt,
-              specs: read.specs,
-              brand: read.brand,
-              model: read.model,
-            },
-          },
-          { upsert: true }
-        );
-      }
+    } else if (read.gone) {
+      networkFailures = 0;
+      summary.gone++;
     } else {
-      if (read.gone) {
-        networkFailures = 0;
-        summary.gone++;
-      } else {
-        networkFailures++;
-        summary.failed++;
-        if (read.failure) summary.note = read.failure;
-      }
-      // La falla se GUARDA (con su espera) y no borra una ficha buena anterior: `specs` no se toca.
-      if (!dryRun) {
-        await specsCollection.updateOne(
-          { listingId: target.listingId },
-          {
-            $set: { listingId: target.listingId, url: target.url, source: target.source, ok: false, gone: read.gone, lastTriedAt: triedAt },
-            $setOnInsert: { specs: null, readAt: null },
-            ...(read.gone ? {} : { $inc: { failures: 1 } }),
-          },
-          { upsert: true }
-        );
-      }
+      // Sin respuesta, o una página sin ficha (un desafío anti-bot): las dos cuentan para el corte.
+      networkFailures++;
+      summary.failed++;
+      if (read.failure) summary.note = read.failure;
+    }
+    // Toda lectura se GUARDA (classes/movilidad/specs/write.ts), y ninguna que no traiga ficha borra
+    // la ficha buena que ya estaba.
+    if (!dryRun) {
+      await specsCollection.updateOne({ listingId: target.listingId }, fichaUpdate(target2, read, triedAt), { upsert: true });
     }
     await sleep(gapMs);
   }
@@ -177,6 +150,11 @@ export async function main(): Promise<void> {
     await MovilidadSpecSnapshotModel.updateOne({ key: MONOPATIN_SNAPSHOT_KEY }, { $set: snapshot }, { upsert: true });
   }
 
+  // Si la mayoría de las páginas que contestan no traen ficha, ML cambió el marcado o sirve otra
+  // página: avisarlo en el log antes de que el directorio se quede sin ficha nueva.
+  if (summary.read >= 10 && summary.withSpecs < summary.read / 2) {
+    console.warn(`[movilidad-specs] ALERTA: sólo ${summary.withSpecs} de ${summary.read} fichas leídas traen datos`);
+  }
   console.log(
     `[movilidad-specs] ${JSON.stringify({
       ...summary,

@@ -4,13 +4,15 @@
 // guarda la lectura fallida, con orden determinista y corte por fallas seguidas, se traba para
 // siempre apenas se juntan cinco avisos borrados al frente — y el log dice "el portal no contesta".
 // Acá toda lectura se guarda, buena o mala, y la mala vuelve con espera: 1, 3 y 7 días, y a la cuarta
-// falla seguida se abandona. Un aviso que ya no existe (404, ficha cerrada) espera 7 días: el
+// falla seguida se abandona por un mes. Un aviso que ya no existe (404, ficha cerrada) espera 7 días: el
 // directorio deja de mostrarlo solo a los 4 días sin verlo, así que casi nunca vuelve.
 
 export const FICHA_REFRESH_DAYS = 45;
 export const GONE_RETRY_DAYS = 7;
 export const FAILURE_BACKOFF_DAYS = [1, 3, 7] as const;
 export const MAX_FAILURES = 4;
+/** Un aviso abandonado se vuelve a probar al mes: un bloqueo largo no lo deja sin ficha para siempre. */
+export const ABANDON_RETRY_DAYS = 30;
 
 /** Lo que `movilidadspecs` guarda por aviso, sea la lectura buena o mala. */
 export interface StoredFichaDoc {
@@ -42,7 +44,7 @@ export function fichaDue(stored: StoredFichaDoc | undefined, now: Date): boolean
   if (!stored) return true;
   if (stored.gone) return elapsedDays(stored.lastTriedAt, now) >= GONE_RETRY_DAYS;
   const failures = stored.failures ?? 0;
-  if (failures >= MAX_FAILURES) return false;
+  if (failures >= MAX_FAILURES) return elapsedDays(stored.lastTriedAt, now) >= ABANDON_RETRY_DAYS;
   if (failures > 0) return elapsedDays(stored.lastTriedAt, now) >= FAILURE_BACKOFF_DAYS[failures - 1]!;
   return elapsedDays(stored.readAt, now) >= FICHA_REFRESH_DAYS;
 }

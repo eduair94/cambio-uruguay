@@ -58,8 +58,12 @@ export const MOVILIDAD_PRODUCTOS_SORT_ITEMS: ReadonlyArray<{
 }> = [
   ...EQUIPAR_PRODUCTOS_SORT_ITEMS,
   { title: 'Mayor autonomía declarada', value: 'autonomia_desc', short: 'Más autonomía' },
-  { title: 'Menor precio por km de autonomía', value: 'precio_km', short: '$ por km' },
-  { title: 'Más liviano', value: 'peso_asc', short: 'Más liviano' },
+  {
+    title: 'Menor precio por km (sólo con autonomía declarada)',
+    value: 'precio_km',
+    short: '$ por km',
+  },
+  { title: 'Más liviano (sólo con peso declarado)', value: 'peso_asc', short: 'Más liviano' },
 ]
 
 export type EquiparProductoCondicion = 'nuevo' | 'usado'
