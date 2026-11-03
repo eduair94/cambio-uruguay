@@ -441,7 +441,6 @@ describe('ninguna página de lectura queda fuera de todos los temas', () => {
 const GUIAS_SIN_TEMA = [
   'ahorrar-en-dolares-o-pesos',
   'cajeros-automaticos-uruguay-turistas',
-  'cambiar-dolares-aeropuerto-carrasco',
   'cambiar-monedas-poco-comunes-uruguay',
   'cambiar-pesos-argentinos-uruguay',
   'criptomonedas-regulacion-impuestos-uruguay',
@@ -527,7 +526,21 @@ const GUIAS_SIN_TEMA = [
  *
  * Sólo puede bajar: subirlo es publicar una guía huérfana.
  */
-const DEUDA_MAXIMA_GUIAS = 18
+/**
+ * 18 → 17 el 2026-11-03: `cambiar-dolares-aeropuerto-carrasco`, que era la ÚNICA de las dieciocho
+ * con la ruta libre de toda ventana de medición abierta (`npm run seo_debt`: 1 de 24 libres, y es
+ * ésta). Las otras diecisiete siguen reservadas, la primera hasta el 2026-11-04.
+ *
+ * El tema no es inventado, que es la regla que dejó a `propinas-en-uruguay` afuera dos veces:
+ * `dolar-y-casas-de-cambio-uruguay` ya reúne dónde conseguir el mejor precio
+ * (`comprar-dolares-mejor-precio`, `casas-de-cambio-vs-bancos`, `evitar-comisiones-cambio`) y esta
+ * guía contesta esa misma pregunta en el punto de llegada: en Carrasco la cotización suele ser peor
+ * que en el centro, así que conviene cambiar sólo lo justo para el traslado. Su propio cuerpo manda
+ * a una casa de cambio del centro, que es lo que los vecinos del bloque le contestan.
+ *
+ * Sólo puede bajar: subirlo es publicar una guía huérfana.
+ */
+const DEUDA_MAXIMA_GUIAS = 17
 
 describe('ninguna guía queda fuera de todos los temas', () => {
   const sinTema = guides

@@ -71,6 +71,7 @@ export const guideHubs: readonly GuideHub[] = [
       'evitar-comisiones-cambio',
       'billetes-y-monedas-de-uruguay',
       'documentos-para-cambiar-dolares-uruguay',
+      'cambiar-dolares-aeropuerto-carrasco',
     ],
     resources: [
       {
@@ -1306,6 +1307,11 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Derechos en compras online',
         description: 'Retracto, vicios y remedios de la Ley 17.250.',
         to: '/derechos-consumidor-compras-online',
+      },
+      {
+        label: 'Reclamar sin abogado',
+        description: 'Hasta 100 UR el reclamo de consumo va al Juzgado de Paz.',
+        to: '/reclamar-sin-abogado-uruguay',
       },
       {
         label: 'Estafas en Uruguay',

@@ -154,7 +154,12 @@
               </td>
               <td data-label="Qué pide">{{ l.pide }}</td>
               <td data-label="Clearing">{{ l.clearing }}</td>
-              <td data-label="Tasa y gastos">{{ l.tasa }}</td>
+              <td data-label="Tasa y gastos">
+                {{ l.tasa }}
+                <div v-if="l.readOn" class="text-caption text-medium-emphasis">
+                  Releído el {{ fmtDate(l.readOn) }}.
+                </div>
+              </td>
               <td data-label="Montos y plazos">{{ l.montos }}</td>
             </tr>
           </tbody>

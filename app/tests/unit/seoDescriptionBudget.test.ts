@@ -481,7 +481,12 @@ const templated = pageFiles()
 // 13 el 2026-11-02, el conteo real y por el mismo motivo que `RESOLVED`: si el piso fuera más bajo,
 // una descripción nueva podría dejar de leerse acá sin poner nada en rojo. Sube con cada plantilla
 // nueva y baja sólo si alguien vuelve ilegible una que hoy se mide, que es lo que tiene que delatar.
-const RESOLVED_TEMPLATE = 13
+//
+// 13 → 14 el 2026-11-03: `/reclamar-sin-abogado-uruguay` nace con su descripción escrita como
+// plantilla (lleva el tope de 100 UR en pesos del día) y la declara en la forma que este archivo
+// sabe leer —una constante de una sola línea, no un `computed(() => { return ... })` como
+// `/elecciones-bps-2026`, que por eso no se mide—. Piso 132 caracteres, 148 con la cifra puesta.
+const RESOLVED_TEMPLATE = 14
 
 /**
  * Las plantillas cuyo texto fijo ya pasa los 155. **SÓLO PUEDE BAJAR.**

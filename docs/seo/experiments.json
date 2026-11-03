@@ -2823,6 +2823,31 @@
         "que banco conviene uruguay"
       ],
       "hypothesis": "Las nueve corridas de descripciones de septiembre dejaron el trinquete en 0 y escribieron que de ahi en adelante el cero era un contrato, pero median solo las descripciones escritas con comillas: las 13 que se escriben con plantilla no las veia nadie, y cuatro ya pasaban los 155 contando solo su texto fijo. Estas tres se curan con el criterio de esas nueve corridas y fallaban igual, abriendo por lo que la pagina ES (Guia para vivir con un sueldo de, N comparaciones uno contra uno entre bancos fintechs tarjetas de credito tarjetas de debito y couriers, N respuestas verificadas sobre mas doce rubros) y dejando del lado cortado lo unico que decide el clic: que a ese sueldo se le suman asignacion familiar del BPS, Tarjeta Uruguay Social y Bono Social de UTE; que las dos puntas se comparan con los mismos criterios; y que cada respuesta trae la norma o el dato oficial al lado. Ninguna cifra es nueva. La cuarta, /pension-alimenticia-uruguay, queda reservada hasta el 2026-11-11 por su propia fila. Se espera mas CTR desde la misma posicion, que es el efecto medido de las tandas anteriores."
+    },
+    {
+      "id": "reclamar-sin-abogado-pagina-nueva",
+      "shippedOn": "2026-11-03",
+      "routes": ["/reclamar-sin-abogado-uruguay"],
+      "queries": [
+        "reclamar sin abogado uruguay",
+        "demandar sin abogado uruguay",
+        "juzgado de paz uruguay reclamo",
+        "ley 18507",
+        "proceso de menor cuantia consumo uruguay",
+        "cuanto puedo reclamar sin abogado"
+      ],
+      "hypothesis": "/defensa-al-consumidor-uruguay termina diciendo que el organismo concilia y sanciona pero la restitucion la ordena un juez, y ahi dejaba al lector: medido el 2026-11-03 con grep sobre pages/ y utils/, el sitio tenia cero menciones de menor cuantia y de la Ley 18.507 y las cuatro de juzgado de paz eran de paso. La pagina nueva contesta la pregunta que sigue con los dos topes que la ley pone para comparecer sin abogado, los dos en unidades reajustables y por eso publicables en pesos del dia como la multa de /elecciones-bps-2026: 100 UR en el proceso de consumo de la Ley 18.507 (art. 1, con asistencia letrada no obligatoria por el art. 3) y 20 UR ante Juzgados de Paz y de Conciliacion en todo lo demas (CGP art. 37.2 literal A). Ninguna cifra es nueva ni inventada: salen del texto actualizado en impo.com.uy de la Ley 18.507 y de los articulos 37, 117, 293, 294 y 340 del CGP, leidos ese dia y citados en la propia pagina. El SERP de estas consultas es institucional e ilegible (el Poder Judicial, IMPO y estudios juridicos) y Google no lo contesta en su caja, que es el criterio con el que esta cola elige tema. Se espera adquisicion nueva en una familia que hoy no tiene ninguna pagina, no mas CTR de una que ya existe."
+    },
+    {
+      "id": "aeropuerto-carrasco-entra-a-su-tema",
+      "shippedOn": "2026-11-03",
+      "routes": ["/guias/cambiar-dolares-aeropuerto-carrasco"],
+      "queries": [
+        "cambiar dolares aeropuerto carrasco",
+        "casa de cambio aeropuerto carrasco",
+        "conviene cambiar en el aeropuerto uruguay"
+      ],
+      "hypothesis": "La guia estaba fuera de TODO tema, asi que \"Mas sobre este tema\" le devolvia cero enlaces y el hub de su tema no la listaba: entra a dolar-y-casas-de-cambio-uruguay, que ya reune donde conseguir el mejor precio (comprar-dolares-mejor-precio, casas-de-cambio-vs-bancos, evitar-comisiones-cambio), y esta guia contesta esa misma pregunta en el punto de llegada. Era la UNICA de las dieciocho guias huerfanas con la ruta libre de toda ventana abierta (npm run seo_debt del 2026-11-03: 1 de 24 libres, y es esta); las otras diecisiete esperan a que cierre su ventana. Se mide sola porque entrar al tema no le cambia el bloque a ninguna otra pagina: temaVecinosParaRuta arma los enlaces con hub.resources y hub.terms, nunca con hub.guides. Ni el titulo ni la descripcion se tocaron (los dos entran en el SERP), asi que lo unico que cambia es el enlazado interno."
     }
   ]
 }

@@ -4463,6 +4463,30 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El paso que seguía después de `/defensa-al-consumidor-uruguay`, que termina diciendo que
+        // la restitución la ordena un juez y ahí dejaba al lector. Medido el 2026-11-03: cero
+        // menciones de «menor cuantía» y de la Ley 18.507 en todo el sitio. Mismo ángulo propio que
+        // `/elecciones-bps-2026`: los dos topes están en UR y la UR viva los pasa a pesos de hoy.
+        to: '/reclamar-sin-abogado-uruguay',
+        labelKey: 'nav.reclamarSinAbogado',
+        icon: 'mdi-gavel',
+        priority: 0.7,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'reclamar sin abogado uruguay',
+          'demandar sin abogado uruguay',
+          'juzgado de paz uruguay reclamo',
+          'ley 18507',
+          'proceso de menor cuantia consumo uruguay',
+          'cuanto puedo reclamar sin abogado',
+          'juicio de menor cuantia uruguay',
+          'conciliacion previa uruguay',
+          'timbre poder judicial uruguay',
+          'demanda sin abogado juzgado de paz',
+        ],
+      },
+      {
         to: '/tiendas-online-uruguay',
         labelKey: 'nav.tiendasOnline',
         icon: 'mdi-store-search-outline',

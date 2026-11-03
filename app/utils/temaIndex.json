@@ -97,7 +97,8 @@
         "casas-de-cambio-vs-bancos",
         "evitar-comisiones-cambio",
         "billetes-y-monedas-de-uruguay",
-        "documentos-para-cambiar-dolares-uruguay"
+        "documentos-para-cambiar-dolares-uruguay",
+        "cambiar-dolares-aeropuerto-carrasco"
       ],
       "terms": [
         {
@@ -1174,6 +1175,10 @@
         {
           "to": "/derechos-consumidor-compras-online",
           "label": "Derechos en compras online"
+        },
+        {
+          "to": "/reclamar-sin-abogado-uruguay",
+          "label": "Reclamar sin abogado"
         },
         {
           "to": "/estafas-uruguay",

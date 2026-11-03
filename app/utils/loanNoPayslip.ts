@@ -146,6 +146,13 @@ export interface SoloCedulaLender {
   pide: string
   /** Qué dice de los antecedentes, con las palabras de su página. */
   clearing: string
+  /**
+   * ISO de la relectura de ESA página, cuando es más nueva que `SOLO_CEDULA_REVIEWED`. Existe por
+   * el mismo motivo que `BCU_CAPS_READ_ON` está aparte: una fila se vuelve a leer sola —porque su
+   * ejemplo venció y la página cambió— y declarar esa lectura con la fecha global diría que las
+   * nueve se releyeron. Ausente = la fila es de `SOLO_CEDULA_REVIEWED`.
+   */
+  readOn?: string
   /** TEA publicada, con los gastos que la acompañan. */
   tasa: string
   /** Montos y plazos publicados. */
@@ -210,7 +217,12 @@ export const SOLO_CEDULA_LENDERS: readonly SoloCedulaLender[] = Object.freeze([
     pide: 'Último recibo de sueldo, jubilación o pensión, cédula y constancia de domicilio; mayor de 18 años.',
     clearing:
       'Si te atrasás, avisa que registra en Clearing de Informes y retiene el 20 % de sueldo, jubilación o pensión.',
-    tasa: 'TEA compensatoria 25 % a 32 % (mora 37,5 % a 44 %) más cuota social de $ 330 por mes IVA incluido ($ 165 sin crédito activo). Ejemplo "Limpiadeudas": $ 70.000 en 24 cuotas de $ 5.353, TEA 25 %, válido hasta el 31 de octubre de 2026.',
+    // Relectura del 2026-11-03: el ejemplo "Limpiadeudas" que esta fila publicaba vencía el
+    // 31/10/2026 y ya no está en la página, y la TEA mínima subió de 25 % a 27 %. El ejemplo nuevo
+    // va con la validez tal como la imprime el origen: dice "30/11/20026", con un dígito de más en
+    // el año, así que acá no se corrige a 2026 ni se da por vigente una fecha que nadie escribió.
+    readOn: '2026-11-03',
+    tasa: 'TEA compensatoria 27 % a 32 % (mora 37,5 % a 43,5 %) más cuota social de $ 330 por mes IVA incluido. Ejemplo "Desinteresado" de octubre de 2026: $ 80.000 en 18 cuotas de $ 6.150, TEA 27 %, costo total $ 110.707; su validez la publican como "30/11/20026", con el año mal tipeado en el origen.',
     montos: '$ 2.000 a $ 600.000 en 6 a 48 cuotas.',
     sourceLabel: 'Verde — términos y condiciones',
     sourceUrl: 'https://verde.com.uy/conocenos_mas_transparentes.php',

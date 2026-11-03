@@ -438,6 +438,18 @@ export const CONTENIDO_PATHS = new Set([
   // a `otro` y la cola de trabajo la ordenaria ocho veces por debajo de la guia equivalente de
   // `/guias/*`; su vecina `/elecciones-bps-2026` tampoco esta aca, pero esa SI lee la UR viva.
   "/multa-por-no-votar-uruguay",
+  // Pagina nueva del 2026-11-03, clasificada en el mismo commit que la publica:
+  // `/reclamar-sin-abogado-uruguay`, los dos topes para comparecer sin abogado (100 UR del proceso
+  // de consumo de la Ley 18.507 y 20 UR del art. 37.2 del CGP). Lectura larga de norma sobre un
+  // catalogo FIJO del repo (`app/utils/smallClaims.ts`) y `ads.ts` le da dos unidades en flujo.
+  //
+  // Lee UN dato en vivo —la UR, para imprimir esos dos topes en pesos de hoy— y eso no la hace
+  // `dato-vivo`: es el mismo criterio con el que las seis del racimo `deudas-y-credito-uruguay`
+  // salieron de la deuda unas lineas mas abajo, que piden la grilla de topes de usura del BCU para
+  // lo mismo. Lo que la pagina AFIRMA son los articulos; la UR solo convierte un tope fijo. La
+  // vecina `/elecciones-bps-2026` sigue en la deuda de `contenidoTramoParity.test.ts` por su propio
+  // motivo: ahi la cifra en pesos es la multa que el BPS liquida, no una conversion de un tope.
+  "/reclamar-sin-abogado-uruguay",
   // Tanda decidida el 2026-10-29 y mergeada el 11-01 (el PR esperó un re-run de CI). Es la primera
   // que toma el HUB como racimo en vez de ir ruta por ruta, y la primera que lo deja atornillado: el
   // tema `deudas-y-credito-uruguay` declara quince entradas en `resources` (`app/utils/guideHubs.ts`)
