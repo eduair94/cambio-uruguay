@@ -108,6 +108,30 @@ export function createReadingProgress() {
   }
 }
 
+/** The slice of `Element` the page lookup needs, so it can be tested without a DOM. */
+interface ReadingNode {
+  readonly classList: { contains(token: string): boolean }
+  readonly children: ArrayLike<ReadingNode>
+}
+
+const isReadingContainer = (node: ReadingNode) => node.classList.contains('v-container')
+
+/**
+ * The routed page among the layout container's direct children: a `.v-container`
+ * itself or a wrapper whose direct child is one (FamiliaNav and layout-tail are
+ * siblings and never match). Checked in script rather than with
+ * `matches('.v-container, :has(> .v-container)')`: browsers without `:has()`
+ * (Firefox < 121, Safari < 15.4) reject the whole selector list and throw a
+ * SyntaxError from the scroll handler's animation frame.
+ */
+export function findReadingPage<T extends ReadingNode>(
+  container: { readonly children: ArrayLike<T> } | null | undefined
+): T | undefined {
+  return Array.from(container?.children ?? []).find(
+    child => isReadingContainer(child) || Array.from(child.children).some(isReadingContainer)
+  )
+}
+
 /** Use the page's own box, excluding the layout's recommendations, footer and ad rail. */
 export function contentScrollPercent(top: number, height: number, viewport: number): number | null {
   if (![top, height, viewport].every(Number.isFinite) || viewport <= 0 || height <= viewport)
