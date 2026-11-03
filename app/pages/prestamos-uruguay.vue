@@ -589,7 +589,26 @@ const gremialLenders = [
 ]
 
 const canonicalUrl = 'https://cambio-uruguay.com/prestamos-uruguay'
-const title = 'Dónde pedir un préstamo en Uruguay: bancos, financieras y cooperativas (2026)'
+
+/**
+ * El título dice CUÁNTOS prestadores hay, y la cifra sale de la lista viva.
+ *
+ * El viejo —«Dónde pedir un préstamo en Uruguay: bancos, financieras y cooperativas (2026)»— medía
+ * 94 caracteres con la marca, o sea 34 de más: el SERP lo cortaba en «…bancos, financieras y c»,
+ * así que lo único que publicaba era una enumeración de categorías, y lo que esta página tiene y
+ * las otras cinco de préstamos no —la lista entera con su tasa al lado— quedaba del lado cortado.
+ * Gastaba además sus 60 caracteres sin contestar nada: quien busca «préstamos uruguay» quiere saber
+ * dónde, y «bancos, financieras y cooperativas» es la respuesta que ya sabía antes de buscar.
+ *
+ * La cifra NO va de literal: se cuenta sobre `lenders`, que es lo que la página publica en la tabla
+ * (el catálogo de `utils/loans.ts` fusionado con lo que `currency-loans` refrescó). Congelar un 23
+ * acá sería el error recurrente del repo, y además el que más rápido envejece: el catálogo crece.
+ *
+ * «prestadores» y no «tasas» a propósito: de los 23 hay 10 que no publican TEA y cotizan a pedido,
+ * así que «23 tasas comparadas» afirmaría de más — un título que promete lo que la página no tiene
+ * gana el clic y lo devuelve.
+ */
+const title = computed(() => `Préstamos en Uruguay: ${lenders.value.length} prestadores`)
 const description =
   'En operaciones por menos de 10.000 UI una financiera puede pasar el 100 % de TEA sin salirse del tope de usura. 23 prestadores con su tasa, monto y plazo.'
 
@@ -600,15 +619,14 @@ defineOgImageComponent('Cambio', {
 })
 
 useSeoMeta({
-  title: () =>
-    'Dónde pedir un préstamo en Uruguay: bancos, financieras y cooperativas (2026) | Cambio Uruguay',
+  title: () => `${title.value} | Cambio Uruguay`,
   description,
-  ogTitle: title,
+  ogTitle: () => title.value,
   ogDescription: description,
   ogType: 'website',
   ogUrl: canonicalUrl,
   twitterCard: 'summary_large_image',
-  twitterTitle: title,
+  twitterTitle: () => title.value,
   twitterDescription: description,
 })
 

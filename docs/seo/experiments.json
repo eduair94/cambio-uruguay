@@ -2854,6 +2854,17 @@
       "shippedOn": "2026-11-03",
       "routes": ["/guias/deposito-de-alquiler-uruguay"],
       "hypothesis": "La guia prometia explicar el monto pero solo decia varios meses, no citaba fuentes y presentaba la devolucion como automatica y la mediacion como obligatoria. Se completa la misma URL con los topes del DL 14.219 art. 38, la moneda y alcance de la Ley 18.795 art. 25, y el tramite y costos del BHU contrastados con ES.AHR.04 version 21 y su contrato vigente. El titulo, cuerpo y pasos HowTo distinguen al depositante del inquilino y el retiro acordado del judicial. Se espera que una respuesta verificable a cuanto depositar y como retirarlo mejore la utilidad y adquisicion de esta guia. Se mide el paquete completo por cuota de clics con 28 dias finales antes y despues, excluyendo el dia de publicacion; no se atribuye una variacion a una palabra del titulo ni se presupone volumen de consultas. La unica intervencion anterior de esta ruta fue el 2/10 y su ventana ya cerro."
+    },
+    {
+      "id": "prestamos-cuantos-prestadores-en-el-titulo",
+      "shippedOn": "2026-11-03",
+      "routes": ["/prestamos-uruguay"],
+      "queries": [
+        "prestamos uruguay",
+        "donde pedir un prestamo en uruguay",
+        "prestamos personales uruguay"
+      ],
+      "hypothesis": "El titulo media 94 caracteres con la marca, 34 de mas: el SERP publicaba \"Donde pedir un prestamo en Uruguay: bancos, financieras y c\" y cortaba el resto, asi que gastaba sus 60 caracteres en una enumeracion de categorias que el lector ya sabia antes de buscar y dejaba del lado cortado lo unico que esta pagina tiene y las otras cinco de prestamos no: la lista entera con su tasa al lado. Pasa a \"Prestamos en Uruguay: N prestadores\" (53 con la marca), con N contado sobre la lista viva que la pagina publica y no congelado en un literal. Se espera mas clics desde la misma posicion por dos vias que no se pueden separar y por eso se declaran juntas: el titulo entra entero, y lleva adelante una cifra concreta en vez de una etiqueta de genero, que es el patron medido en las nueve tandas de descripciones de septiembre. Se dice \"prestadores\" y no \"tasas\" porque 10 de los 23 cotizan a pedido y no publican TEA. Era la peor de las cinco rutas que el trinquete nuevo de pisos de titulo destapo y la unica del tramo contenido entre ellas; la unica fila anterior de esta ruta es del 26/9 y su ventana cerro hace mas de un mes."
     }
   ]
 }
