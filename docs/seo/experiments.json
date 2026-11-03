@@ -2865,6 +2865,18 @@
         "prestamos personales uruguay"
       ],
       "hypothesis": "El titulo media 94 caracteres con la marca, 34 de mas: el SERP publicaba \"Donde pedir un prestamo en Uruguay: bancos, financieras y c\" y cortaba el resto, asi que gastaba sus 60 caracteres en una enumeracion de categorias que el lector ya sabia antes de buscar y dejaba del lado cortado lo unico que esta pagina tiene y las otras cinco de prestamos no: la lista entera con su tasa al lado. Pasa a \"Prestamos en Uruguay: N prestadores\" (53 con la marca), con N contado sobre la lista viva que la pagina publica y no congelado en un literal. Se espera mas clics desde la misma posicion por dos vias que no se pueden separar y por eso se declaran juntas: el titulo entra entero, y lleva adelante una cifra concreta en vez de una etiqueta de genero, que es el patron medido en las nueve tandas de descripciones de septiembre. Se dice \"prestadores\" y no \"tasas\" porque 10 de los 23 cotizan a pedido y no publican TEA. Era la peor de las cinco rutas que el trinquete nuevo de pisos de titulo destapo y la unica del tramo contenido entre ellas; la unica fila anterior de esta ruta es del 26/9 y su ventana cerro hace mas de un mes."
+    },
+    {
+      "id": "monopatines-ficha-tecnica-y-asesor",
+      "shippedOn": "2026-11-03",
+      "routes": ["/monopatines-electricos-uruguay"],
+      "queries": [
+        "monopatin electrico uruguay",
+        "monopatin electrico autonomia",
+        "que monopatin electrico comprar",
+        "monopatin electrico para adultos"
+      ],
+      "hypothesis": "La pagina publicaba precio por tipo, modelos, directorio y normativa, pero no la ficha tecnica que decide la compra y que toda tienda de monopatines pone arriba: autonomia, velocidad, potencia, peso soportado, peso, tiempo de carga y ruedas. Se lee la ficha propia de cada aviso de Mercado Libre y de las tiendas, se suman filtros y ordenes por esas especificaciones, la franja de ficha en cada tarjeta y en la tabla de modelos, una tabla de que esperar de cada tipo con el costo de una carga, y un asesor que elige tres monopatines segun trayecto, peso, presupuesto y subidas con sus reglas a la vista. Se espera mas clics desde busquedas de especificacion y de eleccion (autonomia, que monopatin comprar, para adultos o para 100 kg), que hoy esta pagina no contesta. Tambien cambia la descripcion para nombrar la ficha. Se mide el paquete completo por cuota de clics con 28 dias antes y despues, excluyendo el dia de publicacion; la ventana anterior de esta ruta (movilidad-directorio-visual, 22/9) ya cerro."
     }
   ]
 }
