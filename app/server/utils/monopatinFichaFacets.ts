@@ -60,7 +60,7 @@ export function monopatinFichaFacetPlan(
   query: EquiparProductosQuery,
   cutoff: string
 ): FichaFacetStep[] {
-  const without = (key: EquiparQueryKey) => equiparProductosMatch(query, cutoff, [key])
+  const without = (...keys: EquiparQueryKey[]) => equiparProductosMatch(query, cutoff, keys)
   const entries = <K extends string>(record: Readonly<Record<K, { range: Range }>>, path: string) =>
     Object.fromEntries(
       (Object.entries(record) as Array<[K, { range: Range }]>).map(([slug, { range }]) => [
@@ -88,7 +88,7 @@ export function monopatinFichaFacetPlan(
     },
     {
       dimension: 'potencia',
-      match: without('ficha.potencia'),
+      match: without('ficha.potencia', 'ficha.potenciaMin'),
       group: groupOf(entries(MONOPATIN_POTENCIA_RANGOS, '$specs.motorW')),
     },
     {

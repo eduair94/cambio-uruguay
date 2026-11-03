@@ -93,6 +93,8 @@ export interface MovilidadFichaQuery {
   autonomia: number | null
   velocidad: '' | MonopatinVelocidad
   potencia: '' | MonopatinPotencia
+  /** Potencia mínima, W: la que pide el asesor para las subidas (un tramo no la puede expresar). */
+  potenciaMin: number | null
   /** Peso que soporta, mínimo, kg. */
   carga: number | null
   /** Peso del monopatín, máximo, kg. */
@@ -106,6 +108,7 @@ export const MONOPATIN_FICHA_EMPTY: Readonly<MovilidadFichaQuery> = Object.freez
   autonomia: null,
   velocidad: '',
   potencia: '',
+  potenciaMin: null,
   carga: null,
   peso: null,
   rueda: '',
@@ -152,6 +155,7 @@ export const MONOPATIN_RASGO_CAMPOS: Readonly<
 export const monopatinAutonomiaLabel = (km: number) => `${km} km o más`
 export const monopatinCargaLabel = (kg: number) => `Soporta ${kg} kg o más`
 export const monopatinPesoLabel = (kg: number) => `Hasta ${kg} kg`
+export const monopatinPotenciaMinLabel = (w: number) => `Potencia desde ${w} W`
 
 const intIn = (raw: unknown, min: number, max: number): number | null => {
   const value = Array.isArray(raw) ? raw[0] : raw
@@ -180,6 +184,7 @@ export function monopatinFichaNormalize(raw: Record<string, unknown>): Movilidad
     autonomia: intIn(raw.autonomia, 1, 150),
     velocidad: oneOf(raw.velocidad, MONOPATIN_VELOCIDADES),
     potencia: oneOf(raw.potencia, MONOPATIN_POTENCIAS),
+    potenciaMin: intIn(raw.potenciaMin, 100, 8000),
     carga: intIn(raw.carga, 30, 200),
     peso: intIn(raw.peso, 3, 80),
     rueda: oneOf(raw.rueda, MONOPATIN_RUEDAS),
@@ -194,6 +199,7 @@ export function monopatinFichaParams(ficha: MovilidadFichaQuery | undefined): Re
   if (ficha.autonomia !== null) params.autonomia = String(ficha.autonomia)
   if (ficha.velocidad) params.velocidad = ficha.velocidad
   if (ficha.potencia) params.potencia = ficha.potencia
+  if (ficha.potenciaMin !== null) params.potenciaMin = String(ficha.potenciaMin)
   if (ficha.carga !== null) params.carga = String(ficha.carga)
   if (ficha.peso !== null) params.peso = String(ficha.peso)
   if (ficha.rueda) params.rueda = ficha.rueda
@@ -224,6 +230,11 @@ export function monopatinFichaMatch(
     match['specs.maxSpeedKmh'] = { ...MONOPATIN_VELOCIDAD_RANGOS[ficha.velocidad].range }
   if (ficha.potencia && !skip('potencia'))
     match['specs.motorW'] = { ...MONOPATIN_POTENCIA_RANGOS[ficha.potencia].range }
+  if (ficha.potenciaMin !== null && !skip('potenciaMin'))
+    match['specs.motorW'] = {
+      ...((match['specs.motorW'] as Record<string, number>) ?? {}),
+      $gte: ficha.potenciaMin,
+    }
   if (ficha.carga !== null && !skip('carga')) match['specs.maxLoadKg'] = { $gte: ficha.carga }
   if (ficha.peso !== null && !skip('peso')) match['specs.weightKg'] = { $lte: ficha.peso }
   if (ficha.rueda && !skip('rueda'))

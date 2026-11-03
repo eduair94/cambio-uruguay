@@ -50,6 +50,7 @@ describe('la consulta de ficha técnica', () => {
       autonomia: 30,
       velocidad: 'hasta-25',
       potencia: '350-500',
+      potenciaMin: null,
       carga: 120,
       peso: 15,
       rueda: '9-10',
@@ -86,6 +87,20 @@ describe('la consulta de ficha técnica', () => {
     expect(sinAutonomia.ficha).toMatchObject({ autonomia: null, rasgos: ['plegable', 'disco'] })
     const sinDisco = equiparProductosWithout(query, ['ficha.rasgos.disco'])
     expect(sinDisco.ficha?.rasgos).toEqual(['plegable'])
+  })
+})
+
+describe('potencia mínima (la que pide el asesor)', () => {
+  it('se lee, va a la URL, tiene chip y se junta con el tramo de potencia', () => {
+    const query = movilidad({ potenciaMin: '350' })
+    expect(query.ficha?.potenciaMin).toBe(350)
+    expect(equiparProductosParams(query)).toMatchObject({ potenciaMin: '350' })
+    expect(equiparProductosChips(query, undefined, 'monopatin-electrico').map(c => c.label)).toEqual([
+      'Potencia desde 350 W',
+    ])
+    const match = equiparProductosMatch(movilidad({ potenciaMin: '400', potencia: '350-500' }), CUTOFF)
+    expect(match['specs.motorW']).toEqual({ $gt: 350, $lte: 500, $gte: 400 })
+    expect(movilidad({ potenciaMin: '20' }).ficha?.potenciaMin).toBeNull()
   })
 })
 

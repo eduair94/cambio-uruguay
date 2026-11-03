@@ -19,6 +19,7 @@ import {
   monopatinFichaNormalize,
   monopatinFichaParams,
   monopatinPesoLabel,
+  monopatinPotenciaMinLabel,
   type MonopatinRasgo,
   type MonopatinSpecsPublic,
   type MovilidadFichaKey,
@@ -470,6 +471,8 @@ function fichaChips(ficha: MovilidadFichaQuery): EquiparFilterChip[] {
   if (ficha.autonomia !== null) add('ficha.autonomia', monopatinAutonomiaLabel(ficha.autonomia))
   if (ficha.velocidad) add('ficha.velocidad', MONOPATIN_VELOCIDAD_RANGOS[ficha.velocidad].label)
   if (ficha.potencia) add('ficha.potencia', MONOPATIN_POTENCIA_RANGOS[ficha.potencia].label)
+  if (ficha.potenciaMin !== null)
+    add('ficha.potenciaMin', monopatinPotenciaMinLabel(ficha.potenciaMin))
   if (ficha.carga !== null) add('ficha.carga', monopatinCargaLabel(ficha.carga))
   if (ficha.peso !== null) add('ficha.peso', monopatinPesoLabel(ficha.peso))
   if (ficha.rueda)
