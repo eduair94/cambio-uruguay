@@ -485,17 +485,17 @@ marca pasó de 7 avisos con marca a 486 (Xiaomi 237, Atom 46, Mistyle 39…).
 
 **Sólo monopatín.** El código es genérico; bicicletas queda para después.
 
-### El job `currency-movilidad-specs` (`sync_movilidad_specs.ts`, `49 * * * *`)
+### El job `currency-movilidad-specs` (`sync_movilidad_specs.ts`, `1 * * * *`)
 
 1. Cola (`classes/movilidad/specs/queue.ts`): monopatines frescos (4 días) y no sospechosos, nunca
    Facebook (la ficha de Marketplace exige la sesión; lo único público es el título). Tiendas primero,
-   después ML nunca leídos, después relecturas. 90 por corrida a 2,5 s, tope 8 min
-   (`MOVILIDAD_SPECS_MAX` / `_GAP_MS` / `_MINUTES`). Directo a mercadolibre.com.uy por la misma IP que
-   currency-autos-detail (:11) y currency-rentals-ml-detail (:35, hasta 10 min), por eso a los :49; no
-   usa el puente :9656.
+   después ML nunca leídos, después relecturas. 60 por corrida a 3 s, tope 8 min
+   (`MOVILIDAD_SPECS_MAX` / `_GAP_MS` / `_MINUTES`). A los :01, en el hueco de los consumidores
+   horarios del puente de ML (movilidad :07, sillas :23, autos :29, celulares :37, motos :44,
+   alquileres :47, equipar :53).
 2. **Toda lectura se guarda**, buena o mala, en la colección privada `movilidadspecs`. La mala vuelve
    con espera de 1, 3 y 7 días y a la cuarta falla seguida se abandona por un mes; un aviso que ya no
-   existe (404/410, `item_status` cerrado) espera 7 días y no cuenta como falla. Una página 200 SIN
+   existe (404/410) espera 7 días y no cuenta como falla. Una página 200 SIN
    ficha es falla y no "borrado": es el aspecto de un desafío anti-bot, y contarlo como borrado mandaría
    la cola entera 7 días afuera sin que el corte se entere. Es la
    lección de Casasweb (9-10/10/2026): no guardar la falla + orden determinista + corte por fallas
@@ -503,7 +503,15 @@ marca pasó de 7 avisos con marca a 486 (Xiaomi 237, Atom 46, Mistyle 39…).
    relectura que falla, o que carga pero no trae ficha, no borra la ficha buena anterior
    (`write.ts`); si la mitad de las leídas no trae datos, el log avisa `ALERTA`. Ficha buena se relee a
    los 45 días.
-3. Lectura (`read.ts`): ML = URL del aviso sin fragmento → tabla + descripción del vendedor; Shopify =
+3. Lectura (`read.ts`): **ML = el puente propio, `/product/<id>`** (tabla `specifications` +
+   descripción + marca/modelo). La primera corrida en producción (3/11/2026 23:37 UTC) leyó las 19
+   fichas de tiendas y cortó en las de ML: desde la IP del VPS toda página de producto de ML (`/up/`,
+   `/p/`, `articulo.`) redirige a `/gz/account-verification`, el muro de login — los clasificados
+   (`auto.`, `casa.`) siguen abiertos, por eso autos-detail y rentals-ml-detail no lo ven. El muro no se
+   rodea con otra IP: se usa la vía que el repo ya tiene para ML. El puente acepta ids de producto de
+   usuario (`/up/MLUU…`) y de catálogo (`/p/MLU…`), 609 de 618 avisos; los 9 `articulo.…` no tienen id
+   y la cola no los pide (quedan con lo del título). La guarda de "página 200 sin ficha = falla" fue la
+   que hizo cortar la corrida en vez de marcar 90 avisos como borrados. Shopify =
    `<producto>.json` (`body_html`, `vendor` como marca); resto de tiendas = HTML sin scripts, cortado en
    "Productos relacionados". UA propia `MOVILIDAD_SPECS_USER_AGENT`.
 4. Reaplica la ficha a TODAS las filas frescas de `movilidadlistings` con `enrichMovilidadRow`

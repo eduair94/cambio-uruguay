@@ -271,15 +271,16 @@ module.exports = {
       // La ficha técnica de los monopatines de /monopatines-electricos-uruguay (sync_movilidad_specs.ts):
       // lee la ficha propia de ML y de las tiendas (autonomía, velocidad, potencia, peso, carga
       // soportada, tiempo de carga…) a la colección privada movilidadspecs, la reaplica a
-      // movilidadlistings y guarda el snapshot del asesor (movilidadspecsnapshots). Directo a
-      // mercadolibre.com.uy, como currency-autos-detail (:11) y currency-rentals-ml-detail (:35)
-      // desde la misma IP: a los :49, cuando currency-rentals-ml-detail (hasta 10 min desde :35) ya
-      // terminó, 90 fichas a 2,5 s (~4 min). No usa el puente de ML.
+      // movilidadlistings y guarda el snapshot del asesor (movilidadspecsnapshots). La ficha de ML se
+      // pide al PUENTE (:9656, /product/<id>): desde la IP del VPS la página de producto de ML redirige
+      // al muro de login (medido 3/11/2026). Por eso corre en el hueco de los consumidores horarios del
+      // puente (movilidad :07, sillas :23, autos :29, celulares :37, motos :44, alquileres :47,
+      // equipar :53): a los :01, 60 fichas a 3 s (~4 min).
       name: "currency-movilidad-specs",
       autorestart: false,
       exec_mode: "fork",
       script: "dist/sync_movilidad_specs.js",
-      cron_restart: "49 * * * *",
+      cron_restart: "1 * * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {

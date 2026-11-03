@@ -35,6 +35,15 @@ export interface FichaQueueRow {
 
 const DAY = 86_400_000;
 
+/**
+ * El id que el puente de ML acepta en `/product/<id>`: producto de usuario (`/up/MLUU…`) o de
+ * catálogo (`/p/MLU…`). Un aviso `articulo.…/MLU-…` no tiene ninguno (medido 3/11/2026: 9 de 618).
+ */
+export function mlProductId(url: string): string | null {
+  const match = /\/(?:up|p)\/(MLUU?\d+)/.exec(url);
+  return match ? match[1]! : null;
+}
+
 const elapsedDays = (iso: string | null | undefined, now: Date): number => {
   const time = iso ? Date.parse(iso) : Number.NaN;
   return Number.isNaN(time) ? Number.POSITIVE_INFINITY : (now.getTime() - time) / DAY;
@@ -66,7 +75,13 @@ export function orderTargets(
     return never ? 1 : 3;
   };
   return rows
-    .filter((row) => row.source !== "facebook" && row.url && fichaDue(stored.get(row.listingId), now))
+    .filter(
+      (row) =>
+        row.source !== "facebook" &&
+        row.url &&
+        (row.source !== "mercadolibre" || mlProductId(row.url) !== null) &&
+        fichaDue(stored.get(row.listingId), now)
+    )
     .sort((a, b) => rank(a) - rank(b) || a.listingId.localeCompare(b.listingId))
     .slice(0, Math.max(0, budget));
 }
