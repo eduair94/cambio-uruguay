@@ -2848,6 +2848,12 @@
         "conviene cambiar en el aeropuerto uruguay"
       ],
       "hypothesis": "La guia estaba fuera de TODO tema, asi que \"Mas sobre este tema\" le devolvia cero enlaces y el hub de su tema no la listaba: entra a dolar-y-casas-de-cambio-uruguay, que ya reune donde conseguir el mejor precio (comprar-dolares-mejor-precio, casas-de-cambio-vs-bancos, evitar-comisiones-cambio), y esta guia contesta esa misma pregunta en el punto de llegada. Era la UNICA de las dieciocho guias huerfanas con la ruta libre de toda ventana abierta (npm run seo_debt del 2026-11-03: 1 de 24 libres, y es esta); las otras diecisiete esperan a que cierre su ventana. Se mide sola porque entrar al tema no le cambia el bloque a ninguna otra pagina: temaVecinosParaRuta arma los enlaces con hub.resources y hub.terms, nunca con hub.guides. Ni el titulo ni la descripcion se tocaron (los dos entran en el SERP), asi que lo unico que cambia es el enlazado interno."
+    },
+    {
+      "id": "deposito-alquiler-monto-y-retiro-verificados",
+      "shippedOn": "2026-11-03",
+      "routes": ["/guias/deposito-de-alquiler-uruguay"],
+      "hypothesis": "La guia prometia explicar el monto pero solo decia varios meses, no citaba fuentes y presentaba la devolucion como automatica y la mediacion como obligatoria. Se completa la misma URL con los topes del DL 14.219 art. 38, la moneda y alcance de la Ley 18.795 art. 25, y el tramite y costos del BHU contrastados con ES.AHR.04 version 21 y su contrato vigente. El titulo, cuerpo y pasos HowTo distinguen al depositante del inquilino y el retiro acordado del judicial. Se espera que una respuesta verificable a cuanto depositar y como retirarlo mejore la utilidad y adquisicion de esta guia. Se mide el paquete completo por cuota de clics con 28 dias finales antes y despues, excluyendo el dia de publicacion; no se atribuye una variacion a una palabra del titulo ni se presupone volumen de consultas. La unica intervencion anterior de esta ruta fue el 2/10 y su ventana ya cerro."
     }
   ]
 }
