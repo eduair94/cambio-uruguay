@@ -31,6 +31,8 @@ export interface SnapshotRow {
   suspect: boolean;
   specs: MonopatinSpecs | null;
   uyuPerKm: number | null;
+  /** La página del modelo (classes/movilidad/models/), si el aviso pertenece a uno. */
+  modelSlug?: string | null;
 }
 
 export type CandidateSpecs = Omit<MonopatinSpecs, "from">;
@@ -49,6 +51,8 @@ export interface AdvisorCandidate {
   brand: string;
   variant: string;
   specs: CandidateSpecs;
+  /** "Ver el modelo" en el asesor: sólo cuando el aviso tiene página de modelo. */
+  modelSlug?: string;
 }
 
 export interface SpecStatsRow {
@@ -163,6 +167,7 @@ export function buildSpecSnapshot(rows: readonly SnapshotRow[], generatedAt: str
         brand: row.brand,
         variant: row.variant,
         specs: candidateSpecs(row.specs!),
+        ...(row.modelSlug ? { modelSlug: row.modelSlug } : {}),
       }))
       .sort((a, b) => a.priceUyu - b.priceUyu || a.id.localeCompare(b.id)),
     stats: {

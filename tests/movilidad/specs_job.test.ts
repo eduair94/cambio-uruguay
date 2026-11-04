@@ -148,6 +148,18 @@ describe("buildSpecSnapshot", () => {
     expect(snapshot.candidates[0]!.specs).not.toHaveProperty("from");
   });
 
+  it("el candidato lleva la página de su modelo, si tiene una", () => {
+    const linked = buildSpecSnapshot(
+      [
+        snapRow({ listingId: "ml:a", modelSlug: "xiaomi-6-pro", specs: ficha({ Autonomía: "45 km" }) }),
+        snapRow({ listingId: "ml:b", specs: ficha({ Autonomía: "45 km" }) }),
+      ],
+      "2026-11-04T06:00:00Z"
+    );
+    expect(linked.candidates.find((c) => c.id === "ml:a")!.modelSlug).toBe("xiaomi-6-pro");
+    expect(linked.candidates.find((c) => c.id === "ml:b")).not.toHaveProperty("modelSlug");
+  });
+
   it("publica medianas sólo con cinco datos o más", () => {
     const urbano = snapshot.stats.byVariant.find((stats) => stats.variant === "urbano")!;
     expect(urbano.rangeKm).toBe(30);

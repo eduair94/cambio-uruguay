@@ -51,6 +51,9 @@ const MovilidadListingSchema = new Schema(
     // enrich.ts); sin declararlas acá, mongoose las descartaría en silencio al escribir.
     specs: { type: Schema.Types.Mixed, default: null },
     uyuPerKm: { type: Number, default: null },
+    // El modelo al que pertenece el aviso (classes/movilidad/models/), para enlazar la tarjeta con
+    // /monopatines-electricos-uruguay/<modelo>. Lo escribe sólo `sync_movilidad_specs.ts`.
+    modelSlug: { type: String, default: null },
   },
   { timestamps: true }
 );
