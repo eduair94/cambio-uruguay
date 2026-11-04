@@ -70,8 +70,11 @@ export const guideHubs: readonly GuideHub[] = [
       'casas-de-cambio-vs-bancos',
       'evitar-comisiones-cambio',
       'billetes-y-monedas-de-uruguay',
+      'moneda-de-uruguay',
+      'pagar-en-dolares-o-pesos-uruguay',
       'documentos-para-cambiar-dolares-uruguay',
       'cambiar-dolares-aeropuerto-carrasco',
+      'dolares-para-viajar',
     ],
     resources: [
       {

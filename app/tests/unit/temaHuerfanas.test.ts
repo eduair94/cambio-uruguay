@@ -447,11 +447,8 @@ const GUIAS_SIN_TEMA = [
   'devolucion-iva-turistas-uruguay',
   'dolar-cripto-usdt-uruguay',
   'dolares-deteriorados-billetes-rechazados-uruguay',
-  'dolares-para-viajar',
   'euros-reales-donde-cambiar',
   'horarios-casas-de-cambio-uruguay',
-  'moneda-de-uruguay',
-  'pagar-en-dolares-o-pesos-uruguay',
   'precio-del-oro-en-uruguay',
   'propinas-en-uruguay',
   'proyeccion-dolar-uruguay-se-puede-predecir',
@@ -540,7 +537,40 @@ const GUIAS_SIN_TEMA = [
  *
  * Sólo puede bajar: subirlo es publicar una guía huérfana.
  */
-const DEUDA_MAXIMA_GUIAS = 17
+/**
+ * 17 → 14 el 2026-11-04: `moneda-de-uruguay`, `pagar-en-dolares-o-pesos-uruguay` y
+ * `dolares-para-viajar` entran a `dolar-y-casas-de-cambio-uruguay`, y son las TRES únicas de las
+ * diecisiete con la ruta libre de toda ventana de medición abierta (`npm run seo_debt`: 3 libres de
+ * 26, y las tres son de este pozo). Las otras catorce siguen reservadas, la primera hasta el
+ * 2026-11-05.
+ *
+ * Ninguna de las tres inventa un padre, que es la regla que dejó a `propinas-en-uruguay` afuera dos
+ * veces, y las tres caen del mismo lado de la línea por el mismo motivo: su consejo operativo ES la
+ * tesis del hub —cambiar en una casa de cambio comparando dónde dan más— y no un tema de al lado.
+ *
+ * - `moneda-de-uruguay` es la más literal de las tres: el término `peso-uruguayo` ya es uno de los
+ *   `terms` del hub, `billetes-y-monedas-de-uruguay` ya es una de sus guías (entró el 2026-11-01) y
+ *   `/donde-conseguir-monedas-uruguay` ya es uno de sus `resources`. Sus CUATRO `related` escritos a
+ *   mano caen todos adentro de este tema —`/glosario/peso-uruguayo`,
+ *   `/guias/billetes-y-monedas-de-uruguay` y `/cotizacion/dolar` ya eran miembros, y el cuarto es
+ *   `pagar-en-dolares-o-pesos-uruguay`, que entra hoy con ella—, o sea que el vínculo que el bloque
+ *   le da es el que la guía ya declaraba a mano. Y su sección «En Uruguay no hay dólar blue» cae al
+ *   lado del término `dolar-blue` y del recurso `/dolar-blue-hoy`, que el hub ya lleva.
+ * - `pagar-en-dolares-o-pesos-uruguay` contesta, del lado del mostrador del comercio, la misma
+ *   pregunta que `evitar-comisiones-cambio` y `cambiar-dolares-aeropuerto-carrasco` contestan del
+ *   lado de la casa de cambio: el comercio turístico aplica su propio tipo de cambio y conviene
+ *   cambiar el efectivo donde paguen mejor. Quien llega preguntando si puede pagar en dólares
+ *   recibe del bloque exactamente el vecino que necesita.
+ * - `dolares-para-viajar` es la peor huérfana de las diecisiete, por el motivo que el 2026-11-01
+ *   hacía peor a la de online: no tiene `related` ni `links` de sección, así que
+ *   `guideNextSteps` (`utils/guideReading.ts`) no tenía ninguna de sus tres fuentes y la página
+ *   terminaba sin UN SOLO enlace de salida. El hub ya lleva `/llevar-dolares-o-reales-a-brasil`
+ *   entre sus `resources` y la guía del aeropuerto entre las suyas, que es el consejo que esta guía
+ *   da en su tercera sección («el peor lugar para cambiar suele ser el aeropuerto»).
+ *
+ * Sólo puede bajar: subirlo es publicar una guía huérfana.
+ */
+const DEUDA_MAXIMA_GUIAS = 14
 
 describe('ninguna guía queda fuera de todos los temas', () => {
   const sinTema = guides
