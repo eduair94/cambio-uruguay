@@ -45,47 +45,14 @@ FIRST VIEWPORT: el H1, el selector y la tabla con los modelos de la URL.
       >.
     </p>
 
-    <div v-if="chosen.length" class="compare-scroll">
-      <table class="compare-table">
-        <thead>
-          <tr>
-            <th scope="col" class="compare-table__corner"><span class="d-sr-only">Dato</span></th>
-            <th v-for="model in chosen" :key="model.slug" scope="col" class="compare-table__model">
-              <MovilidadVariantThumb
-                :src="model.image ?? null"
-                :alt="model.name"
-                icon="mdi-scooter-electric"
-              />
-              <NuxtLink :to="`/monopatines-electricos-uruguay/${model.slug}`" class="cat-link">
-                {{ model.name }}
-              </NuxtLink>
-              <button
-                type="button"
-                class="compare-table__remove"
-                :aria-label="`Sacar ${model.name} de la comparación`"
-                @click="remove(model.slug)"
-              >
-                <VIcon icon="mdi-close" size="16" aria-hidden="true" />
-                Sacar
-              </button>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in rows" :key="row.key">
-            <th scope="row">{{ row.label }}</th>
-            <td
-              v-for="(cell, index) in row.cells"
-              :key="`${row.key}:${index}`"
-              :class="{ 'is-best': row.best.includes(index) }"
-            >
-              {{ cell ?? '—' }}
-              <span v-if="row.best.includes(index)" class="best-tag">Mejor</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <MovilidadCompareTable
+      v-if="chosen.length"
+      :models="tableModels"
+      :rows="rows"
+      hub="/monopatines-electricos-uruguay"
+      icon="mdi-scooter-electric"
+      @remove="remove"
+    />
 
     <p class="section-intro notes">
       "Autonomía estimada en la calle" es el 65 % de la declarada: con un adulto, alguna subida y la
@@ -101,6 +68,7 @@ import {
   MONOPATIN_COMPARE_MAX,
   monopatinCompareRows,
   monopatinCompareSlugs,
+  monopatinModelShortName,
   type MonopatinModelListResponse,
   type MonopatinModelSummary,
 } from '~/utils/monopatinModelos'
@@ -125,6 +93,9 @@ const chosen = computed(() =>
 )
 const options = computed(() => all.value.filter(model => !slugs.value.includes(model.slug)))
 const rows = computed(() => monopatinCompareRows(chosen.value))
+const tableModels = computed(() =>
+  chosen.value.map(model => ({ ...model, shortName: monopatinModelShortName(model) }))
+)
 
 function setSlugs(next: string[]) {
   router.replace({ query: next.length ? { m: next.join(',') } : {} })
@@ -201,102 +172,7 @@ useHead({
   background: rgba(var(--v-theme-on-surface), 0.04);
   font-size: 0.95rem;
 }
-.compare-scroll {
-  margin-top: 24px;
-  overflow-x: auto;
-  border: 1px solid rgba(var(--v-border-color), 0.25);
-  border-radius: 12px;
-}
-.compare-table {
-  width: 100%;
-  min-width: 560px;
-  border-collapse: collapse;
-  font-variant-numeric: tabular-nums;
-}
-.compare-table th,
-.compare-table td {
-  padding: 12px 16px;
-  text-align: left;
-  vertical-align: top;
-  border-bottom: 1px solid rgba(var(--v-border-color), 0.18);
-}
-.compare-table tbody tr:last-child th,
-.compare-table tbody tr:last-child td {
-  border-bottom: 0;
-}
-.compare-table tbody th {
-  position: sticky;
-  left: 0;
-  z-index: 1;
-  width: 28%;
-  font-weight: 600;
-  background: rgb(var(--v-theme-surface));
-}
-.compare-table__corner {
-  position: sticky;
-  left: 0;
-  z-index: 2;
-  background: rgb(var(--v-theme-surface));
-}
-.compare-table__model {
-  min-width: 160px;
-}
-.compare-table__model .cat-link {
-  display: block;
-  margin-top: 8px;
-}
-.compare-table__remove {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  min-height: 32px;
-  margin-top: 4px;
-  font-size: 0.875rem;
-  opacity: 0.8;
-}
-.compare-table__remove:hover,
-.compare-table__remove:focus-visible {
-  opacity: 1;
-  text-decoration: underline;
-}
-.is-best {
-  font-weight: 700;
-  background: rgba(var(--v-theme-success), 0.1);
-}
-.best-tag {
-  display: inline-block;
-  margin-left: 6px;
-  padding: 0 6px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.0333em;
-  color: rgb(var(--v-theme-success));
-}
 .notes {
   margin-top: 24px !important;
-}
-/* En el teléfono tienen que entrar dos modelos sin desplazar: rótulo angosto, "Mejor" abajo. */
-@media (max-width: 600px) {
-  .compare-table {
-    min-width: 0;
-    font-size: 0.875rem;
-  }
-  .compare-table th,
-  .compare-table td {
-    padding: 8px 10px;
-  }
-  .compare-table tbody th {
-    width: 104px;
-    min-width: 104px;
-  }
-  .compare-table__model {
-    min-width: 128px;
-  }
-  .best-tag {
-    display: block;
-    margin: 2px 0 0;
-    padding: 0;
-  }
 }
 </style>

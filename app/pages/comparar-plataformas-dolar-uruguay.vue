@@ -109,19 +109,27 @@ eea14b93, staged as a verdict followed by a public record.
           </div>
           <div class="matrix-filter">
             <span>{{ t('platformComparison.filterLabel') }}</span>
-            <div class="matrix-filter__scroll">
-              <VBtnToggle
-                v-model="selectedCategory"
-                mandatory
-                color="primary"
+            <!-- Chips que bajan de línea, no un grupo de botones que se desplaza de costado: en un
+                 teléfono de 390 px el grupo medía 441 px y la última categoría quedaba afuera. -->
+            <VChipGroup
+              v-model="selectedCategory"
+              mandatory
+              column
+              filter
+              selected-class="text-primary"
+              class="matrix-filter__chips"
+              :aria-label="t('platformComparison.filterLabel')"
+            >
+              <VChip
+                v-for="category in categories"
+                :key="category"
+                :value="category"
+                size="small"
                 variant="outlined"
-                density="comfortable"
               >
-                <VBtn v-for="category in categories" :key="category" :value="category" size="small">
-                  {{ t(`platformComparison.filters.${category}`) }}
-                </VBtn>
-              </VBtnToggle>
-            </div>
+                {{ t(`platformComparison.filters.${category}`) }}
+              </VChip>
+            </VChipGroup>
           </div>
         </div>
 
@@ -1028,11 +1036,6 @@ useHead(() => ({
 
   .matrix-filter {
     margin-top: 20px;
-  }
-
-  .matrix-filter__scroll {
-    overflow-x: auto;
-    padding-bottom: 4px;
   }
 
   .comparison-grid__header {
