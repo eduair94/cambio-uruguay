@@ -45,7 +45,7 @@ FIRST VIEWPORT: migas, foto, H1, "nuevo desde" con vendedores, la franja de fich
         <MovilidadSpecStrip v-if="specsPublic" :specs="specsPublic" class="modelo-hero__strip" />
         <div class="modelo-hero__actions">
           <VBtn color="primary" variant="flat" href="#ofertas">
-            Ver {{ model.offers.length === 1 ? 'la oferta' : `las ${model.offers.length} ofertas` }}
+            Ver {{ model.sellers === 1 ? 'la oferta' : `los ${model.sellers} vendedores` }}
           </VBtn>
           <VBtn v-if="siblings[0]" variant="tonal" :to="compareTo(siblings[0])">
             Comparar con {{ siblings[0].name }}
@@ -58,16 +58,24 @@ FIRST VIEWPORT: migas, foto, H1, "nuevo desde" con vendedores, la franja de fich
     <section id="ofertas" class="modelo-section" aria-labelledby="ofertas-title">
       <h2 id="ofertas-title">Dónde comprarlo</h2>
       <p class="section-intro">
-        Todas las ofertas que encontramos de este modelo, la más barata primero, en Mercado Libre y
-        en tiendas uruguayas. El precio es el que publica el vendedor; el envío, la garantía y si
-        sigue en stock se confirman en el aviso.
+        Cada vendedor con su precio más bajo, el más barato primero, en Mercado Libre y en tiendas
+        uruguayas; si publica el mismo modelo más de una vez, sus otras publicaciones quedan abajo.
+        El precio es el que publica el vendedor; el envío, la garantía y si sigue en stock se
+        confirman en el aviso.
       </p>
       <div v-for="group in offerGroups" :key="group.key" class="offer-group">
         <h3>
-          {{ group.label }} <span class="muted">({{ group.offers.length }})</span>
+          {{ group.label }}
+          <span class="muted">({{ sellersLabel(group.primary.length) }})</span>
         </h3>
         <ul class="offer-list">
-          <li v-for="offer in group.offers" :key="offer.listingId" class="offer-row">
+          <li
+            v-for="offer in [...group.primary, ...group.rest]"
+            v-show="!group.rest.includes(offer) || openRest.includes(group.key)"
+            :key="offer.listingId"
+            class="offer-row"
+            :class="{ 'offer-row--rest': group.rest.includes(offer) }"
+          >
             <MovilidadVariantThumb
               :src="offer.image"
               :alt="offer.title"
@@ -98,6 +106,18 @@ FIRST VIEWPORT: migas, foto, H1, "nuevo desde" con vendedores, la franja de fich
             </div>
           </li>
         </ul>
+        <VBtn
+          v-if="group.rest.length && !openRest.includes(group.key)"
+          class="mt-2"
+          variant="text"
+          size="small"
+          append-icon="mdi-chevron-down"
+          @click="openRest = [...openRest, group.key]"
+        >
+          Ver {{ group.rest.length }}
+          {{ group.rest.length === 1 ? 'publicación más' : 'publicaciones más' }} de los mismos
+          vendedores
+        </VBtn>
       </div>
     </section>
 
@@ -207,6 +227,7 @@ import {
   monopatinModelDescription,
   monopatinModelFaq,
   monopatinModelTitle,
+  monopatinOfferGroups,
   monopatinRealRangeKm,
   monopatinSpecTableRows,
   type MonopatinModelDetailResponse,
@@ -268,12 +289,10 @@ const specRows = computed(() =>
   model.value.specs ? monopatinSpecTableRows(model.value.specs) : []
 )
 
-const offerGroups = computed(() =>
-  [
-    { key: 'new', label: 'Nuevo', offers: model.value.offers.filter(o => o.condition === 'new') },
-    { key: 'used', label: 'Usado', offers: model.value.offers.filter(o => o.condition === 'used') },
-  ].filter(group => group.offers.length)
-)
+// Una fila por vendedor; las demás publicaciones del mismo vendedor quedan en el HTML (v-show) y se
+// abren con el botón.
+const openRest = ref<string[]>([])
+const offerGroups = computed(() => monopatinOfferGroups(model.value.offers))
 
 // El vendedor enlaza a su ficha de tienda sólo cuando esa tienda tiene ficha propia (mismo criterio
 // que el hub y las páginas de equipar).
@@ -556,6 +575,10 @@ useHead(() => {
 }
 .offer-row + .offer-row {
   border-top: 1px solid rgba(var(--v-border-color), 0.18);
+}
+/* Las otras publicaciones de un vendedor que ya tiene fila: un escalón más quietas. */
+.offer-row--rest {
+  background: rgba(var(--v-theme-on-surface), 0.025);
 }
 .offer-row__main {
   display: flex;

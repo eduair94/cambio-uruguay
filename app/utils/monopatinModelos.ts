@@ -586,3 +586,44 @@ export function monopatinCompareSlugs(raw: unknown, known: ReadonlySet<string>):
   }
   return out
 }
+
+export interface MonopatinOfferGroup {
+  key: 'new' | 'used'
+  label: string
+  /** La oferta más barata de cada vendedor, la más barata primero: una fila por vendedor. */
+  primary: MonopatinModelOffer[]
+  /** Las otras publicaciones de los mismos vendedores, plegadas. */
+  rest: MonopatinModelOffer[]
+}
+
+/**
+ * Las ofertas como las muestra un comparador de precios: una fila por vendedor con su precio más bajo
+ * (medido el 4/11: el Xiaomi 6 Pro tenía 25 ofertas nuevas de 9 vendedores, y la lista repetía al
+ * mismo vendedor una y otra vez). Nuevo antes que usado, nunca mezclados.
+ */
+export function monopatinOfferGroups(
+  offers: readonly MonopatinModelOffer[]
+): MonopatinOfferGroup[] {
+  const groups: MonopatinOfferGroup[] = []
+  for (const [key, label] of [
+    ['new', 'Nuevo'],
+    ['used', 'Usado'],
+  ] as const) {
+    const sorted = offers
+      .filter(offer => offer.condition === key)
+      .sort((a, b) => a.priceUyu - b.priceUyu)
+    const seen = new Set<string>()
+    const primary: MonopatinModelOffer[] = []
+    const rest: MonopatinModelOffer[] = []
+    for (const offer of sorted) {
+      const seller = offer.sellerKey || offer.sellerName
+      if (seen.has(seller)) rest.push(offer)
+      else {
+        seen.add(seller)
+        primary.push(offer)
+      }
+    }
+    if (primary.length) groups.push({ key, label, primary, rest })
+  }
+  return groups
+}

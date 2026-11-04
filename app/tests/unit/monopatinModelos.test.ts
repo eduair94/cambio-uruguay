@@ -13,6 +13,7 @@ import {
   monopatinSpecTableRows,
   monopatinModelFaq,
   monopatinCompareSlugs,
+  monopatinOfferGroups,
   type MonopatinModelDoc,
   type MonopatinModelSummary,
 } from '../../utils/monopatinModelos'
@@ -271,5 +272,28 @@ describe('monopatinCompareSlugs', () => {
     ])
     expect(monopatinCompareSlugs(undefined, known)).toEqual([])
     expect(monopatinCompareSlugs(42 as never, known)).toEqual([])
+  })
+})
+
+describe('monopatinOfferGroups', () => {
+  const offer = (
+    listingId: string,
+    sellerKey: string,
+    priceUyu: number,
+    condition: 'new' | 'used' = 'new'
+  ) => ({ listingId, sellerKey, sellerName: sellerKey, priceUyu, condition }) as never
+  it('una fila por vendedor (su oferta más barata) y el resto plegado, nuevo antes que usado', () => {
+    const groups = monopatinOfferGroups([
+      offer('a1', 'a', 30000),
+      offer('b1', 'b', 31000),
+      offer('a2', 'a', 33000),
+      offer('a3', 'a', 35000),
+      offer('u1', 'c', 20000, 'used'),
+    ])
+    expect(groups.map(g => g.key)).toEqual(['new', 'used'])
+    expect(groups[0]!.primary.map((o: { listingId: string }) => o.listingId)).toEqual(['a1', 'b1'])
+    expect(groups[0]!.rest.map((o: { listingId: string }) => o.listingId)).toEqual(['a2', 'a3'])
+    expect(groups[1]!.primary).toHaveLength(1)
+    expect(groups[1]!.rest).toEqual([])
   })
 })
