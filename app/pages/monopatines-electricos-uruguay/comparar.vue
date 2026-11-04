@@ -273,4 +273,27 @@ useHead({
 .notes {
   margin-top: 24px !important;
 }
+/* En el teléfono tienen que entrar dos modelos sin desplazar: rótulo angosto, "Mejor" abajo. */
+@media (max-width: 600px) {
+  .compare-table {
+    min-width: 0;
+    font-size: 0.875rem;
+  }
+  .compare-table th,
+  .compare-table td {
+    padding: 8px 10px;
+  }
+  .compare-table tbody th {
+    width: 104px;
+    min-width: 104px;
+  }
+  .compare-table__model {
+    min-width: 128px;
+  }
+  .best-tag {
+    display: block;
+    margin: 2px 0 0;
+    padding: 0;
+  }
+}
 </style>

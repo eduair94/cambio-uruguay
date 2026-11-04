@@ -671,8 +671,9 @@ useHead(() => {
   .modelo-hero {
     grid-template-columns: minmax(0, 1fr);
   }
+  /* En el teléfono el precio tiene que llegar al primer pantallazo: la foto se achica. */
   .modelo-hero__media {
-    max-width: 220px;
+    max-width: 160px;
   }
   .offer-row {
     grid-template-columns: auto minmax(0, 1fr);
