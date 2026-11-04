@@ -10,6 +10,8 @@ import {
   monopatinModelTitle,
   monopatinRealRangeKm,
   monopatinSpecAgreement,
+  monopatinSpecTableRows,
+  monopatinModelFaq,
   type MonopatinModelDoc,
   type MonopatinModelSummary,
 } from '../../utils/monopatinModelos'
@@ -198,5 +200,56 @@ describe('monopatinRealRangeKm', () => {
   it('la misma regla del asesor: 65 % de lo declarado', () => {
     expect(monopatinRealRangeKm(70)).toBe(46)
     expect(monopatinRealRangeKm(null)).toBeNull()
+  })
+})
+
+describe('monopatinSpecTableRows', () => {
+  it('muestra el valor y cuántas fichas lo dicen; si no coinciden, el rango', () => {
+    const specs = {
+      values: values({ rangeKm: 45, maxSpeedKmh: 25, foldable: true, brakes: 'Disco' }),
+      agree: {
+        rangeKm: { n: 1, of: 4 },
+        maxSpeedKmh: { n: 5, of: 5 },
+        foldable: { n: 3, of: 3 },
+        brakes: { n: 1, of: 1 },
+      },
+      spread: { rangeKm: { min: 25, max: 45 } },
+    }
+    const rows = monopatinSpecTableRows(specs as never)
+    const byKey = Object.fromEntries(rows.map(row => [row.key, row]))
+    expect(byKey.rangeKm!.value).toMatch(/^25 a 45\skm$/)
+    expect(byKey.rangeKm!.note).toBe('Las fichas no coinciden')
+    expect(byKey.maxSpeedKmh!.value).toMatch(/^25\skm\/h$/)
+    expect(byKey.maxSpeedKmh!.note).toBe('5 de 5 fichas')
+    expect(byKey.foldable!.value).toBe('Sí')
+    expect(byKey.brakes!.note).toBeNull()
+    expect(byKey.motorW).toBeUndefined()
+  })
+})
+
+describe('monopatinModelFaq', () => {
+  it('pregunta sólo lo que la ficha puede contestar', () => {
+    const faq = monopatinModelFaq(doc())
+    expect(faq.map(item => item.id)).toEqual([
+      'monopatin-modelo-precio',
+      'monopatin-modelo-autonomia',
+      'monopatin-modelo-carga',
+      'monopatin-modelo-peso',
+      'monopatin-modelo-montevideo',
+    ])
+    expect(faq[0]!.question).toContain('Xiaomi 6 Pro')
+    expect(faq[1]!.answer).toContain('46')
+    const bare = monopatinModelFaq(doc({ specs: null }))
+    expect(bare.map(item => item.id)).toEqual(['monopatin-modelo-precio'])
+  })
+  it('más de 25 km/h: dice que en Montevideo se usa limitado, nunca "ilegal"', () => {
+    const fast = doc({
+      specs: { values: values({ maxSpeedKmh: 45 }), agree: {}, spread: {} } as never,
+    })
+    const answer = monopatinModelFaq(fast).find(
+      item => item.id === 'monopatin-modelo-montevideo'
+    )!.answer
+    expect(answer).toContain('25')
+    expect(answer.toLowerCase()).not.toContain('ilegal')
   })
 })

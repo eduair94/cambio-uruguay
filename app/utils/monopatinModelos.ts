@@ -4,7 +4,8 @@
 //
 // `app/utils` es un espacio de auto-import plano: todo lo de acá lleva el prefijo `monopatinModel`/
 // `MONOPATIN_MODEL_` para no chocar con equipar ni celulares.
-import type { MonopatinSpecsPublic } from './monopatinFicha'
+import type { FaqItem } from './faqAnswers'
+import { monopatinChargeCostUyu, type MonopatinSpecsPublic } from './monopatinFicha'
 import { MONOPATIN_AUTONOMIA_REAL } from './monopatinAsesor'
 
 export type MonopatinConsensusValues = Omit<MonopatinSpecsPublic, 'fromFicha'>
@@ -415,4 +416,156 @@ export function monopatinCompareRows(
     rows.push({ key: spec.key, label: spec.label, cells, best })
   }
   return rows
+}
+
+/** El nombre de cada tipo, como lo escribe `classes/movilidad/registry.ts`. */
+export const MONOPATIN_VARIANT_LABEL: Readonly<Record<string, string>> = {
+  urbano: 'Urbano o estándar',
+  'alto-rendimiento': 'Alto rendimiento',
+  infantil: 'Infantil',
+}
+
+export interface MonopatinSpecTableRow {
+  key: MonopatinConsensusField
+  label: string
+  value: string
+  /** "5 de 5 fichas", "Las fichas no coinciden", o null con una sola ficha. */
+  note: string | null
+}
+
+const SPEC_TABLE: ReadonlyArray<{ key: MonopatinConsensusField; label: string; unit?: string }> = [
+  { key: 'rangeKm', label: 'Autonomía declarada', unit: 'km' },
+  { key: 'maxSpeedKmh', label: 'Velocidad máxima', unit: 'km/h' },
+  { key: 'motorW', label: 'Potencia del motor', unit: 'W' },
+  { key: 'motorPeakW', label: 'Potencia máxima', unit: 'W' },
+  { key: 'batteryV', label: 'Voltaje de la batería', unit: 'V' },
+  { key: 'batteryAh', label: 'Capacidad de la batería', unit: 'Ah' },
+  { key: 'batteryWh', label: 'Energía de la batería', unit: 'Wh' },
+  { key: 'chargeHours', label: 'Tiempo de carga', unit: 'h' },
+  { key: 'maxLoadKg', label: 'Peso máximo que soporta', unit: 'kg' },
+  { key: 'weightKg', label: 'Peso del monopatín', unit: 'kg' },
+  { key: 'wheelInches', label: 'Tamaño de las ruedas', unit: '"' },
+  { key: 'minAge', label: 'Edad mínima', unit: 'años' },
+  { key: 'foldable', label: 'Plegable' },
+  { key: 'suspension', label: 'Suspensión' },
+  { key: 'discBrake', label: 'Freno a disco' },
+  { key: 'brakes', label: 'Frenos' },
+  { key: 'bluetooth', label: 'App o bluetooth' },
+  { key: 'ipRating', label: 'Resistencia al agua' },
+]
+
+const measure = (value: number, unit?: string) =>
+  unit === '"' ? `${num(value)}"` : unit ? `${num(value)}${NB}${unit}` : num(value)
+
+/** La ficha técnica del modelo, fila por fila, con cuánto coinciden las fichas de sus avisos. */
+export function monopatinSpecTableRows(specs: MonopatinConsensus): MonopatinSpecTableRow[] {
+  const rows: MonopatinSpecTableRow[] = []
+  for (const { key, label, unit } of SPEC_TABLE) {
+    const value = specs.values[key]
+    if (value === null || value === undefined) continue
+    const agree = specs.agree[key]
+    const several = agree && agree.of >= 2 ? agree : null
+    if (typeof value === 'number') {
+      const spread = specs.spread[key as MonopatinNumericField]
+      const agrees = !several || several.n * 2 >= several.of
+      rows.push({
+        key,
+        label,
+        value:
+          agrees || !spread
+            ? measure(value, unit)
+            : `${num(spread.min)} a ${measure(spread.max, unit)}`,
+        note: !several
+          ? null
+          : agrees
+            ? `${several.n} de ${several.of} fichas`
+            : 'Las fichas no coinciden',
+      })
+    } else {
+      rows.push({
+        key,
+        label,
+        value: typeof value === 'boolean' ? yesNo(value) : value,
+        note: several ? `${several.n} de ${several.of} fichas` : null,
+      })
+    }
+  }
+  return rows
+}
+
+/** Las preguntas de la página del modelo: sólo las que su ficha puede contestar. */
+export function monopatinModelFaq(model: MonopatinModelDoc): FaqItem[] {
+  const short = monopatinModelShortName(model)
+  const v = model.specs?.values
+  const faq: FaqItem[] = []
+
+  const price: string[] = []
+  if (model.newBand) {
+    price.push(
+      `Nuevo, desde ${money(model.newBand.min)} en ${model.newBand.sellers} ${model.newBand.sellers === 1 ? 'vendedor' : 'vendedores'}` +
+        (model.newBand.n > 1
+          ? `; la mitad de las ofertas está en ${money(model.newBand.median)} o menos.`
+          : '.')
+    )
+  }
+  if (model.usedBand) price.push(`Usado, desde ${money(model.usedBand.min)}.`)
+  price.push(
+    'Son los precios que publican los vendedores en Mercado Libre y en tiendas uruguayas; el envío y la garantía se confirman en cada aviso.'
+  )
+  faq.push({
+    id: 'monopatin-modelo-precio',
+    question: `¿Cuánto sale el ${short} en Uruguay?`,
+    answer: price.join(' '),
+  })
+
+  if (v?.rangeKm) {
+    faq.push({
+      id: 'monopatin-modelo-autonomia',
+      question: `¿Qué autonomía tiene el ${short}?`,
+      answer:
+        `La ficha declara ${num(v.rangeKm)} km por carga, medidos por el fabricante en condiciones ideales. ` +
+        `En la calle, con un adulto, alguna subida y la velocidad máxima, contá con unos ${monopatinRealRangeKm(v.rangeKm)} km ` +
+        `(el 65 % de lo declarado, la misma regla del asesor de la página de monopatines).`,
+    })
+  }
+
+  if (v?.chargeHours || v?.batteryWh) {
+    const parts: string[] = []
+    if (v.chargeHours)
+      parts.push(`Según la ficha, la carga completa tarda ${num(v.chargeHours)} horas.`)
+    const cost = monopatinChargeCostUyu(v.batteryWh)
+    if (v.batteryWh && cost !== null) {
+      parts.push(
+        `La batería es de ${num(v.batteryWh)} Wh: cargarla de cero cuesta unos ${money(cost)} con la tarifa residencial de UTE.`
+      )
+    }
+    faq.push({
+      id: 'monopatin-modelo-carga',
+      question: `¿Cuánto tarda en cargar el ${short} y cuánto sale cargarlo?`,
+      answer: parts.join(' '),
+    })
+  }
+
+  if (v?.weightKg || v?.maxLoadKg) {
+    const parts: string[] = []
+    if (v.weightKg) parts.push(`Pesa ${num(v.weightKg)} kg`)
+    if (v.maxLoadKg) parts.push(`soporta hasta ${num(v.maxLoadKg)} kg`)
+    faq.push({
+      id: 'monopatin-modelo-peso',
+      question: `¿Cuánto pesa el ${short} y cuánto peso aguanta?`,
+      answer: `${parts.join(' y ')}, según la ficha. Para subirlo a un ómnibus o a un apartamento sin ascensor, más de 15 kg ya se siente.`,
+    })
+  }
+
+  if (v?.maxSpeedKmh) {
+    faq.push({
+      id: 'monopatin-modelo-montevideo',
+      question: `¿Se puede usar el ${short} en Montevideo?`,
+      answer:
+        v.maxSpeedKmh > 25
+          ? `Declara ${num(v.maxSpeedKmh)} km/h, más que los 25 km/h que permiten Montevideo y San José: se puede usar, pero limitado a 25 km/h y con casco.`
+          : `Declara ${num(v.maxSpeedKmh)} km/h, dentro de los 25 km/h que permiten Montevideo y San José, donde además el casco es obligatorio.`,
+    })
+  }
+  return faq
 }
