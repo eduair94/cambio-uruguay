@@ -304,3 +304,66 @@ describe("una pieza que abre el título no es un vehículo", () => {
     expect(classify(title)?.key, title).toBe(key);
   });
 });
+
+describe("bicicleta: los accesorios que nombran la bici a la que van (4/11/2026)", () => {
+  // Medido sobre los 478 avisos frescos de bicicleta eléctrica: estos pasaban `include` y, con el
+  // directorio ordenado por precio, encabezaban. Ninguno abre el título con una pieza de la lista de
+  // autos: dicen "para bicicleta", "compatible con", o son importaciones con el sustantivo en inglés.
+  const accesorios = [
+    "Luz Trasera Inteligente Para Bicicleta Compatible Con Ebike",
+    "Luz Y Movimiento Tuck Luz Trasera De Ebike",
+    "E-bike - Camiseta De Ciclismo Eléctrico Electrónico Para .",
+    "Bikehand Bike Handlebar Holder - Stabilizer Bicycle E-bike E",
+    "Bike Acelerador 36v Bike Electric Bicycle Ebike",
+    "Jadeshay Bike Acelerador 36v Bike Electric Bicycle Ebike Man",
+    "Portabicicleta, Let's Go Aero V-lectric Fat Pro Two E-bike S",
+    "Seguridad, Luces, Faros D Dioche Led E-bike Headlight, Alumi",
+    "E-bike Headlight 2 In 1 Set Aluminum Front Light Headlamp Li",
+    "Luz Trasera NiteRider Emax+ para E-Bike con 150 lm y 6 Modos",
+    "Portabicicletas de Enganche Young Electric para 2 Bicicletas Eléctricas con Rampa",
+    "Medidor De Pantalla Lcd De Bicicleta Eléctrica, Panel De",
+    "Jetson - Cesta Trasera Para Bicicleta Eléctrica Haze, Compat",
+    "Conmutador Freno Moto Electrica E-bike | Dinamoto",
+    "Vibrelli Electric Bike Hitch Rack - 2 Ebike Rack Se Adapta A",
+    "Cesto E-bike Retroceso Compatible Con Todas Las Bicicletas E",
+    "Evoc Fr Enduro E-ride 16 Mochila Para Bicicleta Eléctrica",
+    "1 Par De Empuñadura De Acelerador Para Bicicleta Eléctrica",
+    "Kmc Ept 116l 8s Para Cadena Ebike, 1/2 X 3/32 X 8",
+    "Cadena Kmc E11 11v 136l Ebike Ept Extra Duración M",
+    "Trax Pro - Sistema De Remolque Para Bicicleta/ciclo/e-bike A",
+    "Set De Frenos Hidráulicos A Disco Para Bicicleta Eléctrica",
+    "Bafang Pantalla De Bicicleta Electrica Macho De 5 Pines Para",
+    "Indicador Led Para Bicicleta Eléctrica 810, 36v O 48v Abs",
+    "Grin Technologies Double Bob Ebike Battery Anchor Bracket Mo",
+    "Bafang Crank Brazo 170mm Para Bicicleta Eléctrica Bbs01 Bbs0",
+    "Chip Deslimitador Speedbox 3.0 Tunning Motores Bosch Ebike",
+    // Facebook: lo que se ofrece A CAMBIO de una bici, no una bici.
+    "CAMBIO POR BICI ELÉCTRICA",
+    "Se vende o cambia por bici eléctrica o monopatín q este bueno leer descripción",
+    "Vendo o permuto por bici electrica o un monopatín bueno está súper bueno no falla nada",
+  ];
+  it.each(accesorios)("%s -> rechazado", (title) => {
+    expect(classify(title)).toBeNull();
+  });
+
+  // Bicis reales del mismo inventario que nombran un accesorio que TRAEN, una medida o "para
+  // adultos/niños". Si alguna empieza a dar null, la regla se aflojó hacia el lado caro.
+  const bicis: Array<[string, string]> = [
+    ["Bicicleta Eléctrica Rodado 26 Nakto 250w 32km/h C/ Canasto", "urbana"],
+    ["Bicicleta Eléctrica Killer Rodado 20 Fat Bike Luz Señaleros", "urbana"],
+    ["Bicicleta Eléctrica De Paseo Con Canasto Y Asiento Trasero", "urbana"],
+    ["Bicicleta Eléctrica Plegable Gyroor C3 R14 Para Adultos", "plegable"],
+    ["Blaukpunt E-bike  - Bicicleta Eléctrica Para Adultos", "urbana"],
+    ["Bicicleta Eléctrica Amalfyt Country 48v 400w Con Canasto", "urbana"],
+    ["Vendo y permuto bicicleta electrica HURLEY rodado 28", "urbana"],
+    ["Bicicleta Electrica Tipo Paseo Rod 28 Metropolis 30v 10.4ah", "urbana"],
+    ["Bicicleta Eléctrica Tern Quick Haul P9 / Bosch / Urban Bikes", "urbana"],
+    ["Bicicleta Eléctrica De Equilibrio Para Niños Aiii Dna 12", "infantil"],
+    ["Bici Eléctrica De Balanceo Infantil", "infantil"],
+  ];
+  it.each(bicis)("%s sigue siendo bici (%s)", (title, variant) => {
+    const category = classify(title);
+    expect(category?.key, title).toBe("bicicleta-electrica");
+    expect(variantFor(category!, title).key, title).toBe(variant);
+  });
+});
