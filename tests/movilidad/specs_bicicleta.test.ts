@@ -138,8 +138,30 @@ describe("títulos de bici medidos", () => {
     expect(specsFromTitle(title, BICI)).toMatchObject(expected);
   });
 
-  it("'Bicicleta Eléctrica Gyroor 20 Eb025' no inventa un rodado del número suelto", () => {
-    expect(specsFromTitle("Bicicleta Electrica Gyroor 20 Eb025 Plegable", BICI).wheelInches).toBeNull();
+  // El rodado pelado, sin "rodado" ni comillas: así titulan los vendedores de ML (medido en el dry-run
+  // del VPS, 4/11/2026, donde "Gyroor 27.5 Cd-2614" quedaba sin rodado).
+  it.each([
+    ["Bicicleta Electrica Gyroor 20 Eb025 Plegable", 20],
+    ["Bicicleta Electrica Gyroor 27.5 Cd-2614 Plateada", 27.5],
+    ["Valentini Bikes - Bicicleta Eléctrica 26  Negra", 26],
+    ["Bicicleta Eléctrica Gyroor 14 Pulgadas C3-14", 14],
+  ])("rodado pelado: %s -> %s", (title, wheel) => {
+    expect(specsFromTitle(title, BICI).wheelInches).toBe(wheel);
+    expect(specsFromTitle(title, BICI).from.wheelInches).toBe("titulo");
+  });
+
+  it.each([
+    "Bicicleta Electrica 20 km de autonomía",
+    "Bicicleta Electrica 26 v 10ah",
+    "Bicicleta Eléctrica Gyroor C3-14 350w Negro",
+    "Bicicleta Eléctrica S-pro E-clipper 2026",
+    "Bicicleta Electrica plegable 24 cuotas sin recargo",
+  ])("un número con unidad, dentro de un código o un año no es rodado: %s", (title) => {
+    expect(specsFromTitle(title, BICI).wheelInches).toBeNull();
+  });
+
+  it("en un monopatín el número pelado nunca es rodado", () => {
+    expect(specsFromTitle("Monopatin Electrico Xiaomi 4 Pro 20 Negro").wheelInches).toBeNull();
   });
 
   it("'Vel 32 Km' no son cambios", () => {

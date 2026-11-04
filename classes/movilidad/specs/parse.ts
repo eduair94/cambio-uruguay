@@ -440,7 +440,33 @@ export function specsFromTitle(title: string, category?: string | null): Monopat
       specs.from.rangeKm = "titulo";
     }
   }
+  if (specProfile(category).bike && specs.wheelInches === null) {
+    const wheel = bareRodado(prep(title));
+    if (wheel !== null) {
+      specs.wheelInches = wheel;
+      specs.from.wheelInches = "titulo";
+    }
+  }
   return specs;
+}
+
+/**
+ * Sólo en el título de una bici: un rodado sin "rodado" ni comillas ("Gyroor 20 Eb025", "Gyroor
+ * 27.5 Cd-2614", "Valentini Bikes - Bicicleta Eléctrica 26 Negra"). Medido el 4/11/2026: es como
+ * titulan los vendedores de ML, y un número suelto de esa lista no es otra cosa en un título de bici
+ * — salvo que lo siga una unidad ("20 km", "26 v", "28 kg") o que sea parte de un código ("C3-14").
+ */
+const BARE_RODADO = /(?:^|\s)(12|14|16|20|24|26|27\.5|28|29)(?=\s|$|,)/g;
+const UNIT_AFTER = /^\s*(?:km|kms|w|watts?|v|volts?|kg|kgs|kilos?|ah|wh|h|hs|horas?|cm|mm|%|x\b|anos?|meses|dias|cuotas)/;
+
+function bareRodado(text: string): number | null {
+  BARE_RODADO.lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = BARE_RODADO.exec(text))) {
+    if (UNIT_AFTER.test(text.slice(match.index + match[0].length))) continue;
+    return Number(match[1]);
+  }
+  return null;
 }
 
 const ROW_STRING = '"((?:[^"\\\\]|\\\\.)*)"';
