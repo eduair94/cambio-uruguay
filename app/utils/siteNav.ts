@@ -4972,6 +4972,8 @@ export const EXCLUDED_ROUTES: readonly string[] = Object.freeze([
   // El comparador de monopatines: cada combinación de modelos la elige el lector (noindex). Se
   // llega desde la tabla de modelos y desde cada página de modelo, no desde el menú.
   '/monopatines-electricos-uruguay/comparar',
+  // Lo mismo para bicicletas eléctricas (4/11/2026).
+  '/bicicletas-electricas-uruguay/comparar',
 ])
 
 /**
@@ -5031,6 +5033,8 @@ export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freez
   'celulares-uruguay/[modelo]': 'consumer',
   // Una página por modelo de monopatín (4/11/2026): cuelga del hub de monopatines eléctricos.
   'monopatines-electricos-uruguay/[modelo]': 'consumer',
+  // Una página por modelo de bicicleta eléctrica (4/11/2026): mismo catálogo, otro hub.
+  'bicicletas-electricas-uruguay/[modelo]': 'consumer',
   // Las páginas individuales de descuentos: una por emisor y una por rubro, ambas alimentadas por
   // el mismo catálogo de Bankos que el mapa de /descuentos-con-tarjeta-uruguay.
   'descuentos-con-tarjeta-uruguay/[banco]': 'banking',

@@ -31,14 +31,7 @@ import {
  * contaría a cada aviso que no declara la velocidad.
  */
 type Dimension =
-  | 'autonomia'
-  | 'velocidad'
-  | 'potencia'
-  | 'carga'
-  | 'peso'
-  | 'rueda'
-  | 'rodado'
-  | 'rasgos'
+  'autonomia' | 'velocidad' | 'potencia' | 'carga' | 'peso' | 'rueda' | 'rodado' | 'rasgos'
 
 export interface FichaFacetStep {
   dimension: Dimension | 'conFicha'
@@ -84,10 +77,7 @@ export function monopatinFichaFacetPlan(
       match: without('ficha.autonomia'),
       group: groupOf(
         Object.fromEntries(
-          perfil.autonomia.map(km => [
-            `o${km}`,
-            count(inRange('$specs.rangeKm', { $gte: km })),
-          ])
+          perfil.autonomia.map(km => [`o${km}`, count(inRange('$specs.rangeKm', { $gte: km }))])
         )
       ),
     },
@@ -106,10 +96,7 @@ export function monopatinFichaFacetPlan(
       match: without('ficha.carga'),
       group: groupOf(
         Object.fromEntries(
-          perfil.carga.map(kg => [
-            `o${kg}`,
-            count(inRange('$specs.maxLoadKg', { $gte: kg })),
-          ])
+          perfil.carga.map(kg => [`o${kg}`, count(inRange('$specs.maxLoadKg', { $gte: kg }))])
         )
       ),
     },
@@ -118,10 +105,7 @@ export function monopatinFichaFacetPlan(
       match: without('ficha.peso'),
       group: groupOf(
         Object.fromEntries(
-          perfil.peso.map(kg => [
-            `o${kg}`,
-            count(inRange('$specs.weightKg', { $lte: kg })),
-          ])
+          perfil.peso.map(kg => [`o${kg}`, count(inRange('$specs.weightKg', { $lte: kg }))])
         )
       ),
     },
@@ -194,17 +178,13 @@ export function monopatinFichaFacetsFrom(
       slug => slug === selected
     )
   return {
-    autonomia: numeric(
-      'autonomia',
-      perfil.autonomia,
-      monopatinAutonomiaLabel,
-      ficha.autonomia
-    ),
+    autonomia: numeric('autonomia', perfil.autonomia, monopatinAutonomiaLabel, ficha.autonomia),
     velocidad: ranged('velocidad', MONOPATIN_VELOCIDAD_RANGOS, ficha.velocidad),
     potencia: ranged('potencia', MONOPATIN_POTENCIA_RANGOS, ficha.potencia),
     carga: numeric('carga', perfil.carga, monopatinCargaLabel, ficha.carga),
     peso: numeric('peso', perfil.peso, monopatinPesoLabel, ficha.peso),
-    rueda: perfil.ruedaClave === 'rueda' ? ranged('rueda', MONOPATIN_RUEDA_RANGOS, ficha.rueda) : [],
+    rueda:
+      perfil.ruedaClave === 'rueda' ? ranged('rueda', MONOPATIN_RUEDA_RANGOS, ficha.rueda) : [],
     rodado:
       perfil.ruedaClave === 'rodado' ? ranged('rodado', BICICLETA_RODADO_RANGOS, ficha.rodado) : [],
     rasgos: keep(

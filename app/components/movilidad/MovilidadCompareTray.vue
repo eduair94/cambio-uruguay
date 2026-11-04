@@ -1,11 +1,12 @@
 <!--
-  La bandeja "Comparar" de /monopatines-electricos-uruguay: aparece fija abajo cuando el lector marca
+  La bandeja "Comparar" de /monopatines-electricos-uruguay (y, con `compare-path`, la de
+  /bicicletas-electricas-uruguay): aparece fija abajo cuando el lector marca
   un modelo en la tabla, junta hasta MONOPATIN_COMPARE_MAX y lleva al comparador con esos modelos en la
   URL (?m=a,b,c), que es lo que hace que la comparación se pueda compartir.
 -->
 <template>
   <Transition name="compare-tray">
-    <aside v-if="items.length" class="compare-tray" aria-label="Comparar monopatines">
+    <aside v-if="items.length" class="compare-tray" :aria-label="label">
       <div class="compare-tray__inner">
         <p class="compare-tray__count" aria-live="polite">
           <strong>{{ countLabel }}</strong>
@@ -43,7 +44,15 @@
 <script setup lang="ts">
 import { MONOPATIN_COMPARE_MAX } from '~/utils/monopatinModelos'
 
-const props = defineProps<{ items: Array<{ slug: string; name: string }> }>()
+const props = withDefaults(
+  defineProps<{
+    items: Array<{ slug: string; name: string }>
+    /** El comparador de la categoría; sin él, el de monopatines. */
+    comparePath?: string
+    label?: string
+  }>(),
+  { comparePath: '/monopatines-electricos-uruguay/comparar', label: 'Comparar monopatines' }
+)
 const emit = defineEmits<{ remove: [slug: string]; clear: [] }>()
 
 const countLabel = computed(() =>
@@ -55,7 +64,7 @@ const countLabel = computed(() =>
 // Literal y sin localePath: las páginas de modelo y el comparador son sólo en español, como las
 // fichas de celulares.
 const link = computed(() => ({
-  path: '/monopatines-electricos-uruguay/comparar',
+  path: props.comparePath,
   query: { m: props.items.map(item => item.slug).join(',') },
 }))
 </script>

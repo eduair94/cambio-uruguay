@@ -8,7 +8,7 @@ const APP = join(__dirname, '..', '..')
 const read = (...parts: string[]): string => readFileSync(join(APP, ...parts), 'utf8')
 
 const page = read('pages', 'monopatines-electricos-uruguay', 'index.vue')
-const bicicletas = read('pages', 'bicicletas-electricas-uruguay.vue')
+const bicicletas = read('pages', 'bicicletas-electricas-uruguay', 'index.vue')
 const card = read('components', 'equipar', 'ListingCard.vue')
 const filters = read('components', 'equipar', 'ProductosFilters.vue')
 const directorio = read('components', 'equipar', 'Directorio.vue')
@@ -70,21 +70,22 @@ describe('lo compartido con equipar', () => {
     expect(filters).toContain("rasgos: draft.rasgos.join(',')")
   })
 
-  it('los órdenes por ficha sólo aparecen en el directorio de monopatines', () => {
+  it('los órdenes por ficha sólo aparecen en los directorios con ficha (monopatín y bicicleta)', () => {
     expect(directorio).toMatch(
-      /props\.vertical === 'movilidad' && props\.fixedCategoria === 'monopatin-electrico'[\s\S]*MOVILIDAD_PRODUCTOS_SORT_ITEMS/
+      /props\.vertical === 'movilidad' &&[\s\S]*props\.fixedCategoria === 'monopatin-electrico'[\s\S]*props\.fixedCategoria === 'bicicleta-electrica'[\s\S]*MOVILIDAD_PRODUCTOS_SORT_ITEMS/
     )
   })
 
-  it('la página de bicicletas no gana nada de la ficha', () => {
+  // Desde el 4/11/2026 la bici tiene su propio asesor y sus medianas, nunca los del monopatín.
+  it('la página de bicicletas usa su asesor y su snapshot, no los del monopatín', () => {
     expect(bicicletas).not.toContain('MovilidadMonopatinAsesor')
-    expect(bicicletas).not.toContain('specStats')
+    expect(bicicletas).toContain('<MovilidadBicicletaAsesor')
+    expect(bicicletas).toContain('specStats')
   })
 
-  it('la ruta de la categoría sólo agrega ficha para monopatín', () => {
-    expect(categoriaApi).toMatch(
-      /slug === 'monopatin-electrico'\s*\?\s*await attachMonopatinSpecs\(items\)/
-    )
+  it('la ruta de la categoría agrega la ficha de SU categoría (un snapshot por categoría)', () => {
+    expect(categoriaApi).toContain('await attachMovilidadSpecs(items, slug)')
+    expect(categoriaApi).toContain('MovilidadSpecSnapshotModel.findOne({ key: category })')
   })
 })
 

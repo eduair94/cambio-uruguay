@@ -54,11 +54,7 @@
         :categoria="producto.category"
       />
       <!-- Sólo con modelo identificado: todas las ofertas del mismo modelo juntas. -->
-      <NuxtLink
-        v-if="producto.modelSlug && modelPath"
-        :to="modelPath"
-        class="eq-card__model"
-      >
+      <NuxtLink v-if="producto.modelSlug && modelPath" :to="modelPath" class="eq-card__model">
         Ver el modelo en todos los vendedores
       </NuxtLink>
       <p class="eq-card__facts">{{ facts }}</p>

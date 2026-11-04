@@ -20,7 +20,7 @@ const composable = read('composables', 'useEquiparProductosDirectorio.ts')
 const listingCard = read('components', 'equipar', 'ListingCard.vue')
 const directorio = read('components', 'equipar', 'Directorio.vue')
 const monopatinPage = read('pages', 'monopatines-electricos-uruguay', 'index.vue')
-const bicicletaPage = read('pages', 'bicicletas-electricas-uruguay.vue')
+const bicicletaPage = read('pages', 'bicicletas-electricas-uruguay', 'index.vue')
 
 describe('GET /api/movilidad/productos', () => {
   it('lee movilidadlistings, nunca la colección de equipar', () => {

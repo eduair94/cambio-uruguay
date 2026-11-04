@@ -49,7 +49,9 @@ export default defineEventHandler(async (event): Promise<MonopatinModelDetailRes
   const floor = monopatinModelFreshFloor(new Date().toISOString().slice(0, 10))
   // Un slug de bici pedido desde la página de monopatines (o al revés) es 404: cada página publica
   // sólo los modelos de su categoría.
-  const byCategory = movilidadModelCategoryFilter(movilidadModelCategoria(getQuery(event).categoria))
+  const byCategory = movilidadModelCategoryFilter(
+    movilidadModelCategoria(getQuery(event).categoria)
+  )
   let model: MonopatinModelDoc | null
   let others: MonopatinModelDoc[] = []
   try {
