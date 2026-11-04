@@ -30,7 +30,7 @@ import { buildSpecSnapshot, MONOPATIN_SNAPSHOT_KEY, type SnapshotRow } from "./c
 import { loadFichaByListingId, MOVILIDAD_SPECS_COLLECTION } from "./classes/movilidad/store";
 import { MovilidadModelModel } from "./classes/models/MovilidadModel";
 import { buildModels, modelsRunIsThin, type ModelHistoryPoint, type ModelRow } from "./classes/movilidad/models/build";
-import { modelsWrites } from "./classes/movilidad/models/write";
+import { modelsRetireWrite, modelsWrites } from "./classes/movilidad/models/write";
 import type { EquiparListingRow } from "./classes/equipar/listings";
 import { sleep } from "./classes/rentals/net";
 
@@ -213,8 +213,14 @@ export async function main(): Promise<void> {
       .lean()
       .exec()) as unknown as Array<{ slug: string; history?: ModelHistoryPoint[] }>;
     await MovilidadModelModel.bulkWrite(
-      modelsWrites(models, new Map(prev.map((doc) => [doc.slug, doc.history ?? []]))) as any,
-      { ordered: false }
+      [
+        ...modelsWrites(models, new Map(prev.map((doc) => [doc.slug, doc.history ?? []]))),
+        modelsRetireWrite(
+          models.map((model) => model.slug),
+          modelCutoff
+        ),
+      ] as any,
+      { ordered: true }
     );
   }
 

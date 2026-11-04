@@ -23,6 +23,7 @@ const MovilidadModelSchema = new Schema(
     listings: { type: Number, default: 0 },
     sellers: { type: Number, default: 0 },
     indexable: { type: Boolean, default: false },
+    retired: { type: Boolean, default: false },
     firstSeen: { type: String, required: true },
     lastSeen: { type: String, required: true },
     generatedAt: { type: String, required: true },

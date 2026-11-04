@@ -27,6 +27,15 @@ describe('/monopatines-electricos-uruguay/<modelo>', () => {
     )
   })
 
+  it('un modelo retirado lo dice y no se ofrece para comparar', () => {
+    expect(template).toContain('v-if="model.retired"')
+    expect(template).toMatch(/v-if="siblings\[0\] && !model\.retired"/)
+  })
+
+  it('sólo en español: no genera copias en/pt', () => {
+    expect(page).toContain("defineI18nRoute({ locales: ['es'] })")
+  })
+
   it('canonical absoluto, título con el precio y la marca del sitio', () => {
     expect(page).toContain(
       '`https://cambio-uruguay.com/monopatines-electricos-uruguay/${slug.value}`'

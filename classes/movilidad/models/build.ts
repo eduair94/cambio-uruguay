@@ -20,6 +20,8 @@ export const MODEL_HISTORY_MAX = 400;
 export const MODEL_MIN_LISTINGS = 2;
 export const MODEL_INDEXABLE_SELLERS = 2;
 export const MODEL_INDEXABLE_SPECS = 3;
+/** El mismo patrón que valida la página (`MONOPATIN_MODEL_SLUG_RE` en app/utils/monopatinModelos.ts). */
+export const MODEL_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+){1,6}$/;
 /** Dos fichas "coinciden" si difieren menos que esto (redondeos: 25 y 25,5 km/h). */
 const AGREE_TOLERANCE = 0.05;
 
@@ -108,6 +110,8 @@ export interface MovilidadModelDoc {
   listings: number;
   sellers: number;
   indexable: boolean;
+  /** La corrida más reciente ya no lo armó (cambió la clave de sus avisos, o le quedó uno solo). */
+  retired: boolean;
   firstSeen: string;
   lastSeen: string;
   generatedAt: string;
@@ -264,7 +268,8 @@ export function buildModels(
   const models: MovilidadModelDoc[] = [];
   const slugByListing = new Map<string, string>();
   for (const [slug, { identity, rows: members }] of groups) {
-    if (members.length < MODEL_MIN_LISTINGS) continue;
+    // Un slug que la página rechazaría sería un enlace a un 404 en la tabla, el asesor y el sitemap.
+    if (members.length < MODEL_MIN_LISTINGS || !MODEL_SLUG_RE.test(slug)) continue;
     const offers = members.map(toOffer).sort((a, b) => a.priceUyu - b.priceUyu || a.listingId.localeCompare(b.listingId));
     const fresh = offers.filter((offer) => offer.condition === "new");
     const used = offers.filter((offer) => offer.condition === "used");
@@ -272,11 +277,14 @@ export function buildModels(
     const numericSpecs = NUMERIC.filter((field) => specs.values[field] !== null).length;
     const sellers = new Set(members.map((row) => row.sellerKey)).size;
     const image = [...fresh, ...used].find((offer) => offer.image)?.image ?? null;
+    // La forma más repetida de la marca entre sus avisos: el primero de la base cambia entre corridas, y
+    // con él el H1 y el título ("XIAOMI Electric Scooter" si una tienda Fenicio venía primero).
+    const brandLabel = mode(identified.filter((row) => row.identity?.key === slug).map((row) => row.identity!.brandLabel));
     models.push({
       slug,
-      name: `${identity.brandLabel} ${identity.label}`,
+      name: `${brandLabel} ${identity.label}`,
       brandKey: identity.brandKey,
-      brandLabel: identity.brandLabel,
+      brandLabel,
       modelLabel: identity.label,
       variant: mode(members.map((row) => row.variant)),
       image,
@@ -288,6 +296,7 @@ export function buildModels(
       listings: members.length,
       sellers,
       indexable: sellers >= MODEL_INDEXABLE_SELLERS && numericSpecs >= MODEL_INDEXABLE_SPECS,
+      retired: false,
       firstSeen: members.map((row) => row.firstSeen ?? today).sort()[0]!,
       lastSeen: today,
       generatedAt,

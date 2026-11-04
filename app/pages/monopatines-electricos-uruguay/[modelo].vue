@@ -47,12 +47,20 @@ FIRST VIEWPORT: migas, foto, H1, "nuevo desde" con vendedores, la franja de fich
           <VBtn color="primary" variant="flat" href="#ofertas">
             Ver {{ model.sellers === 1 ? 'la oferta' : `los ${model.sellers} vendedores` }}
           </VBtn>
-          <VBtn v-if="siblings[0]" variant="tonal" :to="compareTo(siblings[0])">
+          <VBtn v-if="siblings[0] && !model.retired" variant="tonal" :to="compareTo(siblings[0])">
             Comparar con {{ siblings[0].name }}
           </VBtn>
         </div>
       </div>
     </header>
+
+    <VAlert v-if="model.retired" type="info" variant="tonal" class="mt-6">
+      Ya no encontramos avisos de este modelo con dos vendedores o más: sus precios son de la última
+      vez que lo vimos y pueden haber cambiado.
+      <NuxtLink to="/monopatines-electricos-uruguay#modelos-title" class="cat-link">
+        Ver los modelos a la venta hoy
+      </NuxtLink>
+    </VAlert>
 
     <!-- ── Ofertas ────────────────────────────────────────────────────────── -->
     <section id="ofertas" class="modelo-section" aria-labelledby="ofertas-title">
@@ -234,6 +242,10 @@ import {
   type MonopatinModelOffer,
   type MonopatinModelSummary,
 } from '~/utils/monopatinModelos'
+
+// Sólo español, como las fichas de alquiler: sin esto Nuxt generaba /en/ y /pt/ con el mismo cuerpo
+// en castellano y el layout anunciaba esas copias como alternativas (revisión final, 4/11).
+defineI18nRoute({ locales: ['es'] })
 
 // 404 real para un slug inventado, ANTES de renderizar: mismo patrón que /celulares-uruguay/[modelo].
 // El filtro de forma va primero para no gastar una consulta por cada URL basura.

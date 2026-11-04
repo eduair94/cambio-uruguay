@@ -10,6 +10,10 @@ const page = readFileSync(
 const template = page.split('<script setup')[0] ?? ''
 
 describe('/monopatines-electricos-uruguay/comparar', () => {
+  it('sólo en español: no genera copias en/pt', () => {
+    expect(page).toContain("defineI18nRoute({ locales: ['es'] })")
+  })
+
   it('nunca se indexa: cada combinación es una copia elegida por el lector', () => {
     expect(page).toContain("robots: 'noindex, follow'")
   })

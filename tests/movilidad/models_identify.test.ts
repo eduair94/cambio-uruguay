@@ -167,3 +167,54 @@ describe("mlCatalogId y unifyByCatalog", () => {
     ]);
   });
 });
+
+describe("revisión final de rama (4/11)", () => {
+  const raw = (title: string, brand: string, brandKey: string, fichaModel: string | null = null): IdentifyInput => ({
+    title,
+    brand,
+    brandKey,
+    fichaModel,
+    source: "store",
+  });
+
+  it("la clave es un slug aunque la marca guardada traiga espacios o apóstrofo", () => {
+    expect(key(raw("Monopatín Segway Ninebot Max G2", "Segway Ninebot", "segway ninebot"))).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)+$/);
+    expect(key(raw("Monopatín K'NEX Speedy 350w", "K'NEX", "k'nex"))).toBe("knex-speedy");
+  });
+
+  it("Segway/Ninebot: el alias de la marca no es modelo, y G30 no se une con G2", () => {
+    expect(key(ml("Segway Ninebot Kickscooter Max G30", "Segway"))).toBe("segway-max-g30");
+    expect(key(ml("Segway Ninebot Kickscooter Max G2", "Segway"))).toBe("segway-max-g2");
+    expect(key(ml("Ninebot Max G30 Segway", "Segway"))).toBe("segway-max-g30");
+  });
+
+  it("G30 LP es otro modelo que el G30, y si el nombre sigue más allá del tope no se trunca", () => {
+    expect(key(ml("Segway Ninebot Max G30 LP Negro", "Segway"))).toBe("segway-max-g30-lp");
+    expect(key(ml("Monopatin Kugoo Kirin M4 Pro Max Negro", "Kugoo"))).toBe(null);
+  });
+
+  it("la marca se nombra como la vende el fabricante, no como la escribió la tienda", () => {
+    expect(identifyModel(raw("XIAOMI Electric Scooter 6 Pro", "XIAOMI", "xiaomi"))!.brandLabel).toBe("Xiaomi");
+  });
+
+  it("la ficha nunca le saca la generación ni el número al título", () => {
+    expect(key(ml("Xiaomi 4 Lite Gen2", "Xiaomi", "Electric Scooter 4 Lite"))).toBe("xiaomi-4-lite-gen2");
+    expect(key(ml("Monopatin Atom Tenacity 2 Plegable", "Atom", "Tenacity"))).toBe("atom-tenacity-2");
+  });
+
+  it("las palabras de venta y 'pulg'/'kms' no son modelo", () => {
+    expect(key(ml("Monopatin Xiaomi 6 Lite Entrega Inmediata", "Xiaomi"))).toBe("xiaomi-6-lite");
+    expect(key(ml("Monopatin Atom Tenacity 10 Pulg", "Atom"))).toBe("atom-tenacity");
+    expect(key(ml("Monopatin Atom Kaizen Pro 50 Kms", "Atom"))).toBe("atom-kaizen-pro");
+  });
+
+  it("un empate en el catálogo de ML no elige: cada aviso conserva el suyo", () => {
+    const id = (k: string): ModelIdentity => ({ brandKey: "xiaomi", brandLabel: "Xiaomi", tokens: [], key: k, label: k });
+    const rows = unifyByCatalog([
+      { url: "https://x/p/MLU9", identity: id("xiaomi-6") },
+      { url: "https://x/p/MLU9", identity: id("xiaomi-6-pro") },
+      { url: "https://x/p/MLU9", identity: null },
+    ]);
+    expect(rows.map((row) => row.identity?.key ?? null)).toEqual(["xiaomi-6", "xiaomi-6-pro", null]);
+  });
+});

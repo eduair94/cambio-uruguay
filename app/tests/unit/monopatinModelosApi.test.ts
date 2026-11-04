@@ -106,7 +106,11 @@ describe('GET /api/movilidad/modelos/<slug>', () => {
     expect(response.model.slug).toBe('xiaomi-6-pro')
     expect(response.siblings.map(s => s.slug)).toEqual(['xiaomi-6'])
     expect(response.siblings[0]).not.toHaveProperty('offers')
-    expect(findFilter[0]).toMatchObject({ variant: 'urbano', slug: { $ne: 'xiaomi-6-pro' } })
+    expect(findFilter[0]).toMatchObject({
+      variant: 'urbano',
+      slug: { $ne: 'xiaomi-6-pro' },
+      retired: { $ne: true },
+    })
     expect(cache()).toMatch(/public, max-age=900/)
   })
 })
@@ -120,7 +124,10 @@ describe('GET /api/movilidad/modelos', () => {
     ])
     const response = await list({} as never)
     expect(response.models.map(m => m.slug)).toEqual(['b', 'c', 'a'])
-    expect(findFilter[0]).toMatchObject({ lastSeen: { $gte: expect.any(String) } })
+    expect(findFilter[0]).toMatchObject({
+      lastSeen: { $gte: expect.any(String) },
+      retired: { $ne: true },
+    })
     expect(response.generatedAt).toBe('2026-11-04T06:01:00Z')
     expect(cache()).toMatch(/public/)
   })

@@ -79,6 +79,8 @@ export interface MonopatinModelDoc {
   listings: number
   sellers: number
   indexable: boolean
+  /** La corrida más reciente ya no lo armó: la página sigue, con noindex y un aviso. */
+  retired?: boolean
   firstSeen: string
   lastSeen: string
   generatedAt: string

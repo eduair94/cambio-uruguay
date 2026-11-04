@@ -105,6 +105,9 @@ import {
   type MonopatinModelSummary,
 } from '~/utils/monopatinModelos'
 
+// Sólo español, como la página de cada modelo.
+defineI18nRoute({ locales: ['es'] })
+
 const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()

@@ -19,7 +19,7 @@
 // Precisión sobre recall, como `classes/phones/identify.ts`: un aviso sin modelo queda en el
 // directorio y no entra a ninguna página. Nunca se une por precio, foto ni parecido de texto.
 import { norm } from "../../equipar/classify";
-import { brandPattern } from "../specs/brands";
+import { brandPattern, cleanBrand } from "../specs/brands";
 
 export interface ModelIdentity {
   brandKey: string;
@@ -54,12 +54,39 @@ const GENERIC = new Set(
     "ruedas doble freno frenos suspension app bluetooth led luces luz asiento kit pack mas km kms metal reforzado " +
     "barato barata version ver edicion global internacional us usa eu negro negra blanco blanca gris azul rojo roja " +
     "rodado pulgadas timbre cover funda repuesto repuestos cargador accesorio accesorios casco " +
+    // Palabras de venta (revisión final, 4/11: "6 Lite Entrega Inmediata" daba un modelo aparte).
+    "entrega inmediata envios stock tienda liquidacion liviano liviana promo promocion cuotas disponible " +
+    "disponibles oficial importado kick kickscooter " +
     "rosa verde naranja amarillo violeta celeste plateado plata dorado mate black white grey gray blue red pink green"
   ).split(" ")
 );
 /** Sólo al principio: "Mi Electric Scooter Pro 2" es Xiaomi y "mi" no es el modelo. */
 const LEADING_ONLY = new Set(["mi", "e"]);
-const UNITS = new Set(["w", "kw", "km", "kmh", "kph", "h", "hs", "hr", "kg", "v", "ah", "wh", "mah", "cm", "mm", "mph", "pulgadas"]);
+const UNITS = new Set([
+  "w",
+  "kw",
+  "km",
+  "kms",
+  "kmh",
+  "kph",
+  "kilometros",
+  "h",
+  "hs",
+  "hr",
+  "kg",
+  "v",
+  "ah",
+  "wh",
+  "mah",
+  "cm",
+  "mm",
+  "mph",
+  "pulg",
+  "pulgada",
+  "pulgadas",
+  "watts",
+  "volts",
+]);
 const MEASURE = /^\d+(?:\.\d+)?(?:w|kw|km|kmh|kph|kg|kgs|v|ah|wh|mah|cm|mm|mph|hs|h|")$/;
 
 /** Prefijo de línea: Xiaomi vende "Electric Scooter 6 Pro", y así se busca. */
@@ -106,36 +133,39 @@ function splitTier(token: string): string[] {
  * Las palabras del modelo en `text` (ya sin la marca adelante): saltea genéricas iniciales y corta en
  * la primera palabra que no puede ser parte de un nombre de modelo.
  */
+function verdict(token: string, next: string | undefined, out: string[], skip: Set<string>): "skip" | "stop" | "take" {
+  if (!out.length && (GENERIC.has(token) || skip.has(token) || LEADING_ONLY.has(token))) return "skip";
+  if (GENERIC.has(token) || skip.has(token)) return "stop";
+  if (MEASURE.test(token)) return "stop";
+  if (/^\d+(?:\.\d+)?$/.test(token)) {
+    // "25 km", "350 w": una medida separada. Un número pelado grande es una potencia sin unidad, y
+    // uno chico después de un código ("Sgx3 10", "E9pro 25") es ruido del título.
+    if (next && UNITS.has(next)) return "stop";
+    if (Number(token) > 99) return "stop";
+    if (out.some((word) => /\d/.test(word))) return "stop";
+  }
+  return /^[a-z0-9]+$/.test(token) ? "take" : "stop";
+}
+
+/**
+ * Las palabras del modelo en `text` (ya sin la marca adelante): saltea genéricas iniciales y corta en
+ * la primera palabra que no puede ser parte de un nombre de modelo. Si el nombre sigue más allá de
+ * MAX_TOKENS no se trunca: devuelve nada, porque truncar unía "Max G30" con "Max G2" cuando la marca
+ * ocupaba un lugar (revisión final, 4/11).
+ */
 export function modelTokens(text: string, brandWords: string[]): string[] {
   const skip = new Set(brandWords);
   const list = generations(words(text)).flatMap(splitTier);
   const out: string[] = [];
-  for (let i = 0; i < list.length && out.length < MAX_TOKENS; i++) {
-    const token = list[i]!;
-    const next = list[i + 1];
-    if (!out.length && (GENERIC.has(token) || skip.has(token) || LEADING_ONLY.has(token))) continue;
-    if (GENERIC.has(token) || skip.has(token)) break;
-    if (MEASURE.test(token)) break;
-    if (/^\d+(?:\.\d+)?$/.test(token)) {
-      // "25 km", "350 w": una medida separada. Un número pelado grande es una potencia sin unidad, y
-      // uno chico después de un código ("Sgx3 10", "E9pro 25") es ruido del título.
-      if (next && UNITS.has(next)) break;
-      if (Number(token) > 99) break;
-      if (out.some((word) => /\d/.test(word))) break;
-    }
-    if (!/^[a-z0-9]+$/.test(token)) break;
-    out.push(token);
+  for (let i = 0; i < list.length; i++) {
+    const v = verdict(list[i]!, list[i + 1], out, skip);
+    if (v === "skip") continue;
+    if (v === "stop") break;
+    if (out.length === MAX_TOKENS) return [];
+    out.push(list[i]!);
   }
   return out;
 }
-
-const isSub = (needle: string[], hay: string[]): boolean => {
-  if (!needle.length || needle.length > hay.length) return false;
-  for (let start = 0; start + needle.length <= hay.length; start++) {
-    if (needle.every((word, i) => hay[start + i] === word)) return true;
-  }
-  return false;
-};
 
 function labelOf(brandKey: string, tokens: string[]): string {
   const words = tokens.map((token) =>
@@ -149,8 +179,27 @@ function labelOf(brandKey: string, tokens: string[]): string {
   return prefix && /^\d$/.test(tokens[0] ?? "") ? `${prefix} ${words.join(" ")}` : words.join(" ");
 }
 
+/** Igual que `enrichMovilidadRow`: la marca guardada por una tienda puede traer espacios o apóstrofo. */
+const slugOf = (value: string): string =>
+  norm(value)
+    .replace(/'/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+/** Dónde empieza `needle` adentro de `hay`, o -1. */
+const indexOfSub = (needle: string[], hay: string[]): number => {
+  if (!needle.length || needle.length > hay.length) return -1;
+  for (let start = 0; start + needle.length <= hay.length; start++) {
+    if (needle.every((word, i) => hay[start + i] === word)) return start;
+  }
+  return -1;
+};
+
 export function identifyModel(input: IdentifyInput): ModelIdentity | null {
   if (input.source === "facebook" || !input.brand || !input.brandKey) return null;
+  const brandKey = slugOf(input.brandKey);
+  if (!brandKey) return null;
+  const brandLabel = cleanBrand(input.brand) ?? input.brand;
   const brandWords = words(input.brand);
   const title = norm(input.title);
   const pattern = brandPattern(input.brand);
@@ -160,25 +209,35 @@ export function identifyModel(input: IdentifyInput): ModelIdentity | null {
   // Una marca desconocida que el título no nombra es casi siempre el nombre del vendedor.
   if (!match && !pattern) return null;
 
-  const allBrandWords = [...brandWords, ...(match ? words(match[0]) : [])];
+  // Todos los alias que el título usa para la marca ("Segway Ninebot ...") se saltean, no sólo el
+  // primero: si no, "ninebot" pasaba a ser parte del modelo.
+  const aliases = pattern ? [...title.matchAll(new RegExp(pattern.source, "g"))].flatMap((m) => words(m[0])) : [];
+  const allBrandWords = [...brandWords, ...aliases, ...(match ? words(match[0]) : [])];
   const fromTitle = match ? modelTokens(title.slice(match.index + match[0].length), allBrandWords) : [];
   const fromFicha = input.fichaModel ? modelTokens(input.fichaModel, allBrandWords) : [];
 
   let tokens = fromTitle;
   if (!tokens.length) tokens = fromFicha;
-  else if (fromFicha.length && fromFicha.length < fromTitle.length && isSub(fromFicha, fromTitle)) {
-    // La ficha es el mismo modelo sin el ruido del título; sólo si lo que sobra no es la gama.
-    const dropped = fromTitle.filter((word) => !fromFicha.includes(word));
-    if (!dropped.some((word) => TIERS.has(word))) tokens = fromFicha;
+  else if (fromFicha.length && fromFicha.length < fromTitle.length) {
+    // La ficha es el mismo modelo sin el ruido del título ("Enxuta 45 Meenx552n" con ficha MEENX552N),
+    // nunca para sacarle la gama, la generación ni un número que siga al modelo ("Tenacity 2").
+    const start = indexOfSub(fromFicha, fromTitle);
+    if (start >= 0) {
+      const dropped = fromTitle.filter((word) => !fromFicha.includes(word));
+      const after = fromTitle.slice(start + fromFicha.length);
+      const keeps =
+        dropped.some((word) => TIERS.has(word) || /^gen\d$/.test(word)) || after.some((word) => /^\d+$/.test(word));
+      if (!keeps) tokens = fromFicha;
+    }
   }
   if (!tokens.length) return null;
 
   return {
-    brandKey: input.brandKey,
-    brandLabel: input.brand,
+    brandKey,
+    brandLabel,
     tokens,
-    key: `${input.brandKey}-${tokens.join("-")}`,
-    label: labelOf(input.brandKey, tokens),
+    key: `${brandKey}-${tokens.join("-")}`,
+    label: labelOf(brandKey, tokens),
   };
 }
 
@@ -189,7 +248,7 @@ export function mlCatalogId(url: string): string | null {
 
 /**
  * Los avisos del mismo producto de catálogo de ML son el mismo modelo: toman el modelo mayoritario del
- * grupo (empate → el de clave menor, para que la corrida sea determinista), también los que no tenían.
+ * grupo (en empate no se elige), también los que no tenían.
  */
 export function unifyByCatalog<T extends { url: string; identity: ModelIdentity | null }>(rows: T[]): T[] {
   const votes = new Map<string, Map<string, { count: number; identity: ModelIdentity }>>();
@@ -204,8 +263,11 @@ export function unifyByCatalog<T extends { url: string; identity: ModelIdentity 
   }
   const winner = new Map<string, ModelIdentity>();
   for (const [catalog, tally] of votes) {
-    const best = [...tally.entries()].sort((a, b) => b[1].count - a[1].count || a[0].localeCompare(b[0]))[0]!;
-    winner.set(catalog, best[1].identity);
+    const ranked = [...tally.values()].sort((a, b) => b.count - a.count);
+    // Empate: ML dice que es el mismo producto pero los vendedores no coinciden en cuál. No se elige
+    // (el de clave menor ponía un 6 Pro en la página del 6): cada aviso conserva el suyo.
+    if (ranked.length > 1 && ranked[0]!.count === ranked[1]!.count) continue;
+    winner.set(catalog, ranked[0]!.identity);
   }
   return rows.map((row) => {
     const catalog = mlCatalogId(row.url);

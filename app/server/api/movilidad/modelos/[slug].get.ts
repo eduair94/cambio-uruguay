@@ -55,6 +55,7 @@ export default defineEventHandler(async (event): Promise<MonopatinModelDetailRes
         variant: model.variant,
         slug: { $ne: slug },
         lastSeen: { $gte: floor },
+        retired: { $ne: true },
       })
         .select(SUMMARY_PROJECTION)
         .maxTimeMS(5000)

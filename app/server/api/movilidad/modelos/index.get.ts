@@ -20,7 +20,8 @@ export default defineEventHandler(async (event): Promise<MonopatinModelListRespo
   let docs: MonopatinModelDoc[]
   try {
     await connectDb()
-    docs = (await MovilidadModelModel.find({ lastSeen: { $gte: floor } })
+    // Sin los retirados: la corrida más reciente ya no los armó (sus avisos tienen otra clave).
+    docs = (await MovilidadModelModel.find({ lastSeen: { $gte: floor }, retired: { $ne: true } })
       .select({
         _id: 0,
         slug: 1,

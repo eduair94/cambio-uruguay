@@ -189,3 +189,12 @@ describe("modelsRunIsThin", () => {
     expect(modelsRunIsThin(0, 2)).toBe(false);
   });
 });
+
+describe("el nombre del modelo no depende del orden de la base", () => {
+  it("con una marca que cada tienda escribe distinto, usa la forma más repetida", () => {
+    const acme = (brand: string) => row({ brand, brandKey: "acme", title: `Monopatin ${brand} X1 350w` });
+    const { models } = buildModels([acme("ACME"), acme("Acme"), acme("Acme")], TODAY, NOW);
+    expect(models[0]!.name).toBe("Acme X1");
+    expect(models[0]!.brandLabel).toBe("Acme");
+  });
+});
