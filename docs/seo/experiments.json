@@ -2950,6 +2950,16 @@
       "shippedOn": "2026-11-04",
       "routes": ["/guias/feriados-en-uruguay-como-se-pagan"],
       "hypothesis": "La guia afirmaba en titulo y descripcion que solo cinco dias se pagan doble y clasificaba todo el resto del calendario como feriado comun, aunque su propia fuente MTSS admite feriados pagos sectoriales por convenio. Se aclara desde el inicio que las cinco fechas son el regimen general, se explica el caso de las horas del sabado redistribuidas y se alinean cuerpo y FAQ. Se retiran inferencias no respaldadas por la fuente sobre jornadas y remuneracion mixta. Se mantiene la misma URL y se mide el paquete completo de precision y utilidad, no el efecto aislado de una palabra del titulo. La intervencion anterior del 4/10 tiene sus 28 dias posteriores archivados hasta el 1/11; el resultado agregado de doce guias no demuestra una perdida de esta pagina. Se espera responder mejor a una necesidad ya presente en la guia y favorecer la adquisicion organica; evaluar por cuota de clics del sitio con 28 dias finales antes y despues, excluyendo el dia de publicacion. Fuentes oficiales MTSS e IMPO verificadas el 4/11/2026. Sin consultas inventadas ni cambios de anuncios, plantilla o calendarios."
+    },
+    {
+      "id": "tres-guias-de-viaje-entran-al-tema-del-dolar",
+      "shippedOn": "2026-11-04",
+      "routes": [
+        "/guias/moneda-de-uruguay",
+        "/guias/pagar-en-dolares-o-pesos-uruguay",
+        "/guias/dolares-para-viajar"
+      ],
+      "hypothesis": "Las tres eran guias huerfanas: sin entrada en ningun tema no dibujan Mas sobre este tema y por eso no reciben NINGUN enlace del bloque, que es reciproco por construccion. Entran a dolar-y-casas-de-cambio-uruguay, que es su tema sin inventar ningun padre: el termino peso-uruguayo y el recurso /donde-conseguir-monedas-uruguay ya estaban en el hub y son a donde apuntan los related de moneda-de-uruguay; la guia del aeropuerto y /llevar-dolares-o-reales-a-brasil son el vecino que dolares-para-viajar pide en su tercera seccion. dolares-para-viajar es ademas la peor de las tres porque no tiene related ni links de seccion, o sea que guideNextSteps no tenia ninguna de sus tres fuentes y la pagina terminaba sin un solo enlace de salida; entrar al tema le da el bloque de vecinos y los proximos pasos de un saque. Se espera que las tres ganen enlaces internos desde el resto del tema (quince guias, veinte recursos y diecisiete terminos del glosario) y repartan autoridad hacia el comparador; evaluar por cuota de clics del sitio con 28 dias archivados, excluyendo el dia de publicacion. No se toco el texto de ninguna guia ni su titulo o descripcion."
     }
   ]
 }
