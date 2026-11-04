@@ -283,3 +283,24 @@ describe("potencia máxima sola", () => {
     expect(specsFromText("Potencia pico 1200W, motor brushless", "descripcion").motorW).toBeNull();
   });
 });
+
+describe("negaciones y rangos con 'a' (diferidos del 3/11)", () => {
+  it("'Freno de disco: No' no es freno de disco", () => {
+    expect(specsFromText("Freno de disco: No. Freno eléctrico trasero.", "descripcion").discBrake).not.toBe(true);
+  });
+  it("'Sin app' es sin app", () => {
+    expect(specsFromText("Modelo básico sin app ni bluetooth", "descripcion").bluetooth).toBe(false);
+  });
+  it("'Bluetooth: no' es sin bluetooth", () => {
+    expect(specsFromText("Bluetooth: no", "descripcion").bluetooth).toBe(false);
+  });
+  it("una tabla con '4 a 6 h' toma el lado conservador del tiempo de carga", () => {
+    expect(specsFromRows({ "Tiempo de carga": "4 a 6 h" }).chargeHours).toBe(6);
+  });
+  it("una tabla con '20 a 25 km' toma el lado bajo de la autonomía", () => {
+    expect(specsFromRows({ Autonomía: "20 a 25 km" }).rangeKm).toBe(20);
+  });
+  it("'hasta' también separa un rango de tabla", () => {
+    expect(specsFromRows({ "Tiempo de carga": "5 hasta 7 h" }).chargeHours).toBe(7);
+  });
+});

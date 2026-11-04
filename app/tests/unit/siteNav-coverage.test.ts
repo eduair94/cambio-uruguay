@@ -140,6 +140,7 @@ describe('the navigation model has no dead links', () => {
       '/equipar-casa-uruguay/mi-lista',
       '/estadisticas-de-busqueda',
       '/estadisticas-por-pagina',
+      '/monopatines-electricos-uruguay/comparar',
       '/offline',
       '/opinion-alquileres',
       '/opiniones-alquileres',

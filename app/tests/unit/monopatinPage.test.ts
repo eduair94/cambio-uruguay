@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest'
 const APP = join(__dirname, '..', '..')
 const read = (...parts: string[]): string => readFileSync(join(APP, ...parts), 'utf8')
 
-const page = read('pages', 'monopatines-electricos-uruguay.vue')
+const page = read('pages', 'monopatines-electricos-uruguay', 'index.vue')
 const bicicletas = read('pages', 'bicicletas-electricas-uruguay.vue')
 const card = read('components', 'equipar', 'ListingCard.vue')
 const filters = read('components', 'equipar', 'ProductosFilters.vue')
@@ -85,5 +85,40 @@ describe('lo compartido con equipar', () => {
     expect(categoriaApi).toMatch(
       /slug === 'monopatin-electrico'\s*\?\s*await attachMonopatinSpecs\(items\)/
     )
+  })
+})
+
+describe('la tabla de modelos agrupados (4/11/2026)', () => {
+  it('lee el catálogo de modelos y enlaza cada fila a la página del modelo', () => {
+    expect(page).toContain("useFetch<MonopatinModelListResponse>('/api/movilidad/modelos'")
+    expect(page).toContain('`/monopatines-electricos-uruguay/${model.slug}`')
+    expect(page).toContain('<MovilidadCompareTray')
+  })
+
+  it('sin catálogo de modelos cae a la tabla vieja', () => {
+    expect(page).toMatch(/v-else-if="productRows\.length"/)
+  })
+
+  it('el ItemList del hub enlaza a las páginas de modelo', () => {
+    expect(page).toContain(
+      'url: `https://cambio-uruguay.com/monopatines-electricos-uruguay/${model.slug}`'
+    )
+  })
+
+  it('la bandeja compara hasta tres y arma la URL del comparador', () => {
+    const tray = read('components', 'movilidad', 'MovilidadCompareTray.vue')
+    expect(tray).toContain('/monopatines-electricos-uruguay/comparar')
+    expect(tray).toContain('MONOPATIN_COMPARE_MAX')
+    expect(tray).toMatch(/m: .*join\(','\)/)
+  })
+})
+
+describe('"Ver el modelo" desde la tarjeta y el asesor', () => {
+  it('la tarjeta del directorio enlaza al modelo sólo cuando el aviso tiene uno', () => {
+    expect(card).toContain('v-if="producto.modelSlug"')
+    expect(card).toContain('`/monopatines-electricos-uruguay/${producto.modelSlug}`')
+  })
+  it('cada elección del asesor enlaza a su modelo', () => {
+    expect(asesor).toContain('v-if="pick.candidato.modelSlug"')
   })
 })

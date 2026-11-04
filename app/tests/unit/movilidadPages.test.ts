@@ -9,7 +9,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 const PAGES = join(__dirname, '..', '..', 'pages')
-const MONOPATIN_FILE = join(PAGES, 'monopatines-electricos-uruguay.vue')
+const MONOPATIN_FILE = join(PAGES, 'monopatines-electricos-uruguay', 'index.vue')
 const BICICLETA_FILE = join(PAGES, 'bicicletas-electricas-uruguay.vue')
 
 const read = (file: string): string => readFileSync(file, 'utf8')

@@ -7,6 +7,7 @@ import {
   type EquiparQueryKey,
 } from '../../utils/equiparProductos'
 import { monopatinFichaMatch, monopatinSpecsPublic } from '../../utils/monopatinFicha'
+import { MONOPATIN_MODEL_SLUG_RE } from '../../utils/monopatinModelos'
 
 /** Same freshness window as `/api/equipar`: a listing not seen in 4 days is not on sale today. */
 export const EQUIPAR_PRODUCTOS_STALE_DAYS = 4
@@ -102,17 +103,21 @@ export const EQUIPAR_PRODUCTOS_PROJECTION = {
   lastSeen: 1,
   specs: 1,
   uyuPerKm: 1,
+  modelSlug: 1,
 } as const
 
 export function equiparProductoPublic(
-  row: Partial<EquiparListingDoc> & { specs?: unknown; uyuPerKm?: unknown }
+  row: Partial<EquiparListingDoc> & { specs?: unknown; uyuPerKm?: unknown; modelSlug?: unknown }
 ): EquiparProductoPublic {
   const specs = monopatinSpecsPublic(row.specs)
   const uyuPerKm =
     typeof row.uyuPerKm === 'number' && row.uyuPerKm > 0 ? Math.round(row.uyuPerKm) : null
-  const extra: Pick<EquiparProductoPublic, 'specs' | 'uyuPerKm'> = {}
+  const extra: Pick<EquiparProductoPublic, 'specs' | 'uyuPerKm' | 'modelSlug'> = {}
   if (specs) extra.specs = specs
   if (uyuPerKm !== null) extra.uyuPerKm = uyuPerKm
+  // Sólo monopatín: la página de su modelo (currency-movilidad-specs), si tiene una con forma válida.
+  if (typeof row.modelSlug === 'string' && MONOPATIN_MODEL_SLUG_RE.test(row.modelSlug))
+    extra.modelSlug = row.modelSlug
   return {
     ...extra,
     listingId: String(row.listingId ?? ''),

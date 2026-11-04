@@ -28,11 +28,16 @@ import { readFicha } from "./classes/movilidad/specs/read";
 import { fichaUpdate } from "./classes/movilidad/specs/write";
 import { buildSpecSnapshot, MONOPATIN_SNAPSHOT_KEY, type SnapshotRow } from "./classes/movilidad/specs/snapshot";
 import { loadFichaByListingId, MOVILIDAD_SPECS_COLLECTION } from "./classes/movilidad/store";
+import { MovilidadModelModel } from "./classes/models/MovilidadModel";
+import { buildModels, modelsRunIsThin, type ModelHistoryPoint, type ModelRow } from "./classes/movilidad/models/build";
+import { modelsRetireWrite, modelsWrites } from "./classes/movilidad/models/write";
 import type { EquiparListingRow } from "./classes/equipar/listings";
 import { sleep } from "./classes/rentals/net";
 
 /** Igual que la página (`EQUIPAR_PRODUCTOS_STALE_DAYS`): un aviso no visto en 4 días no está en venta. */
 const FRESH_DAYS = 4;
+/** Igual que la API (`MONOPATIN_MODEL_STALE_DAYS`): la guarda de corrida flaca compara contra esto. */
+const MODEL_FRESH_DAYS = 7;
 
 const number = (name: string, fallback: number): number => {
   const value = Number(process.env[name]);
@@ -112,12 +117,60 @@ export async function main(): Promise<void> {
   // Todas las filas frescas, leídas hoy o antes: la misma función que usa la horaria de movilidad.
   const fichas = await loadFichaByListingId(rows.map((row) => row.listingId));
   const enriched = rows.map((row) => enrichMovilidadRow(row, fichas.get(row.listingId)));
+
+  // El catálogo de modelos (classes/movilidad/models/): los avisos de todos los vendedores juntos.
+  const today = now.toISOString().slice(0, 10);
+  const { models, slugByListing } = buildModels(
+    enriched.map(
+      (row): ModelRow => ({
+        listingId: row.listingId,
+        title: row.title,
+        url: row.url,
+        image: row.image,
+        price: row.price,
+        currency: row.currency,
+        priceUyu: row.priceUyu,
+        condition: row.condition,
+        source: row.source,
+        sellerName: row.sellerName,
+        sellerKey: row.sellerKey,
+        brand: row.brand,
+        brandKey: row.brandKey,
+        variant: row.variant,
+        suspect: row.suspect,
+        specs: row.specs ?? null,
+        firstSeen: row.firstSeen,
+        observedAt: row.observedAt,
+        freeShipping: row.freeShipping,
+        officialStore: row.officialStore,
+        fichaModel: fichas.get(row.listingId)?.model ?? null,
+      })
+    ),
+    today,
+    now.toISOString()
+  );
+  const modelCutoff = new Date(now.getTime() - MODEL_FRESH_DAYS * 86_400_000).toISOString().slice(0, 10);
+  const freshModels = await MovilidadModelModel.countDocuments({ lastSeen: { $gte: modelCutoff } }).exec();
+  // Una corrida que arma muchos menos modelos que los guardados (la base vino a medias, cambió un
+  // título en masa) no pisa nada: ni los modelos ni el enlace de cada aviso a su modelo.
+  const thinModels = modelsRunIsThin(models.length, freshModels);
+  const modelSlugOf = (row: ListingDoc): string | null =>
+    thinModels ? (row.modelSlug ?? null) : (slugByListing.get(row.listingId) ?? null);
+
   if (!dryRun && enriched.length) {
     await MovilidadListingModel.bulkWrite(
       enriched.map((row) => ({
         updateOne: {
           filter: { listingId: row.listingId },
-          update: { $set: { specs: row.specs ?? null, uyuPerKm: row.uyuPerKm ?? null, brand: row.brand, brandKey: row.brandKey } },
+          update: {
+            $set: {
+              specs: row.specs ?? null,
+              uyuPerKm: row.uyuPerKm ?? null,
+              brand: row.brand,
+              brandKey: row.brandKey,
+              modelSlug: modelSlugOf(row),
+            },
+          },
         },
       })) as any,
       { ordered: false }
@@ -143,12 +196,32 @@ export async function main(): Promise<void> {
         suspect: row.suspect,
         specs: row.specs ?? null,
         uyuPerKm: row.uyuPerKm ?? null,
+        modelSlug: modelSlugOf(row),
       })
     ),
     now.toISOString()
   );
   if (!dryRun) {
     await MovilidadSpecSnapshotModel.updateOne({ key: MONOPATIN_SNAPSHOT_KEY }, { $set: snapshot }, { upsert: true });
+  }
+
+  if (thinModels) {
+    console.warn(`[movilidad-specs] ALERTA: ${models.length} modelos contra ${freshModels} guardados; no se escriben`);
+  } else if (!dryRun && models.length) {
+    const prev = (await MovilidadModelModel.find({ slug: { $in: models.map((model) => model.slug) } })
+      .select({ _id: 0, slug: 1, history: 1 })
+      .lean()
+      .exec()) as unknown as Array<{ slug: string; history?: ModelHistoryPoint[] }>;
+    await MovilidadModelModel.bulkWrite(
+      [
+        ...modelsWrites(models, new Map(prev.map((doc) => [doc.slug, doc.history ?? []]))),
+        modelsRetireWrite(
+          models.map((model) => model.slug),
+          modelCutoff
+        ),
+      ] as any,
+      { ordered: true }
+    );
   }
 
   // Si la mayoría de las páginas que contestan no traen ficha, ML cambió el marcado o sirve otra
@@ -164,6 +237,10 @@ export async function main(): Promise<void> {
       withFicha: snapshot.stats.withFicha,
       total: snapshot.stats.total,
       over25: snapshot.stats.over25,
+      models: models.length,
+      indexable: models.filter((model) => model.indexable).length,
+      linked: slugByListing.size,
+      thinModels,
     })}`
   );
 }

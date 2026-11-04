@@ -573,6 +573,63 @@ equipar no cambia); "Qué esperar de cada tipo" con las medianas y el costo de u
 mediana × UTE simple 101–600 kWh con IVA + 15 % de pérdida del cargador); "Cómo elegir" y cuatro
 preguntas frecuentes con esas cifras; `Product.additionalProperty` en el JSON-LD.
 
+## Páginas por modelo y comparador (4/11/2026)
+
+**Por qué.** La tabla "Modelos y sus mejores ofertas" salía del régimen `modelo` de equipar, que
+identifica por el texto entero del título: en producción eran 23 "productos" con un aviso cada uno
+("Xiaomi 5 Max" tres veces). Con la marca y el modelo que trae la ficha de ML, los 774 avisos vivos
+daban 190 grupos y 37 con dos vendedores o más. Y la ficha de entidad es lo que rankea (sillas,
+celulares, autos); el hub no.
+
+**Identidad** (`classes/movilidad/models/identify.ts`, puro). Precisión sobre recall:
+- la marca es la del aviso (ficha → título); una marca desconocida que el título no nombra suele ser
+  el vendedor ("Like Latam") y no da modelo;
+- el modelo son hasta tres palabras que siguen a la marca, salteando genéricas al principio
+  ("Monopatín Eléctrico Electric Xiaomi Scooter 5 Pro 25km/h" → `xiaomi-5-pro`) y cortando en la
+  primera medida (`350w`, `25 km`), color, conector, número pelado > 99 o número después de un código
+  ("Sgx3 10", "E9pro 25");
+- `e9pro` se parte en `e9 pro` (sufijo de gama pegado), el guion separa, "Move 2.0" es `move-2`, y la
+  generación se escribe de cinco formas (`Gen2`, `Gen 2`, `2nd`, `2da Gen`, `segunda`) que son `gen2`;
+- el modelo de la ficha se usa si el título no trae, o si el título es ese mismo modelo con ruido
+  ("Enxuta 45 Meenx552n" con ficha MEENX552N), **nunca para sacarle la gama** (un "6 Pro" con ficha
+  "Electric Scooter 6" sigue siendo 6 Pro);
+- los avisos del mismo producto de catálogo de ML (`/p/MLU…`) toman el modelo mayoritario.
+Facebook nunca entra. Nunca se une por precio, foto ni parecido de texto.
+
+**Catálogo** (`classes/movilidad/models/build.ts`), escrito por `currency-movilidad-specs` en APP DB
+`movilidadmodels` después del re-enriquecimiento:
+- un modelo con un solo aviso no se publica;
+- ofertas una por aviso, la más barata primero (tope 40); bandas nuevo y usado separadas;
+- **ficha de consenso**: por campo numérico la MODA si un valor se repite más que los demás, si no la
+  mediana BAJA — nunca un promedio: con 12 V y 48 V la mediana par publicaba 30 V, que ninguna ficha
+  dijo (Mistyle ME500, 4/11). `agree` dice cuántas fichas coinciden con el valor (±5 %) y `spread`
+  el rango cuando no coinciden; la página muestra el rango si coincide menos de la mitad;
+- `indexable` = dos vendedores o más y tres datos numéricos de ficha; si no, la página va `noindex,
+  follow` y no entra al sitemap;
+- `history`: un punto diario `{ newMin, newMedian, n }` desde el 4/11 (tope 400). No se dibuja
+  todavía: no se reconstruye hacia atrás, así que se empieza a guardar ya;
+- un modelo que deja de verse conserva su documento; la API sólo sirve `lastSeen` de los últimos 7
+  días (después 404). Corrida que arma menos del 40 % de los modelos frescos guardados: no escribe
+  modelos ni toca el `modelSlug` de los avisos.
+
+Medido el 4/11 sobre los 774 avisos: 54 modelos, 41 indexables, 386 avisos enlazados (Xiaomi 6 Lite:
+36 avisos de 11 vendedores).
+
+**App.** `GET /api/movilidad/modelos` (resúmenes) y `/api/movilidad/modelos/<slug>` (modelo + hasta 4
+del mismo tipo con el precio más parecido); slug malo 404 sin base, base caída 503 no-store.
+- `/monopatines-electricos-uruguay/<modelo>` (`pages/monopatines-electricos-uruguay/[modelo].vue`):
+  nuevo/usado desde, todas las ofertas, ficha con "N de M fichas" o el rango, autonomía real (65 %) y
+  costo de carga con la tarifa de UTE, normativa si declara más de 25 km/h, "Comparalo con", FAQ.
+  `Product` + `AggregateOffer` sólo con ofertas nuevas. Título con el precio (`monopatinModelTitle`,
+  forma corta "Monopatín Xiaomi 6 Pro: desde $ X" si el nombre largo no entra en 60).
+- `/monopatines-electricos-uruguay/comparar?m=a,b,c`: hasta 3 modelos, el mejor de cada fila marcado
+  sólo donde más (o menos) es mejor — la velocidad no se premia (25 km/h en Montevideo y San José), ni
+  el voltaje, la capacidad o la rueda. `noindex`, en `EXCLUDED_ROUTES`.
+- El hub pasó a `pages/monopatines-electricos-uruguay/index.vue` (misma URL). Su tabla de modelos lee
+  el catálogo nuevo (con casilla "Comparar" y bandeja fija) y cae a la tabla vieja si está vacío. Las
+  tarjetas del directorio y las elecciones del asesor enlazan a su modelo (`modelSlug`).
+- Enlaces a la familia literales, sin `localePath`: es sólo español, como las fichas de celulares.
+
 ## Tests
 
 - `tests/movilidad/registry.test.ts` — forma del registro (claves sin colisión con equipar, room

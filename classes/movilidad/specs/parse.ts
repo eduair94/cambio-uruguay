@@ -287,12 +287,15 @@ function booleansFromText(text: string, specs: MonopatinSpecs, source: SpecSourc
   const suspensions = [...text.matchAll(/\b(sin )?suspension(?:es)?(?: (?:delantera|trasera|doble))?\s*[:=]?\s*(no\b)?/g)];
   if (suspensions.length) set("suspension", suspensions.some((match) => !match[1] && !match[2]));
 
-  if (/\bfrenos? (?:\S+ ){0,3}?(?:a |de )?discos?\b|\bdiscos? de freno\b|\bdoble disco\b/.test(text)) {
-    set("discBrake", true);
-  }
+  // "Freno de disco: No" y "sin freno de disco" nombran el disco para negarlo (diferido del 3/11).
+  const disc =
+    /(\bsin )?\b(?:frenos? (?:\S+ ){0,3}?(?:a |de )?discos?\b|discos? de freno\b|doble disco\b)(\s*[:=]?\s*no\b)?/.exec(
+      text
+    );
+  if (disc && !disc[1] && !disc[2]) set("discBrake", true);
 
-  const bluetooth = /\b(?:con )?(?:bluetooth|app)\b(\s*[:=]?\s*no\b)?/.exec(text);
-  if (bluetooth) set("bluetooth", !bluetooth[1]);
+  const bluetooth = /\b(sin |con )?(?:bluetooth|app)\b(\s*[:=]?\s*no\b)?/.exec(text);
+  if (bluetooth) set("bluetooth", bluetooth[1] !== "sin " && !bluetooth[2]);
 
   const ip = /\bip ?(x\d|\d{2})\b/.exec(text);
   if (ip && specs.ipRating === null) {
@@ -421,7 +424,8 @@ export function specsFromRows(rows: Record<string, string>): MonopatinSpecs {
   for (const [rawLabel, rawValue] of Object.entries(rows)) {
     const label = prep(rawLabel);
     const value = prep(rawValue);
-    const number = /(\d+(?:\.\d+)?)(?:\s*-\s*(\d+(?:\.\d+)?))?\s*([a-z"/ ]*)/.exec(value);
+    // "4 a 6 h" y "5 hasta 7 h" son rangos como "4-6 h" (diferido del 3/11: daban el extremo bajo).
+    const number = /(\d+(?:\.\d+)?)(?:\s*(?:-|\ba\b|\bhasta\b)\s*(\d+(?:\.\d+)?))?\s*([a-z"/ ]*)/.exec(value);
 
     const numeric = ROW_FIELDS.find((entry) => entry.label.test(label));
     if (numeric && number && specs[numeric.field] === null) {

@@ -25,6 +25,7 @@ import { MovilidadItemModel } from "../../classes/models/MovilidadItem";
 import { MovilidadMetaModel } from "../../classes/models/MovilidadMeta";
 import { MovilidadListingModel } from "../../classes/models/MovilidadListing";
 import { MovilidadSpecSnapshotModel } from "../../classes/models/MovilidadSpecSnapshot";
+import { MovilidadModelModel } from "../../classes/models/MovilidadModel";
 import { CharruaTextModel } from "../../classes/models/CharruaText";
 import { CharruaSnapshotModel } from "../../classes/models/CharruaSnapshot";
 import { CarCatalogMetaModel } from "../../classes/models/CarCatalogMeta";
@@ -232,6 +233,12 @@ describe("app-Mongo schema parity", () => {
       appFields(appModel("MovilidadSpecSnapshot")).sort()
     );
     expect(MovilidadSpecSnapshotModel.collection.name).toBe("movilidadspecsnapshots");
+  });
+
+  it("MovilidadModel declares exactly the app's top-level fields", () => {
+    // Una fila por modelo de monopatín: /monopatines-electricos-uruguay/<modelo> y su comparador.
+    expect(Object.keys(MovilidadModelModel.schema.obj).sort()).toEqual(appFields(appModel("MovilidadModel")).sort());
+    expect(MovilidadModelModel.collection.name).toBe("movilidadmodels");
   });
 
   it("CharruaText declares exactly the app's top-level fields", () => {

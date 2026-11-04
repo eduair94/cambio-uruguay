@@ -4969,6 +4969,9 @@ export const EXCLUDED_ROUTES: readonly string[] = Object.freeze([
   // desde /mercado-it-uruguay y no se indexa — buscar un nombre propio no tiene por que traer a
   // alguien a "los mas negativos del sub".
   '/ranking-usuarios-charruadevs',
+  // El comparador de monopatines: cada combinación de modelos la elige el lector (noindex). Se
+  // llega desde la tabla de modelos y desde cada página de modelo, no desde el menú.
+  '/monopatines-electricos-uruguay/comparar',
 ])
 
 /**
@@ -5026,6 +5029,8 @@ export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freez
   // es la propia `key` del modelo (classes/phones/identify.ts) y GET /api/phones/<slug> es la
   // misma fuente que decide si existe.
   'celulares-uruguay/[modelo]': 'consumer',
+  // Una página por modelo de monopatín (4/11/2026): cuelga del hub de monopatines eléctricos.
+  'monopatines-electricos-uruguay/[modelo]': 'consumer',
   // Las páginas individuales de descuentos: una por emisor y una por rubro, ambas alimentadas por
   // el mismo catálogo de Bankos que el mapa de /descuentos-con-tarjeta-uruguay.
   'descuentos-con-tarjeta-uruguay/[banco]': 'banking',

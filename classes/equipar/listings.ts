@@ -66,6 +66,8 @@ export interface EquiparListingRow {
    */
   specs?: MonopatinSpecs | null;
   uyuPerKm?: number | null;
+  /** Monopatines: la página de su modelo (classes/movilidad/models/), si pertenece a uno. */
+  modelSlug?: string | null;
 }
 
 export interface BuildListingsInput {

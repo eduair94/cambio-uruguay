@@ -42,6 +42,8 @@ const MovilidadListingSchema = new Schema(
     // Ficha técnica de un monopatín (classes/movilidad/specs/) y precio por km de autonomía.
     specs: { type: Schema.Types.Mixed, default: null },
     uyuPerKm: { type: Number, default: null },
+    // La página del modelo del aviso (/monopatines-electricos-uruguay/<modelo>), o null.
+    modelSlug: { type: String, default: null },
   },
   { timestamps: true }
 )

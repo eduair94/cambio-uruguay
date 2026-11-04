@@ -161,6 +161,8 @@ export interface EquiparProductoPublic {
   specs?: MonopatinSpecsPublic
   /** Sólo monopatín: precio dividido por la autonomía declarada en la ficha. */
   uyuPerKm?: number
+  /** Sólo monopatín: /monopatines-electricos-uruguay/<modelSlug>, cuando el aviso es de un modelo. */
+  modelSlug?: string
 }
 
 export interface EquiparProductosFacet {
