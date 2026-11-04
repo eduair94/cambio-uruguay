@@ -13,6 +13,7 @@
 //   * indexable = dos vendedores o más y al menos tres datos de ficha: con menos, la página no dice
 //     nada que el aviso no diga, y se sirve con noindex.
 import { identifyModel, unifyByCatalog, type ModelIdentity } from "./identify";
+import { MONOPATIN_CATEGORY, type MovilidadSpecCategory } from "../specs/profiles";
 import type { BooleanSpecField, MonopatinSpecs, NumericSpecField, SpecField } from "../specs/types";
 
 export const MODEL_OFFERS_MAX = 40;
@@ -95,6 +96,8 @@ export interface ModelHistoryPoint {
 
 export interface MovilidadModelDoc {
   slug: string;
+  /** `monopatin-electrico` o `bicicleta-electrica`. */
+  category: MovilidadSpecCategory;
   name: string;
   brandKey: string;
   brandLabel: string;
@@ -131,8 +134,17 @@ const NUMERIC: readonly NumericSpecField[] = [
   "weightKg",
   "wheelInches",
   "minAge",
+  "gears",
 ];
-const BOOLEAN: readonly BooleanSpecField[] = ["foldable", "suspension", "discBrake", "bluetooth"];
+const BOOLEAN: readonly BooleanSpecField[] = [
+  "foldable",
+  "suspension",
+  "discBrake",
+  "bluetooth",
+  "removableBattery",
+  "throttle",
+  "centralMotor",
+];
 const TEXT = ["brakes", "ipRating"] as const;
 
 const median = (values: number[]): number => {
@@ -240,7 +252,8 @@ const mode = (values: string[]): string => {
 export function buildModels(
   rows: ModelRow[],
   today: string,
-  generatedAt: string
+  generatedAt: string,
+  category: MovilidadSpecCategory = MONOPATIN_CATEGORY
 ): { models: MovilidadModelDoc[]; slugByListing: Map<string, string> } {
   const identified = unifyByCatalog(
     rows
@@ -253,6 +266,7 @@ export function buildModels(
           brandKey: row.brandKey || null,
           fichaModel: row.fichaModel,
           source: row.source,
+          category,
         }),
       }))
   );
@@ -282,6 +296,7 @@ export function buildModels(
     const brandLabel = mode(identified.filter((row) => row.identity?.key === slug).map((row) => row.identity!.brandLabel));
     models.push({
       slug,
+      category,
       name: `${brandLabel} ${identity.label}`,
       brandKey: identity.brandKey,
       brandLabel,

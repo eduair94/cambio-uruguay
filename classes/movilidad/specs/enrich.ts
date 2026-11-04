@@ -1,4 +1,4 @@
-// Lo que la ficha técnica agrega a una fila del directorio de monopatines.
+// Lo que la ficha técnica agrega a una fila del directorio de monopatines o de bicicletas.
 //
 // La usan los DOS escritores de `movilidadlistings`: `sync_movilidad.ts`, que reescribe cada fila
 // cada hora con el precio nuevo, y `sync_movilidad_specs.ts`, que lee fichas y las reaplica. Si sólo
@@ -9,9 +9,10 @@ import { norm } from "../../equipar/classify";
 import type { EquiparListingRow } from "../../equipar/listings";
 import { brandFromTitle, cleanBrand } from "./brands";
 import { hasAnySpecs, mergeSpecs, specsFromTitle } from "./parse";
+import { isSpecCategory } from "./profiles";
 import type { MonopatinSpecs } from "./types";
 
-export const MONOPATIN_CATEGORY = "monopatin-electrico";
+export { BICICLETA_CATEGORY, MONOPATIN_CATEGORY } from "./profiles";
 
 /** Lo que `movilidadspecs` guarda de una ficha leída bien, para enriquecer su fila. */
 export interface StoredFicha {
@@ -22,9 +23,9 @@ export interface StoredFicha {
 }
 
 export function enrichMovilidadRow<T extends EquiparListingRow>(row: T, ficha: StoredFicha | undefined): T {
-  if (row.category !== MONOPATIN_CATEGORY) return row;
+  if (!isSpecCategory(row.category)) return row;
 
-  const merged = mergeSpecs(ficha?.specs, specsFromTitle(row.title));
+  const merged = mergeSpecs(ficha?.specs, specsFromTitle(row.title, row.category));
   const specs = hasAnySpecs(merged) ? merged : null;
   // El precio por km sólo con una autonomía que declaró el vendedor en su ficha: un "45km" del
   // título es una cifra más débil para ordenar por "rinde más por peso".
@@ -33,7 +34,7 @@ export function enrichMovilidadRow<T extends EquiparListingRow>(row: T, ficha: S
 
   let { brand, brandKey } = row;
   if (!brandKey) {
-    const found = cleanBrand(ficha?.brand) ?? brandFromTitle(row.title);
+    const found = cleanBrand(ficha?.brand, row.category) ?? brandFromTitle(row.title, row.category);
     if (found) {
       brand = found;
       // Un slug, porque es lo que acepta el filtro de marca (`/^[a-z0-9:_.-]{1,80}$/`): "K'nex" con su

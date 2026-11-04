@@ -1,4 +1,5 @@
-// Marcas de monopatín eléctrico, para llenar la faceta de marca del directorio.
+// Marcas de monopatín y de bicicleta eléctrica, para llenar la faceta de marca del directorio y
+// para saber de qué modelo es un aviso (classes/movilidad/models/identify.ts).
 //
 // Medido el 2026-11-03: la tarjeta de búsqueda de Mercado Libre llega con `attributes: []`, así
 // que de 782 avisos sólo 7 tenían marca (Xiaomi 6, Voltbike 1). La ficha propia sí la trae, pero
@@ -7,13 +8,14 @@
 // electrico" del mismo día) por palabra entera en el título; la primera que aparece gana, así "Go
 // Green Mod. Zero" es Gogreen y no la marca Zero (que por eso no está en la lista).
 import { norm } from "../../equipar/classify";
+import { BICICLETA_CATEGORY, MONOPATIN_CATEGORY } from "./profiles";
 
 interface BrandEntry {
   name: string;
   pattern: RegExp;
 }
 
-const BRANDS: readonly BrandEntry[] = [
+const MONOPATIN_BRANDS: readonly BrandEntry[] = [
   { name: "Xiaomi", pattern: /\b(xiaomi|mi electric scooter)\b/ },
   { name: "Segway", pattern: /\b(segway|ninebot)\b/ },
   { name: "Atom", pattern: /\batom\b/ },
@@ -59,21 +61,79 @@ const BRANDS: readonly BrandEntry[] = [
   { name: "Mirrend", pattern: /\bmirrend\b/ },
 ];
 
+/**
+ * Marcas de bicicleta eléctrica, medidas el 4/11/2026 en los 478 avisos frescos (títulos y "Marca" de
+ * la ficha de ML). El orden importa cuando dos aparecen en el mismo lugar: "Trinx Swft Zip S" es una
+ * Swft que vende el distribuidor de Trinx, así que Swft va primero y su patrón se come el "trinx".
+ */
+const BICICLETA_BRANDS: readonly BrandEntry[] = [
+  { name: "Swft", pattern: /\b(?:trinx )?swft\b/ },
+  { name: "S-Pro", pattern: /\bs-?pro\b|\bs pro\b/ },
+  { name: "Gyroor", pattern: /\bgyroor\b/ },
+  { name: "Loop", pattern: /\bloop\b/ },
+  { name: "Wheele", pattern: /\bwheele\b/ },
+  { name: "Trinx", pattern: /\btrinx\b/ },
+  { name: "Snake", pattern: /\bsnake\b/ },
+  { name: "Eleglide", pattern: /\beleglide\b/ },
+  { name: "Hiper Engine", pattern: /\bhiper ?engine\b/ },
+  { name: "Ado", pattern: /\bado\b/ },
+  { name: "Gogreen", pattern: /\bgo[- ]?green\b/ },
+  { name: "Luxor", pattern: /\bluxor\b/ },
+  { name: "K'nex", pattern: /\bk'?nex\b/ },
+  { name: "Voltbike", pattern: /\bvolt ?bike\b/ },
+  { name: "Tern", pattern: /\btern\b/ },
+  { name: "Amalfyt", pattern: /\bamalfyt\b/ },
+  { name: "Nexus", pattern: /\bnexus\b/ },
+  { name: "Valentini", pattern: /\bvalentini\b/ },
+  { name: "Xiaomi", pattern: /\b(xiaomi|qicycle|himo)\b/ },
+  { name: "Hotebike", pattern: /\bhotebike\b/ },
+  { name: "Nakto", pattern: /\bnakto\b/ },
+  { name: "Positivo", pattern: /\bpositivo\b/ },
+  { name: "Kixin", pattern: /\bkixin\b/ },
+  { name: "Jeep", pattern: /\bjeep\b/ },
+  { name: "Vivibot", pattern: /\bvivibot\b/ },
+  { name: "Samebike", pattern: /\bsamebike\b/ },
+  { name: "Urban Halley", pattern: /\burban halley\b/ },
+  { name: "Ciclo Electro", pattern: /\bciclo electro\b/ },
+  { name: "Trek", pattern: /\btrek\b/ },
+  { name: "Swagtron", pattern: /\bswagtron\b/ },
+  { name: "Blaupunkt", pattern: /\bblau?k?pun?k?t\b/ },
+  { name: "Fiido", pattern: /\bfiido\b/ },
+  { name: "Engwe", pattern: /\bengwe\b/ },
+  { name: "Himiway", pattern: /\bhimiway\b/ },
+  { name: "Stacyc", pattern: /\bstacyc\b/ },
+  { name: "Atom", pattern: /\batom\b/ },
+  { name: "Mistyle", pattern: /\bu?mistyle\b/ },
+  { name: "Legend", pattern: /\blegend\b/ },
+];
+
+const BRANDS_BY_CATEGORY: Readonly<Record<string, readonly BrandEntry[]>> = {
+  [MONOPATIN_CATEGORY]: MONOPATIN_BRANDS,
+  [BICICLETA_CATEGORY]: BICICLETA_BRANDS,
+};
+
+/** Las marcas de la categoría; sin categoría, las de monopatín (las únicas hasta el 4/11/2026). */
+const brandsOf = (category?: string | null): readonly BrandEntry[] =>
+  (category && BRANDS_BY_CATEGORY[category]) || MONOPATIN_BRANDS;
+
 /** El patrón con que se reconoce una marca conocida en un título ya normalizado, o null. */
-export function brandPattern(name: string): RegExp | null {
+export function brandPattern(name: string, category?: string | null): RegExp | null {
   const key = norm(name);
-  return BRANDS.find((brand) => norm(brand.name) === key)?.pattern ?? null;
+  return brandsOf(category).find((brand) => norm(brand.name) === key)?.pattern ?? null;
 }
 
 /** Lo que el formulario de ML guarda cuando el vendedor no sabe o no quiere poner la marca. */
 const GENERIC =
   /^(monopatin( electrico)?|monopatines|scooter( electrico)?|e-?scooter|patinete( electrico)?|electric|electrico|generic[ao]?|sin marca|otras? marcas?|otros?|varios|importado|nacional|no aplica|n\/a|-)$/;
+/** Lo mismo en una bicicleta: "Bicicleta", "E-bike", "Bici Eléctrica". */
+const BICICLETA_GENERIC =
+  /^(bicicletas?( electricas?)?|bicis?( electricas?)?|e-?bikes?|electric bike|bike|electrica|generic[ao]?|sin marca|otras? marcas?|otros?|varios|importado|importada|nacional|no aplica|n\/a|-)$/;
 
 /** La marca conocida que aparece primero en el título, o null. */
-export function brandFromTitle(title: string): string | null {
+export function brandFromTitle(title: string, category?: string | null): string | null {
   const text = norm(title);
   let best: { name: string; at: number } | null = null;
-  for (const brand of BRANDS) {
+  for (const brand of brandsOf(category)) {
     const match = brand.pattern.exec(text);
     if (match && (!best || match.index < best.at)) best = { name: brand.name, at: match.index };
   }
@@ -81,10 +141,11 @@ export function brandFromTitle(title: string): string | null {
 }
 
 /** La marca que escribió el vendedor, con el nombre canónico si es conocida; null si es un genérico. */
-export function cleanBrand(raw: string | null | undefined): string | null {
+export function cleanBrand(raw: string | null | undefined, category?: string | null): string | null {
   const value = (raw ?? "").trim();
   const key = norm(value).trim();
-  if (!key || GENERIC.test(key)) return null;
-  const known = BRANDS.find((brand) => brand.pattern.test(key));
+  const generic = category === BICICLETA_CATEGORY ? BICICLETA_GENERIC : GENERIC;
+  if (!key || generic.test(key)) return null;
+  const known = brandsOf(category).find((brand) => brand.pattern.test(key));
   return known ? known.name : value;
 }

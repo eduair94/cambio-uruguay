@@ -1,4 +1,4 @@
-// La ficha técnica de un monopatín eléctrico, tal como la DECLARA quien lo vende.
+// La ficha técnica de un monopatín o una bicicleta eléctrica, tal como la DECLARA quien lo vende.
 //
 // Ningún campo es una medición nuestra: es lo que dice la tabla de la ficha de Mercado Libre, el
 // texto de la tienda o, en último caso, el título. Por eso cada campo lleva su procedencia en
@@ -36,8 +36,20 @@ export interface MonopatinSpecs {
   brakes: string | null;
   /** "IPX5", "IP54". */
   ipRating: string | null;
+  // Sólo bicicleta (`profiles.ts`): en un monopatín quedan siempre en null.
+  /** Cantidad de cambios ("Shimano 7 velocidades", "21 Vel"). */
+  gears: number | null;
+  /** La batería se saca para cargarla adentro (la ficha de ML: "Con batería removible"). */
+  removableBattery: boolean | null;
+  /** Tiene acelerador de puño además del pedaleo asistido ("Con acelerador independiente"). */
+  throttle: boolean | null;
+  /** Motor central (en el eje del pedalier: Bosch, Bafang M, Shimano Steps), no en la rueda. */
+  centralMotor: boolean | null;
   from: Partial<Record<SpecField, SpecSource>>;
 }
+
+/** El mismo tipo con el nombre de la familia: una bicicleta declara la misma ficha, más cuatro campos. */
+export type MovilidadSpecs = MonopatinSpecs;
 
 export type SpecField = Exclude<keyof MonopatinSpecs, "from">;
 
@@ -53,9 +65,17 @@ export type NumericSpecField =
   | "maxLoadKg"
   | "weightKg"
   | "wheelInches"
-  | "minAge";
+  | "minAge"
+  | "gears";
 
-export type BooleanSpecField = "foldable" | "suspension" | "discBrake" | "bluetooth";
+export type BooleanSpecField =
+  | "foldable"
+  | "suspension"
+  | "discBrake"
+  | "bluetooth"
+  | "removableBattery"
+  | "throttle"
+  | "centralMotor";
 
 export const SPEC_FIELDS: readonly SpecField[] = [
   "rangeKm",
@@ -76,6 +96,10 @@ export const SPEC_FIELDS: readonly SpecField[] = [
   "bluetooth",
   "brakes",
   "ipRating",
+  "gears",
+  "removableBattery",
+  "throttle",
+  "centralMotor",
 ];
 
 /**
@@ -95,4 +119,22 @@ export const SPEC_BANDS: Readonly<Record<NumericSpecField, readonly [number, num
   weightKg: [3, 80],
   wheelInches: [5, 14],
   minAge: [3, 18],
+  gears: [1, 30],
+};
+
+/**
+ * Lo que una bicicleta eléctrica puede declarar. Cambia lo que separa a las dos: el rodado (12″ una
+ * de equilibrio, 29″ una de montaña, contra 5–14″ de un monopatín), el peso del aparato y la potencia
+ * (una bici de 3.000 W ya es una moto). Medido el 4/11/2026 en las fichas de ML de 8 bicis: rodado
+ * 14–27,5, 21–30 kg, 250–500 W, 25–35 km/h, 120–150 kg soportados.
+ */
+export const BICICLETA_SPEC_BANDS: Readonly<Record<NumericSpecField, readonly [number, number]>> = {
+  ...SPEC_BANDS,
+  rangeKm: [5, 200],
+  maxSpeedKmh: [6, 60],
+  motorW: [100, 3000],
+  motorPeakW: [100, 5000],
+  maxLoadKg: [40, 250],
+  weightKg: [8, 60],
+  wheelInches: [12, 29],
 };

@@ -38,7 +38,8 @@ import {
   type PreviousItem,
 } from "./classes/movilidad/store";
 import type { MovilidadMeta } from "./classes/movilidad/types";
-import { enrichMovilidadRow, MONOPATIN_CATEGORY } from "./classes/movilidad/specs/enrich";
+import { enrichMovilidadRow } from "./classes/movilidad/specs/enrich";
+import { isSpecCategory } from "./classes/movilidad/specs/profiles";
 import { recordPricewatch } from "./classes/pricewatch/record";
 import { harvestRetail } from "./classes/retail/harvest";
 import { retailStores } from "./classes/retail/stores";
@@ -201,7 +202,7 @@ export async function main(): Promise<void> {
     let rows = built.rows;
     try {
       const fichas = await loadFichaByListingId(
-        rows.filter((row) => row.category === MONOPATIN_CATEGORY).map((row) => row.listingId)
+        rows.filter((row) => isSpecCategory(row.category)).map((row) => row.listingId)
       );
       rows = rows.map((row) => enrichMovilidadRow(row, fichas.get(row.listingId)));
     } catch (error) {

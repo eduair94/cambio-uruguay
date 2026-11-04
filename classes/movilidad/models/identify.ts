@@ -18,8 +18,16 @@
 //
 // Precisión sobre recall, como `classes/phones/identify.ts`: un aviso sin modelo queda en el
 // directorio y no entra a ninguna página. Nunca se une por precio, foto ni parecido de texto.
+//
+// Bicicletas (4/11/2026, sobre los 441 avisos de bici que quedan después de sacar accesorios): la
+// misma regla con tres diferencias que salen de cómo se titulan. (1) El rodado suele ir ANTES del
+// código ("Gyroor 20 Eb025", "Gyroor 27.5 Eb-041"): un número de rodado al principio se saltea, pero
+// en el medio sigue siendo parte del nombre, porque "Ado Air 20" y "Ado Air 28" son dos bicis. (2)
+// "Eb-041" y "EB041" son el mismo código: letras-guion-dígitos se juntan. (3) "R20", "rod", "Bosch",
+// "Shimano" y las palabras de bici ("paseo", "aluminio", "pleg") nunca nombran un modelo.
 import { norm } from "../../equipar/classify";
 import { brandPattern, cleanBrand } from "../specs/brands";
+import { BICICLETA_CATEGORY } from "../specs/profiles";
 
 export interface ModelIdentity {
   brandKey: string;
@@ -38,6 +46,8 @@ export interface IdentifyInput {
   /** El "Modelo" que declara la ficha (ML) o null. */
   fichaModel: string | null;
   source: string;
+  /** La categoría del aviso; sin ella, monopatín (el único catálogo hasta el 4/11/2026). */
+  category?: string | null;
 }
 
 const MAX_TOKENS = 3;
@@ -60,6 +70,28 @@ const GENERIC = new Set(
     "rosa verde naranja amarillo violeta celeste plateado plata dorado mate black white grey gray blue red pink green"
   ).split(" ")
 );
+/** Lo que tampoco nombra nunca a una bicicleta (además de {@link GENERIC}). */
+const BIKE_GENERIC = new Set(
+  (
+    "bicicleta bicicletas bici bicis ebike ebikes bike bikes bicycle paseo montana mtb aluminio cuadro rod " +
+    "velocidades vel shimano bosch bafang fat tire cargo unisex dama mujer hombre trekking hibrida city delivery " +
+    "asistida pedaleo litio canasto senaleros pleg plegabl plegabable rodados aro plateada dorada rosada electro " +
+    "oscuro oscura claro clara marron coral beige crema bordo turquesa lila " +
+    // Vendedores que firman el título al final ("Swft Zip S Mmsports", "Metropolis Rod. 28 Albion").
+    "circuit albion ferreplus mmsports sportpolis albanes delcar tx calidad"
+  ).split(" ")
+);
+/** Los rodados de bicicleta: al principio del modelo, son la rueda y no el nombre. */
+const RODADO_SIZES = new Set(["12", "14", "16", "18", "20", "24", "26", "27.5", "28", "29"]);
+/** "R20", "Rod26", "Rodado20": el rodado pegado a su palabra ("Wheele Manhattan Flex Rodado20"). */
+const RODADO_TOKEN = /^(?:r|rod|rodado)\d{2}(?:\.5)?$/;
+
+interface IdentifyProfile {
+  generic: ReadonlySet<string>;
+  bike: boolean;
+  linePrefix: Readonly<Record<string, string>>;
+}
+
 /** Sólo al principio: "Mi Electric Scooter Pro 2" es Xiaomi y "mi" no es el modelo. */
 const LEADING_ONLY = new Set(["mi", "e"]);
 const UNITS = new Set([
@@ -92,9 +124,23 @@ const MEASURE = /^\d+(?:\.\d+)?(?:w|kw|km|kmh|kph|kg|kgs|v|ah|wh|mah|cm|mm|mph|h
 /** Prefijo de línea: Xiaomi vende "Electric Scooter 6 Pro", y así se busca. */
 const LINE_PREFIX: Record<string, string> = { xiaomi: "Electric Scooter" };
 
-function words(text: string): string[] {
+const MONOPATIN_PROFILE: IdentifyProfile = { generic: GENERIC, bike: false, linePrefix: LINE_PREFIX };
+const BICICLETA_PROFILE: IdentifyProfile = {
+  generic: new Set([...GENERIC, ...BIKE_GENERIC]),
+  bike: true,
+  linePrefix: {},
+};
+const profileOf = (category?: string | null): IdentifyProfile =>
+  category === BICICLETA_CATEGORY ? BICICLETA_PROFILE : MONOPATIN_PROFILE;
+
+function words(text: string, bike = false): string[] {
+  const base = norm(text);
+  // "Eb-041" es el EB041 de otro vendedor; "Cd-2614", el CD2614; "27,5" es el rodado 27.5. Sólo en
+  // bici: en monopatín el guion separa la gama ("habit-pro" → habit pro) y así quedó medido.
+  const bikeBase = (): string =>
+    base.replace(/\b([a-z]{1,3})-(\d{2,4})\b/g, "$1$2").replace(/\b(\d{2}),(\d)\b/g, "$1.$2");
   return (
-    norm(text)
+    (bike ? bikeBase() : base)
       // El punto separa salvo entre dígitos: "8.5" (la rueda) sigue siendo un número.
       .replace(/[,+]|(?<!\d)\.|\.(?!\d)/g, " ")
       .split(/[\s-]+/)
@@ -133,9 +179,19 @@ function splitTier(token: string): string[] {
  * Las palabras del modelo en `text` (ya sin la marca adelante): saltea genéricas iniciales y corta en
  * la primera palabra que no puede ser parte de un nombre de modelo.
  */
-function verdict(token: string, next: string | undefined, out: string[], skip: Set<string>): "skip" | "stop" | "take" {
-  if (!out.length && (GENERIC.has(token) || skip.has(token) || LEADING_ONLY.has(token))) return "skip";
-  if (GENERIC.has(token) || skip.has(token)) return "stop";
+function verdict(
+  token: string,
+  next: string | undefined,
+  out: string[],
+  skip: Set<string>,
+  profile: IdentifyProfile
+): "skip" | "stop" | "take" {
+  const generic = profile.generic;
+  const rodado = profile.bike && (RODADO_SIZES.has(token) || RODADO_TOKEN.test(token));
+  if (!out.length && (generic.has(token) || skip.has(token) || LEADING_ONLY.has(token) || rodado)) return "skip";
+  if (generic.has(token) || skip.has(token)) return "stop";
+  // "Gyroor Eb021 R20": el rodado después del código cierra el modelo.
+  if (profile.bike && RODADO_TOKEN.test(token)) return "stop";
   if (MEASURE.test(token)) return "stop";
   if (/^\d+(?:\.\d+)?$/.test(token)) {
     // "25 km", "350 w": una medida separada. Un número pelado grande es una potencia sin unidad, y
@@ -153,12 +209,13 @@ function verdict(token: string, next: string | undefined, out: string[], skip: S
  * MAX_TOKENS no se trunca: devuelve nada, porque truncar unía "Max G30" con "Max G2" cuando la marca
  * ocupaba un lugar (revisión final, 4/11).
  */
-export function modelTokens(text: string, brandWords: string[]): string[] {
+export function modelTokens(text: string, brandWords: string[], category?: string | null): string[] {
+  const profile = profileOf(category);
   const skip = new Set(brandWords);
-  const list = generations(words(text)).flatMap(splitTier);
+  const list = generations(words(text, profile.bike)).flatMap(splitTier);
   const out: string[] = [];
   for (let i = 0; i < list.length; i++) {
-    const v = verdict(list[i]!, list[i + 1], out, skip);
+    const v = verdict(list[i]!, list[i + 1], out, skip, profile);
     if (v === "skip") continue;
     if (v === "stop") break;
     if (out.length === MAX_TOKENS) return [];
@@ -167,7 +224,7 @@ export function modelTokens(text: string, brandWords: string[]): string[] {
   return out;
 }
 
-function labelOf(brandKey: string, tokens: string[]): string {
+function labelOf(brandKey: string, tokens: string[], linePrefix: Readonly<Record<string, string>>): string {
   const words = tokens.map((token) =>
     /^gen\d$/.test(token)
       ? `Gen ${token.slice(3)}`
@@ -175,7 +232,7 @@ function labelOf(brandKey: string, tokens: string[]): string {
         ? token.toUpperCase()
         : token.charAt(0).toUpperCase() + token.slice(1)
   );
-  const prefix = LINE_PREFIX[brandKey];
+  const prefix = linePrefix[brandKey];
   return prefix && /^\d$/.test(tokens[0] ?? "") ? `${prefix} ${words.join(" ")}` : words.join(" ");
 }
 
@@ -199,10 +256,11 @@ export function identifyModel(input: IdentifyInput): ModelIdentity | null {
   if (input.source === "facebook" || !input.brand || !input.brandKey) return null;
   const brandKey = slugOf(input.brandKey);
   if (!brandKey) return null;
-  const brandLabel = cleanBrand(input.brand) ?? input.brand;
+  const profile = profileOf(input.category);
+  const brandLabel = cleanBrand(input.brand, input.category) ?? input.brand;
   const brandWords = words(input.brand);
   const title = norm(input.title);
-  const pattern = brandPattern(input.brand);
+  const pattern = brandPattern(input.brand, input.category);
   const literal = new RegExp(`\\b${brandWords.join("[\\s-]?")}\\b`);
   const match = (pattern ?? literal).exec(title) ?? literal.exec(title);
 
@@ -213,8 +271,10 @@ export function identifyModel(input: IdentifyInput): ModelIdentity | null {
   // primero: si no, "ninebot" pasaba a ser parte del modelo.
   const aliases = pattern ? [...title.matchAll(new RegExp(pattern.source, "g"))].flatMap((m) => words(m[0])) : [];
   const allBrandWords = [...brandWords, ...aliases, ...(match ? words(match[0]) : [])];
-  const fromTitle = match ? modelTokens(title.slice(match.index + match[0].length), allBrandWords) : [];
-  const fromFicha = input.fichaModel ? modelTokens(input.fichaModel, allBrandWords) : [];
+  const fromTitle = match
+    ? modelTokens(title.slice(match.index + match[0].length), allBrandWords, input.category)
+    : [];
+  const fromFicha = input.fichaModel ? modelTokens(input.fichaModel, allBrandWords, input.category) : [];
 
   let tokens = fromTitle;
   if (!tokens.length) tokens = fromFicha;
@@ -237,7 +297,7 @@ export function identifyModel(input: IdentifyInput): ModelIdentity | null {
     brandLabel,
     tokens,
     key: `${brandKey}-${tokens.join("-")}`,
-    label: labelOf(brandKey, tokens),
+    label: labelOf(brandKey, tokens, profile.linePrefix),
   };
 }
 

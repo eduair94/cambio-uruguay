@@ -47,9 +47,22 @@ const ficha = (rows: Record<string, string>, over: Partial<StoredFicha> = {}): S
 });
 
 describe("enrichMovilidadRow", () => {
-  it("no toca una fila de bicicleta", () => {
-    const bike = row({ category: "bicicleta-electrica", title: "Bicicleta Eléctrica 350w 25 km/h" });
-    expect(enrichMovilidadRow(bike, undefined)).toEqual(bike);
+  it("no toca una fila de una categoría sin perfil de ficha", () => {
+    const other = row({ category: "heladera", title: "Heladera 350 litros" });
+    expect(enrichMovilidadRow(other, undefined)).toEqual(other);
+  });
+
+  it("desde el 4/11/2026 enriquece la bicicleta con su perfil: rodado y marca de bici", () => {
+    const bike = row({
+      category: "bicicleta-electrica",
+      title: "Bicicleta Eléctrica Gyroor Eb021 R20 En Aluminio 350w 25 km/h",
+      brand: "",
+      brandKey: "",
+    });
+    const enriched = enrichMovilidadRow(bike, undefined);
+    expect(enriched.specs).toMatchObject({ wheelInches: 20, motorW: 350, maxSpeedKmh: 25 });
+    expect(enriched.brand).toBe("Gyroor");
+    expect(enriched.brandKey).toBe("gyroor");
   });
 
   it("sin ficha, usa sólo el título y no calcula precio por km", () => {

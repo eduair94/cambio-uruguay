@@ -9,6 +9,9 @@ import type { MovilidadModelDoc } from "../movilidad/models/build";
 const MovilidadModelSchema = new Schema(
   {
     slug: { type: String, required: true },
+    // Desde el 4/11/2026 el catálogo tiene monopatines y bicicletas. Un documento sin categoría es de
+    // antes de eso, y siempre de monopatín: por eso las lecturas de monopatín piden `$in: [cat, null]`.
+    category: { type: String, default: null },
     name: { type: String, required: true },
     brandKey: { type: String, required: true },
     brandLabel: { type: String, required: true },
@@ -34,5 +37,6 @@ const MovilidadModelSchema = new Schema(
 
 MovilidadModelSchema.index({ slug: 1 }, { unique: true });
 MovilidadModelSchema.index({ lastSeen: 1 });
+MovilidadModelSchema.index({ category: 1, lastSeen: 1 });
 
 export const MovilidadModelModel = appModel<MovilidadModelDoc>("MovilidadModel", MovilidadModelSchema, "movilidadmodels");
