@@ -13,7 +13,11 @@
 //     franja de 30° de campo visual que recomienda SMPTE para una imagen 4K o Full HD;
 //   * aire: 115 frigorías por m², +15 % con sol fuerte y +10 % en un último piso; 1 frigoría =
 //     3,968 BTU, y se sugiere el tamaño comercial siguiente (9.000, 12.000, 18.000, 24.000 BTU).
-import type { EquiparFichaCategoria, EquiparFichaValue } from './equiparFicha'
+import {
+  equiparFichaRangoValue,
+  type EquiparFichaCategoria,
+  type EquiparFichaValue,
+} from './equiparFicha'
 
 export const EQUIPAR_ASESOR_LITROS_BASE = 130
 export const EQUIPAR_ASESOR_LITROS_PERSONA = 65
@@ -312,53 +316,19 @@ export function equiparAsesorQuery(
   const rasgos: string[] = []
   if (!input.usados) query.condicion = 'nuevo'
   if (input.presupuesto !== null) query.precioMax = String(input.presupuesto)
-  // El tramo de tamaño que contiene el mínimo pedido (los filtros del directorio son tramos).
-  const tramo = (cuts: Array<[number, string]>, fallback: string) =>
-    cuts.find(([max]) => requisito.min <= max)?.[1] ?? fallback
+  // El tamaño que pide la regla, como tamaño libre: los tramos del panel no dicen "o más" (el que
+  // contiene el mínimo mostraría lo que no alcanza y escondería lo que sobra).
+  const key = categoria === 'tv' ? 'pulgadas' : 'capacidad'
+  query[key] = equiparFichaRangoValue(categoria, key, requisito.min, requisito.idealMax)
   switch (categoria) {
     case 'heladera':
-      query.capacidad = tramo(
-        [
-          [250, 'hasta-250'],
-          [350, '251-350'],
-          [450, '351-450'],
-        ],
-        'mas-450'
-      )
       if (input.noFrost) rasgos.push('no-frost')
       break
     case 'lavarropas':
-      query.capacidad = tramo(
-        [
-          [7, 'hasta-7'],
-          [9, '8-9'],
-          [12, '10-12'],
-        ],
-        'mas-12'
-      )
       if (input.carga) query.carga = input.carga
       if (input.lavaseca) rasgos.push('lavaseca')
       break
-    case 'tv':
-      query.pulgadas = tramo(
-        [
-          [32, 'hasta-32'],
-          [45, '40-43'],
-          [55, '50-55'],
-          [65, '58-65'],
-        ],
-        'mas-65'
-      )
-      break
     case 'aire-acondicionado':
-      query.capacidad = tramo(
-        [
-          [9500, 'hasta-9000'],
-          [13500, '12000'],
-          [19500, '18000'],
-        ],
-        'mas-18000'
-      )
       if (input.frioCalor) rasgos.push('frio-calor')
       break
   }

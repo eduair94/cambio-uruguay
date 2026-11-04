@@ -100,7 +100,7 @@ describe('filtros de ficha de equipar', () => {
   it('cada chip saca lo suyo', () => {
     const query = { capacidad: '251-350', rasgos: ['no-frost', 'inverter'] }
     const chips = equiparFichaChips(query, 'heladera')
-    expect(chips.map(c => c.label)).toEqual(['Capacidad: de 251 a 350 l', 'No frost', 'Inverter'])
+    expect(chips.map(c => c.label)).toEqual(['Capacidad: de 251 a 350 L', 'No frost', 'Inverter'])
     expect(equiparFichaWithout(query, ['eqficha.rasgos.no-frost'])).toEqual({
       capacidad: '251-350',
       rasgos: ['inverter'],
@@ -109,6 +109,20 @@ describe('filtros de ficha de equipar', () => {
       capacidad: '',
       rasgos: ['no-frost', 'inverter'],
     })
+  })
+
+  it('un tamaño libre (el del asesor): se valida, filtra y tiene su chip', () => {
+    const q = equiparFichaNormalize({ capacidad: 'desde-390' }, 'heladera')!
+    expect(q.capacidad).toBe('desde-390')
+    expect(equiparFichaMatch(q, 'heladera')).toEqual({ 'ficha.values.capacidadL': { $gte: 390 } })
+    expect(equiparFichaChips(q, 'heladera')[0]!.label).toBe('Capacidad: desde 390 L')
+    const tv = equiparFichaNormalize({ pulgadas: '45-a-63' }, 'tv')!
+    expect(equiparFichaMatch(tv, 'tv')).toEqual({ 'ficha.values.pulgadas': { $gte: 45, $lte: 63 } })
+    expect(equiparFichaChips(tv, 'tv')[0]!.label).toBe('Tamaño de pantalla: de 45 a 63″')
+    // Fuera de banda, al revés o en un grupo sin tamaño: no vale.
+    expect(equiparFichaNormalize({ capacidad: 'desde-5' }, 'heladera')!.capacidad).toBe('')
+    expect(equiparFichaNormalize({ pulgadas: '63-a-45' }, 'tv')!.pulgadas).toBe('')
+    expect(equiparFichaNormalize({ resolucion: 'desde-4' }, 'tv')!.resolucion).toBe('')
   })
 
   it('en la consulta del directorio: sólo en equipar y en categorías con ficha', () => {
@@ -276,8 +290,31 @@ describe('asesor de tamaño', () => {
     ).toEqual({
       condicion: 'nuevo',
       precioMax: '40000',
-      capacidad: '251-350',
+      capacidad: 'desde-325',
       rasgos: 'no-frost',
     })
+  })
+
+  it('el enlace pide lo que pide la regla, no el tramo que contiene el mínimo', () => {
+    const base = EQUIPAR_ASESOR_DEFAULT
+    const link = (categoria: Parameters<typeof equiparAsesorRequisito>[0], over = {}) => {
+      const input = { ...base, ...over }
+      return equiparAsesorQuery(categoria, input, equiparAsesorRequisito(categoria, input))
+    }
+    // 2,5 m: entre 45 y 63 pulgadas (el tramo "40 a 43" mostraba lo que no alcanza).
+    expect(link('tv', { distancia: 2.5 }).pulgadas).toBe('45-a-63')
+    // Muy cerca: el mínimo cae debajo de la banda y se sube a ella.
+    expect(link('tv', { distancia: 0.5 }).pulgadas).toBe('15-a-15')
+    // 2 personas: 7 kg o más (el tramo "hasta 7" escondía los de 8 a 12).
+    expect(link('lavarropas', { personas: 2 }).capacidad).toBe('desde-7')
+    // 20 m²: 9.000 BTU con 5 % de tolerancia.
+    expect(link('aire-acondicionado', { m2: 20, sol: false, ultimoPiso: false }).capacidad).toBe(
+      'desde-8550'
+    )
+    for (const categoria of ['heladera', 'lavarropas', 'tv', 'aire-acondicionado'] as const) {
+      const query = link(categoria)
+      const key = categoria === 'tv' ? 'pulgadas' : 'capacidad'
+      expect(equiparFichaNormalize(query, categoria)![key]).toBe(query[key])
+    }
   })
 })

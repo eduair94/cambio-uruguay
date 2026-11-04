@@ -534,7 +534,11 @@ Frío/Calor") y viene en formato uruguayo: punto de miles y coma decimal, salvo 
   `/equipar-casa-uruguay/<categoria>`: heladera 130 L + 65 L por persona y ancho del hueco; lavarropas
   5 kg + 1 por persona, hasta 12; televisor entre la distancia/5,5 y la distancia/4 en pulgadas (SMPTE,
   30°); aire 115 frigorías por m² (+15 % sol, +10 % último piso) redondeado al tamaño comercial
-  siguiente. Tres elecciones con nombre, y "Ver los que cumplen" lleva los requisitos al directorio.
+  siguiente. Tres elecciones con nombre, y "Ver los que cumplen" lleva los requisitos al directorio
+  como **tamaño libre** (`capacidad=desde-325`, `pulgadas=45-a-63`), no como tramo: un tramo no dice
+  "o más", y el que contiene el mínimo mostraba lo que no alcanza y escondía lo que sobra.
+- Una cifra que la ficha declara fuera de banda queda `descartado` y el título no la completa (ni por
+  la otra unidad: BTU y frigorías son la misma cantidad).
 
 **Siguiente:** páginas por modelo de electrodoméstico (el código de modelo de la ficha de ML es exacto)
 y las fichas de tienda.

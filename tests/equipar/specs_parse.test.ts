@@ -200,3 +200,39 @@ describe("aire acondicionado", () => {
     expect(fichaFromTitle("aire-acondicionado", "Aire Acondicionado Xion 12.000btu Inverter").values.btu).toBe(12000);
   });
 });
+
+describe("lo que encontró la revisión", () => {
+  it("A+, A++ y A+++ no se achican a A", () => {
+    for (const [raw, value] of [
+      ["A", "A"],
+      ["A+", "A+"],
+      ["A++", "A++"],
+      ["A +++", "A+++"],
+      ["B", "B"],
+    ]) {
+      expect(fichaFromRows("heladera", { "Eficiencia energética Uruguay": raw! }).values.eficiencia).toBe(value);
+    }
+  });
+
+  it("semi no frost no es no frost", () => {
+    expect(fichaFromRows("heladera", { "Tipo de deshielo": "Semi no frost" }).values.noFrost).toBe(false);
+    expect(fichaFromTitle("heladera", "Heladera James Semi No Frost 300 L").values.noFrost).toBe(false);
+  });
+
+  it("título: el número de litros más grande es el total", () => {
+    expect(fichaFromTitle("heladera", "Heladera Freezer 85 L Total 365 L").values.capacidadL).toBe(365);
+  });
+
+  it("un BTU de la ficha fuera de banda no lo completa el título", () => {
+    const ficha = mergeFicha(
+      "aire-acondicionado",
+      fichaFromRows("aire-acondicionado", {
+        "Tipo de aire acondicionado": "Portátil",
+        "Capacidad de refrigeración": "3.754,14 BTU",
+      }),
+      fichaFromTitle("aire-acondicionado", "Aire Acondicionado Portatil 12000 Btu")
+    );
+    expect(ficha.values).toMatchObject({ btu: null, frigorias: null, tipo: "portatil" });
+    expect(ficha.from.btu).toBe("descartado");
+  });
+});

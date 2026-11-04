@@ -20,7 +20,7 @@ import { fetchUsdUyuRate } from "./classes/chairs/catalog";
 import { buildBaskets } from "./classes/equipar/basket";
 import { buildEquiparCatalog, uncoveredCategories } from "./classes/equipar/catalog";
 import { buildEquiparListings } from "./classes/equipar/listings";
-import { enrichEquiparRow } from "./classes/equipar/specs/enrich";
+import { enrichEquiparRow, withoutEmptyBrand } from "./classes/equipar/specs/enrich";
 import { isEquiparFichaCategory } from "./classes/equipar/specs/fields";
 import { loadEquiparFichas } from "./classes/equipar/specs/store";
 import { equiparSpecs } from "./classes/equipar/classify";
@@ -188,7 +188,7 @@ async function main(): Promise<void> {
     const built = buildEquiparListings({ listings, usdUyu });
     // La ficha técnica de heladeras, lavarropas, televisores y aires viaja en cada reescritura (la
     // misma función que usa sync_equipar_specs.ts); si las fichas no se pueden leer, las filas se
-    // guardan sin `ficha` en el $set y lo que ya estaba guardado sigue ahí.
+    // guardan sin `ficha` en el $set y sin la marca vacía de las de ML: lo guardado sigue ahí.
     let rows = built.rows;
     try {
       const fichas = await loadEquiparFichas(
@@ -197,6 +197,7 @@ async function main(): Promise<void> {
       rows = rows.map((row) => enrichEquiparRow(row, fichas.get(row.listingId)));
     } catch (error) {
       console.error("[equipar] no se pudieron leer las fichas técnicas; las filas se guardan sin ellas", error);
+      rows = rows.map(withoutEmptyBrand);
     }
     const saved = await saveEquiparListings(rows, today);
     console.log(

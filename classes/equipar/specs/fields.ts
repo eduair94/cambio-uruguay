@@ -8,7 +8,7 @@
 // "12000 Btu" declara 4.095 en la ficha, y es la ficha la que dice la verdad).
 //
 // Espejo de lectura en el app: `app/utils/equiparFicha.ts` (paridad de claves en
-// `app/tests/unit/equiparFichaParity.test.ts`).
+// `app/tests/unit/equiparFicha.test.ts`, «paridad con el backend»).
 
 export const EQUIPAR_FICHA_CATEGORIES = ["heladera", "lavarropas", "tv", "aire-acondicionado"] as const;
 export type EquiparFichaCategory = (typeof EQUIPAR_FICHA_CATEGORIES)[number];
@@ -17,7 +17,11 @@ export const isEquiparFichaCategory = (value: unknown): value is EquiparFichaCat
   typeof value === "string" && (EQUIPAR_FICHA_CATEGORIES as readonly string[]).includes(value);
 
 export type FichaValue = number | boolean | string | null;
-export type FichaSource = "ficha" | "titulo";
+/**
+ * `descartado`: la ficha declaró el dato pero fuera de banda. Queda vacío y el título no lo completa:
+ * un portátil cuya ficha dice "3.754,14 BTU" y cuyo título dice "12000 Btu" no tiene 12.000.
+ */
+export type FichaSource = "ficha" | "titulo" | "descartado";
 
 /** La ficha de un aviso de equipar: valores por campo y de dónde salió cada uno. */
 export interface EquiparFicha {

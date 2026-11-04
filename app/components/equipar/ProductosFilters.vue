@@ -205,13 +205,7 @@
         <VSelect
           v-else-if="!grupo.multi"
           v-model="eqDraft[grupo.key]"
-          :items="[
-            { title: 'Cualquiera', value: '' },
-            ...grupo.opciones.map(opcion => ({
-              title: `${opcion.name} (${opcion.count})`,
-              value: opcion.slug,
-            })),
-          ]"
+          :items="eqSelectItems(grupo)"
           :label="grupo.label"
           density="comfortable"
           variant="outlined"
@@ -235,7 +229,14 @@
 </template>
 
 <script setup lang="ts">
-import { equiparFichaActive, equiparFichaParams } from '~/utils/equiparFicha'
+import {
+  EQUIPAR_FICHA_FILTROS,
+  equiparFichaActive,
+  equiparFichaParams,
+  equiparFichaValorLabel,
+  isEquiparFichaCategoria,
+  type EquiparFichaFaceta,
+} from '~/utils/equiparFicha'
 import {
   monopatinAutonomiaLabel,
   monopatinCargaLabel,
@@ -314,11 +315,40 @@ watch(
     eqDraft.value = toEqDraft(next)
   }
 )
+// Las facetas de ficha son de la categoría de la consulta: si el lector cambia la categoría en el
+// panel, los grupos de la anterior se esconden y no viajan al aplicar (un `rasgos=inverter` de
+// heladera sobreviviría callado al pasar a lavarropas).
+const eqSameCategoria = computed(
+  () => (props.fixedCategoria || draft.categoria) === props.query.categoria
+)
 const eqFacets = computed(() => {
   const facets = props.facets.eqficha
-  if (!facets) return null
+  if (!facets || !eqSameCategoria.value) return null
   return facets.conFicha > 0 || equiparFichaActive(props.query.eqficha) ? facets : null
 })
+/** Las opciones del grupo, y el tamaño libre que trajo el asesor (`desde-390`) si es lo puesto. */
+function eqSelectItems(grupo: EquiparFichaFaceta) {
+  const items = [
+    { title: 'Cualquiera', value: '' },
+    ...grupo.opciones.map(opcion => ({
+      title: `${opcion.name} (${opcion.count})`,
+      value: opcion.slug,
+    })),
+  ]
+  const current = eqDraft.value[grupo.key]
+  const categoria = props.query.categoria
+  if (
+    typeof current === 'string' &&
+    current &&
+    !grupo.opciones.some(opcion => opcion.slug === current) &&
+    isEquiparFichaCategoria(categoria)
+  ) {
+    const def = EQUIPAR_FICHA_FILTROS[categoria].find(g => g.key === grupo.key)
+    const label = def ? equiparFichaValorLabel(def, current) : null
+    if (label) items.splice(1, 0, { title: label, value: current })
+  }
+  return items
+}
 watch(
   () => props.query,
   next => Object.assign(draft, toDraft(next))
@@ -405,7 +435,9 @@ function apply() {
         categoria: props.fixedCategoria || draft.categoria,
         orden: props.query.orden,
         // Equipar: los grupos de ficha pisan las claves homónimas de movilidad (vacías acá).
-        ...(props.vertical === 'equipar' ? equiparFichaParams(eqDraft.value) : {}),
+        ...(props.vertical === 'equipar' && eqSameCategoria.value
+          ? equiparFichaParams(eqDraft.value)
+          : {}),
       },
       props.vertical
     )

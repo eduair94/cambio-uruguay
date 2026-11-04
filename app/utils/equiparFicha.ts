@@ -108,6 +108,12 @@ export interface EquiparFichaGrupo {
   field: string
   /** `rasgos`: varias a la vez, cada una exige su campo en `true`. */
   multi?: boolean
+  /**
+   * Tamaños: además de los tramos, un tamaño libre (`desde-390`, `45-a-63`). Es lo que manda el
+   * asesor, porque un tramo no dice "o más": el que contiene el mínimo muestra lo que no alcanza y
+   * esconde lo que sobra. Los límites son la banda del backend (fields.ts).
+   */
+  rango?: { unidad: string; min: number; max: number }
   opciones: readonly EquiparFichaOpcion[]
 }
 
@@ -126,6 +132,7 @@ export const EQUIPAR_FICHA_FILTROS: Readonly<
       key: 'capacidad',
       label: 'Capacidad',
       field: 'capacidadL',
+      rango: { unidad: ' L', min: 30, max: 1000 },
       opciones: [
         { slug: 'hasta-250', label: 'Hasta 250 L', cond: { $lte: 250 } },
         { slug: '251-350', label: 'De 251 a 350 L', cond: { $gt: 250, $lte: 350 } },
@@ -150,6 +157,7 @@ export const EQUIPAR_FICHA_FILTROS: Readonly<
       key: 'capacidad',
       label: 'Capacidad de lavado',
       field: 'capacidadKg',
+      rango: { unidad: ' kg', min: 2, max: 30 },
       opciones: [
         { slug: 'hasta-7', label: 'Hasta 7 kg', cond: { $lte: 7 } },
         { slug: '8-9', label: '8 a 9 kg', cond: { $gt: 7, $lte: 9 } },
@@ -183,6 +191,7 @@ export const EQUIPAR_FICHA_FILTROS: Readonly<
       key: 'pulgadas',
       label: 'Tamaño de pantalla',
       field: 'pulgadas',
+      rango: { unidad: '″', min: 15, max: 110 },
       opciones: [
         { slug: 'hasta-32', label: 'Hasta 32″', cond: { $lte: 32 } },
         { slug: '40-43', label: '40 a 43″', cond: { $gt: 32, $lte: 45 } },
@@ -215,6 +224,7 @@ export const EQUIPAR_FICHA_FILTROS: Readonly<
       key: 'capacidad',
       label: 'Capacidad',
       field: 'btu',
+      rango: { unidad: ' BTU', min: 4000, max: 60000 },
       opciones: [
         { slug: 'hasta-9000', label: 'Hasta 9.000 BTU', cond: { $lte: 9500 } },
         { slug: '12000', label: '12.000 BTU', cond: { $gt: 9500, $lte: 13500 } },
@@ -255,6 +265,53 @@ const first = (raw: unknown): string => {
   return typeof value === 'string' ? value.trim() : ''
 }
 
+const RANGO = /^(?:desde-(\d{1,6})|(\d{1,6})-a-(\d{1,6}))$/
+
+/** Un tamaño libre (`desde-390`, `45-a-63`) como condición, o null si no es uno válido del grupo. */
+export function equiparFichaRango(
+  grupo: EquiparFichaGrupo,
+  value: string
+): { $gte: number; $lte?: number } | null {
+  if (!grupo.rango) return null
+  const match = RANGO.exec(value)
+  if (!match) return null
+  const gte = Number(match[1] ?? match[2])
+  const lte = match[3] === undefined ? undefined : Number(match[3])
+  const { min, max } = grupo.rango
+  if (gte < min || gte > max) return null
+  if (lte !== undefined && (lte < gte || lte > max)) return null
+  return lte === undefined ? { $gte: gte } : { $gte: gte, $lte: lte }
+}
+
+/** El tamaño libre de un grupo, dentro de su banda: lo que arma el asesor. */
+export function equiparFichaRangoValue(
+  categoria: EquiparFichaCategoria,
+  key: string,
+  min: number,
+  max: number | null = null
+): string {
+  const rango = EQUIPAR_FICHA_FILTROS[categoria].find(grupo => grupo.key === key)?.rango
+  if (!rango) return ''
+  const clamp = (value: number) => Math.min(rango.max, Math.max(rango.min, Math.round(value)))
+  const desde = clamp(min)
+  return max === null ? `desde-${desde}` : `${desde}-a-${Math.max(desde, clamp(max))}`
+}
+
+/** El rótulo de lo puesto en un grupo: el de su opción o el del tamaño libre. */
+export function equiparFichaValorLabel(grupo: EquiparFichaGrupo, value: string): string | null {
+  const opcion = grupo.opciones.find(o => o.slug === value)
+  if (opcion) return opcion.label
+  const rango = equiparFichaRango(grupo, value)
+  if (!rango || !grupo.rango) return null
+  const unidad = grupo.rango.unidad
+  const fmt = (x: number) => x.toLocaleString('es-UY')
+  return rango.$lte === undefined
+    ? `Desde ${fmt(rango.$gte)}${unidad}`
+    : `De ${fmt(rango.$gte)} a ${fmt(rango.$lte)}${unidad}`
+}
+
+const lowerFirst = (value: string) => value.charAt(0).toLowerCase() + value.slice(1)
+
 /** La consulta de ficha desde la URL: sólo los grupos y opciones de la categoría. */
 export function equiparFichaNormalize(
   raw: Record<string, unknown>,
@@ -269,7 +326,7 @@ export function equiparFichaNormalize(
       const picked = value.split(',').map(s => s.trim())
       query[grupo.key] = slugs.filter(slug => picked.includes(slug))
     } else {
-      query[grupo.key] = slugs.includes(value) ? value : ''
+      query[grupo.key] = slugs.includes(value) || equiparFichaRango(grupo, value) ? value : ''
     }
   }
   return query
@@ -311,9 +368,11 @@ export function equiparFichaMatch(
       }
     } else if (typeof value === 'string' && value) {
       const opcion = grupo.opciones.find(o => o.slug === value)
+      const rango = opcion ? null : equiparFichaRango(grupo, value)
       if (opcion)
         match[path(grupo.field)] =
           typeof opcion.cond === 'object' ? { ...opcion.cond } : opcion.cond
+      else if (rango) match[path(grupo.field)] = rango
     }
   }
   return match
@@ -360,11 +419,11 @@ export function equiparFichaChips(
           })
       }
     } else if (value) {
-      const label = grupo.opciones.find(o => o.slug === value)?.label
+      const label = equiparFichaValorLabel(grupo, value)
       if (label)
         chips.push({
           key: `eqficha.${grupo.key}`,
-          label: `${grupo.label}: ${label.toLowerCase()}`,
+          label: `${grupo.label}: ${lowerFirst(label)}`,
           keys: [`eqficha.${grupo.key}`],
         })
     }

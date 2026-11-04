@@ -6,8 +6,12 @@ import type { EquiparListingRow } from "../listings";
 import type { EquiparFicha, EquiparFichaCategory, FichaValue } from "./fields";
 import { fichaFromSeller } from "./parse";
 
-/** Más que esto no hace falta para elegir tres: la lista va al navegador. */
-export const EQUIPAR_SNAPSHOT_MAX = 600;
+/**
+ * La lista va al navegador, y el asesor cuenta "N de M cumplen" sobre ella: el tope tiene que quedar
+ * por encima de lo que hay. Medido el 4/11/2026: a lo sumo 573 avisos de ML por categoría (sólo ML
+ * trae ficha del vendedor), y con un tope por precio las pantallas grandes son las primeras en caer.
+ */
+export const EQUIPAR_SNAPSHOT_MAX = 1200;
 const TITLE_MAX = 140;
 
 export interface EquiparFichaCandidate {

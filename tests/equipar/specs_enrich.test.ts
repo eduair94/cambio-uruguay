@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { enrichEquiparRow } from "../../classes/equipar/specs/enrich";
+import { enrichEquiparRow, withoutEmptyBrand } from "../../classes/equipar/specs/enrich";
 import { buildEquiparFichaSnapshot } from "../../classes/equipar/specs/snapshot";
 import { equiparFichaUpdate } from "../../classes/equipar/specs/store";
 import type { EquiparListingRow } from "../../classes/equipar/listings";
@@ -56,6 +56,21 @@ describe("enrichEquiparRow", () => {
     const enriched = enrichEquiparRow(row(), { listingId: "ml:MLU1", rows: null, brand: "Genérica", model: null });
     expect(enriched.ficha?.values.capacidadL).toBe(245);
     expect(enriched.brandKey).toBe("");
+  });
+
+  it("la clave de una marca de ficha es la de las tiendas (norm), no un slug", () => {
+    const enriched = enrichEquiparRow(row(), { listingId: "ml:MLU1", rows: null, brand: "Black Decker", model: null });
+    expect(enriched.brandKey).toBe("black decker");
+  });
+
+  it("sin fichas, una fila de ML sin marca no manda la marca vacía", () => {
+    const stripped = withoutEmptyBrand(row());
+    expect("brand" in stripped).toBe(false);
+    expect("brandKey" in stripped).toBe(false);
+    const branded = row({ brand: "LG", brandKey: "lg" });
+    expect(withoutEmptyBrand(branded)).toBe(branded);
+    const other = row({ category: "olla" });
+    expect(withoutEmptyBrand(other)).toBe(other);
   });
 
   it("no toca categorías sin ficha", () => {

@@ -53,7 +53,7 @@ const yesNo = (value: string): boolean | null =>
   /^(si|yes|true)\b/.test(value) ? true : /^(no|false)\b/.test(value) ? false : null;
 
 const eficiencia = (value: string): string | null => {
-  const match = /^(a\+{0,3}|[b-g])\b/.exec(value.replace(/\s/g, ""));
+  const match = /^(a\+{0,3}|[b-g])(?![+a-z0-9])/.exec(value.replace(/\s/g, ""));
   return match ? match[1]!.toUpperCase() : null;
 };
 
@@ -115,13 +115,23 @@ function blank(category: EquiparFichaCategory): EquiparFicha {
   return { values, from: {} };
 }
 
+const SAME_QUANTITY: Readonly<Record<string, string>> = { btu: "frigorias", frigorias: "btu" };
+
 function setter(category: EquiparFichaCategory, ficha: EquiparFicha, source: "ficha" | "titulo") {
   return (key: string, value: FichaValue) => {
     if (value === null || value === undefined || ficha.values[key] !== null) return;
     const field = fieldOf(category, key);
     if (!field) return;
     const clean = typeof value === "number" ? inBand(field, Math.round(value * 10) / 10) : value;
-    if (clean === null) return;
+    if (clean === null) {
+      if (source === "ficha") {
+        ficha.from[key] = "descartado";
+        // BTU y frigorías son la misma cantidad: el título tampoco la completa por la otra unidad.
+        const twin = SAME_QUANTITY[key];
+        if (twin && ficha.values[twin] === null) ficha.from[twin] = "descartado";
+      }
+      return;
+    }
     ficha.values[key] = clean;
     ficha.from[key] = source;
   };
@@ -131,13 +141,13 @@ function setter(category: EquiparFichaCategory, ficha: EquiparFicha, source: "fi
 function finish(category: EquiparFichaCategory, ficha: EquiparFicha): EquiparFicha {
   if (category === "aire-acondicionado") {
     const { btu, frigorias } = ficha.values;
-    if (typeof btu === "number" && frigorias === null) {
+    if (typeof btu === "number" && frigorias === null && ficha.from.frigorias !== "descartado") {
       const fg = inBand(fieldOf(category, "frigorias"), Math.round(btu / BTU_POR_FRIGORIA));
       if (fg !== null) {
         ficha.values.frigorias = fg;
         ficha.from.frigorias = ficha.from.btu!;
       }
-    } else if (typeof frigorias === "number" && btu === null) {
+    } else if (typeof frigorias === "number" && btu === null && ficha.from.btu !== "descartado") {
       const value = inBand(fieldOf(category, "btu"), Math.round(frigorias * BTU_POR_FRIGORIA));
       if (value !== null) {
         ficha.values.btu = value;
@@ -174,7 +184,8 @@ export function fichaFromRows(category: EquiparFichaCategory, rows: Record<strin
       set("capacidadL", num(/^capacidad total$/) ?? num(/^capacidad (neta|bruta|util)$/));
       set("freezerL", num(/^capacidad del freezer/));
       const deshielo = get(/^tipo de deshielo$/);
-      if (deshielo) set("noFrost", /no ?frost|frio seco/.test(deshielo) ? true : /ciclico|manual|semi/.test(deshielo) ? false : null);
+      if (deshielo)
+        set("noFrost", /semi/.test(deshielo) ? false : /no ?frost|frio seco/.test(deshielo) ? true : /ciclico|manual/.test(deshielo) ? false : null);
       set("puertas", num(/^cantidad de puertas$/));
       set("dispensador", bool(/^con dispensador de agua$/));
       set("anchoCm", parts[0] ? toCm(parts[0]) : get(/^ancho$/) ? toCm(get(/^ancho$/)!) : null);
@@ -245,9 +256,13 @@ export function fichaFromTitle(category: EquiparFichaCategory, title: string): E
 
   switch (category) {
     case "heladera": {
-      const litros = /(?:^|[^\d.,])(\d{2,3})\s?(?:l|lt|lts|litros)\b/.exec(text);
-      if (litros) set("capacidadL", Number(litros[1]));
-      if (/no ?frost|frio seco/.test(text)) set("noFrost", true);
+      // El más grande es el total: "Freezer 85 L Total 365 L".
+      const litros = [...text.matchAll(/(?:^|[^\d.,])(\d{2,3})\s?(?:l|lt|lts|litros)\b/g)]
+        .map((match) => Number(match[1]))
+        .filter((value) => inBand(fieldOf(category, "capacidadL"), value) !== null);
+      if (litros.length) set("capacidadL", Math.max(...litros));
+      if (/semi ?no ?frost/.test(text)) set("noFrost", false);
+      else if (/no ?frost|frio seco/.test(text)) set("noFrost", true);
       else if (/\bciclic[ao]\b/.test(text)) set("noFrost", false);
       if (/dispen(s|c)er|dispensador/.test(text)) set("dispensador", true);
       break;
@@ -298,14 +313,21 @@ export function fichaFromTitle(category: EquiparFichaCategory, title: string): E
   return finish(category, ficha);
 }
 
-/** Campo por campo, la primera capa con dato gana (ficha > título). */
+/**
+ * Campo por campo, la primera capa con dato gana (ficha > título). Un dato que la ficha declaró fuera
+ * de banda (`descartado`) tampoco lo completa una capa posterior.
+ */
 export function mergeFicha(category: EquiparFichaCategory, ...layers: ReadonlyArray<EquiparFicha | null | undefined>): EquiparFicha {
   const merged = blank(category);
   for (const layer of layers) {
     if (!layer) continue;
     for (const field of EQUIPAR_FICHA_FIELDS[category]) {
       const value = layer.values?.[field.key];
-      if (value === null || value === undefined || merged.values[field.key] !== null) continue;
+      if (merged.values[field.key] !== null || merged.from[field.key] === "descartado") continue;
+      if (value === null || value === undefined) {
+        if (layer.from?.[field.key] === "descartado") merged.from[field.key] = "descartado";
+        continue;
+      }
       merged.values[field.key] = value;
       const source = layer.from?.[field.key];
       if (source) merged.from[field.key] = source;

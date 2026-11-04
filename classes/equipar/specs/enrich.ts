@@ -24,12 +24,6 @@ export interface StoredEquiparFicha {
 /** Lo que el formulario de ML guarda cuando el vendedor no pone la marca. */
 const GENERIC_BRAND = /^(generic[ao]?|sin marca|otras? marcas?|otros?|varios|importado|nacional|no aplica|n\/a|-)$/;
 
-const slug = (value: string): string =>
-  norm(value)
-    .replace(/'/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
 export function enrichEquiparRow<T extends EquiparListingRow & { ficha?: EquiparFicha | null }>(
   row: T,
   stored: StoredEquiparFicha | undefined
@@ -46,7 +40,21 @@ export function enrichEquiparRow<T extends EquiparListingRow & { ficha?: Equipar
   const fichaBrand = (stored?.brand ?? "").trim();
   if (!brandKey && fichaBrand && !GENERIC_BRAND.test(norm(fichaBrand))) {
     brand = fichaBrand;
-    brandKey = slug(fichaBrand);
+    // `norm`, como `brandOf` en listings.ts: la misma marca de tienda y de ficha es UNA en la faceta.
+    brandKey = norm(fichaBrand);
   }
   return { ...row, ficha, brand, brandKey };
+}
+
+/**
+ * Para cuando las fichas no se pudieron leer: una fila de estas categorías sin marca propia no toca la
+ * guardada. La tarjeta de ML no trae marca, así que el `$set` con "" borraría la que puso la ficha
+ * hasta la próxima corrida de `sync_equipar_specs.ts`.
+ */
+export function withoutEmptyBrand<T extends EquiparListingRow>(row: T): T {
+  if (!isEquiparFichaCategory(row.category) || row.brandKey) return row;
+  const copy: Partial<T> = { ...row };
+  delete copy.brand;
+  delete copy.brandKey;
+  return copy as T;
 }
