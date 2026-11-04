@@ -2944,6 +2944,12 @@
         "bicicleta electrica s-pro e-strada"
       ],
       "hypothesis": "Las bicicletas no tenian pagina por modelo: el regimen commodity del catalogo publica bandas, no productos. Con la misma identidad de modelo que monopatines y un perfil de bici (el rodado antes del codigo no es el modelo, Eb-041 y EB041 son el mismo, Bosch y Shimano no nombran nada), los avisos de Mercado Libre y de las tiendas se juntan por marca y modelo y cada modelo con dos avisos o mas tiene su pagina: nueva y usada desde, todas las ofertas por vendedor, ficha de consenso, autonomia real y costo de carga, y modelos para comparar. Medido el 4/11 sobre 441 avisos sin accesorios: 89 modelos y 20 con dos vendedores o mas, antes de leer ninguna ficha. Se espera que las paginas de modelo ganen impresiones y clics por nombre de modelo, que el hub no puede rankear (memoria directorios-ficha-rankea-hub-no). Se declara solo la familia nueva; el hub tiene su propia fila del mismo dia."
+    },
+    {
+      "id": "feriados-pagos-convenios-y-sabado-redistribuido",
+      "shippedOn": "2026-11-04",
+      "routes": ["/guias/feriados-en-uruguay-como-se-pagan"],
+      "hypothesis": "La guia afirmaba en titulo y descripcion que solo cinco dias se pagan doble y clasificaba todo el resto del calendario como feriado comun, aunque su propia fuente MTSS admite feriados pagos sectoriales por convenio. Se aclara desde el inicio que las cinco fechas son el regimen general, se explica el caso de las horas del sabado redistribuidas y se alinean cuerpo y FAQ. Se retiran inferencias no respaldadas por la fuente sobre jornadas y remuneracion mixta. Se mantiene la misma URL y se mide el paquete completo de precision y utilidad, no el efecto aislado de una palabra del titulo. La intervencion anterior del 4/10 tiene sus 28 dias posteriores archivados hasta el 1/11; el resultado agregado de doce guias no demuestra una perdida de esta pagina. Se espera responder mejor a una necesidad ya presente en la guia y favorecer la adquisicion organica; evaluar por cuota de clics del sitio con 28 dias finales antes y despues, excluyendo el dia de publicacion. Fuentes oficiales MTSS e IMPO verificadas el 4/11/2026. Sin consultas inventadas ni cambios de anuncios, plantilla o calendarios."
     }
   ]
 }
