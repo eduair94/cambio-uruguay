@@ -630,6 +630,93 @@ del mismo tipo con el precio más parecido); slug malo 404 sin base, base caída
   tarjetas del directorio y las elecciones del asesor enlazan a su modelo (`modelSlug`).
 - Enlaces a la familia literales, sin `localePath`: es sólo español, como las fichas de celulares.
 
+## Bicicletas: ficha, asesor, modelos y directorio limpio (4/11/2026)
+
+Lo que monopatines ganó el 3 y el 4/11 (ficha técnica, filtros y órdenes por ficha, asesor, catálogo
+de modelos, página por modelo, comparador), aplicado a `/bicicletas-electricas-uruguay`. No es un
+fork: la maquinaria recibe la categoría y cambia lo que una bici declara distinto. Diseño en
+`docs/superpowers/specs/2026-11-04-bicicletas-ficha-modelos-design.md`.
+
+### Lo medido antes de escribir nada
+
+- 478 avisos frescos de bici (330 de ML, 308 con id de producto que el puente lee; 30 de tiendas; 118
+  de Facebook). **17 con marca**, cero fichas, cero modelos.
+- **30 eran accesorios** que pasaban `include` por nombrar la bici a la que van ("Luz Trasera … Para
+  Bicicleta", "Portabicicletas Para Ebike", "Cadena Kmc … Ebike", "Set De Frenos … Para Bicicleta
+  Eléctrica") y 4 trueques de Facebook ("cambio por bici eléctrica"). En bici el accesorio casi nunca
+  ABRE el título con una pieza de la lista de autos: por eso `PIEZA_ABRE_EL_TITULO` no los veía.
+- La ficha de ML de una bici trae Rodado ("20x4.0", "27,5"), Potencia, Velocidad máxima, Voltaje y
+  Capacidad, Peso, Peso máximo soportado, Es plegable, **Con batería removible**, **Con acelerador
+  independiente**, Altura recomendada. La descripción: "Shimano Tourney 7 velocidades", "Autonomía:
+  35-70 km".
+
+### Directorio limpio (`registry.ts`, `BICI_ACCESORIO`)
+
+Cuatro formas que una bici real no tiene: "para / compatible con / apto para" + bici (o "cadena");
+un accesorio que abre el título (luz, cadena, cesto, portabicicletas, camiseta, remolque, medidor,
+indicador, conmutador, set, chip, "1 par") o marca + pieza ("Bafang Pantalla"); sustantivos de
+importación (headlight, holder, bracket, hitch, apparel) y los suyos en español (portabicicletas,
+empuñadura, deslimitador); y "cambio/permuto por bici". Sobre los 478: **37 fuera, cero bicis
+reales**. "Luz", "canasto" y "cesta" sólo cuentan si abren el título: "Nakto 250w C/ Canasto" y "Fat
+Bike Luz Señaleros" son bicis. Variante nueva `infantil` (por palabra, nunca por rodado: la Gyroor C3
+de 14″ es para adultos). Las filas ya guardadas que dejan de clasificar se sirven 4 días más; para
+borrarlas antes, `npm run movilidad_prune_listings -- --apply` en el VPS.
+
+### Ficha por perfil (`classes/movilidad/specs/profiles.ts`)
+
+- El perfil de cada categoría: bandas propias (`BICICLETA_SPEC_BANDS`: rodado 12–29″, peso 8–60 kg,
+  potencia hasta 3.000 W, autonomía hasta 200 km) y si se leen los campos de bici. Sin categoría es
+  monopatín, que sale **idéntico** (los 258 tests de antes pasan sin tocarlos).
+- Campos nuevos, sólo bici: `gears`, `removableBattery`, `throttle`, `centralMotor`. Rodado desde
+  "R20", "Rod. 28", "Rodado 20x4.0", "26x1.95" (una bici casi nunca escribe las comillas). "3
+  velocidades" en un monopatín son los modos del acelerador: ahí nunca se leen cambios.
+- `brands.ts` por categoría: 38 marcas de bici medidas (Swft va antes que Trinx: "Trinx Swft Zip S" es
+  una Swft). Marca: 17 → 291 de los 441 avisos sin accesorios.
+- `currency-movilidad-specs` lee las dos categorías con una sola cola y el mismo presupuesto (60 por
+  corrida): ~340 fichas de bici se leen en ~6 corridas. Un snapshot por categoría
+  (`movilidadspecsnapshots`, `key` = categoría) y un catálogo de modelos por categoría con su guarda de
+  corrida flaca.
+
+### Modelos de bici (`identify.ts` con perfil, `movilidadmodels.category`)
+
+- El rodado ANTES del código no es el modelo ("Gyroor 20 Eb033" → EB033); en el medio sí lo es,
+  porque "Ado Air 20" y "Ado Air 28" son dos bicis. "R20" después del código lo cierra. "Eb-041" =
+  "EB041", "27,5" = 27.5. Bosch, Shimano, Bafang y las palabras de bici no nombran un modelo; los
+  vendedores que firman el título al final ("Mmsports", "Circuit", "Albion") tampoco.
+- Medido sobre los 441: 206 avisos con modelo, 89 modelos, 36 con dos avisos o más, 20 con dos
+  vendedores o más (Gyroor C3: 18 avisos, 3 vendedores; S-Pro E-Clipper: 9 avisos, 6 vendedores).
+- `movilidadmodels` suma `category`. **Un documento sin `category` es de monopatín** (anterior a las
+  bicis): el filtro de monopatín es `{ category: { $in: ['monopatin-electrico', null] } }`
+  (`classes/movilidad/models/category.ts` y `app/utils/movilidadModelos.ts`). Las APIs de modelos
+  (`?categoria=`), el sitemap y los hermanos filtran por categoría: sin eso una bici salía en la tabla y
+  el sitemap de monopatines. Un slug que ya es de la otra categoría (guardado o armado antes en la
+  misma corrida) no se pisa.
+
+### En la página
+
+- El hub pasó a `pages/bicicletas-electricas-uruguay/index.vue` (misma URL): asesor, tabla de modelos
+  con comparar y bandeja (`MovilidadCompareTray` con `compare-path`), ItemList de modelos indexables,
+  "Qué esperar de cada tipo" con rodado y costo de carga, ficha en la tarjeta (rodado primero) y
+  filtros por ficha con el perfil de bici (`movilidadFichaPerfil`: autonomía 30–100 km, peso 20–30 kg,
+  **rodado** en vez de rueda, rasgos batería removible / acelerador / motor central), órdenes por ficha.
+- Asesor (`utils/bicicletaAsesor.ts`, `MovilidadBicicletaAsesor.vue`, estilos compartidos en
+  `components/movilidad/asesor.css`): autonomía real 60 % (50 % sobre 90 kg) porque el fabricante la
+  mide con la asistencia más baja; peso + 10 kg; 350/500 W con algunas/muchas subidas; "la más fácil de
+  subir" = plegable o 22 kg o menos; acelerador como requisito duro si se pide. Más de 25 km/h se dice
+  contra la norma europea de pedaleo asistido (EN 15194, corta la ayuda a los 25 km/h), **no** contra
+  el decreto de Montevideo, que fija los 25 km/h para monopatines y plataformas, no para bicis.
+- `/bicicletas-electricas-uruguay/<modelo>` (`utils/bicicletaModelos.ts`: título "Bicicleta eléctrica
+  X: desde $ N" o "Bici eléctrica X…" si no entra en 60) y `/comparar` (noindex, en
+  `EXCLUDED_ROUTES`, fuera del sitemap y de las más visitadas). El comparador no premia el rodado.
+
+### Otros tipos de artículo
+
+El perfil es el punto de entrada para una categoría nueva: bandas + campos propios en `profiles.ts`,
+marcas en `brands.ts`, palabras genéricas en `identify.ts`, opciones de filtro en
+`movilidadFichaPerfil`. Equipar (heladeras, lavarropas, televisores…) no se activó: tiene ~25.000
+avisos frescos (~12.000 en categorías de régimen `modelo`) y a 60 fichas por hora del puente, que
+comparten diez jobs, leerlos lleva semanas. Es una decisión de presupuesto del puente, no de código.
+
 ## Tests
 
 - `tests/movilidad/registry.test.ts` — forma del registro (claves sin colisión con equipar, room
