@@ -26,6 +26,11 @@ import { PRECIOS_MIN_OBSERVATIONS, preciosSlug } from '../../../utils/preciosCat
 import { NAV_SECTIONS, UNLISTED_ROUTES } from '../../../utils/siteNav'
 import { MovilidadModelModel } from '../../models/MovilidadModel'
 import { monopatinModelFreshFloor } from '../../../utils/monopatinModelos'
+import {
+  MOVILIDAD_MODEL_CATEGORIES,
+  MOVILIDAD_MODEL_HUBS,
+  movilidadModelCategoryFilter,
+} from '../../../utils/movilidadModelos'
 import { toolSlugs } from '../../../utils/tools'
 import { videoTopicSlugs } from '../../../utils/videoTopics'
 import { isEquiparCategorySlug } from '../../../utils/equiparCategoryPages'
@@ -504,30 +509,35 @@ export default defineEventHandler(async _event => {
     await disconnectDbAfterPrerender()
   }
 
-  // --- Monopatín model pages: sólo los indexables ------------------------------------------
+  // --- Monopatín y bicicleta: páginas de modelo, sólo las indexables ------------------------
   // Sólo español, como celulares. `indexable` lo decide currency-movilidad-specs (dos vendedores o
   // más y tres datos de ficha): es el MISMO criterio que pone `noindex` en la página, así que el
   // sitemap nunca manda una URL que la página misma pide no indexar. Fresco = visto en la semana.
+  // Cada categoría bajo su hub y con su filtro: desde el 4/11/2026 la colección tiene las dos, y sin
+  // el filtro una bici salía en el sitemap como /monopatines-electricos-uruguay/<bici>.
   try {
     await connectDb()
     const today = new Date().toISOString().slice(0, 10)
-    const monopatines = await MovilidadModelModel.find({
-      indexable: true,
-      lastSeen: { $gte: monopatinModelFreshFloor(today) },
-    })
-      .select({ _id: 0, slug: 1, lastSeen: 1 })
-      .lean()
-    monopatines.forEach(({ slug, lastSeen }) => {
-      urls.push({
-        loc: `/monopatines-electricos-uruguay/${slug}`,
-        lastmod: lastSeen,
-        changefreq: 'daily',
-        priority: 0.6,
+    for (const categoria of MOVILIDAD_MODEL_CATEGORIES) {
+      const modelos = await MovilidadModelModel.find({
+        ...movilidadModelCategoryFilter(categoria),
+        indexable: true,
+        lastSeen: { $gte: monopatinModelFreshFloor(today) },
       })
-    })
-    if (monopatines.length) console.log(`- Monopatín model pages: ${monopatines.length} routes`)
+        .select({ _id: 0, slug: 1, lastSeen: 1 })
+        .lean()
+      modelos.forEach(({ slug, lastSeen }) => {
+        urls.push({
+          loc: `${MOVILIDAD_MODEL_HUBS[categoria]}/${slug}`,
+          lastmod: lastSeen,
+          changefreq: 'daily',
+          priority: 0.6,
+        })
+      })
+      if (modelos.length) console.log(`- ${categoria} model pages: ${modelos.length} routes`)
+    }
   } catch (monopatinError) {
-    console.warn('Failed to add monopatín model pages to sitemap:', monopatinError)
+    console.warn('Failed to add movilidad model pages to sitemap:', monopatinError)
   } finally {
     await disconnectDbAfterPrerender()
   }

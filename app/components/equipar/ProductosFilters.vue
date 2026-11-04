@@ -86,7 +86,8 @@
       variant="outlined"
       hide-details
     />
-    <!-- Sólo monopatines: la ficha técnica que declara el vendedor (currency-movilidad-specs). -->
+    <!-- Sólo movilidad (monopatines y bicicletas): la ficha técnica que declara el vendedor
+         (currency-movilidad-specs). Lo que cambia entre las dos sale de `movilidadFichaPerfil`. -->
     <fieldset v-if="fichaFacets" class="eq-filters__ficha">
       <legend class="eq-filters__legend">Ficha técnica</legend>
       <VSelect
@@ -124,12 +125,22 @@
       <VSelect
         v-model="draft.peso"
         :items="fichaItems('peso', draft.peso, monopatinPesoLabel)"
-        label="Peso del monopatín"
+        :label="`Peso ${perfil.delAparato}`"
         density="comfortable"
         variant="outlined"
         hide-details
       />
       <VSelect
+        v-if="perfil.ruedaClave === 'rodado'"
+        v-model="draft.rodado"
+        :items="fichaItems('rodado', draft.rodado)"
+        label="Rodado"
+        density="comfortable"
+        variant="outlined"
+        hide-details
+      />
+      <VSelect
+        v-else
         v-model="draft.rueda"
         :items="fichaItems('rueda', draft.rueda)"
         label="Ruedas"
@@ -182,6 +193,7 @@ import {
   monopatinAutonomiaLabel,
   monopatinCargaLabel,
   monopatinFichaPanelVisible,
+  movilidadFichaPerfil,
   monopatinPesoLabel,
 } from '~/utils/monopatinFicha'
 import {
@@ -233,6 +245,7 @@ const toDraft = (query: EquiparProductosQuery) => ({
   carga: query.ficha?.carga?.toString() ?? '',
   peso: query.ficha?.peso?.toString() ?? '',
   rueda: query.ficha?.rueda ?? '',
+  rodado: query.ficha?.rodado ?? '',
   rasgos: [...(query.ficha?.rasgos ?? [])] as string[],
   soloFicha: query.ficha?.soloFicha ?? false,
 })
@@ -279,7 +292,10 @@ const vendedorItems = computed(() => [
   ...facet(props.facets.vendedores),
 ])
 
-type FichaFacetKey = 'autonomia' | 'velocidad' | 'potencia' | 'carga' | 'peso' | 'rueda'
+type FichaFacetKey = 'autonomia' | 'velocidad' | 'potencia' | 'carga' | 'peso' | 'rueda' | 'rodado'
+
+/** Monopatín o bicicleta: qué ruedas se filtran y cómo se nombra el aparato. */
+const perfil = computed(() => movilidadFichaPerfil(props.fixedCategoria || props.query.categoria))
 
 const fichaFacets = computed(() =>
   monopatinFichaPanelVisible(props.facets.ficha, props.query.ficha) ? props.facets.ficha! : null

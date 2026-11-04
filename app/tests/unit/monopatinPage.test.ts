@@ -115,8 +115,10 @@ describe('la tabla de modelos agrupados (4/11/2026)', () => {
 
 describe('"Ver el modelo" desde la tarjeta y el asesor', () => {
   it('la tarjeta del directorio enlaza al modelo sólo cuando el aviso tiene uno', () => {
-    expect(card).toContain('v-if="producto.modelSlug"')
-    expect(card).toContain('`/monopatines-electricos-uruguay/${producto.modelSlug}`')
+    // Desde el 4/11/2026 la ruta sale de la categoría del aviso (monopatín o bici):
+    // movilidadModelPath, con su test en movilidadModelos.test.ts.
+    expect(card).toContain('v-if="producto.modelSlug && modelPath"')
+    expect(card).toContain('movilidadModelPath(props.producto.category, props.producto.modelSlug)')
   })
   it('cada elección del asesor enlaza a su modelo', () => {
     expect(asesor).toContain('v-if="pick.candidato.modelSlug"')

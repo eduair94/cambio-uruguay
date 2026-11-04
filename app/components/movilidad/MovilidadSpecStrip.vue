@@ -1,7 +1,8 @@
 <!--
-  La franja de ficha técnica de un monopatín: autonomía, velocidad, potencia y peso con su ícono, y
-  en una segunda línea lo que importa después (carga soportada, tiempo de carga, ruedas, plegable).
-  Es lo que DECLARA el vendedor: cuando sólo salió del título, la franja lo dice.
+  La franja de ficha técnica de un monopatín o una bicicleta: autonomía, velocidad, potencia y peso
+  con su ícono (en una bici, el rodado primero), y en una segunda línea lo que importa después (carga
+  soportada, tiempo de carga, ruedas o cambios, plegable). Es lo que DECLARA el vendedor: cuando sólo
+  salió del título, la franja lo dice.
 -->
 <template>
   <div v-if="chips.length || extras.length" class="spec-strip">
@@ -21,7 +22,11 @@
 
 <script setup lang="ts">
 import { equiparMoneyNbsp } from '~/utils/equiparProductos'
-import { monopatinSpecExtras, type MonopatinSpecsPublic } from '~/utils/monopatinFicha'
+import {
+  BICICLETA_CATEGORIA,
+  monopatinSpecExtras,
+  type MonopatinSpecsPublic,
+} from '~/utils/monopatinFicha'
 
 const props = withDefaults(
   defineProps<{
@@ -29,15 +34,21 @@ const props = withDefaults(
     uyuPerKm?: number | null
     /** En una fila de tabla: sin la segunda línea de "por km". */
     compact?: boolean
+    /** `bicicleta-electrica` pone el rodado primero y nombra a la bici; cualquier otra, monopatín. */
+    categoria?: string | null
   }>(),
-  { uyuPerKm: null, compact: false }
+  { uyuPerKm: null, compact: false, categoria: null }
 )
+
+const bici = computed(() => props.categoria === BICICLETA_CATEGORIA)
 
 const n = (value: number) => value.toLocaleString('es-UY', { maximumFractionDigits: 1 })
 
 const chips = computed(() => {
   const s = props.specs
   const out: Array<{ icon: string; label: string; title: string }> = []
+  if (bici.value && s.wheelInches !== null)
+    out.push({ icon: 'mdi-bicycle', label: `R${n(s.wheelInches)}`, title: 'Rodado' })
   if (s.rangeKm !== null)
     out.push({
       icon: 'mdi-map-marker-distance',
@@ -58,12 +69,14 @@ const chips = computed(() => {
     out.push({
       icon: 'mdi-weight-kilogram',
       label: `${n(s.weightKg)} kg`,
-      title: 'Peso del monopatín',
+      title: bici.value ? 'Peso de la bici' : 'Peso del monopatín',
     })
   return out
 })
 
-const extras = computed(() => (props.compact ? [] : monopatinSpecExtras(props.specs)))
+const extras = computed(() =>
+  props.compact ? [] : monopatinSpecExtras(props.specs, props.categoria)
+)
 </script>
 
 <style scoped>

@@ -7,9 +7,7 @@ import type {
   MonopatinFichaFacets,
 } from '../../utils/equiparProductos'
 import {
-  MONOPATIN_AUTONOMIA_OPCIONES,
-  MONOPATIN_CARGA_OPCIONES,
-  MONOPATIN_PESO_OPCIONES,
+  BICICLETA_RODADO_RANGOS,
   MONOPATIN_POTENCIA_RANGOS,
   MONOPATIN_RASGO_CAMPOS,
   MONOPATIN_RUEDA_RANGOS,
@@ -17,19 +15,30 @@ import {
   monopatinAutonomiaLabel,
   monopatinCargaLabel,
   monopatinPesoLabel,
+  movilidadFichaPerfil,
   type MovilidadFichaQuery,
 } from '../../utils/monopatinFicha'
 
 /**
- * Las facetas de ficha técnica del directorio de monopatines: cuántos avisos devolvería cada opción
- * con los DEMÁS filtros puestos y el suyo sacado, como el resto de las facetas del directorio.
+ * Las facetas de ficha técnica del directorio de monopatines y del de bicicletas: cuántos avisos
+ * devolvería cada opción con los DEMÁS filtros puestos y el suyo sacado, como el resto de las facetas
+ * del directorio. Las opciones (autonomía, peso, rueda o rodado, rasgos) son las del perfil de la
+ * categoría de la consulta (`movilidadFichaPerfil`).
  *
  * Un `$group` con un `$cond` por opción, sobre a lo sumo un millar de filas: barato, y con la misma
  * caché de borde de 300 s que el resto de la respuesta. En una comparación de agregación `null` es
  * MENOR que cualquier número, así que toda condición va con `$isNumber`: sin eso, "hasta 25 km/h"
  * contaría a cada aviso que no declara la velocidad.
  */
-type Dimension = 'autonomia' | 'velocidad' | 'potencia' | 'carga' | 'peso' | 'rueda' | 'rasgos'
+type Dimension =
+  | 'autonomia'
+  | 'velocidad'
+  | 'potencia'
+  | 'carga'
+  | 'peso'
+  | 'rueda'
+  | 'rodado'
+  | 'rasgos'
 
 export interface FichaFacetStep {
   dimension: Dimension | 'conFicha'
@@ -60,6 +69,7 @@ export function monopatinFichaFacetPlan(
   query: EquiparProductosQuery,
   cutoff: string
 ): FichaFacetStep[] {
+  const perfil = movilidadFichaPerfil(query.categoria)
   const without = (...keys: EquiparQueryKey[]) => equiparProductosMatch(query, cutoff, keys)
   const entries = <K extends string>(record: Readonly<Record<K, { range: Range }>>, path: string) =>
     Object.fromEntries(
@@ -74,7 +84,7 @@ export function monopatinFichaFacetPlan(
       match: without('ficha.autonomia'),
       group: groupOf(
         Object.fromEntries(
-          MONOPATIN_AUTONOMIA_OPCIONES.map(km => [
+          perfil.autonomia.map(km => [
             `o${km}`,
             count(inRange('$specs.rangeKm', { $gte: km })),
           ])
@@ -96,7 +106,7 @@ export function monopatinFichaFacetPlan(
       match: without('ficha.carga'),
       group: groupOf(
         Object.fromEntries(
-          MONOPATIN_CARGA_OPCIONES.map(kg => [
+          perfil.carga.map(kg => [
             `o${kg}`,
             count(inRange('$specs.maxLoadKg', { $gte: kg })),
           ])
@@ -108,26 +118,32 @@ export function monopatinFichaFacetPlan(
       match: without('ficha.peso'),
       group: groupOf(
         Object.fromEntries(
-          MONOPATIN_PESO_OPCIONES.map(kg => [
+          perfil.peso.map(kg => [
             `o${kg}`,
             count(inRange('$specs.weightKg', { $lte: kg })),
           ])
         )
       ),
     },
-    {
-      dimension: 'rueda',
-      match: without('ficha.rueda'),
-      group: groupOf(entries(MONOPATIN_RUEDA_RANGOS, '$specs.wheelInches')),
-    },
+    perfil.ruedaClave === 'rodado'
+      ? {
+          dimension: 'rodado',
+          match: without('ficha.rodado'),
+          group: groupOf(entries(BICICLETA_RODADO_RANGOS, '$specs.wheelInches')),
+        }
+      : {
+          dimension: 'rueda',
+          match: without('ficha.rueda'),
+          group: groupOf(entries(MONOPATIN_RUEDA_RANGOS, '$specs.wheelInches')),
+        },
     {
       dimension: 'rasgos',
       match: without('ficha.rasgos'),
       group: groupOf(
         Object.fromEntries(
-          Object.entries(MONOPATIN_RASGO_CAMPOS).map(([slug, { field }]) => [
+          perfil.rasgos.map(slug => [
             slug,
-            count({ $eq: [`$${field}`, true] }),
+            count({ $eq: [`$${MONOPATIN_RASGO_CAMPOS[slug].field}`, true] }),
           ])
         )
       ),
@@ -144,8 +160,10 @@ type Counts = Record<string, number>
 
 export function monopatinFichaFacetsFrom(
   counts: Partial<Record<Dimension, Counts>> & { conFicha?: number },
-  ficha: MovilidadFichaQuery
+  ficha: MovilidadFichaQuery,
+  categoria?: string | null
 ): MonopatinFichaFacets {
+  const perfil = movilidadFichaPerfil(categoria)
   const keep = (rows: EquiparProductosFacet[], selected: (slug: string) => boolean) =>
     rows.filter(row => row.count > 0 || selected(row.slug))
   const numeric = (
@@ -178,19 +196,21 @@ export function monopatinFichaFacetsFrom(
   return {
     autonomia: numeric(
       'autonomia',
-      MONOPATIN_AUTONOMIA_OPCIONES,
+      perfil.autonomia,
       monopatinAutonomiaLabel,
       ficha.autonomia
     ),
     velocidad: ranged('velocidad', MONOPATIN_VELOCIDAD_RANGOS, ficha.velocidad),
     potencia: ranged('potencia', MONOPATIN_POTENCIA_RANGOS, ficha.potencia),
-    carga: numeric('carga', MONOPATIN_CARGA_OPCIONES, monopatinCargaLabel, ficha.carga),
-    peso: numeric('peso', MONOPATIN_PESO_OPCIONES, monopatinPesoLabel, ficha.peso),
-    rueda: ranged('rueda', MONOPATIN_RUEDA_RANGOS, ficha.rueda),
+    carga: numeric('carga', perfil.carga, monopatinCargaLabel, ficha.carga),
+    peso: numeric('peso', perfil.peso, monopatinPesoLabel, ficha.peso),
+    rueda: perfil.ruedaClave === 'rueda' ? ranged('rueda', MONOPATIN_RUEDA_RANGOS, ficha.rueda) : [],
+    rodado:
+      perfil.ruedaClave === 'rodado' ? ranged('rodado', BICICLETA_RODADO_RANGOS, ficha.rodado) : [],
     rasgos: keep(
-      Object.entries(MONOPATIN_RASGO_CAMPOS).map(([slug, { label }]) => ({
+      perfil.rasgos.map(slug => ({
         slug,
-        name: label,
+        name: MONOPATIN_RASGO_CAMPOS[slug].label,
         count: counts.rasgos?.[slug] ?? 0,
       })),
       slug => (ficha.rasgos as string[]).includes(slug)
@@ -224,7 +244,7 @@ export async function monopatinFichaFacets(
       if (step.dimension === 'conFicha') counts.conFicha = row.conFicha ?? 0
       else counts[step.dimension] = row
     })
-    return monopatinFichaFacetsFrom(counts, ficha)
+    return monopatinFichaFacetsFrom(counts, ficha, query.categoria)
   } catch {
     return undefined
   }

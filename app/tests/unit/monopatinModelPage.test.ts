@@ -77,11 +77,13 @@ describe('el sitemap de las páginas de modelo', () => {
       'utf8'
     )
     const block = sitemap.slice(
-      sitemap.indexOf('Monopatín model pages'),
+      sitemap.indexOf('Monopatín y bicicleta: páginas de modelo'),
       sitemap.indexOf('Per-branch pages')
     )
     expect(block).toContain('indexable: true')
     expect(block).toContain('monopatinModelFreshFloor(today)')
-    expect(block).toContain('`/monopatines-electricos-uruguay/${slug}`')
+    // Desde el 4/11/2026, una vuelta por categoría con su filtro y bajo su hub (movilidadModelos.ts).
+    expect(block).toContain('movilidadModelCategoryFilter(categoria)')
+    expect(block).toContain('`${MOVILIDAD_MODEL_HUBS[categoria]}/${slug}`')
   })
 })
