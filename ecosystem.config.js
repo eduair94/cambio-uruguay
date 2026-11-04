@@ -284,6 +284,17 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // La ficha técnica de heladeras, lavarropas, televisores y aires de /equipar-casa-uruguay
+      // (sync_equipar_specs.ts): 40 fichas de ML por el puente, a 3 s (~2 min). A los :40, entre
+      // celulares (:37, ~1 min) y motos (:44), en el hueco de los consumidores horarios del puente.
+      name: "currency-equipar-specs",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_equipar_specs.js",
+      cron_restart: "40 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // El directorio de motos usadas de `/motos-usadas-uruguay`. Reusa el puente de MercadoLibre de
       // autos contra la categoria MLU1763, con la cilindrada leida del titulo.
       //

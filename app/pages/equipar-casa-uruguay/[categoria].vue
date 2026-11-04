@@ -56,6 +56,13 @@ FAMILY: Spanish only (like comparativas and sucursal): the canonical carries no 
       </div>
     </section>
 
+    <!-- ── Asesor de tamaño (heladera, lavarropas, tv, aire) ─────────────── -->
+    <section v-if="asesorCategoria" class="cat-section" aria-labelledby="asesor-title">
+      <h2 id="asesor-title">¿Qué tamaño necesitás?</h2>
+      <p class="section-intro">{{ asesorIntro }}</p>
+      <EquiparTamanoAsesor :categoria="asesorCategoria" :icon="asesorIcon" />
+    </section>
+
     <!-- ── Historia ───────────────────────────────────────────────────────── -->
     <section v-if="variants.length" class="cat-section" aria-labelledby="historia-title">
       <h2 id="historia-title">Cómo se movió la mediana</h2>
@@ -335,6 +342,7 @@ import {
 import { equiparEs } from '~/utils/equiparEs'
 import { dateLocale } from '~/utils/format'
 import { storeSlugForSeller } from '~/utils/storeDirectory'
+import { isEquiparFichaCategoria, type EquiparFichaCategoria } from '~/utils/equiparFicha'
 
 // 404 real para un slug inventado: `validate` corre antes del setup (un createError después de un
 // await respondería 200). Es una macro, así que sólo puede usar la función importada.
@@ -346,6 +354,38 @@ const route = useRoute()
 const localePath = useLocalePath()
 
 const slug = computed(() => String(route.params.categoria ?? ''))
+
+// ── Asesor de tamaño ─────────────────────────────────────────────────────
+// Sólo las cuatro categorías con ficha técnica leída (currency-equipar-specs, utils/equiparFicha.ts).
+const asesorCategoria = computed(() => (isEquiparFichaCategoria(slug.value) ? slug.value : null))
+const ASESOR: Readonly<Record<EquiparFichaCategoria, { icon: string; intro: string }>> = {
+  heladera: {
+    icon: 'mdi-fridge-outline',
+    intro:
+      'Contanos cuántos viven en la casa y el ancho del hueco: te decimos cuántos litros necesitás y elegimos entre las heladeras con ficha técnica leída.',
+  },
+  lavarropas: {
+    icon: 'mdi-washing-machine',
+    intro:
+      'Contanos cuántos viven en la casa: te decimos cuántos kilos de carga necesitás y elegimos entre los lavarropas con ficha técnica leída.',
+  },
+  tv: {
+    icon: 'mdi-television',
+    intro:
+      'Contanos a qué distancia vas a mirarla: te decimos qué tamaño de pantalla se aprovecha y elegimos entre los televisores con ficha técnica leída.',
+  },
+  'aire-acondicionado': {
+    icon: 'mdi-air-conditioner',
+    intro:
+      'Contanos cuántos metros cuadrados tiene el ambiente: te decimos cuántas frigorías y BTU necesitás y elegimos entre los aires con ficha técnica leída.',
+  },
+}
+const asesorIcon = computed(() =>
+  asesorCategoria.value ? ASESOR[asesorCategoria.value].icon : 'mdi-sofa-outline'
+)
+const asesorIntro = computed(() =>
+  asesorCategoria.value ? ASESOR[asesorCategoria.value].intro : ''
+)
 const found = equiparCategoryPage(slug.value)
 if (!found) {
   // Red de seguridad antes de cualquier await: `validate` ya filtró los slugs que no existen.

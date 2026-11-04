@@ -2,6 +2,7 @@ import type { Model } from 'mongoose'
 import { connectDb } from './db'
 import { pricewatchHistory } from './priceHistory'
 import { monopatinFichaFacets } from './monopatinFichaFacets'
+import { equiparFichaFacets } from './equiparFichaFacets'
 import {
   EQUIPAR_PRODUCTOS_PROJECTION,
   equiparProductoPublic,
@@ -154,6 +155,7 @@ export async function retailProductosResponse(
       fuentes,
       condiciones,
       ficha,
+      eqficha,
     ] = await Promise.all([
       model.countDocuments(match).maxTimeMS(FACET_MS),
       model
@@ -198,6 +200,11 @@ export async function retailProductosResponse(
         2
       ),
       wantsFicha ? monopatinFichaFacets(model, query, cutoff) : Promise.resolve(undefined),
+      // Equipar: sólo las cuatro categorías con ficha (heladera, lavarropas, tv, aire); el plan
+      // vuelve vacío para cualquier otra.
+      vertical === 'equipar'
+        ? equiparFichaFacets(model, query, cutoff)
+        : Promise.resolve(undefined),
     ])
 
     setResponseHeader(event, 'cache-control', `public, max-age=${maxAge}, s-maxage=${maxAge}`)
@@ -232,6 +239,7 @@ export async function retailProductosResponse(
             count: row.count,
           })),
         ...(ficha ? { ficha } : {}),
+        ...(eqficha ? { eqficha } : {}),
       },
       suspect,
     }

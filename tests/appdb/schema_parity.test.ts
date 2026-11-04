@@ -25,6 +25,7 @@ import { MovilidadItemModel } from "../../classes/models/MovilidadItem";
 import { MovilidadMetaModel } from "../../classes/models/MovilidadMeta";
 import { MovilidadListingModel } from "../../classes/models/MovilidadListing";
 import { MovilidadSpecSnapshotModel } from "../../classes/models/MovilidadSpecSnapshot";
+import { EquiparSpecSnapshotModel } from "../../classes/models/EquiparSpecSnapshot";
 import { MovilidadModelModel } from "../../classes/models/MovilidadModel";
 import { CharruaTextModel } from "../../classes/models/CharruaText";
 import { CharruaSnapshotModel } from "../../classes/models/CharruaSnapshot";
@@ -225,6 +226,14 @@ describe("app-Mongo schema parity", () => {
       appFields(appModel("MovilidadListing")).sort()
     );
     expect(MovilidadListingModel.collection.name).toBe("movilidadlistings");
+  });
+
+  it("EquiparSpecSnapshot declares exactly the app's top-level fields", () => {
+    // El asesor de tamaño de /equipar-casa-uruguay/<categoria> (heladera, lavarropas, tv, aire).
+    expect(Object.keys(EquiparSpecSnapshotModel.schema.obj).sort()).toEqual(
+      appFields(appModel("EquiparSpecSnapshot")).sort()
+    );
+    expect(EquiparSpecSnapshotModel.collection.name).toBe("equiparspecsnapshots");
   });
 
   it("MovilidadSpecSnapshot declares exactly the app's top-level fields", () => {

@@ -26,6 +26,16 @@ import {
   type MovilidadFichaKey,
   type MovilidadFichaQuery,
 } from './monopatinFicha'
+import {
+  equiparFichaActive,
+  equiparFichaChips,
+  equiparFichaNormalize,
+  equiparFichaParams,
+  equiparFichaWithout,
+  type EquiparFichaFacetas,
+  type EquiparFichaPublic,
+  type EquiparFichaQuery,
+} from './equiparFicha'
 
 export const EQUIPAR_PRODUCTOS_PATH = '/equipar-casa-uruguay/productos'
 export const EQUIPAR_LISTA_PATH = '/equipar-casa-uruguay/mi-lista'
@@ -164,6 +174,8 @@ export interface EquiparProductoPublic {
   uyuPerKm?: number
   /** Sólo monopatín: /monopatines-electricos-uruguay/<modelSlug>, cuando el aviso es de un modelo. */
   modelSlug?: string
+  /** Heladeras, lavarropas, televisores y aires: la ficha técnica declarada (classes/equipar/specs/). */
+  ficha?: EquiparFichaPublic
 }
 
 export interface EquiparProductosFacet {
@@ -182,6 +194,8 @@ export interface EquiparProductosFacets {
   condiciones: EquiparProductosFacet[]
   /** Sólo el directorio de monopatines: cada opción contada sin su propio filtro. */
   ficha?: MonopatinFichaFacets
+  /** Heladeras, lavarropas, televisores y aires: los grupos de ficha, cada opción contada. */
+  eqficha?: EquiparFichaFacetas
 }
 
 export interface MonopatinFichaFacets {
@@ -236,11 +250,16 @@ export interface EquiparProductosQuery {
   page: number
   /** Sólo con la vertical de movilidad: los filtros por ficha técnica. Ausente en equipar. */
   ficha?: MovilidadFichaQuery
+  /** Sólo equipar con una categoría con ficha (heladera, lavarropas, tv, aire): sus filtros. */
+  eqficha?: EquiparFichaQuery
 }
 
 /** Una clave que un chip puede sacar: un campo de la consulta o uno de la ficha. */
 export type EquiparQueryKey =
-  keyof EquiparProductosQuery | `ficha.${MovilidadFichaKey}` | `ficha.rasgos.${MonopatinRasgo}`
+  | keyof EquiparProductosQuery
+  | `ficha.${MovilidadFichaKey}`
+  | `ficha.rasgos.${MonopatinRasgo}`
+  | `eqficha.${string}`
 
 const EQUIPAR_Q_MAX = 80
 const SLUG = /^[a-z0-9-]{1,60}$/
@@ -312,6 +331,10 @@ export function equiparProductosNormalize(
     page: Number.isFinite(page) && page >= 1 ? Math.min(page, 500) : 1,
   }
   if (vertical === 'movilidad') query.ficha = monopatinFichaNormalize(raw, query.categoria)
+  if (vertical === 'equipar') {
+    const eqficha = equiparFichaNormalize(raw, query.categoria)
+    if (eqficha) query.eqficha = eqficha
+  }
   return query
 }
 
@@ -329,7 +352,7 @@ export function equiparProductosParams(query: EquiparProductosQuery): Record<str
   if (query.q) params.q = query.q
   if (query.orden !== 'precio_asc') params.orden = query.orden
   if (query.page > 1) params.page = String(query.page)
-  return { ...params, ...monopatinFichaParams(query.ficha) }
+  return { ...params, ...monopatinFichaParams(query.ficha), ...equiparFichaParams(query.eqficha) }
 }
 
 const EQUIPAR_FILTER_KEYS: ReadonlyArray<keyof EquiparProductosQuery> = [
@@ -350,6 +373,7 @@ export function equiparProductosFiltered(
   ignore: ReadonlyArray<keyof EquiparProductosQuery> = []
 ): boolean {
   if (!ignore.includes('ficha') && monopatinFichaActive(query.ficha)) return true
+  if (!ignore.includes('eqficha') && equiparFichaActive(query.eqficha)) return true
   return EQUIPAR_FILTER_KEYS.some(key => {
     if (ignore.includes(key)) return false
     const value = query[key]
@@ -382,9 +406,11 @@ export function equiparProductosWithout(
 ): EquiparProductosQuery {
   const next: EquiparProductosQuery = { ...query, page: 1 }
   if (query.ficha) next.ficha = fichaWithout(query.ficha, keys)
+  if (query.eqficha) next.eqficha = equiparFichaWithout(query.eqficha, keys)
   for (const raw of keys) {
     if (raw === 'ficha' || raw.startsWith('ficha.')) continue
-    const key = raw as Exclude<keyof EquiparProductosQuery, 'ficha'>
+    if (raw === 'eqficha' || raw.startsWith('eqficha.')) continue
+    const key = raw as Exclude<keyof EquiparProductosQuery, 'ficha' | 'eqficha'>
     if (key === 'precioMin' || key === 'precioMax') next[key] = null
     else if (key === 'orden') next.orden = 'precio_asc'
     else if (key === 'page') next.page = 1
@@ -467,6 +493,13 @@ export function equiparProductosChips(
     })
   }
   if (query.ficha) chips.push(...fichaChips(query.ficha))
+  if (query.eqficha)
+    chips.push(
+      ...equiparFichaChips(query.eqficha, query.categoria).map(chip => ({
+        ...chip,
+        keys: chip.keys as EquiparQueryKey[],
+      }))
+    )
   if (query.q) chips.push({ key: 'q', label: `“${query.q}”`, keys: ['q'] })
   return chips
 }

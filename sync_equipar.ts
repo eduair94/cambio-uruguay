@@ -20,6 +20,9 @@ import { fetchUsdUyuRate } from "./classes/chairs/catalog";
 import { buildBaskets } from "./classes/equipar/basket";
 import { buildEquiparCatalog, uncoveredCategories } from "./classes/equipar/catalog";
 import { buildEquiparListings } from "./classes/equipar/listings";
+import { enrichEquiparRow, withoutEmptyBrand } from "./classes/equipar/specs/enrich";
+import { isEquiparFichaCategory } from "./classes/equipar/specs/fields";
+import { loadEquiparFichas } from "./classes/equipar/specs/store";
 import { equiparSpecs } from "./classes/equipar/classify";
 import { EQUIPAR_CATEGORIES } from "./classes/equipar/registry";
 import {
@@ -183,7 +186,20 @@ async function main(): Promise<void> {
   // listing it did not read. Own try/catch: a failure here never costs the catalogue just saved.
   try {
     const built = buildEquiparListings({ listings, usdUyu });
-    const saved = await saveEquiparListings(built.rows, today);
+    // La ficha técnica de heladeras, lavarropas, televisores y aires viaja en cada reescritura (la
+    // misma función que usa sync_equipar_specs.ts); si las fichas no se pueden leer, las filas se
+    // guardan sin `ficha` en el $set y sin la marca vacía de las de ML: lo guardado sigue ahí.
+    let rows = built.rows;
+    try {
+      const fichas = await loadEquiparFichas(
+        rows.filter((row) => isEquiparFichaCategory(row.category)).map((row) => row.listingId)
+      );
+      rows = rows.map((row) => enrichEquiparRow(row, fichas.get(row.listingId)));
+    } catch (error) {
+      console.error("[equipar] no se pudieron leer las fichas técnicas; las filas se guardan sin ellas", error);
+      rows = rows.map(withoutEmptyBrand);
+    }
+    const saved = await saveEquiparListings(rows, today);
     console.log(
       `[equipar] avisos: ${saved.written} escritos, ${saved.pruned} podados, ${built.rejected} rechazados por la banda, ${built.suspect} sospechosos`
     );

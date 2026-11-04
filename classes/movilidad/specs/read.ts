@@ -93,16 +93,32 @@ interface BridgeProduct {
  * el muro con otra IP. Un aviso sin id de producto (`articulo.…`, el 1,5 % medido) no lo puede leer
  * el puente y la cola ni lo intenta (`mlProductId`).
  */
-async function readMlFromBridge(target: FichaTarget, fetcher: Fetcher): Promise<FichaRead> {
-  const id = mlProductId(target.url);
-  if (!id) return nothing({ failure: "aviso sin id de producto" });
+/** Lo que el puente contesta de un producto de ML, ya aplanado: la tabla de la ficha rótulo → valor. */
+export interface MlProductRead {
+  ok: boolean;
+  gone: boolean;
+  failure?: string;
+  rows: Record<string, string>;
+  description: string;
+  brand: string | null;
+  model: string | null;
+}
+
+/**
+ * La ficha de un aviso de ML por el puente, sin interpretar: la usan la ficha de monopatines y
+ * bicicletas (abajo) y la de equipar (classes/equipar/specs/), cada una con su parser.
+ */
+export async function readMlProductRows(url: string, fetcher: Fetcher = fetchText): Promise<MlProductRead> {
+  const empty = { rows: {}, description: "", brand: null, model: null };
+  const id = mlProductId(url);
+  if (!id) return { ok: false, gone: false, failure: "aviso sin id de producto", ...empty };
   const { body, failure } = await get(`${ML_API_BASE}/product/${id}?country=UY`, fetcher);
-  if (!body) return nothing({ gone: GONE_STATUS.test(failure), failure });
+  if (!body) return { ok: false, gone: GONE_STATUS.test(failure), failure, ...empty };
   let product: BridgeProduct;
   try {
     product = JSON.parse(body) as BridgeProduct;
   } catch {
-    return nothing({ failure: "respuesta del puente ilegible" });
+    return { ok: false, gone: false, failure: "respuesta del puente ilegible", ...empty };
   }
   const rows: Record<string, string> = {};
   for (const group of product.specifications ?? []) {
@@ -112,17 +128,24 @@ async function readMlFromBridge(target: FichaTarget, fetcher: Fetcher): Promise<
       if (label && value && !(label in rows)) rows[label] = value;
     }
   }
-  const specs = mergeSpecs(
-    specsFromRows(rows, target.category),
-    specsFromText(product.description ?? "", "descripcion", target.category)
-  );
   return {
     ok: true,
     gone: false,
-    specs: withSpecs(specs),
+    rows,
+    description: product.description ?? "",
     brand: product.brand?.trim() || rows["Marca"] || null,
     model: product.model?.trim() || rows["Modelo"] || null,
   };
+}
+
+async function readMlFromBridge(target: FichaTarget, fetcher: Fetcher): Promise<FichaRead> {
+  const read = await readMlProductRows(target.url, fetcher);
+  if (!read.ok) return nothing({ gone: read.gone, failure: read.failure });
+  const specs = mergeSpecs(
+    specsFromRows(read.rows, target.category),
+    specsFromText(read.description, "descripcion", target.category)
+  );
+  return { ok: true, gone: false, specs: withSpecs(specs), brand: read.brand, model: read.model };
 }
 
 export async function readFicha(target: FichaTarget, fetcher: Fetcher = fetchText): Promise<FichaRead> {

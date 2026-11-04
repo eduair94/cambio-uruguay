@@ -1,0 +1,60 @@
+// Lo que la ficha técnica agrega a una fila de `equiparlistings` (heladeras, lavarropas, televisores y
+// aires): el campo `ficha` y, si faltaba, la marca.
+//
+// La usan los DOS escritores de la colección: `sync_equipar.ts`, que reescribe cada fila cada hora con
+// el precio nuevo, y `sync_equipar_specs.ts`, que lee fichas y las reaplica. Con la misma función en
+// los dos la fila sale igual quien sea que la escriba (la lección de monopatines: si sólo la aplicara
+// el lector de fichas, la horaria vaciaría la marca cada hora).
+//
+// Las filas CRUDAS de la ficha se guardan en `equiparspecs` y se re-interpretan acá en cada escritura:
+// un parser mejor se aplica a todo el catálogo sin volver a pedir una sola ficha.
+import { norm } from "../classify";
+import type { EquiparListingRow } from "../listings";
+import { isEquiparFichaCategory, type EquiparFicha } from "./fields";
+import { fichaFromRows, fichaFromTitle, fichaHasAny, mergeFicha } from "./parse";
+
+/** Lo que `equiparspecs` guarda de una ficha leída bien. */
+export interface StoredEquiparFicha {
+  listingId: string;
+  rows: Record<string, string> | null;
+  brand: string | null;
+  model: string | null;
+}
+
+/** Lo que el formulario de ML guarda cuando el vendedor no pone la marca. */
+const GENERIC_BRAND = /^(generic[ao]?|sin marca|otras? marcas?|otros?|varios|importado|nacional|no aplica|n\/a|-)$/;
+
+export function enrichEquiparRow<T extends EquiparListingRow & { ficha?: EquiparFicha | null }>(
+  row: T,
+  stored: StoredEquiparFicha | undefined
+): T {
+  if (!isEquiparFichaCategory(row.category)) return row;
+  const merged = mergeFicha(
+    row.category,
+    stored?.rows ? fichaFromRows(row.category, stored.rows) : null,
+    fichaFromTitle(row.category, row.title)
+  );
+  const ficha = fichaHasAny(merged) ? merged : null;
+
+  let { brand, brandKey } = row;
+  const fichaBrand = (stored?.brand ?? "").trim();
+  if (!brandKey && fichaBrand && !GENERIC_BRAND.test(norm(fichaBrand))) {
+    brand = fichaBrand;
+    // `norm`, como `brandOf` en listings.ts: la misma marca de tienda y de ficha es UNA en la faceta.
+    brandKey = norm(fichaBrand);
+  }
+  return { ...row, ficha, brand, brandKey };
+}
+
+/**
+ * Para cuando las fichas no se pudieron leer: una fila de estas categorías sin marca propia no toca la
+ * guardada. La tarjeta de ML no trae marca, así que el `$set` con "" borraría la que puso la ficha
+ * hasta la próxima corrida de `sync_equipar_specs.ts`.
+ */
+export function withoutEmptyBrand<T extends EquiparListingRow>(row: T): T {
+  if (!isEquiparFichaCategory(row.category) || row.brandKey) return row;
+  const copy: Partial<T> = { ...row };
+  delete copy.brand;
+  delete copy.brandKey;
+  return copy as T;
+}
