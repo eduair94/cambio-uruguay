@@ -112,3 +112,13 @@ describe('la tabla de modelos agrupados (4/11/2026)', () => {
     expect(tray).toMatch(/m: .*join\(','\)/)
   })
 })
+
+describe('"Ver el modelo" desde la tarjeta y el asesor', () => {
+  it('la tarjeta del directorio enlaza al modelo sólo cuando el aviso tiene uno', () => {
+    expect(card).toContain('v-if="producto.modelSlug"')
+    expect(card).toContain('`/monopatines-electricos-uruguay/${producto.modelSlug}`')
+  })
+  it('cada elección del asesor enlaza a su modelo', () => {
+    expect(asesor).toContain('v-if="pick.candidato.modelSlug"')
+  })
+})

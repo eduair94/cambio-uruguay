@@ -60,6 +60,8 @@ export interface MonopatinCandidato {
   brand: string
   variant: string
   specs: Omit<MonopatinSpecsPublic, 'fromFicha'>
+  /** La página del modelo (/monopatines-electricos-uruguay/<modelSlug>), si el aviso es de uno. */
+  modelSlug?: string
 }
 
 export interface AsesorRequisitos {

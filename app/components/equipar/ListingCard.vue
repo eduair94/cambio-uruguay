@@ -52,6 +52,14 @@
         :specs="producto.specs"
         :uyu-per-km="producto.uyuPerKm ?? null"
       />
+      <!-- Sólo monopatines con modelo identificado: todas las ofertas del mismo modelo juntas. -->
+      <NuxtLink
+        v-if="producto.modelSlug"
+        :to="`/monopatines-electricos-uruguay/${producto.modelSlug}`"
+        class="eq-card__model"
+      >
+        Ver el modelo en todos los vendedores
+      </NuxtLink>
       <p class="eq-card__facts">{{ facts }}</p>
       <p class="eq-card__source">
         {{ producto.sellerName
@@ -244,6 +252,11 @@ const roomIcon = computed(() => {
   font-size: 1.25rem;
   font-weight: 700;
   margin: 0;
+}
+.eq-card__model {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgb(var(--v-theme-link));
 }
 .eq-card__approx,
 .eq-card__facts,

@@ -212,6 +212,20 @@ describe('la fila pública', () => {
     const row = equiparProductoPublic({ listingId: 'store:x:1', title: 'Heladera' } as never)
     expect(row).not.toHaveProperty('specs')
     expect(row).not.toHaveProperty('uyuPerKm')
+    expect(row).not.toHaveProperty('modelSlug')
+  })
+
+  it('el aviso lleva la página de su modelo sólo si tiene una válida', () => {
+    expect(EQUIPAR_PRODUCTOS_PROJECTION).toMatchObject({ modelSlug: 1 })
+    expect(
+      equiparProductoPublic({ listingId: 'ml:1', modelSlug: 'xiaomi-6-pro' } as never).modelSlug
+    ).toBe('xiaomi-6-pro')
+    expect(
+      equiparProductoPublic({ listingId: 'ml:1', modelSlug: null } as never)
+    ).not.toHaveProperty('modelSlug')
+    expect(
+      equiparProductoPublic({ listingId: 'ml:1', modelSlug: '<x>' } as never)
+    ).not.toHaveProperty('modelSlug')
   })
 
   it('una ficha que sólo salió del título no es "de ficha"', () => {

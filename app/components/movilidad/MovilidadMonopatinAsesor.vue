@@ -138,6 +138,13 @@
                 <ul class="asesor__why">
                   <li v-for="line in pick.porque" :key="line">{{ line }}</li>
                 </ul>
+                <NuxtLink
+                  v-if="pick.candidato.modelSlug"
+                  :to="`/monopatines-electricos-uruguay/${pick.candidato.modelSlug}`"
+                  class="asesor__model"
+                >
+                  Ver el modelo en todos los vendedores
+                </NuxtLink>
               </div>
             </li>
           </ol>
@@ -447,6 +454,13 @@ function verEnDirectorio() {
   padding-left: 18px;
   font-size: 0.875rem;
   line-height: 1.5;
+}
+.asesor__model {
+  display: inline-block;
+  margin-top: 8px;
+  color: rgb(var(--v-theme-link));
+  font-weight: 600;
+  font-size: 0.875rem;
 }
 .asesor__why li + li {
   margin-top: 2px;
