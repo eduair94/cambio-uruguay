@@ -145,6 +145,9 @@ describe("televisor", () => {
     });
     expect(fichaFromTitle("tv", 'Smart Tv Samsung 55" Crystal UHD 4K').values).toMatchObject({ pulgadas: 55, resolucion: "4k" });
     expect(fichaFromTitle("tv", "Samsung Smart Tv 40 Hd").values).toMatchObject({ pulgadas: 40, resolucion: "hd" });
+    // Medido en el dry-run del VPS (4/11/2026): el número va detrás de "Hd".
+    expect(fichaFromTitle("tv", "Televisor Smart Led Hd 32  Smartlife").values.pulgadas).toBe(32);
+    expect(fichaFromRows("tv", { "Tamaño de pantalla": '43 "' }).values.pulgadas).toBe(43);
   });
 });
 

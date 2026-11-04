@@ -191,7 +191,7 @@ export function fichaFromRows(category: EquiparFichaCategory, rows: Record<strin
       break;
     }
     case "tv": {
-      set("pulgadas", num(/^tamano de la pantalla$/));
+      set("pulgadas", num(/^tamano de (la )?pantalla$|^pulgadas$/));
       const res = get(/^tipo de resolucion$/);
       set("resolucion", res ? resolucion(res) : null);
       const pantalla = get(/^tipo de pantalla$/);
@@ -265,7 +265,7 @@ export function fichaFromTitle(category: EquiparFichaCategory, title: string): E
     case "tv": {
       const inches =
         /(?:^|[^\d.,])(\d{2})\s?(?:"|pulgadas|pulg\b)/.exec(text) ??
-        /\b(?:tv|televisor|smart|led|qled|oled|uhd|4k)\s+(\d{2})\b(?!\s?(?:hz|w|"|\d))/.exec(text);
+        /\b(?:tv|televisor|smart|led|qled|oled|uhd|4k|hd|fhd)\s+(\d{2})\b(?!\s?(?:hz|w|"|\d))/.exec(text);
       if (inches) set("pulgadas", Number(inches[1]));
       set("resolucion", resolucion(text));
       if (/\bsmart\b|android tv|google tv|webos|tizen/.test(text)) set("smart", true);
