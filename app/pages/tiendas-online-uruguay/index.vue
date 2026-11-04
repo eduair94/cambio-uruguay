@@ -218,13 +218,28 @@ defineOgImageComponent('Cambio', {
   tag: 'TIENDAS',
 })
 
-const seoTitle = 'Tiendas online de Uruguay: opiniones y datos verificables | Cambio Uruguay'
+// El título medía 74 caracteres con la marca y el SERP publicaba 60: se cortaba en
+// «…datos verificable» y gastaba los que tenía en adjetivos. Pasa a llevar la cifra que de verdad
+// dice si acá hay con qué decidir — cuántas de las tiendas relevadas tienen reseñas públicas de
+// Google o de Trustpilot —, contada sobre la lista que la página publica y no congelada en un
+// literal, como en `/prestamos-uruguay` y en `/descuentos-con-tarjeta-uruguay/*`. Sigue sin ser un
+// veredicto: dice cuántas tienen reseñas, nunca si una tienda es confiable.
+//
+// SIN TERNARIO A PROPÓSITO, aunque un fallo de Mongo deje la lista vacía y el título diga «0 con
+// reseñas». Un `cond ? … : …` acá lo lee el piso de `seoTitleBudget.test.ts` como texto vacío: la
+// página seguiría contándose y dejaría de medirse, que es el modo de fallar que ese pozo existe
+// para atrapar. El 0 además es cierto de lo que la página está mostrando en ese momento, y la
+// respuesta vacía de `/api/stores` se sirve `no-store`, así que no se queda cacheada.
+const conResenas = computed(
+  () => stores.value.filter(store => store.trustpilot || store.google).length
+)
+const seoTitle = computed(() => `Tiendas online de Uruguay: ${conResenas.value} con reseñas`)
 const seoDescription =
   'Antigüedad del dominio, Trustpilot, Google, menciones en Reddit y catálogos propios de las ' +
   'tiendas online que venden en Uruguay, con fuente y fecha.'
 
 useSeoMeta({
-  title: seoTitle,
+  title: () => `${seoTitle.value} | Cambio Uruguay`,
   description: seoDescription,
   ogTitle: 'Tiendas online de Uruguay: opiniones y datos verificables',
   ogDescription: seoDescription,

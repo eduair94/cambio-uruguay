@@ -1582,4 +1582,141 @@ export const trabajoBpsGuides: readonly Guide[] = [
       },
     ],
   },
+  {
+    // POR QUÉ EXISTE: `/asignacion-familiar-uruguay` explica las dos asignaciones familiares y
+    // cuánto paga cada una, pero medido hoy con grep sobre `pages/` y `utils/` el sitio tenía CERO
+    // menciones de «ayuda extraordinaria» y ninguna de la asignación DOBLE. O sea que el hogar que
+    // más cobra —el que tiene un hijo con discapacidad— no encontraba su caso en ninguna página, y
+    // es el caso donde la diferencia de plata y la fecha límite importan más.
+    //
+    // Verificado el 2026-11-04 contra tres fichas del BPS (5470 «Asignación familiar», que declara
+    // última actualización el 03/06/2026; 23669 «¿A quiénes les corresponde Asignación familiar
+    // doble?», 05/12/2025; y 3540 «Plan de equidad», 11/09/2026) y los textos vigentes en IMPO del
+    // Decreto-Ley 15.084 y de la Ley 18.227.
+    //
+    // LO QUE NO SE PUBLICA, y está escrito en la última sección de la guía: el monto de las ayudas
+    // extraordinarias (la ficha del BPS dice que existen y para qué son, pero no publica un importe
+    // vigente), el monto del art. 4 literal C de la Ley 18.227 como si fuera de hoy (está escrito
+    // en pesos de 2007) y cualquier umbral numérico de vulnerabilidad del Plan de Equidad, por el
+    // mismo motivo que ya tiene escrito `utils/asignacionFamiliar.ts`.
+    slug: 'asignacion-familiar-doble-uruguay',
+    title: 'Asignación familiar doble por discapacidad',
+    description:
+      'El BPS paga doble por discapacidad: $ 2.694 por mes en la contributiva o $ 3.837,89 fijos del Plan de Equidad (1/2026). Se pide antes de los 18 años.',
+    tag: 'BPS',
+    updatedAt: '2026-11-04',
+    sections: [
+      {
+        heading: '¿Cuánto es la asignación familiar doble?',
+        body: 'En el régimen contributivo —el que se genera por trabajar, el del Decreto-Ley 15.084— la ficha del BPS lo dice en una línea: «Las personas con discapacidad tendrán derecho a la asignación familiar doble, de por vida o hasta que perciban otra prestación del BPS». El doble de qué, lo publica la misma ficha: con vigencia 1/2026 la asignación simple es de $ 1.347 por mes por beneficiario si los ingresos del hogar no pasan de $ 50.502, y de $ 674 si no pasan de $ 84.688. Duplicar esos dos valores es toda la cuenta, y la hacemos acá para que esté a la vista: $ 2.694 y $ 1.348. Los importes son los publicados por el BPS y la multiplicación es nuestra; la liquidación y su redondeo son del BPS. Y como son pesos, caducan: se ajustan en las mismas oportunidades que las remuneraciones de la Administración Central, así que el número vale con su vigencia al lado y no solo.',
+        table: {
+          headers: [
+            'Tope de ingresos del hogar',
+            'Asignación simple (1/2026)',
+            'Doble, por discapacidad',
+          ],
+          rows: [
+            ['Hasta $ 50.502', '$ 1.347 por mes', '$ 2.694 por mes'],
+            ['Hasta $ 84.688', '$ 674 por mes', '$ 1.348 por mes'],
+            ['Por encima de $ 84.688', 'No corresponde', 'No corresponde'],
+          ],
+        },
+      },
+      {
+        heading: 'Las dos condiciones que deciden: el certificado y los 18 años',
+        body: 'La ficha del BPS pone dos requisitos y el segundo es una fecha límite que no se recupera: «Los niños deben contar con certificado de la Comisión Honoraria del Centro Martínez Visca (ex Patronato)» y «deben solicitarla antes de cumplir los 18 años de edad». Quien llega después de ese cumpleaños no entra por esta puerta, y por eso conviene no dejarlo para cuando el trámite «haga falta». La duración, en cambio, es lo más generoso que tiene esta prestación, y no la inventa el BPS: el numeral 3 del artículo 5 del Decreto-Ley 15.084 extiende el beneficio «De por vida o hasta que perciba otra prestación de la seguridad social, cuando el beneficiario padezca de una incapacidad síquica o física tal que impida su incorporación a todo tipo de tarea remunerada». Hay además una bifurcación que la ficha escribe en dos frases y que vale leer despacio, porque reparte el mismo derecho en dos cosas muy distintas: «Si no perciben pensión por invalidez, tendrán derecho a una asignación especial de por vida» y «De lo contrario, podrán acceder a una asignación simple hasta los 15 años».',
+      },
+      {
+        heading: 'En el Plan de Equidad no es doble: es un monto fijo, y más alto',
+        body: 'La otra asignación familiar, la del Plan de Equidad de la Ley 18.227, no duplica nada: tiene su propio valor para estos beneficiarios y con vigencia 1/2026 es de $ 3.837,89 por cada beneficiario con discapacidad, contra $ 2.686,51 del beneficiario en gestación, menor de 5 años o escolar. Y trae tres diferencias que no son de monto. La primera es que ese importe no se diluye: la ficha dice que «El monto es fijo para beneficiarios que padezcan incapacidad física o psíquica», mientras que para el resto varía según la cantidad de beneficiarios del hogar y el nivel educativo. La segunda es que la exigencia de asistir a una institución educativa rige «a excepción de las personas con discapacidad». La tercera es la revisión: «Los mayores de 18 años de edad con discapacidad deberán asistir a revisión médica cada tres años», que es el mismo máximo que fija el literal D del artículo 6 de la ley, y que también admite acreditar la discapacidad psíquica de niños y adolescentes con el certificado del Registro creado por la Ley 13.711 además del de los servicios médicos del BPS. Lo que no se puede es sumar las dos: la ficha del Plan de Equidad dice que «Es incompatible con cualquier otro tipo de asignación familiar» y el artículo 9 de la Ley 18.227 la declara incompatible con las del Decreto-Ley 15.084, dejando al beneficiario la opción de pasarse a este régimen en cualquier momento. Las cifras de al lado no son una recomendación: al Plan de Equidad se entra por una determinación de vulnerabilidad socioeconómica que hace el BPS, no eligiendo la columna más alta.',
+        table: {
+          headers: ['', 'Contributiva (DL 15.084)', 'Plan de Equidad (Ley 18.227)'],
+          rows: [
+            ['Monto con discapacidad (1/2026)', '$ 2.694 o $ 1.348 por mes', '$ 3.837,89 por mes'],
+            ['Cómo se llega al monto', 'El doble de la asignación simple', 'Valor propio, fijo'],
+            ['Baja si hay más hijos en el hogar', 'No', 'No, para este beneficiario'],
+            ['Se genera por', 'Trabajar o haber trabajado', 'Vulnerabilidad socioeconómica'],
+            ['Las dos juntas', 'Incompatibles', 'Incompatibles'],
+          ],
+        },
+        links: [
+          {
+            label: 'Las dos asignaciones familiares, lado a lado',
+            to: '/asignacion-familiar-uruguay',
+          },
+        ],
+      },
+      {
+        heading: 'El otro caso de doble: los nacimientos múltiples',
+        body: 'La discapacidad no es el único caso. La ficha del BPS que contesta a quiénes les corresponde la asignación doble nombra dos, y el segundo es acotado y con fecha: también corresponde, en el caso de «nacimientos múltiples (dos hijos o más)», «para niños y niñas nacidos antes del 1.º de agosto de 2024, que tengan entre 6 y 12 años». Es una ventana que se cierra sola con el calendario, así que si el nacimiento múltiple es posterior a esa fecha, lo que corresponde es la asignación común y no esta.',
+      },
+      {
+        heading: 'Lo que esta guía no publica, y por qué',
+        body: 'Tres cosas, a propósito. La primera son las ayudas extraordinarias: la ficha del BPS dice que las personas con discapacidad «tienen derecho a percibir ayudas económicas, destinadas a favorecer su inserción social, educativa y cultural», pero no publica un importe vigente, y los montos que circulan son de 2022. Decimos que existen y mandamos a preguntarlas; no inventamos la cifra. La segunda es el artículo 4 literal C de la Ley 18.227, que sí fija un monto propio para los beneficiarios con incapacidad, pero escrito en pesos de 2007 y ajustado desde entonces: ese número no sirve como el de hoy y por eso acá va el que publica el BPS. Y la tercera es de dónde sale la duplicación en el régimen contributivo: la afirma el BPS, que es el organismo que liquida, y el texto del Decreto-Ley 15.084 que consultamos no la contiene —lo que sí contiene es la duración de por vida del numeral 3 del artículo 5—. Lo decimos así, con la fuente de cada mitad, en vez de atribuirle a la ley una frase que no leímos en ella.',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Cuánto es la asignación familiar doble en 2026?',
+        a: 'En el régimen contributivo, $ 2.694 por mes por beneficiario si los ingresos del hogar no pasan de $ 50.502, y $ 1.348 si no pasan de $ 84.688: son el doble de los $ 1.347 y $ 674 que publica el BPS con vigencia 1/2026. En el Plan de Equidad no se duplica nada y el valor propio del beneficiario con discapacidad es de $ 3.837,89 por mes, también con vigencia 1/2026. Los tres son pesos y se ajustan, así que verificá la vigencia antes de hacer cuentas.',
+      },
+      {
+        q: '¿Hasta cuándo se puede pedir?',
+        a: 'Antes de cumplir los 18 años. Lo dicen las dos fichas del BPS, la del régimen contributivo y la del Plan de Equidad, y es una fecha límite para SOLICITARLA: una vez otorgada, el beneficio es de por vida o hasta que la persona perciba otra prestación del BPS si no tiene derecho a pensión por invalidez.',
+      },
+      {
+        q: '¿Qué certificado hay que presentar?',
+        a: 'El de la Comisión Honoraria del Centro Martínez Visca (ex Patronato), que es el que nombran las dos fichas del BPS. En el Plan de Equidad, el literal D del artículo 6 de la Ley 18.227 agrega que la discapacidad se acredita con certificado de los servicios médicos del BPS y que, para la discapacidad psíquica de niños y adolescentes, también sirve el certificado del Registro creado por la Ley 13.711, con revisiones periódicas como máximo cada tres años.',
+      },
+      {
+        q: '¿Se pueden cobrar las dos asignaciones familiares a la vez?',
+        a: 'No. La ficha del Plan de Equidad dice que «Es incompatible con cualquier otro tipo de asignación familiar», y el artículo 9 de la Ley 18.227 declara su prestación incompatible con las del Decreto-Ley 15.084. El mismo artículo deja optar por el Plan de Equidad en cualquier momento, pero es una opción entre una y otra, no una suma.',
+      },
+      {
+        q: '¿Y si el hijo ya cobra pensión por invalidez?',
+        a: 'Cambia el derecho. La ficha del BPS lo separa en dos frases: si no perciben pensión por invalidez «tendrán derecho a una asignación especial de por vida»; «De lo contrario, podrán acceder a una asignación simple hasta los 15 años». No es la misma prestación ni la misma duración, así que antes de contar con la doble conviene chequear en el BPS cuál de las dos situaciones es la tuya.',
+      },
+    ],
+    related: [
+      {
+        label: 'Asignación familiar: cuánto es y quién la cobra',
+        to: '/asignacion-familiar-uruguay',
+      },
+      { label: 'Jubilación por incapacidad', to: '/jubilacion-por-incapacidad-uruguay' },
+      { label: 'Pensión por sobrevivencia', to: '/pension-por-sobrevivencia-uruguay' },
+      { label: 'Certificados del BPS', to: '/certificados-bps-uruguay' },
+    ],
+    sources: [
+      {
+        label:
+          'Asignación familiar: «Las personas con discapacidad tendrán derecho a la asignación familiar doble, de por vida o hasta que perciban otra prestación del BPS», el certificado del Centro Martínez Visca, el plazo de los 18 años, la bifurcación por pensión de invalidez, las ayudas extraordinarias y los montos de $ 1.347 y $ 674 con vigencia 1/2026 (ficha con última actualización del 03/06/2026)',
+        url: 'https://www.bps.gub.uy/5470/asignacion-familiar.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          '¿A quiénes les corresponde Asignación familiar doble?: los dos casos, incluido el de nacimientos múltiples «para niños y niñas nacidos antes del 1.º de agosto de 2024, que tengan entre 6 y 12 años» (ficha con última actualización del 05/12/2025)',
+        url: 'https://www.bps.gub.uy/23669/a-quienes-les-corresponde-asignacion-familiar-doble.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'Plan de equidad: «$ 3.837,89 por cada beneficiario con discapacidad» y «$ 2.686,51 por un beneficiario en gestación, menor de 5 años o escolar» con vigencia 1/2026, «El monto es fijo para beneficiarios que padezcan incapacidad física o psíquica», la asistencia educativa «a excepción de las personas con discapacidad», la revisión médica cada tres años desde los 18 y «Es incompatible con cualquier otro tipo de asignación familiar» (ficha con última actualización del 11/09/2026)',
+        url: 'https://www.bps.gub.uy/3540/plan-de-equidad.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'Decreto-Ley 15.084, art. 5 numeral 3 (texto vigente): «De por vida o hasta que perciba otra prestación de la seguridad social, cuando el beneficiario padezca de una incapacidad síquica o física tal que impida su incorporación a todo tipo de tarea remunerada». El texto consultado no contiene la duplicación del monto',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/15084-1980/5',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.227: art. 4 literal C (monto propio para beneficiarios con incapacidad, escrito en pesos de 2007), art. 6 literal D (certificación por los servicios médicos del BPS o por el Registro de la Ley 13.711, con revisiones «como máximo cada tres años») y art. 9 (incompatibilidad con el Decreto-Ley 15.084 y opción en cualquier momento)',
+        url: 'https://www.impo.com.uy/bases/leyes/18227-2007',
+        publisher: 'IMPO',
+      },
+    ],
+  },
 ]

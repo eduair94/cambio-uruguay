@@ -781,6 +781,7 @@ export const guideHubs: readonly GuideHub[] = [
       'hablar-de-dinero-en-pareja-uruguay',
       'division-de-bienes-en-el-divorcio-uruguay',
       'proteger-tu-patrimonio-en-pareja-uruguay',
+      'asignacion-familiar-doble-uruguay',
     ],
     resources: [
       {

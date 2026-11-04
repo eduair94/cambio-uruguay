@@ -56,8 +56,12 @@ const GUIDE_PAGE = readFileSync(join(__dirname, '..', '..', 'pages', 'guias', '[
  * 152 → 153 el 2026-11-02, en el mismo commit que publica
  * `tasa-de-politica-monetaria-uruguay`, que es la disciplina que el párrafo de arriba pide: el piso
  * se mueve cuando se publica, no cuando a alguien le molesta el rojo.
+ *
+ * 153 → 154 el 2026-11-04, en el mismo commit que publica `asignacion-familiar-doble-uruguay`, por
+ * lo mismo. Su título mide 42 caracteres y su descripción 149, o sea que nace dentro de los dos
+ * presupuestos y no toca ninguna de las dos deudas.
  */
-const MEASURED = 153
+const MEASURED = 154
 
 /**
  * 116 → 104 el 2026-10-02: los doce títulos más largos del catálogo, de 104 a 84 caracteres

@@ -6,6 +6,7 @@ import { irpfBracketsUyu, URUGUAY } from '../../utils/calculators'
 import { formatUYU } from '../../utils/format'
 import { ID_CARD_BY_KEY } from '../../utils/idCard'
 import { LENDERS } from '../../utils/loans'
+import { STORE_DIRECTORY } from '../../utils/storeDirectory'
 import { titleFits } from '../../utils/liveRateSeo'
 import { getWithdrawContent } from '../../utils/withdrawCash'
 
@@ -77,6 +78,26 @@ describe('títulos que entran en el SERP', () => {
       'const title = computed(() => `Préstamos en Uruguay: ${lenders.value.length} prestadores`)'
     )
     expect(source).toContain('title: () => `${title.value} | Cambio Uruguay`')
+  })
+
+  // 74 caracteres con la marca hasta el 2026-11-04: el SERP cortaba en «…datos verificable» y los
+  // 60 que publicaba se iban en adjetivos. El piso lo delataba `seoTitleBudget`, y acá va la
+  // medición exacta con la cifra puesta, que es lo que ese pozo no puede afirmar.
+  it('tiendas online: el título lleva cuántas tienen reseñas y entra con la cifra puesta', () => {
+    const title = (conResenas: number) => `Tiendas online de Uruguay: ${conResenas} con reseñas`
+    // El peor caso real es que TODAS las tiendas del registro tengan reseñas: la cifra se cuenta
+    // sobre las publicadas, que nunca son más que el registro.
+    expect(titleFits(title(STORE_DIRECTORY.length))).toBe(true)
+    // Y sigue entrando si el registro pasa de las 99, que es el único crecimiento que lo alargaría.
+    expect(titleFits(title(999))).toBe(true)
+
+    // La cifra sale de la lista que la página publica, no de un literal congelado, igual que en
+    // `/prestamos-uruguay`.
+    const source = page('tiendas-online-uruguay', 'index.vue')
+    expect(source).toContain(
+      'const seoTitle = computed(() => `Tiendas online de Uruguay: ${conResenas.value} con reseñas`)'
+    )
+    expect(source).toContain('title: () => `${seoTitle.value} | Cambio Uruguay`')
   })
 
   it('retirar efectivo: los tres idiomas entran', () => {

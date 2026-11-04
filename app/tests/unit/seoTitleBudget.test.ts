@@ -526,11 +526,14 @@ function pageTitleFloor(source: string): string | null {
  * con la ruta libre de toda ventana de medición abierta junto con `/tiendas-online-uruguay`
  * (`npm run seo_debt`), y entre esas dos manda el tramo: 8× contra 0,2×.
  *
- * Las otras cuatro, con el día en que se libera cada una:
+ * 4 → 3 el 2026-11-04. Se cura `/tiendas-online-uruguay` (74), que era la que quedaba libre: las
+ * otras tres siguen reservadas hasta el 9 y el 24 de noviembre, así que la cola de este pozo no
+ * tiene nada más que se pueda tocar hoy. Entra con la cifra puesta —cuántas de las tiendas
+ * relevadas tienen reseñas públicas de Google o Trustpilot— y su medición exacta vive en
+ * `titlesCutBySerp.test.ts`, como la de los otros títulos con datos adentro.
  *
- *   - `/tiendas-online-uruguay` (74) — LIBRE hoy, pero es tramo `directorio` (0,2×). Entra cuando
- *     sea lo mejor que haya en la cola, que es el mismo criterio con el que la novena corrida de
- *     `seoDescriptionBudget` dejó los directorios para el final.
+ * Las tres que quedan, con el día en que se libera cada una:
+ *
  *   - `/banco-o-casa-de-cambio-uruguay` (75) y `/cobrar-giro-del-exterior-uruguay` (68) — reservadas
  *     por `casas-grupo-antes-de-cambiar` (2026-10-11), se liberan el 2026-11-09.
  *   - `/declarar-dinero-en-efectivo-uruguay` (73 de piso, 80 con el umbral puesto) — reservada por
@@ -544,10 +547,9 @@ const DEUDA_TITULO_PISO = [
   '/banco-o-casa-de-cambio-uruguay',
   '/cobrar-giro-del-exterior-uruguay',
   '/declarar-dinero-en-efectivo-uruguay',
-  '/tiendas-online-uruguay',
 ]
 
-const TITLE_FLOOR_OVER_BUDGET = 4
+const TITLE_FLOOR_OVER_BUDGET = 3
 
 // 247 el 2026-11-03, el conteo real y por el mismo motivo que `MEASURABLE`: si el piso fuera más
 // bajo, un título nuevo podría dejar de leerse acá sin poner nada en rojo. Sube con cada página que
