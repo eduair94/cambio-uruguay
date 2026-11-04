@@ -53,7 +53,17 @@ const BRANDS: readonly BrandEntry[] = [
   { name: "Vsett", pattern: /\bvsett\b/ },
   { name: "Niu", pattern: /\bniu\b/ },
   { name: "Okai", pattern: /\bokai\b/ },
+  // Medidas el 2026-11-04 en las fichas de ML (marca declarada, varios vendedores cada una).
+  { name: "Proove", pattern: /\bproove\b/ },
+  { name: "Maxwheel", pattern: /\bmaxwheel\b/ },
+  { name: "Mirrend", pattern: /\bmirrend\b/ },
 ];
+
+/** El patrón con que se reconoce una marca conocida en un título ya normalizado, o null. */
+export function brandPattern(name: string): RegExp | null {
+  const key = norm(name);
+  return BRANDS.find((brand) => norm(brand.name) === key)?.pattern ?? null;
+}
 
 /** Lo que el formulario de ML guarda cuando el vendedor no sabe o no quiere poner la marca. */
 const GENERIC =
