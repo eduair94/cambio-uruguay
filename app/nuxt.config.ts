@@ -1368,6 +1368,7 @@ export default defineNuxtConfig({
       '/equipar-casa-uruguay/mi-lista',
       // El comparador de monopatines: cada combinación la elige el lector (noindex).
       '/monopatines-electricos-uruguay/comparar',
+      '/bicicletas-electricas-uruguay/comparar',
       '/*/offline',
       '/*/widget',
       '/*/cuenta',
@@ -1382,6 +1383,7 @@ export default defineNuxtConfig({
       '/*/ranking-usuarios-charruadevs',
       '/*/equipar-casa-uruguay/mi-lista',
       '/*/monopatines-electricos-uruguay/comparar',
+      '/*/bicicletas-electricas-uruguay/comparar',
     ],
   },
 

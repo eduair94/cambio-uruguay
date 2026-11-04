@@ -1,7 +1,9 @@
 <!--
-  THESIS: Alguien busca "bicicleta eléctrica uruguay" para saber cuánto sale hoy, no cuál es "la
-  mejor". Contestar con la banda de precio por tipo, nuevo y usado, las ofertas más baratas con su
-  fecha, y la normativa departamental con su fuente — nunca un ranking de marca.
+  THESIS: Alguien busca "bicicleta eléctrica uruguay" para saber cuánto sale hoy y cuál le sirve, no
+  cuál es "la mejor". Contestar con la banda de precio por tipo, nuevo y usado, un asesor con reglas
+  a la vista, los modelos juntando a todos los vendedores, lo que declara la ficha técnica de cada
+  aviso (rodado, autonomía, potencia, batería removible), las ofertas más baratas con su fecha y la
+  normativa departamental con su fuente — nunca un ranking de marca.
   OWN-WORLD: Mismas superficies, tipografía y azul de enlace que /monopatines-electricos-uruguay,
   con quien comparte maquinaria y componente de normativa.
   FAMILY: Sólo español (como comparativas, sucursal y tiendas-online-uruguay): el canonical es
@@ -62,6 +64,100 @@
       </div>
     </section>
 
+    <!-- ── Asesor ────────────────────────────────────────────────────────── -->
+    <section class="movilidad-section" aria-labelledby="asesor-title">
+      <h2 id="asesor-title">¿Cuál te conviene?</h2>
+      <p class="section-intro">
+        Contanos cómo la vas a usar y elegimos entre las bicicletas con ficha técnica leída: la más
+        barata que cumple, la que da más kilómetros por tu plata y la más fácil de subir o la más
+        potente. Las reglas están a la vista, abajo.
+      </p>
+      <MovilidadBicicletaAsesor @ver="verDesdeAsesor" />
+    </section>
+
+    <!-- ── Modelos ───────────────────────────────────────────────────────── -->
+    <!-- Desde el 4/11/2026 los avisos del mismo modelo se juntan entre vendedores
+         (classes/movilidad/models/, `category: bicicleta-electrica`). Sin catálogo, no hay tabla. -->
+    <section v-if="modelRows.length" class="movilidad-section" aria-labelledby="modelos-title">
+      <h2 id="modelos-title">Modelos y sus mejores ofertas</h2>
+      <p class="section-intro">
+        Juntamos los avisos del mismo modelo de todos los vendedores: {{ modelRows.length }} modelos
+        con dos avisos o más. Cada uno tiene su página con todas las ofertas y la ficha técnica.
+        Marcá hasta {{ MONOPATIN_COMPARE_MAX }} para compararlos lado a lado.
+      </p>
+      <VTable class="cu-mobile-cards products-table" density="compact">
+        <thead>
+          <tr>
+            <th scope="col">Modelo</th>
+            <th scope="col">Ficha técnica</th>
+            <th scope="col" class="text-right">Vendedores</th>
+            <th scope="col" class="text-right">Desde</th>
+            <th scope="col"><span class="d-sr-only">Comparar</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(model, index) in modelRows"
+            v-show="showAllModels || index < MODELS_SHOWN"
+            :key="model.slug"
+          >
+            <td data-label="">
+              <div class="product-cell">
+                <MovilidadVariantThumb
+                  :src="model.image ?? null"
+                  :alt="model.name"
+                  icon="mdi-bicycle-electric"
+                />
+                <span class="product-cell__text">
+                  <NuxtLink :to="`/bicicletas-electricas-uruguay/${model.slug}`" class="cat-link">
+                    <strong>{{ model.name }}</strong>
+                  </NuxtLink>
+                  <span class="cu-cell-note">
+                    {{ variantLabelOf(model.variant) }} · {{ model.listings }} avisos
+                  </span>
+                </span>
+              </div>
+            </td>
+            <td data-label="Ficha técnica">
+              <MovilidadSpecStrip
+                v-if="model.specs"
+                :specs="{ ...model.specs, fromFicha: true }"
+                categoria="bicicleta-electrica"
+                compact
+              />
+              <span v-else class="muted" aria-label="Sin ficha técnica leída">—</span>
+            </td>
+            <td data-label="Vendedores" class="text-right">{{ model.sellers }}</td>
+            <td data-label="Desde" class="text-right price">
+              <template v-if="model.newMin">{{ movilidadMoney(model.newMin) }}</template>
+              <template v-else-if="model.usedMin">
+                {{ movilidadMoney(model.usedMin) }} <span class="cu-cell-note">usada</span>
+              </template>
+            </td>
+            <td data-label="Comparar">
+              <VCheckbox
+                :model-value="isCompared(model.slug)"
+                :disabled="!isCompared(model.slug) && compare.length >= MONOPATIN_COMPARE_MAX"
+                :aria-label="`Comparar ${model.name}`"
+                label="Comparar"
+                density="compact"
+                hide-details
+                @update:model-value="toggleCompare(model)"
+              />
+            </td>
+          </tr>
+        </tbody>
+      </VTable>
+      <VBtn
+        v-if="modelRows.length > MODELS_SHOWN && !showAllModels"
+        class="mt-3"
+        variant="tonal"
+        @click="showAllModels = true"
+      >
+        Ver los {{ modelRows.length }} modelos
+      </VBtn>
+    </section>
+
     <!-- ── Los más baratos ───────────────────────────────────────────────── -->
     <AssistantCta topic="bicicletas" class="movilidad-cta" />
     <section
@@ -111,9 +207,10 @@
     <section v-if="hasDirectorio" class="movilidad-section" aria-labelledby="directorio-title">
       <h2 id="directorio-title">Todas las bicicletas eléctricas en venta</h2>
       <p class="section-intro">
-        Todos los avisos vigentes, con foto y filtros por tipo, condición, marca, vendedor y precio.
-        Es la misma lectura que arma las medianas de arriba: un aviso que la banda descartó por
-        precio dudoso tampoco aparece acá.
+        Todos los avisos vigentes, con foto y filtros por tipo, condición, marca, vendedor, precio y
+        ficha técnica (rodado, autonomía, potencia, peso, batería removible, acelerador). Es la
+        misma lectura que arma las medianas de arriba: un aviso que la banda descartó por precio
+        dudoso, o un accesorio que nombra la bici a la que va, tampoco aparece acá.
       </p>
       <EquiparDirectorio
         :query="dirQuery"
@@ -133,6 +230,56 @@
       />
     </section>
 
+    <!-- ── Qué esperar de cada tipo ──────────────────────────────────────── -->
+    <section v-if="specRows.length" class="movilidad-section" aria-labelledby="tipos-title">
+      <h2 id="tipos-title">Qué esperar de cada tipo</h2>
+      <p class="section-intro">
+        La mediana de lo que declaran las fichas técnicas de {{ fmt(specStats!.withFicha) }} de las
+        {{ fmt(specStats!.total) }} bicicletas a la venta. La mitad declara más y la mitad menos: es
+        lo típico, no un mínimo.
+      </p>
+      <VTable class="cu-mobile-cards cu-roomy spec-table" density="compact">
+        <thead>
+          <tr>
+            <th scope="col">Tipo</th>
+            <th scope="col" class="text-right">Rodado</th>
+            <th scope="col" class="text-right">Autonomía</th>
+            <th scope="col" class="text-right">Potencia</th>
+            <th scope="col" class="text-right">Peso</th>
+            <th scope="col" class="text-right">Soporta</th>
+            <th scope="col" class="text-right">Carga completa</th>
+            <th scope="col" class="text-right">Una carga cuesta</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="row in specRows" :key="row.variant">
+            <td data-label="">
+              <strong>{{ row.label }}</strong>
+              <span class="cu-cell-note">{{ fmt(row.n) }} avisos</span>
+            </td>
+            <td data-label="Rodado" class="text-right num">{{ unit(row.wheelInches, '″') }}</td>
+            <td data-label="Autonomía" class="text-right num">{{ unit(row.rangeKm, 'km') }}</td>
+            <td data-label="Potencia" class="text-right num">{{ unit(row.motorW, 'W') }}</td>
+            <td data-label="Peso" class="text-right num">{{ unit(row.weightKg, 'kg') }}</td>
+            <td data-label="Soporta" class="text-right num">{{ unit(row.maxLoadKg, 'kg') }}</td>
+            <td data-label="Carga completa" class="text-right num">
+              {{ unit(row.chargeHours, 'h') }}
+            </td>
+            <td data-label="Una carga cuesta" class="text-right num">
+              {{ chargeCost(row.batteryWh) }}
+            </td>
+          </tr>
+        </tbody>
+      </VTable>
+      <p class="section-intro">
+        "Una carga cuesta" es la batería mediana (V × Ah) a {{ kwhLabel }} el kWh — UTE, tarifa
+        residencial simple, escalón de 101 a 600 kWh, con IVA — más un
+        {{ Math.round(MONOPATIN_CHARGER_LOSS * 100) }} % que se pierde en el cargador. Con
+        asistencia media y alguna cuesta, una bici rinde alrededor del
+        {{ Math.round(BICICLETA_AUTONOMIA_REAL * 100) }} % de la autonomía que declara.
+      </p>
+    </section>
+
     <!-- ── Normativa ─────────────────────────────────────────────────────── -->
     <section class="movilidad-section" aria-labelledby="normativa-title">
       <h2 id="normativa-title">Normativa por departamento</h2>
@@ -148,17 +295,30 @@
       </p>
       <ul class="guide-list">
         <li>
-          <strong>Autonomía.</strong> Los kilómetros que declara el vendedor por carga completa de
-          batería, según el nivel de asistencia usado. El uso real baja con el frío, el peso y las
-          subidas.
+          <strong>Rodado.</strong> El tamaño de la rueda decide qué bici es: 12 a 16″ son las de
+          equilibrio y las plegables más compactas, 20″ las plegables y las fat, 26 a 29″ las de
+          paseo y de montaña.<template v-if="medianWheel">
+            La mediana de las fichas a la venta es rodado {{ medianWheel }}.</template
+          >
         </li>
         <li>
-          <strong>Peso.</strong> El motor y la batería suman peso a una bicicleta común. Importa si
-          hay que subirla escaleras o cargarla en un vehículo.
+          <strong>Autonomía.</strong> Los kilómetros que declara el vendedor por carga completa de
+          batería, medidos con la asistencia más baja. Con asistencia media y alguna cuesta, contá
+          con alrededor del {{ Math.round(BICICLETA_AUTONOMIA_REAL * 100) }} %; el frío y el peso la
+          bajan más.<template v-if="allStats?.rangeKm">
+            La mediana declarada hoy es {{ unit(allStats.rangeKm, 'km') }}.</template
+          >
+        </li>
+        <li>
+          <strong>Peso y batería removible.</strong> El motor y la batería suman peso a una
+          bicicleta común: más de {{ BICICLETA_LIVIANA_KG }} kg se siente en una escalera. Si la
+          bici queda abajo, una batería que se saca se carga adentro.
         </li>
         <li>
           <strong>Potencia del motor.</strong> Los vatios (W) que declara el vendedor son una
-          referencia de cuánta asistencia da en subida, no una garantía de rendimiento.
+          referencia de cuánta asistencia da en subida, no una garantía de rendimiento: con 250 W en
+          una cuesta larga se pedalea casi todo, y un motor central sube mejor que uno en la rueda
+          con la misma potencia.
         </li>
         <li>
           <strong>Freno.</strong> Doble freno (delantero y trasero), preferentemente a disco: el
@@ -222,7 +382,21 @@
         datos suficientes" en vez de inventar un número. Sólo publicamos lo visto en los últimos 4
         días.
       </p>
+      <p class="section-intro">
+        La ficha técnica es la que declara cada vendedor en la página propia de su aviso (la tabla
+        de Mercado Libre o el texto de la tienda), leída una vez por aviso y releída cada 45 días.
+        Un valor que no puede ser el de una bicicleta (un rodado 40, una bici de 90 kg) se descarta
+        en vez de corregirse, y de Facebook Marketplace sólo usamos lo que dice el título.
+      </p>
     </section>
+
+    <MovilidadCompareTray
+      :items="compare"
+      compare-path="/bicicletas-electricas-uruguay/comparar"
+      label="Comparar bicicletas"
+      @remove="slug => (compare = compare.filter(item => item.slug !== slug))"
+      @clear="compare = []"
+    />
   </VContainer>
 </template>
 
@@ -233,16 +407,30 @@ import {
   movilidadMoney,
   movilidadPrecioTipicoAnswer,
   movilidadUsadoAnswer,
+  type MonopatinSpecStatsRow,
   type MovilidadCategoryResponse,
   type MovilidadItemDoc,
 } from '~/utils/movilidad'
 import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
+import {
+  MONOPATIN_CHARGER_LOSS,
+  MONOPATIN_KWH_UYU,
+  monopatinChargeCostUyu,
+  type MovilidadFichaQuery,
+} from '~/utils/monopatinFicha'
+import {
+  MONOPATIN_COMPARE_MAX,
+  type MonopatinModelListResponse,
+  type MonopatinModelSummary,
+} from '~/utils/monopatinModelos'
+import { BICICLETA_AUTONOMIA_REAL, BICICLETA_LIVIANA_KG } from '~/utils/bicicletaAsesor'
 
 const localePath = useLocalePath()
 
 // Server-rendered: las medianas tienen que estar en el HTML que lee el buscador. `bicicleta-electrica`
-// es régimen `commodity` (classes/movilidad/registry.ts): no hay modelos identificados, así que esta
-// página no pide ni muestra `products` — sólo la banda y las ofertas más baratas.
+// es régimen `commodity` (classes/movilidad/registry.ts): la banda no identifica productos, así que
+// esta página no pide `products`. Los modelos vienen de otro lado: el catálogo que arma
+// currency-movilidad-specs juntando vendedores (`/api/movilidad/modelos?categoria=bicicleta-electrica`).
 const { data } = await useFetch('/api/movilidad/bicicleta-electrica', {
   key: 'movilidad-bicicleta',
   transform: (response: MovilidadCategoryResponse): MovilidadCategoryResponse => ({
@@ -281,6 +469,103 @@ const hasDirectorio = computed(() => (dirData.value?.total ?? 0) > 0 || dirFilte
 const items = computed<MovilidadItemDoc[]>(() => data.value?.items ?? [])
 const asOf = computed(() => data.value?.generatedAt ?? null)
 
+// ── Ficha técnica ────────────────────────────────────────────────────────
+// Las medianas por tipo vienen del snapshot que deja currency-movilidad-specs cada hora
+// (classes/movilidad/specs/snapshot.ts, `key: bicicleta-electrica`): esta página no agrega nada.
+const specStats = computed(() => data.value?.specStats ?? null)
+const allStats = computed(() => specStats.value?.all ?? null)
+const hasStat = (row: MonopatinSpecStatsRow) =>
+  [row.rangeKm, row.motorW, row.weightKg, row.maxLoadKg, row.chargeHours, row.wheelInches].some(
+    value => value !== null
+  )
+const VARIANT_ORDER: Record<string, number> = {
+  infantil: 0,
+  plegable: 1,
+  urbana: 2,
+  montana: 3,
+  carga: 4,
+}
+const specRows = computed(() => {
+  const stats = specStats.value
+  if (!stats) return []
+  const rows = [...stats.byVariant]
+    .filter(hasStat)
+    .sort((a, b) => (VARIANT_ORDER[a.variant] ?? 9) - (VARIANT_ORDER[b.variant] ?? 9))
+  return rows.length && hasStat(stats.all) ? [...rows, { ...stats.all, label: 'Todas' }] : rows
+})
+const fmt = (value: number) => value.toLocaleString('es-UY')
+/** Espacio duro: "45 km" y "$ 5" nunca se parten entre dos líneas en un teléfono. */
+const NB = String.fromCharCode(160)
+const unit = (value: number | null | undefined, suffix: string) =>
+  typeof value === 'number'
+    ? `${value.toLocaleString('es-UY', { maximumFractionDigits: 1 })}${suffix === '″' ? '' : NB}${suffix}`
+    : '—'
+const money = (value: number) => `$${NB}${fmt(value)}`
+const chargeCost = (wh: number | null) => {
+  const cost = monopatinChargeCostUyu(wh)
+  return cost === null ? '—' : money(cost)
+}
+const kwhLabel = `$${NB}${MONOPATIN_KWH_UYU.toLocaleString('es-UY', { minimumFractionDigits: 2 })}`
+const medianWheel = computed(() =>
+  allStats.value?.wheelInches
+    ? allStats.value.wheelInches.toLocaleString('es-UY', { maximumFractionDigits: 1 })
+    : null
+)
+
+/** El botón del asesor: sus requisitos pasan a ser los filtros del directorio de abajo. */
+async function verDesdeAsesor(patch: {
+  ficha: MovilidadFichaQuery
+  precioMax: number | null
+  condicion: '' | 'nuevo'
+}) {
+  dirUpdate({
+    ...dirQuery.value,
+    ficha: patch.ficha,
+    precioMax: patch.precioMax,
+    precioMin: null,
+    condicion: patch.condicion,
+    orden: 'precio_asc',
+    page: 1,
+  })
+  await nextTick()
+  scrollToPageTop('movilidad-resultados')
+}
+
+// ── Modelos agrupados ────────────────────────────────────────────────────
+// Server-rendered: los enlaces a las páginas de modelo tienen que estar en el HTML que lee el
+// buscador. Sin catálogo todavía, o con la base caída, la sección no aparece.
+const { data: modelsData } = await useFetch<MonopatinModelListResponse>('/api/movilidad/modelos', {
+  key: 'bicicleta-modelos',
+  query: { categoria: 'bicicleta-electrica' },
+})
+const modelRows = computed<MonopatinModelSummary[]>(() => modelsData.value?.models ?? [])
+/** Los primeros 15 a la vista; el resto queda en el HTML (v-show) para que sus enlaces se rastreen. */
+const MODELS_SHOWN = 15
+const showAllModels = ref(false)
+const variantLabelOf = (variant: string) =>
+  items.value.find(item => item.variant === variant)?.variantLabel ?? ''
+
+/** La lista de modelos del JSON-LD: sólo los indexables, cada uno a su página (el Product con su
+ * AggregateOffer vive en esa página, no acá). */
+const modelsLd = computed(() =>
+  modelRows.value
+    .filter(model => model.indexable)
+    .map((model, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: model.name,
+      url: `https://cambio-uruguay.com/bicicletas-electricas-uruguay/${model.slug}`,
+    }))
+)
+
+const compare = ref<Array<{ slug: string; name: string }>>([])
+const isCompared = (slug: string) => compare.value.some(item => item.slug === slug)
+function toggleCompare(model: MonopatinModelSummary) {
+  if (isCompared(model.slug)) compare.value = compare.value.filter(item => item.slug !== model.slug)
+  else if (compare.value.length < MONOPATIN_COMPARE_MAX)
+    compare.value = [...compare.value, { slug: model.slug, name: model.name }]
+}
+
 const variants = computed(() =>
   [...items.value].sort((a, b) => (a.variantRank ?? 1) - (b.variantRank ?? 1))
 )
@@ -293,8 +578,10 @@ const suspectDropped = computed(() =>
 
 const intro =
   'Relevamos precios de bicicletas eléctricas en tiendas online uruguayas y Mercado Libre: la ' +
-  'banda de precio por tipo, nuevo y usado, y las ofertas más baratas con su fecha. No es un ' +
-  'ranking de "la mejor bici eléctrica": es lo que efectivamente se está vendiendo hoy.'
+  'banda de precio por tipo, nuevo y usado, las ofertas más baratas con su fecha, cada modelo en ' +
+  'todos sus vendedores y la ficha técnica de cada aviso (rodado, autonomía, potencia, peso). No ' +
+  'es un ranking de "la mejor bici eléctrica": es lo que efectivamente se está vendiendo hoy, con ' +
+  'un asesor para elegir según tu trayecto.'
 
 const crumbs = [
   { title: 'Inicio', to: localePath('/') },
@@ -329,6 +616,28 @@ const faqItems = computed(() => [
       'departamental no podemos afirmar una regla.',
   },
   {
+    id: 'movilidad-bicicleta-autonomia',
+    question: '¿Cuánta autonomía tiene una bicicleta eléctrica?',
+    answer: allStats.value?.rangeKm
+      ? `La mediana de lo que declaran las fichas de las bicicletas a la venta en Uruguay es ${unit(allStats.value.rangeKm, 'km')} por carga. ` +
+        `El fabricante la mide con la asistencia más baja: con asistencia media y alguna cuesta contá con alrededor del ${Math.round(BICICLETA_AUTONOMIA_REAL * 100)} %, y menos con frío o más peso.`
+      : `Depende del modelo y de la asistencia: el fabricante la mide con la más baja. Con asistencia media y alguna cuesta contá con alrededor del ${Math.round(BICICLETA_AUTONOMIA_REAL * 100)} % de lo que declara.`,
+  },
+  {
+    id: 'movilidad-bicicleta-carga',
+    question: '¿Cuánto cuesta cargar una bicicleta eléctrica?',
+    answer: (() => {
+      const cost = monopatinChargeCostUyu(allStats.value?.batteryWh ?? null)
+      const battery = allStats.value?.batteryWh
+      return cost !== null && battery
+        ? `Con la batería mediana de las fichas (${unit(battery, 'Wh')}), una carga completa cuesta unos ${money(cost)} con la tarifa residencial de UTE, contando lo que se pierde en el cargador.` +
+            (allStats.value?.chargeHours
+              ? ` La carga completa tarda unas ${unit(allStats.value.chargeHours, 'h')}.`
+              : '')
+        : 'Muy poco: una batería típica de bici (entre 360 y 500 Wh) se carga con menos de medio kWh, unos pocos pesos con la tarifa residencial de UTE.'
+    })(),
+  },
+  {
     id: 'movilidad-bicicleta-usado',
     question: '¿Conviene comprarla usada?',
     answer: movilidadUsadoAnswer(
@@ -353,8 +662,8 @@ defineOgImageComponent('Cambio', {
 
 const seoTitle = 'Precio de bicicletas eléctricas en Uruguay | Cambio Uruguay'
 const seoDescription =
-  'Banda de precio por tipo de bicicleta eléctrica en Uruguay, nueva y usada, las ofertas más ' +
-  'baratas y la normativa de cada departamento, con su fecha.'
+  'Bicicletas eléctricas en Uruguay, nuevas y usadas: cada modelo en todos sus vendedores, ' +
+  'filtros por rodado y autonomía, y un asesor para elegir.'
 
 useSeoMeta({
   title: seoTitle,
@@ -398,6 +707,16 @@ useHead(() => ({
               },
             ],
           },
+          ...(modelsLd.value.length
+            ? [
+                {
+                  '@type': 'ItemList',
+                  name: 'Modelos de bicicletas eléctricas a la venta en Uruguay',
+                  numberOfItems: modelsLd.value.length,
+                  itemListElement: modelsLd.value,
+                },
+              ]
+            : []),
         ],
       }),
     },
@@ -408,6 +727,36 @@ useHead(() => ({
 <style scoped>
 .movilidad-page {
   max-width: 1120px;
+}
+.products-table {
+  margin-top: 16px;
+}
+.spec-table {
+  margin-top: 16px;
+}
+.num {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.price {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.cu-cell-note {
+  display: block;
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+.product-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.product-cell__text {
+  display: block;
+  min-width: 0;
 }
 .movilidad-page p {
   margin: 12px 0 0;

@@ -31,6 +31,7 @@ export interface FichaQueueRow {
   listingId: string;
   url: string;
   source: "store" | "mercadolibre" | "facebook";
+  category?: string;
 }
 
 const DAY = 86_400_000;

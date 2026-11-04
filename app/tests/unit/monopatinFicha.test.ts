@@ -58,6 +58,7 @@ describe('la consulta de ficha técnica', () => {
       carga: 120,
       peso: 15,
       rueda: '9-10',
+      rodado: '',
       rasgos: ['plegable', 'disco'],
       soloFicha: true,
     })

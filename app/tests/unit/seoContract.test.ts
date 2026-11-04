@@ -191,8 +191,12 @@ const NOINDEXED = [
   'autos-usados-uruguay/index.vue',
   'autos-usados-uruguay/precios/[slug].vue',
   // Las dos páginas de movilidad eléctrica llevan su directorio de avisos ADENTRO (2026-09-22):
-  // la URL limpia se indexa y cada combinación de filtros se sale, igual que equipar y autos.
-  'bicicletas-electricas-uruguay.vue',
+  // la URL limpia se indexa y cada combinación de filtros se sale, igual que equipar y autos. Desde
+  // el 4/11/2026 bicicletas tiene, como monopatines, una página por modelo (se indexa con dos
+  // vendedores y ficha) y un comparador, que es una combinación elegida por el lector: noindex.
+  'bicicletas-electricas-uruguay/[modelo].vue',
+  'bicicletas-electricas-uruguay/comparar.vue',
+  'bicicletas-electricas-uruguay/index.vue',
   'buscar.vue',
   // El comparador de modelos se indexa en su URL; cada combinación de modelos se sale, como el asesor.
   'comparar-autos-usados-uruguay.vue',

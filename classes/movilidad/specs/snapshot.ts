@@ -1,14 +1,17 @@
-// El documento precalculado que lee /monopatines-electricos-uruguay: los candidatos del asesor
-// "¿Cuál te conviene?" y las medianas de cada tipo para "Qué esperar de cada tipo".
+// El documento precalculado que leen /monopatines-electricos-uruguay y /bicicletas-electricas-uruguay
+// (uno por categoría, `key` = la categoría): los candidatos del asesor "¿Cuál te conviene?" y las
+// medianas de cada tipo para "Qué esperar de cada tipo".
 //
 // Se arma al final de cada corrida de currency-movilidad-specs y el pedido sólo lo lee (regla del
 // dueño desde el 19/9/2026: lo que procesa la base se precalcula). Las medianas cuentan sólo lo que
 // dice la ficha o la descripción del vendedor, no lo que se leyó del título: un título se escribe
 // para vender y su lectura es la más frágil.
 import { hasFichaSpecs } from "./parse";
+import { BICICLETA_CATEGORY, MONOPATIN_CATEGORY, type MovilidadSpecCategory } from "./profiles";
 import type { MonopatinSpecs, NumericSpecField } from "./types";
 
-export const MONOPATIN_SNAPSHOT_KEY = "monopatin-electrico";
+export const MONOPATIN_SNAPSHOT_KEY = MONOPATIN_CATEGORY;
+export const BICICLETA_SNAPSHOT_KEY = BICICLETA_CATEGORY;
 /** Una mediana con menos datos que esto describe a tres avisos, no a un tipo. */
 export const STATS_MIN_N = 5;
 const TITLE_MAX = 140;
@@ -68,10 +71,12 @@ export interface SpecStatsRow {
   chargeHours: number | null;
   batteryWh: number | null;
   wheelInches: number | null;
+  /** Sólo con sentido en bicicleta; en monopatín queda en null. */
+  gears: number | null;
 }
 
 export interface MonopatinSpecSnapshot {
-  key: typeof MONOPATIN_SNAPSHOT_KEY;
+  key: MovilidadSpecCategory;
   generatedAt: string;
   candidates: AdvisorCandidate[];
   stats: {
@@ -97,6 +102,7 @@ const STAT_FIELDS = [
   "chargeHours",
   "batteryWh",
   "wheelInches",
+  "gears",
 ] as const satisfies readonly NumericSpecField[];
 
 function median(values: number[]): number | null {
@@ -124,6 +130,7 @@ function statsOf(rows: readonly SnapshotRow[], variant: string, label: string): 
     chargeHours: null,
     batteryWh: null,
     wheelInches: null,
+    gears: null,
   };
   for (const field of STAT_FIELDS) {
     stats[field] = median(rows.map((row) => declared(row.specs, field)).filter((value): value is number => value !== null));
@@ -136,7 +143,11 @@ function candidateSpecs(specs: MonopatinSpecs): CandidateSpecs {
   return rest;
 }
 
-export function buildSpecSnapshot(rows: readonly SnapshotRow[], generatedAt: string): MonopatinSpecSnapshot {
+export function buildSpecSnapshot(
+  rows: readonly SnapshotRow[],
+  generatedAt: string,
+  category: MovilidadSpecCategory = MONOPATIN_CATEGORY
+): MonopatinSpecSnapshot {
   const honest = rows.filter((row) => !row.suspect);
   const withFicha = honest.filter((row) => row.source !== "facebook" && hasFichaSpecs(row.specs));
 
@@ -150,7 +161,7 @@ export function buildSpecSnapshot(rows: readonly SnapshotRow[], generatedAt: str
   const speeds = honest.map((row) => declared(row.specs, "maxSpeedKmh")).filter((value): value is number => value !== null);
 
   return {
-    key: MONOPATIN_SNAPSHOT_KEY,
+    key: category,
     generatedAt,
     candidates: withFicha
       .map((row) => ({

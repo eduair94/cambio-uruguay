@@ -9,11 +9,15 @@
 // hub, en el sitemap y como "Comparalo con" de su propio gemelo, con precios viejos.
 import { mergeHistory, type ModelHistoryPoint, type MovilidadModelDoc } from "./build";
 
-/** Los modelos frescos que esta corrida no armó: fuera de la tabla, del sitemap y de los hermanos. */
-export function modelsRetireWrite(builtSlugs: string[], freshFloor: string) {
+/**
+ * Los modelos frescos que esta corrida no armó: fuera de la tabla, del sitemap y de los hermanos.
+ * `scope` acota a una categoría (`modelCategoryFilter`, category.ts): desde el 4/11/2026 la colección
+ * tiene monopatines y bicicletas, y la vuelta de una no puede retirar los de la otra.
+ */
+export function modelsRetireWrite(builtSlugs: string[], freshFloor: string, scope: Record<string, unknown> = {}) {
   return {
     updateMany: {
-      filter: { slug: { $nin: builtSlugs }, retired: { $ne: true }, lastSeen: { $gte: freshFloor } },
+      filter: { ...scope, slug: { $nin: builtSlugs }, retired: { $ne: true }, lastSeen: { $gte: freshFloor } },
       update: { $set: { retired: true, indexable: false } },
     },
   };

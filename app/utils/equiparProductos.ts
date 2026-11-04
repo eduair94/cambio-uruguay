@@ -8,6 +8,7 @@ import { equiparMoney } from './equipar'
 import { isEquiparCategorySlug } from './equiparCategoryPages'
 import { isMovilidadCategorySlug } from './movilidad'
 import {
+  BICICLETA_RODADO_RANGOS,
   MONOPATIN_FICHA_EMPTY,
   MONOPATIN_POTENCIA_RANGOS,
   MONOPATIN_RASGO_CAMPOS,
@@ -190,6 +191,8 @@ export interface MonopatinFichaFacets {
   carga: EquiparProductosFacet[]
   peso: EquiparProductosFacet[]
   rueda: EquiparProductosFacet[]
+  /** Sólo bicicleta (vacío en monopatín, que filtra por `rueda`). */
+  rodado?: EquiparProductosFacet[]
   rasgos: EquiparProductosFacet[]
   /** De los avisos de la consulta, cuántos tienen ficha propia leída. */
   conFicha: number
@@ -308,7 +311,7 @@ export function equiparProductosNormalize(
     orden: sorts.includes(orden) ? (orden as EquiparProductosSort) : 'precio_asc',
     page: Number.isFinite(page) && page >= 1 ? Math.min(page, 500) : 1,
   }
-  if (vertical === 'movilidad') query.ficha = monopatinFichaNormalize(raw)
+  if (vertical === 'movilidad') query.ficha = monopatinFichaNormalize(raw, query.categoria)
   return query
 }
 
@@ -480,6 +483,8 @@ function fichaChips(ficha: MovilidadFichaQuery): EquiparFilterChip[] {
   if (ficha.peso !== null) add('ficha.peso', monopatinPesoLabel(ficha.peso))
   if (ficha.rueda)
     add('ficha.rueda', `Ruedas: ${MONOPATIN_RUEDA_RANGOS[ficha.rueda].label.toLowerCase()}`)
+  if (ficha.rodado)
+    add('ficha.rodado', `Rodado: ${BICICLETA_RODADO_RANGOS[ficha.rodado].label.toLowerCase()}`)
   for (const rasgo of ficha.rasgos)
     add(`ficha.rasgos.${rasgo}`, MONOPATIN_RASGO_CAMPOS[rasgo].label)
   if (ficha.soloFicha) add('ficha.soloFicha', 'Sólo con ficha técnica')

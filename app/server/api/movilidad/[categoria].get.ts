@@ -62,13 +62,15 @@ async function attachOfferHistory<T extends { offers: any[]; products?: { offers
 }
 
 /**
- * Sólo monopatín: la ficha técnica de cada modelo (la primera de sus ofertas que tenga ficha propia
- * leída) y las medianas por tipo del snapshot de currency-movilidad-specs. Un `$in` acotado a las
- * ofertas que la página muestra, contra el índice único de `listingId`: no agrega sobre la colección.
- * Si algo falla, la página sale igual sin ficha.
+ * Monopatín y bicicleta: la ficha técnica de cada modelo (la primera de sus ofertas que tenga ficha
+ * propia leída; sólo monopatín tiene `products`, bicicleta es régimen commodity) y las medianas por
+ * tipo del snapshot de currency-movilidad-specs, que se guarda uno por categoría. Un `$in` acotado a
+ * las ofertas que la página muestra, contra el índice único de `listingId`: no agrega sobre la
+ * colección. Si algo falla, la página sale igual sin ficha.
  */
-async function attachMonopatinSpecs<T extends { products?: { offers: any[] }[] }>(
-  items: T[]
+async function attachMovilidadSpecs<T extends { products?: { offers: any[] }[] }>(
+  items: T[],
+  category: string
 ): Promise<{ items: T[]; specStats: MonopatinSpecStats | null }> {
   const ids = items.flatMap(item =>
     (item.products ?? []).flatMap(product =>
@@ -83,7 +85,7 @@ async function attachMonopatinSpecs<T extends { products?: { offers: any[] }[] }
           .lean()
           .catch(() => [])
       : Promise.resolve([]),
-    MovilidadSpecSnapshotModel.findOne({ key: 'monopatin-electrico' })
+    MovilidadSpecSnapshotModel.findOne({ key: category })
       .select({ _id: 0, stats: 1 })
       .maxTimeMS(5_000)
       .lean()
@@ -146,10 +148,7 @@ export default defineEventHandler(async (event): Promise<MovilidadCategoryRespon
     const items = await attachOfferHistory(
       movilidadCategoryProjection(movilidadSortItems((rows as unknown as MovilidadItemDoc[]) ?? []))
     )
-    const withSpecs =
-      slug === 'monopatin-electrico'
-        ? await attachMonopatinSpecs(items)
-        : { items, specStats: null }
+    const withSpecs = await attachMovilidadSpecs(items, slug)
 
     return {
       category: slug,
@@ -161,7 +160,7 @@ export default defineEventHandler(async (event): Promise<MovilidadCategoryRespon
         listings: run.listings,
       })),
       items: withSpecs.items,
-      ...(slug === 'monopatin-electrico' ? { specStats: withSpecs.specStats } : {}),
+      specStats: withSpecs.specStats,
     }
   } catch {
     setResponseHeader(event, 'cache-control', 'no-store')

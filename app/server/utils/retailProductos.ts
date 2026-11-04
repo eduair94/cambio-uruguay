@@ -139,8 +139,10 @@ export async function retailProductosResponse(
 
     const cutoff = equiparProductosCutoff()
     const match = equiparProductosMatch(query, cutoff)
-    // Sólo el directorio de monopatines tiene ficha técnica (classes/movilidad/specs/).
-    const wantsFicha = vertical === 'movilidad' && query.categoria === 'monopatin-electrico'
+    // Sólo los directorios de monopatines y de bicicletas tienen ficha técnica (classes/movilidad/specs/).
+    const wantsFicha =
+      vertical === 'movilidad' &&
+      (query.categoria === 'monopatin-electrico' || query.categoria === 'bicicleta-electrica')
     const [
       total,
       rows,

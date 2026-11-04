@@ -127,7 +127,7 @@ export interface MovilidadCategoryResponse {
   usdUyu: number | null
   sources: MovilidadCategorySource[]
   items: MovilidadItemDoc[]
-  /** Sólo monopatín: las medianas de la ficha por tipo (snapshot de currency-movilidad-specs). */
+  /** Monopatín y bicicleta: las medianas de la ficha por tipo (snapshot de currency-movilidad-specs). */
   specStats?: MonopatinSpecStats | null
 }
 
@@ -145,6 +145,8 @@ export interface MonopatinSpecStatsRow {
   chargeHours: number | null
   batteryWh: number | null
   wheelInches: number | null
+  /** Sólo bicicleta (desde el 4/11/2026); ausente en un snapshot anterior. */
+  gears?: number | null
 }
 
 export interface MonopatinSpecStats {

@@ -143,12 +143,42 @@ const ALTO_RENDIMIENTO_MATCH =
 const JUEGO_DE_PIEZAS =
   /\bjuego de (palanca|palancas|biela|bielas|llanta|llantas|camara|camaras|pastilla|pastillas|luces|luz|tornillo|tornillos|puno|punos|cable|cables|freno|frenos|pedal|pedales|guardabarro|guardabarros|espejo|espejos)\b/;
 
+/**
+ * Los accesorios de BICICLETA, que casi nunca abren el título con una pieza de la lista de arriba.
+ *
+ * Medido el 4/11/2026 sobre los 478 avisos frescos de bicicleta eléctrica: 30 eran luces,
+ * portabicicletas, cadenas, frenos, pantallas, empuñaduras, mochilas, cestas y camisetas, y pasaban
+ * `include` porque nombran la bici a la que van. Con el directorio ordenado por precio, encabezaban.
+ * Las formas que tienen, y que una bici real no tiene nunca:
+ *
+ *   * "para / compatible con / apto para" + la palabra bici: "Set De Frenos Hidráulicos A Disco Para
+ *     Bicicleta Eléctrica", "Cesto E-bike Retroceso Compatible Con Todas Las Bicicletas". Una bici es
+ *     "para adultos" o "para niños", nunca "para bicicleta";
+ *   * un accesorio que abre el título y no está en {@link PIEZA_ABRE_EL_TITULO} (luz, cadena, cesto,
+ *     portabicicletas, camiseta, remolque, medidor, indicador, conmutador, "set", "1 par"), o una marca
+ *     seguida de la pieza ("Jadeshay Bike Acelerador 36v", "Bafang Pantalla De Bicicleta Electrica");
+ *   * un sustantivo de accesorio de las importaciones en inglés ("E-bike Headlight", "Bike Handlebar
+ *     Holder", "Hitch Rack", "Battery Anchor Bracket") o una empuñadura, sólo si el título NO abre con
+ *     "Bicicleta"/"Bici" — "Bicicleta Eléctrica Rodado 20 + Holder Para Celular" es una bici que trae
+ *     el soporte (revisión de rama, 4/11/2026) —, y en cualquier lugar los que ninguna bici lleva
+ *     (portabicicletas, camiseta, el chip que quita el límite de velocidad);
+ *   * Facebook: "cambio por bici eléctrica", "permuto por bici electrica" — es OTRA cosa que el
+ *     vendedor ofrece a cambio de una bici eléctrica. "Bici Eléctrica Permuto Por Bici De Montaña" sí
+ *     es una bici: lo que sigue a "por" no es eléctrico.
+ *
+ * Medido sobre los mismos 478: 34 fuera, cero bicis reales. Quedan adentro, a propósito, las que
+ * nombran un accesorio que traen ("Rodado 26 Nakto 250w 32km/h C/ Canasto", "Fat Bike Luz Señaleros"):
+ * por eso "luz", "canasto" y "cesta" sólo cuentan si ABREN el título.
+ */
+const BICI_ACCESORIO =
+  /\b(?:para|compatibles? con|apto para)\s+(?:(?:tu|la|su|el|una|todas las|\d+)\s+)?(?:bicicletas?|bicis?|e-?bikes?|ebikes?|bicycles?|cadena)\b|^(?:luz|luces|cadena|cadenas|cesta|cesto|portabicicletas?|porta ?bicis?|camiseta|remolque|medidor|indicador|conmutador|set|chip|1 par)\b|^\S+ (?:bike |e-?bike )?(?:acelerador|pantalla|display|controlador|cargador|bateria)\b|^(?!bicicletas?\b|bicis?\b).*\b(?:headlights?|headlamp|taillights?|holder|bracket|stabilizer|hitch|apparel|empunaduras?)\b|\b(?:portabicicletas?|camiseta|deslimitador|speedbox)\b|\b(?:cambio|cambia|permuto|permuta) por (?:una? )?(?:bici|bicicleta) electric/;
+
 /** Las dos listas de palabras, cada una con las dos reglas de pieza. */
 const MONOPATIN_EXCLUDE = new RegExp(
   `${PIEZA_ABRE_EL_TITULO.source}|${JUEGO_DE_PIEZAS.source}|${MONOPATIN_EXCLUDE_WORDS.source}`
 );
 const BICICLETA_EXCLUDE = new RegExp(
-  `${PIEZA_ABRE_EL_TITULO.source}|${JUEGO_DE_PIEZAS.source}|${BICICLETA_EXCLUDE_WORDS.source}`
+  `${PIEZA_ABRE_EL_TITULO.source}|${JUEGO_DE_PIEZAS.source}|${BICICLETA_EXCLUDE_WORDS.source}|${BICI_ACCESORIO.source}`
 );
 
 export const MOVILIDAD_CATEGORIES: EquiparCategory[] = [
@@ -207,6 +237,15 @@ export const MOVILIDAD_CATEGORIES: EquiparCategory[] = [
     usedOk: true,
     usedNote: "Pedí la fecha y los ciclos de carga de la batería: es la pieza que decide si el precio es bueno.",
     variants: [
+      // Primera: una bici de equilibrio de $ 15.000 plegable o "urbana" corría la banda de las de
+      // adulto (medido 4/11/2026: seis avisos así en 478). Sólo por palabra, nunca por rodado: la
+      // Gyroor C3 de 14″ es plegable para adultos.
+      {
+        key: "infantil",
+        label: "Infantil o de equilibrio",
+        match: /\b(infantil|para (ninos?|ninas?|chicos)|de (equilibrio|balance|balanceo))\b/,
+        rank: 0,
+      },
       { key: "plegable", label: "Plegable", match: /\bplegable\b/, rank: 1 },
       { key: "urbana", label: "Urbana o paseo", fallback: true, rank: 2 },
       { key: "montana", label: "Montaña", match: /\bmontana\b|\bmtb\b/, rank: 3 },

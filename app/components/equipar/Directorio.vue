@@ -167,9 +167,11 @@ const emit = defineEmits<{
 }>()
 
 const { smAndDown } = useDisplay()
-// Los órdenes por ficha técnica sólo existen para monopatines (la única categoría con ficha leída).
+// Los órdenes por ficha técnica sólo existen donde hay ficha leída: monopatines y, desde el
+// 4/11/2026, bicicletas.
 const sortItems = computed(() =>
-  props.vertical === 'movilidad' && props.fixedCategoria === 'monopatin-electrico'
+  props.vertical === 'movilidad' &&
+  (props.fixedCategoria === 'monopatin-electrico' || props.fixedCategoria === 'bicicleta-electrica')
     ? MOVILIDAD_PRODUCTOS_SORT_ITEMS
     : EQUIPAR_PRODUCTOS_SORT_ITEMS
 )

@@ -14,6 +14,7 @@
 //     toman el extremo bajo; el peso del aparato y el tiempo de carga, el alto.
 //   * Valores imposibles existen ("Largo = 100 m" en un monopatín infantil). Fuera de
 //     `SPEC_BANDS` el campo queda en null: no se corrige un error del vendedor.
+import { specProfile, type SpecProfile } from "./profiles";
 import {
   SPEC_BANDS,
   SPEC_FIELDS,
@@ -22,6 +23,8 @@ import {
   type NumericSpecField,
   type SpecSource,
 } from "./types";
+
+type Bands = SpecProfile["bands"];
 
 export const EMPTY_SPECS: MonopatinSpecs = Object.freeze({
   rangeKm: null,
@@ -42,6 +45,10 @@ export const EMPTY_SPECS: MonopatinSpecs = Object.freeze({
   bluetooth: null,
   brakes: null,
   ipRating: null,
+  gears: null,
+  removableBattery: null,
+  throttle: null,
+  centralMotor: null,
   from: Object.freeze({}),
 }) as MonopatinSpecs;
 
@@ -74,9 +81,9 @@ export function prep(value: string): string {
 
 const round1 = (value: number): number => Math.round(value * 10) / 10;
 
-function inBand(field: NumericSpecField, value: number | null): number | null {
+function inBand(field: NumericSpecField, value: number | null, bands: Bands = SPEC_BANDS): number | null {
   if (value === null || !Number.isFinite(value)) return null;
-  const [min, max] = SPEC_BANDS[field];
+  const [min, max] = bands[field];
   return value >= min && value <= max ? value : null;
 }
 
@@ -194,11 +201,17 @@ function convert(value: number, unit: string, converted: { flag: boolean }): num
   return value;
 }
 
-function valueOf(rule: FieldRule, low: string, high: string | undefined, unit: string | undefined): number | null {
+function valueOf(
+  rule: FieldRule,
+  low: string,
+  high: string | undefined,
+  unit: string | undefined,
+  bands: Bands
+): number | null {
   const raw = Number(rule.pick === "high" && high ? high : low);
   const converted = { flag: false };
   const value = convert(raw, (unit ?? "").trim(), converted);
-  return inBand(rule.field, converted.flag ? Math.round(value) : round1(value));
+  return inBand(rule.field, converted.flag ? Math.round(value) : round1(value), bands);
 }
 
 function labeledPattern(rule: FieldRule, separator: string): RegExp {
@@ -211,11 +224,11 @@ function labeledPattern(rule: FieldRule, separator: string): RegExp {
 }
 
 /** La primera coincidencia del patrón cuyo valor cae en banda. */
-function firstValue(text: string, pattern: RegExp, rule: FieldRule): number | null {
+function firstValue(text: string, pattern: RegExp, rule: FieldRule, bands: Bands): number | null {
   pattern.lastIndex = 0;
   let match: RegExpExecArray | null;
   while ((match = pattern.exec(text))) {
-    const value = valueOf(rule, match[1]!, match[2], match[3]);
+    const value = valueOf(rule, match[1]!, match[2], match[3], bands);
     if (value !== null) return value;
   }
   return null;
@@ -255,7 +268,7 @@ const BARE: ReadonlyArray<{ field: NumericSpecField; pattern: RegExp; pick: Pick
   },
 ];
 
-function bareValue(text: string, rule: (typeof BARE)[number]): number | null {
+function bareValue(text: string, rule: (typeof BARE)[number], bands: Bands): number | null {
   rule.pattern.lastIndex = 0;
   let match: RegExpExecArray | null;
   while ((match = rule.pattern.exec(text))) {
@@ -265,7 +278,7 @@ function bareValue(text: string, rule: (typeof BARE)[number]): number | null {
     const converted = { flag: false };
     const raw = Number(rule.pick === "high" && high ? high : low);
     const number = convert(raw, unit ?? "", converted);
-    const value = inBand(rule.field, converted.flag ? Math.round(number) : round1(number));
+    const value = inBand(rule.field, converted.flag ? Math.round(number) : round1(number), bands);
     if (value !== null) return value;
   }
   return null;
@@ -304,9 +317,84 @@ function booleansFromText(text: string, specs: MonopatinSpecs, source: SpecSourc
   }
 }
 
-function finish(specs: MonopatinSpecs): MonopatinSpecs {
+// ---------------------------------------------------------------------------------------------
+// Sólo bicicleta (`profiles.ts`)
+//
+// Lo medido el 4/11/2026 en las fichas de ML de bicis y en los 478 títulos frescos: el rodado casi
+// nunca lleva comillas ("R20", "Rod. 28", "Rodado 20x4.0", "26x1.95"); los cambios se escriben "Shimano
+// Tourney 7 velocidades" o "21 Vel"; la ficha de ML trae "Con batería removible" y "Con acelerador
+// independiente". Nada de esto se lee en un monopatín: "3 velocidades" son ahí los modos del acelerador.
+
+const RODADOS = "12|14|16|18|20|24|26|27\\.5|28|29";
+const RODADO_PATTERNS: readonly RegExp[] = [
+  new RegExp(`(?:^|[^a-z0-9])(?:rodado|rod\\.?|aro|r) ?(${RODADOS})(?:"|x ?\\d+(?:\\.\\d+)?)?(?![0-9.])`),
+  // La medida de la cubierta, pegada y con decimales: "26x1.95", "20x4.0". Con espacios ("12 x 1.500",
+  // "24 x 7") son cuotas y horarios (revisión de rama, 4/11/2026).
+  new RegExp(`(?:^|[^a-z0-9.])(${RODADOS})x[1-5]\\.\\d{1,3}(?![0-9])`),
+];
+const GEARS_PATTERNS: readonly RegExp[] = [
+  /\b(?:cantidad de )?(?:velocidades|cambios)\s*[:=]\s*(\d{1,2})\b/,
+  /(?:^|[^a-z0-9.])(\d{1,2}) ?(?:velocidades|cambios|speeds?)(?![a-z])/,
+  // "21 Vel.f/disco", "7 Vel": la abreviatura, nunca seguida de una palabra ni de "max" ("25 Vel Max"
+  // es la velocidad, revisión de rama 4/11/2026).
+  /(?:^|[^a-z0-9.])(\d{1,2}) ?vel\.?(?!\s*max)(?![a-z]{2})/,
+];
+const CENTRAL_MOTOR =
+  /\bmotor (?:central|centrado|en el centro|mid-?drive)\b|\bmid-?drive\b|\bbosch (?:performance|active|cargo|smart)\b|\bbafang m\d{3}\b|\bshimano (?:steps|ep\d)\b/;
+const HUB_MOTOR =
+  /\bmotor (?:(?:en (?:la |el )?)?(?:rueda|buje|eje|maza) )?(?:traser[oa]|delanter[oa])\b|\b(?:rear|front) hub\b|\bhub motor\b/;
+
+function bikeFromText(text: string, specs: MonopatinSpecs, source: SpecSource, bands: Bands): void {
+  const setBool = (field: BooleanSpecField, value: boolean) => {
+    if (specs[field] !== null) return;
+    specs[field] = value;
+    specs.from[field] = source;
+  };
+
+  if (specs.wheelInches === null) {
+    for (const pattern of RODADO_PATTERNS) {
+      const match = pattern.exec(text);
+      const value = match ? inBand("wheelInches", Number(match[1]), bands) : null;
+      if (value !== null) {
+        specs.wheelInches = value;
+        specs.from.wheelInches = source;
+        break;
+      }
+    }
+  }
+
+  if (specs.gears === null) {
+    for (const pattern of GEARS_PATTERNS) {
+      const match = pattern.exec(text);
+      const value = match ? inBand("gears", Number(match[1]), bands) : null;
+      if (value !== null) {
+        specs.gears = value;
+        specs.from.gears = source;
+        break;
+      }
+    }
+  }
+
+  const removable =
+    /\bbateria\b(?:[^.,;\n:]|\.(?=\d)){0,50}?\b(no (?:es )?)?(?:extraible|removible|desmontable)\b(\s*[:=]\s*no\b)?/.exec(
+      text
+    );
+  if (removable) setBool("removableBattery", !removable[1] && !removable[2]);
+  else if (/\bbateria (?:integrada|fija)\b/.test(text)) setBool("removableBattery", false);
+
+  const throttle =
+    /(\bsin (?:necesidad de )?|\bno (?:tiene|trae|incluye|lleva|requiere|necesita|usa) )?\bacelerador\b(?: (?:de (?:puno|gatillo|dedo)|independiente))?(\s*[:=]\s*no\b)?/.exec(
+      text
+    );
+  if (throttle) setBool("throttle", !throttle[1] && !throttle[2]);
+
+  if (CENTRAL_MOTOR.test(text)) setBool("centralMotor", true);
+  else if (HUB_MOTOR.test(text)) setBool("centralMotor", false);
+}
+
+function finish(specs: MonopatinSpecs, bands: Bands = SPEC_BANDS): MonopatinSpecs {
   if (specs.batteryWh === null && specs.batteryV !== null && specs.batteryAh !== null) {
-    const wh = inBand("batteryWh", Math.round(specs.batteryV * specs.batteryAh));
+    const wh = inBand("batteryWh", Math.round(specs.batteryV * specs.batteryAh), bands);
     if (wh !== null) {
       specs.batteryWh = wh;
       specs.from.batteryWh = specs.from.batteryAh;
@@ -319,7 +407,9 @@ function finish(specs: MonopatinSpecs): MonopatinSpecs {
 // API
 
 /** Texto rotulado y prosa de una tienda o de la descripción de un aviso. */
-export function specsFromText(text: string, source: SpecSource): MonopatinSpecs {
+export function specsFromText(text: string, source: SpecSource, category?: string | null): MonopatinSpecs {
+  const profile = specProfile(category);
+  const bands = profile.bands;
   const clean = prep(text);
   const specs = blank();
   const set = (field: NumericSpecField, value: number | null) => {
@@ -328,25 +418,67 @@ export function specsFromText(text: string, source: SpecSource): MonopatinSpecs 
     specs.from[field] = source;
   };
   // Una tabla ("Ruedas: 8,5”") antes que un par suelto ("Rodado 10"), y los dos antes que la prosa.
-  for (const rule of RULES) set(rule.field, firstValue(clean, labeledPattern(rule, "\\s*[:=]\\s*"), rule));
-  for (const rule of RULES) set(rule.field, firstValue(clean, labeledPattern(rule, "\\s+"), rule));
-  for (const rule of BARE) set(rule.field, bareValue(clean, rule));
+  for (const rule of RULES) set(rule.field, firstValue(clean, labeledPattern(rule, "\\s*[:=]\\s*"), rule, bands));
+  for (const rule of RULES) set(rule.field, firstValue(clean, labeledPattern(rule, "\\s+"), rule, bands));
+  for (const rule of BARE) set(rule.field, bareValue(clean, rule, bands));
+  // "36v350w", "48V500W": voltaje y potencia PEGADOS, que las dos reglas sueltas no ven. Sólo pegados y
+  // nunca delante de "potencia máxima": con espacios ("48v 800w Potencia Maxima") la regla suelta ya
+  // decide, y ahí el número es el pico (revisión de rama, 4/11/2026).
+  const glued =
+    /(?:^|[^a-z0-9.])(\d{2})v(\d{3,4})w(?![a-z0-9])(?!\s*\(?\s*(?:de )?potencia (?:maxima|max|pico))/.exec(clean);
+  if (glued) {
+    set("batteryV", inBand("batteryV", Number(glued[1]), bands));
+    set("motorW", inBand("motorW", Number(glued[2]), bands));
+  }
   booleansFromText(clean, specs, source);
-  return finish(specs);
+  if (profile.bike) bikeFromText(clean, specs, source, bands);
+  return finish(specs, bands);
 }
 
 /** El título: lo mismo que el texto, más "45km" suelto, que en un título sólo puede ser la autonomía. */
-export function specsFromTitle(title: string): MonopatinSpecs {
-  const specs = specsFromText(title, "titulo");
+export function specsFromTitle(title: string, category?: string | null): MonopatinSpecs {
+  const specs = specsFromText(title, "titulo", category);
   if (specs.rangeKm === null) {
     const match = /(?:^|[^a-z0-9.])(\d{1,3}) ?kms?(?![a-z0-9]| ?\/ ?h| por hora)/.exec(prep(title));
-    const value = match ? inBand("rangeKm", Number(match[1])) : null;
+    const value = match ? inBand("rangeKm", Number(match[1]), specProfile(category).bands) : null;
     if (value !== null) {
       specs.rangeKm = value;
       specs.from.rangeKm = "titulo";
     }
   }
+  if (specProfile(category).bike && specs.wheelInches === null) {
+    const wheel = bareRodado(prep(title));
+    if (wheel !== null) {
+      specs.wheelInches = wheel;
+      specs.from.wheelInches = "titulo";
+    }
+  }
   return specs;
+}
+
+/**
+ * Sólo en el título de una bici: un rodado sin "rodado" ni comillas ("Gyroor 20 Eb025", "Gyroor
+ * 27.5 Cd-2614", "Valentini Bikes - Bicicleta Eléctrica 26 Negra"). Medido el 4/11/2026: es como
+ * titulan los vendedores de ML, y un número suelto de esa lista no es otra cosa en un título de bici
+ * — salvo que lo siga una unidad ("20 km", "26 v", "28 kg") o que sea parte de un código ("C3-14").
+ */
+const BARE_RODADO = /(?:^|\s)(12|14|16|20|24|26|27\.5|28|29)(?=\s|$|,)/g;
+const UNIT_AFTER = /^\s*(?:km|kms|w|watts?|v|volts?|kg|kgs|kilos?|ah|wh|h|hs|horas?|cm|mm|%|x\b|anos?|meses|dias|cuotas)/;
+
+/** El talle del cuadro y un rango de edades tampoco son el rodado ("Cuadro 16", "12 A 16 Años"). */
+const WORD_BEFORE = /(?:^|\s)(?:cuadro|talle|talla|frame|edad)\s*$/;
+const RANGE_AFTER = /^\s*(?:a|-|al|hasta)\s*\d/;
+
+function bareRodado(text: string): number | null {
+  BARE_RODADO.lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = BARE_RODADO.exec(text))) {
+    const after = text.slice(match.index + match[0].length);
+    if (UNIT_AFTER.test(after) || RANGE_AFTER.test(after)) continue;
+    if (WORD_BEFORE.test(text.slice(0, match.index))) continue;
+    return Number(match[1]);
+  }
+  return null;
 }
 
 const ROW_STRING = '"((?:[^"\\\\]|\\\\.)*)"';
@@ -418,7 +550,9 @@ const ROW_FIELDS: ReadonlyArray<{ label: RegExp; field: NumericSpecField }> = [
 ];
 
 /** La tabla de la ficha de ML (o cualquier tabla rótulo → valor) convertida en ficha. */
-export function specsFromRows(rows: Record<string, string>): MonopatinSpecs {
+export function specsFromRows(rows: Record<string, string>, category?: string | null): MonopatinSpecs {
+  const profile = specProfile(category);
+  const bands = profile.bands;
   const specs = blank();
   const source: SpecSource = "ficha";
   for (const [rawLabel, rawValue] of Object.entries(rows)) {
@@ -430,7 +564,7 @@ export function specsFromRows(rows: Record<string, string>): MonopatinSpecs {
     const numeric = ROW_FIELDS.find((entry) => entry.label.test(label));
     if (numeric && number && specs[numeric.field] === null) {
       const rule = RULES.find((candidate) => candidate.field === numeric.field)!;
-      const result = valueOf(rule, number[1]!, number[2], (number[3] ?? "").trim().split(" ")[0]);
+      const result = valueOf(rule, number[1]!, number[2], (number[3] ?? "").trim().split(" ")[0], bands);
       if (result !== null) {
         specs[numeric.field] = result;
         specs.from[numeric.field] = source;
@@ -439,7 +573,7 @@ export function specsFromRows(rows: Record<string, string>): MonopatinSpecs {
     }
     if (/^capacidad de (la )?bateria|^energia de (la )?bateria/.test(label) && number) {
       const field: NumericSpecField = /wh\b/.test(value) ? "batteryWh" : "batteryAh";
-      const result = inBand(field, round1(Number(number[1])));
+      const result = inBand(field, round1(Number(number[1])), bands);
       if (result !== null && specs[field] === null) {
         specs[field] = result;
         specs.from[field] = source;
@@ -476,6 +610,7 @@ export function specsFromRows(rows: Record<string, string>): MonopatinSpecs {
       }
       continue;
     }
+    if (profile.bike && bikeRow(label, value, number, specs, bands)) continue;
     if (/proteccion|resistencia al agua|certificacion ip/.test(label)) {
       const ip = /\bip ?(x\d|\d{2})\b/.exec(value);
       if (ip && specs.ipRating === null) {
@@ -484,7 +619,44 @@ export function specsFromRows(rows: Record<string, string>): MonopatinSpecs {
       }
     }
   }
-  return finish(specs);
+  return finish(specs, bands);
+}
+
+/** Una fila de la ficha que sólo declara una bicicleta. true si la fila era de una de ellas. */
+function bikeRow(
+  label: string,
+  value: string,
+  number: RegExpExecArray | null,
+  specs: MonopatinSpecs,
+  bands: Bands
+): boolean {
+  const setBool = (field: BooleanSpecField, result: boolean | null) => {
+    if (result === null || specs[field] !== null) return;
+    specs[field] = result;
+    specs.from[field] = "ficha";
+  };
+  if (/^(con )?bateria (removible|extraible|desmontable)/.test(label)) {
+    setBool("removableBattery", yesNo(value));
+    return true;
+  }
+  if (/^(con )?acelerador/.test(label)) {
+    setBool("throttle", yesNo(value));
+    return true;
+  }
+  if (/^(cantidad de )?(velocidades|cambios)$/.test(label)) {
+    const gears = number ? inBand("gears", Number(number[1]), bands) : null;
+    if (gears !== null && specs.gears === null) {
+      specs.gears = gears;
+      specs.from.gears = "ficha";
+    }
+    return true;
+  }
+  if (/^(posicion|ubicacion|tipo) (del|de) motor|^motor$/.test(label)) {
+    if (/central|centrado|medio|mid/.test(value)) setBool("centralMotor", true);
+    else if (/traser|delanter|rueda|buje|hub|maza/.test(value)) setBool("centralMotor", false);
+    return true;
+  }
+  return false;
 }
 
 /** Campo por campo, la primera capa con dato gana (ficha > descripción > título). */

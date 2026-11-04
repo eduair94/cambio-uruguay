@@ -1,6 +1,10 @@
 import { MovilidadModelModel } from '../../../models/MovilidadModel'
 import { connectDb } from '../../../utils/db'
 import {
+  movilidadModelCategoria,
+  movilidadModelCategoryFilter,
+} from '../../../../utils/movilidadModelos'
+import {
   MONOPATIN_MODEL_SLUG_RE,
   monopatinModelFreshFloor,
   monopatinModelSiblings,
@@ -10,7 +14,8 @@ import {
 } from '../../../../utils/monopatinModelos'
 
 /**
- * Un modelo de monopatín para /monopatines-electricos-uruguay/<modelo>: el documento que dejó
+ * Un modelo para /monopatines-electricos-uruguay/<modelo> o, con `?categoria=bicicleta-electrica`,
+ * para /bicicletas-electricas-uruguay/<modelo>: el documento que dejó
  * currency-movilidad-specs (classes/movilidad/models/) y hasta cuatro modelos del mismo tipo con el
  * precio más parecido. Sólo lee.
  *
@@ -42,16 +47,22 @@ export default defineEventHandler(async (event): Promise<MonopatinModelDetailRes
   }
 
   const floor = monopatinModelFreshFloor(new Date().toISOString().slice(0, 10))
+  // Un slug de bici pedido desde la página de monopatines (o al revés) es 404: cada página publica
+  // sólo los modelos de su categoría.
+  const byCategory = movilidadModelCategoryFilter(
+    movilidadModelCategoria(getQuery(event).categoria)
+  )
   let model: MonopatinModelDoc | null
   let others: MonopatinModelDoc[] = []
   try {
     await connectDb()
-    model = (await MovilidadModelModel.findOne({ slug, lastSeen: { $gte: floor } })
+    model = (await MovilidadModelModel.findOne({ ...byCategory, slug, lastSeen: { $gte: floor } })
       .select({ _id: 0, history: 0, createdAt: 0, updatedAt: 0 })
       .maxTimeMS(5000)
       .lean()) as unknown as MonopatinModelDoc | null
     if (model) {
       others = (await MovilidadModelModel.find({
+        ...byCategory,
         variant: model.variant,
         slug: { $ne: slug },
         lastSeen: { $gte: floor },

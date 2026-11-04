@@ -218,3 +218,92 @@ describe("revisión final de rama (4/11)", () => {
     expect(rows.map((row) => row.identity?.key ?? null)).toEqual(["xiaomi-6", "xiaomi-6-pro", null]);
   });
 });
+
+// Bicicletas: títulos reales de movilidadlistings, medidos el 4/11/2026 sobre los 441 avisos de bici
+// que quedan después de sacar los accesorios.
+describe("identifyModel en bicicleta", () => {
+  const bike = (title: string, fichaModel: string | null = null): string | null => {
+    const brand = brandFromTitle(title, "bicicleta-electrica");
+    return (
+      identifyModel({
+        title,
+        brand,
+        brandKey: brand ? brand.toLowerCase().replace(/'/g, "").replace(/[^a-z0-9]+/g, "-") : null,
+        fichaModel,
+        source: "mercadolibre",
+        category: "bicicleta-electrica",
+      })?.key ?? null
+    );
+  };
+
+  it("el rodado antes del código no es el modelo, y el de después lo cierra", () => {
+    expect(bike("Bicicleta Electrica Gyroor 20 Eb033 Premium Tx")).toBe("gyroor-eb033");
+    expect(bike("Bicicleta Eléctrica Plegable Rodado 20 Gyroor Eb033 Gris")).toBe("gyroor-eb033");
+    expect(bike("Bicicleta Eléctrica Gyroor Eb021 R20 En Aluminio Y Plegable Color Negro")).toBe("gyroor-eb021");
+    expect(bike("Bicicleta Eléctrica Plegable Gyroor R14 C3 Adultos Circuit")).toBe("gyroor-c3");
+    expect(bike("Bicicleta Eléctrica Gyroor 14 Pulgadas C3-14")).toBe("gyroor-c3");
+  });
+
+  it('"Eb-041" y "EB041" son el mismo código; "27,5" es un rodado', () => {
+    expect(bike("Bicicleta Electrica Gyroor 27.5 Eb-041 Dorado")).toBe("gyroor-eb041");
+    expect(bike("Bicicleta Eléctrica Gyroor EB041 27.5'' 48V Dorada Freno Disco Shimano")).toBe("gyroor-eb041");
+    expect(bike("Bicicleta Eléctrica Gyroor Eb041 500 W 27,5 Dorada")).toBe("gyroor-eb041");
+    expect(bike("Bicicleta Electrica Gyroor 27.5 Cd-2614 Plateada")).toBe("gyroor-cd2614");
+  });
+
+  it("un número en el medio sigue siendo parte del nombre: Air 20 y Air 28 no se juntan", () => {
+    expect(bike("Ado Air 28 Lite Bicicleta Electrica Urbana Rodado 28")).toBe("ado-air-28-lite");
+    expect(bike("Ado Air 20 Pro Bicicleta Electrica Plegable")).toBe("ado-air-20-pro");
+  });
+
+  it("la tienda y Mercado Libre caen en el mismo modelo", () => {
+    expect(bike("Bicicleta Eléctrica S PRO e Clipper")).toBe("s-pro-clipper");
+    expect(bike("Bicicleta Eléctrica Plegable S-pro E-clipper Rodado 20")).toBe("s-pro-clipper");
+    expect(bike("Bicicleta Eléctrica S PRO e Strada DLX")).toBe("s-pro-strada-dlx");
+    expect(bike("Bicicleta Eléctrica De Paseo S-pro E-strada Rodado 26 Gris")).toBe("s-pro-strada");
+  });
+
+  it("Bosch, Shimano y las palabras de bici no nombran un modelo", () => {
+    expect(bike("Bicicleta Eléctrica Tern Quick Haul P9 / Bosch / Urban Bikes")).toBe("tern-quick-haul-p9");
+    expect(bike("Bicicleta Eléctrica Tern Hsd P9 Bosch 500 / Urban Bikes")).toBe("tern-hsd-p9");
+    expect(bike("Bicicleta Electrica Gogreen Compact Plegable Rod 20 250w 36v")).toBe("gogreen-compact");
+  });
+
+  it('"Trinx Swft Zip S" es una Swft, y el nombre del vendedor al final no es parte del modelo', () => {
+    expect(bike("Bicicleta Eléctrica Trinx Swft Zip S Mmsports")).toBe("swft-zip-s");
+    expect(bike("Bicicleta Eléctrica Swft Zip S")).toBe("swft-zip-s");
+  });
+
+  it("sin el perfil de bici, el monopatín se identifica igual que antes", () => {
+    expect(key(ml("Monopatin Electrico Luxor E9 Pro 350w", "Luxor"))).toBe("luxor-e9-pro");
+  });
+});
+
+describe("identifyModel en bicicleta: lo que mostró la vista previa con datos reales (4/11/2026)", () => {
+  const bike = (title: string): string | null => {
+    const brand = brandFromTitle(title, "bicicleta-electrica");
+    return (
+      identifyModel({
+        title,
+        brand,
+        brandKey: brand ? brand.toLowerCase().replace(/'/g, "").replace(/[^a-z0-9]+/g, "-") : null,
+        fichaModel: null,
+        source: "mercadolibre",
+        category: "bicicleta-electrica",
+      })?.key ?? null
+    );
+  };
+  it('"Rodado20" pegado cierra el modelo como "R20"', () => {
+    expect(bike("Bicicleta Eléctrica Wheele Manhattan Flex Rodado20 Negra")).toBe("wheele-manhattan-flex");
+  });
+  it('"Electro" no es parte del nombre', () => {
+    expect(bike("Bicicleta Eléctrica S-pro Carrot Electro")).toBe("s-pro-carrot");
+  });
+});
+
+describe("marca de bici: 'Shimano Nexus' es el buje, no la marca (revisión de rama, 4/11/2026)", () => {
+  it("no lee Nexus detrás de Shimano, sí sola", () => {
+    expect(brandFromTitle("Bicicleta Electrica Shimano Nexus 7 Velocidades", "bicicleta-electrica")).toBeNull();
+    expect(brandFromTitle("Bicicleta Electrica Nexus Xc920 R28", "bicicleta-electrica")).toBe("Nexus");
+  });
+});

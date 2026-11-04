@@ -45,19 +45,16 @@
       <p v-if="priceMove" class="eq-card__move" :class="priceMove.down ? 'is-down' : 'is-up'">
         {{ priceMove.text }}
       </p>
-      <!-- Sólo monopatines: la ficha técnica declarada (currency-movilidad-specs). Una fila de
-           equipar no trae `specs`, así que esta tarjeta sale igual que siempre allá. -->
+      <!-- Sólo monopatines y bicicletas: la ficha técnica declarada (currency-movilidad-specs). Una
+           fila de equipar no trae `specs`, así que esta tarjeta sale igual que siempre allá. -->
       <MovilidadSpecStrip
         v-if="producto.specs"
         :specs="producto.specs"
         :uyu-per-km="producto.uyuPerKm ?? null"
+        :categoria="producto.category"
       />
-      <!-- Sólo monopatines con modelo identificado: todas las ofertas del mismo modelo juntas. -->
-      <NuxtLink
-        v-if="producto.modelSlug"
-        :to="`/monopatines-electricos-uruguay/${producto.modelSlug}`"
-        class="eq-card__model"
-      >
+      <!-- Sólo con modelo identificado: todas las ofertas del mismo modelo juntas. -->
+      <NuxtLink v-if="producto.modelSlug && modelPath" :to="modelPath" class="eq-card__model">
         Ver el modelo en todos los vendedores
       </NuxtLink>
       <p class="eq-card__facts">{{ facts }}</p>
@@ -85,6 +82,7 @@
 
 <script setup lang="ts">
 import { priceChangeLabel } from '~/utils/priceHistory'
+import { movilidadModelPath } from '~/utils/movilidadModelos'
 import {
   EQUIPAR_SOURCE_LABELS,
   equiparMoneyNbsp,
@@ -153,6 +151,13 @@ const roomIcon = computed(() => {
   if (/bicicleta/.test(category)) return 'mdi-bicycle-electric'
   return 'mdi-sofa-outline'
 })
+
+/** La página del modelo, en el hub de su categoría (monopatines o bicicletas). */
+const modelPath = computed(() =>
+  props.producto.modelSlug
+    ? movilidadModelPath(props.producto.category, props.producto.modelSlug)
+    : null
+)
 </script>
 
 <style scoped>

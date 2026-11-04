@@ -16,7 +16,10 @@ const monopatinSource = readFileSync(
   join(PAGES, 'monopatines-electricos-uruguay', 'index.vue'),
   'utf8'
 )
-const bicicletaSource = readFileSync(join(PAGES, 'bicicletas-electricas-uruguay.vue'), 'utf8')
+const bicicletaSource = readFileSync(
+  join(PAGES, 'bicicletas-electricas-uruguay', 'index.vue'),
+  'utf8'
+)
 const offerCardSource = readFileSync(
   join(__dirname, '..', '..', 'components', 'movilidad', 'MovilidadOfferCard.vue'),
   'utf8'
@@ -66,7 +69,7 @@ describe('MovilidadOfferCard.vue — el enlace al vendedor de cada oferta', () =
 // Las dos páginas siguen siendo dueñas de USAR esa tarjeta para las dos listas (nuevos y usados).
 describe.each([
   ['monopatines-electricos-uruguay.vue', monopatinSource],
-  ['bicicletas-electricas-uruguay.vue', bicicletaSource],
+  ['bicicletas-electricas-uruguay/index.vue', bicicletaSource],
 ])('%s — las dos listas de "las más baratas" usan la tarjeta compartida', (_file, src) => {
   it('renders MovilidadOfferCard for both cheapestNew and cheapestUsed', () => {
     expect(src).toMatch(/v-for="row in cheapestNew"/)
@@ -96,9 +99,14 @@ describe('monopatines-electricos-uruguay.vue — modelos table (régimen `modelo
   })
 })
 
-describe('bicicletas-electricas-uruguay.vue — sin tabla de modelos (régimen `commodity`)', () => {
-  it('never renders a products table (no named models for a commodity-regime category)', () => {
+describe('bicicletas-electricas-uruguay/index.vue — régimen `commodity`', () => {
+  it('never renders the equipar products table (the band names no products for a commodity category)', () => {
     expect(bicicletaSource).not.toContain('row.product.offers')
-    expect(bicicletaSource).not.toMatch(/<h2[^>]*>Modelos y sus mejores ofertas<\/h2>/)
+  })
+  // Desde el 4/11/2026 la tabla de modelos sale de OTRO lado: el catálogo que arma
+  // currency-movilidad-specs juntando vendedores, pedido con su categoría.
+  it('its models table reads the models catalog of its own category', () => {
+    expect(bicicletaSource).toMatch(/<h2[^>]*>Modelos y sus mejores ofertas<\/h2>/)
+    expect(bicicletaSource).toContain("query: { categoria: 'bicicleta-electrica' }")
   })
 })

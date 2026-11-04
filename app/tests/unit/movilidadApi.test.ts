@@ -154,14 +154,16 @@ describe('la ficha técnica de los modelos de monopatín', () => {
     expect(result.specStats).toEqual(stats)
   })
 
-  it('las bicicletas no consultan ficha ni snapshot', async () => {
+  it('las bicicletas leen su propio snapshot (desde el 4/11/2026) y no buscan fichas por modelo', async () => {
     connectDb.mockResolvedValue(undefined)
     leanOneMock.mockResolvedValue(null)
     leanMock.mockResolvedValue([])
+    snapshotLeanMock.mockResolvedValue({ stats: { withFicha: 3, total: 9 } })
     const result = await handler({ categoria: 'bicicleta-electrica' } as any)
+    // Régimen commodity: no hay `products`, así que no hay ofertas de modelo que buscar.
     expect(listingLeanMock).not.toHaveBeenCalled()
-    expect(snapshotLeanMock).not.toHaveBeenCalled()
-    expect(result).not.toHaveProperty('specStats')
+    expect(snapshotLeanMock).toHaveBeenCalled()
+    expect(result.specStats).toMatchObject({ withFicha: 3, total: 9 })
   })
 })
 

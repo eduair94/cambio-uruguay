@@ -135,6 +135,7 @@ describe('the navigation model has no dead links', () => {
   // the navigation AND from the SEO ratchet, so it must stay small and every addition deliberate.
   it('excludes exactly the non-content routes', () => {
     expect([...EXCLUDED_ROUTES].sort()).toEqual([
+      '/bicicletas-electricas-uruguay/comparar',
       '/cuenta',
       '/descuentos-con-tarjeta-uruguay/cerca-de-mi',
       '/equipar-casa-uruguay/mi-lista',

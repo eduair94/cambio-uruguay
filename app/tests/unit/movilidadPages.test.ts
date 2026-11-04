@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest'
 
 const PAGES = join(__dirname, '..', '..', 'pages')
 const MONOPATIN_FILE = join(PAGES, 'monopatines-electricos-uruguay', 'index.vue')
-const BICICLETA_FILE = join(PAGES, 'bicicletas-electricas-uruguay.vue')
+const BICICLETA_FILE = join(PAGES, 'bicicletas-electricas-uruguay', 'index.vue')
 
 const read = (file: string): string => readFileSync(file, 'utf8')
 
@@ -112,8 +112,11 @@ describe.each(PAGES_UNDER_TEST)(
           expect(src).toContain('ItemList')
           expect(src).toContain('productsLd')
         } else {
+          // Régimen commodity: la banda no nombra productos. Desde el 4/11/2026 la tabla de modelos
+          // sale del catálogo que junta vendedores, con su ItemList de páginas de modelo.
           expect(src).not.toContain('productsLd')
-          expect(tpl).not.toContain('Modelos y sus mejores ofertas')
+          expect(src).toContain('modelsLd')
+          expect(tpl).toContain('Modelos y sus mejores ofertas')
         }
       }
     )

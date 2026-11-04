@@ -2918,6 +2918,32 @@
         "mistyle me1000 uruguay"
       ],
       "hypothesis": "La tabla de modelos del hub publicaba cada aviso como un producto suelto (23 productos, uno por aviso; Xiaomi 5 Max tres veces), asi que la pagina no contestaba lo que se busca por modelo: cuanto sale este modelo y donde. Ahora los avisos de Mercado Libre y de las tiendas se juntan por marca y modelo (el catalogo de ML manda) y cada modelo con dos avisos o mas tiene su pagina: nuevo y usado desde, todas las ofertas de todos los vendedores, la ficha de consenso con cuantas fichas coinciden, autonomia real y costo de carga, y modelos parecidos para comparar. Medido el 4/11 sobre 774 avisos: 54 modelos, 41 indexables (dos vendedores o mas y tres datos de ficha). Ninguna tienda publica el precio del mismo modelo en las demas; se espera que las paginas de modelo ganen impresiones y clics por nombre de modelo, que el hub no puede rankear (memoria directorios-ficha-rankea-hub-no). Se declara solo la familia de paginas nuevas; el hub ya tiene su fila del 3/11 y su ventana sigue abierta."
+    },
+    {
+      "id": "bicicletas-ficha-asesor-y-modelos",
+      "shippedOn": "2026-11-04",
+      "routes": ["/bicicletas-electricas-uruguay"],
+      "queries": [
+        "bicicleta electrica uruguay",
+        "bicicleta electrica plegable precio",
+        "que bicicleta electrica comprar",
+        "bicicleta electrica rodado 26",
+        "autonomia bicicleta electrica"
+      ],
+      "hypothesis": "La pagina de bicicletas publicaba la banda por tipo, las mas baratas y un directorio con filtros de precio y marca, pero no la ficha tecnica que decide la compra (rodado, autonomia, potencia, peso, bateria removible, acelerador), y 30 de sus 478 avisos eran accesorios (luces, portabicicletas, cadenas, frenos) que nombran la bici a la que van y encabezaban el orden por precio. Ahora el directorio sale limpio, se lee la ficha de cada aviso de Mercado Libre y de las tiendas con el perfil de bici, el directorio filtra y ordena por ficha, la marca llena la faceta (17 de 478 avisos tenian marca; con el diccionario de bici, 291 de los 441 que quedan sin accesorios), hay un asesor que elige tres bicis segun trayecto, peso, subidas, si la sube y si quiere acelerador, la tabla de modelos junta vendedores y Que esperar de cada tipo da las medianas y el costo de una carga. Tambien cambia la descripcion. Se espera mas clics desde busquedas de especificacion y de eleccion que hoy la pagina no contesta. Se mide el paquete por cuota de clics con 28 dias antes y despues; las ventanas anteriores de esta ruta (20/9 y 22/9) ya cerraron."
+    },
+    {
+      "id": "bicicletas-paginas-por-modelo",
+      "shippedOn": "2026-11-04",
+      "routes": ["/bicicletas-electricas-uruguay/*"],
+      "queries": [
+        "gyroor c3 precio uruguay",
+        "s-pro e-clipper precio",
+        "loop slim bicicleta electrica",
+        "wheele manhattan plus precio",
+        "bicicleta electrica s-pro e-strada"
+      ],
+      "hypothesis": "Las bicicletas no tenian pagina por modelo: el regimen commodity del catalogo publica bandas, no productos. Con la misma identidad de modelo que monopatines y un perfil de bici (el rodado antes del codigo no es el modelo, Eb-041 y EB041 son el mismo, Bosch y Shimano no nombran nada), los avisos de Mercado Libre y de las tiendas se juntan por marca y modelo y cada modelo con dos avisos o mas tiene su pagina: nueva y usada desde, todas las ofertas por vendedor, ficha de consenso, autonomia real y costo de carga, y modelos para comparar. Medido el 4/11 sobre 441 avisos sin accesorios: 89 modelos y 20 con dos vendedores o mas, antes de leer ninguna ficha. Se espera que las paginas de modelo ganen impresiones y clics por nombre de modelo, que el hub no puede rankear (memoria directorios-ficha-rankea-hub-no). Se declara solo la familia nueva; el hub tiene su propia fila del mismo dia."
     }
   ]
 }

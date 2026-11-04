@@ -26,6 +26,7 @@ vi.mock('../../server/models/MovilidadModel', () => ({
 
 vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
 vi.stubGlobal('getRouterParam', (event: any, key: string) => event[key])
+vi.stubGlobal('getQuery', (event: any) => event.query ?? {})
 vi.stubGlobal('setResponseHeader', (_event: unknown, name: string, value: string) =>
   headers.push([name, value])
 )

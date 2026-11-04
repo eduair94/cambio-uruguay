@@ -112,7 +112,7 @@ describe('where the call lives', () => {
     ['pages/celulares-uruguay/index.vue', 'celulares'],
     ['pages/sillas-escritorio-uruguay/index.vue', 'sillas'],
     ['pages/monopatines-electricos-uruguay/index.vue', 'monopatines'],
-    ['pages/bicicletas-electricas-uruguay.vue', 'bicicletas'],
+    ['pages/bicicletas-electricas-uruguay/index.vue', 'bicicletas'],
     ['pages/precios-de-supermercado-uruguay.vue', 'super'],
   ]
 
