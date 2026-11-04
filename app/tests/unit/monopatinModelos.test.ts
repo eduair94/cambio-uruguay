@@ -12,6 +12,7 @@ import {
   monopatinSpecAgreement,
   monopatinSpecTableRows,
   monopatinModelFaq,
+  monopatinCompareSlugs,
   type MonopatinModelDoc,
   type MonopatinModelSummary,
 } from '../../utils/monopatinModelos'
@@ -251,5 +252,24 @@ describe('monopatinModelFaq', () => {
     )!.answer
     expect(answer).toContain('25')
     expect(answer.toLowerCase()).not.toContain('ilegal')
+  })
+})
+
+describe('monopatinCompareSlugs', () => {
+  const known = new Set(['xiaomi-6', 'xiaomi-6-pro', 'atom-energy', 'luxor-t4'])
+  it('lee ?m= separado por comas, sin repetidos ni desconocidos, hasta tres', () => {
+    expect(
+      monopatinCompareSlugs(
+        'xiaomi-6,xiaomi-6-pro,xiaomi-6,nada-que-ver,atom-energy,luxor-t4',
+        known
+      )
+    ).toEqual(['xiaomi-6', 'xiaomi-6-pro', 'atom-energy'])
+  })
+  it('acepta un arreglo (?m=a&m=b) y descarta basura', () => {
+    expect(monopatinCompareSlugs(['xiaomi-6', 'XIAOMI-6-PRO', '<script>'], known)).toEqual([
+      'xiaomi-6',
+    ])
+    expect(monopatinCompareSlugs(undefined, known)).toEqual([])
+    expect(monopatinCompareSlugs(42 as never, known)).toEqual([])
   })
 })

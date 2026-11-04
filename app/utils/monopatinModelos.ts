@@ -569,3 +569,20 @@ export function monopatinModelFaq(model: MonopatinModelDoc): FaqItem[] {
   }
   return faq
 }
+
+/**
+ * Los modelos del comparador desde `?m=a,b,c` (o `?m=a&m=b`): sólo slugs que existen, sin repetidos,
+ * hasta MONOPATIN_COMPARE_MAX. Lo que no se reconoce se descarta en silencio: es una URL compartida.
+ */
+export function monopatinCompareSlugs(raw: unknown, known: ReadonlySet<string>): string[] {
+  const parts = (Array.isArray(raw) ? raw : [raw])
+    .filter((value): value is string => typeof value === 'string')
+    .flatMap(value => value.split(','))
+    .map(value => value.trim())
+  const out: string[] = []
+  for (const slug of parts) {
+    if (out.length >= MONOPATIN_COMPARE_MAX) break
+    if (MONOPATIN_MODEL_SLUG_RE.test(slug) && known.has(slug) && !out.includes(slug)) out.push(slug)
+  }
+  return out
+}
