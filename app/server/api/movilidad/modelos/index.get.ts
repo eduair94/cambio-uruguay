@@ -41,13 +41,27 @@ export default defineEventHandler(async (event): Promise<MonopatinModelListRespo
       .lean()) as unknown as MonopatinModelDoc[]
   } catch (error) {
     setResponseHeader(event, 'cache-control', 'no-store')
-    throw createError({ statusCode: 503, statusMessage: 'Modelos no disponibles por ahora', cause: error })
+    throw createError({
+      statusCode: 503,
+      statusMessage: 'Modelos no disponibles por ahora',
+      cause: error,
+    })
   }
 
-  setResponseHeader(event, 'cache-control', 'public, max-age=900, s-maxage=900, stale-while-revalidate=86400')
+  setResponseHeader(
+    event,
+    'cache-control',
+    'public, max-age=900, s-maxage=900, stale-while-revalidate=86400'
+  )
   const models = docs
     .map(monopatinModelSummary)
-    .sort((a, b) => b.sellers - a.sellers || b.listings - a.listings || a.slug.localeCompare(b.slug))
-  const generatedAt = docs.map(doc => doc.generatedAt).sort().at(-1) ?? null
+    .sort(
+      (a, b) => b.sellers - a.sellers || b.listings - a.listings || a.slug.localeCompare(b.slug)
+    )
+  const generatedAt =
+    docs
+      .map(doc => doc.generatedAt)
+      .sort()
+      .at(-1) ?? null
   return { generatedAt, models }
 })

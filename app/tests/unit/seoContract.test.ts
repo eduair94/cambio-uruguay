@@ -217,7 +217,7 @@ const NOINDEXED = [
   // Agency pages exclude empty/error states, thin profiles and filtered directory copies.
   'inmobiliarias-uruguay/[key].vue',
   'inmobiliarias-uruguay/index.vue',
-  'monopatines-electricos-uruguay.vue',
+  'monopatines-electricos-uruguay/index.vue',
   // Motos usadas: el directorio y la ficha por modelo se indexan en su URL limpia; una
   // combinación de filtros y un modelo sin grupo se salen, igual que autos usados.
   'motos-usadas-uruguay/[key].vue',

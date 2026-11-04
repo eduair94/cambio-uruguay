@@ -26,7 +26,9 @@ vi.mock('../../server/models/MovilidadModel', () => ({
 
 vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
 vi.stubGlobal('getRouterParam', (event: any, key: string) => event[key])
-vi.stubGlobal('setResponseHeader', (_event: unknown, name: string, value: string) => headers.push([name, value]))
+vi.stubGlobal('setResponseHeader', (_event: unknown, name: string, value: string) =>
+  headers.push([name, value])
+)
 vi.stubGlobal('createError', (options: Record<string, unknown>) =>
   Object.assign(new Error(String(options.statusMessage)), options)
 )
@@ -78,19 +80,28 @@ describe('GET /api/movilidad/modelos/<slug>', () => {
 
   it('la base caída es 503 sin caché, no un 404', async () => {
     connectDb.mockRejectedValue(new Error('down'))
-    await expect(detail({ slug: 'xiaomi-6-pro' } as never)).rejects.toMatchObject({ statusCode: 503 })
+    await expect(detail({ slug: 'xiaomi-6-pro' } as never)).rejects.toMatchObject({
+      statusCode: 503,
+    })
     expect(cache()).toBe('no-store')
   })
 
   it('un modelo que no se ve hace una semana es 404: pide lastSeen fresco', async () => {
     findOneLean.mockResolvedValue(null)
-    await expect(detail({ slug: 'xiaomi-6-pro' } as never)).rejects.toMatchObject({ statusCode: 404 })
-    expect(findOneFilter[0]).toMatchObject({ slug: 'xiaomi-6-pro', lastSeen: { $gte: expect.any(String) } })
+    await expect(detail({ slug: 'xiaomi-6-pro' } as never)).rejects.toMatchObject({
+      statusCode: 404,
+    })
+    expect(findOneFilter[0]).toMatchObject({
+      slug: 'xiaomi-6-pro',
+      lastSeen: { $gte: expect.any(String) },
+    })
   })
 
   it('devuelve el modelo y sus hermanos del mismo tipo, con caché pública', async () => {
     findOneLean.mockResolvedValue(model('xiaomi-6-pro'))
-    findLean.mockResolvedValue([model('xiaomi-6', { newBand: { min: 25000, median: 25000, max: 25000, n: 1, sellers: 1 } })])
+    findLean.mockResolvedValue([
+      model('xiaomi-6', { newBand: { min: 25000, median: 25000, max: 25000, n: 1, sellers: 1 } }),
+    ])
     const response = await detail({ slug: 'xiaomi-6-pro' } as never)
     expect(response.model.slug).toBe('xiaomi-6-pro')
     expect(response.siblings.map(s => s.slug)).toEqual(['xiaomi-6'])

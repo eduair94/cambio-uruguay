@@ -62,7 +62,11 @@ export default defineEventHandler(async (event): Promise<MonopatinModelDetailRes
     }
   } catch (error) {
     setResponseHeader(event, 'cache-control', 'no-store')
-    throw createError({ statusCode: 503, statusMessage: 'Modelo no disponible por ahora', cause: error })
+    throw createError({
+      statusCode: 503,
+      statusMessage: 'Modelo no disponible por ahora',
+      cause: error,
+    })
   }
 
   if (!model) {
@@ -70,10 +74,17 @@ export default defineEventHandler(async (event): Promise<MonopatinModelDetailRes
     throw createError({ statusCode: 404, statusMessage: 'Modelo no encontrado' })
   }
 
-  setResponseHeader(event, 'cache-control', 'public, max-age=900, s-maxage=900, stale-while-revalidate=86400')
+  setResponseHeader(
+    event,
+    'cache-control',
+    'public, max-age=900, s-maxage=900, stale-while-revalidate=86400'
+  )
   return {
     generatedAt: model.generatedAt,
     model: { ...model, history: [] },
-    siblings: monopatinModelSiblings(monopatinModelSummary(model), others.map(monopatinModelSummary)),
+    siblings: monopatinModelSiblings(
+      monopatinModelSummary(model),
+      others.map(monopatinModelSummary)
+    ),
   }
 })

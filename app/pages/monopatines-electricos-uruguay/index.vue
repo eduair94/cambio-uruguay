@@ -74,7 +74,92 @@
     </section>
 
     <!-- ── Modelos ───────────────────────────────────────────────────────── -->
-    <section v-if="productRows.length" class="movilidad-section" aria-labelledby="modelos-title">
+    <!-- Desde el 4/11/2026 los avisos del mismo modelo se juntan entre vendedores
+         (classes/movilidad/models/); sin ese catálogo, la tabla vieja de abajo. -->
+    <section v-if="modelRows.length" class="movilidad-section" aria-labelledby="modelos-title">
+      <h2 id="modelos-title">Modelos y sus mejores ofertas</h2>
+      <p class="section-intro">
+        Juntamos los avisos del mismo modelo de todos los vendedores: {{ modelRows.length }} modelos
+        con dos avisos o más. Cada uno tiene su página con todas las ofertas y la ficha técnica.
+        Marcá hasta {{ MONOPATIN_COMPARE_MAX }} para compararlos lado a lado.
+      </p>
+      <VTable class="cu-mobile-cards products-table" density="compact">
+        <thead>
+          <tr>
+            <th scope="col">Modelo</th>
+            <th scope="col">Ficha técnica</th>
+            <th scope="col" class="text-right">Vendedores</th>
+            <th scope="col" class="text-right">Desde</th>
+            <th scope="col"><span class="d-sr-only">Comparar</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(model, index) in modelRows"
+            v-show="showAllModels || index < MODELS_SHOWN"
+            :key="model.slug"
+          >
+            <td data-label="">
+              <div class="product-cell">
+                <MovilidadVariantThumb
+                  :src="model.image ?? null"
+                  :alt="model.name"
+                  icon="mdi-scooter-electric"
+                />
+                <span class="product-cell__text">
+                  <NuxtLink :to="`/monopatines-electricos-uruguay/${model.slug}`" class="cat-link">
+                    <strong>{{ model.name }}</strong>
+                  </NuxtLink>
+                  <span class="cu-cell-note">
+                    {{ variantLabelOf(model.variant) }} · {{ model.listings }} avisos
+                  </span>
+                </span>
+              </div>
+            </td>
+            <td data-label="Ficha técnica">
+              <MovilidadSpecStrip
+                v-if="model.specs"
+                :specs="{ ...model.specs, fromFicha: true }"
+                compact
+              />
+              <span v-else class="muted" aria-label="Sin ficha técnica leída">—</span>
+            </td>
+            <td data-label="Vendedores" class="text-right">{{ model.sellers }}</td>
+            <td data-label="Desde" class="text-right price">
+              <template v-if="model.newMin">{{ movilidadMoney(model.newMin) }}</template>
+              <template v-else-if="model.usedMin">
+                {{ movilidadMoney(model.usedMin) }} <span class="cu-cell-note">usado</span>
+              </template>
+            </td>
+            <td data-label="Comparar">
+              <VCheckbox
+                :model-value="isCompared(model.slug)"
+                :disabled="!isCompared(model.slug) && compare.length >= MONOPATIN_COMPARE_MAX"
+                :aria-label="`Comparar ${model.name}`"
+                label="Comparar"
+                density="compact"
+                hide-details
+                @update:model-value="toggleCompare(model)"
+              />
+            </td>
+          </tr>
+        </tbody>
+      </VTable>
+      <VBtn
+        v-if="modelRows.length > MODELS_SHOWN && !showAllModels"
+        class="mt-3"
+        variant="tonal"
+        @click="showAllModels = true"
+      >
+        Ver los {{ modelRows.length }} modelos
+      </VBtn>
+    </section>
+
+    <section
+      v-else-if="productRows.length"
+      class="movilidad-section"
+      aria-labelledby="modelos-title"
+    >
       <h2 id="modelos-title">Modelos y sus mejores ofertas</h2>
       <p class="section-intro">
         Cada modelo con lo que declara su ficha (autonomía, velocidad, potencia y peso), cuántos
@@ -401,6 +486,12 @@
         lo que dice el título.
       </p>
     </section>
+
+    <MovilidadCompareTray
+      :items="compare"
+      @remove="slug => (compare = compare.filter(item => item.slug !== slug))"
+      @clear="compare = []"
+    />
   </VContainer>
 </template>
 
@@ -428,6 +519,11 @@ import {
   type MovilidadFichaQuery,
 } from '~/utils/monopatinFicha'
 import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
+import {
+  MONOPATIN_COMPARE_MAX,
+  type MonopatinModelListResponse,
+  type MonopatinModelSummary,
+} from '~/utils/monopatinModelos'
 
 const localePath = useLocalePath()
 
@@ -578,6 +674,28 @@ const productRows = computed(() =>
     .slice(0, 12)
 )
 
+// ── Modelos agrupados ────────────────────────────────────────────────────
+// El catálogo que arma currency-movilidad-specs (classes/movilidad/models/). Server-rendered: los
+// enlaces a las páginas de modelo tienen que estar en el HTML que lee el buscador. Si falla o
+// todavía está vacío, la sección cae a la tabla vieja (`productRows`).
+const { data: modelsData } = await useFetch<MonopatinModelListResponse>('/api/movilidad/modelos', {
+  key: 'monopatin-modelos',
+})
+const modelRows = computed<MonopatinModelSummary[]>(() => modelsData.value?.models ?? [])
+/** Las primeras 15 a la vista; el resto queda en el HTML (v-show) para que sus enlaces se rastreen. */
+const MODELS_SHOWN = 15
+const showAllModels = ref(false)
+const variantLabelOf = (variant: string) =>
+  items.value.find(item => item.variant === variant)?.variantLabel ?? ''
+
+const compare = ref<Array<{ slug: string; name: string }>>([])
+const isCompared = (slug: string) => compare.value.some(item => item.slug === slug)
+function toggleCompare(model: MonopatinModelSummary) {
+  if (isCompared(model.slug)) compare.value = compare.value.filter(item => item.slug !== model.slug)
+  else if (compare.value.length < MONOPATIN_COMPARE_MAX)
+    compare.value = [...compare.value, { slug: model.slug, name: model.name }]
+}
+
 /** La columna de ficha sólo aparece cuando algún modelo la tiene (antes de la primera corrida, ninguno). */
 const hasProductSpecs = computed(() => productRows.value.some(row => row.product.specs))
 
@@ -701,6 +819,17 @@ function productProperties(specs: MovilidadProduct['specs']) {
     .map(([name, value, unitCode]) => ({ '@type': 'PropertyValue', name, value, unitCode }))
 }
 
+const modelsLd = computed(() =>
+  modelRows.value
+    .filter(model => model.indexable)
+    .map((model, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: model.name,
+      url: `https://cambio-uruguay.com/monopatines-electricos-uruguay/${model.slug}`,
+    }))
+)
+
 const productsLd = computed(() =>
   productRows.value
     .map(row => {
@@ -779,20 +908,31 @@ useHead(() => ({
               },
             ],
           },
-          ...(productsLd.value.length
+          // Con el catálogo de modelos, la lista enlaza a cada página de modelo indexable (el
+          // Product con su AggregateOffer vive en esa página); sin él, la lista vieja de productos.
+          ...(modelsLd.value.length
             ? [
                 {
                   '@type': 'ItemList',
                   name: 'Modelos de monopatines eléctricos a la venta en Uruguay',
-                  numberOfItems: productsLd.value.length,
-                  itemListElement: productsLd.value.map((product, index) => ({
-                    '@type': 'ListItem',
-                    position: index + 1,
-                    item: product,
-                  })),
+                  numberOfItems: modelsLd.value.length,
+                  itemListElement: modelsLd.value,
                 },
               ]
-            : []),
+            : productsLd.value.length
+              ? [
+                  {
+                    '@type': 'ItemList',
+                    name: 'Modelos de monopatines eléctricos a la venta en Uruguay',
+                    numberOfItems: productsLd.value.length,
+                    itemListElement: productsLd.value.map((product, index) => ({
+                      '@type': 'ListItem',
+                      position: index + 1,
+                      item: product,
+                    })),
+                  },
+                ]
+              : []),
         ],
       }),
     },

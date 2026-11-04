@@ -64,8 +64,17 @@ const doc = (over: Partial<MonopatinModelDoc> = {}): MonopatinModelDoc => ({
   ...over,
 })
 
-const summary = (slug: string, newMin: number | null, over: Partial<MonopatinModelSummary> = {}) => ({
-  ...monopatinModelSummary(doc({ slug, newBand: newMin ? { min: newMin, median: newMin, max: newMin, n: 1, sellers: 1 } : null })),
+const summary = (
+  slug: string,
+  newMin: number | null,
+  over: Partial<MonopatinModelSummary> = {}
+) => ({
+  ...monopatinModelSummary(
+    doc({
+      slug,
+      newBand: newMin ? { min: newMin, median: newMin, max: newMin, n: 1, sellers: 1 } : null,
+    })
+  ),
   ...over,
 })
 
@@ -128,9 +137,11 @@ describe('títulos y descripción', () => {
   })
   it('la forma corta saca la línea de la marca', () => {
     expect(monopatinModelShortName(doc())).toBe('Xiaomi 6 Pro')
-    expect(monopatinModelShortName(doc({ name: 'Atom Kaizen Pro', brandLabel: 'Atom', modelLabel: 'Kaizen Pro' }))).toBe(
-      'Atom Kaizen Pro'
-    )
+    expect(
+      monopatinModelShortName(
+        doc({ name: 'Atom Kaizen Pro', brandLabel: 'Atom', modelLabel: 'Kaizen Pro' })
+      )
+    ).toBe('Atom Kaizen Pro')
   })
   it('la descripción dice el precio, los vendedores y la ficha, y entra en 155', () => {
     const description = monopatinModelDescription(doc())
@@ -143,7 +154,14 @@ describe('títulos y descripción', () => {
 describe('monopatinSpecAgreement', () => {
   it('con fichas que no coinciden muestra el rango, con fichas que coinciden el valor', () => {
     const specs = doc().specs!
-    expect(monopatinSpecAgreement(specs, 'rangeKm')).toEqual({ value: 70, min: 45, max: 70, n: 12, of: 20, agrees: true })
+    expect(monopatinSpecAgreement(specs, 'rangeKm')).toEqual({
+      value: 70,
+      min: 45,
+      max: 70,
+      n: 12,
+      of: 20,
+      agrees: true,
+    })
     const split = { ...specs, agree: { rangeKm: { n: 1, of: 4 } } }
     expect(monopatinSpecAgreement(split, 'rangeKm')!.agrees).toBe(false)
     expect(monopatinSpecAgreement(specs, 'motorPeakW')).toBeNull()
@@ -151,9 +169,15 @@ describe('monopatinSpecAgreement', () => {
 })
 
 describe('monopatinCompareRows', () => {
-  const a = summary('a', 30000, { specs: values({ rangeKm: 45, weightKg: 18, maxLoadKg: 100 }) as never })
-  const b = summary('b', 40000, { specs: values({ rangeKm: 70, weightKg: 27, maxLoadKg: 120 }) as never })
-  const c = summary('c', 35000, { specs: values({ rangeKm: null, weightKg: 18, maxLoadKg: 120 }) as never })
+  const a = summary('a', 30000, {
+    specs: values({ rangeKm: 45, weightKg: 18, maxLoadKg: 100 }) as never,
+  })
+  const b = summary('b', 40000, {
+    specs: values({ rangeKm: 70, weightKg: 27, maxLoadKg: 120 }) as never,
+  })
+  const c = summary('c', 35000, {
+    specs: values({ rangeKm: null, weightKg: 18, maxLoadKg: 120 }) as never,
+  })
 
   it('marca el mejor de cada fila según lo que conviene (más autonomía, menos peso, menor precio)', () => {
     const rows = monopatinCompareRows([a, b, c])

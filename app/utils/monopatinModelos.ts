@@ -149,7 +149,8 @@ export function monopatinModelSummary(doc: MonopatinModelDoc): MonopatinModelSum
   }
 }
 
-const refPrice = (model: Pick<MonopatinModelSummary, 'newMin' | 'usedMin'>) => model.newMin ?? model.usedMin
+const refPrice = (model: Pick<MonopatinModelSummary, 'newMin' | 'usedMin'>) =>
+  model.newMin ?? model.usedMin
 
 /** Hasta `max` modelos del mismo tipo con el precio más parecido, para "Comparalo con". */
 export function monopatinModelSiblings(
@@ -160,16 +161,22 @@ export function monopatinModelSiblings(
   const price = refPrice(model)
   if (price === null) return []
   return all
-    .filter(other => other.slug !== model.slug && other.variant === model.variant && refPrice(other) !== null)
+    .filter(
+      other =>
+        other.slug !== model.slug && other.variant === model.variant && refPrice(other) !== null
+    )
     .sort(
       (a, b) =>
-        Math.abs(refPrice(a)! - price) - Math.abs(refPrice(b)! - price) || a.slug.localeCompare(b.slug)
+        Math.abs(refPrice(a)! - price) - Math.abs(refPrice(b)! - price) ||
+        a.slug.localeCompare(b.slug)
     )
     .slice(0, max)
 }
 
 /** "Xiaomi 6 Pro": el nombre sin la línea ("Electric Scooter"), que es como se busca. */
-export function monopatinModelShortName(model: Pick<MonopatinModelDoc, 'brandLabel' | 'modelLabel'>): string {
+export function monopatinModelShortName(
+  model: Pick<MonopatinModelDoc, 'brandLabel' | 'modelLabel'>
+): string {
   return `${model.brandLabel} ${model.modelLabel.replace(/^Electric Scooter /, '')}`
 }
 
@@ -273,7 +280,13 @@ const COMPARE_SPECS: readonly CompareSpec[] = [
   { key: 'price', label: 'Nuevo desde', rule: 'min', read: m => m.newMin, format: money },
   { key: 'usedMin', label: 'Usado desde', rule: 'min', read: m => m.usedMin, format: money },
   { key: 'sellers', label: 'Vendedores', rule: 'max', read: m => m.sellers, format: num },
-  { key: 'rangeKm', label: 'Autonomía declarada', rule: 'max', read: m => m.specs?.rangeKm ?? null, format: withUnit('km') },
+  {
+    key: 'rangeKm',
+    label: 'Autonomía declarada',
+    rule: 'max',
+    read: m => m.specs?.rangeKm ?? null,
+    format: withUnit('km'),
+  },
   {
     key: 'realRangeKm',
     label: 'Autonomía estimada en la calle',
@@ -281,21 +294,86 @@ const COMPARE_SPECS: readonly CompareSpec[] = [
     read: m => monopatinRealRangeKm(m.specs?.rangeKm),
     format: withUnit('km'),
   },
-  { key: 'maxSpeedKmh', label: 'Velocidad máxima', rule: null, read: m => m.specs?.maxSpeedKmh ?? null, format: withUnit('km/h') },
-  { key: 'motorW', label: 'Potencia', rule: 'max', read: m => m.specs?.motorW ?? null, format: withUnit('W') },
-  { key: 'motorPeakW', label: 'Potencia máxima', rule: 'max', read: m => m.specs?.motorPeakW ?? null, format: withUnit('W') },
-  { key: 'batteryWh', label: 'Batería', rule: 'max', read: m => m.specs?.batteryWh ?? null, format: withUnit('Wh') },
-  { key: 'batteryV', label: 'Voltaje', rule: null, read: m => m.specs?.batteryV ?? null, format: withUnit('V') },
-  { key: 'batteryAh', label: 'Capacidad', rule: null, read: m => m.specs?.batteryAh ?? null, format: withUnit('Ah') },
-  { key: 'chargeHours', label: 'Tiempo de carga', rule: 'min', read: m => m.specs?.chargeHours ?? null, format: withUnit('h') },
-  { key: 'weightKg', label: 'Peso', rule: 'min', read: m => m.specs?.weightKg ?? null, format: withUnit('kg') },
-  { key: 'maxLoadKg', label: 'Peso que soporta', rule: 'max', read: m => m.specs?.maxLoadKg ?? null, format: withUnit('kg') },
-  { key: 'wheelInches', label: 'Ruedas', rule: null, read: m => m.specs?.wheelInches ?? null, format: value => `${num(value)}"` },
+  {
+    key: 'maxSpeedKmh',
+    label: 'Velocidad máxima',
+    rule: null,
+    read: m => m.specs?.maxSpeedKmh ?? null,
+    format: withUnit('km/h'),
+  },
+  {
+    key: 'motorW',
+    label: 'Potencia',
+    rule: 'max',
+    read: m => m.specs?.motorW ?? null,
+    format: withUnit('W'),
+  },
+  {
+    key: 'motorPeakW',
+    label: 'Potencia máxima',
+    rule: 'max',
+    read: m => m.specs?.motorPeakW ?? null,
+    format: withUnit('W'),
+  },
+  {
+    key: 'batteryWh',
+    label: 'Batería',
+    rule: 'max',
+    read: m => m.specs?.batteryWh ?? null,
+    format: withUnit('Wh'),
+  },
+  {
+    key: 'batteryV',
+    label: 'Voltaje',
+    rule: null,
+    read: m => m.specs?.batteryV ?? null,
+    format: withUnit('V'),
+  },
+  {
+    key: 'batteryAh',
+    label: 'Capacidad',
+    rule: null,
+    read: m => m.specs?.batteryAh ?? null,
+    format: withUnit('Ah'),
+  },
+  {
+    key: 'chargeHours',
+    label: 'Tiempo de carga',
+    rule: 'min',
+    read: m => m.specs?.chargeHours ?? null,
+    format: withUnit('h'),
+  },
+  {
+    key: 'weightKg',
+    label: 'Peso',
+    rule: 'min',
+    read: m => m.specs?.weightKg ?? null,
+    format: withUnit('kg'),
+  },
+  {
+    key: 'maxLoadKg',
+    label: 'Peso que soporta',
+    rule: 'max',
+    read: m => m.specs?.maxLoadKg ?? null,
+    format: withUnit('kg'),
+  },
+  {
+    key: 'wheelInches',
+    label: 'Ruedas',
+    rule: null,
+    read: m => m.specs?.wheelInches ?? null,
+    format: value => `${num(value)}"`,
+  },
   { key: 'foldable', label: 'Plegable', rule: null, read: m => m.specs?.foldable ?? null },
   { key: 'suspension', label: 'Suspensión', rule: null, read: m => m.specs?.suspension ?? null },
   { key: 'brakes', label: 'Frenos', rule: null, read: m => m.specs?.brakes ?? null },
   { key: 'bluetooth', label: 'App o bluetooth', rule: null, read: m => m.specs?.bluetooth ?? null },
-  { key: 'ipRating', label: 'Resistencia al agua', rule: null, read: m => m.specs?.ipRating ?? null },
+  {
+    key: 'ipRating',
+    label: 'Resistencia al agua',
+    rule: null,
+    read: m => m.specs?.ipRating ?? null,
+  },
 ]
 
 export interface MonopatinCompareRow {
@@ -311,7 +389,9 @@ export interface MonopatinCompareRow {
  * Las filas del comparador. La velocidad no se premia (más de 25 km/h no se puede usar en Montevideo
  * y San José), ni el voltaje, la capacidad o la rueda, que no son "mejores" por ser más grandes.
  */
-export function monopatinCompareRows(models: readonly MonopatinModelSummary[]): MonopatinCompareRow[] {
+export function monopatinCompareRows(
+  models: readonly MonopatinModelSummary[]
+): MonopatinCompareRow[] {
   const rows: MonopatinCompareRow[] = []
   for (const spec of COMPARE_SPECS) {
     const raw = models.map(spec.read)
