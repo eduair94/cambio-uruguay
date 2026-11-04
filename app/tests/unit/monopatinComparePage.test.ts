@@ -23,13 +23,13 @@ describe('/monopatines-electricos-uruguay/comparar', () => {
     expect(page).toContain("useFetch<MonopatinModelListResponse>('/api/movilidad/modelos'")
   })
 
-  it('arma las filas con la regla de "mejor" compartida', () => {
+  it('arma las filas con la regla de "mejor" compartida y las dibuja con la tabla común', () => {
     expect(page).toContain('monopatinCompareRows(chosen.value)')
-    expect(template).toContain("'is-best': row.best.includes(index)")
+    expect(template).toContain('<MovilidadCompareTable')
+    expect(template).toContain('hub="/monopatines-electricos-uruguay"')
   })
 
-  it('un solo H1 y enlace de vuelta a cada modelo', () => {
+  it('un solo H1', () => {
     expect(template.match(/<h1[\s>]/g) ?? []).toHaveLength(1)
-    expect(template).toContain('`/monopatines-electricos-uruguay/${model.slug}`')
   })
 })
