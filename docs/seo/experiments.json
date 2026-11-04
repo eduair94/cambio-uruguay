@@ -2960,6 +2960,28 @@
         "/guias/dolares-para-viajar"
       ],
       "hypothesis": "Las tres eran guias huerfanas: sin entrada en ningun tema no dibujan Mas sobre este tema y por eso no reciben NINGUN enlace del bloque, que es reciproco por construccion. Entran a dolar-y-casas-de-cambio-uruguay, que es su tema sin inventar ningun padre: el termino peso-uruguayo y el recurso /donde-conseguir-monedas-uruguay ya estaban en el hub y son a donde apuntan los related de moneda-de-uruguay; la guia del aeropuerto y /llevar-dolares-o-reales-a-brasil son el vecino que dolares-para-viajar pide en su tercera seccion. dolares-para-viajar es ademas la peor de las tres porque no tiene related ni links de seccion, o sea que guideNextSteps no tenia ninguna de sus tres fuentes y la pagina terminaba sin un solo enlace de salida; entrar al tema le da el bloque de vecinos y los proximos pasos de un saque. Se espera que las tres ganen enlaces internos desde el resto del tema (quince guias, veinte recursos y diecisiete terminos del glosario) y repartan autoridad hacia el comparador; evaluar por cuota de clics del sitio con 28 dias archivados, excluyendo el dia de publicacion. No se toco el texto de ninguna guia ni su titulo o descripcion."
+    },
+    {
+      "id": "equipar-ficha-tecnica-y-asesor-de-tamano",
+      "shippedOn": "2026-11-04",
+      "routes": [
+        "/equipar-casa-uruguay/heladera",
+        "/equipar-casa-uruguay/lavarropas",
+        "/equipar-casa-uruguay/tv",
+        "/equipar-casa-uruguay/aire-acondicionado",
+        "/equipar-casa-uruguay/productos/heladera",
+        "/equipar-casa-uruguay/productos/lavarropas",
+        "/equipar-casa-uruguay/productos/tv",
+        "/equipar-casa-uruguay/productos/aire-acondicionado"
+      ],
+      "queries": [
+        "que heladera comprar para 4 personas",
+        "cuantos litros de heladera necesito",
+        "lavarropas de cuantos kilos",
+        "de cuantas pulgadas comprar la tv",
+        "cuantas frigorias necesito para 20 m2"
+      ],
+      "hypothesis": "Las paginas de heladeras, lavarropas, televisores y aires publicaban la banda de precio por tamano y un directorio que filtraba por precio, marca y vendedor, pero no la ficha tecnica con que se elige un electrodomestico. Ahora se lee la ficha de cada aviso de Mercado Libre (litros, no frost, kilos, tipo de carga, pulgadas, resolucion, BTU, inverter, eficiencia), el directorio filtra por esos datos con cada opcion contada, la tarjeta los muestra, y cada pagina de categoria suma un asesor que dice que tamano hace falta (personas, distancia al sillon, metros cuadrados) con la regla escrita y las tres opciones mas baratas que cumplen. Se espera mas clics desde busquedas de tamano (cuantos litros, cuantos kilos, cuantas pulgadas, cuantas frigorias), que hoy estas paginas no contestan. Se mide por cuota de clics con 28 dias antes y despues; ninguna de estas rutas tiene una ventana abierta."
     }
   ]
 }

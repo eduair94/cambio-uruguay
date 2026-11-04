@@ -495,3 +495,46 @@ Reusa de autos `CarsSidebarLayout`, `CarsFilterPanel` y `CarsToolbar`; lo propio
 - Facebook fuera de Montevideo (hoy `location=montevideo`; ampliar es más fan-out de consultas).
 - La primera corrida real todavía no ocurrió: los números de cobertura por categoría hay que medirlos
   contra producción antes de citarlos afuera.
+
+## Ficha técnica, filtros y asesor de tamaño (4/11/2026)
+
+Para heladeras, lavarropas, televisores y aires: las compras más caras de la lista y las que se
+eligen por especificación. Diseño en `docs/superpowers/specs/2026-11-04-equipar-ficha-tecnica-design.md`.
+
+**Lo medido.** Avisos frescos: heladera 379 de ML + 202 de tiendas + 242 de Facebook; lavarropas
+372 + 117 + 150; tv 573 + 127 + 147; aire 373 + 67 + 93. Todos los de ML tienen id de producto. La
+ficha de ML por el puente es regular ("Capacidad total = 245 L", "Tipo de deshielo = No frost",
+"Capacidad del lavarropas = 12 kg", "Tipo de carga = Frontal", "Tamaño de la pantalla = 50 \"",
+"Tipo de resolución = 4K", "Capacidad de refrigeración = 12.000 BTU", "Tipo de climatización =
+Frío/Calor") y viene en formato uruguayo: punto de miles y coma decimal, salvo las medidas.
+
+**Backend** (`classes/equipar/specs/`):
+- `fields.ts`: los campos de cada categoría con su banda (afuera queda vacío, nunca se corrige).
+- `parse.ts`: filas de ML → ficha (`fichaFromRows`), título → ficha (`fichaFromTitle`), y la ficha
+  gana campo por campo (`mergeFicha`). Datos sucios reales: un portátil titulado "12000 Btu" declara
+  4.095 en la ficha (gana la ficha); una tele "Full HD" dice "Resolución máxima 3840 x 2160" (manda
+  "Tipo de resolución"). "Frío seco" es no frost. Las frigorías salen de los BTU y al revés (3,968).
+- `store.ts`: `equiparspecs` guarda las FILAS CRUDAS, no la interpretación; una lectura sin tabla
+  nunca borra las filas buenas. `enrich.ts`: `enrichEquiparRow` reinterpreta en cada escritura, así un
+  parser mejor se aplica a todo el catálogo sin volver a leer, y la usan `sync_equipar.ts` y
+  `sync_equipar_specs.ts` (si no, la horaria vaciaría la marca cada hora).
+- `currency-equipar-specs` (`:40`): 40 fichas de ML por corrida, la misma cola con espera de
+  monopatines (`classes/movilidad/specs/queue.ts`). ~1.700 fichas: unos dos días de lectura inicial.
+  Tiendas y Facebook: sólo el título.
+- `snapshot.ts`: `equiparspecsnapshots`, un documento por categoría con los avisos con ficha del
+  vendedor (ni sospechosos ni de Facebook), para el asesor.
+
+**App:**
+- `utils/equiparFicha.ts`: los filtros son DATOS (grupos y opciones por categoría); normalizar la URL,
+  el `$match` sobre `ficha.values.*`, las facetas (`server/utils/equiparFichaFacets.ts`, con
+  `$isNumber`), los chips y la franja de la tarjeta (`EquiparFichaStrip`) salen de la misma tabla. Sólo
+  con la vertical equipar y estas cuatro categorías; las claves (`capacidad`, `carga`, `rasgos`…) viven
+  en `query.eqficha`, separadas de las homónimas de movilidad.
+- Asesor "¿Qué tamaño necesitás?" (`utils/equiparAsesor.ts`, `EquiparTamanoAsesor`) en
+  `/equipar-casa-uruguay/<categoria>`: heladera 130 L + 65 L por persona y ancho del hueco; lavarropas
+  5 kg + 1 por persona, hasta 12; televisor entre la distancia/5,5 y la distancia/4 en pulgadas (SMPTE,
+  30°); aire 115 frigorías por m² (+15 % sol, +10 % último piso) redondeado al tamaño comercial
+  siguiente. Tres elecciones con nombre, y "Ver los que cumplen" lleva los requisitos al directorio.
+
+**Siguiente:** páginas por modelo de electrodoméstico (el código de modelo de la ficha de ML es exacto)
+y las fichas de tienda.

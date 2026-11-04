@@ -53,6 +53,13 @@
         :uyu-per-km="producto.uyuPerKm ?? null"
         :categoria="producto.category"
       />
+      <!-- Heladeras, lavarropas, televisores y aires: la ficha técnica declarada
+           (currency-equipar-specs). -->
+      <EquiparFichaStrip
+        v-if="producto.ficha"
+        :ficha="producto.ficha"
+        :categoria="producto.category"
+      />
       <!-- Sólo con modelo identificado: todas las ofertas del mismo modelo juntas. -->
       <NuxtLink v-if="producto.modelSlug && modelPath" :to="modelPath" class="eq-card__model">
         Ver el modelo en todos los vendedores

@@ -7,6 +7,7 @@ import {
   type EquiparQueryKey,
 } from '../../utils/equiparProductos'
 import { monopatinFichaMatch, monopatinSpecsPublic } from '../../utils/monopatinFicha'
+import { equiparFichaMatch, equiparFichaPublic } from '../../utils/equiparFicha'
 import { MONOPATIN_MODEL_SLUG_RE } from '../../utils/monopatinModelos'
 
 /** Same freshness window as `/api/equipar`: a listing not seen in 4 days is not on sale today. */
@@ -48,6 +49,10 @@ export function equiparProductosMatch(
   // Sólo monopatines (la vertical de movilidad): la ficha técnica, y los órdenes que no tienen
   // sentido sin el dato dejan afuera a quien no lo tiene, en vez de ponerlo primero.
   if (query.ficha && !skip('ficha')) Object.assign(match, monopatinFichaMatch(query.ficha, ignore))
+  // Heladeras, lavarropas, televisores y aires (equipar): la ficha técnica, por la misma tabla de
+  // filtros que dibuja el panel (utils/equiparFicha.ts).
+  if (query.eqficha && !skip('eqficha'))
+    Object.assign(match, equiparFichaMatch(query.eqficha, query.categoria, ignore))
   if (query.orden === 'precio_km') match.uyuPerKm = { $type: 'number' }
   if (query.orden === 'peso_asc') {
     match['specs.weightKg'] = {
@@ -104,15 +109,23 @@ export const EQUIPAR_PRODUCTOS_PROJECTION = {
   specs: 1,
   uyuPerKm: 1,
   modelSlug: 1,
+  ficha: 1,
 } as const
 
 export function equiparProductoPublic(
-  row: Partial<EquiparListingDoc> & { specs?: unknown; uyuPerKm?: unknown; modelSlug?: unknown }
+  row: Partial<EquiparListingDoc> & {
+    specs?: unknown
+    uyuPerKm?: unknown
+    modelSlug?: unknown
+    ficha?: unknown
+  }
 ): EquiparProductoPublic {
   const specs = monopatinSpecsPublic(row.specs)
   const uyuPerKm =
     typeof row.uyuPerKm === 'number' && row.uyuPerKm > 0 ? Math.round(row.uyuPerKm) : null
-  const extra: Pick<EquiparProductoPublic, 'specs' | 'uyuPerKm' | 'modelSlug'> = {}
+  const extra: Pick<EquiparProductoPublic, 'specs' | 'uyuPerKm' | 'modelSlug' | 'ficha'> = {}
+  const ficha = equiparFichaPublic(row.ficha, String(row.category ?? ''))
+  if (ficha) extra.ficha = ficha
   if (specs) extra.specs = specs
   if (uyuPerKm !== null) extra.uyuPerKm = uyuPerKm
   // Sólo monopatín: la página de su modelo (currency-movilidad-specs), si tiene una con forma válida.
