@@ -141,6 +141,14 @@ describe('ficha y comparador de una bici', () => {
       note: 'Las fichas no coinciden',
     })
     expect(rows.find(row => row.key === 'removableBattery')?.value).toBe('Sí')
+    // Empate (1 de 2): también el rango, no una de las dos.
+    const tie = bicicletaSpecTableRows({
+      values: values({ rangeKm: 15 }),
+      agree: { rangeKm: { n: 1, of: 2 } },
+      spread: { rangeKm: { min: 15, max: 30 } },
+    })
+    expect(tie[0]).toMatchObject({ key: 'rangeKm', note: 'Las fichas no coinciden' })
+    expect(tie[0]!.value.replace(/\u00A0/g, ' ')).toBe('15 a 30 km')
     expect(rows.find(row => row.key === 'gears')?.value).toBe('7')
   })
 

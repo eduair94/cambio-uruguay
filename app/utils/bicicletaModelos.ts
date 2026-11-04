@@ -134,7 +134,9 @@ export function bicicletaSpecTableRows(specs: MonopatinConsensus): MonopatinSpec
     const several = agree && agree.of >= 2 ? agree : null
     if (typeof value === 'number') {
       const spread = specs.spread[key as MonopatinNumericField]
-      const agrees = !several || several.n * 2 >= several.of
+      // Mayoría estricta: con dos fichas que dicen 15 y 30 km, "15 km · 1 de 2 fichas" elige una;
+      // el rango dice lo que hay (medido en la Gyroor C3, 4/11/2026).
+      const agrees = !several || several.n * 2 > several.of
       rows.push({
         key,
         label,

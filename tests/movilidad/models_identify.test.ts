@@ -278,3 +278,25 @@ describe("identifyModel en bicicleta", () => {
     expect(key(ml("Monopatin Electrico Luxor E9 Pro 350w", "Luxor"))).toBe("luxor-e9-pro");
   });
 });
+
+describe("identifyModel en bicicleta: lo que mostró la vista previa con datos reales (4/11/2026)", () => {
+  const bike = (title: string): string | null => {
+    const brand = brandFromTitle(title, "bicicleta-electrica");
+    return (
+      identifyModel({
+        title,
+        brand,
+        brandKey: brand ? brand.toLowerCase().replace(/'/g, "").replace(/[^a-z0-9]+/g, "-") : null,
+        fichaModel: null,
+        source: "mercadolibre",
+        category: "bicicleta-electrica",
+      })?.key ?? null
+    );
+  };
+  it('"Rodado20" pegado cierra el modelo como "R20"', () => {
+    expect(bike("Bicicleta Eléctrica Wheele Manhattan Flex Rodado20 Negra")).toBe("wheele-manhattan-flex");
+  });
+  it('"Electro" no es parte del nombre', () => {
+    expect(bike("Bicicleta Eléctrica S-pro Carrot Electro")).toBe("s-pro-carrot");
+  });
+});

@@ -26,7 +26,9 @@ FIRST VIEWPORT: migas, foto, H1, "nueva desde" con vendedores, la franja de fich
       </div>
       <div class="modelo-hero__text">
         <p class="modelo-hero__eyebrow">{{ variantLabel }} · {{ model.listings }} avisos</p>
-        <h1 class="modelo-hero__title">{{ model.name }}: precio en Uruguay</h1>
+        <h1 class="modelo-hero__title">
+          Bicicleta eléctrica {{ model.name }}: precio en Uruguay
+        </h1>
         <p class="lead">
           <template v-if="model.newBand">
             Nueva desde
