@@ -25,10 +25,10 @@
 //     del 35 % del nominal, 30 % en garantía de alquiler y cooperativas) y el plazo del Clearing, que
 //     lo publica la Unidad Defensa del Consumidor (10 años, y la base NO actualiza saldos) — el
 //     Clearing es privado y de la Ley 18.331, nunca atribuirlo al BCU.
-//   - `feriados-en-uruguay-como-se-pagan`: los CINCO feriados pagos son los del art. 18 de la Ley
-//     12.590 y nada más. Carnaval y Semana de Turismo NO están: son feriados comunes y no se pagan
-//     doble. El traslado al lunes es de la Ley 16.805 (ampliada por la 17.414) y los cinco pagos
-//     están todos en la lista de excepciones, así que nunca se mueven.
+//   - `feriados-en-uruguay-como-se-pagan`: las cinco fechas del art. 18 de la Ley 12.590 son el
+//     régimen general; los convenios pueden reconocer otros feriados pagos. Carnaval y Semana de
+//     Turismo son comunes en ese régimen. El traslado al lunes es de la Ley 16.805 (ampliada por
+//     la 17.414) y los cinco pagos están en la lista de excepciones, así que nunca se mueven.
 //   - `trabajo-en-negro-uruguay`: la historia laboral nominada arranca el 1/4/1996 y ese es el
 //     alcance del servicio de denuncia del BPS. No se publican montos de multas ni plazos de
 //     resolución, y se dice explícitamente que la denuncia de aportes NO cobra lo adeudado.
@@ -5399,19 +5399,19 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'feriados-en-uruguay-como-se-pagan',
-    title: 'Cinco feriados se pagan doble, el resto no',
+    title: 'Feriados pagos: cuándo se cobra doble',
     description:
-      'Sólo cinco días se pagan doble (1/1, 1/5, 18/7, 25/8 y 25/12), por el art. 18 de la Ley 12.590. Carnaval y Semana de Turismo son feriado común.',
+      'Cinco feriados pagos generales; Carnaval y Semana de Turismo son comunes, salvo convenio. Cómo se paga y qué cambia al redistribuir las horas del sábado.',
     tag: 'FERIADOS',
-    updatedAt: '2026-08-11',
+    updatedAt: '2026-11-04',
     sections: [
       {
-        heading: 'Hay dos clases de feriado y solo una se paga doble',
-        body: 'El error más común del año es tratar a todos los feriados igual. En Uruguay conviven los feriados pagos —también llamados no laborables— y los feriados comunes o laborables. En los pagos se cobra el día se trabaje o no, y trabajarlo se remunera doble. En los comunes no hay pago extra por el solo hecho de ser feriado: el mensual cobra su sueldo como cualquier día y el jornalero cobra únicamente si trabaja. Que el comercio cierre o que el día "sea feriado" en el calendario no cambia esa clasificación.',
+        heading: 'Primero, distinguí el régimen general de tu convenio',
+        body: 'Para calcular el pago de un feriado en la actividad privada, importa su clasificación y el convenio que te corresponde. En el régimen general, los feriados pagos se cobran aunque no se trabajen y trabajar ese día se remunera doble. En los comunes no hay un adicional por el solo hecho de ser feriado. Un convenio colectivo puede reconocer otros feriados pagos para una rama de actividad: revisalo antes de concluir que sólo te corresponden las cinco fechas generales. Que el comercio cierre no alcanza para decidir cómo se liquida ese día.',
       },
       {
-        heading: 'Los cinco feriados pagos',
-        body: 'La lista está en el artículo 18 de la Ley 12.590 y son cinco: 1º de enero, 1º de mayo, 18 de julio, 25 de agosto y 25 de diciembre. La norma dice que en esos días todo trabajador percibirá remuneración como si trabajara y que, en caso de trabajar, recibirá doble paga. Todo el resto del calendario —6 de enero, Carnaval, Semana de Turismo, 19 de abril, 18 de mayo, 19 de junio, 12 de octubre, 2 de noviembre y los asuetos que se dispongan— entra en la categoría de feriado común, por más que sean días de descanso efectivo en buena parte del país.',
+        heading: 'Los cinco feriados pagos del régimen general',
+        body: 'El artículo 18 de la Ley 12.590 enumera cinco fechas: 1º de enero, 1º de mayo, 18 de julio, 25 de agosto y 25 de diciembre. En ellas se cobra como si se trabajara y, si se trabaja, corresponde doble paga. Carnaval y Semana de Turismo son feriados comunes en el régimen general; un convenio puede mejorar ese piso. La lista del artículo 18 no permite clasificar cualquier asueto o día especial: hay que leer la disposición que lo establece y a quién alcanza.',
       },
       {
         heading: 'Si sos mensual',
@@ -5425,25 +5425,29 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         heading: 'Si sos jornalero',
-        body: 'Acá la diferencia es mucho más grande, porque el jornalero cobra por día trabajado. En un feriado pago que no trabaja, igual cobra el jornal; si lo trabaja, cobra doble jornal. En un feriado común que no trabaja no cobra nada por ese día, y si lo trabaja cobra su jornal simple. Por eso, para un jornalero, la diferencia entre que el 25 de agosto caiga en su día de trabajo o no es plata concreta, mientras que para un mensual el sueldo del mes no se mueve.',
+        body: 'En el régimen general, el jornalero cobra el jornal del feriado pago aunque no trabaje ese día; si lo trabaja, cobra doble jornal. En un feriado común que no trabaja no cobra el jornal, y si lo trabaja cobra su jornal simple. Antes de liquidarlo, comprobá si el convenio de tu actividad establece una condición más favorable.',
+      },
+      {
+        heading: 'Si las horas del sábado se reparten de lunes a viernes',
+        body: 'Si el sábado coincide con uno de los cinco feriados pagos y sus horas se trabajaron distribuidas de lunes a viernes, el MTSS indica que esas horas redistribuidas se pagan dobles. La condición es haber sustituido el trabajo del sábado por más horas en los otros días: no basta con que el feriado caiga sábado. Revisá tu distribución horaria y el recibo para identificar esas horas.',
       },
       {
         heading: 'Destajistas y remuneraciones variables',
-        body: 'Cuando la retribución no es fija, el criterio del Ministerio de Trabajo es tomar el promedio de lo percibido en las últimas doce jornadas trabajadas antes del feriado: eso es lo que se paga si el trabajador descansa, y el doble si trabaja el feriado pago. Para trabajadores rurales rige además el Decreto 216/012, con su propio régimen. Si tu remuneración mezcla fijo y variable, el promedio se calcula sobre la parte variable y no sobre el total del recibo.',
+        body: 'Para una remuneración variable, el MTSS indica tomar el promedio de lo ganado en los doce últimos días anteriores al feriado. Su explicación no lo define como las últimas doce jornadas efectivamente trabajadas ni detalla cómo combinar componentes fijos y variables. Si tu recibo mezcla ambos, pedí el desglose de la liquidación y contrastalo con el régimen aplicable. Para trabajadores rurales, la fuente también remite al Decreto 216/012.',
       },
       {
         heading: 'Por qué algunos feriados se corren al lunes y otros no',
         body: 'La Ley 16.805 estableció que los feriados que caen martes o miércoles se trasladan al lunes anterior, y los que caen jueves o viernes al lunes siguiente; los que caen sábado, domingo o lunes se mantienen. Pero hay una lista de excepciones que se observan siempre en su fecha, sin importar el día de la semana: Carnaval y Semana de Turismo, 1º y 6 de enero, 1º de mayo, 19 de junio, 18 de julio, 25 de agosto, 2 de noviembre y 25 de diciembre —lista que la Ley 17.414 amplió—. Notá que los cinco feriados pagos están todos dentro de las excepciones: nunca se mueven. La ley aclara además que el traslado no afecta el derecho del trabajador a su descanso semanal.',
       },
       {
-        heading: 'El error caro: creer que Carnaval o Semana de Turismo se pagan doble',
-        body: 'Son los dos casos que más discusiones generan en febrero y en abril. Ninguno de los dos está en el artículo 18 de la Ley 12.590, así que ninguno es feriado pago: son feriados comunes. Si trabajás esos días siendo mensual, no corresponde adicional; si sos jornalero, cobrás el jornal simple por haber trabajado. Puede ocurrir que el convenio de tu grupo de actividad mejore ese piso —los consejos de salarios pueden acordar condiciones más favorables—, y ahí manda el convenio. Pero el piso legal es el que dice la ley, y confundirlo lleva a reclamar un doble jornal que no existe o, peor, a no reclamar el que sí corresponde en los cinco días pagos.',
+        heading: 'Carnaval y Semana de Turismo: revisá el convenio',
+        body: 'Carnaval y Semana de Turismo son feriados comunes en el régimen general, no fechas pagas del artículo 18 de la Ley 12.590. Por ese régimen, el mensual que trabaja cobra su sueldo sin adicional y el jornalero cobra el jornal simple. Si el convenio aplicable reconoce una condición más favorable, corresponde considerar esa regla. La respuesta no se decide sólo mirando el calendario: necesitás saber cómo cobrás y qué convenio rige tu actividad.',
       },
     ],
     faqs: [
       {
         q: '¿Cuáles son los feriados pagos en Uruguay?',
-        a: 'Cinco: 1º de enero, 1º de mayo, 18 de julio, 25 de agosto y 25 de diciembre, según el artículo 18 de la Ley 12.590. En esos días se cobra como si se trabajara y, si se trabaja, se paga doble.',
+        a: 'El régimen general del artículo 18 de la Ley 12.590 establece cinco: 1º de enero, 1º de mayo, 18 de julio, 25 de agosto y 25 de diciembre. Se cobran aunque no se trabajen y, si se trabajan, se pagan doble. Un convenio colectivo puede reconocer otros feriados pagos para una actividad.',
       },
       {
         q: 'Soy mensual y trabajé un feriado pago, ¿cuánto me corresponde?',
@@ -5451,7 +5455,7 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         q: '¿Semana de Turismo se paga doble?',
-        a: 'No. No está entre los cinco feriados pagos del artículo 18 de la Ley 12.590: es feriado común. El mensual cobra su sueldo sin adicional y el jornalero cobra jornal simple si trabaja. Un convenio colectivo puede mejorar ese piso.',
+        a: 'En el régimen general es feriado común: el mensual cobra su sueldo sin adicional y el jornalero cobra jornal simple si trabaja. Un convenio colectivo puede mejorar ese piso; comprobá el que corresponde a tu actividad antes de liquidar el día.',
       },
       {
         q: '¿Por qué algunos feriados se pasan al lunes?',
@@ -5481,7 +5485,7 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         label:
-          'Feriados — clasificación en pagos y comunes y forma de pago para mensuales, jornaleros y destajistas',
+          'Feriados — pago de mensuales, jornaleros y remuneraciones variables; convenios sectoriales y horas del sábado redistribuidas. Consultado el 4/11/2026',
         url: 'https://www.gub.uy/ministerio-trabajo-seguridad-social/institucional/derecho-laboral-uruguayo/feriados',
         publisher: 'MTSS',
       },
