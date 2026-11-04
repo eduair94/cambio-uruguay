@@ -204,6 +204,12 @@ describe('las páginas de modelo y comparador de bici', () => {
     expect(compare).not.toMatch(/['"`]\/monopatines-electricos-uruguay/)
   })
 
+  it('las dos son sólo en español y la de modelo avisa cuando el modelo quedó retirado', () => {
+    expect(page).toContain("defineI18nRoute({ locales: ['es'] })")
+    expect(compare).toContain("defineI18nRoute({ locales: ['es'] })")
+    expect(page).toContain('v-if="model.retired"')
+  })
+
   it('ninguna de las dos dice "ilegal"', () => {
     expect(page.toLowerCase()).not.toContain('ilegal')
     expect(compare.toLowerCase()).not.toContain('ilegal')

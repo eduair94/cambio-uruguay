@@ -41,3 +41,13 @@ describe("claimedElsewhere", () => {
     ).toBe(0);
   });
 });
+
+describe("modelsRetireWrite acotado por categoría", () => {
+  it("la vuelta de bicis sólo retira bicis, y la de monopatín sólo monopatines (con los viejos sin categoría)", async () => {
+    const { modelsRetireWrite } = await import("../../classes/movilidad/models/write");
+    const bici = modelsRetireWrite(["gyroor-c3"], "2026-10-28", modelCategoryFilter("bicicleta-electrica"));
+    expect(bici.updateMany.filter).toMatchObject({ category: "bicicleta-electrica", slug: { $nin: ["gyroor-c3"] } });
+    const mono = modelsRetireWrite(["xiaomi-6-pro"], "2026-10-28", modelCategoryFilter("monopatin-electrico"));
+    expect(mono.updateMany.filter).toMatchObject({ category: { $in: ["monopatin-electrico", null] } });
+  });
+});
