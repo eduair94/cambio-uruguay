@@ -18,6 +18,8 @@ export interface FichaTarget {
   listingId: string;
   url: string;
   source: "mercadolibre" | "store";
+  /** La categoría del aviso: decide qué bandas y qué campos se leen (`profiles.ts`). Sin ella, monopatín. */
+  category?: string | null;
 }
 
 export interface FichaRead {
@@ -110,7 +112,10 @@ async function readMlFromBridge(target: FichaTarget, fetcher: Fetcher): Promise<
       if (label && value && !(label in rows)) rows[label] = value;
     }
   }
-  const specs = mergeSpecs(specsFromRows(rows), specsFromText(product.description ?? "", "descripcion"));
+  const specs = mergeSpecs(
+    specsFromRows(rows, target.category),
+    specsFromText(product.description ?? "", "descripcion", target.category)
+  );
   return {
     ok: true,
     gone: false,
@@ -130,7 +135,7 @@ export async function readFicha(target: FichaTarget, fetcher: Fetcher = fetchTex
     if (!body) return nothing({ gone: GONE_STATUS.test(failure), failure });
     try {
       const product = (JSON.parse(body) as { product?: { body_html?: string; vendor?: string } }).product;
-      const specs = specsFromText(pageText(product?.body_html ?? ""), "descripcion");
+      const specs = specsFromText(pageText(product?.body_html ?? ""), "descripcion", target.category);
       return { ok: true, gone: false, specs: withSpecs(specs), brand: product?.vendor?.trim() || null, model: null };
     } catch {
       return nothing({ failure: "cuerpo ilegible" });
@@ -139,6 +144,6 @@ export async function readFicha(target: FichaTarget, fetcher: Fetcher = fetchTex
 
   const { body, failure } = await get(clean, fetcher);
   if (!body) return nothing({ gone: GONE_STATUS.test(failure), failure });
-  const specs = specsFromText(pageText(body), "descripcion");
+  const specs = specsFromText(pageText(body), "descripcion", target.category);
   return { ok: true, gone: false, specs: withSpecs(specs), brand: null, model: null };
 }

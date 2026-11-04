@@ -32,6 +32,8 @@ export const MOVILIDAD_SPECS_COLLECTION = "movilidadspecs";
  * Las fichas guardadas con dato para esos avisos. Una lectura que falló después de una buena no
  * borra la buena (el job guarda la falla aparte), así que alcanza con pedir `specs` no nulo.
  */
+export type StoredFichaMap = Map<string, StoredFicha>;
+
 export async function loadFichaByListingId(ids: readonly string[]): Promise<Map<string, StoredFicha>> {
   if (!ids.length) return new Map();
   const rows = (await appConnection()
