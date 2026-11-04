@@ -60,3 +60,19 @@ describe('/monopatines-electricos-uruguay/<modelo>', () => {
     expect(page.toLowerCase()).not.toContain('ilegal')
   })
 })
+
+describe('el sitemap de las páginas de modelo', () => {
+  it('manda sólo los modelos indexables y frescos', () => {
+    const sitemap = readFileSync(
+      join(__dirname, '..', '..', 'server', 'api', '__sitemap__', 'urls.get.ts'),
+      'utf8'
+    )
+    const block = sitemap.slice(
+      sitemap.indexOf('Monopatín model pages'),
+      sitemap.indexOf('Per-branch pages')
+    )
+    expect(block).toContain('indexable: true')
+    expect(block).toContain('monopatinModelFreshFloor(today)')
+    expect(block).toContain('`/monopatines-electricos-uruguay/${slug}`')
+  })
+})
