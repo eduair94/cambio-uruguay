@@ -12,7 +12,10 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 const PAGES = join(__dirname, '..', '..', 'pages')
-const monopatinSource = readFileSync(join(PAGES, 'monopatines-electricos-uruguay', 'index.vue'), 'utf8')
+const monopatinSource = readFileSync(
+  join(PAGES, 'monopatines-electricos-uruguay', 'index.vue'),
+  'utf8'
+)
 const bicicletaSource = readFileSync(join(PAGES, 'bicicletas-electricas-uruguay.vue'), 'utf8')
 const offerCardSource = readFileSync(
   join(__dirname, '..', '..', 'components', 'movilidad', 'MovilidadOfferCard.vue'),
