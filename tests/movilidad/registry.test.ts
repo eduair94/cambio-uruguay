@@ -367,3 +367,17 @@ describe("bicicleta: los accesorios que nombran la bici a la que van (4/11/2026)
     expect(variantFor(category!, title).key, title).toBe(variant);
   });
 });
+
+describe("bicicleta: lo que la revisión de rama encontró que la regla de accesorios borraba (4/11/2026)", () => {
+  it.each([
+    "Bicicleta Eléctrica Rodado 20 + Holder Para Celular",
+    "Bicicleta Eléctrica Urbana Con Empuñaduras Ergonomicas",
+    "Bicicleta Eléctrica Infantil Rodado 16 Con Stabilizer",
+    "Bici Electrica Permuto Por Bici De Montaña",
+  ])("%s sigue siendo bici", (title) => {
+    expect(classify(title)?.key, title).toBe("bicicleta-electrica");
+  });
+  it("una empuñadura que no abre con bicicleta sigue siendo accesorio", () => {
+    expect(classify("Par Empuñaduras Ergonomicas Ebike Negras")).toBeNull();
+  });
+});

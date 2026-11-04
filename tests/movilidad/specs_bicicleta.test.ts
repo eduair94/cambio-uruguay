@@ -180,3 +180,40 @@ describe("mezcla de capas en bici", () => {
     expect(merged.from.removableBattery).toBe("ficha");
   });
 });
+
+describe("lo que encontró la revisión de rama (4/11/2026)", () => {
+  it("monopatín: '48v 800w Potencia Maxima' sigue siendo el pico, no el nominal", () => {
+    const specs = specsFromTitle("Monopatin Electrico 48v 800w Potencia Maxima");
+    expect(specs.motorW).toBeNull();
+    expect(specs.motorPeakW).toBe(800);
+    // Pegado sí: "36v350w" son voltaje y potencia.
+    expect(specsFromTitle("Monopatin Electrico 36v350w")).toMatchObject({ batteryV: 36, motorW: 350 });
+  });
+
+  it("'25 Vel Max' es la velocidad, no los cambios", () => {
+    expect(specsFromTitle("Bicicleta Electrica Rodado 20 36v 10ah 25 Vel Max", BICI).gears).toBeNull();
+    expect(specsFromTitle("Bicicleta Eléctrica Aluminio S-pro Wagon Rodado 20 7 Vel", BICI).gears).toBe(7);
+  });
+
+  it("'no requiere acelerador' y 'sin necesidad de acelerador' son que no", () => {
+    expect(specsFromText("No requiere acelerador, asiste al pedalear", "descripcion", BICI).throttle).toBe(false);
+    expect(specsFromText("Pedaleo sin necesidad de acelerador", "descripcion", BICI).throttle).toBe(false);
+  });
+
+  it("cuotas y horarios con 'x' no son rodado; la cubierta pegada sí", () => {
+    expect(specsFromText("Pagá en 12 x 1.500 sin recargo", "descripcion", BICI).wheelInches).toBeNull();
+    expect(specsFromText("Envíos 24 x 7 a todo el país", "descripcion", BICI).wheelInches).toBeNull();
+    expect(specsFromText("Cubiertas 26x1.95 antipinchazo", "descripcion", BICI).wheelInches).toBe(26);
+  });
+
+  it("el talle del cuadro y un rango de edades no son el rodado; 'aro 29' sí", () => {
+    expect(specsFromTitle("Bicicleta Electrica Cuadro 16 Aro 29", BICI).wheelInches).toBe(29);
+    expect(specsFromTitle("Bici Electrica Para Niños 12 A 16 Años", BICI).wheelInches).toBeNull();
+  });
+
+  it("la coma corta la batería: 'asiento desmontable' no es la batería", () => {
+    expect(
+      specsFromText("Bateria de litio 36v 10ah, asiento desmontable", "descripcion", BICI).removableBattery
+    ).toBeNull();
+  });
+});

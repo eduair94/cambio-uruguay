@@ -83,7 +83,8 @@ const BICICLETA_BRANDS: readonly BrandEntry[] = [
   { name: "Voltbike", pattern: /\bvolt ?bike\b/ },
   { name: "Tern", pattern: /\btern\b/ },
   { name: "Amalfyt", pattern: /\bamalfyt\b/ },
-  { name: "Nexus", pattern: /\bnexus\b/ },
+  // "Shimano Nexus" es el buje de cambios internos, no la marca (revisión de rama, 4/11/2026).
+  { name: "Nexus", pattern: /(?<!shimano )\bnexus\b/ },
   { name: "Valentini", pattern: /\bvalentini\b/ },
   { name: "Xiaomi", pattern: /\b(xiaomi|qicycle|himo)\b/ },
   { name: "Hotebike", pattern: /\bhotebike\b/ },

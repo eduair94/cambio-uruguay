@@ -300,3 +300,10 @@ describe("identifyModel en bicicleta: lo que mostró la vista previa con datos r
     expect(bike("Bicicleta Eléctrica S-pro Carrot Electro")).toBe("s-pro-carrot");
   });
 });
+
+describe("marca de bici: 'Shimano Nexus' es el buje, no la marca (revisión de rama, 4/11/2026)", () => {
+  it("no lee Nexus detrás de Shimano, sí sola", () => {
+    expect(brandFromTitle("Bicicleta Electrica Shimano Nexus 7 Velocidades", "bicicleta-electrica")).toBeNull();
+    expect(brandFromTitle("Bicicleta Electrica Nexus Xc920 R28", "bicicleta-electrica")).toBe("Nexus");
+  });
+});

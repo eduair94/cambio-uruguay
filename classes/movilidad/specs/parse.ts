@@ -327,14 +327,17 @@ function booleansFromText(text: string, specs: MonopatinSpecs, source: SpecSourc
 
 const RODADOS = "12|14|16|18|20|24|26|27\\.5|28|29";
 const RODADO_PATTERNS: readonly RegExp[] = [
-  new RegExp(`(?:^|[^a-z0-9])(?:rodado|rod\\.?|r) ?(${RODADOS})(?:"|x ?\\d+(?:\\.\\d+)?)?(?![0-9.])`),
-  new RegExp(`(?:^|[^a-z0-9.])(${RODADOS}) ?x ?\\d(?:\\.\\d+)?(?![0-9])`),
+  new RegExp(`(?:^|[^a-z0-9])(?:rodado|rod\\.?|aro|r) ?(${RODADOS})(?:"|x ?\\d+(?:\\.\\d+)?)?(?![0-9.])`),
+  // La medida de la cubierta, pegada y con decimales: "26x1.95", "20x4.0". Con espacios ("12 x 1.500",
+  // "24 x 7") son cuotas y horarios (revisión de rama, 4/11/2026).
+  new RegExp(`(?:^|[^a-z0-9.])(${RODADOS})x[1-5]\\.\\d{1,3}(?![0-9])`),
 ];
 const GEARS_PATTERNS: readonly RegExp[] = [
   /\b(?:cantidad de )?(?:velocidades|cambios)\s*[:=]\s*(\d{1,2})\b/,
   /(?:^|[^a-z0-9.])(\d{1,2}) ?(?:velocidades|cambios|speeds?)(?![a-z])/,
-  // "21 Vel.f/disco", "7 Vel": la abreviatura, nunca seguida de una palabra ("vel max").
-  /(?:^|[^a-z0-9.])(\d{1,2}) ?vel\.?(?![a-z]{2})/,
+  // "21 Vel.f/disco", "7 Vel": la abreviatura, nunca seguida de una palabra ni de "max" ("25 Vel Max"
+  // es la velocidad, revisión de rama 4/11/2026).
+  /(?:^|[^a-z0-9.])(\d{1,2}) ?vel\.?(?!\s*max)(?![a-z]{2})/,
 ];
 const CENTRAL_MOTOR =
   /\bmotor (?:central|centrado|en el centro|mid-?drive)\b|\bmid-?drive\b|\bbosch (?:performance|active|cargo|smart)\b|\bbafang m\d{3}\b|\bshimano (?:steps|ep\d)\b/;
@@ -373,14 +376,14 @@ function bikeFromText(text: string, specs: MonopatinSpecs, source: SpecSource, b
   }
 
   const removable =
-    /\bbateria\b(?:[^.\n:]|\.(?=\d)){0,50}?\b(no (?:es )?)?(?:extraible|removible|desmontable)\b(\s*[:=]\s*no\b)?/.exec(
+    /\bbateria\b(?:[^.,;\n:]|\.(?=\d)){0,50}?\b(no (?:es )?)?(?:extraible|removible|desmontable)\b(\s*[:=]\s*no\b)?/.exec(
       text
     );
   if (removable) setBool("removableBattery", !removable[1] && !removable[2]);
   else if (/\bbateria (?:integrada|fija)\b/.test(text)) setBool("removableBattery", false);
 
   const throttle =
-    /(\bsin |\bno (?:tiene|trae|incluye|lleva) )?\bacelerador\b(?: (?:de (?:puno|gatillo|dedo)|independiente))?(\s*[:=]\s*no\b)?/.exec(
+    /(\bsin (?:necesidad de )?|\bno (?:tiene|trae|incluye|lleva|requiere|necesita|usa) )?\bacelerador\b(?: (?:de (?:puno|gatillo|dedo)|independiente))?(\s*[:=]\s*no\b)?/.exec(
       text
     );
   if (throttle) setBool("throttle", !throttle[1] && !throttle[2]);
@@ -418,8 +421,11 @@ export function specsFromText(text: string, source: SpecSource, category?: strin
   for (const rule of RULES) set(rule.field, firstValue(clean, labeledPattern(rule, "\\s*[:=]\\s*"), rule, bands));
   for (const rule of RULES) set(rule.field, firstValue(clean, labeledPattern(rule, "\\s+"), rule, bands));
   for (const rule of BARE) set(rule.field, bareValue(clean, rule, bands));
-  // "36v350w", "48V500W": voltaje y potencia pegados, que las dos reglas sueltas no ven.
-  const glued = /(?:^|[^a-z0-9.])(\d{2}) ?v ?(\d{3,4}) ?w(?![a-z0-9])/.exec(clean);
+  // "36v350w", "48V500W": voltaje y potencia PEGADOS, que las dos reglas sueltas no ven. Sólo pegados y
+  // nunca delante de "potencia máxima": con espacios ("48v 800w Potencia Maxima") la regla suelta ya
+  // decide, y ahí el número es el pico (revisión de rama, 4/11/2026).
+  const glued =
+    /(?:^|[^a-z0-9.])(\d{2})v(\d{3,4})w(?![a-z0-9])(?!\s*\(?\s*(?:de )?potencia (?:maxima|max|pico))/.exec(clean);
   if (glued) {
     set("batteryV", inBand("batteryV", Number(glued[1]), bands));
     set("motorW", inBand("motorW", Number(glued[2]), bands));
@@ -459,11 +465,17 @@ export function specsFromTitle(title: string, category?: string | null): Monopat
 const BARE_RODADO = /(?:^|\s)(12|14|16|20|24|26|27\.5|28|29)(?=\s|$|,)/g;
 const UNIT_AFTER = /^\s*(?:km|kms|w|watts?|v|volts?|kg|kgs|kilos?|ah|wh|h|hs|horas?|cm|mm|%|x\b|anos?|meses|dias|cuotas)/;
 
+/** El talle del cuadro y un rango de edades tampoco son el rodado ("Cuadro 16", "12 A 16 Años"). */
+const WORD_BEFORE = /(?:^|\s)(?:cuadro|talle|talla|frame|edad)\s*$/;
+const RANGE_AFTER = /^\s*(?:a|-|al|hasta)\s*\d/;
+
 function bareRodado(text: string): number | null {
   BARE_RODADO.lastIndex = 0;
   let match: RegExpExecArray | null;
   while ((match = BARE_RODADO.exec(text))) {
-    if (UNIT_AFTER.test(text.slice(match.index + match[0].length))) continue;
+    const after = text.slice(match.index + match[0].length);
+    if (UNIT_AFTER.test(after) || RANGE_AFTER.test(after)) continue;
+    if (WORD_BEFORE.test(text.slice(0, match.index))) continue;
     return Number(match[1]);
   }
   return null;

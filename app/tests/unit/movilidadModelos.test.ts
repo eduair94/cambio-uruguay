@@ -118,3 +118,19 @@ describe('las APIs de modelos piden una sola categoría', () => {
     expect(findOneFilter[0]).toMatchObject({ category: { $in: ['monopatin-electrico', null] } })
   })
 })
+
+describe('la URL de una categoría no filtra con la ficha de la otra (revisión de rama, 4/11/2026)', async () => {
+  const { equiparProductosNormalize } = await import('../../utils/equiparProductos')
+  it('monopatines ignora rodado y los rasgos de bici; bicis ignora rueda y app', () => {
+    const mono = equiparProductosNormalize(
+      { categoria: 'monopatin-electrico', rodado: '20', rueda: '9-10', rasgos: 'app,acelerador' },
+      'movilidad'
+    ).ficha!
+    expect(mono).toMatchObject({ rodado: '', rueda: '9-10', rasgos: ['app'] })
+    const bici = equiparProductosNormalize(
+      { categoria: 'bicicleta-electrica', rodado: '20', rueda: '9-10', rasgos: 'app,acelerador' },
+      'movilidad'
+    ).ficha!
+    expect(bici).toMatchObject({ rodado: '20', rueda: '', rasgos: ['acelerador'] })
+  })
+})

@@ -311,7 +311,7 @@ export function equiparProductosNormalize(
     orden: sorts.includes(orden) ? (orden as EquiparProductosSort) : 'precio_asc',
     page: Number.isFinite(page) && page >= 1 ? Math.min(page, 500) : 1,
   }
-  if (vertical === 'movilidad') query.ficha = monopatinFichaNormalize(raw)
+  if (vertical === 'movilidad') query.ficha = monopatinFichaNormalize(raw, query.categoria)
   return query
 }
 

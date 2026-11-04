@@ -157,18 +157,21 @@ const JUEGO_DE_PIEZAS =
  *   * un accesorio que abre el título y no está en {@link PIEZA_ABRE_EL_TITULO} (luz, cadena, cesto,
  *     portabicicletas, camiseta, remolque, medidor, indicador, conmutador, "set", "1 par"), o una marca
  *     seguida de la pieza ("Jadeshay Bike Acelerador 36v", "Bafang Pantalla De Bicicleta Electrica");
- *   * un sustantivo que ninguna bici lleva en el título: los de las importaciones en inglés ("E-bike
- *     Headlight", "Bike Handlebar Holder", "Hitch Rack", "Battery Anchor Bracket") y los suyos en
- *     español (portabicicletas, camiseta, empuñadura, el chip que quita el límite de velocidad);
+ *   * un sustantivo de accesorio de las importaciones en inglés ("E-bike Headlight", "Bike Handlebar
+ *     Holder", "Hitch Rack", "Battery Anchor Bracket") o una empuñadura, sólo si el título NO abre con
+ *     "Bicicleta"/"Bici" — "Bicicleta Eléctrica Rodado 20 + Holder Para Celular" es una bici que trae
+ *     el soporte (revisión de rama, 4/11/2026) —, y en cualquier lugar los que ninguna bici lleva
+ *     (portabicicletas, camiseta, el chip que quita el límite de velocidad);
  *   * Facebook: "cambio por bici eléctrica", "permuto por bici electrica" — es OTRA cosa que el
- *     vendedor ofrece a cambio de una bici.
+ *     vendedor ofrece a cambio de una bici eléctrica. "Bici Eléctrica Permuto Por Bici De Montaña" sí
+ *     es una bici: lo que sigue a "por" no es eléctrico.
  *
  * Medido sobre los mismos 478: 34 fuera, cero bicis reales. Quedan adentro, a propósito, las que
  * nombran un accesorio que traen ("Rodado 26 Nakto 250w 32km/h C/ Canasto", "Fat Bike Luz Señaleros"):
  * por eso "luz", "canasto" y "cesta" sólo cuentan si ABREN el título.
  */
 const BICI_ACCESORIO =
-  /\b(?:para|compatibles? con|apto para)\s+(?:(?:tu|la|su|el|una|todas las|\d+)\s+)?(?:bicicletas?|bicis?|e-?bikes?|ebikes?|bicycles?|cadena)\b|^(?:luz|luces|cadena|cadenas|cesta|cesto|portabicicletas?|porta ?bicis?|camiseta|remolque|medidor|indicador|conmutador|set|chip|1 par)\b|^\S+ (?:bike |e-?bike )?(?:acelerador|pantalla|display|controlador|cargador|bateria)\b|\b(?:headlights?|headlamp|taillights?|holder|bracket|stabilizer|hitch|apparel|portabicicletas?|camiseta|empunaduras?|deslimitador|speedbox)\b|\b(?:cambio|cambia|permuto|permuta) por (?:una? )?(?:bici|bicicleta)\b/;
+  /\b(?:para|compatibles? con|apto para)\s+(?:(?:tu|la|su|el|una|todas las|\d+)\s+)?(?:bicicletas?|bicis?|e-?bikes?|ebikes?|bicycles?|cadena)\b|^(?:luz|luces|cadena|cadenas|cesta|cesto|portabicicletas?|porta ?bicis?|camiseta|remolque|medidor|indicador|conmutador|set|chip|1 par)\b|^\S+ (?:bike |e-?bike )?(?:acelerador|pantalla|display|controlador|cargador|bateria)\b|^(?!bicicletas?\b|bicis?\b).*\b(?:headlights?|headlamp|taillights?|holder|bracket|stabilizer|hitch|apparel|empunaduras?)\b|\b(?:portabicicletas?|camiseta|deslimitador|speedbox)\b|\b(?:cambio|cambia|permuto|permuta) por (?:una? )?(?:bici|bicicleta) electric/;
 
 /** Las dos listas de palabras, cada una con las dos reglas de pieza. */
 const MONOPATIN_EXCLUDE = new RegExp(

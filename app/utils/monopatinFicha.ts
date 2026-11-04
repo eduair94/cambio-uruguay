@@ -264,11 +264,23 @@ const oneOf = <T extends string>(raw: unknown, options: readonly T[]): '' | T =>
     : ''
 }
 
-export function monopatinFichaNormalize(raw: Record<string, unknown>): MovilidadFichaQuery {
+/**
+ * La consulta de ficha desde la URL. Con la categoría, sólo lo que su perfil filtra: la página de
+ * monopatines no acepta `?rodado=` ni los rasgos de bici, y la de bicis no acepta `?rueda=` ni `app`
+ * (revisión de rama, 4/11/2026: el filtro se aplicaba sin control en el panel, y con `rueda` y `rodado`
+ * a la vez uno pisaba al otro). Sin categoría se aceptan las dos (nunca pasa en las páginas, que la fijan).
+ */
+export function monopatinFichaNormalize(
+  raw: Record<string, unknown>,
+  categoria?: string | null
+): MovilidadFichaQuery {
+  const known = categoria === MONOPATIN_CATEGORIA || categoria === BICICLETA_CATEGORIA
+  const perfil = movilidadFichaPerfil(categoria)
+  const allowed: readonly MonopatinRasgo[] = known ? perfil.rasgos : MOVILIDAD_RASGOS
   const rasgosRaw = Array.isArray(raw.rasgos) ? raw.rasgos[0] : raw.rasgos
   const rasgos =
     typeof rasgosRaw === 'string'
-      ? MOVILIDAD_RASGOS.filter(rasgo =>
+      ? allowed.filter(rasgo =>
           rasgosRaw
             .split(',')
             .map(s => s.trim())
@@ -283,8 +295,8 @@ export function monopatinFichaNormalize(raw: Record<string, unknown>): Movilidad
     potenciaMin: intIn(raw.potenciaMin, 100, 8000),
     carga: intIn(raw.carga, 30, 200),
     peso: intIn(raw.peso, 3, 80),
-    rueda: oneOf(raw.rueda, MONOPATIN_RUEDAS),
-    rodado: oneOf(raw.rodado, BICICLETA_RODADOS),
+    rueda: known && perfil.ruedaClave !== 'rueda' ? '' : oneOf(raw.rueda, MONOPATIN_RUEDAS),
+    rodado: known && perfil.ruedaClave !== 'rodado' ? '' : oneOf(raw.rodado, BICICLETA_RODADOS),
     rasgos,
     soloFicha: ficha === '1' || ficha === 'true' || ficha === true,
   }
