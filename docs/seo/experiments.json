@@ -2982,6 +2982,30 @@
         "cuantas frigorias necesito para 20 m2"
       ],
       "hypothesis": "Las paginas de heladeras, lavarropas, televisores y aires publicaban la banda de precio por tamano y un directorio que filtraba por precio, marca y vendedor, pero no la ficha tecnica con que se elige un electrodomestico. Ahora se lee la ficha de cada aviso de Mercado Libre (litros, no frost, kilos, tipo de carga, pulgadas, resolucion, BTU, inverter, eficiencia), el directorio filtra por esos datos con cada opcion contada, la tarjeta los muestra, y cada pagina de categoria suma un asesor que dice que tamano hace falta (personas, distancia al sillon, metros cuadrados) con la regla escrita y las tres opciones mas baratas que cumplen. Se espera mas clics desde busquedas de tamano (cuantos litros, cuantos kilos, cuantas pulgadas, cuantas frigorias), que hoy estas paginas no contestan. Se mide por cuota de clics con 28 dias antes y despues; ninguna de estas rutas tiene una ventana abierta."
+    },
+    {
+      "id": "traduccion-por-maquina-del-cuerpo",
+      "shippedOn": "2026-11-04",
+      "routes": [
+        "/en/guias/",
+        "/pt/guias/",
+        "/en/herramientas/",
+        "/pt/herramientas/",
+        "/en/glosario/",
+        "/pt/glosario/",
+        "/en/temas/",
+        "/pt/temas/",
+        "/en/importar/",
+        "/pt/importar/"
+      ],
+      "queries": [
+        "how much does it cost to live in uruguay",
+        "quanto custa morar no uruguai",
+        "uruguay residency requirements",
+        "como tirar a cedula no uruguai",
+        "uruguay income tax for foreigners"
+      ],
+      "hypothesis": "El cuerpo de las paginas solo en espanol (guias, herramientas, tramites, impuestos, alquilar, trabajar) se traduce por maquina al renderizar, desde una memoria de traduccion que llena el job currency-autotranslate con tr-file. Antes /en y /pt de esas paginas mostraban el texto en espanol con canonical a la espanola: un turista o inmigrante que buscaba en ingles o portugues no tenia una URL del sitio en su idioma. Cuando una pagina llega al 90 % de su texto traducido, su URL /en o /pt pasa a canonical propia, hreflang y sitemap. Se mide sobre las familias que no pisan otra fila abierta (guias, herramientas, glosario, temas, importar en /en y /pt); se espera que sumen impresiones y clics propios (la demanda en portugues se duplico entre septiembre y octubre) sin restar a las espanolas. Las paginas reservadas por otras filas del libro quedan intactas hasta que venza su ventana. Los idiomas extra (fr, de, it, ru, zh) se miden en la fila idiomas-traducidos-por-maquina."
     }
   ]
 }

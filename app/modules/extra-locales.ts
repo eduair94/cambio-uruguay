@@ -1,38 +1,24 @@
 import { createResolver, defineNuxtModule } from '@nuxt/kit'
 import type { NuxtPage } from '@nuxt/schema'
-import { EXTRA_LOCALE_CODES, hasExtraLocales } from '../utils/locales'
-
-const EXTRA_ROUTE_NAME = new RegExp(`___(${EXTRA_LOCALE_CODES.join('|')})$`)
 
 /**
- * Drop the extra-locale copies of every route that is not in `EXTRA_LOCALE_ROUTES`.
+ * How many routes @nuxtjs/i18n compacted into one `/:locale(en|pt|fr|…)/<path>` record.
  *
- * @nuxtjs/i18n localizes every page into every locale. For the core locales that is the
- * design (Spanish-only pages answer /en and /pt with a Spanish canonical); for the extra ones
- * it would be ~320 route records per locale in the entry chunk and thousands of crawlable
- * Spanish pages under French or Japanese URLs. Exported for the unit test.
+ * Every page answers in all 35 locales (utils/locales.ts) through `experimental.compactRoutes`:
+ * one record for Spanish and one regex record for every other locale, instead of one per locale.
+ * Measured on the production entry chunk (2026-11-02): one locale on every route is 321 records
+ * and ~56 KB that every visitor downloads, so 34 non-default locales spelled out would have been
+ * ~1.9 MB. Exported for the unit test.
  */
-export function pruneExtraLocaleRoutes(pages: NuxtPage[]): number {
-  let removed = 0
-  for (let index = pages.length - 1; index >= 0; index--) {
-    const page = pages[index]!
-    const match = page.name ? EXTRA_ROUTE_NAME.exec(page.name) : null
-    if (!match) continue
-    const base = page.path.slice(match[1]!.length + 1) || '/'
-    if (hasExtraLocales(base)) continue
-    pages.splice(index, 1)
-    removed++
-  }
-  return removed
+export function countCompactRoutes(pages: NuxtPage[]): number {
+  return pages.filter(page => /^\/:locale\(/.test(page.path)).length
 }
 
 /**
- * Local modules are installed after the ones listed in nuxt.config (Nuxt's `resolveModules`),
- * so the hooks below are registered after @nuxtjs/i18n's — with one catch: i18n registers its
- * pages hook from inside its own `modules:done` handler. Ours is therefore registered from
- * `modules:done` too (handlers run in registration order, i18n's first), or it would run before
- * the routes are localized and prune nothing. Measured on the first build that got this wrong:
- * 322 `___fr` routes in the entry chunk, and the Nitro build ran out of a 10 GB heap.
+ * Local modules are installed after the ones listed in nuxt.config (Nuxt's `resolveModules`), so
+ * the hooks below are registered after @nuxtjs/i18n's — with one catch: i18n registers its pages
+ * hook from inside its own `modules:done` handler, so ours is registered from `modules:done` too
+ * (handlers run in registration order, i18n's first) or it would see the routes before i18n does.
  */
 export default defineNuxtModule({
   meta: { name: 'extra-locales' },
@@ -44,13 +30,16 @@ export default defineNuxtModule({
         nuxt.options.experimental.scanPageMeta === 'after-resolve'
           ? 'pages:resolved'
           : 'pages:extend'
+      // A silent fall back to one record per locale would put ~1.9 MB in the entry chunk.
       nuxt.hook(pagesHook, pages => {
-        const removed = pruneExtraLocaleRoutes(pages)
-        if (!removed) throw new Error('[extra-locales] no extra-locale route to prune: hook order?')
+        if (!countCompactRoutes(pages)) {
+          throw new Error('[extra-locales] @nuxtjs/i18n generated no compact route')
+        }
       })
     })
 
-    // `useLocalePath` → i18n/localePathFallback.ts (Spanish URL when the current locale has no page).
+    // `useLocalePath` → i18n/localePathFallback.ts: a page restricted to Spanish
+    // (`defineI18nRoute({ locales: ['es'] })`) resolves to its Spanish URL from any locale.
     nuxt.hook('imports:sources', sources => {
       const i18nSource = sources.find(
         source =>

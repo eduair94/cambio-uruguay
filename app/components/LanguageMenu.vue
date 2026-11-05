@@ -16,7 +16,7 @@
         <VIcon end class="d-none d-sm-inline-flex">mdi-chevron-down</VIcon>
       </VBtn>
     </template>
-    <VList class="lang-list" density="compact">
+    <VList class="lang-list" density="compact" translate="no">
       <VListItem v-for="item in availableLocales" :key="item.code" :to="item.to" :lang="item.lang">
         <VListItemTitle>{{ item.name }}</VListItemTitle>
       </VListItem>
@@ -25,15 +25,26 @@
 </template>
 
 <script setup lang="ts">
-// Get i18n instance from global properties
+import { announcedLocales } from '~/utils/autoTranslate'
+import { splitLocalePath } from '~/utils/localizedRoutes'
+
 const { locale, locales } = useI18n()
 const switchLocalePath = useSwitchLocalePath()
+const route = useRoute()
+// Written by plugins/auto-translate.ts: which locales this page is machine-translated into.
+const translation = useState<{ translated: string[]; embargoed: boolean } | null>('auto-translate')
 
-// Only the languages this page exists in: the extra locales cover a handful of routes
-// (utils/locales.ts), and `switchLocalePath` answers '' where the route has no such page.
-const availableLocales = computed(() =>
-  locales.value
-    .filter(item => item.code !== locale.value)
+// Every page answers in every locale (compact routes), so the menu offers only the languages
+// the page is announced in — the same rule as its hreflang (utils/autoTranslate.ts): English
+// and Portuguese everywhere, another language where the page has its copy in it.
+const availableLocales = computed(() => {
+  const path = splitLocalePath(route.path).path.replace(/(.)\/+$/, '$1') || '/'
+  const announced = new Set([
+    'es',
+    ...announcedLocales(path, translation.value ?? { translated: [], embargoed: false }),
+  ])
+  return locales.value
+    .filter(item => item.code !== locale.value && announced.has(item.code))
     .map(item => ({
       code: item.code,
       name: item.name ?? item.code,
@@ -41,7 +52,7 @@ const availableLocales = computed(() =>
       to: switchLocalePath(item.code),
     }))
     .filter(item => item.to)
-)
+})
 </script>
 
 <style scoped>

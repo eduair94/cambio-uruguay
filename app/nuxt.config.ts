@@ -1437,6 +1437,10 @@ export default defineNuxtConfig({
     detectBrowserLanguage: false,
     // fallbackLocale for the extra locales (see the file).
     vueI18n: './i18n.config.ts',
+    // One `/:locale(en|pt|fr|…)/<path>` record per page instead of one per locale: every page
+    // answers in all 35 locales and the entry chunk does not grow with them. Guarded by
+    // modules/extra-locales.ts, which fails the build if no route comes out compacted.
+    experimental: { compactRoutes: true },
     // imports: false, // Disable vue-i18n composable auto-imports (removed, not supported)
   },
 
