@@ -30,7 +30,7 @@ import { createTranslator } from './lib/machine-translate.mjs'
 const APP = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 if (existsSync(resolve(APP, '.env'))) process.loadEnvFile(resolve(APP, '.env'))
 const jiti = createJiti(import.meta.url, { alias: { '~': APP, '@': APP } })
-const { AUTO_TRANSLATE_LOCALES, AUTO_TRANSLATE_THRESHOLD } = await jiti.import(
+const { AUTO_TRANSLATE_LOCALES, AUTO_TRANSLATE_THRESHOLD, isEmbargoed } = await jiti.import(
   resolve(APP, 'utils/autoTranslate.ts')
 )
 const { EXTRA_LOCALES } = await jiti.import(resolve(APP, 'utils/locales.ts'))
@@ -141,6 +141,9 @@ async function main() {
       (await pagesCol.find({}, { projection: { at: 1 } }).toArray()).map(row => [row._id, row.at])
     )
     const stale = Date.now() - RECRAWL_DAYS * 86_400_000
+    // A page reserved by the change log cannot be announced until its window closes, so the
+    // pages that can go out now come first (266 reserved routes on the first production run).
+    const reserved = path => (isEmbargoed(path, routes) ? 1 : 0)
     const candidates = (await sitemapPaths())
       .map((path, order) => ({ path, order, tier: familyOf(path) }))
       .filter(entry => entry.tier !== null)
@@ -148,7 +151,12 @@ async function main() {
       .sort((a, b) => {
         const seenA = known.has(a.path) ? 1 : 0
         const seenB = known.has(b.path) ? 1 : 0
-        return seenA - seenB || a.tier - b.tier || a.order - b.order
+        return (
+          seenA - seenB ||
+          reserved(a.path) - reserved(b.path) ||
+          a.tier - b.tier ||
+          a.order - b.order
+        )
       })
       .slice(0, CRAWL)
     let crawled = 0
@@ -186,10 +194,12 @@ async function main() {
     }
 
     // 3. Translate, in page priority order.
-    const pages = await pagesCol
-      .find({}, { projection: { segs: 1, tier: 1, at: 1 } })
-      .sort({ tier: 1, at: 1 })
-      .toArray()
+    const pages = (
+      await pagesCol
+        .find({}, { projection: { segs: 1, tier: 1, at: 1 } })
+        .sort({ tier: 1, at: 1 })
+        .toArray()
+    ).sort((a, b) => reserved(a._id) - reserved(b._id))
     const wanted = []
     const seen = new Set()
     for (const page of pages) {
