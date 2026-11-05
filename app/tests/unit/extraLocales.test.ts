@@ -3,7 +3,7 @@ import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createI18n } from 'vue-i18n'
 import type { NuxtPage } from '@nuxt/schema'
-import { pruneExtraLocaleRoutes } from '../../modules/extra-locales'
+import { countCompactRoutes } from '../../modules/extra-locales'
 import { CONTENT_SOURCES } from '../../i18n/content/registry'
 import { fnv1a, overlayContent, overlayableStrings } from '../../utils/contentOverlay'
 import {
@@ -89,24 +89,21 @@ describe('extra locales: how their messages load', () => {
 })
 
 describe('extra locales: the route module', () => {
-  it('keeps every core route and only the listed extra-locale ones', () => {
+  it('counts the compact routes that serve every non-default locale', () => {
     const pages = [
-      { name: 'mapa', path: '/mapa' },
-      { name: 'mapa___en', path: '/en/mapa' },
-      { name: 'mapa___fr', path: '/fr/mapa' },
-      { name: 'pizarra___ja', path: '/ja/pizarra' },
-      { name: 'guias___fr', path: '/fr/guias' },
-      { name: 'guias___pt', path: '/pt/guias' },
-      { name: 'historico-origin___de', path: '/de/historico/:origin()' },
+      { name: 'mapa___es', path: '/mapa' },
+      { name: 'mapa', path: '/:locale(en|pt|fr)/mapa' },
+      { name: 'index', path: '/:locale(en|pt|fr)' },
+      { name: 'alquiler-dep-barrio___es', path: '/alquiler/:dep()/:barrio()' },
     ] as NuxtPage[]
-    expect(pruneExtraLocaleRoutes(pages)).toBe(2)
-    expect(pages.map(page => page.name)).toEqual([
-      'mapa',
-      'mapa___en',
-      'mapa___fr',
-      'pizarra___ja',
-      'guias___pt',
-    ])
+    expect(countCompactRoutes(pages)).toBe(2)
+    expect(countCompactRoutes([{ name: 'mapa___es', path: '/mapa' }] as NuxtPage[])).toBe(0)
+  })
+
+  it('is enabled in nuxt.config', () => {
+    expect(readFileSync(join(APP, 'nuxt.config.ts'), 'utf8')).toContain(
+      'experimental: { compactRoutes: true }'
+    )
   })
 })
 

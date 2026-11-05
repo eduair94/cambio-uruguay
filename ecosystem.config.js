@@ -1081,6 +1081,20 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Traducción por máquina de las páginas (app/utils/autoTranslate.ts): recorre el sitemap
+      // español por prioridad, corta cada página con el mismo código que la traduce al renderizar,
+      // traduce lo que falta con tr-file (inglés y portugués primero) y mide la cobertura por página
+      // e idioma. Corre DESDE app/ (sus dependencias y su .env: MONGO_URI y NUXT_API_ADMIN_TOKEN).
+      // Cada 10 minutos, con tope de caracteres y de tiempo por corrida y un lease en la base para
+      // que dos corridas no se pisen. Ver app/AGENTS.md, "Traducción por máquina".
+      name: "currency-autotranslate",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "app/scripts/i18n/autotranslate-job.mjs",
+      cron_restart: "4-59/10 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Termómetro del mercado IT (/mercado-it-uruguay): r/CharruaDevs desde Arctic Shift, cada post
       // y cada comentario "de mercado" clasificado con Gemini (postura −2…+2, tema, IA, relato),
       // votos vivos vía la API de Reddit y un snapshot en la base del APP. Diario 12:14 UTC: minuto

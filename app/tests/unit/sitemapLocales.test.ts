@@ -53,7 +53,8 @@ describe('sitemap locale filter', () => {
       ;(plugin as unknown as (app: unknown) => void)({ hooks: { hook } })
       expect(hook.mock.calls[0]?.[0]).toBe('sitemap:input')
       const context = { sitemapName: 'en-US', urls: ['/en/guias/x', '/en/mapa'] }
-      hook.mock.calls[0]![1](context)
+      // Async now: it reads the translated pages first (none here: no database in the test).
+      await hook.mock.calls[0]![1](context)
       expect(context.urls).toEqual(['/en/mapa'])
     } finally {
       vi.unstubAllGlobals()
