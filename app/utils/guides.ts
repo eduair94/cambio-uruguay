@@ -1422,27 +1422,41 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'documentos-para-cambiar-dolares-uruguay',
-    title: 'Cambiar dólares: documento desde USD 3.000',
+    title: 'Cambiar dólares: qué documento llevar',
     description:
-      'Por debajo del orden de USD 3.000 diarios se cambia sin documento; por encima piden cédula o pasaporte. Con USD 10.000 o más se declara en aduana.',
+      'Llevá cédula o pasaporte. No asumas cambio sin documento: la excepción hasta USD 3.000 tiene condiciones. Aduanas: declarar por más de USD 10.000.',
     tag: 'TRÁMITES',
-    updatedAt: '2026-06-20',
+    updatedAt: '2026-11-05',
     sections: [
       {
-        heading: 'Para montos chicos, normalmente sin trámite',
-        body: 'Para cambiar montos pequeños de dólares en una casa de cambio uruguaya, en general no te piden más que el efectivo: las operaciones por debajo de cierto umbral diario se hacen sin necesidad de mostrar documento. Ese umbral suele ubicarse en el orden de los USD 3.000 por día, por debajo del cual la operación es directa. Es lo habitual para un turista que cambia unos cientos de dólares para sus gastos.',
+        heading: 'Llevá tu documento, aunque cambies un monto chico',
+        body: 'Para cambiar dólares en Uruguay, llevá cédula o pasaporte y consultá qué documento acepta la casa de cambio, especialmente si sos turista. No cuentes con poder operar sin identificación sólo porque el monto sea pequeño. La normativa del Banco Central exige identificar a clientes habituales y ocasionales, con una excepción limitada para ciertas operaciones de clientes ocasionales. Esa excepción no garantiza que cualquier casa atienda sin documento.',
       },
       {
-        heading: 'Montos altos: cédula o pasaporte y declaración jurada',
-        body: 'Cuando la operación supera ese umbral (del orden de USD 3.000 diarios), las casas de cambio están obligadas, por las normas de prevención de lavado de activos del Banco Central, a pedirte un documento de identidad (cédula o pasaporte) y, según el monto, una declaración jurada sobre el origen y el destino de los fondos. No es una sospecha hacia vos: es un requisito legal que aplica a todos por igual, y conviene llevar el documento si pensás cambiar sumas importantes.',
+        heading: 'La excepción de USD 3.000 es por operación individual',
+        body: 'El artículo 296 de la Recopilación de Normas de Regulación y Control del Sistema Financiero permite exceptuar de la identificación a clientes ocasionales cuando el importe individual no supera USD 3.000 o su equivalente en otras monedas: incluye exactamente USD 3.000. No es un cupo diario. La excepción no abarca transferencias de fondos ni se aplica si se intenta fraccionar una operación para eludir la identificación. Si hay indicios o sospecha de lavado de activos u otros delitos contemplados por la norma, corresponde identificar al cliente cualquiera sea el monto.',
       },
       {
-        heading: 'Entrar o salir con más de USD 10.000: declarar en aduana',
-        body: 'Aparte del cambio en sí, hay una regla aduanera importante: si entrás o salís de Uruguay con dinero en efectivo (o instrumentos al portador) por un valor igual o superior a USD 10.000, debés declararlo ante la Dirección Nacional de Aduanas. Aplica tanto al ingreso como al egreso del país y suma todas las monedas convertidas a dólares. No declararlo puede derivar en sanciones, así que si viajás con sumas grandes, hacé la declaración correspondiente.',
+        heading: 'Qué información pueden pedirte',
+        body: 'Cuando corresponde identificar a una persona física como cliente ocasional, el artículo 297 contempla nombre y apellido, copia del documento o constancia de su consulta o verificación en una fuente oficial, domicilio y teléfono. Otros requisitos dependen del tipo de cliente y de la operación. Antes de ir, consultá qué documentación y respaldo sobre el origen de los fondos te pedirán; no conviene asumir que alcanza con una declaración jurada genérica. Si actuás por otra persona, avisalo al consultar.',
       },
       {
-        heading: 'Consejo práctico para turistas',
-        body: 'Para la mayoría de los viajeros, que cambian montos moderados, alcanza con llevar el pasaporte por las dudas. Si pensás operar sumas grandes —por una compra importante, por ejemplo—, anticipá que te pedirán identificación y, posiblemente, una declaración de origen de fondos, y tené presente el límite de USD 10.000 de aduana al entrar o salir. Informarte antes evita demoras en el mostrador.',
+        heading: 'Viajar con más de USD 10.000: declarar en Aduanas',
+        body: 'La declaración al cruzar la frontera es una obligación distinta de la identificación en la casa de cambio. Para un viajero, el artículo 29 de la Ley 19.574 exige declarar ante la Dirección Nacional de Aduanas el transporte de efectivo, metales preciosos u otros instrumentos monetarios por un monto superior a USD 10.000 o su equivalente en otras monedas. El texto vigente dice superior, no igual o superior. Aplica al entrar o salir de Uruguay; verificá también las reglas del otro país de tu viaje.',
+      },
+    ],
+    sources: [
+      {
+        label:
+          'Identificación y excepción para clientes ocasionales: artículos 294, 296 y 297. PDF consolidado con última circular 2512 del 4/9/2026, consultado el 5/11/2026',
+        url: 'https://www.bcu.gub.uy/Acerca-de-BCU/Normativa/Documents/Reordenamiento%20de%20la%20Recopilaci%C3%B3n/Sistema%20Financiero/RNRCSF.pdf',
+        publisher: 'Banco Central del Uruguay',
+      },
+      {
+        label:
+          'Ley 19.574, artículo 29: declaración de dinero y otros valores al cruzar la frontera. Texto actualizado, consultado el 5/11/2026',
+        url: 'https://www.impo.com.uy/bases/leyes/19574-2017/29',
+        publisher: 'IMPO',
       },
     ],
     related: [
