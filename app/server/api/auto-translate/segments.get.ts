@@ -38,7 +38,8 @@ export default defineEventHandler(async event => {
     throw createError({ statusCode: 404 })
   }
   const path = String(getQuery(event).path ?? '')
-  if (!path.startsWith('/') || /^\/(?:api|_)/.test(path) || path.length > 300) {
+  // `/api-cotizacion-intradia` is a page; `/api/…` and `/_nuxt/…` are not.
+  if (!path.startsWith('/') || /^\/(?:api|_[a-z]*)(?:\/|$)/.test(path) || path.length > 300) {
     throw createError({ statusCode: 400, statusMessage: 'path is required' })
   }
   let html: string
