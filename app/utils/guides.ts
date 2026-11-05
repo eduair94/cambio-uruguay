@@ -783,7 +783,7 @@ export const guides: readonly Guide[] = [
     description:
       'Su precio sale por arbitraje: la cotización internacional de cada moneda frente al dólar más el dólar/peso local. Al operarse menos, el spread se ensancha.',
     tag: 'DIVISAS',
-    updatedAt: '2026-06-17',
+    updatedAt: '2026-11-05',
     sections: [
       {
         heading: 'Por qué euros y reales se mueven con el dólar',
@@ -799,9 +799,14 @@ export const guides: readonly Guide[] = [
       },
       {
         heading: 'Compará antes de operar',
-        body: 'Tanto para euros como para reales, entrá a Cambio Uruguay, mirá la cotización en las casas de cambio y elegí según vayas a comprar o vender. Una buena comparación te asegura que no estás dejando dinero sobre la mesa con monedas que, por su menor liquidez, pueden tener precios muy dispares.',
+        body: 'Tanto para euros como para reales, mirá la cotización de la moneda que te importa en las casas de cambio relevadas y elegí según vayas a comprar o vender: si comprás mirás la venta más baja, y si vendés la compra más alta. Una buena comparación te asegura que no estás dejando dinero sobre la mesa con monedas que, por su menor liquidez, pueden tener precios muy dispares.',
+        links: [
+          { label: 'Cotización del euro, casa por casa', to: '/cotizacion/euro' },
+          { label: 'Cotización del real, casa por casa', to: '/cotizacion/real' },
+        ],
       },
     ],
+    related: [{ label: 'La pizarra: dólar, euro, real y peso argentino', to: '/pizarra' }],
   },
   {
     slug: 'casas-de-cambio-vs-bancos',

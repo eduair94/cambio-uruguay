@@ -447,7 +447,6 @@ const GUIAS_SIN_TEMA = [
   'devolucion-iva-turistas-uruguay',
   'dolar-cripto-usdt-uruguay',
   'dolares-deteriorados-billetes-rechazados-uruguay',
-  'euros-reales-donde-cambiar',
   'horarios-casas-de-cambio-uruguay',
   'precio-del-oro-en-uruguay',
   'propinas-en-uruguay',
@@ -570,7 +569,29 @@ const GUIAS_SIN_TEMA = [
  *
  * Sólo puede bajar: subirlo es publicar una guía huérfana.
  */
-const DEUDA_MAXIMA_GUIAS = 14
+/**
+ * 14 → 13 el 2026-11-05: `euros-reales-donde-cambiar` entra a `dolar-y-casas-de-cambio-uruguay`, y
+ * era la ÚNICA de las catorce con la ruta libre de toda ventana de medición abierta
+ * (`npm run seo_debt`: 1 libre de 23, y es ésta). Las otras trece siguen reservadas, la primera
+ * hasta el 2026-11-06.
+ *
+ * Acá no hay que argumentar que el padre no es inventado, que es la regla que dejó a
+ * `propinas-en-uruguay` afuera dos veces: **el `intro` del hub ya la nombra**. Dice, textual, «si
+ * querés comprar o vender dólares, euros o reales sin dejar plata en el camino, empezá por acá», y
+ * su recurso `/pizarra` se describe como «Dólar, euro, real y peso argentino». O sea que el tema
+ * venía prometiendo el euro y el real desde su primera línea y la única guía del catálogo que los
+ * explica no era miembro — el hueco estaba adentro del tema, no al lado, igual que con
+ * `ui-ur-bpc-diferencias` el 2026-10-21.
+ *
+ * Y era de las peores huérfanas por la razón del 2026-11-01 y del 2026-11-04: sin `related` ni
+ * `links` de sección, `guideNextSteps` (`utils/guideReading.ts`) no tenía ninguna de sus tres
+ * fuentes y la página cerraba sin un solo enlace de salida, con las cuatro secciones diciéndole al
+ * lector que compare. Hoy la última sección enlaza `/cotizacion/euro` y `/cotizacion/real` donde la
+ * prosa lo pide, y `related` agrega la pizarra.
+ *
+ * Sólo puede bajar: subirlo es publicar una guía huérfana.
+ */
+const DEUDA_MAXIMA_GUIAS = 13
 
 describe('ninguna guía queda fuera de todos los temas', () => {
   const sinTema = guides
