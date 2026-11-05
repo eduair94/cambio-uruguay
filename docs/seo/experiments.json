@@ -3006,6 +3006,12 @@
         "uruguay income tax for foreigners"
       ],
       "hypothesis": "El cuerpo de las paginas solo en espanol (guias, herramientas, tramites, impuestos, alquilar, trabajar) se traduce por maquina al renderizar, desde una memoria de traduccion que llena el job currency-autotranslate con tr-file. Antes /en y /pt de esas paginas mostraban el texto en espanol con canonical a la espanola: un turista o inmigrante que buscaba en ingles o portugues no tenia una URL del sitio en su idioma. Cuando una pagina llega al 90 % de su texto traducido, su URL /en o /pt pasa a canonical propia, hreflang y sitemap. Se mide sobre las familias que no pisan otra fila abierta (guias, herramientas, glosario, temas, importar en /en y /pt); se espera que sumen impresiones y clics propios (la demanda en portugues se duplico entre septiembre y octubre) sin restar a las espanolas. Las paginas reservadas por otras filas del libro quedan intactas hasta que venza su ventana. Los idiomas extra (fr, de, it, ru, zh) se miden en la fila idiomas-traducidos-por-maquina."
+    },
+    {
+      "id": "documentos-cambio-excepcion-individual-y-aduana",
+      "shippedOn": "2026-11-05",
+      "routes": ["/guias/documentos-para-cambiar-dolares-uruguay"],
+      "hypothesis": "La guia prometia cambiar sin documento por debajo de un umbral diario aproximado y titulaba que la identificacion empezaba desde ese monto. El articulo 296 del BCU establece una excepcion por importe individual para clientes ocasionales, con inclusividad y condiciones distintas; la guia tambien confundia la igualdad en el umbral aduanero y no citaba fuentes. Se corrigen titulo, descripcion y explicacion, se indica que informacion puede solicitarse y se agregan el consolidado BCU y el articulo 29 vigente de la Ley 19.574, consultados el 5/11/2026. Se espera resolver mejor una necesidad con audiencia ya observada y favorecer la adquisicion organica, midiendo el paquete completo por cuota de clics del sitio con 28 dias finales antes y despues, excluyendo la publicacion. La intervencion anterior del 4/10 ya tiene 28 dias posteriores archivados; el resultado de aquel grupo no demuestra un efecto individual de esta pagina. No se inventan consultas ni se cambian anuncios, plantilla, otras rutas o reglas de traduccion. Interpretar los resultados junto al cambio general de traduccion publicado el 4/11, sin atribuir causalidad al titulo por si solo."
     }
   ]
 }
