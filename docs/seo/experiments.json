@@ -3012,6 +3012,19 @@
       "shippedOn": "2026-11-05",
       "routes": ["/guias/documentos-para-cambiar-dolares-uruguay"],
       "hypothesis": "La guia prometia cambiar sin documento por debajo de un umbral diario aproximado y titulaba que la identificacion empezaba desde ese monto. El articulo 296 del BCU establece una excepcion por importe individual para clientes ocasionales, con inclusividad y condiciones distintas; la guia tambien confundia la igualdad en el umbral aduanero y no citaba fuentes. Se corrigen titulo, descripcion y explicacion, se indica que informacion puede solicitarse y se agregan el consolidado BCU y el articulo 29 vigente de la Ley 19.574, consultados el 5/11/2026. Se espera resolver mejor una necesidad con audiencia ya observada y favorecer la adquisicion organica, midiendo el paquete completo por cuota de clics del sitio con 28 dias finales antes y despues, excluyendo la publicacion. La intervencion anterior del 4/10 ya tiene 28 dias posteriores archivados; el resultado de aquel grupo no demuestra un efecto individual de esta pagina. No se inventan consultas ni se cambian anuncios, plantilla, otras rutas o reglas de traduccion. Interpretar los resultados junto al cambio general de traduccion publicado el 4/11, sin atribuir causalidad al titulo por si solo."
+    },
+    {
+      "id": "euro-y-real-entran-al-tema-del-dolar",
+      "shippedOn": "2026-11-05",
+      "routes": ["/guias/euros-reales-donde-cambiar"],
+      "queries": [
+        "donde cambiar euros en uruguay",
+        "donde cambiar reales en uruguay",
+        "cambiar euros montevideo",
+        "cambiar reales en montevideo",
+        "por que sube el euro en uruguay"
+      ],
+      "hypothesis": "La unica guia del catalogo que explica el euro y el real no pertenecia a ningun tema, asi que no recibia ni daba un solo enlace del bloque 'Mas sobre este tema' y su pagina cerraba sin ninguna salida, con sus cuatro secciones pidiendole al lector que compare. El hub dolar-y-casas-de-cambio-uruguay ya prometia esas dos monedas en su primera linea ('comprar o vender dolares, euros o reales') y en la descripcion de su recurso /pizarra, o sea que el hueco estaba adentro del tema. Entra como guia del hub y, en la seccion que pide comparar, enlaza /cotizacion/euro y /cotizacion/real, con /pizarra en los related. Se espera que la guia reciba enlaces internos desde el tema y sus quince guias hermanas, y que el lector que llega por una consulta de euro o real termine en la pizarra de esa moneda en vez de en un callejon sin salida. Se mide por cuota de clics del sitio con 28 dias finales antes y despues, excluyendo el dia de publicacion. No se tocan anuncios, plantilla ni otras rutas: /cotizacion/euro y /cotizacion/real solo reciben el enlace, no cambian."
     }
   ]
 }

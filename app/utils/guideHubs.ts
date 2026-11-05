@@ -69,6 +69,7 @@ export const guideHubs: readonly GuideHub[] = [
       'glosario-terminos-cambiarios',
       'casas-de-cambio-vs-bancos',
       'evitar-comisiones-cambio',
+      'euros-reales-donde-cambiar',
       'billetes-y-monedas-de-uruguay',
       'moneda-de-uruguay',
       'pagar-en-dolares-o-pesos-uruguay',
