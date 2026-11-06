@@ -46,6 +46,14 @@ const SPELLED_NUMBERS = [
  */
 export const TOKEN_STYLES = [i => `ZQ${i}Z`, i => `X${i}X`, i => `[${i}]`]
 
+/**
+ * Uruguayan institutions by their acronym. Google reads them as something else: "Regulated by
+ * BCU" came back in Arabic as "regulated by the Union of British Universities" and "BCU-sourced
+ * data" as "data from the University of British Columbia" (29 messages in five languages,
+ * 2026-11-06). Shielded like the brand, they come back as written.
+ */
+export const PROTECTED_ACRONYMS = ['BCU', 'BROU', 'BPS', 'DGI', 'ANCAP']
+
 const escapeRegExp = text => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 /**

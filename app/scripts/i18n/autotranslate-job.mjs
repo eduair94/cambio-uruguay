@@ -27,7 +27,7 @@ import { fileURLToPath } from 'node:url'
 import { createJiti } from 'jiti'
 import mongoose from 'mongoose'
 import { embargoRoutes, familyOf, giveUp, translationGroups } from './lib/autotranslate-plan.mjs'
-import { createTranslator } from './lib/machine-translate.mjs'
+import { PROTECTED_ACRONYMS, createTranslator } from './lib/machine-translate.mjs'
 
 const APP = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 if (existsSync(resolve(APP, '.env'))) process.loadEnvFile(resolve(APP, '.env'))
@@ -229,6 +229,7 @@ async function main() {
         'cambio-uruguay.com',
         'Cambio Uruguay',
         'Cambio UY',
+        ...PROTECTED_ACRONYMS,
         ...CASAS_REPUTATION.map(casa => casa.name),
       ],
       verbose: false,

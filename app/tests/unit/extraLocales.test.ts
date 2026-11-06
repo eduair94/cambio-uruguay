@@ -6,6 +6,8 @@ import type { NuxtPage } from '@nuxt/schema'
 import { countCompactRoutes } from '../../modules/extra-locales'
 import { CONTENT_SOURCES } from '../../i18n/content/registry'
 import { fnv1a, overlayContent, overlayableStrings } from '../../utils/contentOverlay'
+// @ts-expect-error plain ESM module of the translation scripts
+import { PROTECTED_ACRONYMS } from '../../scripts/i18n/lib/machine-translate.mjs'
 import {
   EXTRA_LOCALE_CODES,
   EXTRA_LOCALE_ROUTES,
@@ -137,6 +139,20 @@ describe('extra locales: the messages', () => {
           if (i18n.global.t(key) !== expected) broken.push(`${key}: compiler`)
         }
         expect(broken).toEqual([])
+      })
+
+      // "Regulated by BCU" came back in Arabic as "regulated by the Union of British
+      // Universities" (scripts/i18n/lib/machine-translate.mjs, PROTECTED_ACRONYMS).
+      it('keeps the acronyms of the Uruguayan institutions', () => {
+        const messages = flatten(readTree(file))
+        const lost: string[] = []
+        for (const [key, text] of messages) {
+          const source = en.get(key) ?? es.get(key)!
+          for (const acronym of PROTECTED_ACRONYMS) {
+            if (source.includes(acronym) && !text.includes(acronym)) lost.push(`${key}: ${acronym}`)
+          }
+        }
+        expect(lost).toEqual([])
       })
 
       it('records source hashes only for keys that still exist', () => {
