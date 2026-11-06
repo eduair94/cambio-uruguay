@@ -50,6 +50,11 @@ function setup(environment: string) {
       },
       './utils/consent': { CONSENT_STRICT_REGIONS },
       './utils/locales': { EXTRA_LOCALES: [] },
+      './utils/sitemapFilters': {
+        ANY_LOCALE_PREFIX_PATTERN: /^$/,
+        SITEMAP_NOINDEX_PATTERN: /^$/,
+        localePrefixPattern: () => /^$/,
+      },
       './i18n/extraMessagesVersion': { extraMessagesVersion: () => 'analytics-test' },
     },
     {

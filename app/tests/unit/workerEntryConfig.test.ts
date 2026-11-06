@@ -17,6 +17,9 @@ const context: Record<string, any> = {
   URL,
   CONSENT_STRICT_REGIONS: [],
   EXTRA_LOCALES: [],
+  ANY_LOCALE_PREFIX_PATTERN: /^$/,
+  SITEMAP_NOINDEX_PATTERN: /^$/,
+  localePrefixPattern: () => /^$/,
   extraMessagesVersion: () => 'worker-test',
   defineNuxtConfig: (config: unknown) => config,
 }

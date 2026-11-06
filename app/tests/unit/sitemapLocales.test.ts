@@ -62,3 +62,27 @@ describe('sitemap locale filter', () => {
     // The dynamic import pulls the whole locale table; under a loaded full run it took 13 s.
   }, 60_000)
 })
+
+describe('sitemap filters', () => {
+  it('keeps the noindex pages out in every locale, and nothing else', async () => {
+    const { SITEMAP_NOINDEX_PATTERN, ANY_LOCALE_PREFIX_PATTERN, localePrefixPattern } =
+      await import('../../utils/sitemapFilters')
+    for (const path of [
+      '/offline',
+      '/en/offline',
+      '/zh/widget',
+      '/fr/equipar-casa-uruguay/mi-lista',
+    ]) {
+      expect(SITEMAP_NOINDEX_PATTERN.test(path)).toBe(true)
+    }
+    for (const path of ['/offline-tips', '/guias', '/en/equipar-casa-uruguay', '/a/b/offline']) {
+      expect(SITEMAP_NOINDEX_PATTERN.test(path)).toBe(false)
+    }
+    expect(ANY_LOCALE_PREFIX_PATTERN.test('/fr')).toBe(true)
+    expect(ANY_LOCALE_PREFIX_PATTERN.test('/th/guias')).toBe(true)
+    expect(ANY_LOCALE_PREFIX_PATTERN.test('/frontera/rivera')).toBe(false)
+    expect(ANY_LOCALE_PREFIX_PATTERN.test('/entrada')).toBe(false)
+    expect(localePrefixPattern(['en']).test('/en')).toBe(true)
+    expect(localePrefixPattern(['en']).test('/encuestas')).toBe(false)
+  })
+})

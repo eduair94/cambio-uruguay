@@ -12,7 +12,10 @@ type Meta = { name?: string; content?: string }
 let config: {
   app: { head: { meta: Meta[] } }
   robots: { header?: boolean }
-  sitemap: { sitemaps: Record<string, { sources?: unknown[] }>; exclude: string[] }
+  sitemap: {
+    sitemaps: Record<string, { sources?: unknown[]; include?: unknown[]; exclude?: unknown[] }>
+    exclude: RegExp[]
+  }
 }
 
 beforeAll(async () => {
@@ -66,11 +69,25 @@ describe('robots meta contract', () => {
           .replace(/\\/g, '/')
           .replace(/(?:\/index)?\.vue$/, '')
       )
-      .filter(
-        route =>
-          !config.sitemap.exclude.includes(route) || !config.sitemap.exclude.includes(`/*${route}`)
-      )
+      .filter(route => {
+        const excluded = (path: string) => config.sitemap.exclude.some(rule => rule.test(path))
+        return !excluded(route) || !excluded(`/en${route}`) || !excluded(`/fr${route}`)
+      })
     expect(offenders).toEqual([])
+  })
+
+  // @nuxtjs/sitemap rebuilds a radix router from every STRING rule, multiplied by the 35
+  // locales, for each URL it tests: 20–40 s a sitemap (utils/sitemapFilters.ts). RegExp only.
+  it('filters the sitemaps with regular expressions, never path strings', () => {
+    const rules = [
+      ...config.sitemap.exclude,
+      ...Object.values(config.sitemap.sitemaps).flatMap(sitemap => [
+        ...(sitemap.include ?? []),
+        ...(sitemap.exclude ?? []),
+      ]),
+    ]
+    expect(rules.length).toBeGreaterThan(30)
+    for (const rule of rules) expect(rule).toBeInstanceOf(RegExp)
   })
 
   it('publishes the agency profiles in their own sitemap', () => {

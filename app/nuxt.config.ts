@@ -2,6 +2,11 @@ import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { CONSENT_STRICT_REGIONS } from './utils/consent'
 import { EXTRA_LOCALES } from './utils/locales'
+import {
+  ANY_LOCALE_PREFIX_PATTERN,
+  SITEMAP_NOINDEX_PATTERN,
+  localePrefixPattern,
+} from './utils/sitemapFilters'
 import { extraMessagesVersion } from './i18n/extraMessagesVersion'
 
 // The machine-translated messages, served as public JSON (i18n/locales/extra.ts explains why
@@ -1319,18 +1324,16 @@ export default defineNuxtConfig({
     // Keep the existing language URLs and isolate the growing image-rich rental
     // catalogue. Explicit locale filters replace the module's automatic mapping.
     sitemaps: {
-      'en-US': { includeAppSources: true, include: ['/en/**'] },
-      'es-ES': {
-        includeAppSources: true,
-        exclude: ['/en/**', '/pt/**', ...EXTRA_LOCALES.map(({ code }) => `/${code}/**`)],
-      },
-      'pt-PT': { includeAppSources: true, include: ['/pt/**'] },
+      // RegExp rules only (utils/sitemapFilters.ts): string rules cost a radix router per URL.
+      'en-US': { includeAppSources: true, include: [localePrefixPattern(['en'])] },
+      'es-ES': { includeAppSources: true, exclude: [ANY_LOCALE_PREFIX_PATTERN] },
+      'pt-PT': { includeAppSources: true, include: [localePrefixPattern(['pt'])] },
       // One per extra locale: what each language has translated enough to stand on its own
       // (server/utils/sitemapLocales.ts), and Search Console counts it per language.
       ...Object.fromEntries(
         EXTRA_LOCALES.map(({ code }) => [
           code,
-          { includeAppSources: true, include: [`/${code}/**`] },
+          { includeAppSources: true, include: [localePrefixPattern([code])] },
         ])
       ),
       rentals: {
@@ -1351,43 +1354,10 @@ export default defineNuxtConfig({
     // production builds independent from catalogue growth while preserving the
     // same public /sitemap.xml URL for crawlers.
     cacheMaxAgeSeconds: 60 * 60,
-    // Keep non-search pages out of the sitemap so they don't waste crawl budget
-    // or show as "not indexed" in Search Console. These are auto-discovered from
-    // pages/; the custom source above no longer emits them either. They're also
-    // noindex'd at the page level. Globs cover the /en and /pt locale prefixes.
-    exclude: [
-      '/offline',
-      '/widget',
-      '/cuenta',
-      '/estado',
-      '/api-reference',
-      '/estadisticas-de-busqueda',
-      '/estadisticas-por-pagina',
-      '/opinion-alquileres',
-      '/opiniones-alquileres',
-      '/oportunidades-reddit',
-      '/descuentos-con-tarjeta-uruguay/cerca-de-mi',
-      '/ranking-usuarios-charruadevs',
-      '/equipar-casa-uruguay/mi-lista',
-      // El comparador de monopatines: cada combinación la elige el lector (noindex).
-      '/monopatines-electricos-uruguay/comparar',
-      '/bicicletas-electricas-uruguay/comparar',
-      '/*/offline',
-      '/*/widget',
-      '/*/cuenta',
-      '/*/estado',
-      '/*/api-reference',
-      '/*/estadisticas-de-busqueda',
-      '/*/estadisticas-por-pagina',
-      '/*/opinion-alquileres',
-      '/*/opiniones-alquileres',
-      '/*/oportunidades-reddit',
-      '/*/descuentos-con-tarjeta-uruguay/cerca-de-mi',
-      '/*/ranking-usuarios-charruadevs',
-      '/*/equipar-casa-uruguay/mi-lista',
-      '/*/monopatines-electricos-uruguay/comparar',
-      '/*/bicicletas-electricas-uruguay/comparar',
-    ],
+    // Keep non-search pages out of the sitemap so they don't waste crawl budget or show as
+    // "not indexed" in Search Console: the always-noindex pages, in Spanish and under every
+    // locale prefix (utils/sitemapFilters.ts — one RegExp, see why there).
+    exclude: [SITEMAP_NOINDEX_PATTERN],
   },
 
   // Scalar API reference. The module always registers one standalone page; we
