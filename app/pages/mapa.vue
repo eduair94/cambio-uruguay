@@ -124,6 +124,7 @@
 </template>
 
 <script setup lang="ts">
+import { VSlider } from 'vuetify/components'
 import { computed, onMounted, ref } from 'vue'
 import LocationsMap from '~/components/map/LocationsMap.vue'
 import ReferenceAddress from '~/components/rentals/ReferenceAddress.vue'

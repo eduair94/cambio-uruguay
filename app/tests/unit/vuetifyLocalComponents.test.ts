@@ -18,7 +18,13 @@ const LOCAL_ONLY = [
   'VTimeline',
   'VTimelineItem',
 ]
-const kebab = (name: string) => name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
+// VDataTable -> v-data-table (la V inicial también lleva guion).
+const kebab = (name: string) =>
+  'v-' +
+  name
+    .slice(1)
+    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+    .toLowerCase()
 
 function vueFiles(dir: string, out: string[] = []): string[] {
   for (const name of readdirSync(dir)) {

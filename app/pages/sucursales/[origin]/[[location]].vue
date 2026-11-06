@@ -220,6 +220,7 @@
 </template>
 
 <script setup lang="ts">
+import { VDataTable } from 'vuetify/components'
 import LocationsMap from '~/components/map/LocationsMap.vue'
 import {
   BANK_ORIGINS,

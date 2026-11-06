@@ -46,6 +46,10 @@ function setupHistory(origin: string, payload: unknown) {
         return { useI18n: () => ({ t, locale: vue.ref('es') }) }
       }
       if (name === 'vuetify') return { useDisplay: () => ({ smAndDown: vue.ref(false) }) }
+      // The page imports VDataTable itself; it is not rendered here.
+      if (name === 'vuetify/components') {
+        return new Proxy({}, { get: () => ({ render: () => null }) })
+      }
       if (name === '@/utils/rateSource') return rates
       if (name === '@/utils/bcuHistory') return bcuHistory
       throw new Error(`Unexpected import: ${name}`)

@@ -247,6 +247,7 @@
 </template>
 
 <script setup lang="ts">
+import { VAutocomplete } from 'vuetify/components'
 import { dedupeDepartmentNames, departmentsInclude } from '~/utils/departments'
 
 // Composables

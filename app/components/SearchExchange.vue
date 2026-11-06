@@ -107,6 +107,7 @@
 </template>
 
 <script setup lang="ts">
+import { VDataTable } from 'vuetify/components'
 import { useDisplay } from 'vuetify'
 import { notFound } from '../services/not_found'
 

@@ -249,6 +249,7 @@
 </template>
 
 <script setup lang="ts">
+import { VAutocomplete, VDataTable } from 'vuetify/components'
 import { useSeoMeta } from '#imports'
 import { format, parseISO } from 'date-fns'
 import { computed, ref, watch } from 'vue'

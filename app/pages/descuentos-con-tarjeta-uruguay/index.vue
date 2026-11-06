@@ -492,6 +492,7 @@
 </template>
 
 <script setup lang="ts">
+import { VSlider } from 'vuetify/components'
 import { computed, onMounted, ref, watch } from 'vue'
 import LocationsMap from '~/components/map/LocationsMap.vue'
 import {

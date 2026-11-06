@@ -579,6 +579,7 @@
 </template>
 
 <script setup lang="ts">
+import { VDataTable } from 'vuetify/components'
 import { useSeoMeta } from '#imports'
 import {
   BarElement,

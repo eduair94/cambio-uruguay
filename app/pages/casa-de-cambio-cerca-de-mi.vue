@@ -129,6 +129,7 @@
 </template>
 
 <script setup lang="ts">
+import { VSlider } from 'vuetify/components'
 import { computed, ref, watch } from 'vue'
 import NearbyCasaCard from '~/components/nearby/NearbyCasaCard.vue'
 import LocationsMap from '~/components/map/LocationsMap.vue'

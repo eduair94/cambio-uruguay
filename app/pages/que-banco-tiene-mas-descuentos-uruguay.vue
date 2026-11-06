@@ -269,6 +269,7 @@
 </template>
 
 <script setup lang="ts">
+import { VDataTable } from 'vuetify/components'
 import { computed } from 'vue'
 import { useTheme } from 'vuetify'
 import { BANKOS_BANKS } from '~/utils/bankos'

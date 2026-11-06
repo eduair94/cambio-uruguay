@@ -303,6 +303,7 @@
 </template>
 
 <script setup lang="ts">
+import { VDataTable } from 'vuetify/components'
 import { useSeoMeta } from '#imports'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
