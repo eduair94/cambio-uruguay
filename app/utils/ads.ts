@@ -24,6 +24,29 @@ import { PREFIXED_LOCALE_CODES } from './locales'
 const LOCALE_PREFIXES = PREFIXED_LOCALE_CODES.map(code => `/${code}`)
 
 /**
+ * Locales whose pages may not carry Google ad code at all, whatever the route.
+ *
+ * AdSense only serves ads on pages whose content is primarily in one of its supported languages,
+ * and the Publisher Policies forbid the code on any other page (support.google.com/adsense/answer/9727,
+ * read 2026-11-06: 50 languages, Persian is not one of them). The body translation of 2026-11-04
+ * publishes `/fa/*` pages that are 97 % Persian, indexable and in their own sitemap, so the rule
+ * cannot depend on the route table — it is a property of the language. A violation is charged to
+ * the account, not to the page.
+ *
+ * Adding a locale to `utils/locales.ts` forces a decision here: `ads.test.ts` checks every prefixed
+ * locale against Google's list.
+ */
+export const ADSENSE_UNSUPPORTED_LOCALES: readonly string[] = Object.freeze(['fa'])
+
+/** True when `path` is served in a language AdSense does not support (`/fa`, `/fa/...`). */
+export function inUnsupportedAdLanguage(path: string): boolean {
+  const clean = path.split('?')[0] ?? ''
+  return ADSENSE_UNSUPPORTED_LOCALES.some(
+    code => clean === `/${code}` || clean.startsWith(`/${code}/`)
+  )
+}
+
+/**
  * Routes that carry no ads at all.
  *
  * Two reasons, both of which cost more than an impression is worth:
@@ -189,6 +212,7 @@ function matches(path: string, list: readonly string[]): boolean {
  */
 export function adDensityForPath(path: string, options: AdPolicyOptions = {}): AdDensity {
   if (isBareRoute(path)) return 'none'
+  if (inUnsupportedAdLanguage(path)) return 'none'
   const clean = normalizeAdPath(path)
   if (NO_ADS_EXACT.includes(clean as (typeof NO_ADS_EXACT)[number])) return 'none'
   if (matches(clean, NO_ADS)) return 'none'

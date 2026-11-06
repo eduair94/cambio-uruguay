@@ -17,7 +17,16 @@
       </VBtn>
     </template>
     <VList class="lang-list" density="compact" translate="no">
-      <VListItem v-for="item in availableLocales" :key="item.code" :to="item.to" :lang="item.lang">
+      <!-- A language AdSense does not support opens with a full page load (`href`, not `to`): a
+           client-side navigation would carry the ad script the previous page already loaded into
+           a page that may not have it (utils/ads.ts → ADSENSE_UNSUPPORTED_LOCALES). -->
+      <VListItem
+        v-for="item in availableLocales"
+        :key="item.code"
+        :to="item.reload ? undefined : item.to"
+        :href="item.reload ? item.to : undefined"
+        :lang="item.lang"
+      >
         <VListItemTitle>{{ item.name }}</VListItemTitle>
       </VListItem>
     </VList>
@@ -25,6 +34,7 @@
 </template>
 
 <script setup lang="ts">
+import { ADSENSE_UNSUPPORTED_LOCALES } from '~/utils/ads'
 import { announcedLocales } from '~/utils/autoTranslate'
 import { splitLocalePath } from '~/utils/localizedRoutes'
 
@@ -50,6 +60,7 @@ const availableLocales = computed(() => {
       name: item.name ?? item.code,
       lang: item.language ?? item.code,
       to: switchLocalePath(item.code),
+      reload: ADSENSE_UNSUPPORTED_LOCALES.includes(item.code),
     }))
     .filter(item => item.to)
 })
