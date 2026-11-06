@@ -1393,10 +1393,12 @@ export default defineNuxtConfig({
       // Every page answers in each of them: the chrome comes from machine-translated vue-i18n
       // messages (scripts/i18n/translate.mjs), the body from the translation memory
       // (utils/autoTranslate.ts). See utils/locales.ts.
-      ...EXTRA_LOCALES.map(({ code, language, name }) => ({
+      ...EXTRA_LOCALES.map(({ code, language, name, dir }) => ({
         code,
         language,
         name,
+        // `<html dir>` (useLocaleHead in the layout); Vuetify follows in plugins/vuetify.ts.
+        ...(dir ? { dir } : {}),
         file: { path: 'extra.ts', cache: false },
       })),
     ],

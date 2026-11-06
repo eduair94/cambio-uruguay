@@ -3008,6 +3008,23 @@
       "hypothesis": "El cuerpo de las paginas solo en espanol (guias, herramientas, tramites, impuestos, alquilar, trabajar) se traduce por maquina al renderizar, desde una memoria de traduccion que llena el job currency-autotranslate con tr-file. Antes /en y /pt de esas paginas mostraban el texto en espanol con canonical a la espanola: un turista o inmigrante que buscaba en ingles o portugues no tenia una URL del sitio en su idioma. Cuando una pagina llega al 90 % de su texto traducido, su URL /en o /pt pasa a canonical propia, hreflang y sitemap. Se mide sobre las familias que no pisan otra fila abierta (guias, herramientas, glosario, temas, importar en /en y /pt); se espera que sumen impresiones y clics propios (la demanda en portugues se duplico entre septiembre y octubre) sin restar a las espanolas. Las paginas reservadas por otras filas del libro quedan intactas hasta que venza su ventana. Los idiomas extra (fr, de, it, ru, zh) se miden en la fila idiomas-traducidos-por-maquina."
     },
     {
+      "id": "idiomas-traducidos-por-maquina-rtl",
+      "shippedOn": "2026-11-06",
+      "routes": [
+        "/ar/*",
+        "/fa/*",
+        "/ur/*",
+        "/he/*"
+      ],
+      "queries": [
+        "سعر الدولار في الأوروغواي",
+        "نرخ ارز اروگوئه",
+        "یوراگوئے کرنسی",
+        "שער הדולר אורוגוואי"
+      ],
+      "hypothesis": "Cuatro idiomas de derecha a izquierda (arabe, persa, urdu y hebreo), la pagina entera: el chrome por vue-i18n y el cuerpo por la memoria de traduccion del job currency-autotranslate, con html dir=rtl y Vuetify espejado. Antes no existian; son las audiencias mas grandes que el sitio no alcanzaba. Cada pagina se anuncia (canonica propia, hreflang, sitemap /__sitemap__/<idioma>.xml) recien con el 90 % de su texto traducido, asi que las URLs aparecen de a poco en los dias siguientes. Se espera que /ar, /fa, /ur y /he sumen impresiones y clics propios sin restar a es/en/pt."
+    },
+    {
       "id": "documentos-cambio-excepcion-individual-y-aduana",
       "shippedOn": "2026-11-05",
       "routes": ["/guias/documentos-para-cambiar-dolares-uruguay"],

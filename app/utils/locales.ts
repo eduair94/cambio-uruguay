@@ -2,7 +2,7 @@
  * The site's languages. PURE (no Nuxt, no Vue): nuxt.config, the sitemap, the route module and
  * the translation scripts all read this one list.
  *
- * Every page answers in all 35 locales (`experimental.compactRoutes`: one route record per page
+ * Every page answers in all 39 locales (`experimental.compactRoutes`: one route record per page
  * for every non-default locale, so the entry chunk does not grow with them). What differs is how
  * much of a page is in that language, and therefore what the page may claim:
  *
@@ -33,11 +33,16 @@ export interface ExtraLocale {
   name: string
   /** Google Translate target code. */
   google: string
+  /**
+   * Right-to-left script. `<html dir>` comes from @nuxtjs/i18n (nuxt.config passes it on) and
+   * Vuetify mirrors its components for these locales (plugins/vuetify.ts, `RTL_LOCALE_CODES`).
+   */
+  dir?: 'rtl'
 }
 
 /**
- * Left to right only. Arabic, Hebrew and Persian need `dir="rtl"` through Vuetify and a
- * layout audit of every physical left/right in the CSS; they are not here until that is done.
+ * Ordered as the language menu lists them. The right-to-left ones go last: Arabic, Persian and
+ * Urdu are the largest audiences the site did not reach, Hebrew the Israeli travellers.
  */
 export const EXTRA_LOCALES: readonly ExtraLocale[] = Object.freeze([
   { code: 'fr', language: 'fr', name: 'Français', google: 'fr' },
@@ -72,10 +77,19 @@ export const EXTRA_LOCALES: readonly ExtraLocale[] = Object.freeze([
   { code: 'ms', language: 'ms', name: 'Bahasa Melayu', google: 'ms' },
   { code: 'vi', language: 'vi', name: 'Tiếng Việt', google: 'vi' },
   { code: 'th', language: 'th', name: 'ไทย', google: 'th' },
+  { code: 'ar', language: 'ar', name: 'العربية', google: 'ar', dir: 'rtl' },
+  { code: 'fa', language: 'fa', name: 'فارسی', google: 'fa', dir: 'rtl' },
+  { code: 'ur', language: 'ur', name: 'اردو', google: 'ur', dir: 'rtl' },
+  { code: 'he', language: 'he', name: 'עברית', google: 'he', dir: 'rtl' },
 ])
 
 export const EXTRA_LOCALE_CODES: readonly string[] = Object.freeze(
   EXTRA_LOCALES.map(locale => locale.code)
+)
+
+/** The right-to-left locales. */
+export const RTL_LOCALE_CODES: readonly string[] = Object.freeze(
+  EXTRA_LOCALES.filter(locale => locale.dir === 'rtl').map(locale => locale.code)
 )
 
 /** Every locale code, core first. */

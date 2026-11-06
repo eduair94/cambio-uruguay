@@ -72,7 +72,7 @@ export function figuresKept(text, source, style) {
  */
 export function escapeForVueI18n(text, source) {
   const allowed = new Set(source.match(/\{[^{}]*\}/g) ?? [])
-  return text
+  return asciiDigits(text)
     .replace(/\{[^{}]*\}|[{}@|]/g, match => {
       if (allowed.has(match)) return match
       if (match === '@' || match === '|') return `{'${match}'}`
@@ -81,10 +81,23 @@ export function escapeForVueI18n(text, source) {
     .replace(/\s+$/, '')
 }
 
+/**
+ * Arabic-Indic and Persian digits (and the Arabic decimal and thousands marks) as ASCII. Google
+ * writes figures that way in Arabic, Persian and Urdu: "٢٥٬٠٠٠" for 25.000, which no figure check
+ * would recognize. The pages already print their live numbers with ASCII digits.
+ */
+export function asciiDigits(text) {
+  return text
+    .replace(/[\u0660-\u0669]/g, digit => String(digit.charCodeAt(0) - 0x0660))
+    .replace(/[\u06F0-\u06F9]/g, digit => String(digit.charCodeAt(0) - 0x06f0))
+    .replace(/\u066B/g, '.')
+    .replace(/\u066C/g, ',')
+}
+
 /** Plain text: only the source's own `{n}` placeholders may contain braces. */
 export function cleanPlainText(text, source) {
   const allowed = new Set(source.match(/\{[^{}]*\}/g) ?? [])
-  return text
+  return asciiDigits(text)
     .replace(/\{[^{}]*\}|[{}]/g, match =>
       allowed.has(match) ? match : match.length > 1 ? match : ''
     )
