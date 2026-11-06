@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { adDensityForPath, adsAllowed, maxAdSlots, normalizeAdPath } from '../../utils/ads'
+import {
+  ADSENSE_UNSUPPORTED_LOCALES,
+  adDensityForPath,
+  adsAllowed,
+  inUnsupportedAdLanguage,
+  maxAdSlots,
+  normalizeAdPath,
+} from '../../utils/ads'
+import { PREFIXED_LOCALE_CODES } from '../../utils/locales'
 
 describe('normalizeAdPath', () => {
   it('drops the query, the trailing slash and the locale prefix', () => {
@@ -137,5 +145,55 @@ describe('maxAdSlots', () => {
     expect(maxAdSlots('none')).toBe(0)
     expect(maxAdSlots('light')).toBe(1)
     expect(maxAdSlots('normal')).toBe(2)
+  })
+})
+
+// Google's list of languages a page may be primarily written in to carry ad code
+// (support.google.com/adsense/answer/9727, read 2026-11-06), as the prefixes this site uses.
+// Persian ("fa") is not on it.
+const ADSENSE_SUPPORTED_PREFIXES = (
+  'ar bn bg ca zh hr cs da nl en et fil fi fr de el gu he hi hu id it ja kn ko lv lt ms ml mr ' +
+  'no pl pt pa ro ru sr sk sl es sv ta te th tr uk ur vi'
+).split(' ')
+
+describe('languages AdSense does not support', () => {
+  it('decides every prefixed locale: supported by Google, or kept away from ad code', () => {
+    // A new locale in utils/locales.ts fails here until someone checks Google's list.
+    const undecided = PREFIXED_LOCALE_CODES.filter(
+      code =>
+        !ADSENSE_SUPPORTED_PREFIXES.includes(code) && !ADSENSE_UNSUPPORTED_LOCALES.includes(code)
+    )
+    expect(undecided).toEqual([])
+    for (const code of ADSENSE_UNSUPPORTED_LOCALES) {
+      expect(ADSENSE_SUPPORTED_PREFIXES, code).not.toContain(code)
+    }
+  })
+
+  it('keeps the loader off every Persian page, even routes that carry ads in Spanish', () => {
+    for (const p of [
+      '/fa',
+      '/fa/',
+      '/fa/a-quien-le-reclamo-uruguay',
+      '/fa/guias/comprar-en-shein-desde-uruguay',
+      '/fa/historico/brou/usd?x=1',
+    ]) {
+      expect(inUnsupportedAdLanguage(p), p).toBe(true)
+      expect(adDensityForPath(p), p).toBe('none')
+      expect(adsAllowed(p, { toolsAds: true }), p).toBe(false)
+    }
+    expect(adDensityForPath('/guias/comprar-en-shein-desde-uruguay')).toBe('normal')
+  })
+
+  it('does not catch a supported locale or a route that merely starts with the letters', () => {
+    for (const p of [
+      '/ar/a-quien-le-reclamo-uruguay',
+      '/ur/historico/brou/usd',
+      '/he',
+      '/faq',
+      '/fallas',
+    ]) {
+      expect(inUnsupportedAdLanguage(p), p).toBe(false)
+    }
+    expect(adDensityForPath('/ar/guias/comprar-en-shein-desde-uruguay')).toBe('normal')
   })
 })
