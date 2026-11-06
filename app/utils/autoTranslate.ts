@@ -58,6 +58,10 @@ export const AUTO_TRANSLATE_LOCALES: readonly string[] = Object.freeze([
   'ms',
   'vi',
   'th',
+  'ar',
+  'fa',
+  'ur',
+  'he',
 ])
 
 /**

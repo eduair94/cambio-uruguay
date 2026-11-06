@@ -8,7 +8,12 @@ import {
   translationGroups,
 } from '../../scripts/i18n/lib/autotranslate-plan.mjs'
 // @ts-expect-error plain ESM module of the translation scripts
-import { numbersIn, templatize } from '../../scripts/i18n/lib/machine-translate.mjs'
+import {
+  asciiDigits,
+  cleanPlainText,
+  numbersIn,
+  templatize,
+} from '../../scripts/i18n/lib/machine-translate.mjs'
 
 describe('auto-translate job: what it translates', () => {
   it('starts with the editorial core and leaves the data catalogues for last', () => {
@@ -101,5 +106,14 @@ describe('auto-translate job: figures', () => {
     expect(templatize('Some pesos', ['25.000'])).toBeNull()
     expect(templatize('Pay 45 now', [])).toBeNull()
     expect(templatize('Only 1 gram', [])).toBe('Only 1 gram')
+  })
+})
+
+describe('auto-translate job: right-to-left scripts', () => {
+  it('reads Arabic-Indic and Persian figures as the ASCII digits the page prints', () => {
+    expect(asciiDigits('٢٥٬٠٠٠ و ۴۰٫۶۳')).toBe('25,000 و 40.63')
+    expect(templatize(cleanPlainText('بـ ٢٥٬٠٠٠ بيزو', 'x'), numbersIn('con 25.000 pesos'))).toBe(
+      'بـ {0} بيزو'
+    )
   })
 })

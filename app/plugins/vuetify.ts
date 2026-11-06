@@ -1,6 +1,7 @@
 import { h } from 'vue'
 import { createVuetify } from 'vuetify'
 import { DEFAULT_THEME_MODE } from '~/utils/theme'
+import { LOCALE_PREFIX_RE, RTL_LOCALE_CODES } from '~/utils/locales'
 import { aliases as mdiAliases, mdi } from 'vuetify/iconsets/mdi'
 import {
   VAlert,
@@ -112,8 +113,21 @@ const MediumIcon = brandIcon(
 )
 
 export default defineNuxtPlugin(nuxtApp => {
+  // Right-to-left locales: VApp sets `direction` itself (`.v-locale--is-ltr`), which would win over
+  // `<html dir="rtl">`, so Vuetify has to know. The URL prefix decides, like everything about the
+  // locale; switching to or from a machine-translated locale reloads the page
+  // (plugins/auto-translate.ts), so this is read once per page load. The other locales keep
+  // Vuetify's default 'en' messages, as before.
+  const path = import.meta.server ? useRequestURL().pathname : window.location.pathname
+  const prefix = path.match(LOCALE_PREFIX_RE)?.[1]
+  const rtlLocale = prefix && RTL_LOCALE_CODES.includes(prefix) ? prefix : null
   const vuetify = createVuetify({
     ssr: true,
+    locale: {
+      locale: rtlLocale ?? 'en',
+      fallback: 'en',
+      rtl: Object.fromEntries(RTL_LOCALE_CODES.map(code => [code, true])),
+    },
     // Vuetify 4 shrank the breakpoint thresholds (md 960→840, lg 1280→1145,
     // xl 1920→1545, xxl 2560→2138). Restore the v3 values so `useDisplay()`
     // (mdAndUp, mobile, …) reflows at the same widths as the CSS grid — whose
