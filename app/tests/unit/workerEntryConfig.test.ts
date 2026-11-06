@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest'
 const filename = new URL('../../nuxt.config.ts', import.meta.url)
 const source = readFileSync(filename, 'utf8')
   // Whole import statements, single- or multi-line.
-  .replace(/^import\b[\s\S]*?\bfrom\s+['"][^'"]+['"];?$/gm, '')
+  .replace(/^import\s[\s\S]*?\sfrom\s+['"][^'"]+['"];?$/gm, '')
   .replace('export default defineNuxtConfig(', 'globalThis.captured = defineNuxtConfig(')
   .replaceAll('import.meta.url', JSON.stringify(filename.href))
 const context: Record<string, any> = {
