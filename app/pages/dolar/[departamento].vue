@@ -55,7 +55,7 @@
               {{ $t('dolarDepto.tableTitle', { department: departmentTitle }) }}
             </v-card-title>
 
-            <v-data-table
+            <VDataTable
               v-if="houses.length"
               :headers="headers"
               :items="houses"
@@ -88,7 +88,7 @@
                   {{ $t('dolarDepto.viewBranches') }}
                 </v-btn>
               </template>
-            </v-data-table>
+            </VDataTable>
 
             <!-- No houses -->
             <v-card-text v-else class="text-center pa-8" data-testid="dolar-empty">
@@ -149,6 +149,7 @@
 </template>
 
 <script setup lang="ts">
+import { VDataTable } from 'vuetify/components'
 import { useSeoMeta } from '#imports'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'

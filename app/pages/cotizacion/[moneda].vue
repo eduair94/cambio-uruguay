@@ -82,7 +82,7 @@
               {{ $t('cotizacion.tableTitle', { currency: currencyName, prep }) }}
             </v-card-title>
 
-            <v-data-table
+            <VDataTable
               v-if="quotes.length"
               :headers="headers"
               :items="quotes"
@@ -148,7 +148,7 @@
                   </v-btn>
                 </div>
               </template>
-            </v-data-table>
+            </VDataTable>
 
             <!-- No quotes -->
             <v-card-text v-else class="text-center pa-8" data-testid="cotizacion-empty">
@@ -314,6 +314,7 @@
 </template>
 
 <script setup lang="ts">
+import { VDataTable } from 'vuetify/components'
 import { useSeoMeta } from '#imports'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'

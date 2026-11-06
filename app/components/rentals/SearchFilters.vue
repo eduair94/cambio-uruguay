@@ -572,7 +572,7 @@
 
 <script setup lang="ts">
 import { rentalAvailabilityCopy } from '~/utils/rentalAvailabilityMessages'
-import { VDialog } from 'vuetify/components'
+import { VAutocomplete, VDialog, VSlider } from 'vuetify/components'
 import { rentalMessages } from '~/utils/rentalMessages'
 import {
   RENTAL_GUARANTEE_PUBLISHED,

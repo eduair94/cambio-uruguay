@@ -190,6 +190,7 @@
 </template>
 
 <script setup lang="ts">
+import { VTimeline, VTimelineItem } from 'vuetify/components'
 import { computed } from 'vue'
 import type { ExchangeRate } from '~/types/api'
 import { currentIndicatorValue, indicatorFromSlug } from '~/utils/indicators'

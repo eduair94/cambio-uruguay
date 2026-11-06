@@ -403,6 +403,7 @@ idioma, aunque la ruta exista bajo /en/ y /pt/ por `prefix_except_default`.
 </template>
 
 <script setup lang="ts">
+import { VPagination } from 'vuetify/components'
 import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
 import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'

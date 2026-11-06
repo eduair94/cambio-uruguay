@@ -25,6 +25,9 @@ const script = compileScript(descriptor, { id: 'historico-detail-head-test' })
 const { outputText } = ts.transpileModule(script.content, {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 })
+// The page imports its occasional Vuetify components itself (tests/unit/vuetifyLocalComponents.test.ts).
+// Vuetify is not rendered here: any name resolves to an empty component.
+const vuetifyComponents = new Proxy({}, { get: () => ({ render: () => null }) })
 const scopes: vue.EffectScope[] = []
 const mountedApps: vue.App[] = []
 afterEach(() => {
@@ -106,6 +109,7 @@ function setupHistory(
     vue: mount ? vue : { ...vue, withAsyncContext: (fn: () => unknown) => [fn(), () => {}] },
     'vue-router': { useRoute: () => route, useRouter: () => ({ replace: vi.fn() }) },
     vuetify: { useDisplay: () => ({ smAndDown: vue.ref(false) }) },
+    'vuetify/components': vuetifyComponents,
     'chart.js': { Chart: { register: vi.fn() } },
     'vue-chartjs': {},
     'date-fns': dates,

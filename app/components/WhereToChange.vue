@@ -172,6 +172,7 @@
 </template>
 
 <script setup lang="ts">
+import { VAutocomplete } from 'vuetify/components'
 import DOMPurify from 'isomorphic-dompurify'
 import { marked } from 'marked'
 import { computed, ref, watch } from 'vue'

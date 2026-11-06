@@ -223,6 +223,7 @@
 </template>
 
 <script setup lang="ts">
+import { VSlider } from 'vuetify/components'
 import {
   MONOPATIN_ASESOR_DEFAULT,
   MONOPATIN_AUTONOMIA_REAL,

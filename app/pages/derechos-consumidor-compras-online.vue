@@ -403,6 +403,7 @@
 </template>
 
 <script setup lang="ts">
+import { VAutocomplete } from 'vuetify/components'
 import {
   buildConsumerComplaint,
   COMPLAINT_STEPS,

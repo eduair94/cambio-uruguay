@@ -583,6 +583,7 @@
 </template>
 
 <script setup lang="ts">
+import { VAutocomplete } from 'vuetify/components'
 import { useTheme } from 'vuetify'
 import LineChart from '~/components/charts/LineChart.vue'
 import type { RateAnalyticsInterval, RateAnalyticsResponse } from '~/types/api'

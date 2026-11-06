@@ -251,6 +251,7 @@ FIRST VIEWPORT: Migas, H1, cuántos modelos y vendedores hay y cuándo se leyó,
 </template>
 
 <script setup lang="ts">
+import { VSlider } from 'vuetify/components'
 import { FEED_AD_AFTER } from '~/utils/ads'
 import { ADUANA_FAQS } from '~/utils/aduanaFaq'
 import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'

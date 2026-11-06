@@ -202,6 +202,7 @@
 </template>
 
 <script setup lang="ts">
+import { VPagination } from 'vuetify/components'
 import { computed, ref, watch } from 'vue'
 import { useDisplay } from 'vuetify'
 import ResultCard from '~/components/mercadoIt/ResultCard.vue'

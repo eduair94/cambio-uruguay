@@ -186,6 +186,7 @@
 </template>
 
 <script setup lang="ts">
+import { VAutocomplete } from 'vuetify/components'
 import { API_CONTACT_EMAIL, formatDateTime } from '~/utils/apiKeys'
 import {
   MAX_COMPETITORS,

@@ -310,7 +310,7 @@
 </template>
 
 <script setup lang="ts">
-import { VDialog } from 'vuetify/components'
+import { VAutocomplete, VDialog } from 'vuetify/components'
 import { useDisplay } from 'vuetify'
 import { rentalBudgetMessages } from '~/utils/rentalBudgetMessages'
 import { rentalAvailabilityCopy } from '~/utils/rentalAvailabilityMessages'

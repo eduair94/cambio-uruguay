@@ -35,7 +35,7 @@
             <!-- Currency selector (for currency-specific analyses) -->
             <v-row v-if="showCurrencySelector" class="mb-4" justify="center">
               <v-col cols="12" sm="8" md="6">
-                <v-autocomplete
+                <VAutocomplete
                   v-model="selectedCurrency"
                   :items="currencyItems"
                   :label="t('ai.selectCurrency')"
@@ -151,6 +151,7 @@
 </template>
 
 <script setup lang="ts">
+import { VAutocomplete } from 'vuetify/components'
 import DOMPurify from 'isomorphic-dompurify'
 import { marked } from 'marked'
 import { computed, onMounted, ref } from 'vue'

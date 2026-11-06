@@ -206,7 +206,7 @@
       <v-row v-if="userLocation" dense class="mb-1">
         <v-col cols="12" md="6" class="d-flex align-center">
           <span class="text-caption mr-2">Radio: {{ radiusKm }} km</span>
-          <v-slider
+          <VSlider
             v-model="radiusKm"
             :min="1"
             :max="30"
@@ -492,6 +492,7 @@
 </template>
 
 <script setup lang="ts">
+import { VSlider } from 'vuetify/components'
 import { computed, onMounted, ref, watch } from 'vue'
 import LocationsMap from '~/components/map/LocationsMap.vue'
 import {

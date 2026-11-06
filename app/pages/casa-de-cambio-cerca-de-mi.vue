@@ -26,7 +26,7 @@
       </v-col>
       <v-col cols="12" sm="4" md="3">
         <span class="text-caption">{{ t('map.radius') }}: {{ radiusKm }} km</span>
-        <v-slider
+        <VSlider
           v-model="radiusKm"
           :min="1"
           :max="50"
@@ -129,6 +129,7 @@
 </template>
 
 <script setup lang="ts">
+import { VSlider } from 'vuetify/components'
 import { computed, ref, watch } from 'vue'
 import NearbyCasaCard from '~/components/nearby/NearbyCasaCard.vue'
 import LocationsMap from '~/components/map/LocationsMap.vue'

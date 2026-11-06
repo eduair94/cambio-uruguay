@@ -134,7 +134,7 @@
           />
         </v-col>
         <v-col cols="12" md="5">
-          <v-autocomplete
+          <VAutocomplete
             v-model="selectedDepartment"
             :items="departmentOptions"
             :label="$t('sucursales.filtrarPorDepartamento')"
@@ -247,6 +247,7 @@
 </template>
 
 <script setup lang="ts">
+import { VAutocomplete } from 'vuetify/components'
 import { dedupeDepartmentNames, departmentsInclude } from '~/utils/departments'
 
 // Composables

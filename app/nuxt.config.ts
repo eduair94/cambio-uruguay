@@ -1236,9 +1236,9 @@ export default defineNuxtConfig({
         },
       },
     ],
-    // Declarative, spring-physics animations (v-motion directive) for the
-    // home hero + card grids. SSR-safe, scroll-triggered via visibleOnce.
-    '@vueuse/motion/nuxt',
+    // NOT '@vueuse/motion/nuxt': it registered the v-motion directive app-wide, putting
+    // @vueuse/motion + popmotion (~30 KB) in every page's entry chunk for one page. The home
+    // registers the directive itself (pages/index.vue).
   ],
 
   // Web Vitals tracking

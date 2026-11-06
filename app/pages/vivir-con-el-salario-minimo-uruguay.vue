@@ -340,6 +340,7 @@
 </template>
 
 <script setup lang="ts">
+import { VPagination } from 'vuetify/components'
 import {
   FORMAS,
   LIQUIDO_SMN,

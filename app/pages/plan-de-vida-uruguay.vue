@@ -353,6 +353,7 @@
 </template>
 
 <script setup lang="ts">
+import { VSlider } from 'vuetify/components'
 import { computed, ref } from 'vue'
 import type { FaqItem } from '~/utils/faqAnswers'
 import { estimateBudget, type City, type Housing, type Situation } from '~/utils/costOfLiving'

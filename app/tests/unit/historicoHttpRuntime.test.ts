@@ -20,6 +20,10 @@ function runSource(source: string, modules: Record<string, unknown>, globals = {
     ...globals,
     require: (name: string) => {
       if (name in modules) return modules[name]
+      // Pages import their occasional Vuetify components themselves; nothing renders them here.
+      if (name === 'vuetify/components') {
+        return new Proxy({}, { get: () => ({ render: () => null }) })
+      }
       throw new Error(`Unexpected module ${name}`)
     },
   }

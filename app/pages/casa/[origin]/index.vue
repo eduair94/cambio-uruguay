@@ -114,7 +114,7 @@
               {{ $t('casaPage.tableTitle', { casa: casaName }) }}
             </v-card-title>
 
-            <v-data-table
+            <VDataTable
               v-if="rates.length"
               :headers="headers"
               :items="rates"
@@ -148,7 +148,7 @@
                   {{ $t('casaPage.viewHistory') }}
                 </v-btn>
               </template>
-            </v-data-table>
+            </VDataTable>
 
             <!-- No rates -->
             <v-card-text v-else class="text-center pa-8" data-testid="casa-empty">
@@ -303,6 +303,7 @@
 </template>
 
 <script setup lang="ts">
+import { VDataTable } from 'vuetify/components'
 import { useSeoMeta } from '#imports'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'

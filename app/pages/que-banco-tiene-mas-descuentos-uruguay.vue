@@ -130,7 +130,7 @@
           <h2 class="text-subtitle-1 font-weight-medium">Tabla comparativa</h2>
         </v-card-item>
         <v-card-text>
-          <v-data-table
+          <VDataTable
             :headers="bankHeaders"
             :items="analysis.banks"
             :items-per-page="-1"
@@ -155,7 +155,7 @@
                 Ver locales
               </v-btn>
             </template>
-          </v-data-table>
+          </VDataTable>
           <p class="text-caption text-medium-emphasis mt-2 mb-1">
             Cobertura = porcentaje de todas las marcas con descuento que cubre ese emisor. Una marca
             puede tener descuento con varios bancos, así que la suma supera el 100%.
@@ -269,6 +269,7 @@
 </template>
 
 <script setup lang="ts">
+import { VDataTable } from 'vuetify/components'
 import { computed } from 'vue'
 import { useTheme } from 'vuetify'
 import { BANKOS_BANKS } from '~/utils/bankos'
