@@ -1235,48 +1235,45 @@ export default defineNuxtConfig({
 
   // Robots Configuration
   robots: {
+    // Every rule written ONCE, with `/*/…` standing for "under any locale prefix". With
+    // `autoI18n` the module copied each rule under the 35 locales (776 rules), and
+    // @nuxtjs/sitemap tests every sitemap URL against every rule with a matcher that allocates
+    // an array per rule: 41–47 s of synchronous CPU per 10.000 URLs, during which the site
+    // worker answered nothing else (2026-11-06: a car advert took 10–74 s and es-ES.xml
+    // answered 524). Tripwire: tests/unit/robotsRules.test.ts.
+    // Checked against the 110.654 distinct paths of the access log: the only new verdicts are
+    // the CSS chunks of the private pages themselves (`/_nuxt/estadisticas-de-busqueda.*.css`,
+    // which only blocked pages load) and two bot probes (`/apps/admin/…`, `/wp-content/…/server/…`).
+    autoI18n: false,
     // /estadisticas-de-busqueda is the owner's Search Console dashboard: it renders the queries
     // visitors typed, so it is disallowed here AND noindexed on the page AND gated server-side.
     // /_nuxt/ serves the public JS, CSS and fonts needed to render the site.
     // Crawlers must be able to fetch those assets, including in the explicit groups below.
     disallow: [
       '/admin/',
+      '/*/admin/',
       '/server/',
+      '/*/server/',
       '/api-reference',
-      '/estadisticas-de-busqueda',
-      // El ranking privado de páginas por visita: misma lógica que el tablero de Search Console.
-      '/estadisticas-por-pagina',
-      // La encuesta de alquileres (se llega desde los correos) y su panel privado de respuestas.
-      '/opinion-alquileres',
-      '/opiniones-alquileres',
-      // Lista de autores de r/CharruaDevs con nombre propio: noindex en la pagina y fuera del
-      // rastreo. Los mismos datos, agregados y sin nombres, estan en /mercado-it-uruguay.
-      '/ranking-usuarios-charruadevs',
+      ...[
+        '/estadisticas-de-busqueda',
+        // El ranking privado de páginas por visita: misma lógica que el tablero de Search Console.
+        '/estadisticas-por-pagina',
+        // La encuesta de alquileres (se llega desde los correos) y su panel privado de respuestas.
+        '/opinion-alquileres',
+        '/opiniones-alquileres',
+        // Lista de autores de r/CharruaDevs con nombre propio: noindex en la pagina y fuera del
+        // rastreo. Los mismos datos, agregados y sin nombres, estan en /mercado-it-uruguay.
+        '/ranking-usuarios-charruadevs',
+      ].flatMap(path => [path, `/*${path}`]),
       // El teléfono del vendedor de un auto: se pide con un clic, con noindex y sin caché. Ningún
       // rastreador tiene nada que hacer ahí (docs/app/AUTOS_CONTACTOS.md).
       '/api/cars/contact/',
     ],
-    allow: [
-      '/',
-      '/avanzado',
-      '/historico',
-      '/sucursales',
-      '/noticias',
-      '/comparar',
-      '/dolar',
-      '/cotizacion',
-      '/casa',
-      '/guias',
-      '/herramientas',
-      '/glosario',
-      '/convertir',
-      '/indicadores',
-      '/blog',
-      '/acerca',
-      '/publicidad',
-      '/conectar',
-      '/desarrolladores',
-    ],
+    // Only `/`: nothing disallowed above overlaps a public section, so the per-section `Allow`
+    // lines it used to list (/guias, /historico…) never changed a verdict — they only made every
+    // sitemap URL pay for 19 × 35 more rules.
+    allow: ['/'],
     // Explicitly welcome AI search/answer crawlers so the site can be cited by
     // Google AI Overviews/Gemini, ChatGPT Search, Perplexity and Claude. These
     // are answer engines (not just training scrapers); citation drives traffic.
@@ -1300,7 +1297,7 @@ export default defineNuxtConfig({
         allow: ['/'],
         // Un grupo propio NO hereda el disallow general: el teléfono del vendedor de un auto va
         // repetido acá, o Bingbot y los rastreadores de IA quedan habilitados a pedirlo.
-        disallow: ['/admin/', '/server/', '/api/cars/contact/'],
+        disallow: ['/admin/', '/*/admin/', '/server/', '/*/server/', '/api/cars/contact/'],
       },
     ],
     // El índice, no /sitemap.xml.
@@ -1354,6 +1351,12 @@ export default defineNuxtConfig({
     // production builds independent from catalogue growth while preserving the
     // same public /sitemap.xml URL for crawlers.
     cacheMaxAgeSeconds: 60 * 60,
+    // The built XML, on disk: shared by the two site workers (pm2 cluster ×2, each with its own
+    // memory) and kept across deploys (`.data` sits beside `.output`, which deploy.sh swaps).
+    // In memory every worker rebuilt every sitemap, and every deploy started both cold: crawlers
+    // asking for the 35 sitemaps right after a release kept the workers busy building them
+    // (2026-11-06). Tripwire: tests/unit/sitemapCache.test.ts.
+    runtimeCacheStorage: { driver: 'fs', base: './.data/sitemap' },
     // Keep non-search pages out of the sitemap so they don't waste crawl budget or show as
     // "not indexed" in Search Console: the always-noindex pages, in Spanish and under every
     // locale prefix (utils/sitemapFilters.ts — one RegExp, see why there).
