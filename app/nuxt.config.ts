@@ -40,6 +40,21 @@ const sentryDefaults = {
   release: sentryRelease,
 }
 
+// robots.txt: the translated used-car adverts (`/fr/autos-usados-uruguay/ml-…`). An advert is
+// noindex in every language and expires within weeks; since every page answers in every locale,
+// ClaudeBot alone asked for 3.729 of them on 2026-11-06 (none the day before), a full SSR each,
+// and the site workers stalled. The Spanish advert stays crawlable (noindex, follow). The longer
+// Allow rules win over the Disallow: the translated model and budget pages stay open, and so do
+// the share cards (`/__og-image__/image/en/autos-usados-uruguay/og.png`), which the `*` also
+// reaches and which social crawlers read through the wildcard group.
+// Both robots groups list these: an explicit group does not inherit the wildcard group's rules.
+const TRANSLATED_ADVERTS_DISALLOW = ['/*/autos-usados-uruguay/']
+const TRANSLATED_ADVERTS_ALLOW = [
+  '/*/autos-usados-uruguay/precios/',
+  '/*/autos-usados-uruguay/hasta-',
+  '/__og-image__/image/*autos-usados-uruguay/',
+]
+
 export default defineNuxtConfig({
   // Keep opt-in validation/CI builds isolated from a running dev server or another staging build.
   // Normal builds retain Nuxt's default cache directory.
@@ -1269,11 +1284,12 @@ export default defineNuxtConfig({
       // El teléfono del vendedor de un auto: se pide con un clic, con noindex y sin caché. Ningún
       // rastreador tiene nada que hacer ahí (docs/app/AUTOS_CONTACTOS.md).
       '/api/cars/contact/',
+      ...TRANSLATED_ADVERTS_DISALLOW,
     ],
-    // Only `/`: nothing disallowed above overlaps a public section, so the per-section `Allow`
-    // lines it used to list (/guias, /historico…) never changed a verdict — they only made every
-    // sitemap URL pay for 19 × 35 more rules.
-    allow: ['/'],
+    // `/` and the exceptions to the translated adverts: nothing else disallowed above overlaps a
+    // public section, so the per-section `Allow` lines it used to list (/guias, /historico…) never
+    // changed a verdict — they only made every sitemap URL pay for 19 × 35 more rules.
+    allow: ['/', ...TRANSLATED_ADVERTS_ALLOW],
     // Explicitly welcome AI search/answer crawlers so the site can be cited by
     // Google AI Overviews/Gemini, ChatGPT Search, Perplexity and Claude. These
     // are answer engines (not just training scrapers); citation drives traffic.
@@ -1294,10 +1310,17 @@ export default defineNuxtConfig({
           'Amazonbot',
           'cohere-ai',
         ],
-        allow: ['/'],
+        allow: ['/', ...TRANSLATED_ADVERTS_ALLOW],
         // Un grupo propio NO hereda el disallow general: el teléfono del vendedor de un auto va
         // repetido acá, o Bingbot y los rastreadores de IA quedan habilitados a pedirlo.
-        disallow: ['/admin/', '/*/admin/', '/server/', '/*/server/', '/api/cars/contact/'],
+        disallow: [
+          '/admin/',
+          '/*/admin/',
+          '/server/',
+          '/*/server/',
+          '/api/cars/contact/',
+          ...TRANSLATED_ADVERTS_DISALLOW,
+        ],
       },
     ],
     // El índice, no /sitemap.xml.

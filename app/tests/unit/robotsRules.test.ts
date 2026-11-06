@@ -46,7 +46,8 @@ const PRIVATE_PAGES = [
 const PUBLIC_PATHS = [
   '/',
   '/autos-usados-uruguay',
-  '/autos-usados-uruguay/fb-1561585904936621',
+  '/autos-usados-uruguay/precios/chevrolet-onix',
+  '/autos-usados-uruguay/hasta-10000-dolares',
   '/alquileres-uruguay',
   '/guias/como-comprar-dolares',
   '/historico',
@@ -93,6 +94,29 @@ describe('robots.txt rules', () => {
       expect(open).toEqual([])
     }
     expect(blocked(groups()[0], '/api-reference')).toBe(true)
+  })
+
+  // A used-car advert is noindex in every language and expires within weeks. Since every page
+  // answers in every locale, ClaudeBot alone asked for 3.729 translated adverts on 2026-11-06
+  // (none the day before), each one a full SSR. The Spanish advert stays crawlable: noindex,
+  // follow is how its links reach the model pages.
+  it('keep crawlers out of the translated used-car adverts, and only those', () => {
+    for (const group of groups()) {
+      const adverts = ['/autos-usados-uruguay/fb-1561585904936621', '/autos-usados-uruguay/ml-MLU1']
+      const open = adverts
+        .flatMap(path => PREFIXED_LOCALE_CODES.map(code => `/${code}${path}`))
+        .filter(path => !blocked(group, path))
+      expect(open).toEqual([])
+      expect(adverts.filter(path => blocked(group, path))).toEqual([])
+      // `/*/autos-usados-uruguay/` also prefixes the share cards of the directory and the model
+      // pages: social crawlers read the wildcard group (caught on the access log, 2026-11-06).
+      const cards = [
+        '/__og-image__/image/autos-usados-uruguay/og.png',
+        '/__og-image__/image/en/autos-usados-uruguay/og.png',
+        '/__og-image__/image/fr/autos-usados-uruguay/precios/chevrolet-onix/og.png',
+      ]
+      expect(cards.filter(path => blocked(group, path))).toEqual([])
+    }
   })
 
   it('never block a public page, in any locale, for any group', () => {
