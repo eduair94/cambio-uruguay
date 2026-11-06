@@ -116,7 +116,7 @@
             </span>
           </v-card-title>
 
-          <v-data-table
+          <VDataTable
             v-if="branchesData?.length"
             :headers="headers"
             :items="branchesData"
@@ -171,7 +171,7 @@
                 {{ ((item as any).distance / 1000).toFixed(1) }} km
               </v-chip>
             </template>
-          </v-data-table>
+          </VDataTable>
 
           <!-- No data state -->
           <v-card-text v-else class="text-center pa-8">

@@ -134,7 +134,7 @@
           />
         </v-col>
         <v-col cols="12" md="5">
-          <v-autocomplete
+          <VAutocomplete
             v-model="selectedDepartment"
             :items="departmentOptions"
             :label="$t('sucursales.filtrarPorDepartamento')"

@@ -98,7 +98,7 @@
               }}
             </v-card-title>
 
-            <v-data-table
+            <VDataTable
               v-if="quotes.length"
               :headers="headers"
               :items="quotes"
@@ -164,7 +164,7 @@
                   </v-btn>
                 </div>
               </template>
-            </v-data-table>
+            </VDataTable>
 
             <!-- No quotes -->
             <v-card-text v-else class="text-center pa-8" data-testid="frontera-empty">

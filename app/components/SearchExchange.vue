@@ -50,7 +50,7 @@
         </p>
       </div>
       <div v-else>
-        <v-data-table
+        <VDataTable
           v-model:sort-by="sortBy"
           :mobile-breakpoint="1100"
           :headers="getHeaders()"
@@ -97,7 +97,7 @@
               {{ formatDistance(item.distance) }}</a
             >
           </template>
-        </v-data-table>
+        </VDataTable>
       </div>
       <v-card-actions>
         <v-spacer />

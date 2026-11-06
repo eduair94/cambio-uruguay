@@ -24,7 +24,7 @@
           <v-card-text>
             <v-row align="start">
               <v-col cols="12" md="4">
-                <v-autocomplete
+                <VAutocomplete
                   v-model="selectedCurrency"
                   :items="currencyOptions"
                   item-title="title"
@@ -38,7 +38,7 @@
                 />
               </v-col>
               <v-col cols="12" md="5">
-                <v-autocomplete
+                <VAutocomplete
                   v-model="selectedOrigins"
                   :items="originOptions"
                   item-title="title"
@@ -195,7 +195,7 @@
                  horizontally on mobile — far more legible than stacked cards
                  when comparing several houses column-by-column. -->
             <div class="table-scroll">
-              <v-data-table
+              <VDataTable
                 :headers="headers"
                 :items="summaryRows"
                 :mobile="false"
@@ -229,7 +229,7 @@
                 <template #item.avg="{ item }">
                   {{ formatCurrency(item.avg) }}
                 </template>
-              </v-data-table>
+              </VDataTable>
             </div>
           </v-card>
         </v-col>

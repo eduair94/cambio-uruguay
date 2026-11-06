@@ -35,7 +35,7 @@
       <v-col cols="12" sm="6" md="3" class="d-flex align-center">
         <div class="px-1 flex-grow-1">
           <span class="text-caption">{{ t('map.radius') }}: {{ radiusKm }} km</span>
-          <v-slider
+          <VSlider
             v-model="radiusKm"
             :min="1"
             :max="50"

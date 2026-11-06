@@ -113,7 +113,7 @@
             </v-row>
           </v-card-text>
           <!-- Tabla de datos -->
-          <v-data-table
+          <VDataTable
             :headers="headers"
             :items="filteredItems"
             :search="search"
@@ -210,7 +210,7 @@
                 </p>
               </div>
             </template>
-          </v-data-table>
+          </VDataTable>
         </v-card>
       </v-col>
     </v-row>
