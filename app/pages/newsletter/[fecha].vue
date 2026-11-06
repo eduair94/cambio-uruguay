@@ -113,7 +113,7 @@
 // from the stored issue and nothing is recomputed from today's quotes: a visitor
 // arriving in six months must see the numbers that were true on that date.
 import { computed } from 'vue'
-import { formatIssueDate, isIssueDate, type NewsletterIssue } from '~/utils/newsletterIssue'
+import { formatIssueDate, type NewsletterIssue } from '~/utils/newsletterIssue'
 
 /** The issue as the API serves it, with its archive neighbours attached. */
 type IssueResponse = NewsletterIssue & { prev: string | null; next: string | null }
@@ -125,7 +125,10 @@ const fecha = computed(() => String(route.params.fecha ?? ''))
 definePageMeta({
   // Reject anything that is not a real calendar date before the request is
   // made, so `/newsletter/algo` 404s instead of reaching the API.
-  validate: route => isIssueDate(String(route.params.fecha ?? '')),
+  validate: async route => {
+    const catalogue = await import('~/utils/newsletterIssue')
+    return catalogue.isIssueDate(String(route.params.fecha ?? ''))
+  },
 })
 
 const { data: issue, error } = await useAsyncData(`newsletter-issue-${fecha.value}`, () =>

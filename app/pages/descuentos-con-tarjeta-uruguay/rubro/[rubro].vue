@@ -241,14 +241,16 @@ import {
   BANKOS_CATEGORY_PAGES,
   BANKOS_SHARED_FAQ,
   bankPageForBankId,
-  categoryPageSlugs,
   getCategoryPage,
 } from '~/utils/bankosPages'
 import type { FaqItem } from '~/utils/faqAnswers'
 import { pickTitle } from '~/utils/liveRateSeo'
 
 definePageMeta({
-  validate: route => categoryPageSlugs().includes(String(route.params.rubro ?? '')),
+  validate: async route => {
+    const catalogue = await import('~/utils/bankosPages')
+    return catalogue.categoryPageSlugs().includes(String(route.params.rubro ?? ''))
+  },
 })
 
 const localePath = useLocalePath()

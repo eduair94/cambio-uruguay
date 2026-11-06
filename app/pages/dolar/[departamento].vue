@@ -178,8 +178,11 @@ definePageMeta({
     const baseURL = import.meta.server ? config.apiBaseServer : config.public.apiBase
     try {
       const localData = await $fetch<LocalDataMap>('/localData', { baseURL })
-      const allNames = listDepartments(localData).map(d => d.name)
-      return departmentFromSlug(String(route.params.departamento ?? ''), allNames) !== null
+      const catalogue = await import('~/utils/departments')
+      const allNames = catalogue.listDepartments(localData).map(d => d.name)
+      return (
+        catalogue.departmentFromSlug(String(route.params.departamento ?? ''), allNames) !== null
+      )
     } catch {
       // API unreachable: can't safely 404, so let the page render and degrade.
       return true

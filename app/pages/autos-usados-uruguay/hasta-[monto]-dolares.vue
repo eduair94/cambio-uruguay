@@ -149,7 +149,10 @@ import type { FaqItem } from '~/utils/faqAnswers'
 // trilingüe usa la ruta cruda, sin localePath, o en /en y /pt cae en un 404.
 defineI18nRoute({ locales: ['es'] })
 definePageMeta({
-  validate: route => parseCarBudget(route.params.monto) !== null,
+  validate: async route => {
+    const catalogue = await import('~/utils/carBudget')
+    return catalogue.parseCarBudget(route.params.monto) !== null
+  },
 })
 
 const SITE = 'https://cambio-uruguay.com'

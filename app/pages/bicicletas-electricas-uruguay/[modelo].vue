@@ -238,7 +238,6 @@ import {
   type MonopatinSpecsPublic,
 } from '~/utils/monopatinFicha'
 import {
-  MONOPATIN_MODEL_SLUG_RE,
   monopatinOfferGroups,
   type MonopatinModelDetailResponse,
   type MonopatinModelOffer,
@@ -264,7 +263,8 @@ defineI18nRoute({ locales: ['es'] })
 definePageMeta({
   validate: async route => {
     const slug = String(route.params.modelo ?? '')
-    if (!MONOPATIN_MODEL_SLUG_RE.test(slug)) return false
+    const catalogue = await import('~/utils/monopatinModelos')
+    if (!catalogue.MONOPATIN_MODEL_SLUG_RE.test(slug)) return false
     try {
       await $fetch(`/api/movilidad/modelos/${slug}`, {
         query: { categoria: 'bicicleta-electrica' },

@@ -143,7 +143,6 @@ import { round } from '~/utils/calculators'
 import {
   amountLabel,
   CONVERT_CURRENCIES,
-  convertSlugs,
   convertTitle,
   foreignCode,
   getConvertEntry,
@@ -156,7 +155,10 @@ import type { CurrencyCode } from '~/utils/currencyPages'
 import type { SavedRateRef } from '~/composables/useSavedDrift'
 
 definePageMeta({
-  validate: route => convertSlugs().includes(String(route.params.slug ?? '')),
+  validate: async route => {
+    const catalogue = await import('~/utils/convert')
+    return catalogue.convertSlugs().includes(String(route.params.slug ?? ''))
+  },
 })
 
 const localePath = useLocalePath()

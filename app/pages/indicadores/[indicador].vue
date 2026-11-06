@@ -333,7 +333,10 @@ import {
 } from '~/utils/indicators'
 
 definePageMeta({
-  validate: route => indicatorFromSlug(String(route.params.indicador ?? '')) !== null,
+  validate: async route => {
+    const catalogue = await import('~/utils/indicators')
+    return catalogue.indicatorFromSlug(String(route.params.indicador ?? '')) !== null
+  },
 })
 
 const route = useRoute()

@@ -363,7 +363,6 @@ import {
   CAR_SELLER_LABELS,
   CAR_TRANSMISSION_LABELS,
   CARS_PATH,
-  carKeyValid,
   carMarketPath,
   carPath,
   formatCarDate,
@@ -388,7 +387,10 @@ import {
 // antes de que nuxt-og-image vuelva a pedir la página para leer su payload: `validate` corre
 // fuera de setup, igual que en equipar/productos. La macro sólo ve imports, nunca constantes.
 definePageMeta({
-  validate: route => carKeyValid(String(route.params.key ?? '')),
+  validate: async route => {
+    const catalogue = await import('~/utils/cars')
+    return catalogue.carKeyValid(String(route.params.key ?? ''))
+  },
 })
 
 const route = useRoute()
