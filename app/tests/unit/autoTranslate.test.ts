@@ -161,9 +161,13 @@ describe('auto-translate: what a translated page may claim', () => {
     )
   })
 
-  it('only translates into real locales of the site', () => {
+  it('translates into every locale of the site but Spanish, each once', () => {
     for (const code of AUTO_TRANSLATE_LOCALES) expect(LOCALE_CODES).toContain(code)
     expect(AUTO_TRANSLATE_LOCALES).not.toContain('es')
+    expect(new Set(AUTO_TRANSLATE_LOCALES).size).toBe(AUTO_TRANSLATE_LOCALES.length)
+    expect([...AUTO_TRANSLATE_LOCALES].sort()).toEqual(
+      LOCALE_CODES.filter(code => code !== 'es').sort()
+    )
   })
 })
 
@@ -179,17 +183,29 @@ describe('auto-translate: the sitemap', () => {
     ],
   })
 
-  it('adds the translated URLs of a Spanish-only page, with reciprocal alternates', () => {
-    const urls = keepCanonicalLocales(
-      [spanish('/guias/una'), { loc: '/en/guias/una' }, { loc: '/de/guias/una' }],
-      { pages: new Map([['/guias/una', ['en', 'fr']]]), isEmbargoed: () => false }
-    )
+  it('adds the translated URLs of a Spanish-only page; extra hreflang stays in the <head>', () => {
+    const urls = keepCanonicalLocales([spanish('/guias/una'), { loc: '/de/guias/una' }], {
+      pages: new Map([['/guias/una', ['en', 'fr']]]),
+      isEmbargoed: () => false,
+    })
     expect(urls.map(url => url.loc)).toEqual(['/guias/una', '/en/guias/una', '/fr/guias/una'])
-    const hreflangs = (urls[0] as { alternatives: Array<{ hreflang: string }> }).alternatives.map(
-      alternative => alternative.hreflang
-    )
-    expect(hreflangs).toEqual(['es-ES', 'en-US', 'fr', 'x-default'])
+    const hreflangs = (url: unknown) =>
+      (url as { alternatives?: Array<{ hreflang: string }> }).alternatives?.map(
+        alternative => alternative.hreflang
+      )
+    expect(hreflangs(urls[0])).toEqual(['es-ES', 'en-US', 'x-default'])
+    expect(hreflangs(urls[1])).toEqual(['es-ES', 'en-US', 'x-default'])
+    expect(hreflangs(urls[2])).toBeUndefined()
     expect((urls[2] as { changefreq?: string }).changefreq).toBe('weekly')
+  })
+
+  it('strips the alternates of a translated extra URL that a source already listed', () => {
+    const urls = keepCanonicalLocales(
+      [spanish('/guias/una'), { loc: '/fr/guias/una', alternatives: spanish('/x').alternatives }],
+      { pages: new Map([['/guias/una', ['fr']]]), isEmbargoed: () => false }
+    )
+    expect(urls.map(url => url.loc)).toEqual(['/guias/una', '/fr/guias/una'])
+    expect((urls[1] as { alternatives?: unknown }).alternatives).toBeUndefined()
   })
 
   it('leaves a reserved page exactly as it was', () => {

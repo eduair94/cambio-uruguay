@@ -1325,11 +1325,14 @@ export default defineNuxtConfig({
         exclude: ['/en/**', '/pt/**', ...EXTRA_LOCALES.map(({ code }) => `/${code}/**`)],
       },
       'pt-PT': { includeAppSources: true, include: ['/pt/**'] },
-      // Every machine-translated locale in one file: ~10 pages each (utils/locales.ts).
-      translations: {
-        includeAppSources: true,
-        include: EXTRA_LOCALES.map(({ code }) => `/${code}/**`),
-      },
+      // One per extra locale: what each language has translated enough to stand on its own
+      // (server/utils/sitemapLocales.ts), and Search Console counts it per language.
+      ...Object.fromEntries(
+        EXTRA_LOCALES.map(({ code }) => [
+          code,
+          { includeAppSources: true, include: [`/${code}/**`] },
+        ])
+      ),
       rentals: {
         includeAppSources: false,
         sources: [['/api/__sitemap__/rentals', { timeout: 60_000 }]],
@@ -1417,8 +1420,9 @@ export default defineNuxtConfig({
       { code: 'en', language: 'en-US', name: 'English', file: 'en.ts' },
       { code: 'es', language: 'es-ES', name: 'Español', file: 'es.ts' },
       { code: 'pt', language: 'pt-PT', name: 'Português', file: 'pt.ts' },
-      // Machine-translated (scripts/i18n/translate.mjs) and present only on the routes in
-      // `EXTRA_LOCALE_ROUTES` — modules/extra-locales.ts prunes the rest. See utils/locales.ts.
+      // Every page answers in each of them: the chrome comes from machine-translated vue-i18n
+      // messages (scripts/i18n/translate.mjs), the body from the translation memory
+      // (utils/autoTranslate.ts). See utils/locales.ts.
       ...EXTRA_LOCALES.map(({ code, language, name }) => ({
         code,
         language,

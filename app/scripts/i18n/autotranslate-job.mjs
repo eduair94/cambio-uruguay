@@ -11,9 +11,11 @@
 // 2. CRAWL — up to AUTO_TRANSLATE_CRAWL Spanish pages from the es-ES sitemap, never-seen first and
 //    by family priority (lib/autotranslate-plan.mjs), are cut into segments by the app itself
 //    (/api/auto-translate/segments), so the keys stored are exactly the keys a render looks up.
-// 3. TRANSLATE — what the memory lacks, locale by locale in AUTO_TRANSLATE_LOCALES order (English
-//    and Portuguese first), up to AUTO_TRANSLATE_CHARS characters, through tr-file
+// 3. TRANSLATE — what the memory lacks, family by family and, inside each, every locale in
+//    AUTO_TRANSLATE_LOCALES order, up to AUTO_TRANSLATE_CHARS characters sent, through tr-file
 //    (lib/machine-translate.mjs). A service that keeps refusing ends the run; the next one resumes.
+//    A segment whose translation fails the checks is skipped for 30 days
+//    (`autotranslationfailures`): retried every run, 88 of them ate half of each run's budget.
 // 4. COVERAGE — per page and locale, the share of Spanish characters with a translation. At
 //    AUTO_TRANSLATE_THRESHOLD a page's translated URL becomes canonical and enters the sitemap.
 //
@@ -24,7 +26,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createJiti } from 'jiti'
 import mongoose from 'mongoose'
-import { embargoRoutes, familyOf } from './lib/autotranslate-plan.mjs'
+import { embargoRoutes, familyOf, giveUp, translationGroups } from './lib/autotranslate-plan.mjs'
 import { createTranslator } from './lib/machine-translate.mjs'
 
 const APP = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
@@ -44,8 +46,13 @@ const ORIGIN = (env.AUTO_TRANSLATE_ORIGIN || `http://127.0.0.1:${env.PORT || 331
   ''
 )
 const TOKEN = env.NUXT_API_ADMIN_TOKEN || ''
-const CRAWL = Number(env.AUTO_TRANSLATE_CRAWL || 25)
-const CHAR_BUDGET = Number(env.AUTO_TRANSLATE_CHARS || 150_000)
+// 1.676 more pages joined the crawl on 2026-11-06 (blog, newsletter, the directories): 50 a run
+// reads them in about six hours, a page or two per second.
+const CRAWL = Number(env.AUTO_TRANSLATE_CRAWL || 50)
+// Characters actually sent, retries included. Once the failures stopped being retried, 150.000
+// took 30 seconds (2026-11-06); 800.000 leaves the run well inside its eight minutes.
+const CHAR_BUDGET = Number(env.AUTO_TRANSLATE_CHARS || 800_000)
+const FAILURE_RETRY_DAYS = Number(env.AUTO_TRANSLATE_FAILURE_RETRY_DAYS || 30)
 const DEADLINE = Date.now() + Number(env.AUTO_TRANSLATE_MINUTES || 8) * 60_000
 const RECRAWL_DAYS = Number(env.AUTO_TRANSLATE_RECRAWL_DAYS || 14)
 const LOCALES = (env.AUTO_TRANSLATE_LOCALES || AUTO_TRANSLATE_LOCALES.join(','))
@@ -96,6 +103,19 @@ async function segmentsOf(path) {
   return (await response.json()).segments
 }
 
+/**
+ * The `<locale>|<hash>` documents of one locale, read as a range of `_id` — the primary index —
+ * so it stays an index scan however many locales the collection holds ('}' follows '|').
+ */
+function idsOf(col, locale, projection = {}) {
+  return col
+    .find(
+      { _id: { $gte: `${locale}|`, $lt: `${locale}}` } },
+      { projection: { _id: 1, ...projection } }
+    )
+    .toArray()
+}
+
 // --------------------------------------------------------------------------------------- run ---
 
 async function main() {
@@ -107,6 +127,7 @@ async function main() {
   const sourcesCol = db.collection('autotranslationsources')
   const memoryCol = db.collection('autotranslations')
   const configCol = db.collection('autotranslationconfig')
+  const failuresCol = db.collection('autotranslationfailures')
 
   // One run at a time: a lease that outlives a crashed run by a few minutes at most.
   const now = new Date()
@@ -193,23 +214,16 @@ async function main() {
       crawled++
     }
 
-    // 3. Translate, in page priority order.
+    // 3. Translate. Family by family and, inside each family, every locale in turn: the
+    // editorial pages reach all the languages before any language gets the catalogues.
     const pages = (
       await pagesCol
         .find({}, { projection: { segs: 1, tier: 1, at: 1 } })
         .sort({ tier: 1, at: 1 })
         .toArray()
     ).sort((a, b) => reserved(a._id) - reserved(b._id))
-    const wanted = []
-    const seen = new Set()
-    for (const page of pages) {
-      for (const [hash] of page.segs ?? []) {
-        if (!seen.has(hash)) {
-          seen.add(hash)
-          wanted.push(hash)
-        }
-      }
-    }
+    const groups = translationGroups(pages, path => reserved(path) === 1)
+    const wantedCount = groups.reduce((sum, group) => sum + group.hashes.length, 0)
     const translator = createTranslator({
       protectedTerms: [
         'cambio-uruguay.com',
@@ -220,54 +234,88 @@ async function main() {
       verbose: false,
     })
     const have = {}
-    let budget = CHAR_BUDGET
-    let translatedCount = 0
-    let refused = null
+    const failed = {}
+    const retryAfter = Date.now() - FAILURE_RETRY_DAYS * 86_400_000
     for (const locale of LOCALES) {
-      const existing = await memoryCol.find({ l: locale }, { projection: { h: 1 } }).toArray()
-      have[locale] = new Set(existing.map(row => row.h))
-      if (refused || DRY_RUN || budget <= 0 || Date.now() > DEADLINE - 30_000) continue
-      const missing = wanted.filter(hash => !have[locale].has(hash))
-      while (missing.length && budget > 0 && Date.now() < DEADLINE - 30_000) {
-        const batch = []
-        let chars = 0
-        const rows = await sourcesCol.find({ _id: { $in: missing.slice(0, 400) } }).toArray()
-        const sources = new Map(rows.map(row => [row._id, row]))
-        const taken = missing.splice(0, 400)
-        for (const [index, hash] of taken.entries()) {
-          const source = sources.get(hash)
-          if (!source?.s) continue
-          if (chars + source.s.length > Math.min(budget, 20_000) && batch.length) {
-            missing.unshift(...taken.slice(index))
-            break
+      have[locale] = new Set(
+        (await idsOf(memoryCol, locale)).map(row => row._id.slice(locale.length + 1))
+      )
+      failed[locale] = new Set(
+        (await idsOf(failuresCol, locale, { n: 1, at: 1 }))
+          .filter(row => giveUp(row, retryAfter))
+          .map(row => row._id.slice(locale.length + 1))
+      )
+    }
+    const spent = () => translator.stats.chars
+    const open = () => spent() < CHAR_BUDGET && Date.now() < DEADLINE - 30_000
+    let translatedCount = 0
+    let failedCount = 0
+    let refused = null
+    for (const group of DRY_RUN ? [] : groups) {
+      for (const locale of LOCALES) {
+        if (refused || !open()) break
+        const missing = group.hashes.filter(
+          hash => !have[locale].has(hash) && !failed[locale].has(hash)
+        )
+        while (missing.length && open()) {
+          const batch = []
+          let chars = 0
+          const taken = missing.splice(0, 400)
+          const rows = await sourcesCol.find({ _id: { $in: taken } }).toArray()
+          const sources = new Map(rows.map(row => [row._id, row]))
+          const room = Math.min(CHAR_BUDGET - spent(), 20_000)
+          for (const [index, hash] of taken.entries()) {
+            const source = sources.get(hash)
+            if (!source?.s) continue
+            if (chars + source.s.length > room && batch.length) {
+              missing.unshift(...taken.slice(index))
+              break
+            }
+            batch.push({ id: hash, template: source.s, example: source.x })
+            chars += source.s.length
           }
-          batch.push({ id: hash, template: source.s, example: source.x })
-          chars += source.s.length
+          if (!batch.length) break
+          let result
+          try {
+            result = await translator.translateTemplates(batch, GOOGLE[locale], locale)
+          } catch (error) {
+            refused = error.message
+            result = error.partial ?? new Map()
+          }
+          if (result.size) {
+            await memoryCol.bulkWrite(
+              [...result].map(([hash, translation]) => ({
+                updateOne: {
+                  filter: { _id: `${locale}|${hash}` },
+                  update: { $set: { l: locale, h: hash, t: translation, at: new Date() } },
+                  upsert: true,
+                },
+              })),
+              { ordered: false }
+            )
+            for (const hash of result.keys()) have[locale].add(hash)
+            translatedCount += result.size
+          }
+          // What the service answered but did not survive the checks (a figure lost, a token
+          // mangled) fails the same way next time: remember it, so the next runs stop paying
+          // for it. A refusal says nothing about the items it cut off.
+          const rejected = refused ? [] : batch.filter(item => !result.has(item.id))
+          if (rejected.length) {
+            await failuresCol.bulkWrite(
+              rejected.map(item => ({
+                updateOne: {
+                  filter: { _id: `${locale}|${item.id}` },
+                  update: { $inc: { n: 1 }, $set: { at: new Date() } },
+                  upsert: true,
+                },
+              })),
+              { ordered: false }
+            )
+            for (const item of rejected) failed[locale].add(item.id)
+            failedCount += rejected.length
+          }
+          if (refused) break
         }
-        if (!batch.length) break
-        budget -= chars
-        let result
-        try {
-          result = await translator.translateTemplates(batch, GOOGLE[locale], locale)
-        } catch (error) {
-          refused = error.message
-          result = error.partial ?? new Map()
-        }
-        if (result.size) {
-          await memoryCol.bulkWrite(
-            [...result].map(([hash, translation]) => ({
-              updateOne: {
-                filter: { _id: `${locale}|${hash}` },
-                update: { $set: { l: locale, h: hash, t: translation, at: new Date() } },
-                upsert: true,
-              },
-            })),
-            { ordered: false }
-          )
-          for (const hash of result.keys()) have[locale].add(hash)
-          translatedCount += result.size
-        }
-        if (refused) break
       }
     }
 
@@ -276,6 +324,8 @@ async function main() {
     for (const page of pages) {
       const segs = page.segs ?? []
       const total = segs.reduce((sum, [, length]) => sum + length, 0)
+      // One field per locale: a run limited by AUTO_TRANSLATE_LOCALES must not erase the
+      // coverage of the locales it did not look at (and with it their canonical and sitemap).
       const cov = {}
       for (const locale of LOCALES) {
         if (!total) continue
@@ -283,9 +333,11 @@ async function main() {
           (sum, [hash, length]) => sum + (have[locale].has(hash) ? length : 0),
           0
         )
-        cov[locale] = Math.round((done / total) * 1000) / 1000
+        cov[`cov.${locale}`] = Math.round((done / total) * 1000) / 1000
       }
-      updates.push({ updateOne: { filter: { _id: page._id }, update: { $set: { cov } } } })
+      if (Object.keys(cov).length) {
+        updates.push({ updateOne: { filter: { _id: page._id }, update: { $set: cov } } })
+      }
     }
     if (updates.length && !DRY_RUN) await pagesCol.bulkWrite(updates, { ordered: false })
     const ready = Object.fromEntries(
@@ -303,8 +355,9 @@ async function main() {
       ])
     )
     log(
-      `crawled ${crawled}/${candidates.length}, pages ${pages.length}, segments ${wanted.length},`,
-      `translated ${translatedCount} (${CHAR_BUDGET - budget} chars, ${translator.stats.requests} requests)`,
+      `crawled ${crawled}/${candidates.length}, pages ${pages.length}, segments ${wantedCount},`,
+      `translated ${translatedCount}, failed ${failedCount}`,
+      `(${spent()} chars, ${translator.stats.requests} requests)`,
       `ready ${JSON.stringify(ready)}`,
       `embargo ${routes.length}`,
       refused ? `— stopped: ${refused}` : ''
