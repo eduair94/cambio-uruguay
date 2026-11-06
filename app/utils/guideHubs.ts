@@ -70,6 +70,7 @@ export const guideHubs: readonly GuideHub[] = [
       'casas-de-cambio-vs-bancos',
       'evitar-comisiones-cambio',
       'euros-reales-donde-cambiar',
+      'cambiar-pesos-argentinos-uruguay',
       'billetes-y-monedas-de-uruguay',
       'moneda-de-uruguay',
       'pagar-en-dolares-o-pesos-uruguay',
@@ -1382,6 +1383,9 @@ export const guideHubs: readonly GuideHub[] = [
       'invertir-en-la-bolsa-de-usa-desde-uruguay',
       'bonos-y-renta-fija-uruguay',
       'conviene-ahorrar-en-dolares-uruguay',
+      // La de al lado contesta "¿conviene?" y ésta "¿en qué moneda, según en qué vas a gastar?":
+      // dos preguntas distintas sobre la misma plata, y por eso las etiquetas no se repiten.
+      'ahorrar-en-dolares-o-pesos',
       'interes-compuesto-explicado-uruguay',
       'errores-y-estafas-al-invertir-uruguay',
       'comprar-criptomonedas-en-uruguay',
