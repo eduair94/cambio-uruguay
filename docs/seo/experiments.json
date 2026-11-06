@@ -3042,6 +3042,30 @@
         "por que sube el euro en uruguay"
       ],
       "hypothesis": "La unica guia del catalogo que explica el euro y el real no pertenecia a ningun tema, asi que no recibia ni daba un solo enlace del bloque 'Mas sobre este tema' y su pagina cerraba sin ninguna salida, con sus cuatro secciones pidiendole al lector que compare. El hub dolar-y-casas-de-cambio-uruguay ya prometia esas dos monedas en su primera linea ('comprar o vender dolares, euros o reales') y en la descripcion de su recurso /pizarra, o sea que el hueco estaba adentro del tema. Entra como guia del hub y, en la seccion que pide comparar, enlaza /cotizacion/euro y /cotizacion/real, con /pizarra en los related. Se espera que la guia reciba enlaces internos desde el tema y sus quince guias hermanas, y que el lector que llega por una consulta de euro o real termine en la pizarra de esa moneda en vez de en un callejon sin salida. Se mide por cuota de clics del sitio con 28 dias finales antes y despues, excluyendo el dia de publicacion. No se tocan anuncios, plantilla ni otras rutas: /cotizacion/euro y /cotizacion/real solo reciben el enlace, no cambian."
+    },
+    {
+      "id": "peso-argentino-entra-al-tema-del-dolar",
+      "shippedOn": "2026-11-06",
+      "routes": ["/guias/cambiar-pesos-argentinos-uruguay"],
+      "queries": [
+        "cambiar pesos argentinos en uruguay",
+        "donde cambiar pesos argentinos montevideo",
+        "cotizacion peso argentino uruguay",
+        "cambiar pesos argentinos en la frontera"
+      ],
+      "hypothesis": "La unica guia del catalogo que explica como cambiar pesos argentinos no pertenecia a ningun tema, asi que no recibia ni daba un solo enlace del bloque 'Mas sobre este tema' y su pagina cerraba sin ninguna salida, con sus cuatro secciones pidiendole al lector que compare. El hub dolar-y-casas-de-cambio-uruguay ya nombraba esta moneda en tres lugares -el termino peso-argentino entre sus terms, el recurso /pizarra descrito textual como 'Dolar, euro, real y peso argentino', y /dolar-blue-hoy como el dolar paralelo argentino-, o sea que el hueco estaba adentro del tema y no al lado, igual que con euros-reales-donde-cambiar el 2026-11-05. Entra como guia del hub y, donde su prosa lo pide, enlaza /cotizacion/peso-argentino, /dolar-blue-hoy y /cotizaciones-de-la-region, con /pizarra en los related. Se espera que la guia reciba enlaces internos desde el tema y sus guias hermanas, y que el lector que llega por una consulta de peso argentino termine en la pizarra de esa moneda en vez de en un callejon sin salida. Se mide por cuota de clics del sitio con 28 dias finales antes y despues, excluyendo el dia de publicacion. No se toco el titulo ni la descripcion de la guia, ni las paginas enlazadas, que solo reciben el enlace."
+    },
+    {
+      "id": "ahorro-por-moneda-entra-al-tema-de-invertir",
+      "shippedOn": "2026-11-06",
+      "routes": ["/guias/ahorrar-en-dolares-o-pesos"],
+      "queries": [
+        "ahorrar en dolares o en pesos uruguay",
+        "en que moneda ahorrar uruguay",
+        "plazo fijo en pesos o en dolares uruguay",
+        "ahorrar en unidades indexadas uruguay"
+      ],
+      "hypothesis": "La guia estaba fuera de TODO tema, asi que no dibujaba 'Mas sobre este tema' y no recibia ningun enlace del bloque, que es reciproco por construccion; y sin related ni links de seccion, guideNextSteps no tenia ninguna de sus tres fuentes y la pagina terminaba sin un solo enlace de salida. Entra a ahorrar-e-invertir-uruguay, que es su tema sin inventar ningun padre: el intro del hub ya promete 'la decision de ahorrar en dolares' y sus recursos son los tres datos que esta guia le pide mirar al lector sin enlazar ninguno -la tasa del plazo fijo, la inflacion con la UI, y donde se opera-. El hub ya lleva conviene-ahorrar-en-dolares-uruguay, que contesta si conviene; esta contesta en que moneda segun en que vas a gastar, que es la misma separacion declarada para /impuesto-temu-uruguay el 2026-10-20, y por eso las etiquetas no se repiten. Ahora enlaza /herramientas/calculadora-plazo-fijo, /indicadores, /guias/unidad-indexada-explicada y /comparar donde su prosa lo pide, con /inversiones-uruguay en los related. Se espera que gane enlaces internos desde el tema y sus diez guias hermanas y que el lector termine en la herramienta que le contesta. Se mide por cuota de clics del sitio con 28 dias finales antes y despues, excluyendo el dia de publicacion. No se toco el titulo ni la descripcion."
     }
   ]
 }

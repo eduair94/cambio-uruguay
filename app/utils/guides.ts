@@ -727,7 +727,7 @@ export const guides: readonly Guide[] = [
     description:
       'Ventajas y riesgos de ahorrar en dólares o en pesos en Uruguay: inflación, tasas de plazo fijo, unidad indexada y cómo elegir según tus gastos futuros.',
     tag: 'AHORRO',
-    updatedAt: '2026-06-17',
+    updatedAt: '2026-11-06',
     sections: [
       {
         heading: 'La pregunta clave: ¿en qué vas a gastar?',
@@ -736,6 +736,10 @@ export const guides: readonly Guide[] = [
       {
         heading: 'Pesos: rinden más, pero pierden con la inflación',
         body: 'Los plazos fijos en pesos suelen pagar tasas más altas que los de dólares para compensar la inflación. El punto es que esa tasa tiene que superar a la inflación para que ganes poder de compra real. Si la inflación se come buena parte del interés, el rendimiento real es bajo. Mirá siempre la tasa frente a la inflación esperada, no en abstracto.',
+        links: [
+          { label: 'Calculadora de plazo fijo', to: '/herramientas/calculadora-plazo-fijo' },
+          { label: 'Inflación, UI, UR y tasas', to: '/indicadores' },
+        ],
       },
       {
         heading: 'Dólares: estabilidad, pero menor tasa',
@@ -744,12 +748,15 @@ export const guides: readonly Guide[] = [
       {
         heading: 'La opción indexada: Unidad Indexada (UI)',
         body: 'Entre ambos extremos están los instrumentos en Unidad Indexada, que ajustan su valor por la inflación (IPC). Permiten ahorrar en pesos sin perder poder de compra frente a la suba de precios. Son una alternativa interesante para quien quiere mantener valor real sin asumir riesgo cambiario.',
+        links: [{ label: 'Qué es la Unidad Indexada', to: '/guias/unidad-indexada-explicada' }],
       },
       {
         heading: 'Diversificar suele ser lo más prudente',
         body: 'No tenés que elegir todo o nada. Muchos ahorristas reparten entre pesos, dólares e instrumentos indexados según sus metas y horizonte. Lo importante es decidir con criterio y no por impulso. Y cuando compres o vendas dólares, compará en Cambio Uruguay para hacerlo al mejor precio.',
+        links: [{ label: 'Comparar el dólar entre casas de cambio', to: '/comparar' }],
       },
     ],
+    related: [{ label: 'Dónde invertir en Uruguay', to: '/inversiones-uruguay' }],
   },
   {
     slug: 'cambiar-pesos-argentinos-uruguay',
@@ -757,11 +764,15 @@ export const guides: readonly Guide[] = [
     description:
       'Cómo y dónde cambiar pesos argentinos en Uruguay, por qué su cotización es volátil y tiene spreads amplios, y consejos para zonas de frontera y turismo.',
     tag: 'FRONTERA',
-    updatedAt: '2026-06-17',
+    updatedAt: '2026-11-06',
     sections: [
       {
         heading: 'Una moneda volátil y de spread amplio',
         body: 'El peso argentino es una de las monedas más volátiles que se operan en Uruguay por la historia inflacionaria y cambiaria del país vecino. Eso se traduce en cotizaciones que varían mucho entre casas de cambio y en spreads (brecha compra-venta) más amplios que los del dólar. Comparar antes de operar es todavía más importante con esta moneda.',
+        links: [
+          { label: 'Dólar blue y la brecha con el oficial', to: '/dolar-blue-hoy' },
+          { label: 'El dólar en Argentina y la región', to: '/cotizaciones-de-la-region' },
+        ],
       },
       {
         heading: 'Dónde se cambia mejor',
@@ -774,8 +785,15 @@ export const guides: readonly Guide[] = [
       {
         heading: 'Compará en Cambio Uruguay',
         body: 'Antes de cambiar pesos argentinos, mirá la cotización de la moneda en las casas de cambio relevadas y quedate con la que más te convenga según vayas a comprar o vender. Tener una referencia clara del mercado te protege de aceptar un precio muy por debajo del disponible.',
+        links: [
+          {
+            label: 'Cotización del peso argentino, casa por casa',
+            to: '/cotizacion/peso-argentino',
+          },
+        ],
       },
     ],
+    related: [{ label: 'La pizarra: dólar, euro, real y peso argentino', to: '/pizarra' }],
   },
   {
     slug: 'euros-reales-donde-cambiar',

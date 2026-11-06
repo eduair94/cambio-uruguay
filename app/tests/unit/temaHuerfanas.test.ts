@@ -439,10 +439,8 @@ describe('ninguna página de lectura queda fuera de todos los temas', () => {
  * (`npx vitest run tests/unit/temaIndex.test.ts -u`). El vínculo queda recíproco solo.
  */
 const GUIAS_SIN_TEMA = [
-  'ahorrar-en-dolares-o-pesos',
   'cajeros-automaticos-uruguay-turistas',
   'cambiar-monedas-poco-comunes-uruguay',
-  'cambiar-pesos-argentinos-uruguay',
   'criptomonedas-regulacion-impuestos-uruguay',
   'devolucion-iva-turistas-uruguay',
   'dolar-cripto-usdt-uruguay',
@@ -591,7 +589,42 @@ const GUIAS_SIN_TEMA = [
  *
  * Sólo puede bajar: subirlo es publicar una guía huérfana.
  */
-const DEUDA_MAXIMA_GUIAS = 13
+/**
+ * 13 → 11 el 2026-11-06: `cambiar-pesos-argentinos-uruguay` y `ahorrar-en-dolares-o-pesos`, que son
+ * las DOS únicas de las trece con la ruta libre de toda ventana de medición abierta
+ * (`npm run seo_debt`: 2 libres de 22, y las dos son de este pozo). Las otras once siguen
+ * reservadas, la primera hasta el 2026-11-07.
+ *
+ * Van a temas DISTINTOS y por eso declaran dos filas del libro de cambios y no una: no son un hueco
+ * del mismo hub, como sí lo eran las tres guías de viaje del 2026-11-04.
+ *
+ * Y ninguna de las dos inventa un padre, que es la regla que dejó a `propinas-en-uruguay` afuera dos
+ * veces:
+ *
+ * - `cambiar-pesos-argentinos-uruguay` → `dolar-y-casas-de-cambio-uruguay`, y acá no hay que
+ *   argumentar nada: `peso-argentino` ya es uno de los `terms` del hub, su recurso `/pizarra` se
+ *   describe textual como «Dólar, euro, real y peso argentino», `/dolar-blue-hoy` ya es otro de sus
+ *   recursos y `/cotizaciones-de-la-region` abre por Argentina. O sea que el tema venía nombrando
+ *   esta moneda en tres lugares y la única guía del catálogo que explica cómo cambiarla no era
+ *   miembro — el mismo hueco adentro del tema que `euros-reales-donde-cambiar` el 2026-11-05.
+ * - `ahorrar-en-dolares-o-pesos` → `ahorrar-e-invertir-uruguay`, cuyo `intro` ya promete «la
+ *   decisión de ahorrar en dólares» y cuyos recursos son los TRES datos que esta guía le pide mirar
+ *   al lector sin enlazar ninguno: la tasa del plazo fijo (`/herramientas/calculadora-plazo-fijo`),
+ *   la inflación y la UI (`/indicadores`) y dónde se opera (`/inversiones-uruguay`). El hub ya lleva
+ *   `conviene-ahorrar-en-dolares-uruguay`, que contesta «¿conviene?»; ésta contesta «¿en qué moneda,
+ *   según en qué vas a gastar?», que es la separación que esta lista declaró para
+ *   `/impuesto-temu-uruguay` el 20/10 y por eso las etiquetas no se repiten.
+ *
+ * Las dos eran además de las peores huérfanas por la razón del 2026-11-01, del 04 y del 05: sin
+ * `related` ni `links` de sección, `guideNextSteps` (`utils/guideReading.ts`) no tenía ninguna de
+ * sus tres fuentes y las dos páginas cerraban sin UN SOLO enlace de salida, con la última sección de
+ * cada una diciéndole al lector que compare. Hoy cada una enlaza donde su prosa lo pide —la del peso
+ * argentino `/cotizacion/peso-argentino`, la del ahorro la calculadora de plazo fijo, los
+ * indicadores, la guía de la UI y `/comparar`— y `related` agrega la pizarra y dónde invertir.
+ *
+ * Sólo puede bajar: subirlo es publicar una guía huérfana.
+ */
+const DEUDA_MAXIMA_GUIAS = 11
 
 describe('ninguna guía queda fuera de todos los temas', () => {
   const sinTema = guides
