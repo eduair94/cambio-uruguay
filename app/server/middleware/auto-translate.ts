@@ -1,4 +1,4 @@
-import { isAutoTranslateLocale, isEmbargoed } from '../../utils/autoTranslate'
+import { isAutoTranslateLocale, isEmbargoed, untranslatedRedirect } from '../../utils/autoTranslate'
 import { splitLocalePath } from '../../utils/localizedRoutes'
 import { embargoedRoutes, lookupTranslations, translatedLocales } from '../utils/autoTranslateStore'
 
@@ -35,11 +35,18 @@ export default defineEventHandler(async event => {
   const { locale, path: raw } = splitLocalePath(url)
   const path = raw.replace(/(.)\/+$/, '$1') || '/'
   const [translated, routes] = await Promise.all([translatedLocales(path), embargoedRoutes()])
+  const embargoed = isEmbargoed(path, routes)
+  // An extra locale the page is not translated into: the Spanish page, without rendering this one.
+  const target = untranslatedRedirect(locale, path, { translated, embargoed })
+  if (target) {
+    const query = event.path.includes('?') ? event.path.slice(event.path.indexOf('?')) : ''
+    return sendRedirect(event, target + query, 302)
+  }
   event.context.autoTranslate = {
     locale,
     path,
     translated,
-    embargoed: isEmbargoed(path, routes),
+    embargoed,
     lookup: hashes =>
       isAutoTranslateLocale(locale)
         ? lookupTranslations(locale, hashes)

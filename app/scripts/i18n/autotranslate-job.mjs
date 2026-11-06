@@ -26,7 +26,13 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createJiti } from 'jiti'
 import mongoose from 'mongoose'
-import { embargoRoutes, familyOf, giveUp, translationGroups } from './lib/autotranslate-plan.mjs'
+import {
+  embargoRoutes,
+  familyOf,
+  giveUp,
+  translationGroups,
+  translationOrder,
+} from './lib/autotranslate-plan.mjs'
 import { PROTECTED_ACRONYMS, createTranslator } from './lib/machine-translate.mjs'
 
 const APP = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
@@ -49,9 +55,9 @@ const TOKEN = env.NUXT_API_ADMIN_TOKEN || ''
 // 1.676 more pages joined the crawl on 2026-11-06 (blog, newsletter, the directories): 50 a run
 // reads them in about six hours, a page or two per second.
 const CRAWL = Number(env.AUTO_TRANSLATE_CRAWL || 50)
-// Characters actually sent, retries included. Once the failures stopped being retried, 150.000
-// took 30 seconds (2026-11-06); 800.000 leaves the run well inside its eight minutes.
-const CHAR_BUDGET = Number(env.AUTO_TRANSLATE_CHARS || 800_000)
+// Characters actually sent, retries included. 800.000 took about four minutes of the eight
+// (2026-11-06, no refusal from the service in 30 runs); 1.400.000 fills the run.
+const CHAR_BUDGET = Number(env.AUTO_TRANSLATE_CHARS || 1_400_000)
 const FAILURE_RETRY_DAYS = Number(env.AUTO_TRANSLATE_FAILURE_RETRY_DAYS || 30)
 const DEADLINE = Date.now() + Number(env.AUTO_TRANSLATE_MINUTES || 8) * 60_000
 const RECRAWL_DAYS = Number(env.AUTO_TRANSLATE_RECRAWL_DAYS || 14)
@@ -252,71 +258,69 @@ async function main() {
     let translatedCount = 0
     let failedCount = 0
     let refused = null
-    for (const group of DRY_RUN ? [] : groups) {
-      for (const locale of LOCALES) {
-        if (refused || !open()) break
-        const missing = group.hashes.filter(
-          hash => !have[locale].has(hash) && !failed[locale].has(hash)
-        )
-        while (missing.length && open()) {
-          const batch = []
-          let chars = 0
-          const taken = missing.splice(0, 400)
-          const rows = await sourcesCol.find({ _id: { $in: taken } }).toArray()
-          const sources = new Map(rows.map(row => [row._id, row]))
-          const room = Math.min(CHAR_BUDGET - spent(), 20_000)
-          for (const [index, hash] of taken.entries()) {
-            const source = sources.get(hash)
-            if (!source?.s) continue
-            if (chars + source.s.length > room && batch.length) {
-              missing.unshift(...taken.slice(index))
-              break
-            }
-            batch.push({ id: hash, template: source.s, example: source.x })
-            chars += source.s.length
+    for (const { group, locale } of DRY_RUN ? [] : translationOrder(groups, LOCALES)) {
+      if (refused || !open()) break
+      const missing = group.hashes.filter(
+        hash => !have[locale].has(hash) && !failed[locale].has(hash)
+      )
+      while (missing.length && open()) {
+        const batch = []
+        let chars = 0
+        const taken = missing.splice(0, 400)
+        const rows = await sourcesCol.find({ _id: { $in: taken } }).toArray()
+        const sources = new Map(rows.map(row => [row._id, row]))
+        const room = Math.min(CHAR_BUDGET - spent(), 20_000)
+        for (const [index, hash] of taken.entries()) {
+          const source = sources.get(hash)
+          if (!source?.s) continue
+          if (chars + source.s.length > room && batch.length) {
+            missing.unshift(...taken.slice(index))
+            break
           }
-          if (!batch.length) break
-          let result
-          try {
-            result = await translator.translateTemplates(batch, GOOGLE[locale], locale)
-          } catch (error) {
-            refused = error.message
-            result = error.partial ?? new Map()
-          }
-          if (result.size) {
-            await memoryCol.bulkWrite(
-              [...result].map(([hash, translation]) => ({
-                updateOne: {
-                  filter: { _id: `${locale}|${hash}` },
-                  update: { $set: { l: locale, h: hash, t: translation, at: new Date() } },
-                  upsert: true,
-                },
-              })),
-              { ordered: false }
-            )
-            for (const hash of result.keys()) have[locale].add(hash)
-            translatedCount += result.size
-          }
-          // What the service answered but did not survive the checks (a figure lost, a token
-          // mangled) fails the same way next time: remember it, so the next runs stop paying
-          // for it. A refusal says nothing about the items it cut off.
-          const rejected = refused ? [] : batch.filter(item => !result.has(item.id))
-          if (rejected.length) {
-            await failuresCol.bulkWrite(
-              rejected.map(item => ({
-                updateOne: {
-                  filter: { _id: `${locale}|${item.id}` },
-                  update: { $inc: { n: 1 }, $set: { at: new Date() } },
-                  upsert: true,
-                },
-              })),
-              { ordered: false }
-            )
-            for (const item of rejected) failed[locale].add(item.id)
-            failedCount += rejected.length
-          }
-          if (refused) break
+          batch.push({ id: hash, template: source.s, example: source.x })
+          chars += source.s.length
         }
+        if (!batch.length) break
+        let result
+        try {
+          result = await translator.translateTemplates(batch, GOOGLE[locale], locale)
+        } catch (error) {
+          refused = error.message
+          result = error.partial ?? new Map()
+        }
+        if (result.size) {
+          await memoryCol.bulkWrite(
+            [...result].map(([hash, translation]) => ({
+              updateOne: {
+                filter: { _id: `${locale}|${hash}` },
+                update: { $set: { l: locale, h: hash, t: translation, at: new Date() } },
+                upsert: true,
+              },
+            })),
+            { ordered: false }
+          )
+          for (const hash of result.keys()) have[locale].add(hash)
+          translatedCount += result.size
+        }
+        // What the service answered but did not survive the checks (a figure lost, a token
+        // mangled) fails the same way next time: remember it, so the next runs stop paying
+        // for it. A refusal says nothing about the items it cut off.
+        const rejected = refused ? [] : batch.filter(item => !result.has(item.id))
+        if (rejected.length) {
+          await failuresCol.bulkWrite(
+            rejected.map(item => ({
+              updateOne: {
+                filter: { _id: `${locale}|${item.id}` },
+                update: { $inc: { n: 1 }, $set: { at: new Date() } },
+                upsert: true,
+              },
+            })),
+            { ordered: false }
+          )
+          for (const item of rejected) failed[locale].add(item.id)
+          failedCount += rejected.length
+        }
+        if (refused) break
       }
     }
 
