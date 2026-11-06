@@ -201,6 +201,7 @@
 </template>
 
 <script setup lang="ts">
+import { VPagination } from 'vuetify/components'
 import { useDisplay } from 'vuetify'
 import { CAR_RISKS_PATH } from '~/utils/carsRisk'
 import {

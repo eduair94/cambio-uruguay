@@ -471,6 +471,7 @@
 </template>
 
 <script setup lang="ts">
+import { VSlider } from 'vuetify/components'
 import { guideDiscoveryMessages } from '~/utils/guideDiscoveryMessages'
 import {
   BEFORE_BUYING_STEPS,

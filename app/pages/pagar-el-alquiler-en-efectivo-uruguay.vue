@@ -180,6 +180,7 @@
 </template>
 
 <script setup lang="ts">
+import { VTimeline, VTimelineItem } from 'vuetify/components'
 import {
   RENT_BANK_RULE_FINE_MONTHS,
   RENT_BANK_RULE_THRESHOLD_BPC,

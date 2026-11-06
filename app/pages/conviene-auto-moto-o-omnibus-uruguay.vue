@@ -710,6 +710,7 @@
 </template>
 
 <script setup lang="ts">
+import { VAutocomplete, VSlider } from 'vuetify/components'
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import type { FaqItem } from '~/utils/faqAnswers'
 import { formatNumber } from '~/utils/format'

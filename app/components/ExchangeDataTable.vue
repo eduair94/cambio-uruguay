@@ -164,6 +164,7 @@
 </template>
 
 <script setup lang="ts">
+import { VDataTable } from 'vuetify/components'
 import { useDisplay } from 'vuetify'
 
 interface Props {

@@ -288,6 +288,7 @@
 </template>
 
 <script setup lang="ts">
+import { VSlider } from 'vuetify/components'
 import {
   EQUIPAR_ASESOR_BTU_FG,
   EQUIPAR_ASESOR_DEFAULT,

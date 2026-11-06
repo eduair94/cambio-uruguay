@@ -684,6 +684,7 @@
 </template>
 
 <script setup lang="ts">
+import { VDataTable } from 'vuetify/components'
 import {
   BCU_LABELS,
   CLEARING_LABELS,

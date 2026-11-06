@@ -236,6 +236,7 @@
 </template>
 
 <script setup lang="ts">
+import { VSlider } from 'vuetify/components'
 import {
   BICICLETA_ASESOR_DEFAULT,
   BICICLETA_AUTONOMIA_REAL,

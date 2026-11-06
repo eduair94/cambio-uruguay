@@ -194,6 +194,7 @@
 </template>
 
 <script setup lang="ts">
+import { VPagination } from 'vuetify/components'
 import { useDisplay } from 'vuetify'
 import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
 import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'

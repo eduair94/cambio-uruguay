@@ -115,6 +115,7 @@
 </template>
 
 <script setup lang="ts">
+import { VPagination } from 'vuetify/components'
 import { useDisplay } from 'vuetify'
 import {
   EQUIPAR_LISTA_MAX,

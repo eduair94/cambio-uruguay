@@ -308,6 +308,7 @@
 </template>
 
 <script setup lang="ts">
+import { VAutocomplete, VSlider } from 'vuetify/components'
 import { CAR_ADVISOR_DEFAULT_KM, CAR_ADVISOR_KM_STEPS } from '~/utils/carAdvisor'
 import { CAR_ADVISOR_PATH } from '~/utils/carAdvisorFigures'
 import {

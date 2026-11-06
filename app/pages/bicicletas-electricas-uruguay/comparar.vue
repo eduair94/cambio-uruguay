@@ -65,6 +65,7 @@ FIRST VIEWPORT: el H1, el selector y la tabla con los modelos de la URL.
 </template>
 
 <script setup lang="ts">
+import { VAutocomplete } from 'vuetify/components'
 import {
   MONOPATIN_COMPARE_MAX,
   monopatinCompareSlugs,

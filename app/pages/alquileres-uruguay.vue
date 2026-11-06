@@ -781,6 +781,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
 </template>
 
 <script setup lang="ts">
+import { VPagination } from 'vuetify/components'
 import { rentalAvailabilityCopy } from '~/utils/rentalAvailabilityMessages'
 import { useDisplay } from 'vuetify'
 import SearchFilters from '~/components/rentals/SearchFilters.vue'

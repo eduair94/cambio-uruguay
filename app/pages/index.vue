@@ -1125,6 +1125,8 @@
 </template>
 
 <script setup lang="ts">
+import { VAutocomplete } from 'vuetify/components'
+import { MotionDirective } from '@vueuse/motion'
 import { useLocalePath } from '#imports'
 import { prLabel } from '~/utils/pageRanking'
 import { topicOf, type TopPageRow, type TopPagesSnapshot } from '~/utils/topPages'
@@ -1160,6 +1162,9 @@ const { mobile } = useDisplay()
 // are server-rendered — this avoids a hydration mismatch and never leaves cards
 // stuck hidden if JS is slow/absent. Once mounted, the from-state kicks in and
 // `visibleOnce` springs each card up as it scrolls into view.
+// The directive is registered here, not app-wide: this is the only page that animates, and the
+// global module put @vueuse/motion + popmotion (~30 KB) in every page's entry chunk.
+const vMotion = MotionDirective()
 const motionReady = ref(false)
 onMounted(() => {
   motionReady.value = true
