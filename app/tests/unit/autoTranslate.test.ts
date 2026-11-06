@@ -6,6 +6,8 @@ import {
   AUTO_TRANSLATE_LOCALES,
   announcedLocales,
   canonicalTarget,
+  spanishOgImage,
+  untranslatedRedirect,
   decodeEntities,
   fillTemplate,
   hashText,
@@ -159,6 +161,32 @@ describe('auto-translate: what a translated page may claim', () => {
     expect(canonicalTarget('en', '/guias/una', { translated: ['en'], embargoed: true })).toBe(
       'keep'
     )
+  })
+
+  it('sends an extra locale that does not have the page to the Spanish one, unrendered', () => {
+    const none = { translated: [], embargoed: false }
+    expect(untranslatedRedirect('fr', '/autos-usados-uruguay/ml-1', none)).toBe(
+      '/autos-usados-uruguay/ml-1'
+    )
+    expect(untranslatedRedirect('fr', '/guias/una', { translated: ['fr'], embargoed: false })).toBe(
+      null
+    )
+    expect(untranslatedRedirect('fr', '/guias/una', { translated: ['fr'], embargoed: true })).toBe(
+      '/guias/una'
+    )
+    // vue-i18n pages are whole in every locale; English and Portuguese always answered.
+    expect(untranslatedRedirect('fr', '/pizarra', none)).toBe(null)
+    expect(untranslatedRedirect('en', '/guias/una', none)).toBe(null)
+    expect(untranslatedRedirect('es', '/guias/una', none)).toBe(null)
+  })
+
+  it('shares the Spanish image in the extra locales, and keeps the English one', () => {
+    const base = 'https://cambio-uruguay.com/__og-image__/image'
+    expect(spanishOgImage(`${base}/de/guias/una/og.png`)).toBe(`${base}/guias/una/og.png`)
+    expect(spanishOgImage(`${base}/ja/og.png`)).toBe(`${base}/og.png`)
+    expect(spanishOgImage(`${base}/en/guias/una/og.png`)).toBe(`${base}/en/guias/una/og.png`)
+    // A page whose own slug starts like a locale code is not one.
+    expect(spanishOgImage(`${base}/frontera/rivera/og.png`)).toBe(`${base}/frontera/rivera/og.png`)
   })
 
   it('translates into every locale of the site but Spanish, each once', () => {

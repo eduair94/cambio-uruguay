@@ -99,3 +99,24 @@ export const FAILURE_LIMIT = 1
 export function giveUp(row, retryAfter) {
   return (row?.n ?? 0) >= FAILURE_LIMIT && new Date(row.at).getTime() > retryAfter
 }
+
+/** Locales that go through every family before the others start one: most of the traffic. */
+export const FIRST_LOCALES = ['en', 'pt']
+
+/**
+ * The (group, locale) pairs in the order the job translates them: English and Portuguese
+ * through every family first (a blog post in English is worth more than a 39th language of the
+ * same editorial page), then family by family, every other locale in turn.
+ *
+ * @param {Array<{ key: string, hashes: string[] }>} groups as translationGroups returns them
+ * @param {string[]} locales in priority order
+ * @returns {Array<{ group: { key: string, hashes: string[] }, locale: string }>} the pairs
+ */
+export function translationOrder(groups, locales) {
+  const first = locales.filter(locale => FIRST_LOCALES.includes(locale))
+  const rest = locales.filter(locale => !FIRST_LOCALES.includes(locale))
+  return [
+    ...first.flatMap(locale => groups.map(group => ({ group, locale }))),
+    ...groups.flatMap(group => rest.map(locale => ({ group, locale }))),
+  ]
+}

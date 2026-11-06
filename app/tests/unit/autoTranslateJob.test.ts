@@ -6,6 +6,7 @@ import {
   familyOf,
   giveUp,
   translationGroups,
+  translationOrder,
 } from '../../scripts/i18n/lib/autotranslate-plan.mjs'
 // @ts-expect-error plain ESM module of the translation scripts
 import {
@@ -57,6 +58,26 @@ describe('auto-translate job: what it translates', () => {
       { key: '0:1', hashes: ['h3'] },
       { key: '0:5', hashes: ['h5'] },
       { key: '1:0', hashes: ['h4'] },
+    ])
+  })
+
+  it('takes English and Portuguese through every family before the other locales', () => {
+    const groups = [
+      { key: '0:0', hashes: ['a'] },
+      { key: '0:5', hashes: ['b'] },
+    ]
+    const order = translationOrder(groups, ['en', 'pt', 'fr', 'de']).map(
+      ({ group, locale }: { group: { key: string }; locale: string }) => `${locale}@${group.key}`
+    )
+    expect(order).toEqual([
+      'en@0:0',
+      'en@0:5',
+      'pt@0:0',
+      'pt@0:5',
+      'fr@0:0',
+      'de@0:0',
+      'fr@0:5',
+      'de@0:5',
     ])
   })
 

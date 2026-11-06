@@ -466,3 +466,36 @@ export function canonicalTarget(
   if (EXTRA_LOCALE_CODES.includes(locale) && !hasExtraLocales(path)) return 'spanish'
   return 'keep'
 }
+
+/**
+ * Where a page request in an extra locale goes INSTEAD of being rendered: the Spanish URL, when
+ * the page is not announced in that locale (`canonicalTarget` would point there anyway). Null
+ * means "render it".
+ *
+ * Every page answers in all 39 locales, and crawlers that do not stop at a canonical rendered
+ * them all: 21.850 French, Japanese… car adverts in one day of log (2026-11-06), each a full SSR
+ * of a noindex page with a Spanish body. A redirect costs nothing to serve. Visitors are not
+ * affected: inside the site they move by client navigation, which never asks the server for
+ * the page, and the language menu only offers the locales a page is announced in.
+ * English and Portuguese keep answering: they always did, with their own chrome.
+ */
+export function untranslatedRedirect(
+  locale: string,
+  path: string,
+  state: PageTranslationState
+): string | null {
+  if (!EXTRA_LOCALE_CODES.includes(locale)) return null
+  return canonicalTarget(locale, path, state) === 'spanish' ? path : null
+}
+
+const EXTRA_OG_IMAGE = new RegExp(`/__og-image__/image/(?:${EXTRA_LOCALE_CODES.join('|')})(?=/)`)
+
+/**
+ * The share image of a page in an extra locale is the Spanish one: nuxt-og-image renders the
+ * page's own props, which are Spanish, so `/__og-image__/image/de/x/og.png` came out byte for
+ * byte the same as `/__og-image__/image/x/og.png` — and crawlers asked for all 36 copies, each a
+ * fresh PNG render (~12 % of a worker's CPU on 2026-11-06). English and Portuguese keep their own.
+ */
+export function spanishOgImage(url: string): string {
+  return url.replace(EXTRA_OG_IMAGE, '/__og-image__/image')
+}

@@ -7,6 +7,7 @@ import {
   isTranslatable,
   normalizeText,
   segmentKey,
+  spanishOgImage,
   translateHtml,
   translateSegment,
   type PageTranslationState,
@@ -82,6 +83,14 @@ function headTexts(tags: Tag[]): string[] {
   return out
 }
 
+const OG_IMAGE_META = new Set([
+  'og:image',
+  'og:image:url',
+  'og:image:secure_url',
+  'twitter:image',
+  'twitter:image:src',
+])
+
 function applyHead(ctx: { tags: Tag[] }, state: AutoTranslateState) {
   const translate = (text: string) =>
     isAutoTranslateLocale(state.locale) && !state.embargoed
@@ -103,6 +112,9 @@ function applyHead(ctx: { tags: Tag[] }, state: AutoTranslateState) {
         tag.props.content = translate(tag.props.content) ?? tag.props.content
       }
       if (canonical && key === 'og:url') tag.props.content = canonical
+      if (OG_IMAGE_META.has(key) && typeof tag.props.content === 'string') {
+        tag.props.content = spanishOgImage(tag.props.content)
+      }
     } else if (canonical && tag.tag === 'link' && tag.props.rel === 'canonical') {
       tag.props.href = canonical
     }
