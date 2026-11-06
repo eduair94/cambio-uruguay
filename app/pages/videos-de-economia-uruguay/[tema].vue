@@ -133,12 +133,15 @@
 <script setup lang="ts">
 import type { VideosSnapshotDoc } from '~/server/models/VideosSnapshot'
 import { buildVideoPageSchema, SITE_URL } from '~/utils/videoSchema'
-import { getVideoTopicPage, VIDEO_TOPIC_PAGES, videoTopicSlugs } from '~/utils/videoTopics'
+import { getVideoTopicPage, VIDEO_TOPIC_PAGES } from '~/utils/videoTopics'
 
 // Un slug que no está en el catálogo es 404 de verdad, no una página vacía. OJO: `validate` se
 // extrae en build, así que editar la lista exige reiniciar el dev server.
 definePageMeta({
-  validate: route => videoTopicSlugs().includes(String(route.params.tema ?? '')),
+  validate: async route => {
+    const catalogue = await import('~/utils/videoTopics')
+    return catalogue.videoTopicSlugs().includes(String(route.params.tema ?? ''))
+  },
 })
 
 /** Mirrors `MAX_AGE_DAYS` in classes/videos/refresh.ts; see the note on the hub page. */

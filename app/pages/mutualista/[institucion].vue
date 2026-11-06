@@ -207,7 +207,6 @@ FORM: Ficha de tarifario, hereda el sistema visual de /tickets-mutualistas-urugu
 <script setup lang="ts">
 import {
   getMutualistaPage,
-  isMutualistaPageSlug,
   mutualistaDayLabel,
   mutualistaPageSlugs,
   formatMutualistaUyu,
@@ -218,7 +217,10 @@ import {
 // renderizar nada: una institución que no está en el archivo es un 404 de verdad y no una página
 // vacía contestada con 200, que es lo que Google indexa como soft 404.
 definePageMeta({
-  validate: route => isMutualistaPageSlug(String(route.params.institucion ?? '')),
+  validate: async route => {
+    const catalogue = await import('~/utils/mutualistaPages')
+    return catalogue.isMutualistaPageSlug(String(route.params.institucion ?? ''))
+  },
 })
 
 const localePath = useLocalePath()

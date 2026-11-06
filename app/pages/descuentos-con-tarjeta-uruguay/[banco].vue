@@ -343,7 +343,6 @@ import {
 import {
   BANKOS_BANK_PAGES,
   BANKOS_SHARED_FAQ,
-  bankPageSlugs,
   categoryPageForCategory,
   getBankPage,
 } from '~/utils/bankosPages'
@@ -352,7 +351,10 @@ import type { FaqItem } from '~/utils/faqAnswers'
 // Un slug fuera del catálogo es 404 de verdad. OJO: `validate` se extrae en build, así que tocar
 // la lista obliga a reiniciar el dev server.
 definePageMeta({
-  validate: route => bankPageSlugs().includes(String(route.params.banco ?? '')),
+  validate: async route => {
+    const catalogue = await import('~/utils/bankosPages')
+    return catalogue.bankPageSlugs().includes(String(route.params.banco ?? ''))
+  },
 })
 
 /** Cuántas marcas se nombran dentro de cada tramo antes del "y N más". */

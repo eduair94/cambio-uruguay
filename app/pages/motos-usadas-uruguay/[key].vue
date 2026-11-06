@@ -293,7 +293,6 @@ import {
   MOTO_SELLER_LABEL,
   motoDepreciacionAnswer,
   motoDisplacementLabel,
-  motoKeyValid,
   motoKmLabel,
   motoLongDate,
   motoModelName,
@@ -309,7 +308,10 @@ import {
 // ve IMPORTS, nunca una constante declarada acá abajo: misma trampa que documenta
 // `/autos-usados-uruguay/[key].vue`.
 definePageMeta({
-  validate: route => motoKeyValid(String(route.params.key ?? '')),
+  validate: async route => {
+    const catalogue = await import('~/utils/motos')
+    return catalogue.motoKeyValid(String(route.params.key ?? ''))
+  },
 })
 
 const route = useRoute()

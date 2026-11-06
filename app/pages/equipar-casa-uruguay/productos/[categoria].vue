@@ -106,7 +106,6 @@ import {
   EQUIPAR_CATEGORY_PAGES,
   equiparCategoryPage,
   equiparGrammarFor,
-  isEquiparCategorySlug,
 } from '~/utils/equiparCategoryPages'
 import {
   EQUIPAR_LISTA_PATH,
@@ -117,7 +116,10 @@ import {
 // A real 404 for an invented slug: `validate` runs before setup. Only the imported function is
 // visible to the macro, never a module constant.
 definePageMeta({
-  validate: route => isEquiparCategorySlug(String(route.params.categoria ?? '')),
+  validate: async route => {
+    const catalogue = await import('~/utils/equiparCategoryPages')
+    return catalogue.isEquiparCategorySlug(String(route.params.categoria ?? ''))
+  },
 })
 
 const route = useRoute()

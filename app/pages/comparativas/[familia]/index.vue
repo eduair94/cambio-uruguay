@@ -69,7 +69,10 @@
 import { familyPairs, getComparativaFamily, type ComparativaPair } from '~/utils/comparativas'
 
 definePageMeta({
-  validate: route => Boolean(getComparativaFamily(String(route.params.familia ?? ''))),
+  validate: async route => {
+    const catalogue = await import('~/utils/comparativas')
+    return Boolean(catalogue.getComparativaFamily(String(route.params.familia ?? '')))
+  },
 })
 
 const localePath = useLocalePath()

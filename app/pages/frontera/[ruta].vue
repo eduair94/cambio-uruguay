@@ -286,7 +286,10 @@ import {
 // allowlist is pure data, so this needs no I/O (cf. /dolar/:departamento, which
 // must fetch the live department list).
 definePageMeta({
-  validate: route => fronteraFromSlug(String(route.params.ruta ?? '')) !== null,
+  validate: async route => {
+    const catalogue = await import('~/utils/frontera')
+    return catalogue.fronteraFromSlug(String(route.params.ruta ?? '')) !== null
+  },
 })
 
 const { t, locale } = useI18n()

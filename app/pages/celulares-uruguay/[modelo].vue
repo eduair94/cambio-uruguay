@@ -319,7 +319,6 @@ import {
   type PhoneImportEstimate,
 } from '~/utils/phoneImport'
 import {
-  PHONE_SLUG_RE,
   PHONE_STALE_DAYS,
   phoneMoney,
   phoneSellerLabel,
@@ -342,7 +341,8 @@ import {
 definePageMeta({
   validate: async route => {
     const slug = String(route.params.modelo ?? '')
-    if (!PHONE_SLUG_RE.test(slug)) return false
+    const catalogue = await import('~/utils/phones')
+    if (!catalogue.PHONE_SLUG_RE.test(slug)) return false
     try {
       await $fetch(`/api/phones/${slug}`)
       return true

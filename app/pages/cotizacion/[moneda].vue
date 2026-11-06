@@ -341,7 +341,10 @@ import { fronteraRoutesForCode, type FronteraCode } from '~/utils/frontera'
 // in the route guard yields a real 404 status (on SSR and client navigation) and,
 // unlike throwing inside setup, never partially renders this component.
 definePageMeta({
-  validate: route => currencyFromSlug(String(route.params.moneda ?? '')) !== null,
+  validate: async route => {
+    const catalogue = await import('~/utils/currencyPages')
+    return catalogue.currencyFromSlug(String(route.params.moneda ?? '')) !== null
+  },
 })
 
 const { t, locale } = useI18n()

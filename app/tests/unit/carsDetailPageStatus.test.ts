@@ -80,7 +80,7 @@ async function setupPage(scenario: Scenario) {
   const event = { path: `/autos-usados-uruguay/${ADVERT}`, context: {} }
   const setResponseStatus = vi.fn()
   const responseHeaders = new Map<string, unknown>()
-  let meta: { validate?: (route: { params: Record<string, string> }) => boolean } = {}
+  let meta: { validate?: (route: { params: Record<string, string> }) => Promise<boolean> } = {}
   const fetchAdvert = vi.fn(async () => {
     if (scenario.kind === 'missing')
       throw h3.createError({ statusCode: 404, statusMessage: 'Advert not found' })
@@ -213,9 +213,10 @@ describe('autos advert page status (SSR setup executed as written)', () => {
   it('rejects a malformed key in definePageMeta.validate, before any advert read', async () => {
     const { meta, fetchAdvert } = await setupPage({ kind: 'live' })
     expect(meta.validate).toBeTypeOf('function')
-    expect(meta.validate!({ params: { key: ADVERT } })).toBe(true)
-    expect(meta.validate!({ params: { key: 'ml-MLU1; drop' } })).toBe(false)
-    expect(meta.validate!({ params: {} })).toBe(false)
+    // Asíncrono: importa `utils/cars` adentro, para que no viaje en el chunk de entrada.
+    await expect(meta.validate!({ params: { key: ADVERT } })).resolves.toBe(true)
+    await expect(meta.validate!({ params: { key: 'ml-MLU1; drop' } })).resolves.toBe(false)
+    await expect(meta.validate!({ params: {} })).resolves.toBe(false)
     // El handler ya no valida la forma de la clave: eso pasó a `validate`, que corre antes.
     expect(fetchAdvert).toHaveBeenCalledTimes(1)
   })

@@ -327,7 +327,6 @@ import {
   equiparGrammarFor,
   equiparHourlyCostUyu,
   equiparPlanRedondoWindowApplies,
-  isEquiparCategorySlug,
 } from '~/utils/equiparCategoryPages'
 import { equiparProductoPath } from '~/utils/equiparProductos'
 import {
@@ -347,7 +346,10 @@ import { isEquiparFichaCategoria, type EquiparFichaCategoria } from '~/utils/equ
 // 404 real para un slug inventado: `validate` corre antes del setup (un createError después de un
 // await respondería 200). Es una macro, así que sólo puede usar la función importada.
 definePageMeta({
-  validate: route => isEquiparCategorySlug(String(route.params.categoria ?? '')),
+  validate: async route => {
+    const catalogue = await import('~/utils/equiparCategoryPages')
+    return catalogue.isEquiparCategorySlug(String(route.params.categoria ?? ''))
+  },
 })
 
 const route = useRoute()
