@@ -8,7 +8,8 @@ import { describe, expect, it } from 'vitest'
 // Evaluate the actual configuration with only its data imports supplied.
 const filename = new URL('../../nuxt.config.ts', import.meta.url)
 const source = readFileSync(filename, 'utf8')
-  .replace(/^import .*$/gm, '')
+  // Whole import statements, single- or multi-line.
+  .replace(/^import\b[\s\S]*?\bfrom\s+['"][^'"]+['"];?$/gm, '')
   .replace('export default defineNuxtConfig(', 'globalThis.captured = defineNuxtConfig(')
   .replaceAll('import.meta.url', JSON.stringify(filename.href))
 const context: Record<string, any> = {
