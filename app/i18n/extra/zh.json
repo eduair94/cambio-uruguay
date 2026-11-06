@@ -256,7 +256,7 @@
   "simpleSubtitle": "比较来自 40 多家外汇兑换机构的美元及其他货币汇率",
   "simpleDescription": "我们每10分钟更新一次买卖汇率。查找在蒙得维的亚和乌拉圭全境以最优价格买卖美元的地点。",
   "trust": {
-    "regulated": "伯明翰城市大学来源的数据",
+    "regulated": "BCU来源的数据",
     "regulatedAria": "利率基于乌拉圭中央银行（BCU）官方登记册。",
     "houses": "40多家外汇兑换机构",
     "updated": "每10分钟更新一次",

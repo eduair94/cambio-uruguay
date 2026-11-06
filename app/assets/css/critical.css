@@ -512,3 +512,14 @@ button:focus-visible,
 .v-theme--light .v-chip--variant-tonal.text-primary {
   color: color-mix(in srgb, rgb(var(--v-theme-primary)) 76%, rgb(var(--v-theme-on-surface)));
 }
+
+/*
+ * Right-to-left locales (ar, fa, ur, he; utils/locales.ts): "read more" arrows point the way the
+ * text reads. Arrows only: Vuetify already swaps its own prev/next chevrons in RTL, so flipping
+ * those here would turn them back.
+ */
+[dir='rtl'] .mdi-arrow-right::before,
+[dir='rtl'] .mdi-arrow-left::before {
+  display: inline-block;
+  transform: scaleX(-1);
+}

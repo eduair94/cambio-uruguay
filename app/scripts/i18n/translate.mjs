@@ -18,7 +18,7 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createJiti } from 'jiti'
-import { createTranslator, escapeForVueI18n } from './lib/machine-translate.mjs'
+import { PROTECTED_ACRONYMS, createTranslator, escapeForVueI18n } from './lib/machine-translate.mjs'
 
 const APP = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const jiti = createJiti(import.meta.url, { alias: { '~': APP, '@': APP } })
@@ -41,7 +41,7 @@ const SOURCES_DIR = resolve(APP, 'i18n/translation-sources')
 const CONTENT_DIR = resolve(APP, 'i18n/content')
 
 // Names Google would translate ("Cambio Uruguay" → "乌拉圭变迁"). Longest first.
-const PROTECTED_TERMS = ['cambio-uruguay.com', 'Cambio Uruguay', 'Cambio UY']
+const PROTECTED_TERMS = ['cambio-uruguay.com', 'Cambio Uruguay', 'Cambio UY', ...PROTECTED_ACRONYMS]
 
 const translator = createTranslator({ protectedTerms: PROTECTED_TERMS, clean: escapeForVueI18n })
 
@@ -118,7 +118,12 @@ async function translateMessages(locale) {
   for (const key of order) {
     const { text, source } = messageSource(key)
     const hash = fnv1a(text)
-    if (current.has(key) && hashes[key] === hash) {
+    // A translation that lost one of the source's acronyms is stale even with an unchanged
+    // source: it was made before PROTECTED_ACRONYMS existed ("BCU" → "British Columbia").
+    const acronymsKept = PROTECTED_ACRONYMS.every(
+      acronym => !text.includes(acronym) || String(current.get(key) ?? '').includes(acronym)
+    )
+    if (current.has(key) && hashes[key] === hash && acronymsKept) {
       kept.set(key, current.get(key))
       keptHashes[key] = hash
       continue
