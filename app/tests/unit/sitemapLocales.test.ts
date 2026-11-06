@@ -59,5 +59,6 @@ describe('sitemap locale filter', () => {
     } finally {
       vi.unstubAllGlobals()
     }
-  })
+    // The dynamic import pulls the whole locale table; under a loaded full run it took 13 s.
+  }, 60_000)
 })

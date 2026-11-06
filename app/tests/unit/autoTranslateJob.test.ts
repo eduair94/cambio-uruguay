@@ -1,18 +1,70 @@
 import { describe, expect, it } from 'vitest'
 // @ts-expect-error plain ESM module of the translation scripts
-import { embargoRoutes, familyOf } from '../../scripts/i18n/lib/autotranslate-plan.mjs'
+import {
+  FAILURE_LIMIT,
+  embargoRoutes,
+  familyOf,
+  giveUp,
+  translationGroups,
+} from '../../scripts/i18n/lib/autotranslate-plan.mjs'
 // @ts-expect-error plain ESM module of the translation scripts
 import { numbersIn, templatize } from '../../scripts/i18n/lib/machine-translate.mjs'
 
 describe('auto-translate job: what it translates', () => {
-  it('starts with the editorial core and leaves the data catalogues for later', () => {
+  it('starts with the editorial core and leaves the data catalogues for last', () => {
     expect(familyOf('/vivir-con-25000-pesos-uruguay')).toBe(0)
     expect(familyOf('/guias/abogado-gratis-uruguay')).toBe(1)
     expect(familyOf('/herramientas/calculadora-irpf')).toBe(2)
     expect(familyOf('/sucursal/brou-centro')).toBe(4)
+    expect(familyOf('/blog/un-post')).toBe(5)
+    expect(familyOf('/newsletter/2026-11-01')).toBe(5)
+    expect(familyOf('/precio/arroz')).toBe(6)
+    expect(familyOf('/descuentos-con-tarjeta-uruguay/tienda-inglesa')).toBe(6)
+    expect(familyOf('/autos-usados-uruguay/toyota-hilux')).toBe(7)
+    expect(familyOf('/sillas-escritorio-uruguay/una')).toBe(7)
     expect(familyOf('/alquileres/abc')).toBeNull()
-    expect(familyOf('/precio/arroz')).toBeNull()
-    expect(familyOf('/blog/un-post')).toBeNull()
+  })
+
+  it('fills every locale with a family before any locale gets the next one', () => {
+    const pages = [
+      {
+        _id: '/a',
+        tier: 0,
+        segs: [
+          ['h1', 10],
+          ['h2', 5],
+        ],
+      },
+      {
+        _id: '/guias/b',
+        tier: 1,
+        segs: [
+          ['h2', 5],
+          ['h3', 7],
+        ],
+      },
+      { _id: '/reservada', tier: 0, segs: [['h4', 3]] },
+      { _id: '/blog/c', tier: 5, segs: [['h5', 4]] },
+    ]
+    const groups = translationGroups(pages, (path: string) => path === '/reservada')
+    expect(groups).toEqual([
+      { key: '0:0', hashes: ['h1', 'h2'] },
+      { key: '0:1', hashes: ['h3'] },
+      { key: '0:5', hashes: ['h5'] },
+      { key: '1:0', hashes: ['h4'] },
+    ])
+  })
+
+  it('stops paying for a segment that keeps failing, and retries it a month later', () => {
+    const now = Date.parse('2026-11-06T00:00:00Z')
+    const retryAfter = now - 30 * 86_400_000
+    const recent = new Date(now - 86_400_000)
+    expect(giveUp({ n: FAILURE_LIMIT - 1, at: recent }, retryAfter)).toBe(false)
+    expect(giveUp({ n: FAILURE_LIMIT, at: recent }, retryAfter)).toBe(true)
+    expect(giveUp({ n: FAILURE_LIMIT, at: new Date(now - 31 * 86_400_000) }, retryAfter)).toBe(
+      false
+    )
+    expect(giveUp(null, retryAfter)).toBe(false)
   })
 
   it('reserves the routes of recent change-log rows, but not the rollout itself', () => {

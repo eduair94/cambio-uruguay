@@ -16,7 +16,13 @@
 
 import { EXTRA_LOCALE_CODES, LOCALE_PREFIX_RE, hasExtraLocales } from './locales'
 
-/** Locales whose pages are machine-translated in full (on top of their vue-i18n chrome). */
+/**
+ * Locales whose pages are machine-translated in full (on top of their vue-i18n chrome): every
+ * locale but Spanish, in the order the job fills them — the languages of who comes to Uruguay to
+ * visit or to stay first (Brazil and Argentina speak Portuguese and Spanish; the rest by the
+ * size of the communities and of the tourism). tests/unit/autoTranslate.test.ts checks that no
+ * locale of utils/locales.ts is left out.
+ */
 export const AUTO_TRANSLATE_LOCALES: readonly string[] = Object.freeze([
   'en',
   'pt',
@@ -25,6 +31,33 @@ export const AUTO_TRANSLATE_LOCALES: readonly string[] = Object.freeze([
   'it',
   'ru',
   'zh',
+  'uk',
+  'nl',
+  'pl',
+  'ja',
+  'ko',
+  'tr',
+  'ca',
+  'ro',
+  'sv',
+  'da',
+  'no',
+  'fi',
+  'el',
+  'cs',
+  'sk',
+  'hu',
+  'bg',
+  'hr',
+  'sl',
+  'lt',
+  'lv',
+  'et',
+  'hi',
+  'id',
+  'ms',
+  'vi',
+  'th',
 ])
 
 /**
@@ -352,17 +385,43 @@ export function translateHtml(
  * the row measuring it is not contaminated.
  */
 export function isEmbargoed(path: string, routes: readonly string[]): boolean {
+  const matcher = embargoMatcher(routes)
+  if (matcher.exact.has(path)) return true
+  for (const prefix of matcher.prefixes) if (path.startsWith(prefix)) return true
+  for (const family of matcher.families) if (path.startsWith(family)) return true
+  return false
+}
+
+interface EmbargoMatcher {
+  exact: Set<string>
+  families: string[]
+  prefixes: string[]
+}
+
+const embargoMatchers = new WeakMap<readonly string[], EmbargoMatcher>()
+
+/**
+ * `routes` compiled once per array. Normalizing every route on every call (a regex over 35
+ * locale prefixes, 256 routes) cost 42 µs a call, and a sitemap asks once per URL and per
+ * alternate: ~45 s a sitemap (measured 2026-11-06).
+ */
+function embargoMatcher(routes: readonly string[]): EmbargoMatcher {
+  let matcher = embargoMatchers.get(routes)
+  if (matcher) return matcher
+  matcher = { exact: new Set(), families: [], prefixes: [] }
   for (const raw of routes) {
     const route = raw.trim().replace(LOCALE_PREFIX_RE, '') || '/'
     if (route.endsWith('*')) {
-      if (path.startsWith(route.slice(0, -1))) return true
+      matcher.prefixes.push(route.slice(0, -1))
     } else if (route.endsWith('/') && route.length > 1) {
-      if (path === route.slice(0, -1) || path.startsWith(route)) return true
-    } else if (path === route) {
-      return true
+      matcher.exact.add(route.slice(0, -1))
+      matcher.families.push(route)
+    } else {
+      matcher.exact.add(route)
     }
   }
-  return false
+  embargoMatchers.set(routes, matcher)
+  return matcher
 }
 
 export interface PageTranslationState {

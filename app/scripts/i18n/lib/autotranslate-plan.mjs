@@ -2,10 +2,11 @@
 // unit tests read the same rules the job runs (tests/unit/autoTranslateJob.test.ts).
 
 /**
- * Which Spanish pages get translated, in which order (lower first). `null` = not now: the
- * catalogues whose text is mostly data (listings, prices, addresses, Reddit quotes) would fill
- * the memory with text that changes every day, and their template text is the same as a sibling
- * page's anyway. They can be added here once the editorial site is done.
+ * Which Spanish pages get translated, in which order (lower first). The editorial site first; then
+ * the archives whose text, once published, does not change (blog, newsletter); then the
+ * directories whose pages are mostly data (discounts, stores, prices), and last the catalogues
+ * whose text is listings that come and go. `null` = never: a rental listing's description is
+ * the advertiser's text and is gone in days (and those pages live in their own sitemap anyway).
  */
 export const FAMILIES = [
   [/^\/guias(?:\/|$)/, 1],
@@ -14,10 +15,13 @@ export const FAMILIES = [
     2,
   ],
   [/^\/(?:comparativas|sucursales|historico|casa|sucursal|alquiler)(?:\/|$)/, 4],
+  [/^\/(?:blog|newsletter)\//, 5],
+  [/^\/(?:descuentos-con-tarjeta-uruguay|tiendas-online-uruguay|precio)\//, 6],
   [
-    /^\/(?:alquileres|autos-usados-uruguay|motos-usadas-uruguay|celulares-uruguay|precio|descuentos-con-tarjeta-uruguay|sillas-escritorio-uruguay|equipar-casa-uruguay|tiendas-online-uruguay|monopatines-electricos-uruguay|bicicletas-electricas-uruguay|venta-viviendas-uruguay|inmobiliarias-uruguay|newsletter|blog)\//,
-    null,
+    /^\/(?:autos-usados-uruguay|motos-usadas-uruguay|celulares-uruguay|sillas-escritorio-uruguay|equipar-casa-uruguay|monopatines-electricos-uruguay|bicicletas-electricas-uruguay|venta-viviendas-uruguay|inmobiliarias-uruguay)\//,
+    7,
   ],
+  [/^\/alquileres\//, null],
 ]
 
 /** Priority tier of a Spanish path; null when the job does not translate it (yet). */
@@ -46,4 +50,52 @@ export function embargoRoutes(experiments, today = new Date()) {
     }
   }
   return [...routes]
+}
+
+/**
+ * The job's translation order: one group per family (reserved pages after every family, since
+ * they cannot be announced before their window closes), each with the hashes it is the first to
+ * need. `pages` come sorted by priority; a hash shared by several families goes to the first.
+ *
+ * @param {Array<{ _id: string, tier?: number, segs?: Array<[string, number]> }>} pages
+ * @param {(path: string) => boolean} isReserved
+ * @returns {Array<{ key: string, hashes: string[] }>} groups in translation order
+ */
+export function translationGroups(pages, isReserved) {
+  const groups = new Map()
+  const seen = new Set()
+  for (const page of pages) {
+    const key = `${isReserved(page._id) ? 1 : 0}:${page.tier ?? 9}`
+    if (!groups.has(key)) groups.set(key, [])
+    const hashes = groups.get(key)
+    for (const [hash] of page.segs ?? []) {
+      if (seen.has(hash)) continue
+      seen.add(hash)
+      hashes.push(hash)
+    }
+  }
+  return [...groups]
+    .map(([key, hashes]) => ({ key, hashes }))
+    .sort((a, b) => {
+      const [reservedA, tierA] = a.key.split(':').map(Number)
+      const [reservedB, tierB] = b.key.split(':').map(Number)
+      return reservedA - reservedB || tierA - tierB
+    })
+}
+
+/**
+ * How many times a segment may come back invalid before the job stops asking for it. Once: every
+ * attempt already tries three token styles on the example and on the template, and what fails is
+ * the content, not luck ("Destinatario menor de edad" → "Recipient under the age of 18" invents a
+ * figure; "te jubilás a los" → "retire at age 10" too). A refusal is not a failure.
+ */
+export const FAILURE_LIMIT = 1
+
+/**
+ * Whether a remembered failure (`autotranslationfailures`, `{ n, at }`) is skipped. It is retried
+ * once its last failure is older than `retryAfter` (a timestamp): the checks or the service may
+ * have changed since.
+ */
+export function giveUp(row, retryAfter) {
+  return (row?.n ?? 0) >= FAILURE_LIMIT && new Date(row.at).getTime() > retryAfter
 }

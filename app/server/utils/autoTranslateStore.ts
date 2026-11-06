@@ -155,16 +155,24 @@ export async function translatedLocales(path: string): Promise<string[]> {
     .map(([locale]) => locale)
 }
 
-/** Every page with at least one translated locale (the sitemap's input). */
+let allPagesCache: { pages: Map<string, string[]>; at: number } | null = null
+
+/**
+ * Every page with at least one translated locale (the sitemap's input). Cached like a page's
+ * coverage: each of the 35 sitemaps asks for it when it is generated.
+ */
 export async function allTranslatedPages(): Promise<Map<string, string[]>> {
-  const out = new Map<string, string[]>()
   const local = readLocalFile()
+  if (!local && allPagesCache && Date.now() - allPagesCache.at < PAGE_TTL) {
+    return allPagesCache.pages
+  }
   const rows: Array<{ _id: string; cov?: Record<string, number> }> = []
   if (local) {
     for (const [path, cov] of Object.entries(local.pages ?? {})) rows.push({ _id: path, cov })
   } else {
     const docs = await collection('autotranslationpages')
-    if (!docs) return out
+    // Down or not configured: whatever was read last, never cached as "nothing".
+    if (!docs) return allPagesCache?.pages ?? new Map()
     try {
       rows.push(
         ...((await docs.find({}, { projection: { cov: 1 } }).toArray()) as unknown as Array<{
@@ -173,15 +181,17 @@ export async function allTranslatedPages(): Promise<Map<string, string[]>> {
         }>)
       )
     } catch {
-      return out
+      return allPagesCache?.pages ?? new Map()
     }
   }
+  const out = new Map<string, string[]>()
   for (const row of rows) {
     const locales = Object.entries(row.cov ?? {})
       .filter(([, share]) => share >= AUTO_TRANSLATE_THRESHOLD)
       .map(([locale]) => locale)
     if (locales.length) out.set(row._id, locales)
   }
+  if (!local) allPagesCache = { pages: out, at: Date.now() }
   return out
 }
 

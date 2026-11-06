@@ -42,22 +42,40 @@ const localeLoc = (locale: string, path: string) =>
  *   extra locale (`EXTRA_LOCALE_ROUTES`) — as before;
  * - or is machine-translated into it (`translations`), outside an embargo. Those URLs are ADDED
  *   when no source listed them, next to their Spanish entry.
+ *
+ * The hreflang of a machine-translated EXTRA locale lives in the page's <head> only, never here:
+ * with 32 of them a page carries ~36 alternates, and repeated on every URL of every sitemap that
+ * is ~15 MB a file, generated on demand by workers with a 512 MB heap. Google reads hreflang from
+ * either place; the sitemap still lists the URL so it is found.
  */
 export function keepCanonicalLocales<T extends SitemapInput>(
   urls: T[],
   translations?: SitemapTranslations
 ): T[] {
-  const translatedInto = (path: string): readonly string[] =>
-    translations && !translations.isEmbargoed(path) ? (translations.pages.get(path) ?? []) : []
-  const listed = (locale: string, path: string) => {
-    if (locale === 'es') return true
-    if (translatedInto(path).includes(locale)) return true
-    return (CORE_LOCALES as readonly string[]).includes(locale)
-      ? isLocalizedRoute(path)
-      : isLocalizedRoute(path) && hasExtraLocales(path)
+  // Asked once per URL and per alternate (~10.000 URLs × up to 36): once per path is enough.
+  const translatedMemo = new Map<string, readonly string[]>()
+  const translatedInto = (path: string): readonly string[] => {
+    let locales = translatedMemo.get(path)
+    if (!locales) {
+      locales =
+        translations && !translations.isEmbargoed(path) ? (translations.pages.get(path) ?? []) : []
+      translatedMemo.set(path, locales)
+    }
+    return locales
   }
+  const isCore = (locale: string) => (CORE_LOCALES as readonly string[]).includes(locale)
+  /** Listed by the site itself, before any machine translation. */
+  const authored = (locale: string, path: string) => {
+    if (locale === 'es') return true
+    return isCore(locale) ? isLocalizedRoute(path) : isLocalizedRoute(path) && hasExtraLocales(path)
+  }
+  const listed = (locale: string, path: string) =>
+    authored(locale, path) || translatedInto(path).includes(locale)
+  /** What a sitemap may name as an alternate: the core locales, and the authored extras. */
+  const alternate = (locale: string, path: string) =>
+    isCore(locale) ? listed(locale, path) : authored(locale, path)
   const alternativesFor = (path: string): Alternative[] => [
-    ...ALL_LOCALES.filter(locale => listed(locale, path)).map(locale => ({
+    ...ALL_LOCALES.filter(locale => alternate(locale, path)).map(locale => ({
       hreflang: HREFLANG[locale]!,
       href: localeLoc(locale, path),
     })),
@@ -81,16 +99,20 @@ export function keepCanonicalLocales<T extends SitemapInput>(
       kept.push(entry)
       continue
     }
+    if (!isCore(locale) && !authored(locale, path)) {
+      const { alternatives: _dropped, ...plain } = entry
+      kept.push(plain as T)
+      continue
+    }
     const alternatives = entry.alternatives.filter(alternative => {
       if (alternative.hreflang === 'x-default') return true
       const target = splitLocalePath(pathOf(alternative.href))
-      return listed(target.locale, target.path)
+      return alternate(target.locale, target.path)
     })
-    const translated = translatedInto(path)
-    for (const extra of translated) {
-      const href = localeLoc(extra, path)
+    for (const core of translatedInto(path).filter(isCore)) {
+      const href = localeLoc(core, path)
       if (!alternatives.some(alternative => pathOf(alternative.href) === href)) {
-        alternatives.splice(alternatives.length - 1, 0, { hreflang: HREFLANG[extra]!, href })
+        alternatives.splice(alternatives.length - 1, 0, { hreflang: HREFLANG[core]!, href })
       }
     }
     kept.push({ ...entry, alternatives } as T)
@@ -102,7 +124,12 @@ export function keepCanonicalLocales<T extends SitemapInput>(
         const loc = localeLoc(locale, path)
         if (present.has(loc)) continue
         present.add(loc)
-        kept.push({ ...entry, loc, alternatives: alternativesFor(path) } as T)
+        const { alternatives: _spanish, ...rest } = entry as T & { alternatives?: Alternative[] }
+        kept.push(
+          (isCore(locale)
+            ? { ...rest, loc, alternatives: alternativesFor(path) }
+            : { ...rest, loc }) as T
+        )
       }
     }
   }
