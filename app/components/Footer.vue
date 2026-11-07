@@ -52,18 +52,19 @@
              NAV_SECTIONS so the footer, header and drawer can never disagree
              about what exists. This is where crawlers pick up the long-tail
              pages, so the links stay — they're just packed tighter now. -->
-        <nav class="cu-footer__dir" :aria-label="$t('nav.sitemap')">
+        <!-- Plain anchors + one delegated click handler, not NuxtLink: see utils/spaLinks.ts. -->
+        <nav class="cu-footer__dir" :aria-label="$t('nav.sitemap')" @click="onDirectoryClick">
           <div v-for="section in footerSections" :key="section.id" class="cu-footer__col">
             <h2 class="cu-footer__heading">{{ $t(section.titleKey) }}</h2>
             <ul class="cu-footer__list">
               <li v-for="entry in section.entries" :key="entry.to">
-                <NuxtLink
-                  :to="localePath(entry.to as string)"
+                <a
+                  :href="localePath(entry.to as string)"
                   class="cu-footer__link"
                   :data-cta="entry.to === '/mapa-del-sitio' ? 'footer-sitemap' : undefined"
                 >
                   {{ $t(entry.labelKey) }}
-                </NuxtLink>
+                </a>
               </li>
             </ul>
           </div>
@@ -106,8 +107,10 @@
 
 <script setup lang="ts">
 import { NAV_SECTIONS } from '~/utils/siteNav'
+import { createSpaLinkHandler } from '~/utils/spaLinks'
 
 const localePath = useLocalePath()
+const onDirectoryClick = createSpaLinkHandler(path => navigateTo(path))
 const { reopen } = useConsent()
 const reopenConsent = () => reopen()
 
