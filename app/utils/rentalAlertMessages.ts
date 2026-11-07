@@ -1,9 +1,9 @@
 import { rentalMessages } from './rentalMessages'
 import { propertyOpportunityMessages } from './propertyOpportunityMessages'
+import { rentalAlertButtonMessages } from './rentalAlertButtonMessages'
 
 const es = {
-  createAlert: 'Crear alerta',
-  notify: 'Avisarme',
+  ...rentalAlertButtonMessages.es,
   searchAlert: 'Nuevos alquileres',
   opportunityAlert: 'Nuevas oportunidades de alquiler',
   alertTitle: 'Alertas de búsquedas',
@@ -72,8 +72,6 @@ const es = {
   loadError: 'No pudimos consultar tus alertas. Volvé a intentar.',
   saveError: 'No pudimos guardar el cambio. Tus elecciones se conservan; volvé a intentar.',
   limitReached: 'Podés tener hasta 20 alertas. Eliminá una en tu cuenta para crear otra.',
-  unsupportedFilter:
-    'Algún filtro no está disponible para alertas. La búsqueda no se modificó; revisá los filtros antes de volver a intentar.',
   selectChannel: 'Elegí al menos un canal disponible para activar la alerta.',
   empty: 'Todavía no creaste alertas de búsqueda.',
   findRentals: 'Buscar alquileres',
@@ -110,8 +108,7 @@ const es = {
 }
 
 const en: Record<keyof typeof es, string> = {
-  createAlert: 'Create alert',
-  notify: 'Notify me',
+  ...rentalAlertButtonMessages.en,
   searchAlert: 'New rentals',
   opportunityAlert: 'New rental opportunities',
   alertTitle: 'Search alerts',
@@ -177,8 +174,6 @@ const en: Record<keyof typeof es, string> = {
   loadError: 'We could not load your alerts. Try again.',
   saveError: 'We could not save the change. Your choices are preserved; try again.',
   limitReached: 'You can have up to 20 alerts. Delete one in your account to add another.',
-  unsupportedFilter:
-    'A filter is not available for alerts. Your search was not changed; review the filters and try again.',
   selectChannel: 'Choose at least one available channel to activate the alert.',
   empty: 'You have no search alerts yet.',
   findRentals: 'Find rentals',
@@ -214,8 +209,7 @@ const en: Record<keyof typeof es, string> = {
 }
 
 const pt: Record<keyof typeof es, string> = {
-  createAlert: 'Criar alerta',
-  notify: 'Me avise',
+  ...rentalAlertButtonMessages.pt,
   searchAlert: 'Novos aluguéis',
   opportunityAlert: 'Novas oportunidades de aluguel',
   alertTitle: 'Alertas de buscas',
@@ -284,8 +278,6 @@ const pt: Record<keyof typeof es, string> = {
   loadError: 'Não conseguimos consultar seus alertas. Tente novamente.',
   saveError: 'Não conseguimos salvar a alteração. Suas escolhas foram mantidas; tente novamente.',
   limitReached: 'Você pode ter até 20 alertas. Exclua um na sua conta para criar outro.',
-  unsupportedFilter:
-    'Algum filtro não está disponível para alertas. A busca não mudou; confira os filtros e tente novamente.',
   selectChannel: 'Escolha pelo menos um canal disponível para ativar o alerta.',
   empty: 'Você ainda não criou alertas de busca.',
   findRentals: 'Buscar aluguéis',

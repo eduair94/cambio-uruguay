@@ -18,7 +18,7 @@
   <VSnackbar v-model="failed" timeout="6000">{{ t('unsupportedFilter') }}</VSnackbar>
 </template>
 <script setup lang="ts">
-import { rentalAlertMessages } from '~/utils/rentalAlertMessages'
+import { rentalAlertButtonMessages } from '~/utils/rentalAlertButtonMessages'
 import type { RentalAlertKind } from '~/utils/rentalAlerts'
 const props = defineProps<{
   kind: RentalAlertKind
@@ -26,16 +26,14 @@ const props = defineProps<{
   compact?: boolean
   notify?: boolean
 }>()
-const { t } = useI18n({ useScope: 'local', messages: rentalAlertMessages })
+const { t } = useI18n({ useScope: 'local', messages: rentalAlertButtonMessages })
 const alerts = useRentalAlerts()
 const id = useId()
 const failed = ref(false)
 function start() {
-  try {
-    alerts.begin(props.kind, props.filters)
-  } catch {
+  alerts.begin(props.kind, props.filters).catch(() => {
     failed.value = true
-  }
+  })
 }
 </script>
 <style scoped>
