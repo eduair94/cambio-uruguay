@@ -67,10 +67,12 @@ describe('layout tail', () => {
     const tails = all.filter(node => hasClass(node, 'layout-tail'))
     expect(tails).toHaveLength(1)
 
-    const inside = elements(tails[0]!).map(node => node.tag)
+    // Lazy<Name> is the same component, hydrated when it nears the viewport (layoutLazyHydration).
+    const name = (tag?: string) => tag?.replace(/^Lazy/, '')
+    const inside = elements(tails[0]!).map(node => name(node.tag))
     for (const tag of TAIL) {
       expect(
-        all.filter(node => node.tag === tag),
+        all.filter(node => name(node.tag) === tag),
         tag
       ).toHaveLength(1)
       expect(inside, tag).toContain(tag)
