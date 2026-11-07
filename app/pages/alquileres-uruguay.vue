@@ -776,7 +776,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
       </details>
     </section>
     <VSnackbar v-model="snackbar" :timeout="4500" role="status">{{ feedback }}</VSnackbar>
-    <RentalAlertDialog />
+    <RentalAlertDialogHost />
   </VContainer>
 </template>
 
@@ -789,7 +789,7 @@ import ReferenceAddress from '~/components/rentals/ReferenceAddress.vue'
 import SavedPanel from '~/components/rentals/SavedPanel.vue'
 import MapPropertyDetail from '~/components/rentals/MapPropertyDetail.vue'
 import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
-import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'
+import RentalAlertDialogHost from '~/components/rentals/RentalAlertDialogHost.vue'
 import { rentalMessages } from '~/utils/rentalMessages'
 import {
   rentalCardPhotoRefs,

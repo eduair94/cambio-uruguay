@@ -1,69 +1,55 @@
-import { initializeApp, getApps } from 'firebase/app'
-import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { useAuthStore } from '~/stores/auth'
-import { useAuthFetch } from '~/composables/useAuthFetch'
-import { hydrateFavorites, resetFavoritesState } from '~/composables/useFavoritesState'
-import { useImportCartStore } from '~/stores/importCart'
-import { useWatchlistStore } from '~/stores/watchlist'
-import { useBankosCardsStore } from '~/stores/bankosCards'
-import { useBankosFavoritesStore } from '~/stores/bankosFavorites'
-import { readPushDevice, revokeBrowserPush } from '~/stores/firebaseMessagingApi'
-import { usePushNotifications } from '~/composables/usePushNotifications'
+import {
+  hasStoredFirebaseSession,
+  isAuthHandoffUrl,
+  loadFirebaseAuth,
+  setFirebaseStarter,
+} from '~/services/firebaseLazy'
 
-export default defineNuxtPlugin(() => {
-  const cfg = useRuntimeConfig().public.firebase
-  if (!cfg?.apiKey) return // not configured -> auth simply stays disabled
+// The Firebase SDK is not part of this plugin, nor of the entry chunk: see services/firebaseLazy.ts.
+// A visitor without a saved session gets a resolved, signed-out auth store and no SDK until they
+// act on auth (the login dialog, a magic link, the Discord hand-off). One with a saved session
+// gets the SDK loaded right away, as its own chunk, to restore that session.
+export default defineNuxtPlugin({
+  name: 'firebase',
+  setup(nuxtApp) {
+    const cfg = useRuntimeConfig().public.firebase
+    if (!cfg?.apiKey) return // not configured -> auth simply stays disabled
 
-  if (!getApps().length) {
-    initializeApp({
-      apiKey: cfg.apiKey,
-      authDomain: cfg.authDomain,
-      projectId: cfg.projectId,
-      appId: cfg.appId,
-      messagingSenderId: cfg.messagingSenderId,
+    const store = useAuthStore()
+    // undefined until a state is applied; null once applied as signed out.
+    let appliedUid: string | null | undefined
+
+    function signedOutWithoutSdk() {
+      // Firebase already reported (the visitor opened the login dialog meanwhile): it wins.
+      if (appliedUid !== undefined) return
+      appliedUid = null
+      store.setUser(null)
+    }
+
+    setFirebaseStarter(async api => {
+      const { createAuthStateSync } = await import('~/services/firebaseAuthSync')
+      const sync = createAuthStateSync(nuxtApp)
+      api.initFirebaseApp(cfg)
+      api.onAuthStateChanged(api.fbAuth(), fbUser => {
+        const uid = fbUser?.uid ?? null
+        // A visitor already resolved as signed out who loads the SDK later (opening the login
+        // dialog) gets a second "signed out" from Firebase: nothing changed, so nothing to redo.
+        if (uid === null && appliedUid === null) return
+        appliedUid = uid
+        return sync(fbUser)
+      })
     })
-  }
 
-  const auth = getAuth()
-  const store = useAuthStore()
-  const { authFetch } = useAuthFetch()
-  const push = usePushNotifications()
-
-  const cart = useImportCartStore()
-  const watchlist = useWatchlistStore()
-  const bankosCards = useBankosCardsStore()
-  const bankosFavorites = useBankosFavoritesStore()
-
-  onAuthStateChanged(auth, async fbUser => {
-    store.setUser(fbUser)
-    const device = readPushDevice()
-    if (device && device.uid !== fbUser?.uid) {
-      // Account changes must not silently reuse a previous account's device consent.
-      if (!(await revokeBrowserPush(null))) store.error = 'push/revocation-failed'
-    } else if (
-      device &&
-      fbUser &&
-      typeof Notification !== 'undefined' &&
-      Notification.permission === 'granted'
-    ) {
-      // Refresh only an explicitly registered device. This never opens a permission prompt.
-      await push.enablePush().catch(() => {})
-    }
-    if (fbUser) {
-      await authFetch('/api/me/profile').catch(() => {})
-      await hydrateFavorites(authFetch)
-      await cart.hydrateFromAccount(authFetch)
-      await watchlist.hydrateFromAccount(authFetch)
-      await bankosCards.hydrateFromAccount(authFetch)
-      await bankosFavorites.hydrateFromAccount(authFetch)
-    } else {
-      resetFavoritesState()
-      cart.onLogout()
-      watchlist.onLogout()
-      bankosCards.onLogout()
-      bankosFavorites.onLogout()
-    }
-  })
-
-  return { provide: { firebaseAuth: auth } }
+    const sessionCheck = isAuthHandoffUrl(window.location.href)
+      ? Promise.resolve(true)
+      : hasStoredFirebaseSession()
+    void sessionCheck.then(hasSession => {
+      // A visitor who never signed in here: the signed-out state Firebase would report anyway
+      // (the account stores start signed out, so there is nothing to reset).
+      if (!hasSession) return signedOutWithoutSdk()
+      // The SDK chunk did not load: resolve as signed out rather than leave callers waiting.
+      return loadFirebaseAuth().then(() => undefined, signedOutWithoutSdk)
+    })
+  },
 })

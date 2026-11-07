@@ -1,16 +1,5 @@
 import { defineStore } from 'pinia'
-import {
-  fbAuth,
-  GoogleAuthProvider,
-  signInWithPopup,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendSignInLinkToEmail,
-  sendPasswordResetEmail,
-  sendEmailVerification,
-  signInAnonymously,
-  signOut,
-} from './firebaseAuthApi'
+import { loadFirebaseAuth, loadedFirebaseAuth } from '~/services/firebaseLazy'
 
 interface AuthUser {
   uid: string
@@ -67,7 +56,9 @@ export const useAuthStore = defineStore('auth', {
       if (!this.ready) {
         await Promise.race([readyGate, new Promise(resolve => setTimeout(resolve, 3000))])
       }
-      const current = fbAuth().currentUser
+      // No user means no token: asking for one must not pull the SDK in.
+      const fb = this.user ? await loadFirebaseAuth() : loadedFirebaseAuth()
+      const current = fb?.fbAuth().currentUser
       return current ? current.getIdToken() : null
     },
 
@@ -75,6 +66,9 @@ export const useAuthStore = defineStore('auth', {
       this.error = null
       this.notice = null
       this.dialogOpen = true
+      // Load the SDK while the visitor reads the dialog, so the sign-in click opens its popup
+      // within the click's user activation instead of waiting on a chunk download.
+      if (import.meta.client) void loadFirebaseAuth().catch(() => {})
     },
     closeDialog() {
       this.dialogOpen = false
@@ -83,7 +77,8 @@ export const useAuthStore = defineStore('auth', {
     async signInWithGoogle() {
       this.error = null
       try {
-        await signInWithPopup(fbAuth(), new GoogleAuthProvider())
+        const fb = await loadFirebaseAuth()
+        await fb.signInWithPopup(fb.fbAuth(), new fb.GoogleAuthProvider())
         this.closeDialog()
       } catch (e: any) {
         this.error = e?.code ?? e?.message ?? 'error'
@@ -93,7 +88,8 @@ export const useAuthStore = defineStore('auth', {
     async signInAsGuest() {
       this.error = null
       try {
-        await signInAnonymously(fbAuth())
+        const fb = await loadFirebaseAuth()
+        await fb.signInAnonymously(fb.fbAuth())
         this.closeDialog()
       } catch (e: any) {
         this.error = e?.code ?? e?.message ?? 'error'
@@ -103,7 +99,8 @@ export const useAuthStore = defineStore('auth', {
     async signInWithEmail(email: string, password: string) {
       this.error = null
       try {
-        await signInWithEmailAndPassword(fbAuth(), email, password)
+        const fb = await loadFirebaseAuth()
+        await fb.signInWithEmailAndPassword(fb.fbAuth(), email, password)
         this.closeDialog()
       } catch (e: any) {
         this.error = e?.code ?? e?.message ?? 'error'
@@ -113,8 +110,9 @@ export const useAuthStore = defineStore('auth', {
     async register(email: string, password: string) {
       this.error = null
       try {
-        const cred = await createUserWithEmailAndPassword(fbAuth(), email, password)
-        await sendEmailVerification(cred.user)
+        const fb = await loadFirebaseAuth()
+        const cred = await fb.createUserWithEmailAndPassword(fb.fbAuth(), email, password)
+        await fb.sendEmailVerification(cred.user)
         this.notice = 'auth.verifySent'
         this.closeDialog()
       } catch (e: any) {
@@ -126,7 +124,8 @@ export const useAuthStore = defineStore('auth', {
       this.error = null
       try {
         const url = `${window.location.origin}/cuenta?magic=1`
-        await sendSignInLinkToEmail(fbAuth(), email, { url, handleCodeInApp: true })
+        const fb = await loadFirebaseAuth()
+        await fb.sendSignInLinkToEmail(fb.fbAuth(), email, { url, handleCodeInApp: true })
         window.localStorage.setItem(MAGIC_LINK_EMAIL_KEY, email)
         this.notice = 'auth.magicSent'
       } catch (e: any) {
@@ -137,7 +136,8 @@ export const useAuthStore = defineStore('auth', {
     async resetPassword(email: string) {
       this.error = null
       try {
-        await sendPasswordResetEmail(fbAuth(), email)
+        const fb = await loadFirebaseAuth()
+        await fb.sendPasswordResetEmail(fb.fbAuth(), email)
         this.notice = 'auth.resetSent'
       } catch (e: any) {
         this.error = e?.code ?? e?.message ?? 'error'
@@ -145,7 +145,7 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async refreshUser(): Promise<void> {
-      const current = fbAuth().currentUser
+      const current = (await loadFirebaseAuth()).fbAuth().currentUser
       if (!current) {
         this.setUser(null)
         return
@@ -157,13 +157,14 @@ export const useAuthStore = defineStore('auth', {
 
     async verifyEmail(): Promise<boolean> {
       this.error = null
-      const current = fbAuth().currentUser
+      const fb = await loadFirebaseAuth()
+      const current = fb.fbAuth().currentUser
       if (!current?.email || current.isAnonymous) {
         this.error = 'auth/required'
         return false
       }
       try {
-        await sendEmailVerification(current)
+        await fb.sendEmailVerification(current)
         this.notice = 'auth.verifySent'
         return true
       } catch (error: any) {
@@ -174,13 +175,14 @@ export const useAuthStore = defineStore('auth', {
 
     async logout() {
       if (import.meta.client && typeof window !== 'undefined') {
-        const { revokeBrowserPush } = await import('./firebaseMessagingApi')
+        const { revokeBrowserPush } = await import('~/services/firebaseMessagingApi')
         if (!(await revokeBrowserPush(await this.getToken()))) {
           this.error = 'push/revocation-failed'
           throw new Error('push/revocation-failed')
         }
       }
-      await signOut(fbAuth())
+      const fb = await loadFirebaseAuth()
+      await fb.signOut(fb.fbAuth())
       this.user = null
     },
   },

@@ -398,7 +398,7 @@ idioma, aunque la ruta exista bajo /en/ y /pt/ por `prefix_except_default`.
       Esto es una comparación de precios pedidos en avisos públicos, con su fecha. No es una
       tasación, no es una recomendación de compra y no dice si una moto está en buen estado.
     </VAlert>
-    <RentalAlertDialog />
+    <RentalAlertDialogHost />
   </VContainer>
 </template>
 
@@ -406,7 +406,7 @@ idioma, aunque la ruta exista bajo /en/ y /pt/ por `prefix_except_default`.
 import { VPagination } from 'vuetify/components'
 import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
-import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'
+import RentalAlertDialogHost from '~/components/rentals/RentalAlertDialogHost.vue'
 import type { FaqItem } from '~/utils/faqAnswers'
 import {
   MOTOS_AUTOS_PATH,

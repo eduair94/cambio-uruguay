@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { fbAuth, isSignInWithEmailLink, signInWithEmailLink } from '~/stores/firebaseAuthApi'
+import { isAuthHandoffUrl, loadFirebaseAuth } from '~/services/firebaseLazy'
 import { isExtraLocale } from '~/utils/locales'
 
 const store = useAuthStore()
@@ -103,10 +103,13 @@ const initials = computed(() => {
   return n.slice(0, 1).toUpperCase()
 })
 
-// Complete a magic-link sign-in when the user lands on the emailed URL.
+// Complete a magic-link sign-in when the user lands on the emailed URL. Only such a URL loads the
+// Firebase SDK here; any other page leaves it unloaded.
 onMounted(async () => {
   try {
     const href = window.location.href
+    if (!isAuthHandoffUrl(href)) return
+    const { fbAuth, isSignInWithEmailLink, signInWithEmailLink } = await loadFirebaseAuth()
     if (!isSignInWithEmailLink(fbAuth(), href)) return
     let email = window.localStorage.getItem('cu_magic_email')
     if (!email) email = window.prompt(t('auth.email')) || ''

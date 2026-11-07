@@ -361,7 +361,12 @@ watch(
 )
 onMounted(() => {
   alerts.recover()
-  if (isOpen.value) void check()
+  // Mounted on first open by RentalAlertDialogHost: the draft begin() just set predates the
+  // watcher above, so save it here as the watcher would have.
+  if (isOpen.value) {
+    alerts.persist()
+    void check()
+  }
 })
 </script>
 
