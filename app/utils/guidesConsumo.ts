@@ -537,13 +537,19 @@ export const consumoGuides: readonly Guide[] = [
     slug: 'precio-supergas-garrafa-uruguay',
     title: 'Supergás: la garrafa de 13 kg, $1.216,28',
     description:
-      'El kilo está en $93,56 desde el 1/7/2026 y el Ejecutivo lo mantuvo en setiembre: la garrafa de 13 kg sale $1.216,28. El MIDES descuenta el 50 % por tuapp.',
+      'El kilo está en $93,56 desde el 1/7/2026 y el Ejecutivo lo mantuvo en noviembre: la garrafa de 13 kg sale $1.216,28. El MIDES descuenta el 50 % por tuapp.',
     tag: 'SUPERGÁS',
     updatedAt: '2026-09-13',
     sections: [
       {
         heading: '¿Cuánto sale hoy la garrafa de 13 kg?',
-        body: 'El precio se fija por kilo. Desde el 1 de julio de 2026 el precio máximo de venta al público del supergás es $93,56 el kilo, tras una baja del 7,6% que el Ministerio de Industria, Energía y Minería tradujo en $100 menos para la garrafa de 13 kg. El 31 de agosto el Poder Ejecutivo resolvió mantenerlo durante setiembre. Multiplicado por 13, la garrafa queda en $1.216,28; la cuenta es nuestra, porque los comunicados oficiales publican el precio del kilo y no siempre el de la garrafa. Si el precio que te pasan por una recarga de 13 kg es distinto, preguntá qué incluye antes de pagar. Y como el precio se revisa periódicamente, antes de hacer cuentas a largo plazo, por ejemplo para decidir qué cocina comprar, mirá el último comunicado oficial: lo que hoy vale $1.216,28 puede cambiar en el próximo ajuste, para arriba o para abajo.',
+        body: 'El precio se fija por kilo. Desde el 1 de julio de 2026 el precio máximo de venta al público del supergás es $93,56 el kilo, tras una baja del 7,6% que el Ministerio de Industria, Energía y Minería tradujo en $100 menos para la garrafa de 13 kg. El MIEM confirmó el 30 de octubre que ese máximo se mantiene desde el 1 de noviembre de 2026. Precio consultado el 7 de noviembre de 2026. Multiplicado por 13, la garrafa queda en $1.216,28; la cuenta es nuestra, porque los comunicados oficiales publican el precio del kilo y no siempre el de la garrafa. Si el precio que te pasan por una recarga de 13 kg es distinto, preguntá qué incluye antes de pagar. Y como el precio se revisa periódicamente, antes de hacer cuentas a largo plazo, por ejemplo para decidir qué cocina comprar, mirá el último comunicado oficial: el importe usado en esta cuenta puede cambiar en el próximo ajuste, para arriba o para abajo.',
+        links: [
+          {
+            label: 'Precio por kilo, vigencia e histórico de combustibles',
+            to: '/precio-de-la-nafta-uruguay',
+          },
+        ],
       },
       {
         heading: '¿Quién fija el precio y dónde se publica?',
@@ -581,7 +587,7 @@ export const consumoGuides: readonly Guide[] = [
     faqs: [
       {
         q: '¿Cuánto sale la garrafa de supergás?',
-        a: 'Desde el 1 de julio de 2026 el precio máximo es $93,56 el kilo, y el Poder Ejecutivo lo mantuvo en setiembre. Para la garrafa de 13 kg eso da $1.216,28.',
+        a: 'En noviembre de 2026 el precio máximo del supergás es $93,56 por kilo, según el comunicado del MIEM del 30 de octubre. Para 13 kg, la multiplicación da $1.216,28.',
       },
       {
         q: '¿Quién fija el precio del supergás?',
@@ -622,6 +628,12 @@ export const consumoGuides: readonly Guide[] = [
           'Poder Ejecutivo mantiene los precios de los combustibles en setiembre — supergás (GLP) a $93,56 el kilo; según la URSEA, la referencia habría justificado $98,96 (31/08/2026)',
         url: 'https://www.gub.uy/presidencia/comunicacion/noticias/poder-ejecutivo-mantiene-precios-combustibles-setiembre',
         publisher: 'Presidencia de la República',
+      },
+      {
+        label:
+          'Precios de noviembre de 2026: el máximo del supergás sigue en $93,56/kg desde el 1/11; comunicado del 30/10, consultado el 7/11/2026',
+        url: 'https://www.gub.uy/ministerio-industria-energia-mineria/comunicacion/noticias/precios-combustibles-se-mantienen-sin-cambios-noviembre',
+        publisher: 'MIEM',
       },
       {
         label:
