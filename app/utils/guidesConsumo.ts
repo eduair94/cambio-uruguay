@@ -389,23 +389,23 @@ export const consumoGuides: readonly Guide[] = [
   },
   {
     slug: 'titulo-del-auto-uruguay',
-    title: 'El título del auto no es obligatorio',
+    title: 'Título del auto: inscribirlo es voluntario',
     description:
-      'Inscribir la compraventa es voluntario y es carga del comprador (art. 85, Ley 16.871), pero sin título un embargo contra el titular inscripto te alcanza.',
+      'La inscripción de la compraventa es voluntaria. Qué cambia frente a la libreta, qué pide Montevideo y qué riesgo hay ante un embargo.',
     tag: 'TÍTULO',
     updatedAt: '2026-09-13',
     sections: [
       {
-        heading: 'Libreta y título no son lo mismo',
-        body: 'Son dos registros distintos que se confunden porque los dos parecen decir quién es el dueño. La libreta, o documento de identificación vehicular, la emite la intendencia donde está empadronado el auto: es lo que te habilita a circular y sobre lo que se cobra la patente. El título es otra cosa: es el documento de compraventa, firmado ante escribano, que se inscribe en el Registro de la Propiedad Sección Mobiliaria, en su Registro de Vehículos Automotores, que depende de la Dirección General de Registros. El artículo 25 de la Ley 16.871 enumera lo que se anota ahí: los instrumentos que transfieren el dominio de un vehículo, las prendas, los embargos específicos y otras medidas que afectan a quien figura como titular. Cuando alguien dice que un auto no tiene títulos, casi siempre quiere decir eso: que ninguna de sus ventas se inscribió en el Registro, aunque la libreta haya cambiado de nombre varias veces.',
+        heading: 'Libreta, documento de compraventa e inscripción',
+        body: 'El documento de compraventa, su inscripción en la Dirección General de Registros y la libreta de la intendencia cumplen funciones diferentes. El documento recoge la compra; su inscripción da publicidad registral al acto. La libreta identifica al titular ante la intendencia: cambiarla de nombre no sustituye la inscripción de la compraventa. El Registro de Vehículos Automotores también anota otros actos, como prendas y embargos específicos, según el artículo 25 de la Ley 16.871. Por eso, antes de comprar un auto «sin títulos», conviene aclarar qué falta: la documentación de la compra o su inscripción.',
       },
       {
-        heading: '¿Es obligatorio hacer el título?',
-        body: 'No hay una multa por no hacerlo. El manual de calificación de automotores de la Dirección General de Registros lo dice sin vueltas: la inscripción no se impone en forma coactiva, es voluntaria, y es una carga para quien tenga interés en la protección de la publicidad registral. La ley agrega a quién le toca esa carga: el artículo 85 de la Ley 16.871 establece que el adquirente es quien tiene la carga de la registración y que será responsable ante el enajenante si no lo hiciere. O sea que, si comprás y no inscribís, el riesgo lo asumís vos. Que sea voluntaria no significa que te puedas saltear el título en cualquier departamento. Para el cambio de titularidad de la libreta, la Intendencia de Montevideo pide el título de propiedad inscripto en forma definitiva en la Dirección General de Registros, o su testimonio notarial. En Maldonado, en cambio, alcanza con acreditar titularidad o representación: que se presente el titular, un apoderado con carta poder certificada, que vale hasta un año, o el título original inscripto.',
+        heading: '¿Es obligatorio inscribir la compraventa?',
+        body: 'La DGR describe la inscripción como voluntaria. El artículo 85 de la Ley 16.871 pone esa carga en quien compra y prevé su responsabilidad frente a quien vende si la omite. Esto se refiere a la inscripción registral, no a prescindir de la documentación de la compra ni de los requisitos para cambiar la libreta. La ficha común de cambio de titularidad de Montevideo pide título inscripto definitivamente o testimonio notarial. Existe también un trámite por parte de la persona vendedora, limitado a vehículos con afectación Particular, Transporte Profesional de Carga o Turismo, que admite otras opciones documentales. Entre ellas hay documentos notariales que acreditan la venta o promesa y la entrega del vehículo; hay que cumplir las condiciones de la ficha correspondiente, y no es una vía general sin documentos. En Maldonado, en cambio, alcanza con acreditar titularidad o representación: que se presente el titular, un apoderado con carta poder certificada, que vale hasta un año, o el título original inscripto. Fuentes sobre inscripción registral y trámites de Montevideo consultadas el 7/11/2026.',
       },
       {
-        heading: 'Qué te protege el título, y por qué un embargo ajeno te puede alcanzar',
-        body: 'El artículo 54 de la Ley 16.871 dice que los actos registrados son oponibles respecto de terceros a partir de su presentación al Registro, y el artículo 25 incluye entre lo que se inscribe los embargos específicos y las medidas cautelares que disponen los tribunales. Juntando las dos piezas se entiende el riesgo del que tanto se habla en los foros. Si tu compra no está inscripta, para el Registro no existe, y un embargo contra quien figura como titular inscripto puede anotarse sobre el vehículo. Tampoco te salva que el auto nunca haya tenido títulos: el manual de la Dirección General de Registros prevé que, si no hay título inscripto anterior, el oficio de embargo ingrese como primera inscripción, y su Resolución 40/2021 aclara que en ese caso no se controla que el embargado coincida con el titular municipal. Es decir, tener la libreta a tu nombre no frena ese asiento. Con tu compra inscripta antes, en cambio, tu derecho queda publicado desde que se presentó al Registro y se le puede oponer a ese acreedor.',
+        heading: 'Qué aporta la inscripción frente a un embargo',
+        body: 'El artículo 54 de la Ley 16.871 regula los efectos de la inscripción frente a terceros, incluidas las reglas de prioridad, y el artículo 25 permite inscribir embargos específicos y otras medidas cautelares. Si tu compra no consta inscripta, un embargo sobre el vehículo puede anotarse aunque la libreta ya esté a tu nombre. El manual de la DGR prevé que un oficio de embargo ingrese como primera inscripción cuando no hay un título inscripto anterior. Su Resolución 40/2021 aclara que, en ese caso, no se controla que el embargado coincida con el titular municipal. La inscripción permite hacer valer la compra frente a terceros conforme a las reglas de publicidad y prioridad registral. Tener o no tener una compraventa inscripta no determina por sí solo el resultado de un embargo concreto: hay que revisar los antecedentes y las fechas de los actos.',
       },
       {
         heading: 'Cuánto sale: lo que cobra el Registro y lo que no está publicado',
@@ -432,7 +432,7 @@ export const consumoGuides: readonly Guide[] = [
       },
       {
         heading: 'Comprar un usado sin títulos: qué revisar antes de pagar',
-        body: 'Que un auto no tenga títulos no es en sí una señal de estafa: puede ser un 0 km de único dueño o un usado cuyas ventas nunca se inscribieron. Lo que cambia es cuánto tenés que verificar vos. Primero, el Registro: pedí el certificado de información sobre el vehículo y sobre quien vende, para ver inscripciones, prendas o embargos. Segundo, quién vende: para la primera inscripción de un usado, el manual de la Dirección General de Registros exige que el titular de la libreta coincida con el vendedor o que el escribano certifique su legitimación, así que si el que te vende no es el de la libreta, eso tiene que quedar resuelto por escrito con un poder. Tercero, el cónyuge: el mismo manual indica que se controla el consentimiento conyugal cuando corresponde, en base al artículo 27 de la Ley 16.871. Cuarto, las deudas del vehículo, que no están en el Registro sino en el SUCIVE y que traban la transferencia. Y si vas a empadronar en Montevideo, sin título inscripto no vas a poder pasar la libreta a tu nombre.',
+        body: 'Que la compra de un auto no esté inscripta no es en sí una señal de estafa: puede ser un 0 km de único dueño o un usado cuyas ventas nunca se inscribieron. Lo que cambia es cuánto tenés que verificar vos. Primero, el Registro: pedí el certificado de información sobre el vehículo y sobre quien vende, para ver inscripciones, prendas o embargos. Segundo, quién vende: para la primera inscripción de un usado, el manual de la Dirección General de Registros exige que el titular de la libreta coincida con el vendedor o que el escribano certifique su legitimación. Si no coinciden, el escribano debe comprobar y certificar por qué esa persona está legitimada para vender; no alcanza con dar por supuesto que puede hacerlo. Tercero, el cónyuge: el mismo manual indica que se controla el consentimiento conyugal cuando corresponde, en base al artículo 27 de la Ley 16.871. Cuarto, las deudas del vehículo, que no están en el Registro sino en el SUCIVE y que traban la transferencia. Antes de cambiar la libreta en Montevideo, revisá qué trámite corresponde y qué documentación exige.',
         links: [{ label: 'Comprar un auto con deuda', to: '/comprar-auto-con-deuda-uruguay' }],
       },
       {
@@ -459,17 +459,17 @@ export const consumoGuides: readonly Guide[] = [
       },
       {
         name: 'Pasá la libreta a tu nombre',
-        text: 'En la intendencia, con los requisitos de cada departamento: Montevideo exige el título inscripto.',
+        text: 'En la intendencia, con los requisitos del trámite y del departamento; la inscripción en DGR no sustituye este paso.',
       },
     ],
     faqs: [
       {
         q: '¿Hacer título de auto o no?',
-        a: 'No es obligatorio: la inscripción es voluntaria y la carga de hacerla es del comprador (art. 85 de la Ley 16.871). Lo que compra el título es protección frente a terceros, porque lo inscripto es oponible desde que se presenta al Registro (art. 54). En Montevideo, además, lo necesitás para pasar la libreta a tu nombre.',
+        a: 'La inscripción registral es voluntaria y es carga del comprador (art. 85 de la Ley 16.871). Da publicidad a la compra frente a terceros, conforme a las reglas de prioridad del artículo 54. Es distinta del documento de compraventa y del cambio de titular en la libreta. En Montevideo, el trámite común pide título inscripto o testimonio notarial; la vía iniciada por la persona vendedora tiene otras opciones documentales y un alcance limitado.',
       },
       {
         q: '¿Qué pasa si compro un auto sin títulos?',
-        a: 'Podés inscribir tu compra en el Registro como primera inscripción de un usado, con escribano. Si no lo hacés, tu compra no figura en el Registro, y un embargo sobre el vehículo puede anotarse igual, incluso como primera inscripción, sin que se controle que el embargado coincida con el titular de la libreta.',
+        a: 'Si no existe una inscripción antecedente, la compra de un usado puede presentarse como primera inscripción, con la documentación y certificación notarial que exige la DGR. Si ya hay antecedentes, hay que revisar la historia registral. La libreta a tu nombre no impide por sí sola un embargo: el manual admite que un oficio ingrese como primera inscripción sin controlar la coincidencia entre el embargado y el titular municipal.',
       },
       {
         q: '¿Cuánto sale hacer el título de un auto?',
@@ -477,15 +477,15 @@ export const consumoGuides: readonly Guide[] = [
       },
       {
         q: 'Si embargan al dueño anterior, ¿pierdo el auto?',
-        a: 'El riesgo existe cuando tu compra no está inscripta, porque los embargos específicos se anotan en el Registro de Vehículos Automotores (art. 25 de la Ley 16.871) y lo inscripto es oponible a terceros (art. 54). Si tu compra se inscribió antes, tu derecho queda publicado desde su presentación y se le puede oponer a ese acreedor.',
+        a: 'No puede determinarse sólo por tener o no tener una compraventa inscripta. Un embargo específico puede anotarse sobre el vehículo, incluso como primera inscripción. Para establecer cómo afecta a tu compra hay que revisar los antecedentes, las fechas y las reglas de prioridad registral. La libreta a tu nombre no sustituye ese análisis.',
       },
       {
         q: '¿Un 0 km tiene título?',
-        a: 'No automáticamente. La primera venta de un 0 km, del importador o concesionario al comprador, es un acto que se puede inscribir en el Registro, pero la inscripción es voluntaria, así que puede no hacerse nunca. En ese caso el auto no tiene historia registral hasta que alguien inscribe una venta.',
+        a: 'La primera venta de un 0 km, del importador o concesionario al comprador, se puede inscribir en el Registro, pero esa inscripción es voluntaria. La documentación de la compra y su inscripción son cosas distintas. La falta de una compraventa inscripta tampoco asegura que el Registro esté vacío: un embargo puede ingresar como primera inscripción.',
       },
       {
         q: '¿Puedo pasar la libreta a mi nombre sin título?',
-        a: 'Depende del departamento. En Montevideo el cambio de titularidad pide el título inscripto en la Dirección General de Registros o su testimonio notarial. En Maldonado alcanza con que se presente el titular, un apoderado con carta poder certificada o el título original inscripto.',
+        a: 'Depende del departamento y del trámite. En Montevideo, la ficha común pide título inscripto definitivamente o testimonio notarial. El cambio iniciado por la persona vendedora admite otras opciones documentales y se limita a vehículos con afectación Particular, Transporte Profesional de Carga o Turismo; no elimina los demás requisitos de esa ficha. En Maldonado alcanza con que se presente el titular, un apoderado con carta poder certificada o el título original inscripto.',
       },
     ],
     related: [
@@ -497,7 +497,7 @@ export const consumoGuides: readonly Guide[] = [
     sources: [
       {
         label:
-          'Ley 16.871 de Registros Públicos — art. 25 (se inscriben las transferencias de dominio de vehículos, las prendas y los "embargos específicos"), art. 54 (lo registrado es oponible "respecto de terceros a partir de la presentación al Registro") y art. 85 ("El adquirente es quien tiene la carga de la registración")',
+          'Ley 16.871 de Registros Públicos — art. 25 (actos inscribibles, incluidas las transferencias de dominio y los embargos específicos), art. 54 (efectos y prioridad frente a terceros) y art. 85 (carga de la registración del adquirente)',
         url: 'https://www.impo.com.uy/bases/leyes/16871-1997',
         publisher: 'IMPO',
       },
@@ -530,6 +530,12 @@ export const consumoGuides: readonly Guide[] = [
           'Transferencia o cambio de titularidad del vehículo en Maldonado — acreditar "Titular, apoderado, o título original inscripto"; carta poder con certificación notarial válida hasta un año; costo $1.780',
         url: 'https://www.gub.uy/tramites/transferencia-cambio-titularidad-vehiculo-maldonado',
         publisher: 'Intendencia de Maldonado — gub.uy',
+      },
+      {
+        label:
+          'Cambio de titular en libreta de circulación por parte de la persona vendedora — afectaciones admitidas y opciones documentales; ficha actualizada el 10/07/2026, consultada el 7/11/2026',
+        url: 'https://tramites.montevideo.gub.uy/tramites-y-tributos/solicitud/cambio-de-titular-en-libreta-de-circulacion-por-parte-del-vendedor-vehiculos-con-afectacion',
+        publisher: 'Intendencia de Montevideo',
       },
     ],
   },
