@@ -284,21 +284,29 @@
              que liberan el tope global (directorios, mapas) lo liberan para su grilla, no para
              esto. Ver `.layout-tail` abajo y tests/unit/layoutTail.test.ts. -->
         <div class="layout-tail">
+          <!-- Hydrated when they near the viewport, not on load: the tail and the footer were ~700
+               of the 870-1.900 component instances every page hydrated at once (measured
+               2026-11-07), for blocks most visits never scroll to. The HTML is the same
+               server-rendered one, links included. Keyed by route (footer: by locale) so a
+               client-side navigation mounts them fresh for the new page instead of hydrating
+               the previous page's HTML. NewsletterCapture stays eager: its root is <ClientOnly>,
+               which renders nothing on the server, so there would be nothing to watch.
+               See tests/unit/layoutLazyHydration.test.ts. -->
           <!-- Where to go next, server-rendered so crawlers follow it too. Routes
                opt out through `utils/relatedPages.ts`; it sits above the ad
                because the reader's next page is worth more than the impression. -->
           <!-- Ampliaciones que el bot escribió para esta ruta a partir de lo que Reddit preguntó
                y la página no contestaba. Vive acá y no en cada página para que un job automático
                nunca tenga que parchear un .vue escrito a mano. Ver utils/generated/addenda.ts. -->
-          <PageAddenda />
+          <LazyPageAddenda :key="route.path" :hydrate-on-visible="TAIL_MARGIN" />
           <!-- Un directorio lleva a los análisis que se hacen con sus datos, y cada análisis lleva de
                vuelta a su directorio. Sale del registro (utils/directorios.ts → `analisis`), así
                que ninguna página lo pega a mano. "Seguí leyendo" no repite lo que muestra. -->
-          <DirectorioAnalisis />
+          <LazyDirectorioAnalisis :key="route.path" :hydrate-on-visible="TAIL_MARGIN" />
           <!-- "Más sobre este tema": el tema de la página y las demás páginas y términos del mismo
                tema, desde utils/guideHubs.ts. Recíproco por construcción. -->
-          <TemaVecinos />
-          <RelatedPages />
+          <LazyTemaVecinos :key="route.path" :hydrate-on-visible="TAIL_MARGIN" />
+          <LazyRelatedPages :key="route.path" :hydrate-on-visible="TAIL_MARGIN" />
           <!-- The end-of-article ask. Long reads only (`utils/capture.ts`), and it
                sits after the recirculation block: giving the reader somewhere to go
                costs them nothing, asking for an email costs them something. -->
@@ -329,7 +337,7 @@
       </div>
     </VMain>
 
-    <Footer />
+    <LazyFooter :key="locale" :hydrate-on-visible="TAIL_MARGIN" />
     <ClientOnly><LazyAuthDialog v-if="authDialogActivated" /></ClientOnly>
 
     <!-- Memory Monitor for debugging (only shows in development) -->
@@ -424,7 +432,10 @@ const isActiveRoute = (path: string) => {
 // the inline bar, the grouped "Más" menu, the mobile drawer and the footer. Add a
 // page there and it appears in all of them; a page that is in none fails the
 // `siteNav-coverage` unit test.
-const { t } = useI18n()
+const { t, locale } = useI18n()
+// Start hydrating the tail and the footer this far before they scroll in, so they are live by
+// the time they are read or tapped.
+const TAIL_MARGIN = { rootMargin: '600px 0px' }
 const navSections = NAV_SECTIONS
 const primaryNav = computed(() => NAV_SECTIONS.flatMap(s => s.entries.filter(e => e.primary)))
 const moreGroups = computed(() =>
