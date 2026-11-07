@@ -538,8 +538,11 @@ const MEASURED = 154
  * guía y se rompa otra sin que nada avise; una lista exacta, no.
  */
 const DEUDA_TITULO_LARGO = [
-  'aguinaldo-casos-especiales-uruguay',
-  'certificado-unico-departamental-uruguay',
+  // Una sola, y queda por la reserva y no por la redacción: `glosario-cambiario-entra-a-su-tema`
+  // la declara el 2026-10-12, así que su ventana de medición cierra el 10 de noviembre. El lector
+  // de `npm run seo_debt` espera este formato multilínea con el `]` al principio de línea
+  // (`classes/revenueplan/debtFree.ts`), así que la lista no se colapsa a una sola línea aunque
+  // tenga un solo elemento — y el comentario es además lo que impide que prettier la colapse.
   'glosario-terminos-cambiarios',
 ]
 
@@ -673,7 +676,48 @@ const DEUDA_TITULO_LARGO = [
  * puesto siendo el único resultado: es el canje que la novena tanda ya dejó escrito, un título de
  * 43 que CONTESTA no puede además repetir las tres palabras del slug.
  */
-const TITLE_OVER_BUDGET = 3
+/**
+ * 3 → 1 el 2026-11-07: `aguinaldo-casos-especiales-uruguay` y
+ * `certificado-unico-departamental-uruguay`, las DOS de este pozo que el cruce contra
+ * `docs/seo/experiments.json` (`npm run seo_debt`) declara libres hoy. La tercera,
+ * `glosario-terminos-cambiarios`, sigue reservada hasta el 10/11 por
+ * `glosario-cambiario-entra-a-su-tema`.
+ *
+ * Las dos tenían el defecto que este archivo documenta desde la primera corrida, cada una en una
+ * de sus dos formas. El CUD (73 caracteres con la marca, 13 de más) ANUNCIABA la pregunta —
+ * «Certificado Único Departamental (CUD): quién lo necesita»— y el SERP cortaba justo el verbo, así
+ * que publicaba el nombre del certificado dos veces y la respuesta ninguna. Y la respuesta es de
+ * una línea y está en el art. 2 del Decreto 502/007, que el cuerpo ya cita: el certificado se
+ * exige a los sujetos pasivos de IRAE, IMEBA y el impuesto a la concentración de inmuebles
+ * rurales, y el art. 3 exceptúa a quien declara no ser contribuyente. Ahora va eso («CUD: sólo
+ * para quien tributa IRAE o IMEBA», 41) y el particular que entra a vender su casa tiene su
+ * respuesta en el renglón que se clickea.
+ *
+ * El de aguinaldo (70, 10 de más) enumeraba los CASOS en vez de contestar ninguno —«Aguinaldo con 3
+ * meses, en negro o enfermo: casos 2026»— y lo que el SERP cortaba era, como siempre, la cola. Su
+ * propio primer encabezado ya trae la respuesta («Con 3 meses de trabajo cobrás igual: no hay
+ * antigüedad mínima») y es la que desmiente la excusa del año de antigüedad que el cuerpo rastrea
+ * hasta el art. 6 de la Ley 12.840, vencido desde 1960. Ahora el título la da («Aguinaldo con 3
+ * meses: cobrás proporcional», 42), conservando «3 meses» porque es la consulta de cabeza.
+ *
+ * Y las dos pagaron el recorte con la DESCRIPCIÓN, que es lo que la regla del buscador propio
+ * obliga a hacer acá: un título de 43 que contesta no puede además repetir los términos largos del
+ * slug, así que los términos se mudan al otro renglón del snippet, que también entra en el `_hay`
+ * de `scoreDocs`. «Certificado Único Departamental» abre ahora la descripción del CUD (el título
+ * sólo lleva la sigla) y «Enfermo» abre la segunda mitad de la de aguinaldo.
+ *
+ * Medido sobre el índice, antes y después del cambio: la consulta «enfermo» había quedado en CERO
+ * resultados —la guía era la ÚNICA página que la servía, exactamente el modo de fallar que
+ * «sanciones» dejó anotado en la novena tanda— y volvió a n=1 con la guía primera al mudar la
+ * palabra a la descripción. «certificado unico departamental» sigue siendo el único resultado y
+ * sigue primero (baja de 80 a 32 por dejar de ser prefijo del título, que es el canje ya escrito),
+ * y «cud» sube de 76 a 110, «irae» y «imeba» de 32 a 62. Las bajas que quedan son de posición y no
+ * de cobertura: «aguinaldo jubilados», «plazos aguinaldo» y «aguinaldo 2026» pasan de la guía al
+ * hub `/temas`, y la tercera además a `/cuando-se-cobra-el-aguinaldo-uruguay`, que es la página
+ * propia de esa consulta. El recargo del 10 % se conservó en la descripción en lugar de «2026»
+ * porque es la cifra, y la cifra es lo que gana el clic.
+ */
+const TITLE_OVER_BUDGET = 1
 
 /**
  * 89 → 77 el 2026-10-01: las doce más largas del catálogo, de 306 a 215 caracteres.
@@ -817,12 +861,9 @@ const TITLE_OVER_BUDGET = 3
  * medición abierta, y exigida exacta para que el contador no se compense solo.
  */
 const DEUDA_DESCRIPCION_LARGA = [
-  // Una sola, y queda por la reserva y no por la redacción: `guias-sin-indexar-reciben-enlaces` la
-  // declara el 2026-10-09, así que su ventana de medición cierra el 7 de noviembre. El lector de
-  // `npm run seo_debt` espera este formato multilínea con el `]` al principio de línea
-  // (`classes/revenueplan/debtFree.ts`), así que la lista no se colapsa a una sola línea aunque
-  // tenga un solo elemento.
-  'cedula-uruguaya-para-argentinos',
+  // POZO PAGADO el 2026-11-07: ninguna de las 154 guías del catálogo pasa de 155 caracteres.
+  // La marca es la que `classes/revenueplan/debtFree.ts` exige para distinguir «se terminó» de
+  // «no entiendo la forma de la lista»; sin ella el informe de `npm run seo_debt` tira excepción.
 ]
 
 /**
@@ -924,7 +965,31 @@ const DEUDA_DESCRIPCION_LARGA = [
  * posición y no de cobertura: «swift» lo sigue ganando `/recibir-transferencia-del-exterior-uruguay`
  * y «edad de retiro» `/planificar-tu-retiro-uruguay`.
  */
-const DESCRIPTION_OVER_BUDGET = 1
+/**
+ * 1 → 0 el 2026-11-07, y con eso el pozo queda pagado: la última era
+ * `cedula-uruguaya-para-argentinos`, que no quedaba por la redacción sino por la reserva —
+ * `guias-sin-indexar-reciben-enlaces` la declaró el 2026-10-09 y su ventana cerró hoy, que es el
+ * primer día en que `npm run seo_debt` la lista como libre.
+ *
+ * Estaba UN carácter pasada (156), así que lo que decidió la reescritura no fue el presupuesto
+ * sino el mismo criterio de las diez tandas anteriores: abría por la condición («Si sos argentino o
+ * del Mercosur, te alcanza con acreditar la nacionalidad…») y dejaba para la cola la respuesta que
+ * el cuerpo llama «lo que más se pregunta cuando alguien llega sin documento uruguayo», que es que
+ * la cédula NO espera la resolución de la residencia. Ahora abre por lo que la guía afirma en su
+ * primer encabezado —no existe una cédula para argentinos, existe la residencia permanente
+ * Mercosur— y cierra con el certificado en trámite. 149 caracteres y ninguna cifra nueva.
+ *
+ * La palabra «permanente» volvió al texto por la regla del buscador propio: sin ella la consulta
+ * «residencia permanente» perdía su único resultado real y caía al `didYouMean`, y la guía es la
+ * página propia de esa consulta.
+ *
+ * DE ACÁ EN ADELANTE EL CERO ES UN CONTRATO: una descripción de guía que se pase de 155 es una que
+ * se escribió hoy. Con una diferencia respecto del cero de `seoDescriptionBudget.test.ts`, que
+ * conviene dejar anotada porque ese cero se leyó como contrato y no lo era: acá no hay punto ciego
+ * de lector. Las 154 descripciones se miden sobre el objeto del catálogo, no sobre el literal de un
+ * archivo, así que una escrita con plantilla se mide igual que una escrita con comillas.
+ */
+const DESCRIPTION_OVER_BUDGET = 0
 
 describe('los snippets de las guías entran en el SERP', () => {
   it(`mide las ${MEASURED} guías del catálogo`, () => {

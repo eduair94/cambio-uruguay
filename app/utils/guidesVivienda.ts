@@ -446,9 +446,9 @@ export const viviendaGuides: readonly Guide[] = [
   },
   {
     slug: 'certificado-unico-departamental-uruguay',
-    title: 'Certificado Único Departamental (CUD): quién lo necesita',
+    title: 'CUD: sólo para quien tributa IRAE o IMEBA',
     description:
-      'El CUD lo presentan quienes tributan IRAE o IMEBA al vender o hipotecar; el particular declara no ser contribuyente. Costo, vigencia y cómo se pide.',
+      'El Certificado Único Departamental sólo lo pide quien tributa IRAE o IMEBA al vender o hipotecar; el particular declara no ser contribuyente.',
     tag: 'CUD',
     updatedAt: '2026-09-13',
     sections: [
