@@ -15,9 +15,9 @@ const h = vi.hoisted(() => ({
   currentUser: null as any,
   revokeBrowserPush: vi.fn(),
 }))
-vi.mock('../../stores/firebaseMessagingApi', () => ({ revokeBrowserPush: h.revokeBrowserPush }))
+vi.mock('../../services/firebaseMessagingApi', () => ({ revokeBrowserPush: h.revokeBrowserPush }))
 
-vi.mock('../../stores/firebaseAuthApi', () => ({
+vi.mock('../../services/firebaseAuthApi', () => ({
   fbAuth: () => ({ currentUser: h.currentUser }),
   GoogleAuthProvider: vi.fn(),
   signInWithPopup: h.signInWithPopup,

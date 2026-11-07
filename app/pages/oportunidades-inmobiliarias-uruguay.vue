@@ -310,7 +310,7 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
       </div>
     </div>
     <VSnackbar v-model="showSnackbar" :timeout="5000">{{ snackbar }}</VSnackbar>
-    <RentalAlertDialog />
+    <RentalAlertDialogHost />
   </VContainer>
 </template>
 
@@ -321,7 +321,7 @@ import { useDisplay } from 'vuetify'
 import OpportunityFilters from '~/components/property-opportunities/Filters.vue'
 import OpportunityCard from '~/components/property-opportunities/OpportunityCard.vue'
 import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
-import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'
+import RentalAlertDialogHost from '~/components/rentals/RentalAlertDialogHost.vue'
 import type { PropertyPreviewRequest } from '~/utils/photoViewer'
 import { propertyOpportunityMessages } from '~/utils/propertyOpportunityMessages'
 import {

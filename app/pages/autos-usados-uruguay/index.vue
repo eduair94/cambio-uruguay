@@ -189,7 +189,7 @@
         </li>
       </ul>
     </section>
-    <RentalAlertDialog />
+    <RentalAlertDialogHost />
   </VContainer>
 </template>
 
@@ -197,7 +197,7 @@
 import { VPagination } from 'vuetify/components'
 import { useDisplay } from 'vuetify'
 import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
-import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'
+import RentalAlertDialogHost from '~/components/rentals/RentalAlertDialogHost.vue'
 import { CAR_RISKS_PATH } from '~/utils/carsRisk'
 import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 import { CAR_ADVISOR_PATH } from '~/utils/carAdvisorFigures'

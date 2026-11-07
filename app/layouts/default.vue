@@ -330,7 +330,7 @@
     </VMain>
 
     <Footer />
-    <ClientOnly><AuthDialog /></ClientOnly>
+    <ClientOnly><LazyAuthDialog v-if="authDialogActivated" /></ClientOnly>
 
     <!-- Memory Monitor for debugging (only shows in development) -->
     <!-- <ClientOnly>
@@ -490,6 +490,17 @@ const paletteOpen = ref(false)
 const paletteActivated = ref(false)
 const searchHref = computed(() => localePath('/buscar'))
 const track = useTrack()
+
+// Login dialog: loaded the first time it opens, like the palette. Once loaded it stays mounted.
+const authStore = useAuthStore()
+const authDialogActivated = ref(false)
+watch(
+  () => authStore.dialogOpen,
+  open => {
+    if (open) authDialogActivated.value = true
+  },
+  { immediate: true }
+)
 
 function openPalette() {
   paletteActivated.value = true

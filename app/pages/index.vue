@@ -2697,23 +2697,42 @@ useSeoMeta({
 }
 
 .live-dot {
+  position: relative;
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: var(--good);
-  box-shadow: 0 0 0 0 rgba(43, 212, 125, 0.55);
+}
+
+/* The pulse is a disc behind the dot that grows and fades. It used to be an animated
+   box-shadow, which the compositor cannot run: the browser repainted it on the main thread
+   every frame, forever, on the home page (Lighthouse "non-composited animation"). Scale and
+   opacity stay on the compositor. 8px scaled 3.25x = the old 9px spread on each side. */
+.live-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgb(43, 212, 125);
+  opacity: 0;
   animation: livePulse 2.2s infinite;
 }
 
 @keyframes livePulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(43, 212, 125, 0.5);
+    transform: scale(1);
+    opacity: 0.5;
   }
-  70% {
-    box-shadow: 0 0 0 9px rgba(43, 212, 125, 0);
-  }
+  70%,
   100% {
-    box-shadow: 0 0 0 0 rgba(43, 212, 125, 0);
+    transform: scale(3.25);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot::after {
+    animation: none;
   }
 }
 

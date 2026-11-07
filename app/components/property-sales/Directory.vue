@@ -276,13 +276,13 @@
     </div>
     <PropertySalesComparison v-model:open="compareOpen" :items="compareItems" />
     <VSnackbar v-model="toastOpen" timeout="4000">{{ toast }}</VSnackbar>
-    <RentalAlertDialog />
+    <RentalAlertDialogHost />
   </VContainer>
 </template>
 <script setup lang="ts">
 import { useDisplay } from 'vuetify'
 import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
-import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'
+import RentalAlertDialogHost from '~/components/rentals/RentalAlertDialogHost.vue'
 import {
   normalizePropertySalesQuery,
   propertySalesQueryToParams,

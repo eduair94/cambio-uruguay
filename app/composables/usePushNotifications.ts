@@ -5,7 +5,7 @@ import {
   isSupported,
   rememberPushDevice,
   revokeBrowserPush,
-} from '~/stores/firebaseMessagingApi'
+} from '~/services/firebaseMessagingApi'
 
 let stopForeground: (() => void) | null = null
 
