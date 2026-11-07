@@ -3072,6 +3072,14 @@
       "shippedOn": "2026-11-07",
       "routes": ["/guias/precio-supergas-garrafa-uruguay"],
       "hypothesis": "La guia mantenia una confirmacion del precio en setiembre y pedia consultar el ultimo comunicado sin enlazar el historico mensual que ya publica el sitio. Se confirma noviembre con el comunicado MIEM del 30/10, consultado el 7/11, y se agrega desde el primer bloque el enlace a precio por kilo, vigencia e historico. El importe y el titulo siguen correctos y se conservan; descripcion y primera FAQ reflejan la nueva confirmacion. La fecha de consulta corresponde solo al precio, no a una revision nueva de MIDES, UTE o IVA. Se espera responder mejor a una necesidad con audiencia observada y facilitar la comprobacion y el recorrido; medir el paquete por cuota de clics del sitio con 28 dias finales antes y despues, excluyendo la publicacion, sin tratar un enlace interno como adquisicion externa demostrada. La fila anterior del 5/10 tiene ventana completa hasta el 2/11; el enlace inverso publicado el 7/10 y los cambios generales de traduccion y rendimiento son contexto concurrente, no controles causales. No se inventan consultas ni se cambian anuncios, plantilla o destino."
+    },
+    {
+      "id": "titulo-del-auto-inscripcion-libreta-y-tramite-del-vendedor",
+      "shippedOn": "2026-11-07",
+      "routes": [
+        "/guias/titulo-del-auto-uruguay"
+      ],
+      "hypothesis": "La guia presentaba la voluntariedad de la inscripcion como una regla sobre el titulo y extendia el requisito del tramite comun de Montevideo a cualquier cambio de libreta. Se distingue documento, inscripcion y libreta, se incorpora la via iniciada por la persona vendedora con sus afectaciones y requisitos, y se retiran resultados automaticos de embargo y primera inscripcion sin antecedentes comprobados. Fuentes DGR, IMPO y Montevideo consultadas el 7/11; la fecha nueva corresponde solo a ese alcance, no a tarifas ni otros departamentos. Se espera resolver mejor una necesidad con audiencia individual observada; medir el paquete editorial completo por cuota de clics del sitio con 28 dias finales antes y despues, excluyendo el dia de publicacion. La intervencion anterior del 6/10 tiene ventana completa hasta el 3/11; su resultado agregado no acredita efecto individual ni motiva una reversion. Los cambios generales de traduccion y rendimiento son contexto concurrente. No se inventan consultas ni se cambian anuncios, plantilla, URL o reglas de traduccion."
     }
   ]
 }
