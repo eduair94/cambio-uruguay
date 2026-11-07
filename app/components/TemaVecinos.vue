@@ -4,6 +4,7 @@
     class="tema-vecinos"
     :aria-label="t('temaVecinos.aria')"
     data-testid="tema-vecinos"
+    @click="onSpaClick"
   >
     <section
       v-for="grupo in grupos"
@@ -21,13 +22,9 @@
 
       <ul v-if="grupo.links.length" class="tema-vecinos__list">
         <li v-for="link in grupo.links.slice(0, VISIBLE)" :key="link.to">
-          <NuxtLink
-            :to="localePath(link.to)"
-            class="tema-vecinos__link"
-            @click="trackClick(link.to)"
-          >
+          <a :href="localePath(link.to)" class="tema-vecinos__link" @click="trackClick(link.to)">
             {{ link.labelKey ? t(link.labelKey) : link.label }}
-          </NuxtLink>
+          </a>
         </li>
       </ul>
       <!-- El resto del tema va plegado: en el HTML (lo lee un buscador y el vínculo sigue siendo
@@ -39,13 +36,9 @@
         </summary>
         <ul class="tema-vecinos__list">
           <li v-for="link in grupo.links.slice(VISIBLE)" :key="link.to">
-            <NuxtLink
-              :to="localePath(link.to)"
-              class="tema-vecinos__link"
-              @click="trackClick(link.to)"
-            >
+            <a :href="localePath(link.to)" class="tema-vecinos__link" @click="trackClick(link.to)">
               {{ link.labelKey ? t(link.labelKey) : link.label }}
-            </NuxtLink>
+            </a>
           </li>
         </ul>
       </details>
@@ -53,22 +46,22 @@
       <p v-if="grupo.terms.length" class="tema-vecinos__terms">
         <span class="tema-vecinos__terms-label">{{ t('temaVecinos.terminos') }}</span>
         <template v-for="(term, index) in grupo.terms" :key="term.slug">
-          <NuxtLink
-            :to="localePath(`/glosario/${term.slug}`)"
+          <a
+            :href="localePath(`/glosario/${term.slug}`)"
             class="tema-vecinos__term"
             @click="trackClick(`/glosario/${term.slug}`)"
-            >{{ term.term }}</NuxtLink
+            >{{ term.term }}</a
           ><span v-if="index < grupo.terms.length - 1" aria-hidden="true">, </span>
         </template>
       </p>
 
-      <NuxtLink
-        :to="localePath(`/temas/${grupo.hub.slug}`)"
+      <a
+        :href="localePath(`/temas/${grupo.hub.slug}`)"
         class="tema-vecinos__all"
         @click="trackClick(`/temas/${grupo.hub.slug}`)"
       >
         {{ t('temaVecinos.verTema', { tema: grupo.hub.title }) }}
-      </NuxtLink>
+      </a>
     </section>
   </nav>
 </template>
@@ -81,6 +74,7 @@
 //
 // Server-rendered a propósito (sin <ClientOnly>): los enlaces tienen que estar en el HTML que lee un
 // buscador. No repite lo que ya mostró el bloque de directorios.
+import { createSpaLinkHandler } from '~/utils/spaLinks'
 import { directorioAnalisisParaRuta } from '~/utils/directorioAnalisis'
 import { familiaNavRutas } from '~/utils/familiaNav'
 import { isExtraLocale } from '~/utils/locales'
@@ -91,6 +85,9 @@ const VISIBLE = 6
 
 const route = useRoute()
 const localePath = useLocalePath()
+// Plain anchors and one delegated click handler instead of NuxtLink (two component instances per
+// link, hydrated on every page this block appears on): see utils/spaLinks.ts.
+const onSpaClick = createSpaLinkHandler(path => navigateTo(path))
 const { t, locale } = useI18n()
 const track = useTrack()
 

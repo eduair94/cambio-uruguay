@@ -87,3 +87,17 @@ describe('the footer link directory', () => {
     expect(footer).toMatch(/createSpaLinkHandler\(/)
   })
 })
+
+describe('the link blocks the layout renders on every page', () => {
+  // FamiliaNav (top of every directory), TemaVecinos and DirectorioAnalisis (layout tail): their
+  // links hydrate on every page they appear on, so they follow the footer's pattern.
+  for (const name of ['FamiliaNav', 'TemaVecinos', 'DirectorioAnalisis']) {
+    it(`${name} uses plain anchors with the delegated handler`, () => {
+      const source = readFileSync(resolve(__dirname, `../../components/${name}.vue`), 'utf8')
+      const template = source.slice(0, source.indexOf('<script'))
+      expect(template).not.toMatch(/<NuxtLink|<nuxt-link|\s:to="/)
+      expect(template).toMatch(/<nav[^>]*@click="onSpaClick"/)
+      expect(source).toMatch(/createSpaLinkHandler\(/)
+    })
+  }
+})

@@ -1,6 +1,11 @@
 <template>
   <div v-if="familia" class="familia-nav-wrap">
-    <nav class="familia-nav" :aria-label="t('familiaNav.aria')" data-testid="familia-nav">
+    <nav
+      class="familia-nav"
+      :aria-label="t('familiaNav.aria')"
+      data-testid="familia-nav"
+      @click="onSpaClick"
+    >
       <!-- Pantalla ancha: todas las hermanas a la vista, en una fila de chips. -->
       <ul class="familia-nav__list">
         <li v-for="item in familia.items" :key="item.to">
@@ -12,15 +17,15 @@
             <VIcon size="18" aria-hidden="true">{{ item.icon }}</VIcon>
             {{ etiqueta(item) }}
           </span>
-          <NuxtLink
+          <a
             v-else
-            :to="localePath(item.to)"
+            :href="localePath(item.to)"
             class="familia-nav__item"
             @click="trackClick(item.to, 'family_nav')"
           >
             <VIcon size="18" aria-hidden="true">{{ item.icon }}</VIcon>
             {{ etiqueta(item) }}
-          </NuxtLink>
+          </a>
         </li>
       </ul>
       <!-- Los grupos, debajo y en texto: son de la sección, no hermanas del directorio. -->
@@ -35,13 +40,13 @@
           </span>
           <ul class="familia-nav__grupo-list" :aria-labelledby="`familia-grupo-${index}`">
             <li v-for="item in grupo.items" :key="item.to">
-              <NuxtLink
-                :to="destino(item)"
+              <a
+                :href="destinoHref(item)"
                 class="familia-nav__link"
                 @click="trackClick(item.to, 'family_nav_group')"
               >
                 {{ etiqueta(item) }}
-              </NuxtLink>
+              </a>
             </li>
           </ul>
         </div>
@@ -75,15 +80,15 @@
               <span class="familia-nav__row-label">{{ etiqueta(item) }}</span>
               <VIcon size="20" aria-hidden="true">mdi-check</VIcon>
             </span>
-            <NuxtLink
+            <a
               v-else
-              :to="localePath(item.to)"
+              :href="localePath(item.to)"
               class="familia-nav__row"
               @click="trackClick(item.to, 'family_nav_menu')"
             >
               <VIcon size="20" aria-hidden="true">{{ item.icon }}</VIcon>
               <span class="familia-nav__row-label">{{ etiqueta(item) }}</span>
-            </NuxtLink>
+            </a>
           </li>
         </ul>
         <template v-for="(grupo, index) in familia.grupos" :key="grupo.labelKey">
@@ -92,14 +97,14 @@
           </p>
           <ul class="familia-nav__menu-list" :aria-labelledby="`familia-grupo-menu-${index}`">
             <li v-for="item in grupo.items" :key="item.to">
-              <NuxtLink
-                :to="destino(item)"
+              <a
+                :href="destinoHref(item)"
                 class="familia-nav__row"
                 @click="trackClick(item.to, 'family_nav_menu_group')"
               >
                 <VIcon size="20" aria-hidden="true">{{ item.icon }}</VIcon>
                 <span class="familia-nav__row-label">{{ etiqueta(item) }}</span>
-              </NuxtLink>
+              </a>
             </li>
           </ul>
         </template>
@@ -122,10 +127,17 @@
 // están en el HTML aunque esté cerrado.
 //
 // Server-rendered, sin <ClientOnly>: es navegación, tiene que estar en el HTML.
+import { createSpaLinkHandler } from '~/utils/spaLinks'
 import { familiaNavParaRuta, familiaNavTotal, type FamiliaNavItem } from '~/utils/familiaNav'
 
 const route = useRoute()
 const localePath = useLocalePath()
+// Plain anchors and one delegated click handler instead of NuxtLink (two component instances per
+// link, hydrated on every page this block appears on): see utils/spaLinks.ts.
+const onSpaClick = createSpaLinkHandler(path => navigateTo(path))
+const router = useRouter()
+/** `destino()` as an href: a group link can carry a query, which a plain anchor has to spell out. */
+const destinoHref = (item: FamiliaNavItem) => router.resolve(destino(item)).href
 const { t } = useI18n()
 const track = useTrack()
 const menu = ref<HTMLDetailsElement | null>(null)

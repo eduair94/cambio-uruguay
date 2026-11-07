@@ -5,6 +5,7 @@
     :aria-labelledby="headingId"
     :data-rol="bloque.rol"
     data-testid="directorio-analisis"
+    @click="onSpaClick"
   >
     <h2 :id="headingId" class="directorio-analisis__title text-subtitle-1 font-weight-bold">
       <VIcon start size="small" color="primary" aria-hidden="true">mdi-chart-box-outline</VIcon>
@@ -20,8 +21,8 @@
 
     <ul class="directorio-analisis__list">
       <li v-for="link in bloque.links" :key="link.to">
-        <NuxtLink
-          :to="localePath(link.to)"
+        <a
+          :href="localePath(link.to)"
           class="directorio-analisis__link"
           :data-kind="link.kind"
           @click="trackClick(link.to)"
@@ -39,13 +40,13 @@
             }}</span>
             <span class="directorio-analisis__label">{{ t(link.labelKey) }}</span>
           </span>
-        </NuxtLink>
+        </a>
       </li>
     </ul>
 
-    <NuxtLink :to="localePath(DIRECTORIOS_HUB.path)" class="directorio-analisis__all">
+    <a :href="localePath(DIRECTORIOS_HUB.path)" class="directorio-analisis__all">
       {{ t('directorioAnalisis.todos') }}
-    </NuxtLink>
+    </a>
   </nav>
 </template>
 
@@ -57,12 +58,16 @@
 //
 // Server-rendered a propósito (sin <ClientOnly>): los enlaces tienen que estar en el HTML que lee
 // un buscador, que es la mitad del motivo de vincular.
+import { createSpaLinkHandler } from '~/utils/spaLinks'
 import { directorioAnalisisParaRuta } from '~/utils/directorioAnalisis'
 import { DIRECTORIOS_HUB } from '~/utils/directorios'
 import { familiaNavRutas } from '~/utils/familiaNav'
 
 const route = useRoute()
 const localePath = useLocalePath()
+// Plain anchors and one delegated click handler instead of NuxtLink (two component instances per
+// link, hydrated on every page this block appears on): see utils/spaLinks.ts.
+const onSpaClick = createSpaLinkHandler(path => navigateTo(path))
 const { t } = useI18n()
 const track = useTrack()
 
