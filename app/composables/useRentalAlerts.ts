@@ -1,12 +1,21 @@
-import {
-  RENTAL_ALERT_KINDS,
-  normalizeRentalAlertFilters,
-  type RentalAlertKind,
-  type RentalAlertSubscription,
-  type RentalAlertCapabilities,
-  type RentalAlertsResponse,
+import type {
+  RentalAlertKind,
+  RentalAlertSubscription,
+  RentalAlertCapabilities,
+  RentalAlertsResponse,
 } from '~/utils/rentalAlerts'
-import { kindSupportsPriceDrops } from '~/utils/listingAlerts'
+
+/**
+ * The filter rules of every alert kind, loaded on first use. utils/rentalAlerts pulls in the
+ * rental model (utils/rentals, the mutualista catalogue…) and utils/listingAlerts the car, moto
+ * and property-sale ones: ~150 KB that every directory page shipped for its "Avisarme" button,
+ * although nothing needs them until someone starts an alert or a saved draft is recovered.
+ */
+async function alertRules() {
+  const [{ RENTAL_ALERT_KINDS, normalizeRentalAlertFilters }, { kindSupportsPriceDrops }] =
+    await Promise.all([import('~/utils/rentalAlerts'), import('~/utils/listingAlerts')])
+  return { RENTAL_ALERT_KINDS, normalizeRentalAlertFilters, kindSupportsPriceDrops }
+}
 
 type AlertKind = RentalAlertKind
 export interface RentalAlertDraft {
@@ -68,11 +77,14 @@ export function useRentalAlerts() {
       storageFailed.value = true
     }
   }
-  function recover() {
+  async function recover() {
     if (!import.meta.client || draft.value) return
     try {
       const raw = sessionStorage.getItem(STORAGE_KEY)
       if (!raw || raw.length > 12000) return
+      // Only a stored draft loads the rules; a draft started meanwhile wins.
+      const { RENTAL_ALERT_KINDS, kindSupportsPriceDrops } = await alertRules()
+      if (draft.value) return
       const stored = JSON.parse(raw)
       const value = stored?.draft
       if (
@@ -121,9 +133,12 @@ export function useRentalAlerts() {
       /* A malformed local draft never blocks the search. */
     }
   }
-  function begin(kind: AlertKind, filters: Record<string, unknown>) {
+  async function begin(kind: AlertKind, filters: Record<string, unknown>) {
+    // Read before the rules load: by then focus may have moved.
+    const focusId = import.meta.client ? document.activeElement?.id || '' : ''
+    const { normalizeRentalAlertFilters, kindSupportsPriceDrops } = await alertRules()
     const matchingFilters = normalizeRentalAlertFilters(kind, filters)
-    if (import.meta.client) returnFocusId.value = document.activeElement?.id || ''
+    if (import.meta.client) returnFocusId.value = focusId
     draft.value = {
       kind,
       filters: JSON.parse(JSON.stringify(matchingFilters)),
@@ -138,8 +153,8 @@ export function useRentalAlerts() {
     persist()
     open.value = true
   }
-  function edit(item: RentalAlertSubscription, activateOnSave = false) {
-    begin(item.kind, item.filters)
+  async function edit(item: RentalAlertSubscription, activateOnSave = false) {
+    await begin(item.kind, item.filters)
     Object.assign(draft.value!, {
       editingId: item.id,
       ownerUid: auth.user?.uid,
@@ -192,6 +207,8 @@ export function useRentalAlerts() {
     }
   }
   async function save() {
+    // Loaded before reading the draft, so nothing changes between the checks and the request.
+    const { kindSupportsPriceDrops } = await alertRules()
     if (!draft.value) throw new Error('Missing alert draft')
     const value = draft.value
     if (value.editingId && value.ownerUid !== auth.user?.uid) throw accountChanged()
