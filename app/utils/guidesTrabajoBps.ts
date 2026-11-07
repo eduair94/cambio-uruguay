@@ -946,9 +946,9 @@ export const trabajoBpsGuides: readonly Guide[] = [
   },
   {
     slug: 'aguinaldo-casos-especiales-uruguay',
-    title: 'Aguinaldo con 3 meses, en negro o enfermo: casos 2026',
+    title: 'Aguinaldo con 3 meses: cobrás proporcional',
     description:
-      'Sí: se cobra con cualquier antigüedad, en proporción a lo pagado en dinero. Quién paga en BPS, recargo del 10 % por atraso, plazos 2026 y jubilados.',
+      'Sí: se cobra con cualquier antigüedad, en proporción a lo pagado en dinero. Enfermo lo paga el BPS, en negro el derecho existe y el atraso recarga 10 %.',
     tag: 'AGUINALDO',
     updatedAt: '2026-09-22',
     sections: [

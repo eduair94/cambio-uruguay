@@ -3074,6 +3074,16 @@
       "hypothesis": "La guia mantenia una confirmacion del precio en setiembre y pedia consultar el ultimo comunicado sin enlazar el historico mensual que ya publica el sitio. Se confirma noviembre con el comunicado MIEM del 30/10, consultado el 7/11, y se agrega desde el primer bloque el enlace a precio por kilo, vigencia e historico. El importe y el titulo siguen correctos y se conservan; descripcion y primera FAQ reflejan la nueva confirmacion. La fecha de consulta corresponde solo al precio, no a una revision nueva de MIDES, UTE o IVA. Se espera responder mejor a una necesidad con audiencia observada y facilitar la comprobacion y el recorrido; medir el paquete por cuota de clics del sitio con 28 dias finales antes y despues, excluyendo la publicacion, sin tratar un enlace interno como adquisicion externa demostrada. La fila anterior del 5/10 tiene ventana completa hasta el 2/11; el enlace inverso publicado el 7/10 y los cambios generales de traduccion y rendimiento son contexto concurrente, no controles causales. No se inventan consultas ni se cambian anuncios, plantilla o destino."
     },
     {
+      "id": "cud-aguinaldo-y-cedula-respuesta-en-el-snippet",
+      "shippedOn": "2026-11-07",
+      "routes": [
+        "/guias/certificado-unico-departamental-uruguay",
+        "/guias/aguinaldo-casos-especiales-uruguay",
+        "/guias/cedula-uruguaya-para-argentinos"
+      ],
+      "hypothesis": "Los tres snippets de guia que npm run seo_debt declara libres hoy, del tramo contenido. Dos titulos pasaban de 60 caracteres con la marca y el SERP cortaba justo la respuesta: el del CUD anunciaba la pregunta ('quien lo necesita', 73) y el de aguinaldo enumeraba los casos sin contestar ninguno ('con 3 meses, en negro o enfermo: casos 2026', 70). Ahora contestan en el renglon que se clickea: solo tributa IRAE o IMEBA (art. 2 y 3 del Decreto 502/007, ya citados en el cuerpo) y se cobra proporcional con cualquier antiguedad (art. 3 de la Ley 12.840, idem), en 41 y 42 caracteres. La tercera, la cedula Mercosur, abria por la condicion y dejaba en la cola la respuesta que su propio cuerpo llama la mas preguntada: la cedula no espera la residencia, sale con el certificado en tramite; 149 caracteres. Las descripciones de las dos primeras absorben los terminos largos que el titulo ya no puede repetir ('Certificado Unico Departamental', 'Enfermo'), medido sobre el indice del buscador propio antes y despues para no dejar ninguna consulta en cero resultados. Ninguna cifra es nueva ni se toco el cuerpo de las guias. Se espera mas clics a igual posicion; medir por cuota de clics del sitio a 28 dias archivados, sin el dia del deploy."
+    },
+    {
       "id": "titulo-del-auto-inscripcion-libreta-y-tramite-del-vendedor",
       "shippedOn": "2026-11-07",
       "routes": [

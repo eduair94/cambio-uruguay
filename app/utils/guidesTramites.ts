@@ -188,7 +188,7 @@ export const tramitesGuides: readonly Guide[] = [
     slug: 'cedula-uruguaya-para-argentinos',
     title: 'Cédula para argentinos: residencia Mercosur',
     description:
-      'Si sos argentino o del Mercosur, te alcanza con acreditar la nacionalidad para la residencia permanente, y con el certificado en trámite ya sacás la cédula.',
+      'No hay cédula para argentinos: hay residencia permanente Mercosur, que se acredita con la nacionalidad. La cédula sale antes: certificado en trámite.',
     tag: 'MERCOSUR',
     updatedAt: '2026-09-13',
     sections: [
