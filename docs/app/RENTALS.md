@@ -1,5 +1,24 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Una búsqueda nueva tardaba 10–14 s: cinco conexiones a Mongo — 8 de noviembre de 2026
+
+Cambiar un filtro, el orden o la página en Montevideo sin caché (`/api/rentals` sin la entrada del
+memo de 5 min) tardaba **10–14 s** (página 25: 14,4 s; dormitorios + tope: 8,6 s), medido desde
+afuera el 8/11. Las mismas tuberías, armadas con el código del sitio y corridas a mano contra la
+base del VPS, cuestan ~3 s en paralelo (ítems 2,8 s, cantidad 1,5 s, departamentos 1,8 s, barrios
+1,4 s, dimensiones 2,1 s) y 0,4 s la de dormitorios: lo que faltaba no era Mongo. Era el pool:
+`server/utils/db.ts` abría **5 conexiones por worker** desde junio, cuando la app sólo guardaba
+cuentas, y una sola búsqueda lanza ocho operaciones a la vez mientras cada SSR concurrente usa el
+mismo pool, así que se hacían casi en fila (la suma serial, ~10 s, es lo que se veía). Ahora son 25
+por worker (mongod local con ~50.000 libres). De paso, el índice de reportes de disponibilidad
+buscaba sus avisos sin la intercalación del índice `rental_advert_id_es_v1` y leía las ~90.000
+propiedades (335 ms) cada vez que había reportes activos: ahora usa `RENTAL_COLLATION` y lee los
+seis que coinciden. Lo vigila `tests/unit/mongoPoolAndCollation.test.ts`.
+
+Lo que queda caro de verdad es el pase de ítems de Montevideo (2,8 s): `$match` por departamento lee
+las ~65.000 propiedades del departamento (3,5 KB de media) y les filtra las ofertas una por una. Bajar
+de ahí pide una colección pública ya proyectada (sólo ofertas vigentes, sin evidencia), no un índice.
+
 ## Barrio de Casasweb, texto de Mercado Libre y gastos comunes de la descripción — 8 de noviembre de 2026
 
 **Casasweb lee el barrio de su etiqueta.** Desde el 2026-11-03 las tarjetas llevan tipo y zona en
