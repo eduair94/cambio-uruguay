@@ -56,7 +56,9 @@ export function rentalPlaceTitleCase(value: string): string {
  * when either folds to the same name ("POCITOS" → "Pocitos", "CORDON" → "Cordón"); otherwise it
  * gets proper-name capitals. An implausible one ("60 m2 60 m2", "Uruguay") gives way to the
  * official area, which comes from the coordinate. A barrio that only repeats the department
- * ("Maldonado" in Maldonado) adds nothing next to it.
+ * ("Maldonado" in Maldonado) adds nothing next to it. Those two spellings are stored as some
+ * portal first wrote them, so they get the same capitals: the UTE area ute:3210 is stored as
+ * "Punta Del Este", and the title read "Casa 3 dorm. en alquiler en Punta Del Este".
  */
 export function rentalDisplayBarrio(
   property: RentalPlaceSource,
@@ -67,12 +69,12 @@ export function rentalDisplayBarrio(
   if (raw && rentalBarrioNamePlausible(raw)) {
     const key = rentalPlaceKey(raw)
     const label = clean(links.barrioLink?.label)
-    if (label && rentalPlaceKey(label) === key) return label
-    if (official && rentalPlaceKey(official) === key) return official
+    if (label && rentalPlaceKey(label) === key) return rentalPlaceTitleCase(label)
+    if (official && rentalPlaceKey(official) === key) return rentalPlaceTitleCase(official)
     if (rentalPlaceKey(clean(property.department)) === key) return null
     return rentalPlaceTitleCase(raw)
   }
-  return official || null
+  return official ? rentalPlaceTitleCase(official) : null
 }
 
 /** "Pocitos"; the department when the advert names no usable barrio; '' when it names neither. */

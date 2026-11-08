@@ -55,6 +55,30 @@ describe('rentalDisplayPlace', () => {
     ).toBe('Ciudad de la Costa')
   })
 
+  it('gives the barrio page label and the official area the same proper-name capitals', () => {
+    // maldonado-punta-del-este-…-apak2m: the UTE area ute:3210 is stored as "Punta Del Este".
+    const maldonado = (neighborhood: string, officialZone: string | null) => ({
+      department: 'Maldonado',
+      neighborhood,
+      officialZone: officialZone ? { name: officialZone } : null,
+    })
+    expect(rentalDisplayPlace(maldonado('PUNTA DEL ESTE', 'Punta Del Este'))).toBe('Punta del Este')
+    expect(
+      rentalDisplayPlace(maldonado('PUNTA DEL ESTE', null), {
+        barrioLink: { path: '/alquiler/maldonado/punta-del-este', label: 'Punta Del Este' },
+      })
+    ).toBe('Punta del Este')
+    // The fallback for a name that is not a barrio, too.
+    expect(rentalDisplayBarrio(maldonado('60 m2 60 m2', 'Punta Del Este'))).toBe('Punta del Este')
+    // A label already written right is kept as is, accents and articles included.
+    expect(
+      rentalDisplayPlace(montevideo('LA TEJA', 'La Teja'), {
+        barrioLink: { path: '/alquiler/montevideo/la-teja', label: 'La Teja' },
+      })
+    ).toBe('La Teja')
+    expect(rentalDisplayPlace(montevideo('CORDON', 'Cordón'))).toBe('Cordón')
+  })
+
   it('keeps an advert barrio that is more precise than its official area', () => {
     expect(rentalDisplayPlace(montevideo('Pocitos Nuevo', 'Pocitos'))).toBe('Pocitos Nuevo')
     expect(rentalDisplayZone(montevideo('Pocitos Nuevo', 'Pocitos'))).toBe(

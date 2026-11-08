@@ -92,10 +92,11 @@ const COPY: Record<'es' | 'en' | 'pt', SnippetCopy> = {
             ? 'Monoambiente'
             : `${label} monoambiente`
           : `${label} ${n} dorm.`,
+    // The street never goes in without the barrio: the title keeps answering type-and-zone searches
+    // ("apartamento 2 dormitorios pocitos") and only adds the street when both fit.
     titles: ({ head, street, place, department, price }) => [
       street && withPrice(`${head} en alquiler en ${street}, ${place}`, price),
       street && withPrice(`${head} en ${street}, ${place}`, price),
-      street && withPrice(`${head} en ${street}`, price),
       department && withPrice(`${head} en alquiler en ${place}, ${department}`, price),
       withPrice(`${head} en alquiler en ${place}`, price),
       withPrice(`${head} en ${place}`, price),
@@ -131,7 +132,6 @@ const COPY: Record<'es' | 'en' | 'pt', SnippetCopy> = {
     titles: ({ head, street, place, department, price }) => [
       street && withPrice(`${head} for rent at ${street}, ${place}`, price),
       street && withPrice(`${head} at ${street}, ${place}`, price),
-      street && withPrice(`${head} at ${street}`, price),
       department && withPrice(`${head} for rent in ${place}, ${department}`, price),
       withPrice(`${head} for rent in ${place}`, price),
       withPrice(`${head} in ${place}`, price),
@@ -167,7 +167,6 @@ const COPY: Record<'es' | 'en' | 'pt', SnippetCopy> = {
     titles: ({ head, street, place, department, price }) => [
       street && withPrice(`${head} para alugar em ${street}, ${place}`, price),
       street && withPrice(`${head} em ${street}, ${place}`, price),
-      street && withPrice(`${head} em ${street}`, price),
       department && withPrice(`${head} para alugar em ${place}, ${department}`, price),
       withPrice(`${head} para alugar em ${place}`, price),
       withPrice(`${head} em ${place}`, price),
@@ -212,8 +211,12 @@ const bedroomsOf = (input: RentalSnippetInput): number | null =>
 /** A Plus Code ("4XVJ+R84") is a geocoder's output, never a street someone searches for. */
 const PLUS_CODE = /(?:^|[\s,])[2-9CFGHJMPQRVWX]{2,8}\+[2-9CFGHJMPQRVWX]{0,3}(?=$|[\s,])/i
 const PLUS_CODES = new RegExp(PLUS_CODE.source, 'gi')
-/** The word right before a number that makes it something other than a door number. */
+/**
+ * The word right before a number that makes it something other than a door number. "Francisco
+ * Soca al 1300" is the block, not the door: the advert did not publish its number.
+ */
 const NOT_A_DOOR_AFTER = new Set([
+  'al',
   'km',
   'kilometro',
   'ruta',

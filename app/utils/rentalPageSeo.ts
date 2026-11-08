@@ -16,6 +16,12 @@ interface RentalPageSchemaOptions {
    * neighborhood is used as is.
    */
   addressLocality?: string | null
+  /**
+   * The street as the page may repeat it (`rentalSnippetAddress`: without a Plus Code, a postal
+   * code, "Uruguay" or a portal's name such as "Casasweb"); '' leaves it out. Omitted, the
+   * advert's own string (`rentalStreet`) is used as is.
+   */
+  streetAddress?: string
   photoCaption: (title: string, position: number) => string
   photoCredit: (source: ReturnType<typeof rentalPhotos>[number]['source']) => string
 }
@@ -36,7 +42,8 @@ export function rentalPageSchema(options: RentalPageSchemaOptions) {
     isBasedOn: photo.sourceUrl,
   }))
   const imageRefs = photos.map(photo => ({ '@id': photo['@id'] }))
-  const address = rentalStreet(property)
+  const address =
+    options.streetAddress === undefined ? rentalStreet(property) : options.streetAddress
   const locality =
     options.addressLocality === undefined ? property.neighborhood : options.addressLocality
   const residential = ['apartamento', 'casa', 'habitacion'].includes(property.propertyType)

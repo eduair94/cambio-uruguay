@@ -179,4 +179,21 @@ describe('individual rental structured data', () => {
     // Without the option the stored neighborhood is kept, as before.
     expect(address({})).toMatchObject({ addressLocality: 'Cordón' })
   })
+
+  it('publishes the street the page cleaned, and none when nothing is left of it', () => {
+    const address = (options: Parameters<typeof schema>[0]) =>
+      graph(options).find(node => node['@type'] === 'Apartment')!.address
+    // An El País advert carried "Casasweb" as its address; others "11300, Uruguay".
+    expect(
+      address({ property: { ...property, address: 'Casasweb' }, streetAddress: '' })
+    ).not.toHaveProperty('streetAddress')
+    expect(
+      address({
+        property: { ...property, address: 'Chana 1800, Cordón' },
+        streetAddress: 'Chana 1800',
+      })
+    ).toMatchObject({ streetAddress: 'Chana 1800', addressLocality: 'Cordón' })
+    // Without the option the advert's own string is kept, as before.
+    expect(address({})).toMatchObject({ streetAddress: 'Chana 1800' })
+  })
 })

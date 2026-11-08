@@ -10,7 +10,10 @@ import {
   type RentalBarrioPage,
   type RentalBarrioSummary,
 } from '../../utils/rentalBarrio'
-import { rentalPhotos } from '../../utils/rentalPresentation'
+import { rentalPlaceKey } from '../../utils/rentalBarrioName'
+import { rentalListingIndexable, type RentalIndexAllowlist } from '../../utils/rentalIndexHygiene'
+import { rentalSnippetStreet } from '../../utils/rentalPageSnippet'
+import { rentalPhotos, rentalPropertyPath } from '../../utils/rentalPresentation'
 import { rentalSavedSafeUrl } from '../../utils/rentalSaved'
 import {
   canonicalRentalDepartment,
@@ -23,6 +26,7 @@ import {
 import { rentalZoneLabel } from '../../utils/rentalZones'
 import { RentalListingModel } from '../models/RentalListing'
 import { connectDb } from './db'
+import { loadRentalIndexAllowlist } from './rentalIndexAllowlist'
 import { rentalPageQualityIssues } from './rentalPage'
 import { loadRentalZoneSnapshots } from './rentalZones'
 
@@ -48,13 +52,31 @@ export interface RentalBarrioListing {
 
 /**
  * Rows read to fill the RENTAL_BARRIO_LISTINGS cards. Most recent adverts fail the ficha's own
- * quality gate (in Pocitos, the six cards of 2026-11-07 were Facebook adverts without gastos
- * comunes, all `noindex`), so the query reads five times what it shows and keeps the ones whose
- * ficha can be indexed.
+ * verdict (in Pocitos, the six cards of 2026-11-07 were Facebook adverts without gastos comunes,
+ * all `noindex`; of the 24 most recent rows of the whole country captured on 2026-11-08, 5
+ * passed), so the query reads ten times what it shows. Under the hint below the cost is the scan of
+ * the barrio's own rows either way: the limit only bounds the top-k sort and what travels.
  */
-const RENTAL_BARRIO_CANDIDATES = 40
+const RENTAL_BARRIO_CANDIDATES = 80
 
-/** What the cards and the quality gate read — no descriptions, galleries or contact data. */
+/**
+ * The `{department, neighborhood}` index, forced. The sort `{freshAt: -1, key: 1}` matches an
+ * index of its own, and walking it while filtering by barrio is quick in Pocitos and a scan of the
+ * whole collection in a barrio with fewer rows than RENTAL_BARRIO_CANDIDATES — a plan the plan
+ * cache can hand from one barrio to the next, and a `maxTimeMS` that trips leaves the page
+ * without cards. With the hint the query reads the barrio's rows and sorts them, as it did when
+ * it sorted by `lastSeen` (which matches no index). Declared on both RentalListing schemas
+ * (tests/appdb/schema_parity.test.ts); rentalBarrioServer.test.ts fails if the app's stops.
+ */
+export const RENTAL_BARRIO_LISTINGS_HINT = { department: 1, neighborhood: 1, priceUyu: 1 } as const
+
+/**
+ * What the cards and the ficha's verdict read. The adverts' descriptions are read because the
+ * verdict reads them (room counts that contradict the ficha, the address-or-description rule) and
+ * never leave this module; galleries, sellers and contact data are not read at all. `furnished`
+ * and `parkingSpaces` come from the adverts because the public pipeline derives them from the
+ * current ones (`rentalPublicStages`), overwriting what the property stores.
+ */
 const LISTING_PROJECTION = {
   _id: 0,
   ...Object.fromEntries(
@@ -68,8 +90,7 @@ const LISTING_PROJECTION = {
       'bedrooms',
       'bathrooms',
       'area',
-      'parkingSpaces',
-      'furnished',
+      'firstSeen',
     ].map(field => [field, 1])
   ),
   ...Object.fromEntries(
@@ -84,7 +105,10 @@ const LISTING_PROJECTION = {
       'priceUyu',
       'commonExpenses',
       'commonExpensesCurrency',
+      'furnished',
+      'parkingSpaces',
       'lastSeen',
+      'details.description',
     ].map(field => [`offers.${field}`, 1])
   ),
 }
@@ -94,24 +118,67 @@ const currency = (value: unknown): RentalCurrency | null =>
 const amount = (value: unknown): number | null =>
   typeof value === 'number' && Number.isFinite(value) ? value : null
 
+/** `rentalPublicStages`: furnished if an advert says so and none says otherwise, and the reverse. */
+function furnishedOf(offers: readonly RentalOffer[]): boolean | null {
+  const said = new Set<unknown>(offers.map(offer => offer.furnished))
+  if (said.has(true)) return said.has(false) ? null : true
+  return said.has(false) ? false : null
+}
+/** `rentalPublicStages`: the most parking spaces any current advert declares. */
+function parkingOf(offers: readonly RentalOffer[]): number | null {
+  const counts = offers
+    .map(offer => offer.parkingSpaces)
+    .filter((value): value is number => typeof value === 'number' && Number.isFinite(value))
+  return counts.length ? Math.max(...counts) : null
+}
+const advertId = (offer: RentalOffer) => `${offer.source}:${offer.listingId}`
+
 /**
- * The cards from the rows the query read, most recent first: only properties whose own ficha
- * passes its quality gate (`rentalPageQualityIssues`, the rule the sitemap applies) — so the
- * barrio page, an indexable landing page, links to fichas that can rank — and each card priced by
- * ONE current advert whose rent and gastos comunes add up. The gate runs on what was projected:
- * without the advert's description a dwelling with no street does not qualify, and without the
- * exchange rate neither do gastos comunes in dollars. Both make it stricter, never looser.
+ * One card per flat: two rows with the same street and door, rent, bedrooms and bathrooms are the
+ * same home published twice. Measured on the 72 Pocitos two-bedroom rows captured on 2026-11-08:
+ * "Ellauri 1084" from El País and from Mercado Libre, and "Luis B. Cavia 2640" twice in Mercado
+ * Libre — without this the first eight cards were six homes. Display only, never identity: two
+ * units of one building at the same price lose a card, not a ficha. A street without a door
+ * number names a whole block and folds nothing.
+ */
+function sameHomeKey(property: RentalPublicProperty, offer: RentalOffer): string | null {
+  const street = rentalSnippetStreet(String(property.address ?? ''))
+  if (!street) return null
+  return [
+    rentalPlaceKey(street),
+    `${offer.currency}:${offer.price}`,
+    property.bedrooms ?? '',
+    property.bathrooms ?? '',
+  ].join('|')
+}
+
+export interface RentalBarrioPickOptions {
+  /** `loadRentalIndexAllowlist()`, as the ficha reads it; null means no verdict, as there. */
+  allowlist?: RentalIndexAllowlist | null
+  limit?: number
+}
+
+/**
+ * The cards from the rows the query read, most recent first: only properties whose own ficha is
+ * indexable — so the barrio page, an indexable landing page, links to fichas that can rank — each
+ * priced by ONE current advert whose rent and gastos comunes add up, and one card per home.
+ *
+ * The verdict is the ficha's, on the same fields (`rentalPageQualityIssues`, then the index
+ * hygiene of `rentalIndexHygiene.ts`), with three differences. Stricter: only the cover photos are
+ * read, so a home whose photos are all in the gallery does not qualify, and without the exchange
+ * rate neither do gastos comunes in dollars. Narrower: an advert shared by two properties makes
+ * both `noindex` (`ambiguous_identity`), and that is checked among the rows read here, while the
+ * ficha asks the whole collection — a query this page does not pay for on every render.
  */
 export function pickRentalBarrioListings(
   rows: ReadonlyArray<Record<string, unknown>>,
   now = Date.now(),
-  limit = RENTAL_BARRIO_LISTINGS
+  options: RentalBarrioPickOptions = {}
 ): RentalBarrioListing[] {
+  const { allowlist = null, limit = RENTAL_BARRIO_LISTINGS } = options
   const cutoff = new Date(now - RENTAL_STALE_DAYS * 86_400_000).toISOString().slice(0, 10)
-  const out: RentalBarrioListing[] = []
-  for (const row of rows) {
-    if (out.length >= limit) break
-    if (typeof row.key !== 'string' || !row.key) continue
+  const candidates = rows.flatMap(row => {
+    if (typeof row.key !== 'string' || !row.key) return []
     // The public pipeline's offer filter (`rentalPublicStages`): seen inside the stale window, with
     // a price. An advert that stopped appearing neither prices the card nor lends it a photo.
     const offers = (Array.isArray(row.offers) ? row.offers : [])
@@ -126,12 +193,31 @@ export function pickRentalBarrioListings(
           (amount(offer.price) ?? 0) > 0 &&
           currency(offer.currency) !== null
       ) as unknown as RentalOffer[]
-    const property = { ...row, offers } as unknown as RentalPublicProperty
+    return offers.length ? [{ row, key: row.key, offers }] : []
+  })
+  const owners = new Map<string, Set<string>>()
+  for (const { key, offers } of candidates)
+    for (const offer of offers)
+      owners.set(advertId(offer), (owners.get(advertId(offer)) ?? new Set<string>()).add(key))
+  const homes = new Set<string>()
+  const out: RentalBarrioListing[] = []
+  for (const { row, key, offers } of candidates) {
+    if (out.length >= limit) break
+    if (offers.some(offer => owners.get(advertId(offer))!.size > 1)) continue
+    const property = {
+      ...row,
+      offers,
+      furnished: furnishedOf(offers),
+      parkingSpaces: parkingOf(offers),
+    } as unknown as RentalPublicProperty
     try {
-      if (!offers.length || rentalPageQualityIssues(property, 0).length) continue
+      if (rentalPageQualityIssues(property, 0).length) continue
     } catch {
       continue
     }
+    const firstSeenAt = typeof row.firstSeen === 'string' ? row.firstSeen : null
+    if (!rentalListingIndexable({ firstSeenAt, path: rentalPropertyPath(key) }, allowlist, now))
+      continue
     // The ficha only offers adverts it can link to (`rentalSavedSafeUrl`); the card does the same.
     const priced = offers
       .filter(offer => rentalSavedSafeUrl(offer.url))
@@ -140,8 +226,13 @@ export function pickRentalBarrioListings(
       .sort((a, b) => a.offer.priceUyu - b.offer.priceUyu)[0]
     if (!priced) continue
     const { offer } = priced
+    const home = sameHomeKey(property, offer)
+    if (home !== null) {
+      if (homes.has(home)) continue
+      homes.add(home)
+    }
     out.push({
-      key: row.key,
+      key,
       title: String(row.title ?? ''),
       propertyType: String(row.propertyType ?? ''),
       bedrooms: typeof row.bedrooms === 'number' ? row.bedrooms : null,
@@ -217,18 +308,26 @@ export async function latestRentalBarrioListings(
 ): Promise<RentalBarrioListing[]> {
   if (!spellings.length) return []
   await connectDb()
-  const rows = await RentalListingModel.find(rentalBarrioListingsFilter(department, spellings, now))
-    // "Recientes" as the directory means it: `freshAt` is the publication day (else the first day
-    // we saw the advert). `lastSeen` is the day of the last read, the same for thousands of rows,
-    // so the `key` tiebreak chose the cards — 'montevideo-apartamento-…' (Facebook) before
-    // 'montevideo-pocitos-…'. `key` still breaks the remaining ties: one snapshot, one set of
-    // cards.
-    .sort({ freshAt: -1, key: 1 })
-    .limit(RENTAL_BARRIO_CANDIDATES)
-    .select(LISTING_PROJECTION)
-    .maxTimeMS(3000)
-    .lean()
-  return pickRentalBarrioListings(rows as unknown as Array<Record<string, unknown>>, now)
+  const [rows, allowlist] = await Promise.all([
+    RentalListingModel.find(rentalBarrioListingsFilter(department, spellings, now))
+      // "Recientes" as the directory means it: `freshAt` is the publication day (else the first
+      // day we saw the advert). `lastSeen` is the day of the last read, the same for thousands of
+      // rows, so the `key` tiebreak chose the cards — 'montevideo-apartamento-…' (Facebook) before
+      // 'montevideo-pocitos-…'. `key` still breaks the remaining ties: one snapshot, one set of
+      // cards.
+      .sort({ freshAt: -1, key: 1 })
+      .hint(RENTAL_BARRIO_LISTINGS_HINT)
+      .limit(RENTAL_BARRIO_CANDIDATES)
+      .select(LISTING_PROJECTION)
+      .maxTimeMS(3000)
+      .lean(),
+    // The ficha's index hygiene, from the same memoized read (once an hour per process); it never
+    // rejects, and without a fresh list nothing changes.
+    loadRentalIndexAllowlist(),
+  ])
+  return pickRentalBarrioListings(rows as unknown as Array<Record<string, unknown>>, now, {
+    allowlist,
+  })
 }
 
 export async function loadRentalBarrio(

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
   formatUyu,
-  rentalBarrioCardCost,
   rentalBarrioDescription,
   rentalBarrioFaq,
   rentalBarrioIntro,
@@ -183,33 +182,5 @@ describe('rentalBarrioCopy', () => {
       to: '/garantia-de-alquiler-uruguay',
       label: 'Garantías de alquiler',
     })
-  })
-
-  it('las tarjetas de avisos dicen alquiler + gastos comunes = total', () => {
-    const card = {
-      currency: 'UYU' as const,
-      commonExpenses: 13400,
-      commonExpensesCurrency: 'UYU' as const,
-      totalUyu: 55400,
-    }
-    expect(rentalBarrioCardCost(card)).toBe('+ $ 13.400 de gastos comunes = $ 55.400 por mes')
-    // Un alquiler en dólares se suma en pesos con la cotización: el total es aproximado.
-    expect(rentalBarrioCardCost({ ...card, currency: 'USD', totalUyu: 57860 })).toBe(
-      '+ $ 13.400 de gastos comunes ≈ $ 57.860 por mes'
-    )
-    expect(rentalBarrioCardCost({ ...card, commonExpenses: 0, commonExpensesCurrency: null })).toBe(
-      'Sin gastos comunes'
-    )
-    expect(
-      rentalBarrioCardCost({
-        ...card,
-        commonExpenses: 150,
-        commonExpensesCurrency: 'USD',
-        totalUyu: null,
-      })
-    ).toBe('+ U$S 150 de gastos comunes')
-    expect(rentalBarrioCardCost({ ...card, commonExpenses: null, totalUyu: null })).toBe(
-      'Gastos comunes no informados'
-    )
   })
 })

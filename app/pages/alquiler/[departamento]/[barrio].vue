@@ -97,9 +97,10 @@
           <h2 class="text-h6 mb-0">Avisos recientes en {{ data.neighborhood }}</h2>
           <VBtn variant="text" :to="data.directoryPath">Ver todos en el directorio</VBtn>
         </div>
-        <!-- Sólo fichas que pasan su propio filtro de calidad, con foto y con alquiler + gastos
-             comunes = total de UN aviso: la página del barrio es una página de entrada y antes
-             enlazaba seis avisos de Facebook sin gastos comunes, todos `noindex`. -->
+        <!-- Sólo viviendas cuya ficha es indexable (server/utils/rentalBarrio.ts), una tarjeta por
+             vivienda, con foto y con alquiler + gastos comunes = total de UN aviso: la página del
+             barrio es una página de entrada y antes enlazaba seis avisos de Facebook sin gastos
+             comunes, todos `noindex`. -->
         <div class="barrio-grid">
           <VCard
             v-for="listing in recentListings"
@@ -108,10 +109,11 @@
             variant="outlined"
             class="barrio-listing"
           >
+            <!-- Decorativa: el título del aviso ya es el texto de este mismo enlace. -->
             <img
               v-if="listing.image && !failedPhotos.has(listing.key)"
               :src="listing.image"
-              :alt="listing.title || 'Vivienda en alquiler'"
+              alt=""
               class="barrio-listing__photo"
               width="320"
               height="200"

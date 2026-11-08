@@ -3,9 +3,13 @@ import { describe, expect, it, vi } from 'vitest'
 vi.mock('../../server/utils/db', () => ({ connectDb: vi.fn(async () => undefined) }))
 vi.mock('../../server/models/RentalListing', () => ({ RentalListingModel: { find: vi.fn() } }))
 vi.mock('../../server/utils/rentalZones', () => ({ loadRentalZoneSnapshots: vi.fn() }))
+vi.mock('../../server/utils/rentalIndexAllowlist', () => ({
+  loadRentalIndexAllowlist: vi.fn(async () => null),
+}))
 
 const {
   RENTAL_BARRIO_LISTINGS,
+  RENTAL_BARRIO_LISTINGS_HINT,
   latestRentalBarrioListings,
   loadRentalBarrio,
   loadIndexableRentalBarrios,
@@ -15,8 +19,16 @@ const {
   startIndexableRentalBarrioLinks,
 } = await import('../../server/utils/rentalBarrio')
 const { RentalListingModel } = await import('../../server/models/RentalListing')
+const { loadRentalIndexAllowlist } = await import('../../server/utils/rentalIndexAllowlist')
 
 const NOW = Date.parse('2026-10-04T12:00:00Z')
+/** A fresh, complete Search Console list (`rentalIndexHygiene.ts`) naming these fichas only. */
+const allowlistOf = (...paths: string[]) => ({
+  asOf: '2026-10-03',
+  windowDays: 56,
+  minImpressions: 5,
+  paths: new Set(paths),
+})
 /** A stored property as the barrio query projects it: one current InfoCasas advert. */
 const listingRow = (
   key: string,
@@ -28,12 +40,12 @@ const listingRow = (
   propertyType: 'apartamento',
   department: 'Montevideo',
   neighborhood: 'Pocitos',
-  address: 'Bulevar España 2600',
+  // A street without a door number: rows that only share it are not one home (see the fold test).
+  address: 'Bulevar España',
   bedrooms: 2,
   bathrooms: 1,
   area: 60,
-  parkingSpaces: null,
-  furnished: null,
+  firstSeen: '2026-09-28',
   offers: [
     {
       source: 'infocasas',
@@ -173,7 +185,7 @@ describe('loadRentalBarrio', () => {
 describe('latestRentalBarrioListings (la consulta de avisos)', () => {
   const chainFor = (rows: unknown[]) => {
     const chain: Record<string, ReturnType<typeof vi.fn>> = {}
-    for (const step of ['sort', 'limit', 'select', 'maxTimeMS', 'collation'])
+    for (const step of ['sort', 'hint', 'limit', 'select', 'maxTimeMS', 'collation'])
       chain[step] = vi.fn(() => chain)
     chain.lean = vi.fn(async () => rows)
     return chain
@@ -181,7 +193,11 @@ describe('latestRentalBarrioListings (la consulta de avisos)', () => {
 
   it('usa el índice {department, neighborhood}: grafías exactas, sin collation, sólo viviendas', async () => {
     const chain = chainFor([
-      listingRow('pocitos-a'),
+      listingRow(
+        'pocitos-a',
+        {},
+        { details: { description: 'Luminoso, al frente y con balcón.' } }
+      ),
       // Facebook without gastos comunes: its ficha is `noindex` (missing_known_monthly_cost).
       listingRow(
         'montevideo-apartamento-13eecmn',
@@ -211,13 +227,27 @@ describe('latestRentalBarrioListings (la consulta de avisos)', () => {
     expect(chain.collation).not.toHaveBeenCalled()
     // `lastSeen` is a day shared by thousands of rows: the key used to pick the cards.
     expect(chain.sort).toHaveBeenCalledWith({ freshAt: -1, key: 1 })
-    expect(chain.limit).toHaveBeenCalledWith(40)
+    // That sort matches an index of its own; the barrio's index keeps the scan to the barrio.
+    expect(chain.hint).toHaveBeenCalledWith(RENTAL_BARRIO_LISTINGS_HINT)
+    expect(chain.limit).toHaveBeenCalledWith(80)
     expect(chain.maxTimeMS).toHaveBeenCalledWith(3000)
-    const projection = chain.select.mock.calls[0]![0] as Record<string, number>
-    for (const field of ['offers.image', 'offers.commonExpenses', 'offers.currency', 'offers.url'])
+    const projection = chain.select!.mock.calls[0]![0] as Record<string, number>
+    for (const field of [
+      'offers.image',
+      'offers.commonExpenses',
+      'offers.currency',
+      'offers.url',
+      'offers.furnished',
+      'offers.parkingSpaces',
+      'firstSeen',
+    ])
       expect(projection[field]).toBe(1)
-    // Cards never carry an advert's description, gallery or contact data.
-    expect(Object.keys(projection).some(field => /details|seller|contact|phone/i.test(field))).toBe(
+    // The ficha's verdict reads the advert's description; nothing else of `details`, and no
+    // gallery, seller or contact data.
+    expect(Object.keys(projection).filter(field => /details/.test(field))).toEqual([
+      'offers.details.description',
+    ])
+    expect(Object.keys(projection).some(field => /seller|contact|phone|images/i.test(field))).toBe(
       false
     )
     expect(rows.map(row => row.key)).toEqual(['pocitos-a'])
@@ -233,6 +263,37 @@ describe('latestRentalBarrioListings (la consulta de avisos)', () => {
       commonExpenses: 13400,
       commonExpensesCurrency: 'UYU',
       totalUyu: 55400,
+    })
+    // The description was read for the verdict and stays here.
+    expect(JSON.stringify(rows)).not.toContain('balcón')
+  })
+
+  it('aplica la higiene del índice de la ficha con la lista que lee la ficha', async () => {
+    const old = { firstSeen: '2026-07-01' }
+    const chain = chainFor([
+      listingRow('vieja-sin-demanda', old),
+      listingRow('vieja-con-demanda', old),
+      listingRow('joven'),
+    ])
+    vi.mocked(RentalListingModel.find)
+      .mockReset()
+      .mockReturnValue(chain as any)
+    const allowlist = vi
+      .mocked(loadRentalIndexAllowlist)
+      .mockResolvedValueOnce(allowlistOf('/alquileres/vieja-con-demanda'))
+    const rows = await latestRentalBarrioListings('Montevideo', ['Pocitos'], NOW)
+    expect(allowlist).toHaveBeenCalled()
+    // More than 8 weeks old and unseen by Search Console: its ficha is `noindex, follow`.
+    expect(rows.map(row => row.key)).toEqual(['vieja-con-demanda', 'joven'])
+  })
+
+  it('declara en el esquema el índice que fuerza', async () => {
+    // A hint naming an index Mongo does not have fails the query, and the cards vanish in silence.
+    const { RentalListingModel: real } = await vi.importActual<
+      typeof import('../../server/models/RentalListing')
+    >('../../server/models/RentalListing')
+    expect(real.schema.indexes().map(([fields]) => fields)).toContainEqual({
+      ...RENTAL_BARRIO_LISTINGS_HINT,
     })
   })
 
@@ -333,6 +394,107 @@ describe('pickRentalBarrioListings (las tarjetas de "Avisos recientes")', () => 
       listingRow(`vivienda-${'abcdefghijkl'[index]}`)
     )
     expect(pickRentalBarrioListings(rows, NOW)).toHaveLength(RENTAL_BARRIO_LISTINGS)
+  })
+
+  it('reads the advert description the way the ficha does', () => {
+    const prose = (text: string) => ({ details: { description: text } })
+    const long =
+      'Apartamento luminoso con living comedor amplio, cocina integrada, balcón al frente y ' +
+      'calefacción central. Edificio con portería, a dos cuadras de la rambla y cerca de todo.'
+    expect(long.length).toBeGreaterThanOrEqual(160)
+    const cards = pickRentalBarrioListings(
+      [
+        // The advert says three bedrooms where the ficha says two: `conflicting_bedrooms`, noindex.
+        listingRow('dice-tres', {}, prose('Hermoso apartamento de 3 dormitorios, muy luminoso.')),
+        // No street, but a source description long enough to say something: the ficha is indexable.
+        listingRow('sin-calle-con-texto', { address: '' }, prose(long)),
+        listingRow('sin-calle-sin-texto', { address: '' }, prose('Muy lindo.')),
+      ],
+      NOW
+    )
+    expect(cards.map(card => card.key)).toEqual(['sin-calle-con-texto'])
+  })
+
+  it('counts furniture and parking from the current adverts, as the public pipeline does', () => {
+    // Two attributes besides the bedrooms: one short of the three the ficha asks for, unless an
+    // advert seen today adds them. What the property stores from older adverts does not count.
+    const sparse = { bathrooms: null, area: null }
+    const cards = pickRentalBarrioListings(
+      [
+        listingRow('guardado', { ...sparse, parkingSpaces: 1, furnished: true }),
+        listingRow('declarado', sparse, { parkingSpaces: 1, furnished: true }),
+        listingRow('se-contradice', sparse, { parkingSpaces: 1, furnished: true }),
+      ].map(row =>
+        row.key === 'se-contradice'
+          ? {
+              ...row,
+              offers: [
+                ...row.offers,
+                { ...row.offers[0]!, listingId: 'ml-otro', furnished: false },
+              ],
+            }
+          : row
+      ),
+      NOW
+    )
+    // "se-contradice": one advert says furnished and another does not, so furniture is unknown.
+    expect(cards.map(card => card.key)).toEqual(['declarado'])
+  })
+
+  it('gives no card to properties that share an advert: both fichas are noindex', () => {
+    const shared = { listingId: 'ic-compartido', url: 'https://www.infocasas.com.uy/compartido' }
+    const cards = pickRentalBarrioListings(
+      [listingRow('una', {}, shared), listingRow('otra', {}, shared), listingRow('aparte')],
+      NOW
+    )
+    expect(cards.map(card => card.key)).toEqual(['aparte'])
+  })
+
+  it('shows one card per home: same street and door, rent and rooms', () => {
+    // 2026-11-08, Pocitos: "ELLAURI 1084" from El País and from Mercado Libre, the same flat.
+    const ellauri = { address: 'ELLAURI 1084', bathrooms: 2 }
+    const cards = pickRentalBarrioListings(
+      [
+        listingRow('ellauri-el-pais', ellauri, { source: 'elpais', listingId: 'ep-ellauri' }),
+        listingRow(
+          'ellauri-mercado-libre',
+          { ...ellauri, address: 'Ellauri 1084' },
+          {
+            source: 'mercadolibre',
+            listingId: 'ml-ellauri',
+          }
+        ),
+        // The same building at another rent, or another size of home, is another card.
+        listingRow('ellauri-otro-precio', ellauri, { price: 45000, priceUyu: 45000 }),
+        listingRow(
+          'ellauri-tres-dorm',
+          { ...ellauri, bedrooms: 3, title: 'Apartamento 3 dormitorios en Pocitos' },
+          { title: 'Apartamento 3 dormitorios en Pocitos' }
+        ),
+        // Without a door number the street names a block: nothing folds.
+        listingRow('bulevar-a'),
+        listingRow('bulevar-b'),
+      ],
+      NOW
+    )
+    expect(cards.map(card => card.key)).toEqual([
+      'ellauri-el-pais',
+      'ellauri-otro-precio',
+      'ellauri-tres-dorm',
+      'bulevar-a',
+      'bulevar-b',
+    ])
+  })
+
+  it('applies the index hygiene only with a fresh list, like the ficha', () => {
+    const rows = [listingRow('vieja', { firstSeen: '2026-07-01' }), listingRow('joven')]
+    expect(
+      pickRentalBarrioListings(rows, NOW, { allowlist: allowlistOf() }).map(card => card.key)
+    ).toEqual(['joven'])
+    expect(pickRentalBarrioListings(rows, NOW, { allowlist: null }).map(card => card.key)).toEqual([
+      'vieja',
+      'joven',
+    ])
   })
 })
 

@@ -828,8 +828,6 @@ import {
 import { MUTUALISTA_SEDES } from '~/utils/mutualistaSedes'
 import { DIRECTORIOS_HUB } from '~/utils/directorios'
 import { rentalPricePerM2 } from '~/utils/rentalPricePerM2'
-// The card names the place as the ficha does: "Pocitos", never the portal's "POCITOS".
-import { rentalDisplayZone } from '~/utils/rentalDisplayPlace'
 import {
   RENTAL_SAVED_STORAGE_ID,
   RENTAL_SAVED_FAVORITE_LIMIT,
@@ -849,6 +847,8 @@ import {
   writeRentalLayout,
   type RentalLayout,
 } from '~/utils/rentalLayout'
+// The card names the place as the ficha does: "Pocitos", never the portal's "POCITOS".
+import { rentalDisplayZone } from '~/utils/rentalDisplayPlace'
 
 const LocationsMap = defineAsyncComponent(() => import('~/components/map/LocationsMap.vue'))
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalMessages })

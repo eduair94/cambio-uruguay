@@ -15,11 +15,13 @@ import {
   rentalDisplayBarrio,
   rentalDisplayPlace,
   rentalDisplayZone,
+  rentalPlaceTitleCase,
 } from '~/utils/rentalDisplayPlace'
 import {
   rentalPageCrumb,
   rentalPageDescription,
   rentalPageTitle,
+  rentalSnippetAddress,
   type RentalSnippetInput,
 } from '~/utils/rentalPageSnippet'
 import {
@@ -413,15 +415,21 @@ const snippet = computed<RentalSnippetInput | null>(() =>
 )
 // Con página de barrio indexable, la miga la enlaza: Todo Uruguay › Buscar alquileres › Pocitos
 // › la vivienda. Esa página es sólo en español, como la ficha: su ruta va tal cual, sin localePath.
+// El nombre, con las mayúsculas de la línea del lugar ("Punta del Este", no "Punta Del Este").
+const barrioCrumb = computed(() =>
+  barrioLink.value
+    ? { name: rentalPlaceTitleCase(barrioLink.value.label), path: barrioLink.value.path }
+    : null
+)
 const breadcrumbs = computed(() => {
   const crumbs = [
     { title: t('country'), to: localePath('/') },
     { title: t('search'), to: localePath('/alquileres-uruguay') },
   ]
-  if (!barrioLink.value) return [...crumbs, { title: zone.value || t('overview'), disabled: true }]
+  if (!barrioCrumb.value) return [...crumbs, { title: zone.value || t('overview'), disabled: true }]
   return [
     ...crumbs,
-    { title: barrioLink.value.label, to: barrioLink.value.path },
+    { title: barrioCrumb.value.name, to: barrioCrumb.value.path },
     {
       title: snippet.value ? rentalPageCrumb(snippet.value, locale.value) : title.value,
       disabled: true,
@@ -506,9 +514,9 @@ const relatedSpecs = (entry: RentalPublicProperty) =>
   ]
     .filter(Boolean)
     .join(' · ')
-// Título de 60 caracteres con calle y número cuando el aviso los publica, y una descripción con
-// alquiler + gastos comunes = total. El H1 sigue siendo el título del portal.
 const pageTitle = computed(() =>
+  // Título de 60 caracteres con calle y número cuando el aviso los publica, y una descripción con
+  // alquiler + gastos comunes = total. El H1 sigue siendo el título del portal.
   snippet.value ? rentalPageTitle(snippet.value, locale.value) : title.value
 )
 const description = computed(() =>
@@ -572,10 +580,11 @@ useHead(
 )
 useHead(() => ({
   // La ficha publica su título entero, ya con el precio: sin " | Cambio Uruguay" (17 caracteres)
-  // entra en los 60 que muestra Google. Gana a la plantilla de app.vue por orden de registro. La
-  // ficha que ya no está y el error de carga conservan la marca (y el título con el que GA4 los
-  // agrupa).
-  titleTemplate: property.value && !error.value ? '%s' : undefined,
+  // entra en los 60 que muestra Google. Gana a la plantilla de app.vue por orden de registro. Sólo
+  // cuando el título es el del snippet: la ficha que ya no está, el error de carga y la vivienda
+  // sin un aviso que se pueda abrir (que muestra "no disponible" con el título del portal)
+  // conservan la marca, y el título con el que GA4 los agrupa.
+  titleTemplate: snippet.value && !error.value ? '%s' : undefined,
   // Mismo `id` que el del layout (`useLocaleHead({ key: 'id' })`): Unhead deduplica por id, así que
   // éste REEMPLAZA la canónica localizada en vez de sumarse — la ficha salía con dos <link canonical>.
   link: [{ id: 'i18n-can', rel: 'canonical', href: canonical.value }],
@@ -596,17 +605,24 @@ useHead(() => ({
                 addressLocality: rentalDisplayBarrio(property.value, {
                   barrioLink: barrioLink.value,
                 }),
+                // Sin lo que sólo escribe un geocodificador o un portal: "Casasweb" como
+                // dirección de un aviso de El País, "11300, Uruguay", un Plus Code.
+                streetAddress: rentalSnippetAddress(
+                  street.value,
+                  rentalDisplayPlace(property.value, { barrioLink: barrioLink.value }),
+                  property.value.department
+                ),
                 breadcrumbs: [
                   { name: t('country'), url: `https://cambio-uruguay.com${localePath('/')}` },
                   {
                     name: t('title'),
                     url: `https://cambio-uruguay.com${localePath('/alquileres-uruguay')}`,
                   },
-                  ...(barrioLink.value
+                  ...(barrioCrumb.value
                     ? [
                         {
-                          name: barrioLink.value.label,
-                          url: `https://cambio-uruguay.com${barrioLink.value.path}`,
+                          name: barrioCrumb.value.name,
+                          url: `https://cambio-uruguay.com${barrioCrumb.value.path}`,
                         },
                       ]
                     : []),

@@ -54,11 +54,24 @@ describe('rentalPageTitle', () => {
     ).toBe('Apartamento 3 dorm. en Guana 2200, Parque Rodó: $ 60.000')
   })
 
-  it('keeps the street before the barrio when both do not fit', () => {
-    // nh6byn-10rlmiq: "…en Bulevar España 2600, Pocitos: $ 60.000" is 61 characters. The barrio
-    // still opens the description.
-    expect(rentalPageTitle(ficha())).toBe('Apartamento 2 dorm. en Bulevar España 2600: $ 60.000')
-    expect(rentalPageDescription(ficha())).toMatch(/^Apartamento en Pocitos: /)
+  it('never trades the barrio for the street: without room for both it names the barrio', () => {
+    // nh6byn-10rlmiq: "…en Bulevar España 2600, Pocitos: $ 60.000" is 61 characters. Type and
+    // zone stay in the title (they are what type-and-barrio searches match); the street moves to
+    // the description, which still names it.
+    const title = rentalPageTitle(ficha())
+    expect(title).toBe('Apartamento 2 dorm. en alquiler en Pocitos: $ 60.000')
+    expect(title).not.toContain('España')
+    expect(rentalPageDescription(ficha())).toMatch(
+      /^Apartamento en Pocitos: .*Bulevar España 2600$/
+    )
+    for (const locale of ['en', 'pt']) {
+      const localized = rentalPageTitle(
+        ficha({ place: 'Aeropuerto Internacional de Carrasco' }),
+        locale
+      )
+      expect(localized).toContain('Aeropuerto Internacional de Carrasco')
+      expect(localized).not.toContain('España')
+    }
   })
 
   it('says "en alquiler" while it fits', () => {
@@ -171,6 +184,8 @@ describe('rentalSnippetStreet (the street a title may carry)', () => {
     'Avenida Carlos Racine 15000 Ciudad de la Costa',
     'Las Pitangas 4, 20000 Punta Del Este, Uruguay',
     'Calle 25 1234',
+    // The block, not the door: the advert hid the number.
+    'Francisco Soca al 1300',
     '11300, Uruguay',
     '2582',
     'Casasweb',
