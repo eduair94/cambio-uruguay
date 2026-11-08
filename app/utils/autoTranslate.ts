@@ -146,7 +146,18 @@ export function translateSegment(
       ? translations.get(key.hash)
       : (translations as Record<string, string>)[key.hash]
   if (typeof stored !== 'string') return null
+  // A stored translation with brackets the Spanish lacks is Google filling a gap ("[link
+  // missing]", "[inserir endereço de e-mail aqui]"): served in Spanish instead. The job refuses
+  // them since 2026-11-08 (`bracketsKept` in scripts/i18n/lib/machine-translate.mjs); this check
+  // also covers the ~1.000 rows it had already stored, from the first render after a deploy.
+  if (addsBrackets(stored, key.template)) return null
   return fillTemplate(stored, key.numbers)
+}
+
+/** Whether `text` has more `[` or `]` than `source`. Same rule as the job's `bracketsKept`. */
+export function addsBrackets(text: string, source: string): boolean {
+  const count = (value: string, char: string) => value.split(char).length - 1
+  return count(text, '[') > count(source, '[') || count(text, ']') > count(source, ']')
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -364,6 +375,8 @@ export function translateHtml(
     const key = segmentKey(normalized)
     const stored = translations.get(key.hash)
     if (stored === undefined) continue
+    // Same rule as translateSegment: an invented "[link missing]" stays in Spanish.
+    if (addsBrackets(stored, key.template)) continue
     const filled = fillTemplate(stored, key.numbers)
     if (filled === null) continue
     used[key.hash] = stored

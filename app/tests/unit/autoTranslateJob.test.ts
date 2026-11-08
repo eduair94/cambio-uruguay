@@ -11,10 +11,41 @@ import {
 // @ts-expect-error plain ESM module of the translation scripts
 import {
   asciiDigits,
+  bracketsKept,
   cleanPlainText,
   numbersIn,
   templatize,
 } from '../../scripts/i18n/lib/machine-translate.mjs'
+
+// Real pairs from the memory on 2026-11-08: the segment ends before a link or a figure, and Google
+// fills the gap with an invented bracket.
+describe('auto-translate job: invented placeholders', () => {
+  it('refuses a translation that adds a bracket the Spanish does not have', () => {
+    for (const [source, translation] of [
+      [
+        'Y si ya te lo retuvieron, el paso a paso está en',
+        "And if they've already held it, the step-by-step instructions are available at [link missing].",
+      ],
+      [
+        'Entre lo que una casa te vende el peso y lo que te lo compra hay hoy hasta',
+        'There is currently up to [amount missing] between what a broker sells and buys.',
+      ],
+      [
+        'Para cualquier consulta sobre privacidad podés escribirnos a',
+        'Para qualquer dúvida sobre privacidade, escreva para [inserir endereço de e-mail aqui].',
+      ],
+      ['Pagás $U {0} por mes', 'You pay $[U] {0} a month'],
+    ])
+      expect(bracketsKept(translation, source), translation).toBe(false)
+  })
+
+  it('keeps brackets the source already had, and plain translations', () => {
+    expect(bracketsKept('See note [1] below', 'Ver la nota [1] abajo')).toBe(true)
+    expect(
+      bracketsKept('The full plan is on this page.', 'El plan completo está en esta página.')
+    ).toBe(true)
+  })
+})
 
 describe('auto-translate job: what it translates', () => {
   it('starts with the editorial core and leaves the data catalogues for last', () => {
