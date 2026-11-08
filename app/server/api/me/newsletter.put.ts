@@ -36,8 +36,12 @@ export default defineEventHandler(async event => {
     try {
       record = await adminAuth().getUser(uid)
     } catch (error) {
-      if ((error as { code?: string })?.code !== 'auth/user-not-found')
-        throw createError({ statusCode: 503, statusMessage: 'account-unavailable' })
+      const code = (error as { code?: string })?.code
+      if (code !== 'auth/user-not-found') {
+        // The Firebase code says what failed (quota, permission, network); kept as the cause.
+        console.error('[me/newsletter] account record unavailable:', code || String(error))
+        throw createError({ statusCode: 503, statusMessage: 'account-unavailable', cause: error })
+      }
     }
     // The address is proven to belong to the account; subscribing also needs it enabled.
     const proven = Boolean(record?.email && record.emailVerified)
