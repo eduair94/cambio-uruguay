@@ -2211,9 +2211,12 @@ Se mide como experimento `fichas-alquiler-calle-precio-total-y-miga-al-barrio` e
     `fichas-alquiler-calle-precio-total-y-miga-al-barrio`, hasta el 6/12) y las páginas de barrio
     siguen con `utils/rentalBarrioName.ts`. Una URL que ya filtra por una dirección sigue andando. Al
     cerrar el experimento, decidir si la ficha también la usa.
-  - El selector del directorio lee los 1.000 barrios con más avisos, filtra y recién ahí corta en
-    250. Antes el corte iba primero, y Montevideo nunca ofrecía Retiro, Marconi, Chacarita ni
-    Santiago Vázquez.
+  - El selector del directorio lee los 5.000 barrios con más avisos, filtra y recién ahí corta en
+    250. Antes el corte iba primero, y lo descartado ocupaba lugares de lo leído (con empates por
+    orden alfabético, una superficie va antes que cualquier barrio con los mismos avisos):
+    - leyendo 250, Montevideo terminaba en los barrios con 4 avisos;
+    - leyendo 1.000 (#276), en los de 2, porque las superficies de Casasweb solas pasaban de 1.000
+      nombres distintos; Retiro y Chacarita, con un aviso cada uno, seguían afuera.
 - **«Avisos recientes» del barrio** (`/alquiler/<departamento>/<barrio>`).
   - Lee las 80 filas más recientes por `freshAt`, forzando el índice
     `{department, neighborhood, priceUyu}`.
