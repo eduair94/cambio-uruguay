@@ -41,9 +41,28 @@ export function ogCardTitle(title: string | null | undefined): string {
   return text.replace(BRAND_SUFFIX, '').trim() || text
 }
 
-/** `text` cut at a word boundary to at most `max` characters, plus "…" when it was cut. */
+/**
+ * A currency sign and the amount after it: "US$ 40.900", "$ 45.000", "$U 39.000", "USD 1.200",
+ * "UI 5.000". Satori breaks a line at any space (the `linebreak` package, UAX #14): on 2026-11-08
+ * the card of /autos-usados-uruguay/precios/toyota-hilux ended its first line on "US$" and printed
+ * "40.900" alone under it.
+ */
+const AMOUNT_GAP = /(US\$|U\$S|\$U|R\$|€|\$|\b(?:USD|UYU|EUR|BRL|ARS|UI|UR))[ \t]+(?=\d)/g
+
+/**
+ * `text` with a no-break space between each currency sign and its amount, where UAX #14 never
+ * breaks. For what the card draws only: og:image:alt keeps plain spaces (`ogCardTitle`).
+ */
+export function glueAmounts(text: string): string {
+  return text.replace(AMOUNT_GAP, '$1\u00A0')
+}
+
+/**
+ * `text` cut at a word boundary to at most `max` characters, plus "…" when it was cut. A currency
+ * sign and its amount count as one word (`glueAmounts`), so a cut never leaves "a $…".
+ */
 export function clipAtWord(text: string | null | undefined, max = OG_DESCRIPTION_MAX): string {
-  const clean = squash(text)
+  const clean = glueAmounts(squash(text))
   if (clean.length <= max) return clean
   const window = clean.slice(0, max + 1)
   const space = window.lastIndexOf(' ')
@@ -70,7 +89,7 @@ export function ogCardSubtitle(card: {
   title?: string
 }): string {
   const subtitle = squash(card.subtitle)
-  if (subtitle) return subtitle
+  if (subtitle) return glueAmounts(subtitle)
   if (card.board) return card.boardDefault
   const description = clipAtWord(card.description)
   if (!description) return ''
