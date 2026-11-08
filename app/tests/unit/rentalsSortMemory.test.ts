@@ -168,9 +168,10 @@ describe('rental endpoint sort input', () => {
     ])
   })
 
-  it('reads 1,000 barrios and offers the first 250 that are neither surfaces nor addresses', async () => {
-    // 2026-11-08: the cut ran before the filter, so dropped names took places in the 250 and
-    // Montevideo never offered Retiro, Marconi or Chacarita.
+  it('reads 5,000 barrios and offers the first 250 that are neither surfaces nor addresses', async () => {
+    // 2026-11-08: the cut ran before the filter, so dropped names took places in what was read.
+    // Reading 1,000 still left out every Montevideo barrio with one advert (Retiro, Chacarita):
+    // Casasweb's surfaces alone made over 1,000 distinct names.
     const junk = Array.from({ length: 60 }, (_, i) => ({ _id: `Calle ${100 + i}`, count: 500 - i }))
     const places = Array.from({ length: 260 }, (_, i) => ({
       _id: `Paraje ${String.fromCharCode(65 + (i % 26))}${String.fromCharCode(65 + Math.floor(i / 26))}`,
@@ -183,7 +184,7 @@ describe('rental endpoint sort input', () => {
     const barrios = pipelines.find(pipeline =>
       pipeline.some(stage => stage.$group?._id === '$neighborhood')
     )!
-    expect(barrios.at(-1)).toEqual({ $limit: 1000 })
+    expect(barrios.at(-1)).toEqual({ $limit: 5000 })
     expect(response.facets.neighborhoods).toEqual(
       places.slice(0, 250).map(row => ({ value: row._id, count: row.count }))
     )

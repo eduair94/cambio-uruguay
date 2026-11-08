@@ -59,13 +59,18 @@ import {
 const STALE_DAYS = RENTAL_STALE_DAYS
 
 /**
- * The barrio selector shows up to 250 names, read from the 1,000 most published ones. The
- * surfaces and addresses it drops (utils/rentalBarrioOption.ts) were cut AFTER the top 250, so they
- * took places in it: on 2026-11-08 Montevideo stopped at the barrios with 4 adverts and never
- * offered Retiro, Marconi, Chacarita or Santiago Vázquez.
+ * The barrio selector shows up to 250 names, read from the 5,000 most published ones. The names it
+ * drops (utils/rentalBarrioOption.ts) take places in whatever is read, and with ties broken
+ * alphabetically a surface ("40 m2 40 m2") sorts before every barrio with as many adverts.
+ * Measured on 2026-11-08 in Montevideo:
+ *  - reading 250, the selector stopped at the barrios with 4 adverts;
+ *  - reading 1,000, at those with 2: Casasweb's surfaces alone ("61 m2 61 m2", almost one per
+ *    advert) made over 1,000 distinct names, so Retiro and Chacarita (1 advert each) stayed out.
+ * Reading more costs little: the grouping runs over every advert anyway, and the reply is cut at
+ * 250.
  */
 const BARRIO_FACET_SIZE = 250
-const BARRIO_FACET_READ = 1000
+const BARRIO_FACET_READ = 5000
 
 /** Lo que el navegador y el borde pueden guardar; la memoria del proceso se rige por `maxAge`. */
 export const RENTAL_DIRECTORY_CACHE_CONTROL = 'public, max-age=30, s-maxage=300'
