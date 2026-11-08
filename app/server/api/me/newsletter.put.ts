@@ -29,11 +29,20 @@ export default defineEventHandler(async event => {
     // address was verified keeps saying "unverified" for up to an hour, and switching off from a
     // device holding one would change the preference without leaving the list (review,
     // 2026-11-08). Same source as the alert emails (tasks/alerts/check.ts).
-    const record = await adminAuth()
-      .getUser(uid)
-      .catch(() => null)
-    const verified = Boolean(record?.email && record.emailVerified && !record.disabled)
-    const addr = normalizeEmail((verified ? record?.email : null) || email || u.email || '')
+    // Only "no such account" means unverified. Any other failure answers 503 before anything is
+    // set: counting it as unverified switched the preference off while the address stayed on the
+    // list, and told a verified user to verify (review, 2026-11-08).
+    let record: Awaited<ReturnType<ReturnType<typeof adminAuth>['getUser']>> | null = null
+    try {
+      record = await adminAuth().getUser(uid)
+    } catch (error) {
+      if ((error as { code?: string })?.code !== 'auth/user-not-found')
+        throw createError({ statusCode: 503, statusMessage: 'account-unavailable' })
+    }
+    // The address is proven to belong to the account; subscribing also needs it enabled.
+    const proven = Boolean(record?.email && record.emailVerified)
+    const verified = proven && !record?.disabled
+    const addr = normalizeEmail((proven ? record?.email : null) || email || u.email || '')
     if (body.email && !addr) {
       throw createError({ statusCode: 422, statusMessage: 'no-email' })
     }
@@ -41,10 +50,10 @@ export default defineEventHandler(async event => {
       throw createError({ statusCode: 409, statusMessage: 'email-not-verified' })
     }
     u.set('newsletter.email', body.email)
-    // The list changes only for a verified address, both ways: switching off used to unsubscribe
+    // The list changes only for a proven address, both ways: switching off used to unsubscribe
     // whatever address the account carried, so an account opened with someone else's address could
     // take that person off the newsletter. Every newsletter email keeps its own unsubscribe link.
-    if (addr && verified) {
+    if (addr && (body.email ? verified : proven)) {
       if (body.email) {
         await NewsletterSubscriberModel.updateOne(
           { email: addr },

@@ -57,6 +57,7 @@ const recordVerified = (emailVerified: boolean, disabled = false) => {
 
 beforeEach(() => {
   mocks.updateOne.mockReset()
+  mocks.account.save.mockClear()
   mocks.account.values = {}
   mocks.user.emailVerified = false
   recordVerified(false)
@@ -112,13 +113,36 @@ describe('PUT /api/me/newsletter', () => {
     expect(mocks.updateOne).not.toHaveBeenCalled()
   })
 
-  it('treats a disabled or unreadable account as unverified', async () => {
+  it('a disabled account cannot subscribe, but its verified address can leave the list', async () => {
     recordVerified(true, true)
     readBody.mockResolvedValueOnce({ email: true })
     await expect(handler({} as never)).rejects.toMatchObject({ statusCode: 409 })
-    mocks.record = new Error('auth/internal-error')
     readBody.mockResolvedValueOnce({ email: false })
     await handler({} as never)
+    expect(mocks.updateOne).toHaveBeenCalledWith(
+      { email: 'someone@example.com' },
+      { $set: { status: 'unsubscribed' } }
+    )
+  })
+
+  // Review, 2026-11-08: counting any lookup failure as "unverified" answered 200 to a switch-off
+  // while the address stayed on the list (and told a verified user to verify on switch-on).
+  it.each([true, false])(
+    'an account record that cannot be read answers 503 and changes nothing (switch %s)',
+    async on => {
+      mocks.record = Object.assign(new Error('internal'), { code: 'auth/internal-error' })
+      readBody.mockResolvedValueOnce({ email: on })
+      await expect(handler({} as never)).rejects.toMatchObject({ statusCode: 503 })
+      expect(mocks.account.values['newsletter.email']).toBeUndefined()
+      expect(mocks.account.save).not.toHaveBeenCalled()
+      expect(mocks.updateOne).not.toHaveBeenCalled()
+    }
+  )
+
+  it('an account Firebase does not know counts as unverified', async () => {
+    mocks.record = Object.assign(new Error('missing'), { code: 'auth/user-not-found' })
+    readBody.mockResolvedValueOnce({ email: false })
+    expect(await handler({} as never)).toMatchObject({ email: false })
     expect(mocks.updateOne).not.toHaveBeenCalled()
   })
 })
