@@ -326,6 +326,7 @@ import {
 import { RENTAL_SOURCE_LABEL } from '~/utils/rentals'
 import { rentalDate, rentalMoney, rentalPropertyPath } from '~/utils/rentalPresentation'
 import { rentalSavedSafeUrl } from '~/utils/rentalSaved'
+import { rentalBarrioOptionPlausible } from '~/utils/rentalBarrioOption'
 
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalBudgetMessages })
 const { smAndDown } = useDisplay()
@@ -438,11 +439,14 @@ const departmentItems = computed(() => [
     ),
   ].map(value => ({ value, title: value })),
 ])
+// No street address offered as a barrio (utils/rentalBarrioOption.ts); the chosen one stays.
 const neighborhoodItems = computed(() => [
   ...new Set(
     [
       draft.value.neighborhood,
-      ...(facetOverride.value?.neighborhoods || data.value?.facets.neighborhoods || []),
+      ...(facetOverride.value?.neighborhoods || data.value?.facets.neighborhoods || []).filter(
+        name => rentalBarrioOptionPlausible(name)
+      ),
     ].filter(Boolean)
   ),
 ])

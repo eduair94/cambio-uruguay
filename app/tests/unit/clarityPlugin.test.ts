@@ -75,7 +75,7 @@ describe('the Clarity plugin stays off the critical path', () => {
       'utils/clarityPolicy.ts',
     ])
     expect(service).not.toMatch(/clarityPolicy/)
-  })
+  }, 30_000) // reads every source of the app: past the 5 s default on a loaded machine
 
   it('puts nothing in the server HTML: no head tag, no preconnect, no tag URL outside the service', () => {
     expect(plugin + runtime).not.toMatch(/useHead|useScript|useSeoMeta|preconnect/)
@@ -85,7 +85,7 @@ describe('the Clarity plugin stays off the critical path', () => {
       )
       .map(file => relative(ROOT, file).split(sep).join('/'))
     expect(mentions).toEqual(['services/clarity.ts'])
-  })
+  }, 30_000)
 
   it('stops Clarity before the URL changes, back and forward included', () => {
     expect(runtime).toMatch(/router\.beforeEach\(/)

@@ -437,6 +437,7 @@ import { rentalEstimateMessages } from '~/utils/rentalEstimateMessages'
 import { rentalAnalysisLocationName } from '~/utils/rentalAnalysisComparison'
 import { rentalPropertyPath } from '~/utils/rentalPresentation'
 import { RENTAL_SOURCE_LABEL, type RentalCurrency } from '~/utils/rentals'
+import { rentalBarrioOptionPlausible } from '~/utils/rentalBarrioOption'
 
 const props = defineProps<{
   department: string
@@ -501,7 +502,9 @@ const neighborhoodOptions = computed(() => {
       ? props.neighborhoods
       : []
     : localNeighborhoods.value
-  return [...new Set([...available, form.neighborhood].filter(Boolean))]
+  // No street address offered as a barrio (utils/rentalBarrioOption.ts); the chosen one stays.
+  const offerable = available.filter(name => rentalBarrioOptionPlausible(name))
+  return [...new Set([...offerable, form.neighborhood].filter(Boolean))]
 })
 const numberLocale = computed(() =>
   locale.value === 'en' ? 'en-US' : locale.value === 'pt' ? 'pt-BR' : 'es-UY'

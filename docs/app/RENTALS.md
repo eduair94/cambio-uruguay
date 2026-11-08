@@ -2180,6 +2180,40 @@ Se mide como experimento `fichas-alquiler-calle-precio-total-y-miga-al-barrio` e
   `tests/unit/rentalBarrioNameParity.test.ts` las compara corriendo las dos: se cambian juntas. Como
   `casasweb.ts` y `normalize.ts` están en `appContracts` de `deploy.yml`, una edición sólo de backend
   corre también la suite del app.
+- **Direcciones fuera de los selectores** (`utils/rentalBarrioOption.ts`). Es una regla sólo del
+  app y **no** entra en el contrato de paridad de arriba.
+  - Qué hace: dejan de ofrecer direcciones guardadas como barrio los cuatro selectores de barrio de
+    los alquileres:
+    - el del directorio (`facets.neighborhoods` de `/api/rentals`);
+    - el de zonas (`components/rentals/zones/Explorer.vue`, en el directorio, `/alquiler-ideal-uruguay`
+      y `/barrios-alquileres-uruguay`);
+    - el de `/oportunidades-inmobiliarias-uruguay` por presupuesto (`BudgetRentals.vue`);
+    - el del estimador de `/analisis-alquileres-uruguay` (`PriceEstimator.vue`).
+  - El de zonas no filtraba nada antes, así que además deja de ofrecer superficies y "Uruguay", la
+    regla de las páginas de barrio. En todo el país (apartamentos) pasa de 1.025 zonas a 426, y en
+    Montevideo de 547 a 127. Una zona ya elegida sigue en la lista mientras el selector está abierto.
+  - Por qué pasaba: la tarjeta de Mercado Libre trae "<calle>, <barrio>, <departamento>" y en el
+    interior suele saltear el barrio, así que "Sarandí 888, Maldonado" guardaba "Sarandí 888".
+  - Medido el 8/11: eran 153 de los 647 nombres que ofrecía el selector del directorio (68 de 205 en
+    Maldonado, 40 de 55 en Paysandú). Leyendo fuente por fuente, Montevideo tenía 77 más.
+  - Precisión antes que cobertura:
+    - Quedan la calle pelada ("Leandro Gómez") y la esquina sin marca ("Ituzaingó y Sarandí").
+    - Los lugares reales con forma de dirección se exceptúan por nombre: localidades del árbol de
+      Mercado Libre como "Ruta 37 Y 9" y "Kilometro 18", y barrios de la IM como "Km 16 Cno.
+      Maldonado".
+    - El nombre de un asentamiento ("Barrio 2000", "Villa La Ruta", "Fracc. Cno. Andaluz Y R.84")
+      puede llevar un tipo de vía o un número; las demás marcas de una dirección valen igual.
+    - Un nombre con la codificación rota (el "Malvín Norte" que llegó con "Ã") no se ofrece.
+    - Validado contra los 1.850 nombres distintos del árbol de Mercado Libre, las 595 localidades
+      del INE (con sus otros nombres) y 2.703 lugares de OpenStreetMap. Sólo esconde "Otras",
+      "Uruguay", manzanas, códigos de relevamiento y dos plazas.
+  - Alcance: sólo los selectores. La ficha nombra la calle a propósito (experimento
+    `fichas-alquiler-calle-precio-total-y-miga-al-barrio`, hasta el 6/12) y las páginas de barrio
+    siguen con `utils/rentalBarrioName.ts`. Una URL que ya filtra por una dirección sigue andando. Al
+    cerrar el experimento, decidir si la ficha también la usa.
+  - El selector del directorio lee los 1.000 barrios con más avisos, filtra y recién ahí corta en
+    250. Antes el corte iba primero, y Montevideo nunca ofrecía Retiro, Marconi, Chacarita ni
+    Santiago Vázquez.
 - **«Avisos recientes» del barrio** (`/alquiler/<departamento>/<barrio>`).
   - Lee las 80 filas más recientes por `freshAt`, forzando el índice
     `{department, neighborhood, priceUyu}`.

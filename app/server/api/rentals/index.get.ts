@@ -20,7 +20,7 @@ import {
   RENTAL_PRICE_PER_M2_SORT_FIELDS,
   rentalPricePerM2Stages,
 } from '../../../utils/rentalPricePerM2'
-import { rentalBarrioNamePlausible } from '../../../utils/rentalBarrioName'
+import { rentalBarrioOptionPlausible } from '../../../utils/rentalBarrioOption'
 
 import {
   annotateRentalAvailability,
@@ -57,6 +57,15 @@ import {
  * week and a half is not shown as if it were on the market today.
  */
 const STALE_DAYS = RENTAL_STALE_DAYS
+
+/**
+ * The barrio selector shows up to 250 names, read from the 1,000 most published ones. The
+ * surfaces and addresses it drops (utils/rentalBarrioOption.ts) were cut AFTER the top 250, so they
+ * took places in it: on 2026-11-08 Montevideo stopped at the barrios with 4 adverts and never
+ * offered Retiro, Marconi, Chacarita or Santiago Vázquez.
+ */
+const BARRIO_FACET_SIZE = 250
+const BARRIO_FACET_READ = 1000
 
 /** Lo que el navegador y el borde pueden guardar; la memoria del proceso se rige por `maxAge`. */
 export const RENTAL_DIRECTORY_CACHE_CONTROL = 'public, max-age=30, s-maxage=300'
@@ -155,7 +164,7 @@ const cachedDirectory = defineCachedEventHandler(
           { $match: { neighborhood: { $ne: '' } } },
           { $group: { _id: '$neighborhood', count: { $sum: 1 } } },
           { $sort: { count: -1, _id: 1 } },
-          { $limit: 250 },
+          { $limit: BARRIO_FACET_READ },
         ]).collation(RENTAL_COLLATION),
         RentalListingModel.aggregate([
           ...publicStages,
@@ -217,9 +226,12 @@ const cachedDirectory = defineCachedEventHandler(
         medianUyu,
         facets: {
           departments: toFacet(departments as Array<{ _id: string; count: number }>),
-          // The barrio selector offers neither a surface nor a country: same rule as the barrio
-          // pages (utils/rentalBarrioName.ts). A URL that already filters by one still works.
-          neighborhoods: toFacet(neighborhoods).filter(row => rentalBarrioNamePlausible(row.value)),
+          // The barrio selector offers no surface, no country (the barrio pages' rule) and no
+          // street address ("Sarandí 888"): utils/rentalBarrioOption.ts.
+          // A URL that already filters by one still works.
+          neighborhoods: toFacet(neighborhoods)
+            .filter(row => rentalBarrioOptionPlausible(row.value))
+            .slice(0, BARRIO_FACET_SIZE),
           types: toFacet(dimension.types || []),
           sources: toFacet(dimension.sources || []),
           priceMaxUyu: Number((dimension.price?.[0] as unknown as { max?: number })?.max || 0),
