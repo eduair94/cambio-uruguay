@@ -34,9 +34,13 @@ export default defineEventHandler(async event => {
     return rentalUnsubscribeHtml('es', 'missing', '', ACTION)
   }
   let found: Awaited<ReturnType<typeof rateAlertUnsubscribeInfo>>
+  let writing = false
   try {
     found = await rateAlertUnsubscribeInfo(token)
-    if (event.method === 'POST') await unsubscribeRateAlertEmail(token)
+    if (event.method === 'POST') {
+      writing = true
+      await unsubscribeRateAlertEmail(token)
+    }
   } catch (error) {
     // Answered here rather than thrown: Nitro would log the request URL, token included, and
     // Nuxt would render its full error page at this address. The log line names the failure only.
@@ -45,7 +49,8 @@ export default defineEventHandler(async event => {
       error instanceof Error ? error.message : error
     )
     setResponseStatus(event, 503)
-    return rentalUnsubscribeHtml('es', 'unavailable', token, ACTION)
+    // Before the write nothing changed; once it was attempted, its outcome is unknown.
+    return rentalUnsubscribeHtml('es', writing ? 'unavailable' : 'unavailableRead', token, ACTION)
   }
   const state =
     event.method === 'POST' || (found && !found.channels?.email)

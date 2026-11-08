@@ -120,8 +120,19 @@ describe('unsubscribe endpoints when the database is down', () => {
     expect(mocks.rentalFindOne).not.toHaveBeenCalled()
   })
 
-  it('the failure page does not claim nothing changed', async () => {
+  // The page says what is known: before the write nothing changed; once the write was attempted
+  // (and in rentals the lease is released after it), whether it went through is not known.
+  it('says nothing changed when the failure came before any write', async () => {
     mocks.rateInfo.mockImplementation(async () => failing())
-    expect(await rate({ method: 'POST' })).not.toContain('no cambió')
+    expect(await rate({ method: 'GET' })).toContain('no se cambió nada')
+    expect(await rate({ method: 'POST' })).toContain('no se cambió nada')
+  })
+
+  it('says it does not know once the write was attempted', async () => {
+    mocks.rateInfo.mockResolvedValue({ _id: 'a', uid: 'u', channels: { email: true } })
+    mocks.rateUnsubscribe.mockImplementation(async () => failing())
+    const page = await rate({ method: 'POST' })
+    expect(page).toContain('No sabemos si se llegó a aplicar')
+    expect(page).not.toContain('no se cambió nada')
   })
 })

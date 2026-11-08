@@ -176,7 +176,10 @@ const form = reactive({
 })
 
 async function load() {
-  alerts.value = await authFetch<any[]>('/api/me/alerts').catch(() => [])
+  // A failed read keeps what is on screen: emptying it would show "no alerts yet" and invite
+  // the visitor to create them again (review, 2026-11-08).
+  const fresh = await authFetch<any[]>('/api/me/alerts').catch(() => null)
+  if (fresh) alerts.value = fresh
 }
 
 async function create() {

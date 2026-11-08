@@ -29,10 +29,14 @@ export default defineEventHandler(async event => {
     return rentalUnsubscribeHtml('es', 'missing')
   }
   let found: Awaited<ReturnType<typeof rentalUnsubscribeInfo>>
+  let writing = false
   try {
     found = await rentalUnsubscribeInfo(token)
     // RFC 8058 callers need no login, and repeated POSTs remain successful.
-    if (event.method === 'POST') await unsubscribeRentalAlertEmail(token)
+    if (event.method === 'POST') {
+      writing = true
+      await unsubscribeRentalAlertEmail(token)
+    }
   } catch (error) {
     // Answered here rather than thrown: Nitro would log the request URL, token included, and
     // Nuxt would render its full error page at this address. The log line names the failure only.
@@ -41,7 +45,9 @@ export default defineEventHandler(async event => {
       error instanceof Error ? error.message : error
     )
     setResponseStatus(event, 503)
-    return rentalUnsubscribeHtml('es', 'unavailable', token)
+    // Before the write nothing changed; once it was attempted (the lease is released after it),
+    // its outcome is unknown.
+    return rentalUnsubscribeHtml('es', writing ? 'unavailable' : 'unavailableRead', token)
   }
   const state =
     event.method === 'POST' || (found && !found.channels.email)

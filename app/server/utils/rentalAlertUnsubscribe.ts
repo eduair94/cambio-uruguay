@@ -46,6 +46,7 @@ const copy = {
     missingBody: 'Podés administrar tus suscripciones desde tu cuenta.',
     unavailable: 'No pudimos procesar el enlace',
     unavailableBody: 'No sabemos si se llegó a aplicar: probá de nuevo en unos minutos.',
+    unavailableReadBody: 'Probá de nuevo en unos minutos: no se cambió nada.',
     account: 'Administrar mis alertas',
   },
   en: {
@@ -59,6 +60,7 @@ const copy = {
     missingBody: 'You can manage your subscriptions in your account.',
     unavailable: 'We could not process this link',
     unavailableBody: 'We do not know whether it went through: please try again in a few minutes.',
+    unavailableReadBody: 'Please try again in a few minutes: nothing was changed.',
     account: 'Manage my alerts',
   },
   pt: {
@@ -72,6 +74,7 @@ const copy = {
     missingBody: 'Você pode administrar suas assinaturas na sua conta.',
     unavailable: 'Não foi possível processar o link',
     unavailableBody: 'Não sabemos se chegou a ser aplicado: tente novamente em alguns minutos.',
+    unavailableReadBody: 'Tente novamente em alguns minutos: nada foi alterado.',
     account: 'Administrar meus alertas',
   },
 }
@@ -79,20 +82,26 @@ const copy = {
 /** Also the page of the rate-alert unsubscribe (api/alerts/unsubscribe), with its own `action`. */
 export function rentalUnsubscribeHtml(
   locale: string,
-  state: 'confirm' | 'done' | 'missing' | 'unavailable',
+  /** `unavailable`: the write was attempted and its outcome is unknown; `unavailableRead`: it failed before any write. */
+  state: 'confirm' | 'done' | 'missing' | 'unavailable' | 'unavailableRead',
   token = '',
   action = '/api/rental-alerts/unsubscribe'
 ): string {
   const lang = locale === 'en' || locale === 'pt' ? locale : 'es'
   const c = copy[lang]
-  const title = { confirm: c.title, done: c.done, missing: c.missing, unavailable: c.unavailable }[
-    state
-  ]
+  const title = {
+    confirm: c.title,
+    done: c.done,
+    missing: c.missing,
+    unavailable: c.unavailable,
+    unavailableRead: c.unavailable,
+  }[state]
   const body = {
     confirm: c.body,
     done: c.doneBody,
     missing: c.missingBody,
     unavailable: c.unavailableBody,
+    unavailableRead: c.unavailableReadBody,
   }[state]
   const prefix = lang === 'es' ? '' : `/${lang}`
   const form =
