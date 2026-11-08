@@ -373,9 +373,9 @@
               Cuánto los guardamos: tu cuenta y lo que guardás en ella, mientras exista; cada
               alerta, hasta que la borres, y con ella su historial de envíos; tu decisión sobre
               cookies, un año; las cookies de Google, lo que dice la sección 4. El resto, sólo el
-              tiempo necesario para los fines descritos o el que exija la ley. Como cualquier
-              servidor, el nuestro anota los pedidos que recibe para diagnosticar fallas y frenar
-              abusos; esos registros técnicos rotan y se borran solos.
+              tiempo necesario para los fines descritos o el que exija la ley. Nuestro servidor no
+              lleva un registro de cada pedido; los errores sí quedan en registros técnicos, que
+              pueden incluir la dirección pedida y que rotan y se borran solos.
             </p>
             <p class="legal-prose text-body-1 text-grey-lighten-1 mt-3">
               En los directorios de alquileres y de viviendas en venta mostramos el nombre del
