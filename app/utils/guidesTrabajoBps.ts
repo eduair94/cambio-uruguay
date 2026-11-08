@@ -17,7 +17,28 @@
 // «3 meses», reafiliación automática, efecto en la devolución). Fuentes: BPS 23321, 4802, 18239, 6486, 10576,
 // 24521, 17508; IMPO Ley 18.731 art. 30, Ley 18.211, Decretos 317/025 y 163/026, Ley 20.486; ASSE; MSP ajustes
 // 07/2026; MTSS prórrogas; FONASA Chile sólo para desambiguar la consulta.
+// 2026-11-08: trabajo-domestico-uruguay. `/cuanto-me-tienen-que-pagar-uruguay` dice en su cuerpo que
+// el ámbito doméstico tiene negociación propia y ahí deja al lector; el sitio no tenía ni el laudo del
+// Grupo 21, ni el cuadro de aportes, ni los descansos de la Ley 18.065. Cifras y plazos verificados el
+// 2026-11-08 contra BPS (comunicado R 14/2026, la guía de afiliación y aportación de junio de 2026, la
+// tabla de categorías 24279 y el folleto de derechos 24455), MTSS (gub.uy, trabajo doméstico) e IMPO
+// (Ley 18.065, arts. 2 a 11, y Ley 19.690 por el fondo de garantía). Los números viven en
+// `utils/domesticWork.ts` y esta guía los compone: no hay un segundo literal que pueda separarse.
 import type { Guide } from './guides'
+import {
+  DOMESTIC_WORK_CATEGORIES,
+  DOMESTIC_WORK_CONTRIBUTIONS,
+  DOMESTIC_WORK_HEALTH_MINIMUM,
+  DOMESTIC_WORK_LEGAL_LIMITS,
+  DOMESTIC_WORK_SOURCES,
+  DOMESTIC_WORK_WAGE_PERIOD,
+  domesticWorkCategory,
+  formatDomesticWorkUyu as uyu,
+} from './domesticWork'
+
+/** El mínimo de la categoría, en pesos ya formateados. `'general'` → `'32.051'`. */
+const minimo = (slug: 'general' | 'cocina' | 'cuidados') =>
+  uyu(domesticWorkCategory(slug)!.monthlyUyu)
 
 export const trabajoBpsGuides: readonly Guide[] = [
   {
@@ -1718,5 +1739,120 @@ export const trabajoBpsGuides: readonly Guide[] = [
         publisher: 'IMPO',
       },
     ],
+  },
+  {
+    // POR QUÉ EXISTE: ver la nota del encabezado. Es la pregunta que el hogar que contrata hace una
+    // vez y no vuelve a hacer, y la que más fácil se contesta mal, porque hay DOS fuentes oficiales
+    // con números distintos: el MTSS publica los mínimos «de referencia» al 30/6/2026 del acuerdo
+    // del 5/12/2025 y el BPS publica los que rigen hoy. Acá va el del BPS, que es el que emite la
+    // factura, y la diferencia se cuenta en voz alta en la primera sección.
+    slug: 'trabajo-domestico-uruguay',
+    title: `Trabajo doméstico: $ ${minimo('general')} por 44 horas`,
+    description: `Mínimos del Grupo 21 hasta el 31/12/2026: $ ${minimo('general')} general, $ ${minimo('cocina')} cocina y $ ${minimo('cuidados')} cuidados por 44 horas. Al BPS, 15 % y 7,5 %.`,
+    tag: 'TRABAJO',
+    updatedAt: '2026-11-08',
+    sections: [
+      {
+        heading: '¿Cuánto hay que pagar como mínimo?',
+        body: `Desde el 1.º de julio de 2026 el sector tiene tres categorías y cada una su propio mínimo, según cuál sea la tarea PRINCIPAL de la jornada —el 50 % más una hora, dice el BPS—, no según todo lo que la persona haga. Los valores que rigen ${DOMESTIC_WORK_WAGE_PERIOD.label} los publica el comunicado R 14/2026 del BPS, y son los de la tabla. Dos avisos antes de usarlos. El primero: el mensual y el por hora se publican por separado y no se derivan uno del otro, así que para una jornada de menos de 44 horas semanales la cuenta va con el valor por hora o con una regla de tres sobre el mensual, nunca con el mensual entero. El segundo es una discrepancia real entre dos fuentes oficiales, y conviene saberla: la página del MTSS sigue publicando los mínimos «de referencia» al 30 de junio de 2026 que fijó el acuerdo del 5 de diciembre de 2025 —$ 32.875 para cocina y $ 33.935 para cuidados—, que son anteriores al ajuste de julio. Acá publicamos los del BPS porque es el organismo que liquida y emite la factura, y lo decimos en vez de elegir en silencio.`,
+        table: {
+          headers: [
+            'Categoría',
+            `Mensual por 44 h (${DOMESTIC_WORK_WAGE_PERIOD.label})`,
+            'Por hora',
+          ],
+          rows: DOMESTIC_WORK_CATEGORIES.map(category => [
+            category.name,
+            `$ ${uyu(category.monthlyUyu)}`,
+            `$ ${uyu(category.hourlyUyu)}`,
+          ]),
+        },
+      },
+      {
+        heading: 'Qué tarea cae en cada categoría',
+        body: `La categoría no la elige el hogar: la decide la tarea principal, y el BPS asignó de oficio la categoría general a todas las personas que ya estaban activas al 1.º de julio de 2026, así que si la tarea principal es cocina o cuidados hay que modificarla en el trámite de trabajo doméstico. Quien está en una categoría puede hacer tareas de las categorías de menor remuneración; al revés no, porque entonces la tarea principal pasó a ser otra. Hay dos bordes que el MTSS escribe con nombre propio y valen más que cualquier resumen: servir comida ya preparada o lavar la vajilla no convierten la tarea en cocina, y cocinar o cuidar hasta el 50 % del tiempo trabajado sigue siendo categoría general.`,
+        table: {
+          headers: ['Categoría', 'Qué comprende'],
+          rows: DOMESTIC_WORK_CATEGORIES.map(category => [category.name, category.tasks]),
+        },
+      },
+      {
+        heading: 'Lo que se paga además del sueldo',
+        body: 'El mínimo de la tabla es el sueldo, no el costo. Arriba de eso van siete cosas y ninguna es opcional: el aguinaldo, que se paga en dos fracciones, en junio y en diciembre; la licencia anual de 20 días continuos por año completo, o 1,67 días por mes cada 25 días trabajados; el salario vacacional, que se paga ANTES de la licencia y no después; el salario vacacional complementario, una suma adicional equivalente al 15 % del salario vacacional vigente; la prima por presentismo, que se abona junto con el aguinaldo y es la cuarta parte de este si no hubo inasistencias en el semestre —se prorratea mes a mes, y las faltas por enfermedad, huelga o licencias autorizadas no la hacen perder—; la prima por antigüedad, del 0,5 % por año trabajado con tope de 10 años, ajustable cada 1.º de enero; y la compensación por nocturnidad, del 15 % entre las 22:00 y las 6:00, que sube al 20 % si en ese horario se trabajan 5 horas o más. El 19 de agosto, Día de la Trabajadora y el Trabajador Doméstico, es feriado pago. Sin retiro se agregan dos obligaciones que no son dinero: alimentación completa y una habitación privada, amueblada e higiénica.',
+        links: [
+          {
+            label: 'Cómo se calcula el aguinaldo',
+            to: '/guias/como-se-calcula-el-aguinaldo-uruguay',
+          },
+          {
+            label: 'Licencia y salario vacacional',
+            to: '/guias/licencia-y-salario-vacacional-uruguay',
+          },
+        ],
+      },
+      {
+        heading: 'El cuadro de aportes del BPS',
+        body: 'Los aportes se calculan sobre la remuneración nominal REAL, que no puede ser menor al mínimo del laudo, e incluyen las demás partidas que correspondan, como la prima por antigüedad. El cuadro de abajo es el de la guía de afiliación y aportación del BPS de junio de 2026. Tres lecturas que no se ven mirando los porcentajes. La primera: el seguro de accidentes del BSE ya no es una póliza aparte que haya que ir a contratar, viene en la misma factura mensual del BPS con una tasa del 1,87 % desde julio de 2025, y la cobertura es automática para toda persona registrada. La segunda: Fonasa es el único concepto que no tiene un número cerrado, porque la tasa personal va del 3 % al 8 % según cónyuge o concubino, hijos a cargo y si la remuneración pasa de 2,5 BPC, y la patronal lleva además el complemento de cuota mutual. La tercera: si corresponde, el hogar empleador también es agente de retención del IRPF. Por eso acá no hay un total «lo que sale por mes»: ese número depende del caso y escribirlo sería inventarlo.',
+        table: {
+          headers: ['Concepto', 'Aporte personal', 'Aporte patronal'],
+          rows: DOMESTIC_WORK_CONTRIBUTIONS.map(row => [row.concept, row.personal, row.employer]),
+        },
+      },
+      {
+        heading: 'El alta tiene fecha, y vencerla cuesta 1 UR',
+        body: 'La inscripción no es un trámite que se pueda hacer después. El BPS lo pone en plazos: la afiliación del titular y el ingreso de la persona trabajadora, desde 10 días corridos antes del comienzo de la actividad y hasta el día de ingreso —o sea que cuando empieza a trabajar ya tiene que estar registrada—, y el egreso, hasta 5 días hábiles después. Vencido el plazo se genera una multa de 1 UR por la afiliación fuera de fecha y otra por el ingreso o egreso tardío. Si es el primer trabajador, el registro del empleador se hace en la misma gestión, por única vez, y sólo hace falta el usuario personal BPS, que se obtiene con la cédula en Abitab, Red Pagos, ANDA o en cualquier sucursal del organismo. Después, dos obligaciones mensuales: entregar copia del recibo de sueldo en cada pago, que es la constancia laboral de la persona trabajadora, y pagar la factura que el BPS calcula con los jornales y salarios declarados. Y una que viene de la ley de inclusión financiera: a las personas registradas como mensuales el sueldo se les paga por medios electrónicos, con una excepción acotada para el empleador que al 31 de diciembre de 2017 ya percibía jubilación, pensión o retiro.',
+      },
+      {
+        heading: 'Las horas y los descansos los fija la ley, no el acuerdo',
+        body: 'El Consejo de Salarios fija cuánto; la Ley 18.065 fija el resto, y lo escribió en horas. Su artículo 2 limita la jornada «en un máximo legal de ocho horas diarias, y de cuarenta y cuatro horas semanales» y su artículo 4 dice que el descanso semanal «será de treinta y seis horas ininterrumpidas, que comprenderá todo el día domingo, pudiendo acordar las partes el día de la semana en que se gozará el descanso restante». El descanso intermedio depende del régimen y no es un detalle: con retiro son 30 minutos pagados como trabajo efectivo, y sin retiro un mínimo de dos horas que no se pagan pero de las que la persona dispone libremente. Sin retiro hay además un descanso nocturno de nueve horas continuas que el empleador no puede interrumpir. Dos cosas más de la misma ley: la indemnización por despido se gana desde los 90 días corridos de iniciada la relación laboral, tanto para mensuales como para jornaleros, y la edad mínima es de 18 años, con autorización del INAU desde los 15 por razones fundadas. Sobre el despido en el embarazo la ley remite a una indemnización especial, que el BPS cuantifica en 6 sueldos, desde la notificación del embarazo y hasta 180 días después del reintegro de la licencia por maternidad.',
+        table: {
+          headers: ['Lo que fija la ley', 'Valor', 'Ley 18.065'],
+          rows: DOMESTIC_WORK_LEGAL_LIMITS.map(limit => [limit.label, limit.value, limit.article]),
+        },
+      },
+      {
+        heading: 'La cobertura de salud tiene un mínimo de actividad',
+        body: `Registrar no alcanza por sí solo para que la persona entre al Seguro Nacional de Salud: el BPS pide un mínimo de ${DOMESTIC_WORK_HEALTH_MINIMUM.jornales} jornales o ${DOMESTIC_WORK_HEALTH_MINIMUM.monthlyHours} horas mensuales, o una remuneración mayor o igual a 1,25 bases de prestación y contribución (BPC). Se cumple con cualquiera de las tres. Y se puede llegar sumando empleadores: en ese caso cada uno aporta su parte proporcional del complemento de cuota mutual, pero si los mínimos ya se alcanzan con UN empleador, es ese el que debe otorgar la cobertura y no hay acumulación posible. Un hogar que no llega a esos mínimos puede igual darle el beneficio haciéndose cargo del complemento. La cobertura alcanza a los hijos menores de 18 años o mayores con discapacidad, propios o del cónyuge o concubino, y al cónyuge o concubino que no tenga cobertura propia. El umbral va en BPC y no en pesos a propósito: la BPC se ajusta y un literal envejece mal.`,
+        links: [{ label: 'Cuánto vale la BPC hoy', to: '/indicadores/bpc' }],
+      },
+      {
+        heading: 'Lo que esta guía no publica, y por qué',
+        body: 'Cuatro cosas, a propósito. La primera es el total: no decimos «contratar sale tanto por mes», porque la suma depende de la cobertura de salud, de la prima por antigüedad, de la nocturnidad y del IRPF que pueda corresponder, y un total promedio no describe a ningún hogar. La segunda es Fonasa en pesos, por lo mismo: su tasa personal tiene seis combinaciones y la patronal lleva un complemento que depende del valor de la cuota mutual. La tercera es el mínimo de la categoría general al 30 de junio de 2026: el MTSS publica los de cocina y cuidados de ese corte y no el de general, así que no completamos el que falta. Y la cuarta son los ejemplos de aportación que el BPS trae en su folleto: están calculados sobre sueldos nominales muy por debajo de los mínimos vigentes —$ 4.628, $ 7.267 y $ 23.920—, así que sirven para ver el mecanismo y no como referencia de lo que paga un hogar hoy.',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Cuál es el salario mínimo del trabajo doméstico en Uruguay?',
+        a: `Depende de la categoría, y las tres rigen ${DOMESTIC_WORK_WAGE_PERIOD.label}: $ ${minimo('general')} mensuales por 44 horas semanales en la categoría general, $ ${minimo('cocina')} en cocina y $ ${minimo('cuidados')} en cuidados, según el comunicado R 14/2026 del BPS. Por hora, para jornaleros, son $ 169, $ 178 y $ 184. Son pesos y se ajustan, así que verificá la vigencia antes de hacer cuentas.`,
+      },
+      {
+        q: '¿Cuánto se paga de aportes al BPS por una trabajadora doméstica?',
+        a: 'El aporte jubilatorio es del 22,5 % en total: 15 % que se le descuenta a la persona trabajadora y 7,5 % a cargo del hogar. Arriba de eso, FRL 0,10 % cada parte, el seguro de accidentes del BSE al 1,87 % patronal —que viene en la misma factura del BPS—, el fondo de garantía de créditos laborales al 0,025 % patronal y el fondo social al 0,03 % por parte, que es opcional. Fonasa no tiene un número único: la tasa personal va del 3 % al 8 % según cónyuge e hijos a cargo y la remuneración, y la patronal es 5 % más el complemento de cuota mutual.',
+      },
+      {
+        q: '¿Cuándo hay que inscribirla en el BPS?',
+        a: 'Antes de que empiece a trabajar: el plazo va desde 10 días corridos antes del comienzo de la actividad y hasta el día de ingreso, y cuando empieza ya debe estar registrada. La baja, hasta 5 días hábiles después del egreso. Fuera de plazo el BPS aplica una multa de 1 UR por la afiliación tardía del titular y otra por el ingreso o egreso tardío del trabajador.',
+      },
+      {
+        q: '¿Cuántas horas puede trabajar y qué descansos le corresponden?',
+        a: 'La Ley 18.065 limita la jornada a 8 horas diarias y 44 semanales. El descanso semanal es de 36 horas ininterrumpidas que comprenden todo el domingo, y las partes acuerdan el día del descanso restante. El descanso intermedio es de 30 minutos pagados en el régimen con retiro y de un mínimo de 2 horas, no remuneradas, sin retiro. Sin retiro hay además un descanso nocturno de 9 horas continuas que no se puede interrumpir.',
+      },
+      {
+        q: '¿Con cuántas horas accede a la mutualista?',
+        a: `Con un mínimo de ${DOMESTIC_WORK_HEALTH_MINIMUM.jornales} jornales o ${DOMESTIC_WORK_HEALTH_MINIMUM.monthlyHours} horas mensuales, o una remuneración mayor o igual a 1,25 BPC; cualquiera de las tres alcanza. Los mínimos se pueden llegar a cumplir sumando varios empleadores, y en ese caso cada uno aporta proporcionalmente el complemento de cuota mutual. Si ya se alcanzan con un solo empleador, es ese el que debe dar la cobertura.`,
+      },
+      {
+        q: '¿Desde cuándo tiene derecho a indemnización por despido?',
+        a: 'Desde los 90 días corridos de iniciada la relación laboral, y vale tanto para mensuales como para jornaleros: lo dice el artículo 7 de la Ley 18.065. Si el despido ocurre después de haberse notificado el embarazo y hasta 180 días después del reintegro de la licencia por maternidad, corresponde además una indemnización especial, que el BPS cuantifica en 6 sueldos.',
+      },
+    ],
+    related: [
+      { label: 'Cuánto me tienen que pagar', to: '/cuanto-me-tienen-que-pagar-uruguay' },
+      { label: 'Entender tu recibo de sueldo', to: '/guias/entender-tu-recibo-de-sueldo-uruguay' },
+      { label: 'Despido y liquidación', to: '/guias/despido-y-liquidacion-uruguay' },
+      { label: 'Trabajo en negro: qué hacer', to: '/guias/trabajo-en-negro-uruguay' },
+      { label: 'Valor de la BPC', to: '/indicadores/bpc' },
+    ],
+    sources: DOMESTIC_WORK_SOURCES.map(source => ({ ...source })),
   },
 ]

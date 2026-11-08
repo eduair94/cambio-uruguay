@@ -1123,6 +1123,7 @@ export const guideHubs: readonly GuideHub[] = [
       'como-funciona-el-irpf-uruguay',
       'trabajar-para-el-exterior-desde-uruguay',
       'salario-minimo-uruguay-cuanto-es',
+      'trabajo-domestico-uruguay',
       'me-quede-sin-trabajo-mutualista-fonasa-uruguay',
       'como-pedir-un-aumento-de-sueldo-uruguay',
       'pedir-que-me-despidan-uruguay',

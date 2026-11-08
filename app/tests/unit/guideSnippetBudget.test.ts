@@ -60,8 +60,14 @@ const GUIDE_PAGE = readFileSync(join(__dirname, '..', '..', 'pages', 'guias', '[
  * 153 → 154 el 2026-11-04, en el mismo commit que publica `asignacion-familiar-doble-uruguay`, por
  * lo mismo. Su título mide 42 caracteres y su descripción 149, o sea que nace dentro de los dos
  * presupuestos y no toca ninguna de las dos deudas.
+ *
+ * 154 → 155 el 2026-11-08, en el mismo commit que publica `trabajo-domestico-uruguay`, por lo
+ * mismo. Su título mide 40 caracteres con la marca puesta —57— y su descripción 131, o sea que
+ * nace dentro de los dos presupuestos y no toca ninguna de las dos deudas. Las dos las COMPONE
+ * desde `utils/domesticWork.ts`, así que lo que este archivo mide es el texto ya interpolado: si
+ * un mínimo del Grupo 21 sube de cuatro a cinco dígitos, el presupuesto lo ve.
  */
-const MEASURED = 154
+const MEASURED = 155
 
 /**
  * 116 → 104 el 2026-10-02: los doce títulos más largos del catálogo, de 104 a 84 caracteres
