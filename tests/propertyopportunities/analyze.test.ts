@@ -464,6 +464,13 @@ describe("rental evidence adapter", () => {
       const explicit = { ...zero, identity: { ...zero.identity!, description } };
       expect(rentalOpportunityListings([{ key: "x", offers: [explicit] }])[0]!.expenses).toEqual({ amount: 0, currency: "UYU" });
     }
+    // A figure read from the description is not the portal's field: it never enters as one.
+    const fromText = { ...offer, commonExpenses: 5_500, commonExpensesCurrency: "UYU" as const, commonExpensesSource: "description" as const };
+    expect(rentalOpportunityListings([{ key: "x", offers: [fromText] }])[0]!.expenses).toBeNull();
+    const fromTextZero = { ...fromText, commonExpenses: 0, identity: { ...fromText.identity!, description: "Sin gastos comunes" } };
+    expect(rentalOpportunityListings([{ key: "x", offers: [fromTextZero] }])[0]!.expenses).toBeNull();
+    const fromPortal = { ...offer, commonExpenses: 5_500, commonExpensesCurrency: "UYU" as const };
+    expect(rentalOpportunityListings([{ key: "x", offers: [fromPortal] }])[0]!.expenses).toEqual({ amount: 5_500, currency: "UYU" });
     const conflicting = { ...offer, details: { ...offer.details, totalArea: 32 } };
     expect(rentalOpportunityListings([{ key: "x", offers: [conflicting] }])[0]!.riskFlags).toContain("attribute_conflict");
     const interior = { ...offer, identity: { ...offer.identity!, department: "Canelones", neighborhood: "Centro" } };
