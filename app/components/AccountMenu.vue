@@ -49,6 +49,7 @@
 
 <script setup lang="ts">
 import { isAuthHandoffUrl, loadFirebaseAuth } from '~/services/firebaseLazy'
+import { withoutSignInHandoff } from '~/utils/analyticsUrl'
 import { isExtraLocale } from '~/utils/locales'
 
 const store = useAuthStore()
@@ -107,12 +108,16 @@ const initials = computed(() => {
 
 // Complete a magic-link sign-in when the user lands on the emailed URL. Only such a URL loads the
 // Firebase SDK here; any other page leaves it unloaded.
+const route = useRoute()
+const router = useRouter()
 onMounted(async () => {
+  const href = window.location.href
+  if (!isAuthHandoffUrl(href)) return
+  let emailedLink = false
   try {
-    const href = window.location.href
-    if (!isAuthHandoffUrl(href)) return
     const { fbAuth, isSignInWithEmailLink, signInWithEmailLink } = await loadFirebaseAuth()
     if (!isSignInWithEmailLink(fbAuth(), href)) return
+    emailedLink = true
     let email = window.localStorage.getItem('cu_magic_email')
     if (!email) email = window.prompt(t('auth.email')) || ''
     if (email) {
@@ -121,6 +126,15 @@ onMounted(async () => {
     }
   } catch {
     /* ignore – surfaced via the normal sign-in flow */
+  } finally {
+    // The link's one-time code leaves the address bar once used (or refused): analytics starts
+    // only when it is gone (plugins/gtag-init.client.ts, utils/analyticsUrl.ts), and a bookmarked
+    // or shared URL must not carry it. Firebase already got the original, `href` above.
+    if (emailedLink) {
+      await router
+        .replace({ path: route.path, query: withoutSignInHandoff(route.query), hash: route.hash })
+        .catch(() => {})
+    }
   }
 })
 </script>

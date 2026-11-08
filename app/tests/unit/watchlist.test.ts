@@ -159,6 +159,23 @@ describe('encodeWatchlist / decodeWatchlist', () => {
     expect(decodeWatchlist(encodeWatchlist(w))).toEqual(w)
   })
 
+  // The share link is a URL that analytics, ads and the recipient read: "Mi ubicación" travels at
+  // ~1 km (two decimals), never the exact GPS fix.
+  it('rounds a point zone to two decimals in the shared token only', () => {
+    const w = list({
+      zone: { mode: 'point', lat: -34.905123, lng: -56.163987, radiusKm: 2, label: 'Mi ubicación' },
+    })
+    const shared = decodeWatchlist(encodeWatchlist(w))!
+    expect(shared.zone).toEqual({
+      mode: 'point',
+      lat: -34.91,
+      lng: -56.16,
+      radiusKm: 2,
+      label: 'Mi ubicación',
+    })
+    expect(w.zone).toMatchObject({ lat: -34.905123, lng: -56.163987 })
+  })
+
   it('produces a URL-safe token', () => {
     const token = encodeWatchlist(list({ origins: ['gales'] }))
     expect(token).toMatch(/^[\w-]+$/)
