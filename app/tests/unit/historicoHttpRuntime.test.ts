@@ -1,4 +1,5 @@
 import * as bcuHistory from '../../utils/bcuHistory'
+import * as ogCardText from '../../utils/ogCardText'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { runInNewContext } from 'node:vm'
@@ -116,7 +117,7 @@ it('returns HTTP 404 through app.vue and the installed Nuxt SSR runtime after hi
   page.ssrRender = () => {}
   const appComponent = sfc(
     'app.vue',
-    { vue, 'vue/server-renderer': serverRenderer },
+    { vue, 'vue/server-renderer': serverRenderer, '~/utils/ogCardText': ogCardText },
     {
       defineOgImageComponent: () => {},
       useHead: () => {},

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   formatUyu,
+  rentalBarrioCard,
   rentalBarrioDescription,
   rentalBarrioFaq,
   rentalBarrioIntro,
@@ -127,6 +128,32 @@ describe('rentalBarrioCopy', () => {
       'Alquilar en Pocitos (Montevideo): casa a $ 45.000 por mes de mediana, con gastos comunes y rango por dormitorio. Datos del 4 de octubre de 2026.'
     )
     expect(description.length).toBeLessThanOrEqual(155)
+  })
+
+  it('tarjeta para compartir: el barrio con su departamento y la mediana de la descripción', () => {
+    const card = rentalBarrioCard(page())
+    expect(card).toEqual({
+      title: 'Alquiler en Pocitos, Montevideo',
+      subtitle:
+        'Apartamento de 2 dormitorios a $ 36.000 por mes de mediana · datos del 4 de octubre de 2026',
+    })
+    // La misma cifra que la descripción: una sola mediana por página.
+    expect(rentalBarrioDescription(page())).toContain(
+      'apartamento de 2 dormitorios a $ 36.000 por mes de mediana'
+    )
+    // Entra en la tarjeta sin cortarse (el corte de la tarjeta es a 110).
+    expect(card.subtitle.length).toBeLessThanOrEqual(110)
+    expect(rentalBarrioCard(page({ cells: [cell('casa', 'any', 45000)] })).subtitle).toBe(
+      'Casa a $ 45.000 por mes de mediana · datos del 4 de octubre de 2026'
+    )
+    // Sin mediana no hay subtítulo: la tarjeta cae a la descripción.
+    expect(rentalBarrioCard(page({ cells: [] }))).toEqual({
+      title: 'Alquiler en Pocitos, Montevideo',
+      subtitle: '',
+    })
+    expect(
+      rentalBarrioCard(page({ rentalDataAsOf: null, generatedAt: 'no es una fecha' })).subtitle
+    ).toBe('Apartamento de 2 dormitorios a $ 36.000 por mes de mediana')
   })
 
   it('intro con 1 y 2 dormitorios, sin 3 si no hay dato', () => {

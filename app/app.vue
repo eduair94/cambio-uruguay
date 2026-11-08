@@ -17,6 +17,8 @@
 </template>
 
 <script setup lang="ts">
+import { OG_IMAGE_ALT_FLOOR } from '~/utils/ogCardText'
+
 // Site-wide default branded OG image. Pages override via defineOgImageComponent.
 defineOgImageComponent('Cambio')
 
@@ -36,10 +38,12 @@ useHead({
 // Site-wide default og:image:alt / twitter:image:alt. nuxt-og-image emits the
 // image + dimensions but never an alt, so without this the branded preview has
 // no alt text on any page. Pages with a more specific alt override via their
-// own useSeoMeta({ ogImageAlt }); this is the floor so every page has one.
+// own useSeoMeta({ ogImageAlt }); this is the floor so every page has one, and
+// plugins/01.og-image-alt.ts swaps it for the page's og:title when it reaches
+// the head unchanged (the card's title is the page's, not the dollar's).
 useSeoMeta({
-  ogImageAlt: 'Cambio Uruguay: cotización del dólar hoy y comparador de casas de cambio',
-  twitterImageAlt: 'Cambio Uruguay: cotización del dólar hoy y comparador de casas de cambio',
+  ogImageAlt: OG_IMAGE_ALT_FLOOR,
+  twitterImageAlt: OG_IMAGE_ALT_FLOOR,
 })
 
 // Google AdSense: inject the loader + account meta only when a publisher id is

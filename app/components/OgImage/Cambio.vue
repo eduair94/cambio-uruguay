@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue'
+import { ogCardFooter, ogCardSubtitle, ogCardTitle } from '~/utils/ogCardText'
 
 // OG image template (1200x630) rendered server-side by nuxt-og-image via satori.
 // Satori supports a CSS subset: flexbox only, gradients, border, border-radius,
@@ -25,24 +26,36 @@ import type { CSSProperties } from 'vue'
 // Only the fonts registered in nuxt.config `ogImage.fonts` exist here — Open
 // Sans 400/600/800 and Sora 700/800. Any other weight is silently substituted
 // by satori, so the ramp below stays inside that set.
+//
+// What the card SAYS (title without the brand, subtitle, footer) is decided in
+// utils/ogCardText.ts: the exchange wording belongs to the rate cards only.
 type OgLocale = 'es' | 'en' | 'pt'
 
 const props = withDefaults(
   defineProps<{
     title?: string
     subtitle?: string
+    /**
+     * The page's meta description. nuxt-og-image passes it to every card whose page does not
+     * set one; it becomes the subtitle of a card without rates and without its own subtitle.
+     */
+    description?: string
     tag?: string
     rateBuy?: number | null
     rateSell?: number | null
     locale?: OgLocale
+    /** 'exchange' asks for the exchange footer on a card without rates; 'site', for the domain. */
+    footer?: 'exchange' | 'site' | ''
   }>(),
   {
     title: '',
     subtitle: '',
+    description: '',
     tag: '',
     rateBuy: null,
     rateSell: null,
     locale: 'es',
+    footer: '',
   }
 )
 
@@ -112,8 +125,6 @@ const NUMBER_LOCALE: Record<OgLocale, string> = {
 }
 
 const labels = OG_LABELS[props.locale] ?? OG_LABELS.es
-const titleText = props.title || labels.title
-const subtitleText = props.subtitle || labels.subtitle
 
 const validRate = (n: number | null | undefined): n is number =>
   typeof n === 'number' && Number.isFinite(n) && n > 0
@@ -123,6 +134,16 @@ const validRate = (n: number | null | undefined): n is number =>
 const hasBuy = validRate(props.rateBuy)
 const hasSell = validRate(props.rateSell)
 const hasBoard = hasBuy || hasSell
+
+const titleText = ogCardTitle(props.title) || labels.title
+const subtitleText = ogCardSubtitle({
+  subtitle: props.subtitle,
+  description: props.description,
+  board: hasBoard,
+  boardDefault: labels.subtitle,
+  title: titleText,
+})
+const footerKind = ogCardFooter(props.footer, hasBoard)
 
 const fmt = (n: number | null | undefined): string =>
   validRate(n)
@@ -352,7 +373,7 @@ const valueNum: CSSProperties = {
   color: '#ffffff',
 }
 
-const footer: CSSProperties = {
+const footerRow: CSSProperties = {
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'center',
@@ -425,13 +446,15 @@ const footerBrand: CSSProperties = { display: 'flex', color: '#ffffff', fontWeig
       </div>
     </div>
 
-    <div class="flex-row" :style="footer">
+    <div class="flex-row" :style="footerRow">
       <span :style="footerBrand">cambio-uruguay.com</span>
-      <span :style="midDot">·</span>
-      <span>{{ labels.footerHouses }}</span>
-      <template v-if="!hasBoard">
+      <template v-if="footerKind === 'exchange'">
         <span :style="midDot">·</span>
-        <span>{{ labels.footerUpdated }}</span>
+        <span>{{ labels.footerHouses }}</span>
+        <template v-if="!hasBoard">
+          <span :style="midDot">·</span>
+          <span>{{ labels.footerUpdated }}</span>
+        </template>
       </template>
     </div>
   </div>

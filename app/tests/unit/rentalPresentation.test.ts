@@ -113,6 +113,35 @@ describe('rental decision details', () => {
     expect(rentalHasLocation({ ...property, latitude: 0 })).toBe(false)
     expect(rentalHasLocation({ ...property, longitude: NaN })).toBe(false)
   })
+  it('drops photos whose signature already ran out and keeps the rest in their order', () => {
+    // x-expires=1793419200 is 2026-10-31; oe=6AF5B93B is 2026-11-12.
+    const tiktok =
+      'https://p16-common-sign.tiktokcdn.com/tos-alisg-i/a~tplv.jpeg?dr=14555&x-expires=1793419200&x-signature=x'
+    const facebook = 'https://scontent-yyz1-1.xx.fbcdn.net/v/t39/1_n.jpg?stp=dst-jpg&oe=6AF5B93B'
+    const first = 'https://cdn2.infocasas.com.uy/repo/img/one.jpg'
+    const last = 'https://cdn2.infocasas.com.uy/repo/img/two.jpg'
+    const signed = {
+      ...property,
+      offers: [
+        { ...offer, image: first, details: { images: [tiktok, facebook, last] } },
+      ] as RentalOffer[],
+    }
+    const urls = (now: number, keepExpired = false) =>
+      rentalPhotos(signed, { now, keepExpired }).map(photo => photo.url)
+    const on8November = Date.UTC(2026, 10, 8)
+    expect(urls(on8November)).toEqual([first, facebook, last])
+    expect(urls(Date.UTC(2026, 10, 13))).toEqual([first, last])
+    expect(urls(Date.UTC(2026, 9, 30))).toEqual([first, tiktok, facebook, last])
+    // Whether the advert published photos is a different question (the page's quality gate).
+    expect(urls(Date.UTC(2026, 10, 13), true)).toEqual([first, tiktok, facebook, last])
+    // A property whose only photo expired shows none, instead of a broken image.
+    expect(
+      rentalPhotos(
+        { ...property, offers: [{ ...offer, image: tiktok }] as RentalOffer[] },
+        { now: on8November }
+      )
+    ).toEqual([])
+  })
   it('translates the complete page and interpolation names in all supported languages', () => {
     const keys = Object.keys(rentalPageMessages.es).sort()
     for (const lang of ['en', 'pt'] as const) {

@@ -10,6 +10,12 @@
   Arranca mostrando cinco (la principal y cuatro): con más, la quinta dice "+N" y un botón despliega
   la grilla entera en la página, sin otro diálogo. Una foto que no carga sale de la grilla y del visor
   a la vez, para que el número de cada foto siga siendo el mismo en los dos.
+
+  Cada foto se pide en el tamaño en que se dibuja (utils/photoSizes.ts): las chicas del mosaico en el
+  de la miniatura (`gridPhotoUrl`) y la principal con un `srcset` que el navegador elige según la
+  pantalla (`leadPhotoSources`, `gridPhotoSizes`). La ficha de InfoCasas bajaba 1,7 MB de originales de
+  1920×1280 para una principal de 356×267 y miniaturas de 176×132. El visor sigue con el original, y
+  si un archivo chico falla se reintenta una vez el original antes de sacar la foto.
 -->
 <template>
   <figure class="photo-grid" :aria-label="t('photoViewer.gallery', { title })">
@@ -29,7 +35,9 @@
         @click="position === moreAt ? expand() : openAt(position)"
       >
         <img
-          :src="photo.url"
+          :sizes="sources[position]?.sizes"
+          :srcset="sources[position]?.srcset"
+          :src="sources[position]?.src ?? photo.url"
           :alt="photo.alt"
           :width="position === 0 ? 960 : 480"
           :height="position === 0 ? 720 : 360"
@@ -38,7 +46,7 @@
           decoding="async"
           referrerpolicy="no-referrer"
           @load="checkLoaded(photo.url, $event.target as HTMLImageElement)"
-          @error="markFailed(photo.url)"
+          @error="onImageError(photo.url, position)"
         />
         <span v-if="position === moreAt" class="photo-grid__more" aria-hidden="true">
           +{{ hidden }}
@@ -81,6 +89,7 @@
 
 <script setup lang="ts">
 import type { ComponentPublicInstance } from 'vue'
+import { gridPhotoSizes, gridPhotoUrl, leadPhotoSources } from '~/utils/photoSizes'
 import type { PhotoViewerMedia } from '~/utils/photoViewer'
 
 const props = defineProps<{ photos: PhotoViewerMedia[]; title: string }>()
@@ -90,6 +99,8 @@ const { t } = useI18n()
 const COLLAPSED = 5
 
 const failed = ref(new Set<string>())
+/** Fotos cuyo archivo chico falló: muestran el original, sin `srcset`. */
+const fallback = ref(new Set<string>())
 const expanded = ref(false)
 const open = ref(false)
 const start = ref(0)
@@ -105,6 +116,33 @@ const hidden = computed(() => available.value.length - shown.value.length)
 const moreAt = computed(() => (hidden.value > 0 ? shown.value.length - 1 : -1))
 /** De una a cuatro fotos cada cantidad tiene su composición; de cinco en adelante, la de mosaico. */
 const layout = computed(() => Math.min(shown.value.length, COLLAPSED))
+
+/**
+ * El archivo de cada foto según su lugar en la grilla. En el mosaico de cinco las chicas son
+ * miniaturas; con menos fotos cada una ocupa un tercio de la galería o más, y elige como la principal.
+ */
+function tileSource(
+  url: string,
+  position: number
+): { src: string; srcset?: string; sizes?: string } {
+  if (fallback.value.has(url)) return { src: url }
+  if (position !== 0 && layout.value >= COLLAPSED) return { src: gridPhotoUrl(url) }
+  const big = leadPhotoSources(url)
+  return big.srcset ? { ...big, sizes: gridPhotoSizes(layout.value, position) } : big
+}
+const sources = computed(() =>
+  shown.value.map((photo, position) => tileSource(photo.url, position))
+)
+
+/** El archivo chico no es un contrato del portal: si falla, una vez el original, sin `srcset`. */
+function onImageError(url: string, position: number) {
+  const source = tileSource(url, position)
+  if (!fallback.value.has(url) && (source.src !== url || source.srcset)) {
+    fallback.value = new Set(fallback.value).add(url)
+    return
+  }
+  markFailed(url)
+}
 
 function remember(element: Element | ComponentPublicInstance | null, position: number) {
   if (element instanceof HTMLElement) tiles.set(position, element)
@@ -132,13 +170,15 @@ function markFailed(url: string) {
   failed.value = new Set(failed.value).add(url)
 }
 
-// Una foto que ya estaba cargada al hidratar —la principal viene en el HTML del servidor— no vuelve
-// a disparar `load`: se revisa a mano.
+// Una foto que ya estaba cargada (o que ya había fallado) al hidratar —la principal viene en el HTML
+// del servidor— no vuelve a disparar `load` ni `error`: se revisa a mano.
 onMounted(() => {
   for (const [position, tile] of tiles) {
     const image = tile.querySelector('img')
     const photo = shown.value[position]
-    if (image?.complete && photo) checkLoaded(photo.url, image)
+    if (!image?.complete || !photo) continue
+    if (image.naturalWidth) checkLoaded(photo.url, image)
+    else onImageError(photo.url, position)
   }
 })
 
@@ -151,6 +191,7 @@ watch(
   () => props.photos.map(photo => photo.url).join('\n'),
   () => {
     failed.value = new Set()
+    fallback.value = new Set()
     expanded.value = false
     start.value = 0
   }

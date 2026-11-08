@@ -328,6 +328,16 @@ function listingFacts(listing: RentalBarrioListing): string {
   return facts.join(' · ')
 }
 
+// La tarjeta para compartir: el barrio con su departamento y la mediana de la descripción
+// (`rentalBarrioCard`, auto-importada de utils/rentalBarrioCopy.ts). Sin la suya, la página
+// mostraba la del sitio: "… | Cambio Uruguay" sobre "Compará +40 casas de cambio en tiempo real".
+const shareCard = computed(() => (data.value ? rentalBarrioCard(data.value) : null))
+defineOgImageComponent('Cambio', {
+  title: () => shareCard.value?.title ?? heading.value,
+  subtitle: () => shareCard.value?.subtitle ?? '',
+  tag: 'ALQUILERES',
+})
+
 useSeoMeta({
   title: () => `${heading.value} | Cambio Uruguay`,
   description,
