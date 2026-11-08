@@ -7,7 +7,12 @@ vi.mock("../../classes/rentals/net", () => ({ fetchText: vi.fn() }));
 // The transient-failure tests go through the real fetch layer; its per-host gap is read at load.
 vi.hoisted(() => { process.env.RENTALS_HOST_GAP_MS = "0"; });
 
-interface Card { id: number | null; title?: string }
+/**
+ * `markup`: the cards served until 2026-11 (default), the 2026-11 ones (type and barrio in a badge,
+ * surfaces in the first `<small>`), or those without their badge — the "40 m2 40 m2" the old reading
+ * took for a barrio.
+ */
+interface Card { id: number | null; title?: string; markup?: "legacy" | "2026-11" | "no-badge" }
 interface SearchPage {
   department?: number;
   type?: string;
@@ -43,8 +48,10 @@ function searchHtml({ department = 1, type = "a", page = 1, total = 0, hasNext =
     <select id="ctl00_content_drpDepto" name="ctl00$content$drpDepto"><option selected="selected" value="${department}">Departamento</option></select>
     ${cards.map(card => `<div class="item-grid"><div class="card"><a href='/ALQUILER__AGENCIA_CW${card.id ?? ""}'>
       <img src='https://casasweb.com/fotos/${card.id ?? 0}s.jpg' class="card-img fondo" />
+      ${card.markup === "2026-11" ? `<span class="badge-zona-resultado">${label} - Centro</span>` : ""}
       <div class="card-body item-info">
-        <div class="tipo-propiedad-zona"><small><b>${label}</b><br />Centro</small><small class="text-right"><strong>${card.id === null ? "" : `CW${card.id}`}</strong><br />${department === 3 ? "Canelones" : "Montevideo"}</small></div>
+        <div class="tipo-propiedad-zona">${(card.markup ?? "legacy") === "legacy" ? `<small><b>${label}</b><br />Centro</small>`
+          : "<small><b>Edificados:</b> 40 m<sup>2</sup><br><b>Area Total:</b> 40 m<sup>2</sup></small>"}<small class="text-right"><strong>${card.id === null ? "" : `CW${card.id}`}</strong><br />${department === 3 ? "Canelones" : "Montevideo"}</small></div>
         <div class="item-title"><h3>${card.title ?? `Alquiler ${label} de 2 dormitorios`}</h3></div>
         <div class="item-precio"><div class="col precio"><h3 class="my-1 cw-alquiler">ALQUILER</h3><h2 class="my-0"><small>$</small> <small>MES</small> 25.000</h2></div></div>
       </div></a></div></div>`).join("")}
@@ -174,6 +181,23 @@ describe("Casasweb coverage and absence safety", () => {
     expect(result).toMatchObject({ ok: true, complete: false });
     expect(result.listings.map(row => row.listingId)).toEqual(["casasweb:CW1", "casasweb:CW221797"]);
   });
+
+  it("reads the 2026-11 cards' barrio from their badge and their built surface, and still covers the search", async () => {
+    serve(() => ({ total: 2, cards: [{ id: 1, markup: "2026-11" }, { id: 2, markup: "2026-11" }] }));
+    const result = await harvestCasasweb("full", 40);
+    expect(result).toMatchObject({ ok: true, complete: true });
+    expect(result.listings.filter(row => row.department === "Montevideo")).toEqual([
+      expect.objectContaining({ listingId: "casasweb:CW1", neighborhood: "Centro", area: 40, propertyType: "apartamento" }),
+      expect.objectContaining({ listingId: "casasweb:CW2", neighborhood: "Centro", area: 40 }),
+    ]);
+  });
+
+  it("publishes a card that names no barrio without one, as long as most of its page does", async () => {
+    serve(() => ({ total: 3, cards: [{ id: 1, markup: "2026-11" }, { id: 2, markup: "2026-11" }, { id: 3, markup: "no-badge" }] }));
+    const result = await harvestCasasweb("full", 40);
+    expect(result).toMatchObject({ ok: true, complete: true });
+    expect(result.listings.find(row => row.listingId === "casasweb:CW3")).toMatchObject({ neighborhood: "", area: 40 });
+  });
 });
 
 // 2026-09-21 10:48 UTC: the hourly pass lost its three Montevideo searches in a row, tripped the
@@ -287,5 +311,18 @@ describe("Casasweb transient failures", () => {
     const result = await harvestCasasweb("fast", 40);
     expect(result.ok).toBe(false);
     expect(result.note).toContain("3 búsquedas fallidas: tarjetas irreconocibles ×3");
+  });
+
+  // 2026-11-03 to 2026-11-08: the cards still parsed, with the surface in the barrio's place, so the
+  // count-only check above passed and ~1.350 adverts went out in "40 m2 40 m2" barrios unannounced.
+  it("fails a search whose cards parse but name no barrio, and writes none of its adverts", async () => {
+    vi.mocked(fetchText).mockImplementation(async (url) => {
+      const { department, type } = searchOf(url);
+      return searchHtml({ department, type, total: 2, cards: [{ id: department * 10 + 1, markup: "no-badge" }, { id: department * 10 + 2, markup: "no-badge" }] });
+    });
+    const result = await harvestCasasweb("fast", 40);
+    expect(result).toMatchObject({ ok: false, complete: false, listings: [] });
+    expect(result.note).toContain("3 búsquedas fallidas: tarjetas irreconocibles ×3");
+    expect([...sourcesAllowingExpiry([result], "full")]).toEqual([]);
   });
 });

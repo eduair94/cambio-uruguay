@@ -88,6 +88,13 @@ export type RentalCurrency = "UYU" | "USD";
 /** A contract period an advert offers in its own words (textFacts.ts). Summer stays are never published. */
 export type RentalTerm = "anual" | "invernal";
 
+/**
+ * Where an advert's gastos comunes came from when they are NOT the portal's own field:
+ * `description` = read from the advert's own words (textFacts.ts, `RENTALS_GC_FROM_TEXT=1`), and
+ * labelled that way on the page. Absent = the portal stated them (or nobody did).
+ */
+export type RentalCommonExpensesSource = "description";
+
 /** Original, per-advert facts. Never reconstructed from the merged property's attributes. */
 export interface RentalOfferIdentity {
   version: 1;
@@ -160,6 +167,8 @@ export interface RentalOffer extends RentalAdvertiserFields {
   /** Gastos comunes when the portal states them; `null` means "not published", never zero. */
   commonExpenses: number | null;
   commonExpensesCurrency: RentalCurrency | null;
+  /** Set only when `commonExpenses` was read from the advert's description; a portal figure has none. */
+  commonExpensesSource?: RentalCommonExpensesSource;
   sellerName: string;
   sellerType: RentalSellerType;
   image: string | null;
@@ -294,6 +303,8 @@ export interface RawRental extends RentalAdvertiserFields {
   stayPriceSuspect?: true;
   commonExpenses: number | null;
   commonExpensesCurrency: RentalCurrency | null;
+  /** Set only when `commonExpenses` was read from the advert's description (textFacts.ts). */
+  commonExpensesSource?: RentalCommonExpensesSource;
   sellerName: string;
   sellerType: RentalSellerType;
   image: string | null;

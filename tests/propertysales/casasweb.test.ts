@@ -19,6 +19,25 @@ function page(options: { operation?: string; saleLabel?: string; title?: string;
   </form></body></html>`;
 }
 const saleHeading = "<h2 class='h3 cw-precio'><span class='cw-op cw-op-venta'>Venta</span> USD 120.000</h2>";
+// A sale card as served from 2026-11 (venta/apartamentos/montevideo, 2026-11-08): type and barrio in
+// a badge, the surfaces where the barrio was. Read the old way its type was "edificados:area total:"
+// and every card was dropped. `badge: null` is the same card without its badge.
+function page2026(options: { badge?: string | null; surfaces?: string } = {}): string {
+  const badge = options.badge === undefined ? "Apartamento - Pocitos" : options.badge;
+  return `<html><body><small class="mb-4">1350 Resultados<br></small><form method="post" action="#" id="aspnetForm">
+    <select id="ctl00_content_drpNegocio" name="ctl00$content$drpNegocio"><option selected="selected" value="V">Venta</option></select>
+    <div class="item-grid"><div class="card"><a href="/VENTA_GAYOL_PROPIEDADES_APARTAMENTO_POCITOS_MONTEVIDEO_PROYECTO_CW234567">
+      <img src="https://casasweb.com/fotos/3252153s.jpg" class="card-img fondo">
+      ${badge === null ? "" : `<span class="badge-zona-resultado">${badge}</span>`}
+      <div class="card-body item-info"><div class="d-flex justify-content-between tipo-propiedad-zona mb-1">
+        <small>${options.surfaces ?? "<b>Edificados:</b> 45 m<sup>2</sup><br><b>Area Total:</b> 56 m<sup>2</sup>"}</small>
+        <small class="text-right text-end"><strong>CW234567</strong><br>Montevideo</small></div>
+      <div class="item-title"><h3>Oportunidad Apartamento 1 Dormitorio Al Frente de Soca, Con Terraza.</h3></div>
+      <div class="card-text small mb-2 text-center item-det"><b>1 Dormitorio</b> <b>Proyecto</b></div>
+      <div class="item-precio row justify-content-center"><div class="col precio"><h3 class="my-1">VENTA</h3><h2 class="my-0"><small>USD</small> 188.800</h2></div></div></div>
+    </a><div class="card-footer text-center"><h3 class="my-0">Gayol Propiedades </h3></div></div></div>
+  </form></body></html>`;
+}
 
 describe("independent Casasweb residential sales source", () => {
   it("reads complete own detail fields and purchase terms, never neighbouring adverts", () => {
@@ -101,5 +120,20 @@ describe("independent Casasweb residential sales source", () => {
   it("stops after three consecutive failed pages without inventing a successful read", async () => {
     const result = await harvestCasaswebSales({ maxPages: 120, now: () => new Date(NOW), fetchPage: async () => null });
     expect(result).toMatchObject({ ok: false, failedPages: 3, pagesRequested: 3, pagesRead: 0, listings: [], unavailableIds: [] });
+  });
+  it("reads the 2026-11 sale cards: type and barrio from the badge, the built surface as the reported one", () => {
+    const row = readCasaswebSalePage(page2026(), NOW)!.listings[0]!;
+    expect(row).toMatchObject({ id: "sale:casasweb:234567", propertyType: "apartamento", department: "Montevideo", neighborhood: "Pocitos",
+      price: { amount: 188_800, currency: "USD" }, bedrooms: 1, sellerName: "Gayol Propiedades", riskFlags: ["project"],
+      area: { value: 45, basis: "reported" }, areas: { built: null, total: null, land: null, terrace: null, reported: 45 } });
+    expect(row.neighborhood).not.toMatch(/m2|m²/);
+    // A house whose card states only its lot has no surface on the card: its own page has the built one.
+    const house = readCasaswebSalePage(page2026({ badge: "Casa - Carrasco", surfaces: "<b>Area Total:</b> 600 m<sup>2</sup>" }), NOW)!.listings[0]!;
+    expect(house).toMatchObject({ propertyType: "casa", neighborhood: "Carrasco", area: null });
+  });
+  it("counts a page whose cards name no barrio as a failed page, never as an empty one", async () => {
+    expect(readCasaswebSalePage(page2026({ badge: null }), NOW)).toBeNull();
+    const result = await harvestCasaswebSales({ maxPages: 120, now: () => new Date(NOW), fetchPage: async () => page2026({ badge: null }) });
+    expect(result).toMatchObject({ ok: false, failedPages: 3, pagesRead: 0, listings: [] });
   });
 });

@@ -31,17 +31,35 @@
 // en la API de ítems, que contesta 403 sin OAuth. Pedir también la móvil duplicaría los pedidos, así
 // que se guardan las que lista la misma lectura, a tamaño completo; la portada y la escritura en el
 // aviso, en `detailImages.ts`.
+//
+// Y el TEXTO (2026-11-08): la misma página trae la descripción del aviso
+// (`.ui-pdp-description__content`), cuándo se publicó ("Apartamento en Alquiler | Publicado hace 30
+// días") y la tienda oficial que lo publica ("Tienda oficial Remax Único"), y no se guardaba nada de
+// eso: el 40 % de las fichas no tenía descripción, y como la fecha del aviso era null el orden "Más
+// recientes" (freshAt = el día que lo vimos primero) subía a la portada avisos de ML de hace un mes.
+// Sin pedidos de más: es la misma página. La fecha y la tienda se publican siempre; la descripción
+// sólo con `RENTALS_ML_DETAIL_TEXT=1`, porque hace pasar la guarda de calidad a más fichas.
 import * as cheerio from "cheerio";
 import { appConnection } from "../appdb";
 import { applyGallery, writeOfferGallery } from "./detailImages";
 import { inUruguay, type RentalPin } from "./detailPins";
-import { rentalImages } from "./details";
+import { rentalDescription, rentalImages, rentalOfferDetails } from "./details";
+import { guaranteesFromText, mergeGuarantees } from "./guarantees";
 import { parseCurrency, parseMoney } from "./normalize";
 import type { RawRental, RentalCurrency } from "./types";
 
 export const ML_DETAIL_COLLECTION = "rentalmldetails";
 /** Common expenses move with the building's budget, not every week: one read a month is enough. */
 export const ML_DETAIL_REFRESH_DAYS = 30;
+/** What the search card puts in `sellerName`: ML's card never names who publishes. */
+export const ML_SELLER_PLACEHOLDER = "Mercado Libre";
+/** The published excerpt's length (`rentalOfferDetails`): nothing longer is ever shown. */
+const ML_DESCRIPTION_LIMIT = 2_400;
+
+/** `RENTALS_ML_DETAIL_TEXT=1` publishes the page's description on the advert. Read per call: off by default. */
+export function mlDetailTextEnabled(): boolean {
+  return process.env.RENTALS_ML_DETAIL_TEXT === "1";
+}
 
 export interface MlRentalDetail {
   listingId: string;
@@ -66,6 +84,17 @@ export interface MlRentalDetail {
    * before photos were kept (2026-10-09): those are read again once (see `mlDetailTargets`).
    */
   images?: string[];
+  /**
+   * The page's own description, sanitized like every portal's (no contacts, links or markup); null =
+   * the page has none. Kept whatever `RENTALS_ML_DETAIL_TEXT` says: the flag decides publishing.
+   * The three text fields are written together; rows read before 2026-11-08 have none of them and
+   * are read again once (see `mlDetailIsCurrent`).
+   */
+  description?: string | null;
+  /** The day "Publicado hace N días" points to (YYYY-MM-DD); null = not stated in days. */
+  publishedAt?: string | null;
+  /** "Tienda oficial <nombre>"; null = not an official store (a seller's nickname is never kept). */
+  officialStore?: string | null;
   /** Always true for a stored row: failed reads are not stored, so the advert is read again. */
   ok: boolean;
 }
@@ -160,6 +189,71 @@ export function parseMlRentalImages(html: string): string[] | null {
   return images.length ? images : null;
 }
 
+const squash = (text: string): string => text.replace(/\s+/g, " ").trim();
+
+/**
+ * The advert's own description, the "Descripción" block of the page, through the same sanitizer as
+ * every portal's (phones, emails, links and markup removed, PROPERTY_ADVERTISERS.md) and bounded to
+ * what is ever published. null = the page has no description block, or nothing survives the
+ * sanitizer: the reader abstains rather than storing an empty string as if it had read one.
+ */
+export function parseMlRentalDescription(html: string): string | null {
+  const $ = cheerio.load(html);
+  const node = $(".ui-pdp-description__content").first();
+  if (!node.length) return null;
+  return rentalDescription(node.html() ?? "", ML_DESCRIPTION_LIMIT) || null;
+}
+
+const AGO_UNIT_MS: Record<string, number> = { minuto: 60_000, hora: 3_600_000, dia: 86_400_000 };
+
+/**
+ * The day the page says the advert was published, from the header's "Publicado hace 30 días": the
+ * read minus that many days (minutes and hours too, which are as exact). Weeks, months and years are
+ * rounded figures and never become a date, and neither does anything outside the header. A relisted
+ * advert says the age of the relisting.
+ */
+export function parseMlRentalPublishedAgo(html: string, readAt: string): string | null {
+  const read = Date.parse(readAt);
+  if (!Number.isFinite(read)) return null;
+  const $ = cheerio.load(html);
+  const labels = $(".ui-pdp-header__subtitle, .ui-pdp-subtitle").toArray()
+    .flatMap(node => [$(node).attr("aria-label") ?? "", $(node).text()]);
+  for (const label of labels) {
+    const match = /\bPublicado hace (\d{1,3}) (minutos?|horas?|d[ií]as?)\b/i.exec(squash(label));
+    if (!match) continue;
+    const unit = match[2]!.toLowerCase().replace("í", "i").replace(/s$/, "");
+    const ms = Number(match[1]) * (AGO_UNIT_MS[unit] ?? NaN);
+    if (!Number.isFinite(ms) || ms < 0 || ms > 400 * 86_400_000) return null;
+    return new Date(read - ms).toISOString().slice(0, 10);
+  }
+  return null;
+}
+
+/** A store name as published: plain text, one line, bounded; "" when nothing name-like is left. */
+const storeName = (value: string): string => {
+  const name = squash(rentalDescription(value, 160));
+  return name.length >= 2 && name.length <= 80 && /\p{L}/u.test(name) ? name : "";
+};
+
+/**
+ * The official store ML itself names on the page: "Tienda oficial <a>Remax Único</a>" in the seller
+ * box and "Ir a la tienda oficial de <a>Remax Único</a>" under the profile. A private seller's
+ * nickname is not a store and is never taken, and the name proves no agency: it becomes the
+ * advert's `sellerName` and nothing else. Two different names abstain.
+ */
+export function parseMlOfficialStore(html: string): string | null {
+  const $ = cheerio.load(html);
+  const names = new Set<string>();
+  $("span").each((_, node) => {
+    const label = $(node);
+    if (!/^(?:tienda oficial|ir a la tienda oficial de)$/i.test(squash(label.text()))) return;
+    const link = label.nextAll("a").first().length ? label.nextAll("a").first() : label.parent().nextAll("a").first();
+    const name = storeName(link.text());
+    if (name) names.add(name);
+  });
+  return names.size === 1 ? [...names][0]! : null;
+}
+
 /**
  * Whether a stated amount may complete the advert: positive, at least $ 200 a month and not above
  * the rent itself. A typo with a zero too many, or the yearly figure, is larger than the rent; a
@@ -205,11 +299,15 @@ export function prioritizeMlDetailTargets(rows: readonly MlDetailTarget[], budge
 
 /**
  * A stored read that needs no other: successful, under a month old and with every field this job
- * keeps. A row without the pin (kept since 2026-10-08) or the photos (since 2026-10-09) predates
- * them and is read once more.
+ * keeps. A row without the pin (kept since 2026-10-08), the photos (since 2026-10-09) or the text
+ * (description, publication day and official store, since 2026-11-08) predates them and is read
+ * once more: ~28.000 rows, about five days at 240 an hour, and never before an advert read for the
+ * first time. The three text fields are always written together, so `publishedAt` (null or a day)
+ * marks them all and `mlDetailTargets` never has to load the descriptions to know.
  */
 export function mlDetailIsCurrent(row: Record<string, unknown>, freshFrom: string): boolean {
-  return row.ok === true && String(row.readAt ?? "") >= freshFrom && row.latitude !== undefined && row.images !== undefined;
+  return row.ok === true && String(row.readAt ?? "") >= freshFrom && row.latitude !== undefined && row.images !== undefined &&
+    row.publishedAt !== undefined;
 }
 
 const details = () => appConnection().collection(ML_DETAIL_COLLECTION);
@@ -245,7 +343,7 @@ export async function mlDetailTargets(now: Date, budget: number, days = 10): Pro
   for (let i = 0; i < targets.length; i += 5_000) {
     const ids = targets.slice(i, i + 5_000).map(target => target.listingId);
     const docs = await details()
-      .find({ listingId: { $in: ids } }, { projection: { listingId: 1, ok: 1, readAt: 1, latitude: 1, images: 1 } })
+      .find({ listingId: { $in: ids } }, { projection: { listingId: 1, ok: 1, readAt: 1, latitude: 1, images: 1, publishedAt: 1 } })
       .toArray();
     for (const doc of docs) (mlDetailIsCurrent(doc, fresh) ? current : readBefore).add(String(doc.listingId));
   }
@@ -280,27 +378,35 @@ export async function writeMlDetailExpenses(
   return result.modifiedCount > 0;
 }
 
+/** How many adverts a harvest completed from their stored pages, per field. */
+export interface MlDetailFilled {
+  expenses: number;
+  bedrooms: number;
+  images: number;
+  publishedAt: number;
+  sellers: number;
+  descriptions: number;
+}
+
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+
 /**
- * The harvest's half: the search card arrives again without common expenses, bedrooms or photos
- * every hour, so what an item page already stated is put back before the property is saved.
- * Returns how many adverts it filled, per field.
+ * Puts what the stored item pages stated back on the raw adverts, only in EMPTY fields: the card
+ * arrives again every hour with no common expenses, bedrooms, photos, publication day, store or
+ * description. The publication day and the official store always; the description only with
+ * `text` (`RENTALS_ML_DETAIL_TEXT=1`), and with it the guarantees it names, the way every portal's
+ * description adds them. Furniture, periods and (RENTALS_GC_FROM_TEXT) gastos comunes are read from
+ * it afterwards, with every portal's (`applyRentalTextFacts`, sources/index.ts). Pure.
  */
-export async function applyMlDetails(rows: RawRental[], usdUyu: number): Promise<{ expenses: number; bedrooms: number; images: number }> {
-  const filled = { expenses: 0, bedrooms: 0, images: 0 };
-  const own = rows.filter(row => row.source === "mercadolibre");
-  if (!own.length) return filled;
-  const stated = new Map<string, MlRentalDetail>();
-  for (let i = 0; i < own.length; i += 5_000) {
-    const ids = own.slice(i, i + 5_000).map(row => row.listingId);
-    const docs = await details()
-      .find(
-        { listingId: { $in: ids }, $or: [{ amount: { $gt: 0 } }, { bedrooms: { $type: "number" } }, { "images.0": { $exists: true } }] },
-        { projection: { _id: 0 } }
-      )
-      .toArray();
-    for (const doc of docs) stated.set(String(doc.listingId), doc as unknown as MlRentalDetail);
-  }
-  for (const row of own) {
+export function applyMlDetailRows(
+  rows: RawRental[],
+  stated: ReadonlyMap<string, MlRentalDetail>,
+  usdUyu: number,
+  options: { text?: boolean } = {}
+): MlDetailFilled {
+  const filled: MlDetailFilled = { expenses: 0, bedrooms: 0, images: 0, publishedAt: 0, sellers: 0, descriptions: 0 };
+  for (const row of rows) {
+    if (row.source !== "mercadolibre") continue;
     const detail = stated.get(row.listingId);
     if (!detail) continue;
     if (row.commonExpenses === null && detail.amount && detail.currency) {
@@ -318,8 +424,52 @@ export async function applyMlDetails(rows: RawRental[], usdUyu: number): Promise
     }
     // The card's cover stays the advert's `image`; the gallery holds the page's other photos.
     if (applyGallery(row, detail.images, mlPhotoKey)) filled.images++;
+    // "Más recientes" sorts by the newest publication day of a property's adverts, else by the day
+    // we first saw it: without this, an advert ML published a month ago headed the list today.
+    if (!row.publishedAt && typeof detail.publishedAt === "string" && DAY.test(detail.publishedAt)) {
+      row.publishedAt = detail.publishedAt;
+      filled.publishedAt++;
+    }
+    // Only over the card's placeholder: "Particular" (the private-seller pass) is a finding, not a gap.
+    if (row.sellerName === ML_SELLER_PLACEHOLDER && typeof detail.officialStore === "string" && detail.officialStore) {
+      row.sellerName = detail.officialStore;
+      filled.sellers++;
+    }
+    if (options.text && !row.details?.description && typeof detail.description === "string" && detail.description) {
+      row.details = row.details ? { ...row.details, description: detail.description } : rentalOfferDetails({ description: detail.description });
+      row.guarantees = mergeGuarantees([row.guarantees, guaranteesFromText(detail.description)]);
+      filled.descriptions++;
+    }
   }
   return filled;
+}
+
+/**
+ * The harvest's half: what the item pages already stated, loaded and put back before the property is
+ * saved (`applyMlDetailRows`). The descriptions are loaded only when they will be published.
+ */
+export async function applyMlDetails(rows: RawRental[], usdUyu: number): Promise<MlDetailFilled> {
+  const text = mlDetailTextEnabled();
+  const own = rows.filter(row => row.source === "mercadolibre");
+  const stated = new Map<string, MlRentalDetail>();
+  for (let i = 0; i < own.length; i += 5_000) {
+    const ids = own.slice(i, i + 5_000).map(row => row.listingId);
+    const docs = await details()
+      .find(
+        {
+          listingId: { $in: ids },
+          $or: [
+            { amount: { $gt: 0 } }, { bedrooms: { $type: "number" } }, { "images.0": { $exists: true } },
+            { publishedAt: { $type: "string" } }, { officialStore: { $type: "string" } },
+            ...(text ? [{ description: { $type: "string" } }] : []),
+          ],
+        },
+        { projection: text ? { _id: 0 } : { _id: 0, description: 0 } }
+      )
+      .toArray();
+    for (const doc of docs) stated.set(String(doc.listingId), doc as unknown as MlRentalDetail);
+  }
+  return applyMlDetailRows(own, stated, usdUyu, { text });
 }
 
 /** The property's empty bedrooms, right away; the harvest keeps them (`applyMlDetails`). */
@@ -332,4 +482,53 @@ export async function writeMlDetailBedrooms(target: Pick<MlDetailTarget, "key" |
 /** The advert's photos, right away, when they are more than it shows; the harvest keeps them. */
 export async function writeMlDetailImages(target: Pick<MlDetailTarget, "key" | "listingId">, images: readonly string[]): Promise<boolean> {
   return writeOfferGallery(target, images, mlPhotoKey);
+}
+
+/**
+ * The advert's publication day, right away, only where it has none. The property's `freshAt` (what
+ * "Más recientes" sorts by) is recomputed when the harvest next writes it, from the same day.
+ */
+export async function writeMlDetailPublishedAt(target: Pick<MlDetailTarget, "key" | "listingId">, publishedAt: string): Promise<boolean> {
+  if (!DAY.test(publishedAt)) return false;
+  const result = await listings().updateOne(
+    { key: target.key },
+    { $set: { "offers.$[o].publishedAt": publishedAt } },
+    { arrayFilters: [{ "o.listingId": target.listingId, "o.publishedAt": null }] }
+  );
+  return result.modifiedCount > 0;
+}
+
+/** The official store as the advert's publisher, right away, only over the card's placeholder. */
+export async function writeMlDetailSeller(target: Pick<MlDetailTarget, "key" | "listingId">, officialStore: string): Promise<boolean> {
+  if (!officialStore) return false;
+  const result = await listings().updateOne(
+    { key: target.key },
+    { $set: { "offers.$[o].sellerName": officialStore } },
+    { arrayFilters: [{ "o.listingId": target.listingId, "o.sellerName": ML_SELLER_PLACEHOLDER }] }
+  );
+  return result.modifiedCount > 0;
+}
+
+/**
+ * The page's description on the stored advert, right away, only while it shows none. Call it only
+ * with `RENTALS_ML_DETAIL_TEXT=1`; the harvest adds the guarantees it names when it next reads it.
+ */
+export async function writeMlDetailDescription(target: Pick<MlDetailTarget, "key" | "listingId">, description: string): Promise<boolean> {
+  if (!description) return false;
+  const row = await listings().findOne({ key: target.key }, { projection: { "offers.listingId": 1, "offers.details.description": 1 } });
+  const offers: Array<{ listingId?: unknown; details?: { description?: unknown } }> = row && Array.isArray(row.offers) ? row.offers : [];
+  const offer = offers.find(item => item?.listingId === target.listingId);
+  if (!offer || (typeof offer.details?.description === "string" && offer.details.description)) return false;
+  const result = offer.details
+    ? await listings().updateOne(
+        { key: target.key },
+        { $set: { "offers.$[o].details.description": rentalDescription(description, ML_DESCRIPTION_LIMIT) } },
+        { arrayFilters: [{ "o.listingId": target.listingId, "o.details": { $type: "object" }, "o.details.description": { $in: ["", null] } }] }
+      )
+    : await listings().updateOne(
+        { key: target.key },
+        { $set: { "offers.$[o].details": rentalOfferDetails({ description }) } },
+        { arrayFilters: [{ "o.listingId": target.listingId, "o.details": { $exists: false } }] }
+      );
+  return result.modifiedCount > 0;
 }
