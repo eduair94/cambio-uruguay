@@ -1349,6 +1349,7 @@
     "tab": "Alertas",
     "title": "Mis alertas de cotización",
     "empty": "No tenés alertas todavía. Creá una para que te avisemos cuando se cumpla tu objetivo.",
+    "loadFailed": "No pudimos cargar tus alertas: lo que ves puede estar desactualizado. Probá de nuevo en un rato.",
     "new": "Nueva alerta",
     "currency": "Moneda",
     "kind": "Tipo",

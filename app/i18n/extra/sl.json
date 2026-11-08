@@ -1349,6 +1349,7 @@
     "tab": "Opozorila",
     "title": "Moja opozorila o cenah",
     "empty": "Še nimate nobenih opozoril. Ustvarite ga in obvestili vas bomo, ko bo vaša tarča zadeta.",
+    "loadFailed": "Vaših opozoril ni bilo mogoče naložiti: prikazana sporočila so morda zastarela. Poskusite znova kmalu.",
     "new": "Novo opozorilo",
     "currency": "Valuta",
     "kind": "Vrsta",

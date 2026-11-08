@@ -12,14 +12,22 @@ export async function rentalUnsubscribeInfo(token: string) {
     .lean()
 }
 
-/** Email-only unsubscribe. Existing push consent remains independent. GET never calls this. */
-export async function unsubscribeRentalAlertEmail(token: string): Promise<void> {
+/**
+ * Email-only unsubscribe. Existing push consent remains independent. GET never calls this.
+ * `onWrite` runs right before the write (inside the lease), so a caller can tell a failure that
+ * changed nothing (a busy lease, a failed read) from one whose outcome is unknown.
+ */
+export async function unsubscribeRentalAlertEmail(
+  token: string,
+  onWrite?: () => void
+): Promise<void> {
   const found = await rentalUnsubscribeInfo(token)
   if (!found) return
   await withRentalAlertLease(`uid:${found.uid}`, async assertOwned => {
     const current = await rentalUnsubscribeInfo(token)
     if (!current || !current.channels.email) return
     await assertOwned()
+    onWrite?.()
     await RentalAlertModel.updateOne(
       { _id: current._id, uid: current.uid, unsubscribeToken: token },
       {

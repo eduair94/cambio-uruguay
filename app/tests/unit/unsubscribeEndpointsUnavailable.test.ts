@@ -9,6 +9,8 @@ const mocks = vi.hoisted(() => ({
   rateInfo: vi.fn(),
   rateUnsubscribe: vi.fn(),
   rentalFindOne: vi.fn(),
+  rentalUpdate: vi.fn(),
+  lease: vi.fn(),
   headers: {} as Record<string, string>,
   status: 200,
   cspWhenFirstRead: null as string | null | undefined,
@@ -19,10 +21,10 @@ vi.mock('../../server/utils/rateAlertUnsubscribe', () => ({
   unsubscribeRateAlertEmail: mocks.rateUnsubscribe,
 }))
 vi.mock('../../server/models/RentalAlert', () => ({
-  RentalAlertModel: { findOne: mocks.rentalFindOne, updateOne: vi.fn() },
+  RentalAlertModel: { findOne: mocks.rentalFindOne, updateOne: mocks.rentalUpdate },
 }))
 vi.mock('../../server/utils/db', () => ({ connectDb: vi.fn().mockResolvedValue(undefined) }))
-vi.mock('../../server/utils/rentalAlertLease', () => ({ withRentalAlertLease: vi.fn() }))
+vi.mock('../../server/utils/rentalAlertLease', () => ({ withRentalAlertLease: mocks.lease }))
 
 let query: Record<string, unknown> = {}
 vi.stubGlobal('defineEventHandler', (fn: unknown) => fn)
@@ -130,9 +132,51 @@ describe('unsubscribe endpoints when the database is down', () => {
 
   it('says it does not know once the write was attempted', async () => {
     mocks.rateInfo.mockResolvedValue({ _id: 'a', uid: 'u', channels: { email: true } })
-    mocks.rateUnsubscribe.mockImplementation(async () => failing())
+    mocks.rateUnsubscribe.mockImplementation(async (_token: string, onWrite?: () => void) => {
+      onWrite?.()
+      failing()
+    })
     const page = await rate({ method: 'POST' })
     expect(page).toContain('No sabemos si se llegó a aplicar')
     expect(page).not.toContain('no se cambió nada')
+  })
+
+  it('a POST that failed inside the helper before writing still says nothing changed', async () => {
+    mocks.rateInfo.mockResolvedValue({ _id: 'a', uid: 'u', channels: { email: true } })
+    mocks.rateUnsubscribe.mockImplementation(async () => failing())
+    expect(await rate({ method: 'POST' })).toContain('no se cambió nada')
+  })
+
+  describe('rental alerts, POST', () => {
+    const row = {
+      _id: 'r',
+      uid: 'owner',
+      locale: 'es',
+      channels: { email: true, push: true },
+      active: true,
+      revision: 1,
+    }
+    beforeEach(() => {
+      mocks.rentalFindOne.mockImplementation(() => ({ select: () => ({ lean: async () => row }) }))
+    })
+
+    it('a busy lease (delivery in progress) changed nothing', async () => {
+      mocks.lease.mockRejectedValue(new Error('Rental alert operation is already in progress'))
+      const page = await rental({ method: 'POST' })
+      expect(mocks.status).toBe(503)
+      expect(page).toContain('no se cambió nada')
+      expect(mocks.rentalUpdate).not.toHaveBeenCalled()
+    })
+
+    it('a failed write inside the lease is not known to have changed nothing', async () => {
+      mocks.lease.mockImplementation(
+        async (_key: string, fn: (assert: () => Promise<void>) => unknown) => fn(async () => {})
+      )
+      mocks.rentalUpdate.mockImplementation(async () => failing())
+      const page = await rental({ method: 'POST' })
+      expect(mocks.status).toBe(503)
+      expect(page).toContain('No sabemos si se llegó a aplicar')
+      expect(page).not.toContain('no se cambió nada')
+    })
   })
 })

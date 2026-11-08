@@ -1349,6 +1349,7 @@
     "tab": "Alertes",
     "title": "Mes alertes de taux",
     "empty": "Vous n'avez pas encore configuré d'alertes. Créez-en une et nous vous avertirons lorsque votre cible sera atteinte.",
+    "loadFailed": "Impossible de charger vos alertes : les informations affichées sont peut-être obsolètes. Veuillez réessayer ultérieurement.",
     "new": "Nouvelle alerte",
     "currency": "Devise",
     "kind": "Taper",

@@ -1331,6 +1331,7 @@
     "tab": "Alertas",
     "title": "Minhas alertas de cotação",
     "empty": "Você ainda não tem alertas. Crie uma e avisamos quando seu objetivo for atingido.",
+    "loadFailed": "Não conseguimos carregar seus alertas: o que você vê pode estar desatualizado. Tente novamente em instantes.",
     "new": "Nova alerta",
     "currency": "Moeda",
     "kind": "Tipo",

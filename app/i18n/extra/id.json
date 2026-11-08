@@ -1349,6 +1349,7 @@
     "tab": "Peringatan",
     "title": "Notifikasi tarif saya",
     "empty": "Anda belum memiliki notifikasi. Buat satu dan kami akan memberi tahu Anda saat target Anda tercapai.",
+    "loadFailed": "Kami tidak dapat memuat peringatan Anda: apa yang Anda lihat mungkin sudah usang. Silakan coba lagi nanti.",
     "new": "Peringatan baru",
     "currency": "Mata uang",
     "kind": "Jenis",

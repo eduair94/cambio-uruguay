@@ -1349,6 +1349,7 @@
     "tab": "Thông báo",
     "title": "Thông báo tỷ giá của tôi",
     "empty": "Bạn chưa có bất kỳ cảnh báo nào. Hãy tạo một cảnh báo và chúng tôi sẽ thông báo cho bạn khi mục tiêu của bạn bị trúng đích.",
+    "loadFailed": "Chúng tôi không thể tải thông báo của bạn: thông tin bạn thấy có thể đã lỗi thời. Vui lòng thử lại sau.",
     "new": "Thông báo mới",
     "currency": "Tiền tệ",
     "kind": "Kiểu",

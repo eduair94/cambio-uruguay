@@ -37,10 +37,10 @@ export default defineEventHandler(async event => {
   let writing = false
   try {
     found = await rateAlertUnsubscribeInfo(token)
-    if (event.method === 'POST') {
-      writing = true
-      await unsubscribeRateAlertEmail(token)
-    }
+    if (event.method === 'POST')
+      await unsubscribeRateAlertEmail(token, () => {
+        writing = true
+      })
   } catch (error) {
     // Answered here rather than thrown: Nitro would log the request URL, token included, and
     // Nuxt would render its full error page at this address. The log line names the failure only.

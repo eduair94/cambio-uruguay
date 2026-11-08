@@ -1349,6 +1349,7 @@
     "tab": "Upozornenia",
     "title": "Moje upozornenia na ceny",
     "empty": "Zatiaľ nemáte žiadne upozornenia. Vytvorte si jedno a my vás upozorníme, keď bude váš cieľ zasiahnutý.",
+    "loadFailed": "Nepodarilo sa nám načítať vaše upozornenia: zobrazené informácie môžu byť zastarané. Skúste to znova neskôr.",
     "new": "Nové upozornenie",
     "currency": "Mena",
     "kind": "Typ",

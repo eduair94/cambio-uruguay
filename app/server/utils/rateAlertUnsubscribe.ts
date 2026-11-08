@@ -33,12 +33,17 @@ export async function rateAlertUnsubscribeInfo(token: string) {
 /**
  * Email off for this alert only; push and Telegram stay as they were. An alert left without a
  * channel is paused, as the rental alerts do: it would keep firing into nothing. GET never calls
- * this, and a repeated POST changes nothing.
+ * this, and a repeated POST changes nothing. `onWrite` runs right before the write, so a caller
+ * can tell a failure that changed nothing from one whose outcome is unknown.
  */
-export async function unsubscribeRateAlertEmail(token: string): Promise<void> {
+export async function unsubscribeRateAlertEmail(
+  token: string,
+  onWrite?: () => void
+): Promise<void> {
   const current = await rateAlertUnsubscribeInfo(token)
   if (!current || !current.channels?.email) return
   const stillReaches = Boolean(current.channels.push || current.channels.telegram)
+  onWrite?.()
   await AlertModel.updateOne(
     { _id: current._id, uid: current.uid, unsubscribeToken: token },
     { $set: { 'channels.email': false, active: Boolean(current.active) && stillReaches } }

@@ -1349,6 +1349,7 @@
     "tab": "Upozornění",
     "title": "Moje upozornění na sazby",
     "empty": "Zatím nemáte žádná upozornění. Vytvořte si jedno a my vás upozorníme, až bude váš cíl zasažen.",
+    "loadFailed": "Nepodařilo se nám načíst vaše upozornění: to, co vidíte, může být zastaralé. Zkuste to prosím znovu později.",
     "new": "Nové upozornění",
     "currency": "Měna",
     "kind": "Typ",

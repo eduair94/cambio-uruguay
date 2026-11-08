@@ -1349,6 +1349,7 @@
     "tab": "Uyarılar",
     "title": "Fiyat uyarılarım",
     "empty": "Henüz hiçbir uyarınız yok. Bir tane oluşturun, hedefiniz vurulduğunda sizi bilgilendireceğiz.",
+    "loadFailed": "Bildirimleriniz yüklenemedi: gördüğünüz bilgiler güncel olmayabilir. Lütfen kısa süre sonra tekrar deneyin.",
     "new": "Yeni uyarı",
     "currency": "Para birimi",
     "kind": "Tip",

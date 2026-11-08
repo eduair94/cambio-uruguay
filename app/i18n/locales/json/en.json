@@ -1338,6 +1338,7 @@
     "tab": "Alerts",
     "title": "My rate alerts",
     "empty": "You don't have any alerts yet. Create one and we'll notify you when your target is hit.",
+    "loadFailed": "We could not load your alerts: what you see may be out of date. Please try again shortly.",
     "new": "New alert",
     "currency": "Currency",
     "kind": "Type",

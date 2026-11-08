@@ -1349,6 +1349,7 @@
     "tab": "Alerty",
     "title": "Moje alerty stawek",
     "empty": "Nie masz jeszcze żadnych alertów. Utwórz jeden, a powiadomimy Cię, gdy Twój cel zostanie osiągnięty.",
+    "loadFailed": "Nie udało się załadować Twoich alertów: to, co widzisz, może być nieaktualne. Spróbuj ponownie za chwilę.",
     "new": "Nowy alert",
     "currency": "Waluta",
     "kind": "Typ",

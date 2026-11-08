@@ -1349,6 +1349,7 @@
     "tab": "Avvisi",
     "title": "Avvisi Myrate",
     "empty": "Non hai ancora impostato alcun avviso. Creane uno e ti avviseremo quando verrà raggiunto il tuo obiettivo.",
+    "loadFailed": "Non è stato possibile caricare i tuoi avvisi: le informazioni visualizzate potrebbero non essere aggiornate. Riprova più tardi.",
     "new": "Nuovo avviso",
     "currency": "Valuta",
     "kind": "Tipo",

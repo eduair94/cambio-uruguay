@@ -1349,6 +1349,7 @@
     "tab": "Brīdinājumi",
     "title": "Mani brīdinājumi par cenām",
     "empty": "Jums vēl nav neviena brīdinājuma. Izveidojiet to, un mēs jūs informēsim, kad jūsu mērķis tiks sasniegts.",
+    "loadFailed": "Neizdevās ielādēt jūsu brīdinājumus: redzamie dati, iespējams, ir novecojuši. Lūdzu, mēģiniet vēlreiz pēc brīža.",
     "new": "Jauns brīdinājums",
     "currency": "Valūta",
     "kind": "Tips",

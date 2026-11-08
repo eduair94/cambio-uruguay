@@ -33,10 +33,10 @@ export default defineEventHandler(async event => {
   try {
     found = await rentalUnsubscribeInfo(token)
     // RFC 8058 callers need no login, and repeated POSTs remain successful.
-    if (event.method === 'POST') {
-      writing = true
-      await unsubscribeRentalAlertEmail(token)
-    }
+    if (event.method === 'POST')
+      await unsubscribeRentalAlertEmail(token, () => {
+        writing = true
+      })
   } catch (error) {
     // Answered here rather than thrown: Nitro would log the request URL, token included, and
     // Nuxt would render its full error page at this address. The log line names the failure only.

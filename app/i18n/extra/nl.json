@@ -1349,6 +1349,7 @@
     "tab": "Waarschuwingen",
     "title": "Mijn tariefmeldingen",
     "empty": "Je hebt nog geen meldingen. Maak er een aan en we laten je weten wanneer je doel is bereikt.",
+    "loadFailed": "Uw meldingen konden niet worden geladen: de informatie die u ziet is mogelijk verouderd. Probeer het over een langere periode opnieuw.",
     "new": "Nieuwe melding",
     "currency": "Munteenheid",
     "kind": "Type",

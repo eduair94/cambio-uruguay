@@ -1349,6 +1349,7 @@
     "tab": "Riasztások",
     "title": "Árfolyamértesítéseim",
     "empty": "Még nincsenek riasztásaid. Hozz létre egyet, és értesítünk, ha eltaláljuk a célpontodat.",
+    "loadFailed": "Nem tudtuk betölteni az értesítéseit: a látottak elavultak lehetnek. Kérjük, próbálja újra később.",
     "new": "Új riasztás",
     "currency": "Valuta",
     "kind": "Típus",

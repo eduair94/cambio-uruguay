@@ -1349,6 +1349,7 @@
     "tab": "Aviseringar",
     "title": "Mina prisaviseringar",
     "empty": "Du har inga aviseringar ännu. Skapa en så meddelar vi dig när ditt mål är träffat.",
+    "loadFailed": "Vi kunde inte ladda dina aviseringar: det du ser kan vara föråldrat. Försök igen om en liten stund.",
     "new": "Ny varning",
     "currency": "Valuta",
     "kind": "Typ",

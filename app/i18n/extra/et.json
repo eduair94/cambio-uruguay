@@ -1349,6 +1349,7 @@
     "tab": "Teavitused",
     "title": "Minu hinnahoiatused",
     "empty": "Teil pole veel ühtegi märguannet. Looge üks ja me teavitame teid, kui teie sihtmärk on tabatud.",
+    "loadFailed": "Me ei saanud teie märguandeid laadida: see, mida te näete, võib olla aegunud. Palun proovige varsti uuesti.",
     "new": "Uus hoiatus",
     "currency": "Valuuta",
     "kind": "Tüüp",

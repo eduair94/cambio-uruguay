@@ -1349,6 +1349,7 @@
     "tab": "Amaran",
     "title": "Amaran kadar saya",
     "empty": "Anda belum mempunyai sebarang makluman lagi. Cipta satu dan kami akan memberitahu anda apabila sasaran anda terkena.",
+    "loadFailed": "Kami tidak dapat memuatkan makluman anda: apa yang anda lihat mungkin sudah lapuk. Sila cuba lagi sebentar lagi.",
     "new": "Amaran baharu",
     "currency": "Mata wang",
     "kind": "Jenis",

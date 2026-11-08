@@ -1349,6 +1349,7 @@
     "tab": "Varsler",
     "title": "Mine prisvarsler",
     "empty": "Du har ingen varsler ennå. Opprett et, så varsler vi deg når målet ditt er truffet.",
+    "loadFailed": "Vi kunne ikke laste inn varslene dine: det du ser kan være utdatert. Prøv igjen om en liten stund.",
     "new": "Nytt varsel",
     "currency": "Valuta",
     "kind": "Type",

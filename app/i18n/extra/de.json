@@ -1349,6 +1349,7 @@
     "tab": "Warnmeldungen",
     "title": "Meine Kursbenachrichtigungen",
     "empty": "Sie haben noch keine Benachrichtigungen. Erstellen Sie eine, und wir benachrichtigen Sie, sobald Ihr Ziel erreicht ist.",
+    "loadFailed": "Ihre Benachrichtigungen konnten nicht geladen werden: Die angezeigten Daten sind möglicherweise veraltet. Bitte versuchen Sie es später erneut.",
     "new": "Neue Warnung",
     "currency": "Währung",
     "kind": "Typ",

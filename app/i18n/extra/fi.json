@@ -1349,6 +1349,7 @@
     "tab": "Hälytykset",
     "title": "Hintahälytykseni",
     "empty": "Sinulla ei ole vielä hälytyksiä. Luo sellainen, niin ilmoitamme sinulle, kun kohteeseesi osuu.",
+    "loadFailed": "Emme voineet ladata ilmoituksiasi: näkemäsi tiedot saattavat olla vanhentuneita. Yritä uudelleen pian.",
     "new": "Uusi hälytys",
     "currency": "Valuutta",
     "kind": "Tyyppi",

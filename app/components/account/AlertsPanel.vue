@@ -88,8 +88,14 @@
     </VCard>
 
     <!-- List -->
-    <VAlert v-if="!alerts.length" type="info" variant="tonal">{{ $t('alerts.empty') }}</VAlert>
-    <VList v-else>
+    <!-- A failed read is not "no alerts": saying so would invite creating them again. -->
+    <VAlert v-if="loadFailed" type="warning" variant="tonal" class="mb-2" role="status">{{
+      $t('alerts.loadFailed')
+    }}</VAlert>
+    <VAlert v-if="!alerts.length && !loadFailed" type="info" variant="tonal">{{
+      $t('alerts.empty')
+    }}</VAlert>
+    <VList v-if="alerts.length">
       <VListItem v-for="a in alerts" :key="a._id" class="px-0">
         <template #prepend>
           <VIcon :color="a.active ? 'primary' : 'grey'">mdi-bell</VIcon>
@@ -175,10 +181,13 @@ const form = reactive({
   telegram: false,
 })
 
+const loadFailed = ref(false)
+
 async function load() {
-  // A failed read keeps what is on screen: emptying it would show "no alerts yet" and invite
-  // the visitor to create them again (review, 2026-11-08).
+  // A failed read keeps what is on screen and says so: emptying it would show "no alerts yet" and
+  // invite the visitor to create them again (review, 2026-11-08).
   const fresh = await authFetch<any[]>('/api/me/alerts').catch(() => null)
+  loadFailed.value = !fresh
   if (fresh) alerts.value = fresh
 }
 

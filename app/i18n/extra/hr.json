@@ -1349,6 +1349,7 @@
     "tab": "Upozorenja",
     "title": "Moje obavijesti o cijenama",
     "empty": "Još nemate nikakvih upozorenja. Izradite jedno i obavijestit ćemo vas kada vaša meta bude pogođena.",
+    "loadFailed": "Nismo mogli učitati vaša upozorenja: ono što vidite možda je zastarjelo. Pokušajte ponovno uskoro.",
     "new": "Novo upozorenje",
     "currency": "Valuta",
     "kind": "Tip",
