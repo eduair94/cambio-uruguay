@@ -5,7 +5,7 @@ import ts from 'typescript'
 import mongoose from 'mongoose'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import * as rentals from '../../utils/rentals'
-import * as rentalBarrioName from '../../utils/rentalBarrioName'
+import * as rentalBarrioOption from '../../utils/rentalBarrioOption'
 import * as rentalDistance from '../../utils/rentalDistance'
 import * as rentalPricePerM2 from '../../utils/rentalPricePerM2'
 import { rentalPublicPropertyProjection } from '../../server/utils/rentalDetail'
@@ -69,7 +69,7 @@ async function capture(
       annotateRentalAvailability: (property: unknown) => property,
     },
     '../../../utils/rentals': rentals,
-    '../../../utils/rentalBarrioName': rentalBarrioName,
+    '../../../utils/rentalBarrioOption': rentalBarrioOption,
     '../../../utils/rentalDistance': rentalDistance,
     '../../../utils/rentalPricePerM2': rentalPricePerM2,
   }
@@ -100,6 +100,7 @@ async function capture(
     facets,
     itemsOptions: options[0]!,
     count: pipelines.length,
+    pipelines,
   }
 }
 
@@ -164,6 +165,48 @@ describe('rental endpoint sort input', () => {
     expect(response.facets.neighborhoods).toEqual([
       { value: 'Pocitos', count: 900 },
       { value: '25 de Mayo', count: 12 },
+    ])
+  })
+
+  it('reads 1,000 barrios and offers the first 250 that are neither surfaces nor addresses', async () => {
+    // 2026-11-08: the cut ran before the filter, so dropped names took places in the 250 and
+    // Montevideo never offered Retiro, Marconi or Chacarita.
+    const junk = Array.from({ length: 60 }, (_, i) => ({ _id: `Calle ${100 + i}`, count: 500 - i }))
+    const places = Array.from({ length: 260 }, (_, i) => ({
+      _id: `Paraje ${String.fromCharCode(65 + (i % 26))}${String.fromCharCode(65 + Math.floor(i / 26))}`,
+      count: 400 - i,
+    }))
+    const { response, pipelines } = await capture({ department: 'Montevideo' }, 240, [
+      ...junk,
+      ...places,
+    ])
+    const barrios = pipelines.find(pipeline =>
+      pipeline.some(stage => stage.$group?._id === '$neighborhood')
+    )!
+    expect(barrios.at(-1)).toEqual({ $limit: 1000 })
+    expect(response.facets.neighborhoods).toEqual(
+      places.slice(0, 250).map(row => ({ value: row._id, count: row.count }))
+    )
+  })
+
+  it('never offers a street address as a barrio in the facet', async () => {
+    // 2026-11-08: 68 of Maldonado's 205 options were Mercado Libre addresses ("Sarandí 888, Maldonado"
+    // keeps the street where the barrio goes) and portal filler.
+    const { response } = await capture({ department: 'Maldonado' }, 240, [
+      { _id: 'Punta del Este', count: 2929 },
+      { _id: 'ruta 39', count: 14 },
+      { _id: 'Av. Leandro Gómez', count: 4 },
+      { _id: 'Pda. 37 Mansa', count: 2 },
+      { _id: 'Otras', count: 6 },
+      { _id: 'Sarandí 888', count: 1 },
+      { _id: '25 De Mayo Esquina Yerbal', count: 1 },
+      { _id: 'Leandro Gomez', count: 1 },
+      { _id: '18 De Julio', count: 1 },
+    ])
+    expect(response.facets.neighborhoods).toEqual([
+      { value: 'Punta del Este', count: 2929 },
+      { value: 'Leandro Gomez', count: 1 },
+      { value: '18 De Julio', count: 1 },
     ])
   })
 
