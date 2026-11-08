@@ -18,7 +18,9 @@
   <VMenu v-else location="bottom end">
     <template #activator="{ props }">
       <VBtn icon v-bind="props" :aria-label="$t('auth.account')">
-        <VAvatar size="34" color="primary">
+        <!-- The account's photo (its URL names the Google or Discord account) and initials, in
+             the header of every page: masked for Microsoft Clarity. -->
+        <VAvatar size="34" color="primary" class="account-avatar" data-clarity-mask="true">
           <VImg v-if="store.user?.photo" :src="store.user.photo" />
           <span v-else>{{ initials }}</span>
         </VAvatar>

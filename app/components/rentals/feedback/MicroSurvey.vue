@@ -5,11 +5,12 @@
 
   El primer toque ES la respuesta: Sí / En parte / No se guarda en ese momento (un POST) y la
   tarjeta dice "Gracias". Abajo, opcional, qué faltó (chips, con "En parte" o "No") y un comentario,
-  que completan la MISMA fila (PATCH con el id que devolvió el POST). Hasta el 8/11/2026 el toque
-  sólo mostraba "Enviar" y no guardaba nada: 20 días, 0 respuestas, con al menos 150 personas de
-  Uruguay que pasaron por la tarjeta. "Dejar una sugerencia" despliega, en el mismo lugar, la caja
-  completa: qué venías a hacer, el comentario y un correo opcional para responderte. Cerrada o
-  respondida, no vuelve por `snoozeDays`.
+  que completan la MISMA fila (PATCH con el id que devolvió el POST); si esa fila ya no los acepta
+  (pasó la media hora), entran como una sugerencia aparte en vez de un error. Hasta el 8/11/2026
+  el toque sólo mostraba "Enviar" y no guardaba nada: 20 días, 0 respuestas, con al menos 150
+  personas de Uruguay que pasaron por la tarjeta. "Dejar una sugerencia" despliega, en el mismo
+  lugar, la caja completa: qué venías a hacer, el comentario y un correo opcional para responderte.
+  Cerrada o respondida, no vuelve por `snoozeDays`.
 
   Medición: `feedback_view` una vez cuando la tarjeta se ve, `data-cta` en cada respuesta y en la
   caja (GA4 `cta_click`), y en Microsoft Clarity la etiqueta `feedback` más el evento de la
@@ -133,8 +134,9 @@
       <div class="rental-feedback__head">
         <div class="rental-feedback__intro">
           <h3 :id="titleId" class="rental-feedback__title">{{ question }}</h3>
-          <p class="rental-feedback__text">
-            Tu respuesta es anónima y nos dice qué arreglar primero.
+          <p :id="hintId" class="rental-feedback__text">
+            Tocá una respuesta y queda guardada, sin nombre ni correo: nos dice qué arreglar
+            primero.
           </p>
         </div>
         <VBtn
@@ -148,13 +150,17 @@
       </div>
 
       <template v-if="!boxOpen">
-        <div class="rental-feedback__choices" role="radiogroup" :aria-labelledby="titleId">
+        <!-- Plain buttons, not radios: a tap SENDS the answer, it does not select one. -->
+        <div
+          class="rental-feedback__choices"
+          role="group"
+          :aria-labelledby="titleId"
+          :aria-describedby="hintId"
+        >
           <button
             v-for="option in FOUND_OPTIONS"
             :key="option.value"
             type="button"
-            role="radio"
-            :aria-checked="found === option.value"
             :aria-busy="busy && found === option.value"
             :disabled="busy"
             :data-cta="`rental-feedback-${option.value}`"
@@ -306,6 +312,7 @@ const route = useRoute()
 const track = useTrack()
 const { send, followUp, snoozed, snooze } = useRentalFeedback()
 const titleId = useId()
+const hintId = useId()
 const snoozeKey = computed(() => (props.surface === 'ficha' ? 'ficha' : 'directorio'))
 const question = computed(() =>
   props.surface === 'ficha' ? '¿Te sirvió esta ficha?' : '¿Encontraste lo que buscabas?'
@@ -427,13 +434,27 @@ async function sendFollowUp() {
   if (!canFollowUp.value || !answerId.value) return
   failed.value = false
   busy.value = true
-  const ok = await followUp(answerId.value, {
-    reasons: found.value === 'si' ? [] : reasons.value,
-    comment: comment.value,
-    website: website.value,
-  })
+  const detail = { reasons: found.value === 'si' ? [] : reasons.value, comment: comment.value }
+  let result = await followUp(answerId.value, { ...detail, website: website.value })
+  if (result === 'gone') {
+    // The tap is stored, but its row no longer takes additions (30 minutes passed, or this
+    // browser lost its id): retrying could never work, so the comment goes in as a suggestion.
+    const stored = await send({
+      kind: 'box',
+      surface: props.surface,
+      path: route.path,
+      filters: props.filters,
+      propertyKey: props.propertyKey,
+      found: null,
+      ...detail,
+      goal: null,
+      email: '',
+      website: website.value,
+    })
+    result = stored ? 'ok' : 'failed'
+  }
   busy.value = false
-  if (!ok) {
+  if (result !== 'ok') {
     failed.value = true
     return
   }

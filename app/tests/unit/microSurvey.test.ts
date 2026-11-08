@@ -59,7 +59,12 @@ afterEach(() => {
   document.body.replaceChildren()
 })
 
-async function mount(options: { send?: () => Promise<{ id: string | null } | null> } = {}) {
+async function mount(
+  options: {
+    send?: () => Promise<{ id: string | null } | null>
+    followUp?: () => Promise<'ok' | 'gone' | 'failed'>
+  } = {}
+) {
   const observers: Array<{ enter: () => void }> = []
   class FakeIntersectionObserver {
     disconnected = false
@@ -79,7 +84,7 @@ async function mount(options: { send?: () => Promise<{ id: string | null } | nul
   vi.stubGlobal('IntersectionObserver', FakeIntersectionObserver)
   const feedback = {
     send: vi.fn(options.send ?? (async () => ({ id: ROW }))),
-    followUp: vi.fn(async () => true),
+    followUp: vi.fn(options.followUp ?? (async () => 'ok' as const)),
     snoozed: vi.fn(() => false),
     snooze: vi.fn(),
   }
@@ -164,6 +169,54 @@ describe('the rental survey card', () => {
     })
     expect(feedback.send).toHaveBeenCalledTimes(1)
     expect(host.textContent).toContain('Gracias, lo leemos todo.')
+  })
+
+  it('a follow-up the row no longer takes goes in as a suggestion, not as an error', async () => {
+    const { host, feedback } = await mount({ followUp: async () => 'gone' })
+    button(host, 'rental-feedback-no').click()
+    await settle()
+    const textarea = host.querySelector('textarea')!
+    textarea.value = 'Volví a la media hora'
+    textarea.dispatchEvent(new Event('input'))
+    await settle()
+    button(host, 'rental-feedback-follow-up').click()
+    // Two requests in a row (the PATCH, then the POST), so twice the ticks.
+    await settle()
+    await settle()
+    expect(feedback.send).toHaveBeenCalledTimes(2)
+    expect(feedback.send.mock.calls[1]![0]).toMatchObject({
+      kind: 'box',
+      surface: 'ficha',
+      found: null,
+      comment: 'Volví a la media hora',
+      propertyKey: 'montevideo-cordon-1rt3jaj',
+    })
+    expect(host.textContent).toContain('Gracias, lo leemos todo.')
+    expect(host.textContent).not.toContain('No pudimos enviarlo')
+  })
+
+  it('a follow-up that failed for a moment says so and can be sent again', async () => {
+    const { host, feedback } = await mount({ followUp: async () => 'failed' })
+    button(host, 'rental-feedback-si').click()
+    await settle()
+    const textarea = host.querySelector('textarea')!
+    textarea.value = 'Más fotos'
+    textarea.dispatchEvent(new Event('input'))
+    await settle()
+    button(host, 'rental-feedback-follow-up').click()
+    await settle()
+    expect(feedback.send).toHaveBeenCalledTimes(1)
+    expect(host.textContent).toContain('No pudimos enviarlo')
+  })
+
+  it('the answers are buttons that send, and say so: not radios that only select', async () => {
+    const { host } = await mount()
+    const group = host.querySelector('.rental-feedback__choices')!
+    expect(group.getAttribute('role')).toBe('group')
+    expect(group.querySelector('[role="radio"], [aria-checked]')).toBeNull()
+    const hint = document.getElementById(group.getAttribute('aria-describedby')!)
+    expect(hint?.textContent).toContain('queda guardada')
+    expect(host.textContent).not.toContain('anónima')
   })
 
   it('keeps the choices when the answer could not be stored, and the next tap retries', async () => {

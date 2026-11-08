@@ -24,13 +24,23 @@ const UNMASKED_PRE: Record<string, string> = {
   'pages/recibir-regalos-del-exterior-uruguay.vue': 'sender instructions from fixed figures',
 }
 
-/** Blocks that show a position, a key or a generated letter, and must stay masked. */
+/**
+ * Blocks that show where the visitor is (a map, or a list in distance order: the order alone says
+ * where), an address they typed, a key, a generated letter, or who is signed in. /privacidad
+ * promises these are hidden, so they must stay masked.
+ */
 const MUST_MASK: Record<string, string[]> = {
   'components/map/LocationsMap.vue': ['locations-map'],
   'components/LocationPopup.vue': ['location_map'],
   'components/account/ApiKeysPanel.vue': ['api-keys-panel__code', 'api-keys-panel__secret'],
+  'components/AccountMenu.vue': ['account-avatar'],
   'components/watchlist/WatchlistSetup.vue': ['wl-current', 'wl-origins'],
   'pages/precio/[slug].vue': ['precios-cercanos'],
+  'pages/mapa.vue': ['mapa-cercanos'],
+  'pages/casa-de-cambio-cerca-de-mi.vue': ['nearby-list'],
+  // Masked only with the visitor's position; the key gives that list its own element.
+  'pages/descuentos-con-tarjeta-uruguay/index.vue': ['comercios-lista'],
+  'pages/conviene-auto-moto-o-omnibus-uruguay.vue': ['ruta-direcciones'],
   'pages/denunciar-ruidos-molestos-uruguay.vue': ['noise-form', 'noise-text'],
   'pages/grabacion-sin-consentimiento-uruguay.vue': ['rec-form', 'rec-text'],
 }
@@ -179,6 +189,17 @@ describe('Clarity masks what a visitor typed', () => {
       }
     }
     expect(missing).toEqual([])
+  })
+
+  it('a mask that depends on the position comes with its own element', () => {
+    // clarity-js decides an element's masking once, when it first sees it (layout/dom.ts privacy()
+    // runs on add, not on update): an attribute added later to the same element masks nothing.
+    const source = files.find(
+      item => item.path === 'pages/descuentos-con-tarjeta-uruguay/index.vue'
+    )!.source
+    expect(source).toMatch(
+      /:key="userLocation \? 'cercanos' : 'todos'"[\s\S]{0,120}:data-clarity-mask="userLocation \? 'true' : undefined"/
+    )
   })
 
   it('the send dialog masks its content: each action link carries the whole message', () => {

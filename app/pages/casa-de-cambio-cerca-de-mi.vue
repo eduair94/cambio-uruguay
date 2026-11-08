@@ -85,7 +85,9 @@
         <v-btn value="rate" size="small">{{ t('nearbyCasas.sortRate') }}</v-btn>
       </v-btn-toggle>
 
-      <div v-if="sorted.length" class="nearby-list">
+      <!-- Branches ranked by distance from the visitor, with their addresses: masked for
+           Microsoft Clarity, like the map. -->
+      <div v-if="sorted.length" class="nearby-list" data-clarity-mask="true">
         <NearbyCasaCard
           v-for="(item, i) in sorted"
           :key="item.branch.id"

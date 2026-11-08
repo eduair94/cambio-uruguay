@@ -6,8 +6,8 @@ import { load, resetClarityState } from '../../services/clarity'
 // Microsoft Clarity is ~25 KB of script plus a serialisation of the whole DOM, measured at about
 // 0.5 s of JavaScript per page at CPU×4. Nothing about it may run before the page is usable, and
 // nothing it is told may undo the visitor's choice. A one-line regression (a setTimeout, a
-// consentv2 'denied', the tag inserted before its consent) changes no visible behaviour, so these
-// guard the source.
+// consentv2 'denied', the tag inserted before its consent, a static import of the runtime) changes
+// no visible behaviour, so these guard the source.
 const ROOT = join(__dirname, '..', '..')
 const SKIP = new Set(['node_modules', 'tests', 'public', '.nuxt', '.output'])
 const withoutComments = (text: string) => text.replace(/\/\*[\s\S]*?\*\/|^\s*\/\/.*$/gm, '')
@@ -23,37 +23,62 @@ function sources(dir: string, out: string[] = []): string[] {
   return out
 }
 
+/** Files with a static (non-type) import of a module matching `target` (firebaseOffEntry's). */
+function staticImporters(target: RegExp): string[] {
+  // The first quote after `import ` opens the specifier; `import(` is dynamic and does not match.
+  const re = /^\s*import(?!\s+type\b)\s[^'"]*['"]([^'"]+)['"]/gm
+  return sources(ROOT)
+    .map(file => relative(ROOT, file).split(sep).join('/'))
+    .filter(path => [...read(path).matchAll(re)].some(match => target.test(match[1] ?? '')))
+    .sort()
+}
+
 describe('the Clarity plugin stays off the critical path', () => {
   const plugin = read('plugins/clarity.client.ts')
+  const runtime = read('services/clarityRuntime.ts')
+  const service = read('services/clarity.ts')
 
   it('has no fixed timer: the old one fired 3 s after setup, hydrated or not', () => {
-    expect(plugin).not.toMatch(/\bsetTimeout\s*\(/)
+    for (const text of [plugin, runtime, service]) expect(text).not.toMatch(/\bsetTimeout\s*\(/)
   })
 
   it('starts after hydration, in an idle moment, with the tab visible', () => {
     const ready = plugin.indexOf('onNuxtReady(')
     const idle = plugin.indexOf('requestIdleCallback(')
     expect(ready).toBeGreaterThan(-1)
-    expect(idle).toBeGreaterThan(ready)
+    expect(idle).toBeGreaterThan(-1)
     expect(plugin).toMatch(/timeout:\s*8000/)
     expect(plugin).toMatch(/visibilityState === 'visible'/)
+    // The runtime is fetched inside that idle callback, never before.
+    expect(plugin.indexOf("import('~/services/clarityRuntime')")).toBeGreaterThan(idle)
   })
 
   it('does nothing at all while the project id is empty', () => {
     const bail = plugin.search(/if \(!projectId\) return/)
     expect(bail).toBeGreaterThan(-1)
-    for (const hook of [
-      'addEventListener(',
-      'router.beforeEach(',
-      'nuxtApp.hook(',
-      'onNuxtReady(',
-    ]) {
+    for (const hook of ['addEventListener(', 'useRouter(', 'onNuxtReady(', 'import(']) {
       expect(plugin.indexOf(hook), hook).toBeGreaterThan(bail)
     }
   })
 
+  it('ships only the plugin in the entry chunk: the rules and the runtime load on demand', () => {
+    // The plugin imports nothing statically; the runtime and the policy only from on-demand code.
+    expect(plugin).not.toMatch(/^\s*import\s/m)
+    expect(staticImporters(/clarityRuntime$/)).toEqual([])
+    expect(staticImporters(/clarityPolicy$/)).toEqual([
+      'server/api/consent-region.get.ts',
+      'services/clarityRuntime.ts',
+    ])
+    // useTrack and the survey card import the service on every page: it carries no route lists.
+    expect(staticImporters(/\/clarityValues$/)).toEqual([
+      'services/clarity.ts',
+      'utils/clarityPolicy.ts',
+    ])
+    expect(service).not.toMatch(/clarityPolicy/)
+  })
+
   it('puts nothing in the server HTML: no head tag, no preconnect, no tag URL outside the service', () => {
-    expect(plugin).not.toMatch(/useHead|useScript|useSeoMeta|preconnect/)
+    expect(plugin + runtime).not.toMatch(/useHead|useScript|useSeoMeta|preconnect/)
     const mentions = sources(ROOT)
       .filter(file =>
         /https?:\/\/[\w.-]*clarity\.ms/.test(withoutComments(readFileSync(file, 'utf8')))
@@ -63,9 +88,13 @@ describe('the Clarity plugin stays off the critical path', () => {
   })
 
   it('stops Clarity before the URL changes, back and forward included', () => {
-    expect(plugin).toMatch(/router\.beforeEach\(/)
-    expect(plugin).toMatch(/'popstate',[\s\S]{0,200}\{ capture: true \}/)
+    expect(runtime).toMatch(/router\.beforeEach\(/)
+    expect(runtime).toMatch(/'popstate',[\s\S]{0,200}\{ capture: true \}/)
     expect(plugin).toMatch(/'page:loading:end'/)
+  })
+
+  it('answers the restarts clarity-js makes on its own: a page restored from the cache', () => {
+    expect(runtime).toMatch(/'pageshow'[\s\S]{0,120}persisted/)
   })
 })
 

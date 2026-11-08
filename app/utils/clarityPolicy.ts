@@ -1,14 +1,24 @@
 // When Microsoft Clarity (heatmaps and session recordings) may record, and what it is told.
 //
-// PURE (no Vue, no Nuxt, no window): the plugin (plugins/clarity.client.ts), the service that
-// talks to Clarity (services/clarity.ts), the consent-region route and the tests all read the
-// same rules. Every value that leaves for Clarity from here is a closed vocabulary — route
-// families, locale codes, event names written in code — never something a visitor typed.
+// PURE (no Vue, no Nuxt, no window): the on-demand runtime (services/clarityRuntime.ts), the
+// consent-region route and the tests all read the same rules. Every value that leaves for Clarity
+// from here is a closed vocabulary — route families, locale codes, event names written in code —
+// never something a visitor typed. The few rules the service needs on every page live in
+// ./clarityValues, so the entry chunk does not carry these lists.
 
 import { isBareRoute } from './bareRoutes'
 import { normalizeAdPath } from './ads'
 import { CONSENT_STRICT_REGIONS, type ConsentDecision } from './consent'
 import { LOCALE_PREFIX_RE } from './locales'
+import { CLARITY_PRIVATE_QUERY_PARAMS } from './clarityValues'
+
+export {
+  CLARITY_COOKIES,
+  CLARITY_PRIVATE_QUERY_PARAMS,
+  clarityEventName,
+  clarityForgetCookies,
+  clarityTagValue,
+} from './clarityValues'
 
 /**
  * Pages Clarity never records, under any locale prefix.
@@ -37,22 +47,9 @@ export const CLARITY_EXCLUDED_ROUTES: readonly string[] = Object.freeze([
 const EXCLUDED_ROUTE_PREFIXES: readonly string[] = ['/estadisticas-']
 
 /**
- * Query parameters that make a URL private. Clarity records the page URL, and masking a URL
- * parameter is something only Clarity's support can switch on: Firebase's sign-in links
- * (`oobCode`, `apiKey`), OAuth hand-offs (`code`, `state`), tokens, and the rental directory's
- * reference address (`refLat`, `refLng`, `refLabel`). Compared case-insensitively: a false
- * positive costs one recording, a miss leaks a token.
+ * A page whose URL carries one of CLARITY_PRIVATE_QUERY_PARAMS (./clarityValues) is not recorded.
+ * Compared case-insensitively: a false positive costs one recording, a miss leaks a token.
  */
-export const CLARITY_PRIVATE_QUERY_PARAMS: readonly string[] = Object.freeze([
-  'oobCode',
-  'apiKey',
-  'code',
-  'state',
-  'token',
-  'refLat',
-  'refLng',
-  'refLabel',
-])
 const PRIVATE_PARAMS = new Set(CLARITY_PRIVATE_QUERY_PARAMS.map(name => name.toLowerCase()))
 
 export type ClarityQuery = Record<string, unknown> | URLSearchParams | string | null | undefined
@@ -83,6 +80,18 @@ export function clarityRouteAllowed(path: string, query?: ClarityQuery): boolean
   if (EXCLUDED_ROUTE_PREFIXES.some(prefix => clean.startsWith(prefix))) return false
   const names = [...queryNames(search), ...queryNames(query)]
   return !names.some(name => PRIVATE_PARAMS.has(name.toLowerCase()))
+}
+
+/**
+ * Whether a tab whose `document.referrer` is `referrer` may be recorded. Clarity sends the
+ * referrer as is (its drop list does not reach it) at the start of every page, and the site's
+ * policy (strict-origin-when-cross-origin) gives a page of the same site the full URL: a listing
+ * opened in a new tab from a search with the reference address would carry that address. Such a
+ * tab is not recorded at all, since the referrer stays the same for every page of it.
+ */
+export function clarityReferrerAllowed(referrer: unknown): boolean {
+  if (typeof referrer !== 'string' || !referrer.includes('?')) return true
+  return !queryNames(referrer).some(name => PRIVATE_PARAMS.has(name.toLowerCase()))
 }
 
 export type ClarityStartDecision = 'skip' | 'wait' | 'load'
@@ -261,33 +270,4 @@ export function parseClaritySeed(raw: unknown): number | null {
 /** The locale prefix of `path` (`/en/…` → `en`), `es` without one. */
 export function clarityLocale(path: string): string {
   return (typeof path === 'string' && path.match(LOCALE_PREFIX_RE)?.[1]) || 'es'
-}
-
-/** The custom-event name Clarity may receive: the site's own `snake_case`/`kebab-case` names only. */
-export function clarityEventName(name: unknown): string | null {
-  return typeof name === 'string' && /^[\w-]{1,100}$/.test(name) ? name : null
-}
-
-/** A tag key or value: the same closed shape, and under Clarity's 255-character limit. */
-export function clarityTagValue(value: unknown): string | null {
-  return typeof value === 'string' && /^[\w.-]{1,100}$/.test(value) ? value : null
-}
-
-/** The cookies Clarity writes on the first party. CLID lives on clarity.ms and is Microsoft's. */
-export const CLARITY_COOKIES: readonly string[] = Object.freeze(['_clck', '_clsk'])
-
-/**
- * The `document.cookie` assignments that delete Clarity's cookies on `hostname`. Clarity writes
- * them on the widest domain the browser accepts (`.cambio-uruguay.com`); a cookie only goes away
- * with the same path and domain it was written with, so this clears the host-only copy and every
- * parent domain of two labels or more (the browser ignores the ones it would never have accepted).
- */
-export function clarityForgetCookies(hostname: string): string[] {
-  const labels = typeof hostname === 'string' && hostname ? hostname.split('.') : []
-  const domains = ['']
-  for (let index = labels.length - 2; index >= 0; index--)
-    domains.push(`; domain=.${labels.slice(index).join('.')}`)
-  return CLARITY_COOKIES.flatMap(name =>
-    domains.map(domain => `${name}=; Max-Age=0; path=/${domain}`)
-  )
 }

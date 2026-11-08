@@ -50,20 +50,27 @@ export function useRentalFeedback() {
     }
   }
 
-  /** Adds what fell short and a comment to the row a tap created. */
+  /**
+   * Adds what fell short and a comment to the row a tap created. `gone` when the server no longer
+   * accepts it for that row (the 30-minute window closed, or this browser lost its id): trying
+   * again can never work, unlike `failed` (offline, rate limit).
+   */
   async function followUp(
     id: string,
     input: { reasons: string[]; comment: string; website?: string }
-  ): Promise<boolean> {
-    if (!isFeedbackId(id)) return false
+  ): Promise<'ok' | 'gone' | 'failed'> {
+    if (!isFeedbackId(id)) return 'gone'
     try {
       await $fetch(`/api/rental-feedback/${id}`, {
         method: 'PATCH',
         body: { ...input, clientId: clientId() },
       })
-      return true
-    } catch {
-      return false
+      return 'ok'
+    } catch (error) {
+      const status =
+        (error as { statusCode?: number; response?: { status?: number } })?.statusCode ??
+        (error as { response?: { status?: number } })?.response?.status
+      return status === 404 ? 'gone' : 'failed'
     }
   }
 

@@ -41,6 +41,11 @@ La encuesta se abre desde:
   (`FEEDBACK_FOLLOW_UP_MINUTES`); cualquier otra cosa responde 404, igual que un id inexistente. Con
   el almacenamiento bloqueado el navegador usa un id de esa sola vista, así el toque y su seguimiento
   igual coinciden. Mismo honeypot y mismos límites por IP que el POST, cada ruta con los suyos.
+- **Un seguimiento tardío no se pierde.** Ante un 404 (la persona volvió a la pestaña pasada la media
+  hora, o el navegador perdió su id) reintentar no sirve nunca, así que la tarjeta no muestra un
+  error: manda los motivos y el comentario como una fila `box` aparte (`found: null`, mismo
+  `clientId`, misma superficie y ficha). Un fallo del momento (sin red, el límite por IP) sí dice
+  «No pudimos enviarlo» y deja reintentar.
 - **No mueve la página.** La pregunta se monta sólo en el cliente (`<ClientOnly>`) y debajo de lo que
   se está mirando: ni CLS ni peso en la carga. Llegar al final de los resultados ya es "uso con
   sentido": no hay otro disparador.

@@ -7,6 +7,7 @@ import {
   clarityKeepRecording,
   clarityLocale,
   clarityQueryRestarts,
+  clarityReferrerAllowed,
   clarityRouteAllowed,
   claritySampled,
   claritySampleRate,
@@ -120,6 +121,21 @@ describe('the routes Clarity never records', () => {
     expect(clarityRouteAllowed('/', new URLSearchParams('code=1&state=2'))).toBe(false)
     expect(clarityRouteAllowed('/alquileres-uruguay', { departamento: 'montevideo' })).toBe(true)
     expect(clarityRouteAllowed('/alquileres-uruguay?departamento=montevideo#mapa')).toBe(true)
+  })
+
+  it('excludes a tab opened from such a URL: Clarity sends the referrer as is', () => {
+    expect(
+      clarityReferrerAllowed(
+        'https://cambio-uruguay.com/alquileres-uruguay?refLat=-34.9&refLabel=Bulevar%20Artigas'
+      )
+    ).toBe(false)
+    expect(clarityReferrerAllowed('https://cambio-uruguay.com/conectar?OOBCODE=abc')).toBe(false)
+    expect(clarityReferrerAllowed('https://cambio-uruguay.com/alquileres-uruguay?barrio=x')).toBe(
+      true
+    )
+    expect(clarityReferrerAllowed('https://www.google.com/')).toBe(true)
+    expect(clarityReferrerAllowed('')).toBe(true)
+    expect(clarityReferrerAllowed(undefined)).toBe(true)
   })
 })
 

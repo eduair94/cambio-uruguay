@@ -173,15 +173,25 @@
               <li>
                 <strong>Qué se oculta:</strong> los campos de formularios, los números y los correos
                 se ocultan en tu navegador, antes de enviar nada. Además ocultamos los mapas y las
-                listas que muestran tu ubicación o el punto de referencia que elegiste, las cartas y
-                denuncias que el sitio arma con tus datos, y las claves de la API.
+                listas que muestran tu ubicación o el punto de referencia que elegiste, las
+                direcciones que escribís para calcular un trayecto, las cartas y denuncias que el
+                sitio arma con tus datos, las claves de la API y la foto y las iniciales de tu
+                cuenta.
               </li>
               <li>
                 <strong>Dónde no graba:</strong> tu cuenta, el inicio de sesión, el asistente con
-                IA, las encuestas de alquileres, los paneles internos y de estadísticas, la guía
-                sobre grabaciones sin consentimiento y el buscador de descuentos cerca tuyo; tampoco
-                una página cuya dirección lleva un enlace de inicio de sesión o el punto de
-                referencia de una búsqueda. Y no graba todas las visitas, sólo una parte.
+                IA, la página de la encuesta de alquileres y su panel, los paneles internos y de
+                estadísticas, la guía sobre grabaciones sin consentimiento y el buscador de
+                descuentos cerca tuyo. Tampoco una página cuya dirección lleva un enlace de inicio
+                de sesión o el punto de referencia de una búsqueda, ni una pestaña que abriste desde
+                una de ellas; y si una dirección así le llega igual (por ejemplo, al volver atrás),
+                esos datos van borrados. Y no graba todas las visitas, sólo una parte.
+              </li>
+              <li>
+                <strong>Las preguntas de los alquileres:</strong> la tarjeta «¿Te sirvió esta
+                ficha?» o «¿Encontraste lo que buscabas?» queda en la grabación de la página donde
+                aparece. Si respondés, marcamos tu respuesta en esa grabación, para encontrar qué
+                trabó a quien contestó «No». No te pedimos nombre ni correo.
               </li>
               <li>
                 <strong>Cookies:</strong> <code>_clck</code> (un identificador al azar de tu
