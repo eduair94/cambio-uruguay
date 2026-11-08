@@ -22,14 +22,12 @@ export default defineEventHandler(async event => {
   // click from the inbox) can leave an alert with none, and an active alert with no channel fires
   // into nothing. The rental alerts follow the same rule (rentalAlertSubscriptions.ts).
   const channelsInBody = Boolean(b?.channels)
-  if (
-    set.active === true &&
-    channelsInBody &&
-    !set['channels.push'] &&
-    !set['channels.email'] &&
-    !set['channels.telegram']
-  )
+  const noChannelLeft =
+    channelsInBody && !set['channels.push'] && !set['channels.email'] && !set['channels.telegram']
+  if (noChannelLeft && set.active === true)
     throw createError({ statusCode: 409, statusMessage: 'no-channel' })
+  // Turning every channel off pauses it, as the rental alerts do.
+  if (noChannelLeft) set.active = false
   const filter: Record<string, unknown> = { _id: id, uid }
   // Checked in the same update, so nothing can switch the channels off in between.
   if (set.active === true && !channelsInBody)

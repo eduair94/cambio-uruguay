@@ -45,7 +45,7 @@ const copy = {
     missing: 'Este enlace ya no está disponible',
     missingBody: 'Podés administrar tus suscripciones desde tu cuenta.',
     unavailable: 'No pudimos procesar el enlace',
-    unavailableBody: 'Probá de nuevo en unos minutos: tu suscripción no cambió.',
+    unavailableBody: 'No sabemos si se llegó a aplicar: probá de nuevo en unos minutos.',
     account: 'Administrar mis alertas',
   },
   en: {
@@ -58,7 +58,7 @@ const copy = {
     missing: 'This link is no longer available',
     missingBody: 'You can manage your subscriptions in your account.',
     unavailable: 'We could not process this link',
-    unavailableBody: 'Please try again in a few minutes: your subscription did not change.',
+    unavailableBody: 'We do not know whether it went through: please try again in a few minutes.',
     account: 'Manage my alerts',
   },
   pt: {
@@ -71,7 +71,7 @@ const copy = {
     missing: 'Este link não está mais disponível',
     missingBody: 'Você pode administrar suas assinaturas na sua conta.',
     unavailable: 'Não foi possível processar o link',
-    unavailableBody: 'Tente novamente em alguns minutos: sua assinatura não mudou.',
+    unavailableBody: 'Não sabemos se chegou a ser aplicado: tente novamente em alguns minutos.',
     account: 'Administrar meus alertas',
   },
 }

@@ -22,8 +22,12 @@ export default defineEventHandler(async event => {
     throw createError({ statusCode: 405, statusMessage: 'Method not allowed' })
   }
   const token = getQuery(event).token
-  if (!validRentalUnsubscribeToken(token))
-    throw createError({ statusCode: 400, statusMessage: 'Invalid link' })
+  // A mangled link gets this page too: under the CSP above, Nuxt's error page would render
+  // without its stylesheets or scripts.
+  if (!validRentalUnsubscribeToken(token)) {
+    setResponseStatus(event, 400)
+    return rentalUnsubscribeHtml('es', 'missing')
+  }
   let found: Awaited<ReturnType<typeof rentalUnsubscribeInfo>>
   try {
     found = await rentalUnsubscribeInfo(token)

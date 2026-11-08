@@ -165,6 +165,19 @@ describe('alerts API: an alert needs a channel to be on', () => {
     })
   })
 
+  it('turning every channel off pauses the alert, as the rental alerts do', async () => {
+    getRouterParam.mockReturnValueOnce('a1')
+    readBody.mockResolvedValueOnce({ channels: { push: false, email: false } })
+    findOneAndUpdate.mockReturnValueOnce(query({ _id: 'a1' }))
+    await patchH({} as any)
+    expect(findOneAndUpdate.mock.calls[0][1].$set).toMatchObject({
+      active: false,
+      'channels.push': false,
+      'channels.email': false,
+      'channels.telegram': false,
+    })
+  })
+
   it('switching off needs no channel', async () => {
     getRouterParam.mockReturnValueOnce('a1')
     readBody.mockResolvedValueOnce({ active: false, channels: { push: false, email: false } })

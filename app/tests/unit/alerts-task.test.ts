@@ -192,4 +192,19 @@ describe('runAlertsCheck: una sola vez y sin cortes', () => {
     await runAlertsCheck(deps as any)
     expect(telegram.mock.calls[0][1]).toContain('la\\_favorita')
   })
+
+  // An alert with every channel off reaches nobody: it is not claimed, so it neither counts as
+  // fired nor looks up the account's contacts on every crossing (review, 2026-11-08).
+  it('skips an alert with no channel without claiming it', async () => {
+    const deps = makeDeps({
+      loadActiveAlerts: vi
+        .fn()
+        .mockResolvedValue([
+          alert('a1', { channels: { push: false, email: false, telegram: false } }),
+        ]),
+    })
+    expect(await runAlertsCheck(deps as any)).toEqual({ checked: 1, fired: 0 })
+    expect(deps.claimAlert).not.toHaveBeenCalled()
+    expect(deps.getUserContacts).not.toHaveBeenCalled()
+  })
 })

@@ -103,4 +103,25 @@ describe('unsubscribe endpoints when the database is down', () => {
     await rate({ method: 'GET' })
     expect(mocks.status).toBe(404)
   })
+
+  // With the strict CSP now set first, a thrown 400 rendered Nuxt's error page without its
+  // stylesheets or scripts (review, 2026-11-08): a mangled link gets the endpoint's own page.
+  it.each([
+    ['rate alerts', () => rate],
+    ['rental alerts', () => rental],
+  ])('%s: a mangled link answers its own 400 page', async (_name, handler) => {
+    query = { token: TOKEN.slice(1) }
+    const page = await handler()({ method: 'GET' })
+    expect(mocks.status).toBe(400)
+    expect(mocks.headers['content-security-policy']).toContain("default-src 'none'")
+    expect(page).toContain('Este enlace ya no está disponible')
+    expect(page).not.toContain('method="post"')
+    expect(mocks.rateInfo).not.toHaveBeenCalled()
+    expect(mocks.rentalFindOne).not.toHaveBeenCalled()
+  })
+
+  it('the failure page does not claim nothing changed', async () => {
+    mocks.rateInfo.mockImplementation(async () => failing())
+    expect(await rate({ method: 'POST' })).not.toContain('no cambió')
+  })
 })

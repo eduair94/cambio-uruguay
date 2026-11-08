@@ -126,7 +126,7 @@
         <template #append>
           <VSwitch
             :model-value="a.active"
-            :disabled="!hasChannel(a)"
+            :disabled="!hasChannel(a) && !a.active"
             density="compact"
             hide-details
             color="primary"
@@ -215,8 +215,9 @@ async function toggle(a: any, value: boolean) {
   try {
     await authFetch(`/api/me/alerts/${a._id}`, { method: 'PATCH', body: { active: value } })
   } catch {
-    // Refused (409 no-channel) or failed: the switch goes back to what the alert really is.
+    // Refused (409 no-channel: another tab may have changed it) or failed: show what is stored.
     a.active = !value
+    await load()
   }
 }
 

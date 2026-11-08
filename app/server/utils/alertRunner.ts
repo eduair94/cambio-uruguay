@@ -34,6 +34,8 @@ export async function runAlertsCheck(
   let fired = 0
 
   for (const a of alerts) {
+    // Sin ningún canal no le llega a nadie: ni se reclama ni se buscan los contactos de la cuenta.
+    if (!a.channels?.push && !a.channels?.email && !a.channels?.telegram) continue
     const rate = deps.bestRate(rows, a.currency, a.kind, a.origin)
     const { fire, armed } = evaluateAlert(a, rate, deps.now)
 
