@@ -57,6 +57,20 @@ export const PROTECTED_ACRONYMS = ['BCU', 'BROU', 'BPS', 'DGI', 'ANCAP']
 const escapeRegExp = text => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 /**
+ * A translation may not add square brackets the Spanish does not have. The page cuts its text at
+ * every link and inline figure, so a segment often ends right before one ("…el paso a paso está
+ * en" + link), and Google completes it with an invented placeholder: "[link missing]", "[amount
+ * missing]", "[inserir endereço de e-mail aqui]" (the Portuguese privacy page, in production).
+ * On 2026-11-08 the memory held 1.031 of them (123 Spanish segments, every locale), plus leftovers
+ * of the `[n]` token style ("[U]", "[{0}]"). Refused, the segment stays in Spanish, which reads
+ * better than a bracket telling the reader something is missing.
+ */
+export function bracketsKept(text, source) {
+  const count = (value, char) => value.split(char).length - 1
+  return count(text, '[') <= count(source, '[') && count(text, ']') <= count(source, ']')
+}
+
+/**
  * A translation may not lose a figure, and may add one only where the source spells it out —
  * never with the `[n]` token style, whose digits are how "1 $U ([1])" got invented.
  */
@@ -237,6 +251,7 @@ export function createTranslator({ protectedTerms, clean = cleanPlainText, verbo
         if (restored == null) return
         const text = clean(restored, item.text)
         if (placeholdersOf(text) !== placeholdersOf(item.text)) return
+        if (!bracketsKept(text, item.text)) return
         if (!figuresKept(text, item.text, style)) return
         out.set(item.id, text)
       })

@@ -68,6 +68,22 @@ describe('auto-translate: segments and keys', () => {
     expect(translateSegment('Otra frase', map)).toBeNull()
     expect(translateSegment('USD', map)).toBeNull()
   })
+
+  // 2026-11-08: ~1.000 stored rows where Google filled the gap before a link or a figure.
+  it('serves in Spanish a stored translation with brackets the Spanish lacks', () => {
+    const map = memory({
+      'Para cualquier consulta sobre privacidad podés escribirnos a':
+        'Para qualquer dúvida sobre privacidade, escreva para [inserir endereço de e-mail aqui].',
+      'Y si ya te lo retuvieron, el paso a paso está en':
+        'If they have already held it, the step-by-step guide is at [link missing].',
+      'Ver la nota [{0}] abajo': 'See note [{0}] below',
+    })
+    expect(
+      translateSegment('Para cualquier consulta sobre privacidad podés escribirnos a', map)
+    ).toBeNull()
+    expect(translateSegment('Y si ya te lo retuvieron, el paso a paso está en', map)).toBeNull()
+    expect(translateSegment('Ver la nota [1] abajo', map)).toBe('See note [1] below')
+  })
 })
 
 describe('auto-translate: the HTML', () => {
@@ -113,6 +129,16 @@ describe('auto-translate: the HTML', () => {
 
   it('is a no-op without translations', () => {
     expect(translateHtml(html, new Map()).html).toBe(html)
+  })
+
+  it('leaves in Spanish a stored row that invents a bracket, and does not hand it to the browser', () => {
+    const page =
+      '<p>Escribinos a <a href="mailto:admin@cambio-uruguay.com">admin@cambio-uruguay.com</a></p>'
+    const map = memory({ 'Escribinos a': 'Write to us at [email address missing]' })
+    const result = translateHtml(page, map)
+    expect(result.html).toBe(page)
+    expect(result.used).toEqual({})
+    expect(result.translatedChars).toBe(0)
   })
 
   it('never reads a piece of a tag as text', () => {
