@@ -79,7 +79,13 @@ export default defineEventHandler(async event => {
       { _id: uid },
       {
         $set: { discordId: String(me.id) },
-        $setOnInsert: { email: me.email ?? null, name: displayName, photo: photoURL ?? null },
+        // Only an address Discord verified: the account switches fall back to this row's email
+        // (newsletter.put.ts), so an unverified one would be an address nobody proved.
+        $setOnInsert: {
+          email: me.verified ? (me.email ?? null) : null,
+          name: displayName,
+          photo: photoURL ?? null,
+        },
       },
       { upsert: true }
     )

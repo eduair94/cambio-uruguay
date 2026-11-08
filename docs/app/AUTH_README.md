@@ -92,3 +92,15 @@ Design: `docs/superpowers/specs/2026-06-18-multichannel-access-discord-login-des
 - The callback's error codes become dialog messages (`auth.discordError`,
   `auth.discordUnverified`), written after the scrub navigation: that navigation
   runs the `/cuenta` auth middleware, whose `openDialog()` clears `store.error`.
+  Only the plugin's own codes count (an own-property lookup: `?authError=constructor`
+  found an inherited member).
+- The `users` row keeps Discord's address only when Discord verified it: the
+  account switches fall back to that row. And the newsletter switch changes the
+  subscriber list only for a verified address, in both directions (switching off
+  used to unsubscribe whatever address the account carried).
+- Not done, pre-existing (2026-11-08 review): the `?ct=` hand-off is not bound to
+  the browser that started the flow, so a link carrying a fresh custom token signs
+  the visitor into someone else's account (login CSRF). The fix is to hand the
+  token over in a short-lived `__Host-` cookie set by the state-checked callback
+  instead of the URL; it was left out because the happy path cannot be checked
+  end to end without a Discord account.

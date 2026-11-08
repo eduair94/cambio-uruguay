@@ -47,7 +47,13 @@ export default defineNuxtPlugin({
       discord: 'auth.discordError',
       'discord-unverified': 'auth.discordUnverified',
     }
-    const authErrorKey = authError ? AUTH_ERRORS[authError] : undefined
+    // Own keys only: `?authError=constructor` (or toString, __proto__…) would otherwise find an
+    // inherited member of the object and put it in the dialog. (Not Object.hasOwn: Safari < 15.4
+    // lacks it, and a plugin that throws here takes the whole app down.)
+    const authErrorKey =
+      authError && Object.prototype.hasOwnProperty.call(AUTH_ERRORS, authError)
+        ? AUTH_ERRORS[authError]
+        : undefined
     if (authErrorKey) scrub('authError', () => showError(authErrorKey))
 
     if (ct) {

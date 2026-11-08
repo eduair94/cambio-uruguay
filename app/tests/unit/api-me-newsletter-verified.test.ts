@@ -54,14 +54,24 @@ describe('PUT /api/me/newsletter', () => {
     expect(mocks.updateOne).not.toHaveBeenCalled()
   })
 
-  it('subscribes a verified address, and anyone can switch it off', async () => {
+  it('subscribes and unsubscribes a verified address', async () => {
     mocks.user.emailVerified = true
     readBody.mockResolvedValueOnce({ email: true })
     await handler({} as never)
     expect(mocks.updateOne.mock.calls[0]![1].$set.status).toBe('confirmed')
-    mocks.user.emailVerified = false
     readBody.mockResolvedValueOnce({ email: false })
     await handler({} as never)
     expect(mocks.updateOne.mock.calls[1]![1].$set.status).toBe('unsubscribed')
+  })
+
+  // Review, 2026-11-08: switching off unsubscribed whatever address the account carried, so an
+  // account opened with someone else's address could take that person off the newsletter. An
+  // unverified account turns off its own preference only; each newsletter email keeps its link.
+  it('an unverified account switches off its preference, not the list', async () => {
+    mocks.user.emailVerified = false
+    readBody.mockResolvedValueOnce({ email: false })
+    expect(await handler({} as never)).toMatchObject({ email: false })
+    expect(mocks.account.values['newsletter.email']).toBe(false)
+    expect(mocks.updateOne).not.toHaveBeenCalled()
   })
 })

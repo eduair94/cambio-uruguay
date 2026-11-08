@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   resolve: vi.fn(),
   updateOne: vi.fn(),
   createCustomToken: vi.fn(async () => 'custom-token'),
+  discordVerified: true,
 }))
 vi.mock('../../server/utils/discordAuth', async () => {
   const actual = await vi.importActual<typeof import('../../server/utils/discordAuth')>(
@@ -34,7 +35,7 @@ vi.stubGlobal(
     json: async () =>
       url.includes('/oauth2/token')
         ? { access_token: 'discord-access' }
-        : { id: '444', email: 'a@b.com', verified: true, username: 'someone' },
+        : { id: '444', email: 'a@b.com', verified: mocks.discordVerified, username: 'someone' },
   }))
 )
 
@@ -42,7 +43,10 @@ const { DiscordUnverifiedAccountError } = await import('../../server/utils/disco
 const { default: handler } = await import('../../server/api/auth/discord/callback.get')
 const run = () => (handler as (event: unknown) => Promise<string>)({})
 
-beforeEach(() => vi.clearAllMocks())
+beforeEach(() => {
+  vi.clearAllMocks()
+  mocks.discordVerified = true
+})
 
 describe('Discord callback', () => {
   it('sends a refused, unverified account to its own message, without linking it', async () => {
@@ -65,5 +69,20 @@ describe('Discord callback', () => {
       expect.objectContaining({ $set: { discordId: '444' } }),
       { upsert: true }
     )
+  })
+
+  // Review, 2026-11-08: the users row kept Discord's address even when Discord had not verified
+  // it, and the account switches fall back to that row (newsletter.put.ts).
+  it('does not store an address Discord did not verify', async () => {
+    mocks.discordVerified = false
+    mocks.resolve.mockResolvedValue('discord:444')
+    await run()
+    expect(mocks.updateOne.mock.calls[0]![1].$setOnInsert.email).toBeNull()
+  })
+
+  it('stores a verified one', async () => {
+    mocks.resolve.mockResolvedValue('uid-1')
+    await run()
+    expect(mocks.updateOne.mock.calls[0]![1].$setOnInsert.email).toBe('a@b.com')
   })
 })

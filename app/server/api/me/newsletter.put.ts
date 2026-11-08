@@ -32,7 +32,10 @@ export default defineEventHandler(async event => {
       throw createError({ statusCode: 409, statusMessage: 'email-not-verified' })
     }
     u.set('newsletter.email', body.email)
-    if (addr) {
+    // The list changes only for a verified address, both ways: switching off used to unsubscribe
+    // whatever address the account carried, so an account opened with someone else's address could
+    // take that person off the newsletter. Every newsletter email keeps its own unsubscribe link.
+    if (addr && emailVerified) {
       if (body.email) {
         await NewsletterSubscriberModel.updateOne(
           { email: addr },
