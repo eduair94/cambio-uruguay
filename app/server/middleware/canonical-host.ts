@@ -1,4 +1,5 @@
 import { canonicalHostRedirect } from '../../utils/canonicalHost'
+import { rawRequestPath } from '../utils/rawRequestPath'
 
 // 301 de `www.` al dominio sin www.
 //
@@ -18,6 +19,6 @@ export default defineEventHandler(event => {
   if (method !== 'GET' && method !== 'HEAD') return
 
   const host = getRequestHeader(event, 'host') || ''
-  const target = canonicalHostRedirect(host, event.path || '/')
+  const target = canonicalHostRedirect(host, rawRequestPath(event))
   if (target) return sendRedirect(event, target, 301)
 })

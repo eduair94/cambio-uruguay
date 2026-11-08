@@ -1,6 +1,7 @@
 import { isAutoTranslateLocale, isEmbargoed, untranslatedRedirect } from '../../utils/autoTranslate'
 import { splitLocalePath } from '../../utils/localizedRoutes'
 import { embargoedRoutes, lookupTranslations, translatedLocales } from '../utils/autoTranslateStore'
+import { rawRequestPath } from '../utils/rawRequestPath'
 
 export interface AutoTranslateContext {
   locale: string
@@ -39,8 +40,14 @@ export default defineEventHandler(async event => {
   // An extra locale the page is not translated into: the Spanish page, without rendering this one.
   const target = untranslatedRedirect(locale, path, { translated, embargoed })
   if (target) {
-    const query = event.path.includes('?') ? event.path.slice(event.path.indexOf('?')) : ''
-    return sendRedirect(event, target + query, 302)
+    // `target` is the DECODED path (h3 decodes event.path): the Location is rebuilt from the
+    // request as sent, minus the same locale prefix and trailing slash (server/utils/rawRequestPath).
+    const raw = rawRequestPath(event)
+    const queryAt = raw.indexOf('?')
+    const rawUrl = queryAt === -1 ? raw : raw.slice(0, queryAt)
+    const query = queryAt === -1 ? '' : raw.slice(queryAt)
+    const rawPath = splitLocalePath(rawUrl).path.replace(/(.)\/+$/, '$1') || '/'
+    return sendRedirect(event, rawPath + query, 302)
   }
   event.context.autoTranslate = {
     locale,
