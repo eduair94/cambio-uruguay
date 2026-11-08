@@ -4,6 +4,10 @@
  * newsletter. One vocabulary for the client and the server: every answer is checked against these
  * closed lists, so the stored rows can be counted without cleaning them first.
  *
+ * A micro-survey answer is stored on the first tap (Sí / En parte / No) and may be completed,
+ * within FEEDBACK_FOLLOW_UP_MINUTES, with what fell short and a comment — so a `micro` row with
+ * no reasons is an ordinary one-tap answer, not a broken one.
+ *
  * Spanish only, like the survey page: the audience searches in Uruguay.
  */
 
@@ -307,6 +311,50 @@ export function sanitizeRentalFeedback(
       clientId,
     },
   }
+}
+
+/**
+ * How long after the first tap the same browser may add, to that same row, what fell short and a
+ * comment. The tap is stored on its own (one tap is the whole answer for most people: the card
+ * went 20 days without a single row while it waited for "Enviar"); the follow-up completes it.
+ */
+export const FEEDBACK_FOLLOW_UP_MINUTES = 30
+
+/** A stored answer's id, as the server returns it after the first tap. */
+export function isFeedbackId(value: unknown): value is string {
+  return typeof value === 'string' && /^[a-f\d]{24}$/i.test(value)
+}
+
+export interface RentalFeedbackFollowUpInput {
+  clientId?: unknown
+  reasons?: unknown
+  comment?: unknown
+}
+
+export interface RentalFeedbackFollowUp {
+  clientId: string
+  reasons: string[]
+  comment: string
+}
+
+/**
+ * The follow-up to a one-tap answer: closed-list reasons and a comment, nothing else (the answer
+ * itself, the page and the filters were stored with the tap and do not change). The browser's
+ * random id is required — it is what proves the follow-up comes from whoever tapped — and a
+ * follow-up that adds nothing is refused.
+ */
+export function sanitizeRentalFeedbackFollowUp(
+  input: RentalFeedbackFollowUpInput
+): { followUp: RentalFeedbackFollowUp } | { error: 'client' | 'empty' } {
+  const clientId =
+    typeof input?.clientId === 'string' && /^[a-z\d]{12,40}$/i.test(input.clientId)
+      ? input.clientId
+      : null
+  if (!clientId) return { error: 'client' }
+  const reasons = someOf(input.reasons, MISSING_REASONS)
+  const comment = text(input.comment, FEEDBACK_COMMENT_MAX)
+  if (!reasons.length && !comment) return { error: 'empty' }
+  return { followUp: { clientId, reasons, comment } }
 }
 
 /** Net Promoter Score of the 0–10 answers: % promoters (9–10) minus % detractors (0–6). */

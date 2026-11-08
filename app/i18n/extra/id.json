@@ -1434,7 +1434,7 @@
     "faqA3": "Tarif diperbarui setiap 10 menit sepanjang hari."
   },
   "consent": {
-    "message": "Kami menggunakan cookie pihak pertama dan pihak ketiga (Google Analytics, Google AdSense, dan Google Ads) untuk mengukur lalu lintas, mempersonalisasi konten, dan menampilkan iklan. Anda dapat menerima atau menolaknya.",
+    "message": "Kami menggunakan cookie pihak pertama dan ketiga (Google Analytics, Google AdSense, Google Ads, dan Microsoft Clarity) untuk mengukur lalu lintas, melihat bagaimana situs digunakan (peta panas dan rekaman dengan data pribadi yang disembunyikan), mempersonalisasi konten, dan menampilkan iklan. Anda dapat menerima atau menolaknya.",
     "accept": "Menerima",
     "reject": "Menolak",
     "more": "Kebijakan privasi",

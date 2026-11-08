@@ -1,34 +1,64 @@
-import type { RentalFeedbackInput } from '~/utils/rentalFeedback'
+import { isFeedbackId, type RentalFeedbackInput } from '~/utils/rentalFeedback'
 
 const CLIENT_KEY = 'cu-rental-feedback-client'
 const SNOOZE_PREFIX = 'cu-rental-feedback-snooze:'
+
+/** Used when storage is blocked: one id for this page view, so a tap and its follow-up match. */
+let pageClientId: string | null = null
+
+const randomId = () =>
+  Array.from(crypto.getRandomValues(new Uint8Array(12)), byte =>
+    byte.toString(16).padStart(2, '0')
+  ).join('')
 
 /** A random id per browser: answers from the same person can be read in order. Never personal. */
 function clientId(): string | null {
   try {
     let id = localStorage.getItem(CLIENT_KEY)
     if (!id || !/^[a-z\d]{12,40}$/i.test(id)) {
-      id = Array.from(crypto.getRandomValues(new Uint8Array(12)), byte =>
-        byte.toString(16).padStart(2, '0')
-      ).join('')
+      id = randomId()
       localStorage.setItem(CLIENT_KEY, id)
     }
     return id
   } catch {
-    return null
+    try {
+      return (pageClientId ??= randomId())
+    } catch {
+      return null
+    }
   }
 }
 
 /**
- * Sending an answer, and remembering that a question was answered or closed so it does not come
- * back for a while. Storage can be blocked (private windows, previews): then the question simply
- * shows again next time, which is the honest fallback.
+ * Sending an answer, completing a one-tap answer, and remembering that a question was answered or
+ * closed so it does not come back for a while. Storage can be blocked (private windows, previews):
+ * then the question simply shows again next time, which is the honest fallback.
  */
 export function useRentalFeedback() {
-  async function send(input: RentalFeedbackInput & { website?: string }): Promise<boolean> {
+  /** Stores an answer. `null` when it could not be sent; `id` is the row, for a micro answer. */
+  async function send(
+    input: RentalFeedbackInput & { website?: string }
+  ): Promise<{ id: string | null } | null> {
     try {
-      await $fetch('/api/rental-feedback', {
+      const response = await $fetch<{ ok?: boolean; id?: unknown }>('/api/rental-feedback', {
         method: 'POST',
+        body: { ...input, clientId: clientId() },
+      })
+      return { id: isFeedbackId(response?.id) ? response.id : null }
+    } catch {
+      return null
+    }
+  }
+
+  /** Adds what fell short and a comment to the row a tap created. */
+  async function followUp(
+    id: string,
+    input: { reasons: string[]; comment: string; website?: string }
+  ): Promise<boolean> {
+    if (!isFeedbackId(id)) return false
+    try {
+      await $fetch(`/api/rental-feedback/${id}`, {
+        method: 'PATCH',
         body: { ...input, clientId: clientId() },
       })
       return true
@@ -54,5 +84,5 @@ export function useRentalFeedback() {
     }
   }
 
-  return { send, snoozed, snooze }
+  return { send, followUp, snoozed, snooze }
 }

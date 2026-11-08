@@ -1434,7 +1434,7 @@
     "faqA3": "Kainos atnaujinamos kas 10 minučių visą dieną."
   },
   "consent": {
-    "message": "Mes naudojame pirmosios ir trečiosios šalies slapukus („Google Analytics“, „Google AdSense“ ir „Google Ads“), kad galėtume matuoti srautą, suasmeninti turinį ir rodyti skelbimus. Galite juos priimti arba atmesti.",
+    "message": "Mes naudojame pirmosios ir trečiosios šalies slapukus („Google Analytics“, „Google AdSense“, „Google Ads“ ir „Microsoft Clarity“), kad galėtume matuoti srautą, matyti, kaip naudojama svetainė (šilumos žemėlapiai ir įrašai su paslėptais asmens duomenimis), suasmeninti turinį ir rodyti skelbimus. Galite juos priimti arba atmesti.",
     "accept": "Priimti",
     "reject": "Atmesti",
     "more": "Privatumo politika",

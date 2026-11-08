@@ -1434,7 +1434,7 @@
     "faqA3": "Les tarifes s'actualitzen cada 10 minuts durant tot el dia."
   },
   "consent": {
-    "message": "Fem servir galetes pròpies i de tercers (Google Analytics, Google AdSense i Google Ads) per mesurar el trànsit, personalitzar el contingut i mostrar anuncis. Pots acceptar-les o rebutjar-les.",
+    "message": "Fem servir galetes pròpies i de tercers (Google Analytics, Google AdSense, Google Ads i Microsoft Clarity) per mesurar el trànsit, veure com s'utilitza el lloc (mapes de calor i enregistraments amb dades personals ocultes), personalitzar el contingut i mostrar anuncis. Pots acceptar-les o rebutjar-les.",
     "accept": "Accepta",
     "reject": "Rebutja",
     "more": "Política de privacitat",

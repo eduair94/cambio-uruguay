@@ -34,13 +34,13 @@ const { t: localT } = useI18n({
   useScope: 'local',
   messages: {
     es: {
-      message: 'Cookies para medir visitas y mostrar anuncios.',
+      message: 'Cookies para medir visitas, ver cómo se usa el sitio y mostrar anuncios.',
     },
     en: {
-      message: 'Cookies to measure visits and show ads.',
+      message: 'Cookies to measure visits, see how the site is used and show ads.',
     },
     pt: {
-      message: 'Cookies para medir visitas e mostrar anúncios.',
+      message: 'Cookies para medir visitas, ver como o site é usado e mostrar anúncios.',
     },
   },
 })

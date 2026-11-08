@@ -1434,7 +1434,7 @@
     "faqA3": "Az árakat a nap folyamán 10 percenként frissítik."
   },
   "consent": {
-    "message": "Elsődleges és harmadik féltől származó sütiket (Google Analytics, Google AdSense és Google Ads) használunk a forgalom mérésére, a tartalom személyre szabására és a hirdetések megjelenítésére. Ezeket elfogadhatja vagy elutasíthatja.",
+    "message": "Elsődleges és harmadik féltől származó sütiket (Google Analytics, Google AdSense, Google Ads és Microsoft Clarity) használunk a forgalom mérésére, a webhelyhasználat megfigyelésére (hőtérképek és személyes adatokat rejtő felvételek), a tartalom személyre szabására és a hirdetések megjelenítésére. Ezeket elfogadhatja vagy elutasíthatja.",
     "accept": "Elfogadás",
     "reject": "Elutasít",
     "more": "Adatvédelmi irányelvek",

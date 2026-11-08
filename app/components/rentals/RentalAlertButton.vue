@@ -10,6 +10,7 @@
     :title="t(notify ? 'notify' : 'createAlert')"
     aria-haspopup="dialog"
     data-testid="rental-alert-trigger"
+    :data-cta="cta"
     @click="start"
   >
     <VIcon v-if="compact" icon="mdi-bell-plus-outline" />
@@ -30,6 +31,8 @@ const { t } = useI18n({ useScope: 'local', messages: rentalAlertButtonMessages }
 const alerts = useRentalAlerts()
 const id = useId()
 const failed = ref(false)
+// GA4 `cta_click` and Clarity: rental-alert-open, car-alert-open, moto-alert-open, sale-alert-open…
+const cta = computed(() => `${props.kind.replace(/-search$/, '')}-alert-open`)
 function start() {
   alerts.begin(props.kind, props.filters).catch(() => {
     failed.value = true

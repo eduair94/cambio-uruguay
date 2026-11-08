@@ -1434,7 +1434,7 @@
     "faqA3": "Fiyatlar gün boyunca her 10 dakikada bir güncellenir."
   },
   "consent": {
-    "message": "Trafiği ölçmek, içeriği kişiselleştirmek ve reklam göstermek için birinci ve üçüncü taraf çerezleri (Google Analytics, Google AdSense ve Google Ads) kullanıyoruz. Bunları kabul edebilir veya reddedebilirsiniz.",
+    "message": "Sitemizdeki trafiği ölçmek, sitenin nasıl kullanıldığını görmek (kişisel verilerin gizlendiği ısı haritaları ve kayıtlar), içeriği kişiselleştirmek ve reklam göstermek için birinci ve üçüncü taraf çerezleri (Google Analytics, Google AdSense, Google Ads ve Microsoft Clarity) kullanıyoruz. Bunları kabul edebilir veya reddedebilirsiniz.",
     "accept": "Kabul etmek",
     "reject": "Reddetmek",
     "more": "Gizlilik politikası",

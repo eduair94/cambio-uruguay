@@ -1434,7 +1434,7 @@
     "faqA3": "Die Preise werden den ganzen Tag über alle 10 Minuten aktualisiert."
   },
   "consent": {
-    "message": "Wir verwenden Cookies von Erst- und Drittanbietern (Google Analytics, Google AdSense und Google Ads), um den Datenverkehr zu messen, Inhalte zu personalisieren und Anzeigen zu schalten. Sie können diese akzeptieren oder ablehnen.",
+    "message": "Wir verwenden Cookies von Erst- und Drittanbietern (Google Analytics, Google AdSense, Google Ads und Microsoft Clarity), um den Datenverkehr zu messen, die Nutzung der Website zu analysieren (Heatmaps und Aufzeichnungen ohne personenbezogene Daten), Inhalte zu personalisieren und Werbung anzuzeigen. Sie können diese akzeptieren oder ablehnen.",
     "accept": "Akzeptieren",
     "reject": "Ablehnen",
     "more": "Datenschutzrichtlinie",

@@ -159,6 +159,61 @@
             </p>
           </section>
 
+          <section id="microsoft-clarity" class="mb-8">
+            <h3 class="text-h6 font-weight-bold mb-3">
+              Microsoft Clarity: mapas de calor y grabaciones
+            </h3>
+            <p class="legal-prose text-body-1 text-grey-lighten-1 mb-3">
+              Para ver qué partes del sitio se entienden y cuáles traban, usamos Microsoft Clarity.
+              Registra clics, toques, desplazamiento y movimientos del cursor, y con eso arma mapas
+              de calor y reproducciones de la navegación; también marca clics repetidos o sin
+              respuesta y errores de la página.
+            </p>
+            <ul class="legal-list text-body-1 text-grey-lighten-1">
+              <li>
+                <strong>Qué se oculta:</strong> los campos de formularios, los números y los correos
+                se ocultan en tu navegador, antes de enviar nada. Además ocultamos los mapas y las
+                listas que muestran tu ubicación o el punto de referencia que elegiste, las cartas y
+                denuncias que el sitio arma con tus datos, y las claves de la API.
+              </li>
+              <li>
+                <strong>Dónde no graba:</strong> tu cuenta, el inicio de sesión, el asistente con
+                IA, las encuestas de alquileres, los paneles internos y de estadísticas, la guía
+                sobre grabaciones sin consentimiento y el buscador de descuentos cerca tuyo; tampoco
+                una página cuya dirección lleva un enlace de inicio de sesión o el punto de
+                referencia de una búsqueda. Y no graba todas las visitas, sólo una parte.
+              </li>
+              <li>
+                <strong>Cookies:</strong> <code>_clck</code> (un identificador al azar de tu
+                navegador, un año) y <code>_clsk</code> (une las páginas de una misma visita, un
+                día), del propio sitio; y <code>CLID</code>, de clarity.ms: un identificador de
+                Microsoft común a los sitios que usan Clarity. No usamos Microsoft Advertising.
+              </li>
+              <li>
+                <strong>Quién responde por esos datos:</strong> Microsoft los trata como
+                responsable, según su
+                <a
+                  class="legal-link"
+                  href="https://www.microsoft.com/privacy/privacystatement"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >declaración de privacidad</a
+                >. Las grabaciones se conservan 30 días, salvo las que marquemos y una muestra al
+                azar, que Microsoft guarda hasta 9 meses. Clarity no permite borrar los datos de una
+                sola persona sin borrar el proyecto entero, así que los pedidos de acceso o
+                eliminación de esos datos van a Microsoft, por esa misma declaración.
+              </li>
+              <li>
+                <strong>Cómo evitarlo:</strong> en el Espacio Económico Europeo, el Reino Unido y
+                Suiza (y cuando no podemos saber desde qué país nos visitás) no se carga hasta que
+                tocás «Aceptar». En el resto de los países, incluido Uruguay, puede grabar desde la
+                primera visita, y lo apagás con «Rechazar» en el aviso de cookies o en «Configurar
+                cookies», al pie de cada página: si ya estaba grabando, se detiene y borramos sus
+                cookies. Si tu navegador envía la señal Global Privacy Control, no se carga.
+              </li>
+            </ul>
+          </section>
+
           <section class="mb-8">
             <h2 class="text-h5 font-weight-bold mb-3">5. Base legal y conservación</h2>
             <p class="legal-prose text-body-1 text-grey-lighten-1">

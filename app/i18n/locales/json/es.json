@@ -1434,7 +1434,7 @@
     "faqA3": "Las cotizaciones se actualizan cada 10 minutos a lo largo del día."
   },
   "consent": {
-    "message": "Usamos cookies propias y de terceros (Google Analytics, Google AdSense y Google Ads) para medir el tráfico, personalizar contenido y mostrar anuncios. Podés aceptarlas o rechazarlas.",
+    "message": "Usamos cookies propias y de terceros (Google Analytics, Google AdSense, Google Ads y Microsoft Clarity) para medir el tráfico, ver cómo se usa el sitio (mapas de calor y grabaciones con los datos personales ocultos), personalizar contenido y mostrar anuncios. Podés aceptarlas o rechazarlas.",
     "accept": "Aceptar",
     "reject": "Rechazar",
     "more": "Política de privacidad",

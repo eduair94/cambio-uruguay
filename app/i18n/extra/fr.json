@@ -1434,7 +1434,7 @@
     "faqA3": "Les tarifs sont mis à jour toutes les 10 minutes, tout au long de la journée."
   },
   "consent": {
-    "message": "Nous utilisons des cookies internes et tiers (Google Analytics, Google AdSense et Google Ads) pour mesurer le trafic, personnaliser le contenu et afficher des annonces. Vous pouvez les accepter ou les refuser.",
+    "message": "Nous utilisons des cookies internes et tiers (Google Analytics, Google AdSense, Google Ads et Microsoft Clarity) pour mesurer le trafic, analyser l'utilisation du site (cartes thermiques et enregistrements avec données personnelles masquées), personnaliser le contenu et afficher des publicités. Vous pouvez les accepter ou les refuser.",
     "accept": "Accepter",
     "reject": "Rejeter",
     "more": "Politique de confidentialité",

@@ -54,7 +54,9 @@ export interface SitePageText {
  * 2026-09-22: the consent banner is in 1 309 chunks, the rates call-to-action in 145 pages).
  */
 const BOILERPLATE = [
-  /^Cookies para medir visitas y mostrar anuncios\.?( Política de privacidad)?$/i,
+  // The banner's short line, before and after it named Clarity (2026-11-08): the index keeps the
+  // old wording until each page is crawled again.
+  /^Cookies para medir visitas(?:, ver cómo se usa el sitio)? y mostrar anuncios\.?( Política de privacidad)?$/i,
   /^Encontrá el mejor precio ahora$/i,
   /^Compará la cotización del dólar en más de 40 casas de cambio y operá con datos, no con corazonadas\.$/i,
 ]

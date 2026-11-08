@@ -1434,7 +1434,7 @@
     "faqA3": "Cenas tiek atjauninātas ik pēc 10 minūtēm visas dienas garumā."
   },
   "consent": {
-    "message": "Mēs izmantojam pirmās un trešās puses sīkfailus (Google Analytics, Google AdSense un Google Ads), lai mērītu datplūsmu, personalizētu saturu un rādītu reklāmas. Jūs varat tos pieņemt vai noraidīt.",
+    "message": "Mēs izmantojam pirmās un trešās puses sīkfailus (Google Analytics, Google AdSense, Google Ads un Microsoft Clarity), lai mērītu datplūsmu, redzētu, kā tiek izmantota vietne (siltuma kartes un ieraksti ar paslēptiem personas datiem), personalizētu saturu un rādītu reklāmas. Jūs varat tos pieņemt vai noraidīt.",
     "accept": "Pieņemt",
     "reject": "Noraidīt",
     "more": "Privātuma politika",

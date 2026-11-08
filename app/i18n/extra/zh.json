@@ -1434,7 +1434,7 @@
     "faqA3": "全天每 10 分钟更新一次价格。"
   },
   "consent": {
-    "message": "我们使用第一方和第三方 Cookie（Google Analytics、Google AdSense 和 Google Ads）来衡量流量、个性化内容和展示广告。您可以选择接受或拒绝。",
+    "message": "我们使用第一方和第三方 Cookie（Google Analytics、Google AdSense、Google Ads 和 Microsoft Clarity）来衡量网站流量、了解网站使用情况（热图和录像，个人数据已隐藏）、个性化内容和展示广告。您可以选择接受或拒绝。",
     "accept": "接受",
     "reject": "拒绝",
     "more": "隐私政策",

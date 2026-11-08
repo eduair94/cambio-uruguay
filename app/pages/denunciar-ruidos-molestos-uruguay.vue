@@ -175,7 +175,7 @@
               <code>[completar]</code>.
             </p>
 
-            <VCard variant="flat" class="noise-form pa-4 mb-4">
+            <VCard variant="flat" class="noise-form pa-4 mb-4" data-clarity-mask="true">
               <VRow dense>
                 <VCol cols="12" sm="6">
                   <VTextField
@@ -266,7 +266,7 @@
             </VAlert>
 
             <VCard variant="flat" class="noise-output pa-4">
-              <pre class="noise-text">{{ complaintText }}</pre>
+              <pre class="noise-text" data-clarity-mask="true">{{ complaintText }}</pre>
               <div class="d-flex flex-wrap ga-2 mt-4">
                 <VBtn
                   color="primary"

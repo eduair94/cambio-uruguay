@@ -3,19 +3,27 @@
   hasta acá ya es usar la página, así que no hace falta otro disparador. Se monta sólo en el cliente
   y queda debajo de lo que se está mirando, así que no mueve el contenido ni pesa en la carga.
 
-  Tres pasos en la misma tarjeta, sin modal: la respuesta (Sí / En parte / No); con "En parte" o
-  "No", qué faltó (chips) y un comentario opcional; con "Sí", sólo el comentario. "Dejar una
-  sugerencia" despliega, en el mismo lugar, la caja completa: qué venías a hacer, el comentario y un
-  correo opcional para responderte. Cerrada o respondida, no vuelve por `snoozeDays`.
+  El primer toque ES la respuesta: Sí / En parte / No se guarda en ese momento (un POST) y la
+  tarjeta dice "Gracias". Abajo, opcional, qué faltó (chips, con "En parte" o "No") y un comentario,
+  que completan la MISMA fila (PATCH con el id que devolvió el POST). Hasta el 8/11/2026 el toque
+  sólo mostraba "Enviar" y no guardaba nada: 20 días, 0 respuestas, con al menos 150 personas de
+  Uruguay que pasaron por la tarjeta. "Dejar una sugerencia" despliega, en el mismo lugar, la caja
+  completa: qué venías a hacer, el comentario y un correo opcional para responderte. Cerrada o
+  respondida, no vuelve por `snoozeDays`.
+
+  Medición: `feedback_view` una vez cuando la tarjeta se ve, `data-cta` en cada respuesta y en la
+  caja (GA4 `cta_click`), y en Microsoft Clarity la etiqueta `feedback` más el evento de la
+  respuesta, para encontrar la grabación de quien contestó "No".
 -->
 <template>
   <section
     v-if="visible"
+    ref="root"
     class="rental-feedback"
     :aria-labelledby="titleId"
     data-testid="rental-feedback"
   >
-    <template v-if="state === 'sent'">
+    <template v-if="phase === 'sent'">
       <p :id="titleId" ref="thanks" class="rental-feedback__title" tabindex="-1">
         <VIcon
           icon="mdi-check-circle-outline"
@@ -32,12 +40,24 @@
       </p>
     </template>
 
-    <template v-else>
+    <template v-else-if="phase === 'answered'">
       <div class="rental-feedback__head">
         <div class="rental-feedback__intro">
-          <h3 :id="titleId" class="rental-feedback__title">{{ question }}</h3>
+          <p :id="titleId" ref="thanks" class="rental-feedback__title" tabindex="-1">
+            <VIcon
+              icon="mdi-check-circle-outline"
+              size="20"
+              class="rental-feedback__ok"
+              aria-hidden="true"
+            />
+            Gracias, ya guardamos tu respuesta.
+          </p>
           <p class="rental-feedback__text">
-            Tu respuesta es anónima y nos dice qué arreglar primero.
+            {{
+              found === 'si'
+                ? 'Si querés, contanos qué mejorarías.'
+                : 'Si tenés un segundo más, contanos qué faltó: así sabemos qué arreglar primero.'
+            }}
           </p>
         </div>
         <VBtn
@@ -45,50 +65,13 @@
           variant="text"
           size="small"
           class="rental-feedback__close"
-          aria-label="No mostrar esta pregunta por ahora"
+          aria-label="Cerrar"
           @click="dismiss"
         />
       </div>
 
-      <div
-        v-if="!boxOpen"
-        class="rental-feedback__choices"
-        role="radiogroup"
-        :aria-labelledby="titleId"
-      >
-        <button
-          v-for="option in FOUND_OPTIONS"
-          :key="option.value"
-          type="button"
-          role="radio"
-          :aria-checked="found === option.value"
-          class="rental-feedback__choice"
-          :class="{ 'is-on': found === option.value }"
-          @click="choose(option.value)"
-        >
-          {{ option.label }}
-        </button>
-      </div>
-
-      <form v-if="found || boxOpen" class="rental-feedback__form" @submit.prevent="submit">
-        <fieldset v-if="boxOpen" class="rental-feedback__group">
-          <legend class="rental-feedback__legend">¿Qué venías a hacer?</legend>
-          <div class="rental-feedback__chips">
-            <VChip
-              v-for="option in GOALS"
-              :key="option.value"
-              :variant="goal === option.value ? 'flat' : 'outlined'"
-              :color="goal === option.value ? 'primary' : undefined"
-              :aria-pressed="goal === option.value"
-              role="button"
-              @click="goal = goal === option.value ? null : option.value"
-            >
-              {{ option.label }}
-            </VChip>
-          </div>
-        </fieldset>
-
-        <fieldset v-if="showReasons" class="rental-feedback__group">
+      <form class="rental-feedback__form" @submit.prevent="sendFollowUp">
+        <fieldset v-if="found !== 'si'" class="rental-feedback__group">
           <legend class="rental-feedback__legend">
             ¿Qué faltó? <span>Marcá lo que aplique.</span>
           </legend>
@@ -109,13 +92,144 @@
 
         <VTextarea
           v-model="comment"
-          :label="
-            boxOpen
-              ? 'Tu sugerencia'
-              : found === 'si'
-                ? '¿Algo que mejorarías? (opcional)'
-                : '¿Algo más? (opcional)'
-          "
+          :label="found === 'si' ? '¿Algo que mejorarías? (opcional)' : '¿Algo más? (opcional)'"
+          :counter="FEEDBACK_COMMENT_MAX"
+          :maxlength="FEEDBACK_COMMENT_MAX"
+          rows="2"
+          auto-grow
+          hide-details="auto"
+          variant="outlined"
+          density="comfortable"
+        />
+
+        <!-- Honeypot: invisible for people, filled by bots. -->
+        <input
+          v-model="website"
+          type="text"
+          name="website"
+          tabindex="-1"
+          autocomplete="off"
+          class="rental-feedback__trap"
+          aria-hidden="true"
+        />
+
+        <p v-if="failed" class="rental-feedback__error" role="alert">
+          No pudimos enviarlo. Probá de nuevo en un momento.
+        </p>
+        <div class="rental-feedback__actions">
+          <VBtn
+            type="submit"
+            color="primary"
+            :loading="busy"
+            :disabled="!canFollowUp"
+            data-cta="rental-feedback-follow-up"
+            >Enviar</VBtn
+          >
+        </div>
+      </form>
+    </template>
+
+    <template v-else>
+      <div class="rental-feedback__head">
+        <div class="rental-feedback__intro">
+          <h3 :id="titleId" class="rental-feedback__title">{{ question }}</h3>
+          <p class="rental-feedback__text">
+            Tu respuesta es anónima y nos dice qué arreglar primero.
+          </p>
+        </div>
+        <VBtn
+          icon="mdi-close"
+          variant="text"
+          size="small"
+          class="rental-feedback__close"
+          aria-label="No mostrar esta pregunta por ahora"
+          @click="dismiss"
+        />
+      </div>
+
+      <template v-if="!boxOpen">
+        <div class="rental-feedback__choices" role="radiogroup" :aria-labelledby="titleId">
+          <button
+            v-for="option in FOUND_OPTIONS"
+            :key="option.value"
+            type="button"
+            role="radio"
+            :aria-checked="found === option.value"
+            :aria-busy="busy && found === option.value"
+            :disabled="busy"
+            :data-cta="`rental-feedback-${option.value}`"
+            class="rental-feedback__choice"
+            :class="{ 'is-on': found === option.value }"
+            @click="choose(option.value)"
+          >
+            {{ option.label }}
+          </button>
+        </div>
+        <!-- Honeypot for the one-tap answer too: it posts without a form. -->
+        <input
+          v-model="website"
+          type="text"
+          name="website"
+          tabindex="-1"
+          autocomplete="off"
+          class="rental-feedback__trap"
+          aria-hidden="true"
+        />
+        <p v-if="failed" class="rental-feedback__error" role="alert">
+          No pudimos guardar tu respuesta. Probá de nuevo en un momento.
+        </p>
+        <p class="rental-feedback__more">
+          <button
+            type="button"
+            class="rental-feedback__link"
+            data-cta="rental-feedback-box"
+            @click="openBox"
+          >
+            Dejar una sugerencia
+          </button>
+        </p>
+      </template>
+
+      <form v-else class="rental-feedback__form" @submit.prevent="submitBox">
+        <fieldset class="rental-feedback__group">
+          <legend class="rental-feedback__legend">¿Qué venías a hacer?</legend>
+          <div class="rental-feedback__chips">
+            <VChip
+              v-for="option in GOALS"
+              :key="option.value"
+              :variant="goal === option.value ? 'flat' : 'outlined'"
+              :color="goal === option.value ? 'primary' : undefined"
+              :aria-pressed="goal === option.value"
+              role="button"
+              @click="goal = goal === option.value ? null : option.value"
+            >
+              {{ option.label }}
+            </VChip>
+          </div>
+        </fieldset>
+
+        <fieldset class="rental-feedback__group">
+          <legend class="rental-feedback__legend">
+            ¿Qué faltó? <span>Marcá lo que aplique.</span>
+          </legend>
+          <div class="rental-feedback__chips">
+            <VChip
+              v-for="option in reasonOptions"
+              :key="option.value"
+              :variant="reasons.includes(option.value) ? 'flat' : 'outlined'"
+              :color="reasons.includes(option.value) ? 'primary' : undefined"
+              :aria-pressed="reasons.includes(option.value)"
+              role="button"
+              @click="toggleReason(option.value)"
+            >
+              {{ option.label }}
+            </VChip>
+          </div>
+        </fieldset>
+
+        <VTextarea
+          v-model="comment"
+          label="Tu sugerencia"
           :counter="FEEDBACK_COMMENT_MAX"
           :maxlength="FEEDBACK_COMMENT_MAX"
           rows="2"
@@ -126,7 +240,6 @@
         />
 
         <VTextField
-          v-if="boxOpen"
           v-model="email"
           type="email"
           label="Tu correo (opcional)"
@@ -149,20 +262,14 @@
           aria-hidden="true"
         />
 
-        <p v-if="state === 'error'" class="rental-feedback__error" role="alert">
+        <p v-if="failed" class="rental-feedback__error" role="alert">
           No pudimos enviarlo. Probá de nuevo en un momento.
         </p>
         <div class="rental-feedback__actions">
-          <VBtn type="submit" color="primary" :loading="sending" :disabled="!canSend">Enviar</VBtn>
-          <VBtn v-if="boxOpen" variant="text" @click="boxOpen = false">Volver</VBtn>
+          <VBtn type="submit" color="primary" :loading="busy" :disabled="!canSendBox">Enviar</VBtn>
+          <VBtn variant="text" @click="closeBox">Volver</VBtn>
         </div>
       </form>
-
-      <p v-if="!boxOpen && !found" class="rental-feedback__more">
-        <button type="button" class="rental-feedback__link" @click="openBox">
-          Dejar una sugerencia
-        </button>
-      </p>
     </template>
   </section>
 </template>
@@ -177,6 +284,11 @@ import {
   SEARCH_REASONS,
   type FeedbackSurface,
 } from '~/utils/rentalFeedback'
+import {
+  event as clarityEvent,
+  set as claritySet,
+  upgrade as clarityUpgrade,
+} from '~/services/clarity'
 
 const props = withDefaults(
   defineProps<{
@@ -191,7 +303,8 @@ const props = withDefaults(
 )
 
 const route = useRoute()
-const { send, snoozed, snooze } = useRentalFeedback()
+const track = useTrack()
+const { send, followUp, snoozed, snooze } = useRentalFeedback()
 const titleId = useId()
 const snoozeKey = computed(() => (props.surface === 'ficha' ? 'ficha' : 'directorio'))
 const question = computed(() =>
@@ -204,7 +317,11 @@ const surveyLink = computed(() => ({
 }))
 
 const visible = ref(false)
-const state = ref<'idle' | 'sending' | 'sent' | 'error'>('idle')
+/** `ask`: the question or the box; `answered`: the tap is stored; `sent`: nothing left to add. */
+const phase = ref<'ask' | 'answered' | 'sent'>('ask')
+const busy = ref(false)
+const failed = ref(false)
+const answerId = ref<string | null>(null)
 const found = ref<string | null>(null)
 const reasons = ref<string[]>([])
 const goal = ref<string | null>(null)
@@ -212,31 +329,116 @@ const comment = ref('')
 const email = ref('')
 const website = ref('')
 const boxOpen = ref(false)
+const root = ref<HTMLElement | null>(null)
 const thanks = ref<HTMLElement | null>(null)
 
-const sending = computed(() => state.value === 'sending')
-const showReasons = computed(
-  () => found.value === 'no' || found.value === 'en-parte' || boxOpen.value
-)
 const emailError = computed(() =>
   email.value.trim() && !isFeedbackEmail(email.value.trim().toLowerCase())
     ? 'Revisá el correo.'
     : ''
 )
-const canSend = computed(
+const canSendBox = computed(
   () =>
-    state.value !== 'sending' &&
+    !busy.value &&
     !emailError.value &&
-    (boxOpen.value ? !!(goal.value || reasons.value.length || comment.value.trim()) : !!found.value)
+    !!(goal.value || reasons.value.length || comment.value.trim())
+)
+const canFollowUp = computed(
+  () => !busy.value && !!((found.value !== 'si' && reasons.value.length) || comment.value.trim())
 )
 
-onMounted(() => {
+let viewObserver: IntersectionObserver | null = null
+let viewed = false
+
+onMounted(async () => {
   visible.value = !snoozed(snoozeKey.value)
+  if (!visible.value) return
+  await nextTick()
+  watchView()
 })
 
-function choose(value: string) {
+onBeforeUnmount(() => {
+  viewObserver?.disconnect()
+  viewObserver = null
+})
+
+/** `feedback_view`, once, when half of the card is on screen: the top of the funnel. */
+function watchView() {
+  const element = root.value
+  if (!element || typeof IntersectionObserver === 'undefined') return
+  viewObserver = new IntersectionObserver(
+    entries => {
+      if (viewed || !entries.some(entry => entry.isIntersecting)) return
+      viewed = true
+      viewObserver?.disconnect()
+      viewObserver = null
+      track('feedback_view', { surface: props.surface })
+    },
+    { threshold: 0.5 }
+  )
+  viewObserver.observe(element)
+}
+
+/** The answer, as Clarity sees it: a tag on the recorded page, an event and a kept recording. */
+function markRecording(value: string) {
+  claritySet('feedback', value)
+  clarityEvent(`feedback_${value}`)
+  clarityUpgrade('feedback')
+}
+
+async function focusThanks() {
+  // The thanks replaces what was under the focus: move the focus with it.
+  await nextTick()
+  thanks.value?.focus()
+}
+
+async function choose(value: string) {
+  if (busy.value) return
   found.value = value
   if (value === 'si') reasons.value = []
+  failed.value = false
+  busy.value = true
+  markRecording(value)
+  const stored = await send({
+    kind: 'micro',
+    surface: props.surface,
+    path: route.path,
+    filters: props.filters,
+    propertyKey: props.propertyKey,
+    found: value,
+    website: website.value,
+  })
+  busy.value = false
+  if (!stored) {
+    failed.value = true
+    // The buttons were disabled while it was sending, which drops the focus: give it back.
+    await nextTick()
+    root.value?.querySelector<HTMLElement>(`[data-cta="rental-feedback-${value}"]`)?.focus()
+    return
+  }
+  snooze(snoozeKey.value, props.snoozeDays)
+  answerId.value = stored.id
+  // Without an id there is no row to complete: the answer is whole as it is.
+  phase.value = stored.id ? 'answered' : 'sent'
+  await focusThanks()
+}
+
+async function sendFollowUp() {
+  if (!canFollowUp.value || !answerId.value) return
+  failed.value = false
+  busy.value = true
+  const ok = await followUp(answerId.value, {
+    reasons: found.value === 'si' ? [] : reasons.value,
+    comment: comment.value,
+    website: website.value,
+  })
+  busy.value = false
+  if (!ok) {
+    failed.value = true
+    return
+  }
+  phase.value = 'sent'
+  await focusThanks()
 }
 
 function toggleReason(value: string) {
@@ -246,7 +448,13 @@ function toggleReason(value: string) {
 }
 
 function openBox() {
+  failed.value = false
   boxOpen.value = true
+}
+
+function closeBox() {
+  failed.value = false
+  boxOpen.value = false
 }
 
 function dismiss() {
@@ -254,31 +462,32 @@ function dismiss() {
   visible.value = false
 }
 
-async function submit() {
-  if (!canSend.value) return
-  state.value = 'sending'
-  const ok = await send({
-    kind: boxOpen.value ? 'box' : 'micro',
+async function submitBox() {
+  if (!canSendBox.value) return
+  failed.value = false
+  busy.value = true
+  const stored = await send({
+    kind: 'box',
     surface: props.surface,
     path: route.path,
     filters: props.filters,
     propertyKey: props.propertyKey,
-    found: boxOpen.value ? null : found.value,
+    found: null,
     reasons: reasons.value,
-    goal: boxOpen.value ? goal.value : null,
+    goal: goal.value,
     comment: comment.value,
-    email: boxOpen.value ? email.value.trim() : '',
+    email: email.value.trim(),
     website: website.value,
   })
-  if (!ok) {
-    state.value = 'error'
+  busy.value = false
+  if (!stored) {
+    failed.value = true
     return
   }
-  state.value = 'sent'
+  markRecording('sugerencia')
   snooze(snoozeKey.value, props.snoozeDays)
-  // The thanks replaces the form under the focus: move the focus with it.
-  await nextTick()
-  thanks.value?.focus()
+  phase.value = 'sent'
+  await focusThanks()
 }
 </script>
 
@@ -359,12 +568,18 @@ async function submit() {
     background-color 150ms ease-out,
     border-color 150ms ease-out;
 }
-.rental-feedback__choice:hover {
+.rental-feedback__choice:hover:not(:disabled) {
   border-color: rgb(var(--v-theme-primary));
 }
 .rental-feedback__choice.is-on {
   border-color: rgb(var(--v-theme-primary));
   background: rgba(var(--v-theme-primary), 0.12);
+}
+.rental-feedback__choice:disabled {
+  cursor: progress;
+}
+.rental-feedback__choice:disabled:not(.is-on) {
+  opacity: 0.6;
 }
 .rental-feedback__choice:focus-visible,
 .rental-feedback__link:focus-visible {

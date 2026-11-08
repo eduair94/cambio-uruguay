@@ -1434,7 +1434,7 @@
     "faqA3": "Cene se posodabljajo vsakih 10 minut čez dan."
   },
   "consent": {
-    "message": "Za merjenje prometa, prilagajanje vsebine in prikazovanje oglasov uporabljamo lastne in tretje piškotke (Google Analytics, Google AdSense in Google Ads). Lahko jih sprejmete ali zavrnete.",
+    "message": "Za merjenje prometa, spremljanje uporabe spletnega mesta (toplotni zemljevidi in posnetki s skritimi osebnimi podatki), prilagajanje vsebine in prikazovanje oglasov uporabljamo lastne in tretje piškotke (Google Analytics, Google AdSense, Google Ads in Microsoft Clarity). Sprejmete jih lahko ali zavrnete.",
     "accept": "Sprejmi",
     "reject": "Zavrni",
     "more": "Pravilnik o zasebnosti",

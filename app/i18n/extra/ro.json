@@ -1434,7 +1434,7 @@
     "faqA3": "Tarifele sunt actualizate la fiecare 10 minute pe parcursul zilei."
   },
   "consent": {
-    "message": "Folosim cookie-uri proprii și terțe (Google Analytics, Google AdSense și Google Ads) pentru a măsura traficul, a personaliza conținutul și a afișa reclame. Le puteți accepta sau respinge.",
+    "message": "Folosim cookie-uri proprii și terțe (Google Analytics, Google AdSense, Google Ads și Microsoft Clarity) pentru a măsura traficul, a vedea cum este utilizat site-ul (hărți termice și înregistrări cu date personale ascunse), a personaliza conținutul și a afișa reclame. Le puteți accepta sau respinge.",
     "accept": "Accepta",
     "reject": "Respinge",
     "more": "Politica de confidențialitate",

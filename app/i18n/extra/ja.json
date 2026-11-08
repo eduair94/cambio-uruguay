@@ -1434,7 +1434,7 @@
     "faqA3": "料金は終日10分ごとに更新されます。"
   },
   "consent": {
-    "message": "当社は、トラフィックの測定、コンテンツのパーソナライズ、広告の表示のために、ファーストパーティおよびサードパーティのCookie（Google Analytics、Google AdSense、Google Ads）を使用しています。これらのCookieは、お客様が承認または拒否することができます。",
+    "message": "当社は、トラフィックの測定、サイトの利用状況の把握（ヒートマップや個人データを非表示にした録画）、コンテンツのパーソナライズ、広告の表示のために、ファーストパーティおよびサードパーティのCookie（Google Analytics、Google AdSense、Google Ads、Microsoft Clarity）を使用しています。これらのCookieは、お客様が承認または拒否することができます。",
     "accept": "受け入れる",
     "reject": "拒否する",
     "more": "プライバシーポリシー",
