@@ -699,7 +699,9 @@
     "telegram": "在 Telegram 上接收",
     "telegramHint": "请先关联您的 Telegram 账号",
     "saved": "已保存偏好设置",
-    "verifyEmail": "请先验证您的电子邮件地址：这样我们才能确认该地址属于您。"
+    "verifyEmail": "请先验证您的电子邮件地址：这样我们才能确认该地址属于您。",
+    "sendVerification": "请给我发送验证邮件",
+    "verificationSent": "完成：点击邮件中的链接，然后再次开启此功能。"
   },
   "donarPaypal": "通过PayPal捐款",
   "donarMercadoPago": "通过 Mercado Pago 进行捐赠",

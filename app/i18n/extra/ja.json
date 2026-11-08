@@ -699,7 +699,9 @@
     "telegram": "Telegramで受信",
     "telegramHint": "まずTelegramをリンクしてください。",
     "saved": "設定が保存されました",
-    "verifyEmail": "まずメールアドレスを確認してください。そうすることで、そのアドレスがあなたのものであることを確認できるからです。"
+    "verifyEmail": "まずメールアドレスを確認してください。そうすることで、そのアドレスがあなたのものであることを確認できるからです。",
+    "sendVerification": "確認メールを送ってください",
+    "verificationSent": "完了：メール内のリンクをタップして、再度オンにしてください。"
   },
   "donarPaypal": "PayPalで寄付する",
   "donarMercadoPago": "Mercado Pagoで寄付する",

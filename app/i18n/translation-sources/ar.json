@@ -600,6 +600,8 @@
   "newsletterPanel.telegramHint": "274b32e5",
   "newsletterPanel.saved": "58ce6da2",
   "newsletterPanel.verifyEmail": "3c0261f2",
+  "newsletterPanel.sendVerification": "e168adf7",
+  "newsletterPanel.verificationSent": "b05d6613",
   "donarPaypal": "567740a5",
   "donarMercadoPago": "0a0e0ec4",
   "accedeRapido": "0a525f82",

@@ -699,7 +699,9 @@
     "telegram": "Rebre a Telegram",
     "telegramHint": "Enllaça primer el teu Telegram",
     "saved": "Preferències desades",
-    "verifyEmail": "Verifica primer el teu correu electrònic: així és com sabem que l'adreça és teva."
+    "verifyEmail": "Verifica primer el teu correu electrònic: així és com sabem que l'adreça és teva.",
+    "sendVerification": "Envia'm el correu electrònic de verificació",
+    "verificationSent": "Fet: toca l'enllaç del correu electrònic i torna a activar-ho."
   },
   "donarPaypal": "Dona amb Paypal",
   "donarMercadoPago": "Fes una donació amb Mercado Pago",

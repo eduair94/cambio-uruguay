@@ -59,10 +59,12 @@
                 contraseña, con un enlace por correo, con Discord o como invitado (sin correo). La
                 cuenta la gestiona Firebase (Google), que guarda tu correo, tu nombre y tu foto si
                 vienen de Google o de Discord, y cómo y cuándo entraste. Nosotros guardamos con tu
-                cuenta tu correo, tu idioma y lo que guardás o configurás en el sitio: favoritos,
-                conversiones guardadas, tu lista, el carrito de importación, tus tarjetas y
-                descuentos favoritos, tus alertas, el Telegram que vincules y, si pedís una clave de
-                la API o activás el monitor de competencia, esos datos.
+                cuenta tu correo, tu idioma, tu nombre, tu foto y tu identificador de Discord si
+                entrás con Discord, los identificadores de las notificaciones de tus dispositivos y
+                lo que guardás o configurás en el sitio: favoritos, conversiones guardadas, tu
+                lista, el carrito de importación, tus tarjetas y descuentos favoritos, tus alertas,
+                el Telegram que vincules y, si pedís una clave de la API o activás el monitor de
+                competencia, esos datos.
               </li>
               <li>
                 <strong>Newsletter (opcional):</strong> tu correo, la fecha en que lo confirmaste y
@@ -94,10 +96,10 @@
                 «Cerca de mí», el mapa y las páginas de precios se usa en tu navegador para ordenar
                 por distancia. En el buscador de descuentos cerca tuyo y en la búsqueda avanzada, tu
                 coordenada va a nuestro servidor para devolverte los lugares cercanos, y en la
-                búsqueda avanzada también para mostrarte tu dirección aproximada; si ahí escribís
-                una dirección, la buscamos en OpenStreetMap. Los mapas se dibujan con imágenes de
-                OpenStreetMap (y de MapTiler en la búsqueda avanzada), que reciben qué zona está en
-                pantalla.
+                búsqueda avanzada también para mostrarte tu dirección aproximada, que le pedimos a
+                Positionstack; si ahí escribís una dirección, la buscamos en OpenStreetMap. Los
+                mapas se dibujan con imágenes de OpenStreetMap (y de MapTiler en la búsqueda
+                avanzada), que reciben qué zona está en pantalla.
               </li>
               <li>
                 <strong>Calculadoras:</strong> en el buscador de alquiler ideal, los ingresos, los
@@ -121,9 +123,10 @@
                 <strong>Empresas (opcional):</strong> si pedís una clave de la API, guardamos el
                 nombre de la empresa, el uso que le vas a dar, el sitio y tu correo, y nos llega un
                 aviso privado por Telegram con esos datos. De cada clave contamos los pedidos y a
-                qué rutas; si usás la API sin clave, contamos tus pedidos por IP durante unos días,
-                sólo para aplicar los límites. Si activás el monitor de competencia, guardamos tu
-                correo, tu casa, las que comparás y los canales de aviso.
+                qué rutas; si usás la API sin clave, contamos tus pedidos por IP durante unos días
+                para aplicar los límites, y guardamos cuántos pedidos llegan desde cada sitio de
+                origen y navegador, para medir el uso. Si activás el monitor de competencia,
+                guardamos tu correo, tu casa, las que comparás y los canales de aviso.
               </li>
               <li>{{ rentalAlertPrivacy }}</li>
               <li>
@@ -435,9 +438,10 @@
               y la de las claves de la API, en Estados Unidos. Varios de los servicios de la sección
               4 procesan datos fuera de Uruguay: la mayoría en Estados Unidos (Google, Cloudflare,
               Sentry, Discord, Puter, OpenAI, Meta y, cuando lo activemos, Microsoft) y otros en sus
-              propios países (Telegram, OpenStreetMap y MapTiler). Cuando usás una función opcional
-              que depende de uno de ellos (entrar con Discord, vincular Telegram, el asistente con
-              IA), el envío es el necesario para darte esa función, que pediste vos.
+              propios países (Telegram, OpenStreetMap, MapTiler y Positionstack). Cuando usás una
+              función opcional que depende de uno de ellos (entrar con Discord, vincular Telegram,
+              el asistente con IA), el envío es el necesario para darte esa función, que pediste
+              vos.
             </p>
           </section>
 

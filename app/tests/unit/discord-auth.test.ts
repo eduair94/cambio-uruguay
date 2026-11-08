@@ -33,8 +33,14 @@ describe('resolveDiscordUid', () => {
   })
 
   it('creates an email user when verified email has no account', async () => {
-    const uid = await resolveDiscordUid({ id: '111', email: 'a@b.com', verified: true }, base)
+    const created: any[] = []
+    const uid = await resolveDiscordUid(
+      { id: '111', email: 'a@b.com', verified: true },
+      { ...base, createUser: async (p: any) => (created.push(p), { uid: 'new-uid' }) }
+    )
     expect(uid).toBe('new-uid')
+    // Discord verified it: the account must say so, or verified-only email never reaches it.
+    expect(created).toEqual([{ email: 'a@b.com', emailVerified: true }])
   })
 
   it('uses discord:<id> uid when email is missing/unverified', async () => {

@@ -699,7 +699,9 @@
     "telegram": "Recibir por Telegram",
     "telegramHint": "Vinculá tu Telegram primero",
     "saved": "Preferencias guardadas",
-    "verifyEmail": "Primero verificá tu correo: es la forma de saber que la dirección es tuya."
+    "verifyEmail": "Primero verificá tu correo: es la forma de saber que la dirección es tuya.",
+    "sendVerification": "Enviarme el correo de verificación",
+    "verificationSent": "Listo: tocá el enlace del correo y volvé a prender el interruptor."
   },
   "donarPaypal": "Donar con Paypal",
   "donarMercadoPago": "Donar con Mercado Pago",

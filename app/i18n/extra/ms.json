@@ -699,7 +699,9 @@
     "telegram": "Terima di Telegram",
     "telegramHint": "Pautkan Telegram anda dahulu",
     "saved": "Pilihan disimpan",
-    "verifyEmail": "Sahkan e-mel anda terlebih dahulu: begitulah cara kami tahu alamat itu adalah milik anda."
+    "verifyEmail": "Sahkan e-mel anda terlebih dahulu: begitulah cara kami tahu alamat itu adalah milik anda.",
+    "sendVerification": "Hantarkan e-mel pengesahan kepada saya",
+    "verificationSent": "Selesai: ketik pautan dalam e-mel dan hidupkan pautan ini sekali lagi."
   },
   "donarPaypal": "Derma dengan Paypal",
   "donarMercadoPago": "Derma dengan Mercado Pago",

@@ -699,7 +699,9 @@
     "telegram": "Λήψη στο Telegram",
     "telegramHint": "Συνδέστε πρώτα το Telegram σας",
     "saved": "Οι προτιμήσεις αποθηκεύτηκαν",
-    "verifyEmail": "Επαληθεύστε πρώτα το email σας: έτσι γνωρίζουμε ότι η διεύθυνσή σας είναι δική σας."
+    "verifyEmail": "Επαληθεύστε πρώτα το email σας: έτσι γνωρίζουμε ότι η διεύθυνσή σας είναι δική σας.",
+    "sendVerification": "Στείλτε μου το email επαλήθευσης",
+    "verificationSent": "Ολοκληρώθηκε: πατήστε τον σύνδεσμο στο email και ενεργοποιήστε ξανά."
   },
   "donarPaypal": "Δωρίστε με Paypal",
   "donarMercadoPago": "Δωρίστε με το Mercado Pago",

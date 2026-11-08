@@ -699,7 +699,9 @@
     "telegram": "Prejemajte na Telegramu",
     "telegramHint": "Najprej povežite svoj Telegram",
     "saved": "Nastavitve shranjene",
-    "verifyEmail": "Najprej preverite svoj e-poštni naslov: tako vemo, da je naslov vaš."
+    "verifyEmail": "Najprej preverite svoj e-poštni naslov: tako vemo, da je naslov vaš.",
+    "sendVerification": "Pošlji mi potrditveno e-pošto",
+    "verificationSent": "Končano: tapnite povezavo v e-poštnem sporočilu in to znova vklopite."
   },
   "donarPaypal": "Donirajte s Paypalom",
   "donarMercadoPago": "Donirajte z Mercado Pago",

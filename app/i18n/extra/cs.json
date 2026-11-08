@@ -699,7 +699,9 @@
     "telegram": "Přijímat na Telegramu",
     "telegramHint": "Nejprve propojte svůj Telegram",
     "saved": "Předvolby uloženy",
-    "verifyEmail": "Nejprve ověřte svůj e-mail: tak víme, že adresa je vaše."
+    "verifyEmail": "Nejprve ověřte svůj e-mail: tak víme, že adresa je vaše.",
+    "sendVerification": "Pošlete mi ověřovací e-mail",
+    "verificationSent": "Hotovo: Klepněte na odkaz v e-mailu a znovu tuto funkci zapněte."
   },
   "donarPaypal": "Darujte přes Paypal",
   "donarMercadoPago": "Darujte s Mercado Pago",

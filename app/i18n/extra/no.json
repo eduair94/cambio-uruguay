@@ -699,7 +699,9 @@
     "telegram": "Motta på Telegram",
     "telegramHint": "Koble til Telegram-en din først",
     "saved": "Innstillinger lagret",
-    "verifyEmail": "Bekreft e-postadressen din først: det er slik vi vet at adressen er din."
+    "verifyEmail": "Bekreft e-postadressen din først: det er slik vi vet at adressen er din.",
+    "sendVerification": "Send meg bekreftelses-e-posten",
+    "verificationSent": "Ferdig: trykk på lenken i e-posten og slå dette på igjen."
   },
   "donarPaypal": "Doner med Paypal",
   "donarMercadoPago": "Doner med Mercado Pago",

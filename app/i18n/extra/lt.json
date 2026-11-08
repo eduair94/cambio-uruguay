@@ -699,7 +699,9 @@
     "telegram": "Gauti per „Telegram“",
     "telegramHint": "Pirmiausia susiekite savo „Telegram“",
     "saved": "Nuostatos išsaugotos",
-    "verifyEmail": "Pirmiausia patikrinkite savo el. pašto adresą: taip žinosime, kad adresas yra jūsų."
+    "verifyEmail": "Pirmiausia patikrinkite savo el. pašto adresą: taip žinosime, kad adresas yra jūsų.",
+    "sendVerification": "Atsiųskite man patvirtinimo el. laišką",
+    "verificationSent": "Atlikta: palieskite el. laiške esančią nuorodą ir vėl įjunkite šią funkciją."
   },
   "donarPaypal": "Paaukokite naudodami „Paypal“",
   "donarMercadoPago": "Paaukokite per „Mercado Pago“",

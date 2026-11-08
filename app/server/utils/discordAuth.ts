@@ -32,6 +32,7 @@ export interface UidDeps {
   createUser: (props: {
     uid?: string
     email?: string
+    emailVerified?: boolean
     displayName?: string
     photoURL?: string
   }) => Promise<{ uid: string }>
@@ -51,7 +52,9 @@ export async function resolveDiscordUid(p: DiscordProfile, deps: UidDeps): Promi
       return u.uid
     } catch (e: any) {
       if (e?.code !== 'auth/user-not-found') throw e
-      const created = await deps.createUser({ email: p.email })
+      // Discord verified this address: the new account carries it as verified, or the newsletter and
+      // the alert emails (which require a verified address) would never reach it.
+      const created = await deps.createUser({ email: p.email, emailVerified: true })
       return created.uid
     }
   }

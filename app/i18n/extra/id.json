@@ -699,7 +699,9 @@
     "telegram": "Terima di Telegram",
     "telegramHint": "Hubungkan akun Telegram Anda terlebih dahulu.",
     "saved": "Pengaturan tersimpan",
-    "verifyEmail": "Verifikasi email Anda terlebih dahulu: dengan begitu kami tahu alamat tersebut milik Anda."
+    "verifyEmail": "Verifikasi email Anda terlebih dahulu: dengan begitu kami tahu alamat tersebut milik Anda.",
+    "sendVerification": "Kirimkan saya email verifikasi",
+    "verificationSent": "Selesai: ketuk tautan di email dan aktifkan kembali."
   },
   "donarPaypal": "Berdonasi melalui Paypal",
   "donarMercadoPago": "Berdonasi melalui Mercado Pago",

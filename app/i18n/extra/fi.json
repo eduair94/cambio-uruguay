@@ -699,7 +699,9 @@
     "telegram": "Vastaanota Telegramissa",
     "telegramHint": "Linkitä ensin Telegram-tilisi",
     "saved": "Asetukset tallennettu",
-    "verifyEmail": "Vahvista ensin sähköpostiosoitteesi: näin tiedämme, että osoite on sinun."
+    "verifyEmail": "Vahvista ensin sähköpostiosoitteesi: näin tiedämme, että osoite on sinun.",
+    "sendVerification": "Lähetä minulle vahvistussähköposti",
+    "verificationSent": "Valmis: napauta sähköpostissa olevaa linkkiä ja ota tämä uudelleen käyttöön."
   },
   "donarPaypal": "Lahjoita PayPalilla",
   "donarMercadoPago": "Lahjoita Mercado Pagon kautta",

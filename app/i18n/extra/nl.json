@@ -699,7 +699,9 @@
     "telegram": "Ontvang via Telegram",
     "telegramHint": "Koppel eerst je Telegram-account",
     "saved": "Voorkeuren opgeslagen",
-    "verifyEmail": "Verifieer eerst je e-mailadres: zo weten we dat het adres van jou is."
+    "verifyEmail": "Verifieer eerst je e-mailadres: zo weten we dat het adres van jou is.",
+    "sendVerification": "Stuur me de verificatie-e-mail.",
+    "verificationSent": "Klaar: tik op de link in de e-mail en schakel dit weer in."
   },
   "donarPaypal": "Doneer via PayPal",
   "donarMercadoPago": "Doneer via Mercado Pago",

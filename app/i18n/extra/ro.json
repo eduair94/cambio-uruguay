@@ -699,7 +699,9 @@
     "telegram": "Primește pe Telegram",
     "telegramHint": "Conectează-ți mai întâi Telegramul",
     "saved": "Preferințe salvate",
-    "verifyEmail": "Verificați mai întâi adresa de e-mail: așa știm că adresa este a dumneavoastră."
+    "verifyEmail": "Verificați mai întâi adresa de e-mail: așa știm că adresa este a dumneavoastră.",
+    "sendVerification": "Trimite-mi e-mailul de verificare",
+    "verificationSent": "Gata: atinge linkul din e-mail și activează din nou această opțiune."
   },
   "donarPaypal": "Donează cu Paypal",
   "donarMercadoPago": "Donează prin Mercado Pago",

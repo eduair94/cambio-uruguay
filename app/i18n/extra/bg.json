@@ -699,7 +699,9 @@
     "telegram": "Получаване в Telegram",
     "telegramHint": "Първо свържете Telegram",
     "saved": "Предпочитанията са запазени",
-    "verifyEmail": "Първо потвърдете имейла си: така ще разберем, че адресът е ваш."
+    "verifyEmail": "Първо потвърдете имейла си: така ще разберем, че адресът е ваш.",
+    "sendVerification": "Изпрати ми имейла за потвърждение",
+    "verificationSent": "Готово: докоснете връзката в имейла и включете това отново."
   },
   "donarPaypal": "Дарете с Paypal",
   "donarMercadoPago": "Дарете с Mercado Pago",

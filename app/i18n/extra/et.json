@@ -699,7 +699,9 @@
     "telegram": "Saa Telegramis",
     "telegramHint": "Lingi esmalt oma Telegram",
     "saved": "Eelistused salvestatud",
-    "verifyEmail": "Kinnitage esmalt oma e-posti aadress: nii teame, et aadress on teie oma."
+    "verifyEmail": "Kinnitage esmalt oma e-posti aadress: nii teame, et aadress on teie oma.",
+    "sendVerification": "Saada mulle kinnitusmeil",
+    "verificationSent": "Valmis: puuduta e-kirjas olevat linki ja lülita see uuesti sisse."
   },
   "donarPaypal": "Anneta PayPali kaudu",
   "donarMercadoPago": "Anneta Mercado Pago kaudu",
