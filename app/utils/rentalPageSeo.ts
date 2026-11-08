@@ -10,6 +10,12 @@ interface RentalPageSchemaOptions {
   description: string
   uncertain: boolean
   breadcrumbs: { name: string; url: string }[]
+  /**
+   * The barrio as the page names it (`rentalDisplayBarrio`: "Pocitos", never "POCITOS" or
+   * "60 m2 60 m2"); null when the advert names none worth publishing. Omitted, the stored
+   * neighborhood is used as is.
+   */
+  addressLocality?: string | null
   photoCaption: (title: string, position: number) => string
   photoCredit: (source: ReturnType<typeof rentalPhotos>[number]['source']) => string
 }
@@ -31,6 +37,8 @@ export function rentalPageSchema(options: RentalPageSchemaOptions) {
   }))
   const imageRefs = photos.map(photo => ({ '@id': photo['@id'] }))
   const address = rentalStreet(property)
+  const locality =
+    options.addressLocality === undefined ? property.neighborhood : options.addressLocality
   const residential = ['apartamento', 'casa', 'habitacion'].includes(property.propertyType)
   // Generic "area" can be land or total area. Only an uncontradicted built area is floor space.
   const builtAreas = property.offers
@@ -60,7 +68,7 @@ export function rentalPageSchema(options: RentalPageSchemaOptions) {
       '@type': 'PostalAddress',
       addressCountry: 'UY',
       ...(property.department ? { addressRegion: property.department } : {}),
-      ...(property.neighborhood ? { addressLocality: property.neighborhood } : {}),
+      ...(locality ? { addressLocality: locality } : {}),
       ...(address ? { streetAddress: address } : {}),
     },
     ...(residential && nonnegativeInteger(property.bedrooms)

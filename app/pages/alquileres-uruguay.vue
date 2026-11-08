@@ -439,10 +439,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                   <div class="rental-card__main">
                     <div class="rental-card__overview">
                       <p class="rental-card__where">
-                        {{
-                          [property.neighborhood, property.department].filter(Boolean).join(', ') ||
-                          t('unknown')
-                        }}
+                        {{ rentalDisplayZone(property) || t('unknown') }}
                       </p>
                       <p
                         v-if="referencePoint && !pending"
@@ -831,6 +828,8 @@ import {
 import { MUTUALISTA_SEDES } from '~/utils/mutualistaSedes'
 import { DIRECTORIOS_HUB } from '~/utils/directorios'
 import { rentalPricePerM2 } from '~/utils/rentalPricePerM2'
+// The card names the place as the ficha does: "Pocitos", never the portal's "POCITOS".
+import { rentalDisplayZone } from '~/utils/rentalDisplayPlace'
 import {
   RENTAL_SAVED_STORAGE_ID,
   RENTAL_SAVED_FAVORITE_LIMIT,

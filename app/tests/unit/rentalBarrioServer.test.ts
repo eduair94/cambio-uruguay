@@ -5,9 +5,11 @@ vi.mock('../../server/models/RentalListing', () => ({ RentalListingModel: { find
 vi.mock('../../server/utils/rentalZones', () => ({ loadRentalZoneSnapshots: vi.fn() }))
 
 const {
+  RENTAL_BARRIO_LISTINGS,
   latestRentalBarrioListings,
   loadRentalBarrio,
   loadIndexableRentalBarrios,
+  pickRentalBarrioListings,
   rentalBarrioNeighborhoodSpellings,
   resolveIndexableBarrioLink,
   startIndexableRentalBarrioLinks,
@@ -15,6 +17,41 @@ const {
 const { RentalListingModel } = await import('../../server/models/RentalListing')
 
 const NOW = Date.parse('2026-10-04T12:00:00Z')
+/** A stored property as the barrio query projects it: one current InfoCasas advert. */
+const listingRow = (
+  key: string,
+  over: Record<string, unknown> = {},
+  advert: Record<string, unknown> = {}
+) => ({
+  key,
+  title: 'Apartamento 2 dormitorios en Pocitos',
+  propertyType: 'apartamento',
+  department: 'Montevideo',
+  neighborhood: 'Pocitos',
+  address: 'Bulevar España 2600',
+  bedrooms: 2,
+  bathrooms: 1,
+  area: 60,
+  parkingSpaces: null,
+  furnished: null,
+  offers: [
+    {
+      source: 'infocasas',
+      listingId: `ic-${key}`,
+      url: `https://www.infocasas.com.uy/${key}`,
+      title: 'Apartamento 2 dormitorios en Pocitos',
+      image: `https://cdn.infocasas.com.uy/${key}.jpg`,
+      price: 42000,
+      currency: 'UYU',
+      priceUyu: 42000,
+      commonExpenses: 13400,
+      commonExpensesCurrency: 'UYU',
+      lastSeen: '2026-10-03',
+      ...advert,
+    },
+  ],
+  ...over,
+})
 const dist = (median: number | null) => ({
   count: 20,
   mean: median,
@@ -74,6 +111,10 @@ describe('loadRentalBarrio', () => {
         price: 35000,
         currency: 'UYU' as const,
         area: 60,
+        image: 'https://cdn.infocasas.com.uy/x.jpg',
+        commonExpenses: 9000,
+        commonExpensesCurrency: 'UYU' as const,
+        totalUyu: 44000,
       },
     ])
     const page = await loadRentalBarrio('montevideo', 'pocitos', {
@@ -140,17 +181,14 @@ describe('latestRentalBarrioListings (la consulta de avisos)', () => {
 
   it('usa el índice {department, neighborhood}: grafías exactas, sin collation, sólo viviendas', async () => {
     const chain = chainFor([
-      {
-        key: 'pocitos-a',
-        title: 'Apto',
-        propertyType: 'apartamento',
-        bedrooms: 2,
-        price: 1200,
-        currency: 'USD',
-        area: 70,
-      },
-      { key: 'sin-precio', title: 'x', price: '35000' },
-      { key: 'casa-b', propertyType: 'casa', bedrooms: 'tres', price: 30000, currency: 'EUR' },
+      listingRow('pocitos-a'),
+      // Facebook without gastos comunes: its ficha is `noindex` (missing_known_monthly_cost).
+      listingRow(
+        'montevideo-apartamento-13eecmn',
+        {},
+        { commonExpenses: null, source: 'facebook' }
+      ),
+      { key: 'sin-avisos', title: 'x', price: 35000 },
     ])
     const find = vi.mocked(RentalListingModel.find).mockReturnValue(chain as any)
     const rows = await latestRentalBarrioListings('Montevideo', ['POCITOS', 'Pocitos'], NOW)
@@ -171,29 +209,31 @@ describe('latestRentalBarrioListings (la consulta de avisos)', () => {
     // The same cutoff `buildRentalFilter` applies: RENTAL_STALE_DAYS (10) before now, as a day.
     expect(filter.lastSeen).toEqual({ $gte: '2026-09-24' })
     expect(chain.collation).not.toHaveBeenCalled()
-    expect(chain.sort).toHaveBeenCalledWith({ lastSeen: -1, key: 1 })
-    expect(chain.limit).toHaveBeenCalledWith(6)
+    // `lastSeen` is a day shared by thousands of rows: the key used to pick the cards.
+    expect(chain.sort).toHaveBeenCalledWith({ freshAt: -1, key: 1 })
+    expect(chain.limit).toHaveBeenCalledWith(40)
     expect(chain.maxTimeMS).toHaveBeenCalledWith(3000)
-    expect(rows).toEqual([
-      {
-        key: 'pocitos-a',
-        title: 'Apto',
-        propertyType: 'apartamento',
-        bedrooms: 2,
-        price: 1200,
-        currency: 'USD',
-        area: 70,
-      },
-      {
-        key: 'casa-b',
-        title: '',
-        propertyType: 'casa',
-        bedrooms: null,
-        price: 30000,
-        currency: 'UYU',
-        area: null,
-      },
-    ])
+    const projection = chain.select.mock.calls[0]![0] as Record<string, number>
+    for (const field of ['offers.image', 'offers.commonExpenses', 'offers.currency', 'offers.url'])
+      expect(projection[field]).toBe(1)
+    // Cards never carry an advert's description, gallery or contact data.
+    expect(Object.keys(projection).some(field => /details|seller|contact|phone/i.test(field))).toBe(
+      false
+    )
+    expect(rows.map(row => row.key)).toEqual(['pocitos-a'])
+    expect(rows[0]).toEqual({
+      key: 'pocitos-a',
+      title: 'Apartamento 2 dormitorios en Pocitos',
+      propertyType: 'apartamento',
+      bedrooms: 2,
+      price: 42000,
+      currency: 'UYU',
+      area: 60,
+      image: 'https://cdn.infocasas.com.uy/pocitos-a.jpg',
+      commonExpenses: 13400,
+      commonExpensesCurrency: 'UYU',
+      totalUyu: 55400,
+    })
   })
 
   it('el departamento va en su grafía canónica; sin grafías no consulta', async () => {
@@ -223,6 +263,76 @@ describe('latestRentalBarrioListings (la consulta de avisos)', () => {
     )
     const fold = (value: string) => value.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()
     expect(new Set(spellings.map(fold))).toEqual(new Set(['malvin norte']))
+  })
+})
+
+describe('pickRentalBarrioListings (las tarjetas de "Avisos recientes")', () => {
+  it('only lists fichas that pass their own quality gate, in the order the query read them', () => {
+    const rows = [
+      listingRow('con-todo'),
+      listingRow('sin-gastos', {}, { commonExpenses: null, commonExpensesCurrency: null }),
+      listingRow('sin-foto', {}, { image: null }),
+      listingRow('sin-dormitorios', { bedrooms: null }),
+      listingRow('pocos-datos', { bathrooms: null, area: null }),
+      listingRow('aviso-vencido', {}, { lastSeen: '2026-09-01' }),
+      listingRow('sin-calle', { address: '' }),
+      listingRow('temporada', { title: 'Alquiler de temporada en Pocitos frente al mar' }),
+      listingRow('sin-gastos-cero', {}, { commonExpenses: 0, commonExpensesCurrency: null }),
+    ]
+    const cards = pickRentalBarrioListings(rows, NOW)
+    expect(cards.map(card => card.key)).toEqual(['con-todo', 'sin-gastos-cero'])
+    // Zero gastos comunes is a published amount: the total is the rent.
+    expect(cards[1]).toMatchObject({ commonExpenses: 0, totalUyu: 42000 })
+  })
+
+  it('prices each card with ONE advert, the cheapest one whose costs add up', () => {
+    // The cheapest advert of the property says nothing about gastos comunes.
+    const facebook = listingRow(
+      'dos-avisos',
+      {},
+      {
+        source: 'facebook',
+        listingId: 'fb-dos-avisos',
+        url: 'https://www.facebook.com/marketplace/item/1',
+        image: 'https://scontent.xx.fbcdn.net/1.jpg',
+        price: 38000,
+        priceUyu: 38000,
+        commonExpenses: null,
+        commonExpensesCurrency: null,
+      }
+    ).offers[0]!
+    const row = listingRow('dos-avisos')
+    row.offers.unshift(facebook)
+    const [card] = pickRentalBarrioListings([row], NOW)
+    expect(card).toMatchObject({ price: 42000, commonExpenses: 13400, totalUyu: 55400 })
+    // The photo comes from the same advert first.
+    expect(card!.image).toBe('https://cdn.infocasas.com.uy/dos-avisos.jpg')
+  })
+
+  it('adds a dollar rent and peso gastos comunes in pesos', () => {
+    const [card] = pickRentalBarrioListings(
+      [
+        listingRow(
+          'dolares',
+          {},
+          { price: 1200, currency: 'USD', priceUyu: 49860, commonExpenses: 8000 }
+        ),
+      ],
+      NOW
+    )
+    expect(card).toMatchObject({
+      price: 1200,
+      currency: 'USD',
+      commonExpenses: 8000,
+      totalUyu: 57860,
+    })
+  })
+
+  it(`shows at most ${RENTAL_BARRIO_LISTINGS}`, () => {
+    const rows = Array.from({ length: 12 }, (_, index) =>
+      listingRow(`vivienda-${'abcdefghijkl'[index]}`)
+    )
+    expect(pickRentalBarrioListings(rows, NOW)).toHaveLength(RENTAL_BARRIO_LISTINGS)
   })
 })
 

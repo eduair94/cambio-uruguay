@@ -20,6 +20,7 @@ import {
   RENTAL_PRICE_PER_M2_SORT_FIELDS,
   rentalPricePerM2Stages,
 } from '../../../utils/rentalPricePerM2'
+import { rentalBarrioNamePlausible } from '../../../utils/rentalBarrioName'
 
 import {
   annotateRentalAvailability,
@@ -216,7 +217,9 @@ const cachedDirectory = defineCachedEventHandler(
         medianUyu,
         facets: {
           departments: toFacet(departments as Array<{ _id: string; count: number }>),
-          neighborhoods: toFacet(neighborhoods),
+          // The barrio selector offers neither a surface nor a country: same rule as the barrio
+          // pages (utils/rentalBarrioName.ts). A URL that already filters by one still works.
+          neighborhoods: toFacet(neighborhoods).filter(row => rentalBarrioNamePlausible(row.value)),
           types: toFacet(dimension.types || []),
           sources: toFacet(dimension.sources || []),
           priceMaxUyu: Number((dimension.price?.[0] as unknown as { max?: number })?.max || 0),
