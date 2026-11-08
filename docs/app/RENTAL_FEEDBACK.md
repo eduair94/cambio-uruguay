@@ -104,6 +104,15 @@ Vista → toque → seguimiento, cada paso por su lado:
 - **Microsoft Clarity**, cuando esté activo: cada respuesta deja la etiqueta `feedback` (`si`,
   `en-parte`, `no`, `sugerencia`), el evento `feedback_<respuesta>` y un `upgrade`, para ver la
   grabación de quien contestó «No». Los `data-cta` llegan como eventos `cta_<valor>`.
+  - **Línea de base antes de prenderlo** (Cloudflare Web Analytics, `rumWebVitalsEventsAdaptiveGroups`,
+    1–8/11/2026, p75, eventos muestreados): `/` móvil CLS 0,716 · INP 552 ms · LCP 1,9 s (n=280);
+    `/` escritorio CLS 0,155 · INP 80 ms · LCP 2,4 s; `/alquileres-uruguay` móvil CLS 0 · INP 104 ms ·
+    LCP 2,0 s; `/autos-usados-uruguay` móvil CLS 0,228 · INP 352 ms · LCP 1,6 s. Una semana después de
+    prenderlo se vuelve a leer la misma consulta (la corre el token de caché del VPS: el análisis de
+    cuenta está permitido, `rum/site_info` no): si el INP móvil p75 sube más de 10 %, se baja el
+    muestreo en `utils/clarityPolicy.ts`. El CLS de la home no es de la página: es la unidad
+    automática *in-page* de AdSense que entra arriba del H1 (reproducido el 8/11 a 390 px: 300 px a
+    los 5,5 s, el hero baja 308 px) — ver `auto-ads` en la consola, no código.
 
 ```js
 db.rentalfeedbacks.aggregate([
