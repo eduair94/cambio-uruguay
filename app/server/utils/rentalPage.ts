@@ -224,7 +224,9 @@ export function rentalPageQualityIssues(property: RentalPublicProperty, usdUyu: 
     typeof property.furnished === 'boolean',
   ].filter(Boolean).length
   if (attributes < 3) issues.push('insufficient_specific_attributes')
-  if (!rentalPhotos(property).length) issues.push('missing_photo')
+  // Whether the advert published photos, not whether a signed copy of one still opens: an expired
+  // TikTok cover leaves the gallery but does not, by itself, move the page out of the index.
+  if (!rentalPhotos(property, { keepExpired: true }).length) issues.push('missing_photo')
   if (!property.offers.some(offer => publicUrl(offer.url))) issues.push('missing_original_advert')
   if (!property.title || property.title.trim().length < 15) issues.push('insufficient_title')
   const comparableOffers = property.offers.filter(offer => publicUrl(offer.url))

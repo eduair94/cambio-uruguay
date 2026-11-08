@@ -399,6 +399,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                        siendo la ficha. -->
                   <div v-if="hasPhoto(property)" class="rental-card__media">
                     <PropertyPhotoCarousel
+                      cta="rental-photo-open"
                       :photos="rentalCardPhotoRefs(property)"
                       :total="property.photoCount"
                       :source="gallerySource(property)"

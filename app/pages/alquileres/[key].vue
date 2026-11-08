@@ -547,11 +547,16 @@ const pageTitle = computed(() =>
 const description = computed(() =>
   snippet.value ? rentalPageDescription(snippet.value, locale.value) : t('unavailableHint')
 )
-const primaryPhoto = computed(() => photos.value[0])
+// The photo a shared link previews (`pickSharePhoto`, auto-imported from utils/photoSizes.ts): the
+// first one a preview can show and that stays valid for two more days. Signed TikTok, Instagram and
+// Facebook photos (403 within days; fbcdn also turns Twitterbot away) and Casasweb's 320-px ones do
+// not qualify, InfoCasas sends its 1200x630 file (uploads reach 710 KB, over WhatsApp's 600 KB) and
+// Mercado Libre its JPEG. With none, the generated card below is the preview.
+const primaryPhoto = computed(() => pickSharePhoto(photos.value, renderedAt.value))
 const primaryPhotoAlt = computed(() =>
   primaryPhoto.value
-    ? t('photoDescription', { title: primaryPhoto.value.title || title.value, n: 1 })
-    : undefined
+    ? t('photoDescription', { title: pageTitle.value, n: primaryPhoto.value.index + 1 })
+    : pageTitle.value
 )
 // Keep the generated URL usable for older links and image crawlers, even when
 // the published preview uses the advert's own photo.

@@ -9,6 +9,7 @@ import {
   type RentalPublicProperty,
 } from './rentals'
 import { rentalSavedSafeUrl } from './rentalSaved'
+import { photoUrlExpired } from './photoSizes'
 import type { PropertyPhotoRef } from './photoViewer'
 
 export const RENTAL_RETURN_STORAGE = 'cu_rental_return_v1'
@@ -63,8 +64,17 @@ export const RENTAL_CARD_PHOTO_PREVIEW = 8
  * Every distinct photo of a property, in ONE order shared by the card carousel, the viewer and the
  * property page — so "photo 3" is the same photo in all three. The advert that matches the active
  * filters is the card's cover, so its photos come first.
+ *
+ * A TikTok, Instagram or Facebook photo is a signed URL that answers 403 once its signature runs
+ * out (`photoUrlExpired`): on 2026-11-08, 18 of the 21 signed covers in the rental sitemap had,
+ * and they still sat in the gallery, the JSON-LD and the image sitemap. Those are left out.
+ * `keepExpired` is for the one reader that asks whether the advert PUBLISHED photos (the page's
+ * quality gate), not whether our copy of the link still opens.
  */
-export function rentalPhotos(property: Pick<RentalPublicProperty, 'offers' | 'matchingOffer'>) {
+export function rentalPhotos(
+  property: Pick<RentalPublicProperty, 'offers' | 'matchingOffer'>,
+  { now = Date.now(), keepExpired = false }: { now?: number; keepExpired?: boolean } = {}
+) {
   const seen = new Set<string>()
   const matching = property.matchingOffer
   const offers = matching
@@ -76,6 +86,7 @@ export function rentalPhotos(property: Pick<RentalPublicProperty, 'offers' | 'ma
     return [offer.image, ...(offer.details?.images ?? [])].flatMap(image => {
       const url = rentalSavedSafeUrl(image)
       if (!url || seen.has(url) || seen.size >= RENTAL_PHOTO_LIMIT) return []
+      if (!keepExpired && photoUrlExpired(url, now)) return []
       seen.add(url)
       return [
         { url, sourceUrl, source: offer.source, title: offer.title, listingId: offer.listingId },
@@ -101,9 +112,14 @@ export function rentalGalleryPreview(
 /**
  * The photos a card can show before anything else is asked for, each credited to the advert it
  * came from: the card's own preview when the list sent one, else every advert's cover.
+ *
+ * An EMPTY preview is the search's own answer (no photo it could show, expired signatures
+ * included) and travels in the payload, so it is kept as is: re-reading the covers here would
+ * measure the signatures again against each side's clock, and a phone whose clock runs behind
+ * would hydrate a photo the server never rendered.
  */
 export function rentalCardPhotoRefs(item: RentalListItem): PropertyPhotoRef[] {
-  if (!item.galleryPreview?.length) return rentalPhotoRefs(item)
+  if (!item.galleryPreview) return rentalPhotoRefs(item)
   const offers = item.matchingOffer ? [item.matchingOffer, ...item.offers] : item.offers
   return item.galleryPreview.flatMap(photo => {
     const offer = offers.find(row => row.listingId === photo.listingId)
