@@ -175,6 +175,23 @@ describe("gastos comunes a description states", () => {
     expect(commonExpensesFromText("Apartamento tipo casa, sin gastos comunes.", pesos, usdUyu)).toEqual({ commonExpenses: 0, commonExpensesCurrency: null });
   });
 
+  // The two misses of the hand-labelled sample of 2026-11-08 (161 of 163 right), both read as "none".
+  it("does not take unreported or small gastos comunes for none", () => {
+    expect(readCommonExpensesFromText("Sin gastos comunes reportados, lo que implica un ahorro significativo.", pesos, usdUyu))
+      .toEqual({ reading: null, reason: "silent" });
+    expect(readCommonExpensesFromText("No tiene gastos comunes informados.", pesos, usdUyu).reason).toBe("silent");
+    expect(readCommonExpensesFromText(
+      "Con un alquiler de $35.000 y gastos comunes mínimos, esta propiedad ofrece una excelente oportunidad. Sin Gastos Comunes.",
+      { price: 35_000, currency: "UYU" }, usdUyu
+    )).toEqual({ reading: null, reason: "disputed" });
+    expect(readCommonExpensesFromText("GC muy bajos. Sin gastos comunes extra por el garaje", pesos, usdUyu).reading).toBeNull();
+    // The plain statements of the sample still read as none, and a small figure is still a figure.
+    for (const text of ["No tiene gastos comunes", "Sin Gastos Comunes", "Todos los patios y servicios son exclusivos, no tiene gastos comunes."]) {
+      expect(commonExpensesFromText(text, pesos, usdUyu), text).toEqual({ commonExpenses: 0, commonExpensesCurrency: null });
+    }
+    expect(commonExpensesFromText("Gastos comunes mínimos. Gastos comunes: $ 2.000", pesos, usdUyu)?.commonExpenses).toBe(2_000);
+  });
+
   it("keeps only what can be a month of gastos comunes for that rent, in pesos at the run's rate", () => {
     // Above the rent: a zero too many, or the year.
     expect(readCommonExpensesFromText("Gastos comunes $45.000", pesos, usdUyu)).toEqual({ reading: null, reason: "implausible" });

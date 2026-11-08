@@ -130,6 +130,26 @@ const GC_QUALIFIED_NONE = new RegExp(
     String.raw`(?:alt[oa]s|alt[ií]sim[oa]s|elevad[oa]s|car[oa]s|car[ií]sim[oa]s|excesiv[oa]s|abusiv[oa]s|exorbitantes|importantes|grandes|enormes)(?![a-záéíóúñ])`,
   "gi"
 );
+/**
+ * "Sin gastos comunes reportados, lo que implica un ahorro": the advert does not report them, which
+ * is not saying there are none (the hand-labelled sample of 2026-11-08 had one, in a description
+ * that also said it "no detalla servicios"). Taken out before reading, like the modest ones above.
+ */
+const GC_UNREPORTED = new RegExp(
+  String.raw`\b(?:sin|no\s+(?:tiene|hay|se\s+(?:reportan|informan|indican|detallan|especifican)))\s+(?:gastos\s+comunes|gc|expensas)\s+` +
+    String.raw`(?:reportad[oa]s|informad[oa]s|declarad[oa]s|especificad[oa]s|detallad[oa]s|indicad[oa]s|mencionad[oa]s|registrad[oa]s|publicad[oa]s|conocid[oa]s)(?![a-záéíóúñ])`,
+  "gi"
+);
+/**
+ * "Gastos comunes mínimos" (bajos, reducidos, accesibles…): a building with small ones. The same
+ * sample had one that later said "Sin Gastos Comunes": an advert that says both says neither, so its
+ * zero is not read. A figure next to the word ("gastos comunes bajos: $2.000") is still read.
+ */
+const GC_SMALL = new RegExp(
+  String.raw`${GC_LABEL}\s+(?:(?:muy|bien|s[uú]per|realmente)\s+)?` +
+    String.raw`(?:m[ií]nimos|baj[oa]s|baj[ií]sim[oa]s|reducid[oa]s|accesibles|econ[oó]mic[oa]s|razonables|moderad[oa]s|chic[oa]s|peque[ñn][oa]s)(?![a-záéíóúñ])`,
+  "i"
+);
 
 export interface CommonExpensesReading {
   /** 0 = the description says there are none ("sin gastos comunes"). */
@@ -163,10 +183,11 @@ export function readCommonExpensesFromText(
   if (!text.trim()) return { reading: null, reason: "silent" };
   if (GC_INCLUDED.test(text)) return { reading: null, reason: "included" };
   if (GC_NOT_MONTHLY.test(text)) return { reading: null, reason: "not-monthly" };
-  const amounts = captionAmounts(text.replace(GC_QUALIFIED_NONE, " "));
+  const amounts = captionAmounts(text.replace(GC_QUALIFIED_NONE, " ").replace(GC_UNREPORTED, " "));
   if (amounts.commonExpensesAmbiguous) return { reading: null, reason: "ambiguous" };
   if (amounts.commonExpenses === null) return { reading: null, reason: "silent" };
   if (amounts.commonExpenses === 0) {
+    if (GC_SMALL.test(text)) return { reading: null, reason: "disputed" };
     return zoneOwnCommonExpenses({ commonExpenses: null }, text).commonExpenses === 0
       ? { reading: { commonExpenses: 0, commonExpensesCurrency: null }, reason: "none" }
       : { reading: null, reason: "conditional" };

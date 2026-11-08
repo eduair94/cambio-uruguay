@@ -30,9 +30,13 @@ export function rentalOpportunityListings(
         : details?.totalArea != null && details.totalArea > 0
           ? { value: details.totalArea, basis: "total" as const }
           : own.area != null && own.area > 0 ? { value: own.area, basis: "reported" as const } : null;
-      const expenses = offer.commonExpenses != null && (offer.commonExpenses !== 0 || explicitNoExpenses(offer.title, description)) &&
-        (offer.commonExpenses === 0 || offer.commonExpensesCurrency === "UYU" || offer.commonExpensesCurrency === "USD")
-        ? { amount: offer.commonExpenses, currency: offer.commonExpensesCurrency || "UYU" as const } : null;
+      // A figure read from the advert's description (RENTALS_GC_FROM_TEXT, rentals/textFacts.ts) is our
+      // reading of the prose, not the portal's field: compared as one, the engine's "the text agrees
+      // with the field" check would measure the text against itself. Only the portal's figure enters.
+      const portalExpenses = offer.commonExpensesSource === "description" ? null : offer.commonExpenses;
+      const expenses = portalExpenses != null && (portalExpenses !== 0 || explicitNoExpenses(offer.title, description)) &&
+        (portalExpenses === 0 || offer.commonExpensesCurrency === "UYU" || offer.commonExpensesCurrency === "USD")
+        ? { amount: portalExpenses, currency: offer.commonExpensesCurrency || "UYU" as const } : null;
       result.push({
         id: `rent:${offer.source}:${offer.listingId.replace(new RegExp(`^${offer.source}:`), "")}`,
         operation: "rent", propertyKey: property.key, source: offer.source, listingId: offer.listingId,

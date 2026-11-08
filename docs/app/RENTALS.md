@@ -133,16 +133,28 @@ teléfonos fuera) y **sólo** cuando el portal no dio nada:
   la base de producción (`tests/rentals/gcTextSample.test.ts` lo vigila). Se espera recuperar del
   20 % al 40 %, no el 41–68 % de la primera muestra, que contaba el mismo aviso de El País varias
   veces.
-- **Y antes de prenderla, decidir las oportunidades**: `/oportunidades-inmobiliarias-uruguay` lee
-  `commonExpenses` de la oferta (`classes/propertyopportunities/rentalAdapter.ts`) y no sabe de
-  `commonExpensesSource`, así que con la bandera prendida una cifra leída de la descripción entraría
-  al total comparado como si la hubiera dado el portal, y su control "los gastos comunes del texto
-  concuerdan con el campo" se compararía contra sí mismo. Hoy no pasa nada (la bandera está
-  apagada); el que la prenda decide si el motor de oportunidades las excluye.
+- **Las oportunidades no la usan** (decidido el 8/11): `/oportunidades-inmobiliarias-uruguay` lee
+  `commonExpenses` de la oferta (`classes/propertyopportunities/rentalAdapter.ts`), y una cifra
+  leída de la descripción entraría al total comparado como si la hubiera dado el portal, con su
+  control "los gastos comunes del texto concuerdan con el campo" comparando el texto contra sí
+  mismo. El adaptador trata `commonExpensesSource: "description"` como sin cifra: la bandera no
+  cambia nada de lo que el motor compara. Las estadísticas de zona sí la cuentan, porque
+  `zoneOwnCommonExpenses` relee el mismo texto con sus reglas y sólo acepta lo que coincide.
+- **Medido el 8/11/2026** (muestra de sólo lectura en el VPS, 1.080 avisos sorteados de los últimos
+  10 días): 163 publicarían una cifra (117 "stated", 46 "none"; El País 74, InfoCasas 89; Casasweb y
+  ML no tienen descripción publicada sin cifra del portal). Dos etiquetadores a ciegas marcaron los
+  163 con el texto completo y coincidieron en todos: **161 correctos (98,8 %, cota inferior de
+  Wilson al 95 % 95,6 %)**. Los dos errores eran "none" de InfoCasas: "Sin gastos comunes
+  reportados" (no informarlos no es no tenerlos) y "gastos comunes mínimos" en el mismo texto que
+  "Sin Gastos Comunes". Los dos se abstienen ahora (`GC_UNREPORTED`, `GC_SMALL` en `textFacts.ts`);
+  sobre la muestra cambian sólo esos dos.
 
-Las dos banderas quedan apagadas hasta que la ficha muestre la descripción y el rótulo de los gastos
-comunes; las declara la fila de `docs/seo/experiments.json` de ese cambio, porque hacen pasar la
-guarda de calidad a más fichas.
+**Estado de las banderas (8/11/2026):** `RENTALS_GC_FROM_TEXT=1` en el `.env` raíz del VPS desde el
+día del deploy de las fichas, como declara la fila `fichas-alquiler-calle-precio-total-y-miga-al-barrio`
+de `docs/seo/experiments.json`. `RENTALS_ML_DETAIL_TEXT` **queda apagada hasta el 6/12** (cierre de
+esa ventana): la relectura de las fichas de ML con texto arrancó el mismo 8/11 y llevaba 1.331 de
+27.689 avisos vivos (~5 % por día), así que prenderla ahora llenaría las descripciones a goteo durante
+tres semanas dentro de la ventana medida. Después del 6/12 se prende con su propia fila.
 
 ## Opiniones de quienes lo usan — 19 de octubre de 2026
 
@@ -1887,7 +1899,7 @@ Lo que pasó ese día, y lo que cambió por eso:
 | `RENTALS_CW_MAX_PAGES` | 60 | tope de páginas por departamento/tipo en Casasweb; la rápida toma una página por búsqueda |
 | `RENTALS_CW_PAUSE_MS` | 60000 | pausa única por corrida antes de la segunda lectura de las búsquedas de Casasweb que fallaron |
 | `RENTALS_ML_DETAIL_TEXT` | — | `1` pone en el aviso la descripción de su ficha de Mercado Libre (y las garantías que nombra). Se guarda en `rentalmldetails` igual; la fecha de publicación y la tienda oficial se publican siempre |
-| `RENTALS_GC_FROM_TEXT` | — | `1` publica los gastos comunes que dice la descripción cuando el portal no los da, rotulados `commonExpensesSource: "description"`. Sólo con ≥ 95 % de aciertos medidos con `npm run rentals_gc_text_sample` |
+| `RENTALS_GC_FROM_TEXT` | — | `1` publica los gastos comunes que dice la descripción cuando el portal no los da, rotulados `commonExpensesSource: "description"`. Sólo con ≥ 95 % de aciertos medidos con `npm run rentals_gc_text_sample`. Prendida en el VPS desde el 8/11/2026 (161 de 163) |
 | `RENTALS_FB_ENABLED` | — | `0` apaga Marketplace |
 | `RENTALS_FB_BROWSER` | — | `0` vuelve al puente `:9657` (20–26 tarjetas por búsqueda) |
 | `RENTALS_FB_BROWSER_MINUTES` | 150 / 12 | tope de reloj del lector por navegador en full / fast; al cortar conserva lo leído |
