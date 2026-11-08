@@ -1444,6 +1444,8 @@
   },
   "legal": {
     "privacyNav": "隐私",
+    "lastUpdated": "最后更新时间",
+    "machineTranslated": "机器翻译：如有出入，以西班牙语原文为准。",
     "termsNav": "条款",
     "contactNav": "接触",
     "privacy": {

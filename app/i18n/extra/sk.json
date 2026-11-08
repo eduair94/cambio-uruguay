@@ -1444,6 +1444,8 @@
   },
   "legal": {
     "privacyNav": "Súkromie",
+    "lastUpdated": "Naposledy aktualizované",
+    "machineTranslated": "Strojový preklad: ak sa niečo líši, má prednosť španielsky text.",
     "termsNav": "Podmienky",
     "contactNav": "Kontakt",
     "privacy": {

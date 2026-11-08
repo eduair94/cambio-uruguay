@@ -1433,6 +1433,8 @@
   },
   "legal": {
     "privacyNav": "Privacy",
+    "lastUpdated": "Last updated",
+    "machineTranslated": "Machine translation: if anything differs, the Spanish text prevails.",
     "termsNav": "Terms",
     "contactNav": "Contact",
     "privacy": {

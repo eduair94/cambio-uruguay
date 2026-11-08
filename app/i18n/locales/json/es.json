@@ -1444,6 +1444,8 @@
   },
   "legal": {
     "privacyNav": "Privacidad",
+    "lastUpdated": "Última actualización",
+    "machineTranslated": "Traducción automática: si algo no coincide, vale el texto en español.",
     "termsNav": "Términos",
     "contactNav": "Contacto",
     "privacy": {

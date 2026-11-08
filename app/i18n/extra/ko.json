@@ -1444,6 +1444,8 @@
   },
   "legal": {
     "privacyNav": "은둔",
+    "lastUpdated": "최종 업데이트됨",
+    "machineTranslated": "기계 번역: 내용이 다를 경우 스페인어 원문이 우선합니다.",
     "termsNav": "자귀",
     "contactNav": "연락하다",
     "privacy": {

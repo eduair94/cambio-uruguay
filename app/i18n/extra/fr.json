@@ -1444,6 +1444,8 @@
   },
   "legal": {
     "privacyNav": "Confidentialité",
+    "lastUpdated": "Dernière mise à jour",
+    "machineTranslated": "Traduction automatique : en cas de divergence, le texte espagnol fait foi.",
     "termsNav": "Termes",
     "contactNav": "Contact",
     "privacy": {

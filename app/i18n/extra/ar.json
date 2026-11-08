@@ -349,7 +349,7 @@
       "landedUsd": "إجمالي المبلغ المدفوع بالدولار الأمريكي",
       "landedUyu": "الإجمالي بالبيزو",
       "atRate": "بسعر دولار واحد {rate}",
-      "effectiveRate": "Tax burden: {pct}% of the goods value",
+      "effectiveRate": "العبء الضريبي: {pct}% من قيمة السلع",
       "saveHint": "سجّل الدخول لحفظ سلة التسوق الخاصة بك وعرضها من أي جهاز."
     },
     "disclaimer": "تقدير مرجعي. تعتمد الضرائب الفعلية على الفئة والمنشأ والجمارك.",
@@ -1444,6 +1444,8 @@
   },
   "legal": {
     "privacyNav": "خصوصية",
+    "lastUpdated": "آخر تحديث",
+    "machineTranslated": "الترجمة الآلية: في حال وجود أي اختلاف، يُعتد بالنص الإسباني.",
     "termsNav": "شروط",
     "contactNav": "اتصال",
     "privacy": {

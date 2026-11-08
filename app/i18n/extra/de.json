@@ -1444,6 +1444,8 @@
   },
   "legal": {
     "privacyNav": "Datenschutz",
+    "lastUpdated": "Letzte Aktualisierung",
+    "machineTranslated": "Maschinelle Übersetzung: Bei Abweichungen ist der spanische Text maßgebend.",
     "termsNav": "Bedingungen",
     "contactNav": "Kontakt",
     "privacy": {

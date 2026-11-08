@@ -1444,6 +1444,8 @@
   },
   "legal": {
     "privacyNav": "Privatumas",
+    "lastUpdated": "Paskutinį kartą atnaujinta",
+    "machineTranslated": "Mašininis vertimas: jei yra neatitikimų, pirmenybė teikiama tekstui ispanų kalba.",
     "termsNav": "Sąlygos",
     "contactNav": "Kontaktas",
     "privacy": {

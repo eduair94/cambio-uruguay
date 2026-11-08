@@ -1444,6 +1444,8 @@
   },
   "legal": {
     "privacyNav": "Privacitat",
+    "lastUpdated": "Última actualització",
+    "machineTranslated": "Traducció automàtica: si hi ha alguna diferència, prevaldrà el text en castellà.",
     "termsNav": "Termes",
     "contactNav": "Contacte",
     "privacy": {

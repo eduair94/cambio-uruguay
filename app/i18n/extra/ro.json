@@ -1444,6 +1444,8 @@
   },
   "legal": {
     "privacyNav": "Confidențialitate",
+    "lastUpdated": "Ultima actualizare",
+    "machineTranslated": "Traducere automată: dacă există vreo diferență, textul în spaniolă prevalează.",
     "termsNav": "Termeni",
     "contactNav": "Contact",
     "privacy": {

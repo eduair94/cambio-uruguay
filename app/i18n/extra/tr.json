@@ -1444,6 +1444,8 @@
   },
   "legal": {
     "privacyNav": "Mahremiyet",
+    "lastUpdated": "Son güncelleme",
+    "machineTranslated": "Makine çevirisi: Herhangi bir farklılık varsa, İspanyolca metin geçerlidir.",
     "termsNav": "Şartlar",
     "contactNav": "Temas etmek",
     "privacy": {

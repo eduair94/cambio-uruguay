@@ -1444,6 +1444,8 @@
   },
   "legal": {
     "privacyNav": "プライバシー",
+    "lastUpdated": "最終更新日",
+    "machineTranslated": "機械翻訳：内容に相違がある場合は、スペイン語の原文が優先されます。",
     "termsNav": "条項",
     "contactNav": "接触",
     "privacy": {

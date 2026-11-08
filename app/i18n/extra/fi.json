@@ -1444,6 +1444,8 @@
   },
   "legal": {
     "privacyNav": "Tietosuoja",
+    "lastUpdated": "Viimeksi päivitetty",
+    "machineTranslated": "Konekäännös: jos tekstissä on eroja, espanjankielinen teksti on ensisijainen.",
     "termsNav": "Ehdot",
     "contactNav": "Yhteystiedot",
     "privacy": {

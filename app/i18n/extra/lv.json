@@ -1444,6 +1444,8 @@
   },
   "legal": {
     "privacyNav": "Privātums",
+    "lastUpdated": "Pēdējoreiz atjaunināts",
+    "machineTranslated": "Mašīntulkojums: ja rodas atšķirības, noteicošais ir spāņu valodas teksts.",
     "termsNav": "Noteikumi",
     "contactNav": "Kontaktinformācija",
     "privacy": {

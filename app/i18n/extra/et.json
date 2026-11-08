@@ -1444,6 +1444,8 @@
   },
   "legal": {
     "privacyNav": "Privaatsus",
+    "lastUpdated": "Viimati uuendatud",
+    "machineTranslated": "Masintõlge: kui on mingeid lahknevusi, on hispaaniakeelne tekst ülimuslik.",
     "termsNav": "Tingimused",
     "contactNav": "Kontakt",
     "privacy": {

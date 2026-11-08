@@ -1444,6 +1444,8 @@
   },
   "legal": {
     "privacyNav": "Zasebnost",
+    "lastUpdated": "Zadnja posodobitev",
+    "machineTranslated": "Strojno prevajanje: če se kaj razlikuje, prevlada špansko besedilo.",
     "termsNav": "Pogoji",
     "contactNav": "Kontakt",
     "privacy": {
