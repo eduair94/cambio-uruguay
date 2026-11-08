@@ -237,6 +237,9 @@ export const rentalMessages = {
       'Se incluye si menciona alguna de las elegidas. Confirmá las condiciones con quien publica.',
     knownHint:
       'Estos filtros incluyen solo lo que el aviso declara. Si no aparece, puede ser que falte el dato.',
+    // Debajo de mascotas, dueño directo y garantías: sólo el 7,9 % de los avisos declara mascotas.
+    declaredOnlyHint: 'Sólo muestra los avisos que lo declaran; la mayoría no lo dice.',
+    expensesFromDescription: 'según la descripción del aviso',
     source: 'Portal',
     allSources: 'Todos los portales',
     multi: 'En más de un portal',
@@ -601,6 +604,8 @@ export const rentalMessages = {
       'Matches any selected guarantee mentioned in the listing. Confirm terms with the publisher.',
     knownHint:
       'These filters only include explicitly published information. Missing results may simply lack that information.',
+    declaredOnlyHint: 'Only shows listings that state it; most do not say.',
+    expensesFromDescription: 'according to the listing description',
     source: 'Portal',
     allSources: 'All portals',
     multi: 'On multiple portals',
@@ -966,6 +971,8 @@ export const rentalMessages = {
       'Inclui anúncios que mencionam alguma das garantias selecionadas. Confirme as condições com o anunciante.',
     knownHint:
       'Estes filtros incluem apenas informações publicadas. Um imóvel ausente pode simplesmente não informar o dado.',
+    declaredOnlyHint: 'Só mostra os anúncios que informam isso; a maioria não diz.',
+    expensesFromDescription: 'segundo a descrição do anúncio',
     source: 'Portal',
     allSources: 'Todos os portais',
     multi: 'Em vários portais',
