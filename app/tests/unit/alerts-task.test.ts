@@ -37,7 +37,8 @@ describe('runAlertsCheck', () => {
     const deps = makeDeps({ loadActiveAlerts: vi.fn().mockResolvedValue([alert]) })
     const res = await runAlertsCheck(deps as any)
     expect(deps.push).toHaveBeenCalledWith(['t1'], expect.any(String), expect.any(String))
-    expect(deps.email).toHaveBeenCalledWith('a@b.com', expect.any(String), expect.any(String))
+    // The alert id lets the task attach that alert's one-click unsubscribe link.
+    expect(deps.email).toHaveBeenCalledWith('a@b.com', expect.any(String), expect.any(String), 'a1')
     // Se desarma ANTES de enviar (reclamo atómico), no después.
     expect(deps.claimAlert).toHaveBeenCalledWith('a1', expect.any(Date))
     expect(res).toEqual({ checked: 1, fired: 1 })

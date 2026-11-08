@@ -70,10 +70,12 @@ const copy = {
   },
 }
 
+/** Also the page of the rate-alert unsubscribe (api/alerts/unsubscribe), with its own `action`. */
 export function rentalUnsubscribeHtml(
   locale: string,
   state: 'confirm' | 'done' | 'missing',
-  token = ''
+  token = '',
+  action = '/api/rental-alerts/unsubscribe'
 ): string {
   const lang = locale === 'en' || locale === 'pt' ? locale : 'es'
   const c = copy[lang]
@@ -82,7 +84,7 @@ export function rentalUnsubscribeHtml(
   const prefix = lang === 'es' ? '' : `/${lang}`
   const form =
     state === 'confirm' && validRentalUnsubscribeToken(token)
-      ? `<form method="post" action="/api/rental-alerts/unsubscribe?token=${token}"><button type="submit">${c.action}</button></form>`
+      ? `<form method="post" action="${action}?token=${token}"><button type="submit">${c.action}</button></form>`
       : ''
   return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>${title} · Cambio Uruguay</title><style>html{color-scheme:light dark;font-family:system-ui,sans-serif}body{margin:0;padding:24px}main{max-width:580px;margin:8vh auto}h1{font-size:1.8rem;line-height:1.25}p{line-height:1.7}button,a{min-height:44px;display:inline-flex;align-items:center;font:inherit}button{padding:10px 18px;border-radius:8px;cursor:pointer}form{margin:24px 0}a{color:LinkText}</style></head><body><main><h1>${title}</h1><p>${body}</p>${form}<a href="${prefix}/cuenta?tab=alerts">${c.account}</a></main></body></html>`
 }

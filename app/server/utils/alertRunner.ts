@@ -18,7 +18,8 @@ export interface RunnerDeps {
   claimAlert: (id: string, at: Date) => Promise<boolean>
   pruneTokens: (uid: string, tokens: string[]) => Promise<void>
   push: (tokens: string[], title: string, body: string) => Promise<string[]>
-  email: (to: string, subject: string, text: string) => Promise<void>
+  /** `alertId` lets the email carry that alert's one-click unsubscribe link. */
+  email: (to: string, subject: string, text: string, alertId: string) => Promise<void>
   telegram: (chatId: string, text: string) => Promise<boolean>
   now: number
   log?: (message: string) => void
@@ -73,7 +74,7 @@ export async function runAlertsCheck(
       })
     }
     if (a.channels?.email && contacts.email) {
-      await attempt('email', () => deps.email(contacts.email as string, title, body))
+      await attempt('email', () => deps.email(contacts.email as string, title, body, String(a._id)))
     }
     if (a.channels?.telegram && contacts.telegramChatId) {
       await attempt('telegram', () =>
