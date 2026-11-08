@@ -16,7 +16,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 // The card URLs a page writes in its head, through the INSTALLED nuxt-og-image runtime (its
 // defineOgImage, its two server plugins and its head helpers) on a real unhead instance — the
 // harness of autosOgImage.test.ts, with a request query. nuxt-og-image 5.1.6 copies the page's
-// query into every card URL it writes; plugins/01.og-image-head.ts writes the clean URL instead.
+// query into every card URL it writes; plugins/01.og-image-head.server.ts writes the clean URL
+// instead. Only the server side is run: the module writes no card tags in the browser.
 
 const app = resolve(__dirname, '../..')
 const ogRuntime = resolve(app, 'node_modules/nuxt-og-image/dist/runtime')
@@ -138,7 +139,7 @@ async function renderHead(
   if (options.plugin) {
     vi.stubGlobal('defineNuxtPlugin', (plugin: unknown) => plugin)
     vi.stubGlobal('injectHead', () => head)
-    const { default: plugin } = await import('../../plugins/01.og-image-head')
+    const { default: plugin } = await import('../../plugins/01.og-image-head.server')
     ;(plugin as unknown as { setup: (app: unknown) => void }).setup(nuxtApp)
   }
   // app.vue: the site-wide default card, `defineOgImageComponent('Cambio')`.
@@ -175,7 +176,7 @@ describe('card URLs of a page asked with a query', () => {
     }
   })
 
-  it('writes the clean card URL with plugins/01.og-image-head.ts', async () => {
+  it('writes the clean card URL with plugins/01.og-image-head.server.ts', async () => {
     const head = await renderHead(TRACKED, { plugin: true })
     for (const url of [head.ogImage, head.twitterImage, head.twitterImageSrc]) {
       expect(url).toBe(CARD)

@@ -1,6 +1,6 @@
 import { defineEventHandler, sendRedirect, setResponseHeader, setResponseStatus } from 'h3'
 import { spanishOgImage } from '../../utils/autoTranslate'
-import { ogImageRequestTarget } from '../../utils/ogImageGuard'
+import { asLocation, ogImageRequestTarget } from '../../utils/ogImageGuard'
 
 /**
  * The share-image endpoint, before nuxt-og-image sees the request.
@@ -14,6 +14,9 @@ import { ogImageRequestTarget } from '../../utils/ogImageGuard'
  * 2. `/__og-image__/image/<extra locale>/…` → the Spanish image, permanently: the PNG is the same
  *    byte for byte (utils/autoTranslate.ts, `spanishOgImage`), and pages no longer link the
  *    per-locale copies, but crawlers had already found thousands of them.
+ *
+ * h3 hands middleware the path percent-decoded, so every redirect goes out through `asLocation`:
+ * a decoded character Node will not write in a header would otherwise turn the answer into a 500.
  */
 export default defineEventHandler(event => {
   const path = event.path
@@ -29,5 +32,5 @@ export default defineEventHandler(event => {
   }
   if (!path.startsWith('/__og-image__/image/')) return
   const spanish = spanishOgImage(path)
-  if (spanish !== path) return sendRedirect(event, spanish, 301)
+  if (spanish !== path) return sendRedirect(event, asLocation(spanish), 301)
 })

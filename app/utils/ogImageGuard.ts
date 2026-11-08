@@ -12,7 +12,7 @@ import { spanishOgImage } from './autoTranslate'
  *
  * Two layers, without patching the module:
  * - the page never advertises a query on a card URL (`stripOgImageQuery`,
- *   plugins/01.og-image-head.ts);
+ *   plugins/01.og-image-head.server.ts);
  * - the endpoint renders exactly one shape of request, `/__og-image__/image/<page>/og.png` with
  *   nothing after it, and redirects or refuses everything else under its rendering prefixes
  *   (`ogImageRequestTarget`, server/middleware/og-image-locale.ts).
@@ -45,6 +45,21 @@ export function stripOgImageQuery(url: string): string {
   return at !== -1 && base.includes('/__og-image__/') ? base : url
 }
 
+/** Any character but a URL's own, `%` included: those go into a `Location` as they are. */
+const UNSAFE_IN_LOCATION = /[^\w\-.~!$&'()*+,;=:@/?#%]/gu
+
+/**
+ * `path` as a `Location` value. h3 hands middleware the request path percent-DECODED, and Node
+ * refuses a header holding a control character or anything past Latin-1 (the request ends in a
+ * 500) and sends the rest of Latin-1 as raw bytes. So anything that is not a URL character goes
+ * back to UTF-8 percent-encoding. `%` stays: h3 leaves `%25` and `%2F` encoded, so they come back
+ * as they went. Idempotent, and it never throws: `toWellFormed` turns a lone surrogate, which
+ * `encodeURIComponent` refuses, into U+FFFD.
+ */
+export function asLocation(path: string): string {
+  return path.toWellFormed().replace(UNSAFE_IN_LOCATION, char => encodeURIComponent(char))
+}
+
 /** The two prefixes nuxt-og-image draws from; `static` is its prerender flavor, same handler. */
 const RENDER_PREFIX = /^\/__og-image__\/(?:image|static)(?=[/?#]|$)/
 /** The page's card as a PNG: group 1 is the flavor, group 2 the page path ('' for the home). */
@@ -59,7 +74,8 @@ export type OgImageRequestTarget = { status: 301; location: string } | { status:
  *   module's own font loader, which calls itself with `?font=`).
  * - a 301 to the card's clean URL: the same card asked with a query or a fragment, or through the
  *   `static` prefix. For an extra locale the location is already the Spanish card
- *   (`spanishOgImage`), so a request with both is fixed in one hop.
+ *   (`spanishOgImage`), so a request with both is fixed in one hop; it is written with
+ *   `asLocation`, whatever the path decoded to.
  * - a 404: any other file or path under those prefixes — `og.html`, `og.svg`, `og.json`,
  *   `og.jpg`… are the module's debugging views and other encodings, and no page links them.
  */
@@ -69,5 +85,6 @@ export function ogImageRequestTarget(path: string): OgImageRequestTarget | null 
   const card = CARD_PNG.exec(pathname)
   if (!card) return { status: 404 }
   if (card[1] === 'image' && at === -1) return null
-  return { status: 301, location: spanishOgImage(`/__og-image__/image${card[2]}/og.png`) }
+  const location = spanishOgImage(`/__og-image__/image${card[2]}/og.png`)
+  return { status: 301, location: asLocation(location) }
 }
