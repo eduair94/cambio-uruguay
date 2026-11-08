@@ -698,7 +698,8 @@
     "email": "Λήψη μέσω email",
     "telegram": "Λήψη στο Telegram",
     "telegramHint": "Συνδέστε πρώτα το Telegram σας",
-    "saved": "Οι προτιμήσεις αποθηκεύτηκαν"
+    "saved": "Οι προτιμήσεις αποθηκεύτηκαν",
+    "verifyEmail": "Επαληθεύστε πρώτα το email σας: έτσι γνωρίζουμε ότι η διεύθυνσή σας είναι δική σας."
   },
   "donarPaypal": "Δωρίστε με Paypal",
   "donarMercadoPago": "Δωρίστε με το Mercado Pago",

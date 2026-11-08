@@ -698,7 +698,8 @@
     "email": "รับทางอีเมล",
     "telegram": "รับทาง Telegram",
     "telegramHint": "เชื่อมต่อ Telegram ของคุณก่อน",
-    "saved": "บันทึกการตั้งค่าแล้ว"
+    "saved": "บันทึกการตั้งค่าแล้ว",
+    "verifyEmail": "โปรดยืนยันอีเมลของคุณก่อน: นี่คือวิธีที่เราตรวจสอบว่าที่อยู่อีเมลนั้นเป็นของคุณ"
   },
   "donarPaypal": "บริจาคผ่าน PayPal",
   "donarMercadoPago": "บริจาคผ่าน Mercado Pago",

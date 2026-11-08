@@ -698,7 +698,8 @@
     "email": "Gauti el. paštu",
     "telegram": "Gauti per „Telegram“",
     "telegramHint": "Pirmiausia susiekite savo „Telegram“",
-    "saved": "Nuostatos išsaugotos"
+    "saved": "Nuostatos išsaugotos",
+    "verifyEmail": "Pirmiausia patikrinkite savo el. pašto adresą: taip žinosime, kad adresas yra jūsų."
   },
   "donarPaypal": "Paaukokite naudodami „Paypal“",
   "donarMercadoPago": "Paaukokite per „Mercado Pago“",

@@ -698,7 +698,8 @@
     "email": "Saņemt pa e-pastu",
     "telegram": "Saņemt pakalpojumā Telegram",
     "telegramHint": "Vispirms pievienojiet saiti savam Telegram",
-    "saved": "Preferences saglabātas"
+    "saved": "Preferences saglabātas",
+    "verifyEmail": "Vispirms pārbaudiet savu e-pasta adresi: tā mēs zinām, ka adrese ir jūsu."
   },
   "donarPaypal": "Ziedot, izmantojot Paypal",
   "donarMercadoPago": "Ziedojiet, izmantojot Mercado Pago",

@@ -1,6 +1,8 @@
 // Update the current user's newsletter channel preferences. Toggling email also
-// syncs a confirmed NewsletterSubscriber for their (authenticated) address — no
-// double opt-in needed. Telegram requires a linked chat id.
+// syncs a confirmed NewsletterSubscriber for their address — no double opt-in, so only when
+// Firebase has verified that address: an email/password account can be opened with anyone's
+// address, and this switch must not subscribe a stranger (privacy audit, 2026-11-08). Telegram
+// requires a linked chat id.
 import { requireUser } from '../../utils/auth'
 import { connectDb } from '../../utils/db'
 import { UserModel } from '../../models/User'
@@ -8,7 +10,7 @@ import { NewsletterSubscriberModel } from '../../models/NewsletterSubscriber'
 import { normalizeEmail, newToken, normalizeNewsletterLang } from '../../utils/newsletter'
 
 export default defineEventHandler(async event => {
-  const { uid, email } = await requireUser(event)
+  const { uid, email, emailVerified } = await requireUser(event)
   const body = await readBody<{ email?: boolean; telegram?: boolean }>(event)
   await connectDb()
   const u = await UserModel.findById(uid).exec()
@@ -25,6 +27,9 @@ export default defineEventHandler(async event => {
     const addr = normalizeEmail(email || u.email || '')
     if (body.email && !addr) {
       throw createError({ statusCode: 422, statusMessage: 'no-email' })
+    }
+    if (body.email && !emailVerified) {
+      throw createError({ statusCode: 409, statusMessage: 'email-not-verified' })
     }
     u.set('newsletter.email', body.email)
     if (addr) {

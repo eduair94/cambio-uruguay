@@ -698,7 +698,8 @@
     "email": "Terima melalui e-mel",
     "telegram": "Terima di Telegram",
     "telegramHint": "Pautkan Telegram anda dahulu",
-    "saved": "Pilihan disimpan"
+    "saved": "Pilihan disimpan",
+    "verifyEmail": "Sahkan e-mel anda terlebih dahulu: begitulah cara kami tahu alamat itu adalah milik anda."
   },
   "donarPaypal": "Derma dengan Paypal",
   "donarMercadoPago": "Derma dengan Mercado Pago",

@@ -698,7 +698,8 @@
     "email": "Motta via e-post",
     "telegram": "Motta på Telegram",
     "telegramHint": "Koble til Telegram-en din først",
-    "saved": "Innstillinger lagret"
+    "saved": "Innstillinger lagret",
+    "verifyEmail": "Bekreft e-postadressen din først: det er slik vi vet at adressen er din."
   },
   "donarPaypal": "Doner med Paypal",
   "donarMercadoPago": "Doner med Mercado Pago",

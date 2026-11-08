@@ -698,7 +698,8 @@
     "email": "Saada e-posti teel",
     "telegram": "Saa Telegramis",
     "telegramHint": "Lingi esmalt oma Telegram",
-    "saved": "Eelistused salvestatud"
+    "saved": "Eelistused salvestatud",
+    "verifyEmail": "Kinnitage esmalt oma e-posti aadress: nii teame, et aadress on teie oma."
   },
   "donarPaypal": "Anneta PayPali kaudu",
   "donarMercadoPago": "Anneta Mercado Pago kaudu",

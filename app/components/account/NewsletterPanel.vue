@@ -8,7 +8,8 @@
       v-model="email"
       :label="$t('newsletterPanel.email')"
       color="teal"
-      hide-details
+      :hide-details="!unverified"
+      :messages="unverified ? $t('newsletterPanel.verifyEmail') : ''"
       :loading="busy"
       @update:model-value="save('email', $event)"
     />
@@ -31,6 +32,8 @@ const email = ref(false)
 const telegram = ref(false)
 const telegramLinked = ref(false)
 const busy = ref(false)
+// The server subscribes an account's address only once Firebase has verified it (409).
+const unverified = ref(false)
 
 type Prefs = { email: boolean; telegram: boolean; telegramLinked: boolean }
 
@@ -58,7 +61,17 @@ async function save(field: 'email' | 'telegram', value: boolean | null) {
         body: { [field]: Boolean(value) },
       })
     )
-  } catch {
+    if (field === 'email') unverified.value = false
+  } catch (error) {
+    const failure = error as {
+      statusCode?: number
+      statusMessage?: string
+      data?: { statusMessage?: string }
+    }
+    unverified.value =
+      field === 'email' &&
+      failure?.statusCode === 409 &&
+      (failure.statusMessage || failure.data?.statusMessage) === 'email-not-verified'
     // Revert the optimistic toggle on error (e.g. 409 telegram-not-linked).
     await refresh()
   } finally {

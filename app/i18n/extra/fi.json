@@ -698,7 +698,8 @@
     "email": "Vastaanota sähköpostitse",
     "telegram": "Vastaanota Telegramissa",
     "telegramHint": "Linkitä ensin Telegram-tilisi",
-    "saved": "Asetukset tallennettu"
+    "saved": "Asetukset tallennettu",
+    "verifyEmail": "Vahvista ensin sähköpostiosoitteesi: näin tiedämme, että osoite on sinun."
   },
   "donarPaypal": "Lahjoita PayPalilla",
   "donarMercadoPago": "Lahjoita Mercado Pagon kautta",

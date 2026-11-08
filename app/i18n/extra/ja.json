@@ -698,7 +698,8 @@
     "email": "メールで受信",
     "telegram": "Telegramで受信",
     "telegramHint": "まずTelegramをリンクしてください。",
-    "saved": "設定が保存されました"
+    "saved": "設定が保存されました",
+    "verifyEmail": "まずメールアドレスを確認してください。そうすることで、そのアドレスがあなたのものであることを確認できるからです。"
   },
   "donarPaypal": "PayPalで寄付する",
   "donarMercadoPago": "Mercado Pagoで寄付する",

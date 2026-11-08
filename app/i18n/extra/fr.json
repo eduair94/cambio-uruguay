@@ -698,7 +698,8 @@
     "email": "Recevoir par courriel",
     "telegram": "Recevoir sur Telegram",
     "telegramHint": "Commencez par lier votre compte Telegram.",
-    "saved": "Préférences enregistrées"
+    "saved": "Préférences enregistrées",
+    "verifyEmail": "Veuillez d'abord vérifier votre adresse e-mail : c'est ainsi que nous savons qu'il s'agit de la vôtre."
   },
   "donarPaypal": "Faites un don via PayPal",
   "donarMercadoPago": "Faites un don via Mercado Pago",

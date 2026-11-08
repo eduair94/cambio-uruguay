@@ -698,7 +698,8 @@
     "email": "Odbieraj e-mailem",
     "telegram": "Odbierz na Telegramie",
     "telegramHint": "Najpierw połącz swój Telegram",
-    "saved": "Preferencje zapisane"
+    "saved": "Preferencje zapisane",
+    "verifyEmail": "Najpierw zweryfikuj swój adres e-mail: w ten sposób będziemy wiedzieć, że adres należy do Ciebie."
   },
   "donarPaypal": "Przekaż darowiznę za pomocą PayPala",
   "donarMercadoPago": "Przekaż darowiznę za pośrednictwem Mercado Pago",

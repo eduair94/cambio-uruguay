@@ -698,7 +698,8 @@
     "email": "Ta emot via e-post",
     "telegram": "Ta emot på Telegram",
     "telegramHint": "Länka ditt Telegram först",
-    "saved": "Inställningar sparade"
+    "saved": "Inställningar sparade",
+    "verifyEmail": "Verifiera din e-postadress först: det är så vi vet att adressen är din."
   },
   "donarPaypal": "Donera med Paypal",
   "donarMercadoPago": "Donera med Mercado Pago",

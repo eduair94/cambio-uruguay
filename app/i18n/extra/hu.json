@@ -698,7 +698,8 @@
     "email": "E-mailben fogadás",
     "telegram": "Fogadás Telegramon",
     "telegramHint": "Először linkeld össze a Telegramodat",
-    "saved": "Beállítások mentve"
+    "saved": "Beállítások mentve",
+    "verifyEmail": "Először is ellenőrizd az e-mail címedet: így tudjuk, hogy a cím a tiéd."
   },
   "donarPaypal": "Adományozás PayPal-lal",
   "donarMercadoPago": "Adományozás a Mercado Pagón keresztül",

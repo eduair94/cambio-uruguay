@@ -695,7 +695,8 @@
     "email": "Receive by email",
     "telegram": "Receive on Telegram",
     "telegramHint": "Link your Telegram first",
-    "saved": "Preferences saved"
+    "saved": "Preferences saved",
+    "verifyEmail": "Verify your email first: that is how we know the address is yours."
   },
   "donarPaypal": "Donate with Paypal",
   "donarMercadoPago": "Donate with Mercado Pago",

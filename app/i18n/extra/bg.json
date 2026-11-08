@@ -698,7 +698,8 @@
     "email": "Получаване по имейл",
     "telegram": "Получаване в Telegram",
     "telegramHint": "Първо свържете Telegram",
-    "saved": "Предпочитанията са запазени"
+    "saved": "Предпочитанията са запазени",
+    "verifyEmail": "Първо потвърдете имейла си: така ще разберем, че адресът е ваш."
   },
   "donarPaypal": "Дарете с Paypal",
   "donarMercadoPago": "Дарете с Mercado Pago",

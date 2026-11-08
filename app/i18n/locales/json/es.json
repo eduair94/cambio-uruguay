@@ -698,7 +698,8 @@
     "email": "Recibir por correo",
     "telegram": "Recibir por Telegram",
     "telegramHint": "Vinculá tu Telegram primero",
-    "saved": "Preferencias guardadas"
+    "saved": "Preferencias guardadas",
+    "verifyEmail": "Primero verificá tu correo: es la forma de saber que la dirección es tuya."
   },
   "donarPaypal": "Donar con Paypal",
   "donarMercadoPago": "Donar con Mercado Pago",

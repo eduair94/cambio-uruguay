@@ -698,7 +698,8 @@
     "email": "E-posta ile alın",
     "telegram": "Telegram üzerinden alın",
     "telegramHint": "Öncelikle Telegram hesabınızı bağlayın.",
-    "saved": "Tercihler kaydedildi."
+    "saved": "Tercihler kaydedildi.",
+    "verifyEmail": "Öncelikle e-postanızı doğrulayın: adresin size ait olduğunu ancak bu şekilde anlayabiliyoruz."
   },
   "donarPaypal": "Paypal ile bağış yapın",
   "donarMercadoPago": "Mercado Pago aracılığıyla bağış yapın",

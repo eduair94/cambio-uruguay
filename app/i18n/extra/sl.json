@@ -698,7 +698,8 @@
     "email": "Prejem po e-pošti",
     "telegram": "Prejemajte na Telegramu",
     "telegramHint": "Najprej povežite svoj Telegram",
-    "saved": "Nastavitve shranjene"
+    "saved": "Nastavitve shranjene",
+    "verifyEmail": "Najprej preverite svoj e-poštni naslov: tako vemo, da je naslov vaš."
   },
   "donarPaypal": "Donirajte s Paypalom",
   "donarMercadoPago": "Donirajte z Mercado Pago",

@@ -698,7 +698,8 @@
     "email": "Per E-Mail erhalten",
     "telegram": "Auf Telegram empfangen",
     "telegramHint": "Verknüpfe zuerst dein Telegram-Konto.",
-    "saved": "Einstellungen gespeichert"
+    "saved": "Einstellungen gespeichert",
+    "verifyEmail": "Bitte bestätigen Sie zuerst Ihre E-Mail-Adresse: Nur so können wir sicherstellen, dass die Adresse Ihnen gehört."
   },
   "donarPaypal": "Spenden Sie via PayPal",
   "donarMercadoPago": "Spenden Sie mit Mercado Pago",

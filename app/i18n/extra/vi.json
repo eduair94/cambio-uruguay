@@ -698,7 +698,8 @@
     "email": "Nhận qua email",
     "telegram": "Nhận trên Telegram",
     "telegramHint": "Trước tiên hãy liên kết tài khoản Telegram của bạn.",
-    "saved": "Tùy chọn đã được lưu"
+    "saved": "Tùy chọn đã được lưu",
+    "verifyEmail": "Trước tiên hãy xác minh email của bạn: đó là cách chúng tôi biết địa chỉ này là của bạn."
   },
   "donarPaypal": "Quyên góp qua Paypal",
   "donarMercadoPago": "Quyên góp thông qua Mercado Pago",
