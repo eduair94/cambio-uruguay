@@ -1434,7 +1434,7 @@
     "faqA3": "De tarieven worden gedurende de dag elke 10 minuten bijgewerkt."
   },
   "consent": {
-    "message": "We gebruiken eigen en externe cookies (Google Analytics, Google AdSense en Google Ads) om het verkeer te meten, content te personaliseren en advertenties weer te geven. U kunt deze accepteren of weigeren.",
+    "message": "We gebruiken eigen en externe cookies (Google Analytics, Google AdSense, Google Ads en Microsoft Clarity) om het websiteverkeer te meten, inzicht te krijgen in het gebruik van de site (heatmaps en opnames waarbij persoonlijke gegevens zijn afgeschermd), content te personaliseren en advertenties weer te geven. U kunt deze cookies accepteren of weigeren.",
     "accept": "Accepteren",
     "reject": "Afwijzen",
     "more": "Privacybeleid",

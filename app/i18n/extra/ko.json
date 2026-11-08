@@ -1434,7 +1434,7 @@
     "faqA3": "요금은 하루 종일 10분마다 업데이트됩니다."
   },
   "consent": {
-    "message": "We use first- and third-party cookies (Google Analytics, Google AdSense and Google Ads) to measure traffic, personalize content and show ads. You can accept or reject them.",
+    "message": "We use first- and third-party cookies (Google Analytics, Google AdSense, Google Ads and Microsoft Clarity) to measure traffic, see how the site is used (heatmaps and recordings with personal data hidden), personalize content and show ads. You can accept or reject them.",
     "accept": "수용하다",
     "reject": "거부하다",
     "more": "개인정보 보호정책",

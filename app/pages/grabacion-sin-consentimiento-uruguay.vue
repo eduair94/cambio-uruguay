@@ -224,7 +224,7 @@
               arriba. Lo que dejes vacío queda marcado como <code>[completar]</code>.
             </p>
 
-            <VCard variant="flat" class="rec-form pa-4 mb-4">
+            <VCard variant="flat" class="rec-form pa-4 mb-4" data-clarity-mask="true">
               <p class="text-subtitle-2 font-weight-bold mb-2">¿A quién se lo mandás?</p>
               <VBtnToggle
                 v-model="form.target"
@@ -330,7 +330,7 @@
             </VAlert>
 
             <VCard variant="flat" class="rec-output pa-4">
-              <pre class="rec-text">{{ requestText }}</pre>
+              <pre class="rec-text" data-clarity-mask="true">{{ requestText }}</pre>
               <div class="d-flex flex-wrap ga-2 mt-4">
                 <VBtn
                   color="primary"

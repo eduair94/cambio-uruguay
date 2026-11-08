@@ -1434,7 +1434,7 @@
     "faqA3": "Kadar dikemas kini setiap 10 minit sepanjang hari."
   },
   "consent": {
-    "message": "Kami menggunakan kuki pihak pertama dan ketiga (Google Analytics, Google AdSense dan Google Ads) untuk mengukur trafik, memperibadikan kandungan dan memaparkan iklan. Anda boleh menerima atau menolaknya.",
+    "message": "Kami menggunakan kuki pihak pertama dan ketiga (Google Analytics, Google AdSense, Google Ads dan Microsoft Clarity) untuk mengukur trafik, melihat cara laman web digunakan (peta haba dan rakaman dengan data peribadi tersembunyi), memperibadikan kandungan dan memaparkan iklan. Anda boleh menerima atau menolaknya.",
     "accept": "Terima",
     "reject": "Tolak",
     "more": "Dasar privasi",

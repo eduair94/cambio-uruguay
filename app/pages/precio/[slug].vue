@@ -198,13 +198,16 @@
           />
         </div>
 
+        <!-- Masked in session recordings, like the table below: with "Cerca de mí" on, the
+             distances to stores at known addresses place the visitor. -->
         <VAlert
           v-if="rows.length"
           :type="filteredCheapest ? 'success' : 'info'"
           variant="tonal"
           density="comfortable"
           :icon="filteredCheapest ? 'mdi-tag-check-outline' : 'mdi-filter-outline'"
-          class="mb-4"
+          class="mb-4 precios-cercanos"
+          data-clarity-mask="true"
           aria-live="polite"
         >
           <p class="mb-1">
@@ -231,7 +234,7 @@
           </p>
         </VAlert>
 
-        <div class="table-scroll">
+        <div class="table-scroll precios-cercanos" data-clarity-mask="true">
           <VTable density="comfortable" class="cu-mobile-cards cu-roomy">
             <thead>
               <tr>

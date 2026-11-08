@@ -1434,7 +1434,7 @@
     "faqA3": "Hindasid uuendatakse iga 10 minuti järel kogu päeva jooksul."
   },
   "consent": {
-    "message": "Kasutame liikluse mõõtmiseks, sisu isikupärastamiseks ja reklaamide kuvamiseks esimese ja kolmanda osapoole küpsiseid (Google Analytics, Google AdSense ja Google Ads). Saate need vastu võtta või tagasi lükata.",
+    "message": "Kasutame esimese ja kolmanda osapoole küpsiseid (Google Analytics, Google AdSense, Google Ads ja Microsoft Clarity) liikluse mõõtmiseks, saidi kasutamise jälgimiseks (soojuskaardid ja salvestised, mille puhul isikuandmed on peidetud), sisu isikupärastamiseks ja reklaamide kuvamiseks. Saate nendega nõustuda või neist keelduda.",
     "accept": "Nõustu",
     "reject": "Keeldu",
     "more": "Privaatsuspoliitika",

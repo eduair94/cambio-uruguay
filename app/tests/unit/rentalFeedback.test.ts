@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import {
+  FEEDBACK_COMMENT_MAX,
   FICHA_REASONS,
+  isFeedbackId,
   MISSING_REASONS,
   netPromoterScore,
   rentalSurveyUrl,
   sanitizeRentalFeedback,
+  sanitizeRentalFeedbackFollowUp,
   SEARCH_REASONS,
   SURVEY_QUESTIONS,
   SURVEY_VERSION,
@@ -115,6 +118,41 @@ describe('rental feedback answers', () => {
     expect(netPromoterScore([10, 9, 8, 7, 0])).toBe(20)
     expect(netPromoterScore([10, 10, 6])).toBe(33)
     expect(netPromoterScore([11, -1, 3.5, 10])).toBe(100)
+  })
+
+  it('stores a one-tap answer on its own: the choice is the whole answer', () => {
+    const record = ok({ kind: 'micro', surface: 'ficha', found: 'si', path: '/alquileres/x' })
+    expect(record).toMatchObject({ kind: 'micro', found: 'si', reasons: [], comment: '' })
+  })
+
+  it('completes a one-tap answer with closed-list reasons and a trimmed comment only', () => {
+    const clientId = 'a1b2c3d4e5f6a7b8c9d0e1f2'
+    expect(
+      sanitizeRentalFeedbackFollowUp({
+        clientId,
+        reasons: ['avisos-viejos', 'hackeo', 'avisos-viejos', 7],
+        comment: '  Ya no   estaba  ',
+      })
+    ).toEqual({ followUp: { clientId, reasons: ['avisos-viejos'], comment: 'Ya no estaba' } })
+    const long = sanitizeRentalFeedbackFollowUp({ clientId, comment: 'b'.repeat(5000) })
+    expect('followUp' in long && long.followUp.comment).toHaveLength(FEEDBACK_COMMENT_MAX)
+  })
+
+  it('refuses a follow-up that adds nothing, or that does not say which browser tapped', () => {
+    const clientId = 'a1b2c3d4e5f6a7b8c9d0e1f2'
+    expect(sanitizeRentalFeedbackFollowUp({ clientId })).toEqual({ error: 'empty' })
+    expect(sanitizeRentalFeedbackFollowUp({ clientId, reasons: ['nope'], comment: '   ' })).toEqual(
+      {
+        error: 'empty',
+      }
+    )
+    expect(sanitizeRentalFeedbackFollowUp({ comment: 'hola' })).toEqual({ error: 'client' })
+    expect(sanitizeRentalFeedbackFollowUp({ clientId: 'corto', comment: 'hola' })).toEqual({
+      error: 'client',
+    })
+    expect(isFeedbackId('6512aa0b1c2d3e4f5a6b7c8d')).toBe(true)
+    expect(isFeedbackId('6512aa0b1c2d3e4f5a6b7c8')).toBe(false)
+    expect(isFeedbackId({ $gt: '' })).toBe(false)
   })
 
   it('builds the survey link the emails use', () => {

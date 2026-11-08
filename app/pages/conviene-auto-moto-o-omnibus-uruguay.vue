@@ -214,7 +214,9 @@
                 >
                   Calcular la ruta
                 </VBtn>
-                <span v-if="ruta?.ok" class="field-note">
+                <!-- The two addresses the visitor typed (home and work, often), as the geocoder
+                     read them: masked for Microsoft Clarity, which records text outside inputs. -->
+                <span v-if="ruta?.ok" class="field-note ruta-direcciones" data-clarity-mask="true">
                   {{ ruta.from?.label }} → {{ ruta.to?.label }}
                 </span>
               </div>

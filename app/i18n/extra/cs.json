@@ -1434,7 +1434,7 @@
     "faqA3": "Ceny se aktualizují každých 10 minut po celý den."
   },
   "consent": {
-    "message": "K měření návštěvnosti, personalizaci obsahu a zobrazování reklam používáme soubory cookie první i třetích stran (Google Analytics, Google AdSense a Google Ads). Můžete je přijmout nebo odmítnout.",
+    "message": "Používáme soubory cookie první i třetích stran (Google Analytics, Google AdSense, Google Ads a Microsoft Clarity) k měření návštěvnosti, sledování používání webu (tepelné mapy a záznamy se skrytými osobními údaji), personalizaci obsahu a zobrazování reklam. Můžete je přijmout nebo odmítnout.",
     "accept": "Přijmout",
     "reject": "Odmítnout",
     "more": "Zásady ochrany osobních údajů",

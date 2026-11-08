@@ -1434,7 +1434,7 @@
     "faqA3": "Cijene se ažuriraju svakih 10 minuta tijekom dana."
   },
   "consent": {
-    "message": "Koristimo kolačiće prve i treće strane (Google Analytics, Google AdSense i Google Ads) za mjerenje prometa, personalizaciju sadržaja i prikazivanje oglasa. Možete ih prihvatiti ili odbiti.",
+    "message": "Koristimo kolačiće prve i treće strane (Google Analytics, Google AdSense, Google Ads i Microsoft Clarity) za mjerenje prometa, uvid u to kako se stranica koristi (heatmape i snimke sa skrivenim osobnim podacima), personalizaciju sadržaja i prikazivanje oglasa. Možete ih prihvatiti ili odbiti.",
     "accept": "Prihvatiti",
     "reject": "Odbiti",
     "more": "Pravila o privatnosti",

@@ -8,8 +8,9 @@ import {
 } from '~/utils/consent'
 
 // Single source of truth for the user's cookie-consent decision. Backed by a
-// first-party cookie (cu_consent). Applies Google Consent Mode v2 updates to
-// gtag when the user accepts; the denied default is configured in nuxt.config.
+// first-party cookie (cu_consent). Each decision is announced on `window` as a
+// `cu:consent` event (Microsoft Clarity listens) and applied to gtag as a
+// Consent Mode v2 update; the region-scoped defaults live in nuxt.config.
 export function useConsent() {
   const cookie = useCookie<string | null>(CONSENT_COOKIE_NAME, {
     maxAge: CONSENT_MAX_AGE,
@@ -26,6 +27,14 @@ export function useConsent() {
 
   const apply = (d: ConsentDecision) => {
     if (!import.meta.client) return
+    // For the scripts that are not gtag (plugins/clarity.client.ts), and BEFORE gtag hears it:
+    // Clarity also listens to Consent Mode, and a 'denied' reaching it while it records restarts
+    // it without cookies and uploads once more. Stopped first, it ignores that signal.
+    try {
+      window.dispatchEvent(new CustomEvent('cu:consent', { detail: d }))
+    } catch {
+      // A listener that throws must not keep the decision from reaching gtag.
+    }
     try {
       const { gtag } = useGtag()
       gtag('consent', 'update', consentSignals(d))

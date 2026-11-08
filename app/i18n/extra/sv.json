@@ -1434,7 +1434,7 @@
     "faqA3": "Rates are updated every 10 minutes throughout the day."
   },
   "consent": {
-    "message": "Vi använder förstapartscookies och tredjepartscookies (Google Analytics, Google AdSense och Google Ads) för att mäta trafik, anpassa innehåll och visa annonser. Du kan acceptera eller avvisa dem.",
+    "message": "Vi använder förstapartscookies och tredjepartscookies (Google Analytics, Google AdSense, Google Ads och Microsoft Clarity) för att mäta trafik, se hur webbplatsen används (värmekartor och inspelningar med dolda personuppgifter), anpassa innehåll och visa annonser. Du kan acceptera eller avvisa dem.",
     "accept": "Acceptera",
     "reject": "Avvisa",
     "more": "Integritetspolicy",

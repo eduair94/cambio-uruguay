@@ -1434,7 +1434,7 @@
     "faqA3": "Hinnat päivittyvät 10 minuutin välein koko päivän."
   },
   "consent": {
-    "message": "Käytämme ensimmäisen ja kolmannen osapuolen evästeitä (Google Analytics, Google AdSense ja Google Ads) liikenteen mittaamiseen, sisällön personointiin ja mainosten näyttämiseen. Voit hyväksyä tai hylätä ne.",
+    "message": "Käytämme ensimmäisen ja kolmannen osapuolen evästeitä (Google Analytics, Google AdSense, Google Ads ja Microsoft Clarity) liikenteen mittaamiseen, sivuston käyttötapojen seuraamiseen (lämpökartat ja tallenteet, joissa henkilötiedot on piilotettu), sisällön personointiin ja mainosten näyttämiseen. Voit hyväksyä tai hylätä ne.",
     "accept": "Hyväksyä",
     "reject": "Hylätä",
     "more": "Tietosuojakäytäntö",

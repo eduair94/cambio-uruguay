@@ -2,6 +2,8 @@
 // "¿encontraste?" split, the reasons people gave, the survey's answers and NPS, and the latest
 // answers with their comments. Admin only (requireAdmin): comments and e-mails are private. The
 // collection is small (one row per answer), so the counts are taken on request over the last 120 days.
+// A micro-survey row is stored on the first tap, so most carry only the answer: `microWithDetail`
+// counts the ones completed afterwards with reasons or a comment.
 import { connectDb } from '../../utils/db'
 import { requireAdmin } from '../../utils/requireAdmin'
 import { RentalFeedbackModel } from '../../models/RentalFeedback'
@@ -45,6 +47,9 @@ export default defineEventHandler(async event => {
     since: since.toISOString(),
     total: rows.length,
     byKind: tally(rows.map(row => row.kind)),
+    microWithDetail: rows.filter(
+      row => row.kind === 'micro' && ((row.reasons?.length ?? 0) > 0 || !!row.comment)
+    ).length,
     bySurface: tally(rows.map(row => row.surface)),
     found: tally(rows.map(row => row.found)),
     reasons: tally(rows.flatMap(row => row.reasons ?? [])),

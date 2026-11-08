@@ -91,7 +91,13 @@
           <v-card-title class="text-subtitle-1">
             {{ userLocation ? t('map.bestNearby') : t('map.setLocationPrompt') }}
           </v-card-title>
-          <v-card-text v-if="userLocation && ranked.length" class="pa-0">
+          <!-- Sorted by distance from the visitor: the order alone says where they are. Masked
+               for Microsoft Clarity, like the map. -->
+          <v-card-text
+            v-if="userLocation && ranked.length"
+            class="pa-0 mapa-cercanos"
+            data-clarity-mask="true"
+          >
             <v-list density="compact">
               <v-list-item
                 v-for="(r, i) in ranked"

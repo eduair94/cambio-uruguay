@@ -1434,7 +1434,7 @@
     "faqA3": "Tỷ giá được cập nhật 10 phút một lần trong suốt cả ngày."
   },
   "consent": {
-    "message": "Chúng tôi sử dụng cookie của bên thứ nhất và bên thứ ba (Google Analytics, Google AdSense và Google Ads) để đo lường lưu lượng truy cập, cá nhân hóa nội dung và hiển thị quảng cáo. Bạn có thể chấp nhận hoặc từ chối chúng.",
+    "message": "Chúng tôi sử dụng cookie của bên thứ nhất và bên thứ ba (Google Analytics, Google AdSense, Google Ads và Microsoft Clarity) để đo lường lưu lượng truy cập, xem cách thức sử dụng trang web (bản đồ nhiệt và bản ghi với dữ liệu cá nhân được ẩn), cá nhân hóa nội dung và hiển thị quảng cáo. Bạn có thể chấp nhận hoặc từ chối chúng.",
     "accept": "Chấp nhận",
     "reject": "Từ chối",
     "more": "Chính sách bảo mật",

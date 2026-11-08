@@ -16,6 +16,7 @@
       size="small"
       append-icon="mdi-flag-outline"
       class="availability-report__trigger cu-btn-flush"
+      data-cta="rental-report-unavailable"
       :aria-label="`${t(shownSummary?.count ? 'review' : 'report')}: ${title || selected?.title || sourceLabel(selected)}`"
       @click="show"
       >{{ t(shownSummary?.count ? 'review' : 'report') }}</VBtn

@@ -267,7 +267,15 @@
             <v-card-text v-else-if="!filtered.length">
               Ningún comercio coincide con el filtro.
             </v-card-text>
-            <v-card-text v-else class="pa-0">
+            <!-- With the visitor's position the list is "Más cercanos", in distance order: masked
+                 for Microsoft Clarity. Clarity reads the mask once, when it first sees an element,
+                 so the key gives the masked list an element of its own. -->
+            <v-card-text
+              v-else
+              :key="userLocation ? 'cercanos' : 'todos'"
+              class="pa-0 comercios-lista"
+              :data-clarity-mask="userLocation ? 'true' : undefined"
+            >
               <v-list density="compact" lines="two">
                 <v-list-item
                   v-for="item in visibleList"

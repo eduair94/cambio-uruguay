@@ -1434,7 +1434,7 @@
     "faqA3": "Le tariffe vengono aggiornate ogni 10 minuti durante tutta la giornata."
   },
   "consent": {
-    "message": "Utilizziamo cookie proprietari e di terze parti (Google Analytics, Google AdSense e Google Ads) per misurare il traffico, personalizzare i contenuti e mostrare annunci pubblicitari. Puoi accettarli o rifiutarli.",
+    "message": "Utilizziamo cookie proprietari e di terze parti (Google Analytics, Google AdSense, Google Ads e Microsoft Clarity) per misurare il traffico, vedere come viene utilizzato il sito (mappe di calore e registrazioni con dati personali nascosti), personalizzare i contenuti e mostrare annunci pubblicitari. Puoi accettarli o rifiutarli.",
     "accept": "Accettare",
     "reject": "Rifiutare",
     "more": "Politica sulla riservatezza",

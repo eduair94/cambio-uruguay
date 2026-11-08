@@ -1434,7 +1434,7 @@
     "faqA3": "Prisene oppdateres hvert 10. minutt gjennom dagen."
   },
   "consent": {
-    "message": "Vi bruker første- og tredjeparts informasjonskapsler (Google Analytics, Google AdSense og Google Ads) for å måle trafikk, tilpasse innhold og vise annonser. Du kan godta eller avvise dem.",
+    "message": "Vi bruker første- og tredjeparts informasjonskapsler (Google Analytics, Google AdSense, Google Ads og Microsoft Clarity) for å måle trafikk, se hvordan nettstedet brukes (varmekart og opptak med skjulte personopplysninger), tilpasse innhold og vise annonser. Du kan godta eller avvise dem.",
     "accept": "Akseptere",
     "reject": "Avvis",
     "more": "Personvernerklæring",

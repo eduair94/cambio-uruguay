@@ -1434,7 +1434,7 @@
     "faqA3": "Stawki są aktualizowane co 10 minut w ciągu dnia."
   },
   "consent": {
-    "message": "Używamy plików cookie własnych i stron trzecich (Google Analytics, Google AdSense i Google Ads) do pomiaru ruchu, personalizacji treści i wyświetlania reklam. Możesz je zaakceptować lub odrzucić.",
+    "message": "Używamy plików cookie własnych i stron trzecich (Google Analytics, Google AdSense, Google Ads i Microsoft Clarity), aby mierzyć ruch, sprawdzać, jak strona jest używana (mapy cieplne i nagrania z ukrytymi danymi osobowymi), personalizować treści i wyświetlać reklamy. Możesz je zaakceptować lub odrzucić.",
     "accept": "Przyjąć",
     "reject": "Odrzucić",
     "more": "Polityka prywatności",

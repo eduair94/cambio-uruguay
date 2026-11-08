@@ -1416,7 +1416,7 @@
     "faqA3": "As cotações são atualizadas a cada 10 minutos ao longo do dia."
   },
   "consent": {
-    "message": "Usamos cookies próprios e de terceiros (Google Analytics, Google AdSense e Google Ads) para medir o tráfego, personalizar conteúdo e exibir anúncios. Você pode aceitá-los ou recusá-los.",
+    "message": "Usamos cookies próprios e de terceiros (Google Analytics, Google AdSense, Google Ads e Microsoft Clarity) para medir o tráfego, ver como o site é usado (mapas de calor e gravações com os dados pessoais ocultos), personalizar conteúdo e exibir anúncios. Você pode aceitá-los ou recusá-los.",
     "accept": "Aceitar",
     "reject": "Recusar",
     "more": "Política de privacidade",
