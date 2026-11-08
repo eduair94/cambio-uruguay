@@ -145,6 +145,14 @@ jobs:
               - 'classes/origins.ts'
               - 'classes/cambios/**'
               - 'classes/rentals/guarantees.ts'
+              # app/utils/rentalBarrioName.ts copia a mano la regla de barrio del lector de
+              # Casasweb (`plausibleCasaswebNeighborhood`, con `flatten` de normalize.ts) y
+              # rentalBarrioNameParity.test.ts la lee como texto para correr las dos sobre los
+              # mismos nombres. Sin estas dos líneas, un cambio sólo del backend en esa regla
+              # salteaba la suite del app, y una superficie leída como barrio volvía a abrir
+              # páginas de barrio sin que nada fallara.
+              - 'classes/rentals/sources/casasweb.ts'
+              - 'classes/rentals/normalize.ts'
               - 'classes/stores/**'
               - 'classes/apikeys/plans.ts'
               - 'classes/apikeys/validate.ts'

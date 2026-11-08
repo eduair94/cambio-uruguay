@@ -4,12 +4,15 @@
 // el sitemap y el hub, así que el gate de indexación vive en un solo lugar.
 import { slugifyDepartment } from './departments'
 import { slugifyText } from './longform'
+import { rentalBarrioNamePlausible } from './rentalBarrioName'
 import { rentalZoneLabel, rentalZoneName, type RentalZoneSnapshots } from './rentalZones'
 import type {
   RentalZoneBedrooms,
   RentalZonePrices,
   RentalZonePropertyType,
 } from './rentalZoneTypes'
+
+export { rentalBarrioNamePlausible }
 
 export const RENTAL_BARRIO_MAX_AGE_DAYS = 7
 export const RENTAL_BARRIO_MIN_CELLS = 2
@@ -22,6 +25,8 @@ export const RENTAL_BARRIO_BEDROOMS: readonly RentalZoneBedrooms[] = [
   '4plus',
 ]
 export const RENTAL_BARRIO_TYPES: readonly RentalZonePropertyType[] = ['apartamento', 'casa']
+/** Cards under "Avisos recientes" on a barrio page (server/utils/rentalBarrio.ts picks them). */
+export const RENTAL_BARRIO_LISTINGS = 8
 const SIMILAR_LIMIT = 6
 const LARGEST_LIMIT = 6
 
@@ -162,6 +167,10 @@ function buildRentalBarrioList(
   const out: RentalBarrioSummary[] = []
   for (const group of groups.values()) {
     const neighborhood = rentalZoneLabel(group.spellings)
+    // A surface ("40 m2 40 m2") or a country is not a barrio. This is the one place every barrio
+    // surface reads from — the pages, /api/rentals/barrios, the similar chips and the rank, the
+    // sitemap and the ficha's link — so a parser drift upstream cannot open an indexable page.
+    if (!rentalBarrioNamePlausible(neighborhood)) continue
     const slug = rentalBarrioSlug(neighborhood)
     // A name made only of punctuation would publish `/alquiler/<departamento>/`: no page.
     if (!slug) continue

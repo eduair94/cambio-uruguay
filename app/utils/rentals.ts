@@ -163,6 +163,12 @@ export interface RentalOffer extends AdvertiserMetadata {
   priceUyu: number
   commonExpenses: number | null
   commonExpensesCurrency: RentalCurrency | null
+  /**
+   * 'description' = the portal gave no figure and the backend read it from the advert's own text
+   * (`RENTALS_GC_FROM_TEXT`, classes/rentals/textFacts.ts); the page says so next to the amount.
+   * Absent = the portal published it.
+   */
+  commonExpensesSource?: 'description' | null
   sellerName: string
   sellerType: RentalSellerType
   image: string | null

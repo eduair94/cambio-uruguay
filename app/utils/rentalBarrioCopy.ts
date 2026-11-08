@@ -4,6 +4,8 @@
 // sólo existe si hay un dato que la conteste: nada de "consultá con una inmobiliaria".
 import type { FaqItem } from './faqAnswers'
 import type { RentalBarrioCell, RentalBarrioPage as FullBarrioPage } from './rentalBarrio'
+import { rentalMoney } from './rentalPresentation'
+import type { RentalCurrency } from './rentals'
 import type { RentalZoneBedrooms, RentalZonePropertyType } from './rentalZoneTypes'
 
 /** Lo que llega al cliente: las grafías crudas se quedan en el servidor. */
@@ -36,6 +38,29 @@ const dateFormat = new Intl.DateTimeFormat('es-UY', {
 export function formatUyu(value: number | null): string {
   if (value === null || !Number.isFinite(value)) return '—'
   return `$ ${uyu.format(value)}`
+}
+
+/** What a card of "Avisos recientes" knows about its cost, from ONE advert. */
+export interface RentalBarrioCardCost {
+  currency: RentalCurrency
+  commonExpenses: number | null
+  commonExpensesCurrency: RentalCurrency | null
+  totalUyu: number | null
+}
+
+/**
+ * The line under the rent: "+ $ 13.400 de gastos comunes = $ 55.400 por mes". A total that needed
+ * a dollar conversion says "≈"; zero gastos comunes only when the advert publishes it.
+ */
+export function rentalBarrioCardCost(card: RentalBarrioCardCost): string {
+  const { commonExpenses: expenses, commonExpensesCurrency: expensesCurrency } = card
+  if (expenses === 0) return 'Sin gastos comunes'
+  if (expenses === null || !(expenses > 0) || !expensesCurrency)
+    return 'Gastos comunes no informados'
+  const line = `+ ${rentalMoney(expenses, expensesCurrency)} de gastos comunes`
+  if (card.totalUyu === null || !Number.isFinite(card.totalUyu)) return line
+  const converted = card.currency === 'USD' || expensesCurrency === 'USD'
+  return `${line} ${converted ? '≈' : '='} ${formatUyu(card.totalUyu)} por mes`
 }
 
 /** "4 de octubre de 2026" desde `rentalDataAsOf` (o `generatedAt`), en hora de Montevideo. */

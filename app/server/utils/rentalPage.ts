@@ -13,6 +13,11 @@ import type {
   RentalPageResponse,
 } from '../../utils/rentalPage'
 import { rentalPhotos, rentalStreet } from '../../utils/rentalPresentation'
+import {
+  rentalLookalikeFacts,
+  rentalLookalikePreference,
+  splitRentalLookalikes,
+} from '../../utils/rentalLookalike'
 import { rentalPublicPropertyProjection, rentalExpandedPropertyProjection } from './rentalDetail'
 
 export const RENTAL_PAGE_STALE_DAYS = RENTAL_STALE_DAYS
@@ -284,7 +289,26 @@ export function rentalPageEvidenceStages(property: RentalPublicProperty) {
   ]
 }
 
-export function rentalPageSimilarKeys(property: RentalPageEvidence, peers: RentalPageEvidence[]) {
+/** "Otras propiedades para comparar" muestra seis viviendas distintas. */
+export const RENTAL_PAGE_SIMILAR_LIMIT = 6
+/**
+ * Cuántas candidatas se leen para llegar a esas seis. El orden es por cercanía de precio, así que
+ * las copias de la propia vivienda (mismo precio exacto) llegan siempre primero: con seis, la ficha
+ * nh6byn-10rlmiq mostraba cuatro copias suyas y dos de otra única vivienda. Doce dejan lugar para
+ * descartarlas sin una segunda lectura.
+ */
+export const RENTAL_PAGE_SIMILAR_CANDIDATES = 12
+
+const byPriceDistance =
+  (property: RentalPageEvidence) => (a: RentalPageEvidence, b: RentalPageEvidence) =>
+    Math.abs(a.priceUyu - property.priceUyu) - Math.abs(b.priceUyu - property.priceUyu) ||
+    a.key.localeCompare(b.key)
+
+export function rentalPageSimilarKeys(
+  property: RentalPageEvidence,
+  peers: RentalPageEvidence[],
+  limit = RENTAL_PAGE_SIMILAR_CANDIDATES
+) {
   const seen = new Set<string>([property.key])
   return unambiguousPeers(property, peers)
     .filter(peer => {
@@ -293,13 +317,39 @@ export function rentalPageSimilarKeys(property: RentalPageEvidence, peers: Renta
       seen.add(peer.key)
       return true
     })
-    .sort(
-      (a, b) =>
-        Math.abs(a.priceUyu - property.priceUyu) - Math.abs(b.priceUyu - property.priceUyu) ||
-        a.key.localeCompare(b.key)
-    )
-    .slice(0, 6)
+    .sort(byPriceDistance(property))
+    .slice(0, limit)
     .map(peer => peer.key)
+}
+
+/**
+ * Las parecidas que se muestran, con precios ya convertidos: por cercanía de precio, una por
+ * vivienda (utils/rentalLookalike.ts, sólo para mostrar) y nunca la propia vivienda. Entre copias
+ * representa la que tiene foto y gastos comunes conocidos. `copies` son las que parecen ser la
+ * propia vivienda: la ficha caída muestra la mejor como "puede ser la misma, todavía publicada".
+ */
+export function rentalPageSimilar(
+  property: RentalPublicProperty,
+  peers: RentalPublicProperty[],
+  limit = RENTAL_PAGE_SIMILAR_LIMIT
+): { similar: RentalPublicProperty[]; copies: RentalPublicProperty[] } {
+  // The sitemap builds every indexable page without peers: nothing to compare.
+  if (!peers.length) return { similar: [], copies: [] }
+  const seen = new Set<string>([property.key])
+  const ordered = peers
+    .filter(peer => {
+      if (seen.has(peer.key) || rentalPageConflicts(peer).length) return false
+      seen.add(peer.key)
+      return true
+    })
+    .sort(byPriceDistance(property))
+  const { kept, copies } = splitRentalLookalikes(
+    rentalLookalikeFacts(property),
+    ordered,
+    rentalLookalikeFacts,
+    rentalLookalikePreference
+  )
+  return { similar: kept.slice(0, limit), copies }
 }
 
 export function rentalPageSimilarStages(keys: string[]) {
@@ -392,19 +442,7 @@ export function buildRentalPage(
     }
   const reasons = rentalPageQualityIssues(property, usdUyu)
   if (ambiguousIdentity) reasons.push('ambiguous_identity')
-  const seen = new Set<string>([property.key])
-  const similar = peers
-    .filter(peer => {
-      if (seen.has(peer.key) || rentalPageConflicts(peer).length) return false
-      seen.add(peer.key)
-      return true
-    })
-    .sort(
-      (a, b) =>
-        Math.abs(a.priceUyu - property.priceUyu) - Math.abs(b.priceUyu - property.priceUyu) ||
-        a.key.localeCompare(b.key)
-    )
-    .slice(0, 6)
+  const { similar } = rentalPageSimilar(property, peers)
   return {
     property,
     usdUyu,

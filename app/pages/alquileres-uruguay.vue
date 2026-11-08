@@ -82,6 +82,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
               <VListItem
                 prepend-icon="mdi-bookmark-plus-outline"
                 :title="t('saveSearch')"
+                data-cta="rental-save-search"
                 @click="saveSearch"
               />
               <VListItem
@@ -92,6 +93,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
               <VListItem
                 prepend-icon="mdi-share-variant-outline"
                 :title="t('share')"
+                data-cta="rental-share-search"
                 @click="shareSearch"
               />
             </VList>
@@ -118,6 +120,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             :icon="smAndDown"
             :aria-label="t('saveSearch')"
             :title="t('saveSearch')"
+            data-cta="rental-save-search"
             @click="saveSearch"
           >
             <VIcon v-if="smAndDown" icon="mdi-bookmark-plus-outline" /><template v-else>{{
@@ -143,6 +146,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             :icon="smAndDown"
             :aria-label="t('share')"
             :title="t('share')"
+            data-cta="rental-share-search"
             @click="shareSearch"
           >
             <VIcon v-if="smAndDown" icon="mdi-share-variant-outline" /><template v-else>{{
@@ -443,10 +447,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                   <div class="rental-card__main">
                     <div class="rental-card__overview">
                       <p class="rental-card__where">
-                        {{
-                          [property.neighborhood, property.department].filter(Boolean).join(', ') ||
-                          t('unknown')
-                        }}
+                        {{ rentalDisplayZone(property) || t('unknown') }}
                       </p>
                       <p
                         v-if="referencePoint && !pending"
@@ -469,9 +470,21 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                         </p>
                         <p v-if="monthlyTotal(property) !== null" class="rental-card__expenses">
                           {{ priceLabel(property) }} {{ t('rent').toLowerCase() }} ·
-                          {{ expensesLabel(property) }}
+                          {{ expensesLabel(property)
+                          }}<template
+                            v-if="displayOffer(property)?.commonExpensesSource === 'description'"
+                          >
+                            ({{ t('expensesFromDescription') }})</template
+                          >
                         </p>
-                        <p v-else class="rental-card__expenses">{{ expensesLabel(property) }}</p>
+                        <p v-else class="rental-card__expenses">
+                          {{ expensesLabel(property)
+                          }}<template
+                            v-if="displayOffer(property)?.commonExpensesSource === 'description'"
+                          >
+                            ({{ t('expensesFromDescription') }})</template
+                          >
+                        </p>
                         <p
                           v-if="displayOffer(property)?.currencyInferred"
                           class="rental-card__expenses"
@@ -633,6 +646,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                         target="_blank"
                         rel="noopener noreferrer nofollow"
                         class="rental-card__offer"
+                        data-cta="rental-card-offer"
                         :class="{
                           'rental-card__offer--selected':
                             offer.listingId === displayOffer(property)?.listingId,
@@ -856,6 +870,8 @@ import {
   writeRentalLayout,
   type RentalLayout,
 } from '~/utils/rentalLayout'
+// The card names the place as the ficha does: "Pocitos", never the portal's "POCITOS".
+import { rentalDisplayZone } from '~/utils/rentalDisplayPlace'
 
 const LocationsMap = defineAsyncComponent(() => import('~/components/map/LocationsMap.vue'))
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalMessages })

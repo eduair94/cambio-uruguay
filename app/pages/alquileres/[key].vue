@@ -12,14 +12,34 @@ import { rentalPageMessages } from '~/utils/rentalPageMessages'
 import type { RentalPageResponse } from '~/utils/rentalPage'
 import { rentalPageSchema } from '~/utils/rentalPageSeo'
 import {
+  rentalDisplayBarrio,
+  rentalDisplayPlace,
+  rentalDisplayZone,
+  rentalPlaceTitleCase,
+} from '~/utils/rentalDisplayPlace'
+import {
+  rentalPageCrumb,
+  rentalPageDescription,
+  rentalPageTitle,
+  rentalSnippetAddress,
+  type RentalSnippetInput,
+} from '~/utils/rentalPageSnippet'
+import {
   RENTAL_GUARANTEE_PUBLISHED,
   RENTAL_SOURCE_LABEL,
   rentalValidKey,
   totalMonthlyUyu,
   type RentalOffer,
-  type RentalPublicProperty,
 } from '~/utils/rentals'
 import { portalPriceGap, rentalListedFor } from '~/utils/rentalPortals'
+import {
+  rentalFichaCacheControl,
+  rentalGoneDirectoryLink,
+  rentalGoneFromError,
+} from '~/utils/rentalGone'
+import { RENTAL_SEEN_ICON, rentalSeenLabel } from '~/utils/rentalSeenLabel'
+import { rentalShareText } from '~/utils/rentalShareText'
+import { RENTAL_SCAM_LINES, rentalScamWarning } from '~/utils/rentalVisitSafety'
 import {
   emptyRentalSaved,
   readRentalSaved,
@@ -72,15 +92,31 @@ const failureCode = computed(() => {
   const failure = error.value as { statusCode?: number; data?: { statusCode?: number } } | null
   return failure?.statusCode === 404 || failure?.data?.statusCode === 404 ? 404 : 503
 })
+// Lo que la ficha caída ofrece en vez del callejón (utils/rentalGone.ts); null en un 503.
+const gone = computed(() => (failureCode.value === 404 ? rentalGoneFromError(error.value) : null))
 if (import.meta.server) {
   const event = useRequestEvent()
   if (event) {
-    useResponseHeader('cache-control').value = error.value
-      ? 'no-store, max-age=0'
-      : 'public, max-age=0, must-revalidate, s-maxage=60'
+    // Una ficha caída es la misma para todos durante cinco minutos: sin esto cada una de esas vistas
+    // (12,8 % de las de Uruguay) se renderizaba en el origen. Sin alternativas, treinta segundos; un
+    // 503 nunca se guarda (utils/rentalGone.ts `rentalFichaCacheControl`).
+    useResponseHeader('cache-control').value = rentalFichaCacheControl({
+      failed: !!error.value,
+      status: failureCode.value,
+      alternatives: !!gone.value,
+    })
     if (error.value) setResponseStatus(event, failureCode.value)
   }
 }
+const goneBrowse = computed(() =>
+  gone.value ? rentalGoneDirectoryLink(gone.value.gone, gone.value.barrioLink) : null
+)
+/** El portal donde la misma vivienda sigue publicada, si la API encontró una copia viva. */
+const goneCopySource = computed(() => {
+  const copy = gone.value?.lookalike
+  const offer = copy ? (copy.matchingOffer ?? copy.offers[0]) : undefined
+  return offer ? RENTAL_SOURCE_LABEL[offer.source] || '' : ''
+})
 const canonical = computed(
   () =>
     `https://cambio-uruguay.com${localePath(data.value?.canonicalPath || rentalPropertyPath(propertyKey.value))}`
@@ -109,6 +145,10 @@ const listedFor = computed(() =>
     ? rentalListedFor({ ...property.value, offers: offers.value }, new Date(renderedAt.value))
     : null
 )
+// La frescura del aviso elegido, debajo de su precio (utils/rentalSeenLabel.ts).
+const seen = computed(() =>
+  selectedOffer.value ? rentalSeenLabel(selectedOffer.value.lastSeen, renderedAt.value) : null
+)
 const money = (value: number, currency: RentalOffer['currency'] = 'UYU') =>
   rentalMoney(value, currency, locale.value)
 /** Para rangos: "$ 37.000 – $ 42.000" se parte en el guion, nunca entre "$" y el número. */
@@ -124,8 +164,12 @@ const uncertainData = computed(() =>
       reason === 'temporary_rental'
   )
 )
+// El lugar como se NOMBRA ("Pocitos, Montevideo", nunca "POCITOS" ni "60 m2 60 m2"); los filtros,
+// la zona oficial y el enlace al barrio siguen leyendo `property.neighborhood` tal cual.
 const zone = computed(() =>
-  [property.value?.neighborhood, property.value?.department].filter(Boolean).join(', ')
+  property.value
+    ? rentalDisplayZone(property.value, { barrioLink: data.value?.barrioLink ?? null })
+    : ''
 )
 const street = computed(() => (property.value ? rentalStreet(property.value) : ''))
 // La API decide (sólo barrios con página indexable) y manda la ruta o null: la ficha no carga la lista.
@@ -251,10 +295,12 @@ const conditionFacts = computed<Fact[]>(() => {
   if (!offer) return []
   const parking = offer.parkingSpaces ?? 0
   return [
+    // Mascotas y garantías: ningún portal publica el "no", así que lo que el aviso no dice se dice
+    // como lo que es — una pregunta para el anunciante, no un "no informado".
     {
       key: 'pets',
       label: t('petsCondition'),
-      value: t(offer.petsAllowed ? 'accepted' : 'notPublished'),
+      value: t(offer.petsAllowed ? 'accepted' : 'notStatedAsk'),
       empty: !offer.petsAllowed,
     },
     {
@@ -292,7 +338,7 @@ const conditionFacts = computed<Fact[]>(() => {
     {
       key: 'guarantee',
       label: t('guaranteeCondition'),
-      value: guarantees.value.length ? guarantees.value.join(' · ') : t('notPublished'),
+      value: guarantees.value.length ? guarantees.value.join(' · ') : t('notStatedAsk'),
       empty: !guarantees.value.length,
     },
   ]
@@ -368,6 +414,8 @@ const questions = computed(() => [
   'questionEntry',
   'questionVisit',
 ])
+// Redes sociales y dueño directo: las tres líneas contra la estafa de la seña.
+const scamWarning = computed(() => rentalScamWarning(selectedOffer.value))
 const market = computed(() => data.value?.market)
 const difference = computed(() => {
   if (!selectedOffer.value || !market.value?.medianRentUyu) return null
@@ -378,11 +426,47 @@ const difference = computed(() => {
   )
   return rent === null ? null : Math.round((rent / market.value.medianRentUyu - 1) * 100)
 })
-const breadcrumbs = computed(() => [
-  { title: t('country'), to: localePath('/') },
-  { title: t('search'), to: localePath('/alquileres-uruguay') },
-  { title: zone.value || t('overview'), disabled: true },
-])
+// Lo que el snippet de búsqueda dice de esta vivienda: título, descripción y la miga final
+// (utils/rentalPageSnippet.ts). Con el aviso que la ficha muestra por defecto, ya repreciado.
+const snippet = computed<RentalSnippetInput | null>(() =>
+  property.value && defaultOffer.value
+    ? {
+        propertyType: property.value.propertyType,
+        bedrooms: property.value.bedrooms,
+        bathrooms: property.value.bathrooms,
+        area: property.value.area,
+        uncertain: Boolean(uncertainData.value),
+        street: street.value,
+        place: rentalDisplayPlace(property.value, { barrioLink: barrioLink.value }),
+        department: property.value.department,
+        offer: defaultOffer.value,
+        usdUyu: usdUyu.value,
+      }
+    : null
+)
+// Con página de barrio indexable, la miga la enlaza: Todo Uruguay › Buscar alquileres › Pocitos
+// › la vivienda. Esa página es sólo en español, como la ficha: su ruta va tal cual, sin localePath.
+// El nombre, con las mayúsculas de la línea del lugar ("Punta del Este", no "Punta Del Este").
+const barrioCrumb = computed(() =>
+  barrioLink.value
+    ? { name: rentalPlaceTitleCase(barrioLink.value.label), path: barrioLink.value.path }
+    : null
+)
+const breadcrumbs = computed(() => {
+  const crumbs = [
+    { title: t('country'), to: localePath('/') },
+    { title: t('search'), to: localePath('/alquileres-uruguay') },
+  ]
+  if (!barrioCrumb.value) return [...crumbs, { title: zone.value || t('overview'), disabled: true }]
+  return [
+    ...crumbs,
+    { title: barrioCrumb.value.name, to: barrioCrumb.value.path },
+    {
+      title: snippet.value ? rentalPageCrumb(snippet.value, locale.value) : title.value,
+      disabled: true,
+    },
+  ]
+})
 function notify(message: string) {
   notice.value = message
   snackbar.value = true
@@ -419,7 +503,14 @@ function copyInquiry() {
 async function share() {
   if (navigator.share) {
     try {
-      await navigator.share({ title: title.value, url: canonical.value })
+      // En WhatsApp el título se pierde: el texto lleva lo que cuesta por mes.
+      await navigator.share({
+        title: pageTitle.value,
+        text: selectedOffer.value
+          ? rentalShareText(selectedOffer.value, usdUyu.value, locale.value, t)
+          : undefined,
+        url: canonical.value,
+      })
       return
     } catch (failure) {
       if ((failure as Error).name === 'AbortError') return
@@ -448,43 +539,13 @@ watch(propertyKey, () => {
   checked.value = []
   showMap.value = false
 })
-const relatedOffer = (entry: RentalPublicProperty) => entry.matchingOffer ?? entry.offers[0]
-const relatedSpecs = (entry: RentalPublicProperty) =>
-  [
-    entry.bedrooms === 0
-      ? t('studio')
-      : entry.bedrooms !== null
-        ? t('bedroomCount', { n: entry.bedrooms }, entry.bedrooms)
-        : '',
-    entry.bathrooms !== null ? t('bathroomCount', { n: entry.bathrooms }, entry.bathrooms) : '',
-    entry.area ? `${entry.area} m²` : '',
-  ]
-    .filter(Boolean)
-    .join(' · ')
 const pageTitle = computed(() =>
-  property.value && defaultOffer.value
-    ? t('propertySeo', {
-        type: [
-          typeLabel.value,
-          !uncertainData.value && property.value.bedrooms !== null
-            ? property.value.bedrooms === 0
-              ? t('studio')
-              : t('seoBedrooms', { n: property.value.bedrooms })
-            : '',
-        ]
-          .filter(Boolean)
-          .join(' '),
-        zone: zone.value || 'Uruguay',
-        price: money(defaultOffer.value.price, defaultOffer.value.currency),
-      })
-    : title.value
+  // Título de 60 caracteres con calle y número cuando el aviso los publica, y una descripción con
+  // alquiler + gastos comunes = total. El H1 sigue siendo el título del portal.
+  snippet.value ? rentalPageTitle(snippet.value, locale.value) : title.value
 )
 const description = computed(() =>
-  property.value
-    ? t('propertyDescription', {
-        summary: [pageTitle.value, street.value].filter(Boolean).join(' · '),
-      })
-    : t('unavailableHint')
+  snippet.value ? rentalPageDescription(snippet.value, locale.value) : t('unavailableHint')
 )
 const primaryPhoto = computed(() => photos.value[0])
 const primaryPhotoAlt = computed(() =>
@@ -543,6 +604,12 @@ useHead(
   { tagPriority: 'high' }
 )
 useHead(() => ({
+  // La ficha publica su título entero, ya con el precio: sin " | Cambio Uruguay" (17 caracteres)
+  // entra en los 60 que muestra Google. Gana a la plantilla de app.vue por orden de registro. Sólo
+  // cuando el título es el del snippet: la ficha que ya no está, el error de carga y la vivienda
+  // sin un aviso que se pueda abrir (que muestra "no disponible" con el título del portal)
+  // conservan la marca, y el título con el que GA4 los agrupa.
+  titleTemplate: snippet.value && !error.value ? '%s' : undefined,
   // Mismo `id` que el del layout (`useLocaleHead({ key: 'id' })`): Unhead deduplica por id, así que
   // éste REEMPLAZA la canónica localizada en vez de sumarse — la ficha salía con dos <link canonical>.
   link: [{ id: 'i18n-can', rel: 'canonical', href: canonical.value }],
@@ -560,12 +627,30 @@ useHead(() => ({
                 title: pageTitle.value,
                 description: description.value,
                 uncertain: Boolean(uncertainData.value),
+                addressLocality: rentalDisplayBarrio(property.value, {
+                  barrioLink: barrioLink.value,
+                }),
+                // Sin lo que sólo escribe un geocodificador o un portal: "Casasweb" como
+                // dirección de un aviso de El País, "11300, Uruguay", un Plus Code.
+                streetAddress: rentalSnippetAddress(
+                  street.value,
+                  rentalDisplayPlace(property.value, { barrioLink: barrioLink.value }),
+                  property.value.department
+                ),
                 breadcrumbs: [
                   { name: t('country'), url: `https://cambio-uruguay.com${localePath('/')}` },
                   {
                     name: t('title'),
                     url: `https://cambio-uruguay.com${localePath('/alquileres-uruguay')}`,
                   },
+                  ...(barrioCrumb.value
+                    ? [
+                        {
+                          name: barrioCrumb.value.name,
+                          url: `https://cambio-uruguay.com${barrioCrumb.value.path}`,
+                        },
+                      ]
+                    : []),
                   { name: title.value, url: canonical.value },
                 ],
                 photoCaption: (photoTitle, n) => t('photoDescription', { title: photoTitle, n }),
@@ -581,7 +666,9 @@ useHead(() => ({
 
 <template>
   <VContainer class="rental-page pt-1 pt-sm-4" data-testid="rental-property-page">
-    <div class="rental-page__topbar">
+    <!-- `rental_breadcrumb`: the crumbs on a wide screen, the back button that replaces them on a
+         phone (the crumbs hide under 600px). Same block, same area. -->
+    <div class="rental-page__topbar" data-link-area="rental_breadcrumb">
       <VBtn
         :to="returnPath || localePath('/alquileres-uruguay')"
         variant="text"
@@ -593,11 +680,61 @@ useHead(() => ({
       <VBreadcrumbs :items="breadcrumbs" density="compact" class="rental-page__crumbs px-0 py-0" />
     </div>
     <VSkeletonLoader v-if="pending" type="heading, image, paragraph" />
-    <section v-else-if="error || !property || !selectedOffer" class="rental-page__unavailable">
-      <h1>{{ t(failureCode === 404 ? 'unavailableTitle' : 'unavailableError') }}</h1>
-      <p>{{ t(failureCode === 404 ? 'unavailableHint' : 'unavailableRetry') }}</p>
-      <VBtn v-if="failureCode !== 404" color="primary" @click="refresh()">{{ t('retry') }}</VBtn>
-      <VBtn v-else color="primary" :to="localePath('/alquileres-uruguay')">{{ t('search') }}</VBtn>
+    <!-- La ficha caída: sigue siendo 404 y "noindex, follow", pero ya no es un callejón. Se hidrata
+         como el resto: es contenido donde los anuncios automáticos pueden entrar. -->
+    <section
+      v-else-if="error || !property || !selectedOffer"
+      class="rental-page__unavailable"
+      :data-link-area="failureCode === 404 ? 'rental_gone' : undefined"
+      data-testid="rental-page-unavailable"
+    >
+      <div class="rental-page__unavailable-text">
+        <h1>{{ t(failureCode === 404 ? 'unavailableTitle' : 'unavailableError') }}</h1>
+        <p v-if="gone?.gone.lastSeen" class="rental-page__gone-seen">
+          {{ t('goneLastSeen', { date: date(gone.gone.lastSeen) }) }}
+        </p>
+      </div>
+      <!-- Lo más útil primero: la misma vivienda, si sigue publicada en otro portal. Va antes de los
+           botones, que en un teléfono ocupan dos o tres renglones y la bajarían de la pantalla. -->
+      <div
+        v-if="gone?.lookalike && goneCopySource"
+        class="rental-page__gone-copy"
+        data-testid="rental-gone-copy"
+      >
+        <p class="rental-page__gone-copy-title">
+          <VIcon icon="mdi-swap-horizontal" size="20" aria-hidden="true" />{{
+            t('goneSameUnit', { source: goneCopySource })
+          }}
+        </p>
+        <RentalsSimilarCards :items="[gone.lookalike]" />
+      </div>
+      <div class="rental-page__unavailable-text">
+        <p>{{ t(failureCode === 404 ? 'unavailableHint' : 'unavailableRetry') }}</p>
+        <VBtn v-if="failureCode !== 404" color="primary" @click="refresh()">{{ t('retry') }}</VBtn>
+        <div v-else class="rental-page__gone-links">
+          <VBtn v-if="goneBrowse" color="primary" :to="goneBrowse.path">{{
+            t('goneBrowse', { name: goneBrowse.label })
+          }}</VBtn>
+          <VBtn
+            v-if="gone?.barrioLink"
+            variant="tonal"
+            prepend-icon="mdi-chart-box-outline"
+            :to="gone.barrioLink.path"
+            >{{ t('barrioPrices', { name: gone.barrioLink.label }) }}</VBtn
+          >
+          <VBtn
+            :color="goneBrowse ? undefined : 'primary'"
+            :variant="goneBrowse ? 'text' : 'elevated'"
+            :to="localePath('/alquileres-uruguay')"
+            >{{ t('search') }}</VBtn
+          >
+        </div>
+      </div>
+      <template v-if="gone?.similar.length">
+        <h2 class="rental-page__gone-title">{{ t('goneSimilarTitle') }}</h2>
+        <p class="rental-page__note">{{ t('similarHint') }}</p>
+        <RentalsSimilarCards :items="gone.similar" />
+      </template>
     </section>
     <div v-else class="rental-page__layout">
       <article class="rental-page__main">
@@ -618,6 +755,7 @@ useHead(() => ({
                 :aria-label="t(favorite ? 'unfavorite' : 'favorite')"
                 :title="t(favorite ? 'unfavorite' : 'favorite')"
                 class="rental-page__icon-tool"
+                data-cta="rental-favorite-head"
                 @click="save"
               />
               <VBtn
@@ -626,6 +764,7 @@ useHead(() => ({
                 :aria-label="t('share')"
                 :title="t('share')"
                 class="rental-page__icon-tool"
+                data-cta="rental-share"
                 @click="share"
               />
             </div>
@@ -641,6 +780,7 @@ useHead(() => ({
           <ListingPresentationButton
             :source="{ kind: 'rental', property, offer: selectedOffer, market }"
             class="mt-4"
+            data-cta="rental-presentation"
           />
         </header>
         <PropertyGallery :property="property" class="rental-page__gallery" />
@@ -746,6 +886,7 @@ useHead(() => ({
                 prepend-icon="mdi-map-outline"
                 :aria-expanded="showMap"
                 aria-controls="rental-location-map"
+                data-cta="rental-map-toggle"
                 @click="showMap = !showMap"
                 >{{ t(showMap ? 'hideMap' : 'showMap') }}</VBtn
               >
@@ -782,7 +923,11 @@ useHead(() => ({
               >
             </div>
           </template>
-          <div v-if="barrioLink" class="rental-page__location-actions">
+          <div
+            v-if="barrioLink"
+            class="rental-page__location-actions"
+            data-link-area="rental_barrio"
+          >
             <VBtn
               variant="text"
               class="cu-btn-flush rental-page__explore"
@@ -897,7 +1042,14 @@ useHead(() => ({
                 </div>
                 <div>
                   <dt>{{ t('expenses') }}</dt>
-                  <dd>{{ expenses(offer) }}</dd>
+                  <dd>
+                    {{ expenses(offer)
+                    }}<span
+                      v-if="offer.commonExpensesSource === 'description'"
+                      class="rental-page__expenses-source"
+                      >{{ t('expensesFromDescription') }}</span
+                    >
+                  </dd>
                 </div>
                 <div>
                   <dt>{{ t('monthlyTotal') }}</dt>
@@ -933,6 +1085,7 @@ useHead(() => ({
                   rel="noopener noreferrer nofollow"
                   variant="outlined"
                   append-icon="mdi-open-in-new"
+                  data-cta="rental-contact-offer"
                   >{{ t('mapOpen', { source: source(offer) }) }}</VBtn
                 >
               </div>
@@ -943,6 +1096,19 @@ useHead(() => ({
         <section class="rental-page__section" aria-labelledby="rental-visit-title">
           <h2 id="rental-visit-title">{{ t('visitTitle') }}</h2>
           <p>{{ t('visitIntro') }}</p>
+          <div v-if="scamWarning" class="rental-page__safety" data-testid="rental-scam-lines">
+            <h3>
+              <VIcon icon="mdi-shield-alert-outline" size="20" aria-hidden="true" />{{
+                t('safetyTitle')
+              }}
+            </h3>
+            <ul>
+              <li v-for="line in RENTAL_SCAM_LINES" :key="line">{{ t(line) }}</li>
+            </ul>
+            <NuxtLink :to="{ path: localePath('/alquilar-en-uruguay'), hash: '#estafas' }">{{
+              t('scamGuide')
+            }}</NuxtLink>
+          </div>
           <ul class="rental-page__questions">
             <li v-for="question in questions" :key="question">
               <label
@@ -956,6 +1122,7 @@ useHead(() => ({
             color="primary"
             variant="tonal"
             prepend-icon="mdi-content-copy"
+            data-cta="rental-copy-inquiry"
             @click="copyInquiry"
             >{{ t('copyQuestions') }}</VBtn
           >
@@ -989,6 +1156,7 @@ useHead(() => ({
           operation="alquiler"
           :property-key="data.property.key"
           class="rental-page__section"
+          data-link-area="rental_insight"
         />
       </article>
       <aside class="rental-page__decision" aria-labelledby="rental-cost-title">
@@ -999,6 +1167,17 @@ useHead(() => ({
             >{{ t('monthlyRent') }} ·
             {{ t('selectedSource', { source: source(selectedOffer) }) }}</span
           >
+        </p>
+        <!-- Donde se decide: la última vez que vimos ESTE aviso, no la propiedad. -->
+        <p
+          v-if="seen"
+          class="rental-page__seen"
+          :class="`is-${seen.tone}`"
+          data-testid="rental-page-seen"
+        >
+          <VIcon :icon="RENTAL_SEEN_ICON[seen.tone]" size="18" aria-hidden="true" />{{
+            t(seen.key, { n: seen.days, source: source(selectedOffer) })
+          }}
         </p>
         <p
           v-if="selectedOffer.currencyInferred"
@@ -1017,7 +1196,15 @@ useHead(() => ({
         <dl class="rental-page__monthly">
           <div>
             <dt>{{ t('expenses') }}</dt>
-            <dd>{{ expenses(selectedOffer) }}</dd>
+            <dd>
+              {{ expenses(selectedOffer)
+              }}<span
+                v-if="selectedOffer.commonExpensesSource === 'description'"
+                class="rental-page__expenses-source"
+                data-testid="rental-expenses-source"
+                >{{ t('expensesFromDescription') }}</span
+              >
+            </dd>
           </div>
           <div class="rental-page__monthly-total">
             <dt>{{ t('monthlyTotal') }}</dt>
@@ -1043,6 +1230,7 @@ useHead(() => ({
           append-icon="mdi-open-in-new"
           class="rental-page__contact"
           data-testid="rental-page-contact"
+          data-cta="rental-contact-aside"
           >{{ t('contact') }}</VBtn
         >
         <div class="rental-page__publisher">
@@ -1071,6 +1259,7 @@ useHead(() => ({
           :aria-pressed="favorite"
           variant="tonal"
           block
+          data-cta="rental-favorite-aside"
           @click="save"
           >{{ t(favorite ? 'unfavorite' : 'favorite') }}</VBtn
         >
@@ -1083,38 +1272,11 @@ useHead(() => ({
         v-if="data?.similar.length"
         class="rental-page__similar rental-page__section"
         aria-labelledby="rental-similar-title"
+        data-link-area="rental_similar"
       >
         <h2 id="rental-similar-title">{{ t('similarTitle') }}</h2>
         <p class="rental-page__note">{{ t('similarHint') }}</p>
-        <ul>
-          <li v-for="entry in data.similar" :key="entry.key">
-            <NuxtLink :to="rentalPropertyPath(entry.key)">
-              <span class="rental-page__similar-media">
-                <img
-                  v-if="rentalSavedSafeUrl(relatedOffer(entry)?.image)"
-                  :src="rentalSavedSafeUrl(relatedOffer(entry)?.image)!"
-                  :alt="entry.title"
-                  width="320"
-                  height="200"
-                  loading="lazy"
-                  referrerpolicy="no-referrer"
-                />
-                <VIcon v-else icon="mdi-home-city-outline" size="36" aria-hidden="true" />
-              </span>
-              <span class="rental-page__similar-body">
-                <b>{{ money(relatedOffer(entry).price, relatedOffer(entry).currency) }}</b>
-                <span class="rental-page__similar-expenses"
-                  >{{ t('expenses') }}: {{ expenses(relatedOffer(entry)) }}</span
-                >
-                <strong>{{ entry.title }}</strong>
-                <span class="rental-page__similar-specs">{{ relatedSpecs(entry) }}</span>
-                <span class="rental-page__similar-zone">{{
-                  [entry.neighborhood, entry.department].filter(Boolean).join(', ')
-                }}</span>
-              </span>
-            </NuxtLink>
-          </li>
-        </ul>
+        <RentalsSimilarCards :items="data.similar" />
       </section>
       <ClientOnly>
         <RentalsFeedbackMicroSurvey
@@ -1138,6 +1300,7 @@ useHead(() => ({
           :aria-label="t(favorite ? 'unfavorite' : 'favorite')"
           :aria-pressed="favorite"
           variant="tonal"
+          data-cta="rental-favorite-bar"
           @click="save"
         />
         <p class="rental-page__bar-price">
@@ -1145,6 +1308,18 @@ useHead(() => ({
           <span>{{
             total === null ? t('monthlyRent') : t('priceBarTotal', { price: money(total) })
           }}</span>
+          <span
+            v-if="seen"
+            class="rental-page__bar-seen"
+            :class="`is-${seen.tone}`"
+            data-testid="rental-bar-seen"
+            ><VIcon
+              v-if="seen.tone === 'warning'"
+              :icon="RENTAL_SEEN_ICON.warning"
+              size="14"
+              aria-hidden="true"
+            />{{ t(seen.shortKey, { n: seen.days }) }}</span
+          >
         </p>
         <VBtn
           :href="rentalSavedSafeUrl(selectedOffer.url)!"
@@ -1153,6 +1328,7 @@ useHead(() => ({
           color="primary"
           append-icon="mdi-open-in-new"
           :aria-label="t('contact')"
+          data-cta="rental-contact-bar"
           >{{ t('openAdvertShort') }}</VBtn
         >
       </div>
@@ -1449,6 +1625,10 @@ useHead(() => ({
   font-weight: 400;
   color: rgba(var(--v-theme-on-surface), 0.6);
   white-space: nowrap;
+}
+/* "El aviso no lo dice: preguntale al anunciante" is a sentence: stacked, it wraps like one. */
+.rental-page__facts > div.is-stacked dd.is-empty {
+  white-space: normal;
 }
 .rental-page__quote {
   margin-top: 16px;
@@ -1766,7 +1946,7 @@ useHead(() => ({
   margin-top: 8px;
 }
 
-/* Similar homes: a card grid in the directory's vocabulary, ink on the card, blue only on the title. */
+/* Similar homes: the cards live in components/rentals/SimilarCards.vue, shared with the gone page. */
 .rental-page__similar,
 .rental-page__help {
   grid-column: 1 / -1;
@@ -1775,77 +1955,6 @@ useHead(() => ({
 .rental-page__feedback {
   grid-column: 1 / -1;
   max-width: 720px;
-}
-.rental-page__similar ul {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
-  padding: 0;
-  list-style: none;
-  margin-top: 20px;
-}
-.rental-page__similar li {
-  min-width: 0;
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  border-radius: 12px;
-  overflow: hidden;
-  background: rgb(var(--v-theme-surface));
-  transition:
-    transform 180ms ease,
-    box-shadow 180ms ease;
-}
-.rental-page__similar li:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-}
-.rental-page .rental-page__similar a {
-  display: block;
-  height: 100%;
-  text-decoration: none;
-  color: inherit;
-}
-.rental-page__similar a:hover strong {
-  text-decoration: underline;
-}
-.rental-page__similar-media {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  aspect-ratio: 3 / 2;
-  background: rgba(var(--v-theme-on-surface), 0.06);
-  color: rgba(var(--v-theme-on-surface), 0.5);
-}
-.rental-page__similar-media img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.rental-page__similar-body {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 14px 16px 16px;
-}
-.rental-page__similar-body > b {
-  font-size: 1.25rem;
-  line-height: 1.2;
-  font-variant-numeric: tabular-nums;
-}
-.rental-page__similar-expenses,
-.rental-page__similar-specs {
-  font-size: 0.8rem;
-  color: rgba(var(--v-theme-on-surface), 0.76);
-}
-.rental-page__similar-body > strong {
-  margin-top: 6px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  line-height: 1.4;
-  color: rgb(var(--v-theme-link));
-}
-.rental-page__similar-zone {
-  font-size: 0.8rem;
-  color: rgba(var(--v-theme-on-surface), 0.76);
 }
 .rental-page__help {
   display: flex;
@@ -1865,15 +1974,107 @@ useHead(() => ({
 .rental-page__mobile-action {
   display: none;
 }
+/* The gone page: the reading column keeps its measure, the cards below take the full width. */
 .rental-page__unavailable {
-  max-width: 65ch;
   padding-block: 24px 80px;
+}
+.rental-page__unavailable-text {
+  max-width: 65ch;
 }
 .rental-page__unavailable h1 {
   margin-bottom: 12px;
 }
-.rental-page__unavailable p {
+.rental-page__unavailable-text p {
   margin-bottom: 20px;
+}
+.rental-page__unavailable-text .rental-page__gone-seen {
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.rental-page__gone-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+/* The same home still listed: right under "Dejó de verse", before the next-step links. */
+.rental-page__gone-copy {
+  margin-block: 16px 32px;
+}
+.rental-page__gone-copy-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-weight: 700;
+}
+.rental-page__gone-copy-title .v-icon {
+  flex-shrink: 0;
+  color: rgb(var(--v-theme-primary));
+}
+.rental-page__gone-title {
+  margin-top: 40px;
+}
+/* "Visto hoy en InfoCasas", under the rent: one quiet line, amber only when it may be gone. */
+.rental-page__seen {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: rgba(var(--v-theme-on-surface), 0.76);
+}
+.rental-page__seen .v-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.rental-page__seen.is-warning {
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(var(--v-theme-warning), 0.14);
+  color: rgb(var(--v-theme-on-surface));
+}
+.rental-page__seen.is-warning .v-icon {
+  color: rgb(var(--v-theme-warning));
+}
+/* "según la descripción del aviso": the figure is the advert's, read from its own text. */
+.rental-page__expenses-source {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: rgba(var(--v-theme-on-surface), 0.72);
+}
+/* Social-media and owner-direct adverts: what to check before paying, never an accusation. */
+.rental-page__safety {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 12px;
+  background: rgba(var(--v-theme-warning), 0.08);
+}
+.rental-page__safety h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rental-page__safety h3 .v-icon {
+  color: rgb(var(--v-theme-warning));
+}
+.rental-page__safety ul {
+  margin: 8px 0 0;
+  padding-inline-start: 22px;
+}
+.rental-page__safety li {
+  line-height: 1.55;
+}
+.rental-page__safety li + li {
+  margin-top: 4px;
+}
+.rental-page__safety a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-weight: 600;
 }
 @media (min-width: 960px) and (max-height: 740px) {
   .rental-page__decision {
@@ -1914,9 +2115,6 @@ useHead(() => ({
   }
   .rental-page__section:first-of-type {
     margin-top: 20px;
-  }
-  .rental-page__similar ul {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .rental-page__mobile-action {
     position: fixed;
@@ -1966,6 +2164,15 @@ useHead(() => ({
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  .rental-page__bar-seen .v-icon {
+    margin-inline-end: 2px;
+    vertical-align: -2px;
+    color: rgb(var(--v-theme-warning));
+  }
+  .rental-page__bar-price .rental-page__bar-seen.is-warning {
+    color: rgb(var(--v-theme-on-surface));
+    font-weight: 600;
   }
 }
 @media (max-width: 767px) {
@@ -2044,9 +2251,6 @@ useHead(() => ({
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  .rental-page__similar ul {
-    grid-template-columns: 1fr;
-  }
 }
 @media (max-width: 359px) {
   .rental-page__bar-price span {
@@ -2054,13 +2258,9 @@ useHead(() => ({
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .rental-page__similar li,
   .rental-page__sections a,
   .rental-page__offers > li {
     transition: none;
-  }
-  .rental-page__similar li:hover {
-    transform: none;
   }
 }
 </style>

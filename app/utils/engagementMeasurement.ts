@@ -55,6 +55,13 @@ export const LINK_AREAS = [
   'guide_section',
   'guide_contents',
   'related_pages',
+  // The rental ficha (/alquileres/<key>): which block a click to another ficha, the barrio page or
+  // the directory came from. Before these, every one of them read as `content`.
+  'rental_gone',
+  'rental_similar',
+  'rental_insight',
+  'rental_breadcrumb',
+  'rental_barrio',
   'header',
   'drawer',
   'footer',

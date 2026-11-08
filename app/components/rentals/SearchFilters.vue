@@ -329,6 +329,12 @@
               color="primary"
             />
           </div>
+          <!-- Sólo el 7,9 % de los avisos declara mascotas (8/11/2026): marcarlo deja afuera al resto
+               sin que la página lo dijera. La línea nombra el filtro: en la misma fila está también
+               "Con garaje", y un "lo" suelto se leía como si fuera ése. -->
+          <p class="rental-search__hint" data-testid="rental-filter-declared-hint">
+            {{ t('petsDeclaredHint') }}
+          </p>
           <VSelect
             v-model="draft.amenities"
             :items="amenityItems"
@@ -371,7 +377,9 @@
             closable-chips
             clearable
           />
-          <p class="rental-search__hint">{{ t('guaranteeHint') }}</p>
+          <p class="rental-search__hint" data-testid="rental-filter-conditions-hint">
+            {{ t('conditionsDeclaredHint') }} {{ t('guaranteeHint') }}
+          </p>
         </details>
         <details
           class="rental-search__group"

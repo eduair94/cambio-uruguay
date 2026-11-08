@@ -107,6 +107,30 @@ describe('listRentalBarrios', () => {
     expect(list.some(item => item.path.endsWith('/'))).toBe(false)
   })
 
+  it('descarta lo que no es un barrio: superficies, hectáreas, números y el país', () => {
+    // 2026-11-07: Casasweb's surface read as the barrio opened /alquiler/montevideo/60-m2-60-m2 and
+    // four more, indexable, in the sitemap and in Pocitos' "Barrios con precios parecidos".
+    const junk = ['60 m2 60 m2', '40 m2 44 m2', '10 m2', '4 H', 'Uruguay']
+    const real = ['25 de Mayo', '18 de Julio']
+    const data = snapshots()
+    for (const name of [...junk, ...real])
+      data.market!.buckets.push(
+        bucket(name, 'apartamento', 'any', 33000, 60) as any,
+        bucket(name, 'apartamento', '2', 35000, 30) as any
+      )
+    const names = listRentalBarrios(data).map(item => item.neighborhood)
+    expect(names).toEqual(expect.arrayContaining(['Pocitos', ...real]))
+    for (const name of junk) expect(names).not.toContain(name)
+    // No page and no link: the junk slug is unknown, the real one is served.
+    expect(buildRentalBarrioPage(data, 'montevideo', '60-m2-60-m2', NOW)).toBeNull()
+    expect(buildRentalBarrioPage(data, 'montevideo', '25-de-mayo', NOW)?.indexable).toBe(true)
+    const pocitos = buildRentalBarrioPage(data, 'montevideo', 'pocitos', NOW)!
+    const linked = [...pocitos.similar, ...pocitos.largest].map(link => link.neighborhood)
+    for (const name of junk) expect(linked).not.toContain(name)
+    // The rank counts the barrios with data: Pocitos, Malvín, Cordón and the two real ones.
+    expect(pocitos.rank).toMatchObject({ position: 1, of: 5 })
+  })
+
   it('arma la lista una vez por snapshot', () => {
     const data = snapshots()
     const first = listRentalBarrios(data)

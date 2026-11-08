@@ -14,6 +14,11 @@ import {
 import { haversineKm } from '../../utils/nearbyRates'
 import { rentalNearbyOrigin } from '../../utils/propertyNearby'
 import { rentalDistanceStages } from '../../utils/rentalDistance'
+import {
+  rentalLookalikeFacts,
+  rentalLookalikes,
+  type RentalLookalikeFacts,
+} from '../../utils/rentalLookalike'
 import { rentalPricePerM2 } from '../../utils/rentalPricePerM2'
 import { rentalPropertyPath } from '../../utils/rentalPresentation'
 import { rentalSavedSafeUrl } from '../../utils/rentalSaved'
@@ -84,6 +89,8 @@ const RENTAL_OFFER_FIELDS = [
   'currency',
   'priceUyu',
   'image',
+  // Sólo para no elegir una copia de la misma vivienda (utils/rentalLookalike.ts); no sale.
+  'sellerName',
 ]
 
 function rentalListing(row: RentalRow, usdUyu: number): PropertyInsightListing | null {
@@ -192,6 +199,9 @@ export async function loadRentalInsight(key: string): Promise<PropertyInsight | 
       $project: {
         _id: 0,
         distanceKm: 1,
+        // Para la regla de copias: el punto exacto veta, el mismo punto y anunciante agrupa.
+        latitude: 1,
+        longitude: 1,
         ...Object.fromEntries(RENTAL_FIELDS.map(field => [field, 1])),
         ...Object.fromEntries(RENTAL_OFFER_FIELDS.map(field => [`offers.${field}`, 1])),
       },
@@ -202,6 +212,10 @@ export async function loadRentalInsight(key: string): Promise<PropertyInsight | 
   const clean = unambiguousRentalPeers(subjectRow, peers).filter(
     peer => !rentalPageConflicts(peer).length
   )
+  // La evidencia de copias se queda acá: las elecciones que salen no la llevan.
+  const facts = new Map<string, RentalLookalikeFacts>(
+    [subjectRow, ...clean].map(item => [item.key, rentalLookalikeFacts(item)])
+  )
   return buildPropertyInsight({
     subject,
     peers: clean
@@ -209,6 +223,11 @@ export async function loadRentalInsight(key: string): Promise<PropertyInsight | 
       .filter((item): item is PropertyInsightListing => !!item),
     located: !!origin,
     unit: 'UYU',
+    sameUnit: (a, b) => {
+      const first = facts.get(a.key)
+      const second = facts.get(b.key)
+      return !!first && !!second && rentalLookalikes(first, second)
+    },
   })
 }
 
