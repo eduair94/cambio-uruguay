@@ -20,7 +20,7 @@ test('the review carousel mounts with the TrustScore banner suppressed', async (
 
   // The widget only mounts after hydration AND after the section intersects, and
   // the dev server hydrates slowly. Retry rather than asserting once.
-  const frame = page.locator('.reviews-widget iframe')
+  const frame = page.locator('iframe.reviews-widget')
   await expect(async () => {
     await section.scrollIntoViewIfNeeded()
     await expect(frame).toHaveCount(1, { timeout: 2_000 })
@@ -31,23 +31,21 @@ test('the review carousel mounts with the TrustScore banner suppressed', async (
   expect(src).toContain('hideTopBanner=true')
   expect(src).toContain('hideGlobalReviews=true')
 
-  // `rating` is a no-op upstream; setting it would be a lie. We never set it, so
-  // the library never puts it in the URL.
-  expect(src).not.toContain('rating=')
+  await expect(frame).toBeVisible()
 
-  // NOTE: `sort=latest` DOES appear here, along with `page=1&limit=20`. Those are
-  // the library's own defaults, injected by its buildIframeUrl — we do not set
-  // them. The constraint is that our config never *sets* `sort`, which
-  // tests/unit/trustpilot.test.ts asserts directly. Do not assert its absence
-  // from the URL; verified against the live dev server, it is always present.
-  expect(src).toContain('sort=latest')
+  // These filters are no-ops upstream. The native iframe sends only our config,
+  // with none of the old SDK's implicit pagination or sorting defaults.
+  expect(src).not.toContain('rating=')
+  expect(src).not.toContain('sort=')
+  expect(src).not.toContain('page=')
+  expect(src).not.toContain('limit=')
 
   // The TrustScore banner (a stale, age-decayed "3.8") lives INSIDE the widget's
   // cross-origin iframe, so only a frameLocator can see it. hideTopBanner +
   // hideGlobalReviews are what suppress it; this asserts the user-visible result,
   // not just the config that is supposed to produce it. not.toBeEmpty() proves we
   // are inspecting loaded iframe content, not passing vacuously on a blank doc.
-  const widgetBody = page.frameLocator('.reviews-widget iframe').locator('body')
+  const widgetBody = page.frameLocator('iframe.reviews-widget').locator('body')
   await expect(async () => {
     await expect(widgetBody).not.toBeEmpty()
     await expect(widgetBody).not.toContainText('3.8')
@@ -73,32 +71,88 @@ test('both review CTAs point at Trustpilot and open in a new tab', async ({ page
   await expect(seeAll).toHaveAttribute('rel', /noopener/)
 })
 
-test('the whole reviews section is removed when the widget host is unreachable', async ({
+test('reviews stay visible while a slow iframe asset delays load beyond eight seconds', async ({
   page,
 }) => {
-  await page.route('**trustpilot.checkleaked.com**', r => r.abort())
+  let releaseAvatar = () => {}
+  const avatarReleased = new Promise<void>(resolve => {
+    releaseAvatar = resolve
+  })
+  let avatarRequested = false
+
+  await page.route('https://trustpilot.checkleaked.com/**', async route => {
+    if (new URL(route.request().url()).pathname === '/slow-avatar.svg') {
+      avatarRequested = true
+      await avatarReleased
+      await route.fulfill({
+        contentType: 'image/svg+xml',
+        body: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"/>',
+      })
+      return
+    }
+
+    await route.fulfill({
+      contentType: 'text/html',
+      body: `<!doctype html><html lang="es"><body>
+        <p data-testid="review">Excelente servicio de cambio</p>
+        <img src="/slow-avatar.svg" width="24" height="24" alt="">
+        <script>
+          window.addEventListener('load', () => { document.body.dataset.loaded = 'true' })
+        </script>
+      </body></html>`,
+    })
+  })
+
+  try {
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
+    const section = page.locator('.reviews-section')
+    const frame = page.locator('iframe.reviews-widget')
+    await expect(async () => {
+      await section.scrollIntoViewIfNeeded()
+      await expect(frame).toHaveCount(1, { timeout: 2_000 })
+    }).toPass({ timeout: 90_000 })
+
+    await expect.poll(() => avatarRequested).toBe(true)
+    const widget = page.frameLocator('iframe.reviews-widget')
+    await expect(widget.getByTestId('review')).toBeVisible()
+    await expect(widget.locator('body')).not.toHaveAttribute('data-loaded', 'true')
+
+    // This duration is the regression: the former readiness deadline destroyed
+    // the entire section at 8s even though the review document was usable.
+    await new Promise(resolve => setTimeout(resolve, 9_000))
+    await expect(frame).toBeVisible()
+    await expect(widget.getByTestId('review')).toBeVisible()
+    await expect(widget.locator('body')).not.toHaveAttribute('data-loaded', 'true')
+    await expect(section.locator('[data-cta="trustpilot-write"]')).toBeVisible()
+    await expect(section.locator('[data-cta="trustpilot-all"]')).toBeVisible()
+
+    releaseAvatar()
+    await expect(widget.locator('body')).toHaveAttribute('data-loaded', 'true')
+  } finally {
+    releaseAvatar()
+  }
+})
+
+test('review links remain available when the iframe host is unreachable', async ({ page }) => {
+  let requested = false
+  await page.route('**trustpilot.checkleaked.com**', async route => {
+    requested = true
+    await route.abort()
+  })
   await page.goto('/')
 
-  // Precondition: the section is server-rendered. Without this, toHaveCount(0)
-  // below would pass vacuously if the section stopped rendering at all.
-  await expect(page.locator('.reviews-section')).toHaveCount(1)
-
-  // The section renders server-side, then removes itself once the probe fails
-  // — but only after IntersectionWrapper reveals it. Several large sections
-  // (AIInsights, WhereToChange, pillar-content, internal-links) sit between
-  // `.reviews-section` and `.ecosystem-section`, so scrolling straight to the
-  // ecosystem strip jumps clean over the reviews section (~4800px away) and
-  // never intersects it — the mount/probe would never even be attempted.
-  // Scroll to `.reviews-section` itself, same as the healthy-path test above.
-  // Guard the scroll: once the section is removed, a locator matching zero
-  // elements would otherwise hang scrollIntoViewIfNeeded.
   const section = page.locator('.reviews-section')
+  const frame = section.locator('iframe')
   await expect(async () => {
-    if ((await section.count()) > 0) await section.scrollIntoViewIfNeeded()
-    await expect(section).toHaveCount(0, { timeout: 2_000 })
+    await section.scrollIntoViewIfNeeded()
+    await expect(frame).toHaveCount(1, { timeout: 2_000 })
   }).toPass({ timeout: 90_000 })
+  await expect.poll(() => requested).toBe(true)
 
-  // The neighbouring section must survive — we removed one section, not the page.
+  await expect(section).toBeVisible()
+  await expect(section.locator('[data-cta="trustpilot-write"]')).toBeVisible()
+  await expect(section.locator('[data-cta="trustpilot-all"]')).toBeVisible()
+
   await page.locator('.ecosystem-section').scrollIntoViewIfNeeded()
   await expect(page.locator('.ecosystem-section')).toBeVisible()
 })
