@@ -151,5 +151,18 @@
     "fa": "نرخ ارز و بازار",
     "ur": "شرح تبادلہ اور مارکیٹ",
     "he": "שערים ושוק"
+  },
+  "legal.privacyNav": {
+    "ko": "개인정보 보호"
+  },
+  "legal.contactNav": {
+    "ko": "문의",
+    "ja": "お問い合わせ"
+  },
+  "consent.accept": {
+    "ko": "수락"
+  },
+  "consent.reject": {
+    "ko": "거부"
   }
 }

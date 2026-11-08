@@ -698,7 +698,10 @@
     "email": "Přijímat e-mailem",
     "telegram": "Přijímat na Telegramu",
     "telegramHint": "Nejprve propojte svůj Telegram",
-    "saved": "Předvolby uloženy"
+    "saved": "Předvolby uloženy",
+    "verifyEmail": "Nejprve ověřte svůj e-mail: tak víme, že adresa je vaše.",
+    "sendVerification": "Pošlete mi ověřovací e-mail",
+    "verificationSent": "Hotovo: Klepněte na odkaz v e-mailu a znovu tuto funkci zapněte."
   },
   "donarPaypal": "Darujte přes Paypal",
   "donarMercadoPago": "Darujte s Mercado Pago",
@@ -1443,6 +1446,8 @@
   },
   "legal": {
     "privacyNav": "Soukromí",
+    "lastUpdated": "Naposledy aktualizováno",
+    "machineTranslated": "Strojový překlad: v případě jakýchkoli rozdílů má přednost španělský text.",
     "termsNav": "Podmínky",
     "contactNav": "Kontakt",
     "privacy": {

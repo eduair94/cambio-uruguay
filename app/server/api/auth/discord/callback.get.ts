@@ -60,6 +60,7 @@ export default defineEventHandler(async event => {
           auth.createUser({
             ...(p.uid ? { uid: p.uid } : {}),
             ...(p.email ? { email: p.email } : {}),
+            ...(p.emailVerified ? { emailVerified: true } : {}),
             ...(displayName ? { displayName } : {}),
             ...(photoURL ? { photoURL } : {}),
           }),

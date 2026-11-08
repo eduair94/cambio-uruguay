@@ -698,7 +698,10 @@
     "email": "E-mailben fogadás",
     "telegram": "Fogadás Telegramon",
     "telegramHint": "Először linkeld össze a Telegramodat",
-    "saved": "Beállítások mentve"
+    "saved": "Beállítások mentve",
+    "verifyEmail": "Először is ellenőrizd az e-mail címedet: így tudjuk, hogy a cím a tiéd.",
+    "sendVerification": "Küldd el nekem az ellenőrző e-mailt",
+    "verificationSent": "Kész: koppintson az e-mailben található linkre, és kapcsolja be újra ezt a funkciót."
   },
   "donarPaypal": "Adományozás PayPal-lal",
   "donarMercadoPago": "Adományozás a Mercado Pagón keresztül",
@@ -1443,6 +1446,8 @@
   },
   "legal": {
     "privacyNav": "Magánélet",
+    "lastUpdated": "Utolsó frissítés",
+    "machineTranslated": "Gépi fordítás: eltérés esetén a spanyol szöveg az irányadó.",
     "termsNav": "Feltételek",
     "contactNav": "Érintkezés",
     "privacy": {

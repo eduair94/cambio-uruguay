@@ -212,6 +212,7 @@ import {
 const store = useWatchlistStore()
 const auth = useAuthStore()
 const route = useRoute()
+const router = useRouter()
 const localePath = useLocalePath()
 const { locale } = useI18n()
 const { authFetch } = useAuthFetch()
@@ -433,6 +434,11 @@ onMounted(() => {
       if (store.configured) sharedPending.value = shared
       else store.replace(shared)
     }
+    // Read once, then out of the address bar: the token can hold a position, and analytics starts
+    // only when it is gone (plugins/gtag-init.client.ts, utils/analyticsUrl.ts).
+    void router
+      .replace({ query: { ...route.query, l: undefined }, hash: route.hash })
+      .catch(() => {})
   }
   if (!store.configured) editing.value = false
 })

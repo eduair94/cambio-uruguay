@@ -698,7 +698,10 @@
     "email": "Saada e-posti teel",
     "telegram": "Saa Telegramis",
     "telegramHint": "Lingi esmalt oma Telegram",
-    "saved": "Eelistused salvestatud"
+    "saved": "Eelistused salvestatud",
+    "verifyEmail": "Kinnitage esmalt oma e-posti aadress: nii teame, et aadress on teie oma.",
+    "sendVerification": "Saada mulle kinnitusmeil",
+    "verificationSent": "Valmis: puuduta e-kirjas olevat linki ja lülita see uuesti sisse."
   },
   "donarPaypal": "Anneta PayPali kaudu",
   "donarMercadoPago": "Anneta Mercado Pago kaudu",
@@ -1443,6 +1446,8 @@
   },
   "legal": {
     "privacyNav": "Privaatsus",
+    "lastUpdated": "Viimati uuendatud",
+    "machineTranslated": "Masintõlge: kui on mingeid lahknevusi, on hispaaniakeelne tekst ülimuslik.",
     "termsNav": "Tingimused",
     "contactNav": "Kontakt",
     "privacy": {

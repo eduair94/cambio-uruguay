@@ -222,9 +222,25 @@ function fromBase64Url(token: string): string {
   return new TextDecoder().decode(bytes)
 }
 
-/** Encode a list into a URL-safe token for sharing (`/mi-lista?l=…`). */
+/**
+ * Encode a list into a URL-safe token for sharing (`/mi-lista?l=…`). A "Mi ubicación" zone travels
+ * rounded to two decimals (~1 km, the smallest radius): the link is a URL that analytics, ads and
+ * whoever receives it can read, and until 2026-11-08 it carried the sharer's exact GPS position.
+ */
 export function encodeWatchlist(w: Watchlist): string {
-  return toBase64Url(JSON.stringify(sanitizeWatchlist(w)))
+  const list = sanitizeWatchlist(w)
+  if (
+    list.zone?.mode === 'point' &&
+    typeof list.zone.lat === 'number' &&
+    typeof list.zone.lng === 'number'
+  ) {
+    list.zone = {
+      ...list.zone,
+      lat: Math.round(list.zone.lat * 100) / 100,
+      lng: Math.round(list.zone.lng * 100) / 100,
+    }
+  }
+  return toBase64Url(JSON.stringify(list))
 }
 
 /**

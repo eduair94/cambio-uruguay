@@ -698,7 +698,10 @@
     "email": "Nhận qua email",
     "telegram": "Nhận trên Telegram",
     "telegramHint": "Trước tiên hãy liên kết tài khoản Telegram của bạn.",
-    "saved": "Tùy chọn đã được lưu"
+    "saved": "Tùy chọn đã được lưu",
+    "verifyEmail": "Trước tiên hãy xác minh email của bạn: đó là cách chúng tôi biết địa chỉ này là của bạn.",
+    "sendVerification": "Hãy gửi cho tôi email xác nhận.",
+    "verificationSent": "Xong: hãy nhấp vào liên kết trong email và bật lại chức năng này."
   },
   "donarPaypal": "Quyên góp qua Paypal",
   "donarMercadoPago": "Quyên góp thông qua Mercado Pago",
@@ -1443,6 +1446,8 @@
   },
   "legal": {
     "privacyNav": "Sự riêng tư",
+    "lastUpdated": "Cập nhật lần cuối",
+    "machineTranslated": "Dịch máy: Nếu có bất kỳ sự khác biệt nào, văn bản tiếng Tây Ban Nha sẽ được ưu tiên.",
     "termsNav": "Điều khoản",
     "contactNav": "Liên hệ",
     "privacy": {

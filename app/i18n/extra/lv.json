@@ -698,7 +698,10 @@
     "email": "Saņemt pa e-pastu",
     "telegram": "Saņemt pakalpojumā Telegram",
     "telegramHint": "Vispirms pievienojiet saiti savam Telegram",
-    "saved": "Preferences saglabātas"
+    "saved": "Preferences saglabātas",
+    "verifyEmail": "Vispirms pārbaudiet savu e-pasta adresi: tā mēs zinām, ka adrese ir jūsu.",
+    "sendVerification": "Nosūtiet man verifikācijas e-pastu",
+    "verificationSent": "Gatavs: pieskarieties saitei e-pastā un atkal ieslēdziet šo funkciju."
   },
   "donarPaypal": "Ziedot, izmantojot Paypal",
   "donarMercadoPago": "Ziedojiet, izmantojot Mercado Pago",
@@ -1443,6 +1446,8 @@
   },
   "legal": {
     "privacyNav": "Privātums",
+    "lastUpdated": "Pēdējoreiz atjaunināts",
+    "machineTranslated": "Mašīntulkojums: ja rodas atšķirības, noteicošais ir spāņu valodas teksts.",
     "termsNav": "Noteikumi",
     "contactNav": "Kontaktinformācija",
     "privacy": {

@@ -698,7 +698,10 @@
     "email": "Ta emot via e-post",
     "telegram": "Ta emot på Telegram",
     "telegramHint": "Länka ditt Telegram först",
-    "saved": "Inställningar sparade"
+    "saved": "Inställningar sparade",
+    "verifyEmail": "Verifiera din e-postadress först: det är så vi vet att adressen är din.",
+    "sendVerification": "Skicka mig verifieringsmejlet",
+    "verificationSent": "Klart: tryck på länken i e-postmeddelandet och slå på det här igen."
   },
   "donarPaypal": "Donera med Paypal",
   "donarMercadoPago": "Donera med Mercado Pago",
@@ -1443,6 +1446,8 @@
   },
   "legal": {
     "privacyNav": "Privatliv",
+    "lastUpdated": "Senast uppdaterad",
+    "machineTranslated": "Maskinöversättning: om något avviker har den spanska texten företräde.",
     "termsNav": "Villkor",
     "contactNav": "Kontakta",
     "privacy": {

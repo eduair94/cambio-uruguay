@@ -698,7 +698,10 @@
     "email": "Ricevi via email",
     "telegram": "Ricevi su Telegram",
     "telegramHint": "Collega prima il tuo account Telegram",
-    "saved": "Preferenze salvate"
+    "saved": "Preferenze salvate",
+    "verifyEmail": "Verifica prima il tuo indirizzo email: in questo modo sapremo che l'indirizzo è tuo.",
+    "sendVerification": "Inviami l'email di verifica",
+    "verificationSent": "Fatto: tocca il link nell'email e riattivalo."
   },
   "donarPaypal": "Dona con PayPal",
   "donarMercadoPago": "Fai una donazione con Mercado Pago",
@@ -1443,6 +1446,8 @@
   },
   "legal": {
     "privacyNav": "Privacy",
+    "lastUpdated": "Ultimo aggiornamento",
+    "machineTranslated": "Traduzione automatica: in caso di discrepanze, prevale il testo spagnolo.",
     "termsNav": "Informazioni",
     "contactNav": "Contatto",
     "privacy": {

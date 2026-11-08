@@ -698,7 +698,10 @@
     "email": "E-posta ile alın",
     "telegram": "Telegram üzerinden alın",
     "telegramHint": "Öncelikle Telegram hesabınızı bağlayın.",
-    "saved": "Tercihler kaydedildi."
+    "saved": "Tercihler kaydedildi.",
+    "verifyEmail": "Öncelikle e-postanızı doğrulayın: adresin size ait olduğunu ancak bu şekilde anlayabiliyoruz.",
+    "sendVerification": "Doğrulama e-postasını bana gönder",
+    "verificationSent": "Tamamlandı: E-postadaki bağlantıya tıklayın ve tekrar açın."
   },
   "donarPaypal": "Paypal ile bağış yapın",
   "donarMercadoPago": "Mercado Pago aracılığıyla bağış yapın",
@@ -1443,6 +1446,8 @@
   },
   "legal": {
     "privacyNav": "Mahremiyet",
+    "lastUpdated": "Son güncelleme",
+    "machineTranslated": "Makine çevirisi: Herhangi bir farklılık varsa, İspanyolca metin geçerlidir.",
     "termsNav": "Şartlar",
     "contactNav": "Temas etmek",
     "privacy": {

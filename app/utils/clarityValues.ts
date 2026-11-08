@@ -18,9 +18,13 @@ export const CLARITY_PRIVATE_QUERY_PARAMS: readonly string[] = Object.freeze([
   'code',
   'state',
   'token',
+  // Discord's hand-off: a Firebase custom token (see utils/analyticsUrl.ts).
+  'ct',
   'refLat',
   'refLng',
   'refLabel',
+  // /mi-lista's share token: a list whose zone can be the sharer's position.
+  'l',
 ])
 
 /** The custom-event name Clarity may receive: the site's own `snake_case`/`kebab-case` names only. */

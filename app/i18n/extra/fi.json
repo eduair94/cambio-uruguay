@@ -698,7 +698,10 @@
     "email": "Vastaanota sähköpostitse",
     "telegram": "Vastaanota Telegramissa",
     "telegramHint": "Linkitä ensin Telegram-tilisi",
-    "saved": "Asetukset tallennettu"
+    "saved": "Asetukset tallennettu",
+    "verifyEmail": "Vahvista ensin sähköpostiosoitteesi: näin tiedämme, että osoite on sinun.",
+    "sendVerification": "Lähetä minulle vahvistussähköposti",
+    "verificationSent": "Valmis: napauta sähköpostissa olevaa linkkiä ja ota tämä uudelleen käyttöön."
   },
   "donarPaypal": "Lahjoita PayPalilla",
   "donarMercadoPago": "Lahjoita Mercado Pagon kautta",
@@ -1443,6 +1446,8 @@
   },
   "legal": {
     "privacyNav": "Tietosuoja",
+    "lastUpdated": "Viimeksi päivitetty",
+    "machineTranslated": "Konekäännös: jos tekstissä on eroja, espanjankielinen teksti on ensisijainen.",
     "termsNav": "Ehdot",
     "contactNav": "Yhteystiedot",
     "privacy": {

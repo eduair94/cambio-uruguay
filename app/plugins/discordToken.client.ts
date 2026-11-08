@@ -15,9 +15,18 @@ export default defineNuxtPlugin({
     const authError = url.searchParams.get('authError')
     const auth = useAuthStore()
 
+    // Through the router, once the app is up. A raw history.replaceState left the token in
+    // vue-router's current route: the next navigation wrote /cuenta?ct=<token> back into that
+    // history entry and Back showed it again, after GA had started (adversarial review,
+    // 2026-11-08). Before app:created the router also re-applies the boot URL, so earlier is moot.
+    const router = useRouter()
     const scrub = (key: string) => {
-      url.searchParams.delete(key)
-      window.history.replaceState({}, '', url.toString())
+      onNuxtReady(() => {
+        const current = router.currentRoute.value
+        // `undefined` drops the key from the URL (vue-router).
+        const query = { ...current.query, [key]: undefined }
+        void router.replace({ path: current.path, query, hash: current.hash }).catch(() => {})
+      })
     }
 
     if (authError === 'discord') {

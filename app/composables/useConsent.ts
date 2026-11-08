@@ -4,6 +4,7 @@ import {
   CONSENT_MAX_AGE,
   parseConsent,
   consentSignals,
+  insertStoredConsent,
   type ConsentDecision,
 } from '~/utils/consent'
 
@@ -36,8 +37,14 @@ export function useConsent() {
       // A listener that throws must not keep the decision from reaching gtag.
     }
     try {
-      const { gtag } = useGtag()
-      gtag('consent', 'update', consentSignals(d))
+      // While gtag.js has not loaded (it can be held back: plugins/gtag-init.client.ts waits for a
+      // clean address bar), a plain update lands after the queued `config` commands and the first
+      // page_view would still go out under the region default. Ahead of `js` it wins.
+      const signals = consentSignals(d)
+      if (!insertStoredConsent((window as { dataLayer?: unknown }).dataLayer, signals)) {
+        const { gtag } = useGtag()
+        gtag('consent', 'update', signals)
+      }
     } catch {
       // gtag not available (module disabled / SSR) — cookie still records intent.
     }

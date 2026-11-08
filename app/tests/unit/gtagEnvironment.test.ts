@@ -6,6 +6,7 @@ import { defu } from 'defu'
 import ts from 'typescript'
 import { withQuery } from 'ufo'
 import { describe, expect, it, vi } from 'vitest'
+import { hasAnalyticsUnsafeQuery } from '../../utils/analyticsUrl'
 import { isBareRoute } from '../../utils/bareRoutes'
 import { CONSENT_STRICT_REGIONS } from '../../utils/consent'
 
@@ -118,7 +119,10 @@ function setup(environment: string) {
     for (const plugin of plugins) loadRuntime(`${plugin.src}.js`).default.setup()
     evaluate(
       resolve(appDir, 'plugins/gtag-init.client.ts'),
-      { '~/utils/bareRoutes': { isBareRoute } },
+      {
+        '~/utils/analyticsUrl': { hasAnalyticsUnsafeQuery },
+        '~/utils/bareRoutes': { isBareRoute },
+      },
       {
         ...runtimeGlobals,
         defineNuxtPlugin: (callback: (app: unknown) => void) => callback({}),

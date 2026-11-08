@@ -698,7 +698,10 @@
     "email": "Gauti el. paštu",
     "telegram": "Gauti per „Telegram“",
     "telegramHint": "Pirmiausia susiekite savo „Telegram“",
-    "saved": "Nuostatos išsaugotos"
+    "saved": "Nuostatos išsaugotos",
+    "verifyEmail": "Pirmiausia patikrinkite savo el. pašto adresą: taip žinosime, kad adresas yra jūsų.",
+    "sendVerification": "Atsiųskite man patvirtinimo el. laišką",
+    "verificationSent": "Atlikta: palieskite el. laiške esančią nuorodą ir vėl įjunkite šią funkciją."
   },
   "donarPaypal": "Paaukokite naudodami „Paypal“",
   "donarMercadoPago": "Paaukokite per „Mercado Pago“",
@@ -1443,6 +1446,8 @@
   },
   "legal": {
     "privacyNav": "Privatumas",
+    "lastUpdated": "Paskutinį kartą atnaujinta",
+    "machineTranslated": "Mašininis vertimas: jei yra neatitikimų, pirmenybė teikiama tekstui ispanų kalba.",
     "termsNav": "Sąlygos",
     "contactNav": "Kontaktas",
     "privacy": {

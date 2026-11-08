@@ -698,7 +698,10 @@
     "email": "Terima melalui email",
     "telegram": "Terima di Telegram",
     "telegramHint": "Hubungkan akun Telegram Anda terlebih dahulu.",
-    "saved": "Pengaturan tersimpan"
+    "saved": "Pengaturan tersimpan",
+    "verifyEmail": "Verifikasi email Anda terlebih dahulu: dengan begitu kami tahu alamat tersebut milik Anda.",
+    "sendVerification": "Kirimkan saya email verifikasi",
+    "verificationSent": "Selesai: ketuk tautan di email dan aktifkan kembali."
   },
   "donarPaypal": "Berdonasi melalui Paypal",
   "donarMercadoPago": "Berdonasi melalui Mercado Pago",
@@ -1443,6 +1446,8 @@
   },
   "legal": {
     "privacyNav": "Pribadi",
+    "lastUpdated": "Terakhir diperbarui",
+    "machineTranslated": "Terjemahan mesin: jika ada perbedaan, teks bahasa Spanyol yang berlaku.",
     "termsNav": "Ketentuan",
     "contactNav": "Kontak",
     "privacy": {

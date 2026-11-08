@@ -698,7 +698,10 @@
     "email": "通过电子邮件接收",
     "telegram": "在 Telegram 上接收",
     "telegramHint": "请先关联您的 Telegram 账号",
-    "saved": "已保存偏好设置"
+    "saved": "已保存偏好设置",
+    "verifyEmail": "请先验证您的电子邮件地址：这样我们才能确认该地址属于您。",
+    "sendVerification": "请给我发送验证邮件",
+    "verificationSent": "完成：点击邮件中的链接，然后再次开启此功能。"
   },
   "donarPaypal": "通过PayPal捐款",
   "donarMercadoPago": "通过 Mercado Pago 进行捐赠",
@@ -1443,6 +1446,8 @@
   },
   "legal": {
     "privacyNav": "隐私",
+    "lastUpdated": "最后更新时间",
+    "machineTranslated": "机器翻译：如有出入，以西班牙语原文为准。",
     "termsNav": "条款",
     "contactNav": "接触",
     "privacy": {
