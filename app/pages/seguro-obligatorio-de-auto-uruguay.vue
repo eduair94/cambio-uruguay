@@ -352,6 +352,11 @@ const relatedLinks = [
     description: 'Cuánto sale por mes cada modo, con el SOA adentro.',
   },
   {
+    to: '/llevar-el-auto-a-brasil-o-argentina',
+    label: 'Llevar el auto a Brasil o Argentina',
+    description: 'Afuera no alcanza el SOA: piden la carta verde del Mercosur.',
+  },
+  {
     to: '/indicadores/unidad-indexada',
     label: 'Valor de la Unidad Indexada',
     description: 'La unidad en la que está escrito el tope de este seguro.',

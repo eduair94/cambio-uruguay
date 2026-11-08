@@ -148,17 +148,48 @@ const SIN_LECTOR_QUE_LA_NECESITE = [
  * no cuenta como arreglo aunque ponga el test en verde.
  */
 const DEUDA_SIN_ENLACE = [
-  // El comentario va DENTRO de la lista y no arriba, por el mismo motivo que `DEUDA_SIN_MIGAS` en
-  // `seoContract.test.ts` deja escrito: `classes/revenueplan/debtFree.ts::parseStringList` corta en
-  // el primer `\n]`, o sea exige que el cierre abra su propia línea, y prettier colapsa a una sola
-  // línea cualquier array que entre en 100 columnas salvo los que llevan un comentario. Con una
-  // sola entrada entra holgado, así que sin esto `npm run lintfix` la aplasta y
+  // POZO PAGADO el 2026-11-08: ninguna página de lectura del sitio queda sin un enlace desde el
+  // contenido de otra. La última fue `/seguro-obligatorio-de-auto-uruguay`, que era además la
+  // ÚNICA ruta libre de los siete pozos ese día (`npm run seo_debt`: 1 de 17).
+  //
+  // Esa marca literal es la que `classes/revenueplan/debtFree.ts::parseStringList` busca para
+  // distinguir «este pozo se terminó» de su propio modo de fallar, que es devolver `[]` cuando no
+  // entiende la forma de la lista: sin la marca, una lista vacía sigue tirando excepción, porque un
+  // `const` renombrado tiene que romper el informe y no vaciarlo en silencio.
+  //
+  // Y el comentario va DENTRO de la lista y no arriba, por el mismo motivo que `DEUDA_SIN_MIGAS` en
+  // `seoContract.test.ts` deja escrito: el lector corta en el primer `\n]`, o sea exige que el
+  // cierre abra su propia línea, y prettier colapsa a una sola línea cualquier array que entre en
+  // 100 columnas salvo los que llevan un comentario. Sin esto `npm run lintfix` la aplasta y
   // `tests/revenueplan/debt_free.test.ts` se pone rojo en el OTRO paquete — que es exactamente lo
   // que pasó al bajar el trinquete de 3 a 1 (run 41405643945, 2026-11-02).
-  '/seguro-obligatorio-de-auto-uruguay',
 ]
 
 /** El trinquete. Sólo puede bajar: subirlo es publicar una página que nadie enlaza. */
+// 1 → 0 el 2026-11-08, y con esto el pozo se termina: `/seguro-obligatorio-de-auto-uruguay` era la
+// única ruta libre de los siete pozos ese día (`npm run seo_debt`: 1 de 17) y la última entrada de
+// esta lista.
+//
+// El enlace sale de `/llevar-el-auto-a-brasil-o-argentina`, cuya fila `llevar-el-auto-al-exterior`
+// (5/10) también estaba libre, y lo necesita su propio lector de la manera más directa que hubo
+// acá: esa página se abre diciendo «afuera no te piden el SOA», su tarjeta «Los dos seguros, que no
+// son el mismo» publica el tope del SOA en UI y en pesos y lo define como «el que exige Uruguay
+// para circular acá» —el encabezado de `utils/carAbroad.ts` deja escrito que la pregunta que la
+// trae es literalmente «¿me alcanza el SOA?»—, y después de contestar que no, nunca decía dónde
+// está lo que ese seguro sí hace. Lo nombra en la entradilla, en la bajada de esa tarjeta, en el
+// rótulo de su primera fila y en el sexto documento que pide la norma —cuatro veces en lo que el
+// lector ve, más su propia descripción del SERP— y no lo enlazaba ninguna.
+//
+// El párrafo nuevo va DENTRO de esa tarjeta, no en el bloque «Seguir por acá» del pie, y agrega el
+// borde que importa justo antes de cruzar: el artículo 6 de la Ley 18.412 saca de la condición de
+// tercero al propietario, al tomador, al conductor y a su familia cercana respecto del seguro del
+// mismo vehículo, así que el SOA no cubre a quien viaja en el auto. Es el mismo dato que la página
+// de destino publica con su literal al lado (`SOA_NON_THIRD_PARTIES`, art. 6 literal A) y que su
+// propia descripción lleva al SERP; no hay ninguna cifra ni afirmación nueva.
+//
+// El vínculo queda recíproco, como el del 13/10: la página del SOA suma la frontera a su «Seguir
+// por acá», que es contenido escrito a mano y por eso cuenta. Lo exige la última prueba de este
+// archivo, para que borrar uno de los dos no vuelva a dejar la página sin enlace en silencio.
 // 5 → 4 el 2026-10-29: `/fondo-de-solidaridad-uruguay`, que era la ÚNICA ruta libre de los cinco
 // pozos ese día (`npm run seo_debt`: 1 de 58) y que además cumplió el 2026-10-28 los 29 días de su
 // propia fila `fondo-de-solidaridad`, del 30/9.
@@ -459,7 +490,7 @@ const DEUDA_SIN_ENLACE = [
 // la IM —la hace un desarrollador independiente con los datos abiertos—, así que el lector que baja
 // la primera que aparece baja la que no es. No se copió ninguna cifra del destino: la nota nombra
 // las dos apps y su desarrollador, y las notas de cada tienda las sirve el destino.
-const DEUDA_MAXIMA = 1
+const DEUDA_MAXIMA = 0
 
 describe('ninguna página de lectura queda sin un enlace de contexto', () => {
   it('las páginas sin enlace son exactamente las declaradas', () => {
@@ -503,6 +534,19 @@ describe('ninguna página de lectura queda sin un enlace de contexto', () => {
     )
     expect([...(entrantes.get('/embargo-de-sueldo-uruguay') ?? [])]).toContain(
       'pages/pension-alimenticia-uruguay.vue'
+    )
+  })
+
+  // Lo mismo para el par que pagó el pozo el 2026-11-08. Con la lista en cero, la primera prueba de
+  // este archivo ya no tiene ninguna entrada que delatar: si alguien borra el párrafo de la tarjeta
+  // «Los dos seguros», la página del SOA vuelve a quedar sin enlace de contexto y el conteo lo diría
+  // sólo como una diferencia contra `SIN_LECTOR_QUE_LA_NECESITE`. Esto lo nombra.
+  it('el SOA y la página de la frontera se enlazan en los dos sentidos', () => {
+    expect([...(entrantes.get('/seguro-obligatorio-de-auto-uruguay') ?? [])]).toContain(
+      'pages/llevar-el-auto-a-brasil-o-argentina.vue'
+    )
+    expect([...(entrantes.get('/llevar-el-auto-a-brasil-o-argentina') ?? [])]).toContain(
+      'pages/seguro-obligatorio-de-auto-uruguay.vue'
     )
   })
 })
