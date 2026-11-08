@@ -1,6 +1,9 @@
-import { describe, expect, it } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   rentalBudget,
+  rentalCardPhotoRefs,
   rentalDate,
   rentalHasLocation,
   rentalPhotos,
@@ -9,7 +12,11 @@ import {
   rentalStreet,
 } from '../../utils/rentalPresentation'
 import { rentalPageMessages } from '../../utils/rentalPageMessages'
-import type { RentalOffer, RentalPublicProperty } from '../../utils/rentals'
+import type { RentalListItem, RentalOffer, RentalPublicProperty } from '../../utils/rentals'
+
+afterEach(() => {
+  vi.useRealTimers()
+})
 
 const offer = {
   source: 'infocasas',
@@ -141,6 +148,34 @@ describe('rental decision details', () => {
         { now: on8November }
       )
     ).toEqual([])
+  })
+  it("keeps the search's empty preview instead of measuring signatures against this clock", () => {
+    // The search dropped the expired cover (2026-10-31) and sent an empty preview; a phone whose
+    // clock says 30 October would read the cover as valid and hydrate a photo the server never drew.
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(Date.UTC(2026, 9, 30))
+    const tiktok =
+      'https://p16-common-sign.tiktokcdn.com/tos-alisg-i/a~tplv.jpeg?x-expires=1793419200&x-signature=x'
+    const item = {
+      ...property,
+      offers: [{ ...offer, source: 'tiktok', image: tiktok }],
+      galleryPreview: [],
+    } as unknown as RentalListItem
+    expect(rentalCardPhotoRefs(item)).toEqual([])
+    // A list that sends no preview at all still shows each advert's cover.
+    expect(rentalCardPhotoRefs({ ...item, galleryPreview: undefined }).map(ref => ref.url)).toEqual(
+      [tiktok]
+    )
+  })
+  it('measures the ficha gallery against the instant the page was rendered, as the page does', () => {
+    // The same `useState` key on both: the server's instant travels in the payload, so the gallery
+    // the server drew and the one the browser hydrates leave out the same expired photos.
+    const app = resolve(__dirname, '../..')
+    const gallery = readFileSync(resolve(app, 'components/rentals/PropertyGallery.vue'), 'utf8')
+    const page = readFileSync(resolve(app, 'pages/alquileres/[key].vue'), 'utf8')
+    expect(gallery).toContain("useState('rental-rendered-at', () => Date.now())")
+    expect(page).toContain("useState('rental-rendered-at', () => Date.now())")
+    expect(gallery).toMatch(/rentalPhotos\(props\.property, \{ now: renderedAt\.value \}\)/)
   })
   it('translates the complete page and interpolation names in all supported languages', () => {
     const keys = Object.keys(rentalPageMessages.es).sort()

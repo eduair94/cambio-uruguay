@@ -77,16 +77,93 @@ export function ogCardSubtitle(card: {
   return card.title && comparable(description) === comparable(card.title) ? '' : description
 }
 
+/** A tag compared without case, accents or extra spaces: "Sucursales" and "SUCURSALES" are one. */
+const tagKey = (tag: string | null | undefined) =>
+  squash(tag)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036F]/g, '')
+    .toLocaleUpperCase('es')
+
+/**
+ * The tags of the exchange pages whose card shows no rates (/dolar-hoy, /dolar/<departamento>,
+ * /dolar-blue-hoy, /casa/<casa>, /sucursal/<slug>, /sucursales, /cotizacion, /convertir, the
+ * history pages in their three languages): their footer keeps the exchange line. Exact tags only,
+ * so a "PRECIOS" or "ALQUILERES" card never says "casas de cambio".
+ */
+const EXCHANGE_TAGS = new Set([
+  'CASA',
+  'CONVERTIR',
+  'COTIZACION',
+  'COTIZACIONES',
+  'DOLAR',
+  'DOLAR BLUE',
+  'DOLAR HOY',
+  'HISTORICO',
+  'HISTORY',
+  'SUCURSAL',
+  'SUCURSALES',
+])
+
 export type OgCardFooter = 'exchange' | 'site'
 
 /**
  * The footer line. The exchange one ("+40 casas de cambio · actualizado cada 10 min") belongs to
- * the rate cards; a page about exchange without rates can ask for it with `footer: 'exchange'`.
- * Every other card signs with the domain alone.
+ * the rate cards and to the exchange pages by their tag (`EXCHANGE_TAGS`); any page can ask for it,
+ * or refuse it, with `footer: 'exchange' | 'site'`. Every other card signs with the domain alone.
  */
-export function ogCardFooter(footer: string | null | undefined, board: boolean): OgCardFooter {
+export function ogCardFooter(
+  footer: string | null | undefined,
+  board: boolean,
+  tag?: string | null
+): OgCardFooter {
   if (footer === 'exchange' || footer === 'site') return footer
-  return board ? 'exchange' : 'site'
+  return board || EXCHANGE_TAGS.has(tagKey(tag)) ? 'exchange' : 'site'
+}
+
+/**
+ * The chip of an English or Portuguese card. Pages write their tag in Spanish ("ALQUILERES") and
+ * the card is drawn in another language only when the page passes `locale` (its title then comes
+ * translated too), so the chip follows from this map. A tag missing here stays as written; the
+ * chip prints in capitals whatever the case below.
+ */
+const TAG_TRANSLATIONS: Readonly<Record<string, { en: string; pt: string }>> = {
+  ACERCA: { en: 'ABOUT', pt: 'SOBRE' },
+  ALQUILER: { en: 'RENTAL', pt: 'ALUGUEL' },
+  ALQUILERES: { en: 'RENTALS', pt: 'ALUGUÉIS' },
+  ARCHIVO: { en: 'ARCHIVE', pt: 'ARQUIVO' },
+  BUSQUEDA: { en: 'SEARCH', pt: 'BUSCA' },
+  CASA: { en: 'EXCHANGE HOUSE', pt: 'CASA DE CÂMBIO' },
+  'CERCA DE MI': { en: 'NEAR ME', pt: 'PERTO DE MIM' },
+  COMPARADOR: { en: 'COMPARE', pt: 'COMPARADOR' },
+  COMPARATIVA: { en: 'COMPARISON', pt: 'COMPARATIVO' },
+  CONTACTO: { en: 'CONTACT', pt: 'CONTATO' },
+  CONVERTIR: { en: 'CONVERT', pt: 'CONVERTER' },
+  COTIZACION: { en: 'EXCHANGE RATE', pt: 'COTAÇÃO' },
+  COTIZACIONES: { en: 'EXCHANGE RATES', pt: 'COTAÇÕES' },
+  DOLAR: { en: 'DOLLAR', pt: 'DÓLAR' },
+  'DOLAR BLUE': { en: 'BLUE DOLLAR', pt: 'DÓLAR BLUE' },
+  'DOLAR HOY': { en: 'DOLLAR TODAY', pt: 'DÓLAR HOJE' },
+  ECONOMIA: { en: 'ECONOMY', pt: 'ECONOMIA' },
+  ESTADO: { en: 'STATUS', pt: 'STATUS' },
+  GUIA: { en: 'GUIDE', pt: 'GUIA' },
+  GUIAS: { en: 'GUIDES', pt: 'GUIAS' },
+  MAPA: { en: 'MAP', pt: 'MAPA' },
+  NOTICIAS: { en: 'NEWS', pt: 'NOTÍCIAS' },
+  'PESO ARG.': { en: 'ARGENTINE PESO', pt: 'PESO ARG.' },
+  PRECIOS: { en: 'PRICES', pt: 'PREÇOS' },
+  PRIVACIDAD: { en: 'PRIVACY', pt: 'PRIVACIDADE' },
+  PUBLICIDAD: { en: 'ADVERTISING', pt: 'PUBLICIDADE' },
+  SUCURSAL: { en: 'BRANCH', pt: 'FILIAL' },
+  SUCURSALES: { en: 'BRANCHES', pt: 'FILIAIS' },
+  TERMINOS: { en: 'TERMS', pt: 'TERMOS' },
+  VIVIENDA: { en: 'HOUSING', pt: 'MORADIA' },
+}
+
+/** The chip's text for the card's language: the page's tag, translated when the map has it. */
+export function ogCardTag(tag: string | null | undefined, locale?: string | null): string {
+  const text = squash(tag)
+  if (locale !== 'en' && locale !== 'pt') return text
+  return TAG_TRANSLATIONS[tagKey(text)]?.[locale] ?? text
 }
 
 /** The part of an unhead tag `replaceFloorImageAlt` reads (the `tags:resolve` hook's tags). */

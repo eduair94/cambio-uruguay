@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue'
-import { ogCardFooter, ogCardSubtitle, ogCardTitle } from '~/utils/ogCardText'
+import { ogCardFooter, ogCardSubtitle, ogCardTag, ogCardTitle } from '~/utils/ogCardText'
 
 // OG image template (1200x630) rendered server-side by nuxt-og-image via satori.
 // Satori supports a CSS subset: flexbox only, gradients, border, border-radius,
@@ -143,7 +143,9 @@ const subtitleText = ogCardSubtitle({
   boardDefault: labels.subtitle,
   title: titleText,
 })
-const footerKind = ogCardFooter(props.footer, hasBoard)
+// The page's Spanish tag decides the footer; the chip prints it in the card's language.
+const footerKind = ogCardFooter(props.footer, hasBoard, props.tag)
+const tagText = ogCardTag(props.tag, props.locale)
 
 const fmt = (n: number | null | undefined): string =>
   validRate(n)
@@ -395,7 +397,7 @@ const footerBrand: CSSProperties = { display: 'flex', color: '#ffffff', fontWeig
         <span>URUGUAY</span>
       </div>
       <div :style="spacer" />
-      <div v-if="tag" :style="tagChip">{{ tag }}</div>
+      <div v-if="tagText" :style="tagChip">{{ tagText }}</div>
     </div>
     <div :style="headRule" />
 

@@ -14,6 +14,7 @@ const {
   clipAtWord,
   ogCardFooter,
   ogCardSubtitle,
+  ogCardTag,
   ogCardTitle,
   replaceFloorImageAlt,
 } = ogCardText
@@ -103,6 +104,88 @@ describe('ogCardFooter', () => {
     expect(ogCardFooter('exchange', false)).toBe('exchange')
     expect(ogCardFooter('site', true)).toBe('site')
     expect(ogCardFooter('anything', false)).toBe('site')
+  })
+
+  it('keeps the exchange line on the exchange pages without rates, by their exact tag', () => {
+    // The tags those pages pass today (/dolar-hoy, /sucursal/<slug>, /sucursales, /cotizacion,
+    // /convertir, /casa/<casa>, /dolar/<departamento>, /dolar-blue-hoy, t('historico') es/en/pt).
+    for (const tag of [
+      'DÓLAR HOY',
+      'SUCURSAL',
+      'SUCURSALES',
+      'Sucursales',
+      'COTIZACIÓN',
+      'COTIZACIONES',
+      'CONVERTIR',
+      'CASA',
+      'DÓLAR',
+      'DÓLAR BLUE',
+      'Histórico',
+      'History',
+    ]) {
+      expect(ogCardFooter('', false, tag), tag).toBe('exchange')
+    }
+    // Anything else, even a tag that only contains one of those words, signs with the domain.
+    for (const tag of ['ALQUILERES', 'PRECIOS', 'CASAS', 'DÓLAR · GUÍA', 'EQUIPAR CASA', '']) {
+      expect(ogCardFooter('', false, tag), tag).toBe('site')
+    }
+    // The page's own choice still wins either way.
+    expect(ogCardFooter('site', false, 'SUCURSAL')).toBe('site')
+  })
+})
+
+describe('ogCardTag', () => {
+  it('translates the chip only on an English or Portuguese card', () => {
+    expect(ogCardTag('ALQUILERES', 'en')).toBe('RENTALS')
+    expect(ogCardTag('ALQUILERES', 'pt')).toBe('ALUGUÉIS')
+    expect(ogCardTag('Sucursales', 'en')).toBe('BRANCHES')
+    expect(ogCardTag('Sucursales', 'pt')).toBe('FILIAIS')
+    expect(ogCardTag('COTIZACIÓN', 'pt')).toBe('COTAÇÃO')
+    expect(ogCardTag('Cerca de mí', 'en')).toBe('NEAR ME')
+    // Spanish, an unknown locale or no locale: the page's tag as written.
+    expect(ogCardTag('ALQUILERES', 'es')).toBe('ALQUILERES')
+    expect(ogCardTag('ALQUILERES', 'ja')).toBe('ALQUILERES')
+    expect(ogCardTag('ALQUILERES')).toBe('ALQUILERES')
+  })
+
+  it('leaves alone what it has no word for, and what the page already translated', () => {
+    expect(ogCardTag('MSP · UYU', 'en')).toBe('MSP · UYU')
+    expect(ogCardTag('History', 'en')).toBe('History')
+    expect(ogCardTag('  ', 'en')).toBe('')
+  })
+
+  it('covers every Spanish tag a card that passes `locale` uses today', () => {
+    // Read from the pages: the cards drawn in English or Portuguese. Tags built with t() or from
+    // a currency name come translated already; NEWSLETTER and FAQ are the same in all three.
+    const pages = [
+      'acerca.vue',
+      'buscar.vue',
+      'casa/[origin]/index.vue',
+      'casa-de-cambio-cerca-de-mi.vue',
+      'comparar-plataformas-dolar-uruguay.vue',
+      'comparar.vue',
+      'contacto.vue',
+      'cotizacion/[moneda].vue',
+      'dolar/[departamento].vue',
+      'economia-uruguay.vue',
+      'estado.vue',
+      'guias/index.vue',
+      'mapa.vue',
+      'newsletter/archivo.vue',
+      'noticias.vue',
+      'privacidad.vue',
+      'publicidad.vue',
+      'sucursales/index.vue',
+      'terminos.vue',
+    ]
+    for (const page of pages) {
+      const source = readFileSync(resolve(APP, 'pages', page), 'utf8')
+      const call = /defineOgImageComponent\('Cambio', \{[\s\S]*?\n\}\)/.exec(source)?.[0] ?? ''
+      expect(call, page).toMatch(/\blocale\b/)
+      const tag = /\btag: '([^']+)'/.exec(call)?.[1]
+      expect(tag, page).toBeTruthy()
+      expect(ogCardTag(tag, 'en'), `${page}: ${tag}`).not.toBe(tag)
+    }
   })
 })
 
@@ -287,5 +370,28 @@ describe('Cambio.vue', () => {
     expect(html).toContain('>Compare portals, costs and conditions.<')
     expect(html).not.toContain('Ignored.')
     expect(html).not.toContain('exchange houses')
+    // The chip in the card's language.
+    expect(html).toContain('>RENTALS<')
+    expect(html).not.toContain('ALQUILERES')
+  })
+
+  it("signs a branch or quote card without rates with the exchange line, in the card's language", async () => {
+    const branch = await renderCard({
+      title: 'Cambio Gales',
+      subtitle: 'Colonia 1301 · Montevideo',
+      tag: 'SUCURSAL',
+    })
+    expect(branch).toContain('>SUCURSAL<')
+    expect(branch).toContain('>+40 casas de cambio<')
+    expect(branch).toContain('>actualizado cada 10 min<')
+    const quote = await renderCard({
+      title: 'Real hoje no Uruguai',
+      subtitle: 'Cotação ao vivo',
+      tag: 'COTIZACIÓN',
+      locale: 'pt',
+    })
+    expect(quote).toContain('>COTAÇÃO<')
+    expect(quote).toContain('>+40 casas de câmbio<')
+    expect(quote).toContain('>atualizado a cada 10 min<')
   })
 })

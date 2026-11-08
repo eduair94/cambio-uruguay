@@ -7,7 +7,11 @@ import { RENTAL_SOURCE_LABEL, type RentalPublicProperty } from '~/utils/rentals'
 const props = defineProps<{ property: RentalPublicProperty }>()
 const { t } = useI18n({ useScope: 'local', messages: rentalPageMessages })
 // Todas las fotos de todos sus avisos, en el mismo orden que el carrusel de la tarjeta y el visor.
-const photos = computed(() => rentalPhotos(props.property))
+// Las firmas vencidas se miden contra el instante de la ficha (pages/alquileres/[key].vue, viaja en
+// el payload) y no contra el reloj de cada lado: una foto que vence entre el render y la hidratación,
+// o un teléfono con la hora corrida, dejaba otra lista en el cliente y Vue repintaba la galería.
+const renderedAt = useState('rental-rendered-at', () => Date.now())
+const photos = computed(() => rentalPhotos(props.property, { now: renderedAt.value }))
 const media = computed(() =>
   photos.value.map((photo, index) => ({
     url: largePhotoUrl(photo.url),

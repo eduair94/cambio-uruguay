@@ -225,9 +225,20 @@ watch(index, position => {
   if (position >= slides.value.length - 2 && count.value > slides.value.length) void loadMore()
 })
 
+/**
+ * A photo that fails gives its turn to the first one that has not asked for its file yet. Only the
+ * window asks, so without this a removed advert whose photos all answer 404 never got past its
+ * first two and kept a broken photo instead of "sin foto"; this way a dead gallery still gets
+ * there one request at a time, and a live one pays at most one extra request per failure.
+ */
 function markFailed(url: string) {
   failed.value = new Set(failed.value).add(url)
-  if (slides.value.every(photo => failed.value.has(photo.url))) emit('failed')
+  if (slides.value.every(photo => failed.value.has(photo.url))) {
+    emit('failed')
+    return
+  }
+  const next = slides.value.find(photo => !started.value.has(photo.url))
+  if (next) started.value = new Set(started.value).add(next.url)
 }
 
 /**
@@ -272,7 +283,14 @@ onMounted(() => {
     else onImageError(photo.url)
   })
   const element = track.value
-  if (!element || typeof ResizeObserver === 'undefined') return
+  if (!element) return
+  // The strip scrolls without JavaScript: on a slow phone the visitor may already be on photo 3
+  // when this runs, and with `index` still at 0 that photo would stay an empty box.
+  if (element.clientWidth) {
+    const position = Math.round(element.scrollLeft / element.clientWidth)
+    index.value = Math.min(Math.max(position, 0), Math.max(slides.value.length - 1, 0))
+  }
+  if (typeof ResizeObserver === 'undefined') return
   trackWidth = element.clientWidth
   resize = new ResizeObserver(() => {
     if (!element.clientWidth || element.clientWidth === trackWidth) return

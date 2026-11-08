@@ -112,9 +112,14 @@ export function rentalGalleryPreview(
 /**
  * The photos a card can show before anything else is asked for, each credited to the advert it
  * came from: the card's own preview when the list sent one, else every advert's cover.
+ *
+ * An EMPTY preview is the search's own answer (no photo it could show, expired signatures
+ * included) and travels in the payload, so it is kept as is: re-reading the covers here would
+ * measure the signatures again against each side's clock, and a phone whose clock runs behind
+ * would hydrate a photo the server never rendered.
  */
 export function rentalCardPhotoRefs(item: RentalListItem): PropertyPhotoRef[] {
-  if (!item.galleryPreview?.length) return rentalPhotoRefs(item)
+  if (!item.galleryPreview) return rentalPhotoRefs(item)
   const offers = item.matchingOffer ? [item.matchingOffer, ...item.offers] : item.offers
   return item.galleryPreview.flatMap(photo => {
     const offer = offers.find(row => row.listingId === photo.listingId)
