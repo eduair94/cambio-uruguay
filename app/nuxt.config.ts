@@ -1405,6 +1405,15 @@ export default defineNuxtConfig({
       width: 1200,
       height: 630,
     },
+    // Rendered cards, per worker, bounded in BYTES. Without this the module caches in Nitro's root
+    // memory storage, which never evicts: each distinct card URL stayed as base64 for its 3-day
+    // TTL, on a heap capped at 512 MB (ecosystem.config.cjs). A count alone bounds nothing, since
+    // an entry weighs what its card weighs; with `maxSize` unstorage's lru-cache driver measures
+    // each entry, ~350 ordinary cards fit, and the least recently used one goes first. Only clean
+    // card URLs get this far (server/middleware/og-image-locale.ts redirects any with a query).
+    // The `lru-cache` package is a dependency of unstorage and already in the server build: the
+    // module's own payload cache uses the same driver. Rollback: remove this line.
+    runtimeCacheStorage: { driver: 'lru-cache', max: 500, maxSize: 48 * 1024 * 1024 },
   },
 
   // i18n Configuration
