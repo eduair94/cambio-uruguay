@@ -20,27 +20,42 @@ export default defineNuxtPlugin({
     // history entry and Back showed it again, after GA had started (adversarial review,
     // 2026-11-08). Before app:created the router also re-applies the boot URL, so earlier is moot.
     const router = useRouter()
-    const scrub = (key: string) => {
+    const scrub = (key: string, then?: () => void) => {
       onNuxtReady(() => {
         const current = router.currentRoute.value
         // `undefined` drops the key from the URL (vue-router).
         const query = { ...current.query, [key]: undefined }
-        void router.replace({ path: current.path, query, hash: current.hash }).catch(() => {})
+        void router
+          .replace({ path: current.path, query, hash: current.hash })
+          .catch(() => {})
+          .finally(() => then?.())
       })
     }
 
-    if (authError === 'discord') {
-      auth.error = 'auth.discordError'
-      scrub('authError')
+    // After the navigation, not before: it runs the /cuenta `auth` middleware, which sends a
+    // signed-out visitor to / with the login dialog, and opening the dialog clears store.error.
+    // Set earlier, the error never reached the screen (measured in production, 2026-11-08).
+    // When the middleware let the page through (auth store not resolved yet), the dialog is
+    // opened here: a failed Discord login is a login the visitor still has to do.
+    const showError = (code: string) => {
+      if (!auth.isLoggedIn) auth.openDialog()
+      auth.error = code
     }
 
+    if (authError === 'discord') scrub('authError', () => showError('auth.discordError'))
+
     if (ct) {
+      let failed = false
       loadFirebaseAuth()
         .then(fb => fb.signInWithCustomToken(fb.fbAuth(), ct))
         .catch(() => {
-          auth.error = 'discord-login-failed'
+          failed = true
         })
-        .finally(() => scrub('ct'))
+        .finally(() =>
+          scrub('ct', () => {
+            if (failed) showError('discord-login-failed')
+          })
+        )
     }
   },
 })
