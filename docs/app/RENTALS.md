@@ -2146,3 +2146,81 @@ operaciones, `utils/propertyInsight.ts#buildPropertyInsight`; los cargadores est
   a reformar y en pozo.
 - El bloque se pinta sólo después de montar: el servidor nunca lo renderiza y la petición ya está en
   curso durante la hidratación (sin la bandera, mismatch medido en dev).
+
+
+## Ficha: snippet, ficha caída, copias y frescura — 8 de noviembre de 2026
+
+Medido antes del cambio (auditoría del 8/11):
+- Títulos de 72 a 109 caracteres con el precio después del carácter ~60, el barrio en las
+  mayúsculas del portal («POCITOS») y una descripción que repetía el título sin gastos comunes ni
+  total.
+- Las búsquedas por dirección son la intención declarada más grande del grupo (posición ~9, CTR
+  0,7 %).
+- 119 de 931 vistas uruguayas de fichas (12,8 %) caían en «ya no está» sin nada para seguir.
+- «Otras propiedades para comparar» listaba copias del mismo apartamento.
+
+Se mide como experimento `fichas-alquiler-calle-precio-total-y-miga-al-barrio` en
+`docs/seo/experiments.json` (rutas `/alquileres/` y `/alquiler/`).
+
+- **Título y descripción** (`utils/rentalPageSnippet.ts`).
+  - El título es el primer candidato de ≤ 60 caracteres, en este orden: calle + barrio con «en
+    alquiler», calle + barrio, barrio + departamento, barrio con «en alquiler», barrio.
+  - La calle nunca va sin el barrio, y sólo con un número de puerta de 2 a 5 dígitos que el aviso
+    publica: nunca un Plus Code, una esquina, «18 de Julio», «km», «al 1300» ni un código postal.
+  - La ficha deja sin el sufijo « | Cambio Uruguay» (`titleTemplate: '%s'`) sólo el título que arma
+    este módulo; una ficha caída lo conserva.
+  - La descripción (≤ 155 caracteres) dice alquiler + gastos comunes = total cuando se conocen: un
+    0 publicado es «sin gastos comunes», y si no hay dato dice «gastos comunes no informados».
+- **Nombres de lugar** (`utils/rentalDisplayPlace.ts`).
+  - Sólo para mostrar: «Pocitos», «Punta del Este», nunca «POCITOS» ni «60 m2 60 m2».
+  - `property.neighborhood` sigue siendo la clave de filtros, zona oficial y enlace al barrio.
+  - La miga y el BreadcrumbList enlazan la página del barrio cuando es indexable.
+- **Barrios basura fuera** (`utils/rentalBarrioName.ts`). Es copia a mano de
+  `plausibleCasaswebNeighborhood` (`classes/rentals/sources/casasweb.ts`), y
+  `tests/unit/rentalBarrioNameParity.test.ts` las compara corriendo las dos: se cambian juntas. Como
+  `casasweb.ts` y `normalize.ts` están en `appContracts` de `deploy.yml`, una edición sólo de backend
+  corre también la suite del app.
+- **«Avisos recientes» del barrio** (`/alquiler/<departamento>/<barrio>`).
+  - Lee las 80 filas más recientes por `freshAt`, forzando el índice
+    `{department, neighborhood, priceUyu}`.
+  - Cada tarjeta pasa el mismo control de calidad que la ficha indexable.
+  - Una tarjeta por vivienda; dos propiedades que comparten un aviso no ganan tarjeta.
+- **Ficha caída** (404, noindex, follow).
+  - La API responde el 404 con `{gone, lookalike, similar ≤ 6, barrioLink}` en el cuerpo, sin
+    lanzarlo, porque Nitro fuerza `no-cache` en un 404 lanzado.
+  - Se cachea 5 min sólo el 404 que trae alternativas (`s-maxage=300`). Un 404 pelado dura 30 s y un
+    503 nunca se guarda.
+  - Cada lectura está topada en 3 s (`RENTAL_GONE_QUERY_MAX_MS`); si una falla, sale el 404 simple.
+  - Orden en pantalla: «Dejó de verse el…», la copia viva («Puede ser la misma vivienda…»), los
+    enlaces al barrio y las parecidas.
+  - Una clave ya podada busca el prefijo `<departamento>-<barrio>` más largo entre todos los barrios
+    conocidos, y sólo enlaza el barrio si es indexable.
+- **Copias en las listas de recomendación** (`utils/rentalLookalike.ts`).
+  - SÓLO para mostrar: nunca identidad, unión ni alertas.
+  - Regla: título plegado de 60 caracteres + dormitorios + baños + precio y moneda exactos, con
+    superficie a ±10 % (o ±5 % obligatoria si el título es genérico).
+  - Las coordenadas sólo vetan, entre puntos de InfoCasas/El País a más de 300 m; los pines de ML
+    pueden estar a ~1 km.
+  - Segunda regla: mismo anunciante + misma coordenada + mismo precio, dormitorios y baños (la
+    inmobiliaria que publica una unidad en tres barrios).
+- **Frescura** (`utils/rentalSeenLabel.ts`).
+  - Los días se cuentan en UTC contra `renderedAt`, así servidor y cliente dicen lo mismo.
+  - Hoy y ayer: «Visto hoy/ayer en <portal>».
+  - De 2 a 4 días: «No lo volvimos a ver desde hace N días».
+  - 5 o más: tono de aviso.
+- **Condiciones no declaradas.** Los filtros de mascotas, dueño directo y garantías avisan que sólo
+  cuentan los avisos que lo declaran. En la ficha, «El aviso no lo dice: preguntale al anunciante».
+- **Estafas.** En avisos de Facebook, TikTok, Instagram o dueño directo, «Antes de coordinar la
+  visita» suma tres líneas (no pagar seña antes de ver y firmar, pedir título o autorización, un
+  precio muy bajo es señal) con enlace a `/alquilar-en-uruguay#estafas`.
+- **Compartir** (`utils/rentalShareText.ts`). `navigator.share` lleva título, texto con alquiler +
+  gastos comunes = total, y la URL canónica.
+- **Medición.**
+  - `LINK_AREAS`: `rental_gone`, `rental_similar`, `rental_insight`, `rental_breadcrumb`,
+    `rental_barrio`.
+  - Más valores fijos de `data-cta` en los botones de ficha y directorio, que
+    `tests/unit/rentalMeasurement.test.ts` controla.
+  - La dimensión `cta` tiene que estar registrada en GA4 (lo hace el dueño, no es retroactivo).
+- **Gastos comunes del texto.** `offers[].commonExpensesSource: 'description'` viaja en la
+  proyección pública y se etiqueta «según la descripción del aviso». Queda inerte hasta
+  `RENTALS_GC_FROM_TEXT=1` (ver «Variables de entorno»).
