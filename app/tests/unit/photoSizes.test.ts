@@ -17,6 +17,8 @@ import {
 const INFOCASAS_CDN1 = 'https://cdn1.infocasas.com.uy/repo/img/13651_UY.42.4.188.172.V1_133.jpg'
 const INFOCASAS_CDN2 =
   'https://cdn2.infocasas.com.uy/repo/img/6ae8ba1a02e17_infocdn__6435-30337jpg.jpg'
+// The upload shape of the adverts first seen from 2026-11-07 on.
+const INFOCASAS_WEB = 'https://cdn1.infocasas.com.uy/web/6af01ea7423df_infocdn.jpg'
 const ML_COVER = 'https://http2.mlstatic.com/D_NQ_NP_2X_893935-MLU121040513313_112026-C.webp'
 const ML_GALLERY = 'https://http2.mlstatic.com/D_NQ_NP_605210-MLU118279795314_102026-F.webp'
 const TIKTOK =
@@ -74,6 +76,12 @@ describe('sharePhotoUrl: the file a link preview gets', () => {
     )
   })
 
+  it('keeps an InfoCasas /web/ upload in its folder: under /repo/img/ the same file is a 403', () => {
+    expect(sharePhotoUrl(INFOCASAS_WEB)).toBe(
+      'https://cdn2.infocasas.com.uy/web/th.outside1200x630.6af01ea7423df_infocdn.jpg'
+    )
+  })
+
   it("sends Mercado Libre's JPEG of the same variant", () => {
     expect(sharePhotoUrl(ML_COVER)).toBe(
       'https://http2.mlstatic.com/D_NQ_NP_2X_893935-MLU121040513313_112026-C.jpg'
@@ -114,6 +122,34 @@ describe('card and grid files', () => {
     )
     // A thumbnail URL is re-sized, not nested.
     expect(gridPhotoUrl(cardPhotoUrl(INFOCASAS_CDN2))).toBe(gridPhotoUrl(INFOCASAS_CDN2))
+  })
+
+  it('shrinks the /web/ uploads too, in their own folder', () => {
+    expect(cardPhotoUrl(INFOCASAS_WEB)).toBe(
+      'https://cdn2.infocasas.com.uy/web/th.outside800x600.6af01ea7423df_infocdn.jpg'
+    )
+    expect(gridPhotoUrl(INFOCASAS_WEB)).toBe(
+      'https://cdn2.infocasas.com.uy/web/th.outside360x240.6af01ea7423df_infocdn.jpg'
+    )
+    expect(gridPhotoUrl(cardPhotoUrl(INFOCASAS_WEB))).toBe(gridPhotoUrl(INFOCASAS_WEB))
+    expect(leadPhotoSources(INFOCASAS_WEB)).toEqual({
+      src: 'https://cdn2.infocasas.com.uy/web/th.outside800x600.6af01ea7423df_infocdn.jpg',
+      srcset:
+        'https://cdn2.infocasas.com.uy/web/th.outside800x600.6af01ea7423df_infocdn.jpg 800w, https://cdn2.infocasas.com.uy/web/th.outside1200x630.6af01ea7423df_infocdn.jpg 1200w',
+    })
+  })
+
+  it('leaves InfoCasas paths it has not measured as they are', () => {
+    for (const url of [
+      'https://cdn1.infocasas.com.uy/web/sub/6af01ea7423df_infocdn.jpg',
+      'https://cdn1.infocasas.com.uy/webp/6af01ea7423df_infocdn.jpg',
+      'https://cdn1.infocasas.com.uy/web/6af01ea7423df_infocdn.jpg?w=400',
+      'https://cdn3.infocasas.com.uy/web/6af01ea7423df_infocdn.jpg',
+      'http://cdn1.infocasas.com.uy/web/6af01ea7423df_infocdn.jpg',
+    ]) {
+      expect(cardPhotoUrl(url), url).toBe(url)
+      expect(gridPhotoUrl(url), url).toBe(url)
+    }
   })
 
   it('keeps Casasweb on its small file in cards and tiles', () => {

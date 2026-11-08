@@ -17,6 +17,11 @@
  *    year: the photo scaled to cover W×H, never enlarged. 21 of 21 uploads (both CDNs, every file
  *    name shape) answered 200 image/jpeg for every variant: 360x240 gave 400×300 (7–32 KB), 800x600
  *    gave 800×600 (22–147 KB), 1200x630 gave 1200×900 (35–228 KB).
+ *    The adverts first seen from 2026-11-07 on bring a second shape, `cdn1/web/<id>_infocdn.jpg`
+ *    (up to 1600 px and 513 KB; 162 of the 947 InfoCasas photos of the 864 newest adverts on
+ *    2026-11-08), whose thumbnails sit in the same folder, `cdn2/web/th.outside<W>x<H>.<file>`: 16
+ *    of 16 answered every variant (360x240 10–64 KB, 800x600 39–217 KB, 1200x630 57–268 KB). The
+ *    same file asked under `/repo/img/` is a 403, so each photo keeps its folder.
  *  - Casasweb serves each photo as `/fotos/<n>.jpg` (the original, 1024×768, 83–240 KB) and as
  *    `<n>u.jpg` / `<n>s.jpg` (345×230, 17–36 KB): its search card's, and the one our rental adverts
  *    keep as their cover. Next to the gallery's full-size photos in the grid, the small cover was
@@ -26,7 +31,7 @@
 const CASASWEB_SMALL = /^(https:\/\/(?:www\.)?casasweb\.com\/fotos\/\d{1,12})[su](\.jpe?g)$/i
 const CASASWEB_ORIGINAL = /^(https:\/\/(?:www\.)?casasweb\.com\/fotos\/\d{1,12})(\.jpe?g)$/i
 const INFOCASAS =
-  /^https:\/\/cdn[12]\.infocasas\.com\.uy\/repo\/img\/(?:th\.[a-z]+\d+x\d+\.)?([^/?#]+)$/
+  /^https:\/\/cdn[12]\.infocasas\.com\.uy\/(repo\/img|web)\/(?:th\.[a-z]+\d+x\d+\.)?([^/?#]+)$/
 const MERCADOLIBRE_WEBP = /^(https:\/\/http2\.mlstatic\.com\/D_[^/?#]+-[A-Z])\.webp$/
 const MERCADOLIBRE_GALLERY =
   /^(https:\/\/http2\.mlstatic\.com\/D_NQ_NP_)(?!2X_)([^/?#]+)-F\.(webp|jpg)$/
@@ -34,8 +39,8 @@ const MERCADOLIBRE_GALLERY =
 type InfoCasasSize = 'outside360x240' | 'outside800x600' | 'outside1200x630'
 
 function infoCasas(url: string, size: InfoCasasSize): string | null {
-  const file = INFOCASAS.exec(url)?.[1]
-  return file ? `https://cdn2.infocasas.com.uy/repo/img/th.${size}.${file}` : null
+  const match = INFOCASAS.exec(url)
+  return match ? `https://cdn2.infocasas.com.uy/${match[1]}/th.${size}.${match[2]}` : null
 }
 
 function mercadoLibreSmall(url: string): string | null {
