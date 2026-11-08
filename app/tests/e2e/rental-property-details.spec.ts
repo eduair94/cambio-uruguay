@@ -4,6 +4,8 @@ import type { RentalOffer, RentalPublicProperty } from '../../utils/rentals'
 // The normal result link opens a synthetic dossier. No catalogue or remote advert is changed.
 test.use({ serviceWorkers: 'block', extraHTTPHeaders: { 'Accept-Language': 'es-UY,es;q=0.9' } })
 
+const rentalTitle = 'Apartamento 301 con terraza'
+
 async function openDossier(page: Page) {
   const date = new Date().toISOString().slice(0, 10)
   const observedAt = new Date().toISOString()
@@ -11,7 +13,7 @@ async function openDossier(page: Page) {
     source: 'infocasas',
     listingId: 'infocasas:fixture301',
     url: 'https://www.infocasas.com.uy/fixture/301',
-    title: 'Apartamento 301 con terraza',
+    title: rentalTitle,
     price: 28000,
     currency: 'UYU',
     priceUyu: 28000,
@@ -262,9 +264,12 @@ for (const width of [320, 390, 1440]) {
     await expect(detail).toContainText('Superficie de terrazas')
     await expect(detail).toContainText('10 m²')
     await expect(detail.locator('.rental-page__monthly-total')).toContainText('$ 28.000')
-    const expand = page.getByRole('button', { name: 'Ampliar foto', exact: true })
+    const expand = detail.getByRole('button', { name: 'Ampliar la foto 1 de 3', exact: true })
     await expand.click()
-    const viewer = page.getByRole('dialog', { name: 'Fotos del alquiler', exact: true })
+    const viewer = page.getByRole('dialog', {
+      name: `Galería de fotos de ${rentalTitle}`,
+      exact: true,
+    })
     await expect(viewer).toBeVisible()
     // The shared viewer's counter is the live region; its copy is "{index} de {total}".
     await expect(viewer.getByRole('status')).toHaveText('1 de 3')

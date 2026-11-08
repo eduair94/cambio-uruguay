@@ -329,35 +329,41 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'como-rescindir-contrato-alquiler-uruguay',
-    title: 'Rescindir el alquiler: avisá por telegrama',
+    title: 'Rescindir alquiler: preaviso y garantía',
     description:
-      'Cómo terminar un alquiler antes de tiempo en Uruguay: preaviso, multas, cómo notificar en forma válida y recuperar el depósito o liberar la garantía.',
+      'El preaviso y la salida anticipada dependen del contrato y régimen. Telegrama, trámite de CGN, entrega de llaves y retiro del depósito.',
     tag: 'ALQUILER',
     updatedAt: '2026-07-18',
     sections: [
       {
-        heading: 'Primero mirá qué tipo de contrato tenés',
-        body: 'No todos los alquileres se rescinden igual. Un contrato de vivienda con plazo (lo habitual, dos años) en principio obliga a las dos partes hasta el vencimiento, pero eso no significa que quedes atrapado: además de las causas que fije el contrato, la normativa uruguaya suele reconocerle al inquilino un derecho a rescindir de forma anticipada una vez cumplido cierto tiempo, cumpliendo el preaviso y la indemnización que correspondan. Un contrato sin plazo o vencido que sigue de hecho es más flexible: se puede terminar avisando con antelación. También cambia si el contrato se firmó bajo el régimen común (Decreto-Ley de alquileres) o bajo el de arrendamiento sin garantía de la LUC, que tiene plazos y preavisos propios. Antes de hacer nada, releé tu contrato entero: ahí figura el plazo, el preaviso pactado y la penalidad. Esa cláusula rige en todo lo que no contradiga la ley, que en materia de alquileres es de orden público y protege al inquilino.',
+        heading: 'Salir antes y no renovar son situaciones distintas',
+        body: 'Antes de fijar la mudanza, identificá el régimen del alquiler, su vencimiento y la cláusula de salida anticipada. El contrato obliga a las partes y puede terminarse de común acuerdo, según los artículos 1291 y 1294 del Código Civil. Para irte durante el plazo, revisá si hay una cláusula que lo permita, un acuerdo con el arrendador o una causa legal aplicable. No des por hecho que cumplir seis meses o un año te habilita a salir sin otras condiciones. Si el contrato va a vencer, revisá por separado cómo evitar una renovación o prórroga. Fuentes sobre régimen de salida, comunicaciones y trámite CGN consultadas el 8/11/2026; documentación BHU consultada el 3/11/2026.',
       },
       {
-        heading: 'El preaviso: cuánto tiempo antes avisar',
-        body: 'La mayoría de los contratos de vivienda incluyen una cláusula que te deja salir antes, casi siempre después de cumplir cierto tiempo (habitualmente los primeros seis meses o el primer año) y avisando con anticipación. Ese preaviso suele ser de unos 60 días en el régimen común, mientras que en el arrendamiento sin garantía de la LUC lo habitual es un preaviso de unos 30 días; en algunos contratos se pacta otro plazo. Verificá el que corresponde a tu contrato y a tu régimen. El punto clave es que el aviso empieza a contar recién cuando el propietario lo recibe de forma fehaciente, no cuando vos lo decidís. Si te vas antes de cumplir el mínimo pactado o sin respetar el preaviso, casi siempre hay una penalidad. Revisá la fecha exacta de tu cláusula para no pagar de más.',
+        heading: 'Qué significan los 30 días del régimen sin garantía',
+        body: 'No todo alquiler sin depósito pertenece al régimen especial de la LUC. El artículo 421 de la Ley 19.889 exige conjuntamente destino de vivienda, ausencia de garantías de cualquier naturaleza, contrato escrito, plazo y precio expresos, y que las partes hayan manifestado su voluntad de acogerse a ese régimen. Para esos contratos, el artículo 422 prevé la prórroga si ninguna parte notifica lo contrario dentro de los treinta días anteriores al vencimiento. Esa regla trata la prórroga al vencer, no una autorización general para irse en cualquier momento avisando treinta días antes. En otro régimen o ante una salida anticipada, verificá la cláusula y la norma aplicable; no traslades automáticamente ese plazo.',
       },
       {
-        heading: 'Multas y penalidades: qué es legítimo cobrar',
-        body: 'La penalidad por salir antes debe surgir del contrato o de la normativa aplicable; si no está pactada, el propietario no puede inventar cualquier monto. Lo más común es que se pacte una indemnización de uno o dos meses de alquiler. Ojo con las cláusulas que pretenden cobrarte todos los meses que faltan hasta el vencimiento: cuando la ley reconoce el derecho a rescindir, la indemnización suele estar acotada, así que un reclamo por el total del plazo puede ser abusivo. Una cosa es la penalidad por rescisión y otra son deudas reales que sí debés (alquiler impago, gastos comunes, servicios, daños). El propietario no puede retenerte por cosas ya cubiertas ni cobrar dos veces lo mismo. Si la penalidad te parece abusiva o no figura en el contrato, conviene consultar con un abogado o con una liga de defensa del inquilino antes de firmar cualquier acuerdo.',
+        heading: 'Preaviso y penalidad: pedí el fundamento de cada importe',
+        body: 'Buscá qué cláusula permite terminar antes, desde cuándo puede usarse, cómo exige comunicarlo y qué costo establece. Si acordás una salida con el arrendador, dejá por escrito la fecha de finalización, la entrega de llaves y los saldos que se reconocen. La penalidad por salida anticipada es distinta de los alquileres, servicios o daños que se reclamen. Pedí un detalle de cada concepto y su fundamento antes de aceptar una liquidación. No apliques por defecto sesenta días de preaviso ni uno o dos meses de penalidad. El artículo 1785 del Código Civil prevé el pago del precio correspondiente al tiempo que falta si el arrendatario devuelve la cosa antes del término convenido. Su aplicación al caso requiere revisar el régimen, las cláusulas de salida y los acuerdos o causas legales que correspondan: no significa que todos los contratos deban liquidarse de la misma forma.',
       },
       {
-        heading: 'Cómo notificar para que valga',
-        body: 'Un WhatsApp o un mail no alcanzan como prueba si después hay discusión. La forma segura y estándar en Uruguay es el telegrama colacionado con aviso de retorno, que enviás por el correo y deja constancia de qué dijiste y cuándo lo recibió la otra parte. Otra opción más formal es una notificación por escribano mediante acta notarial. Guardá siempre el comprobante: es lo que fija la fecha desde la cual corre el preaviso. Redactá el texto en forma clara indicando que rescindís, desde qué fecha y que ofrecés coordinar la entrega de la vivienda y las llaves. Ese papel te protege si el propietario luego alega que nunca le avisaste.',
+        heading: 'Cómo comunicar la salida y conservar prueba',
+        body: 'Usá el medio que corresponda según el contrato, el régimen y el trámite de la garantía. Si se exige un telegrama colacionado o una actuación notarial, cumplí esa formalidad y conservá la constancia de contenido y recepción. La Ley 18.600 reconoce valor jurídico a los documentos electrónicos, pero mantiene las reglas que rigen cada acto: no permite afirmar que cualquier correo o WhatsApp sea suficiente para rescindir, ni que nunca pueda servir como prueba. Dejá clara la fecha que proponés, identificá el contrato y guardá las respuestas. Si se discuten la recepción, la firma o el plazo, consultá antes de dar por terminado el alquiler.',
       },
       {
-        heading: 'Recuperar el depósito y cerrar bien',
-        body: 'Al entregar la vivienda, el propietario puede descontar del depósito o de las garantías lo que le corresponda legítimamente: alquileres o gastos comunes impagos, servicios pendientes y daños que excedan el desgaste normal por el uso. No puede quedarse con el depósito por el simple hecho de que te vas antes si eso ya lo cubre la penalidad pactada. Conviene entregar la casa limpia, hacer un acta o inventario de salida con fotos, y pedir por escrito la constancia de que no quedan deudas. Si tu contrato es bajo el arrendamiento sin garantía de la LUC no hay garantía que liberar, pero si usaste garantía de ANDA o de la Contaduría General de la Nación (CGN), avisá también a esa institución para liberar la garantía; en el caso de la CGN suele haber un trámite específico de rescisión.',
+        heading: 'Con garantía CGN hay que tramitar la rescisión',
+        body: 'La ficha de CGN actualizada el 4/11/2026 permite gestionar la entrega cuando venció el plazo. Si sigue vigente, pide autorización del arrendador o la aplicación de la cláusula de rescisión anticipada emitida por sus inspectores, cuando corresponda. Para la vía con inspección se presenta el formulario firmado y se entregan las llaves con la finca vacía y limpia; la agenda es en línea y la presentación continúa presencialmente. Seguí la ficha y su documentación según tu situación. La CGN aclara además que rescindir no extingue las deudas pendientes. No basta con avisar informalmente al garante ni con mudarte para considerar cerrado el contrato.',
       },
       {
-        heading: 'Esto es información general, no asesoramiento',
-        body: 'Cada contrato y cada situación son distintos, y la aplicación concreta depende del régimen del contrato y de las cláusulas que firmaste. Esta guía te orienta, pero no reemplaza el consejo de un profesional ni la lectura de la normativa vigente y de los trámites oficiales (por ejemplo, en gub.uy). Si hay conflicto, dinero importante en juego o el propietario reclama sumas altas, consultá con un abogado o con una liga o asociación de inquilinos antes de firmar acuerdos o pagar penalidades. Para los aspectos formales de la notificación, un escribano puede darte certeza. Y guardá siempre copia de tu contrato, de los recibos y de toda comunicación fehaciente.',
+        heading: 'Entrega de llaves, depósito y otras garantías',
+        body: 'Coordiná la entrega y guardá una constancia con la fecha, el estado de la vivienda y los saldos que queden pendientes. Con otra garantía, consultá su procedimiento de cierre y conservá la confirmación. Si tenés un depósito en el BHU, usá los requisitos de retiro de esa cuenta: la documentación consultada el 3/11/2026 distingue el retiro autorizado y el desacuerdo que requiere la vía judicial. El fin del alquiler no libera automáticamente esos fondos ni habilita a una parte a decidir por sí sola cuánto retirar. La guía específica explica el trámite y sus límites.',
+        links: [
+          {
+            label: 'Retirar el depósito de alquiler y resolver desacuerdos',
+            to: '/guias/deposito-de-alquiler-uruguay',
+          },
+        ],
       },
     ],
     related: [
@@ -367,24 +373,71 @@ export const redditGuides: readonly Guide[] = [
     ],
     steps: [
       {
-        name: 'Releé tu contrato',
-        text: 'Ubicá la cláusula de rescisión anticipada y fijate también qué te habilita la ley según tu régimen: desde cuándo podés irte, con cuánto preaviso y qué penalidad corresponde. Eso define todo lo demás.',
+        name: 'Identificá régimen y vencimiento',
+        text: 'Leé la cláusula de salida anticipada y separala de las condiciones para no renovar al vencimiento.',
       },
       {
-        name: 'Calculá fechas y costo',
-        text: 'Fijate si ya cumpliste el mínimo para salir sin penalidad y contá los días de preaviso. Estimá cuánto te tocaría pagar si te vas antes y verificá que la penalidad no exceda lo que la ley permite.',
+        name: 'Revisá fechas y saldos',
+        text: 'Comprobá el preaviso y los importes aplicables a tu contrato. Si pactás una salida, dejá sus condiciones por escrito.',
       },
       {
-        name: 'Notificá en forma fehaciente',
-        text: 'Enviá un telegrama colacionado con aviso de retorno (o notificación por escribano) diciendo que rescindís y desde qué fecha. Guardá el comprobante.',
+        name: 'Comunicá por el medio correspondiente',
+        text: 'Seguí la formalidad del contrato o trámite y guardá el contenido, la constancia de recepción y la respuesta.',
       },
       {
-        name: 'Coordiná la entrega',
-        text: 'Acordá día para devolver la vivienda y las llaves. Dejá la casa en condiciones y hacé un acta de salida con fotos del estado.',
+        name: 'Tramitá el cierre de la garantía',
+        text: 'Con CGN, consultá la ficha de rescisión y presentá la autorización, formulario y demás documentación que corresponda. Con otro garante, revisá su procedimiento.',
       },
       {
-        name: 'Cerrá cuentas y liberá garantías',
-        text: 'Pagá servicios y común pendientes, pedí constancia escrita de que no quedan deudas y avisá a ANDA o a la Contaduría (CGN) para liberar la garantía si la usaste.',
+        name: 'Documentá la entrega y el retiro',
+        text: 'Conservá la entrega de llaves, el estado de la vivienda y la liquidación de saldos. Gestioná por separado el retiro del depósito si existe.',
+      },
+    ],
+    sources: [
+      {
+        label: 'Artículo 1785: devolución antes del término y precio del tiempo restante',
+        url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/1785',
+        publisher: 'IMPO — Código Civil',
+      },
+      {
+        label: 'Artículo 1291: efectos del contrato y buena fe',
+        url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/1291',
+        publisher: 'IMPO — Código Civil',
+      },
+      {
+        label: 'Artículo 1294: extinción de obligaciones por mutuo consentimiento',
+        url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/1294',
+        publisher: 'IMPO — Código Civil',
+      },
+      {
+        label: 'Artículo 421: requisitos conjuntos del régimen sin garantía',
+        url: 'https://www.impo.com.uy/bases/leyes/19889-2020/421',
+        publisher: 'IMPO — Ley 19.889',
+      },
+      {
+        label: 'Artículo 422: plazo y prórroga del contrato sin garantía',
+        url: 'https://www.impo.com.uy/bases/leyes/19889-2020/422',
+        publisher: 'IMPO — Ley 19.889',
+      },
+      {
+        label: 'Artículo 458: normas complementarias del régimen sin garantía',
+        url: 'https://www.impo.com.uy/bases/leyes/19889-2020/458',
+        publisher: 'IMPO — Ley 19.889',
+      },
+      {
+        label: 'Artículo 1: documentos electrónicos y conservación de las reglas del acto',
+        url: 'https://www.impo.com.uy/bases/leyes/18600-2009/1',
+        publisher: 'IMPO — Ley 18.600',
+      },
+      {
+        label: 'Rescisiones de contratos con garantía CGN: requisitos y entrega de la finca',
+        url: 'https://www.gub.uy/tramites/rescisiones-contratos-alquiler-relacionados-servicio-garantia-alquileres-cgn',
+        publisher: 'MEF — Contaduría General de la Nación',
+      },
+      {
+        label: 'Inquilinos: rescisión, inspección, servicios y deuda pendiente',
+        url: 'https://www.gub.uy/ministerio-economia-finanzas/politicas-y-gestion/inquilinos',
+        publisher: 'MEF — Servicio de Garantía de Alquileres',
       },
     ],
   },
