@@ -43,6 +43,8 @@ const MUST_MASK: Record<string, string[]> = {
   'pages/conviene-auto-moto-o-omnibus-uruguay.vue': ['ruta-direcciones'],
   'pages/denunciar-ruidos-molestos-uruguay.vue': ['noise-form', 'noise-text'],
   'pages/grabacion-sin-consentimiento-uruguay.vue': ['rec-form', 'rec-text'],
+  // Born only with a reference point (v-if), so the mask applies when the element is created.
+  'pages/alquileres-uruguay.vue': ['rental-card__distance'],
 }
 
 interface TemplateNode {

@@ -452,6 +452,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                         v-if="referencePoint && !pending"
                         class="rental-card__distance"
                         data-testid="rental-card-distance"
+                        data-clarity-mask="true"
                       >
                         {{ distanceLabel(property.distanceKm) }}
                       </p>
