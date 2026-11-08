@@ -10,7 +10,9 @@
 //  * "Cerca" es la distancia a la coordenada PROPIA del aviso, y el radio es el menor de 1, 2, 3 o
 //    5 km que junta ocho comparables. Sin coordenada propia, el barrio, y se dice.
 //  * Sin cinco comparables no hay veredicto: con tres, cualquier mediana es ruido.
-//  * Las elecciones nunca son el propio aviso y un aviso no aparece dos veces.
+//  * Las elecciones nunca son el propio aviso y un aviso no aparece dos veces. Con `sameUnit`,
+//    tampoco su copia en otro portal: el 8/11/2026 "la parecida más cercana" de una ficha de Pocitos
+//    era ella misma publicada en InfoCasas, "a 50 m, mismo precio".
 
 export type PropertyInsightUnit = 'UYU' | 'USD'
 export type PropertyInsightVerdict = 'muy-bajo' | 'bajo' | 'justo' | 'alto' | 'muy-alto'
@@ -89,6 +91,12 @@ export interface PropertyInsightInput {
   /** El aviso tiene coordenada propia y las distancias de `peers` son contra ella. */
   located: boolean
   unit: PropertyInsightUnit
+  /**
+   * ¿Mostrar las dos sería mostrar la misma vivienda? Sólo para las elecciones, nunca para contar:
+   * las estadísticas no cambian. Alquiler la arma con utils/rentalLookalike.ts; sin ella (venta)
+   * las elecciones sólo evitan repetir la misma clave.
+   */
+  sameUnit?: (a: PropertyInsightListing, b: PropertyInsightListing) => boolean
 }
 
 export function propertyInsightVerdict(gap: number): PropertyInsightVerdict {
@@ -195,14 +203,19 @@ export function buildPropertyInsight(input: PropertyInsightInput): PropertyInsig
     peer.price >= priceFloor && (peer.pricePerM2 === null || peer.pricePerM2 >= perM2Floor)
   const picks: PropertyInsight['picks'] = []
   const used = new Set<string>()
+  const chosen: PropertyInsightListing[] = []
+  const { sameUnit } = input
+  const repeated = (candidate: PropertyInsightListing) =>
+    !!sameUnit && [subject, ...chosen].some(other => sameUnit(other, candidate))
   const pick = (
     kind: PropertyInsightPickKind,
     ordered: readonly PropertyInsightListing[],
     accept: (candidate: PropertyInsightListing) => boolean = () => true
   ) => {
-    const candidate = ordered.find(item => !used.has(item.key) && accept(item))
+    const candidate = ordered.find(item => !used.has(item.key) && accept(item) && !repeated(item))
     if (!candidate) return
     used.add(candidate.key)
+    chosen.push(candidate)
     // Una superficie que la guarda de $/m² rechazó (un 900 m² tipeado) no se muestra en la tarjeta.
     picks.push({
       kind,

@@ -2,14 +2,19 @@ import { describe, expect, it } from 'vitest'
 import type { RentalOffer, RentalPublicProperty } from '../../utils/rentals'
 import {
   buildRentalPage,
+  RENTAL_PAGE_SIMILAR_CANDIDATES,
   rentalPageConflicts,
   rentalPageMarket,
   rentalPagePeerStages,
   rentalPageReprice,
   rentalPageEvidenceStages,
+  rentalPageSimilar,
+  rentalPageSimilarKeys,
   rentalPageSitemapUrls,
   rentalPageSitemapStages,
 } from '../../server/utils/rentalPage'
+import { rentalLookalikeFacts, rentalLookalikes } from '../../utils/rentalLookalike'
+import { bulevarEspanaCopies, pocitosAlternatives } from './helpers/rentalCopies'
 
 function offer(overrides: Partial<RentalOffer> = {}): RentalOffer {
   return {
@@ -257,6 +262,41 @@ describe('public rental page evidence', () => {
     expect(page.similar).toHaveLength(6)
     expect(page.canonicalPath).toBe('/alquileres/another-property')
     expect(page.similar[0]?.priceUyu).toBe(40000)
+  })
+  it('reads twelve candidates and shows six distinct homes, never the page or its copies', () => {
+    // nh6byn-10rlmiq, 8/11/2026: by price distance its copies (same exact price) always came
+    // first, so six candidates were four copies of itself and one other home listed twice.
+    const { subject, copies } = bulevarEspanaCopies()
+    const { twice, distinct } = pocitosAlternatives()
+    const rows = [...distinct, ...twice, ...copies]
+    const priced = rentalPageReprice(subject, 40)
+    const evidence = rows.map(row => rentalPageReprice(row, 40))
+    expect(RENTAL_PAGE_SIMILAR_CANDIDATES).toBe(12)
+    expect(rentalPageSimilarKeys(priced, evidence, 6).sort()).toEqual(
+      [...copies, ...twice].map(row => row.key).sort()
+    )
+    const keys = rentalPageSimilarKeys(priced, evidence)
+    expect(keys).toHaveLength(12)
+    const byKey = new Map(rows.map(row => [row.key, row]))
+    const page = buildRentalPage(
+      subject,
+      keys.map(key => byKey.get(key)!),
+      40
+    )
+    const shown = page.similar.map(row => row.key)
+    expect(shown).toHaveLength(6)
+    expect(new Set(shown).size).toBe(6)
+    expect(shown).not.toContain(subject.key)
+    const own = rentalLookalikeFacts(subject)
+    for (const row of page.similar)
+      expect(rentalLookalikes(own, rentalLookalikeFacts(row)), row.key).toBe(false)
+    // One card for the home listed twice: the advert with a photo and known gastos comunes.
+    expect(shown.filter(key => key.startsWith('pocitos-garaje'))).toEqual([
+      'pocitos-garaje-infocasas',
+    ])
+    expect(shown[0]).toBe('pocitos-garaje-infocasas')
+    // The copies are kept apart, best first: the gone page shows it as "the same home, still listed".
+    expect(rentalPageSimilar(priced, evidence).copies[0]?.key).toBe('bulevar-espana-infocasas')
   })
   it('withdraws eligibility when cost/photo/source evidence disappears without treating unknown as zero', () => {
     const unknown = property({

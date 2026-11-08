@@ -51,6 +51,8 @@ const offerFields: Array<keyof RentalOffer> = [
   'priceUyu',
   'commonExpenses',
   'commonExpensesCurrency',
+  // Inert until the backend reads gastos comunes from the advert text (RENTALS_GC_FROM_TEXT=1).
+  'commonExpensesSource',
   'sellerName',
   'sellerType',
   'image',
