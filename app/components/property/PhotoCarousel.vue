@@ -36,6 +36,7 @@
         :key="photo.url"
         type="button"
         class="photo-carousel__slide"
+        :data-cta="cta || undefined"
         :tabindex="position === index ? 0 : -1"
         :aria-label="t('photoViewer.openPhoto', { n: position + 1, total: count })"
         @click="emit('open', position)"
@@ -102,8 +103,10 @@ const props = withDefaults(
     eager?: boolean
     /** Sube los puntos cuando hay una chapa al pie de la foto (la de "N portales"). */
     raisedIndicator?: boolean
+    /** data-cta of the slide button (track-clicks): each directory names its own, e.g. rental-photo-open. */
+    cta?: string | null
   }>(),
-  { total: null, source: null, eager: false, raisedIndicator: false }
+  { total: null, source: null, eager: false, raisedIndicator: false, cta: null }
 )
 const emit = defineEmits<{ open: [index: number]; failed: [] }>()
 const { t } = useI18n()

@@ -112,7 +112,7 @@
             <!-- Decorativa: el título del aviso ya es el texto de este mismo enlace. -->
             <img
               v-if="listing.image && !failedPhotos.has(listing.key)"
-              :src="listing.image"
+              :src="smallPhotoFailed.has(listing.key) ? listing.image : cardPhotoUrl(listing.image)"
               alt=""
               class="barrio-listing__photo"
               width="320"
@@ -120,7 +120,7 @@
               loading="lazy"
               decoding="async"
               referrerpolicy="no-referrer"
-              @error="failedPhotos.add(listing.key)"
+              @error="onListingPhotoError(listing.key, listing.image)"
             />
             <div class="pa-4">
               <p class="barrio-listing-title text-body-1 font-weight-medium mb-2">
@@ -196,6 +196,7 @@
 </template>
 
 <script setup lang="ts">
+import { cardPhotoUrl } from '~/utils/photoSizes'
 import type { RentalBarrioListing, RentalBarrioResponse } from '~/server/utils/rentalBarrio'
 import type { FaqItem } from '~/utils/faqAnswers'
 import {
@@ -314,6 +315,13 @@ const tables = computed(() => {
 
 // A portal photo that stopped answering leaves the card with its text, not a broken image.
 const failedPhotos = reactive(new Set<string>())
+// The card asks for the portal's small variant (utils/photoSizes.ts); if that file is missing it
+// retries the original once before giving up on the photo.
+const smallPhotoFailed = reactive(new Set<string>())
+function onListingPhotoError(key: string, image: string) {
+  if (!smallPhotoFailed.has(key) && cardPhotoUrl(image) !== image) smallPhotoFailed.add(key)
+  else failedPhotos.add(key)
+}
 const recentListings = computed(() => (data.value?.listings ?? []).slice(0, RENTAL_BARRIO_LISTINGS))
 
 function listingFacts(listing: RentalBarrioListing): string {
