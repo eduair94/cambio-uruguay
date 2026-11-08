@@ -82,6 +82,21 @@ describe('rental decision details', () => {
     ])
       expect(rentalReturnPath(input)).toBeNull()
   })
+  it('keeps the distance order on the way back, though the path has no point', () => {
+    expect(rentalReturnPath('/alquileres-uruguay?type=vivienda&sort=distancia&page=2')).toBe(
+      '/alquileres-uruguay?type=vivienda&page=2&sort=distancia#rental-results'
+    )
+    expect(rentalReturnPath('/alquileres-uruguay?sort=distancia&view=mapa')).toBe(
+      '/alquileres-uruguay?sort=distancia&view=mapa#rental-results'
+    )
+    // Any other sort still goes through normalisation: an unknown one is dropped.
+    expect(rentalReturnPath('/alquileres-uruguay?sort=precio')).toBe(
+      '/alquileres-uruguay?sort=precio#rental-results'
+    )
+    expect(rentalReturnPath('/alquileres-uruguay?sort=evil')).toBe(
+      '/alquileres-uruguay#rental-results'
+    )
+  })
   it('does not relabel a headline as a street, render unsafe photos or move date-only readings to yesterday', () => {
     expect(rentalStreet(property)).toBe('')
     expect(rentalStreet({ ...property, address: 'Gestido 2450' })).toBe('Gestido 2450')

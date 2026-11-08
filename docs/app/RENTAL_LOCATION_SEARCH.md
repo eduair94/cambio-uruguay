@@ -18,9 +18,35 @@ point selection.
   to five decimal places. Invalid pairs are discarded together. `sort=distancia` without a valid
   point falls back to `recientes`.
 - Optional `refLabel` is plain text, at most 160 characters, retained only with a valid point.
-- The point, label and sort survive shared URLs and locally saved searches. Subscriptions ignore
-  them as presentation, while retaining all actual criteria (including property types and existing
-  hospital-radius filters).
+- Since 2026-11-08 the point and its label are NOT in the page URL. GA4, the Google tag and every
+  AdSense ad request read the page URL (measured: 4 requests to Google per load of a URL with a
+  point), and the label can be the visitor's own address.
+  `rentalQueryToParams(query, { includeReference })` has three modes: `false` for every
+  address-bar navigation and link,
+  `'point'` (coordinates, never the label) for the site's own API reads and the `/api/rentals`
+  memo key (`rentalDirectoryCacheKey`), which still sort by distance, and the default `true` only
+  for the directory's navigations, whose `navigate()` moves point and label into the new history
+  entry's state. `tests/unit/rentalReference.test.ts` fails on any new caller that relies on the
+  default outside the reviewed ones. The server never reads `refLabel`: the only place the typed
+  text goes is the address lookup (`/api/rentals/geocode` → Google Maps, `no-store`, never logged).
+  The point lives in the history entry's state (`history.state.cuRentalRef`: Back, Forward and a
+  reload replay it) and in `sessionStorage` (`cu-rental-ref`) for the rest of the tab's visit
+  (`composables/useRentalReference.ts`, `utils/rentalReference.ts`). A shared URL keeps
+  `sort=distancia` but not the point, so it reads as `recientes` for whoever opens it; a saved
+  search keeps the filters only, and one saved before 2026-11-08 loses its point the next time
+  the browser reads the saved list, which is also rewritten without it (`utils/rentalSaved.ts`).
+  An old link with `refLat`/`refLng`/`refLabel` is honoured once (also by the server) and then
+  replaced by the same address without them. The visible label is masked for session recordings
+  (`data-clarity-mask`).
+- Known cost: the server never knows the point, so a server-rendered load in a tab that has one
+  (a reload, or arriving from outside the directory) renders without it and re-sorts once hydrated,
+  inserting the reference block above the results. It only affects visitors who chose a point in
+  that tab; watch the page's CLS after a change here.
+- The way back from a listing ("Volver", `rentalReturnPath` in `utils/rentalPresentation.ts`)
+  rebuilds the remembered path through `normalizeRentalQuery`, which reads `sort=distancia` without
+  a point as `recientes`; it has to keep a raw `sort=distancia` for the order to survive the trip.
+- Subscriptions ignore the point and sort as presentation, while retaining all actual criteria
+  (including property types and existing hospital-radius filters).
 - `distanceKm` is approximate straight-line distance, not walking/driving distance or time. The
   server calculates it after filtering current offers and before projection, sort and pagination.
   It remains visible if the user changes to another ordering while keeping the reference.
@@ -198,6 +224,11 @@ transport but do not certify that an external service can never fail.
 `rentalsMapProjection.test.ts` exercise normalization, saved links, subscription semantics,
 coordinate ownership, hidden/legacy/malformed/stale coordinates, same-offer filtering, stable
 global sorting, pagination and public projection. Mongo fixtures use read-only `$documents`.
+`rentalReference.test.ts` covers what may still become a URL, what the API and its memo key get
+(coordinates, never the label), every `rentalQueryToParams` caller in the app, saved searches from
+before the change, old links, the tab's storage, the page's navigation and masking tripwires, and
+the per-entry point against a real vue-router web history (pushes, Back/Forward, reload, the
+old-link replace) under jsdom.
 
 `rentalGeocode.test.ts` and `rentalGeocodeApi.test.ts` cover the measured Hocquart/Democracia
 response, conservative intersection parsing, invalid/approximate candidates, cache/coalescing,

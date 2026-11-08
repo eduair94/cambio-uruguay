@@ -292,6 +292,39 @@ async function chooseType(
   else await expect(form.getByTestId('rental-filter-type')).not.toContainText(label)
 }
 
+/**
+ * The reference point never reaches the address bar: GA4, the Google tag and every AdSense ad
+ * request read the page URL, and the point can be the visitor's own address. The site's own API
+ * still receives it (state.reads), and the history entry and the tab keep it.
+ */
+function expectNoReference(url: string) {
+  const params = new URL(url).searchParams
+  for (const key of ['refLat', 'refLng', 'refLabel']) expect(params.has(key), key).toBe(false)
+}
+
+/**
+ * A reload renders on the server, which never knows the point and which these fixtures cannot reach:
+ * without a catalogue database (CI) that read fails. Once hydrated, the page takes the point back
+ * from the history entry and reads again on the client, which the fixtures answer. "Volver a
+ * intentar" is only the fallback for a client read that lost the race; distances only come back
+ * when that read carries the point, so the fallback cannot hide a lost point.
+ */
+async function reloadKeepingPoint(page: Page) {
+  await page.reload({ waitUntil: 'domcontentloaded' })
+  await expect(async () => {
+    const retry = page.getByRole('button', { name: 'Volver a intentar', exact: true })
+    if (await retry.count()) await retry.first().click({ timeout: 2_000 })
+    await expect(page.getByTestId('rental-card-distance').first()).toContainText('≈ 0,8 km', {
+      timeout: 3_000,
+    })
+  }).toPass({ timeout: 60_000 })
+}
+
+/** The site's own API gets the point's coordinates, never its label (what the visitor typed). */
+function expectNoLabelSent(reads: URL[]) {
+  for (const read of reads) expect(read.searchParams.has('refLabel'), read.href).toBe(false)
+}
+
 async function changeRentalView(page: Page, mobile: boolean, next: 'Mapa' | 'Lista') {
   const container = mobile
     ? page.getByTestId('rental-mobile-toolbar')
@@ -399,7 +432,10 @@ for (const mobile of [true, false]) {
     await expect.poll(() => new URL(page.url()).searchParams.get('sort')).toBe('distancia')
     await expect.poll(() => new URL(page.url()).searchParams.get('view')).toBeNull()
     let selectedUrl = page.url()
-    const selected = new URL(selectedUrl).searchParams
+    // Sorted from the point, which only the site's own API receives: never the address bar.
+    expectNoReference(selectedUrl)
+    await expect.poll(() => state.reads.at(-1)?.searchParams.get('sort')).toBe('distancia')
+    const selected = state.reads.at(-1)!.searchParams
     expect(Number(selected.get('refLat'))).toBeGreaterThan(-35.9)
     expect(Number(selected.get('refLat'))).toBeLessThan(-30)
     expect(Number(selected.get('refLng'))).toBeGreaterThan(-58.6)
@@ -409,7 +445,7 @@ for (const mobile of [true, false]) {
       ['type', 'vivienda'],
       ['pets', '1'],
     ]) {
-      expect(selected.get(key)).toBe(value)
+      expect(new URL(selectedUrl).searchParams.get(key)).toBe(value)
       await expect.poll(() => state.reads.at(-1)?.searchParams.get(key)).toBe(value)
     }
     await expect(page.getByTestId('rental-card-distance').first()).toContainText('≈ 0,8 km')
@@ -421,6 +457,15 @@ for (const mobile of [true, false]) {
     await page.screenshot({
       path: resolve(artifactRoot, `.sdd-rentals-distance-results-${mobile ? '390' : '1366'}.png`),
     })
+    // A reload in the same tab keeps the point and the order: the server renders without it and
+    // the page takes it back from the history entry once hydrated.
+    await reloadKeepingPoint(page)
+    await expect(page.getByTestId('rental-reference')).toBeVisible()
+    await expect(page).toHaveURL(selectedUrl)
+    expectNoReference(page.url())
+    await expect
+      .poll(() => state.reads.at(-1)?.searchParams.get('refLat'))
+      .toBe(selected.get('refLat'))
 
     await page
       .getByTestId('rental-reference')
@@ -431,18 +476,23 @@ for (const mobile of [true, false]) {
     const box = await map.boundingBox()
     await map.click({ position: { x: box!.width / 2 + 16, y: box!.height / 2 - 16 } })
     await expect(apply).toBeEnabled()
-    // Choosing a candidate is a draft: cancellation leaves the committed URL intact.
-    expect(new URL(page.url()).searchParams.get('refLat')).toBe(selected.get('refLat'))
-    expect(new URL(page.url()).searchParams.get('refLng')).toBe(selected.get('refLng'))
+    // Choosing a candidate is a draft: cancellation leaves the committed point intact.
+    expectNoReference(page.url())
+    await expect
+      .poll(() => state.mapReads.at(-1)?.searchParams.get('refLat'))
+      .toBe(selected.get('refLat'))
+    expect(state.reads.at(-1)?.searchParams.get('refLat')).toBe(selected.get('refLat'))
     await page
       .locator('.rentals-map__point-controls')
       .getByRole('button', { name: 'Cancelar', exact: true })
       .click()
     await expect(apply).toBeHidden()
-    expect(new URL(page.url()).searchParams.get('refLat')).toBe(selected.get('refLat'))
-    expect(new URL(page.url()).searchParams.get('refLng')).toBe(selected.get('refLng'))
+    expectNoReference(page.url())
+    expect(state.reads.at(-1)?.searchParams.get('refLat')).toBe(selected.get('refLat'))
+    expect(state.reads.at(-1)?.searchParams.get('refLng')).toBe(selected.get('refLng'))
     await changeRentalView(page, mobile, 'Lista')
     await expect(page).toHaveURL(selectedUrl)
+    await expect(page.getByTestId('rental-card-distance').first()).toContainText('≈ 0,8 km')
     await page
       .getByTestId('rental-reference')
       .getByRole('button', { name: 'Cambiar punto', exact: true })
@@ -454,9 +504,10 @@ for (const mobile of [true, false]) {
     await apply.click()
     await expect.poll(() => new URL(page.url()).searchParams.get('view')).toBeNull()
     await expect
-      .poll(() => new URL(page.url()).searchParams.get('refLat'))
+      .poll(() => state.reads.at(-1)?.searchParams.get('refLat'))
       .not.toBe(selected.get('refLat'))
     selectedUrl = page.url()
+    expectNoReference(selectedUrl)
     expect(new URL(selectedUrl).searchParams.get('type')).toBe('vivienda')
     expect(new URL(selectedUrl).searchParams.get('pets')).toBe('1')
     await page
@@ -464,16 +515,17 @@ for (const mobile of [true, false]) {
       .getByRole('button', { name: 'Quitar punto', exact: true })
       .click()
     await expect(page.getByTestId('rental-reference')).toBeHidden()
-    await expect.poll(() => new URL(page.url()).searchParams.get('refLat')).toBeNull()
-    expect(new URL(page.url()).searchParams.get('refLng')).toBeNull()
+    await expect.poll(() => state.reads.at(-1)?.searchParams.get('refLat') ?? null).toBeNull()
+    expectNoReference(page.url())
     expect(new URL(page.url()).searchParams.get('sort')).not.toBe('distancia')
     expect(new URL(page.url()).searchParams.get('type')).toBe('vivienda')
     expect(new URL(page.url()).searchParams.get('pets')).toBe('1')
     await expect(page.getByTestId('rental-card-distance')).toHaveCount(0)
-    // Back and Forward replay the serialised point, without a hidden local preference.
+    // Back and Forward replay each entry's own point, which travels in the history entry.
     await page.goBack()
     await expect(page).toHaveURL(selectedUrl)
     await expect(page.getByTestId('rental-card-distance').first()).toContainText('≈ 0,8 km')
+    expectNoReference(page.url())
     await page.goForward()
     await expect(page.getByTestId('rental-reference')).toBeHidden()
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
@@ -519,10 +571,15 @@ test('390px mobile: a street intersection stays independent from the properties 
   await apply.click()
   await expect.poll(() => new URL(page.url()).searchParams.get('sort')).toBe('distancia')
   const savedUrl = page.url()
+  // The typed address is the most personal thing on the page: it never reaches the address bar.
+  expectNoReference(savedUrl)
   const params = new URL(savedUrl).searchParams
-  expect(Number(params.get('refLat'))).toBeCloseTo(-34.88974051732336, 4)
-  expect(Number(params.get('refLng'))).toBeCloseTo(-56.1768286423287, 4)
-  expect(params.get('refLabel')).toBe('HOCQUART ESQ DEMOCRACIA, MONTEVIDEO, MONTEVIDEO')
+  await expect.poll(() => state.reads.at(-1)?.searchParams.get('sort')).toBe('distancia')
+  const sent = state.reads.at(-1)!.searchParams
+  expect(Number(sent.get('refLat'))).toBeCloseTo(-34.88974051732336, 4)
+  expect(Number(sent.get('refLng'))).toBeCloseTo(-56.1768286423287, 4)
+  // The typed text went only to the address lookup; the directory reads get the coordinates.
+  expectNoLabelSent(state.reads)
   expect(params.get('type')).toBe('vivienda')
   expect(params.get('pets')).toBe('1')
   expect(params.get('department')).toBe('Canelones')
@@ -530,10 +587,88 @@ test('390px mobile: a street intersection stays independent from the properties 
   await changeRentalView(page, true, 'Mapa')
   await expect
     .poll(() => state.mapReads.at(-1)?.searchParams.get('refLat'))
-    .toBe(params.get('refLat'))
+    .toBe(sent.get('refLat'))
+  expectNoReference(page.url())
   await changeRentalView(page, true, 'Lista')
   await expect(page).toHaveURL(savedUrl)
   await expect(page.getByTestId('rental-reference')).toContainText('HOCQUART ESQ DEMOCRACIA')
+  expectNoLabelSent([...state.reads, ...state.mapReads])
+  expect(state.errors).toEqual([])
+})
+
+test('390px mobile: an old link with the point is honoured once and the address bar loses it', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  const state = await setup(
+    page,
+    'type=vivienda&refLat=-34.90608&refLng=-56.19934&refLabel=Plaza%20Independencia&sort=distancia'
+  )
+  await expect.poll(() => new URL(page.url()).searchParams.has('refLat')).toBe(false)
+  expectNoReference(page.url())
+  expect(new URL(page.url()).searchParams.get('sort')).toBe('distancia')
+  expect(new URL(page.url()).searchParams.get('type')).toBe('vivienda')
+  await expect(page.getByTestId('rental-reference')).toContainText('Plaza Independencia')
+  await expect(page.getByTestId('rental-card-distance').first()).toContainText('≈ 0,8 km')
+  expect(state.reads.at(-1)?.searchParams.get('refLat')).toBe('-34.90608')
+  expect(state.reads.at(-1)?.searchParams.get('sort')).toBe('distancia')
+  // The link's label is shown from session state; the reads never carry it.
+  expectNoLabelSent(state.reads)
+  expect(state.errors).toEqual([])
+})
+
+test('desktop: shared and saved searches keep the filters and never the point', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1366, height: 900 })
+  const state = await setup(page, 'department=Montevideo&type=vivienda')
+  await page.locator('.rentals-sort').getByRole('combobox').click()
+  await page.getByRole('option', { name: 'Más cerca', exact: true }).click()
+  const useCenter = page.getByRole('button', { name: 'Usar centro del mapa', exact: true })
+  await expect(useCenter).toBeEnabled()
+  await useCenter.click()
+  const apply = page.getByTestId('rental-point-apply')
+  await expect(apply).toBeEnabled()
+  await apply.click()
+  await expect.poll(() => new URL(page.url()).searchParams.get('sort')).toBe('distancia')
+  await expect(page.getByTestId('rental-card-distance').first()).toContainText('≈ 0,8 km')
+  const point = state.reads.at(-1)!.searchParams.get('refLat')
+  expect(point).not.toBeNull()
+
+  // "Compartir búsqueda" copies the address bar. The clipboard is stubbed: no permission needed.
+  await page.evaluate(() => {
+    const copied: string[] = []
+    Object.assign(window, { __copied: copied })
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: async (text: string) => void copied.push(text) },
+    })
+  })
+  const tools = page.locator('.rentals-tools')
+  await tools.getByRole('button', { name: 'Compartir búsqueda', exact: true }).click()
+  const copied = () =>
+    page.evaluate(() => (window as unknown as { __copied: string[] }).__copied.slice())
+  await expect.poll(async () => (await copied()).length).toBe(1)
+  const shared = (await copied())[0]!
+  expect(shared).toBe(page.url())
+  expectNoReference(shared)
+  expect(new URL(shared).searchParams.get('type')).toBe('vivienda')
+
+  // Saved like a shared link, filters only: the point is this tab's session, never stored.
+  await tools.getByRole('button', { name: 'Guardar búsqueda', exact: true }).click()
+  const open = page.locator('#rental-saved .saved-search-open').first()
+  await expect(open).toBeVisible()
+  const stored = await page.evaluate(() => localStorage.getItem('cu_rentals_saved_v1') ?? '')
+  expect(stored).toContain('vivienda')
+  for (const key of ['refLat', 'refLng', 'refLabel']) expect(stored).not.toContain(key)
+  // Reopening it gives exactly that search: its filters, without a point or the distance order.
+  await open.click()
+  await expect(page.getByTestId('rental-reference')).toBeHidden()
+  await expect.poll(() => state.reads.at(-1)?.searchParams.get('refLat') ?? null).toBeNull()
+  expectNoReference(page.url())
+  expect(new URL(page.url()).searchParams.get('type')).toBe('vivienda')
+  expect(new URL(page.url()).searchParams.get('department')).toBe('Montevideo')
+  expect(new URL(page.url()).searchParams.get('sort')).not.toBe('distancia')
   expect(state.errors).toEqual([])
 })
 
@@ -620,8 +755,10 @@ test('390px mobile: late map results cannot move the camera away from the chosen
     await page.screenshot({ path: resolve(artifactRoot, '.sdd-rentals-late-map-address-390.png') })
     await page.getByTestId('rental-point-apply').click()
     await expect.poll(() => new URL(page.url()).searchParams.get('sort')).toBe('distancia')
-    expect(Number(new URL(page.url()).searchParams.get('refLat'))).toBeCloseTo(-34.88974, 4)
-    expect(Number(new URL(page.url()).searchParams.get('refLng'))).toBeCloseTo(-56.17683, 4)
+    expectNoReference(page.url())
+    await expect.poll(() => state.reads.at(-1)?.searchParams.get('sort')).toBe('distancia')
+    expect(Number(state.reads.at(-1)!.searchParams.get('refLat'))).toBeCloseTo(-34.88974, 4)
+    expect(Number(state.reads.at(-1)!.searchParams.get('refLng'))).toBeCloseTo(-56.17683, 4)
     expect(new URL(page.url()).searchParams.get('type')).toBe('vivienda')
     expect(state.errors).toEqual([])
   } finally {
@@ -705,8 +842,10 @@ test('390px mobile: an address chosen before Leaflet loads is centered when the 
     await expect(page.getByTestId('rental-point-apply')).toBeEnabled()
     await page.getByTestId('rental-point-apply').click()
     await expect.poll(() => new URL(page.url()).searchParams.get('sort')).toBe('distancia')
-    expect(Number(new URL(page.url()).searchParams.get('refLat'))).toBeCloseTo(-34.88974, 4)
-    expect(Number(new URL(page.url()).searchParams.get('refLng'))).toBeCloseTo(-56.17683, 4)
+    expectNoReference(page.url())
+    await expect.poll(() => state.reads.at(-1)?.searchParams.get('sort')).toBe('distancia')
+    expect(Number(state.reads.at(-1)!.searchParams.get('refLat'))).toBeCloseTo(-34.88974, 4)
+    expect(Number(state.reads.at(-1)!.searchParams.get('refLng'))).toBeCloseTo(-56.17683, 4)
     expect(state.errors).toEqual([])
   } finally {
     releaseLeaflet()

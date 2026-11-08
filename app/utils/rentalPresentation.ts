@@ -138,6 +138,10 @@ export function rentalReturnPath(input: unknown): string | null {
     )
       return null
     const params = rentalQueryToParams(normalizeRentalQuery(Object.fromEntries(url.searchParams)))
+    // The directory keeps its reference point out of the URL (utils/rentalReference.ts), so this
+    // path never has one, and without one normalizeRentalQuery reads `sort=distancia` as
+    // "recientes". The way back keeps the order; the point comes back from the tab's session.
+    if (url.searchParams.get('sort') === 'distancia') params.sort = 'distancia'
     if (url.searchParams.get('view') === 'mapa') params.view = 'mapa'
     const query = new URLSearchParams(params).toString()
     return `${url.pathname}${query ? `?${query}` : ''}#rental-results`
