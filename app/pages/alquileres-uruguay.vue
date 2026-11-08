@@ -896,8 +896,14 @@ const query = computed(() =>
   normalizeRentalQuery({ ...route.query, ...rentalReferenceQuery(rentalReference.reference.value) })
 )
 const agencyName = useAgencySelection(() => query.value.agency)
-// The site's own API does get the point: it measures and sorts by distance.
-const requestParams = computed(() => rentalQueryToParams(query.value))
+// The site's own API gets the point's coordinates, to measure and sort by distance, and never its
+// label: the server does not read it, and it can be the address the visitor typed.
+const requestParams = computed(() =>
+  rentalQueryToParams(query.value, { includeReference: 'point' })
+)
+// Navigations start from the whole query, label included: navigate() moves the point into the new
+// history entry's state and leaves the address bar without it.
+const navigationParams = computed(() => rentalQueryToParams(query.value))
 const requestKey = computed(() => JSON.stringify(requestParams.value))
 const view = computed(() => (route.query.view === 'mapa' ? 'mapa' : 'lista'))
 // El mosaico o las filas son gusto del visitante, no otra dirección: viven en
@@ -1041,7 +1047,7 @@ function removeFilter(keys: string[]) {
     return
   }
   const params = Object.fromEntries(
-    Object.entries(requestParams.value).filter(([key]) => ![...keys, 'page'].includes(key))
+    Object.entries(navigationParams.value).filter(([key]) => ![...keys, 'page'].includes(key))
   )
   void navigate(params)
 }
@@ -1057,7 +1063,7 @@ function changeSort(sort: RentalQuery['sort']) {
   search({ ...query.value, sort })
 }
 function changeView(next: string) {
-  void navigate(requestParams.value, next)
+  void navigate(navigationParams.value, next)
 }
 function changeViewMode(next: string) {
   if (next === 'mapa') {
@@ -1296,7 +1302,7 @@ watch(view, () => {
 })
 async function startPointSelection() {
   await closeMapProperty(false)
-  await navigate(requestParams.value, 'mapa')
+  await navigate(navigationParams.value, 'mapa')
   draftPoint.value = referencePoint.value
   draftPointLabel.value = query.value.refLabel
   pointError.value = false
@@ -1584,14 +1590,9 @@ function persist() {
 }
 function saveSearch() {
   const label = filterChips.value.map(chip => chip.label).join(' · ') || t('country')
-  // Saved like a shared link, filters only: the point is this tab's session and nothing keeps it
-  // after that (utils/rentalReference.ts). Searches saved before still open fine without the URL.
-  const next = saveRentalSearch(saved.value, label, {
-    ...query.value,
-    refLat: null,
-    refLng: null,
-    refLabel: '',
-  })
+  // Saved like a shared link, filters only: saveRentalSearch drops the point, which is this tab's
+  // session and nothing keeps after that (utils/rentalReference.ts).
+  const next = saveRentalSearch(saved.value, label, query.value)
   if (
     saved.value.searches.some(
       search => !next.searches.some(candidate => candidate.id === search.id)

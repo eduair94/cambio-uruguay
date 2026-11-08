@@ -58,17 +58,24 @@
                 filtros que tenías aplicados y un identificador aleatorio que se guarda en tu
                 navegador, para leer en orden varias respuestas de una misma persona. Si respondés
                 desde un correo de alerta, también esa alerta y su zona. Tu dirección IP no se
-                guarda: solo se usa en el momento para frenar envíos abusivos. Tu correo, solo si lo
+                guarda en nuestra base de datos: el servidor la usa solo en su memoria, para limitar
+                cuántas respuestas pueden llegar desde una misma conexión. Tu correo, solo si lo
                 dejás para que te respondamos. Los comentarios nos llegan además como un aviso
                 privado por Telegram.
               </li>
               <li>
-                <strong>Punto de referencia del directorio de alquileres:</strong> la dirección que
-                escribís o el punto que marcás en el mapa para ordenar por distancia queda en tu
-                navegador solo mientras usás esa pestaña. Se envía a nuestro servidor únicamente
-                para calcular las distancias: no va en la dirección de la página, que leen las
+                <strong>Punto de referencia del directorio de alquileres:</strong> el punto desde el
+                que ordenás por distancia, sea una dirección que escribiste o un lugar que marcaste
+                en el mapa, queda en tu navegador solo mientras esa pestaña siga abierta. Para
+                calcular las distancias, la página le envía a nuestro servidor solo sus coordenadas,
+                no la dirección. Mientras escribís una dirección, el texto va a nuestro servidor,
+                que lo busca en los mapas de Google para ubicarla: Google recibe ese texto, pero no
+                tu IP ni tus cookies, y nosotros no lo guardamos en ninguna base de datos (el texto
+                y su resultado quedan unos minutos en la memoria del servidor, para no repetir la
+                misma búsqueda). El punto no va en la dirección de la página, que leen las
                 herramientas de analítica y publicidad, ni en los enlaces que compartís ni en las
-                búsquedas que guardás.
+                búsquedas que guardás; si llegás por un enlace viejo que lo traía, lo sacamos de la
+                dirección apenas carga la página.
               </li>
               <li>
                 <strong>Datos que nos envías:</strong> si nos escribís por correo, conservamos tu
@@ -105,6 +112,10 @@
                 esas funciones.
               </li>
               <li>
+                <strong>Google Maps (Google):</strong> ubica la dirección que escribís en el
+                directorio de alquileres. Le llega solo ese texto, desde nuestro servidor.
+              </li>
+              <li>
                 <strong>Sentry:</strong> registro de errores técnicos. Si algo falla, recibe el tipo
                 de error, la sección del sitio donde pasó y la familia y versión de tu navegador; no
                 le enviamos lo que escribiste en formularios, lo que buscaste ni tus cookies.
@@ -121,10 +132,11 @@
               el resto de los países, incluido Uruguay, están activas desde la primera visita. Estés
               donde estés, podés rechazarlas con «Rechazar» en el aviso de cookies o desde el enlace
               «Configurar cookies» del pie de página: tu elección se guarda en una cookie propia
-              durante un año y se aplica en cada visita. Mientras estén desactivadas, Google
-              Analytics y Google Ads no guardan cookies en tu navegador y reciben solo señales sin
-              cookies, que no llevan un identificador tuyo, y los anuncios que se muestran no son
-              personalizados.
+              durante un año y se aplica en cada visita. Mientras estén desactivadas, le indicamos a
+              Google que no guarde cookies de analítica ni de publicidad en tu navegador y que no
+              personalice los anuncios: Google Analytics y Google Ads reciben solo señales sin
+              cookies, que no llevan un identificador tuyo. Rechazar no borra las cookies que ya se
+              hubieran guardado antes: esas podés borrarlas desde la configuración de tu navegador.
             </VAlert>
             <p class="legal-prose text-body-1 text-grey-lighten-1 mt-3">
               Más información sobre cómo Google usa los datos:

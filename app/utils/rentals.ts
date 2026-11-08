@@ -807,12 +807,16 @@ export function normalizeRentalQuery(input: Record<string, unknown> = {}): Renta
 
 export interface RentalQueryParamsOptions {
   /**
-   * The reference point (`refLat`/`refLng`/`refLabel`). On by default: the site's own API needs it
-   * to measure and sort by distance. OFF for anything that becomes the address bar or a link: the
-   * page URL is read by GA4, the Google tag and every AdSense ad request, and the point can be the
-   * renter's own address. The page keeps it in session state instead (useRentalReference).
+   * The reference point (`refLat`/`refLng`/`refLabel`), which can be the renter's own address.
+   * - `true` (default): coordinates and label. The directory page builds its navigations this way
+   *   and its navigate() moves them into the history entry's state (useRentalReference) before
+   *   anything reaches the address bar.
+   * - `'point'`: the coordinates alone, for the site's own API and its cache key: the server
+   *   measures and sorts by distance and never reads the label, which is display text.
+   * - `false`: nothing, for anything that becomes the address bar or a link: the page URL is read
+   *   by GA4, the Google tag and every AdSense ad request.
    */
-  includeReference?: boolean
+  includeReference?: boolean | 'point'
 }
 
 /** Only the parameters that differ from the default, so the URL stays readable and cacheable. */
@@ -870,7 +874,7 @@ export function rentalQueryToParams(
   if (reference) {
     params.refLat = String(reference.lat)
     params.refLng = String(reference.lng)
-    const label = normalizeRentalReferenceLabel(query.refLabel)
+    const label = includeReference === true ? normalizeRentalReferenceLabel(query.refLabel) : ''
     if (label) params.refLabel = label
   }
   if (query.sort !== 'recientes') params.sort = query.sort

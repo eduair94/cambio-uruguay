@@ -4,13 +4,20 @@
 // GA4, the Google tag and every AdSense ad request, and one load of a directory URL with a point
 // put it in 4 requests to Google. These tests hold the two halves of that: what may still become a
 // URL (nothing of the point), and how the point survives without one (history state + the tab).
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { readdirSync, readFileSync, type Dirent } from 'node:fs'
+import { join, relative, resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { computed, effectScope, nextTick, ref, watch, type Ref } from 'vue'
 import { createRouter, createWebHistory, type Router } from 'vue-router'
 import { normalizeRentalQuery, rentalQueryToParams } from '../../utils/rentals'
-import { emptyRentalSaved, saveRentalSearch } from '../../utils/rentalSaved'
+import {
+  emptyRentalSaved,
+  parseRentalSaved,
+  readRentalSaved,
+  RENTAL_SAVED_STORAGE_ID,
+  saveRentalSearch,
+} from '../../utils/rentalSaved'
+import { rentalDirectoryCacheKey } from '../../server/utils/rentalDirectoryWarm'
 import {
   RENTAL_REFERENCE_HISTORY_KEY,
   RENTAL_REFERENCE_STORAGE_KEY,
@@ -61,7 +68,7 @@ describe('what may become a URL', () => {
     })
   })
 
-  it('still sends the point to the API by default, rounded to 5 decimals', () => {
+  it('keeps point and label by default, rounded to 5 decimals, for navigate() to split', () => {
     expect(rentalQueryToParams(withPoint())).toMatchObject({
       refLat: '-34.90608',
       refLng: '-56.19934',
@@ -72,6 +79,34 @@ describe('what may become a URL', () => {
     expect(rentalQueryToParams(withPoint(), { includeReference: true })).toEqual(
       rentalQueryToParams(withPoint())
     )
+  })
+
+  // The server measures and sorts by the coordinates and never reads the label, which is what the
+  // visitor typed: it has no business in an API URL (edge cache keys, logs) or in the memo key.
+  it('gives the API the coordinates and never the label', () => {
+    const api = rentalQueryToParams(withPoint(), { includeReference: 'point' })
+    expect(api).toEqual({
+      ...rentalQueryToParams(withPoint(), { includeReference: false }),
+      refLat: '-34.90608',
+      refLng: '-56.19934',
+    })
+    expect(api).not.toHaveProperty('refLabel')
+    // A label without a valid point is nothing to send.
+    expect(
+      rentalQueryToParams(normalizeRentalQuery({ refLabel: 'Mi casa' }), {
+        includeReference: 'point',
+      })
+    ).toEqual({})
+  })
+
+  it('keeps one /api/rentals memo entry per point, whatever its label', () => {
+    const point = { type: 'vivienda', refLat: '-34.90608', refLng: '-56.19934', sort: 'distancia' }
+    const key = rentalDirectoryCacheKey(point)
+    expect(key).toBe('type=vivienda&refLat=-34.90608&refLng=-56.19934&sort=distancia')
+    expect(rentalDirectoryCacheKey({ ...point, refLabel: 'Plaza Independencia' })).toBe(key)
+    expect(rentalDirectoryCacheKey({ ...point, refLat: '-34.9' })).not.toBe(key)
+    // Without a point the distance order reads as the default, like the API does.
+    expect(rentalDirectoryCacheKey({ type: 'vivienda', sort: 'distancia' })).toBe('type=vivienda')
   })
 
   it('a shared link without the point lists the same homes, just not by distance', () => {
@@ -139,14 +174,24 @@ describe('the directory page keeps the point out of URLs and recordings', () => 
     for (const [, location] of links) expect(location).toContain('includeReference: false')
   })
 
-  it('saves a search like a shared link: the filters, never the point', () => {
+  it('reads its API with the coordinates only, and navigates from the whole query', () => {
     expect(script).toMatch(
-      /saveRentalSearch\(saved\.value, label, \{\s*\.\.\.query\.value,\s*refLat: null,\s*refLng: null,\s*refLabel: '',?\s*\}\)/
+      /const requestParams = computed\(\(\) =>\s*rentalQueryToParams\(query\.value, \{ includeReference: 'point' \}\)\s*\)/
     )
+    expect(script).toMatch(
+      /const navigationParams = computed\(\(\) => rentalQueryToParams\(query\.value\)\)/
+    )
+    // Built from the API params, a navigation would drop the label from the new entry's point.
+    expect(script).not.toMatch(/navigate\(\s*requestParams/)
+    expect(script).not.toMatch(/Object\.entries\(requestParams/)
+  })
+
+  it('saves a search like a shared link: the filters, never the point', () => {
+    expect(script).toMatch(/saveRentalSearch\(saved\.value, label, query\.value\)/)
     const saved = saveRentalSearch(
       emptyRentalSaved(),
       'Montevideo · Viviendas',
-      { ...withPoint(), refLat: null, refLng: null, refLabel: '' },
+      withPoint(),
       '2026-11-08T00:00:00Z'
     )
     const params = saved.searches[0]!.params
@@ -165,6 +210,87 @@ describe('the directory page keeps the point out of URLs and recordings', () => 
       /normalizeRentalQuery\(\{\s*\.\.\.route\.query,\s*\.\.\.rentalReferenceQuery\(rentalReference\.reference\.value\)/
     )
     expect(script).not.toMatch(/normalizeRentalQuery\(route\.query\)/)
+  })
+})
+
+// The default keeps point and label, which is right only where navigate() moves them into history
+// state. Anywhere else a link or an address bar built with the default puts the point back in the
+// page URL, silently. So every call names its mode, or is one of these reviewed callers.
+describe('every caller of rentalQueryToParams says what it does with the point', () => {
+  const APP = resolve(__dirname, '../..')
+  const REVIEWED_DEFAULT_CALLERS: Record<string, string> = {
+    'pages/alquileres-uruguay.vue': 'navigate() splits point and label off into the entry state',
+    'utils/rentalAlerts.ts': 'nulls the point before serialising the alert',
+    'utils/rentalPresentation.ts':
+      'rentalReturnPath re-reads a path taken from the address bar, which has no point',
+  }
+  const SOURCE_DIRS = [
+    'components',
+    'composables',
+    'layouts',
+    'middleware',
+    'pages',
+    'plugins',
+    'server',
+    'stores',
+    'utils',
+  ]
+
+  function sourceFiles(dir: string): string[] {
+    let entries: Dirent[]
+    try {
+      entries = readdirSync(dir, { withFileTypes: true })
+    } catch {
+      return []
+    }
+    return entries.flatMap(entry => {
+      const path = join(dir, entry.name)
+      if (entry.isDirectory()) return entry.name === 'node_modules' ? [] : sourceFiles(path)
+      return /\.(?:ts|vue)$/.test(entry.name) ? [path] : []
+    })
+  }
+
+  /** The argument text of every call of `name(` in `source`, the declaration excluded. */
+  function callArguments(source: string, name: string): string[] {
+    const calls: string[] = []
+    for (const match of source.matchAll(new RegExp(`(?<![\\w.])${name}\\(`, 'g'))) {
+      const at = match.index!
+      if (/function\s+$/.test(source.slice(Math.max(0, at - 20), at))) continue
+      let depth = 1
+      let end = at + match[0].length
+      for (; end < source.length && depth; end++) {
+        if (source[end] === '(') depth++
+        else if (source[end] === ')') depth--
+      }
+      calls.push(source.slice(at + match[0].length, end - 1))
+    }
+    return calls
+  }
+
+  it('finds the callers it is meant to watch', () => {
+    const calls = callArguments(
+      'a(rentalQueryToParams(q)); export function rentalQueryToParams(query) {}; x.rentalQueryToParams(y); rentalQueryToParams({ ...q, page }, { includeReference: false })',
+      'rentalQueryToParams'
+    )
+    expect(calls).toEqual(['q', '{ ...q, page }, { includeReference: false }'])
+  })
+
+  it('passes includeReference everywhere but the reviewed callers', () => {
+    const files = SOURCE_DIRS.flatMap(dir => sourceFiles(join(APP, dir)))
+    expect(files.length).toBeGreaterThan(100)
+    const offenders: string[] = []
+    let explicit = 0
+    for (const file of files) {
+      const path = relative(APP, file).replace(/\\/g, '/')
+      for (const call of callArguments(readFileSync(file, 'utf8'), 'rentalQueryToParams')) {
+        if (/\bincludeReference\s*:/.test(call)) explicit++
+        else if (!Object.hasOwn(REVIEWED_DEFAULT_CALLERS, path))
+          offenders.push(`${path}: rentalQueryToParams(${call.replace(/\s+/g, ' ').slice(0, 90)})`)
+      }
+    }
+    // false for a link or an address bar, 'point' for the site's own API, true only with a reason.
+    expect(offenders).toEqual([])
+    expect(explicit).toBeGreaterThanOrEqual(6)
   })
 })
 
@@ -223,6 +349,62 @@ function memoryStorage() {
     removeItem: (key: string) => void data.delete(key),
   }
 }
+
+// Before 2026-11-08 a saved search kept the point and its label in localStorage, which outlives the
+// tab. /privacidad now says saved searches never keep it, so the old ones lose it on the next read.
+describe('searches saved before the point left the URL', () => {
+  const legacyList = () =>
+    JSON.stringify({
+      version: 1,
+      searches: [
+        {
+          label: 'Cerca de casa',
+          params: {
+            type: 'vivienda',
+            pets: '1',
+            refLat: '-34.90608',
+            refLng: '-56.19934',
+            refLabel: 'Mi casa, Cordón',
+            sort: 'distancia',
+          },
+          savedAt: '2026-10-01T00:00:00.000Z',
+        },
+      ],
+      favorites: [],
+    })
+
+  it('reopen with their filters and without the point', () => {
+    const state = parseRentalSaved(legacyList())
+    expect(state.searches).toHaveLength(1)
+    // Without its point the distance order is the default, as it reads on every later visit.
+    expect(state.searches[0]!.params).toEqual({ pets: '1', type: 'vivienda' })
+    expect(JSON.stringify(state)).not.toContain('Mi casa')
+    expect(parseRentalSaved(JSON.stringify(state))).toEqual(state)
+  })
+
+  it('leave the browser at the first read, and a clean list is not written again', () => {
+    const storage = memoryStorage()
+    storage.setItem(RENTAL_SAVED_STORAGE_ID, legacyList())
+    const state = readRentalSaved(storage)
+    const stored = storage.data.get(RENTAL_SAVED_STORAGE_ID)!
+    for (const key of REF_KEYS) expect(stored).not.toContain(key)
+    expect(stored).not.toContain('Mi casa')
+    expect(parseRentalSaved(stored)).toEqual(state)
+    const writes = vi.spyOn(storage, 'setItem')
+    expect(readRentalSaved(storage)).toEqual(state)
+    expect(writes).not.toHaveBeenCalled()
+  })
+
+  it('never replace a list that cannot be read with an empty one', () => {
+    const storage = memoryStorage()
+    const unreadable = `${legacyList().slice(0, -5)}`
+    storage.setItem(RENTAL_SAVED_STORAGE_ID, unreadable)
+    const writes = vi.spyOn(storage, 'setItem')
+    expect(readRentalSaved(storage)).toEqual(emptyRentalSaved())
+    expect(writes).not.toHaveBeenCalled()
+    expect(storage.data.get(RENTAL_SAVED_STORAGE_ID)).toBe(unreadable)
+  })
+})
 
 describe('the tab remembers the point (sessionStorage)', () => {
   it('round-trips the point and forgets it on null', () => {

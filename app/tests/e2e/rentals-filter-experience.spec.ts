@@ -302,6 +302,29 @@ function expectNoReference(url: string) {
   for (const key of ['refLat', 'refLng', 'refLabel']) expect(params.has(key), key).toBe(false)
 }
 
+/**
+ * A reload renders on the server, which never knows the point and which these fixtures cannot reach:
+ * without a catalogue database (CI) that read fails. Once hydrated, the page takes the point back
+ * from the history entry and reads again on the client, which the fixtures answer. "Volver a
+ * intentar" is only the fallback for a client read that lost the race; distances only come back
+ * when that read carries the point, so the fallback cannot hide a lost point.
+ */
+async function reloadKeepingPoint(page: Page) {
+  await page.reload({ waitUntil: 'domcontentloaded' })
+  await expect(async () => {
+    const retry = page.getByRole('button', { name: 'Volver a intentar', exact: true })
+    if (await retry.count()) await retry.first().click({ timeout: 2_000 })
+    await expect(page.getByTestId('rental-card-distance').first()).toContainText('≈ 0,8 km', {
+      timeout: 3_000,
+    })
+  }).toPass({ timeout: 60_000 })
+}
+
+/** The site's own API gets the point's coordinates, never its label (what the visitor typed). */
+function expectNoLabelSent(reads: URL[]) {
+  for (const read of reads) expect(read.searchParams.has('refLabel'), read.href).toBe(false)
+}
+
 async function changeRentalView(page: Page, mobile: boolean, next: 'Mapa' | 'Lista') {
   const container = mobile
     ? page.getByTestId('rental-mobile-toolbar')
@@ -436,8 +459,7 @@ for (const mobile of [true, false]) {
     })
     // A reload in the same tab keeps the point and the order: the server renders without it and
     // the page takes it back from the history entry once hydrated.
-    await page.reload({ waitUntil: 'domcontentloaded' })
-    await expect(page.getByTestId('rental-card-distance').first()).toContainText('≈ 0,8 km')
+    await reloadKeepingPoint(page)
     await expect(page.getByTestId('rental-reference')).toBeVisible()
     await expect(page).toHaveURL(selectedUrl)
     expectNoReference(page.url())
@@ -552,13 +574,12 @@ test('390px mobile: a street intersection stays independent from the properties 
   // The typed address is the most personal thing on the page: it never reaches the address bar.
   expectNoReference(savedUrl)
   const params = new URL(savedUrl).searchParams
-  await expect
-    .poll(() => state.reads.at(-1)?.searchParams.get('refLabel'))
-    .toBe('HOCQUART ESQ DEMOCRACIA, MONTEVIDEO, MONTEVIDEO')
+  await expect.poll(() => state.reads.at(-1)?.searchParams.get('sort')).toBe('distancia')
   const sent = state.reads.at(-1)!.searchParams
   expect(Number(sent.get('refLat'))).toBeCloseTo(-34.88974051732336, 4)
   expect(Number(sent.get('refLng'))).toBeCloseTo(-56.1768286423287, 4)
-  expect(sent.get('sort')).toBe('distancia')
+  // The typed text went only to the address lookup; the directory reads get the coordinates.
+  expectNoLabelSent(state.reads)
   expect(params.get('type')).toBe('vivienda')
   expect(params.get('pets')).toBe('1')
   expect(params.get('department')).toBe('Canelones')
@@ -571,6 +592,7 @@ test('390px mobile: a street intersection stays independent from the properties 
   await changeRentalView(page, true, 'Lista')
   await expect(page).toHaveURL(savedUrl)
   await expect(page.getByTestId('rental-reference')).toContainText('HOCQUART ESQ DEMOCRACIA')
+  expectNoLabelSent([...state.reads, ...state.mapReads])
   expect(state.errors).toEqual([])
 })
 
@@ -590,6 +612,8 @@ test('390px mobile: an old link with the point is honoured once and the address 
   await expect(page.getByTestId('rental-card-distance').first()).toContainText('≈ 0,8 km')
   expect(state.reads.at(-1)?.searchParams.get('refLat')).toBe('-34.90608')
   expect(state.reads.at(-1)?.searchParams.get('sort')).toBe('distancia')
+  // The link's label is shown from session state; the reads never carry it.
+  expectNoLabelSent(state.reads)
   expect(state.errors).toEqual([])
 })
 
