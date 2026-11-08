@@ -1325,6 +1325,8 @@
     "magicLink": "Sihirli bağlantı",
     "sendMagicLink": "Bana bir link gönder",
     "forgotPassword": "Şifrenizi mi unuttunuz?",
+    "discordError": "Sizi Discord ile oturum açtıramadık. Lütfen tekrar deneyin.",
+    "discordUnverified": "Bu e-posta adresiyle zaten doğrulanmamış bir hesap mevcut, bu nedenle Discord'a bağlamadık. E-posta adresiniz ve şifrenizle giriş yapın ve size gönderdiğimiz bağlantı üzerinden doğrulayın; eğer bu hesabı siz oluşturmadıysanız, \"Şifrenizi unuttunuz mu?\" seçeneğini kullanın. Ardından Discord ile giriş yapabileceksiniz.",
     "resetSent": "Size şifre sıfırlama e-postası gönderdik.",
     "magicSent": "Size bir giriş bağlantısı gönderdik. E-postanızı kontrol edin.",
     "verifySent": "Hesap oluşturuldu. Kayıt işlemini tamamlamak için e-postanızı doğrulayın.",

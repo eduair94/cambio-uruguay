@@ -100,7 +100,7 @@
           {{ $t(store.notice) }}
         </VAlert>
         <VAlert v-if="store.error" type="error" variant="tonal" density="comfortable" class="mt-4">
-          {{ $t('auth.error') }} ({{ store.error }})
+          {{ errorMessage }}
         </VAlert>
 
         <VDivider class="my-4" />
@@ -120,6 +120,14 @@
 
 <script setup lang="ts">
 const store = useAuthStore()
+const { t, te } = useI18n()
+// The site's own messages are i18n keys (auth.discordUnverified, set by plugins/discordToken);
+// Firebase reports codes (auth/wrong-password…), shown after the generic text as before.
+const errorMessage = computed(() => {
+  const code = store.error
+  if (!code) return ''
+  return te(code) ? t(code) : `${t('auth.error')} (${code})`
+})
 const tab = ref('password')
 const email = ref('')
 const password = ref('')

@@ -1325,6 +1325,8 @@
     "magicLink": "Magiška jungtis",
     "sendMagicLink": "Atsiųskite man nuorodą",
     "forgotPassword": "Pamiršote slaptažodį?",
+    "discordError": "Nepavyko prisijungti prie „Discord“. Bandykite dar kartą.",
+    "discordUnverified": "Šiuo el. pašto adresu jau yra nepatvirtinta paskyra, todėl jos neprijungėme prie „Discord“. Prisijunkite naudodami savo el. pašto adresą ir slaptažodį ir patvirtinkite naudodami mūsų atsiųstą nuorodą; jei nesukūrėte tos paskyros, naudokite parinktį „Pamiršote slaptažodį?“. Tada galėsite prisijungti naudodami „Discord“.",
     "resetSent": "Išsiuntėme jums slaptažodžio atkūrimo el. laišką.",
     "magicSent": "Išsiuntėme jums prisijungimo nuorodą. Patikrinkite savo el. paštą.",
     "verifySent": "Paskyra sukurta. Norėdami užbaigti registraciją, patvirtinkite el. pašto adresą.",

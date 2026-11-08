@@ -1307,6 +1307,8 @@
     "magicLink": "Link mágico",
     "sendMagicLink": "Enviar um link",
     "forgotPassword": "Esqueceu a senha?",
+    "discordError": "Não conseguimos entrar com o Discord. Tente novamente.",
+    "discordUnverified": "Já existe uma conta com este e-mail que ainda não foi verificada, por isso não a conectamos ao Discord. Entre com seu e-mail e senha e verifique-o com o link que enviamos; se você não criou essa conta, use “Esqueceu a senha?”. Depois você poderá entrar com o Discord.",
     "resetSent": "Enviamos um e-mail para redefinir a senha.",
     "magicSent": "Enviamos um link de acesso. Verifique seu e-mail.",
     "verifySent": "Conta criada. Verifique seu e-mail para concluir o cadastro.",

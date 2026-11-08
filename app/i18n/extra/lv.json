@@ -1325,6 +1325,8 @@
     "magicLink": "Maģiskā saite",
     "sendMagicLink": "Atsūtiet man saiti",
     "forgotPassword": "Aizmirsāt paroli?",
+    "discordError": "Neizdevās jūs pierakstīt, izmantojot Discord. Lūdzu, mēģiniet vēlreiz.",
+    "discordUnverified": "Ar šo e-pasta adresi jau pastāv konts, kas nav verificēts, tāpēc mēs to nepievienojām Discord. Pierakstieties ar savu e-pasta adresi un paroli un verificējiet to ar saiti, ko mēs jums nosūtījām; ja jūs neizveidojāt šo kontu, izmantojiet opciju “Aizmirsāt paroli?”. Pēc tam varēsiet pierakstīties, izmantojot Discord.",
     "resetSent": "Mēs nosūtījām jums paroles atiestatīšanas e-pastu.",
     "magicSent": "Mēs nosūtījām jums pieteikšanās saiti. Pārbaudiet savu e-pastu.",
     "verifySent": "Konts ir izveidots. Lai pabeigtu reģistrēšanos, verificējiet savu e-pasta adresi.",

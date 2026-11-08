@@ -1325,6 +1325,8 @@
     "magicLink": "Magiczny link",
     "sendMagicLink": "Wyślij mi link",
     "forgotPassword": "Zapomniałeś hasła?",
+    "discordError": "Nie udało nam się zalogować Cię do Discorda. Spróbuj ponownie.",
+    "discordUnverified": "Istnieje już konto z tym adresem e-mail, które nie zostało zweryfikowane, dlatego nie połączyliśmy go z Discordem. Zaloguj się za pomocą swojego adresu e-mail i hasła, a następnie potwierdź je za pomocą linku, który Ci wysłaliśmy. Jeśli to nie Ty utworzyłeś to konto, skorzystaj z opcji „Nie pamiętasz hasła?”. Wtedy będziesz mógł zalogować się przez Discorda.",
     "resetSent": "Wysłaliśmy Ci wiadomość e-mail umożliwiającą zresetowanie hasła.",
     "magicSent": "Wysłaliśmy Ci link do logowania. Sprawdź swoją skrzynkę e-mail.",
     "verifySent": "Konto utworzone. Zweryfikuj swój adres e-mail, aby dokończyć rejestrację.",

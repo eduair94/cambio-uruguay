@@ -1325,6 +1325,8 @@
     "magicLink": "Magische Verbindung",
     "sendMagicLink": "Schick mir einen Link",
     "forgotPassword": "Passwort vergessen?",
+    "discordError": "Wir konnten dich nicht mit Discord anmelden. Bitte versuche es erneut.",
+    "discordUnverified": "Es existiert bereits ein Konto mit dieser E-Mail-Adresse, das noch nicht verifiziert wurde. Daher konnten wir es nicht mit Discord verknüpfen. Melde dich mit deiner E-Mail-Adresse und deinem Passwort an und verifiziere es über den Link, den wir dir geschickt haben. Falls du dieses Konto nicht selbst erstellt hast, nutze „Passwort vergessen?“. Anschließend kannst du dich bei Discord anmelden.",
     "resetSent": "Wir haben Ihnen eine E-Mail zum Zurücksetzen Ihres Passworts gesendet.",
     "magicSent": "Wir haben Ihnen einen Anmeldelink gesendet. Bitte überprüfen Sie Ihre E-Mails.",
     "verifySent": "Konto erstellt. Bestätigen Sie Ihre E-Mail-Adresse, um die Registrierung abzuschließen.",

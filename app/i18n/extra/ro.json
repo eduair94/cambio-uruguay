@@ -1325,6 +1325,8 @@
     "magicLink": "Legătură magică",
     "sendMagicLink": "Trimite-mi un link",
     "forgotPassword": "Ați uitat parola?",
+    "discordError": "Nu te-am putut conecta cu Discord. Te rugăm să încerci din nou.",
+    "discordUnverified": "Există deja un cont cu această adresă de e-mail care nu a fost verificată, așa că nu l-am conectat la Discord. Conectați-vă cu adresa de e-mail și parola și verificați-o cu linkul pe care vi l-am trimis; dacă nu ați creat acel cont, folosiți opțiunea „Ați uitat parola?”. Apoi vă veți putea conecta cu Discord.",
     "resetSent": "Ți-am trimis un e-mail de resetare a parolei.",
     "magicSent": "Ți-am trimis un link de conectare. Verifică-ți e-mailul.",
     "verifySent": "Cont creat. Verifică-ți adresa de e-mail pentru a finaliza înregistrarea.",

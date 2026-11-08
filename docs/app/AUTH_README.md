@@ -68,3 +68,27 @@ internal `/api/telegram/*` API is gated by `x-telegram-secret`, keyed by chatId
 (never a Firebase token); link codes are single-use with a 10-min Mongo TTL. Bot
 runs as pm2 `cu-telegram-bot` (`bots/dist/entries/telegram.js`). Design/plan:
 `docs/superpowers/specs/2026-06-18-telegram-account-linking-design.md`.
+
+## Discord login
+
+`/api/auth/discord/start` → Discord OAuth2 → `/api/auth/discord/callback`, which
+resolves the Firebase account (`server/utils/discordAuth.ts` `resolveDiscordUid`)
+and hands a custom token back as `/cuenta?ct=…`; `plugins/discordToken.client.ts`
+signs in with it and removes it from the address bar through the router (never a
+raw `history.replaceState`: the token came back with Back and reached GA4).
+Design: `docs/superpowers/specs/2026-06-18-multichannel-access-discord-login-design.md`.
+
+- A verified Discord address links to the existing account with that address
+  **only if that account's address is verified** (2026-11-08). An email/password
+  sign-up can use anyone's address and its creator keeps the password, so a
+  Discord login never takes such an account over: the callback redirects with
+  `authError=discord-unverified` and the dialog tells the visitor to verify the
+  address first, or to take the account with "forgot password" if they did not
+  open it. Nothing is linked and no second account is created.
+- A verified address with no account creates one with `emailVerified: true`. The
+  one account the callback had created before that flag existed was marked
+  verified by hand the same day (its address had been verified by Discord: the
+  email branch has always required it).
+- The callback's error codes become dialog messages (`auth.discordError`,
+  `auth.discordUnverified`), written after the scrub navigation: that navigation
+  runs the `/cuenta` auth middleware, whose `openDialog()` clears `store.error`.

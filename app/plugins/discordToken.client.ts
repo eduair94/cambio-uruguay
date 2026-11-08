@@ -42,7 +42,13 @@ export default defineNuxtPlugin({
       auth.error = code
     }
 
-    if (authError === 'discord') scrub('authError', () => showError('auth.discordError'))
+    // The callback's codes (server/api/auth/discord/callback.get.ts) → the dialog's messages.
+    const AUTH_ERRORS: Record<string, string> = {
+      discord: 'auth.discordError',
+      'discord-unverified': 'auth.discordUnverified',
+    }
+    const authErrorKey = authError ? AUTH_ERRORS[authError] : undefined
+    if (authErrorKey) scrub('authError', () => showError(authErrorKey))
 
     if (ct) {
       let failed = false

@@ -1325,6 +1325,8 @@
     "magicLink": "Magische link",
     "sendMagicLink": "Stuur me een link",
     "forgotPassword": "Wachtwoord vergeten?",
+    "discordError": "Het is niet gelukt om je aan te melden met Discord. Probeer het later nog eens.",
+    "discordUnverified": "Er bestaat al een account met dit e-mailadres dat nog niet is geverifieerd, daarom hebben we het niet aan Discord gekoppeld. Log in met je e-mailadres en wachtwoord en verifieer het account via de link die we je hebben gestuurd. Als je dit account niet zelf hebt aangemaakt, gebruik dan de optie 'Wachtwoord vergeten?'. Daarna kun je inloggen met Discord.",
     "resetSent": "We hebben u een e-mail gestuurd om uw wachtwoord opnieuw in te stellen.",
     "magicSent": "We hebben je een inloglink gestuurd. Controleer je e-mail.",
     "verifySent": "Account aangemaakt. Bevestig je e-mailadres om je registratie te voltooien.",

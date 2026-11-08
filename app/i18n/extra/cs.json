@@ -1325,6 +1325,8 @@
     "magicLink": "Magický odkaz",
     "sendMagicLink": "Pošli mi odkaz",
     "forgotPassword": "Zapomněli jste heslo?",
+    "discordError": "Nepodařilo se nám vás přihlásit přes Discord. Zkuste to prosím znovu.",
+    "discordUnverified": "Účet s touto e-mailovou adresou, která nebyla ověřena, již existuje, proto jsme jej nepropojili s Discordem. Přihlaste se pomocí své e-mailové adresy a hesla a ověřte jej pomocí odkazu, který jsme vám poslali. Pokud jste si účet nevytvořili, použijte možnost „Zapomněli jste heslo?“. Poté se budete moci přihlásit pomocí Discordu.",
     "resetSent": "Poslali jsme vám e-mail s žádostí o obnovení hesla.",
     "magicSent": "Poslali jsme vám přihlašovací odkaz. Zkontrolujte si e-mail.",
     "verifySent": "Účet vytvořen. Pro dokončení registrace ověřte svůj e-mail.",

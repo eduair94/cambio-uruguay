@@ -1325,6 +1325,8 @@
     "magicLink": "Čarobna veza",
     "sendMagicLink": "Pošalji mi link",
     "forgotPassword": "Zaboravili ste lozinku?",
+    "discordError": "Nismo vas uspjeli prijaviti putem Discorda. Pokušajte ponovno.",
+    "discordUnverified": "Već postoji račun s ovom e-poštom koji nije potvrđen, pa ga nismo povezali s Discordom. Prijavite se sa svojom e-poštom i lozinkom te je potvrdite putem poveznice koju smo vam poslali; ako niste kreirali taj račun, upotrijebite \"Zaboravili ste lozinku?\". Nakon toga ćete se moći prijaviti putem Discorda.",
     "resetSent": "Poslali smo vam e-poruku za resetiranje lozinke.",
     "magicSent": "Poslali smo vam link za prijavu. Provjerite svoju e-poštu.",
     "verifySent": "Račun je kreiran. Potvrdite svoju e-poštu kako biste dovršili registraciju.",

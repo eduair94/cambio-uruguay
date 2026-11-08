@@ -1,7 +1,12 @@
 // Complete Discord OAuth2: verify state, exchange code, resolve the Firebase
 // user, and hand a custom token back to the client via ?ct=. Errors redirect to
-// /cuenta?authError=discord (no detail leaked).
-import { verifyState, resolveDiscordUid } from '../../../utils/discordAuth'
+// /cuenta?authError=discord (no detail leaked), or authError=discord-unverified when the address
+// belongs to an account nobody verified (see resolveDiscordUid).
+import {
+  DiscordUnverifiedAccountError,
+  resolveDiscordUid,
+  verifyState,
+} from '../../../utils/discordAuth'
 import { adminAuth } from '../../../utils/firebaseAdmin'
 import { connectDb } from '../../../utils/db'
 import { UserModel } from '../../../models/User'
@@ -82,7 +87,11 @@ export default defineEventHandler(async event => {
     // 5. Mint a custom token for the client to sign in with.
     const customToken = await auth.createCustomToken(uid)
     return sendRedirect(event, `/cuenta?ct=${encodeURIComponent(customToken)}`, 302)
-  } catch {
+  } catch (error) {
+    // Its own code, so the dialog can say what to do: the visitor just proved the address, so
+    // telling them an unverified account holds it reveals nothing they do not own.
+    if (error instanceof DiscordUnverifiedAccountError)
+      return sendRedirect(event, '/cuenta?authError=discord-unverified', 302)
     return sendRedirect(event, '/cuenta?authError=discord', 302)
   }
 })

@@ -1325,6 +1325,8 @@
     "magicLink": "Varázslatos láncszem",
     "sendMagicLink": "Küldj nekem egy linket",
     "forgotPassword": "Elfelejtette jelszavát?",
+    "discordError": "Nem tudtunk bejelentkezni a Discorddal. Próbáld újra.",
+    "discordUnverified": "Már létezik egy fiók ezzel az e-mail címmel, amelyet még nem ellenőriztünk, ezért nem kapcsoltuk össze a Discorddal. Jelentkezz be az e-mail címeddel és jelszavaddal, és ellenőrizd a küldött linkkel; ha nem te hoztad létre a fiókot, használd az „Elfelejtetted a jelszavad?” funkciót. Ezután be tudsz majd jelentkezni a Discorddal.",
     "resetSent": "Elküldtünk egy jelszó-visszaállító e-mailt.",
     "magicSent": "Elküldtünk egy bejelentkezési linket. Nézd meg az e-mailjeidet.",
     "verifySent": "Fiók létrehozva. A regisztráció befejezéséhez igazolnia kell az e-mail címét.",

@@ -1325,6 +1325,8 @@
     "magicLink": "Enllaç màgic",
     "sendMagicLink": "Envia'm un enllaç",
     "forgotPassword": "Has oblidat la contrasenya?",
+    "discordError": "No hem pogut iniciar la sessió amb Discord. Torna-ho a provar.",
+    "discordUnverified": "Ja hi ha un compte amb aquest correu electrònic que no s'ha verificat, per la qual cosa no l'hem connectat a Discord. Inicia la sessió amb el teu correu electrònic i contrasenya i verifica-ho amb l'enllaç que t'hem enviat; si no has creat aquest compte, fes servir \"Has oblidat la contrasenya?\". Aleshores podràs iniciar la sessió amb Discord.",
     "resetSent": "T'hem enviat un correu electrònic per restablir la contrasenya.",
     "magicSent": "T'hem enviat un enllaç per iniciar la sessió. Revisa el teu correu electrònic.",
     "verifySent": "Compte creat. Verifica el teu correu electrònic per acabar de registrar-te.",
