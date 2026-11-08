@@ -97,7 +97,9 @@ Design: `docs/superpowers/specs/2026-06-18-multichannel-access-discord-login-des
 - The `users` row keeps Discord's address only when Discord verified it: the
   account switches fall back to that row. And the newsletter switch changes the
   subscriber list only for a verified address, in both directions (switching off
-  used to unsubscribe whatever address the account carried).
+  used to unsubscribe whatever address the account carried), verified according
+  to the Firebase account record and not the ID token, which can be up to an hour
+  older than the verification.
 - Not done, pre-existing (2026-11-08 review): the `?ct=` hand-off is not bound to
   the browser that started the flow, so a link carrying a fresh custom token signs
   the visitor into someone else's account (login CSRF). The fix is to hand the
