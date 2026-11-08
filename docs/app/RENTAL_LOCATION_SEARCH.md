@@ -18,9 +18,21 @@ point selection.
   to five decimal places. Invalid pairs are discarded together. `sort=distancia` without a valid
   point falls back to `recientes`.
 - Optional `refLabel` is plain text, at most 160 characters, retained only with a valid point.
-- The point, label and sort survive shared URLs and locally saved searches. Subscriptions ignore
-  them as presentation, while retaining all actual criteria (including property types and existing
-  hospital-radius filters).
+- Since 2026-11-08 the point and its label are NOT in the page URL. GA4, the Google tag and every
+  AdSense ad request read the page URL (measured: 4 requests to Google per load of a URL with a
+  point), and the label can be the visitor's own address. Every address-bar navigation and link of
+  the directory is built with `rentalQueryToParams(query, { includeReference: false })`; the
+  default, with the point, is only for the site's own API requests, which still sort by distance.
+  The point lives in the history entry's state (`history.state.cuRentalRef`: Back, Forward and a
+  reload replay it) and in `sessionStorage` (`cu-rental-ref`) for the rest of the tab's visit
+  (`composables/useRentalReference.ts`, `utils/rentalReference.ts`). A shared URL keeps
+  `sort=distancia` but not the point, so it reads as `recientes` for whoever opens it; a search
+  saved in the page keeps the filters only (one saved before still opens with its point, never
+  through the URL). An old link with
+  `refLat`/`refLng`/`refLabel` is honoured once (also by the server) and then replaced by the same
+  address without them. The visible label is masked for session recordings (`data-clarity-mask`).
+- Subscriptions ignore the point and sort as presentation, while retaining all actual criteria
+  (including property types and existing hospital-radius filters).
 - `distanceKm` is approximate straight-line distance, not walking/driving distance or time. The
   server calculates it after filtering current offers and before projection, sort and pagination.
   It remains visible if the user changes to another ordering while keeping the reference.
@@ -198,6 +210,9 @@ transport but do not certify that an external service can never fail.
 `rentalsMapProjection.test.ts` exercise normalization, saved links, subscription semantics,
 coordinate ownership, hidden/legacy/malformed/stale coordinates, same-offer filtering, stable
 global sorting, pagination and public projection. Mongo fixtures use read-only `$documents`.
+`rentalReference.test.ts` covers what may still become a URL, old links, the tab's storage, the
+page's navigation and masking tripwires, and the per-entry point against a real vue-router web
+history (pushes, Back/Forward, reload, the old-link replace) under jsdom.
 
 `rentalGeocode.test.ts` and `rentalGeocodeApi.test.ts` cover the measured Hocquart/Democracia
 response, conservative intersection parsing, invalid/approximate candidates, cache/coalescing,

@@ -805,8 +805,21 @@ export function normalizeRentalQuery(input: Record<string, unknown> = {}): Renta
   }
 }
 
+export interface RentalQueryParamsOptions {
+  /**
+   * The reference point (`refLat`/`refLng`/`refLabel`). On by default: the site's own API needs it
+   * to measure and sort by distance. OFF for anything that becomes the address bar or a link: the
+   * page URL is read by GA4, the Google tag and every AdSense ad request, and the point can be the
+   * renter's own address. The page keeps it in session state instead (useRentalReference).
+   */
+  includeReference?: boolean
+}
+
 /** Only the parameters that differ from the default, so the URL stays readable and cacheable. */
-export function rentalQueryToParams(query: RentalQuery): Record<string, string> {
+export function rentalQueryToParams(
+  query: RentalQuery,
+  { includeReference = true }: RentalQueryParamsOptions = {}
+): Record<string, string> {
   const params: Record<string, string> = {}
   if (query.availability && query.availability !== 'all') params.availability = query.availability
   if (query.q) params.q = query.q
@@ -851,7 +864,9 @@ export function rentalQueryToParams(query: RentalQuery): Record<string, string> 
   if (query.servicios?.length) params.servicios = formatRentalServiceSelections(query.servicios)
   if (query.sedes.length) params.sedes = query.sedes.join(',')
   if (query.radioKm !== RADIO_KM_DEFAULT) params.radio = String(query.radioKm)
-  const reference = parseRentalReferencePoint(query)
+  // `sort=distancia` stays either way: without a point it reads as "recientes", so a shared link
+  // simply loses the distance order instead of carrying somebody's address.
+  const reference = includeReference ? parseRentalReferencePoint(query) : null
   if (reference) {
     params.refLat = String(reference.lat)
     params.refLng = String(reference.lng)

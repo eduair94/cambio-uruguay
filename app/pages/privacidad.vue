@@ -53,6 +53,24 @@
               </li>
               <li>{{ rentalAlertPrivacy }}</li>
               <li>
+                <strong>Opiniones y encuestas sobre los alquileres (opcional):</strong> tus
+                respuestas, el comentario que escribas, la página desde la que respondiste, los
+                filtros que tenías aplicados y un identificador aleatorio que se guarda en tu
+                navegador, para leer en orden varias respuestas de una misma persona. Si respondés
+                desde un correo de alerta, también esa alerta y su zona. Tu dirección IP no se
+                guarda: solo se usa en el momento para frenar envíos abusivos. Tu correo, solo si lo
+                dejás para que te respondamos. Los comentarios nos llegan además como un aviso
+                privado por Telegram.
+              </li>
+              <li>
+                <strong>Punto de referencia del directorio de alquileres:</strong> la dirección que
+                escribís o el punto que marcás en el mapa para ordenar por distancia queda en tu
+                navegador solo mientras usás esa pestaña. Se envía a nuestro servidor únicamente
+                para calcular las distancias: no va en la dirección de la página, que leen las
+                herramientas de analítica y publicidad, ni en los enlaces que compartís ni en las
+                búsquedas que guardás.
+              </li>
+              <li>
                 <strong>Datos que nos envías:</strong> si nos escribís por correo, conservamos tu
                 mensaje para responderte.
               </li>
@@ -86,11 +104,27 @@
                 <strong>Firebase (Google):</strong> autenticación y notificaciones, solo si usás
                 esas funciones.
               </li>
+              <li>
+                <strong>Sentry:</strong> registro de errores técnicos. Si algo falla, recibe el tipo
+                de error, la sección del sitio donde pasó y la familia y versión de tu navegador; no
+                le enviamos lo que escribiste en formularios, lo que buscaste ni tus cookies.
+              </li>
+              <li>
+                <strong>Cloudflare Web Analytics:</strong> mide cuánto tardan en cargar las páginas
+                y cuántas visitas reciben, sin cookies ni otros identificadores en tu navegador.
+              </li>
             </ul>
             <VAlert type="info" variant="tonal" density="comfortable" class="mt-3 legal-prose">
-              Aplicamos el Modo de Consentimiento de Google (Consent Mode v2): hasta que aceptás,
-              las cookies de analítica y publicidad permanecen desactivadas. Podés cambiar tu
-              elección en cualquier momento desde el enlace «Configurar cookies» del pie de página.
+              Aplicamos el Modo de Consentimiento de Google (Consent Mode v2), con una regla que
+              depende de dónde estés. En el Espacio Económico Europeo, el Reino Unido y Suiza, las
+              cookies de analítica y de publicidad quedan desactivadas hasta que tocás «Aceptar». En
+              el resto de los países, incluido Uruguay, están activas desde la primera visita. Estés
+              donde estés, podés rechazarlas con «Rechazar» en el aviso de cookies o desde el enlace
+              «Configurar cookies» del pie de página: tu elección se guarda en una cookie propia
+              durante un año y se aplica en cada visita. Mientras estén desactivadas, Google
+              Analytics y Google Ads no guardan cookies en tu navegador y reciben solo señales sin
+              cookies, que no llevan un identificador tuyo, y los anuncios que se muestran no son
+              personalizados.
             </VAlert>
             <p class="legal-prose text-body-1 text-grey-lighten-1 mt-3">
               Más información sobre cómo Google usa los datos:
@@ -116,9 +150,14 @@
           <section class="mb-8">
             <h2 class="text-h5 font-weight-bold mb-3">5. Base legal y conservación</h2>
             <p class="legal-prose text-body-1 text-grey-lighten-1">
-              Tratamos los datos sobre la base de tu consentimiento (cookies de analítica y
-              publicidad) y de nuestro interés legítimo en operar el sitio. Conservamos los datos
-              solo el tiempo necesario para los fines descritos o el que exija la ley.
+              En el Espacio Económico Europeo, el Reino Unido y Suiza, usamos las cookies de
+              analítica y de publicidad sobre la base de tu consentimiento, que das con «Aceptar» y
+              podés retirar cuando quieras. En el resto de los países, incluido Uruguay, las usamos
+              desde la primera visita por nuestro interés legítimo en medir la audiencia y financiar
+              con publicidad un sitio gratuito, y podés oponerte en cualquier momento con
+              «Rechazar». Los demás datos (cuenta, alertas, opiniones y errores técnicos) los
+              tratamos para darte las funciones que usás y para operar el sitio. Conservamos los
+              datos solo el tiempo necesario para los fines descritos o el que exija la ley.
             </p>
             <p class="legal-prose text-body-1 text-grey-lighten-1 mt-3">
               En el directorio de autos usados mostramos, junto a un aviso y sólo a quien lo pide
@@ -185,7 +224,7 @@
 const { t, locale } = useI18n()
 const localePath = useLocalePath()
 
-const LAST_UPDATED = '2026-10-17'
+const LAST_UPDATED = '2026-11-08'
 const rentalAlertPrivacy = computed(() => {
   if (locale.value.startsWith('en'))
     return 'Search alerts (rentals, homes for sale, used cars and motorcycles) are optional. We store your chosen filters, frequency, channels, whether you want price drops, your verified email address and delivery records to avoid repeating notifications. To detect price drops we keep the last and lowest price of each public listing, with no data about you. Push uses a device registration identifier. You can pause or delete an alert in your account; deleting it also removes its delivery history. Each email includes a link to unsubscribe from that alert’s emails independently of push notifications.'

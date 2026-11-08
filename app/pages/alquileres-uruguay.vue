@@ -205,7 +205,9 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             >
           </div>
           <div v-if="referencePoint" class="rentals-reference" data-testid="rental-reference">
-            <p v-if="query.refLabel">
+            <!-- The label can be the visitor's own address, like the input it came from
+                 (ReferenceAddress): kept out of session recordings. -->
+            <p v-if="query.refLabel" data-clarity-mask="true">
               <strong>{{ query.refLabel }}</strong>
             </p>
             <p>{{ t('distanceHint') }}</p>
@@ -234,7 +236,9 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                 <ReferenceAddress @select="selectReferenceAddress" @edit="clearDraftReference" />
                 <p id="rental-point-instructions">{{ t('pickPointHint') }}</p>
                 <p v-if="pointError" role="alert">{{ t('pointOutsideUruguay') }}</p>
-                <p v-if="draftPoint" role="status">{{ draftPointLabel || t('pointSelected') }}</p>
+                <p v-if="draftPoint" role="status" data-clarity-mask="true">
+                  {{ draftPointLabel || t('pointSelected') }}
+                </p>
                 <div class="rentals-reference__actions">
                   <VBtn variant="outlined" :disabled="!mapReady" @click="useMapCenter">
                     {{ t('useMapCenter') }}
@@ -831,6 +835,7 @@ import {
 import { MUTUALISTA_SEDES } from '~/utils/mutualistaSedes'
 import { DIRECTORIOS_HUB } from '~/utils/directorios'
 import { rentalPricePerM2 } from '~/utils/rentalPricePerM2'
+import { rentalReferenceQuery, splitRentalReference } from '~/utils/rentalReference'
 import {
   RENTAL_SAVED_STORAGE_ID,
   RENTAL_SAVED_FAVORITE_LIMIT,
@@ -883,8 +888,15 @@ async function restoreFilterContext() {
 watch(smAndDown, mobile => {
   if (!mobile) mobileFiltersOpen.value = false
 })
-const query = computed(() => normalizeRentalQuery(route.query))
+// The filters come from the address bar and the reference point from session state, read as ONE
+// query. The point never goes back into the URL: GA4, the Google tag and every AdSense ad request
+// read the page URL, and the point can be the visitor's own address (utils/rentalReference.ts).
+const rentalReference = useRentalReference()
+const query = computed(() =>
+  normalizeRentalQuery({ ...route.query, ...rentalReferenceQuery(rentalReference.reference.value) })
+)
 const agencyName = useAgencySelection(() => query.value.agency)
+// The site's own API does get the point: it measures and sorts by distance.
 const requestParams = computed(() => rentalQueryToParams(query.value))
 const requestKey = computed(() => JSON.stringify(requestParams.value))
 const view = computed(() => (route.query.view === 'mapa' ? 'mapa' : 'lista'))
@@ -983,8 +995,14 @@ const sortItems = computed(() =>
 const failedImages = reactive(new Set<string>())
 
 // Confirmed URL filters alone fetch results. Back/Forward restores the complete draft form.
-function navigate(params: Record<string, string>) {
-  return router.push({ query: { ...params, ...(view.value === 'mapa' ? { view: 'mapa' } : {}) } })
+// Params built from a full query carry the point; it is split off here into the new history
+// entry's state, so every navigation of the page leaves the address bar without it.
+function navigate(params: Record<string, string>, nextView: string = view.value) {
+  const { params: addressBar, reference } = splitRentalReference(params)
+  return rentalReference.navigate(
+    { query: { ...addressBar, ...(nextView === 'mapa' ? { view: 'mapa' } : {}) } },
+    reference
+  )
 }
 function focusSearchResults() {
   const results = document.getElementById('rental-results')
@@ -1039,9 +1057,7 @@ function changeSort(sort: RentalQuery['sort']) {
   search({ ...query.value, sort })
 }
 function changeView(next: string) {
-  void router.push({
-    query: { ...requestParams.value, ...(next === 'mapa' ? { view: 'mapa' } : {}) },
-  })
+  void navigate(requestParams.value, next)
 }
 function changeViewMode(next: string) {
   if (next === 'mapa') {
@@ -1061,8 +1077,11 @@ function paginationLinkProps(props: Record<string, unknown>, page: number | null
   return {
     ...props,
     variant: 'text' as const,
+    // A real link, so never with the point: crawlers, new tabs and session tools read it as is.
     href: enabled
-      ? router.resolve({ query: rentalQueryToParams({ ...query.value, page }) }).href
+      ? router.resolve({
+          query: rentalQueryToParams({ ...query.value, page }, { includeReference: false }),
+        }).href
       : undefined,
     // Keep native link behavior for new tabs and crawlers; ordinary clicks retain scroll context.
     onClick: (event: MouseEvent) => {
@@ -1277,7 +1296,7 @@ watch(view, () => {
 })
 async function startPointSelection() {
   await closeMapProperty(false)
-  await router.push({ query: { ...requestParams.value, view: 'mapa' } })
+  await navigate(requestParams.value, 'mapa')
   draftPoint.value = referencePoint.value
   draftPointLabel.value = query.value.refLabel
   pointError.value = false
@@ -1326,7 +1345,8 @@ async function applyReference() {
     page: 1,
   }
   cancelPointSelection()
-  await router.push({ query: rentalQueryToParams(next) })
+  // Back to the list, sorted from the point; the point itself goes to the entry's state.
+  await navigate(rentalQueryToParams(next), 'lista')
   await nextTick()
   focusSearchResults()
 }
@@ -1564,7 +1584,14 @@ function persist() {
 }
 function saveSearch() {
   const label = filterChips.value.map(chip => chip.label).join(' · ') || t('country')
-  const next = saveRentalSearch(saved.value, label, query.value)
+  // Saved like a shared link, filters only: the point is this tab's session and nothing keeps it
+  // after that (utils/rentalReference.ts). Searches saved before still open fine without the URL.
+  const next = saveRentalSearch(saved.value, label, {
+    ...query.value,
+    refLat: null,
+    refLng: null,
+    refLabel: '',
+  })
   if (
     saved.value.searches.some(
       search => !next.searches.some(candidate => candidate.id === search.id)
