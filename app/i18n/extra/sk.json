@@ -1362,6 +1362,8 @@
     "create": "Vytvoriť upozornenie",
     "active": "Aktívne",
     "delete": "Odstrániť",
+    "noChannel": "Žiadny kanál: toto upozornenie sa k vám nikam nedostane.",
+    "emailAgain": "Získajte to e-mailom",
     "enablePush": "Povoliť push notifikácie",
     "pushGranted": "Upozornenia sú na tomto zariadení povolené.",
     "pushDenied": "Povolenie na upozornenie bolo zamietnuté.",

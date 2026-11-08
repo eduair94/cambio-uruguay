@@ -1362,6 +1362,8 @@
     "create": "Buat peringatan",
     "active": "Aktif",
     "delete": "Menghapus",
+    "noChannel": "Tidak ada saluran: peringatan ini tidak sampai kepada Anda di mana pun.",
+    "emailAgain": "Dapatkan melalui email",
     "enablePush": "Aktifkan notifikasi push",
     "pushGranted": "Notifikasi diaktifkan pada perangkat ini.",
     "pushDenied": "Izin notifikasi ditolak.",

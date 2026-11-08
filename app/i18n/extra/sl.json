@@ -1362,6 +1362,8 @@
     "create": "Ustvari opozorilo",
     "active": "Aktivno",
     "delete": "Izbriši",
+    "noChannel": "Brez kanala: to opozorilo vas ne doseže nikamor.",
+    "emailAgain": "Prejmite po e-pošti",
     "enablePush": "Omogoči potisna obvestila",
     "pushGranted": "Obvestila so omogočena v tej napravi.",
     "pushDenied": "Dovoljenje za obveščanje zavrnjeno.",

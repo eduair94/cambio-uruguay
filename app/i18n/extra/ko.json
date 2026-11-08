@@ -1362,6 +1362,8 @@
     "create": "알림 생성",
     "active": "활동적인",
     "delete": "삭제",
+    "noChannel": "채널 없음: 이 알림은 어떤 채널로도 전달되지 않습니다.",
+    "emailAgain": "이메일로 받아보세요",
     "enablePush": "푸시 알림 활성화",
     "pushGranted": "이 기기에서 알림이 활성화되어 있습니다.",
     "pushDenied": "알림 권한이 거부되었습니다.",

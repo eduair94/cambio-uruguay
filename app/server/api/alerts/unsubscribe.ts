@@ -8,10 +8,20 @@ import {
   validRateAlertUnsubscribeToken,
 } from '../../utils/rateAlertUnsubscribe'
 
+const ACTION = '/api/alerts/unsubscribe'
+
 export default defineEventHandler(async event => {
   setResponseHeader(event, 'cache-control', 'no-store, max-age=0')
   setResponseHeader(event, 'referrer-policy', 'no-referrer')
   setResponseHeader(event, 'x-robots-tag', 'noindex, nofollow')
+  // Before anything can fail: an error page served at this address must not run scripts (the
+  // address carries the token, and GA sends the address bar).
+  setResponseHeader(event, 'content-type', 'text/html; charset=utf-8')
+  setResponseHeader(
+    event,
+    'content-security-policy',
+    "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
+  )
   if (!['GET', 'HEAD', 'POST'].includes(event.method)) {
     setResponseHeader(event, 'allow', 'GET, HEAD, POST')
     throw createError({ statusCode: 405, statusMessage: 'Method not allowed' })
@@ -19,14 +29,20 @@ export default defineEventHandler(async event => {
   const token = getQuery(event).token
   if (!validRateAlertUnsubscribeToken(token))
     throw createError({ statusCode: 400, statusMessage: 'Invalid link' })
-  const found = await rateAlertUnsubscribeInfo(token)
-  if (event.method === 'POST') await unsubscribeRateAlertEmail(token)
-  setResponseHeader(event, 'content-type', 'text/html; charset=utf-8')
-  setResponseHeader(
-    event,
-    'content-security-policy',
-    "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
-  )
+  let found: Awaited<ReturnType<typeof rateAlertUnsubscribeInfo>>
+  try {
+    found = await rateAlertUnsubscribeInfo(token)
+    if (event.method === 'POST') await unsubscribeRateAlertEmail(token)
+  } catch (error) {
+    // Answered here rather than thrown: Nitro would log the request URL, token included, and
+    // Nuxt would render its full error page at this address. The log line names the failure only.
+    console.error(
+      '[alerts/unsubscribe] unavailable:',
+      error instanceof Error ? error.message : error
+    )
+    setResponseStatus(event, 503)
+    return rentalUnsubscribeHtml('es', 'unavailable', token, ACTION)
+  }
   const state =
     event.method === 'POST' || (found && !found.channels?.email)
       ? 'done'
@@ -35,5 +51,5 @@ export default defineEventHandler(async event => {
         : 'missing'
   if (state === 'missing') setResponseStatus(event, 404)
   // The rate-alert emails are written in Spanish, and so is this page.
-  return rentalUnsubscribeHtml('es', state, token, '/api/alerts/unsubscribe')
+  return rentalUnsubscribeHtml('es', state, token, ACTION)
 })

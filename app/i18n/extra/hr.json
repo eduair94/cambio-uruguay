@@ -1362,6 +1362,8 @@
     "create": "Izradi upozorenje",
     "active": "Aktivan",
     "delete": "Izbrisati",
+    "noChannel": "Nema kanala: ovo upozorenje vas nigdje ne dopire.",
+    "emailAgain": "Primite putem e-pošte",
     "enablePush": "Omogući push obavijesti",
     "pushGranted": "Obavijesti su omogućene na ovom uređaju.",
     "pushDenied": "Dozvola za obavijesti odbijena.",

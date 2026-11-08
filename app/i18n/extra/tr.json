@@ -1362,6 +1362,8 @@
     "create": "Uyarı oluştur",
     "active": "Aktif",
     "delete": "Silmek",
+    "noChannel": "Hiçbir kanal yok: Bu uyarı size hiçbir yerden ulaşmıyor.",
+    "emailAgain": "E-posta ile alın",
     "enablePush": "Anlık bildirimleri etkinleştirin",
     "pushGranted": "Bu cihazda bildirimler etkinleştirildi.",
     "pushDenied": "Bildirim izni reddedildi.",

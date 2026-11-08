@@ -1362,6 +1362,8 @@
     "create": "Opret alarm",
     "active": "Aktiv",
     "delete": "Slet",
+    "noChannel": "Ingen kanal: Denne alarm når dig ingen steder.",
+    "emailAgain": "Få det via e-mail",
     "enablePush": "Aktivér push-notifikationer",
     "pushGranted": "Notifikationer er aktiveret på denne enhed.",
     "pushDenied": "Tilladelse til notifikationer nægtet.",

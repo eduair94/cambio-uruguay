@@ -1362,6 +1362,8 @@
     "create": "Maak een melding aan",
     "active": "Actief",
     "delete": "Verwijderen",
+    "noChannel": "Geen kanaal: deze melding bereikt u nergens.",
+    "emailAgain": "Ontvang het per e-mail",
     "enablePush": "Pushmeldingen inschakelen",
     "pushGranted": "Meldingen zijn ingeschakeld op dit apparaat.",
     "pushDenied": "Toegang tot melding geweigerd.",

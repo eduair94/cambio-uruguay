@@ -1362,6 +1362,8 @@
     "create": "Sukurti įspėjimą",
     "active": "Aktyvus",
     "delete": "Ištrinti",
+    "noChannel": "Nėra kanalo: šis įspėjimas jūsų niekur nepasiekia.",
+    "emailAgain": "Gaukite el. paštu",
     "enablePush": "Įjungti tiesioginius pranešimus",
     "pushGranted": "Pranešimai įjungti šiame įrenginyje.",
     "pushDenied": "Pranešimo leidimas atmestas.",

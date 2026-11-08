@@ -24,6 +24,11 @@ const SIGN_IN_PARAMS = [
 /** Old rental links' reference point (`useRentalReference` removes it once the page mounts). */
 const REFERENCE_PARAMS = ['refLat', 'refLng', 'refLabel']
 /**
+ * The email unsubscribe links' token (`/api/alerts/unsubscribe`, `/api/rental-alerts/unsubscribe`).
+ * No page of the app reads it; this is for an error page ever rendered at such an address.
+ */
+const CREDENTIAL_PARAMS = ['token']
+/**
  * Generic names that Firebase adds to an emailed link (`mode=signIn`, `lang=es`, and our own
  * `magic=1` marker): removed only next to an `oobCode`, because `mode` is a real filter elsewhere
  * (`/oportunidades-inmobiliarias-uruguay?mode=budget`).
@@ -33,6 +38,7 @@ const SIGN_IN_COMPANIONS = ['mode', 'lang', 'magic']
 export const ANALYTICS_UNSAFE_PARAMS: readonly string[] = Object.freeze([
   ...SIGN_IN_PARAMS,
   ...REFERENCE_PARAMS,
+  ...CREDENTIAL_PARAMS,
 ])
 
 /** Whether a `location.search` still carries something analytics must not see. */

@@ -1362,6 +1362,8 @@
     "create": "Crea avviso",
     "active": "Attivo",
     "delete": "Eliminare",
+    "noChannel": "Nessun canale: questo avviso non ti raggiungerà da nessuna parte.",
+    "emailAgain": "Ricevilo via email",
     "enablePush": "Attiva le notifiche push",
     "pushGranted": "Notifiche abilitate su questo dispositivo.",
     "pushDenied": "Autorizzazione alla notifica negata.",

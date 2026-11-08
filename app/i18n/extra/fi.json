@@ -1362,6 +1362,8 @@
     "create": "Luo hälytys",
     "active": "Aktiivinen",
     "delete": "Poistaa",
+    "noChannel": "Ei kanavaa: tämä hälytys ei tavoita sinua mihinkään.",
+    "emailAgain": "Hanki se sähköpostitse",
     "enablePush": "Ota push-ilmoitukset käyttöön",
     "pushGranted": "Ilmoitukset käytössä tässä laitteessa.",
     "pushDenied": "Ilmoituslupa evätty.",

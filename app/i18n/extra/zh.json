@@ -1362,6 +1362,8 @@
     "create": "创建提醒",
     "active": "积极的",
     "delete": "删除",
+    "noChannel": "无渠道：您无法通过任何渠道收到此警报。",
+    "emailAgain": "通过电子邮件获取",
     "enablePush": "启用推送通知",
     "pushGranted": "此设备已启用通知功能。",
     "pushDenied": "通知权限被拒绝。",

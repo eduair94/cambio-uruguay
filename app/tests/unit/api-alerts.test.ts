@@ -6,10 +6,11 @@ const find = vi.fn()
 const create = vi.fn()
 const findOneAndUpdate = vi.fn()
 const deleteOne = vi.fn()
+const exists = vi.fn()
 vi.mock('../../server/utils/auth', () => ({ requireUser }))
 vi.mock('../../server/utils/db', () => ({ connectDb: vi.fn().mockResolvedValue(null) }))
 vi.mock('../../server/models/Alert', () => ({
-  AlertModel: { find, create, findOneAndUpdate, deleteOne },
+  AlertModel: { find, create, findOneAndUpdate, deleteOne, exists },
 }))
 
 const { readBody, getRouterParam } = installNitroGlobals()
@@ -20,9 +21,16 @@ const patchH = (await import('../../server/api/me/alerts/[id].patch')).default
 const delH = (await import('../../server/api/me/alerts/[id].delete')).default
 
 beforeEach(() => {
-  ;[requireUser, find, create, findOneAndUpdate, deleteOne, readBody, getRouterParam].forEach(m =>
-    m.mockReset()
-  )
+  ;[
+    requireUser,
+    find,
+    create,
+    findOneAndUpdate,
+    deleteOne,
+    exists,
+    readBody,
+    getRouterParam,
+  ].forEach(m => m.mockReset())
   requireUser.mockResolvedValue({ uid: 'u1', email: 'a@b.com' })
 })
 
@@ -97,5 +105,86 @@ describe('alerts API: canal Telegram', () => {
     findOneAndUpdate.mockReturnValueOnce({ lean: () => ({ exec: () => Promise.resolve({}) }) })
     await patchH({} as any)
     expect(findOneAndUpdate.mock.calls[0][1].$set['channels.telegram']).toBe(true)
+  })
+})
+
+// The email unsubscribe link (one click from the inbox) can leave an alert with no channel, and an
+// active alert with none fires into nothing: switching one on, or creating one, needs a channel —
+// the rule the rental alerts already follow (rentalAlertSubscriptions.ts).
+describe('alerts API: an alert needs a channel to be on', () => {
+  const query = (value: unknown) => ({ lean: () => ({ exec: () => Promise.resolve(value) }) })
+
+  it('switching on asks Mongo for a channel in the same update', async () => {
+    getRouterParam.mockReturnValueOnce('a1')
+    readBody.mockResolvedValueOnce({ active: true })
+    findOneAndUpdate.mockReturnValueOnce(query({ _id: 'a1', active: true }))
+    expect(await patchH({} as any)).toMatchObject({ _id: 'a1' })
+    expect(findOneAndUpdate.mock.calls[0][0]).toEqual({
+      _id: 'a1',
+      uid: 'u1',
+      $or: [{ 'channels.push': true }, { 'channels.email': true }, { 'channels.telegram': true }],
+    })
+  })
+
+  it('refuses to switch on an alert left without a channel', async () => {
+    getRouterParam.mockReturnValueOnce('a1')
+    readBody.mockResolvedValueOnce({ active: true })
+    findOneAndUpdate.mockReturnValueOnce(query(null))
+    exists.mockResolvedValueOnce({ _id: 'a1' })
+    await expect(patchH({} as any)).rejects.toMatchObject({
+      statusCode: 409,
+      statusMessage: 'no-channel',
+    })
+  })
+
+  it("still answers null for an alert that is not the caller's", async () => {
+    getRouterParam.mockReturnValueOnce('a1')
+    readBody.mockResolvedValueOnce({ active: true })
+    findOneAndUpdate.mockReturnValueOnce(query(null))
+    exists.mockResolvedValueOnce(null)
+    expect(await patchH({} as any)).toBeNull()
+  })
+
+  it('refuses switching on while turning every channel off, without writing', async () => {
+    getRouterParam.mockReturnValueOnce('a1')
+    readBody.mockResolvedValueOnce({ active: true, channels: { push: false, email: false } })
+    await expect(patchH({} as any)).rejects.toMatchObject({ statusCode: 409 })
+    expect(findOneAndUpdate).not.toHaveBeenCalled()
+  })
+
+  it('switches on with the channel the same request turns back on', async () => {
+    getRouterParam.mockReturnValueOnce('a1')
+    readBody.mockResolvedValueOnce({ active: true, channels: { push: false, email: true } })
+    findOneAndUpdate.mockReturnValueOnce(query({ _id: 'a1' }))
+    await patchH({} as any)
+    expect(findOneAndUpdate.mock.calls[0][0]).toEqual({ _id: 'a1', uid: 'u1' })
+    expect(findOneAndUpdate.mock.calls[0][1].$set).toMatchObject({
+      active: true,
+      'channels.email': true,
+      'channels.push': false,
+    })
+  })
+
+  it('switching off needs no channel', async () => {
+    getRouterParam.mockReturnValueOnce('a1')
+    readBody.mockResolvedValueOnce({ active: false, channels: { push: false, email: false } })
+    findOneAndUpdate.mockReturnValueOnce(query({ _id: 'a1' }))
+    await patchH({} as any)
+    expect(findOneAndUpdate.mock.calls[0][0]).toEqual({ _id: 'a1', uid: 'u1' })
+  })
+
+  it('refuses to create an alert with no channel', async () => {
+    readBody.mockResolvedValueOnce({
+      currency: 'USD',
+      kind: 'bestBuy',
+      op: '<',
+      target: 39,
+      channels: { push: false, email: false, telegram: false },
+    })
+    await expect(addH({} as any)).rejects.toMatchObject({
+      statusCode: 400,
+      statusMessage: 'no-channel',
+    })
+    expect(create).not.toHaveBeenCalled()
   })
 })

@@ -1362,6 +1362,8 @@
     "create": "Skapa avisering",
     "active": "Aktiv",
     "delete": "Radera",
+    "noChannel": "Ingen kanal: den här varningen når dig inte någonstans.",
+    "emailAgain": "Få det via e-post",
     "enablePush": "Aktivera push-meddelanden",
     "pushGranted": "Aviseringar är aktiverade på den här enheten.",
     "pushDenied": "Aviseringstillstånd nekad.",

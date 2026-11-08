@@ -1362,6 +1362,8 @@
     "create": "Opprett varsel",
     "active": "Aktiv",
     "delete": "Slett",
+    "noChannel": "Ingen kanal: dette varselet når deg ikke noe sted.",
+    "emailAgain": "Få det på e-post",
     "enablePush": "Aktiver push-varsler",
     "pushGranted": "Varsler er aktivert på denne enheten.",
     "pushDenied": "Varslingstillatelse nektet.",

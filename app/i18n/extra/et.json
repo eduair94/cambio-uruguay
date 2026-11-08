@@ -1362,6 +1362,8 @@
     "create": "Loo märguanne",
     "active": "Aktiivne",
     "delete": "Kustuta",
+    "noChannel": "Kanalit pole: see teade ei jõua kuhugi sinuni.",
+    "emailAgain": "Saa see e-posti teel",
     "enablePush": "Luba push-teavitused",
     "pushGranted": "Märguanded on selles seadmes lubatud.",
     "pushDenied": "Teavitamise luba keelatud.",

@@ -1162,6 +1162,8 @@
   "alerts.create": "4144df5b",
   "alerts.active": "1f89134f",
   "alerts.delete": "5797ea6a",
+  "alerts.noChannel": "7077221a",
+  "alerts.emailAgain": "abd77be5",
   "alerts.enablePush": "0408d762",
   "alerts.pushGranted": "debf1c81",
   "alerts.pushDenied": "4fe1399e",

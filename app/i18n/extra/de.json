@@ -1362,6 +1362,8 @@
     "create": "Benachrichtigung erstellen",
     "active": "Aktiv",
     "delete": "Löschen",
+    "noChannel": "Kein Kanal: Diese Benachrichtigung erreicht Sie nirgends.",
+    "emailAgain": "Erhalten Sie es per E-Mail",
     "enablePush": "Push-Benachrichtigungen aktivieren",
     "pushGranted": "Benachrichtigungen sind auf diesem Gerät aktiviert.",
     "pushDenied": "Benachrichtigungsberechtigung verweigert.",

@@ -1362,6 +1362,8 @@
     "create": "Crea alerta",
     "active": "Actiu",
     "delete": "Suprimeix",
+    "noChannel": "Sense canal: aquesta alerta no t'arriba enlloc.",
+    "emailAgain": "Rebre-ho per correu electrònic",
     "enablePush": "Activa les notificacions push",
     "pushGranted": "Notificacions activades en aquest dispositiu.",
     "pushDenied": "Permís de notificació denegat.",

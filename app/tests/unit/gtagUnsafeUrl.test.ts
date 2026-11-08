@@ -20,6 +20,8 @@ describe('what analytics must never read in a page URL', () => {
       '?magic=1&apiKey=AIza&oobCode=abc&mode=signIn&lang=es',
       '?refLat=-34.9&refLng=-56.1&refLabel=Casa',
       '?link=https%3A%2F%2Fx',
+      // An unsubscribe link's token, should an error page ever render at that address.
+      '?token=abab',
     ])
       expect(hasAnalyticsUnsafeQuery(search), search).toBe(true)
     for (const search of ['', '?department=Montevideo', '?mode=budget', '?lang=en', '?q=ct'])

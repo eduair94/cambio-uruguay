@@ -1362,6 +1362,8 @@
     "create": "Creați o alertă",
     "active": "Activ",
     "delete": "Şterge",
+    "noChannel": "Niciun canal: această alertă nu ajunge nicăieri la tine.",
+    "emailAgain": "Primește-l prin e-mail",
     "enablePush": "Activează notificările push",
     "pushGranted": "Notificările sunt activate pe acest dispozitiv.",
     "pushDenied": "Permisiunea de notificare a fost refuzată.",

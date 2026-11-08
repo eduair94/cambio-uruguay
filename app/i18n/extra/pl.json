@@ -1362,6 +1362,8 @@
     "create": "Utwórz alert",
     "active": "Aktywny",
     "delete": "Usuwać",
+    "noChannel": "Brak kanału: to powiadomienie nie dotrze do Ciebie nigdzie.",
+    "emailAgain": "Otrzymaj e-mailem",
     "enablePush": "Włącz powiadomienia push",
     "pushGranted": "Powiadomienia są włączone na tym urządzeniu.",
     "pushDenied": "Odmowa udzielenia zgody na powiadomienie.",

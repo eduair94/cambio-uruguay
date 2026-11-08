@@ -1362,6 +1362,8 @@
     "create": "Izveidot brīdinājumu",
     "active": "Aktīvs",
     "delete": "Dzēst",
+    "noChannel": "Nav kanāla: šis brīdinājums nekur jūs nesasniedz.",
+    "emailAgain": "Saņemt to pa e-pastu",
     "enablePush": "Iespējot push paziņojumus",
     "pushGranted": "Paziņojumi ir iespējoti šajā ierīcē.",
     "pushDenied": "Paziņojumu atļauja liegta.",

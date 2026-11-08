@@ -1362,6 +1362,8 @@
     "create": "Tạo cảnh báo",
     "active": "Tích cực",
     "delete": "Xóa bỏ",
+    "noChannel": "Không có kênh: thông báo này sẽ không đến được với bạn ở bất kỳ đâu.",
+    "emailAgain": "Nhận qua email",
     "enablePush": "Bật thông báo đẩy",
     "pushGranted": "Thông báo đã được bật trên thiết bị này.",
     "pushDenied": "Quyền gửi thông báo bị từ chối.",

@@ -44,6 +44,8 @@ const copy = {
       'Esta suscripción ya no te enviará correos. Podés administrar tus otras alertas desde tu cuenta.',
     missing: 'Este enlace ya no está disponible',
     missingBody: 'Podés administrar tus suscripciones desde tu cuenta.',
+    unavailable: 'No pudimos procesar el enlace',
+    unavailableBody: 'Probá de nuevo en unos minutos: tu suscripción no cambió.',
     account: 'Administrar mis alertas',
   },
   en: {
@@ -55,6 +57,8 @@ const copy = {
       'This subscription will no longer send you emails. You can manage your other alerts in your account.',
     missing: 'This link is no longer available',
     missingBody: 'You can manage your subscriptions in your account.',
+    unavailable: 'We could not process this link',
+    unavailableBody: 'Please try again in a few minutes: your subscription did not change.',
     account: 'Manage my alerts',
   },
   pt: {
@@ -66,6 +70,8 @@ const copy = {
       'Esta assinatura não enviará mais emails. Você pode administrar seus outros alertas na sua conta.',
     missing: 'Este link não está mais disponível',
     missingBody: 'Você pode administrar suas assinaturas na sua conta.',
+    unavailable: 'Não foi possível processar o link',
+    unavailableBody: 'Tente novamente em alguns minutos: sua assinatura não mudou.',
     account: 'Administrar meus alertas',
   },
 }
@@ -73,14 +79,21 @@ const copy = {
 /** Also the page of the rate-alert unsubscribe (api/alerts/unsubscribe), with its own `action`. */
 export function rentalUnsubscribeHtml(
   locale: string,
-  state: 'confirm' | 'done' | 'missing',
+  state: 'confirm' | 'done' | 'missing' | 'unavailable',
   token = '',
   action = '/api/rental-alerts/unsubscribe'
 ): string {
   const lang = locale === 'en' || locale === 'pt' ? locale : 'es'
   const c = copy[lang]
-  const title = state === 'done' ? c.done : state === 'missing' ? c.missing : c.title
-  const body = state === 'done' ? c.doneBody : state === 'missing' ? c.missingBody : c.body
+  const title = { confirm: c.title, done: c.done, missing: c.missing, unavailable: c.unavailable }[
+    state
+  ]
+  const body = {
+    confirm: c.body,
+    done: c.doneBody,
+    missing: c.missingBody,
+    unavailable: c.unavailableBody,
+  }[state]
   const prefix = lang === 'es' ? '' : `/${lang}`
   const form =
     state === 'confirm' && validRentalUnsubscribeToken(token)

@@ -64,6 +64,14 @@ design: `docs/superpowers/specs/2026-06-17-firebase-auth-logged-in-value-design.
   so the alerts created before the link existed get one on their next email.
   GET only shows a confirmation; POST turns off that alert's email channel, needs
   no login and is idempotent. An alert left with no channel is paused.
+- **An alert needs a channel to be on**: creating one with none is refused (400
+  `no-channel`), and so is switching one on while it has none (409, checked in
+  the same `findOneAndUpdate`). The account panel shows such an alert as "sin
+  canal" with a button that turns email back on.
+- Both unsubscribe endpoints set their CSP before touching the database and answer
+  a database failure with their own 503 page: thrown, Nitro would log the URL
+  (token included) and Nuxt would render its full error page, GA and all, at that
+  address. `token` is also one of the parameters that keep GA from starting.
 
 ## Telegram account linking
 

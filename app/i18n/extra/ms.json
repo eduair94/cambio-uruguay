@@ -1362,6 +1362,8 @@
     "create": "Cipta makluman",
     "active": "Aktif",
     "delete": "Padam",
+    "noChannel": "Tiada saluran: amaran ini tidak sampai kepada anda di mana-mana sahaja.",
+    "emailAgain": "Dapatkannya melalui e-mel",
     "enablePush": "Dayakan pemberitahuan tolak",
     "pushGranted": "Pemberitahuan didayakan pada peranti ini.",
     "pushDenied": "Kebenaran pemberitahuan ditolak.",

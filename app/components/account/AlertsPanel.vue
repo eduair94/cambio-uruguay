@@ -77,7 +77,13 @@
           hide-details
         />
         <VSpacer />
-        <VBtn color="primary" :loading="creating" @click="create">{{ $t('alerts.create') }}</VBtn>
+        <VBtn
+          color="primary"
+          :loading="creating"
+          :disabled="!form.push && !form.email && !form.telegram"
+          @click="create"
+          >{{ $t('alerts.create') }}</VBtn
+        >
       </div>
     </VCard>
 
@@ -93,16 +99,34 @@
           {{ a.kind === 'bestBuy' ? $t('alerts.bestBuy') : $t('alerts.bestSell') }}
           {{ a.op }} {{ a.target }}
         </VListItemTitle>
-        <VListItemSubtitle>
+        <VListItemSubtitle v-if="hasChannel(a)">
           {{
-            [a.channels.push ? $t('alerts.push') : '', a.channels.email ? $t('alerts.email') : '']
+            [
+              a.channels.push ? $t('alerts.push') : '',
+              a.channels.email ? $t('alerts.email') : '',
+              a.channels.telegram ? $t('tg.telegram') : '',
+            ]
               .filter(Boolean)
               .join(' · ')
           }}
         </VListItemSubtitle>
+        <!-- The email unsubscribe link can leave an alert with no channel: say so, offer email back. -->
+        <VListItemSubtitle v-else class="d-flex align-center flex-wrap ga-1">
+          {{ $t('alerts.noChannel') }}
+          <VBtn
+            variant="text"
+            size="small"
+            color="link"
+            class="px-1"
+            :loading="restoring === a._id"
+            @click="emailAgain(a)"
+            >{{ $t('alerts.emailAgain') }}</VBtn
+          >
+        </VListItemSubtitle>
         <template #append>
           <VSwitch
             :model-value="a.active"
+            :disabled="!hasChannel(a)"
             density="compact"
             hide-details
             color="primary"
@@ -183,12 +207,42 @@ async function create() {
   }
 }
 
+const hasChannel = (a: any) =>
+  Boolean(a.channels?.push || a.channels?.email || a.channels?.telegram)
+
 async function toggle(a: any, value: boolean) {
   a.active = value
-  await authFetch(`/api/me/alerts/${a._id}`, {
-    method: 'PATCH',
-    body: { active: value },
-  }).catch(() => {})
+  try {
+    await authFetch(`/api/me/alerts/${a._id}`, { method: 'PATCH', body: { active: value } })
+  } catch {
+    // Refused (409 no-channel) or failed: the switch goes back to what the alert really is.
+    a.active = !value
+  }
+}
+
+const restoring = ref<string | null>(null)
+
+/** Turns email back on (and the alert with it) after the unsubscribe link left it without a channel. */
+async function emailAgain(a: any) {
+  restoring.value = a._id
+  try {
+    const updated = await authFetch<any>(`/api/me/alerts/${a._id}`, {
+      method: 'PATCH',
+      body: {
+        active: true,
+        channels: {
+          push: Boolean(a.channels?.push),
+          email: true,
+          telegram: Boolean(a.channels?.telegram),
+        },
+      },
+    })
+    if (updated) Object.assign(a, updated)
+  } catch {
+    // Unchanged: the row keeps offering it.
+  } finally {
+    restoring.value = null
+  }
 }
 
 async function remove(id: string) {

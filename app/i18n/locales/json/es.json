@@ -1362,6 +1362,8 @@
     "create": "Crear alerta",
     "active": "Activa",
     "delete": "Eliminar",
+    "noChannel": "Sin canal: esta alerta no te llega por ningún lado.",
+    "emailAgain": "Recibirla por correo",
     "enablePush": "Activar notificaciones push",
     "pushGranted": "Notificaciones activadas en este dispositivo.",
     "pushDenied": "Permiso de notificaciones denegado.",
