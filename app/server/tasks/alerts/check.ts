@@ -5,6 +5,7 @@ import { fetchCurrentRates, bestRateFor } from '../../utils/rates'
 import { sendPush } from '../../utils/push'
 import { sendMail } from '../../utils/mailer'
 import { sendTelegram } from '../../utils/telegram'
+import { adminAuth } from '../../utils/firebaseAdmin'
 import { runAlertsCheck } from '../../utils/alertRunner'
 
 export default defineTask({
@@ -17,8 +18,16 @@ export default defineTask({
       bestRate: (rows, currency, kind, origin) => bestRateFor(rows, currency, kind, origin),
       getUserContacts: async uid => {
         const u = await UserModel.findById(uid).lean().exec()
+        // users.email is copied from the session whether Firebase verified it or not, and an
+        // email/password account can be opened with anyone's address: mail only a verified one
+        // (privacy audit, 2026-11-08). The search alerts already did (rentalAlertDelivery.ts).
+        const account = u?.email
+          ? await adminAuth()
+              .getUser(uid)
+              .catch(() => null)
+          : null
         return {
-          email: u?.email ?? null,
+          email: account?.emailVerified && !account.disabled ? (u?.email ?? null) : null,
           fcmTokens: u?.fcmTokens ?? [],
           telegramChatId: u?.telegramChatId ?? null,
         }

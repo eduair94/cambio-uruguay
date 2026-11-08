@@ -75,7 +75,7 @@
               <li>
                 <strong>Alertas de cotización (opcional):</strong> la moneda, la casa, el precio que
                 esperás y los canales que elegís (notificación, correo o Telegram), hasta que borres
-                la alerta.
+                la alerta. Por correo sólo te escribimos si tu dirección está verificada.
               </li>
               <li>
                 <strong>Tu lista (opcional):</strong> la zona, las casas, las tarjetas y las monedas
