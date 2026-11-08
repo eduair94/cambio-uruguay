@@ -310,7 +310,10 @@ describe("Casasweb transient failures", () => {
     });
     const result = await harvestCasasweb("fast", 40);
     expect(result.ok).toBe(false);
-    expect(result.note).toContain("3 búsquedas fallidas: tarjetas irreconocibles ×3");
+    // The portal answered every time: one read per search, no pause, no second read of the same page.
+    expect(vi.mocked(fetchText)).toHaveBeenCalledTimes(9);
+    expect(result.note).toContain("9 búsquedas fallidas: tarjetas irreconocibles ×9");
+    expect(result.note).not.toContain("tras una pausa");
   });
 
   // 2026-11-03 to 2026-11-08: the cards still parsed, with the surface in the barrio's place, so the
@@ -322,7 +325,42 @@ describe("Casasweb transient failures", () => {
     });
     const result = await harvestCasasweb("fast", 40);
     expect(result).toMatchObject({ ok: false, complete: false, listings: [] });
-    expect(result.note).toContain("3 búsquedas fallidas: tarjetas irreconocibles ×3");
+    expect(vi.mocked(fetchText)).toHaveBeenCalledTimes(9);
+    expect(result.note).toContain("9 búsquedas fallidas: tarjetas irreconocibles ×9");
     expect([...sourcesAllowingExpiry([result], "full")]).toEqual([]);
+  });
+
+  // Review of 2026-11-08: a search with odd cards fails the same way every time it is read, so it
+  // cannot be what the three-failures stop is for (a portal that stopped answering). Counted, three
+  // adjacent ones — one department's offices, shops and depots — cost every department after them.
+  it("keeps reading the sweep after three adjacent searches whose cards it cannot read", async () => {
+    const odd = new Set(["o", "l", "d"]);
+    const requests = serve();
+    const answer = vi.mocked(fetchText).getMockImplementation()!;
+    vi.mocked(fetchText).mockImplementation(async (url, options) => {
+      const { department, type } = searchOf(url);
+      if (department === 1 && odd.has(type)) {
+        requests.push({ department, type, page: 1 });
+        return searchHtml({ department, type, total: 2, cards: [{ id: type.charCodeAt(0) * 10 + 1, markup: "no-badge" }, { id: type.charCodeAt(0) * 10 + 2, markup: "no-badge" }] });
+      }
+      return answer(url, options);
+    });
+    const result = await harvestCasasweb("full", 40);
+    // Each odd search is read once, and every search after them is still asked for.
+    for (const type of odd) expect(requests.filter(request => request.department === 1 && request.type === type)).toHaveLength(1);
+    expect(requests.some(request => request.department === 19 && request.type === "g")).toBe(true);
+    expect(result).toMatchObject({ ok: true, complete: false });
+    expect(result.listings.map(row => row.listingId)).toEqual(["casasweb:CW221797"]);
+    expect(result.note).toContain("3 búsquedas fallidas: tarjetas irreconocibles ×3");
+    expect(result.note).toContain("departamentos consultados: 19");
+    expect([...sourcesAllowingExpiry([result], "full")]).toEqual([]);
+  });
+
+  it("does not let a lone card that names no barrio fail its search", async () => {
+    serve(() => ({ total: 1, cards: [{ id: 1, markup: "no-badge" }] }));
+    const result = await harvestCasasweb("full", 40);
+    expect(result).toMatchObject({ ok: true, complete: true });
+    expect(result.listings.find(row => row.listingId === "casasweb:CW1")).toMatchObject({ neighborhood: "", area: 40 });
+    expect(result.note).not.toMatch(/fallid/);
   });
 });

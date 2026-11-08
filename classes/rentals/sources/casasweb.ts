@@ -134,10 +134,12 @@ export function casaswebCardArea(card: Pick<CasaswebCard, "builtArea" | "totalAr
 /**
  * Cards this parser no longer understands: they parse, but fewer than half of them name a barrio
  * that can be one. The count-only check let the 2026-11-03 change publish ~1.350 adverts in "40 m2"
- * barrios for five days without a word; this one fails the search, so the run note says so.
+ * barrios for five days without a word; this one fails the search, so the run note says so. One
+ * card alone proves nothing about the markup (a last page, a type whose badge names no zone): it is
+ * published without a barrio, and the search's other pages, or the next search, tell.
  */
 export function casaswebCardsUnrecognised(cardCount: number, placedCount: number): boolean {
-  return cardCount > 0 && placedCount * 2 < cardCount;
+  return cardCount >= 2 && placedCount * 2 < cardCount;
 }
 
 export interface CasaswebPage {
@@ -227,8 +229,12 @@ export function parseCasaswebPage(html: string, observedAt = new Date().toISOStr
 }
 
 interface CasaswebSearch { department: number; type: string; retry: boolean }
-/** `failure` is why the search could not be read to its end; `incomplete` says it was read, but not all of it. */
-interface CasaswebSearchRead { failure: string | null; incomplete: boolean }
+/**
+ * `failure` is why the search could not be read to its end; `incomplete` says it was read, but not
+ * all of it. `cards`: the portal answered with its search page, and the cards on it are what this
+ * parser cannot read — a markup change, not an outage (see `harvestCasasweb`).
+ */
+interface CasaswebSearchRead { failure: string | null; incomplete: boolean; cards?: true }
 
 const count = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
 
@@ -269,8 +275,9 @@ export async function harvestCasasweb(mode: "full" | "fast", usdUyu: number): Pr
       // the 2026-10-07 redesign kept the count and the selects, and this read as "0 avisos". And a
       // page whose cards parse but name no barrio has moved its fields: on 2026-11-03 the surface
       // landed where the barrio was, and that page's adverts are not written.
-      if (parsed.total > 0 && parsed.cardCount === 0) return { failure: "tarjetas irreconocibles", incomplete: true };
-      if (casaswebCardsUnrecognised(parsed.cardCount, parsed.placedCount)) return { failure: "tarjetas irreconocibles", incomplete: true };
+      if ((parsed.total > 0 && parsed.cardCount === 0) || casaswebCardsUnrecognised(parsed.cardCount, parsed.placedCount)) {
+        return { failure: "tarjetas irreconocibles", incomplete: true, cards: true };
+      }
       pages++;
       if (initialTotal === null) initialTotal = parsed.total;
       // A live search is not a snapshot. Do not expire absent adverts if its inventory changes.
@@ -294,6 +301,12 @@ export async function harvestCasasweb(mode: "full" | "fast", usdUyu: number): Pr
   // comes as soon as three searches fail in a row — the hourly pass opens with its only three
   // Montevideo searches — or at the end of the sweep for isolated failures. Three failures in a
   // row after the pause mean the portal is down, and the run says so.
+  //
+  // Cards this parser cannot read ("tarjetas irreconocibles") are neither: the portal answered, and
+  // the same page after a pause reads the same. Such a search fails at once, without a second read,
+  // and does not count toward the stop — it resets it, as any answer does. Counted, three adjacent
+  // searches with odd cards (one department's offices, shops and depots) would cost every
+  // department after them; a markup change on every page still fails every search, and says so.
   const queue: CasaswebSearch[] = departments.flatMap((department) => types.map((type) => ({ department, type, retry: false })));
   const secondChance: CasaswebSearch[] = [];
   let paused = false;
@@ -313,6 +326,12 @@ export async function harvestCasasweb(mode: "full" | "fast", usdUyu: number): Pr
       consecutiveFailures = 0;
       if (read.incomplete) incomplete = true;
       if (search.retry) recovered++;
+      continue;
+    }
+    if (read.cards) {
+      consecutiveFailures = 0;
+      failed++; incomplete = true;
+      reasons.set(read.failure, (reasons.get(read.failure) ?? 0) + 1);
       continue;
     }
     if (!paused) secondChance.push({ ...search, retry: true });

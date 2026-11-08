@@ -138,7 +138,8 @@ describe("Casasweb's cards since 2026-11", () => {
   });
 
   it("never takes a surface for a barrio, and keeps the localities whose name opens with a number", () => {
-    for (const junk of ["40 m2 40 m2", "60 m² 60 m²", "10 m2", "45 mts", "4 H", "1 ha", "120", "Uruguay", ""]) {
+    // The app-side barrio filter mirrors exactly these cases (docs/app/RENTALS.md, 2026-11-08).
+    for (const junk of ["40 m2 40 m2", "60 m² 60 m²", "10 m2", "45 mts", "45 mts.", "60 metros", "4 H", "4H", "1 ha", "2 has", "3 hectáreas", "120", "Uruguay", ""]) {
       expect(plausibleCasaswebNeighborhood(junk), junk).toBe(false);
     }
     for (const place of ["25 de Mayo", "18 de Julio", "Pocitos Nuevo", "Cordón", "Maldonado"]) {
@@ -155,7 +156,11 @@ describe("Casasweb's cards since 2026-11", () => {
     expect(casaswebCardsUnrecognised(parsed.cardCount, parsed.placedCount)).toBe(true);
     expect(casaswebCardsUnrecognised(4, 2)).toBe(false);
     expect(casaswebCardsUnrecognised(3, 1)).toBe(true);
+    expect(casaswebCardsUnrecognised(2, 0)).toBe(true);
+    expect(casaswebCardsUnrecognised(2, 1)).toBe(false);
     expect(casaswebCardsUnrecognised(0, 0)).toBe(false);
+    // One card alone proves nothing about the markup: it goes out without a barrio.
+    expect(casaswebCardsUnrecognised(1, 0)).toBe(false);
   });
 });
 

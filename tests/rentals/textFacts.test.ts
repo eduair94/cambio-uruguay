@@ -124,9 +124,55 @@ describe("gastos comunes a description states", () => {
     expect(readCommonExpensesFromText("Gastos comunes $5.000. Sin gastos comunes para el garaje.", pesos, usdUyu).reason).toBe("ambiguous");
     expect(readCommonExpensesFromText("Precio con gastos comunes incluidos", pesos, usdUyu).reason).toBe("included");
     expect(readCommonExpensesFromText("GC $4.000 incluidos en el precio", pesos, usdUyu).reason).toBe("included");
-    expect(readCommonExpensesFromText("Gastos comunes $48.000 anuales", pesos, usdUyu).reason).toBe("yearly");
+    expect(readCommonExpensesFromText("Gastos comunes $48.000 anuales", pesos, usdUyu).reason).toBe("not-monthly");
     expect(readCommonExpensesFromText("Hermoso apartamento con vista al mar", pesos, usdUyu)).toEqual({ reading: null, reason: "silent" });
     expect(readCommonExpensesFromText("", pesos, usdUyu).reason).toBe("silent");
+  });
+
+  // Review of 2026-11-08 (scratchpad probe over 26 phrasings): each of these was read as a month of
+  // gastos comunes, and would have been added to the rent.
+  it("knows gastos comunes are already in the rent, however the text punctuates or spells it", () => {
+    for (const text of [
+      "Gastos comunes $ 6.000 (incluidos en el precio)",
+      "Gastos comunes: $ 5.000, incluidos en el alquiler",
+      "Gastos comunes $5.000 - incluidos",
+      "Gastos comunes $ 4.000 incluídos",
+      "GASTOS COMUNES $ 4.000 INCLUÍDOS",
+      "Gastos comunes: incluidos",
+      "Precio $ 30.000, incluidos los gastos comunes",
+    ]) expect(readCommonExpensesFromText(text, pesos, usdUyu).reason, text).toBe("included");
+    // VAT included in the rent says nothing about them, and "incluye agua caliente" is what they pay for.
+    expect(commonExpensesFromText("Gastos comunes $ 4.000. IVA incluido en el alquiler", pesos, usdUyu)?.commonExpenses).toBe(4_000);
+    expect(commonExpensesFromText("Gastos comunes aprox. $ 4.500 (incluye agua caliente)", pesos, usdUyu)?.commonExpenses).toBe(4_500);
+  });
+
+  it("never takes the rent and the gastos comunes together for the gastos comunes", () => {
+    expect(readCommonExpensesFromText("Precio total con gc $ 30.000", { price: 26_000, currency: "UYU" }, usdUyu).reason).toBe("included");
+    expect(readCommonExpensesFromText("Alquiler + GC: $ 33.000", { price: 28_000, currency: "UYU" }, usdUyu).reason).toBe("included");
+    expect(readCommonExpensesFromText("Total con gastos comunes: $ 35.000", pesos, usdUyu).reason).toBe("included");
+    // The rent itself under the label is no month of gastos comunes either.
+    expect(readCommonExpensesFromText("Alquiler $ 30.000 - Gastos comunes $ 30.000", pesos, usdUyu).reason).toBe("implausible");
+    // A figure of their own after the rent's is theirs, and so is one after a list of what is paid.
+    expect(commonExpensesFromText("Alquiler $ 25.000 más gastos comunes $ 5.000", pesos, usdUyu)?.commonExpenses).toBe(5_000);
+    expect(commonExpensesFromText("Se paga alquiler + gastos comunes por mes adelantado. Gastos comunes: $ 4.000", pesos, usdUyu)?.commonExpenses).toBe(4_000);
+  });
+
+  it("reads a month's figure only, never a quarter's or any longer period's", () => {
+    for (const text of [
+      "Gastos comunes $ 12.000 por trimestre",
+      "Gastos comunes $ 9.000 bimestrales",
+      "Gastos comunes: $ 18.000 (semestral)",
+      "Gastos comunes $ 6.000 cada 3 meses",
+    ]) expect(readCommonExpensesFromText(text, pesos, usdUyu).reason, text).toBe("not-monthly");
+    expect(commonExpensesFromText("Gastos comunes $ 2.400 al mes", pesos, usdUyu)?.commonExpenses).toBe(2_400);
+    expect(commonExpensesFromText("G.C. $ 4.200 mensuales", pesos, usdUyu)?.commonExpenses).toBe(4_200);
+  });
+
+  it("does not take modest gastos comunes for none", () => {
+    expect(readCommonExpensesFromText("Ideal para quien busca vivir sin gastos comunes elevados", pesos, usdUyu)).toEqual({ reading: null, reason: "silent" });
+    expect(readCommonExpensesFromText("No tiene gastos comunes tan altos como los de la zona", pesos, usdUyu).reason).toBe("silent");
+    // "sin gastos comunes" alone still means a building without them.
+    expect(commonExpensesFromText("Apartamento tipo casa, sin gastos comunes.", pesos, usdUyu)).toEqual({ commonExpenses: 0, commonExpensesCurrency: null });
   });
 
   it("keeps only what can be a month of gastos comunes for that rent, in pesos at the run's rate", () => {

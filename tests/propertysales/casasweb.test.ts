@@ -21,21 +21,22 @@ function page(options: { operation?: string; saleLabel?: string; title?: string;
 const saleHeading = "<h2 class='h3 cw-precio'><span class='cw-op cw-op-venta'>Venta</span> USD 120.000</h2>";
 // A sale card as served from 2026-11 (venta/apartamentos/montevideo, 2026-11-08): type and barrio in
 // a badge, the surfaces where the barrio was. Read the old way its type was "edificados:area total:"
-// and every card was dropped. `badge: null` is the same card without its badge.
-function page2026(options: { badge?: string | null; surfaces?: string } = {}): string {
+// and every card was dropped. `badge: null` is the same card without its badge; `ids` repeats it.
+function page2026(options: { badge?: string | null; surfaces?: string; ids?: number[] } = {}): string {
   const badge = options.badge === undefined ? "Apartamento - Pocitos" : options.badge;
-  return `<html><body><small class="mb-4">1350 Resultados<br></small><form method="post" action="#" id="aspnetForm">
-    <select id="ctl00_content_drpNegocio" name="ctl00$content$drpNegocio"><option selected="selected" value="V">Venta</option></select>
-    <div class="item-grid"><div class="card"><a href="/VENTA_GAYOL_PROPIEDADES_APARTAMENTO_POCITOS_MONTEVIDEO_PROYECTO_CW234567">
+  const card = (id: number) => `<div class="item-grid"><div class="card"><a href="/VENTA_GAYOL_PROPIEDADES_APARTAMENTO_POCITOS_MONTEVIDEO_PROYECTO_CW${id}">
       <img src="https://casasweb.com/fotos/3252153s.jpg" class="card-img fondo">
       ${badge === null ? "" : `<span class="badge-zona-resultado">${badge}</span>`}
       <div class="card-body item-info"><div class="d-flex justify-content-between tipo-propiedad-zona mb-1">
         <small>${options.surfaces ?? "<b>Edificados:</b> 45 m<sup>2</sup><br><b>Area Total:</b> 56 m<sup>2</sup>"}</small>
-        <small class="text-right text-end"><strong>CW234567</strong><br>Montevideo</small></div>
+        <small class="text-right text-end"><strong>CW${id}</strong><br>Montevideo</small></div>
       <div class="item-title"><h3>Oportunidad Apartamento 1 Dormitorio Al Frente de Soca, Con Terraza.</h3></div>
       <div class="card-text small mb-2 text-center item-det"><b>1 Dormitorio</b> <b>Proyecto</b></div>
       <div class="item-precio row justify-content-center"><div class="col precio"><h3 class="my-1">VENTA</h3><h2 class="my-0"><small>USD</small> 188.800</h2></div></div></div>
-    </a><div class="card-footer text-center"><h3 class="my-0">Gayol Propiedades </h3></div></div></div>
+    </a><div class="card-footer text-center"><h3 class="my-0">Gayol Propiedades </h3></div></div></div>`;
+  return `<html><body><small class="mb-4">1350 Resultados<br></small><form method="post" action="#" id="aspnetForm">
+    <select id="ctl00_content_drpNegocio" name="ctl00$content$drpNegocio"><option selected="selected" value="V">Venta</option></select>
+    ${(options.ids ?? [234567]).map(card).join("")}
   </form></body></html>`;
 }
 
@@ -132,8 +133,24 @@ describe("independent Casasweb residential sales source", () => {
     expect(house).toMatchObject({ propertyType: "casa", neighborhood: "Carrasco", area: null });
   });
   it("counts a page whose cards name no barrio as a failed page, never as an empty one", async () => {
-    expect(readCasaswebSalePage(page2026({ badge: null }), NOW)).toBeNull();
-    const result = await harvestCasaswebSales({ maxPages: 120, now: () => new Date(NOW), fetchPage: async () => page2026({ badge: null }) });
-    expect(result).toMatchObject({ ok: false, failedPages: 3, pagesRead: 0, listings: [] });
+    const unplaced = page2026({ badge: null, ids: [234567, 234568] });
+    expect(readCasaswebSalePage(unplaced, NOW)).toBeNull();
+    // Every search answers with them: each is read once and fails, and nothing is published.
+    const result = await harvestCasaswebSales({ maxPages: 120, now: () => new Date(NOW), fetchPage: async () => unplaced });
+    expect(result).toMatchObject({ ok: false, failedPages: 38, pagesRequested: 38, pagesRead: 0, listings: [] });
+    // One card alone proves nothing about the markup.
+    expect(readCasaswebSalePage(page2026({ badge: null }), NOW)).toMatchObject({ listings: [] });
+  });
+
+  it("keeps sweeping after three adjacent searches whose cards it cannot read", async () => {
+    const urls: string[] = [];
+    const result = await harvestCasaswebSales({ maxPages: 120, now: () => new Date(NOW), fetchPage: async (url) => {
+      urls.push(url);
+      return urls.length <= 3 ? page2026({ badge: null, ids: [urls.length * 10, urls.length * 10 + 1] }) : page({ id: 1_000 + urls.length });
+    } });
+    // Counted as an outage they would have ended the sweep at the third page.
+    expect(result).toMatchObject({ ok: true, failedPages: 3, pagesRequested: 38, pagesRead: 35 });
+    expect(result.listings).toHaveLength(35);
+    expect(urls.slice(0, 4)).toEqual([casaswebSaleUrl(1, "a"), casaswebSaleUrl(1, "c"), casaswebSaleUrl(2, "a"), casaswebSaleUrl(2, "c")]);
   });
 });

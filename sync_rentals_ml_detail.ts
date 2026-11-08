@@ -14,6 +14,11 @@
 // pedidos —como currency-autos-detail (:11), que lee de la misma IP—; por eso esta corre a los :35.
 // Cinco fallas seguidas cortan la corrida: un portal que empieza a negarse no se insiste.
 //
+// Y una corrida cuyas relecturas pierden lo que las lecturas anteriores decían (la mitad de 20 o más
+// sin el pin, las fotos, los dormitorios o los gastos comunes que tenían guardados) NO se guarda y sale
+// con 1: es la página de ML la que cambió, no los avisos, y guardarla borraría esos campos
+// (`mlRereadRefusal`). Lo que ya escribió en `rentallistings` sólo completó campos vacíos.
+//
 // --dry-run lee y muestra, sin escribir.
 import "dotenv/config";
 import { appConnection, appDbConfigured } from "./classes/appdb";
@@ -22,6 +27,7 @@ import {
   mlDetailExpenses,
   mlDetailTargets,
   mlDetailTextEnabled,
+  mlRereadRefusal,
   parseMlOfficialStore,
   parseMlRentalBedrooms,
   parseMlRentalDescription,
@@ -36,6 +42,7 @@ import {
   writeMlDetailImages,
   writeMlDetailPublishedAt,
   writeMlDetailSeller,
+  type MlDetailStated,
   type MlRentalDetail,
 } from "./classes/rentals/mlDetail";
 import { writeDetailPin } from "./classes/rentals/detailPins";
@@ -72,6 +79,8 @@ async function main(): Promise<void> {
   const gapMs = number("RENTALS_ML_DETAIL_GAP_MS", 2_000);
   const deadline = Date.now() + number("RENTALS_ML_DETAIL_MINUTES", 10) * 60_000;
   const rows: MlRentalDetail[] = [];
+  // Each read beside what its stored row stated, for the reread guard after the loop.
+  const reads: Array<{ before?: MlDetailStated; after: MlRentalDetail }> = [];
   let consecutiveFailures = 0;
   for (const target of targets) {
     if (Date.now() >= deadline) { summary.note = "presupuesto de tiempo agotado"; break; }
@@ -95,7 +104,7 @@ async function main(): Promise<void> {
       const description = parseMlRentalDescription(html);
       const publishedAt = parseMlRentalPublishedAgo(html, readAt);
       const officialStore = parseMlOfficialStore(html);
-      rows.push({
+      const row: MlRentalDetail = {
         listingId: target.listingId,
         readAt,
         amount: stated?.amount ?? null,
@@ -109,7 +118,9 @@ async function main(): Promise<void> {
         publishedAt,
         officialStore,
         ok: true,
-      });
+      };
+      rows.push(row);
+      reads.push({ before: target.stated, after: row });
       if (publishedAt) {
         summary.publishedAt++;
         if (!dryRun && (await writeMlDetailPublishedAt(target, publishedAt))) summary.publishedAtWritten++;
@@ -149,13 +160,19 @@ async function main(): Promise<void> {
     }
     await sleep(gapMs);
   }
-  if (!dryRun) await saveMlDetails(rows);
+  // Nothing of this run is saved when its rereads blank what earlier reads stated: the first reads
+  // of the same run come from the same changed page, and unsaved they are simply read again.
+  const refusal = mlRereadRefusal(reads);
+  if (refusal) summary.note = [`nada guardado, la ficha de Mercado Libre cambió: ${refusal}`, summary.note].filter(Boolean).join("; ");
+  if (!dryRun && !refusal) await saveMlDetails(rows);
   const stored = dryRun ? 0 : await appConnection().collection(ML_DETAIL_COLLECTION).countDocuments({ amount: { $gt: 0 } });
   const pins = dryRun ? 0 : await appConnection().collection(ML_DETAIL_COLLECTION).countDocuments({ latitude: { $type: "number" } });
   const photos = dryRun ? 0 : await appConnection().collection(ML_DETAIL_COLLECTION).countDocuments({ "images.0": { $exists: true } });
   // How far the one reread of every page for its text has gone (~240 more an hour).
   const texts = dryRun ? 0 : await appConnection().collection(ML_DETAIL_COLLECTION).countDocuments({ description: { $exists: true } });
   console.log(`[rentals-ml-detail] ${JSON.stringify({ ...summary, dryRun, withExpensesStored: stored, withPinStored: pins, withImagesStored: photos, withTextReadStored: texts })}`);
+  // Exit 1, so the failed run shows in pm2 and the next one reads the same pages again.
+  if (refusal && !dryRun) throw new Error(`relecturas sin guardar: ${refusal}`);
 }
 
 main()

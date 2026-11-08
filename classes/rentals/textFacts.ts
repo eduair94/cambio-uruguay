@@ -93,17 +93,43 @@ const GC_TEXT_SOURCES: ReadonlySet<RentalSource> = new Set<RentalSource>(["infoc
 const GC_LABEL = String.raw`(?:gastos\s+comunes|gastos\s+c\.?|\bg\.?\s?c\b\.?|expensas)`;
 /** The figure right after the label: "GC aprox. $6.000", "Gastos comunes: $U 11.000.-", "gastos comunes ($4.000)". */
 const GC_FIGURE = String.raw`\s*(?:de\s+|aprox\.?\s*)?[:=]?\s*\(?\s*(?:u\$s|us\$|usd|\$\s*u?)?\s*\d[\d.,]*(?:\.?-)?\s*\)?\s*`;
-const INCLUDED = String.raw`(?:est[aá]n\s+|van\s+|ya\s+)?incluid[oa]s?`;
+/** What stands between a figure (or the label) and the word that qualifies it: "$ 6.000 (incluidos", "$5.000 - incluidos", ": incluidos". */
+const GC_GAP = String.raw`[\s,.;:()\-–—]*`;
+/** "incluidos", "incluídos" (a common spelling), "ya incluidos", "están incluidos". */
+const INCLUDED = String.raw`(?:est[aá]n\s+|van\s+|ya\s+)?inclu[ií]d[oa]s?`;
 /**
- * "Gastos comunes incluidos", "incluye los GC", "GC $4.000 incluidos en el precio": the rent already
- * holds them, so a figure added to it would count them twice.
+ * "Gastos comunes incluidos", "incluye los GC", "GC $4.000 (incluidos en el precio)": the rent already
+ * holds them, so a figure added to it would count them twice. And "Precio total con GC $ 30.000",
+ * "Alquiler + GC: $ 33.000": that figure is the rent and the gastos comunes together, never the
+ * gastos comunes alone.
  */
 const GC_INCLUDED = new RegExp(
-  String.raw`${GC_LABEL}\s*${INCLUDED}|\bincluyen?\s+(?:los\s+)?${GC_LABEL}|${GC_LABEL}${GC_FIGURE}${INCLUDED}`,
+  [
+    String.raw`${GC_LABEL}${GC_GAP}${INCLUDED}`,
+    String.raw`\bincluyen?\s+(?:los\s+)?${GC_LABEL}`,
+    String.raw`\b${INCLUDED}\s+(?:los\s+)?${GC_LABEL}`,
+    String.raw`${GC_LABEL}${GC_FIGURE}${GC_GAP}${INCLUDED}`,
+    String.raw`\b(?:precio|alquiler|valor|total)(?:\s+(?:total|final))?\s*(?:\+|m[aá]s|con|incluyendo)\s*(?:los\s+)?${GC_LABEL}${GC_FIGURE}`,
+  ].join("|"),
   "i"
 );
-/** "Gastos comunes $48.000 anuales": a year's figure, never a month's. */
-const GC_YEARLY = new RegExp(String.raw`${GC_LABEL}${GC_FIGURE}(?:anual(?:es)?|al\s+a[ñn]o|por\s+a[ñn]o|x\s+a[ñn]o)\b`, "i");
+/**
+ * "Gastos comunes $48.000 anuales", "$ 12.000 por trimestre", "$ 9.000 bimestrales", "cada 3 meses":
+ * the figure of a longer period, never a month's. Above the rent the band below would catch it; a
+ * quarter of a cheap building's gastos comunes is not.
+ */
+const GC_PERIOD = String.raw`(?:anual(?:es)?|(?:bi|tri|cuatri|se)mestral(?:es)?|(?:al|por|x|cada)\s+(?:a[ñn]o|(?:bi|tri|cuatri|se)mestre)|cada\s+(?:\d{1,2}|dos|tres|cuatro|seis|doce)\s+meses)`;
+const GC_NOT_MONTHLY = new RegExp(String.raw`${GC_LABEL}${GC_FIGURE}${GC_GAP}${GC_PERIOD}(?![a-záéíóúñ])`, "i");
+/**
+ * "Ideal para vivir sin gastos comunes elevados", "no tiene gastos comunes tan altos": a building with
+ * modest ones, not one without them. The phrase says nothing about the figure, so it is taken out
+ * before the amounts are read; "sin gastos comunes" on its own still means none.
+ */
+const GC_QUALIFIED_NONE = new RegExp(
+  String.raw`\b(?:sin|no\s+(?:paga|pagas|tiene|abona)|libre\s+de)\s+(?:gastos\s+comunes|gc|expensas)\s+(?:(?:tan|muy|demasiado)\s+)?` +
+    String.raw`(?:alt[oa]s|alt[ií]sim[oa]s|elevad[oa]s|car[oa]s|car[ií]sim[oa]s|excesiv[oa]s|abusiv[oa]s|exorbitantes|importantes|grandes|enormes)(?![a-záéíóúñ])`,
+  "gi"
+);
 
 export interface CommonExpensesReading {
   /** 0 = the description says there are none ("sin gastos comunes"). */
@@ -114,13 +140,14 @@ export interface CommonExpensesReading {
 
 /** Why a description yields a figure or not: the hand-labelled sample counts each reason. */
 export type CommonExpensesReason =
-  | "stated" | "none" | "silent" | "included" | "yearly" | "ambiguous" | "unmarked" | "implausible" | "conditional" | "disputed";
+  | "stated" | "none" | "silent" | "included" | "not-monthly" | "ambiguous" | "unmarked" | "implausible" | "conditional" | "disputed";
 
 /**
  * What the advert's own description says its gastos comunes are, or why it says nothing usable.
- * Precision first: two different figures, "incluidos", a yearly figure, a bare number beside a dollar
- * rent (pesos or dollars?) and a figure under $ 200 or above the rent (the same band as Mercado
- * Libre's spec table, in pesos at the run's rate) all abstain. The rent itself is never read here.
+ * Precision first: two different figures, "incluidos" (or a total with them), the figure of a year,
+ * a quarter or any period but a month, a bare number beside a dollar rent (pesos or dollars?), and a
+ * figure under $ 200, above the rent or equal to it (the same band as Mercado Libre's spec table, in
+ * pesos at the run's rate) all abstain. The rent itself is never read here.
  *
  * The zone statistics read the same words with their own rules (`zoneOwnCommonExpenses`,
  * propertyzones/project.ts), and they have the last word: "sin gastos comunes los primeros 6 meses"
@@ -135,8 +162,8 @@ export function readCommonExpensesFromText(
   const text = String(description || "");
   if (!text.trim()) return { reading: null, reason: "silent" };
   if (GC_INCLUDED.test(text)) return { reading: null, reason: "included" };
-  if (GC_YEARLY.test(text)) return { reading: null, reason: "yearly" };
-  const amounts = captionAmounts(text);
+  if (GC_NOT_MONTHLY.test(text)) return { reading: null, reason: "not-monthly" };
+  const amounts = captionAmounts(text.replace(GC_QUALIFIED_NONE, " "));
   if (amounts.commonExpensesAmbiguous) return { reading: null, reason: "ambiguous" };
   if (amounts.commonExpenses === null) return { reading: null, reason: "silent" };
   if (amounts.commonExpenses === 0) {
@@ -150,7 +177,10 @@ export function readCommonExpensesFromText(
     offer,
     usdUyu
   );
-  if (!plausible) return { reading: null, reason: "implausible" };
+  // The rent itself, repeated under the label ("Alquiler $ 30.000 - Gastos comunes $ 30.000"), is no month of gastos comunes.
+  if (!plausible || (plausible.commonExpensesCurrency === offer.currency && plausible.commonExpenses === offer.price)) {
+    return { reading: null, reason: "implausible" };
+  }
   const zone = zoneOwnCommonExpenses(plausible, text);
   return zone.commonExpenses === plausible.commonExpenses ? { reading: plausible, reason: "stated" } : { reading: null, reason: "disputed" };
 }

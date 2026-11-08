@@ -280,6 +280,43 @@ export interface MlDetailTarget {
   lastSeen: string;
   /** Its page was read before (a month ago, or before a field was kept): after those never read. */
   reread?: boolean;
+  /** On a reread, what the stored read stated: `mlRereadRefusal` compares the new read against it. */
+  stated?: MlDetailStated;
+}
+
+/** What a read stated, per field a later read of the same page could blank. */
+export interface MlDetailStated { expenses: boolean; pin: boolean; photos: boolean; bedrooms: boolean }
+
+export function mlDetailStated(row: Partial<Pick<MlRentalDetail, "amount" | "latitude" | "images" | "bedrooms">>): MlDetailStated {
+  return {
+    expenses: typeof row.amount === "number" && row.amount > 0,
+    pin: typeof row.latitude === "number",
+    photos: Array.isArray(row.images) && row.images.length > 0,
+    bedrooms: typeof row.bedrooms === "number",
+  };
+}
+
+/**
+ * When a run's rereads stop saving. An advert can drop its gastos comunes row or its map, but when
+ * half of a run's rereads lose the same field the page ML serves changed, not the adverts. Saved,
+ * that run would replace good rows with empty ones (`saveMlDetails` sets the whole row), and the
+ * harvest would stop putting the fields back on the adverts: over the ~28.000 rereads that the text
+ * fields of 2026-11-08 started, in five days. Twenty rereads that had the field, at least, so a run
+ * of a few never decides.
+ */
+export const ML_REREAD_GUARD = { minimum: 20, share: 0.5 } as const;
+const STATED_FIELDS: Record<keyof MlDetailStated, string> = { expenses: "gastos comunes", pin: "pin", photos: "fotos", bedrooms: "dormitorios" };
+
+/** Why this run's reads must not be saved, or null. Only rereads count: a first read has nothing to lose. */
+export function mlRereadRefusal(reads: ReadonlyArray<{ before?: MlDetailStated; after: MlRentalDetail }>): string | null {
+  for (const field of Object.keys(STATED_FIELDS) as Array<keyof MlDetailStated>) {
+    const had = reads.filter(read => read.before?.[field]);
+    const lost = had.filter(read => !mlDetailStated(read.after)[field]).length;
+    if (had.length >= ML_REREAD_GUARD.minimum && lost >= had.length * ML_REREAD_GUARD.share) {
+      return `${lost} de ${had.length} relecturas perdieron ${STATED_FIELDS[field]}`;
+    }
+  }
+  return null;
 }
 
 const HOMES = new Set(["apartamento", "casa"]);
@@ -339,17 +376,23 @@ export async function mlDetailTargets(now: Date, budget: number, days = 10): Pro
   }
   const fresh = new Date(now.getTime() - ML_DETAIL_REFRESH_DAYS * 86_400_000).toISOString();
   const current = new Set<string>();
-  const readBefore = new Set<string>();
+  const readBefore = new Map<string, MlDetailStated>();
   for (let i = 0; i < targets.length; i += 5_000) {
     const ids = targets.slice(i, i + 5_000).map(target => target.listingId);
     const docs = await details()
-      .find({ listingId: { $in: ids } }, { projection: { listingId: 1, ok: 1, readAt: 1, latitude: 1, images: 1, publishedAt: 1 } })
+      .find(
+        { listingId: { $in: ids } },
+        { projection: { listingId: 1, ok: 1, readAt: 1, amount: 1, latitude: 1, bedrooms: 1, images: 1, publishedAt: 1 } }
+      )
       .toArray();
-    for (const doc of docs) (mlDetailIsCurrent(doc, fresh) ? current : readBefore).add(String(doc.listingId));
+    for (const doc of docs) {
+      if (mlDetailIsCurrent(doc, fresh)) current.add(String(doc.listingId));
+      else readBefore.set(String(doc.listingId), mlDetailStated(doc as Partial<MlRentalDetail>));
+    }
   }
   const pending = targets
     .filter(target => !current.has(target.listingId))
-    .map(target => (readBefore.has(target.listingId) ? { ...target, reread: true } : target));
+    .map(target => (readBefore.has(target.listingId) ? { ...target, reread: true, stated: readBefore.get(target.listingId) } : target));
   return prioritizeMlDetailTargets(pending, budget);
 }
 
@@ -389,6 +432,19 @@ export interface MlDetailFilled {
 }
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Who publishes an advert ML shows under an official store. The badge is ML's own word that a
+ * business publishes it (a private seller has no store), so it contradicts a "dueño directo" read
+ * from the title, and a contradiction cancels the claim (PROPERTY_ADVERTISERS.md, the rule
+ * `advertiserClassification` applies to a portal's agency field): no owner-direct declaration, and
+ * a "particular" that only that claim made becomes "desconocido". The name still proves no agency,
+ * so nothing is promoted to "inmobiliaria" either. `null` and not absent: retention
+ * (advertiserRetention.ts) brings back an earlier read's claim when the field is `undefined`.
+ */
+export function officialStoreSeller(row: Pick<RawRental, "sellerType">): Pick<RawRental, "sellerType" | "ownerDirect"> {
+  return { sellerType: row.sellerType === "particular" ? "desconocido" : row.sellerType, ownerDirect: null };
+}
 
 /**
  * Puts what the stored item pages stated back on the raw adverts, only in EMPTY fields: the card
@@ -433,6 +489,7 @@ export function applyMlDetailRows(
     // Only over the card's placeholder: "Particular" (the private-seller pass) is a finding, not a gap.
     if (row.sellerName === ML_SELLER_PLACEHOLDER && typeof detail.officialStore === "string" && detail.officialStore) {
       row.sellerName = detail.officialStore;
+      Object.assign(row, officialStoreSeller(row));
       filled.sellers++;
     }
     if (options.text && !row.details?.description && typeof detail.description === "string" && detail.description) {
@@ -498,13 +555,23 @@ export async function writeMlDetailPublishedAt(target: Pick<MlDetailTarget, "key
   return result.modifiedCount > 0;
 }
 
-/** The official store as the advert's publisher, right away, only over the card's placeholder. */
+/**
+ * The official store as the advert's publisher, right away, only over the card's placeholder, and
+ * without the owner-direct claim it contradicts (`officialStoreSeller`), as the harvest writes it.
+ */
 export async function writeMlDetailSeller(target: Pick<MlDetailTarget, "key" | "listingId">, officialStore: string): Promise<boolean> {
   if (!officialStore) return false;
+  const placeholder = { "o.listingId": target.listingId, "o.sellerName": ML_SELLER_PLACEHOLDER };
+  // First, while the placeholder still marks the advert: the update below replaces it.
+  await listings().updateOne(
+    { key: target.key },
+    { $set: { "offers.$[o].sellerType": "desconocido" } },
+    { arrayFilters: [{ ...placeholder, "o.sellerType": "particular" }] }
+  );
   const result = await listings().updateOne(
     { key: target.key },
-    { $set: { "offers.$[o].sellerName": officialStore } },
-    { arrayFilters: [{ "o.listingId": target.listingId, "o.sellerName": ML_SELLER_PLACEHOLDER }] }
+    { $set: { "offers.$[o].sellerName": officialStore, "offers.$[o].ownerDirect": null } },
+    { arrayFilters: [placeholder] }
   );
   return result.modifiedCount > 0;
 }
