@@ -75,6 +75,7 @@ import { notifyAdmin } from "./classes/notify";
 import { ga4Configured } from "./classes/site-analytics/ga4";
 import { isPartialSyncRun } from "./classes/sync_health";
 import { emptyRealtime, fetchRealtime } from "./classes/site-analytics/realtime";
+import { POSITIONSTACK_REVERSE_URL, reverseGeocodeQuery } from "./classes/geo/positionstack";
 import sentryInit from "./sentry";
 
 moment.tz.setDefault("America/Montevideo");
@@ -3485,16 +3486,21 @@ const main = async () => {
     if (!api) {
       throw new Error("POSITIONSTACK_API_KEY is not configured");
     }
-    const query = req.query.query as string;
-    const limit = req.query.limit as string;
-    const [latitude, longitude] = query.split(",").map((x) => parseFloat(x));
-    const url = `http://api.positionstack.com/v1/reverse?access_key=${api}&query=${latitude},${longitude}&limit=${limit}`;
-    const res = await axios
-      .get(url)
+    const reverse = reverseGeocodeQuery(req.query.query, req.query.limit);
+    if (!reverse) {
+      throw new ValidationError(
+        "Invalid query parameter",
+        createValidationError("query", String(req.query.query ?? ""), [], 'Use "<latitude>,<longitude>", e.g. -34.9067,-56.1990')
+      );
+    }
+    // The answer is the visitor's address: it is returned, never logged (the server keeps errors only).
+    return axios
+      .get(POSITIONSTACK_REVERSE_URL, {
+        params: { access_key: api, query: reverse.query, limit: reverse.limit },
+        timeout: 10_000,
+      })
       .then((res) => res.data)
       .catch(() => null);
-    console.log("Response", res);
-    return res;
   });
 
   /**
