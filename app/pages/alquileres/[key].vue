@@ -12,6 +12,19 @@ import { rentalPageMessages } from '~/utils/rentalPageMessages'
 import type { RentalPageResponse } from '~/utils/rentalPage'
 import { rentalPageSchema } from '~/utils/rentalPageSeo'
 import {
+  rentalDisplayBarrio,
+  rentalDisplayPlace,
+  rentalDisplayZone,
+  rentalPlaceTitleCase,
+} from '~/utils/rentalDisplayPlace'
+import {
+  rentalPageCrumb,
+  rentalPageDescription,
+  rentalPageTitle,
+  rentalSnippetAddress,
+  type RentalSnippetInput,
+} from '~/utils/rentalPageSnippet'
+import {
   RENTAL_GUARANTEE_PUBLISHED,
   RENTAL_SOURCE_LABEL,
   rentalValidKey,
@@ -124,8 +137,12 @@ const uncertainData = computed(() =>
       reason === 'temporary_rental'
   )
 )
+// El lugar como se NOMBRA ("Pocitos, Montevideo", nunca "POCITOS" ni "60 m2 60 m2"); los filtros,
+// la zona oficial y el enlace al barrio siguen leyendo `property.neighborhood` tal cual.
 const zone = computed(() =>
-  [property.value?.neighborhood, property.value?.department].filter(Boolean).join(', ')
+  property.value
+    ? rentalDisplayZone(property.value, { barrioLink: data.value?.barrioLink ?? null })
+    : ''
 )
 const street = computed(() => (property.value ? rentalStreet(property.value) : ''))
 // La API decide (sólo barrios con página indexable) y manda la ruta o null: la ficha no carga la lista.
@@ -378,11 +395,47 @@ const difference = computed(() => {
   )
   return rent === null ? null : Math.round((rent / market.value.medianRentUyu - 1) * 100)
 })
-const breadcrumbs = computed(() => [
-  { title: t('country'), to: localePath('/') },
-  { title: t('search'), to: localePath('/alquileres-uruguay') },
-  { title: zone.value || t('overview'), disabled: true },
-])
+// Lo que el snippet de búsqueda dice de esta vivienda: título, descripción y la miga final
+// (utils/rentalPageSnippet.ts). Con el aviso que la ficha muestra por defecto, ya repreciado.
+const snippet = computed<RentalSnippetInput | null>(() =>
+  property.value && defaultOffer.value
+    ? {
+        propertyType: property.value.propertyType,
+        bedrooms: property.value.bedrooms,
+        bathrooms: property.value.bathrooms,
+        area: property.value.area,
+        uncertain: Boolean(uncertainData.value),
+        street: street.value,
+        place: rentalDisplayPlace(property.value, { barrioLink: barrioLink.value }),
+        department: property.value.department,
+        offer: defaultOffer.value,
+        usdUyu: usdUyu.value,
+      }
+    : null
+)
+// Con página de barrio indexable, la miga la enlaza: Todo Uruguay › Buscar alquileres › Pocitos
+// › la vivienda. Esa página es sólo en español, como la ficha: su ruta va tal cual, sin localePath.
+// El nombre, con las mayúsculas de la línea del lugar ("Punta del Este", no "Punta Del Este").
+const barrioCrumb = computed(() =>
+  barrioLink.value
+    ? { name: rentalPlaceTitleCase(barrioLink.value.label), path: barrioLink.value.path }
+    : null
+)
+const breadcrumbs = computed(() => {
+  const crumbs = [
+    { title: t('country'), to: localePath('/') },
+    { title: t('search'), to: localePath('/alquileres-uruguay') },
+  ]
+  if (!barrioCrumb.value) return [...crumbs, { title: zone.value || t('overview'), disabled: true }]
+  return [
+    ...crumbs,
+    { title: barrioCrumb.value.name, to: barrioCrumb.value.path },
+    {
+      title: snippet.value ? rentalPageCrumb(snippet.value, locale.value) : title.value,
+      disabled: true,
+    },
+  ]
+})
 function notify(message: string) {
   notice.value = message
   snackbar.value = true
@@ -462,29 +515,12 @@ const relatedSpecs = (entry: RentalPublicProperty) =>
     .filter(Boolean)
     .join(' · ')
 const pageTitle = computed(() =>
-  property.value && defaultOffer.value
-    ? t('propertySeo', {
-        type: [
-          typeLabel.value,
-          !uncertainData.value && property.value.bedrooms !== null
-            ? property.value.bedrooms === 0
-              ? t('studio')
-              : t('seoBedrooms', { n: property.value.bedrooms })
-            : '',
-        ]
-          .filter(Boolean)
-          .join(' '),
-        zone: zone.value || 'Uruguay',
-        price: money(defaultOffer.value.price, defaultOffer.value.currency),
-      })
-    : title.value
+  // Título de 60 caracteres con calle y número cuando el aviso los publica, y una descripción con
+  // alquiler + gastos comunes = total. El H1 sigue siendo el título del portal.
+  snippet.value ? rentalPageTitle(snippet.value, locale.value) : title.value
 )
 const description = computed(() =>
-  property.value
-    ? t('propertyDescription', {
-        summary: [pageTitle.value, street.value].filter(Boolean).join(' · '),
-      })
-    : t('unavailableHint')
+  snippet.value ? rentalPageDescription(snippet.value, locale.value) : t('unavailableHint')
 )
 const primaryPhoto = computed(() => photos.value[0])
 const primaryPhotoAlt = computed(() =>
@@ -543,6 +579,12 @@ useHead(
   { tagPriority: 'high' }
 )
 useHead(() => ({
+  // La ficha publica su título entero, ya con el precio: sin " | Cambio Uruguay" (17 caracteres)
+  // entra en los 60 que muestra Google. Gana a la plantilla de app.vue por orden de registro. Sólo
+  // cuando el título es el del snippet: la ficha que ya no está, el error de carga y la vivienda
+  // sin un aviso que se pueda abrir (que muestra "no disponible" con el título del portal)
+  // conservan la marca, y el título con el que GA4 los agrupa.
+  titleTemplate: snippet.value && !error.value ? '%s' : undefined,
   // Mismo `id` que el del layout (`useLocaleHead({ key: 'id' })`): Unhead deduplica por id, así que
   // éste REEMPLAZA la canónica localizada en vez de sumarse — la ficha salía con dos <link canonical>.
   link: [{ id: 'i18n-can', rel: 'canonical', href: canonical.value }],
@@ -560,12 +602,30 @@ useHead(() => ({
                 title: pageTitle.value,
                 description: description.value,
                 uncertain: Boolean(uncertainData.value),
+                addressLocality: rentalDisplayBarrio(property.value, {
+                  barrioLink: barrioLink.value,
+                }),
+                // Sin lo que sólo escribe un geocodificador o un portal: "Casasweb" como
+                // dirección de un aviso de El País, "11300, Uruguay", un Plus Code.
+                streetAddress: rentalSnippetAddress(
+                  street.value,
+                  rentalDisplayPlace(property.value, { barrioLink: barrioLink.value }),
+                  property.value.department
+                ),
                 breadcrumbs: [
                   { name: t('country'), url: `https://cambio-uruguay.com${localePath('/')}` },
                   {
                     name: t('title'),
                     url: `https://cambio-uruguay.com${localePath('/alquileres-uruguay')}`,
                   },
+                  ...(barrioCrumb.value
+                    ? [
+                        {
+                          name: barrioCrumb.value.name,
+                          url: `https://cambio-uruguay.com${barrioCrumb.value.path}`,
+                        },
+                      ]
+                    : []),
                   { name: title.value, url: canonical.value },
                 ],
                 photoCaption: (photoTitle, n) => t('photoDescription', { title: photoTitle, n }),

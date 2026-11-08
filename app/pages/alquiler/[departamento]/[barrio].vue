@@ -97,21 +97,41 @@
           <h2 class="text-h6 mb-0">Avisos recientes en {{ data.neighborhood }}</h2>
           <VBtn variant="text" :to="data.directoryPath">Ver todos en el directorio</VBtn>
         </div>
+        <!-- Sólo viviendas cuya ficha es indexable (server/utils/rentalBarrio.ts), una tarjeta por
+             vivienda, con foto y con alquiler + gastos comunes = total de UN aviso: la página del
+             barrio es una página de entrada y antes enlazaba seis avisos de Facebook sin gastos
+             comunes, todos `noindex`. -->
         <div class="barrio-grid">
           <VCard
-            v-for="listing in data.listings.slice(0, 6)"
+            v-for="listing in recentListings"
             :key="listing.key"
             :to="rentalPropertyPath(listing.key)"
             variant="outlined"
-            class="pa-4"
+            class="barrio-listing"
           >
-            <p class="barrio-listing-title text-body-1 font-weight-medium mb-2">
-              {{ listing.title || 'Vivienda en alquiler' }}
-            </p>
-            <p class="text-h6 mb-1">{{ rentalMoney(listing.price, listing.currency) }}</p>
-            <p class="text-body-2 text-medium-emphasis mb-0">
-              {{ listingFacts(listing) }}
-            </p>
+            <!-- Decorativa: el título del aviso ya es el texto de este mismo enlace. -->
+            <img
+              v-if="listing.image && !failedPhotos.has(listing.key)"
+              :src="listing.image"
+              alt=""
+              class="barrio-listing__photo"
+              width="320"
+              height="200"
+              loading="lazy"
+              decoding="async"
+              referrerpolicy="no-referrer"
+              @error="failedPhotos.add(listing.key)"
+            />
+            <div class="pa-4">
+              <p class="barrio-listing-title text-body-1 font-weight-medium mb-2">
+                {{ listing.title || 'Vivienda en alquiler' }}
+              </p>
+              <p class="text-h6 mb-0">{{ rentalMoney(listing.price, listing.currency) }}</p>
+              <p class="text-body-2 mb-1">{{ rentalBarrioCardCost(listing) }}</p>
+              <p class="text-body-2 text-medium-emphasis mb-0">
+                {{ listingFacts(listing) }}
+              </p>
+            </div>
           </VCard>
         </div>
       </section>
@@ -178,10 +198,15 @@
 <script setup lang="ts">
 import type { RentalBarrioListing, RentalBarrioResponse } from '~/server/utils/rentalBarrio'
 import type { FaqItem } from '~/utils/faqAnswers'
-import { rentalBarrioDirectoryPath, type RentalBarrioCell } from '~/utils/rentalBarrio'
+import {
+  RENTAL_BARRIO_LISTINGS,
+  rentalBarrioDirectoryPath,
+  type RentalBarrioCell,
+} from '~/utils/rentalBarrio'
 import {
   BEDROOM_LABEL,
   formatUyu,
+  rentalBarrioCardCost,
   rentalBarrioChipCaption,
   rentalBarrioDate,
   rentalBarrioDescription,
@@ -191,6 +216,7 @@ import {
   rentalBarrioRankSentence,
   rentalBarrioTitle,
 } from '~/utils/rentalBarrioCopy'
+import { rentalCatalogItemList } from '~/utils/rentalCatalogSeo'
 import { rentalMoney, rentalPropertyPath } from '~/utils/rentalPresentation'
 import type { RentalOfficialZone } from '~/utils/rentals'
 import type { RentalZonePropertyType } from '~/utils/rentalZoneTypes'
@@ -286,6 +312,10 @@ const tables = computed(() => {
     .filter(group => group.cells.length > 0)
 })
 
+// A portal photo that stopped answering leaves the card with its text, not a broken image.
+const failedPhotos = reactive(new Set<string>())
+const recentListings = computed(() => (data.value?.listings ?? []).slice(0, RENTAL_BARRIO_LISTINGS))
+
 function listingFacts(listing: RentalBarrioListing): string {
   // El tipo sale del aviso (el endpoint sólo trae apartamentos y casas); sin dato no se inventa.
   const facts: string[] = []
@@ -335,6 +365,29 @@ useHead(() => ({
             ],
           }),
         },
+        // The cards this page renders, as the directory declares its own (rentalCatalogItemList).
+        ...(recentListings.value.length
+          ? [
+              {
+                type: 'application/ld+json',
+                key: 'rental-barrio-listings',
+                // Portal titles are untrusted text inside a <script>.
+                innerHTML: JSON.stringify({
+                  '@context': 'https://schema.org',
+                  ...rentalCatalogItemList(
+                    recentListings.value.map(listing => ({
+                      name: listing.title || 'Vivienda en alquiler',
+                      url: `${SITE}${rentalPropertyPath(listing.key)}`,
+                      image: listing.image,
+                    })),
+                    canonical.value,
+                    1,
+                    RENTAL_BARRIO_LISTINGS
+                  ),
+                }).replace(/</g, '\\u003c'),
+              },
+            ]
+          : []),
       ]
     : [],
 }))
@@ -348,6 +401,20 @@ useHead(() => ({
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 16px;
+}
+.barrio-listing {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+/* The box is reserved before the photo arrives (width/height + aspect-ratio): no layout shift. */
+.barrio-listing__photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  background: rgba(var(--v-theme-on-surface), 0.06);
 }
 .barrio-listing-title {
   display: -webkit-box;

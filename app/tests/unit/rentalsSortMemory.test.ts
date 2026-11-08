@@ -5,6 +5,7 @@ import ts from 'typescript'
 import mongoose from 'mongoose'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import * as rentals from '../../utils/rentals'
+import * as rentalBarrioName from '../../utils/rentalBarrioName'
 import * as rentalDistance from '../../utils/rentalDistance'
 import * as rentalPricePerM2 from '../../utils/rentalPricePerM2'
 import { rentalPublicPropertyProjection } from '../../server/utils/rentalDetail'
@@ -17,7 +18,11 @@ const compiled = ts.transpileModule(route, {
 }).outputText
 
 /** Execute the actual endpoint with IO stubs, retaining its exact Mongo pipelines. */
-async function capture(query: Record<string, string> = {}, total = 240) {
+async function capture(
+  query: Record<string, string> = {},
+  total = 240,
+  neighborhoods: Array<{ _id: string; count: number }> = []
+) {
   const pipelines: Stage[][] = []
   const options: Array<{ allowDiskUse?: boolean }> = []
   const dependencies: Record<string, unknown> = {
@@ -38,7 +43,9 @@ async function capture(query: Record<string, string> = {}, total = 240) {
                   ? [{ total }]
                   : pipeline.some(stage => stage.$facet)
                     ? [{}]
-                    : []
+                    : pipeline.some(stage => stage.$group?._id === '$neighborhood')
+                      ? neighborhoods
+                      : []
               ),
           }
           return chain
@@ -62,6 +69,7 @@ async function capture(query: Record<string, string> = {}, total = 240) {
       annotateRentalAvailability: (property: unknown) => property,
     },
     '../../../utils/rentals': rentals,
+    '../../../utils/rentalBarrioName': rentalBarrioName,
     '../../../utils/rentalDistance': rentalDistance,
     '../../../utils/rentalPricePerM2': rentalPricePerM2,
   }
@@ -81,11 +89,12 @@ async function capture(query: Record<string, string> = {}, total = 240) {
     createError: ({ statusMessage }: { statusMessage: string }) => new Error(statusMessage),
     console,
   })
-  await module.exports.default!({})
+  const response = (await module.exports.default!({})) as rentals.RentalsResponse
   // The median is a branch of the facet pass (rentalMedianFacet), not a seventh aggregation.
   const facets = pipelines.find(pipeline => pipeline.some(stage => stage.$facet))!
   const median = facets.find(stage => stage.$facet)!.$facet.median as Stage[]
   return {
+    response,
     items: pipelines[0]!,
     median,
     facets,
@@ -139,6 +148,23 @@ describe('rental endpoint sort input', () => {
     const { count, median } = await capture({ source: 'casasweb' })
     expect(count).toBe(5)
     expect(median.at(-2)).toEqual({ $group: { _id: null, prices: { $push: '$priceUyu' } } })
+  })
+
+  it('never offers a surface or a country as a barrio in the facet', async () => {
+    // 2026-11-07: Casasweb's '40 m2 40 m2' (49), '60 m2 60 m2' (36), '10 m2' (26) and Maldonado's
+    // '4 H' sat between the real Montevideo barrios of the selector.
+    const { response } = await capture({ department: 'Montevideo' }, 240, [
+      { _id: 'Pocitos', count: 900 },
+      { _id: '40 m2 40 m2', count: 49 },
+      { _id: '25 de Mayo', count: 12 },
+      { _id: '10 m2', count: 26 },
+      { _id: '4 H', count: 3 },
+      { _id: 'Uruguay', count: 2 },
+    ])
+    expect(response.facets.neighborhoods).toEqual([
+      { value: 'Pocitos', count: 900 },
+      { value: '25 de Mayo', count: 12 },
+    ])
   })
 
   it('prices per m² with the advert chosen by the filters, before projecting and paging', async () => {

@@ -443,10 +443,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                   <div class="rental-card__main">
                     <div class="rental-card__overview">
                       <p class="rental-card__where">
-                        {{
-                          [property.neighborhood, property.department].filter(Boolean).join(', ') ||
-                          t('unknown')
-                        }}
+                        {{ rentalDisplayZone(property) || t('unknown') }}
                       </p>
                       <p
                         v-if="referencePoint && !pending"
@@ -856,6 +853,8 @@ import {
   writeRentalLayout,
   type RentalLayout,
 } from '~/utils/rentalLayout'
+// The card names the place as the ficha does: "Pocitos", never the portal's "POCITOS".
+import { rentalDisplayZone } from '~/utils/rentalDisplayPlace'
 
 const LocationsMap = defineAsyncComponent(() => import('~/components/map/LocationsMap.vue'))
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalMessages })
