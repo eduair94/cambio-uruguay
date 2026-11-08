@@ -20,11 +20,11 @@ import {
 } from '~/utils/rentals'
 import { portalPriceGap, rentalListedFor } from '~/utils/rentalPortals'
 import {
-  RENTAL_GONE_PAGE_CACHE_CONTROL,
+  rentalFichaCacheControl,
   rentalGoneDirectoryLink,
   rentalGoneFromError,
 } from '~/utils/rentalGone'
-import { rentalSeenLabel } from '~/utils/rentalSeenLabel'
+import { RENTAL_SEEN_ICON, rentalSeenLabel } from '~/utils/rentalSeenLabel'
 import { rentalShareText } from '~/utils/rentalShareText'
 import { RENTAL_SCAM_LINES, rentalScamWarning } from '~/utils/rentalVisitSafety'
 import {
@@ -79,21 +79,22 @@ const failureCode = computed(() => {
   const failure = error.value as { statusCode?: number; data?: { statusCode?: number } } | null
   return failure?.statusCode === 404 || failure?.data?.statusCode === 404 ? 404 : 503
 })
+// Lo que la ficha caída ofrece en vez del callejón (utils/rentalGone.ts); null en un 503.
+const gone = computed(() => (failureCode.value === 404 ? rentalGoneFromError(error.value) : null))
 if (import.meta.server) {
   const event = useRequestEvent()
   if (event) {
     // Una ficha caída es la misma para todos durante cinco minutos: sin esto cada una de esas vistas
-    // (12,8 % de las de Uruguay) se renderizaba en el origen. Un 503 nunca se guarda.
-    useResponseHeader('cache-control').value = !error.value
-      ? 'public, max-age=0, must-revalidate, s-maxage=60'
-      : failureCode.value === 404
-        ? RENTAL_GONE_PAGE_CACHE_CONTROL
-        : 'no-store, max-age=0'
+    // (12,8 % de las de Uruguay) se renderizaba en el origen. Sin alternativas, treinta segundos; un
+    // 503 nunca se guarda (utils/rentalGone.ts `rentalFichaCacheControl`).
+    useResponseHeader('cache-control').value = rentalFichaCacheControl({
+      failed: !!error.value,
+      status: failureCode.value,
+      alternatives: !!gone.value,
+    })
     if (error.value) setResponseStatus(event, failureCode.value)
   }
 }
-// Lo que la ficha caída ofrece en vez del callejón (utils/rentalGone.ts); null en un 503.
-const gone = computed(() => (failureCode.value === 404 ? rentalGoneFromError(error.value) : null))
 const goneBrowse = computed(() =>
   gone.value ? rentalGoneDirectoryLink(gone.value.gone, gone.value.barrioLink) : null
 )
@@ -632,6 +633,22 @@ useHead(() => ({
         <p v-if="gone?.gone.lastSeen" class="rental-page__gone-seen">
           {{ t('goneLastSeen', { date: date(gone.gone.lastSeen) }) }}
         </p>
+      </div>
+      <!-- Lo más útil primero: la misma vivienda, si sigue publicada en otro portal. Va antes de los
+           botones, que en un teléfono ocupan dos o tres renglones y la bajarían de la pantalla. -->
+      <div
+        v-if="gone?.lookalike && goneCopySource"
+        class="rental-page__gone-copy"
+        data-testid="rental-gone-copy"
+      >
+        <p class="rental-page__gone-copy-title">
+          <VIcon icon="mdi-swap-horizontal" size="20" aria-hidden="true" />{{
+            t('goneSameUnit', { source: goneCopySource })
+          }}
+        </p>
+        <RentalsSimilarCards :items="[gone.lookalike]" />
+      </div>
+      <div class="rental-page__unavailable-text">
         <p>{{ t(failureCode === 404 ? 'unavailableHint' : 'unavailableRetry') }}</p>
         <VBtn v-if="failureCode !== 404" color="primary" @click="refresh()">{{ t('retry') }}</VBtn>
         <div v-else class="rental-page__gone-links">
@@ -653,14 +670,6 @@ useHead(() => ({
           >
         </div>
       </div>
-      <template v-if="gone?.lookalike && goneCopySource">
-        <p class="rental-page__gone-copy">
-          <VIcon icon="mdi-swap-horizontal" size="20" aria-hidden="true" />{{
-            t('goneSameUnit', { source: goneCopySource })
-          }}
-        </p>
-        <RentalsSimilarCards :items="[gone.lookalike]" />
-      </template>
       <template v-if="gone?.similar.length">
         <h2 class="rental-page__gone-title">{{ t('goneSimilarTitle') }}</h2>
         <p class="rental-page__note">{{ t('similarHint') }}</p>
@@ -1106,11 +1115,9 @@ useHead(() => ({
           :class="`is-${seen.tone}`"
           data-testid="rental-page-seen"
         >
-          <VIcon
-            :icon="seen.tone === 'warning' ? 'mdi-alert-outline' : 'mdi-eye-check-outline'"
-            size="18"
-            aria-hidden="true"
-          />{{ t(seen.key, { n: seen.days, source: source(selectedOffer) }) }}
+          <VIcon :icon="RENTAL_SEEN_ICON[seen.tone]" size="18" aria-hidden="true" />{{
+            t(seen.key, { n: seen.days, source: source(selectedOffer) })
+          }}
         </p>
         <p
           v-if="selectedOffer.currencyInferred"
@@ -1248,7 +1255,7 @@ useHead(() => ({
             data-testid="rental-bar-seen"
             ><VIcon
               v-if="seen.tone === 'warning'"
-              icon="mdi-alert-outline"
+              :icon="RENTAL_SEEN_ICON.warning"
               size="14"
               aria-hidden="true"
             />{{ t(seen.shortKey, { n: seen.days }) }}</span
@@ -1929,14 +1936,18 @@ useHead(() => ({
   flex-wrap: wrap;
   gap: 8px 12px;
 }
+/* The same home still listed: right under "Dejó de verse", before the next-step links. */
 .rental-page__gone-copy {
+  margin-block: 16px 32px;
+}
+.rental-page__gone-copy-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 40px;
+  margin: 0;
   font-weight: 700;
 }
-.rental-page__gone-copy .v-icon {
+.rental-page__gone-copy-title .v-icon {
   flex-shrink: 0;
   color: rgb(var(--v-theme-primary));
 }

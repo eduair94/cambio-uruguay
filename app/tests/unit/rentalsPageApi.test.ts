@@ -104,12 +104,14 @@ describe('canonical rental page API', () => {
   it('preserves an honest 404 for an absent/expired property instead of returning a thin 200', async () => {
     collation.mockReset().mockResolvedValue([])
     // Answered, not thrown: a thrown 404 gets Nitro's `no-cache`, and this one is edge-cacheable.
+    // `canonical-key` names no department, so there is nothing to offer instead: a bare 404, which
+    // keeps thirty seconds (rentalFichaGone.test.ts covers the five-minute one with alternatives).
     expect(await handler({} as any)).toMatchObject({ error: true, statusCode: 404 })
     expect(setResponseStatus).toHaveBeenCalledWith({}, 404, 'Rental property is not available')
     expect(setResponseHeader).toHaveBeenCalledWith(
       {},
       'cache-control',
-      'public, max-age=0, s-maxage=300'
+      'public, max-age=0, s-maxage=30'
     )
     expect(buildRentalPage).not.toHaveBeenCalled()
     expect(aggregate).toHaveBeenCalledTimes(1)

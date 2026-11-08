@@ -13,7 +13,10 @@ import type { RentalOffer, RentalSource } from '../../utils/rentals'
 // Las filas medidas el 8/11/2026 en /api/rentals/ficha (scratchpad de la auditoría): títulos,
 // dormitorios, baños, superficie, precio, coordenadas y anunciantes tal como los publicaba cada
 // portal. Las claves van sin dígitos a propósito (el escáner de secretos del repo).
-type Row = RentalLookalikeRow & { key: string; offers: Array<Partial<RentalOffer>> }
+type Row = Omit<RentalLookalikeRow, 'offers'> & {
+  key: string
+  offers: Array<Partial<RentalOffer> & Pick<RentalOffer, 'source' | 'price' | 'currency'>>
+}
 function row(
   key: string,
   source: RentalSource,
@@ -131,6 +134,53 @@ describe('rentalLookalikes', () => {
       rentalLookalikeGenericTitle('Alquiler apartamento 2 dormitorios Pocitos', ['pocitos'])
     ).toBe(true)
     expect(rentalLookalikeGenericTitle('Alq apto Ellauri 1084 103', ['pocitos'])).toBe(false)
+  })
+
+  it('treats the price written in the title as generic, and keeps a door number specific', () => {
+    // "$ 37.000" folds to "37 000": the "000" made the title look specific.
+    expect(rentalLookalikeGenericTitle('Alquiler apartamento 2 dormitorios $ 37.000')).toBe(true)
+    expect(rentalLookalikeGenericTitle('Apartamento U$S 1.200 en Pocitos', ['pocitos'])).toBe(true)
+    expect(rentalLookalikeGenericTitle('Apto 2 dorm. $ 37.000 + GC 8.000')).toBe(true)
+    expect(rentalLookalikeGenericTitle('Alquiler 2 dormitorios 37 mil')).toBe(true)
+    // Written without a separator, only the advert's own price counts as a price.
+    expect(
+      rentalLookalikeGenericTitle('Alquiler apartamento 2 dormitorios $37000', [], [37000])
+    ).toBe(true)
+    // A surface with its unit is generic too, "m²" included (it folds to "m").
+    expect(rentalLookalikeGenericTitle('Apartamento 2 dormitorios 120 m²')).toBe(true)
+    // A number that is neither a price, an amount nor a surface stays specific: a door, a unit.
+    expect(
+      rentalLookalikeGenericTitle('Alquiler apartamento 2 dormitorios 1084', [], [37000])
+    ).toBe(false)
+    expect(rentalLookalikeGenericTitle('Alquiler apartamento 2 dormitorios 103', [], [37000])).toBe(
+      false
+    )
+    expect(rentalLookalikeGenericTitle('Alq apto Ellauri 1084 103', ['pocitos'], [25500])).toBe(
+      false
+    )
+  })
+
+  it('does not fold two units whose only title is "2 dormitorios $ 37.000" when one has no area', () => {
+    const generic = {
+      title: 'Alquiler apartamento 2 dormitorios $ 37.000',
+      bedrooms: 2,
+      bathrooms: 1,
+      price: 37000,
+    }
+    const withArea = row('price-title-area', 'mercadolibre', { ...generic, area: 45 })
+    const noArea = row('price-title-no-area', 'elpais', { ...generic, area: null })
+    expect(rentalLookalikes(facts(withArea), facts(noArea))).toBe(false)
+    // The same text without separators, "$37000": the advert's own price is generic too.
+    const bare = { ...generic, title: 'Alquiler apartamento 2 dormitorios $37000' }
+    expect(
+      rentalLookalikes(
+        facts(row('bare-area', 'mercadolibre', { ...bare, area: 45 })),
+        facts(row('bare-no-area', 'elpais', { ...bare, area: null }))
+      )
+    ).toBe(false)
+    // With the same area they still fold: it is the only thing that identifies them.
+    const twin = row('price-title-twin', 'elpais', { ...generic, area: 45 })
+    expect(rentalLookalikes(facts(withArea), facts(twin))).toBe(true)
   })
 
   it('folds the three iMas.uy adverts: same seller, same exact point, same price and layout', () => {

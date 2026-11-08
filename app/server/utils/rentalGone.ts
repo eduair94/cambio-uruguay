@@ -12,6 +12,8 @@ import {
   type RentalPropertyType,
   type RentalPublicProperty,
 } from '../../utils/rentals'
+import { slugifyDepartment } from '../../utils/departments'
+import { listRentalBarrios, rentalBarrioSlug } from '../../utils/rentalBarrio'
 import {
   RENTAL_GONE_SIMILAR_LIMIT,
   rentalGoneBarrioFromKey,
@@ -19,6 +21,7 @@ import {
   type RentalGoneData,
   type RentalGoneLink,
 } from '../../utils/rentalGone'
+import type { RentalZoneSnapshots } from '../../utils/rentalZones'
 import { RENTAL_BARRIO_LINK_TIMEOUT_MS, resolveIndexableBarrioLink } from './rentalBarrio'
 import {
   rentalPageEvidenceStages,
@@ -28,6 +31,15 @@ import {
   rentalPageSimilarStages,
   type RentalPageEvidence,
 } from './rentalPage'
+import { loadRentalZoneSnapshots } from './rentalZones'
+
+/**
+ * Cada lectura de la ficha caída tiene tope propio. Las dos agregaciones van con la collation del
+ * directorio, que ningún índice lleva (son el mismo plan que las parecidas de una ficha viva), y un
+ * Mongo cargado no puede tener a la ficha caída esperando: las alternativas son un extra, y sin
+ * ellas sale el 404 igual.
+ */
+export const RENTAL_GONE_QUERY_MAX_MS = 3000
 
 /** La fila vieja, sólo con lo que piden las parecidas y la regla de copias; nada privado. */
 export const RENTAL_GONE_PROJECTION = {
@@ -124,10 +136,41 @@ async function within<T>(promise: Promise<T>, ms: number): Promise<T | null> {
   }
 }
 
+/**
+ * Todos los barrios conocidos como `<departamento>-<barrio>`, el mismo armado que el comienzo de una
+ * clave: los del relevamiento de precios (con o sin página indexable) y los 62 del INE en
+ * Montevideo, que incluyen a Cerro Norte, Malvín Norte o Carrasco Norte aunque hoy no tengan avisos.
+ */
+export function knownRentalBarrioPrefixes(snapshots: RentalZoneSnapshots): string[] {
+  const prefixes = new Set<string>()
+  for (const item of listRentalBarrios(snapshots))
+    prefixes.add(`${item.departmentSlug}-${item.slug}`)
+  for (const zone of snapshots.context?.boundaries?.features ?? []) {
+    const slug = rentalBarrioSlug(zone.properties.name)
+    if (slug) prefixes.add(`${slugifyDepartment(zone.properties.department)}-${slug}`)
+  }
+  return [...prefixes]
+}
+
+/** La misma lectura cacheada que usan las páginas de barrio; nunca rechaza (null = no se sabe). */
+export function startKnownRentalBarrioPrefixes(
+  load: () => Promise<RentalZoneSnapshots> = loadRentalZoneSnapshots
+): Promise<readonly string[] | null> {
+  try {
+    return load()
+      .then(knownRentalBarrioPrefixes)
+      .catch(() => null)
+  } catch {
+    return Promise.resolve(null)
+  }
+}
+
 export interface RentalGoneOptions {
   usdUyu: number
   /** La lista de páginas de barrio indexables que la ficha ya empezó a leer en paralelo. */
   barrioLinks: Promise<ReadonlyMap<string, RentalGoneLink> | null>
+  /** Todos los barrios conocidos, para una clave ya podada (ver `rentalGoneBarrioFromKey`). */
+  knownBarrios?: () => Promise<readonly string[] | null>
   timeoutMs?: number
 }
 
@@ -142,17 +185,20 @@ export async function loadRentalGone(
 ): Promise<RentalGoneData | null> {
   const doc = await RentalListingModel.findOne({ key })
     .select(RENTAL_GONE_PROJECTION)
-    .maxTimeMS(3000)
+    .maxTimeMS(RENTAL_GONE_QUERY_MAX_MS)
     .lean<Record<string, unknown>>()
   if (!doc) {
-    // Ya podada: lo único que queda es la clave.
-    const links = await within(
-      options.barrioLinks,
-      options.timeoutMs ?? RENTAL_BARRIO_LINK_TIMEOUT_MS
-    )
-    const barrio = rentalGoneBarrioFromKey(key, links?.values() ?? [])
-    const department = barrio?.department ?? rentalGoneDepartmentFromKey(key)
-    if (!department) return null
+    // Ya podada: lo único que queda es la clave. Sin departamento en ella no hay a dónde mandar, y
+    // ningún barrio puede ser su prefijo (todos empiezan con el departamento).
+    const keyDepartment = rentalGoneDepartmentFromKey(key)
+    if (!keyDepartment) return null
+    const timeout = options.timeoutMs ?? RENTAL_BARRIO_LINK_TIMEOUT_MS
+    const [links, known] = await Promise.all([
+      within(options.barrioLinks, timeout),
+      within((options.knownBarrios ?? startKnownRentalBarrioPrefixes)(), timeout),
+    ])
+    const barrio = rentalGoneBarrioFromKey(key, links?.values() ?? [], known ?? [])
+    const department = barrio?.department ?? keyDepartment
     return {
       gone: {
         department,
@@ -170,16 +216,18 @@ export async function loadRentalGone(
   const priced = rentalPageReprice(stale, options.usdUyu)
   const stages = rentalPageEvidenceStages(stale as unknown as RentalPublicProperty)
   const peers = stages
-    ? await RentalListingModel.aggregate<RentalPageEvidence>(stages).collation(RENTAL_COLLATION)
+    ? await RentalListingModel.aggregate<RentalPageEvidence>(stages)
+        .collation(RENTAL_COLLATION)
+        .option({ maxTimeMS: RENTAL_GONE_QUERY_MAX_MS })
     : []
   const keys = rentalPageSimilarKeys(
     priced,
     peers.map(peer => rentalPageReprice(peer, options.usdUyu))
   )
   const rows = keys.length
-    ? await RentalListingModel.aggregate<RentalPublicProperty>(
-        rentalPageSimilarStages(keys)
-      ).collation(RENTAL_COLLATION)
+    ? await RentalListingModel.aggregate<RentalPublicProperty>(rentalPageSimilarStages(keys))
+        .collation(RENTAL_COLLATION)
+        .option({ maxTimeMS: RENTAL_GONE_QUERY_MAX_MS })
     : []
   const { similar, copies } = rentalPageSimilar(
     priced as unknown as RentalPublicProperty,

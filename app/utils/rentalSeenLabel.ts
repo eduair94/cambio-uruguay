@@ -25,6 +25,16 @@ export interface RentalSeenLabel {
 /** Desde cuántos días el texto pasa a advertir que el aviso puede ya no estar. */
 export const RENTAL_SEEN_WARNING_DAYS = 5
 
+/**
+ * El ícono de cada tono. "No lo volvimos a ver desde hace N días" lleva un reloj y no la tilde de
+ * "Visto hoy": una tilde al lado de "no lo volvimos a ver" se lee como una confirmación.
+ */
+export const RENTAL_SEEN_ICON: Readonly<Record<RentalSeenTone, string>> = {
+  fresh: 'mdi-eye-check-outline',
+  quiet: 'mdi-clock-outline',
+  warning: 'mdi-alert-outline',
+}
+
 const DAY_MS = 86_400_000
 
 export function rentalSeenLabel(

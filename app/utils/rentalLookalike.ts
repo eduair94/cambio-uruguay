@@ -85,28 +85,70 @@ const GENERIC_WORDS = new Set(
     'alquiler alquileres alquilo alquila alquilan alquilamos alquilar alq arriendo arrienda arrendamiento renta rento se',
     'apartamento apartamentos apto aptos apart departamento departamentos depto dpto casa casas',
     'monoambiente monoambientes mono ambiente ambientes ph duplex loft vivienda unidad habitacion habitaciones cuarto',
-    'dormitorio dormitorios dorm dorms dormi dor bano banos m2 mts metros',
+    // "m²" se pliega a "m": el "²" no se descompone.
+    'dormitorio dormitorios dorm dorms dormi dor bano banos m m2 mts mts2 metro metros',
     'un uno una dos tres cuatro cinco seis',
     'de del la las el los en con y e a al para por sin o u muy mas su',
     'montevideo uruguay zona barrio',
     'amplio amplia lindo linda hermoso hermosa excelente impecable luminoso luminosa ideal nuevo nueva estrenar',
     'precioso preciosa moderno moderna comodo comoda gran grande super bien buen ubicado ubicada ubicacion',
     'centrico centrica oportunidad disponible inmediato',
+    // El precio escrito en el título: "U$S" se pliega a "u s", "$U" a "u".
+    'u s us usd uyu peso pesos dolar dolares mil k mes mensual mensuales gastos comunes gc',
   ]
     .join(' ')
     .split(' ')
 )
 /** "2", "2d", "3dorm", "60m2": cantidades y superficies, no señas de una unidad. Un "1084" sí lo es. */
 const COUNT_WORD =
-  /^(?:\d{1,2}(?:d|dorm|dorms|dormitorios?|b|banos?|amb|ambientes?)?|\d{1,4}(?:m2|mts2?|m))$/
+  /^(?:\d{1,2}(?:d|dorm|dorms|dormitorios?|b|banos?|amb|ambientes?)?|\d{1,4}(?:m2|mts2?|m)|\d{1,3}k)$/
+const DIGITS = /^\d+$/
+const LEADING_GROUP = /^\d{1,3}$/
+const THOUSANDS_GROUP = /^\d{3}$/
+const UNIT_WORD = /^(?:m|m2|mts2?|metros?)$/
 
-export function rentalLookalikeGenericTitle(title: string, place: Iterable<string> = []): boolean {
+/**
+ * ¿El título no tiene nada propio? Entonces no prueba que dos avisos sean la misma vivienda.
+ *
+ * Un monto no es una seña de la unidad: "Alquiler apartamento 2 dormitorios $ 37.000" se pliega a
+ * "… 2 dormitorios 37 000", y sin esta regla el "000" la volvía específica y dos unidades distintas
+ * con ese título se juntaban si a una le faltaba la superficie. Cuenta como monto una cifra con
+ * separador de miles ("37 000", "1 200") y una cifra que es el precio del propio aviso (`amounts`,
+ * "$37000"); como superficie, una cifra seguida de su unidad ("120 m²"). Una cifra suelta que no es
+ * nada de eso ("Ellauri 1084", un número de puerta) sigue siendo específica.
+ */
+export function rentalLookalikeGenericTitle(
+  title: string,
+  place: Iterable<string> = [],
+  amounts: Iterable<number> = []
+): boolean {
   const own = new Set(place)
-  return rentalLookalikeFold(title)
-    .split(' ')
-    .filter(Boolean)
-    .every(word => GENERIC_WORDS.has(word) || COUNT_WORD.test(word) || own.has(word))
+  const prices = new Set(amounts)
+  const words = rentalLookalikeFold(title).split(' ').filter(Boolean)
+  for (let index = 0; index < words.length;) {
+    const word = words[index]!
+    if (DIGITS.test(word)) {
+      let end = index + 1
+      if (LEADING_GROUP.test(word))
+        while (end < words.length && THOUSANDS_GROUP.test(words[end]!)) end += 1
+      if (
+        end > index + 1 ||
+        (end < words.length && UNIT_WORD.test(words[end]!)) ||
+        prices.has(Number(words.slice(index, end).join('')))
+      ) {
+        index = end
+        continue
+      }
+    }
+    if (!GENERIC_WORDS.has(word) && !COUNT_WORD.test(word) && !own.has(word)) return false
+    index += 1
+  }
+  return true
 }
+
+/** Los montos de `prices` (`moneda:monto`), para reconocerlos escritos en el título. */
+const priceAmounts = (facts: RentalLookalikeFacts): number[] =>
+  facts.prices.map(price => Number(price.slice(price.indexOf(':') + 1))).filter(Number.isFinite)
 
 type LookalikeOffer = Pick<RentalOffer, 'source' | 'price' | 'currency'> &
   Partial<Pick<RentalOffer, 'sellerName'>>
@@ -185,7 +227,13 @@ const samePoint = (a: RentalLookalikeFacts['point'], b: RentalLookalikeFacts['po
 function sameAdvertText(a: RentalLookalikeFacts, b: RentalLookalikeFacts): boolean {
   if (!a.title || a.title !== b.title) return false
   const areas = a.area !== null && b.area !== null
-  if (rentalLookalikeGenericTitle(a.title, [...a.place, ...b.place]))
+  if (
+    rentalLookalikeGenericTitle(
+      a.title,
+      [...a.place, ...b.place],
+      [...priceAmounts(a), ...priceAmounts(b)]
+    )
+  )
     return areas && closeAreas(a.area!, b.area!, RENTAL_LOOKALIKE_GENERIC_AREA_TOLERANCE)
   return !areas || closeAreas(a.area!, b.area!, RENTAL_LOOKALIKE_AREA_TOLERANCE)
 }

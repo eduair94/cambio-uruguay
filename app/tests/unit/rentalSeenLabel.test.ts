@@ -1,5 +1,7 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { rentalSeenLabel } from '../../utils/rentalSeenLabel'
+import { RENTAL_SEEN_ICON, rentalSeenLabel } from '../../utils/rentalSeenLabel'
 import { rentalPageMessages } from '../../utils/rentalPageMessages'
 
 // El render de la mañana del 8/11/2026 (hora de Montevideo): el mismo instante para servidor y
@@ -47,6 +49,17 @@ describe('rentalSeenLabel', () => {
     // 23:30 en Montevideo = 02:30 UTC del día siguiente: un aviso leído en esa corrida es de hoy.
     expect(rentalSeenLabel('2026-11-09', Date.parse('2026-11-09T02:30:00Z'))?.days).toBe(0)
     expect(rentalSeenLabel('2026-11-08', new Date('2026-11-09T02:30:00Z'))?.days).toBe(1)
+  })
+
+  it('gives each tone its own icon, and no check mark next to "not seen again"', () => {
+    const icons = (['fresh', 'quiet', 'warning'] as const).map(tone => RENTAL_SEEN_ICON[tone])
+    expect(new Set(icons).size).toBe(3)
+    expect(RENTAL_SEEN_ICON.quiet).not.toMatch(/check/)
+    expect(RENTAL_SEEN_ICON.warning).toBe('mdi-alert-outline')
+    // The ficha reads the icon from the map, never a two-way ternary that sends "quiet" to "fresh".
+    const page = readFileSync(resolve(__dirname, '../../pages/alquileres/[key].vue'), 'utf8')
+    expect(page).toContain(':icon="RENTAL_SEEN_ICON[seen.tone]"')
+    expect(page).not.toContain("'mdi-eye-check-outline'")
   })
 
   it('never says "tomorrow" and stays silent without a usable date', () => {

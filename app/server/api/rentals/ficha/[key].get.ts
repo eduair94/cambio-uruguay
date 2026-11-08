@@ -34,7 +34,11 @@ import {
   type RentalPublicProperty,
 } from '../../../../utils/rentals'
 import type { RentalPageResponse } from '../../../../utils/rentalPage'
-import { RENTAL_GONE_CACHE_CONTROL, type RentalGoneData } from '../../../../utils/rentalGone'
+import {
+  RENTAL_GONE_BARE_CACHE_CONTROL,
+  RENTAL_GONE_CACHE_CONTROL,
+  type RentalGoneData,
+} from '../../../../utils/rentalGone'
 
 const GONE_MESSAGE = 'Rental property is not available'
 
@@ -50,11 +54,17 @@ export interface RentalGoneBody {
 /**
  * The 404 is answered, not thrown: Nitro's error handler sets `cache-control: no-cache` on every
  * thrown 404 (nitropack/dist/runtime/internal/error/prod.mjs), so its five edge minutes would never
- * leave the server. `$fetch` still rejects on the status, and the page reads it as an error.
+ * leave the server. `$fetch` still rejects on the status, and the page reads it as an error. Only a
+ * 404 that carries its alternatives keeps the five minutes; a bare one (bad key, nothing to offer,
+ * or a lookup that failed) keeps thirty seconds, so a transient stall is not cached for everyone.
  */
 function goneResponse(event: H3Event, data: RentalGoneData | null): RentalGoneBody {
   setResponseStatus(event, 404, GONE_MESSAGE)
-  setResponseHeader(event, 'cache-control', RENTAL_GONE_CACHE_CONTROL)
+  setResponseHeader(
+    event,
+    'cache-control',
+    data ? RENTAL_GONE_CACHE_CONTROL : RENTAL_GONE_BARE_CACHE_CONTROL
+  )
   return {
     error: true,
     statusCode: 404,
@@ -162,6 +172,8 @@ export default defineEventHandler(async (event): Promise<RentalPageResponse | Re
     let gone: RentalGoneData | null = null
     try {
       const found = await loadRentalGone(key, { usdUyu: rate ?? 0, barrioLinks })
+      // Live rows only leave through `present` (public advertisers + availability), never raw:
+      // without it, a plain 404.
       gone =
         found && present
           ? {
@@ -169,7 +181,7 @@ export default defineEventHandler(async (event): Promise<RentalPageResponse | Re
               lookalike: found.lookalike ? present(found.lookalike) : null,
               similar: found.similar.map(present),
             }
-          : found
+          : null
     } catch (error) {
       console.error('[api/rentals/ficha] gone alternatives failed', error)
     }

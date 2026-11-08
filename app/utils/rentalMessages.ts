@@ -237,8 +237,12 @@ export const rentalMessages = {
       'Se incluye si menciona alguna de las elegidas. Confirmá las condiciones con quien publica.',
     knownHint:
       'Estos filtros incluyen solo lo que el aviso declara. Si no aparece, puede ser que falte el dato.',
-    // Debajo de mascotas, dueño directo y garantías: sólo el 7,9 % de los avisos declara mascotas.
-    declaredOnlyHint: 'Sólo muestra los avisos que lo declaran; la mayoría no lo dice.',
+    // Cada línea nombra su filtro: sólo el 7,9 % de los avisos declara mascotas (8/11/2026), y la
+    // de mascotas va debajo de una fila que también tiene "Con garaje".
+    petsDeclaredHint:
+      'Mascotas: sólo muestra los avisos que dicen que las admiten; la mayoría no lo dice.',
+    conditionsDeclaredHint:
+      'Dueño directo y garantías: sólo se muestran los avisos que lo declaran.',
     expensesFromDescription: 'según la descripción del aviso',
     source: 'Portal',
     allSources: 'Todos los portales',
@@ -604,7 +608,8 @@ export const rentalMessages = {
       'Matches any selected guarantee mentioned in the listing. Confirm terms with the publisher.',
     knownHint:
       'These filters only include explicitly published information. Missing results may simply lack that information.',
-    declaredOnlyHint: 'Only shows listings that state it; most do not say.',
+    petsDeclaredHint: 'Pets: only shows listings that say pets are allowed; most do not say.',
+    conditionsDeclaredHint: 'Owner-direct and guarantees: only listings that state it are shown.',
     expensesFromDescription: 'according to the listing description',
     source: 'Portal',
     allSources: 'All portals',
@@ -971,7 +976,9 @@ export const rentalMessages = {
       'Inclui anúncios que mencionam alguma das garantias selecionadas. Confirme as condições com o anunciante.',
     knownHint:
       'Estes filtros incluem apenas informações publicadas. Um imóvel ausente pode simplesmente não informar o dado.',
-    declaredOnlyHint: 'Só mostra os anúncios que informam isso; a maioria não diz.',
+    petsDeclaredHint:
+      'Animais de estimação: só mostra os anúncios que dizem que aceitam; a maioria não informa.',
+    conditionsDeclaredHint: 'Dono direto e garantias: só aparecem os anúncios que informam isso.',
     expensesFromDescription: 'segundo a descrição do anúncio',
     source: 'Portal',
     allSources: 'Todos os portais',

@@ -44,7 +44,19 @@ describe('rentalShareText', () => {
         translate('es')
       )
     ).toBe('$ 42.000 por mes, gastos comunes no informados')
-    // Gastos en dólares sin cotización: no hay total que decir.
+    // An amount without its currency is not a known amount either.
+    expect(
+      rentalShareText(
+        offer({ commonExpenses: 8000, commonExpensesCurrency: null }),
+        40,
+        'es',
+        translate('es')
+      )
+    ).toBe('$ 42.000 por mes, gastos comunes no informados')
+  })
+
+  it('says the published gastos comunes even when there is no total to add them to', () => {
+    // Dollar gastos comunes and no rate: they are known, only the sum is not.
     expect(
       rentalShareText(
         offer({ commonExpenses: 100, commonExpensesCurrency: 'USD' }),
@@ -52,7 +64,28 @@ describe('rentalShareText', () => {
         'es',
         translate('es')
       )
-    ).toBe('$ 42.000 por mes, gastos comunes no informados')
+    ).toBe('$ 42.000 + U$S 100 de gastos comunes por mes')
+    // The reviewer's probe: a dollar rent without a rate (priceUyu 0) and $ 8.000 of gastos.
+    expect(
+      rentalShareText(
+        offer({ price: 1000, currency: 'USD', priceUyu: 0, commonExpenses: 8000 }),
+        0,
+        'es',
+        translate('es')
+      )
+    ).toBe('U$S 1.000 + $ 8.000 de gastos comunes por mes')
+    expect(
+      rentalShareText(
+        offer({ price: 1000, currency: 'USD', priceUyu: 0, commonExpenses: 8000 }),
+        0,
+        'en',
+        translate('en')
+      )
+    ).toBe('U$S 1,000 + $ 8,000 common expenses a month')
+    for (const locale of ['es', 'en', 'pt'] as const)
+      expect((rentalPageMessages[locale] as Record<string, string>).shareNoTotal, locale).toContain(
+        '{expenses}'
+      )
   })
 
   it('keeps a dollar rent in dollars and totals in pesos at the page rate', () => {

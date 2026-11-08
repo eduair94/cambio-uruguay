@@ -21,10 +21,37 @@ export const RENTAL_GONE_SIMILAR_LIMIT = 6
  */
 export const RENTAL_GONE_CACHE_CONTROL = 'public, max-age=0, s-maxage=300'
 /**
+ * Un 404 SIN alternativas — una clave que no puede ser una vivienda, nada que ofrecer, o una
+ * lectura de alternativas que falló — se guarda treinta segundos y no cinco minutos: si fue un
+ * tropiezo pasajero de Mongo, el callejón no queda en el borde para todos los que lleguen después.
+ */
+export const RENTAL_GONE_BARE_CACHE_CONTROL = 'public, max-age=0, s-maxage=30'
+/**
  * El documento HTML: lo mismo, más `must-revalidate`, que es obligatorio en todo HTML del sitio
  * (nombra `_nuxt/<hash>.js` que cada deploy renombra; docs/app/LOADING_INCIDENT_2026-09-06.md).
  */
 export const RENTAL_GONE_PAGE_CACHE_CONTROL = 'public, max-age=0, must-revalidate, s-maxage=300'
+export const RENTAL_GONE_PAGE_BARE_CACHE_CONTROL = 'public, max-age=0, must-revalidate, s-maxage=30'
+/** La ficha viva: un minuto en el borde. */
+export const RENTAL_FICHA_PAGE_CACHE_CONTROL = 'public, max-age=0, must-revalidate, s-maxage=60'
+/** Un 503 nunca se guarda: es la respuesta de un problema, no de la ficha. */
+export const RENTAL_FICHA_ERROR_CACHE_CONTROL = 'no-store, max-age=0'
+
+/**
+ * El `cache-control` del documento de /alquileres/<key>: viva, un minuto; caída con algo que
+ * ofrecer, cinco; caída sin nada (ver RENTAL_GONE_BARE_CACHE_CONTROL), treinta segundos; 503, nunca.
+ */
+export function rentalFichaCacheControl(state: {
+  /** La lectura de la ficha terminó en error (404 o 503). */
+  failed: boolean
+  status: 404 | 503
+  /** El 404 trae datos de la ficha caída (`rentalGoneFromError` no es null). */
+  alternatives: boolean
+}): string {
+  if (!state.failed) return RENTAL_FICHA_PAGE_CACHE_CONTROL
+  if (state.status !== 404) return RENTAL_FICHA_ERROR_CACHE_CONTROL
+  return state.alternatives ? RENTAL_GONE_PAGE_CACHE_CONTROL : RENTAL_GONE_PAGE_BARE_CACHE_CONTROL
+}
 
 export interface RentalGoneSummary {
   department: string | null
@@ -145,13 +172,21 @@ export function rentalGoneDepartmentFromKey(key: string): string | null {
 /**
  * La página de barrio de una clave que ya no tiene fila: la clave se arma como
  * `<departamento>-<barrio>-<calle>-<hash>` (classes/rentals/dedupe.ts `propertyKey`), así que gana
- * el barrio indexable cuyo `<departamento>-<barrio>` es el prefijo más largo. Facebook arma
+ * el barrio cuyo `<departamento>-<barrio>` es el prefijo más largo. Facebook arma
  * `<departamento>-<tipo>-<hash>`: ahí no hay barrio y queda el departamento.
+ *
+ * El prefijo más largo se busca entre TODOS los barrios conocidos (`known`: los del relevamiento
+ * de precios y los 62 del INE, `<departamento>-<barrio>`), no sólo entre los que tienen página: si
+ * no, `montevideo-cerro-norte-…` caía en "Cerro" y `montevideo-malvin-norte-…` en "Malvín", que
+ * para el INE son otros barrios. Sólo se enlaza cuando el más largo es el de una página indexable;
+ * si no, null y la ficha ofrece el departamento.
  */
 export function rentalGoneBarrioFromKey(
   key: string,
-  links: Iterable<RentalGoneLink>
+  links: Iterable<RentalGoneLink>,
+  known: Iterable<string> = []
 ): (RentalGoneLink & { department: string }) | null {
+  const names = (prefix: string) => key === prefix || key.startsWith(`${prefix}-`)
   let best: (RentalGoneLink & { department: string }) | null = null
   let bestLength = 0
   for (const item of links) {
@@ -159,12 +194,14 @@ export function rentalGoneBarrioFromKey(
     if (!match) continue
     const prefix = `${match[1]}-${match[2]}`
     const department = DEPARTMENT_BY_SLUG.get(match[1]!)
-    if (!department || (key !== prefix && !key.startsWith(`${prefix}-`))) continue
+    if (!department || !names(prefix)) continue
     if (prefix.length > bestLength) {
       best = { path: item.path, label: item.label, department }
       bestLength = prefix.length
     }
   }
+  if (!best) return null
+  for (const prefix of known) if (prefix.length > bestLength && names(prefix)) return null
   return best
 }
 
