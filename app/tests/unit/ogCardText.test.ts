@@ -12,12 +12,17 @@ const {
   OG_DESCRIPTION_MAX,
   OG_IMAGE_ALT_FLOOR,
   clipAtWord,
+  glueAmounts,
   ogCardFooter,
   ogCardSubtitle,
   ogCardTag,
   ogCardTitle,
   replaceFloorImageAlt,
 } = ogCardText
+
+const NBSP = '\u00A0'
+/** Plain spaces back, to compare a drawn text with the page's own. */
+const plain = (text: string) => text.replaceAll(NBSP, ' ')
 
 const APP = resolve(__dirname, '../..')
 const BOARD_DEFAULT = 'Compará +40 casas de cambio en tiempo real'
@@ -44,13 +49,45 @@ describe('ogCardTitle', () => {
     expect(ogCardTitle('Cambio Uruguay')).toBe('Cambio Uruguay')
     expect(ogCardTitle(undefined)).toBe('')
   })
+
+  it('keeps plain spaces, because og:image:alt is built from it', () => {
+    expect(ogCardTitle('Audi A3 2018 usado: US$ 20.245')).not.toContain(NBSP)
+  })
+})
+
+describe('glueAmounts', () => {
+  it('keeps each currency sign on the line of its amount', () => {
+    expect(glueAmounts('Toyota Hilux 2024 usado: US$ 40.900')).toBe(
+      `Toyota Hilux 2024 usado: US$${NBSP}40.900`
+    )
+    expect(glueAmounts('Apartamento a $ 45.000 más $ 6.000 de gastos comunes')).toBe(
+      `Apartamento a $${NBSP}45.000 más $${NBSP}6.000 de gastos comunes`
+    )
+    expect(glueAmounts('$U 39.000, U$S 500, USD 1.200, UYU 48.000, UI 5.000, R$ 300, € 90')).toBe(
+      `$U${NBSP}39.000, U$S${NBSP}500, USD${NBSP}1.200, UYU${NBSP}48.000, UI${NBSP}5.000, R$${NBSP}300, €${NBSP}90`
+    )
+  })
+
+  it('leaves a sign with no amount after it, and every other space, alone', () => {
+    for (const text of [
+      'Cuánto se pide en US$ por un auto',
+      'Pagá en $ o en dólares',
+      'USDT 5 y USDC 3',
+      'Apartamento 2 dorm. en Pocitos',
+      '2024 usado',
+    ]) {
+      expect(glueAmounts(text), text).toBe(text)
+    }
+    const glued = glueAmounts('Hilux: US$ 40.900')
+    expect(glueAmounts(glued)).toBe(glued)
+  })
 })
 
 describe('clipAtWord', () => {
   it('cuts at a word to 110 characters or fewer and adds an ellipsis', () => {
     const clipped = clipAtWord(POCITOS)
     expect(clipped.endsWith('…')).toBe(true)
-    const head = clipped.slice(0, -1)
+    const head = plain(clipped.slice(0, -1))
     expect(head.length).toBeLessThanOrEqual(OG_DESCRIPTION_MAX)
     expect(POCITOS.startsWith(head)).toBe(true)
     // The cut falls between words, and not after a dangling "y"/"de"/comma.
@@ -58,8 +95,14 @@ describe('clipAtWord', () => {
     expect(head).not.toMatch(/(?:\s(?:y|de|con|por|a)|[,;:])$/)
     // "…, con gastos comunes" would end at character 112.
     expect(clipped).toBe(
-      'Alquilar en Pocitos (Montevideo): apartamento de 2 dormitorios a $ 39.000 por mes de mediana, con gastos…'
+      `Alquilar en Pocitos (Montevideo): apartamento de 2 dormitorios a $${NBSP}39.000 por mes de mediana, con gastos…`
     )
+  })
+
+  it('never leaves a currency sign without its amount at the cut', () => {
+    // On plain spaces, the last one before the limit is the one after "$".
+    const text = `${'a'.repeat(100)} por $ 39.000 mensuales`
+    expect(clipAtWord(text)).toBe(`${'a'.repeat(100)}…`)
   })
 
   it('leaves short text alone and hard-cuts one endless word', () => {
@@ -338,6 +381,16 @@ describe('Cambio.vue', () => {
     expect(html).not.toContain('| Cambio Uruguay')
     expect(html).not.toContain('casas de cambio')
     expect(html).not.toContain('actualizado cada 10 min')
+  })
+
+  it('draws a price with its sign on one line, in the title and the subtitle', async () => {
+    // /autos-usados-uruguay/precios/toyota-hilux on 2026-11-08: "US$" closed line one.
+    const html = await renderCard({
+      title: 'Toyota Hilux 2024 usado: US$ 40.900 | Cambio Uruguay',
+      subtitle: 'Mediana de US$ 40.900 sobre 21 avisos',
+    })
+    expect(html).toContain(`>Toyota Hilux 2024 usado: US$${NBSP}40.900<`)
+    expect(html).toContain(`>Mediana de US$${NBSP}40.900 sobre 21 avisos<`)
   })
 
   it('keeps the exchange subtitle and footer on the rate board', async () => {

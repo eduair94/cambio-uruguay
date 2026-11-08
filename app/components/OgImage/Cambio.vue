@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue'
-import { ogCardFooter, ogCardSubtitle, ogCardTag, ogCardTitle } from '~/utils/ogCardText'
+import {
+  glueAmounts,
+  ogCardFooter,
+  ogCardSubtitle,
+  ogCardTag,
+  ogCardTitle,
+} from '~/utils/ogCardText'
 
 // OG image template (1200x630) rendered server-side by nuxt-og-image via satori.
 // Satori supports a CSS subset: flexbox only, gradients, border, border-radius,
@@ -135,7 +141,7 @@ const hasBuy = validRate(props.rateBuy)
 const hasSell = validRate(props.rateSell)
 const hasBoard = hasBuy || hasSell
 
-const titleText = ogCardTitle(props.title) || labels.title
+const titleText = glueAmounts(ogCardTitle(props.title) || labels.title)
 const subtitleText = ogCardSubtitle({
   subtitle: props.subtitle,
   description: props.description,
