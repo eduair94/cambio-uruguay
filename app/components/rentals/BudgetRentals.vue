@@ -688,7 +688,7 @@ async function share() {
 }
 .budget-filters h2 {
   margin: 0;
-  font-size: 1.15rem;
+  font-size: 1.25rem;
 }
 .budget-filters__body {
   display: grid;
@@ -755,7 +755,7 @@ async function share() {
 }
 .budget-results h2 {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
 }
 .budget-results__heading p {
   margin: 4px 0 0;
@@ -889,7 +889,7 @@ async function share() {
   padding: 24px 0;
 }
 .budget-empty h3 {
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   margin: 0;
 }
 .budget-note {
