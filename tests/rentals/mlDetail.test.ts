@@ -1,19 +1,62 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+// The DB half of the text fields (`applyMlDetails`, the `writeMlDetail*` helpers) against a stub of
+// the app database; every other test here is pure and never touches it.
+const db = vi.hoisted(() => ({
+  docs: [] as Array<Record<string, unknown>>,
+  finds: [] as Array<{ filter: Record<string, unknown>; projection: Record<string, number> }>,
+  stored: null as Record<string, unknown> | null,
+  updates: [] as Array<{ filter: unknown; update: Record<string, Record<string, unknown>>; options: { arrayFilters: Array<Record<string, unknown>> } }>,
+}));
+vi.mock("../../classes/appdb", () => ({
+  appConnection: () => ({
+    collection: () => ({
+      find: (filter: Record<string, unknown>, options: { projection?: Record<string, number> } = {}) => {
+        const projection = options.projection ?? {};
+        db.finds.push({ filter, projection });
+        const hidden = Object.keys(projection).filter(field => projection[field] === 0);
+        return { toArray: async () => db.docs.map(doc => Object.fromEntries(Object.entries(doc).filter(([field]) => !hidden.includes(field)))) };
+      },
+      findOne: async () => db.stored,
+      updateOne: async (filter: unknown, update: Record<string, Record<string, unknown>>, options: { arrayFilters: Array<Record<string, unknown>> }) => {
+        db.updates.push({ filter, update, options });
+        return { modifiedCount: 1 };
+      },
+    }),
+  }),
+}));
+
+import { advertiserClassification, ownerDirectDeclaration } from "../../classes/rentals/advertiser";
+import { retainAdvertiserFields } from "../../classes/rentals/advertiserRetention";
 import { applyGallery } from "../../classes/rentals/detailImages";
 import { pinFits, pinFor, type RentalPin } from "../../classes/rentals/detailPins";
 import {
+  applyMlDetailRows,
+  applyMlDetails,
+  ML_SELLER_PLACEHOLDER,
   mlDetailExpenses,
   mlDetailIsCurrent,
+  mlDetailStated,
+  mlDetailTargets,
+  mlRereadRefusal,
+  officialStoreSeller,
   mlPhotoKey,
   mlPictureId,
+  parseMlOfficialStore,
   parseMlRentalBedrooms,
+  parseMlRentalDescription,
   parseMlRentalExpenses,
   parseMlRentalImages,
   parseMlRentalPin,
+  parseMlRentalPublishedAgo,
   prioritizeMlDetailTargets,
+  writeMlDetailDescription,
+  writeMlDetailPublishedAt,
+  writeMlDetailSeller,
   type MlDetailTarget,
+  type MlRentalDetail,
 } from "../../classes/rentals/mlDetail";
 import type { RawRental, RentalProperty } from "../../classes/rentals/types";
 
@@ -119,11 +162,256 @@ describe("which item pages are read first", () => {
 
   it("reads again, once, a page stored before its pin or its photos were kept", () => {
     const fresh = "2026-09-09T00:00:00.000Z";
-    const row = { ok: true, readAt: "2026-10-08T12:00:00.000Z", latitude: null, images: [] as string[] };
+    const row = { ok: true, readAt: "2026-10-08T12:00:00.000Z", latitude: null, images: [] as string[], description: null, publishedAt: null, officialStore: null };
     expect(mlDetailIsCurrent(row, fresh)).toBe(true);
     expect(mlDetailIsCurrent({ ...row, images: undefined }, fresh)).toBe(false);
     expect(mlDetailIsCurrent({ ...row, latitude: undefined }, fresh)).toBe(false);
     expect(mlDetailIsCurrent({ ...row, readAt: "2026-09-01T12:00:00.000Z" }, fresh)).toBe(false);
+  });
+
+  it("reads again, once, a page stored before its text was kept, and not again after", () => {
+    const fresh = "2026-10-09T00:00:00.000Z";
+    // A row of 2026-10-20, current in every other field: ~28.000 of these get one more read.
+    const before = { ok: true, readAt: "2026-10-20T12:00:00.000Z", latitude: -34.9, images: ["x"] };
+    expect(mlDetailIsCurrent(before, fresh)).toBe(false);
+    // The three text fields go in together; a page that had none of them is still read.
+    expect(mlDetailIsCurrent({ ...before, description: null, publishedAt: null, officialStore: null }, fresh)).toBe(true);
+    expect(mlDetailIsCurrent({ ...before, description: "Texto", publishedAt: "2026-10-01", officialStore: "Remax Único" }, fresh)).toBe(true);
+  });
+
+  it("hands each reread what its stored read stated, and a first read nothing", async () => {
+    db.finds = [];
+    // The stub answers both collections with the same rows: the property's for the targets, the
+    // stored read's for what is current. Each loop skips the shape it does not read.
+    db.docs = [
+      { key: "p1", department: "Montevideo", propertyType: "apartamento", offers: [
+        { source: "mercadolibre", listingId: "mercadolibre:MLU1", url: "https://apartamento.mercadolibre.com.uy/MLU-1-x-_JM", lastSeen: "2026-11-07" },
+        { source: "mercadolibre", listingId: "mercadolibre:MLU2", url: "https://apartamento.mercadolibre.com.uy/MLU-2-x-_JM", lastSeen: "2026-11-07" },
+      ] },
+      // Read on 2026-10-20, before the text fields: due once more.
+      { listingId: "mercadolibre:MLU1", ok: true, readAt: "2026-10-20T12:00:00.000Z", amount: 5_000, latitude: -34.9, bedrooms: 2, images: ["x"] },
+    ];
+    const targets = await mlDetailTargets(new Date("2026-11-08T12:00:00.000Z"), 10);
+    expect(db.finds[1]!.projection).toMatchObject({ amount: 1, latitude: 1, bedrooms: 1, images: 1, publishedAt: 1 });
+    expect(targets.map(target => [target.listingId, target.reread ?? false])).toEqual([["mercadolibre:MLU2", false], ["mercadolibre:MLU1", true]]);
+    expect(targets[0]!.stated).toBeUndefined();
+    expect(targets[1]!.stated).toEqual({ expenses: true, pin: true, photos: true, bedrooms: true });
+    db.docs = [];
+  });
+});
+
+// Review of 2026-11-08: the text fields send ~28.000 stored pages to one more read in five days, and
+// each read replaces its whole stored row. If the page ML serves our UA changed under them, the
+// gastos comunes, pins and photos stored before would turn into nulls, and the harvest would stop
+// putting them back on the adverts.
+describe("a run whose rereads blank what earlier reads stated", () => {
+  const after = (over: Partial<MlRentalDetail> = {}): MlRentalDetail => ({
+    listingId: "mercadolibre:MLU1", readAt: "2026-11-08T04:00:00.000Z", amount: 5_000, currency: "UYU",
+    latitude: -34.9, longitude: -56.16, bedrooms: 2, images: ["https://http2.mlstatic.com/D_NQ_NP_1-MLU1_1-F.webp"],
+    description: null, publishedAt: null, officialStore: null, ok: true, ...over,
+  });
+  const had = mlDetailStated(after());
+
+  it("knows what a stored read stated", () => {
+    expect(had).toEqual({ expenses: true, pin: true, photos: true, bedrooms: true });
+    // A zero is what ML's form keeps when nobody writes a number: not a figure that can be lost.
+    expect(mlDetailStated({ amount: 0, latitude: null, images: [], bedrooms: null })).toEqual({ expenses: false, pin: false, photos: false, bedrooms: false });
+    // Rows from before a field was kept never had it.
+    expect(mlDetailStated({})).toEqual({ expenses: false, pin: false, photos: false, bedrooms: false });
+  });
+
+  it("is not saved when half its rereads lose a field they had", () => {
+    const reads = Array.from({ length: 24 }, (_, i) => ({ before: had, after: after(i < 12 ? { latitude: null, longitude: null } : {}) }));
+    expect(mlRereadRefusal(reads)).toBe("12 de 24 relecturas perdieron pin");
+    const noTable = Array.from({ length: 20 }, () => ({ before: had, after: after({ amount: null, currency: null }) }));
+    expect(mlRereadRefusal(noTable)).toBe("20 de 20 relecturas perdieron gastos comunes");
+  });
+
+  it("is saved when adverts change one by one, when there are too few to tell, and for first reads", () => {
+    // Two adverts out of 24 dropping their map is two adverts, not a page that changed.
+    expect(mlRereadRefusal(Array.from({ length: 24 }, (_, i) => ({ before: had, after: after(i < 2 ? { latitude: null } : {}) })))).toBeNull();
+    // Nineteen rereads never decide, whatever they lost.
+    expect(mlRereadRefusal(Array.from({ length: 19 }, () => ({ before: had, after: after({ images: [] }) })))).toBeNull();
+    // A first read had nothing stored: it cannot lose anything.
+    expect(mlRereadRefusal(Array.from({ length: 40 }, () => ({ after: after({ latitude: null, images: [], amount: null }) })))).toBeNull();
+    // Gaining a field is never a loss.
+    expect(mlRereadRefusal(Array.from({ length: 40 }, () => ({ before: mlDetailStated({}), after: after() })))).toBeNull();
+  });
+});
+
+// MLU-703761475 as served to our UA on 2026-11-08 (tests/rentals/fixtures/ml-rental-item-text.html):
+// its page had the description, the age and the official store all along, and the ficha said
+// "Todavía no tenemos una descripción", "Publica: Mercado Libre" and a firstSeen of that same day.
+describe("the text of a Mercado Libre rental item page", () => {
+  const PAGE = fixture("ml-rental-item-text.html");
+  const READ_AT = "2026-11-08T04:18:00.000Z";
+  const header = (subtitle: string) =>
+    `<div class="ui-pdp-header__subtitle"><span class="ui-pdp-subtitle ui-pdp-subtitle_rex" aria-label="${subtitle}">${subtitle}</span></div>`;
+
+  it("reads the advert's own description, without its phones or emails", () => {
+    const description = parseMlRentalDescription(PAGE)!;
+    expect(description).toContain("Gastos comunes: $U11.000.-");
+    expect(description).toContain("Garantías aceptadas: Anda o Contaduría.");
+    expect(description).toContain("Cochera para un auto.");
+    expect(description).not.toMatch(/099|123 456|@|ejemplo/);
+    expect(description.length).toBeLessThanOrEqual(2_400);
+  });
+
+  it("abstains on a page with no description, or one with nothing left after the contacts", () => {
+    expect(parseMlRentalDescription(page(specRow("19.500 UYU")))).toBeNull();
+    expect(parseMlRentalDescription(`<p class="ui-pdp-description__content">099 123 456</p>`)).toBeNull();
+  });
+
+  it("dates 'Publicado hace N días' back from the read, and nothing ML rounds", () => {
+    expect(parseMlRentalPublishedAgo(PAGE, READ_AT)).toBe("2026-10-09");
+    expect(parseMlRentalPublishedAgo(header("Casa en Alquiler | Publicado hace 1 día"), READ_AT)).toBe("2026-11-07");
+    // 04:18 UTC minus five hours is the day before.
+    expect(parseMlRentalPublishedAgo(header("Publicado hace 5 horas"), READ_AT)).toBe("2026-11-07");
+    expect(parseMlRentalPublishedAgo(header("Apartamento en Alquiler | Publicado hace 2 meses"), READ_AT)).toBeNull();
+    expect(parseMlRentalPublishedAgo(header("Publicado hace 1 año"), READ_AT)).toBeNull();
+    expect(parseMlRentalPublishedAgo(header("Publicado hace 3 semanas"), READ_AT)).toBeNull();
+    // Only the header says when the advert went up: a description is free text.
+    expect(parseMlRentalPublishedAgo(`<p class="ui-pdp-description__content">Publicado hace 3 días</p>`, READ_AT)).toBeNull();
+    expect(parseMlRentalPublishedAgo(PAGE, "not a date")).toBeNull();
+  });
+
+  it("names the official store ML shows, never the address beside it or a seller's nickname", () => {
+    expect(parseMlOfficialStore(PAGE)).toBe("Remax Único");
+    // The header's "seller validated" link of the same page is the advert's address.
+    expect(parseMlOfficialStore(PAGE.replace(/<div class="ui-pdp-seller-good-attention">[\s\S]*<\/body>/, "</body>"))).toBeNull();
+    expect(parseMlOfficialStore(`<p><span>Vendido por</span><a href="#seller_profile">JUANPEREZ1987</a></p>`)).toBeNull();
+    // Two names for one store is no name.
+    expect(parseMlOfficialStore(PAGE.replace("<span>Remax Único</span>", "<span>Otra Inmobiliaria</span>"))).toBeNull();
+  });
+
+  it("is the same page the spec table is read from", () => {
+    expect(parseMlRentalExpenses(PAGE)).toEqual({ amount: 11_000, currency: "UYU" });
+    expect(parseMlRentalBedrooms(PAGE)).toBe(2);
+  });
+});
+
+describe("putting the page's text back on the advert", () => {
+  const detail: MlRentalDetail = {
+    listingId: "mercadolibre:MLU703761475", readAt: "2026-11-08T04:18:00.000Z", amount: null, currency: null,
+    latitude: null, longitude: null, bedrooms: null, images: [],
+    description: parseMlRentalDescription(fixture("ml-rental-item-text.html")), publishedAt: "2026-10-09", officialStore: "Remax Único", ok: true,
+  };
+  const card = (over: Partial<RawRental> = {}): RawRental => ({
+    source: "mercadolibre", listingId: detail.listingId, url: "https://apartamento.mercadolibre.com.uy/MLU-703761475-x-_JM",
+    title: "Alquiler 2 Dormitorios Y Servicio, Cochera, Balcón", price: 45_000, currency: "UYU", commonExpenses: null,
+    commonExpensesCurrency: null, sellerName: ML_SELLER_PLACEHOLDER, sellerType: "desconocido", image: null, publishedAt: null,
+    propertyType: "apartamento", department: "Montevideo", neighborhood: "Pocitos", address: "", street: "", streetNumber: "",
+    latitude: null, longitude: null, bedrooms: 2, bathrooms: null, area: null, parkingSpaces: null, furnished: null,
+    petsAllowed: null, guarantees: [], ...over,
+  });
+  const stated = new Map([[detail.listingId, detail]]);
+
+  afterEach(() => vi.unstubAllEnvs());
+  beforeEach(() => { db.docs = []; db.finds = []; });
+
+  it("with RENTALS_ML_DETAIL_TEXT off, puts back the publication day and the store, never the description", () => {
+    const row = card();
+    expect(applyMlDetailRows([row], stated, 40, { text: false })).toMatchObject({ publishedAt: 1, sellers: 1, descriptions: 0 });
+    expect(row).toMatchObject({ publishedAt: "2026-10-09", sellerName: "Remax Único", guarantees: [] });
+    expect(row.details).toBeUndefined();
+  });
+
+  it("with it on, the description too, and the guarantees it names", () => {
+    const row = card();
+    expect(applyMlDetailRows([row], stated, 40, { text: true }).descriptions).toBe(1);
+    expect(row.details!.description).toContain("Garantías aceptadas: Anda o Contaduría.");
+    expect(row.guarantees).toEqual(expect.arrayContaining(["anda", "contaduria"]));
+  });
+
+  it("only fills what the advert does not already say", () => {
+    const row = card({ publishedAt: "2026-11-01", sellerName: "Particular" });
+    applyMlDetailRows([row], stated, 40, { text: true });
+    expect(row).toMatchObject({ publishedAt: "2026-11-01", sellerName: "Particular" });
+    const described = card({ details: { description: "Otro texto", images: [], builtArea: null, totalArea: null, landArea: null, terraceArea: null, amenities: [], guaranteeText: "" } });
+    applyMlDetailRows([described], stated, 40, { text: true });
+    expect(described.details!.description).toBe("Otro texto");
+  });
+
+  // Review of 2026-11-08: "Publica: Remax Único" beside "Dueño directo" read from the title. ML's
+  // badge says a business publishes it, and a contradiction cancels the claim.
+  it("drops an owner-direct claim the official store contradicts, without making the store an agency", () => {
+    const url = "https://apartamento.mercadolibre.com.uy/MLU-703761475-x-_JM";
+    const title = "Dueño directo alquila 2 dormitorios en Pocitos";
+    const claim = ownerDirectDeclaration({ title }, url, "2026-11-08T04:00:00.000Z")!;
+    expect(claim).toMatchObject({ declared: true, evidence: "advert_text" });
+    const claimed = card({ title, url, sellerType: advertiserClassification({ title }).sellerType, ownerDirect: claim });
+    expect(claimed.sellerType).toBe("particular");
+    applyMlDetailRows([claimed], stated, 40);
+    expect(claimed).toMatchObject({ sellerName: "Remax Único", sellerType: "desconocido", ownerDirect: null });
+    // No claim to drop: the type stays what the title made it, never "inmobiliaria" from a name.
+    const silent = card();
+    applyMlDetailRows([silent], stated, 40);
+    expect(silent).toMatchObject({ sellerName: "Remax Único", sellerType: "desconocido", ownerDirect: null });
+    const agency = card({ sellerType: "inmobiliaria" });
+    applyMlDetailRows([agency], stated, 40);
+    expect(agency.sellerType).toBe("inmobiliaria");
+    // ML's own private-seller filter is not overwritten by the store, nor is its claim.
+    const particular = card({ title, url, sellerName: "Particular", sellerType: "particular", ownerDirect: claim });
+    applyMlDetailRows([particular], stated, 40);
+    expect(particular).toMatchObject({ sellerName: "Particular", sellerType: "particular", ownerDirect: claim });
+  });
+
+  it("drops it with null, so a claim stored by an earlier read does not come back", () => {
+    const url = "https://apartamento.mercadolibre.com.uy/MLU-703761475-x-_JM";
+    const claim = ownerDirectDeclaration({ title: "Dueño directo alquila" }, url, "2026-11-08T04:00:00.000Z")!;
+    type Advert = Pick<RawRental, "source" | "listingId" | "url" | "sellerName" | "sellerType" | "ownerDirect">;
+    const base = { source: "mercadolibre" as const, listingId: detail.listingId, url, sellerName: "Remax Único" };
+    const previous: Advert = { ...base, sellerType: "particular", ownerDirect: claim };
+    expect(retainAdvertiserFields(previous, { ...base, sellerType: "desconocido", ...officialStoreSeller({ sellerType: "particular" }) }, true).ownerDirect).toBeNull();
+    // `undefined` reads as "not inspected", and retention would put the old claim back.
+    expect(retainAdvertiserFields(previous, { ...base, sellerType: "desconocido" }, true).ownerDirect).toMatchObject({ declared: true });
+  });
+
+  it("asks the database for the descriptions only when it will publish them", async () => {
+    db.docs = [detail as unknown as Record<string, unknown>];
+    const off = card();
+    await applyMlDetails([off], 40);
+    expect(db.finds[0]!.projection).toEqual({ _id: 0, description: 0 });
+    expect(off).toMatchObject({ publishedAt: "2026-10-09", sellerName: "Remax Único" });
+    expect(off.details).toBeUndefined();
+    vi.stubEnv("RENTALS_ML_DETAIL_TEXT", "1");
+    const on = card();
+    await applyMlDetails([on], 40);
+    expect(db.finds[1]!.projection).toEqual({ _id: 0 });
+    expect(on.details!.description).toContain("Gastos comunes: $U11.000.-");
+  });
+});
+
+describe("writing the page's text on the stored advert", () => {
+  const target = { key: "propiedad", listingId: "mercadolibre:MLU703761475" };
+  beforeEach(() => { db.stored = null; db.updates = []; });
+
+  it("sets the publication day and the store only where the advert has none", async () => {
+    expect(await writeMlDetailPublishedAt(target, "2026-10-09")).toBe(true);
+    expect(db.updates[0]!.update.$set).toEqual({ "offers.$[o].publishedAt": "2026-10-09" });
+    expect(db.updates[0]!.options.arrayFilters).toEqual([{ "o.listingId": target.listingId, "o.publishedAt": null }]);
+    expect(await writeMlDetailSeller(target, "Remax Único")).toBe(true);
+    // A "particular" only the title's claim made goes first, while the placeholder still marks the advert…
+    expect(db.updates[1]!.update.$set).toEqual({ "offers.$[o].sellerType": "desconocido" });
+    expect(db.updates[1]!.options.arrayFilters).toEqual([{ "o.listingId": target.listingId, "o.sellerName": "Mercado Libre", "o.sellerType": "particular" }]);
+    // …then the store over the placeholder, without the owner-direct claim it contradicts.
+    expect(db.updates[2]!.update.$set).toEqual({ "offers.$[o].sellerName": "Remax Único", "offers.$[o].ownerDirect": null });
+    expect(db.updates[2]!.options.arrayFilters).toEqual([{ "o.listingId": target.listingId, "o.sellerName": "Mercado Libre" }]);
+    expect(await writeMlDetailPublishedAt(target, "hace un mes")).toBe(false);
+    expect(await writeMlDetailSeller(target, "")).toBe(false);
+    expect(db.updates).toHaveLength(3);
+  });
+
+  it("puts the description on an advert that shows none, and leaves one that does", async () => {
+    db.stored = { offers: [{ listingId: target.listingId }] };
+    expect(await writeMlDetailDescription(target, "Luminoso, gastos comunes $5.000")).toBe(true);
+    expect(db.updates[0]!.update.$set!["offers.$[o].details"]).toMatchObject({ description: "Luminoso, gastos comunes $5.000", images: [] });
+    db.stored = { offers: [{ listingId: target.listingId, details: { description: "" } }] };
+    expect(await writeMlDetailDescription(target, "Luminoso")).toBe(true);
+    expect(db.updates[1]!.update.$set).toEqual({ "offers.$[o].details.description": "Luminoso" });
+    db.stored = { offers: [{ listingId: target.listingId, details: { description: "Ya tiene" } }] };
+    expect(await writeMlDetailDescription(target, "Luminoso")).toBe(false);
+    expect(db.updates).toHaveLength(2);
   });
 });
 

@@ -79,7 +79,8 @@ export function captionRejection(text: string): string | null {
 // --- Amounts ---------------------------------------------------------------------------------
 
 type Role = "price" | "gc" | "variant" | "ignore" | "plain";
-interface Amount { value: number; currency: RentalCurrency; role: Role }
+/** `marked`: the amount carried its own currency (`$`, `U$S`, "pesos"…); a bare one is read as pesos. */
+interface Amount { value: number; currency: RentalCurrency; role: Role; marked: boolean }
 
 const USD = /(?:u\$s|us\$|usd|u\$d|d[oó]lares)/i;
 /**
@@ -160,6 +161,14 @@ export function captionAmounts(text: string): {
   commonExpenses: number | null;
   commonExpensesCurrency: RentalCurrency | null;
   ambiguous: boolean;
+  /**
+   * The text labels two different gastos comunes ("$3.600 y $4.000"), or labels one and also says
+   * there are none. `commonExpenses` still reports the first, as the captions always did; a reader
+   * that has to be sure (the advert descriptions, textFacts.ts) abstains on this.
+   */
+  commonExpensesAmbiguous: boolean;
+  /** The gastos comunes amount carried its own currency mark; false for a bare number (read as pesos). */
+  commonExpensesMarked: boolean;
 } {
   const source = String(text || "").replace(/💲/g, "$").replace(/\$\s*U(?![a-záéíóúñ])/gi, "$").replace(PHONE, " ");
   const amounts: Amount[] = [];
@@ -192,10 +201,11 @@ export function captionAmounts(text: string): {
       previousKept = false;
       continue;
     }
-    amounts.push({ value, currency: currency ?? "UYU", role });
+    amounts.push({ value, currency: currency ?? "UYU", role, marked: currency !== null });
     previousKept = true;
   }
-  const gc = amounts.find(amount => amount.role === "gc") ?? null;
+  const gcAmounts = amounts.filter(amount => amount.role === "gc");
+  const gc = gcAmounts[0] ?? null;
   const noGc = /\b(?:sin|no\s+(?:paga|pagas|tiene|abona)|libre\s+de)\s+(?:gastos\s+comunes|gc|expensas)\b/i.test(source);
   const labelled = amounts.filter(amount => amount.role === "price");
   const plain = amounts.filter(amount => amount.role === "plain");
@@ -216,6 +226,8 @@ export function captionAmounts(text: string): {
     commonExpenses: gc ? gc.value : noGc ? 0 : null,
     commonExpensesCurrency: gc ? gc.currency : noGc ? (chosen ? chosen.currency : "UYU") : null,
     ambiguous,
+    commonExpensesAmbiguous: distinct(gcAmounts) > 1 || (gc !== null && noGc),
+    commonExpensesMarked: gc ? gc.marked : false,
   };
 }
 

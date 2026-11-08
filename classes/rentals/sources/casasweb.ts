@@ -4,10 +4,10 @@ import { advertiserClassification, ownerDirectDeclaration } from "../advertiser"
 import * as cheerio from "cheerio";
 import { setTimeout as sleep } from "timers/promises";
 import { fetchText } from "../net";
-import { canonicalDepartment, inferPropertyType, isPlausibleRent, looksLikeRentalAdvert, parseCurrency, parseMoney } from "../normalize";
+import { canonicalDepartment, flatten, inferPropertyType, isPlausibleRent, looksLikeRentalAdvert, parseCurrency, parseMoney } from "../normalize";
 import { appDbConfigured } from "../../appdb";
 import { applyCasaswebDetails } from "../casaswebDetail";
-import type { RawRental } from "../types";
+import type { RawRental, RentalPropertyType } from "../types";
 import type { RentalSourceResult } from "./types";
 
 const ORIGIN = "https://casasweb.com";
@@ -48,11 +48,107 @@ export function readCasaswebPager($: cheerio.CheerioAPI): { currentPage: number 
   return { currentPage: page, nextUrl: url && url.origin === ORIGIN ? url.href : null };
 }
 
+/**
+ * Whether a card's barrio can be a place. From 2026-11-03 the cards moved the type and the barrio
+ * into a badge and left the surfaces where the barrio used to be, and ~1.350 adverts went out in
+ * "barrios" called "40 m2 40 m2" (five of them indexable pages, counted in every barrio median). A
+ * surface anywhere in it ("40 m2 40 m2", "60 mts"), a bare number, a hectare count ("4 H") or the
+ * country is not a barrio. A name that only STARTS with a digit is: "25 de Mayo", "18 de Julio".
+ */
+export function plausibleCasaswebNeighborhood(value: string): boolean {
+  const text = clean(value);
+  if (!text) return false;
+  if (/\d[\d.,]*\s*(?:m2|m²|mts?\.?|metros?)(?![a-záéíóúñ])/i.test(text)) return false;
+  if (/^[\d\s.,]+$/.test(text)) return false;
+  if (/^\d+(?:[.,]\d+)?\s*(?:h|has?|hect[aá]reas?)\.?$/i.test(text)) return false;
+  return flatten(text) !== "uruguay";
+}
+
+/** What a search card says about its unit. Shared with the sales reader (propertysales/casasweb.ts). */
+export interface CasaswebCard {
+  /** The portal's type ("Apartamento"); "" when the card shows none. A hint for `inferPropertyType`. */
+  declaredType: string;
+  /** "" when the card names no barrio that passes `plausibleCasaswebNeighborhood`. */
+  neighborhood: string;
+  /** "Edificados: 40 m²"; null = not stated. */
+  builtArea: number | null;
+  /** "Area Total: 45 m²"; null = not stated. A hectare figure ("1 ha") is not converted. */
+  totalArea: number | null;
+  /** The single `<i>45m²</i>` of the cards served until 2026-11. */
+  legacyArea: number | null;
+}
+
+const surface = (text: string, label: RegExp): number | null => {
+  const match = new RegExp(`${label.source}\\s*:?\\s*([\\d.,]+)\\s*m(?:2|²)`, "i").exec(text);
+  return match ? parseMoney(match[1]) : null;
+};
+
+/**
+ * Reads a card's type, barrio and surfaces.
+ *
+ * Since 2026-11 (52 of 52 cards of the Montevideo apartments search, and every card of the houses,
+ * garages and lots searches sampled on 2026-11-08) the type and the zone sit in
+ * `<span class="badge-zona-resultado">Apartamento - Pocitos Nuevo</span>`, accents included, and the
+ * first `<small>` holds the surfaces: `<b>Edificados:</b> 40 m²<br><b>Area Total:</b> 40 m²`. The
+ * zone can carry its own " - " ("Casa - Punta del Este - Pinares"): the type is the first part and
+ * the barrio the last. The cards served until then put type and surface in `<b>Apartamento -
+ * <i>45m²</i></b>` and the barrio after it; that reading stays as the fallback, and only when the
+ * barrio it yields can be one.
+ */
+export function readCasaswebCard(card: cheerio.Cheerio<any>): CasaswebCard {
+  const first = card.find(".tipo-propiedad-zona small").eq(0);
+  const surfaces = clean(first.text());
+  const legacy = clean(first.find("i").text()).match(/([\d.,]+)\s*m/i);
+  const areas = {
+    builtArea: surface(surfaces, /Edificados/),
+    totalArea: surface(surfaces, /[AÁ]rea\s+Total/),
+    legacyArea: legacy ? parseMoney(legacy[1]) : null,
+  };
+  const badge = clean(card.find(".badge-zona-resultado").first().text()).replace(/\s+[-–]\s*$/, "");
+  const parts = badge.split(/\s+[-–]\s+/).filter(Boolean);
+  if (parts.length >= 2) {
+    const neighborhood = parts[parts.length - 1]!;
+    return { ...areas, declaredType: parts[0]!, neighborhood: plausibleCasaswebNeighborhood(neighborhood) ? neighborhood : "" };
+  }
+  const legacyType = clean(first.find("b").clone().children().remove().end().text()).replace(/\s*-\s*$/, "");
+  const legacyNeighborhood = clean(first.clone().find("b").remove().end().text());
+  return {
+    ...areas,
+    // The 2026-11 labels ("Edificados:Area Total:") are not a type.
+    declaredType: parts[0] || (legacyType.includes(":") ? "" : legacyType),
+    neighborhood: plausibleCasaswebNeighborhood(legacyNeighborhood) ? legacyNeighborhood : "",
+  };
+}
+
+/**
+ * The card's surface: what it states as built, else its total, else the older single figure. A
+ * house's total is its lot (the advert's own page says so, propertysales/casasweb.ts), never its
+ * built surface, so a house without "Edificados" has no surface on the card.
+ */
+export function casaswebCardArea(card: Pick<CasaswebCard, "builtArea" | "totalArea" | "legacyArea">, propertyType: RentalPropertyType | null): number | null {
+  if (card.builtArea) return card.builtArea;
+  if (card.totalArea && propertyType !== "casa") return card.totalArea;
+  return card.legacyArea;
+}
+
+/**
+ * Cards this parser no longer understands: they parse, but fewer than half of them name a barrio
+ * that can be one. The count-only check let the 2026-11-03 change publish ~1.350 adverts in "40 m2"
+ * barrios for five days without a word; this one fails the search, so the run note says so. One
+ * card alone proves nothing about the markup (a last page, a type whose badge names no zone): it is
+ * published without a barrio, and the search's other pages, or the next search, tell.
+ */
+export function casaswebCardsUnrecognised(cardCount: number, placedCount: number): boolean {
+  return cardCount >= 2 && placedCount * 2 < cardCount;
+}
+
 export interface CasaswebPage {
   listings: RawRental[];
   total: number;
   nextUrl: string | null;
   cardCount: number;
+  /** Cards (excluded ones included) that name a plausible barrio: see `casaswebCardsUnrecognised`. */
+  placedCount: number;
   /** Includes excluded seasonal/reserved cards: coverage and eligibility are different checks. */
   advertIds: string[];
   department: number | null;
@@ -72,20 +168,22 @@ export function parseCasaswebPage(html: string, observedAt = new Date().toISOStr
   const listings: RawRental[] = [];
   const advertIds: string[] = [];
   let cardCount = 0;
+  let placedCount = 0;
   $("a[href]").each((_, node) => {
     const card = $(node);
     const href = card.attr("href") || "";
     // Root-relative since the redesign ("/ALQUILER__…"), bare before it.
     if (!/^\/?ALQUILER(?:_|$)/.test(href) || !card.find(".item-info").length) return;
     cardCount++;
+    const facts = readCasaswebCard(card);
+    if (facts.neighborhood) placedCount++;
     const title = clean(card.find(".item-title h3").text());
     const location = card.find(".tipo-propiedad-zona small");
     const id = clean(location.eq(1).find("strong").text());
     // The portal also carries native external-reference IDs such as TKA8362149.
     if (!id) return;
     advertIds.push(`casasweb:${id}`);
-    const declaredType = clean(location.eq(0).find("b").clone().children().remove().end().text()).replace(/\s*-\s*$/, "");
-    const neighborhood = clean(location.eq(0).clone().find("b").remove().end().text());
+    const { declaredType, neighborhood } = facts;
     const department = canonicalDepartment(clean(location.eq(1).clone().find("strong").remove().end().text()));
     const rent = card.find(".item-precio .precio").filter((_, price) => /^ALQUILER\s*$/i.test(clean($(price).find("h3").text()))).first();
     const money = clean(rent.find("h2").text());
@@ -100,9 +198,9 @@ export function parseCasaswebPage(html: string, observedAt = new Date().toISOStr
     const bedrooms = details.match(/(\d+)\s+Dormitorios?/i);
     const parking = details.match(/Garaje\s*\((\d+)\)/i);
     const bathrooms = title.match(/\b(\d+)\s+baños?\b/i);
-    const area = clean(location.eq(0).find("i").text()).match(/([\d.,]+)\s*m/i);
     const photo = card.find("img.card-img").attr("src") || "";
     const image = /^https:\/\/\S+$/i.test(photo) ? photo : null;
+    const propertyType = inferPropertyType(title, declaredType);
     listings.push({
       source: "casasweb", listingId: `casasweb:${id}`, url: new URL(href, ORIGIN).href, title,
       price, currency,
@@ -112,18 +210,18 @@ export function parseCasaswebPage(html: string, observedAt = new Date().toISOStr
       sellerType: advertiserClassification({ title }).sellerType,
       ownerDirect: ownerDirectDeclaration({ title }, new URL(href, ORIGIN).href, observedAt) ?? undefined,
       image, publishedAt: null,
-      propertyType: inferPropertyType(title, declaredType), department, neighborhood,
+      propertyType, department, neighborhood,
       // Cards do not have a separate street field; the title must not become a made-up address.
       address: "", street: "", streetNumber: "", latitude: null, longitude: null,
       bedrooms: bedrooms ? Number(bedrooms[1]) : /monoambiente/i.test(details) ? 0 : null,
       bathrooms: bathrooms ? Number(bathrooms[1]) : null,
-      area: area ? parseMoney(area[1]) : null,
+      area: casaswebCardArea(facts, propertyType),
       parkingSpaces: parking ? Number(parking[1]) : null,
       furnished: null, petsAllowed: null, guarantees: [],
     });
   });
   return {
-    listings, total, nextUrl: pager.nextUrl, cardCount, advertIds,
+    listings, total, nextUrl: pager.nextUrl, cardCount, placedCount, advertIds,
     department: Number.isSafeInteger(department) && department >= 1 && department <= 19 ? department : null,
     propertyType: typeof propertyType === "string" && propertyType ? propertyType : null,
     currentPage: pager.currentPage,
@@ -131,8 +229,12 @@ export function parseCasaswebPage(html: string, observedAt = new Date().toISOStr
 }
 
 interface CasaswebSearch { department: number; type: string; retry: boolean }
-/** `failure` is why the search could not be read to its end; `incomplete` says it was read, but not all of it. */
-interface CasaswebSearchRead { failure: string | null; incomplete: boolean }
+/**
+ * `failure` is why the search could not be read to its end; `incomplete` says it was read, but not
+ * all of it. `cards`: the portal answered with its search page, and the cards on it are what this
+ * parser cannot read — a markup change, not an outage (see `harvestCasasweb`).
+ */
+interface CasaswebSearchRead { failure: string | null; incomplete: boolean; cards?: true }
 
 const count = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
 
@@ -170,8 +272,12 @@ export async function harvestCasasweb(mode: "full" | "fast", usdUyu: number): Pr
         return { failure: !html ? transport : !parsed ? "página irreconocible" : "búsqueda distinta a la pedida", incomplete: true };
       }
       // A page that counts results but shows no card this parser recognises has changed its cards:
-      // the 2026-10-07 redesign kept the count and the selects, and this read as "0 avisos".
-      if (parsed.total > 0 && parsed.cardCount === 0) return { failure: "tarjetas irreconocibles", incomplete: true };
+      // the 2026-10-07 redesign kept the count and the selects, and this read as "0 avisos". And a
+      // page whose cards parse but name no barrio has moved its fields: on 2026-11-03 the surface
+      // landed where the barrio was, and that page's adverts are not written.
+      if ((parsed.total > 0 && parsed.cardCount === 0) || casaswebCardsUnrecognised(parsed.cardCount, parsed.placedCount)) {
+        return { failure: "tarjetas irreconocibles", incomplete: true, cards: true };
+      }
       pages++;
       if (initialTotal === null) initialTotal = parsed.total;
       // A live search is not a snapshot. Do not expire absent adverts if its inventory changes.
@@ -195,6 +301,12 @@ export async function harvestCasasweb(mode: "full" | "fast", usdUyu: number): Pr
   // comes as soon as three searches fail in a row — the hourly pass opens with its only three
   // Montevideo searches — or at the end of the sweep for isolated failures. Three failures in a
   // row after the pause mean the portal is down, and the run says so.
+  //
+  // Cards this parser cannot read ("tarjetas irreconocibles") are neither: the portal answered, and
+  // the same page after a pause reads the same. Such a search fails at once, without a second read,
+  // and does not count toward the stop — it resets it, as any answer does. Counted, three adjacent
+  // searches with odd cards (one department's offices, shops and depots) would cost every
+  // department after them; a markup change on every page still fails every search, and says so.
   const queue: CasaswebSearch[] = departments.flatMap((department) => types.map((type) => ({ department, type, retry: false })));
   const secondChance: CasaswebSearch[] = [];
   let paused = false;
@@ -214,6 +326,12 @@ export async function harvestCasasweb(mode: "full" | "fast", usdUyu: number): Pr
       consecutiveFailures = 0;
       if (read.incomplete) incomplete = true;
       if (search.retry) recovered++;
+      continue;
+    }
+    if (read.cards) {
+      consecutiveFailures = 0;
+      failed++; incomplete = true;
+      reasons.set(read.failure, (reasons.get(read.failure) ?? 0) + 1);
       continue;
     }
     if (!paused) secondChance.push({ ...search, retry: true });

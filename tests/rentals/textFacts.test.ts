@@ -1,13 +1,18 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { buildRentalProperties } from "../../classes/rentals/dedupe";
 import { rentalPeriodEvidence } from "../../classes/rentals/eligibility";
+import { textFactsStale, withTodaysTextFacts } from "../../classes/rentals/store";
 import {
   aggregateFurnished,
   aggregateTerms,
   applyRentalTextFacts,
   combineFurnished,
+  commonExpensesFromText,
   furnishedFromText,
+  readCommonExpensesFromText,
   rentalTermsFromText,
 } from "../../classes/rentals/textFacts";
+import type { RawRental, RentalOffer } from "../../classes/rentals/types";
 
 describe("furnishedFromText", () => {
   it("reads the advert's own words, title first", () => {
@@ -86,5 +91,172 @@ describe("combining what portals and words say", () => {
     expect(listing).toMatchObject({ furnished: false, terms: ["invernal"] });
     const infocasas = applyRentalTextFacts({ title: "Apartamento", furnished: null, furnishedPortal: true, terms: undefined });
     expect(infocasas.furnished).toBe(true);
+  });
+});
+
+// Measured 2026-11-07/08 on the public API: 21-40 % of the InfoCasas and El País adverts without the
+// portal's gastos comunes state them in their own description, and without them a card has no total.
+describe("gastos comunes a description states", () => {
+  const usdUyu = 40;
+  const pesos = { price: 30_000, currency: "UYU" as const };
+
+  it("reads the figure next to its label, in the currency it is written in", () => {
+    // /alquileres/montevideo-pocitos-bulevar-espana-tkufq2-r8jimc: "No informado" beside this text.
+    expect(commonExpensesFromText("Cochera para un auto.\n\nGastos comunes: $U11.000.-\nIncluyen limpieza de áreas comunes.", { price: 45_000, currency: "UYU" }, usdUyu))
+      .toEqual({ commonExpenses: 11_000, commonExpensesCurrency: "UYU" });
+    expect(commonExpensesFromText("Edificio con portería. GC aprox. $6.000", pesos, usdUyu)).toEqual({ commonExpenses: 6_000, commonExpensesCurrency: "UYU" });
+    expect(commonExpensesFromText("GASTOS COMUNES: $3600", pesos, usdUyu)).toEqual({ commonExpenses: 3_600, commonExpensesCurrency: "UYU" });
+    expect(commonExpensesFromText("Precio U$S 1.000, gastos comunes U$S 150", { price: 1_000, currency: "USD" }, usdUyu))
+      .toEqual({ commonExpenses: 150, commonExpensesCurrency: "USD" });
+    // The rent beside it is never read: only the gastos comunes are this reader's.
+    expect(commonExpensesFromText("Alquiler $25.000 + GC $4.000. Contrato anual.", pesos, usdUyu)).toEqual({ commonExpenses: 4_000, commonExpensesCurrency: "UYU" });
+  });
+
+  it("takes an explicit 'sin gastos comunes' as zero, but not a discount", () => {
+    expect(commonExpensesFromText("Apartamento tipo casa, sin gastos comunes.", pesos, usdUyu)).toEqual({ commonExpenses: 0, commonExpensesCurrency: null });
+    expect(commonExpensesFromText("No paga gastos comunes", pesos, usdUyu)).toEqual({ commonExpenses: 0, commonExpensesCurrency: null });
+    // The zone statistics' rule for the same words (propertyzones/project.ts) has the last word.
+    expect(readCommonExpensesFromText("Sin gastos comunes durante los primeros 6 meses", pesos, usdUyu)).toEqual({ reading: null, reason: "conditional" });
+  });
+
+  it("abstains whenever the text does not say one monthly figure", () => {
+    expect(readCommonExpensesFromText("Gastos comunes $3.600 y $4.000", pesos, usdUyu)).toEqual({ reading: null, reason: "ambiguous" });
+    expect(readCommonExpensesFromText("Gastos comunes $5.000. Sin gastos comunes para el garaje.", pesos, usdUyu).reason).toBe("ambiguous");
+    expect(readCommonExpensesFromText("Precio con gastos comunes incluidos", pesos, usdUyu).reason).toBe("included");
+    expect(readCommonExpensesFromText("GC $4.000 incluidos en el precio", pesos, usdUyu).reason).toBe("included");
+    expect(readCommonExpensesFromText("Gastos comunes $48.000 anuales", pesos, usdUyu).reason).toBe("not-monthly");
+    expect(readCommonExpensesFromText("Hermoso apartamento con vista al mar", pesos, usdUyu)).toEqual({ reading: null, reason: "silent" });
+    expect(readCommonExpensesFromText("", pesos, usdUyu).reason).toBe("silent");
+  });
+
+  // Review of 2026-11-08 (scratchpad probe over 26 phrasings): each of these was read as a month of
+  // gastos comunes, and would have been added to the rent.
+  it("knows gastos comunes are already in the rent, however the text punctuates or spells it", () => {
+    for (const text of [
+      "Gastos comunes $ 6.000 (incluidos en el precio)",
+      "Gastos comunes: $ 5.000, incluidos en el alquiler",
+      "Gastos comunes $5.000 - incluidos",
+      "Gastos comunes $ 4.000 incluídos",
+      "GASTOS COMUNES $ 4.000 INCLUÍDOS",
+      "Gastos comunes: incluidos",
+      "Precio $ 30.000, incluidos los gastos comunes",
+    ]) expect(readCommonExpensesFromText(text, pesos, usdUyu).reason, text).toBe("included");
+    // VAT included in the rent says nothing about them, and "incluye agua caliente" is what they pay for.
+    expect(commonExpensesFromText("Gastos comunes $ 4.000. IVA incluido en el alquiler", pesos, usdUyu)?.commonExpenses).toBe(4_000);
+    expect(commonExpensesFromText("Gastos comunes aprox. $ 4.500 (incluye agua caliente)", pesos, usdUyu)?.commonExpenses).toBe(4_500);
+  });
+
+  it("never takes the rent and the gastos comunes together for the gastos comunes", () => {
+    expect(readCommonExpensesFromText("Precio total con gc $ 30.000", { price: 26_000, currency: "UYU" }, usdUyu).reason).toBe("included");
+    expect(readCommonExpensesFromText("Alquiler + GC: $ 33.000", { price: 28_000, currency: "UYU" }, usdUyu).reason).toBe("included");
+    expect(readCommonExpensesFromText("Total con gastos comunes: $ 35.000", pesos, usdUyu).reason).toBe("included");
+    // The rent itself under the label is no month of gastos comunes either.
+    expect(readCommonExpensesFromText("Alquiler $ 30.000 - Gastos comunes $ 30.000", pesos, usdUyu).reason).toBe("implausible");
+    // A figure of their own after the rent's is theirs, and so is one after a list of what is paid.
+    expect(commonExpensesFromText("Alquiler $ 25.000 más gastos comunes $ 5.000", pesos, usdUyu)?.commonExpenses).toBe(5_000);
+    expect(commonExpensesFromText("Se paga alquiler + gastos comunes por mes adelantado. Gastos comunes: $ 4.000", pesos, usdUyu)?.commonExpenses).toBe(4_000);
+  });
+
+  it("reads a month's figure only, never a quarter's or any longer period's", () => {
+    for (const text of [
+      "Gastos comunes $ 12.000 por trimestre",
+      "Gastos comunes $ 9.000 bimestrales",
+      "Gastos comunes: $ 18.000 (semestral)",
+      "Gastos comunes $ 6.000 cada 3 meses",
+    ]) expect(readCommonExpensesFromText(text, pesos, usdUyu).reason, text).toBe("not-monthly");
+    expect(commonExpensesFromText("Gastos comunes $ 2.400 al mes", pesos, usdUyu)?.commonExpenses).toBe(2_400);
+    expect(commonExpensesFromText("G.C. $ 4.200 mensuales", pesos, usdUyu)?.commonExpenses).toBe(4_200);
+  });
+
+  it("does not take modest gastos comunes for none", () => {
+    expect(readCommonExpensesFromText("Ideal para quien busca vivir sin gastos comunes elevados", pesos, usdUyu)).toEqual({ reading: null, reason: "silent" });
+    expect(readCommonExpensesFromText("No tiene gastos comunes tan altos como los de la zona", pesos, usdUyu).reason).toBe("silent");
+    // "sin gastos comunes" alone still means a building without them.
+    expect(commonExpensesFromText("Apartamento tipo casa, sin gastos comunes.", pesos, usdUyu)).toEqual({ commonExpenses: 0, commonExpensesCurrency: null });
+  });
+
+  it("keeps only what can be a month of gastos comunes for that rent, in pesos at the run's rate", () => {
+    // Above the rent: a zero too many, or the year.
+    expect(readCommonExpensesFromText("Gastos comunes $45.000", pesos, usdUyu)).toEqual({ reading: null, reason: "implausible" });
+    expect(readCommonExpensesFromText("Gastos comunes $150", pesos, usdUyu).reason).toBe("implausible");
+    // A dollar rent with gastos comunes in pesos is the usual Punta del Este advert: US$ 8.500 is $ 340.000.
+    expect(commonExpensesFromText("Gastos comunes $ 26.000", { price: 8_500, currency: "USD" }, usdUyu)).toEqual({ commonExpenses: 26_000, commonExpensesCurrency: "UYU" });
+    expect(commonExpensesFromText("Gastos comunes $ 26.000", { price: 8_500, currency: "USD" }, 0)).toBeNull();
+    // A bare number beside a dollar rent could be either currency.
+    expect(readCommonExpensesFromText("Gastos comunes: 450", { price: 1_500, currency: "USD" }, usdUyu).reason).toBe("unmarked");
+    expect(commonExpensesFromText("Gastos comunes: 3.500", pesos, usdUyu)).toEqual({ commonExpenses: 3_500, commonExpensesCurrency: "UYU" });
+  });
+
+  const advert = (over: Partial<RawRental> = {}) => ({
+    source: "infocasas" as const, title: "Apartamento 2 dormitorios", price: 30_000, currency: "UYU" as const,
+    commonExpenses: null as number | null, commonExpensesCurrency: null as "UYU" | "USD" | null,
+    furnished: null, furnishedPortal: undefined, terms: undefined, description: undefined,
+    details: { description: "Luminoso. Gastos comunes: $5.500", images: [], builtArea: null, totalArea: null, landArea: null, terraceArea: null, amenities: [], guaranteeText: "" },
+    ...over,
+  });
+
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("is published only with RENTALS_GC_FROM_TEXT=1, and then labelled as the description's", () => {
+    expect(applyRentalTextFacts(advert(), { usdUyu })).toMatchObject({ commonExpenses: null, commonExpensesCurrency: null });
+    expect(applyRentalTextFacts(advert(), { usdUyu })).not.toHaveProperty("commonExpensesSource");
+    vi.stubEnv("RENTALS_GC_FROM_TEXT", "1");
+    expect(applyRentalTextFacts(advert(), { usdUyu })).toMatchObject({ commonExpenses: 5_500, commonExpensesCurrency: "UYU", commonExpensesSource: "description" });
+  });
+
+  it("never moves a figure the portal published, and leaves the portals it does not measure alone", () => {
+    const portal = applyRentalTextFacts(advert({ commonExpenses: 4_000, commonExpensesCurrency: "UYU" }), { usdUyu, gcFromText: true });
+    expect(portal).toMatchObject({ commonExpenses: 4_000, commonExpensesCurrency: "UYU" });
+    expect(portal).not.toHaveProperty("commonExpensesSource");
+    // A portal's explicit zero is a figure too.
+    expect(applyRentalTextFacts(advert({ commonExpenses: 0 }), { usdUyu, gcFromText: true }).commonExpenses).toBe(0);
+    expect(applyRentalTextFacts(advert({ source: "facebook" }), { usdUyu, gcFromText: true }).commonExpenses).toBeNull();
+    // An advert that carries no rent (the furniture-only callers) is not read for money.
+    expect(applyRentalTextFacts({ title: "Apto", description: "Gastos comunes $5.000", furnished: null, terms: undefined }, { usdUyu, gcFromText: true }))
+      .not.toHaveProperty("commonExpenses");
+  });
+
+  it("reads only the published description, so the label points at a text the reader can see", () => {
+    const hidden = advert({ description: "Gastos comunes: $5.500", details: { ...advert().details, description: "Luminoso." } });
+    expect(applyRentalTextFacts(hidden, { usdUyu, gcFromText: true }).commonExpenses).toBeNull();
+  });
+
+  it("is idempotent, and takes back what it read once the flag is off", () => {
+    const read = applyRentalTextFacts(advert(), { usdUyu, gcFromText: true });
+    expect(applyRentalTextFacts(read, { usdUyu, gcFromText: true })).toEqual(read);
+    const off = applyRentalTextFacts(read, { usdUyu, gcFromText: false });
+    expect(off).toMatchObject({ commonExpenses: null, commonExpensesCurrency: null });
+    expect(off).not.toHaveProperty("commonExpensesSource");
+  });
+
+  it("travels with the advert into its property", () => {
+    const raw = {
+      ...applyRentalTextFacts(advert(), { usdUyu, gcFromText: true }),
+      listingId: "infocasas:1", url: "https://www.infocasas.com.uy/1", sellerName: "x", sellerType: "desconocido",
+      image: null, publishedAt: null, propertyType: "apartamento", department: "Montevideo", neighborhood: "Pocitos",
+      address: "", street: "", streetNumber: "", latitude: null, longitude: null, bedrooms: 2, bathrooms: 1, area: 60,
+      parkingSpaces: null, petsAllowed: null, guarantees: [],
+    } as RawRental;
+    const [property] = buildRentalProperties([raw], {
+      usdUyu, today: "2026-11-08", offerFirstSeen: new Map(), propertyFirstSeen: new Map(), offerToProperty: new Map(), propertyCanonicalOffer: new Map(),
+    });
+    expect(property!.offers[0]).toMatchObject({ commonExpenses: 5_500, commonExpensesSource: "description" });
+  });
+
+  it("re-reads the stored adverts in the daily run, with the same rules", () => {
+    // As a current InfoCasas read stores it: the portal's own furniture field is always a boolean.
+    const stored = {
+      ...advert(), furnishedPortal: false, listingId: "infocasas:1", url: "u", priceUyu: 30_000, sellerName: "x", sellerType: "desconocido",
+      image: null, publishedAt: null, petsAllowed: null, guarantees: [], parkingSpaces: null, furnished: null, firstSeen: "2026-11-01", lastSeen: "2026-11-08",
+    } as unknown as RentalOffer;
+    expect(textFactsStale(stored, { usdUyu, gcFromText: false })).toBe(false);
+    expect(textFactsStale(stored, { usdUyu, gcFromText: true })).toBe(true);
+    const updated = withTodaysTextFacts(stored, { usdUyu, gcFromText: true });
+    expect(updated).toMatchObject({ commonExpenses: 5_500, commonExpensesCurrency: "UYU", commonExpensesSource: "description" });
+    expect(textFactsStale(updated, { usdUyu, gcFromText: true })).toBe(false);
+    // Turning the flag off takes the figure back on the next sweep; a portal's figure never moves.
+    expect(textFactsStale(updated, { usdUyu, gcFromText: false })).toBe(true);
+    expect(withTodaysTextFacts(updated, { usdUyu, gcFromText: false })).not.toHaveProperty("commonExpensesSource");
+    expect(textFactsStale({ ...stored, commonExpenses: 4_000, commonExpensesCurrency: "UYU" }, { usdUyu, gcFromText: true })).toBe(false);
   });
 });
