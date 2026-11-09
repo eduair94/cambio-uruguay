@@ -188,14 +188,28 @@ describe('el head no cambia al hidratar', () => {
     const today = initializers.get('TODAY')
     expect(today !== undefined && ts.isConditionalExpression(today)).toBe(true)
     const choice = today as ts.ConditionalExpression
-    expect(choice.condition.getText(source)).toContain('isHydrating')
-    // Hydrating: the payload's day. Otherwise: the clock, read again.
-    const hydrating = choice.whenFalse.getText(source)
+    // Which branch runs while hydrating follows from the condition: `!…isHydrating` sends it to
+    // the `:` side, `…isHydrating` to the `?` side. Checking the text alone let a dropped `!`
+    // through, and that one character brings back both bugs.
+    let negated: boolean | undefined
+    walk(choice.condition, node => {
+      if (ts.isPropertyAccessExpression(node) && node.name.text === 'isHydrating') {
+        negated =
+          ts.isPrefixUnaryExpression(node.parent) &&
+          node.parent.operator === ts.SyntaxKind.ExclamationToken
+      }
+    })
+    expect(negated).toBeDefined()
+    const [whenHydrating, otherwise] = negated
+      ? [choice.whenFalse, choice.whenTrue]
+      : [choice.whenTrue, choice.whenFalse]
+    // Hydrating: the payload's day, a useState read. Otherwise: the clock, read again.
+    const hydrating = whenHydrating.getText(source)
     expect(hydrating).toMatch(/^\w+\.value$/)
     const state = initializers.get(hydrating.replace(/\.value$/, ''))
     expect(
       state !== undefined && ts.isCallExpression(state) && state.expression.getText(source)
     ).toBe('useState')
-    expect(readsClock(choice.whenTrue, clockNames(source))).toBe(true)
+    expect(readsClock(otherwise, clockNames(source))).toBe(true)
   })
 })
