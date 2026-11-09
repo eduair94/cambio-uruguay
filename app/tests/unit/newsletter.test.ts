@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   bestDigestQuotes,
@@ -21,19 +23,41 @@ describe('bestDigestQuotes', () => {
   }))
   const frozen = { origin: 'baluma_cambio', buy: 37.15, sell: 39.55 }
 
-  it('never names a board the rest of the site treats as off-market', () => {
-    const best = bestDigestQuotes([...market, frozen])!
+  it('never names a dollar board the rest of the site treats as off-market', () => {
+    const best = bestDigestQuotes('USD', [...market, frozen])!
     expect(best.bestSell.origin).toBe('casa0')
     expect(best.bestBuy.origin).toBe('casa11')
   })
 
+  // The 3 % band was calibrated on the dollar. On the real and the Argentine peso it dropped 28
+  // and 37 of 39 boards on 2026-11-09, live ones included, and named a worse price (BRL 8,45
+  // while four casas sold at 8,10).
+  it('leaves the other currencies as they are', () => {
+    for (const code of ['EUR', 'BRL', 'ARS']) {
+      const best = bestDigestQuotes(code, [...market, frozen])!
+      expect(best.bestSell.origin, code).toBe('baluma_cambio')
+    }
+  })
+
   it('keeps every board when the market is too thin to judge', () => {
-    const best = bestDigestQuotes([market[0]!, market[1]!, frozen])!
+    const best = bestDigestQuotes('USD', [market[0]!, market[1]!, frozen])!
     expect(best.bestSell.origin).toBe('baluma_cambio')
   })
 
   it('has nothing to say without quotes', () => {
-    expect(bestDigestQuotes([])).toBeNull()
+    expect(bestDigestQuotes('USD', [])).toBeNull()
+  })
+
+  // What the issue publishes comes out of buildDigestData, which fetches and so is not run here:
+  // its loop must pick through bestDigestQuotes and nowhere else.
+  it('is the only way buildDigestData picks a best price', () => {
+    const source = readFileSync(join(__dirname, '../../server/utils/newsletter.ts'), 'utf8')
+    const start = source.indexOf('export async function buildDigestData')
+    const body = source.slice(start, source.indexOf('\n}\n', start))
+    expect(start).toBeGreaterThan(-1)
+    expect(body).toMatch(/bestDigestQuotes\(\s*code,/)
+    expect(body).not.toMatch(/\.reduce\(/)
+    expect(body).not.toMatch(/Math\.(?:min|max)\(/)
   })
 })
 

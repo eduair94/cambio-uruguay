@@ -1927,7 +1927,7 @@
     "colCasa": "Casa de cambio",
     "colRate": "Venta",
     "colSavings": "Ahorro vs. promedio",
-    "methodology": "Ranking por precio de venta del dólar (lo que pagás por cada US$ 1). El ahorro compara el total de comprar US$ {amount} en esa casa contra hacerlo al promedio del mercado. Se excluyen la cotización de referencia del BCU y las cotizaciones interbancarias, que no están disponibles al público.",
+    "methodology": "Ranking por precio de venta del dólar (lo que pagás por cada US$ 1). El ahorro compara el total de comprar US$ {amount} en esa casa contra hacerlo al promedio del mercado. Se excluyen la cotización de referencia del BCU y las cotizaciones interbancarias, que no están disponibles al público. Tampoco entran las pizarras a más de 3 % de la mediana del mercado: suelen ser una pizarra quieta o mal leída.",
     "noData": "No hay cotizaciones disponibles en este momento."
   },
   "rateChanges": {

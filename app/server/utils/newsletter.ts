@@ -96,21 +96,31 @@ interface RateRow {
 }
 
 /**
- * The day's best sell (lowest) and best buy (highest) among one currency's retail boards, without
- * the boards the rest of the site already refuses to crown: a quote further than 3 % from the
- * market median (`utils/marketOutlier.ts`, the rule of /cotizacion, /pizarra and
- * /casas-de-cambio). Without it a board frozen since July at $39,55 — the backend's staleness check
- * marks it `extreme: "min-sell"` — was "la mejor venta" of 84 of the 87 archived issues
- * (2026-08-15 to 2026-11-07, measured 2026-11-09): their title, their description and the email.
- * A market too thin to judge flags nothing, so every board stays eligible.
+ * The day's best sell (lowest) and best buy (highest) among one currency's retail boards.
+ *
+ * For the dollar, without the boards the rest of the site already refuses to crown: a quote
+ * further than 3 % from the market median (`utils/marketOutlier.ts`, the rule of /cotizacion/dolar,
+ * /pizarra and /casas-de-cambio). Without it a board frozen since July at $39,55 — the backend's
+ * staleness check marks it `extreme: "min-sell"` — was "la mejor venta" of 84 of the 87 archived
+ * issues (2026-08-15 to 2026-11-07, measured 2026-11-09): their title, their description and the
+ * email. A market too thin to judge flags nothing, so every board stays eligible.
+ *
+ * Only the dollar: the archive's title and description quote USD alone, and the 3 % band was
+ * calibrated on it. The real and the Argentine peso spread far wider: on the same day the band
+ * dropped 28 and 37 of their 39 boards and named a WORSE price than the live best (BRL 8,45 while
+ * four casas sold at 8,10).
  */
 export function bestDigestQuotes<T extends { buy: number; sell: number }>(
+  code: string,
   rows: readonly T[]
 ): { bestSell: T; bestBuy: T } | null {
   if (!rows.length) return null
-  const isOffMarket = offMarketDetector(rows)
-  const usable = rows.filter(row => !isOffMarket(row))
-  const pool = usable.length ? usable : rows
+  let pool = rows
+  if (code === 'USD') {
+    const isOffMarket = offMarketDetector(rows)
+    const usable = rows.filter(row => !isOffMarket(row))
+    if (usable.length) pool = usable
+  }
   return {
     bestSell: pool.reduce((a, b) => (b.sell < a.sell ? b : a)),
     bestBuy: pool.reduce((a, b) => (b.buy > a.buy ? b : a)),
@@ -147,7 +157,10 @@ export async function buildDigestData(lang: NewsletterLang): Promise<DigestData>
   let date = new Date().toISOString().slice(0, 10)
 
   for (const code of REPORT_CURRENCIES) {
-    const best = bestDigestQuotes(rates.filter(r => r.code === code && isRetail(r)))
+    const best = bestDigestQuotes(
+      code,
+      rates.filter(r => r.code === code && isRetail(r))
+    )
     if (!best) continue
     const { bestSell, bestBuy } = best
     if (bestSell.date) date = bestSell.date.slice(0, 10)
