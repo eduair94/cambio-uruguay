@@ -172,8 +172,15 @@ teléfonos fuera) y **sólo** cuando el portal no dio nada:
 día del deploy de las fichas, como declara la fila `fichas-alquiler-calle-precio-total-y-miga-al-barrio`
 de `docs/seo/experiments.json`. `RENTALS_ML_DETAIL_TEXT` **queda apagada hasta el 6/12** (cierre de
 esa ventana): la relectura de las fichas de ML con texto arrancó el mismo 8/11 y llevaba 1.331 de
-27.689 avisos vivos (~5 % por día), así que prenderla ahora llenaría las descripciones a goteo durante
-tres semanas dentro de la ventana medida. Después del 6/12 se prende con su propia fila.
+27.689 avisos vivos, así que prenderla ahora cambiaría las fichas de ML dentro de la ventana medida.
+Después del 6/12 se prende con su propia fila. Medido el 9/11 a las 07:27 UTC: 4.623 fichas con
+texto, ~210 por hora (la estimación del 8/11 de ~5 % por día era baja: la relectura termina hacia el
+13/11).
+
+**9/11/2026, primera corrida completa con la bandera:** 1.355 ofertas vivas con gastos comunes del
+texto (InfoCasas 820, El País 535; de las 1.766 rotuladas, vivas o no, 610 son ceros de "sin gastos
+comunes"); 10 vivas tomadas al azar, 10 correctas. Esa corrida destapó que `currency-property-opportunities` sí las usaba: ver
+«Datos y privacidad» en [PROPERTY_OPPORTUNITIES.md](PROPERTY_OPPORTUNITIES.md).
 
 ## Opiniones de quienes lo usan — 19 de octubre de 2026
 

@@ -9,6 +9,7 @@ import type { OpportunityAnalysisResult, OpportunityListing, OpportunityOperatio
 import type { OpportunityCoverage, PropertyOpportunitySnapshot } from "./snapshotTypes";
 import type { SaleHarvestResult } from "./sales";
 import { OPPORTUNITY_POLICY } from "./analyze";
+import { RENTAL_OPPORTUNITY_SELECT } from "./rentalAdapter";
 import type { SaleCatalogInput } from "../propertysales/project";
 
 const CHUNK = 300;
@@ -101,14 +102,8 @@ export async function loadSaleCatalogInputs(): Promise<SaleCatalogInput[]> {
 }
 
 export async function loadRentalMarket(): Promise<{ rows: Pick<RentalProperty, "key" | "offers">[]; meta: RentalMeta | null }> {
-  const rows = await RentalListingModel.find({ "offers.identity.version": 1 }).select({
-    _id: 0, key: 1, "offers.identity": 1, "offers.source": 1, "offers.listingId": 1,
-    "offers.title": 1, "offers.url": 1, "offers.image": 1, "offers.sellerName": 1,
-    "offers.price": 1, "offers.currency": 1, "offers.currencyInferred": 1, "offers.stayPriceSuspect": 1, "offers.commonExpenses": 1, "offers.commonExpensesCurrency": 1,
-    "offers.lastSeen": 1, "offers.publishedAt": 1, "offers.parkingSpaces": 1, "offers.furnished": 1,
-    "offers.details.description": 1, "offers.details.builtArea": 1, "offers.details.totalArea": 1,
-    "offers.details.landArea": 1, "offers.details.amenities": 1,
-  }).maxTimeMS(30_000).lean() as unknown as Pick<RentalProperty, "key" | "offers">[];
+  const rows = await RentalListingModel.find({ "offers.identity.version": 1 }).select(RENTAL_OPPORTUNITY_SELECT)
+    .maxTimeMS(30_000).lean() as unknown as Pick<RentalProperty, "key" | "offers">[];
   const meta = await RentalMetaModel.findOne({ key: "uy-rentals" }).lean() as unknown as RentalMeta | null;
   return { rows, meta };
 }
