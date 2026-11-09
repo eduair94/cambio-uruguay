@@ -77,13 +77,25 @@
           hide-details
         />
         <VSpacer />
-        <VBtn color="primary" :loading="creating" @click="create">{{ $t('alerts.create') }}</VBtn>
+        <VBtn
+          color="primary"
+          :loading="creating"
+          :disabled="!form.push && !form.email && !form.telegram"
+          @click="create"
+          >{{ $t('alerts.create') }}</VBtn
+        >
       </div>
     </VCard>
 
     <!-- List -->
-    <VAlert v-if="!alerts.length" type="info" variant="tonal">{{ $t('alerts.empty') }}</VAlert>
-    <VList v-else>
+    <!-- A failed read is not "no alerts": saying so would invite creating them again. -->
+    <VAlert v-if="loadFailed" type="warning" variant="tonal" class="mb-2" role="status">{{
+      $t('alerts.loadFailed')
+    }}</VAlert>
+    <VAlert v-if="!alerts.length && !loadFailed" type="info" variant="tonal">{{
+      $t('alerts.empty')
+    }}</VAlert>
+    <VList v-if="alerts.length">
       <VListItem v-for="a in alerts" :key="a._id" class="px-0">
         <template #prepend>
           <VIcon :color="a.active ? 'primary' : 'grey'">mdi-bell</VIcon>
@@ -93,16 +105,34 @@
           {{ a.kind === 'bestBuy' ? $t('alerts.bestBuy') : $t('alerts.bestSell') }}
           {{ a.op }} {{ a.target }}
         </VListItemTitle>
-        <VListItemSubtitle>
+        <VListItemSubtitle v-if="hasChannel(a)">
           {{
-            [a.channels.push ? $t('alerts.push') : '', a.channels.email ? $t('alerts.email') : '']
+            [
+              a.channels.push ? $t('alerts.push') : '',
+              a.channels.email ? $t('alerts.email') : '',
+              a.channels.telegram ? $t('tg.telegram') : '',
+            ]
               .filter(Boolean)
               .join(' · ')
           }}
         </VListItemSubtitle>
+        <!-- The email unsubscribe link can leave an alert with no channel: say so, offer email back. -->
+        <VListItemSubtitle v-else class="d-flex align-center flex-wrap ga-1">
+          {{ $t('alerts.noChannel') }}
+          <VBtn
+            variant="text"
+            size="small"
+            color="link"
+            class="px-1"
+            :loading="restoring === a._id"
+            @click="emailAgain(a)"
+            >{{ $t('alerts.emailAgain') }}</VBtn
+          >
+        </VListItemSubtitle>
         <template #append>
           <VSwitch
             :model-value="a.active"
+            :disabled="!hasChannel(a) && !a.active"
             density="compact"
             hide-details
             color="primary"
@@ -151,8 +181,14 @@ const form = reactive({
   telegram: false,
 })
 
+const loadFailed = ref(false)
+
 async function load() {
-  alerts.value = await authFetch<any[]>('/api/me/alerts').catch(() => [])
+  // A failed read keeps what is on screen and says so: emptying it would show "no alerts yet" and
+  // invite the visitor to create them again (review, 2026-11-08).
+  const fresh = await authFetch<any[]>('/api/me/alerts').catch(() => null)
+  loadFailed.value = !fresh
+  if (fresh) alerts.value = fresh
 }
 
 async function create() {
@@ -183,12 +219,43 @@ async function create() {
   }
 }
 
+const hasChannel = (a: any) =>
+  Boolean(a.channels?.push || a.channels?.email || a.channels?.telegram)
+
 async function toggle(a: any, value: boolean) {
   a.active = value
-  await authFetch(`/api/me/alerts/${a._id}`, {
-    method: 'PATCH',
-    body: { active: value },
-  }).catch(() => {})
+  try {
+    await authFetch(`/api/me/alerts/${a._id}`, { method: 'PATCH', body: { active: value } })
+  } catch {
+    // Refused (409 no-channel: another tab may have changed it) or failed: show what is stored.
+    a.active = !value
+    await load()
+  }
+}
+
+const restoring = ref<string | null>(null)
+
+/** Turns email back on (and the alert with it) after the unsubscribe link left it without a channel. */
+async function emailAgain(a: any) {
+  restoring.value = a._id
+  try {
+    const updated = await authFetch<any>(`/api/me/alerts/${a._id}`, {
+      method: 'PATCH',
+      body: {
+        active: true,
+        channels: {
+          push: Boolean(a.channels?.push),
+          email: true,
+          telegram: Boolean(a.channels?.telegram),
+        },
+      },
+    })
+    if (updated) Object.assign(a, updated)
+  } catch {
+    // Unchanged: the row keeps offering it.
+  } finally {
+    restoring.value = null
+  }
 }
 
 async function remove(id: string) {

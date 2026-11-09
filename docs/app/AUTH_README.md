@@ -47,11 +47,31 @@ runs exactly as before (the login button simply does nothing useful).
 - Components/pages are validated by `npm run typecheck`; a Playwright smoke test
   lives in `tests/e2e/account.spec.ts`.
 
-## Phase 2 (not yet implemented)
+## Rate alerts
 
-Rate alerts with web push (FCM) + email (Nodemailer/SMTP) and the
-`alerts:check` scheduled task. See
-`docs/superpowers/specs/2026-06-17-firebase-auth-logged-in-value-design.md`.
+Rate alerts (`/cuenta` → Alertas) fire through web push (FCM), email
+(Nodemailer/SMTP) and Telegram from the `alerts:check` scheduled task
+(`server/tasks/alerts/check.ts` → `server/utils/alertRunner.ts`). Original
+design: `docs/superpowers/specs/2026-06-17-firebase-auth-logged-in-value-design.md`.
+
+- **Email only to a verified address** (2026-11-08): the task asks Firebase for
+  `emailVerified` before using `users.email`, which is copied from the session
+  whether verified or not.
+- **One-click unsubscribe** (2026-11-08), the same contract as the rental alerts:
+  each email carries `/api/alerts/unsubscribe?token=…` as a link and as
+  `List-Unsubscribe` / `List-Unsubscribe-Post`. The token (32 random bytes,
+  `select: false`, partial unique index) is minted with the alert's first email,
+  so the alerts created before the link existed get one on their next email.
+  GET only shows a confirmation; POST turns off that alert's email channel, needs
+  no login and is idempotent. An alert left with no channel is paused.
+- **An alert needs a channel to be on**: creating one with none is refused (400
+  `no-channel`), and so is switching one on while it has none (409, checked in
+  the same `findOneAndUpdate`). The account panel shows such an alert as "sin
+  canal" with a button that turns email back on.
+- Both unsubscribe endpoints set their CSP before touching the database and answer
+  a database failure with their own 503 page: thrown, Nitro would log the URL
+  (token included) and Nuxt would render its full error page, GA and all, at that
+  address. `token` is also one of the parameters that keep GA from starting.
 
 ## Telegram account linking
 

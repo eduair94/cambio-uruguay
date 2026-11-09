@@ -37,7 +37,8 @@ describe('runAlertsCheck', () => {
     const deps = makeDeps({ loadActiveAlerts: vi.fn().mockResolvedValue([alert]) })
     const res = await runAlertsCheck(deps as any)
     expect(deps.push).toHaveBeenCalledWith(['t1'], expect.any(String), expect.any(String))
-    expect(deps.email).toHaveBeenCalledWith('a@b.com', expect.any(String), expect.any(String))
+    // The alert id lets the task attach that alert's one-click unsubscribe link.
+    expect(deps.email).toHaveBeenCalledWith('a@b.com', expect.any(String), expect.any(String), 'a1')
     // Se desarma ANTES de enviar (reclamo atómico), no después.
     expect(deps.claimAlert).toHaveBeenCalledWith('a1', expect.any(Date))
     expect(res).toEqual({ checked: 1, fired: 1 })
@@ -190,5 +191,20 @@ describe('runAlertsCheck: una sola vez y sin cortes', () => {
     })
     await runAlertsCheck(deps as any)
     expect(telegram.mock.calls[0][1]).toContain('la\\_favorita')
+  })
+
+  // An alert with every channel off reaches nobody: it is not claimed, so it neither counts as
+  // fired nor looks up the account's contacts on every crossing (review, 2026-11-08).
+  it('skips an alert with no channel without claiming it', async () => {
+    const deps = makeDeps({
+      loadActiveAlerts: vi
+        .fn()
+        .mockResolvedValue([
+          alert('a1', { channels: { push: false, email: false, telegram: false } }),
+        ]),
+    })
+    expect(await runAlertsCheck(deps as any)).toEqual({ checked: 1, fired: 0 })
+    expect(deps.claimAlert).not.toHaveBeenCalled()
+    expect(deps.getUserContacts).not.toHaveBeenCalled()
   })
 })

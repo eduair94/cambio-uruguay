@@ -18,7 +18,8 @@ export interface RunnerDeps {
   claimAlert: (id: string, at: Date) => Promise<boolean>
   pruneTokens: (uid: string, tokens: string[]) => Promise<void>
   push: (tokens: string[], title: string, body: string) => Promise<string[]>
-  email: (to: string, subject: string, text: string) => Promise<void>
+  /** `alertId` lets the email carry that alert's one-click unsubscribe link. */
+  email: (to: string, subject: string, text: string, alertId: string) => Promise<void>
   telegram: (chatId: string, text: string) => Promise<boolean>
   now: number
   log?: (message: string) => void
@@ -33,6 +34,8 @@ export async function runAlertsCheck(
   let fired = 0
 
   for (const a of alerts) {
+    // Sin ningún canal no le llega a nadie: ni se reclama ni se buscan los contactos de la cuenta.
+    if (!a.channels?.push && !a.channels?.email && !a.channels?.telegram) continue
     const rate = deps.bestRate(rows, a.currency, a.kind, a.origin)
     const { fire, armed } = evaluateAlert(a, rate, deps.now)
 
@@ -73,7 +76,7 @@ export async function runAlertsCheck(
       })
     }
     if (a.channels?.email && contacts.email) {
-      await attempt('email', () => deps.email(contacts.email as string, title, body))
+      await attempt('email', () => deps.email(contacts.email as string, title, body, String(a._id)))
     }
     if (a.channels?.telegram && contacts.telegramChatId) {
       await attempt('telegram', () =>
