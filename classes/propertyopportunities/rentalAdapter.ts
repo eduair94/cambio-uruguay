@@ -1,6 +1,23 @@
 import type { RentalProperty } from "../rentals/types";
 import type { OpportunityListing } from "./types";
 
+/**
+ * The fields `loadRentalMarket` (store.ts) reads for `rentalOpportunityListings`. Mongo returns only
+ * these, so a guard below that reads a field missing here never fires in production, while every
+ * test that hands the adapter a whole object still passes. Add the field here in the same change.
+ */
+export const RENTAL_OPPORTUNITY_SELECT: Record<string, 0 | 1> = {
+  _id: 0, key: 1, "offers.identity": 1, "offers.source": 1, "offers.listingId": 1,
+  "offers.title": 1, "offers.url": 1, "offers.image": 1, "offers.sellerName": 1,
+  "offers.price": 1, "offers.currency": 1, "offers.currencyInferred": 1, "offers.stayPriceSuspect": 1, "offers.commonExpenses": 1, "offers.commonExpensesCurrency": 1,
+  // Both were read below and never loaded: the gastos comunes read from the text (#279) entered the rent
+  // snapshot as the portal's figure, and the winter-only guard (#110) never ran.
+  "offers.commonExpensesSource": 1, "offers.terms": 1,
+  "offers.lastSeen": 1, "offers.publishedAt": 1, "offers.parkingSpaces": 1, "offers.furnished": 1,
+  "offers.details.description": 1, "offers.details.builtArea": 1, "offers.details.totalArea": 1,
+  "offers.details.landArea": 1, "offers.details.amenities": 1,
+};
+
 /** Portal zeroes may be defaults. Only the advert's explicit statement supports no expenses. */
 function explicitNoExpenses(title: string, description: string): boolean {
   const own = `${title}\n${description}`.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
