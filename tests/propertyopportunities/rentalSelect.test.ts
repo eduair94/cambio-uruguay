@@ -45,10 +45,14 @@ const loaded = (properties: RentalProperty[]) =>
 describe("the rental opportunity loader selects what the adapter reads", () => {
   it("selects every field the adapter reads from the property, the offer, its identity and its details", () => {
     const file = readFileSync(join(__dirname, "../../classes/propertyopportunities/rentalAdapter.ts"), "utf8");
-    // Only the function's code: the select literal above it would match its own keys ("offers.details.x").
-    const start = file.indexOf("export function rentalOpportunityListings");
-    expect(start).toBeGreaterThan(file.indexOf("export const RENTAL_OPPORTUNITY_SELECT"));
-    const body = file.slice(start);
+    // The whole file but the select literal: its own keys ("offers.details.x") would match the patterns
+    // below, and a helper above the function can read the offer too.
+    const selectStart = file.indexOf("export const RENTAL_OPPORTUNITY_SELECT");
+    const selectEnd = file.indexOf("\n};", selectStart);
+    expect(selectStart).toBeGreaterThanOrEqual(0);
+    expect(selectEnd).toBeGreaterThan(selectStart);
+    const body = file.slice(0, selectStart) + file.slice(selectEnd + 3);
+    expect(body).toContain("export function rentalOpportunityListings");
     // The scan knows the adapter's two aliases by name: renaming one has to update this test too.
     expect(body).toContain("const own = offer.identity;");
     expect(body).toContain("const details = offer.details;");
