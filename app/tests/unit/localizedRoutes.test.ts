@@ -1,7 +1,12 @@
-import { existsSync, readFileSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
+import { join, relative, resolve, sep } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { isLocalizedRoute, splitLocalePath } from '../../utils/localizedRoutes'
+import {
+  SPANISH_ONLY_ROUTES,
+  isLocalizedRoute,
+  isSpanishOnlyRoute,
+  splitLocalePath,
+} from '../../utils/localizedRoutes'
 import { NAV_SECTIONS } from '../../utils/siteNav'
 
 const APP = resolve(__dirname, '../..')
@@ -67,6 +72,51 @@ describe('localized routes', () => {
       })
       .map(entry => entry.to)
     expect(missing).toEqual([])
+  })
+
+  // The sitemap lists the machine-translated locales of a page unless its route is Spanish-only
+  // (server/utils/sitemapLocales.ts), and the route is Spanish-only when the PAGE says so. A page
+  // that adds `defineI18nRoute({ locales: ['es'] })` without a pattern here sends its translated
+  // URLs to the other sitemaps, where every one answers 404.
+  it('lists exactly the pages that exist only in Spanish', () => {
+    const pagesDir = join(APP, 'pages')
+    const files = (dir: string): string[] =>
+      readdirSync(dir).flatMap(name => {
+        const full = join(dir, name)
+        return statSync(full).isDirectory() ? files(full) : name.endsWith('.vue') ? [full] : []
+      })
+    // `pages/alquiler/[departamento]/[barrio].vue` → `/alquiler/x/x`: one path the route answers.
+    const samplePath = (file: string) =>
+      `/${relative(pagesDir, file).split(sep).join('/')}`
+        .replace(/\.vue$/, '')
+        .replace(/\/index$/, '')
+        .replace(/\[[^\]]+\]\]?/g, 'x') || '/'
+    const spanishOnly = files(pagesDir)
+      .filter(file =>
+        /defineI18nRoute\(\{\s*locales:\s*\['es'\]\s*\}\)/.test(readFileSync(file, 'utf8'))
+      )
+      .map(samplePath)
+    expect(spanishOnly.length).toBeGreaterThan(5)
+    for (const path of spanishOnly) expect(isSpanishOnlyRoute(path), path).toBe(true)
+    // …and no pattern is left over from a page that is gone or now speaks other languages.
+    for (const route of SPANISH_ONLY_ROUTES) {
+      expect(
+        spanishOnly.some(path => route.test(path)),
+        String(route)
+      ).toBe(true)
+    }
+    for (const path of [
+      '/alquileres-uruguay',
+      '/autos-usados-uruguay',
+      '/autos-usados-uruguay/precios/toyota-hilux',
+      '/autos-usados-uruguay/ml-1',
+      '/bicicletas-electricas-uruguay',
+      '/monopatines-electricos-uruguay',
+      '/guias/alquilar-en-uruguay',
+    ]) {
+      expect(isSpanishOnlyRoute(path), path).toBe(false)
+    }
+    expect(isSpanishOnlyRoute('/autos-usados-uruguay/hasta-6000-dolares/')).toBe(true)
   })
 
   it('flags only routes that have a page', () => {

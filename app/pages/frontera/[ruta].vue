@@ -415,11 +415,16 @@ useSeoMeta({
   twitterDescription: () => metaDescription.value,
 })
 
+// Rendered once on the server and reused from the payload: with `new Date()` the block differed
+// after hydration and unhead appended a second copy (see pages/cotizacion/[moneda].vue).
+const renderedAt = useState('frontera-rendered-at', () => new Date().toISOString())
+
 // ExchangeRateSpecification + Place + BreadcrumbList JSON-LD for rich results.
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl }],
   script: [
     {
+      key: 'frontera-jsonld',
       type: 'application/ld+json',
       innerHTML: computed(() =>
         JSON.stringify({
@@ -431,7 +436,7 @@ useHead({
               url: canonicalUrl.value,
               name: metaTitle.value,
               inLanguage: locale.value,
-              dateModified: new Date().toISOString(),
+              dateModified: renderedAt.value,
               isPartOf: { '@id': 'https://cambio-uruguay.com/#website' },
               speakable: {
                 '@type': 'SpeakableSpecification',

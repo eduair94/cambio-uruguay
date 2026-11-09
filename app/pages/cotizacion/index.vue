@@ -216,11 +216,16 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
+// Rendered once on the server and reused from the payload: with `new Date()` the block differed
+// after hydration and unhead appended a second copy (see pages/cotizacion/[moneda].vue).
+const renderedAt = useState('cotizaciones-rendered-at', () => new Date().toISOString())
+
 // BreadcrumbList + ItemList JSON-LD so the hub can earn rich results.
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl }],
   script: [
     {
+      key: 'cotizaciones-jsonld',
       type: 'application/ld+json',
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
@@ -231,7 +236,7 @@ useHead({
             url: canonicalUrl,
             name: 'Cotizaciones de todas las monedas en Uruguay hoy',
             inLanguage: 'es',
-            dateModified: new Date().toISOString(),
+            dateModified: renderedAt.value,
             isPartOf: { '@id': 'https://cambio-uruguay.com/#website' },
             speakable: { '@type': 'SpeakableSpecification', cssSelector: ['.cotizacion-intro'] },
           },
