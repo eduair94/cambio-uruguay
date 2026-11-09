@@ -1927,7 +1927,7 @@
     "colCasa": "Zmenáreň",
     "colRate": "Predať",
     "colSavings": "Úspora vs. priemer",
-    "methodology": "Zoradené podľa predajnej ceny v dolároch (koľko platíte za 1 USD). Úspora porovnáva nákup {amount} USD v danom dome s trhovým priemerom. Referenčná sadzba BCU a medzibankové kotácie sú vylúčené – verejnosť na nich nemôže obchodovať.",
+    "methodology": "Zoradené podľa predajnej ceny v dolároch (koľko platíte za 1 USD). Úspora porovnáva nákup {amount} v USD v danom dome s trhovým priemerom. Referenčná sadzba BCU a medzibankové kotácie sú vylúčené – verejnosť na nich nemôže obchodovať. Vylúčené sú aj burzy, ktoré sa od trhového mediánu pohybujú viac ako 3 %: zvyčajne ide o burzu, ktorá sa prestala aktualizovať alebo bola nesprávne interpretovaná.",
     "noData": "Momentálne nie sú k dispozícii žiadne ceny."
   },
   "rateChanges": {

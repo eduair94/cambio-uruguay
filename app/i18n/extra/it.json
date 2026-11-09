@@ -1927,7 +1927,7 @@
     "colCasa": "Casa di scambio",
     "colRate": "Vendere",
     "colSavings": "Risparmio rispetto alla media",
-    "methodology": "Classifica in base al prezzo di vendita in dollari (quanto si paga per 1 dollaro USA). Il risparmio viene calcolato confrontando l'acquisto di {amount} in dollari USA presso quella banca con la media di mercato. Sono esclusi il tasso di riferimento BCU e le quotazioni interbancarie, in quanto non accessibili al pubblico.",
+    "methodology": "Classifica in base al prezzo di vendita in dollari (quanto si paga per 1 dollaro USA). Il risparmio viene calcolato confrontando l'acquisto di {amount} in dollari USA presso quella specifica banca rispetto alla media di mercato. Sono esclusi il tasso di riferimento BCU e le quotazioni interbancarie, in quanto non accessibili al pubblico. Sono esclusi anche i mercati con quotazioni superiori al 3% rispetto alla mediana di mercato: si tratta solitamente di mercati che hanno smesso di essere aggiornati o i cui prezzi sono stati interpretati in modo errato.",
     "noData": "Al momento non sono disponibili tariffe."
   },
   "rateChanges": {

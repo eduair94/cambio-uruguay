@@ -1927,7 +1927,7 @@
     "colCasa": "Menjalnica",
     "colRate": "Prodaja",
     "colSavings": "Varčevanje v primerjavi s povprečjem",
-    "methodology": "Razvrščeno po prodajni ceni v dolarjih (koliko plačate za 1 ameriški dolar). Prihranek primerja nakup {amount} ameriških dolarjev pri tej hiši s tržnim povprečjem. Referenčna obrestna mera BCU in medbančne kotacije so izključene – javnost pri njih ne more sklepati poslov.",
+    "methodology": "Razvrščeno po prodajni ceni v dolarjih (koliko plačate za 1 ameriški dolar). Prihranek primerja nakup {amount} v ameriških dolarjih pri tej hiši s tržnim povprečjem. Referenčna obrestna mera BCU in medbančne kotacije so izključene – javnost na njih ne more poslovati. Izključene so tudi borze, ki so več kot 3 % od tržne mediane: običajno gre za borzo, ki se je nehala posodabljati ali je bila napačno prebrana.",
     "noData": "Trenutno ni na voljo nobenih cen."
   },
   "rateChanges": {

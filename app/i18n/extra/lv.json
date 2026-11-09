@@ -1927,7 +1927,7 @@
     "colCasa": "Valūtas maiņas nams",
     "colRate": "Pārdot",
     "colSavings": "Ietaupījums salīdzinājumā ar vidējo rādītāju",
-    "methodology": "Sarindots pēc pārdošanas cenas dolāros (cik jūs maksājat par 1 ASV dolāru). Ietaupījums salīdzina ASV dolāru {amount} pirkšanu šajā mājā ar tirgus vidējo cenu. BCU atsauces likme un starpbanku kotācijas netiek ņemtas vērā — sabiedrība nevar veikt darījumus ar tām.",
+    "methodology": "Sarindots pēc pārdošanas cenas dolāros (cik jūs maksājat par 1 ASV dolāru). Ietaupījums salīdzina ASV dolāru {amount} pirkšanu šajā mājā ar tirgus vidējo cenu. BCU atsauces likme un starpbanku kotācijas netiek ņemtas vērā — sabiedrība nevar veikt darījumus ar tām. Arī biržas, kas atrodas vairāk nekā 3% no tirgus mediānas, netiek ņemtas vērā: tās parasti ir biržas, kuru atjaunināšana ir pārtraukta vai kuras tika nepareizi nolasītas.",
     "noData": "Pašlaik nav pieejamas cenas."
   },
   "rateChanges": {

@@ -1927,7 +1927,7 @@
     "colCasa": "Keitykla",
     "colRate": "Parduoti",
     "colSavings": "Taupymas, palyginti su vidurkiu",
-    "methodology": "Reitingas nustatomas pagal pardavimo kainą doleriais (kiek mokate už 1 JAV dolerį). Sutaupius lyginate su {amount} JAV dolerių pirkimo už tą namą ir rinkos vidurkiu. BCU bazinė palūkanų norma ir tarpbankinės kotiruotės neįtraukiamos – visuomenė negali jomis sandorių sudaryti.",
+    "methodology": "Reitinguojama pagal pardavimo kainą doleriais (kiek mokate už 1 JAV dolerį). Sutaupyta kaina lyginama su {amount} JAV dolerių pirkimu tame name, palyginti su rinkos vidurkiu. BCU bazinė palūkanų norma ir tarpbankinės kotiruotės neįtrauktos – visuomenė negali jomis prekiauti. Taip pat neįtraukiamos lentos, nukrypusios daugiau nei 3 % nuo rinkos medianos: tai paprastai lentos, kurios nustojo atnaujinamos arba buvo neteisingai perskaitytos.",
     "noData": "Šiuo metu nėra galimų įkainių."
   },
   "rateChanges": {

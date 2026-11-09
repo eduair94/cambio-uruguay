@@ -1927,7 +1927,7 @@
     "colCasa": "Mjenjačnica",
     "colRate": "Prodavati",
     "colSavings": "Štednja u odnosu na prosjek",
-    "methodology": "Rangirano prema prodajnoj cijeni u dolarima (ono što plaćate po 1 američkom dolaru). Ušteda uspoređuje kupnju {amount} američkog dolara u toj kući s tržišnim prosjekom. Referentna stopa BCU i međubankarske kotacije su isključene - javnost ne može trgovati po njima.",
+    "methodology": "Rangirano prema prodajnoj cijeni u dolarima (ono što plaćate po 1 američkom dolaru). Ušteda uspoređuje kupnju {amount} američkog dolara u toj kući s tržišnim prosjekom. Referentna stopa BCU i međubankarske kotacije su isključene - javnost ne može na njima trgovati. Ploče koje su više od 3% od srednje vrijednosti tržišta također su isključene: obično se radi o ploči koja je prestala ažurirati ili je pogrešno pročitana.",
     "noData": "Trenutno nema dostupnih cijena."
   },
   "rateChanges": {

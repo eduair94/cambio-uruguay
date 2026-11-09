@@ -1927,7 +1927,7 @@
     "colCasa": "Vahetusmaja",
     "colRate": "Müüa",
     "colSavings": "Säästmine vs keskmine",
-    "methodology": "Järjestatud dollari müügihinna (mida maksate 1 USA dollari eest) järgi. Sääst võrdleb selle maja eest {amount} USA dollarites ostmist turu keskmisega. BCU viiteintressimäära ja pankadevahelisi noteeringuid ei arvestata – avalikkus ei saa nendega tehinguid teha.",
+    "methodology": "Järjestatud dollari müügihinna järgi (mida maksate 1 USA dollari eest). Sääst võrdleb selle maja eest {amount} USA dollarites ostmist turu keskmisega. BCU viiteintressimäär ja pankadevahelised noteeringud on välja jäetud – avalikkus ei saa nendega tehinguid teha. Samuti on välja jäetud tabelid, mis erinevad turu mediaanist rohkem kui 3%: need on tavaliselt tabelid, mille uuendamine on lõpetatud või mida on valesti loetud.",
     "noData": "Hinnad pole hetkel saadaval."
   },
   "rateChanges": {

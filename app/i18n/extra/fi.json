@@ -1927,7 +1927,7 @@
     "colCasa": "Vaihtotalo",
     "colRate": "Myydä",
     "colSavings": "Säästö vs. keskiarvo",
-    "methodology": "Listattu dollarin myyntihinnan mukaan (mitä maksat per 1 Yhdysvaltain dollari). Säästö vertaa kyseisen talon {amount}-dollarin ostamista markkinoiden keskiarvoon. BCU-viitekorko ja pankkien väliset noteeraukset on jätetty pois – yleisö ei voi tehdä niillä kauppaa.",
+    "methodology": "Listattu dollarin myyntihinnan mukaan (mitä maksat per 1 Yhdysvaltain dollari). Säästö vertaa kyseisen talon {amount}-hintaa markkinoiden keskiarvoon. BCU-viitekorko ja pankkien väliset noteeraukset on jätetty pois – yleisö ei voi tehdä niillä kauppoja. Myöskään yli 3 % markkinoiden mediaanista poikkeavat taulukot eivät ole mukana: ne ovat yleensä taulukoita, joiden päivitys on lakannut tai joita on luettu väärin.",
     "noData": "Ei hintoja saatavilla juuri nyt."
   },
   "rateChanges": {

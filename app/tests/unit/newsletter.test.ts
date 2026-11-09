@@ -29,6 +29,20 @@ describe('bestDigestQuotes', () => {
     expect(best.bestBuy.origin).toBe('casa11')
   })
 
+  // Judged on the side it ranks. Narrow-spread casas buy 3,1–3,3 % above a median the wide-spread
+  // majority keeps low (~8 % of days in 2026), and the frozen board never won the best buy.
+  it('lets a narrow-spread casa that pays more win the best buy', () => {
+    const narrow = { origin: 'cambio_principal', buy: 41.6, sell: 41.9 }
+    const best = bestDigestQuotes('USD', [...market, frozen, narrow])!
+    expect(best.bestBuy.origin).toBe('cambio_principal')
+    expect(best.bestSell.origin).toBe('casa0')
+  })
+
+  it('keeps a board whose buy is odd but whose sell is the cheapest', () => {
+    const oddBuy = { origin: 'prex', buy: 38, sell: 41.3 }
+    expect(bestDigestQuotes('USD', [...market, frozen, oddBuy])!.bestSell.origin).toBe('prex')
+  })
+
   // The 3 % band was calibrated on the dollar. On the real and the Argentine peso it dropped 28
   // and 37 of 39 boards on 2026-11-09, live ones included, and named a worse price (BRL 8,45
   // while four casas sold at 8,10).

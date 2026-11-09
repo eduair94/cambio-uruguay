@@ -1927,7 +1927,7 @@
     "colCasa": "Wisselkantoor",
     "colRate": "Verkopen",
     "colSavings": "Besparing versus gemiddelde",
-    "methodology": "Gerangschikt op basis van de verkoopprijs in dollars (wat u betaalt per US$ 1). De besparing wordt vergeleken met de aankoop van US$ {amount} bij dat huis ten opzichte van het marktgemiddelde. De referentiekoers van de BCU en interbancaire koersen zijn uitgesloten – het publiek kan daar niet tegen handelen.",
+    "methodology": "Gerangschikt op basis van de verkoopprijs in dollars (wat u betaalt per US$ 1). De besparing wordt vergeleken met de aankoop van US$ {amount} bij dat huis ten opzichte van het marktgemiddelde. De referentiekoers BCU en interbancaire koersen zijn uitgesloten, omdat het publiek daar niet tegen kan handelen. Koersen die meer dan 3% van het marktgemiddelde afwijken, worden ook buiten beschouwing gelaten: dit betreft meestal koersen die niet meer worden bijgewerkt of waarvan de koers onjuist is afgelezen.",
     "noData": "Er zijn momenteel geen tarieven beschikbaar."
   },
   "rateChanges": {
