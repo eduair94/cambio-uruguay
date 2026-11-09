@@ -2240,7 +2240,14 @@ const toggleDirection = () => {
 }
 
 // SEO Configuration - Comprehensive JSON-LD Schema Markup
-const currentDate = new Date().toISOString().split('T')[0]
+// The day of the server render, reused from the payload. `/` is cached at the edge for an hour,
+// so HTML rendered at 23:30 UTC hydrates after midnight: with `new Date()` here the WebPage block
+// read another day, unhead could not match the server's <script> and appended a second one
+// (see pages/cotizacion/[moneda].vue and tests/unit/headHydrationParity.test.ts).
+const currentDate = useState(
+  'home-rendered-day',
+  () => new Date().toISOString().split('T')[0]
+).value
 
 // 1. WebApplication Schema
 const webApplicationSchema = computed(() => ({
@@ -2476,6 +2483,7 @@ useHead({
       innerHTML: computed(() => JSON.stringify(breadcrumbSchema.value)),
     },
     {
+      key: 'home-webpage-jsonld',
       type: 'application/ld+json',
       innerHTML: computed(() => JSON.stringify(currencyServiceSchema.value)),
     },

@@ -48,8 +48,10 @@ useSeoMeta({
   // server render. After hydration the one live entry was nuxt-seo-utils' low-priority default,
   // `site.name` ("Cambio Uruguay - Cotización del Dólar en Uruguay Hoy"), and it rewrote the tag
   // on every page: share previews read the short name from the HTML, while Google, which renders
-  // the page, read the long one (measured 2026-11-09 on 508 of 508 templates). An entry here runs
-  // on both sides, so the two agree. Tripwire: tests/unit/headHydrationParity.test.ts.
+  // the page, read the long one (measured 2026-11-09 on 505 of 505 templates). An entry here runs
+  // on both sides, so the two agree. Error pages render error.vue instead of this component and
+  // keep the module's value; they answer 404 and are not indexed.
+  // Tripwire: tests/unit/headHydrationParity.test.ts.
   ogSiteName: 'Cambio Uruguay',
 })
 

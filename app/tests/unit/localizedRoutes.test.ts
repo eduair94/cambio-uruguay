@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative, resolve, sep } from 'node:path'
+import ts from 'typescript'
 import { describe, expect, it } from 'vitest'
 import {
   SPANISH_ONLY_ROUTES,
@@ -8,8 +9,53 @@ import {
   splitLocalePath,
 } from '../../utils/localizedRoutes'
 import { NAV_SECTIONS } from '../../utils/siteNav'
+import { callsTo, parseScript } from './helpers/headScan'
 
 const APP = resolve(__dirname, '../..')
+
+/**
+ * The locales a page's `defineI18nRoute` leaves it, or 'all' when it does not restrict them.
+ * `defineI18nRoute(false)` keeps only the default locale (Spanish).
+ */
+function i18nRouteLocales(source: ts.SourceFile): 'all' | string[] {
+  for (const call of callsTo(source, 'defineI18nRoute')) {
+    const [argument] = call.arguments
+    if (argument?.kind === ts.SyntaxKind.FalseKeyword) return ['es']
+    if (!argument || !ts.isObjectLiteralExpression(argument)) continue
+    for (const property of argument.properties) {
+      if (
+        ts.isPropertyAssignment(property) &&
+        ts.isIdentifier(property.name) &&
+        property.name.text === 'locales' &&
+        ts.isArrayLiteralExpression(property.initializer)
+      ) {
+        return property.initializer.elements.map(element =>
+          ts.isStringLiteral(element) ? element.text : element.getText(source)
+        )
+      }
+    }
+  }
+  return 'all'
+}
+
+const PAGES = join(APP, 'pages')
+const pageFiles = (dir: string): string[] =>
+  readdirSync(dir).flatMap(name => {
+    const full = join(dir, name)
+    return statSync(full).isDirectory() ? pageFiles(full) : name.endsWith('.vue') ? [full] : []
+  })
+// `pages/alquiler/[departamento]/[barrio].vue` → `/alquiler/x/x`: one path the route answers.
+const samplePath = (file: string) =>
+  `/${relative(PAGES, file).split(sep).join('/')}`
+    .replace(/\.vue$/, '')
+    .replace(/\/index$/, '')
+    .replace(/\[[^\]]+\]\]?/g, 'x') || '/'
+// Parsed once, while the file loads: ~330 pages through the SFC compiler and the TypeScript parser
+// took over the 5 s a test gets when the whole suite runs at once.
+const PAGE_LOCALES = pageFiles(PAGES).map(file => ({
+  path: samplePath(file),
+  locales: i18nRouteLocales(parseScript(file)),
+}))
 const pageFile = (to: string) => {
   const base = to === '/' ? 'index' : to.slice(1)
   return [`pages/${base}.vue`, `pages/${base}/index.vue`]
@@ -77,34 +123,37 @@ describe('localized routes', () => {
   // The sitemap lists the machine-translated locales of a page unless its route is Spanish-only
   // (server/utils/sitemapLocales.ts), and the route is Spanish-only when the PAGE says so. A page
   // that adds `defineI18nRoute({ locales: ['es'] })` without a pattern here sends its translated
-  // URLs to the other sitemaps, where every one answers 404.
+  // URLs to the other sitemaps, where every one answers 404. Read from the AST, so the call may
+  // span lines, carry a trailing comma or `paths`, or be `defineI18nRoute(false)`.
   it('lists exactly the pages that exist only in Spanish', () => {
-    const pagesDir = join(APP, 'pages')
-    const files = (dir: string): string[] =>
-      readdirSync(dir).flatMap(name => {
-        const full = join(dir, name)
-        return statSync(full).isDirectory() ? files(full) : name.endsWith('.vue') ? [full] : []
-      })
-    // `pages/alquiler/[departamento]/[barrio].vue` → `/alquiler/x/x`: one path the route answers.
-    const samplePath = (file: string) =>
-      `/${relative(pagesDir, file).split(sep).join('/')}`
-        .replace(/\.vue$/, '')
-        .replace(/\/index$/, '')
-        .replace(/\[[^\]]+\]\]?/g, 'x') || '/'
-    const spanishOnly = files(pagesDir)
-      .filter(file =>
-        /defineI18nRoute\(\{\s*locales:\s*\['es'\]\s*\}\)/.test(readFileSync(file, 'utf8'))
-      )
-      .map(samplePath)
+    const verdicts = PAGE_LOCALES
+    // Only "every locale" and "Spanish only" exist today, and only those reach the sitemap filter.
+    // A page restricted to another subset needs that filter taught its locales first.
+    const otherSubsets = verdicts.filter(
+      v => v.locales !== 'all' && !(v.locales.length === 1 && v.locales[0] === 'es')
+    )
+    expect(otherSubsets, JSON.stringify(otherSubsets)).toEqual([])
+    const spanishOnly = verdicts.filter(v => v.locales !== 'all').map(v => v.path)
     expect(spanishOnly.length).toBeGreaterThan(5)
     for (const path of spanishOnly) expect(isSpanishOnlyRoute(path), path).toBe(true)
-    // …and no pattern is left over from a page that is gone or now speaks other languages.
+    // …no pattern is left over from a page that is gone or now speaks other languages…
     for (const route of SPANISH_ONLY_ROUTES) {
       expect(
         spanishOnly.some(path => route.test(path)),
         String(route)
       ).toBe(true)
     }
+    // …and no page that answers in every language falls under a pattern.
+    for (const { path } of verdicts.filter(v => v.locales === 'all')) {
+      expect(isSpanishOnlyRoute(path), path).toBe(false)
+    }
+    // The reader itself, on the spellings Prettier and the module allow.
+    const read = (code: string) => i18nRouteLocales(parseScript('x.ts', code))
+    expect(read("defineI18nRoute({\n  locales: ['es'],\n})")).toEqual(['es'])
+    expect(read("defineI18nRoute({ paths: { es: '/x' }, locales: ['es'] })")).toEqual(['es'])
+    expect(read('defineI18nRoute(false)')).toEqual(['es'])
+    expect(read("defineI18nRoute({ locales: ['es', 'en'] })")).toEqual(['es', 'en'])
+    expect(read("// defineI18nRoute({ locales: ['es'] })\nconst x = 1")).toBe('all')
     for (const path of [
       '/alquileres-uruguay',
       '/autos-usados-uruguay',
