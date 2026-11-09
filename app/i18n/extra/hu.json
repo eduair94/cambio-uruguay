@@ -1927,7 +1927,7 @@
     "colCasa": "Csereház",
     "colRate": "Elad",
     "colSavings": "Megtakarítás vs. átlag",
-    "methodology": "A dollárban kifejezett eladási ár (amit 1 USD-ért fizet) alapján rangsorolva. A megtakarítás az adott ház {amount} USD-ben történő vásárlását a piaci átlaghoz viszonyítja. A BCU referencia-kamatláb és a bankközi árfolyamok nem szerepelnek – a nyilvánosság nem bonyolíthat le rajtuk ügyleteket.",
+    "methodology": "A dollárban kifejezett eladási ár (amit 1 USD-ért fizet) alapján rangsorolva. A megtakarítás az adott ház {amount} USD-ben történő vásárlását hasonlítja össze a piaci átlaggal. A BCU referenciakamatláb és a bankközi árfolyamok ki vannak zárva – a nyilvánosság nem bonyolíthat le velük tranzakciókat. A piaci mediántól több mint 3%-kal eltérő táblák is kimaradnak: ezek általában olyan táblák, amelyek frissítése leállt, vagy amelyeket félreolvastak.",
     "noData": "Jelenleg nincsenek elérhető árak."
   },
   "rateChanges": {

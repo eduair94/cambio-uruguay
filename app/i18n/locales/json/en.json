@@ -1916,7 +1916,7 @@
     "colCasa": "Exchange house",
     "colRate": "Sell",
     "colSavings": "Saving vs. average",
-    "methodology": "Ranked by the dollar sell price (what you pay per US$ 1). The saving compares buying US$ {amount} at that house against the market average. The BCU reference rate and interbank quotes are excluded — the public cannot transact at them.",
+    "methodology": "Ranked by the dollar sell price (what you pay per US$ 1). The saving compares buying US$ {amount} at that house against the market average. The BCU reference rate and interbank quotes are excluded — the public cannot transact at them. Boards more than 3% from the market median are left out too: they are usually a board that stopped updating or was misread.",
     "noData": "No rates available right now."
   },
   "rateChanges": {

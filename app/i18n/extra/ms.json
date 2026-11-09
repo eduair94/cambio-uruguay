@@ -1927,7 +1927,7 @@
     "colCasa": "Rumah pertukaran",
     "colRate": "Jual",
     "colSavings": "Penjimatan vs. purata",
-    "methodology": "Dinilai mengikut harga jualan dolar (apa yang anda bayar setiap US$ 1). Penjimatan tersebut membandingkan pembelian US$ {amount} di rumah tersebut dengan purata pasaran. Kadar rujukan BCU dan sebut harga antara bank dikecualikan — orang ramai tidak boleh berurus niaga di dalamnya.",
+    "methodology": "Dinilai mengikut harga jualan dolar (apa yang anda bayar setiap US$ 1). Penjimatan tersebut membandingkan pembelian US$ {amount} di rumah tersebut dengan purata pasaran. Kadar rujukan BCU dan sebut harga antara bank dikecualikan — orang ramai tidak boleh berurus niaga di dalamnya. Papan yang lebih daripada 3% daripada median pasaran juga ditinggalkan: ia biasanya papan yang berhenti mengemas kini atau salah baca.",
     "noData": "Tiada kadar tersedia buat masa ini."
   },
   "rateChanges": {

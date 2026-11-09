@@ -1927,7 +1927,7 @@
     "colCasa": "Maison de change",
     "colRate": "Vendre",
     "colSavings": "Épargne par rapport à la moyenne",
-    "methodology": "Le classement est établi en fonction du prix de vente en dollars (ce que vous payez pour 1 USD). L'économie réalisée en comparant l'achat de dollars ({amount}) dans cette maison au prix moyen du marché. Le taux de référence de la BCU et les cotations interbancaires sont exclus, car le public ne peut pas y effectuer de transactions.",
+    "methodology": "Classement selon le prix de vente en dollars (ce que vous payez pour 1 USD). L'économie réalisée compare l'achat de dollars ({amount}) auprès de cette maison de change au taux moyen du marché. Le taux de référence BCU et les cotations interbancaires sont exclus, car le public ne peut pas y effectuer de transactions. Les tableaux de taux s'écartant de plus de 3 % de la médiane du marché sont également exclus : il s'agit généralement de tableaux qui ne sont plus mis à jour ou qui ont fait l'objet d'une mauvaise interprétation.",
     "noData": "Aucun tarif disponible pour le moment."
   },
   "rateChanges": {

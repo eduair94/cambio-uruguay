@@ -1927,7 +1927,7 @@
     "colCasa": "Byttehus",
     "colRate": "Sælge",
     "colSavings": "Besparelse vs. gennemsnit",
-    "methodology": "Rangeret efter salgsprisen i dollar (det, du betaler pr. USD 1). Besparelsen sammenlignes med at købe USD {amount} i det pågældende hus i forhold til markedsgennemsnittet. BCU-referencerenten og interbankkurser er ekskluderet – offentligheden kan ikke handle på dem.",
+    "methodology": "Rangeret efter salgsprisen i dollar (det, du betaler pr. USD 1). Besparelsen sammenlignes med køb af USD {amount} i det pågældende hus i forhold til markedsgennemsnittet. BCU-referencerenten og interbankkurser er ekskluderet – offentligheden kan ikke handle på dem. Investeringer med en rente på mere end 3 % fra markedsmedianen er også udeladt: de er normalt investeringer, der er stoppet med at opdateres, eller som er blevet fejllæst.",
     "noData": "Ingen priser tilgængelige lige nu."
   },
   "rateChanges": {

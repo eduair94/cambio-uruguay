@@ -1927,7 +1927,7 @@
     "colCasa": "Döviz bürosu",
     "colRate": "Satmak",
     "colSavings": "Tasarruf ile ortalama arasındaki fark",
-    "methodology": "Dolar satış fiyatına (1 ABD doları için ödediğiniz miktar) göre sıralanmıştır. Tasarruf, o aracı kurumdan US$ {amount} satın almanın piyasa ortalamasına kıyasla sağladığı avantajı göstermektedir. BCU referans kuru ve bankalararası fiyatlar hariç tutulmuştur; halk bu oranlar üzerinden işlem yapamaz.",
+    "methodology": "Dolar satış fiyatına (1 ABD doları başına ödediğiniz miktar) göre sıralanmıştır. Tasarruf, o borsada US$ {amount} alımının piyasa ortalamasına kıyasla ne kadar olduğunu göstermektedir. BCU referans kuru ve bankalararası fiyatlar hariç tutulmuştur; halk bu oranlar üzerinden işlem yapamaz. Piyasa medyanından %3'ten fazla sapma gösteren borsalar da hariç tutulmuştur: bunlar genellikle güncellemeyi durdurmuş veya yanlış yorumlanmış borsalardır.",
     "noData": "Şu anda fiyat bilgisi mevcut değil."
   },
   "rateChanges": {

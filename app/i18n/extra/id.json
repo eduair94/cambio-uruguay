@@ -1927,7 +1927,7 @@
     "colCasa": "Rumah pertukaran",
     "colRate": "Menjual",
     "colSavings": "Penghematan vs. rata-rata",
-    "methodology": "Peringkat berdasarkan harga jual dolar (harga yang Anda bayarkan per US$ 1). Penghematan tersebut membandingkan pembelian US$ {amount} di perusahaan tersebut dengan rata-rata pasar. Suku bunga acuan BCU dan kuotasi antar bank dikecualikan — publik tidak dapat bertransaksi di sana.",
+    "methodology": "Peringkat berdasarkan harga jual dolar (harga yang Anda bayarkan per US$ 1). Penghematan membandingkan pembelian US$ {amount} di perusahaan tersebut dengan rata-rata pasar. Kurs referensi BCU dan kuotasi antar bank dikecualikan — publik tidak dapat bertransaksi di sana. Perusahaan yang selisihnya lebih dari 3% dari median pasar juga dihilangkan: biasanya perusahaan tersebut berhenti memperbarui data atau salah membaca data.",
     "noData": "Saat ini belum ada informasi tarif yang tersedia."
   },
   "rateChanges": {

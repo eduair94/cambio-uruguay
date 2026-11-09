@@ -6,6 +6,7 @@ import { sanitizeAi } from './ai'
 import { aiMarkdownToEmailHtml, cleanAiCommentary } from '../../utils/newsletterIssue'
 import { rentalSurveyUrl } from '../../utils/rentalFeedback'
 import { isExtraLocale } from '../../utils/locales'
+import { MIN_SAMPLE, deviatesFrom, median } from '../../utils/marketOutlier'
 
 export type NewsletterLang = 'es' | 'en' | 'pt'
 
@@ -94,6 +95,41 @@ interface RateRow {
   date?: string
 }
 
+/**
+ * The day's best sell (lowest) and best buy (highest) among one currency's retail boards.
+ *
+ * The dollar's best sell leaves out a board whose SELL is further than 3 % from the median sell
+ * (`utils/marketOutlier.ts`: same band and same minimum sample as /cotizacion/dolar, /pizarra and
+ * /casas-de-cambio). Without it a board frozen since July at $39,55 — the backend's staleness check
+ * marks it `extreme: "min-sell"` — was "la mejor venta" of 84 of the 87 archived issues
+ * (2026-08-15 to 2026-11-07, measured 2026-11-09): their title, their description and the email.
+ * A market too thin to judge flags nothing, so every board stays eligible.
+ *
+ * Only the sell side, and only the dollar, because everywhere else the band removed right answers:
+ * - The frozen board never won the best BUY. Narrow-spread casas that do buy 3,1–3,3 % above a
+ *   median the wide-spread majority keeps low, so filtering the buy side named a casa that pays
+ *   less on ~8 % of days. A board whose buy is odd while its sell is the cheapest also stays in.
+ * - The archive's title and description quote USD alone, and the band was calibrated on it. The
+ *   real and the Argentine peso spread far wider: on 2026-11-09 the band dropped 28 and 37 of their
+ *   39 boards and named a WORSE price than the live best (BRL 8,45 while four casas sold at 8,10).
+ */
+export function bestDigestQuotes<T extends { buy: number; sell: number }>(
+  code: string,
+  rows: readonly T[]
+): { bestSell: T; bestBuy: T } | null {
+  if (!rows.length) return null
+  let sellers = rows
+  if (code === 'USD' && rows.length >= MIN_SAMPLE) {
+    const medianSell = median(rows.map(row => row.sell))
+    const usable = rows.filter(row => !deviatesFrom(row.sell, medianSell))
+    if (usable.length) sellers = usable
+  }
+  return {
+    bestSell: sellers.reduce((a, b) => (b.sell < a.sell ? b : a)),
+    bestBuy: rows.reduce((a, b) => (b.buy > a.buy ? b : a)),
+  }
+}
+
 function dayOverDayPct(evolution: Array<{ date: string; sell?: number }>): number {
   const byDay = new Map<string, number>()
   for (const p of evolution) {
@@ -124,10 +160,12 @@ export async function buildDigestData(lang: NewsletterLang): Promise<DigestData>
   let date = new Date().toISOString().slice(0, 10)
 
   for (const code of REPORT_CURRENCIES) {
-    const rows = rates.filter(r => r.code === code && isRetail(r))
-    if (rows.length === 0) continue
-    const bestSell = rows.reduce((a, b) => (b.sell < a.sell ? b : a))
-    const bestBuy = rows.reduce((a, b) => (b.buy > a.buy ? b : a))
+    const best = bestDigestQuotes(
+      code,
+      rates.filter(r => r.code === code && isRetail(r))
+    )
+    if (!best) continue
+    const { bestSell, bestBuy } = best
     if (bestSell.date) date = bestSell.date.slice(0, 10)
     let changePct: number
     try {

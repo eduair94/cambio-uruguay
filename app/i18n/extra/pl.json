@@ -1927,7 +1927,7 @@
     "colCasa": "Dom wymiany walut",
     "colRate": "Sprzedać",
     "colSavings": "Oszczędności a średnia",
-    "methodology": "Posortowane według ceny sprzedaży w dolarach (czyli ile płacisz za 1 dolara amerykańskiego). Oszczędność jest porównywalna z ceną zakupu domu za {amount} w dolarach amerykańskich w porównaniu ze średnią rynkową. Kurs referencyjny BCU i notowania międzybankowe są wyłączone – osoby prywatne nie mogą dokonywać transakcji.",
+    "methodology": "Posortowane według ceny sprzedaży w dolarach (czyli ile płacisz za 1 dolara amerykańskiego). Oszczędność jest porównywana z ceną zakupu domu za {amount} w USD w porównaniu ze średnią rynkową. Kurs referencyjny BCU i notowania międzybankowe są wyłączone – osoby prywatne nie mogą dokonywać na nich transakcji. Tabele z ceną odbiegającą o ponad 3% od mediany rynkowej również są pomijane: zazwyczaj są to tablice, które przestały być aktualizowane lub zostały błędnie odczytane.",
     "noData": "W tej chwili nie ma dostępnych stawek."
   },
   "rateChanges": {

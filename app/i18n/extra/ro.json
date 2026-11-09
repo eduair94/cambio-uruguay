@@ -1927,7 +1927,7 @@
     "colCasa": "Casă de schimb valutar",
     "colRate": "Vinde",
     "colSavings": "Economii vs. medie",
-    "methodology": "Clasificat în funcție de prețul de vânzare în dolari (ceea ce plătiți pentru 1 dolar american). Economia se compară cu cumpărarea a {amount} dolari americani de la acea casă cu media pieței. Rata de referință BCU și cotațiile interbancare sunt excluse - publicul nu poate tranzacționa la acestea.",
+    "methodology": "Clasificat în funcție de prețul de vânzare în dolari (ceea ce plătiți pentru 1 dolar american). Economia compară cumpărarea de {amount} dolari americani la acea casă cu media pieței. Rata de referință BCU și cotațiile interbancare sunt excluse - publicul nu poate tranzacționa la acestea. Și panourile situate la mai mult de 3% față de mediana pieței sunt omise: acestea sunt de obicei panouri care nu se mai actualizează sau au fost citite greșit.",
     "noData": "Nu sunt disponibile tarife momentan."
   },
   "rateChanges": {

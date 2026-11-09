@@ -1927,7 +1927,7 @@
     "colCasa": "Byteshus",
     "colRate": "Sälja",
     "colSavings": "Sparande kontra genomsnitt",
-    "methodology": "Rangordnat efter försäljningspris i dollar (vad du betalar per 1 USD). Besparingen jämförs med att köpa {amount} USD i det huset mot marknadsgenomsnittet. BCU-referensräntan och interbankkurser är exkluderade – allmänheten kan inte göra transaktioner på dem.",
+    "methodology": "Rangordnat efter försäljningspris i dollar (vad du betalar per 1 USD). Besparingen jämförs med att köpa {amount} USD i det huset mot marknadsgenomsnittet. Referensräntan för BCU och interbankkurser är exkluderade – allmänheten kan inte göra transaktioner på dem. Anslagstavlor som ligger mer än 3 % från marknadsmedianen utelämnas också: de är vanligtvis en anslagstavla som slutat uppdateras eller som har blivit felläst.",
     "noData": "Inga priser tillgängliga just nu."
   },
   "rateChanges": {

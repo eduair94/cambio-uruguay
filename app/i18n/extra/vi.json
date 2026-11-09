@@ -1927,7 +1927,7 @@
     "colCasa": "Nhà trao đổi",
     "colRate": "Bán",
     "colSavings": "Tiết kiệm so với mức trung bình",
-    "methodology": "Xếp hạng theo giá bán đô la (số tiền bạn trả cho mỗi 1 đô la Mỹ). Mức tiết kiệm so sánh việc mua đô la Mỹ {amount} tại nhà đó với mức trung bình của thị trường. Tỷ giá tham chiếu của BCU và báo giá liên ngân hàng bị loại trừ — công chúng không thể giao dịch theo các tỷ giá này.",
+    "methodology": "Được xếp hạng theo giá bán đô la (số tiền bạn trả cho mỗi 1 đô la Mỹ). Mức tiết kiệm so sánh việc mua đô la Mỹ {amount} tại ngôi nhà đó với mức trung bình của thị trường. Tỷ giá tham chiếu BCU và báo giá liên ngân hàng bị loại trừ — công chúng không thể giao dịch ở mức giá đó. Các bảng có giá cao hơn 3% so với mức trung bình của thị trường cũng bị loại bỏ: chúng thường là bảng đã ngừng cập nhật hoặc bị đọc sai.",
     "noData": "Hiện chưa có giá nào được công bố."
   },
   "rateChanges": {
