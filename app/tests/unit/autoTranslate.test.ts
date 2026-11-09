@@ -262,6 +262,22 @@ describe('auto-translate: the sitemap', () => {
     expect((urls[1] as { alternatives?: unknown }).alternatives).toBeUndefined()
   })
 
+  // The memory translates the TEXT of a Spanish-only page too; its /en or /fr URL is still a 404.
+  // Measured 2026-11-09: the five budget pages of used cars in the sitemap of every language.
+  it('never lists a translation of a route that exists only in Spanish', () => {
+    const path = '/autos-usados-uruguay/hasta-6000-dolares'
+    const urls = keepCanonicalLocales([spanish(path), { loc: `/en${path}` }], {
+      pages: new Map([[path, ['en', 'pt', 'fr']]]),
+      isEmbargoed: () => false,
+    })
+    expect(urls.map(url => url.loc)).toEqual([path])
+    expect(
+      (urls[0] as { alternatives?: Array<{ hreflang: string }> }).alternatives?.map(
+        alternative => alternative.hreflang
+      )
+    ).toEqual(['es-ES', 'x-default'])
+  })
+
   it('leaves a reserved page exactly as it was', () => {
     const urls = keepCanonicalLocales([spanish('/guias/una'), { loc: '/en/guias/una' }], {
       pages: new Map([['/guias/una', ['en', 'fr']]]),

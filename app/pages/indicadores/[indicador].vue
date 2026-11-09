@@ -567,10 +567,15 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
+// Rendered once on the server and reused from the payload: with `new Date()` the block differed
+// after hydration and unhead appended a second copy (see pages/cotizacion/[moneda].vue).
+const renderedAt = useState('indicador-rendered-at', () => new Date().toISOString())
+
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl }],
   script: [
     {
+      key: 'indicador-jsonld',
       type: 'application/ld+json',
       innerHTML: computed(() => {
         const ind = indicator.value!
@@ -583,7 +588,7 @@ useHead({
               url: canonicalUrl.value,
               name: `Valor de la ${ind.name} (${ind.abbr}) hoy`,
               inLanguage: 'es',
-              dateModified: new Date().toISOString(),
+              dateModified: renderedAt.value,
               isPartOf: { '@id': 'https://cambio-uruguay.com/#website' },
               speakable: {
                 '@type': 'SpeakableSpecification',

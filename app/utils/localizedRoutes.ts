@@ -42,9 +42,35 @@ export function splitLocalePath(path: string): { locale: string; path: string } 
   return { locale: match[1]!, path: path.slice(match[0].length) || '/' }
 }
 
+const cleanPath = (path: string) => path.split(/[?#]/)[0]!.replace(/(.)\/+$/, '$1')
+
 /** Whether `path` (Spanish, without locale prefix) has its own /en and /pt pages. */
 export function isLocalizedRoute(path: string): boolean {
-  const clean = path.split(/[?#]/)[0]!.replace(/(.)\/+$/, '$1')
+  const clean = cleanPath(path)
   if (LOCALIZED_NAV.has(clean)) return true
   return LOCALIZED_FAMILIES.some(prefix => clean.startsWith(prefix))
+}
+
+/**
+ * Routes that exist ONLY in Spanish: the page calls `defineI18nRoute({ locales: ['es'] })`, so its
+ * /en, /pt and machine-translated URLs answer 404.
+ *
+ * The translation memory translates their TEXT all the same (it works from the Spanish page), and
+ * the sitemap lists every locale a page is translated into: the five
+ * `/autos-usados-uruguay/hasta-*` pages went out in the sitemap of every other language, URLs that
+ * answer 404 (measured 2026-11-09). `/alquiler/` and the scooter and e-bike pages sit in the same
+ * translation queue. tests/unit/localizedRoutes.test.ts keeps this list in step with the pages.
+ */
+export const SPANISH_ONLY_ROUTES: readonly RegExp[] = Object.freeze([
+  /^\/alquiler\/[^/]+\/[^/]+$/,
+  /^\/alquileres\/[^/]+$/,
+  /^\/autos-usados-uruguay\/hasta-[^/]+-dolares$/,
+  /^\/(?:bicicletas-electricas|monopatines-electricos)-uruguay\/[^/]+$/,
+  /^\/opinion(?:es)?-alquileres$/,
+])
+
+/** Whether `path` (Spanish, without locale prefix) has a page in Spanish only. */
+export function isSpanishOnlyRoute(path: string): boolean {
+  const clean = cleanPath(path)
+  return SPANISH_ONLY_ROUTES.some(route => route.test(clean))
 }

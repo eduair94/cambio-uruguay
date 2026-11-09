@@ -1,5 +1,5 @@
 import { CORE_LOCALES, EXTRA_LOCALES, hasExtraLocales } from '../../utils/locales'
-import { isLocalizedRoute, splitLocalePath } from '../../utils/localizedRoutes'
+import { isLocalizedRoute, isSpanishOnlyRoute, splitLocalePath } from '../../utils/localizedRoutes'
 
 type Alternative = { hreflang: string; href: string }
 type SitemapInput = string | { loc?: string; alternatives?: Alternative[]; [key: string]: unknown }
@@ -41,7 +41,10 @@ const localeLoc = (locale: string, path: string) =>
  * - is localized for English and Portuguese (`isLocalizedRoute`), or carries vue-i18n copy in an
  *   extra locale (`EXTRA_LOCALE_ROUTES`) — as before;
  * - or is machine-translated into it (`translations`), outside an embargo. Those URLs are ADDED
- *   when no source listed them, next to their Spanish entry.
+ *   when no source listed them, next to their Spanish entry. Never for a route whose page exists
+ *   only in Spanish (`isSpanishOnlyRoute`): its text gets translated, but its /en or /fr URL is a
+ *   404, and listing it sent the five `/autos-usados-uruguay/hasta-*` pages to every other
+ *   language's sitemap (measured 2026-11-09).
  *
  * The hreflang of a machine-translated EXTRA locale lives in the page's <head> only, never here:
  * with 32 of them a page carries ~36 alternates, and repeated on every URL of every sitemap that
@@ -58,7 +61,9 @@ export function keepCanonicalLocales<T extends SitemapInput>(
     let locales = translatedMemo.get(path)
     if (!locales) {
       locales =
-        translations && !translations.isEmbargoed(path) ? (translations.pages.get(path) ?? []) : []
+        translations && !translations.isEmbargoed(path) && !isSpanishOnlyRoute(path)
+          ? (translations.pages.get(path) ?? [])
+          : []
       translatedMemo.set(path, locales)
     }
     return locales

@@ -537,11 +537,19 @@ useSeoMeta({
   twitterDescription: () => metaDescription.value,
 })
 
+// The instant the server rendered the rates, reused by the browser from the payload. With
+// `new Date()` here the block read one time on the server and another after hydration, unhead
+// could not match the server's <script> and appended a second one: two WebPage and two FAQPage
+// nodes for one URL in the page Google renders (measured 2026-11-09). The `key` reconciles any
+// future difference in place. Tripwire: tests/unit/headHydrationParity.test.ts.
+const renderedAt = useState('cotizacion-rendered-at', () => new Date().toISOString())
+
 // ExchangeRateSpecification + BreadcrumbList JSON-LD for rich results.
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl }],
   script: [
     {
+      key: 'cotizacion-jsonld',
       type: 'application/ld+json',
       innerHTML: computed(() =>
         JSON.stringify({
@@ -553,7 +561,7 @@ useHead({
               url: canonicalUrl.value,
               name: t('cotizacion.metaTitle', { currency: currencyName.value, prep: prep.value }),
               inLanguage: locale.value,
-              dateModified: new Date().toISOString(),
+              dateModified: renderedAt.value,
               isPartOf: { '@id': 'https://cambio-uruguay.com/#website' },
               speakable: {
                 '@type': 'SpeakableSpecification',
