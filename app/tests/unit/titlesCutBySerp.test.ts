@@ -7,6 +7,7 @@ import { formatUYU } from '../../utils/format'
 import { ID_CARD_BY_KEY } from '../../utils/idCard'
 import { LENDERS } from '../../utils/loans'
 import { STORE_DIRECTORY } from '../../utils/storeDirectory'
+import { remittanceCounts } from '../../utils/remittanceAgents'
 import { titleFits } from '../../utils/liveRateSeo'
 import { getWithdrawContent } from '../../utils/withdrawCash'
 
@@ -98,6 +99,50 @@ describe('títulos que entran en el SERP', () => {
       'const seoTitle = computed(() => `Tiendas online de Uruguay: ${conResenas.value} con reseñas`)'
     )
     expect(source).toContain('title: () => `${seoTitle.value} | Cambio Uruguay`')
+  })
+
+  // 75 caracteres con la marca hasta el 2026-11-09, el peor de los tres que quedaban en el piso de
+  // `seoTitleBudget`: el SERP cortaba en «…cambiar dóla» y lo que publicaba era la pregunta que el
+  // visitante acababa de escribir. Ahora lleva el veredicto del día, y las cuatro ramas se miden
+  // acá porque el piso de ese pozo sólo puede ver el prefijo fijo.
+  it('banco o casa de cambio: las cuatro ramas del veredicto entran con la marca', () => {
+    const title = (verdict: string) => `¿Banco o casa de cambio? ${verdict}`
+    for (const verdict of [
+      'Hoy gana la casa',
+      'Hoy gana el banco',
+      'Hoy están iguales',
+      'Cuál conviene hoy',
+    ])
+      expect(titleFits(title(verdict)), verdict).toBe(true)
+
+    // El veredicto sale del MISMO cálculo que firma la respuesta del cuerpo, no de un literal
+    // suelto: un título que corone a un grupo distinto del que corona la página es peor que uno
+    // largo. `compareInstitutionKinds` es el único que decide quién gana.
+    const source = page('banco-o-casa-de-cambio-uruguay.vue')
+    expect(source).toContain('const gap = comparison.value.sell')
+    expect(source).toContain(
+      "return gap.winner === 'casa' ? 'Hoy gana la casa' : 'Hoy gana el banco'"
+    )
+    expect(source).toContain(
+      'const metaTitle = computed(() => `¿Banco o casa de cambio? ${titleVerdict.value}`)'
+    )
+    expect(source).toContain('title: () => metaTitle.value')
+  })
+
+  // 68 con la marca hasta el 2026-11-09: el corte se llevaba la cifra, que es lo único que este
+  // título puede decir y la caja de respuesta de Google no.
+  it('giro del exterior: el título lleva cuántas casas son agentes y entra con la cifra puesta', () => {
+    const title = (agents: number) => `Cobrar un giro del exterior: ${agents} casas`
+    expect(titleFits(title(remittanceCounts().agents))).toBe(true)
+    // El peor caso es que las 45 casas relevadas pasen a declararse agentes; entra igual, y sigue
+    // entrando si el relevamiento pasa de las 99, que es el único crecimiento que lo alargaría.
+    expect(titleFits(title(remittanceCounts().researched))).toBe(true)
+    expect(titleFits(title(999))).toBe(true)
+
+    // La cifra se cuenta sobre la lista que la página publica, no se congela en el título.
+    expect(page('cobrar-giro-del-exterior-uruguay.vue')).toContain(
+      'const metaTitle = `Cobrar un giro del exterior: ${counts.agents} casas`'
+    )
   })
 
   it('retirar efectivo: los tres idiomas entran', () => {

@@ -1715,6 +1715,7 @@
     "autoAlExterior": "بردن ماشین به برزیل یا آرژانتین",
     "porQueNoBajaAlquiler": "چرا اجاره بها کاهش نمی‌یابد",
     "alquilerDeTemporada": "اجاره‌های فصلی",
+    "coeficienteReajusteAlquileres": "ضریب تعدیل اجاره",
     "cobrarEnDolares": "پرداخت به دلار، خرج به پزو",
     "comisionesTransferencia": "هزینه‌های حواله بانکی در اروگوئه",
     "clonacionTarjetas": "کلونینگ کارت در اروگوئه: چه چیزی از شما محافظت می‌کند",

@@ -375,7 +375,34 @@ const relatedLinks = [
 
 const canonical = 'https://cambio-uruguay.com/banco-o-casa-de-cambio-uruguay'
 
-const metaTitle = 'Banco o casa de cambio: dónde conviene cambiar dólares hoy'
+/**
+ * El VEREDICTO del día, que es la mitad del título.
+ *
+ * El título viejo medía 75 caracteres con la marca y el SERP publicaba 60: cortaba en «…cambiar
+ * dóla» y gastaba los que tenía en ANUNCIAR la pregunta («dónde conviene cambiar dólares hoy»),
+ * que es justo la pregunta que el visitante ya escribió. La respuesta —cuál de los dos grupos
+ * vende hoy más barato— es lo único que el título puede decir y la caja de respuesta de Google no,
+ * porque necesita las dos pizarras y no la de una institución.
+ *
+ * Sale de `comparison.value.sell`, el mismo cálculo que firma la respuesta del cuerpo, así que el
+ * título nunca puede coronar a un grupo distinto del que corona la página. El empate se dice como
+ * empate y sin lectura se vuelve a la pregunta: prometer un ganador que no se midió es el único
+ * modo en que este título mentiría.
+ *
+ * Va en su propio `computed` y no como ternario dentro de la plantilla a propósito: el piso de
+ * `seoTitleBudget.test.ts` lee un `cond ? … : …` como texto vacío, así que la página seguiría
+ * contándose y dejaría de medirse. Resuelto acá, el piso mide el prefijo fijo y la medición exacta
+ * con el veredicto puesto vive en `titlesCutBySerp.test.ts`, como la de los otros títulos con
+ * datos adentro.
+ */
+const titleVerdict = computed(() => {
+  const gap = comparison.value.sell
+  if (!gap) return 'Cuál conviene hoy'
+  if (gap.perUnit === 0) return 'Hoy están iguales'
+  return gap.winner === 'casa' ? 'Hoy gana la casa' : 'Hoy gana el banco'
+})
+
+const metaTitle = computed(() => `¿Banco o casa de cambio? ${titleVerdict.value}`)
 
 /**
  * La descripción lleva la diferencia del día.
@@ -410,21 +437,23 @@ const metaDescription = computed(() => {
   )
 })
 
+// La tarjeta para compartir se dibuja una vez y se cachea, así que lleva la pregunta y no el
+// veredicto del día: una imagen guardada con «Hoy gana la casa» seguiría diciéndolo mañana.
 defineOgImageComponent('Cambio', {
-  title: metaTitle,
+  title: 'Banco o casa de cambio',
   subtitle: '¿Dónde conviene cambiar hoy?',
   tag: 'BANCO O CASA',
 })
 
 useSeoMeta({
-  title: metaTitle,
+  title: () => metaTitle.value,
   description: () => metaDescription.value,
-  ogTitle: metaTitle,
+  ogTitle: () => metaTitle.value,
   ogDescription: () => metaDescription.value,
   ogType: 'website',
   ogUrl: canonical,
   twitterCard: 'summary_large_image',
-  twitterTitle: metaTitle,
+  twitterTitle: () => metaTitle.value,
   twitterDescription: () => metaDescription.value,
 })
 

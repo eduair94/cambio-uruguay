@@ -262,7 +262,18 @@ function staticTitle(source: string): string | null {
 // `utils/seasonalRental.ts`: el plazo de 120 días que imprime es la definición legal del contrato
 // y no se mueve con el día, y que no se despegue de la constante lo vigila
 // `seasonalRental.test.ts`.
-const MEASURABLE = 181
+// 181 → 193 el 2026-11-09, y las doce de diferencia son UNA sola de esta corrida: la página nueva
+// `/coeficiente-de-reajuste-de-alquileres-uruguay`, apretada en el mismo commit que la publica. Las
+// otras once son el sobrante que las cinco notas de arriba describen como el único accidente que
+// este número existe para evitar — once títulos medidos se podrían volver dinámicos, o sea salir del
+// control del largo y del de canibalización, sin que nada se ponga en rojo. Se publicaron de a una
+// sin volver a apretarlo, que es exactamente cómo esto se desajusta. Queda otra vez en el conteo
+// real.
+//
+// El título de la página nueva entra acá porque es un literal de la página y no una cadena armada
+// desde `utils/rentAdjustment.ts`; que no se despegue del último decreto de la serie lo vigila
+// `rentAdjustment.test.ts`, que es lo que impide que el literal envejezca en silencio.
+const MEASURABLE = 193
 // 44 → 33 el 2026-09-07: once de los títulos más largos reescritos a 43 caracteres o menos. Los
 // once perdían la cola en el SERP, y la cola era el dato — «2 puntos o 9», «mora y 72 h», «1 mes
 // por año», «6 países», «13 temas», «ChauDeudas o MiDeuda» —, así que en cada uno se conservó la
@@ -538,24 +549,46 @@ function pageTitleFloor(source: string): string | null {
  *     por `casas-grupo-antes-de-cambiar` (2026-10-11), se liberan el 2026-11-09.
  *   - `/declarar-dinero-en-efectivo-uruguay` (73 de piso, 80 con el umbral puesto) — reservada por
  *     `dos-huerfanas-de-aduana-entran-a-su-tema` (2026-10-26), se libera el 2026-11-24.
+ *
+ * 3 → 1 el 2026-11-09, que es el día exacto que el párrafo de arriba tenía anotado: la fila
+ * `casas-grupo-antes-de-cambiar` del 11/10 cumple hoy 29 días y las DOS que reservaba salen juntas
+ * de la ventana que `experiments_overlap.test.ts` protege (el solape es `|Δfecha| ≤ 28`). Se curan
+ * las dos y no una, porque las dos las libera la MISMA fila: dejar una en la cola no reservaría
+ * nada que no estuviera ya libre.
+ *
+ * Las dos pagaban el recorte con el mismo defecto que este archivo documenta desde la primera
+ * corrida — la segunda mitad ANUNCIABA la pregunta en vez de contestarla — y las dos la contestan
+ * ahora con lo que la página ya calcula:
+ *
+ *   - `/banco-o-casa-de-cambio-uruguay` (75 → 58) pasa a llevar el VEREDICTO del día («¿Banco o
+ *     casa de cambio? Hoy gana la casa»), tomado del mismo `compareInstitutionKinds` que firma la
+ *     respuesta del cuerpo, con el empate dicho como empate y la pregunta como vuelta atrás si no
+ *     hay lectura. Su piso mide 42 porque el veredicto vive en su propio `computed`; la medición
+ *     con el veredicto puesto está en `titlesCutBySerp.test.ts`.
+ *   - `/cobrar-giro-del-exterior-uruguay` (68 → 54) suelta «Dónde» —la pregunta la escribió quien
+ *     busca— y «en Uruguay», que la marca ya repite, y conserva la cifra: cuántas casas de cambio
+ *     declaran ser agentes de una red internacional.
+ *
+ * Queda una y está RESERVADA: `/declarar-dinero-en-efectivo-uruguay` se libera el 2026-11-24.
  */
 const DEUDA_TITULO_PISO = [
   // El comentario va DENTRO de la lista por lo que `DEUDA_SIN_ENLACE` en `enlacesDeContexto.test.ts`
   // deja escrito: `classes/revenueplan/debtFree.ts::parseStringList` corta en el primer `\n]`, o sea
   // exige que el cierre abra su propia línea, y prettier aplasta a una sola línea cualquier array
   // que entre en 100 columnas salvo los que llevan un comentario.
-  '/banco-o-casa-de-cambio-uruguay',
-  '/cobrar-giro-del-exterior-uruguay',
   '/declarar-dinero-en-efectivo-uruguay',
 ]
 
-const TITLE_FLOOR_OVER_BUDGET = 3
+const TITLE_FLOOR_OVER_BUDGET = 1
 
 // 247 el 2026-11-03, el conteo real y por el mismo motivo que `MEASURABLE`: si el piso fuera más
 // bajo, un título nuevo podría dejar de leerse acá sin poner nada en rojo. Sube con cada página que
 // nace y baja sólo si alguien vuelve ilegible un título que hoy se mide, que es lo que tiene que
 // delatar.
-const FLOOR_MEASURABLE = 247
+// 247 → 252 el 2026-11-09: una es la página nueva de esta corrida, apretada en el mismo commit que
+// la publica, y las otras cuatro son sobrante acumulado desde el 3/11. Queda en el conteo real por
+// el mismo motivo que `MEASURABLE`.
+const FLOOR_MEASURABLE = 252
 
 describe('los títulos que el lector de una línea no alcanzaba también entran en el SERP', () => {
   const floors = PAGES_WITH_TITLE.map(file => ({

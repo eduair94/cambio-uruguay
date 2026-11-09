@@ -3444,6 +3444,32 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El número que decide cuánto sube el alquiler en el aniversario del contrato, y que no
+        // estaba en ninguna página: el art. 15 del Decreto-Ley 14.219 manda multiplicar por la
+        // MENOR de dos variaciones de doce meses, el Poder Ejecutivo lo publica en un decreto por
+        // mes y la serie no existe junta en ningún lado — hay que ir decreto por decreto. El art. 3
+        // además habilita al inquilino a optar por este coeficiente cuando el aumento pactado lo
+        // supera, y eso no aparecía escrito en el sitio.
+        to: '/coeficiente-de-reajuste-de-alquileres-uruguay',
+        labelKey: 'nav.coeficienteReajusteAlquileres',
+        icon: 'mdi-home-percent-outline',
+        priority: 0.7,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'coeficiente de reajuste de alquileres',
+          'cra alquileres uruguay',
+          'reajuste de alquiler uruguay',
+          'aumento de alquiler uruguay',
+          'cuanto me pueden aumentar el alquiler',
+          'unidad reajustable de alquileres',
+          'ura uruguay',
+          'decreto ley 14219 articulo 15',
+          'coeficiente alquileres octubre 2026',
+          'ajuste anual del alquiler uruguay',
+        ],
+      },
+      {
         to: '/comprar-o-alquilar-uruguay',
         labelKey: 'nav.comprarOAlquilar',
         icon: 'mdi-home-search-outline',

@@ -1715,6 +1715,7 @@
     "autoAlExterior": "การนำรถของคุณไปบราซิลหรืออาร์เจนตินา",
     "porQueNoBajaAlquiler": "เหตุใดค่าเช่าจึงไม่ลดลง",
     "alquilerDeTemporada": "ให้เช่าตามฤดูกาล",
+    "coeficienteReajusteAlquileres": "สัมประสิทธิ์การปรับค่าเช่า",
     "cobrarEnDolares": "จ่ายเป็นดอลลาร์ แต่ใช้จ่ายเป็นเปโซ",
     "comisionesTransferencia": "ค่าธรรมเนียมการโอนเงินผ่านธนาคารในอุรุกวัย",
     "clonacionTarjetas": "การปลอมแปลงบัตรเครดิตในอุรุกวัย: อะไรคุ้มครองคุณบ้าง",

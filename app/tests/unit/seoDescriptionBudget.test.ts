@@ -165,7 +165,17 @@ const measured = pageFiles()
 // publica la página. Su descripción entra acá porque es literal: los 120 días de plazo y los 15 de
 // desalojo son el texto del art. 28, lit. A del Decreto-Ley 14.219 y no una cifra del día. Lo que
 // esa página NO congela en un literal es ningún monto de multa, que la Ley 20.352 no fija.
-const RESOLVED = 163
+// 163 → 172 el 2026-11-09. Una es la página nueva de esta corrida,
+// `/coeficiente-de-reajuste-de-alquileres-uruguay`, apretada en el mismo commit que la publica; las
+// otras ocho son el sobrante que los renglones de arriba describen: ocho descripciones que hoy se
+// miden podrían volverse dinámicas —y salir del control de los 155 caracteres y del de
+// descripciones repetidas— sin poner nada en rojo. Queda otra vez en el conteo real.
+//
+// La de la página nueva entra acá porque es un literal, y el literal lleva el coeficiente del
+// último decreto publicado (1,0468, Decreto 256/026): lo que impide que envejezca en silencio al
+// sumar el mes siguiente es `rentAdjustment.test.ts`, que exige que el texto nombre al primer mes
+// de la serie, su aumento y su decreto.
+const RESOLVED = 172
 // 121 → 96 el 2026-09-20, la primera medición: veinte hubs (la home de cada directorio, las de
 // descuentos y las de guías) más las cinco peores de todas, entre 376 y 464 caracteres. En las
 // cinco largas el recorte no fue podar la cola: la cifra que las distingue se movió al frente

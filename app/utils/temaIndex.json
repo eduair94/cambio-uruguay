@@ -535,6 +535,10 @@
           "label": "Alquiler de temporada"
         },
         {
+          "to": "/coeficiente-de-reajuste-de-alquileres-uruguay",
+          "label": "Reajuste de alquileres"
+        },
+        {
           "to": "/herramientas/costo-de-vida",
           "label": "Costo de vida"
         },

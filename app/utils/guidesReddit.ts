@@ -828,7 +828,7 @@ export const redditGuides: readonly Guide[] = [
     sections: [
       {
         heading: 'El aumento de la renta y su índice',
-        body: 'El alquiler de vivienda no se ajusta cuando el propietario quiere ni por el monto que se le ocurra. En Uruguay el reajuste se hace, por regla, una vez al año en la fecha aniversario del contrato, y siguiendo un índice objetivo pactado en el propio contrato: habitualmente el Índice de Precios al Consumo o algún coeficiente de reajuste de alquileres que publica el Instituto Nacional de Estadística. En el mercado libre el índice lo fijan las partes, e incluso puede pactarse en dólares o en otra unidad. Lo que manda es lo que figura en tu contrato. El propietario debe comunicarte el nuevo valor con antelación, según lo acordado. Un aumento fuera de fecha, sin aviso o por encima del índice pactado no es exigible. Verificá el coeficiente vigente en el INE.',
+        body: 'El alquiler de vivienda no se ajusta cuando el propietario quiere ni por el monto que se le ocurra. En Uruguay el reajuste se hace, por regla, una vez al año en la fecha aniversario del contrato, y siguiendo un índice objetivo pactado en el propio contrato: habitualmente el Índice de Precios al Consumo, la Unidad Indexada o la Unidad Reajustable. En el mercado libre el índice lo fijan las partes, e incluso puede pactarse en dólares o en otra unidad. Lo que manda es lo que figura en tu contrato. El propietario debe comunicarte el nuevo valor con antelación, según lo acordado. Un aumento fuera de fecha, sin aviso o por encima del índice pactado no es exigible. Y hay un coeficiente legal además del pactado: el Coeficiente de Reajuste de Alquileres del artículo 15 del Decreto-Ley 14.219, que publica el Poder Ejecutivo en el Diario Oficial, no el INE, en un decreto por mes.',
       },
       {
         heading: 'Reparaciones: quién paga qué',
@@ -848,13 +848,17 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         heading: 'Información general, no asesoramiento',
-        body: 'Los derechos concretos dependen del régimen de tu contrato y de sus cláusulas, así que esta guía es orientativa y no reemplaza el consejo profesional. Si enfrentás un desalojo, un aumento abusivo o un conflicto serio, consultá cuanto antes con un abogado o con una liga o asociación de inquilinos, que suelen dar asesoramiento accesible. Para índices y coeficientes de reajuste, la fuente oficial es el Instituto Nacional de Estadística. Guardá tu contrato, los recibos y toda comunicación fehaciente: son la base para hacer valer tus derechos.',
+        body: 'Los derechos concretos dependen del régimen de tu contrato y de sus cláusulas, así que esta guía es orientativa y no reemplaza el consejo profesional. Si enfrentás un desalojo, un aumento abusivo o un conflicto serio, consultá cuanto antes con un abogado o con una liga o asociación de inquilinos, que suelen dar asesoramiento accesible. El Índice de Precios del Consumo lo publica el Instituto Nacional de Estadística; el coeficiente legal de reajuste de alquileres lo fija un decreto del Poder Ejecutivo y se publica en el Diario Oficial. Guardá tu contrato, los recibos y toda comunicación fehaciente: son la base para hacer valer tus derechos.',
       },
     ],
     related: [
       { label: 'Guía para alquilar', to: '/alquilar-en-uruguay' },
       { label: 'Rescindir el contrato', to: '/guias/como-rescindir-contrato-alquiler-uruguay' },
       { label: 'Qué revisar antes de firmar', to: '/guias/que-revisar-antes-de-firmar-alquiler' },
+      {
+        label: 'El coeficiente legal, mes por mes',
+        to: '/coeficiente-de-reajuste-de-alquileres-uruguay',
+      },
     ],
   },
   {

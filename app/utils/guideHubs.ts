@@ -589,6 +589,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/alquiler-de-temporada-uruguay',
       },
       {
+        label: 'Reajuste de alquileres',
+        description: 'El coeficiente legal de cada mes, con el decreto que lo fija.',
+        to: '/coeficiente-de-reajuste-de-alquileres-uruguay',
+      },
+      {
         label: 'Costo de vida',
         description: 'Cuánto necesitás para vivir donde querés.',
         to: '/herramientas/costo-de-vida',

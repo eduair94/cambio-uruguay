@@ -450,6 +450,19 @@ export const CONTENIDO_PATHS = new Set([
   // vecina `/elecciones-bps-2026` sigue en la deuda de `contenidoTramoParity.test.ts` por su propio
   // motivo: ahi la cifra en pesos es la multa que el BPS liquida, no una conversion de un tope.
   "/reclamar-sin-abogado-uruguay",
+  // Pagina nueva del 2026-11-09, clasificada en el mismo commit que la publica:
+  // `/coeficiente-de-reajuste-de-alquileres-uruguay`, el coeficiente legal de reajuste del alquiler
+  // (art. 15 del Decreto-Ley 14.219: la MENOR de dos variaciones de doce meses, publicada en un
+  // decreto por mes). Lectura larga de norma sobre un catalogo FIJO del repo
+  // (`app/utils/rentAdjustment.ts`, cada fila leida en el art. 4 de su propio decreto en IMPO) y
+  // `ads.ts` le da dos unidades en flujo.
+  //
+  // No lee NINGUN dato en vivo, ni siquiera la UR: la URA es un promedio de tres meses de UR
+  // (art. 14) y el coeficiente es el menor de dos cocientes, asi que reconstruirlo desde la UR del
+  // dia seria inventar un numero que el decreto ya dice. Su vecina
+  // `/garantia-de-alquiler-uruguay`, que SI convierte topes en UR a pesos de hoy, esta en la lista
+  // curada de `contenidoTramoParity.test.ts` por ese otro motivo.
+  "/coeficiente-de-reajuste-de-alquileres-uruguay",
   // Tanda decidida el 2026-10-29 y mergeada el 11-01 (el PR esperó un re-run de CI). Es la primera
   // que toma el HUB como racimo en vez de ir ruta por ruta, y la primera que lo deja atornillado: el
   // tema `deudas-y-credito-uruguay` declara quince entradas en `resources` (`app/utils/guideHubs.ts`)
