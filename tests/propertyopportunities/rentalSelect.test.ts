@@ -89,8 +89,9 @@ describe("the rental opportunity loader selects what the adapter reads", () => {
       commonExpenses: null, commonExpensesCurrency: null, lastSeen: "2026-11-09", publishedAt: null,
       image: null, parkingSpaces: null, furnished: null,
     } as unknown as RentalOffer;
-    // Measured in production on 2026-11-09: a zero read from "Sin gastos comunes" entered the rent
-    // snapshot as the portal's zero (3 subjects, 11 comparables), because the select dropped the label.
+    // Measured in production on 2026-11-09: gastos comunes read from the description entered the rent
+    // snapshot as the portal's figure (3 subjects, all zeros from "sin gastos comunes", and 11
+    // comparables), because the select dropped the label.
     const fromText = { ...base, listingId: "infocasas:2", commonExpenses: 0, commonExpensesSource: "description" } as RentalOffer;
     const winterOnly = { ...base, listingId: "infocasas:3", terms: ["invernal"] } as RentalOffer;
     const rows = rentalOpportunityListings(loaded([{ key: "p", offers: [fromText, winterOnly] } as RentalProperty]));

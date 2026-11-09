@@ -161,12 +161,12 @@ teléfonos fuera) y **sólo** cuando el portal no dio nada:
   `zoneOwnCommonExpenses` relee el mismo texto con sus reglas y sólo acepta lo que coincide.
 - **Medido el 8/11/2026** (muestra de sólo lectura en el VPS, 1.080 avisos sorteados de los últimos
   10 días): 163 publicarían una cifra (117 "stated", 46 "none"; El País 74, InfoCasas 89; Casasweb y
-  ML no tienen descripción publicada sin cifra del portal). Dos etiquetadores a ciegas marcaron los
-  163 con el texto completo y coincidieron en todos: **161 correctos (98,8 %, cota inferior de
-  Wilson al 95 % 95,6 %)**. Los dos errores eran "none" de InfoCasas: "Sin gastos comunes
-  reportados" (no informarlos no es no tenerlos) y "gastos comunes mínimos" en el mismo texto que
-  "Sin Gastos Comunes". Los dos se abstienen ahora (`GC_UNREPORTED`, `GC_SMALL` en `textFacts.ts`);
-  sobre la muestra cambian sólo esos dos.
+  ML no tienen descripción publicada sin cifra del portal). Dos etiquetadores a ciegas (dos agentes de
+  IA independientes, no personas) marcaron los 163 con el texto completo y coincidieron en todos:
+  **161 correctos (98,8 %, cota inferior de Wilson al 95 % 95,6 %)**. Los dos errores eran "none" de
+  InfoCasas: "Sin gastos comunes reportados" (no informarlos no es no tenerlos) y "gastos comunes
+  mínimos" en el mismo texto que "Sin Gastos Comunes". Los dos se abstienen ahora (`GC_UNREPORTED`,
+  `GC_SMALL` en `textFacts.ts`); sobre la muestra cambian sólo esos dos.
 
 **Estado de las banderas (8/11/2026):** `RENTALS_GC_FROM_TEXT=1` en el `.env` raíz del VPS desde el
 día del deploy de las fichas, como declara la fila `fichas-alquiler-calle-precio-total-y-miga-al-barrio`
@@ -179,8 +179,9 @@ texto, ~210 por hora (la estimación del 8/11 de ~5 % por día era baja: la rele
 
 **9/11/2026, primera corrida completa con la bandera:** 1.355 ofertas vivas con gastos comunes del
 texto (InfoCasas 820, El País 535; de las 1.766 rotuladas, vivas o no, 610 son ceros de "sin gastos
-comunes"); 10 vivas tomadas al azar, 10 correctas. Esa corrida destapó que `currency-property-opportunities` sí las usaba: ver
-«Datos y privacidad» en [PROPERTY_OPPORTUNITIES.md](PROPERTY_OPPORTUNITIES.md).
+comunes"); 10 vivas tomadas al azar y leídas por un agente de IA, 10 correctas. Esa corrida destapó
+que `currency-property-opportunities` sí las usaba: ver «Datos y privacidad» en
+[PROPERTY_OPPORTUNITIES.md](PROPERTY_OPPORTUNITIES.md).
 
 ## Opiniones de quienes lo usan — 19 de octubre de 2026
 
