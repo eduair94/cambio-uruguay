@@ -101,6 +101,21 @@ describe('rate alert email unsubscribe', () => {
     expect(mocks.update).not.toHaveBeenCalled()
   })
 
+  // The endpoint's error page says "nothing changed" until this fires (api/alerts/unsubscribe.ts).
+  it('tells the caller right before writing, and only when it writes', async () => {
+    const order: string[] = []
+    mocks.update.mockImplementation(async () => {
+      order.push('write')
+      return { modifiedCount: 1 }
+    })
+    await unsubscribeRateAlertEmail(token, () => order.push('onWrite'))
+    expect(order).toEqual(['onWrite', 'write'])
+    const onWrite = vi.fn()
+    mocks.findOne.mockReturnValueOnce(found({ ...row, channels: { push: true, email: false } }))
+    await unsubscribeRateAlertEmail(token, onWrite)
+    expect(onWrite).not.toHaveBeenCalled()
+  })
+
   it('the confirmation form posts back to the rate-alert endpoint', () => {
     const page = rentalUnsubscribeHtml('es', 'confirm', token, '/api/alerts/unsubscribe')
     expect(page).toContain(`action="/api/alerts/unsubscribe?token=${token}"`)
