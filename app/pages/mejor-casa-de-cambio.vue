@@ -89,6 +89,7 @@
 <script setup lang="ts">
 import type { ExchangeRate } from '~/types/api'
 import { buildFaqItems, HOME_FAQ_IDS, type FaqItem, type FaqLang } from '~/utils/faqAnswers'
+import { offMarketDetector } from '~/utils/marketOutlier'
 import { rankExchanges } from '~/utils/recommendation'
 import { pickOriginRate, publicRates } from '~/utils/rateSource'
 
@@ -138,7 +139,18 @@ const rankableRows = computed(() => {
   })
 })
 
-const ranking = computed(() => rankExchanges(rankableRows.value, 'USD', 'buy', REFERENCE_AMOUNT))
+// Without the boards the site already refuses to crown: a quote further than 3 % from the market
+// median (utils/marketOutlier.ts, the rule of /cotizacion, /pizarra, /casas-de-cambio and this
+// page's own FAQ). Without it the answer of this page — its description, the named winner and #1 of
+// the list — was a board frozen since July at $39,55, which the backend's staleness check marks
+// `extreme: "min-sell"` (measured 2026-11-09), while the FAQ below named another casa. An
+// off-market board keeps its own casa page; it just does not rank here.
+const usableRows = computed(() => {
+  const isOffMarket = offMarketDetector(rankableRows.value)
+  return rankableRows.value.filter(row => !isOffMarket(row))
+})
+
+const ranking = computed(() => rankExchanges(usableRows.value, 'USD', 'buy', REFERENCE_AMOUNT))
 
 const winner = computed(() => ranking.value.ranked[0] ?? null)
 

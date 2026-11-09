@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  bestDigestQuotes,
   buildConfirmEmail,
   buildDailyEmail,
   buildDailyTelegram,
@@ -8,6 +9,33 @@ import {
   normalizeEmail,
   type DigestData,
 } from '../../server/utils/newsletter'
+
+// 2026-11-09: baluma_cambio's USD board had not moved since July (37,15 / 39,55; the backend's
+// staleness check marks it `extreme: "min-sell"`) against a market around 40 / 41,4. It was "la
+// mejor venta" of 84 of the 87 archived issues.
+describe('bestDigestQuotes', () => {
+  const market = Array.from({ length: 12 }, (_, i) => ({
+    origin: `casa${i}`,
+    buy: 40 + i * 0.05,
+    sell: 41.4 + i * 0.05,
+  }))
+  const frozen = { origin: 'baluma_cambio', buy: 37.15, sell: 39.55 }
+
+  it('never names a board the rest of the site treats as off-market', () => {
+    const best = bestDigestQuotes([...market, frozen])!
+    expect(best.bestSell.origin).toBe('casa0')
+    expect(best.bestBuy.origin).toBe('casa11')
+  })
+
+  it('keeps every board when the market is too thin to judge', () => {
+    const best = bestDigestQuotes([market[0]!, market[1]!, frozen])!
+    expect(best.bestSell.origin).toBe('baluma_cambio')
+  })
+
+  it('has nothing to say without quotes', () => {
+    expect(bestDigestQuotes([])).toBeNull()
+  })
+})
 
 describe('normalizeEmail', () => {
   it('lowercases and trims', () => {
