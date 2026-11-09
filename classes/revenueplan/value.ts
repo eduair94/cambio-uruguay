@@ -460,9 +460,54 @@ export const CONTENIDO_PATHS = new Set([
   // No lee NINGUN dato en vivo, ni siquiera la UR: la URA es un promedio de tres meses de UR
   // (art. 14) y el coeficiente es el menor de dos cocientes, asi que reconstruirlo desde la UR del
   // dia seria inventar un numero que el decreto ya dice. Su vecina
-  // `/garantia-de-alquiler-uruguay`, que SI convierte topes en UR a pesos de hoy, esta en la lista
-  // curada de `contenidoTramoParity.test.ts` por ese otro motivo.
+  // `/garantia-de-alquiler-uruguay` SI convierte topes en UR a pesos de hoy, y por eso entra con la
+  // tanda de abajo: la conversion de un tope fijo no es un dato en vivo.
   "/coeficiente-de-reajuste-de-alquileres-uruguay",
+  // ---------------------------------------------------------------------------------------------
+  // Tanda del 2026-11-09: las ocho que ya cumplian la linea escrita el 11-03 y nadie habia barrido.
+  //
+  // La linea NO es nueva. La escribio seis dias antes el comentario de `/reclamar-sin-abogado-uruguay`
+  // unas lineas mas arriba, textual: leer la UR en vivo para imprimir un tope fijo en pesos de hoy
+  // «no la hace `dato-vivo`» porque «lo que la pagina AFIRMA son los articulos; la UR solo convierte
+  // un tope fijo». Lo que faltaba era aplicarla, y se ve en que el comentario de la pagina de arriba
+  // —escrito HOY— daba por sentado que `/garantia-de-alquiler-uruguay` seguia en deuda justamente
+  // por convertir topes en UR, que es la operacion que el 11-03 habia declarado inocente. No eran
+  // dos criterios: era un criterio sin barrer. El motivo es el que
+  // `contenidoTramoParity.test.ts` ya explica: la lista se llenaba desde la alerta
+  // `unclassified-families`, que solo nombra lo que GA4 reporto CON trafico en la ventana.
+  //
+  // El barrido es mecanico y por eso es reproducible: de las 54 rutas en deuda, estas son TODAS las
+  // que tienen exactamente UNA lectura viva, esa lectura es un indicador (UR o UI), su unico uso es
+  // expresar en pesos una cifra que una norma fija en esas unidades, y no llaman a ninguna API del
+  // sitio. Las nueve que cumplen la forma son diez menos una: `/elecciones-bps-2026` tiene la misma
+  // firma y se queda afuera porque el comentario de arriba ya la juzgo por su propio motivo —ahi la
+  // cifra en pesos es la multa que el BPS liquida, no la conversion de un tope—. Las demas de la
+  // deuda quedan donde estan: o piden una serie a una ruta propia del sitio (`/api/market-series`,
+  // `/api/aduana`, `/api/cars/*`), o no leen nada y su motivo es otro.
+  //
+  // Las ocho son lectura larga con catalogo FIJO en `app/utils/` y dos unidades en flujo en
+  // `ads.ts`, y cada una convierte una cifra escrita en la norma:
+  //   - `/apostillar-un-documento-uruguay`: el arancel de la apostilla (Dto. 274/017), en UR.
+  //   - `/certificado-de-antecedentes-judiciales-uruguay`: el arancel del CAJ, en UI.
+  //   - `/cooperativas-de-vivienda-uruguay`: el tope de ingresos del hogar del MVOT, en UR.
+  //   - `/garantia-de-alquiler-uruguay`: los montos de cada garantia, en UR.
+  //   - `/libreta-de-conducir-uruguay`: la escala del arancel por anos de libreta, en UR.
+  //   - `/llevar-el-auto-a-brasil-o-argentina`: la cobertura del SOA (Ley 18.412), en UI. Sin
+  //     lectura publica el tope en UI, «como lo escribe la ley», que es la prueba de que la cifra
+  //     es de la norma y no del dia.
+  //   - `/prestamo-hipotecario-uruguay`: el tope de ingresos del FGCH, en UR.
+  //   - `/subsidio-de-alquiler-uruguay`: los topes de alquiler por dormitorios, en UR.
+  //
+  // Sin estas ocho lineas la cola de trabajo las ordena OCHO VECES por debajo de la guia
+  // equivalente de `/guias/*`, que es la misma clase de pagina y la misma intencion de busqueda.
+  "/apostillar-un-documento-uruguay",
+  "/certificado-de-antecedentes-judiciales-uruguay",
+  "/cooperativas-de-vivienda-uruguay",
+  "/garantia-de-alquiler-uruguay",
+  "/libreta-de-conducir-uruguay",
+  "/llevar-el-auto-a-brasil-o-argentina",
+  "/prestamo-hipotecario-uruguay",
+  "/subsidio-de-alquiler-uruguay",
   // Tanda decidida el 2026-10-29 y mergeada el 11-01 (el PR esperó un re-run de CI). Es la primera
   // que toma el HUB como racimo en vez de ir ruta por ruta, y la primera que lo deja atornillado: el
   // tema `deudas-y-credito-uruguay` declara quince entradas en `resources` (`app/utils/guideHubs.ts`)
