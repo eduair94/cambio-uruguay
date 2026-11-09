@@ -20,7 +20,14 @@
 // valor que nuxt.config. (2) Ninguna llamada a `useHead` que registra `application/ld+json`
 // depende del reloj, ni directamente ni a través de un nombre (`const hoy = new Date()` y después
 // `dateModified: hoy`): el instante se toma una vez con `useState` (viaja en el payload) y el
-// script lleva `key`, que unhead empareja aunque el contenido cambie.
+// script lleva `key`, que unhead empareja aunque el contenido cambie. (3) El FAQPage de
+// FaqSection/FaqBlock (useFaqSchema) lleva `key` por sus preguntas.
+//
+// LO QUE ESTE TEST NO VE: los nombres se siguen dentro de un mismo archivo. Lo que llega por props
+// (las respuestas de una FAQ), por parámetros de un composable o por un helper que lee el reloj
+// adentro no se rastrea. Para el camino más común, el FAQPage de ~100 páginas, alcanza con la regla
+// (3): la pregunta no depende del día aunque la respuesta sí (/letras-de-regulacion-monetaria-uruguay
+// nombra la próxima licitación), y con `key` unhead empareja el script del servidor.
 
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
@@ -142,5 +149,38 @@ describe('el head no cambia al hidratar', () => {
       expect(keys.length, page).toBeGreaterThan(0)
       for (const key of keys) expect(key, page).toMatch(/-jsonld$/)
     }
+  })
+
+  it('el FAQPage de los componentes lleva key por sus preguntas, no por sus respuestas', () => {
+    const source = parseScript(join(APP, 'composables/useFaqSchema.ts'))
+    const [call] = callsTo(source, 'useHead')
+    expect(call).toBeDefined()
+    const keys: ts.Expression[] = []
+    walk(call!, node => {
+      if (ts.isPropertyAssignment(node) && ts.isIdentifier(node.name) && node.name.text === 'key') {
+        keys.push(node.initializer)
+      }
+    })
+    expect(keys).toHaveLength(1)
+    // The name the key holds is built from the questions only.
+    const name = keys[0]!.getText(source)
+    let built = ''
+    walk(source, node => {
+      if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.name.text === name) {
+        built = node.initializer?.getText(source) ?? ''
+      }
+    })
+    expect(built).toMatch(/\.question\b/)
+    expect(built).not.toMatch(/\.answer\b/)
+  })
+
+  it('la próxima licitación de LRM, que la FAQ nombra, sale del día del render', () => {
+    const source = parseScript(join(APP, 'pages/letras-de-regulacion-monetaria-uruguay.vue'))
+    expect(clockNames(source).has('TODAY')).toBe(false)
+    expect(
+      callsTo(source, 'useState').filter(call =>
+        call.arguments.some(argument => readsClock(argument))
+      )
+    ).toHaveLength(1)
   })
 })
