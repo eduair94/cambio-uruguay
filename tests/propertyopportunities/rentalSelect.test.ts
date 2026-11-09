@@ -44,23 +44,32 @@ const loaded = (properties: RentalProperty[]) =>
 
 describe("the rental opportunity loader selects what the adapter reads", () => {
   it("selects every field the adapter reads from the property, the offer, its identity and its details", () => {
-    const source = readFileSync(join(__dirname, "../../classes/propertyopportunities/rentalAdapter.ts"), "utf8");
+    const file = readFileSync(join(__dirname, "../../classes/propertyopportunities/rentalAdapter.ts"), "utf8");
+    // Only the function's code: the select literal above it would match its own keys ("offers.details.x").
+    const start = file.indexOf("export function rentalOpportunityListings");
+    expect(start).toBeGreaterThan(file.indexOf("export const RENTAL_OPPORTUNITY_SELECT"));
+    const body = file.slice(start);
+    // The scan knows the adapter's two aliases by name: renaming one has to update this test too.
+    expect(body).toContain("const own = offer.identity;");
+    expect(body).toContain("const details = offer.details;");
     const selected = Object.keys(RENTAL_OPPORTUNITY_SELECT).filter(path => RENTAL_OPPORTUNITY_SELECT[path] === 1);
     // Reading a parent (`offer.details`, `property.offers`) is fine while its children are selected:
     // each child read is checked on its own below.
     const covered = (path: string) =>
       selected.some(other => path === other || path.startsWith(`${other}.`) || other.startsWith(`${path}.`));
-    const read = new Set<string>();
-    // In the adapter `own` is `offer.identity` and `details` is `offer.details`.
-    const receivers: [RegExp, string][] = [
-      [/\bproperty\??\.(\w+)/g, ""],
-      [/\boffer\??\.(\w+)/g, "offers."],
-      [/\bown\??\.(\w+)/g, "offers.identity."],
-      [/\bdetails\??\.(\w+)/g, "offers.details."],
+    const receivers: [string, RegExp, string][] = [
+      ["property", /\bproperty\??\.(\w+)/g, ""],
+      ["offer", /\boffer\??\.(\w+)/g, "offers."],
+      ["own", /\bown\??\.(\w+)/g, "offers.identity."],
+      ["details", /\bdetails\??\.(\w+)/g, "offers.details."],
     ];
-    for (const [pattern, prefix] of receivers) for (const [, field] of source.matchAll(pattern)) read.add(`${prefix}${field}`);
-    // The scan has to find the reads it guards: one per receiver at least, and today well over 30.
-    for (const [, prefix] of receivers) expect([...read].some(path => path.startsWith(prefix || "key"))).toBe(true);
+    const read = new Set<string>();
+    for (const [name, pattern, prefix] of receivers) {
+      const paths = [...body.matchAll(pattern)].map(([, field]) => `${prefix}${field}`);
+      // Every receiver has to find the reads it guards: one that finds none has gone blind.
+      expect(paths.length, name).toBeGreaterThan(0);
+      for (const path of paths) read.add(path);
+    }
     expect(read.size).toBeGreaterThan(30);
     expect([...read].filter(path => !covered(path))).toEqual([]);
   });
