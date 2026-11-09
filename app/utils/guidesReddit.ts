@@ -1728,7 +1728,13 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         heading: 'Comparar con ahorrar y esperar',
-        body: 'Antes de tomar el crédito, hacé la cuenta de la alternativa: cuánto tardarías en juntar la plata ahorrando esa misma cuota, y cuánto interés total te ahorrarías comprando de contado o con un adelanto más grande. Un adelanto mayor baja el monto financiado y por lo tanto el interés total. Si podés esperar unos meses y ahorrar, muchas veces terminás pagando bastante menos por el mismo auto. Podés estimar todo esto con la calculadora de préstamos de Cambio Uruguay, cargando monto, plazo y tasa para ver el costo total y comparar contra ahorrar, antes de comprometerte.',
+        body: 'Antes de tomar el crédito, hacé la cuenta de la alternativa: cuánto tardarías en juntar la plata ahorrando esa misma cuota, y cuánto interés total te ahorrarías comprando de contado o con un adelanto más grande. Un adelanto mayor baja el monto financiado y por lo tanto el interés total. Si podés esperar unos meses y ahorrar, muchas veces terminás pagando bastante menos por el mismo auto. La calculadora de préstamos de Cambio Uruguay estima cuotas e intereses en pesos con el monto, el plazo y la tasa que ingreses. Indicá si la tasa es efectiva anual (TEA) o nominal anual y activá la opción de sumar IVA a los intereses si corresponde a tu oferta. No incluye el seguro, las comisiones ni otros gastos, ni proyecta el valor futuro de la UI o cuánto acumularías ahorrando. Sumá los cargos de tu oferta por separado y hacé aparte la cuenta del ahorro.',
+        links: [
+          {
+            label: 'Estimar cuotas e intereses del préstamo',
+            to: '/herramientas/calculadora-prestamo',
+          },
+        ],
       },
       {
         heading: 'Información general, no asesoría',
@@ -1755,7 +1761,7 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         name: 'Compará con ahorrar',
-        text: 'Usá la calculadora de préstamos para ver cuánto interés total pagarías y contrastalo con juntar la plata ahorrando esa misma cuota.',
+        text: 'Estimá cuotas e intereses en pesos con la calculadora, eligiendo TEA o nominal anual e IVA sobre los intereses si corresponde. Sumá seguro, comisiones y gastos por separado; la herramienta no proyecta el ahorro ni el valor futuro de la UI.',
       },
       {
         name: 'Leé el contrato antes de firmar',
