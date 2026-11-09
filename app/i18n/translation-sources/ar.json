@@ -1122,6 +1122,8 @@
   "auth.magicLink": "2e334c94",
   "auth.sendMagicLink": "b26f2c6c",
   "auth.forgotPassword": "cb816dfb",
+  "auth.discordError": "d22848e1",
+  "auth.discordUnverified": "70689bab",
   "auth.resetSent": "7bd71b35",
   "auth.magicSent": "8df37d97",
   "auth.verifySent": "3e2b3324",

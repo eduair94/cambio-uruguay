@@ -1325,6 +1325,8 @@
     "magicLink": "Pautan ajaib",
     "sendMagicLink": "Hantarkan saya pautan",
     "forgotPassword": "Lupa kata laluan anda?",
+    "discordError": "Kami tidak dapat melog masuk anda dengan Discord. Sila cuba lagi.",
+    "discordUnverified": "Terdapat akaun dengan e-mel ini yang belum disahkan, jadi kami tidak menyambungkannya ke Discord. Log masuk dengan e-mel dan kata laluan anda dan sahkannya dengan pautan yang kami hantar kepada anda; jika anda tidak membuat akaun itu, gunakan “Lupa kata laluan anda?”. Kemudian anda akan dapat log masuk dengan Discord.",
     "resetSent": "Kami telah menghantar e-mel penetapan semula kata laluan kepada anda.",
     "magicSent": "Kami telah menghantar pautan log masuk kepada anda. Semak e-mel anda.",
     "verifySent": "Akaun telah dibuat. Sahkan e-mel anda untuk menyelesaikan pendaftaran.",

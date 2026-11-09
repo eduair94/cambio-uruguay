@@ -1325,6 +1325,8 @@
     "magicLink": "Maagiline lüli",
     "sendMagicLink": "Saada mulle link",
     "forgotPassword": "Unustasid parooli?",
+    "discordError": "Me ei saanud sind Discordiga sisse logida. Palun proovi uuesti.",
+    "discordUnverified": "Selle e-posti aadressiga on juba konto, mida pole kinnitatud, seega me ei ühendanud seda Discordiga. Logi sisse oma e-posti aadressi ja parooliga ning kinnita see lingiga, mille me sulle saatsime; kui sa ei loonud seda kontot, kasuta linki „Unustasid parooli?“. Seejärel saad Discordiga sisse logida.",
     "resetSent": "Saatsime teile parooli lähtestamise e-kirja.",
     "magicSent": "Saatsime teile sisselogimislingi. Kontrollige oma e-posti.",
     "verifySent": "Konto loodud. Registreerimise lõpetamiseks kinnitage oma e-posti aadress.",

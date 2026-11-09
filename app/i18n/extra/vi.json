@@ -1325,6 +1325,8 @@
     "magicLink": "Liên kết ma thuật",
     "sendMagicLink": "Gửi cho tôi đường dẫn",
     "forgotPassword": "Bạn quên mật khẩu?",
+    "discordError": "Chúng tôi không thể đăng nhập bạn bằng Discord. Vui lòng thử lại.",
+    "discordUnverified": "Hiện đã có một tài khoản chưa được xác minh với địa chỉ email này, vì vậy chúng tôi không kết nối tài khoản đó với Discord. Hãy đăng nhập bằng email và mật khẩu của bạn, sau đó xác minh bằng liên kết chúng tôi đã gửi; nếu bạn không tạo tài khoản đó, hãy sử dụng chức năng \"Quên mật khẩu?\". Sau đó, bạn sẽ có thể đăng nhập vào Discord.",
     "resetSent": "Chúng tôi đã gửi cho bạn một email đặt lại mật khẩu.",
     "magicSent": "Chúng tôi đã gửi cho bạn đường dẫn đăng nhập. Hãy kiểm tra email của bạn.",
     "verifySent": "Tài khoản đã được tạo. Vui lòng xác minh email của bạn để hoàn tất đăng ký.",

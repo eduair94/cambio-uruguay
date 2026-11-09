@@ -1325,6 +1325,8 @@
     "magicLink": "Tautan ajaib",
     "sendMagicLink": "Kirimkan saya tautan",
     "forgotPassword": "Lupa kata sandi Anda?",
+    "discordError": "Kami tidak dapat masuk menggunakan Discord. Silakan coba lagi.",
+    "discordUnverified": "Sudah ada akun dengan alamat email ini yang belum diverifikasi, jadi kami tidak menghubungkannya ke Discord. Masuk dengan email dan kata sandi Anda, lalu verifikasi dengan tautan yang kami kirimkan; jika Anda tidak membuat akun tersebut, gunakan \"Lupa kata sandi Anda?\". Setelah itu, Anda dapat masuk ke Discord.",
     "resetSent": "Kami telah mengirimkan email pengaturan ulang kata sandi kepada Anda.",
     "magicSent": "Kami telah mengirimkan tautan masuk kepada Anda. Periksa email Anda.",
     "verifySent": "Akun telah dibuat. Verifikasi email Anda untuk menyelesaikan pendaftaran.",

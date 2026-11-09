@@ -129,6 +129,23 @@ describe('a failed Discord login says so in the login dialog', () => {
     expect(refused.auth.error).toBe('auth.discordError')
   })
 
+  it('says why an existing, unverified account was not linked', async () => {
+    const refused = await boot('?authError=discord-unverified', async () => ({}))
+    expect(refused.replaced.at(-1)).toEqual({})
+    expect(refused.auth.dialogOpen).toBe(true)
+    expect(refused.auth.error).toBe('auth.discordUnverified')
+  })
+
+  it.each(['constructor', 'toString', '__proto__', 'hasOwnProperty', 'nope'])(
+    'ignores ?authError=%s, which is not one of its codes',
+    async code => {
+      const crafted = await boot(`?authError=${code}`, async () => ({}))
+      expect(crafted.replaced).toEqual([])
+      expect(crafted.auth.dialogOpen).toBe(false)
+      expect(crafted.auth.error).toBeNull()
+    }
+  )
+
   it('opens the dialog itself when the middleware let the page through', async () => {
     // The auth store not resolved yet when the URL is cleaned: the middleware does nothing.
     const failed = await boot(

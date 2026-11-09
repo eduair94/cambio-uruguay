@@ -1325,6 +1325,8 @@
     "magicLink": "Maaginen linkki",
     "sendMagicLink": "Lähetä minulle linkki",
     "forgotPassword": "Unohditko salasanasi?",
+    "discordError": "Emme voineet kirjata sinua sisään Discordilla. Yritä uudelleen.",
+    "discordUnverified": "Tällä sähköpostiosoitteella on jo tili, jota ei ole vahvistettu, joten emme yhdistäneet sitä Discordiin. Kirjaudu sisään sähköpostiosoitteellasi ja salasanallasi ja vahvista se lähettämämme linkin avulla. Jos et luonut kyseistä tiliä, käytä kohtaa ”Unohditko salasanasi?”. Tämän jälkeen voit kirjautua sisään Discordiin.",
     "resetSent": "Lähetimme sinulle salasanan palautussähköpostin.",
     "magicSent": "Lähetimme sinulle kirjautumislinkin. Tarkista sähköpostisi.",
     "verifySent": "Tili luotu. Vahvista sähköpostiosoitteesi rekisteröitymisen loppuun saattamiseksi.",

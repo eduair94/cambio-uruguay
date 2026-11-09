@@ -1314,6 +1314,8 @@
     "magicLink": "Magic link",
     "sendMagicLink": "Send me a link",
     "forgotPassword": "Forgot your password?",
+    "discordError": "We couldn't sign you in with Discord. Please try again.",
+    "discordUnverified": "There is already an account with this email that hasn't been verified, so we didn't connect it to Discord. Sign in with your email and password and verify it with the link we sent you; if you didn't create that account, use “Forgot your password?”. Then you'll be able to sign in with Discord.",
     "resetSent": "We sent you a password reset email.",
     "magicSent": "We sent you a sign-in link. Check your email.",
     "verifySent": "Account created. Verify your email to finish signing up.",

@@ -1325,6 +1325,8 @@
     "magicLink": "Lien magique",
     "sendMagicLink": "Envoyez-moi un lien",
     "forgotPassword": "Mot de passe oublié ?",
+    "discordError": "Impossible de vous connecter avec Discord. Veuillez réessayer.",
+    "discordUnverified": "Un compte non vérifié existe déjà avec cette adresse e-mail ; nous ne l'avons donc pas associé à Discord. Connectez-vous avec votre adresse e-mail et votre mot de passe, puis vérifiez-le à l'aide du lien que nous vous avons envoyé. Si vous n'avez pas créé ce compte, utilisez l'option « Mot de passe oublié ? ». Vous pourrez ensuite vous connecter à Discord.",
     "resetSent": "Nous vous avons envoyé un e-mail de réinitialisation de mot de passe.",
     "magicSent": "Nous vous avons envoyé un lien de connexion. Veuillez consulter votre boîte mail.",
     "verifySent": "Compte créé. Veuillez vérifier votre adresse e-mail pour finaliser votre inscription.",

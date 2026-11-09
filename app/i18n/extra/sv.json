@@ -1325,6 +1325,8 @@
     "magicLink": "Magisk länk",
     "sendMagicLink": "Skicka mig en länk",
     "forgotPassword": "Glömt ditt lösenord?",
+    "discordError": "Vi kunde inte logga in dig med Discord. Försök igen.",
+    "discordUnverified": "Det finns redan ett konto med den här e-postadressen som inte har verifierats, så vi kopplade det inte till Discord. Logga in med din e-postadress och ditt lösenord och verifiera det med länken vi skickade dig. Om du inte skapade det kontot, använd \"Glömt lösenordet?\". Då kan du logga in med Discord.",
     "resetSent": "Vi har skickat ett e-postmeddelande för återställning av lösenord.",
     "magicSent": "Vi skickade en inloggningslänk till dig. Kontrollera din e-post.",
     "verifySent": "Konto skapat. Verifiera din e-postadress för att slutföra registreringen.",

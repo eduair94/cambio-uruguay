@@ -1325,6 +1325,8 @@
     "magicLink": "魔法链接",
     "sendMagicLink": "给我发个链接",
     "forgotPassword": "忘记密码了吗？",
+    "discordError": "我们无法使用 Discord 登录。请重试。",
+    "discordUnverified": "此邮箱已关联一个未验证的 Discord 账号，因此我们未能将其连接到 Discord。请使用您的邮箱和密码登录，并通过我们发送给您的链接进行验证；如果您并非该账号的创建者，请使用“忘记密码？”功能。验证通过后，您即可登录 Discord。",
     "resetSent": "我们已向您发送密码重置邮件。",
     "magicSent": "我们已向您发送登录链接，请查收您的电子邮件。",
     "verifySent": "账户已创建。请验证您的邮箱以完成注册。",
