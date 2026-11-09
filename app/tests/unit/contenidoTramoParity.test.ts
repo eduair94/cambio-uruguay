@@ -103,6 +103,25 @@ const LISTA_CURADA = [
 /**
  * La deuda: páginas de lectura larga que todavía no están en ningún tramo. **SÓLO PUEDE BAJAR.**
  *
+ * 46 el 2026-11-09, cuando se BARRE por primera vez la linea que el propio `value.ts` ya tenia
+ * escrita. El 11-03, al clasificar `/reclamar-sin-abogado-uruguay`, ese archivo dejo dicho que leer
+ * la UR en vivo para imprimir un tope fijo en pesos de hoy «no la hace `dato-vivo`» porque «lo que
+ * la pagina AFIRMA son los articulos; la UR solo convierte un tope fijo». Nadie aplico esa frase a
+ * las demas, y se nota en que el comentario escrito el 11-09 para
+ * `/coeficiente-de-reajuste-de-alquileres-uruguay` daba por sentado que `/garantia-de-alquiler-uruguay`
+ * seguia en deuda justamente por convertir topes en UR — la operacion que seis dias antes se habia
+ * declarado inocente. No eran dos criterios en disputa: era un criterio sin barrer, y el motivo es
+ * el que esta cabecera ya explica (la lista se llenaba desde la alerta `unclassified-families`, que
+ * solo nombra lo que GA4 reporto CON trafico).
+ *
+ * Las ocho que salen son TODAS las de la deuda con una sola lectura viva, que es un indicador
+ * (UR o UI) usado unicamente para expresar en pesos una cifra que una norma fija en esas unidades,
+ * y sin ninguna llamada a una API del sitio: apostilla, antecedentes judiciales, cooperativas de
+ * vivienda, garantia de alquiler, libreta de conducir, el auto a Brasil o Argentina, prestamo
+ * hipotecario y subsidio de alquiler. `/elecciones-bps-2026` comparte la firma y se queda: su cifra
+ * en pesos es la multa que el BPS liquida, no la conversion de un tope, y `value.ts` ya la juzgo
+ * asi. El motivo por pagina esta en `classes/revenueplan/value.ts`.
+ *
  * 54 el 2026-10-29, cuando sale el racimo del hub `deudas-y-credito-uruguay`: ese tema declaraba
  * quince entradas partidas por la mitad entre dos tramos que se diferencian por ocho veces —ocho ya
  * eran contenido, una es la calculadora (`/herramientas/*`, dato vivo) y seis estaban acá—, y es el
@@ -140,14 +159,11 @@ const LISTA_CURADA = [
 const DEUDA_SIN_TRAMO = [
   '/advertencias-bcu',
   '/analisis-alquileres-uruguay',
-  '/apostillar-un-documento-uruguay',
   '/banco-o-casa-de-cambio-uruguay',
   '/barrios-alquileres-uruguay',
   '/cambios-de-precio-uruguay',
   '/casas-de-cambio-abiertas-fin-de-semana',
-  '/certificado-de-antecedentes-judiciales-uruguay',
   '/comparar-portales-de-alquiler-uruguay',
-  '/cooperativas-de-vivienda-uruguay',
   '/cotizacion-del-bcu',
   '/cotizaciones-de-la-region',
   '/cuanto-gastar-en-un-sommier-uruguay',
@@ -163,14 +179,11 @@ const DEUDA_SIN_TRAMO = [
   '/evolucion-precio-viviendas-uruguay',
   '/fletes-mudanzas-uruguay',
   '/franquicia-aduana-uruguay',
-  '/garantia-de-alquiler-uruguay',
   '/iass-uruguay',
   '/importar-a-uruguay-siendo-extranjero',
   '/impuestos-inversiones-uruguay',
   '/letras-de-regulacion-monetaria-uruguay',
-  '/libreta-de-conducir-uruguay',
   '/llevar-dolares-o-reales-a-brasil',
-  '/llevar-el-auto-a-brasil-o-argentina',
   '/mercado-it-uruguay',
   '/noticias',
   '/pensiones-estudiantiles-uruguay',
@@ -178,7 +191,6 @@ const DEUDA_SIN_TRAMO = [
   '/por-que-sube-el-dolar',
   '/precio-de-la-nafta-uruguay',
   '/precio-del-boleto-montevideo',
-  '/prestamo-hipotecario-uruguay',
   '/prestamos-p2p-uruguay',
   '/problemas-con-la-aduana-uruguay',
   '/que-auto-comprar-uruguay',
@@ -186,7 +198,6 @@ const DEUDA_SIN_TRAMO = [
   '/ropa-por-kilo-uruguay',
   '/salud-financiera',
   '/seguro-obligatorio-de-auto-uruguay',
-  '/subsidio-de-alquiler-uruguay',
   '/temas-de-dinero-reddit',
   '/tendencias-uruguay',
   '/tickets-mutualistas-uruguay',
@@ -194,7 +205,7 @@ const DEUDA_SIN_TRAMO = [
   '/vivir-con-el-salario-minimo-uruguay',
 ]
 
-const DEUDA_MAXIMA = 54
+const DEUDA_MAXIMA = 46
 
 const TRAMO_POR_NOMBRE: Record<string, unknown> = {
   contenido: TIER_CONTENIDO,
