@@ -174,13 +174,28 @@ describe('el head no cambia al hidratar', () => {
     expect(built).not.toMatch(/\.answer\b/)
   })
 
-  it('la próxima licitación de LRM, que la FAQ nombra, sale del día del render', () => {
+  // The FAQ names the next LRM auction from TODAY. While hydrating the server's HTML it must be
+  // the server's day (the payload's); on any later visit in the same tab, today: a plain useState
+  // would freeze it for the whole session and show a past auction as the next one.
+  it('la próxima licitación de LRM: al hidratar, el día del servidor; después, el de hoy', () => {
     const source = parseScript(join(APP, 'pages/letras-de-regulacion-monetaria-uruguay.vue'))
-    expect(clockNames(source).has('TODAY')).toBe(false)
+    const initializers = new Map<string, ts.Expression>()
+    walk(source, node => {
+      if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer) {
+        initializers.set(node.name.text, node.initializer)
+      }
+    })
+    const today = initializers.get('TODAY')
+    expect(today !== undefined && ts.isConditionalExpression(today)).toBe(true)
+    const choice = today as ts.ConditionalExpression
+    expect(choice.condition.getText(source)).toContain('isHydrating')
+    // Hydrating: the payload's day. Otherwise: the clock, read again.
+    const hydrating = choice.whenFalse.getText(source)
+    expect(hydrating).toMatch(/^\w+\.value$/)
+    const state = initializers.get(hydrating.replace(/\.value$/, ''))
     expect(
-      callsTo(source, 'useState').filter(call =>
-        call.arguments.some(argument => readsClock(argument))
-      )
-    ).toHaveLength(1)
+      state !== undefined && ts.isCallExpression(state) && state.expression.getText(source)
+    ).toBe('useState')
+    expect(readsClock(choice.whenTrue, clockNames(source))).toBe(true)
   })
 })

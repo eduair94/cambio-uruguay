@@ -448,13 +448,18 @@ const live = computed(() => usableSnapshot(data.value))
 const snapshot = computed<LrmSnapshotDoc>(() => live.value ?? LRM_BASELINE)
 
 // El día de hoy en Montevideo, resuelto UNA vez en setup: en el template se reevaluaría en cada
-// render y el servidor y el navegador podrían no coincidir. Y por useState, que viaja en el
-// payload: la página se guarda 10 minutos en el borde, así que el HTML de las 23:55 se hidrataba
-// pasada la medianoche, la FAQ nombraba otra licitación y el navegador agregaba un segundo
-// FAQPage (tests/unit/headHydrationParity.test.ts).
-const TODAY = useState('lrm-today', () =>
+// render y el servidor y el navegador podrían no coincidir.
+//
+// Al hidratar, el día del SERVIDOR, que viaja en el payload: la página se guarda 10 minutos en el
+// borde, así que el HTML de las 23:55 se hidrataba pasada la medianoche con otra licitación en la
+// FAQ que el HTML (tests/unit/headHydrationParity.test.ts). En cualquier otra visita dentro de la
+// misma pestaña, el de hoy: un useState solo lo congelaría por toda la sesión, y quien volviera
+// días después por un enlace interno vería como "próxima" una licitación que ya pasó.
+const montevideoToday = () =>
   new Date().toLocaleDateString('en-CA', { timeZone: 'America/Montevideo' })
-).value
+const renderedDay = useState('lrm-today', montevideoToday)
+const TODAY =
+  import.meta.client && !useNuxtApp().isHydrating ? montevideoToday() : renderedDay.value
 
 const thirty = computed(() => latestFor(snapshot.value, 30))
 const year = computed(() => latestFor(snapshot.value, 360))
