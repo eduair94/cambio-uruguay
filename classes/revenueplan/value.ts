@@ -337,6 +337,7 @@ export const CONTENIDO_PATHS = new Set([
   "/comisiones-mercado-pago-uruguay",
   "/compensacion-por-corte-de-luz-uruguay",
   "/comprar-o-alquilar-uruguay",
+  "/computo-por-hijo-jubilacion-uruguay",
   "/contractor-en-uruguay",
   "/contribucion-inmobiliaria-uruguay",
   "/conviene-pagar-todo-con-credito-uruguay",

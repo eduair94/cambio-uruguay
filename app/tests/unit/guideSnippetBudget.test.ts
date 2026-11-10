@@ -543,13 +543,31 @@ const MEASURED = 155
  * `enlacesDeContexto.test.ts` ya hacían con sus listas. Un número solo admite que se arregle una
  * guía y se rompa otra sin que nada avise; una lista exacta, no.
  */
+// Sin anotación de tipo a propósito, aunque esté vacía: el lector de `npm run seo_debt` busca el
+// texto exacto `const DEUDA_TITULO_LARGO = [` (`parseStringList` en `classes/revenueplan/debtFree.ts`)
+// y un `: string[]` en el medio lo hace fallar con «¿lo renombraron?».
 const DEUDA_TITULO_LARGO = [
-  // Una sola, y queda por la reserva y no por la redacción: `glosario-cambiario-entra-a-su-tema`
-  // la declara el 2026-10-12, así que su ventana de medición cierra el 10 de noviembre. El lector
-  // de `npm run seo_debt` espera este formato multilínea con el `]` al principio de línea
-  // (`classes/revenueplan/debtFree.ts`), así que la lista no se colapsa a una sola línea aunque
-  // tenga un solo elemento — y el comentario es además lo que impide que prettier la colapse.
-  'glosario-terminos-cambiarios',
+  // POZO PAGADO el 2026-11-10: `glosario-terminos-cambiarios` era la última y se pagó el día en que
+  // la reserva de `glosario-cambiario-entra-a-su-tema` (12/10) cumplió sus 29 días.
+  //
+  // Esa marca literal es la que `classes/revenueplan/debtFree.ts::parseStringList` busca para
+  // distinguir «este pozo se terminó» de su propio modo de fallar, que es no entender la forma de
+  // la lista; es el segundo pozo que la usa, después de `DEUDA_SIN_MIGAS` el 2026-10-27.
+  //
+  // Siete veces se decidió NO tocarla, y la razón escrita era buena: el título tiene que entrar en
+  // 43 caracteres, y cada término por el que podría abrir («spread», «cable», «billete») ya lo gana
+  // por lejos su propia ficha del glosario, así que un título que ABRE POR UN TÉRMINO pierde
+  // consultas sin ganar ninguna. Lo que esa pregunta nunca se hizo es la otra: recortar el RELLENO
+  // sin abrir por nada nuevo. «Glosario rápido de términos cambiarios en Uruguay» gastaba trece
+  // caracteres en «rápido» y «en Uruguay», y «Uruguay» ya está en la marca que el título agrega
+  // siempre. Medido con `scoreDocs` sobre `buildSearchIndex` antes de cambiarlo: «Términos
+  // cambiarios: glosario rápido» sube «terminos cambiarios» de 62 a 80 (primera en los dos casos,
+  // ahora con margen), conserva los 136 de «glosario terminos cambiarios» y los 92 de «glosario
+  // cambiario», y en «glosario» sigue segunda detrás de `/glosario` (142), que es la que debe
+  // ganarla. Cero consultas perdidas y el snippet pasa de 66 a 53 caracteres.
+  //
+  // El lector de `npm run seo_debt` espera este formato multilínea con el `]` al principio de línea
+  // (`classes/revenueplan/debtFree.ts`), así que la lista no se colapsa aunque esté vacía.
 ]
 
 /**
@@ -722,8 +740,15 @@ const DEUDA_TITULO_LARGO = [
  * hub `/temas`, y la tercera además a `/cuando-se-cobra-el-aguinaldo-uruguay`, que es la página
  * propia de esa consulta. El recargo del 10 % se conservó en la descripción en lugar de «2026»
  * porque es la cifra, y la cifra es lo que gana el clic.
+ *
+ * 1 → 0 el 2026-11-10, y con esto el pozo de títulos de guía queda PAGADO: la última era
+ * `glosario-terminos-cambiarios`, cuya historia entera está en `DEUDA_TITULO_LARGO`. El resumen es
+ * que lo que la bloqueaba siete veces era la pregunta equivocada —cómo escribir un título que
+ * CONTESTE en 43 caracteres, cuando cada término que podría contestar ya lo gana su propia ficha—
+ * y no la única que hacía falta, que era si el título tenía relleno para soltar. Tenía trece
+ * caracteres de relleno y ninguna consulta colgando de ellos.
  */
-const TITLE_OVER_BUDGET = 1
+const TITLE_OVER_BUDGET = 0
 
 /**
  * 89 → 77 el 2026-10-01: las doce más largas del catálogo, de 306 a 215 caracteres.

@@ -1384,6 +1384,10 @@
           "label": "¿Cuándo me puedo jubilar?"
         },
         {
+          "to": "/computo-por-hijo-jubilacion-uruguay",
+          "label": "Cómputo por hijo"
+        },
+        {
           "to": "/iass-uruguay",
           "label": "IASS: impuesto a las jubilaciones"
         },

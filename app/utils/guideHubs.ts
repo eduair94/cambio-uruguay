@@ -1526,6 +1526,12 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/cuando-me-puedo-jubilar-uruguay',
       },
       {
+        label: 'Cómputo por hijo',
+        description:
+          'Un año de servicios por hijo, hasta cinco, y dos más por discapacidad severa.',
+        to: '/computo-por-hijo-jubilacion-uruguay',
+      },
+      {
         label: 'IASS: impuesto a las jubilaciones',
         description: 'Desde cuánto se paga, la escala marginal y el caso de varios organismos.',
         to: '/iass-uruguay',

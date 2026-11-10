@@ -986,7 +986,15 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'glosario-terminos-cambiarios',
-    title: 'Glosario rápido de términos cambiarios en Uruguay',
+    // 49 → 36 caracteres (66 → 53 con la marca) el 2026-11-10. Lo que se soltó es relleno: «rápido»
+    // y «en Uruguay», que la marca del título ya repite. Medido contra el propio buscador del sitio
+    // antes de tocarlo, porque la razón anotada seis veces para NO tocarlo era que un título de 43
+    // perdería las consultas que esta guía gana: con este texto gana «terminos cambiarios» con 80
+    // en vez de 62 (sigue primera, ahora con margen), conserva los 136 de «glosario terminos
+    // cambiarios» y los 92 de «glosario cambiario», y en «glosario» sigue segunda detrás de
+    // `/glosario`, que es la que corresponde. No hay consulta perdida: el bloqueo era redactar un
+    // título que ABRIERA por un término —y cada término ya lo gana su ficha—, no recortar el relleno.
+    title: 'Términos cambiarios: glosario rápido',
     description:
       'Los términos clave del mercado cambiario uruguayo explicados en simple: cotización, spread, billete, cable, transferencia, interbancario y más.',
     tag: 'GLOSARIO',

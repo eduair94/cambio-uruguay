@@ -132,6 +132,17 @@
           >reconocer años trabajados antes de 1996</NuxtLink
         >.
       </p>
+
+      <p class="body-text mt-4 mb-0">
+        Y hay años que no se trabajaron y se computan igual: el artículo 43 de la misma Ley 20.130
+        da a las madres <strong>un año de servicios por cada hijo</strong>, con un tope de cinco,
+        más dos años por cada hijo en situación de discapacidad severa que quedan fuera de ese tope.
+        Para quien le falta poco para la causal eso puede ser la diferencia, y el detalle —a qué
+        cajas alcanza y cuándo lo puede usar el padre— está en
+        <NuxtLink :to="localePath('/computo-por-hijo-jubilacion-uruguay')"
+          >el cómputo por hijo</NuxtLink
+        >.
+      </p>
     </section>
 
     <!-- Régimen anterior -->

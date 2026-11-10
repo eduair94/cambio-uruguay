@@ -2087,6 +2087,32 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El año de servicios que suma cada hijo, que no estaba escrito en ninguna página: la
+        // palabra «cómputo por hijo» no aparecía ni acá ni en `searchIndex.ts`. Y el ángulo propio
+        // es que la norma que citan casi todos los resúmenes —el art. 14 de la Ley 18.395— está
+        // DEROGADA por el art. 43 de la Ley 20.130, que es el que la reemplazó: el año por hijo no
+        // cambió, pero sí los dos años por hijo con discapacidad severa fuera del tope, la división
+        // entre padres y, sobre todo, que a tres cajas las alcanza la ley y a otras tres sólo les
+        // da la facultad de aplicarlo.
+        to: '/computo-por-hijo-jubilacion-uruguay',
+        labelKey: 'nav.computoPorHijo',
+        icon: 'mdi-account-child-outline',
+        priority: 0.7,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'computo por hijo jubilacion',
+          'anos por hijo jubilacion uruguay',
+          'los hijos suman anos para la jubilacion',
+          'computo ficto por cuidados',
+          'cinco anos por hijos bps',
+          'ley 20130 articulo 43',
+          'jubilacion de la mujer uruguay',
+          'un ano por hijo bps',
+          'computo por hijo discapacidad severa',
+        ],
+      },
+      {
         to: '/renunciar-al-trabajo-uruguay',
         labelKey: 'nav.renunciarTrabajo',
         icon: 'mdi-exit-run',
