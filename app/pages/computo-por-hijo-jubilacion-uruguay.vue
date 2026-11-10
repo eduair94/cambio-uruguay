@@ -233,13 +233,14 @@
             <h2 class="text-h5 font-weight-bold mb-3">Desde cuándo rige cada cosa</h2>
             <p class="text-body-1 cch-prose">
               Las dos reglas no empezaron el mismo día, porque el artículo 6 de la Ley 20.130 le da
-              a cada disposición su propia fecha. El cómputo del artículo 43 rige desde la fecha del
-              numeral 1 de ese artículo —el primer día del tercer mes siguiente al de la publicación
-              de la ley en el Diario Oficial—, que el informe del BPS a un año de la ley ubica en
-              <strong>agosto de 2023</strong>. El recálculo del artículo 45 rige desde la fecha del
-              numeral 4 —el primer día del mes siguiente a los ciento ochenta días de la
-              publicación—, y el BPS la escribe como el <strong>1.º de diciembre de 2023</strong> en
-              su página del cómputo ficto por cuidados.
+              a cada disposición su propia fecha, y las dos se cuentan desde la publicación en el
+              Diario Oficial, que IMPO fecha el <strong>10 de mayo de 2023</strong> (la ley se
+              promulgó el 2 de mayo). El cómputo del artículo 43 rige desde la fecha del numeral 1:
+              el <strong>primer día del tercer mes siguiente</strong> al de esa publicación. El
+              recálculo del artículo 45 rige desde la del numeral 4: el primer día del mes siguiente
+              a los <strong>ciento ochenta días</strong> de la publicación, que el BPS escribe como
+              el <strong>1.º de diciembre de 2023</strong> en su página del cómputo ficto por
+              cuidados.
             </p>
             <p class="text-body-2 text-medium-emphasis cch-prose">
               Esta página explica qué dice la norma y cómo la aplica el BPS; no es asesoramiento
