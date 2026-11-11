@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createI18n } from 'vue-i18n'
@@ -665,5 +665,140 @@ describe('los títulos que el lector de una línea no alcanzaba también entran 
     // Lo que no resuelve aporta vacío, nunca un largo inventado.
     expect(titleFloor('() => t(claveDinamica)', [])).toBe('')
     expect(titleFloor('() => `${data.value.name} | Cambio Uruguay`', [])).toBe(' | Cambio Uruguay')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// El octavo pozo: los títulos que viven en i18n y no en la página
+// ---------------------------------------------------------------------------
+
+/**
+ * POR QUÉ HACE FALTA UN TERCER LECTOR, Y POR QUÉ ES EL MISMO AGUJERO DEL SEXTO Y DEL SÉPTIMO.
+ *
+ * Los dos lectores de arriba leen el `.vue`: `staticTitle` mide 193 páginas y el piso del 2026-11-03
+ * llega a 252. Ninguno de los dos puede medir `title: () => t('seo.algoTitle')`, porque el texto no
+ * está en la página sino en `i18n/locales/json/*.json`: para `staticTitle` es una llamada, y para el
+ * piso la llamada no aporta nada fijo, así que devuelve `null` y la página sale del conteo. Son 59
+ * de las 313 que declaran un `title:`, y los tres bloques de i18n de arriba miden a mano TRES
+ * claves (`homeTitle`, `homeTitleLive` y, por su propio mensaje, `dolarDepto`/`frontera`).
+ *
+ * O sea el modo de fallar de siempre: los dos presupuestos decían 0 y era verdad de lo que medían,
+ * mientras **ocho claves de i18n titulaban ocho páginas que nadie contaba**. Medido el 2026-11-11,
+ * con la marca puesta y sobre los tres idiomas, siete estaban pasadas:
+ *
+ *   - `sucursalesIndexTitle` 80 (es), 75 (pt), 66 (en) — veinte caracteres de más en español, el
+ *     peor del archivo: «Directorio de Sucursales - Todas las Casas de Cambio en Uruguay» se corta
+ *     antes de «en Uruguay» y abre por dos palabras de relleno («Directorio de», «Todas las») en
+ *     vez de por la que se busca. Pasa a «Sucursales de casas de cambio en Uruguay» (57).
+ *   - `historicalTitle` 63 (es) — suelta «en Uruguay», que la marca ya repite, que es exactamente
+ *     lo que se le hizo a `/cobrar-giro-del-exterior-uruguay` el 2026-11-09 (52).
+ *   - `advancedTitle` 68 (pt), 63 (en) — el español entra justo en 60 y se queda como está.
+ *   - `nearbyCasasTitle` 62 (pt) — suelta «no Uruguai» y CONSERVA «Melhor», que es la palabra de la
+ *     consulta (51).
+ *
+ * LO QUE ESTE POZO NO MIDE, DICHO EN VOZ ALTA. Las tres claves de título con parámetros
+ * (`historicalOriginTitle`, `historicalDetailTitle`, `sucursalesTitle`) quedan fuera: su largo real
+ * depende del nombre de la casa, que llega del payload y no de un catálogo, así que medirlas pide
+ * una fijación de peor caso como la de `LONGEST_DEPARTMENTS` y no una lectura del JSON. No es una
+ * absolución: con el nombre más largo del catálogo de `utils/casasDirectory.ts` («BROU (Banco
+ * República)», 23 caracteres) `historicalOriginTitle` da 82 (es), 77 (pt) y 74 (en), y su texto fijo
+ * mide 60 sin el `{origin}`, o sea que **se pasa con cualquier nombre**; `historicalDetailTitle` da
+ * 73/70/71. Las dos titulan rutas que ahora mismo toca un PR abierto (#156, `/historico/[origin]` y
+ * su detalle), así que se arreglan ahí o en su propia corrida, con el peor caso medido y no con un
+ * nombre inventado. `sucursalesTitle` entra (53).
+ *
+ * CONDENA Y NO ABSUELVE, como el sexto y el séptimo: una clave que entra en 60 acá no prueba que la
+ * página entre —el `.vue` puede envolverla— y por eso los dos lectores de arriba se quedan donde
+ * están.
+ */
+const I18N_TITLE_ROUTES = {
+  advancedTitle: '/avanzado',
+  compareTitle: '/comparar',
+  historicalTitle: '/historico',
+  homeTitle: '/',
+  mapaTitle: '/mapa',
+  nearbyCasasTitle: '/casa-de-cambio-cerca-de-mi',
+  offlineTitle: '/offline',
+  sucursalesIndexTitle: '/sucursales',
+} as const
+
+/** El archivo de página de una ruta: `/historico` → `historico/index.vue`, `/` → `index.vue`. */
+const pageFileOf = (route: string) =>
+  route === '/' ? ['index.vue'] : [`${route.slice(1)}.vue`, `${route.slice(1)}/index.vue`]
+
+const DEUDA_TITULO_I18N = [
+  // POZO PAGADO el 2026-11-11, el día que nació: las ocho claves sin parámetros entran en el SERP
+  // en los tres idiomas. Las siete que no entraban se reescribieron en el mismo commit, porque un
+  // pozo que nace con deuda propia nace reservando su propia cola.
+  //
+  // Esa marca literal es la que `classes/revenueplan/debtFree.ts::parseStringList` busca para
+  // distinguir «este pozo se terminó» de su propio modo de fallar, que es devolver `[]` cuando no
+  // entiende la forma de la lista.
+  //
+  // Y el comentario va DENTRO de la lista por lo que `DEUDA_SIN_ENLACE` en
+  // `enlacesDeContexto.test.ts` deja escrito: `parseStringList` corta en el primer `\n]`, o sea
+  // exige que el cierre abra su propia línea, y prettier aplasta a una sola línea cualquier array
+  // que entre en 100 columnas salvo los que llevan un comentario.
+]
+
+const I18N_OVER_BUDGET = 0
+
+describe('los títulos que viven en i18n también entran en el SERP', () => {
+  const KEYS = Object.keys(I18N_TITLE_ROUTES) as (keyof typeof I18N_TITLE_ROUTES)[]
+
+  // El guard que cierra el agujero: una clave `*Title` nueva y sin parámetros queda medida sola. Sin
+  // esto el pozo mide ocho claves para siempre y la novena nace fuera de todo presupuesto, que es
+  // justo cómo llegaron acá las siete de hoy.
+  it('la tabla nombra exactamente las claves `seo.*Title` sin parámetros', () => {
+    const seo = es.seo as Record<string, unknown>
+    const sinParametros = Object.entries(seo)
+      .filter(
+        ([key, value]) => key.endsWith('Title') && typeof value === 'string' && !value.includes('{')
+      )
+      .map(([key]) => key)
+      .sort()
+    expect(sinParametros).toEqual([...KEYS].sort())
+  })
+
+  // Una clave renombrada o una página movida dejarían la tabla apuntando al vacío y el presupuesto
+  // seguiría verde contra una ruta que ya no existe, igual que en los otros pozos.
+  it('cada ruta de la tabla es una página real', () => {
+    for (const key of KEYS) {
+      const route = I18N_TITLE_ROUTES[key]
+      const found = pageFileOf(route).some(file => existsSync(join(PAGES_DIR, file)))
+      expect(found, `${key} → ${route}`).toBe(true)
+    }
+  })
+
+  for (const [code, messages] of LOCALES) {
+    const t = translator(code, messages)
+
+    it(`${code}: las ${KEYS.length} claves entran en ${MAX_TITLE} caracteres con la marca`, () => {
+      const offenders = KEYS.map(name => ({ name, title: withBrand(t(`seo.${name}`)) }))
+        .filter(entry => entry.title.length > MAX_TITLE)
+        .map(
+          entry =>
+            `${entry.title.length} ${I18N_TITLE_ROUTES[entry.name]} (${entry.name}): ${entry.title}`
+        )
+        .sort()
+      expect(offenders.length, offenders.join('\n')).toBeLessThanOrEqual(I18N_OVER_BUDGET)
+    })
+  }
+
+  // La deuda dice la verdad, en los tres idiomas a la vez: una ruta ya curada tiene que delatarse
+  // acá en vez de inflar el presupuesto y dejar que el próximo título nazca cortado.
+  it('la deuda nombra exactamente las rutas que siguen pasadas', () => {
+    const over = new Set<string>()
+    for (const [code, messages] of LOCALES) {
+      const t = translator(code, messages)
+      for (const key of KEYS)
+        if (withBrand(t(`seo.${key}`)).length > MAX_TITLE) over.add(I18N_TITLE_ROUTES[key])
+    }
+    expect([...over].sort()).toEqual([...DEUDA_TITULO_I18N].sort())
+  })
+
+  it('ninguna ruta en deuda es inventada', () => {
+    const known: string[] = KEYS.map(key => I18N_TITLE_ROUTES[key])
+    expect(DEUDA_TITULO_I18N.filter(route => !known.includes(route))).toEqual([])
   })
 })
