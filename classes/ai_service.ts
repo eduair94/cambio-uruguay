@@ -2,6 +2,7 @@ import "dotenv/config";
 import OpenAI from "openai";
 import { CambioObj } from "../interfaces/Cambio";
 import { aiInsightCache } from "./ai_insight_cache";
+import { offMarketSide } from "./market_outlier";
 import { BCU_ORIGIN, isPublicRate } from "./rate_source";
 import { redisCache } from "./redis_cache";
 
@@ -322,6 +323,7 @@ class AIService {
         buy: item.buy,
         sell: item.sell,
         type: displayType(item.type),
+        counter: !item.type || item.type === "BILLETE",
         name: item.name || "",
       });
     }
@@ -353,9 +355,18 @@ class AIService {
       dataSummary += `${L.currentRates}:\n`;
       for (const code of shownCodes) {
         const entries = byCurrency[code];
-        const buyRates = entries.map((e) => e.buy).filter((b) => b > 0);
-        const sellRates = entries.map((e) => e.sell).filter((s) => s > 0);
-        if (buyRates.length === 0) continue;
+        // Sólo los precios que el sitio corona (classes/market_outlier.ts), juzgados contra una
+        // pizarra de mostrador por casa: la venta mínima de este resumen era una pizarra quieta desde
+        // julio a 39,55, y la IA la recomendaba en el blog, el newsletter y el bot (2026-11-11).
+        const board = new Map<string, any>();
+        for (const e of entries) if (e.counter && !board.has(e.origin)) board.set(e.origin, e);
+        const buyOff = offMarketSide([...board.values()], code, "buy");
+        const sellOff = offMarketSide([...board.values()], code, "sell");
+        const buyable = entries.filter((e) => e.buy > 0 && !buyOff(e));
+        const sellable = entries.filter((e) => e.sell > 0 && !sellOff(e));
+        const buyRates = buyable.map((e) => e.buy);
+        const sellRates = sellable.map((e) => e.sell);
+        if (buyRates.length === 0 || sellRates.length === 0) continue;
 
         // Currency name from data
         const currencyName = entries[0]?.name || code;
@@ -378,17 +389,17 @@ class AIService {
         }
         if (Object.keys(byType).length > 1) {
           for (const [t, typeEntries] of Object.entries(byType)) {
-            const tBuy = typeEntries.map((e) => e.buy).filter((b) => b > 0);
-            const tSell = typeEntries.map((e) => e.sell).filter((s) => s > 0);
-            if (tBuy.length > 0) {
+            const tBuy = typeEntries.filter((e) => buyable.includes(e)).map((e) => e.buy);
+            const tSell = typeEntries.filter((e) => sellable.includes(e)).map((e) => e.sell);
+            if (tBuy.length > 0 && tSell.length > 0) {
               dataSummary += `  [${t}] ${L.buy}: ${fmtRate(Math.min(...tBuy))}-${fmtRate(Math.max(...tBuy))}, ${L.sell}: ${fmtRate(Math.min(...tSell))}-${fmtRate(Math.max(...tSell))}\n`;
             }
           }
         }
 
         // Top 5 best buy (highest = best for seller) and sell (lowest = best for buyer)
-        const sortedBuy = entries.filter((e) => e.buy > 0).sort((a, b) => b.buy - a.buy);
-        const sortedSell = entries.filter((e) => e.sell > 0).sort((a, b) => a.sell - b.sell);
+        const sortedBuy = [...buyable].sort((a, b) => b.buy - a.buy);
+        const sortedSell = [...sellable].sort((a, b) => a.sell - b.sell);
         if (sortedBuy.length > 0) {
           dataSummary += `  ${L.bestBuy}: ${sortedBuy
             .slice(0, 5)
@@ -405,6 +416,7 @@ class AIService {
         // Best spread (lowest sell - highest buy from same origin+type)
         const originTypePairs: Record<string, { buy: number; sell: number; originName: string; type: string }> = {};
         for (const e of entries) {
+          if (buyOff(e) || sellOff(e)) continue;
           const key = `${e.origin}_${e.type}`;
           if (!originTypePairs[key]) originTypePairs[key] = { buy: e.buy, sell: e.sell, originName: e.originName, type: e.type };
         }

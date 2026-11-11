@@ -9,6 +9,7 @@
 // Best market rates (most favorable to the user) drive conversions.
 
 import type { CambioApi, HouseInfo, NewsItem, RateRow } from "./api.js";
+import { offMarketSide } from "./marketOutlier.js";
 
 /** Quote types that are not retail cash exchange and are excluded from market math. */
 const INTERBANK_TYPES = new Set(["INTERBANCARIO", "FONDO/CABLE", "CABLE", "BILLETE", "PROMED.FONDO"]);
@@ -22,14 +23,28 @@ function houseName(local: Record<string, HouseInfo>, origin: string): string {
   return local[origin]?.name ?? origin;
 }
 
-async function retailRows(api: CambioApi, currency: string): Promise<{ rows: RateRow[]; local: Record<string, HouseInfo> }> {
+/** Which side of a row is too good to be a market price: a sell that cheap, a buy that generous. */
+interface OffMarket {
+  buy: (r: RateRow) => boolean;
+  sell: (r: RateRow) => boolean;
+}
+
+async function retailRows(
+  api: CambioApi,
+  currency: string
+): Promise<{ rows: RateRow[]; local: Record<string, HouseInfo>; off: OffMarket }> {
   const code = currency.toUpperCase();
   const [all, local] = await Promise.all([api.getRates(), api.getLocalData()]);
   const rows = all.filter((r) => r.code === code && isRetail(r));
   if (rows.length === 0) {
     throw new Error(`No retail rates found for currency "${code}".`);
   }
-  return { rows, local };
+  // The rule the site crowns its best price with (src/marketOutlier.ts), judged against one board
+  // per house: until 2026-11-11 the best dollar sell here was a board frozen since July at 39,55,
+  // and the bots posted it.
+  const board = [...new Map(rows.map((r) => [r.origin, r] as const).reverse()).values()];
+  const off = { buy: offMarketSide(board, code, "buy"), sell: offMarketSide(board, code, "sell") };
+  return { rows, local, off };
 }
 
 export interface HousePrice {
@@ -38,6 +53,11 @@ export interface HousePrice {
   buy: number;
   sell: number;
   spread: number;
+  /**
+   * True when a side of this board is too good to be a market price (a stale or misparsed
+   * pizarra): it is listed, and never named best, nor counted in the averages or the spread.
+   */
+  offMarket: boolean;
 }
 
 export interface RatesResult {
@@ -54,7 +74,7 @@ export interface RatesResult {
 
 export async function getRates(api: CambioApi, args: { currency: string }): Promise<RatesResult> {
   const code = args.currency.toUpperCase();
-  const { rows, local } = await retailRows(api, code);
+  const { rows, local, off } = await retailRows(api, code);
 
   const houses: HousePrice[] = rows
     .map((r) => ({
@@ -63,21 +83,25 @@ export async function getRates(api: CambioApi, args: { currency: string }): Prom
       buy: r.buy,
       sell: r.sell,
       spread: r.sell - r.buy,
+      offMarket: off.buy(r) || off.sell(r),
     }))
     .sort((a, b) => a.sell - b.sell);
 
   const avg = (xs: number[]) => xs.reduce((s, x) => s + x, 0) / xs.length;
-  const bestBuyRow = rows.reduce((a, b) => (b.buy > a.buy ? b : a));
-  const bestSellRow = rows.reduce((a, b) => (b.sell < a.sell ? b : a));
-  const lowestSpreadHouse = houses.reduce((a, b) => (b.spread < a.spread ? b : a));
+  const buyable = rows.filter((r) => !off.buy(r));
+  const sellable = rows.filter((r) => !off.sell(r));
+  const bestBuyRow = buyable.reduce((a, b) => (b.buy > a.buy ? b : a));
+  const bestSellRow = sellable.reduce((a, b) => (b.sell < a.sell ? b : a));
+  const clean = houses.filter((h) => !h.offMarket);
+  const lowestSpreadHouse = (clean.length ? clean : houses).reduce((a, b) => (b.spread < a.spread ? b : a));
   const date = rows.reduce((d, r) => (r.date > d ? r.date : d), rows[0].date);
 
   return {
     currency: code,
     date,
     houseCount: rows.length,
-    marketAvgBuy: avg(rows.map((r) => r.buy)),
-    marketAvgSell: avg(rows.map((r) => r.sell)),
+    marketAvgBuy: avg(buyable.map((r) => r.buy)),
+    marketAvgSell: avg(sellable.map((r) => r.sell)),
     bestBuy: { origin: bestBuyRow.origin, name: houseName(local, bestBuyRow.origin), rate: bestBuyRow.buy },
     bestSell: { origin: bestSellRow.origin, name: houseName(local, bestSellRow.origin), rate: bestSellRow.sell },
     lowestSpread: { origin: lowestSpreadHouse.origin, name: lowestSpreadHouse.name, spread: lowestSpreadHouse.spread },
@@ -99,12 +123,13 @@ export async function bestHouse(api: CambioApi, args: { currency: string; side: 
     throw new Error(`Invalid side "${args.side}"; expected "buy" or "sell".`);
   }
   const code = args.currency.toUpperCase();
-  const { rows, local } = await retailRows(api, code);
-  // buy → user buys the currency → lowest sell. sell → user sells → highest buy.
+  const { rows, local, off } = await retailRows(api, code);
+  // buy → user buys the currency → lowest sell. sell → user sells → highest buy. Never a price the
+  // market rejects on that side.
   const pick =
     args.side === "buy"
-      ? rows.reduce((a, b) => (b.sell < a.sell ? b : a))
-      : rows.reduce((a, b) => (b.buy > a.buy ? b : a));
+      ? rows.filter((r) => !off.sell(r)).reduce((a, b) => (b.sell < a.sell ? b : a))
+      : rows.filter((r) => !off.buy(r)).reduce((a, b) => (b.buy > a.buy ? b : a));
   return {
     currency: code,
     side: args.side,
