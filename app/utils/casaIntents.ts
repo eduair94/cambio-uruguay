@@ -565,6 +565,14 @@ export function intentDescription(intent: CasaIntent, facts: CasaFacts): string 
 }
 
 /**
+ * What to say next to a price better than the best one the market crowns. It can only be a price
+ * the site refused to crown (utils/marketOutlier.ts), and calling it "la más barata del mercado"
+ * is what the board frozen since July at 39,55 got on its own page (2026-11-11).
+ */
+const STALE_BOARD_ADVICE =
+  'Un precio tan lejos del resto suele ser una pizarra que no se actualizó: confirmalo con la casa antes de ir.'
+
+/**
  * A sentence quantifying this casa's position today, or `''` when it does not quote.
  *
  * The rank clause is appended only when the casa is inside the ranked set: a
@@ -581,6 +589,11 @@ export function marketPositionSentence(
   if (intent === 'comprar-dolares') {
     if (facts.marketBestSell === null) return ''
     const gap = facts.usd.sell - facts.marketBestSell
+    if (gap < -0.0001) {
+      return `Hoy ${facts.name} publica una venta de $ ${formatRateEs(facts.usd.sell)}, muy por debajo del resto del mercado: la casa más barata entre las demás vende a $ ${formatRateEs(
+        facts.marketBestSell
+      )}. ${STALE_BOARD_ADVICE}`
+    }
     if (gap <= 0.0001) {
       return `Hoy ${facts.name} tiene la venta más barata del mercado: ningún otro lugar te cobra menos por cada dólar.`
     }
@@ -597,6 +610,11 @@ export function marketPositionSentence(
 
   if (facts.marketBestBuy === null) return ''
   const gap = facts.marketBestBuy - facts.usd.buy
+  if (gap < -0.0001) {
+    return `Hoy ${facts.name} publica que paga $ ${formatRateEs(facts.usd.buy)} por dólar, muy por encima del resto del mercado: la casa que mejor paga entre las demás da $ ${formatRateEs(
+      facts.marketBestBuy
+    )}. ${STALE_BOARD_ADVICE}`
+  }
   if (gap <= 0.0001) {
     return `Hoy ${facts.name} es quien mejor paga el dólar: nadie te da más por cada billete.`
   }
@@ -635,9 +653,17 @@ export function currencyPositionSentence(facts: CasaFacts): string {
     )}: es lo que te cuesta comprar y vender en el mismo lugar.`,
   ]
 
+  let offMarket = false
   if (currency.marketSize > 1 && currency.bestSell !== null) {
     const gap = currency.sell - currency.bestSell
-    if (gap <= 0.0001) {
+    if (gap < -0.0001) {
+      offMarket = true
+      parts.push(
+        `Su venta está muy por debajo del resto del mercado: la casa más barata entre las demás lo vende a $ ${formatRateEs(
+          currency.bestSell
+        )}.`
+      )
+    } else if (gap <= 0.0001) {
       parts.push(
         `Es la venta más barata del mercado: ninguna otra casa te cobra menos por cada ${unit}.`
       )
@@ -653,7 +679,14 @@ export function currencyPositionSentence(facts: CasaFacts): string {
 
   if (currency.marketSize > 1 && currency.bestBuy !== null) {
     const gap = currency.bestBuy - currency.buy
-    if (gap <= 0.0001) {
+    if (gap < -0.0001) {
+      offMarket = true
+      parts.push(
+        `Y su compra está muy por encima de lo que paga el resto: quien mejor paga entre las demás da $ ${formatRateEs(
+          currency.bestBuy
+        )} por ${unit}.`
+      )
+    } else if (gap <= 0.0001) {
       parts.push(`Y es quien mejor lo paga: nadie te da más si venís a vender.`)
     } else {
       parts.push(
@@ -663,6 +696,8 @@ export function currencyPositionSentence(facts: CasaFacts): string {
       )
     }
   }
+
+  if (offMarket) parts.push(STALE_BOARD_ADVICE)
 
   if (currency.marketSize <= 1) {
     parts.push(

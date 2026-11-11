@@ -25,7 +25,7 @@ function sourceFiles(dir: string): string[] {
 /** Function → how many arguments a call must pass for the currency to be among them. */
 const REQUIRED_ARGS: Record<string, number> = {
   offMarketSide: 3,
-  offMarketDetector: 2,
+  crownable: 4,
   rankUsableQuotes: 2,
   compareInstitutionKinds: 2,
   bestDigestQuotes: 2,

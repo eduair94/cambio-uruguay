@@ -98,9 +98,7 @@ export default defineCachedEventHandler(
   {
     maxAge: 60 * 45, // regenerate every 45 min
     staleMaxAge: 60 * 60 * 4, // serve stale up to 4h while revalidating
-    // A new name drops prose cached before the ranking left out off-market boards: it recommended
-    // a board frozen since July at 39,55 to buy dollars (2026-11-11).
-    name: 'where-to-change-uy-mercado',
+    name: 'where-to-change-uy',
     getKey: event => {
       const q = getQuery(event)
       const currency = String(q.currency ?? 'USD')

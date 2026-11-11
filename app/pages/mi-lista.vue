@@ -198,6 +198,8 @@
 import { useWatchlistStore } from '~/stores/watchlist'
 import { useAuthStore } from '~/stores/auth'
 import { publicRates } from '~/utils/rateSource'
+import { quotesForCurrency } from '~/utils/currencyPages'
+import { crownable } from '~/utils/marketOutlier'
 import { decodeWatchlist, encodeWatchlist, type Watchlist } from '~/utils/watchlist'
 import {
   applyDrift,
@@ -306,14 +308,18 @@ const originOptions = computed<OriginOption[]>(() => {
  * so the table reports the commission and says the spread rides on top.
  */
 const fxVenta = computed<number | null>(() => {
-  const usdSells = boardRows.value.filter(r => r.code === 'USD' && r.sell != null).map(r => r.sell!)
-  if (usdSells.length) return Math.min(...usdSells)
   // Public quotes only: an interbank USD price is lower than anything a person
-  // can buy at, and using it here would understate what the card costs.
-  const marketSells = publicRates(rates.value)
-    .filter(r => r.code === 'USD' && typeof r.sell === 'number' && r.sell > 0)
-    .map(r => r.sell as number)
-  return marketSells.length ? Math.min(...marketSells) : null
+  // can buy at, and using it here would understate what the card costs. And
+  // not a price the site refuses to crown (utils/marketOutlier.ts): the
+  // cheapest sell of the market was the board frozen since July at 39,55.
+  const market = quotesForCurrency(publicRates(rates.value) as any, 'USD')
+  const own = crownable(
+    boardRows.value.filter(r => r.code === 'USD'),
+    market,
+    'USD',
+    'sell'
+  )
+  return (own[0] ?? crownable(market, market, 'USD', 'sell')[0])?.sell ?? null
 })
 
 const cardCosts = computed(() =>

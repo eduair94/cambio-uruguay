@@ -1,3 +1,5 @@
+import { offMarketSide } from './marketOutlier'
+
 export interface LatLng {
   lat: number
   lng: number
@@ -17,14 +19,46 @@ export function haversineKm(a: LatLng, b: LatLng): number {
 export type RateLite = { buy: number | null; sell: number | null }
 export type RatesByOrigin = Record<string, Record<string, RateLite>>
 
+/**
+ * Today's buy and sell of each house, per currency, as /mapa and /casa-de-cambio-cerca-de-mi rank
+ * them by distance.
+ *
+ * One quote per house: its first counter or cash row. The last row used to win, whatever its type,
+ * so a branch could be ranked by an eBROU or interbank price it does not charge. And a price the site
+ * refuses to crown (utils/marketOutlier.ts), judged against the whole national market, is left null,
+ * so no ranking puts it first: near Punta del Este the board frozen since July at 39,55 headed
+ * "Mejores cotizaciones cerca" (2026-11-11).
+ */
 export function buildRatesByOrigin(
-  rows: Array<{ origin: string; code: string; buy: number | null; sell: number | null }>
+  rows: Array<{
+    origin: string
+    code: string
+    type?: string | null
+    buy: number | null
+    sell: number | null
+  }>
 ): RatesByOrigin {
   const out: RatesByOrigin = {}
   for (const r of rows || []) {
-    if (!r || !r.origin || !r.code) continue
+    if (!r || !r.origin || !r.code || r.origin === 'bcu') continue
+    if (r.type && r.type !== 'BILLETE') continue
     if (!out[r.origin]) out[r.origin] = {}
+    if (out[r.origin][r.code]) continue
     out[r.origin][r.code] = { buy: r.buy ?? null, sell: r.sell ?? null }
+  }
+  const houses = Object.values(out)
+  for (const code of new Set(houses.flatMap(byCode => Object.keys(byCode)))) {
+    const market = houses.map(byCode => byCode[code]).filter((q): q is RateLite => !!q)
+    const buyOff = offMarketSide(market, code, 'buy')
+    const sellOff = offMarketSide(market, code, 'sell')
+    for (const byCode of houses) {
+      const quote = byCode[code]
+      if (!quote) continue
+      byCode[code] = {
+        buy: buyOff(quote) ? null : quote.buy,
+        sell: sellOff(quote) ? null : quote.sell,
+      }
+    }
   }
   return out
 }
