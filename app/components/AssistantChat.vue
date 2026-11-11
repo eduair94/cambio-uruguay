@@ -30,7 +30,7 @@
             >¿Preferís usar tu propia clave de Gemini?</VExpansionPanelTitle
           >
           <VExpansionPanelText>
-            <ol class="steps mb-3">
+            <ol class="key-steps mb-3">
               <li class="text-body-2">
                 Entrá a
                 <a
@@ -77,9 +77,12 @@
     </div>
 
     <!-- 2. El chat -->
-    <div v-else>
-      <div class="d-flex flex-wrap align-center ga-2 mb-3">
-        <span class="text-caption text-medium-emphasis">{{ connectionLabel }}</span>
+    <div v-else class="chat">
+      <div class="chat-bar">
+        <span class="chat-status">
+          <span class="chat-status-dot" aria-hidden="true" />
+          {{ connectionLabel }}
+        </span>
         <VSpacer />
         <VBtn
           size="small"
@@ -95,40 +98,98 @@
         </VBtn>
       </div>
 
-      <div v-if="!messages.length" class="mb-3">
-        <div class="text-body-2 text-medium-emphasis mb-2">
-          Probá con alguno de estos o escribí el tuyo:
+      <!-- Primera vez: qué puede hacer, con una pregunta lista por cada parte del sitio -->
+      <div v-if="!messages.length && !busy" class="welcome">
+        <div class="welcome-mark">
+          <AssistantMark :size="28" />
         </div>
-        <div class="d-flex flex-column ga-2">
-          <VBtn
-            v-for="(s, i) in suggestions"
-            :key="i"
-            variant="tonal"
-            class="suggestion"
-            @click="send(s)"
-          >
-            {{ s }}
-          </VBtn>
+        <h2 class="welcome-title">¿Qué querés resolver?</h2>
+        <p class="welcome-lead">
+          Busca en los avisos, las cotizaciones y las guías del sitio, y te muestra lo que encontró.
+        </p>
+        <ul class="ideas">
+          <li v-for="idea in suggestions" :key="idea.text">
+            <button type="button" class="idea" @click="send(idea.text)">
+              <span class="idea-kicker">
+                <VIcon :icon="idea.icon" size="16" />
+                {{ idea.kicker }}
+              </span>
+              <span class="idea-text">{{ idea.text }}</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Announced: the answer's text, not its carousels — a screen reader would otherwise read every
+           card of every carousel the moment it lands. The cards stay in the reading order below. -->
+      <div class="d-sr-only" aria-live="polite">{{ announcement }}</div>
+      <div class="log">
+        <template v-for="(m, i) in messages" :key="i">
+          <div v-if="m.role === 'user'" class="turn user">
+            <div class="bubble">{{ m.text }}</div>
+          </div>
+          <div v-else :ref="el => setTurnRef(el, i)" class="turn assistant">
+            <div class="avatar" aria-hidden="true">
+              <AssistantMark :size="18" />
+            </div>
+            <div class="turn-body">
+              <!-- eslint-disable-next-line vue/no-v-html -- renderChatMarkdown drops raw HTML and non-http links -->
+              <div class="answer" v-html="m.html" />
+              <AssistantBlocks v-if="m.blocks?.length" :blocks="m.blocks" class="mt-4" />
+              <div class="turn-actions">
+                <VBtn
+                  size="small"
+                  variant="text"
+                  :prepend-icon="copied === i ? 'mdi-check' : 'mdi-content-copy'"
+                  @click="copy(m, i)"
+                >
+                  {{ copied === i ? 'Copiado' : 'Copiar' }}
+                </VBtn>
+                <span v-if="m.families?.length" class="consulted">
+                  Consultó
+                  <VIcon
+                    v-for="family in m.families"
+                    :key="family"
+                    :icon="FAMILY_ICON[family]"
+                    size="16"
+                    :aria-label="FAMILY_LABEL[family]"
+                    :title="FAMILY_LABEL[family]"
+                  />
+                </span>
+              </div>
+              <div
+                v-if="i === messages.length - 1 && !busy && m.followUps?.length"
+                class="follow-ups"
+              >
+                <button
+                  v-for="question in m.followUps"
+                  :key="question"
+                  type="button"
+                  class="follow-up"
+                  @click="send(question)"
+                >
+                  {{ question }}
+                  <VIcon icon="mdi-arrow-right" size="14" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </template>
+        <div v-if="busy" ref="busyRow" class="turn assistant">
+          <div class="avatar working" aria-hidden="true">
+            <AssistantMark :size="18" />
+          </div>
+          <div class="turn-body">
+            <AssistantSteps :steps="steps" />
+          </div>
         </div>
       </div>
 
-      <div ref="log" class="log mb-3" aria-live="polite">
-        <div v-for="(m, i) in messages" :key="i" :class="['msg', m.role]">
-          <div v-if="m.role === 'user'" class="text-body-2">{{ m.text }}</div>
-          <!-- eslint-disable-next-line vue/no-v-html -- renderChatMarkdown drops raw HTML and non-http links -->
-          <div v-else class="text-body-2 answer" v-html="m.html" />
-        </div>
-        <div v-if="busy" class="msg assistant d-flex align-center ga-2">
-          <VProgressCircular indeterminate size="16" width="2" color="primary" />
-          <span class="text-body-2 text-medium-emphasis">{{ statusText }}…</span>
-        </div>
-      </div>
-
-      <form class="d-flex ga-2 align-end" @submit.prevent="send()">
+      <form :class="['composer', { docked: messages.length || busy }]" @submit.prevent="send()">
         <VTextarea
           v-model="draft"
           label="Contale qué buscás"
-          rows="2"
+          rows="1"
           auto-grow
           max-rows="6"
           density="comfortable"
@@ -162,12 +223,24 @@
 </template>
 
 <script setup lang="ts">
-import { AI_PROMPT_EXAMPLES } from '~/utils/aiSearch'
+import { AI_PROMPT_EXAMPLES, type AiPromptExample } from '~/utils/aiSearch'
 import { renderChatMarkdown } from '~/utils/chatMarkdown'
+import {
+  FAMILY_ICON,
+  buildChatBlocks,
+  followUps,
+  plainAnswer,
+  toolFamily,
+  type ChatBlock,
+  type ChatStep,
+  type ToolCallRecord,
+  type ToolFamily,
+} from '~/utils/chatResults'
 import {
   CHAT_INSTRUCTIONS,
   GEMINI_KEY_STORAGE,
   GeminiError,
+  TOOL_STATUS,
   createMcpClient,
   listGeminiModels,
   runChatTurn,
@@ -194,6 +267,19 @@ interface ChatMessage {
   role: 'user' | 'assistant'
   text: string
   html?: string
+  /** What the turn's tools returned, drawn as cards (utils/chatResults.ts). */
+  blocks?: ChatBlock[]
+  followUps?: string[]
+  /** The parts of the site it read, in the order it read them. */
+  families?: ToolFamily[]
+}
+
+const FAMILY_LABEL: Record<ToolFamily, string> = {
+  alquileres: 'alquileres',
+  autos: 'autos',
+  productos: 'productos',
+  cambio: 'cotizaciones',
+  sitio: 'guías del sitio',
 }
 
 // Storage can throw (private mode, blocked site data): every access is guarded.
@@ -223,11 +309,19 @@ const connectingKey = ref(false)
 const keyInput = ref('')
 const remember = ref(true)
 const busy = ref(false)
-const statusText = ref('')
 const error = ref('')
 const draft = ref('')
 const messages = ref<ChatMessage[]>([])
-const log = ref<HTMLElement | null>(null)
+/** The tool calls of the turn being answered, as they happen. */
+const steps = ref<ChatStep[]>([])
+const copied = ref<number | null>(null)
+const announcement = ref('')
+const busyRow = ref<HTMLElement | null>(null)
+const turnRefs = new Map<number, HTMLElement>()
+const setTurnRef = (el: unknown, index: number) => {
+  if (el instanceof HTMLElement) turnRefs.set(index, el)
+  else turnRefs.delete(index)
+}
 const puterName = ref('')
 const model = ref('')
 /** A question brought from a directory (?q=): sent once, as soon as the chat is connected. */
@@ -244,10 +338,28 @@ let geminiHistory: GeminiContent[] = []
 let puterHistory: OpenAiMessage[] = []
 
 // One question about the site first: it is what the assistant does that a directory filter cannot.
+// Then one per directory, and the market the site is named after.
+const KICKER: Record<AiPromptExample['vertical'], { kicker: string; icon: string }> = {
+  sitio: { kicker: 'Guías', icon: FAMILY_ICON.sitio },
+  alquileres: { kicker: 'Alquileres', icon: FAMILY_ICON.alquileres },
+  autos: { kicker: 'Autos', icon: FAMILY_ICON.autos },
+  productos: { kicker: 'Productos', icon: FAMILY_ICON.productos },
+}
 const suggestions = [
-  AI_PROMPT_EXAMPLES.find(e => e.vertical === 'sitio'),
-  ...AI_PROMPT_EXAMPLES.filter((_, i) => [0, 4, 6].includes(i)),
-].flatMap(e => (e ? [e.text] : []))
+  ...[
+    AI_PROMPT_EXAMPLES.find(e => e.vertical === 'sitio'),
+    ...AI_PROMPT_EXAMPLES.filter((_, i) => [3, 4, 7].includes(i)),
+  ].flatMap(e => (e ? [{ text: e.text, ...KICKER[e.vertical] }] : [])),
+  {
+    text: '¿Dónde conviene comprar dólares hoy, y cómo vino el dólar este mes?',
+    kicker: 'Cotizaciones',
+    icon: FAMILY_ICON.cambio,
+  },
+  // Six, so the grid closes on two full rows of three.
+  ...AI_PROMPT_EXAMPLES.filter(e => e.vertical === 'sitio')
+    .slice(1, 2)
+    .map(e => ({ text: e.text, ...KICKER[e.vertical] })),
+]
 const connectionLabel = computed(() =>
   provider.value === 'puter'
     ? `Conectado${puterName.value ? ` como ${puterName.value}` : ''} · ${model.value}`
@@ -328,9 +440,30 @@ async function send(text = draft.value) {
   error.value = ''
   messages.value.push({ role: 'user', text: userText })
   busy.value = true
-  scrollDown()
-  const callTool = (name: string, args: Record<string, unknown>) => mcp.callTool(name, args)
-  const onStatus = (status: string) => (statusText.value = status)
+  steps.value = []
+  scrollTo(() => busyRow.value, 'nearest')
+  // Every call of the turn is kept twice: as a progress line while it runs, and with its
+  // structured result for the cards drawn under the answer.
+  const calls: ToolCallRecord[] = []
+  const callTool = async (name: string, args: Record<string, unknown>) => {
+    const step: ChatStep = {
+      name,
+      label: TOOL_STATUS[name] ?? `Consultando ${name}`,
+      state: 'running',
+    }
+    steps.value = [...steps.value, step]
+    const settle = (state: ChatStep['state']) =>
+      (steps.value = steps.value.map(s => (s === step ? { ...s, state } : s)))
+    try {
+      const result = await mcp.callTool(name, args)
+      calls.push({ name, args, data: result.data, isError: result.isError })
+      settle(result.isError ? 'error' : 'done')
+      return result
+    } catch (e) {
+      settle('error')
+      throw e
+    }
+  }
   try {
     let answer: string
     if (provider.value === 'puter' && puter) {
@@ -342,7 +475,6 @@ async function send(text = draft.value) {
         system: instructions,
         tools: openAiTools,
         callTool,
-        onStatus,
       })
       puterHistory = result.messages
       model.value = result.model
@@ -357,14 +489,28 @@ async function send(text = draft.value) {
         systemInstruction: instructions,
         declarations,
         callTool,
-        onStatus,
       })
       geminiHistory = result.history
       model.value = result.model
       answer = result.text
     }
     answer ||= 'No tengo una respuesta para eso; probá reformularlo.'
-    messages.value.push({ role: 'assistant', text: answer, html: renderChatMarkdown(answer) })
+    const blocks = buildChatBlocks(calls, answer)
+    messages.value.push({
+      role: 'assistant',
+      text: answer,
+      html: renderChatMarkdown(answer),
+      blocks,
+      followUps: followUps(blocks, userText),
+      families: [...new Set(calls.map(call => toolFamily(call.name)))],
+    })
+    const index = messages.value.length - 1
+    const shown = blocks.length
+      ? ` Debajo, ${blocks.length === 1 ? 'un bloque' : `${blocks.length} bloques`} con lo que encontró.`
+      : ''
+    announcement.value = `${plainAnswer(answer)}${shown}`
+    // A long answer with cards is read from its top, not from its last line.
+    scrollTo(() => turnRefs.get(index) ?? null, 'start')
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e)
     // The question stays in the box so a retry after a limit is one click.
@@ -372,7 +518,19 @@ async function send(text = draft.value) {
     draft.value = userText
   } finally {
     busy.value = false
-    scrollDown()
+    steps.value = []
+  }
+}
+
+async function copy(message: ChatMessage, index: number) {
+  try {
+    await navigator.clipboard.writeText(message.text)
+    copied.value = index
+    setTimeout(() => {
+      if (copied.value === index) copied.value = null
+    }, 2000)
+  } catch {
+    error.value = 'No se pudo copiar; seleccioná el texto y copialo a mano.'
   }
 }
 
@@ -394,14 +552,21 @@ function sendPending() {
   }
 }
 
-function scrollDown() {
-  nextTick(() => log.value?.scrollTo({ top: log.value.scrollHeight, behavior: 'smooth' }))
+/** Bring a turn into view once it renders; instant when the visitor asked for less motion. */
+function scrollTo(target: () => HTMLElement | null, block: ScrollLogicalPosition) {
+  nextTick(() => {
+    const el = target()
+    if (!el) return
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    el.scrollIntoView({ block, behavior: reduced ? 'auto' : 'smooth' })
+  })
 }
 
 function reset() {
   geminiHistory = []
   puterHistory = []
   messages.value = []
+  turnRefs.clear()
   error.value = ''
 }
 
@@ -432,83 +597,308 @@ onMounted(async () => {
 })
 </script>
 <style scoped>
+/* A feature surface (16px). Visible overflow: the composer sticks to the bottom of the viewport,
+   and a sticky child of an `overflow: hidden` card never sticks. */
 .chat-card {
-  border: 1px solid rgba(var(--v-border-color), 0.16);
-  border-radius: 12px;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 16px;
+  overflow: visible;
 }
-.steps {
+.key-steps {
   padding-left: 1.2rem;
 }
-.pending {
-  border-left: 3px solid rgb(var(--v-theme-primary));
-  background: rgba(var(--v-theme-primary), 0.06);
-  border-radius: 0 8px 8px 0;
-  padding: 10px 14px;
-  overflow-wrap: anywhere;
-}
-.steps li {
+.key-steps li {
   margin-bottom: 4px;
 }
-.suggestion {
-  height: auto !important;
-  min-height: 36px;
-  padding-block: 8px;
-  white-space: normal;
-  text-transform: none;
-  letter-spacing: normal;
-  justify-content: flex-start;
-  text-align: left;
-}
-.log {
-  max-height: 60vh;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.msg {
-  border-radius: 12px;
-  padding: 10px 14px;
-  max-width: 100%;
+.pending {
+  background: rgba(var(--v-theme-primary), 0.08);
+  border-radius: 8px;
+  padding: 12px 16px;
   overflow-wrap: anywhere;
 }
-.msg.user {
-  align-self: flex-end;
-  background: rgba(var(--v-theme-primary), 0.12);
-  max-width: 85%;
+
+/* ── The connected chat ── */
+.chat {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
-.msg.assistant {
-  align-self: flex-start;
-  background: rgba(var(--v-theme-on-surface), 0.04);
+.chat-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.chat-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: rgba(var(--v-theme-on-surface), 0.66);
+}
+.chat-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgb(var(--v-theme-success));
+}
+
+.welcome {
+  padding: 8px 0 24px;
+}
+.welcome-mark,
+.avatar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(var(--v-theme-primary), 0.12);
+  color: rgb(var(--v-theme-link));
+}
+.welcome-mark {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+}
+.welcome-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.welcome-lead {
+  margin: 4px 0 0;
+  max-width: 60ch;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: rgba(var(--v-theme-on-surface), 0.76);
+}
+.ideas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.ideas li {
+  min-width: 0;
+}
+.idea {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 12px;
+  background: rgb(var(--v-theme-surface));
+  color: rgb(var(--v-theme-on-surface));
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease-out,
+    box-shadow 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.idea:hover {
+  border-color: rgb(var(--v-theme-primary));
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+.idea-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.0333em;
+  color: rgb(var(--v-theme-link));
+}
+.idea-text {
+  font-size: 0.875rem;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.log {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+.log:empty {
+  display: none;
+}
+.turn {
+  display: flex;
+  gap: 12px;
+  min-width: 0;
+  scroll-margin-top: 80px;
+}
+.turn.user {
+  justify-content: flex-end;
+}
+.bubble {
+  max-width: 85%;
+  padding: 12px 16px;
+  border-radius: 16px 16px 4px 16px;
+  background: rgba(var(--v-theme-primary), 0.12);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.avatar {
+  width: 32px;
+  height: 32px;
+}
+/* Breathing while it works: the only motion in the chat that is not a hover. */
+.avatar.working {
+  animation: breathe 1.6s ease-in-out infinite;
+}
+@keyframes breathe {
+  50% {
+    background: rgba(var(--v-theme-primary), 0.24);
+  }
+}
+.turn-body {
+  flex: 1;
+  min-width: 0;
+  padding-top: 4px;
+}
+.answer {
+  max-width: 72ch;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 .answer :deep(p) {
-  margin-bottom: 8px;
+  margin: 0 0 8px;
+}
+.answer :deep(p:last-child) {
+  margin-bottom: 0;
 }
 .answer :deep(ul),
 .answer :deep(ol) {
+  margin: 0 0 8px;
   padding-left: 1.2rem;
-  margin-bottom: 8px;
+}
+.answer :deep(li + li) {
+  margin-top: 4px;
 }
 .answer :deep(h3),
 .answer :deep(h4) {
+  margin: 16px 0 4px;
   font-size: 1rem;
   font-weight: 700;
-  margin: 8px 0 4px;
 }
 .answer :deep(table) {
   display: block;
   overflow-x: auto;
   border-collapse: collapse;
   margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
 }
 .answer :deep(th),
 .answer :deep(td) {
-  border: 1px solid rgba(var(--v-border-color), 0.2);
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   padding: 4px 8px;
 }
 .answer :deep(a),
 .cu-link {
   color: rgb(var(--v-theme-link));
   font-weight: 600;
+}
+.turn-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.consulted {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: rgba(var(--v-theme-on-surface), 0.66);
+}
+.follow-ups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.follow-up {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 1px solid rgba(var(--v-theme-primary), 0.4);
+  border-radius: 999px;
+  background: transparent;
+  color: rgb(var(--v-theme-link));
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 160ms ease-out;
+}
+.follow-up:hover {
+  background: rgba(var(--v-theme-primary), 0.08);
+}
+
+/* Docked to the bottom of the viewport once there is a conversation to scroll; before, it sits
+   after the suggestions instead of covering them. */
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-top: 24px;
+  padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  background: rgb(var(--v-theme-surface));
+}
+.composer.docked {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+}
+@media (max-width: 599.98px) {
+  .bubble {
+    max-width: 92%;
+  }
+  /* On a phone the answer and its carousels take the whole width; the mark rides above them. */
+  .turn.assistant {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .turn.assistant .avatar {
+    width: 28px;
+    height: 28px;
+  }
+  .turn-body {
+    padding-top: 0;
+  }
+  .follow-up {
+    min-height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .avatar.working {
+    animation: none;
+  }
+  .idea:hover {
+    transform: none;
+  }
 }
 </style>

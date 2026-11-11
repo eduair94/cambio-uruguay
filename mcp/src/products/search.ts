@@ -2,7 +2,7 @@
 // directories of the site (phones, desk chairs, home equipment, e-scooters and
 // e-bikes). Each directory is a whole catalogue, cached and filtered here.
 
-import { compact, fmt, fold, matchesWords, money, PUBLIC_SITE } from "../format.js";
+import { compact, fmt, fold, matchesWords, money, PUBLIC_SITE, safeImage } from "../format.js";
 import type { ToolOutput } from "../output.js";
 import { TTL, type SiteApi } from "../site.js";
 
@@ -21,6 +21,8 @@ export interface ProductOffer {
   seller?: string;
   title?: string;
   url?: string;
+  /** The advert's photo, when the site has one (never Facebook's: those URLs expire). */
+  image?: string | null;
   price?: number;
   currency?: string;
   priceUyu?: number;
@@ -61,6 +63,8 @@ export interface ProductRow {
   rating?: string;
   tier?: string;
   note?: string;
+  /** A photo, for clients that draw cards; the text line never prints it. */
+  image?: string;
   siteUrl: string;
   /** Matched by text search but not returned: product names inside a category. */
   keywords?: string;
@@ -87,7 +91,10 @@ const offerOf = (o: ProductOffer | undefined) =>
   o ? compact({ seller: o.seller, priceUyu: o.priceUyu, url: o.url, condition: o.condition === "used" ? "usado" : o.condition === "new" ? "nuevo" : o.condition }) : undefined;
 
 interface PhonesResponse {
-  brands?: Array<{ brandLabel?: string; models?: Array<{ slug: string; name: string; brandLabel?: string; storageGb?: number; bestNewUyu?: number; newSellers?: number }> }>;
+  brands?: Array<{
+    brandLabel?: string;
+    models?: Array<{ slug: string; name: string; brandLabel?: string; storageGb?: number; bestNewUyu?: number; newSellers?: number; image?: string | null }>;
+  }>;
 }
 
 interface ChairsResponse {
@@ -96,6 +103,7 @@ interface ChairsResponse {
     name: string;
     brand?: string;
     category?: string;
+    image?: string | null;
     offers?: ProductOffer[];
     price?: { median?: number; min?: number; max?: number; bestNew?: number | null; bestUsed?: number | null };
     stars?: number | null;
@@ -129,6 +137,7 @@ export function categoryRows(vertical: ProductVertical, items: CategoryItem[], p
       bestUsedOffer: offerOf(bestUsed),
       tier: it.tier,
       note: it.usedNote,
+      image: safeImage(best?.image) ?? safeImage(offers.find((o) => safeImage(o.image))?.image),
       keywords: (it.products ?? []).map((p) => [p.brand, p.name].filter(Boolean).join(" ")).join(" | "),
       siteUrl: `${PUBLIC_SITE}${pagePath(it)}`,
     }) as ProductRow;
@@ -148,6 +157,7 @@ export async function loadVertical(site: SiteApi, vertical: ProductVertical): Pr
             bestPriceUyu: m.bestNewUyu,
             sellers: m.newSellers,
             note: "precio nuevo más bajo entre tiendas y Mercado Libre",
+            image: safeImage(m.image),
             siteUrl: `${PUBLIC_SITE}/celulares-uruguay/${m.slug}`,
           }) as ProductRow
       )
@@ -168,6 +178,7 @@ export async function loadVertical(site: SiteApi, vertical: ProductVertical): Pr
         bestOffer: offerOf(best),
         rating: p.stars ? `${fmt(p.stars, 1)}★ (${fmt(p.ratingCount ?? 0)} opiniones)` : undefined,
         tier: p.tier,
+        image: safeImage(p.image) ?? safeImage(best?.image),
         siteUrl: `${PUBLIC_SITE}/sillas-escritorio-uruguay/${p.slug}`,
       }) as ProductRow;
     });

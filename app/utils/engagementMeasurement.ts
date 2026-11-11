@@ -62,6 +62,10 @@ export const LINK_AREAS = [
   'rental_insight',
   'rental_breadcrumb',
   'rental_barrio',
+  // The /asistente-ia chat: a card, rate panel or "ver todos" drawn from what the assistant
+  // found, versus a page it cited as a source. Without them both read as `content`.
+  'assistant_cards',
+  'assistant_sources',
   'header',
   'drawer',
   'footer',
