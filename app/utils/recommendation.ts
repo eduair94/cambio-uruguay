@@ -6,6 +6,7 @@
 // Types come from the shared API contract; imported relatively so this module
 // stays runtime-agnostic.
 import type { ExchangeRate } from '../types/api'
+import { offMarketSide } from './marketOutlier'
 
 /** Which side of the trade the user wants to perform on the chosen currency. */
 export type Operation = 'buy' | 'sell'
@@ -62,25 +63,6 @@ function round2(value: number): number {
 }
 
 /**
- * Rank exchange houses for buying/selling a given currency with a given amount.
- *
- * Semantics:
- *  - `'buy'`: the user BUYS `currency` from a house, paying its `sell` price.
- *    Best house = lowest `sell`. Total = `amount * sell` (UYU spent).
- *  - `'sell'`: the user SELLS `currency` to a house, receiving its `buy` price.
- *    Best house = highest `buy`. Total = `amount * buy` (UYU received).
- *
- * Only rows matching `currency` with a positive relevant rate are considered.
- * The market average is the arithmetic mean of the relevant rate across those
- * rows. `savingsVsAvg` is the per-house benefit vs. transacting at that average.
- *
- * Sorting is deterministic and stable on ties: primary key is the rate (best
- * first), secondary key is `origin` ascending so equal rates keep a fixed order.
- *
- * @returns a strictly-typed {@link RankingResult}; `ranked` is empty and
- * `marketAverage` is 0 when there is no usable data.
- */
-/**
  * Nombre legible de una casa a partir de su `origin`.
  *
  * Deliberadamente simple y sin catálogo: este módulo es puro y lo consume tanto el servidor como el
@@ -96,11 +78,39 @@ export function humaniseOriginName(origin: string): string {
     .replace(/(^|\s)(\p{L})/gu, (_m, sep, ch) => sep + ch.toUpperCase())
 }
 
+/**
+ * Rank exchange houses for buying/selling a given currency with a given amount.
+ *
+ * Semantics:
+ *  - `'buy'`: the user BUYS `currency` from a house, paying its `sell` price.
+ *    Best house = lowest `sell`. Total = `amount * sell` (UYU spent).
+ *  - `'sell'`: the user SELLS `currency` to a house, receiving its `buy` price.
+ *    Best house = highest `buy`. Total = `amount * buy` (UYU received).
+ *
+ * Only rows matching `currency` with a positive relevant rate are considered,
+ * and not a price the site's outlier rule rejects (`utils/marketOutlier.ts`,
+ * judged on the side being ranked): until 2026-11-11 the home's "¿Dónde cambiar?"
+ * list and its AI recommendation, fed from here, told every visitor to buy
+ * dollars at a board frozen since July at 39,55, while the headline of the same
+ * page named another casa.
+ *
+ * The market average is the arithmetic mean of the relevant rate across those
+ * rows. `savingsVsAvg` is the per-house benefit vs. transacting at that average.
+ *
+ * Sorting is deterministic and stable on ties: primary key is the rate (best
+ * first), secondary key is `origin` ascending so equal rates keep a fixed order.
+ *
+ * `reference` is the whole market for `currency`, when `rows` is a subset: a
+ *   handful of boards is too few to judge.
+ * @returns a strictly-typed {@link RankingResult}; `ranked` is empty and
+ * `marketAverage` is 0 when there is no usable data.
+ */
 export function rankExchanges(
   rows: readonly RankableRate[],
   currency: string,
   operation: Operation,
-  amount: number
+  amount: number,
+  reference: readonly RankableRate[] = rows
 ): RankingResult {
   const safeAmount = Number.isFinite(amount) && amount > 0 ? amount : 0
 
@@ -114,9 +124,17 @@ export function rankExchanges(
 
   if (!rows.length || !currency) return base
 
+  // Buying the currency ranks the houses' sells; selling it, their buys.
+  const side = operation === 'buy' ? 'sell' : 'buy'
+  const isOffMarket = offMarketSide(
+    reference.filter(r => r.code === currency),
+    currency,
+    side
+  )
+
   // Pick the rate relevant to the operation and keep only positive quotes.
   const candidates = rows
-    .filter(r => r.code === currency)
+    .filter(r => r.code === currency && !isOffMarket(r))
     .map(r => ({
       origin: r.origin,
       // El nombre SALE DEL ORIGEN, nunca de `r.name`. Ese campo no es el nombre de la casa: es la

@@ -974,7 +974,7 @@ const isLowSample = (r: CasaRow): boolean =>
 // not be crowned the best price in the country.
 const bestPicks = computed(() => {
   const list = filteredRows.value
-  const withUsd = list.filter(r => r.usd && !r.usd.offMarket)
+  const withUsd = list.filter(r => r.usd && !r.usd.offMarketSell)
   const bestRate = withUsd.length
     ? withUsd.reduce((min, r) => (r.usd!.sell < min.usd!.sell ? r : min))
     : null
@@ -1045,17 +1045,17 @@ const bestPicks = computed(() => {
 // Highlight the best price WITHIN the slice on screen, not against houses the
 // reader has filtered out — a green cell has to mean "best of what you see".
 const bestVisibleSell = computed(() => {
-  const values = visibleRows.value.filter(r => r.usd && !r.usd.offMarket).map(r => r.usd!.sell)
+  const values = visibleRows.value.filter(r => r.usd && !r.usd.offMarketSell).map(r => r.usd!.sell)
   return values.length ? Math.min(...values) : null
 })
 const bestVisibleBuy = computed(() => {
-  const values = visibleRows.value.filter(r => r.usd && !r.usd.offMarket).map(r => r.usd!.buy)
+  const values = visibleRows.value.filter(r => r.usd && !r.usd.offMarketBuy).map(r => r.usd!.buy)
   return values.length ? Math.max(...values) : null
 })
 const isBestSell = (r: CasaRow): boolean =>
-  !!r.usd && !r.usd.offMarket && r.usd.sell === bestVisibleSell.value
+  !!r.usd && !r.usd.offMarketSell && r.usd.sell === bestVisibleSell.value
 const isBestBuy = (r: CasaRow): boolean =>
-  !!r.usd && !r.usd.offMarket && r.usd.buy === bestVisibleBuy.value
+  !!r.usd && !r.usd.offMarketBuy && r.usd.buy === bestVisibleBuy.value
 
 // --- Department cross-links ----------------------------------------------------
 const departmentLinks = computed(() =>

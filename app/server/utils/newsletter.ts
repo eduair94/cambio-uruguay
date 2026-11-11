@@ -6,7 +6,7 @@ import { sanitizeAi } from './ai'
 import { aiMarkdownToEmailHtml, cleanAiCommentary } from '../../utils/newsletterIssue'
 import { rentalSurveyUrl } from '../../utils/rentalFeedback'
 import { isExtraLocale } from '../../utils/locales'
-import { MIN_SAMPLE, deviatesFrom, median } from '../../utils/marketOutlier'
+import { offMarketSide } from '../../utils/marketOutlier'
 
 export type NewsletterLang = 'es' | 'en' | 'pt'
 
@@ -96,37 +96,31 @@ interface RateRow {
 }
 
 /**
- * The day's best sell (lowest) and best buy (highest) among one currency's retail boards.
+ * The day's best sell (lowest) and best buy (highest) among one currency's retail boards, without
+ * the prices the rest of the site refuses to crown (`utils/marketOutlier.ts`: one side at a time,
+ * with the band of each currency — the same rule as /cotizacion, /pizarra and /casas-de-cambio).
  *
- * The dollar's best sell leaves out a board whose SELL is further than 3 % from the median sell
- * (`utils/marketOutlier.ts`: same band and same minimum sample as /cotizacion/dolar, /pizarra and
- * /casas-de-cambio). Without it a board frozen since July at $39,55 — the backend's staleness check
- * marks it `extreme: "min-sell"` — was "la mejor venta" of 84 of the 87 archived issues
- * (2026-08-15 to 2026-11-07, measured 2026-11-09): their title, their description and the email.
- * A market too thin to judge flags nothing, so every board stays eligible.
- *
- * Only the sell side, and only the dollar, because everywhere else the band removed right answers:
- * - The frozen board never won the best BUY. Narrow-spread casas that do buy 3,1–3,3 % above a
- *   median the wide-spread majority keeps low, so filtering the buy side named a casa that pays
- *   less on ~8 % of days. A board whose buy is odd while its sell is the cheapest also stays in.
- * - The archive's title and description quote USD alone, and the band was calibrated on it. The
- *   real and the Argentine peso spread far wider: on 2026-11-09 the band dropped 28 and 37 of their
- *   39 boards and named a WORSE price than the live best (BRL 8,45 while four casas sold at 8,10).
+ * Without it a board frozen since July at $39,55 — the backend's staleness check marks it
+ * `extreme: "min-sell"` — was "la mejor venta" of 84 of the 87 archived issues (2026-08-15 to
+ * 2026-11-07, measured 2026-11-09): their title, their description and the email. One side at a
+ * time, because the narrow-spread casas buy well above a median the wide-spread majority keeps low
+ * and are real; with each currency's band, because the real and the Argentine peso spread far
+ * wider than the dollar (a 3 % band dropped 28 and 37 of their 39 boards on 2026-11-09). The
+ * Argentine peso's band still drops tradelix's 0,15 buy against a 0,02 median, which the issue of
+ * 2026-11-06 named "la mejor compra". A market too thin to judge flags nothing.
  */
 export function bestDigestQuotes<T extends { buy: number; sell: number }>(
   code: string,
   rows: readonly T[]
 ): { bestSell: T; bestBuy: T } | null {
   if (!rows.length) return null
-  let sellers = rows
-  if (code === 'USD' && rows.length >= MIN_SAMPLE) {
-    const medianSell = median(rows.map(row => row.sell))
-    const usable = rows.filter(row => !deviatesFrom(row.sell, medianSell))
-    if (usable.length) sellers = usable
-  }
+  const sellOff = offMarketSide(rows, code, 'sell')
+  const buyOff = offMarketSide(rows, code, 'buy')
+  const sellers = rows.filter(row => !sellOff(row))
+  const buyers = rows.filter(row => !buyOff(row))
   return {
-    bestSell: sellers.reduce((a, b) => (b.sell < a.sell ? b : a)),
-    bestBuy: rows.reduce((a, b) => (b.buy > a.buy ? b : a)),
+    bestSell: (sellers.length ? sellers : rows).reduce((a, b) => (b.sell < a.sell ? b : a)),
+    bestBuy: (buyers.length ? buyers : rows).reduce((a, b) => (b.buy > a.buy ? b : a)),
   }
 }
 

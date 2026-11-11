@@ -25,8 +25,8 @@
 //     caso aislado. Las dos cifras juntas son la respuesta; una sola es un titular.
 
 import { categoryForOrigin, type OriginCategory } from './exchangeChannel'
-import type { CurrencyQuote } from './currencyPages'
-import { median, offMarketDetector } from './marketOutlier'
+import type { CurrencyCode, CurrencyQuote } from './currencyPages'
+import { median, offMarketSide } from './marketOutlier'
 
 /** Los grupos que la página compara, en el orden en que los muestra. */
 export const COMPARED_KINDS: readonly OriginCategory[] = ['casa', 'banco', 'fintech'] as const
@@ -83,20 +83,30 @@ const positive = (n: number | null | undefined): n is number => typeof n === 'nu
  * mediana de los bancos no filtraría nada. El descarte se hace una sola vez contra el mercado
  * entero, que es la referencia que sí tiene muestra.
  */
-function summarise(kind: OriginCategory, quotes: readonly CurrencyQuote[]): KindSummary {
-  const sells = quotes.map(q => q.sell).filter(positive)
-  const buys = quotes.map(q => q.buy).filter(positive)
+function summarise(
+  kind: OriginCategory,
+  quotes: readonly CurrencyQuote[],
+  sellOff: (q: CurrencyQuote) => boolean,
+  buyOff: (q: CurrencyQuote) => boolean
+): KindSummary {
+  // Each side leaves out only what is off-market on that side (utils/marketOutlier.ts).
+  const sellers = quotes.filter(q => !sellOff(q))
+  const buyers = quotes.filter(q => !buyOff(q))
+  const sells = sellers.map(q => q.sell).filter(positive)
+  const buys = buyers.map(q => q.buy).filter(positive)
 
   let bestSell: CurrencyQuote | null = null
   let bestBuy: CurrencyQuote | null = null
-  for (const quote of quotes) {
+  for (const quote of sellers) {
     if (positive(quote.sell) && (bestSell === null || quote.sell < bestSell.sell!)) bestSell = quote
+  }
+  for (const quote of buyers) {
     if (positive(quote.buy) && (bestBuy === null || quote.buy > bestBuy.buy!)) bestBuy = quote
   }
 
   return {
     kind,
-    count: quotes.length,
+    count: quotes.filter(q => !sellOff(q) && !buyOff(q)).length,
     bestSell,
     bestBuy,
     medianSell: median(sells),
@@ -137,14 +147,19 @@ function gapBetween(
  *   entran en la diferencia: cotizan sólo para sus propios clientes y en la app, así que no son una
  *   alternativa para el que va con efectivo, que es a quien responde esta página.
  */
-export function compareInstitutionKinds(quotes: readonly CurrencyQuote[]): KindComparison {
-  const isOffMarket = offMarketDetector(quotes)
-  const usable = quotes.filter(quote => !isOffMarket(quote))
+export function compareInstitutionKinds(
+  quotes: readonly CurrencyQuote[],
+  code: CurrencyCode
+): KindComparison {
+  const sellOff = offMarketSide(quotes, code, 'sell')
+  const buyOff = offMarketSide(quotes, code, 'buy')
 
   const summaries = COMPARED_KINDS.map(kind =>
     summarise(
       kind,
-      usable.filter(quote => categoryForOrigin(quote.origin) === kind)
+      quotes.filter(quote => categoryForOrigin(quote.origin) === kind),
+      sellOff,
+      buyOff
     )
   )
   const casa = summaries.find(s => s.kind === 'casa')!

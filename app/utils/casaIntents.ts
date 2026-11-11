@@ -22,7 +22,7 @@ import {
   type CurrencyCode,
   type CurrencySlug,
 } from './currencyPages'
-import { offMarketDetector } from './marketOutlier'
+import { offMarketSide } from './marketOutlier'
 
 /** The fixed, non-currency intents a casa page can be sliced into. */
 export const CASA_FIXED_INTENTS = [
@@ -155,8 +155,10 @@ export interface CasaFacts {
   marketBestSell: number | null
   /** Highest USD buy across the market today (what the best casa pays you). */
   marketBestBuy: number | null
-  /** How many casas quote USD today — the denominator of "puesto N de M". */
+  /** How many casas sell USD today — the denominator of the sell "puesto N de M". */
   marketSize: number
+  /** How many casas buy USD today — the denominator of the buy "puesto N de M". */
+  buyMarketSize: number
   /** 1-based position by cheapest sell; `null` when this casa does not quote. */
   sellRank: number | null
   /** 1-based position by highest buy; `null` when this casa does not quote. */
@@ -279,13 +281,14 @@ export function buildCurrencyMarket(
   }
 
   const picked = [...byOrigin.values()]
-  const isOffMarket = offMarketDetector(picked)
-  const ranked = picked.filter(quote => !isOffMarket(quote))
+  // Each ranking leaves out what is off-market on ITS side only (utils/marketOutlier.ts).
+  const sellOff = offMarketSide(picked, code, 'sell')
+  const buyOff = offMarketSide(picked, code, 'buy')
 
   return {
     picked: byOrigin,
-    bySell: [...ranked].sort((a, b) => a.sell - b.sell),
-    byBuy: [...ranked].sort((a, b) => b.buy - a.buy),
+    bySell: picked.filter(quote => !sellOff(quote)).sort((a, b) => a.sell - b.sell),
+    byBuy: picked.filter(quote => !buyOff(quote)).sort((a, b) => b.buy - a.buy),
   }
 }
 
@@ -598,7 +601,9 @@ export function marketPositionSentence(
     return `Hoy ${facts.name} es quien mejor paga el dólar: nadie te da más por cada billete.`
   }
   const rank =
-    facts.buyRank && facts.marketSize ? ` Está ${facts.buyRank}º de ${facts.marketSize} casas.` : ''
+    facts.buyRank && facts.buyMarketSize
+      ? ` Está ${facts.buyRank}º de ${facts.buyMarketSize} casas.`
+      : ''
   return `Hoy ${facts.name} paga $ ${formatRateEs(facts.usd.buy)} por dólar y el que mejor paga da $ ${formatRateEs(
     facts.marketBestBuy
   )}: son $ ${formatRateEs(gap)} menos por dólar, unos $ ${formatPesosEs(

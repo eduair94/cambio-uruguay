@@ -44,7 +44,7 @@
               </VCardItem>
               <VCardText class="pt-0">
                 <div class="d-flex justify-space-between text-body-2">
-                  <span class="text-grey-lighten-1">Compra desde</span>
+                  <span class="text-grey-lighten-1">Compra hasta</span>
                   <span class="font-weight-medium">{{ formatRate(cur.buy) }}</span>
                 </div>
                 <div class="d-flex justify-space-between text-body-2">
@@ -100,6 +100,7 @@ import {
   currencyDisplayName,
   currencyFromSlug,
   quotesForCurrency,
+  rankUsableQuotes,
   type CurrencyCode,
 } from '~/utils/currencyPages'
 
@@ -114,7 +115,9 @@ const GROUP_META: Record<string, { label: string; icon: string }> = {
   groupCommodities: { label: 'Metales preciosos', icon: 'mdi-gold' },
 }
 
-// SSR fetch: today's quotes once, summarised per currency (best buy/sell + count).
+// SSR fetch: today's quotes once, summarised per currency (best buy/sell + count). The best
+// prices are the ones every currency page crowns (`rankUsableQuotes`): the raw extremes put
+// "Venta desde $ 39,55" on the dollar's card, a board frozen since July (2026-11-11).
 const { data } = await useAsyncData('cotizacion-hub', async () => {
   const result = await getProcessedExchangeData('')
   const rows = (result?.exchangeData ?? []) as ExchangeRate[]
@@ -122,14 +125,10 @@ const { data } = await useAsyncData('cotizacion-hub', async () => {
   for (const group of CURRENCY_GROUPS) {
     for (const slug of group.slugs) {
       const code = currencyFromSlug(slug) as CurrencyCode
-      const quotes = quotesForCurrency(rows, code)
-      const buys = quotes.map(q => q.buy).filter((n): n is number => typeof n === 'number' && n > 0)
-      const sells = quotes
-        .map(q => q.sell)
-        .filter((n): n is number => typeof n === 'number' && n > 0)
+      const quotes = rankUsableQuotes(quotesForCurrency(rows, code), code)
       summary[slug] = {
-        buy: buys.length ? Math.max(...buys) : null,
-        sell: sells.length ? Math.min(...sells) : null,
+        buy: quotes.find(q => q.bestBuy)?.buy ?? null,
+        sell: quotes.find(q => q.bestSell)?.sell ?? null,
         count: quotes.length,
       }
     }

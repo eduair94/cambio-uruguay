@@ -1143,6 +1143,7 @@ import {
   parseAmount,
   type RateRow,
 } from '@/utils/conversion'
+import { offMarketSide } from '@/utils/marketOutlier'
 import { publicRates } from '@/utils/rateSource'
 import {
   matchesChannel,
@@ -1244,7 +1245,7 @@ const hubCasas = computed(() => {
 // headline and the ExchangeRateSpecification JSON-LD are both built from it, so
 // the schema can never advertise a price the page does not show.
 const usdQuotes = computed(() =>
-  rankUsableQuotes(quotesForCurrency(sharedRealRows.value ?? [], 'USD'))
+  rankUsableQuotes(quotesForCurrency(sharedRealRows.value ?? [], 'USD'), 'USD')
 )
 const usdBestSell = computed(() => usdQuotes.value.find(q => q.bestSell)?.sell ?? null)
 const usdBestBuy = computed(() => usdQuotes.value.find(q => q.bestBuy)?.buy ?? null)
@@ -1872,12 +1873,15 @@ const leftForReverse = ref(0)
 // Conversion result computed property
 const setConversionRate = () => {
   // Core forward/reverse math comes from the pure util (unit-tested).
+  // Judged against the whole market: a department or a channel alone is too few boards to tell
+  // a frozen one (utils/marketOutlier.ts).
   const core = convertAmount(
     rateRows.value,
     Number(amount.value),
     selectedCurrency.value,
     selectedTargetCurrency.value,
-    selectedExchangeHouse.value
+    selectedExchangeHouse.value,
+    realExchangeData.value as RateRow[]
   )
   const rate = core.rate
   const reverseRate = core.reverseRate
@@ -1968,7 +1972,8 @@ const savingsInfo = computed(() =>
     rateRows.value,
     subjectCode.value,
     Number(amount.value),
-    intentIsSellingSubject.value ? 'sell' : 'buy'
+    intentIsSellingSubject.value ? 'sell' : 'buy',
+    realExchangeData.value as RateRow[]
   )
 )
 const showSavings = computed(
@@ -1998,11 +2003,26 @@ const copyResult = async (): Promise<void> => {
   }
 }
 
+// The prices the site refuses to crown (utils/marketOutlier.ts), judged on the whole market and
+// one side at a time: the "best to buy" list put the board frozen since July at 39,55 first
+// (2026-11-11). A department or a channel alone is too few boards to tell.
+const subjectOffMarket = computed(() => {
+  const market = realExchangeData.value.filter(item => item.code === subjectCode.value)
+  return {
+    buy: offMarketSide(market, subjectCode.value, 'buy'),
+    sell: offMarketSide(market, subjectCode.value, 'sell'),
+  }
+})
+
 // Build top 4 lists for subject currency: sell (houses buy) and buy (houses sell)
 const top4SellRatesForSubject = computed(() => {
   if (!filteredExchangeData.value.length || !subjectCode.value) return []
+  const isOff = subjectOffMarket.value.buy
   const items = filteredExchangeData.value
-    .filter(item => item.code === subjectCode.value && item.buy > 0 && item.localData?.name)
+    .filter(
+      item =>
+        item.code === subjectCode.value && item.buy > 0 && item.localData?.name && !isOff(item)
+    )
     .map(item => ({
       origin: item.origin,
       source: item.localData?.name || item.origin,
@@ -2016,8 +2036,12 @@ const top4SellRatesForSubject = computed(() => {
 
 const top4BuyRatesForSubject = computed(() => {
   if (!filteredExchangeData.value.length || !subjectCode.value) return []
+  const isOff = subjectOffMarket.value.sell
   const items = filteredExchangeData.value
-    .filter(item => item.code === subjectCode.value && item.sell > 0 && item.localData?.name)
+    .filter(
+      item =>
+        item.code === subjectCode.value && item.sell > 0 && item.localData?.name && !isOff(item)
+    )
     .map(item => ({
       origin: item.origin,
       source: item.localData?.name || item.origin,

@@ -60,6 +60,7 @@ function facts(overrides: Partial<CasaFacts> = {}): CasaFacts {
     marketBestSell: 40.63,
     marketBestBuy: 40.03,
     marketSize: 43,
+    buyMarketSize: 43,
     sellRank: 37,
     buyRank: 30,
     rating: { score: 4.2, count: 180 },

@@ -2,7 +2,7 @@
 // PURE (no Vue/Nuxt imports) so unit tests and server code can import freely.
 
 import { operationForRate, requiresAccount, type OperationKind } from './exchangeChannel'
-import { offMarketDetector } from './marketOutlier'
+import { offMarketSide } from './marketOutlier'
 
 /** Date the reputation snapshot (ratings, press, strengths) was researched. */
 export const CASAS_LAST_RESEARCHED = '2026-07-24'
@@ -33,8 +33,12 @@ export interface UsdComparisonEntry {
   operation: OperationKind
   /** True when you must be a client of the institution to get this price. */
   requiresAccount: boolean
-  /** True when the quote sits implausibly far from the market — see below. */
+  /** True when either price sits implausibly far from the market — see below. */
   offMarket: boolean
+  /** The sell is off-market: it is never crowned the cheapest. */
+  offMarketSell: boolean
+  /** The buy is off-market: it is never crowned the best payer. */
+  offMarketBuy: boolean
 }
 
 /**
@@ -70,10 +74,15 @@ export function buildUsdComparison(rows: UsdRateRow[]): UsdComparisonEntry[] {
   }
   const picked = [...byOrigin.values()]
   if (picked.length === 0) return []
-  const bestSell = Math.min(...picked.map(r => r.sell))
-  const bestBuy = Math.max(...picked.map(r => r.buy))
-  // Shared with /pizarra: median-based, and it stands down on a thin market.
-  const isOffMarket = offMarketDetector(picked)
+  // Shared with /pizarra: median-based, one side at a time, and it stands down on a thin market.
+  const sellOff = offMarketSide(picked, 'USD', 'sell')
+  const buyOff = offMarketSide(picked, 'USD', 'buy')
+  // The gaps are measured against the best price the table crowns. Against the raw extremes,
+  // every casa read "x % más cara" than a board frozen since July at 39,55 (2026-11-11).
+  const sells = picked.filter(r => !sellOff(r)).map(r => r.sell)
+  const buys = picked.filter(r => !buyOff(r)).map(r => r.buy)
+  const bestSell = Math.min(...(sells.length ? sells : picked.map(r => r.sell)))
+  const bestBuy = Math.max(...(buys.length ? buys : picked.map(r => r.buy)))
   return picked.map(r => ({
     origin: r.origin,
     buy: r.buy,
@@ -84,7 +93,9 @@ export function buildUsdComparison(rows: UsdRateRow[]): UsdComparisonEntry[] {
     gapBuyPct: ((bestBuy - r.buy) / bestBuy) * 100,
     operation: operationForRate(r.origin, r.type),
     requiresAccount: requiresAccount(r.origin, r.type),
-    offMarket: isOffMarket(r),
+    offMarket: sellOff(r) || buyOff(r),
+    offMarketSell: sellOff(r),
+    offMarketBuy: buyOff(r),
   }))
 }
 
