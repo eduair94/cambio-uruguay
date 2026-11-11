@@ -28,6 +28,28 @@
           <ShareButtons label variant="tonal" color="white" class="cu-footer__share" />
           <ClientOnly><PwaInstallAction /></ClientOnly>
 
+          <!-- The suggestion box and the bug report, from every page. Plain links to the form on
+               /contacto (works without JS, no modal); `?tipo=bug` preselects the report. -->
+          <div class="cu-footer__feedback" @click="onDirectoryClick">
+            <p class="cu-footer__feedback-title">{{ fbT('footer.title') }}</p>
+            <a
+              :href="localePath('/contacto') + '#sugerencias'"
+              class="cu-footer__feedback-link"
+              data-cta="footer_suggest"
+            >
+              <VIcon size="18" aria-hidden="true">mdi-lightbulb-on-outline</VIcon>
+              {{ fbT('footer.suggest') }}
+            </a>
+            <a
+              :href="localePath('/contacto') + '?tipo=bug#sugerencias'"
+              class="cu-footer__feedback-link"
+              data-cta="footer_bug"
+            >
+              <VIcon size="18" aria-hidden="true">mdi-bug-outline</VIcon>
+              {{ fbT('footer.bug') }}
+            </a>
+          </div>
+
           <!-- External + connect channels. Native title + aria-label instead of
                VTooltip: avoids empty role=tooltip overlays that fail the
                aria-tooltip-name audit. -->
@@ -108,8 +130,10 @@
 <script setup lang="ts">
 import { NAV_SECTIONS } from '~/utils/siteNav'
 import { createSpaLinkHandler } from '~/utils/spaLinks'
+import { siteFeedbackMessages } from '~/utils/siteFeedbackMessages'
 
 const localePath = useLocalePath()
+const { t: fbT } = useI18n({ useScope: 'local', messages: siteFeedbackMessages })
 const onDirectoryClick = createSpaLinkHandler(path => navigateTo(path))
 const { reopen } = useConsent()
 const reopenConsent = () => reopen()
@@ -240,6 +264,40 @@ $teal: #4dd0e1;
 
 .cu-footer__share {
   margin-bottom: 14px;
+}
+
+// The suggestion box: a quiet two-link block under the share action. Same muted ink as the
+// tagline for the question, white links with the teal accent on the icon, 44px rows to tap.
+.cu-footer__feedback {
+  display: grid;
+  justify-items: start;
+  margin: 4px 0 14px;
+}
+.cu-footer__feedback-title {
+  margin: 0 0 2px;
+  color: $muted;
+  font-size: 0.82rem;
+}
+.cu-footer__feedback-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: $ink;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+
+  .v-icon {
+    color: $teal;
+  }
+  &:hover {
+    text-decoration: underline;
+  }
+  &:focus-visible {
+    outline: 2px solid $teal;
+    outline-offset: 2px;
+  }
 }
 
 .cu-footer__social {

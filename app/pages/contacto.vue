@@ -15,6 +15,10 @@
 
       <VRow justify="center">
         <VCol cols="12" md="8" lg="6">
+          <!-- The suggestion box / bug report (components/feedback/FeedbackForm.vue). First on the
+               page: it is what most people come here for, and the footer links land on it. -->
+          <FeedbackForm anchor-id="sugerencias" :initial-kind="initialKind" class="mb-6" />
+
           <VCard class="pa-6 mb-6" variant="tonal" color="primary">
             <h2 class="text-h6 font-weight-bold mb-2">{{ t('legal.contact.emailTitle') }}</h2>
             <!-- eslint-disable-next-line vue/max-attributes-per-line -->
@@ -47,7 +51,19 @@
 </template>
 
 <script setup lang="ts">
+import type { FormKind } from '~/utils/siteFeedback'
+
 const { t, locale } = useI18n()
+const route = useRoute()
+// `/contacto?tipo=bug#sugerencias` (footer "Reportar un error") opens the form on the bug report.
+const initialKind = computed<FormKind>(() => {
+  const tipo = String(route.query.tipo ?? '')
+  return tipo === 'bug' || tipo === 'error'
+    ? 'bug'
+    : tipo === 'praise' || tipo === 'elogio'
+      ? 'praise'
+      : 'suggestion'
+})
 
 const socials = [
   { label: 'Twitter / X', icon: 'mdi-twitter', href: 'https://twitter.com/cambio_uruguay' },

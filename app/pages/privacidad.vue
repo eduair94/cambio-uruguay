@@ -141,6 +141,19 @@
                 privado por Telegram.
               </li>
               <li>
+                <strong
+                  >Sugerencias, reportes de error y «¿Te sirvió esta página?» (opcional):</strong
+                >
+                tu respuesta o tu mensaje, la página desde la que lo enviaste, el idioma y un
+                identificador aleatorio que se guarda en tu navegador. En un reporte de error, si
+                dejás marcada la casilla, también el tamaño de la pantalla, el tema, el idioma del
+                navegador, la página de la que venías y el navegador que usás. Tu dirección IP no se
+                guarda: el servidor la usa solo en su memoria para limitar los envíos. Tu correo,
+                solo si lo dejás para que te respondamos. Los mensajes con texto nos llegan además
+                por correo electrónico y por Telegram, en privado. Lo que ya respondiste se recuerda
+                en tu propio navegador para no volver a preguntarte.
+              </li>
+              <li>
                 <strong>Punto de referencia del directorio de alquileres:</strong> el punto desde el
                 que ordenás por distancia, sea una dirección que escribiste o un lugar que marcaste
                 en el mapa, queda en tu navegador solo mientras esa pestaña siga abierta. Para

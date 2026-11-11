@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="pa-2 pa-sm-4">
+  <v-container fluid class="px-4 py-2 pa-sm-4">
     <h1 class="text-h5 mb-2">{{ t('map.title') }}</h1>
     <p class="text-body-2 mb-4">{{ t('map.subtitle') }}</p>
 

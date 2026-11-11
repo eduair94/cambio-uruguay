@@ -299,6 +299,10 @@
                tema, desde utils/guideHubs.ts. Recíproco por construcción. -->
           <TemaVecinos />
           <RelatedPages />
+          <!-- "¿Te sirvió esta página?": one tap, then the review ask or a line of what was missing.
+               Client-only (it reads what this browser already answered) and lazy, so it costs the
+               entry chunk nothing. Rules in utils/siteFeedback.ts. -->
+          <ClientOnly><LazyFeedbackPageHelpful /></ClientOnly>
           <!-- The end-of-article ask. Long reads only (`utils/capture.ts`), and it
                sits after the recirculation block: giving the reader somewhere to go
                costs them nothing, asking for an email costs them something. -->
