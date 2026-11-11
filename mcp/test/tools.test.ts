@@ -170,6 +170,19 @@ describe("a price the market rejects is never the best", () => {
     expect(["baluma_cambio", "narrow"]).not.toContain(r.lowestSpread.origin);
   });
 
+  it("a frozen board inside the band is not named best either, and stays listed", async () => {
+    // cambio_principal's euro buy, the same 45 for 100 days and 1 % over the best live one
+    // (2026-11-11): no band separates it, the API's `frozen` mark does.
+    const stale = { ...row("USD", "stale", 39.2, 40.85), frozen: true, frozenDays: 100 };
+    const withStale = () => fakeApi({ getRates: async () => [...market, stale] });
+    const r = await getRates(withStale(), { currency: "USD" });
+    expect(r.bestSell).toMatchObject({ origin: "narrow", rate: 40.9 });
+    expect(r.bestBuy).toMatchObject({ origin: "casa_11", rate: 39.11 });
+    expect(r.houses.find((h) => h.origin === "stale")).toMatchObject({ offMarket: true, frozen: true });
+    expect(r.houseCount).toBe(15);
+    expect((await bestHouse(withStale(), { currency: "USD", side: "sell" })).origin).toBe("casa_11");
+  });
+
   it("bestHouse and convert follow it", async () => {
     expect((await bestHouse(api(), { currency: "USD", side: "buy" })).origin).toBe("narrow");
     expect((await bestHouse(api(), { currency: "USD", side: "sell" })).origin).toBe("casa_11");

@@ -671,6 +671,7 @@ import {
   type UsdComparisonEntry,
 } from '~/utils/casasDirectory'
 import type { StoredTrustpilot } from '~/utils/casasReviews'
+import { frozenAheadIn } from '~/utils/marketOutlier'
 import { dedupeDepartmentNames, slugifyDepartment } from '~/utils/departments'
 import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 import { servesDepartment } from '~/utils/exchangeChannel'
@@ -972,9 +973,25 @@ const isLowSample = (r: CasaRow): boolean =>
 // Picks describe the slice on screen, so filtering by department answers "best
 // here". Quotes flagged as off-market are excluded: an unverified board must
 // not be crowned the best price in the country.
+/**
+ * The rows of a slice that may be crowned on one side: off-market prices out (judged against the
+ * whole market by `buildUsdComparison`), and no frozen board ahead of the slice's best live one —
+ * the national pass only saw the national best (utils/marketOutlier.ts).
+ */
+function crownableRows(rows: readonly CasaRow[], side: 'buy' | 'sell'): CasaRow[] {
+  const usable = rows.filter(
+    r => r.usd && !(side === 'sell' ? r.usd.offMarketSell : r.usd.offMarketBuy)
+  )
+  const ahead = frozenAheadIn(
+    usable.map(r => r.usd!),
+    side
+  )
+  return usable.filter(r => !ahead(r.usd!))
+}
+
 const bestPicks = computed(() => {
   const list = filteredRows.value
-  const withUsd = list.filter(r => r.usd && !r.usd.offMarketSell)
+  const withUsd = crownableRows(list, 'sell')
   const bestRate = withUsd.length
     ? withUsd.reduce((min, r) => (r.usd!.sell < min.usd!.sell ? r : min))
     : null
@@ -1044,18 +1061,20 @@ const bestPicks = computed(() => {
 
 // Highlight the best price WITHIN the slice on screen, not against houses the
 // reader has filtered out — a green cell has to mean "best of what you see".
+const visibleSellers = computed(() => crownableRows(visibleRows.value, 'sell'))
+const visibleBuyers = computed(() => crownableRows(visibleRows.value, 'buy'))
 const bestVisibleSell = computed(() => {
-  const values = visibleRows.value.filter(r => r.usd && !r.usd.offMarketSell).map(r => r.usd!.sell)
+  const values = visibleSellers.value.map(r => r.usd!.sell)
   return values.length ? Math.min(...values) : null
 })
 const bestVisibleBuy = computed(() => {
-  const values = visibleRows.value.filter(r => r.usd && !r.usd.offMarketBuy).map(r => r.usd!.buy)
+  const values = visibleBuyers.value.map(r => r.usd!.buy)
   return values.length ? Math.max(...values) : null
 })
 const isBestSell = (r: CasaRow): boolean =>
-  !!r.usd && !r.usd.offMarketSell && r.usd.sell === bestVisibleSell.value
+  !!r.usd && r.usd.sell === bestVisibleSell.value && visibleSellers.value.includes(r)
 const isBestBuy = (r: CasaRow): boolean =>
-  !!r.usd && !r.usd.offMarketBuy && r.usd.buy === bestVisibleBuy.value
+  !!r.usd && r.usd.buy === bestVisibleBuy.value && visibleBuyers.value.includes(r)
 
 // --- Department cross-links ----------------------------------------------------
 const departmentLinks = computed(() =>

@@ -15,7 +15,8 @@ export type Operation = 'buy' | 'sell'
  * Minimal quote row this module needs. `ExchangeRate` already carries optional
  * `buy`/`sell`; we keep the structural shape minimal so callers satisfy it.
  */
-export type RankableRate = Pick<ExchangeRate, 'origin' | 'code' | 'buy' | 'sell' | 'name'>
+export type RankableRate = Pick<ExchangeRate, 'origin' | 'code' | 'buy' | 'sell' | 'name'> &
+  Partial<Pick<ExchangeRate, 'frozen'>>
 
 /** A single ranked exchange house for a given operation and amount. */
 export interface RankedHouse {
@@ -129,7 +130,8 @@ export function rankExchanges(
   const isOffMarket = offMarketSide(
     reference.filter(r => r.code === currency),
     currency,
-    side
+    side,
+    rows.filter(r => r.code === currency)
   )
 
   // Pick the rate relevant to the operation and keep only positive quotes.

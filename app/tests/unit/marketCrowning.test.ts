@@ -21,6 +21,11 @@
 // cualquiera de sus lados está fuera": ese día las dos variantes coronan lo mismo. Por eso hay un
 // segundo mercado, sintético, donde la venta más barata es de una casa con la COMPRA fuera de
 // banda: juzgar los dos lados juntos la pierde, y juzgarlos cruzados corona la pizarra congelada.
+//
+// Y un tercero para lo que ninguna banda ve: una pizarra quieta hace 100 días a 1 % de la mejor viva
+// (la compra del euro de cambio_principal, 45, el mismo 2026-11-11). Sólo la separa la marca
+// `frozen` que la API pone en las filas de hoy (classes/frozen_marks.ts), y cada superficie tiene que
+// leerla — una que rearma sus filas sin copiarla vuelve a coronarla.
 
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -42,7 +47,15 @@ import { rankExchanges } from '../../utils/recommendation'
 import { bestDigestQuotes } from '../../server/utils/newsletter'
 import { bestRateFor } from '../../server/utils/rates'
 
-type Row = { origin: string; code: string; type: string; buy: number; sell: number }
+type Row = {
+  origin: string
+  code: string
+  type: string
+  buy: number
+  sell: number
+  frozen?: boolean
+  frozenDays?: number
+}
 type Expected = Partial<Record<CurrencyCode, { sell: number; buy: number }>>
 
 const photo = JSON.parse(
@@ -73,14 +86,35 @@ const synthetic: Row[] = [
   { origin: payer, code: 'USD', type: '', buy: 39.9, sell: 41.5 },
 ]
 
+// The quiet market: twenty real casas, plus
+// - `stale`: frozen for 100 days, cheapest sell (−0,6 %) and best buy (+2,2 %), inside both bands;
+// - `seller`: the cheapest live sell; `livePayer`: the best live buy.
+const [seller, stale, livePayer] = casas.slice(20, 23) as [string, string, string]
+const quiet: Row[] = [
+  ...casas.slice(0, 20).map((origin, i) => ({
+    origin,
+    code: 'USD',
+    type: '',
+    buy: 39 + i * 0.01,
+    sell: 41 + i * 0.01,
+  })),
+  { origin: stale, code: 'USD', type: '', buy: 39.95, sell: 40.85, frozen: true, frozenDays: 100 },
+  { origin: seller, code: 'USD', type: '', buy: 39.1, sell: 40.9 },
+  { origin: livePayer, code: 'USD', type: '', buy: 39.9, sell: 41.5 },
+]
+
 const MARKETS: Array<{
   name: string
   rows: Row[]
   expected: Expected
   /** The house with the cheapest sell the site crowns. */
   bestSeller: string
-  /** The house whose sell is too cheap to be a price. */
+  /** The house whose sell must not be crowned: too cheap to be a price, or frozen. */
   offSeller: string
+  /** Its own USD sell, which it keeps when asked for by name. */
+  offSell: number
+  /** Whether its buy is rejected too (frozen boards lose both crowns they would win). */
+  offSellerBuyOff: boolean
   /** A house real on its sell and off on its buy, when the market has one. */
   offBuyer?: string
 }> = [
@@ -95,6 +129,8 @@ const MARKETS: Array<{
     },
     bestSeller: 'prex',
     offSeller: 'baluma_cambio',
+    offSell: 39.55,
+    offSellerBuyOff: false,
   },
   {
     name: 'un mercado que separa los dos lados',
@@ -102,7 +138,18 @@ const MARKETS: Array<{
     expected: { USD: { sell: 40.9, buy: 39.9 } },
     bestSeller: narrow,
     offSeller: frozen,
+    offSell: 39.55,
+    offSellerBuyOff: false,
     offBuyer: narrow,
+  },
+  {
+    name: 'un mercado con una pizarra quieta dentro de la banda',
+    rows: quiet,
+    expected: { USD: { sell: 40.9, buy: 39.9 } },
+    bestSeller: seller,
+    offSeller: stale,
+    offSell: 40.85,
+    offSellerBuyOff: true,
   },
 ]
 
@@ -214,7 +261,7 @@ describe.each(MARKETS)('$name: todas las superficies coronan lo mismo', market =
     const subset = rows.filter(r => r.origin === market.offSeller)
     expect(getExchangeRate(subset, 'UYU', 'USD', 'best', rows)).toBe(0)
     // Pedida por nombre, una casa conserva su precio.
-    expect(getExchangeRate(rows, 'UYU', 'USD', market.offSeller)).toBeCloseTo(1 / 39.55)
+    expect(getExchangeRate(rows, 'UYU', 'USD', market.offSeller)).toBeCloseTo(1 / market.offSell)
     expect(marketAverageSavings(rows, 'USD', 41000, 'buy').bestRate).toBe(usd.sell)
   })
 
@@ -224,8 +271,9 @@ describe.each(MARKETS)('$name: todas las superficies coronan lo mismo', market =
     const table = buildUsdComparison(asRates)
     const off = table.find(e => e.origin === market.offSeller)!
     expect(off.offMarketSell).toBe(true)
-    // Its buy is low, which is a bad price and not an error.
-    expect(off.offMarketBuy).toBe(false)
+    // The frozen-since-July board's buy is low, which is a bad price and not an error. A frozen
+    // board that would also win the buy loses that crown too.
+    expect(off.offMarketBuy).toBe(market.offSellerBuyOff)
     expect(off.offMarket).toBe(true)
     // La distancia "a la mejor" se mide contra la venta que la tabla corona, no contra 39,55.
     expect(table.find(e => e.origin === market.bestSeller)!.gapSellPct).toBe(0)
@@ -292,6 +340,41 @@ describe.each(MARKETS)('$name: todas las superficies coronan lo mismo', market =
       expect(bestRateFor(asRates, code, 'bestBuy', 'any'), code).toBe(expected[code]!.buy)
     }
     // Una alerta sobre una casa por nombre mira esa casa.
-    expect(bestRateFor(asRates, 'USD', 'bestSell', market.offSeller)).toBe(39.55)
+    expect(bestRateFor(asRates, 'USD', 'bestSell', market.offSeller)).toBe(market.offSell)
+  })
+})
+
+// A frozen board behind the national best but ahead of every live board of its department: the
+// national rule keeps it (a quiet board can be a real price), and the department's page must not
+// crown it. /dolar/<departamento>, /frontera and the home filtered by department crown a subset.
+describe('una pizarra quieta que sólo gana en su departamento', () => {
+  const local = casas[19]!
+  const rows = quiet.map(r =>
+    r.origin === local ? { ...r, buy: 39.05, sell: 40.95, frozen: true, frozenDays: 30 } : r
+  )
+  const asRates = rows.map(r => ({
+    ...r,
+    name: r.origin,
+    date: '2026-11-11T03:00:00Z',
+    isInterBank: false,
+  })) as ExchangeRate[]
+  const national = quotesForCurrency(asRates, 'USD')
+  const inside = new Set([local, ...casas.slice(5, 8)])
+  const department = asRates.filter(r => inside.has(r.origin))
+
+  it('en el país está detrás de la mejor viva, y sigue en carrera', () => {
+    const ranked = rankUsableQuotes(national, 'USD')
+    expect(ranked.find(q => q.bestSell)?.origin).toBe(seller)
+    expect(crownable(publicRates(asRates), national, 'USD', 'sell').map(q => q.origin)).toContain(
+      local
+    )
+  })
+
+  it('en su departamento no corona (rankUsableQuotes, crownable, conversor, recomendador)', () => {
+    const ranked = rankUsableQuotes(quotesForCurrency(department, 'USD'), 'USD', national)
+    expect(ranked.find(q => q.bestSell)?.origin).toBe(casas[5])
+    expect(crownable(department, national, 'USD', 'sell')[0]?.origin).toBe(casas[5])
+    expect(getExchangeRate(department, 'UYU', 'USD', 'best', asRates)).toBeCloseTo(1 / 41.05, 10)
+    expect(rankExchanges(department, 'USD', 'buy', 1, asRates).ranked[0]?.origin).toBe(casas[5])
   })
 })

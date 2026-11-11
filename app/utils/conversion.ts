@@ -59,7 +59,8 @@ export function getExchangeRate(
       ? offMarketSide(
           reference.filter(row => row.code === code),
           code,
-          side
+          side,
+          rows.filter(row => row.code === code)
         )
       : () => false
 
@@ -175,7 +176,8 @@ export function marketAverageSavings(
   const isOff = offMarketSide(
     reference.filter(r => r.code === currency),
     currency,
-    direction === 'sell' ? 'buy' : 'sell'
+    direction === 'sell' ? 'buy' : 'sell',
+    rows.filter(r => r.code === currency)
   )
 
   if (direction === 'sell') {

@@ -25,6 +25,12 @@ export interface RateRow {
   buy: number;
   sell: number;
   name: string;
+  /**
+   * Only on today's rows, and only when true: this board has published the same buy and sell for
+   * days beyond what its own group considers normal (`GET /frozen-quotes`).
+   */
+  frozen?: boolean;
+  frozenDays?: number;
 }
 
 /** House metadata from `GET /localData`, keyed by origin id. */

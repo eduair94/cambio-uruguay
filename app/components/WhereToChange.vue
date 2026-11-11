@@ -191,6 +191,7 @@ interface ProcessedRow {
   buy?: number
   sell?: number
   type?: string
+  frozen?: boolean
   localData: { name?: string } | null
 }
 
@@ -209,6 +210,8 @@ const rates = computed<RankableRate[]>(() =>
       buy: r.buy,
       sell: r.sell,
       name: r.localData?.name ?? r.origin,
+      // The backend's mark (utils/marketOutlier.ts): without it the ranking crowns a frozen board.
+      ...(r.frozen === true ? { frozen: true } : {}),
     }))
 )
 const loadingRates = computed(() => ratesPending.value && rates.value.length === 0)

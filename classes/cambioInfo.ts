@@ -1,6 +1,7 @@
 import moment from "moment-timezone";
 import { CambioObj } from "../interfaces/Cambio";
 import BCU_Details from "./bcu_details";
+import { currentFrozenMarks, markFrozen } from "./frozen_marks";
 import { Cambio } from "./cambio";
 import { origins } from "./origins";
 import {
@@ -219,11 +220,13 @@ class CambioInfo extends Cambio {
   }
 
   async get_data(date?: Date, query?: any): Promise<CambioObj[]> {
-    if (!date) {
-      // Ensure default date is in Uruguay timezone for consistency
-      date = moment.tz("America/Montevideo").startOf("day").toDate();
-    }
+    // Ensure default date is in Uruguay timezone for consistency
+    const today = moment.tz("America/Montevideo").startOf("day").toDate();
+    if (!date) date = today;
     const obj = await this.db.allEntriesSort({ date }, { code: -1, sell: 1, buy: 1 });
+    // La marca de pizarra quieta (classes/frozen_marks.ts) sólo va en las filas de hoy: el informe
+    // describe el presente, y un día del archivo no tiene con qué juzgarse.
+    if (date.getTime() === today.getTime()) return markFrozen(obj, currentFrozenMarks()) as any;
     return obj as any;
   }
   private house_names(): Record<string, string> {

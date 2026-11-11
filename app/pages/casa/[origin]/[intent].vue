@@ -657,7 +657,14 @@ const { data: payload } = await useAsyncData(
       name: casa?.name || localData[origin.value]?.name || origin.value,
       branches,
       departments: departmentLabels(branches),
-      usd: mine ? { buy: mine.buy, sell: mine.sell, type: mine.type } : null,
+      usd: mine
+        ? {
+            buy: mine.buy,
+            sell: mine.sell,
+            type: mine.type,
+            ...(mine.frozen === true ? { frozen: true, frozenDays: mine.frozenDays } : {}),
+          }
+        : null,
       marketBestSell: bySell[0]?.sell ?? null,
       marketBestBuy: byBuy[0]?.buy ?? null,
       marketSize: bySell.length,

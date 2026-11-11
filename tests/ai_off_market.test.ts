@@ -41,3 +41,17 @@ describe("AIService.buildPrompt no le pasa a la IA un precio fuera de mercado", 
     expect(prompt).toContain("Narrow(40.95");
   });
 });
+
+describe("AIService.buildPrompt tampoco le pasa como el mejor una pizarra quieta", () => {
+  // La compra del euro de cambio_principal, 45 durante 100 días y a 1 % de la mejor viva
+  // (2026-11-11): dentro de la banda, así que sólo la marca `frozen` de la API la separa.
+  const stale = { origin: "stale", code: "USD", type: "", name: "Dólar", buy: 39.2, sell: 40.85, frozen: true, frozenDays: 100 };
+  const prompt = (new AIService() as any).buildPrompt({ type: "best_rates", language: "es", currency: "USD" }, [...ROWS, stale]) as string;
+
+  it("no encabeza la venta ni la compra", () => {
+    expect(prompt).not.toContain("Stale(40.85");
+    expect(prompt).not.toContain("Stale(39.2");
+    expect(prompt).toContain("Narrow(40.9");
+    expect(prompt).toContain("Casa 11(39.11");
+  });
+});

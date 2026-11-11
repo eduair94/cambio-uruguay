@@ -1,4 +1,4 @@
-import { offMarketSide } from './marketOutlier'
+import { frozenAheadIn, offMarketSide } from './marketOutlier'
 
 export interface LatLng {
   lat: number
@@ -16,7 +16,7 @@ export function haversineKm(a: LatLng, b: LatLng): number {
   return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)))
 }
 
-export type RateLite = { buy: number | null; sell: number | null }
+export type RateLite = { buy: number | null; sell: number | null; frozen?: boolean }
 export type RatesByOrigin = Record<string, Record<string, RateLite>>
 
 /**
@@ -36,6 +36,7 @@ export function buildRatesByOrigin(
     type?: string | null
     buy: number | null
     sell: number | null
+    frozen?: boolean
   }>
 ): RatesByOrigin {
   const out: RatesByOrigin = {}
@@ -44,7 +45,11 @@ export function buildRatesByOrigin(
     if (r.type && r.type !== 'BILLETE') continue
     if (!out[r.origin]) out[r.origin] = {}
     if (out[r.origin][r.code]) continue
-    out[r.origin][r.code] = { buy: r.buy ?? null, sell: r.sell ?? null }
+    out[r.origin][r.code] = {
+      buy: r.buy ?? null,
+      sell: r.sell ?? null,
+      ...(r.frozen === true ? { frozen: true } : {}),
+    }
   }
   const houses = Object.values(out)
   for (const code of new Set(houses.flatMap(byCode => Object.keys(byCode)))) {
@@ -55,6 +60,7 @@ export function buildRatesByOrigin(
       const quote = byCode[code]
       if (!quote) continue
       byCode[code] = {
+        ...quote,
         buy: buyOff(quote) ? null : quote.buy,
         sell: sellOff(quote) ? null : quote.sell,
       }
@@ -85,6 +91,14 @@ export function rankNearby<T extends { origin: string; lat: number; lng: number 
     if (rate == null || !(rate > 0)) continue
     out.push({ branch: b, distanceKm, rate })
   }
-  out.sort((x, y) => (direction === 'buy' ? y.rate - x.rate : x.rate - y.rate))
+  // The national pass above only saw the national best: inside the radius, a frozen board that is
+  // merely the best around here would still head "Mejores cotizaciones cerca".
+  const quoteOf = (e: RankedBranch<T>) => ({
+    [direction]: e.rate,
+    frozen: rates[e.branch.origin]?.[currency]?.frozen === true,
+  })
+  const ahead = frozenAheadIn(out.map(quoteOf), direction)
   return out
+    .filter(e => !ahead(quoteOf(e)))
+    .sort((x, y) => (direction === 'buy' ? y.rate - x.rate : x.rate - y.rate))
 }

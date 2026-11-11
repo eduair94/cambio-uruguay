@@ -259,12 +259,16 @@ const { data, pending } = await useAsyncData<DepartmentPageData | null>(
       .slice(0, MAX_RELATED)
 
     // Judged against the national market, one side at a time (utils/marketOutlier.ts): a department
-    // has too few boards to judge, and a board whose buy is odd is still a real place to buy.
+    // has too few boards to judge, and a board whose buy is odd is still a real place to buy. A
+    // frozen board is measured against the best live one of the DEPARTMENT, which is what this page
+    // crowns.
     const national = quotesForCurrency(rows, 'USD')
-    const sellOff = offMarketSide(national, 'USD', 'sell')
-    const buyOff = offMarketSide(national, 'USD', 'buy')
-    const offMarketSell = national.filter(q => sellOff(q)).map(q => q.origin)
-    const offMarketBuy = national.filter(q => buyOff(q)).map(q => q.origin)
+    const here = new Set(houses.map(house => house.origin))
+    const inDepartment = national.filter(q => here.has(q.origin))
+    const sellOff = offMarketSide(national, 'USD', 'sell', inDepartment)
+    const buyOff = offMarketSide(national, 'USD', 'buy', inDepartment)
+    const offMarketSell = inDepartment.filter(q => sellOff(q)).map(q => q.origin)
+    const offMarketBuy = inDepartment.filter(q => buyOff(q)).map(q => q.origin)
 
     return { departmentName, houses, related, offMarketSell, offMarketBuy }
   }

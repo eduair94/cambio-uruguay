@@ -5,6 +5,7 @@ import {
   OFF_MARKET_BANDS,
   bandFor,
   crownable,
+  frozenAheadIn,
   median,
   offMarketSide,
   pastBand,
@@ -190,5 +191,68 @@ describe('crownable', () => {
     const quotes = [...all, { origin: 'none', buy: 0, sell: null }]
     expect(crownable(quotes, all, 'USD', 'buy').some(q => q.origin === 'none')).toBe(false)
     expect(crownable(quotes, all, 'USD', 'sell').some(q => q.origin === 'none')).toBe(false)
+  })
+})
+
+// The backend's `frozen` mark (classes/frozen_marks.ts): a board that has published the same prices
+// for days. No band separates one sitting 1 % from the best live price — cambio_principal's euro buy,
+// 45 for 100 days, was the site's best euro buy on 2026-11-11 — so the rule reads the mark.
+describe('a frozen board', () => {
+  const live = Array.from({ length: 12 }, (_, i) => ({
+    origin: `casa_${i}`,
+    buy: 39 + i * 0.01,
+    sell: 41 + i * 0.01,
+  }))
+  const ahead = { origin: 'ahead', buy: 39.2, sell: 40.95, frozen: true }
+  const behind = { origin: 'behind', buy: 39.05, sell: 41.05, frozen: true }
+  const market = [...live, ahead, behind]
+
+  it('loses the crown it would win, inside the band, on each side', () => {
+    expect(offMarketSide(market, 'USD', 'sell')(ahead)).toBe(true)
+    expect(offMarketSide(market, 'USD', 'buy')(ahead)).toBe(true)
+    expect(crownable(market, market, 'USD', 'sell')[0]?.origin).toBe('casa_0')
+    expect(crownable(market, market, 'USD', 'buy')[0]?.origin).toBe('casa_11')
+  })
+
+  it('a tie with the best live price goes to the live board', () => {
+    const tie = { origin: 'tie', buy: 39.11, sell: 41, frozen: true }
+    // First in the list, so a stable sort would keep it ahead if the rule let it through.
+    const rows = [tie, ...live]
+    expect(crownable(rows, rows, 'USD', 'sell')[0]?.origin).toBe('casa_0')
+    expect(crownable(rows, rows, 'USD', 'buy')[0]?.origin).toBe('casa_11')
+  })
+
+  it('behind the best live price stays ranked and counted: a quiet board can be a real price', () => {
+    expect(offMarketSide(market, 'USD', 'sell')(behind)).toBe(false)
+    expect(offMarketSide(market, 'USD', 'buy')(behind)).toBe(false)
+    expect(crownable(market, market, 'USD', 'sell')).toHaveLength(13)
+  })
+
+  it('does not head a subset either, where the national best is not present', () => {
+    // A department: `behind` is its cheapest board, behind the national best but ahead of the
+    // department's best live one.
+    const department = [live[6]!, live[9]!, behind]
+    expect(crownable(department, market, 'USD', 'sell').map(q => q.origin)).toEqual([
+      'casa_6',
+      'casa_9',
+    ])
+    expect(offMarketSide(market, 'USD', 'sell', department)(behind)).toBe(true)
+    expect(frozenAheadIn(department, 'sell')(behind)).toBe(true)
+  })
+
+  it('alone in a subset, it is measured against the market', () => {
+    expect(crownable([ahead], market, 'USD', 'sell')).toEqual([])
+    expect(crownable([behind], market, 'USD', 'sell').map(q => q.origin)).toEqual(['behind'])
+  })
+
+  it('is judged on a thin market too, where the band stands down', () => {
+    const thin = [...live.slice(0, 4), ahead]
+    expect(offMarketSide(thin, 'USD', 'sell')(ahead)).toBe(true)
+    expect(offMarketSide(thin, 'USD', 'sell')(live[0]!)).toBe(false)
+  })
+
+  it('without the mark, the same prices are crowned', () => {
+    const unmarked = market.map(({ origin, buy, sell }) => ({ origin, buy, sell }))
+    expect(crownable(unmarked, unmarked, 'USD', 'sell')[0]?.origin).toBe('ahead')
   })
 })

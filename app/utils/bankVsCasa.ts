@@ -26,7 +26,7 @@
 
 import { categoryForOrigin, type OriginCategory } from './exchangeChannel'
 import type { CurrencyCode, CurrencyQuote } from './currencyPages'
-import { median, offMarketSide } from './marketOutlier'
+import { frozenAheadIn, median, offMarketSide } from './marketOutlier'
 
 /** Los grupos que la página compara, en el orden en que los muestra. */
 export const COMPARED_KINDS: readonly OriginCategory[] = ['casa', 'banco', 'fintech'] as const
@@ -89,9 +89,14 @@ function summarise(
   sellOff: (q: CurrencyQuote) => boolean,
   buyOff: (q: CurrencyQuote) => boolean
 ): KindSummary {
-  // Each side leaves out only what is off-market on that side (utils/marketOutlier.ts).
-  const sellers = quotes.filter(q => !sellOff(q))
-  const buyers = quotes.filter(q => !buyOff(q))
+  // Each side leaves out only what is off-market on that side (utils/marketOutlier.ts), and a
+  // frozen board does not head its kind either: the national pass only saw the national best.
+  const sellable = quotes.filter(q => !sellOff(q))
+  const buyable = quotes.filter(q => !buyOff(q))
+  const sellAhead = frozenAheadIn(sellable, 'sell')
+  const buyAhead = frozenAheadIn(buyable, 'buy')
+  const sellers = sellable.filter(q => !sellAhead(q))
+  const buyers = buyable.filter(q => !buyAhead(q))
   const sells = sellers.map(q => q.sell).filter(positive)
   const buys = buyers.map(q => q.buy).filter(positive)
 
@@ -106,7 +111,7 @@ function summarise(
 
   return {
     kind,
-    count: quotes.filter(q => !sellOff(q) && !buyOff(q)).length,
+    count: quotes.filter(q => sellers.includes(q) && buyers.includes(q)).length,
     bestSell,
     bestBuy,
     medianSell: median(sells),
