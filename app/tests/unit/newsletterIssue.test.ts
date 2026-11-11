@@ -4,6 +4,8 @@
 // sitemap entry for a page that is published once and then never regenerated —
 // so a formatting slip is permanent for that date rather than something the
 // next run fixes.
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -15,6 +17,7 @@ import {
   formatIssueRate,
   isIssueDate,
   isPublishableIssue,
+  issueReadyToBuild,
   issueSummary,
   issueTitle,
   issueTrend,
@@ -60,6 +63,28 @@ describe('isIssueDate', () => {
     // `/newsletter/archivo` and `/newsletter/[fecha]` share a path segment; the
     // validator is what keeps the hub from being parsed as an issue date.
     expect(isIssueDate('archivo')).toBe(false)
+  })
+})
+
+// Every archived issue was built at 00:00 Montevideo from the few boards the sync had written
+// yet (utils/newsletterIssue.ts, ISSUE_EARLIEST_HOUR).
+describe('issueReadyToBuild', () => {
+  it('waits until 06:00 Montevideo', () => {
+    expect(issueReadyToBuild(new Date('2026-11-08T03:00:50Z'))).toBe(false) // 00:00:50
+    expect(issueReadyToBuild(new Date('2026-11-08T08:59:00Z'))).toBe(false) // 05:59
+    expect(issueReadyToBuild(new Date('2026-11-08T09:00:00Z'))).toBe(true) // 06:00
+    expect(issueReadyToBuild(new Date('2026-11-08T12:00:00Z'))).toBe(true) // the scheduled run
+    expect(issueReadyToBuild(new Date('2026-11-09T02:59:00Z'))).toBe(true) // 23:59
+  })
+
+  it('is what ensureIssue asks before building today', () => {
+    const source = readFileSync(join(__dirname, '../../server/utils/newsletterArchive.ts'), 'utf8')
+    const start = source.indexOf('export async function ensureIssue')
+    const body = source.slice(start, source.indexOf('\n}\n', start))
+    const gate = body.indexOf('!issueReadyToBuild()')
+    expect(gate).toBeGreaterThan(-1)
+    // Before anything is built or saved.
+    expect(gate).toBeLessThan(body.indexOf('buildDigestData'))
   })
 })
 

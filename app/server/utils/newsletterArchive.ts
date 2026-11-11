@@ -21,6 +21,7 @@ import type { DigestData } from './newsletter'
 import {
   isIssueDate,
   isPublishableIssue,
+  issueReadyToBuild,
   montevideoToday,
   toIssueSummary,
   withDerivedCopy,
@@ -138,6 +139,11 @@ export async function ensureIssue(
 
   const existing = await getIssue(date)
   if (existing) return existing
+
+  // Not before the day's data is complete (`ISSUE_EARLIEST_HOUR`): a build is permanent, and one
+  // made from the first few boards the sync wrote after midnight is wrong for good. The page of
+  // today 404s until then and the archive lists yesterday as the latest, which is true.
+  if (date === montevideoToday() && !issueReadyToBuild()) return null
 
   const pending = inFlight.get(date)
   if (pending) return pending

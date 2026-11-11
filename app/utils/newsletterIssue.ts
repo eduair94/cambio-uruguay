@@ -79,6 +79,25 @@ export function montevideoToday(now: Date = new Date()): string {
   return shifted.toISOString().slice(0, 10)
 }
 
+/**
+ * The Montevideo hour from which today's issue may be built.
+ *
+ * Every archived issue was built at 00:00 Montevideo: the first request to the archive after
+ * midnight nudges today's issue into existence, and at that moment the five-minute sync has only just
+ * started writing the new day's rows, a few casas at a time. "El mercado ese día" was the
+ * handful of boards scraped first — a board frozen since July among them, which is why 84 of
+ * the 87 issues up to 2026-11-07 named it the best sell, and why 2026-11-08 said $41,35 when
+ * Prex sold at $40,88 all day. By 06:00 the sync has gone round every casa dozens of times;
+ * the scheduled run (09:00) is after it.
+ */
+export const ISSUE_EARLIEST_HOUR = 6
+
+/** Whether today's issue may be built at `now`: past {@link ISSUE_EARLIEST_HOUR} in Montevideo. */
+export function issueReadyToBuild(now: Date = new Date()): boolean {
+  const montevideoHour = new Date(now.getTime() - 3 * 60 * 60 * 1000).getUTCHours()
+  return montevideoHour >= ISSUE_EARLIEST_HOUR
+}
+
 const MONTHS_ES = [
   'enero',
   'febrero',
