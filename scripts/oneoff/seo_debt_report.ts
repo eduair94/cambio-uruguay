@@ -108,6 +108,19 @@ const POOLS: Array<{
     list: "DEUDA_TITULO_PISO",
     budget: "TITLE_FLOOR_OVER_BUDGET",
   },
+  // El octavo, desde el 2026-11-11, y es el MISMO agujero del sexto y del séptimo corrido un
+  // archivo más allá: los dos lectores de `seoTitleBudget.test.ts` leen el `.vue`, así que ninguno
+  // podía medir `title: () => t('seo.algoTitle')` —el texto vive en `i18n/locales/json/*.json`— y
+  // las ocho claves sin parámetros que titulan ocho páginas no las contaba nadie. Siete de ellas
+  // estaban pasadas en alguno de los tres idiomas, la peor con 80 caracteres en español. Las tres
+  // claves de título CON parámetros siguen fuera y el comentario del pozo dice por qué y cuánto
+  // miden, que es la parte que no se puede dejar en una medición ausente.
+  {
+    pool: "título de i18n pasado de 60",
+    file: "seoTitleBudget.test.ts",
+    list: "DEUDA_TITULO_I18N",
+    budget: "I18N_OVER_BUDGET",
+  },
 ];
 
 /** Hoy en UTC, o el día que pida `--today=YYYY-MM-DD` (para mirar la cola desde otra fecha). */
