@@ -34,14 +34,20 @@ describe('MCP client', () => {
           `data: ${JSON.stringify({ result: { tools: [{ name: 'search_rentals' }] } })}`
         )
       return json(200, {
-        result: { content: [{ type: 'text', text: '3 viviendas' }], isError: false },
+        result: {
+          content: [{ type: 'text', text: '3 viviendas' }],
+          structuredContent: { total: 3, items: [{ key: 'a' }] },
+          isError: false,
+        },
       })
     })
     const mcp = createMcpClient(fetch as unknown as typeof globalThis.fetch, 'https://mcp.test/mcp')
     expect(await mcp.listTools()).toEqual([{ name: 'search_rentals' }])
+    // The text goes to the model; the structured payload stays with the chat, for its cards.
     expect(await mcp.callTool('search_rentals', { bedrooms: 2 })).toEqual({
       text: '3 viviendas',
       isError: false,
+      data: { total: 3, items: [{ key: 'a' }] },
     })
     const body = JSON.parse(String(fetch.mock.calls[1]![1].body))
     expect(body).toMatchObject({

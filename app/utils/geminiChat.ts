@@ -81,12 +81,18 @@ export function createMcpClient(fetchImpl: Fetch, url = CHAT_MCP_URL) {
     async listTools(): Promise<McpTool[]> {
       return (await rpc<{ tools?: McpTool[] }>('tools/list')).tools ?? []
     },
+    /**
+     * `text` is what the model reads. `data` is the same result as structured data
+     * (`structuredContent`): the chat draws its cards from it (utils/chatResults.ts), and it never
+     * goes back to the model, so a photo URL per advert costs no tokens.
+     */
     async callTool(
       name: string,
       args: Record<string, unknown>
-    ): Promise<{ text: string; isError: boolean }> {
+    ): Promise<{ text: string; isError: boolean; data: Record<string, unknown> | null }> {
       const result = await rpc<{
         content?: Array<{ type: string; text?: string }>
+        structuredContent?: unknown
         isError?: boolean
       }>('tools/call', {
         name,
@@ -96,7 +102,15 @@ export function createMcpClient(fetchImpl: Fetch, url = CHAT_MCP_URL) {
         .map(part => part.text ?? '')
         .join('\n')
         .trim()
-      return { text: text || '(sin resultados)', isError: !!result?.isError }
+      const structured = result?.structuredContent
+      return {
+        text: text || '(sin resultados)',
+        isError: !!result?.isError,
+        data:
+          structured && typeof structured === 'object' && !Array.isArray(structured)
+            ? (structured as Record<string, unknown>)
+            : null,
+      }
     },
   }
 }

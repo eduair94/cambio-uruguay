@@ -3,7 +3,7 @@
 // publishes its common expenses: mixing one portal's rent with another's
 // expenses would produce a figure no advert offers.
 
-import { compact, fmt, isoDay, money, PUBLIC_SITE } from "../format.js";
+import { compact, fmt, isoDay, money, PUBLIC_SITE, safeImage } from "../format.js";
 import { GUARANTEE_LABEL, SOURCE_LABEL, type RawOffer, type RawRental } from "./types.js";
 
 export interface CompactRental {
@@ -31,6 +31,8 @@ export interface CompactRental {
   sources?: string[];
   advertiser?: { name?: string; type?: string };
   listingUrl?: string;
+  /** A photo of the advert, for clients that draw cards. Never in the text line. */
+  image?: string;
   siteUrl: string;
   firstSeen?: string;
   lastSeen?: string;
@@ -83,6 +85,7 @@ export function compactRental(p: RawRental, usdUyu = 0): CompactRental {
     sources: p.sources,
     advertiser: offer?.sellerName ? compact({ name: offer.sellerName, type: offer.sellerType }) : undefined,
     listingUrl: offer?.url,
+    image: safeImage(offer?.image) ?? safeImage(p.galleryPreview?.[0]?.url),
     siteUrl: rentalSiteUrl(p.key),
     firstSeen: isoDay(p.firstSeen),
     lastSeen: isoDay(p.lastSeen),
