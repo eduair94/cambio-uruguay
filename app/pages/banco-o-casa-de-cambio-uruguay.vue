@@ -216,7 +216,7 @@ const prettyOrigin = (origin: string) =>
 
 const usdQuotes = computed<CurrencyQuote[]>(() => quotesForCurrency(rawRows.value, 'USD'))
 
-const comparison = computed(() => compareInstitutionKinds(usdQuotes.value))
+const comparison = computed(() => compareInstitutionKinds(usdQuotes.value, 'USD'))
 
 const KIND_LABELS: Record<string, { label: string; plural: string; href: string | null }> = {
   casa: {

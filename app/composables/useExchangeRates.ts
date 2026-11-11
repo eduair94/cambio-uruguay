@@ -67,7 +67,7 @@ export function useExchangeRates(codes?: readonly CurrencyCode[]) {
    * que no puede pasar es que el sitio la anuncie como el mejor precio del mercado.
    */
   const rankedQuotes = (code: CurrencyCode) =>
-    rankUsableQuotes(quotesForCurrency(realRows.value, code))
+    rankUsableQuotes(quotesForCurrency(realRows.value, code), code)
 
   /** Lowest positive sell price for a currency (best price to BUY it), or null. */
   const bestSell = (code: CurrencyCode): number | null =>

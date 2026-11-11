@@ -16,6 +16,7 @@ import {
 } from '../../utils/blog'
 import { fetchNewsFrom, type NewsItem } from './news'
 import { generateChat } from './ai'
+import { offMarketSide } from '../../utils/marketOutlier'
 
 /** System prompt for the blog articles (Spanish analyst, no LaTeX). */
 const BLOG_SYSTEM_PROMPT = `Sos un analista financiero experto en el mercado cambiario de Uruguay. Escribís artículos de blog claros, útiles y bien estructurados en español, en formato Markdown, con un tono informativo y accesible.
@@ -98,14 +99,20 @@ export function rateContext(rates: Rate[]): string {
     r => r.code === 'USD' && (!r.type || r.type === '') && r.origin !== 'bcu' && r.sell > 0
   )
 
-  // The best sell and the best buy are almost never the same casa: the cheapest
-  // seller today is Baluma at 39,55 while the best payer is Fénix at 40,25.
-  // Both numbers are true, and stating them side by side without saying WHOSE
-  // they are reads as one market quoting a negative spread — a free 0,70 a
-  // dollar. The model believed it and reasoned from it, so the pairing is now
-  // explicit and the line says out loud that these are two different houses.
-  const bestSellRow = usd.length ? usd.reduce((a, b) => (b.sell < a.sell ? b : a)) : null
-  const withBuy = usd.filter(r => r.buy > 0)
+  // The best sell and the best buy are almost never the same casa. Stating them
+  // side by side without saying WHOSE they are reads as one market quoting a
+  // negative spread, and the model believed it and reasoned from it, so the
+  // pairing is explicit and the line says out loud that these are two houses.
+  //
+  // Both come through the site's outlier rule (utils/marketOutlier.ts, one side
+  // at a time). The raw minimum was a board frozen since July at 39,55, below
+  // what the best casa paid, and 15 of the 40 latest posts (measured 2026-11-11)
+  // quoted it as the market's cheapest dollar.
+  const sellOff = offMarketSide(usd, 'USD', 'sell')
+  const buyOff = offMarketSide(usd, 'USD', 'buy')
+  const sellers = usd.filter(r => !sellOff(r))
+  const bestSellRow = sellers.length ? sellers.reduce((a, b) => (b.sell < a.sell ? b : a)) : null
+  const withBuy = usd.filter(r => r.buy > 0 && !buyOff(r))
   const bestBuyRow = withBuy.length ? withBuy.reduce((a, b) => (b.buy > a.buy ? b : a)) : null
 
   const marketLine =

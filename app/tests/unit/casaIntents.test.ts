@@ -60,6 +60,7 @@ function facts(overrides: Partial<CasaFacts> = {}): CasaFacts {
     marketBestSell: 40.63,
     marketBestBuy: 40.03,
     marketSize: 43,
+    buyMarketSize: 43,
     sellRank: 37,
     buyRank: 30,
     rating: { score: 4.2, count: 180 },
@@ -291,7 +292,7 @@ describe('currency markets', () => {
     expect(quotedCurrenciesFor(mixed, 'gales')).toEqual(['EUR', 'BRL'])
   })
 
-  // Thin markets are the whole reason `offMarketDetector` stands down below ten
+  // Thin markets are the whole reason `offMarketSide` stands down below ten
   // quotes: with five boards, one of them being 4% off the median is normal.
   it('crowns a winner even in a market too thin to judge outliers', () => {
     const thin = marketRows('PYG', [
@@ -463,5 +464,50 @@ describe('market position', () => {
   it('returns nothing when the casa publishes no quote', () => {
     expect(marketPositionSentence('comprar-dolares', facts({ usd: null }))).toBe('')
     expect(marketPositionSentence('vender-dolares', facts({ marketBestBuy: null }))).toBe('')
+  })
+})
+
+// A price better than the best one the market crowns can only be one the site refused to crown
+// (utils/marketOutlier.ts): the board frozen since July at 39,55 read "tiene la venta más barata del
+// mercado" on its own page (2026-11-11).
+describe('a price the market rejects is not called the best', () => {
+  it('on the dollar sell', () => {
+    const text = marketPositionSentence(
+      'comprar-dolares',
+      facts({ marketBestSell: 42, sellRank: null })
+    )
+    expect(text).not.toContain('la venta más barata')
+    expect(text).toContain('muy por debajo del resto')
+    expect(text).toContain('42,00')
+    expect(text).toContain('confirmalo')
+  })
+
+  it('on the dollar buy', () => {
+    const text = marketPositionSentence(
+      'vender-dolares',
+      facts({ marketBestBuy: 38, buyRank: null })
+    )
+    expect(text).not.toContain('es quien mejor paga')
+    expect(text).toContain('muy por encima del resto')
+    expect(text).toContain('38,00')
+  })
+
+  it('on another currency, one side at a time', () => {
+    const rows = marketRows('EUR', [
+      ...Array.from({ length: 12 }, (_, i) => ({
+        origin: `c${i}`,
+        buy: 44 + i * 0.01,
+        sell: 48 + i * 0.01,
+      })),
+      // A real cheapest sell and a buy 6,7 % over the median.
+      { origin: 'gales', buy: 47, sell: 47.5 },
+    ])
+    const text = currencyPositionSentence(
+      facts({ currency: currencyFactsFor(rows, 'gales', 'euro') })
+    )
+    expect(text).toContain('Es la venta más barata')
+    expect(text).toContain('su compra está muy por encima')
+    expect(text).not.toContain('quien mejor lo paga')
+    expect(text.match(/confirmalo/g)).toHaveLength(1)
   })
 })

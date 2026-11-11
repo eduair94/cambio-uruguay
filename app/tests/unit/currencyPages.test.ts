@@ -439,7 +439,7 @@ describe('rankUsableQuotes', () => {
       ...Array.from({ length: 12 }, (_, i) => quote(`casa${i}`, 39.2 + i * 0.02, 41.4 + i * 0.02)),
       quote('cheapest', 40.03, 40.63),
     ]
-    const ranked = rankUsableQuotes(quotes)
+    const ranked = rankUsableQuotes(quotes, 'USD')
     expect(ranked.find(q => q.bestSell)?.origin).toBe('cheapest')
     expect(ranked.find(q => q.origin === 'outlier')?.bestSell).toBe(false)
   })
@@ -449,25 +449,25 @@ describe('rankUsableQuotes', () => {
       quote('outlier', 37.15, 39.55),
       ...Array.from({ length: 12 }, (_, i) => quote(`casa${i}`, 39.2 + i * 0.02, 41.4 + i * 0.02)),
     ]
-    expect(rankUsableQuotes(quotes)).toHaveLength(13)
+    expect(rankUsableQuotes(quotes, 'USD')).toHaveLength(13)
   })
 
   // Below the detector's sample floor nothing is an outlier, so a thin market
   // still gets a winner rather than none.
   it('crowns normally in a market too thin to judge', () => {
-    const ranked = rankUsableQuotes([quote('a', 39, 42), quote('b', 40, 41)])
+    const ranked = rankUsableQuotes([quote('a', 39, 42), quote('b', 40, 41)], 'USD')
     expect(ranked.find(q => q.bestSell)?.origin).toBe('b')
     expect(ranked.find(q => q.bestBuy)?.origin).toBe('b')
   })
 
   it('ignores quotes with no usable price', () => {
-    const ranked = rankUsableQuotes([quote('a', 0, 0), quote('b', 40, 41)])
+    const ranked = rankUsableQuotes([quote('a', 0, 0), quote('b', 40, 41)], 'USD')
     expect(ranked.find(q => q.bestSell)?.origin).toBe('b')
   })
 
   it('never mutates the quotes it was given', () => {
     const original = [quote('a', 40, 41)]
-    rankUsableQuotes(original)
+    rankUsableQuotes(original, 'USD')
     expect(original[0]!.bestSell).toBe(false)
   })
 })

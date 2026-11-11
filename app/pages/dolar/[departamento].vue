@@ -166,7 +166,7 @@ import {
 import { pickOriginRate } from '~/utils/rateSource'
 import { bestOf, pickDescription, pickTitle, seoRate } from '~/utils/liveRateSeo'
 import { quotesForCurrency } from '~/utils/currencyPages'
-import { offMarketDetector } from '~/utils/marketOutlier'
+import { offMarketSide } from '~/utils/marketOutlier'
 
 // Validate the slug against the live department list BEFORE rendering. Running in
 // the route guard yields a real 404 status (on SSR and client navigation) and,
@@ -220,7 +220,8 @@ interface DepartmentPageData {
    * leída). Un departamento tiene pocas casas, menos que la muestra mínima del detector, así que
    * se las juzga contra el país. Siguen en la tabla; sólo no llegan al título ni a la descripción.
    */
-  offMarket: string[]
+  offMarketSell: string[]
+  offMarketBuy: string[]
 }
 
 // SSR fetch: localData (for the department -> houses mapping) + today's quotes
@@ -257,11 +258,15 @@ const { data, pending } = await useAsyncData<DepartmentPageData | null>(
       .filter(d => d.name !== departmentName)
       .slice(0, MAX_RELATED)
 
+    // Judged against the national market, one side at a time (utils/marketOutlier.ts): a department
+    // has too few boards to judge, and a board whose buy is odd is still a real place to buy.
     const national = quotesForCurrency(rows, 'USD')
-    const isOffMarket = offMarketDetector(national)
-    const offMarket = national.filter(q => isOffMarket(q)).map(q => q.origin)
+    const sellOff = offMarketSide(national, 'USD', 'sell')
+    const buyOff = offMarketSide(national, 'USD', 'buy')
+    const offMarketSell = national.filter(q => sellOff(q)).map(q => q.origin)
+    const offMarketBuy = national.filter(q => buyOff(q)).map(q => q.origin)
 
-    return { departmentName, houses, related, offMarket }
+    return { departmentName, houses, related, offMarketSell, offMarketBuy }
   }
 )
 
@@ -318,8 +323,11 @@ defineOgImageComponent('Cambio', {
 // "valor do dolar em rivera" de quien cruza desde Livramento, y el genérico no contestaba. Sin
 // lectura, o con una sola casa en el departamento, el de siempre.
 const liveRates = computed(() => {
-  const offMarket = new Set(data.value?.offMarket ?? [])
-  return bestOf(houses.value.filter(house => !offMarket.has(house.origin)))
+  const offSell = new Set(data.value?.offMarketSell ?? [])
+  const offBuy = new Set(data.value?.offMarketBuy ?? [])
+  const sellers = bestOf(houses.value.filter(house => !offSell.has(house.origin)))
+  const buyers = bestOf(houses.value.filter(house => !offBuy.has(house.origin)))
+  return { sell: sellers.sell, buy: buyers.buy, count: sellers.count }
 })
 const metaTitle = computed(() => {
   const fallback = t('dolarDepto.metaTitle', { department: departmentTitle.value })

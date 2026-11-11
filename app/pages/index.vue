@@ -1134,7 +1134,7 @@ import DirectionToggle from '@/components/DirectionToggle.vue'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { HOME_FAQ_IDS, type FaqItem } from '~/utils/faqAnswers'
-import { quotesForCurrency, rankUsableQuotes } from '~/utils/currencyPages'
+import { quotesForCurrency, rankUsableQuotes, type CurrencyCode } from '~/utils/currencyPages'
 import { useDisplay } from 'vuetify'
 import {
   convert as convertAmount,
@@ -1143,6 +1143,7 @@ import {
   parseAmount,
   type RateRow,
 } from '@/utils/conversion'
+import { crownable } from '@/utils/marketOutlier'
 import { publicRates } from '@/utils/rateSource'
 import {
   matchesChannel,
@@ -1244,7 +1245,7 @@ const hubCasas = computed(() => {
 // headline and the ExchangeRateSpecification JSON-LD are both built from it, so
 // the schema can never advertise a price the page does not show.
 const usdQuotes = computed(() =>
-  rankUsableQuotes(quotesForCurrency(sharedRealRows.value ?? [], 'USD'))
+  rankUsableQuotes(quotesForCurrency(sharedRealRows.value ?? [], 'USD'), 'USD')
 )
 const usdBestSell = computed(() => usdQuotes.value.find(q => q.bestSell)?.sell ?? null)
 const usdBestBuy = computed(() => usdQuotes.value.find(q => q.bestBuy)?.buy ?? null)
@@ -1700,67 +1701,38 @@ const topExchanges = computed(() => {
     selectedCurrency.value !== 'UYU' && selectedTargetCurrency.value === 'UYU'
   const isConvertingTo = selectedCurrency.value === 'UYU' && selectedTargetCurrency.value !== 'UYU'
 
+  // Best first among the prices the site crowns (utils/marketOutlier.ts): sorted raw, "UYU → USD"
+  // put the board frozen since July at 39,55 first while the converter above named another casa.
+  // `type` is the house's side: what it pays (`buy`, the user sells) or charges (`sell`).
+  const best = (code: string, type: 'buy' | 'sell') =>
+    crownable(
+      currencyData.filter(item => item.code === code),
+      marketFor.value(code),
+      code,
+      type
+    ).map(item => ({
+      source: item.localData?.name || item.origin,
+      rate: item[type],
+      type,
+      origin: item.origin,
+      name: item.localData.name,
+      code: item.code,
+      isRegulated: item.localData.bcu || false,
+    }))
+
   let rates = []
-
   if (isConvertingFrom) {
-    // User is selling the selected currency (FROM currency TO UYU)
-    // Show top 4 selling rates (highest buy rates = best for user selling)
-    rates = currencyData
-      .map(item => ({
-        source: item.localData?.name || item.origin,
-        rate: item.buy,
-        type: 'buy' as const, // This is what the exchange house pays (buys from user)
-        origin: item.origin,
-        name: item.localData.name,
-        code: item.code,
-        isRegulated: item.localData.bcu || false,
-      }))
-      .sort((a, b) => b.rate - a.rate) // Highest buy rate first
+    // User is selling the selected currency (FROM currency TO UYU): highest buy first.
+    rates = best(selectedCurrency.value, 'buy')
   } else if (isConvertingTo) {
-    // User is buying the selected currency (FROM UYU TO currency)
-    // Show top 4 buying rates (lowest sell rates = best for user buying)
-    rates = currencyData
-      .map(item => ({
-        source: item.localData?.name || item.origin,
-        rate: item.sell,
-        type: 'sell' as const, // This is what the exchange house sells (user buys)
-        origin: item.origin,
-        code: item.code,
-        name: item.localData.name,
-        isRegulated: item.localData.bcu || false,
-      }))
-      .sort((a, b) => a.rate - b.rate) // Lowest sell rate first
+    // User is buying the selected currency (FROM UYU TO currency): lowest sell first.
+    rates = best(selectedTargetCurrency.value, 'sell')
   } else {
-    // For other conversions, show mixed rates (2 buy + 2 sell)
-    const buyRates = currencyData
-      .filter(item => item.code === selectedCurrency.value)
-      .map(item => ({
-        source: item.localData?.name || item.origin,
-        rate: item.buy,
-        type: 'buy' as const,
-        origin: item.origin,
-        code: item.code,
-        name: item.localData.name,
-        isRegulated: item.localData.bcu || false,
-      }))
-      .sort((a, b) => b.rate - a.rate)
-      .slice(0, 4)
-
-    const sellRates = currencyData
-      .filter(item => item.code === selectedTargetCurrency.value)
-      .map(item => ({
-        source: item.localData?.name || item.origin,
-        rate: item.sell,
-        type: 'sell' as const,
-        code: item.code,
-        origin: item.origin,
-        name: item.localData.name,
-        isRegulated: item.localData.bcu || false,
-      }))
-      .sort((a, b) => a.rate - b.rate)
-      .slice(0, 4)
-
-    rates = [...buyRates, ...sellRates]
+    // For other conversions, show mixed rates (4 buy + 4 sell)
+    rates = [
+      ...best(selectedCurrency.value, 'buy').slice(0, 4),
+      ...best(selectedTargetCurrency.value, 'sell').slice(0, 4),
+    ]
   }
 
   // Remove duplicates based on source name and type
@@ -1872,12 +1844,15 @@ const leftForReverse = ref(0)
 // Conversion result computed property
 const setConversionRate = () => {
   // Core forward/reverse math comes from the pure util (unit-tested).
+  // Judged against the whole market: a department or a channel alone is too few boards to tell
+  // a frozen one (utils/marketOutlier.ts).
   const core = convertAmount(
     rateRows.value,
     Number(amount.value),
     selectedCurrency.value,
     selectedTargetCurrency.value,
-    selectedExchangeHouse.value
+    selectedExchangeHouse.value,
+    realExchangeData.value as RateRow[]
   )
   const rate = core.rate
   const reverseRate = core.reverseRate
@@ -1968,7 +1943,8 @@ const savingsInfo = computed(() =>
     rateRows.value,
     subjectCode.value,
     Number(amount.value),
-    intentIsSellingSubject.value ? 'sell' : 'buy'
+    intentIsSellingSubject.value ? 'sell' : 'buy',
+    realExchangeData.value as RateRow[]
   )
 )
 const showSavings = computed(
@@ -1998,11 +1974,29 @@ const copyResult = async (): Promise<void> => {
   }
 }
 
+// The prices the site refuses to crown (utils/marketOutlier.ts) are judged on the whole market of
+// each currency, one board per house, one side at a time: the "best to buy" list put the board
+// frozen since July at 39,55 first (2026-11-11), and a department or a channel alone is too few
+// boards to tell.
+const marketFor = computed(() => {
+  const cache = new Map<string, ReturnType<typeof quotesForCurrency>>()
+  return (code: string) => {
+    if (!cache.has(code)) {
+      cache.set(code, quotesForCurrency(realExchangeData.value as any, code as CurrencyCode))
+    }
+    return cache.get(code)!
+  }
+})
+
 // Build top 4 lists for subject currency: sell (houses buy) and buy (houses sell)
 const top4SellRatesForSubject = computed(() => {
   if (!filteredExchangeData.value.length || !subjectCode.value) return []
-  const items = filteredExchangeData.value
-    .filter(item => item.code === subjectCode.value && item.buy > 0 && item.localData?.name)
+  const code = subjectCode.value
+  const items = filteredExchangeData.value.filter(
+    item => item.code === code && item.localData?.name
+  )
+  return crownable(items, marketFor.value(code), code, 'buy')
+    .slice(0, 4)
     .map(item => ({
       origin: item.origin,
       source: item.localData?.name || item.origin,
@@ -2010,22 +2004,22 @@ const top4SellRatesForSubject = computed(() => {
       // La punta importa: una casa puede tener el mostrador quieto y el eBROU moviendose.
       type: item.type || '',
     }))
-    .sort((a, b) => b.rate - a.rate)
-  return items.slice(0, 4)
 })
 
 const top4BuyRatesForSubject = computed(() => {
   if (!filteredExchangeData.value.length || !subjectCode.value) return []
-  const items = filteredExchangeData.value
-    .filter(item => item.code === subjectCode.value && item.sell > 0 && item.localData?.name)
+  const code = subjectCode.value
+  const items = filteredExchangeData.value.filter(
+    item => item.code === code && item.localData?.name
+  )
+  return crownable(items, marketFor.value(code), code, 'sell')
+    .slice(0, 4)
     .map(item => ({
       origin: item.origin,
       source: item.localData?.name || item.origin,
       rate: item.sell,
       type: item.type || '',
     }))
-    .sort((a, b) => a.rate - b.rate)
-  return items.slice(0, 4)
 })
 
 // Primary/secondary intent-ordered lists and titles

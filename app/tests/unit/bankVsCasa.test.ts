@@ -39,7 +39,7 @@ const market = (): CurrencyQuote[] => [
 
 describe('compareInstitutionKinds', () => {
   it('agrupa cada pizarra en su tipo de institución', () => {
-    const { summaries } = compareInstitutionKinds(market())
+    const { summaries } = compareInstitutionKinds(market(), 'USD')
     expect(summaries.map(s => s.kind)).toEqual([...COMPARED_KINDS])
     expect(summaries.find(s => s.kind === 'casa')!.count).toBe(5)
     expect(summaries.find(s => s.kind === 'banco')!.count).toBe(5)
@@ -49,7 +49,7 @@ describe('compareInstitutionKinds', () => {
   })
 
   it('corona el mejor mostrador de cada grupo, no el del mercado', () => {
-    const { summaries } = compareInstitutionKinds(market())
+    const { summaries } = compareInstitutionKinds(market(), 'USD')
     const casa = summaries.find(s => s.kind === 'casa')!
     const banco = summaries.find(s => s.kind === 'banco')!
     expect(casa.bestSell?.origin).toBe('cambio_principal')
@@ -60,7 +60,7 @@ describe('compareInstitutionKinds', () => {
   })
 
   it('mide la diferencia comprando dólares contra el precio del ganador', () => {
-    const { sell } = compareInstitutionKinds(market())
+    const { sell } = compareInstitutionKinds(market(), 'USD')
     expect(sell).not.toBeNull()
     expect(sell!.winner).toBe('casa')
     expect(sell!.loser).toBe('banco')
@@ -70,7 +70,7 @@ describe('compareInstitutionKinds', () => {
   })
 
   it('mide la otra punta con la compra más alta, no con la más baja', () => {
-    const { buy } = compareInstitutionKinds(market())
+    const { buy } = compareInstitutionKinds(market(), 'USD')
     expect(buy!.winner).toBe('casa')
     // 39,60 (Gales) − 39,00 (Itaú)
     expect(buy!.perUnit).toBeCloseTo(0.6, 10)
@@ -78,7 +78,7 @@ describe('compareInstitutionKinds', () => {
 
   it('deja ganar al banco cuando el banco gana', () => {
     const rows = market().map(q => (q.origin === 'itau' ? quote('itau', 39.9, 40.5) : q))
-    const { sell, buy } = compareInstitutionKinds(rows)
+    const { sell, buy } = compareInstitutionKinds(rows, 'USD')
     expect(sell!.winner).toBe('banco')
     expect(buy!.winner).toBe('banco')
   })
@@ -87,14 +87,14 @@ describe('compareInstitutionKinds', () => {
     // Una coma perdida en un banco: 4,19 en vez de 41,90. Sin el descarte sería "el banco vende
     // el dólar a $4" y la página publicaría justo lo contrario de lo que pasa.
     const rows = market().map(q => (q.origin === 'brou' ? quote('brou', 3.89, 4.19) : q))
-    const { sell, summaries } = compareInstitutionKinds(rows)
+    const { sell, summaries } = compareInstitutionKinds(rows, 'USD')
     expect(summaries.find(s => s.kind === 'banco')!.count).toBe(4)
     expect(sell!.winner).toBe('casa')
     expect(sell!.loser).toBe('banco')
   })
 
   it('lleva la mediana del grupo al lado del mejor precio', () => {
-    const banco = compareInstitutionKinds(market()).summaries.find(s => s.kind === 'banco')!
+    const banco = compareInstitutionKinds(market(), 'USD').summaries.find(s => s.kind === 'banco')!
     // Cinco ventas: 41,80 · 41,85 · 41,90 · 41,95 · 42,00
     expect(banco.medianSell).toBeCloseTo(41.9, 10)
   })
@@ -103,7 +103,7 @@ describe('compareInstitutionKinds', () => {
     const soloCasas = market().filter(
       q => !['brou', 'itau', 'santander', 'bbva', 'scotiabank'].includes(q.origin)
     )
-    const { sell, buy, summaries } = compareInstitutionKinds(soloCasas)
+    const { sell, buy, summaries } = compareInstitutionKinds(soloCasas, 'USD')
     expect(summaries.find(s => s.kind === 'banco')!.count).toBe(0)
     expect(sell).toBeNull()
     expect(buy).toBeNull()
@@ -111,7 +111,7 @@ describe('compareInstitutionKinds', () => {
 
   it('ignora precios nulos o cero sin romper el grupo', () => {
     const rows = market().map(q => (q.origin === 'gales' ? quote('gales', null, 0) : q))
-    const casa = compareInstitutionKinds(rows).summaries.find(s => s.kind === 'casa')!
+    const casa = compareInstitutionKinds(rows, 'USD').summaries.find(s => s.kind === 'casa')!
     expect(casa.count).toBe(5)
     expect(casa.bestBuy?.origin).toBe('cambio_principal')
     expect(casa.bestSell?.origin).toBe('cambio_principal')
@@ -119,14 +119,14 @@ describe('compareInstitutionKinds', () => {
 
   it('con un empate exacto no corona a nadie por más de cero', () => {
     const rows = market().map(q => (q.origin === 'itau' ? quote('itau', 39.6, 41.0) : q))
-    const { sell, buy } = compareInstitutionKinds(rows)
+    const { sell, buy } = compareInstitutionKinds(rows, 'USD')
     expect(sell!.perUnit).toBe(0)
     expect(sell!.pct).toBe(0)
     expect(buy!.perUnit).toBe(0)
   })
 
   it('sobrevive a un mercado vacío', () => {
-    const { summaries, sell, buy } = compareInstitutionKinds([])
+    const { summaries, sell, buy } = compareInstitutionKinds([], 'USD')
     expect(summaries).toHaveLength(COMPARED_KINDS.length)
     expect(summaries.every(s => s.count === 0)).toBe(true)
     expect(sell).toBeNull()

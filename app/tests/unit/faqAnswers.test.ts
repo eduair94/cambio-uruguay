@@ -84,7 +84,7 @@ describe('el nombre de la casa nunca sale de la etiqueta de la pizarra', () => {
 // pizarra 4,6 % bajo la mediana" (currencyPages.ts:262), o sea un precio inalcanzable, y Google
 // leía las dos afirmaciones en el mismo documento.
 describe('el FAQPage descarta las pizarras fuera de mercado, como el resto del sitio', () => {
-  // `offMarketDetector` se calla con menos de MIN_SAMPLE (10) cotizaciones: en un mercado fino
+  // `offMarketSide` se calla con menos de MIN_SAMPLE (10) cotizaciones: en un mercado fino
   // —ARS, o una moneda que cotizan dos casas— descartar una de dos precios sería peor que el
   // problema. Así que el fixture necesita mercado de verdad, como el real de 41 casas.
   const sanas: ExchangeRate[] = Array.from({ length: 12 }, (_, i) => ({

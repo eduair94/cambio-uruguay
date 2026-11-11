@@ -43,14 +43,29 @@ describe('bestDigestQuotes', () => {
     expect(bestDigestQuotes('USD', [...market, frozen, oddBuy])!.bestSell.origin).toBe('prex')
   })
 
-  // The 3 % band was calibrated on the dollar. On the real and the Argentine peso it dropped 28
-  // and 37 of 39 boards on 2026-11-09, live ones included, and named a worse price (BRL 8,45
-  // while four casas sold at 8,10).
-  it('leaves the other currencies as they are', () => {
-    for (const code of ['EUR', 'BRL', 'ARS']) {
-      const best = bestDigestQuotes(code, [...market, frozen])!
-      expect(best.bestSell.origin, code).toBe('baluma_cambio')
-    }
+  // Each currency with its own band (utils/marketOutlier.ts). A board 5 % under the median is
+  // left out of the dollar and the euro, but the real's live casas sell up to 6 % under it, and a
+  // 3 % band dropped them on every day measured (BRL 8,45 named while four casas sold at 8,10).
+  it('judges each currency with its own band', () => {
+    expect(bestDigestQuotes('EUR', [...market, frozen])!.bestSell.origin).toBe('casa0')
+    expect(bestDigestQuotes('BRL', [...market, frozen])!.bestSell.origin).toBe('baluma_cambio')
+  })
+
+  // The issue of 2026-11-06 named tradelix "la mejor compra" of the Argentine peso: 0,15 against a
+  // 0,02 median. A peso quoted to the cent at 0,03 is real and stays in.
+  it('leaves out the Argentine peso buy that is not a price, and keeps the one that is', () => {
+    const pesos = Array.from({ length: 12 }, (_, i) => ({
+      origin: `ars${i}`,
+      buy: 0.02,
+      sell: 0.05,
+    }))
+    const best = bestDigestQuotes('ARS', [
+      ...pesos,
+      { origin: 'tradelix', buy: 0.15, sell: 0.55 },
+      { origin: 'prex', buy: 0.03, sell: 0.03 },
+    ])!
+    expect(best.bestBuy.origin).toBe('prex')
+    expect(best.bestSell.origin).toBe('prex')
   })
 
   it('keeps every board when the market is too thin to judge', () => {

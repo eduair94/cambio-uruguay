@@ -57,7 +57,7 @@ const arsMarket = (): ExchangeRate[] => [
 
 describe('crowning the converter reads', () => {
   it('no corona la compra de tradelix, que está 7 veces sobre la mediana', () => {
-    const ranked = rankUsableQuotes(quotesForCurrency(arsMarket(), 'ARS'))
+    const ranked = rankUsableQuotes(quotesForCurrency(arsMarket(), 'ARS'), 'ARS')
     const crowned = ranked.find(q => q.bestBuy)
 
     expect(crowned?.origin).not.toBe('tradelix')
@@ -74,7 +74,7 @@ describe('crowning the converter reads', () => {
   })
 
   it('la fila sospechosa sigue en la lista: es un precio publicado, no un error de parseo', () => {
-    const ranked = rankUsableQuotes(quotesForCurrency(arsMarket(), 'ARS'))
+    const ranked = rankUsableQuotes(quotesForCurrency(arsMarket(), 'ARS'), 'ARS')
     expect(ranked.find(q => q.origin === 'tradelix')?.buy).toBe(0.15)
     expect(ranked).toHaveLength(40)
   })

@@ -7,6 +7,7 @@
 // Types come from the shared API contract; imported relatively so this module
 // stays runtime-agnostic.
 import type { ExchangeRate } from '../types/api'
+import { offMarketSide, type QuoteSide } from './marketOutlier'
 
 /** Base currency of the market: every quote is expressed against UYU. */
 export const BASE_CURRENCY = 'UYU' as const
@@ -33,25 +34,43 @@ export type RateRow = Pick<ExchangeRate, 'origin' | 'code' | 'buy' | 'sell'>
  * When `houseOrigin` is provided (anything other than `'best'`), only quotes from
  * that exchange house are considered. Missing data yields `0`.
  *
+ * With `'best'`, a price the site's outlier rule rejects (`utils/marketOutlier.ts`) is never the
+ * best: the converter offered the board frozen since July at 39,55 as the price of the dollar
+ * while the headline above it named another casa (2026-11-11). A house picked by name always
+ * gets its own price.
+ *
+ * `reference` is the whole market, when `rows` is a subset (a department, a channel): a
+ *   handful of boards is too few to judge.
  * @returns the rate as a non-negative number (`0` when it cannot be computed).
  */
 export function getExchangeRate(
   rows: readonly RateRow[],
   fromCurrency: string,
   toCurrency: string,
-  houseOrigin: string = 'best'
+  houseOrigin: string = 'best',
+  reference: readonly RateRow[] = rows
 ): number {
   if (!rows.length) return 0
   if (fromCurrency === toCurrency) return 1
 
   const inHouse = (row: RateRow): boolean => houseOrigin === 'best' || row.origin === houseOrigin
+  const offMarket = (code: string, side: QuoteSide) =>
+    houseOrigin === 'best'
+      ? offMarketSide(
+          reference.filter(row => row.code === code),
+          code,
+          side
+        )
+      : () => false
 
   // X -> UYU : sell X to a house (use its buy price), pick the highest.
   if (toCurrency === BASE_CURRENCY) {
+    const isOff = offMarket(fromCurrency, 'buy')
     let best = 0
     for (const row of rows) {
       if (!inHouse(row)) continue
       if (row.code !== fromCurrency) continue
+      if (isOff(row)) continue
       const buy = row.buy ?? 0
       if (buy > best) best = buy
     }
@@ -60,10 +79,12 @@ export function getExchangeRate(
 
   // UYU -> X : buy X from a house (use its sell price), pick the lowest.
   if (fromCurrency === BASE_CURRENCY) {
+    const isOff = offMarket(toCurrency, 'sell')
     let bestSell = 0
     for (const row of rows) {
       if (!inHouse(row)) continue
       if (row.code !== toCurrency) continue
+      if (isOff(row)) continue
       const sell = row.sell ?? 0
       if (sell <= 0) continue
       if (bestSell === 0 || sell < bestSell) bestSell = sell
@@ -72,8 +93,8 @@ export function getExchangeRate(
   }
 
   // Cross-currency: route through UYU.
-  const fromToBase = getExchangeRate(rows, fromCurrency, BASE_CURRENCY, houseOrigin)
-  const baseToTarget = getExchangeRate(rows, BASE_CURRENCY, toCurrency, houseOrigin)
+  const fromToBase = getExchangeRate(rows, fromCurrency, BASE_CURRENCY, houseOrigin, reference)
+  const baseToTarget = getExchangeRate(rows, BASE_CURRENCY, toCurrency, houseOrigin, reference)
   return fromToBase * baseToTarget
 }
 
@@ -103,10 +124,11 @@ export function convert(
   amount: number,
   fromCurrency: string,
   toCurrency: string,
-  houseOrigin: string = 'best'
+  houseOrigin: string = 'best',
+  reference: readonly RateRow[] = rows
 ): ConversionResult {
-  const rate = getExchangeRate(rows, fromCurrency, toCurrency, houseOrigin)
-  const reverseRate = getExchangeRate(rows, toCurrency, fromCurrency, houseOrigin)
+  const rate = getExchangeRate(rows, fromCurrency, toCurrency, houseOrigin, reference)
+  const reverseRate = getExchangeRate(rows, toCurrency, fromCurrency, houseOrigin, reference)
   return {
     rate,
     invertedRate: rate > 0 ? 1 / rate : 0,
@@ -142,14 +164,25 @@ export function marketAverageSavings(
   rows: readonly RateRow[],
   currency: string,
   amount: number,
-  direction: 'buy' | 'sell'
+  direction: 'buy' | 'sell',
+  reference: readonly RateRow[] = rows
 ): SavingsResult {
   const empty: SavingsResult = { savings: 0, bestRate: 0, averageRate: 0 }
   if (!rows.length || currency === BASE_CURRENCY) return empty
 
+  // The best and the average both leave out the prices the site refuses to crown: against the
+  // board frozen at 39,55 the home promised "ahorrás 1,85 %" (2026-11-11).
+  const isOff = offMarketSide(
+    reference.filter(r => r.code === currency),
+    currency,
+    direction === 'sell' ? 'buy' : 'sell'
+  )
+
   if (direction === 'sell') {
     // Houses' buy prices for this currency.
-    const buys = rows.filter(r => r.code === currency && (r.buy ?? 0) > 0).map(r => r.buy as number)
+    const buys = rows
+      .filter(r => r.code === currency && (r.buy ?? 0) > 0 && !isOff(r))
+      .map(r => r.buy as number)
     if (buys.length < 2) return { ...empty, bestRate: buys[0] ?? 0, averageRate: buys[0] ?? 0 }
 
     const bestRate = Math.max(...buys)
@@ -160,7 +193,7 @@ export function marketAverageSavings(
 
   // direction === 'buy': houses' sell prices for this currency.
   const sells = rows
-    .filter(r => r.code === currency && (r.sell ?? 0) > 0)
+    .filter(r => r.code === currency && (r.sell ?? 0) > 0 && !isOff(r))
     .map(r => r.sell as number)
   if (sells.length < 2) return { ...empty, bestRate: sells[0] ?? 0, averageRate: sells[0] ?? 0 }
 

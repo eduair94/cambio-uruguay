@@ -22,7 +22,7 @@ import {
   type CurrencyCode,
   type CurrencySlug,
 } from './currencyPages'
-import { offMarketDetector } from './marketOutlier'
+import { offMarketSide } from './marketOutlier'
 
 /** The fixed, non-currency intents a casa page can be sliced into. */
 export const CASA_FIXED_INTENTS = [
@@ -155,8 +155,10 @@ export interface CasaFacts {
   marketBestSell: number | null
   /** Highest USD buy across the market today (what the best casa pays you). */
   marketBestBuy: number | null
-  /** How many casas quote USD today — the denominator of "puesto N de M". */
+  /** How many casas sell USD today — the denominator of the sell "puesto N de M". */
   marketSize: number
+  /** How many casas buy USD today — the denominator of the buy "puesto N de M". */
+  buyMarketSize: number
   /** 1-based position by cheapest sell; `null` when this casa does not quote. */
   sellRank: number | null
   /** 1-based position by highest buy; `null` when this casa does not quote. */
@@ -279,13 +281,14 @@ export function buildCurrencyMarket(
   }
 
   const picked = [...byOrigin.values()]
-  const isOffMarket = offMarketDetector(picked)
-  const ranked = picked.filter(quote => !isOffMarket(quote))
+  // Each ranking leaves out what is off-market on ITS side only (utils/marketOutlier.ts).
+  const sellOff = offMarketSide(picked, code, 'sell')
+  const buyOff = offMarketSide(picked, code, 'buy')
 
   return {
     picked: byOrigin,
-    bySell: [...ranked].sort((a, b) => a.sell - b.sell),
-    byBuy: [...ranked].sort((a, b) => b.buy - a.buy),
+    bySell: picked.filter(quote => !sellOff(quote)).sort((a, b) => a.sell - b.sell),
+    byBuy: picked.filter(quote => !buyOff(quote)).sort((a, b) => b.buy - a.buy),
   }
 }
 
@@ -562,6 +565,14 @@ export function intentDescription(intent: CasaIntent, facts: CasaFacts): string 
 }
 
 /**
+ * What to say next to a price better than the best one the market crowns. It can only be a price
+ * the site refused to crown (utils/marketOutlier.ts), and calling it "la más barata del mercado"
+ * is what the board frozen since July at 39,55 got on its own page (2026-11-11).
+ */
+const STALE_BOARD_ADVICE =
+  'Un precio tan lejos del resto suele ser una pizarra que no se actualizó: confirmalo con la casa antes de ir.'
+
+/**
  * A sentence quantifying this casa's position today, or `''` when it does not quote.
  *
  * The rank clause is appended only when the casa is inside the ranked set: a
@@ -578,6 +589,11 @@ export function marketPositionSentence(
   if (intent === 'comprar-dolares') {
     if (facts.marketBestSell === null) return ''
     const gap = facts.usd.sell - facts.marketBestSell
+    if (gap < -0.0001) {
+      return `Hoy ${facts.name} publica una venta de $ ${formatRateEs(facts.usd.sell)}, muy por debajo del resto del mercado: la casa más barata entre las demás vende a $ ${formatRateEs(
+        facts.marketBestSell
+      )}. ${STALE_BOARD_ADVICE}`
+    }
     if (gap <= 0.0001) {
       return `Hoy ${facts.name} tiene la venta más barata del mercado: ningún otro lugar te cobra menos por cada dólar.`
     }
@@ -594,11 +610,18 @@ export function marketPositionSentence(
 
   if (facts.marketBestBuy === null) return ''
   const gap = facts.marketBestBuy - facts.usd.buy
+  if (gap < -0.0001) {
+    return `Hoy ${facts.name} publica que paga $ ${formatRateEs(facts.usd.buy)} por dólar, muy por encima del resto del mercado: la casa que mejor paga entre las demás da $ ${formatRateEs(
+      facts.marketBestBuy
+    )}. ${STALE_BOARD_ADVICE}`
+  }
   if (gap <= 0.0001) {
     return `Hoy ${facts.name} es quien mejor paga el dólar: nadie te da más por cada billete.`
   }
   const rank =
-    facts.buyRank && facts.marketSize ? ` Está ${facts.buyRank}º de ${facts.marketSize} casas.` : ''
+    facts.buyRank && facts.buyMarketSize
+      ? ` Está ${facts.buyRank}º de ${facts.buyMarketSize} casas.`
+      : ''
   return `Hoy ${facts.name} paga $ ${formatRateEs(facts.usd.buy)} por dólar y el que mejor paga da $ ${formatRateEs(
     facts.marketBestBuy
   )}: son $ ${formatRateEs(gap)} menos por dólar, unos $ ${formatPesosEs(
@@ -630,9 +653,17 @@ export function currencyPositionSentence(facts: CasaFacts): string {
     )}: es lo que te cuesta comprar y vender en el mismo lugar.`,
   ]
 
+  let offMarket = false
   if (currency.marketSize > 1 && currency.bestSell !== null) {
     const gap = currency.sell - currency.bestSell
-    if (gap <= 0.0001) {
+    if (gap < -0.0001) {
+      offMarket = true
+      parts.push(
+        `Su venta está muy por debajo del resto del mercado: la casa más barata entre las demás lo vende a $ ${formatRateEs(
+          currency.bestSell
+        )}.`
+      )
+    } else if (gap <= 0.0001) {
       parts.push(
         `Es la venta más barata del mercado: ninguna otra casa te cobra menos por cada ${unit}.`
       )
@@ -648,7 +679,14 @@ export function currencyPositionSentence(facts: CasaFacts): string {
 
   if (currency.marketSize > 1 && currency.bestBuy !== null) {
     const gap = currency.bestBuy - currency.buy
-    if (gap <= 0.0001) {
+    if (gap < -0.0001) {
+      offMarket = true
+      parts.push(
+        `Y su compra está muy por encima de lo que paga el resto: quien mejor paga entre las demás da $ ${formatRateEs(
+          currency.bestBuy
+        )} por ${unit}.`
+      )
+    } else if (gap <= 0.0001) {
       parts.push(`Y es quien mejor lo paga: nadie te da más si venís a vender.`)
     } else {
       parts.push(
@@ -658,6 +696,8 @@ export function currencyPositionSentence(facts: CasaFacts): string {
       )
     }
   }
+
+  if (offMarket) parts.push(STALE_BOARD_ADVICE)
 
   if (currency.marketSize <= 1) {
     parts.push(

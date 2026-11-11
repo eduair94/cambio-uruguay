@@ -180,9 +180,9 @@
                       <td>Puesto por venta más barata</td>
                       <td data-label="Valor">{{ facts.sellRank }}º de {{ facts.marketSize }}</td>
                     </tr>
-                    <tr v-if="facts.buyRank && facts.marketSize">
+                    <tr v-if="facts.buyRank && facts.buyMarketSize">
                       <td>Puesto por mejor compra</td>
-                      <td data-label="Valor">{{ facts.buyRank }}º de {{ facts.marketSize }}</td>
+                      <td data-label="Valor">{{ facts.buyRank }}º de {{ facts.buyMarketSize }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -642,10 +642,10 @@ const { data: payload } = await useAsyncData(
     // the signature of a stale or misparsed pizarra — and every casa page then
     // told its reader it charged ~$2 per dollar too much against a price nobody
     // could actually get. `offMarket` is the same flag /casas-de-cambio and
-    // /pizarra use, so the three pages crown the same winner.
-    const ranked = comparison.filter(entry => !entry.offMarket)
-    const bySell = [...ranked].sort((a, b) => a.sell - b.sell)
-    const byBuy = [...ranked].sort((a, b) => b.buy - a.buy)
+    // /pizarra use, so the three pages crown the same winner. Each ranking leaves out only what is
+    // off-market on its own side.
+    const bySell = comparison.filter(entry => !entry.offMarketSell).sort((a, b) => a.sell - b.sell)
+    const byBuy = comparison.filter(entry => !entry.offMarketBuy).sort((a, b) => b.buy - a.buy)
 
     const stored = reviews?.reviews?.[origin.value] ?? null
     const researched = CASAS_REPUTATION.find(entry => entry.code === origin.value) ?? null
@@ -660,7 +660,8 @@ const { data: payload } = await useAsyncData(
       usd: mine ? { buy: mine.buy, sell: mine.sell, type: mine.type } : null,
       marketBestSell: bySell[0]?.sell ?? null,
       marketBestBuy: byBuy[0]?.buy ?? null,
-      marketSize: ranked.length,
+      marketSize: bySell.length,
+      buyMarketSize: byBuy.length,
       // `findIndex` returns -1 for a casa excluded as off-market, which would
       // print "0º de 43" — leave the rank out instead.
       sellRank: rankOf(bySell, origin.value),

@@ -18,7 +18,7 @@
 // sitemap route and the internal-link blocks without duplicating the logic.
 import type { ExchangeRate } from '../types/api'
 import type { CurrencyCode, CurrencyQuote, CurrencySlug } from './currencyPages'
-import { quotesForCurrency } from './currencyPages'
+import { quotesForCurrency, rankUsableQuotes } from './currencyPages'
 import { housesInDepartment, slugifyDepartment, type LocalDataMap } from './departments'
 
 /** The non-USD currencies that get border-department landing pages. */
@@ -179,10 +179,15 @@ export function housesForFrontera(
 ): CurrencyQuote[] {
   const inDept = new Set(housesInDepartment(localData, route.departmentSlug).map(h => h.origin))
   if (!inDept.size) return []
-  // Scope the rows to this department first, then reuse the shared currency
-  // reducer so the best-buy/best-sell flags are computed over the local subset.
+  // Scope the rows to this department first, then crown within the local subset — but judge each
+  // price against the NATIONAL market (utils/marketOutlier.ts): a department has too few boards to
+  // tell a stale or misparsed one from a real price.
   const scoped = rows.filter(row => inDept.has(row.origin))
-  return quotesForCurrency(scoped, route.code, localData)
+  return rankUsableQuotes(
+    quotesForCurrency(scoped, route.code, localData),
+    route.code,
+    quotesForCurrency(rows, route.code, localData)
+  )
 }
 
 /** The house paying the most for the currency (best place to SELL it), or null. */
