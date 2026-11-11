@@ -39,12 +39,12 @@ export type MarketBand = { pct: number } | { factor: number }
  *   majority keeps low, and they are live (cambial, fénix and principal, on 4 of the 55 days). At
  *   3 % they lost the best buy.
  * - EUR sell, 3 %: sells left unchanged for weeks sit within 0,5–1 % of the best live one and win
- *   on 6 of the 55 days. No band separates them: that takes the board's own history, which the
- *   backend measures (`rate_staleness.ts`, `GET /frozen-quotes`) and this rule does not read.
+ *   on 6 of the 55 days. No band separates them: that takes the board's own history, which is why
+ *   the rule also reads the backend's `frozen` mark (see {@link offMarketSide}).
  * - EUR buy, 3,5 %: leaves out cambio_principal's 45–48, 3,7–7,7 % over the median for months. At
  *   3 % it also lost the best live buy on about half the days (fortex and nonica buy 3,1–3,9 %
  *   up); at 3,5 % it misses it on 4 days by at most 1,1 %, and a board unchanged for weeks, within
- *   1 % of the live one, wins on 7. Same limit as the sell.
+ *   1 % of the live one, wins on 7. Same limit as the sell, and the same answer: the `frozen` mark.
  * - BRL, 12 % sell and 15 % buy: four live casas sell 4,1–7,5 % under the median and buy up to
  *   11,8 % over it. At 3 % the best live board was lost on 55 of 55 days.
  * - ARS, ×4 sell and ×2 buy: quoted to the cent (0,02 / 0,03 / 0,05), where a percentage means
@@ -100,27 +100,18 @@ export function pastBand(
   return side === 'sell' ? pct < -band.pct : pct > band.pct
 }
 
-type Quote = { buy?: number | null; sell?: number | null }
+/**
+ * A quote as the rule reads it. `frozen` is the backend's mark (classes/frozen_marks.ts): this
+ * exact board, on this currency and type, has published the same buy and sell for days beyond what
+ * its own group considers normal (`rate_staleness.ts`). Only today's rows carry it.
+ */
+type Quote = { buy?: number | null; sell?: number | null; frozen?: boolean | null }
 
 const price = (value: number | null | undefined): number | null =>
   typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null
 
-/**
- * Build an "is this price off-market?" predicate for ONE side of one currency.
- *
- * The side being crowned is the only one judged. The cheapest seller is chosen
- * by its sell and the best payer by its buy: a narrow-spread casa whose buy sits
- * high is still a real place to buy at its sell, and the other way round. Judging
- * both sides at once lost those answers.
- *
- * Median, not mean: one badly-parsed board must not drag the reference it is
- * being judged against. Always false when the sample is too thin to judge.
- *
- * @param quotes the whole market for `code`, one quote per board — pass the
- *   national market even when the ranking is over a department or a channel,
- *   or a small subset would never flag anything.
- */
-export function offMarketSide(
+/** The band half of the rule: a price past its side's band around the market median. */
+function bandSide(
   quotes: ReadonlyArray<Quote>,
   code: string,
   side: QuoteSide
@@ -134,6 +125,85 @@ export function offMarketSide(
   }
 }
 
+/** The best price on `side` among the boards that are neither frozen nor rejected, or null. */
+function bestLive(
+  quotes: ReadonlyArray<Quote>,
+  side: QuoteSide,
+  rejected: (q: Quote) => boolean
+): number | null {
+  let best: number | null = null
+  for (const q of quotes) {
+    if (q.frozen === true || rejected(q)) continue
+    const value = price(q[side])
+    if (value === null) continue
+    if (best === null || (side === 'sell' ? value < best : value > best)) best = value
+  }
+  return best
+}
+
+/** A frozen board whose price on `side` matches or beats `best`: the one place it does harm. */
+function aheadOf(q: Quote, side: QuoteSide, best: number | null): boolean {
+  if (q.frozen !== true || best === null) return false
+  const value = price(q[side])
+  return value !== null && (side === 'sell' ? value <= best : value >= best)
+}
+
+/**
+ * Build an "is this price off-market?" predicate for ONE side of one currency.
+ *
+ * The side being crowned is the only one judged. The cheapest seller is chosen
+ * by its sell and the best payer by its buy: a narrow-spread casa whose buy sits
+ * high is still a real place to buy at its sell, and the other way round. Judging
+ * both sides at once lost those answers.
+ *
+ * Median, not mean: one badly-parsed board must not drag the reference it is
+ * being judged against. The band stands down when the sample is too thin to judge.
+ *
+ * Two ways to be rejected:
+ * - past the band of the currency's side ({@link OFF_MARKET_BANDS});
+ * - frozen (the backend's mark, see {@link Quote}) AND matching or beating the best live price on
+ *   that side. A frozen board does not stay put in the ranking, it climbs it: the market moves and
+ *   it does not, so it drifts to an end of the distribution, and the site sorts by "cheapest". On
+ *   2026-11-11 cambio_principal's euro buy, the same 45 for 100 days, was the best buy on the site
+ *   inside the 3,5 % band. Only that case: a frozen board behind the best live one stays counted
+ *   and ranked, because a quiet board can be a real price (a small casa in a calm week), and a
+ *   quarter of every market is quiet — taking them out of "Nº de N casas" would be another error.
+ *
+ * @param quotes the whole market for `code`, one quote per board — pass the
+ *   national market even when the ranking is over a department or a channel,
+ *   or a small subset would never flag anything.
+ * @param code the currency, which picks the band ({@link bandFor}).
+ * @param side the side being crowned.
+ * @param within what is being ranked, when it is a subset of `quotes` (a department, a channel, a
+ *   filtered list). The band is the market's, but "the best live price" a frozen board must not
+ *   match is the subset's: against the national best only, a frozen board that is merely the best
+ *   of its department would still head that department's page. A subset with no live board at all
+ *   (a department whose only casa is frozen) falls back to the market's best.
+ */
+export function offMarketSide(
+  quotes: ReadonlyArray<Quote>,
+  code: string,
+  side: QuoteSide,
+  within: ReadonlyArray<Quote> = quotes
+): (q: Quote) => boolean {
+  const band = bandSide(quotes, code, side)
+  const best = bestLive(within, side, band) ?? bestLive(quotes, side, band)
+  return q => band(q) || aheadOf(q, side, best)
+}
+
+/**
+ * The frozen boards that match or beat the best live price of `within` on `side`, for a list that
+ * has already been through {@link offMarketSide} against the national market (a radius on the map,
+ * the filtered slice of a table) and is crowned again inside itself.
+ */
+export function frozenAheadIn(
+  within: ReadonlyArray<Quote>,
+  side: QuoteSide
+): (q: Quote) => boolean {
+  const best = bestLive(within, side, () => false)
+  return q => aheadOf(q, side, best)
+}
+
 /**
  * The items that may be crowned on `side`, best first: a positive price the market does not
  * reject. `market` is the whole market for `code`, one quote per board, even when `items` is a
@@ -145,7 +215,7 @@ export function crownable<T extends Quote>(
   code: string,
   side: QuoteSide
 ): T[] {
-  const isOff = offMarketSide(market, code, side)
+  const isOff = offMarketSide(market, code, side, items)
   return items
     .filter(item => price(item[side]) !== null && !isOff(item))
     .sort((a, b) => (side === 'sell' ? a.sell! - b.sell! : b.buy! - a.buy!))

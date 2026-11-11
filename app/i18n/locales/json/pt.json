@@ -1911,7 +1911,7 @@
     "colCasa": "Casa de câmbio",
     "colRate": "Venda",
     "colSavings": "Economia vs. média",
-    "methodology": "Classificado pelo preço de venda do dólar (o que você paga por US$ 1). A economia compara comprar US$ {amount} nessa casa com a média do mercado. A cotação de referência do BCU e as cotações interbancárias são excluídas — o público não pode operar nelas. Também ficam de fora os quadros a mais de 3% da mediana do mercado: costumam ser um quadro parado ou mal lido.",
+    "methodology": "Classificado pelo preço de venda do dólar (o que você paga por US$ 1). A economia compara comprar US$ {amount} nessa casa com a média do mercado. A cotação de referência do BCU e as cotações interbancárias são excluídas — o público não pode operar nelas. Também ficam de fora os quadros a mais de 3% da mediana do mercado: costumam ser um quadro parado ou mal lido. E um quadro que está há dias sem mudar não encabeça o ranking, mesmo quando o preço parece o melhor: o mercado se moveu e ele não.",
     "noData": "Não há cotações disponíveis no momento."
   },
   "rateChanges": {

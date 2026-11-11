@@ -1929,7 +1929,7 @@
     "colCasa": "Casa de canvi",
     "colRate": "Vendre",
     "colSavings": "Estalvi vs. mitjana",
-    "methodology": "Ranked by the dollar sell price (what you pay per US$ 1). The saving compares buying US$ {amount} at that house against the market average. The BCU reference rate and interbank quotes are excluded — the public cannot transact at them. Boards more than 3% from the market median are left out too: they are usually a board that stopped updating or was misread.",
+    "methodology": "Ranked by the dollar sell price (what you pay per US$ 1). The saving compares buying US$ {amount} at that house against the market average. The BCU reference rate and interbank quotes are excluded — the public cannot transact at them. Boards more than 3% from the market median are left out too: they are usually a board that stopped updating or was misread. And a board that has not changed for days never heads the ranking, even when its price looks like the best: the market moved and it did not.",
     "noData": "No hi ha tarifes disponibles ara mateix."
   },
   "rateChanges": {

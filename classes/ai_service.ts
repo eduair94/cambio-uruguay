@@ -324,6 +324,8 @@ class AIService {
         sell: item.sell,
         type: displayType(item.type),
         counter: !item.type || item.type === "BILLETE",
+        // La marca de pizarra quieta (classes/frozen_marks.ts): la regla no la deja encabezar.
+        frozen: item.frozen === true,
         name: item.name || "",
       });
     }

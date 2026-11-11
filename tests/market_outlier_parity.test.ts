@@ -46,18 +46,22 @@ function lcg(seed: number) {
 
 const CENTERS: Record<string, number> = { USD: 40, EUR: 46, BRL: 7.5, ARS: 0.035, CHF: 50 };
 
-/** A market of `size` boards around `center`, with stale, misparsed and missing prices mixed in. */
+/**
+ * A market of `size` boards around `center`, with stale, misparsed and missing prices mixed in, and
+ * some boards carrying the backend's `frozen` mark (classes/frozen_marks.ts).
+ */
 function market(code: string, size: number, random: () => number) {
   const center = CENTERS[code]!;
   return Array.from({ length: size }, () => {
     const roll = random();
+    const frozen = random() < 0.2 ? { frozen: true } : {};
     const buy = center * (0.93 + random() * 0.06);
     const sell = center * (1.0 + random() * 0.06);
-    if (roll < 0.08) return { buy: buy * 0.9, sell: sell * 0.92 }; // a stale board
+    if (roll < 0.08) return { buy: buy * 0.9, sell: sell * 0.92, ...frozen }; // a stale board
     if (roll < 0.12) return { buy: buy * 8, sell: sell / 8 }; // a misplaced comma
-    if (roll < 0.15) return { buy: null, sell }; // one side missing
+    if (roll < 0.15) return { buy: null, sell, ...frozen }; // one side missing
     if (roll < 0.17) return { buy: 0, sell }; // a zero
-    return { buy, sell };
+    return { buy, sell, ...frozen };
   });
 }
 
@@ -99,5 +103,47 @@ describe("las tres copias de la regla de fuera de mercado", () => {
     // The generated markets must exercise both answers, or equality proves nothing.
     expect(flagged).toBeGreaterThan(50);
     expect(judged - flagged).toBeGreaterThan(1000);
+  });
+
+  it("niegan la corona a la misma pizarra quieta, también dentro de un subconjunto", () => {
+    const random = lcg(20261112);
+    let frozenOut = 0;
+    let frozenKept = 0;
+    for (const code of Object.keys(CENTERS)) {
+      for (const size of [5, 12, 30]) {
+        for (let round = 0; round < 8; round++) {
+          const quotes = market(code, size, random);
+          // A department: a slice of the market, judged with the market's band.
+          const within = quotes.slice(0, Math.max(1, Math.floor(size / 3)));
+          for (const side of ["buy", "sell"] as const) {
+            const expected = within.map(backend.offMarketSide(quotes, code, side, within));
+            const ahead = within.map(backend.frozenAheadIn(within, side));
+            for (const [name, copy] of COPIES) {
+              expect(within.map(copy.offMarketSide(quotes, code, side, within)), `${name} ${code} ${side}`).toEqual(expected);
+              expect(within.map(copy.frozenAheadIn(within, side)), `${name} ${code} ${side}`).toEqual(ahead);
+            }
+            within.forEach((q, i) => {
+              if (!("frozen" in q)) return;
+              if (ahead[i]) frozenOut++;
+              else frozenKept++;
+            });
+          }
+        }
+      }
+    }
+    // Both cases happen: a frozen board ahead of the best live one, and one behind it.
+    expect(frozenOut).toBeGreaterThan(10);
+    expect(frozenKept).toBeGreaterThan(10);
+  });
+
+  it("una pizarra quieta detrás de la mejor viva sigue en carrera; adelante, no", () => {
+    const board = (sell: number, frozen = false) => ({ buy: sell - 2, sell, ...(frozen ? { frozen } : {}) });
+    const quotes = [...Array.from({ length: 12 }, (_, i) => board(41 + i * 0.01)), board(40.95, true), board(41.5, true)];
+    for (const copy of [backend, ...COPIES.map(([, c]) => c)]) {
+      const off = copy.offMarketSide(quotes, "USD", "sell");
+      expect(off(quotes[12]!)).toBe(true); // 40,95 frozen, ahead of 41,00 live
+      expect(off(quotes[13]!)).toBe(false); // 41,50 frozen, behind: still ranked and counted
+      expect(off(quotes[0]!)).toBe(false);
+    }
   });
 });

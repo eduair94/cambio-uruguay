@@ -16,6 +16,9 @@ export interface UsdRateRow {
   buy: number
   sell: number
   isInterBank?: boolean
+  /** The backend's mark on today's rows: the board has not changed for days (utils/marketOutlier.ts). */
+  frozen?: boolean
+  frozenDays?: number
 }
 
 export interface UsdComparisonEntry {
@@ -39,6 +42,9 @@ export interface UsdComparisonEntry {
   offMarketSell: boolean
   /** The buy is off-market: it is never crowned the best payer. */
   offMarketBuy: boolean
+  /** The backend's mark: the board has not changed for days (utils/marketOutlier.ts). */
+  frozen?: boolean
+  frozenDays?: number
 }
 
 /**
@@ -96,6 +102,7 @@ export function buildUsdComparison(rows: UsdRateRow[]): UsdComparisonEntry[] {
     offMarket: sellOff(r) || buyOff(r),
     offMarketSell: sellOff(r),
     offMarketBuy: buyOff(r),
+    ...(r.frozen === true ? { frozen: true, frozenDays: r.frozenDays } : {}),
   }))
 }
 
@@ -2703,7 +2710,7 @@ const CONTENT: Record<'es' | 'en' | 'pt', CasasContent> = {
       'Este precio solo se consigue siendo cliente de la institución (eBROU, transferencia bancaria, Prex, OCA). No es comparable con el mostrador de una casa de cambio, donde no hace falta ser cliente.',
     offMarket: 'verificar',
     offMarketHint:
-      'Esta cotización se aparta más de 3% de la mediana del mercado. Puede ser una pizarra desactualizada en el sitio de la casa: confirmá antes de viajar.',
+      'Esta cotización queda demasiado lejos del resto del mercado, o la pizarra lleva días sin cambiar mientras el mercado se mueve. Puede estar desactualizada en el sitio de la casa: confirmá antes de viajar.',
     emptyTitle: 'Ninguna casa coincide con estos filtros',
     emptyText: 'Probá con otro departamento o quitá el filtro de tipo.',
     clearFilters: 'Limpiar filtros',
@@ -2866,7 +2873,7 @@ const CONTENT: Record<'es' | 'en' | 'pt', CasasContent> = {
       'This price is only available to clients of the institution (eBROU, bank transfer, Prex, OCA). It is not comparable to an exchange house counter, where you need no account at all.',
     offMarket: 'check first',
     offMarketHint:
-      'This quote sits more than 3% away from the market median. It may be a stale board on the house’s own site — confirm before travelling.',
+      'This quote sits too far from the rest of the market, or the board has not changed for days while the market moves. It may be stale on the house’s own site — confirm before travelling.',
     emptyTitle: 'No house matches these filters',
     emptyText: 'Try another department, or drop the type filter.',
     clearFilters: 'Clear filters',
@@ -3029,7 +3036,7 @@ const CONTENT: Record<'es' | 'en' | 'pt', CasasContent> = {
       'Este preço só está disponível para clientes da instituição (eBROU, transferência bancária, Prex, OCA). Não é comparável com o balcão de uma casa de câmbio, onde não é preciso ser cliente.',
     offMarket: 'verificar',
     offMarketHint:
-      'Esta cotação está a mais de 3% da mediana do mercado. Pode ser um quadro desatualizado no site da casa — confirme antes de viajar.',
+      'Esta cotação está longe demais do resto do mercado, ou o quadro está há dias sem mudar enquanto o mercado se move. Pode estar desatualizado no site da casa — confirme antes de viajar.',
     emptyTitle: 'Nenhuma casa corresponde a estes filtros',
     emptyText: 'Tente outro departamento ou remova o filtro de tipo.',
     clearFilters: 'Limpar filtros',

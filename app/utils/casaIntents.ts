@@ -149,8 +149,11 @@ export interface CasaFacts {
   branches: BranchPage[]
   /** Department labels where it operates, deduped and sorted. */
   departments: string[]
-  /** This casa's USD cash quote today, when it publishes one. */
-  usd: { buy: number; sell: number; type: string } | null
+  /**
+   * This casa's USD cash quote today, when it publishes one. `frozen` is the backend's mark: the
+   * board has published the same prices for `frozenDays` days (utils/marketOutlier.ts).
+   */
+  usd: { buy: number; sell: number; type: string; frozen?: boolean; frozenDays?: number } | null
   /** Cheapest USD sell across the market today (what the best casa charges you). */
   marketBestSell: number | null
   /** Highest USD buy across the market today (what the best casa pays you). */
@@ -217,6 +220,9 @@ export interface CurrencyQuoteFacts {
   marketSize: number
   sellRank: number | null
   buyRank: number | null
+  /** The backend's mark: this board has not changed for `frozenDays` days. */
+  frozen?: boolean
+  frozenDays?: number
 }
 
 /** A quote row as the market feed publishes it. */
@@ -227,6 +233,9 @@ export interface MarketQuoteRow {
   buy: number
   sell: number
   isInterBank?: boolean
+  /** The backend's mark on today's rows: the board has not changed for days (utils/marketOutlier.ts). */
+  frozen?: boolean
+  frozenDays?: number
 }
 
 /** One casa's chosen quote for a currency, before ranking. */
@@ -235,6 +244,9 @@ interface PickedQuote {
   type: string
   buy: number
   sell: number
+  /** The backend's mark: the board has not changed for days (utils/marketOutlier.ts). */
+  frozen?: boolean
+  frozenDays?: number
 }
 
 /**
@@ -276,7 +288,13 @@ export function buildCurrencyMarket(
       quoteRank(type) < quoteRank(previous.type) ||
       (quoteRank(type) === quoteRank(previous.type) && row.sell < previous.sell)
     ) {
-      byOrigin.set(row.origin, { origin: row.origin, type, buy: row.buy, sell: row.sell })
+      byOrigin.set(row.origin, {
+        origin: row.origin,
+        type,
+        buy: row.buy,
+        sell: row.sell,
+        ...(row.frozen === true ? { frozen: true, frozenDays: row.frozenDays } : {}),
+      })
     }
   }
 
@@ -338,6 +356,7 @@ export function currencyFactsFor(
     marketSize: market.bySell.length,
     sellRank: rankOf(market.bySell),
     buyRank: rankOf(market.byBuy),
+    ...(mine.frozen === true ? { frozen: true, frozenDays: mine.frozenDays } : {}),
   }
 }
 
@@ -573,6 +592,20 @@ const STALE_BOARD_ADVICE =
   'Un precio tan lejos del resto suele ser una pizarra que no se actualizó: confirmalo con la casa antes de ir.'
 
 /**
+ * The same case when the backend KNOWS the board is stale: it has published the same prices for
+ * days (utils/marketOutlier.ts). Then the reason is not a guess, and the price need not be far from
+ * the rest — cambio_principal's euro buy was 45 for 100 days, 1 % over the best live one.
+ */
+const FROZEN_BOARD_ADVICE = 'Confirmá el precio con la casa antes de ir.'
+
+/** "lleva 100 días sin cambiar", or without the number when the mark did not carry one. */
+function frozenFor(days: number | undefined): string {
+  return typeof days === 'number' && days > 1
+    ? `lleva ${days} días sin cambiar`
+    : 'lleva días sin cambiar'
+}
+
+/**
  * A sentence quantifying this casa's position today, or `''` when it does not quote.
  *
  * The rank clause is appended only when the casa is inside the ranked set: a
@@ -589,6 +622,13 @@ export function marketPositionSentence(
   if (intent === 'comprar-dolares') {
     if (facts.marketBestSell === null) return ''
     const gap = facts.usd.sell - facts.marketBestSell
+    if (facts.usd.frozen && gap <= 0.0001) {
+      return `Hoy ${facts.name} publica una venta de $ ${formatRateEs(facts.usd.sell)}, pero su pizarra ${frozenFor(
+        facts.usd.frozenDays
+      )}: la casa más barata con el precio al día vende a $ ${formatRateEs(
+        facts.marketBestSell
+      )}. ${FROZEN_BOARD_ADVICE}`
+    }
     if (gap < -0.0001) {
       return `Hoy ${facts.name} publica una venta de $ ${formatRateEs(facts.usd.sell)}, muy por debajo del resto del mercado: la casa más barata entre las demás vende a $ ${formatRateEs(
         facts.marketBestSell
@@ -610,6 +650,13 @@ export function marketPositionSentence(
 
   if (facts.marketBestBuy === null) return ''
   const gap = facts.marketBestBuy - facts.usd.buy
+  if (facts.usd.frozen && gap <= 0.0001) {
+    return `Hoy ${facts.name} publica que paga $ ${formatRateEs(facts.usd.buy)} por dólar, pero su pizarra ${frozenFor(
+      facts.usd.frozenDays
+    )}: quien mejor paga con el precio al día da $ ${formatRateEs(
+      facts.marketBestBuy
+    )}. ${FROZEN_BOARD_ADVICE}`
+  }
   if (gap < -0.0001) {
     return `Hoy ${facts.name} publica que paga $ ${formatRateEs(facts.usd.buy)} por dólar, muy por encima del resto del mercado: la casa que mejor paga entre las demás da $ ${formatRateEs(
       facts.marketBestBuy
@@ -654,9 +701,17 @@ export function currencyPositionSentence(facts: CasaFacts): string {
   ]
 
   let offMarket = false
+  let frozenAhead = false
   if (currency.marketSize > 1 && currency.bestSell !== null) {
     const gap = currency.sell - currency.bestSell
-    if (gap < -0.0001) {
+    if (currency.frozen && gap <= 0.0001) {
+      frozenAhead = true
+      parts.push(
+        `Publica una venta de $ ${formatRateEs(currency.sell)}, pero la pizarra ${frozenFor(
+          currency.frozenDays
+        )}: la casa más barata con el precio al día lo vende a $ ${formatRateEs(currency.bestSell)}.`
+      )
+    } else if (gap < -0.0001) {
       offMarket = true
       parts.push(
         `Su venta está muy por debajo del resto del mercado: la casa más barata entre las demás lo vende a $ ${formatRateEs(
@@ -679,7 +734,18 @@ export function currencyPositionSentence(facts: CasaFacts): string {
 
   if (currency.marketSize > 1 && currency.bestBuy !== null) {
     const gap = currency.bestBuy - currency.buy
-    if (gap < -0.0001) {
+    if (currency.frozen && gap <= 0.0001) {
+      // The sell sentence above may already have said the board is stale.
+      const why = frozenAhead
+        ? 'con la misma pizarra quieta'
+        : `la pizarra ${frozenFor(currency.frozenDays)}`
+      frozenAhead = true
+      parts.push(
+        `Y publica que lo compra a $ ${formatRateEs(currency.buy)}, pero ${why}: quien mejor paga con el precio al día da $ ${formatRateEs(
+          currency.bestBuy
+        )} por ${unit}.`
+      )
+    } else if (gap < -0.0001) {
       offMarket = true
       parts.push(
         `Y su compra está muy por encima de lo que paga el resto: quien mejor paga entre las demás da $ ${formatRateEs(
@@ -697,7 +763,8 @@ export function currencyPositionSentence(facts: CasaFacts): string {
     }
   }
 
-  if (offMarket) parts.push(STALE_BOARD_ADVICE)
+  if (frozenAhead) parts.push(FROZEN_BOARD_ADVICE)
+  else if (offMarket) parts.push(STALE_BOARD_ADVICE)
 
   if (currency.marketSize <= 1) {
     parts.push(

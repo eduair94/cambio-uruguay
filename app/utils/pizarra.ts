@@ -28,6 +28,9 @@ export interface PizarraRow {
   sell?: number
   /** Wholesale/reference marker set by the API service. */
   isInterBank?: boolean
+  /** The backend's mark on today's rows: the board has not changed for days (utils/marketOutlier.ts). */
+  frozen?: boolean
+  frozenDays?: number
   /** Non-empty when the quote needs a condition met (eBROU, Prex account…). */
   condition?: string
   localData?: { name?: string } | null
@@ -118,6 +121,8 @@ export interface ComparisonRow {
   bestBuy: boolean
   /** True when this is the market's best sell for its currency (cash only). */
   bestSell: boolean
+  /** The backend's mark: the board has not changed for days (utils/marketOutlier.ts). */
+  frozen?: boolean
 }
 
 /** The full market for one currency, best-first, nothing filtered out. */
@@ -156,6 +161,7 @@ export function buildComparison(rows: readonly PizarraRow[]): ComparisonGroup[] 
       sell,
       bestBuy: false,
       bestSell: false,
+      ...(row.frozen === true ? { frozen: true } : {}),
     })
     byCode.set(row.code, list)
   }

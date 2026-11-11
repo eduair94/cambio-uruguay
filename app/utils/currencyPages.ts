@@ -244,6 +244,9 @@ export interface CurrencyQuote {
   bestBuy: boolean
   /** True for the row with the lowest sell price (best place to BUY the currency). */
   bestSell: boolean
+  /** The backend's mark: this board has not changed for days (see `ExchangeRate.frozen`). */
+  frozen?: boolean
+  frozenDays?: number
 }
 
 /**
@@ -288,8 +291,8 @@ export function rankUsableQuotes(
   reference: readonly CurrencyQuote[] = quotes
 ): CurrencyQuote[] {
   const ranked = quotes.map(quote => ({ ...quote, bestBuy: false, bestSell: false }))
-  const buyOff = offMarketSide(reference, code, 'buy')
-  const sellOff = offMarketSide(reference, code, 'sell')
+  const buyOff = offMarketSide(reference, code, 'buy', ranked)
+  const sellOff = offMarketSide(reference, code, 'sell', ranked)
 
   let bestBuy: CurrencyQuote | null = null
   let bestSell: CurrencyQuote | null = null
@@ -378,6 +381,7 @@ export function quotesForCurrency(
       sell: typeof row.sell === 'number' ? row.sell : null,
       bestBuy: false,
       bestSell: false,
+      ...(row.frozen === true ? { frozen: true, frozenDays: row.frozenDays } : {}),
     })
   }
 

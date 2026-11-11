@@ -133,6 +133,8 @@ const rankableRows = computed(() => {
         buy: row.buy,
         sell: row.sell,
         name: (row as { localData?: { name?: string } }).localData?.name ?? origin,
+        // The backend's mark (utils/marketOutlier.ts): without it a frozen board heads the ranking.
+        ...(row.frozen === true ? { frozen: true } : {}),
       },
     ]
   })

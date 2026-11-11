@@ -55,9 +55,12 @@ export interface HousePrice {
   spread: number;
   /**
    * True when a side of this board is too good to be a market price (a stale or misparsed
-   * pizarra): it is listed, and never named best, nor counted in the averages or the spread.
+   * pizarra), or the board is frozen and would otherwise be named best: it is listed, and never
+   * named best, nor counted in the averages or the spread.
    */
   offMarket: boolean;
+  /** The API's mark: this board has not changed its prices for days. */
+  frozen: boolean;
 }
 
 export interface RatesResult {
@@ -84,6 +87,7 @@ export async function getRates(api: CambioApi, args: { currency: string }): Prom
       sell: r.sell,
       spread: r.sell - r.buy,
       offMarket: off.buy(r) || off.sell(r),
+      frozen: r.frozen === true,
     }))
     .sort((a, b) => a.sell - b.sell);
 
