@@ -1212,7 +1212,7 @@
 
     <!-- ══ 14. CROSS-LINKS ══ -->
     <VRow class="my-6">
-      <VCol cols="12" md="4">
+      <VCol cols="12" md="3">
         <VCard
           :to="localePath('/herramientas/calculadora-irpf')"
           class="cross-link pa-4 h-100"
@@ -1226,7 +1226,7 @@
           </p>
         </VCard>
       </VCol>
-      <VCol cols="12" md="4">
+      <VCol cols="12" md="3">
         <VCard
           :to="localePath('/salud-financiera')"
           class="cross-link pa-4 h-100"
@@ -1240,7 +1240,7 @@
           </p>
         </VCard>
       </VCol>
-      <VCol cols="12" md="4">
+      <VCol cols="12" md="3">
         <VCard
           :to="localePath('/inversiones-uruguay')"
           class="cross-link pa-4 h-100"
@@ -1251,6 +1251,20 @@
           <h3 class="text-subtitle-1 font-weight-bold mb-1">Invertir en Uruguay</h3>
           <p class="text-body-2 text-medium-emphasis mb-0">
             Qué hacer con la plata que la empresa empieza a dejar.
+          </p>
+        </VCard>
+      </VCol>
+      <VCol cols="12" md="3">
+        <VCard
+          :to="localePath('/registrar-una-marca-uruguay')"
+          class="cross-link pa-4 h-100"
+          hover
+          variant="flat"
+        >
+          <VIcon color="primary" class="mb-2">mdi-trademark</VIcon>
+          <h3 class="text-subtitle-1 font-weight-bold mb-1">Registrar la marca</h3>
+          <p class="text-body-2 text-medium-emphasis mb-0">
+            La tasa de la DNPI va por clase de Niza: el nombre y el logo no cuestan lo mismo.
           </p>
         </VCard>
       </VCol>

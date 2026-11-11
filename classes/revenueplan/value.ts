@@ -400,6 +400,7 @@ export const CONTENIDO_PATHS = new Set([
   "/recibir-regalos-del-exterior-uruguay",
   "/reclamo-sodimac-compra-cancelada",
   "/reconocer-anos-trabajados-uruguay",
+  "/registrar-una-marca-uruguay",
   "/renunciar-al-trabajo-uruguay",
   "/retirar-efectivo-uruguay",
   "/salario-vacacional-uruguay",

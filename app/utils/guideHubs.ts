@@ -1685,6 +1685,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/facturar-en-monotributo-uruguay',
       },
       {
+        label: 'Registrar una marca',
+        description: 'La tasa de la DNPI va por clase de Niza, y con logo sale 40 % más.',
+        to: '/registrar-una-marca-uruguay',
+      },
+      {
         label: 'Ropa por kilo y fardos',
         description: 'Dónde compran los feriantes, cuánto deja un lote y qué dice la aduana.',
         to: '/ropa-por-kilo-uruguay',

@@ -1878,6 +1878,31 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // Lo que sale registrar la marca del emprendimiento, que no estaba escrito en ninguna
+        // página: ni «marca registrada» ni «propiedad industrial» ni «DNPI» aparecían en el repo.
+        // El ángulo propio es que NO HAY un precio del trámite —la tasa se cobra por clase de Niza y
+        // la marca con logo sale exactamente 40 % más— y que dos de las tasas que todos los
+        // resúmenes listan ya no se cobran: la búsqueda de antecedentes la suprimió el art. 138 de
+        // la Ley 19.670 y la publicación en el Boletín no se cobra por la circular 3/2018.
+        to: '/registrar-una-marca-uruguay',
+        labelKey: 'nav.registrarMarca',
+        icon: 'mdi-trademark',
+        priority: 0.7,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'registrar una marca uruguay',
+          'cuanto sale registrar una marca',
+          'tasas dnpi marcas',
+          'marca registrada uruguay',
+          'clasificacion de niza',
+          'renovar una marca uruguay',
+          'oposicion de marca uruguay',
+          'ley 17011 marcas',
+          'propiedad industrial uruguay',
+        ],
+      },
+      {
         to: '/facturar-en-monotributo-uruguay',
         labelKey: 'nav.facturarMonotributo',
         icon: 'mdi-receipt-text-outline',

@@ -1531,6 +1531,10 @@
           "label": "Facturar en monotributo"
         },
         {
+          "to": "/registrar-una-marca-uruguay",
+          "label": "Registrar una marca"
+        },
+        {
           "to": "/ropa-por-kilo-uruguay",
           "label": "Ropa por kilo y fardos"
         },

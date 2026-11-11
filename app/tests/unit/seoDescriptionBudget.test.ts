@@ -518,17 +518,35 @@ const RESOLVED_TEMPLATE = 14
  * `pension-alimenticia-enlaces-de-contexto` del 2026-10-13 midiendo, así que tocarle la descripción
  * ahora le cambia el sujeto al experimento. Se libera el 2026-11-11 y desde entonces
  * `npm run seo_debt` la nombra sola: este pozo se declara como los otros cinco y el informe lo lee.
+ *
+ * 1 → 0 el 2026-11-11, que es el día exacto que el párrafo de arriba tenía anotado: la fila que
+ * reservaba `/pension-alimenticia-uruguay` se publicó el 2026-10-13, así que hoy cumple 29 días y
+ * sale de la ventana que `experiments_overlap.test.ts` protege (el solape es `|Δfecha| ≤ 28`), y
+ * `npm run seo_debt` la imprimió como la ÚNICA ruta libre de las trece en deuda. Su piso medía 272
+ * caracteres —casi el doble del presupuesto— porque abría explicando la ausencia («La ley uruguaya
+ * no fija ningún porcentaje del sueldo») y dejaba del lado cortado las tres cifras que deciden el
+ * clic. Pasa a 143 de piso y 152 renderizado, con las tres adelante: el piso universal de 1 BPC
+ * ($6.864) por núcleo familiar que el juez fija cuando no conoce los ingresos (CNA art. 46 in fine,
+ * redacción de la Ley 20.212), y los 5 años sin crédito bancario que trae el registro de deudores
+ * alimentarios morosos pasadas las 3 cuotas (Leyes 17.957 y 18.244). Ninguna cifra es nueva: las
+ * tres ya estaban en la descripción vieja y las tres siguen en el cuerpo con su fuente.
  */
 const DEUDA_DESCRIPCION_PLANTILLA = [
-  // El comentario va DENTRO de la lista por lo que `DEUDA_SIN_ENLACE` en `enlacesDeContexto.test.ts`
-  // deja escrito: `classes/revenueplan/debtFree.ts::parseStringList` corta en el primer `\n]`, o sea
+  // POZO PAGADO el 2026-11-11: ninguna descripción escrita con plantilla tiene el piso pasado de
+  // 155 caracteres.
+  //
+  // Esa marca literal es la que `classes/revenueplan/debtFree.ts::parseStringList` busca para
+  // distinguir «este pozo se terminó» de su propio modo de fallar, que es devolver `[]` cuando no
+  // entiende la forma de la lista: sin la marca, una lista vacía sigue tirando excepción, porque un
+  // `const` renombrado tiene que romper el informe y no vaciarlo en silencio.
+  //
+  // Y el comentario sigue DENTRO de la lista por lo que `DEUDA_SIN_ENLACE` en
+  // `enlacesDeContexto.test.ts` deja escrito: `parseStringList` corta en el primer `\n]`, o sea
   // exige que el cierre abra su propia línea, y prettier aplasta a una sola línea cualquier array
-  // que entre en 100 columnas salvo los que llevan un comentario. Con una sola entrada entra
-  // holgado, así que sin esto `npm run lintfix` lo colapsa y el informe deja de leer este pozo.
-  '/pension-alimenticia-uruguay',
+  // que entre en 100 columnas salvo los que llevan un comentario.
 ]
 
-const TEMPLATE_OVER_BUDGET = 1
+const TEMPLATE_OVER_BUDGET = 0
 
 describe('las descripciones escritas con plantilla también entran en el SERP', () => {
   it(`lee el piso de ${RESOLVED_TEMPLATE} páginas sin ejecutar la app`, () => {
