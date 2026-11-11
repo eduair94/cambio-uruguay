@@ -979,8 +979,10 @@ useHead(() => ({
 }
 @media (max-width: 700px) {
   .opportunities {
-    /* The layout already contributes 12px: retain 16px total at each edge. */
-    padding: 4px 4px 56px;
+    /* The layout already contributes 12px; 16px more puts the content at x=28 like every other
+       page under the section bar (FamiliaNav). With 4px the cards stood 12px wider than the bar on
+       each side, the inconsistency a reader reported from a phone on 2026-11-11. */
+    padding: 4px 16px 56px;
   }
   .opportunities__breadcrumbs {
     display: none;

@@ -1564,6 +1564,12 @@ export default defineNuxtConfig({
     newsletter: {
       delayMs: process.env.NEWSLETTER_SEND_DELAY_MS || '1000',
     },
+    // Site feedback (suggestion box, bug reports): where the email goes. The owner's own inbox is
+    // set as FEEDBACK_EMAIL in the server's app/.env, never in the repo (it is public); until then
+    // it goes to the site's public contact address. Runtime override: NUXT_FEEDBACK_TO.
+    feedback: {
+      to: process.env.FEEDBACK_EMAIL || 'admin@cambio-uruguay.com',
+    },
     rentalAlerts: {
       enabled: process.env.RENTAL_ALERTS_ENABLED !== '0',
     },

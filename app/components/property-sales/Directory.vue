@@ -630,7 +630,8 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('seoDescrip
 <style scoped>
 .sales-directory {
   max-width: 1280px;
-  padding: 12px;
+  /* 16px at the sides: the same x=28 edge as every page under the section bar (FamiliaNav). */
+  padding: 12px 16px;
 }
 :where(.sales-directory) :where(h1, h2, h3, p) {
   margin: 0;

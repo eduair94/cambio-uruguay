@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="pa-2 pa-sm-4">
+  <v-container fluid class="px-4 py-2 pa-sm-4">
     <h1 class="text-h5 text-sm-h4 mb-2">Descuentos con tarjeta en Uruguay: el mapa por banco</h1>
     <p class="text-body-2 text-medium-emphasis mb-3" style="max-width: 70ch">
       Elegí tus tarjetas y mirá en el mapa qué comercios tienen descuento con cada una — Itaú, BROU,

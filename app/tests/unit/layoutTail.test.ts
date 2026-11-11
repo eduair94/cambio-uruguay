@@ -24,6 +24,7 @@ const TAIL = [
   'DirectorioAnalisis',
   'TemaVecinos',
   'RelatedPages',
+  'LazyFeedbackPageHelpful',
   'NewsletterCapture',
 ]
 
