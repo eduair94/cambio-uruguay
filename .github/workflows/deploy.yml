@@ -166,6 +166,10 @@ jobs:
               - 'classes/priceevents/calendar.ts'
             backendContracts:
               - 'app/utils/**'
+              # La copia del MCP de la regla de "fuera de mercado": tests/market_outlier_parity.test.ts
+              # la corre junto a la del app y la del backend. Sin esta línea, un cambio sólo en esa
+              # copia no corría ninguna suite (mcp/ no tiene filtro) y el bot volvía a publicar otra cifra.
+              - 'mcp/src/marketOutlier.ts'
               - 'app/server/**'
               - 'app/pages/videos-de-economia-uruguay.vue'
               - 'app/pages/videos-de-economia-uruguay/**'

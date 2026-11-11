@@ -145,3 +145,35 @@ describe("dailySummary", () => {
     expect(r.summary).toBe("El dólar se mantiene estable hoy.");
   });
 });
+
+// The board frozen since July at 39,55 (2026-11-11): the bots posted it as the cheapest dollar.
+describe("a price the market rejects is never the best", () => {
+  const market: RateRow[] = [
+    ...Array.from({ length: 12 }, (_, i) => row("USD", `casa_${i}`, 39 + i * 0.01, 41 + i * 0.01)),
+    row("USD", "baluma_cambio", 37.15, 39.55),
+    // A real cheapest sell from a narrow-spread casa whose buy is too generous to be a price.
+    row("USD", "narrow", 40.8, 40.9),
+  ];
+  const api = () => fakeApi({ getRates: async () => market });
+
+  it("getRates names the live best on each side and flags the boards it left out", async () => {
+    const r = await getRates(api(), { currency: "USD" });
+    expect(r.bestSell).toMatchObject({ origin: "narrow", rate: 40.9 });
+    expect(r.bestBuy).toMatchObject({ origin: "casa_11", rate: 39.11 });
+    expect(r.houseCount).toBe(14);
+    expect(r.houses.find((h) => h.origin === "baluma_cambio")?.offMarket).toBe(true);
+    expect(r.houses.find((h) => h.origin === "narrow")?.offMarket).toBe(true);
+    expect(r.houses.find((h) => h.origin === "casa_0")?.offMarket).toBe(false);
+    // Neither 39,55 nor 40,8 moves the averages, and the lowest spread is a clean board.
+    expect(r.marketAvgSell).toBeGreaterThan(40.9);
+    expect(r.marketAvgBuy).toBeLessThan(39.2);
+    expect(["baluma_cambio", "narrow"]).not.toContain(r.lowestSpread.origin);
+  });
+
+  it("bestHouse and convert follow it", async () => {
+    expect((await bestHouse(api(), { currency: "USD", side: "buy" })).origin).toBe("narrow");
+    expect((await bestHouse(api(), { currency: "USD", side: "sell" })).origin).toBe("casa_11");
+    const r = await convert(api(), { amount: 409, from: "UYU", to: "USD" });
+    expect(r.result).toBeCloseTo(10, 6);
+  });
+});
