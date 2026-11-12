@@ -53,7 +53,13 @@ Si la diferencia contra el BROU es menor a $ 100 sobre US$ 1.000, el post no com
 
 La [API de IFTTT](https://ifttt.com/docs/api_reference) **no sirve para esto**: es el protocolo que
 implementa el dueño de un servicio para que IFTTT lo llame, no una forma de crear applets o publicar.
-El camino es un applet común, y entra en el plan gratuito (2 applets, el feed se lee una vez por hora).
+El camino es un applet común. **El applet ya existe** (creado el 12/11/2026): "Post diario de
+cambio-uruguay.com en LinkedIn", <https://ifttt.com/applets/tRmuXzx6>, con "AI Action assist"
+APAGADO (si se prende, IFTTT reescribe cada post con IA) y "Notify me if this fails to run"
+prendido. IFTTT cobra en créditos: 20 el trigger + 20 la acción por post. La cuenta consulta el
+feed cada 5 minutos (Pro); en el plan gratis es cada hora.
+
+Para rearmarlo desde cero (modo *Classic*, no *Chat*):
 
 1. Entrar a <https://ifttt.com/create>.
 2. **If This** → buscar **RSS Feed** → **New feed item** → Feed URL:
@@ -69,7 +75,7 @@ El camino es un applet común, y entra en el plan gratuito (2 applets, el feed s
 4. *Continue* → nombre del applet → apagar "Receive notifications when this Applet runs" → *Finish*.
 
 IFTTT no publica los ítems que ya estaban en el feed al crear el applet: el primer post sale con el
-primer `guid` nuevo, a las 9 del día siguiente (entre 9 y 10, por la lectura horaria del plan gratis).
+primer `guid` nuevo, a las 9 del día siguiente (con la lectura cada 5 minutos, antes de las 9:10).
 
 **A revisar con el primer post**: que LinkedIn respete los saltos de línea de `{{EntryContent}}`. El
 texto va en CDATA con saltos reales; si IFTTT los aplana, el post se lee igual pero en un solo
@@ -93,5 +99,20 @@ curl -s https://cambio-uruguay.com/feeds/linkedin.xml
 curl -sI https://cambio-uruguay.com/feeds/linkedin.xml   # HEAD también responde (sin sufijo .get)
 ```
 
-Cabeceras: `application/rss+xml`, `s-maxage=300` (los lunes tiene que verse el número de esa
-mañana) y `x-robots-tag: noindex` (no es una página).
+Cabeceras: `application/rss+xml`, `x-robots-tag: noindex` (no es una página) y
+`LINKEDIN_FEED_CACHE_CONTROL`: `s-maxage=300` (los lunes tiene que verse el número de esa mañana)
+con `stale-while-revalidate` y `stale-if-error` de un día, **sin `must-revalidate`**.
+
+### La caché del borde (por qué IFTTT no depende del origen)
+
+El 12/11/2026 a las 17:01 UTC el origen se trabó dos minutos (97 respuestas 499/503 en todo el
+sitio, VPS compartido) e IFTTT marcó el applet con "The service took too long to respond": el log
+de nginx (`/usr/local/apache/domlogs/cambio-uruguay.com.log`) muestra la consulta de
+`IFTTT/1.0` de ese minuto como 499, y todas las demás en 200. El feed salía `cf-cache-status:
+DYNAMIC` porque la regla de páginas de Cloudflare excluye las rutas con extensión.
+
+Desde ese día hay una Cache Rule propia (`starts_with(http.request.uri.path, "/feeds/")`,
+`edge_ttl: bypass_by_default`, la misma postura que las demás: guarda sólo si el origen manda
+`s-maxage`). Con eso, más los `stale-*`, el borde contesta con la copia que tiene aunque el origen
+no responda. Se verifica con `cf-cache-status` (`HIT`, o `STALE`/`UPDATING` al vencer) y en el log de
+nginx: las consultas de `IFTTT/1.0` dejan de llegar al origen cada 5 minutos.

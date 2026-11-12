@@ -20,8 +20,23 @@ export const LINKEDIN_SITE = 'https://cambio-uruguay.com'
 /** Primer día de la rotación: `LINKEDIN_POSTS[0]` sale este día. */
 export const LINKEDIN_EPOCH = '2026-11-13'
 
-/** Hora de Montevideo desde la que el post del día aparece en el feed. IFTTT gratis lo lee cada hora. */
+/** Hora de Montevideo desde la que el post del día aparece en el feed. IFTTT lo lee cada 5-60 min. */
 export const LINKEDIN_POST_HOUR = 9
+
+/**
+ * Cache-Control del feed. Cloudflare lo guarda por la regla de `/feeds/*` (respeta `s-maxage`).
+ *
+ * POR QUÉ SIN `must-revalidate` Y CON `stale-*`: el 12/11/2026 a las 17:01 UTC el origen se trabó
+ * dos minutos (97 respuestas 499/503 en todo el sitio, VPS compartido) e IFTTT cortó la consulta
+ * del feed con "The service took too long to respond". El contenido cambia una vez por día, así
+ * que una copia de minutos atrás es igual de buena: el borde la sirve en el acto y revalida por
+ * detrás, o la sostiene si el origen falla. `must-revalidate` lo habría prohibido.
+ *
+ * `s-maxage` corto para que el lunes se vea el dólar de esa mañana y el post nuevo de las 9 llegue
+ * en la consulta siguiente.
+ */
+export const LINKEDIN_FEED_CACHE_CONTROL =
+  'public, max-age=0, s-maxage=300, stale-while-revalidate=86400, stale-if-error=86400'
 
 export interface LinkedinPost {
   /** Identificador estable, sólo para tests y logs. */

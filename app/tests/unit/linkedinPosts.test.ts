@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 import { guideSlugs } from '../../utils/guides'
 import {
   LINKEDIN_EPOCH,
+  LINKEDIN_FEED_CACHE_CONTROL,
   LINKEDIN_POSTS,
   LINKEDIN_SEASONAL,
   dollarPost,
@@ -300,6 +301,24 @@ describe('renderLinkedinFeed', () => {
   it('un texto que no termina en dos puntos deja una línea en blanco antes de la URL', () => {
     expect(linkedinMessage({ id: 'y', path: '/', text: 'Hola.' })).toBe(
       'Hola.\n\nhttps://cambio-uruguay.com/'
+    )
+  })
+})
+
+describe('LINKEDIN_FEED_CACHE_CONTROL', () => {
+  // 12/11/2026 17:01 UTC: el origen se trabó dos minutos (97 respuestas 499/503 en todo el sitio) e
+  // IFTTT cortó la consulta del feed por timeout. El borde tiene que poder contestar con la copia
+  // que ya tiene mientras el origen no responde.
+  it('deja que el borde sirva la copia guardada si el origen tarda o falla', () => {
+    expect(LINKEDIN_FEED_CACHE_CONTROL).toMatch(/\bs-maxage=\d+/)
+    expect(LINKEDIN_FEED_CACHE_CONTROL).toMatch(/\bstale-while-revalidate=\d+/)
+    expect(LINKEDIN_FEED_CACHE_CONTROL).toMatch(/\bstale-if-error=\d+/)
+  })
+
+  it('no prohíbe servir una copia vieja', () => {
+    // must-revalidate le prohíbe a TODA caché usar una respuesta vencida sin revalidar.
+    expect(LINKEDIN_FEED_CACHE_CONTROL).not.toMatch(
+      /must-revalidate|proxy-revalidate|no-cache|no-store|private/
     )
   })
 })
