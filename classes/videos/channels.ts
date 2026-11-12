@@ -91,6 +91,21 @@ export const VIDEO_CHANNELS: readonly VideoChannel[] = Object.freeze([
     blurb: "Educación financiera para uruguayos que arrancan: hábitos, ahorro, presupuesto y cripto.",
   },
   {
+    // Pedido por su autor (12/11/2026). Feed leído ese día: finanzas uruguayas (débito o crédito,
+    // Prex o Gletir) y psicología del inversor, pero también relatos personales ("Cuba y México,
+    // 1999") que no son de plata — de ahí el filtro, aunque sea un creador y no un medio.
+    id: "javier-gutierrez-finanzas",
+    channelId: "UC_1NE9RUSIvNIMUD3COfp7A",
+    name: "Javier Gutiérrez - Finanzas",
+    handle: "@JavierGutierrezFinanzas",
+    country: "UY",
+    kind: "creador",
+    needsFilter: true,
+    weight: 3,
+    blurb:
+      "Inversión y psicología del inversor desde Uruguay: débito o crédito, Prex o Gletir, y los errores de conducta que más cuestan.",
+  },
+  {
     id: "estudio-contable-dmf",
     channelId: "UC4sQlwJ21-TOgwzzH-oGtzA",
     name: "Estudio Contable DMF",
