@@ -15,7 +15,7 @@ import {
   ARMADOR_ZONES,
   type ArmadorEntry,
   type ArmadorItem,
-  armadorFromPrice,
+  armadorShownPrice,
   armadorPriceText,
 } from '~/utils/armadores'
 
@@ -96,7 +96,8 @@ const coverageLine = computed(() => {
   return parts.length ? parts.join(' · ') : null
 })
 
-const headline = computed(() => armadorFromPrice(props.entry, props.mueble))
+// En dólares sólo si el prestador no publica nada en pesos (Naterial): se muestra, no ordena.
+const headline = computed(() => armadorShownPrice(props.entry, props.mueble))
 const headlineLabel = computed(() => {
   const price = headline.value
   if (!price) return null

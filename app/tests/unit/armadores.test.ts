@@ -14,6 +14,7 @@ import {
   armadoresStateFromQuery,
   armadorFromPrice,
   armadorPriceReference,
+  armadorShownPrice,
   armadorZoneCounts,
 } from '../../utils/armadores'
 
@@ -286,5 +287,73 @@ describe('armadoresCompact', () => {
       { url: 'https://x', consultedAt: DAY, label: 'Google Maps' },
     ])
     expect(payload).not.toHaveProperty('notes')
+  })
+})
+
+describe('hallazgos de la revisión final', () => {
+  it('con un barrio elegido, quien sólo está en la misma zona va en su propio grupo', () => {
+    const colon = entry('colon', {
+      base: { barrio: 'Colón', zone: 'norte', department: 'Montevideo', basis: 'ml-city' },
+    })
+    const prado = entry('prado', {
+      base: { barrio: 'Prado', zone: 'norte', department: 'Montevideo', basis: 'ml-city' },
+    })
+    const groups = armadoresGroups([colon, prado], {
+      ...ARMADORES_DEFAULT_STATE,
+      zona: 'norte',
+      barrio: 'Prado',
+    })
+    expect(groups.local.map(e => e.id)).toEqual(['prado'])
+    expect(groups.nearby.map(e => e.id)).toEqual(['colon'])
+  })
+
+  it('una base con etiqueta INE compuesta cuenta para cualquiera de sus partes', () => {
+    const pb = entry('pb', {
+      base: {
+        barrio: 'Parque Batlle, Villa Dolores',
+        zone: 'costa-este',
+        department: 'Montevideo',
+        basis: 'coordinates',
+      },
+    })
+    const groups = armadoresGroups([pb], {
+      ...ARMADORES_DEFAULT_STATE,
+      zona: 'costa-este',
+      barrio: 'Villa Dolores',
+    })
+    expect(groups.local.map(e => e.id)).toEqual(['pb'])
+  })
+
+  it('la misma lista de precios publicada en varios avisos cuenta una vez en la referencia', () => {
+    const list = (id: string) =>
+      entry(id, {
+        source: 'facebook',
+        kind: 'aviso',
+        prices: [price({ amount: 900, origin: 'ad-text' })],
+      })
+    const ref = armadorPriceReference([list('a'), list('b'), list('c')])
+    expect(ref.items.find(row => row.item === 'ropero')).toBeUndefined()
+  })
+
+  it('un prestador que sólo publica en dólares muestra ese precio y cuenta como «con precio»', () => {
+    const usd = entry('usd', { prices: [price({ amount: 80, currency: 'USD', item: 'ropero' })] })
+    expect(armadorShownPrice(usd, null)?.currency).toBe('USD')
+    expect(armadorFromPrice(usd, null)).toBeNull()
+    const groups = armadoresGroups([usd], { ...ARMADORES_DEFAULT_STATE, precio: true })
+    expect(groups.local.map(e => e.id)).toEqual(['usd'])
+  })
+
+  it('pasa la fecha de lectura de cada fuente a la página', () => {
+    const payload = armadoresCompact({
+      key: 'mvd',
+      capturedAt: new Date('2026-11-12T18:05:00Z'),
+      googleAt: '2026-11-10',
+      editorialReviewedAt: '2026-11-11',
+      sourcesAt: { facebook: '2026-11-09', mercadolibre: '2026-11-12' },
+      entries: [],
+      counts: {},
+      notes: [],
+    })
+    expect(payload?.sourcesAt).toEqual({ facebook: '2026-11-09', mercadolibre: '2026-11-12' })
   })
 })

@@ -10,6 +10,7 @@ const ArmadorSnapshotSchema = new Schema(
     capturedAt: { type: Date, required: true },
     googleAt: { type: String, default: null },
     editorialReviewedAt: { type: String, default: null },
+    sourcesAt: { type: Schema.Types.Mixed, default: {} },
     entries: { type: [Schema.Types.Mixed], default: [] },
     counts: { type: Schema.Types.Mixed, default: {} },
     notes: { type: [String], default: [] },

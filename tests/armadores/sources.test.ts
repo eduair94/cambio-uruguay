@@ -164,3 +164,27 @@ describe("relevamiento editorial", () => {
     expect(entry.coverage).toMatchObject({ allMontevideo: true, outside: ["Canelones"] });
   });
 });
+
+describe("hallazgos de la revisión final", () => {
+  it("un desarmadero, un armado de eventos o un montaje industrial no son armadores", () => {
+    for (const name of ["Desarmadero de autos Pando", "Armado de Eventos y Fiestas", "Montaje industrial SA", "Ensambles Metalúrgicos"]) {
+      expect(googleEntry(place({ name }), () => "Cordón", DAY), name).toBeNull();
+    }
+  });
+
+  it("un monto simbólico de Mercado Libre no se publica como precio", () => {
+    const item = { id: "MLU9", title: "Armador de muebles", permalink: "https://servicio.mercadolibre.com.uy/MLU-9-_JM", image: null, price: { amount: 1, currency: "UYU" as const }, state: "Montevideo", city: "Centro" };
+    const entry = mlEntry(item, DAY);
+    expect(entry?.prices).toEqual([]);
+    expect(entry?.symbolicPrice).toBe(true);
+  });
+
+  it("descarta un enlace que no es https y borra contactos del título", () => {
+    const card = { id: "1", title: "Armador de muebles 099 123 456", url: "javascript:alert(1)", price: { amount: 500, currency: "UYU" as const }, location: "Montevideo, Uruguay" };
+    expect(facebookEntry(card, null, DAY)).toBeNull();
+    const ok = facebookEntry({ ...card, url: "https://www.facebook.com/marketplace/item/1/" }, null, DAY);
+    expect(ok?.name).toBe("Armador de muebles");
+    const ml = { id: "MLU8", title: "Armador De Muebles 096 716 121", permalink: "http://x", image: null, price: null, state: "Montevideo", city: null };
+    expect(mlEntry(ml, DAY)).toBeNull();
+  });
+});

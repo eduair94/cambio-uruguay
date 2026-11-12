@@ -8,8 +8,8 @@
 //
 // El puente es compartido (autos, sillas, celulares…): pedidos en serie, con pausa entre ellos.
 import { blankEntry, withZones } from "../entry";
-import { coverageFromText, isAssemblyTitle, servicesFromText } from "../text";
-import type { ArmadorEntry } from "../types";
+import { coverageFromText, isAssemblyTitle, servicesFromText, stripContacts } from "../text";
+import { SYMBOLIC_PRICE_UYU, type ArmadorEntry } from "../types";
 import { zoneOfAnyName, zoneOfBarrio } from "../zones";
 
 export const ML_SERVICES_CATEGORY = "MLU1540";
@@ -111,8 +111,9 @@ export async function readMlServices(options: {
 }
 
 export function mlEntry(item: MlServiceItem, day: string): ArmadorEntry | null {
-  if (!isAssemblyTitle(item.title)) return null;
-  const entry = blankEntry({ id: `ml:${item.id}`, source: "mercadolibre", kind: "aviso", name: item.title, url: item.permalink }, day);
+  if (!isAssemblyTitle(item.title) || !item.permalink.startsWith("https://")) return null;
+  // El título puede traer el teléfono: los contactos de un aviso no se publican.
+  const entry = blankEntry({ id: `ml:${item.id}`, source: "mercadolibre", kind: "aviso", name: stripContacts(item.title) || "Aviso de armado de muebles", url: item.permalink }, day);
   entry.image = item.image;
   entry.coverage = withZones(coverageFromText(item.title));
   // ML llama "Montevideo" a la ciudad cuando el aviso no eligió barrio: eso no es un barrio.
@@ -122,7 +123,10 @@ export function mlEntry(item: MlServiceItem, day: string): ArmadorEntry | null {
     ? { barrio: item.city, zone, department: item.state, basis: "ml-city" }
     : { barrio: null, zone: null, department: item.state, basis: null };
   entry.services = [...new Set<ArmadorEntry["services"][number]>(["armado", ...servicesFromText(item.title)])];
-  if (item.price) {
+  // El mismo piso simbólico que Facebook: "$ 1" no es un precio.
+  const real = item.price && item.price.amount >= (item.price.currency === "USD" ? 5 : SYMBOLIC_PRICE_UYU);
+  if (item.price && !real) entry.symbolicPrice = true;
+  if (item.price && real) {
     entry.prices = [{
       item: null, label: "Precio del aviso", amount: item.price.amount, amountMax: null, currency: item.price.currency,
       kind: "ad", conditions: null, sourceUrl: item.permalink, observedAt: day, origin: "ad-card",

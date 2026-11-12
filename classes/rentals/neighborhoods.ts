@@ -266,7 +266,16 @@ export function neighborhoodsListedIn(text: string): NeighborhoodFromText[] {
     if (CUE_ONLY.has(span.entry.key) || overlaps(span) || corner(span)) continue;
     taken.push(span);
   }
-  // Generic names: behind a locative cue, or chained right after an accepted name.
+  // Generic names: behind a STRONG locative cue ("en", "zona", "barrio", "en el"), or chained right
+  // after an accepted name. Not behind "de"/"la", which the single-barrio reader accepts: a service
+  // lists furniture, and "mesas de centro", "centro de entretenimiento", "retiro de muebles" are
+  // furniture and chores, not barrios (measured on the armadores directory, 2026-11-12).
+  const STRONG_CUES = new Set(["en", "zona", "barrio", "bo"]);
+  const strongCue = (start: number): boolean => {
+    const before = start > 0 ? tokens[start - 1]! : "";
+    const twoBefore = start > 1 ? tokens[start - 2]! : "";
+    return STRONG_CUES.has(before) || ((before === "el" || before === "la" || before === "del") && STRONG_CUES.has(twoBefore));
+  };
   let added = true;
   while (added) {
     added = false;
@@ -274,7 +283,9 @@ export function neighborhoodsListedIn(text: string): NeighborhoodFromText[] {
       if (!CUE_ONLY.has(span.entry.key) || taken.includes(span) || overlaps(span) || corner(span)) continue;
       const before = span.start > 0 ? tokens[span.start - 1]! : "";
       const chained = taken.some(t => t.end === span.start || (t.end === span.start - 1 && CORNER_CUES.has(before)));
-      if (!LOCATIVE_CUES.has(before) && !chained) continue;
+      const after = span.end < tokens.length ? tokens[span.end]! : "";
+      if (after === "de" && !chained) continue;
+      if (!strongCue(span.start) && !chained) continue;
       taken.push(span);
       added = true;
     }

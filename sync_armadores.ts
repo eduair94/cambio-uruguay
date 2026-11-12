@@ -21,7 +21,7 @@ import { FACEBOOK_QUERIES, facebookDescription, facebookEntry, facebookSearches,
 import { googleEntry, readGooglePlaces } from "./classes/armadores/sources/google";
 import { mlEntry, readMlServices } from "./classes/armadores/sources/mercadolibre";
 import { FACEBOOK_DETAIL_REREAD_DAYS, loadArmadores, loadFacebookDetails, saveArmadores, saveFacebookDetails } from "./classes/armadores/store";
-import { ARMADORES_KEY, GOOGLE_EVERY_DAYS, type ArmadorEntry, type ArmadorSnapshot } from "./classes/armadores/types";
+import { ARMADORES_KEY, GOOGLE_EVERY_DAYS, type ArmadorEntry, type ArmadorSnapshot, type ArmadorSource } from "./classes/armadores/types";
 import { FB_ITEM_URL, FacebookSessionError, connectFacebookBrowser, facebookSessionOk, readFacebookPageTexts, sleep } from "./classes/facebook/browser";
 import { acquireFacebookProfile } from "./classes/facebook/lock";
 import { readMarketplaceSearches } from "./classes/facebook/search";
@@ -103,9 +103,13 @@ async function readFacebookDetails(cards: FacebookCardLike[], day: string, dryRu
   const candidates = cards.filter(card => facebookEntry(card, null, day));
   const cached = dryRun && !appDbConfigured() ? new Map<string, ArmadorFacebookDetailDocument>() : await loadFacebookDetails(candidates.map(card => card.id));
   const descriptions = new Map<string, string | null>([...cached].map(([id, row]) => [id, row.description]));
+  // Una ficha leída se relee a los 60 días; una que no trajo descripción (falla blanda: la página
+  // cargó a medias) a los 3, para no perder su lista de precios dos meses por un tropiezo.
   const stale = (id: string): boolean => {
     const row = cached.get(id);
-    return !row || (Date.now() - new Date(row.readAt).getTime()) / 86_400_000 > FACEBOOK_DETAIL_REREAD_DAYS;
+    if (!row) return true;
+    const age = (Date.now() - new Date(row.readAt).getTime()) / 86_400_000;
+    return age > (row.found ? FACEBOOK_DETAIL_REREAD_DAYS : 3);
   };
   const targets = candidates.filter(card => stale(card.id)).slice(0, number("ARMADORES_FB_DETAIL_MAX", 30));
   if (!targets.length || !(await facebookSessionOk())) return descriptions;
@@ -152,17 +156,19 @@ async function main(): Promise<void> {
   const googleDue = process.argv.includes("--google") || daysSince(previous?.googleAt, day) >= GOOGLE_EVERY_DAYS;
   const google = googleDue ? await readGoogle(day, notes) : null;
 
+  // ML primero: no depende de Facebook, y así sus ~100 pedidos al puente compartido caen en el
+  // minuto elegido (18:05) y no media hora después, encima de los consumidores horarios.
+  const ml = await readMlServices({ base: ML_API_BASE });
+  console.log(`[armadores] mercadolibre: ${ml.items.length} avisos en ${ml.calls} pedidos (${ml.failed} fallidos)`);
+  const mercadolibre = !ml.items.length && ml.failed ? null : ml.items.map(item => mlEntry(item, day)).filter((entry): entry is ArmadorEntry => !!entry);
+  if (!mercadolibre) notes.push("mercadolibre: el puente no respondió; se conservan los avisos anteriores");
+
   const cards = await readFacebookCards(notes);
   let facebook: ArmadorEntry[] | null = null;
   if (cards) {
     const descriptions = await readFacebookDetails(cards, day, dryRun);
     facebook = cards.map(card => facebookEntry(card, descriptions.get(card.id) ?? null, day)).filter((entry): entry is ArmadorEntry => !!entry);
   }
-
-  const ml = await readMlServices({ base: ML_API_BASE });
-  console.log(`[armadores] mercadolibre: ${ml.items.length} avisos en ${ml.calls} pedidos (${ml.failed} fallidos)`);
-  const mercadolibre = !ml.items.length && ml.failed ? null : ml.items.map(item => mlEntry(item, day)).filter((entry): entry is ArmadorEntry => !!entry);
-  if (!mercadolibre) notes.push("mercadolibre: el puente no respondió; se conservan los avisos anteriores");
 
   const entries = mergeEntries(previous?.entries ?? [], { editorial: editorialEntries(), google, facebook, mercadolibre }, now);
   const counts: Record<string, number> = { total: entries.length, withPrice: entries.filter(entry => entry.prices.length).length };
@@ -171,6 +177,15 @@ async function main(): Promise<void> {
     key: ARMADORES_KEY,
     capturedAt: now,
     googleAt: google ? day : (previous?.googleAt ?? null),
+    // La última lectura buena de cada fuente: la página dice "leído el …" por fuente, y una fuente
+    // caída conserva su fecha vieja en vez de heredar la de hoy.
+    sourcesAt: {
+      ...(previous?.sourcesAt ?? {}),
+      editorial: EDITORIAL.reviewedAt,
+      ...(google ? { google: day } : {}),
+      ...(facebook ? { facebook: day } : {}),
+      ...(mercadolibre ? { mercadolibre: day } : {}),
+    },
     editorialReviewedAt: EDITORIAL.reviewedAt,
     entries,
     counts,
@@ -188,7 +203,8 @@ async function main(): Promise<void> {
     }
     process.exit(0);
   }
-  const refusal = snapshotIsThin(entries, previous?.entries ?? []);
+  const ran = new Set<ArmadorSource>([...(google ? ["google" as const] : []), ...(facebook ? ["facebook" as const] : []), ...(mercadolibre ? ["mercadolibre" as const] : [])]);
+  const refusal = snapshotIsThin(entries, previous?.entries ?? [], ran);
   if (refusal) {
     console.error(`[armadores] ${refusal}; no se pisa el snapshot anterior.`);
     process.exit(1);

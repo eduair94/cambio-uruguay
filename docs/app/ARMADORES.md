@@ -47,13 +47,20 @@ Reglas (precisión antes que cobertura):
 2. El precio de la tarjeta de un aviso es «precio del aviso»: no se atribuye a ningún mueble y no
    entra en la referencia. Menos de $ 150 es simbólico: «a consultar».
 3. La lista de precios de una descripción se toma sólo de un segmento con UN mueble y UN monto (o un
-   rango "de $ 800 a $ 1.500"); dos montos sueltos se abstienen. Los teléfonos se borran de la etiqueta.
+   rango "de $ 800 a $ 1.500", "$ 800 - $ 1.200", "entre $ 900 y $ 1.500"); dos montos sueltos se
+   abstienen, y una cuota no es una tarifa. **La etiqueta es lo que el aviso escribe ANTES del monto**,
+   sin correos, @usuarios, enlaces ni números largos: lo de después ("consultas al 099…", "tel …
+   Juan") es justo el contacto que no se publica. Los títulos de los avisos pasan por el mismo filtro.
 4. Una fuente que no corrió conserva sus filas; un aviso que no se vio en 14 días sale, un negocio de
-   Google a los 30. Una corrida con menos de la mitad de las filas no editoriales guardadas (si había
-   ≥ 20) no escribe y sale con 1.
+   Google a los 30. La guarda de corrida flaca juzga sólo las fuentes que CORRIERON (una que trae
+   menos de la mitad de sus filas guardadas, si tenía ≥ 20, no escribe y sale con 1): contar los avisos
+   que vencen de una fuente caída congelaba el snapshot para siempre. `sourcesAt` guarda la última
+   lectura buena de cada fuente y la página la muestra.
 5. Google se une a su prestador relevado por place id, por el nombre entero (sin espacios, o la parte
-   antes del guion de la ficha) o porque la ficha lleva todas las palabras propias del prestador. Un
-   nombre genérico ("Armador de muebles") nunca une.
+   antes del guion de la ficha) o porque la ficha lleva todas las palabras propias del prestador (de 3
+   letras o más; una sola alcanza si es larga y no es común como "express"). Un nombre genérico nunca
+   une. Lo que Google le dio (place id, puntuación, base) se conserva los seis días de la semana en
+   que Google no se lee, hasta 30 días desde esa lectura.
 6. Contactos: sólo los que el prestador (o la tienda que lo recomienda, con URL) publica. El teléfono
    de una ficha de Google se pide EN VIVO al tocar «Ver teléfono»
    (`/api/armadores/contacto/<placeId>`, `no-store`, sólo place ids del snapshot, 10 por IP por
@@ -66,8 +73,11 @@ snapshot para mirar la página en dev; `--google` fuerza la lectura de Google.
 
 Cinco zonas sobre los 62 barrios INE más el área metropolitana (`classes/armadores/zones.ts`, espejo
 en `app/utils/armadores.ts`, `app/tests/unit/armadoresZonesParity.test.ts`). Agrupación editorial, no
-oficial. Filtrar una zona (o un barrio) muestra primero quien tiene la base ahí, después quien la
-nombra, y aparte quien dice cubrir todo Montevideo. Un aviso sin zona sólo aparece sin filtro.
+oficial. Filtrar una zona (o un barrio) muestra primero quien tiene la base ahí o la nombra; con un
+barrio elegido, en otro grupo quien sólo está en la misma zona (no se le atribuye un barrio que no
+nombró); y aparte quien dice cubrir todo Montevideo. Un aviso sin zona sólo aparece sin filtro. Un
+nombre genérico ("Centro", "Unión", "Retiro") cuenta como barrio sólo detrás de "en", "zona" o
+"barrio": un armador lista "mesas de centro" y "retiro de muebles".
 
 ## La página
 
@@ -94,4 +104,9 @@ nombra, y aparte quien dice cubrir todo Montevideo. Un aviso sin zona sólo apar
 ## Pendiente
 
 - Sumarlo al hub `/directorios-uruguay` (tiene su propio contrato de cifras y tests de paridad).
+- Nombres de departamento que también son calles de Montevideo ("Rivera", "Artigas", "Maldonado")
+  pueden aparecer en «Dice cubrir» como lugares de afuera; es sólo texto, no mueve zonas.
+- Las localidades metropolitanas de San José (Ciudad del Plata, Delta del Tigre) se rotulan
+  Canelones en la base que viene de Google.
+- El payload del servidor lleva el snapshot entero (~200 KB, sobre todo `conditions` de las tablas).
 - Leer más hondo Marketplace con bandas de precio si la cola de avisos crece.

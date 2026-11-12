@@ -81,6 +81,7 @@ export interface ArmadorSnapshotDoc {
   capturedAt: Date | string
   googleAt: string | null
   editorialReviewedAt: string | null
+  sourcesAt?: Partial<Record<ArmadorSource, string>>
   entries: ArmadorEntry[]
   counts: Record<string, number>
   notes: string[]
@@ -91,6 +92,8 @@ export interface ArmadoresPayload {
   capturedAt: string
   googleAt: string | null
   editorialReviewedAt: string | null
+  /** Último día en que cada fuente se leyó bien: una fuente caída no hereda la fecha de hoy. */
+  sourcesAt: Partial<Record<ArmadorSource, string>>
   entries: ArmadorEntry[]
 }
 
@@ -436,13 +439,34 @@ export function armadorFromPrice(
   )
 }
 
+/**
+ * El precio que se MUESTRA en la fila: el de `armadorFromPrice` y, si el prestador sólo publica
+ * en dólares, el más bajo en dólares. No ordena: un precio en dólares no se compara con uno en pesos.
+ */
+export function armadorShownPrice(
+  entry: ArmadorEntry,
+  mueble: ArmadorItem | null
+): ArmadorPrice | null {
+  const uyu = armadorFromPrice(entry, mueble)
+  if (uyu) return uyu
+  const usd = entry.prices.filter(
+    price =>
+      price.currency === 'USD' &&
+      (mueble ? price.item === mueble : price.item === null || !NOT_A_JOB.has(price.item))
+  )
+  return usd.reduce<ArmadorPrice | null>(
+    (best, price) => (!best || price.amount < best.amount ? price : best),
+    null
+  )
+}
+
 /** Qué tan cerca está de lo elegido: 0 base en el lugar, 1 dice cubrirlo, 2 misma zona (barrio), 3 toda la ciudad. */
 function placeRank(entry: ArmadorEntry, state: ArmadoresState): number | null {
   if (!state.zona) return 0
   const barrio = state.barrio ? fold(state.barrio) : null
-  const baseBarrio = entry.base.barrio ? fold(entry.base.barrio.split(',')[0] ?? '') : null
+  const baseParts = entry.base.barrio ? entry.base.barrio.split(',').map(fold) : []
   if (barrio) {
-    if (baseBarrio === barrio) return 0
+    if (baseParts.includes(barrio)) return 0
     if (entry.coverage.barrios.some(name => fold(name) === barrio)) return 1
     if (entry.base.zone === state.zona || entry.coverage.zones.includes(state.zona)) return 2
   } else {
@@ -455,7 +479,7 @@ function placeRank(entry: ArmadorEntry, state: ArmadoresState): number | null {
 
 function matchesFilters(entry: ArmadorEntry, state: ArmadoresState): boolean {
   if (state.fuente && entry.source !== state.fuente) return false
-  if (state.precio && !armadorFromPrice(entry, state.mueble)) return false
+  if (state.precio && !armadorShownPrice(entry, state.mueble)) return false
   if (state.q) {
     const needle = fold(state.q)
     const hay = fold(
@@ -505,6 +529,8 @@ export function armadoresSort(
 export interface ArmadoresGroups {
   /** Base o cobertura declarada en el lugar elegido (o todo, sin lugar). */
   local: ArmadorEntry[]
+  /** Con un barrio elegido: base o cobertura en la misma zona, sin nombrar ese barrio. */
+  nearby: ArmadorEntry[]
   /** Dicen cubrir todo Montevideo, sin nombrar el lugar. */
   citywide: ArmadorEntry[]
   /** Filas sin ninguna zona informada que un filtro de zona deja afuera. */
@@ -519,6 +545,7 @@ export function armadoresGroups(
   if (!state.zona)
     return {
       local: armadoresSort(filtered, state.orden, state.mueble),
+      nearby: [],
       citywide: [],
       hiddenWithoutZone: 0,
     }
@@ -531,10 +558,12 @@ export function armadoresGroups(
       hiddenWithoutZone++
   }
   const rankOf = (entry: ArmadorEntry): number => ranks.get(entry.id) ?? 9
-  const local = filtered.filter(entry => ranks.has(entry.id) && rankOf(entry) < 3)
+  const local = filtered.filter(entry => ranks.has(entry.id) && rankOf(entry) < 2)
+  const nearby = filtered.filter(entry => rankOf(entry) === 2)
   const citywide = filtered.filter(entry => rankOf(entry) === 3)
   return {
     local: armadoresSort(local, state.orden, state.mueble, rankOf),
+    nearby: armadoresSort(nearby, state.orden, state.mueble),
     citywide: armadoresSort(citywide, state.orden, state.mueble),
     hiddenWithoutZone,
   }
@@ -627,7 +656,7 @@ export function armadorPriceReference(entries: readonly ArmadorEntry[]): Armador
   const seenTables = new Set<string>()
   const distinct = entries.filter(entry => {
     const table = entry.prices
-      .filter(p => p.origin === 'table')
+      .filter(p => p.origin === 'table' || p.origin === 'ad-text')
       .map(p => `${p.item}:${p.amount}:${p.currency}`)
       .sort()
       .join('|')
@@ -668,6 +697,7 @@ export function armadoresCompact(
     capturedAt,
     googleAt: doc.googleAt ?? null,
     editorialReviewedAt: doc.editorialReviewedAt ?? null,
+    sourcesAt: doc.sourcesAt ?? {},
     entries: doc.entries.map(entry => ({
       ...entry,
       sources: (entry.sources ?? []).map(source => ({

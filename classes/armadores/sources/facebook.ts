@@ -9,7 +9,7 @@
 import { fbNodes } from "../../facebook/graphql";
 import type { MarketplaceSearch } from "../../facebook/search";
 import { blankEntry, withZones } from "../entry";
-import { coverageFromText, isAssemblyTitle, pricesFromText, servicesFromText } from "../text";
+import { coverageFromText, isAssemblyTitle, pricesFromText, servicesFromText, stripContacts } from "../text";
 import { SYMBOLIC_PRICE_UYU, type ArmadorEntry, type ArmadorPrice } from "../types";
 import { zoneOfBarrio } from "../zones";
 
@@ -48,13 +48,13 @@ export function facebookDescription(id: string, texts: readonly string[]): strin
 const cityOf = (location: string | null): string => String(location || "").split(",")[0]!.trim();
 
 export function facebookEntry(card: FacebookCardLike, description: string | null, day: string): ArmadorEntry | null {
-  if (!isAssemblyTitle(card.title)) return null;
+  if (!isAssemblyTitle(card.title) || !String(card.url || "").startsWith("https://")) return null;
   const city = cityOf(card.location);
   const metro = city && city !== "Montevideo" ? zoneOfBarrio(city) : null;
   // Fuera de Montevideo y del área metropolitana no es este directorio (Florida, Maldonado…).
   if (city !== "Montevideo" && metro !== "metropolitana") return null;
 
-  const entry = blankEntry({ id: `fb:${card.id}`, source: "facebook", kind: "aviso", name: card.title.trim(), url: card.url }, day);
+  const entry = blankEntry({ id: `fb:${card.id}`, source: "facebook", kind: "aviso", name: stripContacts(card.title) || "Aviso de armado de muebles", url: card.url }, day);
   const text = [card.title, description ?? ""].join("\n");
   entry.coverage = withZones(coverageFromText(text));
   entry.base = metro

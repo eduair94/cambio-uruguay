@@ -88,11 +88,59 @@ describe("mergeEntries", () => {
 describe("snapshotIsThin", () => {
   const many = (n: number, source: ArmadorSource) => Array.from({ length: n }, (_, i) => row(`${source}:${i}`, source));
   it("rechaza una corrida con menos de la mitad de las filas no editoriales", () => {
-    expect(snapshotIsThin(many(9, "facebook"), many(20, "facebook"))).toMatch(/9.*20/);
-    expect(snapshotIsThin(many(10, "facebook"), many(20, "facebook"))).toBeNull();
+    expect(snapshotIsThin(many(9, "facebook"), many(20, "facebook"), new Set(["facebook"]))).toMatch(/9.*20/);
+    expect(snapshotIsThin(many(10, "facebook"), many(20, "facebook"), new Set(["facebook"]))).toBeNull();
   });
   it("no juzga contra un snapshot chico ni cuenta lo editorial", () => {
-    expect(snapshotIsThin(many(1, "facebook"), many(19, "facebook"))).toBeNull();
-    expect(snapshotIsThin([...many(30, "editorial"), ...many(5, "google")], many(25, "google"))).toMatch(/5/);
+    expect(snapshotIsThin(many(1, "facebook"), many(19, "facebook"), new Set(["facebook"]))).toBeNull();
+    expect(snapshotIsThin([...many(30, "editorial"), ...many(5, "google")], many(25, "google"), new Set(["google"]))).toMatch(/5/);
+  });
+});
+
+describe("hallazgos de la revisión final (fusión)", () => {
+  it("no une por una sola palabra corta o común («S Y A», «M,E», «Express»)", () => {
+    const editorial = [
+      row("ed:sya", "editorial", { name: "S Y A Muebles" }),
+      row("ed:me", "editorial", { name: "Servicios M,E" }),
+      row("ed:express", "editorial", { name: "Armado Express" }),
+    ];
+    const google = [
+      row("g:1", "google", { name: "Armados Rodríguez S.A.", placeId: "1" }),
+      row("g:2", "google", { name: "M&M Armado de muebles", placeId: "2" }),
+      row("g:3", "google", { name: "Express Mudanzas y Armado de Muebles", placeId: "3" }),
+    ];
+    const merged = mergeEntries([], { ...none, editorial, google }, NOW);
+    expect(merged.filter(e => e.source === "google").map(e => e.id).sort()).toEqual(["g:1", "g:2", "g:3"]);
+    expect(merged.filter(e => e.source === "editorial").every(e => e.placeId === null)).toBe(true);
+  });
+
+  it("sigue uniendo por una palabra propia larga («ATOPE»)", () => {
+    const editorial = [row("ed:atope", "editorial", { name: "ATOPE" })];
+    const google = [row("g:a", "google", { name: "Armador de muebles # Atope", placeId: "a" })];
+    expect(mergeEntries([], { ...none, editorial, google }, NOW).map(e => e.id)).toEqual(["ed:atope"]);
+  });
+
+  it("conserva la ficha de Google de un prestador relevado los días que Google no corre", () => {
+    const rating = { value: 4.8, count: 120, observedAt: "2026-11-08" };
+    const previous = [row("ed:x", "editorial", { name: "ATOPE", placeId: "PID", rating, base: { barrio: "Ciudad Vieja", zone: "centro", department: "Montevideo", basis: "coordinates" } })];
+    const editorial = [row("ed:x", "editorial", { name: "ATOPE" })];
+    const merged = mergeEntries(previous, { ...none, editorial }, NOW);
+    expect(merged[0]).toMatchObject({ placeId: "PID", rating, base: { barrio: "Ciudad Vieja", basis: "coordinates" } });
+  });
+
+  it("deja vencer esa ficha a los 30 días de su lectura", () => {
+    const rating = { value: 4.8, count: 120, observedAt: "2026-10-01" };
+    const previous = [row("ed:x", "editorial", { name: "ATOPE", placeId: "PID", rating })];
+    const merged = mergeEntries(previous, { ...none, editorial: [row("ed:x", "editorial", { name: "ATOPE" })] }, NOW);
+    expect(merged[0]?.rating).toBeNull();
+  });
+
+  it("la guarda sólo juzga las fuentes que corrieron: los avisos que vencen de una fuente caída no congelan el directorio", () => {
+    const many = (n: number, source: ArmadorSource) => Array.from({ length: n }, (_, i) => row(`${source}:${i}`, source));
+    const previous = [...many(30, "facebook"), ...many(10, "mercadolibre")];
+    const next = many(10, "mercadolibre");
+    expect(snapshotIsThin(next, previous, new Set(["mercadolibre"]))).toBeNull();
+    expect(snapshotIsThin(many(2, "mercadolibre"), previous, new Set(["mercadolibre"]))).toBeNull();
+    expect(snapshotIsThin(many(10, "facebook"), many(30, "facebook"), new Set(["facebook"]))).toMatch(/facebook/);
   });
 });

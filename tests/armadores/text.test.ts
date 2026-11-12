@@ -123,3 +123,55 @@ describe("pricesFromText", () => {
     expect(price?.label).not.toMatch(/099/);
   });
 });
+
+describe("hallazgos de la revisión final", () => {
+  it("rechaza productos con el armado incluido escrito de otras formas, perchas y piscinas", () => {
+    for (const title of [
+      "Ropero 6 puertas armador incluido",
+      "Cama con armador gratis",
+      "Placard envio y armador sin cargo",
+      "Ropero 3 puertas, armado de muebles sin costo",
+      "Rack TV - armado de muebles bonificado",
+      "Escritorio gamer + armado de muebles gratis",
+      "Vendo ropero desarmado, muebles de dormitorio",
+      "Servicio de armado de piscinas",
+      "Armadores de madera para ropa x 10",
+    ]) expect(isAssemblyTitle(title), title).toBe(false);
+  });
+
+  it("sigue aceptando un servicio que ofrece presupuesto o visita sin costo", () => {
+    expect(isAssemblyTitle("Armador de muebles, presupuesto sin costo")).toBe(true);
+    expect(isAssemblyTitle("Roperos, camas, cómodas: armado a domicilio")).toBe(true);
+  });
+
+  it("no lee «mesas de centro», «centro de entretenimiento» ni «retiro de muebles» como barrios", () => {
+    expect(coverageFromText("Armado de muebles: roperos, camas, mesas de centro").barrios).toEqual([]);
+    expect(coverageFromText("Armado de centro de entretenimiento").barrios).toEqual([]);
+    expect(coverageFromText("Servicio de retiro de muebles viejos").barrios).toEqual([]);
+    expect(coverageFromText("Armador en el Cerro").barrios).toEqual(["Cerro"]);
+  });
+
+  it("la etiqueta de un precio leído de un aviso no lleva contactos ni nombres", () => {
+    const labels = pricesFromText(
+      [
+        "Ropero $1200 consultas al 099 12 34 56",
+        "Cama $800 tel 098123456 Juan",
+        "Cómoda $700 juan.perez@gmail.com",
+        "Escritorio $600 IG @juanarmados",
+        "Rack $650 wa.me/59899123456",
+        "Mesa de luz $400 llamar al 2 600 1234",
+      ].join("\n"),
+      SRC,
+      DAY,
+    ).map(p => p.label);
+    expect(labels).toEqual(["Ropero", "Cama", "Cómoda", "Escritorio", "Rack", "Mesa de luz"]);
+  });
+
+  it("lee «$ 800 - $ 1.200» como rango y no confunde «y», cuotas ni «armado y desarmado»", () => {
+    expect(pricesFromText("Ropero $ 800 - $ 1.200", SRC, DAY).map(p => [p.amount, p.amountMax, p.kind])).toEqual([[800, 1200, "range"]]);
+    expect(pricesFromText("Roperos y camas: $1.500 y $900", SRC, DAY)).toEqual([]);
+    expect(pricesFromText("Roperos entre $900 y $1.500", SRC, DAY).map(p => [p.amount, p.amountMax])).toEqual([[900, 1500]]);
+    expect(pricesFromText("Cucheta 12 cuotas de $ 250", SRC, DAY)).toEqual([]);
+    expect(pricesFromText("Armado y desarmado de roperos $1.200", SRC, DAY).map(p => p.item)).toEqual(["ropero"]);
+  });
+});

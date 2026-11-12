@@ -114,6 +114,8 @@ export interface ArmadorSnapshot {
   googleAt: string | null;
   /** Fecha del relevamiento editorial. */
   editorialReviewedAt: string | null;
+  /** Último día en que cada fuente se leyó bien (una caída conserva su fecha anterior). */
+  sourcesAt: Partial<Record<ArmadorSource, string>>;
   entries: ArmadorEntry[];
   counts: Record<string, number>;
   /** Qué fuente no corrió y por qué (se conservaron sus filas anteriores). */

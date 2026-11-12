@@ -28,9 +28,9 @@ FORM: mapa-selector, candidato 4 de la lista; semilla ef5594b1; puesta en escena
       </h1>
       <p class="am-lead">
         <template v-if="roperoRef">
-          Armar un ropero cuesta entre {{ armadorMoney(roperoRef.min) }} y
-          {{ armadorMoney(roperoRef.max) }}, con mediana de {{ armadorMoney(roperoRef.median) }},
-          según los {{ roperoRef.n }} prestadores que publican su tarifa.
+          Por armar un ropero, la tarifa más baja que publica cada prestador va de
+          {{ armadorMoney(roperoRef.min) }} a {{ armadorMoney(roperoRef.max) }}, con mediana de
+          {{ armadorMoney(roperoRef.median) }} entre los {{ roperoRef.n }} que la publican.
         </template>
         Juntamos {{ entries.length || 'los' }} armadores y avisos de Montevideo y el área
         metropolitana: empresas con tarifa por mueble, negocios con ficha en Google Maps y armadores
@@ -180,6 +180,28 @@ FORM: mapa-selector, candidato 4 de la lista; semilla ef5594b1; puesta en escena
             @click="localLimit += PAGE"
           >
             Mostrar {{ Math.min(PAGE, groups.local.length - visibleLocal.length) }} más
+          </VBtn>
+        </section>
+        <section v-if="groups.nearby.length" class="am-group" aria-labelledby="am-g-near">
+          <h3 id="am-g-near" class="am-group__title">En la misma zona</h3>
+          <p class="am-group__intro">
+            Tienen la base o trabajan en barrios vecinos; no nombran {{ placeLabel }}.
+          </p>
+          <ArmadoresProviderRow
+            v-for="entry in visibleNear"
+            :key="entry.id"
+            :entry="entry"
+            :mueble="state.mueble"
+            heading-level="h4"
+          />
+          <VBtn
+            v-if="groups.nearby.length > visibleNear.length"
+            variant="tonal"
+            color="primary"
+            class="am-more"
+            @click="nearLimit += PAGE"
+          >
+            Mostrar {{ Math.min(PAGE, groups.nearby.length - visibleNear.length) }} más
           </VBtn>
         </section>
         <section v-if="groups.citywide.length" class="am-group" aria-labelledby="am-g-city">
@@ -393,13 +415,15 @@ const fmtDay = (iso: string | null | undefined): string | null =>
   iso ? LONG.format(new Date(iso.length === 10 ? `${iso}T15:00:00Z` : iso)) : null
 const updatedLong = computed(() => fmtDay(payload.value?.capturedAt) ?? '')
 const updatedShort = computed(() => updatedLong.value.replace(/ de \d{4}$/, ''))
+const readOn = (day: string | undefined): string | undefined =>
+  day ? `Última lectura: ${fmtDay(day)}.` : undefined
 const sourceDates = computed<Partial<Record<ArmadorSource, string>>>(() => ({
   editorial: payload.value?.editorialReviewedAt
     ? `Relevado el ${fmtDay(payload.value.editorialReviewedAt)}.`
     : undefined,
   google: payload.value?.googleAt ? `Leído el ${fmtDay(payload.value.googleAt)}.` : undefined,
-  facebook: payload.value ? `Leído el ${updatedLong.value}.` : undefined,
-  mercadolibre: payload.value ? `Leído el ${updatedLong.value}.` : undefined,
+  facebook: readOn(payload.value?.sourcesAt?.facebook),
+  mercadolibre: readOn(payload.value?.sourcesAt?.mercadolibre),
 }))
 const sourcesNote = computed(() => {
   const ads = (sourceCounts.value.facebook ?? 0) + (sourceCounts.value.mercadolibre ?? 0)
@@ -407,19 +431,24 @@ const sourcesNote = computed(() => {
 })
 
 const groups = computed(() => armadoresGroups(entries.value, state))
-const resultCount = computed(() => groups.value.local.length + groups.value.citywide.length)
+const resultCount = computed(
+  () => groups.value.local.length + groups.value.nearby.length + groups.value.citywide.length
+)
 const localLimit = ref(PAGE)
 const cityLimit = ref(PAGE)
+const nearLimit = ref(PAGE)
 watch(
   () => armadoresQueryFromState(state),
   () => {
     localLimit.value = PAGE
     cityLimit.value = PAGE
+    nearLimit.value = PAGE
   },
   { deep: true }
 )
 const visibleLocal = computed(() => groups.value.local.slice(0, localLimit.value))
 const visibleCity = computed(() => groups.value.citywide.slice(0, cityLimit.value))
+const visibleNear = computed(() => groups.value.nearby.slice(0, nearLimit.value))
 
 const placeLabel = computed(() => {
   if (state.barrio) return state.barrio
@@ -492,7 +521,7 @@ const faqItems = computed<FaqItem[]>(() => {
       id: 'cuanto-cobra',
       question: '¿Cuánto cobra un armador de muebles en Montevideo?',
       answer: ropero
-        ? `Por un ropero, entre ${armadorMoney(ropero.min)} y ${armadorMoney(ropero.max)} según los ${ropero.n} prestadores que publican su tarifa, con una mediana de ${armadorMoney(ropero.median)}. Los muebles chicos (mesas de luz, estantes) cuestan bastante menos y los placares grandes o las cuchetas, más. Los avisos de Marketplace y Mercado Libre suelen poner en la tarjeta el precio desde${adCard ? ` (mediana ${armadorMoney(adCard.median)})` : ''}, que corresponde al mueble más chico.`
+        ? `Por un ropero, la tarifa más baja que publica cada prestador va de ${armadorMoney(ropero.min)} a ${armadorMoney(ropero.max)}, con una mediana de ${armadorMoney(ropero.median)} entre los ${ropero.n} que la publican; un placard grande o con espejo cuesta más que eso. Los muebles chicos (mesas de luz, estantes) cuestan bastante menos y los placares grandes o las cuchetas, más. Los avisos de Marketplace y Mercado Libre suelen poner en la tarjeta el precio desde${adCard ? ` (mediana ${armadorMoney(adCard.median)})` : ''}, que corresponde al mueble más chico.`
         : 'Depende del mueble: los muebles chicos cuestan bastante menos que un ropero o una cucheta. En el directorio cada prestador muestra los precios que publica, con su fuente y su fecha.',
     },
     {

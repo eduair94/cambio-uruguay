@@ -36,6 +36,11 @@ const GENERIC = new Set([
   "mueble", "montevideo", "mvd", "a", "al", "domicilio", "y", "e", "el", "la", "los", "las", "servicio", "servicios", "en",
   "uruguay", "carpinteria", "montaje", "profesional", "profesionales", "integral",
 ]);
+/** Palabras que no son genéricas del rubro pero sí de cualquier comercio: solas no identifican. */
+const COMMON = new Set([
+  "express", "home", "hogar", "casa", "hermanos", "service", "soluciones", "rapido", "rapidos", "total", "uruguay",
+  "group", "grupo", "center", "centro", "pro", "plus", "deco", "mudanzas", "fletes", "carpinteria",
+]);
 const distinctive = (name: string): string[] => fold(name).split(" ").filter(word => word && !GENERIC.has(word));
 
 /** El nombre del negocio de Google lleva todas las palabras propias del prestador editorial. */
@@ -47,8 +52,11 @@ function sameBusiness(editorial: ArmadorEntry, google: ArmadorEntry): boolean {
   // ("EL ARMADOR - Armado de muebles"): vale aunque todas sus palabras sean genéricas.
   const whole = compact(editorial.name);
   if (whole && (whole === compact(google.name) || whole === compact(google.name.split(/\s[-–—|]\s/)[0] ?? ""))) return true;
-  const own = distinctive(editorial.name);
+  // Palabras propias de 3 letras o más. Una sola alcanza si es larga y no es común ("ATOPE");
+  // "S Y A", "M,E" o "Express" unirían negocios ajenos y les pasarían la puntuación y el teléfono.
+  const own = distinctive(editorial.name).filter(word => word.length >= 3);
   if (!own.length) return false;
+  if (own.length === 1 && (own[0]!.length < 5 || COMMON.has(own[0]!))) return false;
   const theirs = new Set(fold(google.name).split(" "));
   return own.every(word => theirs.has(word));
 }
@@ -63,6 +71,25 @@ function absorbGoogle(editorial: ArmadorEntry, matches: ArmadorEntry[]): Armador
     // La dirección relevada manda; la coordenada de Google sólo llena una base vacía.
     base: editorial.base.zone || !located ? editorial.base : located.base,
     sources: [...editorial.sources, ...matches.flatMap(match => match.sources)],
+  };
+}
+
+/**
+ * Lo que Google le había dado a un prestador relevado (place id, puntuación, base por coordenada)
+ * sobrevive a los días en que Google no se lee —seis de siete—, hasta 30 días desde esa lectura.
+ * Sin esto la puntuación y el botón "Ver teléfono" aparecían un día por semana.
+ */
+function carryGoogle(entry: ArmadorEntry, previous: ArmadorEntry | undefined, day: string): ArmadorEntry {
+  if (!previous?.rating && !previous?.placeId) return entry;
+  const age = previous.rating ? daysBetween(previous.rating.observedAt, day) : 0;
+  if (age > GOOGLE_TTL_DAYS) return entry;
+  const googleSources = previous.sources.filter(source => source.label === "Google Maps");
+  return {
+    ...entry,
+    placeId: entry.placeId ?? previous.placeId,
+    rating: entry.rating ?? previous.rating,
+    base: entry.base.zone || previous.base.basis !== "coordinates" ? entry.base : previous.base,
+    sources: [...entry.sources, ...googleSources.filter(source => !entry.sources.some(s => s.url === source.url))],
   };
 }
 
@@ -91,7 +118,8 @@ export function mergeEntries(previous: readonly ArmadorEntry[], fresh: FreshRead
   const editorial = fresh.editorial.map(entry => {
     const matches = google.filter(place => sameBusiness(entry, place));
     google = google.filter(place => !matches.includes(place));
-    return seen(matches.length ? absorbGoogle(entry, matches) : entry);
+    if (matches.length) return seen(absorbGoogle(entry, matches));
+    return seen(carryGoogle(entry, before.get(entry.id), day));
   });
 
   // El mismo aviso republicado: mismo título (sin mayúsculas ni tildes) y mismo precio de tarjeta.
@@ -108,12 +136,20 @@ export function mergeEntries(previous: readonly ArmadorEntry[], fresh: FreshRead
     .sort((a, b) => a.id.localeCompare(b.id, "en", { numeric: true }));
 }
 
-const nonEditorial = (entries: readonly ArmadorEntry[]): number => entries.filter(entry => entry.source !== "editorial").length;
+const countOf = (entries: readonly ArmadorEntry[], source: ArmadorSource): number => entries.filter(entry => entry.source === source).length;
 
-/** Motivo para NO escribir: la corrida trae menos de la mitad de lo que había (si había ≥ 20). */
-export function snapshotIsThin(next: readonly ArmadorEntry[], previous: readonly ArmadorEntry[]): string | null {
-  const had = nonEditorial(previous);
-  const has = nonEditorial(next);
-  if (had < 20 || has * 2 >= had) return null;
-  return `la corrida trae ${has} filas no editoriales contra ${had} guardadas`;
+/**
+ * Motivo para NO escribir: una fuente que CORRIÓ en esta pasada trae menos de la mitad de las filas
+ * que tenía guardadas (si tenía ≥ 20). Sólo se juzgan las que corrieron: los avisos de una fuente
+ * caída vencen solos a los 14 días, y contarlos como "corrida flaca" congelaba el snapshot para
+ * siempre (no se escribe → al día siguiente se compara contra lo mismo → tampoco).
+ */
+export function snapshotIsThin(next: readonly ArmadorEntry[], previous: readonly ArmadorEntry[], ran: ReadonlySet<ArmadorSource>): string | null {
+  for (const source of ran) {
+    if (source === "editorial") continue;
+    const had = countOf(previous, source);
+    const has = countOf(next, source);
+    if (had >= 20 && has * 2 < had) return `${source}: la corrida trae ${has} filas contra ${had} guardadas`;
+  }
+  return null;
 }

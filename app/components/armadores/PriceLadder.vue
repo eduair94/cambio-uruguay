@@ -33,8 +33,8 @@ const expanded = computed(
     <div class="am-ladder__head">
       <h2 id="am-ladder-title" class="am-ladder__title">Cuánto cobran por mueble</h2>
       <p class="am-ladder__intro">
-        De la tarifa más baja a la más alta que publican, con la mediana marcada. Tocá un mueble
-        para ordenar el directorio por su precio.
+        Por cada mueble, el precio más bajo que publica cada prestador: del más barato al más caro,
+        con la mediana marcada. Tocá un mueble para ordenar el directorio por su precio.
       </p>
     </div>
 

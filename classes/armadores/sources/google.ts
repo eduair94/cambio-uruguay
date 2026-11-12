@@ -11,7 +11,7 @@
 // Un negocio "de área de servicio" (dirección sin calle, "13000 Montevideo") publica una
 // coordenada que no es un local: no se le asigna barrio.
 import { blankEntry } from "../entry";
-import { servicesFromText } from "../text";
+import { OTHER_OBJECT, servicesFromText } from "../text";
 import type { ArmadorEntry } from "../types";
 import { METRO_LOCALITIES, zoneOfBarrio, zoneOfIneLabel } from "../zones";
 
@@ -118,8 +118,10 @@ export async function readGooglePlaces(options: {
 }
 
 const fold = (text: string): string => text.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
-const ASSEMBLY_NAME = /\barm(ado|ados|ador|adores|adora)\b|\bdesarm|\bmontaje\b|\bensambl/;
-const NOT_FURNITURE = /\b(galpon|galpones|caseta|casetas|casitas?|carpa|carpas|gazebo|computadora|pc|andamio|jardin)/;
+// "desarm" a secas también es un desarmadero de autos; "montaje" y "ensamble" solos, industria.
+const ASSEMBLY_NAME = /\barm(ado|ados|ador|adores|adora)\b|\bdesarm(ado|ados|ador|adores)\b|\bmontaje de muebles\b|\bensamblado de muebles\b/;
+/** La misma lista que los avisos (classes/armadores/text.ts): una sola, para que no se separen. */
+const NOT_FURNITURE = OTHER_OBJECT;
 
 /** El nombre del negocio dice que arma muebles (o arma, sin decir otro objeto). */
 export function isAssemblyBusinessName(name: string): boolean {
