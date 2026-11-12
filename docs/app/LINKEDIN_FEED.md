@@ -100,8 +100,9 @@ curl -sI https://cambio-uruguay.com/feeds/linkedin.xml   # HEAD también respond
 ```
 
 Cabeceras: `application/rss+xml`, `x-robots-tag: noindex` (no es una página) y
-`LINKEDIN_FEED_CACHE_CONTROL`: `s-maxage=300` (los lunes tiene que verse el número de esa mañana)
-con `stale-while-revalidate` y `stale-if-error` de un día, **sin `must-revalidate`**.
+`linkedinFeedCacheControl(now)`: `s-maxage` = segundos hasta las próximas 9 de Montevideo (mínimo
+60, máximo un día), con `stale-while-revalidate` y `stale-if-error` de un día, **sin
+`must-revalidate`**.
 
 ### La caché del borde (por qué IFTTT no depende del origen)
 
@@ -113,6 +114,15 @@ DYNAMIC` porque la regla de páginas de Cloudflare excluye las rutas con extensi
 
 Desde ese día hay una Cache Rule propia (`starts_with(http.request.uri.path, "/feeds/")`,
 `edge_ttl: bypass_by_default`, la misma postura que las demás: guarda sólo si el origen manda
-`s-maxage`). Con eso, más los `stale-*`, el borde contesta con la copia que tiene aunque el origen
-no responda. Se verifica con `cf-cache-status` (`HIT`, o `STALE`/`UPDATING` al vencer) y en el log de
-nginx: las consultas de `IFTTT/1.0` dejan de llegar al origen cada 5 minutos.
+`s-maxage`).
+
+**Medido el mismo día con `s-maxage=300`: al vencer, Cloudflare responde `EXPIRED`** (va al origen
+en el acto y espera); no sirve la copia vieja mientras revalida, aunque el origen mande
+`stale-while-revalidate`. Con vencimientos cada 5 minutos, la mitad de las consultas de IFTTT
+seguían llegando al origen. Por eso `s-maxage` dura exactamente hasta el próximo cambio del post:
+una consulta por día llega al origen (la primera después de las 9), y si justo esa cae en un
+momento trabado, IFTTT la reintenta a los 5 minutos sin perder el post. Un deploy del app purga
+todo el borde (`purge_everything` en `deploy.sh`): la consulta siguiente vuelve a llenar la copia.
+
+Se verifica con `cf-cache-status: HIT` y un `Age` que crece durante el día, y en el log de nginx:
+las consultas de `IFTTT/1.0` dejan de aparecer salvo una por día o después de un deploy.
