@@ -3,6 +3,10 @@ import {
   ARMADORES_DEFAULT_STATE,
   type ArmadorEntry,
   type ArmadorPrice,
+  armadorBarrioCounts,
+  armadorMapBin,
+  armadorMoney,
+  armadorPriceText,
   armadoresCompact,
   armadoresGroups,
   armadoresQueryFromState,
@@ -59,35 +63,74 @@ function entry(id: string, over: Partial<ArmadorEntry> = {}): ArmadorEntry {
 
 describe('estado en la URL', () => {
   it('lee sólo valores válidos y omite los predeterminados al escribir', () => {
-    const state = armadoresStateFromQuery({ zona: 'costa-este', mueble: 'ropero', fuente: 'nope', precio: '1', orden: 'raro', q: '  roperos  ' })
-    expect(state).toEqual({ ...ARMADORES_DEFAULT_STATE, zona: 'costa-este', mueble: 'ropero', precio: true, q: 'roperos' })
-    expect(armadoresQueryFromState(state)).toEqual({ zona: 'costa-este', mueble: 'ropero', precio: '1', q: 'roperos' })
+    const state = armadoresStateFromQuery({
+      zona: 'costa-este',
+      mueble: 'ropero',
+      fuente: 'nope',
+      precio: '1',
+      orden: 'raro',
+      q: '  roperos  ',
+    })
+    expect(state).toEqual({
+      ...ARMADORES_DEFAULT_STATE,
+      zona: 'costa-este',
+      mueble: 'ropero',
+      precio: true,
+      q: 'roperos',
+    })
+    expect(armadoresQueryFromState(state)).toEqual({
+      zona: 'costa-este',
+      mueble: 'ropero',
+      precio: '1',
+      q: 'roperos',
+    })
     expect(armadoresQueryFromState(ARMADORES_DEFAULT_STATE)).toEqual({})
   })
 
   it('un barrio desconocido no se acepta y uno conocido fija su zona', () => {
     expect(armadoresStateFromQuery({ barrio: 'Narnia' }).barrio).toBeNull()
-    expect(armadoresStateFromQuery({ barrio: 'Pocitos', zona: 'oeste' })).toMatchObject({ barrio: 'Pocitos', zona: 'costa-este' })
+    expect(armadoresStateFromQuery({ barrio: 'Pocitos', zona: 'oeste' })).toMatchObject({
+      barrio: 'Pocitos',
+      zona: 'costa-este',
+    })
   })
 })
 
 describe('grupos por zona', () => {
-  const pocitos = entry('base-pocitos', { base: { barrio: 'Pocitos', zone: 'costa-este', department: 'Montevideo', basis: 'coordinates' } })
-  const dice = entry('dice-buceo', { coverage: { allMontevideo: false, barrios: ['Buceo'], zones: ['costa-este'], outside: [] } })
-  const todo = entry('todo-mvd', { coverage: { allMontevideo: true, barrios: [], zones: [], outside: [] } })
-  const cerro = entry('cerro', { base: { barrio: 'Cerro', zone: 'oeste', department: 'Montevideo', basis: 'ml-city' } })
+  const pocitos = entry('base-pocitos', {
+    base: { barrio: 'Pocitos', zone: 'costa-este', department: 'Montevideo', basis: 'coordinates' },
+  })
+  const dice = entry('dice-buceo', {
+    coverage: { allMontevideo: false, barrios: ['Buceo'], zones: ['costa-este'], outside: [] },
+  })
+  const todo = entry('todo-mvd', {
+    coverage: { allMontevideo: true, barrios: [], zones: [], outside: [] },
+  })
+  const cerro = entry('cerro', {
+    base: { barrio: 'Cerro', zone: 'oeste', department: 'Montevideo', basis: 'ml-city' },
+  })
   const nada = entry('sin-zona')
 
   it('pone primero la base en la zona, después quien dice cubrirla y aparte toda la ciudad', () => {
-    const groups = armadoresGroups([todo, dice, cerro, nada, pocitos], { ...ARMADORES_DEFAULT_STATE, zona: 'costa-este' })
+    const groups = armadoresGroups([todo, dice, cerro, nada, pocitos], {
+      ...ARMADORES_DEFAULT_STATE,
+      zona: 'costa-este',
+    })
     expect(groups.local.map(e => e.id)).toEqual(['base-pocitos', 'dice-buceo'])
     expect(groups.citywide.map(e => e.id)).toEqual(['todo-mvd'])
     expect(groups.hiddenWithoutZone).toBe(1)
   })
 
   it('la búsqueda de texto filtra también ordenando por precio de un mueble', () => {
-    const state = { ...ARMADORES_DEFAULT_STATE, mueble: 'ropero' as const, orden: 'precio-asc' as const, q: 'pocitos' }
-    expect(armadoresGroups([todo, dice, cerro, nada, pocitos], state).local.map(e => e.id)).toEqual(['base-pocitos'])
+    const state = {
+      ...ARMADORES_DEFAULT_STATE,
+      mueble: 'ropero' as const,
+      orden: 'precio-asc' as const,
+      q: 'pocitos',
+    }
+    expect(armadoresGroups([todo, dice, cerro, nada, pocitos], state).local.map(e => e.id)).toEqual(
+      ['base-pocitos']
+    )
   })
 
   it('sin zona elegida muestra todo en un solo grupo', () => {
@@ -97,12 +140,56 @@ describe('grupos por zona', () => {
   })
 
   it('cuenta por zona base y cobertura, sin sumar toda la ciudad', () => {
-    expect(armadorZoneCounts([todo, dice, cerro, pocitos])).toMatchObject({ 'costa-este': 2, oeste: 1, centro: 0 })
+    expect(armadorZoneCounts([todo, dice, cerro, pocitos])).toMatchObject({
+      'costa-este': 2,
+      oeste: 1,
+      centro: 0,
+    })
   })
 
   it('el área metropolitana no hereda «todo Montevideo»', () => {
     const groups = armadoresGroups([todo], { ...ARMADORES_DEFAULT_STATE, zona: 'metropolitana' })
     expect(groups.citywide).toEqual([])
+  })
+})
+
+describe('mapa', () => {
+  it('cuenta por barrio INE la base y los barrios nombrados, sin «todo Montevideo»', () => {
+    const counts = armadorBarrioCounts(
+      [
+        entry('g', {
+          base: {
+            barrio: 'Parque Batlle, Villa Dolores',
+            zone: 'costa-este',
+            department: 'Montevideo',
+            basis: 'coordinates',
+          },
+        }),
+        entry('ml', {
+          base: {
+            barrio: 'Parque Batlle',
+            zone: 'costa-este',
+            department: 'Montevideo',
+            basis: 'ml-city',
+          },
+        }),
+        entry('fb', {
+          coverage: {
+            allMontevideo: true,
+            barrios: ['Pocitos', 'Villa Dolores'],
+            zones: ['costa-este'],
+            outside: [],
+          },
+        }),
+        entry('todo', { coverage: { allMontevideo: true, barrios: [], zones: [], outside: [] } }),
+      ],
+      ['Parque Batlle, Villa Dolores', 'Pocitos', 'Cerro']
+    )
+    expect(counts).toEqual({ 'Parque Batlle, Villa Dolores': 3, Pocitos: 1, Cerro: 0 })
+  })
+
+  it('reparte los conteos en cinco tramos fijos', () => {
+    expect([0, 1, 2, 3, 4, 5, 12].map(armadorMapBin)).toEqual([0, 1, 2, 3, 3, 4, 4])
   })
 })
 
@@ -115,7 +202,9 @@ describe('precios', () => {
   })
 
   it('sin mueble usa el precio más bajo publicado, sin visita ni hora', () => {
-    const e = entry('e', { prices: [price({ item: 'visita', amount: 200 }), price({ item: 'mesa-de-luz', amount: 350 })] })
+    const e = entry('e', {
+      prices: [price({ item: 'visita', amount: 200 }), price({ item: 'mesa-de-luz', amount: 350 })],
+    })
     expect(armadorFromPrice(e, null)?.amount).toBe(350)
   })
 
@@ -125,18 +214,53 @@ describe('precios', () => {
       entry('b', { prices: [price({ amount: 1200 })] }),
       entry('c', { prices: [price({ amount: 2000 })] }),
       entry('d', { prices: [price({ amount: 50, currency: 'USD' })] }),
-      entry('e', { source: 'facebook', prices: [price({ item: null, amount: 500, kind: 'ad', origin: 'ad-card' })] }),
-      entry('f', { prices: [price({ item: 'cama', amount: 600 }), price({ item: 'cama', amount: 700 })] }),
+      entry('e', {
+        source: 'facebook',
+        prices: [price({ item: null, amount: 500, kind: 'ad', origin: 'ad-card' })],
+      }),
+      entry('f', {
+        prices: [price({ item: 'cama', amount: 600 }), price({ item: 'cama', amount: 700 })],
+      }),
     ])
     const ropero = ref.items.find(row => row.item === 'ropero')
     expect(ropero).toMatchObject({ n: 3, min: 1000, median: 1200, max: 2000 })
     expect(ref.items.find(row => row.item === 'cama')).toBeUndefined()
   })
 
+  it('una tarifa idéntica publicada por dos prestadores (la misma lista de referencia) cuenta una vez', () => {
+    const table = [price({ amount: 740 }), price({ item: 'cama', amount: 500 })]
+    const ref = armadorPriceReference([
+      entry('divino', { prices: table }),
+      entry('emporio', { prices: table.map(p => ({ ...p, sourceUrl: 'https://otra' })) }),
+      entry('b', { prices: [price({ amount: 1200 })] }),
+    ])
+    expect(ref.items.find(row => row.item === 'ropero')).toBeUndefined()
+  })
+
   it('la mediana de la tarjeta de los avisos va aparte y sin montos simbólicos', () => {
-    const card = (id: string, amount: number) => entry(id, { source: 'facebook', kind: 'aviso', prices: [price({ item: null, amount, kind: 'ad', origin: 'ad-card' })] })
-    const ref = armadorPriceReference([card('a', 400), card('b', 600), card('c', 800), entry('s', { source: 'facebook', symbolicPrice: true })])
+    const card = (id: string, amount: number) =>
+      entry(id, {
+        source: 'facebook',
+        kind: 'aviso',
+        prices: [price({ item: null, amount, kind: 'ad', origin: 'ad-card' })],
+      })
+    const ref = armadorPriceReference([
+      card('a', 400),
+      card('b', 600),
+      card('c', 800),
+      entry('s', { source: 'facebook', symbolicPrice: true }),
+    ])
     expect(ref.adCard).toMatchObject({ n: 3, median: 600 })
+  })
+})
+
+describe('importes', () => {
+  it('nunca separa el signo del número (espacio duro)', () => {
+    expect(armadorMoney(1490)).toBe('$ 1.490')
+    expect(armadorPriceText(price({ kind: 'range', amount: 800, amountMax: 1500 }))).toBe(
+      '$ 800 a $ 1.500'
+    )
+    expect(armadorPriceText(price({ kind: 'from', amount: 900 }))).toBe('desde $ 900')
   })
 })
 
@@ -151,12 +275,16 @@ describe('armadoresCompact', () => {
       capturedAt: new Date('2026-11-11T18:05:00Z'),
       googleAt: DAY,
       editorialReviewedAt: DAY,
-      entries: [entry('a', { sources: [{ url: 'https://x', consultedAt: DAY, label: 'Google Maps' }] })],
+      entries: [
+        entry('a', { sources: [{ url: 'https://x', consultedAt: DAY, label: 'Google Maps' }] }),
+      ],
       counts: { total: 1 },
       notes: ['facebook: sesión no válida'],
     })
     expect(payload?.capturedAt).toBe('2026-11-11T18:05:00.000Z')
-    expect(payload?.entries[0]?.sources).toEqual([{ url: 'https://x', consultedAt: DAY, label: 'Google Maps' }])
+    expect(payload?.entries[0]?.sources).toEqual([
+      { url: 'https://x', consultedAt: DAY, label: 'Google Maps' },
+    ])
     expect(payload).not.toHaveProperty('notes')
   })
 })

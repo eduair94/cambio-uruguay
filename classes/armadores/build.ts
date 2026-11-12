@@ -39,8 +39,14 @@ const GENERIC = new Set([
 const distinctive = (name: string): string[] => fold(name).split(" ").filter(word => word && !GENERIC.has(word));
 
 /** El nombre del negocio de Google lleva todas las palabras propias del prestador editorial. */
+const compact = (name: string): string => fold(name).replace(/ /g, "");
+
 function sameBusiness(editorial: ArmadorEntry, google: ArmadorEntry): boolean {
   if (editorial.placeId && editorial.placeId === google.placeId) return true;
+  // El nombre entero, sin espacios, contra la ficha entera o contra lo que va antes del guion
+  // ("EL ARMADOR - Armado de muebles"): vale aunque todas sus palabras sean genéricas.
+  const whole = compact(editorial.name);
+  if (whole && (whole === compact(google.name) || whole === compact(google.name.split(/\s[-–—|]\s/)[0] ?? ""))) return true;
   const own = distinctive(editorial.name);
   if (!own.length) return false;
   const theirs = new Set(fold(google.name).split(" "));

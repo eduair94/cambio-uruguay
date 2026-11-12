@@ -109,6 +109,7 @@ export const movingServicesEs = {
   nextTitle: 'Completá tu mudanza',
   paperwork: 'Gastos, UTE, OSE y entrega de llaves',
   furnish: 'Precios para equipar la casa',
+  assemblers: 'Armadores de muebles por barrio y sus precios',
   units: {
     hour: 'hora',
     trip: 'viaje',
@@ -242,6 +243,7 @@ const movingServicesEn: MovingServicesCopy = {
   nextTitle: 'Complete your move',
   paperwork: 'Bills, UTE, OSE and key handover',
   furnish: 'Prices for furnishing your home',
+  assemblers: 'Furniture assemblers by neighborhood and their prices',
   units: {
     hour: 'hour',
     trip: 'trip',
@@ -373,6 +375,7 @@ const movingServicesPt: MovingServicesCopy = {
   nextTitle: 'Complete sua mudança',
   paperwork: 'Contas, UTE, OSE e entrega de chaves',
   furnish: 'Preços para mobiliar a casa',
+  assemblers: 'Montadores de móveis por bairro e seus preços',
   units: {
     hour: 'hora',
     trip: 'viagem',

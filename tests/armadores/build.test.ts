@@ -59,6 +59,15 @@ describe("mergeEntries", () => {
     expect(mergeEntries([], { ...none, editorial, google }, NOW).map(e => e.id)).toEqual(["ed:x"]);
   });
 
+  it("une por el nombre entero aunque sea genérico o venga pegado («El Armador», «ArmadoresMontevideo»)", () => {
+    const editorial = [row("ed:el-armador", "editorial", { name: "El Armador" }), row("ed:am", "editorial", { name: "ArmadoresMontevideo" })];
+    const google = [
+      row("g:1", "google", { name: "EL ARMADOR - Armado de muebles", placeId: "1" }),
+      row("g:2", "google", { name: "Armadores Montevideo", placeId: "2" }),
+    ];
+    expect(mergeEntries([], { ...none, editorial, google }, NOW).map(e => [e.id, e.placeId])).toEqual([["ed:am", "2"], ["ed:el-armador", "1"]]);
+  });
+
   it("no une nombres genéricos («Armador de muebles») con un prestador", () => {
     const editorial = [row("ed:armador-de-muebles-el-rey", "editorial", { name: "Armador de muebles el Rey" })];
     const google = [row("g:q", "google", { name: "Armador de muebles", placeId: "q" })];

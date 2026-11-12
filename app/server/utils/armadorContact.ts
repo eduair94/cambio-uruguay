@@ -4,8 +4,9 @@
 // publica hoy: un visitante no puede usar esta ruta para consultar cualquier negocio.
 // Límites por proceso (como movingReviews): 10 por IP por minuto, 60 en total.
 
-export const ARMADOR_CONTACT_FIELDS = 'name,formatted_phone_number,international_phone_number,website,url'
-const PLACE_ID = /^[A-Za-z0-9_-]{10,200}$/
+export const ARMADOR_CONTACT_FIELDS =
+  'name,formatted_phone_number,international_phone_number,website,url'
+const PLACE_ID = /^[\w-]{10,200}$/
 
 export interface ArmadorContactBody {
   ok: boolean
@@ -16,10 +17,21 @@ export interface ArmadorContactBody {
   error?: 'invalid_request' | 'not_found' | 'not_configured' | 'rate_limited' | 'upstream'
 }
 
-type Fetcher = (url: string, options: { params: Record<string, string>; timeout: number }) => Promise<unknown>
+type Fetcher = (
+  url: string,
+  options: { params: Record<string, string>; timeout: number }
+) => Promise<unknown>
 
-const empty = (error: ArmadorContactBody['error']): ArmadorContactBody => ({ ok: false, phone: null, internationalPhone: null, website: null, mapsUrl: null, error })
-const text = (value: unknown): string | null => (typeof value === 'string' && value.trim() ? value.trim() : null)
+const empty = (error: ArmadorContactBody['error']): ArmadorContactBody => ({
+  ok: false,
+  phone: null,
+  internationalPhone: null,
+  website: null,
+  mapsUrl: null,
+  error,
+})
+const text = (value: unknown): string | null =>
+  typeof value === 'string' && value.trim() ? value.trim() : null
 const httpUrl = (value: unknown): string | null => {
   const raw = text(value)
   return raw && /^https?:\/\//i.test(raw) ? raw : null
@@ -52,7 +64,11 @@ export function createArmadorContactService(options: {
   }
 
   return {
-    async read(input: { placeId: string; ip: string; gmapsBase: string }): Promise<{ status: number; body: ArmadorContactBody }> {
+    async read(input: {
+      placeId: string
+      ip: string
+      gmapsBase: string
+    }): Promise<{ status: number; body: ArmadorContactBody }> {
       if (!PLACE_ID.test(input.placeId)) return { status: 400, body: empty('invalid_request') }
       if (!input.gmapsBase) return { status: 503, body: empty('not_configured') }
       if (!(await options.allowed(input.placeId))) return { status: 404, body: empty('not_found') }
@@ -67,7 +83,8 @@ export function createArmadorContactService(options: {
       } catch {
         data = null
       }
-      if (!data || data.status !== 'OK' || !data.result) return { status: 502, body: empty('upstream') }
+      if (!data || data.status !== 'OK' || !data.result)
+        return { status: 502, body: empty('upstream') }
       return {
         status: 200,
         body: {

@@ -10,7 +10,8 @@
 //
 // Una fuente que falla conserva sus filas anteriores (classes/armadores/build.ts) y lo anota en
 // `notes`. Nunca pisa un buen snapshot con una corrida flaca: sale con 1 sin escribir.
-// `--dry-run` lee todo, no escribe nada y funciona sin APP_MONGO_URI. `--google` fuerza Google.
+// `--dry-run` lee todo, no escribe en la base y funciona sin APP_MONGO_URI (`--json=<archivo>` guarda el
+// snapshot en un archivo). `--google` fuerza Google.
 import "dotenv/config";
 
 import { appConnection, appDbConfigured } from "./classes/appdb";
@@ -178,6 +179,9 @@ async function main(): Promise<void> {
   console.log(`[armadores] ${JSON.stringify(counts)}${notes.length ? ` · ${notes.join(" · ")}` : ""}`);
 
   if (dryRun) {
+    // `--json=<archivo>`: el snapshot entero, para mirar la página en dev sin tocar la base.
+    const jsonOut = process.argv.find(arg => arg.startsWith("--json="))?.slice("--json=".length);
+    if (jsonOut) (await import("fs")).writeFileSync(jsonOut, JSON.stringify(snapshot, null, 2));
     for (const entry of entries) {
       const price = entry.prices[0] ? `${entry.prices[0].currency} ${entry.prices[0].amount}` : entry.symbolicPrice ? "a consultar" : "—";
       console.log(`  ${entry.source.padEnd(12)} ${entry.base.zone ?? "·"} ${entry.base.barrio ?? ""} | ${entry.name.slice(0, 70)} | ${price}${entry.coverage.allMontevideo ? " | todo MVD" : ""}${entry.coverage.barrios.length ? ` | ${entry.coverage.barrios.join(", ")}` : ""}`);

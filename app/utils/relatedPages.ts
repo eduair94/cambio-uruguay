@@ -559,9 +559,19 @@ export const CURATED: Readonly<Record<string, readonly string[]>> = Object.freez
   ],
   '/fletes-mudanzas-uruguay': [
     '/alquileres-uruguay',
+    '/armadores-de-muebles-montevideo',
     '/primer-alquiler-uruguay',
     '/equipar-casa-uruguay',
     '/alquilar-en-uruguay',
+    '/sillas-escritorio-uruguay',
+  ],
+  // Después de la mudanza viene armar lo que se compró: el flete trae las cajas, el armador las
+  // arma, y equipar dice qué falta comprar.
+  '/armadores-de-muebles-montevideo': [
+    '/fletes-mudanzas-uruguay',
+    '/equipar-casa-uruguay',
+    '/alquileres-uruguay',
+    '/primer-alquiler-uruguay',
     '/sillas-escritorio-uruguay',
   ],
   '/herramientas/costo-de-vida': [

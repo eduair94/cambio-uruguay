@@ -13,7 +13,10 @@ const details = {
   },
 }
 
-function service(fetcher = vi.fn(async () => details), allowed = async (id: string) => id === PLACE) {
+function service(
+  fetcher = vi.fn(async () => details),
+  allowed = async (id: string) => id === PLACE
+) {
   return { fetcher, read: createArmadorContactService({ fetcher, allowed, now: () => 0 }).read }
 }
 
@@ -22,15 +25,31 @@ describe('contacto de un armador de Google, en vivo', () => {
     const { fetcher, read } = service()
     const result = await read({ placeId: PLACE, ip: '1.1.1.1', gmapsBase: 'http://proxy:2221' })
     expect(result.status).toBe(200)
-    expect(result.body).toMatchObject({ ok: true, phone: '099 123 456', internationalPhone: '+598 99 123 456', website: 'https://armadofast.com/', mapsUrl: 'https://maps.google.com/?cid=1' })
-    expect(fetcher).toHaveBeenCalledWith('http://proxy:2221/placeDetails', expect.objectContaining({
-      params: expect.objectContaining({ place_id: PLACE, fields: 'name,formatted_phone_number,international_phone_number,website,url' }),
-    }))
+    expect(result.body).toMatchObject({
+      ok: true,
+      phone: '099 123 456',
+      internationalPhone: '+598 99 123 456',
+      website: 'https://armadofast.com/',
+      mapsUrl: 'https://maps.google.com/?cid=1',
+    })
+    expect(fetcher).toHaveBeenCalledWith(
+      'http://proxy:2221/placeDetails',
+      expect.objectContaining({
+        params: expect.objectContaining({
+          place_id: PLACE,
+          fields: 'name,formatted_phone_number,international_phone_number,website,url',
+        }),
+      })
+    )
   })
 
   it('no consulta un place id que no está en el directorio', async () => {
     const { fetcher, read } = service()
-    const result = await read({ placeId: 'ChIJotroOtroOtroOtro', ip: '1.1.1.1', gmapsBase: 'http://proxy:2221' })
+    const result = await read({
+      placeId: 'ChIJotroOtroOtroOtro',
+      ip: '1.1.1.1',
+      gmapsBase: 'http://proxy:2221',
+    })
     expect(result.status).toBe(404)
     expect(fetcher).not.toHaveBeenCalled()
   })
@@ -44,7 +63,10 @@ describe('contacto de un armador de Google, en vivo', () => {
   it('limita las consultas por IP', async () => {
     const { read } = service()
     const statuses: number[] = []
-    for (let i = 0; i < 12; i++) statuses.push((await read({ placeId: PLACE, ip: '2.2.2.2', gmapsBase: 'http://proxy' })).status)
+    for (let i = 0; i < 12; i++)
+      statuses.push(
+        (await read({ placeId: PLACE, ip: '2.2.2.2', gmapsBase: 'http://proxy' })).status
+      )
     expect(statuses.filter(s => s === 200)).toHaveLength(10)
     expect(statuses.at(-1)).toBe(429)
   })

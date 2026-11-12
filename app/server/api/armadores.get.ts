@@ -7,7 +7,11 @@ import { connectDb } from '../utils/db'
 import { armadoresCompact } from '../../utils/armadores'
 
 export default defineEventHandler(async event => {
-  setResponseHeader(event, 'cache-control', 'public, max-age=900, s-maxage=1800, stale-while-revalidate=86400')
+  setResponseHeader(
+    event,
+    'cache-control',
+    'public, max-age=900, s-maxage=1800, stale-while-revalidate=86400'
+  )
   try {
     await connectDb()
     const doc = await ArmadorSnapshotModel.findOne({ key: 'mvd' })
