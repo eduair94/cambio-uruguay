@@ -5,7 +5,7 @@
 //
 // Por qué existe y cuál es la regla: `classes/revenueplan/debtFree.ts`.
 //
-// QUÉ CUBRE. Los SIETE pozos de deuda de SEO del app, cada uno declarado como una lista en el
+// QUÉ CUBRE. Los NUEVE pozos de deuda de SEO del app, cada uno declarado como una lista en el
 // trinquete que lo mide. El cuarto y el quinto entraron el 2026-10-20 y eran los que faltaban: las
 // migas de `seoContract.test.ts` y los dos snippets pasados de `guideSnippetBudget.test.ts` declaraban un
 // NÚMERO y nada más, así que este informe no los podía nombrar y la respuesta a «¿cuál puedo tocar
@@ -121,6 +121,22 @@ const POOLS: Array<{
     list: "DEUDA_TITULO_I18N",
     budget: "I18N_OVER_BUDGET",
   },
+  // El noveno, desde el 2026-11-12, y es la mitad SIMÉTRICA del octavo: el octavo midió las claves
+  // `seo.*Title` que viven en i18n y nadie contaba, y la descripción de esas mismas ocho páginas
+  // seguía sin medir. Los dos lectores de `seoDescriptionBudget.test.ts` leen el `.vue` —comillas y
+  // plantillas, 188 páginas—, así que ninguno puede medir `description: () => t('seo.algoDescription')`,
+  // donde el texto vive en `i18n/locales/json/*.json`: son 95 de las 309 páginas que declaran un
+  // `description:`, y de las claves que las alimentan la única con test propio era
+  // `homeDescriptionLive`, contra 160 y no contra los 155 del resto del repo. Tres de las ocho
+  // claves sin parámetros estaban pasadas en algún idioma, la peor con 227 caracteres en la home.
+  // Las cuatro claves CON parámetros siguen fuera y el comentario del pozo dice por qué y cuánto
+  // miden, que es la parte que no se puede dejar en una medición ausente.
+  {
+    pool: "descripción de i18n pasada de 155",
+    file: "seoDescriptionI18n.test.ts",
+    list: "DEUDA_DESCRIPCION_I18N",
+    budget: "I18N_DESCRIPTION_OVER_BUDGET",
+  },
 ];
 
 /** Hoy en UTC, o el día que pida `--today=YYYY-MM-DD` (para mirar la cola desde otra fecha). */
@@ -170,7 +186,7 @@ function main(): void {
   }
   console.log(
     "\nUna ruta libre acá NO es una mejora: sigue haciendo falta que el cambio le sirva a un lector.\n" +
-      "Los siete pozos con lista están contados; las dos deudas que no son de ruta (el título y la\n" +
+      "Los nueve pozos con lista están contados; las dos deudas que no son de ruta (el título y la\n" +
       "descripción de una MISMA guía) salen como dos filas, porque se arreglan por separado."
   );
 }
