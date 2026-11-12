@@ -119,7 +119,7 @@ export async function readGooglePlaces(options: {
 
 const fold = (text: string): string => text.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
 const ASSEMBLY_NAME = /\barm(ado|ados|ador|adores|adora)\b|\bdesarm|\bmontaje\b|\bensambl/;
-const NOT_FURNITURE = /\b(galpon|galpones|caseta|casetas|carpa|carpas|gazebo|computadora|pc|andamio)/;
+const NOT_FURNITURE = /\b(galpon|galpones|caseta|casetas|casitas?|carpa|carpas|gazebo|computadora|pc|andamio|jardin)/;
 
 /** El nombre del negocio dice que arma muebles (o arma, sin decir otro objeto). */
 export function isAssemblyBusinessName(name: string): boolean {

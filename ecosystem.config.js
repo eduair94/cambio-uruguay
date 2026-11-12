@@ -1081,6 +1081,21 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Armadores de muebles (/armadores-de-muebles-montevideo): relevamiento editorial + Google
+      // Places por el proxy :2221 (semanal, cuota) + Facebook Marketplace (Chrome del perfil por
+      // CDP, puente :9657 de respaldo; lee la ficha de los avisos nuevos) + MercadoLibre Servicios
+      // por el puente :9656 (barrio por el filtro de ciudad de ML). UN documento en la base del APP
+      // (`armadorsnapshots`). Diario 18:05 UTC: el minuto :05 no lo usa ningún consumidor horario de
+      // los puentes de ML y FB (sillas :23, autos :29, celulares :37, motos :44, alquileres :47,
+      // equipar :53, movilidad :07), y una fuente caída conserva sus filas. Needs APP_MONGO_URI.
+      name: "currency-armadores",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_armadores.js",
+      cron_restart: "5 18 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Traducción por máquina de las páginas (app/utils/autoTranslate.ts): recorre el sitemap
       // español por prioridad, corta cada página con el mismo código que la traduce al renderizar,
       // traduce lo que falta con tr-file (inglés y portugués primero) y mide la cobertura por página

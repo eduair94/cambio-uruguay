@@ -32,6 +32,8 @@ describe("isAssemblyTitle", () => {
       "Alquiler De Carpas Y Gazebos Con Armado Para Fiestas",
       "Mueble de cocina",
       "Muebles a medida",
+      "Armador de casa jardín",
+      "Armado de casitas de jardín",
     ]) expect(isAssemblyTitle(title), title).toBe(false);
   });
 

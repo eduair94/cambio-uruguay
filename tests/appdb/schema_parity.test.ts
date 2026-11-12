@@ -45,6 +45,7 @@ import { MotoMarketSnapshotModel } from "../../classes/models/MotoMarketSnapshot
 import { CompetitorMonitorModel } from "../../classes/models/CompetitorMonitor";
 import { CompetitorMonitorStateModel } from "../../classes/models/CompetitorMonitorState";
 import { UsefulAppsSnapshotModel } from "../../classes/models/UsefulAppsSnapshot";
+import { ArmadorSnapshotModel } from "../../classes/models/ArmadorSnapshot";
 import { LrmSnapshotModel } from "../../classes/models/LrmSnapshot";
 import { RedditOpportunityModel } from "../../classes/models/RedditOpportunity";
 import { RedditOpportunityMetaModel } from "../../classes/models/RedditOpportunityMeta";
@@ -402,5 +403,14 @@ describe("app-Mongo schema parity", () => {
       appFields(appModel("RedditOpportunityMeta")).sort()
     );
     expect(RedditOpportunityMetaModel.collection.name).toBe("redditopportunitymetas");
+  });
+
+  it("ArmadorSnapshot declares exactly the app's top-level fields", () => {
+    // El directorio de /armadores-de-muebles-montevideo: un campo que el job escriba y el app no
+    // declare (las notas de una fuente caída, la fecha de Google) se guarda y la página no lo ve.
+    expect(Object.keys(ArmadorSnapshotModel.schema.obj).sort()).toEqual(
+      appFields(appModel("ArmadorSnapshot")).sort()
+    );
+    expect(ArmadorSnapshotModel.collection.name).toBe("armadorsnapshots");
   });
 });

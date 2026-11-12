@@ -14,7 +14,7 @@ const fold = (text: string): string => flatten(text).replace(/[^a-z0-9$]+/g, " "
 /** Un mueble a la venta que trae el armado (no es un armador), herramientas, kits. */
 const PRODUCT = /\b(armado|armada)s? (gratis|incluido|incluida|sin cargo|bonificado|de regalo)\b|\bincluye armado\b|\bcon armado\b|\btaladro|\batornillador|\bherramientas?\b|\bkit\b/;
 /** Otros "armados" que no son muebles; sólo descartan si el título no nombra muebles. */
-const OTHER_OBJECT = /\b(galpon|galpones|caseta|casetas|cobertizo|carpa|carpas|gazebo|gazebos|evento|eventos|fiesta|fiestas|andamio|andamios|computadora|pc)\b/;
+const OTHER_OBJECT = /\b(galpon|galpones|caseta|casetas|casitas?|cobertizo|carpa|carpas|gazebo|gazebos|evento|eventos|fiesta|fiestas|andamio|andamios|computadora|pc|jardin)\b/;
 const SERVICE = /\barmador(es|a)?\b|\barmados? y desarmados?\b|\b(armado|desarmado)s? (y desarmados? )?(de )?muebles?\b|\bservicio de (armado|desarmado)\b|\bdesarmados?\b.*\bmuebles?\b/;
 
 /** El título anuncia un servicio de armado de muebles (no un mueble que viene armado). */
