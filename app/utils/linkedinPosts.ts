@@ -23,21 +23,6 @@ export const LINKEDIN_EPOCH = '2026-11-13'
 /** Hora de Montevideo desde la que el post del día aparece en el feed. IFTTT lo lee cada 5-60 min. */
 export const LINKEDIN_POST_HOUR = 9
 
-/**
- * Cache-Control del feed. Cloudflare lo guarda por la regla de `/feeds/*` (respeta `s-maxage`).
- *
- * POR QUÉ SIN `must-revalidate` Y CON `stale-*`: el 12/11/2026 a las 17:01 UTC el origen se trabó
- * dos minutos (97 respuestas 499/503 en todo el sitio, VPS compartido) e IFTTT cortó la consulta
- * del feed con "The service took too long to respond". El contenido cambia una vez por día, así
- * que una copia de minutos atrás es igual de buena: el borde la sirve en el acto y revalida por
- * detrás, o la sostiene si el origen falla. `must-revalidate` lo habría prohibido.
- *
- * `s-maxage` corto para que el lunes se vea el dólar de esa mañana y el post nuevo de las 9 llegue
- * en la consulta siguiente.
- */
-export const LINKEDIN_FEED_CACHE_CONTROL =
-  'public, max-age=0, s-maxage=300, stale-while-revalidate=86400, stale-if-error=86400'
-
 export interface LinkedinPost {
   /** Identificador estable, sólo para tests y logs. */
   id: string
@@ -464,6 +449,31 @@ export function linkedinPostDate(now: Date): string {
   return Number(parts.hour) < LINKEDIN_POST_HOUR ? addDays(today, -1) : today
 }
 
+/** El instante (UTC) en que sale el post de `date`. Montevideo es UTC-3 todo el año. */
+function postInstant(date: string): Date {
+  return new Date(`${date}T${String(LINKEDIN_POST_HOUR + 3).padStart(2, '0')}:00:00Z`)
+}
+
+/**
+ * Cache-Control del feed. Cloudflare lo guarda por la regla de `/feeds/*` (respeta `s-maxage`).
+ *
+ * POR QUÉ `s-maxage` HASTA EL PRÓXIMO CAMBIO: el 12/11/2026 a las 17:01 UTC el origen se trabó dos
+ * minutos (97 respuestas 499/503 en todo el sitio, VPS compartido) e IFTTT, que consulta cada 5
+ * minutos, cortó con "The service took too long to respond". Con `s-maxage=300` se midió que al
+ * vencer Cloudflare responde `EXPIRED`: va al origen en el acto, no sirve la copia vieja mientras
+ * revalida. El feed sólo cambia a las 9 de Montevideo, así que el borde lo guarda exactamente hasta
+ * ese momento: una consulta por día llega al origen en vez de una cada cinco minutos. El lunes, el
+ * dólar se calcula en esa primera consulta después de las 9, que es lo que se quiere publicar.
+ *
+ * Sin `must-revalidate` (le prohíbe a toda caché servir una copia vencida) y con `stale-*` por si
+ * el borde alguna vez sí los aplica.
+ */
+export function linkedinFeedCacheControl(now: Date): string {
+  const next = postInstant(addDays(linkedinPostDate(now), 1)).getTime()
+  const ttl = Math.min(86_400, Math.max(60, Math.round((next - now.getTime()) / 1000)))
+  return `public, max-age=0, s-maxage=${ttl}, stale-while-revalidate=86400, stale-if-error=86400`
+}
+
 export function daysSinceEpoch(date: string): number {
   return Math.round(
     (Date.parse(`${date}T12:00:00Z`) - Date.parse(`${LINKEDIN_EPOCH}T12:00:00Z`)) / 86_400_000
@@ -522,7 +532,7 @@ export function renderLinkedinFeed(date: string, post: LinkedinPost, now: Date):
   const url = linkedinUrl(post.path)
   const image = linkedinImageUrl(post.path)
   const title = post.text.trim().split('\n')[0]!.slice(0, 140)
-  const pubDate = new Date(`${date}T${String(LINKEDIN_POST_HOUR + 3).padStart(2, '0')}:00:00Z`)
+  const pubDate = postInstant(date)
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/">',

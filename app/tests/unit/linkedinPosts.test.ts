@@ -5,12 +5,12 @@ import { describe, expect, it } from 'vitest'
 import { guideSlugs } from '../../utils/guides'
 import {
   LINKEDIN_EPOCH,
-  LINKEDIN_FEED_CACHE_CONTROL,
   LINKEDIN_POSTS,
   LINKEDIN_SEASONAL,
   dollarPost,
   formatPesos,
   joinNames,
+  linkedinFeedCacheControl,
   linkedinImageUrl,
   linkedinMessage,
   linkedinPostDate,
@@ -305,20 +305,30 @@ describe('renderLinkedinFeed', () => {
   })
 })
 
-describe('LINKEDIN_FEED_CACHE_CONTROL', () => {
+describe('linkedinFeedCacheControl', () => {
+  const sMaxage = (iso: string) =>
+    Number(linkedinFeedCacheControl(new Date(iso)).match(/\bs-maxage=(\d+)/)![1])
+
   // 12/11/2026 17:01 UTC: el origen se trabó dos minutos (97 respuestas 499/503 en todo el sitio) e
-  // IFTTT cortó la consulta del feed por timeout. El borde tiene que poder contestar con la copia
-  // que ya tiene mientras el origen no responde.
-  it('deja que el borde sirva la copia guardada si el origen tarda o falla', () => {
-    expect(LINKEDIN_FEED_CACHE_CONTROL).toMatch(/\bs-maxage=\d+/)
-    expect(LINKEDIN_FEED_CACHE_CONTROL).toMatch(/\bstale-while-revalidate=\d+/)
-    expect(LINKEDIN_FEED_CACHE_CONTROL).toMatch(/\bstale-if-error=\d+/)
+  // IFTTT cortó la consulta del feed por timeout. Y medido después con s-maxage=300: al vencer,
+  // Cloudflare responde EXPIRED (va al origen en el acto), no sirve la copia vieja. Así que el
+  // borde tiene que guardar el feed hasta el momento exacto en que cambia, no unos minutos.
+  it('guarda la copia hasta las 9 de Montevideo, cuando cambia el post', () => {
+    expect(sMaxage('2026-11-16T11:00:00Z')).toBe(3600)
+    expect(sMaxage('2026-11-16T12:00:00Z')).toBe(86400)
+    expect(sMaxage('2026-11-16T18:30:00Z')).toBe(63000)
+    expect(sMaxage('2026-11-17T03:00:00Z')).toBe(32400)
   })
 
-  it('no prohíbe servir una copia vieja', () => {
+  it('nunca menos de un minuto, aunque falten segundos para el cambio', () => {
+    expect(sMaxage('2026-11-16T11:59:30Z')).toBe(60)
+  })
+
+  it('deja que el borde sirva la copia guardada si el origen falla', () => {
+    const cc = linkedinFeedCacheControl(new Date('2026-11-16T15:00:00Z'))
+    expect(cc).toMatch(/\bstale-while-revalidate=\d+/)
+    expect(cc).toMatch(/\bstale-if-error=\d+/)
     // must-revalidate le prohíbe a TODA caché usar una respuesta vencida sin revalidar.
-    expect(LINKEDIN_FEED_CACHE_CONTROL).not.toMatch(
-      /must-revalidate|proxy-revalidate|no-cache|no-store|private/
-    )
+    expect(cc).not.toMatch(/must-revalidate|proxy-revalidate|no-cache|no-store|private/)
   })
 })
