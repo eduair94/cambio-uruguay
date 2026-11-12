@@ -69,3 +69,14 @@ export function zoneOfBarrio(name: string): ArmadorZone | null {
 export function zoneOfIneLabel(label: string): ArmadorZone | null {
   return zoneOfBarrio(String(label || "").split(", ")[0] ?? "");
 }
+
+/** La zona de un nombre compuesto de otro portal ("Maroñas, Curva"): entero, o la primera parte que tenga zona. */
+export function zoneOfAnyName(name: string): ArmadorZone | null {
+  const whole = zoneOfBarrio(name);
+  if (whole) return whole;
+  for (const part of String(name || "").split(/\s*,\s*/)) {
+    const zone = zoneOfBarrio(part);
+    if (zone) return zone;
+  }
+  return null;
+}
