@@ -211,6 +211,96 @@ export function neighborhoodFromText(text: string, department: string): Neighbor
   return best;
 }
 
+/**
+ * EVERY barrio or town a text lists, in reading order — for a service that names where it works
+ * ("Pocitos, Buceo y Malvín"), not for a property that is in one place. Same guards as
+ * `neighborhoodFromText`, with two list readings it cannot afford:
+ *   * "Buceo y Malvín" is a list when the word after the "y" starts another known name; "Buceo y
+ *     Rivera" stays a corner;
+ *   * a generic name ("Centro", "Unión") also counts right after another accepted name, so
+ *     "Cordón, Centro" reads both — never at the start of a list.
+ * Overlaps keep the longer name ("Carrasco Norte", "Paso Carrasco"). A name spelled the same in
+ * several departments ("La Paloma", "Bella Vista") is reported once, Montevideo first, then
+ * Canelones: a listing that names it is read in the place it serves.
+ */
+export function neighborhoodsListedIn(text: string): NeighborhoodFromText[] {
+  const tokens = tokenize(text);
+  if (!tokens.length) return [];
+  interface Span { entry: Entry; start: number; end: number }
+  const found: Span[] = [];
+  const departmentStarts = new Set<number>();
+  const departmentEnds = new Set<number>();
+  const occurrences = (words: string[], at: (start: number) => void): void => {
+    for (let start = 0; words.length && start + words.length <= tokens.length; start++) {
+      let same = true;
+      for (let i = 0; i < words.length && same; i++) same = tokens[start + i] === words[i];
+      if (same) at(start);
+    }
+  };
+  for (const entry of dictionary()) {
+    if (DEPARTMENT_KEYS.has(entry.key)) occurrences(entry.tokens, start => { departmentStarts.add(start); departmentEnds.add(start + entry.tokens.length); });
+    else occurrences(entry.tokens, start => found.push({ entry, start, end: start + entry.tokens.length }));
+  }
+  for (const key of DEPARTMENT_KEYS) {
+    const words = tokenize(key);
+    occurrences(words, start => { departmentStarts.add(start); departmentEnds.add(start + words.length); });
+  }
+  // A street cue before a name drops it — except a list's "y": "Buceo y Malvín" when the word
+  // before the "y" closes another name.
+  const raw = found.filter(span => {
+    const before = span.start > 0 ? tokens[span.start - 1]! : "";
+    if (!STREET_CUES.has(before)) return true;
+    const listGlue = before === "y" || before === "e";
+    return listGlue && (found.some(other => other.end === span.start - 1) || departmentEnds.has(span.start - 1));
+  });
+  const startsName = new Set([...raw.map(span => span.start), ...departmentStarts]);
+  // Longest first, then reading order: a shorter name inside an accepted longer one is dropped.
+  const ordered = [...raw].sort((a, b) => (b.end - b.start) - (a.end - a.start) || a.start - b.start);
+  const taken: Span[] = [];
+  const overlaps = (span: Span): boolean => taken.some(t => span.start < t.end && t.start < span.end && t.entry.key !== span.entry.key);
+  const corner = (span: Span): boolean => {
+    const after = span.end < tokens.length ? tokens[span.end]! : "";
+    return CORNER_CUES.has(after) && span.end + 1 < tokens.length && !startsName.has(span.end + 1);
+  };
+  for (const span of ordered) {
+    if (CUE_ONLY.has(span.entry.key) || overlaps(span) || corner(span)) continue;
+    taken.push(span);
+  }
+  // Generic names: behind a STRONG locative cue ("en", "zona", "barrio", "en el"), or chained right
+  // after an accepted name. Not behind "de"/"la", which the single-barrio reader accepts: a service
+  // lists furniture, and "mesas de centro", "centro de entretenimiento", "retiro de muebles" are
+  // furniture and chores, not barrios (measured on the armadores directory, 2026-11-12).
+  const STRONG_CUES = new Set(["en", "zona", "barrio", "bo"]);
+  const strongCue = (start: number): boolean => {
+    const before = start > 0 ? tokens[start - 1]! : "";
+    const twoBefore = start > 1 ? tokens[start - 2]! : "";
+    return STRONG_CUES.has(before) || ((before === "el" || before === "la" || before === "del") && STRONG_CUES.has(twoBefore));
+  };
+  let added = true;
+  while (added) {
+    added = false;
+    for (const span of ordered) {
+      if (!CUE_ONLY.has(span.entry.key) || taken.includes(span) || overlaps(span) || corner(span)) continue;
+      const before = span.start > 0 ? tokens[span.start - 1]! : "";
+      const chained = taken.some(t => t.end === span.start || (t.end === span.start - 1 && CORNER_CUES.has(before)));
+      const after = span.end < tokens.length ? tokens[span.end]! : "";
+      if (after === "de" && !chained) continue;
+      if (!strongCue(span.start) && !chained) continue;
+      taken.push(span);
+      added = true;
+    }
+  }
+  const rank = (department: string): number => (department === "Montevideo" ? 0 : department === "Canelones" ? 1 : 2);
+  const byKey = new Map<string, Span>();
+  for (const span of taken) {
+    const current = byKey.get(span.entry.key);
+    if (!current || rank(span.entry.department) < rank(current.entry.department)) byKey.set(span.entry.key, span);
+  }
+  return [...byKey.values()]
+    .sort((a, b) => a.start - b.start)
+    .map(span => ({ neighborhood: span.entry.name, department: span.entry.department }));
+}
+
 function pick(matches: Match[], department: string): NeighborhoodFromText | null {
   if (!matches.length) return null;
   const best = [...matches].sort((a, b) => b.chars - a.chars || a.start - b.start)[0]!;

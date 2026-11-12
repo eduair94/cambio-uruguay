@@ -1,0 +1,146 @@
+// La fusión diaria del directorio de armadores: qué se conserva cuando una fuente no corrió,
+// cuándo vence una fila, cómo se unen Google y el relevamiento editorial, y la guarda que impide
+// que una corrida flaca pise un buen snapshot.
+import { describe, expect, it } from "vitest";
+import { mergeEntries, snapshotIsThin } from "../../classes/armadores/build";
+import { blankEntry } from "../../classes/armadores/entry";
+import type { ArmadorEntry, ArmadorSource } from "../../classes/armadores/types";
+
+const NOW = new Date("2026-11-11T18:05:00Z");
+const DAY = "2026-11-11";
+
+function row(id: string, source: ArmadorSource, over: Partial<ArmadorEntry> = {}): ArmadorEntry {
+  const kind = source === "editorial" ? "empresa" : source === "google" ? "empresa" : "aviso";
+  return { ...blankEntry({ id, source, kind, name: over.name ?? id, url: `https://x/${id}` }, over.lastSeen ?? DAY), ...over };
+}
+
+const none = { editorial: [], google: null, facebook: null, mercadolibre: null };
+
+describe("mergeEntries", () => {
+  it("conserva las filas de una fuente que no corrió (Facebook sin sesión no borra nada)", () => {
+    const previous = [row("fb:1", "facebook", { lastSeen: "2026-11-10", firstSeen: "2026-11-01" })];
+    const merged = mergeEntries(previous, none, NOW);
+    expect(merged.map(e => [e.id, e.firstSeen, e.lastSeen])).toEqual([["fb:1", "2026-11-01", "2026-11-10"]]);
+  });
+
+  it("renueva lastSeen de lo visto hoy y conserva firstSeen", () => {
+    const previous = [row("fb:1", "facebook", { lastSeen: "2026-11-05", firstSeen: "2026-11-01" })];
+    const merged = mergeEntries(previous, { ...none, facebook: [row("fb:1", "facebook")] }, NOW);
+    expect(merged[0]).toMatchObject({ firstSeen: "2026-11-01", lastSeen: DAY });
+  });
+
+  it("vence un aviso a los 14 días sin verse y un negocio de Google a los 30", () => {
+    const previous = [
+      row("fb:old", "facebook", { lastSeen: "2026-10-27" }),
+      row("fb:ok", "facebook", { lastSeen: "2026-10-29" }),
+      row("g:old", "google", { lastSeen: "2026-10-11" }),
+      row("g:ok", "google", { lastSeen: "2026-10-13" }),
+    ];
+    const merged = mergeEntries(previous, { ...none, facebook: [], google: [] }, NOW);
+    expect(merged.map(e => e.id).sort()).toEqual(["fb:ok", "g:ok"]);
+  });
+
+  it("une un negocio de Google con su prestador editorial por nombre y le pasa la puntuación", () => {
+    const editorial = [row("ed:armado-fast", "editorial", { name: "Armado FAST" })];
+    const google = [row("g:abc", "google", {
+      name: "Armado FAST - Armadores de Muebles Montevideo",
+      placeId: "abc",
+      rating: { value: 5, count: 459, observedAt: DAY },
+      base: { barrio: "Cordón", zone: "centro", department: "Montevideo", basis: "coordinates" },
+    })];
+    const merged = mergeEntries([], { ...none, editorial, google }, NOW);
+    expect(merged.map(e => e.id)).toEqual(["ed:armado-fast"]);
+    expect(merged[0]).toMatchObject({ placeId: "abc", rating: { count: 459 }, base: { barrio: "Cordón", basis: "coordinates" } });
+  });
+
+  it("une por place id aunque los nombres no se parezcan", () => {
+    const editorial = [row("ed:x", "editorial", { name: "Servicio X", placeId: "p9" })];
+    const google = [row("g:p9", "google", { name: "Armados Ya 2022", placeId: "p9" })];
+    expect(mergeEntries([], { ...none, editorial, google }, NOW).map(e => e.id)).toEqual(["ed:x"]);
+  });
+
+  it("une por el nombre entero aunque sea genérico o venga pegado («El Armador», «ArmadoresMontevideo»)", () => {
+    const editorial = [row("ed:el-armador", "editorial", { name: "El Armador" }), row("ed:am", "editorial", { name: "ArmadoresMontevideo" })];
+    const google = [
+      row("g:1", "google", { name: "EL ARMADOR - Armado de muebles", placeId: "1" }),
+      row("g:2", "google", { name: "Armadores Montevideo", placeId: "2" }),
+    ];
+    expect(mergeEntries([], { ...none, editorial, google }, NOW).map(e => [e.id, e.placeId])).toEqual([["ed:am", "2"], ["ed:el-armador", "1"]]);
+  });
+
+  it("no une nombres genéricos («Armador de muebles») con un prestador", () => {
+    const editorial = [row("ed:armador-de-muebles-el-rey", "editorial", { name: "Armador de muebles el Rey" })];
+    const google = [row("g:q", "google", { name: "Armador de muebles", placeId: "q" })];
+    expect(mergeEntries([], { ...none, editorial, google }, NOW).map(e => e.id).sort()).toEqual(["ed:armador-de-muebles-el-rey", "g:q"]);
+  });
+
+  it("colapsa el mismo aviso de Facebook publicado dos veces (título y precio iguales)", () => {
+    const price = (amount: number) => [{ item: null, label: "Precio del aviso", amount, amountMax: null, currency: "UYU" as const, kind: "ad" as const, conditions: null, sourceUrl: "u", observedAt: DAY, origin: "ad-card" as const }];
+    const facebook = [
+      row("fb:1", "facebook", { name: "Armador de muebles en todo Montevideo", prices: price(450) }),
+      row("fb:2", "facebook", { name: "ARMADOR DE MUEBLES EN TODO MONTEVIDEO", prices: price(450) }),
+      row("fb:3", "facebook", { name: "Armador de muebles en todo Montevideo", prices: price(600) }),
+    ];
+    expect(mergeEntries([], { ...none, facebook }, NOW).map(e => e.id)).toEqual(["fb:1", "fb:3"]);
+  });
+});
+
+describe("snapshotIsThin", () => {
+  const many = (n: number, source: ArmadorSource) => Array.from({ length: n }, (_, i) => row(`${source}:${i}`, source));
+  it("rechaza una corrida con menos de la mitad de las filas no editoriales", () => {
+    expect(snapshotIsThin(many(9, "facebook"), many(20, "facebook"), new Set(["facebook"]))).toMatch(/9.*20/);
+    expect(snapshotIsThin(many(10, "facebook"), many(20, "facebook"), new Set(["facebook"]))).toBeNull();
+  });
+  it("no juzga contra un snapshot chico ni cuenta lo editorial", () => {
+    expect(snapshotIsThin(many(1, "facebook"), many(19, "facebook"), new Set(["facebook"]))).toBeNull();
+    expect(snapshotIsThin([...many(30, "editorial"), ...many(5, "google")], many(25, "google"), new Set(["google"]))).toMatch(/5/);
+  });
+});
+
+describe("hallazgos de la revisión final (fusión)", () => {
+  it("no une por una sola palabra corta o común («S Y A», «M,E», «Express»)", () => {
+    const editorial = [
+      row("ed:sya", "editorial", { name: "S Y A Muebles" }),
+      row("ed:me", "editorial", { name: "Servicios M,E" }),
+      row("ed:express", "editorial", { name: "Armado Express" }),
+    ];
+    const google = [
+      row("g:1", "google", { name: "Armados Rodríguez S.A.", placeId: "1" }),
+      row("g:2", "google", { name: "M&M Armado de muebles", placeId: "2" }),
+      row("g:3", "google", { name: "Express Mudanzas y Armado de Muebles", placeId: "3" }),
+    ];
+    const merged = mergeEntries([], { ...none, editorial, google }, NOW);
+    expect(merged.filter(e => e.source === "google").map(e => e.id).sort()).toEqual(["g:1", "g:2", "g:3"]);
+    expect(merged.filter(e => e.source === "editorial").every(e => e.placeId === null)).toBe(true);
+  });
+
+  it("sigue uniendo por una palabra propia larga («ATOPE»)", () => {
+    const editorial = [row("ed:atope", "editorial", { name: "ATOPE" })];
+    const google = [row("g:a", "google", { name: "Armador de muebles # Atope", placeId: "a" })];
+    expect(mergeEntries([], { ...none, editorial, google }, NOW).map(e => e.id)).toEqual(["ed:atope"]);
+  });
+
+  it("conserva la ficha de Google de un prestador relevado los días que Google no corre", () => {
+    const rating = { value: 4.8, count: 120, observedAt: "2026-11-08" };
+    const previous = [row("ed:x", "editorial", { name: "ATOPE", placeId: "PID", rating, base: { barrio: "Ciudad Vieja", zone: "centro", department: "Montevideo", basis: "coordinates" } })];
+    const editorial = [row("ed:x", "editorial", { name: "ATOPE" })];
+    const merged = mergeEntries(previous, { ...none, editorial }, NOW);
+    expect(merged[0]).toMatchObject({ placeId: "PID", rating, base: { barrio: "Ciudad Vieja", basis: "coordinates" } });
+  });
+
+  it("deja vencer esa ficha a los 30 días de su lectura", () => {
+    const rating = { value: 4.8, count: 120, observedAt: "2026-10-01" };
+    const previous = [row("ed:x", "editorial", { name: "ATOPE", placeId: "PID", rating })];
+    const merged = mergeEntries(previous, { ...none, editorial: [row("ed:x", "editorial", { name: "ATOPE" })] }, NOW);
+    expect(merged[0]?.rating).toBeNull();
+  });
+
+  it("la guarda sólo juzga las fuentes que corrieron: los avisos que vencen de una fuente caída no congelan el directorio", () => {
+    const many = (n: number, source: ArmadorSource) => Array.from({ length: n }, (_, i) => row(`${source}:${i}`, source));
+    const previous = [...many(30, "facebook"), ...many(10, "mercadolibre")];
+    const next = many(10, "mercadolibre");
+    expect(snapshotIsThin(next, previous, new Set(["mercadolibre"]))).toBeNull();
+    expect(snapshotIsThin(many(2, "mercadolibre"), previous, new Set(["mercadolibre"]))).toBeNull();
+    expect(snapshotIsThin(many(10, "facebook"), many(30, "facebook"), new Set(["facebook"]))).toMatch(/facebook/);
+  });
+});

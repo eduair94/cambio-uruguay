@@ -547,6 +547,10 @@
           "label": "Fletes y mudanzas"
         },
         {
+          "to": "/armadores-de-muebles-montevideo",
+          "label": "Armadores de muebles"
+        },
+        {
           "to": "/equipar-casa-uruguay",
           "label": "Equipar una casa"
         },

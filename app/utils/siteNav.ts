@@ -3189,6 +3189,24 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // Job diario `currency-armadores`: avisos de Marketplace y Mercado Libre, fichas de Google y
+        // tarifas relevadas. Sólo en español: la canónica es la URL española.
+        to: '/armadores-de-muebles-montevideo',
+        labelKey: 'nav.armadores',
+        icon: 'mdi-hammer-screwdriver',
+        priority: 0.8,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'armador de muebles montevideo',
+          'armado de muebles a domicilio precio',
+          'cuanto cobra un armador de muebles',
+          'precio armar ropero placard cama',
+          'armadores de muebles por barrio pocitos cordon malvin',
+          'desarmado de muebles mudanza',
+        ],
+      },
+      {
         to: '/plan-de-vida-uruguay',
         labelKey: 'nav.planDeVida',
         icon: 'mdi-chart-timeline-variant',

@@ -604,6 +604,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/fletes-mudanzas-uruguay',
       },
       {
+        label: 'Armadores de muebles',
+        description: 'Quién arma muebles en tu barrio y cuánto cobra por cada uno.',
+        to: '/armadores-de-muebles-montevideo',
+      },
+      {
         label: 'Equipar una casa',
         description: 'Qué sale llenar una vivienda vacía, categoría por categoría.',
         to: '/equipar-casa-uruguay',

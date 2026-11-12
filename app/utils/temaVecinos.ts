@@ -57,8 +57,11 @@ export const TEMA_VECINOS_MAX_GRUPOS = 2
  * `/coeficiente-de-reajuste-de-alquileres-uruguay`. Tercera vez que lo mueve el mismo tema y por la
  * misma razón: el tope no elige cuántos enlaces conviene mostrar, sólo evita que el bloque recorte
  * y rompa la reciprocidad que `temaVecinos.test.ts` exige.
+ *
+ * 27 → 28 el 2026-11-12: el mismo tema pasó a 29 recursos con `/armadores-de-muebles-montevideo`
+ * (después de la mudanza viene armar los muebles). Misma razón.
  */
-export const TEMA_VECINOS_MAX_LINKS = 27
+export const TEMA_VECINOS_MAX_LINKS = 28
 /**
  * Los términos son un complemento, y en el orden del tema van primero los más usados. Con 12, una
  * página en dos temas llegaba a 53 enlaces (`/historico`: 29 páginas + 24 términos); las páginas no
