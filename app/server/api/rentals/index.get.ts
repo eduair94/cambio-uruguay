@@ -72,6 +72,31 @@ const STALE_DAYS = RENTAL_STALE_DAYS
 const BARRIO_FACET_SIZE = 250
 const BARRIO_FACET_READ = 5000
 
+const DEPARTMENT_FACET_STAGES = [
+  { $group: { _id: '$department', count: { $sum: 1 } } },
+  { $sort: { count: -1 } },
+  { $limit: 25 },
+]
+
+const NEIGHBORHOOD_FACET_STAGES = [
+  { $match: { neighborhood: { $ne: '' } } },
+  { $group: { _id: '$neighborhood', count: { $sum: 1 } } },
+  { $sort: { count: -1, _id: 1 } },
+  { $limit: BARRIO_FACET_READ },
+]
+
+/**
+ * `buildRentalFilter` returns shallow copies of one filter, so two variants that hold the same keys
+ * with the same values select exactly the same properties.
+ */
+function sameRentalFilter(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
+  const keys = Object.keys(a)
+  return (
+    keys.length === Object.keys(b).length &&
+    keys.every(key => Object.prototype.hasOwnProperty.call(b, key) && a[key] === b[key])
+  )
+}
+
 /** Lo que el navegador y el borde pueden guardar; la memoria del proceso se rige por `maxAge`. */
 export const RENTAL_DIRECTORY_CACHE_CONTROL = 'public, max-age=30, s-maxage=300'
 
@@ -118,8 +143,18 @@ const cachedDirectory = defineCachedEventHandler(
       // Sorting alone must not change the rental-price statistics for the same search.
       const priceStages = rentalOfferStages({ ...query, sort: 'precio' }, usdUyu)
       const publicStages = rentalPublicStages(filter, STALE_DAYS, excluded)
+      // Every pass below reads the whole public inventory (`rentalPublicStages` re-derives each
+      // property's current offers before anything can filter on them), so each one is a full scan
+      // of `rentallistings`. Measured on the VPS on 2026-11-13: ~600 uncached searches in five hours
+      // ran ~7,500 s of these scans, up to six at once, and their bursts (513 s of scanning inside
+      // one minute) are what starve the other routes' 4 s queries into MaxTimeMSExpired 503s
+      // (Sentry CAMBIO-URUGUAY-BACKEND-12, docs/app/SENTRY_ERRORS.md). The count always rides the
+      // facet pass, and so do the department and barrio counts whenever their filter is this one:
+      // the unfiltered directory reads the inventory twice instead of five times.
+      const foldDepartments = sameRentalFilter(nonLocation, filter)
+      const foldNeighborhoods = sameRentalFilter(withoutNeighborhood, filter)
 
-      const [items, totals, departments, neighborhoods, dimensions, coverage] = await Promise.all([
+      const [items, departmentRows, neighborhoodRows, dimensions, coverage] = await Promise.all([
         RentalListingModel.aggregate([
           ...publicStages,
           ...offerStages,
@@ -154,27 +189,26 @@ const cachedDirectory = defineCachedEventHandler(
           // projection can exceed 100 MiB at this inventory size; allow bounded disk spill.
           .allowDiskUse(true)
           .collation(RENTAL_COLLATION),
-        RentalListingModel.aggregate([...publicStages, { $count: 'total' }]).collation(
-          RENTAL_COLLATION
-        ),
-        RentalListingModel.aggregate([
-          ...rentalPublicStages(nonLocation, STALE_DAYS, excluded),
-          { $group: { _id: '$department', count: { $sum: 1 } } },
-          { $sort: { count: -1 } },
-          { $limit: 25 },
-        ]).collation(RENTAL_COLLATION),
+        foldDepartments
+          ? null
+          : RentalListingModel.aggregate([
+              ...rentalPublicStages(nonLocation, STALE_DAYS, excluded),
+              ...DEPARTMENT_FACET_STAGES,
+            ]).collation(RENTAL_COLLATION),
         // Exclude the neighborhood's own selection so selecting Pocitos does not hide Cordón.
-        RentalListingModel.aggregate([
-          ...rentalPublicStages(withoutNeighborhood, STALE_DAYS, excluded),
-          { $match: { neighborhood: { $ne: '' } } },
-          { $group: { _id: '$neighborhood', count: { $sum: 1 } } },
-          { $sort: { count: -1, _id: 1 } },
-          { $limit: BARRIO_FACET_READ },
-        ]).collation(RENTAL_COLLATION),
+        foldNeighborhoods
+          ? null
+          : RentalListingModel.aggregate([
+              ...rentalPublicStages(withoutNeighborhood, STALE_DAYS, excluded),
+              ...NEIGHBORHOOD_FACET_STAGES,
+            ]).collation(RENTAL_COLLATION),
         RentalListingModel.aggregate([
           ...publicStages,
           {
             $facet: {
+              total: [{ $count: 'total' }],
+              ...(foldDepartments ? { departments: DEPARTMENT_FACET_STAGES } : {}),
+              ...(foldNeighborhoods ? { neighborhoods: NEIGHBORHOOD_FACET_STAGES } : {}),
               types: [
                 { $group: { _id: '$propertyType', count: { $sum: 1 } } },
                 { $sort: { count: -1 } },
@@ -192,7 +226,6 @@ const cachedDirectory = defineCachedEventHandler(
         ]).collation(RENTAL_COLLATION),
         getRentalCoverage(meta?.generatedAt, STALE_DAYS),
       ])
-      const total = Number(totals[0]?.total) || 0
 
       const toFacet = (rows: Array<{ _id: string; count: number }>): RentalFacetValue[] =>
         (rows || [])
@@ -203,6 +236,9 @@ const cachedDirectory = defineCachedEventHandler(
         string,
         Array<{ _id: string; count: number }>
       >
+      const total = Number((dimension.total?.[0] as unknown as { total?: number })?.total) || 0
+      const departments = departmentRows ?? dimension.departments ?? []
+      const neighborhoods = neighborhoodRows ?? dimension.neighborhoods ?? []
       // The median is what tells someone whether a price is normal for the filter they built.
       const median = Number((dimension.median?.[0] as unknown as { median?: number })?.median)
       const medianUyu = total > 0 && Number.isFinite(median) ? Math.round(median) : 0
