@@ -183,7 +183,24 @@
           <!-- MCP server / AI assistants (open-source, npm) -->
           <section class="mb-8">
             <McpConfigCard />
+            <VBtn
+              :to="localePath('/datos-abiertos-uruguay')"
+              variant="tonal"
+              color="primary"
+              class="mt-3"
+              prepend-icon="mdi-database-export-outline"
+            >
+              {{ t('openData.nav') }}
+            </VBtn>
           </section>
+
+          <!-- Quién nos cita (medios, catálogos): sólo en castellano, el bloque no está traducido. -->
+          <PressMentions
+            v-if="locale === 'es'"
+            page="/acerca"
+            title="Quién nos cita"
+            intro="Medios, catálogos y personas que publicaron o usaron nuestros datos, con el enlace al original y lo que agregamos nosotros."
+          />
 
           <!-- Disclaimer -->
           <VAlert type="warning" variant="tonal" class="mb-8" :title="t('acerca.disclaimerTitle')">

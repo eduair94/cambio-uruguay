@@ -623,6 +623,9 @@
   "intradayApi": {
     "nav": "Päevasisene API"
   },
+  "openData": {
+    "nav": "Avaandmed"
+  },
   "regionalApi": {
     "nav": "Regionaalne API"
   },

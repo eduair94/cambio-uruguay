@@ -13,9 +13,9 @@
 // Módulo PURO (sin Vue/Nuxt): la página y el test comparten la misma fuente.
 
 /** Fecha (YYYY-MM-DD) en que se leyeron las citas y métricas de abajo. */
-export const PRESS_MENTIONS_LAST_REVIEWED = '2026-08-17'
+export const PRESS_MENTIONS_LAST_REVIEWED = '2026-11-13'
 
-export type MentionPlatform = 'x' | 'prensa' | 'reddit' | 'youtube'
+export type MentionPlatform = 'x' | 'prensa' | 'reddit' | 'youtube' | 'directorio'
 
 export interface MentionMetric {
   label: string
@@ -45,14 +45,52 @@ export interface PressMention {
   metrics?: readonly MentionMetric[]
   /** Nuestra respuesta: qué confirmamos, qué no, y qué cambió en la página. */
   ourTake: string
+  /** Texto del botón al original; por defecto, según la plataforma. */
+  linkLabel?: string
+  /** Va primera en cada página donde aparece, antes que las más nuevas. */
+  featured?: boolean
 }
 
 export const PRESS_MENTIONS: readonly PressMention[] = Object.freeze([
   {
+    id: 'diario-norte-cotizacion-del-dia-2026-11',
+    // La página de la API de datos abiertos la pone arriba: es la prueba de que un medio publica
+    // la pizarra todos los días tomándola de acá.
+    pages: ['/datos-abiertos-uruguay', '/acerca'],
+    platform: 'prensa',
+    author: 'Diario NORTE',
+    authorNote: 'Diario regional del norte del país, editado en Rivera',
+    url: 'https://diarionorte.com.uy/ensenanza/olimpiada-de-robotica-de-ceibal-reunio-a-mas-de-9-200-participantes-y-a-equipos-de-todo-el-pais-79138.html',
+    date: '2026-11-12',
+    quote: 'Fuente: Banco República (datos vía Cambio-Uruguay.com)',
+    context:
+      'Es el pie del recuadro «Cotización del día» que Diario NORTE publica en su portada y al costado de cada nota: dólar, dólar eBROU, peso argentino, real, euro y unidad indexada, con compra y venta. El recuadro está en todo el sitio, no en una nota puntual; lo verificamos en la portada y en una nota del 12/11/2026.',
+    ourTake:
+      'La atribución es exacta: los precios son la pizarra del BROU, y Cambio Uruguay es quien la lee, la normaliza y la publica en una API sin clave. Por eso el pie dice «Banco República» primero y nosotros después, que es el orden correcto: el que fija el precio es el banco. Para el que quiera hacer lo mismo con alquileres, viviendas o autos usados, esa es la idea de /datos-abiertos-uruguay: los mismos números que publica el sitio, gratis y con la licencia por escrito.',
+    linkLabel: 'Ver el recuadro en una nota',
+    featured: true,
+  },
+  {
+    id: 'jentic-api-directory-2026',
+    pages: ['/datos-abiertos-uruguay', '/acerca'],
+    platform: 'directorio',
+    author: 'Jentic',
+    authorNote: 'Catálogo de APIs para agentes de IA',
+    url: 'https://jentic.com/apis/cambio-uruguay.com/cambio-uruguay',
+    date: '2026-11-13',
+    quote:
+      'The Cambio Uruguay Public API aggregates buy and sell quotes from dozens of Uruguayan exchange houses and banks',
+    context:
+      'Ficha de la API de cotizaciones en el catálogo público de Jentic, que indexa APIs para que los agentes de IA las puedan llamar: describe las rutas de cotización actual, por casa y de series históricas, y remite a la documentación de cambio-uruguay.com. No tiene fecha propia; la fecha de acá es la del día en que la leímos.',
+    ourTake:
+      'La descripción es correcta para la API de cotizaciones. Lo que el catálogo todavía no lista es lo que sumamos después: el servidor MCP (29 herramientas, también alquileres, autos y productos) y la API de datos abiertos de precios de alquileres, viviendas y autos usados. Las dos están documentadas en /datos-abiertos-uruguay y en /buscar-con-ia.',
+    linkLabel: 'Ver la ficha',
+  },
+  {
     id: 'alainmizrahi-soy-santander-2026-08',
     // También en el media kit (/publicidad): es la prueba de que el ranking se cita afuera tal
     // como está, que es lo que un anunciante compra cuando NO compra una posición.
-    pages: ['/tarjetas-de-credito-uruguay', '/publicidad'],
+    pages: ['/tarjetas-de-credito-uruguay', '/publicidad', '/acerca'],
     platform: 'x',
     author: 'Alain Mizrahi',
     handle: 'alainmizrahi',
@@ -73,10 +111,11 @@ export const PRESS_MENTIONS: readonly PressMention[] = Object.freeze([
   },
 ])
 
-/** Menciones que corresponden a una ruta, de la más nueva a la más vieja. */
+/** Menciones que corresponden a una ruta: las destacadas primero y después de la más nueva a la más vieja. */
 export function mentionsFor(page: string): PressMention[] {
-  return PRESS_MENTIONS.filter(m => m.pages.includes(page)).sort((a, b) =>
-    b.date.localeCompare(a.date)
+  return PRESS_MENTIONS.filter(m => m.pages.includes(page)).sort(
+    (a, b) =>
+      Number(Boolean(b.featured)) - Number(Boolean(a.featured)) || b.date.localeCompare(a.date)
   )
 }
 
@@ -89,8 +128,22 @@ const PLATFORM_LABELS: Readonly<Record<MentionPlatform, string>> = Object.freeze
   prensa: 'Prensa',
   reddit: 'Reddit',
   youtube: 'YouTube',
+  directorio: 'Directorio',
 })
 
 export function platformLabel(platform: MentionPlatform): string {
   return PLATFORM_LABELS[platform]
+}
+
+const LINK_LABELS: Readonly<Record<MentionPlatform, string>> = Object.freeze({
+  x: 'Ver el posteo original',
+  prensa: 'Ver la nota',
+  reddit: 'Ver el hilo original',
+  youtube: 'Ver el video',
+  directorio: 'Ver la ficha',
+})
+
+/** Texto del botón que lleva al original. */
+export function mentionLinkLabel(mention: Pick<PressMention, 'platform' | 'linkLabel'>): string {
+  return mention.linkLabel ?? LINK_LABELS[mention.platform]
 }

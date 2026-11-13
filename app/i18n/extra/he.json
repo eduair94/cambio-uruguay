@@ -623,6 +623,9 @@
   "intradayApi": {
     "nav": "ממשק API תוך יומי"
   },
+  "openData": {
+    "nav": "נתונים פתוחים"
+  },
   "regionalApi": {
     "nav": "ממשק API אזורי"
   },

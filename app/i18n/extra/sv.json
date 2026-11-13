@@ -623,6 +623,9 @@
   "intradayApi": {
     "nav": "Intradags-API"
   },
+  "openData": {
+    "nav": "Öppna data"
+  },
   "regionalApi": {
     "nav": "Regionalt API"
   },

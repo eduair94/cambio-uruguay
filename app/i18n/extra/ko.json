@@ -623,6 +623,9 @@
   "intradayApi": {
     "nav": "일중 API"
   },
+  "openData": {
+    "nav": "공공 데이터"
+  },
   "regionalApi": {
     "nav": "지역 API"
   },

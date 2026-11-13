@@ -76,6 +76,7 @@ const NO_ES_PAGINA_DE_LECTURA = new Map([
   ['/acerca', 'sobre el propio sitio'],
   ['/api-cotizacion-intradia', 'referencia para desarrolladores'],
   ['/api-cotizaciones-regionales', 'referencia para desarrolladores'],
+  ['/datos-abiertos-uruguay', 'referencia para desarrolladores'],
   ['/empresas', 'los planes de la API: la página ES la conversión'],
   ['/estadisticas-reddit', 'sobre el propio sitio'],
   ['/hecho-a-pedido', 'sobre el propio sitio'],

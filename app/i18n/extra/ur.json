@@ -623,6 +623,9 @@
   "intradayApi": {
     "nav": "انٹرا ڈے API"
   },
+  "openData": {
+    "nav": "اوپن ڈیٹا"
+  },
   "regionalApi": {
     "nav": "علاقائی API"
   },

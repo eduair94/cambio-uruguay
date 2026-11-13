@@ -623,6 +623,9 @@
   "intradayApi": {
     "nav": "API ระหว่างวัน"
   },
+  "openData": {
+    "nav": "ข้อมูลเปิด"
+  },
   "regionalApi": {
     "nav": "API ระดับภูมิภาค"
   },

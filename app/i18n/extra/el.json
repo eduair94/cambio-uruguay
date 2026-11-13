@@ -623,6 +623,9 @@
   "intradayApi": {
     "nav": "Ενδοημερήσιο API"
   },
+  "openData": {
+    "nav": "Ανοιχτά δεδομένα"
+  },
   "regionalApi": {
     "nav": "Περιφερειακό API"
   },

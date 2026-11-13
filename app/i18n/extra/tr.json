@@ -623,6 +623,9 @@
   "intradayApi": {
     "nav": "Gün içi API"
   },
+  "openData": {
+    "nav": "Açık veri"
+  },
   "regionalApi": {
     "nav": "Bölgesel API"
   },

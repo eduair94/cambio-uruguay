@@ -623,6 +623,9 @@
   "intradayApi": {
     "nav": "API intradía"
   },
+  "openData": {
+    "nav": "Datos abiertos"
+  },
   "regionalApi": {
     "nav": "API regional"
   },
