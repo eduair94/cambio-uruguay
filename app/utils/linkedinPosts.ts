@@ -519,10 +519,12 @@ export function linkedinMessage(post: LinkedinPost): string {
   return `${text}${text.endsWith(':') ? '\n' : '\n\n'}${linkedinUrl(post.path)}`
 }
 
-const escapeXml = (s: string) =>
+/** Escapa texto para un atributo o nodo XML. Lo usa también el feed de X (`xPosts.ts`). */
+export const escapeXml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
-const cdata = (s: string) => `<![CDATA[${s.split(']]>').join(']]]]><![CDATA[>')}]]>`
+/** Envuelve en CDATA partiendo cualquier `]]>` del texto. */
+export const cdata = (s: string) => `<![CDATA[${s.split(']]>').join(']]]]><![CDATA[>')}]]>`
 
 /**
  * RSS 2.0 con UN solo ítem: el post vigente. IFTTT dispara por cada `guid` nuevo, y el `guid` es
