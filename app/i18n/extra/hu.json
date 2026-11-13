@@ -623,6 +623,9 @@
   "intradayApi": {
     "nav": "Napközbeni API"
   },
+  "openData": {
+    "nav": "Nyílt adatok"
+  },
   "regionalApi": {
     "nav": "Regionális API"
   },

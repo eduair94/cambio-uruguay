@@ -6,6 +6,7 @@ import {
   PRESS_MENTIONS,
   PRESS_MENTIONS_LAST_REVIEWED,
   getPressMention,
+  mentionLinkLabel,
   mentionsFor,
   platformLabel,
 } from '../../utils/pressMentions'
@@ -77,10 +78,19 @@ describe('press mentions catalogue', () => {
     expect(mentionsFor('/pagina-que-no-existe')).toEqual([])
   })
 
+  it('puts a featured mention first even when a newer one shares the page', () => {
+    const found = mentionsFor('/acerca')
+    expect(found[0]?.id).toBe('diario-norte-cotizacion-del-dia-2026-11')
+    expect(found.length).toBeGreaterThan(1)
+  })
+
   it('resolves by id and labels platforms', () => {
     expect(getPressMention(PRESS_MENTIONS[0]!.id)).toBeDefined()
     expect(getPressMention('nope')).toBeUndefined()
     expect(platformLabel('x')).toBe('X (Twitter)')
     expect(platformLabel('prensa')).toBe('Prensa')
+    expect(platformLabel('directorio')).toBe('Directorio')
+    expect(mentionLinkLabel({ platform: 'prensa' })).toBe('Ver la nota')
+    expect(mentionLinkLabel({ platform: 'x', linkLabel: 'Otro' })).toBe('Otro')
   })
 })

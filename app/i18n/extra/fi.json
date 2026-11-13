@@ -623,6 +623,9 @@
   "intradayApi": {
     "nav": "Päivänsisäinen API"
   },
+  "openData": {
+    "nav": "Avoin data"
+  },
   "regionalApi": {
     "nav": "Alueellinen API"
   },

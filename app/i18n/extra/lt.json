@@ -623,6 +623,9 @@
   "intradayApi": {
     "nav": "Dienos API"
   },
+  "openData": {
+    "nav": "Atvirieji duomenys"
+  },
   "regionalApi": {
     "nav": "Regioninė API"
   },

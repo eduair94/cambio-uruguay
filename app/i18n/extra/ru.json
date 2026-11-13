@@ -623,6 +623,9 @@
   "intradayApi": {
     "nav": "API для внутридневной торговли"
   },
+  "openData": {
+    "nav": "Открытые данные"
+  },
   "regionalApi": {
     "nav": "Региональный API"
   },

@@ -623,6 +623,9 @@
   "intradayApi": {
     "nav": "Intradenní API"
   },
+  "openData": {
+    "nav": "Otevřená data"
+  },
   "regionalApi": {
     "nav": "Regionální API"
   },

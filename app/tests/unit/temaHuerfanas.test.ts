@@ -50,6 +50,7 @@ const FUERA_DE_TEMA_POR_DISENO = [
   '/buscar-con-ia', // sobre el propio sitio
   '/conectar', // área de cuenta
   '/contacto',
+  '/datos-abiertos-uruguay', // referencia para desarrolladores
   '/desarrolladores',
   '/directorios-uruguay', // índice de los directorios del sitio
   '/empresas', // planes de la API

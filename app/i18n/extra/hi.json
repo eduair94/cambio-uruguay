@@ -623,6 +623,9 @@
   "intradayApi": {
     "nav": "इंट्राडे एपीआई"
   },
+  "openData": {
+    "nav": "ओपन डेटा"
+  },
   "regionalApi": {
     "nav": "क्षेत्रीय एपीआई"
   },

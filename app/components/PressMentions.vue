@@ -15,7 +15,7 @@
  * Una mención nunca toca un puntaje: los puntajes salen de la rúbrica, no de quién
  * nos aplaude.
  */
-import { mentionsFor, platformLabel } from '~/utils/pressMentions'
+import { mentionLinkLabel, mentionsFor, platformLabel } from '~/utils/pressMentions'
 
 const props = withDefaults(
   defineProps<{
@@ -23,8 +23,14 @@ const props = withDefaults(
     page: string
     /** Título del bloque. */
     title?: string
+    /** Bajada del bloque; la de por defecto es la del ranking de tarjetas. */
+    intro?: string
   }>(),
-  { title: 'Nos citaron' }
+  {
+    title: 'Nos citaron',
+    intro:
+      'Discusiones públicas donde esta página se usó como dato. Van con la cita textual, el link al original y nuestra respuesta al lado. Ninguna mención mueve un puntaje del ranking.',
+  }
 )
 
 const mentions = computed(() => mentionsFor(props.page))
@@ -34,6 +40,7 @@ const PLATFORM_ICONS: Record<string, string> = {
   prensa: 'mdi-newspaper-variant-outline',
   reddit: 'mdi-reddit',
   youtube: 'mdi-youtube',
+  directorio: 'mdi-book-open-page-variant-outline',
 }
 
 /** 2026-08-17 → 17 de agosto de 2026. */
@@ -65,10 +72,7 @@ function formatDate(iso: string): string {
     aria-labelledby="press-mentions-title"
   >
     <h2 id="press-mentions-title" class="text-h6 font-weight-bold mb-1">{{ title }}</h2>
-    <p class="text-body-2 text-medium-emphasis mb-3">
-      Discusiones públicas donde esta página se usó como dato. Van con la cita textual, el link al
-      original y nuestra respuesta al lado. Ninguna mención mueve un puntaje del ranking.
-    </p>
+    <p class="text-body-2 text-medium-emphasis mb-3">{{ intro }}</p>
 
     <SurfaceCard v-for="m in mentions" :key="m.id" class="mb-3">
       <div class="d-flex align-center flex-wrap ga-2 mb-3">
@@ -114,7 +118,7 @@ function formatDate(iso: string): string {
           size="small"
         >
           <VIcon start size="small">mdi-open-in-new</VIcon>
-          Ver el posteo original
+          {{ mentionLinkLabel(m) }}
         </VBtn>
         <VBtn
           v-if="m.threadUrl"

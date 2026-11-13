@@ -3210,6 +3210,14 @@
         "/guias/cuenta-sueldo-elegir-banco-uruguay"
       ],
       "hypothesis": "Guia nueva. La pregunta -me pueden obligar a cobrar el sueldo en el banco que eligio la empresa- vivia en UNA tarjeta de /preguntas-economia-personal, marcada muy_comun, y en ninguna pagina propia; medido con grep el 13/11, el Decreto 263/015 no se nombraba en ningun otro archivo del sitio, asi que los dos plazos de diez dias habiles del art. 9, la excepcion del art. 11 para el cambio asociado a una nueva relacion laboral y la lista del art. 16 de lo que la cuenta tiene que dar sin cobrar (5 extracciones, 8 transferencias de hasta UI 2.000, tarjeta con dos reposiciones, sin saldo minimo) no estaban publicados. Es demanda de intencion local y sin caja de respuesta de Google: la consulta pide un plazo y un derecho concretos, no una conversion. Entra en el hub sueldo-trabajo-e-impuestos-uruguay, que ya tiene el recibo, el aguinaldo y el laudo, y se enlaza desde la tarjeta de preguntas que hoy la contesta a medias. Las cifras salen de utils/payrollAccount.ts, leidas el 13/11 del texto ACTUALIZADO de IMPO (Ley 19.210 arts. 10, 11 y 15; Decreto 263/015 arts. 1, 9, 11, 14, 15, 16 y 23): no se publica ninguna tarifa de banco, ni el tope en pesos de la transferencia gratuita -el decreto lo escribe en UI-, ni el total de nada. Medir por cuota de clics del sitio con 28 dias archivados antes y despues, sin el dia del deploy."
+    },
+    {
+      "id": "datos-abiertos-api-y-menciones",
+      "shippedOn": "2026-11-13",
+      "routes": [
+        "/datos-abiertos-uruguay"
+      ],
+      "hypothesis": "Pagina nueva: la API de datos abiertos (estadisticas diarias de precio pedido de alquileres, viviendas y autos usados por barrio y modelo, CC BY 4.0, sin clave y con CORS) mas la busqueda de avisos y el servidor MCP, con una tabla en vivo del alquiler mediano de un apartamento de 2 dormitorios por barrio de Montevideo y un Dataset de schema.org. Apuesta doble: aparecer en busquedas de datos (precio de alquiler por barrio, api alquileres uruguay, datos abiertos) y ganar enlaces editoriales de medios y desarrolladores que citan la fuente, como ya hace Diario NORTE con la cotizacion del BROU (destacado arriba de la pagina). Medir por cuota de clics del sitio con 28 dias archivados antes y despues, sin el dia del deploy; los enlaces entrantes se miden aparte en Search Console."
     }
   ]
 }

@@ -16,6 +16,7 @@ const UNMASKED_PRE: Record<string, string> = {
   'pages/api-cotizacion-intradia.vue': 'API request and response examples',
   'pages/api-cotizaciones-regionales.vue': 'a JSON sample and curl commands',
   'pages/desarrolladores.vue': 'clone and install commands',
+  'pages/datos-abiertos-uruguay.vue': 'curl commands, MCP URLs and the attribution snippet',
   'pages/empresas.vue': 'a curl example without a key',
   'pages/buscar-con-ia.vue': 'MCP client configuration snippets',
   'pages/derechos-consumidor-compras-online.vue':
