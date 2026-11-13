@@ -400,6 +400,17 @@ describe('storeAddress', () => {
   })
 })
 
+/**
+ * TODA llamada a `storeFaq` de este bloque pasa `NOW`, el mismo reloj congelado al que `daysAgo()`
+ * ancla los `checkedAt` de los pertrechos.
+ *
+ * Sin el tercer argumento, `storeFaq` cae en su `new Date()` por defecto y mide la frescura de una
+ * señal fechada en setiembre de 2026 contra el reloj real, así que estos tests se ponían rojos
+ * solos al cumplirse los `STORE_SIGNAL_MAX_AGE_DAYS` (60) de cada pertrecho, sin que nadie tocara
+ * el repositorio: el de `daysAgo(2)` cayó el 13/11/2026 y los nueve de `daysAgo(1)` cumplían al día
+ * siguiente. Es justo lo que el test «judges freshness against the passed `now`» de más abajo le
+ * exige a la función, y lo que la página hace en producción, donde pasa su `servedAt`.
+ */
 describe('storeFaq', () => {
   it('answers "¿es confiable?" with the enumerated signals, ending with the disclaimer', () => {
     const profile = baseProfile({
@@ -413,7 +424,7 @@ describe('storeFaq', () => {
         checkedAt: daysAgo(2),
       },
     })
-    const faqs = storeFaq(profile, null)
+    const faqs = storeFaq(profile, null, NOW)
     const confiable = faqs.find(f => f.question === `¿${profile.name} es confiable?`)
     expect(confiable).toBeTruthy()
     expect(confiable!.answer).toContain('4,2')
@@ -462,7 +473,7 @@ describe('storeFaq', () => {
         checkedAt: daysAgo(1),
       },
     })
-    const faqs = storeFaq(profile, null)
+    const faqs = storeFaq(profile, null, NOW)
     const local = faqs.find(f => f.question === `¿${profile.name} tiene local físico?`)
     expect(local!.answer).toContain('Av. Italia 123, Montevideo')
   })
@@ -484,7 +495,7 @@ describe('storeFaq', () => {
         checkedAt: daysAgo(1),
       },
     })
-    const faqs = storeFaq(profile, null)
+    const faqs = storeFaq(profile, null, NOW)
     const local = faqs.find(f => f.question === `¿${profile.name} tiene local físico?`)
     expect(local!.answer).toContain('Bulevar Artigas 456, Montevideo')
   })
@@ -493,7 +504,7 @@ describe('storeFaq', () => {
     // baseProfile() has google: null and site: null — neither source was ever asked, so the
     // generic answer replaces the old blanket claim that always named both sources regardless.
     const profile = baseProfile()
-    const faqs = storeFaq(profile, null)
+    const faqs = storeFaq(profile, null, NOW)
     const local = faqs.find(f => f.question === `¿${profile.name} tiene local físico?`)
     expect(local!.answer).toBe('No tenemos una dirección verificada.')
   })
@@ -503,7 +514,7 @@ describe('storeFaq', () => {
       google: { rating: 4, reviews: 5, address: null, url: 'x', checkedAt: daysAgo(1) },
       // site is null: never queried, so it must never be named as a checked source.
     })
-    const faqs = storeFaq(profile, null)
+    const faqs = storeFaq(profile, null, NOW)
     const local = faqs.find(f => f.question === `¿${profile.name} tiene local físico?`)
     expect(local!.answer).toBe('No encontramos una dirección publicada en Google Maps.')
   })
@@ -526,7 +537,7 @@ describe('storeFaq', () => {
       },
       // google is null: never queried, so it must never be named as a checked source.
     })
-    const faqs = storeFaq(profile, null)
+    const faqs = storeFaq(profile, null, NOW)
     const local = faqs.find(f => f.question === `¿${profile.name} tiene local físico?`)
     expect(local!.answer).toBe('No encontramos una dirección publicada en el sitio de la tienda.')
   })
@@ -549,7 +560,7 @@ describe('storeFaq', () => {
         checkedAt: daysAgo(1),
       },
     })
-    const faqs = storeFaq(profile, null)
+    const faqs = storeFaq(profile, null, NOW)
     const local = faqs.find(f => f.question === `¿${profile.name} tiene local físico?`)
     expect(local!.answer).toBe('No encontramos una dirección publicada en Google Maps.')
   })
@@ -572,7 +583,7 @@ describe('storeFaq', () => {
         checkedAt: daysAgo(1),
       },
     })
-    const faqs = storeFaq(profile, null)
+    const faqs = storeFaq(profile, null, NOW)
     const local = faqs.find(f => f.question === `¿${profile.name} tiene local físico?`)
     expect(local!.answer).toBe(
       'No encontramos una dirección publicada en Google Maps ni en el sitio de la tienda.'
@@ -589,7 +600,7 @@ describe('storeFaq', () => {
         checkedAt: daysAgo(1),
       },
     })
-    const faqs = storeFaq(profile, null)
+    const faqs = storeFaq(profile, null, NOW)
     const local = faqs.find(f => f.question === `¿${profile.name} tiene local físico?`)
     expect(local!.answer.startsWith('Dirección publicada: Av. Italia 123, Montevideo')).toBe(true)
     expect(local!.answer.startsWith('Sí:')).toBe(false)
@@ -624,7 +635,7 @@ describe('storeFaq', () => {
         checkedAt: staleForever,
       },
     })
-    const faqs = storeFaq(profile, null)
+    const faqs = storeFaq(profile, null, NOW)
     const local = faqs.find(f => f.question === `¿${profile.name} tiene local físico?`)
     expect(local!.answer).toBe('No tenemos una dirección verificada.')
     expect(local!.answer).not.toContain('Montevideo')
@@ -632,14 +643,14 @@ describe('storeFaq', () => {
 
   it('includes "¿Cómo le reclamo a <name>?"', () => {
     const profile = baseProfile()
-    const faqs = storeFaq(profile, null)
+    const faqs = storeFaq(profile, null, NOW)
     expect(faqs.some(f => f.question === `¿Cómo le reclamo a ${profile.name}?`)).toBe(true)
   })
 
   it('links to the Bankos brand page via `link` (never a raw path in the answer text), and says so plainly when it did not resolve (item 14)', () => {
     const profile = baseProfile()
-    const withBrand = storeFaq(profile, 'tienda-test')
-    const withoutBrand = storeFaq(profile, null)
+    const withBrand = storeFaq(profile, 'tienda-test', NOW)
+    const withoutBrand = storeFaq(profile, null, NOW)
     const question = `¿${profile.name} tiene descuentos con tarjeta?`
 
     const withBrandAnswer = withBrand.find(f => f.question === question)!

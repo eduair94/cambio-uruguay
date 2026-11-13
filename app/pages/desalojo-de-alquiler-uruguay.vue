@@ -228,7 +228,15 @@ const verifiedAt = asUyDate(EVICTION_VERIFIED_AT)
 const cutoffText = asUyDate(DL14219_SCOPE_CUTOFF)
 
 const canonicalUrl = 'https://cambio-uruguay.com/desalojo-de-alquiler-uruguay'
-const title = 'Desalojo de alquiler en Uruguay: plazos'
+// El título CONTESTA, y los dos números son el ángulo propio de la página: el plazo para desocupar
+// es 6 días hábiles en el régimen sin garantía (Ley 19.889, art. 439) y 20 en el común
+// (Decreto-Ley 14.219, art. 48), y lo decide el contrato. El anterior —«… en Uruguay: plazos»—
+// prometía el dato y no publicaba ninguno, que es el defecto que ya se arregló en las cinco páginas
+// de `snippetConLaRespuesta.test.ts`: la consulta pide un plazo y el plazo estaba en el cuerpo.
+// «en Uruguay» sale porque la marca del `titleTemplate` ya lo dice y los caracteres valen el
+// número. Como es un literal, la sincronía con el catálogo la cuida `tests/unit/eviction.test.ts`,
+// igual que la de la descripción.
+const title = 'Desalojo de alquiler: 6 o 20 días'
 // Literal a propósito, y no armada con los plazos del catálogo: así la mide el trinquete de los 155
 // caracteres de `seoDescriptionBudget.test.ts`, que sólo lee descripciones literales. La sincronía
 // con el catálogo la cuida `tests/unit/eviction.test.ts`, que falla si un plazo del snippet deja de

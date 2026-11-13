@@ -3218,6 +3218,15 @@
         "/datos-abiertos-uruguay"
       ],
       "hypothesis": "Pagina nueva: la API de datos abiertos (estadisticas diarias de precio pedido de alquileres, viviendas y autos usados por barrio y modelo, CC BY 4.0, sin clave y con CORS) mas la busqueda de avisos y el servidor MCP, con una tabla en vivo del alquiler mediano de un apartamento de 2 dormitorios por barrio de Montevideo y un Dataset de schema.org. Apuesta doble: aparecer en busquedas de datos (precio de alquiler por barrio, api alquileres uruguay, datos abiertos) y ganar enlaces editoriales de medios y desarrolladores que citan la fuente, como ya hace Diario NORTE con la cotizacion del BROU (destacado arriba de la pagina). Medir por cuota de clics del sitio con 28 dias archivados antes y despues, sin el dia del deploy; los enlaces entrantes se miden aparte en Search Console."
+    },
+    {
+      "id": "desalojo-y-certificados-bps-el-titulo-contesta",
+      "shippedOn": "2026-11-13",
+      "routes": [
+        "/desalojo-de-alquiler-uruguay",
+        "/certificados-bps-uruguay"
+      ],
+      "hypothesis": "Dos titulos reescritos para que CONTESTEN, y son las dos unicas rutas del tramo contenido (8x el promedio del sitio) con el defecto exacto que ya se arreglo en las cinco paginas de snippetConLaRespuesta.test.ts -la consulta pide una cifra o un plazo y la cifra estaba en el cuerpo- y con la ruta libre de toda ventana de medicion abierta (npm run seo_debt; 144 rutas raiz libres de 236). /desalojo-de-alquiler-uruguay decia 'Desalojo de alquiler en Uruguay: plazos': prometia el dato y no publicaba ninguno, cuando los dos plazos para desocupar son el angulo propio de la pagina y ya viajaban en su descripcion -6 dias habiles en el regimen sin garantia (Ley 19.889 art. 439) y 20 en el comun (Decreto-Ley 14.219 art. 48), y lo decide el contrato-; pasa a 'Desalojo de alquiler: 6 o 20 dias', 50 caracteres con la marca contra 56. /certificados-bps-uruguay decia 'Certificados del BPS: comun y especial', que describe la pagina y no contesta nada, mientras la consulta pregunta cuanto vale el certificado; pasa a 'Certificados del BPS: valen 180 dias' (BPS_CERTIFICATE_VALIDITY_DAYS), 53 con la marca. La distincion comun/especial no se pierde: sigue en la descripcion, que ya abre por la cifra. Las dos cifras son las que la pagina YA publicaba, asi que no se afirma nada nuevo; lo que cambia es el renglon sobre el que se hace clic. Y como los dos titulos son literales -la unica forma que seoTitleBudget.test.ts sabe leer sin ejecutar la app- cada uno queda atado a su catalogo por el test que ya vigilaba su descripcion: eviction.test.ts exige los dos plazos de evictionStep() y bpsCertificates.test.ts la constante, con el largo medido con la marca puesta en los dos casos. No se toco H1, cuerpo, URL, canonical, OG, tema, enlace ni anuncio. Medir por cuota de clics del sitio con 28 dias archivados antes y despues, sin el dia del deploy."
     }
   ]
 }
