@@ -35,10 +35,20 @@ vuelve a llenar.
 
 ## El applet de IFTTT
 
-"RSS Feed: New feed item" con `https://cambio-uruguay.com/feeds/x.xml` → "X (Twitter): Post a
-tweet" con sólo `{{EntryContent}}` como texto. "AI Action assist" APAGADO. Se arma en modo *Classic*
-de <https://ifttt.com/create>, igual que el de LinkedIn; X arma solo la tarjeta del link con la OG
-image de la página.
+**Ya existe** (creado el 13/11/2026): "Tuits de @cambio_uruguay (dólar y guías)",
+<https://ifttt.com/applets/W2Pzb7FA>. "RSS Feed: New feed item" con
+`https://cambio-uruguay.com/feeds/x.xml` → "X (Twitter): Post a tweet" con la cuenta
+**cambio_uruguay** y sólo `{{EntryContent}}` como texto. "AI Action assist" APAGADO, "Notify me if
+this fails to run" prendido. X arma sola la tarjeta del link con la OG image de la página.
+
+**La cuenta de IFTTT tiene DOS cuentas de X conectadas**: `checkleaked` (otro proyecto, con sus
+propios applets "API → Post Tweet") y `cambio_uruguay`. IFTTT sólo admite una segunda cuenta por
+servicio en **Pro+**, y el plan se subió a Pro+ por esto. Nunca "reconectar" el servicio de X a otra
+cuenta: cambia la de todos los applets que lo usan. Para rearmar este applet, elegir
+`cambio_uruguay` en el combo "X (Twitter) account" (viene preseleccionada `checkleaked`).
+
+Créditos: 20 el trigger + **100** la acción de X por tuit (unos 36 tuits por mes, 4.300 créditos de
+los 100.000 de Pro+).
 
 ## Por qué no el bot de `bots/`
 
