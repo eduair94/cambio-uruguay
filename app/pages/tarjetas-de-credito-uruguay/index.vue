@@ -295,6 +295,13 @@
     <!-- Where this ranking got used as evidence, and what we answered -->
     <PressMentions page="/tarjetas-de-credito-uruguay" class="mt-8" />
 
+    <!-- El mismo tema en video, de un creador uruguayo (utils/creatorVideos.ts) -->
+    <CreatorVideos
+      page="/tarjetas-de-credito-uruguay"
+      title="¿Débito o crédito? En video"
+      class="mt-8"
+    />
+
     <!-- The other half of the saving: knowing where today's discount is -->
     <DiscountFinders context="credito" />
 

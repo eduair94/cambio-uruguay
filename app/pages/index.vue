@@ -774,6 +774,10 @@
          on failure, so a third-party outage never leaves an empty box here. -->
     <TrustpilotReviews />
 
+    <!-- Nos mencionaron en YouTube: el canal que nos citó y algunos de sus videos, con botón para
+         suscribirse (utils/creatorVideos.ts). Reproductores diferidos: nada de YouTube hasta el play. -->
+    <HomeCreatorMention />
+
     <!-- AI Insights Section -->
     <AIInsights />
 

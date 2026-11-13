@@ -377,6 +377,12 @@
       </p>
     </VCard>
 
+    <!-- El mismo tema en video, de un creador uruguayo (utils/creatorVideos.ts) -->
+    <CreatorVideos
+      page="/conviene-pagar-todo-con-credito-uruguay"
+      title="¿Débito o crédito? En video"
+    />
+
     <!-- FAQ -->
     <FaqSection :items="faqs" class="mb-5" />
 

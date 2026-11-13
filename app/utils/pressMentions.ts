@@ -71,6 +71,24 @@ export const PRESS_MENTIONS: readonly PressMention[] = Object.freeze([
     featured: true,
   },
   {
+    id: 'javier-gutierrez-finanzas-youtube-2026-11',
+    // La portada lo cuenta con sus videos (components/HomeCreatorMention.vue); acá queda con la
+    // cita y la respuesta, como las demás.
+    pages: ['/acerca'],
+    platform: 'youtube',
+    author: 'Javier Gutiérrez Finanzas',
+    handle: 'JavierGutierrezFinanzas',
+    authorNote: 'Canal uruguayo de finanzas personales e inversión',
+    url: 'https://www.youtube.com/watch?v=3pr3cvroY6s',
+    date: '2026-11-13',
+    quote: 'Una referencia para quienes siguen el mundo de las finanzas y la inversión',
+    context:
+      'Es el título con el que presenta a Cambio Uruguay, con el enlace al sitio, en la descripción de su video «¿Débito o Crédito? Por qué usar la equivocada te cuesta dinero» (publicado el 12/11/2026; la referencia la agregó el 13/11). Contó que la va a sumar también en videos siguientes que traten temas cercanos.',
+    ourTake:
+      'La relación es recíproca y la decimos: el 12/11 nos pidió entrar al directorio de /videos-de-economia-uruguay, lo sumamos después de leer su feed (con filtro, porque también publica relatos personales que no son de plata) y le preguntamos si podía mencionarnos, sin que una cosa fuera condición de la otra. No hay pago en ningún sentido. Desde ese día, además, sus videos aparecen al lado de las páginas que tratan lo mismo: el de débito o crédito en tarjetas de débito y de crédito, y el de Prex o Gletir en cuenta remunerada e inversiones.',
+    linkLabel: 'Ver el video',
+  },
+  {
     id: 'jentic-api-directory-2026',
     pages: ['/datos-abiertos-uruguay', '/acerca'],
     platform: 'directorio',

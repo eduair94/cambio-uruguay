@@ -268,6 +268,14 @@
       </VAlert>
     </section>
 
+    <!-- La otra comparación que se hace mucho —Prex contra un fondo de liquidez—, en video, de un
+         creador uruguayo (utils/creatorVideos.ts) -->
+    <CreatorVideos
+      page="/cuenta-remunerada-uruguay"
+      title="¿Y contra un fondo de liquidez? En video"
+      intro="Un creador uruguayo compara la cuenta remunerada de Prex con el Fondo Centenario de Liquidez de Gletir: costos, liquidez y qué mirar antes de elegir. Si te sirve, suscribite a su canal."
+    />
+
     <!-- ¿Va a bajar? -->
     <section class="mb-6" aria-labelledby="baja-title">
       <h2 id="baja-title" class="text-h6 font-weight-bold mb-1">
