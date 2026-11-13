@@ -1134,6 +1134,7 @@ export const guideHubs: readonly GuideHub[] = [
       'trabajar-para-el-exterior-desde-uruguay',
       'salario-minimo-uruguay-cuanto-es',
       'trabajo-domestico-uruguay',
+      'cuenta-sueldo-elegir-banco-uruguay',
       'me-quede-sin-trabajo-mutualista-fonasa-uruguay',
       'como-pedir-un-aumento-de-sueldo-uruguay',
       'pedir-que-me-despidan-uruguay',

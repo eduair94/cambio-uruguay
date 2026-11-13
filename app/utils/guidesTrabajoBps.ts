@@ -24,6 +24,14 @@
 // tabla de categorías 24279 y el folleto de derechos 24455), MTSS (gub.uy, trabajo doméstico) e IMPO
 // (Ley 18.065, arts. 2 a 11, y Ley 19.690 por el fondo de garantía). Los números viven en
 // `utils/domesticWork.ts` y esta guía los compone: no hay un segundo literal que pueda separarse.
+// 2026-11-13: cuenta-sueldo-elegir-banco-uruguay. «¿Me pueden obligar a cobrar el sueldo en el banco
+// que eligió la empresa?» vivía en UNA tarjeta de `/preguntas-economia-personal` y en ninguna página
+// propia; el Decreto 263/015 no se nombraba en ningún otro archivo del sitio, así que los dos plazos
+// de diez días hábiles, la excepción por nueva relación laboral y la lista de servicios que la cuenta
+// debe dar sin cobrar no estaban publicados. Plazos y mínimos verificados el 2026-11-13 en el texto
+// ACTUALIZADO de IMPO (Ley 19.210 arts. 10, 11 y 15; Decreto 263/015 arts. 1, 9, 11, 14, 15, 16 y 23)
+// más las dos vías del MTSS para consultar y denunciar. Las cifras viven en `utils/payrollAccount.ts`
+// y esta guía las compone.
 import type { Guide } from './guides'
 import {
   DOMESTIC_WORK_CATEGORIES,
@@ -35,6 +43,21 @@ import {
   domesticWorkCategory,
   formatDomesticWorkUyu as uyu,
 } from './domesticWork'
+import {
+  PAYROLL_ACCOUNT_CHOICE_DAYS,
+  PAYROLL_ACCOUNT_DEADLINES,
+  PAYROLL_ACCOUNT_FREE_SERVICES,
+  PAYROLL_ACCOUNT_NOTICE_DAYS,
+  PAYROLL_ACCOUNT_REVIEWED,
+  PAYROLL_ACCOUNT_SOURCES,
+  PAYROLL_FREE_CARD_REPLACEMENTS,
+  PAYROLL_FREE_TRANSFERS,
+  PAYROLL_FREE_WITHDRAWALS,
+  PAYROLL_NETWORK_MIN_POPULATION,
+  PAYROLL_NETWORK_NEARBY_KM,
+  payrollFreeTransferCap,
+  payrollMiles,
+} from './payrollAccount'
 
 /** El mínimo de la categoría, en pesos ya formateados. `'general'` → `'32.051'`. */
 const minimo = (slug: 'general' | 'cocina' | 'cuidados') =>
@@ -1854,5 +1877,135 @@ export const trabajoBpsGuides: readonly Guide[] = [
       { label: 'Valor de la BPC', to: '/indicadores/bpc' },
     ],
     sources: DOMESTIC_WORK_SOURCES.map(source => ({ ...source })),
+  },
+  {
+    slug: 'cuenta-sueldo-elegir-banco-uruguay',
+    title: 'Cuenta sueldo: el banco lo elegís vos',
+    description: `La Ley 19.210 te deja elegir dónde cobrás: ${PAYROLL_ACCOUNT_CHOICE_DAYS} días hábiles desde que la empresa avisa, y la cuenta da ${PAYROLL_FREE_WITHDRAWALS} extracciones y ${PAYROLL_FREE_TRANSFERS} transferencias gratis por mes.`,
+    tag: 'TRABAJO',
+    updatedAt: PAYROLL_ACCOUNT_REVIEWED,
+    sections: [
+      {
+        heading: '¿Te pueden obligar a cobrar en el banco de la empresa?',
+        body: 'No. El artículo 11 de la Ley 19.210 lo escribe sin condiciones: cuando el sueldo se paga por acreditación, «el trabajador tendrá derecho a elegir libremente la institución de intermediación financiera o la institución emisora de dinero electrónico en la cual cobrar su remuneración y toda otra partida en dinero que tenga derecho a percibir». La empresa puede elegir por vos, pero sólo si vos no elegiste, y esa elección vale «hasta tanto el trabajador haga uso de su facultad de elegir la institución»: para pisarla no hay que esperar ningún plazo ni pedir permiso. El plazo aparece recién del otro lado — cuando la elección la hacés vos, el mismo artículo le da vigencia por un año. Y una aclaración previa que se confunde seguido: lo que se elige acá es la INSTITUCIÓN, no la forma de pago. Que el sueldo se pague en efectivo o en cuenta es una modalidad que el artículo 11 manda acordar entre trabajador y empleador al inicio de la relación laboral, y el artículo 10 sigue empezando con «sin perjuicio de la modalidad de pago en efectivo».',
+      },
+      {
+        heading: 'Los dos plazos de diez días hábiles del Decreto 263/015',
+        body: `El derecho lo da la ley; los plazos los pone el Decreto 263/015, y son los que deciden si lo podés ejercer hoy o dentro de un año. El artículo 1.º dice que al iniciar la relación laboral indicás la institución elegida, y que si no lo indicás el empleador debe elegir por vos «previa notificación». Esa notificación tiene reglas: va con ${PAYROLL_ACCOUNT_NOTICE_DAYS} días hábiles de antelación como mínimo ANTES de abrir la cuenta, y tiene que informarte dos cosas — que durante los ${PAYROLL_ACCOUNT_CHOICE_DAYS} días hábiles siguientes podés elegir vos, y que si no lo hacés recién vas a poder cambiar al año de concretada la apertura. El empleador además debe conservar copia de esos avisos por un año. Y ahí está la trampa del caso más común: si entrás a un trabajo nuevo y te dicen que cobrás en tal banco, el año de permanencia NO te alcanza, porque el artículo 11 dice que ese mínimo «no será exigible (…) cuando el cambio de institución esté asociado al inicio de una nueva relación laboral». Dato que conviene saber por si te lo discuten: el inciso que obligaba al empleador a no dar curso a un cambio antes del año fue derogado en 2017 por el Decreto 106/017.`,
+        table: {
+          headers: ['Qué se cuenta', 'Cuánto', 'Norma'],
+          rows: PAYROLL_ACCOUNT_DEADLINES.map(deadline => [
+            deadline.label,
+            deadline.value,
+            deadline.article,
+          ]),
+        },
+      },
+      {
+        heading: 'Cómo se avisa, y el papel que te tienen que dar',
+        body: 'El trámite lo describe el artículo 14 del decreto y tiene dos mitades que conviene no saltear. La tuya: notificás al empleador la institución elegida «presentando la documentación que les haya entregado dicha institución», que como mínimo tiene que traer tus datos identificatorios y los de la cuenta o del instrumento de dinero electrónico donde acreditar los fondos. O sea que no alcanza con decir el nombre del banco: hay que ir al banco primero y traer el papel. La del empleador, que es la que se olvida: «deberá entregar al trabajador una copia firmada de la documentación emitida por la institución elegida como constancia de recepción, indicando la fecha en que recibió la comunicación». Guardá esa copia con la fecha. Es la única prueba de que avisaste y de cuándo, y es exactamente lo que hace falta si después el sueldo sigue cayendo en la cuenta vieja.',
+        links: [
+          {
+            label: 'Entender tu recibo de sueldo',
+            to: '/guias/entender-tu-recibo-de-sueldo-uruguay',
+          },
+        ],
+      },
+      {
+        heading: 'Qué tiene que ser gratis en esa cuenta',
+        body: `Elegir la institución es la mitad del asunto; la otra es que la cuenta donde cae el sueldo no es una cuenta común. El artículo 15 del decreto dice que la institución elegida «no podrá cobrar cargo alguno a ninguna de las partes» por estos servicios de pago, y le prohíbe condicionarlos a que contrates otra cosa: un banco no puede pedirte un paquete, una tarjeta de crédito ni un seguro para darte la cuenta donde cobrás. El artículo 16 enumera el piso, y es la tabla de abajo. Tres lecturas que no se ven en la lista. La primera: son MÍNIMOS, así que lo que cada banco dé por encima es su propia oferta y lo que cobre por encima de ese mínimo es su tarifario — acá no publicamos ninguna tarifa, porque cambian sin aviso. La segunda: el tope de la transferencia gratuita está escrito en unidades indexadas y no en pesos, así que para saber cuánto es hoy hay que mirar el valor de la UI. La tercera: un mismo titular tiene derecho a UNA cuenta con estas características, no a una por empleo.`,
+        table: {
+          headers: ['Qué tiene que dar la cuenta', 'Mínimo que fija la norma', 'Decreto 263/015'],
+          rows: PAYROLL_ACCOUNT_FREE_SERVICES.map(service => [
+            service.label,
+            service.value,
+            service.article,
+          ]),
+        },
+        links: [
+          { label: 'Valor de la Unidad Indexada', to: '/indicadores/unidad-indexada' },
+          { label: 'Comparar bancos de Uruguay', to: '/mejores-bancos-uruguay' },
+        ],
+      },
+      {
+        heading: 'Dónde son gratis esas extracciones',
+        body: `Las ${PAYROLL_FREE_WITHDRAWALS} extracciones gratis del mes no son «en cualquier cajero»: son en la red que el artículo 23 obliga a poner a disposición, formada por los puntos de la propia institución más los de otras entidades que ella habilite. Esa red tiene una exigencia de cobertura escrita en el decreto: puntos en todas las localidades de más de ${payrollMiles(PAYROLL_NETWORK_MIN_POPULATION)} habitantes, salvo las que estén a menos de ${PAYROLL_NETWORK_NEARBY_KM} kilómetros de otra localidad que ya tenga uno. Fuera de esa red la institución puede cobrar, y el mismo artículo la obliga a informarte el costo, igual que el de las extracciones que superen el mínimo gratuito. Por eso la pregunta útil al abrir la cuenta no es «¿cuántas extracciones gratis tengo?» —eso ya lo fija la norma— sino «¿qué red es, y hay un punto donde vivo?». Aparte de eso, el literal B) del artículo 16 te garantiza algo distinto y que no se cuenta en esas cinco: al menos un mecanismo para retirar TODO lo acreditado del mes en un único movimiento y sin costo.`,
+        links: [{ label: 'Dónde retirar efectivo', to: '/retirar-efectivo-uruguay' }],
+      },
+      {
+        heading: 'Jubilaciones y pensiones: el mismo derecho, otro plazo',
+        body: 'Quien cobra una jubilación, pensión o retiro tiene el derecho por el artículo 15 de la Ley 19.210, y con dos diferencias respecto del sueldo. La primera: puede cobrar en efectivo u optar «en cualquier momento» por la acreditación en cuenta, y la elección se notifica al organismo que paga —directamente o a través de la institución elegida—, no a un empleador. La segunda: pasado un año de hecha esa elección puede cambiar de institución o volver a cobrar en efectivo o por los otros medios que el organismo ponga a disposición. Ese año de permanencia es exigible sólo para quienes eligieron después del 1.º de enero de 2019; quien eligió antes no lo tiene. La cuenta, en cambio, es la misma: las características mínimas del artículo 16 valen también para estas prestaciones.',
+      },
+      {
+        heading: 'Si igual te condicionan el pago',
+        body: 'Dos vías y las dos son gratis. La consulta laboral y salarial del MTSS sirve para preguntar antes de discutir, con los recibos y las fechas a mano. Y para denunciar, el propio artículo 9 del decreto nombra al organismo competente: «competerá a la Inspección General del Trabajo y la Seguridad Social del Ministerio de Trabajo y Seguridad Social las actuaciones derivadas de las denuncias por incumplimiento de las obligaciones dispuestas en el presente artículo», que son justamente el aviso previo y sus plazos. Llevá la copia firmada del artículo 14 si ya notificaste tu elección, y los recibos que muestren dónde se acreditó el sueldo.',
+        links: [{ label: 'A quién le reclamo cada cosa', to: '/a-quien-le-reclamo-uruguay' }],
+      },
+      {
+        heading: 'Lo que esta guía no publica, y por qué',
+        body: 'Tres cosas, a propósito. Ninguna tarifa de banco: lo que la norma fija es un mínimo gratuito, y lo que cada institución cobra por encima de ese mínimo vive en su tarifario y se mueve sin aviso, así que un número acá envejecería mal y además no sería el derecho de nadie. El tope de la transferencia gratuita en pesos: el decreto lo escribe en unidades indexadas y la UI se ajusta a diario, así que publicamos la cifra en la unidad en que está escrita y dejamos la conversión del lado del lector. Y los nombres comerciales: «cuenta sueldo» es como le dice la gente, pero la norma habla de cuentas en instituciones de intermediación financiera e instrumentos de dinero electrónico, y cada banco bautiza su producto como quiere — pedir la cuenta por el nombre del artículo 16 funciona mejor que pedirla por el nombre que usa el de al lado.',
+      },
+    ],
+    steps: [
+      {
+        name: 'Elegí la institución',
+        text: 'Puede ser un banco o una emisora de dinero electrónico, y no tiene que ser la que eligió la empresa.',
+      },
+      {
+        name: 'Pedile a esa institución la documentación de la cuenta',
+        text: 'Tiene que traer tus datos identificatorios y los de la cuenta o instrumento donde acreditar el sueldo.',
+      },
+      {
+        name: 'Notificá al empleador presentando ese papel',
+        text: 'El artículo 14 del Decreto 263/015 pide la notificación con la documentación de la institución elegida.',
+      },
+      {
+        name: 'Pedí la copia firmada con la fecha',
+        text: 'El empleador debe entregarte copia firmada como constancia de recepción, indicando la fecha en que la recibió.',
+      },
+      {
+        name: 'Si no se cumple, reclamá',
+        text: 'Consulta laboral del MTSS para preguntar, Inspección General del Trabajo para denunciar el incumplimiento.',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Puede la empresa obligarme a cobrar el sueldo en el banco que eligió ella?',
+        a: 'No. El artículo 11 de la Ley 19.210 te da derecho a elegir libremente la institución donde cobrás tu remuneración. La empresa puede elegir por vos sólo si no elegiste, y esa elección rige «hasta tanto el trabajador haga uso de su facultad de elegir la institución»: no hay plazo que esperar para pisarla.',
+      },
+      {
+        q: 'Entré a un trabajo nuevo y me impusieron el banco. ¿Tengo que esperar un año?',
+        a: 'No. El año de permanencia del artículo 11 del Decreto 263/015 «no será exigible (…) cuando el cambio de institución esté asociado al inicio de una nueva relación laboral». El año sí corre si ya venías en ese empleo, no elegiste nada y el empleador te abrió la cuenta: en ese caso se cuenta desde que la apertura se concretó.',
+      },
+      {
+        q: '¿Cuánto tiempo tengo para elegir cuando la empresa me avisa?',
+        a: `${PAYROLL_ACCOUNT_CHOICE_DAYS} días hábiles. El artículo 9 del decreto obliga al empleador a avisarte con ${PAYROLL_ACCOUNT_NOTICE_DAYS} días hábiles de antelación como mínimo antes de abrirte la cuenta, y a informarte en ese aviso que durante los ${PAYROLL_ACCOUNT_CHOICE_DAYS} días hábiles siguientes podés ejercer la libre elección y qué pasa si no la ejercés.`,
+      },
+      {
+        q: '¿Me pueden cobrar por la cuenta donde cobro el sueldo?',
+        a: `No por los servicios que el artículo 16 del Decreto 263/015 fija como mínimos: no tiene costo de apertura, mantenimiento ni cierre, no exige saldo mínimo, incluye tarjeta de débito con un mínimo de ${PAYROLL_FREE_CARD_REPLACEMENTS} reposiciones sin costo, ${PAYROLL_FREE_WITHDRAWALS} extracciones gratis por mes en la red, ${PAYROLL_FREE_TRANSFERS} transferencias domésticas gratis de hasta ${payrollFreeTransferCap()} cada una y consultas de saldo ilimitadas. Por servicios adicionales que contrates aparte, sí.`,
+      },
+      {
+        q: '¿Pueden pedirme contratar un paquete o una tarjeta de crédito para darme la cuenta?',
+        a: 'No. El artículo 15 del decreto dice que ninguna institución «podrá condicionar la prestación de los servicios de pago» a contratar servicios adicionales. Podés acordar otros servicios y por esos sí te pueden cobrar, pero no como requisito de la cuenta donde cobrás.',
+      },
+      {
+        q: '¿Puedo seguir cobrando el sueldo en efectivo?',
+        a: 'La modalidad no la elige una sola parte: el artículo 11 de la Ley 19.210 dice que se acuerda entre trabajador y empleador al inicio de la relación laboral y rige por un año, prorrogable por igual período si no se acuerda otra. Lo que la ley no derogó es el efectivo: el artículo 10 arranca con «sin perjuicio de la modalidad de pago en efectivo». Distinto es el derecho a elegir la institución, que ahí sí es tuyo y unilateral.',
+      },
+      {
+        q: '¿Cobro una jubilación: tengo el mismo derecho?',
+        a: 'Sí, por el artículo 15 de la Ley 19.210: podés cobrar en efectivo u optar en cualquier momento por acreditación en cuenta, eligiendo libremente la institución, y la notificación va al organismo que paga. Pasado un año de esa elección podés cambiar de institución o volver al efectivo. Ese año rige para quienes eligieron después del 1.º de enero de 2019.',
+      },
+    ],
+    related: [
+      { label: 'Comparar bancos de Uruguay', to: '/mejores-bancos-uruguay' },
+      { label: 'Abrir una cuenta bancaria', to: '/guias/abrir-una-cuenta-bancaria-uruguay' },
+      { label: 'Entender tu recibo de sueldo', to: '/guias/entender-tu-recibo-de-sueldo-uruguay' },
+      { label: 'Cuánto me tienen que pagar', to: '/cuanto-me-tienen-que-pagar-uruguay' },
+      { label: 'Dónde retirar efectivo', to: '/retirar-efectivo-uruguay' },
+      { label: 'Valor de la Unidad Indexada', to: '/indicadores/unidad-indexada' },
+    ],
+    sources: PAYROLL_ACCOUNT_SOURCES.map(source => ({ ...source })),
   },
 ]

@@ -66,8 +66,14 @@ const GUIDE_PAGE = readFileSync(join(__dirname, '..', '..', 'pages', 'guias', '[
  * nace dentro de los dos presupuestos y no toca ninguna de las dos deudas. Las dos las COMPONE
  * desde `utils/domesticWork.ts`, así que lo que este archivo mide es el texto ya interpolado: si
  * un mínimo del Grupo 21 sube de cuatro a cinco dígitos, el presupuesto lo ve.
+ *
+ * 155 → 156 el 2026-11-13, en el mismo commit que publica `cuenta-sueldo-elegir-banco-uruguay`,
+ * por lo mismo. Su título mide 37 caracteres —54 con la marca puesta— y su descripción 151, o sea
+ * que nace dentro de los dos presupuestos y no toca ninguna de las dos deudas. Las dos las COMPONE
+ * desde `utils/payrollAccount.ts`, así que lo que este archivo mide es el texto ya interpolado: si
+ * un plazo del Decreto 263/015 pasa de uno a dos dígitos, el presupuesto lo ve.
  */
-const MEASURED = 155
+const MEASURED = 156
 
 /**
  * 116 → 104 el 2026-10-02: los doce títulos más largos del catálogo, de 104 a 84 caracteres
