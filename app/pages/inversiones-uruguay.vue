@@ -609,6 +609,14 @@
       </p>
     </VCard>
 
+    <!-- Aprender en video: un creador uruguayo (utils/creatorVideos.ts) -->
+    <CreatorVideos
+      page="/inversiones-uruguay"
+      title="Aprender a invertir, en video"
+      intro="Un creador uruguayo que habla de inversión desde acá y, sobre todo, de la parte que más cuesta: las decisiones que tomamos con la plata. Si te sirve, suscribite a su canal."
+      class="mt-6"
+    />
+
     <!-- CTA -->
     <VCard class="cta-inversiones mt-6 pa-6 text-center" variant="flat">
       <h2 class="text-h6 font-weight-bold mb-2 text-white">¿Cuánto rendiría tu plazo fijo?</h2>

@@ -568,6 +568,9 @@
     <!-- The other half of the saving: knowing where today's discount is -->
     <DiscountFinders context="debito" />
 
+    <!-- El mismo tema en video, de un creador uruguayo (utils/creatorVideos.ts) -->
+    <CreatorVideos page="/tarjetas-de-debito-uruguay" title="¿Débito o crédito? En video" />
+
     <!-- FAQ -->
     <VCard variant="flat" class="pa-4 pa-sm-5 mb-5">
       <h2 class="text-h6 font-weight-bold mb-3">Preguntas frecuentes</h2>
