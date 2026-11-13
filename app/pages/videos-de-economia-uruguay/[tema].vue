@@ -51,6 +51,7 @@
           :key="video.videoId"
           :video="video"
           :hide-topic="topic.slug"
+          anchor
         />
       </div>
     </section>

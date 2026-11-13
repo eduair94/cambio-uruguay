@@ -21,8 +21,7 @@
         icon="mdi-clock-outline"
       >
         Última lectura: <strong>{{ capturedLabel }}</strong
-        >. Se releen los canales cada 6 horas.
-        <strong>{{ snapshot.counts.videos }} videos</strong> de
+        >. Se releen los canales cada hora. <strong>{{ snapshot.counts.videos }} videos</strong> de
         <strong>{{ snapshot.counts.channelsOk }} canales</strong>, de los cuales
         {{ snapshot.counts.uruguayan }} son de canales uruguayos. Los videos son de sus autores: acá
         sólo los listamos, con el enlace a YouTube y al canal.
@@ -37,8 +36,8 @@
       class="mb-8"
       icon="mdi-cloud-off-outline"
     >
-      Todavía no hay una lectura guardada. El proceso que lee los canales corre cada 6 horas; si
-      esto sigue así, es que no llegó a escribir ninguna.
+      Todavía no hay una lectura guardada. El proceso que lee los canales corre cada hora; si esto
+      sigue así, es que no llegó a escribir ninguna.
     </VAlert>
 
     <template v-else>
@@ -164,8 +163,8 @@
         <div class="method">
           <ol class="method-list">
             <li>
-              Una vez cada 6 horas leemos el feed público de cada canal de la lista de arriba. No
-              usamos la API de YouTube ni ninguna clave: es el mismo XML que YouTube publica para
+              Una vez por hora leemos el feed público de cada canal de la lista de arriba. No usamos
+              la API de YouTube ni ninguna clave: es el mismo XML que YouTube publica para
               cualquiera.
             </li>
             <li>
@@ -324,7 +323,7 @@ const faqItems = [
     id: 'cada-cuanto',
     question: '¿Cada cuánto se actualiza?',
     answer:
-      'Los canales se releen cada 6 horas, todos los días. La fecha y la hora de la última lectura están arriba de todo, y cada video muestra su propia fecha de publicación.',
+      'Los canales se releen cada hora, todos los días. La fecha y la hora de la última lectura están arriba de todo, y cada video muestra su propia fecha de publicación.',
   },
   {
     id: 'como-se-eligen',
@@ -354,7 +353,7 @@ const faqItems = [
 
 const title = 'Videos de economía en Uruguay: 13 temas'
 const description =
-  'Los videos de YouTube sobre economía uruguaya en 13 temas —dólar, inflación, sueldos, impuestos, inversiones, vivienda—, releídos cuatro veces por día.'
+  'Los videos de YouTube sobre economía uruguaya en 13 temas —dólar, inflación, sueldos, impuestos, inversiones, vivienda—, releídos cada hora.'
 const canonicalUrl = `${SITE_URL}/videos-de-economia-uruguay`
 
 // Branded OG image, same template as the rest of the site.

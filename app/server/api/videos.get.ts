@@ -1,9 +1,9 @@
-// Serves the video snapshot the backend job `currency-videos` writes every six hours.
+// Serves the video snapshot the backend job `currency-videos` writes every hour.
 //
 // Read-only and unauthenticated: /videos-de-economia-uruguay publishes all of it, and every row is
 // already public (YouTube's own channel feeds). Nothing per-visitor.
 //
-// Cached for an hour at the edge: the writer runs every six, so anything shorter only buys Mongo
+// Cached for an hour at the edge: the writer runs hourly, so anything shorter only buys Mongo
 // trips. A missing document returns null and the page renders its own empty state — a 500 here
 // would turn "the job has not run yet" into a broken page, and the per-topic routes would 404 for
 // a reason that has nothing to do with the topic.

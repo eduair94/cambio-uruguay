@@ -50,6 +50,34 @@ cuenta: cambia la de todos los applets que lo usan. Para rearmar este applet, el
 Créditos: 20 el trigger + **100** la acción de X por tuit (unos 36 tuits por mes, 4.300 créditos de
 los 100.000 de Pro+).
 
+## Videos nuevos (`/feeds/videos.xml`)
+
+Un segundo feed, para un segundo applet a la misma cuenta: cuando un canal uruguayo de la lista de
+`/videos-de-economia-uruguay` sube un video sobre los temas del sitio, la cuenta lo tuitea con
+enlace a la página del tema (no a YouTube), directo a la tarjeta del video (`#video-<id>`).
+
+- Feed: `https://cambio-uruguay.com/feeds/videos.xml` (`app/server/routes/feeds/videos.xml.ts`).
+  Lógica y textos: `app/utils/videoPosts.ts`. Test: `app/tests/unit/videoPosts.test.ts`.
+- Lee el snapshot `videossnapshots` que escribe `currency-videos`, que **desde el 13/11/2026 corre
+  cada hora** (antes cada 6 h: "cuando sale" habría sido hasta 6 h tarde).
+- **Qué video**: canal uruguayo, clasificador de plata `money` y con tema. Afuera los programas
+  diarios con la fecha completa en el título (IMPOUY "Hoy en el Diario Oficial • 13 de noviembre
+  2026" saldría todos los días). El título va sin hashtags: en X serían nuestros.
+- **Cuándo**: 90 min después de publicado (ya está en el snapshot). Nada entre las 23:00 y las
+  8:30 de Montevideo: lo de la noche sale a las 8:30. Por día: máximo 4, uno por canal, una hora
+  entre uno y otro; lo que no entra se queda en la página sin tuit. Sin estado: cada hora sale de
+  la fecha del video, y el `guid` es el id del video, así que IFTTT no repite nada.
+- **Caché**: `s-maxage` hasta el próximo video programado, entre 1 y 15 minutos; misma Cache Rule
+  de `/feeds/*`.
+- Medido sobre el snapshot real del 13/11/2026: de 1 a 4 tuits por día. Lo que el clasificador de
+  temas deja pasar también se tuitea (ese día, "España tuvo su primer paro general", de En
+  Perspectiva, en "sueldos y trabajo"): se arregla en `classes/videos/topics.ts`, no acá.
+- Créditos de IFTTT: 120 por tuit (20 + 100), unos 60-90 tuits por mes.
+
+**El applet**: "RSS Feed: New feed item" con `https://cambio-uruguay.com/feeds/videos.xml` → "X
+(Twitter): Post a tweet", cuenta **cambio_uruguay** (no `checkleaked`), texto sólo
+`{{EntryContent}}`, AI Action assist apagado, aviso de falla prendido.
+
 ## Por qué no el bot de `bots/`
 
 `bots/` ya tiene `content_promo` (ganchos de guías para X) y el resumen diario sabe tuitear, pero en

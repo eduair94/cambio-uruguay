@@ -9,7 +9,7 @@
   reach back four months, so a card with no date would let a February explainer read as today's.
 -->
 <template>
-  <article class="video-card">
+  <article :id="anchor ? `video-${video.videoId}` : undefined" class="video-card">
     <VideosEmbed :video-id="video.videoId" :title="video.title" :thumbnail="video.thumbnail" />
 
     <div class="video-card__body">
@@ -65,8 +65,14 @@ const props = withDefaults(
     video: VideoItem
     /** Topic already implied by the surrounding page: shown without a chip pointing at itself. */
     hideTopic?: string
+    /**
+     * Give the card the id `video-<videoId>`, so a link can land on it. Only where each video is
+     * listed once (a topic page): the hub shows the same video in two lists, and a repeated id is
+     * invalid HTML. The tweets of `/feeds/videos.xml` link here (`utils/videoPosts.ts`).
+     */
+    anchor?: boolean
   }>(),
-  { hideTopic: '' }
+  { hideTopic: '', anchor: false }
 )
 
 const localePath = useLocalePath()
@@ -107,6 +113,8 @@ const viewsLabel = computed(() => {
 
 <style scoped>
 .video-card {
+  /* Lands below the sticky app bar when reached by `#video-<id>`. */
+  scroll-margin-top: 88px;
   display: flex;
   flex-direction: column;
   height: 100%;
