@@ -398,7 +398,7 @@ const relatedLinks = [
 ]
 
 const canonicalUrl = 'https://cambio-uruguay.com/cuando-me-puedo-jubilar-uruguay'
-const title = '¿Cuándo me puedo jubilar en Uruguay?'
+const title = 'Cuándo me puedo jubilar: de 60 a 65 años'
 const description =
   'Nacidos antes del 1/1/1973: 60 años y 30 de trabajo. Desde 1973, la Ley 20.130 sube la edad un año por generación hasta los 65 según tu año de nacimiento.'
 

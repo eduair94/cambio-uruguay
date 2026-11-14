@@ -19,6 +19,15 @@
   ],
   "experiments": [
     {
+      "id": "jubilacion-y-franquicia-el-titulo-contesta",
+      "shippedOn": "2026-11-14",
+      "routes": [
+        "/cuando-me-puedo-jubilar-uruguay",
+        "/franquicia-viajero-uruguay"
+      ],
+      "hypothesis": "Los dos titulos nombraban el tema y no contestaban: uno repetia la pregunta del lector (\"Cuando me puedo jubilar en Uruguay?\") y el otro era una etiqueta con el anio (\"Franquicia de viajero en Uruguay 2026\"), mientras la respuesta ya estaba publicada y con fuente en la propia pagina. Ahora el titulo trae la cifra -de 60 a 65 anios segun el anio de nacimiento (Ley 20.130), y US$ 500 por via aerea o maritima contra US$ 300 por frontera terrestre (Decreto 139/014 y Decreto 43/019)-, los dos entran en 60 caracteres con la marca, y el de franquicia queda ademas separado en el SERP de su hermana /franquicia-aduana-uruguay, que ya titula con su propia cifra (US$ 800 al anio): deberia subir el CTR desde la misma posicion."
+    },
+    {
       "id": "reclamos-a-la-intendencia-por-barrio-pagina-nueva",
       "shippedOn": "2026-10-30",
       "routes": [
