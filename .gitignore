@@ -65,6 +65,11 @@ serviceAccount.json
 ga4_key.json
 *-[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].json
 .env
+# Copias del .env (`.env.bak-20260922-cf` estaba suelta en la raíz, con secretos, sin ignorar). Las
+# plantillas que sí van al repo son `.env.sample` y `*/.env.example`.
+.env.*
+!.env.sample
+!.env.example
 
 proxy.txt
 oca_session.json
@@ -90,6 +95,22 @@ indumex_reviews.json
 rev.json
 rev2.json
 regul-snapshot.yml
+/*_snapshot.yml
+/births.json
+/bonda-catalog.json
+/ifttt-activity.yml
+/serp-*.txt
+/tmp-*.ts
+/t[0-9].sh
+# Redirecciones de cmd.exe hechas desde Git Bash (`> nul`, `2>&9`): crean archivos de verdad.
+/nul
+/&[0-9]
+
+# Carpeta de trabajo de los agentes: copias enteras del árbol para el escaneo de gitleaks, previews
+# de UI, logs de deploy y binarios bajados. El 14/11/2026 eran 48.600 archivos sin trackear, que
+# tapaban los cambios reales en `git status`. Nada de esto es código.
+.artifacts/
+.codex-remote-attachments/
 
 # Tooling scratch + crash dumps
 .playwright-mcp/
