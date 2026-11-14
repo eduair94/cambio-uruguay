@@ -20,6 +20,7 @@ const context: Record<string, any> = {
   EXTRA_LOCALES: [],
   ANY_LOCALE_PREFIX_PATTERN: /^$/,
   SITEMAP_NOINDEX_PATTERN: /^$/,
+  SHARED_LINK_PATTERN: /^$/,
   localePrefixPattern: () => /^$/,
   extraMessagesVersion: () => 'worker-test',
   defineNuxtConfig: (config: unknown) => config,

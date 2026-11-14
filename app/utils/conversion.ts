@@ -209,6 +209,23 @@ export function marketAverageSavings(
 }
 
 /**
+ * Savings for an explicit quantity of foreign currency, in either direction. Best and average
+ * leave out what the site refuses to crown, judged on `reference` (the whole market).
+ */
+export function currencyAmountSavings(
+  rows: readonly RateRow[],
+  currency: string,
+  quantity: number,
+  direction: 'buy' | 'sell',
+  reference: readonly RateRow[] = rows
+): SavingsResult {
+  const { bestRate, averageRate } = marketAverageSavings(rows, currency, 0, direction, reference)
+  const perUnit = direction === 'sell' ? bestRate - averageRate : averageRate - bestRate
+  const safeQuantity = Number.isFinite(quantity) && quantity > 0 ? quantity : 0
+  return { bestRate, averageRate, savings: Math.max(0, round2(perUnit * safeQuantity)) }
+}
+
+/**
  * Format a numeric amount with es-UY thousands/decimal separators
  * (e.g. `1000.5` -> `"1.000,50"`). No currency symbol — purely the number.
  *

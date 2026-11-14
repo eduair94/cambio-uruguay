@@ -22,52 +22,77 @@ export default defineNuxtPlugin(nuxtApp => {
     }
   }
 
-  const onClick = (e: MouseEvent) => {
+  const anchorOf = (e: MouseEvent) =>
+    (e.target as HTMLElement | null)?.closest?.('a[href]') as HTMLAnchorElement | null
+
+  const webUrl = (anchor: HTMLAnchorElement): URL | null => {
+    try {
+      const u = new URL(anchor.getAttribute('href') || '', location.href)
+      return /^https?:$/.test(u.protocol) ? u : null
+    } catch {
+      return null /* non-URL href */
+    }
+  }
+
+  // Internal navigation and CTAs: capture, so a component that stops propagation still counts.
+  const onCapture = (e: MouseEvent) => {
     if (e.type === 'auxclick' && e.button !== 1) return
     const el = e.target as HTMLElement | null
-    const anchor = el?.closest?.('a[href]') as HTMLAnchorElement | null
-    if (anchor) {
-      const raw = anchor.getAttribute('href') || ''
-      try {
-        const u = new URL(raw, location.href)
-        if (/^https?:$/.test(u.protocol) && u.origin !== location.origin) {
-          send('outbound_click', { link_url: u.origin, link_domain: u.hostname })
-        } else if (
-          /^https?:$/.test(u.protocol) &&
-          !anchor.hasAttribute('download') &&
-          u.pathname !== location.pathname
-        ) {
-          const destination = measurementPath(router.resolve(u.pathname))
-          if (destination) {
-            const area = anchor.closest<HTMLElement>('[data-link-area]')?.dataset.linkArea
-            const inferredArea = anchor.closest('.related-pages')
-              ? 'related_pages'
-              : anchor.closest('.v-app-bar')
-                ? 'header'
-                : anchor.closest('.v-navigation-drawer')
-                  ? 'drawer'
-                  : anchor.closest('footer, .v-footer')
-                    ? 'footer'
-                    : 'content'
-            send('internal_navigation', {
-              destination_path: destination,
-              link_area: measurementLinkArea(area || inferredArea),
-            })
-          }
-        }
-      } catch {
-        /* non-URL href */
+    const anchor = anchorOf(e)
+    const u = anchor ? webUrl(anchor) : null
+    if (
+      anchor &&
+      u &&
+      u.origin === location.origin &&
+      !anchor.hasAttribute('download') &&
+      u.pathname !== location.pathname
+    ) {
+      const destination = measurementPath(router.resolve(u.pathname))
+      if (destination) {
+        const area = anchor.closest<HTMLElement>('[data-link-area]')?.dataset.linkArea
+        const inferredArea = anchor.closest('.related-pages')
+          ? 'related_pages'
+          : anchor.closest('.v-app-bar')
+            ? 'header'
+            : anchor.closest('.v-navigation-drawer')
+              ? 'drawer'
+              : anchor.closest('footer, .v-footer')
+                ? 'footer'
+                : 'content'
+        send('internal_navigation', {
+          destination_path: destination,
+          link_area: measurementLinkArea(area || inferredArea),
+        })
       }
     }
     const cta = el?.closest?.('[data-cta]') as HTMLElement | null
     if (cta && /^[\w-]{1,80}$/.test(cta.dataset.cta || ''))
       send('cta_click', { cta: cta.dataset.cta, path: measurementPath(router.currentRoute.value) })
   }
-  document.addEventListener('click', onClick, { capture: true, passive: true })
-  document.addEventListener('auxclick', onClick, { capture: true, passive: true })
+
+  // Outbound: window bubble, which runs after the exit notice (ExternalNavigationDialog) has had
+  // its chance to cancel the navigation. A cancelled click is not an exit, and the notice's own
+  // anchor (`data-external-exit-tracked`) was already counted when the reader confirmed.
+  const onOutbound = (e: MouseEvent) => {
+    if (e.type === 'auxclick' && e.button !== 1) return
+    if (e.defaultPrevented) return
+    const anchor = anchorOf(e)
+    if (!anchor || anchor.hasAttribute('data-external-exit-tracked')) return
+    const u = webUrl(anchor)
+    if (u && u.origin !== location.origin) {
+      send('outbound_click', { link_url: u.origin, link_domain: u.hostname })
+    }
+  }
+
+  document.addEventListener('click', onCapture, { capture: true, passive: true })
+  document.addEventListener('auxclick', onCapture, { capture: true, passive: true })
+  window.addEventListener('click', onOutbound, { passive: true })
+  window.addEventListener('auxclick', onOutbound, { passive: true })
   const cleanup = () => {
-    document.removeEventListener('click', onClick, true)
-    document.removeEventListener('auxclick', onClick, true)
+    document.removeEventListener('click', onCapture, true)
+    document.removeEventListener('auxclick', onCapture, true)
+    window.removeEventListener('click', onOutbound)
+    window.removeEventListener('auxclick', onOutbound)
   }
   nuxtApp.vueApp.onUnmount(cleanup)
   if (import.meta.hot) import.meta.hot.dispose(cleanup)

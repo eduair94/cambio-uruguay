@@ -118,6 +118,10 @@
                       {{ t('whereToChange.savings', { amount: formatUyu(house.savingsVsAvg) }) }}
                     </span>
                   </VListItemSubtitle>
+                  <StaleRateChip
+                    :entry="frozenFor(house.origin, currency, houseType(house.origin))"
+                    class="mt-1"
+                  />
                   <template #append>
                     <div class="text-right">
                       <div class="text-caption text-grey-lighten-1">
@@ -182,7 +186,8 @@ import { rankExchanges, type Operation, type RankableRate } from '@/utils/recomm
 const { t, locale } = useI18n()
 // Reuse the shared, deduped exchange-rates fetch instead of issuing another
 // identical request for the day's dataset.
-const { rows: sharedRows, pending: ratesPending } = useExchangeRates()
+const { realRows: sharedRows, pending: ratesPending } = useExchangeRates()
+const { frozenFor } = useFrozenQuotes()
 
 // A processed row carries the house display name under localData.name.
 interface ProcessedRow {
@@ -203,17 +208,20 @@ const amountInput = ref<number>(100)
 // display name for the ranking). No second fetch of its own.
 const rates = computed<RankableRate[]>(() =>
   (sharedRows.value as unknown as ProcessedRow[])
-    .filter(r => !r.type || r.type === '')
+    .filter(r => !r.type || r.type === 'BILLETE')
     .map(r => ({
       origin: r.origin,
       code: r.code,
       buy: r.buy,
       sell: r.sell,
+      type: r.type as RankableRate['type'],
       name: r.localData?.name ?? r.origin,
       // The backend's mark (utils/marketOutlier.ts): without it the ranking crowns a frozen board.
       ...(r.frozen === true ? { frozen: true } : {}),
     }))
 )
+const houseType = (origin: string) =>
+  rates.value.find(row => row.origin === origin && row.code === currency.value)?.type
 const loadingRates = computed(() => ratesPending.value && rates.value.length === 0)
 
 const operationItems = computed(() => [

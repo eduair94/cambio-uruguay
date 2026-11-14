@@ -82,6 +82,7 @@ describe('the routes Clarity never records', () => {
       '/asistente-ia',
       '/opinion-alquileres',
       '/opiniones-alquileres',
+      '/contactos-comerciales',
       '/estadisticas-de-busqueda',
       '/estadisticas-por-pagina',
       '/pt/estadisticas-del-sitio',

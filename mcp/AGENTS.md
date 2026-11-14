@@ -45,6 +45,12 @@ at initialisation; `src/register/prompts.ts` holds 6 guided workflows.
   intersection and sometimes answers 503. `geocodeItems` retries without the street type; errors advise lat/lng.
 - **Category offer lists are not curated** (a 20-peso fridge, a paring knife under "chef knife"): an offer only
   counts when it reaches 60 % of the p25 of the band for its condition (`plausibleOffers`).
+- **Mobility searches use the advert directory**, `/api/movilidad/productos`, not category summaries.
+  Matching a brand against a category's keywords and returning its cheapest offer can recommend another
+  brand. `src/products/mobility.ts` forwards the page's filters (text, brand, variant, seller, source,
+  condition and price range) and preserves them in the public link. The API accepts integer pesos and
+  facet keys only; reject invalid keys or crossed ranges instead of letting its normalizer drop them.
+  `total` is the filtered directory total, not the number of returned rows (24 per upstream page).
 - **`/api/rentals/fit`** is 10 req/min per IP and 30/min per worker, and a cold worker needs 30–60 s to load the
   catalogue (Cloudflare can 502 once): the hosted server shares one IP, so heavy use hits 429.
 - The car valuation `diesel` coefficient is computed but not advice (it measures the version); it is not shown.

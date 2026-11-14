@@ -41,6 +41,7 @@ const PRIVATE_PAGES = [
   '/estadisticas-por-pagina',
   '/opinion-alquileres',
   '/opiniones-alquileres',
+  '/contactos-comerciales',
   '/ranking-usuarios-charruadevs',
 ]
 const PUBLIC_PATHS = [

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   convert,
+  currencyAmountSavings,
   formatAmount,
   getExchangeRate,
   marketAverageSavings,
@@ -96,6 +97,24 @@ describe('marketAverageSavings', () => {
   it('returns zero savings when fewer than two quotes exist', () => {
     const single: RateRow[] = [{ origin: 'only', code: 'GBP', buy: 50, sell: 52 }]
     expect(marketAverageSavings(single, 'GBP', 100, 'sell').savings).toBe(0)
+  })
+})
+
+describe('currencyAmountSavings', () => {
+  it('compares the same 100 foreign units when buying or selling', () => {
+    expect(currencyAmountSavings(rows, 'USD', 100, 'buy').savings).toBe(100)
+    expect(currencyAmountSavings(rows, 'USD', 100, 'sell').savings).toBe(100)
+  })
+
+  it('does not treat the entered peso amount as dollars', () => {
+    const quantity = 4100 / 41
+    expect(currencyAmountSavings(rows, 'USD', quantity, 'buy').savings).toBe(100)
+  })
+
+  it('returns no invented savings for empty, zero or invalid quantities', () => {
+    expect(currencyAmountSavings([], 'USD', 100, 'buy').savings).toBe(0)
+    expect(currencyAmountSavings(rows, 'USD', 0, 'buy').savings).toBe(0)
+    expect(currencyAmountSavings(rows, 'USD', Number.NaN, 'buy').savings).toBe(0)
   })
 })
 

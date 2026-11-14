@@ -81,6 +81,21 @@ describe("buildServer", () => {
     expect((res.content as Array<{ text: string }>)[0]!.text).toContain("reintentá en un minuto");
   });
 
+  it("accepts mobility directory filters through the MCP tool schema", async () => {
+    const client = await connect(["productos"], {
+      "/api/movilidad/productos": { items: [], total: 0, perPage: 24 },
+    });
+    const res = await client.callTool({ name: "search_products", arguments: {
+      vertical: "monopatines", minPriceUyu: 10000, maxPriceUyu: 20000,
+      variant: "urbano", seller: "store:delcar", source: "tienda", condition: "used",
+    } });
+    expect(res.isError).toBeFalsy();
+    const { searches } = res.structuredContent as { searches: string[] };
+    expect(Object.fromEntries(new URL(searches[0]!).searchParams)).toEqual({
+      precioMin: "10000", precioMax: "20000", variante: "urbano", vendedor: "store:delcar", fuente: "tienda", condicion: "usado",
+    });
+  });
+
   it("rejects invalid arguments through the schema", async () => {
     const client = await connect(["alquileres"]);
     const res = await client.callTool({ name: "search_rentals", arguments: { bedrooms: 99 } });

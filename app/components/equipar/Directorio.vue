@@ -67,6 +67,8 @@
           />
         </div>
 
+        <slot name="before-results" />
+
         <VAlert v-if="error" type="warning" variant="outlined" class="mb-4">
           El directorio se está actualizando. Probá de nuevo en unos minutos.
         </VAlert>

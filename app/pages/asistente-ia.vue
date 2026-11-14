@@ -29,14 +29,26 @@
       </p>
     </VAlert>
 
+    <div v-if="sourceDirectory" class="assistant-origin mb-4" data-testid="assistant-origin">
+      <p class="text-body-2 mb-0">
+        {{ directoryText('origin') }}:
+        <strong>{{ directoryText(`names.${sourceTopic}`) }}</strong>
+      </p>
+      <NuxtLink :to="localePath(sourceDirectory.path)" class="cu-link text-body-2">
+        {{ directoryText('back') }}
+      </NuxtLink>
+    </div>
+
     <ClientOnly>
-      <AssistantChat class="mb-8" :initial-prompt="initialPrompt" />
+      <AssistantChat class="mb-8" :initial-prompt="initialPrompt" :source-topic="sourceTopic" />
       <template #fallback>
         <VCard variant="flat" class="pa-6 mb-8 text-center text-medium-emphasis">
           Cargando el asistente…
         </VCard>
       </template>
     </ClientOnly>
+
+    <AssistantDirectories class="mb-8" />
 
     <h2 class="text-h6 font-weight-bold mb-2">Qué le podés pedir</h2>
     <ul class="list mb-6">
@@ -63,11 +75,19 @@
 
 <script setup lang="ts">
 import { AI_PROMPT_EXAMPLES } from '~/utils/aiSearch'
-import { readAssistantPrompt } from '~/utils/assistantPrompt'
+import { readAssistantPrompt, readAssistantTopic } from '~/utils/assistantPrompt'
+import { ASSISTANT_DIRECTORIES } from '~/utils/assistantDirectories'
+import { assistantDirectoryMessages } from '~/utils/assistantDirectoryMessages'
 
 const localePath = useLocalePath()
+const route = useRoute()
+const { t: directoryText } = useI18n({ useScope: 'local', messages: assistantDirectoryMessages })
 // A directory's «Preguntale a la IA» brings the question in ?q= (utils/assistantPrompt.ts).
-const initialPrompt = readAssistantPrompt(useRoute().query.q)
+const initialPrompt = computed(() => readAssistantPrompt(route.query.q))
+const sourceTopic = computed(() => readAssistantTopic(route.query.topic))
+const sourceDirectory = computed(() =>
+  sourceTopic.value ? ASSISTANT_DIRECTORIES[sourceTopic.value] : undefined
+)
 const examples = AI_PROMPT_EXAMPLES.map(example => example.text)
 
 const FAQ = [
@@ -180,6 +200,13 @@ useHead(() => ({
 </script>
 
 <style scoped>
+.assistant-origin {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
 .list {
   padding-left: 1.2rem;
 }

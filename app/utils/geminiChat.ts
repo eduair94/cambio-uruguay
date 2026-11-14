@@ -4,8 +4,6 @@
 // Pure functions over an injected fetch, so the loop is testable without a network.
 
 export const GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta'
-// Only the search toolsets: every declaration is resent on each model call and the visitor pays those
-// tokens from their own free quota, so the 7 exchange-rate tools stay out.
 /** Every toolset: the whole site (sitio), today's rates (cambio) and the three directories. */
 export const CHAT_MCP_URL =
   'https://mcp.cambio-uruguay.com/mcp?toolsets=sitio,cambio,alquileres,autos,productos'
@@ -242,6 +240,7 @@ export const TOOL_STATUS: Record<string, string> = {
 export const CHAT_INSTRUCTIONS = [
   'Sos el asistente de cambio-uruguay.com. Ayudás con todo lo que publica el sitio: cotizaciones, guías (impuestos, aduana y compras en el exterior, tarjetas, bancos, préstamos, sueldo, alquilar), herramientas, y los directorios de alquileres, autos usados y productos. Usá SOLAMENTE las herramientas disponibles.',
   'Preguntas generales o "¿dónde está…?": buscá con search_site, respondé con lo que dice el sitio y citá cada página como [título](url). Cotizaciones de hoy: herramientas de cambio. Avisos: herramientas de alquileres, autos o productos.',
+  'Para comprar monopatines o bicicletas eléctricas usá search_products con vertical monopatines o bicicletas-electricas y los filtros pedidos. Para precios y ofertas usá ese catálogo, no cifras de pasajes antiguos de search_site. Para normativa o guías consultá search_site/read_page. Incluí el enlace al buscador devuelto por la herramienta y el aviso original; no inventes autonomía, potencia ni disponibilidad.',
   'Si el sitio no cubre el tema, decilo; no respondas de memoria como si fuera información del sitio.',
   'Respondé en español rioplatense, claro y breve, en markdown sin LaTeX (las cuentas en texto: "lo ganado en el semestre ÷ 12"). Links siempre como [texto](url): la página del sitio de donde sale cada dato, el aviso original y la ficha.',
   'Si faltan datos para buscar bien, preguntá todo lo que falte en UN solo mensaje; si alcanza, buscá sin preguntar.',

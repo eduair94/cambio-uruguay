@@ -260,6 +260,11 @@ import type { FaqItem } from '~/utils/faqAnswers'
 import { phoneImportEstimate, phoneImportTotals } from '~/utils/phoneImport'
 import { phoneMoney, phoneUsd, type PhoneHubCard, type PhoneHubResponse } from '~/utils/phones'
 import {
+  PHONE_SHARE_QUERY_KEYS,
+  phoneFiltersFromQuery,
+  phoneFiltersToQuery,
+} from '~/utils/catalogShareQuery'
+import {
   PHONE_US_PRICES,
   PHONE_US_PRICES_SOURCE,
   PHONE_US_PRICES_VERIFIED_AT,
@@ -292,21 +297,28 @@ const brandOptions = computed(() =>
   }))
 )
 
-const selectedBrand = ref<string | null>(null)
+const phoneFilters = reactive(phoneFiltersFromQuery(useRoute().query))
+const selectedBrand = computed({
+  get: () => phoneFilters.brand,
+  set: value => {
+    phoneFilters.brand = value
+  },
+})
 
 const priceCeiling = computed(() => {
   const max = cards.value.reduce((m, card) => Math.max(m, card.bestNewUyu), 0)
   return Math.max(20000, Math.ceil(max / 1000) * 1000)
 })
-const maxPrice = ref(0)
-// El techo llega recién con la respuesta del fetch; arranca ahí en vez de en 0 (que ocultaría
-// todo) y sigue al techo mientras nadie haya movido el control a mano.
-watch(
-  priceCeiling,
-  value => {
-    if (maxPrice.value === 0 || maxPrice.value >= priceCeiling.value) maxPrice.value = value
+const maxPrice = computed({
+  get: () => phoneFilters.maxPrice ?? priceCeiling.value,
+  set: value => {
+    phoneFilters.maxPrice = value >= priceCeiling.value ? null : value
   },
-  { immediate: true }
+})
+useCatalogShareQuery(
+  PHONE_SHARE_QUERY_KEYS,
+  () => phoneFiltersToQuery(phoneFilters),
+  query => Object.assign(phoneFilters, phoneFiltersFromQuery(query))
 )
 
 const visibleCards = computed(() =>

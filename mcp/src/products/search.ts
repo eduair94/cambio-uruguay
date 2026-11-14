@@ -1,10 +1,12 @@
 // search_products + list_directories: one normalised search over the product
 // directories of the site (phones, desk chairs, home equipment, e-scooters and
-// e-bikes). Each directory is a whole catalogue, cached and filtered here.
+// e-bikes). Mobility searches the filtered advert directory; the other verticals
+// are whole catalogues, cached and filtered here.
 
 import { compact, fmt, fold, matchesWords, money, PUBLIC_SITE, safeImage } from "../format.js";
-import type { ToolOutput } from "../output.js";
+import { UserInputError, type ToolOutput } from "../output.js";
 import { TTL, type SiteApi } from "../site.js";
+import { isMobilityVertical, searchMobility } from "./mobility.js";
 
 export const PRODUCT_VERTICALS = ["celulares", "sillas", "hogar", "monopatines", "bicicletas-electricas"] as const;
 export type ProductVertical = (typeof PRODUCT_VERTICALS)[number];
@@ -58,13 +60,14 @@ export interface ProductRow {
   usedBand?: Band;
   usedSavingPct?: number;
   sellers?: number;
-  bestOffer?: { seller?: string; priceUyu?: number; url?: string; condition?: string };
+  bestOffer?: { seller?: string; priceUyu?: number; price?: number; currency?: string; url?: string; condition?: string };
   bestUsedOffer?: { seller?: string; priceUyu?: number; url?: string; condition?: string };
   rating?: string;
   tier?: string;
   note?: string;
   /** A photo, for clients that draw cards; the text line never prints it. */
   image?: string;
+  lastSeen?: string;
   siteUrl: string;
   /** Matched by text search but not returned: product names inside a category. */
   keywords?: string;
@@ -112,11 +115,6 @@ interface ChairsResponse {
     sellers?: number;
   }>;
 }
-
-const MOVILIDAD: Record<string, { api: string; page: string }> = {
-  monopatines: { api: "/api/movilidad/monopatin-electrico", page: "/monopatines-electricos-uruguay" },
-  "bicicletas-electricas": { api: "/api/movilidad/bicicleta-electrica", page: "/bicicletas-electricas-uruguay" },
-};
 
 export function categoryRows(vertical: ProductVertical, items: CategoryItem[], pagePath: (item: CategoryItem) => string): ProductRow[] {
   return items.map((it) => {
@@ -187,37 +185,41 @@ export async function loadVertical(site: SiteApi, vertical: ProductVertical): Pr
     const res = await site.get<{ items?: CategoryItem[] }>("/api/equipar", undefined, { ttlMs: TTL.catalog });
     return categoryRows(vertical, res.items ?? [], (it) => `/equipar-casa-uruguay/${it.category}`);
   }
-  const m = MOVILIDAD[vertical]!;
-  const res = await site.get<{ items?: CategoryItem[] }>(m.api, undefined, { ttlMs: TTL.catalog });
-  return categoryRows(vertical, res.items ?? [], () => m.page);
+  return (await searchMobility(site, vertical, {})).rows;
 }
 
 export interface ProductSearchInput {
   vertical?: ProductVertical | "todas";
   text?: string;
   brand?: string;
+  minPriceUyu?: number;
   maxPriceUyu?: number;
+  variant?: string;
+  seller?: string;
+  source?: "mercadolibre" | "facebook" | "tienda";
   condition?: "new" | "used" | "any";
   limit?: number;
 }
 
 export async function searchProducts(site: SiteApi, input: ProductSearchInput): Promise<ToolOutput> {
+  if ((input.variant || input.seller || input.source) && !isMobilityVertical(input.vertical ?? "")) {
+    throw new UserInputError("Los filtros variant, seller y source requieren vertical monopatines o bicicletas-electricas.");
+  }
   const verticals = !input.vertical || input.vertical === "todas" ? [...PRODUCT_VERTICALS] : [input.vertical];
-  const settled = await Promise.allSettled(verticals.map((v) => loadVertical(site, v)));
+  const settled = await Promise.allSettled(verticals.map(async (vertical) => {
+    if (isMobilityVertical(vertical)) return searchMobility(site, vertical, input);
+    const rows = filterCatalog(await loadVertical(site, vertical), input);
+    return { rows, total: rows.length };
+  }));
   const failed = verticals.filter((_, i) => settled[i]!.status === "rejected");
-  const rows = settled.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+  const results = settled.flatMap((r) => r.status === "fulfilled" ? [r.value] : []);
+  const rows = results.flatMap((r) => r.rows);
   if (!rows.length && failed.length) throw (settled.find((r) => r.status === "rejected") as PromiseRejectedResult).reason;
-  const brand = input.brand ? fold(input.brand) : "";
-  const matched = rows
-    .filter((r) => matchesWords([r.name, r.brand, r.category, r.variant, r.keywords].filter(Boolean).join(" "), input.text))
-    .filter((r) => !brand || fold(`${r.brand ?? ""} ${r.name} ${r.keywords ?? ""}`).includes(brand))
-    .filter((r) => input.condition !== "used" || !!r.usedBand)
-    .map((r) => (input.condition === "used" && r.usedBand?.median ? { ...r, bestPriceUyu: r.bestUsedOffer?.priceUyu ?? r.usedBand.p25 ?? r.usedBand.median, bestOffer: r.bestUsedOffer ?? r.bestOffer } : r))
-    .filter((r) => !input.maxPriceUyu || (r.bestPriceUyu ?? Infinity) <= input.maxPriceUyu)
-    .sort((a, b) => (a.bestPriceUyu ?? Infinity) - (b.bestPriceUyu ?? Infinity));
+  const total = results.reduce((sum, result) => sum + result.total, 0);
+  const matched = rows.sort((a, b) => (a.bestPriceUyu ?? Infinity) - (b.bestPriceUyu ?? Infinity));
   const limit = Math.max(1, Math.min(30, input.limit ?? 12));
   const items = matched.slice(0, limit).map(({ keywords: _k, ...row }) => row);
-  const lines = [`${fmt(matched.length)} productos coinciden en ${verticals.join(", ")} (del más barato al más caro).`];
+  const lines = [`${fmt(total)} productos o avisos coinciden en ${verticals.join(", ")} (del más barato al más caro; se muestran ${items.length}).`];
   items.forEach((r, n) => {
     const bands = [
       r.newBand?.median ? `nuevo típico ${money(r.newBand.median)}${r.newBand.p25 ? ` (${money(r.newBand.p25)}–${money(r.newBand.p75)})` : ""}` : "",
@@ -231,13 +233,30 @@ export async function searchProducts(site: SiteApi, input: ProductSearchInput): 
         (bands.length ? ` · ${bands.join(" · ")}` : "") +
         (r.rating ? ` · ${r.rating}` : "") +
         (r.sellers ? ` · ${r.sellers} vendedores` : "") +
-        `\n   ${r.bestOffer?.url ?? ""}\n   ficha: ${r.siteUrl}`
+        (r.lastSeen ? ` · visto al ${r.lastSeen}` : "") +
+        `\n   ${r.bestOffer?.url ?? ""}\n   ${isMobilityVertical(r.vertical) ? "buscador" : "ficha"}: ${r.siteUrl}`
     );
   });
-  if (!items.length) lines.push("Sin coincidencias: probá con una palabra más general (\"heladera\", \"iphone\", \"silla gamer\").");
+  if (!items.length) lines.push(verticals.every(isMobilityVertical)
+    ? "Sin coincidencias: probá otro modelo o ampliá los filtros de marca, condición o presupuesto."
+    : "Sin coincidencias: probá con una palabra más general (\"heladera\", \"iphone\", \"silla gamer\").");
   if (failed.length) lines.push(`No se pudo leer: ${failed.join(", ")} (reintentá más tarde).`);
-  lines.push("Precios en pesos uruguayos de tiendas y Mercado Libre, relevados a diario; confirmá stock y precio final en el link.");
-  return { text: lines.join("\n"), data: { total: matched.length, items, verticals, unavailable: failed } };
+  const searches = results.flatMap((r) => "searchUrl" in r ? [r.searchUrl] : []);
+  if (!items.length) searches.forEach((url) => lines.push(`Buscador: ${url}`));
+  lines.push("Precios en pesos uruguayos de tiendas, Mercado Libre y Facebook Marketplace; confirmá stock y precio final en el link.");
+  if (searches.length) lines.push("En movilidad cada resultado corresponde a un aviso concreto; puede haber varios del mismo modelo.");
+  return { text: lines.join("\n"), data: { total, items, verticals, unavailable: failed, searches } };
+}
+
+function filterCatalog(rows: ProductRow[], input: ProductSearchInput): ProductRow[] {
+  const brand = input.brand ? fold(input.brand) : "";
+  return rows
+    .filter((r) => matchesWords([r.name, r.brand, r.category, r.variant, r.keywords].filter(Boolean).join(" "), input.text))
+    .filter((r) => !brand || fold(`${r.brand ?? ""} ${r.name} ${r.keywords ?? ""}`).includes(brand))
+    .filter((r) => input.condition !== "used" || !!r.usedBand)
+    .map((r) => (input.condition === "used" && r.usedBand?.median ? { ...r, bestPriceUyu: r.bestUsedOffer?.priceUyu ?? r.usedBand.p25 ?? r.usedBand.median, bestOffer: r.bestUsedOffer ?? r.bestOffer } : r))
+    .filter((r) => !input.minPriceUyu || (r.bestPriceUyu ?? -Infinity) >= input.minPriceUyu)
+    .filter((r) => !input.maxPriceUyu || (r.bestPriceUyu ?? Infinity) <= input.maxPriceUyu);
 }
 
 /** Directory key of /api/directorios → its page and what it lists. */
@@ -268,7 +287,8 @@ export async function listDirectories(site: SiteApi): Promise<ToolOutput> {
   }));
   const extra = [
     { key: "equipar", label: "Equipar una casa (38 categorías, canastas)", siteUrl: `${PUBLIC_SITE}/equipar-casa-uruguay` },
-    { key: "movilidad", label: "Monopatines y bicicletas eléctricas", siteUrl: `${PUBLIC_SITE}/monopatines-electricos-uruguay` },
+    { key: "monopatines", label: "Monopatines eléctricos", siteUrl: `${PUBLIC_SITE}/monopatines-electricos-uruguay` },
+    { key: "bicicletas-electricas", label: "Bicicletas eléctricas", siteUrl: `${PUBLIC_SITE}/bicicletas-electricas-uruguay` },
     { key: "oportunidades", label: "Oportunidades inmobiliarias y de autos", siteUrl: `${PUBLIC_SITE}/oportunidades-inmobiliarias-uruguay` },
   ];
   const lines = [

@@ -4,7 +4,7 @@ import { supermarketPrices } from "../src/products/groceries";
 import { planHomeSetup } from "../src/products/home";
 import { listDirectories, searchProducts } from "../src/products/search";
 import { checkOnlineStore } from "../src/products/stores";
-import { fakeSite } from "./fakeSite";
+import { fakeSite, type Call } from "./fakeSite";
 
 const heladera = {
   key: "heladera:frigobar",
@@ -45,8 +45,9 @@ const routes = {
       ],
     },
   },
-  "/api/movilidad/monopatin-electrico": { items: [] },
-  "/api/movilidad/bicicleta-electrica": new SiteError(503, "caído"),
+  "/api/movilidad/productos": ({ query }: Call) => query?.categoria === "bicicleta-electrica"
+    ? new SiteError(503, "caído")
+    : { items: [], total: 0, perPage: 24 },
 };
 
 describe("searchProducts", () => {
@@ -126,6 +127,8 @@ describe("listDirectories and supermarketPrices", () => {
     const { site } = fakeSite({ "/api/directorios": { cifras: { autos: { count: 18977, asOf: "2026-09-21" } } } });
     const out = await listDirectories(site);
     expect(out.text).toContain("Autos usados: 18.977 (al 2026-09-21) — https://cambio-uruguay.com/autos-usados-uruguay");
+    expect(out.text).toContain("Monopatines eléctricos — https://cambio-uruguay.com/monopatines-electricos-uruguay");
+    expect(out.text).toContain("Bicicletas eléctricas — https://cambio-uruguay.com/bicicletas-electricas-uruguay");
   });
 
   it("finds articles and the cheapest stores of a department", async () => {

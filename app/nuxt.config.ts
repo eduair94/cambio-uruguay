@@ -4,6 +4,7 @@ import { CONSENT_STRICT_REGIONS } from './utils/consent'
 import { EXTRA_LOCALES } from './utils/locales'
 import {
   ANY_LOCALE_PREFIX_PATTERN,
+  SHARED_LINK_PATTERN,
   SITEMAP_NOINDEX_PATTERN,
   localePrefixPattern,
 } from './utils/sitemapFilters'
@@ -309,6 +310,27 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
+    '/s/**': {
+      sitemap: false,
+      headers: {
+        'cache-control': 'private, no-store, max-age=0, must-revalidate',
+        'X-Robots-Tag': 'noindex, follow',
+      },
+    },
+    '/en/s/**': {
+      sitemap: false,
+      headers: {
+        'cache-control': 'private, no-store, max-age=0, must-revalidate',
+        'X-Robots-Tag': 'noindex, follow',
+      },
+    },
+    '/pt/s/**': {
+      sitemap: false,
+      headers: {
+        'cache-control': 'private, no-store, max-age=0, must-revalidate',
+        'X-Robots-Tag': 'noindex, follow',
+      },
+    },
     // The browser half is stated out loud here, but this line alone does NOT
     // decide what a visitor gets — the zone's Browser Cache TTL does, and this
     // comment exists because that took two measurements to learn.
@@ -1274,6 +1296,8 @@ export default defineNuxtConfig({
         '/estadisticas-de-busqueda',
         // El ranking privado de páginas por visita: misma lógica que el tablero de Search Console.
         '/estadisticas-por-pagina',
+        // El panel privado de contactos comerciales (requireAdmin).
+        '/contactos-comerciales',
         // La encuesta de alquileres (se llega desde los correos) y su panel privado de respuestas.
         '/opinion-alquileres',
         '/opiniones-alquileres',
@@ -1383,7 +1407,8 @@ export default defineNuxtConfig({
     // Keep non-search pages out of the sitemap so they don't waste crawl budget or show as
     // "not indexed" in Search Console: the always-noindex pages, in Spanish and under every
     // locale prefix (utils/sitemapFilters.ts — one RegExp, see why there).
-    exclude: [SITEMAP_NOINDEX_PATTERN],
+    // y los enlaces guardados de Compartir (`/s/<id>`, selecciones del lector, noindex).
+    exclude: [SITEMAP_NOINDEX_PATTERN, SHARED_LINK_PATTERN],
   },
 
   // Scalar API reference. The module always registers one standalone page; we

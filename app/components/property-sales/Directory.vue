@@ -91,12 +91,14 @@
               >({{ favorites.keys.value.length }})</span
             >
           </VBtn>
-          <VBtn
-            icon="mdi-share-variant-outline"
+          <ShareButtons
+            :url="shareUrl"
+            :text="t('title')"
+            :description="chips.map(chip => chip.label).join(' · ')"
+            :label="false"
+            color="primary"
             variant="text"
-            :aria-label="t('share')"
             data-testid="sale-share-trigger"
-            @click="shareSearch"
           />
           <!-- Built from the URL query, never from the saved-only view: favourites are not a search.
                On mobile it sits next to the sort instead: at 320 px a fifth control wraps this bar. -->
@@ -523,20 +525,12 @@ const date = (value: string) =>
     dateStyle: 'medium',
     timeZone: 'America/Montevideo',
   }).format(new Date(value))
-async function shareSearch() {
-  const url = new URL(route.path, window.location.origin)
+const shareUrl = computed(() => {
+  const url = new URL(route.path, 'https://cambio-uruguay.com')
   const shareQuery = propertySalesQueryToParams(effectiveQuery.value)
   Object.entries(shareQuery).forEach(([key, value]) => url.searchParams.set(key, value))
-  try {
-    if (navigator.share) await navigator.share({ title: t('title'), url: url.href })
-    else {
-      await navigator.clipboard.writeText(url.href)
-      announce(t('copied'))
-    }
-  } catch (err) {
-    if ((err as Error).name !== 'AbortError') announce(t('shareError'))
-  }
-}
+  return url.href
+})
 watch(
   () => favorites.keys.value,
   keys => {

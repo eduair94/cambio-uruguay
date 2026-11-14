@@ -232,7 +232,6 @@
     </section>
 
     <!-- ── Los más baratos ───────────────────────────────────────────────── -->
-    <AssistantCta topic="monopatines" class="movilidad-cta" />
     <section
       v-if="cheapestNew.length || cheapestUsed.length"
       class="movilidad-section"
@@ -301,7 +300,15 @@
         @update="dirUpdate"
         @remove="dirRemove"
         @clear="dirClear"
-      />
+      >
+        <template #before-results>
+          <AssistantCta
+            topic="monopatines"
+            :filters="dirChips.map(chip => chip.label)"
+            class="mb-4"
+          />
+        </template>
+      </EquiparDirectorio>
     </section>
 
     <!-- ── Qué esperar de cada tipo ──────────────────────────────────────── -->
@@ -1110,10 +1117,6 @@ function offerMove(offer: { priceHistory?: { changePct: number | null; points: u
   list-style: none;
 }
 
-/* El bloque del asistente es una sección más: sin esto quedaba pegado a la tabla de modelos. */
-.movilidad-cta {
-  margin-top: 40px;
-}
 .variant-head {
   display: flex;
   align-items: center;

@@ -30,13 +30,17 @@ export function registerProducts(server: McpServer, site: SiteApi): void {
       title: "Buscar productos y precios en Uruguay",
       description:
         "Búsqueda unificada en los directorios de productos, relevados a diario en tiendas uruguayas, Mercado Libre y Facebook Marketplace: celulares (modelo + almacenamiento, precio nuevo más bajo), sillas de escritorio y gamer (con calificación), hogar (38 categorías para equipar una casa: heladera, lavarropas, colchón, cocina, aire acondicionado, TV…, con banda de precio nuevo y usado) y movilidad eléctrica (monopatines, bicicletas eléctricas). " +
-        "Devuelve el precio más bajo con vendedor y link, la banda típica (p25–mediana–p75), cuánto ahorra comprar usado y la ficha del sitio. Ordena del más barato al más caro.",
+        "En movilidad devuelve avisos concretos que cumplen marca, texto, variante, vendedor, fuente, condición y rango de precio, con precio, vendedor, fecha y enlace al buscador con los filtros aplicados. Las bandas típicas y el ahorro usado corresponden a las categorías de hogar. Ordena del más barato al más caro.",
       inputSchema: {
         vertical: z.enum([...PRODUCT_VERTICALS, "todas"]).optional().describe("Directorio (default: todas)."),
-        text: z.string().max(80).optional().describe('Palabras a buscar: "heladera no frost", "iphone 13", "silla ergonómica".'),
-        brand: z.string().max(40).optional().describe('Marca: "Samsung", "Midea".'),
+        text: z.string().max(80).optional().describe('Palabras a buscar: "heladera no frost", "iphone 13", "silla ergonómica". En movilidad busca una frase en el título del aviso, por ejemplo "G30" o "Xiaomi"; la categoría ya la fija vertical.'),
+        brand: z.string().max(40).optional().describe('Marca; en movilidad, clave de la faceta (por ejemplo "xiaomi" o "ninebot"). Para marcas con varias palabras, usá text.'),
+        minPriceUyu: z.number().positive().optional().describe("Precio mínimo en pesos."),
         maxPriceUyu: z.number().positive().optional().describe("Precio máximo en pesos."),
-        condition: z.enum(["new", "used", "any"]).optional().describe("used = sólo con banda de usados, al precio usado."),
+        variant: z.string().max(80).optional().describe('Sólo movilidad: clave del filtro de tipo/variante del buscador (parámetro variante), por ejemplo "urbano".'),
+        seller: z.string().max(80).optional().describe("Sólo movilidad: clave del vendedor del buscador (parámetro vendedor), no su nombre visible."),
+        source: z.enum(["mercadolibre", "facebook", "tienda"]).optional().describe("Sólo movilidad: fuente de los avisos (parámetro fuente del buscador)."),
+        condition: z.enum(["new", "used", "any"]).optional().describe("En movilidad filtra la condición del aviso (any o sin indicar = ambas). En hogar, used pide la banda de usados y su precio."),
         limit: z.number().int().min(1).max(30).optional().describe("Resultados a devolver (default 12)."),
       },
       annotations: READ_ONLY,

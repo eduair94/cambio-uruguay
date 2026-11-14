@@ -108,12 +108,13 @@
             ><span>{{ compactBandLabel(query.band) }}</span></template
           ></VSelect
         >
-        <VBtn
+        <ShareButtons
           v-if="!smAndDown"
-          icon="mdi-share-variant-outline"
+          :label="false"
+          color="primary"
           variant="text"
-          :aria-label="t('share')"
-          @click="share"
+          :text="t('title')"
+          :description="chips.map(chip => chip.label).join(' · ')"
         />
       </div>
       <div v-if="chips.length" class="budget-chips" :aria-label="t('activeFilters')">
@@ -304,7 +305,6 @@
           >{{ t('sales') }}</NuxtLink
         >
       </nav>
-      <VSnackbar v-model="snackbarOpen" timeout="3500">{{ snackbar }}</VSnackbar>
     </div>
   </div>
 </template>
@@ -633,23 +633,6 @@ availability.watchChanges(async () => {
   await refresh()
   if (query.value.availability !== 'all') await focusResults()
 })
-const snackbarOpen = ref(false),
-  snackbar = ref('')
-async function share() {
-  try {
-    if (navigator.share) await navigator.share({ title: t('title'), url: window.location.href })
-    else {
-      await navigator.clipboard.writeText(window.location.href)
-      snackbar.value = t('copied')
-      snackbarOpen.value = true
-    }
-  } catch (error) {
-    if ((error as Error).name !== 'AbortError') {
-      snackbar.value = t('shareError')
-      snackbarOpen.value = true
-    }
-  }
-}
 </script>
 
 <style scoped>

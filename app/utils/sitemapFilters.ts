@@ -33,6 +33,10 @@ export const SITEMAP_NOINDEX_PATHS: readonly string[] = Object.freeze([
   // El comparador de monopatines: cada combinación la elige el lector (noindex).
   '/monopatines-electricos-uruguay/comparar',
   '/bicicletas-electricas-uruguay/comparar',
+  // Y el de avisos de autos (el hub indexable es /comparar-autos-usados-uruguay).
+  '/autos-usados-uruguay/comparar',
+  // El panel privado de contactos comerciales (requireAdmin).
+  '/contactos-comerciales',
 ])
 
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -41,6 +45,9 @@ const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&
 export const SITEMAP_NOINDEX_PATTERN = new RegExp(
   `^(?:/[^/]+)?(?:${SITEMAP_NOINDEX_PATHS.map(escapeRegExp).join('|')})/?$`
 )
+
+/** Saved Compartir selections (`/s/<id>`, bare or under a locale prefix): noindex, never listed. */
+export const SHARED_LINK_PATTERN = /^(?:\/[^/]+)?\/s\/[^/]+\/?$/
 
 /** A path in one of these locales: `/fr` or `/fr/…`. */
 export function localePrefixPattern(codes: readonly string[]): RegExp {

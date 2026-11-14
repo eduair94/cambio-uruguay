@@ -186,6 +186,9 @@ const NOINDEXED = [
   // Autos usados: the directory and the model pages index at their own URL; filter combinations,
   // thin models and single adverts (they expire within weeks) opt out.
   'autos-usados-uruguay/[key].vue',
+  // El comparador de AVISOS: hasta tres que elige el lector, siempre noindex. El hub indexable de
+  // "comparar autos usados" es el de modelos (comparar-autos-usados-uruguay.vue).
+  'autos-usados-uruguay/comparar.vue',
   // Por presupuesto: se indexa con modelos suficientes en el tramo; si no, noindex.
   'autos-usados-uruguay/hasta-[monto]-dolares.vue',
   'autos-usados-uruguay/index.vue',
@@ -200,6 +203,8 @@ const NOINDEXED = [
   'buscar.vue',
   // El comparador de modelos se indexa en su URL; cada combinación de modelos se sale, como el asesor.
   'comparar-autos-usados-uruguay.vue',
+  // Panel privado de contactos comerciales (requireAdmin).
+  'contactos-comerciales.vue',
   // El tasador se indexa en su URL; cada combinación de marca, modelo y año se sale.
   'cuanto-vale-mi-auto-uruguay.vue',
   'cuenta/index.vue',
@@ -250,6 +255,8 @@ const NOINDEXED = [
   // El ranking de autores de r/CharruaDevs nombra personas: se llega desde el termometro y no entra
   // al indice. La pagina que SI se indexa es /mercado-it-uruguay, con los mismos datos sin nombres.
   'ranking-usuarios-charruadevs.vue',
+  // Los enlaces guardados de Compartir: selecciones del lector, nunca contenido propio.
+  's/[id].vue',
   // Sale dossiers use the same reviewed, fresh pilot gate as their sitemap entries.
   'venta-viviendas-uruguay/[key].vue',
   // Las formas de vivir con el salario mínimo se indexan en su URL; cada combinación de decisiones
