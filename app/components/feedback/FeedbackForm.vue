@@ -298,6 +298,9 @@ function reset() {
   color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
 }
 .feedback-form__kinds {
+  /* The tiles answer to the width the form actually has (a card on /contacto, the helpful box at
+     the foot of a page), not to the viewport. */
+  container: feedback-kinds / inline-size;
   border: 0;
   padding: 0;
   min-width: 0;
@@ -309,7 +312,8 @@ function reset() {
   font-weight: 700;
 }
 .feedback-form__kind-row {
-  /* Three equal columns at every width: stacked full-width rows took a whole phone screen. */
+  /* Three equal columns down to a 360 px phone: stacked full-width rows took a whole phone screen.
+     Below that the tiles cannot hold their labels; see the container queries further down. */
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
@@ -346,6 +350,30 @@ function reset() {
 .feedback-form__kind:has(:focus-visible) {
   outline: 2px solid rgb(var(--v-theme-link));
   outline-offset: 2px;
+}
+/* "Sugerencia" is one unbreakable word of ~79 px. On a 360 px phone a tile is 80 px wide, so the
+   word sat flush against both borders; on a 320 px phone (65 px tiles) it spilled out of the box.
+   Narrow: keep the three columns, with less padding and a step smaller type. Narrower still: rows,
+   icon beside the label, 44 px tall, so the three together stay short. */
+@container feedback-kinds (max-width: 299px) {
+  .feedback-form__kind {
+    padding-inline: 2px;
+    font-size: 0.8125rem;
+  }
+}
+@container feedback-kinds (max-width: 239px) {
+  .feedback-form__kind-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .feedback-form__kind {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 10px;
+    min-height: 44px;
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 0.9375rem;
+  }
 }
 .feedback-form__radio {
   position: absolute;

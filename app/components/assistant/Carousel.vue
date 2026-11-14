@@ -116,12 +116,19 @@ onBeforeUnmount(() => observer?.disconnect())
 .carousel {
   min-width: 0;
 }
+/* Título y cuenta no se parten, así que la fila sí: en un teléfono de 320-340 px "Oportunidades ·
+   8 de 1.234 · Ver todos" no entra en el ancho del turno y empujaba el chat de costado. "Ver todos"
+   baja al renglón siguiente, alineado a la derecha. */
 .head {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 0 8px;
   margin-bottom: 8px;
   min-height: 40px;
+}
+.head > .more {
+  margin-left: auto;
 }
 .head-icon {
   color: rgb(var(--v-theme-link));

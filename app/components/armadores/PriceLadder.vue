@@ -144,8 +144,10 @@ const expanded = computed(
     background-color 150ms ease-out,
     border-color 150ms ease-out;
 }
-.am-ladder__row:hover {
-  background: rgba(var(--v-theme-on-surface), 0.04);
+@media (hover: hover) {
+  .am-ladder__row:hover {
+    background: rgba(var(--v-theme-on-surface), 0.04);
+  }
 }
 .am-ladder__row:focus-visible {
   outline: 2px solid rgb(var(--v-theme-primary));

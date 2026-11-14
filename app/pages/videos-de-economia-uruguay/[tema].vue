@@ -256,7 +256,9 @@ useHead(() => ({
   letter-spacing: 0.08em;
   font-size: 0.75rem;
   font-weight: 700;
-  color: rgb(var(--v-theme-primary));
+  /* Tinta de enlace y no `primary`: el azul de relleno da 4:1 sobre el fondo oscuro, corto para
+     un texto de 12 px. */
+  color: rgb(var(--v-theme-link));
   margin-bottom: 0.35rem;
 }
 
@@ -272,13 +274,13 @@ useHead(() => ({
 
 .video-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
   gap: 1.25rem;
 }
 
 .channel-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
   gap: 1rem;
 }
 
