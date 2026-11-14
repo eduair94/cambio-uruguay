@@ -1024,6 +1024,11 @@ export const guideHubs: readonly GuideHub[] = [
       'me-compraron-la-deuda-uruguay',
       'saldo-a-favor-tarjeta-de-credito-uruguay',
       'como-saber-si-tengo-deudas-uruguay',
+      // La otra mitad de lo que el hub ya reúne: las quince de arriba cuentan cómo se toma y
+      // cómo se sale de una deuda, y el recurso /embargo-de-sueldo-uruguay cuenta qué pueden
+      // sacarte del sueldo. Lo que nadie contestaba es la pregunta siguiente de ese mismo
+      // lector: si pueden quedarse con la casa, y qué figura la saca del alcance del acreedor.
+      'bien-de-familia-uruguay',
     ],
     resources: [
       {
