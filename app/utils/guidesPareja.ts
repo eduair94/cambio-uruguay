@@ -99,7 +99,7 @@ export const parejaGuides: readonly Guide[] = [
     description:
       'La unión concubinaria de la Ley 18.246: convivencia de al menos cinco años, reconocimiento judicial y los derechos patrimoniales y de pensión que genera.',
     tag: 'CONCUBINATO',
-    updatedAt: '2026-07-18',
+    updatedAt: '2026-11-14',
     sections: [
       {
         heading: 'Qué es la unión concubinaria',
@@ -111,11 +111,11 @@ export const parejaGuides: readonly Guide[] = [
       },
       {
         heading: 'El reconocimiento no es automático',
-        body: 'Este es el punto que más confusión genera. Convivir muchos años no equivale a estar casado, ni crea por sí solo una sociedad de bienes entre la pareja. Para que la unión concubinaria despliegue sus efectos patrimoniales hace falta, en general, un reconocimiento judicial de la unión, que puede promoverse en vida por uno o ambos concubinos, o incluso después. A partir de ese reconocimiento inscripto la comunidad de bienes se vuelve efectiva frente a terceros. En otras palabras: la convivencia es el hecho, pero el reconocimiento es lo que le da forma legal. Para trámites de seguridad social, la prueba de la convivencia se hace ante el organismo correspondiente.',
+        body: 'Este es el punto que más confusión genera. Convivir muchos años no equivale a estar casado, ni crea por sí solo una sociedad de bienes entre la pareja. Para que la unión concubinaria despliegue sus efectos patrimoniales hace falta, en general, un reconocimiento judicial de la unión, que puede promoverse en vida por uno o ambos concubinos, o incluso después. A partir de ese reconocimiento inscripto la comunidad de bienes se vuelve efectiva frente a terceros. En otras palabras: la convivencia es el hecho, pero el reconocimiento es lo que le da forma legal. Para la seguridad social el camino es otro: la prueba de los requisitos se hace en principio ante el organismo previsional (art. 20, en la redacción de la Ley 20.212), y el BPS pide probar un mínimo de cinco años de convivencia a la fecha del fallecimiento o la desaparición, con testigos, declaraciones de los domicilios compartidos y documentos como facturas de servicios, contratos de alquiler o estados de cuenta. Una sentencia sirve ante el BPS cuando el organismo fue parte en el juicio, que es lo que ese mismo artículo exige para que el fallo le sea vinculante.',
       },
       {
         heading: 'Qué derechos genera',
-        body: 'Reconocida la unión, la ley genera varios derechos. Nace una comunidad de bienes que se rige, en lo aplicable, por las normas de la sociedad conyugal, salvo que la pareja pacte otra forma de administración. Surgen deberes de asistencia recíproca y derecho a alimentos entre los concubinos en ciertos casos. En materia de seguridad social, el conviviente puede acceder a pensión ante el fallecimiento del otro, probando la convivencia ante el BPS. Y en materia sucesoria, el concubino sobreviviente puede tener derechos hereditarios que la normativa reconoce, comparables a los de un cónyuge. Son efectos importantes, pero atados al cumplimiento de los requisitos legales.',
+        body: 'Reconocida la unión, la ley genera varios derechos, y cada uno tiene su artículo. El reconocimiento inscripto da nacimiento a una sociedad de bienes que se rige, en lo aplicable, por las normas de la sociedad conyugal, salvo que los concubinos opten de común acuerdo por otra forma de administración (art. 5). Los concubinos se deben asistencia recíproca personal y material y contribuyen a los gastos del hogar según su situación económica; disuelta la unión, la obligación de auxilios subsiste por un plazo que no puede ser mayor al de la convivencia, y sólo si uno la necesita para subsistir (art. 3). En materia sucesoria, el art. 11 no dice "algo parecido": le da al concubino sobreviviente los mismos derechos que el art. 1026 del Código Civil consagra para el cónyuge, y si concurre con un cónyuge supérstite los dos integran la misma parte, en proporción a los años de convivencia. El mismo artículo agrega un derecho real de uso y habitación sobre la vivienda del causante o común, para el concubino mayor de sesenta años sin medios propios suficientes que convivió los últimos diez años en forma ininterrumpida.',
       },
       {
         heading: 'En qué se diferencia del matrimonio',
@@ -136,6 +136,23 @@ export const parejaGuides: readonly Guide[] = [
         to: '/guias/legitima-y-herederos-forzosos-uruguay',
       },
       { label: 'Jubilación y AFAP', to: '/guias/jubilacion-y-afap-como-funciona-uruguay' },
+    ],
+    // Esta guía afirmaba reglas legales —cinco años, sociedad de bienes, derechos sucesorios— y no
+    // citaba ni una norma, que es justo lo que el campo `sources` existe para evitar (ver su
+    // comentario en `guides.ts`). Verificado el 2026-11-14 artículo por artículo en IMPO.
+    sources: [
+      {
+        label:
+          'Ley 18.246 de 27/12/2007 — convivencia ininterrumpida de al menos cinco años (art. 1), caracteres e impedimentos (art. 2), asistencia recíproca y auxilios por un plazo no mayor al de la convivencia (art. 3), sociedad de bienes desde el reconocimiento inscripto (art. 5) y derechos sucesorios del art. 1026 del Código Civil, con uso y habitación a los sesenta años y diez de convivencia (art. 11)',
+        url: 'https://www.impo.com.uy/bases/leyes/18246-2007',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Qué necesito para probar un concubinato — mínimo de cinco años de convivencia a la fecha del fallecimiento, con testigos, domicilios y documentos; la sentencia alcanza si el BPS fue parte en el juicio',
+        url: 'https://www.bps.gub.uy/20593/que-necesito-para-probar-un-concubinato.html',
+        publisher: 'BPS',
+      },
     ],
   },
   {

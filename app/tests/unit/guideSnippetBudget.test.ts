@@ -72,8 +72,13 @@ const GUIDE_PAGE = readFileSync(join(__dirname, '..', '..', 'pages', 'guias', '[
  * que nace dentro de los dos presupuestos y no toca ninguna de las dos deudas. Las dos las COMPONE
  * desde `utils/payrollAccount.ts`, así que lo que este archivo mide es el texto ya interpolado: si
  * un plazo del Decreto 263/015 pasa de uno a dos dígitos, el presupuesto lo ve.
+ *
+ * 156 → 157 el 2026-11-14, en el mismo commit que publica `bien-de-familia-uruguay`, por lo
+ * mismo. Su título mide 41 caracteres —58 con la marca puesta— y su descripción 153, o sea que
+ * nace dentro de los dos presupuestos y no toca ninguna de las dos deudas. Los dos llevan el
+ * número adentro (4.500 UR, el tope del Decreto 504/984), que es la regla de oro de este archivo.
  */
-const MEASURED = 156
+const MEASURED = 157
 
 /**
  * 116 → 104 el 2026-10-02: los doce títulos más largos del catálogo, de 104 a 84 caracteres
