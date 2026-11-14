@@ -203,8 +203,11 @@ const zoneModel = computed({
   cursor: pointer;
   transition: opacity 150ms ease-out;
 }
-.am-map__barrio:hover {
-  opacity: 0.82;
+/* Con el dedo no hay "pasar por encima": el toque dejaba el barrio aclarado. */
+@media (hover: hover) {
+  .am-map__barrio:hover {
+    opacity: 0.82;
+  }
 }
 .am-map__barrio--dim {
   opacity: 0.35;

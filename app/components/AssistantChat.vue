@@ -878,7 +878,7 @@ onMounted(async () => {
 }
 .ideas {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
   gap: 8px;
   margin: 24px 0 0;
   padding: 0;

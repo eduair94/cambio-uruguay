@@ -421,7 +421,9 @@ useHead(() => ({
   letter-spacing: 0.08em;
   font-size: 0.75rem;
   font-weight: 700;
-  color: rgb(var(--v-theme-primary));
+  /* Tinta de enlace y no `primary`: el azul de relleno da 4:1 sobre el fondo oscuro, corto para
+     un texto de 12 px. */
+  color: rgb(var(--v-theme-link));
   margin-bottom: 0.35rem;
 }
 
@@ -459,12 +461,23 @@ useHead(() => ({
   margin-bottom: 0.25rem;
 }
 
+/* Se parte en dos líneas cuando hace falta: con `nowrap`, "Ver los 8 videos de ahorro y finanzas
+   personales" medía más que un teléfono de 360 px y ensanchaba la página entera (scroll lateral).
+   Flex en línea para que la flecha quede pegada al texto y no huérfana en su propio renglón. */
 .topic-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   font-size: 0.85rem;
   font-weight: 600;
-  white-space: nowrap;
-  color: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-link));
   text-decoration: none;
+}
+
+@media (pointer: coarse) {
+  .topic-more {
+    min-height: 44px;
+  }
 }
 
 .topic-more:hover {
@@ -473,13 +486,13 @@ useHead(() => ({
 
 .video-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
   gap: 1.25rem;
 }
 
 .channel-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
   gap: 1rem;
 }
 

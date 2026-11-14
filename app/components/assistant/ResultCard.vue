@@ -41,7 +41,7 @@
       <div class="foot">
         <span v-if="card.place" class="place">
           <VIcon icon="mdi-map-marker-outline" size="14" />
-          {{ card.place }}
+          <span class="place-text">{{ card.place }}</span>
         </span>
         <span v-if="card.source" class="source">{{ card.source }}</span>
       </div>
@@ -86,12 +86,15 @@ const ariaLabel = computed(() =>
     transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
     box-shadow 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.result-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-}
-.v-theme--dark .result-card:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+/* Sólo con puntero que flota: en el teléfono el toque dejaba la tarjeta levantada al volver. */
+@media (hover: hover) {
+  .result-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  }
+  .v-theme--dark .result-card:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  }
 }
 .media {
   position: relative;
@@ -222,6 +225,11 @@ const ariaLabel = computed(() =>
   display: inline-flex;
   align-items: center;
   gap: 2px;
+  min-width: 0;
+}
+/* The ellipsis lives on the text's own box: on the flex container it never drew, and "Pocitos,
+   Montevideo" was cut flat at "Monte". */
+.place-text {
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;

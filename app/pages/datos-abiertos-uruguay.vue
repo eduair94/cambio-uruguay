@@ -556,6 +556,12 @@ li code,
 .params summary {
   cursor: pointer;
 }
+/* El desplegable medía 20 px de alto: con el dedo, la fila entera tiene que poder tocarse. */
+@media (pointer: coarse) {
+  .params summary {
+    padding-block: 12px;
+  }
+}
 .tight-list {
   margin-top: 0;
   padding-left: 1.15rem;

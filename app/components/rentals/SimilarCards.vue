@@ -87,9 +87,12 @@ const specs = (entry: RentalPublicProperty) =>
     transform 180ms ease,
     box-shadow 180ms ease;
 }
-.rental-similar-cards li:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+/* Sólo con puntero que flota: en el teléfono el toque dejaba la tarjeta levantada al volver atrás. */
+@media (hover: hover) {
+  .rental-similar-cards li:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  }
 }
 .rental-similar-cards a {
   display: block;

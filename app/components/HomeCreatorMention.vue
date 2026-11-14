@@ -52,8 +52,10 @@
         </VCol>
       </VRow>
 
-      <VRow justify="center">
-        <VCol v-for="v in videos" :key="v.videoId" cols="12" sm="6" md="4">
+      <!-- En el teléfono, una tira que se desliza (la tarjeta siguiente asoma): apilados, los tres
+           videos medían más de dos pantallas antes de llegar a los botones. -->
+      <ul class="creator-mention__videos" :aria-label="t('videosLabel', { name: creator.name })">
+        <li v-for="v in videos" :key="v.videoId" class="creator-mention__slide">
           <article class="creator-mention__card">
             <VideosEmbed :video-id="v.videoId" :title="v.title" :thumbnail="videoThumbnail(v)" />
             <div class="creator-mention__card-body">
@@ -77,10 +79,10 @@
               </div>
             </div>
           </article>
-        </VCol>
-      </VRow>
+        </li>
+      </ul>
 
-      <div class="d-flex justify-center flex-wrap ga-3 mt-6">
+      <div class="creator-mention__actions d-flex justify-center flex-wrap ga-3 mt-6">
         <VBtn
           :href="subscribeUrl(creator)"
           target="_blank"
@@ -153,6 +155,7 @@ const { t, locale } = useI18n({
       subscribe: 'Suscribirme al canal',
       channel: 'Ver el canal',
       more: 'Más videos de economía',
+      videosLabel: 'Videos de {name}',
     },
     en: {
       eyebrow: 'Mentioned on YouTube',
@@ -164,6 +167,7 @@ const { t, locale } = useI18n({
       subscribe: 'Subscribe to the channel',
       channel: 'See the channel',
       more: 'More economy videos',
+      videosLabel: 'Videos by {name}',
     },
     pt: {
       eyebrow: 'Fomos mencionados no YouTube',
@@ -175,6 +179,7 @@ const { t, locale } = useI18n({
       subscribe: 'Inscrever-me no canal',
       channel: 'Ver o canal',
       more: 'Mais vídeos de economia',
+      videosLabel: 'Vídeos de {name}',
     },
   },
 })
@@ -259,7 +264,52 @@ function onClick(linkKind: 'mention' | 'video' | 'channel' | 'subscribe') {
 }
 
 .creator-mention__quote figcaption a {
-  color: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-link));
+}
+
+.creator-mention__videos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.creator-mention__slide {
+  min-width: 0;
+}
+
+/* Teléfono: tira horizontal con imán. El 84 % deja asomar la tarjeta siguiente, que es la señal de
+   que se desliza; la tira llega hasta el borde de la pantalla para que no parezca cortada. */
+@media (max-width: 599.98px) {
+  .creator-mention__videos {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 84%;
+    gap: 12px;
+    margin-inline: -16px;
+    padding: 0 16px 8px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 16px;
+    scrollbar-width: none;
+  }
+
+  .creator-mention__videos::-webkit-scrollbar {
+    display: none;
+  }
+
+  .creator-mention__slide {
+    scroll-snap-align: start;
+  }
+
+  /* Los botones, del mismo ancho y apilados: tres anchos distintos centrados parecían sueltos. */
+  .creator-mention__actions > .v-btn {
+    flex: 1 1 100%;
+    max-width: 360px;
+  }
 }
 
 .creator-mention__card {

@@ -157,10 +157,12 @@ function onClick(creatorId: string, linkKind: 'video' | 'channel' | 'subscribe')
   max-width: 70ch;
 }
 
+/* `min(100%, …)`: en un teléfono de 320 px la tarjeta deja ~232 px y una columna de 240 fijos
+   sacaba el video por el borde derecho, fuera del relleno. */
 .creator-videos__grid {
   display: grid;
   gap: 20px;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
 }
 
 .creator-videos__item {
@@ -243,10 +245,13 @@ function onClick(creatorId: string, linkKind: 'video' | 'channel' | 'subscribe')
   text-decoration: underline;
 }
 
+/* Renglón propio: un handle es una sola palabra larga y, al lado del nombre, se cortaba en la
+   última letra ("@JavierGutierrezFinanza" / "s"). */
 .creator-videos__handle {
-  margin-left: 6px;
+  display: block;
   font-size: 0.8rem;
   color: rgba(var(--v-theme-on-surface), 0.66);
+  overflow-wrap: anywhere;
 }
 
 .creator-videos__blurb {
