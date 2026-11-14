@@ -58,6 +58,8 @@ export function inUnsupportedAdLanguage(path: string): boolean {
  * `isBareRoute`, which is also what keeps the loader script off them.
  */
 const NO_ADS = [
+  // A saved selection is a hand-off to the content, not an editorial ad surface.
+  '/s',
   '/alquiler-ideal-uruguay',
   '/cuenta',
   '/conectar',
@@ -75,6 +77,7 @@ const NO_ADS = [
   // panel privado.
   '/opinion-alquileres',
   '/opiniones-alquileres',
+  '/contactos-comerciales',
   // Los hilos de Reddit para contestar: casi todo el texto es de Reddit citado, y AdSense trata un
   // anuncio al lado de contenido ajeno como contenido raspado — una sanción a la cuenta, no a la página.
   '/oportunidades-reddit',
@@ -155,6 +158,7 @@ export function adsFlagOn(value: unknown): boolean {
  * that is how a comparison site trains people to use a different one.
  */
 const LIGHT = [
+  '/autos-usados-uruguay/comparar',
   '/',
   // Un planificador es un instrumento: una sola unidad, que no se meta en la tabla.
   '/meal-prep-uruguay',

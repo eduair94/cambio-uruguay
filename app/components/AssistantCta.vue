@@ -55,7 +55,7 @@ const prompt = computed(() => {
 const mounted = ref(false)
 onMounted(() => (mounted.value = true))
 const target = computed(() =>
-  localePath(mounted.value ? assistantLink(prompt.value) : assistantLink(''))
+  localePath(mounted.value ? assistantLink(prompt.value, props.topic) : assistantLink(''))
 )
 
 function onClick() {

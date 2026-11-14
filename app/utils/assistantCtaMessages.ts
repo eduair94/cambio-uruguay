@@ -26,7 +26,12 @@ export const ASSISTANT_CTA_GROUP: Readonly<Record<AssistantTopic, AssistantCtaGr
 }
 
 /** Topics whose question can carry the page's filters. */
-export const ASSISTANT_FILTER_TOPICS: ReadonlySet<AssistantTopic> = new Set(['alquiler', 'autos'])
+export const ASSISTANT_FILTER_TOPICS: ReadonlySet<AssistantTopic> = new Set([
+  'alquiler',
+  'autos',
+  'monopatines',
+  'bicicletas',
+])
 
 export const assistantCtaMessages = {
   es: {
@@ -77,6 +82,10 @@ export const assistantCtaMessages = {
         'Busco un alquiler con estos filtros: {filters}. ¿Cuáles me convienen más y por qué? Mostrame los mejores con sus links.',
       autos:
         'Busco un auto usado con estos filtros: {filters}. ¿Cuáles valen la pena por su precio y por qué? Mostrame los mejores con sus links.',
+      monopatines:
+        'Busco un monopatín eléctrico con estos filtros: {filters}. Compará los avisos por precio y mostrame las opciones con sus links.',
+      bicicletas:
+        'Busco una bicicleta eléctrica con estos filtros: {filters}. Compará los avisos por precio y mostrame las opciones con sus links.',
     },
   },
   en: {
@@ -128,6 +137,10 @@ export const assistantCtaMessages = {
         'I am looking for a rental with these filters: {filters}. Which ones suit me best and why? Show me the best ones with their links.',
       autos:
         'I am looking for a used car with these filters: {filters}. Which ones are worth their price and why? Show me the best ones with their links.',
+      monopatines:
+        'I am looking for an electric scooter with these filters: {filters}. Compare listings by price and show me the options with their links.',
+      bicicletas:
+        'I am looking for an electric bike with these filters: {filters}. Compare listings by price and show me the options with their links.',
     },
   },
   pt: {
@@ -177,6 +190,10 @@ export const assistantCtaMessages = {
         'Procuro um aluguel com estes filtros: {filters}. Quais me convêm mais e por quê? Mostre os melhores com os links.',
       autos:
         'Procuro um carro usado com estes filtros: {filters}. Quais valem o preço e por quê? Mostre os melhores com os links.',
+      monopatines:
+        'Procuro um patinete elétrico com estes filtros: {filters}. Compare os anúncios por preço e mostre as opções com os links.',
+      bicicletas:
+        'Procuro uma bicicleta elétrica com estes filtros: {filters}. Compare os anúncios por preço e mostre as opções com os links.',
     },
   },
 }

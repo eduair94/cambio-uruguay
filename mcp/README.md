@@ -107,7 +107,7 @@ For stdio set `MCP_TOOLSETS=alquileres,autos` (default: all).
 
 | Tool | Description |
 |---|---|
-| `search_products` | One search over phones, desk chairs, 38 home categories and e-scooters/e-bikes: cheapest plausible offer with seller and link, typical new/used band, used savings. |
+| `search_products` | One search over phones, desk chairs, 38 home categories and e-scooters/e-bikes. Mobility returns actual adverts matching brand, title, variant, seller, source, condition and price range, with seller, last-seen date and a link that preserves the directory filters; home categories include typical new/used bands and used savings. |
 | `plan_home_setup` | What equipping an empty home costs (minimal/decent/complete), minus what the person already has; says when a total is partial. |
 | `check_online_store` | Dated trust signals of an online store (domain age, Google, Trustpilot, Reddit mentions, policies, payments). Never a verdict. |
 | `supermarket_prices` | Official SIPC prices per article and the cheapest supermarkets of a department by matched basket. |

@@ -203,6 +203,7 @@
                     <VCol cols="12" lg="6" class="converter-col converter-col--result">
                       <!-- Conversion Result -->
                       <VCard
+                        v-if="hasConversionRate"
                         class="conversion-result pa-4 mb-md-4"
                         color="rgba(76, 175, 80, 0.1)"
                         variant="outlined"
@@ -218,6 +219,7 @@
                           >
                             {{ selectedExchangeHouseName }}
                           </VChip>
+                          <StaleRateChip :entry="selectedQuoteFrozen" class="ml-2" />
                         </div>
                         <VRow align="center" justify="center" class="conversion-display-row">
                           <VCol cols="5" sm="4" class="text-center align-self-start">
@@ -340,6 +342,24 @@
                           </VBtn>
                         </div>
                       </VCard>
+                      <VAlert
+                        v-else
+                        type="info"
+                        variant="tonal"
+                        data-testid="conversion-unavailable"
+                      >
+                        {{ t('whereToChange.noData') }}
+                        <!-- The card (and its toggle) is gone: without this the reader who flipped
+                             into a missing quote had no way back to the amount they typed. -->
+                        <template #append>
+                          <DirectionToggle
+                            :is-forward="isForward"
+                            size="32"
+                            color="success"
+                            @toggle="toggleDirection"
+                          />
+                        </template>
+                      </VAlert>
                     </VCol>
                   </VRow>
 
@@ -435,6 +455,12 @@
                         </VBtn>
                       </template>
                     </VAlert>
+                    <RateComparisonContext
+                      :amount="comparisonSubjectAmount"
+                      :currency="subjectCode"
+                      :excluded-count="recommendationExcludedCount"
+                      :selected-off-market="selectedQuoteOffMarket"
+                    />
                     <VRow class="best-rates-grid">
                       <VCol v-if="primaryRatesForSubject.length" cols="12" lg="6">
                         <!-- First card: current intent (sell or buy) -->
@@ -479,9 +505,16 @@
                                     ${{ rate.rate.toFixed(2) }}
                                   </div>
                                   <div class="rate-type text-caption">
-                                    {{ intentIsSellingSubject ? t('buy') : t('sell') }}
+                                    {{ intentIsSellingSubject ? t('sell') : t('buy') }}
                                     {{ t('codes.' + subjectCode) }}
                                   </div>
+                                  <RateAmountComparison
+                                    :amount="comparisonSubjectAmount"
+                                    :rate="rate.rate"
+                                    :best-rate="primaryRatesForSubject[0]!.rate"
+                                    :selling="intentIsSellingSubject"
+                                    :first="index === 0"
+                                  />
                                   <StaleRateChip
                                     :entry="frozenFor(rate.origin, subjectCode, rate.type)"
                                     dense
@@ -537,9 +570,16 @@
                                     ${{ rate.rate.toFixed(2) }}
                                   </div>
                                   <div class="rate-type text-caption">
-                                    {{ intentIsSellingSubject ? t('sell') : t('buy') }}
+                                    {{ intentIsSellingSubject ? t('buy') : t('sell') }}
                                     {{ t('codes.' + subjectCode) }}
                                   </div>
+                                  <RateAmountComparison
+                                    :amount="comparisonSubjectAmount"
+                                    :rate="rate.rate"
+                                    :best-rate="secondaryRatesForSubject[0]!.rate"
+                                    :selling="!intentIsSellingSubject"
+                                    :first="index === 0"
+                                  />
                                   <StaleRateChip
                                     :entry="frozenFor(rate.origin, subjectCode, rate.type)"
                                     dense
@@ -1143,7 +1183,7 @@ import { useDisplay } from 'vuetify'
 import {
   convert as convertAmount,
   formatAmount,
-  marketAverageSavings,
+  currencyAmountSavings,
   parseAmount,
   type RateRow,
 } from '@/utils/conversion'
@@ -1846,7 +1886,7 @@ const desiredRightAmountRaw = ref(0)
 const leftForReverse = ref(0)
 
 // Conversion result computed property
-const setConversionRate = () => {
+const setConversionRate = (preserveRightAmount = false) => {
   // Core forward/reverse math comes from the pure util (unit-tested).
   // Judged against the whole market: a department or a channel alone is too few boards to tell
   // a frozen one (utils/marketOutlier.ts).
@@ -1870,6 +1910,16 @@ const setConversionRate = () => {
   }
   // Forward amount (entered amount converted to target)
   dualConversion.value.forwardToAmount = conversionResult.value.convertedAmount
+  // Market/filter updates recalculate the displayed figure too. Preserve it
+  // only when the user flips direction (which adjusts the left amount).
+  if (!preserveRightAmount || desiredRightAmountRaw.value <= 0) {
+    desiredRightAmountRaw.value = isForward.value
+      ? rawConvertedAmount
+      : reverseRate > 0
+        ? Number(amount.value) / reverseRate
+        : 0
+    desiredRightAmount.value = round2(desiredRightAmountRaw.value)
+  }
   // Reverse summary:
   // - In forward mode: target to sell to get the entered left amount
   // - In reverse mode: show the fixed right-hand amount (avoid double rounding)
@@ -1885,18 +1935,6 @@ const setConversionRate = () => {
   }
   // end setConversionRate
 
-  // Maintain invariants for UI:
-  // - desiredRightAmount remains the target shown on the right
-  if (desiredRightAmountRaw.value <= 0) {
-    if (isForward.value) {
-      // Forward: initialize from forward conversion
-      desiredRightAmountRaw.value = rawConvertedAmount
-    } else {
-      // Reverse: initialize from reverse math (right needed to obtain left)
-      desiredRightAmountRaw.value = reverseRate > 0 ? Number(amount.value) / reverseRate : 0
-    }
-    desiredRightAmount.value = round2(desiredRightAmountRaw.value)
-  }
   // - leftForReverse display depends on direction
   if (isForward.value) {
     // Forward: show how much you'd get on the left if you sell the right amount
@@ -1940,13 +1978,69 @@ const intentIsSellingSubject = computed(() => {
   return isForward.value ? fromIsSubject : !fromIsSubject
 })
 
+const hasConversionRate = computed(() =>
+  isForward.value ? conversionResult.value.rate > 0 : conversionResult.value.reverseRate > 0
+)
+
+// All house comparisons use the same quantity of the foreign currency, whichever side of the
+// converter holds the pesos.
+const comparisonSubjectAmount = computed(() => {
+  if (!hasConversionRate.value) return 0
+  if (selectedCurrency.value === subjectCode.value && selectedTargetCurrency.value === 'UYU') {
+    return Number(amount.value)
+  }
+  if (selectedTargetCurrency.value === subjectCode.value && selectedCurrency.value === 'UYU') {
+    return desiredRightAmount.value
+  }
+  return 0
+})
+
+/** The side the ranking crowns: selling dollars, the houses' buy price. */
+const rankedSide = computed<'buy' | 'sell'>(() => (intentIsSellingSubject.value ? 'buy' : 'sell'))
+
+// How many boards of this currency the ranking leaves out (the site's one crown rule,
+// utils/marketOutlier.ts), so the reader is told rather than left to wonder.
+const recommendationExcludedCount = computed(() => {
+  const code = subjectCode.value
+  const side = rankedSide.value
+  const items = filteredExchangeData.value.filter(
+    row => row.code === code && row.localData?.name && (row[side] ?? 0) > 0
+  )
+  if (!items.length) return 0
+  return items.length - crownable(items, marketFor.value(code), code, side).length
+})
+
+const selectedHouseQuote = computed(() => {
+  if (selectedExchangeHouse.value === 'best') return null
+  const side = rankedSide.value
+  return (
+    filteredExchangeData.value
+      .filter(
+        row =>
+          row.origin === selectedExchangeHouse.value &&
+          row.code === subjectCode.value &&
+          (row[side] ?? 0) > 0
+      )
+      .sort((a, b) => (side === 'buy' ? b.buy - a.buy : a.sell - b.sell))[0] ?? null
+  )
+})
+const selectedQuoteFrozen = computed(() => {
+  const row = selectedHouseQuote.value
+  return row ? frozenFor(row.origin, row.code, row.type) : null
+})
+const selectedQuoteOffMarket = computed(() => {
+  const row = selectedHouseQuote.value
+  if (!row) return false
+  return !crownable([row], marketFor.value(row.code), row.code, rankedSide.value).length
+})
+
 // Savings of the best rate vs. the market average for the subject currency.
 // Only meaningful when one side is UYU and there are >= 2 quotes to average.
 const savingsInfo = computed(() =>
-  marketAverageSavings(
+  currencyAmountSavings(
     rateRows.value,
     subjectCode.value,
-    Number(amount.value),
+    comparisonSubjectAmount.value,
     intentIsSellingSubject.value ? 'sell' : 'buy',
     realExchangeData.value as RateRow[]
   )
@@ -2146,7 +2240,7 @@ const applyExchangeData = (data: ExchangeItem[]) => {
 watch(
   [sharedRows, sharedPending] as const,
   ([rows, pending]) => {
-    if (rows && rows.length) applyExchangeData(rows as unknown as ExchangeItem[])
+    if (rows?.length || !pending) applyExchangeData((rows ?? []) as unknown as ExchangeItem[])
     if (!pending) initialLoading.value = false
   },
   { immediate: true }
@@ -2230,7 +2324,7 @@ const toggleDirection = () => {
     amountInput.value = amount.value
   }
   amountDisplay.value = plainAmountString(amountInput.value)
-  setConversionRate()
+  setConversionRate(true)
   // Reflect current direction in the URL
   updateQueryParams()
   // Save form data to localStorage

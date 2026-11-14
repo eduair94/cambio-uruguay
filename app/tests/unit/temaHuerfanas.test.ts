@@ -66,6 +66,7 @@ const FUERA_DE_TEMA_POR_DISENO = [
   '/offline', // fallback de la PWA, noindex
   '/opinion-alquileres', // encuesta, se llega desde los correos; noindex
   '/opiniones-alquileres', // privada, noindex
+  '/contactos-comerciales', // privada, noindex
   '/oportunidades-reddit', // noindex, se comparte por enlace
   '/origen-del-trafico', // sobre el propio sitio, como /estadisticas-del-sitio
   '/paginas-mas-visitadas', // sobre el propio sitio, como /estadisticas-del-sitio

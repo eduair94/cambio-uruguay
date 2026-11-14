@@ -24,6 +24,7 @@ export const useAuthStore = defineStore('auth', {
     user: null as AuthUser | null,
     ready: false,
     dialogOpen: false,
+    googlePending: false,
     error: null as string | null,
     notice: null as string | null,
   }),
@@ -75,13 +76,18 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async signInWithGoogle() {
+      if (this.googlePending) return
+      this.googlePending = true
       this.error = null
       try {
         const fb = await loadFirebaseAuth()
         await fb.signInWithPopup(fb.fbAuth(), new fb.GoogleAuthProvider())
         this.closeDialog()
       } catch (e: any) {
-        this.error = e?.code ?? e?.message ?? 'error'
+        if (!['auth/popup-closed-by-user', 'auth/cancelled-popup-request'].includes(e?.code))
+          this.error = e?.code ?? e?.message ?? 'error'
+      } finally {
+        this.googlePending = false
       }
     },
 

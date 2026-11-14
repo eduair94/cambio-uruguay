@@ -815,8 +815,6 @@
         </ol>
       </VCard>
     </section>
-
-    <NewsletterCapture v-if="adsOn" class="mt-6" />
   </VContainer>
 </template>
 

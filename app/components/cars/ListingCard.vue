@@ -57,6 +57,7 @@
       <p class="car-card__source">
         {{ car.sourceName }}<template v-if="car.hasContact"> · con teléfono</template>
       </p>
+      <CarsCompareLink :car-key="car.key" />
     </div>
   </article>
 </template>

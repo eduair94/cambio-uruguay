@@ -5076,6 +5076,8 @@ export const EXCLUDED_ROUTES: readonly string[] = Object.freeze([
   // Los hilos de Reddit para contestar: pública y para compartir por enlace, pero `noindex`. Es
   // casi entera texto de Reddit citado, y eso no tiene lugar en el menú ni en el sitemap.
   '/oportunidades-reddit',
+  // El panel privado de contactos comerciales (requireAdmin, noindex): no es contenido.
+  '/contactos-comerciales',
   // "¿Tengo descuento acá?": una herramienta cuya respuesta depende de dónde está parado quien la
   // abre. No hay nada que indexar; se llega desde el mapa.
   '/descuentos-con-tarjeta-uruguay/cerca-de-mi',
@@ -5088,6 +5090,10 @@ export const EXCLUDED_ROUTES: readonly string[] = Object.freeze([
   '/monopatines-electricos-uruguay/comparar',
   // Lo mismo para bicicletas eléctricas (4/11/2026).
   '/bicicletas-electricas-uruguay/comparar',
+  // Y el de avisos de autos: hasta tres avisos que elige el lector (14/11/2026). El hub indexable
+  // para "comparar autos usados" es /comparar-autos-usados-uruguay (modelos); se llega desde el
+  // directorio, las tarjetas y cada ficha.
+  '/autos-usados-uruguay/comparar',
 ])
 
 /**
@@ -5107,6 +5113,8 @@ export const UNLISTED_ROUTES: ReadonlyArray<{ to: string; priority: number; chan
  * filesystem exactly, so a new dynamic route cannot be silently orphaned.
  */
 export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freeze({
+  // Saved public selections are deliberately excluded from the sitemap in nuxt.config.ts.
+  's/[id]': 'consumer',
   'alquileres/[key]': 'consumer',
   'alquiler/[departamento]/[barrio]': 'consumer',
   'autos-usados-uruguay/hasta-[monto]-dolares': 'consumer',

@@ -92,6 +92,8 @@ describe('adDensityForPath', () => {
   })
 
   it('carries no ads on plumbing pages', () => {
+    expect(adDensityForPath('/s/AbCd_0123-xy')).toBe('none')
+    expect(adDensityForPath('/pt/s/AbCd_0123-xy')).toBe('none')
     expect(adDensityForPath('/offline')).toBe('none')
     expect(adDensityForPath('/estado')).toBe('none')
   })

@@ -20,6 +20,7 @@
         </template>
       </p>
       <!-- Las oportunidades y "¿el auto tiene deudas?" están en la barra "En esta sección". -->
+      <CarsCompareLink />
     </header>
 
     <!--

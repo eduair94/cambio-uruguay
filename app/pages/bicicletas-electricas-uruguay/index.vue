@@ -159,7 +159,6 @@
     </section>
 
     <!-- ── Los más baratos ───────────────────────────────────────────────── -->
-    <AssistantCta topic="bicicletas" class="movilidad-cta" />
     <section
       v-if="cheapestNew.length || cheapestUsed.length"
       class="movilidad-section"
@@ -227,7 +226,15 @@
         @update="dirUpdate"
         @remove="dirRemove"
         @clear="dirClear"
-      />
+      >
+        <template #before-results>
+          <AssistantCta
+            topic="bicicletas"
+            :filters="dirChips.map(chip => chip.label)"
+            class="mb-4"
+          />
+        </template>
+      </EquiparDirectorio>
     </section>
 
     <!-- ── Qué esperar de cada tipo ──────────────────────────────────────── -->
@@ -873,10 +880,6 @@ useHead(() => ({
   list-style: none;
 }
 
-/* El bloque del asistente es una sección más: sin esto quedaba pegado a la grilla de tipos. */
-.movilidad-cta {
-  margin-top: 40px;
-}
 .variant-head {
   display: flex;
   align-items: center;

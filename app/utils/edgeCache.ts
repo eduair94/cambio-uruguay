@@ -48,6 +48,7 @@ const NEVER = [
   '/estadisticas-por-pagina',
   '/opinion-alquileres',
   '/opiniones-alquileres',
+  '/contactos-comerciales',
   '/ranking-usuarios-charruadevs',
   '/oportunidades-reddit',
 ]

@@ -27,6 +27,14 @@ export const ASSISTANT_TOPICS = [
 ] as const
 export type AssistantTopic = (typeof ASSISTANT_TOPICS)[number]
 
+/** Only our known directories can set the assistant's origin/context. */
+export function readAssistantTopic(raw: unknown): AssistantTopic | undefined {
+  const value = Array.isArray(raw) ? raw[0] : raw
+  return typeof value === 'string' && ASSISTANT_TOPICS.includes(value as AssistantTopic)
+    ? (value as AssistantTopic)
+    : undefined
+}
+
 /** A question read back from the URL: plain text, one line, bounded. '' when unusable. */
 export function readAssistantPrompt(raw: unknown): string {
   const value = Array.isArray(raw) ? raw[0] : raw
@@ -54,7 +62,13 @@ export function assistantFilterList(labels: readonly string[], max = 8): string 
 }
 
 /** The link target, or the bare page when there is no question to carry. */
-export function assistantLink(prompt: string): { path: string; query?: { q: string } } {
+export function assistantLink(
+  prompt: string,
+  topic?: AssistantTopic
+): { path: string; query?: { q?: string; topic?: AssistantTopic } } {
   const q = readAssistantPrompt(prompt)
-  return q ? { path: ASSISTANT_PATH, query: { q } } : { path: ASSISTANT_PATH }
+  const origin = readAssistantTopic(topic)
+  return q || origin
+    ? { path: ASSISTANT_PATH, query: { ...(q ? { q } : {}), ...(origin ? { topic: origin } : {}) } }
+    : { path: ASSISTANT_PATH }
 }

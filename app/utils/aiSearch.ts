@@ -251,6 +251,14 @@ export const AI_PROMPT_EXAMPLES: readonly AiPromptExample[] = Object.freeze([
     text: '¿Dónde está más barato un iPhone 13 de 128 GB? ¿Y es confiable la tienda?',
   },
   {
+    vertical: 'productos',
+    text: 'Busco un monopatín eléctrico nuevo de hasta $30.000. Compará los avisos por precio y marca, y dejame el enlace al buscador con esos filtros.',
+  },
+  {
+    vertical: 'productos',
+    text: 'Busco una bicicleta eléctrica usada. Mostrame los precios relevados y los enlaces a los avisos; si no hay opciones, decímelo.',
+  },
+  {
     vertical: 'sitio',
     text: '¿Cuánto puedo traer por courier sin pagar impuestos, y qué pasa si me paso?',
   },

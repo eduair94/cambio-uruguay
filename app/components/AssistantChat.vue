@@ -313,6 +313,9 @@
 import type { ComponentPublicInstance } from 'vue'
 import { useDisplay } from 'vuetify'
 import { AI_PROMPT_EXAMPLES, type AiPromptExample } from '~/utils/aiSearch'
+import { assistantDirectoryContext } from '~/utils/assistantDirectories'
+import { assistantCtaMessages } from '~/utils/assistantCtaMessages'
+import { readAssistantPrompt, type AssistantTopic } from '~/utils/assistantPrompt'
 import { renderChatMarkdown } from '~/utils/chatMarkdown'
 import {
   FAMILY_ICON,
@@ -350,7 +353,11 @@ import {
   type PuterLike,
 } from '~/utils/puterChat'
 
-const props = withDefaults(defineProps<{ initialPrompt?: string }>(), { initialPrompt: '' })
+const props = withDefaults(
+  defineProps<{ initialPrompt?: string; sourceTopic?: AssistantTopic }>(),
+  { initialPrompt: '' }
+)
+const { locale } = useI18n()
 
 // The page's `class` goes to the chat's place in the page, which keeps its spacing whichever home the
 // card is in.
@@ -515,7 +522,7 @@ const KICKER: Record<AiPromptExample['vertical'], { kicker: string; icon: string
   autos: { kicker: 'Autos', icon: FAMILY_ICON.autos },
   productos: { kicker: 'Productos', icon: FAMILY_ICON.productos },
 }
-const suggestions = [
+const baseSuggestions = [
   ...[
     AI_PROMPT_EXAMPLES.find(e => e.vertical === 'sitio'),
     ...AI_PROMPT_EXAMPLES.filter((_, i) => [3, 4, 7].includes(i)),
@@ -530,6 +537,31 @@ const suggestions = [
     .slice(1, 2)
     .map(e => ({ text: e.text, ...KICKER[e.vertical] })),
 ]
+
+// Arriving from a directory (`?topic=`), its own question goes first; the grid stays at six.
+const suggestions = computed(() => {
+  const lang = locale.value === 'en' || locale.value === 'pt' ? locale.value : 'es'
+  const contextQuestion = props.sourceTopic
+    ? assistantCtaMessages[lang].q[props.sourceTopic]
+    : undefined
+  if (!contextQuestion) return baseSuggestions
+  return [
+    { text: contextQuestion, kicker: 'Tu búsqueda', icon: 'mdi-magnify' },
+    ...baseSuggestions.filter(s => s.text !== contextQuestion),
+  ].slice(0, 6)
+})
+
+// A new directory link may reuse this component. Preserve a running conversation and let the
+// visitor send the new question explicitly when already connected.
+watch(
+  () => props.initialPrompt,
+  value => {
+    const question = readAssistantPrompt(value)
+    if (!question) return
+    if (provider.value) draft.value = question
+    else pendingPrompt.value = question
+  }
+)
 const connectionLabel = computed(() =>
   provider.value === 'puter'
     ? `Conectado${puterName.value ? ` como ${puterName.value}` : ''} · ${model.value}`
@@ -635,6 +667,9 @@ async function send(text = draft.value) {
       throw e
     }
   }
+  const contextualInstructions = [instructions, assistantDirectoryContext(props.sourceTopic)]
+    .filter(Boolean)
+    .join('\n\n')
   try {
     let answer: string
     if (provider.value === 'puter' && puter) {
@@ -643,7 +678,7 @@ async function send(text = draft.value) {
         models: puterModels,
         messages: puterHistory,
         userText,
-        system: instructions,
+        system: contextualInstructions,
         tools: openAiTools,
         callTool,
       })
@@ -657,7 +692,7 @@ async function send(text = draft.value) {
         models: geminiModels,
         history: geminiHistory,
         userText,
-        systemInstruction: instructions,
+        systemInstruction: contextualInstructions,
         declarations,
         callTool,
       })

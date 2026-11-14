@@ -303,10 +303,10 @@
                Client-only (it reads what this browser already answered) and lazy, so it costs the
                entry chunk nothing. Rules in utils/siteFeedback.ts. -->
           <ClientOnly><LazyFeedbackPageHelpful /></ClientOnly>
-          <!-- The end-of-article ask. Long reads only (`utils/capture.ts`), and it
-               sits after the recirculation block: giving the reader somewhere to go
-               costs them nothing, asking for an email costs them something. -->
-          <NewsletterCapture />
+          <!-- One contextual invitation after the content (share + newsletter or account), sharing
+               the same attention budget; the newsletter card (`NewsletterCapture`, long reads only)
+               now lives inside it. -->
+          <ReaderFollowUp />
         </div>
         <!-- The one ad every allowed route carries: after the content, before
              the footer, never in the middle of a tool. Routes opt out through
@@ -335,6 +335,7 @@
 
     <Footer />
     <ClientOnly><LazyAuthDialog v-if="authDialogActivated" /></ClientOnly>
+    <ClientOnly><ExternalNavigationDialog /></ClientOnly>
 
     <!-- Memory Monitor for debugging (only shows in development) -->
     <!-- <ClientOnly>

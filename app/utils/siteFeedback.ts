@@ -48,6 +48,7 @@ const OWN_QUESTION = [
   '/alquileres',
   '/opinion-alquileres',
   '/opiniones-alquileres',
+  '/contactos-comerciales',
   '/contacto',
   '/estadisticas-de-busqueda',
   '/estadisticas-por-pagina',

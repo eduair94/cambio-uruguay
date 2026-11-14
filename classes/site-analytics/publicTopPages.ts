@@ -38,7 +38,7 @@ export const PUBLIC_AI_MIN_ENTRANCES = 3;
 export const PUBLIC_MIN_PAGES = 10;
 
 /**
- * Rutas que nunca se listan. Las primeras doce son `EXCLUDED_ROUTES` de `app/utils/siteNav.ts`
+ * Rutas que nunca se listan. Las primeras quince son `EXCLUDED_ROUTES` de `app/utils/siteNav.ts`
  * (el test exige que estén todas); las otras son de cuenta, búsqueda o referencia, públicas pero no
  * páginas para recomendar.
  */
@@ -56,6 +56,8 @@ export const PUBLIC_EXCLUDED_PATHS: readonly string[] = Object.freeze([
   "/oportunidades-reddit",
   "/monopatines-electricos-uruguay/comparar",
   "/bicicletas-electricas-uruguay/comparar",
+  "/autos-usados-uruguay/comparar",
+  "/contactos-comerciales",
   "/buscar",
   "/conectar",
   "/mi-lista",

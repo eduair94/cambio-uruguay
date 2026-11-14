@@ -272,15 +272,24 @@ describe('delegated navigation clicks', () => {
     const runtime = browser()
     const plugin = (await import('../../plugins/track-clicks.client')).default
     plugin(runtime.app as never)
-    const click = (href: string, area = 'guide_next_steps', type = 'click', button = 0) => {
+    const click = (
+      href: string,
+      area = 'guide_next_steps',
+      type = 'click',
+      button = 0,
+      { prevented = false, exitTracked = false } = {}
+    ) => {
       const anchor = {
         getAttribute: () => href,
-        hasAttribute: () => false,
+        hasAttribute: (name: string) => name === 'data-external-exit-tracked' && exitTracked,
         closest: (selector: string) =>
           selector === '[data-link-area]' ? { dataset: { linkArea: area } } : null,
       }
       const target = { closest: (selector: string) => (selector === 'a[href]' ? anchor : null) }
-      runtime.document.emit(type, { target, button })
+      // Capture on the document, then bubble to the window, as in a browser.
+      const event = { target, button, defaultPrevented: prevented }
+      runtime.document.emit(type, event)
+      runtime.window.emit(type, event)
     }
     click('/b?email=private@example.com#private')
     expect(runtime.gtag.mock.calls[0][1]).toBe('internal_navigation')
@@ -299,6 +308,10 @@ describe('delegated navigation clicks', () => {
       link_domain: 'wa.me',
     })
     expect(JSON.stringify(runtime.gtag.mock.calls)).not.toMatch(/private|secret|99123456/)
+    // The exit notice cancelled it, or already counted it when the reader confirmed.
+    click('https://externo.example/aviso', 'content', 'click', 0, { prevented: true })
+    click('https://externo.example/aviso', 'content', 'click', 0, { exitTracked: true })
+    expect(runtime.gtag).toHaveBeenCalledTimes(2)
     click('/c', 'header', 'auxclick', 2)
     expect(runtime.gtag).toHaveBeenCalledTimes(2)
     click('/c', 'header', 'auxclick', 1)

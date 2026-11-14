@@ -1,229 +1,219 @@
 <template>
   <div class="about-page">
-    <VContainer>
+    <VContainer class="about-container">
       <!-- Header -->
-      <header class="text-center pt-2 pb-6 py-md-12">
-        <VChip class="mb-4" color="primary" size="small" variant="tonal">
-          <VIcon start size="small">mdi-information-outline</VIcon>
-          {{ t('acerca.tag') }}
-        </VChip>
-        <h1 class="text-h4 text-md-h3 font-weight-bold mb-4">{{ t('acerca.h1') }}</h1>
-        <p class="text-body-1 text-grey-lighten-1 mx-auto about-intro">{{ t('acerca.intro') }}</p>
-        <p class="text-caption text-grey-darken-1 mt-4">
+      <header class="about-header">
+        <p class="about-eyebrow">{{ t('acerca.tag') }}</p>
+        <h1>{{ t('acerca.h1') }}</h1>
+        <p class="about-intro">{{ t('acerca.intro') }}</p>
+        <p class="about-updated">
           {{ t('acerca.lastUpdated', { date: lastUpdatedDisplay }) }}
         </p>
+        <nav class="about-nav" :aria-label="t('acerca.tag')">
+          <a href="#fuentes">{{ t('acerca.sourcesTitle') }}</a>
+          <a href="#autor">{{ t('acerca.authorTitle') }}</a>
+          <a href="#widget">{{ t('acerca.embedTitle') }}</a>
+        </nav>
       </header>
 
-      <VRow justify="center">
-        <VCol cols="12" md="9" lg="8">
-          <!-- ¿Qué es Cambio Uruguay? -->
-          <section class="mb-8">
-            <h2 class="text-h5 font-weight-bold mb-3">{{ t('acerca.whatTitle') }}</h2>
-            <p class="text-body-1 text-grey-lighten-1 about-prose">
-              Cambio Uruguay es una plataforma independiente y gratuita para comparar la cotización
-              del dólar y otras divisas en más de 40 casas de cambio de Uruguay, en un solo lugar y
-              en tiempo casi real. Nuestro objetivo es simple: que cualquier persona pueda ver, en
-              segundos, dónde conviene comprar o vender divisas, sin recorrer sitio por sitio ni
-              depender del primer lugar que tenga a mano.
-            </p>
-            <p class="text-body-1 text-grey-lighten-1 about-prose mt-3">
-              Reunimos los precios de compra y de venta de cada casa, calculamos el spread y te
-              mostramos quién ofrece la mejor cotización para tu operación. Toda la información se
-              presenta de forma transparente, con su fuente y su fecha de actualización a la vista.
-            </p>
-          </section>
+      <article class="about-content">
+        <!-- ¿Qué es Cambio Uruguay? -->
+        <section class="about-section">
+          <h2>{{ t('acerca.whatTitle') }}</h2>
+          <p class="about-prose">
+            Cambio Uruguay es una plataforma independiente y gratuita para comparar la cotización
+            del dólar y otras divisas en más de 40 casas de cambio de Uruguay, en un solo lugar y en
+            tiempo casi real. Nuestro objetivo es simple: que cualquier persona pueda ver, en
+            segundos, dónde conviene comprar o vender divisas, sin recorrer sitio por sitio ni
+            depender del primer lugar que tenga a mano.
+          </p>
+          <p class="about-prose">
+            Reunimos los precios de compra y de venta de cada casa, calculamos el spread y te
+            mostramos quién ofrece la mejor cotización para tu operación. Toda la información se
+            presenta de forma transparente, con su fuente y su fecha de actualización a la vista.
+          </p>
+        </section>
 
-          <!-- Cómo obtenemos los datos -->
-          <section class="mb-8">
-            <h2 class="text-h5 font-weight-bold mb-3">{{ t('acerca.dataTitle') }}</h2>
-            <p class="text-body-1 text-grey-lighten-1 about-prose">
-              Los datos provienen del Banco Central del Uruguay (BCU), la autoridad que regula y
-              publica la información del mercado cambiario, complementados con las cotizaciones que
-              cada casa de cambio difunde. Procesamos esa información para más de 40 casas de cambio
-              y la normalizamos para que puedas compararlas entre sí de forma justa.
-            </p>
-            <p class="text-body-1 text-grey-lighten-1 about-prose mt-3">
-              No fijamos ni modificamos precios: solo los recopilamos, ordenamos y presentamos. Cada
-              cotización refleja lo que la fuente publica en ese momento.
-            </p>
+        <!-- Cómo obtenemos los datos -->
+        <section class="about-section">
+          <h2>{{ t('acerca.dataTitle') }}</h2>
+          <p class="about-prose">
+            Los datos provienen del Banco Central del Uruguay (BCU), la autoridad que regula y
+            publica la información del mercado cambiario, complementados con las cotizaciones que
+            cada casa de cambio difunde. Procesamos esa información para más de 40 casas de cambio y
+            la normalizamos para que puedas compararlas entre sí de forma justa.
+          </p>
+          <p class="about-prose">
+            No fijamos ni modificamos precios: solo los recopilamos, ordenamos y presentamos. Cada
+            cotización refleja lo que la fuente publica en ese momento.
+          </p>
 
-            <h3 class="text-h6 font-weight-bold mt-5 mb-2">{{ t('acerca.typesTitle') }}</h3>
-            <p class="text-body-1 text-grey-lighten-1 about-prose mb-3">
-              El dólar no tiene un único precio: depende de cómo se mueve el dinero. Estos son los
-              tipos que vas a encontrar:
-            </p>
-            <VList class="bg-transparent pa-0" density="comfortable">
-              <VListItem
-                v-for="row in rateTypes"
-                :key="row.code"
-                class="px-0 about-type-item"
-                lines="two"
-              >
-                <template #prepend>
-                  <VChip color="primary" variant="tonal" size="small" class="mr-3 font-weight-bold">
-                    {{ row.code }}
-                  </VChip>
-                </template>
-                <VListItemTitle class="text-body-1 text-grey-lighten-1 about-type-desc">
-                  {{ row.desc }}
-                </VListItemTitle>
-              </VListItem>
-            </VList>
-            <VAlert type="info" variant="tonal" density="comfortable" class="mt-3">
-              {{ t('acerca.interbankNote') }}
-            </VAlert>
-          </section>
-
-          <!-- Frecuencia de actualización -->
-          <section class="mb-8">
-            <h2 class="text-h5 font-weight-bold mb-3">{{ t('acerca.freqTitle') }}</h2>
-            <p class="text-body-1 text-grey-lighten-1 about-prose">
-              Las cotizaciones se actualizan aproximadamente cada 10 minutos durante el horario de
-              actividad del mercado. Eso significa que la foto que ves es muy cercana al mercado en
-              vivo, sin ser una cotización en tiempo real al segundo. Fuera del horario hábil, en
-              fines de semana o feriados, los precios reflejan la última referencia disponible,
-              porque el mercado cambiario opera principalmente en días hábiles.
-            </p>
-          </section>
-
-          <!-- Fuentes -->
-          <section class="mb-8">
-            <h2 class="text-h5 font-weight-bold mb-3">{{ t('acerca.sourcesTitle') }}</h2>
-            <p class="text-body-1 text-grey-lighten-1 about-prose mb-3">
-              Trabajamos con fuentes oficiales y públicas del mercado uruguayo:
-            </p>
-            <ul class="about-list text-body-1 text-grey-lighten-1">
-              <li>
-                <strong>Banco Central del Uruguay (BCU):</strong> regulador y fuente de referencia
-                del mercado cambiario.
-              </li>
-              <li>
-                <strong>Casas de cambio:</strong> más de 40 entidades autorizadas, cada una con sus
-                cotizaciones publicadas de compra y venta.
-              </li>
-              <li>
-                <strong>Bancos y plataformas digitales:</strong> incluidas opciones como eBROU,
-                cuando difunden cotizaciones para el público.
-              </li>
-            </ul>
-          </section>
-
-          <!-- Quién está detrás -->
-          <section class="mb-8">
-            <h2 class="text-h5 font-weight-bold mb-3">{{ t('acerca.authorTitle') }}</h2>
-            <p class="text-body-1 text-grey-lighten-1 about-prose">
-              Cambio Uruguay fue creado y es mantenido por
-              <a
-                class="about-link"
-                href="https://www.linkedin.com/in/eduardo-airaudo/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >Eduardo Airaudo</a
-              >, desarrollador uruguayo, junto a un equipo que cuida que la información sea clara,
-              precisa y útil. El proyecto nació de una necesidad concreta: comparar cotizaciones sin
-              perder tiempo ni pagar de más. Si querés conocer al autor o ponerte en contacto, podés
-              hacerlo a través de su perfil profesional o de su
-              <a
-                class="about-link"
-                href="https://github.com/eduair94"
-                target="_blank"
-                rel="noopener noreferrer"
-                >perfil en GitHub</a
-              >, donde el código del sitio es público.
-            </p>
-          </section>
-
-          <!-- Independencia y gratuidad -->
-          <section class="mb-8">
-            <h2 class="text-h5 font-weight-bold mb-3">{{ t('acerca.independenceTitle') }}</h2>
-            <p class="text-body-1 text-grey-lighten-1 about-prose">
-              Cambio Uruguay es independiente y gratuito. No cobramos por mostrar las cotizaciones
-              ni priorizamos a ninguna casa de cambio a cambio de dinero: el orden lo determina
-              siempre el precio. No somos una casa de cambio, no operamos divisas y no recibimos
-              comisiones por las operaciones que hagas. Nuestro compromiso es con la información
-              transparente, para que decidas con datos y no con corazonadas.
-            </p>
-            <p class="text-body-1 text-grey-lighten-1 about-prose mt-3">
-              El sitio se financia con publicidad etiquetada como tal: un espacio patrocinado es un
-              bloque aparte, nunca una posición en el ranking. Las condiciones completas, y lo que
-              no está en venta, están en la página de
-              <NuxtLink :to="localePath('/publicidad')" class="about-link">publicidad</NuxtLink>.
-            </p>
-          </section>
-
-          <!-- Insertá el widget (embeddable iframe -> backlinks) -->
-          <section class="mb-8">
-            <h2 class="text-h5 font-weight-bold mb-3">{{ t('acerca.embedTitle') }}</h2>
-            <p class="text-body-1 text-grey-lighten-1 about-prose mb-4">
-              {{ t('acerca.embedText') }}
-            </p>
-            <div class="embed-snippet">
-              <VTextarea
-                :model-value="embedSnippet"
-                readonly
-                variant="solo-filled"
-                rows="3"
-                auto-grow
-                hide-details
-                class="embed-code"
-                :aria-label="t('acerca.embedTitle')"
-              />
-              <VBtn
-                color="primary"
-                variant="tonal"
-                class="mt-2"
-                :prepend-icon="copied ? 'mdi-check' : 'mdi-content-copy'"
-                @click="copyEmbed"
-              >
-                {{ copied ? t('acerca.embedCopied') : t('acerca.embedCopy') }}
-              </VBtn>
+          <h3>{{ t('acerca.typesTitle') }}</h3>
+          <p class="about-prose">
+            El dólar no tiene un único precio: depende de cómo se mueve el dinero. Estos son los
+            tipos que vas a encontrar:
+          </p>
+          <dl class="about-types">
+            <div v-for="row in rateTypes" :key="row.code" class="about-type">
+              <dt>{{ row.code }}</dt>
+              <dd>{{ row.desc.replace(/^[^:]+:\s*/, '') }}</dd>
             </div>
-          </section>
-
-          <!-- MCP server / AI assistants (open-source, npm) -->
-          <section class="mb-8">
-            <McpConfigCard />
-            <VBtn
-              :to="localePath('/datos-abiertos-uruguay')"
-              variant="tonal"
-              color="primary"
-              class="mt-3"
-              prepend-icon="mdi-database-export-outline"
-            >
-              {{ t('openData.nav') }}
-            </VBtn>
-          </section>
-
-          <!-- Quién nos cita (medios, catálogos): sólo en castellano, el bloque no está traducido. -->
-          <PressMentions
-            v-if="locale === 'es'"
-            page="/acerca"
-            title="Quién nos cita"
-            intro="Medios, catálogos y personas que publicaron o usaron nuestros datos, con el enlace al original y lo que agregamos nosotros."
-          />
-
-          <!-- Disclaimer -->
-          <VAlert type="warning" variant="tonal" class="mb-8" :title="t('acerca.disclaimerTitle')">
-            {{ t('acerca.disclaimerText') }}
+          </dl>
+          <VAlert type="info" variant="tonal" density="comfortable" class="mt-3">
+            {{ t('acerca.interbankNote') }}
           </VAlert>
+        </section>
 
-          <!-- CTA + internal links -->
-          <VCard class="cta-about pa-6 text-center" variant="flat">
-            <h2 class="text-h6 font-weight-bold mb-2 text-white">{{ t('acerca.ctaTitle') }}</h2>
-            <p class="text-body-2 text-grey-lighten-1 mb-4">{{ t('acerca.ctaText') }}</p>
-            <div class="d-flex flex-wrap justify-center ga-2">
-              <VBtn :to="localePath('/')" color="primary" variant="elevated">
-                <VIcon start>mdi-chart-line</VIcon>
-                {{ t('acerca.ctaButton') }}
-              </VBtn>
-              <VBtn :to="localePath('/guias')" color="primary" variant="tonal">
-                <VIcon start>mdi-book-open-variant</VIcon>
-                {{ t('guias.nav') }}
-              </VBtn>
-            </div>
-          </VCard>
-        </VCol>
-      </VRow>
+        <!-- Frecuencia de actualización -->
+        <section class="about-section">
+          <h2>{{ t('acerca.freqTitle') }}</h2>
+          <p class="about-prose">
+            Las cotizaciones se actualizan aproximadamente cada 10 minutos durante el horario de
+            actividad del mercado. Eso significa que la foto que ves es muy cercana al mercado en
+            vivo, sin ser una cotización en tiempo real al segundo. Fuera del horario hábil, en
+            fines de semana o feriados, los precios reflejan la última referencia disponible, porque
+            el mercado cambiario opera principalmente en días hábiles.
+          </p>
+        </section>
+
+        <!-- Fuentes -->
+        <section id="fuentes" class="about-section">
+          <h2>{{ t('acerca.sourcesTitle') }}</h2>
+          <p class="about-prose">
+            Trabajamos con fuentes oficiales y públicas del mercado uruguayo:
+          </p>
+          <ul class="about-list">
+            <li>
+              <strong>Banco Central del Uruguay (BCU):</strong> regulador y fuente de referencia del
+              mercado cambiario.
+            </li>
+            <li>
+              <strong>Casas de cambio:</strong> más de 40 entidades autorizadas, cada una con sus
+              cotizaciones publicadas de compra y venta.
+            </li>
+            <li>
+              <strong>Bancos y plataformas digitales:</strong> incluidas opciones como eBROU, cuando
+              difunden cotizaciones para el público.
+            </li>
+          </ul>
+        </section>
+
+        <!-- Quién está detrás -->
+        <section id="autor" class="about-section">
+          <h2>{{ t('acerca.authorTitle') }}</h2>
+          <p class="about-prose">
+            Cambio Uruguay fue creado y es mantenido por
+            <a
+              class="about-link"
+              href="https://www.linkedin.com/in/eduardo-airaudo/"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Eduardo Airaudo</a
+            >, desarrollador uruguayo, junto a un equipo que cuida que la información sea clara,
+            precisa y útil. El proyecto nació de una necesidad concreta: comparar cotizaciones sin
+            perder tiempo ni pagar de más. Si querés conocer al autor o ponerte en contacto, podés
+            hacerlo a través de su perfil profesional o de su
+            <a
+              class="about-link"
+              href="https://github.com/eduair94"
+              target="_blank"
+              rel="noopener noreferrer"
+              >perfil en GitHub</a
+            >, donde el código del sitio es público.
+          </p>
+        </section>
+
+        <!-- Independencia y gratuidad -->
+        <section class="about-section">
+          <h2>{{ t('acerca.independenceTitle') }}</h2>
+          <p class="about-prose">
+            Cambio Uruguay es independiente y gratuito. No cobramos por mostrar las cotizaciones ni
+            priorizamos a ninguna casa de cambio a cambio de dinero: el orden lo determina siempre
+            el precio. No somos una casa de cambio, no operamos divisas y no recibimos comisiones
+            por las operaciones que hagas. Nuestro compromiso es con la información transparente,
+            para que decidas con datos y no con corazonadas.
+          </p>
+          <p class="about-prose">
+            El sitio se financia con publicidad etiquetada como tal: un espacio patrocinado es un
+            bloque aparte, nunca una posición en el ranking. Las condiciones completas, y lo que no
+            está en venta, están en la página de
+            <NuxtLink :to="localePath('/publicidad')" class="about-link">publicidad</NuxtLink>.
+          </p>
+        </section>
+
+        <!-- Insertá el widget (embeddable iframe -> backlinks) -->
+        <section id="widget" class="about-section">
+          <h2>{{ t('acerca.embedTitle') }}</h2>
+          <p class="about-prose">
+            {{ t('acerca.embedText') }}
+          </p>
+          <div class="embed-snippet">
+            <VTextarea
+              :model-value="embedSnippet"
+              readonly
+              variant="solo-filled"
+              rows="3"
+              auto-grow
+              hide-details
+              class="embed-code"
+              :aria-label="t('acerca.embedTitle')"
+            />
+            <VBtn
+              color="primary"
+              variant="tonal"
+              class="mt-2"
+              :prepend-icon="copied ? 'mdi-check' : 'mdi-content-copy'"
+              @click="copyEmbed"
+            >
+              {{ copied ? t('acerca.embedCopied') : t('acerca.embedCopy') }}
+            </VBtn>
+          </div>
+        </section>
+
+        <!-- MCP server / AI assistants (open-source, npm) -->
+        <section class="about-section">
+          <McpConfigCard />
+          <VBtn
+            :to="localePath('/datos-abiertos-uruguay')"
+            variant="tonal"
+            color="primary"
+            class="mt-3"
+            prepend-icon="mdi-database-export-outline"
+          >
+            {{ t('openData.nav') }}
+          </VBtn>
+        </section>
+
+        <!-- Quién nos cita (medios, catálogos): sólo en castellano, el bloque no está traducido. -->
+        <PressMentions
+          v-if="locale === 'es'"
+          page="/acerca"
+          title="Quién nos cita"
+          intro="Medios, catálogos y personas que publicaron o usaron nuestros datos, con el enlace al original y lo que agregamos nosotros."
+        />
+
+        <!-- Disclaimer -->
+        <aside class="about-disclaimer" aria-labelledby="about-disclaimer-title">
+          <h2 id="about-disclaimer-title">{{ t('acerca.disclaimerTitle') }}</h2>
+          <p>{{ t('acerca.disclaimerText') }}</p>
+        </aside>
+
+        <!-- CTA + internal links -->
+        <section class="about-cta">
+          <h2>{{ t('acerca.ctaTitle') }}</h2>
+          <p>{{ t('acerca.ctaText') }}</p>
+          <div class="about-actions">
+            <VBtn :to="localePath('/')" color="primary" variant="elevated">
+              <VIcon start>mdi-chart-line</VIcon>
+              {{ t('acerca.ctaButton') }}
+            </VBtn>
+            <VBtn :to="localePath('/guias')" color="primary" variant="tonal">
+              <VIcon start>mdi-book-open-variant</VIcon>
+              {{ t('guias.nav') }}
+            </VBtn>
+          </div>
+        </section>
+      </article>
     </VContainer>
   </div>
 </template>
@@ -376,42 +366,172 @@ useHead({
 </script>
 
 <style scoped>
+.about-page {
+  min-width: 0;
+  container-type: inline-size;
+  color: rgb(var(--v-theme-on-surface));
+}
+
+.about-container {
+  max-width: 78ch;
+}
+
+.about-page :where(h1, h2, h3, p, ul, dl, dd) {
+  margin: 0;
+}
+
+.about-header {
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.14);
+}
+
+.about-eyebrow {
+  color: rgb(var(--v-theme-link));
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  line-height: 1.4;
+}
+
+.about-header h1 {
+  margin-top: 16px;
+  max-width: 28ch;
+  font-size: clamp(1.75rem, 5cqi, 2.5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
 .about-intro {
-  max-width: 720px;
-  line-height: 1.7;
+  margin-top: 24px;
+  font-size: 1.075rem;
+  line-height: 1.65;
+  color: rgba(var(--v-theme-on-surface), 0.82);
+}
+
+.about-updated {
+  margin-top: 16px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: rgba(var(--v-theme-on-surface), 0.72);
+}
+
+.about-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 24px;
+  margin-top: 16px;
+}
+
+.about-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.about-content {
+  display: grid;
+  gap: 40px;
+  padding-top: 40px;
+  min-width: 0;
+}
+
+.about-content > * {
+  min-width: 0;
+}
+
+.about-section {
+  scroll-margin-top: 96px;
+}
+
+.about-content h2 {
+  margin-bottom: 16px;
+  font-size: clamp(1.35rem, 3cqi, 1.75rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.about-content h3 {
+  margin-top: 24px;
+  margin-bottom: 8px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.6;
 }
 
 .about-prose {
   line-height: 1.75;
+  color: rgba(var(--v-theme-on-surface), 0.82);
+}
+
+.about-prose + .about-prose {
+  margin-top: 16px;
 }
 
 .about-list {
-  line-height: 1.8;
+  margin-top: 16px;
+  line-height: 1.75;
   padding-left: 1.2rem;
+  color: rgba(var(--v-theme-on-surface), 0.82);
 }
 
-.about-list li {
-  margin: 0.4rem 0;
+.about-list li + li {
+  margin-top: 16px;
 }
 
-.about-type-item :deep(.v-list-item__prepend) {
-  align-self: flex-start;
-  margin-top: 2px;
+.about-types {
+  margin-top: 16px;
 }
 
-.about-type-desc {
-  white-space: normal;
+.about-type {
+  display: grid;
+  grid-template-columns: 10rem minmax(0, 1fr);
+  gap: 8px 24px;
+  padding-block: 16px;
+  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.14);
+}
+
+.about-type dt {
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.8;
+}
+
+.about-type dd {
+  min-width: 0;
+  font-size: 0.95rem;
   line-height: 1.6;
+  color: rgba(var(--v-theme-on-surface), 0.82);
 }
 
-.about-link {
+.about-link,
+.about-nav a {
   color: rgb(var(--v-theme-link));
-  text-decoration: none;
+  text-decoration: underline;
+  text-decoration-color: rgba(var(--v-theme-link), 0.4);
+  text-underline-offset: 4px;
   font-weight: 600;
 }
 
-.about-link:hover {
-  text-decoration: underline;
+.about-link:hover,
+.about-nav a:hover {
+  text-decoration-color: currentColor;
+}
+
+.about-link:focus-visible,
+.about-nav a:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.embed-snippet {
+  margin-top: 16px;
 }
 
 .embed-code :deep(textarea) {
@@ -420,10 +540,45 @@ useHead({
   line-height: 1.5;
 }
 
-/* Readable CTA on dark theme (avoid Vuetify outlined color tinting the text) */
-.cta-about {
-  background: rgba(33, 150, 243, 0.1);
-  border: 1px solid rgba(33, 150, 243, 0.28);
-  border-radius: 12px;
+.about-disclaimer {
+  padding-top: 24px;
+  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.14);
+}
+
+.about-disclaimer h2 {
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+
+.about-disclaimer p,
+.about-cta p {
+  color: rgba(var(--v-theme-on-surface), 0.82);
+  line-height: 1.65;
+}
+
+.about-disclaimer p {
+  font-size: 0.875rem;
+}
+
+.about-cta {
+  padding-block: 24px;
+  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.14);
+}
+
+.about-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.about-actions .v-btn {
+  min-height: 44px;
+}
+
+@container (max-width: 600px) {
+  .about-type {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 </style>

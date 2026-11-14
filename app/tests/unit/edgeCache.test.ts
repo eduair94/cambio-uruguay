@@ -57,6 +57,7 @@ describe('caché de borde por defecto', () => {
       '/estadisticas-de-busqueda',
       '/estadisticas-por-pagina',
       '/opiniones-alquileres',
+      '/contactos-comerciales',
       '/oportunidades-reddit',
       '/admin/clientes',
     ]) {

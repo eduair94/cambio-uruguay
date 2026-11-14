@@ -89,7 +89,15 @@ async function submit(): Promise<void> {
     onSuccess: () => track('newsletter_signup', analytics),
     onError: () => track('newsletter_error', analytics),
   })
-  if (state.value === 'sent') emit('subscribed')
+  if (state.value === 'sent') {
+    // Also remember requests from the standalone signup page, not just the capture card.
+    try {
+      localStorage.setItem('cu_nl_done', '1')
+    } catch {
+      /* Storage is optional. */
+    }
+    emit('subscribed')
+  }
 }
 </script>
 

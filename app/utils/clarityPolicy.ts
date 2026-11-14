@@ -36,6 +36,7 @@ export const CLARITY_EXCLUDED_ROUTES: readonly string[] = Object.freeze([
   '/asistente-ia',
   '/opinion-alquileres',
   '/opiniones-alquileres',
+  '/contactos-comerciales',
   '/oportunidades-reddit',
   '/offline',
   '/estado',
