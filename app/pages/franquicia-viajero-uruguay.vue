@@ -323,7 +323,7 @@ const sources = [
 
 // --- SEO ---
 const canonicalUrl = 'https://cambio-uruguay.com/franquicia-viajero-uruguay'
-const title = 'Franquicia de viajero en Uruguay 2026'
+const title = 'Franquicia de viajero: US$ 500 o US$ 300'
 const description =
   'US$ 500 de franquicia aérea o marítima, US$ 300 terrestre y 50 % sobre el excedente, sin despachante. Qué pasa si no declarás y qué es «uso personal».'
 
