@@ -606,4 +606,129 @@ export const deudasGuides: readonly Guide[] = [
       },
     ],
   },
+  {
+    // La única figura del derecho uruguayo que saca la casa del alcance de un acreedor, y la que
+    // nadie encuentra: el sitio tenía /embargo-de-sueldo-uruguay y quince guías de deuda, y la
+    // palabra "bien de familia" no aparecía en ninguna. Lo que la hace una guía y no una ficha de
+    // trámite es la fecha: protege para adelante, así que a quien ya lo están ejecutando no le
+    // sirve, y eso es exactamente lo que se busca saber. Verificado el 2026-11-14 en IMPO
+    // (Decreto-Ley 15.597, arts. 1 a 17; Decreto 504/984, art. 1).
+    slug: 'bien-de-familia-uruguay',
+    title: 'Bien de familia: 4.500 UR y deudas nuevas',
+    description:
+      'El inmueble declarado bien de familia no se embarga por deudas posteriores: tope de 4.500 UR, tasación del BHU, diez días de avisos e inscripción gratis.',
+    tag: 'INEMBARGABLE',
+    updatedAt: '2026-11-14',
+    sections: [
+      {
+        heading: 'Qué protege, y la fecha que decide todo',
+        body: 'El bien de familia es un inmueble que su dueño declara protegido frente a sus propios acreedores. Lo regula el Decreto-Ley 15.597, de julio de 1984, que derogó la vieja Ley 9.770 de 1938 y es de orden público (art. 17). El efecto central está en el art. 9: una vez inscripto, el inmueble no es embargable por deudas contraídas con posterioridad a su constitución, y no puede ejecutarse ni siquiera en el concurso o la quiebra del titular. La fecha de la constitución es lo que decide, porque la protección corre para adelante y no para atrás: una deuda que ya existía cuando declaraste el bien queda afuera. El decreto-ley lo refuerza desde el otro lado, en el art. 7, que no deja constituirlo sobre un inmueble ya hipotecado o gravado para garantizar una obligación, salvo que la hipoteca sea a favor del Banco Hipotecario o del tercero que hizo posible la compra. Si lo que buscás es frenar un embargo que ya viene, este no es el camino.',
+        links: [{ label: 'Qué te pueden embargar del sueldo', to: '/embargo-de-sueldo-uruguay' }],
+      },
+      {
+        heading: 'Cuánto puede valer el inmueble',
+        body: 'Hay un tope, y no lo fija la ley: el art. 5 encarga al Poder Ejecutivo fijarlo todos los años, asesorado por el Banco Hipotecario, con un valor distinto para la casa-habitación y para la finca rústica, y con la opción de fijarlo por zonas del país. La misma norma agrega dos reglas que importan: mientras no se actualice sigue rigiendo el anterior, y el valor fijado al constituirlo no se altera porque el inmueble después valga más. El único decreto de tope que encontramos publicado es el 504/984, que fijó 4.500 unidades reajustables para la casa-habitación —o casa con tienda o taller— y 7.000 para la finca rústica. No encontramos ninguno posterior que lo actualice, así que confirmá el tope vigente con el Banco Hipotecario antes de ir al escribano. Que el tope esté expresado en UR y no en pesos es lo que lo mantiene con sentido cuarenta años después: la UR se mueve con el índice medio de salarios.',
+        links: [
+          { label: 'Valor de la UR hoy', to: '/indicadores/unidad-reajustable' },
+          { label: 'UI, UR y BPC: en qué se diferencian', to: '/guias/ui-ur-bpc-diferencias' },
+        ],
+      },
+      {
+        heading: 'Qué inmueble, y quién lo puede declarar',
+        body: 'Puede constituirlo toda persona capaz de contratar, sobre un inmueble propio (art. 1). Tiene que ser una casa habitación, una casa con tienda o taller, o una finca rústica, en todos los casos ocupada o explotada por la familia (art. 2). No se puede declarar un inmueble en indivisión (art. 3) y nadie puede ser titular de más de un bien de familia (art. 4). El art. 6 ordena los casos: un cónyuge sobre su bien propio, en beneficio de los dos o de los descendientes; los dos cónyuges juntos sobre un bien ganancial, y si uno no da el consentimiento lo suple el juez; el cónyuge o concubino sobreviviente, o los cónyuges divorciados o separados de hecho, para los hijos menores o con discapacidad, que es la redacción que le dio la Ley 18.651 de 2010; el padre o la madre natural para sus hijos menores; y cualquier persona en beneficio de otra, siempre que no se afecte la legítima de los herederos forzosos.',
+        links: [
+          {
+            label: 'Legítima y herederos forzosos',
+            to: '/guias/legitima-y-herederos-forzosos-uruguay',
+          },
+        ],
+      },
+      {
+        heading: 'Los tres pasos, y los dos que no se pueden saltear',
+        body: 'El art. 8 pide tres cosas. Primero, escritura pública o testamento, con la tasación del Banco Hipotecario y la descripción completa del inmueble; si el dueño no acepta esa tasación, el valor lo fijan tres peritos, uno designado por el Banco, uno por el reclamante y un tercero por esos dos. Segundo, la publicación en el Diario Oficial y en un diario local durante diez días, o en uno de la capital si en la localidad no hay. Tercero, la inscripción en el Registro de la Propiedad, Sección Inmobiliaria. Los dos últimos no son un trámite accesorio: el propio artículo dice que si faltan, la constitución no es oponible a terceros, o sea que no te protege de ningún acreedor. El art. 16 deja varias cosas sin costo: las tasaciones y certificados del Banco Hipotecario, los certificados de los registros públicos, las publicaciones en el Diario Oficial y las inscripciones.',
+      },
+      {
+        heading: 'Lo que ya no vas a poder hacer con esa casa',
+        body: 'La protección tiene un precio y conviene saberlo antes de firmar: el inmueble queda atado. El art. 9 cierra la enajenación y el art. 10 explica el detalle. No se puede vender, ni en parte, mientras existan hijos menores o cónyuges beneficiarios, salvo con el consentimiento del cónyuge y la venia judicial, y sólo para comprar otro inmueble del mismo destino y calidad; el precio de esa venta se deposita en el Banco Hipotecario convertido en unidades reajustables, a la orden del juzgado, hasta que se adquiera el reemplazo, y ese depósito es inembargable. Gravarlo exige también el consentimiento del cónyuge y la venia judicial, y sólo por necesidades urgentes de la familia o causas graves. Tampoco se puede arrendar a terceros mientras lo ocupen el cónyuge o los hijos menores. La permuta por otro inmueble del mismo destino se admite con venia judicial previa (art. 11), y si hay siniestro o expropiación la indemnización tiene que reinvertirse en otro bien de familia (art. 12). De los frutos, el 60 % de la producción anual no es embargable (art. 9).',
+      },
+      {
+        heading: 'Si alguien muere o la pareja se separa',
+        body: 'El decreto-ley resuelve esos casos sin que haya que volver al escribano. Si muere uno de los cónyuges, las condiciones no cambian y la administración pasa al que sobrevive; si mueren los dos, el inmueble queda en indivisión bajo un tutor hasta que todos los hijos sean mayores (art. 13). En el divorcio o la separación de hecho tampoco cambian las condiciones: la administración y la ocupación van al cónyuge que tiene la tenencia de los hijos, hasta que lleguen a la mayoría de edad. Si el que muere es el padre natural con hijos menores, el inmueble queda bajo el otro progenitor que tenga la patria potestad, o bajo un tutor (art. 14). Y si el bien era ganancial, el cónyuge sobreviviente puede quedarse con el inmueble entero al valor de la tasación aprobada judicialmente, pagándoles a los herederos su parte en dinero (art. 15).',
+        links: [
+          { label: 'Cómo funciona una sucesión', to: '/guias/como-funciona-una-sucesion-uruguay' },
+        ],
+      },
+      {
+        heading: 'Los dos números que no publicamos',
+        body: 'Faltan dos cifras en esta guía, y faltan a propósito. Una es el tope vigente: el art. 5 manda actualizarlo cada año y el único decreto que encontramos publicado es el de 1984, así que publicamos ése con su fecha en vez de inventar el de hoy. La otra son los honorarios del escribano, que son el gasto grande del trámite y no tienen arancel oficial publicado, así que pedí presupuesto por escrito antes de empezar. Esta guía es información general y no asesoramiento legal: la constitución pasa por escribano y, según el caso, por el juzgado.',
+      },
+    ],
+    steps: [
+      {
+        name: 'Pedí la tasación al Banco Hipotecario',
+        text: 'El art. 8 la exige para la escritura, y el art. 16 la declara sin costo junto con los certificados.',
+      },
+      {
+        name: 'Firmá la escritura pública o el testamento',
+        text: 'Con la tasación y la descripción completa del inmueble; si no aceptás el valor del Banco, lo fijan tres peritos.',
+      },
+      {
+        name: 'Publicá los avisos durante diez días',
+        text: 'En el Diario Oficial y en un diario local, o en uno de la capital si en la localidad no hay.',
+      },
+      {
+        name: 'Inscribilo en el Registro de la Propiedad',
+        text: 'Sección Inmobiliaria. Sin la publicación y sin esta inscripción, la constitución no es oponible a terceros.',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Me protege de las deudas que ya tengo?',
+        a: 'No. El art. 9 del Decreto-Ley 15.597 habla de las deudas contraídas con posterioridad a la constitución, así que la protección corre desde la fecha en que el bien queda constituido e inscripto. Además, el art. 7 impide constituirlo sobre un inmueble ya hipotecado o gravado para garantizar una obligación, con la excepción de la hipoteca a favor del Banco Hipotecario o del tercero que hizo posible la compra.',
+      },
+      {
+        q: '¿Puedo tener dos bienes de familia?',
+        a: 'No: el art. 4 dice que nadie puede ser titular de más de uno. Los derechos eventuales como hijo de familia sobre parte de otro inmueble ya constituido no impiden constituir el propio.',
+      },
+      {
+        q: '¿Puedo venderla o alquilarla después?',
+        a: 'Venderla, sólo con el consentimiento del cónyuge y venia judicial, y para comprar otro inmueble del mismo destino y calidad; el precio se deposita en el Banco Hipotecario convertido en unidades reajustables, a la orden del juzgado, hasta adquirir el reemplazo (art. 10). Arrendarla a terceros no, mientras la ocupen el cónyuge o los hijos menores.',
+      },
+      {
+        q: '¿Cuánto sale constituirlo?',
+        a: 'El art. 16 declara sin costo las tasaciones y certificados del Banco Hipotecario, los certificados de los registros públicos, las publicaciones en el Diario Oficial y las inscripciones. Lo que se paga son los honorarios del escribano, que no tienen arancel oficial publicado.',
+      },
+      {
+        q: '¿Sirve contra el concurso o la quiebra?',
+        a: 'El art. 9 dice que el inmueble no puede ejecutarse aun en caso de concurso o quiebra del titular, siempre dentro de la misma regla: por deudas contraídas después de la constitución.',
+      },
+    ],
+    related: [
+      { label: 'Qué te pueden embargar del sueldo', to: '/embargo-de-sueldo-uruguay' },
+      { label: 'Cuándo prescribe una deuda', to: '/guias/cuando-prescribe-una-deuda-uruguay' },
+      {
+        label: 'Legítima y herederos forzosos',
+        to: '/guias/legitima-y-herederos-forzosos-uruguay',
+      },
+    ],
+    sources: [
+      {
+        label:
+          'Decreto-Ley 15.597 de 19/7/1984 — bien de familia: inembargabilidad por deudas posteriores y 60 % de los frutos (art. 9), tope anual fijado por el Poder Ejecutivo (art. 5), escritura, publicación por diez días e inscripción (art. 8), gratuidad (art. 16) y orden público (art. 17)',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/15597-1984',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto 504/984, art. 1 — fija el valor máximo en 4.500 unidades reajustables para la casa-habitación o casa con tienda o taller y 7.000 para la finca rústica',
+        url: 'https://www.impo.com.uy/bases/decretos/504-1984/1',
+        publisher: 'IMPO',
+      },
+      {
+        label: 'Cómo pedir la tasación para constituir un inmueble en bien de familia',
+        url: 'https://www.bhu.com.uy/node/258',
+        publisher: 'Banco Hipotecario del Uruguay',
+      },
+    ],
+  },
 ]
