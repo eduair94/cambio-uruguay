@@ -1279,7 +1279,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'bhu-como-funciona',
     title: 'El BHU da el crédito, no la ANV',
     description:
-      'Qué es el Banco Hipotecario del Uruguay, sus planes de ahorro previo y líneas de crédito para vivienda, la diferencia con la ANV y para quién conviene.',
+      'Presta en Unidades Indexadas o en pesos, así que la cuota en pesos sube con la inflación; los créditos viejos van en UR, que ajusta por salarios.',
     tag: 'VIVIENDA',
     updatedAt: '2026-07-18',
     sections: [
@@ -1897,7 +1897,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'prestamo-a-sola-firma-uruguay',
     title: 'Sola firma: compará el costo total',
     description:
-      'Cómo funcionan los préstamos a sola firma en Uruguay, por qué son caros, cómo leer la tasa efectiva y el costo total, y cuándo tienen sentido.',
+      'Sin garantía ni garante: alcanza tu firma; el riesgo lo cubren con la tasa. Lo que compara no es la cuota ni la TNA: es la tasa implícita que mide el BCU.',
     tag: 'PRÉSTAMOS',
     updatedAt: '2026-07-18',
     sections: [
@@ -1936,7 +1936,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'entender-tea-tna-y-cft',
     title: 'TEA, TNA y CFT: el costo total, no la cuota',
     description:
-      'Qué son la TNA, la TEA y el costo financiero total, por qué la cuota chica engaña y cómo comparar créditos por su costo real en Uruguay.',
+      'La TEA no incluye comisiones ni seguros. El costo real es la tasa implícita, la misma que el BCU usa para medir usura, más el total a pagar en pesos.',
     tag: 'TASAS',
     updatedAt: '2026-07-18',
     sections: [
@@ -1975,7 +1975,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'refinanciar-deudas-uruguay',
     title: 'Refinanciar: mirá el total, no la cuota',
     description:
-      'Qué significa refinanciar o unificar deudas en Uruguay, cuándo baja el costo, cuándo solo lo esconde y qué señales de alarma mirar.',
+      'Si la TEA no baja, refinanciar sólo estira el plazo y el total sube. Compará la TEA y el total a pagar de la deuda vieja contra la nueva, no las cuotas.',
     tag: 'DEUDA',
     updatedAt: '2026-07-18',
     sections: [
@@ -2014,7 +2014,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'mejorar-historial-crediticio-uruguay',
     title: 'Historial crediticio: dos registros, no uno',
     description:
-      'Diferencia entre el Clearing de Informes y la Central de Riesgos del BCU, cómo salir del clearing y hábitos para reconstruir tu perfil.',
+      'El Clearing lo opera una empresa privada; la Central de Riesgos es del BCU y sólo lista instituciones reguladas. Podés estar limpio en uno y no en el otro.',
     tag: 'HISTORIAL',
     updatedAt: '2026-07-18',
     sections: [
@@ -2075,7 +2075,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'ser-garante-o-codeudor-riesgos-uruguay',
     title: 'Garante solidario: te pueden cobrar a vos',
     description:
-      'Qué asumís al firmar como garante, fiador o codeudor en Uruguay, cómo te afecta si el titular no paga y cómo protegerte.',
+      'El codeudor es deudor desde el primer día y el fiador solidario resigna que le cobren primero al titular. Podés ir al Clearing por una deuda ajena.',
     tag: 'GARANTÍA',
     updatedAt: '2026-07-18',
     sections: [
@@ -2117,7 +2117,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'salir-de-deudas-de-tarjeta-uruguay',
     title: 'Deudas de tarjeta: con el mínimo no salís',
     description:
-      'Por qué el pago mínimo es una trampa, cómo aplicar bola de nieve o avalancha y cómo negociar con el emisor para salir de la tarjeta.',
+      'Lo que no pagás va al rotativo y los intereses se cobran sobre intereses. Bola de nieve ordena por monto y avalancha por tasa, que paga menos en total.',
     tag: 'TARJETA',
     updatedAt: '2026-07-18',
     sections: [

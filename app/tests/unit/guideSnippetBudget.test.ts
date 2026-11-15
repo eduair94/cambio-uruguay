@@ -896,6 +896,20 @@ const TITLE_OVER_BUDGET = 0
  * es donde está la cifra—. **SÓLO PUEDE BAJAR.** Misma razón que `DEUDA_TITULO_LARGO`: declarada
  * para que `npm run seo_debt` pueda decir cuál se puede reescribir hoy sin pisar una ventana de
  * medición abierta, y exigida exacta para que el contador no se compense solo.
+ *
+ * Y ESTE CERO NO ES UN CONTRATO, al revés del de `DEUDA_TITULO_LARGO`: lo único que dice es que a
+ * ninguna descripción le cortan la cola. No dice que la cola valga algo. Lo que este archivo mide
+ * es el LARGO, así que una descripción de 121 caracteres que gasta el único renglón del SERP
+ * enumerando las secciones de la guía («Qué son la TNA, la TEA y el costo financiero total…»,
+ * «Qué asumís al firmar como garante, fiador o codeudor…») lo deja en cero publicando un índice en
+ * vez de un dato. Medido el 2026-11-15 sobre las 94 guías con la ruta libre: así estaban las SIETE
+ * de crédito y deuda, que es el cluster con el RPM medido más alto del tramo `contenido`, y las
+ * reescribió `descripciones-de-credito-que-no-contestaban` en `docs/seo/experiments.json` con la
+ * respuesta que cada cuerpo ya publicaba. Es el modo de fallar de `/sillas-de-escritorio-uruguay`
+ * en `value.ts` y el de las descripciones de plantilla del 2/11: no una medición en rojo, una
+ * medición que no alcanza a la página, y por eso se lee igual que «acá no hay deuda». No se declara
+ * una lista para esto porque «la descripción contesta» no es mecánico; la señal se lee a mano sobre
+ * las rutas que `npm run seo_debt` da por libres.
  */
 const DEUDA_DESCRIPCION_LARGA = [
   // POZO PAGADO el 2026-11-07: ninguna de las 154 guías del catálogo pasa de 155 caracteres.
