@@ -346,6 +346,7 @@ export const guideHubs: readonly GuideHub[] = [
       'unidad-indexada-explicada',
       'ui-ur-bpc-diferencias',
       'tasa-de-politica-monetaria-uruguay',
+      'linea-de-pobreza-uruguay',
     ],
     resources: [
       {
