@@ -3303,6 +3303,22 @@
         "aguinaldo liquido"
       ],
       "hypothesis": "La calculadora daba solo el nominal (lo cobrado en el semestre / 12) y en diciembre la pregunta es cuanto entra a la cuenta. Pasa a dar tambien el liquido estimado con su desglose: jubilatorio 15 %, FONASA a la tasa del sueldo del mes (la prueba de 2,5 BPC se hace sin el aguinaldo), FRL 0,10 % (BPS, Comunicado 13/2025: las deducciones por aportes jubilatorios, Seguro Nacional de Salud y FRL deben incluir los del aguinaldo) e IRPF aparte a la tasa marginal maxima del sueldo (Decreto 148/007 art. 55-BIS, Decreto 185/009, Resolucion DGI 617/009), con dos casillas (hijos, conyuge a cargo) que mueven la tasa de FONASA. computeAguinaldoLiquido en utils/payroll.ts, con tests. Titulo y descripcion nombran el liquido porque es la capacidad nueva. En Search Console (2026-10-17..11-13) calculadora de aguinaldo estaba en 6,8 y simulador aguinaldo en 12,9, con 0 clics, fuera de temporada: el aguinaldo de diciembre se paga hasta el 20 y la demanda se concentra en las tres primeras semanas del mes. Se espera que la calculadora gane porcion de clics en su cluster."
+    },
+    {
+      "id": "descripciones-del-dolar-que-no-contestaban",
+      "shippedOn": "2026-11-16",
+      "routes": [
+        "/guias/conviene-comprar-dolares-hoy",
+        "/guias/billete-cable-transferencia",
+        "/guias/casas-de-cambio-vs-bancos",
+        "/guias/como-leer-cotizacion-dolar",
+        "/guias/unidad-indexada-explicada",
+        "/guias/inflacion-y-dolar-uruguay",
+        "/guias/evitar-comisiones-cambio",
+        "/guias/como-afecta-la-fed-al-dolar",
+        "/guias/proteger-ahorros-de-la-inflacion"
+      ],
+      "hypothesis": "Las nueve guias del cluster del dolar y las casas de cambio cuya descripcion era una ETIQUETA del tema y no una respuesta. Es el mismo eje que abrio el 2026-11-15 con las siete de credito, y por el mismo motivo: guideSnippetBudget.test.ts cerro en 0 el pozo de descripciones pasadas de 155 el 2026-10-29, asi que estas nueve estaban en verde con 134 a 154 caracteres y publicando un indice en vez de un dato ('Como decidir si conviene comprar dolares hoy en Uruguay: que mirar en la cotizacion...'; 'Diferencias entre cambiar divisas en casas de cambio o en bancos...'; 'Aprende a leer la cotizacion del dolar en Uruguay: compra y venta, spread...'; 'Que es la Unidad Indexada (UI) en Uruguay...'). El presupuesto mide el LARGO y nada mide si el unico renglon que el SERP publica dice algo: es el mismo modo de fallar que /sillas-de-escritorio-uruguay en value.ts, o sea una medicion que no alcanza a la pagina y que por eso se lee igual que no hay deuda. Las nueve arrancan ahora por la respuesta que decide el clic y que la guia YA publicaba en su propio cuerpo: que si compras lo que pagas es la VENTA de la casa y que del mejor al peor lugar puede haber varios pesos por dolar; que BILLETE es el efectivo en mano y suele pagar mas spread, TRANSFERENCIA mueve saldos entre cuentas, CABLE va al exterior y el INTERBANCARIO es mayorista y no un precio al publico; que el banco no da automaticamente el mejor precio; que los dos numeros de la pizarra son de la casa (compra es lo que te paga, venta lo que te cobra) y el spread es la brecha; que la UI se ajusta todos los dias por el IPC y no es la UR, que ajusta por salarios; que inflacion y dolar no se mueven juntos ni en la misma magnitud; que un lugar sin comision puede salir mas caro por la cotizacion y lo que hay que pedir es el total a pagar o a recibir; que mas tasa de la Fed tiende a un dolar global mas fuerte; y que el dolar conviene si las metas son en dolares mientras los instrumentos en UI ahorran en pesos sin perder. Ninguna cifra ni afirmacion es nueva: todas estaban en las secciones de la propia guia, y no se toco titulo, H1, cuerpo, URL, canonical, tema, enlace ni anuncio. Es el cluster del dolar, que es el tramo contenido (8x el promedio del sitio) y la familia que mas demanda de busqueda le trae al sitio, asi que un renglon desperdiciado cuesta mas caro aca. Las nueve rutas estaban libres de toda ventana abierta (npm run seo_debt y el cruce contra las filas de los ultimos 28 dias). Se espera mas clics desde la misma posicion, como midieron las tandas que eligieron por largo; se mide por cuota de clics del sitio con 28 dias archivados antes y despues, sin el dia del deploy."
     }
   ]
 }

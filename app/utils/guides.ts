@@ -141,7 +141,7 @@ export const guides: readonly Guide[] = [
     slug: 'conviene-comprar-dolares-hoy',
     title: '¿Conviene comprar dólares hoy en Uruguay?',
     description:
-      'Cómo decidir si conviene comprar dólares hoy en Uruguay: qué mirar en la cotización, el spread entre casas de cambio y tu propio horizonte de necesidad.',
+      'Si comprás, lo que pagás es la venta de la casa, y del mejor al peor puede haber varios pesos por dólar. Con plazo largo, escaloná y no adivines el piso.',
     tag: 'DECISIÓN',
     updatedAt: '2026-06-16',
     sections: [
@@ -178,7 +178,7 @@ export const guides: readonly Guide[] = [
     slug: 'billete-cable-transferencia',
     title: 'BILLETE es efectivo; CABLE va al exterior',
     description:
-      'Qué significan BILLETE, CABLE, TRANSFERENCIA, eBROU e INTERBANCARIO en las cotizaciones del dólar en Uruguay y por qué cada tipo tiene un precio distinto.',
+      'BILLETE es el efectivo en mano y suele pagar más spread; TRANSFERENCIA mueve saldos entre cuentas; CABLE va al exterior; el INTERBANCARIO no es público.',
     tag: 'TIPOS',
     updatedAt: '2026-06-16',
     sections: [
@@ -830,7 +830,7 @@ export const guides: readonly Guide[] = [
     slug: 'casas-de-cambio-vs-bancos',
     title: 'Tu banco no siempre da el mejor cambio',
     description:
-      'Diferencias entre cambiar divisas en casas de cambio o en bancos en Uruguay: cotizaciones, comodidad, requisitos y cuándo conviene cada opción.',
+      'El banco no da automáticamente el mejor precio: en montos chicos la comodidad puede justificar una diferencia, y en efectivo la referencia son las casas.',
     tag: 'COMPARATIVA',
     updatedAt: '2026-06-17',
     sections: [
@@ -859,7 +859,7 @@ export const guides: readonly Guide[] = [
     slug: 'como-leer-cotizacion-dolar',
     title: 'Leer la cotización: la compra te la pagan',
     description:
-      'Aprendé a leer la cotización del dólar en Uruguay: compra y venta, spread, tipos de operación y cómo identificar rápido el mejor precio para tu caso.',
+      'Los dos números son de la casa: compra es lo que te paga y venta lo que te cobra. El spread es la brecha, y el interbancario no es un precio al público.',
     tag: 'BÁSICOS',
     updatedAt: '2026-06-17',
     sections: [
@@ -885,7 +885,7 @@ export const guides: readonly Guide[] = [
     slug: 'unidad-indexada-explicada',
     title: 'Unidad Indexada: ajusta por el IPC',
     description:
-      'Qué es la Unidad Indexada (UI) en Uruguay, por qué ajusta por inflación, en qué contratos aparece y cómo convertir UI a pesos uruguayos.',
+      'La UI se ajusta todos los días por el IPC y el BCU publica su valor: multiplicás las UI por el del día. No es la UR, que ajusta por salarios.',
     tag: 'INDEXACIÓN',
     updatedAt: '2026-06-17',
     sections: [
@@ -911,7 +911,7 @@ export const guides: readonly Guide[] = [
     slug: 'inflacion-y-dolar-uruguay',
     title: 'Inflación y dólar no van siempre juntos',
     description:
-      'Cómo se relacionan la inflación y el dólar en Uruguay, por qué muchos ahorran en dólares y qué mirar para entender el poder de compra del peso.',
+      'No se mueven juntos ni en la misma magnitud: el dólar también sube o baja por oferta y demanda, la región y el BCU. La inflación la mide el IPC del INE.',
     tag: 'ECONOMÍA',
     updatedAt: '2026-06-17',
     sections: [
@@ -937,7 +937,7 @@ export const guides: readonly Guide[] = [
     slug: 'evitar-comisiones-cambio',
     title: 'La comisión se esconde en la cotización',
     description:
-      'Identificá y evitá comisiones ocultas, mínimos y malas cotizaciones al cambiar divisas en Uruguay, y aprendé a comparar el costo real de cada operación.',
+      'Un lugar sin comisión puede salir más caro por la cotización: pedí el total a pagar o a recibir, y en montos altos pedí que te mejoren el precio.',
     tag: 'COSTOS',
     updatedAt: '2026-06-17',
     sections: [
@@ -1026,7 +1026,7 @@ export const guides: readonly Guide[] = [
     slug: 'como-afecta-la-fed-al-dolar',
     title: 'Fed: más tasa tiende a un dólar más fuerte',
     description:
-      'Qué es la Reserva Federal de EE.UU., cómo sus decisiones de tasas mueven al dólar en el mundo y por qué eso llega hasta la cotización en Uruguay.',
+      'Si la Fed sube la tasa, invertir en dólares rinde más y el dólar global tiende a fortalecerse; si la baja, a debilitarse. Acá se mezcla con el BCU.',
     tag: 'GLOBAL',
     updatedAt: '2026-06-17',
     sections: [
@@ -1052,7 +1052,7 @@ export const guides: readonly Guide[] = [
     slug: 'proteger-ahorros-de-la-inflacion',
     title: 'Contra la inflación: dólares o indexados',
     description:
-      'Estrategias prácticas para que la inflación no licúe tus ahorros en Uruguay: dólares, Unidad Indexada, plazos fijos y diversificación.',
+      'El dólar conviene si tus metas son en dólares; si gastás en pesos suma riesgo de cambio. Los instrumentos en UI ajustan por inflación y ahorran en pesos.',
     tag: 'AHORRO',
     updatedAt: '2026-06-17',
     sections: [
