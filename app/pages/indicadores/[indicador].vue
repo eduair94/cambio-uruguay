@@ -14,26 +14,32 @@
                   Valor de la {{ indicator.name }} ({{ indicator.abbr }})
                   {{ staticYear ? `${staticYear} en Uruguay` : 'hoy en Uruguay' }}
                 </h1>
-                <p class="text-body-1 text-grey-lighten-2 mb-0 indicador-intro">
+                <!-- La respuesta, pegada al título y ANTES de la definición. Medido en producción el
+                     16/11/2026 a 390 px: con el aviso de cookies, la unidad que Auto Ads pone arriba
+                     del H1 y el párrafo de introducción, el número quedaba en y=837 de 844 — debajo
+                     del pliegue en la página a la que se llega buscando «valor ur hoy». -->
+                <div class="cu-keep-together indicador-answer" data-testid="indicador-value">
+                  <div class="text-overline indicador-answer-soft">
+                    1 {{ indicator.abbr }} equivale a
+                  </div>
+                  <div class="text-h4 font-weight-bold text-white">{{ formattedValue }}</div>
+                  <div class="text-caption indicador-answer-soft">{{ valueLabel }}</div>
+                </div>
+                <p class="text-body-1 text-grey-lighten-2 mt-3 mb-0 indicador-intro">
                   {{ indicator.shortDef }}
                 </p>
               </div>
             </div>
           </div>
 
-          <v-card-text class="py-5">
-            <div class="cu-keep-together cu-keep-together--row align-center flex-wrap ga-6">
-              <div class="cu-keep-together" data-testid="indicador-value">
-                <div class="text-overline text-grey">1 {{ indicator.abbr }} equivale a</div>
-                <div class="text-h4 font-weight-bold text-primary">{{ formattedValue }}</div>
-                <div class="text-caption text-grey">{{ valueLabel }}</div>
-                <div v-if="indicator.legal" class="text-caption text-grey indicador-note">
-                  Fuente:
-                  <a :href="indicator.legal.url" target="_blank" rel="noopener noreferrer">{{
-                    indicator.legal.act
-                  }}</a>
-                  (IMPO), publicado el {{ isoDayLabelEs(indicator.legal.published) }}
-                </div>
+          <v-card-text class="py-4">
+            <div class="cu-keep-together cu-keep-together--row align-center flex-wrap ga-4">
+              <div v-if="indicator.legal" class="text-caption text-grey indicador-note">
+                Fuente:
+                <a :href="indicator.legal.url" target="_blank" rel="noopener noreferrer">{{
+                  indicator.legal.act
+                }}</a>
+                (IMPO), publicado el {{ isoDayLabelEs(indicator.legal.published) }}
               </div>
               <v-spacer class="d-none d-sm-flex" />
               <ShareButtons :url="canonicalUrl" :text="`Valor de la ${indicator.name} hoy`" />
@@ -645,6 +651,14 @@ useHead({
 .indicador-intro {
   max-width: 760px;
   line-height: 1.6;
+}
+/* El valor vive sobre el degradado (oscuro en los dos temas): blanco el número, y el rótulo y la
+   fecha un escalón abajo, con contraste de sobra sobre #7c4dff→#2f81f7. */
+.indicador-answer {
+  margin-top: 8px;
+}
+.indicador-answer-soft {
+  color: rgba(255, 255, 255, 0.86);
 }
 .indicador-prose {
   line-height: 1.7;

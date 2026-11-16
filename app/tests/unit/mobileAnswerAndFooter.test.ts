@@ -37,11 +37,25 @@ describe('una unidad de Auto Ads no parte la respuesta', () => {
     expect(css).toMatch(/\.cu-keep-together--row \{\s*flex-direction: row;\s*\}/)
   })
 
+  it('el valor del indicador va pegado al título, antes de la definición', () => {
+    const page = read('pages/indicadores/[indicador].vue')
+    const h1 = page.indexOf('<h1')
+    const value = page.indexOf('data-testid="indicador-value"')
+    const intro = page.indexOf('indicador-intro">')
+    expect(h1).toBeGreaterThan(-1)
+    expect(value).toBeGreaterThan(h1)
+    expect(intro).toBeGreaterThan(value)
+    // Dentro del encabezado, no en la tarjeta de abajo.
+    expect(value).toBeLessThan(page.indexOf('<v-card-text'))
+  })
+
   it('el valor del indicador y su fila lo llevan', () => {
     const page = read('pages/indicadores/[indicador].vue')
-    expect(page).toContain('<div class="cu-keep-together" data-testid="indicador-value">')
     expect(page).toContain(
-      'class="cu-keep-together cu-keep-together--row align-center flex-wrap ga-6"'
+      '<div class="cu-keep-together indicador-answer" data-testid="indicador-value">'
+    )
+    expect(page).toContain(
+      'class="cu-keep-together cu-keep-together--row align-center flex-wrap ga-4"'
     )
   })
 
