@@ -82,6 +82,24 @@ export function sentryPageName(name: unknown): string | undefined {
  * The string code from the error or its cause chain (`ERR_HTTP_HEADERS_SENT`, `ECONNRESET`,
  * `RENTAL_ANALYSIS_STALE`): a fixed enum naming what failed, never on what.
  */
+/**
+ * The HTTP status the current document was served with (Navigation Timing
+ * `responseStatus`), or undefined where the browser does not expose it.
+ */
+export function sentryDocumentStatus(performanceLike: unknown): string | undefined {
+  try {
+    const entry = (
+      performanceLike as { getEntriesByType?: (type: string) => unknown[] } | undefined
+    )?.getEntriesByType?.('navigation')?.[0] as { responseStatus?: unknown } | undefined
+    const status = entry?.responseStatus
+    return Number.isInteger(status) && (status as number) >= 100 && (status as number) <= 599
+      ? String(status)
+      : undefined
+  } catch {
+    return undefined
+  }
+}
+
 export function sentryErrorCode(error: unknown): string | undefined {
   const seen = new Set<unknown>()
   let current = error
@@ -293,6 +311,9 @@ const diagnosticTags: Array<[string, RegExp]> = [
     /^(?:(?:Chrome|Edge|Firefox|Safari|Samsung|Opera) \d{1,3}|Facebook app|Instagram app|Other)$/,
   ],
   ['asset_status', /^(?:[1-5]\d{2}|network)$/],
+  ['nuxt_hook', /^(?:app|vue)$/],
+  ['nuxt_phase', /^(?:startup|navigation)$/],
+  ['document_status', /^[1-5]\d{2}$/],
 ]
 
 /** An allowlist, so future SDK integrations cannot silently add private data. */
