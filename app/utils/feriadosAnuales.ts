@@ -277,3 +277,81 @@ export function resumenDe(year: number): ResumenAnual {
     tramoMasLargo: tramos.reduce((max, t) => Math.max(max, t.dias), 0),
   }
 }
+
+// ---------------------------------------------------------------------------
+// El almanaque: los doce meses en grilla, para ver e imprimir
+// ---------------------------------------------------------------------------
+
+/** Un día del almanaque, con lo que la grilla necesita para marcarlo. */
+export interface DiaDelAlmanaque {
+  readonly iso: string
+  readonly dia: number
+  readonly finDeSemana: boolean
+  /** Los feriados que se observan ese día (Carnaval y Turismo son dos días, nunca dos el mismo). */
+  readonly feriados: readonly FeriadoDelAnio[]
+  /** `true` si el día cae dentro de un fin de semana largo de {@link finesDeSemanaLargosDe}. */
+  readonly enFinDeSemanaLargo: boolean
+}
+
+export interface MesDelAlmanaque {
+  /** 0 = enero. */
+  readonly mes: number
+  /**
+   * Semanas de lunes a domingo, siete celdas cada una; `null` es una celda vacía antes del 1.º o
+   * después del último día. Lunes primero porque es como se imprimen los almanaques acá.
+   */
+  readonly semanas: readonly (readonly (DiaDelAlmanaque | null)[])[]
+  /** Los feriados del mes, en orden, para la lista de abajo de cada grilla. */
+  readonly feriados: readonly FeriadoDelAnio[]
+}
+
+/**
+ * Los doce meses de un año en grilla de lunes a domingo, con cada feriado y cada fin de semana
+ * largo marcados.
+ *
+ * POR QUÉ (2026-11-15). En Search Console, "calendario 2027 uruguay", "calendario 2027 uruguay con
+ * feriados", "almanaque 2027 uruguay con feriados" y sus vueltas sumaban ~900 impresiones en 28
+ * días con la página citada arriba de todo y 0 clics: quien busca un CALENDARIO quiere verlo y
+ * llevárselo impreso, y la página le daba una tabla. Sale de las mismas funciones que la tabla
+ * —{@link calendarioDe} y {@link finesDeSemanaLargosDe}—, así que la grilla y la tabla no pueden
+ * discrepar.
+ */
+export function almanaqueDe(year: number): MesDelAlmanaque[] {
+  const porFecha = new Map<string, FeriadoDelAnio[]>()
+  for (const f of calendarioDe(year)) {
+    porFecha.set(f.observado, [...(porFecha.get(f.observado) ?? []), f])
+  }
+  const enTramo = new Set<string>()
+  for (const tramo of finesDeSemanaLargosDe(year)) {
+    for (let t = fecha(tramo.desde).getTime(); t <= fecha(tramo.hasta).getTime(); t += DIA_MS) {
+      enTramo.add(ISO(new Date(t)))
+    }
+  }
+
+  const meses: MesDelAlmanaque[] = []
+  for (let mes = 0; mes < 12; mes++) {
+    const ultimo = new Date(Date.UTC(year, mes + 1, 0)).getUTCDate()
+    // getUTCDay: 0 = domingo. Con lunes primero, el domingo va en la columna 6.
+    const huecoInicial = (new Date(Date.UTC(year, mes, 1)).getUTCDay() + 6) % 7
+    const celdas: (DiaDelAlmanaque | null)[] = Array.from({ length: huecoInicial }, () => null)
+    for (let dia = 1; dia <= ultimo; dia++) {
+      const iso = ISO(new Date(Date.UTC(year, mes, dia)))
+      celdas.push({
+        iso,
+        dia,
+        finDeSemana: esFinDeSemana(iso),
+        feriados: porFecha.get(iso) ?? [],
+        enFinDeSemanaLargo: enTramo.has(iso),
+      })
+    }
+    while (celdas.length % 7 !== 0) celdas.push(null)
+    const semanas: (DiaDelAlmanaque | null)[][] = []
+    for (let i = 0; i < celdas.length; i += 7) semanas.push(celdas.slice(i, i + 7))
+    meses.push({
+      mes,
+      semanas,
+      feriados: celdas.flatMap(c => (c ? c.feriados : [])),
+    })
+  }
+  return meses
+}

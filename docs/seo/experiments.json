@@ -3287,6 +3287,23 @@
         "descargar cedula catastral"
       ],
       "hypothesis": "La pagina contestaba el tramite con el vocabulario de 'valor catastral' y ningun titulo nombraba la cedula, mientras en Search Console (2026-10-17..11-13) 'cedula catastral' sola trajo 5.191 impresiones en posicion 9,8 y sus variantes (comun, informada, emision, por padron, descargar) otras ~3.000, todas al fondo de la primera pagina: quien escribe eso quiere sacar el papel, no saber que es el valor. Se agrega una seccion 'Como sacar la cedula catastral comun, paso a paso' (CEDULA_PASOS: numero de padron en la factura de la contribucion, Sede Electronica sin usuario, se imprime al final, validacion de acceso libre, y la informada con su tasa en UR), el H2 de los tres tramites pasa a nombrar 'Cedula catastral comun, informada o revision' y tres preguntas frecuentes (comun vs informada, por numero de padron, como se valida). No agrega ningun hecho: todo sale de lo cotejado el 2026-10-12 en utils/cadastralValue.ts. No se toco titulo, descripcion, URL, canonical ni anuncio. Se espera que la pagina suba en ese cluster, que es el que mas impresiones le trae."
+    },
+    {
+      "id": "calendario-2027-imprimible",
+      "shippedOn": "2026-11-27",
+      "routes": [
+        "/feriados-2027-uruguay"
+      ],
+      "queries": [
+        "feriados 2027",
+        "calendario 2027 uruguay",
+        "calendario 2027 uruguay con feriados",
+        "calendario 2027 con feriados uruguay",
+        "almanaque 2027 uruguay con feriados",
+        "calendario uruguay 2027",
+        "calendario 2027 uruguay con feriados para imprimir"
+      ],
+      "hypothesis": "En Search Console (2026-10-17..11-13) la pagina aparecia en posicion 1,0 para las consultas de CALENDARIO (calendario 2027 uruguay 322 impresiones, con feriados 169, almanaque 2027 uruguay con feriados 88, y sus vueltas: ~900 en total) con 0 clics, y en 9,6 para feriados 2027 (2.565 impresiones, 0 clics). Posicion 1 sin un clic es la firma de una cita en la respuesta de la IA de Google: quien busca un calendario quiere verlo y llevarselo impreso, y la pagina le daba una tabla. Se agrega la grilla de los doce meses con cada feriado marcado por forma (pago lleno, no pago anillo, fin de semana largo franja con raya, legible en blanco y negro) y un boton que imprime solo el calendario en una hoja A4, arriba de todo; el H1 nombra el calendario. Sale de las mismas funciones que la tabla (almanaqueDe sobre calendarioDe y finesDeSemanaLargosDe), asi que no agrega ninguna fecha. No se toco titulo, descripcion, URL, canonical ni anuncios. Se publica el 27/11 a proposito: la fila feriados-2027-pagina-nueva (29/10) reserva la ruta 28 dias, y la demanda del calendario sube en diciembre y enero. Se espera que la pagina gane clics en el cluster de calendario y suba en feriados 2027."
     }
   ]
 }
