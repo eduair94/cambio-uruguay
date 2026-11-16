@@ -4,6 +4,7 @@ import ts from 'typescript'
 import { describe, expect, it } from 'vitest'
 import {
   SPANISH_ONLY_ROUTES,
+  I18N_CANONICAL_PENDING,
   hasPendingI18nCanonical,
   isLocalizedRoute,
   isSpanishOnlyRoute,
@@ -94,16 +95,19 @@ describe('localized routes', () => {
       '/sillas-escritorio-uruguay/una-silla',
       '/casas-de-cambio/bancos',
       '/inmobiliarias-uruguay/infocasas:1',
+      '/',
+      '/cotizacion',
+      '/cotizacion/real',
+      '/dolar/montevideo',
+      '/dolar/records',
     ]) {
       expect(isLocalizedRoute(path), path).toBe(true)
     }
     for (const path of [
-      '/',
       '/dolar-hoy',
       '/guias/una-guia',
       '/precio/shampoo',
       '/casa/brou',
-      '/dolar/montevideo',
       '/equipar-casa-uruguay/mi-lista',
     ]) {
       expect(isLocalizedRoute(path), path).toBe(false)
@@ -114,15 +118,19 @@ describe('localized routes', () => {
   // When a page moves its canonical to `localePath`, it leaves this list for `LOCALIZED_FAMILIES`
   // or a `localized` nav flag: the two lists never name the same route.
   it('knows the vue-i18n pages whose canonical is still pending, and nothing else', () => {
-    for (const path of ['/', '/avanzado', '/cotizacion/real', '/dolar/rivera', '/dolar/records']) {
-      expect(hasPendingI18nCanonical(path), path).toBe(true)
-    }
-    for (const path of ['/guias/una', '/cotizaciones-de-la-region', '/dolar-hoy', '/avanzado/x']) {
+    expect(hasPendingI18nCanonical('/avanzado')).toBe(true)
+    for (const path of [
+      '/',
+      '/cotizacion/real',
+      '/dolar/rivera',
+      '/guias/una',
+      '/dolar-hoy',
+      '/avanzado/x',
+    ]) {
       expect(hasPendingI18nCanonical(path), path).toBe(false)
     }
-    for (const path of ['/', '/avanzado', '/cotizacion/real', '/dolar/rivera']) {
-      expect(isLocalizedRoute(path), path).toBe(false)
-    }
+    // The two lists never name the same route.
+    for (const path of I18N_CANONICAL_PENDING) expect(isLocalizedRoute(path), path).toBe(false)
   })
 
   it('flags every nav page whose canonical is built with localePath', () => {

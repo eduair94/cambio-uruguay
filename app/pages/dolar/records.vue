@@ -66,7 +66,9 @@ function fmtDate(d: string) {
   })
 }
 
-const canonical = 'https://cambio-uruguay.com/dolar/records'
+// Canonical per locale (2026-11-30): the /en and /pt pages are whole vue-i18n translations, so
+// each one is the canonical of itself, and the route is localized (utils/localizedRoutes.ts).
+const canonical = `https://cambio-uruguay.com${localePath('/dolar/records')}`
 defineOgImageComponent('Cambio', {
   title: () => t('dolarRecords.title'),
   subtitle: () => t('dolarRecords.subtitle'),

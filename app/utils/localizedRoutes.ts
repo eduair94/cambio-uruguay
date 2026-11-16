@@ -20,6 +20,9 @@ import { NAV_SECTIONS } from './siteNav'
  */
 export const LOCALIZED_FAMILIES: readonly string[] = Object.freeze([
   '/casas-de-cambio/',
+  // 2026-11-30: out of I18N_CANONICAL_PENDING, once their pages built the canonical per locale.
+  '/cotizacion/',
+  '/dolar/',
   '/historico/',
   '/inmobiliarias-uruguay/',
   '/sillas-escritorio-uruguay/',
@@ -42,12 +45,10 @@ export const LOCALIZED_FAMILIES: readonly string[] = Object.freeze([
  * on /cotizacion/* and /dolar/* until 2026-11-28, `home-descripcion-por-idioma` on / until
  * 2026-11-29, `descripciones-de-i18n-que-el-serp-cortaba` on /avanzado until 2026-12-10).
  */
-export const I18N_CANONICAL_PENDING: readonly string[] = Object.freeze([
-  '/',
-  '/avanzado',
-  '/cotizacion/',
-  '/dolar/',
-])
+//
+// 2026-11-30: `/`, `/cotizacion/` and `/dolar/` left for their own canonical (`localized` nav flag
+// and LOCALIZED_FAMILIES). `/avanzado` stays until its window closes.
+export const I18N_CANONICAL_PENDING: readonly string[] = Object.freeze(['/avanzado'])
 
 const LOCALIZED_NAV = new Set(
   NAV_SECTIONS.flatMap(section =>
