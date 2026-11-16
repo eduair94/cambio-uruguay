@@ -26,6 +26,29 @@ export const LOCALIZED_FAMILIES: readonly string[] = Object.freeze([
   '/sucursales/',
 ])
 
+/**
+ * Pages written WHOLE in vue-i18n for English and Portuguese whose canonical still points at the
+ * Spanish URL, so they are not `isLocalizedRoute` (that list means "canonical of themselves").
+ *
+ * Measured 2026-11-15 on the live site, H2 by H2: `/en/cotizacion/real`, `/en/dolar/maldonado`,
+ * `/en/avanzado` and the English home are English from top to bottom (six H2 of six), and the
+ * Portuguese ones are what Brazilians at the border click (`/pt/dolar/rivera`,
+ * `/pt/cotizacion/dolar`). They keep their hreflang alternates while the rest of the
+ * Spanish-bodied /en and /pt pages lose them (utils/autoTranslate.ts, `hreflangLocales`).
+ *
+ * The real fix is in each page —build the canonical with `localePath` and move the route to
+ * `LOCALIZED_FAMILIES` or flag its nav entry `localized`— and it waits for the change log: on
+ * 2026-11-16 every one of them sits inside an open window (`cotizaciones-con-la-cifra-en-el-titulo`
+ * on /cotizacion/* and /dolar/* until 2026-11-28, `home-descripcion-por-idioma` on / until
+ * 2026-11-29, `descripciones-de-i18n-que-el-serp-cortaba` on /avanzado until 2026-12-10).
+ */
+export const I18N_CANONICAL_PENDING: readonly string[] = Object.freeze([
+  '/',
+  '/avanzado',
+  '/cotizacion/',
+  '/dolar/',
+])
+
 const LOCALIZED_NAV = new Set(
   NAV_SECTIONS.flatMap(section =>
     section.entries.filter(entry => entry.localized && entry.to).map(entry => entry.to as string)
@@ -43,6 +66,14 @@ export function splitLocalePath(path: string): { locale: string; path: string } 
 }
 
 const cleanPath = (path: string) => path.split(/[?#]/)[0]!.replace(/(.)\/+$/, '$1')
+
+/** Whether `path` (Spanish, no prefix) has whole vue-i18n copy whose canonical is still Spanish. */
+export function hasPendingI18nCanonical(path: string): boolean {
+  const clean = cleanPath(path) || '/'
+  return I18N_CANONICAL_PENDING.some(route =>
+    route.endsWith('/') && route !== '/' ? clean.startsWith(route) : clean === route
+  )
+}
 
 /** Whether `path` (Spanish, without locale prefix) has its own /en and /pt pages. */
 export function isLocalizedRoute(path: string): boolean {

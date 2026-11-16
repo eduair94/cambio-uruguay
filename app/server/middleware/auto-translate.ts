@@ -1,3 +1,4 @@
+import { setResponseHeader } from 'h3'
 import { isAutoTranslateLocale, isEmbargoed, untranslatedRedirect } from '../../utils/autoTranslate'
 import { splitLocalePath } from '../../utils/localizedRoutes'
 import { embargoedRoutes, lookupTranslations, translatedLocales } from '../utils/autoTranslateStore'
@@ -47,7 +48,14 @@ export default defineEventHandler(async event => {
     const rawUrl = queryAt === -1 ? raw : raw.slice(0, queryAt)
     const query = queryAt === -1 ? '' : raw.slice(queryAt)
     const rawPath = splitLocalePath(rawUrl).path.replace(/(.)\/+$/, '$1') || '/'
-    return sendRedirect(event, rawPath + query, 302)
+    // 301 and not 302 (2026-11-15). With a temporary redirect Google kept the /ru, /hi… URL in its
+    // index as the page and ranked it for SPANISH queries: `/ru/cuando-se-cobra-el-aguinaldo-uruguay`
+    // drew 230 impressions in 28 days against 66 for the Spanish URL it redirects to. Permanent
+    // folds the URL into its target. It can still change: the day the page is translated into
+    // that locale this branch stops firing and the URL answers 200 with its own canonical, so the
+    // browser may keep the redirect only a day and the edge only a day too.
+    setResponseHeader(event, 'cache-control', 'public, max-age=86400, s-maxage=86400')
+    return sendRedirect(event, rawPath + query, 301)
   }
   event.context.autoTranslate = {
     locale,

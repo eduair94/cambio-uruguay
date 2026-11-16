@@ -15,6 +15,7 @@
  */
 
 import { EXTRA_LOCALE_CODES, LOCALE_PREFIX_RE, hasExtraLocales } from './locales'
+import { hasPendingI18nCanonical, isLocalizedRoute } from './localizedRoutes'
 
 /**
  * Locales whose pages are machine-translated in full (on top of their vue-i18n chrome): every
@@ -462,6 +463,42 @@ export function announcedLocales(path: string, state: PageTranslationState): str
 }
 
 /**
+ * The non-Spanish locales a page may name in its hreflang alternates: only URLs that are
+ * canonical of themselves, which is what Google asks of an hreflang set ("non-canonical pages
+ * should not be in any hreflang set") and what the sitemap already does
+ * (server/utils/sitemapLocales.ts, `keepCanonicalLocales`).
+ *
+ * WHY (2026-11-15). Every page put /en and /pt in its hreflang set, and most of them are Spanish
+ * prose whose /en and /pt pages canonicalise to Spanish: measured on 397 page families, 184 had a
+ * Spanish body behind /en and /pt, canonical to Spanish, and still announced as the English and
+ * Portuguese version. Two signals that contradict each other, and Google sometimes believed the
+ * hreflang: `/en/convertir/200-reales-a-pesos-uruguayos` took 1.610 impressions in 28 days for
+ * Spanish queries ("200 reales a pesos uruguayos") with 0 clicks, `/en/couriers-uruguay/usx-cargo`
+ * 2.184 with 0. English and Portuguese stay where the page is localized (`isLocalizedRoute`),
+ * machine-translated into that locale, or written in vue-i18n with its canonical still pending
+ * (`hasPendingI18nCanonical`). A page reserved by the change log keeps what it had, so no open
+ * measurement window sees its head change. The language menu still offers /en and /pt everywhere
+ * (`announcedLocales`): the chrome is translated and a reader may want it.
+ */
+export function hreflangLocales(path: string, state: PageTranslationState): string[] {
+  const out: string[] = []
+  for (const code of ['en', 'pt']) {
+    if (
+      state.embargoed ||
+      isLocalizedRoute(path) ||
+      hasPendingI18nCanonical(path) ||
+      state.translated.includes(code)
+    )
+      out.push(code)
+  }
+  for (const code of EXTRA_LOCALE_CODES) {
+    if (hasExtraLocales(path) || (!state.embargoed && state.translated.includes(code)))
+      out.push(code)
+  }
+  return out
+}
+
+/**
  * Where the canonical of `/<locale><path>` points:
  * - `self` when the page is translated into that locale (and not reserved);
  * - `spanish` for an extra locale on a page that has neither a translation nor vue-i18n copy —
@@ -477,6 +514,18 @@ export function canonicalTarget(
   if (locale === 'es') return 'keep'
   if (!state.embargoed && state.translated.includes(locale)) return 'self'
   if (EXTRA_LOCALE_CODES.includes(locale) && !hasExtraLocales(path)) return 'spanish'
+  // English and Portuguese of a page that exists only as Spanish prose: the Spanish URL, whatever
+  // the page declared. Almost every such page already said so; the few that built a canonical of
+  // their own around a Spanish body (/en/comparativas/bancos/…, measured 2026-11-15) claimed to be
+  // an English page that is not one. Localized and pending-vue-i18n pages keep their own word, and
+  // a reserved page keeps exactly what it had.
+  if (
+    !state.embargoed &&
+    (locale === 'en' || locale === 'pt') &&
+    !isLocalizedRoute(path) &&
+    !hasPendingI18nCanonical(path)
+  )
+    return 'spanish'
   return 'keep'
 }
 

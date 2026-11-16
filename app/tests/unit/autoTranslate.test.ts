@@ -6,6 +6,7 @@ import {
   AUTO_TRANSLATE_LOCALES,
   announcedLocales,
   canonicalTarget,
+  hreflangLocales,
   spanishOgImage,
   untranslatedRedirect,
   decodeEntities,
@@ -181,12 +182,42 @@ describe('auto-translate: what a translated page may claim', () => {
     expect(canonicalTarget('en', '/guias/una', translated)).toBe('self')
     expect(canonicalTarget('fr', '/guias/una', translated)).toBe('self')
     expect(canonicalTarget('es', '/guias/una', translated)).toBe('keep')
-    expect(canonicalTarget('pt', '/guias/una', none)).toBe('keep')
+    // English and Portuguese of a Spanish-prose page: Spanish, whatever the page declared.
+    expect(canonicalTarget('pt', '/guias/una', none)).toBe('spanish')
+    expect(canonicalTarget('en', '/indicadores/unidad-reajustable', none)).toBe('spanish')
+    // …but a localized page, or one written in vue-i18n whose canonical is pending, keeps its word.
+    expect(canonicalTarget('en', '/historico/brou/usd', none)).toBe('keep')
+    expect(canonicalTarget('pt', '/dolar/rivera', none)).toBe('keep')
+    expect(canonicalTarget('en', '/', none)).toBe('keep')
+    // A reserved page keeps exactly what it had.
+    expect(canonicalTarget('pt', '/guias/una', { translated: [], embargoed: true })).toBe('keep')
     expect(canonicalTarget('de', '/guias/una', none)).toBe('spanish')
     expect(canonicalTarget('de', '/mapa', none)).toBe('keep')
     expect(canonicalTarget('en', '/guias/una', { translated: ['en'], embargoed: true })).toBe(
       'keep'
     )
+  })
+
+  it('names in hreflang only the English and Portuguese URLs that are canonical of themselves', () => {
+    const none = { translated: [], embargoed: false }
+    // Spanish prose: /en and /pt canonicalise to Spanish, so they are not alternates.
+    expect(hreflangLocales('/convertir/200-reales-a-pesos-uruguayos', none)).toEqual([])
+    expect(hreflangLocales('/guias/una', none)).toEqual([])
+    // Machine-translated into English: English is announced, Portuguese is not.
+    expect(hreflangLocales('/guias/una', { translated: ['en'], embargoed: false })).toEqual(['en'])
+    // Localized families and nav pages, and the vue-i18n pages whose canonical is pending.
+    expect(hreflangLocales('/historico/brou/usd', none)).toEqual(['en', 'pt'])
+    expect(hreflangLocales('/cotizacion/real', none)).toEqual(['en', 'pt'])
+    expect(hreflangLocales('/dolar/rivera', none)).toEqual(['en', 'pt'])
+    expect(hreflangLocales('/', none)).toEqual(['en', 'pt'])
+    // A reserved page keeps the set it had: English and Portuguese, no machine-translated extra.
+    expect(hreflangLocales('/guias/una', { translated: ['fr'], embargoed: true })).toEqual([
+      'en',
+      'pt',
+    ])
+    // Extra locales follow the same rule as before.
+    expect(hreflangLocales('/mapa', none)).toContain('fr')
+    expect(hreflangLocales('/guias/una', { translated: ['fr'], embargoed: false })).toEqual(['fr'])
   })
 
   it('sends an extra locale that does not have the page to the Spanish one, unrendered', () => {

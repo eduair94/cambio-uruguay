@@ -24,6 +24,7 @@ const canonicalHost = (await import('../../server/middleware/canonical-host')).d
 
 let server: Server
 let port = 0
+let lastCacheControl: string | null = null
 
 beforeAll(async () => {
   const app = createApp()
@@ -43,6 +44,7 @@ function get(path: string, host = '127.0.0.1') {
       { host: '127.0.0.1', port, path, headers: { accept: 'text/html', host } },
       res => {
         res.resume()
+        lastCacheControl = (res.headers['cache-control'] as string) ?? null
         resolve({ status: res.statusCode ?? 0, location: (res.headers.location as string) ?? null })
       }
     )
@@ -54,17 +56,25 @@ function get(path: string, host = '127.0.0.1') {
 describe('redirects keep the request percent-encoding', () => {
   it('extra locale -> Spanish, with a non-Latin-1 segment (the production 500)', async () => {
     expect(await get('/de/historico/%E4%B8%AD%E6%96%87')).toEqual({
-      status: 302,
+      status: 301,
       location: '/historico/%E4%B8%AD%E6%96%87',
     })
   })
 
+  // Permanent, so Google folds the /de, /ru… URL into the Spanish one instead of ranking it for
+  // Spanish queries — but cached only a day, because the redirect stops the day the page gets
+  // translated into that locale.
+  it('extra locale -> Spanish is permanent, and cached only a day', async () => {
+    expect((await get('/ru/historico/brou')).status).toBe(301)
+    expect(lastCacheControl).toBe('public, max-age=86400, s-maxage=86400')
+  })
+
   it('extra locale keeps an encoded "?" in the path and the real query after it', async () => {
     expect(await get('/de/historico/a%3Fb/?x=1')).toEqual({
-      status: 302,
+      status: 301,
       location: '/historico/a%3Fb?x=1',
     })
-    expect(await get('/de/historico/brou')).toEqual({ status: 302, location: '/historico/brou' })
+    expect(await get('/de/historico/brou')).toEqual({ status: 301, location: '/historico/brou' })
   })
 
   it('lowercase canonical with an untouched non-Latin-1 segment', async () => {

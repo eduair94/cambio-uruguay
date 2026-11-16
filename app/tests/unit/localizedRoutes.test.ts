@@ -4,6 +4,7 @@ import ts from 'typescript'
 import { describe, expect, it } from 'vitest'
 import {
   SPANISH_ONLY_ROUTES,
+  hasPendingI18nCanonical,
   isLocalizedRoute,
   isSpanishOnlyRoute,
   splitLocalePath,
@@ -105,6 +106,21 @@ describe('localized routes', () => {
       '/dolar/montevideo',
       '/equipar-casa-uruguay/mi-lista',
     ]) {
+      expect(isLocalizedRoute(path), path).toBe(false)
+    }
+  })
+
+  // The vue-i18n pages whose /en and /pt canonical still points at Spanish (see the constant).
+  // When a page moves its canonical to `localePath`, it leaves this list for `LOCALIZED_FAMILIES`
+  // or a `localized` nav flag: the two lists never name the same route.
+  it('knows the vue-i18n pages whose canonical is still pending, and nothing else', () => {
+    for (const path of ['/', '/avanzado', '/cotizacion/real', '/dolar/rivera', '/dolar/records']) {
+      expect(hasPendingI18nCanonical(path), path).toBe(true)
+    }
+    for (const path of ['/guias/una', '/cotizaciones-de-la-region', '/dolar-hoy', '/avanzado/x']) {
+      expect(hasPendingI18nCanonical(path), path).toBe(false)
+    }
+    for (const path of ['/', '/avanzado', '/cotizacion/real', '/dolar/rivera']) {
       expect(isLocalizedRoute(path), path).toBe(false)
     }
   })
