@@ -252,9 +252,11 @@ export const tools: readonly Tool[] = [
   },
   {
     slug: 'calculadora-aguinaldo',
-    title: 'Calculadora de aguinaldo en Uruguay',
+    // 2026-11-16: la calculadora pasó a dar también el líquido, que es lo que se pregunta en
+    // diciembre ("cuánto me queda del aguinaldo"); el título y la descripción lo nombran.
+    title: 'Calculadora de aguinaldo: nominal y líquido',
     description:
-      'Calculá tu aguinaldo (sueldo anual complementario) dividiendo entre 12 lo que ganaste en el semestre. Estimación rápida y clara.',
+      'Calculá tu aguinaldo de diciembre (lo cobrado en el semestre dividido entre 12) y cuánto te queda en mano después de BPS, FONASA, FRL e IRPF.',
     icon: 'mdi-gift-outline',
     category: 'finanzas',
     keywords: ['calculadora aguinaldo uruguay', 'aguinaldo sac', 'cómo se calcula el aguinaldo'],
