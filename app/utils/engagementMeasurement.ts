@@ -52,6 +52,12 @@ export function measurementContext(path: string, origin: string) {
 export const LINK_AREAS = [
   'bank_decision',
   'guide_next_steps',
+  // The guide's first recommendations repeated INSIDE the article, and the "what next" row right
+  // under a tool's result. Both exist because the end-of-page modules sit 17-19 phone screens
+  // down (measured 2026-11-16): same destinations, different place, so they need their own area
+  // to be compared with the ones at the bottom.
+  'guide_inline_next',
+  'related_inline',
   'guide_section',
   'guide_contents',
   'related_pages',

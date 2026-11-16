@@ -57,6 +57,10 @@ function setup(environment: string) {
         localePrefixPattern: () => /^$/,
       },
       './i18n/extraMessagesVersion': { extraMessagesVersion: () => 'analytics-test' },
+      './i18n/messagesVersion': {
+        I18N_MESSAGE_SOURCES: [],
+        i18nMessagesVersion: () => 'analyticstest',
+      },
     },
     {
       defineNuxtConfig: (value: unknown) => value,

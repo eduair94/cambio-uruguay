@@ -116,6 +116,27 @@
               <ClientOnly v-if="i === 0 && adsOn">
                 <AdSlot placement="in-article" class="mb-6" />
               </ClientOnly>
+              <!-- Las primeras recomendaciones de la guía, ADENTRO del artículo (utils/guideReading
+                   → guideInlineNext): la lista del final cae en la pantalla 17 del teléfono. En el
+                   HTML del servidor, como la del final. -->
+              <nav
+                v-if="inlineNext && i === inlineNext.afterSection"
+                class="guide-next guide-next--inline mb-6"
+                :aria-label="readingT('guideReading.inlineNext')"
+                data-link-area="guide_inline_next"
+              >
+                <p class="guide-next-label text-overline mb-0">
+                  {{ readingT('guideReading.inlineNext') }}
+                </p>
+                <ul class="guide-next-list">
+                  <li v-for="link in inlineNext.links" :key="link.to">
+                    <NuxtLink :to="localePath(link.to)">
+                      <span>{{ link.label }}</span>
+                      <VIcon size="18" aria-hidden="true">mdi-arrow-right</VIcon>
+                    </NuxtLink>
+                  </li>
+                </ul>
+              </nav>
             </template>
           </article>
 
@@ -222,7 +243,7 @@ import { authorReference } from '~/utils/authorEntity'
 import { measurementContext, measurementPath } from '~/utils/engagementMeasurement'
 import { hubOfGuide } from '~/utils/guideHubs'
 import { getGuide } from '~/utils/guides'
-import { guideNextSteps, guideSectionIds } from '~/utils/guideReading'
+import { guideInlineNext, guideNextSteps, guideSectionIds } from '~/utils/guideReading'
 import { guideReadingMessages } from '~/utils/guideReadingMessages'
 
 // Reject unknown slugs at the route guard so they 404 (on SSR and client nav)
@@ -248,6 +269,9 @@ const adsOn = computed(() => adDensityForPath(route.path) !== 'none')
 const sectionIds = computed(() => guideSectionIds(guide.value?.sections ?? []))
 const nextSteps = computed(() =>
   guide.value ? guideNextSteps(guide.value, hub.value?.resources) : []
+)
+const inlineNext = computed(() =>
+  guide.value ? guideInlineNext(guide.value, nextSteps.value) : null
 )
 const contents = computed(() => {
   const current = guide.value
@@ -557,6 +581,15 @@ useHead({
 .guide-next h2 {
   margin-top: 0;
   margin-bottom: 12px;
+}
+
+/* La versión de adentro del artículo: la misma lista, sin título de sección. */
+.guide-next--inline {
+  padding-block: 12px;
+}
+
+.guide-next-label {
+  color: rgba(var(--v-theme-on-surface), 0.72);
 }
 
 .guide-next-list a {

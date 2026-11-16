@@ -21,9 +21,9 @@ anterior.
 - **Todo reporte filtra por `hostName`** (`cambio-uruguay.com` y `www.`). La misma propiedad GA4
   recibió datos de otra aplicación del mismo dueño hasta julio de 2026 y de los servidores de
   desarrollo. Sin el filtro, el segundo "referente" del sitio era esa aplicación, y Reddit "llevaba
-  gente" a rutas que acá no existen. `/estadisticas-del-sitio` todavía no filtra por host: su
-  ventana de 28 días ya no alcanza a la otra aplicación, pero la serie de 90 días la alcanzaría si
-  volviera a reportar.
+  gente" a rutas que acá no existen. `/estadisticas-del-sitio` también filtra por host desde el
+  16/11/2026 (`classes/site-analytics/refresh.ts`), y lleva un segundo juego de reportes sólo de
+  Uruguay, que es lo que la página muestra por defecto.
 - **Fuentes que no son fuentes.** `auto`, `button` y `/una-ruta` con medio `(not set)` eran eventos
   propios con un parámetro `source` que GA4 tomó como campaña (corregido en `a0417e0b`). Van a "sin
   atribuir" junto con desarrollo (`localhost`, IPs), el propio sitio y las herramientas que abren

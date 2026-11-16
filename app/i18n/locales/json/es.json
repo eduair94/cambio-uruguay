@@ -1551,8 +1551,8 @@
     }
   },
   "capture": {
-    "title": "¿Te sirvió? Recibí el resumen del dólar cada día",
-    "lead": "Un correo por día con las mejores cotizaciones, la tendencia y lo que cambió. Gratis, y te podés dar de baja cuando quieras.",
+    "title": "¿Seguís el dólar? Te lo mandamos cada mañana",
+    "lead": "Un correo por día con la mejor compra y la mejor venta entre más de 40 casas de cambio, la tendencia y lo que cambió. Gratis, y te podés dar de baja cuando quieras.",
     "dismiss": "Cerrar",
     "aria": "Suscribirse al newsletter"
   },

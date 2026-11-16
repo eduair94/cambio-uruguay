@@ -272,6 +272,9 @@
 
     <VMain id="main" tabindex="-1" :class="formatNameRoute()">
       <CookieConsent />
+      <!-- A quien lee español y cayó en otra versión: la misma página, en español (un enlace, nunca
+           una redirección). Regla en utils/languageHint.ts. -->
+      <LanguageHint />
       <!-- `--rail` sólo cuando el riel de escritorio va a renderizar: sin el id de la unidad la
            clase no se aplica y la grilla no existe (una grilla vacía robaría 300 px a toda página
            de densidad normal y dejaría de colapsar los márgenes entre hijos). -->

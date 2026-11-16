@@ -23,6 +23,8 @@ const context: Record<string, any> = {
   SHARED_LINK_PATTERN: /^$/,
   localePrefixPattern: () => /^$/,
   extraMessagesVersion: () => 'worker-test',
+  I18N_MESSAGE_SOURCES: [],
+  i18nMessagesVersion: () => 'workertest',
   defineNuxtConfig: (config: unknown) => config,
 }
 runInNewContext(

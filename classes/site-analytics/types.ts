@@ -50,6 +50,25 @@ export interface AnalyticsEventRow {
   users: number;
 }
 
+/**
+ * The same breakdowns for ONE audience (readers in Uruguay). No `countries`: it is one country.
+ *
+ * Why it exists: measured 2026-11-16, 73 % of the sessions GA4 counted in 28 days came from outside
+ * Uruguay through the Direct channel — one page, zero seconds, a desktop Chrome at 1280x1200 cycling
+ * through dozens of countries. With them in, the public page said "21 % engagement, 73 % direct";
+ * readers in Uruguay were 67 % engaged and 68 % from search. The page shows this block by default
+ * and the whole-property numbers one tap away, the same choice /origen-del-trafico already made.
+ */
+export interface AnalyticsAudience {
+  totals: AnalyticsTotals;
+  previousTotals: AnalyticsTotals;
+  daily: AnalyticsDailyPoint[];
+  topPages: AnalyticsPageRow[];
+  channels: AnalyticsShareRow[];
+  devices: AnalyticsShareRow[];
+  events: AnalyticsEventRow[];
+}
+
 export interface SiteAnalyticsSnapshot {
   /** Always `site` — one living document, upserted. */
   key: string;
@@ -72,6 +91,8 @@ export interface SiteAnalyticsSnapshot {
   countries: AnalyticsShareRow[];
   devices: AnalyticsShareRow[];
   events: AnalyticsEventRow[];
+  /** Readers in Uruguay only. Absent when that half of the batch came back empty. */
+  uruguay?: AnalyticsAudience;
 }
 
 export const SITE_ANALYTICS_KEY = "site";

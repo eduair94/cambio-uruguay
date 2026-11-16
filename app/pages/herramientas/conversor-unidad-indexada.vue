@@ -7,7 +7,7 @@
     :seo-description="seoDescription"
   >
     <VCard class="pa-4 pa-sm-6">
-      <div class="ui-today mb-5" data-testid="ui-today">
+      <div class="ui-today cu-keep-together mb-5" data-testid="ui-today">
         <div class="text-overline text-grey">Valor de la UI hoy</div>
         <template v-if="live">
           <div class="text-h5 font-weight-bold">1 UI = {{ formatUYU(live.value, 4) }}</div>
@@ -73,7 +73,7 @@
       <VDivider class="my-6" />
 
       <div class="result-grid">
-        <div class="result-box">
+        <div class="result-box cu-keep-together">
           <div class="text-overline text-grey">Resultado</div>
           <div class="text-h4 font-weight-bold text-primary">
             <template v-if="mode === 'uiToPesos'">{{ formatUYU(result) }}</template>

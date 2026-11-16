@@ -1,4 +1,12 @@
-export const RECOMMENDATION_AREAS = ['guide_next_steps', 'bank_decision'] as const
+// `related_pages` (the layout's "Seguí leyendo") joined on 2026-11-16: it had clicks but no
+// exposures, so 34 clicks in 28 days could not be told apart from "nobody scrolls that far".
+export const RECOMMENDATION_AREAS = [
+  'guide_next_steps',
+  'guide_inline_next',
+  'related_inline',
+  'related_pages',
+  'bank_decision',
+] as const
 export type RecommendationArea = (typeof RECOMMENDATION_AREAS)[number]
 
 export function recommendationArea(value: string | undefined): RecommendationArea | null {
