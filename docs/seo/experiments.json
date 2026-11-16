@@ -3303,6 +3303,24 @@
         "aguinaldo liquido"
       ],
       "hypothesis": "La calculadora daba solo el nominal (lo cobrado en el semestre / 12) y en diciembre la pregunta es cuanto entra a la cuenta. Pasa a dar tambien el liquido estimado con su desglose: jubilatorio 15 %, FONASA a la tasa del sueldo del mes (la prueba de 2,5 BPC se hace sin el aguinaldo), FRL 0,10 % (BPS, Comunicado 13/2025: las deducciones por aportes jubilatorios, Seguro Nacional de Salud y FRL deben incluir los del aguinaldo) e IRPF aparte a la tasa marginal maxima del sueldo (Decreto 148/007 art. 55-BIS, Decreto 185/009, Resolucion DGI 617/009), con dos casillas (hijos, conyuge a cargo) que mueven la tasa de FONASA. computeAguinaldoLiquido en utils/payroll.ts, con tests. Titulo y descripcion nombran el liquido porque es la capacidad nueva. En Search Console (2026-10-17..11-13) calculadora de aguinaldo estaba en 6,8 y simulador aguinaldo en 12,9, con 0 clics, fuera de temporada: el aguinaldo de diciembre se paga hasta el 20 y la demanda se concentra en las tres primeras semanas del mes. Se espera que la calculadora gane porcion de clics en su cluster."
+    },
+    {
+      "id": "transferencia-de-auto-arancel-por-departamento",
+      "shippedOn": "2026-11-16",
+      "routes": [
+        "/cuanto-sale-transferir-un-auto-uruguay",
+        "/guias/transferir-un-auto-uruguay"
+      ],
+      "queries": [
+        "cuanto sale transferir un auto uruguay",
+        "transferencia de auto uruguay",
+        "cambio de titularidad vehiculo uruguay",
+        "costo transferencia auto uruguay",
+        "libreta de propiedad precio uruguay",
+        "requisitos transferencia auto intendencia",
+        "transferir una moto uruguay"
+      ],
+      "hypothesis": "La transferencia es un tramite DEPARTAMENTAL y el sitio la contestaba solo con la guia /guias/transferir-un-auto-uruguay, que sobre los requisitos decia textual \"conviene consultar de antemano en la intendencia correspondiente\": manda a hacer el trabajo a quien vino a que se lo hicieran, y no publicaba ningun arancel. El SERP de esta consulta es el caso que este sitio si puede ganar (institucional e ilegible): diecinueve listas, una por intendencia, ninguna comparable con otra. La pagina nueva lee las fichas oficiales que existen y las pone en una pantalla: ocho en el catalogo nacional mas el instructivo propio de Montevideo, con el arancel textual, la fecha de \"Ultima actualizacion\" de cada ficha y los ocho requisitos comparados. Lo medido el 16/11/2026: cinco publican 1.780 por la libreta nueva, Canelones 1.620 y San Jose 1.419, Treinta y Tres remite a consultar y el instructivo legible de Montevideo no cifra; los dos importes mas bajos son tambien las dos fichas mas viejas (2025 y 2022), asi que la dispersion puede ser la fecha de la ficha y no el departamento, y la pagina lo dice en vez de publicar un promedio. Diez departamentos no tienen ficha en gub.uy (buscado en el catalogo, en Google y probando las seis formas de URL del propio catalogo) y eso se publica como ausencia, no se completa. No se publica lo que la fuente no trae: el escribano, el arancel de Montevideo y el plazo del Digesto. La guia conserva su URL y su intencion (el COMO, y que la deuda sigue al auto) y su seccion de certificados pasa a traer los conteos en vez del \"consulte\"; las dos se enlazan. Se espera que la porcion de clics del grupo de consultas de costo y requisitos de transferencia suba desde cero, que es lo que hay hoy: ninguna URL del sitio responde el monto."
     }
   ]
 }

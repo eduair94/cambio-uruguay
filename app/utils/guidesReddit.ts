@@ -1834,7 +1834,11 @@ export const redditGuides: readonly Guide[] = [
     description:
       'Cómo transferir un auto en Uruguay: verificar titularidad y deudas, certificados, intendencia, firmas y cómo evitar estafas.',
     tag: 'TRÁMITE',
-    updatedAt: '2026-07-18',
+    // 2026-11-16: la sección de certificados decía «conviene consultar de antemano en la
+    // intendencia correspondiente», que es mandar a hacer el trabajo a quien vino a que se lo
+    // hicieran. Pasa a traer lo que dicen las nueve fichas oficiales leídas, contadas en
+    // `utils/carTransferFees.ts`.
+    updatedAt: '2026-11-16',
     sections: [
       {
         heading: 'Antes de comprar: verificá titularidad y deudas',
@@ -1842,7 +1846,7 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         heading: 'Los certificados que necesitás',
-        body: 'Para transferir hace falta reunir la documentación que acredite que el auto está en regla. Eso incluye comprobar que la patente esté paga y sin deuda, que no haya multas pendientes, y la libreta de propiedad del vehículo. El trámite de cambio de titular se hace ante la intendencia del departamento donde está empadronado el auto, que lleva el registro departamental de vehículos. Cada intendencia puede pedir requisitos algo distintos, así que conviene consultar de antemano en la intendencia correspondiente qué certificados y formularios exige, para juntar todo antes de coordinar la firma y no tener que volver.',
+        body: 'Para transferir hace falta reunir la documentación que acredite que el auto está en regla. El trámite de cambio de titular se hace ante la intendencia del departamento donde está empadronado el auto, que lleva el registro departamental de vehículos, y cada una publica su propia lista. Leídas las nueve fichas oficiales que encontramos publicadas (noviembre de 2026), lo único que piden las nueve es documento de identidad de quien firma y Seguro Obligatorio de Automotores vigente. La libreta de propiedad y la patente al día figuran en seis, la inspección del vehículo en cuatro, el certificado de libre de prenda y embargo en tres —en Paysandú y Treinta y Tres con vigencia de 24 horas, o sea que se pide el día anterior— y la constancia de domicilio en dos. El arancel de la libreta nueva va de $1.419 a $1.780 según el departamento, y paga sólo el documento del vehículo: el escribano y los certificados van aparte.',
       },
       {
         heading: 'La firma y el rol del escribano',
@@ -1862,6 +1866,10 @@ export const redditGuides: readonly Guide[] = [
       },
     ],
     related: [
+      {
+        label: 'Cuánto sale transferir un auto',
+        to: '/cuanto-sale-transferir-un-auto-uruguay',
+      },
       { label: 'Comprar auto 0km o usado', to: '/guias/comprar-auto-0km-o-usado-uruguay' },
       { label: 'Cuánto cuesta tener un auto', to: '/guias/costos-de-tener-auto-uruguay' },
       { label: 'Estafas en Uruguay', to: '/estafas-uruguay' },
