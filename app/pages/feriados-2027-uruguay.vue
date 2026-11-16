@@ -3,7 +3,7 @@
     <header class="mb-10">
       <VChip color="primary" variant="flat" size="small" class="mb-4">FERIADOS</VChip>
       <h1 class="text-h4 text-md-h3 font-weight-bold mb-4">
-        Feriados 2027 en Uruguay: las 15 fechas y los 6 fines de semana largos
+        Feriados 2027 en Uruguay: calendario con las 15 fechas y los 6 fines de semana largos
       </h1>
       <p class="lead mb-6">
         En 2027 hay <strong>{{ resumen.dias }} días de feriado</strong> y dejan
@@ -35,6 +35,77 @@
         </div>
       </VCard>
     </header>
+
+    <!-- El almanaque: los doce meses en grilla, para ver e imprimir (utils/feriadosAnuales.ts,
+         `almanaqueDe`). Va primero porque es lo que pide quien busca "calendario 2027". -->
+    <section class="almanaque mb-12" aria-labelledby="almanaque-titulo">
+      <div class="almanaque-cabeza mb-2">
+        <h2 id="almanaque-titulo" class="text-h5 font-weight-bold mb-0">
+          Calendario 2027 con feriados
+        </h2>
+        <VBtn
+          class="no-print"
+          variant="tonal"
+          size="small"
+          prepend-icon="mdi-printer-outline"
+          @click="imprimirAlmanaque"
+        >
+          Imprimir calendario
+        </VBtn>
+      </div>
+      <p class="section-intro text-medium-emphasis mb-4 no-print">
+        Los doce meses, con cada feriado en el día en que se observa. El botón imprime sólo el
+        calendario, en una hoja A4.
+      </p>
+      <ul class="almanaque-leyenda" aria-label="Referencias del calendario">
+        <li><span class="dia-marca dia-marca--pago" aria-hidden="true">1</span> Feriado pago</li>
+        <li>
+          <span class="dia-marca dia-marca--laborable" aria-hidden="true">1</span> Feriado no pago
+        </li>
+        <li>
+          <span class="dia-marca dia-marca--tramo" aria-hidden="true">1</span> Fin de semana largo
+        </li>
+      </ul>
+      <div class="almanaque-grilla">
+        <div v-for="m in almanaque" :key="m.mes" class="almanaque-mes">
+          <table class="mes-tabla">
+            <caption class="mes-nombre">
+              {{
+                nombreDelMes(m.mes)
+              }}
+            </caption>
+            <thead>
+              <tr>
+                <th v-for="d in DIAS_DE_LA_SEMANA" :key="d.largo" scope="col" :abbr="d.largo">
+                  {{ d.corto }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(semana, i) in m.semanas" :key="i">
+                <td v-for="(dia, j) in semana" :key="j" :class="claseDelDia(dia)">
+                  <template v-if="dia">
+                    <span class="dia-marca">{{ dia.dia }}</span>
+                    <span v-if="dia.feriados.length" class="d-sr-only">
+                      , {{ dia.feriados.map(f => f.nombre).join(', ') }}</span
+                    >
+                  </template>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <ul v-if="m.feriados.length" class="mes-feriados">
+            <li v-for="f in m.feriados" :key="f.key">
+              <strong>{{ numeroDelDia(f.observado) }}</strong> {{ f.nombre }}
+            </li>
+          </ul>
+        </div>
+      </div>
+      <p class="almanaque-pie print-only">
+        Feriados de Uruguay en 2027 según las leyes 16.805, 6.997 y 12.590. Fuente:
+        cambio-uruguay.com/feriados-2027-uruguay
+      </p>
+    </section>
 
     <!-- Fines de semana largos -->
     <section class="mb-12">
@@ -220,10 +291,12 @@
 <script setup lang="ts">
 import { FERIADOS_SOURCES, FERIADOS_VERIFIED_AT } from '~/utils/feriados'
 import {
+  almanaqueDe,
   calendarioDe,
   diaDeLaSemana,
   finesDeSemanaLargosDe,
   resumenDe,
+  type DiaDelAlmanaque,
   type FeriadoDelAnio,
   type TramoLibre,
 } from '~/utils/feriadosAnuales'
@@ -238,6 +311,55 @@ const localePath = useLocalePath()
 const calendario = calendarioDe(ANIO)
 const tramos = finesDeSemanaLargosDe(ANIO)
 const resumen = resumenDe(ANIO)
+const almanaque = almanaqueDe(ANIO)
+
+// Lunes primero, como se imprimen los almanaques acá; `abbr` le da a un lector de pantalla el
+// nombre entero del día en vez de "Mi".
+const DIAS_DE_LA_SEMANA = [
+  { corto: 'Lu', largo: 'lunes' },
+  { corto: 'Ma', largo: 'martes' },
+  { corto: 'Mi', largo: 'miércoles' },
+  { corto: 'Ju', largo: 'jueves' },
+  { corto: 'Vi', largo: 'viernes' },
+  { corto: 'Sá', largo: 'sábado' },
+  { corto: 'Do', largo: 'domingo' },
+] as const
+
+const NOMBRE_DEL_MES = new Intl.DateTimeFormat('es-UY', { month: 'long', timeZone: 'UTC' })
+const nombreDelMes = (mes: number) => {
+  const nombre = NOMBRE_DEL_MES.format(new Date(Date.UTC(ANIO, mes, 1)))
+  return nombre.charAt(0).toUpperCase() + nombre.slice(1)
+}
+const numeroDelDia = (iso: string) => Number(iso.slice(8, 10))
+
+/**
+ * La marca de cada día va por FORMA y no sólo por color, para que se lea impresa en blanco y negro:
+ * feriado pago = círculo lleno, feriado no pago = anillo, fin de semana largo = franja con raya.
+ */
+function claseDelDia(dia: DiaDelAlmanaque | null): Record<string, boolean> {
+  if (!dia) return { 'dia-vacio': true }
+  const pago = dia.feriados.some(f => f.pago)
+  return {
+    'dia-finde': dia.finDeSemana,
+    'dia-pago': pago,
+    'dia-laborable': dia.feriados.length > 0 && !pago,
+    'dia-tramo': dia.enFinDeSemanaLargo,
+  }
+}
+
+/**
+ * Imprime SÓLO el calendario: la clase en <html> activa las reglas de impresión de abajo (que
+ * esconden todo lo que no contiene al almanaque) y se saca al terminar. Un Ctrl+P sin el botón
+ * sigue imprimiendo la página entera, como antes.
+ */
+function imprimirAlmanaque() {
+  const root = document.documentElement
+  root.classList.add('imprimir-almanaque')
+  window.addEventListener('afterprint', () => root.classList.remove('imprimir-almanaque'), {
+    once: true,
+  })
+  window.print()
+}
 
 // El porqué de la fila, derivado del corrimiento y no escrito a mano: los dos feriados que 2027
 // corre caen martes, pero el motivo tiene tres formas y un literal sería falso el año en que una de
@@ -390,7 +512,8 @@ useHead(() => ({
           },
           {
             '@type': 'Article',
-            headline: 'Feriados 2027 en Uruguay: las 15 fechas y los 6 fines de semana largos',
+            headline:
+              'Feriados 2027 en Uruguay: calendario con las 15 fechas y los 6 fines de semana largos',
             description,
             inLanguage: 'es-UY',
             mainEntityOfPage: canonicalUrl,
@@ -454,5 +577,208 @@ useHead(() => ({
 
 .sources-list a {
   color: rgb(var(--v-theme-primary));
+}
+
+/* El almanaque ------------------------------------------------------------------------------ */
+.almanaque-cabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.almanaque-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  font-size: 0.875rem;
+}
+
+.almanaque-leyenda li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.almanaque-grilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
+  gap: 1.75rem 2rem;
+}
+
+.mes-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-variant-numeric: tabular-nums;
+}
+
+.mes-nombre {
+  text-align: left;
+  font-weight: 700;
+  font-size: 1rem;
+  padding-bottom: 0.4rem;
+}
+
+.mes-tabla th {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+  padding: 0 0 0.25rem;
+  text-align: center;
+}
+
+.mes-tabla td {
+  text-align: center;
+  padding: 2px 0;
+  font-size: 0.85rem;
+}
+
+.dia-marca {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  line-height: 1;
+}
+
+.dia-finde .dia-marca {
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+}
+
+/* El fin de semana largo es una franja corrida de lado a lado, con una raya abajo que sobrevive a
+   una impresora que no imprime fondos. */
+.dia-tramo {
+  background: rgba(var(--v-theme-primary), 0.1);
+  box-shadow: inset 0 -2px 0 rgba(var(--v-theme-primary), 0.55);
+}
+
+.dia-laborable .dia-marca {
+  border-color: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-on-surface));
+  font-weight: 700;
+}
+
+.dia-pago .dia-marca {
+  background: rgb(var(--v-theme-success));
+  border-color: rgb(var(--v-theme-success));
+  color: rgb(var(--v-theme-on-success));
+  font-weight: 700;
+}
+
+/* La leyenda usa las mismas marcas, sueltas. */
+.dia-marca--laborable {
+  border-color: rgb(var(--v-theme-primary));
+  font-weight: 700;
+}
+
+.dia-marca--pago {
+  background: rgb(var(--v-theme-success));
+  border-color: rgb(var(--v-theme-success));
+  color: rgb(var(--v-theme-on-success));
+  font-weight: 700;
+}
+
+.dia-marca--tramo {
+  border-radius: 4px;
+  background: rgba(var(--v-theme-primary), 0.1);
+  box-shadow: inset 0 -2px 0 rgba(var(--v-theme-primary), 0.55);
+}
+
+.mes-feriados {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+}
+
+.mes-feriados strong {
+  display: inline-block;
+  min-width: 1.5rem;
+  color: rgb(var(--v-theme-on-surface));
+}
+
+.print-only {
+  display: none;
+}
+
+.almanaque-pie {
+  font-size: 0.75rem;
+  margin: 1rem 0 0;
+}
+</style>
+
+<!-- Impresión del almanaque. Sin `scoped`: tiene que alcanzar a <html> y a los contenedores del
+     layout. Sólo actúa con la clase que pone el botón, así que un Ctrl+P normal no cambia. Esconde
+     todo elemento que no sea el almanaque, no esté adentro de él ni lo contenga (`:has`), en vez del
+     truco de `visibility`, que deja el resto ocupando lugar y saca hojas en blanco. -->
+<style>
+@media print {
+  html.imprimir-almanaque body *:not(:has(.almanaque)):not(.almanaque):not(.almanaque *) {
+    display: none !important;
+  }
+
+  html.imprimir-almanaque body *:has(.almanaque) {
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    max-width: none !important;
+    box-shadow: none !important;
+  }
+
+  html.imprimir-almanaque .almanaque {
+    margin: 0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  html.imprimir-almanaque .almanaque .no-print,
+  html.imprimir-almanaque .almanaque ins.adsbygoogle,
+  html.imprimir-almanaque .almanaque .google-auto-placed {
+    display: none !important;
+  }
+
+  html.imprimir-almanaque .almanaque .print-only {
+    display: block !important;
+  }
+
+  html.imprimir-almanaque .almanaque-grilla {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 5mm 8mm !important;
+  }
+
+  html.imprimir-almanaque .almanaque-mes {
+    break-inside: avoid;
+  }
+
+  html.imprimir-almanaque .mes-tabla td {
+    padding: 0 !important;
+    font-size: 8.5pt !important;
+  }
+
+  html.imprimir-almanaque .dia-marca {
+    width: 5.6mm !important;
+    height: 5.6mm !important;
+    border-width: 1.5px !important;
+  }
+
+  html.imprimir-almanaque .mes-feriados {
+    font-size: 7pt !important;
+    margin-top: 1mm !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
 }
 </style>

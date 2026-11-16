@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  almanaqueDe,
   calendarioDe,
   carnavalDe,
   cenizaDe,
@@ -181,5 +182,52 @@ describe('el resumen que va en el título y en la descripción', () => {
       expect(resumen.pagos, String(year)).toBe(5)
       expect(resumen.seCorren, String(year)).toBeLessThanOrEqual(3)
     }
+  })
+})
+
+describe('el almanaque de 2027, mes por mes', () => {
+  const meses = almanaqueDe(2027)
+
+  it('tiene doce meses y cada uno todos sus días, en semanas de siete', () => {
+    expect(meses).toHaveLength(12)
+    let total = 0
+    for (const m of meses) {
+      for (const semana of m.semanas) expect(semana).toHaveLength(7)
+      total += m.semanas.flat().filter(Boolean).length
+    }
+    expect(total).toBe(365)
+  })
+
+  it('arranca cada mes en la columna de su día (lunes primero)', () => {
+    // 1.º de enero de 2027: viernes → columna 4. 1.º de febrero: lunes → columna 0.
+    expect(meses[0]!.semanas[0]!.findIndex(Boolean)).toBe(4)
+    expect(meses[1]!.semanas[0]!.findIndex(Boolean)).toBe(0)
+    // 1.º de agosto de 2027: domingo → columna 6.
+    expect(meses[7]!.semanas[0]!.findIndex(Boolean)).toBe(6)
+  })
+
+  it('marca exactamente los mismos feriados que la tabla', () => {
+    const enGrilla = meses.flatMap(m => m.feriados.map(f => f.observado))
+    expect(enGrilla).toEqual(calendarioDe(2027).map(f => f.observado))
+  })
+
+  it('pinta los fines de semana largos con los mismos tramos', () => {
+    const dias = meses.flatMap(m => m.semanas.flat()).filter(d => d?.enFinDeSemanaLargo)
+    const esperado = finesDeSemanaLargosDe(2027).reduce((n, t) => n + t.dias, 0)
+    expect(dias).toHaveLength(esperado)
+    // Carnaval: sábado 6 a martes 9 de febrero, cuatro días.
+    const feb = meses[1]!.semanas
+      .flat()
+      .filter(d => d?.enFinDeSemanaLargo)
+      .map(d => d!.dia)
+    expect(feb).toEqual(expect.arrayContaining([6, 7, 8, 9]))
+  })
+
+  it('un feriado que cae fin de semana no arma un fin de semana largo', () => {
+    // 18 de julio de 2027: domingo, aislado.
+    const dia = meses[6]!.semanas.flat().find(d => d?.dia === 18)!
+    expect(dia.feriados.map(f => f.key).length).toBe(1)
+    expect(dia.finDeSemana).toBe(true)
+    expect(dia.enFinDeSemanaLargo).toBe(false)
   })
 })
