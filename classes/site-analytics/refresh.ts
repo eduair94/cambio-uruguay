@@ -330,11 +330,15 @@ export function buildSnapshot(reports: Ga4Report[], ctx: BuildSnapshotContext): 
  * comes WITHOUT its Uruguay half must remove the stored one. `$set` alone would leave yesterday's
  * block next to today's window, and the page would show two different date ranges as one.
  */
-export function siteAnalyticsUpdate(snapshot: SiteAnalyticsSnapshot) {
+export function siteAnalyticsUpdate(snapshot: SiteAnalyticsSnapshot): {
+  $set: SiteAnalyticsSnapshot;
+  $unset?: { uruguay: "" };
+} {
   const { uruguay, ...rest } = snapshot;
-  return uruguay
-    ? { $set: { ...rest, uruguay, key: SITE_ANALYTICS_KEY } }
-    : { $set: { ...rest, key: SITE_ANALYTICS_KEY }, $unset: { uruguay: "" } };
+  // One declared shape for both branches: as a union of two object literals, reading
+  // `$set.uruguay` did not type-check, and the production build compiles the tests too.
+  const $set: SiteAnalyticsSnapshot = { ...rest, key: SITE_ANALYTICS_KEY, ...(uruguay ? { uruguay } : {}) };
+  return uruguay ? { $set } : { $set, $unset: { uruguay: "" } };
 }
 
 /** A snapshot with no traffic at all is almost always a misconfiguration, not a quiet month. */

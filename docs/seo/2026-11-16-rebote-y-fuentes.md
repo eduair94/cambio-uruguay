@@ -48,6 +48,8 @@ ingreso: este documento es público.
   `server/plugins/i18n-messages-cache.ts`); una versión vieja se redirige a la vigente.
 - `.cu-keep-together` (critical.css): una unidad de Auto Ads insertada dentro de una respuesta pasa
   al final del bloque, entera y visible. En el indicador y en el conversor de UI.
+- En los indicadores el valor va pegado al título, antes de la definición: con el aviso de cookies
+  y la unidad que Auto Ads pone arriba del H1, el número quedaba debajo del pliegue del teléfono.
 - Las dos primeras recomendaciones de una guía larga se repiten después de su segunda sección
   (`guideInlineNext`), y las tres primeras de «Seguí leyendo» van debajo del resultado en las 17
   calculadoras y en los indicadores (`RelatedInline`); el bloque del pie no las repite.
