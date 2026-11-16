@@ -8,6 +8,7 @@ import {
   hasAnalyticsUnsafeQuery,
   withoutSignInHandoff,
 } from '../../utils/analyticsUrl'
+import { MEASURE_AUTOMATION_KEY, isAutomatedClient } from '../../utils/automatedClient'
 import { isBareRoute } from '../../utils/bareRoutes'
 
 // 2026-11-08, measured in production: a Discord sign-in lands on /cuenta?ct=<Firebase custom
@@ -75,6 +76,7 @@ function boot(path: string, search: string) {
     require: (name: string) => {
       if (name === '~/utils/analyticsUrl') return { hasAnalyticsUnsafeQuery }
       if (name === '~/utils/bareRoutes') return { isBareRoute }
+      if (name === '~/utils/automatedClient') return { MEASURE_AUTOMATION_KEY, isAutomatedClient }
       throw new Error(`Unexpected import: ${name}`)
     },
     defineNuxtPlugin: (fn: unknown) => fn,

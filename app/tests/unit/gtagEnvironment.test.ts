@@ -7,6 +7,7 @@ import ts from 'typescript'
 import { withQuery } from 'ufo'
 import { describe, expect, it, vi } from 'vitest'
 import { hasAnalyticsUnsafeQuery } from '../../utils/analyticsUrl'
+import { MEASURE_AUTOMATION_KEY, isAutomatedClient } from '../../utils/automatedClient'
 import { isBareRoute } from '../../utils/bareRoutes'
 import { CONSENT_STRICT_REGIONS } from '../../utils/consent'
 
@@ -125,6 +126,7 @@ function setup(environment: string) {
       resolve(appDir, 'plugins/gtag-init.client.ts'),
       {
         '~/utils/analyticsUrl': { hasAnalyticsUnsafeQuery },
+        '~/utils/automatedClient': { MEASURE_AUTOMATION_KEY, isAutomatedClient },
         '~/utils/bareRoutes': { isBareRoute },
       },
       {

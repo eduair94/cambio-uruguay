@@ -131,6 +131,10 @@ cubre rutas sensibles, querystrings, teléfono/mensaje externo, tiempo oculto, r
 reinicios SPA, clic central, paridad de slugs editoriales, exposición visible de enlaces y desmontaje
 de los plugins. Los tests no contactan Google.
 
+Un navegador manejado por Playwright, Puppeteer o WebDriver no inicia GA (`utils/automatedClient.ts`,
+desde el 16/11/2026): para ver salir los eventos, la prueba pone `localStorage.cu_measure_automation = '1'`
+antes de cargar la página.
+
 En un navegador de prueba con depuración habilitada en producción: hacer una navegación real y
 comprobar **una sola** vista nueva, ubicación/referrer correctos en esa vista y un evento de clic
 separado; los nuevos plugins no administran vistas. Leer/desplazar más de 30 segundos, ocultar la

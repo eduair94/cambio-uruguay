@@ -110,11 +110,18 @@ describe('el cableado', () => {
     expect(config).toContain('i18nMessagesVersion: i18nMessagesVersionId,')
   })
 
-  it('la cabecera sólo va en un 200 o un 304 de la ruta versionada', () => {
+  it('la cabecera sólo va en un 200 de la ruta versionada', () => {
     const plugin = read('server/plugins/i18n-messages-cache.ts')
     expect(plugin).toContain("hooks.hook('beforeResponse'")
     expect(plugin).toContain('if (!versionedMessagesLocale(event.path')
-    expect(plugin).toContain('if (status !== 200 && status !== 304) return')
+    expect(plugin).toContain('if (event.node.res.statusCode !== 200) return')
+  })
+
+  it('un pedido condicional entra sin sus condicionales: el 304 del módulo salía con max-age=-1', () => {
+    const plugin = read('server/plugins/i18n-messages-cache.ts')
+    expect(plugin).toContain("hooks.hook('request'")
+    expect(plugin).toContain("delete event.node.req.headers['if-none-match']")
+    expect(plugin).toContain("delete event.node.req.headers['if-modified-since']")
   })
 
   it('la red redirige a la versión vigente, no se guarda y no puede entrar en bucle', () => {

@@ -56,6 +56,10 @@ ingreso: este documento es público.
 - `/estadisticas-del-sitio` muestra Uruguay por defecto y dice cuánto agrega «todos los países».
 - Quien tiene el navegador en español y cae en otra versión ve un enlace a la misma página en
   español. Nadie es redirigido.
+- GA no arranca en un navegador automatizado (`navigator.webdriver`, o el User-Agent de las
+  herramientas propias): 388 de las 1.190 sesiones directas de Uruguay duraban cero segundos y
+  eran las auditorías del sitio contra producción. Una prueba que necesita ver los eventos lo pide
+  con `localStorage.cu_measure_automation = '1'`.
 
 ## Cómo evaluarlo
 
@@ -75,5 +79,8 @@ Se miden en GA4, Uruguay con Uruguay y teléfono con teléfono, a 28 días compl
 - **La consola de AdSense.** En un teléfono Auto Ads puso 12–15 unidades en una sola página, y los
   enlaces de intención son un formato que se apaga ahí.
 - **La etiqueta de Google Ads** que carga el sitio responde 404: un pedido muerto por vista.
-- **El origen de la ola automatizada.** GA4 la reconoce por resolución de pantalla; una regla de
-  borde necesita el User-Agent o la ruta, que hay que mirar con `npm run cf_traffic`.
+- **El origen de la ola automatizada.** GA4 la reconoce por resolución de pantalla. En Cloudflare,
+  quienes hidratan desde fuera de Uruguay son rastreadores declarados (Ahrefs, Applebot, Baidu) y
+  una rotación pareja de User-Agents de teléfono, casi toda desde Estados Unidos: no hay una firma
+  única que una regla de borde pueda desafiar sin tocar lectores. Si esos navegadores declaran
+  `navigator.webdriver`, dejan de contarse con el cambio de arriba; se sabrá en GA4 en unos días.
