@@ -1,6 +1,13 @@
 // app/tests/unit/payroll.test.ts
 import { describe, expect, it } from 'vitest'
-import { computePayroll, fonasaRate, nominalForLiquido, PAYROLL_UY } from '../../utils/payroll'
+import {
+  computeAguinaldoLiquido,
+  computePayroll,
+  fonasaRate,
+  marginalRate,
+  nominalForLiquido,
+  PAYROLL_UY,
+} from '../../utils/payroll'
 import { URUGUAY } from '../../utils/calculators'
 
 const BPC = URUGUAY.bpc // 6864 (2026)
@@ -191,5 +198,77 @@ describe('nominalForLiquido (reverse mode)', () => {
   })
   it('returns 0 for a zero target', () => {
     expect(nominalForLiquido(0)).toBe(0)
+  })
+})
+
+describe('computeAguinaldoLiquido', () => {
+  it('descuenta jubilatorio, FONASA, FRL e IRPF a la tasa marginal del sueldo', () => {
+    // $ 50.000 por mes, seis meses: aguinaldo $ 25.000. FONASA 4,5 % (sueldo > 2,5 BPC, solo),
+    // IRPF 10 % (el sueldo pasa 7 BPC y no llega a 10).
+    const r = computeAguinaldoLiquido({ aguinaldo: 25000, sueldoMensual: 50000 })
+    expect(r.jubilatorio.amount).toBe(3750)
+    expect(r.fonasa).toEqual({ rate: 4.5, amount: 1125 })
+    expect(r.frl.amount).toBe(25)
+    expect(r.irpf).toEqual({ rate: 10, amount: 2500 })
+    expect(r.totalDescuentos).toBe(7400)
+    expect(r.liquido).toBe(17600)
+  })
+
+  it('la tasa de FONASA sale del sueldo del mes, no del aguinaldo', () => {
+    // El aguinaldo de $ 15.000 está por debajo de 2,5 BPC, el sueldo de $ 30.000 no.
+    expect(computeAguinaldoLiquido({ aguinaldo: 15000, sueldoMensual: 30000 }).fonasa.rate).toBe(
+      4.5
+    )
+    expect(
+      computeAguinaldoLiquido({ aguinaldo: 15000, sueldoMensual: 30000, hijos: 1 }).fonasa.rate
+    ).toBe(6)
+    expect(
+      computeAguinaldoLiquido({
+        aguinaldo: 15000,
+        sueldoMensual: 30000,
+        hijos: 2,
+        conyugeACargo: true,
+      }).fonasa.rate
+    ).toBe(8)
+  })
+
+  it('sin IRPF hasta 7 BPC de sueldo, y la tasa sube con el 6 % por encima de 10 BPC', () => {
+    expect(computeAguinaldoLiquido({ aguinaldo: 20000, sueldoMensual: 40000 }).irpf.amount).toBe(0)
+    // $ 80.000 + 6 % = $ 84.800: entre 10 y 15 BPC, 15 %.
+    expect(computeAguinaldoLiquido({ aguinaldo: 40000, sueldoMensual: 80000 }).irpf.rate).toBe(15)
+    // Justo en 7 BPC sigue en la franja de 0 %.
+    const bpc = URUGUAY.bpc
+    expect(computeAguinaldoLiquido({ aguinaldo: 1000, sueldoMensual: 7 * bpc }).irpf.rate).toBe(0)
+  })
+
+  it('avisa cuando el aguinaldo pasa el tope jubilatorio en vez de inventarlo', () => {
+    expect(
+      computeAguinaldoLiquido({ aguinaldo: 150000, sueldoMensual: 300000 }).superaTopeJubilatorio
+    ).toBe(true)
+    expect(
+      computeAguinaldoLiquido({ aguinaldo: 25000, sueldoMensual: 50000 }).superaTopeJubilatorio
+    ).toBe(false)
+  })
+
+  it('nunca da un líquido negativo ni mayor que el nominal', () => {
+    for (const sueldo of [0, 20000, 60000, 120000, 400000]) {
+      const r = computeAguinaldoLiquido({ aguinaldo: sueldo / 2, sueldoMensual: sueldo })
+      expect(r.liquido).toBeGreaterThanOrEqual(0)
+      expect(r.liquido).toBeLessThanOrEqual(r.aguinaldo)
+    }
+  })
+})
+
+describe('marginalRate', () => {
+  it('devuelve la tasa de la franja en la que cae la base', () => {
+    const brackets = [
+      { upTo: 100, rate: 0 },
+      { upTo: 200, rate: 10 },
+      { upTo: null, rate: 20 },
+    ]
+    expect(marginalRate(0, brackets)).toBe(0)
+    expect(marginalRate(100, brackets)).toBe(0)
+    expect(marginalRate(150, brackets)).toBe(10)
+    expect(marginalRate(5000, brackets)).toBe(20)
   })
 })

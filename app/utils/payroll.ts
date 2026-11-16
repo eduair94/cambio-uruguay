@@ -36,7 +36,14 @@
 //
 // Informativo, no asesoramiento fiscal.
 
-import { URUGUAY, irpfBracketsUyu, progressiveTax, round, type BracketDetail } from './calculators'
+import {
+  URUGUAY,
+  irpfBracketsUyu,
+  progressiveTax,
+  round,
+  type BracketDetail,
+  type TaxBracket,
+} from './calculators'
 
 /** Verified payroll parameters. Update yearly alongside `URUGUAY.bpc`. */
 export const PAYROLL_UY = Object.freeze({
@@ -241,4 +248,104 @@ export function nominalForLiquido(
     else high = mid
   }
   return round((low + high) / 2)
+}
+
+// ---------------------------------------------------------------------------
+// El aguinaldo líquido
+// ---------------------------------------------------------------------------
+
+/**
+ * La tasa marginal (%) de la franja en la que cae `base`: la de la última franja que alcanza.
+ * Cero hasta el mínimo no imponible.
+ */
+export function marginalRate(base: number, brackets: readonly TaxBracket[]): number {
+  if (!(base > 0)) return 0
+  for (const bracket of brackets) {
+    if (bracket.upTo === null || base <= bracket.upTo) return bracket.rate
+  }
+  return brackets[brackets.length - 1]?.rate ?? 0
+}
+
+export interface AguinaldoLiquidoInput {
+  /** El aguinaldo nominal de la cuota (lo que devuelve `computeAguinaldo`). */
+  aguinaldo: number
+  /**
+   * El sueldo nominal mensual, SIN el aguinaldo. Decide dos cosas: la tasa de FONASA (la prueba de
+   * 2,5 BPC excluye el aguinaldo) y la tasa marginal del IRPF que se le aplica al aguinaldo.
+   */
+  sueldoMensual: number
+  hijos?: number
+  conyugeACargo?: boolean
+  bpc?: number
+}
+
+export interface AguinaldoLiquidoResult {
+  aguinaldo: number
+  jubilatorio: AporteLine
+  fonasa: AporteLine
+  frl: AporteLine
+  /** `rate` es la tasa marginal máxima del sueldo del mes. */
+  irpf: AporteLine
+  totalDescuentos: number
+  liquido: number
+  /**
+   * El aporte jubilatorio del aguinaldo tiene su propio tope (Decreto 440/997, art. 2: el
+   * aguinaldo se compara con el tope «multiplicando cada mitad por dos»). Por encima de eso esta
+   * cuenta sobrestima el aporte; la página lo dice en vez de inventar el tope del aguinaldo, que
+   * BPS no publica en pesos.
+   */
+  superaTopeJubilatorio: boolean
+}
+
+/**
+ * Lo que queda del aguinaldo después de los descuentos, para un trabajador dependiente.
+ *
+ * POR QUÉ (2026-11-16). La calculadora daba sólo el nominal y la pregunta de diciembre es cuánto
+ * entra a la cuenta. Cada regla está en una fuente primaria, leída ese día:
+ *   - Jubilatorio 15 %, FONASA y FRL SÍ gravan el aguinaldo: BPS, Comunicado 13/2025 (ajuste
+ *     anual IRPF), «las deducciones correspondientes a aportes personales jubilatorios, Seguro
+ *     Nacional de Salud y FRL, deben incluir los aportes personales por concepto de aguinaldo».
+ *     El aguinaldo sólo está excluido del aporte PATRONAL a FONASA (Decreto 2/008, art. 4).
+ *   - La tasa de FONASA es la del sueldo del mes: la prueba de 2,5 BPC se hace «con exclusión del
+ *     aguinaldo» (bps.gub.uy/10314/tasas-fonasa.html). Con la tasa del propio aguinaldo, un sueldo
+ *     de $ 30.000 caería en 3 % en vez de 4,5 %, que es el error que esta función evita.
+ *   - FRL 0,10 % (Ley 19.689, art. 17).
+ *   - IRPF: el aguinaldo legal se grava APARTE, a una tasa proporcional igual a la marginal máxima
+ *     de las demás rentas del trabajo (Decreto 148/007, art. 55-BIS; DGI, «IRPF para trabajadores
+ *     dependientes»), y se retiene al pagarlo con la tasa del sueldo del mes (Decreto 185/009,
+ *     Resolución DGI 617/009). La tasa se toma sobre la misma base del anticipo del mes (con el
+ *     6 % por encima de 10 BPC, como `computePayroll`). El ajuste anual de diciembre la recalcula.
+ *
+ * Lo que NO hace: el crédito por deducciones que esos mismos aportes generan en el IRPF del mes
+ * (puede bajar un poco la retención), ni el tope jubilatorio propio del aguinaldo
+ * (`superaTopeJubilatorio`). Es una estimación, y la página lo dice.
+ */
+export function computeAguinaldoLiquido(input: AguinaldoLiquidoInput): AguinaldoLiquidoResult {
+  const bpc = input.bpc && input.bpc > 0 ? input.bpc : URUGUAY.bpc
+  const aguinaldo = Math.max(input.aguinaldo || 0, 0)
+  const sueldo = Math.max(input.sueldoMensual || 0, 0)
+
+  const jubilatorio = round((aguinaldo * PAYROLL_UY.jubilatorioRate) / 100)
+  const fRate = fonasaRate(sueldo, bpc, Math.max(input.hijos || 0, 0), !!input.conyugeACargo)
+  const fonasa = round((aguinaldo * fRate) / 100)
+  const frl = round((aguinaldo * PAYROLL_UY.frlRate) / 100)
+
+  const computable =
+    sueldo > PAYROLL_UY.irpfIncrementAboveBpc * bpc
+      ? sueldo * (1 + PAYROLL_UY.irpfIncrementPct / 100)
+      : sueldo
+  const irpfRate = marginalRate(computable, irpfBracketsUyu(bpc))
+  const irpf = round((aguinaldo * irpfRate) / 100)
+
+  const totalDescuentos = round(jubilatorio + fonasa + frl + irpf)
+  return {
+    aguinaldo: round(aguinaldo),
+    jubilatorio: { rate: PAYROLL_UY.jubilatorioRate, amount: jubilatorio },
+    fonasa: { rate: fRate, amount: fonasa },
+    frl: { rate: PAYROLL_UY.frlRate, amount: frl },
+    irpf: { rate: irpfRate, amount: irpf },
+    totalDescuentos,
+    liquido: round(aguinaldo - totalDescuentos),
+    superaTopeJubilatorio: aguinaldo * 2 > PAYROLL_UY.jubilatorioTope,
+  }
 }

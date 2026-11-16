@@ -3287,6 +3287,22 @@
         "descargar cedula catastral"
       ],
       "hypothesis": "La pagina contestaba el tramite con el vocabulario de 'valor catastral' y ningun titulo nombraba la cedula, mientras en Search Console (2026-10-17..11-13) 'cedula catastral' sola trajo 5.191 impresiones en posicion 9,8 y sus variantes (comun, informada, emision, por padron, descargar) otras ~3.000, todas al fondo de la primera pagina: quien escribe eso quiere sacar el papel, no saber que es el valor. Se agrega una seccion 'Como sacar la cedula catastral comun, paso a paso' (CEDULA_PASOS: numero de padron en la factura de la contribucion, Sede Electronica sin usuario, se imprime al final, validacion de acceso libre, y la informada con su tasa en UR), el H2 de los tres tramites pasa a nombrar 'Cedula catastral comun, informada o revision' y tres preguntas frecuentes (comun vs informada, por numero de padron, como se valida). No agrega ningun hecho: todo sale de lo cotejado el 2026-10-12 en utils/cadastralValue.ts. No se toco titulo, descripcion, URL, canonical ni anuncio. Se espera que la pagina suba en ese cluster, que es el que mas impresiones le trae."
+    },
+    {
+      "id": "calculadora-aguinaldo-con-liquido",
+      "shippedOn": "2026-11-16",
+      "routes": [
+        "/herramientas/calculadora-aguinaldo"
+      ],
+      "queries": [
+        "calculadora de aguinaldo",
+        "simulador aguinaldo",
+        "calcular aguinaldo",
+        "calculadora aguinaldo",
+        "calculadora aguinaldo uruguay",
+        "aguinaldo liquido"
+      ],
+      "hypothesis": "La calculadora daba solo el nominal (lo cobrado en el semestre / 12) y en diciembre la pregunta es cuanto entra a la cuenta. Pasa a dar tambien el liquido estimado con su desglose: jubilatorio 15 %, FONASA a la tasa del sueldo del mes (la prueba de 2,5 BPC se hace sin el aguinaldo), FRL 0,10 % (BPS, Comunicado 13/2025: las deducciones por aportes jubilatorios, Seguro Nacional de Salud y FRL deben incluir los del aguinaldo) e IRPF aparte a la tasa marginal maxima del sueldo (Decreto 148/007 art. 55-BIS, Decreto 185/009, Resolucion DGI 617/009), con dos casillas (hijos, conyuge a cargo) que mueven la tasa de FONASA. computeAguinaldoLiquido en utils/payroll.ts, con tests. Titulo y descripcion nombran el liquido porque es la capacidad nueva. En Search Console (2026-10-17..11-13) calculadora de aguinaldo estaba en 6,8 y simulador aguinaldo en 12,9, con 0 clics, fuera de temporada: el aguinaldo de diciembre se paga hasta el 20 y la demanda se concentra en las tres primeras semanas del mes. Se espera que la calculadora gane porcion de clics en su cluster."
     }
   ]
 }
