@@ -8,9 +8,11 @@
 //
 // The window ends YESTERDAY, never today: GA4's current day is partial, and a half day rendered
 // next to 27 whole ones reads as a traffic collapse.
-import { ga4PropertyId, reportRows, reportTotals, runReports } from "./ga4";
+import { exactDimension, ga4PropertyId, reportRows, reportTotals, runReports } from "./ga4";
 import type { Ga4Report, Ga4ReportRequest, Ga4Row } from "./ga4";
+import { SITE_HOSTS } from "./sourceKinds";
 import type {
+  AnalyticsAudience,
   AnalyticsDailyPoint,
   AnalyticsEventRow,
   AnalyticsPageRow,
@@ -77,10 +79,31 @@ export function analyticsWindows(now: Date, tz: string = DEFAULT_TIMEZONE): Anal
   };
 }
 
-/** The batch of reports the snapshot is made of. Order matters — `buildSnapshot` reads it by index. */
-export function analyticsReportRequests(w: AnalyticsWindows): Ga4ReportRequest[] {
+/** Which visits a batch of reports counts. */
+export type AnalyticsAudienceScope = "all" | "uruguay";
+
+/** How many reports one audience takes. `buildSnapshot` reads the second audience at this offset. */
+export const REPORTS_PER_AUDIENCE = 8;
+
+// The GA4 property was shared with another app until July 2026 and is still hit by dev servers
+// (docs/analytics/TRAFFIC_SOURCES.md): every report states the host it is about.
+const onSite = { filter: { fieldName: "hostName", inListFilter: { values: [...SITE_HOSTS] } } };
+const inUruguay = { andGroup: { expressions: [onSite, exactDimension("countryId", "UY")] } };
+
+/**
+ * The batch of reports one audience is made of. Order matters — `buildSnapshot` reads it by index.
+ *
+ * `uruguay` is the same eight reports with a country filter, not a ninth dimension on the first
+ * eight: totals asked per country and summed do not reproduce GA4's own totals (users are not
+ * additive), so each audience gets reports of its own.
+ */
+export function analyticsReportRequests(
+  w: AnalyticsWindows,
+  scope: AnalyticsAudienceScope = "all"
+): Ga4ReportRequest[] {
   const metrics = (names: string[]) => names.map((name) => ({ name }));
-  return [
+  const dimensionFilter = scope === "uruguay" ? inUruguay : onSite;
+  const requests: Ga4ReportRequest[] = [
     // 0 — totals, current window
     { dateRanges: [{ startDate: w.current.start, endDate: w.current.end }], metrics: metrics(SUMMARY_METRICS) },
     // 1 — totals, previous window (the deltas)
@@ -134,6 +157,7 @@ export function analyticsReportRequests(w: AnalyticsWindows): Ga4ReportRequest[]
       limit: 40,
     },
   ];
+  return requests.map((request) => ({ ...request, dimensionFilter }));
 }
 
 function num(row: Ga4Row | undefined, key: string): number {
@@ -257,8 +281,29 @@ export interface BuildSnapshotContext {
   timezone: string;
 }
 
-/** Pure: the eight reports of {@link analyticsReportRequests}, in order, become one snapshot. */
+/** The seven breakdowns of one audience, from its eight reports (the country report is skipped). */
+function audienceOf(reports: Ga4Report[]): AnalyticsAudience {
+  return {
+    totals: totalsOf(reports[0]),
+    previousTotals: totalsOf(reports[1]),
+    daily: dailyOf(reports[2]),
+    topPages: pagesOf(reports[3]),
+    channels: sharesOf(reports[4], "sessionDefaultChannelGroup", "sessions", 10),
+    devices: sharesOf(reports[6], "deviceCategory", "sessions", 5),
+    events: eventsOf(reports[7]),
+  };
+}
+
+/**
+ * Pure: the reports of {@link analyticsReportRequests}, in order, become one snapshot — the whole
+ * property first, then (if they are there) the same eight for Uruguay.
+ *
+ * An Uruguay half with no sessions is not published: on this site it means the second batch failed
+ * or the filter stopped matching, never that nobody in Uruguay came, and the page falls back to the
+ * whole-property view when the block is absent.
+ */
 export function buildSnapshot(reports: Ga4Report[], ctx: BuildSnapshotContext): SiteAnalyticsSnapshot {
+  const uruguay = audienceOf(reports.slice(REPORTS_PER_AUDIENCE, REPORTS_PER_AUDIENCE * 2));
   return {
     key: SITE_ANALYTICS_KEY,
     propertyId: ctx.propertyId,
@@ -276,7 +321,20 @@ export function buildSnapshot(reports: Ga4Report[], ctx: BuildSnapshotContext): 
     countries: sharesOf(reports[5], "country", "activeUsers", TOP_COUNTRIES),
     devices: sharesOf(reports[6], "deviceCategory", "sessions", 5),
     events: eventsOf(reports[7]),
+    ...(uruguay.totals.sessions > 0 ? { uruguay } : {}),
   };
+}
+
+/**
+ * The write, as data, so the one rule in it can be tested without a database: a snapshot that
+ * comes WITHOUT its Uruguay half must remove the stored one. `$set` alone would leave yesterday's
+ * block next to today's window, and the page would show two different date ranges as one.
+ */
+export function siteAnalyticsUpdate(snapshot: SiteAnalyticsSnapshot) {
+  const { uruguay, ...rest } = snapshot;
+  return uruguay
+    ? { $set: { ...rest, uruguay, key: SITE_ANALYTICS_KEY } }
+    : { $set: { ...rest, key: SITE_ANALYTICS_KEY }, $unset: { uruguay: "" } };
 }
 
 /** A snapshot with no traffic at all is almost always a misconfiguration, not a quiet month. */
@@ -287,7 +345,10 @@ export function snapshotIsEmpty(snapshot: SiteAnalyticsSnapshot): boolean {
 export async function refreshSiteAnalytics(now: Date = new Date()): Promise<SiteAnalyticsSnapshot> {
   const timezone = process.env.GA4_TIMEZONE || DEFAULT_TIMEZONE;
   const windows = analyticsWindows(now, timezone);
-  const reports = await runReports(analyticsReportRequests(windows));
+  const reports = await runReports([
+    ...analyticsReportRequests(windows, "all"),
+    ...analyticsReportRequests(windows, "uruguay"),
+  ]);
   return buildSnapshot(reports, {
     propertyId: ga4PropertyId(),
     windows,

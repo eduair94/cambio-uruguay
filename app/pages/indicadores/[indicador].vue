@@ -22,8 +22,8 @@
           </div>
 
           <v-card-text class="py-5">
-            <div class="d-flex align-center flex-wrap ga-6">
-              <div data-testid="indicador-value">
+            <div class="cu-keep-together cu-keep-together--row align-center flex-wrap ga-6">
+              <div class="cu-keep-together" data-testid="indicador-value">
                 <div class="text-overline text-grey">1 {{ indicator.abbr }} equivale a</div>
                 <div class="text-h4 font-weight-bold text-primary">{{ formattedValue }}</div>
                 <div class="text-caption text-grey">{{ valueLabel }}</div>
@@ -89,6 +89,9 @@
         </v-card>
       </v-col>
     </v-row>
+
+    <!-- Qué hacer con el valor, al lado del valor (components/RelatedInline.vue). -->
+    <RelatedInline />
 
     <!-- Equivalence table + month-by-month series -->
     <v-row v-if="equivalences.length || hasHistory" class="mt-2">

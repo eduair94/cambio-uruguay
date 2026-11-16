@@ -9,11 +9,19 @@ import {
   localePrefixPattern,
 } from './utils/sitemapFilters'
 import { extraMessagesVersion } from './i18n/extraMessagesVersion'
+import { I18N_MESSAGE_SOURCES, i18nMessagesVersion } from './i18n/messagesVersion'
 
 // The machine-translated messages, served as public JSON (i18n/locales/extra.ts explains why
 // they are not bundled). The hash goes in their URL so a deploy with new copy is a new URL.
 const EXTRA_MESSAGES_DIR = fileURLToPath(new URL('./i18n/extra', import.meta.url))
 const extraLocalesVersion = extraMessagesVersion(EXTRA_MESSAGES_DIR)
+
+// The route the browser fetches vue-i18n messages from before hydrating, versioned by CONTENT
+// (i18n/messagesVersion.ts explains why the module's own hash is not enough). With the version in
+// the path the response is immutable: server/plugins/i18n-messages-cache.ts says so, and
+// server/routes/_i18n/[...path].ts forwards a stale version to this one.
+const I18N_DIR = fileURLToPath(new URL('./i18n', import.meta.url))
+const i18nMessagesVersionId = i18nMessagesVersion(I18N_DIR, I18N_MESSAGE_SOURCES)
 
 // Read only this checkout: app remains a self-contained deploy surface. PM2
 // need not load .env again; Nuxt serializes these build defaults into runtimeConfig.
@@ -1473,6 +1481,10 @@ export default defineNuxtConfig({
     detectBrowserLanguage: false,
     // fallbackLocale for the extra locales (see the file).
     vueI18n: './i18n.config.ts',
+    // `/_i18n/<content version>/<module hash>/<locale>/messages.json`. The version is what makes the
+    // URL safe to cache for a year (see `i18nMessagesVersionId` above); the module's hash alone
+    // stays the same when a JSON changes.
+    serverRoutePrefix: `/_i18n/${i18nMessagesVersionId}`,
     // One `/:locale(en|pt|fr|…)/<path>` record per page instead of one per locale: every page
     // answers in all 35 locales and the entry chunk does not grow with them. Guarded by
     // modules/extra-locales.ts, which fails the build if no route comes out compacted.
@@ -1598,6 +1610,8 @@ export default defineNuxtConfig({
     rentalAlerts: {
       enabled: process.env.RENTAL_ALERTS_ENABLED !== '0',
     },
+    // Server-only: where server/routes/_i18n/[...path].ts sends a request for a previous version.
+    i18nMessagesVersion: i18nMessagesVersionId,
     // Public keys (exposed to client-side)
     public: {
       extraLocalesVersion,

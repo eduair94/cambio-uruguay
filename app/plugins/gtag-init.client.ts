@@ -8,6 +8,7 @@
 // request) and /widget (an iframe inside somebody else's page) were both still
 // pulling googletagmanager.com. Caught by the /pizarra e2e network assertion.
 import { hasAnalyticsUnsafeQuery } from '~/utils/analyticsUrl'
+import { MEASURE_AUTOMATION_KEY, isAutomatedClient } from '~/utils/automatedClient'
 import { isBareRoute } from '~/utils/bareRoutes'
 
 /** How long GA waits for a sign-in hand-off to leave the address bar before skipping the view. */
@@ -15,6 +16,16 @@ const UNSAFE_URL_WAIT_MS = 60_000
 
 export default defineNuxtPlugin(nuxtApp => {
   if (!import.meta.client) return
+
+  // A browser driven by a program is not a visit (utils/automatedClient.ts): GA never starts for
+  // it, on any route. A test that needs to see the hits opts in through localStorage.
+  let measureAutomation = false
+  try {
+    measureAutomation = window.localStorage?.getItem(MEASURE_AUTOMATION_KEY) === '1'
+  } catch {
+    // No storage: an automated browser stays unmeasured, which is the safe default.
+  }
+  if (isAutomatedClient(window.navigator, measureAutomation)) return
 
   const { initialize } = useGtag()
   let started = false

@@ -35,6 +35,7 @@
     <VRow v-if="asideLayout">
       <VCol cols="12" :md="hasContent ? 7 : 12" :lg="hasContent ? 8 : 12">
         <slot />
+        <RelatedInline />
         <!-- La única unidad manual de la calculadora: DESPUÉS de la calculadora entera (campos y
              resultado), nunca entre los campos y el resultado. En el teléfono la explicación de la
              columna de al lado cae debajo; con la unidad después de la explicación —donde estuvo
@@ -68,6 +69,8 @@
       <div v-else class="tool-stack-calc">
         <slot />
       </div>
+      <!-- Qué hacer con el resultado, al lado del resultado (components/RelatedInline.vue). -->
+      <RelatedInline />
 
       <!-- La misma unidad, en el diseño de explicación larga: después de la calculadora y antes
            del artículo, que es lo que hacía que nadie llegara a verla. -->

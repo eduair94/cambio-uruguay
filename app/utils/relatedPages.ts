@@ -480,6 +480,12 @@ export const CURATED: Readonly<Record<string, readonly string[]>> = Object.freez
     '/indicadores',
     '/salud-financiera',
   ],
+  // IVA: the next question is how much of it comes back with a card, and what an import pays.
+  '/herramientas/calculadora-iva': [
+    '/descuento-de-iva-con-tarjeta-uruguay',
+    '/impuesto-temu-uruguay',
+    '/franquicia-aduana-uruguay',
+  ],
   '/herramientas/calculadora-sueldo-liquido': [
     '/cuanto-me-tienen-que-pagar-uruguay',
     '/vivir-con-25000-pesos-uruguay',

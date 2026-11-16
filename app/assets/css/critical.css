@@ -70,6 +70,30 @@ ins.adsbygoogle {
   order: 99;
 }
 
+/* Y a veces la mete DENTRO de la respuesta: entre el rótulo y el número que el lector vino a
+   buscar. Medido el 16/11/2026 en /indicadores/unidad-reajustable a 390 px: un bloque de «Ver más»
+   (enlaces de intención, `.goog-rentries`) entre «1 UR equivale a» y «$ 1.948,97», con el valor
+   empujado a y=799 de 844 — al borde del pliegue, en la página donde el móvil rebota 64 % y el
+   escritorio 25 %.
+
+   Mismo criterio que la fila de arriba: no se oculta ni se toca la unidad, se la deja entera y
+   visible DESPUÉS de lo que partía. `.cu-keep-together` va en el contenedor cuyos hijos se leen
+   como una sola cosa (rótulo + valor + fuente) y lo vuelve una columna flex, que es lo que hace
+   que `order` exista; con `.cu-keep-together--row` el contenedor ya era una fila y sólo se ordena. */
+.cu-keep-together {
+  display: flex;
+  flex-direction: column;
+}
+
+.cu-keep-together--row {
+  flex-direction: row;
+}
+
+.cu-keep-together > .google-auto-placed,
+.cu-keep-together > .ap_container {
+  order: 99;
+}
+
 /* Segunda capa, que no depende de cómo llame Google a su contenedor: el envoltorio
    cae POR ENCIMA del .v-container y arrastra a la página entera. Cada página vive
    dentro de un .v-container, así que declarar ahí la alineación corta cualquier

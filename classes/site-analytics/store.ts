@@ -15,14 +15,13 @@ import type { PageRankingSnapshot } from "./pageRanking";
 import { revenueIsEmpty, SITE_REVENUE_KEY } from "./revenue";
 import type { RevenueSnapshot } from "./revenue";
 import { SITE_ANALYTICS_KEY } from "./types";
+import { siteAnalyticsUpdate } from "./refresh";
 import type { SiteAnalyticsSnapshot } from "./types";
 
 export async function saveSiteAnalytics(snapshot: SiteAnalyticsSnapshot): Promise<void> {
-  await SiteAnalyticsSnapshotModel.updateOne(
-    { key: SITE_ANALYTICS_KEY },
-    { $set: { ...snapshot, key: SITE_ANALYTICS_KEY } },
-    { upsert: true }
-  );
+  await SiteAnalyticsSnapshotModel.updateOne({ key: SITE_ANALYTICS_KEY }, siteAnalyticsUpdate(snapshot), {
+    upsert: true,
+  });
 }
 
 export async function loadSiteAnalytics(): Promise<SiteAnalyticsSnapshot | null> {

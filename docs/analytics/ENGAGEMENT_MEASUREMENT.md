@@ -17,7 +17,8 @@ el Consent Mode ya configurados; no cambian la elección de cookies ni sus valor
 registra la intención de abrir otra página, **no prueba** que cargó; para la llegada usar el
 `page_view` que ya produce GA4 y la exploración de rutas.
 
-Las exposiciones se limitan a `guide_next_steps` y `bank_decision`. Se observa el enlace real,
+Las exposiciones se limitan a `guide_next_steps`, `guide_inline_next`, `related_inline`,
+`related_pages` y `bank_decision` (las tres del medio desde el 16/11/2026). Se observa el enlace real,
 no la caja completa del módulo; no se cuentan anclas de la misma página, descargas, destinos
 privados ni enlaces externos. Cambiar de página desconecta el observador anterior; cambiar
 filtros, volver de una pestaña oculta o restaurar la caché del navegador no repite la exposición.
@@ -66,7 +67,9 @@ URL de WhatsApp. Los valores de `data-link-area` y `data-cta` son vocabulario fi
 persona. Esta protección corresponde a estos plugins; no modifica los eventos automáticos del
 Google tag ni la configuración de Enhanced Measurement de la propiedad.
 
-Áreas admitidas: `guide_next_steps`, `guide_section`, `guide_contents`, `related_pages`, `header`,
+Áreas admitidas: `guide_next_steps`, `guide_inline_next` (las primeras recomendaciones de la guía,
+repetidas adentro del artículo), `related_inline` («Seguí leyendo» al lado del resultado de una
+calculadora o un indicador), `guide_section`, `guide_contents`, `related_pages`, `header`,
 `drawer`, `footer`, `content`. Un contenedor puede declarar `data-link-area="guide_next_steps"`;
 para el resto se reconoce el área por la estructura del sitio. Un valor desconocido cae en
 `content`, sin publicarlo como dimensión.
@@ -127,6 +130,10 @@ ninguna de esas tres situaciones.
 cubre rutas sensibles, querystrings, teléfono/mensaje externo, tiempo oculto, restauración del scroll,
 reinicios SPA, clic central, paridad de slugs editoriales, exposición visible de enlaces y desmontaje
 de los plugins. Los tests no contactan Google.
+
+Un navegador manejado por Playwright, Puppeteer o WebDriver no inicia GA (`utils/automatedClient.ts`,
+desde el 16/11/2026): para ver salir los eventos, la prueba pone `localStorage.cu_measure_automation = '1'`
+antes de cargar la página.
 
 En un navegador de prueba con depuración habilitada en producción: hacer una navegación real y
 comprobar **una sola** vista nueva, ubicación/referrer correctos en esa vista y un evento de clic

@@ -1,5 +1,10 @@
 <template>
-  <nav v-if="items.length" class="related-pages" :aria-label="t('related.aria')">
+  <nav
+    v-if="items.length"
+    class="related-pages"
+    :aria-label="t('related.aria')"
+    data-link-area="related_pages"
+  >
     <h2 class="related-title text-subtitle-1 font-weight-bold mb-1">
       <VIcon start size="small" color="primary">mdi-compass-outline</VIcon>
       {{ t('related.title') }}
@@ -50,6 +55,7 @@ import { directorioAnalisisParaRuta } from '~/utils/directorioAnalisis'
 import { familiaNavRutas } from '~/utils/familiaNav'
 import { temaVecinosRutas } from '~/utils/temaVecinos'
 import { relatedEnabledForPath, relatedFor } from '~/utils/relatedPages'
+import { relatedInlineRoutes, relatedInlineStateKey } from '~/utils/relatedInline'
 
 const route = useRoute()
 const localePath = useLocalePath()
@@ -57,10 +63,16 @@ const { t } = useI18n()
 const track = useTrack()
 
 const sourcePath = computed(() => route.path)
+// What `RelatedInline` already put next to the answer on this page (tools, indicators).
+const inlineShown = useState<{ path: string; routes: string[] }>(relatedInlineStateKey, () => ({
+  path: '',
+  routes: [],
+}))
 const relatedExclusions = computed(() => {
   const above = [
     ...familiaNavRutas(route.path),
     ...(directorioAnalisisParaRuta(route.path)?.links.map(link => link.to) ?? []),
+    ...relatedInlineRoutes(inlineShown.value, route.path),
   ]
   return [...above, ...temaVecinosRutas(route.path, above)]
 })
