@@ -3250,6 +3250,43 @@
         "/guias/bhu-como-funciona"
       ],
       "hypothesis": "Las siete guias de credito y deuda cuya descripcion era una ETIQUETA del tema y no una respuesta. Es un eje nuevo: las once tandas de descripciones de guias de octubre eligieron por LARGO, y guideSnippetBudget.test.ts cerro ese pozo en 0 el 2026-10-29, asi que estas siete estaban en verde con 121 a 151 caracteres y publicando un indice en vez de un dato (Que son la TNA, la TEA y el costo financiero total...; Que significa refinanciar o unificar deudas...; Que asumis al firmar como garante...). El presupuesto mide el LARGO y nada mide si el unico renglon que el SERP publica dice algo: es el mismo modo de fallar que /sillas-de-escritorio-uruguay en value.ts y que las descripciones de plantilla del 2026-11-02, o sea una medicion que no alcanza a la pagina y que por eso se lee igual que no hay deuda. Las siete arrancan ahora por la respuesta que decide el clic y que la guia YA publicaba en su propio cuerpo: que a sola firma alcanza la firma y el riesgo lo cubre la tasa; que la TEA no incluye comisiones ni seguros y el costo real es la tasa implicita que el BCU usa para medir usura; que refinanciar sin bajar la TEA sube el total; que el Clearing es privado y la Central de Riesgos es del BCU; que lo que no pagas va al rotativo y la avalancha paga menos en total; que el codeudor es deudor desde el primer dia y el fiador solidario resigna que le cobren primero al titular; y que el BHU presta en UI o pesos y los creditos viejos van en UR. Ninguna cifra ni afirmacion es nueva: todas estaban en las secciones de la propia guia, y no se toco titulo, H1, cuerpo, URL, canonical, tema, enlace ni anuncio. Es el cluster de credito, que es el tramo contenido (8x el promedio del sitio) y la familia con el RPM medido mas alto, asi que un renglon desperdiciado cuesta mas caro aca. Las siete rutas estaban libres de toda ventana abierta (npm run seo_debt y el cruce contra las filas de los ultimos 28 dias). Se espera mas clics desde la misma posicion, como midieron las tandas que eligieron por largo; se mide por cuota de clics del sitio con 28 dias archivados antes y despues, sin el dia del deploy."
+    },
+    {
+      "id": "tablas-ur-ui-con-los-montos-que-se-buscan",
+      "shippedOn": "2026-11-16",
+      "routes": [
+        "/indicadores/unidad-reajustable",
+        "/indicadores/unidad-indexada",
+        "/herramientas/conversor-unidad-indexada"
+      ],
+      "queries": [
+        "40 ur a pesos uruguayos",
+        "75 ur",
+        "2 ur cuanto es",
+        "75 ur a pesos uruguayos",
+        "8 ur a pesos uruguayos",
+        "60 ur a pesos uruguayos",
+        "6 ur a pesos uruguayos",
+        "750 ui a pesos uruguayos"
+      ],
+      "hypothesis": "La tabla de equivalencias de la UR listaba 11 montos (1; 1,25; 5; 10; 12; 15; 20; 25; 30; 50; 100) y en Search Console (2026-10-17..11-13) las consultas 'N ur a pesos' con un monto que NO estaba en la tabla sumaban ~5.000 impresiones con 0 clics: 40 UR 1.169, 75 UR 769, 2 UR 584, 6 UR 384, 60 UR 279, 8 UR 251, 125 UR 239, 3 UR 218, 4 UR 108. La consulta ES el monto, y una tabla que lo saltea obliga a hacer la multiplicacion en otro lado. Pasa a 20 montos (agrega 2, 3, 4, 6, 8, 40, 60, 75 y 125) y la de la UI suma 30, 75 y 750 (~100 impresiones cada uno), que es la misma tabla en /indicadores/unidad-indexada y en el conversor. Es sustancia que contesta la consulta, no un snippet: no se toco titulo, descripcion, H1, URL, canonical ni anuncio. Se espera que la porcion de clics del cluster numerico de la UR suba; la posicion media de esas consultas ya estaba entre 4 y 9, asi que el techo lo pone el clic, no el ranking."
+    },
+    {
+      "id": "cedula-catastral-paso-a-paso",
+      "shippedOn": "2026-11-16",
+      "routes": [
+        "/valor-catastral-uruguay"
+      ],
+      "queries": [
+        "cedula catastral",
+        "cedula catastral comun",
+        "cedula catastral informada",
+        "catastro cedula catastral",
+        "cedulas catastrales",
+        "emision de cedula catastral",
+        "descargar cedula catastral"
+      ],
+      "hypothesis": "La pagina contestaba el tramite con el vocabulario de 'valor catastral' y ningun titulo nombraba la cedula, mientras en Search Console (2026-10-17..11-13) 'cedula catastral' sola trajo 5.191 impresiones en posicion 9,8 y sus variantes (comun, informada, emision, por padron, descargar) otras ~3.000, todas al fondo de la primera pagina: quien escribe eso quiere sacar el papel, no saber que es el valor. Se agrega una seccion 'Como sacar la cedula catastral comun, paso a paso' (CEDULA_PASOS: numero de padron en la factura de la contribucion, Sede Electronica sin usuario, se imprime al final, validacion de acceso libre, y la informada con su tasa en UR), el H2 de los tres tramites pasa a nombrar 'Cedula catastral comun, informada o revision' y tres preguntas frecuentes (comun vs informada, por numero de padron, como se valida). No agrega ningun hecho: todo sale de lo cotejado el 2026-10-12 en utils/cadastralValue.ts. No se toco titulo, descripcion, URL, canonical ni anuncio. Se espera que la pagina suba en ese cluster, que es el que mas impresiones le trae."
     }
   ]
 }

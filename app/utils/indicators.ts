@@ -356,8 +356,16 @@ export function liveIndicatorReading(
  * mortgage (UI, in the hundreds of thousands) or the IRPF brackets (7, 10, 15, 30 and 50 BPC).
  */
 export const EQUIVALENCE_AMOUNTS: Readonly<Record<string, readonly number[]>> = Object.freeze({
-  'unidad-indexada': [1, 10, 20, 50, 100, 500, 1000, 1500, 5000, 10000, 100000],
-  'unidad-reajustable': [1, 1.25, 5, 10, 12, 15, 20, 25, 30, 50, 100],
+  // 30, 75 and 750 joined on 2026-11-15: "30 ui", "75 ui" and "750 ui" are the round amounts with
+  // ~100 impressions each in 28 days (2026-10-17..11-13) that the table did not answer.
+  'unidad-indexada': [1, 10, 20, 30, 50, 75, 100, 500, 750, 1000, 1500, 5000, 10000, 100000],
+  // 2026-11-15: the UR cluster had ~8.000 impressions in 28 days on "N ur a pesos" queries with an
+  // amount the table did not list — 40 UR alone 1.169, then 75 (769), 2 (584), 6 (384), 60 (279),
+  // 8 (251), 125 (239), 3 (218) and 4 (108) — and those rows got 0 clicks. The amount is the
+  // question; a table that skips it makes the reader do the multiplication somewhere else.
+  'unidad-reajustable': [
+    1, 1.25, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50, 60, 75, 100, 125,
+  ],
   // 2, 3, 4 and 5 are what people type for the BPC (Search Console, 2026-07-20..10-17: "2 bpc
   // cuanto es", "cuanto es 3 bpc en uruguay", "4 bpc cuanto es", "5 bpc cuanto es"); 2,5 is the
   // FONASA threshold and 7/10/15/30/50 the IRPF bracket edges.

@@ -286,6 +286,21 @@ describe('BPC: el valor del decreto vigente', () => {
     expect(staticIndicatorSnippet(indicatorFromSlug('unidad-indexada')!, in2026)).toBeNull()
   })
 
+  it('la tabla de la UR tiene los montos que se buscan y no tenía (40, 75, 2, 6, 60, 8, 125 UR)', () => {
+    // Search Console, 2026-10-17..11-13: cada uno con 100+ impresiones y 0 clics.
+    for (const n of [2, 3, 4, 6, 8, 40, 60, 75, 125]) {
+      expect(EQUIVALENCE_AMOUNTS['unidad-reajustable']).toContain(n)
+    }
+    for (const n of [30, 75, 750]) expect(EQUIVALENCE_AMOUNTS['unidad-indexada']).toContain(n)
+  })
+
+  it('las tablas van de menor a mayor y sin repetidos', () => {
+    for (const amounts of Object.values(EQUIVALENCE_AMOUNTS)) {
+      expect([...amounts].sort((a, b) => a - b)).toEqual([...amounts])
+      expect(new Set(amounts).size).toBe(amounts.length)
+    }
+  })
+
   it('la tabla tiene los montos que se buscan (2, 3, 4 y 5 BPC) y los cortes del sueldo', () => {
     for (const n of [2, 2.5, 3, 4, 5, 7, 10]) expect(EQUIVALENCE_AMOUNTS.bpc).toContain(n)
   })
