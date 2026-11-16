@@ -8,6 +8,7 @@ import {
   CADASTRAL_SOURCES,
   CADASTRAL_UNPUBLISHED,
   CEDULA_DATOS,
+  CEDULA_PASOS,
   REVISION_REQUISITOS,
   TASA_CATASTRAL_UR,
   TASA_CATASTRAL_VIGENCIA,
@@ -114,6 +115,28 @@ describe('lo que la página afirma y lo que se abstiene de afirmar', () => {
   it('lista los datos que pide la cédula para los dos regímenes', () => {
     expect(CEDULA_DATOS.map(d => d.regimen)).toEqual(['Urbano', 'Rural'])
     expect(CEDULA_DATOS.every(d => /padrón/i.test(d.datos))).toBe(true)
+  })
+
+  // Los pasos no agregan hechos: cada uno tiene que apoyarse en algo que el módulo ya cotejó.
+  it('arma los pasos de la cédula común sólo con lo que el catálogo ya respalda', () => {
+    expect(CEDULA_PASOS.length).toBeGreaterThanOrEqual(3)
+    expect(new Set(CEDULA_PASOS.map(p => p.paso)).size).toBe(CEDULA_PASOS.length)
+    const texto = CEDULA_PASOS.map(p => `${p.paso} ${p.detalle}`).join(' ')
+    expect(texto).toMatch(/factura de la contribución inmobiliaria/i)
+    expect(texto).toMatch(/sin usuario|crear una cuenta/i)
+    // Lo que se valida tiene que estar en la lista de acceso libre, textual.
+    expect(CADASTRAL_FREE_ACCESS).toContain('Validación de cédula catastral común')
+    expect(texto).toContain('Validación de cédula catastral común')
+    // Ningún peso: la única cifra de este trámite es la tasa, y va en UR en la página.
+    expect(texto).not.toMatch(/\$\s?\d/)
+  })
+
+  it('las preguntas nuevas sobre la cédula usan la misma tasa del catálogo', () => {
+    const informada = CADASTRAL_FAQ.find(f => /común y la informada/i.test(f.question))
+    expect(informada).toBeDefined()
+    expect(informada!.answer).toContain(`${String(TASA_CATASTRAL_UR).replace('.', ',')} UR`)
+    expect(CADASTRAL_FAQ.some(f => /número de padrón/i.test(f.question))).toBe(true)
+    expect(CADASTRAL_FAQ.some(f => /valida/i.test(f.question))).toBe(true)
   })
 
   it('lista los servicios de acceso libre, con la emisión de cédulas entre ellos', () => {
