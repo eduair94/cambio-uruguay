@@ -1,7 +1,7 @@
 import {
   TRANSLATABLE_ATTRIBUTES,
-  announcedLocales,
   canonicalTarget,
+  hreflangLocales,
   htmlSegments,
   isAutoTranslateLocale,
   isTranslatable,
@@ -30,7 +30,7 @@ import { splitLocalePath } from '~/utils/localizedRoutes'
  *
  * HEAD, both sides through the same unhead hook: title and descriptions translated; canonical
  * to the page itself once the page is translated (`canonicalTarget`); hreflang and
- * og:locale:alternate only for the locales the page is announced in (`announcedLocales`).
+ * og:locale:alternate only for the URLs that are canonical of themselves (`hreflangLocales`).
  */
 
 interface AutoTranslateState extends PageTranslationState {
@@ -119,7 +119,7 @@ function applyHead(ctx: { tags: Tag[] }, state: AutoTranslateState) {
       tag.props.href = canonical
     }
   }
-  const announced = new Set(['es', ...announcedLocales(state.path, state)])
+  const announced = new Set(['es', ...hreflangLocales(state.path, state)])
   ctx.tags = ctx.tags.filter(tag => {
     if (tag.tag === 'link' && tag.props.rel === 'alternate' && tag.props.hreflang) {
       return tag.props.hreflang === 'x-default' || announced.has(languageOf(tag.props.hreflang))
