@@ -921,6 +921,12 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/vender-mi-auto-uruguay',
       },
       {
+        label: 'Cuánto sale transferir un auto',
+        description:
+          'El arancel de la libreta departamento por departamento y qué pide cada ficha oficial.',
+        to: '/cuanto-sale-transferir-un-auto-uruguay',
+      },
+      {
         label: 'Multas y patente',
         description: 'Cómo consultar multas y deuda de patente de un auto.',
         to: '/multas-de-transito-y-patente-uruguay',
