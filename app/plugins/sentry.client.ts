@@ -8,6 +8,7 @@ import {
   sentryHttpStatus,
   sentryPageName,
   sentryRouteCategory,
+  sentryThrownShape,
   sentryVueTags,
 } from '~/utils/sentryPrivacy'
 
@@ -58,6 +59,8 @@ export default defineNuxtPlugin({
           nuxt_hook: hook,
           nuxt_phase: started ? 'navigation' : 'startup',
           ...(documentStatus ? { document_status: documentStatus } : {}),
+          // What was thrown (class only) and whether it had a stack: a frameless 500.
+          ...sentryThrownShape(error),
           // Only the component's file name and Vue's lifecycle code, never the instance itself.
           ...sentryVueTags(instance, info),
         },

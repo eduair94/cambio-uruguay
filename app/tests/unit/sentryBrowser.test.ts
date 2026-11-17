@@ -94,6 +94,9 @@ it('captures Vue, window errors and unhandled promise rejections without DOM/ses
     nuxt_hook: 'app',
     nuxt_phase: 'startup',
     http_status: '500',
+    // What was thrown reaches the event (sentryThrownShape), as a class and a stack flag.
+    thrown_kind: 'Error',
+    stack_status: 'present',
   })
   expect(tagsOf(envelopes[2])).toMatchObject({
     nuxt_hook: 'app',
