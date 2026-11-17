@@ -286,10 +286,16 @@ defineOgImageComponent('Cambio', {
   subtitle: 'Descuentos sin tarjeta bancaria, en Uruguay',
   tag: 'Beneficios',
 })
+// La descripción publica las dos cifras que la página YA cuenta —cuántas tarjetas se relevaron y
+// cuántas no cuestan nada— en vez de prometer "qué cuestan" y dejar el dato del lado cortado. Es un
+// literal porque es la única forma que `seoDescriptionBudget` sabe leer sin ejecutar la app, y
+// `tests/unit/snippetClubesYTarjetas.test.ts` lo ata al catálogo para que no se separen en silencio.
+const seoDescription =
+  '21 tarjetas de socio relevadas y 8 sin costo: Club El País, shoppings, Ta-Ta Plus, ANCAPuntos, cines y teatros. Qué cuesta cada una y qué descuenta.'
+
 useSeoMeta({
   title: 'Tarjetas de socio y beneficios en Uruguay',
-  description:
-    'Tarjetas de socio que no son de crédito ni débito: Club El País, shoppings, supermercados, combustible, cine y teatro. Qué cuestan y qué descuentan.',
+  description: seoDescription,
   ogTitle: 'Tarjetas de socio y beneficios en Uruguay',
   ogDescription:
     'Cuánto cuestan de verdad, cómo se sacan y qué descuento dan — con la fuente oficial al lado.',
