@@ -142,6 +142,12 @@ describe("el lector de las listas del app no puede fallar en silencio", () => {
     ["seoContract.test.ts", "DEUDA_SIN_MIGAS", "BREADCRUMB_BUDGET", "/"],
     ["guideSnippetBudget.test.ts", "DEUDA_TITULO_LARGO", "TITLE_OVER_BUDGET", ""],
     ["guideSnippetBudget.test.ts", "DEUDA_DESCRIPCION_LARGA", "DESCRIPTION_OVER_BUDGET", ""],
+    // Los dos pozos de los temas, desde el 2026-11-17. Nacieron pagados —la tanda que los descubre
+    // es la que los baja a cero—, así que lo único que esta fila puede atajar es lo que de verdad
+    // importa de un pozo en cero: que alguien renombre el `const` o le cambie la forma y el informe
+    // siga imprimiendo «0 de 0» sobre nada.
+    ["hubSnippetBudget.test.ts", "DEUDA_HUB_TITULO", "TITLE_OVER_BUDGET", ""],
+    ["hubSnippetBudget.test.ts", "DEUDA_HUB_DESCRIPCION", "DESCRIPTION_OVER_BUDGET", ""],
   ])("lee %s → %s y cabe en su propio trinquete", (file, list, budget, prefix) => {
     const source = read(file);
     const declared = parseStringList(source, list);

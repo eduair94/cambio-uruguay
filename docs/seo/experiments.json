@@ -19,6 +19,14 @@
   ],
   "experiments": [
     {
+      "id": "temas-snippet-que-entra-al-serp",
+      "shippedOn": "2026-11-17",
+      "routes": [
+        "/temas/*"
+      ],
+      "hypothesis": "Los dieciseis temas (/temas/<slug>) son las paginas hub del enlazado reciproco del sitio y del tramo que rinde 8x, y ninguno publicaba su titulo: medidos con la marca puesta, 16 de 16 pasaban los 60 caracteres -el peor con 101, o sea que el SERP mostraba menos de la mitad y elegia el que poner- y 13 de 16 descripciones pasaban los 155. No era deuda que alguien dejara para despues: ningun trinquete los media. Los dos presupuestos del directorio de paginas leen el .vue (seoTitleBudget y seoDescriptionBudget, entre comillas y por plantilla) y app/pages/temas/[slug].vue no declara ninguna cadena, porque arma su snippet con una flecha sobre utils/guideHubs.ts; los cuatro lectores devolvian null y los temas se caian del conteo sin aparecer en ninguna lista. Los dieciseis titulos eran el nombre del tema seguido de la lista de sus sub-temas, asi que gastaban los 43 caracteres publicables en repetir el H1 y dejaban del lado cortado justo los nouns que se buscan; ahora entran los dos o tres nouns de cada tema (courier y franquicia, 0km o usado, prestamos y Clearing) y tres abren por lo mas buscado de adentro en vez de por el nombre del tema (Jubilacion y AFAP, Reclamos, Dinero en pareja). Las trece descripciones abrian con la etiqueta de genero (\"Todo sobre el dolar en Uruguay:\", \"Ordena tu vida financiera en Uruguay:\") y ahora arrancan por el contenido. Ninguna cifra ni afirmacion es nueva: cada noun que quedo es una guia o un resources declarado del propio hub, y dos claims que la version vieja arrastraba se cayeron en vez de recortarse (que no hay impuesto a la herencia, porque la sucesion paga ITP, y la e-factura de emprender, que no es miembro de ese hub). Se declara como UNA fila sobre la familia porque es UN cambio: una fila por tema se pisaria con las otras quince. Lo mide el trinquete nuevo app/tests/unit/hubSnippetBudget.test.ts, con los dos pozos en cero y cruzados por npm run seo_debt."
+    },
+    {
       "id": "jubilacion-y-franquicia-el-titulo-contesta",
       "shippedOn": "2026-11-14",
       "routes": [

@@ -5,7 +5,7 @@
 //
 // Por qué existe y cuál es la regla: `classes/revenueplan/debtFree.ts`.
 //
-// QUÉ CUBRE. Los NUEVE pozos de deuda de SEO del app, cada uno declarado como una lista en el
+// QUÉ CUBRE. Los ONCE pozos de deuda de SEO del app, cada uno declarado como una lista en el
 // trinquete que lo mide. El cuarto y el quinto entraron el 2026-10-20 y eran los que faltaban: las
 // migas de `seoContract.test.ts` y los dos snippets pasados de `guideSnippetBudget.test.ts` declaraban un
 // NÚMERO y nada más, así que este informe no los podía nombrar y la respuesta a «¿cuál puedo tocar
@@ -137,6 +137,29 @@ const POOLS: Array<{
     list: "DEUDA_DESCRIPCION_I18N",
     budget: "I18N_DESCRIPTION_OVER_BUDGET",
   },
+  // El décimo y el undécimo, desde el 2026-11-17, y son el MISMO agujero del sexto, del séptimo,
+  // del octavo y del noveno corrido un archivo más allá: los dieciséis temas (`/temas/<slug>`). Los
+  // dos lectores de `seoDescriptionBudget.test.ts` y los dos de `seoTitleBudget.test.ts` leen el
+  // `.vue`, y `app/pages/temas/[slug].vue` no declara ninguna cadena — arma su snippet con una
+  // flecha sobre `utils/guideHubs.ts` —, así que los cuatro devolvían `null` y los dieciséis temas
+  // se caían del conteo sin aparecer en ninguna lista. Medido antes de la tanda: 16 de 16 títulos
+  // pasados (o sea NINGUNO se publicaba entero, el peor con 101 caracteres) y 13 de 16
+  // descripciones. Son páginas del tramo que rinde 8× y además los hubs del enlazado recíproco del
+  // sitio, así que lo que se gana no es sólo el clic del tema: es la puerta de entrada a sus guías.
+  {
+    pool: "título de tema pasado de 60",
+    file: "hubSnippetBudget.test.ts",
+    list: "DEUDA_HUB_TITULO",
+    budget: "TITLE_OVER_BUDGET",
+    toRoute: (slug) => `/temas/${slug}`,
+  },
+  {
+    pool: "descripción de tema pasada de 155",
+    file: "hubSnippetBudget.test.ts",
+    list: "DEUDA_HUB_DESCRIPCION",
+    budget: "DESCRIPTION_OVER_BUDGET",
+    toRoute: (slug) => `/temas/${slug}`,
+  },
 ];
 
 /** Hoy en UTC, o el día que pida `--today=YYYY-MM-DD` (para mirar la cola desde otra fecha). */
@@ -186,8 +209,9 @@ function main(): void {
   }
   console.log(
     "\nUna ruta libre acá NO es una mejora: sigue haciendo falta que el cambio le sirva a un lector.\n" +
-      "Los nueve pozos con lista están contados; las dos deudas que no son de ruta (el título y la\n" +
-      "descripción de una MISMA guía) salen como dos filas, porque se arreglan por separado."
+      "Los once pozos con lista están contados; las deudas que no son de ruta (el título y la\n" +
+      "descripción de una MISMA guía o de un MISMO tema) salen como dos filas, porque se arreglan\n" +
+      "por separado."
   );
 }
 
