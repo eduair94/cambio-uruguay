@@ -262,6 +262,26 @@ export const tools: readonly Tool[] = [
     keywords: ['calculadora aguinaldo uruguay', 'aguinaldo sac', 'cómo se calcula el aguinaldo'],
   },
   {
+    slug: 'calculadora-subsidio-por-enfermedad',
+    // 2026-11-17: el sitio explicaba el régimen entero en la guía
+    // `me-certifique-subsidio-por-enfermedad-uruguay` y no contestaba la pregunta que se escribe
+    // ("me certificaron N días, cuánto cobro"), que es una cuenta de cuatro pasos: el 70 %, el
+    // tope, los tres días sin cubrir y la doceava de aguinaldo. Las cifras viven en
+    // `utils/sickLeaveBenefit.ts` con su fuente; la descripción las publica.
+    title: 'Calculadora de subsidio por enfermedad',
+    description:
+      'Cuánto paga el BPS por los días certificados: el 70 % del promedio de 180 días, tope $ 67.754 (01/2026), desde el cuarto día, más aguinaldo.',
+    icon: 'mdi-medical-bag',
+    category: 'finanzas',
+    keywords: [
+      'subsidio por enfermedad bps',
+      'cuanto paga el bps por certificado medico',
+      'certificado medico cuanto cobro uruguay',
+      'subsidio por enfermedad calculo',
+      'tope subsidio por enfermedad',
+    ],
+  },
+  {
     slug: 'calculadora-plazo-fijo',
     // Título y descripción contestan lo que se busca ("simulador plazo fijo uruguay brou
     // dólares"): la página trae la pizarra de cada banco (utils/plazoFijoBancos.ts).

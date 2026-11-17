@@ -534,10 +534,16 @@ const FAQ: FaqItem[] = [
 
 const canonicalUrl = 'https://cambio-uruguay.com/apps-de-beneficios-uruguay'
 
+// La descripción vieja prometía «cuánto devuelve cada club» y no publicaba ninguna cifra, cuando la
+// conclusión de la página es justamente que casi ningún programa publica lo necesario para medirlo:
+// de los 10 relevados, uno. Eso es el dato, y va al frente. Literal por lo que
+// `seoDescriptionBudget` sabe leer, atado al catálogo por `tests/unit/snippetClubesYTarjetas.test.ts`.
+const seoDescription =
+  'De 10 clubes de beneficios sólo Tienda Inglesa publica lo necesario para medir qué devuelve: 1,67 %. Qué cuesta cada uno y cuándo vencen los puntos.'
+
 useSeoMeta({
   title: 'Apps y clubes de beneficios en Uruguay',
-  description:
-    'Ta-Ta PLUS, Tienda Inglesa, Tarjeta Más, Farmacard, ANCAPuntos y PedidosYa Plus: cuánto devuelve cada club, qué cuesta y cuándo vencen los puntos.',
+  description: seoDescription,
   ogTitle: 'Apps y programas de beneficios en Uruguay: cuánto devuelve cada uno',
   ogDescription:
     'Puntos de supermercado, farmacia, combustible y clubes con cuota, con las reglas leídas de las bases oficiales.',
