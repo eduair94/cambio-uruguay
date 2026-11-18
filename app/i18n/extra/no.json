@@ -822,7 +822,7 @@
     "homeDescriptionLive": "Dollar i Uruguay i dag: kjøp fra $U {sell} eller selg for opptil $U {buy} på {count}-vekslingskontorer, oppdateres hvert 10. minutt. Også euro, real og argentinsk peso.",
     "homeDescription": "Dollarkursen i Uruguay oppdateres hvert 10. minutt i dag. Sammenlign kjøps- og salgspriser fra over 40 vekslingskontorer. Finn de beste USD-, EUR-, BRL- og ARS-kursene i Montevideo og hele Uruguay.",
     "homeKeywords": "Dollarkurs Uruguay, USD til UYU, valutaveksling Uruguay, valutaveksling Uruguay, kjøp dollar Uruguay, selg dollar Uruguay, dollarkurs Montevideo, BROU valutakurs, beste valutakurs Uruguay",
-    "advancedTitle": "Avansert dollarvekslingssammenligning i Uruguay",
+    "advancedTitle": "Avansert dollarsammenligning i Uruguay",
     "advancedDescription": "Avansert visning av Uruguays valutasammenligner: filtrer hus og valutaer, se filialkartet og finn den beste USD-, EUR- og BRL-kursen i sanntid.",
     "historicalTitle": "Valutakurshistorikk i Uruguay",
     "historicalDescription": "Sjekk den komplette historikken over valutakurser fra alle vekslingshus i Uruguay. Oppdaterte data i sanntid.",
@@ -840,11 +840,11 @@
     "sucursalesDescription": "Alle {count} {origin}-filialer i Uruguay: adresse, telefonnummer og åpningstider for hver enkelt, pluss dollarkursen huset oppgir i dag.",
     "sucursalesLocationDescription": "{origin} har {count}-filialer i {location}. Adresse, telefonnummer og åpningstider for hver filial, med dagens dollarkurs og veibeskrivelse.",
     "sucursalesKeywords": "{origin}-filialer, {origin}-adresser, {origin}-lokasjoner, børskontorer i Uruguay",
-    "sucursalesIndexTitle": "Filialkatalog - Alle bytteboliger i Uruguay",
+    "sucursalesIndexTitle": "Vekslingskontorer i Uruguay",
     "sucursalesIndexDescription": "Komplett oversikt over filialer fra alle børskontorer i Uruguay. Finn lokasjoner, adresser og kontakter etter avdeling.",
     "sucursalesIndexKeywords": "filialkatalog uruguay, byttehus uruguay, montevideo filialer, canelones filialer, alle filialer uruguay",
     "compareTitle": "Sammenlign bytteboliger over tid",
-    "compareDescription": "Sammenlign den historiske utviklingen av amerikanske dollar og andre valutakurser på tvers av flere uruguayanske børser på ett enkelt diagram. Finn hvem som tilbyr den beste prisen over tid.",
+    "compareDescription": "Opptil 4 børshus på ett diagram: kjøp eller salg, fra 7 dager til full historikk, med lavpunkt, høypunkt og gjennomsnitt for hver enkelt.",
     "compareKeywords": "sammenlign byttehus uruguay, dollarutvikling uruguay, kurssammenligning, sammenlignende dollardiagram, beste byttehus uruguay",
     "mapaTitle": "Kart over bytteboliger i Uruguay",
     "mapaDescription": "Interaktivt kart over bytteboliger i Uruguay. Finn nærmeste filial og den beste amerikanske dollarkursen i nærheten av deg.",
@@ -1551,8 +1551,8 @@
     }
   },
   "capture": {
-    "title": "Nyttig? Få den daglige dollaroppsummeringen",
-    "lead": "Én e-post om dagen med de beste prisene, trenden og hva som har endret seg. Gratis, og du kan melde deg av når du vil.",
+    "title": "Følger du dollaren? Få den hver morgen",
+    "lead": "Én e-post om dagen med de beste kjøps- og salgskursene på tvers av over 40 bytteboliger i Uruguay, trenden og hva som har endret seg. Gratis, og du kan melde deg av når du vil.",
     "dismiss": "Lukke",
     "aria": "Abonner på nyhetsbrevet"
   },
@@ -1768,6 +1768,7 @@
     "impuestosInversiones": "Investeringsskatt",
     "proyectos": "Uruguayanske prosjekter",
     "carneDeSalud": "Helseattest",
+    "carneManipulacionAlimentos": "Mathåndtererkort",
     "libretaDeConducir": "Førerkort",
     "saludFinanciera": "Finansiell helse",
     "apps": "Pengeapper",
@@ -1933,7 +1934,7 @@
     "colCasa": "Byttehus",
     "colRate": "Selge",
     "colSavings": "Sparing kontra gjennomsnitt",
-    "methodology": "Rangert etter salgspris i dollar (hva du betaler per USD 1). Besparelsen sammenlignes med å kjøpe USD {amount} i det huset mot markedsgjennomsnittet. BCU-referanserenten og interbankkurser er ekskludert – publikum kan ikke handle på dem. Tavler som er mer enn 3 % fra markedsmedianen er også utelatt: de er vanligvis et tavle som har sluttet å oppdateres eller ble feillest.",
+    "methodology": "Rangert etter salgspris i dollar (hva du betaler per USD 1). Besparelsen sammenlignes med å kjøpe USD {amount} i det huset mot markedsgjennomsnittet. BCU-referanserenten og interbankkurser er ekskludert – publikum kan ikke handle på dem. Kort som er mer enn 3 % fra markedsmedianen er også utelatt: de er vanligvis et kort som sluttet å oppdateres eller ble feillest. Og et kort som ikke har endret seg på flere dager topper aldri rangeringen, selv når prisen ser ut til å være den beste: markedet beveget seg, men det gjorde det ikke.",
     "noData": "Ingen priser tilgjengelig akkurat nå."
   },
   "rateChanges": {

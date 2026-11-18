@@ -544,6 +544,14 @@ export const CONTENIDO_PATHS = new Set([
   "/prestamo-sin-recibo-de-sueldo-uruguay",
   "/prestamos-para-jubilados-uruguay",
   "/saldar-deudas-uruguay",
+  // 2026-11-18: nace `/carne-de-manipulacion-de-alimentos-uruguay` y entra clasificada, en el mismo
+  // commit que la publica, que es lo que la deuda de `contenidoTramoParity.test.ts` pide de toda
+  // pagina nueva de lectura larga. No pide NINGUN dato en vivo —su `<script setup>` no tiene un
+  // solo `useFetch`: la tabla de las siete intendencias y las tres transcripciones del Reglamento
+  // Bromatologico salen de `app/utils/foodHandlerCard.ts`—, asi que la linea mecanica del 22/10 la
+  // resuelve sin dudar: es texto, no una serie con texto alrededor. Y es la misma clase de pagina
+  // que su vecina de hub `/carne-de-salud-uruguay`, ya clasificada arriba.
+  "/carne-de-manipulacion-de-alimentos-uruguay",
 ]);
 
 export function tierOf(bucket: string): Tier {
