@@ -1551,8 +1551,8 @@
     }
   },
   "capture": {
-    "title": "Handig? Bekijk het dagelijkse dollaroverzicht.",
-    "lead": "Ontvang dagelijks één e-mail met de beste tarieven, de trends en de veranderingen. Gratis, en u kunt zich op elk gewenst moment afmelden.",
+    "title": "Volgt u de dollar op de voet? Ontvang hem elke ochtend.",
+    "lead": "Ontvang dagelijks één e-mail met de beste koop- en verkoopkoersen van meer dan 40 wisselkantoren in Uruguay, inclusief trends en veranderingen. Gratis en u kunt zich op elk gewenst moment afmelden.",
     "dismiss": "Dichtbij",
     "aria": "Abonneer u op de nieuwsbrief"
   },
@@ -1768,6 +1768,7 @@
     "impuestosInversiones": "Investeringsbelastingen",
     "proyectos": "Uruguayaanse projecten",
     "carneDeSalud": "Gezondheidscertificaat",
+    "carneManipulacionAlimentos": "Voedselveiligheidscertificaat",
     "libretaDeConducir": "Rijbewijs",
     "saludFinanciera": "Financiële gezondheid",
     "apps": "Geld-apps",

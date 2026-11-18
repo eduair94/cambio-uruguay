@@ -1551,8 +1551,8 @@
     }
   },
   "capture": {
-    "title": "Utile ? Consultez le récapitulatif quotidien du dollar.",
-    "lead": "Un e-mail par jour vous informe des meilleurs taux, des tendances et des changements. C'est gratuit et vous pouvez vous désabonner à tout moment.",
+    "title": "Vous suivez le dollar ? Recevez-le chaque matin",
+    "lead": "Recevez chaque jour par e-mail les meilleurs taux d'achat et de vente proposés par plus de 40 bureaux de change en Uruguay, ainsi que les tendances et les évolutions du marché. Service gratuit et sans engagement.",
     "dismiss": "Fermer",
     "aria": "Abonnez-vous à la newsletter"
   },
@@ -1768,6 +1768,7 @@
     "impuestosInversiones": "Impôts sur les investissements",
     "proyectos": "Projets uruguayens",
     "carneDeSalud": "Certificat de santé",
+    "carneManipulacionAlimentos": "Carte de manipulateur d'aliments",
     "libretaDeConducir": "Permis de conduire",
     "saludFinanciera": "Santé financière",
     "apps": "Applications financières",

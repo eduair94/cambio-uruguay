@@ -1551,8 +1551,8 @@
     }
   },
   "capture": {
-    "title": "Util? Obțineți recapitularea zilnică a dolarului",
-    "lead": "Un e-mail pe zi cu cele mai bune tarife, tendințe și schimbări. Gratuit și te poți dezabona oricând dorești.",
+    "title": "Urmărești dolarul? Ia-l în fiecare dimineață",
+    "lead": "Un e-mail pe zi cu cele mai bune rate de cumpărare și vânzare de la peste 40 de case de schimb valutar din Uruguay, tendințele și schimbările. Gratuit și te poți dezabona oricând dorești.",
     "dismiss": "Aproape",
     "aria": "Abonează-te la newsletter"
   },
@@ -1768,6 +1768,7 @@
     "impuestosInversiones": "Impozite pe investiții",
     "proyectos": "Proiecte uruguayene",
     "carneDeSalud": "Certificat de sănătate",
+    "carneManipulacionAlimentos": "Card de manipulator de alimente",
     "libretaDeConducir": "Permis de conducere",
     "saludFinanciera": "Sănătate financiară",
     "apps": "Aplicații financiare",

@@ -1551,8 +1551,8 @@
     }
   },
   "capture": {
-    "title": "Kasulik? Vaadake igapäevast dollari kokkuvõtet",
-    "lead": "Üks e-kiri päevas parimate hindade, trendi ja muutustega. Tasuta ja saate tellimuse igal ajal tühistada.",
+    "title": "Dollari järgimine? Saa see igal hommikul kätte",
+    "lead": "Üks e-kiri päevas parimate ostu- ja müügihindadega enam kui 40 vahetusmajas Uruguays, trendide ja muutuste kohta. Tasuta ja saate tellimuse igal ajal tühistada.",
     "dismiss": "Sule",
     "aria": "Liitu uudiskirjaga"
   },
@@ -1768,6 +1768,7 @@
     "impuestosInversiones": "Investeeringumaksud",
     "proyectos": "Uruguay projektid",
     "carneDeSalud": "Tervisetõend",
+    "carneManipulacionAlimentos": "Toidukäitleja kaart",
     "libretaDeConducir": "Juhiluba",
     "saludFinanciera": "Finantsiline tervis",
     "apps": "Raharakendused",

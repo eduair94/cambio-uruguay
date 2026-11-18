@@ -1551,8 +1551,8 @@
     }
   },
   "capture": {
-    "title": "Užitečné? Získejte denní shrnutí dolaru",
-    "lead": "Jeden e-mail denně s nejlepšími cenami, trendy a změnami. Zdarma a můžete se kdykoli odhlásit.",
+    "title": "Sledujete dolar? Získejte ho každé ráno",
+    "lead": "Jeden e-mail denně s nejlepšími kurzy nákupu a prodeje na více než 40 směnárenských místech v Uruguayi, trendy a změny. Zdarma a můžete se kdykoli odhlásit.",
     "dismiss": "Blízko",
     "aria": "Přihlaste se k odběru newsletteru"
   },
@@ -1768,6 +1768,7 @@
     "impuestosInversiones": "Investiční daně",
     "proyectos": "Uruguayské projekty",
     "carneDeSalud": "Zdravotní osvědčení",
+    "carneManipulacionAlimentos": "Karta manipulátora s potravinami",
     "libretaDeConducir": "Řidičský průkaz",
     "saludFinanciera": "Finanční zdraví",
     "apps": "Aplikace pro peníze",

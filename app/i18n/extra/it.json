@@ -1551,8 +1551,8 @@
     }
   },
   "capture": {
-    "title": "Utile? Ricevi il riepilogo giornaliero del dollaro",
-    "lead": "Una email al giorno con le migliori tariffe, l'andamento del mercato e le ultime novità. Gratuita e con possibilità di disiscriversi in qualsiasi momento.",
+    "title": "Seguendo il dollaro? Ottienilo ogni mattina",
+    "lead": "Un'email al giorno con i migliori tassi di acquisto e vendita di oltre 40 agenzie di cambio in Uruguay, l'andamento del mercato e le novità. È gratuita e puoi disiscriverti quando vuoi.",
     "dismiss": "Vicino",
     "aria": "Iscriviti alla newsletter"
   },
@@ -1768,6 +1768,7 @@
     "impuestosInversiones": "Imposte sugli investimenti",
     "proyectos": "Progetti uruguaiani",
     "carneDeSalud": "Certificato sanitario",
+    "carneManipulacionAlimentos": "Attestato di idoneità alla manipolazione degli alimenti",
     "libretaDeConducir": "Patente di guida",
     "saludFinanciera": "Salute finanziaria",
     "apps": "App per guadagnare soldi",

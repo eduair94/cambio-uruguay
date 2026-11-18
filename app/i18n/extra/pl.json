@@ -1551,8 +1551,8 @@
     }
   },
   "capture": {
-    "title": "Przydatne? Otrzymuj codzienne podsumowanie dolara",
-    "lead": "Jeden e-mail dziennie z najlepszymi cenami, trendami i zmianami. Za darmo, a Ty możesz zrezygnować z subskrypcji, kiedy tylko chcesz.",
+    "title": "Podążasz za dolarem? Otrzymuj go każdego ranka",
+    "lead": "Jeden e-mail dziennie z najlepszymi kursami kupna i sprzedaży w ponad 40 domach wymiany walut w Urugwaju, trendami i zmianami. Za darmo, możesz zrezygnować z subskrypcji, kiedy tylko chcesz.",
     "dismiss": "Zamknąć",
     "aria": "Zapisz się do newslettera"
   },
@@ -1768,6 +1768,7 @@
     "impuestosInversiones": "Podatki inwestycyjne",
     "proyectos": "Projekty urugwajskie",
     "carneDeSalud": "Świadectwo zdrowia",
+    "carneManipulacionAlimentos": "Karta osoby zajmującej się żywnością",
     "libretaDeConducir": "Prawo jazdy",
     "saludFinanciera": "Zdrowie finansowe",
     "apps": "Aplikacje finansowe",

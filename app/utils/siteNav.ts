@@ -2594,6 +2594,34 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // «carne de manipulacion de alimentos» se busca como un precio y como un
+        // plazo, y afuera se contesta con UNA cifra. No hay una: el carné no es
+        // nacional. El Reglamento Bromatológico exige el carné de salud y pone la
+        // capacitación a cargo del empleador; el carné lo crea, lo cobra y lo
+        // fecha cada intendencia, así que sale $ 0 en Montevideo y $ 850 en
+        // Paysandú. Ninguna página del sitio lo contestaba.
+        to: '/carne-de-manipulacion-de-alimentos-uruguay',
+        labelKey: 'nav.carneManipulacionAlimentos',
+        icon: 'mdi-silverware-fork-knife',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'carne de manipulacion de alimentos',
+          'carne de manipulador de alimentos',
+          'carne de manipulacion de alimentos uruguay',
+          'cuanto sale el carne de manipulacion de alimentos',
+          'carne de manipulacion de alimentos montevideo',
+          'carne de manipulacion de alimentos online',
+          'curso de manipulacion de alimentos uruguay',
+          'certificado de habilitacion en manipulacion de alimentos',
+          'carne de manipulacion de alimentos canelones',
+          'carne de manipulacion de alimentos maldonado',
+          'cuanto dura el carne de manipulacion de alimentos',
+          'renovar carne de manipulacion de alimentos',
+        ],
+      },
+      {
         // «cuanto sale la libreta de conducir» se busca como precio y afuera se
         // contesta «depende de tu intendencia». Dejó de depender en 2023: el
         // Congreso de Intendentes y el Sucive unificaron la emisión en UR 1,25,

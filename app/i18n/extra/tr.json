@@ -1551,8 +1551,8 @@
     }
   },
   "capture": {
-    "title": "Faydalı mı? Günlük dolar özetine göz atın.",
-    "lead": "En iyi döviz kurları, trendler ve değişiklikler hakkında günde bir e-posta. Ücretsizdir ve istediğiniz zaman aboneliğinizi iptal edebilirsiniz.",
+    "title": "Doların seyrini mi takip ediyorsunuz? Her sabah alın.",
+    "lead": "Uruguay'daki 40'tan fazla döviz bürosundaki en iyi alış ve satış kurlarını, trendleri ve değişiklikleri içeren günde bir e-posta. Ücretsizdir ve istediğiniz zaman aboneliğinizi iptal edebilirsiniz.",
     "dismiss": "Kapalı",
     "aria": "Bültene abone olun"
   },
@@ -1768,6 +1768,7 @@
     "impuestosInversiones": "Yatırım vergileri",
     "proyectos": "Uruguay projeleri",
     "carneDeSalud": "Sağlık sertifikası",
+    "carneManipulacionAlimentos": "Gıda işleme sertifikası",
     "libretaDeConducir": "Sürücü ehliyeti",
     "saludFinanciera": "Finansal sağlık",
     "apps": "Para uygulamaları",

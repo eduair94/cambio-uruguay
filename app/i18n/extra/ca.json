@@ -1551,8 +1551,8 @@
     }
   },
   "capture": {
-    "title": "Útil? Obtén el resum diari en dòlars",
-    "lead": "Un correu electrònic al dia amb les millors tarifes, la tendència i què ha canviat. Gratuït i pots donar-te de baixa quan vulguis.",
+    "title": "Seguint el dòlar? Aconsegueix-lo cada matí",
+    "lead": "Un correu electrònic al dia amb les millors taxes de compra i venda de més de 40 cases de canvi a l'Uruguai, la tendència i què ha canviat. Gratuït i pots donar-te de baixa quan vulguis.",
     "dismiss": "Tanca",
     "aria": "Subscriu-te al butlletí"
   },
@@ -1768,6 +1768,7 @@
     "impuestosInversiones": "Impostos sobre la inversió",
     "proyectos": "Projectes uruguaians",
     "carneDeSalud": "Certificat sanitari",
+    "carneManipulacionAlimentos": "Carnet de manipulador d'aliments",
     "libretaDeConducir": "Carnet de conduir",
     "saludFinanciera": "Salut financera",
     "apps": "Aplicacions de diners",

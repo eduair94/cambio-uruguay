@@ -1551,8 +1551,8 @@
     }
   },
   "capture": {
-    "title": "Nützlich? Holen Sie sich die tägliche Dollar-Zusammenfassung.",
-    "lead": "Täglich eine E-Mail mit den besten Konditionen, aktuellen Trends und Neuerungen. Kostenlos und jederzeit abbestellbar.",
+    "title": "Dem Dollar folgen? Erhalten Sie ihn jeden Morgen",
+    "lead": "Täglich eine E-Mail mit den besten An- und Verkaufskursen von über 40 Wechselstuben in Uruguay, den aktuellen Trends und Veränderungen. Kostenlos und jederzeit abbestellbar.",
     "dismiss": "Schließen",
     "aria": "Abonnieren Sie den Newsletter"
   },
@@ -1768,6 +1768,7 @@
     "impuestosInversiones": "Investitionssteuern",
     "proyectos": "Uruguayische Projekte",
     "carneDeSalud": "Gesundheitszeugnis",
+    "carneManipulacionAlimentos": "Lebensmittelhygiene-Zertifikat",
     "libretaDeConducir": "Führerschein",
     "saludFinanciera": "Finanzielle Gesundheit",
     "apps": "Geld-Apps",

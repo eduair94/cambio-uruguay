@@ -1551,8 +1551,8 @@
     }
   },
   "capture": {
-    "title": "Hyödyllinen? Hanki päivittäinen dollariyhteenveto",
-    "lead": "Yksi sähköposti päivässä, jossa on parhaat hinnat, trendi ja muutokset. Ilmainen, ja voit peruuttaa tilauksen milloin tahansa.",
+    "title": "Dollarin perässä? Saat sen joka aamu",
+    "lead": "Yksi sähköposti päivässä, jossa on parhaat osto- ja myyntikurssit yli 40 pörssiyhtiössä Uruguayssa, trendi ja muutokset. Ilmainen, ja voit peruuttaa tilauksen milloin tahansa.",
     "dismiss": "Lähellä",
     "aria": "Tilaa uutiskirje"
   },
@@ -1768,6 +1768,7 @@
     "impuestosInversiones": "Sijoitusverot",
     "proyectos": "Uruguayn projektit",
     "carneDeSalud": "Terveystodistus",
+    "carneManipulacionAlimentos": "Elintarvikekäsittelijän kortti",
     "libretaDeConducir": "Ajokortti",
     "saludFinanciera": "Taloudellinen terveys",
     "apps": "Rahasovellukset",

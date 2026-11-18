@@ -1551,8 +1551,8 @@
     }
   },
   "capture": {
-    "title": "Nyttigt? Få den daglige oversigt over dollars",
-    "lead": "Én e-mail om dagen med de bedste priser, tendensen og hvad der har ændret sig. Gratis, og du kan afmelde dig når som helst.",
+    "title": "Følger du dollaren? Få den hver morgen",
+    "lead": "Én e-mail om dagen med de bedste købs- og salgskurser på tværs af mere end 40 byttehuse i Uruguay, trenden og hvad der har ændret sig. Gratis, og du kan afmelde dig når som helst.",
     "dismiss": "Tæt",
     "aria": "Tilmeld dig nyhedsbrevet"
   },
@@ -1768,6 +1768,7 @@
     "impuestosInversiones": "Investeringsskatter",
     "proyectos": "Uruguayanske projekter",
     "carneDeSalud": "Sundhedsattest",
+    "carneManipulacionAlimentos": "Fødevarehåndteringskort",
     "libretaDeConducir": "Kørekort",
     "saludFinanciera": "Finansiel sundhed",
     "apps": "Pengeapps",

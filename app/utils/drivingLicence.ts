@@ -408,6 +408,12 @@ export const DRIVING_LICENCE_RELATED: readonly DrivingLicenceRelated[] = Object.
   { to: '/indicadores/unidad-reajustable', label: 'Cuánto vale hoy la Unidad Reajustable' },
   { to: '/multas-de-transito-y-patente-uruguay', label: 'Multas de tránsito y patente' },
   { to: '/carne-de-salud-uruguay', label: 'Carné de salud: cuándo es gratis' },
+  // El otro carné que cobra la intendencia, y el contraste exacto de esta página: acá el costo se
+  // unificó a nivel nacional en 2023 y allá sigue decidiéndolo cada una, de $ 0 a $ 850.
+  {
+    to: '/carne-de-manipulacion-de-alimentos-uruguay',
+    label: 'Carné de manipulación de alimentos',
+  },
   {
     to: '/cuanto-sale-la-cedula-de-identidad-uruguaya',
     label: 'Cuánto sale la cédula de identidad',

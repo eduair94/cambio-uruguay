@@ -1551,8 +1551,8 @@
     }
   },
   "capture": {
-    "title": "Bermanfaat? Dapatkan rangkuman dolar harian.",
-    "lead": "Satu email setiap hari berisi tarif terbaik, tren, dan perubahan yang terjadi. Gratis, dan Anda dapat berhenti berlangganan kapan pun Anda mau.",
+    "title": "Mengikuti pergerakan dolar? Dapatkan setiap pagi.",
+    "lead": "Satu email setiap hari berisi kurs beli dan jual terbaik dari lebih dari 40 lembaga penukaran mata uang di Uruguay, trennya, dan perubahannya. Gratis, dan Anda dapat berhenti berlangganan kapan pun Anda mau.",
     "dismiss": "Menutup",
     "aria": "Berlangganan buletin"
   },
@@ -1768,6 +1768,7 @@
     "impuestosInversiones": "Pajak investasi",
     "proyectos": "Proyek Uruguay",
     "carneDeSalud": "Sertifikat kesehatan",
+    "carneManipulacionAlimentos": "Kartu penanganan makanan",
     "libretaDeConducir": "Surat izin mengemudi",
     "saludFinanciera": "Kesehatan keuangan",
     "apps": "Aplikasi uang",

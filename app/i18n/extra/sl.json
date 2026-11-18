@@ -1551,8 +1551,8 @@
     }
   },
   "capture": {
-    "title": "Koristno? Pridobite dnevni povzetek stanja v dolarju.",
-    "lead": "Eno e-poštno sporočilo na dan z najboljšimi cenami, trendom in spremembami. Brezplačno, od prejemanja e-poštnih sporočil pa se lahko kadar koli odjavite.",
+    "title": "Sledite dolarju? Dobite ga vsako jutro.",
+    "lead": "Eno e-poštno sporočilo na dan z najboljšimi nakupnimi in prodajnimi tečaji za več kot 40 menjalnic v Urugvaju, trendi in spremembe. Brezplačno, od prejemanja e-poštnih sporočil pa se lahko kadar koli odjavite.",
     "dismiss": "Zapri",
     "aria": "Naročite se na novice"
   },
@@ -1768,6 +1768,7 @@
     "impuestosInversiones": "Davki na naložbe",
     "proyectos": "Urugvajski projekti",
     "carneDeSalud": "Zdravstveno spričevalo",
+    "carneManipulacionAlimentos": "Kartica za ravnanje z živili",
     "libretaDeConducir": "Vozniško dovoljenje",
     "saludFinanciera": "Finančno zdravje",
     "apps": "Aplikacije za denar",

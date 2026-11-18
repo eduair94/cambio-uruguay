@@ -1551,8 +1551,8 @@
     }
   },
   "capture": {
-    "title": "Hữu ích? Xem bản tóm tắt tỷ giá đô la hàng ngày.",
-    "lead": "Mỗi ngày nhận một email với tỷ giá tốt nhất, xu hướng và những thay đổi. Hoàn toàn miễn phí và bạn có thể hủy đăng ký bất cứ lúc nào.",
+    "title": "Theo dõi tỷ giá đô la? Nhận thông tin mỗi sáng",
+    "lead": "Mỗi ngày nhận một email với tỷ giá mua và bán tốt nhất từ hơn 40 nhà đổi ngoại tệ tại Uruguay, xu hướng và những thay đổi. Hoàn toàn miễn phí và bạn có thể hủy đăng ký bất cứ lúc nào.",
     "dismiss": "Đóng",
     "aria": "Đăng ký nhận bản tin"
   },
@@ -1768,6 +1768,7 @@
     "impuestosInversiones": "Thuế đầu tư",
     "proyectos": "Các dự án của Uruguay",
     "carneDeSalud": "Giấy chứng nhận sức khỏe",
+    "carneManipulacionAlimentos": "Thẻ người xử lý thực phẩm",
     "libretaDeConducir": "Giấy phép lái xe",
     "saludFinanciera": "Sức khỏe tài chính",
     "apps": "Ứng dụng tiền bạc",

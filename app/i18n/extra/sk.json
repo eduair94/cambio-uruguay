@@ -1551,8 +1551,8 @@
     }
   },
   "capture": {
-    "title": "Užitočné? Získajte denný prehľad o dolároch",
-    "lead": "Jeden e-mail denne s najlepšími cenami, trendom a zmenami. Zadarmo a kedykoľvek sa môžete odhlásiť.",
+    "title": "Sledujete dolár? Získajte ho každé ráno",
+    "lead": "Jeden e-mail denne s najlepšími kurzami nákupu a predaja vo viac ako 40 zmenárňach v Uruguaji, trendom a zmenou. Zadarmo a môžete sa kedykoľvek odhlásiť.",
     "dismiss": "Zatvoriť",
     "aria": "Prihláste sa na odber noviniek"
   },
@@ -1768,6 +1768,7 @@
     "impuestosInversiones": "Investičné dane",
     "proyectos": "Uruguajské projekty",
     "carneDeSalud": "Zdravotný certifikát",
+    "carneManipulacionAlimentos": "Karta manipulátora s potravinami",
     "libretaDeConducir": "Vodičský preukaz",
     "saludFinanciera": "Finančné zdravie",
     "apps": "Aplikácie pre peniaze",

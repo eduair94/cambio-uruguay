@@ -1551,8 +1551,8 @@
     }
   },
   "capture": {
-    "title": "Noderīgi? Saņemiet ikdienas dolāru pārskatu",
-    "lead": "Viens e-pasts dienā ar labākajām cenām, tendencēm un izmaiņām. Bez maksas, un jūs varat atteikties no abonēšanas jebkurā laikā.",
+    "title": "Sekot dolāram? Saņemt to katru rītu",
+    "lead": "Viens e-pasts dienā ar labākajām pirkšanas un pārdošanas likmēm vairāk nekā 40 biržas namos Urugvajā, tendencēm un izmaiņām. Bez maksas, un jūs varat atteikties no abonēšanas, kad vien vēlaties.",
     "dismiss": "Aizvērt",
     "aria": "Abonēt jaunumus"
   },
@@ -1768,6 +1768,7 @@
     "impuestosInversiones": "Investīciju nodokļi",
     "proyectos": "Urugvajas projekti",
     "carneDeSalud": "Veselības sertifikāts",
+    "carneManipulacionAlimentos": "Pārtikas apstrādātāja karte",
     "libretaDeConducir": "Vadītāja apliecība",
     "saludFinanciera": "Finansiālā veselība",
     "apps": "Naudas lietotnes",

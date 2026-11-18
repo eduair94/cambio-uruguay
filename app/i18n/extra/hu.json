@@ -1551,8 +1551,8 @@
     }
   },
   "capture": {
-    "title": "Hasznos? Tekintse meg a napi dollárösszesítőt",
-    "lead": "Naponta egy e-mail a legjobb árakkal, a trendekkel és a változásokkal. Ingyenes, és bármikor leiratkozhatsz.",
+    "title": "Követed a dollárt? Minden reggel megkapod",
+    "lead": "Naponta egy e-mail a legjobb vételi és eladási árfolyamokkal több mint 40 uruguayi tőzsdén, a trendekkel és a változásokkal. Ingyenes, és bármikor leiratkozhat.",
     "dismiss": "Közeli",
     "aria": "Iratkozzon fel a hírlevélre"
   },
@@ -1768,6 +1768,7 @@
     "impuestosInversiones": "Befektetési adók",
     "proyectos": "Uruguayi projektek",
     "carneDeSalud": "Egészségügyi igazolás",
+    "carneManipulacionAlimentos": "Élelmiszer-kezelő kártya",
     "libretaDeConducir": "Jogosítvány",
     "saludFinanciera": "Pénzügyi egészség",
     "apps": "Pénzügyi alkalmazások",

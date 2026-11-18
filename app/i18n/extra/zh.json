@@ -1551,8 +1551,8 @@
     }
   },
   "capture": {
-    "title": "有用吗？获取每日美元收支汇总",
-    "lead": "每天一封邮件，为您提供最佳利率、趋势和最新变化。完全免费，您可以随时取消订阅。",
+    "title": "关注美元走势？每天早上获取。",
+    "lead": "每天一封邮件，为您汇总乌拉圭 40 多家外汇兑换机构的最佳买卖汇率、汇率趋势及变化。完全免费，您可以随时取消订阅。",
     "dismiss": "关闭",
     "aria": "订阅新闻简报"
   },
@@ -1768,6 +1768,7 @@
     "impuestosInversiones": "投资税",
     "proyectos": "乌拉圭项目",
     "carneDeSalud": "健康证明",
+    "carneManipulacionAlimentos": "食品处理人员证",
     "libretaDeConducir": "驾驶执照",
     "saludFinanciera": "财务健康状况",
     "apps": "理财应用",

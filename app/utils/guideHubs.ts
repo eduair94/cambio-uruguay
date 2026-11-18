@@ -1961,6 +1961,16 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/carne-de-salud-uruguay',
       },
       {
+        // Va pegado al carné de salud porque son los dos documentos que se confunden entre sí y
+        // hacen falta los dos: el de salud lo exige el Reglamento Bromatológico a todo el personal
+        // de una empresa alimentaria, el de manipulación lo da cada intendencia. La etiqueta dice
+        // el rango y no «cuánto sale» porque lo que la página agrega es justamente que no hay UN
+        // precio: el mismo documento es gratis en Montevideo y $ 850 en Paysandú.
+        label: 'Carné de manipulación de alimentos',
+        description: 'Gratis en Montevideo, $ 850 en Paysandú: lo cobra cada intendencia.',
+        to: '/carne-de-manipulacion-de-alimentos-uruguay',
+      },
+      {
         label: 'A quién le reclamo',
         description: 'El organismo que corresponde a cada problema.',
         to: '/a-quien-le-reclamo-uruguay',

@@ -1551,8 +1551,8 @@
     }
   },
   "capture": {
-    "title": "Berguna? Dapatkan ringkasan dolar harian",
-    "lead": "Satu emel sehari dengan kadar terbaik, trend dan apa yang berubah. Percuma, dan anda boleh berhenti melanggan bila-bila masa yang anda mahu.",
+    "title": "Mengikuti dolar? Dapatkannya setiap pagi",
+    "lead": "Satu emel sehari dengan kadar jual beli terbaik merentasi 40+ rumah pertukaran di Uruguay, trend dan apa yang berubah. Percuma, dan anda boleh berhenti melanggan bila-bila masa yang anda mahu.",
     "dismiss": "Tutup",
     "aria": "Langgan surat berita"
   },
@@ -1768,6 +1768,7 @@
     "impuestosInversiones": "Cukai pelaburan",
     "proyectos": "Projek Uruguay",
     "carneDeSalud": "Sijil kesihatan",
+    "carneManipulacionAlimentos": "Kad pengendali makanan",
     "libretaDeConducir": "Lesen memandu",
     "saludFinanciera": "Kesihatan kewangan",
     "apps": "Aplikasi wang",

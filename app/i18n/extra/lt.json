@@ -1551,8 +1551,8 @@
     }
   },
   "capture": {
-    "title": "Naudinga? Gaukite dienos dolerio apžvalgą",
-    "lead": "Vienas el. laiškas per dieną su geriausiais tarifais, tendencijomis ir pokyčiais. Nemokamai, ir galite bet kada atsisakyti prenumeratos.",
+    "title": "Sekite dolerį? Gaukite jį kiekvieną rytą",
+    "lead": "Vienas el. laiškas per dieną su geriausiais pirkimo ir pardavimo kursais daugiau nei 40 biržų Urugvajuje, tendencijomis ir pokyčiais. Nemokamai, ir galite bet kada atsisakyti prenumeratos.",
     "dismiss": "Uždaryti",
     "aria": "Prenumeruokite naujienlaiškį"
   },
@@ -1768,6 +1768,7 @@
     "impuestosInversiones": "Investicijų mokesčiai",
     "proyectos": "Urugvajaus projektai",
     "carneDeSalud": "Sveikatos pažymėjimas",
+    "carneManipulacionAlimentos": "Maisto tvarkytojo kortelė",
     "libretaDeConducir": "Vairuotojo pažymėjimas",
     "saludFinanciera": "Finansinė sveikata",
     "apps": "Pinigų programėlės",
