@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -95,5 +97,30 @@ describe('integridad', () => {
     for (const b of ROUTING_BODIES) {
       expect(b.url).toMatch(/^https:\/\/([\w.]+\.)?(gub\.uy|bcu\.gub\.uy)/)
     }
+  })
+})
+
+// El título de la página, atado al conteo del que salió. Mismo patrón y misma razón que
+// `snippetConLaRespuesta.test.ts`: el título es un literal del `.vue` y un literal no se
+// entera cuando cambia la lista que lo respalda. El día que entre o salga un organismo,
+// esto se pone en rojo en vez de dejar en el SERP un número que la propia página ya
+// desmiente.
+describe('/a-quien-le-reclamo-uruguay: el título contesta', () => {
+  const source = readFileSync(
+    join(__dirname, '..', '..', 'pages', 'a-quien-le-reclamo-uruguay.vue'),
+    'utf8'
+  )
+  const title = source.match(/\nconst title = '((?:[^'\\]|\\.)*)'/)?.[1]
+
+  it('contesta con el conteo en vez de devolver la pregunta', () => {
+    expect(title).toBe('¿A quién le reclamo? Son cinco organismos')
+    // «cinco» es `ROUTING_BODIES`, no un número escrito a mano.
+    expect(ROUTING_BODIES).toHaveLength(5)
+    // Y no vuelve a ser la consulta con «en Uruguay» pegado atrás.
+    expect(title).not.toMatch(/reclamo en Uruguay\?$/)
+  })
+
+  it('entra en los 60 caracteres que publica el SERP, con la marca puesta', () => {
+    expect(`${title} | Cambio Uruguay`.length).toBeLessThanOrEqual(60)
   })
 })

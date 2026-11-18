@@ -205,7 +205,16 @@ const verifiedAt = new Date(ROUTING_VERIFIED_AT).toLocaleDateString('es-UY', {
 })
 
 const canonicalUrl = 'https://cambio-uruguay.com/a-quien-le-reclamo-uruguay'
-const title = '¿A quién le reclamo en Uruguay?'
+// El título CONTESTA en vez de devolver la consulta. El anterior era la pregunta del
+// lector con «en Uruguay» pegado atrás, o sea gastaba el renglón en repetirla, y la
+// respuesta de esta página —que no hay un solo mostrador: son cinco, y presentarlo en el
+// equivocado no te redirige— ya estaba en su propio encabezado. El número sale de
+// `ROUTING_BODIES` y `complaintRouting.test.ts` lo ata: si entra un sexto organismo, el
+// título deja de decir la verdad y se pone en rojo. Los cinco no entran en los 43
+// caracteres que deja la marca, y nombrar cuatro omitiría justo al que es el default
+// (Defensa del Consumidor), así que el título lleva el conteo y la descripción sigue
+// llevando el ruteo por servicio.
+const title = '¿A quién le reclamo? Son cinco organismos'
 const description =
   'Luz y agua son URSEA, celular e internet URSEC, bancos y seguros el BCU, lo laboral el MTSS. Plazos: 15 días hábiles en URSEA, 15 corridos en el BCU.'
 
