@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -165,5 +167,31 @@ describe('integridad', () => {
   it('la primera pregunta es la que corrige la creencia equivocada', () => {
     expect(DEFENSE_FAQ[0].question).toMatch(/devolver la plata/i)
     expect(DEFENSE_FAQ[0].short).toMatch(/^No\b/)
+  })
+})
+
+// El título de la página, atado a la tesis de la que salió. Mismo patrón y misma razón
+// que `snippetConLaRespuesta.test.ts`: el título es un literal dentro del `.vue` —es la
+// única forma que `seoTitleBudget` sabe leer sin ejecutar la app— y un literal no se
+// entera cuando cambia la constante que lo respalda. Si alguien matiza la tesis y no el
+// título, la página publicaría en su renglón del SERP una afirmación que su propio cuerpo
+// ya no hace.
+describe('/defensa-al-consumidor-uruguay: el título contesta', () => {
+  const source = readFileSync(
+    join(__dirname, '..', '..', 'pages', 'defensa-al-consumidor-uruguay.vue'),
+    'utf8'
+  )
+  const title = source.match(/\nconst title = '((?:[^'\\]|\\.)*)'/)?.[1]
+
+  it('publica la respuesta y no la promesa de compararla', () => {
+    expect(title).toBe('Defensa del Consumidor no devuelve la plata')
+    // Lo que afirma el título lo afirma la tesis, textual salvo el pronombre.
+    expect(DEFENSE_THESIS).toContain('no te devuelve la plata')
+    // Y no vuelve a ser un anuncio: «qué puede y qué no» describe la página, no contesta.
+    expect(title).not.toMatch(/qué puede/i)
+  })
+
+  it('entra en los 60 caracteres que publica el SERP, con la marca puesta', () => {
+    expect(`${title} | Cambio Uruguay`.length).toBeLessThanOrEqual(60)
   })
 })
