@@ -1220,6 +1220,15 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/horas-extras-uruguay',
       },
       {
+        // Va pegada a horas extras porque la regla de jornada del teletrabajo es la excepción a la
+        // de esa página: el exceso DIARIO no es trabajo extraordinario, se compensa con horas no
+        // trabajadas en la misma semana (Ley 19.978, art. 8). Quien llega buscando horas extras y
+        // teletrabaja necesita saber eso antes de hacer la cuenta.
+        label: 'Teletrabajo',
+        description: '8 horas de desconexión, y sin acuerdo el equipo lo pone la empresa.',
+        to: '/teletrabajo-uruguay',
+      },
+      {
         label: 'Feriados que se corren al lunes',
         description: 'Son tres: 19 de abril, 18 de mayo y 12 de octubre (Ley 16.805, art. 2).',
         to: '/feriados-que-se-corren-uruguay',

@@ -1070,6 +1070,10 @@
           "label": "Horas extras"
         },
         {
+          "to": "/teletrabajo-uruguay",
+          "label": "Teletrabajo"
+        },
+        {
           "to": "/feriados-que-se-corren-uruguay",
           "label": "Feriados que se corren al lunes"
         },
