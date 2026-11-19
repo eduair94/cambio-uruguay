@@ -223,6 +223,12 @@ const NOINDEXED = [
   // El ranking privado de páginas por visita: mismo trato que el tablero de Search Console.
   'estadisticas-por-pagina.vue',
   'estado.vue',
+  // Las guías se indexan en su URL; una guía CONSOLIDADA se sale (`Guide.consolidatedInto`), porque
+  // su canónica es la página raíz que se quedó con la misma intención — el par que
+  // `slugCollision.test.ts` documenta. Que esta página siga declarando canónica, robots y
+  // estructurados desde el campo y no a mano lo mide `guideConsolidation.test.ts`, que es lo que
+  // cubre el hueco de sacarla de `OWES_OWN_SEO`.
+  'guias/[slug].vue',
   // Agency pages exclude empty/error states, thin profiles and filtered directory copies.
   'inmobiliarias-uruguay/[key].vue',
   'inmobiliarias-uruguay/index.vue',

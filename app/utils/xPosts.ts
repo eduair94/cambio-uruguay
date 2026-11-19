@@ -105,7 +105,7 @@ export const X_GUIDES: readonly XPost[] = Object.freeze([
   },
   {
     id: 'impuesto-temu',
-    path: '/guias/impuesto-temu-uruguay',
+    path: '/impuesto-temu-uruguay',
     text: 'El impuesto a las compras en Temu no lo cobra Temu: lo liquida el correo o el courier, que retiene el paquete hasta que pagues el IVA. Cómo funciona:',
   },
   {

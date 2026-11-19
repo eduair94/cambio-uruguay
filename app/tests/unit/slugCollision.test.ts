@@ -1,7 +1,7 @@
 import { readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { guides } from '../../utils/guides'
+import { guides, isGuideConsolidated } from '../../utils/guides'
 
 /**
  * Dos URLs del sitio con el MISMO slug y el mismo tema: `/<x>` y `/guias/<x>`.
@@ -66,17 +66,35 @@ const guideSlugs = guides.map(guide => guide.slug).sort()
  * (`sitemap.exclude` + su `robots`, como pide `robotsMetaContract.test.ts`), conservando sus enlaces
  * entrantes, que es lo que consolida la señal en vez de tirarla.
  *
+ * 1 → 0 el 2026-11-19, que es el día siguiente al que ese párrafo tenía anotado: la fila
+ * `impuesto-temu-tema-y-enlace` del 20/10 cumplió sus 29 días y la ruta quedó libre. Se hizo
+ * exactamente lo que estaba escrito, y la parte que faltaba decidir era qué cuenta este trinquete.
+ *
+ * LO QUE CUENTA AHORA ES LA COMPETENCIA, NO EL SLUG REPETIDO. Un par consolidado sigue teniendo el
+ * mismo slug de los dos lados —la guía conserva su cuerpo y sus enlaces a propósito—, así que un
+ * contador de slugs cruzados nunca podría bajar y la única forma de ponerlo en cero sería borrar la
+ * guía, que es justamente lo que el arreglo evita. Lo que desaparece al consolidar es el conflicto:
+ * una sola de las dos se declara canónica, una sola entra al sitemap y una sola sale `index`. Por
+ * eso el cruce descuenta las guías que declaran `consolidatedInto`, y por eso ese campo es lo que
+ * la página, el sitemap y este test leen del mismo lugar: si alguien le saca la consolidación a la
+ * guía para volver a indexarla, el par reaparece acá en rojo.
+ *
  * Subirlo es publicar una segunda URL para una consulta que el sitio ya contesta.
  */
 const PARES_QUE_COMPITEN = [
+  // POZO PAGADO el 2026-11-19: ninguna consulta del sitio tiene dos URLs propias compitiendo.
+  //
   // El comentario va DENTRO de la lista por lo que `DEUDA_SIN_ENLACE` en `enlacesDeContexto.test.ts`
   // deja escrito: prettier aplasta a una sola línea cualquier array que entre en 100 columnas salvo
   // los que llevan un comentario, y el cierre tiene que abrir su propia línea.
-  'impuesto-temu-uruguay',
 ]
 
+/** Los pares consolidados: mismo slug de los dos lados, pero una sola URL indexable. */
+const CONSOLIDADOS = ['impuesto-temu-uruguay']
+
 describe('ninguna consulta tiene dos URLs del sitio compitiendo por ella', () => {
-  const colisiones = rootSlugs.filter(slug => guideSlugs.includes(slug))
+  const duplicados = rootSlugs.filter(slug => guideSlugs.includes(slug))
+  const colisiones = duplicados.filter(slug => !isGuideConsolidated(slug))
 
   // Guarda la guarda: si el catálogo de guías dejara de cargarse, o `pages/` se leyera vacío, el
   // cruce daría cero colisiones y este archivo pasaría sin haber mirado nada.
@@ -99,6 +117,16 @@ describe('ninguna consulta tiene dos URLs del sitio compitiendo por ella', () =>
   // frena el caso que el repo ya sufrió dos veces, que es el slug repetido literal.
   it('la deuda sólo nombra slugs que existen de los dos lados', () => {
     for (const slug of PARES_QUE_COMPITEN) {
+      expect(rootSlugs, slug).toContain(slug)
+      expect(guideSlugs, slug).toContain(slug)
+    }
+  })
+
+  // El descuento tiene que declararse: sin esto, marcar `consolidatedInto` en cualquier guía
+  // bajaría el conteo en silencio, que es el modo de fallar de un trinquete con una exención.
+  it('cada par descontado está declarado y sigue duplicado de los dos lados', () => {
+    expect(duplicados.filter(slug => isGuideConsolidated(slug))).toEqual([...CONSOLIDADOS].sort())
+    for (const slug of CONSOLIDADOS) {
       expect(rootSlugs, slug).toContain(slug)
       expect(guideSlugs, slug).toContain(slug)
     }

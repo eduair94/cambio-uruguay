@@ -15,6 +15,13 @@ import type { Guide } from './guides'
 export const importacionGuides: readonly Guide[] = [
   {
     slug: 'impuesto-temu-uruguay',
+    // Consolidada en `/impuesto-temu-uruguay` el 2026-11-19: las dos URLs servían la misma
+    // intención («Impuesto Temu: cuánto pagás en Uruguay» y «Impuesto Temu: qué es y cuánto
+    // pagás») y competían entre sí. Se queda la página raíz porque tiene el nombre popular con el
+    // que se busca, dos filas del libro de cambios medidas sobre ella y el gancho del mínimo legal
+    // de IVA; esta guía conserva su cuerpo y sus enlaces entrantes y le pasa la señal. El motivo
+    // completo está en `tests/unit/slugCollision.test.ts`.
+    consolidatedInto: '/impuesto-temu-uruguay',
     title: 'Impuesto Temu: qué es y cuánto pagás',
     description:
       'Desde el 1.º de mayo de 2026 tu compra web del exterior paga IVA 22 %, con un mínimo de US$ 20 por envío, y la franquicia es de US$ 800 en tres envíos.',

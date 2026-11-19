@@ -151,9 +151,12 @@ export default defineEventHandler(async _event => {
   // puts in `dateModified`. Without it the 146 guides were the one content family with no lastmod
   // at all, while 1.859 live-data URLs said "changed today": seven guides, six of them from
   // September, were still not indexed on 2026-10-08 and Google had never crawled them.
-  guides.forEach(guide =>
-    addUrlsForAllLocales(`/guias/${guide.slug}`, 0.7, 'weekly', guide.updatedAt)
-  )
+  // Una guía consolidada (`Guide.consolidatedInto`) NO se publica: su canónica es otra URL, así que
+  // mandarla al sitemap sería pedirle a Google que indexe una página que ella misma declara que no
+  // es la buena. Sus enlaces entrantes se conservan, que es lo que mueve la señal a la que se queda.
+  guides
+    .filter(guide => !guide.consolidatedInto)
+    .forEach(guide => addUrlsForAllLocales(`/guias/${guide.slug}`, 0.7, 'weekly', guide.updatedAt))
   importCategoryIndexSlugs().forEach(slug =>
     addUrlsForAllLocales(`/importar/${slug}`, 0.7, 'monthly')
   )

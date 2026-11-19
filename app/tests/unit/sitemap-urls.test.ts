@@ -156,12 +156,27 @@ describe('sitemap with a healthy API', () => {
     const { guides } = await import('../../utils/guides')
     const urls = await runHandler(HEALTHY)
     const byLoc = new Map(urls.map(u => [u.loc, u]))
-    for (const guide of guides) {
+    for (const guide of guides.filter(guide => !guide.consolidatedInto)) {
       for (const prefix of ['', '/en', '/pt']) {
         expect(byLoc.get(`${prefix}/guias/${guide.slug}`)?.lastmod, guide.slug).toBe(
           guide.updatedAt
         )
       }
+    }
+  })
+
+  // Una guía consolidada no se publica en ningún idioma: su canónica es otra URL (ver
+  // `Guide.consolidatedInto` y `guideConsolidation.test.ts`). El destino sí tiene que estar.
+  it('deja fuera del sitemap la guía consolidada, y publica la página que se quedó', async () => {
+    const { guides } = await import('../../utils/guides')
+    const consolidadas = guides.filter(guide => guide.consolidatedInto)
+    expect(consolidadas.length).toBeGreaterThan(0)
+    const locs = new Set((await runHandler(HEALTHY)).map(u => u.loc))
+    for (const guide of consolidadas) {
+      for (const prefix of ['', '/en', '/pt']) {
+        expect(locs.has(`${prefix}/guias/${guide.slug}`), guide.slug).toBe(false)
+      }
+      expect(locs.has(guide.consolidatedInto!), guide.slug).toBe(true)
     }
   })
 

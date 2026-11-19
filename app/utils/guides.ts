@@ -126,6 +126,23 @@ export interface Guide {
    * names and compares with public tariffs; the guide text never changes because of the link.
    */
   affiliateIds?: string[]
+  /**
+   * La página raíz que se queda con la señal de búsqueda de esta guía, cuando las dos cubren la
+   * MISMA intención y el sitio tenía dos URLs compitiendo por la misma consulta.
+   *
+   * Por qué existe y no se borra la guía: `tests/unit/slugCollision.test.ts` documenta el defecto
+   * —`/<x>` y `/guias/<x>` las dos `index, follow`, las dos canónicas de sí mismas, las dos en el
+   * sitemap, así que Google reparte entre ellas los enlaces internos, las impresiones y los clics—
+   * y escribe el arreglo: la guía pasa a canónica HACIA la página y sale del sitemap, conservando
+   * sus enlaces entrantes. Borrarla tiraría la señal que esos enlaces acumularon; consolidarla la
+   * mueve a la URL que se queda.
+   *
+   * Con el campo puesto, `pages/guias/[slug].vue` emite `rel=canonical` y `og:url` hacia acá y se
+   * declara `noindex, follow` (sigue pasando autoridad por sus enlaces), y
+   * `server/api/__sitemap__/urls.get.ts` no la publica — las tres señales que una consolidación
+   * necesita decir a la vez. Ruta del sitio, absoluta y sin dominio (`/impuesto-temu-uruguay`).
+   */
+  consolidatedInto?: string
 }
 
 /**
@@ -1814,4 +1831,19 @@ export function getGuide(slug: string): Guide | undefined {
 /** Every guide slug, in catalogue order. Used by the route guard and sitemap. */
 export function guideSlugs(): string[] {
   return guides.map(guide => guide.slug)
+}
+
+/**
+ * La ruta canónica de una guía: la suya, o la página raíz que la consolidó.
+ *
+ * Es la única cuenta de dónde vive la señal de una guía, para que la página, el sitemap y el test
+ * de colisión no puedan separarse en silencio.
+ */
+export function guideCanonicalPath(slug: string): string {
+  return getGuide(slug)?.consolidatedInto ?? `/guias/${slug}`
+}
+
+/** True cuando la guía cedió su señal a una página raíz (ver {@link Guide.consolidatedInto}). */
+export function isGuideConsolidated(slug: string): boolean {
+  return Boolean(getGuide(slug)?.consolidatedInto)
 }

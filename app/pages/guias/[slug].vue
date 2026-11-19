@@ -242,7 +242,7 @@ import { adDensityForPath } from '~/utils/ads'
 import { authorReference } from '~/utils/authorEntity'
 import { measurementContext, measurementPath } from '~/utils/engagementMeasurement'
 import { hubOfGuide } from '~/utils/guideHubs'
-import { getGuide } from '~/utils/guides'
+import { getGuide, guideCanonicalPath, isGuideConsolidated } from '~/utils/guides'
 import { guideInlineNext, guideNextSteps, guideSectionIds } from '~/utils/guideReading'
 import { guideReadingMessages } from '~/utils/guideReadingMessages'
 
@@ -312,7 +312,12 @@ if (!guide.value) {
 const { canRender } = useAffiliates()
 const affiliateIds = computed(() => (guide.value?.affiliateIds ?? []).filter(id => canRender(id)))
 
-const canonicalUrl = computed(() => `https://cambio-uruguay.com/guias/${slug.value}`)
+// La canónica de una guía consolidada es la página raíz que se quedó con su intención, no ella
+// misma: `Guide.consolidatedInto` explica por qué el par no se arregla borrando una de las dos.
+// Todo lo que declara "dónde vive esto" —canonical, `og:url`, el `@id` del JSON-LD y el botón de
+// compartir— sale de acá, así que las señales no pueden decir dos cosas distintas.
+const canonicalUrl = computed(() => `https://cambio-uruguay.com${guideCanonicalPath(slug.value)}`)
+const consolidated = computed(() => isGuideConsolidated(slug.value))
 
 const updatedDisplay = computed(() =>
   guide.value
@@ -343,6 +348,9 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
   twitterTitle: () => guide.value?.title ?? 'Guía',
   twitterDescription: () => guide.value?.description ?? '',
+  // `follow` y no `noindex, nofollow`: la guía consolidada sigue enlazando a media docena de
+  // páginas del sitio y su valor está justamente en seguir pasando esa autoridad.
+  robots: () => (consolidated.value ? 'noindex, follow' : 'index, follow'),
 })
 
 // Article + BreadcrumbList JSON-LD for rich results, with author Eduardo Airaudo

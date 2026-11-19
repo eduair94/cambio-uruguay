@@ -92,7 +92,7 @@ export const LINKEDIN_POSTS: readonly LinkedinPost[] = Object.freeze([
   },
   {
     id: 'impuesto-temu',
-    path: '/guias/impuesto-temu-uruguay',
+    path: '/impuesto-temu-uruguay',
     text: 'El impuesto a las compras en Temu no lo cobra Temu.\n\nLo liquida el correo o el courier cuando el paquete llega a Uruguay, y lo retienen hasta que pagás el IVA. Por eso el total que viste en la app no siempre es lo que terminás pagando.\n\nCómo funciona y cuándo aplica:',
   },
   {
