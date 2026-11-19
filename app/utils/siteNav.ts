@@ -2199,6 +2199,34 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El teletrabajo tiene ley propia desde 2021 (19.978) y reglamento desde 2022 (86/022), y
+        // el sitio no lo nombraba en ninguna página: la palabra sólo aparecía como keyword
+        // («teletrabajo vivienda») en este archivo y en `tools.ts`. Las preguntas que se buscan son
+        // de plata y las contesta la norma: quién pone el equipo, quién paga los servicios, cuántas
+        // horas podés no contestar y si la hora de más de un día es extra (no lo es: el exceso
+        // diario se compensa en la misma semana, art. 8).
+        to: '/teletrabajo-uruguay',
+        labelKey: 'nav.teletrabajo',
+        icon: 'mdi-laptop-account',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'teletrabajo uruguay',
+          'ley de teletrabajo uruguay',
+          'ley 19978',
+          'decreto 86022 teletrabajo',
+          'derecho a la desconexion uruguay',
+          'quien paga la luz en el teletrabajo',
+          'teletrabajo derechos uruguay',
+          'me pueden obligar a teletrabajar',
+          'volver a la oficina teletrabajo',
+          'teletrabajo horas extras uruguay',
+          'acuerdo de teletrabajo uruguay',
+          'teletrabajo hibrido uruguay',
+        ],
+      },
+      {
         to: '/licencias-especiales-uruguay',
         labelKey: 'nav.licenciasEspeciales',
         icon: 'mdi-calendar-heart',
