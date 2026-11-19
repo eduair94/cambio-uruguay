@@ -200,6 +200,40 @@ export const PAGE_ADDENDA: readonly PageAddendum[] = Object.freeze([
       },
     ],
   },
+  {
+    route: '/elecciones-bps-2026',
+    updatedAt: '2026-11-19',
+    items: [
+      {
+        question:
+          '¿El trámite para justificar se hace online o hay que ir en persona a alguna oficina de la Corte Electoral?',
+        answer:
+          'Podés elegir cualquiera de las dos vías. Online, entrando con tu usuario ID Uruguay (podés hacerlo vos o pedirle a otra persona que te ayude a justificar), a través del portal que la Corte Electoral habilita al día siguiente de la elección, sin límite de justificaciones por usuario. O presencial, yendo a cualquier Oficina Electoral Departamental u Oficina Inscriptora Delegada de la Corte Electoral.',
+        sources: [
+          {
+            title: 'gub.uy',
+            url: 'https://www.gub.uy/corte-electoral/comunicacion/publicaciones/justificacion-multas-voto-elecciones-del-bps-2026',
+          },
+        ],
+      },
+      {
+        question:
+          'Si justifico por vivir en otro departamento, ¿qué comprobante concreto me piden? ¿alcanza una factura de UTE, Antel u OSE?',
+        answer:
+          'La Corte Electoral no exige un papel único: pide "documentación fehaciente" que acredite tu domicilio real. En ediciones anteriores de esta misma causal, la propia Corte dio como ejemplos válidos la constancia de domicilio, constancia laboral, de estudios o de seccional policial, pero no menciona en ningún lado si una factura de servicios por sí sola cumple ese requisito, así que no hay confirmación oficial de que alcance. Tené en cuenta además que esta causal no aplica a mandatarios de empresa.',
+        sources: [
+          {
+            title: 'gub.uy',
+            url: 'https://www.gub.uy/corte-electoral/comunicacion/publicaciones/justificacion-multas-voto-elecciones-del-bps-2026',
+          },
+          {
+            title: 'montevideo.com.uy',
+            url: 'https://www.montevideo.com.uy/Noticias/Cuales-son-las-razones-para-justificar-no-votar-en-las-elecciones-de-BPS-y-como-se-hace-uc805293?plantilla=1385',
+          },
+        ],
+      },
+    ],
+  },
   // <<< generated-addenda >>>
 ])
 
