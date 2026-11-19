@@ -753,6 +753,20 @@ const DEUDA_TITULO_LARGO = [
  * CONTESTE en 43 caracteres, cuando cada término que podría contestar ya lo gana su propia ficha—
  * y no la única que hacía falta, que era si el título tenía relleno para soltar. Tenía trece
  * caracteres de relleno y ninguna consulta colgando de ellos.
+ *
+ * Y CON EL POZO EN CERO, LO QUE QUEDA ES LO QUE ESTE PRESUPUESTO NO PUEDE VER. Las once tandas de
+ * octubre usaron esta lista como cola de trabajo («la tanda salió de las 64 libres, por mayor
+ * sobrante total»), así que el título que entra en los 43 caracteres y no contesta nada nunca
+ * apareció en ninguna tanda: no sobra ni un carácter que lo delate. Medido el 2026-11-19 sobre las
+ * guías con la ruta libre, cinco estaban en ese estado y las cinco habían pasado por la cola de la
+ * DESCRIPCIÓN —`descripciones-de-las-guias-respuesta-primero` (1/10) y `-2` (7/10)—, o sea que
+ * salieron de ella con la respuesta adelante en el renglón de abajo y la etiqueta del tema intacta
+ * en el de arriba, que es el que se clickea. Es el modo de fallar que
+ * `seoDescriptionBudget.test.ts` se anotó el 2026-11-02: no una medición en rojo, una medición que
+ * no alcanza a la página. El arreglo de esas cinco y el ancla de sus cifras contra el cuerpo de su
+ * propia guía están en `titulosDeGuiaQueContestan.test.ts`; acá no se declara una deuda nueva
+ * porque «el título contesta» no es mecanizable y una lista con falsos positivos es peor que
+ * ninguna.
  */
 const TITLE_OVER_BUDGET = 0
 

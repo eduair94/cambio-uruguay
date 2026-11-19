@@ -759,7 +759,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'alquilar-sin-garantia-uruguay',
-    title: 'Cómo alquilar sin garantía en Uruguay',
+    title: 'Alquilar sin garantía: seguro, ANDA o LUC',
     description:
       'Cinco vías sin garante propietario: seguro de fianza, adelanto de meses, ANDA, la garantía de la Contaduría y el régimen de la LUC, que acorta el desalojo.',
     tag: 'SIN GARANTÍA',
@@ -1587,7 +1587,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'legitima-y-herederos-forzosos-uruguay',
-    title: 'Legítima y herederos forzosos en Uruguay',
+    title: 'Legítima: mitad con un hijo, 2/3 con dos',
     description:
       'La legítima es la mitad del patrimonio con un hijo, dos tercios con dos y tres cuartos con tres o más. Sin descendientes, los ascendientes llevan la mitad.',
     tag: 'LEGÍTIMA',
@@ -1626,7 +1626,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'hay-impuesto-a-la-herencia-uruguay',
-    title: '¿Hay impuesto a la herencia en Uruguay?',
+    title: 'No hay impuesto a la herencia: sí el ITP',
     description:
       'No existe: Uruguay no grava el hecho de heredar. Lo que se paga son los costos de la sucesión y, si hay inmuebles, el ITP sobre el valor que fija Catastro.',
     tag: 'IMPUESTOS',
@@ -2322,7 +2322,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'licencia-y-salario-vacacional-uruguay',
-    title: 'Licencia y salario vacacional en Uruguay',
+    title: 'Licencia: 20 días y uno más cada 4 años',
     description:
       'Veinte días de licencia (Ley 12.590) y uno más cada cuatro años desde el quinto. El salario vacacional iguala el jornal líquido y se paga antes de empezar.',
     tag: 'LICENCIA',
@@ -4249,7 +4249,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'elegir-o-cambiar-de-afap-uruguay',
-    title: 'Cómo elegir o cambiarte de AFAP en Uruguay',
+    title: 'Cambiar de AFAP: gratis, mirá la comisión',
     description:
       'A la AFAP entran 5 de los 15 puntos sólo si empezaste a trabajar desde el 1/12/2023; antes todo va al BPS hasta el tope A. Después comparás comisiones.',
     tag: 'AFAP',
