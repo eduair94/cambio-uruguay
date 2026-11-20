@@ -22,8 +22,12 @@ export type EquiparRegime = "modelo" | "commodity";
  * Equipar's own categories never use it, and `classes/equipar/basket.ts` only ever iterates
  * `EQUIPAR_CATEGORIES` — never the categories of an injected registry — so a foreign category can
  * never reach the basket or the budget regardless of what it puts in `room`.
+ *
+ * `"productos-vida"` is the same thing for a third consumer: the products r/uruguay named in the
+ * thread behind /productos-que-te-cambian-la-vida-uruguay (`classes/productosvida/registry.ts`),
+ * MercadoLibre only, under the same rule: never part of the basket.
  */
-export type EquiparRoom = "cocina" | "dormitorio" | "bano" | "living" | "limpieza" | "movilidad";
+export type EquiparRoom = "cocina" | "dormitorio" | "bano" | "living" | "limpieza" | "movilidad" | "productos-vida";
 
 export interface EquiparVariant {
   key: string;

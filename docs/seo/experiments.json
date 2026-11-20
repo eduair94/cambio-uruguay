@@ -3407,6 +3407,14 @@
         "sucursales brou abiertas hoy"
       ],
       "hypothesis": "Las paginas de sucursales ya decian su intencion en el titulo (\"Sucursales de X en <departamento>\"); lo que cambia es que su enlace de marca deja de mandar \"Ver todo sobre X\" a /casa/<casa> y manda \"Todas las cotizaciones de X hoy\" a la pagina de marca, y que un departamento con UN local deja de titularse \"Sucursales de Cambio Principal en Rivera: 1 locales\" (764 impresiones de \"cambio principal\" en esa URL en 28 dias) y pasa a \"Sucursal de Cambio Principal en Rivera: telefono y horario\". OCA (\"oca maldonado\" posicion 10,3 en 90 dias) ya cae en la URL correcta de su intencion: su problema es la posicion, no el reparto, y no se toca su snippet. Se espera que las sucursales conserven sus consultas de marca + lugar y que los locales unicos ganen CTR por el titulo en singular."
+    },
+    {
+      "id": "productos-que-te-cambian-la-vida-pagina-nueva",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/productos-que-te-cambian-la-vida-uruguay"
+      ],
+      "hypothesis": "Pagina nueva armada sobre el hilo de r/uruguay 'Que producto les cambio la vida?' del 2026-11-19 (81 comentarios leidos el 2026-11-20): un bloque por producto con cuantas personas lo nombraron, el motivo parafraseado sin usuarios ni citas, que mirar al comprarlo y la banda viva de Mercado Libre Uruguay por variante (p25, mediana, p75, cantidad de avisos y fecha), leida cuatro veces por dia (0, 4, 16 y 20 UTC) por un tercer consumidor del registro inyectable de equipar. Antes el sitio no tenia impresiones para freidora de aire, lavavajillas, aspiradora robot, almohada, auriculares ni kindle, y lo que ya tenia dueno en /equipar-casa-uruguay se enlaza en vez de competir. La apuesta principal no son los clics de Google sino las citas de asistentes de IA, que ya son la primera entrada de los directorios de precio, y el enlace en el propio hilo; ninguna de las dos se ve en esta medicion. Parte de cero: diez clics o mas en los 28 dias archivados es mejoro, y sin cambio es el resultado esperable aunque la pagina funcione."
     }
   ]
 }

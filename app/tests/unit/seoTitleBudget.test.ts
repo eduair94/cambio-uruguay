@@ -273,7 +273,10 @@ function staticTitle(source: string): string | null {
 // El título de la página nueva entra acá porque es un literal de la página y no una cadena armada
 // desde `utils/rentAdjustment.ts`; que no se despegue del último decreto de la serie lo vigila
 // `rentAdjustment.test.ts`, que es lo que impide que el literal envejezca en silencio.
-const MEASURABLE = 193
+// 193 → 198 el 2026-11-20: una es `/productos-que-te-cambian-la-vida-uruguay`, apretada en el mismo
+// commit que la publica (su título es un literal sin cifras); las otras cuatro son sobrante
+// acumulado desde el 9/11. Queda otra vez en el conteo real.
+const MEASURABLE = 198
 // 44 → 33 el 2026-09-07: once de los títulos más largos reescritos a 43 caracteres o menos. Los
 // once perdían la cola en el SERP, y la cola era el dato — «2 puntos o 9», «mora y 72 h», «1 mes
 // por año», «6 países», «13 temas», «ChauDeudas o MiDeuda» —, así que en cada uno se conservó la
@@ -588,7 +591,9 @@ const TITLE_FLOOR_OVER_BUDGET = 1
 // 247 → 252 el 2026-11-09: una es la página nueva de esta corrida, apretada en el mismo commit que
 // la publica, y las otras cuatro son sobrante acumulado desde el 3/11. Queda en el conteo real por
 // el mismo motivo que `MEASURABLE`.
-const FLOOR_MEASURABLE = 252
+// 252 → 259 el 2026-11-20: una es `/productos-que-te-cambian-la-vida-uruguay`, apretada en el mismo
+// commit que la publica, y las otras seis son sobrante acumulado desde el 9/11.
+const FLOOR_MEASURABLE = 259
 
 describe('los títulos que el lector de una línea no alcanzaba también entran en el SERP', () => {
   const floors = PAGES_WITH_TITLE.map(file => ({

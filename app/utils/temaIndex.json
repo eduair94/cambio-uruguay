@@ -563,6 +563,10 @@
           "label": "Cuánto gastar en un sommier"
         },
         {
+          "to": "/productos-que-te-cambian-la-vida-uruguay",
+          "label": "Productos que te cambian la vida"
+        },
+        {
           "to": "/pensiones-estudiantiles-uruguay",
           "label": "Pensiones estudiantiles"
         }
