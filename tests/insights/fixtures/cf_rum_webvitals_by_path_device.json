@@ -1,0 +1,107 @@
+{
+  "_fixture": "rumWebVitalsEventsAdaptiveGroups by requestPath+deviceType. Times in MICROSECONDS (1113000 = 1.113 s), CLS unitless float, -1 = N/A (no measurement; the real probe returned a 400-count group with all -1). Counts are multiples of 10 because sampleInterval=10: an estimate, not a tally. Synthetic numbers.",
+  "data": {
+    "viewer": {
+      "accounts": [
+        {
+          "rumWebVitalsEventsAdaptiveGroups": [
+            {
+              "count": 400,
+              "avg": {
+                "sampleInterval": 10
+              },
+              "dimensions": {
+                "requestPath": "/",
+                "deviceType": "mobile"
+              },
+              "sum": {
+                "lcpGood": 330,
+                "lcpNeedsImprovement": 50,
+                "lcpPoor": 20,
+                "lcpTotal": 400,
+                "inpGood": 120,
+                "inpNeedsImprovement": 60,
+                "inpPoor": 40,
+                "inpTotal": 220,
+                "clsGood": 250,
+                "clsNeedsImprovement": 70,
+                "clsPoor": 80,
+                "clsTotal": 400
+              },
+              "quantiles": {
+                "largestContentfulPaintP75": 1113000,
+                "interactionToNextPaintP75": 624000,
+                "cumulativeLayoutShiftP75": 0.14,
+                "firstContentfulPaintP75": 1343000,
+                "timeToFirstByteP75": 459000
+              }
+            },
+            {
+              "count": 400,
+              "avg": {
+                "sampleInterval": 10
+              },
+              "dimensions": {
+                "requestPath": "/en/celulares-uruguay",
+                "deviceType": "mobile"
+              },
+              "sum": {
+                "lcpGood": 0,
+                "lcpNeedsImprovement": 0,
+                "lcpPoor": 0,
+                "lcpTotal": 0,
+                "inpGood": 0,
+                "inpNeedsImprovement": 0,
+                "inpPoor": 0,
+                "inpTotal": 0,
+                "clsGood": 0,
+                "clsNeedsImprovement": 0,
+                "clsPoor": 0,
+                "clsTotal": 0
+              },
+              "quantiles": {
+                "largestContentfulPaintP75": -1,
+                "interactionToNextPaintP75": -1,
+                "cumulativeLayoutShiftP75": -1,
+                "firstContentfulPaintP75": -1,
+                "timeToFirstByteP75": -1
+              }
+            },
+            {
+              "count": 70,
+              "avg": {
+                "sampleInterval": 10
+              },
+              "dimensions": {
+                "requestPath": "/autos-usados-uruguay",
+                "deviceType": "desktop"
+              },
+              "sum": {
+                "lcpGood": 60,
+                "lcpNeedsImprovement": 10,
+                "lcpPoor": 0,
+                "lcpTotal": 70,
+                "inpGood": 40,
+                "inpNeedsImprovement": 0,
+                "inpPoor": 0,
+                "inpTotal": 40,
+                "clsGood": 70,
+                "clsNeedsImprovement": 0,
+                "clsPoor": 0,
+                "clsTotal": 70
+              },
+              "quantiles": {
+                "largestContentfulPaintP75": 1238000,
+                "interactionToNextPaintP75": 112000,
+                "cumulativeLayoutShiftP75": 0.077,
+                "firstContentfulPaintP75": 1100000,
+                "timeToFirstByteP75": 690000
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "errors": null
+}

@@ -55,6 +55,7 @@ const FUERA_DE_TEMA_POR_DISENO = [
   '/directorios-uruguay', // índice de los directorios del sitio
   '/empresas', // planes de la API
   '/estadisticas-de-busqueda', // privada, noindex
+  '/estadisticas-de-uso', // privada, noindex
   '/estadisticas-por-pagina', // privada, noindex
   '/estadisticas-del-sitio',
   '/estadisticas-reddit',

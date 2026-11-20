@@ -589,6 +589,17 @@ export const CURATED: Readonly<Record<string, readonly string[]>> = Object.freez
     '/primer-alquiler-uruguay',
     '/sillas-escritorio-uruguay',
   ],
+  // Lo que r/uruguay dijo que le cambió la vida: el lector sigue comparando precios de compras de
+  // la casa y del día a día. Ninguna ruta de su propio tema (alquiler y vivienda): «Más sobre este
+  // tema» ya las muestra y RelatedPages las descartaría (temaVecinosRutas).
+  '/productos-que-te-cambian-la-vida-uruguay': [
+    '/sillas-escritorio-uruguay',
+    '/precios-de-supermercado-uruguay',
+    '/ciberlunes-y-black-friday-uruguay',
+    '/cambios-de-precio-uruguay',
+    '/tiendas-online-uruguay',
+    '/bicicletas-electricas-uruguay',
+  ],
   '/herramientas/costo-de-vida': [
     OPPORTUNITIES_PATH,
     '/alquileres-uruguay',

@@ -1,0 +1,23 @@
+{
+  "_fixture": "GetPageStats returns the SAME QueryStats type: 'Query' holds the page URL. Synthetic.",
+  "d": [
+    {
+      "__type": "QueryStats:#Microsoft.Bing.Webmaster.Api",
+      "AvgClickPosition": 3,
+      "AvgImpressionPosition": 5,
+      "Clicks": 18,
+      "Date": "/Date(1762671600000-0700)/",
+      "Impressions": 260,
+      "Query": "https://cambio-uruguay.com/dolar-hoy"
+    },
+    {
+      "__type": "QueryStats:#Microsoft.Bing.Webmaster.Api",
+      "AvgClickPosition": 0,
+      "AvgImpressionPosition": 14,
+      "Clicks": 0,
+      "Date": "/Date(1762671600000-0700)/",
+      "Impressions": 41,
+      "Query": "https://cambio-uruguay.com/alquileres-uruguay"
+    }
+  ]
+}

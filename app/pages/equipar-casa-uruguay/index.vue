@@ -271,6 +271,13 @@ planner is client state only and never persists.
       <p class="thread-credit">
         <a :href="EQUIPAR_THREAD" target="_blank" rel="noopener noreferrer">{{ c.threadCredit }}</a>
       </p>
+      <p class="thread-credit">
+        {{ vidaLink.before }}
+        <NuxtLink :to="localePath('/productos-que-te-cambian-la-vida-uruguay')">{{
+          vidaLink.link
+        }}</NuxtLink
+        >.
+      </p>
     </section>
 
     <!-- ── De dónde salen los precios ────────────────────────────────────── -->
@@ -325,6 +332,26 @@ const { locale, t } = useI18n()
 const localePath = useLocalePath()
 const c = computed(() =>
   locale.value === 'en' ? equiparEn : locale.value === 'pt' ? equiparPt : equiparEs
+)
+
+// El enlace de contexto a /productos-que-te-cambian-la-vida-uruguay (otro hilo de r/uruguay, el de
+// las compras que le cambiaron la vida a la gente). En la página y no en equiparEs/En/Pt: es una
+// sola oración y esos tres archivos son la copia de la página entera.
+const vidaLink = computed(() =>
+  locale.value === 'en'
+    ? {
+        before: 'Which purchase changed people’s day-to-day life? See',
+        link: 'what r/uruguay named, with what sellers ask on Mercado Libre',
+      }
+    : locale.value === 'pt'
+      ? {
+          before: 'Que compra mudou o dia a dia das pessoas? Veja',
+          link: 'o que o r/uruguay citou, com o que pedem no Mercado Libre',
+        }
+      : {
+          before: '¿Qué compra le cambió el día a día a la gente? Mirá',
+          link: 'lo que nombró r/uruguay, con lo que piden en Mercado Libre',
+        }
 )
 
 const crumbs = computed(() => [

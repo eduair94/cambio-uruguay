@@ -175,7 +175,12 @@ const measured = pageFiles()
 // último decreto publicado (1,0468, Decreto 256/026): lo que impide que envejezca en silencio al
 // sumar el mes siguiente es `rentAdjustment.test.ts`, que exige que el texto nombre al primer mes
 // de la serie, su aumento y su decreto.
-const RESOLVED = 172
+// 172 → 176 el 2026-11-20: una es `/productos-que-te-cambian-la-vida-uruguay`, apretada en el mismo
+// commit que la publica, y las otras tres son sobrante acumulado desde el 9/11. Su descripción
+// entra acá porque es literal: los productos que nombra son los más nombrados de un hilo leído una
+// vez (`productosVidaPage.test.ts` lo exige) y la única fecha es la del hilo, que no envejece; los
+// precios, que sí cambian, quedan en el cuerpo.
+const RESOLVED = 176
 // 121 → 96 el 2026-09-20, la primera medición: veinte hubs (la home de cada directorio, las de
 // descuentos y las de guías) más las cinco peores de todas, entre 376 y 464 caracteres. En las
 // cinco largas el recorte no fue podar la cola: la cifra que las distingue se movió al frente

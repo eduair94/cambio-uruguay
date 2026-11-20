@@ -13,10 +13,12 @@
         Vivir con el salario mínimo en Uruguay: las formas que cierran
       </h1>
       <p class="smn-lead mb-3">
-        El salario mínimo es de {{ pesos(SMN_VIGENTE) }} por mes y en la mano quedan
-        {{ pesos(LIQUIDO_SMN) }}. Solo y alquilando al promedio de Montevideo ({{
-          pesos(alquilerMontevideo)
-        }}
+        El
+        <NuxtLink :to="localePath('/guias/salario-minimo-uruguay-cuanto-es')"
+          >salario mínimo</NuxtLink
+        >
+        es de {{ pesos(SMN_VIGENTE) }} por mes y en la mano quedan {{ pesos(LIQUIDO_SMN) }}. Solo y
+        alquilando al promedio de Montevideo ({{ pesos(alquilerMontevideo) }}
         un contrato nuevo) no alcanza: esa cuenta está en
         <NuxtLink :to="localePath('/vivir-con-25000-pesos-uruguay')"
           >¿se puede vivir con 25.000?</NuxtLink
@@ -165,7 +167,10 @@
             varios en el perfil austero del
             <NuxtLink :to="localePath('/herramientas/costo-de-vida')">costo de vida</NuxtLink>
             del sitio; en el interior la comida sigue la relación entre las canastas del INE y el
-            ómnibus se cuenta un 30 % más barato, como en ese modelo (distancias más cortas).
+            ómnibus se cuenta un 30 % más barato que el
+            <NuxtLink :to="localePath('/precio-del-boleto-montevideo')"
+              >boleto de Montevideo</NuxtLink
+            >, como en ese modelo (distancias más cortas).
           </p>
         </section>
       </VCol>

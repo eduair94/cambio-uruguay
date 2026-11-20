@@ -220,6 +220,8 @@ const NOINDEXED = [
   // The Search Console dashboard: private, gated server-side, and noindexed so a stray link can
   // never put the site's own keyword list into the index.
   'estadisticas-de-busqueda.vue',
+  // El tablero privado de uso (currency-usage-insights): tráfico por página, requireAdmin.
+  'estadisticas-de-uso.vue',
   // El ranking privado de páginas por visita: mismo trato que el tablero de Search Console.
   'estadisticas-por-pagina.vue',
   'estado.vue',

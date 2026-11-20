@@ -205,9 +205,12 @@
           </li>
           <li class="mb-2">
             <strong>Lo que tiene el auto, dicho.</strong>
-            Una deuda o un choque no desaparecen por no nombrarlos: aparecen en el certificado del
-            SUCIVE y en el registral que pide la escribanía, y la venta se cae ahí, con el comprador
-            ya en la mesa.
+            Una deuda o un choque no desaparecen por no nombrarlos: aparecen en el
+            <NuxtLink :to="localePath('/guias/pagar-patente-sucive-uruguay')"
+              >certificado del SUCIVE</NuxtLink
+            >
+            y en el registral que pide la escribanía, y la venta se cae ahí, con el comprador ya en
+            la mesa.
             <template v-if="debtGap !== null">
               Y declararla te cuesta: los avisos que la declaran se piden
               {{ formatCarRiskGap(debtGap).replace(' más barato', '') }} menos que el mismo auto sin

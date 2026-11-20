@@ -200,6 +200,7 @@ export const DIRECTORIO_PATHS = new Set([
   "/armadores-de-muebles-montevideo",
   "/monopatines-electricos-uruguay",
   "/bicicletas-electricas-uruguay",
+  "/productos-que-te-cambian-la-vida-uruguay",
   "/tiendas-online-uruguay",
   "/sillas-escritorio-uruguay",
   "/precios-de-supermercado-uruguay",

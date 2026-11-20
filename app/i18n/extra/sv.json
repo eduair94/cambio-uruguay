@@ -287,7 +287,7 @@
     "h1": "Importvarukorg: den slutliga kostnaden för dina utlandsköp",
     "intro": "Lägg till produkter från Amazon, eBay eller MercadoLibre (klistra in länken eller skriv in dem för hand) och räkna ut vad de kostade landat i Uruguay: skatter per kategori, franchise, frakt och totalt i pesos.",
     "ogSubtitle": "Skatter, franchise och frakt för dina onlinebeställningar, i pesos",
-    "metaDescription": "Bygg en varukorg med dina Amazon-, eBay- eller MercadoLibre-beställningar och se den slutliga kostnaden i Uruguay: skatter, franchisen på 800 USD, budfrakt och totalsumman i uruguayanska pesos, live.",
+    "metaDescription": "Bygg en varukorg med dina Amazon-, eBay- eller MercadoLibre-beställningar och se slutkostnaden i Uruguay: skatter, franchisen på 800 USD, frakt och totalt i pesos.",
     "yourCart": "Din varukorg",
     "clear": "Rensa",
     "empty": {
@@ -353,7 +353,8 @@
       "saveHint": "Logga in för att spara din varukorg och se den från vilken enhet som helst."
     },
     "disclaimer": "Referensberäkning. Faktiska skatter beror på kategori, ursprung och tull.",
-    "fullCalculator": "Öppna hela kalkylatorn"
+    "fullCalculator": "Öppna hela kalkylatorn",
+    "metaTitle": "Importvagn: slutkostnaden"
   },
   "share": {
     "label": "Dela:",
@@ -1439,7 +1440,7 @@
     "noTrend": "Inga trenddata tillgängliga ännu.",
     "sevenDays": "Senaste 7 dagarna",
     "seeMore": "Visa detaljer",
-    "metaTitle": "Dollarkursen i Uruguay idag: steg eller sjönk?",
+    "metaTitle": "Dollarkursen i Uruguay idag: upp eller ner?",
     "metaDescription": "Dollarkurs i Uruguay idag: köp- och säljpris, förändring jämfört med igår och trend under de senaste dagarna, med den bästa kursen från över 40 växlingskontor.",
     "footNote": "Förändringen beräknas mot Uruguays centralbanks (BCU) officiella kurs.",
     "compareCta": "För att handla, jämför dollarkursen på fler än 40 växlingshus.",
@@ -1808,6 +1809,7 @@
     "advertenciasBcu": "BCU-varningar (obehöriga företag)",
     "monopatines": "Priser på elektriska skotrar",
     "bicicletasElectricas": "Priser på elcyklar",
+    "productosVida": "Livsförändrande produkter",
     "derechosConsumidor": "Jag köpte online och det levererades inte",
     "estafas": "Jag blev lurad: vad ska jag göra",
     "aduanaFaq": "Tull- och importfrågor",
@@ -1936,7 +1938,7 @@
   "mejorCasa": {
     "h1": "Var ska man växla dollar i Uruguay idag?",
     "subtitle": "Vi jämför alla växlingshus och banker i landet för att identifiera den bästa kursen idag.",
-    "metaTitle": "Bästa växlingshus i Uruguay idag: billigaste dollarn",
+    "metaTitle": "Bästa växlingshuset idag: billigaste dollarn",
     "metaDescription": "Idag är det billigaste stället att köpa dollar på {casa} för ${rate}. Jämför 40+ hus och spara ${savings} mot marknadsgenomsnittet.",
     "metaDescriptionGeneric": "Jämför dollarpriset på fler än 40 växlingskontor och banker i Uruguay och ta reda på var du kan växla pengar idag.",
     "answer": "Idag är {casa} det billigaste stället att köpa dollar, där de säljs för {rate} dollar. Att köpa 1 000 USD där sparar dig cirka {savings} dollar jämfört med genomsnittet för de {count}-växlingshus och banker vi jämför.",

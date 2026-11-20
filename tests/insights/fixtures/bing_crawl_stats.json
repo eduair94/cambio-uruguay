@@ -1,0 +1,23 @@
+{
+  "_fixture": "GetCrawlStats: one row per day. Property names from the .NET CrawlStats contract (verified); numbers synthetic.",
+  "d": [
+    {
+      "__type": "CrawlStats:#Microsoft.Bing.Webmaster.Api",
+      "AllOtherCodes": 0,
+      "BlockedByRobotsTxt": 4,
+      "Code2xx": 1210,
+      "Code301": 88,
+      "Code302": 0,
+      "Code4xx": 37,
+      "Code5xx": 2,
+      "ConnectionTimeout": 0,
+      "ContainsMalware": 0,
+      "CrawlErrors": 39,
+      "CrawledPages": 1341,
+      "Date": "/Date(1763276400000-0700)/",
+      "DnsFailures": 0,
+      "InIndex": 2210,
+      "InLinks": 640
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "_fixture": "GET /client/v4/zones/<zone> trimmed to the fields the connector reads. Shape matches the 2026-11-20 probe (status 200, plan 'Free Website').",
+  "success": true,
+  "errors": [],
+  "messages": [],
+  "result": {
+    "id": "00000000000000000000000000000000",
+    "name": "cambio-uruguay.com",
+    "status": "active",
+    "account": {
+      "id": "11111111111111111111111111111111",
+      "name": "redacted"
+    },
+    "plan": {
+      "id": "0feeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "name": "Free Website",
+      "legacy_id": "free"
+    }
+  }
+}

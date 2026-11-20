@@ -1,0 +1,17 @@
+{
+  "_fixture": "GetRankAndTrafficStats: site totals per day (Date, Clicks, Impressions). Field set from the .NET data contract; synthetic numbers.",
+  "d": [
+    {
+      "__type": "RankAndTrafficStats:#Microsoft.Bing.Webmaster.Api",
+      "Clicks": 31,
+      "Date": "/Date(1763190000000-0700)/",
+      "Impressions": 902
+    },
+    {
+      "__type": "RankAndTrafficStats:#Microsoft.Bing.Webmaster.Api",
+      "Clicks": 27,
+      "Date": "/Date(1763276400000-0700)/",
+      "Impressions": 845
+    }
+  ]
+}

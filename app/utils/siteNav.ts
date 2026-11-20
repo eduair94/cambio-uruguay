@@ -4800,6 +4800,24 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/productos-que-te-cambian-la-vida-uruguay',
+        labelKey: 'nav.productosVida',
+        icon: 'mdi-lightbulb-on-outline',
+        priority: 0.7,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'productos que te cambian la vida',
+          'que producto te cambio la vida reddit uruguay',
+          'mejores compras mercado libre uruguay',
+          'precio freidora de aire uruguay',
+          'precio lavavajillas uruguay',
+          'precio aspiradora robot uruguay',
+          'calientacama precio',
+          'secarropas precio uruguay',
+        ],
+      },
+      {
         to: '/advertencias-bcu',
         labelKey: 'nav.advertenciasBcu',
         icon: 'mdi-alert-octagon-outline',
@@ -5171,6 +5189,8 @@ export const EXCLUDED_ROUTES: readonly string[] = Object.freeze([
   '/estadisticas-de-busqueda',
   // El ranking privado de páginas por visita (GA4): la lista de trabajo del sitio, no contenido.
   '/estadisticas-por-pagina',
+  // El tablero privado de uso (Cloudflare, GA4, indexación, opiniones): tráfico por página, no contenido.
+  '/estadisticas-de-uso',
   // La encuesta de quienes usan los alquileres: se llega desde los correos y desde la pregunta al
   // final de los resultados, no es contenido para buscadores. Y su panel privado de lectura.
   '/opinion-alquileres',

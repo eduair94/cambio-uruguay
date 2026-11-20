@@ -14,6 +14,7 @@ import { PropertyOpportunitySnapshotModel } from "../../classes/models/PropertyO
 import { SearchConsoleSnapshotModel } from "../../classes/models/SearchConsoleSnapshot";
 import { SiteRevenueSnapshotModel } from "../../classes/models/SiteRevenueSnapshot";
 import { SitePageRankingModel } from "../../classes/models/SitePageRanking";
+import { UsageInsightSnapshotModel } from "../../classes/models/UsageInsightSnapshot";
 import { SiteTopPagesModel } from "../../classes/models/SiteTopPages";
 import { SiteTrafficSourcesModel } from "../../classes/models/SiteTrafficSources";
 import { SearchDemandQueueModel } from "../../classes/models/SearchDemandQueue";
@@ -27,6 +28,9 @@ import { MovilidadListingModel } from "../../classes/models/MovilidadListing";
 import { MovilidadSpecSnapshotModel } from "../../classes/models/MovilidadSpecSnapshot";
 import { EquiparSpecSnapshotModel } from "../../classes/models/EquiparSpecSnapshot";
 import { MovilidadModelModel } from "../../classes/models/MovilidadModel";
+import { ProductosVidaItemModel } from "../../classes/models/ProductosVidaItem";
+import { ProductosVidaMetaModel } from "../../classes/models/ProductosVidaMeta";
+import { ProductosVidaListingModel } from "../../classes/models/ProductosVidaListing";
 import { CharruaTextModel } from "../../classes/models/CharruaText";
 import { CharruaSnapshotModel } from "../../classes/models/CharruaSnapshot";
 import { CarCatalogMetaModel } from "../../classes/models/CarCatalogMeta";
@@ -189,6 +193,15 @@ describe("app-Mongo schema parity", () => {
     );
   });
 
+  it("UsageInsightSnapshot declares exactly the app's top-level fields", () => {
+    // El tablero privado de /estadisticas-de-uso. Un campo que el job escriba y el app no declare se
+    // guarda igual pero la página nunca lo ve.
+    expect(Object.keys(UsageInsightSnapshotModel.schema.obj).sort()).toEqual(
+      appFields(appModel("UsageInsightSnapshot")).sort()
+    );
+    expect(UsageInsightSnapshotModel.collection.name).toBe("usageinsightsnapshots");
+  });
+
   it("SiteTopPages declares exactly the app's top-level fields", () => {
     expect(Object.keys(SiteTopPagesModel.schema.obj).sort()).toEqual(appFields(appModel("SiteTopPages")).sort());
   });
@@ -227,6 +240,31 @@ describe("app-Mongo schema parity", () => {
       appFields(appModel("MovilidadListing")).sort()
     );
     expect(MovilidadListingModel.collection.name).toBe("movilidadlistings");
+  });
+
+  it("ProductosVidaItem declares exactly the app's top-level fields", () => {
+    // /productos-que-te-cambian-la-vida-uruguay: la misma forma que MovilidadItem (buildEquiparCatalog
+    // produce EquiparItem con cualquier registro), en su propia colección. El app fija el nombre de
+    // la colección como texto: se verifica ese texto además del modelo del backend.
+    expect(Object.keys(ProductosVidaItemModel.schema.obj).sort()).toEqual(appFields(appModel("ProductosVidaItem")).sort());
+    expect(ProductosVidaItemModel.collection.name).toBe("productosvidaitems");
+    expect(appModel("ProductosVidaItem")).toContain("'productosvidaitems'");
+  });
+
+  it("ProductosVidaMeta declares exactly the app's top-level fields", () => {
+    expect(Object.keys(ProductosVidaMetaModel.schema.obj).sort()).toEqual(appFields(appModel("ProductosVidaMeta")).sort());
+    expect(ProductosVidaMetaModel.collection.name).toBe("productosvidameta");
+    expect(appModel("ProductosVidaMeta")).toContain("'productosvidameta'");
+  });
+
+  it("ProductosVidaListing declares exactly the app's top-level fields", () => {
+    // Una fila por aviso, para las subpáginas de la v2. La v1 del app no la lee, pero un campo que el
+    // backend escriba y el app no declare se perdería el día que la lea.
+    expect(Object.keys(ProductosVidaListingModel.schema.obj).sort()).toEqual(
+      appFields(appModel("ProductosVidaListing")).sort()
+    );
+    expect(ProductosVidaListingModel.collection.name).toBe("productosvidalistings");
+    expect(appModel("ProductosVidaListing")).toContain("'productosvidalistings'");
   });
 
   it("EquiparSpecSnapshot declares exactly the app's top-level fields", () => {

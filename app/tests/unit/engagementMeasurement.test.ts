@@ -56,6 +56,8 @@ describe('analytics route privacy', () => {
     '/pt/mi-lista',
     '/estadisticas-de-busqueda',
     '/estadisticas-por-pagina',
+    '/estadisticas-de-uso',
+    '/fr/estadisticas-de-uso',
   ])('does not add global measurement on %s', path => {
     expect(measurementPath(route(path))).toBeNull()
   })

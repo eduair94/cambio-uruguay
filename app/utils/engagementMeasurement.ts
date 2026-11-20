@@ -23,7 +23,7 @@ export function measurementPath(route: MeasurementRoute): string | null {
   const plain = path.replace(LOCALE_PREFIX_RE, '') || '/'
   if (
     isBareRoute(path) ||
-    /^\/(?:api|cuenta|conectar|mi-lista|estadisticas-por-pagina|estadisticas-de-busqueda)(?:\/|$)/.test(
+    /^\/(?:api|cuenta|conectar|mi-lista|estadisticas-por-pagina|estadisticas-de-busqueda|estadisticas-de-uso)(?:\/|$)/.test(
       plain
     ) ||
     !/^\/(?:[\w-]+|:item)?(?:\/(?:[\w-]+|:item))*\/?$/.test(path) ||

@@ -1,0 +1,20 @@
+{
+  "_fixture": "SYNTHETIC, wording unverified: the other error family (time range wider than maxDuration, older than notOlderThan, a field the plan lacks: 'does not have access to the field ...'). Treat any non-authz GraphQL error as a source failure for that query only.",
+  "data": null,
+  "errors": [
+    {
+      "message": "cannot request data older than 2678400s",
+      "path": [
+        "viewer",
+        "zones",
+        0,
+        "httpRequestsAdaptiveGroups"
+      ],
+      "extensions": {
+        "code": "bad_request",
+        "timestamp": "2026-11-20T04:20:00Z",
+        "ray_id": "<redacted>"
+      }
+    }
+  ]
+}

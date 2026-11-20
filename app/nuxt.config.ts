@@ -1326,6 +1326,8 @@ export default defineNuxtConfig({
         '/estadisticas-de-busqueda',
         // El ranking privado de páginas por visita: misma lógica que el tablero de Search Console.
         '/estadisticas-por-pagina',
+        // El tablero privado de uso (currency-usage-insights): tráfico por página, requireAdmin.
+        '/estadisticas-de-uso',
         // El panel privado de contactos comerciales (requireAdmin).
         '/contactos-comerciales',
         // La encuesta de alquileres (se llega desde los correos) y su panel privado de respuestas.

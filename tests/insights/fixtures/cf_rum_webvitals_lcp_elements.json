@@ -1,0 +1,46 @@
+{
+  "_fixture": "LCP culprits: filter largestContentfulPaint_gt: 2500000 (microseconds). A text LCP element has no object path and N/A (-1) resource sub-parts. The cookie-consent paragraph as LCP is a real 2026-11-19 finding.",
+  "data": {
+    "viewer": {
+      "accounts": [
+        {
+          "rumWebVitalsEventsAdaptiveGroups": [
+            {
+              "count": 30,
+              "dimensions": {
+                "requestPath": "/herramientas/calculadora-plazo-fijo",
+                "deviceType": "mobile",
+                "largestContentfulPaintElement": "div.align-center.d-flex.flex-wrap.ga-4>div>p.mb-0.text-body-1.tool-intro",
+                "largestContentfulPaintObjectPath": "",
+                "lcpInitiatorType": ""
+              },
+              "quantiles": {
+                "largestContentfulPaintP75": 5056000,
+                "lcpResourceLoadDelayP75": -1,
+                "lcpElementRenderDelayP75": 3900000,
+                "timeToFirstByteP75": 3262000
+              }
+            },
+            {
+              "count": 30,
+              "dimensions": {
+                "requestPath": "/",
+                "deviceType": "mobile",
+                "largestContentfulPaintElement": "#main>div.cookie-consent>div.cookie-consent__card>div.cookie-consent__text>p",
+                "largestContentfulPaintObjectPath": "",
+                "lcpInitiatorType": ""
+              },
+              "quantiles": {
+                "largestContentfulPaintP75": 4400000,
+                "lcpResourceLoadDelayP75": -1,
+                "lcpElementRenderDelayP75": 3200000,
+                "timeToFirstByteP75": 912000
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "errors": null
+}

@@ -160,6 +160,8 @@ jobs:
               - 'classes/monitor/access.ts'
               - 'classes/equipar/registry.ts'
               - 'classes/usefulapps/catalog.ts'
+              # productosVidaParity.test.ts compara claves, orden, label y mlQueries[0] con app/utils/productosVidaCatalog.ts
+              - 'classes/productosvida/registry.ts'
               # I3 (final review, Plan D): app/utils/priceEvents.ts hand-mirrors this file's calendar
               # array; a root-only edit here (e.g. the November-date manual update) must still run the
               # app suite so priceEventsCalendarParity.test.ts catches a mismatch before it deploys.

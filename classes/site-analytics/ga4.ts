@@ -53,6 +53,8 @@ export interface Ga4ReportRequest {
   orderBys?: any[];
   dimensionFilter?: any;
   keepEmptyRows?: boolean;
+  /** Pide que la respuesta traiga el estado de la cuota (`propertyQuota`). */
+  returnPropertyQuota?: boolean;
 }
 
 /**
@@ -74,6 +76,7 @@ export interface Ga4Report {
   rows?: { dimensionValues?: { value?: string }[]; metricValues?: { value?: string }[] }[];
   rowCount?: number;
   metadata?: { currencyCode?: string; timeZone?: string };
+  propertyQuota?: { tokensPerProjectPerHour?: { consumed?: number; remaining?: number } };
 }
 
 /** One report row flattened to `{ dimensionName: string, metricName: number }`. */
@@ -195,6 +198,23 @@ export async function runReports(requests: Ga4ReportRequest[], propertyId?: stri
     out.push(...((data?.reports || []) as Ga4Report[]));
   }
   return out;
+}
+
+/**
+ * Las dimensiones y métricas que la propiedad acepta, por `apiName` (las propias aparecen como
+ * `customEvent:<parámetro>`). Un `batchRunReports` que nombra una dimensión no registrada falla
+ * ENTERO, así que quien pide dimensiones propias mira acá primero.
+ */
+export async function ga4Metadata(propertyId?: string): Promise<{ dimensions: string[]; metrics: string[] }> {
+  const property = propertyId || ga4PropertyId();
+  if (!property) throw new Error("GA4: GA4_PROPERTY_ID is not set");
+  const token = await ga4AccessToken();
+  const { data } = await axios.get(`${API_ROOT}/properties/${property}/metadata`, {
+    headers: { authorization: `Bearer ${token}` },
+    timeout: 30000,
+  });
+  const names = (list: any) => (Array.isArray(list) ? list.map((x: any) => String(x?.apiName || "")).filter(Boolean) : []);
+  return { dimensions: names(data?.dimensions), metrics: names(data?.metrics) };
 }
 
 export interface Ga4RealtimeRequest {

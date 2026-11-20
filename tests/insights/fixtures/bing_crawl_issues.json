@@ -1,0 +1,19 @@
+{
+  "_fixture": "GetCrawlIssues: HttpCode, InLinks, Issues (CrawlIssues FLAGS bitmask: names Code301, Code302, Code4xx, Code5xx, BlockedByRobotsTxt, ContainsMalware, ImportantUrlBlockedByRobotsTxt, DnsErrors, TimeOutErrors; numeric values UNVERIFIED — store the raw integer and HttpCode, do not decode in v1), Url. Synthetic.",
+  "d": [
+    {
+      "__type": "UrlWithCrawlIssues:#Microsoft.Bing.Webmaster.Api",
+      "HttpCode": 404,
+      "InLinks": 3,
+      "Issues": 4,
+      "Url": "https://cambio-uruguay.com/sucursal/cambio-ejemplo-centro"
+    },
+    {
+      "__type": "UrlWithCrawlIssues:#Microsoft.Bing.Webmaster.Api",
+      "HttpCode": 301,
+      "InLinks": 12,
+      "Issues": 1,
+      "Url": "https://cambio-uruguay.com/cotizacion/brou"
+    }
+  ]
+}

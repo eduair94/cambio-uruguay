@@ -1,0 +1,23 @@
+{
+  "_fixture": "Synthetic in Google's standard error envelope (messages approximate). inspectUrl() already maps 403/429 to null = 'no inspection today'. Quota: 2,000/day and 600/min PER PROPERTY, shared with currency-gsc (20/day today).",
+  "403": {
+    "status": 403,
+    "body": {
+      "error": {
+        "code": 403,
+        "message": "User does not have sufficient permission for site 'sc-domain:cambio-uruguay.com'. See also: https://support.google.com/webmasters/answer/2451999.",
+        "status": "PERMISSION_DENIED"
+      }
+    }
+  },
+  "429": {
+    "status": 429,
+    "body": {
+      "error": {
+        "code": 429,
+        "message": "Quota exceeded for quota metric 'Inspections' ...",
+        "status": "RESOURCE_EXHAUSTED"
+      }
+    }
+  }
+}

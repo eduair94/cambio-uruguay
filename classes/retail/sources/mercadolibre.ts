@@ -154,9 +154,23 @@ function planScans(specs: readonly CategorySpec[]): MlScan[] {
   return plan;
 }
 
+/**
+ * Optional limits a caller can put on one harvest. Both can only LOWER what the harvester does and
+ * both default to "unchanged", so chairs, equipar, phones and movilidad (which pass nothing) run
+ * exactly as before. Code-path options, not pm2 env vars, for the reason `HarvestOptions.maxStoreQueries`
+ * gives in classes/retail/harvest.ts.
+ */
+export interface MlHarvestLimits {
+  /** Result pages per search; can only LOWER RETAIL_ML_MAX_PAGES/CHAIR_ML_MAX_PAGES (default 4). */
+  maxPagesPerQuery?: number;
+  /** Epoch ms. No new page request starts at or after it. */
+  deadlineAt?: number;
+}
+
 export async function harvestMercadoLibre(
   specs: readonly CategorySpec[],
-  maxScans = Number(process.env.RETAIL_ML_MAX_SCANS || 0) || Infinity
+  maxScans = Number(process.env.RETAIL_ML_MAX_SCANS || 0) || Infinity,
+  limits: MlHarvestLimits = {}
 ): Promise<RetailSourceResult> {
   const observedAt = new Date().toISOString();
   const byId = new Map<string, RetailListing>();
@@ -164,11 +178,26 @@ export async function harvestMercadoLibre(
   let pages = 0;
   let rejected = 0;
 
+  const pagesPerQuery =
+    (limits.maxPagesPerQuery ?? 0) > 0
+      ? Math.min(MAX_PAGES_PER_QUERY, Math.floor(limits.maxPagesPerQuery!))
+      : MAX_PAGES_PER_QUERY;
+  const deadlineAt = Number.isFinite(limits.deadlineAt) ? limits.deadlineAt! : null;
+  // How many budgeted searches got their first page, so a clock cut can say how many it skipped.
+  let started = 0;
+  let clockCut = false;
+
   const plan = planScans(specs);
   const budgeted = plan.slice(0, maxScans);
 
-  for (const scan of budgeted) {
-    for (let page = 0; page < MAX_PAGES_PER_QUERY; page++) {
+  scans: for (const scan of budgeted) {
+    for (let page = 0; page < pagesPerQuery; page++) {
+      // Checked before every page, never in the middle of one: a page already asked for finishes.
+      if (deadlineAt !== null && Date.now() >= deadlineAt) {
+        clockCut = true;
+        break scans;
+      }
+      if (page === 0) started++;
       const results = await searchPage({ ...scan.params, offset: String(page * PAGE_SIZE) });
       pages++;
       if (results.length) reachable = true;
@@ -191,11 +220,12 @@ export async function harvestMercadoLibre(
   }
 
   const skipped = plan.length - budgeted.length;
+  const clock = clockCut ? `, corte por reloj: ${budgeted.length - started} búsquedas sin leer` : "";
   return {
     listings: [...byId.values()],
     ok: reachable,
     note: reachable
-      ? `${pages} páginas, ${rejected} descartadas por título${skipped ? `, ${skipped} búsquedas fuera de presupuesto` : ""}`
-      : `sin respuesta de ${API_BASE}`,
+      ? `${pages} páginas, ${rejected} descartadas por título${skipped ? `, ${skipped} búsquedas fuera de presupuesto` : ""}${clock}`
+      : `sin respuesta de ${API_BASE}${clock}`,
   };
 }
