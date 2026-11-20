@@ -287,7 +287,8 @@
     "h1": "Uvozna košarica: končni stroški vaših nakupov v tujini",
     "intro": "Dodajte izdelke z Amazona, eBaya ali MercadoLibre (prilepite povezavo ali jih vnesite ročno) in izračunajte, koliko stanejo ob prihodu v Urugvaj: davki po kategorijah, franšizah, stroški pošiljanja in skupni znesek v pesih.",
     "ogSubtitle": "Davki, franšiza in pošiljanje vaših spletnih naročil, v pesih",
-    "metaDescription": "Sestavite košarico z naročili na Amazonu, eBayu ali MercadoLibre in si v živo oglejte končne stroške v Urugvaju: davke, franšizo v višini 800 USD, kurirsko dostavo in skupni znesek v urugvajskih pesih.",
+    "metaTitle": "Uvozna košarica: končni stroški",
+    "metaDescription": "Sestavite košarico z naročili na Amazonu, eBayu ali MercadoLibre in si oglejte končne stroške v Urugvaju: davke, franšizo v višini 800 USD, poštnino in skupni znesek v pesih.",
     "yourCart": "Vaša košarica",
     "clear": "Jasno",
     "empty": {
@@ -1439,7 +1440,7 @@
     "noTrend": "Podatki o trendih še niso na voljo.",
     "sevenDays": "Zadnjih 7 dni",
     "seeMore": "Ogled podrobnosti",
-    "metaTitle": "Menjalni tečaj dolarja v Urugvaju danes: zvišal se je ali padel?",
+    "metaTitle": "Tečaj dolarja v Urugvaju danes: gor ali dol?",
     "metaDescription": "Menjalni tečaj dolarja v Urugvaju danes: nakupna in prodajna cena, sprememba v primerjavi z včerajšnjim dnem in trend v zadnjih dneh, z najboljšim tečajem iz več kot 40 menjalnic.",
     "footNote": "Sprememba se izračuna glede na uradni tečaj Centralne banke Urugvaja (BCU).",
     "compareCta": "Za trgovanje primerjajte menjalni tečaj dolarja v več kot 40 menjalnicah.",
@@ -1936,7 +1937,7 @@
   "mejorCasa": {
     "h1": "Kje bi danes v Urugvaju zamenjali dolarje?",
     "subtitle": "Primerjamo vse menjalnice in banke v državi, da bi našli najboljši tečaj danes.",
-    "metaTitle": "Najboljša menjalnica v Urugvaju danes: najcenejši dolar",
+    "metaTitle": "Najboljša menjalnica danes: najcenejši dolar",
     "metaDescription": "Danes je najcenejše mesto za nakup dolarjev {casa} za ${rate}. Primerjajte več kot 40 hiš in prihranite ${savings} v primerjavi s povprečjem na trgu.",
     "metaDescriptionGeneric": "Primerjajte ceno dolarja v več kot 40 menjalnicah in bankah v Urugvaju in ugotovite, kje lahko danes zamenjate denar.",
     "answer": "Today the cheapest place to buy dollars is {casa}, selling at ${rate}. Buying US$ 1,000 there saves you about ${savings} against the average of the {count} exchange houses and banks we compare.",

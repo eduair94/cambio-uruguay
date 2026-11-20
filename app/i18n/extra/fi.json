@@ -287,7 +287,8 @@
     "h1": "Tuontikori: ulkomaisten ostosten lopullinen hinta",
     "intro": "Lisää tuotteita Amazonista, eBaysta tai MercadoLibrestä (liitä linkki tai syötä ne käsin) ja laske, mitä ne maksoivat Uruguayssa: verot luokittain, franchising-maksut, toimituskulut ja kokonaissumma pesoina.",
     "ogSubtitle": "Verkkotilaustesi verot, franchising-maksut ja toimituskulut pesoina",
-    "metaDescription": "Kokoa ostoskori Amazon-, eBay- tai MercadoLibre-tilauksillasi ja katso reaaliaikaisesti lopullinen hinta Uruguayssa: verot, 800 Yhdysvaltain dollarin franchising-maksu, kuriirikulut ja loppusumma Uruguayn pesoina.",
+    "metaTitle": "Tuontikori: lopullinen hinta",
+    "metaDescription": "Kokoa ostoskori Amazon-, eBay- tai MercadoLibre-tilauksillasi ja katso lopullinen hinta Uruguayssa: verot, 800 Yhdysvaltain dollarin franchising-sopimus, toimituskulut ja loppusumma pesoina.",
     "yourCart": "Ostoskorisi",
     "clear": "Tyhjennä",
     "empty": {
@@ -1439,7 +1440,7 @@
     "noTrend": "Trenditietoja ei ole vielä saatavilla.",
     "sevenDays": "Viimeiset 7 päivää",
     "seeMore": "Näytä tiedot",
-    "metaTitle": "Dollarin vaihtokurssi Uruguayssa tänään: nousi vai laski?",
+    "metaTitle": "Dollarin kurssi Uruguayssa tänään: ylös vai alas?",
     "metaDescription": "Dollarin vaihtokurssi Uruguayssa tänään: osto- ja myyntihinta, muutos eiliseen verrattuna ja trendi viime päivinä, parhaalla kurssilla yli 40 vaihtoyhtiöltä.",
     "footNote": "Muutos lasketaan Uruguayn keskuspankin (BCU) virallisen kurssin mukaan.",
     "compareCta": "Kaupankäyntiä varten vertaile dollarin vaihtokurssia yli 40 pörssinvaihtopisteessä.",
@@ -1936,7 +1937,7 @@
   "mejorCasa": {
     "h1": "Missä Uruguayssa kannattaa vaihtaa dollareita nykyään?",
     "subtitle": "Vertaamme kaikkia valuutanvaihtopisteitä ja pankkeja maassa löytääksemme parhaan kurssin tänään.",
-    "metaTitle": "Paras vaihtoasunto Uruguayssa tänään: halvin dollari",
+    "metaTitle": "Paras vaihtoasunto tänään: halvin dollari",
     "metaDescription": "Nykyään halvin paikka ostaa dollareita on {casa} hintaan ${rate}. Vertaile yli 40 taloa ja säästä ${savings} markkinoiden keskiarvoon verrattuna.",
     "metaDescriptionGeneric": "Vertaile dollarin hintaa yli 40 valuutanvaihtopisteessä ja pankissa Uruguayssa ja ota selvää, missä voit vaihtaa rahaa tänään.",
     "answer": "Nykyään halvin paikka ostaa dollareita on {casa}, jonka hinta on {rate} dollaria. 1 000 Yhdysvaltain dollarin ostaminen sieltä säästää noin {savings} dollaria vertailemiemme {count}-pörssien ja -pankkien keskiarvoon verrattuna.",

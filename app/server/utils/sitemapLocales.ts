@@ -50,11 +50,28 @@ const localeLoc = (locale: string, path: string) =>
  * with 32 of them a page carries ~36 alternates, and repeated on every URL of every sitemap that
  * is ~15 MB a file, generated on demand by workers with a 512 MB heap. Google reads hreflang from
  * either place; the sitemap still lists the URL so it is found.
+ *
+ * A translated URL whose Spanish page is absent from the same input is dropped: a translation
+ * without its Spanish page in the same build is an orphan. Every source emits the Spanish entry
+ * next to its translations, so this removes only what has no page. (The twelve orphans measured
+ * on 2026-11-20 came from sitemaps built from DIFFERENT snapshots of the source. Caching the
+ * source once, in api/__sitemap__/urls.get.ts, reduces that; it does not remove it, because each
+ * child XML keeps its own cache and two files can still come from two snapshots for a while after
+ * a page leaves the source. This guard is only a per-input invariant.)
  */
 export function keepCanonicalLocales<T extends SitemapInput>(
   urls: T[],
   translations?: SitemapTranslations
 ): T[] {
+  // One extra pass with the same split the loop below already does, then a Set lookup per URL: no
+  // rule matching per entry (the 2026-11-06 outage was per-URL rule matching in the module).
+  const spanishPaths = new Set<string>()
+  for (const entry of urls) {
+    const loc = typeof entry === 'string' ? entry : entry.loc
+    if (typeof loc !== 'string') continue
+    const { locale, path } = splitLocalePath(pathOf(loc))
+    if (locale === 'es') spanishPaths.add(path)
+  }
   // Asked once per URL and per alternate (~10.000 URLs × up to 36): once per path is enough.
   const translatedMemo = new Map<string, readonly string[]>()
   const translatedInto = (path: string): readonly string[] => {
@@ -97,6 +114,7 @@ export function keepCanonicalLocales<T extends SitemapInput>(
       continue
     }
     const { locale, path } = splitLocalePath(pathOf(loc))
+    if (locale !== 'es' && !spanishPaths.has(path)) continue
     if (!listed(locale, path)) continue
     present.add(localeLoc(locale, path))
     if (locale === 'es' && typeof entry !== 'string') spanish.set(path, entry)

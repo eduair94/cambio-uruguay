@@ -287,7 +287,8 @@
     "h1": "Troli import: kos akhir pembelian luar negara anda",
     "intro": "Tambahkan produk daripada Amazon, eBay atau MercadoLibre (tampal pautan atau masukkannya dengan tangan) dan kirakan kosnya yang diterima di Uruguay: cukai mengikut kategori, francais, penghantaran dan jumlah dalam peso.",
     "ogSubtitle": "Cukai, francais dan penghantaran pesanan dalam talian anda, dalam peso",
-    "metaDescription": "Bina troli dengan pesanan Amazon, eBay atau MercadoLibre anda dan lihat kos akhir di Uruguay: cukai, francais USD 800, penghantaran kurier dan jumlah keseluruhan dalam peso Uruguay, secara langsung.",
+    "metaTitle": "Troli import: kos akhir",
+    "metaDescription": "Bina troli dengan pesanan Amazon, eBay atau MercadoLibre anda dan lihat kos akhir di Uruguay: cukai, francais USD 800, penghantaran dan jumlah dalam peso.",
     "yourCart": "Troli anda",
     "clear": "Jelas",
     "empty": {
@@ -1439,7 +1440,7 @@
     "noTrend": "Tiada data trend tersedia lagi.",
     "sevenDays": "7 hari terakhir",
     "seeMore": "Lihat butiran",
-    "metaTitle": "Kadar pertukaran dolar di Uruguay hari ini: naik atau turun?",
+    "metaTitle": "Kadar dolar di Uruguay hari ini: naik atau turun?",
     "metaDescription": "Kadar pertukaran dolar di Uruguay hari ini: harga beli dan jual, perubahan berbanding semalam dan trend sejak beberapa hari kebelakangan ini, dengan kadar terbaik daripada lebih 40 rumah pertukaran.",
     "footNote": "Perubahan ini dikira berdasarkan kadar rasmi Bank Pusat Uruguay (BCU).",
     "compareCta": "Untuk berdagang, bandingkan kadar pertukaran dolar merentasi lebih 40 rumah pertukaran.",
@@ -1936,7 +1937,7 @@
   "mejorCasa": {
     "h1": "Di mana anda perlu menukar dolar di Uruguay hari ini?",
     "subtitle": "Kami membandingkan setiap rumah pertukaran dan bank di negara ini untuk menamakan kadar terbaik hari ini.",
-    "metaTitle": "Rumah pertukaran terbaik di Uruguay hari ini: dolar termurah",
+    "metaTitle": "Rumah pertukaran terbaik hari ini: dolar termurah",
     "metaDescription": "Hari ini tempat paling murah untuk membeli dolar ialah {casa} pada harga ${rate}. Bandingkan 40+ rumah dan jimat ${savings} berbanding purata pasaran.",
     "metaDescriptionGeneric": "Bandingkan harga dolar merentasi 40+ rumah pertukaran dan bank di Uruguay dan ketahui tempat untuk menukar wang hari ini.",
     "answer": "Hari ini tempat paling murah untuk membeli dolar ialah {casa}, dijual pada harga ${rate}. Membeli US$ 1,000 di sana menjimatkan kira-kira ${savings} berbanding purata rumah pertukaran dan bank {count} yang kita bandingkan.",

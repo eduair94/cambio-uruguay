@@ -159,6 +159,10 @@ const SITE = 'https://cambio-uruguay.com'
 const GUIDES = [
   { to: '/comprar-auto-con-deuda-uruguay', label: 'Auto usado con deuda: qué se hereda' },
   {
+    to: '/guias/pagar-patente-sucive-uruguay',
+    label: 'Patente: cómo consultar en el SUCIVE cuánto debe el auto',
+  },
+  {
     to: '/guias/titulo-del-auto-uruguay',
     label: 'Título del auto: ¿hace falta o alcanza la libreta?',
   },

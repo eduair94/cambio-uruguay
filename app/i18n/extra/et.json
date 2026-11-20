@@ -287,7 +287,8 @@
     "h1": "Imporditud ostukorv: teie välismaiste ostude lõpphind",
     "intro": "Lisa tooteid Amazonist, eBayst või MercadoLibre'ist (kleepi link või sisesta need käsitsi) ja arvuta välja, kui palju need Uruguaysse saabudes maksid: maksud kategooria, frantsiisi, saatmiskulude ja kogusumma peesodes.",
     "ogSubtitle": "Teie veebitellimuste maksud, frantsiis ja saatmiskulud peesodes",
-    "metaDescription": "Loo ostukorv oma Amazoni, eBay või MercadoLibre tellimustega ja vaata reaalajas lõpphinda Uruguays: maksud, 800 USA dollari suurune frantsiis, kullerteenus ja kogusumma Uruguay peesodes.",
+    "metaTitle": "Imporditud ostukorv: lõpphind",
+    "metaDescription": "Loo ostukorv oma Amazoni, eBay või MercadoLibre tellimustega ja vaata lõpphinda Uruguays: maksud, 800 USA dollari suurune frantsiis, saatmiskulud ja kogusumma peesodes.",
     "yourCart": "Teie ostukorv",
     "clear": "Selge",
     "empty": {
@@ -1439,7 +1440,7 @@
     "noTrend": "Trendiandmeid pole veel saadaval.",
     "sevenDays": "Viimased 7 päeva",
     "seeMore": "Kuva üksikasjad",
-    "metaTitle": "Dollari vahetuskurss Uruguays täna: tõusis või langes?",
+    "metaTitle": "Dollari kurss Uruguays täna: tõus või langus?",
     "metaDescription": "Dollari vahetuskurss Uruguays täna: ostu- ja müügihind, muutus võrreldes eilsega ja trend viimastel päevadel, parima kursiga enam kui 40 vahetuspunktist.",
     "footNote": "Muutus arvutatakse Uruguay keskpanga (BCU) ametliku kursi alusel.",
     "compareCta": "Kauplemiseks võrrelge dollari vahetuskurssi enam kui 40 vahetuspunktis.",
@@ -1936,7 +1937,7 @@
   "mejorCasa": {
     "h1": "Kus peaks Uruguays tänapäeval dollareid vahetama?",
     "subtitle": "Võrdleme kõiki riigi valuutavahetuspunkte ja panku, et leida täna parim kurss.",
-    "metaTitle": "Parim vahetusmaja Uruguays täna: odavaim dollar",
+    "metaTitle": "Parim vahetuskodu täna: odavaim dollar",
     "metaDescription": "Täna on odavaim koht dollarite ostmiseks {casa}-s hinnaga ${rate}. Võrdle enam kui 40 maja ja säästa turu keskmisega võrreldes ${savings}.",
     "metaDescriptionGeneric": "Võrdle dollari hinda enam kui 40 valuutavahetuspunktis ja pangas Uruguays ning saa teada, kus täna raha vahetada.",
     "answer": "Today the cheapest place to buy dollars is {casa}, selling at ${rate}. Buying US$ 1,000 there saves you about ${savings} against the average of the {count} exchange houses and banks we compare.",

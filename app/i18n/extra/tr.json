@@ -287,7 +287,7 @@
     "h1": "İthalat sepeti: Yurtdışı alışverişlerinizin nihai maliyeti",
     "intro": "Amazon, eBay veya MercadoLibre'den ürünler ekleyin (bağlantıyı yapıştırın veya elle girin) ve Uruguay'a ithalat maliyetlerini hesaplayın: kategoriye göre vergiler, bayilik, kargo ve toplam tutar (peso cinsinden).",
     "ogSubtitle": "Çevrimiçi siparişlerinizin vergileri, franchise ücretleri ve kargo ücretleri (peso cinsinden).",
-    "metaDescription": "Amazon, eBay veya MercadoLibre siparişlerinizle bir sepet oluşturun ve Uruguay'daki nihai maliyeti görün: vergiler, 800 USD'lik franchise ücreti, kurye kargo ücreti ve Uruguay pesosu cinsinden toplam tutar, canlı olarak.",
+    "metaDescription": "Amazon, eBay veya MercadoLibre siparişlerinizle bir sepet oluşturun ve Uruguay'daki nihai maliyeti görün: vergiler, 800 USD franchise ücreti, kargo ve toplam tutar (peso cinsinden).",
     "yourCart": "Sepetiniz",
     "clear": "Temizlemek",
     "empty": {
@@ -353,7 +353,8 @@
       "saveHint": "Sepetinizi kaydetmek ve herhangi bir cihazdan görüntülemek için oturum açın."
     },
     "disclaimer": "Tahmini referans. Gerçek vergiler kategoriye, menşe ülkeye ve gümrüğe bağlıdır.",
-    "fullCalculator": "Hesap makinesinin tamamını açın"
+    "fullCalculator": "Hesap makinesinin tamamını açın",
+    "metaTitle": "Sepeti içe aktar: nihai maliyet"
   },
   "share": {
     "label": "Paylaşmak:",
@@ -1936,7 +1937,7 @@
   "mejorCasa": {
     "h1": "Bugün Uruguay'da doları nerede değiştirmelisiniz?",
     "subtitle": "Ülkedeki tüm döviz bürolarını ve bankaları karşılaştırarak bugünün en iyi kurunu belirliyoruz.",
-    "metaTitle": "Bugün Uruguay'daki en iyi döviz bürosu: en ucuz dolar",
+    "metaTitle": "Bugünün en iyi döviz bürosu: en ucuz dolar",
     "metaDescription": "Bugün dolar satın almak için en ucuz yer {casa} olup, fiyatı ${rate}'dir. 40'tan fazla evi karşılaştırın ve piyasa ortalamasına göre ${savings} tasarruf edin.",
     "metaDescriptionGeneric": "Uruguay'daki 40'tan fazla döviz bürosu ve bankadaki dolar kurlarını karşılaştırın ve bugün nerede para değiştirebileceğinizi öğrenin.",
     "answer": "Bugün dolar satın almak için en ucuz yer {casa} olup, fiyatı ${rate}'dir. Oradan 1.000 ABD doları satın almak, karşılaştırdığımız {count} döviz büroları ve bankalarının ortalamasına kıyasla yaklaşık ${savings} tasarruf sağlar.",

@@ -3817,6 +3817,95 @@
         "beneficio de inventario uruguay"
       ],
       "hypothesis": "Las once tandas de snippet de octubre y noviembre salieron de las listas de los presupuestos (titulo o descripcion pasados del largo), y una descripcion GENERICA que entra en 155 caracteres nunca aparecio en ninguna: no sobra un caracter que la delate. Se buscaron por otro lado -descripciones de guia sin una sola cifra ni un nombre propio, cruzadas contra las ventanas abiertas del libro- y de las 29 libres se arreglaron las DOS que tenian el dato esperando en su propio cuerpo. (1) /guias/como-se-calcula-el-aguinaldo-uruguay decia 'Que es el aguinaldo, como se calcula por proporcion de lo ganado y cuando se cobra en Uruguay: junio y diciembre', o sea anunciaba la pregunta que mas se busca en diciembre sin contestar ningun plazo, y su cuerpo era todavia mas vago ('alrededor de junio', 'cerca de fin de ano') que lo que el propio sitio ya publica con fuente en /cuando-se-cobra-el-aguinaldo-uruguay. Ahora la descripcion da los dos plazos legales y la seccion de las fechas los cita textuales: la Ley 12.840 art. 1 manda pagar 'dentro de los diez dias anteriores al 24 de diciembre de cada ano' y el Decreto-Ley 14.525 art. 1 faculta a abonarlo 'en dos etapas: lo generado hasta el 31 de mayo dentro del mes de junio', de donde sale que el tope de la primera cuota es el 30 de junio; los dos articulos se leyeron en IMPO ese dia y la guia estrena tarjeta de Fuentes con ellos y con el MTSS, mas un enlace a la pagina que tiene la fecha del ano. (2) /guias/las-deudas-se-heredan-uruguay devolvia la pregunta sin contestarla y listaba los temas; ahora dice el limite del beneficio de inventario y el efecto del repudio sobre los propios hijos, que ya estaban en sus dos primeras secciones (ninguna afirmacion nueva). descripcionesConDato.test.ts exige que el dato del snippet este TAMBIEN en el cuerpo y que la guia cite la norma, para que el arreglo no se pueda deshacer en silencio. Las dos rutas estaban libres de toda ventana abierta. Es el tramo contenido (8x el promedio del sitio). Se esperan mas clics desde la misma posicion, el de aguinaldo con la estacionalidad de diciembre en contra de una comparacion cruda; se mide por cuota de clics del sitio con 28 dias archivados antes y despues, sin el dia del deploy."
+    },
+    {
+      "id": "dolar-hoy-y-mejor-casa-titulo-en-el-serp",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/dolar-hoy",
+        "/mejor-casa-de-cambio"
+      ],
+      "queries": [
+        "cotización del dólar",
+        "cotizacion dolar hoy",
+        "el dolar hoy",
+        "cotización del dólar en uruguay",
+        "cotizacion dolar uruguay",
+        "casas de cambio montevideo",
+        "mejor casa de cambio en montevideo",
+        "casa de cambio"
+      ],
+      "hypothesis": "Los titulos de /dolar-hoy (68) y /mejor-casa-de-cambio (70) se cortaban en el SERP y ningun presupuesto los media (clave i18n fuera de seo.). Se recortan a 57 y 59 soltando en Uruguay, que la marca repite, y la descripcion de /dolar-hoy de 175 a 150. /dolar-hoy 1013 impresiones en posicion 17,5 con 262 de cotizacion del dolar; /mejor-casa-de-cambio 297 impresiones en posicion 7,3. Se espera mas porcion de clics del sitio. (El integrador agrega shippedOn con la fecha del deploy.)"
+    },
+    {
+      "id": "alquileres-uruguay-descripcion-entra-en-el-serp",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/alquileres-uruguay"
+      ],
+      "queries": [
+        "alquiler uruguay",
+        "alquileres uruguay",
+        "portales del uruguay inmobiliaria"
+      ],
+      "hypothesis": "La descripcion del directorio de alquileres media 159 y su test permitia 175; se suelta servicios cercanos (138, 152 en la pagina 10000) y el test baja a 155. 81 impresiones en posicion 9,8. (El integrador agrega shippedOn con la fecha del deploy.)"
+    },
+    {
+      "id": "carrito-importacion-titulo-entra-en-el-serp",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/herramientas/carrito-importacion"
+      ],
+      "hypothesis": "El titulo era el H1 entero (83 con la marca) y la descripcion 184; titulo propio de 55 (Carrito de importacion: el costo final, traducido a los 38 idiomas) y descripcion de 154 sin perder la franquicia de USD 800. 22 impresiones en posicion 5,8; sin consultas con volumen, se mide por ruta. (El integrador agrega shippedOn con la fecha del deploy.)"
+    },
+    {
+      "id": "enlace-de-contexto-salario-minimo-guia",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/guias/salario-minimo-uruguay-cuanto-es"
+      ],
+      "queries": [
+        "salario minimo uruguay",
+        "salario minimo uruguay 2026",
+        "sueldo minimo en uruguay",
+        "salario minimo nacional 2026 uruguay",
+        "cuanto es el sueldo minimo en uruguay",
+        "salario minimo nacional"
+      ],
+      "hypothesis": "La guia del salario minimo (3306 impresiones, 1 clic, posicion 10 en 28 dias) no recibia ningun enlace de contexto desde las 40 paginas mas visitadas. Se enlaza desde la primera frase de /vivir-con-el-salario-minimo-uruguay, la que da la cifra del SMN. Se espera que la guia suba su porcion de clics del sitio."
+    },
+    {
+      "id": "enlace-de-contexto-boleto-montevideo",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/precio-del-boleto-montevideo"
+      ],
+      "queries": [
+        "boleto montevideo",
+        "precio boleto montevideo",
+        "cuanto vale el boleto con stm",
+        "cuanto cuesta el boleto en montevideo",
+        "cuanto sale el boleto en montevideo",
+        "cuanto esta el boleto comun"
+      ],
+      "hypothesis": "El precio del boleto (4435 impresiones, 3 clics, posicion 8,7) tenia un solo enlace de contexto en el repo, desde el comparador de transporte. Se enlaza con el ancla boleto de Montevideo en la nota de la tabla de /vivir-con-el-salario-minimo-uruguay, la que cuenta el omnibus al trabajo. Se espera que la pagina suba su porcion de clics."
+    },
+    {
+      "id": "enlace-de-contexto-patente-sucive",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/guias/pagar-patente-sucive-uruguay"
+      ],
+      "queries": [
+        "que meses se paga la patente",
+        "patente 2026 meses",
+        "sucive patente 2026",
+        "cada cuanto se paga la patente de un auto",
+        "cuando se vence la patente 2026",
+        "sucive vencimiento patente 2026",
+        "este mes se paga patente"
+      ],
+      "hypothesis": "La guia de la patente del SUCIVE (3499 impresiones, 4 clics, posicion 8,5, en baja frente a los 28 dias previos: 7 clics, posicion 7,8) solo la enlazaban /comprar-auto-con-deuda-uruguay y /multas-de-transito-y-patente-uruguay, y ninguna de las 40 paginas mas visitadas. Se enlaza desde el certificado del SUCIVE en /vender-mi-auto-uruguay y desde la lista Que revisar antes de comprar de las cinco paginas /autos-usados-uruguay/hasta-N-dolares. Se espera que la guia suba su porcion de clics."
     }
   ]
 }

@@ -127,7 +127,7 @@ describe("el lector de las listas del app no puede fallar en silencio", () => {
     expect(parseStringList(source, "L")).toEqual(["/uno", "/dos"]);
   });
 
-  // La prueba que importa: las OCHO listas de verdad, como las declara el app hoy. Si alguien
+  // La prueba que importa: las DOCE listas de verdad, como las declara el app hoy. Si alguien
   // renombra un `const` o le cambia la forma, esto se pone rojo y el informe no miente.
   //
   // La cuarta, la quinta y la sexta entraron el 2026-10-20, cuando `seoContract.test.ts` y
@@ -148,6 +148,12 @@ describe("el lector de las listas del app no puede fallar en silencio", () => {
     // siga imprimiendo «0 de 0» sobre nada.
     ["hubSnippetBudget.test.ts", "DEUDA_HUB_TITULO", "TITLE_OVER_BUDGET", ""],
     ["hubSnippetBudget.test.ts", "DEUDA_HUB_DESCRIPCION", "DESCRIPTION_OVER_BUDGET", ""],
+    // Los pozos de catálogo del 2026-11-20: títulos y descripciones con clave fuera de `seo.` y los
+    // que una herramienta hereda de `utils/tools.ts`.
+    ["seoMessageSnippetBudget.test.ts", "DEUDA_TITULO_MENSAJE", "MESSAGE_TITLE_OVER_BUDGET", "/"],
+    ["seoMessageSnippetBudget.test.ts", "DEUDA_DESCRIPCION_MENSAJE", "MESSAGE_DESCRIPTION_OVER_BUDGET", "/"],
+    ["seoToolCatalogBudget.test.ts", "DEUDA_TITULO_HERRAMIENTA", "TOOL_TITLE_OVER_BUDGET", "/"],
+    ["seoToolCatalogBudget.test.ts", "DEUDA_DESCRIPCION_HERRAMIENTA", "TOOL_DESCRIPTION_OVER_BUDGET", "/"],
   ])("lee %s → %s y cabe en su propio trinquete", (file, list, budget, prefix) => {
     const source = read(file);
     const declared = parseStringList(source, list);

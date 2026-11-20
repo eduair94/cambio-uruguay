@@ -287,7 +287,8 @@
     "h1": "Importní košík: konečná cena vašich zahraničních nákupů",
     "intro": "Přidejte produkty z Amazonu, eBay nebo MercadoLibre (vložte odkaz nebo je zadejte ručně) a vypočítejte, kolik stály při doručení do Uruguaye: daně podle kategorie, franšíza, poštovné a celková cena v pesos.",
     "ogSubtitle": "Daně, franšíza a doprava vašich online objednávek v pesos",
-    "metaDescription": "Vytvořte si košík s objednávkami z Amazonu, eBay nebo MercadoLibre a podívejte se na konečnou cenu v Uruguayi: daně, franšízu 800 USD, dopravu kurýrem a celkovou cenu v uruguayských pesos, a to v reálném čase.",
+    "metaTitle": "Importní košík: konečná cena",
+    "metaDescription": "Vytvořte si košík s objednávkami z Amazonu, eBay nebo MercadoLibre a podívejte se na konečnou cenu v Uruguayi: daně, franšíza 800 USD, poštovné a celkovou cenu v pesos.",
     "yourCart": "Váš košík",
     "clear": "Jasný",
     "empty": {
@@ -1439,7 +1440,7 @@
     "noTrend": "Zatím nejsou k dispozici žádná data o trendech.",
     "sevenDays": "Posledních 7 dní",
     "seeMore": "Zobrazit podrobnosti",
-    "metaTitle": "Kurz dolaru v Uruguayi dnes: vzrostl nebo klesl?",
+    "metaTitle": "Kurz dolaru v Uruguayi dnes: nahoru nebo dolů?",
     "metaDescription": "Směnný kurz dolaru v Uruguayi dnes: nákupní a prodejní cena, změna oproti včerejšku a trend za poslední dny, s nejlepším kurzem z více než 40 směnáren.",
     "footNote": "Změna se vypočítává vůči oficiálnímu kurzu Centrální banky Uruguaye (BCU).",
     "compareCta": "Pro obchodování porovnejte směnný kurz dolaru na více než 40 směnárnách.",
@@ -1936,7 +1937,7 @@
   "mejorCasa": {
     "h1": "Kde byste si dnes měli v Uruguayi směnit dolary?",
     "subtitle": "Porovnáváme všechny směnárny a banky v zemi, abychom vám dnes vybrali nejlepší kurz.",
-    "metaTitle": "Nejlepší směnárna v Uruguayi dnes: nejlevnější dolar",
+    "metaTitle": "Nejlepší směnárna dnes: nejlevnější dolar",
     "metaDescription": "Dnes je nejlevnějším místem k nákupu dolarů {casa} za {rate}. Porovnejte více než 40 domů a ušetřete {savings} oproti průměru trhu.",
     "metaDescriptionGeneric": "Porovnejte cenu dolaru ve více než 40 směnárnách a bankách v Uruguayi a zjistěte, kde si dnes můžete směnit peníze.",
     "answer": "Dnes je nejlevnějším místem pro nákup dolarů {casa}, kde se prodávají za {rate}. Nákupem 1 000 USD tam ušetříte přibližně {savings} oproti průměru směnáren a bank {count}, které porovnáváme.",

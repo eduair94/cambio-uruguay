@@ -287,7 +287,8 @@
     "h1": "Uvozna košarica: konačna cijena vaših inozemnih kupnji",
     "intro": "Dodajte proizvode s Amazona, eBaya ili MercadoLibrea (zalijepite poveznicu ili ih unesite ručno) i izračunajte njihovu cijenu pri dolasku u Urugvaj: porezi po kategoriji, franšiza, dostava i ukupno u pezosima.",
     "ogSubtitle": "Porezi, franšiza i dostava vaših online narudžbi, u pezosima",
-    "metaDescription": "Izradite košaricu s narudžbama s Amazona, eBaya ili MercadoLibrea i uživo pogledajte konačnu cijenu u Urugvaju: poreze, franšizu od 800 USD, kurirsku dostavu i ukupan iznos u urugvajskim pezosima.",
+    "metaTitle": "Uvoz košarice: konačna cijena",
+    "metaDescription": "Izradite košaricu s narudžbama s Amazona, eBaya ili MercadoLibrea i pogledajte konačnu cijenu u Urugvaju: poreze, franšizu od 800 USD, dostavu i ukupan iznos u pezosima.",
     "yourCart": "Vaša košarica",
     "clear": "Jasan",
     "empty": {
@@ -1439,7 +1440,7 @@
     "noTrend": "Još nema dostupnih podataka o trendovima.",
     "sevenDays": "Posljednjih 7 dana",
     "seeMore": "Prikaži detalje",
-    "metaTitle": "Tečaj dolara u Urugvaju danas: porastao ili pao?",
+    "metaTitle": "Tečaj dolara u Urugvaju danas: gore ili dolje?",
     "metaDescription": "Tečaj dolara u Urugvaju danas: kupovna i prodajna cijena, promjena u odnosu na jučer i trend posljednjih dana, s najboljim tečajem od preko 40 mjenjačnica.",
     "footNote": "Promjena se izračunava prema službenom tečaju Središnje banke Urugvaja (BCU).",
     "compareCta": "Za trgovanje usporedite tečaj dolara u više od 40 mjenjačnica.",
@@ -1936,7 +1937,7 @@
   "mejorCasa": {
     "h1": "Gdje biste danas trebali promijeniti dolare u Urugvaju?",
     "subtitle": "Uspoređujemo sve mjenjačnice i banke u zemlji kako bismo odredili najbolji tečaj danas.",
-    "metaTitle": "Najbolja mjenjačnica u Urugvaju danas: najjeftiniji dolar",
+    "metaTitle": "Najbolja mjenjačnica danas: najjeftiniji dolar",
     "metaDescription": "Danas je najjeftinije mjesto za kupnju dolara {casa} po cijeni od {rate}. Usporedite više od 40 kuća i uštedite {savings} u odnosu na tržišni prosjek.",
     "metaDescriptionGeneric": "Usporedite cijenu dolara u više od 40 mjenjačnica i banaka u Urugvaju i saznajte gdje danas možete promijeniti novac.",
     "answer": "Today the cheapest place to buy dollars is {casa}, selling at ${rate}. Buying US$ 1,000 there saves you about ${savings} against the average of the {count} exchange houses and banks we compare.",

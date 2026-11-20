@@ -287,7 +287,8 @@
     "h1": "Importwinkelwagen: de uiteindelijke kosten van uw aankopen in het buitenland",
     "intro": "Voeg producten van Amazon, eBay of MercadoLibre toe (plak de link of voer ze handmatig in) en bereken de totale kosten inclusief verzending naar Uruguay: belastingen per categorie, franchisekosten, verzendkosten en het totaalbedrag in peso's.",
     "ogSubtitle": "Belastingen, franchisekosten en verzendkosten van uw online bestellingen, in peso's",
-    "metaDescription": "Stel je winkelmandje samen met je bestellingen van Amazon, eBay of MercadoLibre en zie live de uiteindelijke kosten in Uruguay: belastingen, de franchise van USD 800, verzendkosten en het totaalbedrag in Uruguayaanse peso's.",
+    "metaTitle": "Importeer winkelwagen: de uiteindelijke kosten",
+    "metaDescription": "Stel je winkelmandje samen met je bestellingen van Amazon, eBay of MercadoLibre en zie de uiteindelijke kosten in Uruguay: belastingen, de franchise van USD 800, verzendkosten en het totaalbedrag in peso's.",
     "yourCart": "Uw winkelwagen",
     "clear": "Duidelijk",
     "empty": {
@@ -1439,7 +1440,7 @@
     "noTrend": "Er zijn nog geen trendgegevens beschikbaar.",
     "sevenDays": "Afgelopen 7 dagen",
     "seeMore": "Bekijk details",
-    "metaTitle": "De wisselkoers van de dollar in Uruguay is vandaag gestegen of gedaald?",
+    "metaTitle": "De dollarwisselkoers in Uruguay vandaag: gestegen of gedaald?",
     "metaDescription": "De wisselkoers van de dollar in Uruguay vandaag: koop- en verkoopprijs, verandering ten opzichte van gisteren en trend over de afgelopen dagen, met de beste koers van meer dan 40 wisselkantoren.",
     "footNote": "De wijziging wordt berekend op basis van de officiële koers van de Centrale Bank van Uruguay (BCU).",
     "compareCta": "Om te handelen, vergelijk de dollarwisselkoers bij meer dan 40 wisselkantoren.",
@@ -1936,7 +1937,7 @@
   "mejorCasa": {
     "h1": "Waar kunt u vandaag dollars wisselen in Uruguay?",
     "subtitle": "We vergelijken alle wisselkantoren en banken in het land om de beste koers van vandaag te bepalen.",
-    "metaTitle": "Beste wisselkantoor in Uruguay vandaag: de goedkoopste dollar",
+    "metaTitle": "Beste wisselkantoor vandaag: de goedkoopste dollar",
     "metaDescription": "Vandaag is de goedkoopste plek om dollars te kopen {casa} voor ${rate}. Vergelijk meer dan 40 huizen en bespaar ${savings} ten opzichte van het marktgemiddelde.",
     "metaDescriptionGeneric": "Vergelijk de dollarwisselkoers bij meer dan 40 wisselkantoren en banken in Uruguay en ontdek waar u vandaag nog geld kunt wisselen.",
     "answer": "Vandaag is {casa} de goedkoopste plek om dollars te kopen, met een wisselkoers van ${rate}. Door daar $1.000 te kopen, bespaar je ongeveer ${savings} ten opzichte van de gemiddelde wisselkoers van {count} bij wisselkantoren en banken die we vergelijken.",

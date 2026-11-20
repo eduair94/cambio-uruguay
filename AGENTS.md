@@ -161,6 +161,10 @@ Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`
   un `title:`, y entre las 110 que no leía había uno de 94 caracteres (`/prestamos-uruguay`, tramo
   8×) y otros cuatro pasados de 60. El lector nuevo mide el PISO —los `${...}` que no resuelven
   aportan vacío—, así que condena y no absuelve, y el viejo y su cero se quedan donde están.
+  **Y desde el 2026-11-20 son quince**: del octavo al decimoquinto es el mismo agujero corrido un
+  archivo más allá —títulos y descripciones de las claves `seo.*` de i18n, de los dieciséis temas,
+  de los mensajes fuera de `seo.` y del catálogo de herramientas—; cuál entró cuándo y por qué lo
+  dice el encabezado de cada pozo en `scripts/oneoff/seo_debt_report.ts`.
 - **Este repositorio es PÚBLICO: cero cifras de ingreso en nada versionado.** Ni en código, ni en
   comentarios, ni en este archivo, ni en un mensaje de commit. La convención ya existía para los
   documentos (`docs/seo/adsense-growth-loop.md` es "público sin cifras"; los montos viven en
