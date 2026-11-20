@@ -126,6 +126,9 @@
                   {{ formatRate(item.sell) }}
                 </span>
               </template>
+              <template #header.actions>
+                <span class="d-sr-only">{{ actionsHeaderLabel(locale) }}</span>
+              </template>
               <template #item.actions="{ item }">
                 <div class="d-flex ga-1 justify-end flex-wrap">
                   <v-btn
@@ -335,6 +338,7 @@ import {
   type CurrencyQuote,
 } from '~/utils/currencyPages'
 import { bestOf, pickDescription, pickTitle, seoRate } from '~/utils/liveRateSeo'
+import { actionsHeaderLabel } from '~/utils/a11yLabels'
 import { currencyFaqIds, type FaqItem } from '~/utils/faqAnswers'
 import { fronteraRoutesForCode, type FronteraCode } from '~/utils/frontera'
 

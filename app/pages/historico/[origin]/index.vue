@@ -30,7 +30,9 @@
                  elige para «cambio principal» o «cotización brou». El encabezado lo dice igual
                  que el título, y en el idioma de la página: antes era un literal en castellano
                  también en /en y /pt. -->
-            <h1 class="text-h5 text-md-h4 ma-0" :class="{ 'text-wrap': isBcu }">
+            <!-- `text-wrap` siempre, no sólo en el BCU: v-card-title es `nowrap` + `ellipsis`
+                 y en 390 px el nombre de cualquier casa larga se cortaba a mitad de palabra. -->
+            <h1 class="text-h5 text-md-h4 ma-0 text-wrap">
               {{
                 isBcu ? bcuText.hubHeading : $t('historical.originHeading', { origin: originName })
               }}
@@ -155,7 +157,7 @@
                 size="small"
               >
                 <v-avatar size="20" class="mr-2">
-                  <img :src="getCurrencyFlag(item.code)" :alt="item.code" width="20" height="20" />
+                  <img :src="getCurrencyFlag(item.code)" alt="" width="20" height="20" />
                 </v-avatar>
                 {{ item.code }}
               </v-btn>

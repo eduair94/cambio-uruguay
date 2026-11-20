@@ -230,11 +230,12 @@
           </VBtnToggle>
         </VCol>
         <VCol cols="12" sm="8" md="9">
-          <label class="cv-label">
+          <label id="cv-income-label" class="cv-label" for="cv-income">
             Ingreso mensual líquido del hogar
             <span class="text-grey-lighten-1">(en la mano, sumando a los dos si son pareja)</span>
           </label>
           <VTextField
+            id="cv-income"
             v-model.number="income"
             type="number"
             min="0"

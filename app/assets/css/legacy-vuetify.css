@@ -16,8 +16,10 @@
  *
  * 3) Button labels that outgrow their button (see the rule at the bottom).
  *
- * 4) A VBtnToggle with more options than fit one line: `cu-btn-grid`, last
- *    block in this file.
+ * 4) A VBtnToggle with more options than fit one line: `cu-btn-grid`.
+ *
+ * 5) Breadcrumbs (VBreadcrumbs): readable current item, wrapping row, 32px
+ *    links. Last block in this file.
  *
  * Remove this file when adopting MD3 elevations/typography (follow-up).
  */
@@ -244,4 +246,52 @@
 
 .cu-btn-flush.v-btn--size-x-large {
   --cu-btn-pad: 24px;
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+ * 5) Breadcrumbs — Vuetify's VBreadcrumbs defaults, measured in production on
+ * 2026-11-20, failed three ways on every page that opens with crumbs:
+ *
+ *   - The current item (`--disabled`) is dimmed with `opacity:
+ *     var(--v-disabled-opacity)`: #a5a5a7 on #f6f7f9, 2.29:1, flagged by axe on
+ *     21+ pages. It is not a disabled control, it is where you are. Medium
+ *     emphasis of the theme's own ink reads as secondary and clears AA in both
+ *     themes (~5.6:1 light; white at 0.70 on the dark navy).
+ *   - `.v-breadcrumbs` is a flex row with no wrap, so on a phone every item
+ *     shrank and broke inside itself: "Autos / usados", "Chevrolet / Celta" as
+ *     three two-line columns ~100px tall. With the row wrapping, an item that
+ *     fits a line is placed whole (flex breaks lines at each item's max-content
+ *     width), so no `white-space: nowrap` is needed — and nowrap would add the
+ *     bad case: a crumb wider than the row (a long guide or model title at
+ *     320px) could not break and would push the page sideways. Instead each
+ *     item is capped at the row and only THEN breaks its text, the pattern the
+ *     rental ficha already used.
+ *   - Links were 24px tall; 32px is the floor for a row of small targets.
+ *
+ * Padding and margins are NOT touched here: the air around the opening crumb
+ * belongs to the layout (`tests/unit/layoutTop.test.ts`). Unlayered so it beats
+ * `@layer vuetify-components`; a page rule with a class of its own (the
+ * rental ficha's scoped `.rental-page .v-breadcrumbs-item`) still wins.
+ *
+ * Regression check: `tests/unit/breadcrumbsCss.test.ts`. */
+.v-breadcrumbs {
+  flex-wrap: wrap;
+  row-gap: 2px;
+}
+
+.v-breadcrumbs-item {
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.v-breadcrumbs-item--disabled {
+  opacity: 1;
+  color: rgba(var(--v-theme-on-background), var(--v-medium-emphasis-opacity));
+}
+
+.v-breadcrumbs-item--link {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
 }

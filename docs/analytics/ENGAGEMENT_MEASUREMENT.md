@@ -18,11 +18,18 @@ registra la intención de abrir otra página, **no prueba** que cargó; para la 
 `page_view` que ya produce GA4 y la exploración de rutas.
 
 Las exposiciones se limitan a `guide_next_steps`, `guide_inline_next`, `related_inline`,
-`related_pages` y `bank_decision` (las tres del medio desde el 16/11/2026). Se observa el enlace real,
+`related_pages` y `bank_decision` (las tres del medio desde el 16/11/2026), y `topic_neighbours`
+(Más sobre este tema) y `family_nav` (barra de familia), desde el 20/11/2026. Se observa el enlace real,
 no la caja completa del módulo; no se cuentan anclas de la misma página, descargas, destinos
 privados ni enlaces externos. Cambiar de página desconecta el observador anterior; cambiar
 filtros, volver de una pestaña oculta o restaurar la caché del navegador no repite la exposición.
 No hay temporizadores y, sin soporte de IntersectionObserver, no se inventan vistas.
+
+Desde el 20/11/2026 `helpful_view` (la caja «¿Te sirvió?») sale cuando la caja queda al menos a
+la mitad en pantalla con la pestaña visible, en cualquier página de la visita, y no cuando se
+monta. Hasta ese día contaba montajes: la primera página de cada carga, aunque nadie bajara
+hasta la caja, y nunca las páginas abiertas por la SPA. La serie se corta ese día a propósito;
+`helpful_answer` no cambia, pero su cociente contra `helpful_view` sí.
 
 ## Qué mide y qué no
 
@@ -69,10 +76,13 @@ Google tag ni la configuración de Enhanced Measurement de la propiedad.
 
 Áreas admitidas: `guide_next_steps`, `guide_inline_next` (las primeras recomendaciones de la guía,
 repetidas adentro del artículo), `related_inline` («Seguí leyendo» al lado del resultado de una
-calculadora o un indicador), `guide_section`, `guide_contents`, `related_pages`, `header`,
-`drawer`, `footer`, `content`. Un contenedor puede declarar `data-link-area="guide_next_steps"`;
+calculadora o un indicador), `guide_section`, `guide_contents`, `related_pages`,
+`topic_neighbours` (Más sobre este tema), `family_nav` (barra de familia), `header`, `drawer`,
+`footer`, `content`. Un contenedor puede declarar `data-link-area="guide_next_steps"`;
 para el resto se reconoce el área por la estructura del sitio. Un valor desconocido cae en
-`content`, sin publicarlo como dimensión.
+`content`, sin publicarlo como dimensión. Un enlace dentro de un `<details>` cerrado (la barra de
+familia en el teléfono, el «ver más» de Más sobre este tema) cuenta como expuesto recién al
+abrirse. Hasta el 20/11/2026 los clics de los dos bloques se leían como `content`.
 
 ## Cómo usar los datos después de desplegar
 

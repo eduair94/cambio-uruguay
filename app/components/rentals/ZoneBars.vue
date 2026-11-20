@@ -10,11 +10,15 @@
   keyboard-operable and printable without a modal, which would interrupt a scan that needs no
   protected focus. The open/closed choice is shared by every card on the page and remembered: a
   reader who opens one card wants the same rows on the next one, not seven more clicks.
+
+  A named group, not a <section>: a page of cards carried one region per card, several with the
+  same barrio name (axe landmark-unique, tests/unit/landmarks.test.ts).
 -->
 <template>
-  <section
+  <div
     v-if="zone && rows.length"
     class="zone-bars"
+    role="group"
     :aria-label="t('region', { name: zone.name })"
     data-testid="rental-zone-bars"
   >
@@ -52,7 +56,7 @@
         <p>{{ t('methodHint') }}</p>
       </details>
     </details>
-  </section>
+  </div>
 </template>
 
 <script setup lang="ts">

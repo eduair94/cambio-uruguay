@@ -2121,9 +2121,11 @@ useHead(() => ({
   .rental-page__section:first-of-type {
     margin-top: 20px;
   }
+  /* 1003: above the sticky chip row, below Vuetify's app bar (1004), the drawer's scrim (1005)
+     and the drawer (1006), so the open menu covers this bar (fixedBarsBelowDrawer.test.ts). */
   .rental-page__mobile-action {
     position: fixed;
-    z-index: 1900;
+    z-index: 1003;
     inset: auto 0 0;
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;

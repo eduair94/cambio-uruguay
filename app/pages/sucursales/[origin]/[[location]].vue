@@ -11,7 +11,9 @@
             <!-- «<Casa> en <Departamento>: sucursales y horarios»: la consulta trae la casa y el
                  lugar, y «horarios» es la palabra que el título ya lleva. Antes decía
                  «Sucursales - BROU» en todos los departamentos, y en inglés «Branches - BROU». -->
-            <h1 class="text-h5 text-md-h4 ma-0">
+            <!-- `text-wrap`: v-card-title es `nowrap` + `ellipsis` y el h1 lo hereda; en 390 px
+                 se cortaba a mitad de palabra («BROU en Montevideo: sucurs»). -->
+            <h1 class="text-h5 text-md-h4 ma-0 text-wrap">
               {{
                 location
                   ? $t('sucursalesHeading', { origin: exchangeHouseName, location: locationLabel })

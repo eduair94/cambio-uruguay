@@ -110,6 +110,14 @@
             @activate="activeIndex = $event"
             @select="onSelect"
           />
+          <!-- A rescued typo can be the wrong page ("impreza" -> "Qué empresa abrir"): when the
+               words or the page name a directory, offer it too. Nothing on 'none'. -->
+          <SearchDirectoryLinks
+            v-if="isSuggestion"
+            :q="query"
+            :from-path="route.fullPath"
+            @navigate="open = false"
+          />
           <NuxtLink
             class="search-palette__see-all"
             data-cta="search-see-all"
@@ -133,6 +141,8 @@
         <div v-else-if="!amountHit" class="search-palette__empty">
           <VIcon size="32">mdi-magnify-close</VIcon>
           <p>{{ $t('search.empty', { q: query }) }}</p>
+          <!-- The index has no car, motorbike or phone models; the directories do. -->
+          <SearchDirectoryLinks :q="query" :from-path="route.fullPath" @navigate="open = false" />
           <NuxtLink
             class="search-palette__ask-ai"
             data-cta="search-ask-ai"
@@ -160,6 +170,7 @@ import type { AmountHit } from '~/utils/searchIndex'
 import { amountLabel } from '~/utils/convert'
 import type { CurrencyCode } from '~/utils/currencyPages'
 import { POPULAR, flattenResults, scoreDocs, type SearchDoc } from '~/utils/siteNav'
+import { createDeadEndReporter } from '~/utils/searchDeadEnds'
 import { assistantLink } from '~/utils/assistantPrompt'
 
 const open = defineModel<boolean>({ required: true })
@@ -197,6 +208,9 @@ let triggerEl: HTMLElement | null = null
 let indexModule: typeof import('~/utils/searchIndex') | null = null
 /** True when the lazy chunk import failed (stale hash after a deploy) — shows the SSR escape hatch. */
 const indexLoadFailed = ref(false)
+/** Dead-end queries already sent to GA4 during this opening (normalized). Declared before the
+ *  `immediate` open watcher, which resets it. */
+const deadEnds = createDeadEndReporter()
 
 const results = computed(() => (query.value ? scoreDocs(query.value, docs.value) : []))
 const hasResults = computed(() => results.value.length > 0)
@@ -294,6 +308,8 @@ watch(
     triggerEl = import.meta.client ? (document.activeElement as HTMLElement | null) : null
     // A reopen retries a previously failed chunk load (e.g. transient network blip).
     indexLoadFailed.value = false
+    // Each opening is a new search session for the dead-end report.
+    deadEnds.reset()
     void loadIndex()
   },
   { immediate: true }
@@ -397,7 +413,13 @@ function go(to: string) {
 
 function onSelect(doc: SearchDoc) {
   const rank = flatDocs.value.findIndex(d => d.id === doc.id)
-  track('search_select', { q: query.value, to: doc.to ?? doc.id, type: doc.type, rank })
+  track('search_select', {
+    q: query.value,
+    search_term: query.value,
+    to: doc.to ?? doc.id,
+    type: doc.type,
+    rank,
+  })
 
   if (doc.action?.kind === 'theme') {
     // Stay open: cycling the theme is a setting, not a destination.
@@ -428,12 +450,19 @@ function selectAmount() {
   go(hit.navTo)
 }
 
-// GA4: which queries dead-end? Debounced so a query isn't counted mid-typing.
+// GA4: which queries dead-end? Debounced so a query isn't counted mid-typing, and sent once per
+// (opening, normalized query) on the first settled pause: deleting and retyping the same words
+// used to count again. Sent on the pause, not on close, so leaving by a link or closing the tab
+// loses nothing. Since 2026-11-20 the series counts distinct dead ends per opening, not pauses.
+// `search_term` is the parameter GA4 maps to its standard search-term dimension.
 let noResultTimer: ReturnType<typeof setTimeout> | undefined
 watch([query, hasResults, amountHit], () => {
   clearTimeout(noResultTimer)
   if (!query.value || hasResults.value || amountHit.value) return
-  noResultTimer = setTimeout(() => track('search_no_results', { q: query.value }), 400)
+  noResultTimer = setTimeout(() => {
+    const q = query.value
+    if (deadEnds.shouldReport(q)) track('search_no_results', { q, search_term: q })
+  }, 400)
 })
 
 onMounted(() => {

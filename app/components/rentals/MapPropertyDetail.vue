@@ -604,7 +604,8 @@ onMounted(async () => {
     position: fixed;
     inset: auto max(8px, env(safe-area-inset-right))
       calc(60px + max(12px, env(safe-area-inset-bottom))) max(8px, env(safe-area-inset-left));
-    z-index: 1850;
+    /* Above Leaflet's controls (1000), below the app bar, scrim and drawer (1004-1006). */
+    z-index: 1003;
     width: auto;
     max-height: min(62dvh, calc(100dvh - 170px));
   }

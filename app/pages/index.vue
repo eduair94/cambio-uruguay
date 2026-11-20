@@ -22,20 +22,27 @@
               <!-- Trust signals: BCU source, coverage, freshness, Trustpilot -->
               <TrustBar class="hero-trust hero-anim" />
 
-              <!-- Live USD rate band: momentum chip + sparkline, the hero hook -->
-              <ClientOnly>
-                <DollarMomentum class="hero-live hero-anim mb-6" />
-              </ClientOnly>
+              <!-- Live USD rate band: momentum chip + sparkline, the hero hook. The server
+                   renders the card's skeleton in its place, so the card no longer pops in after
+                   hydration and pushes the converter down. The entrance animation sits on this
+                   wrapper, which survives hydration: on the swapped node it would run twice. -->
+              <div class="hero-live hero-anim mb-6">
+                <ClientOnly>
+                  <DollarMomentum />
+                  <template #fallback>
+                    <DollarMomentumSkeleton />
+                  </template>
+                </ClientOnly>
+              </div>
 
-              <!-- Guided tour: loaded and started only from this button. -->
-              <ClientOnly>
-                <div class="d-flex justify-center mb-4">
-                  <SiteTour />
-                </div>
-              </ClientOnly>
+              <!-- Guided tour: loaded and started only from this button (driver.js is
+                   imported inside start(), so the button itself renders on the server). -->
+              <div class="d-flex justify-center mb-4">
+                <SiteTour />
+              </div>
 
               <!-- Currency Converter Card -->
-              <VCard class="exchange-card hero-anim pa-6 mb-6" elevation="8">
+              <VCard class="exchange-card hero-anim pa-3 pa-sm-6 mb-6" elevation="8">
                 <h2 class="text-h5 font-weight-bold mb-6 text-center">
                   {{ t('quickExchange') }}
                 </h2>
@@ -222,7 +229,7 @@
                           <StaleRateChip :entry="selectedQuoteFrozen" class="ml-2" />
                         </div>
                         <VRow align="center" justify="center" class="conversion-display-row">
-                          <VCol cols="5" sm="4" class="text-center align-self-start">
+                          <VCol sm="4" class="conversion-side text-center align-self-start">
                             <div class="conversion-display">
                               <span class="amount-text">
                                 {{ formatCurrency(isForward ? amount : leftForReverse) }}
@@ -237,7 +244,8 @@
                             </div>
                           </VCol>
 
-                          <VCol cols="2" sm="4" class="text-center">
+                          <!-- `auto` on xs: a 2/12 column squeezed the toggle to 23 px. -->
+                          <VCol cols="auto" sm="4" class="text-center">
                             <DirectionToggle
                               :is-forward="isForward"
                               size="32"
@@ -246,7 +254,7 @@
                             />
                           </VCol>
 
-                          <VCol cols="5" sm="4" class="text-center align-self-start">
+                          <VCol sm="4" class="conversion-side text-center align-self-start">
                             <div class="conversion-display">
                               <span class="amount-text converted" data-testid="result-amount">
                                 {{ formatCurrency(desiredRightAmount) }}
@@ -506,7 +514,10 @@
                                   </div>
                                   <div class="rate-type text-caption">
                                     {{ intentIsSellingSubject ? t('sell') : t('buy') }}
-                                    {{ t('codes.' + subjectCode) }}
+                                    <span class="d-sm-none">{{ subjectCode }}</span>
+                                    <span class="d-none d-sm-inline">{{
+                                      ' ' + t('codes.' + subjectCode)
+                                    }}</span>
                                   </div>
                                   <RateAmountComparison
                                     :amount="comparisonSubjectAmount"
@@ -571,7 +582,10 @@
                                   </div>
                                   <div class="rate-type text-caption">
                                     {{ intentIsSellingSubject ? t('buy') : t('sell') }}
-                                    {{ t('codes.' + subjectCode) }}
+                                    <span class="d-sm-none">{{ subjectCode }}</span>
+                                    <span class="d-none d-sm-inline">{{
+                                      ' ' + t('codes.' + subjectCode)
+                                    }}</span>
                                   </div>
                                   <RateAmountComparison
                                     :amount="comparisonSubjectAmount"
@@ -612,9 +626,9 @@
                   {{ usdHeadline }}
                 </p>
 
-                <ClientOnly>
-                  <SavingsHighlight class="hero-savings" />
-                </ClientOnly>
+                <!-- Server-rendered: it reads only the shared rates the page already awaits, and
+                     inside <ClientOnly> it appeared after hydration and pushed everything below. -->
+                <SavingsHighlight class="hero-savings" />
 
                 <div class="hero-actions">
                   <ShareButtons />
@@ -676,7 +690,7 @@
                   <span class="house-rank">{{ i + 1 }}</span>
                   <VChip
                     :color="exchange.isRegulated ? 'success' : 'warning'"
-                    size="x-small"
+                    size="small"
                     variant="flat"
                     class="house-badge"
                   >
@@ -1175,7 +1189,7 @@ import { useLocalePath } from '#imports'
 import { prLabel } from '~/utils/pageRanking'
 import { topicOf, type TopPageRow, type TopPagesSnapshot } from '~/utils/topPages'
 import DirectionToggle from '@/components/DirectionToggle.vue'
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, onServerPrefetch, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { HOME_FAQ_IDS, type FaqItem } from '~/utils/faqAnswers'
 import { quotesForCurrency, rankUsableQuotes, type CurrencyCode } from '~/utils/currencyPages'
@@ -1196,6 +1210,8 @@ import {
   type ExchangeChannelFilter,
 } from '@/utils/exchangeChannel'
 import { dedupeDepartmentNames, sameDepartment } from '@/utils/departments'
+import { replaceQueryInPlace } from '@/utils/historyQuery'
+import { formatUyuCurrency, keepCurrency } from '@/utils/homeConverter'
 
 /** Cuántas guías muestra la portada. */
 const HOME_GUIDES = 6
@@ -1259,9 +1275,21 @@ const localePath = useLocalePath()
 // Shared, deduped exchange-rates fetch (the home trend modules use the same
 // `useExchangeRates` cache key) — the calculator reads from it instead of
 // issuing its own second identical request for the dataset.
-const { rows: sharedRows, pending: sharedPending, realRows: sharedRealRows } = useExchangeRates()
+const {
+  rows: sharedRows,
+  pending: sharedPending,
+  realRows: sharedRealRows,
+  ready: ratesReady,
+} = useExchangeRates()
 const route = useRoute()
-const router = useRouter()
+
+// The instant of the server render, taken once and carried in the payload, so the server and the
+// hydrating browser print the same date. `/` is cached at the edge for an hour: HTML rendered at
+// 23:30 hydrates after midnight, and a `new Date()` read on each side wrote two different days
+// into the hero answer (a hydration mismatch) and into the WebPage JSON-LD (unhead then appended a
+// second block; see tests/unit/headHydrationParity.test.ts, which allows ONE clock-reading
+// useState per page — the hero and the JSON-LD share this one).
+const renderedAt = useState('home-rendered-at', () => Date.now()).value
 
 // SSR-rendered, self-contained answer to "¿a cuánto está el dólar hoy?" so the
 // figure is visible plain text (not only inside the FAQ accordion / schema),
@@ -1304,7 +1332,7 @@ const usdHeadline = computed<string | null>(() => {
   const lang = dateLocale(locale.value)
   const fmt = (n: number) =>
     n.toLocaleString(lang, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  const date = new Date().toLocaleDateString(lang, {
+  const date = new Date(renderedAt).toLocaleDateString(lang, {
     timeZone: 'America/Montevideo',
     day: 'numeric',
     month: 'long',
@@ -1393,36 +1421,26 @@ const saveFormData = () => {
   }
 }
 
-// Get initial values from query params, localStorage, or defaults
-function getInitialString(
-  queryValue: string | undefined,
-  storedValue: string | undefined,
-  defaultValue: string
-): string {
-  if (queryValue !== undefined && queryValue !== null && queryValue !== '') return queryValue
-  if (storedValue !== undefined && storedValue !== null) return storedValue
-  return defaultValue
+// Initial values come from the query params or the defaults. The form saved in this browser is
+// NOT read during setup: the server has no localStorage and its HTML (cached at the edge, shared
+// by every visitor) carries the query/default form, so a returning visitor's first client render
+// must match it or hydration throws the converter away. The saved form is applied in onMounted
+// (`restoreStoredForm`), after hydration, for every field the URL does not set.
+const queryString = (value: unknown): string | undefined =>
+  typeof value === 'string' && value !== '' ? value : undefined
+
+// The amount the URL asks for, or none.
+const queryAmount = (): number | null => {
+  const value = Number(route.query.amount)
+  return value && value > 0 ? value : null
 }
 
-const storedData = getStoredFormData()
-
 // Use input refs for v-models
-const selectedCurrencyInput = ref(
-  getInitialString(route.query.from as string, storedData?.from, 'USD')
-)
-const selectedTargetCurrencyInput = ref(
-  getInitialString(route.query.to as string, storedData?.to, 'UYU')
-)
+const selectedCurrencyInput = ref(queryString(route.query.from) ?? 'USD')
+const selectedTargetCurrencyInput = ref(queryString(route.query.to) ?? 'UYU')
 // Numeric source of truth for the entered amount (kept as a number so all
 // downstream math/toggling stays unchanged).
-const amountInput = ref<number>(
-  (() => {
-    const queryAmount = Number(route.query.amount)
-    if (queryAmount && queryAmount > 0) return queryAmount
-    if (storedData?.amount && storedData.amount > 0) return storedData.amount
-    return 100
-  })()
-)
+const amountInput = ref<number>(queryAmount() ?? 100)
 
 // Text-field-facing buffer for the entered amount. Deliberately NOT formatted
 // with es-UY thousands separators ("."), and never reformatted while the
@@ -1484,15 +1502,25 @@ const isActiveShortcut = (pair: CurrencyPair): boolean =>
   selectedCurrency.value === pair.from && selectedTargetCurrency.value === pair.to
 
 // Exchange house selector - 'best' means show best rate
-const selectedExchangeHouseInput = ref(
-  getInitialString(route.query.house as string, storedData?.exchangeHouse, 'best')
-)
+const selectedExchangeHouseInput = ref(queryString(route.query.house) ?? 'best')
 const selectedExchangeHouse = ref(selectedExchangeHouseInput.value)
 
 // selectedCurrency, selectedTargetCurrency, and amount are refs, set manually on button click
 const selectedCurrency = ref(selectedCurrencyInput.value)
 const selectedTargetCurrency = ref(selectedTargetCurrencyInput.value)
 const amount = ref(amountInput.value)
+
+// The two currency selects can be cleared (their clear icon emits null). An empty currency is not
+// a choice: the converter would copy it on the next tap and stop converting. Put the previous
+// currency back instead (utils/homeConverter.ts, keepCurrency).
+watch(selectedCurrencyInput, (next, previous) => {
+  const kept = keepCurrency(next, previous, selectedCurrency.value || 'USD')
+  if (kept !== next) selectedCurrencyInput.value = kept
+})
+watch(selectedTargetCurrencyInput, (next, previous) => {
+  const kept = keepCurrency(next, previous, selectedTargetCurrency.value || 'UYU')
+  if (kept !== next) selectedTargetCurrencyInput.value = kept
+})
 // Rounding helper (shared)
 const round2 = (n: number) => Math.round((Number(n) + Number.EPSILON) * 100) / 100
 const round4 = (n: number) => {
@@ -1568,13 +1596,14 @@ const departmentOptions = computed(() => {
 // empty market forever, with an empty state blaming a place that does not
 // exist. Resolve it against the live list (slug-based, so `?dep=paysandu` and
 // `?dep=PAYSANDÚ` both land), and fall back to the whole country if it is junk.
-watch(departmentOptions, options => {
+const reconcileDepartmentFilter = (options: typeof departmentOptions.value) => {
   if (options.length <= 1 || departmentFilter.value === ALL_DEPARTMENTS) return
   const match = options.find(
     o => o.value !== ALL_DEPARTMENTS && sameDepartment(o.value, departmentFilter.value)
   )
   departmentFilter.value = match ? match.value : ALL_DEPARTMENTS
-})
+}
+watch(departmentOptions, reconcileDepartmentFilter)
 
 /** `SAN JOSÉ` -> `San José`; the API stores departments uppercased. */
 function titleCaseDepartment(name: string): string {
@@ -1871,12 +1900,10 @@ const dualConversion = ref({
 
 // UI direction: forward (left->right) vs reverse (right->left)
 const isForward = ref(true)
-// Initialize from query param dir=f|r, then localStorage (defaults to forward)
+// Initialize from query param dir=f|r (defaults to forward); the saved form, in onMounted
 if (typeof route.query.dir === 'string') {
   const lower = route.query.dir.toLowerCase()
   isForward.value = !(lower === 'r' || lower === 'reverse' || lower === '0' || lower === 'false')
-} else if (storedData?.dir !== undefined) {
-  isForward.value = storedData.dir
 }
 // We keep the right-hand amount constant across direction toggles
 const desiredRightAmount = ref(0)
@@ -2152,41 +2179,9 @@ const getRateCardColor = (index: number): string => {
 }
 
 // Methods
-const formatCurrency = (value: number): string => {
-  // Use a more robust approach to ensure $ symbol is always shown
-  try {
-    let formatted = new Intl.NumberFormat('es-UY', {
-      style: 'currency',
-      currency: 'UYU',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value)
-
-    // Handle different mobile formats that might show UYU instead of $
-    if (formatted.includes('UYU')) {
-      // Replace UYU with $
-      formatted = formatted.replace(/UYU/g, '$')
-
-      // If $ is at the end, move it to the front
-      if (formatted.endsWith('$')) {
-        formatted = '$ ' + formatted.replace(/\$$/, '').trim()
-      }
-
-      // Ensure there's always a space after $
-      if (formatted.startsWith('$') && !formatted.startsWith('$ ')) {
-        formatted = formatted.replace(/^\$/, '$ ')
-      }
-
-      // Clean up extra spaces
-      formatted = formatted.replace(/\s+/g, ' ').trim()
-    }
-
-    return formatted
-  } catch {
-    // Fallback in case of any issues with Intl.NumberFormat
-    return `$ ${value.toLocaleString('es-UY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-  }
-}
+// One shared Intl.NumberFormat (utils/homeConverter.ts): the page built a new one on every call,
+// ~15 per render, and each converter tap re-renders the whole page.
+const formatCurrency = formatUyuCurrency
 
 // Function to update query parameters
 const updateQueryParams = () => {
@@ -2200,22 +2195,11 @@ const updateQueryParams = () => {
     dep: departmentFilter.value === ALL_DEPARTMENTS ? undefined : departmentFilter.value,
   }
 
-  // Only update if parameters have actually changed
-  if (
-    route.query.from !== query.from ||
-    route.query.to !== query.to ||
-    route.query.amount !== query.amount ||
-    route.query.dir !== query.dir ||
-    route.query.house !== query.house ||
-    route.query.canal !== query.canal ||
-    route.query.dep !== query.dep
-  ) {
-    try {
-      router.push({ query })
-    } catch {
-      // Ignore navigation errors (e.g., duplicate navigation)
-    }
-  }
+  // In place, not through the router: a `router.push` per tap recomputed every RouterLink of the
+  // page, ran the route hooks and left one history entry per amount tried (utils/historyQuery.ts).
+  // Nothing on this page reads `route.query` after setup. It does nothing when the URL already
+  // says the same.
+  replaceQueryInPlace(query)
 }
 
 // Apply the shared exchange dataset to the calculator's local state.
@@ -2246,6 +2230,21 @@ watch(
   { immediate: true }
 )
 
+// On the server that immediate watcher runs exactly once, and it ran before the rates request
+// finished whenever that request was the slowest of the render (the three awaited useFetch above
+// are other, faster endpoints): the edge-cached HTML then shipped the "Cargando..." spinner, no
+// best-rate grid and none of the /historico links, and hydration swapped the whole card. Wait for
+// the rows before rendering and apply them the same way the browser will on hydration — the two
+// data watchers above (department spelling, a house the filters drop) run in the browser before
+// the hydrating render, and a server watcher never re-runs, so they are applied here too.
+onServerPrefetch(async () => {
+  await ratesReady()
+  applyExchangeData((sharedRows.value ?? []) as unknown as ExchangeItem[])
+  reconcileDepartmentFilter(departmentOptions.value)
+  if (filteredExchangeData.value.length) dropSelectedHouseIfFilteredOut()
+  initialLoading.value = false
+})
+
 // Add cleanup to prevent memory leaks
 onBeforeUnmount(() => {
   // Clear large data arrays to help garbage collection
@@ -2258,19 +2257,15 @@ onBeforeUnmount(() => {
 })
 
 const trackConvert = useTrack()
-const updateExchange = () => {
-  loading.value = true
+
+// The arithmetic half of a conversion: copy the form into the applied state and recompute. No
+// tracking, no URL, no storage — restoring the saved form on mount uses it too, and that is not a
+// conversion the visitor asked for.
+const applyForm = () => {
   selectedCurrency.value = selectedCurrencyInput.value
   selectedTargetCurrency.value = selectedTargetCurrencyInput.value
   selectedExchangeHouse.value = selectedExchangeHouseInput.value
   amount.value = Number(amountInput.value) || 0
-  // GA4: the converter is the core feature — track usage (currencies + whether a
-  // specific house was picked) to see what people actually look up.
-  trackConvert('convert', {
-    from: selectedCurrency.value,
-    to: selectedTargetCurrency.value,
-    house: selectedExchangeHouse.value || 'best',
-  })
   setConversionRate()
   // Preserve the shown result when inverted; only reset desiredRightAmount in forward mode
   if (isForward.value) {
@@ -2292,9 +2287,25 @@ const updateExchange = () => {
     // Show exactly the entered left amount on the left side
     leftForReverse.value = round2(amount.value)
   }
+}
+
+const updateExchange = () => {
+  loading.value = true
+  applyForm()
   updateQueryParams()
-  // Save form data to localStorage
-  saveFormData()
+  // GA4: the converter is the core feature — track usage (currencies + whether a
+  // specific house was picked) to see what people actually look up. The payload is read now; the
+  // gtag call and the localStorage write wait for the next task, out of the tap, so the browser
+  // paints the result first (each ran inside the click handler of a 1,072 ms tap at 4x CPU).
+  const converted = {
+    from: selectedCurrency.value,
+    to: selectedTargetCurrency.value,
+    house: selectedExchangeHouse.value || 'best',
+  }
+  setTimeout(() => {
+    trackConvert('convert', converted)
+    saveFormData()
+  }, 0)
   setTimeout(() => {
     loading.value = false
   }, 200)
@@ -2327,19 +2338,64 @@ const toggleDirection = () => {
   setConversionRate(true)
   // Reflect current direction in the URL
   updateQueryParams()
-  // Save form data to localStorage
-  saveFormData()
+  // Save form data to localStorage, out of the tap (a swap is not a conversion: no GA4 event)
+  setTimeout(saveFormData, 0)
 }
 
+// Apply the form saved in this browser, for every field the URL does not set. Only after mount:
+// reading it during setup made a returning visitor's first render differ from the shared server
+// HTML. Not a conversion: no `convert` event and no URL write.
+const restoreStoredForm = () => {
+  const stored = getStoredFormData()
+  if (!stored) return
+  let changed = false
+  if (
+    queryString(route.query.from) === undefined &&
+    stored.from &&
+    stored.from !== selectedCurrencyInput.value
+  ) {
+    selectedCurrencyInput.value = stored.from
+    changed = true
+  }
+  if (
+    queryString(route.query.to) === undefined &&
+    stored.to &&
+    stored.to !== selectedTargetCurrencyInput.value
+  ) {
+    selectedTargetCurrencyInput.value = stored.to
+    changed = true
+  }
+  if (queryAmount() === null && stored.amount > 0 && stored.amount !== amountInput.value) {
+    amountInput.value = stored.amount
+    amountDisplay.value = plainAmountString(stored.amount)
+    changed = true
+  }
+  if (
+    queryString(route.query.house) === undefined &&
+    stored.exchangeHouse &&
+    stored.exchangeHouse !== selectedExchangeHouseInput.value
+  ) {
+    selectedExchangeHouseInput.value = stored.exchangeHouse
+    changed = true
+  }
+  if (typeof route.query.dir !== 'string' && typeof stored.dir === 'boolean') {
+    changed ||= isForward.value !== stored.dir
+    isForward.value = stored.dir
+  }
+  if (!changed) return
+  applyForm()
+  // A saved house that no longer quotes in the active view falls back to "best", as it did when
+  // the saved form was read before the rates arrived.
+  if (filteredExchangeData.value.length) dropSelectedHouseIfFilteredOut()
+}
+onMounted(restoreStoredForm)
+
 // SEO Configuration - Comprehensive JSON-LD Schema Markup
-// The day of the server render, reused from the payload. `/` is cached at the edge for an hour,
-// so HTML rendered at 23:30 UTC hydrates after midnight: with `new Date()` here the WebPage block
-// read another day, unhead could not match the server's <script> and appended a second one
+// The day of the server render, from `renderedAt` (payload). `/` is cached at the edge for an
+// hour, so HTML rendered at 23:30 UTC hydrates after midnight: with `new Date()` here the WebPage
+// block read another day, unhead could not match the server's <script> and appended a second one
 // (see pages/cotizacion/[moneda].vue and tests/unit/headHydrationParity.test.ts).
-const currentDate = useState(
-  'home-rendered-day',
-  () => new Date().toISOString().split('T')[0]
-).value
+const currentDate = new Date(renderedAt).toISOString().split('T')[0]
 
 // 1. WebApplication Schema
 const webApplicationSchema = computed(() => ({
@@ -2726,20 +2782,28 @@ useSeoMeta({
 }
 
 /* ---- Hero ---- */
+/* Soft top spotlight just behind the hero content, painted as the section's own background.
+   It was a `::before` at `inset: -25% -10% auto -10%; height: 80%`, i.e. sized in percentages of
+   a hero ~4,500 px tall on a phone: every change of the hero's height moved it, and Chrome
+   counted its whole transparent box as shifted (CLS 0.78 at 390 px, 0.29 at 360 px, 0.24 on
+   desktop, with the ads blocked). A background never produces a layout shift. Same gradient and
+   same geometry, now in px: the box is 120 % of the section's width (-10 % on each side) and
+   the old 80 %/-25 % of a hero 4,500 px tall on a phone and ~2,300 px from md up. */
 .hero-section {
   position: relative;
   overflow: hidden;
   padding-top: clamp(20px, 4vw, 48px);
+  background-image: radial-gradient(58% 100% at 50% 0%, rgba(99, 102, 241, 0.2), transparent 70%);
+  background-repeat: no-repeat;
+  background-size: 120% 3600px;
+  background-position: 50% -1125px;
 }
 
-/* Soft top spotlight just behind the hero content. */
-.hero-section::before {
-  content: '';
-  position: absolute;
-  inset: -25% -10% auto -10%;
-  height: 80%;
-  background: radial-gradient(58% 100% at 50% 0%, rgba(99, 102, 241, 0.2), transparent 70%);
-  pointer-events: none;
+@media (min-width: 960px) {
+  .hero-section {
+    background-size: 120% 1840px;
+    background-position: 50% -575px;
+  }
 }
 
 .min-height-hero {
@@ -2763,10 +2827,14 @@ useSeoMeta({
 .hero-eyebrow.hero-anim {
   animation-delay: 0.05s;
 }
+/* The H1 and the subtitle are the LCP candidates: they rise but never start transparent, so the
+   largest paint is the first paint (it waited for the fade: 1,388 ms against a load of 810). */
 .hero-title.hero-anim {
+  animation-name: heroRise;
   animation-delay: 0.12s;
 }
 .hero-subtitle.hero-anim {
+  animation-name: heroRise;
   animation-delay: 0.2s;
 }
 .hero-trust.hero-anim {
@@ -2940,6 +3008,16 @@ useSeoMeta({
   }
 }
 
+@keyframes heroRise {
+  from {
+    transform: translateY(24px);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
 /* ---- Exchange (converter) card: glass centerpiece ---- */
 .exchange-card {
   position: relative;
@@ -2973,6 +3051,59 @@ useSeoMeta({
 .preset-chip:hover,
 .shortcut-chip:hover {
   transform: translateY(-1px);
+}
+
+/* The most tapped targets of the page were 26 px (chips) and 28 px ("Copiar resultado") tall.
+   Each gets a 44 px tall hit area from an out-of-flow, transparent `::before`, so the chip, the
+   button and the rows keep their size.
+   - `::before`, never `::after`: VBtn 4.2 draws its :focus-visible ring on `.v-btn::after`
+     (`pointer-events: none`, a 2 px border at the button's own box). VChip and VBtn ship no
+     `::before`, so nothing of theirs is touched. `pointer-events: auto` is explicit so the area
+     takes the tap even if a library rule ever reaches it.
+   - VChip and VBtn ship `overflow: hidden`, which would clip the pseudo-element for hit-testing
+     too, so it is lifted. That clip was also what rounded their hover/focus overlay and tonal
+     underlay (absolute, 100 % box, NO inherited radius); `border-radius: inherit` below keeps
+     those highlights inside the pill. The ripple container already inherits the radius.
+   - The chip rows wrap with an 8 px row gap (`ga-2`). A centred 44 px area would reach 9 px into
+     that gap and cover the bottom pixel of the chip above, so the chips' area is asymmetric:
+     8 px up (exactly the gap) and the rest down. Downward it only overlaps the lower row's chip,
+     which comes later in the DOM and so stays on top of it for hit-testing. */
+.preset-chip,
+.shortcut-chip,
+.copy-result-btn {
+  overflow: visible;
+}
+
+.preset-chip :deep(.v-chip__overlay),
+.preset-chip :deep(.v-chip__underlay),
+.shortcut-chip :deep(.v-chip__overlay),
+.shortcut-chip :deep(.v-chip__underlay),
+.copy-result-btn :deep(.v-btn__overlay),
+.copy-result-btn :deep(.v-btn__underlay) {
+  border-radius: inherit;
+}
+
+.preset-chip::before,
+.shortcut-chip::before,
+.copy-result-btn::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  pointer-events: auto;
+  background: transparent;
+}
+
+.preset-chip::before,
+.shortcut-chip::before {
+  top: -8px;
+  transform: translateX(-50%);
+}
+
+.copy-result-btn::before {
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .shortcut-chips {
@@ -3060,22 +3191,43 @@ useSeoMeta({
 
 /* Mobile responsiveness for conversion result */
 @media (max-width: 600px) {
-  .conversion-result {
-    .conversion-display-row {
-      .v-col {
-        margin-bottom: 8px;
-      }
-    }
+  /* One line on phones: amount, toggle (48 px, `auto` column), amount. The side columns are
+     grow columns, whose Vuetify min-width is their min-content ("estadounidenses", an amount
+     glued by a NBSP), and the row wraps: that dropped the answer onto a second line at 320
+     and 360. `nowrap` + `min-width: 0` keep the three on one line, an 8 px gap leaves the
+     sides as wide as the old 5/12 columns, and the text wraps inside its column instead of
+     running under the toggle. */
+  .conversion-result .conversion-display-row {
+    flex-wrap: nowrap;
+    --v-col-gap-x: 8px;
+  }
 
-    .conversion-display {
-      .amount-text {
-        font-size: 1.2em;
-      }
+  .conversion-result .conversion-display-row .v-col {
+    margin-bottom: 8px;
+  }
 
-      .currency-name {
-        font-size: 0.8em;
-      }
-    }
+  .conversion-result .conversion-side,
+  .conversion-result .conversion-display {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .conversion-result .conversion-display .amount-text {
+    font-size: 1.2em;
+    overflow-wrap: anywhere;
+  }
+
+  .conversion-result .conversion-display .currency-name {
+    font-size: 0.8em;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+  }
+}
+
+/* At 320-399 px a side column is ~83-100 px: "$ 4.050,00" at 1.2em is ~89 px. */
+@media (max-width: 399.98px) {
+  .conversion-result .conversion-display .amount-text {
+    font-size: 1.05em;
   }
 }
 
@@ -3410,9 +3562,9 @@ useSeoMeta({
 }
 
 @media (max-width: 600px) {
-  .exchange-card {
-    padding: 18px !important;
-  }
+  /* The converter card pads with `pa-3 pa-sm-6` (12 px on a phone). An 18px !important here
+     outranked the utility and, with three more nested paddings, left the rate cards narrower
+     than "estadounidenses". */
 
   .house-rate {
     font-size: 1.25rem;

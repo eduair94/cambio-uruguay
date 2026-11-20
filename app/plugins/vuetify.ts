@@ -1,8 +1,10 @@
 import { h } from 'vue'
 import { createVuetify } from 'vuetify'
 import { DEFAULT_THEME_MODE } from '~/utils/theme'
-import { LOCALE_PREFIX_RE, RTL_LOCALE_CODES } from '~/utils/locales'
+import { RTL_LOCALE_CODES } from '~/utils/locales'
+import { VUETIFY_DATE_LOCALES, followRouteLocale, vuetifyLocaleFor } from '~/utils/vuetifyLocale'
 import { aliases as mdiAliases, mdi } from 'vuetify/iconsets/mdi'
+import { en, es, pt } from 'vuetify/locale'
 import {
   VAlert,
   VApp,
@@ -106,21 +108,23 @@ const MediumIcon = brandIcon(
 )
 
 export default defineNuxtPlugin(nuxtApp => {
-  // Right-to-left locales: VApp sets `direction` itself (`.v-locale--is-ltr`), which would win over
-  // `<html dir="rtl">`, so Vuetify has to know. The URL prefix decides, like everything about the
-  // locale; switching to or from a machine-translated locale reloads the page
-  // (plugins/auto-translate.ts), so this is read once per page load. The other locales keep
-  // Vuetify's default 'en' messages, as before.
+  // The URL prefix decides Vuetify's language, like everything about the locale
+  // (utils/vuetifyLocale.ts): Spanish without a prefix, en and pt on theirs, the right-to-left
+  // codes as they are (VApp sets `direction` itself, `.v-locale--is-ltr`, which would win over
+  // `<html dir="rtl">`, so Vuetify has to know) and 'en' for the other machine-translated ones.
+  // Server and client read the same path, so the footer of a table hydrates with the same text.
   const path = import.meta.server ? useRequestURL().pathname : window.location.pathname
-  const prefix = path.match(LOCALE_PREFIX_RE)?.[1]
-  const rtlLocale = prefix && RTL_LOCALE_CODES.includes(prefix) ? prefix : null
   const vuetify = createVuetify({
     ssr: true,
     locale: {
-      locale: rtlLocale ?? 'en',
+      locale: vuetifyLocaleFor(path),
       fallback: 'en',
+      messages: { en, es, pt },
       rtl: Object.fromEntries(RTL_LOCALE_CODES.map(code => [code, true])),
     },
+    // The date picker's month and weekday names: 'es-UY' writes "setiembre" (utils/format.ts,
+    // dateLocale), plain 'es' would write "septiembre".
+    date: { locale: { ...VUETIFY_DATE_LOCALES } },
     // Vuetify 4 shrank the breakpoint thresholds (md 960→840, lg 1280→1145,
     // xl 1920→1545, xxl 2560→2138). Restore the v3 values so `useDisplay()`
     // (mdAndUp, mobile, …) reflows at the same widths as the CSS grid — whose
@@ -268,4 +272,6 @@ export default defineNuxtPlugin(nuxtApp => {
   })
 
   nuxtApp.vueApp.use(vuetify)
+  // es ↔ en ↔ pt switch without a reload: the locale read above would stay behind.
+  if (import.meta.client) followRouteLocale(useRouter(), vuetify.locale.current)
 })

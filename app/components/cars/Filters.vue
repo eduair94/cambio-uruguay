@@ -101,7 +101,14 @@
         Más filtros
         <span v-if="moreCount" class="car-filters__count">({{ moreCount }})</span>
       </summary>
-      <div class="car-filters__group-fields">
+      <!--
+        Cerrado no se monta: eran doce controles de Vuetify, cerca de la mitad de los ~470 nodos
+        que sumaba abrir el cajón, y nadie los veía. Los valores no viven en los controles sino en
+        `draft`, así que lo elegido acá o lo que trae la URL se sigue aplicando con el grupo
+        cerrado. En una página con el cuerpo traducido por máquina se monta siempre (ver
+        `translatedBody`).
+      -->
+      <div v-if="moreOpen || translatedBody" class="car-filters__group-fields">
         <VSelect
           v-model="draft.fuel"
           :items="fuelItems"
@@ -223,6 +230,7 @@ import {
   type CarFacet,
   type CarsQuery,
 } from '~/utils/cars'
+import { isAutoTranslateLocale } from '~/utils/autoTranslate'
 
 const props = withDefaults(
   defineProps<{
@@ -292,6 +300,20 @@ const moreOpen = ref(moreCount.value > 0)
 watch(moreCount, count => {
   if (count > 0) moreOpen.value = true
 })
+
+/*
+ * En /en/, /pt/ y los demás idiomas por máquina el grupo se monta aunque esté cerrado. La
+ * traducción del cuerpo (plugins/auto-translate.ts) manda al navegador sólo las frases que usó el
+ * HTML del servidor, y lo que se monta después sin estar en ese mapa queda en español: «Más
+ * filtros» abriría un bloque en castellano adentro de una página en inglés. Se lee una sola vez,
+ * del estado que el servidor deja en el payload, así que servidor y navegador dibujan lo mismo; el
+ * idioma sale de la URL, no del visitante.
+ */
+const autoTranslate = useState<{ locale: string; embargoed: boolean } | null>('auto-translate')
+const translatedBody =
+  !!autoTranslate.value &&
+  isAutoTranslateLocale(autoTranslate.value.locale) &&
+  !autoTranslate.value.embargoed
 
 /*
  * Toda faceta se lee con `?? []`. No es paranoia de tipos: durante una ventana de despliegue

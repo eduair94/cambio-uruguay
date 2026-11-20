@@ -26,10 +26,15 @@
                       }}
                     </h1>
                     <div class="d-flex flex-wrap ga-2 align-center mt-1">
-                      <v-chip color="secondary" size="small">
+                      <v-chip color="secondary" size="small" class="hero-chip">
                         {{ route.params.currency }}
                       </v-chip>
-                      <v-chip v-if="route.params.type" color="accent" size="small">
+                      <v-chip
+                        v-if="route.params.type"
+                        color="accent"
+                        size="small"
+                        class="hero-chip"
+                      >
                         {{ (route.params.type as string).toUpperCase() }}
                       </v-chip>
                     </div>
@@ -48,7 +53,7 @@
                 </div>
               </v-col>
               <v-col cols="12" md="4" class="text-center text-md-right">
-                <div class="d-flex flex-column flex-md-row justify-start justify-md-end ga-2">
+                <div class="d-flex flex-row flex-wrap justify-start justify-md-end ga-2">
                   <v-btn
                     v-if="isBcu || evolutionData.localData.website"
                     :href="isBcu ? BCU_HISTORY_SOURCE : evolutionData.localData.website"
@@ -273,6 +278,7 @@
                   density="compact"
                   :loading="loading"
                   hide-details
+                  aria-label="Período de análisis"
                   @update:model-value="onPeriodChange"
                 >
                   <template #prepend-inner>
@@ -426,9 +432,7 @@
           <v-card>
             <v-card-title class="d-flex align-center flex-wrap ga-3 py-3">
               <v-icon start>mdi-chart-line</v-icon>
-              {{
-                isBcu ? bcuSeriesLabel : `${$t('evolucionCotizaciones')} - ${route.params.currency}`
-              }}
+              <span class="text-wrap">{{ chartLabel }}</span>
               <v-spacer />
               <v-btn-toggle v-model="chartType" mandatory density="compact">
                 <v-btn
@@ -445,26 +449,21 @@
               </v-btn-toggle>
             </v-card-title>
             <v-card-text>
-              <div
-                :class="['chart-container']"
-                role="img"
-                :aria-label="
-                  isBcu
-                    ? bcuSeriesLabel
-                    : `${$t('evolucionCotizaciones')} - ${route.params.currency}`
-                "
-                style="position: relative; height: 400px"
-              >
+              <!-- The name goes on the <canvas role="img"> that vue-chartjs renders, not on this
+                   wrapper: a named div around an unnamed img role is what axe flagged. -->
+              <div :class="['chart-container']" style="position: relative; height: 400px">
                 <Line
                   v-if="chartType === 'line'"
                   :data="chartData"
                   :options="chartOptions"
+                  :aria-label="chartLabel"
                   style="position: absolute; top: 0; left: 0; width: 100%; height: 100%"
                 />
                 <Bar
                   v-else
                   :data="chartData"
                   :options="chartOptions"
+                  :aria-label="chartLabel"
                   style="position: absolute; top: 0; left: 0; width: 100%; height: 100%"
                 />
               </div>
@@ -1032,6 +1031,10 @@ const bcuType = computed(() =>
   String(bcuRows.value[0]?.type ?? route.params.type ?? '').toUpperCase()
 )
 const bcuSeriesLabel = computed(() => bcuText.value.series(currencyName.value, bcuType.value))
+// The chart card's title, also the accessible name of its <canvas role="img">.
+const chartLabel = computed(() =>
+  isBcu.value ? bcuSeriesLabel.value : `${t('evolucionCotizaciones')} - ${route.params.currency}`
+)
 const bcuExplanation = computed(() =>
   bcuReferenceExplanation(currencyName.value, bcuType.value, locale.value)
 )
@@ -1718,11 +1721,16 @@ useHead(() => ({
   transition: transform 0.2s ease;
 }
 
-/* Glassmorphism effect for chips */
-.v-chip {
+/* Glassmorphism effect for the two chips in the blue header. Scoped to a class of
+   their own: a bare `.v-chip` here also reaches the chips this file passes to
+   VDataTable's slots, and turned every Compra/Venta value white on white. The text
+   is forced white because the tonal chip paints it with `.text-secondary` /
+   `.text-accent`, both !important (orange on glass did not read). */
+.hero-chip {
   backdrop-filter: blur(10px);
   background: rgba(255, 255, 255, 0.15) !important;
   border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff !important;
 }
 
 /* The generic "Histórico de Cotizaciones" label above the H1. It used to BE the

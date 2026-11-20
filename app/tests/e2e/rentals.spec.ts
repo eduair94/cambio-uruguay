@@ -829,7 +829,7 @@ test.describe('rental directory', () => {
     await expect.poll(() => filterScroll.evaluate(element => element.scrollTop)).toBeGreaterThan(0)
     await expectInsideViewport(apply, page)
     await expectInsideViewport(reset, page)
-    const neighborhoods = page.getByRole('textbox', { name: 'Barrios o localidades', exact: true })
+    const neighborhoods = page.getByRole('combobox', { name: 'Barrios o localidades', exact: true })
     await neighborhoods.scrollIntoViewIfNeeded()
     await expectInsideViewport(neighborhoods, page)
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeCloseTo(resultScroll, 0)
@@ -1287,7 +1287,7 @@ test.describe('rental directory', () => {
       })
       const area = page.getByRole('spinbutton', { name: 'Superficie desde (m²)', exact: true })
       const pets = page.getByRole('checkbox', { name: 'Admite mascotas', exact: true })
-      const neighborhoods = page.getByRole('textbox', {
+      const neighborhoods = page.getByRole('combobox', {
         name: 'Barrios o localidades',
         exact: true,
       })

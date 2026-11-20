@@ -1,9 +1,10 @@
 <template>
-  <section
+  <component
+    :is="labelledBy ? 'div' : 'section'"
     v-if="series"
     class="price-history"
     :class="{ 'price-history--bare': bare }"
-    :aria-labelledby="labelledBy ?? headingId"
+    :aria-labelledby="labelledBy ? undefined : headingId"
   >
     <h3 v-if="!labelledBy" :id="headingId" class="price-history__title">
       {{ title ?? t('title') }}
@@ -45,7 +46,7 @@
     <p class="price-history__note">
       {{ t('method', { points: pointsText, date: formatDay(series.firstSeen) }) }}
     </p>
-  </section>
+  </component>
 </template>
 
 <script setup lang="ts">
@@ -67,7 +68,10 @@ const props = defineProps<{
    * que separa sus secciones con filetes (alquiler). Lo pide la ficha que ya pone su propio h2.
    */
   bare?: boolean
-  /** El id del h2 de la sección que lo contiene; con él, el bloque no repite su título. */
+  /**
+   * El id del h2 de la sección que lo contiene; con él, el bloque no repite su título ni es otra
+   * región: la sección de la ficha ya lo es, y dos regiones con un nombre son un `landmark-unique`.
+   */
   labelledBy?: string
 }>()
 

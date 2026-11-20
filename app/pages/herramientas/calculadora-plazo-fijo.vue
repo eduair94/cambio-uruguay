@@ -156,6 +156,7 @@
                 size="small"
                 variant="tonal"
                 color="primary"
+                class="rate-use-btn"
                 :aria-label="`Usar ${pct(offer.rate)} de ${offer.bankName}, ${offer.channelLabel}`"
                 @click="applyRate(offer.rate)"
               >
@@ -226,7 +227,13 @@
             >, {{ BCU_DEPOSIT_RATES.period }}. Total del sistema (personas y empresas):
             {{ marketTotal == null ? 'sin dato' : pct(marketTotal) }}.
           </p>
-          <VBtn size="small" variant="tonal" color="primary" @click="applyRate(marketRate)">
+          <VBtn
+            size="small"
+            variant="tonal"
+            color="primary"
+            class="rate-use-btn"
+            @click="applyRate(marketRate)"
+          >
             Usar esta tasa
           </VBtn>
         </template>
@@ -908,6 +915,17 @@ const faq = [
 
 .table-scroll {
   overflow-x: auto;
+}
+
+/* En el teléfono «Usar» es la única acción de cada banco y medía 56x28: tamaño de botón por
+   defecto y 44 px de alto. Por CSS, no con el useDisplay de Vuetify: el HTML se cachea en el
+   borde y el servidor y el cliente dibujan el mismo marcado. */
+@media (max-width: 599.98px) {
+  .rate-use-btn {
+    min-height: 44px;
+    padding: 0 16px;
+    font-size: 0.875rem;
+  }
 }
 </style>
 
