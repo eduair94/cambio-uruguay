@@ -1,3 +1,6 @@
+import { readdirSync, readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { normalizeViteManifest, type Manifest } from 'vue-bundle-renderer'
 import {
@@ -5,8 +8,13 @@ import {
   getPrefetchLinks,
   getPreloadLinks,
   renderScripts,
+  renderStyles,
 } from 'vue-bundle-renderer/runtime'
-import { deferCataloguePrefetch } from '../../modules/catalogue-prefetch/policy'
+import {
+  deferCataloguePrefetch,
+  moduleNames,
+  pagesWithoutChunk,
+} from '../../modules/catalogue-prefetch/policy'
 
 const fixture = (): Manifest =>
   normalizeViteManifest({
@@ -333,5 +341,182 @@ describe('code that is only loaded on demand', () => {
     expect(manifest['utils/catalogue.ts']?.prefetch).toBe(false)
     expect(manifest['_common-hash.js']?.prefetch).toBe(true)
     expect(manifest['entry.js']?.prefetch).toBe(true)
+  })
+})
+
+// Cut from the client manifest of the production build of 2026-11-20 (commit 5b7833f8, public
+// build metadata): the entry with 20 of its 77 dynamic imports, the layout and its lazy
+// components, /dolar-hoy, and every static import of those. Two things in it that no hand-made
+// fixture had: three validator catalogues and the page /alquileres-uruguay lost their facade
+// (keyed `_<file>`, no `src`), and the page's lazy MapPropertyDetail imports the page's chunk.
+const here = dirname(fileURLToPath(import.meta.url))
+const appRoot = join(here, '../..')
+const realCut = JSON.parse(
+  readFileSync(join(here, 'fixtures/client-manifest-2026-11-20.json'), 'utf8')
+) as Manifest
+const realManifest = (): Manifest => {
+  const manifest = normalizeViteManifest(structuredClone(realCut))
+  // What @nuxtjs/i18n's own build:manifest hook does to the locale files.
+  for (const [id, resource] of Object.entries(manifest))
+    if (id.startsWith('i18n/locales/')) resource.prefetch = resource.preload = false
+  return manifest
+}
+const sourceNames = (dir: string) =>
+  readdirSync(join(appRoot, dir))
+    .filter(file => /\.[cm]?[jt]s$/.test(file) && !/\.d\.[cm]?ts$/.test(file))
+    .map(file => file.replace(/\.[cm]?[jt]s$/, ''))
+// What modules/catalogue-prefetch.ts passes in the build, from this checkout.
+const realOptions = {
+  utilsModules: sourceNames('utils'),
+  servicesModules: sourceNames('services'),
+  pageSources: ['pages/alquileres-uruguay.vue', 'pages/dolar-hoy.vue'],
+}
+// What Nuxt registers while rendering /dolar-hoy.
+const dolarHoy = () => ({ modules: new Set(['layouts/default.vue', 'pages/dolar-hoy.vue']) })
+// A hint by the chunk's preserved module name, or a stylesheet by its file's stem.
+const hintNames = (
+  manifest: Manifest,
+  request: Parameters<typeof getPrefetchLinks>[0],
+  as: 'script' | 'style'
+) => {
+  const byFile = new Map(Object.values(manifest).map(resource => [`/${resource.file}`, resource]))
+  return getPrefetchLinks(request, createRendererContext({ manifest }))
+    .filter(link => link.as === as)
+    .map(link => {
+      const resource = byFile.get(link.href)!
+      return as === 'script' ? resource.name! : resource.file.split('.')[0]!
+    })
+    .sort()
+}
+// App-wide lazy code, all of it reachable right after hydration: the auth middleware, the widget
+// layout, the i18n config and the locale helper, workbox, and the layout's search palette,
+// feedback block and login dialog.
+const APP_WIDE_SCRIPTS = [
+  'AuthDialog',
+  'FeedbackForm',
+  'PageHelpful',
+  'SearchPalette',
+  'SearchResults',
+  'assistantPrompt',
+  'auth',
+  'externalNavigation',
+  'i18n.config',
+  'trustpilot',
+  'widget',
+  'workbox-window.prod.es5',
+]
+const APP_WIDE_STYLES = [
+  'AuthDialog',
+  'FeedbackForm',
+  'PageHelpful',
+  'SearchPalette',
+  'SearchResults',
+  'widget',
+]
+
+describe('the production build of 2026-11-20', () => {
+  it('hints the rental page and the faceless catalogues on /dolar-hoy without the policy', () => {
+    const manifest = realManifest()
+    const scripts = hintNames(manifest, dolarHoy(), 'script')
+    expect(scripts).toEqual(
+      expect.arrayContaining(['alquileres-uruguay', 'comparativas', 'equiparCategoryPages'])
+    )
+    expect(scripts).toEqual(expect.arrayContaining(['monopatinModelos', 'firebaseAuthSync']))
+    expect(hintNames(manifest, dolarHoy(), 'style')).toEqual(
+      expect.arrayContaining(['alquileres-uruguay', 'ZoneBars', 'VPagination'])
+    )
+  })
+
+  it('leaves /dolar-hoy with the app-wide lazy code and nothing else', () => {
+    const manifest = realManifest()
+    deferCataloguePrefetch(manifest, realOptions)
+    // assistantPrompt is shared by the search palette and the rental page: while the page has no
+    // facade it is a deferred root and takes the hint with it. With the facade back
+    // (pages/alquileres-uruguay.vue imports MapPropertyDetail statically) it keeps it.
+    expect(hintNames(manifest, dolarHoy(), 'script')).toEqual(
+      APP_WIDE_SCRIPTS.filter(name => name !== 'assistantPrompt')
+    )
+    expect(hintNames(manifest, dolarHoy(), 'style')).toEqual(APP_WIDE_STYLES)
+  })
+
+  it('changes no preload, stylesheet or script of any page', () => {
+    const requests = [
+      {},
+      dolarHoy(),
+      { modules: new Set(['layouts/default.vue', 'components/rentals/MapPropertyDetail.vue']) },
+    ]
+    const before = createRendererContext({ manifest: realManifest() })
+    const manifest = realManifest()
+    deferCataloguePrefetch(manifest, realOptions)
+    const after = createRendererContext({ manifest })
+    for (const request of requests) {
+      expect(getPreloadLinks(request, after)).toEqual(getPreloadLinks(request, before))
+      expect(renderStyles(request, after)).toEqual(renderStyles(request, before))
+      expect(renderScripts(request, after)).toEqual(renderScripts(request, before))
+    }
+    const untouched = realManifest()
+    for (const [id, resource] of Object.entries(manifest))
+      expect({ ...resource, prefetch: untouched[id]!.prefetch }).toEqual(untouched[id])
+  })
+
+  it('defers the validator catalogues that lost their facade, with what only they reach', () => {
+    const manifest = realManifest()
+    deferCataloguePrefetch(manifest, realOptions)
+    for (const id of ['_CvD9iAPZ.js', '_UQ8xYZcM.js', '_CEW8SFT9.js', 'utils/currencyPages.ts'])
+      expect(manifest[id]?.prefetch, id).toBe(false)
+    // cardRewards and debitCards (comparativas), householdBills, monopatinFicha.
+    for (const id of ['_C0gQbGNa.js', '_B1Kyr0og.js', '_DNmmwYl8.js', '_im6dPkFZ.js'])
+      expect(manifest[id]?.prefetch, id).toBe(false)
+    // The names come from the checkout: the three catalogues are still utils modules.
+    expect(realOptions.utilsModules).toEqual(
+      expect.arrayContaining(['comparativas', 'equiparCategoryPages', 'monopatinModelos'])
+    )
+  })
+
+  it('keeps every app-wide lazy chunk warm', () => {
+    const manifest = realManifest()
+    deferCataloguePrefetch(manifest, realOptions)
+    for (const id of [
+      'node_modules/nuxt/dist/app/entry.js',
+      'layouts/default.vue',
+      'layouts/widget.vue',
+      'middleware/auth.ts',
+      'i18n/i18n.config.ts',
+      'node_modules/workbox-window/build/workbox-window.prod.es5.mjs',
+      'components/SearchPalette.vue',
+      'components/feedback/PageHelpful.vue',
+      'components/AuthDialog.vue',
+      'SearchPalette.DaGcxIWC.css',
+      'widget.Bb5Calbu.css',
+    ])
+      expect(manifest[id]?.prefetch, id).toBe(true)
+  })
+
+  it('reports the page that lost its chunk, and treats it as on demand', () => {
+    const manifest = realManifest()
+    expect(pagesWithoutChunk(manifest, realOptions.pageSources)).toEqual([
+      'pages/alquileres-uruguay.vue',
+    ])
+    deferCataloguePrefetch(manifest, realOptions)
+    expect(manifest['_Bww13dD9.js']?.prefetch).toBe(false)
+    // Its stylesheets go with it: every script that lists them lost its hint.
+    expect(manifest['alquileres-uruguay.CJ_6Vkmf.css']?.prefetch).toBe(false)
+    expect(manifest['ZoneBars.uC1BL1zF.css']?.prefetch).toBe(false)
+  })
+
+  it('is idempotent', () => {
+    const manifest = realManifest()
+    deferCataloguePrefetch(manifest, realOptions)
+    const once = structuredClone(manifest)
+    deferCataloguePrefetch(manifest, realOptions)
+    expect(manifest).toEqual(once)
+  })
+})
+
+describe('moduleNames', () => {
+  it('takes the basename of source modules and skips declarations and data files', () => {
+    expect(
+      moduleNames(['guides.ts', 'clarity.mjs', 'types.d.ts', 'temaIndex.json', 'mealprep'])
+    ).toEqual(['guides', 'clarity'])
   })
 })

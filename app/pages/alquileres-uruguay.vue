@@ -806,6 +806,12 @@ import { rentalAvailabilityCopy } from '~/utils/rentalAvailabilityMessages'
 import { useDisplay } from 'vuetify'
 import SearchFilters from '~/components/rentals/SearchFilters.vue'
 import SavedPanel from '~/components/rentals/SavedPanel.vue'
+// Estático a propósito, aunque sólo se pinte en el mapa: usa PropertyPhotoCarousel, que nada fuera
+// de esta página usa. Cargado con import() (como en #342), Rollup deja el carrusel dentro del chunk
+// de la página para dárselo, el chunk deja de ser la "fachada" de la página y el manifiesto la
+// pierde: la página salía sin su CSS y todo su código se anunciaba como prefetch en TODO el sitio.
+// Ver app/modules/catalogue-prefetch/README.md, "A chunk without a facade".
+import MapPropertyDetail from '~/components/rentals/MapPropertyDetail.vue'
 import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
 import RentalAlertDialogHost from '~/components/rentals/RentalAlertDialogHost.vue'
 import { rentalMessages } from '~/utils/rentalMessages'
@@ -874,13 +880,12 @@ import { rentalDisplayZone } from '~/utils/rentalDisplayPlace'
 import { shareMatchingOffer } from '~/utils/rentalSharedOffer'
 
 const LocationsMap = defineAsyncComponent(() => import('~/components/map/LocationsMap.vue'))
-// Sólo se pintan dentro del mapa o mientras se elige un punto: la lista no precarga su JS ni
-// espera su CSS (el de MapPropertyDetail arrastra el de contacto y servicios cercanos).
+// Sólo se pinta mientras se elige un punto: la lista no precarga su JS ni espera su CSS. Puede ser
+// diferido porque no comparte con la página nada que sea sólo de ella (su chunk importa la entrada
+// y rentalMessages, medido en el build del 20/11/2026).
 const ReferenceAddress = defineAsyncComponent(
   () => import('~/components/rentals/ReferenceAddress.vue')
 )
-const loadMapPropertyDetail = () => import('~/components/rentals/MapPropertyDetail.vue')
-const MapPropertyDetail = defineAsyncComponent(loadMapPropertyDetail)
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalMessages })
 const { t: globalT } = useI18n({ useScope: 'global' })
 const availability = useRentalAvailability()
@@ -1316,8 +1321,6 @@ const draftPointLabel = ref('')
 const pointError = ref(false)
 const mapReady = ref(false)
 function onReferenceMapReady() {
-  // El primer clic en un marcador no espera la red: el import queda en caché.
-  void loadMapPropertyDetail()
   mapReady.value = true
   // Address suggestions can arrive before the lazy map has finished initializing.
   if (pickingPoint.value && draftPoint.value) rentalMap.value?.focusPoint(draftPoint.value)
