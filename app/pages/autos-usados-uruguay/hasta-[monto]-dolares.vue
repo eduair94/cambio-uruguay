@@ -159,10 +159,15 @@ const SITE = 'https://cambio-uruguay.com'
 const GUIDES = [
   { to: '/comprar-auto-con-deuda-uruguay', label: 'Auto usado con deuda: qué se hereda' },
   {
+    to: '/guias/pagar-patente-sucive-uruguay',
+    label: 'Patente: cómo consultar en el SUCIVE cuánto debe el auto',
+  },
+  {
     to: '/guias/titulo-del-auto-uruguay',
     label: 'Título del auto: ¿hace falta o alcanza la libreta?',
   },
   { to: '/guias/transferir-un-auto-uruguay', label: 'Cómo transferir un auto' },
+  { to: '/cuanto-sale-transferir-un-auto-uruguay', label: 'Cuánto sale la transferencia' },
   {
     to: '/autos-chocados-y-con-deuda-uruguay',
     label: 'Autos chocados y con deuda: lo que declaran los avisos',

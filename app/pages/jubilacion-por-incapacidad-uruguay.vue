@@ -198,7 +198,13 @@
               Médica del Servicio de Certificaciones Médicas de ASSE declara a la persona
               imposibilitada para su empleo, ASSE sigue pagando el subsidio por
               <strong>hasta {{ prejubilatorioDays }} días</strong> contados desde ese dictamen, con
-              carácter prejubilatorio (Decreto-Ley 14.407, art. 17).
+              carácter prejubilatorio (Decreto-Ley 14.407, art. 17). Cuánto paga el subsidio por
+              enfermedad según tu sueldo lo calcula la
+              <NuxtLink
+                :to="localePath('/herramientas/calculadora-subsidio-por-enfermedad')"
+                class="cu-link"
+                >calculadora del subsidio por enfermedad</NuxtLink
+              >.
             </p>
             <p class="text-body-1 inc-prose">
               Ese adelanto no es un regalo: se descuenta de la primera liquidación jubilatoria y, si

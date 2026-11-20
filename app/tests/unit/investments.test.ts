@@ -783,13 +783,15 @@ describe('investments helpers', () => {
     expect(riskLabel('alto')).toBe('Alto')
     expect(riskLabel('variable')).toBe('Variable')
   })
-  it('minInvestmentLabel formats amount+currency or falls back to Sin mínimo', () => {
+  it('minInvestmentLabel formats amount+currency; a null is "No publicado" unless the source says there is none', () => {
     const withAmount: InvestmentOption = {
       ...INVESTMENTS[0]!,
       minInvestment: { amount: 1000, currency: 'USD' },
     }
     expect(minInvestmentLabel(withAmount)).toBe('US$ 1.000')
-    const noMin: InvestmentOption = { ...INVESTMENTS[0]!, minInvestment: null }
+    const unknown: InvestmentOption = { ...INVESTMENTS[0]!, minInvestment: null }
+    expect(minInvestmentLabel(unknown)).toBe('No publicado')
+    const noMin: InvestmentOption = { ...INVESTMENTS[0]!, minInvestment: null, noMinimum: true }
     expect(minInvestmentLabel(noMin)).toBe('Sin mínimo')
   })
   it('investmentsByCategory groups in INVESTMENT_CATEGORIES order with all options', () => {

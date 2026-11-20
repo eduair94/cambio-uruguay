@@ -1109,6 +1109,25 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Productos que te cambian la vida (/productos-que-te-cambian-la-vida-uruguay): lo que nombró
+      // r/uruguay en el hilo del 19/11/2026 con su precio de hoy, SÓLO Mercado Libre por el puente
+      // :9656 (classes/productosvida/registry.ts). El minuto :13 es el hueco libre del puente
+      // (:13–:21, después de movilidad-specs :01 y movilidad-horaria :07, antes de sillas-horaria
+      // :23). Las horas 00/04/16/20 esquivan autos-parts (02/18/22), el barrido diario de autos
+      // (07:43 a ~10:15) y la diaria de sillas (11:41). A lo sumo 66 pedidos (33 búsquedas × 2
+      // páginas). pm2 lanza la app al registrarla, al recrearla y en cada `pm2 resurrect`, a
+      // cualquier minuto: fuera de :13–:14 de esas horas `main()` deja una línea y sale sin leer ni
+      // conectar. Ninguna página nueva después de 6 minutos desde el arranque; en el peor caso
+      // (cada pedido agota sus reintentos) la última termina ~8,5 minutos después, antes de las :23.
+      // Needs APP_MONGO_URI.
+      name: "currency-productos-vida",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_productos_vida.js",
+      cron_restart: "13 0,4,16,20 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Traducción por máquina de las páginas (app/utils/autoTranslate.ts): recorre el sitemap
       // español por prioridad, corta cada página con el mismo código que la traduce al renderizar,
       // traduce lo que falta con tr-file (inglés y portugués primero) y mide la cobertura por página

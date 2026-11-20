@@ -805,8 +805,12 @@ import { VPagination } from 'vuetify/components'
 import { rentalAvailabilityCopy } from '~/utils/rentalAvailabilityMessages'
 import { useDisplay } from 'vuetify'
 import SearchFilters from '~/components/rentals/SearchFilters.vue'
-import ReferenceAddress from '~/components/rentals/ReferenceAddress.vue'
 import SavedPanel from '~/components/rentals/SavedPanel.vue'
+// Estático a propósito, aunque sólo se pinte en el mapa: usa PropertyPhotoCarousel, que nada fuera
+// de esta página usa. Cargado con import() (como en #342), Rollup deja el carrusel dentro del chunk
+// de la página para dárselo, el chunk deja de ser la "fachada" de la página y el manifiesto la
+// pierde: la página salía sin su CSS y todo su código se anunciaba como prefetch en TODO el sitio.
+// Ver app/modules/catalogue-prefetch/README.md, "A chunk without a facade".
 import MapPropertyDetail from '~/components/rentals/MapPropertyDetail.vue'
 import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
 import RentalAlertDialogHost from '~/components/rentals/RentalAlertDialogHost.vue'
@@ -873,8 +877,15 @@ import {
 } from '~/utils/rentalLayout'
 // The card names the place as the ficha does: "Pocitos", never the portal's "POCITOS".
 import { rentalDisplayZone } from '~/utils/rentalDisplayPlace'
+import { shareMatchingOffer } from '~/utils/rentalSharedOffer'
 
 const LocationsMap = defineAsyncComponent(() => import('~/components/map/LocationsMap.vue'))
+// Sólo se pinta mientras se elige un punto: la lista no precarga su JS ni espera su CSS. Puede ser
+// diferido porque no comparte con la página nada que sea sólo de ella (su chunk importa la entrada
+// y rentalMessages, medido en el build del 20/11/2026).
+const ReferenceAddress = defineAsyncComponent(
+  () => import('~/components/rentals/ReferenceAddress.vue')
+)
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalMessages })
 const { t: globalT } = useI18n({ useScope: 'global' })
 const availability = useRentalAvailability()
@@ -930,10 +941,12 @@ const view = computed(() => (route.query.view === 'mapa' ? 'mapa' : 'lista'))
 // montar; por eso no hay desajuste de hidratación.
 const layout = ref<RentalLayout>(DEFAULT_RENTAL_LAYOUT)
 const viewMode = computed(() => (view.value === 'mapa' ? 'mapa' : layout.value))
+// matchingOffer llega como copia de una de sus ofertas; compartir la referencia hace que el
+// payload la escriba una sola vez (utils/rentalSharedOffer.ts).
 const { data, pending, error, refresh } = await useAsyncData<RentalsResponse>(
   'rental-directory',
   () => $fetch('/api/rentals', { query: availability.withRevision(requestParams.value) }),
-  { watch: [requestKey] }
+  { watch: [requestKey], transform: (response: RentalsResponse) => shareMatchingOffer(response) }
 )
 const items = computed(() => data.value?.items ?? [])
 // La antigüedad se mide contra un instante FIJADO EN EL SERVIDOR y transferido en el payload. Con

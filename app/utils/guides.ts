@@ -18,6 +18,7 @@ import { importacionGuides } from './guidesImportacion'
 import { pagosGuides } from './guidesPagos'
 import { patrimonioGuides } from './guidesPatrimonio'
 import { politicaMonetariaGuides } from './guidesPoliticaMonetaria'
+import { pobrezaGuides } from './guidesPobreza'
 import { parejaGuides } from './guidesPareja'
 import { primavera2026Guides } from './guidesPrimavera2026'
 import { redditGuides } from './guidesReddit'
@@ -1817,6 +1818,13 @@ export const guides: readonly Guide[] = [
   // sobre `utils/monetaryPolicyRate.ts` porque el número escrito a mano ya envejeció una vez: el
   // COPOM lo subió el 8/10/2026 y tres páginas publicaron 5,75 % hasta hoy.
   ...politicaMonetariaGuides,
+  // La línea de pobreza y la de indigencia del INE, 2026-11-15: la vara oficial del INGRESO, que
+  // le faltaba al racimo que ya contestaba la misma pregunta desde el GASTO (vivir con 25.000,
+  // vivir con el mínimo, los precios del SIPC). Su ángulo propio es que la línea NO es un número
+  // sino doce: cambia con el tamaño del hogar, la región y —lo que casi nunca se nombra— si el
+  // hogar ALQUILA. Cuerpo armado con plantillas sobre `utils/povertyLine.ts` por la misma razón
+  // que la guía de la TPM; el detalle entero está en la cabecera de `guidesPobreza.ts`.
+  ...pobrezaGuides,
 ]
 
 /**

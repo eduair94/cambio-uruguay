@@ -305,7 +305,15 @@ const verifiedAt = new Date(DEFENSE_VERIFIED_AT).toLocaleDateString('es-UY', {
 })
 
 const canonicalUrl = 'https://cambio-uruguay.com/defensa-al-consumidor-uruguay'
-const title = 'Defensa del Consumidor: qué puede y qué no'
+// El título CONTESTA, y la respuesta es la primera frase de `DEFENSE_THESIS`: el
+// organismo no devuelve la plata. El anterior («qué puede y qué no») anunciaba la
+// comparación sin resolverla, y por eso no lo delataba ningún trinquete: los dos pozos de
+// títulos miden a los que se PASAN de 60 y éste entraba en 59. Lo que queda en la
+// descripción es el matiz —concilia y sanciona, la multa la cobra el Estado y la
+// restitución la ordena un juez—, que es donde se mide. `consumerDefense.test.ts` lo ata a
+// la tesis: si alguien cambia la tesis y no el título, se pone en rojo en vez de publicar
+// dos cosas distintas en la misma página.
+const title = 'Defensa del Consumidor no devuelve la plata'
 const description =
   'Defensa del Consumidor concilia y sanciona, pero no ordena que te devuelvan la plata: la multa la cobra el Estado y la restitución la ordena un juez.'
 

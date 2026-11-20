@@ -246,6 +246,49 @@ Las tablas del hub y de la ficha se filtran y ordenan; la lógica es pura y est�
   cambio de query, o sea en cada tecla. La ubicación y el radio **nunca** van a
   la URL.
 
+### Resumen fechado y canasta artículo por artículo (2026-11-20)
+
+El hub contestaba "qué súper es más barato" sólo como filas de tres tablas al
+final de la sección de la canasta, y nunca mostraba qué 33 artículos la forman ni
+cuánto cuestan, aunque `basket.nationalCost` ya viajaba en el payload. Ahora:
+
+- **`#resumen`**, antes del buscador: frases enteras con la lectura del día
+  (`app/utils/preciosSummary.ts`). Rango de cadenas y de departamentos, Montevideo,
+  el local más barato del país con su cobertura y el costo de la canasta. Sólo
+  nombra ámbitos **calificados**: el 2026-11-19 la mediana más alta era la de
+  Paysandú, con 4 locales comparables, y el resumen dice Tacuarembó (6). Ninguna
+  frase compara contra otro día: del 18 al 19/11 la mediana de "Tomate Perita"
+  pasó de $219 a $299 cuando sus locales declarantes pasaron de 51 a 133, y con
+  tres kilos en la canasta eso solo le sumó $240 al total — un salto que mide la
+  muestra antes que los precios.
+- **La canasta, fila por fila** (`app/utils/preciosBasket.ts`): artículo, mediana,
+  cantidad, subtotal y locales, agrupada en alimentos y limpieza e higiene. Es una
+  **copia** de `basket_v1.ts` y `NON_FOOD_NEEDS` con dos guardas:
+  `app/tests/unit/preciosBasketParity.test.ts` falla si la copia se separa del
+  backend, y la página no dibuja la tabla si la canasta es de otra versión, de
+  otro día que el catálogo o si su suma se aleja más de $1 de `nationalCost`
+  (queda la frase con el total del backend). El total siempre lleva su fecha.
+- El ejemplo "cómo se lee el nivel" sale de `cheapestStores[0]`: `cost` y
+  `cost / ratio`, que es exactamente lo que `storeBasket` publica.
+
+**Corrección.** La página decía que el Estado "no guarda" el histórico. Sí lo
+guarda: el SIPC tiene desde 2007 los precios de 219 presentaciones (85 productos,
+`precios.uy/datos-del-sipc`) y los publica como datos abiertos
+(`catalogodatos.gub.uy`, organización Defensa del Consumidor): una serie
+2007–2022 y, desde 2023, un conjunto por año con los **precios diarios**, que se
+actualiza **cada tres meses** (el de 2026, actualizado el 10/11/2026, llega hasta
+setiembre). O sea que el dato oficial no es más grueso que el de acá: llega con
+meses de atraso (el 20/11/2026, el archivo de 2026 llegaba hasta setiembre). Lo que el comparador público no muestra es la **serie
+diaria por artículo el mismo día**, que es lo que guarda este archivo desde el
+2026-09-07. La misma frase estaba en el comentario OpenAPI de `/precios/articles`
+(`index.ts`), en la cabecera de `sync_precios.ts` y en la fila `currency-precios`
+de `AGENTS.md`, y se corrige en el mismo commit; si alguno sigue diciendo "no
+guarda", falta esa corrección. También estaba mal que el SIPC "no obliga
+a actualizar todos los días": su FAQ dice que los establecimientos obligados
+"deben informar diariamente". El organismo hoy se llama **Unidad** Defensa del
+Consumidor (MEF). Los precios declarados incluyen impuestos (Decreto 503/006,
+art. 2).
+
 ## 8. Lo que NO tenemos medido (habilita los subproyectos B y C)
 
 Todo esto está hoy **hardcodeado** en `app/utils/costOfLiving.ts` como estimación

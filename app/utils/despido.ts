@@ -30,6 +30,13 @@
 //     privada, salvo destajistas y jornaleros de establecimientos típicamente industriales.
 //   - Ley 12.597 (30/12/1958), arts. 1 a 10 — jornaleros y destajistas, la definición de «derecho a
 //     jubilación», el cómputo año a año, el servicio doméstico y la carga de la prueba.
+//   - Ley 18.065 (05/12/2006), art. 7 — el trabajo doméstico, mensual o jornalero, tiene derecho
+//     a indemnización «desde los noventa días corridos de iniciada la relación laboral».
+//     Verificado en IMPO el 2026-11-20 y CORREGIDO ese día: hasta entonces esta página publicaba
+//     el año continuado de la Ley 12.597, art. 7 (1958), y le contestaba «no te corresponde» a
+//     quien despedían entre los 90 días y el año. Es la misma cifra que publica la guía
+//     /guias/trabajo-domestico-uruguay (`DOMESTIC_WORK_LEGAL_LIMITS`, utils/domesticWork.ts), y el
+//     test las ata. DESPIDO_VERIFIED_AT no se movió: el resto del archivo no se volvió a verificar.
 //   - Ley 18.091 (07/01/2007), arts. 1 a 4 — prescripción anual de la acción, quinquenal de los
 //     créditos, e interrupción por la audiencia del MTSS o la demanda.
 //   - MTSS, «Despido (régimen común)» — la lectura oficial vigente.
@@ -257,10 +264,10 @@ export const DESPIDO_REGLAS: readonly DespidoRegla[] = [
   },
   {
     key: 'domestico',
-    label: 'El servicio doméstico necesita un año continuado',
-    source: 'Ley 12.597, art. 7',
+    label: 'El trabajo doméstico necesita 90 días corridos, no un año',
+    source: 'Ley 18.065, art. 7',
     detail:
-      'Es la excepción a la regla de que no hay antigüedad mínima: el personal del servicio doméstico tiene derecho a indemnización por despido, pero se le exige una antigüedad mínima de un año continuado de labor al servicio del empleador.',
+      'Es la excepción a la regla de que no hay antigüedad mínima. La Ley 12.597, art. 7 (1958) pedía «una antigüedad mínima de un año continuado de labor», pero la Ley 18.065 (2006), la ley propia del trabajo doméstico, fija el piso en noventa días. Su art. 7: «Las/os trabajadoras/es domésticas/os, tanto mensuales como jornaleros, tendrán derecho a indemnización por despido desde los noventa días corridos de iniciada la relación laboral, rigiéndose en lo demás por las normas generales sobre despido». Una trabajadora doméstica despedida a los cuatro meses ya tiene derecho a indemnización.',
   },
   {
     key: 'recargo',
@@ -339,8 +346,13 @@ export const DESPIDO_SOURCES: readonly DespidoSource[] = [
   },
   {
     label:
-      'Ley 12.597 (30/12/1958), arts. 1 a 10 — indemnización parcial de dos días por cada veinticinco jornadas, definición de «derecho a jubilación» (más de diez años de servicios y cuarenta de edad), cómputo desde el ingreso, base salarial, recargo del 1 % mensual, servicio doméstico y carga de la prueba de la notoria mala conducta',
+      'Ley 12.597 (30/12/1958), arts. 1 a 10 — indemnización parcial de dos días por cada veinticinco jornadas, definición de «derecho a jubilación» (más de diez años de servicios y cuarenta de edad), cómputo desde el ingreso, base salarial, recargo del 1 % mensual, servicio doméstico y carga de la prueba de la notoria mala conducta. El piso de antigüedad del trabajo doméstico ya no es el año continuado de su art. 7 sino los noventa días de la Ley 18.065, art. 7',
     url: 'https://www.impo.com.uy/bases/leyes/12597-1958',
+  },
+  {
+    label:
+      'Ley 18.065 (05/12/2006), art. 7 — las trabajadoras y los trabajadores domésticos, mensuales y jornaleros, tienen derecho a indemnización por despido «desde los noventa días corridos de iniciada la relación laboral»',
+    url: 'https://www.impo.com.uy/bases/leyes/18065-2006/7',
   },
   {
     label:

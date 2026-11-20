@@ -6,6 +6,42 @@
     />
     <header class="mb-6">
       <h1 class="text-h4 font-weight-bold mb-2">Oportunidades en autos usados en Uruguay</h1>
+      <!-- La lista ENTERA, no la página que se ve: las páginas 2 en adelante y cada filtro van
+           noindex, así que sin este resumen la URL indexada sólo contaba las 20 primeras. -->
+      <p v-if="summary?.total" class="text-body-1 mb-3" data-testid="deal-summary">
+        <template v-if="summary.total === 1">
+          La lista tiene <strong>1 auto usado</strong> que pide menos que otros iguales, con
+          comparación {{ summary.strict ? 'sólida' : 'exploratoria' }}.
+        </template>
+        <template v-else>
+          La lista tiene <strong>{{ formatCarCount(summary.total) }} autos usados</strong> que piden
+          menos que otros iguales: {{ formatCarCount(summary.strict) }} con comparación sólida y
+          {{ formatCarCount(summary.exploratory) }} con comparación exploratoria.
+          <template
+            v-if="
+              summary.minUsd !== null &&
+              summary.maxUsd !== null &&
+              summary.medianUsd !== null &&
+              summary.medianGap !== null
+            "
+          >
+            Piden entre {{ formatCarUsd(summary.minUsd) }} y
+            {{ formatCarUsd(summary.maxUsd) }} (mediana {{ formatCarUsd(summary.medianUsd) }}) y la
+            diferencia mediana contra sus comparables es de {{ carPercent(summary.medianGap) }}.
+          </template>
+        </template>
+        <template v-if="leadModels.length">
+          {{
+            leadModels.length === 1 ? 'El modelo que más aparece:' : 'Los modelos que más aparecen:'
+          }}
+          <template v-for="part in leadModels" :key="part.marketSlug">
+            <span>{{ part.name }}</span> ({{ part.count }}){{ part.trail }}
+          </template>
+        </template>
+        Cálculo del
+        <time :datetime="generatedAt">{{ formatCarDate(generatedAt) }}</time
+        >.
+      </p>
       <p class="text-body-1 mb-3">
         Autos que piden bastante menos que otros avisos del
         <strong>mismo modelo, año, versión, motor y caja</strong>, con kilómetros parecidos, en
@@ -127,6 +163,26 @@
             {{ data.stats.input.toLocaleString('es-UY') }} avisos, de los cuales
             {{ data.stats.analyzed.toLocaleString('es-UY') }} tenían suficientes comparables.
           </p>
+          <!-- Un div y no un párrafo: VChip dibuja un div adentro (noChipInsideParagraph.test.ts). -->
+          <div
+            v-if="budgetChips.length"
+            class="d-flex flex-wrap align-center ga-2 mb-4"
+            data-testid="deal-budgets"
+          >
+            <span class="text-body-2">Por presupuesto:</span>
+            <VChip
+              v-for="row in budgetChips"
+              :key="row.budget"
+              size="small"
+              :color="query.priceMax === row.budget ? 'primary' : undefined"
+              :variant="query.priceMax === row.budget ? 'flat' : 'outlined'"
+              :aria-pressed="query.priceMax === row.budget ? 'true' : 'false'"
+              @click="toggleBudget(row.budget)"
+            >
+              Hasta {{ formatCarUsd(row.budget) }}
+              <template v-if="onlyBudgetFilter">({{ formatCarCount(row.count) }})</template>
+            </VChip>
+          </div>
           <p v-if="!data.items.length" class="text-body-1">
             Hoy no hay autos que cumplan estas condiciones con esos filtros. Es un resultado válido:
             la regla es exigente a propósito.
@@ -154,6 +210,78 @@
         </template>
       </template>
     </CarsSidebarLayout>
+
+    <template v-if="summary?.total">
+      <section v-if="summary.budgets.length" id="por-presupuesto" class="mt-10">
+        <h2 class="text-h5 mb-3">Oportunidades por presupuesto</h2>
+        <p class="text-body-2 text-medium-emphasis mb-3">
+          Sobre la lista entera del {{ formatCarDate(generatedAt) }}, sin filtros. Cada tope cuenta
+          también los autos más baratos: los de hasta {{ formatCarUsd(summary.budgets[0]!.budget) }}
+          entran en todos los demás.
+        </p>
+        <VTable class="cu-mobile-cards" density="comfortable">
+          <thead>
+            <tr>
+              <th scope="col">Presupuesto</th>
+              <th scope="col">Oportunidades</th>
+              <th scope="col">Con comparación sólida</th>
+              <th scope="col">Diferencia mediana</th>
+              <th scope="col">Qué se compra con ese dinero</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in summary.budgets" :key="row.budget">
+              <td data-label="Presupuesto">Hasta {{ formatCarUsd(row.budget) }}</td>
+              <td data-label="Oportunidades">{{ formatCarCount(row.count) }}</td>
+              <td data-label="Con comparación sólida">{{ formatCarCount(row.strict) }}</td>
+              <td data-label="Diferencia mediana">{{ carPercent(row.medianGap) }}</td>
+              <td data-label="Qué se compra con ese dinero">
+                <!-- Ruta cruda, sin localePath: las páginas por presupuesto existen sólo en
+                     español; /en/autos-usados-uruguay/hasta-… sería un 404. -->
+                <NuxtLink :to="carBudgetPath(row.budget)">
+                  Qué se compra con {{ formatCarUsd(row.budget) }}
+                </NuxtLink>
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+      </section>
+
+      <section v-if="summary.models.length" id="por-modelo" class="mt-10">
+        <h2 class="text-h5 mb-3">Modelos con más oportunidades</h2>
+        <VTable class="cu-mobile-cards" density="comfortable">
+          <thead>
+            <tr>
+              <th scope="col">Modelo</th>
+              <th scope="col">Oportunidades</th>
+              <th scope="col">Con comparación sólida</th>
+              <th scope="col">Precio pedido</th>
+              <th scope="col">Años</th>
+              <th scope="col">Diferencia mediana</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in summary.models" :key="row.marketSlug">
+              <td data-label="Modelo">{{ row.brand }} {{ row.model }}</td>
+              <td data-label="Oportunidades">{{ formatCarCount(row.count) }}</td>
+              <td data-label="Con comparación sólida">{{ formatCarCount(row.strict) }}</td>
+              <td data-label="Precio pedido">{{ formatCarUsdSpan(row.minUsd, row.maxUsd) }}</td>
+              <td data-label="Años">{{ formatCarYearSpan(row.yearFrom, row.yearTo) }}</td>
+              <td data-label="Diferencia mediana">{{ carPercent(row.medianGap) }}</td>
+            </tr>
+          </tbody>
+        </VTable>
+        <p v-if="summary.otherModels" class="text-body-2 text-medium-emphasis mt-2 mb-0">
+          Además hay {{ formatCarCount(summary.otherModels.count) }} modelos con
+          {{
+            summary.otherModels.maxEach === 1
+              ? '1 oportunidad'
+              : `${summary.otherModels.maxEach} oportunidades o menos`
+          }}
+          cada uno; están en la lista de arriba.
+        </p>
+      </section>
+    </template>
 
     <section v-if="data" id="metodo" class="mt-10">
       <h2 class="text-h5 mb-3">Cómo se calcula</h2>
@@ -197,6 +325,15 @@
         </li>
       </ul>
     </section>
+
+    <!-- `:ad="false"`: la página ya lleva su unidad dentro de la grilla (FeedAd, feedAd.test.ts). -->
+    <FaqSection
+      v-if="faq.length"
+      :items="faq"
+      heading="Preguntas frecuentes"
+      :expanded="true"
+      :ad="false"
+    />
   </VContainer>
 </template>
 
@@ -204,6 +341,15 @@
 import { VPagination } from 'vuetify/components'
 import { useDisplay } from 'vuetify'
 import { CAR_RISKS_PATH } from '~/utils/carsRisk'
+import { carBudgetPath } from '~/utils/carBudget'
+import {
+  carOpportunityFaq,
+  carOpportunityLeadModels,
+  formatCarCount,
+  formatCarUsdSpan,
+  formatCarYearSpan,
+  type CarOpportunitiesWithSummary,
+} from '~/utils/carOpportunitySummary'
 import {
   CAR_OPPORTUNITIES_PATH,
   CARS_PATH,
@@ -212,6 +358,7 @@ import {
   carPercent,
   formatCarDate,
   formatCarKm,
+  formatCarUsd,
   normalizeCarOpportunityQuery,
   type CarOpportunitiesResponse,
   type CarOpportunityQuery,
@@ -243,10 +390,31 @@ const query = computed(() => normalizeCarOpportunityQuery(route.query as Record<
 const { data, error } = await useAsyncData(
   'car-opportunities',
   () =>
-    $fetch<CarOpportunitiesResponse>('/api/car-opportunities', {
+    $fetch<CarOpportunitiesWithSummary>('/api/car-opportunities', {
       query: carOpportunityQueryParams(query.value),
     }),
   { watch: [query] }
+)
+// El resumen de la lista entera (sin filtros) que la API manda con cada página. Opcional: una
+// respuesta que el borde cacheó antes del despliegue no lo trae, y entonces no se dibuja nada.
+const summary = computed(() => data.value?.summary)
+const generatedAt = computed(() => data.value?.generatedAt ?? '')
+// Hasta tres modelos para la primera frase. Cada nombre en su propio elemento, para que la memoria
+// de traducción no cambie de clave cada vez que cambia el modelo del día; los separadores (con su
+// espacio, que la plantilla no conserva) salen del helper y tienen test.
+const leadModels = computed(() => carOpportunityLeadModels(summary.value?.models ?? []))
+/** Los topes que recortan la lista: el que ya entra entero no filtra nada. */
+const budgetChips = computed(() =>
+  (summary.value?.budgets ?? []).filter(row => row.count < summary.value!.total)
+)
+/** El número del chip es de la lista entera: con otro filtro puesto ya no describe lo que se ve. */
+const onlyBudgetFilter = computed(
+  () => activeCount.value === (query.value.priceMax !== null ? 1 : 0)
+)
+const faq = computed(() =>
+  summary.value && data.value
+    ? carOpportunityFaq(summary.value, data.value.policy, data.value.stats, data.value.generatedAt)
+    : []
 )
 // "Cargar más al bajar" (composables/useInfiniteFeed.ts): la lista recorre `feed.items`.
 const resultsList = ref<HTMLElement | null>(null)
@@ -308,6 +476,10 @@ function navigate(next: CarOpportunityQuery) {
   filtersOpen.value = false
   router.replace({ query: carOpportunityQueryParams(next) })
 }
+/** Un chip de presupuesto pone ese tope de precio; tocar el que está puesto lo saca. */
+function toggleBudget(budget: number) {
+  navigate({ ...query.value, priceMax: query.value.priceMax === budget ? null : budget, page: 1 })
+}
 function apply() {
   // The order is chosen next to the results, not in the form: applying filters keeps it.
   navigate(normalizeCarOpportunityQuery({ ...draft, ...subject.value, sort: query.value.sort }))
@@ -333,7 +505,7 @@ useSeoMeta({
   robots: () => (Object.keys(route.query).length ? 'noindex, follow' : 'index, follow'),
 })
 
-useHead({
+useHead(() => ({
   link: [{ rel: 'canonical', href: canonical }],
   script: [
     {
@@ -341,7 +513,14 @@ useHead({
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
         '@graph': [
-          { '@type': 'CollectionPage', name: title, description, url: canonical },
+          {
+            '@type': 'CollectionPage',
+            name: title,
+            description,
+            url: canonical,
+            // La fecha del cálculo publicado (sin cálculo, JSON.stringify la omite).
+            dateModified: data.value?.generatedAt,
+          },
           {
             '@type': 'BreadcrumbList',
             itemListElement: [
@@ -358,7 +537,7 @@ useHead({
       }),
     },
   ],
-})
+}))
 </script>
 
 <style scoped>

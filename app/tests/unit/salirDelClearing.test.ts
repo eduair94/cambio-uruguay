@@ -17,6 +17,12 @@ import {
   EQUIFAX_PRODUCTS,
   clearingFaq,
 } from '../../utils/salirDelClearing'
+import {
+  CLEARING_LENDERS,
+  CLEARING_REVIEWED as LOAN_CLEARING_REVIEWED,
+  clearingNames,
+  isoDateEs,
+} from '../../utils/loanNoPayslip'
 
 const PAGE = readFileSync(join(__dirname, '..', '..', 'pages', 'salir-del-clearing.vue'), 'utf8')
 
@@ -88,10 +94,21 @@ describe('qué pasa si estoy en clearing', () => {
     expect(texto).not.toMatch(/rechazados? por Porto incluso con/i)
   })
 
-  it('la única financiera que dice prestar en el clearing es Pronto!, y nadie te "saca" por un pago', () => {
+  it('quién presta en el clearing es lo que lista /prestamo-sin-recibo-de-sueldo-uruguay, y nadie te "saca" por un pago', () => {
+    // Las dos páginas se enlazan entre sí: decía "la única es Pronto!" cuando la tabla del clearing
+    // de la otra lista cinco, con la misma fecha de lectura.
     const prestamos = CLEARING_CONSEQUENCES.find(c => c.id === 'prestamos')!
-    expect(prestamos.text).toMatch(/Pronto!/)
+    const quePasa = faq.find(f => f.id === 'que-pasa')!.answer
     expect(prestamos.text).toMatch(/OCA exige/)
+    for (const lender of CLEARING_LENDERS) expect(prestamos.text).toContain(lender.name)
+    for (const lender of CLEARING_LENDERS.filter(l => l.recibo !== 'no-publica'))
+      expect(quePasa).toContain(lender.name)
+    for (const text of [prestamos.text, quePasa]) {
+      expect(text).not.toMatch(/la única/i)
+      expect(text).toContain(isoDateEs(LOAN_CLEARING_REVIEWED))
+    }
+    expect(prestamos.text).toContain(`con recibo de sueldo, ${clearingNames('pide')}`)
+    expect(prestamos.text).toContain(`sin recibo, ${clearingNames('no-pide')}`)
     const estafa = CLEARING_CONSEQUENCES.find(c => c.id === 'estafa')!
     expect(estafa.text).toMatch(/no requiere gestores ni intermediarios/)
     for (const c of CLEARING_CONSEQUENCES) {

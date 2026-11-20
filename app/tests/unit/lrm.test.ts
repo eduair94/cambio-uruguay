@@ -10,15 +10,27 @@ import {
 import { BROU_DEPOSIT_BOARD } from '../../utils/investments'
 import {
   BREAK_EVEN_CAP,
+  BROKER_TARIFFS,
   BROU_MIN_COMMISSION,
+  DEPOSIT_MIN_UYU,
   LRM_BASELINE,
   LRM_BID_STEP,
+  LRM_GRID_AMOUNTS,
   LRM_MIN_BID,
   LRM_SOURCES,
   LRM_STATIC_TITLE,
+  LRM_TARIFFS_VERIFIED_AT,
+  LRM_VERIFIED_AT,
+  LRM_WHERE_TO_BUY,
   brouCommission,
   breakEvenAmount,
+  breakEvenLabel,
+  breakEvenSentence,
+  buildAmountGrid,
+  buildBreakEvenRows,
   buildLrmFaq,
+  latestAuctions,
+  noComparableDepositSentence,
   daysBetween,
   depositOutcome,
   latestFor,
@@ -232,8 +244,163 @@ describe('calendario', () => {
   })
 })
 
+/**
+ * La foto con la letra «de 30 días» a 28 días, que es lo normal: 29 de las 57 licitaciones de ese
+ * plazo entre octubre de 2025 y noviembre de 2026 duraron menos de 30, y la pizarra e-BROU empieza
+ * en 30. No hay plazo fijo con qué comparar.
+ */
+function withShortThirty(): LrmSnapshotDoc {
+  return {
+    ...LRM_BASELINE,
+    latest: LRM_BASELINE.latest.map(a =>
+      a.termRef === 30 ? { ...a, days: 28, maturity: '2026-11-10' } : a
+    ),
+  }
+}
+
+describe('punto de equilibrio por plazo', () => {
+  it('una letra más corta que el plazo fijo más corto no se compara con nada', () => {
+    const rows = buildBreakEvenRows(withShortThirty())
+    const thirty = rows.find(r => r.termRef === 30)!
+    expect(thirty.comparable).toBe(false)
+    expect(thirty.deposit).toBeNull()
+    expect(thirty.amount).toBeNull()
+    expect(breakEvenLabel(thirty)).toMatch(/sin plazo fijo/)
+    expect(breakEvenLabel(thirty)).not.toMatch(/más de/)
+    expect(noComparableDepositSentence(28)).toBe(
+      'El plazo fijo e-BROU más corto es de 30 días: una letra a 28 días no tiene con qué compararse.'
+    )
+  })
+
+  it('con plazo fijo comparable dice el monto, o «más de» el tope si no gana nunca', () => {
+    expect(breakEvenLabel({ amount: 850_000, comparable: true })).toMatch(/850\.000/)
+    expect(breakEvenLabel({ amount: null, comparable: true })).toBe('más de $ 50 millones')
+    expect(BREAK_EVEN_CAP).toBe(50_000_000)
+  })
+
+  it('la frase lista los montos de menor a mayor, con el plazo de cada uno', () => {
+    const rows = buildBreakEvenRows(LRM_BASELINE)
+    const year = linearBreakEven(latestFor(LRM_BASELINE, 360)!, 'brou')!
+    const half = linearBreakEven(latestFor(LRM_BASELINE, 180)!, 'brou')!
+    const sentence = breakEvenSentence(rows)
+    const fmt = (n: number) => n.toLocaleString('es-UY')
+    const order = [850_000, 1_760_000, year, half].sort((a, b) => a - b)
+    const positions = order.map(n => sentence.indexOf(fmt(n)))
+    for (const p of positions) expect(p).toBeGreaterThanOrEqual(0)
+    expect([...positions].sort((a, b) => a - b)).toEqual(positions)
+    expect(sentence).toMatch(/^desde \$/)
+    expect(sentence).toMatch(/850\.000 a 90 días/)
+    expect(sentence).toMatch(/ y desde /)
+    expect(breakEvenSentence([])).toBe('')
+    expect(breakEvenSentence([{ termRef: 30, amount: null }])).toBe('')
+  })
+})
+
+describe('cuánto queda según el monto', () => {
+  const grid = buildAmountGrid(LRM_BASELINE)
+  const cellAt = (amount: number, termRef: number) =>
+    grid.find(r => r.amount === amount)!.cells.find(c => c.termRef === termRef)!
+
+  it('siete montos por cuatro plazos, de menor a mayor', () => {
+    expect(grid.map(r => r.amount)).toEqual([...LRM_GRID_AMOUNTS])
+    for (const r of grid) expect(r.cells.map(c => c.termRef)).toEqual([30, 90, 180, 360])
+  })
+
+  it('debajo del mínimo de la letra queda sólo el plazo fijo y no hay ganador', () => {
+    const row = grid.find(r => r.amount === 50_000)!
+    expect(row.belowMinimum).toBe(true)
+    for (const c of row.cells) {
+      expect(c.letter).toBeNull()
+      expect(c.deposit).not.toBeNull()
+      expect(c.winner).toBeNull()
+    }
+  })
+
+  it('con $ 100.000 a 30 días la mejor letra es la de Itaú y gana el plazo fijo', () => {
+    const c = cellAt(100_000, 30)
+    expect(lrmOutcome(100_000, latestFor(LRM_BASELINE, 30)!, 'brou').netGain).toBeLessThan(0)
+    expect(c.letter?.broker).toBe('itau')
+    expect(c.winner).toBe('deposit')
+  })
+
+  it('con $ 5.000.000 a 30 días la letra por el BROU le gana al plazo fijo', () => {
+    const c = cellAt(5_000_000, 30)
+    expect(c.letter?.broker).toBe('brou')
+    expect(c.winner).toBe('letter')
+  })
+
+  it('el ganador es siempre el que deja más', () => {
+    for (const r of grid) {
+      for (const c of r.cells) {
+        if (!c.letter || !c.deposit) continue
+        expect(c.winner).toBe(c.letter.netGain >= c.deposit.netGain ? 'letter' : 'deposit')
+      }
+    }
+  })
+
+  it('una letra a 28 días no tiene plazo fijo al lado ni ganador', () => {
+    const short = buildAmountGrid(withShortThirty())
+    for (const r of short) {
+      const c = r.cells.find(x => x.termRef === 30)!
+      expect(c.days).toBe(28)
+      expect(c.deposit).toBeNull()
+      expect(c.winner).toBeNull()
+    }
+  })
+
+  it('el plazo fijo e-BROU arranca en el mínimo que imprime la pizarra', () => {
+    expect(DEPOSIT_MIN_UYU).toBe(5_000)
+    expect(BROU_DEPOSIT_BOARD.series.UYU.minimum).toBe('$ 5.000')
+  })
+})
+
+describe('últimas licitaciones', () => {
+  it('las doce más nuevas, de la más nueva a la más vieja, sin confiar en el orden de la foto', () => {
+    const shuffled = { ...LRM_BASELINE, recent: [...LRM_BASELINE.recent].reverse() }
+    const rows = latestAuctions(shuffled, 12)
+    expect(rows).toHaveLength(12)
+    expect(rows[0]!.date).toBe('2026-10-15')
+    const dates = rows.map(a => a.date)
+    expect([...dates].sort().reverse()).toEqual(dates)
+    expect(latestAuctions({ ...LRM_BASELINE, recent: [] })).toEqual([])
+  })
+})
+
+describe('dónde comprar', () => {
+  it('cinco bancos, cada uno con fuente https, y sólo dos con comisión calculable', () => {
+    const ids = LRM_WHERE_TO_BUY.map(s => s.id)
+    expect(new Set(ids).size).toBe(5)
+    expect(ids).toEqual(['brou', 'itau', 'bbva', 'santander', 'scotiabank'])
+    for (const s of LRM_WHERE_TO_BUY) {
+      expect(s.sources.length, s.id).toBeGreaterThan(0)
+      for (const src of s.sources) expect(src.url, s.id).toMatch(/^https:\/\//)
+    }
+    expect(LRM_WHERE_TO_BUY.filter(s => s.computable).map(s => s.id)).toEqual(['brou', 'itau'])
+  })
+
+  it('la comisión del BROU y la de Itaú son las mismas reglas que usa el simulador', () => {
+    const rule = (id: string) => BROKER_TARIFFS.find(t => t.id === id)!.rule
+    expect(LRM_WHERE_TO_BUY.find(s => s.id === 'brou')!.commission).toBe(rule('brou'))
+    expect(LRM_WHERE_TO_BUY.find(s => s.id === 'itau')!.commission).toBe(rule('itau'))
+  })
+
+  it('las custodias de BBVA y Santander dicen lo que su manual no precisa', () => {
+    const custody = (id: string) => LRM_WHERE_TO_BUY.find(s => s.id === id)!.custody
+    expect(custody('bbva')).toMatch(/renglón general de custodia/)
+    expect(custody('bbva')).toMatch(/no dice sobre qué base ni por qué período/)
+    expect(custody('santander')).toMatch(/segmento y el volumen invertido/)
+  })
+
+  it('el tarifario de Itaú está fechado en la versión que se leyó', () => {
+    expect(BROKER_TARIFFS.find(t => t.id === 'itau')!.sourceLabel).toMatch(/1\/11\/2026/)
+    expect(LRM_TARIFFS_VERIFIED_AT >= LRM_VERIFIED_AT).toBe(true)
+  })
+})
+
 describe('preguntas frecuentes', () => {
-  const faq = buildLrmFaq(LRM_BASELINE, LRM_BASELINE.calendar!.items[0]!, 1_760_000)
+  const next = LRM_BASELINE.calendar!.items[0]!
+  const faq = buildLrmFaq(LRM_BASELINE, next, buildBreakEvenRows(LRM_BASELINE))
+  const answer = (id: string) => faq.find(f => f.id === id)!.answer
 
   it('no imprime huecos', () => {
     expect(new Set(faq.map(f => f.id)).size).toBe(faq.length)
@@ -241,10 +408,92 @@ describe('preguntas frecuentes', () => {
   })
 
   it('dice la próxima licitación, el IRPF del plazo fijo y el punto de equilibrio', () => {
-    const answer = (id: string) => faq.find(f => f.id === id)!.answer
     expect(answer('lrm-proxima')).toMatch(/lunes 19 de octubre a las 14:00/)
     expect(answer('lrm-irpf')).toMatch(/5,5 %/)
     expect(answer('lrm-conviene')).toMatch(/1\.760\.000/)
+    expect(answer('lrm-conviene')).toMatch(/850\.000/)
     expect(answer('lrm-ui')).toMatch(/3,00 % real anual a 12 años/)
+    expect(answer('lrm-ui')).toMatch(/dólares/)
+  })
+
+  it('las preguntas no dependen de los datos: sólo las respuestas', () => {
+    const other = buildLrmFaq(withShortThirty(), null, buildBreakEvenRows(withShortThirty()))
+    expect(other.map(f => f.question)).toEqual(faq.map(f => f.question))
+    for (const f of other) expect(f.answer, f.id).not.toMatch(/undefined|NaN|null|—/)
+  })
+
+  it('sin plazo fijo a 30 días, la respuesta de si conviene sigue con los otros plazos', () => {
+    const short = buildLrmFaq(withShortThirty(), next, buildBreakEvenRows(withShortThirty()))
+    const conviene = short.find(f => f.id === 'lrm-conviene')!.answer
+    expect(conviene).toMatch(/90 días/)
+    expect(conviene).not.toMatch(/a 30 días/)
+  })
+
+  it('monto máximo: el tramo no competitivo, con el de la próxima licitación si hay calendario', () => {
+    expect(answer('lrm-maximo')).toMatch(/art\. 8/)
+    expect(answer('lrm-maximo')).toMatch(/2\.660/)
+    const noNext = buildLrmFaq(LRM_BASELINE, null, buildBreakEvenRows(LRM_BASELINE))
+    expect(noNext.find(f => f.id === 'lrm-maximo')!.answer).not.toMatch(/próxima/)
+  })
+
+  it('con menos del mínimo: el plazo fijo y las cuentas remuneradas', () => {
+    const a = faq.find(f => f.id === 'lrm-menos-del-minimo')!
+    expect(a.answer).toMatch(/\$ 5\.000/)
+    expect(a.answer).toMatch(/100\.000/)
+    expect(a.answer).toMatch(/83 días/)
+    expect(a.link?.to).toBe('/cuenta-remunerada-uruguay')
+  })
+
+  it('monto máximo: el tope del art. 8 es del tramo no competitivo, no de toda compra', () => {
+    const a = answer('lrm-maximo')
+    expect(a).toMatch(/no es Operador Primario/)
+    expect(a).toMatch(/tramo competitivo, que no tiene ese tope/)
+    expect(a).toMatch(/mercado secundario/)
+    expect(a).not.toMatch(/^Los documentos del BCU/)
+  })
+
+  it('la letra a dos años: el documento la prevé, la foto dice si se licitó', () => {
+    const plazos = answer('lrm-plazos')
+    expect(LRM_BASELINE.recent.some(a => a.termRef === 720)).toBe(false)
+    const n = LRM_BASELINE.recent.length
+    const longest = Math.max(...LRM_BASELINE.recent.map(a => a.days))
+    expect(plazos).toMatch(/prevé además una letra a dos años, una vez por mes, pero en las/)
+    expect(plazos).toContain(`en las ${n} licitaciones desde el`)
+    expect(plazos).toContain(`no se licitó ninguna: la más larga duró ${longest} días`)
+    expect(plazos).toMatch(/Tampoco hubo ninguna a 60 días/)
+    expect(plazos).not.toMatch(/720 días, una vez por mes,/)
+
+    const twoYear: LrmAuction = {
+      ...LRM_BASELINE.recent[0]!,
+      series: 'TEST-720',
+      date: '2026-09-15',
+      days: 714,
+      termRef: 720,
+    }
+    const withTwoYear = { ...LRM_BASELINE, recent: [...LRM_BASELINE.recent, twoYear] }
+    const t = buildLrmFaq(withTwoYear, null, []).find(f => f.id === 'lrm-plazos')!.answer
+    expect(t).toMatch(/prevé además una letra a dos años, una vez por mes: la última se licitó el/)
+    expect(t).toContain('714 días')
+    expect(t).toMatch(/En las \d+ licitaciones desde el .* no hubo ninguna a 60 días/)
+    expect(t).not.toMatch(/no se licitó ninguna/)
+
+    const inLatest = { ...withTwoYear, latest: [...LRM_BASELINE.latest, twoYear] }
+    const l = buildLrmFaq(inLatest, null, []).find(f => f.id === 'lrm-plazos')!.answer
+    expect(l).toMatch(/BCU prevé una letra a dos años/)
+    expect(l).not.toMatch(/prevé además/)
+
+    const sixty: LrmAuction = { ...twoYear, series: 'TEST-60', days: 61, termRef: 90 }
+    const withSixty = { ...LRM_BASELINE, recent: [...LRM_BASELINE.recent, sixty] }
+    const s = buildLrmFaq(withSixty, null, []).find(f => f.id === 'lrm-plazos')!.answer
+    expect(s).toMatch(/A unos 60 días hubo una el .*, de 61 días/)
+
+    const empty = buildLrmFaq({ ...LRM_BASELINE, recent: [] }, null, [])
+    for (const f of empty) expect(f.answer, f.id).not.toMatch(/undefined|NaN|null|—|Infinity/)
+  })
+
+  it('plazos, BROU y garantía de depósitos', () => {
+    expect(answer('lrm-plazos')).toMatch(/34, 83, 175 y 364 días/)
+    expect(answer('lrm-brou')).toMatch(/2 1996 000/)
+    expect(answer('lrm-segura')).toMatch(/NO constituyen un depósito/)
   })
 })

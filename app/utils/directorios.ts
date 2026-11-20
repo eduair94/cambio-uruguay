@@ -225,6 +225,18 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
     analisis: Object.freeze(['/ciberlunes-y-black-friday-uruguay']),
   },
   {
+    id: 'productos-vida',
+    to: '/productos-que-te-cambian-la-vida-uruguay',
+    familia: 'compras',
+    titulo: 'Productos que te cambian la vida',
+    queCompara:
+      'Lo que r/uruguay dijo que le cambió la vida, con lo que piden por cada uno en Mercado Libre.',
+    icon: 'mdi-lightbulb-on-outline',
+    // Habla por producto, cada uno con su banda y su fecha: no hay un total que publicar.
+    unidad: 'productos',
+    fuente: 'sin-cifra',
+  },
+  {
     id: 'tiendas',
     to: '/tiendas-online-uruguay',
     familia: 'compras',

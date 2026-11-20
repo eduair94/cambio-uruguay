@@ -182,7 +182,22 @@
             <p class="callout-text mb-0">
               <strong>Si va la punta compradora o la vendedora.</strong> El texto de la DGI dice «el
               tipo de cambio interbancario» y no aclara cuál de las dos; la serie que la propia DGI
-              publica es la de <em>compra billete</em>. Cuál corresponde a tu caso es una decisión
+              publica es la de <em>compra billete</em>. Para el IRPF de rentas de capital y de
+              trabajo la norma sí lo dice: la
+              <a
+                href="https://www.impo.com.uy/bases/resoluciones-dgi-interes-general/662-2007"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Resolución DGI 662/007</a
+              >
+              (numeral 7) remite al
+              <a
+                href="https://www.impo.com.uy/bases/decretos/150-2007/74"
+                target="_blank"
+                rel="noopener noreferrer"
+                >artículo 74 del Decreto 150/007</a
+              >, que usa la «cotización interbancaria tipo comprador billete» al cierre del día
+              anterior al de la operación. Fuera de ese caso, cuál corresponde es una decisión
               contable y no la contestamos: preguntale a tu contador y verificá el número en la
               fuente oficial, que está enlazada abajo.
             </p>

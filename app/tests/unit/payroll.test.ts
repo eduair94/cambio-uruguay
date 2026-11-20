@@ -103,11 +103,22 @@ describe('computePayroll — IRPF edges', () => {
     expect(r.irpf.tax).toBeGreaterThanOrEqual(0)
   })
 
-  it('drops the credit rate to 8% at or above 15 BPC of monthly nominal', () => {
-    const below = computePayroll({ nominal: 15 * BPC - 1 })
-    const atOrAbove = computePayroll({ nominal: 15 * BPC })
-    expect(below.irpf.creditRate).toBe(PAYROLL_UY.creditRateLow)
-    expect(atOrAbove.irpf.creditRate).toBe(PAYROLL_UY.creditRateHigh)
+  it('keeps the 14% credit rate up to and including 15 BPC, 8% above it', () => {
+    // Decreto 148/007 art. 63 («Hasta 15 BPC 14% / Más de 15 BPC 8%») and BPS Comunicado R 5/2026
+    // («≤ 102.960 14 %»). Until 2026-11-20 this module switched AT 15 BPC: $ 1.210 less in hand
+    // than `irpfCasos.estimateMonthlyWithholding` for the same $ 102.960.
+    expect(computePayroll({ nominal: 15 * BPC }).irpf.creditRate).toBe(PAYROLL_UY.creditRateLow)
+    expect(computePayroll({ nominal: 15 * BPC + 1 }).irpf.creditRate).toBe(
+      PAYROLL_UY.creditRateHigh
+    )
+  })
+
+  it('agrees with estimateMonthlyWithholding exactly at 15 BPC', async () => {
+    const { estimateMonthlyWithholding } = await import('../../utils/irpfCasos')
+    expect(computePayroll({ nominal: 15 * BPC }).irpf.tax).toBeCloseTo(
+      estimateMonthlyWithholding(15 * BPC).withholding,
+      0
+    )
   })
 
   it('a child raises the FONASA rate as well as adding an IRPF deduction', () => {
@@ -198,6 +209,31 @@ describe('nominalForLiquido (reverse mode)', () => {
   })
   it('returns 0 for a zero target', () => {
     expect(nominalForLiquido(0)).toBe(0)
+  })
+
+  // The líquido is NOT monotonic in the nominal: it drops when the nominal crosses 2,5 BPC (FONASA
+  // 3 % -> 4,5 %), 10 BPC (+6 % on the IRPF base) and 15 BPC (credit 14 % -> 8 %). A plain
+  // bisection could land on the far side of a drop and return a nominal much higher than needed:
+  // until 2026-11-20 a $ 55.000 target returned $ 69.542 although $ 68.640 already gives $ 55.010.
+  const STEPS = [2.5 * BPC, 10 * BPC, 15 * BPC]
+
+  it('returns the smallest nominal across a drop at 10 BPC and at 15 BPC', () => {
+    const a = nominalForLiquido(55000)
+    expect(a).toBeLessThanOrEqual(10 * BPC)
+    expect(Math.abs(computePayroll({ nominal: a }).liquido - 55000)).toBeLessThan(0.5)
+    const b = nominalForLiquido(76000)
+    expect(b).toBeLessThanOrEqual(15 * BPC)
+    expect(Math.abs(computePayroll({ nominal: b }).liquido - 76000)).toBeLessThan(0.5)
+  })
+
+  it('never skips a step that already reaches the target (10.000 to 250.000, every 250)', () => {
+    for (let target = 10000; target <= 250000; target += 250) {
+      const nominal = nominalForLiquido(target)
+      expect(Math.abs(computePayroll({ nominal }).liquido - target)).toBeLessThan(0.5)
+      for (const step of STEPS) {
+        if (step < nominal) expect(computePayroll({ nominal: step }).liquido).toBeLessThan(target)
+      }
+    }
   })
 })
 

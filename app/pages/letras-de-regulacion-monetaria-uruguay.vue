@@ -22,6 +22,16 @@
         >.
       </p>
       <p v-if="yearMove" class="text-body-2 text-medium-emphasis lead mt-2">{{ yearMove }}</p>
+      <p v-if="breakEvenLead" class="text-body-2 lead mt-2">
+        Para una persona la cuenta depende del monto: comprada por el BROU, la letra le gana al
+        plazo fijo e-BROU {{ breakEvenLead }}. Con menos, el plazo fijo rinde más que la letra
+        comprada por el BROU.
+      </p>
+      <p v-if="rateRange" class="text-body-2 lead mt-2">
+        La Tasa de Política Monetaria del BCU está en {{ tpmLabel }} {{ tpmSince }}, y las últimas
+        letras cortaron {{ rateRange }}.
+        <NuxtLink :to="links.tpm" class="cu-link">Qué es la TPM</NuxtLink>.
+      </p>
       <p v-if="nextAuction" class="text-body-2 lead mt-2">
         La próxima licitación es el <strong>{{ longDay(nextAuction.date) }}</strong
         >, a las {{ nextAuction.hour }}: letra a {{ nextAuction.days }} días.
@@ -100,6 +110,42 @@
           </template>
         </ClientOnly>
       </div>
+
+      <template v-if="recentAuctions.length">
+        <h3 class="text-subtitle-1 font-weight-bold mt-6 mb-2">
+          Las últimas {{ recentAuctions.length }} licitaciones
+        </h3>
+        <div class="table-wrap">
+          <VTable class="cu-mobile-cards" density="compact">
+            <thead>
+              <tr>
+                <th scope="col">Fecha</th>
+                <th scope="col">Plazo</th>
+                <th scope="col" class="text-right">Días</th>
+                <th scope="col" class="text-right">Tasa de corte</th>
+                <th scope="col" class="text-right">Licitado</th>
+                <th scope="col" class="text-right">Adjudicado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="a in recentAuctions" :key="a.series">
+                <td data-label="Fecha">{{ shortDay(a.date) }}</td>
+                <td data-label="Plazo">{{ LRM_TERM_LABEL[a.termRef] }}</td>
+                <td data-label="Días" class="text-right">{{ a.days }}</td>
+                <td data-label="Tasa de corte" class="text-right font-weight-bold">
+                  {{ pct(a.cutRate) }}
+                </td>
+                <td data-label="Licitado" class="text-right">
+                  $ {{ formatNumber(a.auctioned, 0) }} millones
+                </td>
+                <td data-label="Adjudicado" class="text-right">
+                  $ {{ formatNumber(a.awarded, 0) }} millones
+                </td>
+              </tr>
+            </tbody>
+          </VTable>
+        </div>
+      </template>
     </section>
 
     <section class="mb-8">
@@ -168,8 +214,8 @@
             label="Monto a invertir"
             prefix="$"
             type="number"
-            :min="LRM_MIN_BID"
-            :step="LRM_BID_STEP"
+            :min="0"
+            :step="amountStep"
             variant="outlined"
             :error-messages="amountError"
             hide-details="auto"
@@ -185,7 +231,7 @@
           />
         </VCol>
       </VRow>
-      <div v-if="comparison" class="table-wrap">
+      <div v-if="comparison?.rows.length" class="table-wrap">
         <VTable class="cu-mobile-cards" density="comfortable">
           <thead>
             <tr>
@@ -206,7 +252,7 @@
           </tbody>
         </VTable>
       </div>
-      <p v-if="comparison" class="text-body-2 lead mt-3">{{ comparison.verdict }}</p>
+      <p v-if="comparison?.verdict" class="text-body-2 lead mt-3">{{ comparison.verdict }}</p>
 
       <h3 class="text-subtitle-1 font-weight-bold mt-6 mb-2">
         Desde cuánto la LRM comprada por el BROU le gana al plazo fijo e-BROU
@@ -226,15 +272,18 @@
               <td data-label="Plazo">{{ LRM_TERM_LABEL[row.termRef] }}</td>
               <td data-label="Tasa de corte" class="text-right">{{ pct(row.cutRate) }}</td>
               <td data-label="Pizarra e-BROU" class="text-right">
-                {{ row.deposit != null ? pct(row.deposit) : '—' }}
+                {{ row.deposit != null ? pct(row.deposit) : `no hay a ${row.days} días` }}
               </td>
               <td data-label="La letra gana desde" class="text-right font-weight-bold">
-                {{ row.amount != null ? money(row.amount) : 'más de $ 50 millones' }}
+                {{ breakEvenLabel(row) }}
               </td>
             </tr>
           </tbody>
         </VTable>
       </div>
+      <p v-if="shortLetter" class="text-body-2 text-medium-emphasis lead mt-2">
+        {{ noComparableDepositSentence(shortLetter.days) }}
+      </p>
       <p class="text-body-2 lead mt-3">
         La comisión mínima del BROU es de {{ money(BROU_MIN_COMMISSION) }} por operación<template
           v-if="smallTicket"
@@ -246,6 +295,62 @@
         buscás liquidez diaria en pesos, mirá las
         <NuxtLink :to="links.cuenta" class="cu-link">cuentas remuneradas</NuxtLink>.
       </p>
+
+      <h3 class="text-subtitle-1 font-weight-bold mt-6 mb-2">
+        Cuánto te queda según cuánto pongas
+      </h3>
+      <p class="text-body-2 lead mb-3">
+        La misma cuenta para los montos más comunes, con la última licitación de cada plazo.
+        Ganancia en pesos al vencimiento, ya descontada la comisión (letra) o el IRPF (plazo fijo).
+      </p>
+      <div class="table-wrap">
+        <VTable class="cu-mobile-cards cu-roomy" density="compact">
+          <thead>
+            <tr>
+              <th scope="col">Monto</th>
+              <th v-for="a in gridColumns" :key="a.termRef" scope="col" class="text-right">
+                {{ LRM_TERM_LABEL[a.termRef] }}
+                <span class="d-block text-caption text-medium-emphasis">
+                  {{ a.days }} días · {{ pct(a.cutRate) }}
+                </span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in amountGrid" :key="row.amount">
+              <td data-label="">{{ money(row.amount) }}</td>
+              <td
+                v-for="c in row.cells"
+                :key="c.termRef"
+                :data-label="`${LRM_TERM_LABEL[c.termRef]} (${c.days} días)`"
+                class="text-right"
+              >
+                <span>
+                  <span class="d-block" :class="{ 'font-weight-bold': c.winner === 'letter' }">
+                    {{
+                      c.letter
+                        ? `Letra ${money(c.letter.netGain)} (${BROKER_NAME[c.letter.broker]})`
+                        : 'Letra: no llega al mínimo'
+                    }}
+                  </span>
+                  <span class="d-block" :class="{ 'font-weight-bold': c.winner === 'deposit' }">
+                    {{
+                      c.deposit
+                        ? `Plazo fijo ${money(c.deposit.netGain)}`
+                        : 'Sin plazo fijo a ese plazo'
+                    }}
+                  </span>
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+      </div>
+      <p class="text-caption text-medium-emphasis mt-2">
+        Letra: la que deja más entre comprarla por el BROU o por Itaú. Plazo fijo: pizarra e-BROU.
+        En negrita, la que gana.
+      </p>
+
       <p class="text-caption text-medium-emphasis mt-2">
         Comisiones según los tarifarios publicados: {{ brouTariff.rule }} (BROU);
         {{ itauTariff.rule }}
@@ -256,14 +361,15 @@
     </section>
 
     <section class="mb-8">
-      <h2 class="text-h5 font-weight-bold mb-3">Cómo compra una persona</h2>
+      <h2 class="text-h5 font-weight-bold mb-3">Cómo comprar LRM siendo una persona</h2>
       <ol class="steps">
         <li>
           <strong>Por un banco o un corredor de bolsa, nunca directo.</strong> En la licitación
           compiten sólo los Operadores Primarios que designa el BCU; el resto de los bancos,
           corredores y casas financieras entra en el tramo no competitivo, a la misma tasa de corte
           y por hasta el 20 % de lo licitado. Tu banco o tu corredor te anota ahí, o te vende letras
-          ya emitidas en el mercado secundario.
+          ya emitidas en el mercado secundario. El BCU lo recordó el 1/3/2024: la inversión «está
+          disponible a través de los distintos agentes regulados del sistema financiero».
         </li>
         <li>
           <strong>Con un mínimo de {{ money(LRM_MIN_BID) }}.</strong> El sistema del BCU no admite
@@ -281,6 +387,64 @@
           sin cargo en el BROU y en Itaú.
         </li>
       </ol>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="text-h5 font-weight-bold mb-3">Dónde comprar LRM: qué publica cada banco</h2>
+      <p class="text-body-2 lead mb-3">
+        Lo que cada banco publica en su sitio y en su tarifario, leído el
+        {{ longDay(LRM_TARIFFS_VERIFIED_AT, true) }}. De estos cinco, sólo el BROU y el Itaú
+        publican una comisión propia de las LRM que dice cómo se aplica: son las dos del simulador.
+        BBVA publica un porcentaje para letras sin decir si es anual, y Santander no tiene un
+        renglón para letras.
+      </p>
+      <div class="table-wrap">
+        <VTable class="cu-mobile-cards cu-roomy" density="compact">
+          <thead>
+            <tr>
+              <th scope="col">Banco</th>
+              <th scope="col">Cómo se compra</th>
+              <th scope="col">Mínimo</th>
+              <th scope="col">Comisión por comprar</th>
+              <th scope="col">Custodia</th>
+              <th scope="col">Fuente</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="s in LRM_WHERE_TO_BUY" :key="s.id">
+              <td data-label="">{{ s.name }}</td>
+              <td data-label="Cómo se compra" class="cu-cell-prose">{{ s.how }}</td>
+              <td data-label="Mínimo" class="cu-cell-prose">{{ s.minimum }}</td>
+              <td data-label="Comisión por comprar" class="cu-cell-prose">{{ s.commission }}</td>
+              <td data-label="Custodia" class="cu-cell-prose">{{ s.custody }}</td>
+              <td data-label="Fuente" class="cu-cell-prose">
+                <span class="source-links">
+                  <a
+                    v-for="src in s.sources"
+                    :key="src.url"
+                    :href="src.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="cu-link"
+                    >{{ src.label }}</a
+                  >
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+      </div>
+      <p class="text-body-2 lead mt-3">
+        Si vas por un corredor de bolsa o un agente de valores, fijate que figure en el
+        <a
+          :href="LRM_SOURCES.bcuIntermediariesUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="cu-link"
+          >registro de intermediarios de valores del BCU</a
+        >
+        y pedí por escrito la tasa neta: lo que te queda después de la comisión.
+      </p>
     </section>
 
     <section v-if="example" class="mb-8">
@@ -366,8 +530,9 @@
         </li>
       </ul>
       <p class="text-caption text-medium-emphasis">
-        Normas, tarifarios y pizarra verificados el {{ longDay(LRM_VERIFIED_AT, true) }}. Las tasas
-        de las licitaciones se leen de la planilla del BCU dos veces por día.
+        Normas, tarifarios, pizarra y páginas de los bancos verificados el
+        {{ longDay(LRM_TARIFFS_VERIFIED_AT, true) }}. Las tasas de las licitaciones se leen de la
+        planilla del BCU dos veces por día.
       </p>
     </section>
 
@@ -395,30 +560,41 @@ import { computed, ref } from 'vue'
 import LineChart from '~/components/charts/LineChart.vue'
 import { formatNumber, formatSiteDateTime } from '~/utils/format'
 import { BROU_DEPOSIT_BOARD, DEPOSIT_IRPF_LAW, netOfIrpf } from '~/utils/investments'
+import { COPOM_DECISIONS_2026, LAST_DECISION } from '~/utils/monetaryPolicyRate'
 import {
   BROKER_TARIFFS,
   BROU_MIN_COMMISSION,
+  DEPOSIT_MIN_UYU,
   LRM_BASELINE,
   LRM_BID_STEP,
   LRM_MIN_BID,
   LRM_SCHEDULE,
   LRM_SOURCES,
   LRM_STATIC_DESCRIPTION,
+  LRM_TARIFFS_VERIFIED_AT,
   LRM_TERM_LABEL,
   LRM_VERIFIED_AT,
+  LRM_WHERE_TO_BUY,
   breakEvenAmount,
+  breakEvenLabel,
+  breakEvenSentence,
+  buildAmountGrid,
+  buildBreakEvenRows,
   buildLrmFaq,
   daysBetween,
   depositOutcome,
+  latestAuctions,
   latestFor,
   longDay,
   lrmDescription,
   lrmOutcome,
   lrmTitle,
   money,
+  noComparableDepositSentence,
   pct,
   presentValue,
   shortDay,
+  sortedLatest,
   upcomingFrom,
   usableSnapshot,
   yearAgoOf,
@@ -436,6 +612,7 @@ const links = {
   cuenta: localePath('/cuenta-remunerada-uruguay'),
   impuestos: localePath('/impuestos-inversiones-uruguay'),
   bonos: localePath('/guias/bonos-y-renta-fija-uruguay'),
+  tpm: localePath('/guias/tasa-de-politica-monetaria-uruguay'),
 }
 
 const { data } = await useFetch<LrmSnapshotDoc | null>('/api/letras-regulacion-monetaria', {
@@ -509,23 +686,59 @@ const termItems = computed(() =>
     .map(a => ({ title: `${LRM_TERM_LABEL[a.termRef]} (${a.days} días)`, value: a.termRef }))
 )
 const amountError = computed(() =>
-  (amount.value || 0) < LRM_MIN_BID
-    ? `El BCU no admite propuestas por menos de ${money(LRM_MIN_BID)}.`
+  (amount.value || 0) < DEPOSIT_MIN_UYU
+    ? `El plazo fijo e-BROU arranca en ${money(DEPOSIT_MIN_UYU)} y la letra en ${money(LRM_MIN_BID)}.`
     : ''
+)
+
+// Las flechas del campo: de a $ 5.000 (el plazo fijo) debajo del mínimo de la letra y de a
+// $ 10.000 (lo que exige el BCU) desde ahí. La base es 0 y no el mínimo: con base $ 5.000 un paso de
+// $ 10.000 ofrecería $ 105.000, que el BCU no acepta.
+const amountStep = computed(() =>
+  (amount.value || 0) < LRM_MIN_BID ? DEPOSIT_MIN_UYU : LRM_BID_STEP
 )
 
 const brouTariff = BROKER_TARIFFS.find(t => t.id === 'brou')!
 const itauTariff = BROKER_TARIFFS.find(t => t.id === 'itau')!
+const BROKER_NAME = { brou: 'BROU', itau: 'Itaú' } as const
 
 const comparison = computed(() => {
   const auction: LrmAuction | null =
     latestFor(snapshot.value, term.value) ?? snapshot.value.latest[0] ?? null
-  const invested = Math.max(LRM_MIN_BID, Number(amount.value) || 0)
+  const invested = Math.max(DEPOSIT_MIN_UYU, Number(amount.value) || 0)
   if (!auction) return null
-  const none = lrmOutcome(invested, auction, 'none')
-  const brou = lrmOutcome(invested, auction, 'brou')
-  const itau = lrmOutcome(invested, auction, 'itau')
   const deposit = depositOutcome(invested, auction.days)
+  const depositRow = deposit
+    ? {
+        id: 'deposit',
+        label: 'Plazo fijo e-BROU',
+        detail: `Pizarra ${pct(deposit.grossPct)} (${deposit.tranche.label} días), menos ${money(deposit.irpf)} de IRPF.`,
+        gain: deposit.netGain,
+        annual: deposit.netAnnualPct,
+      }
+    : null
+  // Debajo del mínimo de la letra no se calcula una letra que no se puede comprar: queda el
+  // plazo fijo, y la página lo dice en vez de subir el monto a escondidas.
+  if (invested < LRM_MIN_BID) {
+    const tail = deposit
+      ? `En plazo fijo e-BROU a ${auction.days} días ganás ${money(deposit.netGain)} después del IRPF.`
+      : noComparableDepositSentence(auction.days)
+    return {
+      days: auction.days,
+      rows: depositRow ? [{ ...depositRow, best: true }] : [],
+      verdict: `Con ${money(invested)} no llegás al mínimo de una letra (${money(LRM_MIN_BID)}). ${tail}`,
+    }
+  }
+  // El BCU toma múltiplos de $ 10.000: un monto escrito a mano se baja al múltiplo para la letra
+  // (el plazo fijo va con el monto entero) y el veredicto lo dice.
+  const letterAmount = Math.floor(invested / LRM_BID_STEP) * LRM_BID_STEP
+  const roundedNote =
+    letterAmount !== invested
+      ? `La letra se compra en múltiplos de ${money(LRM_BID_STEP)}: la cuenta de la letra es con ${money(letterAmount)}. `
+      : ''
+  const none = lrmOutcome(letterAmount, auction, 'none')
+  const brou = lrmOutcome(letterAmount, auction, 'brou')
+  const itau = lrmOutcome(letterAmount, auction, 'itau')
   const rows = [
     {
       id: 'none',
@@ -549,15 +762,7 @@ const comparison = computed(() => {
       annual: itau.netAnnualPct,
     },
   ]
-  if (deposit) {
-    rows.push({
-      id: 'deposit',
-      label: 'Plazo fijo e-BROU',
-      detail: `Pizarra ${pct(deposit.grossPct)} (${deposit.tranche.label} días), menos ${money(deposit.irpf)} de IRPF.`,
-      gain: deposit.netGain,
-      annual: deposit.netAnnualPct,
-    })
-  }
+  if (depositRow) rows.push(depositRow)
   // La mejor opción contratable: la fila sin comisión es un techo, no algo que se pueda comprar.
   const buyable = rows.filter(r => r.id !== 'none')
   const best = buyable.reduce((a, b) => (b.gain > a.gain ? b : a))
@@ -569,24 +774,45 @@ const comparison = computed(() => {
     ? best.id === 'deposit'
       ? `Con ${money(invested)} a ${auction.days} días, el plazo fijo por e-BROU te deja ${money(deposit.netGain - bestLetter.gain)} más que la mejor letra comprada por banco (por ${letterName}), aun pagando IRPF.`
       : `Con ${money(invested)} a ${auction.days} días, la letra comprada por ${letterName} te deja ${money(bestLetter.gain - deposit.netGain)} más que el plazo fijo por e-BROU.`
-    : ''
+    : noComparableDepositSentence(auction.days)
   return {
     days: auction.days,
     rows: rows.map(r => ({ ...r, best: r.id === best.id })),
-    verdict,
+    verdict: `${roundedNote}${verdict}`,
   }
 })
 
-const breakEvenRows = computed(() =>
-  [...snapshot.value.latest]
-    .sort((a, b) => a.termRef - b.termRef)
-    .map(a => ({
-      termRef: a.termRef,
-      cutRate: a.cutRate,
-      deposit: depositOutcome(LRM_MIN_BID, a.days)?.grossPct ?? null,
-      amount: breakEvenAmount(a, 'brou'),
-    }))
-)
+const breakEvenRows = computed(() => buildBreakEvenRows(snapshot.value))
+/** La primera letra más corta que el plazo fijo más corto: la pizarra no tiene con qué compararla. */
+const shortLetter = computed(() => breakEvenRows.value.find(r => !r.comparable) ?? null)
+const breakEvenLead = computed(() => breakEvenSentence(breakEvenRows.value))
+
+const amountGrid = computed(() => buildAmountGrid(snapshot.value))
+const gridColumns = computed(() => sortedLatest(snapshot.value))
+const recentAuctions = computed(() => latestAuctions(snapshot.value))
+
+const tpmLabel = pct(LAST_DECISION.levelPct, Number.isInteger(LAST_DECISION.levelPct) ? 0 : 2)
+/**
+ * Fechado, porque «está en 6 %» sin fecha es la frase que el sitio ya publicó un mes después de que
+ * dejara de ser cierta (utils/monetaryPolicyRate.ts). «Desde» sólo si la racha de reuniones con el
+ * mismo nivel arranca en una que lo cambió; si no, la fecha del comunicado que se leyó.
+ */
+const tpmSince = (() => {
+  let start = COPOM_DECISIONS_2026.length - 1
+  while (start > 0 && COPOM_DECISIONS_2026[start - 1]!.levelPct === LAST_DECISION.levelPct) start--
+  const first = COPOM_DECISIONS_2026[start]!
+  return first.changeBp !== 0
+    ? `desde el ${longDay(first.date, true)}`
+    : `según el comunicado del COPOM del ${longDay(LAST_DECISION.date, true)}`
+})()
+/** «entre 6,06 % y 6,49 %», de la última licitación de cada plazo. */
+const rateRange = computed(() => {
+  const rates = snapshot.value.latest.map(a => a.cutRate)
+  if (!rates.length) return ''
+  const lo = Math.min(...rates)
+  const hi = Math.max(...rates)
+  return lo === hi ? `en ${pct(lo)}` : `entre ${pct(lo)} y ${pct(hi)}`
+})
 
 /** Lo que hace la comisión mínima con la letra más chica y más corta. */
 const smallTicket = computed(() => {
@@ -626,13 +852,7 @@ const TREASURY_LABEL: Record<'UYU' | 'UI' | 'UP', string> = {
 }
 const treasury = computed(() => snapshot.value.treasury)
 
-const faq = computed(() =>
-  buildLrmFaq(
-    snapshot.value,
-    nextAuction.value,
-    breakEvenRows.value.find(r => r.termRef === 30)?.amount ?? null
-  )
-)
+const faq = computed(() => buildLrmFaq(snapshot.value, nextAuction.value, breakEvenRows.value))
 
 // --- Gráfico ----------------------------------------------------------------------------------------
 
@@ -699,6 +919,29 @@ const sources = [
   { label: brouTariff.sourceLabel, url: brouTariff.source },
   { label: itauTariff.sourceLabel, url: itauTariff.source },
   { label: 'BROU — Pizarras de plazo fijo e-BROU y sucursales', url: BROU_DEPOSIT_BOARD.pdfUrl },
+  {
+    label: 'BCU — Acceso a Letras de Regulación Monetaria por parte de la ciudadanía (1/3/2024)',
+    url: LRM_SOURCES.citizenAccessUrl,
+  },
+  { label: 'BROU — Instrumentos financieros', url: LRM_SOURCES.brouInstrumentsUrl },
+  {
+    label: 'BROU — Instrumentos financieros, preguntas frecuentes',
+    url: LRM_SOURCES.brouInstrumentsFaqUrl,
+  },
+  { label: 'Itaú — Inversiones (Letras de Regulación Monetaria)', url: LRM_SOURCES.itauProductUrl },
+  {
+    label: 'BBVA — Manual de tarifas y comisiones (3/9/2026), secciones 42 y 43',
+    url: LRM_SOURCES.bbvaTariffUrl,
+  },
+  {
+    label: 'Santander — Letras de Regulación Monetaria y Notas del Gobierno Central',
+    url: LRM_SOURCES.santanderProductUrl,
+  },
+  { label: 'Santander — App Inversiones', url: LRM_SOURCES.santanderAppUrl },
+  { label: 'Santander — Manual de tarifas, inversión', url: LRM_SOURCES.santanderTariffUrl },
+  { label: 'Scotiabank — Banca Premium', url: LRM_SOURCES.scotiabankPremiumUrl },
+  { label: 'Scotiabank — Banca Premium, inversiones', url: LRM_SOURCES.scotiabankInvestmentsUrl },
+  { label: 'BCU — Intermediarios de valores', url: LRM_SOURCES.bcuIntermediariesUrl },
 ]
 
 const related = [
@@ -709,6 +952,12 @@ const related = [
   { label: 'Bonos y renta fija', to: '/guias/bonos-y-renta-fija-uruguay' },
   { label: 'Qué son las LRM (glosario)', to: '/glosario/letras-regulacion-monetaria' },
   { label: 'Valor de la UI hoy', to: '/indicadores/unidad-indexada' },
+  { label: 'Tasa de política monetaria', to: '/guias/tasa-de-politica-monetaria-uruguay' },
+  {
+    label: 'Contra la inflación: dólares o indexados',
+    to: '/guias/proteger-ahorros-de-la-inflacion',
+  },
+  { label: '¿Conviene un plazo fijo?', to: '/guias/plazo-fijo-en-uruguay-conviene' },
 ]
 
 const crumbs = computed(() => [
@@ -837,6 +1086,11 @@ useHead(() => ({
 .steps li,
 .plain-list li {
   margin-top: 8px;
+}
+.source-links {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0 0.75rem;
 }
 .sources {
   padding-left: 1.1rem;

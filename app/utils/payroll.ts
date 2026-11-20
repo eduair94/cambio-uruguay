@@ -27,7 +27,10 @@
 //     2026-10-19 this module skipped it: $ 80.000 nominales withheld $ 1.568 instead
 //     of $ 2.288 and the líquido came out $ 720 too high.
 //     Tasa del crédito: 14% si los ingresos nominales anuales (excluido aguinaldo y
-//     salario vacacional) son < 180 BPC; 8% en otro caso. (180 BPC/año == 15 BPC/mes.)
+//     salario vacacional) son iguales o inferiores a 180 BPC; 8% en otro caso (T.O. 2023,
+//     Título 7, art. 49). Para la retención del mes: «Hasta 15 BPC 14% / Más de 15 BPC 8%»
+//     (Decreto 148/007 art. 63; BPS Comunicado R 5/2026: «≤ 102.960 14 %»). Hasta el
+//     2026-11-20 este módulo pasaba al 8 % EN 15 BPC: $ 1.210 menos en mano a $ 102.960.
 //   - Deducciones admitidas (DGI, "Deducciones admitidas en la liquidación del IRPF"):
 //     aportes jubilatorios personales, aportes personales FONASA y FRL, Fondo de
 //     Solidaridad y su adicional, cuota de préstamo hipotecario para vivienda única y
@@ -61,7 +64,7 @@ export const PAYROLL_UY = Object.freeze({
   hijoDiscapacidadDeduccionBpc: 40,
   /** Cuota de préstamo hipotecario (vivienda única y permanente): annual cap, in BPC. */
   hipotecarioTopeBpc: 36,
-  /** Deduction credit: 14% below the threshold, 8% at or above it. */
+  /** Deduction credit: 14% up to and including the threshold, 8% above it. */
   creditRateLow: 14,
   creditRateHigh: 8,
   /** Threshold for the credit rate, in BPC of MONTHLY nominal (180 BPC/year / 12). */
@@ -185,7 +188,7 @@ export function computePayroll(input: PayrollInput): PayrollResult {
   )
 
   const creditRate =
-    nominal < PAYROLL_UY.creditThresholdBpcMonthly * bpc
+    nominal <= PAYROLL_UY.creditThresholdBpcMonthly * bpc
       ? PAYROLL_UY.creditRateLow
       : PAYROLL_UY.creditRateHigh
   const credit = round((deductionsMonthly * creditRate) / 100)
@@ -223,9 +226,15 @@ export function computePayroll(input: PayrollInput): PayrollResult {
 }
 
 /**
- * Reverse mode: what nominal do I need to take home `target` líquido?
- * `computePayroll` is monotonic in `nominal`, so bisect. Used for job offers
+ * Reverse mode: the SMALLEST nominal that takes home `target` líquido. Used for job offers
  * quoted in líquido ("te pagamos X en mano").
+ *
+ * The líquido is NOT monotonic in the nominal: it drops when the nominal crosses 2,5 BPC (FONASA
+ * rate), 10 BPC (+6 % IRPF base) and 15 BPC (credit 14 % -> 8 %). Each condition is "greater
+ * than", so a step value belongs to the segment below it, and inside a segment the líquido does
+ * grow with the nominal. So the search walks the segments upwards and bisects the first one whose
+ * top already reaches the target. Until 2026-11-20 it bisected the whole range: a $ 55.000 target
+ * returned $ 69.542 although $ 68.640 (10 BPC) already gives $ 55.010.
  */
 export function nominalForLiquido(
   target: number,
@@ -235,15 +244,35 @@ export function nominalForLiquido(
   const goal = Math.max(target || 0, 0)
   if (goal === 0) return 0
 
-  let low = goal
-  let high = goal * 3 + 10000
-  // Make sure the upper bound really overshoots.
-  while (computePayroll({ ...input, nominal: high }).liquido < goal && high < 1e9) high *= 2
+  const bpc = input.bpc && input.bpc > 0 ? input.bpc : URUGUAY.bpc
+  const steps = [
+    PAYROLL_UY.fonasaThresholdBpc,
+    PAYROLL_UY.irpfIncrementAboveBpc,
+    PAYROLL_UY.creditThresholdBpcMonthly,
+  ]
+    .map(n => n * bpc)
+    .sort((a, b) => a - b)
+
+  let low = 0
+  let high: number | null = null
+  for (const step of steps) {
+    if (computePayroll({ ...input, nominal: step }).liquido >= goal) {
+      high = step
+      break
+    }
+    low = step
+  }
+  if (high === null) {
+    // Open top segment: overshoot from above the last step.
+    high = Math.max(low, goal * 3 + 10000)
+    while (computePayroll({ ...input, nominal: high }).liquido < goal && high < 1e9) high *= 2
+  }
 
   for (let i = 0; i < maxIterations; i++) {
-    const mid = (low + high) / 2
+    // Evaluated at the rounded value it returns, so the returned nominal itself lands within 0,5.
+    const mid = round((low + high) / 2)
     const { liquido } = computePayroll({ ...input, nominal: mid })
-    if (Math.abs(liquido - goal) < 0.5) return round(mid)
+    if (Math.abs(liquido - goal) < 0.5) return mid
     if (liquido < goal) low = mid
     else high = mid
   }

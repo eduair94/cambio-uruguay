@@ -242,6 +242,20 @@ dentro del snapshot. Toda oportunidad publicada pasó por su ficha (en las webs,
 ML y Facebook, la página del aviso): activa, mismo precio/año/km, sin menciones de choque, recupero,
 deuda/leasing o chapa extranjera. Monedas deducidas fuera. No es tasación.
 
+**El resumen de la lista entera** (desde el 20/11/2026, `app/utils/carOpportunitySummary.ts`):
+`/api/car-opportunities` manda en cada respuesta, además de la página pedida, un campo `summary`
+calculado sobre la lista ENTERA sin filtros (mismo reloj y mismo corte de 2 días que la lista): total
+y reparto sólida/exploratoria, precio mínimo/mediano/máximo, diferencia mediana y máxima, cuántas
+entran hasta cada tope de `CAR_BUDGETS` (acumulado, la misma comparación `<=` que el filtro de
+precio), los 12 modelos con más oportunidades y la más barata. La página lo imprime arriba de las
+tarjetas, en dos tablas y en las preguntas frecuentes, porque las páginas 2 en adelante y cada filtro
+van `noindex` y el HTML canónico sólo traía las 20 primeras. Es aditivo y opcional: una respuesta
+cacheada sin el campo no dibuja nada. La respuesta "sólida o exploratoria" se arma con TODAS las
+condiciones de `tierFor` leídas de `policy` (una lista incompleta se lee como suficiente y viaja tal
+cual en el FAQPage), y los separadores de la primera frase llevan su propio espacio porque Vue
+descarta el blanco antes de `</template>`: lo cubre un test que compila y renderiza el fragmento de la
+página.
+
 ### El precio es el de contado que dice el aviso (2026-09-19)
 
 Las automotoras publican la **entrega** como precio y ponen el precio real en la descripción:
@@ -582,6 +596,18 @@ el próximo agregado:
 
 Medido el 2026-09-18: 17.684 avisos comparables, 80 marcas, 942 modelos; mediana US$ 13.000, año 2018,
 107.000 km; 83 % nafta, 65 % manual, 51 % automotora; Montevideo 48 %.
+
+**El directorio también lo publica** (desde 2026-11-20): `/autos-usados-uruguay` pide
+`/api/car-report` en paralelo con el catálogo (clave `cars-directory-market`, tope 2,5 s,
+`transform: carsDirectorySummary` → un resumen de menos de 4 KB en el payload) y dibuja la mediana de
+los avisos en dólares en el encabezado, las franjas de precio, los presupuestos, el precio mediano por
+marca y hasta ocho preguntas frecuentes (`app/utils/carsDirectorySummary.ts`,
+`components/cars/DirectoryMarket.vue`). No recalcula ninguna mediana sobre el catálogo: el sitio
+publicaría dos. Se oculta si el informe es más de 3 días más viejo que el catálogo o tiene menos de
+1.000 avisos. La rotación NO se publica como "cuánto tarda en venderse": es la vida mediana de los
+avisos que ya salieron, y deja afuera a los que siguen publicados, que son los que más duran. Los
+atajos de filtro son botones sin href: las URLs filtradas van noindex y cada una cuesta varias
+agregaciones.
 
 ## El tasador y la guía para vender
 

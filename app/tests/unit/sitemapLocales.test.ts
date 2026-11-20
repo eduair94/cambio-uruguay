@@ -29,15 +29,43 @@ describe('sitemap locale filter', () => {
     expect(keepCanonicalLocales(entries)).toEqual(entries)
   })
 
+  // The module's `nuxt:pages` source lists the Spanish page next to its locales, as every real
+  // input does; a translation with no Spanish entry is dropped (see the orphan tests below).
   it("drops the module's own page entries for /en and /pt, absolute or relative", () => {
     expect(
       keepCanonicalLocales([
         '/dolar-hoy',
         '/en/dolar-hoy',
         { loc: 'https://cambio-uruguay.com/pt/dolar-hoy' },
+        { loc: 'https://cambio-uruguay.com/pizarra' },
         { loc: 'https://cambio-uruguay.com/en/pizarra' },
       ])
-    ).toEqual(['/dolar-hoy', { loc: 'https://cambio-uruguay.com/en/pizarra' }])
+    ).toEqual([
+      '/dolar-hoy',
+      { loc: 'https://cambio-uruguay.com/pizarra' },
+      { loc: 'https://cambio-uruguay.com/en/pizarra' },
+    ])
+  })
+
+  // A translation whose Spanish page is not in the same input is an orphan: the page it translates
+  // is gone. (On 2026-11-20 twelve /ro, /sv, /hr, /lv, /vi and /ar URLs had no Spanish entry in the
+  // Spanish sitemap; those came from separate snapshots of the source, now cached once.)
+  it('drops a translation whose Spanish page is absent from the same input', () => {
+    expect(keepCanonicalLocales([{ loc: '/fr/mapa' }, { loc: '/en/mapa' }])).toEqual([])
+    expect(
+      keepCanonicalLocales([{ loc: '/mapa' }, { loc: '/fr/mapa' }, { loc: '/en/mapa' }])
+    ).toEqual([{ loc: '/mapa' }, { loc: '/fr/mapa' }, { loc: '/en/mapa' }])
+  })
+
+  it('adds no machine translation for a path whose Spanish entry is absent', () => {
+    const urls = keepCanonicalLocales([{ loc: '/mapa' }], {
+      pages: new Map([
+        ['/mapa', ['fr']],
+        ['/guias/ausente', ['en', 'fr']],
+      ]),
+      isEmbargoed: () => false,
+    })
+    expect(urls.map(url => url.loc)).toEqual(['/mapa', '/fr/mapa'])
   })
 
   it('passes Spanish entries without alternates and entries without a loc through', () => {
@@ -52,10 +80,15 @@ describe('sitemap locale filter', () => {
       const hook = vi.fn()
       ;(plugin as unknown as (app: unknown) => void)({ hooks: { hook } })
       expect(hook.mock.calls[0]?.[0]).toBe('sitemap:input')
-      const context = { sitemapName: 'en-US', urls: ['/en/guias/x', '/en/mapa'] }
+      // Every sitemap's input carries all locales (the module filters per sitemap AFTER the hook),
+      // so the Spanish pages are there next to their translations.
+      const context = {
+        sitemapName: 'en-US',
+        urls: ['/guias/x', '/en/guias/x', '/mapa', '/en/mapa'],
+      }
       // Async now: it reads the translated pages first (none here: no database in the test).
       await hook.mock.calls[0]![1](context)
-      expect(context.urls).toEqual(['/en/mapa'])
+      expect(context.urls).toEqual(['/guias/x', '/mapa', '/en/mapa'])
     } finally {
       vi.unstubAllGlobals()
     }

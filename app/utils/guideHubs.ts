@@ -52,9 +52,9 @@ export const guideHubs: readonly GuideHub[] = [
   {
     slug: 'dolar-y-casas-de-cambio-uruguay',
     title: 'Dólar y casas de cambio en Uruguay',
-    seoTitle: 'Dólar y casas de cambio en Uruguay: mejor precio, comparador y guías',
+    seoTitle: 'Dólar en Uruguay: comparar casas de cambio',
     description:
-      'Todo sobre el dólar en Uruguay: comparar el precio entre casas de cambio, entender BILLETE, CABLE y TRANSFERENCIA, y cambiar al mejor precio con nuestras guías y herramientas.',
+      'Comparar el dólar entre más de 40 casas de cambio, entender BILLETE, CABLE y TRANSFERENCIA, y cambiar donde más te paguen, con el comparador en vivo.',
     tag: 'DÓLAR',
     icon: 'mdi-cash-multiple',
     intro:
@@ -206,9 +206,9 @@ export const guideHubs: readonly GuideHub[] = [
   {
     slug: 'importaciones-y-aduana-uruguay',
     title: 'Importar y aduana en Uruguay',
-    seoTitle: 'Importar a Uruguay: courier, franquicia, aduana e impuestos',
+    seoTitle: 'Importar a Uruguay: courier y franquicia',
     description:
-      'Comprar del exterior a Uruguay sin sorpresas: régimen de courier y franquicia, impuestos, la franquicia del viajero, problemas con la aduana y calculadoras de costo final.',
+      'Courier, franquicia y aduana: qué impuestos paga una compra del exterior, cuánto queda exonerado, la franquicia del viajero y el costo final.',
     tag: 'ADUANA',
     icon: 'mdi-package-variant-closed',
     intro:
@@ -332,9 +332,9 @@ export const guideHubs: readonly GuideHub[] = [
   {
     slug: 'economia-y-mercado-uruguay',
     title: 'Economía y mercado en Uruguay',
-    seoTitle: 'Economía de Uruguay: por qué sube el dólar, inflación, indicadores y noticias',
+    seoTitle: 'Economía de Uruguay: dólar, inflación y UI',
     description:
-      'Entendé la economía uruguaya: por qué sube el dólar, la inflación, los indicadores (UI, UR, BPC), las noticias y cómo proteger tus ahorros de la suba de precios.',
+      'Por qué sube el dólar, qué es la inflación y cómo la mide el INE, qué valen la UI, la UR y la BPC, y cómo proteger tus ahorros cuando los precios suben.',
     tag: 'ECONOMÍA',
     icon: 'mdi-chart-areaspline',
     intro:
@@ -346,6 +346,7 @@ export const guideHubs: readonly GuideHub[] = [
       'unidad-indexada-explicada',
       'ui-ur-bpc-diferencias',
       'tasa-de-politica-monetaria-uruguay',
+      'linea-de-pobreza-uruguay',
     ],
     resources: [
       {
@@ -459,9 +460,9 @@ export const guideHubs: readonly GuideHub[] = [
   {
     slug: 'alquiler-y-vivienda-uruguay',
     title: 'Alquilar en Uruguay',
-    seoTitle: 'Alquilar en Uruguay: garantías, contratos y derechos del inquilino',
+    seoTitle: 'Alquilar en Uruguay: garantías y derechos',
     description:
-      'Todo sobre alquilar en Uruguay: tipos de garantía, depósito, cómo rescindir el contrato, derechos del inquilino y alquiler temporario. Guías claras y verificadas.',
+      'Qué garantía te piden y cuánto sale, el depósito, cómo rescindir el contrato antes de tiempo, los derechos del inquilino y el alquiler de temporada.',
     tag: 'VIVIENDA',
     icon: 'mdi-home-city-outline',
     intro:
@@ -625,6 +626,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/cuanto-gastar-en-un-sommier-uruguay',
       },
       {
+        label: 'Productos que te cambian la vida',
+        description: 'Lo que nombró r/uruguay, con lo que piden hoy en Mercado Libre.',
+        to: '/productos-que-te-cambian-la-vida-uruguay',
+      },
+      {
         label: 'Pensiones estudiantiles',
         description: 'Alternativas de alojamiento para estudiantes y cuánto cuestan.',
         to: '/pensiones-estudiantiles-uruguay',
@@ -636,7 +642,7 @@ export const guideHubs: readonly GuideHub[] = [
   {
     slug: 'comprar-vivienda-uruguay',
     title: 'Comprar vivienda en Uruguay',
-    seoTitle: 'Comprar vivienda en Uruguay: crédito hipotecario, BHU y escrituración',
+    seoTitle: 'Comprar casa en Uruguay: hipotecario y BHU',
     description:
       'Cómo comprar tu casa en Uruguay paso a paso: crédito hipotecario, BHU, costos de escrituración e ITP, promesa de compraventa y compra de terrenos.',
     tag: 'VIVIENDA',
@@ -744,9 +750,9 @@ export const guideHubs: readonly GuideHub[] = [
   {
     slug: 'herencias-y-sucesiones-uruguay',
     title: 'Herencias y sucesiones en Uruguay',
-    seoTitle: 'Herencias y sucesiones en Uruguay: testamento, legítima e impuestos',
+    seoTitle: 'Herencias en Uruguay: testamento y deudas',
     description:
-      'Cómo funciona una sucesión en Uruguay: si las deudas se heredan, cómo hacer un testamento, herederos forzosos y legítima, y por qué no hay impuesto a la herencia.',
+      'Si las deudas se heredan, cómo se hace un testamento, quiénes son los herederos forzosos y qué parte es la legítima, y qué paga una sucesión.',
     tag: 'HERENCIAS',
     icon: 'mdi-file-document-multiple-outline',
     intro:
@@ -780,9 +786,9 @@ export const guideHubs: readonly GuideHub[] = [
   {
     slug: 'pareja-familia-y-dinero-uruguay',
     title: 'Pareja, familia y dinero en Uruguay',
-    seoTitle: 'Economía de pareja en Uruguay: separación de bienes, gastos y finanzas juntos',
+    seoTitle: 'Dinero en pareja: bienes, gastos y divorcio',
     description:
-      'Cómo manejar el dinero en pareja en Uruguay: régimen patrimonial, separación de bienes, unión concubinaria, dividir gastos, cuenta conjunta y qué pasa en un divorcio.',
+      'Régimen patrimonial y separación de bienes, unión concubinaria, cómo dividir los gastos, la cuenta conjunta y qué pasa con todo eso en un divorcio.',
     tag: 'PAREJA',
     icon: 'mdi-account-heart-outline',
     intro:
@@ -795,6 +801,7 @@ export const guideHubs: readonly GuideHub[] = [
       'cuenta-conjunta-o-separada-pareja-uruguay',
       'hablar-de-dinero-en-pareja-uruguay',
       'division-de-bienes-en-el-divorcio-uruguay',
+      'divorcio-por-sola-voluntad-uruguay',
       'proteger-tu-patrimonio-en-pareja-uruguay',
       'asignacion-familiar-doble-uruguay',
     ],
@@ -845,9 +852,9 @@ export const guideHubs: readonly GuideHub[] = [
   {
     slug: 'comprar-y-mantener-auto-uruguay',
     title: 'Comprar y mantener un auto en Uruguay',
-    seoTitle: 'Comprar un auto en Uruguay: 0km o usado, crédito prendario y costos',
+    seoTitle: 'Comprar un auto en Uruguay: 0km o usado',
     description:
-      'Cómo comprar y mantener un auto en Uruguay: 0km vs usado, crédito prendario, el costo real de tener auto (patente, SOA, seguro) y cómo transferir un vehículo.',
+      '0km o usado, crédito prendario, el costo real de tener auto (patente, SOA y seguro) y cómo transferir un vehículo sin arrastrar su deuda.',
     tag: 'VEHÍCULOS',
     icon: 'mdi-car-outline',
     intro:
@@ -918,6 +925,12 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Vender mi auto',
         description: 'Cómo fijar el precio y qué pide el comprador.',
         to: '/vender-mi-auto-uruguay',
+      },
+      {
+        label: 'Cuánto sale transferir un auto',
+        description:
+          'La libreta sale $1.779,52 en 2026 en todo el país (SUCIVE), y qué piden las fichas oficiales.',
+        to: '/cuanto-sale-transferir-un-auto-uruguay',
       },
       {
         label: 'Multas y patente',
@@ -1001,7 +1014,7 @@ export const guideHubs: readonly GuideHub[] = [
   {
     slug: 'deudas-y-credito-uruguay',
     title: 'Deudas y crédito en Uruguay',
-    seoTitle: 'Deudas y crédito en Uruguay: préstamos, TEA, Clearing y cómo salir',
+    seoTitle: 'Deudas en Uruguay: préstamos y Clearing',
     description:
       'Cómo funciona el crédito en Uruguay y cómo salir de deudas: préstamos a sola firma, entender la TEA y el CFT, refinanciar, el Clearing y ser garante.',
     tag: 'CRÉDITO',
@@ -1024,6 +1037,11 @@ export const guideHubs: readonly GuideHub[] = [
       'me-compraron-la-deuda-uruguay',
       'saldo-a-favor-tarjeta-de-credito-uruguay',
       'como-saber-si-tengo-deudas-uruguay',
+      // La otra mitad de lo que el hub ya reúne: las quince de arriba cuentan cómo se toma y
+      // cómo se sale de una deuda, y el recurso /embargo-de-sueldo-uruguay cuenta qué pueden
+      // sacarte del sueldo. Lo que nadie contestaba es la pregunta siguiente de ese mismo
+      // lector: si pueden quedarse con la casa, y qué figura la saca del alcance del acreedor.
+      'bien-de-familia-uruguay',
     ],
     resources: [
       {
@@ -1112,9 +1130,9 @@ export const guideHubs: readonly GuideHub[] = [
   {
     slug: 'sueldo-trabajo-e-impuestos-uruguay',
     title: 'Sueldo, trabajo e impuestos en Uruguay',
-    seoTitle: 'Sueldo, trabajo e impuestos en Uruguay: recibo, aguinaldo, IRPF y despido',
+    seoTitle: 'Sueldo en Uruguay: recibo, aguinaldo e IRPF',
     description:
-      'Entendé tu sueldo en Uruguay: recibo (nominal vs líquido), aguinaldo, licencia y salario vacacional, despido y liquidación, IRPF y trabajar para el exterior.',
+      'Nominal contra líquido en el recibo, aguinaldo, licencia y salario vacacional, despido y liquidación, IRPF y trabajar para el exterior.',
     tag: 'TRABAJO',
     icon: 'mdi-briefcase-outline',
     intro:
@@ -1188,6 +1206,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/herramientas/calculadora-aguinaldo',
       },
       {
+        label: 'Calculadora del subsidio por enfermedad',
+        description: 'Cuánto paga el BPS por los días certificados.',
+        to: '/herramientas/calculadora-subsidio-por-enfermedad',
+      },
+      {
         label: 'Seguro de paro',
         description: 'Cuánto cobrás, por cuántos meses y por qué baja.',
         to: '/seguro-de-paro-uruguay',
@@ -1206,6 +1229,15 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Horas extras',
         description: 'Cuánto se pagan y cómo se calculan.',
         to: '/horas-extras-uruguay',
+      },
+      {
+        // Va pegada a horas extras porque la regla de jornada del teletrabajo es la excepción a la
+        // de esa página: el exceso DIARIO no es trabajo extraordinario, se compensa con horas no
+        // trabajadas en la misma semana (Ley 19.978, art. 8). Quien llega buscando horas extras y
+        // teletrabaja necesita saber eso antes de hacer la cuenta.
+        label: 'Teletrabajo',
+        description: '8 horas de desconexión, y sin acuerdo el equipo lo pone la empresa.',
+        to: '/teletrabajo-uruguay',
       },
       {
         label: 'Feriados que se corren al lunes',
@@ -1286,9 +1318,9 @@ export const guideHubs: readonly GuideHub[] = [
   {
     slug: 'derechos-y-reclamos-uruguay',
     title: 'Derechos y reclamos en Uruguay',
-    seoTitle: 'Derechos y reclamos en Uruguay: sueldo impago, cobranzas y abogado gratis',
+    seoTitle: 'Reclamos en Uruguay: abogado gratis y MTSS',
     description:
-      'Cómo reclamar en Uruguay: sueldo impago y conciliación ante el MTSS, qué puede y qué no una empresa de cobranza, dónde conseguir asesoramiento jurídico gratuito y a qué organismo va cada problema.',
+      'Sueldo impago y conciliación ante el MTSS, qué puede y qué no una empresa de cobranza, dónde hay abogado gratis y a qué organismo va cada reclamo.',
     tag: 'DERECHOS',
     icon: 'mdi-scale-balance',
     intro:
@@ -1381,7 +1413,7 @@ export const guideHubs: readonly GuideHub[] = [
   {
     slug: 'ahorrar-e-invertir-uruguay',
     title: 'Ahorrar e invertir en Uruguay',
-    seoTitle: 'Ahorrar e invertir en Uruguay: desde cero, plazo fijo, bolsa y dólares',
+    seoTitle: 'Ahorrar e invertir en Uruguay: desde cero',
     description:
       'Cómo empezar a ahorrar e invertir en Uruguay: fondo de emergencia, interés compuesto, plazo fijo, la bolsa de USA, renta fija, dólares y evitar estafas.',
     tag: 'INVERSIÓN',
@@ -1478,9 +1510,9 @@ export const guideHubs: readonly GuideHub[] = [
   {
     slug: 'finanzas-personales-y-jubilacion-uruguay',
     title: 'Finanzas personales y jubilación en Uruguay',
-    seoTitle: 'Finanzas personales en Uruguay: presupuesto, seguros, jubilación y AFAP',
+    seoTitle: 'Jubilación, AFAP y presupuesto en Uruguay',
     description:
-      'Ordená tu vida financiera en Uruguay: presupuesto personal, seguros que conviene tener, jubilación y AFAP, planificar el retiro, cuentas, billeteras y estafas.',
+      'Presupuesto personal, qué seguros conviene tener, jubilación y AFAP, cómo planificar el retiro, las facturas del hogar y cómo no caer en una estafa.',
     tag: 'FINANZAS',
     icon: 'mdi-heart-pulse',
     intro:
@@ -1665,10 +1697,9 @@ export const guideHubs: readonly GuideHub[] = [
   {
     slug: 'emprender-y-empresa-uruguay',
     title: 'Emprender y tener una empresa en Uruguay',
-    seoTitle:
-      'Emprender en Uruguay: monotributo, empresa unipersonal, facturar y qué empresa abrir',
+    seoTitle: 'Emprender en Uruguay: monotributo o empresa',
     description:
-      'Formalizar y hacer crecer tu emprendimiento en Uruguay: monotributo, empresa unipersonal, cómo facturar como freelancer, e-factura, impuestos y qué forma jurídica conviene.',
+      'Monotributo o empresa unipersonal, cómo facturar como freelancer, qué impuestos paga cada figura y cuál conviene según cuánto facturás.',
     tag: 'EMPRENDER',
     icon: 'mdi-rocket-launch-outline',
     intro:
@@ -1694,6 +1725,12 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Registrar una marca',
         description: 'La tasa de la DNPI va por clase de Niza, y con logo sale 40 % más.',
         to: '/registrar-una-marca-uruguay',
+      },
+      {
+        label: 'Apps hechas en Uruguay',
+        description:
+          'Lo que construyen desarrolladores de acá, revisado en la web de cada proyecto.',
+        to: '/apps-hechas-en-uruguay',
       },
       {
         label: 'Ropa por kilo y fardos',
@@ -1734,9 +1771,9 @@ export const guideHubs: readonly GuideHub[] = [
   {
     slug: 'bancos-y-pagos-uruguay',
     title: 'Bancos, tarjetas y pagos en Uruguay',
-    seoTitle: 'Bancos y pagos en Uruguay: débito, transferencias y alias',
+    seoTitle: 'Bancos y pagos en Uruguay: débito y alias',
     description:
-      'Pagar, cobrar y transferir en Uruguay sin perder plata: débito y recargos, saldo retenido, transferencias equivocadas, alias, dinero del exterior y tarjetas uruguayas en Argentina.',
+      'Débito y recargos, saldo retenido, qué hacer con una transferencia equivocada, el alias, cobrar dinero del exterior y la tarjeta uruguaya en Argentina.',
     tag: 'PAGOS',
     icon: 'mdi-bank-transfer',
     intro:
@@ -1870,9 +1907,9 @@ export const guideHubs: readonly GuideHub[] = [
   {
     slug: 'tramites-y-documentos-uruguay',
     title: 'Trámites y documentos en Uruguay',
-    seoTitle: 'Trámites en Uruguay: ciudadanía, cédula, antecedentes y más',
+    seoTitle: 'Trámites en Uruguay: cédula y ciudadanía',
     description:
-      'Los trámites por los que más se pregunta en Uruguay, con requisitos, costo y plazo: ciudadanía legal, cédula para extranjeros, antecedentes judiciales, casarse por civil y cuánto guardar cada papel.',
+      'Requisitos, costo y plazo de los trámites que más se preguntan: ciudadanía legal, cédula para extranjeros, antecedentes judiciales y casarse por civil.',
     tag: 'TRÁMITES',
     icon: 'mdi-file-document-outline',
     intro:
@@ -1948,6 +1985,16 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Carné de salud',
         description: 'Dónde hacerlo y cuánto sale.',
         to: '/carne-de-salud-uruguay',
+      },
+      {
+        // Va pegado al carné de salud porque son los dos documentos que se confunden entre sí y
+        // hacen falta los dos: el de salud lo exige el Reglamento Bromatológico a todo el personal
+        // de una empresa alimentaria, el de manipulación lo da cada intendencia. La etiqueta dice
+        // el rango y no «cuánto sale» porque lo que la página agrega es justamente que no hay UN
+        // precio: el mismo documento no se cobra en Montevideo ni en Rivera y sale $ 962 en Salto.
+        label: 'Carné de manipulación de alimentos',
+        description: 'Gratis en Montevideo y Rivera, $ 962 en Salto: lo cobra cada intendencia.',
+        to: '/carne-de-manipulacion-de-alimentos-uruguay',
       },
       {
         label: 'A quién le reclamo',

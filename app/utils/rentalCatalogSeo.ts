@@ -42,7 +42,7 @@ const RENTAL_CATALOG_META = {
     paginatedTitle: 'Alquileres en Uruguay',
     page: 'Página',
     description:
-      'Buscá casas y apartamentos en alquiler en Uruguay. Compará fotos, precios, gastos comunes y garantías de varios portales. Explorá el mapa y servicios cercanos.',
+      'Buscá casas y apartamentos en alquiler en Uruguay. Compará fotos, precios, gastos comunes y garantías de varios portales. Explorá el mapa.',
     language: 'es-UY',
   },
   en: {
@@ -50,7 +50,7 @@ const RENTAL_CATALOG_META = {
     paginatedTitle: 'Rentals in Uruguay',
     page: 'Page',
     description:
-      'Find houses and apartments for rent in Uruguay. Compare photos, prices, fees and guarantees from several portals. Explore the map and nearby services.',
+      'Find houses and apartments for rent in Uruguay. Compare photos, prices, fees and guarantees from several portals. Explore the map.',
     language: 'en-US',
   },
   pt: {
@@ -58,7 +58,7 @@ const RENTAL_CATALOG_META = {
     paginatedTitle: 'Aluguéis no Uruguai',
     page: 'Página',
     description:
-      'Encontre casas e apartamentos para alugar no Uruguai. Compare fotos, preços, condomínio e garantias de vários portais. Explore o mapa e os serviços próximos.',
+      'Encontre casas e apartamentos para alugar no Uruguai. Compare fotos, preços, condomínio e garantias de vários portais. Explore o mapa.',
     language: 'pt-BR',
   },
 } as const
