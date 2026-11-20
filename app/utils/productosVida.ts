@@ -226,10 +226,13 @@ export function productosVidaTime(value: string | null | undefined): string {
     : ''
 }
 
-/** «20/11 a las 21:13», sólo para un instante. */
+/**
+ * «20/11, 21:13», sólo para un instante. Con coma y no «a las»: va en la nota de fechas de arriba,
+ * que con «a las» pasaba a tres renglones a 390 px.
+ */
 export function productosVidaDateTime(value: string | null | undefined): string {
   const time = productosVidaTime(value)
-  return time ? `${productosVidaShortDate(value)} a las ${time}` : ''
+  return time ? `${productosVidaShortDate(value)}, ${time}` : ''
 }
 
 /** El día de Montevideo de un instante, `YYYY-MM-DD`. Un día suelto vuelve tal cual. */
