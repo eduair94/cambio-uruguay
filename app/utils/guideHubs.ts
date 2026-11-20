@@ -796,6 +796,7 @@ export const guideHubs: readonly GuideHub[] = [
       'cuenta-conjunta-o-separada-pareja-uruguay',
       'hablar-de-dinero-en-pareja-uruguay',
       'division-de-bienes-en-el-divorcio-uruguay',
+      'divorcio-por-sola-voluntad-uruguay',
       'proteger-tu-patrimonio-en-pareja-uruguay',
       'asignacion-familiar-doble-uruguay',
     ],

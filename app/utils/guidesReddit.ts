@@ -1501,7 +1501,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'las-deudas-se-heredan-uruguay',
     title: 'Las deudas se heredan: hay cómo limitarlas',
     description:
-      '¿Se heredan las deudas en Uruguay? Cómo funciona el activo y el pasivo, la aceptación con beneficio de inventario y cuándo conviene repudiar la herencia.',
+      'Se hereda el activo y el pasivo: con beneficio de inventario respondés sólo hasta donde alcancen los bienes, y si repudiás tu parte pasa a tus hijos.',
     tag: 'HERENCIA',
     updatedAt: '2026-07-18',
     sections: [
@@ -2347,9 +2347,9 @@ export const redditGuides: readonly Guide[] = [
     slug: 'como-se-calcula-el-aguinaldo-uruguay',
     title: 'Aguinaldo: la doceava parte de lo ganado',
     description:
-      'Qué es el aguinaldo (sueldo anual complementario), cómo se calcula por proporción de lo ganado y cuándo se cobra en Uruguay: junio y diciembre.',
+      'Se paga en los diez días anteriores al 24 de diciembre (Ley 12.840), y un decreto adelanta a junio lo generado hasta mayo: cómo se calcula cada cuota.',
     tag: 'AGUINALDO',
-    updatedAt: '2026-07-18',
+    updatedAt: '2026-11-20',
     sections: [
       {
         heading: 'Qué es el aguinaldo',
@@ -2361,7 +2361,10 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         heading: 'Cuándo se cobra: los dos medios aguinaldos',
-        body: 'El aguinaldo se paga en dos veces al año, en dos medios. Uno se abona alrededor de junio y el otro cerca de fin de año, en diciembre, antes de las fiestas. Cada pago corresponde a un semestre distinto de remuneraciones, y en los dos casos se trata de meses ya trabajados: el de junio cubre aproximadamente el semestre que va de diciembre a mayo, y el de diciembre el semestre de junio a noviembre. Por eso, si empezaste a trabajar en agosto, tu primer aguinaldo llegará en diciembre y será proporcional a los meses trabajados desde tu ingreso. Los plazos exactos de pago están fijados por la normativa, y en la práctica las empresas los liquidan en esas ventanas de junio y diciembre.',
+        body: 'Las dos fechas las fija la norma, no la empresa. La Ley 12.840 obliga a todo patrono a pagar el sueldo anual complementario «dentro de los diez días anteriores al 24 de diciembre de cada año» (artículo 1), y el Decreto-Ley 14.525 faculta al Poder Ejecutivo a que se abone «en dos etapas: lo generado hasta el 31 de mayo dentro del mes de junio y el complemento antes del 24 de diciembre de cada año». Cada año un decreto ejerce esa facultad, así que el tope de la primera cuota es el 30 de junio y el de la segunda es el de la ley, que el decreto del año puede acortar. Cada cuota corresponde a un semestre ya trabajado: la de junio cubre de diciembre a mayo y la de diciembre, de junio a noviembre. Por eso, si empezaste a trabajar en agosto, tu primer aguinaldo llega en diciembre y es proporcional a los meses trabajados desde tu ingreso.',
+        links: [
+          { label: 'La fecha exacta de este año', to: '/cuando-se-cobra-el-aguinaldo-uruguay' },
+        ],
       },
       {
         heading: 'Aportes e impuestos sobre el aguinaldo',
@@ -2389,6 +2392,26 @@ export const redditGuides: readonly Guide[] = [
         to: '/guias/licencia-y-salario-vacacional-uruguay',
       },
       { label: 'Entender tu recibo de sueldo', to: '/guias/entender-tu-recibo-de-sueldo-uruguay' },
+    ],
+    sources: [
+      {
+        label:
+          'Ley 12.840, artículo 1 — todo patrono paga el sueldo anual complementario «dentro de los diez días anteriores al 24 de diciembre de cada año»; el artículo 2 lo define como «la doceava parte del total de sueldos o salarios abonados»',
+        url: 'https://www.impo.com.uy/bases/leyes/12840-1960',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto-Ley 14.525, artículo 1 — faculta al Poder Ejecutivo a que el aguinaldo se abone «en dos etapas: lo generado hasta el 31 de mayo dentro del mes de junio y el complemento antes del 24 de diciembre de cada año»',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/14525-1976',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'MTSS — «Sueldo Anual Complementario o Aguinaldo»: el criterio del Ministerio y el decreto de cada año',
+        url: 'https://www.gub.uy/ministerio-trabajo-seguridad-social/politicas-y-gestion/derecho-reglamentacion-laboral/derecho-laboral-uruguayo/sueldo-anual-complementario-aguinaldo',
+        publisher: 'MTSS',
+      },
     ],
   },
   {

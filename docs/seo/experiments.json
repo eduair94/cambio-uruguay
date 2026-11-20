@@ -3789,6 +3789,36 @@
       "hypothesis": "El indice del directorio de descuentos suma 741 impresiones en 28 dias en posicion 6,6 con 4 clics, casi todas por preguntas entre emisores (donde hay buenas promociones, que emisor se destaca, que tarjeta tiene descuento en mas comercios). Su HTML de servidor no traia ninguna cifra por emisor ni el total del catalogo (solo la cuenta de locales de 48 marcas): diez parrafos de plantilla iguales y nueve preguntas sobre como usar el mapa. Ahora publica, contado de la misma lectura del catalogo que ya pedia en el servidor, el total de marcas y locales con la fecha de la lectura, una tabla por emisor (marcas, locales, con debito, exclusivas, rubro fuerte) con el texto mas repetido de cada uno citado tal cual, la tabla de que emisor lidera cada rubro y cinco preguntas respondidas con esas cifras (cobertura, rubro, debito, dias que nombran los textos, cuotas). Titulo y descripcion sin cambios. Enlaces nuevos en contenido a /que-banco-tiene-mas-descuentos-uruguay, /descuento-de-iva-con-tarjeta-uruguay y /conviene-comprar-en-cuotas; las paginas por emisor y por rubro, reservadas hasta el 2026-11-30, no se tocaron ni recibieron enlaces nuevos."
     },
     {
+      "id": "divorcio-tres-vias-guia-nueva",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/guias/divorcio-por-sola-voluntad-uruguay"
+      ],
+      "queries": [
+        "divorcio por sola voluntad uruguay",
+        "como divorciarse en uruguay",
+        "cuanto demora un divorcio en uruguay",
+        "divorcio de mutuo consentimiento uruguay",
+        "divorcio en uruguay"
+      ],
+      "hypothesis": "El sitio cubria la pareja por todos lados menos por el que la disuelve: tenia regimen patrimonial, separacion de bienes, union concubinaria, division de bienes en el divorcio y pension alimenticia, y ninguna pagina decia COMO se tramita un divorcio, con el tema pareja-familia-y-dinero-uruguay prometiendolo en su propio seoTitle ('Dinero en pareja: bienes, gastos y divorcio'). La guia nueva publica las tres vias del articulo 187 del Codigo Civil con el texto de cada una, y la respuesta que va al snippet es justamente la que cambio en enero: el numeral 3 (divorcio 'por la sola voluntad de cualquiera de los conyuges') lo reescribio el articulo 474 de la Ley 20.446 del 16/12/2025 y desde el 1/1/2026 -su vigencia sale del articulo 3 de esa misma ley- se resuelve con un escrito y UNA audiencia, mientras el mutuo consentimiento sigue teniendo tres comparecencias y dos plazos de tres meses escritos en la norma. Ninguna cifra es nuestra: cada articulo que la guia nombra viaja con su enlace a IMPO en la tarjeta de Fuentes y tests/unit/divorcio.test.ts pone CI en rojo si uno queda sin cita (asi se encontro que el 186 estaba citado en la prosa y no en las fuentes). Lo que la guia deliberadamente NO publica es cuanto sale: los honorarios no son un precio publico, asi que en vez de una cifra enlaza la guia del abogado gratis, y el test prohibe que aparezca un importe. Entra al tema de pareja (asi recibe el bloque 'Mas sobre este tema' y lo devuelve) y recibe un enlace de contexto desde la guia de division de bienes. Es el tramo contenido, 8x el promedio del sitio, y sale gratis en /guias/* sin tocar value.ts. Se espera demanda legal de marca propia ('divorcio por sola voluntad', que es el nombre de la via) e intencion local; se mide por cuota de clics del sitio con 28 dias archivados antes y despues, sin contar el dia del deploy."
+    },
+    {
+      "id": "dos-descripciones-genericas-con-el-dato",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/guias/como-se-calcula-el-aguinaldo-uruguay",
+        "/guias/las-deudas-se-heredan-uruguay"
+      ],
+      "queries": [
+        "cuando se cobra el aguinaldo",
+        "como se calcula el aguinaldo uruguay",
+        "se heredan las deudas uruguay",
+        "beneficio de inventario uruguay"
+      ],
+      "hypothesis": "Las once tandas de snippet de octubre y noviembre salieron de las listas de los presupuestos (titulo o descripcion pasados del largo), y una descripcion GENERICA que entra en 155 caracteres nunca aparecio en ninguna: no sobra un caracter que la delate. Se buscaron por otro lado -descripciones de guia sin una sola cifra ni un nombre propio, cruzadas contra las ventanas abiertas del libro- y de las 29 libres se arreglaron las DOS que tenian el dato esperando en su propio cuerpo. (1) /guias/como-se-calcula-el-aguinaldo-uruguay decia 'Que es el aguinaldo, como se calcula por proporcion de lo ganado y cuando se cobra en Uruguay: junio y diciembre', o sea anunciaba la pregunta que mas se busca en diciembre sin contestar ningun plazo, y su cuerpo era todavia mas vago ('alrededor de junio', 'cerca de fin de ano') que lo que el propio sitio ya publica con fuente en /cuando-se-cobra-el-aguinaldo-uruguay. Ahora la descripcion da los dos plazos legales y la seccion de las fechas los cita textuales: la Ley 12.840 art. 1 manda pagar 'dentro de los diez dias anteriores al 24 de diciembre de cada ano' y el Decreto-Ley 14.525 art. 1 faculta a abonarlo 'en dos etapas: lo generado hasta el 31 de mayo dentro del mes de junio', de donde sale que el tope de la primera cuota es el 30 de junio; los dos articulos se leyeron en IMPO ese dia y la guia estrena tarjeta de Fuentes con ellos y con el MTSS, mas un enlace a la pagina que tiene la fecha del ano. (2) /guias/las-deudas-se-heredan-uruguay devolvia la pregunta sin contestarla y listaba los temas; ahora dice el limite del beneficio de inventario y el efecto del repudio sobre los propios hijos, que ya estaban en sus dos primeras secciones (ninguna afirmacion nueva). descripcionesConDato.test.ts exige que el dato del snippet este TAMBIEN en el cuerpo y que la guia cite la norma, para que el arreglo no se pueda deshacer en silencio. Las dos rutas estaban libres de toda ventana abierta. Es el tramo contenido (8x el promedio del sitio). Se esperan mas clics desde la misma posicion, el de aguinaldo con la estacionalidad de diciembre en contra de una comparacion cruda; se mide por cuota de clics del sitio con 28 dias archivados antes y despues, sin el dia del deploy."
+    },
+    {
       "id": "dolar-hoy-y-mejor-casa-titulo-en-el-serp",
       "shippedOn": "2026-11-20",
       "routes": [
