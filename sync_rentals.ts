@@ -48,7 +48,7 @@ import {
   saveRentalProperties,
 } from "./classes/rentals/store";
 import { flagRentalStayPrices, inferRentalCurrencies, rentPriceCohorts } from "./classes/rentals/currency";
-import { RENTAL_BIG_SOURCE_SHARE, rentalCollapseVerdict, rentalSourceDrops } from "./classes/rentals/collapse";
+import { rentalCollapseVerdict, rentalNextRecent, rentalSourceDrops } from "./classes/rentals/collapse";
 import { notifyAdmin } from "./classes/notify";
 import { RENTAL_META_KEY, type RentalMeta } from "./classes/rentals/types";
 
@@ -110,20 +110,23 @@ async function main(): Promise<void> {
   for (const run of harvest.runs) {
     console.log(`[rentals] ${run.ok ? "ok  " : "FAIL"} ${run.key.padEnd(14)} ${run.listings.length} avisos :: ${run.note}`);
   }
-  // Sources that brought less than half of what they did in the last saved full run: what explains
-  // a smaller sweep. Every one is logged; the big ones are also sent to Telegram below.
-  const drops = mode === "full" ? rentalSourceDrops(harvest.runs.map((run) => ({ key: run.key, listings: run.listings.length })), lastFull, COLLAPSE_RATIO) : [];
+  // Sources that brought less than half of their own median over the last saved full runs: what
+  // explains a smaller sweep. Every one is logged; the big ones are also sent to Telegram below.
+  const drops = mode === "full" ? rentalSourceDrops(harvest.runs.map((run) => ({ key: run.key, listings: run.listings.length })), lastFull) : [];
   const lastFullDay = String(lastFull?.generatedAt || "").slice(0, 10);
   for (const drop of drops) {
-    console.warn(`[rentals] ${drop.key} trajo ${drop.now} avisos contra ${drop.before} de la última corrida completa guardada (${lastFullDay})`);
+    console.warn(`[rentals] ${drop.key} trajo ${drop.now} avisos contra ${drop.before} de mediana en las últimas corridas completas guardadas (la última, ${lastFullDay})`);
   }
-  const bigDrops = drops.filter((drop) => drop.share >= RENTAL_BIG_SOURCE_SHARE).map((drop) => `${drop.key} ${drop.now} contra ${drop.before}`);
+  const bigDrops = drops.filter((drop) => drop.big).map((drop) => `${drop.key} ${drop.now} contra ${drop.before}`);
 
   // Only a complete sweep can use absence as evidence. Partial sources and the hourly slice
   // may add/update adverts, but never expire the older offers of a property they happen to touch.
   const okSources = sourcesAllowingExpiry(harvest.runs, mode);
   if (!harvest.runs.some((run) => run.ok && run.listings.length)) {
     console.error("[rentals] ningún portal respondió — se conserva el directorio anterior");
+    // The one collapse that never reaches the guard below. Only the daily sweep pings: an hourly
+    // slice that finds nothing new is retried in an hour and would only be noise.
+    if (mode === "full") await notifyAdmin("*Alquileres*: ningún portal respondió en la corrida completa. Se conserva el directorio anterior.");
     process.exit(1);
   }
 
@@ -207,7 +210,7 @@ async function main(): Promise<void> {
   // at 21.
   if (bigDrops.length) {
     await notifyAdmin(
-      `*Alquileres*: la corrida completa sigue, pero una fuente grande trajo menos de la mitad que en la última guardada (${lastFullDay}): ${bigDrops.join("; ")}.`
+      `*Alquileres*: la corrida completa sigue, pero una fuente grande trajo menos de la mitad de su mediana de las últimas corridas guardadas: ${bigDrops.join("; ")}.`
     );
   }
 
@@ -307,6 +310,10 @@ async function main(): Promise<void> {
       listings: run.listings.length,
       note: run.note,
       ...(run.access ? { access: run.access } : {}),
+      // The yardstick of tomorrow's per-source check; kept only with the last full run's summary.
+      ...(mode === "full"
+        ? { recent: rentalNextRecent(lastFull?.mode === "full" ? lastFull.sources?.find((source) => source?.key === run.key) : null, run.listings.length) }
+        : {}),
     })),
   };
   // A failed read of the previous summary only loses the streak dates, never the run itself.

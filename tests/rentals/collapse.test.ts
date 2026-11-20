@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
-  RENTAL_BIG_SOURCE_SHARE,
+  RENTAL_BIG_SOURCE_LISTINGS,
+  RENTAL_SOURCE_HISTORY,
   rentalCollapseVerdict,
+  rentalNextRecent,
   rentalRunListings,
   rentalSourceDrops,
+  rentalSourceReference,
   type RentalCollapseInput,
-  type RentalSourceDrop,
 } from "../../classes/rentals/collapse";
 import type { RentalSource } from "../../classes/rentals/types";
 
@@ -150,41 +152,94 @@ describe("rentalSourceDrops", () => {
     { key: "elpais", listings: 1899 },
     { key: "tiktok", listings: 173 },
   ];
-  const big = (drops: RentalSourceDrop[]) => drops.filter((drop) => drop.share >= RENTAL_BIG_SOURCE_SHARE);
+  const withListings = (key: string, listings: number) => today.map((row) => (row.key === key ? { ...row, listings } : row));
+  /** El resumen que deja guardado una corrida completa: lo de hoy, y el `recent` de cada fuente. */
+  const saved = (previous: typeof LAST_FULL, runs: { key: string; listings: number }[]) => ({
+    ...previous,
+    sources: previous.sources.map((row) => {
+      const listings = runs.find((item) => item.key === row.key)?.listings ?? 0;
+      return { ...row, listings, recent: rentalNextRecent(row, listings) };
+    }),
+  });
 
-  it("nombra las fuentes que trajeron menos de la mitad que en la última corrida completa", () => {
-    const drops = rentalSourceDrops(today, LAST_FULL, 0.5);
-    expect(drops.map(({ key, now, before }) => ({ key, now, before }))).toEqual([
-      { key: "facebook", now: 1884, before: 5668 },
-      { key: "elpais", now: 1899, before: 5471 },
+  it("nombra las fuentes que trajeron menos de la mitad de su vara, y dice cuáles son grandes", () => {
+    expect(rentalSourceDrops(today, LAST_FULL)).toEqual([
+      { key: "facebook", now: 1884, before: 5668, big: false },
+      { key: "elpais", now: 1899, before: 5471, big: false },
     ]);
-    // Las dos pesan un 11 % de la corrida: van al log, no al Telegram.
-    expect(drops.map((drop) => Math.round(drop.share * 100))).toEqual([11, 11]);
-    expect(big(drops)).toEqual([]);
   });
 
-  it("Mercado Libre o InfoCasas caídas sí son grandes: 44 % y 28 % de la corrida", () => {
-    const drops = rentalSourceDrops(today.map((row) => (row.key === "mercadolibre" ? { ...row, listings: 0 } : row)), LAST_FULL, 0.5);
-    expect(big(drops).map((drop) => [drop.key, Math.round(drop.share * 100)])).toEqual([["mercadolibre", 44]]);
-    const second = rentalSourceDrops(today.map((row) => (row.key === "infocasas" ? { ...row, listings: 6000 } : row)), LAST_FULL, 0.5);
-    expect(big(second).map((drop) => [drop.key, Math.round(drop.share * 100)])).toEqual([["infocasas", 28]]);
+  it("grande es por tamaño, no por parte de la corrida: Mercado Libre e InfoCasas", () => {
+    expect(RENTAL_BIG_SOURCE_LISTINGS).toBe(10_000);
+    const ml = rentalSourceDrops(withListings("mercadolibre", 0), LAST_FULL).filter((drop) => drop.big);
+    expect(ml).toEqual([{ key: "mercadolibre", now: 0, before: 21606, big: true }]);
+    const ic = rentalSourceDrops(withListings("infocasas", 6000), LAST_FULL).filter((drop) => drop.big);
+    expect(ic).toEqual([{ key: "infocasas", now: 6000, before: 14009, big: true }]);
+    // Un día gordo de Facebook no le saca a InfoCasas la condición de grande (el 17/11/2026 era el
+    // 25,7 % de una corrida de 54.488: con el umbral por parte, 1.600 avisos más la dejaban afuera).
+    const fat = { ...LAST_FULL, sources: LAST_FULL.sources.map((row) => (row.key === "facebook" ? { ...row, listings: 12500 } : row)) };
+    expect(rentalRunListings(fat)).toBe(56462);
+    expect(14009 / 56462 < 0.25).toBe(true);
+    expect(rentalSourceDrops(withListings("infocasas", 0), fat).find((drop) => drop.key === "infocasas")?.big).toBe(true);
   });
 
-  it("en una caída en escalones cada día avisa de la fuente que se sumó", () => {
-    // La vara del día 2 es la corrida del día 1 (ya sin Mercado Libre): InfoCasas es la mitad de ella.
-    const dayTwo = rentalSourceDrops(today.filter((row) => row.key !== "mercadolibre" && row.key !== "infocasas"), without("mercadolibre"), 0.5);
-    expect(big(dayTwo).map((drop) => drop.key)).toEqual(["infocasas"]);
+  it("la vara es la mediana de las últimas corridas, no la de ayer: un desangre del 40 % diario se nombra al segundo día", () => {
+    // 21.606 → 12.964 → 7.778: cada día trae el 60 % del anterior, nunca menos de la mitad.
+    let summary = saved(LAST_FULL, LAST_FULL.sources);
+    expect(rentalSourceDrops(withListings("mercadolibre", 12964), summary).filter((drop) => drop.big)).toEqual([]);
+    summary = saved(summary, withListings("mercadolibre", 12964));
+    expect(summary.sources[0]!.recent).toEqual([21606, 21606, 12964]);
+    expect(7778 >= 12964 * 0.5).toBe(true);
+    expect(rentalSourceDrops(withListings("mercadolibre", 7778), summary).filter((drop) => drop.big)).toEqual([
+      { key: "mercadolibre", now: 7778, before: 21606, big: true },
+    ]);
+  });
+
+  it("una fuente muerta se sigue nombrando cada día hasta que la mediana la alcanza", () => {
+    // Una semana de corridas sanas guardadas, y después Mercado Libre en cero.
+    let summary = saved(LAST_FULL, LAST_FULL.sources);
+    for (let day = 0; day < RENTAL_SOURCE_HISTORY; day++) summary = saved(summary, LAST_FULL.sources);
+    const dead = withListings("mercadolibre", 0);
+    const named: boolean[] = [];
+    for (let day = 0; day < 5; day++) {
+      named.push(rentalSourceDrops(dead, summary).some((drop) => drop.key === "mercadolibre" && drop.big));
+      summary = saved(summary, dead);
+    }
+    // Cuatro días seguidos; al quinto hay cuatro ceros entre las siete y la mediana ya es cero.
+    expect(named).toEqual([true, true, true, true, false]);
   });
 
   it("una fuente chica no cuenta, y una que hoy ni corrió cuenta como cero", () => {
     // instagram (88), facebookreels (6) y alquileresuy (111) no aparecen aunque hoy falten.
-    const drops = rentalSourceDrops([{ key: "mercadolibre", listings: 21593 }], LAST_FULL, 0.5);
+    const drops = rentalSourceDrops([{ key: "mercadolibre", listings: 21593 }], LAST_FULL);
     expect(drops.map((drop) => drop.key)).toEqual(["infocasas", "facebook", "casasweb", "elpais"]);
     expect(drops.every((drop) => drop.now === 0)).toBe(true);
   });
 
   it("sin corrida completa guardada no hay contra qué comparar", () => {
-    expect(rentalSourceDrops(today, null, 0.5)).toEqual([]);
-    expect(rentalSourceDrops(today, { ...LAST_FULL, mode: "fast" }, 0.5)).toEqual([]);
+    expect(rentalSourceDrops(today, null)).toEqual([]);
+    expect(rentalSourceDrops(today, { ...LAST_FULL, mode: "fast" })).toEqual([]);
+  });
+});
+
+describe("la vara de cada fuente", () => {
+  it("es la mediana de sus últimas corridas guardadas", () => {
+    expect(rentalSourceReference({ listings: 9, recent: [21606, 21485, 21499, 21606, 12000] })).toBe(21499);
+    expect(rentalSourceReference({ listings: 9, recent: [21606, 0] })).toBe(10803);
+  });
+
+  it("un resumen de antes de `recent` vale por su única corrida", () => {
+    expect(rentalSourceReference({ listings: 21606 })).toBe(21606);
+    expect(rentalSourceReference({ listings: 21606, recent: [] })).toBe(21606);
+    expect(rentalSourceReference(null)).toBe(0);
+    expect(rentalSourceReference({ listings: Number.NaN })).toBe(0);
+  });
+
+  it("cada corrida completa guardada agrega lo suyo y conserva las últimas siete", () => {
+    expect(rentalNextRecent({ listings: 21606 }, 21593)).toEqual([21606, 21593]);
+    expect(rentalNextRecent(null, 21593)).toEqual([21593]);
+    expect(rentalNextRecent({ listings: 0, recent: [1, 2, 3, 4, 5, 6, 7] }, 8)).toEqual([2, 3, 4, 5, 6, 7, 8]);
+    expect(rentalNextRecent({ listings: 5, recent: ["x", -3, 4] as unknown as number[] }, 6)).toEqual([4, 6]);
+    expect(RENTAL_SOURCE_HISTORY).toBe(7);
   });
 });

@@ -29,8 +29,8 @@ import type { RentalMeta } from "./types";
  * guardan frescas, y una corrida flaca guardada no borra nada por ausencia en las fuentes
  * parciales (`sourcesAllowingExpiry`) —, pero no puede pasar callada: si la fuente sigue caída,
  * sus propiedades dejan de mostrarse a los 10 días (`RENTAL_STALE_DAYS`) y `pruneStaleRentals` las
- * borra a los 21, completa o no la fuente. Por eso `rentalSourceDrops` y el aviso de
- * `sync_rentals.ts`.
+ * borra a los 21, completa o no la fuente. Por eso `rentalSourceDrops`, que mide cada fuente contra
+ * su propia mediana de las últimas corridas y no contra la de ayer, y el aviso de `sync_rentals.ts`.
  *
  * Sin una corrida completa guardada (base nueva) queda la regla anterior, contra lo almacenado.
  * `RENTALS_COLLAPSE_RATIO=0` apaga las dos varas: es la salida para una baja permanente y sabida
@@ -99,41 +99,86 @@ export function rentalCollapseVerdict(input: RentalCollapseInput): RentalCollaps
   return { refuse: false, basis: "none", found: input.listings, expected: 0, threshold: ratio };
 }
 
+/** Cuántas corridas completas guardadas entran en la vara de cada fuente. */
+export const RENTAL_SOURCE_HISTORY = 7;
+/** Una fuente cayó si trae menos de esta parte de su vara. Fijo: no depende de RENTALS_COLLAPSE_RATIO. */
+export const RENTAL_SOURCE_DROP_RATIO = 0.5;
+/**
+ * Desde cuántos avisos por corrida la caída de una fuente va al Telegram y no sólo al log. En
+ * absoluto, no como parte de la corrida: el total lo mueve Facebook (el 17/11/2026 InfoCasas era
+ * el 25,7 % de una corrida de 54.488, a un día gordo de Facebook de dejar de contar como grande).
+ * Hoy pasan Mercado Libre (21,6 mil) e InfoCasas (14 mil), que son parejas día a día; Facebook y
+ * El País (5,5 mil) varían solas y quedan en el log.
+ */
+export const RENTAL_BIG_SOURCE_LISTINGS = 10_000;
+
+type SourceSummary = { listings?: number; recent?: number[] };
+
+const median = (values: readonly number[]): number => {
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[middle]! : (sorted[middle - 1]! + sorted[middle]!) / 2;
+};
+
+const counts = (values: unknown): number[] =>
+  (Array.isArray(values) ? values : []).map(Number).filter((value) => Number.isFinite(value) && value >= 0);
+
+/**
+ * La vara de una fuente: la MEDIANA de lo que trajo en las últimas corridas completas guardadas.
+ *
+ * No lo de la última corrida, que se renueva sola: una fuente que pierde el 40 % por día nunca trae
+ * menos de la mitad que el día anterior (21.606 → 12.964 → 7.778 → …) y se desangra entera sin una
+ * línea; contra la mediana, el segundo día ya está debajo de la mitad. Y una fuente muerta se sigue
+ * nombrando cada día hasta que la mediana la alcanza, no sólo el primero.
+ *
+ * Un resumen de antes de que existiera `recent` vale por una sola corrida: su `listings`.
+ */
+export function rentalSourceReference(source: SourceSummary | null | undefined): number {
+  const recent = counts(source?.recent);
+  if (recent.length) return median(recent);
+  const listings = Number(source?.listings);
+  return Number.isFinite(listings) && listings > 0 ? listings : 0;
+}
+
+/** El `recent` que guarda esta corrida completa: el anterior más lo de hoy, las últimas siete. */
+export function rentalNextRecent(previous: SourceSummary | null | undefined, listings: number): number[] {
+  const before = counts(previous?.recent);
+  const carried = before.length ? before : counts(previous ? [previous.listings] : []);
+  return [...carried, Math.max(0, Number(listings) || 0)].slice(-RENTAL_SOURCE_HISTORY);
+}
+
 export interface RentalSourceDrop {
   key: string;
   now: number;
+  /** La vara: la mediana de las últimas corridas completas guardadas de esta fuente. */
   before: number;
-  /** Qué parte de la última corrida completa guardada era esta fuente (0–1). */
-  share: number;
+  /** La fuente trae RENTAL_BIG_SOURCE_LISTINGS o más por corrida: su caída se avisa. */
+  big: boolean;
 }
 
-/** Una fuente que era al menos esta parte de la corrida y se cayó amerita un aviso, no sólo un log. */
-export const RENTAL_BIG_SOURCE_SHARE = 0.25;
-
 /**
- * Fuentes que hoy trajeron menos de `ratio` de lo que trajeron en la última corrida completa
- * guardada, entre las que entonces traían `minPrevious` avisos o más.
+ * Fuentes que hoy trajeron menos de la mitad de su vara, entre las que traen `minReference` avisos
+ * o más por corrida.
  *
- * No decide si la corrida se guarda: es lo que explica una corrida más chica. Las fuentes grandes
- * (`share` ≥ RENTAL_BIG_SOURCE_SHARE: hoy Mercado Libre, 44 %, e InfoCasas, 28 %) son parejas día a
- * día, así que una caída ahí es siempre un incidente y `sync_rentals.ts` avisa; Facebook y El País
- * (11 % cada una) varían solas — el 20/11/2026 Facebook trajo 1.884 contra 5.668 y El País 1.899
- * contra 5.471 — y quedan en el log.
+ * No decide si la corrida se guarda: es lo que explica una corrida más chica, y lo que impide que
+ * la pérdida de una fuente pase callada. El 20/11/2026 habría nombrado a Facebook (1.884 contra
+ * 5.668, cortado a dos búsquedas) y a El País (1.899 contra 5.471, lecturas incompletas).
  */
 export function rentalSourceDrops(
   runs: readonly { key: string; listings: number }[],
   lastFull: Pick<RentalMeta, "mode" | "sources"> | null,
-  ratio: number,
-  minPrevious = 1000,
+  minReference = 1000,
 ): RentalSourceDrop[] {
   if (lastFull?.mode !== "full") return [];
-  const total = rentalRunListings(lastFull);
   const drops: RentalSourceDrop[] = [];
   for (const previous of lastFull.sources ?? []) {
-    const before = Number(previous?.listings) || 0;
-    if (before < minPrevious) continue;
+    if (!previous) continue;
+    const before = rentalSourceReference(previous);
+    if (before < minReference) continue;
     const now = Number(runs.find((run) => run.key === previous.key)?.listings) || 0;
-    if (now < before * ratio) drops.push({ key: previous.key, now, before, share: total > 0 ? before / total : 0 });
+    if (now < before * RENTAL_SOURCE_DROP_RATIO) {
+      drops.push({ key: previous.key, now, before: Math.round(before), big: before >= RENTAL_BIG_SOURCE_LISTINGS });
+    }
   }
   return drops;
 }

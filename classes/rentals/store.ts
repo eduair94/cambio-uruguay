@@ -666,7 +666,10 @@ export async function saveRentalMeta(meta: RentalMeta): Promise<void> {
       { upsert: true },
     );
   }
-  await RentalMetaModel.updateOne({ key: RENTAL_META_KEY }, { $set: meta }, { upsert: true });
+  // `recent` (each source's last full runs) is the yardstick of the daily guard and belongs to the
+  // document above only: the app serves this one to the directory page.
+  const published: RentalMeta = { ...meta, sources: meta.sources.map(({ recent: _recent, ...source }) => source) };
+  await RentalMetaModel.updateOne({ key: RENTAL_META_KEY }, { $set: published }, { upsert: true });
 }
 
 export async function loadRentalMeta(): Promise<RentalMeta | null> {

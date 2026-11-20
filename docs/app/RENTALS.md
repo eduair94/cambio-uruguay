@@ -47,13 +47,23 @@ Sin el documento de la última corrida completa (base nueva) queda la regla ante
 
 **Y avisa**, que era la otra mitad del problema:
 
-- una negativa manda un **Telegram** (`notifyAdmin`), además de salir con 1;
-- el log nombra cada fuente de más de 1.000 avisos que trajo menos de la mitad que en la última
-  corrida completa (`rentalSourceDrops`). El 20/11 habría dicho: Facebook 1.884 contra 5.668
-  (cortado a dos búsquedas) y El País 1.899 contra 5.471 (lecturas incompletas);
-- si la que cae es una fuente **grande** — un cuarto o más de la corrida: hoy Mercado Libre (44 %)
-  e InfoCasas (28 %), que son parejas día a día — también va al Telegram. Facebook y El País (11 %
-  cada una) varían solas y quedan en el log.
+- una negativa manda un **Telegram** (`notifyAdmin`), además de salir con 1; también cuando en la
+  corrida completa no responde ningún portal, que sale antes de llegar a la guarda;
+- el log nombra cada fuente de más de 1.000 avisos por corrida que trajo menos de la mitad de **su
+  vara** (`rentalSourceDrops`). El 20/11 habría dicho: Facebook 1.884 contra 5.668 (cortado a dos
+  búsquedas) y El País 1.899 contra 5.471 (lecturas incompletas);
+- si la que cae es una fuente **grande** — 10.000 avisos o más por corrida: hoy Mercado Libre
+  (21,6 mil) e InfoCasas (14 mil), que son parejas día a día — también va al Telegram. Facebook y
+  El País (5,5 mil) varían solas y quedan en el log. Grande es por tamaño y no por parte de la
+  corrida: el total lo mueve Facebook, y el 17/11 InfoCasas era el 25,7 % de una corrida de 54.488.
+
+**La vara de cada fuente es la mediana de sus últimas siete corridas completas guardadas**, no lo
+de ayer (`rentalSourceReference`; el resumen `uy-rentals-last-full` guarda `sources[].recent`, que
+nunca se copia al resumen público). Contra lo de ayer una fuente que pierde el 40 % por día nunca
+trae menos de la mitad que el día anterior (21.606 → 12.964 → 7.778 → …) y se desangra sin una
+línea; contra la mediana se nombra el segundo día. Y una fuente muerta se sigue nombrando cuatro
+días seguidos, hasta que la mediana la alcanza, no sólo el primero. El umbral de esta comprobación
+es fijo (la mitad): `RENTALS_COLLAPSE_RATIO=0` apaga la guarda, no el aviso.
 
 **Lo que la guarda no cubre, a sabiendas.** Perder UNA fuente grande pasa: sin Mercado Libre queda
 el 56 % de la corrida anterior y el 31 % de lo almacenado. Está bien que pase — las demás fuentes

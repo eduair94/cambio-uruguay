@@ -17,6 +17,15 @@ describe("daily coverage evidence", () => {
       { $set: { ...meta, key: RENTAL_FULL_META_KEY } }, { upsert: true });
     expect(updateOne).toHaveBeenCalledWith({ key: RENTAL_META_KEY }, { $set: meta }, { upsert: true });
   });
+  it("keeps each source's recent full runs with the daily evidence only, never in the public summary", async () => {
+    // `recent` is the yardstick of the daily guard (classes/rentals/collapse.ts); the app serves the
+    // public summary to the directory page, which has no use for it.
+    const withRecent: RentalMeta = { ...meta, sources: [{ ...meta.sources[0]!, recent: [90, 100] }] };
+    await saveRentalMeta(withRecent);
+    expect(updateOne).toHaveBeenCalledWith({ key: RENTAL_FULL_META_KEY },
+      { $set: { ...withRecent, key: RENTAL_FULL_META_KEY } }, { upsert: true });
+    expect(updateOne).toHaveBeenCalledWith({ key: RENTAL_META_KEY }, { $set: meta }, { upsert: true });
+  });
   it("an hourly slice updates the public status without replacing the daily evidence", async () => {
     const hourly = { ...meta, mode: "fast" as const, offers: 4 };
     await saveRentalMeta(hourly);
