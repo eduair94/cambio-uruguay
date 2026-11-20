@@ -226,9 +226,10 @@ async function noOverflow(page: Page) {
   ).toBeLessThanOrEqual(1)
 }
 async function selectField(page: Page, label: string, choice: string) {
+  // In Vuetify 4 the <input> of a VSelect is the combobox (the plugin no longer strips its role).
   const field = page
     .locator('.v-select')
-    .filter({ has: page.getByRole('textbox', { name: label, exact: true }) })
+    .filter({ has: page.getByRole('combobox', { name: label, exact: true }) })
   if (!(await field.isVisible())) await page.locator('.zone-filter-toggle:visible').click()
   await field.locator('.v-field__append-inner').click()
   await page.getByRole('option', { name: choice, exact: true }).click()

@@ -21,6 +21,7 @@ const extraLocalesVersion = extraMessagesVersion(EXTRA_MESSAGES_DIR)
 // the path the response is immutable: server/plugins/i18n-messages-cache.ts says so, and
 // server/routes/_i18n/[...path].ts forwards a stale version to this one.
 const I18N_DIR = fileURLToPath(new URL('./i18n', import.meta.url))
+const ATOMIC_FS_DRIVER = fileURLToPath(new URL('./server/storage/atomicFs.ts', import.meta.url))
 const i18nMessagesVersionId = i18nMessagesVersion(I18N_DIR, I18N_MESSAGE_SOURCES)
 
 // Read only this checkout: app remains a self-contained deploy surface. PM2
@@ -63,6 +64,22 @@ const TRANSLATED_ADVERTS_ALLOW = [
   '/*/autos-usados-uruguay/hasta-',
   '/__og-image__/image/*autos-usados-uruguay/',
 ]
+
+// The cookie banner travels in the edge-cached HTML of every visitor (first-visit variant, in the
+// flow: see the `routeRules` comment). A visitor who already decided used to see it until
+// hydration removed it, and the whole column jumped 123 px (CLS 0.135 on /alquileres-uruguay).
+// This inline <head> script runs before the <body> is painted and only marks <html
+// data-cu-consent> when `cu_consent` holds a decision the app itself would accept (what
+// `useCookie` decodes — decodeURIComponent + destr — then `parseConsent`: granted|denied, bare
+// or between balanced quotes); critical.css then skips painting the inline banner. The banner
+// stays in the server HTML for everyone and Consent Mode is untouched (plugins/consent.client.ts).
+// A literal and not an import: tests/unit/gtagEnvironment and workerEntryConfig evaluate this file
+// with a closed set of imports. tests/unit/prepaint.test.ts runs this exact string and checks the
+// cookie name against CONSENT_COOKIE_NAME.
+const PREPAINT_CONSENT_SCRIPT =
+  '(function(){try{var m=document.cookie.match(/(?:^|;\\s*)cu_consent=([^;]*)/),' +
+  'v=m&&decodeURIComponent(m[1]).match(/^("?)(granted|denied)\\1$/);' +
+  "if(v)document.documentElement.setAttribute('data-cu-consent',v[2])}catch(e){}})()"
 
 export default defineNuxtConfig({
   // Keep opt-in validation/CI builds isolated from a running dev server or another staging build.
@@ -263,6 +280,10 @@ export default defineNuxtConfig({
           href: 'https://www.googletagmanager.com',
         },
       ],
+      // Marca <html data-cu-consent> antes del primer pintado si el visitante ya decidió sobre
+      // las cookies, lo único que el HTML compartido del borde no puede saber; critical.css no
+      // pinta el aviso ya decidido. Ver PREPAINT_CONSENT_SCRIPT, arriba.
+      script: [{ innerHTML: PREPAINT_CONSENT_SCRIPT, tagPosition: 'head' }],
     },
   },
 
@@ -442,10 +463,12 @@ export default defineNuxtConfig({
     // prefijo>` que volvía BYPASS a todo /en y /pt. Nada más del render lee cookie, cabecera
     // ni sesión (auth, tema, avisos y AdSense son client-only). El asterisco es el aviso de
     // cookies: `CookieConsent.vue` se renderiza en el servidor leyendo `cu_consent`, así que
-    // el borde guarda la variante "primera visita" y un visitante que ya decidió ve el aviso un
-    // instante hasta que hidrata. Se acepta a sabiendas: es un parpadeo, no un dato equivocado
-    // (la decisión sigue en su cookie y Consent Mode se actualiza igual), y moverlo a client-only
-    // choca con app/AGENTS.md y tests/e2e/consent.spec.ts.
+    // el borde guarda la variante "primera visita" para todos. Moverlo a client-only choca con
+    // app/AGENTS.md y tests/e2e/consent.spec.ts; a quien ya decidió no se le pinta porque el
+    // script de `app.head.script` (PREPAINT_CONSENT_SCRIPT) marca <html data-cu-consent> antes del
+    // primer pintado y critical.css lo esconde. Hasta el 20/11/2026 lo veía hasta hidratar y su
+    // retiro subía la columna 123 px (CLS 0,135). La decisión sigue en su cookie y Consent Mode
+    // se actualiza igual.
     //
     // LO QUE NO VIVE ACÁ: el `s-maxage` es inerte hasta que en Cloudflare exista una Cache
     // Rule (Caching → Cache Rules) que marque estas rutas como cacheables respetando el TTL del
@@ -1413,7 +1436,10 @@ export default defineNuxtConfig({
     // In memory every worker rebuilt every sitemap, and every deploy started both cold: crawlers
     // asking for the 35 sitemaps right after a release kept the workers busy building them
     // (2026-11-06). Tripwire: tests/unit/sitemapCache.test.ts.
-    runtimeCacheStorage: { driver: 'fs', base: './.data/sitemap' },
+    // The driver is `fs` with atomic writes (server/storage/atomicFs.ts): with the plain `fs`
+    // driver a worker reading while the other was still writing got half a document and Nitro
+    // reported "Malformed data read from cache." (CAMBIO-URUGUAY-BACKEND-1E).
+    runtimeCacheStorage: { driver: ATOMIC_FS_DRIVER, base: './.data/sitemap' },
     // Keep non-search pages out of the sitemap so they don't waste crawl budget or show as
     // "not indexed" in Search Console: the always-noindex pages, in Spanish and under every
     // locale prefix (utils/sitemapFilters.ts — one RegExp, see why there).

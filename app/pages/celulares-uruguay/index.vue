@@ -56,12 +56,15 @@ FIRST VIEWPORT: Migas, H1, cuántos modelos y vendedores hay y cuándo se leyó,
         </VChip>
       </div>
       <div class="price-filter">
-        <label class="price-filter__label" for="phones-max-price">
+        <!-- `for` apunta al <input> oculto de Vuetify; el pulgar (role="slider"), que es lo que
+             se enfoca, toma el nombre de aria-labelledby (tests/unit/celularesHub.test.ts). -->
+        <label id="phones-max-price-label" class="price-filter__label" for="phones-max-price">
           Hasta {{ phoneMoney(maxPrice) }}
         </label>
         <VSlider
           id="phones-max-price"
           v-model="maxPrice"
+          aria-labelledby="phones-max-price-label"
           :min="0"
           :max="priceCeiling"
           :step="1000"
@@ -540,7 +543,10 @@ useHead(() => ({
 /* Tarjetas */
 .phone-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  /* 150 px y no 200: a 390 px de ancho entraba UNA columna y las 89 tarjetas medían 63 pantallas
+     (19/11/2026). A 320 px queda una columna; `min(…, 100%)` evita el desborde en un contenedor
+     de menos de 150 px. */
+  grid-template-columns: repeat(auto-fill, minmax(min(150px, 100%), 1fr));
   gap: 16px;
   /* La unidad ocupa una fila entera; `dense` rellena la fila de arriba para que nunca quede un
      hueco antes de ella en una grilla ancha. */
@@ -586,6 +592,7 @@ useHead(() => ({
 .phone-card__name {
   font-size: 0.95rem;
   line-height: 1.3;
+  overflow-wrap: anywhere;
 }
 .phone-card__price {
   font-size: 0.825rem;

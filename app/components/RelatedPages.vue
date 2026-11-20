@@ -55,7 +55,7 @@ import { directorioAnalisisParaRuta } from '~/utils/directorioAnalisis'
 import { familiaNavRutas } from '~/utils/familiaNav'
 import { temaVecinosRutas } from '~/utils/temaVecinos'
 import { relatedEnabledForPath, relatedFor } from '~/utils/relatedPages'
-import { relatedInlineRoutes, relatedInlineStateKey } from '~/utils/relatedInline'
+import { relatedInlineItems } from '~/utils/relatedInline'
 
 const route = useRoute()
 const localePath = useLocalePath()
@@ -63,16 +63,17 @@ const { t } = useI18n()
 const track = useTrack()
 
 const sourcePath = computed(() => route.path)
-// What `RelatedInline` already put next to the answer on this page (tools, indicators).
-const inlineShown = useState<{ path: string; routes: string[] }>(relatedInlineStateKey, () => ({
-  path: '',
-  routes: [],
-}))
+// What `RelatedInline` puts next to the answer on this page (tools, indicators): the same pure
+// call with the same arguments, so the server and the client exclude exactly what it rendered.
+// It used to be a `useState` written from a `watchEffect`, which a page with a top-level await
+// filled only AFTER the server had rendered this block: every card then hydrated with one page's
+// label and another page's link.
+const inlineShown = computed(() => relatedInlineItems(route.path, route.query).map(item => item.to))
 const relatedExclusions = computed(() => {
   const above = [
     ...familiaNavRutas(route.path),
     ...(directorioAnalisisParaRuta(route.path)?.links.map(link => link.to) ?? []),
-    ...relatedInlineRoutes(inlineShown.value, route.path),
+    ...inlineShown.value,
   ]
   return [...above, ...temaVecinosRutas(route.path, above)]
 })
@@ -127,7 +128,8 @@ function trackRelatedClick(destination: string) {
 .related-section {
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  font-size: 0.68rem;
+  /* 12 px, the caption size. 0.68rem rendered 10.88 px on every page of the site. */
+  font-size: 0.75rem;
 }
 .related-label {
   line-height: 1.35;

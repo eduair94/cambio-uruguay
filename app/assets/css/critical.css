@@ -547,3 +547,14 @@ button:focus-visible,
   display: inline-block;
   transform: scaleX(-1);
 }
+
+/*
+ * El aviso de cookies viaja en el HTML compartido del borde para todos (primera visita, en el
+ * flujo). A quien ya decidió se le borraba recién al hidratar y la columna subía 123 px: el script
+ * del <head> (PREPAINT_CONSENT_SCRIPT en nuxt.config.ts) marca <html data-cu-consent> antes de
+ * pintar y acá no se pinta. El diálogo que abre "Configurar cookies" en el pie es un VDialog
+ * (.v-dialog) y queda afuera.
+ */
+html[data-cu-consent] .cookie-consent:not(.v-dialog) {
+  display: none;
+}

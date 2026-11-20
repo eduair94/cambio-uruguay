@@ -33,9 +33,10 @@ test('shared filters, history, grouped prices and live review states', async ({
     })
   })
   const query = page.getByRole('textbox', { name: 'Empresa, localidad o servicio', exact: true })
+  // Every field this helper opens is a VSelect: in Vuetify 4 its <input> is the combobox.
   async function select(label: string, option: string) {
-    await page.getByRole('textbox', { name: label, exact: true }).focus()
-    await page.getByRole('textbox', { name: label, exact: true }).press('ArrowDown')
+    await page.getByRole('combobox', { name: label, exact: true }).focus()
+    await page.getByRole('combobox', { name: label, exact: true }).press('ArrowDown')
     await pickOption(page, option)
   }
   async function ready() {
@@ -68,18 +69,18 @@ test('shared filters, history, grouped prices and live review states', async ({
   await page.reload({ waitUntil: 'domcontentloaded' })
   await ready()
   await expect(query).toHaveValue('Furniture')
-  await expect(page.getByRole('textbox', { name: 'Departamento', exact: true })).toHaveValue(
+  await expect(page.getByRole('combobox', { name: 'Departamento', exact: true })).toHaveValue(
     'Canelones'
   )
 
   await select('Departamento', 'Montevideo')
   await expect(page).toHaveURL(/departamento=Montevideo/)
   await page.goBack()
-  await expect(page.getByRole('textbox', { name: 'Departamento', exact: true })).toHaveValue(
+  await expect(page.getByRole('combobox', { name: 'Departamento', exact: true })).toHaveValue(
     'Canelones'
   )
   await page.goForward()
-  await expect(page.getByRole('textbox', { name: 'Departamento', exact: true })).toHaveValue(
+  await expect(page.getByRole('combobox', { name: 'Departamento', exact: true })).toHaveValue(
     'Montevideo'
   )
   // A pending text edit must never overwrite a history entry with the same committed q.

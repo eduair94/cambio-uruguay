@@ -19,99 +19,18 @@
       class="mobile-navigation-drawer"
       :aria-label="$t('a11y.primaryNav')"
     >
-      <!-- The drawer itself is the <nav> landmark (labelled above). Neutralise
-           Vuetify's default role=listbox on the inner list (its mixed link/button/
-           divider children aren't listbox options) so it's a plain container — the
-           links inside remain the navigable content. -->
-      <!-- Build the large mobile menu only when requested. Keep it mounted after
-           the first opening so closing transitions and expanded groups survive. -->
-      <VList
+      <!-- The drawer itself is the <nav> landmark (labelled above). Build the large
+           mobile menu only when requested, and keep it mounted after the first opening
+           so closing transitions and expanded sections survive. Plain markup, no
+           Vuetify list: see the header of components/MobileNavList.vue for the cost it
+           removes. It takes no slot and stable props on purpose, so the drawer's own
+           re-renders (hover, open, close) skip it. -->
+      <MobileNavList
         v-if="drawerContentReady"
-        v-model:opened="openGroups"
-        role="presentation"
-        tabindex="-1"
-      >
-        <VListItem>
-          <VListItemTitle class="text-h6"> Menu </VListItemTitle>
-          <template #append>
-            <div class="d-flex align-center">
-              <ThemeToggle />
-              <VBtn
-                icon="mdi-close"
-                variant="text"
-                size="small"
-                :aria-label="$t('a11y.close')"
-                @click="drawer = false"
-              />
-            </div>
-          </template>
-        </VListItem>
-
-        <VDivider />
-
-        <VListItem :href="searchHref" @click="onSearchTrigger">
-          <template #prepend>
-            <VIcon>mdi-magnify</VIcon>
-          </template>
-          <VListItemTitle>{{ $t('search.triggerLabel') }}</VListItemTitle>
-        </VListItem>
-
-        <VDivider />
-
-        <!-- `fluid` zeroes Vuetify's nested indent. Without it the group inherits
-             --parent-padding of one prepend-icon width (40px) plus a 16px indent
-             step, pushing every sub-item's icon 72px in while the section headers
-             sit at 16px. -->
-        <VListGroup v-for="section in navSections" :key="section.id" :value="section.id" fluid>
-          <!-- `role="button"` is a correction, not decoration. VListGroup passes its
-               own `value` down to this activator, and Vuetify 4 derives a list item's
-               role as `isSelectable ? 'option' : 'listitem'` with `props.value != null`
-               counting as selectable — so from the 3.9 -> 4.1.5 upgrade these headers
-               shipped as `role="option"` inside a `role="presentation"` list. An option
-               outside a listbox is orphaned ARIA. What this element actually is, is the
-               disclosure toggle for the section: it owns the click handler and Vuetify
-               already points the expanded region's `aria-labelledby` at its id.
-               `no-orphan-listbox-options.spec.ts` fails if this regresses. -->
-          <template #activator="{ props: activatorProps, isOpen }">
-            <VListItem
-              v-bind="activatorProps"
-              role="button"
-              :aria-expanded="isOpen"
-              :aria-selected="undefined"
-            >
-              <VListItemTitle class="font-weight-medium">
-                {{ $t(section.titleKey) }}
-              </VListItemTitle>
-            </VListItem>
-          </template>
-
-          <template v-for="entry in section.entries" :key="entry.to ?? entry.href">
-            <VListItem
-              v-if="entry.to"
-              :to="localePath(entry.to)"
-              :exact="entry.exact"
-              @click="drawer = false"
-            >
-              <template #prepend>
-                <VIcon>{{ entry.icon }}</VIcon>
-              </template>
-              <VListItemTitle>{{ $t(entry.labelKey) }}</VListItemTitle>
-            </VListItem>
-            <VListItem
-              v-else
-              :href="entry.href"
-              target="_blank"
-              rel="noopener noreferrer"
-              @click="drawer = false"
-            >
-              <template #prepend>
-                <VIcon>{{ entry.icon }}</VIcon>
-              </template>
-              <VListItemTitle>{{ $t(entry.labelKey) }}</VListItemTitle>
-            </VListItem>
-          </template>
-        </VListGroup>
-      </VList>
+        :search-href="searchHref"
+        @close="drawer = false"
+        @search="onSearchTrigger"
+      />
     </VNavigationDrawer>
 
     <VAppBar class="app-bar px-2 px-sm-4" flat>
@@ -433,7 +352,6 @@ const isActiveRoute = (path: string) => {
 // page there and it appears in all of them; a page that is in none fails the
 // `siteNav-coverage` unit test.
 const { t } = useI18n()
-const navSections = NAV_SECTIONS
 const primaryNav = computed(() => NAV_SECTIONS.flatMap(s => s.entries.filter(e => e.primary)))
 const moreGroups = computed(() =>
   NAV_SECTIONS.map(s => ({ ...s, entries: s.entries.filter(e => !e.primary) })).filter(
@@ -476,20 +394,6 @@ function bucketIntoColumns(sections: readonly NavSection[], columnCount: number)
 const MEGA_MENU_COLUMNS = 4
 const megaMenuColumns = computed(() => bucketIntoColumns(moreGroups.value, MEGA_MENU_COLUMNS))
 const navLabel = (entry: NavEntry): string => t(entry.labelKey)
-
-// Open the drawer group that owns the current route, so a mobile visitor lands
-// inside the section they are already browsing.
-const openGroups = ref<string[]>([])
-watch(
-  () => route.path,
-  () => {
-    const section = NAV_SECTIONS.find(s =>
-      s.entries.some(e => e.to && e.to !== '/' && route.path.startsWith(e.to))
-    )
-    openGroups.value = section ? [section.id] : ['market']
-  },
-  { immediate: true }
-)
 
 // Search palette. `paletteActivated` defers loading the component (and, inside
 // it, the ~220-document index) until the first hint that someone wants to

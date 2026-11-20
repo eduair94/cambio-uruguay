@@ -255,6 +255,7 @@
         </p>
         <VProgressLinear
           :model-value="Math.min(100, plan.adherence.kcal * 100)"
+          :aria-label="`Calorías: ${pct(plan.adherence.kcal)} del objetivo`"
           :color="adherenceColor(plan.adherence.kcal)"
           height="8"
           rounded

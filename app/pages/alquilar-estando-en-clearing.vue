@@ -246,7 +246,7 @@
       <h2 id="rental-next-title" class="section-heading mb-2">{{ t('clearing.nextTitle') }}</h2>
       <p class="text-body-2 text-medium-emphasis mb-2">{{ t('clearing.nextLead') }}</p>
       <ContentTaskLinks
-        :label="t('clearing.navigation')"
+        :label="t('clearing.nextTitle')"
         placement="matcher_results"
         :items="[
           { label: t('clearing.listings'), to: localePath('/alquileres-uruguay') },

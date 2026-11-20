@@ -4,6 +4,7 @@
       class="familia-nav"
       :aria-label="t('familiaNav.aria')"
       data-testid="familia-nav"
+      data-link-area="family_nav"
       @click="onSpaClick"
     >
       <!-- Pantalla ancha: todas las hermanas a la vista, en una fila de chips. -->
