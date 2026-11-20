@@ -1,0 +1,28 @@
+{
+  "_fixture": "SHAPE ONLY (values unverified, synthetic): settings{<dataset>{enabled maxDuration maxNumberOfFields maxPageSize notOlderThan}} in seconds. Run it once on the VPS and log the real numbers; never hardcode the window.",
+  "data": {
+    "viewer": {
+      "accounts": [
+        {
+          "settings": {
+            "rumPageloadEventsAdaptiveGroups": {
+              "enabled": true,
+              "maxDuration": 2678400,
+              "maxNumberOfFields": 30,
+              "maxPageSize": 10000,
+              "notOlderThan": 15811200
+            },
+            "rumWebVitalsEventsAdaptiveGroups": {
+              "enabled": true,
+              "maxDuration": 2678400,
+              "maxNumberOfFields": 30,
+              "maxPageSize": 10000,
+              "notOlderThan": 15811200
+            }
+          }
+        }
+      ]
+    }
+  },
+  "errors": null
+}

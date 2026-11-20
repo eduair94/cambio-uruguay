@@ -1,0 +1,11 @@
+{
+  "_fixture": "Not enough Chrome traffic for that url/origin + formFactor. NOT a failure: store 'sin datos de campo' and move on. Same body for queryHistoryRecord. Shape per the official CrUX API guide.",
+  "status": 404,
+  "body": {
+    "error": {
+      "code": 404,
+      "message": "chrome ux report data not found",
+      "status": "NOT_FOUND"
+    }
+  }
+}

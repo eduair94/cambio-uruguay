@@ -14,6 +14,7 @@ import { PropertyOpportunitySnapshotModel } from "../../classes/models/PropertyO
 import { SearchConsoleSnapshotModel } from "../../classes/models/SearchConsoleSnapshot";
 import { SiteRevenueSnapshotModel } from "../../classes/models/SiteRevenueSnapshot";
 import { SitePageRankingModel } from "../../classes/models/SitePageRanking";
+import { UsageInsightSnapshotModel } from "../../classes/models/UsageInsightSnapshot";
 import { SiteTopPagesModel } from "../../classes/models/SiteTopPages";
 import { SiteTrafficSourcesModel } from "../../classes/models/SiteTrafficSources";
 import { SearchDemandQueueModel } from "../../classes/models/SearchDemandQueue";
@@ -190,6 +191,15 @@ describe("app-Mongo schema parity", () => {
     expect(Object.keys(SitePageRankingModel.schema.obj).sort()).toEqual(
       appFields(appModel("SitePageRanking")).sort()
     );
+  });
+
+  it("UsageInsightSnapshot declares exactly the app's top-level fields", () => {
+    // El tablero privado de /estadisticas-de-uso. Un campo que el job escriba y el app no declare se
+    // guarda igual pero la página nunca lo ve.
+    expect(Object.keys(UsageInsightSnapshotModel.schema.obj).sort()).toEqual(
+      appFields(appModel("UsageInsightSnapshot")).sort()
+    );
+    expect(UsageInsightSnapshotModel.collection.name).toBe("usageinsightsnapshots");
   });
 
   it("SiteTopPages declares exactly the app's top-level fields", () => {

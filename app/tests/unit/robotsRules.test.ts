@@ -39,6 +39,7 @@ const underEveryLocale = (path: string) => [
 const PRIVATE_PAGES = [
   '/estadisticas-de-busqueda',
   '/estadisticas-por-pagina',
+  '/estadisticas-de-uso',
   '/opinion-alquileres',
   '/opiniones-alquileres',
   '/contactos-comerciales',
@@ -71,10 +72,14 @@ describe('robots.txt rules', () => {
     expect(robots.autoI18n).toBe(false)
   })
 
+  // The ceiling is the measured problem (776 rules), not a target: each private page costs two
+  // rules (`/x` and `/*/x`) and 26 is the 24 of 2026-11-06 plus /estadisticas-de-uso (2026-11-20).
+  // A prefix shared by two private pages (`/estadisticas-de-`) would fit under 24, but it would also
+  // block any future public `/estadisticas-de-…` page in silence, so each one keeps its own line.
   it('keep the wildcard group small enough to test every sitemap URL against', () => {
     const [wildcard] = groups()
-    expect(wildcard._rules.length).toBeLessThanOrEqual(24)
-    for (const group of groups()) expect(group._rules.length).toBeLessThanOrEqual(24)
+    expect(wildcard._rules.length).toBeLessThanOrEqual(26)
+    for (const group of groups()) expect(group._rules.length).toBeLessThanOrEqual(26)
   })
 
   it('block each private page, bare and under every locale prefix', () => {

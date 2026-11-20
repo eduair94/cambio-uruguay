@@ -1,0 +1,26 @@
+{
+  "_fixture": "CAPTURED 2026-11-20 from this machine calling queryRecord WITHOUT a key (origin example.com). With a bad key expect 400 API_KEY_INVALID; with the API not enabled on the key's project, 403 SERVICE_DISABLED.",
+  "status": 403,
+  "body": {
+    "error": {
+      "code": 403,
+      "message": "Permission denied on the service.",
+      "status": "PERMISSION_DENIED",
+      "details": [
+        {
+          "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+          "reason": "ACCESS_DENIED",
+          "domain": "googleapis.com",
+          "metadata": {
+            "service": "chromeuxreport.googleapis.com"
+          }
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.LocalizedMessage",
+          "locale": "en-US",
+          "message": "Permission denied on the service."
+        }
+      ]
+    }
+  }
+}

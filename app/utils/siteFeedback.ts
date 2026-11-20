@@ -52,6 +52,7 @@ const OWN_QUESTION = [
   '/contacto',
   '/estadisticas-de-busqueda',
   '/estadisticas-por-pagina',
+  '/estadisticas-de-uso',
   '/mi-cuenta',
   '/widget',
 ] as const

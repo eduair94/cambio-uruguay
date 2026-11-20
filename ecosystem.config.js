@@ -763,6 +763,17 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // /estadisticas-de-uso (privada, requireAdmin): Cloudflare RUM, GA4 comportamiento, inspección de URLs,
+      // sitefeedbacks y, cuando exista su variable, Clarity/Bing/Cloudflare zona/CrUX. Escribe APP DB
+      // usageinsightsnapshots + usageinsightdays. Necesita APP_MONGO_URI. docs/analytics/USAGE_INSIGHTS.md
+      name: "currency-usage-insights",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_usage_insights.js",
+      cron_restart: "21 12 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Fichas de /tiendas-online-uruguay: por cada tienda del registro curado
       // (classes/stores/registry.ts) lee su home, la antigüedad del dominio (crt.sh, Wayback),
       // Trustpilot (:3029), Google Maps (:2221, sólo si el sitio de la ficha ES el dominio), las

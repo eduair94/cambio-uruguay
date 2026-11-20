@@ -1,0 +1,15 @@
+{
+  "_fixture": "CAPTURED 2026-11-20 on the VPS (srcprobe.json cfHttpZone), identifiers redacted; 'data' value not captured (the probe kept only errors) so treat data as possibly null OR an empty zones list. Detect by extensions.code === 'authz' (or the 'does not have permission' message) and SKIP quietly. GraphQL answers HTTP 200 with errors[]; always check errors before data.",
+  "data": null,
+  "errors": [
+    {
+      "message": "Actor 'com.cloudflare.api.token.<redacted>' does not have permission 'com.cloudflare.api.account.zone.analytics.read' for zone <redacted-zone>",
+      "path": null,
+      "extensions": {
+        "code": "authz",
+        "timestamp": "2026-11-20T04:18:29.749383153Z",
+        "ray_id": "<redacted>"
+      }
+    }
+  ]
+}

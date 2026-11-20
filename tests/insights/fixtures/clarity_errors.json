@@ -1,0 +1,23 @@
+{
+  "_fixture": "Error table from Microsoft Learn (bodies other than the 429 message are not documented; do not parse them).",
+  "401": {
+    "status": 401,
+    "body": "",
+    "meaning": "Missing, invalid, or expired token"
+  },
+  "403": {
+    "status": 403,
+    "body": "",
+    "meaning": "Token not authorized for operation"
+  },
+  "400": {
+    "status": 400,
+    "body": "",
+    "meaning": "Invalid request parameters (e.g. numOfDays=7, dimension 'PopularPages')"
+  },
+  "429": {
+    "status": 429,
+    "body": "Exceeded daily limit",
+    "meaning": "More than 10 requests per project per day (shared by every token of the project, manual tests included)"
+  }
+}

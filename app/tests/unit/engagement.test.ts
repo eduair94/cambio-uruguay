@@ -26,6 +26,7 @@ describe('contextual invitations', () => {
       '/pizarra',
       '/widget',
       '/estadisticas-de-busqueda',
+      '/estadisticas-de-uso',
       '/herramientas/aguinaldo',
     ])
       expect(followUpForPath(path), path).toBeNull()

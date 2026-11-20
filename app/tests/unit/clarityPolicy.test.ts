@@ -85,6 +85,7 @@ describe('the routes Clarity never records', () => {
       '/contactos-comerciales',
       '/estadisticas-de-busqueda',
       '/estadisticas-por-pagina',
+      '/estadisticas-de-uso',
       '/pt/estadisticas-del-sitio',
       '/oportunidades-reddit',
       '/offline',

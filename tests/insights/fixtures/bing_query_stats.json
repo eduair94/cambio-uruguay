@@ -1,0 +1,32 @@
+{
+  "_fixture": "GET https://ssl.bing.com/webmaster/api.svc/json/GetQueryStats?siteUrl=<verified site>&apikey=<key>. Wrapper 'd'; Date is WCF '/Date(ms[+-]hhmm)/' (ms since epoch UTC; the offset is informational). Rows are dated BUCKETS (observed weekly, Saturday dates) and a query repeats per bucket: aggregate by Query. Positions are integers, AvgClickPosition=0 means no clicks. Synthetic.",
+  "d": [
+    {
+      "__type": "QueryStats:#Microsoft.Bing.Webmaster.Api",
+      "AvgClickPosition": 3,
+      "AvgImpressionPosition": 4,
+      "Clicks": 12,
+      "Date": "/Date(1762671600000-0700)/",
+      "Impressions": 140,
+      "Query": "cotizacion dolar uruguay"
+    },
+    {
+      "__type": "QueryStats:#Microsoft.Bing.Webmaster.Api",
+      "AvgClickPosition": 0,
+      "AvgImpressionPosition": 9,
+      "Clicks": 0,
+      "Date": "/Date(1762671600000-0700)/",
+      "Impressions": 33,
+      "Query": "casas de cambio montevideo"
+    },
+    {
+      "__type": "QueryStats:#Microsoft.Bing.Webmaster.Api",
+      "AvgClickPosition": 2,
+      "AvgImpressionPosition": 2,
+      "Clicks": 5,
+      "Date": "/Date(1763276400000-0700)/",
+      "Impressions": 61,
+      "Query": "cotizacion dolar uruguay"
+    }
+  ]
+}

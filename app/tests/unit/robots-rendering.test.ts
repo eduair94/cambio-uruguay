@@ -70,5 +70,6 @@ describe('crawler access to the rendered site', () => {
     }
     const defaults = robots.groups.find(group => group.userAgent.includes('*'))!
     expect(matchPathToRule('/estadisticas-de-busqueda', defaults._rules)?.allow).toBe(false)
+    expect(matchPathToRule('/estadisticas-de-uso', defaults._rules)?.allow).toBe(false)
   })
 })

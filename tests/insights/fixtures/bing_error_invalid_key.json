@@ -1,0 +1,8 @@
+{
+  "_fixture": "CAPTURED 2026-11-20 from this machine with a fake key against example.com (HTTP 400). ApiErrorCode enum: 0 None, 1 InternalError, 2 UnknownError, 3 InvalidApiKey, 4 ThrottleUser, 5 ThrottleHost, 6 UserBlocked, 7 InvalidUrl, 8 InvalidParameter, 9 TooManySites, 10 UserNotFound, 11 NotFound, 12 AlreadyExists, 13 NotAllowed, 14 NotAuthorized (site not verified for this key's user), 15 UnexpectedState, 16 Deprecated.",
+  "status": 400,
+  "body": {
+    "ErrorCode": 3,
+    "Message": "ERROR!!! InvalidApiKey"
+  }
+}

@@ -73,6 +73,8 @@ const NO_ADS = [
   '/estadisticas-de-busqueda',
   // El ranking privado de páginas: mismo lector, misma razón.
   '/estadisticas-por-pagina',
+  // El tablero privado de uso: mismo lector, misma razón.
+  '/estadisticas-de-uso',
   // La encuesta de alquileres: una conversación de un minuto, no una página para monetizar. Y su
   // panel privado.
   '/opinion-alquileres',

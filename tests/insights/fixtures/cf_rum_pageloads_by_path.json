@@ -1,0 +1,74 @@
+{
+  "_fixture": "rumPageloadEventsAdaptiveGroups by requestPath, filter {requestHost, bot:0, countryName:'UY', datetime_geq/leq}. count = page loads (estimated), sum.visits = page loads whose document.referrer host differs from the page host (landings). Synthetic numbers.",
+  "data": {
+    "viewer": {
+      "accounts": [
+        {
+          "rumPageloadEventsAdaptiveGroups": [
+            {
+              "count": 1840,
+              "sum": {
+                "visits": 1210
+              },
+              "avg": {
+                "sampleInterval": 1
+              },
+              "dimensions": {
+                "requestPath": "/"
+              }
+            },
+            {
+              "count": 640,
+              "sum": {
+                "visits": 590
+              },
+              "avg": {
+                "sampleInterval": 1
+              },
+              "dimensions": {
+                "requestPath": "/alquileres-uruguay"
+              }
+            },
+            {
+              "count": 410,
+              "sum": {
+                "visits": 402
+              },
+              "avg": {
+                "sampleInterval": 1
+              },
+              "dimensions": {
+                "requestPath": "/herramientas/calculadora-plazo-fijo"
+              }
+            },
+            {
+              "count": 220,
+              "sum": {
+                "visits": 0
+              },
+              "avg": {
+                "sampleInterval": 1
+              },
+              "dimensions": {
+                "requestPath": "/autos-usados-uruguay/comparar"
+              }
+            },
+            {
+              "count": 90,
+              "sum": {
+                "visits": 88
+              },
+              "avg": {
+                "sampleInterval": 1
+              },
+              "dimensions": {
+                "requestPath": "/en/celulares-uruguay"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "errors": null
+}

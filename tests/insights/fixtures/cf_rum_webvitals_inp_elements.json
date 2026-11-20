@@ -1,0 +1,44 @@
+{
+  "_fixture": "INP culprits: filter interactionToNextPaint_gt: 200000 (microseconds). interactionToNextPaintName is the event type (pointer/keyboard). The inp* sub-parts (Oct 2026 changelog) split where the time goes. Synthetic.",
+  "data": {
+    "viewer": {
+      "accounts": [
+        {
+          "rumWebVitalsEventsAdaptiveGroups": [
+            {
+              "count": 40,
+              "dimensions": {
+                "requestPath": "/autos-usados-uruguay",
+                "deviceType": "mobile",
+                "interactionToNextPaintElement": "",
+                "interactionToNextPaintName": "pointer"
+              },
+              "quantiles": {
+                "interactionToNextPaintP75": 376000,
+                "inpInputDelayP75": 40000,
+                "inpProcessingDurationP75": 250000,
+                "inpPresentationDelayP75": 86000
+              }
+            },
+            {
+              "count": 30,
+              "dimensions": {
+                "requestPath": "/",
+                "deviceType": "mobile",
+                "interactionToNextPaintElement": "div.v-slide-group__content>button.v-chip",
+                "interactionToNextPaintName": "pointer"
+              },
+              "quantiles": {
+                "interactionToNextPaintP75": 624000,
+                "inpInputDelayP75": 52000,
+                "inpProcessingDurationP75": 470000,
+                "inpPresentationDelayP75": 102000
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "errors": null
+}
