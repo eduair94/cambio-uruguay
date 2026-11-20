@@ -195,7 +195,9 @@ const faqs = [
   },
 ]
 
-const canonicalUrl = 'https://cambio-uruguay.com/cotizacion'
+// Canonical per locale (2026-11-30): the /en and /pt pages are whole vue-i18n translations, so
+// each one is the canonical of itself, and the route is localized (utils/localizedRoutes.ts).
+const canonicalUrl = `https://cambio-uruguay.com${localePath('/cotizacion')}`
 
 defineOgImageComponent('Cambio', {
   title: 'Cotizaciones de todas las monedas en Uruguay',
