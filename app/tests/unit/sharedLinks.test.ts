@@ -71,6 +71,7 @@ describe('public share targets', () => {
     '/en/cuenta/perfil',
     '/estadisticas-de-busqueda',
     '/estadisticas-por-pagina',
+    '/estadisticas-de-uso',
     '/contactos-comerciales',
     '/api/cars',
     '/en/api/cars',

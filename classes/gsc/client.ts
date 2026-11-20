@@ -299,6 +299,64 @@ export interface UrlInspection {
   googleCanonical: string | null;
   userCanonical: string | null;
   pageFetchState: string | null;
+  /** Campos documentados que se agregaron después (2026-11-20, `currency-usage-insights`). */
+  crawledAs?: string | null;
+  sitemap?: string[];
+  referringUrls?: string[];
+  inspectionResultLink?: string | null;
+}
+
+export type InspectionOutcome =
+  | { ok: true; result: UrlInspection }
+  | { ok: false; status: 403 | 429; kind: "permission" | "quota" };
+
+/** La forma de una respuesta de URL Inspection, sin I/O. Exportada para los tests. */
+export function parseInspection(inspectionUrl: string, data: any): UrlInspection {
+  const result = data?.inspectionResult || {};
+  const r = result.indexStatusResult || {};
+  return {
+    url: inspectionUrl,
+    verdict: r.verdict || "UNKNOWN",
+    coverageState: r.coverageState || "",
+    robotsTxtState: r.robotsTxtState || "",
+    indexingState: r.indexingState || "",
+    lastCrawlTime: r.lastCrawlTime || null,
+    googleCanonical: r.googleCanonical || null,
+    userCanonical: r.userCanonical || null,
+    pageFetchState: r.pageFetchState || null,
+    crawledAs: r.crawledAs || null,
+    sitemap: Array.isArray(r.sitemap) ? r.sitemap.map(String) : [],
+    referringUrls: Array.isArray(r.referringUrls) ? r.referringUrls.slice(0, 5).map(String) : [],
+    inspectionResultLink: result.inspectionResultLink || null,
+  };
+}
+
+/**
+ * URL Inspection con el motivo cuando no hay resultado: 429, o un 403 de cuota, es `quota`; cualquier
+ * otro 403 es `permission` (la cuenta de servicio no tiene "Completo"). Todo otro error se propaga.
+ * `languageCode` sólo lo manda esta función, así `currency-gsc` no cambia de idioma.
+ */
+export async function inspectUrlDetailed(
+  inspectionUrl: string,
+  opts: { languageCode?: string; siteOverride?: string; sendLanguage?: boolean } = {}
+): Promise<InspectionOutcome> {
+  const token = await accessToken();
+  const body: Record<string, string> = { inspectionUrl, siteUrl: opts.siteOverride || siteUrl() };
+  if (opts.sendLanguage !== false) body.languageCode = opts.languageCode ?? "en-US";
+  try {
+    const res = await paced(() =>
+      axios.post("https://searchconsole.googleapis.com/v1/urlInspection/index:inspect", body, {
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 60000,
+      })
+    );
+    return { ok: true, result: parseInspection(inspectionUrl, res.data) };
+  } catch (e: any) {
+    const status = e?.response?.status;
+    if (status === 429) return { ok: false, status: 429, kind: "quota" };
+    if (status === 403) return { ok: false, status: 403, kind: isQuotaError(e) ? "quota" : "permission" };
+    throw e;
+  }
 }
 
 /**
@@ -307,35 +365,10 @@ export interface UrlInspection {
  * QUOTA IS THE WHOLE DESIGN CONSTRAINT: 2000 calls per property per day, 600 per minute. That is
  * why the caller samples a rotating handful of URLs a day instead of sweeping the ~1900-URL site.
  * Requires "Completo" permission — with read-only access this 403s, which the caller treats as
- * "skip", not as a failure.
+ * "skip", not as a failure. 403 = read-only permission; 429 = daily quota spent: both mean "no
+ * inspection today", never "the site is broken".
  */
 export async function inspectUrl(inspectionUrl: string, siteOverride?: string): Promise<UrlInspection | null> {
-  const token = await accessToken();
-  try {
-    const res = await paced(() =>
-      axios.post(
-        "https://searchconsole.googleapis.com/v1/urlInspection/index:inspect",
-        { inspectionUrl, siteUrl: siteOverride || siteUrl() },
-        { headers: { Authorization: `Bearer ${token}` }, timeout: 60000 }
-      )
-    );
-    const r = res.data?.inspectionResult?.indexStatusResult || {};
-    return {
-      url: inspectionUrl,
-      verdict: r.verdict || "UNKNOWN",
-      coverageState: r.coverageState || "",
-      robotsTxtState: r.robotsTxtState || "",
-      indexingState: r.indexingState || "",
-      lastCrawlTime: r.lastCrawlTime || null,
-      googleCanonical: r.googleCanonical || null,
-      userCanonical: r.userCanonical || null,
-      pageFetchState: r.pageFetchState || null,
-    };
-  } catch (e: any) {
-    const status = e?.response?.status;
-    // 403 = the service account has read-only permission; 429 = daily quota spent. Both mean "no
-    // inspection today", never "the site is broken".
-    if (status === 403 || status === 429) return null;
-    throw e;
-  }
+  const o = await inspectUrlDetailed(inspectionUrl, { siteOverride, sendLanguage: false });
+  return o.ok ? o.result : null;
 }

@@ -1,0 +1,188 @@
+{
+  "_fixture": "GET /export-data/api/v1/project-live-insights?numOfDays=1 (no dimension): 16 metric blocks. Traffic keys use Microsoft's own sample spelling (distantUserCount, PagesPerSessionPercentage) and the friction/ScrollDepth/EngagementTime row keys follow the third-party field references; the keys INSIDE PopularPages/Browser/Device/OS/Country/PageTitle/ReferrerUrl are UNVERIFIED guesses (url confirmed for PopularPages only). Counts are STRINGS, percentages numbers. Parse keys case-insensitively and log unknown metricName/keys on the first real call. Synthetic numbers.",
+  "body": [
+    {
+      "metricName": "Traffic",
+      "information": [
+        {
+          "totalSessionCount": "1520",
+          "totalBotSessionCount": "310",
+          "distantUserCount": "1388",
+          "PagesPerSessionPercentage": 1.7421
+        }
+      ]
+    },
+    {
+      "metricName": "EngagementTime",
+      "information": [
+        {
+          "totalTime": "182400",
+          "activeTime": "61200"
+        }
+      ]
+    },
+    {
+      "metricName": "ScrollDepth",
+      "information": [
+        {
+          "averageScrollDepth": 41.37
+        }
+      ]
+    },
+    {
+      "metricName": "DeadClickCount",
+      "information": [
+        {
+          "sessionsCount": "1520",
+          "sessionsWithMetricPercentage": 9.21,
+          "sessionsWithoutMetricPercentage": 90.79,
+          "pagesViews": "2648",
+          "subTotal": "287"
+        }
+      ]
+    },
+    {
+      "metricName": "RageClickCount",
+      "information": [
+        {
+          "sessionsCount": "1520",
+          "sessionsWithMetricPercentage": 1.45,
+          "sessionsWithoutMetricPercentage": 98.55,
+          "pagesViews": "2648",
+          "subTotal": "31"
+        }
+      ]
+    },
+    {
+      "metricName": "QuickbackClick",
+      "information": [
+        {
+          "sessionsCount": "1520",
+          "sessionsWithMetricPercentage": 6.12,
+          "sessionsWithoutMetricPercentage": 93.88,
+          "pagesViews": "2648",
+          "subTotal": "102"
+        }
+      ]
+    },
+    {
+      "metricName": "ExcessiveScroll",
+      "information": [
+        {
+          "sessionsCount": "1520",
+          "sessionsWithMetricPercentage": 2.04,
+          "sessionsWithoutMetricPercentage": 97.96,
+          "pagesViews": "2648",
+          "subTotal": "33"
+        }
+      ]
+    },
+    {
+      "metricName": "ScriptErrorCount",
+      "information": [
+        {
+          "sessionsCount": "1520",
+          "sessionsWithMetricPercentage": 3.3,
+          "sessionsWithoutMetricPercentage": 96.7,
+          "pagesViews": "2648",
+          "subTotal": "71"
+        }
+      ]
+    },
+    {
+      "metricName": "ErrorClickCount",
+      "information": [
+        {
+          "sessionsCount": "1520",
+          "sessionsWithMetricPercentage": 0.4,
+          "sessionsWithoutMetricPercentage": 99.6,
+          "pagesViews": "2648",
+          "subTotal": "6"
+        }
+      ]
+    },
+    {
+      "metricName": "PopularPages",
+      "information": [
+        {
+          "url": "https://cambio-uruguay.com/",
+          "visitsCount": "640"
+        },
+        {
+          "url": "https://cambio-uruguay.com/alquileres-uruguay?barrio=pocitos",
+          "visitsCount": "210"
+        }
+      ]
+    },
+    {
+      "metricName": "Browser",
+      "information": [
+        {
+          "name": "Chrome",
+          "sessionsCount": "1010"
+        },
+        {
+          "name": "Safari",
+          "sessionsCount": "380"
+        }
+      ]
+    },
+    {
+      "metricName": "Device",
+      "information": [
+        {
+          "name": "Mobile",
+          "sessionsCount": "1150"
+        },
+        {
+          "name": "PC",
+          "sessionsCount": "360"
+        }
+      ]
+    },
+    {
+      "metricName": "OS",
+      "information": [
+        {
+          "name": "Android",
+          "sessionsCount": "760"
+        },
+        {
+          "name": "iOS",
+          "sessionsCount": "390"
+        }
+      ]
+    },
+    {
+      "metricName": "Country",
+      "information": [
+        {
+          "name": "Uruguay",
+          "sessionsCount": "1100"
+        },
+        {
+          "name": "United States",
+          "sessionsCount": "190"
+        }
+      ]
+    },
+    {
+      "metricName": "PageTitle",
+      "information": [
+        {
+          "name": "Cotizaciones del dólar hoy en Uruguay",
+          "sessionsCount": "640"
+        }
+      ]
+    },
+    {
+      "metricName": "ReferrerUrl",
+      "information": [
+        {
+          "name": "https://www.google.com/",
+          "sessionsCount": "720"
+        }
+      ]
+    }
+  ]
+}

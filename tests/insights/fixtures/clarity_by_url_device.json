@@ -1,0 +1,109 @@
+{
+  "_fixture": "dimension1=URL&dimension2=Device&numOfDays=1. Row dimension keys: 'Url' (absolute URL, may carry ?query — strip it before storing) and assumed 'Device' (unverified casing). At most 1,000 rows per call, no pagination: the long tail is cut silently, so store rowsSeen and flag truncation at 1000. Synthetic.",
+  "body": [
+    {
+      "metricName": "Traffic",
+      "information": [
+        {
+          "totalSessionCount": "420",
+          "totalBotSessionCount": "40",
+          "distinctUserCount": "401",
+          "pagesPerSessionPercentage": 1.31,
+          "Url": "https://cambio-uruguay.com/",
+          "Device": "Mobile"
+        },
+        {
+          "totalSessionCount": "95",
+          "totalBotSessionCount": "2",
+          "distinctUserCount": "93",
+          "pagesPerSessionPercentage": 2.1,
+          "Url": "https://cambio-uruguay.com/alquileres-uruguay",
+          "Device": "PC"
+        }
+      ]
+    },
+    {
+      "metricName": "ScrollDepth",
+      "information": [
+        {
+          "averageScrollDepth": 22.5,
+          "Url": "https://cambio-uruguay.com/",
+          "Device": "Mobile"
+        },
+        {
+          "averageScrollDepth": 64.0,
+          "Url": "https://cambio-uruguay.com/alquileres-uruguay",
+          "Device": "PC"
+        }
+      ]
+    },
+    {
+      "metricName": "EngagementTime",
+      "information": [
+        {
+          "totalTime": "25200",
+          "activeTime": "6100",
+          "Url": "https://cambio-uruguay.com/",
+          "Device": "Mobile"
+        },
+        {
+          "totalTime": "17100",
+          "activeTime": "9400",
+          "Url": "https://cambio-uruguay.com/alquileres-uruguay",
+          "Device": "PC"
+        }
+      ]
+    },
+    {
+      "metricName": "RageClickCount",
+      "information": [
+        {
+          "sessionsCount": "420",
+          "sessionsWithMetricPercentage": 4.29,
+          "sessionsWithoutMetricPercentage": 95.71,
+          "pagesViews": "551",
+          "subTotal": "23",
+          "Url": "https://cambio-uruguay.com/",
+          "Device": "Mobile"
+        },
+        {
+          "sessionsCount": "95",
+          "sessionsWithMetricPercentage": 0,
+          "sessionsWithoutMetricPercentage": 100,
+          "pagesViews": "200",
+          "subTotal": "0",
+          "Url": "https://cambio-uruguay.com/alquileres-uruguay",
+          "Device": "PC"
+        }
+      ]
+    },
+    {
+      "metricName": "DeadClickCount",
+      "information": [
+        {
+          "sessionsCount": "420",
+          "sessionsWithMetricPercentage": 12.38,
+          "sessionsWithoutMetricPercentage": 87.62,
+          "pagesViews": "551",
+          "subTotal": "71",
+          "Url": "https://cambio-uruguay.com/",
+          "Device": "Mobile"
+        }
+      ]
+    },
+    {
+      "metricName": "QuickbackClick",
+      "information": [
+        {
+          "sessionsCount": "95",
+          "sessionsWithMetricPercentage": 8.42,
+          "sessionsWithoutMetricPercentage": 91.58,
+          "pagesViews": "200",
+          "subTotal": "9",
+          "Url": "https://cambio-uruguay.com/alquileres-uruguay",
+          "Device": "PC"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "_fixture": "Synthetic, modelled on the PageSpeed 429 captured on 2026-11-20 (srcprobe psi). Limit: 150 queries/minute per Google Cloud project, shared with queryHistoryRecord; no daily cap documented. Back off and retry.",
+  "status": 429,
+  "body": {
+    "error": {
+      "code": 429,
+      "message": "Quota exceeded for quota metric 'Queries' and limit 'Queries per minute' of service 'chromeuxreport.googleapis.com' for consumer 'project_number:<redacted>'.",
+      "status": "RESOURCE_EXHAUSTED"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "_fixture": "SHAPE ONLY (values synthetic; availableFields path format per docs, e.g. sum_requests). Changelog 2026-10-02: adaptive datasets keep >=31 days on Free, up to 30 days per query. Fields per plan unchanged: read availableFields before selecting.",
+  "data": {
+    "viewer": {
+      "zones": [
+        {
+          "settings": {
+            "httpRequestsAdaptiveGroups": {
+              "enabled": true,
+              "maxDuration": 2592000,
+              "maxNumberOfFields": 30,
+              "maxPageSize": 10000,
+              "notOlderThan": 2678400,
+              "availableFields": [
+                "count",
+                "dimensions_clientRequestPath",
+                "dimensions_edgeResponseStatus",
+                "dimensions_cacheStatus",
+                "dimensions_userAgent",
+                "dimensions_datetimeHour",
+                "dimensions_date",
+                "dimensions_requestSource",
+                "dimensions_verifiedBotCategory"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  },
+  "errors": null
+}

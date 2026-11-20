@@ -1,0 +1,16 @@
+{
+  "_fixture": "Excluded page: verdict NEUTRAL, no googleCanonical (absent when not indexed). Other real coverageState strings in this family: 'Discovered - currently not indexed', 'URL is unknown to Google', 'Duplicate, Google chose different canonical than user', 'Alternate page with proper canonical tag', 'Page with redirect', 'Excluded by ‘noindex’ tag', 'Soft 404', 'Not found (404)'. Classify by keyword, not equality.",
+  "inspectionResult": {
+    "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:cambio-uruguay.com&id=<opaque>",
+    "indexStatusResult": {
+      "verdict": "NEUTRAL",
+      "coverageState": "Crawled - currently not indexed",
+      "robotsTxtState": "ALLOWED",
+      "indexingState": "INDEXING_ALLOWED",
+      "lastCrawlTime": "2026-11-02T08:41:10Z",
+      "pageFetchState": "SUCCESSFUL",
+      "userCanonical": "https://cambio-uruguay.com/alquileres-uruguay/montevideo/ejemplo-123",
+      "crawledAs": "MOBILE"
+    }
+  }
+}

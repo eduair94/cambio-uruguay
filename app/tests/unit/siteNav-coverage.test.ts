@@ -142,6 +142,7 @@ describe('the navigation model has no dead links', () => {
       '/descuentos-con-tarjeta-uruguay/cerca-de-mi',
       '/equipar-casa-uruguay/mi-lista',
       '/estadisticas-de-busqueda',
+      '/estadisticas-de-uso',
       '/estadisticas-por-pagina',
       '/monopatines-electricos-uruguay/comparar',
       '/offline',

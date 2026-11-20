@@ -49,6 +49,7 @@ export const PUBLIC_EXCLUDED_PATHS: readonly string[] = Object.freeze([
   "/cuenta",
   "/estadisticas-de-busqueda",
   "/estadisticas-por-pagina",
+  "/estadisticas-de-uso",
   "/descuentos-con-tarjeta-uruguay/cerca-de-mi",
   "/ranking-usuarios-charruadevs",
   "/opinion-alquileres",

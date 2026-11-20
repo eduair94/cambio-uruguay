@@ -24,6 +24,7 @@ export const SITEMAP_NOINDEX_PATHS: readonly string[] = Object.freeze([
   '/api-reference',
   '/estadisticas-de-busqueda',
   '/estadisticas-por-pagina',
+  '/estadisticas-de-uso',
   '/opinion-alquileres',
   '/opiniones-alquileres',
   '/oportunidades-reddit',

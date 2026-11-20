@@ -1,0 +1,26 @@
+{
+  "_fixture": "POST https://searchconsole.googleapis.com/v1/urlInspection/index:inspect body {inspectionUrl, siteUrl:'sc-domain:cambio-uruguay.com', languageCode:'en-US'}. The indexStatusResult core matches the 2026-11-20 probe; sitemap/referringUrls/crawledAs/inspectionResultLink are documented fields that classes/gsc/client.ts inspectUrl() currently DROPS.",
+  "inspectionResult": {
+    "inspectionResultLink": "https://search.google.com/search-console/inspect?resource_id=sc-domain:cambio-uruguay.com&id=<opaque>",
+    "indexStatusResult": {
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "robotsTxtState": "ALLOWED",
+      "indexingState": "INDEXING_ALLOWED",
+      "lastCrawlTime": "2026-11-15T20:09:56Z",
+      "pageFetchState": "SUCCESSFUL",
+      "googleCanonical": "https://cambio-uruguay.com/dolar-hoy",
+      "userCanonical": "https://cambio-uruguay.com/dolar-hoy",
+      "sitemap": [
+        "https://cambio-uruguay.com/sitemap.xml"
+      ],
+      "referringUrls": [
+        "https://cambio-uruguay.com/"
+      ],
+      "crawledAs": "MOBILE"
+    },
+    "mobileUsabilityResult": {
+      "verdict": "VERDICT_UNSPECIFIED"
+    }
+  }
+}

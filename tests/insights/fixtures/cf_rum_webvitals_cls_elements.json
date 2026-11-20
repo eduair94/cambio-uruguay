@@ -1,0 +1,47 @@
+{
+  "_fixture": "CLS culprits: filter cumulativeLayoutShift_gt: 0.1, dimensions requestPath deviceType cumulativeLayoutShiftElement. An EMPTY element string is common (shift not attributable) and must be reported as 'sin elemento', never dropped. Selectors match the real 2026-11-19 probe.",
+  "data": {
+    "viewer": {
+      "accounts": [
+        {
+          "rumWebVitalsEventsAdaptiveGroups": [
+            {
+              "count": 90,
+              "dimensions": {
+                "requestPath": "/",
+                "deviceType": "mobile",
+                "cumulativeLayoutShiftElement": ""
+              },
+              "quantiles": {
+                "cumulativeLayoutShiftP75": 0.73
+              }
+            },
+            {
+              "count": 40,
+              "dimensions": {
+                "requestPath": "/autos-usados-uruguay",
+                "deviceType": "mobile",
+                "cumulativeLayoutShiftElement": "#main>div.container_custom.container_custom--rail"
+              },
+              "quantiles": {
+                "cumulativeLayoutShiftP75": 0.321
+              }
+            },
+            {
+              "count": 30,
+              "dimensions": {
+                "requestPath": "/",
+                "deviceType": "mobile",
+                "cumulativeLayoutShiftElement": "#main>div.cookie-consent>div.cookie-consent__card"
+              },
+              "quantiles": {
+                "cumulativeLayoutShiftP75": 0.314
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "errors": null
+}
