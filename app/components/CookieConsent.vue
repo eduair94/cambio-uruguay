@@ -20,8 +20,8 @@
         </p>
       </div>
       <div class="cookie-consent__actions">
-        <VBtn variant="outlined" @click="reject">{{ t('consent.reject') }}</VBtn>
-        <VBtn variant="outlined" @click="accept">{{ t('consent.accept') }}</VBtn>
+        <VBtn variant="outlined" @click="onReject">{{ t('consent.reject') }}</VBtn>
+        <VBtn variant="outlined" @click="onAccept">{{ t('consent.accept') }}</VBtn>
       </div>
     </div>
   </component>
@@ -56,6 +56,29 @@ const settled = ref(false)
 onMounted(() => {
   settled.value = true
 })
+// The buttons answer as soon as they hydrate, which can be before this component's onMounted (the
+// layout waits for the page's async parts): a decision taken in that gap must hide the banner now,
+// not when the page finishes mounting.
+function onAccept() {
+  settled.value = true
+  accept()
+}
+function onReject() {
+  settled.value = true
+  reject()
+}
+// Once the app is running, ITS reading of the cookie is the one that counts. The mark on <html> was
+// set before the first paint by a script that reads the raw cookie: if the app does not see a
+// decision (the cookie was deleted in another tab, or holds a value the app rejects), a mark left
+// behind would keep hiding a banner the visitor needs.
+watch(
+  [settled, hasDecided],
+  ([isSettled, decided]) => {
+    if (import.meta.client && isSettled && !decided)
+      document.documentElement.removeAttribute('data-cu-consent')
+  },
+  { flush: 'sync' }
+)
 const visible = computed(() =>
   consentBannerRendered({
     settled: settled.value,
@@ -100,7 +123,13 @@ const containerProps = computed(() =>
         scrollable: true,
         'aria-labelledby': titleId,
       }
-    : { role: 'region', 'aria-label': t('consent.title'), 'data-testid': 'cookie-consent-inline' }
+    : {
+        role: 'region',
+        'aria-label': t('consent.title'),
+        'data-testid': 'cookie-consent-inline',
+        // The first text inside <main> on every page, and now in every server HTML.
+        'data-nosnippet': '',
+      }
 )
 </script>
 

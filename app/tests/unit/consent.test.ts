@@ -54,9 +54,6 @@ describe('consent core', () => {
   })
 })
 
-// The consent defaults are region-scoped (nuxt.config.ts): denied where Google's EU user consent
-// policy requires it, granted elsewhere. Getting this list wrong is not a visible bug — it is
-// either a compliance problem in Europe or three quarters of the traffic going unmeasured at home.
 describe('the inline banner is rendered the same for everyone until the page has hydrated', () => {
   // The edge stores ONE copy of each page's HTML and hands it to every visitor, whoever asked for
   // it first. Measured in production on 2026-11-20: a request that carried `cu_consent=granted`
@@ -85,6 +82,9 @@ describe('the inline banner is rendered the same for everyone until the page has
   })
 })
 
+// The consent defaults are region-scoped (nuxt.config.ts): denied where Google's EU user consent
+// policy requires it, granted elsewhere. Getting this list wrong is not a visible bug — it is
+// either a compliance problem in Europe or three quarters of the traffic going unmeasured at home.
 describe('strict consent regions', () => {
   it('covers the EEA, the UK and Switzerland', () => {
     for (const code of [

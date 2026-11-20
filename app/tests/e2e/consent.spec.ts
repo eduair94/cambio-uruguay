@@ -45,7 +45,11 @@ test.describe('cookie consent', () => {
     // The copy the edge stores is the answer to whoever asked first. With the cookie deciding the
     // server render, a decided visitor left a banner-less copy for the next new visitor.
     for (const cookie of ['', 'cu_consent=granted', 'cu_consent=denied']) {
-      const response = await request.get('/dolar-hoy', { headers: cookie ? { cookie } : {} })
+      // A cold dev server takes close to a minute for its first page; the fixture's default is 30 s.
+      const response = await request.get('/dolar-hoy', {
+        headers: cookie ? { cookie } : {},
+        timeout: 120_000,
+      })
       expect(response.ok()).toBe(true)
       expect(await response.text(), `cookie: ${cookie || '(none)'}`).toContain(
         'data-testid="cookie-consent-inline"'
@@ -60,11 +64,31 @@ test.describe('cookie consent', () => {
     page.on('console', message => {
       if (/hydrat/i.test(message.text())) mismatches.push(message.text())
     })
-    await page.goto('/dolar-hoy', { waitUntil: 'domcontentloaded' })
-    await expect(page.locator('html')).toHaveAttribute('data-cu-consent', 'denied')
-    await expect(page.getByTestId('cookie-consent-inline')).toBeHidden()
-    await expect(page.getByTestId('cookie-consent-inline')).toHaveCount(0, { timeout: 60_000 })
+    // Hold the app's scripts so the state BEFORE hydration can be observed (as theme.spec.ts does):
+    // without this, "hidden" would also be true of a banner that hydration had already removed.
+    let releaseScripts!: () => void
+    const scriptsReady = new Promise<void>(resolve => (releaseScripts = resolve))
+    await page.route('**/_nuxt/**', async route => {
+      if (route.request().resourceType() === 'script') await scriptsReady
+      await route.fallback()
+    })
+    const inline = page.getByTestId('cookie-consent-inline')
+    try {
+      await page.goto('/dolar-hoy', { waitUntil: 'commit' })
+      await expect(page.locator('html')).toHaveAttribute('data-cu-consent', 'denied')
+      await expect(inline).toBeAttached()
+      await expect(inline).toBeHidden()
+    } finally {
+      releaseScripts()
+    }
+    await expect(inline).toHaveCount(0, { timeout: 60_000 })
     expect(mismatches).toEqual([])
+
+    // The mark on <html> stays for the rest of the page: it must not hide the dialog of the footer.
+    const dialog = page.getByRole('dialog', { name: 'Tu privacidad' })
+    await page.getByRole('button', { name: /Configurar cookies/i }).click()
+    await expect(dialog).toBeVisible()
+    await expect(dialog.getByRole('button', { name: /Aceptar/i })).toBeVisible()
   })
 
   test('rejecting persists denied and hides the banner', async ({ page }) => {
