@@ -3407,6 +3407,20 @@
         "sucursales brou abiertas hoy"
       ],
       "hypothesis": "Las paginas de sucursales ya decian su intencion en el titulo (\"Sucursales de X en <departamento>\"); lo que cambia es que su enlace de marca deja de mandar \"Ver todo sobre X\" a /casa/<casa> y manda \"Todas las cotizaciones de X hoy\" a la pagina de marca, y que un departamento con UN local deja de titularse \"Sucursales de Cambio Principal en Rivera: 1 locales\" (764 impresiones de \"cambio principal\" en esa URL en 28 dias) y pasa a \"Sucursal de Cambio Principal en Rivera: telefono y horario\". OCA (\"oca maldonado\" posicion 10,3 en 90 dias) ya cae en la URL correcta de su intencion: su problema es la posicion, no el reparto, y no se toca su snippet. Se espera que las sucursales conserven sus consultas de marca + lugar y que los locales unicos ganen CTR por el titulo en singular."
+    },
+    {
+      "id": "apps-hechas-en-uruguay-pagina-propia",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/apps-hechas-en-uruguay"
+      ],
+      "queries": [
+        "apps uruguayas",
+        "apps hechas en uruguay",
+        "aplicaciones uruguayas",
+        "aplicaciones hechas en uruguay"
+      ],
+      "hypothesis": "Pagina nueva. El sitio no tenia donde poner las apps y webs que hacen desarrolladores uruguayos por su cuenta. /apps-utiles-uruguay solo admite apps de Google Play o del App Store de Uruguay publicadas por quien presta el servicio, y alguna no oficial solo si la usa muchisima gente. De los ocho proyectos del hilo Recopilatorio apps uruguayas de r/CharruaDevs del 2026-11-17, ninguno cumple esa regla: seis son solo web o una biblioteca, y los dos con ficha de tienda tienen 100+ y 50+ descargas. La pagina los lista por categoria con lo que dice la web o la ficha de cada proyecto, abierta el 2026-11-20. No lleva usuarios de Reddit, citas, nombres de personas, ni calificaciones o precios que el proyecto no publique. Cada tarjeta dice exactamente que afirma su fuente sobre Uruguay: hecha por uruguayos, domicilio en sus terminos o en su ficha, web hecha para el mercado uruguayo sin decir quien la hace, o nada mas que el hilo. Titulo: Apps uruguayas de devs independientes. Lo que hoy contesta 'apps uruguayas' en el buscador son notas de prensa de 2013 a 2019. El angulo propio es una lista fechada, revisada a mano y con una via para que cada desarrollador mande la suya por el buzon del sitio. En el archivo de Search Console (28 dias al 2026-11-17) no hay ninguna impresion para estas consultas, asi que el antes es cero por definicion; lo que se mide es si la pagina entra al indice y con que consultas. Recibe su enlace de contexto desde /apps-utiles-uruguay (ruta libre, un parrafo, sin fila propia) y entra al tema emprender-y-empresa-uruguay. No se declara la consulta 'app uruguay', que es de /apps-utiles-uruguay. Medir contra las 28 jornadas posteriores archivadas, sin el dia del deploy."
     }
   ]
 }
