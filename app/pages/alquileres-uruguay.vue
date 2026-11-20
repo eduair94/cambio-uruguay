@@ -1838,7 +1838,8 @@ useSchemaOrg([
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 0;
+  /* 4 y no 5: la barra mide 53 con botones de 44 (contrato del e2e: ≤ 72, un renglón). */
+  padding: 4px 0;
   background: rgb(var(--v-theme-background));
   border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
@@ -2479,18 +2480,26 @@ useSchemaOrg([
 
 @media (max-width: 959px) {
   .rentals-head {
-    margin: 8px 0 24px;
+    /* 12 y no 24: la caja de 44 px del enlace de abajo ya deja aire bajo el texto. */
+    margin: 8px 0 12px;
   }
   .rentals-breadcrumbs {
     display: none;
   }
   .rentals-provenance {
-    margin-top: 8px;
+    margin-top: 4px;
+    /* 12 y no 8: si la fecha baja de renglón, arranca donde termina la caja de 44 px del enlace
+       (que cuelga 12 px bajo su margen), no 4 px adentro. En un solo renglón no cambia nada. */
+    row-gap: 12px;
   }
   .rentals-provenance > a {
     min-height: 44px;
     display: inline-flex;
     align-items: center;
+    /* La caja de 44 px se queda (blanco táctil), pero se monta sobre el aire de arriba (el último
+       renglón del copete, texto) y de abajo (el margen del encabezado) en vez de empujar los
+       resultados 24 px hacia abajo. */
+    margin-block: -12px;
   }
   .rentals-mobile-bar > .v-btn {
     flex: 0 0 44px;
@@ -2603,7 +2612,9 @@ useSchemaOrg([
     font-size: 0.875rem;
   }
 }
-@media (max-width: 599px) {
+/* Desde 360 px el enlace y la fecha entran en un renglón; abajo de eso van en columna, como antes
+   del 20/11/2026 (cuando la columna regía hasta 599). */
+@media (max-width: 359px) {
   .rentals-provenance {
     flex-direction: column;
     align-items: flex-start;
@@ -2612,6 +2623,95 @@ useSchemaOrg([
   /* En columna el punto separaría dos renglones, no dos textos. */
   .rentals-provenance__sep {
     display: none;
+  }
+  /* En columna la caja de 44 px se montaría sobre la fecha: vuelve a ocupar su lugar. */
+  .rentals-provenance > a {
+    margin-block: 0;
+  }
+}
+/* Teléfono: el primer aviso arriba de los 400 px a 390×844 sin el anuncio automático (medido en
+   producción el 20/11/2026: estaba a 504). La cuenta y el orden comparten renglón; la mediana va
+   debajo, a todo el ancho. Prefijo `.rentals` para ganarle a `.rentals--mobile …` y a las reglas
+   de 599 de `.rentals-sort` / `.rentals-toolbar` sin `!important`. */
+@media (max-width: 959px) {
+  .rentals .rentals-head h1 {
+    margin-bottom: 4px;
+  }
+  .rentals .rentals-toolbar {
+    --rentals-sort-width: 10.25rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--rentals-sort-width);
+    align-items: start;
+    gap: 0 8px;
+    margin: 8px 0;
+  }
+  /* El resumen ocupa el renglón entero y el orden se apoya en su punta derecha; el h2 le deja el
+     lugar con su relleno. */
+  .rentals .rentals-summary {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    margin-right: 0;
+  }
+  .rentals .rentals-summary h2 {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline-end: calc(var(--rentals-sort-width) + 8px);
+    font-size: 1rem;
+    line-height: 1.2;
+  }
+  .rentals .rentals-summary h2 + p {
+    margin-top: 0;
+  }
+  .rentals .rentals-sort {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+  }
+  .rentals .rentals-sort :deep(.v-field) {
+    --v-field-padding-start: 12px;
+  }
+  /* 44 y no 40: era el único control del teléfono por debajo del blanco táctil. */
+  .rentals .rentals-sort :deep(.v-field__input) {
+    min-height: 44px;
+  }
+  /* Sólo el valor mostrado: el <input> sigue en 16 px y iOS no hace zoom al tocarlo. */
+  .rentals .rentals-sort :deep(.v-select__selection-text) {
+    font-size: 0.875rem;
+  }
+}
+/* Entre 600 y 959 sobra renglón: el orden se ensancha hasta que "Menor costo mensual total" (179 px
+   de texto, 58 de relleno y flecha) entra sin cortarse. Abajo de 600 se queda en 10.25rem: más ancho
+   partiría la cuenta en tres renglones. */
+@media (min-width: 600px) and (max-width: 959px) {
+  .rentals .rentals-toolbar {
+    --rentals-sort-width: 15rem;
+  }
+}
+@media (max-width: 599px) {
+  /* Paso List Text de DESIGN.md: dos renglones desde 320 px (eran tres). */
+  .rentals .rentals-lead {
+    font-size: 0.875rem;
+    line-height: 1.45;
+  }
+}
+/* Abajo de 360 el orden no entra al lado de la cuenta: vuelve debajo, como antes. */
+@media (max-width: 359px) {
+  .rentals .rentals-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rentals .rentals-summary h2 {
+    display: block;
+    min-height: 0;
+    padding-inline-end: 0;
+  }
+  .rentals .rentals-summary h2 + p {
+    margin-top: 4px;
+  }
+  .rentals .rentals-sort {
+    grid-column: 1;
+    grid-row: 2;
+    margin-top: 8px;
   }
 }
 /* Fila horizontal en pantallas anchas, como InfoCasas y la vista lista de
