@@ -1,3 +1,4 @@
+import type { PipelineStage } from 'mongoose'
 import { loadRentalServiceZoneIds } from '../../utils/rentalZoneServices'
 import { RentalListingModel } from '../../models/RentalListing'
 import { RentalMetaModel } from '../../models/RentalMeta'
@@ -7,19 +8,24 @@ import { rentalAvailabilityAdvertId } from '../../../utils/rentalAvailability'
 import { publicAdvertiserProjection } from '../../../utils/propertyAdvertiser'
 import { rentalDistanceProjection, rentalDistanceStages } from '../../../utils/rentalDistance'
 import {
+  RENTAL_PRICE_PER_M2_SORT_FIELDS,
+  rentalPricePerM2Stages,
+} from '../../../utils/rentalPricePerM2'
+import {
   RENTAL_COLLATION,
   RENTAL_STALE_DAYS,
   RENTAL_TOTAL_SORT_FIELDS,
-  rentalInsertedProjection,
   buildRentalFilter,
   normalizeRentalQuery,
   rentalMatchingOffer,
   rentalMongoSort,
   rentalOfferStages,
   rentalPublicStages,
+  rentalRecentSortProjection,
   type RentalOffer,
   type RentalMapPoint,
   type RentalMapResponse,
+  type RentalQuery,
 } from '../../../utils/rentals'
 
 /**
@@ -50,6 +56,73 @@ const STALE_DAYS = RENTAL_STALE_DAYS
  * pines lo que se ve son los grupos, no los pines.
  */
 const MAX_POINTS = 3000
+
+/**
+ * The sorted points pass. Pure, and exported so a production check runs this array itself.
+ *
+ * EVERY key of the `$sort` has to survive the `$project` before it: Mongo sorts a missing field as
+ * null without a word, every row ties and the map silently falls to the next key. Before
+ * 2026-11-20 that happened twice here: "baja" sorted on `priceDrop.pct`, never projected, and
+ * "precio-m2" on fields this pipeline never computed (tests/unit/rentalsMapProjection.test.ts
+ * checks every sort).
+ */
+export function rentalMapPointsPipeline(
+  query: RentalQuery,
+  publicLocated: object[],
+  offerStages: object[]
+): PipelineStage[] {
+  return [
+    ...publicLocated,
+    ...offerStages,
+    ...rentalDistanceStages(query),
+    // On the advert chosen above, as the list does.
+    ...(query.sort === 'precio-m2' ? rentalPricePerM2Stages() : []),
+    // Discard rich descriptions, galleries and private identity before Mongo keeps sort rows.
+    {
+      $project: {
+        _id: 0,
+        ...rentalDistanceProjection(query),
+        ...publicAdvertiserProjection('offers'),
+        ...publicAdvertiserProjection('matchingOffer'),
+        key: 1,
+        latitude: 1,
+        longitude: 1,
+        price: 1,
+        // Internal sort keys, omitted from the public map-point mapper below.
+        priceUyu: 1,
+        freshAt: 1,
+        ...rentalRecentSortProjection(query),
+        ...(query.sort === 'baja' ? { 'priceDrop.pct': 1 } : {}),
+        ...(query.sort === 'total'
+          ? Object.fromEntries(RENTAL_TOTAL_SORT_FIELDS.map(field => [field, 1]))
+          : {}),
+        ...(query.sort === 'precio-m2'
+          ? Object.fromEntries(RENTAL_PRICE_PER_M2_SORT_FIELDS.map(field => [field, 1]))
+          : {}),
+        currency: 1,
+        bedrooms: 1,
+        area: 1,
+        neighborhood: 1,
+        'offers.url': 1,
+        'offers.listingId': 1,
+        'offers.source': 1,
+        'offers.price': 1,
+        'offers.priceUyu': 1,
+        'offers.currency': 1,
+        'offers.sellerType': 1,
+        'offers.commonExpenses': 1,
+        'offers.commonExpensesCurrency': 1,
+        'offers.petsAllowed': 1,
+        'offers.furnished': 1,
+        'offers.terms': 1,
+        'offers.parkingSpaces': 1,
+        'offers.guarantees': 1,
+      },
+    },
+    { $sort: rentalMongoSort(query.sort) },
+    { $limit: MAX_POINTS },
+  ] as PipelineStage[]
+}
 
 export default defineEventHandler(async (event): Promise<RentalMapResponse> => {
   setResponseHeader(event, 'cache-control', 'public, max-age=30, s-maxage=60')
@@ -83,51 +156,9 @@ export default defineEventHandler(async (event): Promise<RentalMapResponse> => {
       RentalListingModel.aggregate([...publicLocated, { $count: 'total' }]).collation(
         RENTAL_COLLATION
       ),
-      RentalListingModel.aggregate([
-        ...publicLocated,
-        ...rentalOfferStages(query, usdUyu),
-        ...rentalDistanceStages(query),
-        // Discard rich descriptions, galleries and private identity before Mongo keeps sort rows.
-        {
-          $project: {
-            _id: 0,
-            ...rentalDistanceProjection(query),
-            ...publicAdvertiserProjection('offers'),
-            ...publicAdvertiserProjection('matchingOffer'),
-            key: 1,
-            latitude: 1,
-            longitude: 1,
-            price: 1,
-            // Internal sort keys, omitted from the public map-point mapper below.
-            priceUyu: 1,
-            freshAt: 1,
-            ...rentalInsertedProjection(query.sort),
-            ...(query.sort === 'total'
-              ? Object.fromEntries(RENTAL_TOTAL_SORT_FIELDS.map(field => [field, 1]))
-              : {}),
-            currency: 1,
-            bedrooms: 1,
-            area: 1,
-            neighborhood: 1,
-            'offers.url': 1,
-            'offers.listingId': 1,
-            'offers.source': 1,
-            'offers.price': 1,
-            'offers.priceUyu': 1,
-            'offers.currency': 1,
-            'offers.sellerType': 1,
-            'offers.commonExpenses': 1,
-            'offers.commonExpensesCurrency': 1,
-            'offers.petsAllowed': 1,
-            'offers.furnished': 1,
-            'offers.terms': 1,
-            'offers.parkingSpaces': 1,
-            'offers.guarantees': 1,
-          },
-        },
-        { $sort: rentalMongoSort(query.sort) },
-        { $limit: MAX_POINTS },
-      ])
+      RentalListingModel.aggregate(
+        rentalMapPointsPipeline(query, publicLocated, rentalOfferStages(query, usdUyu))
+      )
         // The retained point rows still contain own-offer terms. Keep the map available when
         // a larger catalogue/offer set pushes even this projected sort beyond 100 MiB.
         .allowDiskUse(true)

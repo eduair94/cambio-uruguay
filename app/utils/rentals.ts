@@ -1838,16 +1838,72 @@ export function rentalMedianFacet(priceStages: object[]): object[] {
 }
 
 /**
- * The tie-break inside one day of "más recientes": `freshAt` is a DATE, so every property of the same
- * day tied and `key` broke the tie alphabetically — the first page of Montevideo was all Aguada and
- * Aires Puros (2026-10-08). The document's ObjectId is the moment we first saved the property, so
- * among the same day the run of 10:47 comes before the one of 06:47, and one run mixes barrios.
- * A temporary sort key like the totals': the public projection drops `_id`.
+ * "Más recientes", and none of its steps is the price.
+ *
+ * 1. `freshAt`, a DAY (the portal's publication date, else the day we first saw the advert):
+ *    nothing of an older day comes before a newer one, which is what the label promises.
+ * 2. Inside one day, homes (`vivienda`: apartamento, casa, habitación) before locales, oficinas,
+ *    garajes, terrenos and "otro", a quarter of the inventory and not what someone opening the page
+ *    looks for. Only when the search chose no type: with types chosen, every chosen type counts the
+ *    same. The chosen types are read exactly as `buildRentalFilter` reads them.
+ * 3. Inside one day and tier, the newest insertion hour first: the hour of the document's
+ *    ObjectId, the moment we first saved the property, as whole hours since 1970 (a number, so the
+ *    route's "es" collation never reorders it). An evening visit opens on the afternoon's arrivals,
+ *    not on a draw among the whole day: read on production on 2026-11-20 by the review, the
+ *    2026-11-19 block held 905 homes and 570 of them were saved after 12:00 UTC. An `_id` that is not an ObjectId
+ *    gets null (`$convert` with onError/onNull) and goes last in its day; it never fails the query.
+ * 4. Inside one hour, a fixed mix: the hash of the key (binary, so no collation reorders it). NOT
+ *    the ObjectId itself: classes/rentals/dedupe.ts hands each run to the store sorted by price, so
+ *    `_id` descending walked the price DOWN — on 2026-11-20 the first page opened on two houses of
+ *    $ 210.000 and $ 185.000 against a directory median of $ 31.000 and ended on $ 2.400 cabins.
+ *    One run lasts seconds, so the hour holds it whole and the hash breaks its price order. A hash
+ *    mixes, it does not rank: an expensive home can still come first, as often as any other.
+ * 5. `key`, unique: the order is total, so adjacent pages neither repeat nor skip.
+ * Before the ObjectId (2026-10-08) the day's tie went to `key` and page 1 of Montevideo was all
+ * Aguada; the hash mixes barrios as well.
+ *
+ * What the hour costs, measured on production on 2026-11-20 with the real route pipelines (median
+ * of 3, noise about ±150 ms): the default page 3,75 s without it and 4,07 s with it, the map 2,88 s
+ * and 3,20 s. The default pages 1 and 2 are a 5-minute memo re-warmed at :51 and :56
+ * (server/tasks/rentals/directory-warm.ts) and the map carries s-maxage=60, so what pays it is an
+ * uncached search. First 24 rows that day: median $ 25.500 with the hour, $ 27.500 without
+ * (directory median $ 31.000), no non-home in either. The hour was the owner's recommendation;
+ * one build dropped it for the cost and the review restored it.
+ *
+ * Computed in the slim `$project` that precedes the blocking sort, never in a `$set` on the whole
+ * document, and dropped after `$limit` (the map's point mapper copies its fields one by one).
  */
-export const RENTAL_INSERTED_SORT_FIELD = '_rentalInserted'
+export const RENTAL_RECENT_SORT_FIELDS = ['_rentalTier', '_rentalHour', '_rentalMix'] as const
 
-export function rentalInsertedProjection(sort: RentalSort): Record<string, string> {
-  return sort === 'recientes' || sort === 'baja' ? { [RENTAL_INSERTED_SORT_FIELD]: '$_id' } : {}
+const RENTAL_RECENT_SORT: Readonly<Record<string, 1 | -1>> = Object.freeze({
+  freshAt: -1,
+  _rentalTier: 1,
+  _rentalHour: -1,
+  _rentalMix: 1,
+  key: 1,
+})
+
+const RENTAL_HOUR_MS = 3_600_000
+
+export function rentalRecentSortProjection(
+  query: Pick<RentalQuery, 'sort' | 'types' | 'type'>
+): Record<string, unknown> {
+  if (query.sort !== 'recientes' && query.sort !== 'baja') return {}
+  const chosenTypes = query.types ?? (query.type ? [query.type] : [])
+  return {
+    _rentalTier: chosenTypes.length
+      ? { $literal: 0 }
+      : { $cond: [{ $in: ['$propertyType', [...RENTAL_TYPE_FILTER_TYPES.vivienda]] }, 0, 1] },
+    _rentalHour: {
+      $trunc: {
+        $divide: [
+          { $toLong: { $convert: { input: '$_id', to: 'date', onError: null, onNull: null } } },
+          RENTAL_HOUR_MS,
+        ],
+      },
+    },
+    _rentalMix: { $toHashedIndexKey: '$key' },
+  }
 }
 
 /** Stable tie-breaks keep adjacent pages from repeating or skipping equal-price properties. */
@@ -1862,7 +1918,6 @@ export function rentalMongoSort(sort: RentalSort): Record<string, 1 | -1> {
     return { _rentalPricePerM2Unknown: 1, _rentalPricePerM2: 1, priceUyu: 1, key: 1 }
   if (sort === 'metros') return { area: -1, priceUyu: 1, key: 1 }
   // Largest drop first (see `priceDrop`); a property without one has none and keeps 'recientes' order.
-  if (sort === 'baja')
-    return { 'priceDrop.pct': -1, freshAt: -1, [RENTAL_INSERTED_SORT_FIELD]: -1, key: 1 }
-  return { freshAt: -1, [RENTAL_INSERTED_SORT_FIELD]: -1, key: 1 }
+  if (sort === 'baja') return { 'priceDrop.pct': -1, ...RENTAL_RECENT_SORT }
+  return { ...RENTAL_RECENT_SORT }
 }
