@@ -21,6 +21,7 @@ const extraLocalesVersion = extraMessagesVersion(EXTRA_MESSAGES_DIR)
 // the path the response is immutable: server/plugins/i18n-messages-cache.ts says so, and
 // server/routes/_i18n/[...path].ts forwards a stale version to this one.
 const I18N_DIR = fileURLToPath(new URL('./i18n', import.meta.url))
+const ATOMIC_FS_DRIVER = fileURLToPath(new URL('./server/storage/atomicFs.ts', import.meta.url))
 const i18nMessagesVersionId = i18nMessagesVersion(I18N_DIR, I18N_MESSAGE_SOURCES)
 
 // Read only this checkout: app remains a self-contained deploy surface. PM2
@@ -1435,7 +1436,10 @@ export default defineNuxtConfig({
     // In memory every worker rebuilt every sitemap, and every deploy started both cold: crawlers
     // asking for the 35 sitemaps right after a release kept the workers busy building them
     // (2026-11-06). Tripwire: tests/unit/sitemapCache.test.ts.
-    runtimeCacheStorage: { driver: 'fs', base: './.data/sitemap' },
+    // The driver is `fs` with atomic writes (server/storage/atomicFs.ts): with the plain `fs`
+    // driver a worker reading while the other was still writing got half a document and Nitro
+    // reported "Malformed data read from cache." (CAMBIO-URUGUAY-BACKEND-1E).
+    runtimeCacheStorage: { driver: ATOMIC_FS_DRIVER, base: './.data/sitemap' },
     // Keep non-search pages out of the sitemap so they don't waste crawl budget or show as
     // "not indexed" in Search Console: the always-noindex pages, in Spanish and under every
     // locale prefix (utils/sitemapFilters.ts — one RegExp, see why there).
