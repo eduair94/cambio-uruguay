@@ -27,6 +27,8 @@
 // SI SE AGREGA UN ESPEJO NUEVO: agregarlo acá y en ningún otro lado. La lista se testea contra
 // los scrapers reales en `app/tests/unit/rateMirrors.test.ts`.
 
+import { casaBrandPath } from './casaBrandPage'
+
 /** Origen que replica la pizarra de otro, y a quién replica. */
 export interface RateMirror {
   /** Slug de la casa que replica. */
@@ -85,7 +87,12 @@ export function publishesOwnStats(origin: string | null | undefined): boolean {
   return !isRateMirror(origin)
 }
 
-/** La ruta del hub de la casa cuya pizarra se replica, para enlazarla desde el aviso. */
+/**
+ * La página de marca de la casa cuya pizarra se replica, para enlazarla desde el aviso.
+ *
+ * El ancla del aviso es el nombre de la fuente («Ver BROU»), así que apunta a la página de marca y
+ * no a la ficha `/casa/<casa>`, que ahora declara canónica a la de marca (ver `casaBrandPage.ts`).
+ */
 export function mirrorSourcePath(mirror: RateMirror): string {
-  return `/casa/${mirror.source}`
+  return casaBrandPath(mirror.source)
 }

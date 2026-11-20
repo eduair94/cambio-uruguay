@@ -3337,6 +3337,237 @@
       "hypothesis": "Consolidacion de un par canibalizado. El sitio servia DOS URLs propias para la misma intencion desde el 2026-09-21: la pagina raiz /impuesto-temu-uruguay ('Impuesto Temu: cuanto pagas en Uruguay') y la guia /guias/impuesto-temu-uruguay ('Impuesto Temu: que es y cuanto pagas'). Las dos respondian 200, las dos salian index follow, cada una se declaraba canonica de si misma y las dos entraban al sitemap, asi que Google recibia dos candidatas para la misma consulta y repartia entre ellas los enlaces internos (storeProfiles.ts, guidesPrimavera2026.ts, linkedinPosts.ts, xPosts.ts y /franquicia-aduana-uruguay), las impresiones y los clics. El sintoma es el peor posible para medir: ninguna de las dos aparece mal, las dos rankean peor que una. Lo detecto tests/unit/slugCollision.test.ts el 2026-11-12, que ya habia escrito el arreglo y la fecha en que se podia hacer: la ruta estaba RESERVADA por la fila impuesto-temu-tema-y-enlace del 2026-10-20 y se liberaba el 2026-11-18. Se hace del lado de la GUIA y no de la pagina, porque la pagina tiene el nombre popular con el que se busca, dos filas del libro medidas sobre ella y el gancho del minimo legal de IVA: la guia conserva su cuerpo y sus enlaces entrantes, pasa a canonical hacia /impuesto-temu-uruguay, se declara noindex follow (follow, para seguir pasando la autoridad de la media docena de paginas que enlaza) y sale del sitemap en los tres idiomas. Borrarla tiraria la senal que esos enlaces acumularon; consolidarla la mueve a la URL que se queda. Los dos posts sociales que apuntaban a la guia (feed de LinkedIn y de X) pasan a la pagina, porque un enlace externo a una URL noindex que canoniza en otra se desperdicia. No se toco titulo, descripcion, H1 ni cuerpo de ninguna de las dos. Se espera que la porcion de clics del par no baje y que la de la pagina raiz suba, porque la senal repartida se concentra en una sola URL; se mide por cuota de clics del sitio sobre las DOS rutas juntas, con 28 dias archivados antes y despues y sin el dia del deploy."
     },
     {
+      "id": "marca-casa-una-pagina-por-marca-historico",
+      "shippedOn": "2026-11-20",
+      "routes": ["/historico/*", "/en/historico/*", "/pt/historico/*"],
+      "queries": [
+        "cambio principal",
+        "cotizacion brou",
+        "brou cotizaciones",
+        "cotizaciones brou",
+        "cotización brou",
+        "brou cotización",
+        "cotización brou hoy",
+        "cambio fenix",
+        "fenix cambio",
+        "cambio fénix",
+        "cambio gales",
+        "cambio gales cotizacion",
+        "cambio matriz",
+        "cambio misiones",
+        "cambio varlix",
+        "cambio indumex",
+        "indumex",
+        "cambio la favorita",
+        "cambio 18",
+        "cambio oriental",
+        "cambio maiorano",
+        "cambio pernas",
+        "itau cotizaciones",
+        "dolar brou",
+        "dolar brou hoy",
+        "precio dolar brou hoy",
+        "cotización del dólar brou",
+        "cotizacion dolar brou"
+      ],
+      "hypothesis": "Una pagina por marca. La consulta que trae solo el nombre de una casa se repartia entre cuatro familias que se presentaban como la de su marca y abrian la descripcion con la misma frase (\"Dolar en X hoy: compra...\"): \"cambio principal\" aparecia con doce URLs propias entre la posicion 4 y la 10 (GSC 20/9-17/10), y la curva de CTR del sitio paga el clic hasta la cuarta. La pagina de marca pasa a ser /historico/<casa>, la que Google ya elegia (consultas de marca sola, 90 dias: 28.090 impresiones, 184 clics, posicion 6,8, contra 8.723 / 33 / 8,5 de /casa/<casa>; gana en 12 a 15 casas contra 2 a 4). Su titulo dice marca + hoy (\"Cambio Principal: cotizaciones de hoy\", sin el \"historico\" que no tiene), su H1 \"Cotizaciones de X hoy\", su descripcion arranca por la marca y la tabla pone el dolar primero. /historico/<casa>/<moneda> arranca por la moneda (\"Dolar en BROU hoy: cotizacion e historico\") y su boton manda a la pagina de marca con el nombre como ancla. Se espera que la marca suba de la quinta-sexta posicion y que la porcion de clics de la familia y de estas consultas crezca; el reparto entre /casa y /historico deja de ser ruido. Se mide junto con marca-casa-la-ficha-cede-la-marca y marca-casa-sucursales-dicen-su-intencion, del mismo deploy."
+    },
+    {
+      "id": "marca-casa-la-ficha-cede-la-marca",
+      "shippedOn": "2026-11-20",
+      "routes": ["/casa/*", "/en/casa/*", "/pt/casa/*"],
+      "queries": [
+        "santander horarios",
+        "horario banco santander",
+        "horario santander",
+        "santander horario",
+        "horarios santander",
+        "horario scotiabank",
+        "horario itau",
+        "banco itau horarios"
+      ],
+      "hypothesis": "La ficha /casa/<casa> muestra la misma pizarra de hoy que /historico/<casa> y le disputaba la consulta de la marca con el titulo \"X: cotizacion dolar hoy, sucursales y opiniones\". Ahora declara canonica a la pagina de marca (cada idioma a su espejo, con los hreflang re-apuntados) y sale del sitemap; se queda canonica de si misma solo si la casa no cotiza hoy, porque entonces la pagina de marca responde 404. Las paginas de intencion (/casa/<casa>/horarios, /telefono, /opiniones, monedas) no cambian de titulo y mandan su \"Todo sobre X\", su \"X: cotizacion de hoy\" y el padre de sus migas a la pagina de marca. Analisis de casa-fichas-accesos (14/9, -35 %): la base era chica (26 clics a 13 en castellano, ventanas de 28 dias antes y despues) y lo que se perdio no fue a las subpaginas -las impresiones de consultas sin palabra de intencion en ellas bajaron de 1.383 a 1.038; la excepcion es Cambio Principal, cuya pagina de horarios paso de 14 a 260 impresiones de \"cambio principal\"- sino que la marca roto entre /casa, /historico y /sucursales (\"cambio matriz\" se fue a /sucursales/matriz, \"fenix cambio\" a /historico/cambio_fenix). Se espera que el hub /casa/<casa> pierda impresiones A PROPOSITO, que las paginas de intencion conserven sus consultas de horario y telefono, y que la marca gane en marca-casa-una-pagina-por-marca-historico."
+    },
+    {
+      "id": "marca-casa-sucursales-dicen-su-intencion",
+      "shippedOn": "2026-11-20",
+      "routes": ["/sucursales/*", "/en/sucursales/*", "/pt/sucursales/*"],
+      "queries": [
+        "oca maldonado",
+        "oca sucursales",
+        "sucursales oca",
+        "oca paysandu",
+        "oca salto",
+        "oca rivera",
+        "itau sucursales",
+        "sucursales itau",
+        "cambio principal rivera",
+        "cambio fenix rivera",
+        "brou montevideo shopping",
+        "sucursales brou abiertas hoy"
+      ],
+      "hypothesis": "Las paginas de sucursales ya decian su intencion en el titulo (\"Sucursales de X en <departamento>\"); lo que cambia es que su enlace de marca deja de mandar \"Ver todo sobre X\" a /casa/<casa> y manda \"Todas las cotizaciones de X hoy\" a la pagina de marca, y que un departamento con UN local deja de titularse \"Sucursales de Cambio Principal en Rivera: 1 locales\" (764 impresiones de \"cambio principal\" en esa URL en 28 dias) y pasa a \"Sucursal de Cambio Principal en Rivera: telefono y horario\". OCA (\"oca maldonado\" posicion 10,3 en 90 dias) ya cae en la URL correcta de su intencion: su problema es la posicion, no el reparto, y no se toca su snippet. Se espera que las sucursales conserven sus consultas de marca + lugar y que los locales unicos ganen CTR por el titulo en singular."
+    },
+    {
+      "id": "apps-hechas-en-uruguay-pagina-propia",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/apps-hechas-en-uruguay"
+      ],
+      "queries": [
+        "apps uruguayas",
+        "apps hechas en uruguay",
+        "aplicaciones uruguayas",
+        "aplicaciones hechas en uruguay"
+      ],
+      "hypothesis": "Pagina nueva. El sitio no tenia donde poner las apps y webs que hacen desarrolladores uruguayos por su cuenta. /apps-utiles-uruguay solo admite apps de Google Play o del App Store de Uruguay publicadas por quien presta el servicio, y alguna no oficial solo si la usa muchisima gente. De los ocho proyectos del hilo Recopilatorio apps uruguayas de r/CharruaDevs del 2026-11-17, ninguno cumple esa regla: seis son solo web o una biblioteca, y los dos con ficha de tienda tienen 100+ y 50+ descargas. La pagina los lista por categoria con lo que dice la web o la ficha de cada proyecto, abierta el 2026-11-20. No lleva usuarios de Reddit, citas, nombres de personas, ni calificaciones o precios que el proyecto no publique. Cada tarjeta dice exactamente que afirma su fuente sobre Uruguay: hecha por uruguayos, domicilio en sus terminos o en su ficha, web hecha para el mercado uruguayo sin decir quien la hace, o nada mas que el hilo. Titulo: Apps uruguayas de devs independientes. Lo que hoy contesta 'apps uruguayas' en el buscador son notas de prensa de 2013 a 2019. El angulo propio es una lista fechada, revisada a mano y con una via para que cada desarrollador mande la suya por el buzon del sitio. En el archivo de Search Console (28 dias al 2026-11-17) no hay ninguna impresion para estas consultas, asi que el antes es cero por definicion; lo que se mide es si la pagina entra al indice y con que consultas. Recibe su enlace de contexto desde /apps-utiles-uruguay (ruta libre, un parrafo, sin fila propia) y entra al tema emprender-y-empresa-uruguay. No se declara la consulta 'app uruguay', que es de /apps-utiles-uruguay. Medir contra las 28 jornadas posteriores archivadas, sin el dia del deploy."
+    },
+    {
+      "id": "bien-de-familia-la-casa-inembargable",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/guias/bien-de-familia-uruguay"
+      ],
+      "hypothesis": "Pagina nueva en el tramo contenido: el bien de familia del Decreto-Ley 15.597, la figura que saca la casa del alcance de los acreedores. El sitio tenia quince guias de deuda y /embargo-de-sueldo-uruguay, y la palabra no aparecia en ningun archivo de pages/ ni utils/ (grep del 14/11). El angulo propio es la FECHA, que es lo que cambia la respuesta y lo que el SERP institucional no pone en el titulo: el art. 9 protege de las deudas contraidas DESPUES de la constitucion, asi que a quien ya le estan ejecutando la casa no le sirve. Titulo y descripcion llevan el numero adentro -tope de 4.500 UR del Decreto 504/984, el unico decreto de tope que encontramos publicado, con su ano a la vista- y miden 41 y 153 caracteres, dentro de los dos presupuestos de guideSnippetBudget.test.ts. El cuerpo publica lo que el tramite exige (escritura con tasacion del BHU, diez dias de avisos en el Diario Oficial y en un diario local, e inscripcion, sin las cuales no es oponible a terceros), lo que cuesta (el honorario de UR 12 del Arancel Oficial de la AEU, art. 2 literal C, sin honorarios en la Clinica Notarial de la Facultad de Derecho si la tasacion no supera las UR 1.000, y el diario local, que el art. 16 no hace gratuito) y lo que deja de poder hacerse con esa casa. La unica cifra que se declara ausente es el tope vigente. La enlazan /temas/deudas-y-credito-uruguay, el indice /guias, /saldar-deudas-uruguay en su seccion de embargos y las guias cuando-prescribe-una-deuda-uruguay, me-compraron-la-deuda-uruguay y union-concubinaria-uruguay. Medir por cuota de clics del sitio con 28 dias archivados antes y despues, sin el dia del deploy."
+    },
+    {
+      "id": "concubinato-con-las-normas-a-la-vista",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/guias/union-concubinaria-uruguay"
+      ],
+      "queries": [
+        "concubinato uruguay",
+        "como comprobar un concubinato",
+        "ley 18.246 uruguay"
+      ],
+      "hypothesis": "Defecto arreglado, no pagina nueva: esta guia afirmaba reglas legales -cinco anos de convivencia, sociedad de bienes, derechos sucesorios- sin citar una sola norma, que es exactamente lo que el campo sources del catalogo existe para evitar ('use it on any guide that states a legal figure'). Ahora cita la Ley 18.246 articulo por articulo y la pagina del BPS sobre como se prueba un concubinato, y reemplaza vaguedades por lo que el texto dice: el art. 2 pide una relacion exclusiva, singular, estable y permanente; el art. 11 no da derechos hereditarios 'comparables' a los del conyuge, da los del art. 1026 del Codigo Civil, y agrega uso y habitacion para el concubino mayor de sesenta anos con diez anos de convivencia ininterrumpida; y la prueba ante el BPS son cinco anos hasta la fecha del fallecimiento o la desaparicion, con la sentencia alcanzando solo si el BPS fue citado como parte en el juicio (art. 20, redaccion de la Ley 20.212: quien invoque el fallo tiene que emplazar al instituto). Suma un enlace a la nueva guia del bien de familia (art. 6 c del Decreto-Ley 15.597). Titulo y descripcion sin tocar, asi que lo que se mide no es el snippet: es si una guia legal con sus fuentes a la vista retiene mejor. Medir por cuota de clics del sitio con 28 dias archivados antes y despues, sin el dia del deploy."
+    },
+    {
+      "id": "linea-de-pobreza-guia-nueva",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/guias/linea-de-pobreza-uruguay"
+      ],
+      "hypothesis": "Guia nueva para la vara oficial del INGRESO. El sitio ya contestaba 'se puede vivir con X?' desde el GASTO -/vivir-con-25000-pesos-uruguay, /vivir-con-el-salario-minimo-uruguay, los precios del SIPC en /precios-de-supermercado-uruguay, /herramientas/costo-de-vida- y esas paginas comparan contra la linea de pobreza del INE, pero ninguna explicaba como se arma. El angulo propio: la linea NO es un numero. Depende del tamano del hogar, de la region y -la dimension que casi nunca se nombra- de si el hogar ALQUILA. Para una persona sola en Montevideo, junio de 2026: $ 25.195 si alquila y $ 15.572 si no. No es un recargo arbitrario sino la metodologia: la canasta no alimentaria 'no incluye el valor locativo en ningun caso, pero si incluye el alquiler para los hogares inquilinos', y ese alquiler es un rubro fijo de la canasta (cuadro 3: $ 18.459 contra $ 8.836, la brecha de $ 9.623), el mismo para todos los inquilinos de su tamano y region, no lo que paga cada hogar. Por eso el '$ 58.893' que circula suelto -tres personas, Montevideo, alquilando- se lee como umbral de sueldo y no alcanza para que nadie sepa si le toca. Publica el cuadro 2 entero (12 celdas), las filas de cuatro y cinco personas calculadas con la formula publicada en la nota metodologica 2017 del INE (exponentes 0,9/0,4 en Montevideo y 0,8/0,3 en el interior, rotuladas como calculo propio, a 2 pesos del cuadro en las celdas publicadas), la serie mensual de la canasta alimentaria (linea de indigencia, 6 meses de 2026) y la incidencia del primer semestre 2026 contra 2025 con el margen de error al 95 % de cada estimacion. Ninguna cifra esta escrita a mano: todas salen de app/utils/povertyLine.ts con su URL. Sobre beneficios dice solo lo que las leyes dicen: el Monotributo Social Mides exige estar bajo la linea de pobreza del INE o en vulnerabilidad (Ley 18.874, art. 1) y la asignacion familiar del Plan de Equidad no la nombra (Ley 18.227, art. 2). Nace como GUIA y no como pagina raiz por el mismo motivo escrito en la cabecera de utils/guidesPoliticaMonetaria.ts; /guias/* ya esta en el tramo contenido. El titulo lleva la cifra ('Linea de pobreza: $ 25.195 si alquilas solo', 60 con la marca) y la descripcion las tres que destaca; povertyLine.test.ts los ata al cuadro. La enlazan /vivir-con-el-salario-minimo-uruguay (sobre la canasta basica alimentaria) y la guia del salario minimo. Ruta nueva, sin solape con ninguna ventana abierta. Medir por cuota de clics del sitio con 28 dias archivados antes y despues, sin el dia del deploy."
+    },
+    {
+      "id": "transferencia-de-auto-arancel-por-departamento",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/cuanto-sale-transferir-un-auto-uruguay",
+        "/guias/transferir-un-auto-uruguay"
+      ],
+      "queries": [
+        "cuanto sale transferir un auto uruguay",
+        "transferencia de auto uruguay",
+        "cambio de titularidad vehiculo uruguay",
+        "costo transferencia auto uruguay",
+        "libreta de propiedad precio uruguay",
+        "requisitos transferencia auto intendencia",
+        "transferir una moto uruguay"
+      ],
+      "hypothesis": "La transferencia se hace en la intendencia donde esta empadronado el auto y el sitio la contestaba solo con la guia /guias/transferir-un-auto-uruguay, que sobre los requisitos decia textual \"conviene consultar de antemano en la intendencia correspondiente\" y no publicaba ningun importe. Las listas de requisitos que publican las intendencias no coinciden y estan en fichas separadas, ninguna comparable con otra: el SERP institucional e ilegible que este sitio si puede ganar. La pagina nueva da el importe de la libreta, que es uno solo en todo el pais porque lo fija el Texto Ordenado del SUCIVE (1.779,52 en 2026, Circular DAV 180/2025 del Congreso de Intendentes; la unica salvedad del mismo articulo 9 son las tasas propias por el servicio al que esta afectado el vehiculo), y pone en una pantalla las nueve fuentes oficiales legibles (ocho fichas del catalogo nacional y el instructivo de Montevideo) con lo que dice cada ficha, su fecha de \"Ultima actualizacion\" y los ocho requisitos comparados. Lo medido el 20/11/2026: las cinco fichas actualizadas en 2026 publican 1.780; San Jose publica 1.419, que es exactamente el importe del Texto Ordenado de 2022, y Canelones 1.620 en una ficha de 2025, asi que los numeros distintos son fichas viejas y no departamentos mas baratos, y la pagina lo dice como hecho. Con deuda el auto no se puede transferir, por el articulo 45 del mismo Texto Ordenado. Diez departamentos no tienen ficha en el catalogo nacional; Salto, Tacuarembo y Rio Negro tienen una pagina del tramite en su propio portal (la de Salto solo con direccion y horario), y se publica asi, sin completarlo. No se publica lo que la fuente no trae: el escribano, el precio del libre de prenda y de la inspeccion, y el plazo del Digesto montevideano. La guia conserva su URL y su intencion (el COMO); su seccion de certificados pasa a traer los conteos y el importe nacional en vez del \"consulte\", y su titulo deja \"la deuda sigue al auto\", que ninguna fuente primaria sostiene, por \"con deuda no se puede\" (articulo 45); las dos se enlazan, y a la pagina nueva la enlazan ademas /vender-mi-auto-uruguay y las paginas de autos por presupuesto. Se espera que la porcion de clics del grupo de consultas de costo y requisitos de transferencia suba desde cero, que es lo que hay hoy: ninguna URL del sitio responde el monto."
+    },
+    {
+      "id": "calculadora-subsidio-por-enfermedad",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/herramientas/calculadora-subsidio-por-enfermedad"
+      ],
+      "queries": [
+        "calculadora subsidio por enfermedad",
+        "subsidio por enfermedad bps",
+        "cuanto paga bps por certificacion medica",
+        "cuanto paga bps por licencia medica",
+        "si me certifico me pagan"
+      ],
+      "hypothesis": "Pagina nueva. El sitio explicaba el regimen entero del subsidio por enfermedad en /guias/me-certifique-subsidio-por-enfermedad-uruguay desde el 2026-08-10 -el 70 %, el tope, el cuarto dia, la prorroga, el articulo 23- y no contestaba con un numero la pregunta que la persona escribe: me certificaron N dias, cuanto me va a pagar el BPS. Esa respuesta es una cuenta de cuatro pasos que nadie hace de memoria: el 70 % del promedio de 180 dias de materia gravada, el tope mensual de $ 67.754 (vigencia 01/2026) si la base lo alcanza, los tres primeros dias que la prestacion no cubre -cero si hubo internacion- y la doceava parte de aguinaldo que el Decreto 7/976 art. 12 manda pagar junto con el subsidio. Vive bajo /herramientas/*, que es donde la clasifica bucketOf y donde value.ts ya le puso tramo a la familia. Ninguna cifra es nueva ni inventada: todas salen de BPS 4774 (pagina con ultima actualizacion 19/11/2026, releida el 2026-11-20 con las mismas cifras) y del texto VIGENTE del Decreto-Ley 14.407 y su reglamento, y viven en utils/sickLeaveBenefit.ts con su fuente al lado. El tope va copiado y NO calculado: la Ley 18.725 lo fijo en 8 BPC desde 2015, pero la Ley 19.003 lo ajusto por la unidad reajustable desde el 1/1/2012 y lo paso a BPC recien el 1/1/2021 (redaccion de la Ley 19.924, art. 739), asi que hoy son 9,87 BPC; ocho BPC de 2026 darian $ 54.912 y el BPS publica $ 67.754, o sea que multiplicar publicaria $ 12.842 de menos, y hay un test que lo delata. Y se publican DOS ausencias en vez de dos tranquilidades inventadas: el divisor diario no lo fija ninguna de las dos normas -el reglamento solo topea el maximo mensual del jornalero en veinticinco jornales-, asi que el monto por dia es el mensual sobre 30 y la pagina lo declara como estimacion propia; y el total es NOMINAL, porque los arts. 6 y 8 del Decreto 7/976 mandan descontar el aporte obrero al pagar y ninguna fuente leida publica ese descuento sobre el subsidio. La demanda es de intencion local (cuanto paga bps por certificacion medica, si me certifico me pagan), hoy contestada solo por la guia, y no una conversion que Google contesta en su caja, porque la respuesta depende de cuatro datos del caso. La guia sigue reservada hasta el 2026-11-28 y no se toco: el enlace guia a calculadora queda para despues de esa fecha; mientras tanto la enlazan el tema de sueldo y trabajo, /jubilacion-por-incapacidad-uruguay y la calculadora de sueldo liquido. Se mide por cuota de clics del sitio con 28 dias archivados antes y despues, sin el dia del deploy."
+    },
+    {
+      "id": "clubes-y-tarjetas-de-socio-con-la-cifra-en-la-descripcion",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/apps-de-beneficios-uruguay",
+        "/tarjetas-de-socio-uruguay"
+      ],
+      "hypothesis": "Las dos descripciones del racimo de beneficios que PROMETIAN una cifra y no publicaban ninguna, que es el defecto exacto que snippetConLaRespuesta.test.ts documenta para cinco paginas de contenido -la consulta pide un dato y el dato estaba en el cuerpo- aplicado al renglon de la descripcion. /apps-de-beneficios-uruguay decia 'cuanto devuelve cada club, que cuesta y cuando vencen los puntos' y no publicaba ni un porcentaje, cuando la CONCLUSION de la propia pagina es que casi ningun programa publica lo necesario para medirlo: de los 10 relevados, uno. Pasa a abrir por eso ('De 10 clubes de beneficios solo Tienda Inglesa publica lo necesario para medir que devuelve: 1,67 %', de sus bases: 15 puntos cada $ 900 y cada punto vale $ 1), 148 caracteres. /tarjetas-de-socio-uruguay decia 'Que cuestan y que descuentan' detras de una lista de rubros; pasa a abrir por las dos cifras que la pagina ya cuenta, cuantas tarjetas se relevaron y cuantas no cuestan nada ('21 tarjetas de socio relevadas y 8 sin costo'), 148 caracteres. Ninguna cifra es nueva: las tres salen de MEMBERSHIP_CARDS y de BENEFIT_PROGRAMS, que son lo que la pagina imprime, y tests/unit/snippetClubesYTarjetas.test.ts las ata al catalogo para que un literal no se quede viejo cuando alguien agregue una tarjeta o Tienda Inglesa cambie su reglamento. No se toco titulo, H1, cuerpo, URL, canonical, tema, enlace ni anuncio. Las dos rutas estaban libres de toda ventana abierta: la ultima fila que las nombraba es del 2026-09-28, a 53 dias. Se esperan mas clics desde la misma posicion, como midieron las tandas de descripciones que eligieron por largo; se mide por cuota de clics del sitio con 28 dias archivados antes y despues, sin el dia del deploy."
+    },
+    {
+      "id": "temas-snippet-que-entra-al-serp",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/temas/*"
+      ],
+      "hypothesis": "Los dieciseis temas (/temas/<slug>) son las paginas hub del enlazado reciproco del sitio y del tramo que rinde 8x, y ninguno publicaba su titulo: medidos con la marca puesta, 16 de 16 pasaban los 60 caracteres -el peor con 101, o sea que el SERP mostraba menos de la mitad y elegia el que poner- y 13 de 16 descripciones pasaban los 155. No era deuda que alguien dejara para despues: ningun trinquete los media. Los dos presupuestos del directorio de paginas leen el .vue (seoTitleBudget y seoDescriptionBudget, entre comillas y por plantilla) y app/pages/temas/[slug].vue no declara ninguna cadena, porque arma su snippet con una flecha sobre utils/guideHubs.ts; los cuatro lectores devolvian null y los temas se caian del conteo sin aparecer en ninguna lista. Los dieciseis titulos eran el nombre del tema seguido de la lista de sus sub-temas, asi que gastaban los 43 caracteres publicables en repetir el H1 y dejaban del lado cortado justo los nouns que se buscan; ahora entran los dos o tres nouns de cada tema (courier y franquicia, 0km o usado, prestamos y Clearing) y tres abren por lo mas buscado de adentro en vez de por el nombre del tema (Jubilacion y AFAP, Reclamos, Dinero en pareja). Las trece descripciones abrian con la etiqueta de genero (\"Todo sobre el dolar en Uruguay:\", \"Ordena tu vida financiera en Uruguay:\") y ahora arrancan por el contenido. Ninguna cifra ni afirmacion es nueva: cada noun que quedo es una guia o un resources declarado del propio hub, y tres claims se cayeron en vez de recortarse: que no hay impuesto a la herencia (la sucesion paga ITP), la e-factura de emprender (no es miembro de ese hub) y el cuanto es la inflacion de economia, porque ningun miembro de ese hub publica una cifra de inflacion; ahora dice que es y como la mide el INE. Se declara como UNA fila sobre la familia porque es UN cambio: una fila por tema se pisaria con las otras quince. Lo mide el trinquete nuevo app/tests/unit/hubSnippetBudget.test.ts, con los dos pozos en cero y cruzados por npm run seo_debt."
+    },
+    {
+      "id": "carne-de-manipulacion-de-alimentos-por-departamento",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/carne-de-manipulacion-de-alimentos-uruguay"
+      ],
+      "queries": [
+        "carne de manipulacion de alimentos",
+        "carne de manipulador de alimentos",
+        "carne de manipulacion de alimentos uruguay",
+        "cuanto sale el carne de manipulacion de alimentos",
+        "carne de manipulacion de alimentos montevideo",
+        "curso de manipulacion de alimentos uruguay",
+        "certificado de habilitacion en manipulacion de alimentos",
+        "cuanto dura el carne de manipulacion de alimentos"
+      ],
+      "hypothesis": "Pagina nueva. 'Carne de manipulacion de alimentos' se busca como un precio y como un plazo y ninguna pagina del sitio lo contestaba; afuera se contesta con UNA cifra y no hay una, porque el carne no es nacional. El Reglamento Bromatologico Nacional (Decreto 315/994, apartado 5.5.1 en la redaccion del Decreto 415/002) exige otra cosa -el carne de SALUD- y pone la capacitacion a cargo del titular de la empresa (5.5.2); la palabra 'carne de manipulacion' no aparece en su texto consolidado, leido capitulo por capitulo el 2026-11-20. Lo crea, lo cobra y lo fecha cada intendencia, y la pagina publica diez fuentes oficiales con su importe, su plazo, su URL y la frase textual: Montevideo y Rivera no cobran (Montevideo por 5 anos y 100 % en linea, ficha del 2026-10-09; Rivera, ficha del 2026-04-14, sin vigencia publicada), Flores $ 100 (ficha sin fecha), San Jose $ 623 por 3 anos (noticia de la intendencia del 2026-10-26), Paysandu $ 850 la primera vez y $ 300 la renovacion por 3 anos (2026-11-04), Salto un timbre de $ 962 por 5 anos (noticia de la intendencia del 2026-04-27), Maldonado 0,1 UR (2026-01-02), Lavalleja 0,28 UR (2026-07-28), Canelones 1/2 UR el tramite web por 3 anos (2026-11-17) y Florida una tasa sin importe publicado por 3 anos (2024-05-27). Declara como hueco las cuatro que no publican vigencia, no convierte a pesos ningun importe en UR -Canelones habla de una 'U.R. Municipal' que se ajusta semestralmente- y nombra los otros nueve departamentos sin ponerles el importe de un vecino ni afirmar que no publican nada. El titulo no lleva un rango en pesos, porque el de las fuentes que cobran en pesos ($ 0 a $ 962) no es el del pais; la descripcion lleva los que no cobran, Paysandu, el maximo (Salto) y las dos vigencias, atadas al catalogo por app/tests/unit/foodHandlerCard.test.ts. Entra al tema tramites-y-documentos-uruguay, pegada al carne de salud, que es el documento con el que se confunde, y recibe enlace de contexto desde /libreta-de-conducir-uruguay, que es el contraste: ahi el costo de emision esta unificado a nivel nacional desde el 2023-09-01 y aca lo decide cada intendencia, y desde la tabla de tramites de /que-empresa-abrir-uruguay. Ruta nueva, asi que no hay ventana abierta que solapar. Se espera porcion de clics nueva en ese cluster, que hoy es cero."
+    },
+    {
+      "id": "reclamos-el-titulo-contesta",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/defensa-al-consumidor-uruguay",
+        "/a-quien-le-reclamo-uruguay"
+      ],
+      "hypothesis": "Los dos titulos del tema de reclamos que ANUNCIABAN en vez de contestar, dos rutas del tramo contenido (8x el promedio del sitio) libres hoy en el libro de cambios. Es el mismo eje que desalojo-y-certificados-bps-el-titulo-contesta (13/11) y gastos-comunes-titulo-contesta (10/11), y no lo delata ningun trinquete porque los dos pozos de titulos miden a los que se PASAN de 60 caracteres y estos dos entraban en 59 y en 48. /defensa-al-consumidor-uruguay decia 'Defensa del Consumidor: que puede y que no', que promete una comparacion y no la resuelve, mientras la respuesta es la PRIMERA FRASE de la tesis que la propia pagina publica en su tarjeta de arriba: el organismo no te devuelve la plata (Ley 17.250: el art. 42 lit. F lo limita a una audiencia para tentar el acuerdo y las sanciones del art. 47 son sin perjuicio de las acciones civiles; la multa la cobra el Estado y la restitucion la ordena un juez). Pasa a 'Defensa del Consumidor no devuelve la plata' (60 con la marca). Es ademas una respuesta contraintuitiva: el cuerpo dice que casi todo el mundo llega al reclamo esperando lo contrario. /a-quien-le-reclamo-uruguay decia 'A quien le reclamo en Uruguay?', o sea devolvia la consulta con 'en Uruguay' pegado atras. Pasa a 'A quien le reclamo? Depende del servicio' (58 con la marca), que es la respuesta de la pagina: no hay un solo mostrador, cada servicio regulado tiene su organismo y presentarlo en el equivocado no te redirige. El titulo no lleva un conteo de organismos porque la propia pagina deriva casos fuera de sus cinco tarjetas (URCDP, Fiscalia, Intendencia); el ruteo por servicio sigue en la descripcion (URSEA luz y agua, URSEC celular e internet, BCU bancos y seguros, MTSS lo laboral). Ninguna afirmacion es nueva, y un trinquete en consumerDefense.test.ts ata el primer titulo a DEFENSE_THESIS y otro en complaintRouting.test.ts impide que vuelva un numero al segundo. No se toco H1, cuerpo, URL, canonical, tema, enlace ni anuncio. Se esperan mas clics desde la misma posicion; se mide por cuota de clics del sitio con 28 dias archivados antes y despues, sin el dia del deploy."
+    },
+    {
+      "id": "teletrabajo-ley-19978-pagina-nueva",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/teletrabajo-uruguay",
+        "/horas-extras-uruguay"
+      ],
+      "queries": [
+        "teletrabajo uruguay",
+        "ley de teletrabajo uruguay",
+        "ley 19978",
+        "derecho a la desconexion uruguay",
+        "quien paga la luz en el teletrabajo",
+        "me pueden obligar a teletrabajar",
+        "teletrabajo horas extras uruguay",
+        "acuerdo de teletrabajo uruguay"
+      ],
+      "hypothesis": "Pagina nueva. El teletrabajo tiene ley propia desde 2021 (Ley 19.978) y reglamento desde 2022 (Decreto 86/022) y el sitio no lo contestaba en ninguna pagina: medido el 2026-11-19, las dos unicas apariciones de la palabra en app/pages y app/utils eran la keyword 'teletrabajo vivienda' en tools.ts y en siteNav.ts, o sea una etiqueta de busqueda y ninguna respuesta. El racimo laboral esta completo alrededor -horas extras, licencias especiales, salario vacacional, aguinaldo, despido, seguro de paro, trabajo en negro- y el teletrabajo no tenia donde contestarse. Las preguntas que se buscan son de plata y las contesta la norma: la ley se aplica a la relacion de dependencia con un empleador privado o de derecho publico no estatal (art. 2); si no hay acuerdo, el empleador debe proporcionar los equipos, los insumos y los servicios y, en ese mismo caso, son de su cargo la instalacion, operacion, funcionamiento, reemplazo y mantenimiento de los equipos (Ley 19.978, art. 12; Decreto 86/022, art. 8); lo que provee no se considera a ningun efecto salario, materia gravada ni asignacion computable, asi que no sube la base de aportes (art. 12); la desconexion minima es de 8 horas continuas entre jornadas y no se puede sancionar a quien se opone a cumplir tareas en esa franja (art. 8 de la ley y art. 9 del decreto); el exceso DIARIO no es trabajo extraordinario y se compensa con horas no trabajadas en la misma semana, y lo que pasa del maximo semanal se paga con un 100 % de recargo sobre el valor hora de los dias habiles (art. 8); y si el teletrabajo empezo despues de una relacion presencial, cualquiera de las partes puede volver dentro de 90 dias corridos con 7 de aviso (art. 7 de la ley y art. 4 del decreto), mientras un cambio que dura mas de 45 dias se entiende permanente salvo pacto expreso (art. 4 del decreto). El HUECO se publica como hueco y es el punto de la pagina: ninguna de las dos normas nombra la factura de UTE ni el internet -escriben 'servicios'-, asi que la pagina dice eso y no 'la empresa te paga la luz'. Las normas se leyeron articulo por articulo en impo.com.uy (texto vigente, nunca leyes-originales), la ultima vez el 2026-11-20, y cada regla guarda la cita textual de la norma, atada por app/tests/unit/teletrabajo.test.ts. Entra al tema trabajo pegada a /horas-extras-uruguay, que es la pagina cuya regla el teletrabajo cambia, y recibe de ella su enlace de contexto con ese motivo escrito en el ancla; la enlazan tambien /contractor-en-uruguay y la guia del recibo de sueldo. Ruta nueva, asi que no hay ventana abierta que solapar; /horas-extras-uruguay se declara porque recibe el enlace saliente y ninguna otra fila abierta la mide. Se espera porcion de clics nueva en un racimo que hoy es cero."
+    },
+    {
+      "id": "titulos-de-guia-que-nombraban-el-tema",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/guias/alquilar-sin-garantia-uruguay",
+        "/guias/legitima-y-herederos-forzosos-uruguay",
+        "/guias/hay-impuesto-a-la-herencia-uruguay",
+        "/guias/licencia-y-salario-vacacional-uruguay",
+        "/guias/elegir-o-cambiar-de-afap-uruguay"
+      ],
+      "queries": [
+        "herederos forzosos uruguay",
+        "heredero forzoso",
+        "impuesto a la herencia uruguay",
+        "salario vacacional y licencia es lo mismo en uruguay",
+        "que afap es mejor en uruguay",
+        "luc alquileres sin garantia"
+      ],
+      "hypothesis": "Los cinco titulos de guia que NOMBRABAN el tema mientras su propia descripcion ya traia la respuesta. Lo nuevo no es el criterio -es el mismo de las once tandas de snippet de octubre- sino COMO se encontraron las cinco, porque el presupuesto no podia verlas: guideSnippetBudget.test.ts cerro en 0 el pozo de titulos pasados de 60 caracteres (con la marca incluida, o sea 43 del catalogo) el 2026-11-10, y esas listas fueron la cola de trabajo de todas las tandas, asi que un titulo que ENTRA en el presupuesto y no contesta nada nunca aparecio en ninguna: no sobra ni un caracter que lo delate. Las cinco ya habian pasado por la cola de la DESCRIPCION -las filas descripciones-de-las-guias-respuesta-primero (2026-10-01) y -2 (2026-10-07)- y salieron de ella con la respuesta adelante en el renglon de abajo y la etiqueta del tema intacta en el de arriba, que es el renglon sobre el que se hace clic. Los cinco titulos nuevos: 'Como alquilar sin garantia en Uruguay' pasa a 'Alquilar sin garantia: seguro, ANDA o LUC' (las vias concretas que la guia enumera); 'Legitima y herederos forzosos en Uruguay' a 'Herederos forzosos: legitima 1/2, 2/3 o 3/4' (la escala del Codigo Civil art. 887, y conserva al frente 'herederos forzosos', la consulta con la que la guia ya rankea cerca de la posicion 5); 'Hay impuesto a la herencia en Uruguay?' a 'No hay impuesto a la herencia: si el ITP' (la pregunta devuelta sin contestar era el peor caso; el Impuesto a las Herencias, Legados y Donaciones lo derogo el Decreto Ley 14.252 art. 318 de 1974 segun IMPO, y por causa de muerte queda el ITP sobre inmuebles); 'Licencia y salario vacacional en Uruguay' a 'Licencia y salario vacacional: 20 dias base' (Ley 12.590 art. 1, veinte dias como minimo, y conserva 'licencia y salario vacacional', que es donde la guia entra al top 10); y 'Como elegir o cambiarte de AFAP en Uruguay' a 'Cambiar de AFAP: gratis, mira la comision' (Republica AFAP: el tramite no tiene ningun costo). Ninguna cifra ni afirmacion es nueva: las cinco respuestas ya estaban en la descripcion o en el cuerpo de la misma guia, y titulosDeGuiaQueContestan.test.ts las ancla ahi y exige que cada guia cite en su tarjeta de Fuentes el texto primario que sostiene su titulo (se agrego esa tarjeta, o una fuente a la existente, en cuatro de las cinco). Lo que cambia es guide.title, que ademas del title del SERP es el H1 de la pagina, el og:title y twitter:title, la imagen OG, el texto de compartir y el name del JSON-LD; no se toco descripcion, cuerpo, URL, canonical, tema, enlace ni anuncio. Los cinco rendered quedan entre 56 y 60 caracteres, dentro del presupuesto, asi que el pozo sigue en 0. Es el tramo contenido (8x el promedio del sitio). Las cinco rutas estaban libres de toda ventana abierta (su unica fila previa es la tanda de descripciones de principios de octubre, cerrada). Se espera mas clics desde la misma posicion; se mide por cuota de clics del sitio con 28 dias archivados antes y despues, sin el dia del deploy."
+    },
+    {
       "id": "autos-directorio-mercado-en-numeros",
       "shippedOn": "2026-11-20",
       "routes": [

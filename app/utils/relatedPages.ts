@@ -424,9 +424,18 @@ export const CURATED: Readonly<Record<string, readonly string[]>> = Object.freez
   // Apps útiles: lo que sigue es plata (las de economía), trámites y el aviso de estafas.
   '/apps-utiles-uruguay': [
     '/apps-economia-uruguay',
+    '/apps-hechas-en-uruguay',
     '/certificados-bps-uruguay',
     '/a-quien-le-reclamo-uruguay',
     '/estafas-uruguay',
+  ],
+  // Las apps que hacen desarrolladores de acá: lo que sigue son las oficiales, las de plata (que ya
+  // tienen su sección de comunidad) y cómo ve la comunidad el trabajo en software.
+  '/apps-hechas-en-uruguay': [
+    '/apps-utiles-uruguay',
+    '/apps-economia-uruguay',
+    '/mercado-it-uruguay',
+    '/que-empresa-abrir-uruguay',
   ],
   // Quien vino por las apps de plata casi siempre busca también las del Estado.
   '/apps-economia-uruguay': [

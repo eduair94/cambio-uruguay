@@ -72,8 +72,13 @@ const GUIDE_PAGE = readFileSync(join(__dirname, '..', '..', 'pages', 'guias', '[
  * que nace dentro de los dos presupuestos y no toca ninguna de las dos deudas. Las dos las COMPONE
  * desde `utils/payrollAccount.ts`, así que lo que este archivo mide es el texto ya interpolado: si
  * un plazo del Decreto 263/015 pasa de uno a dos dígitos, el presupuesto lo ve.
+ *
+ * 156 → 157 el 2026-11-14, en el mismo commit que publica `bien-de-familia-uruguay`, por lo
+ * mismo. Su título mide 41 caracteres —58 con la marca puesta— y su descripción 153, o sea que
+ * nace dentro de los dos presupuestos y no toca ninguna de las dos deudas. Los dos llevan el
+ * número adentro (4.500 UR, el tope del Decreto 504/984), que es la regla de oro de este archivo.
  */
-const MEASURED = 156
+const MEASURED = 157
 
 /**
  * 116 → 104 el 2026-10-02: los doce títulos más largos del catálogo, de 104 a 84 caracteres
@@ -753,6 +758,20 @@ const DEUDA_TITULO_LARGO = [
  * CONTESTE en 43 caracteres, cuando cada término que podría contestar ya lo gana su propia ficha—
  * y no la única que hacía falta, que era si el título tenía relleno para soltar. Tenía trece
  * caracteres de relleno y ninguna consulta colgando de ellos.
+ *
+ * Y CON EL POZO EN CERO, LO QUE QUEDA ES LO QUE ESTE PRESUPUESTO NO PUEDE VER. Las once tandas de
+ * octubre usaron esta lista como cola de trabajo («la tanda salió de las 64 libres, por mayor
+ * sobrante total»), así que el título que entra en los 43 caracteres y no contesta nada nunca
+ * apareció en ninguna tanda: no sobra ni un carácter que lo delate. Medido el 2026-11-19 sobre las
+ * guías con la ruta libre, cinco estaban en ese estado y las cinco habían pasado por la cola de la
+ * DESCRIPCIÓN —`descripciones-de-las-guias-respuesta-primero` (1/10) y `-2` (7/10)—, o sea que
+ * salieron de ella con la respuesta adelante en el renglón de abajo y la etiqueta del tema intacta
+ * en el de arriba, que es el que se clickea. Es el modo de fallar que
+ * `seoDescriptionBudget.test.ts` se anotó el 2026-11-02: no una medición en rojo, una medición que
+ * no alcanza a la página. El arreglo de esas cinco y el ancla de sus cifras contra el cuerpo de su
+ * propia guía están en `titulosDeGuiaQueContestan.test.ts`; acá no se declara una deuda nueva
+ * porque «el título contesta» no es mecanizable y una lista con falsos positivos es peor que
+ * ninguna.
  */
 const TITLE_OVER_BUDGET = 0
 

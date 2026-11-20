@@ -292,8 +292,10 @@
         </li>
         <li class="mb-2">
           <strong>Comer afuera.</strong> La comida es la del perfil austero del sitio:
-          {{ pesos(comidaMontevideo) }} por persona en Montevideo, {{ vecesCba }} veces la canasta
-          básica alimentaria del INE. Alcanza cocinando en casa; para organizarlo está el
+          {{ pesos(comidaMontevideo) }} por persona en Montevideo, {{ vecesCba }} veces la
+          <NuxtLink :to="localePath('/guias/linea-de-pobreza-uruguay')"
+            >canasta básica alimentaria del INE</NuxtLink
+          >. Alcanza cocinando en casa; para organizarlo está el
           <NuxtLink :to="localePath('/meal-prep-uruguay')">planificador de viandas</NuxtLink>.
         </li>
         <li class="mb-2">

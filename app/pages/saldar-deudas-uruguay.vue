@@ -71,6 +71,13 @@
         </article>
       </div>
 
+      <p class="debt-reading-measure">
+        La casa tiene una figura propia, el
+        <NuxtLink :to="localePath('/guias/bien-de-familia-uruguay')">bien de familia</NuxtLink>: una
+        vez inscripto, el inmueble no se embarga por deudas contraídas después de su constitución,
+        así que no frena una deuda que ya existía.
+      </p>
+
       <VRow class="mt-2">
         <VCol cols="12" md="7">
           <h3 class="text-h6 font-weight-bold mb-2">

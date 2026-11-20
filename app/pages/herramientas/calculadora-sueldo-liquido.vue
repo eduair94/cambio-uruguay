@@ -531,7 +531,10 @@
       {{ formatUYU(PAYROLL_UY.jubilatorioTope, 0) }}), FONASA según tu situación familiar, FRL
       {{ pct(PAYROLL_UY.frlRate) }} e IRPF con el crédito por deducciones. No contempla aguinaldo ni
       salario vacacional (el aguinaldo tiene su propia calculadora en Herramientas), ni partidas
-      variables. Informativo, no asesoramiento fiscal: confirmá con tu recibo, BPS o tu contador.
+      variables. Si estás certificado, el BPS paga un subsidio que se calcula distinto: está en la
+      <NuxtLink :to="localePath('/herramientas/calculadora-subsidio-por-enfermedad')">
+        calculadora del subsidio por enfermedad </NuxtLink
+      >. Informativo, no asesoramiento fiscal: confirmá con tu recibo, BPS o tu contador.
     </template>
   </ToolShell>
 </template>

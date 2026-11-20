@@ -118,6 +118,9 @@
 
     <h2 class="text-h6 font-weight-bold mb-2">Seguir leyendo</h2>
     <div class="d-flex flex-wrap ga-3 mb-4">
+      <NuxtLink :to="localePath('/teletrabajo-uruguay')" class="cu-link">
+        Si teletrabajás, el exceso diario no es hora extra
+      </NuxtLink>
       <NuxtLink :to="localePath('/licencias-especiales-uruguay')" class="cu-link">
         Licencias especiales
       </NuxtLink>
