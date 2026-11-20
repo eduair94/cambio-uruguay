@@ -13,6 +13,16 @@ import { connectDb } from '../../utils/db'
 import { getRentalCoverage } from '../../utils/rentalCoverage'
 import { rentalDirectoryCacheKey } from '../../utils/rentalDirectoryWarm'
 import {
+  orderByKeys,
+  rentalDirectoryCardsPipeline,
+  rentalDirectoryCardsStages,
+  rentalDirectoryKeysPipeline,
+} from '../../utils/rentalDirectoryOrder'
+import {
+  normalizeRentalDirectoryParts,
+  type RentalsDirectoryResponse,
+} from '../../../utils/rentalDirectoryParts'
+import {
   RENTAL_DISTANCE_SORT_FIELDS,
   rentalDistanceProjection,
   rentalDistanceStages,
@@ -43,7 +53,6 @@ import {
   type RentalMeta,
   type RentalProperty,
   type RentalQuery,
-  type RentalsResponse,
 } from '../../../utils/rentals'
 
 /**
@@ -99,10 +108,49 @@ function sameRentalFilter(a: Record<string, unknown>, b: Record<string, unknown>
   )
 }
 
+/** Every aggregation of this route says what it is, so mongod's slow-op log counts them by role. */
+type RentalAggregateRole = 'keys' | 'cards' | 'legacy' | 'facet' | 'dept' | 'barrio'
+
+const RENTAL_AGGREGATE_MAX_TIME_MS: Readonly<Record<RentalAggregateRole, number>> = {
+  keys: 20_000,
+  cards: 10_000,
+  legacy: 20_000,
+  facet: 20_000,
+  dept: 20_000,
+  barrio: 20_000,
+}
+
 /**
- * The items pass: one page of the search, sorted. Pure, and exported so the production check of an
- * order change runs THIS array and not a copy of it that can drift from the route.
- * `publicStages` is `rentalPublicStages(filter, …)` and `offerStages` is `rentalOfferStages(query, …)`.
+ * The one place this route reaches `rentallistings`. The collation stays last: it is the case- and
+ * accent-insensitive comparison every pass needs (tests/unit/rentalsMap.test.ts), and the call the
+ * tests' stubs resolve.
+ */
+function aggregateRentals<T>(
+  role: RentalAggregateRole,
+  pipeline: PipelineStage[],
+  allowDiskUse = false
+): Promise<T[]> {
+  return RentalListingModel.aggregate(pipeline)
+    .allowDiskUse(allowDiskUse)
+    .option({ maxTimeMS: RENTAL_AGGREGATE_MAX_TIME_MS[role], comment: `rentals:${role}` })
+    .collation(RENTAL_COLLATION) as unknown as Promise<T[]>
+}
+
+/** Mongo's MaxTimeMSExpired: the database is saturated, and a second pass would only add to it. */
+function isMaxTimeExpired(error: unknown): boolean {
+  const { code, codeName } = (error ?? {}) as { code?: unknown; codeName?: unknown }
+  return code === 50 || codeName === 'MaxTimeMSExpired'
+}
+
+/**
+ * The single pass: one page of the search, sorted, cards included. Pure, and exported so the
+ * production check of an order change runs THIS array and not a copy of it that can drift from the
+ * route. `publicStages` is `rentalPublicStages(filter, …)` and `offerStages` is
+ * `rentalOfferStages(query, …)`.
+ *
+ * Since 2026-11-20 the route no longer runs it over the whole search: it is the CARDS pass, run
+ * over the keys of the page (server/utils/rentalDirectoryOrder.ts), and the fallback when the keys
+ * or the cards pass fail for any reason but a timeout.
  */
 export function rentalDirectoryItemsPipeline(
   query: RentalQuery,
@@ -156,8 +204,12 @@ export const RENTAL_DIRECTORY_CACHE_CONTROL = 'public, max-age=30, s-maxage=300'
  * una entrada vencida en mano sirve la vieja y registra el error en vez de propagarlo.
  */
 const cachedDirectory = defineCachedEventHandler(
-  async (event): Promise<RentalsResponse> => {
-    const query = normalizeRentalQuery(getQuery(event) as Record<string, unknown>)
+  async (event): Promise<RentalsDirectoryResponse> => {
+    const input = getQuery(event) as Record<string, unknown>
+    const query = normalizeRentalQuery(input)
+    // `items` for the next page of a scroll, `facets` for the barrio list of another department,
+    // the whole response otherwise (utils/rentalDirectoryParts.ts).
+    const parts = normalizeRentalDirectoryParts(input.parts)
 
     try {
       await connectDb()
@@ -185,111 +237,181 @@ const cachedDirectory = defineCachedEventHandler(
       // Sorting alone must not change the rental-price statistics for the same search.
       const priceStages = rentalOfferStages({ ...query, sort: 'precio' }, usdUyu)
       const publicStages = rentalPublicStages(filter, STALE_DAYS, excluded)
-      // Every pass below reads the whole public inventory (`rentalPublicStages` re-derives each
-      // property's current offers before anything can filter on them), so each one is a full scan
-      // of `rentallistings`. Measured on the VPS on 2026-11-13: ~600 uncached searches in five hours
-      // ran ~7,500 s of these scans, up to six at once, and their bursts (513 s of scanning inside
-      // one minute) are what starve the other routes' 4 s queries into MaxTimeMSExpired 503s
-      // (Sentry CAMBIO-URUGUAY-BACKEND-12, docs/app/SENTRY_ERRORS.md). The count always rides the
-      // facet pass, and so do the department and barrio counts whenever their filter is this one:
-      // the unfiltered directory reads the inventory twice instead of five times.
+      // Every pass below but the cards pass reads the whole public inventory (`rentalPublicStages`
+      // re-derives each property's current offers before anything can filter on them), so each one
+      // is a full scan of `rentallistings`. Measured on the VPS on 2026-11-13: ~600 uncached
+      // searches in five hours ran ~7,500 s of these scans, up to six at once, and their bursts
+      // (513 s of scanning inside one minute) are what starve the other routes' 4 s queries into
+      // MaxTimeMSExpired 503s (Sentry CAMBIO-URUGUAY-BACKEND-12, docs/app/SENTRY_ERRORS.md). The
+      // count always rides the facet pass, and so do the department and barrio counts whenever
+      // their filter is this one: the unfiltered directory reads the inventory twice (the keys of
+      // the page, and the facet pass) plus the cards of the page by key, instead of five times.
+      // `parts=items` reads it once, `parts=facets` once plus the passes it cannot fold.
       const foldDepartments = sameRentalFilter(nonLocation, filter)
       const foldNeighborhoods = sameRentalFilter(withoutNeighborhood, filter)
 
-      const [items, departmentRows, neighborhoodRows, dimensions, coverage] = await Promise.all([
-        RentalListingModel.aggregate(rentalDirectoryItemsPipeline(query, publicStages, offerStages))
-          // Deep offsets retain every preceding public row in Mongo's top-k sort. Even the slim
-          // projection can exceed 100 MiB at this inventory size; allow bounded disk spill.
-          .allowDiskUse(true)
-          .collation(RENTAL_COLLATION),
-        foldDepartments
-          ? null
-          : RentalListingModel.aggregate([
-              ...rentalPublicStages(nonLocation, STALE_DAYS, excluded),
-              ...DEPARTMENT_FACET_STAGES,
-            ]).collation(RENTAL_COLLATION),
-        // Exclude the neighborhood's own selection so selecting Pocitos does not hide Cordón.
-        foldNeighborhoods
-          ? null
-          : RentalListingModel.aggregate([
-              ...rentalPublicStages(withoutNeighborhood, STALE_DAYS, excluded),
-              ...NEIGHBORHOOD_FACET_STAGES,
-            ]).collation(RENTAL_COLLATION),
-        RentalListingModel.aggregate([
-          ...publicStages,
-          {
-            $facet: {
-              total: [{ $count: 'total' }],
-              ...(foldDepartments ? { departments: DEPARTMENT_FACET_STAGES } : {}),
-              ...(foldNeighborhoods ? { neighborhoods: NEIGHBORHOOD_FACET_STAGES } : {}),
-              types: [
-                { $group: { _id: '$propertyType', count: { $sum: 1 } } },
-                { $sort: { count: -1 } },
-              ],
-              sources: [
-                { $unwind: '$sources' },
-                { $group: { _id: '$sources', count: { $sum: 1 } } },
-                { $sort: { count: -1 } },
-              ],
-              price: [...priceStages, { $group: { _id: null, max: { $max: '$priceUyu' } } }],
-              // The median rides this same pass instead of a seventh one (see rentalMedianFacet).
-              median: rentalMedianFacet(priceStages),
-            },
-          },
-        ]).collation(RENTAL_COLLATION),
-        getRentalCoverage(meta?.generatedAt, STALE_DAYS),
-      ])
-
-      const toFacet = (rows: Array<{ _id: string; count: number }>): RentalFacetValue[] =>
-        (rows || [])
-          .filter(row => row?._id)
-          .map(row => ({ value: String(row._id), count: row.count }))
-
-      const dimension = (dimensions?.[0] || {}) as Record<
-        string,
-        Array<{ _id: string; count: number }>
-      >
-      const total = Number((dimension.total?.[0] as unknown as { total?: number })?.total) || 0
-      const departments = departmentRows ?? dimension.departments ?? []
-      const neighborhoods = neighborhoodRows ?? dimension.neighborhoods ?? []
-      // The median is what tells someone whether a price is normal for the filter they built.
-      const median = Number((dimension.median?.[0] as unknown as { median?: number })?.median)
-      const medianUyu = total > 0 && Number.isFinite(median) ? Math.round(median) : 0
+      // The page: the keys in the search's order, then the cards of those keys only, in that order
+      // (server/utils/rentalDirectoryOrder.ts). Same stages as the single pass, so the same cards.
+      const pageItems = async (): Promise<RentalProperty[]> => {
+        try {
+          const keyRows = await aggregateRentals<{ key?: unknown }>(
+            'keys',
+            rentalDirectoryKeysPipeline(query, publicStages, offerStages, {
+              skip: (query.page - 1) * query.perPage,
+              limit: query.perPage,
+            }),
+            // Deep offsets retain every preceding public row in Mongo's top-k sort; even the keys
+            // alone may spill on a deep page of a wide search.
+            true
+          )
+          const keys = keyRows
+            .map(row => row?.key)
+            .filter((key): key is string => typeof key === 'string')
+          if (!keys.length) return []
+          const cards = await aggregateRentals<RentalProperty>(
+            'cards',
+            rentalDirectoryCardsPipeline(
+              query,
+              // The keys pass's own stages, so the same current-offer cutoff (never a second
+              // `rentalPublicStages`, whose clock may have passed midnight since).
+              rentalDirectoryCardsStages(publicStages, keys),
+              offerStages,
+              keys.length,
+              rentalDirectoryItemsPipeline
+            )
+          )
+          return orderByKeys(cards, keys)
+        } catch (error) {
+          // A saturated database answers 503 as before: a second full pass would only add to it.
+          if (isMaxTimeExpired(error)) throw error
+          console.warn('[api/rentals] fallback', error)
+          return aggregateRentals<RentalProperty>(
+            'legacy',
+            rentalDirectoryItemsPipeline(query, publicStages, offerStages),
+            // The single pass sorts every public card: at this inventory size even the slim
+            // projection can exceed 100 MiB, so it may spill to disk.
+            true
+          )
+        }
+      }
 
       // The card carousels' photos, read for this page only (see rentalGalleryPreview.ts). A failed
       // read leaves each card with its cover: fewer photos, never a broken search.
-      const pageItems = items as RentalProperty[]
-      const galleries = pageItems.length
-        ? await RentalListingModel.find(
-            { key: { $in: pageItems.map(property => property.key) } },
-            rentalGalleryProjection
-          )
-            .lean<RentalGalleryRow[]>()
-            .catch(() => [])
-        : []
+      const cardItems = async () => {
+        const items = await pageItems()
+        const galleries = items.length
+          ? await RentalListingModel.find(
+              { key: { $in: items.map(property => property.key) } },
+              rentalGalleryProjection
+            )
+              .lean<RentalGalleryRow[]>()
+              .catch(() => [])
+          : []
+        return withRentalGalleryPreviews(items, galleries).map(property =>
+          annotateRentalAvailability(publicRentalAdvertisers(property), availability)
+        )
+      }
 
+      const searchFacets = async () => {
+        const [departmentRows, neighborhoodRows, dimensions] = await Promise.all([
+          foldDepartments
+            ? null
+            : aggregateRentals<{ _id: string; count: number }>('dept', [
+                ...rentalPublicStages(nonLocation, STALE_DAYS, excluded),
+                ...DEPARTMENT_FACET_STAGES,
+              ] as PipelineStage[]),
+          // Exclude the neighborhood's own selection so selecting Pocitos does not hide Cordón.
+          foldNeighborhoods
+            ? null
+            : aggregateRentals<{ _id: string; count: number }>('barrio', [
+                ...rentalPublicStages(withoutNeighborhood, STALE_DAYS, excluded),
+                ...NEIGHBORHOOD_FACET_STAGES,
+              ] as PipelineStage[]),
+          aggregateRentals<Record<string, Array<{ _id: string; count: number }>>>('facet', [
+            ...publicStages,
+            {
+              $facet: {
+                total: [{ $count: 'total' }],
+                ...(foldDepartments ? { departments: DEPARTMENT_FACET_STAGES } : {}),
+                ...(foldNeighborhoods ? { neighborhoods: NEIGHBORHOOD_FACET_STAGES } : {}),
+                types: [
+                  { $group: { _id: '$propertyType', count: { $sum: 1 } } },
+                  { $sort: { count: -1 } },
+                ],
+                sources: [
+                  { $unwind: '$sources' },
+                  { $group: { _id: '$sources', count: { $sum: 1 } } },
+                  { $sort: { count: -1 } },
+                ],
+                price: [...priceStages, { $group: { _id: null, max: { $max: '$priceUyu' } } }],
+                // The median rides this same pass instead of a seventh one (see rentalMedianFacet).
+                median: rentalMedianFacet(priceStages),
+              },
+            },
+          ] as PipelineStage[]),
+        ])
+
+        const toFacet = (rows: Array<{ _id: string; count: number }>): RentalFacetValue[] =>
+          (rows || [])
+            .filter(row => row?._id)
+            .map(row => ({ value: String(row._id), count: row.count }))
+
+        const dimension = (dimensions?.[0] || {}) as Record<
+          string,
+          Array<{ _id: string; count: number }>
+        >
+        const total = Number((dimension.total?.[0] as unknown as { total?: number })?.total) || 0
+        const departments = departmentRows ?? dimension.departments ?? []
+        const neighborhoods = neighborhoodRows ?? dimension.neighborhoods ?? []
+        // The median is what tells someone whether a price is normal for the filter they built.
+        const median = Number((dimension.median?.[0] as unknown as { median?: number })?.median)
+        const medianUyu = total > 0 && Number.isFinite(median) ? Math.round(median) : 0
+
+        return {
+          total,
+          medianUyu,
+          facets: {
+            departments: toFacet(departments),
+            // The barrio selector offers no surface, no country (the barrio pages' rule) and no
+            // street address ("Sarandí 888"): utils/rentalBarrioOption.ts.
+            // A URL that already filters by one still works.
+            neighborhoods: toFacet(neighborhoods)
+              .filter(row => rentalBarrioOptionPlausible(row.value))
+              .slice(0, BARRIO_FACET_SIZE),
+            types: toFacet(dimension.types || []),
+            sources: toFacet(dimension.sources || []),
+            priceMaxUyu: Number((dimension.price?.[0] as unknown as { max?: number })?.max || 0),
+          },
+        }
+      }
+
+      if (parts === 'items') {
+        // The next page of a scroll reads the cards only: no facet, department, barrio or
+        // coverage pass. The page already holds the count of page 1's response.
+        return {
+          parts: 'items',
+          items: await cardItems(),
+          total: null,
+          page: query.page,
+          perPage: query.perPage,
+        }
+      }
+      if (parts === 'facets') return { parts: 'facets', ...(await searchFacets()) }
+
+      const [items, counts, coverage] = await Promise.all([
+        cardItems(),
+        searchFacets(),
+        getRentalCoverage(meta?.generatedAt, STALE_DAYS),
+      ])
       return {
         meta: (meta as RentalMeta | null) ?? null,
         coverage,
-        items: withRentalGalleryPreviews(pageItems, galleries).map(property =>
-          annotateRentalAvailability(publicRentalAdvertisers(property), availability)
-        ),
-        total,
+        items,
+        total: counts.total,
         page: query.page,
         perPage: query.perPage,
-        medianUyu,
-        facets: {
-          departments: toFacet(departments as Array<{ _id: string; count: number }>),
-          // The barrio selector offers no surface, no country (the barrio pages' rule) and no
-          // street address ("Sarandí 888"): utils/rentalBarrioOption.ts.
-          // A URL that already filters by one still works.
-          neighborhoods: toFacet(neighborhoods)
-            .filter(row => rentalBarrioOptionPlausible(row.value))
-            .slice(0, BARRIO_FACET_SIZE),
-          types: toFacet(dimension.types || []),
-          sources: toFacet(dimension.sources || []),
-          priceMaxUyu: Number((dimension.price?.[0] as unknown as { max?: number })?.max || 0),
-        },
+        medianUyu: counts.medianUyu,
+        facets: counts.facets,
       }
     } catch (error) {
       console.error('[api/rentals] failed', error)
@@ -324,11 +446,11 @@ const cachedDirectory = defineCachedEventHandler(
 // Pero NUNCA sobre una respuesta ya enviada: ante un `If-None-Match` que coincide, el memo contesta
 // 304 y cierra la respuesta él mismo, y escribir una cabecera encima tiraba ERR_HTTP_HEADERS_SENT y
 // convertía ese 304 en un 500 (Sentry CAMBIO-URUGUAY-BACKEND-14).
-export default defineEventHandler(async (event): Promise<RentalsResponse> => {
+export default defineEventHandler(async (event): Promise<RentalsDirectoryResponse> => {
   try {
     const response = await cachedDirectory(event)
     setHeaderUnlessSent(event, 'cache-control', RENTAL_DIRECTORY_CACHE_CONTROL)
-    return response as RentalsResponse
+    return response as RentalsDirectoryResponse
   } catch (error) {
     setHeaderUnlessSent(event, 'cache-control', 'no-store')
     throw error
