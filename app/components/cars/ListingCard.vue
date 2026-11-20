@@ -191,6 +191,18 @@ const place = computed(() =>
 .car-badge--flag {
   color: rgb(var(--v-theme-warning));
 }
+/*
+ * En el tema claro los tokens del tema no llegan a 4,5:1 a 12 px sobre blanco: warning (#ff8f00)
+ * da 2,28:1 —y es la bandera que avisa de choque o deuda— e info (#00897b) da 4,31:1 (axe en
+ * producción, 2026-11-20). Un tono más oscuro del mismo color; el tema oscuro ya contrasta.
+ * polishTargets.test.ts mide el contraste.
+ */
+.v-theme--light .car-badge--flag {
+  color: #9a5800;
+}
+.v-theme--light .car-badge--drop {
+  color: #00695c;
+}
 .car-card__title {
   font-size: 0.875rem;
   font-weight: 400;

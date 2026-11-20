@@ -32,7 +32,7 @@ export function useExchangeRates(codes?: readonly CurrencyCode[]) {
   // modules, tools) via the fixed key — useAsyncData dedupes by key. Uses
   // today's Montevideo date (the request that returns data) and keeps SSR on so
   // pages that render rates in their initial HTML stay server-rendered.
-  const { data, pending, error, refresh } = useAsyncData<ExchangeRate[]>(
+  const request = useAsyncData<ExchangeRate[]>(
     wanted ? `tool-exchange-rates-${wanted.join('-')}` : 'tool-exchange-rates',
     async () => {
       const date = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Montevideo' })
@@ -47,6 +47,19 @@ export function useExchangeRates(codes?: readonly CurrencyCode[]) {
         wanted ? rows.filter(row => wanted.includes(String(row.code).toUpperCase())) : rows,
     }
   )
+  const { data, pending, error, refresh } = request
+
+  /**
+   * Resuelve cuando la lectura terminó (bien o mal: el handle de useAsyncData no rechaza).
+   *
+   * Para el render del servidor de una página que NO hace `await useExchangeRates()` y llena su
+   * estado con un watcher: en SSR un watcher corre una sola vez, así que si la lectura era la más
+   * lenta del render el HTML salía con el estado vacío (la home servía "Cargando..." sin la grilla
+   * de mejores cotizaciones ni los enlaces a /historico). La home lo espera en `onServerPrefetch`.
+   */
+  const ready = async (): Promise<void> => {
+    await request
+  }
 
   // Public-obtainable quotes only: the headline price, the converter and the
   // tool conversions must never quote the BCU reference or an interbank/wholesale
@@ -77,5 +90,5 @@ export function useExchangeRates(codes?: readonly CurrencyCode[]) {
   const bestBuy = (code: CurrencyCode): number | null =>
     rankedQuotes(code).find(q => q.bestBuy)?.buy ?? null
 
-  return { rows: data, realRows, pending, error, refresh, bestSell, bestBuy }
+  return { rows: data, realRows, pending, error, refresh, ready, bestSell, bestBuy }
 }

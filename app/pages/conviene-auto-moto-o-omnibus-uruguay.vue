@@ -239,9 +239,12 @@
             <VDivider class="my-5" />
 
             <div class="field-group">
-              <span class="cv-label"> Días por semana: {{ scenario.daysPerWeek }} </span>
+              <span id="tp-dias-label" class="cv-label">
+                Días por semana: {{ scenario.daysPerWeek }}
+              </span>
               <VSlider
                 v-model="scenario.daysPerWeek"
+                aria-labelledby="tp-dias-label"
                 :min="1"
                 :max="7"
                 :step="1"
@@ -268,11 +271,12 @@
             </div>
 
             <div class="field-group">
-              <span class="cv-label">
+              <span id="tp-horizonte-label" class="cv-label">
                 Horizonte de la comparación: {{ scenario.horizonMonths }} meses
               </span>
               <VSlider
                 v-model="scenario.horizonMonths"
+                aria-labelledby="tp-horizonte-label"
                 :min="TRANSPORT_SCENARIO_LIMITS.horizonMonths.min"
                 :max="TRANSPORT_SCENARIO_LIMITS.horizonMonths.max"
                 :step="6"

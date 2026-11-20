@@ -1,5 +1,5 @@
 <template>
-  <aside class="assistant-cta" :aria-label="t('aria')" data-testid="assistant-cta">
+  <section class="assistant-cta" :aria-label="t('aria')" data-testid="assistant-cta">
     <VIcon icon="mdi-chat-processing-outline" size="28" class="assistant-cta__icon" />
     <div class="assistant-cta__body">
       <p class="assistant-cta__title">{{ t(`title.${group}`) }}</p>
@@ -19,7 +19,7 @@
     >
       {{ t('button') }}
     </VBtn>
-  </aside>
+  </section>
 </template>
 
 <script setup lang="ts">

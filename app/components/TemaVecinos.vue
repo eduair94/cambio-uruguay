@@ -4,6 +4,7 @@
     class="tema-vecinos"
     :aria-label="t('temaVecinos.aria')"
     data-testid="tema-vecinos"
+    data-link-area="topic_neighbours"
     @click="onSpaClick"
   >
     <section

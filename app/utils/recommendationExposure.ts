@@ -6,6 +6,12 @@ export const RECOMMENDATION_AREAS = [
   'related_inline',
   'related_pages',
   'bank_decision',
+  // "Más sobre este tema" (TemaVecinos, layout tail) and the family bar (FamiliaNav, top of a
+  // directory) joined on 2026-11-20 for the same reason: clicks (related_click), no exposure.
+  // A link inside a closed <details> is not on screen, so the family bar on a phone (a menu) and
+  // a topic's folded links only count once opened.
+  'topic_neighbours',
+  'family_nav',
 ] as const
 export type RecommendationArea = (typeof RECOMMENDATION_AREAS)[number]
 

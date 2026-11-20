@@ -403,7 +403,7 @@ for (const mobile of [true, false]) {
   }) => {
     await page.setViewportSize({ width: mobile ? 390 : 1366, height: mobile ? 844 : 900 })
     const state = await setup(page, 'department=Montevideo&type=vivienda&pets=1')
-    await page.locator('.rentals-sort').getByRole('combobox').click()
+    await page.locator('.rentals-sort .v-field').click()
     await page.getByRole('option', { name: 'Más cerca', exact: true }).click()
     await expect.poll(() => new URL(page.url()).searchParams.get('view')).toBe('mapa')
     const map = page.locator('.rentals-map__frame .leaflet-container')
@@ -538,7 +538,7 @@ test('390px mobile: a street intersection stays independent from the properties 
 }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   const state = await setup(page, 'department=Canelones&type=vivienda&pets=1')
-  await page.locator('.rentals-sort').getByRole('combobox').click()
+  await page.locator('.rentals-sort .v-field').click()
   await page.getByRole('option', { name: 'Más cerca', exact: true }).click()
   const address = page.getByTestId('rental-reference-address').getByRole('combobox')
   await expect(address).toBeVisible()
@@ -622,7 +622,7 @@ test('desktop: shared and saved searches keep the filters and never the point', 
 }) => {
   await page.setViewportSize({ width: 1366, height: 900 })
   const state = await setup(page, 'department=Montevideo&type=vivienda')
-  await page.locator('.rentals-sort').getByRole('combobox').click()
+  await page.locator('.rentals-sort .v-field').click()
   await page.getByRole('option', { name: 'Más cerca', exact: true }).click()
   const useCenter = page.getByRole('button', { name: 'Usar centro del mapa', exact: true })
   await expect(useCenter).toBeEnabled()
@@ -721,7 +721,7 @@ test('390px mobile: late map results cannot move the camera away from the chosen
     })
   })
   try {
-    await page.locator('.rentals-sort').getByRole('combobox').click()
+    await page.locator('.rentals-sort .v-field').click()
     await page.getByRole('option', { name: 'Más cerca', exact: true }).click()
     await expect.poll(() => mapRequested).toBe(true)
     await expect(
@@ -789,7 +789,7 @@ test('390px mobile: an address chosen before Leaflet loads is centered when the 
     await route.fulfill({ response, body })
   })
   try {
-    await page.locator('.rentals-sort').getByRole('combobox').click()
+    await page.locator('.rentals-sort .v-field').click()
     await page.getByRole('option', { name: 'Más cerca', exact: true }).click()
     await expect.poll(() => leafletBlocked).toBe(true)
     const center = page.getByRole('button', { name: 'Usar centro del mapa', exact: true })

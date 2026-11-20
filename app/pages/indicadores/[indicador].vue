@@ -175,29 +175,38 @@
           </v-card-title>
           <v-card-text>
             <p v-if="yearChangeText" class="text-body-2 mb-3">{{ yearChangeText }}</p>
-            <VTable density="compact" class="indicador-table" data-testid="indicador-history">
-              <thead>
-                <tr>
-                  <th scope="col">Mes</th>
-                  <th scope="col" class="text-right">
-                    {{ indicator.code === 'UI' ? 'Valor al cierre' : 'Valor' }}
-                  </th>
-                  <th scope="col" class="text-right">Variación</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(m, i) in historyRows" :key="m.month">
-                  <td>
-                    {{ capitalize(monthLabelEs(m.month)) }}
-                    <span v-if="i === 0 && indicator.code === 'UI'" class="text-grey">
-                      (en curso)</span
-                    >
-                  </td>
-                  <td class="text-right">{{ formatPesos(m.value, indicator.decimals) }}</td>
-                  <td class="text-right">{{ formatChange(m.changePct) }}</td>
-                </tr>
-              </tbody>
-            </VTable>
+            <!-- En un teléfono la tabla se desborda: el desplazamiento vive en este div enfocable
+                 para que se pueda mover con el teclado (axe scrollable-region-focusable). -->
+            <div
+              class="indicador-scroll"
+              tabindex="0"
+              role="region"
+              :aria-label="`${indicator.abbr} mes a mes`"
+            >
+              <VTable density="compact" class="indicador-table" data-testid="indicador-history">
+                <thead>
+                  <tr>
+                    <th scope="col">Mes</th>
+                    <th scope="col" class="text-right">
+                      {{ indicator.code === 'UI' ? 'Valor al cierre' : 'Valor' }}
+                    </th>
+                    <th scope="col" class="text-right">Variación</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(m, i) in historyRows" :key="m.month">
+                    <td>
+                      {{ capitalize(monthLabelEs(m.month)) }}
+                      <span v-if="i === 0 && indicator.code === 'UI'" class="text-grey">
+                        (en curso)</span
+                      >
+                    </td>
+                    <td class="text-right">{{ formatPesos(m.value, indicator.decimals) }}</td>
+                    <td class="text-right">{{ formatChange(m.changePct) }}</td>
+                  </tr>
+                </tbody>
+              </VTable>
+            </div>
             <p class="text-caption text-grey mt-2 mb-0">
               Serie del Banco Central del Uruguay. La variación compara con el mes anterior.
             </p>
@@ -665,6 +674,12 @@ useHead({
 }
 .indicador-table {
   font-variant-numeric: tabular-nums;
+}
+.indicador-scroll {
+  overflow-x: auto;
+}
+.indicador-scroll :deep(.v-table__wrapper) {
+  overflow: visible;
 }
 .indicador-note a {
   color: rgb(var(--v-theme-primary));

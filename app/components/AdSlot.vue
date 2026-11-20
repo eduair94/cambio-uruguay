@@ -1,11 +1,8 @@
 <template>
-  <aside
-    v-if="enabled && !unfilled"
-    ref="root"
-    class="cu-ad"
-    :class="`cu-ad--${placement}`"
-    :aria-label="$t('ads.label')"
-  >
+  <!-- A div, not an <aside aria-label>: with two or three units per page the landmark list read
+       "Publicidad" several times (axe landmark-unique on 44 page profiles). The visible label below
+       still says what the box is. -->
+  <div v-if="enabled && !unfilled" ref="root" class="cu-ad" :class="`cu-ad--${placement}`">
     <span class="cu-ad__label">{{ $t('ads.label') }}</span>
     <ins
       v-if="near"
@@ -19,7 +16,7 @@
       :data-ad-layout="placement === 'in-article' ? 'in-article' : undefined"
       :data-full-width-responsive="placement === 'sidebar' ? undefined : 'true'"
     />
-  </aside>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -61,6 +58,78 @@ const unfilled = ref(false)
 
 let io: IntersectionObserver | null = null
 let mo: MutationObserver | null = null
+/** Waits for an unfilled unit the reader can see to leave the screen. */
+let away: IntersectionObserver | null = null
+
+type Place = 'below' | 'above' | 'on-screen'
+
+/**
+ * Give the reserved space back, the way that moves nothing the reader can see.
+ *
+ * Removing the box moves everything under it up by its height. Done while the box is on
+ * screen, that moved the FAQ or the footer the reader was looking at: scroll-phase shifts
+ * of exactly the unit's height (-407 / -390 px, CLS 0.25-0.48) on ten pages of the
+ * 2026-11-19 probe. So:
+ *   - below the screen: collapse now, nothing visible sits under it;
+ *   - above the screen: collapse now. Chrome's scroll anchoring already scrolls by what was
+ *     lost (measured 2026-11-20: 300 of 300 px). Scrolling again on top of that moved the
+ *     text a second time, so only what the browser did NOT compensate is scrolled;
+ *   - on screen: wait until it is off screen, then apply one of the two above.
+ * Measuring never prevents the collapse: if it throws, the box goes as before.
+ */
+function giveBack(known?: Place) {
+  const node = root.value
+  const doc = node?.ownerDocument
+  const view = doc?.defaultView
+  let place: Place = 'below'
+  let upperHalf = false
+  try {
+    if (known) place = known
+    // The rail has a column of its own with nothing under it, and it is sticky, so it would
+    // never leave the screen: removing it moves nothing, so it goes at once.
+    else if (props.placement === 'sidebar') place = 'below'
+    else if (node && view) {
+      const box = node.getBoundingClientRect()
+      place = box.top >= view.innerHeight ? 'below' : box.bottom <= 0 ? 'above' : 'on-screen'
+      upperHalf = box.top < view.innerHeight / 2
+    }
+  } catch {
+    place = 'below'
+  }
+  if (place === 'on-screen' && node && typeof IntersectionObserver !== 'undefined') {
+    away = new IntersectionObserver(
+      entries => {
+        const entry = entries.find(item => !item.isIntersecting)
+        if (!entry) return
+        away?.disconnect()
+        away = null
+        giveBack(entry.boundingClientRect.top > 0 ? 'below' : 'above')
+      },
+      { threshold: 0 }
+    )
+    away.observe(node)
+    return
+  }
+  // No observer to wait with: collapse now, compensating as before when the box is in the
+  // upper half of the screen.
+  const compensate = place === 'above' || (place === 'on-screen' && upperHalf)
+  let before: { height: number; y: number } | null = null
+  try {
+    if (compensate && doc && view)
+      before = { height: doc.documentElement.scrollHeight, y: view.scrollY }
+  } catch {
+    before = null
+  }
+  unfilled.value = true
+  if (before && doc && view)
+    void nextTick(() => {
+      // Reading scrollHeight lays the page out, and with it the browser applies its own
+      // scroll anchoring; scrollY then says how much of the loss it already took.
+      const lost = before!.height - doc.documentElement.scrollHeight
+      const rest = lost - (before!.y - view.scrollY)
+      if (rest > 0) view.scrollBy({ top: -rest, behavior: 'instant' })
+    })
+}
 
 onMounted(() => {
   if (!enabled.value || !root.value) return
@@ -87,31 +156,12 @@ watch(near, async isNear => {
   // Observe BEFORE requesting: an already loaded AdSense runtime can answer
   // during push(). Watching afterwards misses that response permanently.
   const checkStatus = () => {
-    if (el.getAttribute('data-ad-status') !== 'unfilled') return
-    // Devolver el espacio reservado (300–600px) con el bloque ya en la mitad de arriba de la
-    // pantalla, o más arriba, subía de golpe todo lo que la persona estaba leyendo debajo: medido
-    // el 2026-10-04 al pie de una ficha de venta, el pie saltó 451px. En ese caso se compensa el
-    // scroll con lo que se achicó la página; en la mitad de abajo, se colapsa hacia abajo y lo
-    // que se ve no se mueve.
-    // Documento y ventana del propio nodo, no los globales: medir nunca puede impedir el colapso.
-    const doc = root.value?.ownerDocument
-    const view = doc?.defaultView
-    let before: number | null = null
-    try {
-      const box = root.value?.getBoundingClientRect()
-      if (box && view && doc && box.top < view.innerHeight / 2)
-        before = doc.documentElement.scrollHeight
-    } catch {
-      before = null
-    }
-    unfilled.value = true
-    mo?.disconnect()
+    if (el.getAttribute('data-ad-status') !== 'unfilled' || !mo) return
+    // Once per unit: the observer and the check right after push() can both see the answer.
+    // Devolver el espacio reservado sin mover lo que la persona está leyendo: ver giveBack.
+    mo.disconnect()
     mo = null
-    if (before !== null && doc && view)
-      void nextTick(() => {
-        const lost = before! - doc.documentElement.scrollHeight
-        if (lost > 0) view.scrollBy({ top: -lost, behavior: 'instant' })
-      })
+    giveBack()
   }
   mo = new MutationObserver(checkStatus)
   mo.observe(el, { attributes: true, attributeFilter: ['data-ad-status'] })
@@ -129,14 +179,24 @@ watch(near, async isNear => {
 onBeforeUnmount(() => {
   io?.disconnect()
   mo?.disconnect()
+  away?.disconnect()
   io = null
   mo = null
+  away = null
 })
 </script>
 
 <style scoped>
+/* The reserve is NOT a min-height on the box: AdSense writes `min-height: 0px !important;
+   height: auto !important` inline on the ins's parents (axe samples, 2026-11-19), and an inline
+   !important beats the stylesheet, so the box reserved nothing. A pseudo-element cannot carry an
+   inline style. `::before` spans both rows and is `--cu-ad-reserve` tall, so the box is
+   max(reserve, label + ad), exactly what the min-height gave with the label inside it: the `1fr`
+   row takes what the reserve needs beyond the label, and the ad sits right under the label. */
 .cu-ad {
-  display: block;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
   width: 100%;
   margin: 32px auto;
   text-align: center;
@@ -144,8 +204,18 @@ onBeforeUnmount(() => {
   contain: layout;
 }
 
+.cu-ad::before {
+  content: '';
+  grid-column: 1;
+  grid-row: 1 / 3;
+  height: var(--cu-ad-reserve, 0px);
+  pointer-events: none;
+}
+
 .cu-ad__label {
   display: block;
+  grid-column: 1;
+  grid-row: 1;
   margin-bottom: 4px;
   font-size: 0.6875rem;
   letter-spacing: 0.08em;
@@ -155,27 +225,32 @@ onBeforeUnmount(() => {
   opacity: 0.72;
 }
 
+/* `start`, not the grid's default stretch: the ins keeps the height AdSense gives it, as in
+   block flow, and is never made as tall as the reserve. */
 .cu-ad :deep(.adsbygoogle) {
   display: block;
   width: 100%;
+  grid-column: 1;
+  grid-row: 2;
+  align-self: start;
 }
 
 /* Reserved heights match the responsive units AdSense serves at these widths.
    Bigger than the real ad is worse than smaller: it leaves a gap. */
 .cu-ad--content-end,
 .cu-ad--after-tool {
-  min-height: 300px;
+  --cu-ad-reserve: 300px;
 }
 
 .cu-ad--in-article {
-  min-height: 280px;
+  --cu-ad-reserve: 280px;
 }
 
 @media (min-width: 960px) {
   .cu-ad--content-end,
   .cu-ad--after-tool,
   .cu-ad--in-article {
-    min-height: 280px;
+    --cu-ad-reserve: 280px;
   }
 }
 
@@ -189,6 +264,12 @@ onBeforeUnmount(() => {
    there is no text under it to cover. */
 .cu-ad--sidebar {
   display: none;
+}
+
+/* The rail stays a block box with its min-height: its ins is a fixed 300x600 of our own
+   stylesheet, so the reserve lives in the ins and the pseudo-element is not needed there. */
+.cu-ad--sidebar::before {
+  content: none;
 }
 
 @media (min-width: 1280px) {

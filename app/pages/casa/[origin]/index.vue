@@ -137,6 +137,9 @@
               <template #item.sell="{ item }">
                 {{ formatRate(item.sell) }}
               </template>
+              <template #header.actions>
+                <span class="d-sr-only">{{ actionsHeaderLabel(locale) }}</span>
+              </template>
               <template #item.actions="{ item }">
                 <v-btn
                   :to="localePath(canonicalRoutePath(`/historico/${origin}/${item.code}`))"
@@ -330,6 +333,7 @@ import { hreflangLinksFor } from '~/utils/historyCanonical'
 import { computePageRecords } from '~/utils/rateStats'
 import type { BranchPage } from '~/utils/branches'
 import { intentsFor } from '~/utils/casaIntents'
+import { actionsHeaderLabel } from '~/utils/a11yLabels'
 import { casaHubMessages } from '~/utils/casaHubMessages'
 // `formatBareRate` va aliaseado: esta página ya tiene un `formatRate` local que arma la moneda
 // entera ("$ 39,00"), y la meta description quiere el número pelado porque el "$" es parte de

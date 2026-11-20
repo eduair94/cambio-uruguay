@@ -3,11 +3,16 @@
     <img
       v-if="isHttpUrl(flagSource)"
       :src="flagSource"
-      :alt="item.code"
+      :alt="decorative ? '' : item.code"
       class="currency-flag-image"
       loading="lazy"
     />
-    <span v-else class="currency-flag-emoji" :title="item.code">
+    <span
+      v-else
+      class="currency-flag-emoji"
+      :title="decorative ? undefined : item.code"
+      :aria-hidden="decorative ? 'true' : undefined"
+    >
       {{ flagSource }}
     </span>
   </span>
@@ -38,9 +43,11 @@ interface CambioItem {
 
 interface Props {
   item: CambioItem
+  /** El código ya va impreso al lado: la bandera no repite su nombre (alt=""). */
+  decorative?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), { decorative: false })
 
 // Currency flag mapping - can include both HTTP URLs and Unicode emojis
 const currencyFlags: Record<string, string> = {

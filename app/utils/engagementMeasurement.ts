@@ -61,6 +61,11 @@ export const LINK_AREAS = [
   'guide_section',
   'guide_contents',
   'related_pages',
+  // "Más sobre este tema" (TemaVecinos) and the family bar (FamiliaNav), since 2026-11-20. Before
+  // that their clicks read as `content`, so that area's share drops from that day on without
+  // anyone reading less.
+  'topic_neighbours',
+  'family_nav',
   // The rental ficha (/alquileres/<key>): which block a click to another ficha, the barrio page or
   // the directory came from. Before these, every one of them read as `content`.
   'rental_gone',

@@ -5419,18 +5419,37 @@ const TYPE_ORDER: Readonly<Record<SearchType, number>> = Object.freeze({
   casa: 8,
 })
 
-/** Runs only when the tiered pass finds nothing: a bounded single-typo rescue. */
+/**
+ * Runs only when the tiered pass finds nothing: a bounded typo rescue (at most two edits against
+ * a title word). With one token, that token is rescued as before. With more than one, every token
+ * of 4+ characters has to land in the document, in its text or as a near-miss of a title word
+ * (shorter ones count only when present): rescuing only the
+ * longest token and ignoring the rest let one word propose anything ("subaru impreza" -> impreza
+ * ~ empresa -> "Qué empresa abrir"), while the typo in "canadiense dolr" is the short word.
+ */
 function didYouMean(tokens: string[], docs: readonly SearchDoc[]): SearchResult[] {
   const q = tokens.reduce((longest, t) => (t.length > longest.length ? t : longest), '')
   if (q.length < 4) return []
+  const multi = tokens.length > 1
   const out: SearchResult[] = []
   for (const doc of docs) {
-    let best = 3
-    for (const word of doc._title.split(/[\s-]+/)) {
-      const d = levenshtein(q, word, 2)
-      if (d < best) best = d
+    const words = doc._title.split(/[\s-]+/)
+    let worst = 0
+    for (const token of tokens) {
+      let best = 3
+      if (multi && doc._hay.includes(token)) best = 0
+      // A short word absent from the document ("hoy", "en", "uy") neither vetoes nor scores:
+      // "cotizacon hoy" is still the cotización typo.
+      else if (multi && token.length < 4) continue
+      else if (token.length >= 4)
+        for (const word of words) {
+          const d = levenshtein(token, word, 2)
+          if (d < best) best = d
+        }
+      if (best > worst) worst = best
+      if (worst > 2) break
     }
-    if (best <= 2) out.push({ doc, score: 2 - best, suggestion: true })
+    if (worst <= 2) out.push({ doc, score: 2 - worst, suggestion: true })
   }
   return out
     .sort((a, b) => b.score - a.score || TYPE_ORDER[a.doc.type] - TYPE_ORDER[b.doc.type])

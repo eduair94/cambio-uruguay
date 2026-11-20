@@ -42,7 +42,9 @@ test('no element claims role="option" outside a listbox', async ({ page }) => {
   // stops emitting orphan options there are no options left, and the palette's
   // listbox only exists while the palette is open. It timed out for exactly the
   // reason the fix worked. Anchor on an element that is present once the drawer is open.
-  const headers = page.locator('#mobile-navigation .v-list-group__header')
+  // Since 2026-11-20 the drawer is plain markup (components/MobileNavList.vue): its section
+  // headers are <button class="mobile-nav__toggle">, no longer Vuetify list-group headers.
+  const headers = page.locator('#mobile-navigation .mobile-nav__toggle')
   await expect(headers.first()).toBeAttached({ timeout: 30_000 })
 
   // Guard the guard: if the drawer ever stops rendering, the orphan check below
@@ -65,6 +67,25 @@ test('no element claims role="option" outside a listbox', async ({ page }) => {
   expect(
     orphans,
     `role="option" fuera de un listbox:\n${orphans.map(o => `  ${o.id} — "${o.text}" — ${o.cls}`).join('\n')}`
+  ).toEqual([])
+
+  // Same family of defect, other role: the drawer's "Menu" header was a bare VListItem, which
+  // Vuetify 4 renders as role="listitem" — inside a role="presentation" list, so with no list
+  // parent (axe aria-required-parent, critical, on 70 of 72 phone pages probed 2026-11-19).
+  const orphanItems = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('[role="listitem"]'))
+      .filter(el => !el.closest('[role="list"]'))
+      .map(el => {
+        const e = el as HTMLElement
+        return {
+          cls: e.className?.toString().slice(0, 80) || '(sin clase)',
+          text: (e.textContent || '').trim().slice(0, 40),
+        }
+      })
+  )
+  expect(
+    orphanItems,
+    `role="listitem" fuera de un list:\n${orphanItems.map(o => `  "${o.text}" — ${o.cls}`).join('\n')}`
   ).toEqual([])
 })
 

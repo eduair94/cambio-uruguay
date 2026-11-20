@@ -494,7 +494,11 @@ $teal: #4dd0e1;
   color: rgba(255, 255, 255, 0.3);
 }
 
+// Es la única forma de volver a abrir el consentimiento: 44 px de alto para el dedo (medía 18).
 .cu-footer__cookies {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   padding: 0;
   border: none;
   background: none;

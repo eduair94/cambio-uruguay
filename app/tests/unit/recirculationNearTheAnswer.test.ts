@@ -15,7 +15,7 @@ import {
   guideInlineNext,
 } from '../../utils/guideReading'
 import { RECOMMENDATION_AREAS, recommendationArea } from '../../utils/recommendationExposure'
-import { RELATED_INLINE_LIMIT, relatedInlineRoutes } from '../../utils/relatedInline'
+import { RELATED_INLINE_LIMIT, relatedInlineItems } from '../../utils/relatedInline'
 
 const APP = join(__dirname, '..', '..')
 const read = (path: string): string => readFileSync(join(APP, path), 'utf8')
@@ -78,21 +78,20 @@ describe('qué hacer con el resultado, al lado del resultado', () => {
 
   it('son tres, de la misma lista que el bloque del pie', () => {
     expect(RELATED_INLINE_LIMIT).toBe(3)
+    expect(read('utils/relatedInline.ts')).toContain('relatedFor(path, RELATED_INLINE_LIMIT')
     const inline = read('components/RelatedInline.vue')
-    expect(inline).toContain('relatedFor(route.path, RELATED_INLINE_LIMIT')
+    expect(inline).toContain('relatedInlineItems(route.path, route.query)')
     expect(inline).toContain('data-link-area="related_inline"')
     expect(inline).not.toContain('<ClientOnly')
   })
 
   it('el bloque del pie no repite lo que ya se mostró arriba EN ESA página', () => {
-    const state = { path: '/herramientas/calculadora-iva', routes: ['/a', '/b'] }
-    expect(relatedInlineRoutes(state, '/herramientas/calculadora-iva')).toEqual(['/a', '/b'])
-    // El estado de la página anterior no vale para la siguiente.
-    expect(relatedInlineRoutes(state, '/guias/otra')).toEqual([])
-    expect(relatedInlineRoutes(null, '/x')).toEqual([])
-    expect(read('components/RelatedPages.vue')).toContain(
-      '...relatedInlineRoutes(inlineShown.value, route.path),'
-    )
+    expect(relatedInlineItems('/herramientas/calculadora-iva')).toHaveLength(RELATED_INLINE_LIMIT)
+    // Una página que no pinta el bloque de arriba no le saca nada al pie.
+    expect(relatedInlineItems('/guias/otra')).toEqual([])
+    const footer = read('components/RelatedPages.vue')
+    expect(footer).toContain('relatedInlineItems(route.path, route.query)')
+    expect(footer).toContain('...inlineShown.value,')
   })
 })
 
