@@ -153,15 +153,21 @@ describe('la página del directorio', () => {
     expect(pagina.slice(at, at + 300)).toContain('shareMatchingOffer')
   })
 
-  it('carga el detalle del mapa y la dirección de referencia sólo cuando hacen falta', () => {
-    expect(pagina).not.toMatch(/import MapPropertyDetail from/)
+  it('carga la dirección de referencia sólo cuando hace falta', () => {
     expect(pagina).not.toMatch(/import ReferenceAddress from/)
     expect(pagina).toMatch(
       /defineAsyncComponent\(\s*\(\) => import\('~\/components\/rentals\/ReferenceAddress\.vue'\)\s*\)/
     )
-    expect(pagina).toContain("import('~/components/rentals/MapPropertyDetail.vue')")
+  })
+
+  // Diferido (#342), el detalle del mapa le sacó al chunk de la página su fachada: usa el carrusel
+  // de fotos, que sólo usa esta página, y Rollup lo dejó dentro del chunk de la página para
+  // dárselo. En el build del 20/11/2026 la página salió sin su CSS y todo su código pasó a ser
+  // prefetch en cada página del sitio (app/modules/catalogue-prefetch/README.md).
+  it('importa el detalle del mapa de forma estática', () => {
     expect(pagina).toMatch(
-      /const MapPropertyDetail = defineAsyncComponent\(loadMapPropertyDetail\)/
+      /^import MapPropertyDetail from '~\/components\/rentals\/MapPropertyDetail\.vue'$/m
     )
+    expect(pagina).not.toContain("import('~/components/rentals/MapPropertyDetail.vue')")
   })
 })
