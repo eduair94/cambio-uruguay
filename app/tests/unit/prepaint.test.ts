@@ -157,6 +157,34 @@ describe('prepaint: el aviso de cookies ya decidido no se pinta', () => {
     expect(read('layouts/default.vue')).toContain('<CookieConsent />')
   })
 
+  it('el servidor no le pregunta a la cookie si renderiza el aviso', () => {
+    // El borde guarda una sola copia del HTML por URL y se la da a todos: si el servidor mirara
+    // `cu_consent`, la copia guardada sería la de quien la pidió primero (medido el 20/11/2026: un
+    // pedido con la cookie dejó guardado el HTML SIN aviso y el siguiente visitante, sin cookie, lo
+    // recibió). La regla vive en utils/consent.ts y sólo cambia después de montar.
+    const banner = read('components/CookieConsent.vue')
+    expect(banner).toMatch(/consentBannerRendered\(\{/)
+    expect(banner).toMatch(/const settled = ref\(false\)/)
+    expect(banner).toMatch(/onMounted\(\(\) => \{\s*settled\.value = true\s*\}\)/)
+    // La visibilidad ya no se calcula directo de la cookie.
+    expect(banner).not.toMatch(/visible = computed\(\(\) => !hasDecided\.value/)
+  })
+
+  it('un clic antes de montar esconde el aviso igual, y una marca vieja no tapa un aviso que hace falta', () => {
+    const banner = read('components/CookieConsent.vue')
+    // Los botones contestan apenas hidratan, que puede ser antes del onMounted del componente.
+    expect(banner).toMatch(/function onAccept\(\) \{\s*settled\.value = true\s*accept\(\)\s*\}/)
+    expect(banner).toMatch(/function onReject\(\) \{\s*settled\.value = true\s*reject\(\)\s*\}/)
+    expect(banner).toMatch(/@click="onReject"/)
+    expect(banner).toMatch(/@click="onAccept"/)
+    // La marca la puso un script que lee la cookie cruda; si la app no ve una decisión, la saca.
+    expect(banner).toMatch(
+      /isSettled && !decided\)\s*document\.documentElement\.removeAttribute\('data-cu-consent'\)/
+    )
+    // El texto del aviso es lo primero dentro de <main>: fuera de los fragmentos del buscador.
+    expect(banner).toMatch(/'data-nosnippet': ''/)
+  })
+
   it('el aviso de idioma no cambió: sigue client-only (v-if, fuera del HTML del servidor)', () => {
     const hint = read('components/LanguageHint.vue')
     expect(hint).toMatch(/<div v-if="show" class="lang-hint"/)
