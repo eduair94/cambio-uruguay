@@ -61,9 +61,11 @@ Sin el documento de la última corrida completa (base nueva) queda la regla ante
 de ayer (`rentalSourceReference`; el resumen `uy-rentals-last-full` guarda `sources[].recent`, que
 nunca se copia al resumen público). Contra lo de ayer una fuente que pierde el 40 % por día nunca
 trae menos de la mitad que el día anterior (21.606 → 12.964 → 7.778 → …) y se desangra sin una
-línea; contra la mediana se nombra el segundo día. Y una fuente muerta se sigue nombrando cuatro
-días seguidos, hasta que la mediana la alcanza, no sólo el primero. El umbral de esta comprobación
-es fijo (la mitad): `RENTALS_COLLAPSE_RATIO=0` apaga la guarda, no el aviso.
+línea; contra la mediana se nombra el segundo día. Y un portal que no contesta (`ok: false`) se
+nombra **cada día mientras siga caído**: su lectura fallida no entra en la historia, así que la
+vara queda en su nivel sano. Una fuente que el job apaga a propósito (lectura real de cero) deja
+de nombrarse cuando la mediana la alcanza, a los cuatro días. El umbral de esta comprobación es
+fijo (la mitad): `RENTALS_COLLAPSE_RATIO=0` apaga la guarda, no el aviso.
 
 **Lo que la guarda no cubre, a sabiendas.** Perder UNA fuente grande pasa: sin Mercado Libre queda
 el 56 % de la corrida anterior y el 31 % de lo almacenado. Está bien que pase — las demás fuentes

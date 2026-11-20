@@ -311,8 +311,16 @@ async function main(): Promise<void> {
       note: run.note,
       ...(run.access ? { access: run.access } : {}),
       // The yardstick of tomorrow's per-source check; kept only with the last full run's summary.
+      // A failed read stays out of it (its zero is "no answer", not "no adverts"); an import that
+      // is switched off on purpose is a real reading of nothing.
       ...(mode === "full"
-        ? { recent: rentalNextRecent(lastFull?.mode === "full" ? lastFull.sources?.find((source) => source?.key === run.key) : null, run.listings.length) }
+        ? {
+            recent: rentalNextRecent(
+              lastFull?.mode === "full" ? lastFull.sources?.find((source) => source?.key === run.key) : null,
+              run.listings.length,
+              run.ok || run.access === "external_only",
+            ),
+          }
         : {}),
     })),
   };

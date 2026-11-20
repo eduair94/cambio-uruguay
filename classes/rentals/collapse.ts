@@ -140,10 +140,20 @@ export function rentalSourceReference(source: SourceSummary | null | undefined):
   return Number.isFinite(listings) && listings > 0 ? listings : 0;
 }
 
-/** El `recent` que guarda esta corrida completa: el anterior más lo de hoy, las últimas siete. */
-export function rentalNextRecent(previous: SourceSummary | null | undefined, listings: number): number[] {
+/**
+ * El `recent` que guarda esta corrida completa: el anterior más lo de hoy, las últimas siete.
+ *
+ * Sólo entra una lectura DE VERDAD (`real`). Un portal que falló trae cero porque no contestó, no
+ * porque no tenga avisos: si ese cero entrara, a los cuatro días la mediana sería cero, la fuente
+ * dejaría de nombrarse estando todavía caída y, al volver, pasaría otros cuatro días sin vara. Con
+ * la lectura fallida afuera, la vara queda en su nivel sano y la fuente se nombra cada día hasta
+ * que vuelve. Una fuente apagada a propósito sí registra su cero (es una lectura real de "nada") y
+ * deja de nombrarse cuando la mediana la alcanza.
+ */
+export function rentalNextRecent(previous: SourceSummary | null | undefined, listings: number, real = true): number[] {
   const before = counts(previous?.recent);
   const carried = before.length ? before : counts(previous ? [previous.listings] : []);
+  if (!real) return carried.slice(-RENTAL_SOURCE_HISTORY);
   return [...carried, Math.max(0, Number(listings) || 0)].slice(-RENTAL_SOURCE_HISTORY);
 }
 

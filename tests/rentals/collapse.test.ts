@@ -153,12 +153,16 @@ describe("rentalSourceDrops", () => {
     { key: "tiktok", listings: 173 },
   ];
   const withListings = (key: string, listings: number) => today.map((row) => (row.key === key ? { ...row, listings } : row));
-  /** El resumen que deja guardado una corrida completa: lo de hoy, y el `recent` de cada fuente. */
-  const saved = (previous: typeof LAST_FULL, runs: { key: string; listings: number }[]) => ({
+  /**
+   * El resumen que deja guardado una corrida completa: lo de hoy, y el `recent` de cada fuente.
+   * `failed` nombra las fuentes que no contestaron (ok: false), como arma el resumen sync_rentals.ts.
+   */
+  const saved = (previous: typeof LAST_FULL, runs: { key: string; listings: number }[], failed: string[] = []) => ({
     ...previous,
     sources: previous.sources.map((row) => {
       const listings = runs.find((item) => item.key === row.key)?.listings ?? 0;
-      return { ...row, listings, recent: rentalNextRecent(row, listings) };
+      const ok = !failed.includes(row.key);
+      return { ...row, ok, listings, recent: rentalNextRecent(row, listings, ok) };
     }),
   });
 
@@ -195,8 +199,30 @@ describe("rentalSourceDrops", () => {
     ]);
   });
 
-  it("una fuente muerta se sigue nombrando cada día hasta que la mediana la alcanza", () => {
-    // Una semana de corridas sanas guardadas, y después Mercado Libre en cero.
+  it("un portal que no contesta se nombra CADA día mientras siga caído: su cero no entra en la vara", () => {
+    // Mercado Libre deja de contestar (ok: false) tres semanas. La lectura fallida no entra en su
+    // historia, así que la vara queda en 21.606 y no se calla al cuarto día con la fuente aún caída.
+    let summary = saved(LAST_FULL, LAST_FULL.sources);
+    const dead = withListings("mercadolibre", 0);
+    for (let day = 0; day < 21; day++) {
+      expect(rentalSourceDrops(dead, summary).filter((drop) => drop.big)).toEqual([
+        { key: "mercadolibre", now: 0, before: 21606, big: true },
+      ]);
+      summary = saved(summary, dead, ["mercadolibre"]);
+    }
+    expect(summary.sources[0]!.recent).toEqual([21606, 21606]);
+  });
+
+  it("y al volver a medias se sigue nombrando: tres días caído y un día con el 30 %", () => {
+    let summary = saved(LAST_FULL, LAST_FULL.sources);
+    for (let day = 0; day < 3; day++) summary = saved(summary, withListings("mercadolibre", 0), ["mercadolibre"]);
+    expect(rentalSourceDrops(withListings("mercadolibre", 6482), summary).filter((drop) => drop.big)).toEqual([
+      { key: "mercadolibre", now: 6482, before: 21606, big: true },
+    ]);
+  });
+
+  it("una fuente apagada a propósito (lectura real de cero) deja de nombrarse cuando la mediana la alcanza", () => {
+    // Una semana de corridas sanas guardadas, y después Mercado Libre en cero con ok: true.
     let summary = saved(LAST_FULL, LAST_FULL.sources);
     for (let day = 0; day < RENTAL_SOURCE_HISTORY; day++) summary = saved(summary, LAST_FULL.sources);
     const dead = withListings("mercadolibre", 0);
@@ -240,6 +266,10 @@ describe("la vara de cada fuente", () => {
     expect(rentalNextRecent(null, 21593)).toEqual([21593]);
     expect(rentalNextRecent({ listings: 0, recent: [1, 2, 3, 4, 5, 6, 7] }, 8)).toEqual([2, 3, 4, 5, 6, 7, 8]);
     expect(rentalNextRecent({ listings: 5, recent: ["x", -3, 4] as unknown as number[] }, 6)).toEqual([4, 6]);
+    // Una lectura fallida no entra: se arrastra lo anterior tal cual.
+    expect(rentalNextRecent({ listings: 21606, recent: [21606, 21593] }, 0, false)).toEqual([21606, 21593]);
+    expect(rentalNextRecent({ listings: 21606 }, 0, false)).toEqual([21606]);
+    expect(rentalNextRecent(null, 0, false)).toEqual([]);
     expect(RENTAL_SOURCE_HISTORY).toBe(7);
   });
 });
