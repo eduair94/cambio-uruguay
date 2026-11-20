@@ -27,12 +27,18 @@ test('no element claims role="option" outside a listbox', async ({ page }) => {
   // The drawer is where the orphan options lived, and it now mounts its items only when it opens
   // (the closed SSR drawer ships empty to keep the first HTML light). A test that waits for its
   // section headers on a closed drawer waits forever — so it opens the menu, like a person does.
+  //
+  // "Open" is read from the button's `aria-expanded`, NOT from the drawer being visible: once the
+  // app hydrates, the CLOSED drawer is a box translated off screen, which Playwright already counts
+  // as visible. A tap swallowed before hydration followed by that check passed with the menu still
+  // shut, its items never mounted, and the wait below timed out (CI, 2026-11-20). The tap is also
+  // skipped when the menu is already open, because the button toggles.
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
   const menu = page.locator('.v-app-bar [aria-controls="mobile-navigation"]')
   await expect(async () => {
-    await menu.click()
-    await expect(page.locator('#mobile-navigation')).toBeVisible({ timeout: 3_000 })
+    if ((await menu.getAttribute('aria-expanded')) !== 'true') await menu.click()
+    await expect(menu).toHaveAttribute('aria-expanded', 'true', { timeout: 3_000 })
   }).toPass({ timeout: 60_000 })
 
   // Gate on the drawer headers themselves, NOT on `[role="option"]`.
