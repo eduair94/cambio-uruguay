@@ -7,6 +7,13 @@
       app <a href="https://bankos.uy" target="_blank" rel="noopener nofollow">Bankos</a>; podés
       agregar todas las tarjetas que quieras y se combinan en un solo mapa.
     </p>
+    <!-- La respuesta a "¿qué tarjeta tiene más descuentos?" antes del mapa, contada de la lectura
+         del catálogo que esta página ya pide en el servidor (utils/bankosHub.ts). Sólo un ancla
+         interna: la barra de familia es la que enlaza a las otras páginas. -->
+    <p v-if="headline" class="text-body-2 mb-3" style="max-width: 70ch">
+      {{ headline }}
+      <a href="#comparacion-por-emisor">Ver la comparación por emisor</a>
+    </p>
 
     <!-- Las páginas de tarjetas y bancos están en la barra "En esta sección" (utils/familiaNav.ts). -->
 
@@ -362,61 +369,76 @@
          por vista (28 días al 30/10/2026). FaqSection va con :ad="false": el tope sigue en dos. -->
     <AdSlot placement="in-article" class="mt-8" />
 
-    <!-- Marcas con descuento. Server-rendered a propósito: es lo único de esta página que el
-         buscador puede leer, porque el mapa depende de una selección que sólo existe en el
-         navegador de cada quien. -->
-    <section v-if="topBrands?.length" class="mt-8">
-      <h2 class="text-h6 mb-1">Marcas con descuento en Uruguay</h2>
-      <p class="text-body-2 text-medium-emphasis mb-3" style="max-width: 70ch">
-        Las cadenas con más locales del catálogo. Cada una tiene su página con qué emisor da el
-        beneficio, si aplica con débito y el mapa de sus locales.
+    <!-- Per-bank section: a real <h3> per issuer for brand-intent queries, a table that answers
+         the cross-issuer question in the server HTML, and a shortcut that selects that bank's
+         cards (also reachable via ?banco=<id>). Every count comes from utils/bankosHub.ts. -->
+    <section id="comparacion-por-emisor" class="mt-8">
+      <h2 class="text-h6 mb-1">Descuentos por banco</h2>
+      <p v-if="readLabel" class="text-body-2 text-medium-emphasis mb-3" style="max-width: 75ch">
+        Cuántas marcas y locales tienen beneficio con cada emisor en la lectura del
+        {{ readLabel }}.
       </p>
-      <div class="d-flex flex-wrap ga-2">
-        <NuxtLink
-          v-for="brand in topBrands"
-          :key="brand.pageSlug!"
-          :to="localePath(`/descuentos-con-tarjeta-uruguay/marca/${brand.pageSlug}`)"
-          class="brand-pill"
-        >
-          {{ brand.name }}
-          <span class="brand-pill__count">{{ brand.locations }}</span>
-        </NuxtLink>
-      </div>
-    </section>
-
-    <!-- Context / SEO body -->
-    <v-card variant="tonal" class="mt-6">
-      <v-card-text style="max-width: 75ch">
-        <h2 class="text-h6 mb-2">Cómo funciona</h2>
-        <p class="text-body-2 mb-2">
-          Cada banco negocia sus propios descuentos con los comercios. Al elegir tus tarjetas, el
-          mapa muestra únicamente los locales que tienen beneficio con alguno de tus bancos, con el
-          detalle de crédito y débito. Si tenés tarjetas de varios bancos, se combinan: vas a ver la
-          unión de todos los beneficios.
+      <template v-if="hub.issuers.length">
+        <div class="table-scroll">
+          <table class="cmp cu-mobile-cards">
+            <thead>
+              <tr>
+                <th scope="col">Emisor</th>
+                <th scope="col" class="num">Marcas</th>
+                <th scope="col" class="num">Locales</th>
+                <th scope="col" class="num">Con débito</th>
+                <th scope="col" class="num">Sólo ese emisor</th>
+                <th scope="col">Donde más tiene</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in hub.issuers" :key="row.bankId">
+                <td data-label="">
+                  <span
+                    class="bank-dot mr-1"
+                    :style="{ background: row.color }"
+                    aria-hidden="true"
+                  />
+                  <a v-if="cardBankIds.has(row.bankId)" :href="`#descuentos-${row.bankId}`">{{
+                    row.name
+                  }}</a>
+                  <template v-else>{{ row.name }}</template>
+                </td>
+                <td class="num" data-label="Marcas">{{ fmt(row.brands) }}</td>
+                <td class="num" data-label="Locales">{{ fmt(row.locations) }}</td>
+                <td class="num" data-label="Con débito">
+                  {{ row.debit === null ? '—' : fmt(row.debit) }}
+                </td>
+                <td class="num" data-label="Sólo ese emisor">{{ fmt(row.exclusive) }}</td>
+                <td class="cu-cell-prose" data-label="Donde más tiene">
+                  {{ topCategoriesLabel(row) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-caption text-medium-emphasis mt-2 mb-1" style="max-width: 75ch">
+          "Sólo ese emisor" son las marcas que ningún otro emisor del mapa descuenta. Es cobertura
+          contada del catálogo: no dice cuánto ahorrás, porque el catálogo trae el texto de cada
+          beneficio y no un porcentaje comparable.
+          <template v-if="hub.singleMedium.length">
+            {{ joinedSingleMedium }}
+            {{ hub.singleMedium.length === 1 ? 'tiene' : 'tienen' }} un solo medio de pago en el
+            catálogo, así que no hay un beneficio de débito que contar aparte.
+          </template>
+          <template v-if="hub.withoutDiscounts.length">
+            {{ joinedWithoutDiscounts }}
+            {{ hub.withoutDiscounts.length === 1 ? 'no tiene' : 'no tienen' }} descuentos vigentes
+            en esta lectura.
+          </template>
         </p>
-        <p class="text-body-2 mb-2">
-          El descuento real depende de la tarjeta puntual, el día y los topes de cada banco.
-          Verificá siempre las condiciones vigentes antes de pagar. Para comparar qué banco te
-          conviene por reintegros y app, mirá la
-          <NuxtLink :to="localePath('/mejores-bancos-uruguay')">tier list de bancos</NuxtLink> y las
-          <NuxtLink :to="localePath('/tarjetas-de-credito-uruguay')"
-            >tarjetas de crédito por puntos y beneficios</NuxtLink
+        <p class="text-caption text-medium-emphasis mb-4" style="max-width: 75ch">
+          Las gráficas y las marcas exclusivas de cada emisor están en
+          <NuxtLink :to="localePath('/que-banco-tiene-mas-descuentos-uruguay')"
+            >¿Qué banco tiene más descuentos?</NuxtLink
           >.
         </p>
-        <p class="text-caption text-medium-emphasis">
-          Datos de Bankos (bankos.uy). Este sitio no está afiliado a Bankos ni a los bancos
-          mencionados. Si llegaste buscando la app, acá está
-          <NuxtLink :to="localePath('/alternativa-a-bankos-uruguay')"
-            >en qué se diferencia de este mapa</NuxtLink
-          >, incluido lo que la app hace mejor.
-        </p>
-      </v-card-text>
-    </v-card>
-
-    <!-- Per-bank section: a real <h3> per issuer for brand-intent queries, an accurate blurb,
-         and a shortcut that selects that bank's cards (also reachable via ?banco=<id>). -->
-    <section class="mt-8">
-      <h2 class="text-h6 mb-1">Descuentos por banco</h2>
+      </template>
       <p class="text-body-2 text-medium-emphasis mb-3" style="max-width: 75ch">
         Tocá tu banco para ver en el mapa los comercios con descuento. Podés sumar varios y se
         combinan.
@@ -433,7 +455,20 @@
               </NuxtLink>
               <span v-else>Descuentos {{ bank.name }}</span>
             </h3>
-            <v-card-text class="text-body-2 py-1 flex-grow-1">{{ bankBlurb(bank) }}</v-card-text>
+            <v-card-text class="text-body-2 py-1 flex-grow-1">
+              <template v-if="issuerById[bank.id]">
+                <p class="mb-1">{{ issuerCounts(issuerById[bank.id]!) }}</p>
+                <p v-for="q in issuerQuotes(issuerById[bank.id]!)" :key="q" class="tier-text mb-1">
+                  {{ q }}
+                </p>
+              </template>
+              <template v-else-if="hub.totals.brands">
+                En esta lectura no hay descuentos vigentes de {{ bank.name }}.
+              </template>
+              <template v-else
+                >Elegí tus tarjetas {{ bank.name }} para ver sus comercios en el mapa.</template
+              >
+            </v-card-text>
             <v-card-actions class="flex-wrap ga-1 pt-0">
               <v-btn size="small" variant="text" color="primary" @click="selectBank(bank.id)">
                 Ver en el mapa
@@ -468,14 +503,46 @@
     </section>
 
     <!-- Rubros: la otra entrada al mismo catálogo. Alguien que busca "descuentos en farmacias" no
-         sabe todavía qué banco quiere; esta sección lo lleva a la comparativa del rubro. -->
+         sabe todavía qué banco quiere: la tabla le contesta quién lidera cada rubro y los chips lo
+         llevan a la comparativa del rubro (los únicos enlaces a esas páginas desde acá). -->
     <section class="mt-8">
       <h2 class="text-h6 mb-1">Descuentos por rubro</h2>
       <p class="text-body-2 text-medium-emphasis mb-3" style="max-width: 75ch">
         Si la pregunta es "¿con qué tarjeta me conviene el supermercado?" y no "¿qué tiene mi
-        banco?", entrá por acá: cada rubro compara a todos los emisores por marcas y locales
-        adheridos.
+        banco?", mirá esta tabla: el emisor con más marcas adheridas en cada rubro y los dos que le
+        siguen.
       </p>
+      <template v-if="hub.categories.length">
+        <div class="table-scroll">
+          <table class="cmp cu-mobile-cards">
+            <thead>
+              <tr>
+                <th scope="col">Rubro</th>
+                <th scope="col" class="num">Marcas</th>
+                <th scope="col">Lidera</th>
+                <th scope="col">Le siguen</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in hub.categories" :key="row.category">
+                <td data-label="">{{ row.label }}</td>
+                <td class="num" data-label="Marcas">{{ fmt(row.brands) }}</td>
+                <td data-label="Lidera">{{ podiumLabel(row.podium.slice(0, 1)) }}</td>
+                <td class="cu-cell-prose" data-label="Le siguen">
+                  {{ podiumLabel(row.podium.slice(1)) || '—' }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-caption text-medium-emphasis mt-2 mb-4" style="max-width: 75ch">
+          Una marca puede tener beneficio con más de un emisor, así que las cuentas de un rubro se
+          superponen.
+        </p>
+        <p class="text-body-2 mb-2">
+          La comparativa completa de cada rubro, con la lista de marcas:
+        </p>
+      </template>
       <div class="d-flex flex-wrap ga-2">
         <v-chip
           v-for="rubro in BANKOS_CATEGORY_PAGES"
@@ -490,8 +557,81 @@
       </div>
     </section>
 
+    <!-- Marcas con descuento. Server-rendered a propósito: el mapa depende de una selección que
+         sólo existe en el navegador de cada quien, así que estos nombres (junto con las dos
+         tablas de arriba) son lo que el buscador puede leer. -->
+    <section v-if="hub.topBrands.length" class="mt-8">
+      <h2 class="text-h6 mb-1">Marcas con descuento en Uruguay</h2>
+      <p class="text-body-2 text-medium-emphasis mb-3" style="max-width: 70ch">
+        Las cadenas con más locales del catálogo. Cada una tiene su página con qué emisor da el
+        beneficio, si aplica con débito y el mapa de sus locales.
+      </p>
+      <div class="d-flex flex-wrap ga-2">
+        <NuxtLink
+          v-for="brand in hub.topBrands"
+          :key="brand.pageSlug"
+          :to="localePath(`/descuentos-con-tarjeta-uruguay/marca/${brand.pageSlug}`)"
+          class="brand-pill"
+        >
+          {{ brand.name }}
+          <span class="brand-pill__count">{{ brand.locations }}</span>
+        </NuxtLink>
+      </div>
+    </section>
+
+    <!-- Context / SEO body -->
+    <v-card variant="tonal" class="mt-6">
+      <v-card-text style="max-width: 75ch">
+        <h2 class="text-h6 mb-2">Cómo funciona</h2>
+        <p class="text-body-2 mb-2">
+          Cada banco negocia sus propios descuentos con los comercios. Al elegir tus tarjetas, el
+          mapa muestra únicamente los locales que tienen beneficio con alguno de tus bancos, con el
+          detalle de crédito y débito. Si tenés tarjetas de varios bancos, se combinan: vas a ver la
+          unión de todos los beneficios.
+        </p>
+        <h3 class="text-subtitle-1 font-weight-medium mb-1">
+          Tres reglas para no marearte con las promos
+        </h3>
+        <ol class="text-body-2 mb-3 pl-5">
+          <li class="mb-1">
+            Elegí por rubro. El total de marcas de un emisor importa menos que cuántas tiene donde
+            vos gastás: supermercado, farmacia o restaurantes.
+          </li>
+          <li class="mb-1">
+            Leé el renglón entero. El texto de cada beneficio dice el día y la gama de tarjeta que
+            pide. El tope mensual no viene en el catálogo: confirmalo con el emisor antes de contar
+            con un descuento grande. Para comparar qué banco te conviene por reintegros y app, mirá
+            la
+            <NuxtLink :to="localePath('/mejores-bancos-uruguay')">tier list de bancos</NuxtLink> y
+            las
+            <NuxtLink :to="localePath('/tarjetas-de-credito-uruguay')"
+              >tarjetas de crédito por puntos y beneficios</NuxtLink
+            >.
+          </li>
+          <li v-if="ivaGeneralPoints && ivaGastronomiaPoints">
+            La rebaja de IVA va aparte. Pagar con débito o dinero electrónico baja
+            {{ ivaGeneralPoints }} puntos de IVA en las compras a consumo final<template
+              v-if="ivaNineActive"
+              >, y en restaurantes, bares y cafeterías baja {{ ivaGastronomiaPoints }} puntos,
+              también con crédito, hasta el {{ ivaNineLastDay }}</template
+            >.
+            <NuxtLink :to="localePath('/descuento-de-iva-con-tarjeta-uruguay')"
+              >Cuánto es sobre el ticket</NuxtLink
+            >.
+          </li>
+        </ol>
+        <p class="text-caption text-medium-emphasis">
+          Datos de Bankos (bankos.uy). Este sitio no está afiliado a Bankos ni a los bancos
+          mencionados. Si llegaste buscando la app, acá está
+          <NuxtLink :to="localePath('/alternativa-a-bankos-uruguay')"
+            >en qué se diferencia de este mapa</NuxtLink
+          >, incluido lo que la app hace mejor.
+        </p>
+      </v-card-text>
+    </v-card>
+
     <FaqSection
-      :items="BANKOS_FAQ"
+      :items="faqItems"
       heading="Preguntas frecuentes sobre descuentos con tarjeta"
       :expanded="true"
       :ad="false"
@@ -513,13 +653,24 @@ import {
   bankosTypeFromQuery,
   dayRestrictionLabel,
   isoWeekdayToday,
-  type BankosBank,
   type BankosCard,
   type BankosDiscountsResponse,
   type BankosItem,
 } from '~/utils/bankos'
+import {
+  EMPTY_HUB_SUMMARY,
+  buildHubFaq,
+  buildHubSummary,
+  hubHeadline,
+  hubReadLabel,
+  joinNames,
+  type HubCategory,
+  type HubInput,
+  type HubIssuer,
+} from '~/utils/bankosHub'
 import { BANKOS_CATEGORY_PAGES, bankPageForBankId } from '~/utils/bankosPages'
 import { formatUYU } from '~/utils/format'
+import { IVA_NINE_POINTS_LAST_DAY, IVA_REGIMES } from '~/utils/ivaTarjeta'
 import {
   mercadoPagoDaysLeft,
   mercadoPagoPromoFor,
@@ -599,18 +750,63 @@ function debitFichaPath(bankId: string): string {
   return id ? localePath(`/tarjetas-de-debito-uruguay#tarjeta-${id}`) : ''
 }
 
-/** Accurate one-liner per bank — card types read from the catalog, never invented. */
-function bankBlurb(bank: BankosBank): string {
-  const types = new Set(BANKOS_CARDS.filter(c => c.bankId === bank.id).map(c => c.type))
-  const t =
-    types.has('credit') && types.has('debit')
-      ? 'crédito y débito'
-      : types.has('credit')
-        ? 'crédito'
-        : 'débito'
-  const qr = bank.id === 'mercadopago' ? ' y pagos con QR' : ''
-  return `Descuentos de ${bank.name} con tarjeta de ${t}${qr} en comercios adheridos de todo el país. Elegí tus tarjetas ${bank.name} para verlos en el mapa.`
+/**
+ * Lo que dice la tarjeta de cada emisor, contado de la lectura. Reemplaza una frase de plantilla
+ * que era igual para los diez y anunciaba "tarjeta de débito" en Club El País, Mercado Pago y
+ * Prex, que el propio catálogo da como tarjeta a secas o QR.
+ */
+function issuerCounts(issuer: HubIssuer): string {
+  const parts = [`${fmt(issuer.brands)} marcas`, `${fmt(issuer.locations)} locales`]
+  if (issuer.debit !== null) parts.push(`${fmt(issuer.debit)} con débito`)
+  return parts.join(' · ')
 }
+
+/** El texto más repetido de cada medio de pago, citado tal cual lo publica el emisor. */
+function issuerQuotes(issuer: HubIssuer): string[] {
+  const plural = (n: number) => `${fmt(n)} marca${n === 1 ? '' : 's'}`
+  if (issuer.singleMedium) {
+    const only = issuer.topCredit ?? issuer.topDebit
+    return only ? [`“${only.text}” — el texto más repetido, en ${plural(only.brands)}`] : []
+  }
+  const out: string[] = []
+  if (issuer.topCredit)
+    out.push(
+      `“${issuer.topCredit.text}” — el texto más repetido con crédito, en ${plural(issuer.topCredit.brands)}`
+    )
+  if (issuer.topDebit)
+    out.push(
+      `“${issuer.topDebit.text}” — el más repetido con débito, en ${plural(issuer.topDebit.brands)}`
+    )
+  return out
+}
+
+/** "Supermercados (208), Farmacias (205)". */
+function topCategoriesLabel(issuer: HubIssuer): string {
+  return issuer.topCategories.map(c => `${c.label} (${fmt(c.brands)})`).join(', ') || '—'
+}
+
+/** "BROU · 208" o "OCA · 65, Itaú · 11". */
+function podiumLabel(podium: HubCategory['podium']): string {
+  return podium.map(p => `${p.name} · ${fmt(p.brands)}`).join(', ')
+}
+
+const numberFormat = new Intl.NumberFormat('es-UY')
+function fmt(n: number): string {
+  return numberFormat.format(n)
+}
+
+// La rebaja de IVA se cita de las constantes verificadas de utils/ivaTarjeta.ts, nunca a mano.
+const ivaGeneralPoints = IVA_REGIMES.find(r => r.id === 'general')?.points ?? 0
+const ivaGastronomiaPoints = IVA_REGIMES.find(r => r.id === 'gastronomia')?.points ?? 0
+const ivaNineLastDay = hubReadLabel(IVA_NINE_POINTS_LAST_DAY)
+// Los 9 puntos vencen: la frase sale sola cuando la lectura del catálogo pasa la fecha. Se compara
+// contra la fecha del payload y no contra "hoy", así servidor y navegador dicen lo mismo.
+const ivaNineActive = computed(() => {
+  const at = hub.value.generatedAt
+  return !at || at.slice(0, 10) <= IVA_NINE_POINTS_LAST_DAY
+})
+/** Las tarjetas de emisor que tienen ancla en la grilla: la tabla sólo enlaza a ésas. */
+const cardBankIds = new Set(banks.map(b => b.id))
 
 // Push alerts: the PWA service worker already carries the FCM handler, so enabling them is
 // permission + token + opt-in flag. Account-only, because a push needs a device to send to.
@@ -739,34 +935,43 @@ function cardKindLabel(bank: { unique?: string }, card: { type: string }): strin
 }
 
 /**
- * Las marcas más grandes con página propia, traídas EN EL SERVIDOR.
+ * El catálogo por marca, leído EN EL SERVIDOR y reducido al resumen que la página imprime.
  *
  * Por qué existe: el mapa se arma con la selección de tarjetas, que vive en localStorage y en el
  * servidor está vacía, así que su fetch es `server: false` y el HTML servido de esta página no
  * contenía el nombre de una sola marca — medido: Farmashop, TaTa, Ancap, Tienda Inglesa y Las
  * Delicias aparecían cero veces en 287 KB. La página que ES el producto hacía 35 impresiones y 0
- * clics. Esta lectura es chica, no depende de nadie en particular, y le da al buscador (y a quien
- * llega sin tarjetas elegidas) algo que leer y por dónde entrar a las 304 páginas de marca.
+ * clics. De la misma lectura salen ahora las marcas, la tabla por emisor, la de rubros y las
+ * preguntas con cifras (utils/bankosHub.ts): la página es la que el buscador trae para las
+ * preguntas entre emisores ("¿qué tarjeta tiene descuento en más comercios?") y hasta el
+ * 2026-11-20 su HTML no traía ni una cifra.
  */
-interface HubBrand {
-  name: string
-  locations: number
-  pageSlug: string | null
-}
-
-const { data: topBrands } = await useFetch('/api/bankos/brands', {
+const { data: hub } = await useFetch('/api/bankos/brands', {
   key: 'bankos-brands-hub',
-  // `transform` y no un computed sobre la respuesta: lo que devuelve esta ruta son 2.068 marcas y
-  // 382 KB, y sin recortar ACÁ Nuxt serializa el payload entero en el HTML — medido, la página
+  // `transform` y no un computed sobre la respuesta: lo que devuelve esta ruta son 2.530 marcas y
+  // ~500 KB, y sin recortar ACÁ Nuxt serializa el payload entero en el HTML — medido, la página
   // pasó de 287 KB a 760 KB la primera vez que se agregó. `transform` corre antes de serializar,
-  // así que sólo viajan las 48 filas que la sección dibuja.
-  transform: (res: { brands: HubBrand[] }) =>
-    (res?.brands || [])
-      .filter(b => b.pageSlug)
-      .sort((a, b) => b.locations - a.locations)
-      .slice(0, 48)
-      .map(b => ({ name: b.name, locations: b.locations, pageSlug: b.pageSlug })),
-  default: () => [] as HubBrand[],
+  // así que sólo viaja el resumen (~11 KB).
+  transform: (res: HubInput) => buildHubSummary(res),
+  default: () => EMPTY_HUB_SUMMARY,
+})
+
+/** La fecha de la lectura del catálogo, nunca "hoy": el HTML se cachea en el borde. */
+const readLabel = computed(() => hubReadLabel(hub.value.generatedAt))
+const headline = computed(() => hubHeadline(hub.value, readLabel.value))
+const issuerById = computed<Record<string, HubIssuer>>(() =>
+  Object.fromEntries(hub.value.issuers.map(i => [i.bankId, i]))
+)
+const joinedSingleMedium = computed(() => joinNames(hub.value.singleMedium))
+const joinedWithoutDiscounts = computed(() => joinNames(hub.value.withoutDiscounts))
+
+/**
+ * Primero las preguntas con cifras de la lectura; después las fijas sobre cómo usar el mapa. La
+ * fija de crédito y débito sale cuando hay datos: la de débito por emisor la contesta con números.
+ */
+const faqItems = computed<FaqItem[]>(() => {
+  const live = buildHubFaq(hub.value, readLabel.value)
+  return live.length ? [...live, ...BANKOS_FAQ.filter(f => f.id !== 'credito-debito')] : BANKOS_FAQ
 })
 
 const cardsParam = computed(() => [...selectedCards.value].sort().join(','))
@@ -1217,6 +1422,38 @@ useHead(() => ({
   font-size: 0.72rem;
   color: rgba(var(--v-theme-on-surface), 0.6);
   font-variant-numeric: tabular-nums;
+}
+/* Las dos tablas del resumen: las mismas reglas que la comparación de [banco].vue. */
+.table-scroll {
+  overflow-x: auto;
+}
+.cmp {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.cmp th,
+.cmp td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  text-align: left;
+}
+.cmp .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.cmp a {
+  color: rgb(var(--v-theme-link));
+  text-decoration: none;
+}
+.cmp a:hover,
+.cmp a:focus-visible {
+  text-decoration: underline;
+}
+.tier-text {
+  font-style: italic;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 /* El tope y su advertencia se apoyan en el lienzo de la tarjeta, no en un panel tintado, así que
    el color va mezclado hacia `on-surface` para llegar a 4,5:1 en los dos temas. */

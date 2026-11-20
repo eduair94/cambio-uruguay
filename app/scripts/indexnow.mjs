@@ -13,13 +13,35 @@
 // vive en scripts/lib/indexnow.mjs (pura, con tests en tests/unit/indexnow.test.ts).
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 
-import { resolveIndexNowKey, runIndexNow } from './lib/indexnow.mjs'
+import {
+  INDEXNOW_ENDPOINT,
+  isEnabled,
+  readStateFile,
+  resolveEndpoint,
+  resolveIndexNowKey,
+  runIndexNow,
+} from './lib/indexnow.mjs'
 
 let dotenvText = ''
 try {
   dotenvText = readFileSync(new URL('../.env', import.meta.url), 'utf8')
 } catch {
   // Sin .env no hay bandera: el gate de runIndexNow lo trata como apagado.
+}
+
+// INDEXNOW_ENDPOINT (entorno o app/.env) elige entre los dos endpoints que nombra indexnow.org;
+// cualquier otro valor cae a api.indexnow.org y lo dice en el log — sólo con la compuerta abierta
+// o en --dry-run: apagado, el script no dice nada más que "nothing sent".
+const argv = process.argv.slice(2)
+let endpoint = INDEXNOW_ENDPOINT
+try {
+  const resolved = resolveEndpoint(process.env, dotenvText)
+  endpoint = resolved.endpoint
+  if (resolved.note && (argv.includes('--dry-run') || isEnabled(process.env, dotenvText))) {
+    console.log(resolved.note)
+  }
+} catch (error) {
+  console.log(`indexnow: cannot read INDEXNOW_ENDPOINT: ${String(error?.message || error)}`)
 }
 
 const publicDir = new URL('../public/', import.meta.url)
@@ -39,13 +61,9 @@ try {
 // Sin este archivo cada deploy re-anunciaba el sitemap entero y api.indexnow.org contestaba 429.
 const stateUrl = new URL('../.data/indexnow-announced.json', import.meta.url)
 const state = {
-  read: () => {
-    try {
-      return readFileSync(stateUrl, 'utf8')
-    } catch {
-      return null
-    }
-  },
+  // Sólo "no existe" es un primer deploy; otro error de lectura lo atrapa runIndexNow y aborta
+  // sin pisar el archivo (`readStateFile`, con test).
+  read: () => readStateFile(readFileSync, stateUrl),
   write: text => {
     mkdirSync(new URL('../.data/', import.meta.url), { recursive: true })
     writeFileSync(stateUrl, text)
@@ -55,10 +73,11 @@ const state = {
 const result = await runIndexNow({
   fetch: globalThis.fetch,
   env: process.env,
-  argv: process.argv.slice(2),
+  argv,
   dotenvText,
   key,
   state,
+  endpoint,
   log: message => console.log(message),
 })
 

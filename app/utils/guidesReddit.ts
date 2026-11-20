@@ -759,7 +759,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'alquilar-sin-garantia-uruguay',
-    title: 'Cómo alquilar sin garantía en Uruguay',
+    title: 'Alquilar sin garantía: seguro, ANDA o LUC',
     description:
       'Cinco vías sin garante propietario: seguro de fianza, adelanto de meses, ANDA, la garantía de la Contaduría y el régimen de la LUC, que acorta el desalojo.',
     tag: 'SIN GARANTÍA',
@@ -815,6 +815,20 @@ export const redditGuides: readonly Guide[] = [
       {
         name: 'Dejá todo por escrito',
         text: 'Cualquiera sea la vía, que el contrato indique la garantía elegida, los montos adelantados y a qué se imputa cada pago.',
+      },
+    ],
+    sources: [
+      {
+        label:
+          'Ley 19.889 (LUC) art. 421, «Régimen de arrendamiento sin garantía» — destino casa habitación, "la ausencia de garantías de cualquier naturaleza a favor del arrendador", contrato escrito con plazo y precio, y que las partes hagan constar "su voluntad de someterse a esta ley"',
+        url: 'https://www.impo.com.uy/bases/leyes/19889-2020/421',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'ANDA — servicio de garantía de alquiler para inquilinos, propietarios e inmobiliarias',
+        url: 'https://anda.com.uy/garantia-de-alquiler/',
+        publisher: 'ANDA',
       },
     ],
   },
@@ -958,6 +972,10 @@ export const redditGuides: readonly Guide[] = [
     related: [
       { label: 'Guía para alquilar', to: '/alquilar-en-uruguay' },
       { label: 'Cómo funciona el IRPF', to: '/guias/como-funciona-el-irpf-uruguay' },
+      {
+        label: 'IRPF de alquileres: el 10,5 % o la exoneración',
+        to: '/guias/irpf-de-alquileres-uruguay',
+      },
       { label: 'Derechos del inquilino', to: '/guias/derechos-del-inquilino-uruguay' },
     ],
   },
@@ -1483,7 +1501,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'las-deudas-se-heredan-uruguay',
     title: 'Las deudas se heredan: hay cómo limitarlas',
     description:
-      '¿Se heredan las deudas en Uruguay? Cómo funciona el activo y el pasivo, la aceptación con beneficio de inventario y cuándo conviene repudiar la herencia.',
+      'Se hereda el activo y el pasivo: con beneficio de inventario respondés sólo hasta donde alcancen los bienes, y si repudiás tu parte pasa a tus hijos.',
     tag: 'HERENCIA',
     updatedAt: '2026-07-18',
     sections: [
@@ -1587,7 +1605,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'legitima-y-herederos-forzosos-uruguay',
-    title: 'Legítima y herederos forzosos en Uruguay',
+    title: 'Herederos forzosos: legítima 1/2, 2/3 o 3/4',
     description:
       'La legítima es la mitad del patrimonio con un hijo, dos tercios con dos y tres cuartos con tres o más. Sin descendientes, los ascendientes llevan la mitad.',
     tag: 'LEGÍTIMA',
@@ -1623,10 +1641,18 @@ export const redditGuides: readonly Guide[] = [
       { label: 'Cómo funciona una sucesión', to: '/guias/como-funciona-una-sucesion-uruguay' },
       { label: '¿Las deudas se heredan?', to: '/guias/las-deudas-se-heredan-uruguay' },
     ],
+    sources: [
+      {
+        label:
+          'Código Civil art. 887 — con un hijo "la porción legitimaria será la mitad de los bienes; si hay dos hijos, las dos terceras partes; si hay tres o más hijos, las tres cuartas partes", y sin descendientes "la mitad de la herencia será la legítima de los ascendientes"',
+        url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/887',
+        publisher: 'IMPO — Código Civil',
+      },
+    ],
   },
   {
     slug: 'hay-impuesto-a-la-herencia-uruguay',
-    title: '¿Hay impuesto a la herencia en Uruguay?',
+    title: 'No hay impuesto a la herencia: sí el ITP',
     description:
       'No existe: Uruguay no grava el hecho de heredar. Lo que se paga son los costos de la sucesión y, si hay inmuebles, el ITP sobre el valor que fija Catastro.',
     tag: 'IMPUESTOS',
@@ -1661,6 +1687,20 @@ export const redditGuides: readonly Guide[] = [
       { label: 'Cómo funciona una sucesión', to: '/guias/como-funciona-una-sucesion-uruguay' },
       { label: 'Costos de escrituración', to: '/guias/costos-de-escrituracion-uruguay' },
       { label: 'Hacer un testamento', to: '/guias/hacer-un-testamento-uruguay' },
+    ],
+    sources: [
+      {
+        label:
+          'Ley 12.804 art. 147 — nota de IMPO: "Impuesto a las Herencias, Legados y Donaciones derogado/s por: Decreto Ley Nº 14.252 de 22/08/1974 artículo 318"',
+        url: 'https://www.impo.com.uy/bases/leyes/12804-1960/147',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'DGI, Impuesto a las Transmisiones Patrimoniales — grava "las trasmisiones de bienes inmuebles operadas por causa de muerte", los contribuyentes son los herederos y legatarios y la base es el "valor real fijado por la Dirección Nacional de Catastro"; 3 % en línea recta ascendente o descendente y 4 % en los demás casos',
+        url: 'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/impuesto-transmisiones-patrimoniales-0',
+        publisher: 'DGI',
+      },
     ],
   },
   {
@@ -1830,19 +1870,32 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'transferir-un-auto-uruguay',
-    title: 'Transferir un auto: la deuda sigue al auto',
+    // 2026-11-20: el título decía «la deuda sigue al auto» (#123) y ninguna fuente primaria lo
+    // sostiene; el Texto Ordenado del SUCIVE dice otra cosa: con deuda el auto no se transfiere
+    // (art. 45, citado en `sources`).
+    title: 'Transferir un auto: con deuda no se puede',
     description:
       'Cómo transferir un auto en Uruguay: verificar titularidad y deudas, certificados, intendencia, firmas y cómo evitar estafas.',
     tag: 'TRÁMITE',
-    updatedAt: '2026-07-18',
+    // 2026-11-20: la sección de certificados decía «conviene consultar de antemano en la
+    // intendencia correspondiente». Pasa a traer lo que dicen las nueve fuentes oficiales leídas,
+    // contadas en `utils/carTransferFees.ts`, y el importe de la libreta del Texto Ordenado del
+    // SUCIVE 2026, que es el mismo en todos los departamentos.
+    updatedAt: '2026-11-20',
     sections: [
       {
         heading: 'Antes de comprar: verificá titularidad y deudas',
-        body: 'El paso más importante es anterior a pagar. Confirmá que quien vende es el titular real del vehículo y que los datos de la documentación coinciden con el auto: número de motor, número de chasis y matrícula. Verificá que no arrastre deudas de patente ni multas, y muy especialmente que no tenga una prenda vigente inscripta, porque si el auto está prendado el acreedor puede reclamarlo aunque vos ya lo hayas pagado. La deuda de patente sigue al vehículo a través del SUCIVE, así que si comprás un auto con patente atrasada, esa deuda pasa a ser tu problema.',
+        body: 'El paso más importante es anterior a pagar. Confirmá que quien vende es el titular real del vehículo y que los datos de la documentación coinciden con el auto: número de motor, número de chasis y matrícula. Verificá que no arrastre deudas de patente ni multas, y muy especialmente que no tenga una prenda vigente inscripta, porque si el auto está prendado el acreedor puede reclamarlo aunque vos ya lo hayas pagado. Con patente, multas o cuotas de convenio adeudadas el auto no se puede transferir, aunque esas deudas todavía no hayan vencido: lo dice el artículo 45 del Texto Ordenado del SUCIVE, que rige en todos los departamentos.',
       },
       {
         heading: 'Los certificados que necesitás',
-        body: 'Para transferir hace falta reunir la documentación que acredite que el auto está en regla. Eso incluye comprobar que la patente esté paga y sin deuda, que no haya multas pendientes, y la libreta de propiedad del vehículo. El trámite de cambio de titular se hace ante la intendencia del departamento donde está empadronado el auto, que lleva el registro departamental de vehículos. Cada intendencia puede pedir requisitos algo distintos, así que conviene consultar de antemano en la intendencia correspondiente qué certificados y formularios exige, para juntar todo antes de coordinar la firma y no tener que volver.',
+        body: 'Para transferir hace falta reunir la documentación que acredite que el auto está en regla. El trámite de cambio de titular se hace ante la intendencia del departamento donde está empadronado el auto, que lleva el registro departamental de vehículos, y las listas de requisitos que publican las intendencias no coinciden. Leídas las nueve fuentes oficiales que comparamos (las ocho fichas del catálogo nacional de trámites y el instructivo de Montevideo, noviembre de 2026), lo único que piden las nueve es documento de identidad de quien firma y Seguro Obligatorio de Automotores vigente. La libreta de propiedad y la patente al día figuran en seis, la inspección del vehículo en cuatro (más dos que la piden en algún caso), el certificado de libre de prenda y embargo en tres —en Paysandú y Treinta y Tres con vigencia de 24 horas— y la constancia de domicilio en dos. La libreta nueva sale $1.779,52 en 2026 en cualquier departamento, porque el importe lo fija el Texto Ordenado del SUCIVE, y paga sólo el documento del vehículo: el escribano y los certificados van aparte.',
+        links: [
+          {
+            label: 'Cuánto sale transferir un auto: la libreta y lo que pide cada ficha',
+            to: '/cuanto-sale-transferir-un-auto-uruguay',
+          },
+        ],
       },
       {
         heading: 'La firma y el rol del escribano',
@@ -1862,6 +1915,10 @@ export const redditGuides: readonly Guide[] = [
       },
     ],
     related: [
+      {
+        label: 'Cuánto sale transferir un auto',
+        to: '/cuanto-sale-transferir-un-auto-uruguay',
+      },
       { label: 'Comprar auto 0km o usado', to: '/guias/comprar-auto-0km-o-usado-uruguay' },
       { label: 'Cuánto cuesta tener un auto', to: '/guias/costos-de-tener-auto-uruguay' },
       { label: 'Estafas en Uruguay', to: '/estafas-uruguay' },
@@ -1873,7 +1930,7 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         name: 'Controlá deudas y prenda',
-        text: 'Revisá que no haya patente atrasada, multas ni una prenda vigente inscripta. La deuda de patente sigue al auto vía SUCIVE.',
+        text: 'Revisá que no haya patente atrasada, multas ni una prenda vigente inscripta. Con patente o multas adeudadas el auto no se puede transferir (Texto Ordenado del SUCIVE, art. 45).',
       },
       {
         name: 'Reuní los certificados',
@@ -1890,6 +1947,14 @@ export const redditGuides: readonly Guide[] = [
       {
         name: 'Guardá todo',
         text: 'Conservá copia de la compraventa y del trámite. El vendedor debe asegurarse de que la transferencia quede completa para no recibir multas.',
+      },
+    ],
+    sources: [
+      {
+        label:
+          'Texto Ordenado del SUCIVE 2026 (Circular DAV 180/2025 del Congreso de Intendentes), art. 45 — «No podrá transferirse un vehículo que deba patente, multas, cuotas de convenios interdepartamentales o montos por chapas matrículas o DIV, aunque no haya vencido el plazo para su pago.»; y el importe de la libreta: «LIBRETA DE PROPIEDAD Y CIRCULACION 700 x 2,542173922= 1.779,52»',
+        url: 'https://www.gub.uy/congreso-intendentes/sites/congreso-intendentes/files/2026-02/CIRCULAR%20DAV%20180-25%20texto%20ordenado%202026,%20info%20sistema%20(23.12.25).pdf',
+        publisher: 'Congreso de Intendentes',
       },
     ],
   },
@@ -2197,6 +2262,12 @@ export const redditGuides: readonly Guide[] = [
       {
         heading: 'Las partidas: aguinaldo, salario vacacional, horas extra',
         body: 'Además del sueldo del mes, el recibo puede incluir partidas. El aguinaldo (sueldo anual complementario) se cobra en dos medios, alrededor de junio y de diciembre. El salario vacacional es una suma extra para disfrutar la licencia y se paga antes de que la tomes. También pueden figurar horas extra, nocturnidad, presentismo, comisiones o viáticos. Algunas de estas partidas aportan a BPS y pagan IRPF igual que el sueldo; otras, como ciertos viáticos, pueden tener tratamiento distinto. Conviene mirar cada línea: no es lo mismo un ingreso gravado que uno que no lo es, y eso explica variaciones de un mes a otro.',
+        links: [
+          {
+            label: 'Teletrabajo: lo que pone la empresa no es salario',
+            to: '/teletrabajo-uruguay',
+          },
+        ],
       },
       {
         heading: 'Por qué te descuentan tanto y cómo verificarlo',
@@ -2276,9 +2347,9 @@ export const redditGuides: readonly Guide[] = [
     slug: 'como-se-calcula-el-aguinaldo-uruguay',
     title: 'Aguinaldo: la doceava parte de lo ganado',
     description:
-      'Qué es el aguinaldo (sueldo anual complementario), cómo se calcula por proporción de lo ganado y cuándo se cobra en Uruguay: junio y diciembre.',
+      'Se paga en los diez días anteriores al 24 de diciembre (Ley 12.840), y un decreto adelanta a junio lo generado hasta mayo: cómo se calcula cada cuota.',
     tag: 'AGUINALDO',
-    updatedAt: '2026-07-18',
+    updatedAt: '2026-11-20',
     sections: [
       {
         heading: 'Qué es el aguinaldo',
@@ -2290,7 +2361,10 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         heading: 'Cuándo se cobra: los dos medios aguinaldos',
-        body: 'El aguinaldo se paga en dos veces al año, en dos medios. Uno se abona alrededor de junio y el otro cerca de fin de año, en diciembre, antes de las fiestas. Cada pago corresponde a un semestre distinto de remuneraciones, y en los dos casos se trata de meses ya trabajados: el de junio cubre aproximadamente el semestre que va de diciembre a mayo, y el de diciembre el semestre de junio a noviembre. Por eso, si empezaste a trabajar en agosto, tu primer aguinaldo llegará en diciembre y será proporcional a los meses trabajados desde tu ingreso. Los plazos exactos de pago están fijados por la normativa, y en la práctica las empresas los liquidan en esas ventanas de junio y diciembre.',
+        body: 'Las dos fechas las fija la norma, no la empresa. La Ley 12.840 obliga a todo patrono a pagar el sueldo anual complementario «dentro de los diez días anteriores al 24 de diciembre de cada año» (artículo 1), y el Decreto-Ley 14.525 faculta al Poder Ejecutivo a que se abone «en dos etapas: lo generado hasta el 31 de mayo dentro del mes de junio y el complemento antes del 24 de diciembre de cada año». Cada año un decreto ejerce esa facultad, así que el tope de la primera cuota es el 30 de junio y el de la segunda es el de la ley, que el decreto del año puede acortar. Cada cuota corresponde a un semestre ya trabajado: la de junio cubre de diciembre a mayo y la de diciembre, de junio a noviembre. Por eso, si empezaste a trabajar en agosto, tu primer aguinaldo llega en diciembre y es proporcional a los meses trabajados desde tu ingreso.',
+        links: [
+          { label: 'La fecha exacta de este año', to: '/cuando-se-cobra-el-aguinaldo-uruguay' },
+        ],
       },
       {
         heading: 'Aportes e impuestos sobre el aguinaldo',
@@ -2319,10 +2393,30 @@ export const redditGuides: readonly Guide[] = [
       },
       { label: 'Entender tu recibo de sueldo', to: '/guias/entender-tu-recibo-de-sueldo-uruguay' },
     ],
+    sources: [
+      {
+        label:
+          'Ley 12.840, artículo 1 — todo patrono paga el sueldo anual complementario «dentro de los diez días anteriores al 24 de diciembre de cada año»; el artículo 2 lo define como «la doceava parte del total de sueldos o salarios abonados»',
+        url: 'https://www.impo.com.uy/bases/leyes/12840-1960',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto-Ley 14.525, artículo 1 — faculta al Poder Ejecutivo a que el aguinaldo se abone «en dos etapas: lo generado hasta el 31 de mayo dentro del mes de junio y el complemento antes del 24 de diciembre de cada año»',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/14525-1976',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'MTSS — «Sueldo Anual Complementario o Aguinaldo»: el criterio del Ministerio y el decreto de cada año',
+        url: 'https://www.gub.uy/ministerio-trabajo-seguridad-social/politicas-y-gestion/derecho-reglamentacion-laboral/derecho-laboral-uruguayo/sueldo-anual-complementario-aguinaldo',
+        publisher: 'MTSS',
+      },
+    ],
   },
   {
     slug: 'licencia-y-salario-vacacional-uruguay',
-    title: 'Licencia y salario vacacional en Uruguay',
+    title: 'Licencia y salario vacacional: 20 días base',
     description:
       'Veinte días de licencia (Ley 12.590) y uno más cada cuatro años desde el quinto. El salario vacacional iguala el jornal líquido y se paga antes de empezar.',
     tag: 'LICENCIA',
@@ -4249,7 +4343,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'elegir-o-cambiar-de-afap-uruguay',
-    title: 'Cómo elegir o cambiarte de AFAP en Uruguay',
+    title: 'Cambiar de AFAP: gratis, mirá la comisión',
     description:
       'A la AFAP entran 5 de los 15 puntos sólo si empezaste a trabajar desde el 1/12/2023; antes todo va al BPS hasta el tope A. Después comparás comisiones.',
     tag: 'AFAP',
@@ -4326,6 +4420,12 @@ export const redditGuides: readonly Guide[] = [
           'BPS — topes de asignaciones computables (consultados el 10 de agosto de 2026: tope A $96.279, B $144.418, C $288.836)',
         url: 'https://www.bps.gub.uy/5478/',
         publisher: 'BPS',
+      },
+      {
+        label:
+          'República AFAP, Traspaso (cambio de AFAP) — "El trámite no tiene ningún costo y el saldo acumulado pasa íntegramente a su nueva AFAP"; a quien ingresó al mercado laboral antes del 1/12/2023 le pide "tener al menos seis meses de aportes registrados en la actual AFAP"',
+        url: 'https://www.rafap.com.uy/mvdcms/Contenidos/Traspaso-cambio-de-AFAP--uc1022',
+        publisher: 'República AFAP',
       },
     ],
   },
@@ -4405,6 +4505,12 @@ export const redditGuides: readonly Guide[] = [
       {
         heading: 'Cuánto es el salario mínimo hoy',
         body: 'El Salario Mínimo Nacional (SMN) es el piso legal por debajo del cual no se puede pagar un sueldo por la jornada completa en Uruguay. En 2026 quedó fijado en $24.572 desde el 1.º de enero y sube a $25.383 desde el 1.º de julio, tras un ajuste adicional de 3,3%. Llevado a otras formas, el valor de mitad de año equivale a un jornal de $1.015,32 y a $126,92 la hora. Estos montos surgen de un decreto del Poder Ejecutivo (Decreto 319/025) y los fija y actualiza el Ministerio de Trabajo y Seguridad Social (MTSS).',
+        links: [
+          {
+            label: 'Línea de pobreza: cuánto hace falta según el hogar',
+            to: '/guias/linea-de-pobreza-uruguay',
+          },
+        ],
       },
       {
         heading: 'Qué es y qué no es el SMN',

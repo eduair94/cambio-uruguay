@@ -287,7 +287,7 @@
     "h1": "İthalat sepeti: Yurtdışı alışverişlerinizin nihai maliyeti",
     "intro": "Amazon, eBay veya MercadoLibre'den ürünler ekleyin (bağlantıyı yapıştırın veya elle girin) ve Uruguay'a ithalat maliyetlerini hesaplayın: kategoriye göre vergiler, bayilik, kargo ve toplam tutar (peso cinsinden).",
     "ogSubtitle": "Çevrimiçi siparişlerinizin vergileri, franchise ücretleri ve kargo ücretleri (peso cinsinden).",
-    "metaDescription": "Amazon, eBay veya MercadoLibre siparişlerinizle bir sepet oluşturun ve Uruguay'daki nihai maliyeti görün: vergiler, 800 USD'lik franchise ücreti, kurye kargo ücreti ve Uruguay pesosu cinsinden toplam tutar, canlı olarak.",
+    "metaDescription": "Amazon, eBay veya MercadoLibre siparişlerinizle bir sepet oluşturun ve Uruguay'daki nihai maliyeti görün: vergiler, 800 USD franchise ücreti, kargo ve toplam tutar (peso cinsinden).",
     "yourCart": "Sepetiniz",
     "clear": "Temizlemek",
     "empty": {
@@ -353,7 +353,8 @@
       "saveHint": "Sepetinizi kaydetmek ve herhangi bir cihazdan görüntülemek için oturum açın."
     },
     "disclaimer": "Tahmini referans. Gerçek vergiler kategoriye, menşe ülkeye ve gümrüğe bağlıdır.",
-    "fullCalculator": "Hesap makinesinin tamamını açın"
+    "fullCalculator": "Hesap makinesinin tamamını açın",
+    "metaTitle": "Sepeti içe aktar: nihai maliyet"
   },
   "share": {
     "label": "Paylaşmak:",
@@ -826,7 +827,7 @@
     "homeDescriptionLive": "Bugün Uruguay doları: {count} döviz bürolarında $U {sell}'den satın alın veya $U {buy}'ye kadar satın, kur her 10 dakikada bir güncellenir. Ayrıca euro, real ve Arjantin pesosu da işlem görmektedir.",
     "homeDescription": "Uruguay'daki dolar kuru bugün her 10 dakikada bir güncellenmektedir. 40'tan fazla döviz bürosundan alış ve satış fiyatlarını karşılaştırın. Montevideo ve tüm Uruguay'daki en iyi USD, EUR, BRL ve ARS kurlarını bulun.",
     "homeKeywords": "Uruguay dolar kuru, USD - UYU, Uruguay döviz kuru, Uruguay döviz büroları, Uruguay'da dolar al, Uruguay'da dolar sat, Montevideo dolar kuru, BROU döviz kuru, Uruguay'daki en iyi döviz kuru",
-    "advancedTitle": "Uruguay'da gelişmiş dolar döviz kuru karşılaştırması",
+    "advancedTitle": "Uruguay'da gelişmiş dolar karşılaştırması",
     "advancedDescription": "Uruguay döviz karşılaştırma aracının gelişmiş görünümü: döviz bürolarını ve para birimlerini filtreleyin, şube haritasını görün ve gerçek zamanlı olarak en iyi USD, EUR ve BRL kurunu bulun.",
     "historicalTitle": "Uruguay'da döviz kuru geçmişi",
     "historicalDescription": "Uruguay'daki tüm döviz bürolarının döviz kurlarının tam geçmişini inceleyin. Gerçek zamanlı olarak güncellenen veriler.",
@@ -844,11 +845,11 @@
     "sucursalesDescription": "Uruguay'daki tüm {count} {origin} şubeleri: her birinin adresi, telefon numarası ve çalışma saatleri, ayrıca o günkü dolar kuru.",
     "sucursalesLocationDescription": "{origin}'nin {location}'de {count} şubesi bulunmaktadır. Her bir şubenin adresi, telefon numarası, çalışma saatleri, güncel dolar kuru ve yol tarifi bilgileri verilmiştir.",
     "sucursalesKeywords": "{origin} şubeleri, {origin} adresleri, {origin} lokasyonları, Uruguay döviz büroları",
-    "sucursalesIndexTitle": "Şube Rehberi - Uruguay'daki Tüm Döviz Büroları",
+    "sucursalesIndexTitle": "Uruguay'daki döviz bürosu şubeleri",
     "sucursalesIndexDescription": "Uruguay'daki tüm döviz bürolarının şubelerinin eksiksiz listesi. Şubelerin konumlarını, adreslerini ve iletişim bilgilerini departmanlara göre bulun.",
     "sucursalesIndexKeywords": "uruguay şube rehberi, uruguay döviz büroları, montevideo şubeleri, canelones şubeleri, uruguay'daki tüm şubeler",
     "compareTitle": "Zaman İçinde Exchange House'ları Karşılaştırın",
-    "compareDescription": "Uruguay'daki çeşitli döviz bürolarında ABD dolarının ve diğer para birimlerinin kurlarının tarihsel gelişimini tek bir grafikte karşılaştırın. Zaman içinde en iyi fiyatı kimin sunduğunu bulun.",
+    "compareDescription": "Tek bir grafikte 4'e kadar borsa: 7 günden tüm geçmişe kadar alım veya satım işlemleri, her birinin en düşük, en yüksek ve ortalama değerleriyle birlikte.",
     "compareKeywords": "Uruguay'daki döviz bürolarını karşılaştırma, Uruguay'da doların gelişimi, kur karşılaştırması, karşılaştırmalı dolar grafiği, Uruguay'daki en iyi döviz bürosu",
     "mapaTitle": "Uruguay'daki döviz bürolarının haritası",
     "mapaDescription": "Uruguay'daki döviz bürolarının interaktif haritası. Size en yakın şubeyi ve bölgenizdeki en iyi ABD doları kurunu bulun.",
@@ -1559,8 +1560,8 @@
     }
   },
   "capture": {
-    "title": "Faydalı mı? Günlük dolar özetine göz atın.",
-    "lead": "En iyi döviz kurları, trendler ve değişiklikler hakkında günde bir e-posta. Ücretsizdir ve istediğiniz zaman aboneliğinizi iptal edebilirsiniz.",
+    "title": "Doların seyrini mi takip ediyorsunuz? Her sabah alın.",
+    "lead": "Uruguay'daki 40'tan fazla döviz bürosundaki en iyi alış ve satış kurlarını, trendleri ve değişiklikleri içeren günde bir e-posta. Ücretsizdir ve istediğiniz zaman aboneliğinizi iptal edebilirsiniz.",
     "dismiss": "Kapalı",
     "aria": "Bültene abone olun"
   },
@@ -1776,10 +1777,12 @@
     "impuestosInversiones": "Yatırım vergileri",
     "proyectos": "Uruguay projeleri",
     "carneDeSalud": "Sağlık sertifikası",
+    "carneManipulacionAlimentos": "Gıda işleme sertifikası",
     "libretaDeConducir": "Sürücü ehliyeti",
     "saludFinanciera": "Finansal sağlık",
     "apps": "Para uygulamaları",
     "appsUtiles": "Faydalı uygulamalar",
+    "appsHechasEnUruguay": "Uruguay'da üretilen uygulamalar",
     "redditTopics": "Reddit'te para konuları",
     "tendencias": "Uruguay'ın bugün aradığı şey",
     "videosEconomia": "Ekonomi videoları",
@@ -1875,6 +1878,7 @@
     "comparativas": "Birebir karşılaştırmalar",
     "seguroObligatorioAuto": "Zorunlu araç sigortası (SOA)",
     "comprarAutoConDeuda": "Vergisi ödenmemiş bir araba satın almak",
+    "transferirAutoCosto": "Uruguay'da araç transfer maliyeti",
     "usedCars": "Satılık ikinci el arabalar",
     "usedCarOpportunities": "İkinci el araba fırsatları",
     "ruidosMolestos": "Gürültü şikayetlerini bildirin",
@@ -1883,6 +1887,7 @@
     "licenciasEspeciales": "Özel izin (Uruguay)",
     "licenciaConstruccion": "İnşaat izni (Uruguay)",
     "horasExtras": "Fazla mesai ücreti (Uruguay)",
+    "teletrabajo": "Uzaktan çalışma yasası (Uruguay)",
     "usedCarRisks": "Borçlu veya kaza hasarlı araçlar",
     "usedCarMarketReport": "İkinci el otomobil piyasası raporu",
     "usedCarValuation": "Arabamın değeri ne kadar?",
@@ -1933,7 +1938,7 @@
   "mejorCasa": {
     "h1": "Bugün Uruguay'da doları nerede değiştirmelisiniz?",
     "subtitle": "Ülkedeki tüm döviz bürolarını ve bankaları karşılaştırarak bugünün en iyi kurunu belirliyoruz.",
-    "metaTitle": "Bugün Uruguay'daki en iyi döviz bürosu: en ucuz dolar",
+    "metaTitle": "Bugünün en iyi döviz bürosu: en ucuz dolar",
     "metaDescription": "Bugün dolar satın almak için en ucuz yer {casa} olup, fiyatı ${rate}'dir. 40'tan fazla evi karşılaştırın ve piyasa ortalamasına göre ${savings} tasarruf edin.",
     "metaDescriptionGeneric": "Uruguay'daki 40'tan fazla döviz bürosu ve bankadaki dolar kurlarını karşılaştırın ve bugün nerede para değiştirebileceğinizi öğrenin.",
     "answer": "Bugün dolar satın almak için en ucuz yer {casa} olup, fiyatı ${rate}'dir. Oradan 1.000 ABD doları satın almak, karşılaştırdığımız {count} döviz büroları ve bankalarının ortalamasına kıyasla yaklaşık ${savings} tasarruf sağlar.",
@@ -1942,7 +1947,7 @@
     "colCasa": "Döviz bürosu",
     "colRate": "Satmak",
     "colSavings": "Tasarruf ile ortalama arasındaki fark",
-    "methodology": "Dolar satış fiyatına (1 ABD doları başına ödediğiniz miktar) göre sıralanmıştır. Tasarruf, o borsada US$ {amount} alımının piyasa ortalamasına kıyasla ne kadar olduğunu göstermektedir. BCU referans kuru ve bankalararası fiyatlar hariç tutulmuştur; halk bu oranlar üzerinden işlem yapamaz. Piyasa medyanından %3'ten fazla sapma gösteren borsalar da hariç tutulmuştur: bunlar genellikle güncellemeyi durdurmuş veya yanlış yorumlanmış borsalardır.",
+    "methodology": "Dolar satış fiyatına (1 ABD doları başına ödediğiniz miktar) göre sıralanmıştır. Tasarruf, o borsadan US$ {amount} satın almanın piyasa ortalamasına kıyasla ne kadar olduğunu gösterir. BCU referans kuru ve bankalararası fiyatlar hariç tutulmuştur; halk bunlarla işlem yapamaz. Piyasa medyanından %3'ten fazla sapma gösteren borsalar da hariç tutulmuştur: bunlar genellikle güncellemeyi durdurmuş veya yanlış yorumlanmış borsalardır. Ve fiyatı en iyi gibi görünse bile, günlerce değişmeyen bir borsa asla sıralamanın başına geçmez: piyasa hareket etmiştir, o ise etmemiştir.",
     "noData": "Şu anda fiyat bilgisi mevcut değil."
   },
   "rateChanges": {

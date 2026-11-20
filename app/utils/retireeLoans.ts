@@ -30,9 +30,10 @@
 //
 //  3. EL CALENDARIO ESTÁ ABIERTO AHORA. El BPS habilitó la renovación anticipada del 1 al 31 de
 //     octubre de 2026 y anunció una tasa cinco puntos más baja para las pasividades más chicas desde
-//     el 1 de noviembre; el BROU hace su campaña de pasivos a fin de año y al 19/10/2026 no había
-//     anunciado la de 2026. La página dice en qué estado está cada cosa el día que se la lee
-//     (`retireeEventStatus`), en vez de una frase que envejece.
+//     el 1 de noviembre; el BROU hace su campaña de pasivos a fin de año: al 19/10/2026 no había
+//     anunciado la de 2026, y el 20/11/2026 ya estaba abierta (eBROU desde el 9/11, sucursales por
+//     dígito en dos rondas; ver `brou-pasivos-2026`). La página dice en qué estado está cada cosa el
+//     día que se la lee (`retireeEventStatus`), en vez de una frase que envejece.
 //
 // LO QUE NO SE COPIA A MANO. El tope de usura viene de la grilla viva del BCU (`/api/bcu-rates`) y
 // las filas que esa grilla no trae —crédito de nómina y retención de haberes— de la lectura fechada
@@ -168,6 +169,12 @@ export const RETIREE_SOURCES: readonly RetireeSource[] = Object.freeze([
     id: 'brou-ui',
     label: 'BROU — Préstamos con Retención en UI (sólo para empleados con convenio)',
     url: 'https://www.brou.com.uy/personas/prestamos/prestamo-consumo/ui',
+  },
+  {
+    id: 'brou-pasivos-2026',
+    label:
+      'BROU — Campaña Préstamos a Pasivos 2026: canales y fechas por dígito (leída el 20/11/2026)',
+    url: 'https://www.brou.com.uy/personas/prestamos/campania-prestamos-a-pasivos-2026',
   },
   {
     id: 'presidencia-brou-2025',
@@ -565,8 +572,8 @@ export const OTHER_LENDERS: readonly OtherLender[] = Object.freeze([
       'Hasta 80 años, cobrando por un banco o una institución de dinero electrónico.',
       'Buenos antecedentes crediticios y el «Contrato Persona» del BPS firmado (se gestiona en sus sucursales).',
     ],
-    rate: '29,20 % + IVA (menos de 10.000 UI) y 29,80 % + IVA (10.000 UI o más)',
-    asOf: 'octubre de 2026',
+    rate: '29,10 % + IVA (menos de 10.000 UI) y 28,30 % + IVA (10.000 UI o más)',
+    asOf: 'noviembre de 2026',
     sourceId: 'anda',
   },
   {
@@ -578,8 +585,8 @@ export const OTHER_LENDERS: readonly OtherLender[] = Object.freeze([
       'Hay que cobrar la pasividad en ANDA o en su tarjeta prepaga.',
       'Se devuelve entero cuando se cobra la pasividad.',
     ],
-    rate: '29,00 % + IVA',
-    asOf: 'octubre de 2026',
+    rate: '26,30 % + IVA',
+    asOf: 'noviembre de 2026',
     sourceId: 'anda',
   },
   {
@@ -669,11 +676,12 @@ export const RETIREE_EVENTS: readonly RetireeEvent[] = Object.freeze([
   {
     id: 'brou-campana',
     who: 'BROU',
-    title: 'Campaña «Préstamos para Pasivos» del BROU',
-    when: 'Fin de año; la de 2026 sin fecha anunciada',
+    title: 'Campaña «Préstamos a Pasivos» 2026 del BROU',
+    when: 'Por eBROU desde el 9 de noviembre de 2026; en sucursales, por dígito, en dos rondas',
+    from: '2026-11-09',
     detail:
-      'La edición 2025 empezó en noviembre, abrió las sucursales el 9 de diciembre —por el dígito verificador de la cédula: del 9 al 15 quienes cobran la pasividad en el BROU, del 16 al 22 los demás— y cerró el 30 de diciembre, a una tasa «en el entorno del 20 % de interés anual en pesos», con una bonificación adicional por eBROU. Quien cobraba menos de $ 30.000 nominales también podía pedirlo por teléfono o WhatsApp, hasta $ 150.000. Al 19 de octubre de 2026 ni el BROU ni Presidencia habían publicado las fechas de la de 2026.',
-    sourceId: 'presidencia-brou-2025',
+      'Por eBROU desde el 9/11. Por WhatsApp (2 1996 000), del 16/11 al 22/12, si cobrás menos de $ 30.000 nominales. En sucursales, dos dígitos verificadores de la cédula por día y en dos rondas: si cobrás la pasividad en el BROU, del 16 al 20 de noviembre y del 9 al 15 de diciembre; si no, del 24 al 30 de noviembre y del 16 al 22 de diciembre. Desde el 23/12, todos los pasivos. Para renovar no exige un porcentaje mínimo de cuotas pagas. La página de la campaña no publica la tasa ni el monto máximo (leída el 20 de noviembre de 2026).',
+    sourceId: 'brou-pasivos-2026',
   },
 ])
 
@@ -840,8 +848,8 @@ export interface RetireeUnpublished {
 export const RETIREE_UNPUBLISHED: readonly RetireeUnpublished[] = Object.freeze([
   {
     id: 'brou-2026',
-    label: 'Las fechas de la campaña 2026 del BROU',
-    why: 'Al 19 de octubre de 2026 no estaban anunciadas, y la página del producto en brou.com.uy contestaba «servicio temporalmente no disponible». Las de 2025 las publicó Presidencia; las de este año, cuando se anuncien.',
+    label: 'La tasa y el monto máximo de la campaña 2026 del BROU',
+    why: 'La página de la campaña dice «la tasa más conveniente» por eBROU y no da una cifra ni un monto máximo (leída el 20 de noviembre de 2026). La de 2025, «en el entorno del 20 %» según Presidencia, no se repite acá como si fuera la de este año.',
   },
   {
     id: 'iva-bps',
@@ -878,7 +886,7 @@ export const RETIREE_FAQ: readonly RetireeFaq[] = Object.freeze([
   {
     id: 'brou-cuando',
     question: '¿Cuándo empiezan los préstamos para jubilados en el BROU?',
-    answer: `La línea con retención para pasivos está abierta todo el año, desde el primer mes de cobro, con tasas vigentes desde el 1 de octubre de 2026. Lo que tiene fecha es la campaña «Préstamos para Pasivos» de fin de año: la de 2025 empezó en noviembre, abrió las sucursales el 9 de diciembre por el dígito verificador de la cédula y cerró el 30 de diciembre. Al 19 de octubre de 2026 el BROU no había anunciado las fechas de la de 2026.`,
+    answer: `La línea con retención para pasivos está abierta todo el año, desde el primer mes de cobro, con tasas vigentes desde el 1 de octubre de 2026. Lo que tiene fecha es la campaña «Préstamos a Pasivos» de fin de año. La de 2026 se pide por eBROU desde el 9 de noviembre; por WhatsApp (2 1996 000), del 16 de noviembre al 22 de diciembre, si cobrás menos de $ 30.000 nominales; y en sucursales por el dígito verificador de la cédula, en dos rondas: si cobrás la pasividad en el BROU, del 16 al 20 de noviembre y del 9 al 15 de diciembre; si no, del 24 al 30 de noviembre y del 16 al 22 de diciembre. Desde el 23 de diciembre, todos los pasivos (página de la campaña, leída el 20 de noviembre de 2026).`,
   },
   {
     id: 'bps-cuanto',

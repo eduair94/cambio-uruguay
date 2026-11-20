@@ -215,7 +215,22 @@ describe('el calendario dice el estado del día', () => {
     expect(retireeEventStatus(byId('renovacion-anticipada'), '2026-10-20')).toBe('vigente')
     expect(retireeEventStatus(byId('tasa-diferencial'), '2026-10-20')).toBe('proximo')
     expect(retireeEventStatus(byId('refinanciacion'), '2026-10-20')).toBe('proximo')
-    expect(retireeEventStatus(byId('brou-campana'), '2026-10-20')).toBe('sin-fecha')
+    // El 19/10 el BROU no había anunciado la de 2026; el 20/11 ya estaba abierta desde el 9/11.
+    expect(retireeEventStatus(byId('brou-campana'), '2026-10-20')).toBe('proximo')
+  })
+
+  it('la campaña 2026 del BROU está abierta desde el 9/11 y dice sus rondas enteras', () => {
+    const campana = byId('brou-campana')
+    expect(retireeEventStatus(campana, '2026-11-08')).toBe('proximo')
+    expect(retireeEventStatus(campana, '2026-11-20')).toBe('vigente')
+    // La ronda de noviembre dura una semana: nunca "desde el 16", que al cerrar ya engaña.
+    expect(campana.detail).toContain('del 16 al 20 de noviembre y del 9 al 15 de diciembre')
+    expect(campana.detail).toContain('del 24 al 30 de noviembre y del 16 al 22 de diciembre')
+    expect(campana.detail).toContain('Desde el 23/12')
+    expect(campana.detail).not.toMatch(/sin fecha/i)
+    expect(retireeSource(campana.sourceId)?.url).toBe(
+      'https://www.brou.com.uy/personas/prestamos/campania-prestamos-a-pasivos-2026'
+    )
   })
 
   it('en noviembre cierra la renovación y abre la diferencial', () => {

@@ -149,10 +149,13 @@ describe('rental catalogue result markup', () => {
   })
 
   it.each(['es', 'en', 'pt'])('has concise, localized metadata for %s', locale => {
-    for (const page of [1, 2, 9999]) {
+    // 175 → 155 el 2026-11-20: con 175 la descripción de la primera página servía 159 y CI seguía
+    // verde. 155 es el presupuesto del resto del sitio, y se mide también en la página 10000, la
+    // última que `rentalCatalogIndexPage` deja indexar: el prefijo «Página 10000. » suma 14.
+    for (const page of [1, 2, 9999, 10000]) {
       const metadata = rentalCatalogMetadata(locale, page)
       expect(`${metadata.title} | Cambio Uruguay`.length).toBeLessThanOrEqual(60)
-      expect(metadata.description.length).toBeLessThanOrEqual(175)
+      expect(metadata.description.length, metadata.description).toBeLessThanOrEqual(155)
     }
     expect(rentalCatalogMetadata(locale, 2).title).not.toBe(rentalCatalogMetadata(locale, 1).title)
   })

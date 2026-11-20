@@ -26,6 +26,16 @@
 
 export const INDEXNOW_HOST = 'cambio-uruguay.com'
 export const INDEXNOW_ENDPOINT = 'https://api.indexnow.org/indexnow'
+/**
+ * Los dos endpoints que nombra indexnow.org/faq; uno basta, el aviso se comparte entre motores.
+ * `INDEXNOW_ENDPOINT` en el entorno o en `app/.env` elige entre ESTOS y nada más: la clave viaja
+ * en el cuerpo y no se le manda a un host cualquiera por una variable mal escrita.
+ */
+export const INDEXNOW_ENDPOINTS = Object.freeze([
+  INDEXNOW_ENDPOINT,
+  'https://www.bing.com/indexnow',
+])
+export const INDEXNOW_ENDPOINT_VAR = 'INDEXNOW_ENDPOINT'
 export const INDEXNOW_MAX_URLS_PER_POST = 10_000
 /** Se entra por el índice y no por `/__sitemap__/es-ES.xml` a mano: sobrevive a un cambio de prefijo. */
 export const SITEMAP_INDEX_URL = `https://${INDEXNOW_HOST}/sitemap_index.xml`
@@ -138,57 +148,157 @@ export function filterApexUrls(urls, host = INDEXNOW_HOST) {
  * Era 100 y bajó a 25 el 19/10/2026: con 100 se aceptaron cinco tandas y la sexta volvió 429, con
  * 3.377 URLs viejas todavía en cola. A 25 por deploy el atraso tarda más, pero el atraso no es lo
  * que importa: una página nueva sale primero (ver `planSubmission`), y es la que Bing no conoce.
+ *
+ * Desde el 20/11/2026 es el TECHO de la tanda, no la tanda: después de un 429 se vuelve de a 1 y
+ * se duplica con cada envío aceptado (`initialBatch`/`batchAfter`), y el atraso ya no se manda.
  */
 export const INDEXNOW_MAX_NEW_PER_RUN = 25
 
+const DAY_MS = 24 * 60 * 60 * 1000
+
 /**
- * Cuánto callar después de un 429. Medido el 22/9/2026: tras dos envíos de 3.691 URLs, el tercero
- * (ya de 500) también volvió 429 media hora después — el receptor castiga al host, no al lote. Un
- * deploy más no lo arregla; un día de silencio sí puede. El estado guarda `blockedUntil` y hasta
- * esa hora no hay POST.
+ * La primera espera después de un 429: un día. Medido el 22/9/2026: tras dos envíos de 3.691 URLs,
+ * el tercero (ya de 500) también volvió 429 media hora después. Un deploy más no lo arregla; el
+ * estado guarda `blockedUntil` y hasta esa hora no hay POST.
+ *
+ * Y un día fijo tampoco alcanzó: del 28/10 al 19/11/2026 los 17 POST de 25 URLs volvieron 429, uno
+ * por día, siempre las mismas 25. Ahora la espera se duplica con cada 429 seguido (`backoffMs`).
  */
-export const INDEXNOW_BACKOFF_MS = 24 * 60 * 60 * 1000
+export const INDEXNOW_BACKOFF_MS = DAY_MS
+/**
+ * A lo sumo un POST aceptado cada 24 h. El umbral del receptor es POR DÍA ("each participating
+ * search engine sets its own daily submission thresholds per site", indexnow.org/faq) y el
+ * historial lo confirma (con 100 por deploy se aceptaron cinco tandas y la sexta volvió 429),
+ * pero el script corre en cada deploy del app, hasta 8 por día. Sin este espacio el arranque lento
+ * duplicaría la tanda por DEPLOY (1+2+4+8+16+25 en una tarde) y volvería al 429 el mismo día. Con
+ * él la tanda crece una vez por día: 1, 2, 4, 8, 16, 25. Lo recién publicado que espera no se
+ * marca como conocido, así que sale al día siguiente con la misma prioridad.
+ */
+export const INDEXNOW_MIN_GAP_MS = DAY_MS
+/** Tope de la espera exponencial: 1, 2, 4, 8 y desde el quinto 429 seguido, 14 días. */
+export const INDEXNOW_BACKOFF_MAX_MS = 14 * DAY_MS
+/** Tope a lo que pida un `Retry-After`, para que un valor absurdo no apague el envío para siempre. */
+export const INDEXNOW_RETRY_AFTER_MAX_MS = 30 * DAY_MS
+
+/**
+ * Cuánto callar después del 429 número `strikes` (seguidos): lo mayor entre la espera exponencial y
+ * el `Retry-After` del receptor. indexnow.org/faq: "Pause submissions and retry after the time
+ * specified in the Retry-After header".
+ */
+export function backoffMs(strikes, retryAfterMs = null) {
+  const n = Number.isInteger(strikes) && strikes > 0 ? strikes : 1
+  const exponential = Math.min(INDEXNOW_BACKOFF_MAX_MS, INDEXNOW_BACKOFF_MS * 2 ** (n - 1))
+  const hinted =
+    typeof retryAfterMs === 'number' && Number.isFinite(retryAfterMs) && retryAfterMs > 0
+      ? Math.min(INDEXNOW_RETRY_AFTER_MAX_MS, retryAfterMs)
+      : 0
+  return Math.max(exponential, hinted)
+}
+
+/** `Retry-After` en ms: segundos enteros o una fecha HTTP. `null` si falta, no parsea o ya pasó. */
+export function parseRetryAfter(value, nowMs) {
+  if (typeof value !== 'string') return null
+  const text = value.trim()
+  if (!text) return null
+  if (/^\d+$/.test(text)) {
+    const ms = Number(text) * 1000
+    return ms > 0 ? ms : null
+  }
+  if (!/[a-z]/i.test(text)) return null
+  const at = Date.parse(text)
+  const ms = at - nowMs
+  return Number.isFinite(ms) && ms > 0 ? ms : null
+}
+
+/**
+ * La tanda de la próxima corrida, como un arranque lento: después de un 429 arranca en 1 y cada
+ * envío aceptado la duplica hasta `cap`; cada 429 la parte al medio. indexnow.org/faq: "each
+ * participating search engine sets its own daily submission thresholds per site" — el umbral no se
+ * publica y se encuentra así. Medido el 20/11/2026: con la misma clave, 25 URLs daban 429 hacía un
+ * mes y 1 URL dio 200 — pero ese POST de 1 salió de OTRA IP que el VPS y un mes después, así que no
+ * separa un límite por tamaño de un castigo por IP o por host. Si una tanda de 1 desde el VPS
+ * también vuelve 429, la palanca es `INDEXNOW_ENDPOINT` (ver `resolveEndpoint`), no este número.
+ * La tanda crece a lo sumo una vez por día (`INDEXNOW_MIN_GAP_MS`).
+ * Una tanda que no se llenó (había menos novedades) no achica la siguiente.
+ */
+export function initialBatch(saved, cap) {
+  if (Number.isInteger(saved?.batch)) return Math.min(cap, Math.max(1, saved.batch))
+  if (saved?.blockedUntil || saved?.strikes > 0) return 1
+  return cap
+}
+
+export function batchAfter(accepted, sent, batch, cap) {
+  if (accepted) return Math.min(cap, Math.max(1, batch, sent * 2))
+  return Math.max(1, Math.floor(sent / 2))
+}
 
 /**
  * Qué mandar en esta corrida: las URLs del sitemap que no figuran en el estado guardado (lo que ya
  * se anunció), recortadas al tope. Devuelve también el estado que habría que guardar SI el envío
  * sale bien (lo anunciado antes más lo de ahora), para que un rechazo no marque como anunciado lo
- * que no llegó. Una URL que desaparece del sitemap deja de contar sola.
+ * que no llegó. Una URL que desaparece del sitemap deja de contar sola como ANUNCIADA, pero sigue
+ * en `known`: las fichas de /casa y de catálogo entran y salen del sitemap (200 ↔ 404), y si
+ * `known` las olvidara volverían como "recién publicadas" y gastarían la tanda chica re-anunciando
+ * páginas que el receptor ya tiene. `known` crece sólo con lo enviado, a lo sumo una tanda por día.
  *
  * Primero va lo RECIÉN PUBLICADO: las URLs que no estaban en ningún sitemap anterior (`known`).
  * Antes iba todo en el orden del sitemap, así que una página publicada hoy esperaba detrás de
- * 3.377 URLs viejas que Bing ya conoce por el sitemap, a 100 por deploy y con un 429 cada tanto:
- * semanas para avisar justo lo único que el aviso adelanta. Sin `known` (un estado de antes de esta
- * regla) no se puede separar lo nuevo del atraso: esa corrida va en orden y deja `known` armado
- * con el sitemap entero, así que desde la siguiente lo nuevo pasa adelante. Lo recién publicado que
- * no entró por el tope NO se marca como conocido, para que siga teniendo prioridad.
+ * 3.377 URLs viejas que Bing ya conoce por el sitemap. Lo recién publicado que no entró por el tope
+ * NO se marca como conocido, para que siga teniendo prioridad.
+ *
+ * Con `backlog: false` (lo que usa `runIndexNow` desde el 20/11/2026) lo viejo no se manda NUNCA,
+ * ni para llenar la tanda: indexnow.org/faq dice que el protocolo "is not intended for
+ * retroactive submission of older changes" y "not designed for submitting every URL on your site
+ * at once". Esas URLs Bing las tiene por el sitemap. Sin `known` no hay nada recién publicado.
  */
-export function planSubmission(urls, previous = [], cap = INDEXNOW_MAX_NEW_PER_RUN, known = null) {
+export function planSubmission(
+  urls,
+  previous = [],
+  cap = INDEXNOW_MAX_NEW_PER_RUN,
+  known = null,
+  { backlog: withBacklog = true } = {}
+) {
   const announced = new Set(previous)
   const fresh = urls.filter(url => !announced.has(url))
   const knownSet = known ? new Set(known) : null
   const brandNew = knownSet ? fresh.filter(url => !knownSet.has(url)) : []
-  const backlog = knownSet ? fresh.filter(url => knownSet.has(url)) : fresh
-  const toSend = [...brandNew, ...backlog].slice(0, cap)
+  const older = knownSet ? fresh.filter(url => knownSet.has(url)) : fresh
+  const toSend = (withBacklog ? [...brandNew, ...older] : brandNew).slice(0, cap)
   const current = new Set(urls)
   const nextState = [...previous.filter(url => current.has(url)), ...toSend]
-  const nextKnown = [...new Set([...(known ?? urls), ...toSend])].filter(url => current.has(url))
+  const nextKnown = [...new Set([...(known ?? urls), ...toSend])]
   return {
     toSend,
     pending: fresh.length - toSend.length,
     brandNew: brandNew.length,
+    older: older.length,
     nextState,
     nextKnown,
   }
 }
 
+/** Una tanda guardada sólo vale si es un entero razonable; lo demás es "no hay tanda guardada". */
+const MAX_SAVED_BATCH = 10_000
+
 /**
- * El archivo de estado: `{ submittedAt, urls: [...], known?: [...], blockedUntil? }`. `urls` es lo
- * anunciado; `known`, todo lo que alguna vez estuvo en el sitemap (`null` si el estado es de antes
- * de que existiera). Cualquier cosa ilegible vale "nunca se anunció nada y no hay castigo vigente".
+ * El archivo de estado: `{ submittedAt, urls, known?, blockedUntil?, strikes?, batch?, lastStatus? }`.
+ * `urls` es lo anunciado; `known`, todo lo que alguna vez estuvo en el sitemap (`null` si el estado
+ * es de antes de que existiera); `strikes`, los 429 seguidos; `batch`, la tanda de la próxima
+ * corrida; `submittedAt`, el último POST aceptado (`INDEXNOW_MIN_GAP_MS`). Cualquier cosa ilegible
+ * vale "nunca se anunció nada y no hay castigo vigente".
+ *
+ * Un estado con `blockedUntil` y sin `strikes` es la forma de antes del 20/11/2026, escrita después
+ * de un mes de 429 seguidos: cuenta como al menos un 429, así el próximo espera 2 días y no 1.
  */
 export function parseState(text) {
-  const empty = { urls: [], known: null, blockedUntil: null }
+  const empty = {
+    urls: [],
+    known: null,
+    blockedUntil: null,
+    strikes: 0,
+    batch: null,
+    submittedAt: null,
+  }
   try {
     const parsed = JSON.parse(text)
     if (!parsed || typeof parsed !== 'object') return empty
@@ -202,9 +312,37 @@ export function parseState(text) {
       typeof parsed.blockedUntil === 'string' && !Number.isNaN(Date.parse(parsed.blockedUntil))
         ? parsed.blockedUntil
         : null
-    return { urls, known, blockedUntil }
+    const strikes =
+      Number.isInteger(parsed.strikes) && parsed.strikes >= 0
+        ? parsed.strikes
+        : blockedUntil
+          ? 1
+          : empty.strikes
+    const batch =
+      Number.isInteger(parsed.batch) && parsed.batch >= 1 && parsed.batch <= MAX_SAVED_BATCH
+        ? parsed.batch
+        : null
+    const submittedAt =
+      typeof parsed.submittedAt === 'string' && !Number.isNaN(Date.parse(parsed.submittedAt))
+        ? parsed.submittedAt
+        : null
+    return { urls, known, blockedUntil, strikes, batch, submittedAt }
   } catch {
     return empty
+  }
+}
+
+/**
+ * Lee el archivo de estado para el CLI. Sólo "no existe" (`ENOENT`) es un primer deploy y vale
+ * `null`; cualquier otro error (permisos, disco) se lanza para que `runIndexNow` aborte sin pisar
+ * el archivo y sin perder el castigo vigente.
+ */
+export function readStateFile(readFile, location) {
+  try {
+    return readFile(location, 'utf8')
+  } catch (error) {
+    if (error?.code === 'ENOENT') return null
+    throw error
   }
 }
 
@@ -255,6 +393,35 @@ export function isEnabled(env = {}, dotenvText = '') {
   return readEnvFlag(dotenvText, INDEXNOW_ENABLED_VAR) === '1'
 }
 
+/**
+ * El endpoint, mismo orden que la compuerta (entorno, después `.env`). Sólo uno de
+ * `INDEXNOW_ENDPOINTS`: cualquier otro valor cae al de siempre y devuelve una `note` para el log.
+ * Existe para cambiar de receptor desde el VPS sin desplegar código si api.indexnow.org siguiera
+ * contestando 429 a una tanda de 1.
+ */
+export function resolveEndpoint(env = {}, dotenvText = '') {
+  const fromProcess = env?.[INDEXNOW_ENDPOINT_VAR]
+  const raw =
+    fromProcess !== undefined && fromProcess !== ''
+      ? fromProcess
+      : readEnvFlag(dotenvText, INDEXNOW_ENDPOINT_VAR)
+  const value = typeof raw === 'string' ? raw.trim() : ''
+  if (!value) return { endpoint: INDEXNOW_ENDPOINT, note: null }
+  if (INDEXNOW_ENDPOINTS.includes(value)) {
+    return {
+      endpoint: value,
+      note:
+        value === INDEXNOW_ENDPOINT ? null : `indexnow: ${INDEXNOW_ENDPOINT_VAR} selects ${value}.`,
+    }
+  }
+  return {
+    endpoint: INDEXNOW_ENDPOINT,
+    note:
+      `indexnow: ${INDEXNOW_ENDPOINT_VAR}=${JSON.stringify(value.slice(0, 120))} is not one of ` +
+      `${INDEXNOW_ENDPOINTS.join(', ')}; using ${INDEXNOW_ENDPOINT}.`,
+  }
+}
+
 async function fetchText(fetchImpl, url) {
   const res = await fetchImpl(url, {
     headers: { 'user-agent': 'cambio-uruguay-indexnow/1.0 (+https://cambio-uruguay.com)' },
@@ -293,7 +460,14 @@ export async function collectUrls({
   return { ok: true, childUrl, urls: kept, dropped }
 }
 
-/** POST de cada tanda. Registra el estado; nunca lanza — un 4xx es un resultado, no una excepción. */
+/** Lo que el log muestra del cuerpo de un rechazo: una línea, a lo sumo 300 caracteres. */
+const REJECTION_BODY_MAX = 300
+
+/**
+ * POST de cada tanda. Registra el estado; nunca lanza — un 4xx es un resultado, no una excepción.
+ * De un rechazo guarda además el `Retry-After` y el cuerpo: durante un mes de 429 el log decía sólo
+ * "HTTP 429" y nadie podía ver qué pedía el receptor.
+ */
 export async function submitPayloads({ fetch: fetchImpl, payloads, endpoint = INDEXNOW_ENDPOINT }) {
   const results = []
   for (const payload of payloads) {
@@ -305,11 +479,28 @@ export async function submitPayloads({ fetch: fetchImpl, payloads, endpoint = IN
         signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       })
       // 200 = OK, 202 = aceptado con la clave pendiente de validar; lo demás es rechazo.
-      results.push({
-        status: res.status,
-        ok: res.status === 200 || res.status === 202,
-        urls: payload.urlList.length,
-      })
+      const ok = res.status === 200 || res.status === 202
+      const result = { status: res.status, ok, urls: payload.urlList.length }
+      if (!ok) {
+        result.retryAfter = null
+        result.body = ''
+        try {
+          const header = res.headers?.get?.('retry-after')
+          if (typeof header === 'string' && header.trim()) result.retryAfter = header.trim()
+        } catch {
+          // Sin cabeceras legibles no hay Retry-After; la espera exponencial alcanza.
+        }
+        try {
+          const text = typeof res.text === 'function' ? await res.text() : ''
+          result.body = String(text ?? '')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, REJECTION_BODY_MAX)
+        } catch {
+          // Un cuerpo que no se puede leer no cambia el veredicto.
+        }
+      }
+      results.push(result)
     } catch (error) {
       results.push({
         status: 0,
@@ -332,7 +523,9 @@ const EMPTY = { urls: 0, chunks: 0, responses: [] }
  * `fetch` no tiene default a propósito: el CLI pasa `globalThis.fetch` y un test que no lo pasa
  * tiene que abortar, no salir a Internet (la primera versión hizo un POST real desde vitest).
  *
- *   status: 'disabled' | 'aborted' | 'dry-run' | 'submitted' | 'rejected'
+ *   status: 'disabled' | 'aborted' | 'backoff' | 'spaced' | 'nothing-new' | 'dry-run' | 'submitted'
+ *           | 'rejected'
+ *   ('spaced' = hubo un POST aceptado hace menos de `INDEXNOW_MIN_GAP_MS`; no se envía ni se escribe)
  */
 export async function runIndexNow({
   fetch: fetchImpl,
@@ -345,8 +538,8 @@ export async function runIndexNow({
   endpoint = INDEXNOW_ENDPOINT,
   host = INDEXNOW_HOST,
   // Estado entre corridas (lo ya anunciado): `read()` devuelve el texto o null, `write(text)`
-  // persiste. Sin estado inyectado se comporta como si nunca se hubiera anunciado nada, pero igual
-  // respeta el tope por corrida.
+  // persiste. Sin estado inyectado no hay `known`, así que no se envía nada: sin saber qué estaba
+  // antes en el sitemap no se puede saber qué es nuevo.
   state = null,
   maxNewPerRun = INDEXNOW_MAX_NEW_PER_RUN,
   now = () => new Date().toISOString(),
@@ -370,30 +563,64 @@ export async function runIndexNow({
       log(`indexnow: aborted, ${collected.reason}. Nothing sent.`)
       return { status: 'aborted', reason: collected.reason, ...EMPTY }
     }
-    let previous = []
-    let known = null
-    let blockedUntil = null
+    let saved = parseState('')
     try {
       const text = state && typeof state.read === 'function' ? state.read() : null
-      const saved = text ? parseState(text) : parseState('')
-      previous = saved.urls
-      known = saved.known
-      blockedUntil = saved.blockedUntil
+      if (text) saved = parseState(text)
     } catch (error) {
-      log(
-        `indexnow: state unreadable, treating everything as new: ${String(error?.message || error)}`
-      )
+      // Un archivo que existe y no se puede leer no es un primer deploy: tratarlo así lo pisaría
+      // con un estado vacío y perdería el castigo vigente. No se envía ni se escribe nada.
+      const reason = `state unreadable: ${String(error?.message || error)}`
+      log(`indexnow: ${reason}; nothing sent, state left as it is.`)
+      return { status: 'aborted', reason, ...EMPTY }
     }
+    const { urls: previous, known, blockedUntil, strikes } = saved
     if (blockedUntil && Date.parse(blockedUntil) > Date.parse(now())) {
-      log(`indexnow: backing off after a 429 until ${blockedUntil}; no POST.`)
+      log(
+        `indexnow: backing off after ${strikes || 1} consecutive 429(s) until ${blockedUntil}; no POST.`
+      )
       return { status: 'backoff', urls: 0, chunks: 0, responses: [] }
     }
-    const plan = planSubmission(collected.urls, previous, maxNewPerRun, known)
+    const { submittedAt } = saved
+    const elapsed = submittedAt ? Date.parse(now()) - Date.parse(submittedAt) : Number.NaN
+    // Una fecha en el futuro (reloj corrido) no traba el envío: sólo cuenta un pasado reciente.
+    if (elapsed >= 0 && elapsed < INDEXNOW_MIN_GAP_MS) {
+      log(`indexnow: last accepted POST at ${submittedAt}, under 24 h ago; no POST.`)
+      return { status: 'spaced', urls: 0, chunks: 0, responses: [] }
+    }
+    const writeState = next => {
+      if (dryRun || !state || typeof state.write !== 'function') return
+      try {
+        state.write(JSON.stringify(next))
+      } catch (error) {
+        log(`indexnow: could not persist state: ${String(error?.message || error)}`)
+      }
+    }
+    if (known === null) {
+      // Sin la lista de lo que ya estaba en el sitemap no se puede saber qué es nuevo, y mandar
+      // el sitio entero es lo que el receptor castiga: se anota el sitemap de hoy y no se envía.
+      log(
+        `indexnow: no record of earlier sitemaps; recording today's ${collected.urls.length} URLs as known, announcing none.`
+      )
+      writeState({
+        submittedAt,
+        urls: previous,
+        known: collected.urls,
+        strikes,
+        ...(saved.batch ? { batch: saved.batch } : {}),
+      })
+      return { status: 'nothing-new', urls: 0, chunks: 0, responses: [] }
+    }
+    const cap = Math.max(1, Math.floor(maxNewPerRun) || INDEXNOW_MAX_NEW_PER_RUN)
+    const batch = initialBatch(saved, cap)
+    const plan = planSubmission(collected.urls, previous, batch, known, { backlog: false })
+    const waitingNew = plan.brandNew - plan.toSend.length
     log(
       `indexnow: ${collected.urls.length} URLs in ${collected.childUrl}, ${previous.length} already announced, ` +
-        `${plan.toSend.length} new to send now` +
-        (plan.brandNew ? ` (${plan.brandNew} first published since the last run go first)` : '') +
-        (plan.pending ? `, ${plan.pending} left for the next deploy` : '') +
+        `${plan.brandNew} first published since the last run, ${plan.toSend.length} to send now to ${endpoint} ` +
+        `(batch ${batch}${strikes ? ` after ${strikes} strike(s)` : ''})` +
+        (waitingNew > 0 ? `, ${waitingNew} new left for the next deploy` : '') +
+        (plan.older ? `; ${plan.older} older URLs not re-announced (sitemap covers them)` : '') +
         (collected.dropped.length ? `; ${collected.dropped.length} off-host/duplicate dropped` : '')
     )
     if (plan.toSend.length === 0) {
@@ -417,29 +644,45 @@ export async function runIndexNow({
     const responses = await submitPayloads({ fetch: fetchImpl, payloads, endpoint })
     for (const response of responses) {
       log(
-        `indexnow: POST ${response.urls} URLs → HTTP ${response.status}${response.ok ? '' : ' (rejected)'}${response.error ? ` ${response.error}` : ''}`
+        `indexnow: POST ${response.urls} URLs → HTTP ${response.status}${response.ok ? '' : ' (rejected)'}` +
+          (response.error ? ` ${response.error}` : '') +
+          (response.retryAfter ? ` retry-after=${response.retryAfter}` : '') +
+          (response.body ? ` body=${JSON.stringify(response.body)}` : '')
       )
     }
     const allOk = responses.every(response => response.ok)
-    const throttled = responses.some(response => response.status === 429)
-    if (state && typeof state.write === 'function' && (allOk || throttled)) {
-      // Sólo un envío aceptado marca URLs como anunciadas; un 429 no marca nada pero sí deja
-      // escrito hasta cuándo callar, para que el deploy siguiente no vuelva a pegar.
-      try {
-        // `known` en el 429 queda como estaba (o, si no existía, el sitemap de hoy): lo recién
-        // publicado que no llegó sigue siendo nuevo para la próxima corrida.
-        const next = allOk
-          ? { submittedAt: now(), urls: plan.nextState, known: plan.nextKnown }
-          : {
-              submittedAt: null,
-              urls: previous,
-              known: known ?? collected.urls,
-              blockedUntil: new Date(Date.parse(now()) + INDEXNOW_BACKOFF_MS).toISOString(),
-            }
-        state.write(JSON.stringify(next))
-      } catch (error) {
-        log(`indexnow: could not persist state: ${String(error?.message || error)}`)
-      }
+    const throttle = responses.find(response => response.status === 429)
+    const sent = plan.toSend.length
+    if (allOk) {
+      // Sólo un envío aceptado marca URLs como anunciadas.
+      writeState({
+        submittedAt: now(),
+        urls: plan.nextState,
+        known: plan.nextKnown,
+        strikes: 0,
+        batch: batchAfter(true, sent, batch, cap),
+        lastStatus: responses.at(-1)?.status ?? 200,
+      })
+    } else if (throttle) {
+      // Un 429 no marca nada pero deja escrito hasta cuándo callar y con qué tanda volver. `known`
+      // queda como estaba: lo recién publicado que no llegó sigue siendo nuevo la próxima vez.
+      const nowMs = Date.parse(now())
+      const nextStrikes = strikes + 1
+      const wait = backoffMs(nextStrikes, parseRetryAfter(throttle.retryAfter, nowMs))
+      const nextBatch = batchAfter(false, sent, batch, cap)
+      const until = new Date(nowMs + wait).toISOString()
+      log(
+        `indexnow: throttled (${nextStrikes} consecutive 429s); silent until ${until}, then batch ${nextBatch}.`
+      )
+      writeState({
+        submittedAt: null,
+        urls: previous,
+        known,
+        blockedUntil: until,
+        strikes: nextStrikes,
+        batch: nextBatch,
+        lastStatus: 429,
+      })
     }
     return {
       status: allOk ? 'submitted' : 'rejected',

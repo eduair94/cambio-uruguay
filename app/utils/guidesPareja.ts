@@ -99,11 +99,11 @@ export const parejaGuides: readonly Guide[] = [
     description:
       'La unión concubinaria de la Ley 18.246: convivencia de al menos cinco años, reconocimiento judicial y los derechos patrimoniales y de pensión que genera.',
     tag: 'CONCUBINATO',
-    updatedAt: '2026-07-18',
+    updatedAt: '2026-11-20',
     sections: [
       {
         heading: 'Qué es la unión concubinaria',
-        body: 'La unión concubinaria está regulada por la Ley 18.246, vigente en Uruguay desde 2008. Reconoce que dos personas que conviven de forma estable, en una relación de tipo afectivo y sexual, exclusiva, singular y a la vista de todos, sin estar casadas entre sí, pueden generar derechos y obligaciones parecidos en varios aspectos a los del matrimonio. Aplica tanto a parejas del mismo sexo como de distinto sexo. La ley vino a dar amparo jurídico a una realidad muy común: mucha gente en Uruguay arma su vida en pareja sin pasar por el Registro Civil, y esa convivencia, cumplidos ciertos requisitos, tiene consecuencias legales.',
+        body: 'La unión concubinaria está regulada por la Ley 18.246, vigente en Uruguay desde 2008. Reconoce que dos personas que conviven en una relación afectiva de índole sexual, exclusiva, singular, estable y permanente (art. 2), sin estar casadas entre sí, pueden generar derechos y obligaciones parecidos en varios aspectos a los del matrimonio. Aplica tanto a parejas del mismo sexo como de distinto sexo. La ley vino a dar amparo jurídico a una realidad muy común: mucha gente en Uruguay arma su vida en pareja sin pasar por el Registro Civil, y esa convivencia, cumplidos ciertos requisitos, tiene consecuencias legales.',
       },
       {
         heading: 'El requisito de convivencia',
@@ -111,11 +111,11 @@ export const parejaGuides: readonly Guide[] = [
       },
       {
         heading: 'El reconocimiento no es automático',
-        body: 'Este es el punto que más confusión genera. Convivir muchos años no equivale a estar casado, ni crea por sí solo una sociedad de bienes entre la pareja. Para que la unión concubinaria despliegue sus efectos patrimoniales hace falta, en general, un reconocimiento judicial de la unión, que puede promoverse en vida por uno o ambos concubinos, o incluso después. A partir de ese reconocimiento inscripto la comunidad de bienes se vuelve efectiva frente a terceros. En otras palabras: la convivencia es el hecho, pero el reconocimiento es lo que le da forma legal. Para trámites de seguridad social, la prueba de la convivencia se hace ante el organismo correspondiente.',
+        body: 'Este es el punto que más confusión genera. Convivir muchos años no equivale a estar casado, ni crea por sí solo una sociedad de bienes entre la pareja. Para que la unión concubinaria despliegue sus efectos patrimoniales hace falta, en general, un reconocimiento judicial de la unión, que puede promoverse en vida por uno o ambos concubinos, o incluso después. A partir de ese reconocimiento inscripto la comunidad de bienes se vuelve efectiva frente a terceros. En otras palabras: la convivencia es el hecho, pero el reconocimiento es lo que le da forma legal. Para la seguridad social el camino es otro: la prueba de los requisitos se hace en principio ante el organismo previsional (art. 20, en la redacción de la Ley 20.212), y el BPS pide probar un mínimo de cinco años de convivencia hasta la fecha del fallecimiento o la desaparición, con testigos, declaraciones de los domicilios compartidos y documentos como recibos de servicios, contratos de arrendamiento o estados de cuenta. Una sentencia alcanza ante el BPS cuando el organismo fue citado como parte en el juicio, que es lo que ese mismo artículo exige para que el fallo le sea vinculante: quien quiera hacerlo valer ante un instituto de previsión tiene que emplazarlo en el proceso.',
       },
       {
         heading: 'Qué derechos genera',
-        body: 'Reconocida la unión, la ley genera varios derechos. Nace una comunidad de bienes que se rige, en lo aplicable, por las normas de la sociedad conyugal, salvo que la pareja pacte otra forma de administración. Surgen deberes de asistencia recíproca y derecho a alimentos entre los concubinos en ciertos casos. En materia de seguridad social, el conviviente puede acceder a pensión ante el fallecimiento del otro, probando la convivencia ante el BPS. Y en materia sucesoria, el concubino sobreviviente puede tener derechos hereditarios que la normativa reconoce, comparables a los de un cónyuge. Son efectos importantes, pero atados al cumplimiento de los requisitos legales.',
+        body: 'Reconocida la unión, la ley genera varios derechos, y cada uno tiene su artículo. El reconocimiento inscripto da nacimiento a una sociedad de bienes que se rige, en lo aplicable, por las normas de la sociedad conyugal, salvo que los concubinos opten de común acuerdo por otra forma de administración (art. 5). Los concubinos se deben asistencia recíproca personal y material y contribuyen a los gastos del hogar según su situación económica; disuelta la unión, la obligación de auxilios subsiste por un plazo que no puede ser mayor al de la convivencia, y sólo si uno la necesita para subsistir (art. 3). En materia sucesoria, el art. 11 no dice "algo parecido": le da al concubino sobreviviente los mismos derechos que el art. 1026 del Código Civil consagra para el cónyuge, y si concurre con un cónyuge supérstite los dos integran la misma parte, en proporción a los años de convivencia. El mismo artículo agrega un derecho real de uso y habitación sobre la vivienda del causante o común, para el concubino mayor de sesenta años sin medios propios suficientes que convivió los últimos diez años en forma ininterrumpida.',
       },
       {
         heading: 'En qué se diferencia del matrimonio',
@@ -136,6 +136,27 @@ export const parejaGuides: readonly Guide[] = [
         to: '/guias/legitima-y-herederos-forzosos-uruguay',
       },
       { label: 'Jubilación y AFAP', to: '/guias/jubilacion-y-afap-como-funciona-uruguay' },
+      // El art. 6 c) del Decreto-Ley 15.597 deja al concubino sobreviviente constituir bien de
+      // familia a favor de los hijos menores o con discapacidad de la unión.
+      { label: 'Bien de familia: que no embarguen la casa', to: '/guias/bien-de-familia-uruguay' },
+    ],
+    // Esta guía afirmaba reglas legales —cinco años, sociedad de bienes, derechos sucesorios— y no
+    // citaba ni una norma, que es justo lo que el campo `sources` existe para evitar (ver su
+    // comentario en `guides.ts`). Verificado el 2026-11-14 artículo por artículo en IMPO y releído
+    // el 2026-11-20 (art. 2 y art. 20 contra IMPO; la prueba ante el BPS contra su propia página).
+    sources: [
+      {
+        label:
+          'Ley 18.246 de 27/12/2007 — convivencia ininterrumpida de al menos cinco años (art. 1), caracteres e impedimentos (art. 2), asistencia recíproca y auxilios por un plazo no mayor al de la convivencia (art. 3), sociedad de bienes desde el reconocimiento inscripto (art. 5) y derechos sucesorios del art. 1026 del Código Civil, con uso y habitación a los sesenta años y diez de convivencia (art. 11); la prueba se hace "en principio en el organismo previsional", y quien invoque el fallo judicial ante un instituto "deberá necesariamente emplazarlo" o no le será vinculante (art. 20, en la redacción de la Ley 20.212)',
+        url: 'https://www.impo.com.uy/bases/leyes/18246-2007',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Qué necesito para probar un concubinato — "un mínimo de 5 años de convivencia hasta la fecha de fallecimiento o desaparición", con testigos, domicilios y documentos; "en caso de que el BPS haya sido citado como parte en el proceso judicial, la sentencia dictada es válida y suficiente"',
+        url: 'https://www.bps.gub.uy/20593/que-necesito-para-probar-un-concubinato.html',
+        publisher: 'BPS',
+      },
     ],
   },
   {
@@ -321,6 +342,10 @@ export const parejaGuides: readonly Guide[] = [
         to: '/guias/regimen-patrimonial-matrimonio-uruguay',
       },
       { label: 'Separación de bienes', to: '/guias/separacion-de-bienes-uruguay' },
+      {
+        label: 'Las tres vías del divorcio',
+        to: '/guias/divorcio-por-sola-voluntad-uruguay',
+      },
       { label: 'Cómo funciona una sucesión', to: '/guias/como-funciona-una-sucesion-uruguay' },
     ],
   },
@@ -364,6 +389,186 @@ export const parejaGuides: readonly Guide[] = [
         label: 'Legítima y herederos forzosos',
         to: '/guias/legitima-y-herederos-forzosos-uruguay',
       },
+    ],
+  },
+  {
+    slug: 'divorcio-por-sola-voluntad-uruguay',
+    title: 'Divorcio por sola voluntad: una audiencia',
+    description:
+      'El divorcio por sola voluntad lleva un escrito y una audiencia desde el 1/1/2026; el de mutuo consentimiento, tres audiencias y dos plazos de tres meses.',
+    tag: 'DIVORCIO',
+    updatedAt: '2026-11-20',
+    sections: [
+      {
+        heading: 'Las tres vías del artículo 187',
+        body: 'El matrimonio se disuelve por la muerte de uno de los cónyuges o «por el divorcio legalmente pronunciado» (Código Civil, artículo 186), y el artículo 187 dice que «el divorcio solo puede pedirse» de tres maneras: «por las causas enunciadas en el artículo 148 de este Código», «por el mutuo consentimiento de los cónyuges» o «por la sola voluntad de cualquiera de los cónyuges». Las tres terminan en una sentencia, y las dos últimas se tramitan, textual, ante «el Juez Letrado de su domicilio»: el Código no prevé un divorcio ante escribano. Lo que cambia entre una vía y otra no es el resultado, que es el mismo vínculo disuelto, sino cuántas veces hay que comparecer, cuánto se espera y qué hay que probar.',
+      },
+      {
+        heading: 'Por sola voluntad: un escrito y una audiencia',
+        body: 'Es la vía del numeral 3 y la que menos pide. El texto vigente dice que «será necesario que el cónyuge comparezca por escrito ante el Juez Letrado de su domicilio, expresando su voluntad de poner fin al vínculo matrimonial»; que «el juez decretará la separación provisional de los cónyuges y convocará a audiencia»; y que en esa audiencia «se consultará al cónyuge que inició el proceso si persiste en su voluntad de divorciarse», y si la mantiene «se dictará sentencia decretando el divorcio». No hace falta el acuerdo de la otra persona, ni una causa, ni una antigüedad mínima del matrimonio, ni un tiempo de separación previa: nada de eso está escrito en la norma. Lo que sí está es la contracara: si quien inició el proceso no comparece a la audiencia, «se lo tendrá por desistido del proceso» (artículo 227 del Código General del Proceso), y ese desistimiento «coloca a las situaciones jurídicas objeto del mismo en el estado que tenían antes de la demanda y no impide la renovación de aquél» (artículo 227.2), o sea que se puede volver a pedir. Esta redacción es nueva: la dio el artículo 474 de la Ley 20.446, del 16 de diciembre de 2025, y rige desde el 1.º de enero de 2026, porque esa ley «regirá a partir del 1° de enero de 2026» salvo donde fije otra fecha (artículo 3) y para el numeral 3 no fijó ninguna.',
+      },
+      {
+        heading: 'Por mutuo consentimiento: tres comparecencias y seis meses de plazos',
+        body: 'La vía del acuerdo es la más larga de las tres, y el tiempo lo pone la propia norma. El numeral 2 exige «que los cónyuges comparezcan personalmente en el mismo acto ante el Juez Letrado de su domicilio, a quien expondrán su deseo de separarse»; el juez propone los medios conciliatorios y, si no dan resultado, «decretará desde luego la separación provisoria de los cónyuges». De ahí sale un acta, y al final de ella el juez «fijará nueva audiencia con plazo de tres meses» para que los cónyuges manifiesten que persisten; de esa segunda audiencia sale otra acta y se cita «en un nuevo plazo de tres meses, a fin de que hagan manifestación definitiva de su voluntad de divorciarse». Si no comparecen a hacerla, «se dará por terminado el procedimiento». Son tres comparecencias y dos plazos de tres meses escritos en la ley: seis meses que no son demora del juzgado. Por eso, aun habiendo acuerdo, hay parejas que eligen la vía de la sola voluntad, que no tiene ninguna espera escrita.',
+      },
+      {
+        heading: 'Por causal: las once del artículo 148',
+        body: 'El numeral 1 remite a las causas del artículo 148, que son once: adulterio de cualquiera de los cónyuges; la tentativa de uno contra la vida del otro, «pronunciada la sentencia criminal condenatoria»; «sevicias o injurias graves», donde la norma agrega que «la violencia basada en género contra la cónyuge y el abuso sexual contra hijas e hijos se considerarán, en todos los casos, injurias graves»; la propuesta para prostituir al otro; el conato de prostituir a los hijos o menores a cargo; «riñas y disputas continuas» que hagan insoportable la vida común; la condena a penitenciaría por más de diez años; el abandono voluntario del hogar que «haya durado más de tres años»; «la separación de hecho, ininterrumpida y voluntaria de por lo menos uno de los cónyuges durante más de tres años, sea cual fuere el motivo»; la incapacidad declarada por enfermedad mental permanente e irreversible, con los requisitos del propio numeral; y el cambio de identidad de género posterior al matrimonio. Esta vía es la única que obliga a probar algo, y por eso hoy casi nadie la usa pudiendo usar el numeral 3. Hay además un camino aparte: «transcurridos tres años de una sentencia de separación personal, cualquiera de los cónyuges podrá solicitar la conversión en divorcio» (artículo 185).',
+      },
+      {
+        heading: 'Con hijos menores no hay sentencia sin guarda, visitas y pensión',
+        body: 'Este es el requisito que más sorprende y el que más demora los divorcios con hijos, y está en una sola frase: «En los autos no se dictará sentencia definitiva si antes no se acredita que se ha resuelto la situación de los hijos menores de edad o incapaces, en cuanto a su guarda, régimen de visitas y pensión alimenticia» (artículo 167). No es un requisito de la vía del acuerdo nada más: el artículo 189 lo extiende a las dos, «en los casos previstos por los numerales 2º y 3º del artículo 187». O sea que se puede pedir el divorcio sin acuerdo sobre nada, pero no se puede obtener la sentencia sin esos tres puntos resueltos. El mismo artículo aclara que el tiempo que eso lleve «no se computará a los efectos de la perención de la instancia»: el expediente no se cae mientras se resuelve.',
+        links: [
+          { label: 'Cuánto es la pensión y cómo se fija', to: '/pension-alimenticia-uruguay' },
+        ],
+      },
+      {
+        heading: 'Lo que no se puede pactar, y lo que pasa después',
+        body: 'La facultad de pedir el divorcio no se puede firmar en contra: «para la ley es nula toda renuncia o reserva que se establezca en las capitulaciones matrimoniales, respecto de la facultad de pedir el divorcio» (artículo 188). Después de la sentencia, «disuelto legalmente el matrimonio, los cónyuges quedan facultados para contraer nueva unión matrimonial», y «los cónyuges divorciados podrán volver a unirse entre sí, celebrando nuevo matrimonio» (artículo 190). Y hay un efecto que suele olvidarse: «ejecutoriada la sentencia de divorcio, no podrá el excónyuge, usar el apellido del otro» (artículo 191). Los bienes son un capítulo propio y no se liquidan en el mismo trámite: la sociedad conyugal se disuelve y se liquida, con los gananciales en principio por mitades, y eso tiene su propia guía.',
+        links: [
+          {
+            label: 'Cómo se reparten los bienes',
+            to: '/guias/division-de-bienes-en-el-divorcio-uruguay',
+          },
+        ],
+      },
+      {
+        heading: 'Hace falta abogado, y la norma no dice cuánto sale',
+        body: 'El escrito con el que empieza cualquiera de las vías lleva firma letrada: «la parte deberá comparecer a todos los actos del proceso asistida por abogado, debiendo el tribunal rechazar los escritos que no lleven firma letrada» (artículo 37.1 del Código General del Proceso). Las excepciones del 37.2 no alcanzan al divorcio: son para los Juzgados de Paz y de Conciliación en asuntos menores a 20 UR y para localidades del interior donde no haya tres abogados. Cuánto cuesta el divorcio, en cambio, no está en ninguna norma: los honorarios no son un precio público, así que esta guía no publica una cifra que no pueda sostener con una fuente. Si no podés pagar un abogado particular, el camino son los consultorios jurídicos gratuitos.',
+        links: [
+          { label: 'Dónde conseguir un abogado gratis', to: '/guias/abogado-gratis-uruguay' },
+        ],
+      },
+      {
+        heading: 'Información general, no asesoramiento legal',
+        body: 'Esta guía resume el texto vigente del Código Civil y del Código General del Proceso, con el enlace a cada artículo en las fuentes, y no constituye asesoramiento legal. Cada divorcio tiene su propia historia de bienes, hijos, deudas y domicilios, y hay situaciones —violencia, bienes en el exterior, un matrimonio celebrado fuera del país— donde el camino concreto lo define un abogado mirando el caso. Lo que esta guía sí puede hacer es que llegues a esa consulta sabiendo qué vía te sirve, qué plazos fija la ley y qué tiene que estar resuelto antes de que haya sentencia.',
+      },
+    ],
+    steps: [
+      {
+        name: 'Presentá el escrito ante el Juez Letrado de tu domicilio',
+        text: 'El numeral 3 del artículo 187 pide un escrito en el que expreses tu voluntad de poner fin al vínculo matrimonial, con firma de abogado (artículo 37.1 del Código General del Proceso).',
+      },
+      {
+        name: 'El juez decreta la separación provisional y convoca a audiencia',
+        text: 'Es lo que manda el mismo numeral 3: la separación provisional de los cónyuges y una audiencia, en la que se dictan las medidas provisionales que correspondan.',
+      },
+      {
+        name: 'Resolvé la situación de los hijos menores',
+        text: 'Sin guarda, régimen de visitas y pensión alimenticia acreditados no hay sentencia definitiva (artículos 167 y 189), aunque el expediente no se cae mientras eso se resuelve.',
+      },
+      {
+        name: 'Comparecé a la audiencia y confirmá tu voluntad',
+        text: 'Si mantenés la voluntad de poner fin al vínculo, se dicta sentencia de divorcio; si no comparecés, se te tiene por desistido del proceso (artículo 227 del Código General del Proceso).',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Puedo divorciarme si mi pareja no quiere?',
+        a: 'Sí. El artículo 187 admite el divorcio «por la sola voluntad de cualquiera de los cónyuges»: se presenta un escrito ante el Juez Letrado del domicilio y el juez convoca a una audiencia en la que se consulta a quien inició el proceso si persiste. No se le pide conformidad a la otra parte ni se le exige una causa a quien pide.',
+      },
+      {
+        q: '¿Cuánto demora un divorcio en Uruguay?',
+        a: 'Depende de la vía. El mutuo consentimiento tiene dos plazos de tres meses escritos en el artículo 187, o sea seis meses de esperas legales entre la primera audiencia y la manifestación definitiva. La vía de la sola voluntad no tiene ninguna espera escrita: es un escrito y una audiencia. Con hijos menores, en las dos vías la sentencia espera a que estén resueltas guarda, visitas y pensión (artículo 167).',
+      },
+      {
+        q: '¿Se puede divorciar ante escribano?',
+        a: 'No. El artículo 187 prevé tres vías y todas terminan en una sentencia judicial; las dos de acuerdo o de voluntad unilateral se tramitan ante el Juez Letrado del domicilio. Tampoco se puede pactar lo contrario: es nula toda renuncia a la facultad de pedir el divorcio puesta en las capitulaciones matrimoniales (artículo 188).',
+      },
+      {
+        q: '¿Hay que estar separados tres años para divorciarse?',
+        a: 'Sólo si vas por causal. Los tres años son el requisito del numeral 9 del artículo 148, «la separación de hecho, ininterrumpida y voluntaria de por lo menos uno de los cónyuges durante más de tres años», y de la conversión de una separación personal en divorcio (artículo 185). Las vías de mutuo consentimiento y de sola voluntad no piden ningún tiempo de separación previa.',
+      },
+      {
+        q: '¿Puedo volver a casarme después del divorcio?',
+        a: 'Sí, y también con la misma persona: «disuelto legalmente el matrimonio, los cónyuges quedan facultados para contraer nueva unión matrimonial» y «los cónyuges divorciados podrán volver a unirse entre sí, celebrando nuevo matrimonio» (artículo 190). Lo que no se conserva es el apellido: ejecutoriada la sentencia, el excónyuge no puede usar el apellido del otro (artículo 191).',
+      },
+    ],
+    sources: [
+      {
+        label:
+          'Código Civil, artículo 187 — «el divorcio solo puede pedirse» por las causas del artículo 148, «por el mutuo consentimiento de los cónyuges» o «por la sola voluntad de cualquiera de los cónyuges», con el procedimiento de cada vía: tres comparecencias y dos plazos de tres meses en el mutuo consentimiento, escrito y una audiencia en la sola voluntad',
+        url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/187',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Código Civil, artículo 186 — el matrimonio se disuelve «por la muerte de uno de los cónyuges» o «por el divorcio legalmente pronunciado»',
+        url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/186',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 20.446, artículo 474 — dio nueva redacción al numeral 3º) del artículo 187 del Código Civil',
+        url: 'https://www.impo.com.uy/bases/leyes/20446-2025/474',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 20.446, artículo 3 — «esta ley regirá a partir del 1° de enero de 2026, excepto en aquellas disposiciones para las cuales, en forma expresa, se establezca otra fecha de vigencia»',
+        url: 'https://www.impo.com.uy/bases/leyes/20446-2025/3',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Código Civil, artículo 148 — las once causales, con el plazo de tres años del numeral 9 y la violencia basada en género como injuria grave «en todos los casos»',
+        url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/148',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Código Civil, artículo 167 — «en los autos no se dictará sentencia definitiva si antes no se acredita que se ha resuelto la situación de los hijos menores de edad o incapaces, en cuanto a su guarda, régimen de visitas y pensión alimenticia»',
+        url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/167',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Código Civil, artículo 189 — «en los casos previstos por los numerales 2º y 3º del artículo 187, se cumplirá también con lo previsto por el artículo 167»',
+        url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/189',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Código Civil, artículo 185 — «transcurridos tres años de una sentencia de separación personal, cualquiera de los cónyuges podrá solicitar la conversión en divorcio»',
+        url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/185',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Código Civil, artículo 188 — «es nula toda renuncia o reserva que se establezca en las capitulaciones matrimoniales, respecto de la facultad de pedir el divorcio»',
+        url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/188',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Código Civil, artículos 190 y 191 — los divorciados «quedan facultados para contraer nueva unión matrimonial», incluso entre sí, y «ejecutoriada la sentencia de divorcio, no podrá el excónyuge, usar el apellido del otro»',
+        url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/190',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Código General del Proceso, artículo 37 — «la parte deberá comparecer a todos los actos del proceso asistida por abogado», con las excepciones del 37.2 para los Juzgados de Paz y de Conciliación y para el interior sin tres abogados',
+        url: 'https://www.impo.com.uy/bases/codigo-general-proceso/15982-1988/37',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Código General del Proceso, artículo 227 — el desistimiento del proceso «coloca a las situaciones jurídicas objeto del mismo en el estado que tenían antes de la demanda y no impide la renovación de aquél»',
+        url: 'https://www.impo.com.uy/bases/codigo-general-proceso/15982-1988/227',
+        publisher: 'IMPO',
+      },
+    ],
+    related: [
+      {
+        label: 'División de bienes en el divorcio',
+        to: '/guias/division-de-bienes-en-el-divorcio-uruguay',
+      },
+      { label: 'Pensión alimenticia', to: '/pension-alimenticia-uruguay' },
+      {
+        label: 'Régimen patrimonial del matrimonio',
+        to: '/guias/regimen-patrimonial-matrimonio-uruguay',
+      },
+      { label: 'Abogado gratis', to: '/guias/abogado-gratis-uruguay' },
     ],
   },
 ]

@@ -376,7 +376,8 @@
         "proteger-ahorros-de-la-inflacion",
         "unidad-indexada-explicada",
         "ui-ur-bpc-diferencias",
-        "tasa-de-politica-monetaria-uruguay"
+        "tasa-de-politica-monetaria-uruguay",
+        "linea-de-pobreza-uruguay"
       ],
       "terms": [
         {
@@ -774,6 +775,7 @@
         "cuenta-conjunta-o-separada-pareja-uruguay",
         "hablar-de-dinero-en-pareja-uruguay",
         "division-de-bienes-en-el-divorcio-uruguay",
+        "divorcio-por-sola-voluntad-uruguay",
         "proteger-tu-patrimonio-en-pareja-uruguay",
         "asignacion-familiar-doble-uruguay"
       ],
@@ -827,6 +829,10 @@
         {
           "to": "/vender-mi-auto-uruguay",
           "label": "Vender mi auto"
+        },
+        {
+          "to": "/cuanto-sale-transferir-un-auto-uruguay",
+          "label": "Cuánto sale transferir un auto"
         },
         {
           "to": "/multas-de-transito-y-patente-uruguay",
@@ -993,7 +999,8 @@
         "cancelar-prestamo-antes-de-tiempo-uruguay",
         "me-compraron-la-deuda-uruguay",
         "saldo-a-favor-tarjeta-de-credito-uruguay",
-        "como-saber-si-tengo-deudas-uruguay"
+        "como-saber-si-tengo-deudas-uruguay",
+        "bien-de-familia-uruguay"
       ],
       "terms": [
         {
@@ -1052,6 +1059,10 @@
           "label": "Calculadora de aguinaldo"
         },
         {
+          "to": "/herramientas/calculadora-subsidio-por-enfermedad",
+          "label": "Calculadora del subsidio por enfermedad"
+        },
+        {
           "to": "/seguro-de-paro-uruguay",
           "label": "Seguro de paro"
         },
@@ -1066,6 +1077,10 @@
         {
           "to": "/horas-extras-uruguay",
           "label": "Horas extras"
+        },
+        {
+          "to": "/teletrabajo-uruguay",
+          "label": "Teletrabajo"
         },
         {
           "to": "/feriados-que-se-corren-uruguay",
@@ -1544,6 +1559,10 @@
           "label": "Registrar una marca"
         },
         {
+          "to": "/apps-hechas-en-uruguay",
+          "label": "Apps hechas en Uruguay"
+        },
+        {
           "to": "/ropa-por-kilo-uruguay",
           "label": "Ropa por kilo y fardos"
         },
@@ -1771,6 +1790,10 @@
         {
           "to": "/carne-de-salud-uruguay",
           "label": "Carné de salud"
+        },
+        {
+          "to": "/carne-de-manipulacion-de-alimentos-uruguay",
+          "label": "Carné de manipulación de alimentos"
         },
         {
           "to": "/a-quien-le-reclamo-uruguay",
