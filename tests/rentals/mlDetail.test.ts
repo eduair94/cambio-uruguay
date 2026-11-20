@@ -6,23 +6,36 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // the app database; every other test here is pure and never touches it.
 const db = vi.hoisted(() => ({
   docs: [] as Array<Record<string, unknown>>,
-  finds: [] as Array<{ filter: Record<string, unknown>; projection: Record<string, number> }>,
+  finds: [] as Array<{ filter: Record<string, unknown>; projection: Record<string, number>; options: Record<string, unknown> }>,
   stored: null as Record<string, unknown> | null,
+  // What every `updateOne` / `updateMany` reports as modified.
+  modified: 1,
+  // The index (0-based) of the `updateOne` call that rejects, as a transient Mongo error would.
+  throwOnUpdate: null as number | null,
+  // What the repair's `find` rejects with, as a time limit exceeded would.
+  findError: null as Error | null,
   updates: [] as Array<{ filter: unknown; update: Record<string, Record<string, unknown>>; options: { arrayFilters: Array<Record<string, unknown>> } }>,
+  manyUpdates: [] as Array<{ filter: unknown; update: unknown; options?: unknown }>,
 }));
 vi.mock("../../classes/appdb", () => ({
   appConnection: () => ({
     collection: () => ({
       find: (filter: Record<string, unknown>, options: { projection?: Record<string, number> } = {}) => {
         const projection = options.projection ?? {};
-        db.finds.push({ filter, projection });
+        db.finds.push({ filter, projection, options });
         const hidden = Object.keys(projection).filter(field => projection[field] === 0);
+        if (db.findError) { const error = db.findError; return { toArray: async () => { throw error; } }; }
         return { toArray: async () => db.docs.map(doc => Object.fromEntries(Object.entries(doc).filter(([field]) => !hidden.includes(field)))) };
       },
       findOne: async () => db.stored,
       updateOne: async (filter: unknown, update: Record<string, Record<string, unknown>>, options: { arrayFilters: Array<Record<string, unknown>> }) => {
         db.updates.push({ filter, update, options });
-        return { modifiedCount: 1 };
+        if (db.throwOnUpdate === db.updates.length - 1) throw new Error("connection reset");
+        return { modifiedCount: db.modified };
+      },
+      updateMany: async (filter: unknown, update: unknown, options?: unknown) => {
+        db.manyUpdates.push({ filter, update, options });
+        return { modifiedCount: db.modified };
       },
     }),
   }),
@@ -52,6 +65,8 @@ import {
   parseMlRentalPin,
   parseMlRentalPublishedAgo,
   prioritizeMlDetailTargets,
+  repairMlFreshAt,
+  runMlFreshAtRepair,
   writeMlDetailDescription,
   writeMlDetailPublishedAt,
   writeMlDetailSeller,
@@ -384,22 +399,59 @@ describe("putting the page's text back on the advert", () => {
 
 describe("writing the page's text on the stored advert", () => {
   const target = { key: "propiedad", listingId: "mercadolibre:MLU703761475" };
-  beforeEach(() => { db.stored = null; db.updates = []; });
+  beforeEach(() => { db.stored = null; db.updates = []; db.modified = 1; db.throwOnUpdate = null; });
+  afterEach(() => { db.throwOnUpdate = null; vi.restoreAllMocks(); });
 
   it("sets the publication day and the store only where the advert has none", async () => {
     expect(await writeMlDetailPublishedAt(target, "2026-10-09")).toBe(true);
     expect(db.updates[0]!.update.$set).toEqual({ "offers.$[o].publishedAt": "2026-10-09" });
     expect(db.updates[0]!.options.arrayFilters).toEqual([{ "o.listingId": target.listingId, "o.publishedAt": null }]);
+    // The day moves the property's freshAt at once (updates[1], next test); the seller writes follow.
     expect(await writeMlDetailSeller(target, "Remax Único")).toBe(true);
     // A "particular" only the title's claim made goes first, while the placeholder still marks the advert…
-    expect(db.updates[1]!.update.$set).toEqual({ "offers.$[o].sellerType": "desconocido" });
-    expect(db.updates[1]!.options.arrayFilters).toEqual([{ "o.listingId": target.listingId, "o.sellerName": "Mercado Libre", "o.sellerType": "particular" }]);
+    expect(db.updates[2]!.update.$set).toEqual({ "offers.$[o].sellerType": "desconocido" });
+    expect(db.updates[2]!.options.arrayFilters).toEqual([{ "o.listingId": target.listingId, "o.sellerName": "Mercado Libre", "o.sellerType": "particular" }]);
     // …then the store over the placeholder, without the owner-direct claim it contradicts.
-    expect(db.updates[2]!.update.$set).toEqual({ "offers.$[o].sellerName": "Remax Único", "offers.$[o].ownerDirect": null });
-    expect(db.updates[2]!.options.arrayFilters).toEqual([{ "o.listingId": target.listingId, "o.sellerName": "Mercado Libre" }]);
+    expect(db.updates[3]!.update.$set).toEqual({ "offers.$[o].sellerName": "Remax Único", "offers.$[o].ownerDirect": null });
+    expect(db.updates[3]!.options.arrayFilters).toEqual([{ "o.listingId": target.listingId, "o.sellerName": "Mercado Libre" }]);
     expect(await writeMlDetailPublishedAt(target, "hace un mes")).toBe(false);
     expect(await writeMlDetailSeller(target, "")).toBe(false);
-    expect(db.updates).toHaveLength(3);
+    expect(db.updates).toHaveLength(4);
+  });
+
+  it("recomputes a single-offer property's freshAt from the day it just wrote, as the harvest would", async () => {
+    expect(await writeMlDetailPublishedAt(target, "2026-10-09")).toBe(true);
+    expect(db.updates).toHaveLength(2);
+    // Only a one-advert property: with more, the newest day of the others decides, and the harvest does it.
+    expect(db.updates[1]!.filter).toEqual({ key: target.key, "offers.1": { $exists: false } });
+    // freshnessOf for one offer, with the two-argument $ifNull production's MongoDB 4.4 accepts.
+    expect(db.updates[1]!.update).toEqual([
+      { $set: { freshAt: { $ifNull: [{ $max: "$offers.publishedAt" }, { $ifNull: [{ $max: "$offers.firstSeen" }, "$freshAt"] }] } } },
+    ]);
+    expect(db.updates[1]!.options).toBeUndefined();
+  });
+
+  // The day is already written when the recompute fails: throwing would lose every page read so far
+  // in the run (`saveMlDetails` comes after the loop), and the next run's repair fixes the freshAt.
+  it("still reports the day written when the freshAt recompute fails", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    db.throwOnUpdate = 1;
+    await expect(writeMlDetailPublishedAt(target, "2026-10-09")).resolves.toBe(true);
+    expect(db.updates).toHaveLength(2);
+    expect(warn).toHaveBeenCalledWith("[rentals-ml-detail] freshAt no recalculado", target.key, expect.any(Error));
+  });
+
+  it("still rejects when the publication day itself could not be written", async () => {
+    db.throwOnUpdate = 0;
+    await expect(writeMlDetailPublishedAt(target, "2026-10-09")).rejects.toThrow("connection reset");
+    expect(db.updates).toHaveLength(1);
+  });
+
+  it("leaves freshAt alone when the publication day changed nothing", async () => {
+    db.modified = 0;
+    expect(await writeMlDetailPublishedAt(target, "2026-10-09")).toBe(false);
+    expect(db.updates).toHaveLength(1);
+    expect(db.updates[0]!.update.$set).toEqual({ "offers.$[o].publishedAt": "2026-10-09" });
   });
 
   it("puts the description on an advert that shows none, and leaves one that does", async () => {
@@ -412,6 +464,70 @@ describe("writing the page's text on the stored advert", () => {
     db.stored = { offers: [{ listingId: target.listingId, details: { description: "Ya tiene" } }] };
     expect(await writeMlDetailDescription(target, "Luminoso")).toBe(false);
     expect(db.updates).toHaveLength(2);
+  });
+});
+
+// 2026-11-20: 1.852 single-advert properties of production kept the day we first saw them as their
+// freshAt after the item page gave the publication day, so "publicado en los últimos N días" (which
+// reads the stored freshAt) dropped or kept them by the wrong day. The repair puts the day back.
+describe("repairing the freshAt the publication day did not move", () => {
+  beforeEach(() => { db.docs = []; db.finds = []; db.manyUpdates = []; db.modified = 1; db.findError = null; });
+  afterEach(() => { db.findError = null; vi.restoreAllMocks(); });
+
+  const SINGLE_WITH_DAY = {
+    "offers.1": { $exists: false },
+    "offers.0.publishedAt": { $regex: /^\d{4}-\d{2}-\d{2}/ },
+  };
+
+  it("finds the single-advert properties whose freshAt is not their advert's day, a bounded batch", async () => {
+    db.docs = [{ key: "a" }, { key: "b" }];
+    db.modified = 2;
+    expect(await repairMlFreshAt()).toBe(2);
+    expect(db.finds).toHaveLength(1);
+    expect(db.finds[0]!.filter).toEqual({
+      ...SINGLE_WITH_DAY,
+      $expr: { $ne: ["$freshAt", { $arrayElemAt: ["$offers.publishedAt", 0] }] },
+    });
+    expect(db.finds[0]!.options).toEqual({ projection: { _id: 0, key: 1 }, limit: 1_000, maxTimeMS: 30_000 });
+    expect(db.manyUpdates).toEqual([
+      {
+        filter: { key: { $in: ["a", "b"] }, ...SINGLE_WITH_DAY },
+        update: [{ $set: { freshAt: { $arrayElemAt: ["$offers.publishedAt", 0] } } }],
+        // The write has the same time bound as the scan: no statement of the repair is unbounded.
+        options: { maxTimeMS: 30_000 },
+      },
+    ]);
+  });
+
+  // A repair that fails every hour must show in the run's one summary line, not only in a pm2 log
+  // that rotates: otherwise the backlog it exists for would never clear and nobody would know.
+  it("reports a failed repair for the run's summary instead of throwing", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    db.findError = new Error("operation exceeded time limit");
+    await expect(runMlFreshAtRepair(1_000, false)).resolves.toEqual({ repaired: null, error: "operation exceeded time limit" });
+    expect(db.manyUpdates).toHaveLength(0);
+    expect(error).toHaveBeenCalledWith("[rentals-ml-detail] no se pudo reparar freshAt", "operation exceeded time limit");
+    db.findError = null;
+    db.docs = [{ key: "a" }];
+    await expect(runMlFreshAtRepair(1_000, true)).resolves.toEqual({ repaired: 1, error: "" });
+  });
+
+  it("honours the limit it is given", async () => {
+    db.docs = [{ key: "a" }];
+    await repairMlFreshAt(25);
+    expect(db.finds[0]!.options.limit).toBe(25);
+    // 0 is "no limit" to MongoDB: never a scan that returns the whole collection.
+    await repairMlFreshAt(0);
+    expect(db.finds[1]!.options.limit).toBe(1);
+  });
+
+  it("only counts on a dry run, and writes nothing when nothing disagrees", async () => {
+    db.docs = [{ key: "a" }, { key: "b" }, { key: "c" }];
+    expect(await repairMlFreshAt(1_000, true)).toBe(3);
+    expect(db.manyUpdates).toHaveLength(0);
+    db.docs = [];
+    expect(await repairMlFreshAt()).toBe(0);
+    expect(db.manyUpdates).toHaveLength(0);
   });
 });
 

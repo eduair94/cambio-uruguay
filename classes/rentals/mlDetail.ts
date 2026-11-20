@@ -542,8 +542,19 @@ export async function writeMlDetailImages(target: Pick<MlDetailTarget, "key" | "
 }
 
 /**
- * The advert's publication day, right away, only where it has none. The property's `freshAt` (what
- * "Más recientes" sorts by) is recomputed when the harvest next writes it, from the same day.
+ * `freshnessOf` (dedupe.ts) for a property's offers, in aggregation: the newest publication day,
+ * else the newest day we first saw an offer, else the stored value. Two-argument `$ifNull`, nested:
+ * production runs MongoDB 4.4, and the three-argument form only exists from 5.0.
+ */
+const FRESHNESS_OF_OFFERS = { $ifNull: [{ $max: "$offers.publishedAt" }, { $ifNull: [{ $max: "$offers.firstSeen" }, "$freshAt"] }] };
+
+/**
+ * The advert's publication day, right away, only where it has none; and with it the property's
+ * `freshAt` (what "Más recientes" sorts by and "publicado en los últimos N días" filters on, stored),
+ * which kept the day we first saw it until the harvest next wrote it. Only on a one-advert property:
+ * the 4 of ~89.700 with more are left to the harvest, which weighs the other adverts' days.
+ * A failed recompute is only logged: the day is written, the next run's `repairMlFreshAt` fixes the
+ * freshAt, and throwing here would lose every page the run read so far (saved after the loop).
  */
 export async function writeMlDetailPublishedAt(target: Pick<MlDetailTarget, "key" | "listingId">, publishedAt: string): Promise<boolean> {
   if (!DAY.test(publishedAt)) return false;
@@ -552,7 +563,57 @@ export async function writeMlDetailPublishedAt(target: Pick<MlDetailTarget, "key
     { $set: { "offers.$[o].publishedAt": publishedAt } },
     { arrayFilters: [{ "o.listingId": target.listingId, "o.publishedAt": null }] }
   );
-  return result.modifiedCount > 0;
+  if (result.modifiedCount <= 0) return false;
+  try {
+    await listings().updateOne({ key: target.key, "offers.1": { $exists: false } }, [{ $set: { freshAt: FRESHNESS_OF_OFFERS } }]);
+  } catch (error) {
+    console.warn("[rentals-ml-detail] freshAt no recalculado", target.key, error);
+  }
+  return true;
+}
+
+/** A one-advert property whose advert states a publication day (`YYYY-MM-DD…`). */
+const SINGLE_OFFER_WITH_DAY = { "offers.1": { $exists: false }, "offers.0.publishedAt": { $regex: /^\d{4}-\d{2}-\d{2}/ } };
+const FIRST_OFFER_DAY = { $arrayElemAt: ["$offers.publishedAt", 0] };
+
+/**
+ * The one-advert properties whose stored `freshAt` is not their advert's publication day: written
+ * before `writeMlDetailPublishedAt` moved it (1.852 on 2026-11-20, 1.058 of them older than the day),
+ * or by any other path that set the day alone. At most `limit` per call, one collection scan; the
+ * filter is repeated on the write so a property that gained an advert in between is left alone.
+ * Returns how many it repaired, or with `dryRun` how many it would (and writes nothing).
+ */
+export async function repairMlFreshAt(limit = 1_000, dryRun = false): Promise<number> {
+  const rows = await listings()
+    .find(
+      { ...SINGLE_OFFER_WITH_DAY, $expr: { $ne: ["$freshAt", FIRST_OFFER_DAY] } },
+      // A limit of 0 means "no limit" to MongoDB: never the whole collection in one call.
+      { projection: { _id: 0, key: 1 }, limit: Math.max(1, Math.floor(limit) || 1), maxTimeMS: 30_000 }
+    )
+    .toArray();
+  const keys = rows.map(row => String(row.key));
+  if (dryRun || !keys.length) return keys.length;
+  const result = await listings().updateMany(
+    { key: { $in: keys }, ...SINGLE_OFFER_WITH_DAY },
+    [{ $set: { freshAt: FIRST_OFFER_DAY } }],
+    { maxTimeMS: 30_000 }
+  );
+  return result.modifiedCount;
+}
+
+/**
+ * `repairMlFreshAt` for the job's run: its failure fails nothing (the detail reads still happen)
+ * and comes back as `error`, so it lands in the run's one summary line and not only in a pm2 log
+ * that rotates. `repaired` is null when it failed.
+ */
+export async function runMlFreshAtRepair(limit: number, dryRun: boolean): Promise<{ repaired: number | null; error: string }> {
+  try {
+    return { repaired: await repairMlFreshAt(limit, dryRun), error: "" };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("[rentals-ml-detail] no se pudo reparar freshAt", message);
+    return { repaired: null, error: message || "error" };
+  }
 }
 
 /**

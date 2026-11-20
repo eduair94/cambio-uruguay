@@ -10,6 +10,11 @@
 // "Mercado Libre"; la descripción, sólo con `RENTALS_ML_DETAIL_TEXT=1` y sólo si el aviso no tiene.
 // La cosecha los reaplica al volver a ver el aviso.
 //
+// Con el `publishedAt` mueve también el `freshAt` de una propiedad de un solo aviso, como lo
+// calcularía la cosecha, y antes de leer repara hasta 1.000 que quedaron con el día en que la vimos
+// primero (`repairMlFreshAt`, `freshAtRepaired` en el resumen, y `freshAtError` si falló sin cortar
+// la corrida): el filtro "publicado en los últimos N días" lee el `freshAt` guardado.
+//
 // Las fichas se piden directo a mercadolibre.com.uy desde el VPS, con la UA del bot y 2 s entre
 // pedidos —como currency-autos-detail (:11), que lee de la misma IP—; por eso esta corre a los :35.
 // Cinco fallas seguidas cortan la corrida: un portal que empieza a negarse no se insiste.
@@ -35,6 +40,7 @@ import {
   parseMlRentalImages,
   parseMlRentalPin,
   parseMlRentalPublishedAgo,
+  runMlFreshAtRepair,
   saveMlDetails,
   writeMlDetailBedrooms,
   writeMlDetailDescription,
@@ -61,6 +67,10 @@ async function main(): Promise<void> {
   const now = new Date();
   const meta = await appConnection().collection("rentalmetas").findOne({ key: RENTAL_META_KEY }, { projection: { usdUyu: 1 } });
   const usdUyu = Number(meta?.usdUyu) || 0;
+  // First, up to 1.000 one-advert properties whose freshAt kept the day we first saw them after the
+  // page gave the publication day (`repairMlFreshAt`). Its failure fails nothing: the reads go on,
+  // and the error goes in the summary line (`freshAtError`), where a repair failing every hour shows.
+  const { repaired: freshAtRepaired, error: freshAtError } = await runMlFreshAtRepair(1_000, dryRun);
   // 240 since 2026-10-08: 120 read in ~4 min with zero failures run after run (autos-detail reads
   // ML from this same IP at up to 400 an hour), and at 120 the ~29.000 adverts took ten days.
   const targets = await mlDetailTargets(now, number("RENTALS_ML_DETAIL_MAX", 240));
@@ -70,10 +80,10 @@ async function main(): Promise<void> {
     targets: targets.length, rereads: targets.filter(target => target.reread).length, read: 0, stated: 0, zeroOrAbsent: 0,
     unreadable: 0, failed: 0, implausible: 0, written: 0, pinned: 0, located: 0, bedrooms: 0, bedroomsWritten: 0,
     withImages: 0, photos: 0, galleriesWritten: 0, withDescription: 0, descriptionsWritten: 0, publishedAt: 0,
-    publishedAtWritten: 0, officialStores: 0, sellersWritten: 0, publishText, note: "",
+    publishedAtWritten: 0, officialStores: 0, sellersWritten: 0, freshAtRepaired, freshAtError, publishText, note: "",
   };
   if (!targets.length) {
-    console.log("[rentals-ml-detail] sin fichas pendientes");
+    console.log(`[rentals-ml-detail] sin fichas pendientes ${JSON.stringify({ freshAtRepaired, freshAtError, dryRun })}`);
     return;
   }
   const gapMs = number("RENTALS_ML_DETAIL_GAP_MS", 2_000);
