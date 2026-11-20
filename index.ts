@@ -974,9 +974,11 @@ const main = async () => {
    *       Consumidor, MEF / Area Defensa del Consumidor), la fuente oficial:
    *       `precios.gub.uy` responde 301 hacia `www.precios.uy`.
    *
-   *       Lo que agrega esta API es el HISTORICO, que el origen no guarda: su
-   *       API devuelve solo el precio de hoy con su fecha y no tiene endpoint de
-   *       serie.
+   *       Lo que agrega esta API es la SERIE DIARIA por articulo el mismo dia,
+   *       que el comparador oficial no muestra: su API devuelve solo el precio
+   *       vigente con su fecha y no tiene endpoint de serie. El SIPC si guarda
+   *       su historico desde 2007 y publica los precios diarios como datos
+   *       abiertos, en un archivo anual que se actualiza cada tres meses.
    *     responses:
    *       200:
    *         description: Catalogo con minimo, mediana y maximo nacional por articulo

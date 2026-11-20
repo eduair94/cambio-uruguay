@@ -1,10 +1,13 @@
-// Los precios oficiales del SIPC, todos los días, con el histórico que el
-// Estado no guarda.
+// Los precios oficiales del SIPC, todos los días, con la serie diaria por
+// artículo que el comparador oficial no muestra (el archivo abierto del SIPC
+// llega cada tres meses).
 //
 // `precios.gub.uy` responde 301 hacia `www.precios.uy`, así que la fuente es
-// oficial (MEF / Área Defensa del Consumidor). Su API devuelve sólo el precio
-// de hoy con su fecha: no hay endpoint de serie, y nadie publica la evolución.
-// Este job es el archivo.
+// oficial (MEF / Unidad Defensa del Consumidor). Su API devuelve sólo el precio
+// de hoy con su fecha: no hay endpoint de serie. El SIPC sí guarda su histórico
+// desde 2007 y lo publica como datos abiertos, un archivo por año con los
+// precios diarios que se actualiza cada tres meses; este job guarda la serie
+// del día, el mismo día.
 //
 // Barre 215 × `compararArticulo` con bbox nacional. NO usa `compararCanasta`,
 // que imputa —694 de 722 celdas con precio y sin fecha, el mismo `$509.32 (*)`

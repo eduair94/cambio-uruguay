@@ -23,8 +23,9 @@
               con un tope de <strong>{{ maxAmountLabel }}</strong
               >, al <strong>{{ teaRangeLabel }}</strong> anual según el plazo. El
               <strong>BROU</strong> presta con retención todo el año y hace una campaña para pasivos
-              a fin de año, que en 2025 empezó en noviembre. Y pase lo que pase, la ley te deja
-              cobrando en mano al menos el <strong>{{ floorPct }} %</strong> de tu pasividad.
+              a fin de año, que en 2026 abrió el 9 de noviembre por eBROU. Y pase lo que pase, la
+              ley te deja cobrando en mano al menos el <strong>{{ floorPct }} %</strong> de tu
+              pasividad.
             </p>
             <ShareButtons
               class="mt-4"

@@ -302,6 +302,11 @@ const relatedLinks = [
     description: 'Cuánto te toca por franjas, con deducciones.',
   },
   {
+    to: '/guias/irpf-de-alquileres-uruguay',
+    label: 'IRPF de alquileres',
+    description: 'Lo que paga el dueño: el 10,5 % o la exoneración.',
+  },
+  {
     to: '/alquileres-uruguay',
     label: 'Alquileres en Uruguay',
     description: 'Avisos vigentes con precio y gastos comunes.',

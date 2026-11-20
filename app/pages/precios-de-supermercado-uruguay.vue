@@ -11,21 +11,38 @@
     <header class="hero on-dark mb-8">
       <p class="eyebrow">Precios de góndola · {{ freshnessLabel }}</p>
       <h1 class="text-h4 text-md-h3 font-weight-bold mb-3">Precios de supermercado en Uruguay</h1>
-      <p class="hero-lead text-body-1 mb-4">
-        Los precios que las <strong>{{ storeCount }} bocas</strong> declaran al
-        <strong>SIPC</strong>, el sistema oficial del Ministerio de Economía y el Área Defensa del
-        Consumidor. {{ articleCount }} artículos, los 19 departamentos, y una cosa que el Estado no
-        guarda: <strong>el histórico</strong>. Su API devuelve sólo el precio de hoy y no tiene
-        endpoint de serie, así que la evolución empieza el día que este archivo empezó a guardarla.
+      <p v-if="hasData" class="hero-lead text-body-1 mb-4">
+        Compará el precio de <strong>{{ articleCount }} artículos</strong> en supermercados,
+        autoservicios y farmacias de {{ departmentsLabel }}, con lo que los comercios declaran al
+        <strong>SIPC</strong>, el sistema oficial de precios del Ministerio de Economía y Finanzas.
+        <template v-if="mostDeclared">
+          El artículo más declarado lo informan {{ mostDeclared }} locales.
+        </template>
+        <template v-if="basket?.qualifiedStores">
+          <strong>{{ basket.qualifiedStores }}</strong> declaran al menos el 70 % de una canasta
+          fija de {{ basket.basketItems }} artículos y son los que se comparan entre sí.
+        </template>
+      </p>
+      <p v-else class="hero-lead text-body-1 mb-4">
+        Compará precios de góndola con lo que los comercios declaran al <strong>SIPC</strong>, el
+        sistema oficial de precios del Ministerio de Economía y Finanzas.
       </p>
       <p class="hero-lead text-body-2 mb-4">
-        Cada precio dice <strong>de qué día es</strong>. Eso importa: el 94 % de las góndolas
-        reportan hoy o ayer, pero hay locales que no actualizan desde hace semanas, y como el
-        ranking ordena por "más barato" serían justo esos los que encabezarían. No encabezan.
+        Cada precio dice <strong>de qué día es</strong>: una góndola que no se actualiza hace más de
+        dos semanas no puede encabezar un «más barato».
       </p>
       <div class="d-flex flex-wrap ga-2">
         <VBtn color="white" variant="flat" size="small" prepend-icon="mdi-magnify" href="#buscador">
           Buscar un producto
+        </VBtn>
+        <VBtn
+          v-if="hasSummary"
+          variant="outlined"
+          size="small"
+          prepend-icon="mdi-trophy-outline"
+          href="#resumen"
+        >
+          Qué súper es más barato
         </VBtn>
         <VBtn variant="outlined" size="small" prepend-icon="mdi-basket-outline" href="#canasta">
           La canasta
@@ -49,6 +66,48 @@
     </VAlert>
 
     <template v-else>
+      <!-- Resumen: la respuesta en frases, antes que las tablas -->
+      <section v-if="hasSummary" id="resumen" class="mb-10">
+        <h2 class="text-h5 font-weight-bold mb-2">Qué supermercado es más barato</h2>
+        <p class="text-body-2 text-medium-emphasis mb-3">
+          Lectura del {{ summary.dayLabel }}. El nivel de precios compara lo que cobra cada local
+          por los artículos de la canasta que declara con la mediana del país de esos mismos
+          artículos.
+        </p>
+        <ul class="precios-resumen text-body-1 mb-3">
+          <li v-if="summaryLines.chains">
+            <strong>Por cadena:</strong> {{ summaryLines.chains }}
+            <a href="#cadenas">Ver la tabla</a>
+          </li>
+          <li v-if="summaryLines.depts">
+            <strong>Por departamento:</strong> {{ summaryLines.depts }}
+            <a href="#departamentos">Ver la tabla</a>
+          </li>
+          <li v-if="summaryLines.montevideo">
+            <strong>Montevideo:</strong> {{ summaryLines.montevideo }}
+          </li>
+          <li v-if="summaryLines.cheapest">
+            <strong
+              >El local comparable más barato<template v-if="basket?.qualifiedStores">
+                de {{ basket.qualifiedStores }}</template
+              >:</strong
+            >
+            {{ summaryLines.cheapest }}
+          </li>
+          <li v-if="summaryLines.basket">
+            <strong>La canasta:</strong> {{ summaryLines.basket }}
+            <a href="#canasta-articulos">Ver artículo por artículo</a>
+          </li>
+        </ul>
+        <p class="text-caption text-medium-emphasis mb-0" style="max-width: 75ch">
+          Vale para esta canasta y este día. La mediana de cada artículo se calcula con todos los
+          comercios que lo declaran, también farmacias y autoservicios, y no sólo con los locales
+          comparables<template v-if="nationalLevel"
+            >; el local comparable mediano queda {{ nationalLevel }}</template
+          >.
+        </p>
+      </section>
+
       <!-- Buscador -->
       <section id="buscador" class="mb-10">
         <h2 class="text-h5 font-weight-bold mb-2">Buscá un producto</h2>
@@ -248,12 +307,105 @@
       <section v-if="basket" id="canasta" class="mb-10">
         <h2 class="text-h5 font-weight-bold mb-2">La canasta, y qué se puede comparar</h2>
         <p class="text-body-2 text-medium-emphasis mb-4">
-          Una canasta fija de <strong>{{ basket.basketItems }} artículos</strong> pinneada el
-          {{ basket.basketPinnedAt }}. Se calcula sólo con precios observados:
+          Una canasta fija de <strong>{{ basket.basketItems }} artículos</strong> fijada el
+          {{ preciosDayLabel(basket.basketPinnedAt) }}. Se calcula sólo con precios observados:
           <strong>{{ basket.qualifiedStores }} locales</strong> declaran al menos el 70 % de ella y
           por eso entran en la comparación; los demás dicen "muestra insuficiente" en lugar de un
           número que parece comparable y no lo es.
         </p>
+
+        <template v-if="summary.basketCost">
+          <h3 id="canasta-articulos" class="text-subtitle-1 font-weight-bold mb-2">
+            Qué hay en la canasta y cuánto cuesta
+          </h3>
+          <p class="text-body-2 mb-3" style="max-width: 75ch">
+            <template v-if="summary.basketCost.itemsPriced < summary.basketCost.items">
+              {{ summary.basketCost.itemsPriced }} de los {{ summary.basketCost.items }} artículos
+              tienen precio en la lectura del {{ summary.dayLabel }} y suman
+              <strong>{{ preciosPesos(summary.basketCost.total) }}</strong> a precio mediano del
+              país: es un total <strong>parcial</strong
+              ><template v-if="basketTotals?.missing.length">
+                (falta {{ basketTotals.missing.join(', ') }})</template
+              >.
+            </template>
+            <template v-else>
+              Los {{ summary.basketCost.items }} artículos de la canasta cuestan
+              <strong>{{ preciosPesos(summary.basketCost.total) }}</strong> a precio mediano del
+              país en la lectura del {{ summary.dayLabel
+              }}<template v-if="summary.basketCost.foodItems && summary.basketCost.nonFoodItems"
+                >: {{ preciosPesos(summary.basketCost.food) }} los
+                {{ summary.basketCost.foodItems }} alimentos y
+                {{ preciosPesos(summary.basketCost.nonFood) }} los
+                {{ summary.basketCost.nonFoodItems }} de limpieza e higiene</template
+              >.
+            </template>
+            Para cada necesidad se eligió el artículo que más locales declaraban el
+            {{ preciosDayLabel(basket.basketPinnedAt) }}, y las cantidades son un supuesto fijo,
+            pensado como el consumo de un mes de dos personas.
+            <strong>No es lo que gasta un hogar:</strong> la canasta no tiene leche, pan fresco ni
+            legumbres, y las cantidades sirven para comparar locales, no para presupuestar.
+          </p>
+
+          <div v-if="basketTotals" class="table-scroll mb-3">
+            <VTable density="comfortable" class="cu-mobile-cards cu-roomy">
+              <thead>
+                <tr>
+                  <th class="text-left">Artículo</th>
+                  <th class="text-right">Precio mediano</th>
+                  <th class="text-right">Cantidad</th>
+                  <th class="text-right">Subtotal</th>
+                  <th class="text-right">Locales</th>
+                </tr>
+              </thead>
+              <tbody v-for="group in basketGroups" :key="group.label">
+                <tr class="precios-basket__group">
+                  <td data-label="" colspan="5">
+                    {{ group.label }} · {{ group.lines.length }} artículos ·
+                    {{ preciosPesos(group.subtotal) }}
+                  </td>
+                </tr>
+                <tr v-for="line in group.lines" :key="line.articleId">
+                  <td data-label="Artículo">
+                    <!-- Texto plano a propósito hasta el 30/11/2026: la familia /precio/*
+                         está en una ventana de medición (super-mediana-en-el-titulo) y 33
+                         enlaces nuevos la contaminarían. Después, volver a NuxtLink con
+                         `/precio/${line.slug}`. -->
+                    {{ line.name }}
+                    <span v-if="line.pack" class="d-block text-caption text-medium-emphasis">
+                      {{ line.pack }}
+                    </span>
+                  </td>
+                  <td data-label="Precio mediano" class="text-right">
+                    {{ line.median === null ? 'sin precio' : money(line.median) }}
+                  </td>
+                  <td data-label="Cantidad" class="text-right">× {{ line.qty }}</td>
+                  <td data-label="Subtotal" class="text-right font-weight-medium">
+                    {{ line.subtotal === null ? '—' : money(line.subtotal) }}
+                  </td>
+                  <td data-label="Locales" class="text-right">{{ line.n || '—' }}</td>
+                </tr>
+              </tbody>
+              <tbody>
+                <tr class="precios-basket__group">
+                  <td data-label="" colspan="5">
+                    Total{{ basketTotals.missing.length ? ' parcial' : '' }}:
+                    {{ preciosPesos(summary.basketCost.total) }}
+                  </td>
+                </tr>
+              </tbody>
+            </VTable>
+          </div>
+          <p class="text-body-2 text-medium-emphasis mb-3" style="max-width: 75ch">
+            La Canasta Básica Alimentaria la calcula el INE con otra metodología. Para armar un
+            presupuesto, usá la
+            <NuxtLink :to="localePath('/herramientas/costo-de-vida')"
+              >calculadora de costo de vida</NuxtLink
+            >.
+          </p>
+          <p v-if="workedExample" class="text-body-2 mb-5" style="max-width: 75ch">
+            <strong>Cómo se lee el nivel de un local:</strong> {{ workedExample }}
+          </p>
+        </template>
 
         <VAlert
           type="info"
@@ -262,7 +414,7 @@
           icon="mdi-information-outline"
           class="mb-5"
         >
-          <p class="mb-1 font-weight-medium">Por qué no publicamos "la canasta cuesta $X acá"</p>
+          <p class="mb-1 font-weight-medium">Por qué no hay un total por supermercado</p>
           <p class="text-body-2 mb-0">
             Ningún local del país declara los {{ basket.basketItems }} artículos. Sumar sólo lo que
             cada uno declara le baja el total al que le <em>faltan</em> productos, no al que es
@@ -356,7 +508,7 @@
         </p>
         <div v-else class="mb-6" />
 
-        <h3 class="text-subtitle-1 font-weight-bold mb-2">Por departamento</h3>
+        <h3 id="departamentos" class="text-subtitle-1 font-weight-bold mb-2">Por departamento</h3>
         <p class="text-body-2 text-medium-emphasis mb-3">
           {{ rankedDepartments.length }} de 19 departamentos tienen muestra suficiente. Los otros
           {{ unrankedDepartments.length }} no: el catálogo oficial tiene
@@ -413,7 +565,7 @@
           {{ unrankedDepartments.map(s => `${scopeName(s.scope)} (${s.stores})`).join(', ') }}.
         </p>
 
-        <h3 class="text-subtitle-1 font-weight-bold mb-2">Por cadena</h3>
+        <h3 id="cadenas" class="text-subtitle-1 font-weight-bold mb-2">Por cadena</h3>
         <p class="text-body-2 text-medium-emphasis mb-3">
           Sólo las cadenas con al menos 5 locales que declaren el 70 % de la canasta. Es un nivel de
           precios sobre esta canasta y este día, no un veredicto sobre la cadena.
@@ -436,7 +588,9 @@
             </thead>
             <tbody>
               <tr v-for="scope in rankedChains" :key="scope.scope">
-                <td data-label="Cadena">{{ scopeName(scope.scope) }}</td>
+                <td data-label="Cadena">
+                  {{ preciosChainLabel(scopeName(scope.scope), rankedStores) }}
+                </td>
                 <td data-label="Nivel de precios" class="text-right">
                   {{ levelLabel(scope.median) }}
                 </td>
@@ -465,7 +619,7 @@
       <section class="mb-4">
         <h2 class="text-h5 font-weight-bold mb-3">Seguí con el resto del presupuesto</h2>
         <VRow>
-          <VCol v-for="link in relatedLinks" :key="link.to" cols="12" sm="6" md="3">
+          <VCol v-for="link in relatedLinks" :key="link.to" cols="12" sm="6" md="4">
             <VCard variant="outlined" class="pa-4 h-100" :to="localePath(link.to)">
               <p class="text-subtitle-2 font-weight-bold mb-1">{{ link.title }}</p>
               <p class="text-body-2 text-medium-emphasis mb-0">{{ link.body }}</p>
@@ -511,6 +665,28 @@ import {
   type PreciosRankedStore,
   type PreciosSortDir,
 } from '~/utils/preciosTable'
+import {
+  PRECIOS_BASKET_ITEMS,
+  PRECIOS_BASKET_VERSION,
+  preciosBasketLines,
+  preciosBasketMatches,
+  preciosBasketTotals,
+} from '~/utils/preciosBasket'
+import {
+  PRECIOS_ARCHIVE_SINCE,
+  preciosBasketCostSentence,
+  preciosChainLabel,
+  preciosChainsSentence,
+  preciosCheapestSentence,
+  preciosDayLabel,
+  preciosDecimal,
+  preciosDeptsSentence,
+  preciosHubSummary,
+  preciosLevelText,
+  preciosMontevideoSentence,
+  preciosPesos,
+  preciosWorkedExample,
+} from '~/utils/preciosSummary'
 
 const localePath = useLocalePath()
 const route = useRoute()
@@ -527,17 +703,66 @@ const basket = computed<any>(() => data.value?.basket ?? null)
 const hasData = computed(() => articles.value.length > 0)
 
 const articleCount = computed(() => articles.value.length)
-const storeCount = computed(() => {
-  // Los locales que efectivamente declararon algo, no el tamaño del catálogo.
-  const scopes = basket.value?.scopes ?? []
-  const depts = scopes.filter((s: any) => s.scope.startsWith('dept:'))
-  const counted = depts.reduce((sum: number, s: any) => sum + (s.stores || 0), 0)
-  return counted || basket.value?.qualifiedStores || 0
+// El artículo que más locales declaran. Los 373 de la canasta son OTRA cifra: los locales que
+// declaran al menos el 70 % de ella, que son los únicos que se comparan entre sí.
+const mostDeclared = computed(() =>
+  articles.value.reduce((best, row) => Math.max(best, row.n ?? 0), 0)
+)
+const departmentsLabel = computed(() => {
+  const count = (basket.value?.scopes ?? []).filter((s: any) => s.scope?.startsWith('dept:')).length
+  if (count === 19) return 'los 19 departamentos'
+  return count ? `${count} departamentos` : 'todo el país'
 })
 
 const freshnessLabel = computed(() =>
-  data.value?.day ? `lectura del ${data.value.day}` : 'sin lectura'
+  data.value?.day ? `lectura del ${preciosDayLabel(data.value.day)}` : 'sin lectura'
 )
+
+// ---------------------------------------------------------------------------
+// Resumen fechado y canasta artículo por artículo
+// ---------------------------------------------------------------------------
+
+const summary = computed(() => preciosHubSummary(data.value))
+const summaryLines = computed(() => ({
+  chains: preciosChainsSentence(summary.value.chains),
+  depts: preciosDeptsSentence(summary.value.depts),
+  montevideo: preciosMontevideoSentence(summary.value.montevideo),
+  cheapest: preciosCheapestSentence(summary.value.cheapestStore),
+  basket: preciosBasketCostSentence(summary.value.basketCost),
+}))
+const hasSummary = computed(() => hasData.value && Object.values(summaryLines.value).some(Boolean))
+const nationalLevel = computed(() => preciosLevelText(summary.value.nationalRatio))
+const workedExample = computed(() => preciosWorkedExample(summary.value.cheapestStore))
+
+/**
+ * Las filas de la canasta, sólo si suman lo mismo que el total que publicó el backend para ESE
+ * día y esa versión. Si no coinciden (la copia de la canasta quedó vieja, o el catálogo y la
+ * canasta son de lecturas distintas) la tabla no se dibuja y queda la frase con el total oficial.
+ */
+const basketTotals = computed(() => {
+  const current = basket.value
+  if (!current || current.day !== data.value?.day) return null
+  if (current.basketVersion !== PRECIOS_BASKET_VERSION) return null
+  const lines = preciosBasketLines(articles.value)
+  const totals = preciosBasketTotals(lines)
+  return preciosBasketMatches(totals, current.nationalCost) ? { ...totals, lines } : null
+})
+const basketGroups = computed(() => {
+  const lines = basketTotals.value?.lines ?? []
+  return [
+    { label: 'Alimentos', food: true },
+    { label: 'Limpieza e higiene', food: false },
+  ]
+    .map(group => {
+      const members = lines.filter(line => line.food === group.food)
+      return {
+        label: group.label,
+        lines: members,
+        subtotal: members.reduce((sum, line) => sum + (line.subtotal ?? 0), 0),
+      }
+    })
+    .filter(group => group.lines.length)
+})
 
 // ---------------------------------------------------------------------------
 // Tabla de artículos
@@ -682,7 +907,7 @@ const maxSpreadLabel = computed(() => {
     const spread = preciosSpread(row)
     if (spread && spread > best) best = spread
   }
-  return best ? `${best.toFixed(1)} veces` : '—'
+  return best ? `${preciosDecimal(best)} veces` : '—'
 })
 
 const perUnitLabel = (row: PreciosArticleRow): string => {
@@ -926,13 +1151,15 @@ const levelLabel = (ratio?: number | null): string => {
   if (ratio === undefined || ratio === null || !Number.isFinite(ratio)) return '—'
   const pct = (ratio - 1) * 100
   if (Math.abs(pct) < 1) return 'como la mediana'
-  return pct < 0 ? `${Math.abs(pct).toFixed(1)} % más barato` : `${pct.toFixed(1)} % más caro`
+  return pct < 0
+    ? `${preciosDecimal(Math.abs(pct))} % más barato`
+    : `${preciosDecimal(pct)} % más caro`
 }
 
 const methodCards = [
   {
     title: 'La fuente es el Estado, no nosotros',
-    body: 'Los precios los declaran los comercios al SIPC (Ministerio de Economía / Área Defensa del Consumidor). <code>precios.gub.uy</code> redirige a <code>precios.uy</code>: es el mismo sistema oficial. Acá no se releva ningún precio a mano.',
+    body: 'Los precios los declaran los comercios al SIPC, el Sistema de Información de Precios al Consumidor del Ministerio de Economía y Finanzas (Unidad Defensa del Consumidor). Informar es obligatorio y diario para los minoristas de alimentos que integran una cadena de dos o más locales o tienen al menos tres cajas, y para las farmacias de cadenas de tres o más locales. <code>precios.gub.uy</code> redirige a <a href="https://www.precios.uy/" target="_blank" rel="noopener">precios.uy</a>: es el mismo sistema oficial. Acá no se releva ningún precio a mano.',
   },
   {
     title: 'Una góndola vieja no encabeza',
@@ -940,7 +1167,11 @@ const methodCards = [
   },
   {
     title: 'El precio absurdo se marca, no se borra',
-    body: 'La banda se calcula con los percentiles del propio artículo, porque el spread real va de 1,58× a 4,86× según el producto y un factor fijo no sirve para los dos. Lo que queda muy por debajo del resto se muestra marcado y tampoco encabeza.',
+    body: 'La banda se calcula con los percentiles del propio artículo, porque la distancia entre el más barato y el más caro cambia mucho según el producto: el 07/09/2026 iba de 1,58 a 4,86 veces, y un factor fijo no sirve para los dos. Lo que queda muy por debajo del resto se muestra marcado y tampoco encabeza.',
+  },
+  {
+    title: 'El histórico: el oficial y el de acá',
+    body: `El SIPC guarda desde 2007 los precios de 219 presentaciones (85 productos) y los publica como <a href="https://catalogodatos.gub.uy/organization/defensa-del-consumidor" target="_blank" rel="noopener">datos abiertos</a>: una serie de 2007 a 2022 y, desde 2023, un conjunto por año con los precios diarios, que se actualiza cada tres meses (el de 2026, actualizado el 10/11/2026, llega hasta setiembre). Su comparador muestra los locales que informaron el producto en los últimos tres días, con el precio y la fecha. La diferencia con lo de acá es el momento: la lectura de cada día se guarda ese mismo día, desde el ${preciosDayLabel(PRECIOS_ARCHIVE_SINCE)}, y la ficha de cada artículo muestra su serie sin esperar a que se actualice el archivo oficial.`,
   },
   {
     title: 'Las ofertas cuentan',
@@ -968,6 +1199,11 @@ const relatedLinks = [
     body: 'Qué día conviene comprar y con qué tarjeta.',
   },
   {
+    to: '/meal-prep-uruguay',
+    title: 'Viandas para la semana',
+    body: 'Cuatro platos que se cocinan en un día, y la lista de compras con precios de supermercado.',
+  },
+  {
     to: '/herramientas/calculadora-sueldo-liquido',
     title: 'Sueldo líquido',
     body: 'De lo que dice el contrato a lo que llega a la cuenta.',
@@ -979,18 +1215,80 @@ const relatedLinks = [
   },
 ]
 
-const faqItems: FaqItem[] = [
+const comparableStoresLabel = computed(() => {
+  const n = basket.value?.qualifiedStores
+  return typeof n === 'number' && n > 0 ? `${n} locales` : 'locales'
+})
+
+const masBaratoAnswer = computed(() => {
+  const { cheapestStore, chains, dayLabel } = summary.value
+  const parts: string[] = []
+  if (cheapestStore) {
+    parts.push(
+      `En la lectura del ${dayLabel}, entre los ${comparableStoresLabel.value} comparables, el de nivel de precios más bajo es ${preciosCheapestSentence(cheapestStore)}`
+    )
+  }
+  const chainLine = preciosChainsSentence(chains)
+  if (chainLine) parts.push(`Por cadena, ${chainLine}`)
+  if (!parts.length) {
+    return 'Depende del día y del departamento. Esta página compara lo que cobra cada local por los artículos de una canasta fija con la mediana del país de esos mismos artículos, y publica cada día cuál queda más abajo.'
+  }
+  return `${parts.join(' ')} Vale para esta canasta y este día: el nivel compara cada local con la mediana del país de los artículos que declara.`
+})
+
+const canastaCostoAnswer = computed(() => {
+  const cost = summary.value.basketCost
+  const assumption =
+    'Las cantidades son un supuesto fijo, pensado como el consumo de un mes de dos personas, y la canasta no tiene leche, pan fresco ni legumbres: sirve para ver precios concretos y comparar locales, no como presupuesto ni como lo que gasta un hogar.'
+  if (!cost) {
+    return `Se calcula cada día con la mediana nacional de cada artículo por su cantidad. ${assumption}`
+  }
+  const split =
+    cost.foodItems && cost.nonFoodItems
+      ? `: ${preciosPesos(cost.food)} los ${cost.foodItems} alimentos y ${preciosPesos(cost.nonFood)} los ${cost.nonFoodItems} de limpieza e higiene`
+      : ''
+  const head =
+    cost.itemsPriced < cost.items
+      ? `En la lectura del ${summary.value.dayLabel}, ${cost.itemsPriced} de los ${cost.items} artículos tienen precio y suman ${preciosPesos(cost.total)} a precio mediano del país (total parcial)`
+      : `En la lectura del ${summary.value.dayLabel} cuestan ${preciosPesos(cost.total)} a precio mediano del país`
+  return `${head}${split}. ${assumption}`
+})
+
+// Las preguntas son fijas: el FAQPage se identifica por ellas (useFaqSchema). Las respuestas
+// pueden llevar la lectura del día porque viajan en el payload, no salen del reloj.
+const faqItems = computed<FaqItem[]>(() => [
+  {
+    id: 'mas-barato',
+    question: '¿Cuál es el supermercado más barato de Uruguay?',
+    answer: masBaratoAnswer.value,
+  },
+  {
+    id: 'canasta-costo',
+    question: `¿Cuánto cuestan los ${PRECIOS_BASKET_ITEMS.length} artículos de la canasta?`,
+    answer: canastaCostoAnswer.value,
+  },
   {
     id: 'fuente',
     question: '¿De dónde salen estos precios?',
     answer:
-      'Los declaran los propios comercios al SIPC, el Sistema de Información de Precios al Consumidor del Ministerio de Economía y Finanzas y el Área Defensa del Consumidor. Es información pública y oficial; acá se lee todos los días, se guarda y se compara.',
+      'Los declaran los propios comercios al SIPC, el Sistema de Información de Precios al Consumidor del Ministerio de Economía y Finanzas (Unidad Defensa del Consumidor). Informar es obligatorio para los minoristas de alimentos que integran una cadena de dos o más locales o tienen al menos tres cajas, y para las farmacias de cadenas de tres o más locales. Es información pública y oficial; acá se lee todos los días, se guarda y se compara.',
+  },
+  {
+    id: 'impuestos',
+    question: '¿Los precios incluyen impuestos?',
+    answer:
+      'Sí. El Decreto 503/006 (artículo 2) manda informar el precio de venta al público con impuestos incluidos, y las ofertas con su vigencia.',
   },
   {
     id: 'fecha-vieja',
     question: '¿Por qué un local aparece con un precio de la semana pasada?',
     answer:
-      'Porque es la fecha que el propio local declaró. El sistema oficial no obliga a actualizar todos los días, así que hay góndolas que quedan quietas. La fecha se muestra siempre, y una fila de más de dos semanas no puede aparecer como el precio más barato.',
+      'Porque es la fecha que el propio local declaró. Los comercios obligados tienen que informar sus precios todos los días, pero en los datos hay locales cuya última fecha tiene días o semanas. La fecha se muestra siempre, y una fila de más de dos semanas no puede aparecer como el precio más barato.',
+  },
+  {
+    id: 'historico',
+    question: '¿Dónde está el histórico de precios?',
+    answer: `El SIPC guarda desde 2007 los precios de 219 presentaciones (85 productos) y los publica como datos abiertos en el catálogo del Estado (catalogodatos.gub.uy): una serie de 2007 a 2022 y, desde 2023, un conjunto por año con los precios diarios, que se actualiza cada tres meses (el de 2026, actualizado el 10/11/2026, llega hasta setiembre). Su comparador muestra los locales que informaron el producto en los últimos tres días. Acá la lectura de cada día se guarda ese mismo día, desde el ${preciosDayLabel(PRECIOS_ARCHIVE_SINCE)}, y la ficha de cada artículo muestra su serie.`,
   },
   {
     id: 'canasta-completa',
@@ -1022,7 +1320,7 @@ const faqItems: FaqItem[] = [
     answer:
       'No. El IPC lo calcula el Instituto Nacional de Estadística con su propia canasta y su propia metodología. Lo de esta página es una canasta fija propia, con cantidades supuestas, que sirve para comparar locales entre sí en un mismo día.',
   },
-]
+])
 
 // 34 caracteres: con el sufijo del sitio el titulo renderizado queda en 51 y
 // entra completo en el SERP. El presupuesto de titulos del repo tolera 33
@@ -1044,6 +1342,10 @@ useSeoMeta({
   twitterDescription: description,
 })
 
+const datasetDay = computed(() =>
+  preciosDayLabel(data.value?.day) ? (data.value.day as string) : ''
+)
+
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl }],
   script: [
@@ -1058,6 +1360,15 @@ useHead(() => ({
         inLanguage: 'es-UY',
         isAccessibleForFree: true,
         creator: { '@type': 'Organization', name: 'Cambio Uruguay' },
+        isBasedOn: 'https://www.precios.uy/',
+        spatialCoverage: { '@type': 'Place', name: 'Uruguay' },
+        // El día de la lectura viaja en el payload: no hay reloj en el head.
+        ...(datasetDay.value
+          ? {
+              dateModified: datasetDay.value,
+              temporalCoverage: `${PRECIOS_ARCHIVE_SINCE}/${datasetDay.value}`,
+            }
+          : {}),
         distribution: [
           {
             '@type': 'DataDownload',
@@ -1097,9 +1408,25 @@ useHead(() => ({
 .table-scroll {
   overflow-x: auto;
 }
-/* "Ver locales" desplaza hasta acá: sin margen, el título queda bajo la barra fija. */
-#locales-canasta {
+/* "Ver locales" y los enlaces del resumen desplazan hasta acá: sin margen, el título queda bajo
+   la barra fija. */
+#resumen,
+#locales-canasta,
+#canasta-articulos,
+#departamentos,
+#cadenas {
   scroll-margin-top: 88px;
+}
+.precios-resumen {
+  padding-left: 1.25rem;
+  max-width: 75ch;
+}
+.precios-resumen li + li {
+  margin-top: 0.5rem;
+}
+.precios-basket__group td {
+  font-weight: 600;
+  background: rgba(var(--v-theme-on-surface), 0.04);
 }
 .precios-toolbar {
   display: flex;

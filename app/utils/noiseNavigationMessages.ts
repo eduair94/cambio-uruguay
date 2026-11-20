@@ -21,6 +21,8 @@ export const noiseNavigationMessages = {
     useTemplate: 'Completar la denuncia',
     where: 'Dónde denunciar',
     anonymous: 'Denuncia anónima',
+    outside: 'Fuera de Montevideo',
+    hours: 'Hasta qué hora',
     whereHeading: 'Dónde hacer la denuncia por ruidos molestos',
     anonymousHeading: '¿La denuncia por ruidos molestos puede ser anónima?',
     anonymousAnswer:
@@ -39,6 +41,8 @@ export const noiseNavigationMessages = {
     useTemplate: 'Prepare your complaint',
     where: 'Where to report noise',
     anonymous: 'Anonymous complaints',
+    outside: 'Outside Montevideo',
+    hours: 'Until what time',
     whereHeading: 'Where to file a noise complaint',
     anonymousHeading: 'Can you file a noise complaint anonymously?',
     anonymousAnswer:
@@ -57,6 +61,8 @@ export const noiseNavigationMessages = {
     useTemplate: 'Preparar a denúncia',
     where: 'Onde denunciar',
     anonymous: 'Denúncia anônima',
+    outside: 'Fora de Montevidéu',
+    hours: 'Até que horas',
     whereHeading: 'Onde fazer a denúncia de ruídos incômodos',
     anonymousHeading: 'A denúncia de ruídos incômodos pode ser anônima?',
     anonymousAnswer:

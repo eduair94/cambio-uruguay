@@ -27,8 +27,8 @@ import {
 } from './loanTierlist'
 import { usuryGridKey, type UsuryGridKey } from './usuryCaps'
 
-/** Last time the quotes below were read against their sources. */
-export const NOPAYSLIP_LOANS_REVIEWED = '2026-09-16'
+/** Last time the quotes below were read against their sources (all four re-read 2026-11-20). */
+export const NOPAYSLIP_LOANS_REVIEWED = '2026-11-20'
 
 /**
  * Last time the "sólo con cédula" table was read against each lender's own page. Separate from
@@ -104,7 +104,7 @@ export const NOPAYSLIP_DOORS: readonly NoPayslipDoor[] = Object.freeze([
       {
         lenderId: 'creditel',
         lenderName: 'Creditel',
-        text: 'Pide cédula vigente y tener entre 18 y 84 años. "En caso de no tener el comprobante de ingresos, podés presentar tres facturas a tu nombre de UTE, OSE, Antel, otras compañías telefónicas o de cable." Montos de $ 3.000 a $ 240.000 y la primera cuota a los 60 días; no publica la TEA (leído el 22 de setiembre de 2026).',
+        text: 'Pide cédula vigente y tener entre 18 y 84 años. "En caso de no tener el comprobante de ingresos, podés presentar tres facturas a tu nombre de UTE, OSE, Antel, otras compañías telefónicas o de cable." Montos de $ 3.000 a $ 240.000 y la primera cuota a los 60 días; no publica la TEA (leído el 20 de noviembre de 2026).',
         sourceLabel: 'Creditel — preguntas frecuentes',
         sourceUrl: 'https://www.creditel.com.uy/centro-ayuda/preguntas-frecuentes',
       },
@@ -125,8 +125,10 @@ export const NOPAYSLIP_DOORS: readonly NoPayslipDoor[] = Object.freeze([
 // COMPROBANTE DE INGRESOS, no "sin mirar el clearing". De las financieras que lo anuncian, OCA
 // exige "no figurar actualmente en el clearing", Crédito de la Casa pide "sin incumplimientos en
 // Infocred o Clearing" hasta para Compra Ágil, y República Microfinanzas "sin morosidad vigente en
-// Clearing de informes y/o sistema financiero". La única que lo afirma en su propia web es Pronto!.
-// Cada fila es una lectura fechada (`SOLO_CEDULA_REVIEWED`) de la página del propio prestamista.
+// Clearing de informes y/o sistema financiero". De las que anuncian la cédula sola, la que dice
+// prestar estando en el clearing es Pronto!; las que lo dicen pidiendo recibo (ANDA, Cash) están en
+// `CLEARING_LENDERS`, más abajo. Cada fila es una lectura fechada (`SOLO_CEDULA_REVIEWED`, o su
+// `readOn` si se releyó sola) de la página del propio prestamista.
 
 /** `si` = anuncia que basta la cédula; `parcial` = cédula más otro papel; `no` = pide comprobante. */
 export type SoloCedulaStance = 'si' | 'parcial' | 'no'
@@ -168,7 +170,11 @@ export const SOLO_CEDULA_LENDERS: readonly SoloCedulaLender[] = Object.freeze([
     soloCedula: 'si',
     pide: 'Tener entre 18 y 72 años y un ingreso mensual mínimo de $ 10.000 (soltero) o $ 15.000 (casado), sin comprobante.',
     clearing: 'Exige "no figurar actualmente en el clearing".',
-    tasa: 'TEA entre 29 % y 87 % + IVA según la web; la cartilla vigente desde el 15 de setiembre de 2026 fija 62 % (7 a 12 cuotas) u 86 % (13 a 36 cuotas) + IVA, bonificada a 53,29 %–81,01 % si pagás en fecha, y mora 72 % + IVA. Comisiones de 40 UI (concesión) + 80 UI (administración y cobranza) + IVA, que "se cobran al inicio y se suman al capital solicitado", y seguro de vida de 0,25 % mensual sobre saldo. Ejemplo publicado: $ 200.000 a 24 meses con TEA 39 %, cuota $ 12.643, total $ 303.432.',
+    // Relectura del 2026-11-20: la web pasó de 29–87 % a 32–78 % y el ejemplo de TEA 39 % a 42 %.
+    // La cartilla (TasasVigentes.pdf) es "Vigente desde: 01/11/2026" con techo de 78 %; su capa de
+    // texto sale revuelta, así que de ella sólo se repite la frase de las 120 UI, leída a ojo.
+    readOn: '2026-11-20',
+    tasa: 'TEA entre 32 % y 78 % + IVA según su web. Comisiones de 40 UI (concesión) + 80 UI (administración y cobranza) + IVA y seguro de vida de 0,25 % mensual sobre saldo; según su cartilla, las 120 UI "se cobran al inicio y se suman al capital solicitado". Ejemplo publicado: $ 200.000 a 24 meses con TEA 42 %, cuota $ 12.936, total $ 310.464.',
     montos: '$ 5.000 a $ 600.000 en 7 a 36 meses (la FAQ online dice $ 6.000 a $ 150.000).',
     sourceLabel: 'OCA — préstamos para nuevos clientes y cartilla de tasas vigentes',
     sourceUrl: 'https://oca.uy/prestamos/nuevo-cliente.html',
@@ -179,8 +185,9 @@ export const SOLO_CEDULA_LENDERS: readonly SoloCedulaLender[] = Object.freeze([
     soloCedula: 'si',
     pide: '"Podrás solicitarlos solo con la cédula"; recomienda el recibo de sueldo o de jubilación "para poder acceder a mejores ofertas".',
     clearing:
-      'Es la única que lo dice en su propia página: la titula "Préstamos estando en el clearing y sin recibo de sueldo", sujeto a evaluación.',
-    tasa: 'Publica como máximos los topes del BCU de setiembre de 2026 (133,4860 % hasta 366 días bajo 10.000 UI; 66,3245 % desde 10.000 UI). Ejemplo con recibo: $ 500.000 en 42 cuotas de $ 28.526, TEA 49 % + IVA.',
+      'La titula "Préstamos estando en el clearing y sin recibo de sueldo", sujeto a evaluación.',
+    readOn: '2026-11-20',
+    tasa: 'Publica como máximos los topes del BCU de noviembre de 2026 (142,7395 % hasta 366 días bajo 10.000 UI; 55,1335 % desde 10.000 UI) y anuncia "desde 29 % + IVA". Ejemplo con recibo: $ 500.000 en 42 cuotas de $ 28.526, TEA 49 % + IVA, precio total financiado $ 1.198.092.',
     montos:
       '$ 5.000 a $ 600.000 en 3 a 48 cuotas, primera cuota hasta 60 días (en /credito/ dice hasta $ 1.000.000).',
     sourceLabel: 'Pronto! — préstamos estando en el clearing y sin recibo de sueldo',
@@ -232,9 +239,12 @@ export const SOLO_CEDULA_LENDERS: readonly SoloCedulaLender[] = Object.freeze([
     name: 'ANDA',
     soloCedula: 'no',
     pide: 'Último recibo de sueldo y 6 meses de antigüedad (los pasivos no requieren antigüedad), más cédula. Lo que se firma "sólo con tu cédula" en Abitab es el contrato web, no el préstamo sin recibo.',
-    clearing: 'Pide "buenos antecedentes crediticios" en la línea de nómina para pasivos.',
-    tasa: 'Setiembre de 2026: bajo 10.000 UI, 27,20 % (1 a 10 cuotas) o 31,80 % (12 o más) + IVA; desde 10.000 UI, 28,80 % o 32,20 % + IVA.',
-    montos: '1 a 48 cuotas; 10.000 UI eran $ 66.371 al 31 de agosto de 2026.',
+    // Sin "exige" ni "no figurar": ANDA presta con antecedentes (postura 'si' en el ranking).
+    clearing:
+      'En sus preguntas frecuentes dice que podés afiliarte y pedir el préstamo "estando en el Clearing de Informes" y que, según el antecedente, puede pedir una garantía. La línea de nómina para pasivos pide "buenos antecedentes crediticios".',
+    readOn: '2026-11-20',
+    tasa: 'Noviembre de 2026: bajo 10.000 UI, 26,30 % (1 a 10 cuotas) o 31,50 % (12 o más) + IVA; desde 10.000 UI, 27,20 % o 30,60 % + IVA.',
+    montos: '1 a 48 cuotas; 10.000 UI eran $ 66.838 con la UI del 31 de octubre de 2026.',
     sourceLabel: 'ANDA — préstamos',
     sourceUrl: 'https://anda.com.uy/prestamos/',
   },
@@ -244,7 +254,8 @@ export const SOLO_CEDULA_LENDERS: readonly SoloCedulaLender[] = Object.freeze([
     pide: 'Actividad independiente como fuente principal de ingresos con 6 meses (asalariados, 1 año), dos firmas, 18 a 75 años. Los comparadores que la listan como "sólo con cédula" no citan su cartilla.',
     clearing:
       '"Sin morosidad vigente en Clearing de informes y/o sistema financiero"; tampoco deudor alimentario.',
-    tasa: 'TEA 44 % + IVA hasta 366 días y 46 % + IVA desde 367 días, mora 49 %; cartilla vigente del 1 al 30 de setiembre de 2026.',
+    readOn: '2026-11-20',
+    tasa: 'TEA 44 % + IVA hasta 366 días y 46 % + IVA desde 367 días, mora 49 %; cartilla vigente del 1 al 30 de noviembre de 2026.',
     montos: '3.000 a 12.500 UI (30.000 UI con 2 años de cliente) en 3 a 18 meses.',
     sourceLabel: 'República Microfinanzas — cartilla Préstamo Efectivo (PDF)',
     sourceUrl:
@@ -252,13 +263,268 @@ export const SOLO_CEDULA_LENDERS: readonly SoloCedulaLender[] = Object.freeze([
   },
 ])
 
+// ── Estando en el clearing: con recibo y sin recibo de sueldo ─────────────────────────────────
+//
+// La mitad de los clics atribuibles de la página (GSC 2026-10-21..11-17) venía de consultas que
+// cruzan "estando en el clearing" con "con/sin recibo de sueldo", y la página no tenía la respuesta:
+// decía que la única que presta estando en el clearing es Pronto!. Releídas en la página de cada
+// prestamista, cinco lo dicen, y la línea que importa es si piden recibo. Cada fila cita lo que la
+// institución dice del clearing; las tasas llevan su mes porque ANDA, Cash y Pronto! las republican
+// todos los meses.
+
+/** Cuándo se leyó la tabla del clearing contra la página de cada institución. */
+export const CLEARING_REVIEWED = '2026-11-20'
+
+/** `pide` = exige recibo o comprobante de ingresos; `no-pide` = no lo exige; `no-publica` = no lo dice. */
+export type PayslipStance = 'pide' | 'no-pide' | 'no-publica'
+
+export const PAYSLIP_LABELS: Record<PayslipStance, string> = Object.freeze({
+  pide: 'Sí, pide recibo',
+  'no-pide': 'No pide recibo',
+  'no-publica': 'No lo publica',
+})
+
+export interface ClearingLender {
+  /** Lender id in `LENDER_TIERLIST`. */
+  lenderId?: string
+  name: string
+  recibo: PayslipStance
+  /** Qué dice del clearing, con sus palabras. */
+  dice: string
+  /** Qué pide para prestar. */
+  pide: string
+  /** Tasa publicada, con los gastos y el mes al que corresponde. */
+  tasa: string
+  /**
+   * La TEA más baja y la más alta que `tasa` publica, sin IVA, como números: de acá salen la frase
+   * de tasas del cierre de la sección y del FAQ, y la tasa de la tabla principal cuando el catálogo
+   * no la trae (Volvé). Ausente = la página no publica un rango propio.
+   */
+  teaRange?: readonly [number, number]
+  /** La página imprime como tasa máxima el tope del BCU y no una tasa propia (Pronto!). */
+  capOnly?: true
+  montos: string
+  sourceLabel: string
+  sourceUrl: string
+}
+
+export const CLEARING_LENDERS: readonly ClearingLender[] = Object.freeze([
+  {
+    lenderId: 'anda',
+    name: 'ANDA',
+    recibo: 'pide',
+    dice: 'En sus preguntas frecuentes: "Sí, podés afiliarte a ANDA y solicitar tu préstamo estando en el Clearing de Informes. Dependiendo del tipo de antecedente, se puede solicitar una garantía."',
+    pide: 'Ser socio, último recibo de sueldo, 6 meses de antigüedad laboral (los pasivos no requieren antigüedad) y cédula vigente. El monto depende de tu "disponible", que se calcula con el recibo.',
+    tasa: 'Noviembre de 2026: bajo 10.000 UI, 26,30 % (1 a 10 cuotas) o 31,50 % (12 o más) + IVA; desde 10.000 UI, 27,20 % o 30,60 % + IVA.',
+    teaRange: [26.3, 31.5],
+    montos: '1 a 48 cuotas; 10.000 UI eran $ 66.838 con la UI del 31 de octubre de 2026.',
+    sourceLabel: 'ANDA — preguntas frecuentes de préstamos',
+    sourceUrl: 'https://anda.com.uy/prestamos/preguntas-frecuentes/',
+  },
+  {
+    lenderId: 'cash',
+    name: 'Cash',
+    recibo: 'pide',
+    dice: 'En sus requisitos: "Estar en el clearing con antecedentes de incumplimiento no es excluyente para solicitar un crédito", sujeto a aprobación crediticia.',
+    pide: 'Último recibo de ingresos, comprobante de domicilio y cédula vigente. Empleados en relación de dependencia y jubilados mayores de 21 años, con 4 meses de antigüedad laboral e ingreso líquido mayor a $ 10.000.',
+    // Sólo el rango: la tabla por celda de su página parece cruzada (134,7 % cae en una celda cuyo
+    // tope legal es 55,13 %), y una fuente no se "corrige" acá.
+    tasa: 'TEA de 54,1 % a 141,7 % + IVA según monto y plazo (noviembre de 2026), más gastos de concesión de hasta 40 UI, administrativos de hasta 80 UI y un seguro de 6 por mil mensual sobre saldo. Su ejemplo: $ 10.000 en 10 cuotas fijas de $ 1.661, total $ 16.610.',
+    teaRange: [54.1, 141.7],
+    montos:
+      '$ 5.000 a $ 500.000 en hasta 48 cuotas (sus preguntas frecuentes dicen "hasta $ 250.000").',
+    sourceLabel: 'Cash — requisitos y documentación',
+    sourceUrl: 'https://prestamocash.com.uy/pagina/requisitos-y-documentacion',
+  },
+  {
+    lenderId: 'pronto',
+    name: 'Pronto!',
+    recibo: 'no-pide',
+    dice: 'Titula su página "Préstamos estando en el clearing y sin recibo de sueldo" y dice que evalúa tu perfil crediticio antes de ofertar.',
+    pide: '"Podrás solicitarlos solo con la cédula"; aconseja presentar el recibo de sueldo o de jubilación "para poder acceder a mejores ofertas".',
+    tasa: 'No publica su tasa para este caso: sus términos imprimen como máximos los topes del BCU (la tabla de más abajo). Su ejemplo es con recibo: $ 500.000 en 42 cuotas de $ 28.526, TEA 49 % + IVA, precio total financiado $ 1.198.092.',
+    capOnly: true,
+    montos: '$ 5.000 a $ 600.000 en hasta 48 cuotas; se retira en una sucursal.',
+    sourceLabel: 'Pronto! — préstamos estando en el clearing y sin recibo de sueldo',
+    sourceUrl: 'https://www.pronto.com.uy/dinero/',
+  },
+  {
+    lenderId: 'volve',
+    name: 'Volvé',
+    recibo: 'no-pide',
+    dice: '"Te damos la oportunidad de volver al mundo crediticio sin importar si estás en el Clearing." Se dirige a quien tiene "malos antecedentes crediticios".',
+    pide: '"Simplemente tener entre 35 y 75 años y una cuenta bancaria a tu nombre." Da hasta 100 préstamos por día.',
+    tasa: 'TEA entre 112 % y 141,74 % + IVA, más gastos de hasta 120 UI (40 UI por la concesión y 8 UI por cuota).',
+    // El catálogo (`LENDER_TIERLIST` y el snapshot del 2026-11-08) la tiene sin tasa: este rango,
+    // leído en el pie de https://www.volve.com.uy/ el 2026-11-20, es el que va a la tabla principal.
+    teaRange: [112, 141.74],
+    montos:
+      'El primero es de $ 1.000 en 3 cuotas; pagándolo en fecha, de $ 1.000 a $ 60.000 en 3 a 24 cuotas.',
+    sourceLabel: 'Volvé — página principal',
+    sourceUrl: 'https://www.volve.com.uy/',
+  },
+  {
+    lenderId: 'pago-despues',
+    name: 'Pago Después',
+    recibo: 'no-publica',
+    dice: '"Accedé a préstamos en efectivo sin vueltas. Incluso estando en el Clearing", sujeto a aprobación crediticia.',
+    pide: 'Ser cliente de su app: pedís si tenés monto disponible; si no, se habilita "realizando compras con Pago Después y siendo buen cliente". credisol.com.uy redirige a este mismo sitio.',
+    // El snapshot del 2026-11-08 le puso teaMaxPct 126 y en su propia nota dice que ese rango
+    // "replica el tope legal del BCU por tramo de monto en UI, no es una tasa promocional propia".
+    // Por eso la tabla principal tampoco lo imprime como su tasa (`READ_AS_BCU_CAP`).
+    tasa: 'No publica una tasa propia: como tasa, su página legal imprime el tope de tasas del BCU.',
+    montos: 'Se acredita en tu cuenta bancaria "en menos de 24hs hábiles".',
+    sourceLabel: 'Pago Después — página principal',
+    sourceUrl: 'https://www.pagodespues.com.uy/',
+  },
+])
+
+/** Las que atienden a quien no tiene recibo pero exigen no tener antecedentes, con sus palabras. */
+export const CLEARING_CLOSED: readonly { name: string; quote: string; sourceUrl: string }[] =
+  Object.freeze([
+    {
+      name: 'OCA',
+      quote: '"no figurar actualmente en el clearing"',
+      sourceUrl: 'https://oca.uy/prestamos/nuevo-cliente.html',
+    },
+    {
+      name: 'BROU',
+      quote:
+        '"No figurar con información negativa en el BROU o en el resto del sistema financiero"',
+      sourceUrl:
+        'https://www.brou.com.uy/personas/prestamos/prestamo-consumo/prestamos-sin-retencion-en-pesos-ui-y-dolares',
+    },
+    {
+      name: 'República Microfinanzas',
+      quote: '"Sin morosidad vigente en Clearing de informes y/o sistema financiero"',
+      sourceUrl:
+        'https://www.republicamicrofinanzas.com.uy/wp-content/uploads/2025/04/cartilla-prestamo-efectivo.pdf',
+    },
+  ])
+
+/**
+ * La campaña "Préstamos a Pasivos 2026" del BROU: eBROU desde el 9/11; WhatsApp (2 1996 000) del
+ * 16/11 al 22/12 para quien cobra menos de $ 30.000 nominales; en sucursales, dos dígitos
+ * verificadores por día en DOS rondas (quien cobra en el BROU, 16–20/11 y 9–15/12; quien no,
+ * 24–30/11 y 16–22/12), y desde el 23/12 todos. La ronda de noviembre dura una semana: la página
+ * imprime las rondas enteras, nunca "desde el 16", que al día siguiente de cerrar ya engaña.
+ */
+export const BROU_PASIVOS_CAMPAIGN = Object.freeze({
+  readOn: '2026-11-20',
+  sourceUrl: 'https://www.brou.com.uy/personas/prestamos/campania-prestamos-a-pasivos-2026',
+})
+
+/** `['A']` → `'A'`; `['A', 'B']` → `'A y B'`; `['A', 'B', 'C']` → `'A, B y C'`. */
+export function joinEs(names: readonly string[]): string {
+  if (names.length <= 1) return names[0] ?? ''
+  return `${names.slice(0, -1).join(', ')} y ${names[names.length - 1]}`
+}
+
+/** Las de la tabla del clearing con esa postura sobre el recibo: `'pide'` → "ANDA y Cash". */
+export const clearingNames = (recibo: PayslipStance): string =>
+  joinEs(CLEARING_LENDERS.filter(l => l.recibo === recibo).map(l => l.name))
+
+/** `[112, 141.74]` → `'de 112 % a 141,74 % + IVA'`. */
+const rangeEs = ([lo, hi]: readonly [number, number]): string =>
+  lo === hi ? `${pctEs(lo)} + IVA` : `de ${pctEs(lo)} a ${pctEs(hi)} + IVA`
+
+/**
+ * Lo que publica cada una de la tabla del clearing como tasa, armado con los números de sus filas:
+ * "sin recibo, Volvé publica de 112 % a 141,74 % + IVA y Pronto! imprime como máximo el tope del
+ * BCU (…); con recibo, ANDA publica de 26,3 % a 31,5 % + IVA y Cash, de 54,1 % a 141,7 % + IVA."
+ * Las que no publican tasa (Pago Después) no entran: no hay qué comparar.
+ */
+export function clearingRatesSentence(capLabel: string): string {
+  const part = (recibo: PayslipStance): string =>
+    joinEs(
+      CLEARING_LENDERS.filter(l => l.recibo === recibo).flatMap(l => {
+        if (l.teaRange) return [`${l.name} publica ${rangeEs(l.teaRange)}`]
+        if (l.capOnly) {
+          return [
+            `${l.name} imprime como máximo el tope del BCU (${capLabel} en pesos, menos de 10.000 UI y hasta un año)`,
+          ]
+        }
+        return []
+      })
+    )
+  const sin = part('no-pide')
+  const con = part('pide')
+  return [sin && `sin recibo, ${sin}`, con && `con recibo, ${con}`].filter(Boolean).join('; ') + '.'
+}
+
+const MONTHS_ES = [
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'setiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
+] as const
+
+/** `'2026-11-20'` → `'20 de noviembre de 2026'`, sin `Intl` ni zona horaria. */
+export function isoDateEs(iso: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso)
+  const month = m ? MONTHS_ES[Number(m[2]) - 1] : undefined
+  return m && month ? `${Number(m[3])} de ${month} de ${m[1]}` : iso
+}
+
+/**
+ * Ids que la propia página leyó como "presta sin comprobante de ingresos": las de la cédula sola (o
+ * cédula y otro papel) y las del clearing que no piden recibo. Existe porque el refresco semanal del
+ * catálogo reetiqueta audiencias (el 2026-11-08 les sacó 'independiente' a Pronto! y a Creditel) y
+ * la tabla principal no puede contradecir una lectura fechada de la página del prestamista.
+ */
+const READ_WITHOUT_PAYSLIP: ReadonlySet<string> = new Set(
+  [
+    ...SOLO_CEDULA_LENDERS.filter(l => l.soloCedula !== 'no').map(l => l.lenderId),
+    ...CLEARING_LENDERS.filter(l => l.recibo === 'no-pide').map(l => l.lenderId),
+  ].filter((id): id is string => !!id)
+)
+
+/**
+ * La TEA de la tabla del clearing para las que el catálogo trae sin tasa. Sólo rellena un hueco:
+ * si el catálogo (o el snapshot semanal) publica una tasa, gana esa. Existe porque la tabla
+ * principal decía "No la publica" para Volvé dos secciones arriba de la fila que cita su rango.
+ */
+const READ_TEA: ReadonlyMap<string, readonly [number, number]> = new Map(
+  CLEARING_LENDERS.filter(l => l.lenderId && l.teaRange).map(
+    l => [l.lenderId!, l.teaRange!] as const
+  )
+)
+
+/**
+ * Las que imprimen como tasa el tope del BCU y no una propia (Pago Después: el snapshot del
+ * 2026-11-08 le puso "hasta 126 %" y su propia nota dice que replica el tope legal). Una cifra del
+ * tope no es la tasa de esa institución, así que no se rotula como tal ni entra al rango de tasas.
+ */
+const READ_AS_BCU_CAP: ReadonlySet<string> = new Set(['pago-despues'])
+export const BCU_CAP_ONLY_LABEL = 'Imprime el tope del BCU'
+
+/** The rate this page prints for a lender: the catalogue's, or the page's own dated reading. */
+function pageTea(l: LenderEntity): { teaPct: number | null; teaMaxPct: number | null } {
+  if (READ_AS_BCU_CAP.has(l.id)) return { teaPct: null, teaMaxPct: null }
+  const read = READ_TEA.get(l.id)
+  if (read && !(l.teaPct != null && l.teaPct > 0) && !(l.teaMaxPct != null && l.teaMaxPct > 0)) {
+    return { teaPct: read[0], teaMaxPct: read[1] }
+  }
+  return { teaPct: l.teaPct, teaMaxPct: l.teaMaxPct }
+}
+
 // ── Topes de usura vigentes (BCU, Ley 18.212) ─────────────────────────────────────────────────
 //
 // El BCU republica la tabla TODOS LOS MESES sobre una ventana trimestral móvil (memoria
-// `un-solo-tope-de-usura`), así que las seis filas que la grilla viva trae (`/api/bcu-rates`:
-// consumo en pesos y en dólares, por tramo y por plazo) se reemplazan por las de hoy y las que la
-// grilla no trae (autorización de descuento, retención de haberes, crédito de nómina) quedan como
-// lectura fechada del PDF y se marcan así. Regla legal (art. 11, redacción Ley 19.732): tope =
+// `un-solo-tope-de-usura`), así que las CUATRO filas de consumo en pesos (por tramo y por plazo)
+// se reemplazan por las que trae hoy la grilla viva (`/api/bcu-rates`). Las de dólares NO: la
+// grilla seguía sirviendo 8,26 % / 12,26 % cuando la Comunicación 2026/212 ya decía 11,2685 % /
+// 17,7785 %, así que quedan como lectura fechada de esa comunicación hasta que `/api/bcu-rates`
+// las lea bien. Las que la grilla no trae (autorización de descuento, retención de haberes,
+// crédito de nómina) también son lectura fechada, y todas las fechadas se marcan así. Regla legal (art. 11, redacción Ley 19.732): tope =
 // media + 55 %; crédito de nómina + 20 %; retención de haberes + 30 %; mora + 80 %.
 //
 // La lectura fechada sale de la COMUNICACIÓN que publica cada tabla y no del PDF de la URL fija:
@@ -274,6 +540,8 @@ export const BCU_CAPS_IN_FORCE_SINCE = '2026-11-01'
 export const BCU_CAPS_SOURCE_URL = 'https://www.bcu.gub.uy/Comunicados/seggco26212.pdf'
 /** Número de la comunicación, para el pie de la tabla: que no quede escrito a mano en la página. */
 export const BCU_CAPS_COMUNICACION = '2026/212'
+/** Fecha de la comunicación ("Montevideo, 22 de octubre de 2026"): no es la de su lectura. */
+export const BCU_CAPS_COMUNICACION_DATE = '2026-10-22'
 /**
  * Cuándo se leyó esa comunicación. Aparte de `SOLO_CEDULA_REVIEWED` a propósito: la tabla del BCU
  * se volvió a leer ese día y las páginas de los prestamistas no.
@@ -388,6 +656,9 @@ export const NOPAYSLIP_CAPS: readonly NoPayslipCapRow[] = Object.freeze([
   },
   // En dólares el PDF publica UNA sola celda de consumo, sin partir por autorización de descuento ni
   // por tramo de UI: no existe un tope en dólares "sin descuento bajo 10.000 UI".
+  // Sin `grid` a propósito: /api/bcu-rates trae las filas en dólares sin parsearlas, y el 2026-11-19
+  // servía 8,26 % / 12,26 % contra 7,27 % / 11,47 % de la Comunicación 2026/212. La grilla viva
+  // pisaba esta lectura buena con una vieja; hasta que la grilla las lea, rige la comunicación.
   {
     id: 'usd-consumo-corto',
     segment: 'Consumo en dólares (única categoría)',
@@ -396,7 +667,6 @@ export const NOPAYSLIP_CAPS: readonly NoPayslipCapRow[] = Object.freeze([
     meanPct: 7.27,
     capPct: 11.2685,
     moraPct: 13.086,
-    grid: 'menor10kUI|corto|USD',
   },
   {
     id: 'usd-consumo-largo',
@@ -406,7 +676,6 @@ export const NOPAYSLIP_CAPS: readonly NoPayslipCapRow[] = Object.freeze([
     meanPct: 11.47,
     capPct: 17.7785,
     moraPct: 20.646,
-    grid: 'menor10kUI|largo|USD',
   },
 ])
 
@@ -508,20 +777,27 @@ export function teaLabelOf(teaPct: number | null, teaMaxPct: number | null): str
 
 /**
  * Lenders that will consider somebody without a payslip: those whose published audience includes
- * independent workers, plus pawn/secured lenders, which assess the collateral instead of income.
+ * independent workers, pawn/secured lenders, which assess the collateral instead of income, and
+ * the ones this page read lending without proof of income (`READ_WITHOUT_PAYSLIP`).
  * Cheapest representative TEA first; lenders that publish no rate go last.
  */
 export function noPayslipLenders(lenders: readonly LenderEntity[]): NoPayslipRow[] {
   return lenders
-    .filter(l => l.audiences.includes('independiente') || l.segment === 'prendario')
+    .filter(
+      l =>
+        l.audiences.includes('independiente') ||
+        l.segment === 'prendario' ||
+        READ_WITHOUT_PAYSLIP.has(l.id)
+    )
     .map(l => {
-      const tea = representativeTea(l.teaPct, l.teaMaxPct)
+      const { teaPct, teaMaxPct } = pageTea(l)
+      const tea = representativeTea(teaPct, teaMaxPct)
       return {
         id: l.id,
         name: l.name,
         segment: l.segment,
         segmentLabel: SEGMENT_LABELS[l.segment],
-        teaLabel: teaLabelOf(l.teaPct, l.teaMaxPct),
+        teaLabel: READ_AS_BCU_CAP.has(l.id) ? BCU_CAP_ONLY_LABEL : teaLabelOf(teaPct, teaMaxPct),
         // A 0 % "rate" is a promotion or a fee-based product, not a comparable TEA.
         teaSort: tea != null && tea > 0 ? tea : null,
         clearing: l.clearing,
@@ -558,8 +834,9 @@ export function teaSpread(
   let withRate = 0
   for (const l of lenders) {
     if (!ids.has(l.id)) continue
-    const lo = l.teaPct != null && l.teaPct > 0 ? l.teaPct : null
-    const hi = l.teaMaxPct != null && l.teaMaxPct > 0 ? l.teaMaxPct : null
+    const { teaPct, teaMaxPct } = pageTea(l)
+    const lo = teaPct != null && teaPct > 0 ? teaPct : null
+    const hi = teaMaxPct != null && teaMaxPct > 0 ? teaMaxPct : null
     const low = lo ?? hi
     const high = hi ?? lo
     if (low == null || high == null) continue
@@ -577,12 +854,15 @@ export interface NoPayslipFaqInput {
   capLabel: string
   /** When that cap took effect, e.g. "1 de setiembre de 2026". */
   capSince: string
+  /** `CLEARING_REVIEWED` formatted by the page, e.g. "20 de noviembre de 2026". */
+  clearingReviewedLabel: string
 }
 
 export interface NoPayslipFaq {
   id: string
   question: string
   answer: string
+  link?: { label: string; to: string }
 }
 
 /**
@@ -594,9 +874,24 @@ export function buildNoPayslipFaq({
   spread,
   capLabel,
   capSince,
+  clearingReviewedLabel,
 }: NoPayslipFaqInput): NoPayslipFaq[] {
   const withClearing = rows.filter(r => r.clearing === 'si').length
-  const soloCedula = SOLO_CEDULA_LENDERS.filter(l => l.soloCedula === 'si').map(l => l.name)
+  const soloCedulaRows = SOLO_CEDULA_LENDERS.filter(l => l.soloCedula === 'si')
+  const soloCedula = soloCedulaRows.map(l => l.name)
+  // Las páginas que la respuesta cita se releyeron en días distintos: la fecha es la de la lectura
+  // más vieja y la más nueva de esas filas, no la global de la tabla.
+  const soloReads = [...new Set(soloCedulaRows.map(l => l.readOn ?? SOLO_CEDULA_REVIEWED))].sort()
+  const soloReadLabel =
+    soloReads.length > 1
+      ? `leídas entre el ${isoDateEs(soloReads[0]!)} y el ${isoDateEs(soloReads[soloReads.length - 1]!)}`
+      : `leídas el ${isoDateEs(soloReads[0] ?? SOLO_CEDULA_REVIEWED)}`
+  const conRecibo = clearingNames('pide')
+  const sinRecibo = clearingNames('no-pide')
+  const conReciboRows = CLEARING_LENDERS.filter(l => l.recibo === 'pide')
+  const sinReciboRows = CLEARING_LENDERS.filter(l => l.recibo === 'no-pide')
+  const each = (list: readonly ClearingLender[]) => list.map(l => `${l.name}: ${l.pide}`).join(' ')
+  const all = (n: number) => (n === 2 ? 'Las dos' : 'Todas')
   const range =
     spread.min != null && spread.max != null
       ? `Entre las ${rows.length} instituciones que atienden a quien no tiene recibo, las tasas efectivas anuales publicadas van de ${pctEs(spread.min)} a ${pctEs(spread.max)}.`
@@ -611,7 +906,7 @@ export function buildNoPayslipFaq({
     {
       id: 'solo-cedula',
       question: 'Préstamos solo con cédula: ¿quién los da de verdad?',
-      answer: `${soloCedula.join(' y ')} lo anuncian en sus propias páginas (leídas el 22 de setiembre de 2026). Creditel pide además tres facturas de UTE, OSE o Antel a tu nombre si no tenés comprobante. Crédito de la Casa, Verde, ANDA y República Microfinanzas piden recibo o actividad documentada, aunque algún comparador las liste como "sólo con cédula". "Sólo con cédula" quiere decir sin comprobante de ingresos, no sin mirar el clearing: OCA exige no figurar en él, y sólo Pronto! dice prestar estando en el clearing.`,
+      answer: `${soloCedula.join(' y ')} lo anuncian en sus propias páginas (${soloReadLabel}). Creditel pide además tres facturas de UTE, OSE o Antel a tu nombre si no tenés comprobante. Crédito de la Casa, Verde, ANDA y República Microfinanzas piden recibo o actividad documentada, aunque algún comparador las liste como "sólo con cédula". "Sólo con cédula" quiere decir sin comprobante de ingresos, no sin mirar el clearing: OCA exige no figurar en él. De las que anuncian la cédula sola, Pronto! es la que dice prestar estando en el clearing; con recibo también lo dicen ${conRecibo}.`,
     },
     {
       id: 'certificado',
@@ -627,7 +922,18 @@ export function buildNoPayslipFaq({
     {
       id: 'clearing',
       question: '¿Y si además estoy en el clearing?',
-      answer: `${withClearing} de las ${rows.length} instituciones de esta lista publican que prestan con antecedentes negativos. OCA y el BROU exigen no figurar en el clearing, así que ahí la puerta de la cédula se cierra. Antes de endeudarte más, mirá cómo regularizar y salir del clearing.`,
+      answer: `${withClearing} de las ${rows.length} instituciones de esta lista publican que prestan con antecedentes negativos; las que además lo dicen sin pedir recibo son ${sinRecibo}. Fuera de esta lista, porque piden recibo de sueldo, también lo dicen ${conRecibo}. OCA y el BROU exigen no figurar en el clearing, así que ahí la puerta de la cédula se cierra. Antes de endeudarte más, mirá cómo regularizar y salir del clearing.`,
+      link: { label: 'Cómo salir del clearing', to: '/salir-del-clearing' },
+    },
+    {
+      id: 'clearing-con-recibo',
+      question: '¿Quién presta estando en el clearing y con recibo de sueldo?',
+      answer: `${conRecibo}, según su propia página (leída el ${clearingReviewedLabel}). ${each(conReciboRows)} ${all(conReciboRows.length)} resuelven caso a caso, sujeto a aprobación crediticia.`,
+    },
+    {
+      id: 'clearing-sin-recibo',
+      question: '¿Y estando en el clearing y sin recibo de sueldo?',
+      answer: `${sinRecibo}, según su propia página (leída el ${clearingReviewedLabel}). ${each(sinReciboRows)} En tasas: ${clearingRatesSentence(capLabel)} La otra salida es una garantía, como el empeño, donde lo que respalda el préstamo es el objeto que dejás; el empeño del BROU igual exige no tener información negativa.`,
     },
     {
       id: 'estafa',

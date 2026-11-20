@@ -16,8 +16,14 @@ import { BROU_DEPOSIT_BOARD, netOfIrpf, type BankBoardTranche } from './investme
 
 export const LRM_PATH = '/letras-de-regulacion-monetaria-uruguay'
 
-/** Día en que se leyeron a mano la planilla, el calendario, los tarifarios y las normas. */
+/** Día en que se leyeron a mano la planilla y el calendario de la foto horneada. */
 export const LRM_VERIFIED_AT = '2026-10-19'
+
+/**
+ * Día en que se releyeron los tarifarios, la pizarra e-BROU, las normas del BCU y las páginas de
+ * cada banco. Todo lo de {@link LRM_WHERE_TO_BUY} vale a esta fecha: se relee cuando se mueve.
+ */
+export const LRM_TARIFFS_VERIFIED_AT = '2026-11-20'
 
 // --- Forma de la foto (espejo de classes/lrm/types.ts) -------------------------------------------
 
@@ -99,6 +105,22 @@ export const LRM_SOURCES = Object.freeze({
   brouTariffUrl:
     'https://www.brou.com.uy/documents/20182/112335/Tarifario_Sitio.pdf/681aecbe-2ba8-4616-844a-97ebd97e0175',
   itauTariffUrl: 'https://www.itau.com.uy/inst/aci/docs/tarifario.pdf',
+  /** BCU, 1/3/2024: «Acceso a Letras de Regulación Monetaria por parte de la ciudadanía». */
+  citizenAccessUrl:
+    'https://www.bcu.gub.uy/Comunicaciones/Paginas/Detalle-Noticia.aspx?noticia=309&title=Acceso-a-Letras-de-Regulaci%C3%B3n-Monetaria-por-parte-de-la-ciudadan%C3%ADa',
+  brouInstrumentsUrl: 'https://www.brou.com.uy/personas/inversiones/instrumentos-financieros',
+  brouInstrumentsFaqUrl:
+    'https://www.brou.com.uy/personas/inversiones/instrumentos-financieros/preguntas-frecuentes',
+  itauProductUrl: 'https://www.itau.com.uy/inst/paratiInversiones.html',
+  bbvaTariffUrl:
+    'https://www.bbva.com.uy/content/dam/public-web/uruguay/documents/NuevoTarifario2024.pdf',
+  santanderProductUrl:
+    'https://www.santander.com.uy/Inversiones/Letras-de-Regulaci%C3%B3n-Monetaria-y-Notas-emitidas-por-el-Gobierno-Central',
+  santanderAppUrl: 'https://www.santander.com.uy/santander-digital/app-inversiones',
+  santanderTariffUrl: 'https://www.santander.com.uy/manual-de-tarifas?tipo=inversion',
+  scotiabankPremiumUrl: 'https://www.scotiabank.com.uy/Banca-Premium/default',
+  scotiabankInvestmentsUrl: 'https://www.scotiabank.com.uy/Banca-Premium/Inversiones/default',
+  bcuIntermediariesUrl: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/int_Valores.aspx',
 })
 
 /**
@@ -623,7 +645,8 @@ export interface BrokerTariff {
  * $ 9.999.999 y 0,50 % desde $ 10.000.000, con un mínimo de $ 2.500, «sobre valor nominal» y
  * «ponderadas por tiempo remanente», topeadas en un año. Custodia sin cargo (3.2).
  *
- * Itaú: tarifario versión 01/10/2026, 10.1: «Letras de Regulación Monetarias — Comisión Entrada:
+ * Itaú: tarifario «Versión_ noviembre 01, 2026» (releído el 20/11/2026, el renglón de las LRM no
+ * cambió desde la versión de octubre), 10.1: «Letras de Regulación Monetarias — Comisión Entrada:
  * 2 puntos de la tasa; Comisión Salida: 1 punto de la tasa». Custodia sin costo (10.2).
  */
 export const BROKER_TARIFFS: readonly BrokerTariff[] = Object.freeze([
@@ -639,7 +662,7 @@ export const BROKER_TARIFFS: readonly BrokerTariff[] = Object.freeze([
     name: 'Itaú',
     rule: '2 puntos de la tasa al comprar y 1 punto al vender antes del vencimiento',
     source: LRM_SOURCES.itauTariffUrl,
-    sourceLabel: 'Itaú — Tarifario, versión del 1/10/2026, apartado 10.1',
+    sourceLabel: 'Itaú — Tarifario, versión del 1/11/2026, apartado 10.1',
   },
   {
     id: 'none',
@@ -647,6 +670,127 @@ export const BROKER_TARIFFS: readonly BrokerTariff[] = Object.freeze([
     rule: 'la tasa de corte entera, el techo de lo que puede rendir la letra',
     source: LRM_SOURCES.operationsUrl,
     sourceLabel: 'BCU — tasa de corte de la licitación',
+  },
+])
+
+const tariffRule = (id: BrokerId): string => BROKER_TARIFFS.find(t => t.id === id)!.rule
+
+export interface LrmSeller {
+  id: 'brou' | 'itau' | 'bbva' | 'santander' | 'scotiabank'
+  name: string
+  how: string
+  minimum: string
+  commission: string
+  custody: string
+  /** Si la tarifa publicada alcanza para calcular cuánto te queda: sólo entonces va al simulador. */
+  computable: boolean
+  /**
+   * Qué comisión publica el banco para comprar una letra: un renglón propio de las LRM (`'lrm'`),
+   * sólo el de compra y venta de valores en general (`'valores'`) o ninguna (`'none'`). La fila del
+   * mismo banco en `investments.ts` (/inversiones-uruguay) lo repite y
+   * `tests/unit/lrmBanksAgree.test.ts` las ata.
+   */
+  publishedFee: 'lrm' | 'valores' | 'none'
+  sources: readonly { label: string; url: string }[]
+}
+
+/**
+ * Qué publica cada banco sobre comprar LRM, en su sitio y su tarifario, releído el
+ * {@link LRM_TARIFFS_VERIFIED_AT}. Se imprime literal: BBVA y Santander publican un porcentaje sin
+ * decir si es anual o ponderado por el plazo, y Santander no tiene un renglón para letras, así que
+ * esas tarifas nunca entran en una cuenta.
+ *
+ * - BROU, preguntas frecuentes de instrumentos financieros: «¿Dónde puedo realizar mis inversiones
+ *   en el Banco República? En nuestras dependencias, Ud. puede consultar Ejecutivos de Negocios»;
+ *   «WhatsApp: 2 1996 000». Ninguna página pública del BROU describe una compra de LRM por e-BROU.
+ * - Itaú, página de inversiones: «Monto mínimo: $100.000. Vencimiento: 30, 90, 180 y 360 días»;
+ *   «Cliqueá en Inversiones … La contratación de la inversión es automática y el dinero se debita
+ *   de tu cuenta en ese momento».
+ * - BBVA, «Manual de tarifas y comisiones», 3/9/2026, sección 42: «Letras de Regulación Monetaria |
+ *   402 | Todos los importes | 1,20% | USD 50»; sección 43, custodia: «Todo importe | 0.80% Máximo
+ *   IVA incluido».
+ * - Santander, manual de tarifas de inversión: «Monto Mínimo a Operar … UYU 100.000. Comisión 2%
+ *   sobre precio más una Comisión Fija de USD 40 + IVA»; custodia mensual de «0,20% + IVA anual» a
+ *   «1,60% + IVA anual - Resto de clientes». App Inversiones: «será necesario generar una instancia
+ *   presencial o por videollamada con tu Ejecutivo Select o Private Banking».
+ * - Scotiabank, Banca Premium: «Letras de regulación monetaria» entre sus productos; «Se requiere
+ *   ingresos de $300.000 pesos uruguayos líquidos mensuales o inversiones mayores a USD 100.000».
+ *   Su página de inversiones las ofrece como producto propio: «Letras de Regulación Monetaria y
+ *   Notas … desde 30 hasta 360 días … Al vencimiento, se acreditará en tu cuenta el valor nominal
+ *   … Aplica mínimos», sin decir cuál ni qué cobra.
+ */
+export const LRM_WHERE_TO_BUY: readonly LrmSeller[] = Object.freeze([
+  {
+    id: 'brou',
+    name: 'BROU',
+    how: 'En sucursales, con un Ejecutivo de Negocios. Su sitio no describe una compra de LRM por e-BROU; para consultas da el WhatsApp 2 1996 000.',
+    minimum: 'No publica uno propio.',
+    commission: tariffRule('brou'),
+    custody: 'Sin cargo.',
+    computable: true,
+    publishedFee: 'lrm',
+    sources: [
+      { label: 'Tarifario', url: LRM_SOURCES.brouTariffUrl },
+      { label: 'Preguntas frecuentes', url: LRM_SOURCES.brouInstrumentsFaqUrl },
+    ],
+  },
+  {
+    id: 'itau',
+    name: 'Itaú',
+    how: 'Online, desde la web del banco: entrás a Inversiones, elegís la letra y se debita en el momento.',
+    minimum: '$ 100.000, a 30, 90, 180 o 360 días.',
+    commission: tariffRule('itau'),
+    custody: 'Sin costo.',
+    computable: true,
+    publishedFee: 'lrm',
+    sources: [
+      { label: 'Inversiones', url: LRM_SOURCES.itauProductUrl },
+      { label: 'Tarifario', url: LRM_SOURCES.itauTariffUrl },
+    ],
+  },
+  {
+    id: 'bbva',
+    name: 'BBVA',
+    how: 'Su manual de tarifas no dice por qué canal.',
+    minimum: 'El manual no fija uno para LRM.',
+    commission:
+      '1,20 % sobre todos los importes, con un mínimo de USD 50. El manual no dice si es anual ni si se pondera por el plazo.',
+    custody:
+      '0,80 % como máximo, IVA incluido, en el renglón general de custodia de valores. El manual no dice sobre qué base ni por qué período.',
+    computable: false,
+    publishedFee: 'lrm',
+    sources: [{ label: 'Manual de tarifas', url: LRM_SOURCES.bbvaTariffUrl }],
+  },
+  {
+    id: 'santander',
+    name: 'Santander',
+    how: 'Tiene página de producto para letras, que no describe el trámite. Su app de inversiones se habilita en una instancia presencial o por videollamada con un ejecutivo Select o Private Banking.',
+    minimum: '$ 100.000 para operar valores.',
+    commission:
+      'No tiene un renglón para letras. Para compra y venta de valores en general: 2 % sobre el precio más USD 40 fijos.',
+    custody:
+      'Mensual sobre la cartera: de 0,20 % a 1,60 % anual más IVA, según el segmento y el volumen invertido.',
+    computable: false,
+    publishedFee: 'valores',
+    sources: [
+      { label: 'Letras', url: LRM_SOURCES.santanderProductUrl },
+      { label: 'App Inversiones', url: LRM_SOURCES.santanderAppUrl },
+      { label: 'Manual de tarifas', url: LRM_SOURCES.santanderTariffUrl },
+    ],
+  },
+  {
+    id: 'scotiabank',
+    name: 'Scotiabank',
+    how: 'Las nombra entre los productos de Banca Premium, que pide ingresos líquidos de $ 300.000 por mes o inversiones por más de USD 100.000.',
+    minimum: 'No publicado.',
+    commission: 'No encontramos una publicada.',
+    custody: 'No publicada.',
+    computable: false,
+    publishedFee: 'none',
+    sources: [
+      { label: 'Banca Premium', url: LRM_SOURCES.scotiabankPremiumUrl },
+      { label: 'Inversiones', url: LRM_SOURCES.scotiabankInvestmentsUrl },
+    ],
   },
 ])
 
@@ -767,6 +911,141 @@ export function breakEvenAmount(auction: LrmAuction, broker: BrokerId): number |
   return at(lo)
 }
 
+/** El mínimo del plazo fijo e-BROU en pesos, leído del texto de la pizarra («$ 5.000»). */
+export const DEPOSIT_MIN_UYU = Number(BROU_DEPOSIT_BOARD.series.UYU.minimum.replace(/\D/g, ''))
+
+/** La última licitación de cada plazo, del más corto al más largo. */
+export function sortedLatest(snapshot: LrmSnapshotDoc): LrmAuction[] {
+  return [...snapshot.latest].sort((a, b) => a.termRef - b.termRef)
+}
+
+export interface BreakEvenRow {
+  termRef: LrmTermRef
+  days: number
+  cutRate: number
+  /** Tasa de la pizarra e-BROU a ese plazo, o `null` si la letra es más corta que el primer tramo. */
+  deposit: number | null
+  amount: number | null
+  /** Si hay un plazo fijo e-BROU a los días de la letra con el que compararla. */
+  comparable: boolean
+}
+
+/** Desde qué monto la letra comprada por el BROU le gana al plazo fijo, plazo por plazo. */
+export function buildBreakEvenRows(snapshot: LrmSnapshotDoc): BreakEvenRow[] {
+  return sortedLatest(snapshot).map(a => {
+    const tranche = depositTrancheForDays(a.days)
+    return {
+      termRef: a.termRef,
+      days: a.days,
+      cutRate: a.cutRate,
+      deposit: tranche?.online ?? null,
+      amount: breakEvenAmount(a, 'brou'),
+      comparable: tranche != null,
+    }
+  })
+}
+
+/**
+ * La celda «La letra gana desde». Sin plazo fijo comparable no hay nada que ganar: decir
+ * «más de $ 50 millones» ahí sería afirmar una comparación que no se hizo.
+ */
+export function breakEvenLabel(row: { amount: number | null; comparable: boolean }): string {
+  if (!row.comparable) return 'sin plazo fijo a ese plazo'
+  if (row.amount != null) return money(row.amount)
+  return `más de $ ${formatNumber(BREAK_EVEN_CAP / 1_000_000, 0)} millones`
+}
+
+/** «desde $ 850.000 a 90 días, desde $ 1.760.000 a 30 días y desde …», de menor a mayor monto. */
+export function breakEvenSentence(
+  rows: readonly { termRef: LrmTermRef; amount: number | null }[]
+): string {
+  return joinY(
+    rows
+      .filter((r): r is { termRef: LrmTermRef; amount: number } => r.amount != null)
+      .sort((a, b) => a.amount - b.amount)
+      .map(r => `desde ${money(r.amount)} a ${LRM_TERM_LABEL[r.termRef]}`)
+  )
+}
+
+/** «a, b y c»; '' si no hay nada. */
+function joinY(parts: readonly string[]): string {
+  if (parts.length < 2) return parts[0] ?? ''
+  return `${parts.slice(0, -1).join(', ')} y ${parts.at(-1)}`
+}
+
+/** Por qué una letra corta no se compara con un plazo fijo. */
+export function noComparableDepositSentence(days: number): string {
+  const shortest = BROU_DEPOSIT_BOARD.series.UYU.tranches[0]!.minDays
+  return `El plazo fijo e-BROU más corto es de ${shortest} días: una letra a ${days} días no tiene con qué compararse.`
+}
+
+// --- Cuánto queda según el monto ------------------------------------------------------------------------
+
+/** Los montos de la tabla: los que más se buscan, incluido uno por debajo del mínimo de la letra. */
+export const LRM_GRID_AMOUNTS: readonly number[] = Object.freeze([
+  50_000, 100_000, 200_000, 500_000, 1_000_000, 5_000_000, 10_000_000,
+])
+
+export interface AmountGridCell {
+  termRef: LrmTermRef
+  days: number
+  cutRate: number
+  /** La letra que más deja entre comprarla por el BROU o por Itaú; `null` debajo del mínimo. */
+  letter: { broker: 'brou' | 'itau'; netGain: number; netAnnualPct: number } | null
+  /** Plazo fijo e-BROU a los mismos días, después del IRPF; `null` si la pizarra no tiene el plazo. */
+  deposit: { netGain: number; netAnnualPct: number } | null
+  winner: 'letter' | 'deposit' | null
+}
+
+export interface AmountGridRow {
+  amount: number
+  belowMinimum: boolean
+  cells: AmountGridCell[]
+}
+
+/** La cuenta del simulador para cada monto de {@link LRM_GRID_AMOUNTS} y cada plazo. */
+export function buildAmountGrid(
+  snapshot: LrmSnapshotDoc,
+  amounts: readonly number[] = LRM_GRID_AMOUNTS
+): AmountGridRow[] {
+  const auctions = sortedLatest(snapshot)
+  return amounts.map(amount => {
+    const belowMinimum = amount < LRM_MIN_BID
+    return {
+      amount,
+      belowMinimum,
+      cells: auctions.map(a => {
+        let letter: AmountGridCell['letter'] = null
+        if (!belowMinimum) {
+          const brou = lrmOutcome(amount, a, 'brou')
+          const itau = lrmOutcome(amount, a, 'itau')
+          const best =
+            itau.netGain > brou.netGain
+              ? { o: itau, broker: 'itau' as const }
+              : { o: brou, broker: 'brou' as const }
+          letter = {
+            broker: best.broker,
+            netGain: best.o.netGain,
+            netAnnualPct: best.o.netAnnualPct,
+          }
+        }
+        const d = depositOutcome(amount, a.days)
+        const deposit = d ? { netGain: d.netGain, netAnnualPct: d.netAnnualPct } : null
+        const winner =
+          letter && deposit ? (letter.netGain >= deposit.netGain ? 'letter' : 'deposit') : null
+        return { termRef: a.termRef, days: a.days, cutRate: a.cutRate, letter, deposit, winner }
+      }),
+    }
+  })
+}
+
+/** Las `n` licitaciones más nuevas de la foto, sin suponer en qué orden vienen. */
+export function latestAuctions(snapshot: LrmSnapshotDoc, n = 12): LrmAuction[] {
+  return [...snapshot.recent]
+    .sort((a, b) => (a.date !== b.date ? (a.date < b.date ? 1 : -1) : a.series < b.series ? 1 : -1))
+    .slice(0, n)
+}
+
 // --- Textos de la página -----------------------------------------------------------------------------
 
 export function latestFor(snapshot: LrmSnapshotDoc, termRef: LrmTermRef): LrmAuction | null {
@@ -808,11 +1087,48 @@ export function lrmDescription(snapshot: LrmSnapshotDoc): string {
   return `Letras de Regulación Monetaria al ${shortDay(newest)}: ${list}. Cómo comprarlas, comisión e IRPF.`
 }
 
-/** Las preguntas frecuentes, armadas con los números de la foto. */
+/** Qué cuenta como «una letra a 60 días»: más larga que cualquier 30 días y bien más corta que 90. */
+const SIXTY_DAY_RANGE = { min: 46, max: 75 } as const
+
+/**
+ * La letra a dos años y la de 60 días, dichas con lo que pasó en la foto y no sólo con el
+ * documento del BCU: el documento prevé una a 720 días por mes, pero en el año medido el
+ * 2026-11-19 no se licitó ninguna, y leído solo mandaría a buscar una letra que no se emite.
+ */
+export function plazosFromRecent(
+  snapshot: LrmSnapshotDoc,
+  ordered: readonly LrmAuction[] = sortedLatest(snapshot)
+): string {
+  const doc = 'El documento de instrumentos del BCU prevé'
+  const inLatest = ordered.some(a => a.termRef === 720)
+  const recent = latestAuctions(snapshot, snapshot.recent.length)
+  if (!recent.length)
+    return `${doc} ${inLatest ? '' : 'además '}una letra a dos años, una vez por mes.`
+  const since = recent.at(-1)!.date
+  const span = `en las ${recent.length} licitaciones desde el ${shortDay(since)}`
+  const twoYear = recent.find(a => a.termRef === 720) ?? null
+  const sixty =
+    recent.find(a => a.days >= SIXTY_DAY_RANGE.min && a.days <= SIXTY_DAY_RANGE.max) ?? null
+  const longest = Math.max(...recent.map(a => a.days))
+  const twoYearText = twoYear
+    ? `${doc} ${inLatest ? '' : 'además '}una letra a dos años, una vez por mes: la última se licitó el ${shortDay(twoYear.date)}, a ${twoYear.days} días.`
+    : `${doc} además una letra a dos años, una vez por mes, pero ${span} no se licitó ninguna: la más larga duró ${longest} días.`
+  const sixtyText = sixty
+    ? `A unos 60 días hubo una el ${shortDay(sixty.date)}, de ${sixty.days} días.`
+    : twoYear
+      ? `${span.charAt(0).toUpperCase()}${span.slice(1)} no hubo ninguna a 60 días.`
+      : 'Tampoco hubo ninguna a 60 días.'
+  return `${twoYearText} ${sixtyText}`
+}
+
+/**
+ * Las preguntas frecuentes, armadas con los números de la foto. Las PREGUNTAS son fijas (la clave
+ * del FAQPage sale de ellas); sólo las respuestas cambian con los datos.
+ */
 export function buildLrmFaq(
   snapshot: LrmSnapshotDoc,
   next: LrmUpcoming | null,
-  thirtyBreakEven: number | null
+  breakEven: readonly { termRef: LrmTermRef; amount: number | null }[]
 ): FaqItem[] {
   const rates = snapshot.latest
     .map(a => `${LRM_TERM_LABEL[a.termRef]}: ${pct(a.cutRate)} (${shortDay(a.date)})`)
@@ -820,6 +1136,12 @@ export function buildLrmFaq(
   const ui = snapshot.treasury.find(t => t.currency === 'UI')
   // La alícuota del plazo fijo en pesos a menos de un año, leída de la matriz y no escrita a mano.
   const depositIrpf = netOfIrpf(1, 'UYU', 12).taxPct
+  const breakEvenText = breakEvenSentence(breakEven)
+  const ordered = sortedLatest(snapshot)
+  // Lo más parecido a una letra con menos de $ 100.000: el plazo fijo a los días de la de 90.
+  const ninety = latestFor(snapshot, 90)
+  const small = ninety ? depositOutcome(50_000, ninety.days) : null
+  const board = BROU_DEPOSIT_BOARD.series.UYU
   const items: FaqItem[] = [
     {
       id: 'lrm-tasa',
@@ -855,17 +1177,58 @@ export function buildLrmFaq(
     {
       id: 'lrm-conviene',
       question: '¿Rinde más una LRM que un plazo fijo?',
-      answer: thirtyBreakEven
-        ? `Depende del monto. La tasa de corte es más alta que la pizarra e-BROU y no paga IRPF, pero la comisión mínima del BROU es de $ 2.500 por operación: a 30 días, la letra le gana al plazo fijo recién desde unos $ ${formatNumber(thirtyBreakEven, 0)}.`
+      answer: breakEvenText
+        ? `Depende del monto. La tasa de corte es más alta que la pizarra e-BROU y la letra no paga IRPF, pero la comisión mínima del BROU es de ${money(BROU_MIN_COMMISSION)} por operación: comprada por el BROU, la letra le gana al plazo fijo e-BROU ${breakEvenText}.`
         : 'Depende del monto y del plazo: la tasa de corte es más alta que la pizarra e-BROU y no paga IRPF, pero la comisión del banco se come esa diferencia en montos chicos.',
       link: { label: 'Calculadora de plazo fijo', to: '/herramientas/calculadora-plazo-fijo' },
     },
     {
       id: 'lrm-ui',
       question: '¿Hay Letras de Regulación Monetaria en UI o en dólares?',
-      answer: ui
-        ? `Hoy el BCU emite LRM sólo en pesos nominales. En unidades indexadas, lo que licita el Estado son Notas del Tesoro del MEF: la última, el ${shortDay(ui.date)}, cortó en ${pct(ui.yield)} real anual a ${formatNumber(ui.years, 0)} años.`
-        : 'Hoy el BCU emite LRM sólo en pesos nominales. En unidades indexadas, lo que licita el Estado son Notas del Tesoro del MEF.',
+      answer: `${
+        ui
+          ? `Hoy el BCU emite LRM sólo en pesos nominales. En unidades indexadas, lo que licita el Estado son Notas del Tesoro del MEF: la última, el ${shortDay(ui.date)}, cortó en ${pct(ui.yield)} real anual a ${formatNumber(ui.years, 0)} años.`
+          : 'Hoy el BCU emite LRM sólo en pesos nominales. En unidades indexadas, lo que licita el Estado son Notas del Tesoro del MEF.'
+      } En dólares tampoco hay: para comprar una LRM hay que pasar los dólares a pesos, y al vencer cobrás pesos.`,
+    },
+    {
+      id: 'lrm-maximo',
+      question: '¿Hay un monto máximo para invertir en LRM?',
+      answer: `El reglamento de Operadores Primarios y el documento de instrumentos del BCU no fijan un máximo por persona. El tope depende de por dónde entra tu compra. Si tu banco o corredor no es Operador Primario, entra por el tramo no competitivo, que es el menor entre el 20 % de lo licitado y el 20 % de lo adjudicado: ninguna institución puede pedir más que eso, y si entre todas piden más se reparte en proporción (Reglamento de Operadores Primarios, art. 8).${
+        next
+          ? ` Para la próxima licitación, el calendario del BCU anuncia $ ${formatNumber(next.nonCompetitive, 0)} millones en ese tramo.`
+          : ''
+      } Un Operador Primario puja en el tramo competitivo, que no tiene ese tope, y en el mercado secundario se compran letras ya emitidas, fuera de la licitación.`,
+    },
+    {
+      id: 'lrm-menos-del-minimo',
+      question: '¿Qué puedo hacer con menos de $ 100.000?',
+      answer: `Una letra en la licitación, no: el sistema del BCU no toma propuestas por menos de ${money(LRM_MIN_BID)}, y es también el mínimo que publica Itaú. Lo más parecido es un plazo fijo por e-BROU, que arranca en ${board.minimum}${
+        small && ninety
+          ? `: con ${money(50_000)} a ${ninety.days} días ganás ${money(small.netGain)} después del IRPF (pizarra ${pct(small.grossPct)})`
+          : ''
+      }. Si necesitás la plata todos los días, algunas cuentas remuneradas son fondos que compran LRM y otros papeles del BCU y del Tesoro por vos.`,
+      link: { label: 'Cuentas remuneradas en pesos', to: '/cuenta-remunerada-uruguay' },
+    },
+    {
+      id: 'lrm-brou',
+      question: '¿Cómo compro LRM en el BROU? ¿Se puede por e-BROU?',
+      answer: `El BROU las compra para sus clientes y publica la comisión: ${tariffRule('brou')}; la custodia es sin cargo. En su sitio no describe una compra de LRM por e-BROU: en las preguntas frecuentes de instrumentos financieros dice que las inversiones se hacen «en nuestras dependencias», con un Ejecutivo de Negocios, y para consultas da el WhatsApp 2 1996 000. Lo que sí se contrata por e-BROU es el plazo fijo.`,
+    },
+    {
+      id: 'lrm-plazos',
+      question: '¿Qué plazos hay? ¿Existe una letra a 60 días o a más de un año?',
+      answer: `${
+        ordered.length
+          ? `En las últimas licitaciones hubo letras a ${joinY(ordered.map(a => LRM_TERM_LABEL[a.termRef]))}: son plazos aproximados, de ${joinY(ordered.map(a => String(a.days)))} días exactos. `
+          : ''
+      }${plazosFromRecent(snapshot, ordered)} A más de dos años, lo que se licita son Notas del Tesoro del MEF.`,
+    },
+    {
+      id: 'lrm-segura',
+      question: '¿Es segura una LRM? ¿La cubre la garantía de depósitos?',
+      answer:
+        'Quien te debe es el Banco Central del Uruguay, que la emite en pesos y paga el valor nominal al vencimiento. Pero no es un depósito: el BROU advierte que los títulos comprados por intermedio de un banco «NO constituyen un depósito en el banco» y no están alcanzados por la cobertura del ahorro bancario, así que el riesgo es el del emisor. Los otros dos riesgos son el de tasa (si la vendés antes y las tasas subieron, vendés con pérdida) y el de inflación: paga una tasa fija en pesos.',
     },
     {
       id: 'lrm-vender',

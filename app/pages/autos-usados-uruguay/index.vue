@@ -16,7 +16,7 @@
         contra autos iguales.
         <template v-if="data">
           Hoy hay {{ data.coverage.listings.toLocaleString('es-UY') }} avisos vigentes; última
-          lectura el {{ formatCarDate(data.coverage.lastReadAt) }}.
+          lectura el {{ formatCarDate(data.coverage.lastReadAt) }}. {{ marketLead }}
         </template>
       </p>
       <!-- Las oportunidades y "¿el auto tiene deudas?" están en la barra "En esta sección". -->
@@ -122,6 +122,14 @@
       </template>
     </CarsSidebarLayout>
 
+    <CarsDirectoryMarket
+      v-if="market || browseFacets"
+      :summary="market"
+      :facets="browseFacets"
+      :total="data?.coverage.listings ?? null"
+      @apply="applyShortcut"
+    />
+
     <section v-if="data?.coverage.models.length" class="mt-10">
       <h2 class="text-h5 mb-3">Precios por modelo</h2>
       <p class="text-body-2 mb-3">
@@ -190,6 +198,15 @@
         </li>
       </ul>
     </section>
+    <!-- :ad="false": el directorio ya lleva su unidad en la grilla (tests/unit/feedAd.test.ts). -->
+    <FaqSection
+      v-if="faq.length"
+      :items="faq"
+      heading="Preguntas frecuentes"
+      :expanded="true"
+      :ad="false"
+      class="mt-10"
+    />
     <RentalAlertDialogHost />
   </VContainer>
 </template>
@@ -202,7 +219,13 @@ import RentalAlertDialogHost from '~/components/rentals/RentalAlertDialogHost.vu
 import { CAR_RISKS_PATH } from '~/utils/carsRisk'
 import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 import { CAR_ADVISOR_PATH } from '~/utils/carAdvisorFigures'
-import { CAR_REPORT_PATH } from '~/utils/carsReport'
+import { CAR_REPORT_PATH, type CarReportResponse } from '~/utils/carsReport'
+import {
+  carsDirectoryFaq,
+  carsDirectoryFresh,
+  carsDirectoryLead,
+  carsDirectorySummary,
+} from '~/utils/carsDirectorySummary'
 import { CAR_SELL_PATH, CAR_VALUATION_PATH } from '~/utils/carsValuation'
 import {
   CARS_PATH,
@@ -241,10 +264,36 @@ const sortItems: Array<{ title: string; value: CarSort; short: string }> = [
 ]
 
 const query = computed(() => normalizeCarsQuery(route.query as Record<string, unknown>))
-const { data, error } = await useAsyncData(
-  'cars-directory',
-  () => $fetch<CarsResponse>('/api/cars', { query: carsQueryParams(query.value) }),
-  { watch: [query] }
+// El mercado en números sale del MISMO informe que /mercado-de-autos-usados-uruguay, en paralelo
+// con el catálogo y con un tope corto: si tarda o falla, el bloque no se dibuja y la lista sí.
+// `transform` deja en el payload sólo el resumen (unos 3 KB), no el informe entero.
+const [{ data, error }, { data: marketSummary }] = await Promise.all([
+  useAsyncData(
+    'cars-directory',
+    () => $fetch<CarsResponse>('/api/cars', { query: carsQueryParams(query.value) }),
+    { watch: [query] }
+  ),
+  useAsyncData(
+    'cars-directory-market',
+    () =>
+      $fetch<CarReportResponse>('/api/car-report', { timeout: 2500, retry: 0 }).catch(() => null),
+    { transform: carsDirectorySummary }
+  ),
+])
+
+/** Sólo junto a un catálogo de la misma época: las dos fechas vienen del payload. */
+const market = computed(() =>
+  carsDirectoryFresh(marketSummary.value, data.value?.generatedAt)
+    ? (marketSummary.value ?? null)
+    : null
+)
+const marketLead = computed(() => (market.value ? carsDirectoryLead(market.value) : ''))
+const faq = computed(() => carsDirectoryFaq(market.value, data.value?.coverage ?? null))
+/** Los conteos por departamento y carrocería son del catálogo entero sólo sin filtros puestos. */
+const browseFacets = computed(() =>
+  data.value && !carsFiltered(query.value)
+    ? { departments: data.value.facets.departments, bodies: data.value.facets.bodies }
+    : null
 )
 
 const pageCount = computed(() =>
@@ -293,6 +342,12 @@ function changePage(page: number) {
 function update(next: CarsQuery) {
   filtersOpen.value = false
   router.replace({ query: carsQueryParams(next) })
+}
+
+/** Un atajo del bloque de mercado reemplaza los filtros, conserva el orden y sube a la lista. */
+function applyShortcut(params: Record<string, string>) {
+  update(normalizeCarsQuery({ ...params, sort: query.value.sort }))
+  scrollToPageTop('cars-results')
 }
 
 const canonical = `https://cambio-uruguay.com${CARS_PATH}`

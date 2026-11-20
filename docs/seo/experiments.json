@@ -3335,6 +3335,227 @@
         "iva compras del exterior uruguay"
       ],
       "hypothesis": "Consolidacion de un par canibalizado. El sitio servia DOS URLs propias para la misma intencion desde el 2026-09-21: la pagina raiz /impuesto-temu-uruguay ('Impuesto Temu: cuanto pagas en Uruguay') y la guia /guias/impuesto-temu-uruguay ('Impuesto Temu: que es y cuanto pagas'). Las dos respondian 200, las dos salian index follow, cada una se declaraba canonica de si misma y las dos entraban al sitemap, asi que Google recibia dos candidatas para la misma consulta y repartia entre ellas los enlaces internos (storeProfiles.ts, guidesPrimavera2026.ts, linkedinPosts.ts, xPosts.ts y /franquicia-aduana-uruguay), las impresiones y los clics. El sintoma es el peor posible para medir: ninguna de las dos aparece mal, las dos rankean peor que una. Lo detecto tests/unit/slugCollision.test.ts el 2026-11-12, que ya habia escrito el arreglo y la fecha en que se podia hacer: la ruta estaba RESERVADA por la fila impuesto-temu-tema-y-enlace del 2026-10-20 y se liberaba el 2026-11-18. Se hace del lado de la GUIA y no de la pagina, porque la pagina tiene el nombre popular con el que se busca, dos filas del libro medidas sobre ella y el gancho del minimo legal de IVA: la guia conserva su cuerpo y sus enlaces entrantes, pasa a canonical hacia /impuesto-temu-uruguay, se declara noindex follow (follow, para seguir pasando la autoridad de la media docena de paginas que enlaza) y sale del sitemap en los tres idiomas. Borrarla tiraria la senal que esos enlaces acumularon; consolidarla la mueve a la URL que se queda. Los dos posts sociales que apuntaban a la guia (feed de LinkedIn y de X) pasan a la pagina, porque un enlace externo a una URL noindex que canoniza en otra se desperdicia. No se toco titulo, descripcion, H1 ni cuerpo de ninguna de las dos. Se espera que la porcion de clics del par no baje y que la de la pagina raiz suba, porque la senal repartida se concentra en una sola URL; se mide por cuota de clics del sitio sobre las DOS rutas juntas, con 28 dias archivados antes y despues y sin el dia del deploy."
+    },
+    {
+      "id": "autos-directorio-mercado-en-numeros",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/autos-usados-uruguay"
+      ],
+      "queries": [
+        "autos usados en uruguay",
+        "venta de autos usados",
+        "autos usados",
+        "venta autos en uruguay",
+        "lista de precios de autos usados en uruguay",
+        "venta de autos usados en montevideo",
+        "compra de autos usados"
+      ],
+      "hypothesis": "El directorio de autos es la 2a pagina mas visitada desde Uruguay (483 vistas en 28 dias) y la primera puerta de entrada desde asistentes de IA (55 de sus 89 entradas), pero su HTML de servidor no traia ninguna cifra de precio del mercado, ni preguntas frecuentes, ni un enlace a las cinco paginas por presupuesto, y los filtros no se dibujan en el servidor. Ahora publica, del mismo informe que /mercado-de-autos-usados-uruguay y con su fecha, la mediana y el rango central de los avisos en dolares en el encabezado, los avisos por franja de precio, los presupuestos con enlace a su pagina, el precio mediano de las diez marcas con mas avisos, los avisos por departamento y carroceria y hasta ocho preguntas con respuesta medida. En Search Console parte de 4 clics y 140 impresiones en posicion 32,3: la lectura principal es la entrada desde asistentes en GA4 y la posicion de las consultas de cola."
+    },
+    {
+      "id": "ruidos-molestos-por-caso-y-por-departamento",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/denunciar-ruidos-molestos-uruguay"
+      ],
+      "queries": [
+        "denuncia por ruidos molestos",
+        "denuncia por ruidos molestos anónima",
+        "denuncia ruidos molestos canelones",
+        "ruidos molestos de vecinos que hacer",
+        "hasta que hora se puede hacer ruidos molestos",
+        "cuanto es la multa por ruidos molestos",
+        "denuncia por ruidos molestos online",
+        "ruidos molestos en edificios"
+      ],
+      "hypothesis": "Las diez respuestas del bloque de preguntas no llegaban al HTML del servidor ni al DOM hidratado (paneles perezosos) y la pagina, que promete Uruguay en su H1, solo publicaba el canal de Montevideo. 69 % de las 5.920 impresiones de 28 dias (21/10-17/11) y 72 de los 124 clics son de consultas anonimizadas; las 244 visibles preguntan por caso: vecino, casa o edificio (61 variantes), telefono o a quien llamar (53), hasta que hora (31, nueve entre posicion 9 y 25), policia o 911 (19), anonima (80 impresiones, posicion 4,0), otro departamento (posicion 10,8), multa (posicion 10). Se agregan con fuente primaria: tabla segun quien hace el ruido, hasta que hora, multas en UR, canales de Canelones, Maldonado, Salto, Rivera y Lavalleja, mediacion de la Defensoria de Vecinas y Vecinos, WhatsApp del Buzon Ciudadano, y las preguntas se renderizan en el servidor. Titulo y descripcion no se tocan. LEER ANTES DEL VEREDICTO: la ventana entra en temporada alta de denuncias (diciembre) y la pagina ya venia con +64 % de visitas en dos semanas."
+    },
+    {
+      "id": "guia-shein-como-se-compra-demora-y-cuanto-sale",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/guias/comprar-en-shein-desde-uruguay"
+      ],
+      "queries": [
+        "shein uruguay",
+        "shein uruguay como comprar",
+        "se puede comprar en shein desde uruguay",
+        "shein llega a uruguay",
+        "cuanto demora shein en llegar a uruguay",
+        "cuanto demora un pedido de shein a uruguay",
+        "hay shein en uruguay",
+        "si compro en shein tengo que pagar aduana"
+      ],
+      "hypothesis": "La guia contestaba si Shein envia y dejaba sin respuesta, o solo dentro de una pregunta frecuente plegada cuyo texto no sale en el HTML del servidor, lo que la gente escribe despues: como se compra (623 impresiones y 6 clics en posicion 6,4 a 9,2 en Search Console 2026-10-21..11-17), cuanto demora (99 impresiones y 0 clics; 95 dicen demora y la pagina decia tarda), si hay sitio, app o local en Uruguay (shein uruguay: 1.291 impresiones en posicion 7,3 con 5 clics) y cuanto termina saliendo. Se agregan tres secciones (como comprar: sitio, app y moneda; cuanto demora, con el total de 9 a 16 dias laborables desde el pago; despues de pagar: quien declara y que datos te piden, con el art. 9 del Decreto 50/026 y las preguntas frecuentes de la DNA) y una tabla de seis pedidos calculada con courierImport() mas el envio que publica Shein (US$ 12,90 hasta US$ 79): un pedido de US$ 75 termina en US$ 107,90 y uno de US$ 80 en US$ 100. Las preguntas frecuentes pasan de 7 a 13 y repiten lo que ya dicen las secciones; la del maquillaje contesta que se puede traer por el regimen general con despachante. Todo releido el 20/11/2026 en las paginas de Shein, la DNA, el MEF e IMPO. No toca titulo ni descripcion ni los enlaces al par del impuesto Temu, que esta en ventana abierta. La pagina recibio 26 sesiones desde asistentes de IA en 28 dias."
+    },
+    {
+      "id": "oportunidades-autos-resumen-por-presupuesto-y-modelo",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/oportunidades-autos-usados-uruguay"
+      ],
+      "hypothesis": "El HTML canonico (20/11/2026) mostraba 20 de 99 oportunidades (todas solidas, ninguna de las 71 exploratorias) y solo el total con su fecha; las paginas 2 en adelante y cada filtro van noindex. Suma el resumen fechado sobre toda la lista (solidas y exploratorias, rango y mediana de precio, diferencia mediana), cuantas hay hasta cada presupuesto con enlace a las cinco paginas por presupuesto, los modelos con mas oportunidades, preguntas frecuentes con las cifras del dia y dateModified en el JSON-LD. Base de 28 dias: 137 vistas UY, 49 entradas (27 desde asistentes de IA, 19 organicas), 2 clics y 10 impresiones, posicion 4.7. El libro dara sin datos por clics (menos de 10 previos): se lee por entradas desde IA e impresiones."
+    },
+    {
+      "id": "lrm-monto-banco-y-licitaciones",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/letras-de-regulacion-monetaria-uruguay"
+      ],
+      "queries": [
+        "lrm",
+        "lrm uruguay",
+        "letras de regulacion monetaria",
+        "licitacion letras",
+        "lrm brou",
+        "bcu licitaciones lrm",
+        "como comprar letras de regulación monetaria en uruguay",
+        "comprar letras de regulación monetaria brou"
+      ],
+      "hypothesis": "Se llevo al HTML del servidor lo que se pregunta despues de 'LRM' y la pagina no contestaba: tabla de cuanto queda por monto y plazo (el simulador solo renderizaba $ 500.000 a 90 dias), donde se compran banco por banco con lo que cada uno publica de canal, minimo, comision y custodia (BROU, Itau, BBVA, Santander, Scotiabank), las ultimas 12 licitaciones, monto maximo, que hacer con menos de $ 100.000, que plazos hay (con la letra a dos anos contada contra las licitaciones del ultimo ano) y si la cubre la garantia de depositos. Se corrigio la fila de 30 dias, que decia 'mas de $ 50 millones' cuando no hay plazo fijo comparable (la letra de 30 dias duro 28; 29 de 57 licitaciones de ese plazo duraron menos de 30). Evidencia: 42 clics, 1.767 impresiones, posicion 5,4 en 28 dias; 'lrm brou' en 10,3 y 'comprar letras de regulacion monetaria brou' en 16,0; 21 impresiones visibles piden banco y 24 monto o plazo."
+    },
+    {
+      "id": "clearing-anda-fideciu-contaduria-lo-que-publican",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/alquilar-estando-en-clearing"
+      ],
+      "queries": [
+        "garantía de alquiler estando en el clearing",
+        "garantía de alquiler anda estando en el clearing",
+        "garantía de alquiler estando en clearing",
+        "garantia de alquiler estando en clearing",
+        "garantias de alquiler estando en el clearing",
+        "garantia de alquiler estando en el clearing"
+      ],
+      "hypothesis": "La pagina es la 16 del sitio por visitas de Uruguay: posicion 1,0-1,6 para 'garantia de alquiler estando en el clearing' (203 impresiones, 15 clics en 28 dias) y 3,1 para 'garantia de alquiler anda estando en el clearing' (29 impresiones, 2 clics). Para esa variante, la fila decia que ANDA no aclaraba si miraba el clearing y el selector la dejaba en 'cuesta arriba', cuando ANDA publica en sus preguntas frecuentes de propietarios e inmobiliarias 'Personas registradas en Clearing de Informes pueden acceder al servicio', sujeto a aprobacion. Se corrige ANDA con la cita y se agregan FIDECIU, que publica 'no excluyente, se analiza cada caso', y la Contaduria/SGA, que la Ley 20.212 art. 631 nombra entre los servicios que no pueden negarse por el clearing (con quien puede usarla). Ademas: una tabla de siete aseguradoras con lo que cada una publica, un bloque de respuesta corta arriba, el detalle de cada garantia que ya estaba escrito y no se dibujaba, y las respuestas de las preguntas frecuentes pasan al HTML del servidor (estaban solo en el JSON-LD). Titulo y descripcion no se tocan."
+    },
+    {
+      "id": "calculadora-sueldo-liquido-tablas-y-explicacion",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/herramientas/calculadora-sueldo-liquido"
+      ],
+      "queries": [
+        "nominal a liquido",
+        "sueldo liquido",
+        "salario liquido uruguay",
+        "sueldo liquido uruguay",
+        "sueldo nominal",
+        "liquido a nominal",
+        "60000 nominales a liquidos",
+        "salario liquido"
+      ],
+      "hypothesis": "16.657 impresiones y 74 clics en 28 dias (21/10-17/11), posicion 7,0: 'nominal a liquido' 606 impresiones en 8,1, 'sueldo liquido' 455 en 8,7, 'salario liquido uruguay' 438 en 8,7, 'sueldo nominal' 226 en 10,0, 'liquido a nominal' 87 en 8,6, '60000 nominales a liquidos' 13 en 8,2. El HTML del servidor casi no tenia prosa (unas 165 palabras) y ninguna tabla: la nota de la pagina vivia en un slot que ToolShell no dibuja y las respuestas de las preguntas frecuentes solo salen en el JSON-LD. Se suma, debajo de la calculadora y con la misma funcion (computePayroll): tabla de nominal a liquido para 15 montos, del salario minimo a $ 250.000; tabla inversa de liquido al menor nominal necesario, de $ 25.000 a $ 150.000 en mano; tabla con hijos o conyuge a cargo; que es nominal y que es liquido; que se descuenta, con las tasas de FONASA del BPS; la cuenta paso a paso; cuatro preguntas frecuentes nuevas (sus respuestas, como las anteriores, salen en el JSON-LD). Ademas el modo inverso devuelve el menor nominal y la tasa del credito es 14 % hasta 15 BPC inclusive. Titulo, descripcion y H1 no cambian."
+    },
+    {
+      "id": "super-hub-respuesta-primero-y-canasta",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/precios-de-supermercado-uruguay"
+      ],
+      "queries": [
+        "precios supermercado uruguay",
+        "que supermercado es mas barato",
+        "supermercado mas barato de montevideo",
+        "que es mas barato",
+        "canasta familiar uruguay 2026",
+        "precio canasta familiar 2026",
+        "supermercado costo",
+        "comparador de precios uruguay"
+      ],
+      "hypothesis": "1.612 impresiones en 28 dias en posicion 7,0 con 16 clics, y 10 de las 24 entradas llegan desde asistentes de IA. El HTML del servidor no decia en una frase que cadena, departamento o local tiene el nivel de precios mas bajo (estaba en tres tablas), no mostraba que 33 articulos forman la canasta ni cuanto cuestan aunque nationalCost ya viajaba en el payload, y listaba solo los primeros 25 articulos por orden alfabetico (11 aceites, aguas, afeitadoras y alcohol): salvo el aceite, ningun otro articulo de la canasta. Ahora abre con la lectura fechada (rango de cadenas y departamentos calificados, Montevideo, local comparable mas barato) y muestra la canasta articulo por articulo con cantidad, mediana y subtotal, aclarando que no es un presupuesto, mas cuatro preguntas frecuentes nuevas. Corrige ademas tres afirmaciones que la fuente oficial o el propio dato desmienten: que el Estado no guarda el historico (el SIPC lo guarda desde 2007 y publica los precios diarios como datos abiertos), que el sistema no obliga a actualizar todos los dias (obliga) y que 373 locales declaran precios (son los que tienen canasta comparable; un articulo lo declaran 763)."
+    },
+    {
+      "id": "inversiones-por-monto-y-tasas-de-hoy",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/inversiones-uruguay"
+      ],
+      "queries": [
+        "en que invertir 5.000 dólares en uruguay",
+        "en que invertir 1.000 dólares en uruguay",
+        "tengo 2 millones de pesos en que puedo invertir",
+        "en que invertir en uruguay 2026",
+        "donde invertir en uruguay 2026",
+        "inversiones en uruguay 2026",
+        "en que invertir en uruguay",
+        "en que invertir hoy"
+      ],
+      "hypothesis": "Search Console 21/10-17/11/2026: 1.233 impresiones, 16 clics, posicion 11,0. La consulta con mas impresiones es 'en que invertir 5.000 dolares en uruguay' (40, posicion 7,6); con '1.000 dolares' y '2 millones de pesos' suman 51 impresiones en esta ruta y 2 de los 7 clics con consulta visible, y la pagina no tenia ningun bloque por monto ni una sola tasa de rendimiento: era un directorio de entidades. Ademas 36 consultas largas con forma de pregunta a un asistente (bajo riesgo, ingresos estables, renta fija) la muestran en posicion media 2,8 y su FAQPage no se veia en la pagina. Se agregan tarjetas por monto (US$ 1.000, 5.000, 10.000 y $ 2.000.000): en pesos el plazo fijo e-BROU neto de IRPF, la LRM de un ano con la comision del BROU y el tope del seguro de depositos pasado a pesos (que los 2 millones superan); en dolares el minimo, el IRPF y el PDF de la pizarra (la pizarra en dolares del 01/11/2026 todavia no estaba cargada en el repo), la comision de una orden de ese tamano en Gletir y en Prex, los minimos que alcanza y el tope del seguro de depositos. Tambien una tabla de cuanto paga hoy lo de bajo riesgo (LRM y Notas del Tesoro leidas de la planilla del BCU por la API propia, pizarra e-BROU en pesos y UI, referencia TPM de las cuentas que rinden) con IRPF, minimo y como se sale, y las preguntas frecuentes visibles con FaqSection. La celda 'Sin minimo' pasa a 'No publicado' donde el minimo no se verifico. Sin cambio de titulo ni descripcion. Se espera que suba la posicion de las consultas con monto y de las de 2026, y las entradas desde asistentes."
+    },
+    {
+      "id": "calculadora-iva-tabla-de-montos",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/herramientas/calculadora-iva"
+      ],
+      "queries": [
+        "calcular iva uruguay",
+        "calculadora iva uruguay",
+        "sumar iva",
+        "descontar iva",
+        "como calcular el iva en uruguay",
+        "sacar el iva a un precio",
+        "1500 mas iva cuanto es",
+        "cuanto es el iva de 3000 pesos"
+      ],
+      "hypothesis": "10.447 impresiones en 28 dias (21/10-17/11) en posicion 6,9 con 24 clics: CTR 0,23 % donde la curva propia del sitio da 0,70 % (accion ctr-below-curve, 48 clics potenciales). De las 485 consultas que Search Console lista, 231 traen un monto ('1500 mas iva cuanto es', 'cuanto es el iva de 3000 pesos', '1200 menos iva'): mas de 100 montos distintos con 1 a 4 impresiones por consulta, posicion ~7; las listadas suman 2.975 impresiones y 5 clics, asi que el 72 % de las impresiones y 19 de los 24 clics vienen de consultas raras que Google no lista. El HTML del servidor tenia un solo monto resuelto y ninguna tabla. Ahora trae la tabla de 54 montos con IVA y total a 22 % y 10 %, la inversa de 23 precios finales, como sumarlo y como sacarlo (dividir entre 1,22; restar 22 % da mal; el IVA es 18,03 % del precio final), que va a la tasa minima (art. 36, con su calificativo de fresco, congelado o enfriado), que esta exonerado (art. 38) y que significa 'mas IVA' en un presupuesto (Ley 17.250 art. 15). Titulo, descripcion, H1 y la logica de la calculadora no cambian."
+    },
+    {
+      "id": "guia-irpf-alquileres-monto-formularios-y-dolares",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/guias/irpf-de-alquileres-uruguay"
+      ],
+      "queries": [
+        "formulario 5500 dgi",
+        "formulario 5500 y 5600",
+        "a partir de que monto se paga irpf por alquileres",
+        "exoneracion irpf alquileres",
+        "pago irpf alquileres",
+        "anticipo irpf alquileres",
+        "irpf alquileres",
+        "devolucion irpf alquileres"
+      ],
+      "hypothesis": "Guia a 30 dias de publicada: 27 clics, 3.761 impresiones, posicion 7,2, impresiones en alza (931 a 1.305 por semana) y CTR sobre la curva del sitio; la caida de GA4 es el pico de la semana de publicacion. Las consultas visibles piden lo que ningun titulo ni tabla contestaba: los formularios 5500 y 5600 (54 impresiones, posicion 9,6, 0 clics) y desde que monto se paga (25 impresiones, posicion 9,6), y las respuestas de la FAQ no salen en el HTML del servidor. Se agrega que no hay minimo y que el tope de 40 BPC es anual, la tabla de montos del 10,5 %, los topes de 40 y 3 BPC por ano de la DGI, la seccion de formularios con su tabla y sus descargas, Abitab, Red Pagos y BANRED, la devolucion del excedente, el alquiler impago a los tres meses y una seccion sobre el alquiler en dolares. Sin cambio de titulo ni descripcion."
+    },
+    {
+      "id": "prestamo-sin-recibo-clearing-con-y-sin-recibo",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/prestamo-sin-recibo-de-sueldo-uruguay"
+      ],
+      "queries": [
+        "prestamos estando en el clearing con recibo de sueldo",
+        "prestamos estando en clearing sin recibo de sueldo",
+        "préstamos estando en el clearing y sin recibo de sueldo",
+        "prestamos en clearing sin recibo de sueldo",
+        "prestamos con recibo de sueldo y estando en el clearing",
+        "préstamo con recibo de sueldo estando en el clearing",
+        "prestamos sin recibo de sueldo",
+        "préstamos solo con la cédula y sin recibo de sueldo"
+      ],
+      "hypothesis": "Seccion nueva 'Prestamos estando en el clearing: con recibo y sin recibo de sueldo' con cinco instituciones citadas de su propia pagina (ANDA y Cash piden recibo; Pronto y Volve no; Pago Despues no lo publica), sus tasas armadas desde las filas, y correccion de la frase que decia que la unica que presta estando en el clearing es Pronto. GSC 2026-10-21..11-17: seis consultas que cruzan clearing y recibo suman 13 impresiones y 4 clics, la mitad de los 8 clics atribuibles de la pagina, en posiciones 20 a 66; la pagina paso de 3 a 15 clics y de 140 a 295 impresiones y tuvo 18 entradas desde asistentes de IA. Ademas Pronto y Creditel vuelven a la tabla principal, Volve muestra su TEA publicada y Pago Despues deja de mostrar el tope del BCU como su tasa, los topes en dolares salen de la Comunicacion BCU 2026/212, se releyeron OCA, ANDA, Pronto y Republica Microfinanzas, la campana BROU Prestamos a Pasivos 2026 entra con sus rondas completas y las respuestas del FAQ quedan en el HTML del servidor."
+    },
+    {
+      "id": "descuentos-hub-resumen-por-emisor-y-rubro",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/descuentos-con-tarjeta-uruguay"
+      ],
+      "queries": [
+        "¿dónde se encuentran buenas promociones de pago con tarjeta?",
+        "¿cuál procesador de pagos ofrece mejores promociones bancarias en uruguay?",
+        "¿cuál tarjeta suele ofrecer descuentos atractivos en distintos comercios?",
+        "¿qué emisores se destacan por tener promociones frecuentes para sus clientes?",
+        "¿cuáles son las opciones más interesantes para ahorrar mediante descuentos con tarjeta?",
+        "descuentos tarjeta de credito",
+        "descuentos con tarjetas",
+        "descuentos tarjeta"
+      ],
+      "hypothesis": "El indice del directorio de descuentos suma 741 impresiones en 28 dias en posicion 6,6 con 4 clics, casi todas por preguntas entre emisores (donde hay buenas promociones, que emisor se destaca, que tarjeta tiene descuento en mas comercios). Su HTML de servidor no traia ninguna cifra por emisor ni el total del catalogo (solo la cuenta de locales de 48 marcas): diez parrafos de plantilla iguales y nueve preguntas sobre como usar el mapa. Ahora publica, contado de la misma lectura del catalogo que ya pedia en el servidor, el total de marcas y locales con la fecha de la lectura, una tabla por emisor (marcas, locales, con debito, exclusivas, rubro fuerte) con el texto mas repetido de cada uno citado tal cual, la tabla de que emisor lidera cada rubro y cinco preguntas respondidas con esas cifras (cobertura, rubro, debito, dias que nombran los textos, cuotas). Titulo y descripcion sin cambios. Enlaces nuevos en contenido a /que-banco-tiene-mas-descuentos-uruguay, /descuento-de-iva-con-tarjeta-uruguay y /conviene-comprar-en-cuotas; las paginas por emisor y por rubro, reservadas hasta el 2026-11-30, no se tocaron ni recibieron enlaces nuevos."
     }
   ]
 }

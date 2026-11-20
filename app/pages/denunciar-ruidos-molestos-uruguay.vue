@@ -15,9 +15,12 @@
               Si el ruido está pasando ahora, en Montevideo la Intendencia recibe denuncias las 24
               horas en el <strong>{{ nightLine }}</strong
               >, también por fiestas o reuniones en una vivienda. Si es una fiesta que no para, la
-              ley obliga a la Policía a hacerla cesar: llamá al <strong>911</strong>. Abajo, el
-              límite en decibeles, qué datos te piden, qué canales no tienen costo y una plantilla
-              lista para completar y enviar.
+              ley obliga a la Policía a hacerla cesar: llamá al <strong>911</strong>. Fuera de
+              Montevideo, Canelones atiende en el <strong>1828 interno 83</strong> y Maldonado en el
+              <strong>4222 3333</strong>, su línea de solicitudes, las 24 horas. La obligación de la
+              Policía rige en todo el país. Abajo, qué hacer según quién hace el ruido, el límite en
+              decibeles, las multas, qué canales no tienen costo y una plantilla lista para
+              completar y enviar.
             </p>
             <nav :aria-label="t('navigation')" class="noise-navigation d-flex flex-wrap ga-2 mt-4">
               <VBtn
@@ -33,6 +36,10 @@
                 {{ t('useTemplate') }}
               </VBtn>
               <VBtn href="#donde-denunciar" variant="tonal">{{ t('where') }}</VBtn>
+              <VBtn href="#otros-departamentos" variant="tonal" data-cta="noise_outside_montevideo">
+                {{ t('outside') }}
+              </VBtn>
+              <VBtn href="#horarios" variant="text">{{ t('hours') }}</VBtn>
               <VBtn href="#denuncia-anonima" variant="text" data-cta="noise_anonymous">
                 {{ t('anonymous') }}
               </VBtn>
@@ -45,7 +52,37 @@
 
           <VDivider class="mb-6" />
 
-          <!-- 1. El límite -->
+          <!-- 1. Según quién hace el ruido -->
+          <section id="segun-el-caso" class="mb-8">
+            <h2 class="text-h5 font-weight-bold mb-3">Qué hacer según quién hace el ruido</h2>
+            <p class="text-body-1 noise-prose mb-3">
+              Los canales de esta tabla son los de Montevideo. Si vivís en otro departamento, mirá
+              <a href="#otros-departamentos" class="noise-link">dónde denunciar en cada uno</a>. La
+              Ley 17.852 y el 911 rigen en todo el país.
+            </p>
+            <div class="table-scroll">
+              <table class="noise-table cu-mobile-cards">
+                <thead>
+                  <tr>
+                    <th>Quién hace el ruido</th>
+                    <th>Si está pasando ahora</th>
+                    <th>Si se repite</th>
+                    <th>Qué dice la norma</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="row in cases" :key="row.id">
+                    <td>{{ row.who }}</td>
+                    <td data-label="Si está pasando ahora">{{ row.now }}</td>
+                    <td data-label="Si se repite">{{ row.repeated }}</td>
+                    <td data-label="Qué dice la norma">{{ row.norm }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- 2. El límite -->
           <section class="mb-8">
             <h2 class="text-h5 font-weight-bold mb-3">Cuánto ruido permite la norma</h2>
             <p class="text-body-1 noise-prose mb-3">
@@ -75,11 +112,42 @@
               Los valores son los que publica la Intendencia de Montevideo. La Ley 17.852 delega los
               niveles nacionales en el ministerio y deja la fiscalización en la autoridad
               departamental, así que el número que aplica un inspector es el de su Intendencia. Si
-              vivís en otro departamento, consultá la normativa de la tuya.
+              vivís en otro departamento, mirá
+              <a href="#otros-departamentos" class="noise-link">la tabla por departamento</a>.
             </p>
           </section>
 
-          <!-- 2. Antes de denunciar -->
+          <section id="horarios" class="mb-8">
+            <h2 class="text-h5 font-weight-bold mb-3">Hasta qué hora se puede hacer ruido</h2>
+            <p class="text-body-1 noise-prose mb-3">{{ hoursAnswer }}</p>
+            <div class="table-scroll">
+              <table class="noise-table cu-mobile-cards">
+                <thead>
+                  <tr>
+                    <th>Se aplica a</th>
+                    <th>Departamento</th>
+                    <th>Regla</th>
+                    <th>Cuándo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(rule, i) in hourRules" :key="i">
+                    <td>{{ rule.subject }}</td>
+                    <td data-label="Departamento">{{ rule.place }}</td>
+                    <td data-label="Regla">{{ rule.rule }}</td>
+                    <td data-label="Cuándo">{{ rule.when }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="text-body-2 text-medium-emphasis mt-3 mb-0">
+              En Maldonado los niveles son los del ruido de fondo aceptable, con una tolerancia
+              máxima del 10 %, y la regla de diciembre a febrero rige en el conurbano
+              Maldonado–Punta del Este y en los balnearios de la costa oceánica.
+            </p>
+          </section>
+
+          <!-- 3. Antes de denunciar -->
           <section class="mb-8">
             <h2 class="text-h5 font-weight-bold mb-3">Antes de denunciar</h2>
             <p class="text-body-1 noise-prose mb-4">
@@ -149,13 +217,85 @@
                 las 24 horas, también por fiestas o reuniones en viviendas, y el 911 si es una
                 fiesta o un evento puntual. Si el problema se repite, consultá en tu Centro Comunal
                 Zonal cuál es la vía y revisá el reglamento de copropiedad si vivís en un edificio.
+                La Defensoría de Vecinas y Vecinos ofrece mediación entre vecinos, voluntaria,
+                gratuita y confidencial.
               </p>
             </VAlert>
+          </section>
+
+          <section id="otros-departamentos" class="mb-8">
+            <h2 class="text-h5 font-weight-bold mb-3">
+              Fuera de Montevideo: dónde denunciar en cada departamento
+            </h2>
+            <p class="text-body-1 noise-prose mb-3">
+              Estas cinco Intendencias publican por dónde hacer la denuncia: cuatro con un trámite
+              de ruidos y Maldonado con su línea general de solicitudes. Cada fila enlaza su página
+              oficial y la fecha en que esa página se actualizó.
+            </p>
+            <div class="table-scroll">
+              <table class="noise-table cu-mobile-cards">
+                <thead>
+                  <tr>
+                    <th>Departamento</th>
+                    <th>Dónde</th>
+                    <th>Cuándo</th>
+                    <th>Costo</th>
+                    <th>Qué datos pide</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="department in departments" :key="department.id">
+                    <td>
+                      <a
+                        :href="department.url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="noise-link"
+                      >
+                        {{ department.name }}
+                      </a>
+                      <span class="d-block text-caption text-medium-emphasis">
+                        {{
+                          department.updated
+                            ? `Actualizada el ${department.updated}`
+                            : 'La página no publica fecha'
+                        }}
+                      </span>
+                    </td>
+                    <td data-label="Dónde">
+                      {{ department.where }}.
+                      <span v-if="department.note" class="d-block mt-1">{{ department.note }}</span>
+                    </td>
+                    <td data-label="Cuándo">{{ department.when }}</td>
+                    <td data-label="Costo">{{ noiseDepartmentCost(department) }}</td>
+                    <td data-label="Qué datos pide">{{ department.asks }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="text-body-2 noise-prose mt-4 mb-2">
+              Dos vías existen en los 19 departamentos. Una: si es una fiesta o un evento puntual
+              que no para, la Ley 17.852 (art. 13) obliga a la Policía a hacer cesar el ruido; llamá
+              al 911. Dos: la denuncia ambiental del Ministerio de Ambiente, en línea, sin costo y
+              desde cualquier punto del país. Su formulario no nombra el ruido entre sus temas.
+            </p>
+            <p class="text-body-2 text-medium-emphasis mb-0">
+              Para los otros trece departamentos no publicamos un canal: al {{ searchedDisplay }} no
+              encontramos una página oficial vigente que nombre uno. Eso no quiere decir que no
+              exista. Consultá en tu Intendencia.
+            </p>
           </section>
 
           <section id="denuncia-anonima" class="mb-8">
             <h2 class="text-h5 font-weight-bold mb-3">{{ t('anonymousHeading') }}</h2>
             <p class="text-body-1 noise-prose mb-3">{{ t('anonymousAnswer') }}</p>
+            <p class="text-body-2 noise-prose mb-1">Fuera de Montevideo:</p>
+            <ul class="noise-list mb-3">
+              <li v-for="department in departments" :key="department.id">
+                <strong>{{ department.name }}:</strong>
+                {{ noiseDepartmentIdentity(department) }}.
+              </li>
+            </ul>
             <a
               href="https://www.gub.uy/tramites/denuncias-ambiente"
               target="_blank"
@@ -164,6 +304,51 @@
             >
               {{ t('anonymousSource') }}
             </a>
+          </section>
+
+          <section id="multas" class="mb-8">
+            <h2 class="text-h5 font-weight-bold mb-3">Cuánto es la multa por ruidos molestos</h2>
+            <p class="text-body-1 noise-prose mb-3">
+              La multa se fija en Unidades Reajustables (UR), no en pesos. En Montevideo, los ruidos
+              excesivos son 2 UR si la falta es leve, 7 UR si es mediana y 15 UR si es grave. Para
+              pasarlo a pesos, mirá
+              <NuxtLink
+                :to="localePath('/indicadores/unidad-reajustable')"
+                class="noise-link"
+                data-cta="noise_ur_value"
+              >
+                el valor de la UR del día</NuxtLink
+              >.
+            </p>
+            <div class="table-scroll">
+              <table class="noise-table cu-mobile-cards">
+                <thead>
+                  <tr>
+                    <th>Infracción</th>
+                    <th>Departamento</th>
+                    <th>Multa</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(fine, i) in fines" :key="i">
+                    <td>{{ fine.offence }}</td>
+                    <td data-label="Departamento">{{ fine.jurisdiction }}</td>
+                    <td data-label="Multa">{{ fine.amount }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="text-body-2 text-medium-emphasis mt-3 mb-0">
+              Montevideo: Régimen Punitivo Departamental, art. 10, y Digesto, art. D.2014.1 para el
+              ruido de bailes, espectáculos o reuniones que llega a las viviendas vecinas (arts.
+              D.2011.1 a D.2011.3). Para los locales de espectáculos públicos de categorías A, B y C
+              la sanción la fija el art. D.3146.54 del Digesto, que no publicamos acá. El portal de
+              normativa de la Intendencia advierte que su base normativa «se encuentra en estado de
+              revisión». Maldonado: ordenanza de ruidos molestos, art. D.353; responden también el
+              titular de la habilitación, el arrendatario y el propietario, y la multa se carga al
+              padrón del inmueble (art. D.323). Las multas de los vehículos están en la tabla de
+              arriba, según quién hace el ruido.
+            </p>
           </section>
 
           <!-- 5. La plantilla -->
@@ -249,6 +434,14 @@
                     hide-details
                   />
                 </VCol>
+                <VCol cols="12">
+                  <VCheckbox
+                    v-model="form.outsideMontevideo"
+                    label="Denuncio fuera de Montevideo (el texto no cita el límite de Montevideo)"
+                    density="comfortable"
+                    hide-details
+                  />
+                </VCol>
               </VRow>
             </VCard>
 
@@ -309,7 +502,9 @@
             <VExpansionPanels variant="accordion" class="noise-faqs">
               <VExpansionPanel v-for="(faq, i) in faqs" :key="i">
                 <VExpansionPanelTitle class="font-weight-medium">{{ faq.q }}</VExpansionPanelTitle>
-                <VExpansionPanelText>
+                <!-- `eager`: without it the server HTML ships every answer empty, and the answers
+                     only exist inside the FAQPage JSON-LD (measured in production, 19/11/2026). -->
+                <VExpansionPanelText eager>
                   <p class="text-body-1 noise-prose mb-0">{{ faq.a }}</p>
                 </VExpansionPanelText>
               </VExpansionPanel>
@@ -377,8 +572,14 @@
 import type { SendAction } from '~/utils/messageChannels'
 import { noiseNavigationMessages } from '~/utils/noiseNavigationMessages'
 import {
+  NOISE_CASES,
   NOISE_CHANNELS,
+  NOISE_DEPARTMENTS,
+  NOISE_DEPARTMENTS_SEARCHED_AT,
   NOISE_FAQS,
+  NOISE_FINES,
+  NOISE_HOUR_RULES,
+  NOISE_HOURS_ANSWER,
   NOISE_LIMITS,
   NOISE_NIGHT_LINE,
   NOISE_SOURCES,
@@ -389,11 +590,18 @@ import {
   emptyNoiseComplaint,
   missingRequiredFields,
   noiseChannelCost,
+  noiseDepartmentCost,
+  noiseDepartmentIdentity,
 } from '~/utils/noiseComplaint'
 
 const localePath = useLocalePath()
 const { t } = useI18n({ useScope: 'local', messages: noiseNavigationMessages })
 
+const cases = NOISE_CASES
+const hoursAnswer = NOISE_HOURS_ANSWER
+const hourRules = NOISE_HOUR_RULES
+const departments = NOISE_DEPARTMENTS
+const fines = NOISE_FINES
 const limits = NOISE_LIMITS
 const channels = NOISE_CHANNELS
 const steps = NOISE_STEPS
@@ -444,8 +652,7 @@ const sendActions = computed<SendAction[]>(() => [
   {
     channel: 'link',
     label: 'Buzón ciudadano (sin costo)',
-    openUrl:
-      'https://tramites.montevideo.gub.uy/tramites-y-tributos/denuncia/molestias-ruidos-molestos-humo-y-olores',
+    openUrl: 'https://montevideo.gub.uy/buzon-ciudadano',
     copyFirst: true,
     note: 'Copiamos el texto: el formulario no acepta el cuerpo por enlace.',
   },
@@ -458,14 +665,15 @@ const sendActions = computed<SendAction[]>(() => [
   },
 ])
 
-const verifiedDisplay = computed(() =>
-  new Date(NOISE_VERIFIED_AT).toLocaleDateString('es-UY', {
-    timeZone: siteTimeZone(NOISE_VERIFIED_AT),
+const displayDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('es-UY', {
+    timeZone: siteTimeZone(iso),
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   })
-)
+const verifiedDisplay = computed(() => displayDate(NOISE_VERIFIED_AT))
+const searchedDisplay = displayDate(NOISE_DEPARTMENTS_SEARCHED_AT)
 
 const canonicalUrl = 'https://cambio-uruguay.com/denunciar-ruidos-molestos-uruguay'
 const title = computed(() => t('title'))
@@ -588,6 +796,11 @@ useHead(() => ({
 .noise-missing {
   padding-left: 1.1rem;
   font-size: 0.88rem;
+}
+.noise-list {
+  padding-left: 1.1rem;
+  font-size: 0.92rem;
+  line-height: 1.6;
 }
 
 .noise-faqs :deep(.v-expansion-panel-title) {

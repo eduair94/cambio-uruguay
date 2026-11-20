@@ -8,13 +8,21 @@ import {
   BCU_CAPS_PERIOD,
   BCU_CAPS_READ_ON,
   BCU_CAPS_SOURCE_URL,
+  CLEARING_CLOSED,
+  CLEARING_LENDERS,
+  CLEARING_REVIEWED,
   NOPAYSLIP_CAPS,
   NOPAYSLIP_DOORS,
+  NOPAYSLIP_LOANS_REVIEWED,
+  PAYSLIP_LABELS,
   SOLO_CEDULA_LABELS,
   SOLO_CEDULA_LENDERS,
   SOLO_CEDULA_REVIEWED,
   USURY_EXCLUDED_COSTS,
   buildNoPayslipFaq,
+  clearingRatesSentence,
+  isoDateEs,
+  joinEs,
   mergeNoPayslipCaps,
   noPayslipLenders,
   pctEs,
@@ -29,13 +37,24 @@ const byId = (id: string): LenderEntity => {
   return l
 }
 
+/** Ids que la propia página leyó como "presta sin comprobante de ingresos". */
+const readWithoutPayslip = new Set([
+  ...SOLO_CEDULA_LENDERS.filter(l => l.soloCedula !== 'no').map(l => l.lenderId),
+  ...CLEARING_LENDERS.filter(l => l.recibo === 'no-pide').map(l => l.lenderId),
+])
+
 describe('noPayslipLenders', () => {
   const rows = noPayslipLenders(LENDER_TIERLIST)
 
-  it('keeps lenders that serve independents or take collateral, and nobody else', () => {
+  it('keeps lenders that serve independents, take collateral or were read lending without proof', () => {
     for (const r of rows) {
       const l = byId(r.id)
-      expect(l.audiences.includes('independiente') || l.segment === 'prendario', r.id).toBe(true)
+      expect(
+        l.audiences.includes('independiente') ||
+          l.segment === 'prendario' ||
+          readWithoutPayslip.has(r.id),
+        r.id
+      ).toBe(true)
     }
     const ids = rows.map(r => r.id)
     expect(ids).toContain('brou')
@@ -59,6 +78,81 @@ describe('noPayslipLenders', () => {
   it('treats a 0 % promotional rate as unrated', () => {
     const fake = { ...byId('brou'), id: 'promo', teaPct: 0, teaMaxPct: null } as LenderEntity
     expect(noPayslipLenders([fake])[0]!.teaSort).toBeNull()
+  })
+
+  // El snapshot semanal del 2026-11-08 les sacó 'independiente' a Pronto! y a Creditel, y la tabla
+  // principal los perdió mientras la sección de abajo decía que prestan con la cédula sola.
+  it('keeps Pronto! and Creditel when the weekly refresh retags their audiences', () => {
+    const retagged = LENDER_TIERLIST.map(l =>
+      l.id === 'pronto' || l.id === 'creditel'
+        ? ({ ...l, audiences: ['dependiente', 'jubilado'] } as LenderEntity)
+        : l
+    )
+    const ids = noPayslipLenders(retagged).map(r => r.id)
+    expect(ids).toContain('pronto')
+    expect(ids).toContain('creditel')
+    // Piden recibo: estar en la tabla del clearing no las hace "sin recibo".
+    expect(ids).not.toContain('itau')
+    expect(ids).not.toContain('cash')
+    expect(ids).not.toContain('anda')
+  })
+})
+
+describe('joinEs', () => {
+  it('joins names the Spanish way', () => {
+    expect(joinEs([])).toBe('')
+    expect(joinEs(['A'])).toBe('A')
+    expect(joinEs(['A', 'B'])).toBe('A y B')
+    expect(joinEs(['A', 'B', 'C'])).toBe('A, B y C')
+  })
+})
+
+describe('CLEARING_LENDERS: estando en el clearing, con recibo y sin recibo', () => {
+  it('every row is dated, sourced and tied to a catalogue lender that lends with marks', () => {
+    expect(CLEARING_REVIEWED).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    expect(new Set(CLEARING_LENDERS.map(l => l.name)).size).toBe(CLEARING_LENDERS.length)
+    for (const l of CLEARING_LENDERS) {
+      expect(l.sourceUrl).toMatch(/^https:\/\//)
+      expect(PAYSLIP_LABELS[l.recibo]).toBeTruthy()
+      for (const text of [l.dice, l.pide, l.tasa, l.montos]) {
+        expect(text.length).toBeGreaterThan(10)
+        expect(text).not.toMatch(/septiembre/i)
+      }
+      if (l.lenderId) {
+        expect(['si', 'parcial'], l.name).toContain(byId(l.lenderId).clearing)
+      }
+    }
+  })
+
+  it('splits by payslip: ANDA and Cash ask for it, Pronto! and Volvé do not', () => {
+    const ids = (s: string) =>
+      CLEARING_LENDERS.filter(l => l.recibo === s)
+        .map(l => l.lenderId)
+        .sort()
+    expect(ids('pide')).toEqual(['anda', 'cash'])
+    expect(ids('no-pide')).toEqual(['pronto', 'volve'])
+  })
+
+  it('quotes what each lender says about the clearing', () => {
+    const anda = CLEARING_LENDERS.find(l => l.lenderId === 'anda')!
+    expect(anda.dice).toMatch(/estando en el Clearing de Informes/)
+    expect(anda.dice).toMatch(/garantía/)
+    expect(anda.tasa).toMatch(/26,30 %/)
+    expect(anda.tasa).toMatch(/Noviembre de 2026/)
+    const cash = CLEARING_LENDERS.find(l => l.lenderId === 'cash')!
+    expect(cash.dice).toMatch(/no es excluyente/)
+    expect(cash.tasa).toMatch(/54,1 % a 141,7 %/)
+    const volve = CLEARING_LENDERS.find(l => l.lenderId === 'volve')!
+    expect(volve.dice).toMatch(/sin importar si estás en el Clearing/)
+    expect(volve.tasa).toMatch(/112 % y 141,74 %/)
+  })
+
+  it('names who requires a clean record, with their own words', () => {
+    expect(CLEARING_CLOSED.map(c => c.name)).toEqual(['OCA', 'BROU', 'República Microfinanzas'])
+    for (const c of CLEARING_CLOSED) {
+      expect(c.sourceUrl).toMatch(/^https:\/\//)
+      expect(c.quote.length).toBeGreaterThan(20)
+    }
   })
 })
 
@@ -110,7 +204,9 @@ describe('the doors quote what the catalogue says', () => {
     const door = NOPAYSLIP_DOORS.find(d => d.id === 'solo-cedula')!
     const creditel = door.quotes.find(q => q.lenderId === 'creditel')!
     expect(creditel.text).toMatch(/tres facturas/)
-    expect(creditel.text).toMatch(/22 de setiembre de 2026/)
+    // La fecha impresa en la cita es la de la relectura de las puertas: no pueden separarse.
+    expect(NOPAYSLIP_LOANS_REVIEWED).toBe('2026-11-20')
+    expect(creditel.text).toMatch(/20 de noviembre de 2026/)
   })
 })
 
@@ -122,6 +218,41 @@ describe('buildNoPayslipFaq', () => {
     spread,
     capLabel: '99,99%',
     capSince: '1 de enero de 2030',
+    clearingReviewedLabel: '2 de febrero de 2030',
+  })
+
+  it('answers "en el clearing con recibo" and "sin recibo" from the clearing table', () => {
+    const con = faq.find(f => f.id === 'clearing-con-recibo')!
+    const sin = faq.find(f => f.id === 'clearing-sin-recibo')!
+    expect(con.question).toBe('¿Quién presta estando en el clearing y con recibo de sueldo?')
+    expect(sin.question).toBe('¿Y estando en el clearing y sin recibo de sueldo?')
+    expect(con.answer).toMatch(/ANDA y Cash/)
+    expect(con.answer).toMatch(/Las dos resuelven caso a caso/)
+    expect(con.answer).toContain('2 de febrero de 2030')
+    expect(sin.answer).toMatch(/Pronto! y Volvé/)
+    expect(sin.answer).toContain('99,99%')
+    expect(sin.answer).toMatch(/empeño/)
+    const clearing = faq.find(f => f.id === 'clearing')!
+    // ANDA y Cash no están en "esta lista" (piden recibo): la respuesta no puede contarlas en el N.
+    expect(clearing.answer).toMatch(/lo dicen sin pedir recibo son Pronto! y Volvé/)
+    expect(clearing.answer).toMatch(
+      /Fuera de esta lista, porque piden recibo de sueldo, también lo dicen ANDA y Cash/
+    )
+    const ids = new Set(rows.map(r => r.id))
+    expect(ids.has('anda') || ids.has('cash')).toBe(false)
+    // Las tasas salen de las filas, sin comparativos que ninguna fuente sostiene.
+    expect(sin.answer).not.toMatch(/más cara|cerca del tope/)
+    expect(sin.answer).toContain('Volvé publica de 112 % a 141,74 % + IVA')
+    expect(sin.answer).toContain('Cash publica de 54,1 % a 141,7 % + IVA')
+    expect(clearing.link).toEqual({ label: 'Cómo salir del clearing', to: '/salir-del-clearing' })
+  })
+
+  it('no longer says Pronto! is the only one that lends with marks', () => {
+    const text = faq.map(f => f.answer).join(' ')
+    expect(text).not.toMatch(/la única/)
+    expect(text).not.toMatch(/sólo Pronto! dice/)
+    const solo = faq.find(f => f.id === 'solo-cedula')!
+    expect(solo.answer).toMatch(/con recibo también lo dicen ANDA y Cash/)
   })
 
   it('takes the usury cap by parameter and never hand-types one', () => {
@@ -148,6 +279,70 @@ describe('buildNoPayslipFaq', () => {
     expect(q.answer).toMatch(/OCA y Pronto!/)
     expect(q.answer).toMatch(/no sin mirar el clearing/)
     expect(q.answer).not.toMatch(/septiembre/)
+  })
+
+  it('dates the "solo con cédula" answer from the rows it cites, not a hand-typed day', () => {
+    const q = faq.find(f => f.id === 'solo-cedula')!
+    const reads = SOLO_CEDULA_LENDERS.filter(l => l.soloCedula === 'si').map(
+      l => l.readOn ?? SOLO_CEDULA_REVIEWED
+    )
+    for (const iso of reads) expect(q.answer).toContain(isoDateEs(iso))
+    expect(q.answer).not.toMatch(/22 de setiembre de 2026/)
+  })
+})
+
+describe('the clearing table and the main table agree', () => {
+  const rows = noPayslipLenders(LENDER_TIERLIST)
+  const rowOf = (id: string) => rows.find(r => r.id === id)
+
+  it('a clearing row that publishes a TEA never sits next to "No la publica", and the reverse', () => {
+    for (const c of CLEARING_LENDERS) {
+      const main = c.lenderId ? rowOf(c.lenderId) : undefined
+      if (!main) continue
+      if (c.teaRange) expect(main.teaLabel, c.name).not.toBe('No la publica')
+      if (c.tasa.startsWith('No publica una tasa')) expect(main.teaLabel, c.name).not.toMatch(/\d/)
+    }
+  })
+
+  it('Volvé gets its read range when the catalogue has none; a catalogue rate still wins', () => {
+    expect(byId('volve').teaPct).toBeNull()
+    expect(rowOf('volve')!.teaLabel).toBe('112–141,74 %')
+    const priced = LENDER_TIERLIST.map(l =>
+      l.id === 'volve' ? ({ ...l, teaPct: 90, teaMaxPct: 100 } as LenderEntity) : l
+    )
+    expect(noPayslipLenders(priced).find(r => r.id === 'volve')!.teaLabel).toBe('90–100 %')
+  })
+
+  it('Pago Después: the BCU cap it prints is not labelled as its own rate', () => {
+    const patched = LENDER_TIERLIST.map(l =>
+      l.id === 'pago-despues' ? ({ ...l, teaMaxPct: 126 } as LenderEntity) : l
+    )
+    const r = noPayslipLenders(patched)
+    expect(r.find(x => x.id === 'pago-despues')!.teaLabel).toBe('Imprime el tope del BCU')
+    expect(r.find(x => x.id === 'pago-despues')!.teaSort).toBeNull()
+    expect(teaSpread(patched, r).max).not.toBe(126)
+  })
+
+  it('every teaRange is the one its own text prints', () => {
+    for (const c of CLEARING_LENDERS) {
+      if (!c.teaRange) continue
+      for (const n of c.teaRange) expect(c.tasa, c.name).toContain(n.toLocaleString('es-UY'))
+    }
+  })
+
+  it('builds the rates sentence from the rows and the live cap', () => {
+    const s = clearingRatesSentence('77,7 %')
+    expect(s).toBe(
+      'sin recibo, Pronto! imprime como máximo el tope del BCU (77,7 % en pesos, menos de 10.000 UI y hasta un año) y Volvé publica de 112 % a 141,74 % + IVA; con recibo, ANDA publica de 26,3 % a 31,5 % + IVA y Cash publica de 54,1 % a 141,7 % + IVA.'
+    )
+  })
+})
+
+describe('isoDateEs', () => {
+  it('formats an ISO day the Uruguayan way', () => {
+    expect(isoDateEs('2026-11-20')).toBe('20 de noviembre de 2026')
+    expect(isoDateEs('2026-09-01T03:00:00Z')).toBe('1 de setiembre de 2026')
+    expect(isoDateEs('no-date')).toBe('no-date')
   })
 })
 
@@ -177,10 +372,12 @@ describe('SOLO_CEDULA_LENDERS: sin comprobante no es sin clearing', () => {
   it('las que exigen clearing limpio lo dicen en su fila, con la corrección de Compra Ágil', () => {
     const oca = SOLO_CEDULA_LENDERS.find(l => l.lenderId === 'oca')!
     expect(oca.clearing).toMatch(/no figurar actualmente en el clearing/)
-    // OCA publica un rango en la web y otro en la cartilla: las dos TEA y los gastos viajan juntos.
-    expect(oca.tasa).toMatch(/29 % y 87 %/)
-    expect(oca.tasa).toMatch(/62 %/)
-    expect(oca.tasa).toMatch(/86 %/)
+    // Relectura del 2026-11-20: la web dice 32 % a 78 % y el ejemplo cambió a TEA 42 %. Las
+    // cifras de la cartilla del 15/9 (62 %, 86 %) ya no rigen y no pueden volver sueltas.
+    expect(oca.readOn).toBe('2026-11-20')
+    expect(oca.tasa).toMatch(/32 % y 78 %/)
+    expect(oca.tasa).toMatch(/12\.936/)
+    expect(oca.tasa).not.toMatch(/62 %|86 %|87 %/)
     expect(oca.tasa).toMatch(/40 UI/)
     expect(oca.tasa).toMatch(/80 UI/)
     expect(oca.tasa).toMatch(/0,25 %/)
@@ -194,6 +391,20 @@ describe('SOLO_CEDULA_LENDERS: sin comprobante no es sin clearing', () => {
     expect(rmf.clearing).toMatch(/Sin morosidad vigente en Clearing/)
     const pronto = SOLO_CEDULA_LENDERS.find(l => l.lenderId === 'pronto')!
     expect(pronto.clearing).toMatch(/estando en el clearing/)
+    expect(pronto.clearing).not.toMatch(/la única/)
+    expect(pronto.tasa).toMatch(/142,7395 %/)
+    expect(pronto.tasa).not.toMatch(/133,4860/)
+    const anda = SOLO_CEDULA_LENDERS.find(l => l.lenderId === 'anda')!
+    expect(anda.clearing).toMatch(/estando en el Clearing de Informes/)
+    expect(anda.tasa).toMatch(/Noviembre de 2026/)
+  })
+
+  it('una fila releída lleva su fecha, posterior a la lectura global', () => {
+    for (const l of SOLO_CEDULA_LENDERS) {
+      if (!l.readOn) continue
+      expect(l.readOn, l.name).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+      expect(l.readOn > SOLO_CEDULA_REVIEWED, l.name).toBe(true)
+    }
   })
 
   it('la postura del ranking y la de la tabla no se contradicen', () => {
@@ -260,7 +471,26 @@ describe('NOPAYSLIP_CAPS: la tabla del BCU cierra con la Ley 18.212', () => {
     }
   })
 
-  it('las seis filas de consumo se refrescan con la grilla viva; las otras quedan fechadas', () => {
+  // /api/bcu-rates trae las filas en dólares sin parsearlas: el 2026-11-19 servía 8,26 % / 12,26 %
+  // contra 7,27 % / 11,47 % de la Comunicación 2026/212, y la grilla pisaba la lectura buena.
+  it('una fila viva en dólares no reemplaza la lectura de la comunicación', () => {
+    const live = [
+      {
+        bracket: 'menor10kUI',
+        cortoPlazo: true,
+        currency: 'USD',
+        media: 0.0826,
+        tope: 0.12803,
+        topeMora: 0.14868,
+      },
+    ] as BcuCapRow[]
+    const row = mergeNoPayslipCaps(NOPAYSLIP_CAPS, live).find(r => r.id === 'usd-consumo-corto')!
+    expect(row.live).toBe(false)
+    expect(row.capPct).toBe(11.2685)
+    expect(NOPAYSLIP_CAPS.filter(r => r.currency === 'USD').every(r => !r.grid)).toBe(true)
+  })
+
+  it('las cuatro filas de consumo en pesos se refrescan con la grilla viva; las otras quedan fechadas', () => {
     const live = [
       {
         bracket: 'menor10kUI',
@@ -280,7 +510,7 @@ describe('NOPAYSLIP_CAPS: la tabla del BCU cierra con la Ley 18.212', () => {
     const manual = merged.find(r => r.id === 'retencion-chico-corto')!
     expect(manual.live).toBe(false)
     expect(manual.capPct).toBe(26.39)
-    expect(NOPAYSLIP_CAPS.filter(r => r.grid).length).toBe(6)
+    expect(NOPAYSLIP_CAPS.filter(r => r.grid).length).toBe(4)
   })
 
   it('una fila viva con error de unidad no reemplaza la lectura del PDF', () => {
@@ -339,5 +569,20 @@ describe('la página lee la tabla y los topes del util, no a mano', () => {
     )
     // Y el BCU republica mensualmente, no "cada trimestre".
     expect(page).not.toMatch(/cada trimestre/)
+  })
+
+  it('monta la tabla del clearing y deja las respuestas del FAQ en el HTML del servidor', () => {
+    expect(page).toContain('id="clearing"')
+    expect(page).toContain('CLEARING_LENDERS')
+    expect(page).toContain('CLEARING_CLOSED')
+    expect(page).toContain("hash: '#con-clearing'")
+    expect(page).toContain('/prestamos-para-jubilados-uruguay')
+    expect(page).toMatch(/<FaqSection[^>]* expanded\s*\/>/)
+    expect(page).not.toMatch(/la única que dice/)
+    expect(page).not.toMatch(/no publicó fechas de la edición 2026/)
+    expect(page).not.toMatch(/UI de agosto de 2026/)
+    // La tasa del BROU para pasivos y su fecha salen de retireeLoans.ts, no a mano.
+    expect(page).toContain('BROU_RATES_IN_FORCE_SINCE')
+    expect(page).not.toMatch(/1 de setiembre de 2026/)
   })
 })

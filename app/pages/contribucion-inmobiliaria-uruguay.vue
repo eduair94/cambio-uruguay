@@ -233,6 +233,9 @@
         administradora: la cuenta está en
         <NuxtLink :to="localePath('/impuestos-inversiones-uruguay')"
           >impuestos sobre inversiones y rentas</NuxtLink
+        >, y cuánto se paga por mes y cómo se pide la exoneración, en
+        <NuxtLink :to="localePath('/guias/irpf-de-alquileres-uruguay')"
+          >IRPF de alquileres: el 10,5 % o la exoneración</NuxtLink
         >. Si la deuda ya viene de años, mirá
         <NuxtLink :to="localePath('/prescripcion-de-deudas-con-el-estado-uruguay')"
           >cómo prescriben las deudas con el Estado</NuxtLink
