@@ -1696,6 +1696,12 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/registrar-una-marca-uruguay',
       },
       {
+        label: 'Apps hechas en Uruguay',
+        description:
+          'Lo que construyen desarrolladores de acá, revisado en la web de cada proyecto.',
+        to: '/apps-hechas-en-uruguay',
+      },
+      {
         label: 'Ropa por kilo y fardos',
         description: 'Dónde compran los feriantes, cuánto deja un lote y qué dice la aduana.',
         to: '/ropa-por-kilo-uruguay',

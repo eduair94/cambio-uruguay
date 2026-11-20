@@ -647,6 +647,28 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'apps que todo uruguayo deberia tener',
         ],
       },
+      {
+        // Las apps y webs que hacen desarrolladores uruguayos por su cuenta. No entran en
+        // /apps-utiles-uruguay (sólo apps de tienda publicadas por quien presta el servicio); la
+        // lista nació del hilo «Recopilatorio apps uruguayas» de r/CharruaDevs (17/11/2026).
+        to: '/apps-hechas-en-uruguay',
+        labelKey: 'nav.appsHechasEnUruguay',
+        icon: 'mdi-cellphone-text',
+        priority: 0.6,
+        changefreq: 'monthly',
+        keywords: [
+          'apps uruguayas',
+          'apps hechas en uruguay',
+          'aplicaciones uruguayas',
+          'apps de desarrolladores uruguayos',
+          'software uruguayo',
+          'proyectos de charruadevs',
+          'luce',
+          'carpincho',
+          'subtitio',
+          'kiosko',
+        ],
+      },
     ],
   },
   {

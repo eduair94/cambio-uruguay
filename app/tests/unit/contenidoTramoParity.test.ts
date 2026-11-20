@@ -90,7 +90,7 @@ const NO_ES_PAGINA_DE_LECTURA = new Map([
 ])
 
 /**
- * Las tres listas CURADAS, sin clasificar A PROPÓSITO y con el mismo motivo que
+ * Las cuatro listas CURADAS, sin clasificar A PROPÓSITO y con el mismo motivo que
  * `directoriosTramoParity.test.ts` ya le escribió a `/apps-utiles-uruguay`: no son fichas de un
  * relevamiento propio, y a una familia que no se midió no se le inventa un multiplicador. Valen 1×
  * y salen en la alerta `unclassified-families` hasta que alguien tenga sus cifras.
@@ -99,6 +99,8 @@ const LISTA_CURADA = [
   '/apps-utiles-uruguay',
   '/apps-de-beneficios-uruguay',
   '/apps-economia-uruguay',
+  // 2026-11-20: la cuarta lista curada, la de los proyectos de desarrolladores uruguayos.
+  '/apps-hechas-en-uruguay',
 ]
 
 /**

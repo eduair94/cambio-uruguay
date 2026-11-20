@@ -194,6 +194,9 @@ history.replaceState.
           Los íconos, las notas y las fechas de versión se leyeron de las tiendas el
           {{ storesLabel }}.
         </template>
+        Las apps y webs que hacen desarrolladores uruguayos por su cuenta y que todavía no están en
+        las tiendas o no usa mucha gente están en
+        <NuxtLink :to="localePath('/apps-hechas-en-uruguay')">apps hechas en Uruguay</NuxtLink>.
         ¿Falta una app o cambió algo? Escribinos desde
         <NuxtLink :to="localePath('/contacto')">contacto</NuxtLink>.
       </p>
