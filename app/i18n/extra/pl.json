@@ -287,7 +287,8 @@
     "h1": "Koszyk importowy: ostateczny koszt zakupów zagranicznych",
     "intro": "Dodaj produkty z Amazon, eBay lub MercadoLibre (wklej link lub wpisz je ręcznie) i oblicz, ile kosztowały po wylądowaniu w Urugwaju: podatki według kategorii, franczyza, wysyłka i łączna kwota w pesos.",
     "ogSubtitle": "Podatki, franczyza i wysyłka zamówień online w pesos",
-    "metaDescription": "Utwórz koszyk ze swoimi zamówieniami z Amazon, eBay lub MercadoLibre i zobacz ostateczny koszt w Urugwaju: podatki, franczyzę w wysokości 800 USD, przesyłkę kurierską i całkowitą kwotę w pesos urugwajskich.",
+    "metaTitle": "Koszyk importowy: koszt końcowy",
+    "metaDescription": "Utwórz koszyk ze swoimi zamówieniami z serwisów Amazon, eBay lub MercadoLibre i zobacz ostateczny koszt w Urugwaju: podatki, franczyzę w wysokości 800 USD, wysyłkę i sumę całkowitą w pesos.",
     "yourCart": "Twój koszyk",
     "clear": "Jasne",
     "empty": {
@@ -822,7 +823,7 @@
     "homeDescriptionLive": "Kurs dolara w Urugwaju dzisiaj: kup od $U {sell} lub sprzedaj za do $U {buy} w kantorach {count}, aktualizowany co 10 minut. Również euro, real i peso argentyńskie.",
     "homeDescription": "Kurs dolara w Urugwaju aktualizowany co 10 minut. Porównaj ceny kupna i sprzedaży w ponad 40 kantorach. Znajdź najlepsze kursy USD, EUR, BRL i ARS w Montevideo i całym Urugwaju.",
     "homeKeywords": "Kurs wymiany dolara w Urugwaju, USD do UYU, wymiana walut w Urugwaju, domy wymiany walut w Urugwaju, kupno dolarów w Urugwaju, sprzedaż dolarów w Urugwaju, kurs dolara w Montevideo, kurs wymiany BROU, najlepszy kurs wymiany w Urugwaju",
-    "advancedTitle": "Zaawansowane porównanie kursów dolara w Urugwaju",
+    "advancedTitle": "Zaawansowane porównanie dolarów w Urugwaju",
     "advancedDescription": "Zaawansowany widok porównywarki walut Urugwaju: filtruj banki i waluty, zobacz mapę oddziałów i znajdź najlepszy kurs USD, EUR i BRL w czasie rzeczywistym.",
     "historicalTitle": "Historia kursów walut w Urugwaju",
     "historicalDescription": "Sprawdź pełną historię kursów walut wszystkich kantorów w Urugwaju. Dane aktualizowane w czasie rzeczywistym.",
@@ -840,11 +841,11 @@
     "sucursalesDescription": "Wszystkie oddziały {count} {origin} w Urugwaju: adres, telefon i godziny otwarcia każdego z nich, a także kurs wymiany walut obowiązujący dzisiaj.",
     "sucursalesLocationDescription": "{origin} ma oddziały {count} w {location}. Adres, numer telefonu i godziny otwarcia każdego z nich, aktualny kurs dolara i wskazówki dojazdu.",
     "sucursalesKeywords": "Oddziały {origin}, adresy {origin}, lokalizacje {origin}, domy wymiany walut Urugwaj",
-    "sucursalesIndexTitle": "Katalog oddziałów - wszystkie kantory wymiany walut w Urugwaju",
+    "sucursalesIndexTitle": "Oddziały kantorów wymiany walut w Urugwaju",
     "sucursalesIndexDescription": "Kompletny katalog oddziałów wszystkich kantorów wymiany walut w Urugwaju. Znajdź lokalizacje, adresy i dane kontaktowe według departamentu.",
     "sucursalesIndexKeywords": "katalog oddziałów urugwaj, domy wymiany urugwaj, oddziały montevideo, oddziały canelones, wszystkie oddziały urugwaj",
     "compareTitle": "Porównaj domy wymiany na przestrzeni czasu",
-    "compareDescription": "Porównaj historyczne zmiany kursu dolara amerykańskiego i innych walut w kilku urugwajskich kantorach na jednym wykresie. Znajdź, kto oferuje najlepsze ceny na przestrzeni czasu.",
+    "compareDescription": "Do 4 giełd na jednym wykresie: kupno lub sprzedaż, od 7 dni do pełnej historii, z najniższym, najwyższym i średnim kursem każdej z nich.",
     "compareKeywords": "Porównaj kantory w Urugwaju, ewolucja dolara w Urugwaju, porównanie kursów, porównawcza tabela dolara, najlepszy kantor w Urugwaju",
     "mapaTitle": "Mapa domów wymiany walut w Urugwaju",
     "mapaDescription": "Interaktywna mapa kantorów wymiany walut w Urugwaju. Znajdź najbliższy oddział i najlepszy kurs dolara amerykańskiego w swojej okolicy.",
@@ -1431,7 +1432,7 @@
     "noTrend": "Dane dotyczące trendów nie są jeszcze dostępne.",
     "sevenDays": "Ostatnie 7 dni",
     "seeMore": "Zobacz szczegóły",
-    "metaTitle": "Kurs dolara w Urugwaju dzisiaj: wzrósł czy spadł?",
+    "metaTitle": "Kurs dolara w Urugwaju dzisiaj: w górę czy w dół?",
     "metaDescription": "Kurs dolara w Urugwaju dzisiaj: cena kupna i sprzedaży, zmiana w porównaniu do wczoraj oraz trendy w ostatnich dniach, z najlepszymi kursami z ponad 40 kantorów.",
     "footNote": "Zmiana została obliczona według oficjalnego kursu Centralnego Banku Urugwaju (BCU).",
     "compareCta": "Aby dokonać transakcji, porównaj kurs dolara w ponad 40 kantorach.",
@@ -1551,8 +1552,8 @@
     }
   },
   "capture": {
-    "title": "Przydatne? Otrzymuj codzienne podsumowanie dolara",
-    "lead": "Jeden e-mail dziennie z najlepszymi cenami, trendami i zmianami. Za darmo, a Ty możesz zrezygnować z subskrypcji, kiedy tylko chcesz.",
+    "title": "Podążasz za dolarem? Otrzymuj go każdego ranka",
+    "lead": "Jeden e-mail dziennie z najlepszymi kursami kupna i sprzedaży w ponad 40 domach wymiany walut w Urugwaju, trendami i zmianami. Za darmo, możesz zrezygnować z subskrypcji, kiedy tylko chcesz.",
     "dismiss": "Zamknąć",
     "aria": "Zapisz się do newslettera"
   },
@@ -1924,7 +1925,7 @@
   "mejorCasa": {
     "h1": "Gdzie dziś wymienić dolary w Urugwaju?",
     "subtitle": "Porównujemy wszystkie kantory i banki w kraju, aby wskazać najlepszy kurs na dziś.",
-    "metaTitle": "Najlepszy kantor wymiany walut w Urugwaju dzisiaj: najtańszy dolar",
+    "metaTitle": "Najlepszy kantor wymiany walut dzisiaj: najtańszy dolar",
     "metaDescription": "Dzisiaj najtaniej kupić dolary za {casa} za {rate}. Porównaj oferty ponad 40 domów i zaoszczędź {savings} w porównaniu ze średnią rynkową.",
     "metaDescriptionGeneric": "Porównaj ceny dolarów w ponad 40 kantorach i bankach w Urugwaju i dowiedz się, gdzie wymienić pieniądze już dziś.",
     "answer": "Today the cheapest place to buy dollars is {casa}, selling at ${rate}. Buying US$ 1,000 there saves you about ${savings} against the average of the {count} exchange houses and banks we compare.",
@@ -1933,7 +1934,7 @@
     "colCasa": "Dom wymiany walut",
     "colRate": "Sprzedać",
     "colSavings": "Oszczędności a średnia",
-    "methodology": "Posortowane według ceny sprzedaży w dolarach (czyli ile płacisz za 1 dolara amerykańskiego). Oszczędność jest porównywana z ceną zakupu domu za {amount} w USD w porównaniu ze średnią rynkową. Kurs referencyjny BCU i notowania międzybankowe są wyłączone – osoby prywatne nie mogą dokonywać na nich transakcji. Tabele z ceną odbiegającą o ponad 3% od mediany rynkowej również są pomijane: zazwyczaj są to tablice, które przestały być aktualizowane lub zostały błędnie odczytane.",
+    "methodology": "Ranking według ceny sprzedaży w dolarach (czyli ile płacisz za 1 dolara amerykańskiego). Oszczędność jest porównywana z ceną zakupu domu za {amount} w dolarach amerykańskich w porównaniu ze średnią rynkową. Kurs referencyjny BCU i notowania międzybankowe są wyłączone – osoby prywatne nie mogą dokonywać na nich transakcji. Tabele z ceną odbiegającą o ponad 3% od mediany rynkowej również są pomijane: zazwyczaj są to tablice, które przestały być aktualizowane lub zostały błędnie odczytane. Tabele, które nie zmieniły się przez kilka dni, nigdy nie są na szczycie rankingu, nawet jeśli ich cena wydaje się najlepsza: rynek się zmienił, a tak się nie stało.",
     "noData": "W tej chwili nie ma dostępnych stawek."
   },
   "rateChanges": {

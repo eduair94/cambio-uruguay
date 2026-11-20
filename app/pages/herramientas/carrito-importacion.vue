@@ -285,7 +285,7 @@ defineOgImageComponent('Cambio', {
 })
 
 useSeoMeta({
-  title: () => `${t('importCart.h1')} | Cambio Uruguay`,
+  title: () => `${t('importCart.metaTitle')} | Cambio Uruguay`,
   description: () => t('importCart.metaDescription'),
   ogTitle: () => t('importCart.h1'),
   ogDescription: () => t('importCart.metaDescription'),

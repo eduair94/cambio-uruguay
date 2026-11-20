@@ -287,7 +287,8 @@
     "h1": "Troli import: kos akhir pembelian luar negara anda",
     "intro": "Tambahkan produk daripada Amazon, eBay atau MercadoLibre (tampal pautan atau masukkannya dengan tangan) dan kirakan kosnya yang diterima di Uruguay: cukai mengikut kategori, francais, penghantaran dan jumlah dalam peso.",
     "ogSubtitle": "Cukai, francais dan penghantaran pesanan dalam talian anda, dalam peso",
-    "metaDescription": "Bina troli dengan pesanan Amazon, eBay atau MercadoLibre anda dan lihat kos akhir di Uruguay: cukai, francais USD 800, penghantaran kurier dan jumlah keseluruhan dalam peso Uruguay, secara langsung.",
+    "metaTitle": "Troli import: kos akhir",
+    "metaDescription": "Bina troli dengan pesanan Amazon, eBay atau MercadoLibre anda dan lihat kos akhir di Uruguay: cukai, francais USD 800, penghantaran dan jumlah dalam peso.",
     "yourCart": "Troli anda",
     "clear": "Jelas",
     "empty": {
@@ -822,7 +823,7 @@
     "homeDescriptionLive": "Dolar di Uruguay hari ini: beli dari $U {sell} atau jual sehingga $U {buy} di rumah pertukaran {count}, dikemas kini setiap 10 minit. Juga euro, real dan peso Argentina.",
     "homeDescription": "Kadar pertukaran dolar di Uruguay hari ini dikemas kini setiap 10 minit. Bandingkan harga beli dan jual daripada lebih 40 rumah pertukaran. Cari kadar USD, EUR, BRL dan ARS terbaik di Montevideo dan seluruh Uruguay.",
     "homeKeywords": "kadar pertukaran dolar Uruguay, USD ke UYU, pertukaran mata wang Uruguay, rumah pertukaran Uruguay, beli dolar Uruguay, jual dolar Uruguay, kadar dolar Montevideo, kadar pertukaran BROU, kadar pertukaran terbaik Uruguay",
-    "advancedTitle": "Perbandingan pertukaran dolar lanjutan di Uruguay",
+    "advancedTitle": "Perbandingan dolar lanjutan di Uruguay",
     "advancedDescription": "Paparan lanjutan pembanding pertukaran Uruguay: tapis rumah dan mata wang, lihat peta cawangan dan cari kadar USD, EUR dan BRL terbaik dalam masa nyata.",
     "historicalTitle": "Sejarah kadar pertukaran di Uruguay",
     "historicalDescription": "Semak sejarah lengkap kadar pertukaran daripada semua rumah pertukaran di Uruguay. Data dikemas kini masa nyata.",
@@ -840,11 +841,11 @@
     "sucursalesDescription": "Semua cawangan {count} {origin} di Uruguay: alamat, telefon dan waktu operasi setiap satunya, serta kadar dolar yang disebut harga oleh rumah hari ini.",
     "sucursalesLocationDescription": "{origin} mempunyai cawangan {count} di {location}. Alamat, telefon dan waktu operasi untuk setiap satu, dengan kadar dolar hari ini dan arah tuju.",
     "sucursalesKeywords": "Cawangan {origin}, alamat {origin}, lokasi {origin}, rumah pertukaran Uruguay",
-    "sucursalesIndexTitle": "Direktori Cawangan - Semua Rumah Pertukaran di Uruguay",
+    "sucursalesIndexTitle": "Cawangan rumah pertukaran di Uruguay",
     "sucursalesIndexDescription": "Direktori lengkap cawangan dari semua rumah pertukaran di Uruguay. Cari lokasi, alamat dan kenalan mengikut jabatan.",
     "sucursalesIndexKeywords": "direktori cawangan uruguay, rumah pertukaran uruguay, cawangan montevideo, cawangan canelones, semua cawangan uruguay",
     "compareTitle": "Bandingkan Rumah Pertukaran Dari Masa ke Masa",
-    "compareDescription": "Bandingkan evolusi sejarah dolar AS dan kadar mata wang lain merentasi beberapa rumah pertukaran Uruguay pada satu carta. Cari siapa yang menawarkan harga terbaik dari semasa ke semasa.",
+    "compareDescription": "Sehingga 4 rumah pertukaran pada satu carta: beli atau jual, dari 7 hari hingga sejarah penuh, dengan terendah, tertinggi dan purata setiap satu.",
     "compareKeywords": "bandingkan rumah pertukaran Uruguay, evolusi dolar Uruguay, perbandingan kadar, carta dolar perbandingan, rumah pertukaran terbaik Uruguay",
     "mapaTitle": "Peta rumah pertukaran di Uruguay",
     "mapaDescription": "Peta interaktif rumah pertukaran di Uruguay. Cari cawangan terdekat dan kadar dolar AS terbaik di sekitar anda.",
@@ -1431,7 +1432,7 @@
     "noTrend": "Tiada data trend tersedia lagi.",
     "sevenDays": "7 hari terakhir",
     "seeMore": "Lihat butiran",
-    "metaTitle": "Kadar pertukaran dolar di Uruguay hari ini: naik atau turun?",
+    "metaTitle": "Kadar dolar di Uruguay hari ini: naik atau turun?",
     "metaDescription": "Kadar pertukaran dolar di Uruguay hari ini: harga beli dan jual, perubahan berbanding semalam dan trend sejak beberapa hari kebelakangan ini, dengan kadar terbaik daripada lebih 40 rumah pertukaran.",
     "footNote": "Perubahan ini dikira berdasarkan kadar rasmi Bank Pusat Uruguay (BCU).",
     "compareCta": "Untuk berdagang, bandingkan kadar pertukaran dolar merentasi lebih 40 rumah pertukaran.",
@@ -1551,8 +1552,8 @@
     }
   },
   "capture": {
-    "title": "Berguna? Dapatkan ringkasan dolar harian",
-    "lead": "Satu emel sehari dengan kadar terbaik, trend dan apa yang berubah. Percuma, dan anda boleh berhenti melanggan bila-bila masa yang anda mahu.",
+    "title": "Mengikuti dolar? Dapatkannya setiap pagi",
+    "lead": "Satu emel sehari dengan kadar jual beli terbaik merentasi 40+ rumah pertukaran di Uruguay, trend dan apa yang berubah. Percuma, dan anda boleh berhenti melanggan bila-bila masa yang anda mahu.",
     "dismiss": "Tutup",
     "aria": "Langgan surat berita"
   },
@@ -1924,7 +1925,7 @@
   "mejorCasa": {
     "h1": "Di mana anda perlu menukar dolar di Uruguay hari ini?",
     "subtitle": "Kami membandingkan setiap rumah pertukaran dan bank di negara ini untuk menamakan kadar terbaik hari ini.",
-    "metaTitle": "Rumah pertukaran terbaik di Uruguay hari ini: dolar termurah",
+    "metaTitle": "Rumah pertukaran terbaik hari ini: dolar termurah",
     "metaDescription": "Hari ini tempat paling murah untuk membeli dolar ialah {casa} pada harga ${rate}. Bandingkan 40+ rumah dan jimat ${savings} berbanding purata pasaran.",
     "metaDescriptionGeneric": "Bandingkan harga dolar merentasi 40+ rumah pertukaran dan bank di Uruguay dan ketahui tempat untuk menukar wang hari ini.",
     "answer": "Hari ini tempat paling murah untuk membeli dolar ialah {casa}, dijual pada harga ${rate}. Membeli US$ 1,000 di sana menjimatkan kira-kira ${savings} berbanding purata rumah pertukaran dan bank {count} yang kita bandingkan.",
@@ -1933,7 +1934,7 @@
     "colCasa": "Rumah pertukaran",
     "colRate": "Jual",
     "colSavings": "Penjimatan vs. purata",
-    "methodology": "Dinilai mengikut harga jualan dolar (apa yang anda bayar setiap US$ 1). Penjimatan tersebut membandingkan pembelian US$ {amount} di rumah tersebut dengan purata pasaran. Kadar rujukan BCU dan sebut harga antara bank dikecualikan — orang ramai tidak boleh berurus niaga di dalamnya. Papan yang lebih daripada 3% daripada median pasaran juga ditinggalkan: ia biasanya papan yang berhenti mengemas kini atau salah baca.",
+    "methodology": "Dinilai mengikut harga jualan dolar (apa yang anda bayar setiap US$ 1). Penjimatan ini membandingkan pembelian US$ {amount} di rumah tersebut dengan purata pasaran. Kadar rujukan BCU dan sebut harga antara bank dikecualikan — orang ramai tidak boleh berurus niaga dengannya. Papan yang lebih daripada 3% daripada median pasaran juga ditinggalkan: ia biasanya papan yang berhenti mengemas kini atau salah baca. Dan papan yang tidak berubah selama berhari-hari tidak pernah mendahului kedudukan, walaupun harganya kelihatan seperti yang terbaik: pasaran bergerak dan ia tidak.",
     "noData": "Tiada kadar tersedia buat masa ini."
   },
   "rateChanges": {

@@ -287,7 +287,8 @@
     "h1": "Giỏ hàng nhập khẩu: tổng chi phí cuối cùng cho các giao dịch mua hàng ở nước ngoài của bạn.",
     "intro": "Thêm sản phẩm từ Amazon, eBay hoặc MercadoLibre (dán liên kết hoặc nhập thủ công) và tính toán chi phí khi nhập khẩu vào Uruguay: thuế theo từng loại sản phẩm, phí nhượng quyền, phí vận chuyển và tổng cộng bằng peso.",
     "ogSubtitle": "Thuế, phí nhượng quyền và phí vận chuyển cho đơn hàng trực tuyến của bạn, tính bằng peso.",
-    "metaDescription": "Tạo giỏ hàng với các đơn đặt hàng từ Amazon, eBay hoặc MercadoLibre của bạn và xem tổng chi phí bằng đô la Uruguay: thuế, phí nhượng quyền 800 USD, phí vận chuyển nhanh và tổng số tiền bằng peso Uruguay, theo thời gian thực.",
+    "metaTitle": "Nhập giỏ hàng: chi phí cuối cùng",
+    "metaDescription": "Tạo giỏ hàng với các đơn đặt hàng từ Amazon, eBay hoặc MercadoLibre của bạn và xem tổng chi phí tại Uruguay: thuế, phí nhượng quyền 800 USD, phí vận chuyển và tổng cộng bằng peso.",
     "yourCart": "Giỏ hàng của bạn",
     "clear": "Thông thoáng",
     "empty": {
@@ -822,7 +823,7 @@
     "homeDescriptionLive": "Tỷ giá Đô la Uruguay hôm nay: mua từ $U {sell} hoặc bán với giá lên đến $U {buy} tại các điểm đổi tiền {count}, cập nhật 10 phút một lần. Cũng có euro, real và peso Argentina.",
     "homeDescription": "Tỷ giá hối đoái Đô la Mỹ tại Uruguay hôm nay được cập nhật 10 phút một lần. So sánh giá mua và bán từ hơn 40 nhà đổi tiền. Tìm tỷ giá USD, EUR, BRL và ARS tốt nhất tại Montevideo và toàn bộ Uruguay.",
     "homeKeywords": "Tỷ giá hối đoái đô la Uruguay, USD sang UYU, đổi tiền tệ Uruguay, các điểm đổi tiền Uruguay, mua đô la Uruguay, bán đô la Uruguay, tỷ giá đô la Montevideo, tỷ giá hối đoái BROU, tỷ giá hối đoái tốt nhất Uruguay",
-    "advancedTitle": "So sánh tỷ giá hối đoái đô la Mỹ nâng cao tại Uruguay",
+    "advancedTitle": "Công cụ so sánh đô la nâng cao tại Uruguay",
     "advancedDescription": "Giao diện nâng cao của công cụ so sánh tỷ giá hối đoái Uruguay: lọc các nhà đổi tiền và loại tiền tệ, xem bản đồ chi nhánh và tìm tỷ giá USD, EUR và BRL tốt nhất trong thời gian thực.",
     "historicalTitle": "Lịch sử tỷ giá hối đoái tại Uruguay",
     "historicalDescription": "Kiểm tra toàn bộ lịch sử tỷ giá hối đoái từ tất cả các công ty đổi tiền tại Uruguay. Dữ liệu được cập nhật theo thời gian thực.",
@@ -840,11 +841,11 @@
     "sucursalesDescription": "Tất cả các chi nhánh của {count} {origin} tại Uruguay: địa chỉ, số điện thoại và giờ mở cửa của từng chi nhánh, cùng với tỷ giá đô la mà nhà mạng niêm yết hôm nay.",
     "sucursalesLocationDescription": "{origin} có các chi nhánh {count} tại {location}. Địa chỉ, số điện thoại và giờ mở cửa của từng chi nhánh, cùng với tỷ giá đô la hiện tại và chỉ dẫn đường đi.",
     "sucursalesKeywords": "Các chi nhánh {origin}, địa chỉ {origin}, vị trí {origin}, các điểm đổi tiền Uruguay",
-    "sucursalesIndexTitle": "Danh mục chi nhánh - Tất cả các công ty đổi ngoại tệ tại Uruguay",
+    "sucursalesIndexTitle": "Các chi nhánh của công ty đổi ngoại tệ tại Uruguay",
     "sucursalesIndexDescription": "Danh mục đầy đủ các chi nhánh của tất cả các công ty đổi ngoại tệ tại Uruguay. Tìm địa điểm, địa chỉ và thông tin liên hệ theo từng khu vực.",
     "sucursalesIndexKeywords": "thư mục chi nhánh uruguay, trao đổi nhà uruguay, chi nhánh montevideo, chi nhánh canelones, tất cả các chi nhánh uruguay",
     "compareTitle": "So sánh giá nhà trao đổi qua thời gian",
-    "compareDescription": "So sánh sự biến động tỷ giá của đồng đô la Mỹ và các loại tiền tệ khác tại nhiều nhà đổi tiền ở Uruguay trên cùng một biểu đồ. Tìm ra nhà đổi tiền nào cung cấp tỷ giá tốt nhất theo thời gian.",
+    "compareDescription": "Hiển thị tối đa 4 sàn giao dịch trên cùng một biểu đồ: mua hoặc bán, từ 7 ngày đến toàn bộ lịch sử giao dịch, kèm theo giá thấp nhất, cao nhất và trung bình của mỗi sàn.",
     "compareKeywords": "So sánh các nhà đổi ngoại tệ tại Uruguay, diễn biến tỷ giá đô la Uruguay, so sánh tỷ giá, biểu đồ so sánh đô la, nhà đổi ngoại tệ tốt nhất tại Uruguay",
     "mapaTitle": "Bản đồ các điểm đổi ngoại tệ ở Uruguay",
     "mapaDescription": "Bản đồ tương tác các điểm đổi tiền tại Uruguay. Tìm chi nhánh gần nhất và tỷ giá đô la Mỹ tốt nhất xung quanh bạn.",
@@ -1551,8 +1552,8 @@
     }
   },
   "capture": {
-    "title": "Hữu ích? Xem bản tóm tắt tỷ giá đô la hàng ngày.",
-    "lead": "Mỗi ngày nhận một email với tỷ giá tốt nhất, xu hướng và những thay đổi. Hoàn toàn miễn phí và bạn có thể hủy đăng ký bất cứ lúc nào.",
+    "title": "Theo dõi tỷ giá đô la? Nhận thông tin mỗi sáng",
+    "lead": "Mỗi ngày nhận một email với tỷ giá mua và bán tốt nhất từ hơn 40 nhà đổi ngoại tệ tại Uruguay, xu hướng và những thay đổi. Hoàn toàn miễn phí và bạn có thể hủy đăng ký bất cứ lúc nào.",
     "dismiss": "Đóng",
     "aria": "Đăng ký nhận bản tin"
   },
@@ -1845,7 +1846,7 @@
     "alquilar": "Cách thuê nhà ở Uruguay",
     "primerAlquiler": "Lần thuê nhà đầu tiên: chi phí và thủ tục giấy tờ",
     "mudanzas": "Dịch vụ chuyển nhà, vận chuyển hàng hóa và lắp ráp đồ nội thất",
-    "armadores": "Thợ lắp ráp nội thất ở Montevideo",
+    "armadores": "Thợ lắp ráp đồ nội thất tại Montevideo",
     "equiparCasa": "Trang bị nội thất cho nhà ở: cần mua gì và chi phí bao nhiêu",
     "equiparProductos": "Danh sách đồ dùng để trang bị nội thất cho nhà ở: tủ lạnh, nệm và nhiều hơn nữa",
     "sommier": "Nên chi bao nhiêu tiền cho một chuyên gia nếm rượu?",
@@ -1924,7 +1925,7 @@
   "mejorCasa": {
     "h1": "Bạn nên đổi đô la ở đâu tại Uruguay hôm nay?",
     "subtitle": "Chúng tôi so sánh tỷ giá của tất cả các công ty đổi ngoại tệ và ngân hàng trên cả nước để tìm ra tỷ giá tốt nhất hiện nay.",
-    "metaTitle": "Nhà đổi tiền tốt nhất tại Uruguay hôm nay: đô la rẻ nhất",
+    "metaTitle": "Sàn giao dịch tốt nhất hôm nay: đô la rẻ nhất",
     "metaDescription": "Hôm nay, nơi rẻ nhất để mua đô la là {casa} với giá ${rate}. So sánh hơn 40 ngôi nhà và tiết kiệm ${savings} so với giá trung bình thị trường.",
     "metaDescriptionGeneric": "So sánh tỷ giá đô la Mỹ tại hơn 40 điểm đổi tiền và ngân hàng ở Uruguay và tìm ra nơi đổi tiền tốt nhất hiện nay.",
     "answer": "Hiện nay, nơi rẻ nhất để mua đô la là {casa}, với giá bán là ${rate}. Mua 1.000 đô la Mỹ ở đó sẽ giúp bạn tiết kiệm khoảng ${savings} so với mức trung bình của các nhà đổi tiền và ngân hàng {count} mà chúng tôi so sánh.",
@@ -1933,7 +1934,7 @@
     "colCasa": "Nhà trao đổi",
     "colRate": "Bán",
     "colSavings": "Tiết kiệm so với mức trung bình",
-    "methodology": "Được xếp hạng theo giá bán đô la (số tiền bạn trả cho mỗi 1 đô la Mỹ). Mức tiết kiệm so sánh việc mua đô la Mỹ {amount} tại ngôi nhà đó với mức trung bình của thị trường. Tỷ giá tham chiếu BCU và báo giá liên ngân hàng bị loại trừ — công chúng không thể giao dịch ở mức giá đó. Các bảng có giá cao hơn 3% so với mức trung bình của thị trường cũng bị loại bỏ: chúng thường là bảng đã ngừng cập nhật hoặc bị đọc sai.",
+    "methodology": "Xếp hạng theo giá bán tính bằng đô la (số tiền bạn trả cho mỗi 1 đô la Mỹ). Mức tiết kiệm được so sánh với việc mua {amount} đô la Mỹ tại sàn giao dịch đó so với mức trung bình của thị trường. Tỷ giá tham chiếu BCU và tỷ giá liên ngân hàng bị loại trừ — công chúng không thể giao dịch ở mức giá này. Các sàn giao dịch có giá chênh lệch hơn 3% so với mức trung bình của thị trường cũng bị loại bỏ: đó thường là những sàn giao dịch đã ngừng cập nhật hoặc bị đọc sai. Và một sàn giao dịch không thay đổi trong nhiều ngày sẽ không bao giờ đứng đầu bảng xếp hạng, ngay cả khi giá của nó có vẻ tốt nhất: thị trường đã biến động còn giá thì không.",
     "noData": "Hiện chưa có giá nào được công bố."
   },
   "rateChanges": {

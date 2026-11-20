@@ -5,7 +5,7 @@
 //
 // Por qué existe y cuál es la regla: `classes/revenueplan/debtFree.ts`.
 //
-// QUÉ CUBRE. Los NUEVE pozos de deuda de SEO del app, cada uno declarado como una lista en el
+// QUÉ CUBRE. Los TRECE pozos de deuda de SEO del app, cada uno declarado como una lista en el
 // trinquete que lo mide. El cuarto y el quinto entraron el 2026-10-20 y eran los que faltaban: las
 // migas de `seoContract.test.ts` y los dos snippets pasados de `guideSnippetBudget.test.ts` declaraban un
 // NÚMERO y nada más, así que este informe no los podía nombrar y la respuesta a «¿cuál puedo tocar
@@ -137,6 +137,36 @@ const POOLS: Array<{
     list: "DEUDA_DESCRIPCION_I18N",
     budget: "I18N_DESCRIPTION_OVER_BUDGET",
   },
+  // Del décimo al decimotercero, desde el 2026-11-20, y son el mismo agujero otra vez. El octavo y el
+  // noveno miden una tabla de claves `seo.*`, así que una página que se titula con `t('dolarHoy.metaTitle')`
+  // no la medía nadie: `/dolar-hoy` servía 68 caracteres de título y 175 de descripción con los
+  // cuatro presupuestos en 0. Los dos primeros leen la clave desde la página (catálogo global o el
+  // local que la página importa) y miden los tres idiomas. Los otros dos miden el título y la
+  // descripción que `ToolShell.vue` toma de `utils/tools.ts` cuando la página no le pasa uno propio.
+  {
+    pool: "título de mensaje pasado de 60",
+    file: "seoMessageSnippetBudget.test.ts",
+    list: "DEUDA_TITULO_MENSAJE",
+    budget: "MESSAGE_TITLE_OVER_BUDGET",
+  },
+  {
+    pool: "descripción de mensaje pasada de 155",
+    file: "seoMessageSnippetBudget.test.ts",
+    list: "DEUDA_DESCRIPCION_MENSAJE",
+    budget: "MESSAGE_DESCRIPTION_OVER_BUDGET",
+  },
+  {
+    pool: "título de herramienta pasado de 60",
+    file: "seoToolCatalogBudget.test.ts",
+    list: "DEUDA_TITULO_HERRAMIENTA",
+    budget: "TOOL_TITLE_OVER_BUDGET",
+  },
+  {
+    pool: "descripción de herramienta pasada de 155",
+    file: "seoToolCatalogBudget.test.ts",
+    list: "DEUDA_DESCRIPCION_HERRAMIENTA",
+    budget: "TOOL_DESCRIPTION_OVER_BUDGET",
+  },
 ];
 
 /** Hoy en UTC, o el día que pida `--today=YYYY-MM-DD` (para mirar la cola desde otra fecha). */
@@ -186,7 +216,7 @@ function main(): void {
   }
   console.log(
     "\nUna ruta libre acá NO es una mejora: sigue haciendo falta que el cambio le sirva a un lector.\n" +
-      "Los nueve pozos con lista están contados; las dos deudas que no son de ruta (el título y la\n" +
+      "Los trece pozos con lista están contados; las dos deudas que no son de ruta (el título y la\n" +
       "descripción de una MISMA guía) salen como dos filas, porque se arreglan por separado."
   );
 }

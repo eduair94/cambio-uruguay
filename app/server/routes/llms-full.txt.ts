@@ -5,8 +5,9 @@ import { guides } from '../../utils/guides'
 import { LLMS_SITE_URL, renderLlmsFull } from '../../utils/llmsFull'
 
 /**
- * `/llms-full.txt`: la versión larga de `public/llms.txt` para agentes de IA — un bloque por guía
- * editorial (título, resumen, fecha de revisión y URL canónica), generado del catálogo.
+ * `/llms-full.txt`: la versión larga de `/llms.txt` (`server/routes/llms.txt.ts`) para agentes de
+ * IA — un bloque por guía editorial (título, resumen, fecha de revisión y URL canónica), generado
+ * del catálogo.
  *
  * Es un route de Nitro y no una página a propósito: no es HTML, no lleva chrome ni OG image, no
  * va en el sitemap (no es una página indexable, es un índice para agentes) y no dispara el guard

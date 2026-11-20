@@ -84,6 +84,13 @@ STORY: See what it costs where, why it scores what it scores, then read the peop
                   : t('chairMarket.noRating')
               }}
             </span>
+            <a
+              v-if="product.stars !== null && product.ratingSignals.length"
+              href="#signals-title"
+              class="rating-sources"
+            >
+              {{ ratingSources }}
+            </a>
             <VChip size="x-small" variant="tonal" :color="confidenceColor">
               {{ t(`chairDetail.confidence.${product.confidence}`) }}
             </VChip>
@@ -463,6 +470,7 @@ import {
   type ChairCatalogOffer,
   type ChairCatalogProduct,
 } from '~/utils/chairCatalog'
+import { chairProductJsonLd } from '~/utils/chairProductLd'
 import { storeSlugForSeller } from '~/utils/storeDirectory'
 
 interface ChairDetailResponse {
@@ -520,6 +528,14 @@ const ratingAria = computed(() =>
         stars: product.value.stars.toFixed(1),
         count: product.value.ratingCount,
       })
+)
+
+// La nota de arriba es un compuesto de terceros: al lado van las fuentes que la arman, con enlace
+// a "Cómo se calcula la calificación", que muestra el peso y la muestra de cada una.
+const ratingSources = computed(() =>
+  (product.value?.ratingSignals ?? [])
+    .map(signal => t(`chairDetail.signal.${signal.source}`))
+    .join(' · ')
 )
 
 const observedDate = computed(() => {
@@ -681,49 +697,16 @@ const breadcrumbLd = () => ({
   }),
 })
 
+// Sin calificación en el JSON-LD (las estrellas son de Mercado Libre y Reddit, no de lectores de
+// este sitio) y sin `Product` cuando no hay precio: el porqué está en `utils/chairProductLd.ts`.
+const productLd = computed(() =>
+  product.value ? chairProductJsonLd(product.value, canonicalUrl.value) : null
+)
+
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl.value }],
-  script: product.value
-    ? [
-        breadcrumbLd(),
-        {
-          type: 'application/ld+json',
-          innerHTML: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'Product',
-            name: product.value.name,
-            brand: product.value.brand
-              ? { '@type': 'Brand', name: product.value.brand }
-              : undefined,
-            model: product.value.model || undefined,
-            image: product.value.images.map(image => image.url).slice(0, 4),
-            description: product.value.verdict || undefined,
-            url: canonicalUrl.value,
-            // Only published when real reviews exist — an invented rating would be a lie to Google
-            // and to the reader alike.
-            aggregateRating:
-              product.value.stars !== null && product.value.ratingCount > 0
-                ? {
-                    '@type': 'AggregateRating',
-                    ratingValue: product.value.stars,
-                    reviewCount: product.value.ratingCount,
-                    bestRating: 5,
-                    worstRating: 1,
-                  }
-                : undefined,
-            offers: product.value.price
-              ? {
-                  '@type': 'AggregateOffer',
-                  priceCurrency: 'UYU',
-                  lowPrice: product.value.price.min,
-                  highPrice: product.value.price.max,
-                  offerCount: product.value.offers.length,
-                  availability: 'https://schema.org/InStock',
-                }
-              : undefined,
-          }),
-        },
-      ]
+  script: productLd.value
+    ? [breadcrumbLd(), { type: 'application/ld+json', innerHTML: JSON.stringify(productLd.value) }]
     : [breadcrumbLd()],
 }))
 </script>
@@ -844,6 +827,13 @@ useHead(() => ({
 
 .rating-count {
   opacity: 0.75;
+}
+
+.rating-sources {
+  color: inherit;
+  opacity: 0.75;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
 }
 
 .detail-verdict {

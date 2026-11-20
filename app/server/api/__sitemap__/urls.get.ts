@@ -5,7 +5,7 @@ import {
   EXTRA_LOCALES,
   hasExtraLocales,
 } from '../../../utils/locales'
-import { intentsFor } from '../../../utils/casaIntents'
+import { intentsFor, isCurrencyIntent } from '../../../utils/casaIntents'
 import { casaTypePaths } from '../../../utils/casasDirectory'
 import { comparativaFamilySlugs, comparativaPaths } from '../../../utils/comparativas'
 import { entityPageSlugs } from '../../../utils/entityPageSlugs'
@@ -50,6 +50,7 @@ import { listIssueDates } from '../../utils/newsletterArchive'
 import { loadPropertySaleSitemapUrls } from '../../utils/propertySales'
 import { connectDb, disconnectDbAfterPrerender } from '../../utils/db'
 import { loadIndexableRentalBarrios } from '../../utils/rentalBarrio'
+import { isSitemapDay, previousSitemapDays, sitemapDay } from '../../../utils/sitemapLastmod'
 
 interface SitemapUrl {
   loc: string
@@ -71,6 +72,31 @@ const CORE_HREFLANG: Record<string, string> = { es: 'es-ES', en: 'en-US', pt: 'p
 const SITEMAP_CURRENCIES = new Set(['USD', 'EUR', 'BRL', 'ARS'])
 
 /**
+ * Cuántos días hacia atrás se miran las filas para declarar `/historico/<casa>/<moneda>`. Las filas
+ * son del día de Montevideo, así que entre las 00:00 y el primer scrape bueno de cada casa sus pares
+ * desaparecían del sitemap, y el BCU sólo publica dólar, real y peso argentino los días hábiles:
+ * `/historico/bcu/usd` (200, indexable, 401 impresiones en 28 días) faltaba todas las noches y todos
+ * los fines de semana. Tampoco hay filas del BCU los feriados (medido: el lunes 2/11/2026), así que
+ * cuatro días no alcanzaban: el miércoles de Carnaval a la madrugada se miraban martes, lunes,
+ * domingo y sábado, ninguno con dólar del BCU, y la Semana de Turismo es más larga todavía. Diez
+ * días cubren las dos; cada día extra es un pedido de ~25 KB en paralelo, con su propio catch.
+ */
+const HISTORICO_LOOKBACK_DAYS = 10
+
+/**
+ * Edad máxima de la foto guardada de la fuente. Con `swr`, Nitro sirve una entrada vieja que pasa
+ * `validate` mientras reconstruye por detrás, y `staleMaxAge` no rige con `swr`; como una corrida
+ * con un bloque caído no se guarda, un bloque que falla para siempre dejaría servir la última foto
+ * completa sin límite: ni un post, guía o modelo nuevo llegaría a ningún sitemap y las páginas
+ * borradas seguirían listadas. Pasada esta edad la entrada deja de ser válida al LEERLA, Nitro
+ * espera la reconstrucción y sirve lo que salga aunque venga recortado, que es lo de antes.
+ */
+const SITEMAP_SOURCE_MAX_STALE_MS = 6 * 60 * 60 * 1000
+
+/** Changefreqs that promise a change at least daily: only those carry today as `lastmod`. */
+const DAILY_OR_FASTER = new Set(['always', 'hourly', 'daily'])
+
+/**
  * Build the sitemap URL set.
  *
  * The static backbone — every navigation route plus every catalogue slug — is
@@ -84,13 +110,19 @@ const SITEMAP_CURRENCIES = new Set(['USD', 'EUR', 'BRL', 'ARS'])
  * longer be added to the site and forgotten here: /por-que-sube-el-dolar,
  * /dolar/records, /casa-de-cambio-cerca-de-mi and /newsletter were all missing
  * from the hand-written list this replaces.
+ *
+ * `complete` is false when any independently fallible block failed: the caller serves that list
+ * but never caches it (see `cachedSitemapUrls` below).
  */
-export default defineEventHandler(async _event => {
+export async function buildSitemapUrls(): Promise<{ urls: SitemapUrl[]; complete: boolean }> {
   const urls: SitemapUrl[] = []
+  let complete = true
 
-  // Today (UTC) as the lastmod for live/dynamic pages whose data refreshes daily
-  // or faster — a freshness hint that helps crawlers (and AI) prioritise re-crawl.
-  const today = new Date().toISOString()
+  // Un `lastmod` dice "los datos de esta página cambiaron ese día", nunca el instante en que se
+  // armó el archivo (utils/sitemapLastmod.ts). Hoy es el día de Montevideo, sin hora: es el día
+  // con que se guardan las filas de cotización, y es lo único que se sabe de las páginas que se
+  // reescriben con ellas.
+  const today = sitemapDay()
 
   const addUrlsForAllLocales = (
     path: string,
@@ -129,14 +161,18 @@ export default defineEventHandler(async _event => {
   // --- Static backbone: the navigation model is the source of truth ----------
   // /estado carries `sitemapExclude` (ops dashboard, not search content), while
   // /offline, /widget and /cuenta are absent from the model entirely (noindex).
+  // A `fresh` page carries today only when it also promises a daily (or faster) change: 83 of the
+  // 154 `fresh` entries declare `monthly` and 21 `weekly`, and a monthly page that says "changed
+  // today" on every rebuild is the contradiction that teaches crawlers to ignore the field.
   for (const section of NAV_SECTIONS) {
     for (const entry of section.entries) {
       if (!entry.to || entry.sitemapExclude) continue
+      const changefreq = entry.changefreq ?? 'weekly'
       addUrlsForAllLocales(
         entry.to,
         entry.priority ?? 0.6,
-        entry.changefreq ?? 'weekly',
-        entry.fresh ? today : undefined
+        changefreq,
+        entry.fresh && DAILY_OR_FASTER.has(changefreq) ? today : undefined
       )
     }
   }
@@ -172,12 +208,14 @@ export default defineEventHandler(async _event => {
   // prosa en español sobre comercios uruguayos, y tres locales serían tres URLs del mismo texto.
   // Se emiten SIEMPRE, aunque el proveedor esté caído: los slugs son catálogo puro y una página
   // que se cae del sitemap en una semana floja pierde la posición que tardó meses en ganar.
+  // Sin `lastmod`, igual que las marcas de abajo: ni el catálogo ni el índice de marcas traen la
+  // fecha en que cambió cada página, y el `generatedAt` del snapshot es la hora de la descarga
+  // (la misma regla que las fichas de venta, más abajo).
   bankPageSlugs().forEach(slug =>
     urls.push({
       loc: `/descuentos-con-tarjeta-uruguay/${slug}`,
       changefreq: 'daily',
       priority: 0.7,
-      lastmod: today,
     })
   )
   categoryPageSlugs().forEach(slug =>
@@ -185,7 +223,6 @@ export default defineEventHandler(async _event => {
       loc: `/descuentos-con-tarjeta-uruguay/rubro/${slug}`,
       changefreq: 'daily',
       priority: 0.7,
-      lastmod: today,
     })
   )
   // Descuentos por MARCA. A diferencia de los dos bloques de arriba, estos slugs NO son catálogo
@@ -202,10 +239,10 @@ export default defineEventHandler(async _event => {
         loc: `/descuentos-con-tarjeta-uruguay/marca/${entry.slug}`,
         changefreq: 'weekly',
         priority: 0.6,
-        lastmod: today,
       })
     )
   } catch (brandsError) {
+    complete = false
     console.warn('Sitemap: no se pudo leer el catálogo de marcas:', brandsError)
   }
   // Standalone tools already come from NAV_SECTIONS; these slugs have /herramientas/ pages.
@@ -285,6 +322,7 @@ export default defineEventHandler(async _event => {
       })
     })
   } catch (blogError) {
+    complete = false
     console.warn('Failed to add blog posts to sitemap:', blogError)
   }
 
@@ -307,6 +345,7 @@ export default defineEventHandler(async _event => {
       })
     })
   } catch (issueError) {
+    complete = false
     console.warn('Failed to add newsletter issues to sitemap:', issueError)
   }
 
@@ -318,6 +357,7 @@ export default defineEventHandler(async _event => {
   try {
     urls.push(...(await loadPropertySaleSitemapUrls()))
   } catch (saleError) {
+    complete = false
     console.warn('Failed to add reviewed sale pages to sitemap:', saleError)
   } finally {
     await disconnectDbAfterPrerender()
@@ -343,6 +383,7 @@ export default defineEventHandler(async _event => {
         )
       })
     } catch (chairError) {
+      complete = false
       console.warn('Failed to add chair pages to sitemap:', chairError)
     }
 
@@ -381,6 +422,7 @@ export default defineEventHandler(async _event => {
         })
       })
     } catch (equiparError) {
+      complete = false
       console.warn('Failed to add equipar category pages to sitemap:', equiparError)
     }
 
@@ -403,9 +445,11 @@ export default defineEventHandler(async _event => {
         urls.push({ loc: `/tiendas-online-uruguay/${slug}`, changefreq: 'weekly', priority: 0.6 })
       }
     } catch (storeError) {
+      complete = false
       console.warn('Failed to add store profile pages to sitemap:', storeError)
     }
   } catch (dbError) {
+    complete = false
     console.warn('Failed to connect for chair/equipar sitemap pages:', dbError)
   } finally {
     // The sitemap is prerendered: leaving the pool open hangs `nuxt build`.
@@ -427,6 +471,7 @@ export default defineEventHandler(async _event => {
     })
     if (models.length) console.log(`- Used-car model pages: ${models.length} routes`)
   } catch (carError) {
+    complete = false
     console.warn('Failed to add used-car model pages to sitemap:', carError)
   } finally {
     await disconnectDbAfterPrerender()
@@ -446,6 +491,7 @@ export default defineEventHandler(async _event => {
     })
     if (barrios.length) console.log(`- Rental neighborhood pages: ${barrios.length} routes`)
   } catch (barrioError) {
+    complete = false
     console.warn('Failed to add rental neighborhood pages to sitemap:', barrioError)
   } finally {
     await disconnectDbAfterPrerender()
@@ -475,6 +521,7 @@ export default defineEventHandler(async _event => {
     })
     if (motoModels.length) console.log(`- Moto model pages: ${motoModels.length} routes`)
   } catch (motoError) {
+    complete = false
     console.warn('Failed to add moto model pages to sitemap:', motoError)
   } finally {
     await disconnectDbAfterPrerender()
@@ -507,6 +554,7 @@ export default defineEventHandler(async _event => {
     if (publishablePhones.length)
       console.log(`- Phone model pages: ${publishablePhones.length} routes`)
   } catch (phoneError) {
+    complete = false
     console.warn('Failed to add phone model pages to sitemap:', phoneError)
   } finally {
     await disconnectDbAfterPrerender()
@@ -540,6 +588,7 @@ export default defineEventHandler(async _event => {
       if (modelos.length) console.log(`- ${categoria} model pages: ${modelos.length} routes`)
     }
   } catch (monopatinError) {
+    complete = false
     console.warn('Failed to add movilidad model pages to sitemap:', monopatinError)
   } finally {
     await disconnectDbAfterPrerender()
@@ -567,12 +616,12 @@ export default defineEventHandler(async _event => {
       quotes?: Record<string, string[]>
     }>('/api/branches')
     const branches = directory?.branches ?? []
+    // Sin `lastmod`: el cuerpo es dirección y horario, y nada en el feed fecha su último cambio.
     branches.forEach(branch => {
       urls.push({
         loc: `/sucursal/${branch.slug}`,
         changefreq: 'weekly',
         priority: 0.6,
-        lastmod: today,
       })
     })
     if (branches.length) console.log(`- Branch pages: ${branches.length} routes`)
@@ -608,17 +657,22 @@ export default defineEventHandler(async _event => {
         quotedCurrencies: directory?.quotes?.[origin] ?? [],
       })
       for (const intent of intents) {
+        // Sólo las páginas de cotización cambian con las filas de hoy; horarios, teléfono y
+        // opiniones salen de datos que no traen fecha.
+        const quotesToday =
+          intent === 'comprar-dolares' || intent === 'vender-dolares' || isCurrencyIntent(intent)
         urls.push({
           loc: `/casa/${origin}/${intent}`,
           changefreq: 'daily',
           priority: 0.7,
-          lastmod: today,
+          ...(quotesToday ? { lastmod: today } : {}),
         })
         intentCount++
       }
     }
     if (intentCount) console.log(`- Casa intent pages: ${intentCount} routes`)
   } catch (branchError) {
+    complete = false
     console.warn('Failed to add branch pages to sitemap:', branchError)
   }
 
@@ -631,24 +685,29 @@ export default defineEventHandler(async _event => {
     try {
       localData = (await $fetch('https://api.cambio-uruguay.com/localData')) as typeof localData
     } catch (localDataError) {
+      complete = false
       console.warn('Failed to fetch localData for sucursales routes:', localDataError)
       // Continue without sucursales routes if localData fails
     }
 
     const origins = new Set<string>()
-    const originCurrencyPairs = new Set<string>()
+    // Par casa/moneda → el último día con filas de ese par.
+    const originCurrencyPairs = new Map<string, string>()
+    // La moneda y el tipo llegan en MAYÚSCULA desde la base ("USD", "EBROU") y la ruta resuelve
+    // con cualquier grafía, así que el sitemap venía declarando `/historico/brou/USD` mientras el
+    // tráfico medido está en `/historico/brou/usd` (8.592 impresiones). Un sitemap que señala la
+    // grafía que no rankea invita a Google a indexar las dos. La canónica es la minúscula, y
+    // server/middleware/lowercase-routes.ts redirige la otra.
+    const currencyPairOf = (item: { origin?: string; code?: string }): string | null =>
+      item.origin && item.code && SITEMAP_CURRENCIES.has(item.code.toUpperCase())
+        ? `${item.origin}/${item.code.toLocaleLowerCase('es')}`
+        : null
 
     data.forEach(item => {
       if (!item.origin) return
       origins.add(item.origin)
-      // La moneda y el tipo llegan en MAYÚSCULA desde la base ("USD", "EBROU") y la ruta resuelve
-      // con cualquier grafía, así que el sitemap venía declarando `/historico/brou/USD` mientras el
-      // tráfico medido está en `/historico/brou/usd` (8.592 impresiones). Un sitemap que señala la
-      // grafía que no rankea invita a Google a indexar las dos. La canónica es la minúscula, y
-      // server/middleware/lowercase-routes.ts redirige la otra.
-      if (item.code && SITEMAP_CURRENCIES.has(item.code.toUpperCase())) {
-        originCurrencyPairs.add(`${item.origin}/${item.code.toLocaleLowerCase('es')}`)
-      }
+      const pair = currencyPairOf(item)
+      if (pair) originCurrencyPairs.set(pair, today)
       // El `type` NO va al sitemap, y eso se decidió midiendo. La ruta es
       // /historico/<casa>/<MONEDA>, así que meter el tipo en el segundo segmento
       // produce /historico/brou/billete: una página que responde 200 y se titula
@@ -657,6 +716,29 @@ export default defineEventHandler(async _event => {
       // días las trece que Google llegó a mostrar juntaron 88 impresiones y CERO
       // clics. Un sitemap que las declara le pide a Google que gaste rastreo en
       // eso en vez de en las páginas que sí convierten.
+    })
+
+    // Los pares que hoy todavía no tienen filas se toman de los últimos días, con la fecha del día
+    // en que sí las tuvieron (ver HISTORICO_LOOKBACK_DAYS). Sólo los pares: el hub
+    // `/historico/<casa>` contesta 404 sin filas de hoy, así que sigue atado a `origins`. Un día
+    // sin filas el backend lo contesta con un 500 ("No results found"), que no es una falla de la
+    // fuente: cada pedido tiene su propio catch y no marca la lista como incompleta.
+    const previousDays = previousSitemapDays(HISTORICO_LOOKBACK_DAYS)
+    const previousRows = await Promise.all(
+      previousDays.map(day =>
+        $fetch<Array<{ origin?: string; code?: string }>>(
+          `https://api.cambio-uruguay.com/?date=${day}`,
+          { timeout: 15000 }
+        ).catch(() => [])
+      )
+    )
+    previousDays.forEach((day, index) => {
+      const rows = previousRows[index]
+      if (!Array.isArray(rows)) return
+      for (const item of rows) {
+        const pair = currencyPairOf(item)
+        if (pair && !originCurrencyPairs.has(pair)) originCurrencyPairs.set(pair, day)
+      }
     })
 
     const sucursalesOrigins = new Set<string>()
@@ -693,8 +775,8 @@ export default defineEventHandler(async _event => {
     branchLocationPairs?.forEach(pair => sucursalesLocationPairs.add(pair))
 
     origins.forEach(origin => addUrlsForAllLocales(`/historico/${origin}`, 0.8, 'daily', today))
-    originCurrencyPairs.forEach(pair =>
-      addUrlsForAllLocales(`/historico/${pair}`, 0.7, 'daily', today)
+    originCurrencyPairs.forEach((lastmod, pair) =>
+      addUrlsForAllLocales(`/historico/${pair}`, 0.7, 'daily', lastmod)
     )
     sucursalesOrigins.forEach(origin => addUrlsForAllLocales(`/sucursales/${origin}`, 0.8))
     sucursalesLocationPairs.forEach(pair => addUrlsForAllLocales(`/sucursales/${pair}`, 0.7))
@@ -714,18 +796,22 @@ export default defineEventHandler(async _event => {
     let precioArticleSlugs = 0
     try {
       const apiBase = useRuntimeConfig().apiBaseServer
-      const catalogue = await $fetch<{ articles?: Array<{ name: string; n?: number }> }>(
-        `${apiBase}/precios/articles`,
-        { timeout: 15000 }
-      )
+      const catalogue = await $fetch<{
+        day?: unknown
+        articles?: Array<{ name: string; n?: number }>
+      }>(`${apiBase}/precios/articles`, { timeout: 15000 })
+      // El dia del relevamiento del SIPC que trae el propio catalogo, no el de hoy: el job corre
+      // a las 03:12 UTC y un dia sin relevamiento deja los precios como estaban.
+      const precioLastmod = isSitemapDay(catalogue?.day) ? catalogue.day : undefined
       for (const article of catalogue?.articles ?? []) {
         if ((article.n ?? 0) < PRECIOS_MIN_OBSERVATIONS) continue
         const slug = preciosSlug(article.name)
         if (!slug) continue
-        addUrlsForAllLocales(`/precio/${slug}`, 0.6, 'daily', today)
+        addUrlsForAllLocales(`/precio/${slug}`, 0.6, 'daily', precioLastmod)
         precioArticleSlugs++
       }
     } catch (error) {
+      complete = false
       // Un catalogo caido recorta el sitemap, no lo rompe.
       console.warn('[sitemap] no se pudo listar los articulos de precios:', error)
     }
@@ -744,9 +830,56 @@ export default defineEventHandler(async _event => {
       `\n- Total across ${CORE_LOCALES.length + EXTRA_LOCALES.length} locales: ${urls.length} URLs`
     )
   } catch (error) {
+    complete = false
     console.error('Error adding API-derived sitemap URLs:', error)
     console.error(`Serving the ${urls.length} static URLs without live data.`)
   }
 
+  // Se avisa ACÁ y no en el handler: con `swr` la reconstrucción corre por detrás mientras se
+  // sirve la foto guardada, y ése es justo el caso de un bloque que falla para siempre. Los
+  // `console.warn` de cada bloque dicen cuál fue.
+  if (!complete) console.warn('[sitemap] fuente incompleta: esta corrida no se guarda')
+
+  return { urls, complete }
+}
+
+/**
+ * La lista se arma UNA vez cada media hora y la comparten los 56 sitemaps hijos y los dos workers.
+ *
+ * El módulo arma cada hijo con su propia caché (`defineCachedFunction` con TTL fijo) y en cada
+ * reconstrucción vuelve a pedir esta fuente, que tardaba 9–20 s medida en producción
+ * (2026-11-20): 56 hijos eran 56 fotos distintas, tomadas a distinta hora. Así el sitemap rumano,
+ * armado a las 04:00 UTC, seguía listando dos páginas de equipar que el español de las 04:34 ya
+ * no tenía, y cada archivo estampaba su propio instante como `lastmod`.
+ *
+ * `base: 'sitemap'` es el montaje en disco que ya usa el módulo (`runtimeCacheStorage`,
+ * `.data/sitemap`): una sola foto para los dos workers, que sobrevive al deploy (el `integrity`
+ * de Nitro la invalida cuando cambia el código). Una corrida con algún bloque caído se sirve pero
+ * NO se guarda (`validate`): una caída no puede fijar media hora de lista recortada, y mientras
+ * tanto `swr` sigue sirviendo la última completa, pero nunca una de más de
+ * SITEMAP_SOURCE_MAX_STALE_MS (`validate` corre también al leer, con el `mtime` guardado; al
+ * escribir Nitro ya le puso el instante actual).
+ */
+export function isUsableSitemapSource(
+  entry: { value?: { complete?: boolean }; mtime?: number },
+  now: number = Date.now()
+): boolean {
+  return entry.value?.complete === true && now - (entry.mtime ?? 0) < SITEMAP_SOURCE_MAX_STALE_MS
+}
+
+const cachedSitemapUrls = defineCachedFunction(buildSitemapUrls, {
+  name: 'sitemap-source-urls',
+  base: 'sitemap',
+  getKey: () => 'all',
+  maxAge: 30 * 60,
+  swr: true,
+  validate: entry => isUsableSitemapSource(entry),
+})
+
+// Devuelve la LISTA, no el objeto: sync_rag_index.ts y scripts/check-og-images.mjs la leen así.
+export default defineEventHandler(async () => {
+  const { urls, complete } = await cachedSitemapUrls()
+  // Sólo llega acá recortada si no había una foto completa de menos de seis horas.
+  if (!complete) console.warn('[sitemap] sin foto completa vigente: se sirve recortada')
   return urls
 })

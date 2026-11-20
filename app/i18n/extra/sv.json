@@ -287,7 +287,8 @@
     "h1": "Importvarukorg: den slutliga kostnaden för dina utlandsköp",
     "intro": "Lägg till produkter från Amazon, eBay eller MercadoLibre (klistra in länken eller skriv in dem för hand) och räkna ut vad de kostade landat i Uruguay: skatter per kategori, franchise, frakt och totalt i pesos.",
     "ogSubtitle": "Skatter, franchise och frakt för dina onlinebeställningar, i pesos",
-    "metaDescription": "Bygg en varukorg med dina Amazon-, eBay- eller MercadoLibre-beställningar och se den slutliga kostnaden i Uruguay: skatter, franchisen på 800 USD, budfrakt och totalsumman i uruguayanska pesos, live.",
+    "metaTitle": "Importvagn: slutkostnaden",
+    "metaDescription": "Bygg en varukorg med dina Amazon-, eBay- eller MercadoLibre-beställningar och se slutkostnaden i Uruguay: skatter, franchisen på 800 USD, frakt och totalt i pesos.",
     "yourCart": "Din varukorg",
     "clear": "Rensa",
     "empty": {
@@ -822,7 +823,7 @@
     "homeDescriptionLive": "Dollar i Uruguay idag: köp från $U {sell} eller sälj för upp till $U {buy} på {count}-börser, uppdateras var 10:e minut. Även euro, real och argentinsk peso.",
     "homeDescription": "Dollarkursen i Uruguay uppdateras idag var 10:e minut. Jämför köp- och säljpriser från över 40 växlingskontor. Hitta de bästa USD-, EUR-, BRL- och ARS-kurserna i Montevideo och hela Uruguay.",
     "homeKeywords": "Dollarkurs Uruguay, USD till UYU, valutaväxling Uruguay, växlingshus Uruguay, köp dollar Uruguay, sälj dollar Uruguay, dollarkurs Montevideo, BROU växelkurs, bästa växelkurs Uruguay",
-    "advancedTitle": "Avancerad dollarväxlingsjämförelse i Uruguay",
+    "advancedTitle": "Avancerad dollarjämförelse i Uruguay",
     "advancedDescription": "Avancerad vy av Uruguays valutajämförelse: filtrera hus och valutor, se filialkartan och hitta den bästa USD-, EUR- och BRL-kursen i realtid.",
     "historicalTitle": "Växelkurshistorik i Uruguay",
     "historicalDescription": "Kontrollera den kompletta historiken över växelkurser från alla växlingskontor i Uruguay. Uppdaterad data i realtid.",
@@ -840,11 +841,11 @@
     "sucursalesDescription": "Alla {count} {origin}-filialer i Uruguay: adress, telefonnummer och öppettider för var och en, plus den dollarkurs som huset anger idag.",
     "sucursalesLocationDescription": "{origin} har {count}-filialer i {location}. Adress, telefonnummer och öppettider för varje filial, med dagens dollarkurs och vägbeskrivning.",
     "sucursalesKeywords": "{origin}-filialer, {origin}-adresser, {origin}-platser, växlingskontor i Uruguay",
-    "sucursalesIndexTitle": "Filialkatalog - Alla Byteshus i Uruguay",
+    "sucursalesIndexTitle": "Växlingskontor i Uruguay",
     "sucursalesIndexDescription": "Komplett katalog över filialer från alla växlingskontor i Uruguay. Hitta platser, adresser och kontakter per avdelning.",
     "sucursalesIndexKeywords": "filialkatalog uruguay, byteshus uruguay, montevideo filialer, canelones filialer, alla filialer uruguay",
     "compareTitle": "Jämför byteshus över tid",
-    "compareDescription": "Jämför den historiska utvecklingen av den amerikanska dollarn och andra valutakurser mellan flera uruguayanska växlingshus i ett enda diagram. Hitta vem som erbjuder det bästa priset över tid.",
+    "compareDescription": "Upp till 4 börshus på ett diagram: köp eller sälj, från 7 dagar till fullständig historik, med lägsta, högsta och genomsnittliga värden för varje.",
     "compareKeywords": "jämför växlingshus Uruguay, dollarutveckling Uruguay, kursjämförelse, jämförande dollardiagram, bästa växlingshus Uruguay",
     "mapaTitle": "Karta över byteshus i Uruguay",
     "mapaDescription": "Interaktiv karta över växlingshus i Uruguay. Hitta närmaste filial och den bästa amerikanska dollarkursen i närheten av dig.",
@@ -1431,7 +1432,7 @@
     "noTrend": "Inga trenddata tillgängliga ännu.",
     "sevenDays": "Senaste 7 dagarna",
     "seeMore": "Visa detaljer",
-    "metaTitle": "Dollarkursen i Uruguay idag: steg eller sjönk?",
+    "metaTitle": "Dollarkursen i Uruguay idag: upp eller ner?",
     "metaDescription": "Dollarkurs i Uruguay idag: köp- och säljpris, förändring jämfört med igår och trend under de senaste dagarna, med den bästa kursen från över 40 växlingskontor.",
     "footNote": "Förändringen beräknas mot Uruguays centralbanks (BCU) officiella kurs.",
     "compareCta": "För att handla, jämför dollarkursen på fler än 40 växlingshus.",
@@ -1551,8 +1552,8 @@
     }
   },
   "capture": {
-    "title": "Användbart? Få den dagliga dollaröversikten",
-    "lead": "Ett e-postmeddelande om dagen med de bästa priserna, trenden och vad som har förändrats. Gratis, och du kan avsluta prenumerationen när du vill.",
+    "title": "Följer du dollarn? Skaffa den varje morgon",
+    "lead": "Ett e-postmeddelande om dagen med de bästa köp- och säljkurserna för över 40 husbyten i Uruguay, trenden och vad som förändrats. Gratis, och du kan avsluta prenumerationen när du vill.",
     "dismiss": "Nära",
     "aria": "Prenumerera på nyhetsbrevet"
   },
@@ -1924,7 +1925,7 @@
   "mejorCasa": {
     "h1": "Var ska man växla dollar i Uruguay idag?",
     "subtitle": "Vi jämför alla växlingshus och banker i landet för att identifiera den bästa kursen idag.",
-    "metaTitle": "Bästa växlingshus i Uruguay idag: billigaste dollarn",
+    "metaTitle": "Bästa växlingshuset idag: billigaste dollarn",
     "metaDescription": "Idag är det billigaste stället att köpa dollar på {casa} för ${rate}. Jämför 40+ hus och spara ${savings} mot marknadsgenomsnittet.",
     "metaDescriptionGeneric": "Jämför dollarpriset på fler än 40 växlingskontor och banker i Uruguay och ta reda på var du kan växla pengar idag.",
     "answer": "Idag är {casa} det billigaste stället att köpa dollar, där de säljs för {rate} dollar. Att köpa 1 000 USD där sparar dig cirka {savings} dollar jämfört med genomsnittet för de {count}-växlingshus och banker vi jämför.",
@@ -1933,7 +1934,7 @@
     "colCasa": "Byteshus",
     "colRate": "Sälja",
     "colSavings": "Sparande kontra genomsnitt",
-    "methodology": "Rangordnat efter försäljningspris i dollar (vad du betalar per 1 USD). Besparingen jämförs med att köpa {amount} USD i det huset mot marknadsgenomsnittet. Referensräntan för BCU och interbankkurser är exkluderade – allmänheten kan inte göra transaktioner på dem. Anslagstavlor som ligger mer än 3 % från marknadsmedianen utelämnas också: de är vanligtvis en anslagstavla som slutat uppdateras eller som har blivit felläst.",
+    "methodology": "Rankad efter försäljningspris i dollar (vad du betalar per 1 USD). Besparingen jämförs med att köpa {amount} USD i det huset mot marknadsgenomsnittet. Referensräntan BCU och interbankkurser är exkluderade – allmänheten kan inte göra transaktioner på dem. Också nämnda nämndar är mer än 3 % från marknadens medianvärde utelämnade: de är vanligtvis nämndar som slutat uppdateras eller har blivit fellästa. Och en nämnd som inte har ändrats på flera dagar toppar aldrig rankningen, inte ens när dess pris ser ut att vara det bästa: marknaden rörde sig men det gjorde den inte.",
     "noData": "Inga priser tillgängliga just nu."
   },
   "rateChanges": {

@@ -287,7 +287,8 @@
     "h1": "Importkosár: a külföldi vásárlások végső költsége",
     "intro": "Adj hozzá termékeket az Amazonról, az eBay-ről vagy a MercadoLibre-ről (illeszd be a linket, vagy írd be kézzel), és számold ki, mennyibe kerültek Uruguayban: adók kategóriánként, franchise-onként, szállítási költség és összesen pesóban.",
     "ogSubtitle": "Az online rendelések adói, franchise-díjai és szállítási költségei pesóban",
-    "metaDescription": "Hozz létre egy kosarat Amazon, eBay vagy MercadoLibre rendeléseiddel, és nézd meg élőben a végső árat Uruguayban: az adókat, a 800 USD-s franchise-t, a futárszolgálatot és a teljes összeget uruguayi pesóban.",
+    "metaTitle": "Importkosár: a végső költség",
+    "metaDescription": "Hozz létre egy kosarat Amazon, eBay vagy MercadoLibre rendeléseiddel, és nézd meg a végső árat Uruguayban: adók, a 800 USD-s franchise, szállítás és a teljes összeg pesóban.",
     "yourCart": "A kosarad",
     "clear": "Világos",
     "empty": {
@@ -822,7 +823,7 @@
     "homeDescriptionLive": "Dollár Uruguayban ma: vásároljon $U {sell}-tól, vagy adjon el akár $U {buy}-ért a {count} tőzsdéken, 10 percenként frissítve. Valamint euró, real és argentin peso.",
     "homeDescription": "A dollár árfolyama Uruguayban ma 10 percenként frissül. Hasonlítsa össze a vételi és eladási árakat több mint 40 tőzsdeház kínálatából. Találja meg a legjobb USD, EUR, BRL és ARS árfolyamokat Montevideóban és egész Uruguayban.",
     "homeKeywords": "dollár árfolyam Uruguay, USD - UYU, valutaváltás Uruguay, pénzváltók Uruguay, dollár vásárlás Uruguay, dollár eladás Uruguay, dollárárfolyam Montevideo, BROU árfolyam, legjobb árfolyam Uruguay",
-    "advancedTitle": "Speciális dollárárfolyam-összehasonlítás Uruguayban",
+    "advancedTitle": "Speciális dollár-összehasonlítás Uruguayban",
     "advancedDescription": "Az uruguayi tőzsde összehasonlítójának részletes nézete: szűrhet házakat és valutákat, megtekintheti a fióktérképet, és valós időben megtalálhatja a legjobb USD, EUR és BRL árfolyamot.",
     "historicalTitle": "Az uruguayi árfolyamok története",
     "historicalDescription": "Tekintse meg az összes uruguayi valutaváltó árfolyamainak teljes történetét. Valós idejű, frissített adatok.",
@@ -840,11 +841,11 @@
     "sucursalesDescription": "Minden {count} {origin} fiók Uruguayban: cím, telefonszám és nyitvatartási idő, valamint a bank által ma jegyzett dollárárfolyam.",
     "sucursalesLocationDescription": "A {origin}-nek {count} fiókjai vannak {location}-ben. Mindegyik fiók címe, telefonszáma és nyitvatartási ideje, a mai dollárárfolyammal és útvonaltervvel.",
     "sucursalesKeywords": "{origin} fiókok, {origin} címek, {origin} helyszínek, pénzváltók Uruguayban",
-    "sucursalesIndexTitle": "Fiókjegyzék - Minden tőzsde Uruguayban",
+    "sucursalesIndexTitle": "Tőzsdefiókok Uruguayban",
     "sucursalesIndexDescription": "Uruguay összes pénzváltójának fiókjainak teljes címtára. Keressen helyszíneket, címeket és elérhetőségeket részlegek szerint.",
     "sucursalesIndexKeywords": "fiókkönyvtár uruguay, csereházak uruguay, montevideo ágak, canelones fiókok, összes fiók uruguay",
     "compareTitle": "Hasonlítsa össze a csereházakat az idő múlásával",
-    "compareDescription": "Hasonlítsa össze az amerikai dollár és más valuták árfolyamának történelmi alakulását több uruguayi tőzsdén egyetlen grafikonon. Keresse meg, ki kínálja a legjobb árat az idő múlásával.",
+    "compareDescription": "Akár 4 tőzsdeház egy grafikonon: vétel vagy eladás, 7 naptól a teljes előzményekig, mindegyik minimum, maximum és átlagárával.",
     "compareKeywords": "tőzsdeházak összehasonlítása Uruguayban, dollár alakulása Uruguayban, árfolyam-összehasonlítás, összehasonlító dollárdiagram, legjobb tőzsdeház Uruguayban",
     "mapaTitle": "Térkép az uruguayi csereházakról",
     "mapaDescription": "Interaktív térkép Uruguay-i váltóházakról. Keresse meg a legközelebbi fiókot és a legjobb amerikai dollár árfolyamot az Ön környékén.",
@@ -1431,7 +1432,7 @@
     "noTrend": "Még nincsenek elérhető trendadatok.",
     "sevenDays": "Utolsó 7 nap",
     "seeMore": "Részletek megtekintése",
-    "metaTitle": "A dollár árfolyama Uruguayban ma: emelkedett vagy esett?",
+    "metaTitle": "A dollár árfolyama Uruguayban ma: felfelé vagy lefelé?",
     "metaDescription": "Dollárárfolyam Uruguayban ma: vételi és eladási ár, változás a tegnapihoz képest és trend az elmúlt napokban, a legjobb árfolyamon több mint 40 tőzsdeháztól.",
     "footNote": "A változást az Uruguayi Központi Bank (BCU) hivatalos árfolyamához viszonyítva számítják ki.",
     "compareCta": "Kereskedéshez hasonlítsa össze a dollár árfolyamát több mint 40 tőzsdén.",
@@ -1551,8 +1552,8 @@
     }
   },
   "capture": {
-    "title": "Hasznos? Tekintse meg a napi dollárösszesítőt",
-    "lead": "Naponta egy e-mail a legjobb árakkal, a trendekkel és a változásokkal. Ingyenes, és bármikor leiratkozhatsz.",
+    "title": "Követed a dollárt? Minden reggel megkapod",
+    "lead": "Naponta egy e-mail a legjobb vételi és eladási árfolyamokkal több mint 40 uruguayi tőzsdén, a trendekkel és a változásokkal. Ingyenes, és bármikor leiratkozhat.",
     "dismiss": "Közeli",
     "aria": "Iratkozzon fel a hírlevélre"
   },
@@ -1924,7 +1925,7 @@
   "mejorCasa": {
     "h1": "Hol érdemes ma dollárt váltani Uruguayban?",
     "subtitle": "Összehasonlítjuk az ország összes pénzváltóját és bankját, hogy megtaláljuk a mai legjobb árfolyamot.",
-    "metaTitle": "A legjobb csereház Uruguayban ma: a legolcsóbb dollár",
+    "metaTitle": "A legjobb csereház ma: a legolcsóbb dollár",
     "metaDescription": "Ma a legolcsóbb hely dollár vásárlására a {casa}, ${rate} áron. Hasonlítson össze több mint 40 házat, és takarítson meg ${savings}-t a piaci átlaghoz képest.",
     "metaDescriptionGeneric": "Hasonlítsa össze a dollár árfolyamát több mint 40 uruguayi pénzváltó és bank kínálatában, és tudja meg, hol válthat pénzt még ma.",
     "answer": "Today the cheapest place to buy dollars is {casa}, selling at ${rate}. Buying US$ 1,000 there saves you about ${savings} against the average of the {count} exchange houses and banks we compare.",
@@ -1933,7 +1934,7 @@
     "colCasa": "Csereház",
     "colRate": "Elad",
     "colSavings": "Megtakarítás vs. átlag",
-    "methodology": "A dollárban kifejezett eladási ár (amit 1 USD-ért fizet) alapján rangsorolva. A megtakarítás az adott ház {amount} USD-ben történő vásárlását hasonlítja össze a piaci átlaggal. A BCU referenciakamatláb és a bankközi árfolyamok ki vannak zárva – a nyilvánosság nem bonyolíthat le velük tranzakciókat. A piaci mediántól több mint 3%-kal eltérő táblák is kimaradnak: ezek általában olyan táblák, amelyek frissítése leállt, vagy amelyeket félreolvastak.",
+    "methodology": "A rangsorolás a dollárban kifejezett eladási ár (amit 1 USD-ért fizet) alapján történik. A megtakarítás a {amount} USD-ben történő vásárlást hasonlítja össze az adott ház piaci átlagával. A BCU referencia-kamatláb és a bankközi árfolyamok ki vannak zárva – a nyilvánosság nem bonyolíthat le náluk tranzakciókat. A piaci mediántól több mint 3%-kal eltérő táblák is kimaradnak: ezek általában olyan táblák, amelyek frissítése leállt, vagy amelyeket félreolvastak. És egy olyan tábla, amely napok óta nem változott, soha nem vezeti a rangsort, még akkor sem, ha az ára a legjobbnak tűnik: a piac mozgott, és nem változott.",
     "noData": "Jelenleg nincsenek elérhető árak."
   },
   "rateChanges": {

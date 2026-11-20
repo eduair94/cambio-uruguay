@@ -142,6 +142,12 @@ describe("el lector de las listas del app no puede fallar en silencio", () => {
     ["seoContract.test.ts", "DEUDA_SIN_MIGAS", "BREADCRUMB_BUDGET", "/"],
     ["guideSnippetBudget.test.ts", "DEUDA_TITULO_LARGO", "TITLE_OVER_BUDGET", ""],
     ["guideSnippetBudget.test.ts", "DEUDA_DESCRIPCION_LARGA", "DESCRIPTION_OVER_BUDGET", ""],
+    // Los pozos de catálogo del 2026-11-20: títulos y descripciones con clave fuera de `seo.` y los
+    // que una herramienta hereda de `utils/tools.ts`.
+    ["seoMessageSnippetBudget.test.ts", "DEUDA_TITULO_MENSAJE", "MESSAGE_TITLE_OVER_BUDGET", "/"],
+    ["seoMessageSnippetBudget.test.ts", "DEUDA_DESCRIPCION_MENSAJE", "MESSAGE_DESCRIPTION_OVER_BUDGET", "/"],
+    ["seoToolCatalogBudget.test.ts", "DEUDA_TITULO_HERRAMIENTA", "TOOL_TITLE_OVER_BUDGET", "/"],
+    ["seoToolCatalogBudget.test.ts", "DEUDA_DESCRIPCION_HERRAMIENTA", "TOOL_DESCRIPTION_OVER_BUDGET", "/"],
   ])("lee %s → %s y cabe en su propio trinquete", (file, list, budget, prefix) => {
     const source = read(file);
     const declared = parseStringList(source, list);
