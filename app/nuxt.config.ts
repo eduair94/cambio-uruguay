@@ -461,13 +461,16 @@ export default defineNuxtConfig({
     // `server/middleware/lang-cookie-cache.ts` saca el `Set-Cookie: lang=<idioma del
     // prefijo>` que volvía BYPASS a todo /en y /pt. Nada más del render lee cookie, cabecera
     // ni sesión (auth, tema, avisos y AdSense son client-only). El asterisco es el aviso de
-    // cookies: `CookieConsent.vue` se renderiza en el servidor leyendo `cu_consent`, así que
-    // el borde guarda la variante "primera visita" para todos. Moverlo a client-only choca con
-    // app/AGENTS.md y tests/e2e/consent.spec.ts; a quien ya decidió no se le pinta porque el
-    // script de `app.head.script` (PREPAINT_CONSENT_SCRIPT) marca <html data-cu-consent> antes del
-    // primer pintado y critical.css lo esconde. Hasta el 20/11/2026 lo veía hasta hidratar y su
-    // retiro subía la columna 123 px (CLS 0,135). La decisión sigue en su cookie y Consent Mode
-    // se actualiza igual.
+    // cookies: `CookieConsent.vue` se renderiza en el servidor y es el mismo para todos — NO lee
+    // `cu_consent` hasta que monta en el navegador (`consentBannerRendered`, utils/consent.ts) —,
+    // así que la copia del borde es siempre la de "primera visita", la pida quien la pida. Hasta el
+    // 20/11/2026 el servidor sí miraba la cookie y el borde guardaba la respuesta al primero que
+    // preguntaba: un visitante que ya había decidido dejaba guardado el HTML SIN aviso para el
+    // siguiente visitante nuevo. Moverlo a client-only choca con app/AGENTS.md y
+    // tests/e2e/consent.spec.ts; a quien ya decidió no se le pinta porque el script de
+    // `app.head.script` (PREPAINT_CONSENT_SCRIPT) marca <html data-cu-consent> antes del primer
+    // pintado y critical.css lo esconde, y sale del DOM al montar. La decisión sigue en su cookie y
+    // Consent Mode se actualiza igual.
     //
     // LO QUE NO VIVE ACÁ: el `s-maxage` es inerte hasta que en Cloudflare exista una Cache
     // Rule (Caching → Cache Rules) que marque estas rutas como cacheables respetando el TTL del

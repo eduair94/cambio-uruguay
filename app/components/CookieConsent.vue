@@ -29,6 +29,7 @@
 
 <script setup lang="ts">
 import { VDialog } from 'vuetify/components'
+import { consentBannerRendered } from '~/utils/consent'
 const { t } = useI18n({ useScope: 'global' })
 const { t: localT } = useI18n({
   useScope: 'local',
@@ -47,7 +48,21 @@ const { t: localT } = useI18n({
 const localePath = useLocalePath()
 const { hasDecided, bannerOpen, accept, reject } = useConsent()
 const titleId = useId()
-const visible = computed(() => !hasDecided.value || bannerOpen.value)
+// The same HTML for every visitor until this component has mounted: the edge shares one copy of
+// each page, so the server must not ask the cookie (utils/consent.ts, consentBannerRendered). A
+// visitor who already decided never sees it in between — <html data-cu-consent> is set before the
+// first paint and critical.css does not paint it — and it leaves the DOM right here.
+const settled = ref(false)
+onMounted(() => {
+  settled.value = true
+})
+const visible = computed(() =>
+  consentBannerRendered({
+    settled: settled.value,
+    hasDecided: hasDecided.value,
+    dialogOpen: bannerOpen.value,
+  })
+)
 const preferencesTrigger = shallowRef<HTMLElement | null>(null)
 watch(
   bannerOpen,

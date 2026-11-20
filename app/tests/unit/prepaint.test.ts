@@ -157,6 +157,19 @@ describe('prepaint: el aviso de cookies ya decidido no se pinta', () => {
     expect(read('layouts/default.vue')).toContain('<CookieConsent />')
   })
 
+  it('el servidor no le pregunta a la cookie si renderiza el aviso', () => {
+    // El borde guarda una sola copia del HTML por URL y se la da a todos: si el servidor mirara
+    // `cu_consent`, la copia guardada sería la de quien la pidió primero (medido el 20/11/2026: un
+    // pedido con la cookie dejó guardado el HTML SIN aviso y el siguiente visitante, sin cookie, lo
+    // recibió). La regla vive en utils/consent.ts y sólo cambia después de montar.
+    const banner = read('components/CookieConsent.vue')
+    expect(banner).toMatch(/consentBannerRendered\(\{/)
+    expect(banner).toMatch(/const settled = ref\(false\)/)
+    expect(banner).toMatch(/onMounted\(\(\) => \{\s*settled\.value = true\s*\}\)/)
+    // La visibilidad ya no se calcula directo de la cookie.
+    expect(banner).not.toMatch(/visible = computed\(\(\) => !hasDecided\.value/)
+  })
+
   it('el aviso de idioma no cambió: sigue client-only (v-if, fuera del HTML del servidor)', () => {
     const hint = read('components/LanguageHint.vue')
     expect(hint).toMatch(/<div v-if="show" class="lang-hint"/)

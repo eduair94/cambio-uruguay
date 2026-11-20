@@ -38,6 +38,35 @@ test.describe('cookie consent', () => {
     await expect(page.getByRole('button', { name: /Aceptar/i })).toBeHidden()
   })
 
+  test('the server HTML carries the banner whoever asks, because the edge shares one copy', async ({
+    request,
+    page,
+  }) => {
+    // The copy the edge stores is the answer to whoever asked first. With the cookie deciding the
+    // server render, a decided visitor left a banner-less copy for the next new visitor.
+    for (const cookie of ['', 'cu_consent=granted', 'cu_consent=denied']) {
+      const response = await request.get('/dolar-hoy', { headers: cookie ? { cookie } : {} })
+      expect(response.ok()).toBe(true)
+      expect(await response.text(), `cookie: ${cookie || '(none)'}`).toContain(
+        'data-testid="cookie-consent-inline"'
+      )
+    }
+
+    // And the decided visitor still never sees it: hidden before the first paint, gone once mounted.
+    await page
+      .context()
+      .addCookies([{ name: 'cu_consent', value: 'denied', domain: 'localhost', path: '/' }])
+    const mismatches: string[] = []
+    page.on('console', message => {
+      if (/hydrat/i.test(message.text())) mismatches.push(message.text())
+    })
+    await page.goto('/dolar-hoy', { waitUntil: 'domcontentloaded' })
+    await expect(page.locator('html')).toHaveAttribute('data-cu-consent', 'denied')
+    await expect(page.getByTestId('cookie-consent-inline')).toBeHidden()
+    await expect(page.getByTestId('cookie-consent-inline')).toHaveCount(0, { timeout: 60_000 })
+    expect(mismatches).toEqual([])
+  })
+
   test('rejecting persists denied and hides the banner', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' })
     const reject = page.getByRole('button', { name: /Rechazar/i })
