@@ -39,6 +39,7 @@ import {
   retypeStoredRentalOffers,
   refreshStoredRentalTextFacts,
   loadRentPriceRows,
+  loadLastFullRentalMeta,
   loadRentalHistory,
   loadRentalMeta,
   dropReassignedOffers,
@@ -47,9 +48,14 @@ import {
   saveRentalProperties,
 } from "./classes/rentals/store";
 import { flagRentalStayPrices, inferRentalCurrencies, rentPriceCohorts } from "./classes/rentals/currency";
+import { RENTAL_BIG_SOURCE_SHARE, rentalCollapseVerdict, rentalSourceDrops } from "./classes/rentals/collapse";
+import { notifyAdmin } from "./classes/notify";
 import { RENTAL_META_KEY, type RentalMeta } from "./classes/rentals/types";
 
-/** A full run that finds less than this share of what we already had is treated as an outage. */
+/**
+ * A full run that brings less than this share of what the LAST SAVED FULL RUN brought is treated as
+ * an outage. See classes/rentals/collapse.ts for why the yardstick is a run and not the stored total.
+ */
 const COLLAPSE_RATIO = Number(process.env.RENTALS_COLLAPSE_RATIO || 0.5);
 /** Days a property may go unpublished before it leaves the directory. */
 const PRUNE_DAYS = Number(process.env.RENTALS_PRUNE_DAYS || 21);
@@ -93,15 +99,25 @@ async function main(): Promise<void> {
   }
   console.log(`[rentals] modo ${mode}, dólar de referencia ${usdUyu.toFixed(2)}`);
 
-  const [harvest, history, existing] = await Promise.all([
+  const [harvest, history, existing, lastFull] = await Promise.all([
     harvestRentalMarket(mode, usdUyu),
     loadRentalHistory(),
     countRentals(),
+    // The yardstick of the collapse guard. A failed read falls back to the stored total.
+    loadLastFullRentalMeta().catch(() => null),
   ]);
 
   for (const run of harvest.runs) {
     console.log(`[rentals] ${run.ok ? "ok  " : "FAIL"} ${run.key.padEnd(14)} ${run.listings.length} avisos :: ${run.note}`);
   }
+  // Sources that brought less than half of what they did in the last saved full run: what explains
+  // a smaller sweep. Every one is logged; the big ones are also sent to Telegram below.
+  const drops = mode === "full" ? rentalSourceDrops(harvest.runs.map((run) => ({ key: run.key, listings: run.listings.length })), lastFull, COLLAPSE_RATIO) : [];
+  const lastFullDay = String(lastFull?.generatedAt || "").slice(0, 10);
+  for (const drop of drops) {
+    console.warn(`[rentals] ${drop.key} trajo ${drop.now} avisos contra ${drop.before} de la última corrida completa guardada (${lastFullDay})`);
+  }
+  const bigDrops = drops.filter((drop) => drop.share >= RENTAL_BIG_SOURCE_SHARE).map((drop) => `${drop.key} ${drop.now} contra ${drop.before}`);
 
   // Only a complete sweep can use absence as evidence. Partial sources and the hourly slice
   // may add/update adverts, but never expire the older offers of a property they happen to touch.
@@ -156,12 +172,43 @@ async function main(): Promise<void> {
 
   // A full sweep that comes back with half of what we had is an outage upstream, not a market that
   // emptied overnight. Publishing it would delete thousands of live listings.
-  if (mode === "full" && existing > 200 && properties.length < existing * COLLAPSE_RATIO) {
-    console.error(
-      `[rentals] la corrida trajo ${properties.length} propiedades contra ${existing} guardadas ` +
-        `(< ${Math.round(COLLAPSE_RATIO * 100)} %) — se conserva el directorio anterior`
+  //
+  // Two yardsticks (classes/rentals/collapse.ts): the last full run that was saved, advert for
+  // advert — not everything stored, which a healthy sweep never reaches — and a floor against the
+  // stored total, which does not move with each run and stops a collapse that comes in steps.
+  const collapse = rentalCollapseVerdict({
+    mode,
+    listings: harvest.listings.length,
+    properties: properties.length,
+    stored: existing,
+    lastFull,
+    ratio: COLLAPSE_RATIO,
+  });
+  if (collapse.refuse) {
+    const what = collapse.basis === "last-full-run" ? "avisos" : "propiedades";
+    const against =
+      collapse.basis === "last-full-run"
+        ? `${collapse.expected} avisos de la última corrida completa guardada (${lastFullDay})`
+        : `${collapse.expected} propiedades guardadas`;
+    const line =
+      `la corrida trajo ${collapse.found} ${what} contra ${against} ` +
+      `(< ${Math.round(collapse.threshold * 100)} %) — se conserva el directorio anterior`;
+    console.error(`[rentals] ${line}`);
+    // The refusal happens before the run summary is written, so without this ping it only exists
+    // in a pm2 log: five full runs were thrown away in November 2026 before anyone looked.
+    await notifyAdmin(
+      `*Alquileres*: la corrida completa no se guardó. ${line.charAt(0).toUpperCase()}${line.slice(1)}.` +
+        (bigDrops.length ? ` Fuentes caídas: ${bigDrops.join("; ")}.` : "")
     );
     process.exit(1);
+  }
+  // One big source down does NOT trip the guard, on purpose (the rest is saved fresh), but it must
+  // not go unnoticed: if it stays down, its properties leave the directory at 10 days and are pruned
+  // at 21.
+  if (bigDrops.length) {
+    await notifyAdmin(
+      `*Alquileres*: la corrida completa sigue, pero una fuente grande trajo menos de la mitad que en la última guardada (${lastFullDay}): ${bigDrops.join("; ")}.`
+    );
   }
 
   const { written, emptied, separated, assigned } = await saveRentalProperties(properties, {

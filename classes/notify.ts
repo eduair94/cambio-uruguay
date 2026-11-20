@@ -14,6 +14,9 @@ export async function notifyAdmin(text: string, fetchImpl: typeof fetch = fetch)
     const res = await fetchImpl(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
       headers: { "content-type": "application/json" },
+      // Acotado: un job llama esto justo antes de salir, a veces con un candado tomado, y sin plazo
+      // un Telegram que no contesta lo dejaría colgado minutos.
+      signal: AbortSignal.timeout(15_000),
       body: JSON.stringify({
         chat_id: chatId,
         text,

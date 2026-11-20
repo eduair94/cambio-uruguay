@@ -672,3 +672,8 @@ export async function saveRentalMeta(meta: RentalMeta): Promise<void> {
 export async function loadRentalMeta(): Promise<RentalMeta | null> {
   return RentalMetaModel.findOne({ key: RENTAL_META_KEY }).lean() as unknown as Promise<RentalMeta | null>;
 }
+
+/** The summary of the last FULL run that was saved (the hourly slices never overwrite it). */
+export async function loadLastFullRentalMeta(): Promise<RentalMeta | null> {
+  return RentalMetaModel.findOne({ key: RENTAL_FULL_META_KEY }).lean() as unknown as Promise<RentalMeta | null>;
+}
