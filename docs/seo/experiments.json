@@ -3914,6 +3914,14 @@
         "/productos-que-te-cambian-la-vida-uruguay"
       ],
       "hypothesis": "Pagina nueva armada sobre el hilo de r/uruguay 'Que producto les cambio la vida?' del 2026-11-19 (81 comentarios leidos el 2026-11-20): un bloque por producto con cuantas personas lo nombraron, el motivo parafraseado sin usuarios ni citas, que mirar al comprarlo y la banda viva de Mercado Libre Uruguay por variante (p25, mediana, p75, cantidad de avisos y fecha), leida cuatro veces por dia (0, 4, 16 y 20 UTC) por un tercer consumidor del registro inyectable de equipar. Antes el sitio no tenia impresiones para freidora de aire, lavavajillas, aspiradora robot, almohada, auriculares ni kindle, y lo que ya tenia dueno en /equipar-casa-uruguay se enlaza en vez de competir. La apuesta principal no son los clics de Google sino las citas de asistentes de IA, que ya son la primera entrada de los directorios de precio, y el enlace en el propio hilo; ninguna de las dos se ve en esta medicion. Parte de cero: diez clics o mas en los 28 dias archivados es mejoro, y sin cambio es el resultado esperable aunque la pagina funcione."
+    },
+    {
+      "id": "por-que-sube-el-dolar-titulo-y-descripcion-en-el-serp",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/por-que-sube-el-dolar"
+      ],
+      "hypothesis": "El titulo de la pagina media 81 caracteres con la marca en espanol (89 en ingles, 79 en portugues) y la descripcion 156 en espanol y 158 en portugues, asi que el SERP cortaba las dos: el titulo repetia la pregunta del lector y le agregaba una etiqueta generica ('Analisis y correlacion') que se perdia junto con la marca, y la descripcion nombraba tres de las cuatro series que la pagina correlaciona (se le caia el blue argentino, que es un driversFor('USD') como el real, el indice dolar y el bono a 10 anios). Ahora el titulo entra en 59/57/57 conservando las dos formas de la consulta ('sube o baja') y la descripcion en 151/148/146 nombrando las cuatro series y el dia a dia, que es lo que la pagina publica y ninguna nota de opinion tiene. Se espera mas clics desde la misma posicion, sin tocar el H1 ni el cuerpo."
     }
   ]
 }
