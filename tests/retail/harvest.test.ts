@@ -59,4 +59,19 @@ describe("harvestRetail y Facebook Marketplace", () => {
     await harvestRetail({ stores: [], specs: [specNoFb("celulares")] });
     expect(mlCalls).toHaveLength(1);
   });
+
+  // /productos-que-te-cambian-la-vida-uruguay pasa un tope de páginas y un reloj; los demás jobs no
+  // pasan nada y el cosechador de ML recibe los dos campos vacíos (= su comportamiento de siempre).
+  it("pasa el tope de páginas y el reloj de ML sólo cuando se los dan", async () => {
+    mlCalls.length = 0;
+    await harvestRetail({ stores: [], specs: [specNoFb("vida")], maxMlScans: 40, mlMaxPagesPerQuery: 2, mlDeadlineAt: 123 });
+    expect((mlCalls[0] as unknown[])[1]).toBe(40);
+    expect((mlCalls[0] as unknown[])[2]).toEqual({ maxPagesPerQuery: 2, deadlineAt: 123 });
+
+    mlCalls.length = 0;
+    await harvestRetail({ stores: [], specs: [specNoFb("equipar")] });
+    const limits = (mlCalls[0] as unknown[])[2] as Record<string, unknown>;
+    expect(limits.maxPagesPerQuery).toBeUndefined();
+    expect(limits.deadlineAt).toBeUndefined();
+  });
 });

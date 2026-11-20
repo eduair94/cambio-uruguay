@@ -64,6 +64,16 @@ export interface HarvestOptions {
    * reaches the VPS and the cap would silently stay at 24.
    */
   maxStoreQueries?: number;
+  /**
+   * Result pages per MercadoLibre search for this run; can only lower the env default (4). Absent
+   * keeps it. A code-path option, not a pm2 env, for the same reason as `maxStoreQueries`.
+   */
+  mlMaxPagesPerQuery?: number;
+  /**
+   * Epoch ms after which no new MercadoLibre page starts (a page already asked for finishes). Absent
+   * means no clock. A code-path option, not a pm2 env, for the same reason as `maxStoreQueries`.
+   */
+  mlDeadlineAt?: number;
 }
 
 /** A store's `adapter` is the only thing that decides how it is read. */
@@ -106,7 +116,12 @@ export async function harvestRetail(options: HarvestOptions): Promise<RetailHarv
     "mercadolibre",
     "Mercado Libre Uruguay",
     "mercadolibre",
-    await safely(() => harvestMercadoLibre(specs, options.maxMlScans))
+    await safely(() =>
+      harvestMercadoLibre(specs, options.maxMlScans, {
+        maxPagesPerQuery: options.mlMaxPagesPerQuery,
+        deadlineAt: options.mlDeadlineAt,
+      })
+    )
   );
 
   // A caller whose every spec declares `fbQueries: []` (celulares: Marketplace titles almost never

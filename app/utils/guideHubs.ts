@@ -626,6 +626,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/cuanto-gastar-en-un-sommier-uruguay',
       },
       {
+        label: 'Productos que te cambian la vida',
+        description: 'Lo que nombró r/uruguay, con lo que piden hoy en Mercado Libre.',
+        to: '/productos-que-te-cambian-la-vida-uruguay',
+      },
+      {
         label: 'Pensiones estudiantiles',
         description: 'Alternativas de alojamiento para estudiantes y cuánto cuestan.',
         to: '/pensiones-estudiantiles-uruguay',

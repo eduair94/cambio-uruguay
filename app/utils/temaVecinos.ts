@@ -60,8 +60,11 @@ export const TEMA_VECINOS_MAX_GRUPOS = 2
  *
  * 27 → 28 el 2026-11-12: el mismo tema pasó a 29 recursos con `/armadores-de-muebles-montevideo`
  * (después de la mudanza viene armar los muebles). Misma razón.
+ *
+ * 28 → 29 el 2026-11-20: el mismo tema pasó a 30 recursos con
+ * `/productos-que-te-cambian-la-vida-uruguay`. Misma razón.
  */
-export const TEMA_VECINOS_MAX_LINKS = 28
+export const TEMA_VECINOS_MAX_LINKS = 29
 /**
  * Los términos son un complemento, y en el orden del tema van primero los más usados. Con 12, una
  * página en dos temas llegaba a 53 enlaces (`/historico`: 29 páginas + 24 términos); las páginas no

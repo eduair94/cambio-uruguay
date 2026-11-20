@@ -3906,6 +3906,14 @@
         "este mes se paga patente"
       ],
       "hypothesis": "La guia de la patente del SUCIVE (3499 impresiones, 4 clics, posicion 8,5, en baja frente a los 28 dias previos: 7 clics, posicion 7,8) solo la enlazaban /comprar-auto-con-deuda-uruguay y /multas-de-transito-y-patente-uruguay, y ninguna de las 40 paginas mas visitadas. Se enlaza desde el certificado del SUCIVE en /vender-mi-auto-uruguay y desde la lista Que revisar antes de comprar de las cinco paginas /autos-usados-uruguay/hasta-N-dolares. Se espera que la guia suba su porcion de clics."
+    },
+    {
+      "id": "productos-que-te-cambian-la-vida-pagina-nueva",
+      "shippedOn": "2026-11-20",
+      "routes": [
+        "/productos-que-te-cambian-la-vida-uruguay"
+      ],
+      "hypothesis": "Pagina nueva armada sobre el hilo de r/uruguay 'Que producto les cambio la vida?' del 2026-11-19 (81 comentarios leidos el 2026-11-20): un bloque por producto con cuantas personas lo nombraron, el motivo parafraseado sin usuarios ni citas, que mirar al comprarlo y la banda viva de Mercado Libre Uruguay por variante (p25, mediana, p75, cantidad de avisos y fecha), leida cuatro veces por dia (0, 4, 16 y 20 UTC) por un tercer consumidor del registro inyectable de equipar. Antes el sitio no tenia impresiones para freidora de aire, lavavajillas, aspiradora robot, almohada, auriculares ni kindle, y lo que ya tenia dueno en /equipar-casa-uruguay se enlaza en vez de competir. La apuesta principal no son los clics de Google sino las citas de asistentes de IA, que ya son la primera entrada de los directorios de precio, y el enlace en el propio hilo; ninguna de las dos se ve en esta medicion. Parte de cero: diez clics o mas en los 28 dias archivados es mejoro, y sin cambio es el resultado esperable aunque la pagina funcione."
     }
   ]
 }
