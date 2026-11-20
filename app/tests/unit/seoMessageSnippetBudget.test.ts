@@ -287,7 +287,12 @@ const DEUDA_TITULO_MENSAJE = [
   // propia: antes el `<title>` era el H1 entero). Las tres sueltan relleno y conservan las palabras
   // de las consultas que las traen; «en Uruguay» se va porque la marca ya lo dice.
   //
-  // Las once que quedan no se tocaron ese día. `/dolar/records` está reservada hasta el 2026-11-29;
+  // 11 → 10 el 2026-11-20: `/por-que-sube-el-dolar`, 81/89/79 con la marca en es/en/pt → 59/57/57.
+  // El título repetía la pregunta del lector y le agregaba una etiqueta genérica («Análisis y
+  // correlación») que el SERP cortaba junto con la marca; ahora conserva las dos formas de la
+  // consulta («sube o baja») y gasta el resto en lo que la página sí contesta.
+  //
+  // Las diez que quedan no se tocaron. `/dolar/records` está reservada hasta el 2026-11-29;
   // `/alquilar-estando-en-clearing` (68 en inglés, 70 en portugués: el español entra) tenía su
   // página en manos de otra rama. `npm run seo_debt` dice cuál se puede tocar hoy.
   //
@@ -301,20 +306,23 @@ const DEUDA_TITULO_MENSAJE = [
   '/dolar/records',
   '/guias',
   '/pizarra',
-  '/por-que-sube-el-dolar',
   '/preguntas-frecuentes',
   '/sillas-escritorio-uruguay',
   '/sillas-escritorio-uruguay/precios',
   '/ultimos-cambios',
 ]
 
-const MESSAGE_TITLE_OVER_BUDGET = 11
+const MESSAGE_TITLE_OVER_BUDGET = 10
 
 /** Lo mismo para las descripciones, contra 155. **SÓLO PUEDE BAJAR**, y la lista es exacta. */
 const DEUDA_DESCRIPCION_MENSAJE = [
   // 17 → 15 el 2026-11-20, el día que nació: se curan `/dolar-hoy` (175 → 150 en español, 168 → 145
   // en portugués; el inglés ya entraba en 155) y `/herramientas/carrito-importacion` (184 → 154),
   // sin perder la franquicia de USD 800, que es la cifra que la página calcula.
+  //
+  // 15 → 14 el 2026-11-20: `/por-que-sube-el-dolar`, 156 en español y 158 en portugués → 151 y 146,
+  // y de paso pasa a nombrar las CUATRO series que la página correlaciona: le faltaba el blue
+  // argentino, que es un `driversFor('USD')` como el real, el índice dólar y el bono a 10 años.
   //
   // Reservadas ese día: `/comparar-plataformas-dolar-uruguay` hasta el 2026-11-26,
   // `/grabacion-sin-consentimiento-uruguay` (sólo el inglés, 158) hasta el 2026-11-22 y
@@ -330,14 +338,13 @@ const DEUDA_DESCRIPCION_MENSAJE = [
   '/grabacion-sin-consentimiento-uruguay',
   '/guias',
   '/noticias',
-  '/por-que-sube-el-dolar',
   '/preguntas-frecuentes',
   '/sillas-escritorio-uruguay',
   '/sillas-escritorio-uruguay/precios',
   '/tarjetas-de-credito-uruguay',
 ]
 
-const MESSAGE_DESCRIPTION_OVER_BUDGET = 15
+const MESSAGE_DESCRIPTION_OVER_BUDGET = 14
 
 // El conteo real del 2026-11-20, por el mismo motivo que `MEASURABLE` en `seoTitleBudget.test.ts`:
 // si el piso fuera más bajo, una página podría dejar de leerse acá sin poner nada en rojo.
