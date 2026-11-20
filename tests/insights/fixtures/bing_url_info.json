@@ -1,0 +1,14 @@
+{
+  "_fixture": "GetUrlInfo(siteUrl, url): a single object under 'd' (not an array). Property names from the .NET UrlInfo contract; values synthetic. A URL Bing does not know answers an ErrorCode (NotFound=11 expected, unverified).",
+  "d": {
+    "__type": "UrlInfo:#Microsoft.Bing.Webmaster.Api",
+    "AnchorCount": 7,
+    "DiscoveryDate": "/Date(1751353200000-0700)/",
+    "DocumentSize": 48211,
+    "HttpStatus": 200,
+    "IsPage": true,
+    "LastCrawledDate": "/Date(1763190000000-0700)/",
+    "TotalChildUrlCount": 0,
+    "Url": "https://cambio-uruguay.com/dolar-hoy"
+  }
+}

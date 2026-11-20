@@ -46,6 +46,7 @@ const NEVER = [
   // Privadas del dueño (las mismas que robots.txt bloquea).
   '/estadisticas-de-busqueda',
   '/estadisticas-por-pagina',
+  '/estadisticas-de-uso',
   '/opinion-alquileres',
   '/opiniones-alquileres',
   '/contactos-comerciales',

@@ -1,0 +1,122 @@
+{
+  "_fixture": "POST .../v1/records:queryHistoryRecord body {origin|url, formFactor?, metrics, collectionPeriodCount (1..40, default 25)}. Weekly (Mondays ~04:00 UTC), 40 weeks max. An ineligible period is 'NaN' in densities and null in p75s. Synthetic.",
+  "record": {
+    "key": {
+      "origin": "https://cambio-uruguay.com"
+    },
+    "metrics": {
+      "largest_contentful_paint": {
+        "histogramTimeseries": [
+          {
+            "start": 0,
+            "end": 2500,
+            "densities": [
+              0.8701,
+              "NaN",
+              0.8812
+            ]
+          },
+          {
+            "start": 2500,
+            "end": 4000,
+            "densities": [
+              0.085,
+              "NaN",
+              0.0791
+            ]
+          },
+          {
+            "start": 4000,
+            "densities": [
+              0.0449,
+              "NaN",
+              0.0397
+            ]
+          }
+        ],
+        "percentilesTimeseries": {
+          "p75s": [
+            2010,
+            null,
+            1904
+          ]
+        }
+      },
+      "cumulative_layout_shift": {
+        "histogramTimeseries": [
+          {
+            "start": "0.00",
+            "end": "0.10",
+            "densities": [
+              0.58,
+              "NaN",
+              0.6011
+            ]
+          },
+          {
+            "start": "0.10",
+            "end": "0.25",
+            "densities": [
+              0.16,
+              "NaN",
+              0.1502
+            ]
+          },
+          {
+            "start": "0.25",
+            "densities": [
+              0.26,
+              "NaN",
+              0.2487
+            ]
+          }
+        ],
+        "percentilesTimeseries": {
+          "p75s": [
+            "0.27",
+            null,
+            "0.26"
+          ]
+        }
+      }
+    },
+    "collectionPeriods": [
+      {
+        "firstDate": {
+          "year": 2026,
+          "month": 10,
+          "day": 4
+        },
+        "lastDate": {
+          "year": 2026,
+          "month": 10,
+          "day": 31
+        }
+      },
+      {
+        "firstDate": {
+          "year": 2026,
+          "month": 10,
+          "day": 11
+        },
+        "lastDate": {
+          "year": 2026,
+          "month": 11,
+          "day": 7
+        }
+      },
+      {
+        "firstDate": {
+          "year": 2026,
+          "month": 10,
+          "day": 18
+        },
+        "lastDate": {
+          "year": 2026,
+          "month": 11,
+          "day": 14
+        }
+      }
+    ]
+  }
+}

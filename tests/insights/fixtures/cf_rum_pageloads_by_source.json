@@ -1,0 +1,89 @@
+{
+  "_fixture": "rumPageloadEventsAdaptiveGroups by refererHost/countryName/deviceType/userAgentBrowser. Note visits=0 when the referer is the site itself (internal navigation), exactly as in the real probe. Synthetic numbers.",
+  "data": {
+    "viewer": {
+      "accounts": [
+        {
+          "rumPageloadEventsAdaptiveGroups": [
+            {
+              "count": 480,
+              "sum": {
+                "visits": 480
+              },
+              "avg": {
+                "sampleInterval": 1
+              },
+              "dimensions": {
+                "refererHost": "www.google.com",
+                "countryName": "UY",
+                "deviceType": "mobile",
+                "userAgentBrowser": "Chrome Mobile"
+              }
+            },
+            {
+              "count": 313,
+              "sum": {
+                "visits": 313
+              },
+              "avg": {
+                "sampleInterval": 1
+              },
+              "dimensions": {
+                "refererHost": "",
+                "countryName": "UY",
+                "deviceType": "mobile",
+                "userAgentBrowser": "Mobile Safari"
+              }
+            },
+            {
+              "count": 174,
+              "sum": {
+                "visits": 0
+              },
+              "avg": {
+                "sampleInterval": 1
+              },
+              "dimensions": {
+                "refererHost": "cambio-uruguay.com",
+                "countryName": "UY",
+                "deviceType": "mobile",
+                "userAgentBrowser": "Chrome Mobile"
+              }
+            },
+            {
+              "count": 144,
+              "sum": {
+                "visits": 144
+              },
+              "avg": {
+                "sampleInterval": 1
+              },
+              "dimensions": {
+                "refererHost": "www.google.com",
+                "countryName": "UY",
+                "deviceType": "desktop",
+                "userAgentBrowser": "Chrome"
+              }
+            },
+            {
+              "count": 40,
+              "sum": {
+                "visits": 40
+              },
+              "avg": {
+                "sampleInterval": 1
+              },
+              "dimensions": {
+                "refererHost": "chatgpt.com",
+                "countryName": "UY",
+                "deviceType": "desktop",
+                "userAgentBrowser": "Chrome"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "errors": null
+}

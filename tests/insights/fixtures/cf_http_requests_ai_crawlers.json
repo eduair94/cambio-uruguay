@@ -1,0 +1,62 @@
+{
+  "_fixture": "httpRequestsAdaptiveGroups (zone scope) by userAgent+clientRequestPath+edgeResponseStatus+cacheStatus, filter {requestSource:'eyeball', datetime_geq/leq, OR:[{userAgent_like:'%GPTBot%'},...]}. NEEDS Zone > Analytics > Read on the token. NEVER select clientIP. Synthetic.",
+  "data": {
+    "viewer": {
+      "zones": [
+        {
+          "httpRequestsAdaptiveGroups": [
+            {
+              "count": 812,
+              "avg": {
+                "sampleInterval": 1
+              },
+              "dimensions": {
+                "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; GPTBot/1.2; +https://openai.com/gptbot",
+                "clientRequestPath": "/dolar-hoy",
+                "edgeResponseStatus": 200,
+                "cacheStatus": "hit"
+              }
+            },
+            {
+              "count": 96,
+              "avg": {
+                "sampleInterval": 1
+              },
+              "dimensions": {
+                "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; ClaudeBot/1.0; +claudebot@anthropic.com)",
+                "clientRequestPath": "/cotizacion/brou",
+                "edgeResponseStatus": 301,
+                "cacheStatus": "dynamic"
+              }
+            },
+            {
+              "count": 41,
+              "avg": {
+                "sampleInterval": 1
+              },
+              "dimensions": {
+                "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; OAI-SearchBot/1.3; +https://openai.com/searchbot",
+                "clientRequestPath": "/alquileres-uruguay/montevideo/pocitos",
+                "edgeResponseStatus": 404,
+                "cacheStatus": "miss"
+              }
+            },
+            {
+              "count": 12,
+              "avg": {
+                "sampleInterval": 1
+              },
+              "dimensions": {
+                "userAgent": "Mozilla/5.0 (compatible; PerplexityBot/1.0; +https://perplexity.ai/perplexitybot)",
+                "clientRequestPath": "/en/dolar-hoy",
+                "edgeResponseStatus": 200,
+                "cacheStatus": "expired"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "errors": null
+}

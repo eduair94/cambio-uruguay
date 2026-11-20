@@ -2,14 +2,24 @@
   <VContainer fluid class="gsc-page py-6">
     <div class="d-flex flex-wrap align-center justify-space-between ga-2 mb-1">
       <h1 class="text-h4">Search Console</h1>
-      <VBtn
-        to="/estadisticas-por-pagina"
-        variant="text"
-        size="small"
-        prepend-icon="mdi-format-list-numbered"
-      >
-        Ranking de páginas por visita
-      </VBtn>
+      <div class="d-flex flex-wrap ga-1">
+        <VBtn
+          to="/estadisticas-por-pagina"
+          variant="text"
+          size="small"
+          prepend-icon="mdi-format-list-numbered"
+        >
+          Ranking de páginas por visita
+        </VBtn>
+        <VBtn
+          to="/estadisticas-de-uso"
+          variant="text"
+          size="small"
+          prepend-icon="mdi-chart-timeline-variant"
+        >
+          Uso del sitio
+        </VBtn>
+      </div>
     </div>
     <p class="text-body-2 text-medium-emphasis mb-6">
       Panel privado. Lo escribe el job <code>currency-gsc</code> una vez por día y no lo ve nadie

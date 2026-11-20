@@ -56,6 +56,7 @@ describe('caché de borde por defecto', () => {
       '/pizarra',
       '/estadisticas-de-busqueda',
       '/estadisticas-por-pagina',
+      '/estadisticas-de-uso',
       '/opiniones-alquileres',
       '/contactos-comerciales',
       '/oportunidades-reddit',

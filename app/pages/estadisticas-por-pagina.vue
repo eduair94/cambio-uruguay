@@ -2,9 +2,19 @@
   <VContainer fluid class="pr-page py-6">
     <div class="d-flex flex-wrap align-center justify-space-between ga-2 mb-1">
       <h1 class="text-h4">Ranking de páginas</h1>
-      <VBtn to="/estadisticas-de-busqueda" variant="text" size="small" prepend-icon="mdi-magnify">
-        Search Console y plan de ingreso
-      </VBtn>
+      <div class="d-flex flex-wrap ga-1">
+        <VBtn to="/estadisticas-de-busqueda" variant="text" size="small" prepend-icon="mdi-magnify">
+          Search Console y plan de ingreso
+        </VBtn>
+        <VBtn
+          to="/estadisticas-de-uso"
+          variant="text"
+          size="small"
+          prepend-icon="mdi-chart-timeline-variant"
+        >
+          Uso del sitio
+        </VBtn>
+      </div>
     </div>
     <p class="text-body-2 text-medium-emphasis mb-6">
       Panel privado. Qué páginas mueven el sitio, cuáles suben, cuáles se caen y cuáles engañan. Lo
