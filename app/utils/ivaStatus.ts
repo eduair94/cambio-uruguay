@@ -14,6 +14,7 @@
 // {@link IVA_RULES} + LAST_RESEARCHED.
 
 import { LAST_RESEARCHED } from './withdrawCash'
+import { IVA_GASTRONOMIA_PERIOD } from './ivaTarjeta'
 
 /** A confirmed full-exemption summer window (gastronomy + car rental). */
 export interface SeasonalWindow {
@@ -40,19 +41,19 @@ export interface BaseReductionSegment {
  *
  * Sources: gub.uy/ministerio-turismo (beneficios-para-no-residentes), DGI
  * (reducción de 9 puntos), Decreto 220/025. As verified June 2026.
+ * Base reduction only: DGI + Decreto 235/026 rechecked 2026-10-23; see ivaTarjeta.ts.
  */
 export const IVA_RULES = {
   /** Lodging is 0% IVA for non-residents, permanent (year-round). */
   hotelPct: 0,
   /**
    * Year-round base reduction on gastronomy + car rental (electronic payment).
-   * 9 points historically; drops to 5 points on 2026-10-01 (DGI). Order matters:
-   * the resolver picks the last segment whose `from` is on/before today.
+   * The October 2026 extension preserves 9 points. Order matters: the resolver
+   * picks the last segment whose `from` is on/before today, within the verified horizon.
    */
-  baseReductionSegments: [
-    { from: '2005-01-01', points: 9 },
-    { from: '2026-10-01', points: 5 },
-  ] as BaseReductionSegment[],
+  baseReductionSegments: [{ from: '2005-01-01', points: 9 }] as BaseReductionSegment[],
+  /** Inclusive limit confirmed by Decreto 235/026; later dates require verification. */
+  baseReductionValidThrough: IVA_GASTRONOMIA_PERIOD.through,
   /**
    * Confirmed summer full-exemption (0%) windows. Add the next one once the
    * annual decree is published (historically ~late October, effective ~Nov 15).
@@ -68,8 +69,8 @@ export interface IvaStatus {
   date: string
   /** Lodging IVA rate (always 0 for non-residents). */
   hotelPct: number
-  /** Year-round base reduction in effect (percentage points). */
-  baseReductionPoints: number
+  /** Confirmed base reduction (percentage points); null beyond the verified extension. */
+  baseReductionPoints: number | null
   /** Whether a summer full-exemption window is active today. */
   seasonalActive: boolean
   /** The active window, if any. */
@@ -108,7 +109,7 @@ export function resolveIvaStatus(today: Date): IvaStatus {
   return {
     date,
     hotelPct: IVA_RULES.hotelPct,
-    baseReductionPoints,
+    baseReductionPoints: date <= IVA_RULES.baseReductionValidThrough ? baseReductionPoints : null,
     seasonalActive: seasonalWindow !== null,
     seasonalWindow,
   }
@@ -149,6 +150,10 @@ function addMonths(d: Date, months: number): Date {
  */
 export function getReverifyState(today: Date, lastResearched = LAST_RESEARCHED): ReverifyState {
   const reasons: string[] = []
+
+  if (toISODate(today) > IVA_RULES.baseReductionValidThrough) {
+    reasons.push(`Base reduction extension ended on ${IVA_RULES.baseReductionValidThrough}`)
+  }
 
   const seasonYear = pendingSeasonStartYear(today)
   if (seasonYear !== null && !seasonConfirmed(seasonYear)) {

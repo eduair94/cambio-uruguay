@@ -84,30 +84,32 @@ FIRST VIEWPORT: Migas, H1, cuántos modelos y vendedores hay y cuándo se leyó,
         Ningún modelo entra en ese rango. Subí el precio máximo o probá otra marca.
       </p>
       <div v-else class="phone-grid mb-10">
-        <NuxtLink
-          v-for="card in visibleCards"
-          :key="card.slug"
-          :to="localePath(`/celulares-uruguay/${card.slug}`)"
-          class="phone-card"
-        >
-          <span class="phone-card__media">
-            <img
-              v-if="card.image"
-              :src="card.image"
-              :alt="card.name"
-              loading="lazy"
-              decoding="async"
-            />
-            <VIcon v-else icon="mdi-cellphone" size="40" />
-          </span>
-          <span class="phone-card__body">
-            <strong class="phone-card__name">{{ card.name }}</strong>
-            <span class="phone-card__price">
-              desde {{ phoneMoney(card.bestNewUyu) }} nuevo en {{ card.newSellers }}
-              {{ card.newSellers === 1 ? 'tienda' : 'tiendas' }}
+        <!-- La unidad intermedia, como fila entera después del cuarto modelo (utils/ads.ts →
+             FEED_AD_AFTER) y no arriba de las preguntas, que quedan debajo de ~95 modelos: la
+             página daba 0,63 impresiones por vista (28 días al 30/10/2026). FaqSection va con
+             :ad="false", así que el tope sigue en dos. -->
+        <template v-for="(card, index) in visibleCards" :key="card.slug">
+          <AdSlot v-if="index === gridAdIndex" placement="in-article" class="phone-grid__ad" />
+          <NuxtLink :to="localePath(`/celulares-uruguay/${card.slug}`)" class="phone-card">
+            <span class="phone-card__media">
+              <img
+                v-if="card.image"
+                :src="card.image"
+                :alt="card.name"
+                loading="lazy"
+                decoding="async"
+              />
+              <VIcon v-else icon="mdi-cellphone" size="40" />
             </span>
-          </span>
-        </NuxtLink>
+            <span class="phone-card__body">
+              <strong class="phone-card__name">{{ card.name }}</strong>
+              <span class="phone-card__price">
+                desde {{ phoneMoney(card.bestNewUyu) }} nuevo en {{ card.newSellers }}
+                {{ card.newSellers === 1 ? 'tienda' : 'tiendas' }}
+              </span>
+            </span>
+          </NuxtLink>
+        </template>
       </div>
     </template>
 
@@ -244,17 +246,24 @@ FIRST VIEWPORT: Migas, H1, cuántos modelos y vendedores hay y cuándo se leyó,
       </ul>
     </section>
 
-    <FaqSection :items="faq" heading="Preguntas frecuentes" :expanded="true" />
+    <FaqSection :items="faq" heading="Preguntas frecuentes" :expanded="true" :ad="false" />
   </VContainer>
 </template>
 
 <script setup lang="ts">
+import { VSlider } from 'vuetify/components'
+import { FEED_AD_AFTER } from '~/utils/ads'
 import { ADUANA_FAQS } from '~/utils/aduanaFaq'
 import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 import { dateLocale } from '~/utils/format'
 import type { FaqItem } from '~/utils/faqAnswers'
 import { phoneImportEstimate, phoneImportTotals } from '~/utils/phoneImport'
 import { phoneMoney, phoneUsd, type PhoneHubCard, type PhoneHubResponse } from '~/utils/phones'
+import {
+  PHONE_SHARE_QUERY_KEYS,
+  phoneFiltersFromQuery,
+  phoneFiltersToQuery,
+} from '~/utils/catalogShareQuery'
 import {
   PHONE_US_PRICES,
   PHONE_US_PRICES_SOURCE,
@@ -288,21 +297,28 @@ const brandOptions = computed(() =>
   }))
 )
 
-const selectedBrand = ref<string | null>(null)
+const phoneFilters = reactive(phoneFiltersFromQuery(useRoute().query))
+const selectedBrand = computed({
+  get: () => phoneFilters.brand,
+  set: value => {
+    phoneFilters.brand = value
+  },
+})
 
 const priceCeiling = computed(() => {
   const max = cards.value.reduce((m, card) => Math.max(m, card.bestNewUyu), 0)
   return Math.max(20000, Math.ceil(max / 1000) * 1000)
 })
-const maxPrice = ref(0)
-// El techo llega recién con la respuesta del fetch; arranca ahí en vez de en 0 (que ocultaría
-// todo) y sigue al techo mientras nadie haya movido el control a mano.
-watch(
-  priceCeiling,
-  value => {
-    if (maxPrice.value === 0 || maxPrice.value >= priceCeiling.value) maxPrice.value = value
+const maxPrice = computed({
+  get: () => phoneFilters.maxPrice ?? priceCeiling.value,
+  set: value => {
+    phoneFilters.maxPrice = value >= priceCeiling.value ? null : value
   },
-  { immediate: true }
+})
+useCatalogShareQuery(
+  PHONE_SHARE_QUERY_KEYS,
+  () => phoneFiltersToQuery(phoneFilters),
+  query => Object.assign(phoneFilters, phoneFiltersFromQuery(query))
 )
 
 const visibleCards = computed(() =>
@@ -311,6 +327,11 @@ const visibleCards = computed(() =>
       (selectedBrand.value === null || card.brand === selectedBrand.value) &&
       card.bestNewUyu <= maxPrice.value
   )
+)
+
+// La celda de la unidad: después del cuarto modelo, o antes del último si un filtro deja menos.
+const gridAdIndex = computed(() =>
+  visibleCards.value.length > 1 ? Math.min(FEED_AD_AFTER, visibleCards.value.length - 1) : -1
 )
 
 function toDate(value: string | null | undefined): Date | null {
@@ -521,6 +542,14 @@ useHead(() => ({
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 16px;
+  /* La unidad ocupa una fila entera; `dense` rellena la fila de arriba para que nunca quede un
+     hueco antes de ella en una grilla ancha. */
+  grid-auto-flow: row dense;
+}
+.phone-grid__ad {
+  grid-column: 1 / -1;
+  min-width: 0;
+  margin: 0;
 }
 .phone-card {
   display: flex;

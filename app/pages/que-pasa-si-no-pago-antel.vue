@@ -354,6 +354,7 @@
 </template>
 
 <script setup lang="ts">
+import { VTimeline, VTimelineItem } from 'vuetify/components'
 import {
   A_FAVOR_DEL_CLIENTE,
   ANTECEDENTE_COVID,

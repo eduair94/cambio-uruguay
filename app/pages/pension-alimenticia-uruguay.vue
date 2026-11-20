@@ -239,6 +239,9 @@
       </ul>
     </section>
 
+    <!-- La unidad intermedia, antes de las preguntas: mismo corte que FaqSection (ver
+         docs/seo/adsense-growth-loop.md, 31/10/2026). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <!-- FAQ -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-4">Preguntas frecuentes</h2>
@@ -330,7 +333,7 @@ const verifiedAt = new Date(`${CHILD_SUPPORT_VERIFIED_AT}T00:00:00Z`).toLocaleDa
 
 const canonicalUrl = 'https://cambio-uruguay.com/pension-alimenticia-uruguay'
 const title = 'Pensión alimenticia en Uruguay: cuánto es'
-const description = `La ley uruguaya no fija ningún porcentaje del sueldo: el juez la calcula por proporcionalidad (CNA art. 46). El único número escrito es el piso de ${UNIVERSAL_FLOOR_BPC} BPC (${money(floorUyu)}) por núcleo familiar cuando no se conocen los ingresos, y adeudar más de ${REGISTRY_OVERDUE_INSTALMENTS} cuotas cierra el crédito bancario por ${REGISTRY_YEARS} años.`
+const description = `Sin porcentaje legal: la fija el juez por proporcionalidad (CNA art. 46). Piso a ciegas ${UNIVERSAL_FLOOR_BPC} BPC (${money(floorUyu)}) por núcleo; pasadas ${REGISTRY_OVERDUE_INSTALMENTS} cuotas, ${REGISTRY_YEARS} años sin crédito.`
 
 defineOgImageComponent('Cambio', {
   title: 'Pensión alimenticia en Uruguay',

@@ -1,7 +1,7 @@
 // find_property_opportunities: homes asked below comparable adverts, with the
 // evidence behind each gap. It is a price comparison, not an appraisal.
 
-import { compact, fmt, money, pct, siteUrl, type QueryValue } from "../format.js";
+import { compact, fmt, money, pct, siteUrl, type QueryValue, safeImage } from "../format.js";
 import type { ToolOutput } from "../output.js";
 import { TTL, type SiteApi } from "../site.js";
 import { rentalSiteUrl } from "./compact.js";
@@ -38,6 +38,8 @@ interface OppItem {
     propertyKey?: string;
     source?: string;
     url?: string;
+    /** The advert's photo (see `safeImage`): for clients that draw cards, never in the text. */
+    image?: string | null;
     title?: string;
     sellerName?: string;
     department?: string;
@@ -129,6 +131,7 @@ export async function findPropertyOpportunities(site: SiteApi, input: Opportunit
       advertiser: s.sellerName,
       source: SOURCE_LABEL[s.source ?? ""] ?? s.source,
       listingUrl: s.url,
+      image: safeImage(s.image),
       siteUrl: operation === "rent" && s.propertyKey ? rentalSiteUrl(s.propertyKey) : undefined,
       sampleComparables: (it.comparables ?? []).slice(0, 3).map((c) => compact({ title: c.title, price: money(c.price?.amount, c.price?.currency), url: c.url })),
       lastSeen: s.lastSeen,

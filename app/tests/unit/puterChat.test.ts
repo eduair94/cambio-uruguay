@@ -59,6 +59,28 @@ describe('toOpenAiTools', () => {
 })
 
 describe('runPuterTurn', () => {
+  it('refreshes directory context while preserving the conversation', async () => {
+    const { puter, seen } = fakePuter([{ message: { role: 'assistant', content: 'Bicicletas' } }])
+    const history: OpenAiMessage[] = [
+      { role: 'system', content: 'Buscador de monopatines' },
+      { role: 'user', content: 'Busco un monopatín' },
+      { role: 'assistant', content: 'Estos son los avisos' },
+    ]
+    await runPuterTurn(
+      opts(puter, {
+        messages: history,
+        system: 'Buscador de bicicletas eléctricas',
+        userText: 'Ahora quiero una bicicleta',
+      })
+    )
+    expect(seen[0]).toEqual([
+      { role: 'system', content: 'Buscador de bicicletas eléctricas' },
+      ...history.slice(1),
+      { role: 'user', content: 'Ahora quiero una bicicleta' },
+    ])
+    expect(history[0]!.content).toBe('Buscador de monopatines')
+  })
+
   it('runs tool calls through the MCP and returns the final text', async () => {
     const { puter, chat, seen } = fakePuter([
       {

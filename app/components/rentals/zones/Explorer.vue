@@ -187,7 +187,9 @@
               <p v-if="data.rentalDataAsOf" class="list-date">
                 {{ date(data.rentalDataAsOf) }}
               </p>
-              <p v-if="!filteredZones.length" role="status" class="notice">{{ t('empty') }}</p>
+              <p v-if="!filteredZones.length" role="status" class="notice">
+                {{ t(search ? 'empty' : 'emptyArea') }}
+              </p>
               <ul v-else class="zone-list">
                 <li
                   v-for="zone in visibleZones"
@@ -320,6 +322,7 @@ import type {
 } from '~/utils/rentalZoneTypes'
 import { useDisplay } from 'vuetify'
 import { rentalZoneMessages } from '~/utils/rentalZoneMessages'
+import { rentalOfferableZoneIds } from '~/utils/rentalBarrioOption'
 import ZoneMap from './Map.client.vue'
 import ZoneDetail from './Detail.vue'
 const props = withDefaults(
@@ -496,13 +499,22 @@ function apply() {
     exclude: draft.value.exclude.map(zone => ({ ...zone })),
   })
 }
+// An address or a surface stored as a barrio ("Sarandí 888", "40 m2 40 m2") is not a zone to pick,
+// as in the barrio selector (utils/rentalBarrioOption.ts). A zone picked now, or already picked when
+// the selector opened, stays listed: removing it must not make its row and its button disappear.
+const offerableZoneIds = computed(() => rentalOfferableZoneIds(data.value?.zones || []))
+const pickedOnOpen = new Set([...props.initial.include, ...props.initial.exclude].map(key))
+const pickedKeys = computed(
+  () => new Set([...pickedOnOpen, ...[...draft.value.include, ...draft.value.exclude].map(key)])
+)
 const filteredZones = computed(() => {
   const collator = new Intl.Collator(locale.value, { sensitivity: 'base' })
   return (data.value?.zones || [])
     .filter(
       zone =>
-        !search.value ||
-        fold(`${zone.ref.neighborhood} ${zone.ref.department}`).includes(fold(search.value))
+        (offerableZoneIds.value.has(zone.id) || pickedKeys.value.has(key(zone.ref))) &&
+        (!search.value ||
+          fold(`${zone.ref.neighborhood} ${zone.ref.department}`).includes(fold(search.value)))
     )
     .sort((a, b) => {
       const byName = collator.compare(a.ref.neighborhood, b.ref.neighborhood)

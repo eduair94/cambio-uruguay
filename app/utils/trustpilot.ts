@@ -1,4 +1,4 @@
-// Config for the Trustpilot review carousel (trustpilot-iframe-widget).
+// Config for the Trustpilot review carousel, embedded directly as an iframe.
 //
 // Two upstream options are deliberately absent. `rating` (minimum-rating
 // filter) and `sort` are documented in the package README but are no-ops
@@ -15,11 +15,8 @@ export const TRUSTPILOT_DOMAIN = 'cambio-uruguay.com'
 export const TRUSTPILOT_PROFILE_URL = `https://www.trustpilot.com/review/${TRUSTPILOT_DOMAIN}`
 export const TRUSTPILOT_REVIEW_URL = `https://www.trustpilot.com/evaluate/${TRUSTPILOT_DOMAIN}`
 
-/** The widget iframe's origin. Probed for reachability before we mount anything. */
+/** The widget iframe's origin. */
 export const TRUSTPILOT_WIDGET_ORIGIN = 'https://trustpilot.checkleaked.com'
-
-/** Give the probe less time than READY_TIMEOUT_MS so it always decides first. */
-export const PROBE_TIMEOUT_MS = 5_000
 
 /** Kept in lockstep with the min-height the component reserves, so the iframe never shifts layout. */
 export const TRUSTPILOT_WIDGET_HEIGHT = 320
@@ -61,35 +58,11 @@ export function buildWidgetConfig({ theme, reducedMotion }: WidgetOpts): Trustpi
   }
 }
 
-/**
- * True when the widget host answers at all.
- *
- * The library calls `onReady` from `iframe.onload`, and browsers fire `load`
- * even for a blocked or failed navigation — so `onReady` cannot distinguish a
- * live widget from an ad-blocked one. An opaque `no-cors` request can: it
- * resolves when the host answers and rejects when the request is blocked,
- * aborted, or the host is unreachable.
- *
- * It cannot see HTTP status (the response is opaque), so a 5xx still reads as
- * reachable. That is acceptable: the widget renders its own error state, and we
- * are guarding against outage and ad-blockers, not against a bad status code.
- */
-export async function probeWidgetReachable(
-  fetchImpl: typeof fetch,
-  timeoutMs: number = PROBE_TIMEOUT_MS
-): Promise<boolean> {
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), timeoutMs)
-  try {
-    await fetchImpl(`${TRUSTPILOT_WIDGET_ORIGIN}/?domain=${TRUSTPILOT_DOMAIN}`, {
-      mode: 'no-cors',
-      cache: 'no-store',
-      signal: controller.signal,
-    })
-    return true
-  } catch {
-    return false
-  } finally {
-    clearTimeout(timer)
+/** Navigate directly: a separate fetch cannot tell whether a browser can frame the page. */
+export function buildWidgetUrl(opts: WidgetOpts): string {
+  const url = new URL('/', TRUSTPILOT_WIDGET_ORIGIN)
+  for (const [key, value] of Object.entries(buildWidgetConfig(opts))) {
+    url.searchParams.set(key, String(value))
   }
+  return url.toString()
 }

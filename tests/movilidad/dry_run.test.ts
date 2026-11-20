@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { RetailListing } from "../../classes/retail/types";
+import { EMPTY_SPECS } from "../../classes/movilidad/specs/parse";
 
 // Every collaborator that could touch the network or a database is mocked. The indirection
 // (`(...args) => xMock(...args)` instead of returning `xMock` itself) is deliberate: `vi.mock`
@@ -22,7 +23,11 @@ const loadStoreSnapshotMock = vi.fn();
 const saveMovilidadCatalogMock = vi.fn();
 const saveStoreSnapshotMock = vi.fn();
 const withHistoryMock = vi.fn();
+const saveMovilidadListingsMock = vi.fn();
+const loadFichaByListingIdMock = vi.fn();
 vi.mock("../../classes/movilidad/store", () => ({
+  saveMovilidadListings: (...args: unknown[]) => saveMovilidadListingsMock(...args),
+  loadFichaByListingId: (...args: unknown[]) => loadFichaByListingIdMock(...args),
   loadPreviousItems: (...args: unknown[]) => loadPreviousItemsMock(...args),
   countStoredItems: (...args: unknown[]) => countStoredItemsMock(...args),
   loadStoreSnapshot: (...args: unknown[]) => loadStoreSnapshotMock(...args),
@@ -87,6 +92,8 @@ beforeEach(() => {
     items.map((item) => ({ ...item, firstSeen: "2026-01-01", lastSeen: "2026-09-17", history: [] }))
   );
   recordPricewatchMock.mockResolvedValue({ written: 0, skipped: 0, pruned: 0 });
+  saveMovilidadListingsMock.mockResolvedValue({ written: 0, pruned: 0 });
+  loadFichaByListingIdMock.mockResolvedValue(new Map());
   fetchUsdUyuRateMock.mockResolvedValue(40);
   harvestRetailMock.mockResolvedValue({ listings: [], runs: [] });
   delete process.env.APP_MONGO_URI;
@@ -152,6 +159,55 @@ describe("sync_movilidad main()", () => {
 
     await expect(main()).rejects.toThrow(/guardados/);
     expect(saveMovilidadCatalogMock).not.toHaveBeenCalled();
+  });
+
+  // La horaria reescribe cada fila del directorio: sin esto, la marca y la ficha que dejó
+  // currency-movilidad-specs volverían a vacío cada hora.
+  it("guarda las filas de monopatín con la ficha leída y la marca", async () => {
+    process.env.APP_MONGO_URI = "mongodb://fake-app-db/test";
+    setArgv();
+    harvestRetailMock.mockResolvedValue({
+      listings: [
+        storeListing({ title: "Monopatin Electrico Urbano 25 km/h", attributes: { CATEGORY_SPEC: "monopatin-electrico" } }),
+      ],
+      runs: [],
+    });
+    loadFichaByListingIdMock.mockResolvedValue(
+      new Map([
+        [
+          "store:delcar:1",
+          {
+            listingId: "store:delcar:1",
+            specs: { ...EMPTY_SPECS, rangeKm: 30, from: { rangeKm: "ficha" } },
+            brand: "Xiaomi",
+            model: null,
+          },
+        ],
+      ])
+    );
+
+    await expect(main()).resolves.toBeUndefined();
+
+    expect(loadFichaByListingIdMock).toHaveBeenCalledWith(["store:delcar:1"]);
+    const [rows] = saveMovilidadListingsMock.mock.calls[0]!;
+    expect(rows[0]).toMatchObject({ brand: "Xiaomi", brandKey: "xiaomi", uyuPerKm: 400 });
+    expect(rows[0].specs).toMatchObject({ rangeKm: 30, maxSpeedKmh: 25 });
+  });
+
+  it("si la ficha guardada no se puede leer, guarda las filas sin tocar ficha ni marca", async () => {
+    process.env.APP_MONGO_URI = "mongodb://fake-app-db/test";
+    setArgv();
+    harvestRetailMock.mockResolvedValue({
+      listings: [storeListing({ attributes: { CATEGORY_SPEC: "monopatin-electrico" } })],
+      runs: [],
+    });
+    loadFichaByListingIdMock.mockRejectedValue(new Error("mongo caído"));
+
+    await expect(main()).resolves.toBeUndefined();
+
+    const [rows] = saveMovilidadListingsMock.mock.calls[0]!;
+    expect(rows[0]).not.toHaveProperty("specs");
+    expect(rows[0]).not.toHaveProperty("uyuPerKm");
   });
 
   // The hourly `--fast` run searches a smaller budget than the daily one; the daily run's store

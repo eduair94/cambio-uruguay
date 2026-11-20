@@ -127,7 +127,7 @@
             </v-row>
           </v-card-text>
           <!-- Tabla de datos -->
-          <v-data-table
+          <VDataTable
             :headers="headers"
             :items="filteredItems"
             :search="search"
@@ -225,14 +225,17 @@
                 </p>
               </div>
             </template>
-          </v-data-table>
+          </VDataTable>
         </v-card>
       </v-col>
     </v-row>
+
+    <CasaOwnerCta :casa="originName" :origin="String(route.params.origin ?? '')" />
   </VContainer>
 </template>
 
 <script setup lang="ts">
+import { VDataTable } from 'vuetify/components'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'

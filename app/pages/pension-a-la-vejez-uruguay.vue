@@ -213,6 +213,7 @@ import {
   LAPSE_RULE,
   MEANS_TEST,
   PENSION_FAQ,
+  PENSION_SNIPPET_DESCRIPTION,
   PENSION_SOURCES,
   PENSION_VERIFIED_AT,
   RESIDENCY_RULE,
@@ -235,8 +236,12 @@ const verifiedAt = longDate(PENSION_VERIFIED_AT)
 const amountUpdatedAt = longDate(AMOUNT_UPDATED_AT)
 
 const canonicalUrl = 'https://cambio-uruguay.com/pension-a-la-vejez-uruguay'
-const title = 'Pensión a la vejez del BPS: requisitos'
-const description = `La pensión a la vejez del BPS paga ${formatUYU(AMOUNT_2026, 0)} por mes a mayores de 70 años (65 con cuidados) sin jubilación y carencia de recursos. Requisitos y monto 2026.`
+// La cifra va en el título porque la consulta pide un número ("cuánto es la pensión a la vejez").
+// Es un literal y no una interpolación de AMOUNT_2026 porque es la única forma que
+// `seoTitleBudget` sabe medir; que no se despegue de la constante lo vigila
+// `snippetConLaRespuesta.test.ts`, y la descripción sí se arma con la constante.
+const title = 'Pensión a la vejez 2026: $ 18.575 por mes'
+const description = PENSION_SNIPPET_DESCRIPTION
 
 defineOgImageComponent('Cambio', {
   title: 'Pensión a la vejez del BPS',

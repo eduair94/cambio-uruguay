@@ -16,11 +16,16 @@
         <VIcon end class="d-none d-sm-inline-flex">mdi-chevron-down</VIcon>
       </VBtn>
     </template>
-    <VList>
+    <VList class="lang-list" density="compact" translate="no">
+      <!-- A language AdSense does not support opens with a full page load (`href`, not `to`): a
+           client-side navigation would carry the ad script the previous page already loaded into
+           a page that may not have it (utils/ads.ts → ADSENSE_UNSUPPORTED_LOCALES). -->
       <VListItem
-        v-for="(item, index) in availableLocales"
-        :key="index"
-        :to="switchLocalePath(item.code)"
+        v-for="item in availableLocales"
+        :key="item.code"
+        :to="item.reload ? undefined : item.to"
+        :href="item.reload ? item.to : undefined"
+        :lang="item.lang"
       >
         <VListItemTitle>{{ item.name }}</VListItemTitle>
       </VListItem>
@@ -29,12 +34,35 @@
 </template>
 
 <script setup lang="ts">
-// Get i18n instance from global properties
+import { ADSENSE_UNSUPPORTED_LOCALES } from '~/utils/ads'
+import { announcedLocales } from '~/utils/autoTranslate'
+import { splitLocalePath } from '~/utils/localizedRoutes'
+
 const { locale, locales } = useI18n()
 const switchLocalePath = useSwitchLocalePath()
+const route = useRoute()
+// Written by plugins/auto-translate.ts: which locales this page is machine-translated into.
+const translation = useState<{ translated: string[]; embargoed: boolean } | null>('auto-translate')
 
+// Every page answers in every locale (compact routes), so the menu offers only the languages
+// the page is announced in — the same rule as its hreflang (utils/autoTranslate.ts): English
+// and Portuguese everywhere, another language where the page has its copy in it.
 const availableLocales = computed(() => {
-  return locales.value.filter(i => i.code !== locale.value)
+  const path = splitLocalePath(route.path).path.replace(/(.)\/+$/, '$1') || '/'
+  const announced = new Set([
+    'es',
+    ...announcedLocales(path, translation.value ?? { translated: [], embargoed: false }),
+  ])
+  return locales.value
+    .filter(item => item.code !== locale.value && announced.has(item.code))
+    .map(item => ({
+      code: item.code,
+      name: item.name ?? item.code,
+      lang: item.language ?? item.code,
+      to: switchLocalePath(item.code),
+      reload: ADSENSE_UNSUPPORTED_LOCALES.includes(item.code),
+    }))
+    .filter(item => item.to)
 })
 </script>
 
@@ -43,6 +71,12 @@ const availableLocales = computed(() => {
    360px screen; the label is only ever a two-letter locale code. */
 .lang-btn {
   min-width: 0;
+}
+
+/* 30+ languages on the translated pages: scroll inside the menu, never past the screen. */
+.lang-list {
+  max-height: min(70vh, 32rem);
+  overflow-y: auto;
 }
 
 .lang-btn__code {

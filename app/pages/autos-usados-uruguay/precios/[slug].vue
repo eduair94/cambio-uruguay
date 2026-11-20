@@ -42,6 +42,14 @@
           </NuxtLink>
           ·
           <NuxtLink :to="localePath(CAR_SELL_PATH)">guía para vender</NuxtLink>
+          <template v-if="data.indexable">
+            ·
+            <NuxtLink
+              :to="localePath({ path: CAR_COMPARE_PATH, query: { modelos: data.market.slug } })"
+            >
+              compararlo con otros modelos
+            </NuxtLink>
+          </template>
         </p>
         <VAlert
           v-if="!data.indexable"
@@ -117,6 +125,7 @@
 </template>
 
 <script setup lang="ts">
+import { CAR_COMPARE_PATH } from '~/utils/carCompare'
 import { CAR_SELL_PATH, CAR_VALUATION_PATH } from '~/utils/carsValuation'
 import {
   CAR_MARKET_INDEX_MIN,
@@ -127,6 +136,7 @@ import {
   formatCarUsd,
   type CarMarketResponse,
 } from '~/utils/cars'
+import { pickTitle } from '~/utils/liveRateSeo'
 
 const route = useRoute()
 const localePath = useLocalePath()
@@ -173,8 +183,21 @@ const description = computed(() =>
     : `Precios pedidos por ${name.value} usado en Uruguay, por año y versión.`
 )
 
+// La misma cifra de la descripción, en el título: las consultas de esta familia piden el precio
+// ("suzuki alto 800 usado precio uruguay") y el SERP mostraba "precios en Uruguay" sin ninguno.
+// Un año con menos de cinco avisos no da una mediana para ponerle al modelo en el título.
+const seoTitle = computed(() => {
+  const year = latest.value
+  if (!year || year.n < 5) return heading.value
+  const usd = formatCarUsd(year.median)
+  return pickTitle(
+    [`${name.value} ${year.year} usado: ${usd}`, `${name.value} ${year.year}: ${usd}`],
+    heading.value
+  )
+})
+
 useSeoMeta({
-  title: () => `${heading.value} | Cambio Uruguay`,
+  title: () => `${seoTitle.value} | Cambio Uruguay`,
   description,
   ogTitle: heading,
   ogDescription: description,

@@ -114,7 +114,7 @@
               {{ $t('casaPage.tableTitle', { casa: casaName }) }}
             </v-card-title>
 
-            <v-data-table
+            <VDataTable
               v-if="rates.length"
               :headers="headers"
               :items="rates"
@@ -148,7 +148,7 @@
                   {{ $t('casaPage.viewHistory') }}
                 </v-btn>
               </template>
-            </v-data-table>
+            </VDataTable>
 
             <!-- La página de marca de la casa, con su nombre en el ancla: es la canónica de esta
                  ficha (utils/casaBrandPage.ts). -->
@@ -308,11 +308,14 @@
           </v-card>
         </v-col>
       </v-row>
+
+      <CasaOwnerCta :casa="casaName" :origin="origin" />
     </template>
   </VContainer>
 </template>
 
 <script setup lang="ts">
+import { VDataTable } from 'vuetify/components'
 import { useSeoMeta } from '#imports'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'

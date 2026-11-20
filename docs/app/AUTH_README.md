@@ -47,11 +47,31 @@ runs exactly as before (the login button simply does nothing useful).
 - Components/pages are validated by `npm run typecheck`; a Playwright smoke test
   lives in `tests/e2e/account.spec.ts`.
 
-## Phase 2 (not yet implemented)
+## Rate alerts
 
-Rate alerts with web push (FCM) + email (Nodemailer/SMTP) and the
-`alerts:check` scheduled task. See
-`docs/superpowers/specs/2026-06-17-firebase-auth-logged-in-value-design.md`.
+Rate alerts (`/cuenta` → Alertas) fire through web push (FCM), email
+(Nodemailer/SMTP) and Telegram from the `alerts:check` scheduled task
+(`server/tasks/alerts/check.ts` → `server/utils/alertRunner.ts`). Original
+design: `docs/superpowers/specs/2026-06-17-firebase-auth-logged-in-value-design.md`.
+
+- **Email only to a verified address** (2026-11-08): the task asks Firebase for
+  `emailVerified` before using `users.email`, which is copied from the session
+  whether verified or not.
+- **One-click unsubscribe** (2026-11-08), the same contract as the rental alerts:
+  each email carries `/api/alerts/unsubscribe?token=…` as a link and as
+  `List-Unsubscribe` / `List-Unsubscribe-Post`. The token (32 random bytes,
+  `select: false`, partial unique index) is minted with the alert's first email,
+  so the alerts created before the link existed get one on their next email.
+  GET only shows a confirmation; POST turns off that alert's email channel, needs
+  no login and is idempotent. An alert left with no channel is paused.
+- **An alert needs a channel to be on**: creating one with none is refused (400
+  `no-channel`), and so is switching one on while it has none (409, checked in
+  the same `findOneAndUpdate`). The account panel shows such an alert as "sin
+  canal" with a button that turns email back on.
+- Both unsubscribe endpoints set their CSP before touching the database and answer
+  a database failure with their own 503 page: thrown, Nitro would log the URL
+  (token included) and Nuxt would render its full error page, GA and all, at that
+  address. `token` is also one of the parameters that keep GA from starting.
 
 ## Telegram account linking
 
@@ -68,3 +88,41 @@ internal `/api/telegram/*` API is gated by `x-telegram-secret`, keyed by chatId
 (never a Firebase token); link codes are single-use with a 10-min Mongo TTL. Bot
 runs as pm2 `cu-telegram-bot` (`bots/dist/entries/telegram.js`). Design/plan:
 `docs/superpowers/specs/2026-06-18-telegram-account-linking-design.md`.
+
+## Discord login
+
+`/api/auth/discord/start` → Discord OAuth2 → `/api/auth/discord/callback`, which
+resolves the Firebase account (`server/utils/discordAuth.ts` `resolveDiscordUid`)
+and hands a custom token back as `/cuenta?ct=…`; `plugins/discordToken.client.ts`
+signs in with it and removes it from the address bar through the router (never a
+raw `history.replaceState`: the token came back with Back and reached GA4).
+Design: `docs/superpowers/specs/2026-06-18-multichannel-access-discord-login-design.md`.
+
+- A verified Discord address links to the existing account with that address
+  **only if that account's address is verified** (2026-11-08). An email/password
+  sign-up can use anyone's address and its creator keeps the password, so a
+  Discord login never takes such an account over: the callback redirects with
+  `authError=discord-unverified` and the dialog tells the visitor to verify the
+  address first, or to take the account with "forgot password" if they did not
+  open it. Nothing is linked and no second account is created.
+- A verified address with no account creates one with `emailVerified: true`. The
+  one account the callback had created before that flag existed was marked
+  verified by hand the same day (its address had been verified by Discord: the
+  email branch has always required it).
+- The callback's error codes become dialog messages (`auth.discordError`,
+  `auth.discordUnverified`), written after the scrub navigation: that navigation
+  runs the `/cuenta` auth middleware, whose `openDialog()` clears `store.error`.
+  Only the plugin's own codes count (an own-property lookup: `?authError=constructor`
+  found an inherited member).
+- The `users` row keeps Discord's address only when Discord verified it: the
+  account switches fall back to that row. And the newsletter switch changes the
+  subscriber list only for a verified address, in both directions (switching off
+  used to unsubscribe whatever address the account carried), verified according
+  to the Firebase account record and not the ID token, which can be up to an hour
+  older than the verification.
+- Not done, pre-existing (2026-11-08 review): the `?ct=` hand-off is not bound to
+  the browser that started the flow, so a link carrying a fresh custom token signs
+  the visitor into someone else's account (login CSRF). The fix is to hand the
+  token over in a short-lived `__Host-` cookie set by the state-checked callback
+  instead of the URL; it was left out because the happy path cannot be checked
+  end to end without a Discord account.

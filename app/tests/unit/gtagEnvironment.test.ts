@@ -6,6 +6,8 @@ import { defu } from 'defu'
 import ts from 'typescript'
 import { withQuery } from 'ufo'
 import { describe, expect, it, vi } from 'vitest'
+import { hasAnalyticsUnsafeQuery } from '../../utils/analyticsUrl'
+import { MEASURE_AUTOMATION_KEY, isAutomatedClient } from '../../utils/automatedClient'
 import { isBareRoute } from '../../utils/bareRoutes'
 import { CONSENT_STRICT_REGIONS } from '../../utils/consent'
 
@@ -49,6 +51,17 @@ function setup(environment: string) {
         },
       },
       './utils/consent': { CONSENT_STRICT_REGIONS },
+      './utils/locales': { EXTRA_LOCALES: [] },
+      './utils/sitemapFilters': {
+        ANY_LOCALE_PREFIX_PATTERN: /^$/,
+        SITEMAP_NOINDEX_PATTERN: /^$/,
+        localePrefixPattern: () => /^$/,
+      },
+      './i18n/extraMessagesVersion': { extraMessagesVersion: () => 'analytics-test' },
+      './i18n/messagesVersion': {
+        I18N_MESSAGE_SOURCES: [],
+        i18nMessagesVersion: () => 'analyticstest',
+      },
     },
     {
       defineNuxtConfig: (value: unknown) => value,
@@ -111,7 +124,11 @@ function setup(environment: string) {
     for (const plugin of plugins) loadRuntime(`${plugin.src}.js`).default.setup()
     evaluate(
       resolve(appDir, 'plugins/gtag-init.client.ts'),
-      { '~/utils/bareRoutes': { isBareRoute } },
+      {
+        '~/utils/analyticsUrl': { hasAnalyticsUnsafeQuery },
+        '~/utils/automatedClient': { MEASURE_AUTOMATION_KEY, isAutomatedClient },
+        '~/utils/bareRoutes': { isBareRoute },
+      },
       {
         ...runtimeGlobals,
         defineNuxtPlugin: (callback: (app: unknown) => void) => callback({}),

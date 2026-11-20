@@ -115,7 +115,7 @@
 
 <script setup lang="ts">
 import { rentalAvailabilityCopy } from '~/utils/rentalAvailabilityMessages'
-import { VDialog } from 'vuetify/components'
+import { VAutocomplete, VDialog } from 'vuetify/components'
 import { propertyOpportunityMessages } from '~/utils/propertyOpportunityMessages'
 import { normalizeOpportunityQuery, type OpportunityQuery } from '~/utils/propertyOpportunityQuery'
 

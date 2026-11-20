@@ -309,6 +309,9 @@
       “garantizarte” una garantía estando en clearing.
     </VAlert>
 
+    <!-- La unidad intermedia, antes de las preguntas: mismo corte que FaqSection (ver
+         docs/seo/adsense-growth-loop.md, 31/10/2026). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <!-- FAQ -->
     <h2 class="section-heading mb-3">Preguntas frecuentes</h2>
     <VExpansionPanels variant="accordion" class="faq-panels mb-6">

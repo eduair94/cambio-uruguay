@@ -536,7 +536,9 @@ function fmtDate(iso: string): string {
 
 // ── SEO ──
 const canonicalUrl = 'https://cambio-uruguay.com/sala-vip-aeropuerto-uruguay'
-const title = 'Sala VIP en el aeropuerto de Carrasco'
+// La respuesta en el título: cuánto sale entrar (US$ 90 suelto) y que con algunas tarjetas no
+// cuesta nada, que es lo que la página detalla tarjeta por tarjeta.
+const title = 'Sala VIP de Carrasco: US$ 90 o gratis'
 const description =
   'Qué tarjeta uruguaya da acceso gratis a la Sala VIP de Carrasco y Punta del Este, la tarifa de US$ 10 de Itaú y el ingreso suelto de US$ 90. Con fuente.'
 

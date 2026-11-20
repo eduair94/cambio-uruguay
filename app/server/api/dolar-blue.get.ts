@@ -22,6 +22,7 @@ import {
   type BluePoint,
 } from '../../utils/blueDollar'
 import { montevideoToday } from '../../utils/newsletterIssue'
+import { offMarketSide } from '../../utils/marketOutlier'
 
 interface RateRow {
   origin: string
@@ -89,7 +90,11 @@ export default defineCachedEventHandler(
         sell: r.sell,
       }))
 
-    const usdRows = rates.filter(r => r.code === 'USD' && isRetail(r) && r.sell > 0)
+    // The dollar's best sell through the site's outlier rule (utils/marketOutlier.ts): the raw
+    // minimum was a board frozen since July at 39,55, and the page divided by it (2026-11-11).
+    const usdRetail = rates.filter(r => r.code === 'USD' && isRetail(r) && r.sell > 0)
+    const usdSellOff = offMarketSide(usdRetail, 'USD', 'sell')
+    const usdRows = usdRetail.filter(r => !usdSellOff(r))
     const usdSell = usdRows.length ? Math.min(...usdRows.map(r => r.sell)) : null
     const usdSellRow = usdRows.length ? usdRows.reduce((a, b) => (b.sell < a.sell ? b : a)) : null
 

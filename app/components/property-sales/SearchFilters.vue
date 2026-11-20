@@ -239,7 +239,7 @@
   </component>
 </template>
 <script setup lang="ts">
-import { VDialog } from 'vuetify/components'
+import { VAutocomplete, VDialog } from 'vuetify/components'
 import {
   normalizePropertySalesQuery,
   PROPERTY_SALES_AMENITIES,

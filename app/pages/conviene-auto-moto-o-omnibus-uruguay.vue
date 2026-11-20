@@ -214,7 +214,9 @@
                 >
                   Calcular la ruta
                 </VBtn>
-                <span v-if="ruta?.ok" class="field-note">
+                <!-- The two addresses the visitor typed (home and work, often), as the geocoder
+                     read them: masked for Microsoft Clarity, which records text outside inputs. -->
+                <span v-if="ruta?.ok" class="field-note ruta-direcciones" data-clarity-mask="true">
                   {{ ruta.from?.label }} → {{ ruta.to?.label }}
                 </span>
               </div>
@@ -710,6 +712,7 @@
 </template>
 
 <script setup lang="ts">
+import { VAutocomplete, VSlider } from 'vuetify/components'
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import type { FaqItem } from '~/utils/faqAnswers'
 import { formatNumber } from '~/utils/format'
@@ -1236,6 +1239,12 @@ if (import.meta.client) {
  * no compara.
  */
 const enlaces = [
+  {
+    to: '/precio-del-boleto-montevideo',
+    icon: 'mdi-bus',
+    label: 'Precio del boleto',
+    note: 'La tarifa de la IM que esta cuenta usa como término de comparación, con tarjeta y en efectivo.',
+  },
   {
     to: '/precio-de-la-nafta-uruguay',
     icon: 'mdi-gas-station',

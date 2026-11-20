@@ -12,6 +12,7 @@ import {
   IVA_MINIMO_2026,
   LEYENDAS,
   MONO_APORTES_2026,
+  MONO_CASOS_EXTENDED_AT,
   MONO_CASOS_VERIFIED_AT,
   MONO_INVOICING_VERIFIED_AT,
   MONO_MORA_2026,
@@ -270,7 +271,8 @@ describe('CASOS (Qué pasa si…)', () => {
       expect(c.sources.length, c.id).toBeGreaterThanOrEqual(1)
       for (const s of c.sources) {
         expect(s.url, `${c.id}: ${s.url}`).toMatch(PRIMARY)
-        expect(s.seenOn).toBe(MONO_CASOS_VERIFIED_AT)
+        // Cada fuente con SU fecha: la primera tanda o la ampliación, nunca otra.
+        expect([MONO_CASOS_VERIFIED_AT, MONO_CASOS_EXTENDED_AT]).toContain(s.seenOn)
         expect(s.label.length).toBeGreaterThan(10)
       }
     }
@@ -492,5 +494,65 @@ describe('la página existe y usa la data', () => {
   it('emits exactly one FAQPage graph node and one <h1>', () => {
     expect((page.match(/'@type':\s*'FAQPage'/g) ?? []).length).toBe(1)
     expect((page.match(/<h1[ >]/g) ?? []).length).toBe(1)
+  })
+})
+
+// Segunda tanda (2026-10-19, para mergear desde el 2026-10-30): lo que la cola de demanda seguía
+// preguntando con otras palabras o en otra lectura.
+describe('CASOS, segunda tanda', () => {
+  const caso = (id: string) => CASOS.find(c => c.id === id)!
+  const detail = (id: string) => caso(id).detail.join(' ')
+
+  it('tiene su propia fecha, posterior a la primera, que no se movió', () => {
+    expect(MONO_CASOS_EXTENDED_AT).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    expect(MONO_CASOS_EXTENDED_AT > MONO_CASOS_VERIFIED_AT).toBe(true)
+    expect(MONO_CASOS_VERIFIED_AT).toBe('2026-09-22')
+  })
+
+  it('la deuda vieja: prescribe, pero hay que pedirla, y el convenio es renuncia', () => {
+    const d = detail('debo-cuotas')
+    expect(d).toMatch(/cinco años/)
+    expect(d).toMatch(/diez/)
+    expect(d).toMatch(/Código Tributario, art\. 38/)
+    expect(d).toMatch(/no se borra sola/)
+    expect(d).toMatch(/«Prescripción de adeudos»/)
+    expect(d).toMatch(/renuncia tácita/)
+    expect(d).toMatch(/no se devuelve/)
+    expect(d).toMatch(/veinte años/)
+    const urls = caso('debo-cuotas').sources.map(s => s.url)
+    expect(urls).toContain('https://www.impo.com.uy/bases/codigo-tributario/14306-1974/38')
+    expect(urls.some(u => u.includes('bps.gub.uy/11296/'))).toBe(true)
+    expect(urls.some(u => u.includes('bps.gub.uy/11053/'))).toBe(true)
+    // Las fuentes nuevas llevan la fecha nueva; las viejas, la vieja.
+    for (const s of caso('debo-cuotas').sources) {
+      const nueva = /11296|11053|14306-1974\/38/.test(s.url)
+      expect(s.seenOn, s.url).toBe(nueva ? MONO_CASOS_EXTENDED_AT : MONO_CASOS_VERIFIED_AT)
+    }
+    const faq = FAQ.find(f => f.question === caso('debo-cuotas').question)!
+    expect(faq.answer).toMatch(/Prescripción de adeudos/)
+  })
+
+  it('«no facturo» contesta también «vendo y no hago boleta», sin inventar una sanción', () => {
+    const d = detail('no-facturo')
+    expect(d).toMatch(/no te exime de documentar/)
+    expect(d).toMatch(/comprobante diario global/)
+    expect(d).toMatch(/688\/992/)
+    // Ni multa ni clausura con número: no se verificó en el texto ordenado vigente.
+    expect(d).not.toMatch(/clausura (del|de tu) (local|establecimiento)|seis días hábiles/i)
+  })
+
+  it('la pregunta del tope se titula como se busca, en la tarjeta y en el FAQ', () => {
+    const tope = caso('me-paso-del-tope')
+    expect(tope.question).toBe('¿Qué pasa si me excedo en la facturación del monotributo?')
+    expect(FAQ.map(f => f.question)).toContain(tope.question)
+  })
+
+  it('el promedio mensual del tope del Mides es la división por doce, y no se presenta como tope', () => {
+    const d = detail('monotributo-social-mides')
+    expect(d).toContain('$97.961')
+    expect(d).toContain('$163.269')
+    expect(Math.floor(1_175_537 / 12)).toBe(97_961)
+    expect(Math.floor(1_959_229 / 12)).toBe(163_269)
+    expect(d).toMatch(/el límite es del año/)
   })
 })

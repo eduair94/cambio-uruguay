@@ -15,6 +15,7 @@ import { SearchConsoleSnapshotModel } from "../../classes/models/SearchConsoleSn
 import { SiteRevenueSnapshotModel } from "../../classes/models/SiteRevenueSnapshot";
 import { SitePageRankingModel } from "../../classes/models/SitePageRanking";
 import { SiteTopPagesModel } from "../../classes/models/SiteTopPages";
+import { SiteTrafficSourcesModel } from "../../classes/models/SiteTrafficSources";
 import { SearchDemandQueueModel } from "../../classes/models/SearchDemandQueue";
 import { RevenuePlanSnapshotModel } from "../../classes/models/RevenuePlanSnapshot";
 import { EquiparItemModel } from "../../classes/models/EquiparItem";
@@ -23,6 +24,9 @@ import { EquiparListingModel } from "../../classes/models/EquiparListing";
 import { MovilidadItemModel } from "../../classes/models/MovilidadItem";
 import { MovilidadMetaModel } from "../../classes/models/MovilidadMeta";
 import { MovilidadListingModel } from "../../classes/models/MovilidadListing";
+import { MovilidadSpecSnapshotModel } from "../../classes/models/MovilidadSpecSnapshot";
+import { EquiparSpecSnapshotModel } from "../../classes/models/EquiparSpecSnapshot";
+import { MovilidadModelModel } from "../../classes/models/MovilidadModel";
 import { CharruaTextModel } from "../../classes/models/CharruaText";
 import { CharruaSnapshotModel } from "../../classes/models/CharruaSnapshot";
 import { CarCatalogMetaModel } from "../../classes/models/CarCatalogMeta";
@@ -41,6 +45,10 @@ import { MotoMarketSnapshotModel } from "../../classes/models/MotoMarketSnapshot
 import { CompetitorMonitorModel } from "../../classes/models/CompetitorMonitor";
 import { CompetitorMonitorStateModel } from "../../classes/models/CompetitorMonitorState";
 import { UsefulAppsSnapshotModel } from "../../classes/models/UsefulAppsSnapshot";
+import { ArmadorSnapshotModel } from "../../classes/models/ArmadorSnapshot";
+import { LrmSnapshotModel } from "../../classes/models/LrmSnapshot";
+import { RedditOpportunityModel } from "../../classes/models/RedditOpportunity";
+import { RedditOpportunityMetaModel } from "../../classes/models/RedditOpportunityMeta";
 
 const appModel = (name: string): string =>
   fs.readFileSync(path.join(__dirname, "..", "..", "app", "server", "models", `${name}.ts`), "utf8");
@@ -153,6 +161,13 @@ describe("app-Mongo schema parity", () => {
     );
   });
 
+  it("SearchDemandQueue no inventa un resumen para los snapshots anteriores", () => {
+    const field = SearchDemandQueueModel.schema.path("serpRun");
+    expect(field).toBeDefined();
+    expect(field.options.default).toBeUndefined();
+    expect(field.options.required).not.toBe(true);
+  });
+
   it("RevenuePlanSnapshot declares exactly the app's top-level fields", () => {
     // El plan de ingreso. Mismo riesgo que sus dos vecinos y uno propio: si el app no declara
     // `families`, la tabla que dice qué familia consume tráfico sin pagarlo se renderiza vacía y
@@ -176,6 +191,12 @@ describe("app-Mongo schema parity", () => {
 
   it("SiteTopPages declares exactly the app's top-level fields", () => {
     expect(Object.keys(SiteTopPagesModel.schema.obj).sort()).toEqual(appFields(appModel("SiteTopPages")).sort());
+  });
+
+  it("SiteTrafficSources declares exactly the app's top-level fields", () => {
+    expect(Object.keys(SiteTrafficSourcesModel.schema.obj).sort()).toEqual(
+      appFields(appModel("SiteTrafficSources")).sort()
+    );
   });
 
   it("EquiparItem declares exactly the app's top-level fields", () => {
@@ -206,6 +227,28 @@ describe("app-Mongo schema parity", () => {
       appFields(appModel("MovilidadListing")).sort()
     );
     expect(MovilidadListingModel.collection.name).toBe("movilidadlistings");
+  });
+
+  it("EquiparSpecSnapshot declares exactly the app's top-level fields", () => {
+    // El asesor de tamaño de /equipar-casa-uruguay/<categoria> (heladera, lavarropas, tv, aire).
+    expect(Object.keys(EquiparSpecSnapshotModel.schema.obj).sort()).toEqual(
+      appFields(appModel("EquiparSpecSnapshot")).sort()
+    );
+    expect(EquiparSpecSnapshotModel.collection.name).toBe("equiparspecsnapshots");
+  });
+
+  it("MovilidadSpecSnapshot declares exactly the app's top-level fields", () => {
+    // Candidatos del asesor y medianas por tipo de /monopatines-electricos-uruguay.
+    expect(Object.keys(MovilidadSpecSnapshotModel.schema.obj).sort()).toEqual(
+      appFields(appModel("MovilidadSpecSnapshot")).sort()
+    );
+    expect(MovilidadSpecSnapshotModel.collection.name).toBe("movilidadspecsnapshots");
+  });
+
+  it("MovilidadModel declares exactly the app's top-level fields", () => {
+    // Una fila por modelo de monopatín: /monopatines-electricos-uruguay/<modelo> y su comparador.
+    expect(Object.keys(MovilidadModelModel.schema.obj).sort()).toEqual(appFields(appModel("MovilidadModel")).sort());
+    expect(MovilidadModelModel.collection.name).toBe("movilidadmodels");
   });
 
   it("CharruaText declares exactly the app's top-level fields", () => {
@@ -276,6 +319,7 @@ describe("app-Mongo schema parity", () => {
     expect(SiteRevenueSnapshotModel.collection.name).toBe("siterevenuesnapshots");
     expect(SitePageRankingModel.collection.name).toBe("sitepagerankings");
     expect(SiteTopPagesModel.collection.name).toBe("sitetoppages");
+    expect(SiteTrafficSourcesModel.collection.name).toBe("sitetrafficsources");
     expect(EquiparItemModel.collection.name).toBe("equiparitems");
     expect(EquiparMetaModel.collection.name).toBe("equiparmeta");
     expect(StoreProfileModel.collection.name).toBe("storeprofiles");
@@ -334,5 +378,39 @@ describe("app-Mongo schema parity", () => {
       appFields(appModel("UsefulAppsSnapshot")).sort()
     );
     expect(UsefulAppsSnapshotModel.collection.name).toBe("usefulappssnapshots");
+  });
+
+  it("LrmSnapshot declares exactly the app's top-level fields", () => {
+    // Las licitaciones de LRM para /letras-de-regulacion-monetaria-uruguay: si el app no declara
+    // `calendar`, la página se queda sin «próxima licitación» y cae al calendario horneado sin
+    // que nada falle.
+    expect(Object.keys(LrmSnapshotModel.schema.obj).sort()).toEqual(appFields(appModel("LrmSnapshot")).sort());
+    expect(LrmSnapshotModel.collection.name).toBe("lrmsnapshots");
+  });
+
+  it("RedditOpportunity declares exactly the app's top-level fields", () => {
+    // Dos dueños sobre el mismo documento: el job escribe el veredicto y el app el estado de
+    // trabajo. Un campo que uno de los dos no declare se pierde en silencio — el estado "respondido"
+    // que el job no conoce lo pisaría el próximo upsert si alguna vez lo tocara.
+    expect(Object.keys(RedditOpportunityModel.schema.obj).sort()).toEqual(
+      appFields(appModel("RedditOpportunity")).sort()
+    );
+    expect(RedditOpportunityModel.collection.name).toBe("redditopportunities");
+  });
+
+  it("RedditOpportunityMeta declares exactly the app's top-level fields", () => {
+    expect(Object.keys(RedditOpportunityMetaModel.schema.obj).sort()).toEqual(
+      appFields(appModel("RedditOpportunityMeta")).sort()
+    );
+    expect(RedditOpportunityMetaModel.collection.name).toBe("redditopportunitymetas");
+  });
+
+  it("ArmadorSnapshot declares exactly the app's top-level fields", () => {
+    // El directorio de /armadores-de-muebles-montevideo: un campo que el job escriba y el app no
+    // declare (las notas de una fuente caída, la fecha de Google) se guarda y la página no lo ve.
+    expect(Object.keys(ArmadorSnapshotModel.schema.obj).sort()).toEqual(
+      appFields(appModel("ArmadorSnapshot")).sort()
+    );
+    expect(ArmadorSnapshotModel.collection.name).toBe("armadorsnapshots");
   });
 });

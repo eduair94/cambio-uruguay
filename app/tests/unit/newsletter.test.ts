@@ -1,5 +1,8 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
+  bestDigestQuotes,
   buildConfirmEmail,
   buildDailyEmail,
   buildDailyTelegram,
@@ -8,6 +11,84 @@ import {
   normalizeEmail,
   type DigestData,
 } from '../../server/utils/newsletter'
+
+// 2026-11-09: baluma_cambio's USD board had not moved since July (37,15 / 39,55; the backend's
+// staleness check marks it `extreme: "min-sell"`) against a market around 40 / 41,4. It was "la
+// mejor venta" of 84 of the 87 archived issues.
+describe('bestDigestQuotes', () => {
+  const market = Array.from({ length: 12 }, (_, i) => ({
+    origin: `casa${i}`,
+    buy: 40 + i * 0.05,
+    sell: 41.4 + i * 0.05,
+  }))
+  const frozen = { origin: 'baluma_cambio', buy: 37.15, sell: 39.55 }
+
+  it('never names a dollar board the rest of the site treats as off-market', () => {
+    const best = bestDigestQuotes('USD', [...market, frozen])!
+    expect(best.bestSell.origin).toBe('casa0')
+    expect(best.bestBuy.origin).toBe('casa11')
+  })
+
+  // Judged on the side it ranks. Narrow-spread casas buy 3,1–3,3 % above a median the wide-spread
+  // majority keeps low (~8 % of days in 2026), and the frozen board never won the best buy.
+  it('lets a narrow-spread casa that pays more win the best buy', () => {
+    const narrow = { origin: 'cambio_principal', buy: 41.6, sell: 41.9 }
+    const best = bestDigestQuotes('USD', [...market, frozen, narrow])!
+    expect(best.bestBuy.origin).toBe('cambio_principal')
+    expect(best.bestSell.origin).toBe('casa0')
+  })
+
+  it('keeps a board whose buy is odd but whose sell is the cheapest', () => {
+    const oddBuy = { origin: 'prex', buy: 38, sell: 41.3 }
+    expect(bestDigestQuotes('USD', [...market, frozen, oddBuy])!.bestSell.origin).toBe('prex')
+  })
+
+  // Each currency with its own band (utils/marketOutlier.ts). A board 5 % under the median is
+  // left out of the dollar and the euro, but the real's live casas sell up to 6 % under it, and a
+  // 3 % band dropped them on every day measured (BRL 8,45 named while four casas sold at 8,10).
+  it('judges each currency with its own band', () => {
+    expect(bestDigestQuotes('EUR', [...market, frozen])!.bestSell.origin).toBe('casa0')
+    expect(bestDigestQuotes('BRL', [...market, frozen])!.bestSell.origin).toBe('baluma_cambio')
+  })
+
+  // The issue of 2026-11-06 named tradelix "la mejor compra" of the Argentine peso: 0,15 against a
+  // 0,02 median. A peso quoted to the cent at 0,03 is real and stays in.
+  it('leaves out the Argentine peso buy that is not a price, and keeps the one that is', () => {
+    const pesos = Array.from({ length: 12 }, (_, i) => ({
+      origin: `ars${i}`,
+      buy: 0.02,
+      sell: 0.05,
+    }))
+    const best = bestDigestQuotes('ARS', [
+      ...pesos,
+      { origin: 'tradelix', buy: 0.15, sell: 0.55 },
+      { origin: 'prex', buy: 0.03, sell: 0.03 },
+    ])!
+    expect(best.bestBuy.origin).toBe('prex')
+    expect(best.bestSell.origin).toBe('prex')
+  })
+
+  it('keeps every board when the market is too thin to judge', () => {
+    const best = bestDigestQuotes('USD', [market[0]!, market[1]!, frozen])!
+    expect(best.bestSell.origin).toBe('baluma_cambio')
+  })
+
+  it('has nothing to say without quotes', () => {
+    expect(bestDigestQuotes('USD', [])).toBeNull()
+  })
+
+  // What the issue publishes comes out of buildDigestData, which fetches and so is not run here:
+  // its loop must pick through bestDigestQuotes and nowhere else.
+  it('is the only way buildDigestData picks a best price', () => {
+    const source = readFileSync(join(__dirname, '../../server/utils/newsletter.ts'), 'utf8')
+    const start = source.indexOf('export async function buildDigestData')
+    const body = source.slice(start, source.indexOf('\n}\n', start))
+    expect(start).toBeGreaterThan(-1)
+    expect(body).toMatch(/bestDigestQuotes\(\s*code,/)
+    expect(body).not.toMatch(/\.reduce\(/)
+    expect(body).not.toMatch(/Math\.(?:min|max)\(/)
+  })
+})
 
 describe('normalizeEmail', () => {
   it('lowercases and trims', () => {

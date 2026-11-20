@@ -1,3 +1,4 @@
+import { fnv1a } from '~/utils/contentOverlay'
 import type { FaqItem } from '~/utils/faqAnswers'
 
 /**
@@ -16,9 +17,16 @@ export function useFaqSchema(items: () => FaqItem[], enabled: () => boolean = ()
   useHead(() => {
     const list = items()
     if (!enabled() || !list.length) return {}
+    // Named after the QUESTIONS. An answer can depend on the day (the next LRM auction); the
+    // question does not. Without a key unhead matches a <script> by its content, so an answer
+    // that differed between the server render and hydration left the server's FAQPage in place
+    // and appended a second one (reproduced 2026-11-09 with /letras-de-regulacion-monetaria-uruguay
+    // and its live data). Two FAQ blocks with different questions keep two names.
+    const schemaName = `faq-${fnv1a(list.map(i => i.question).join('\n'))}-jsonld`
     return {
       script: [
         {
+          key: schemaName,
           type: 'application/ld+json',
           innerHTML: JSON.stringify(
             $seo.generateFAQData(list.map(i => ({ question: i.question, answer: i.answer })))

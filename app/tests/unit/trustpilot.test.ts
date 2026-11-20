@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   buildWidgetConfig,
-  probeWidgetReachable,
+  buildWidgetUrl,
   TRUSTPILOT_DOMAIN,
   TRUSTPILOT_PROFILE_URL,
   TRUSTPILOT_REVIEW_URL,
@@ -55,62 +55,32 @@ describe('buildWidgetConfig', () => {
   })
 })
 
-// `onReady` cannot be trusted to detect a blocked/downed host: the widget library
-// sets `iframe.onload = onReady`, and browsers fire `load` even when the framed
-// navigation is blocked or fails — the browser just loads an error document into
-// the frame. `probeWidgetReachable` is the discriminator that actually works: an
-// opaque `no-cors` fetch resolves when the host answers and rejects when the
-// request is blocked, aborted, or the host is unreachable.
-describe('probeWidgetReachable', () => {
-  it('returns true when the host answers', async () => {
-    const fetchImpl = (async () => new Response()) as unknown as typeof fetch
+describe('buildWidgetUrl', () => {
+  it('navigates to the widget with the review configuration and no SDK-only defaults', () => {
+    const url = new URL(buildWidgetUrl({ theme: 'dark', reducedMotion: false }))
 
-    await expect(probeWidgetReachable(fetchImpl)).resolves.toBe(true)
+    expect(url.origin).toBe(TRUSTPILOT_WIDGET_ORIGIN)
+    expect(url.pathname).toBe('/')
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      domain: TRUSTPILOT_DOMAIN,
+      theme: 'dark',
+      autoplay: 'true',
+      interval: '6000',
+      maxReviews: '5',
+      showRating: 'true',
+      showDate: 'true',
+      showAvatar: 'true',
+      showReply: 'false',
+      hideGlobalReviews: 'true',
+      hideTopBanner: 'true',
+      height: String(TRUSTPILOT_WIDGET_HEIGHT),
+    })
   })
 
-  it('returns false when the request rejects (blocked, aborted, or unreachable)', async () => {
-    const fetchImpl = (async () => {
-      throw new TypeError('Failed to fetch')
-    }) as unknown as typeof fetch
+  it('updates the URL for the selected theme and reduced-motion preference', () => {
+    const url = new URL(buildWidgetUrl({ theme: 'light', reducedMotion: true }))
 
-    await expect(probeWidgetReachable(fetchImpl)).resolves.toBe(false)
-  })
-
-  it('returns false once the timeout elapses when the request never settles on its own', async () => {
-    // Mirrors real `fetch`: it only rejects once the passed-in signal aborts,
-    // otherwise it would hang forever, same as a real stalled network request.
-    const hangingFetch = ((_url: RequestInfo | URL, init?: RequestInit) =>
-      new Promise<Response>((_resolve, reject) => {
-        init?.signal?.addEventListener('abort', () => {
-          reject(new DOMException('Aborted', 'AbortError'))
-        })
-      })) as typeof fetch
-
-    await expect(probeWidgetReachable(hangingFetch, 20)).resolves.toBe(false)
-  })
-
-  it('probes the widget origin with our domain', async () => {
-    let requestedUrl = ''
-    const fetchImpl = (async (url: RequestInfo | URL) => {
-      requestedUrl = String(url)
-      return new Response()
-    }) as unknown as typeof fetch
-
-    await probeWidgetReachable(fetchImpl)
-
-    expect(requestedUrl).toContain(TRUSTPILOT_WIDGET_ORIGIN)
-    expect(requestedUrl).toContain(`domain=${TRUSTPILOT_DOMAIN}`)
-  })
-
-  it('issues an opaque no-cors request', async () => {
-    let requestedInit: RequestInit | undefined
-    const fetchImpl = (async (_url: RequestInfo | URL, init?: RequestInit) => {
-      requestedInit = init
-      return new Response()
-    }) as unknown as typeof fetch
-
-    await probeWidgetReachable(fetchImpl)
-
-    expect(requestedInit?.mode).toBe('no-cors')
+    expect(url.searchParams.get('theme')).toBe('light')
+    expect(url.searchParams.get('autoplay')).toBe('false')
   })
 })

@@ -214,6 +214,9 @@
     </section>
 
     <!-- Why 9% IMESI isn't 9% more expensive -->
+    <!-- La unidad intermedia, en un corte de sección a mitad de página (ver
+         docs/seo/adsense-growth-loop.md, decimotercera iteración). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <section class="mb-8">
       <h2 class="section-heading mb-1">Por qué "9 % de IMESI" no es "el auto sube 9 %"</h2>
       <VCard variant="flat" class="practica pa-5">
@@ -598,7 +601,9 @@ const lastResearchedLabel = new Date(`${LAST_RESEARCHED}T00:00:00Z`).toLocaleDat
 
 // --- SEO ---
 const canonicalUrl = 'https://cambio-uruguay.com/impuesto-autos-electricos-uruguay'
-const title = 'IMESI a autos eléctricos en Uruguay 2027'
+// La respuesta en el título, con la palabra que se busca («impuesto autos eléctricos»): las tres
+// tasas de 2027. IMESI, el nombre del impuesto, sigue en la descripción y en el H1.
+const title = 'Impuesto autos eléctricos 2027: 0, 5 o 9 %'
 const description =
   'Desde el 1°/1/2027 los eléctricos pagan 0, 5 o 9 % de IMESI según el valor en aduana (corte en US$ 19.000 y US$ 27.000). Matriz del Decreto 147/026.'
 

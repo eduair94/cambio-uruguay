@@ -151,6 +151,18 @@ Todos los timestamps y fechas están en la zona horaria de Uruguay (America/Mont
             type: 'string',
             description: 'Nombre descriptivo de la moneda',
             example: 'Dólar Estadounidense'
+          },
+          frozen: {
+            type: 'boolean',
+            description:
+              'Sólo en las cotizaciones de hoy, y sólo cuando es true: esta pizarra publica la misma compra y venta desde hace días, más de lo que su propio grupo (moneda + tipo) considera normal. Ver /frozen-quotes. Un precio así puede ser real, pero no es el mejor del día aunque lo parezca: el mercado se movió y la pizarra no.',
+            example: true
+          },
+          frozenDays: {
+            type: 'number',
+            description:
+              'Con frozen: días de calendario sin cambios (si la ventana de 120 días está entera quieta, es un piso).',
+            example: 100
           }
         },
         required: ['origin', 'code', 'buy', 'sell', 'date']

@@ -136,12 +136,19 @@
 
 <script setup lang="ts">
 import { COINS_PATH, COINS_SOURCES, getCoinsContent, LAST_RESEARCHED } from '~/utils/coins'
+import { isExtraLocale } from '~/utils/locales'
 
 const { locale } = useI18n()
 const localePath = useLocalePath()
 
-// Localized content tree for the active UI locale (falls back to es).
-const c = computed(() => getCoinsContent(locale.value))
+// Localized content tree for the active UI locale (falls back to es). The extra locales read
+// the English tree with its machine translation laid over it (useContentTranslation).
+const translation = await useContentTranslation('coins')
+const c = computed(() =>
+  isExtraLocale(locale.value)
+    ? translatedTree(getCoinsContent('en'), locale.value, translation.value)
+    : getCoinsContent(locale.value)
+)
 const sources = COINS_SOURCES
 
 const lastCheckedDate = computed(() =>
@@ -162,7 +169,7 @@ const ogImageUrl = computed(
 
 // Short uppercase OG tag, localized.
 const ogTag = computed(
-  () => ({ es: 'MONEDAS', en: 'COINS', pt: 'MOEDAS' })[locale.value] ?? 'MONEDAS'
+  () => ({ es: 'MONEDAS', en: 'COINS', pt: 'MOEDAS' })[locale.value] ?? 'COINS'
 )
 
 defineOgImageComponent('Cambio', {

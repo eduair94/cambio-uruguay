@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="pa-2 pa-sm-4 nearby-casas-page">
+  <v-container fluid class="px-4 py-2 pa-sm-4 nearby-casas-page">
     <h1 class="text-h5 mb-2">{{ t('nearbyCasas.title') }}</h1>
     <p class="text-body-2 mb-4">{{ t('nearbyCasas.subtitle') }}</p>
 
@@ -26,7 +26,7 @@
       </v-col>
       <v-col cols="12" sm="4" md="3">
         <span class="text-caption">{{ t('map.radius') }}: {{ radiusKm }} km</span>
-        <v-slider
+        <VSlider
           v-model="radiusKm"
           :min="1"
           :max="50"
@@ -85,7 +85,9 @@
         <v-btn value="rate" size="small">{{ t('nearbyCasas.sortRate') }}</v-btn>
       </v-btn-toggle>
 
-      <div v-if="sorted.length" class="nearby-list">
+      <!-- Branches ranked by distance from the visitor, with their addresses: masked for
+           Microsoft Clarity, like the map. -->
+      <div v-if="sorted.length" class="nearby-list" data-clarity-mask="true">
         <NearbyCasaCard
           v-for="(item, i) in sorted"
           :key="item.branch.id"
@@ -129,6 +131,7 @@
 </template>
 
 <script setup lang="ts">
+import { VSlider } from 'vuetify/components'
 import { computed, ref, watch } from 'vue'
 import NearbyCasaCard from '~/components/nearby/NearbyCasaCard.vue'
 import LocationsMap from '~/components/map/LocationsMap.vue'

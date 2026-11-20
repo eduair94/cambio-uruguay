@@ -291,6 +291,27 @@ FORM: Guía operativa con simulador, extensión de la familia /franquicia-aduana
         todos: un cargador de pared común <strong>no</strong> necesita autorización previa, y unos
         auriculares Bluetooth <strong>no</strong> necesitan URSEC.
       </p>
+
+      <VAlert
+        type="info"
+        variant="tonal"
+        density="comfortable"
+        icon="mdi-tshirt-crew-outline"
+        class="mb-4"
+      >
+        ¿Y si lo que vas a revender es <strong>ropa</strong>? No está en el cuadro, y es el rubro
+        donde el simulador de arriba acierta la ruta y falla el negocio. Por la norma: las prendas
+        <strong>nuevas</strong> de los capítulos 61 y 62 necesitan una licencia de importación ante
+        la <strong>Dirección Nacional de Industrias</strong> (Decreto 8/022) y esa licencia no prevé
+        excepción postal, mientras la ropa <strong>usada</strong> (partida 6309) queda fuera de
+        ella. Por la plata: el flete aéreo por kilo cuesta varias veces lo que vale en origen el
+        kilo de ropa usada, así que el envío entra por el 60 % y la cuenta igual no cierra. Las dos
+        mitades, con sus fuentes y con lo que no se pudo verificar, en
+        <NuxtLink :to="localePath('/ropa-por-kilo-uruguay')"
+          >ropa por kilo y fardos en Uruguay</NuxtLink
+        >.
+      </VAlert>
+
       <VRow>
         <VCol v-for="p in PRODUCT_CHECKS" :key="p.id" cols="12" md="6">
           <VCard variant="flat" class="check-card pa-4 h-100">
@@ -492,7 +513,7 @@ const faqs = [
   },
   {
     q: '¿Puedo hacer muchos envíos de US$ 800 en el año?',
-    a: 'Ni el Decreto 50/026 ni la lista de requisitos que publica la DNA establecen un tope anual o un cupo de envíos para la prestación única: los límites que publican son <strong>por envío</strong> (US$ 800 de factura y 20 kg). Lo que sí tiene tope anual es la franquicia (US$ 800 en hasta 3 envíos), y esa no la vas a usar igual. Dicho eso, fraccionar artificialmente un mismo pedido para esquivar el tope es la clase de maniobra que la Aduana mira: si tu proveedor te factura 2.400 y llegan tres cajas el mismo día, no es lo mismo que tres compras distintas.',
+    a: 'Ni el Decreto 50/026 ni la lista de requisitos que publica la DNA establecen un tope anual o un cupo de envíos para la prestación única: los límites que publican son <strong>por envío</strong> (US$ 800 de factura y 20 kg). Lo que sí tiene tope anual es la franquicia (US$ 800 en hasta 3 envíos), y esa no la vas a usar igual. Dicho eso, fraccionar artificialmente un mismo pedido para esquivar el tope es la clase de maniobra que la Aduana mira: si tu proveedor te factura 2.400 y llegan tres cajas el mismo día, no es lo mismo que tres compras distintas. Y antes del riesgo hay una cuenta: el mínimo de US$ 20 también es <strong>por envío</strong>, así que una caja de menos de US$ 20 paga más de impuesto que de mercadería — está <a href="/impuesto-temu-uruguay">calculado compra por compra acá</a>, con lo que cambia según desde dónde factura la plataforma.',
   },
   {
     q: '¿Por qué el 60% suele salir más barato que el DUA si el arancel es mucho menor?',

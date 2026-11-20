@@ -329,6 +329,7 @@ import { BANKOS_BANK_BY_ID, BANKOS_CARD_PAGE_ANCHORS, dayRestrictionLabel } from
 import type { BrandRow, OfferTier } from '~/utils/bankosBrands'
 import type { BankosAnalysis } from '~/utils/bankosAnalysis'
 import { formatUYU } from '~/utils/format'
+import { pickTitle } from '~/utils/liveRateSeo'
 import {
   MERCADO_PAGO_PROMOS,
   MERCADO_PAGO_PROMOS_REVIEWED,
@@ -342,7 +343,6 @@ import {
 import {
   BANKOS_BANK_PAGES,
   BANKOS_SHARED_FAQ,
-  bankPageSlugs,
   categoryPageForCategory,
   getBankPage,
 } from '~/utils/bankosPages'
@@ -351,7 +351,10 @@ import type { FaqItem } from '~/utils/faqAnswers'
 // Un slug fuera del catálogo es 404 de verdad. OJO: `validate` se extrae en build, así que tocar
 // la lista obliga a reiniciar el dev server.
 definePageMeta({
-  validate: route => bankPageSlugs().includes(String(route.params.banco ?? '')),
+  validate: async route => {
+    const catalogue = await import('~/utils/bankosPages')
+    return catalogue.bankPageSlugs().includes(String(route.params.banco ?? ''))
+  },
 })
 
 /** Cuántas marcas se nombran dentro de cada tramo antes del "y N más". */
@@ -600,8 +603,24 @@ defineOgImageComponent('Cambio', {
   tag: 'DESCUENTOS',
 })
 
+// El título dice cuántos comercios tiene hoy el emisor, la cifra que la página ya muestra arriba de
+// todo y lo que pregunta quien llega («comercios adheridos a anda», «tiendas con descuento itau»).
+// Sale de la misma lectura que esos números; si no vino o no entra en 60 con la marca, queda el
+// título fijo del emisor (utils/bankosPages.ts).
+const seoTitle = computed(() => {
+  const fallback = page.value?.seoTitle ?? ''
+  const brands = data.value?.totals.brands ?? 0
+  const name = bank.value?.name
+  if (!brands || !name) return fallback
+  const n = fmt(brands)
+  return pickTitle(
+    [`Descuentos ${name}: ${n} comercios adheridos`, `Descuentos ${name}: ${n} comercios`],
+    fallback
+  )
+})
+
 useSeoMeta({
-  title: () => `${page.value?.seoTitle ?? ''} | Cambio Uruguay`,
+  title: () => `${seoTitle.value} | Cambio Uruguay`,
   description: () => page.value?.seoDescription ?? '',
   ogTitle: () => page.value?.h1 ?? '',
   ogDescription: () => page.value?.seoDescription ?? '',

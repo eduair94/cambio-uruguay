@@ -362,6 +362,7 @@
 </template>
 
 <script setup lang="ts">
+import { VAutocomplete } from 'vuetify/components'
 import { Chart, LineController, LineElement, PointElement } from 'chart.js'
 import {
   carSeriesKey,

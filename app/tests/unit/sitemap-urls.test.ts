@@ -9,6 +9,8 @@ import { join, relative, resolve, sep } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { installNitroGlobals } from './helpers/nitro'
+import { EXTRA_LOCALE_CODES, LOCALE_PREFIX_RE, hasExtraLocales } from '../../utils/locales'
+import { splitLocalePath } from '../../utils/localizedRoutes'
 
 // This file needs more than the default 5s per test, and that is a property of
 // what it does rather than something to optimise away. Every scenario calls
@@ -104,6 +106,43 @@ describe('sitemap with a healthy API', () => {
     expect(locs.has('/sucursal')).toBe(true)
   })
 
+  // /sucursales/<casa>/<departamento> 404s unless the casa has a branch there in
+  // /api/branches. localData listed departments the feed did not (ten 404s in the
+  // sitemap on 2026-10-20), so the pairs come from the feed, spelled like the
+  // page's canonical: the first branch's department, lower-cased.
+  it('declares a casa/department pair only where the branch feed has a branch', async () => {
+    const urls = await runHandler(async url => {
+      if (url === '/api/branches') {
+        return {
+          branches: [
+            { slug: 'brou-1', origin: 'brou', dept: 'MONTEVIDEO' },
+            { slug: 'brou-2', origin: 'brou', dept: 'Montevideo' },
+            { slug: 'ghost-1', origin: 'ghost', dept: 'SALTO' },
+          ],
+          casas: { brou: {} },
+        }
+      }
+      return HEALTHY(url)
+    })
+    const locs = new Set(urls.map(u => u.loc))
+    expect(locs.has('/sucursales/brou/montevideo')).toBe(true)
+    expect(locs.has('/sucursales/brou/treinta y tres')).toBe(false)
+    expect(locs.has('/sucursales/ghost/salto')).toBe(false)
+    expect([...locs].filter(loc => loc.startsWith('/sucursales/brou/'))).toEqual([
+      '/sucursales/brou/montevideo',
+    ])
+  })
+
+  it('falls back to localData pairs when the branch feed is unavailable', async () => {
+    const urls = await runHandler(async url => {
+      if (url === '/api/branches') throw new Error('branch feed down')
+      return HEALTHY(url)
+    })
+    const locs = new Set(urls.map(u => u.loc))
+    expect(locs.has('/sucursales/brou/montevideo')).toBe(true)
+    expect(locs.has('/sucursales/brou/treinta y tres')).toBe(true)
+  })
+
   it('keeps the priority and changefreq the hand-written list used to emit', async () => {
     const urls = await runHandler(HEALTHY)
     const byLoc = new Map(urls.map(u => [u.loc, u]))
@@ -120,12 +159,27 @@ describe('sitemap with a healthy API', () => {
     const { guides } = await import('../../utils/guides')
     const urls = await runHandler(HEALTHY)
     const byLoc = new Map(urls.map(u => [u.loc, u]))
-    for (const guide of guides) {
+    for (const guide of guides.filter(guide => !guide.consolidatedInto)) {
       for (const prefix of ['', '/en', '/pt']) {
         expect(byLoc.get(`${prefix}/guias/${guide.slug}`)?.lastmod, guide.slug).toBe(
           guide.updatedAt
         )
       }
+    }
+  })
+
+  // Una guía consolidada no se publica en ningún idioma: su canónica es otra URL (ver
+  // `Guide.consolidatedInto` y `guideConsolidation.test.ts`). El destino sí tiene que estar.
+  it('deja fuera del sitemap la guía consolidada, y publica la página que se quedó', async () => {
+    const { guides } = await import('../../utils/guides')
+    const consolidadas = guides.filter(guide => guide.consolidatedInto)
+    expect(consolidadas.length).toBeGreaterThan(0)
+    const locs = new Set((await runHandler(HEALTHY)).map(u => u.loc))
+    for (const guide of consolidadas) {
+      for (const prefix of ['', '/en', '/pt']) {
+        expect(locs.has(`${prefix}/guias/${guide.slug}`), guide.slug).toBe(false)
+      }
+      expect(locs.has(guide.consolidatedInto!), guide.slug).toBe(true)
     }
   })
 
@@ -145,7 +199,32 @@ describe('sitemap with a healthy API', () => {
       expect(locs.has(`${prefix}/herramientas/alquiler-ideal-uruguay`)).toBe(false)
     }
   })
+
+  it('emits the machine-translated locales only on their routes, with reciprocal hreflang', async () => {
+    const urls = await runHandler(HEALTHY)
+    const extra = urls.filter(url => {
+      const { locale } = splitLocalePath(url.loc)
+      return EXTRA_LOCALE_CODES.includes(locale)
+    })
+    for (const url of extra) {
+      expect(hasExtraLocales(splitLocalePath(url.loc).path), url.loc).toBe(true)
+    }
+    const mapa = urls.find(url => url.loc === '/fr/mapa')
+    expect(mapa).toBeTruthy()
+    expect(mapa!.alternatives).toEqual(
+      expect.arrayContaining([
+        { hreflang: 'fr', href: '/fr/mapa' },
+        { hreflang: 'zh-CN', href: '/zh/mapa' },
+        { hreflang: 'es-ES', href: '/mapa' },
+      ])
+    )
+    const guias = urls.find(url => url.loc === '/guias')
+    expect(guias?.alternatives?.some(alt => alt.hreflang === 'fr')).toBe(false)
+    expect(locsOf(urls).has('/fr/guias')).toBe(false)
+  })
 })
+
+const locsOf = (urls: SitemapUrl[]) => new Set(urls.map(url => url.loc))
 
 describe('sitemap when the API is down', () => {
   it('still serves the full static backbone instead of an empty sitemap', async () => {
@@ -291,12 +370,12 @@ describe('cada URL que el sitemap declara existe en el router', () => {
   it('no declara ninguna URL que el router no resuelva', async () => {
     const urls = await runHandler(HEALTHY)
     // Los prefijos de idioma los agrega el emisor sobre la misma ruta española, así que se miden
-    // una vez: comprobar `/en/x` y `/pt/x` repetiría el mismo hallazgo tres veces.
+    // una vez: comprobar `/en/x`, `/pt/x` o `/fr/x` repetiría el mismo hallazgo en cada idioma.
     const broken = [
       ...new Set(
         urls
           .map(url => url.loc)
-          .filter(loc => !/^\/(?:en|pt)(?:\/|$)/.test(loc))
+          .filter(loc => !LOCALE_PREFIX_RE.test(loc))
           .filter(loc => !resolvesInRouter(loc))
       ),
     ].sort()

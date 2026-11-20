@@ -138,7 +138,10 @@ function apply(zones: RentalZonePreferences) {
     neighborhoods: zones.include.map(zone => zone.neighborhood),
     type: 'vivienda',
   })
-  return navigateTo({ path: localePath('/alquileres-uruguay'), query: rentalQueryToParams(query) })
+  return navigateTo({
+    path: localePath('/alquileres-uruguay'),
+    query: rentalQueryToParams(query, { includeReference: false }),
+  })
 }
 </script>
 <style scoped>

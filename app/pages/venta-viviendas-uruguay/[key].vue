@@ -50,6 +50,10 @@
             :source-name="propertySaleSourceName(property.source)"
             :source-url="property.url"
           />
+          <ListingPresentationButton
+            :source="{ kind: 'sale', property, priceHistory: data.priceHistory }"
+            class="sale-detail__presentation"
+          />
           <section
             v-if="property.conditions.length"
             class="sale-detail__section sale-detail__conditions"
@@ -83,6 +87,11 @@
             />
             <p v-else>{{ t('noDescription') }}</p>
           </section>
+          <!-- La unidad intermedia de la ficha, en el primer corte después de lo
+               que la persona vino a ver (las condiciones y la descripción). La ficha
+               es densidad normal: con el cierre del layout son dos, el tope de
+               maxAdSlots. Ver docs/seo/adsense-growth-loop.md, decimotercera iteración. -->
+          <AdSlot placement="in-article" />
           <section v-if="property.amenities.length" class="sale-detail__section">
             <h2>{{ t('amenities') }}</h2>
             <ul class="sale-detail__amenities">
@@ -442,6 +451,9 @@ defineOgImageComponent('Cambio', {
 .sale-detail__aside {
   min-width: 0;
 }
+.sale-detail__presentation {
+  margin-top: 16px;
+}
 /* Fija la columna lateral ENTERA, no sólo la tarjeta: con la tarjeta sola, el enlace "¿Comprar o
    alquilar?" que la sigue seguía de largo con el scroll y su flecha cruzaba por encima de la
    tarjeta fija (medido el 2026-10-04). Sólo en escritorio: en móvil la columna va arriba. */
@@ -599,6 +611,11 @@ defineOgImageComponent('Cambio', {
   .sale-detail__main > .sale-gallery {
     order: 0;
     width: 100%;
+  }
+  /* El botón es el video de esas fotos: va pegado a la galería. Con el `gap` de 24px de la
+     columna más su propio margen quedaba a 40px, más lejos de ella que de lo que sigue. */
+  .sale-detail__main > .sale-detail__presentation {
+    margin-top: -8px;
   }
   .sale-detail__facts {
     padding: 16px;

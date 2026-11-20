@@ -661,18 +661,20 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
         'decreto-50-026',
         'rg-dna-10-2026',
         'rg-dna-21-2026',
+        'rg-dna-26-2026',
         'dna-vendedores-registrados',
         'ley-20446',
       ],
       steps: [
-        'No busques un papel para "arreglar" la parte (a): si el vendedor no está registrado ante la DNA, no hay documento que vos puedas presentar. La exoneración de IVA no aplica y el envío tributa. Es una decisión del vendedor, no tuya.',
-        'Antes de comprar (a partir del 1/10/2026), verificá el registro en la página oficial «Régimen de Franquicia» de la DNA. Al 26/07/2026 publica seis empresas: Xipron Inc (Tiendamía), United States Xpress Inc, Grinbox Corp, Netbox Corp, Miami box latinoamérica LLC y Eshop Miami INC. Usá siempre la lista oficial, porque puede cambiar.',
+        'No busques un papel para "arreglar" la parte (a): si el vendedor no está registrado ante la DNA, no hay documento que vos puedas presentar. La exoneración de IVA no aplica y el envío tributa. El alta la pide la propia empresa o, desde el 5/10/2026, tu operador postal: vos no podés pedirla ante la DNA.',
+        'El registro ya se exige: antes de comprar, verificá que el vendedor figure en la lista de la página oficial «Régimen de Franquicia» de la DNA, que la DNA está obligada a publicar (RG 26/2026 num. 4). Al 26/07/2026 publicaba seis empresas: Xipron Inc (Tiendamía), United States Xpress Inc, Grinbox Corp, Netbox Corp, Miami box latinoamérica LLC y Eshop Miami INC; desde el 5/10/2026 la DNA puede sumar empresas de oficio, así que usá siempre la lista vigente.',
+        'Si el vendedor no figura, pedile a tu courier o al Correo que solicite el alta: el operador postal la pide por LUCIA con el nombre, el domicilio de residencia fiscal y el criterio con que lo comprobó, y la DNA la analiza en 48 horas hábiles (RG 26/2026 nums. 2 y 3). Es una facultad del operador, no una obligación, y la resolución no dice si un alta posterior alcanza a un envío que ya se declaró.',
         'Para la parte (b): registrate en el registro de identidad de la DNA (RG 10/2026), con identidad digital de nivel intermedio (verificado) o superior, vía LUCIA en la web de la DNA. Hoy es voluntario (num. 1.2 y 7); cuando pase a obligatorio, sin registro no se libera la mercadería.',
         'Pagá siempre con tu propia tarjeta, a tu nombre, y que el destinatario del envío seas vos. Si la tarjeta es de otra persona, perdés la franquicia (Decreto 50/026 art. 4 lit. e).',
         'Si el envío ya está retenido pidiéndote documentación, seguí los pasos de «El paquete quedó retenido en la aduana».',
       ],
       deadline:
-        'El registro del vendedor es exigible desde el 1/10/2026 (RG 21/2026 num. 1). El registro del comprador es voluntario hasta que la DNA lo comunique (RG 10/2026 num. 7).',
+        'El registro del vendedor es exigible desde el 1/10/2026 (RG 21/2026 num. 1); la validación automática de LUCIA corre desde el 3/11/2026 (RG 26/2026 num. 10). El registro del comprador es voluntario hasta que la DNA lo comunique (RG 10/2026 num. 7).',
       claimBody: 'dna',
       claimTemplate:
         'Montevideo, {{fecha}}\n\nDirección Nacional de Aduanas — Área Gestión de Comercio Exterior\nRef.: Exoneración de IVA — Acuerdo Comercial EE.UU. — guía {{tracking}}\n\nQuien suscribe, [NOMBRE], CI [CI], destinatario del envío postal internacional guía {{tracking}},\nDICE:\n\n1. Que el envío procede de Estados Unidos de América, país declarado habilitado por el numeral 1\n   del Anexo I de la Resolución General DNA N° 09/2026.\n\n2. Que la factura comercial que acompaña el envío fue emitida por [VENDEDOR], y que conforme al\n   numeral 10 del Anexo I de la citada Resolución, su emisor se encuentra registrado ante la\n   Dirección Nacional de Aduanas. {{descripcion}}\n\n3. Que el valor de factura no supera los USD 200, umbral de la exoneración prevista en el artículo 7\n   de la Ley 18.761 (Acuerdo Marco sobre Comercio e Inversión con los Estados Unidos de América).\n\n4. Que se ha liquidado Impuesto al Valor Agregado sobre el envío, pese a cumplirse las condiciones\n   del artículo 3 del Decreto 50/026.\n\nPETITORIO: se revise la liquidación practicada y se aplique la exoneración del Impuesto al Valor\nAgregado que corresponde al envío de referencia.\n\n[FIRMA] — [NOMBRE] — CI [CI] — [TELÉFONO] — [EMAIL]',
@@ -789,8 +791,8 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       id: 'prohibido-o-restringido',
       title: 'Trae algo que necesita permiso (MSP, URSEC, MGAP)',
       symptom: 'Trae algo que necesita permiso (MSP, URSEC, MGAP)',
-      norm: 'El régimen de EPI no se aplica en ningún caso a mercadería gravada por IMESI, y puede no aplicarse a mercadería restringida — aquella que requiere autorización de algún organismo competente para su importación, exportación o comercialización (Ley 20.446 art. 633). El Decreto 50/026 art. 7 no se aplica a mercadería gravada por IMESI ni a la que requiera autorización de un organismo competente y carezca de ella, pero da la salida: si aún no se produjo el despacho, el interesado puede devolverla a su costo al lugar de procedencia dentro del plazo de 30 días, siempre que no haya incurrido en incumplimiento de la normativa vigente. El corte legal es el DESPACHO, no la verificación: que la DNA haya abierto o revisado el envío no cierra esta puerta. Libros y medicamentos de uso personal quedan exceptuados tanto del tope de USD 800 (art. 4 inc. final) como de los 3 envíos (RG DNA 11/2026 num. 26), los medicamentos sólo con la debida autorización del MSP. Quién autoriza qué, y con qué límite: MSP — el MSP no autoriza el ingreso de productos de salud del exterior por particulares (Decreto 18/020 art. 19); la única puerta es la excepción de producto no registrado, con prescripción médica específica, consentimiento informado y sin equivalente registrado en el país, así que para el resto no hay trámite que puedas iniciar vos. URSEC — equipos radioeléctricos, con certificado previo que la propia persona física tramita en VUCE (celular, router con módem celular, GPS, handy, cámara con conexión celular); pero URSEC NO interviene cuando el dispositivo opera únicamente en 2,4 GHz y/o 5,8 GHz con Wi-Fi 802.11 o Bluetooth 802.15 — auriculares, mouse, smartwatch, joystick, cámaras y similares (Resoluciones URSEC 275/021 y 297/021). MGAP — acá no hay trámite que hacer: la Resolución MGAP 1.720/021 PROHÍBE ingresar por correo o encomienda semillas, plantas, frutas y verduras frescas, animales vivos, alimentos de origen animal, fertilizantes y plaguicidas, sin franja de uso personal, y no encontramos ningún trámite dirigido a persona física para traerlos.',
-      sourceIds: ['ley-20446-633', 'decreto-50-026', 'dna-prohibidos'],
+      norm: 'El régimen de EPI no se aplica en ningún caso a mercadería gravada por IMESI, y puede no aplicarse a mercadería restringida — aquella que requiere autorización de algún organismo competente para su importación, exportación o comercialización (Ley 20.446 art. 633). El Decreto 50/026 art. 7 no se aplica a mercadería gravada por IMESI ni a la que requiera autorización de un organismo competente y carezca de ella, pero da la salida: si aún no se produjo el despacho, el interesado puede devolverla a su costo al lugar de procedencia dentro del plazo de 30 días, siempre que no haya incurrido en incumplimiento de la normativa vigente. El corte legal es el DESPACHO, no la verificación: que la DNA haya abierto o revisado el envío no cierra esta puerta. Libros y medicamentos de uso personal quedan exceptuados tanto del tope de USD 800 (art. 4 inc. final) como de los 3 envíos (RG DNA 11/2026 num. 26), los medicamentos sólo con la debida autorización del MSP. Quién autoriza qué, y con qué límite: MSP — el propio MSP publica que «no autoriza el ingreso al país de productos de salud del exterior por particulares», y nombra entre ellos a los medicamentos, los suplementos y los cosméticos; la única puerta es la excepción de producto no registrado, con prescripción médica específica, consentimiento informado y sin equivalente registrado en el país (para un medicamento, la sostiene el art. 19 del reglamento aprobado por el Decreto 18/020), así que para el resto no hay trámite que puedas iniciar vos. URSEC — equipos radioeléctricos, con certificado previo que la propia persona física tramita en VUCE (celular, router con módem celular, GPS, handy, cámara con conexión celular); pero URSEC NO interviene cuando el dispositivo opera únicamente en 2,4 GHz y/o 5,8 GHz con Wi-Fi 802.11 o Bluetooth 802.15 — auriculares, mouse, smartwatch, joystick, cámaras y similares (Resoluciones URSEC 275/021 y 297/021). MGAP — acá no hay trámite que hacer: la Resolución MGAP 1.720/021 PROHÍBE ingresar por correo o encomienda semillas, plantas, frutas y verduras frescas, animales vivos, alimentos de origen animal, fertilizantes y plaguicidas, sin franja de uso personal, y no encontramos ningún trámite dirigido a persona física para traerlos.',
+      sourceIds: ['ley-20446-633', 'decreto-50-026', 'dna-prohibidos', 'msp-productos-salud'],
       steps: [
         'Primero fijate si ese permiso existe para vos: la Resolución MGAP 1.720/021 PROHÍBE ingresar por correo o encomienda semillas, plantas, frutas y verduras frescas, animales vivos, alimentos de origen animal, fertilizantes y plaguicidas, y no hay trámite de persona física para traerlos; el MSP tampoco autoriza el ingreso de productos de salud por particulares, salvo la excepción de producto no registrado. Si tu envío cae ahí, saltá directo al paso de la devolución a origen. Si el permiso sí existe (URSEC para equipos radioeléctricos, y no para los que funcionan sólo con Wi-Fi o Bluetooth en 2,4/5,8 GHz), conseguí el certificado del organismo ANTES de pedir agenda en Aduana: para retirar envíos con mercadería de ingreso restringido y retenidos, hace falta el certificado de autorización del organismo correspondiente antes de cualquier trámite en Aduana.',
         'Con el certificado en mano, seguí los pasos de «El paquete quedó retenido en la aduana».',
@@ -1049,11 +1051,20 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       kind: 'norma',
     },
     {
+      id: 'rg-dna-26-2026',
+      title:
+        'Registro de empresas extranjeras: alta de oficio y a pedido del operador postal, lista publicada por la DNA y validación automática corrida al 3/11/2026',
+      norm: 'RG DNA 26/2026 (13/08/2026, vigente desde el 05/10/2026)',
+      url: 'https://www.aduanas.gub.uy/innovaportal/file/28724/1/rg-26-2026-exoneracion-iva-encomiendas-postales.pdf',
+      checkedAt: '2026-10-31',
+      kind: 'norma',
+    },
+    {
       id: 'dna-vendedores-registrados',
       title: 'DNA — régimen de franquicia y empresas extranjeras registradas',
       norm: 'portal oficial del régimen vigente desde el 01/05/2026',
       url: 'https://www.aduanas.gub.uy/innovaportal/v/28221/1/innova.front/',
-      checkedAt: '2026-07-26',
+      checkedAt: '2026-10-31',
       kind: 'pagina-oficial',
     },
     {
@@ -1280,6 +1291,15 @@ export const ADUANA_FALLBACK: PublicAduanaPayload = {
       norm: 'procedimiento oficial (09/01/2026)',
       url: 'https://www.aduanas.gub.uy/innovaportal/v/28229/1/innova.front/',
       checkedAt: '2026-07-12',
+      kind: 'pagina-oficial',
+    },
+    {
+      id: 'msp-productos-salud',
+      title:
+        'MSP — ¿Puedo ingresar al país productos de salud desde el exterior? (no autoriza el ingreso por particulares; excepción del producto no registrado)',
+      norm: 'página oficial del MSP',
+      url: 'https://www.gub.uy/ministerio-salud-publica/Puedo-ingresar-al-pa%C3%ADs-productos-de-salud-desde-el-exterior',
+      checkedAt: '2026-10-31',
       kind: 'pagina-oficial',
     },
     {

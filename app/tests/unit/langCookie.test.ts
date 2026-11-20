@@ -69,7 +69,12 @@ describe('redundantLangLocale', () => {
 
   it('no reconoce un idioma que el router no prefija', () => {
     expect(redundantLangLocale('/es/guias')).toBe('es')
-    expect(redundantLangLocale('/fr/guias')).toBe('es')
+    expect(redundantLangLocale('/xx/guias')).toBe('es')
+  })
+
+  it('reconoce los idiomas traducidos por máquina, que también llevan prefijo', () => {
+    expect(redundantLangLocale('/fr/mapa')).toBe('fr')
+    expect(redundantLangLocale('/zh')).toBe('zh')
   })
 })
 

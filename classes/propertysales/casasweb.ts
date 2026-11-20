@@ -4,7 +4,7 @@ import * as cheerio from "cheerio";
 import { rentalDescription, rentalImages } from "../rentals/details";
 import { canonicalDepartment, flatten, parseCurrency, parseMoney } from "../rentals/normalize";
 import { fetchText } from "../rentals/net";
-import { casaswebSearchUrl, readCasaswebPager } from "../rentals/sources/casasweb";
+import { casaswebCardArea, casaswebCardsUnrecognised, casaswebSearchUrl, readCasaswebCard, readCasaswebPager } from "../rentals/sources/casasweb";
 import type { OpportunityListing } from "../propertyopportunities/types";
 import type { OpportunityMoney } from "../propertyopportunities/types";
 
@@ -144,26 +144,42 @@ export async function confirmCasaswebSaleCurrencies(harvest: CasaswebSaleHarvest
   return { ...harvest, listings, priceChecks: { checked, confirmedUsd, withheld: listings.filter(row => row.price.currency !== "USD").length } };
 }
 
-/** The exact own-source sale card is the only scope; nearby rental/seasonal prices are ignored. */
+/**
+ * The exact own-source sale card is the only scope; nearby rental/seasonal prices are ignored.
+ * Type, barrio and surface are read like the rental cards (`readCasaswebCard`): the 2026-11 cards
+ * moved type and barrio into a badge, and the old reading took "edificados:area total:" for the type
+ * and dropped every card. A page whose cards mostly name no barrio is not a page this reader knows,
+ * and counts as a failed page (null) rather than as an empty one.
+ */
 export function readCasaswebSalePage(html: string, readAt: string): CasaswebSalePage | null {
-  if (!Number.isFinite(Date.parse(readAt))) return null;
+  return readSalePage(html, readAt).page;
+}
+
+/** `cardsUnrecognised`: the portal served its search page, and its cards are what this reader cannot read. */
+function readSalePage(html: string, readAt: string): { page: CasaswebSalePage | null; cardsUnrecognised: boolean } {
+  const unread = { page: null, cardsUnrecognised: false };
+  if (!Number.isFinite(Date.parse(readAt))) return unread;
   const $ = cheerio.load(html);
   const count = clean($("body").text()).match(/([\d.,]+)\s+Resultados\b/i);
-  if (!count || !$("select[id$=drpNegocio] option[value=V][selected]").length) return null;
+  if (!count || !$("select[id$=drpNegocio] option[value=V][selected]").length) return unread;
   const listings: OpportunityListing[] = [], unavailableIds: string[] = [];
+  let cards = 0, placed = 0;
   $("a[href]").each((_, node) => {
     const card = $(node), href = card.attr("href") || "";
     if (!/^\/?VENTA_[^/?#]+_CW\d+$/i.test(href) || !card.find(".item-info").length) return;
+    cards++;
+    const facts = readCasaswebCard(card);
+    if (facts.neighborhood) placed++;
     const location = card.find(".tipo-propiedad-zona small");
     const label = clean(location.eq(1).find("strong").text());
     const id = /^CW(\d{1,18})$/.exec(label)?.[1];
     if (!id || !href.endsWith(`_CW${id}`)) return;
     const title = clean(card.find(".item-title h3").text());
     if (/\b(?:reservad[oa]|vendid[oa])\b/i.test(title)) { unavailableIds.push(`sale:casasweb:${id}`); return; }
-    const declaredType = flatten(clean(location.eq(0).find("b").clone().children().remove().end().text()).replace(/\s*-\s*$/, ""));
+    const declaredType = flatten(facts.declaredType);
     const propertyType = declaredType === "apartamento" ? "apartamento" : declaredType === "casa" ? "casa" : null;
     const department = canonicalDepartment(clean(location.eq(1).clone().find("strong").remove().end().text()));
-    const neighborhood = clean(location.eq(0).clone().find("b").remove().end().text());
+    const neighborhood = facts.neighborhood;
     const prices = card.find(".item-precio .precio").filter((_, n) => /^VENTA$/i.test(clean($(n).find("h3").text())));
     if (prices.length !== 1) return;
     const priceNode = prices.first().find("h2");
@@ -175,8 +191,7 @@ export function readCasaswebSalePage(html: string, readAt: string): CasaswebSale
     const bedrooms = details.match(/(\d+)\s+Dormitorios?/i);
     const parking = details.match(/Garaje\s*\((\d+)\)/i);
     const bathrooms = title.match(/\b(\d+)\s+baños?\b/i);
-    const rawArea = clean(location.eq(0).find("i").text()).match(/([\d.,]+)\s*m/i);
-    const reported = rawArea ? parseMoney(rawArea[1]!) : null;
+    const reported = casaswebCardArea(facts, propertyType);
     const images = rentalImages([card.find("img.card-img").attr("src")]);
     listings.push({
       id: `sale:casasweb:${id}`, operation: "sale", source: "casasweb", listingId: `casasweb:${id}`,
@@ -193,7 +208,8 @@ export function readCasaswebSalePage(html: string, readAt: string): CasaswebSale
       riskFlags: [...(/\bProyecto\b/.test(details) ? ["project" as const] : []), ...(/\bRenta\b/.test(details) ? ["occupied" as const] : [])],
     });
   });
-  return { listings, unavailableIds, total: Number(count[1]!.replace(/[.,]/g, "")), nextUrl: readCasaswebPager($).nextUrl };
+  if (casaswebCardsUnrecognised(cards, placed)) return { page: null, cardsUnrecognised: true };
+  return { page: { listings, unavailableIds, total: Number(count[1]!.replace(/[.,]/g, "")), nextUrl: readCasaswebPager($).nextUrl }, cardsUnrecognised: false };
 }
 
 /** Breadth first across all departments; bounded partial readings never retire unseen IDs. */
@@ -217,9 +233,15 @@ export async function harvestCasaswebSales(options: {
     pagesRequested++;
     let html: string | null = null;
     try { html = await fetchPage(queue.url); } catch { /* Keep prior source reads. */ }
-    const parsed = html ? readCasaswebSalePage(html, now().toISOString()) : null;
+    const read = html ? readSalePage(html, now().toISOString()) : { page: null, cardsUnrecognised: false };
+    const parsed = read.page;
     if (!parsed) {
       queue.active = false; failedPages++;
+      // Cards this reader cannot read come back the same on every read and say the portal is up:
+      // they do not count toward the outage stop, or three adjacent ones would end the sweep and
+      // the harvest would be refused. A change on every page still fails every search, and
+      // `casaswebHarvestRefusal` refuses a harvest with that many failed pages.
+      if (read.cardsUnrecognised) { consecutiveFailures = 0; continue; }
       if (++consecutiveFailures >= 3) break sweep;
       continue;
     }

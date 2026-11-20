@@ -21,6 +21,18 @@
 // arriba: ahí el riesgo era publicar dos filas que se pisan, acá es gastar la corrida averiguando
 // que no había nada que publicar.
 //
+// Desde el 2026-10-20 los CINCO pozos declaran su lista y el informe cruza las 99 rutas, no 53. Los
+// dos que faltaban declaraban sólo un número, así que para esos tres contadores la respuesta vivía
+// en el comentario del presupuesto, en prosa y con la fecha de liberación a mano. Medido ese día:
+// 3 libres de 99, y las 46 agregadas estaban todas reservadas — o sea que la corrida anterior sacó
+// esa misma conclusión a mano, que es exactamente el gasto que describe el párrafo de arriba.
+//
+// Y desde el 2026-11-02 son SEIS. El sexto no es deuda que alguien dejara para después: es un
+// AGUJERO de medición. `seoDescriptionBudget.test.ts` declaró su pozo pagado en 0, y era verdad de
+// lo que medía —sólo cadenas entre comillas—, así que las 13 descripciones escritas con PLANTILLA
+// no las veía nadie y cuatro ya salían cortadas del SERP contando sólo su texto fijo. Las
+// plantillas se miden por PISO (su texto fijo), que condena y no absuelve.
+//
 // LA REGLA, Y DE DÓNDE SALE. El test de solape marca un par cuando `|Δfecha| ≤ 28`, o sea que una
 // fila nueva es segura recién al día 29. Por eso la reserva es `EXPERIMENT_WINDOW_DAYS + 1` y no la
 // ventana: 28 días es cuánto mide el libro, 29 es a partir de cuándo se puede declarar otra cosa
@@ -97,6 +109,9 @@ export function reserveReport(items: DebtRoute[], specs: ExperimentSpec[], today
     .sort((a, b) => a.freeOn.localeCompare(b.freeOn) || a.pool.localeCompare(b.pool) || a.route.localeCompare(b.route));
 }
 
+/** Lo que un pozo pagado escribe dentro de su lista para que el lector no lo lea como una falla. */
+export const PAID_OFF_MARKER = "POZO PAGADO";
+
 /**
  * Las cadenas de un `const NOMBRE = [ '...', '...' ]` de un archivo TypeScript.
  *
@@ -109,6 +124,14 @@ export function reserveReport(items: DebtRoute[], specs: ExperimentSpec[], today
  * TIRA EXCEPCIÓN si no encuentra el `const` o si la lista queda vacía, y eso es la mitad del valor:
  * el modo de fallar de un lector así es devolver `[]` y declarar que no hay deuda, que se ve igual
  * que «no hay nada que hacer». Un `const` renombrado tiene que romper el informe, no vaciarlo.
+ *
+ * LA ÚNICA EXCEPCIÓN es un pozo que de verdad se terminó, y hace falta porque el 2026-10-27 pasó
+ * por primera vez: `DEUDA_SIN_MIGAS` llegó a cero y el informe entero dejó de correr, porque una
+ * lista legítimamente vacía es indistinguible de la falla contra la que esta función existe. No
+ * alcanza con mirar si el cuerpo quedó en blanco —una lista con sólo un comentario también queda
+ * en blanco al limpiarla, y ese caso TIENE que seguir rompiendo (`debt_free.test.ts` lo fija)—,
+ * así que la diferencia no se adivina: el pozo la declara en voz alta con la marca `POZO PAGADO`
+ * y el lector la busca en el cuerpo crudo. Un pozo que se vacía sin decirlo sigue siendo un error.
  */
 export function parseStringList(source: string, constName: string): string[] {
   const head = source.indexOf(`const ${constName} = [`);
@@ -116,12 +139,11 @@ export function parseStringList(source: string, constName: string): string[] {
   const open = source.indexOf("[", head);
   const close = source.indexOf("\n]", open);
   if (close === -1) throw new Error(`\`${constName}\` no cierra con un \`]\` al principio de línea`);
-  const body = source
-    .slice(open + 1, close)
-    .replace(/\/\/[^\n]*/g, "")
-    .replace(/\/\*[\s\S]*?\*\//g, "");
+  const raw = source.slice(open + 1, close);
+  const body = raw.replace(/\/\/[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, "");
   const values = [...body.matchAll(/'((?:[^'\\]|\\.)*)'/g)].map((match) => match[1]!);
-  if (!values.length) throw new Error(`\`${constName}\` quedó vacía: el lector no reconoce su forma`);
+  if (!values.length && !raw.includes(PAID_OFF_MARKER))
+    throw new Error(`\`${constName}\` quedó vacía: el lector no reconoce su forma`);
   return values;
 }
 

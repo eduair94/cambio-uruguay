@@ -125,6 +125,40 @@ listas curadas `/couriers-uruguay` y `/apps-utiles-uruguay` siguen en `otro` a p
 son fichas de un relevamiento propio y a una familia que no se midió no se le inventa un
 multiplicador.
 
+**Y la mitad simétrica, que es la que más páginas toca (2026-10-22).** El cotejo del 14/10 preguntó
+si cada directorio que el sitio declara está valuado como directorio. La pregunta al revés —qué pasa
+con las páginas que el sitio declara CONTENIDO— no la cotejaba nada, y la respuesta era peor:
+**de las 223 páginas raíz, 161 caían en `otro` y valían 1×** teniendo la forma del tramo que mide 8×.
+El motivo es el mismo accidente de plegado: `bucketOf` sólo pliega las familias que se abren en
+muchas URLs, así que `/guias/<x>` cae en `/guias/*` y cobra su tramo, pero una página de problema con
+ruta propia conserva su path entero y tiene que estar listada a mano en `CONTENIDO_PATHS`. Esa lista
+se llenaba desde la alerta `unclassified-families`, que sólo nombra lo que GA4 reportó CON tráfico en
+la ventana, así que una página sin muestra nunca se asomaba por ahí. La consecuencia es la de
+siempre, en el sentido contrario: una página de problema quedaba OCHO VECES por debajo de la guía
+equivalente de `/guias/*` —la misma clase de página y la misma intención de búsqueda, a un lado y al
+otro de una línea que no quiso decir nada— y 5× por encima de un directorio en vez de 40×.
+
+Lo cotejable es con QUÉ se compara, y acá hay un segundo registro que ya existía y que tiene plata de
+por medio: `adDensityForPath` (`app/utils/ads.ts`) le da a cada ruta `normal` —dos unidades EN FLUJO,
+«the long reads where an in-flow unit is ordinary and expected»— o `light` —una sola, después del
+contenido, en «tool and rate surfaces»—. No es una pista de la diferencia de RPM, es su mecanismo, y
+el `why` de `TIER_DATO_VIVO` ya razonaba desde ahí mucho antes del cotejo («cotización, conversor,
+histórico, sucursal: alrededor del promedio del sitio, **y una sola unidad de anuncio**»). Los dos
+registros coinciden donde los dos opinan: cero páginas `normal` valuadas `dato-vivo` y cero páginas
+`light` valuadas `contenido`. Lo cuida `app/tests/unit/contenidoTramoParity.test.ts`, que exige que
+toda página de lectura larga esté valuada como contenido, como directorio medido, o declarada con su
+motivo.
+
+La primera tanda entró corta a propósito, por la regla 3 de arriba: **84 de las 161**, y las otras 62
+quedan en `otro` y en la alerta como deuda que sólo puede bajar. La línea es mecánica y por eso la
+tanda es reproducible: no se promueve una página que pide un dato en vivo en su propio
+`<script setup>`, porque desde el repo una guía que muestra una cifra fresca —la de préstamos, que es
+la familia que más rinde— y una serie viva con texto alrededor se ven igual. Cinco páginas no las
+decide esa línea y llevan su motivo escrito (dos son un relevamiento y tres tienen el cuerpo hecho de
+la cifra misma), y las tres listas curadas y las doce que no son páginas de lectura quedan afuera por
+lo mismo que ya las dejaba afuera el cotejo de directorios: llevan `normal` porque es el DEFAULT de
+`ads.ts`, no porque alguien las haya juzgado lectura larga.
+
 ### Por qué el orden sobrevive a que no haya plata medida
 
 El enlace AdSense↔GA4 es del 2026-09-02 y el ingreso diario del sitio, cuando esto se escribió,
@@ -167,6 +201,8 @@ Detalles que costaron pensarse:
   salen del mismo documento por día.
 - **Una página nueva se mide contra cero, no con un cociente imposible.** Cero clics previos no es
   ruido: es cero de verdad, y lo único que se quería saber es si la página existe en la búsqueda.
+  También espera los 28 días archivados: alcanzar diez clics antes de cerrar la ventana muestra
+  progreso, no un veredicto. Al cerrar, diez o más clics dan «mejoró» y menos dan «sin cambio».
 - **Un cambio que toca todo el sitio no se puede declarar acá.** Sin páginas de control, el sujeto es
   el denominador y siempre da "sin cambio". La barra de familia (`ce35e4b5`) y el bloque de temas
   (`c10fb0ab`) son de ese tipo y quedaron fuera a propósito.
@@ -229,11 +265,45 @@ la razón que el test de solape ya da para sus testigos. La reserva es `EXPERIME
 página sin poner CI en rojo, y la diferencia de un día es justo el día en que alguien se equivocaría.
 `tests/revenueplan/debt_free.test.ts` fija ese borde y la lectura de las tres listas reales.
 
-No cubre los otros dos pozos (las migas de `seoContract` y los snippets de guía de
-`guideSnippetBudget`): declaran un número y calculan sus miembros desde el árbol de páginas, así que
-nombrarlos pediría reimplementar esa cuenta, y una segunda cuenta que se separa de la primera en
-silencio es lo que todo este archivo evita. Cubrirlos pide que esos dos trinquetes declaren sus
-miembros como los otros tres.
+**Desde el 2026-10-20 cubre los cinco pozos**, que son 99 rutas y no 53. Los dos que faltaban —las
+migas de `seoContract` y los dos snippets pasados de `guideSnippetBudget`— declaraban un número y
+calculaban sus miembros desde el árbol de páginas y el catálogo de guías, así que nombrarlos acá
+habría pedido reimplementar esa cuenta, y una segunda cuenta que se separa de la primera en silencio
+es lo que todo este archivo evita. La salida no era reimplementarla sino la que este párrafo ya
+pedía: que esos dos trinquetes **declaren sus miembros como los otros tres**. Ahora los declaran
+(`DEUDA_SIN_MIGAS`, `DEUDA_TITULO_LARGO`, `DEUDA_DESCRIPCION_LARGA`) y además los exigen EXACTOS,
+igual que las otras tres listas, así que el presupuesto deja de poder compensarse solo: antes
+arreglar una guía y pasarse con otra dejaba el contador en 16 y nada avisaba.
+
+Lo que costaba no era el cruce sino DÓNDE vivía la respuesta. La pregunta que abre cada corrida —de
+la deuda que queda, cuál se puede tocar hoy— se contestaba para esos tres pozos leyendo el
+comentario de cada presupuesto, que la traía en prosa y con la fecha de liberación escrita a mano
+(«las diez entran cuando su ventana cierre, la última el 2026-10-26»). Una fecha a mano envejece sin
+avisar y es el mismo modo de fallar que el informe entero existe para no tener. Medido el 2026-10-20,
+la primera corrida con los cinco pozos: 3 rutas libres de 99, y las 46 que se agregaron estaban todas
+reservadas —8 migas y 38 snippets—, o sea que el día anterior esa conclusión se sacaba a mano.
+
+Sigue sin cubrir lo que no es deuda de ruta, y no hay nada que cubrir: los dos pozos nuevos son de
+`app/`, así que el guard de la raíz los lee como texto por la misma razón que los otros tres
+(`tests/revenueplan/debt_free.test.ts`).
+
+**Y desde el 2026-11-02 son SEIS, por un motivo distinto a los cinco anteriores.** Los cinco
+primeros son deuda que alguien midió y dejó para después. El sexto salió de un AGUJERO en la
+medición: `app/tests/unit/seoDescriptionBudget.test.ts` cerró su pozo en 0 el 2026-10-29 y escribió
+que de ahí en adelante el cero era un contrato —«una descripción que se pase de 155 es una que se
+escribió hoy»—, pero su lector sólo reconoce cadenas entre comillas unidas con `+`. Las
+descripciones escritas con una PLANTILLA (acento invertido) devolvían `null` y se caían del conteo
+sin aparecer en ninguna lista: son 13, y **4 ya pasaban los 155 contando sólo su texto fijo**, la
+peor con 498 caracteres en `/vivir-con-25000-pesos-uruguay`, que es del tramo `contenido` (8×). Es
+exactamente el modo de fallar de `/sillas-de-escritorio-uruguay` en `value.ts`, un nivel más arriba:
+no una medición en rojo, una medición que no alcanza a la página, y por eso se lee igual que «acá no
+hay deuda».
+
+Las plantillas se miden por **PISO**: su texto fijo, ignorando los `${...}`, que en tiempo de render
+sólo pueden agregar caracteres. Así que el piso **condena y no absuelve** —un piso pasado de 155
+sale cortado con cualquier dato, y un piso por debajo no prueba nada: hay páginas con 147 fijos y
+cuatro huecos—. Por eso este pozo no se declara pagado, y el test lo fija con un caso propio para
+que su cero no se lea como un contrato igual que el de arriba.
 
 ---
 
@@ -257,8 +327,8 @@ miembros como los otros tres.
 | guarda | qué ataja |
 |---|---|
 | `planIsThin` | `currency-gsc` falló hoy → cola casi vacía que en la pantalla se ve igual que "no hay nada para hacer". No pisa un plan de ≥ 10 acciones con uno que trae menos del 40 %. La negativa caduca a los 7 días. |
-| `MAX_ARCHIVE_DAYS = 90` | cada documento del archivo lleva hasta 5.000 consultas y 3.000 páginas; sin tope, agregar experimentos degrada en silencio hasta un OOM. Lo que se cae es lo viejo, nunca lo recién publicado. |
-| veredictos cerrados se reusan | una ventana cerrada no cambia; releerla todos los días es leer el archivo entero para nada. `sin datos` y `esperando` sí se recalculan, porque un `--backfill` puede haber agregado justo los días que faltaban. |
+| `MAX_ARCHIVE_DAYS = 90` | cada documento del archivo lleva hasta 5.000 consultas y 3.000 páginas; sin tope, agregar experimentos degrada en silencio hasta un OOM. El rango llega como máximo a hoy: los días futuros de una fila recién publicada no consumen presupuesto ni expulsan ventanas que ya se pueden medir. Si todavía no entra todo, se prioriza lo reciente. |
+| veredictos cerrados se reusan | sólo se reusan con 28 días posteriores y cero días faltantes, además del mismo sujeto y fecha. Un veredicto legado sobre una ventana incompleta se recalcula, igual que `sin datos` y `esperando`: un `--backfill` puede haber agregado justo los días que faltaban. |
 | pisos de muestra por familia | una familia con 40 vistas y una impresión da un RPM espectacular y falso que encabezaría la cola para siempre. |
 | `PROVISIONAL_REVENUE_USD` | con centavos en la ventana, todo RPM por familia es provisional y la pantalla lo dice. |
 | desglose completo de ingreso | `fetchRevenue` pagina por `pagePath` hasta `rowCount`, con presupuesto de 100.000 filas. Las páginas sin anuncios también aportan vistas al RPM. Una página incompleta, repetida, un total cambiante o un error conserva el snapshot privado anterior; la actualización pública sigue independiente. |
@@ -277,6 +347,14 @@ saliendo del total sin filtrar, y ningún país queda excluido de nada por esto 
 por ese motivo sigue siendo una decisión de una persona, ahora con la cifra al lado. Las cifras y
 el diagnóstico detallado quedan en `docs/seo/data/revenue-2026-09-21/`, fuera del repositorio
 público.
+
+El tope de archivo limita las fechas que se pueden leer, no las ventanas teóricas completas. Una
+fila publicada hoy conserva sus 28 días posteriores para el veredicto, pero no pide esos días
+futuros ni los carga al presupuesto. El techo es hoy y no la fecha del snapshot de Search Console:
+el archivo puede tener días más nuevos aunque la actualización del tablero haya fallado. Eso no
+cierra una ventana por calendario: todo veredicto cerrado requiere los 28 días archivados.
+La lectura continúa en tandas de 10 días, y una ventana todavía enteramente futura no pide un
+rango invertido.
 
 Las caídas de una página conservan su URL desde `pageFalling`, antes de atribuir destinos a las
 consultas. Así una caída del histórico se valora como histórico y una de una guía como guía. Una

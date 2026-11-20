@@ -137,7 +137,11 @@
         Ninguna norma las obliga a cerrar en feriado ni a abrir, así que cada casa lo decide, y el
         horario de un feriado no siempre es el que figura publicado. Lo que sí sirve saber de
         antemano es <em>qué lunes</em> va a ser feriado, que es justamente lo que resuelve la tabla
-        de arriba.
+        de arriba. Si lo que buscás es el año entero ya resuelto —con Carnaval y Semana de Turismo,
+        que esta página no fecha porque la ley no les pone fecha—, está en
+        <NuxtLink :to="localePath('/feriados-2027-uruguay')" class="cu-link">
+          los feriados de 2027 y sus seis fines de semana largos </NuxtLink
+        >.
       </p>
       <div class="d-flex flex-wrap ga-2">
         <VBtn
@@ -156,6 +160,9 @@
       </div>
     </section>
 
+    <!-- La unidad intermedia, antes de las preguntas: mismo corte que FaqSection (ver
+         docs/seo/adsense-growth-loop.md, 31/10/2026). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <!-- FAQ -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-4">Preguntas frecuentes</h2>
@@ -240,7 +247,9 @@ const verifiedAt = new Date(`${FERIADOS_VERIFIED_AT}T00:00:00Z`).toLocaleDateStr
 })
 
 const canonicalUrl = 'https://cambio-uruguay.com/feriados-que-se-corren-uruguay'
-const title = 'Feriados que se corren al lunes en Uruguay'
+// La respuesta en el título: son tres (Ley 16.805, art. 2), y es lo que la descripción y el H1
+// ya dicen. Las consultas que traen gente son «el lunes es feriado» y sus variantes.
+const title = 'Feriados que se corren al lunes: sólo 3'
 const description =
   'Sólo tres feriados uruguayos se corren al lunes: el 19 de abril, el 18 de mayo y el 12 de octubre (Ley 16.805, art. 2). Las otras ocho caen donde caen.'
 

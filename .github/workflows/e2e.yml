@@ -56,7 +56,7 @@ jobs:
       - name: Build
         run: npx nuxt build
         env:
-          NODE_OPTIONS: --max-old-space-size=10240
+          NODE_OPTIONS: --max-old-space-size=12288
       - name: Run e2e suite
         run: npm run test:e2e
         env:

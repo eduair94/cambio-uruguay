@@ -17,11 +17,15 @@ export interface PriceEvent {
 }
 
 /**
- * Verificado el 16–17/9/2026 (ver `docs/superpowers/plans/2026-09-16-directorios-d-eventos.md`):
- * CyberLunes lo organiza la CEDU dos veces por año, junio y noviembre. La edición de noviembre de
- * 2026 TODAVÍA NO TIENE FECHA PUBLICADA — se muestra "a confirmar por la CEDU" hasta que un humano
- * cargue la fecha real con su fuente, una línea de este arreglo y de su espejo en `app/`. Nunca
- * inventar una fecha para completar esta lista.
+ * Verificado el 16–17/9/2026 (ver `docs/superpowers/plans/2026-09-16-directorios-d-eventos.md`) y
+ * de nuevo el 19/10/2026: CyberLunes lo organiza la CEDU dos veces por año, junio y noviembre. La
+ * edición de noviembre de 2026 es del lunes 2 al miércoles 4: lo dice la nota de la CEDU del
+ * 16/9/2026 (la `source` de abajo) y lo repite el sitio oficial, ciberlunes.uy ("2, 3 y 4 de
+ * noviembre", con la cuenta regresiva a "November 02, 2026"). Black Friday sigue el calendario de
+ * EE.UU.: el viernes siguiente al Día de Acción de Gracias, que en 2026 es el jueves 26 de noviembre
+ * según el calendario de feriados federales de la OPM (su `source`). Una edición nueva se carga con
+ * su fuente, acá y en el espejo de `app/`. Nunca inventar una fecha para completar esta lista: una
+ * edición anunciada sin fecha va con `start`/`end` en `null` y `confirmed: false`.
  */
 export const PRICE_EVENTS: readonly PriceEvent[] = [
   {
@@ -46,15 +50,12 @@ export const PRICE_EVENTS: readonly PriceEvent[] = [
   {
     id: "ciberlunes-2026-11",
     label: "CyberLunes noviembre 2026",
-    start: null,
-    end: null,
-    confirmed: false,
-    source: "https://www.cedu.org.uy/ciberlunes/",
-    // Final review I4: an undated claim like "todavía no publicó la fecha" silently becomes false the
-    // day CEDU announces it — dating the claim itself means a stale page reads as stale, not wrong.
-    // See docs/app/PRICE_EVENTS.md, "Cuándo revisar la fecha de noviembre" for the reminder to update
-    // this once CEDU publishes (or once the guessed window has clearly been missed).
-    note: "Al 17 de setiembre de 2026 la CEDU no había publicado la fecha.",
+    start: "2026-11-02",
+    end: "2026-11-04",
+    confirmed: true,
+    source:
+      "https://www.cedu.org.uy/camara-de-la-economia-digital-del-uruguay-invita-a-empresas-a-sumarse-al-ciberlunes/",
+    note: "Lo organiza la Cámara de la Economía Digital del Uruguay (CEDU), que publicó la fecha el 16 de setiembre de 2026.",
   },
   {
     id: "black-friday-2026",
@@ -62,8 +63,8 @@ export const PRICE_EVENTS: readonly PriceEvent[] = [
     start: "2026-11-27",
     end: "2026-11-30",
     confirmed: true,
-    source: null,
-    note: "Del viernes 27 al lunes 30 de noviembre (Cyber Monday de EE.UU.).",
+    source: "https://www.opm.gov/policy-data-oversight/pay-leave/federal-holidays/",
+    note: "Es el viernes siguiente al Día de Acción de Gracias de EE.UU. (jueves 26 de noviembre). Lo seguimos hasta el lunes 30, el Cyber Monday de EE.UU.",
   },
 ];
 
@@ -72,6 +73,11 @@ export const PRICE_EVENTS: readonly PriceEvent[] = [
  * su lugar activa esta ventana amplia (adivinada del patrón de ediciones anteriores de noviembre) el
  * tiempo suficiente para que el job horario de evento (`--event-only`) empiece a recalcular antes de
  * que la CEDU confirme la fecha real, en vez de quedarse dormido hasta que alguien la cargue a mano.
+ *
+ * HOY NINGUNA EDICIÓN LA USA: era la de CyberLunes noviembre 2026, que la CEDU fechó el 16/9/2026.
+ * La ventana quedó escrita para ESA edición (noviembre de 2026), así que antes de cargar otra edición
+ * sin fecha hay que moverla a la suya — `tests/priceevents/calendar.test.ts` falla a propósito en
+ * cuanto aparece una edición sin confirmar, para que nadie herede esta ventana sin mirarla.
  */
 const UNCONFIRMED_WINDOW_START = "2026-11-01";
 const UNCONFIRMED_WINDOW_END = "2026-11-08";
@@ -101,8 +107,8 @@ export function resolveActiveEvent(events: readonly PriceEvent[], today: string)
   return (active.find((w) => w.event.confirmed) ?? active[0]!).event;
 }
 
-/** Ediciones dentro de [start, end] inclusive; la de noviembre de 2026 (sin fecha) activa la ventana
- * amplia con `confirmed: false`. `null` si ningún evento cubre `today`. */
+/** Ediciones dentro de [start, end] inclusive; una edición sin fecha activaría la ventana amplia con
+ * `confirmed: false` (hoy no hay ninguna). `null` si ningún evento cubre `today`. */
 export function activeEvent(today: string): PriceEvent | null {
   return resolveActiveEvent(PRICE_EVENTS, today);
 }

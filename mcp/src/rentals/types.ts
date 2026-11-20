@@ -79,6 +79,8 @@ export interface RawOffer {
   source?: string;
   listingId?: string;
   url?: string;
+  /** The advert's cover photo, as the site's cards show it. */
+  image?: string | null;
   title?: string;
   price?: number;
   currency?: string;
@@ -139,6 +141,8 @@ export interface RawRental {
   distanceKm?: number | null;
   /** The largest drop of a shown advert in the last 30 days (`bajo=1` filters on it). */
   priceDrop?: { listingId?: string; from: number; to: number; currency?: string; at: string; pct: number } | null;
+  /** The first photos of a search result's card carousel (the site's `rentalGalleryPreview`). */
+  galleryPreview?: Array<{ url?: string }>;
 }
 
 export interface RawFacet {

@@ -180,10 +180,18 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
+// The day the server rendered the page, reused from the payload, for when the analysis has no
+// `asOf`: `new Date()` here could name a different day after hydration (see
+// pages/cotizacion/[moneda].vue).
+const renderedDay = useState('por-que-dolar-rendered-day', () =>
+  new Date().toISOString().slice(0, 10)
+)
+
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonical.value }],
   script: [
     {
+      key: 'por-que-dolar-jsonld',
       type: 'application/ld+json',
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
@@ -210,8 +218,8 @@ useHead(() => ({
             headline: t('porQueDolar.metaTitle'),
             description: t('porQueDolar.metaDescription'),
             image: 'https://cambio-uruguay.com/__og-image__/image/por-que-sube-el-dolar/og.png',
-            datePublished: analysis.value?.asOf ?? new Date().toISOString().slice(0, 10),
-            dateModified: analysis.value?.asOf ?? new Date().toISOString().slice(0, 10),
+            datePublished: analysis.value?.asOf ?? renderedDay.value,
+            dateModified: analysis.value?.asOf ?? renderedDay.value,
             inLanguage: 'es-UY',
             mainEntityOfPage: { '@type': 'WebPage', '@id': canonical.value },
             author: {

@@ -2,7 +2,7 @@
 //
 // PURE (no Vue/Nuxt imports) so it is unit-testable in plain Node, and so the
 // Nitro handler in server/api/og-rate.get.ts can import it directly.
-import { offMarketDetector } from './marketOutlier'
+import { offMarketSide } from './marketOutlier'
 
 export interface OgRatePair {
   /** Best price a house pays for your USD — the highest trustworthy buy. */
@@ -27,7 +27,8 @@ const isPrice = (n: unknown): n is number => typeof n === 'number' && Number.isF
  * Two quotes are dropped before the extremes are taken:
  *  - the BCU reference and every typed (interbank / preferential) row, because
  *    the public cannot transact at them;
- *  - boards the shared {@link offMarketDetector} calls off-market.
+ *  - prices the shared rule calls off-market ({@link offMarketSide}, one side
+ *    at a time, with the dollar's band).
  *
  * The outlier pass is the part that matters. Taking a raw `max(buy)` and
  * `min(sell)` across ~42 houses reads one extreme off each tail, so a single
@@ -40,11 +41,17 @@ const isPrice = (n: unknown): n is number => typeof n === 'number' && Number.isF
  */
 export function bestUsdPair(rates: readonly UsdQuote[]): OgRatePair {
   const usd = rates.filter(r => r.code === 'USD' && !r.type && r.origin !== 'bcu')
-  const isOffMarket = offMarketDetector(usd)
-  const trusted = usd.filter(r => !isOffMarket(r))
+  const buyOff = offMarketSide(usd, 'USD', 'buy')
+  const sellOff = offMarketSide(usd, 'USD', 'sell')
 
-  const buys = trusted.map(r => r.buy).filter(isPrice)
-  const sells = trusted.map(r => r.sell).filter(isPrice)
+  const buys = usd
+    .filter(r => !buyOff(r))
+    .map(r => r.buy)
+    .filter(isPrice)
+  const sells = usd
+    .filter(r => !sellOff(r))
+    .map(r => r.sell)
+    .filter(isPrice)
 
   return {
     buy: buys.length ? Math.max(...buys) : null,

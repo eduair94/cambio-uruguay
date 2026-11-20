@@ -7,16 +7,49 @@
 // loaded by the module itself, so /pizarra (which promises no third-party
 // request) and /widget (an iframe inside somebody else's page) were both still
 // pulling googletagmanager.com. Caught by the /pizarra e2e network assertion.
+import { hasAnalyticsUnsafeQuery } from '~/utils/analyticsUrl'
+import { MEASURE_AUTOMATION_KEY, isAutomatedClient } from '~/utils/automatedClient'
 import { isBareRoute } from '~/utils/bareRoutes'
+
+/** How long GA waits for a sign-in hand-off to leave the address bar before skipping the view. */
+const UNSAFE_URL_WAIT_MS = 60_000
 
 export default defineNuxtPlugin(nuxtApp => {
   if (!import.meta.client) return
 
+  // A browser driven by a program is not a visit (utils/automatedClient.ts): GA never starts for
+  // it, on any route. A test that needs to see the hits opts in through localStorage.
+  let measureAutomation = false
+  try {
+    measureAutomation = window.localStorage?.getItem(MEASURE_AUTOMATION_KEY) === '1'
+  } catch {
+    // No storage: an automated browser stays unmeasured, which is the safe default.
+  }
+  if (isAutomatedClient(window.navigator, measureAutomation)) return
+
   const { initialize } = useGtag()
   let started = false
+  let waiting: ReturnType<typeof setInterval> | null = null
 
   const startUnlessBare = (path: string) => {
     if (started || isBareRoute(path)) return
+    // A sign-in hand-off (Discord's Firebase custom token, an emailed link's one-time code) or an
+    // old rental link's reference point is still in the address bar, and the first page_view
+    // would send it to Google (utils/analyticsUrl.ts). The code that uses each one removes it;
+    // GA starts once it has. If it is still there after a minute, this view goes unmeasured and
+    // the next navigation starts GA.
+    if (hasAnalyticsUnsafeQuery(window.location.search, window.location.pathname)) {
+      if (waiting) return
+      const since = Date.now()
+      waiting = setInterval(() => {
+        const unsafe = hasAnalyticsUnsafeQuery(window.location.search, window.location.pathname)
+        if (unsafe && Date.now() - since < UNSAFE_URL_WAIT_MS) return
+        clearInterval(waiting!)
+        waiting = null
+        if (!unsafe) startUnlessBare(window.location.pathname)
+      }, 250)
+      return
+    }
     started = true
     initialize()
   }

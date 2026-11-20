@@ -1,0 +1,526 @@
+{
+  "title": [
+    "1229e1ce",
+    "Gdzie wypłacić gotówkę w Urugwaju: bankomaty, opłaty i atrakcje turystyczne"
+  ],
+  "metaTitle": [
+    "3e82d293",
+    "Bankomaty w Urugwaju: wypłata dolarów lub pesos"
+  ],
+  "description": [
+    "3eb63bbe",
+    "Jak i gdzie zdobyć gotówkę w Urugwaju jako turysta: bankomaty wypłacające dolary amerykańskie i peso, opłaty, limity wypłat, pułapka związana z przewalutowaniem (DCC) oraz najlepsze miejsca do wypłaty gotówki na lotnisku, w Montevideo, Punta del Este i Colonii."
+  ],
+  "keywords": [
+    "4acfb17e",
+    "wypłacaj gotówkę urugwaj, wypłacaj pieniądze urugwaj, bankomat urugwaj turysta, dolary z bankomatu urugwaj, wymieniaj pieniądze urugwaj, opłaty bankomatowe urugwaj, casas de cambio urugwaj"
+  ],
+  "tldr.0": [
+    "5f1561fe",
+    "Urugwajskie bankomaty wypłacają zarówno dolary amerykańskie, jak i peso — to rzadka zaleta tego regionu (w Argentynie jest to praktycznie niemożliwe)."
+  ],
+  "tldr.1": [
+    "7b41d73f",
+    "Są dwie sieci: RedBROU i Banred. Jeśli jedna zawiedzie, spróbuj drugiej; miej przy sobie karty Visa i Mastercard."
+  ],
+  "tldr.2": [
+    "c5aa36e3",
+    "Gdy bankomat zaproponuje Ci pobranie opłaty w Twojej walucie, zawsze wybieraj walutę lokalną: „przeliczenie” maskuje niekorzystny kurs wymiany."
+  ],
+  "tldr.3": [
+    "b73d4126",
+    "Unikaj wymiany dużych kwot na lotnisku lub terminalach promowych — kursy są tam zauważalnie niższe."
+  ],
+  "tldr.4": [
+    "83b2ff36",
+    "Płać w hotelach i restauracjach zagraniczną kartą: oprócz korzyści z podatku VAT, będziesz mieć przy sobie mniej gotówki."
+  ],
+  "ui.backToTools": [
+    "950196fc",
+    "Narzędzia"
+  ],
+  "ui.tldrTitle": [
+    "799c628c",
+    "Krótko mówiąc"
+  ],
+  "ui.networksTitle": [
+    "90dd37e5",
+    "Dwie sieci bankomatów: RedBROU i Banred"
+  ],
+  "ui.tableNetwork": [
+    "6974ad65",
+    "Sieć"
+  ],
+  "ui.tableReach": [
+    "c549e23b",
+    "Zasięg"
+  ],
+  "ui.tableUsd": [
+    "47b34a69",
+    "Limit USD / wypłata"
+  ],
+  "ui.tableUyu": [
+    "7d4e5b12",
+    "Limit $U / wypłata"
+  ],
+  "ui.tableNote": [
+    "0ff01b6a",
+    "Notatki"
+  ],
+  "ui.zonesTitle": [
+    "126f8827",
+    "Gdzie zdobyć gotówkę w poszczególnych strefach turystycznych"
+  ],
+  "ui.zonesIntro": [
+    "e4c560b0",
+    "Odniesienia na poziomie strefy i punktu orientacyjnego (nie dokładne adresy, które ulegają zmianie). Bankomaty znajdują się zazwyczaj w bankach, centrach handlowych lub placówkach Abitab i Redpagos."
+  ],
+  "ui.stepsTitle": [
+    "3e1ff2e0",
+    "Jak wypłacić gotówkę krok po kroku"
+  ],
+  "ui.faqTitle": [
+    "e466bfa9",
+    "Często zadawane pytania"
+  ],
+  "ui.sourcesTitle": [
+    "105bfcc3",
+    "Źródła i odniesienia"
+  ],
+  "ui.relatedTitle": [
+    "ac7a8ccc",
+    "Czytaj dalej"
+  ],
+  "ui.ctaTitle": [
+    "60dda6a1",
+    "Porównaj przed wymianą"
+  ],
+  "ui.ctaText": [
+    "fe6b01a6",
+    "Sprawdź kurs dolara w ponad 40 kantorach, aktualizowany co 10 minut, i wybierz najlepsze miejsce do prowadzenia działalności."
+  ],
+  "ui.ctaButton": [
+    "9efd557a",
+    "Otwórz komparator"
+  ],
+  "ui.mapButton": [
+    "4e8c8db6",
+    "Zobacz punkty wypłaty na mapie"
+  ],
+  "ui.disclaimer": [
+    "b166cfce",
+    "Informacje dla turystów, nie porady finansowe. Opłaty, limity i ulgi podatkowe ulegają zmianie: należy je potwierdzić po przyjeździe oraz u wystawcy karty. Nie jesteśmy powiązani z wymienionymi bankami ani kantorami wymiany walut."
+  ],
+  "ui.lastChecked": [
+    "9182e108",
+    "Ostatnia kontrola: czerwiec 2026"
+  ],
+  "ivaLive.heading": [
+    "5af716c3",
+    "Ulgi VAT dla turystów obowiązujące od dziś"
+  ],
+  "ivaLive.asOf": [
+    "dd801240",
+    "Stan na dzień {date}:"
+  ],
+  "ivaLive.hotel": [
+    "152a8c47",
+    "Zakwaterowanie (hotele i podobne): 0% VAT przez cały rok."
+  ],
+  "ivaLive.base": [
+    "9856855a",
+    "Wyżywienie i wynajem samochodu bez kierowcy: obniżka podatku VAT o liczbę punktów {points} za opłacenie końcowej konsumpcji kartą osoby fizycznej, w tym kartą zagraniczną, do 30 kwietnia 2027 r. (Dekret 235/026; źródło sprawdzone 23 października 2026 r.)."
+  ],
+  "ivaLive.baseUnconfirmed": [
+    "d65944df",
+    "Wyżywienie i wynajem samochodów: zweryfikowane przedłużenie wygasło 30 kwietnia 2027 r. Sprawdź w DGI, jaka zniżka obowiązuje w dniu zakupu."
+  ],
+  "ivaLive.seasonalOn": [
+    "41748da1",
+    "Pełne zwolnienie z VAT w okresie letnim: AKTYWNE (do {end})."
+  ],
+  "ivaLive.seasonalOff": [
+    "015a1161",
+    "Pełne zwolnienie z VAT w okresie letnim: nie mamy potwierdzonego okresu na tę datę. Skontaktuj się z DGI, zanim skorzystasz z tej ulgi."
+  ],
+  "sections.0.heading": [
+    "90dd37e5",
+    "Dwie sieci bankomatów: RedBROU i Banred"
+  ],
+  "sections.0.paragraphs.0": [
+    "0f52a7fe",
+    "W Urugwaju istnieją dwie sieci bankomatów: RedBROU, zarządzana przez bank państwowy (BROU), oraz Banred, sieć banków prywatnych. Obie sieci są ze sobą połączone i połączone z sieciami międzynarodowymi (Mastercard Cirrus/Maestro i Visa Plus), więc karta zagraniczna działa w obu."
+  ],
+  "sections.0.paragraphs.1": [
+    "208b768b",
+    "Aby mieć pewność, że bankomat przyjmie Twoją kartę, sprawdź, czy na urządzeniu widnieje logo Visa, Mastercard, Cirrus, Plus lub Maestro. Praktyczna rada: miej przy sobie karty Visa i Mastercard z różnych kont; jeśli jedna karta lub bankomat zawiedzie, spróbuj w innej sieci."
+  ],
+  "sections.1.heading": [
+    "612974f0",
+    "Dolary czy pesos? W Urugwaju można wziąć obie waluty"
+  ],
+  "sections.1.paragraphs.0": [
+    "d9928d31",
+    "W przeciwieństwie do Argentyny, wiele bankomatów w Urugwaju wypłaca zarówno dolary amerykańskie, jak i peso urugwajskie. To prawdziwa zaleta, jeśli chcesz wypłacić dolary bez konieczności udania się do kantoru. Dolary zazwyczaj wypłacane są w banknotach 100-dolarowych, co w połączeniu z limitami wypłat może oznaczać, że otrzymasz tylko jeden banknot na raz."
+  ],
+  "sections.1.paragraphs.1": [
+    "cd694b7a",
+    "Prosta zasada: bierz pesos na codzienne wydatki (taksówki, targi, małe sklepy), a dolary tylko wtedy, gdy naprawdę potrzebujesz gotówki. W przypadku większości większych płatności karta jest lepsza niż gotówka."
+  ],
+  "sections.2.heading": [
+    "9ce97b34",
+    "Opłaty i limity wypłat"
+  ],
+  "sections.2.paragraphs.0": [
+    "e28a7f0e",
+    "Opłata dodatkowa pobierana przez urugwajski bankomat za kartę zagraniczną jest niska w porównaniu z wieloma innymi krajami (rzędu kilku dolarów za wypłatę). Większy koszt zazwyczaj ponosi Twój bank: opłata za transakcję zagraniczną (zwykle 1–3%) plus czasami stała opłata za wypłatę międzynarodową. Karta podróżna bez prowizji za przewalutowanie pozwala zaoszczędzić niemal wszystko."
+  ],
+  "sections.2.paragraphs.1": [
+    "154c6f01",
+    "Limity wypłat z kart zagranicznych są ustalane przez lokalne sieci, a nie przez Twój bank, i są niskie. Twój bank również stosuje własny limit dzienny. Zadzwoń do banku przed podróżą, aby podnieść limit i wypłacić maksymalną kwotę za transakcję, aby rozłożyć stałą opłatę na większą ilość gotówki."
+  ],
+  "sections.2.bullets.0": [
+    "befd8df3",
+    "Lokalna dopłata za wypłatę: przybliżona, rzędu kilku dolarów (przed potwierdzeniem sprawdź kwotę na ekranie)."
+  ],
+  "sections.2.bullets.1": [
+    "0f872d39",
+    "Opłata naliczana przez bank/wydawcę: zazwyczaj większy koszt; sprawdź, czy za transakcje zagraniczne pobierana jest opłata."
+  ],
+  "sections.2.bullets.3": [
+    "4aacdc05",
+    "Limit dzienny: ustalony przez Twój bank; powiadom go przed podróżą w celu jego podwyższenia."
+  ],
+  "sections.3.heading": [
+    "6bd46a0c",
+    "Pułapka konwersji walut (DCC): zawsze wybieraj lokalną walutę"
+  ],
+  "sections.3.paragraphs.0": [
+    "29fe4c81",
+    "Wiele bankomatów i terminali płatniczych oferuje możliwość „pobrania płatności w walucie ojczystej” zamiast w peso urugwajskich czy dolarach. Brzmi to wygodnie („zobacz, ile jest w Twojej walucie”), ale dynamiczna konwersja walut (DCC) stosuje zawyżony kurs wymiany i ukrytą opłatę. Prawie zawsze tracisz."
+  ],
+  "sections.3.paragraphs.1": [
+    "34380f1f",
+    "Zawsze wybieraj opcję „bez przewalutowania” lub walutę lokalną: peso urugwajskie, gdy przyjmujesz peso, dolary, gdy przyjmujesz dolary. Pozwól swojemu bankowi dokonać przewalutowania – jego kurs jest zazwyczaj korzystniejszy."
+  ],
+  "sections.4.heading": [
+    "cc573fd8",
+    "Kantor wymiany walut, bankomat czy bank: co jest lepsze?"
+  ],
+  "sections.4.paragraphs.0": [
+    "1116ae4f",
+    "Kantory wymiany walut (casas de cambio, takie jak Varlix, Indumex, Gales, Aspen, Cambio Sir, Cambio Inglés i Global Exchange) to klasyczny sposób wymiany gotówki. Oferują najlepsze kursy wymiany dolara, z niewielkim spreadem i bez prowizji; euro jest drugą najlepszą walutą, real brazylijski jest akceptowany, a peso argentyńskie jest najgorsze. Zazwyczaj proszą o paszport."
+  ],
+  "sections.4.paragraphs.1": [
+    "b7c83296",
+    "Godziny otwarcia: oddziały uliczne otwarte od poniedziałku do piątku (około 9-19) oraz w sobotnie poranki; wiele z nich jest nieczynnych w niedziele. Oddziały w centrach handlowych otwarte są codziennie lub dłużej. Aby porównać stawki dzienne w różnych domach, skorzystaj z naszej porównywarki i strony z oddziałami."
+  ],
+  "sections.5.heading": [
+    "f8b82759",
+    "Ile gotówki zabrać ze sobą i jaką walutę zabrać"
+  ],
+  "sections.5.paragraphs.0": [
+    "e22fd664",
+    "Urugwaj jest bardzo przyjazny dla kart: karty Visa i Mastercard są akceptowane niemal wszędzie, a płatności zbliżeniowe i QR (Mercado Pago) są powszechne. Na drobne zakupy noś przy sobie tylko kilka peso w gotówce, a większe kwoty płać kartą."
+  ],
+  "sections.5.paragraphs.1": [
+    "f9b88276",
+    "Jeśli masz przy sobie gotówkę, najlepszą walutą jest dolar amerykański (najlepsze kursy, akceptowane w każdym domu). Drugie miejsce zajmuje euro. Pochodząc z Argentyny, zabierz dolary, a nie peso argentyńskie – peso w Urugwaju bardzo słabo się wymienia. Z Brazylii, zwłaszcza w pobliżu granicy, działają prawdziwe dolary, choć dolary są nadal wygodniejsze."
+  ],
+  "sections.6.heading": [
+    "97a59b72",
+    "Ulga VAT dla turystów (w przypadku płatności kartą zagraniczną)"
+  ],
+  "sections.6.paragraphs.0": [
+    "88ea76fc",
+    "Urugwaj zwraca część podatku VAT turystom niebędącym rezydentami, którzy płacą kartą wydaną za granicą. Zakwaterowanie (zarejestrowane hotele i podobne) jest objęte 0% podatkiem VAT przez cały rok dla nierezydentów, którzy okazują zagraniczny dokument tożsamości i płacą zagraniczną kartą – to stała korzyść."
+  ],
+  "sections.6.paragraphs.1": [
+    "7f51f9e2",
+    "W przypadku posiłków i wynajmu samochodów bez kierowcy, Dekret 235/026 utrzymuje ogólną dziewięciopunktową obniżkę do 30 kwietnia 2027 r. dla konsumpcji końcowej opłaconej kwalifikującymi się środkami elektronicznymi. Sezonowe pełne zwolnienie to osobne świadczenie z własnym dekretem i datami: przedłużenie dziewięciopunktowej obniżki nie potwierdza pełnego zwolnienia. Przed podróżą należy skontaktować się z DGI."
+  ],
+  "sections.6.paragraphs.2": [
+    "f963de1e",
+    "W każdym przypadku zniżka jest automatyczna: płacisz kartą zagraniczną, a korzyść widnieje na paragonie lub wyciągu z karty. Płacąc gotówką, tracisz ją. Dlatego warto płacić kartą za hotele i restauracje i wypłacać mniej gotówki."
+  ],
+  "sections.6.bullets.0": [
+    "fc6c4026",
+    "Hotele/zakwaterowanie: 0% VAT przez cały rok dla osób niebędących rezydentami (stałych)."
+  ],
+  "sections.6.bullets.1": [
+    "02f7d683",
+    "Restauracje i wynajem samochodów bez kierowcy: dziewięć punktów do 30 kwietnia 2027 r., z zastrzeżeniem wymogów dotyczących płatności elektronicznych. Sezonowe całkowite zwolnienie wymaga osobnego potwierdzenia."
+  ],
+  "sections.6.bullets.2": [
+    "bf5ed0b5",
+    "Każdy system ma swoje własne wymagania. Ogólna dziewięciopunktowa redukcja wymaga ostatecznego zużycia i posiadania przez osobę fizyczną kwalifikowanej elektronicznej metody płatności; wydanie zagraniczne nie jest wymagane."
+  ],
+  "sections.7.heading": [
+    "84fbae56",
+    "Wskazówki dotyczące bezpieczeństwa podczas wypłacania gotówki"
+  ],
+  "sections.7.paragraphs.0": [
+    "e227f80c",
+    "Urugwaj należy do najbezpieczniejszych krajów w regionie, ale drobne kradzieże zdarzają się, zwłaszcza w Ciudad Vieja w Montevideo, w okolicy portu i w kurortach nadmorskich w szczycie sezonu. Korzystaj z bankomatów w bankach, centrach handlowych lub przeszklonych holach, najlepiej w ciągu dnia, i zwracaj uwagę na otoczenie."
+  ],
+  "sections.7.bullets.0": [
+    "d234b5e4",
+    "Wypłacaj pieniądze w ciągu dnia i w bankomatach w pomieszczeniach zamkniętych, nie na ulicy w nocy."
+  ],
+  "sections.7.bullets.1": [
+    "f9f5f149",
+    "Noś przy sobie dwie karty z różnych kont i trzymaj gotówkę w więcej niż jednym miejscu."
+  ],
+  "sections.7.bullets.3": [
+    "d7920a67",
+    "Korzystaj z Ubera, Cabify lub zarejestrowanych taksówek. Nie zostawiaj w samochodzie wartościowych przedmiotów."
+  ],
+  "sections.7.link.label": [
+    "d8570bac",
+    "Już utknąłem z dużym banknotem: gdzie zdobyć drobne i monety"
+  ],
+  "networkRows.0.network": [
+    "7ee344a0",
+    "RedBROU"
+  ],
+  "networkRows.0.reach": [
+    "4a5d053e",
+    "Sieć państwowego banku BROU: ponad 400 bankomatów w całym kraju, plus Abitab i Redpagos."
+  ],
+  "networkRows.0.usdPerTxn": [
+    "f41a726d",
+    "≈ 200 USD"
+  ],
+  "networkRows.0.note": [
+    "786a7e5f",
+    "Wiele bankomatów wypłaca dolary. Kapsle są przybliżone dla kart zagranicznych."
+  ],
+  "networkRows.1.network": [
+    "6823b06d",
+    "Zbanowany"
+  ],
+  "networkRows.1.reach": [
+    "331e78b2",
+    "Sieć banków prywatnych; ponad 370 punktów we wszystkich 19 departamentach."
+  ],
+  "networkRows.1.usdPerTxn": [
+    "75830c42",
+    "≈ 300 USD"
+  ],
+  "networkRows.1.note": [
+    "9f2f1329",
+    "Połączono z RedBROU. Jeśli jedna sieć odrzuci Twoją kartę, spróbuj innej."
+  ],
+  "zones.0.name": [
+    "8a4dc608",
+    "Lotnisko Carrasco (MVD), Montevideo"
+  ],
+  "zones.0.summary": [
+    "462aaacd",
+    "Biura Global Exchange są czynne 24 godziny na dobę, bankomaty znajdują się w terminalu (potwierdzono obecność bankomatu Santander) oraz oddział banku."
+  ],
+  "zones.0.tips.0": [
+    "d6202725",
+    "Wymiana na lotnisku jest zauważalnie tańsza: resztę trzeba wydać na dojazd do miasta."
+  ],
+  "zones.0.tips.1": [
+    "99e81ace",
+    "Jeśli potrzebujesz gotówki natychmiast, wypłać niewielką kwotę z bankomatu i zmień resztę na mieście."
+  ],
+  "zones.1.name": [
+    "034a744d",
+    "Montevideo (Centrum, Ciudad Vieja i port)"
+  ],
+  "zones.1.summary": [
+    "04c221eb",
+    "Kantory skupiają się przy Avenida 18 de Julio (Centro) i w Ciudad Vieja. Terminal dla statków wycieczkowych znajduje się obok Ciudad Vieja, z kantorami i bankomatami."
+  ],
+  "zones.1.tips.0": [
+    "a26e5af3",
+    "W Centro i Ciudad Vieja znajdziesz kilka kantorów, w których możesz porównać swoje oferty."
+  ],
+  "zones.1.tips.1": [
+    "4139b3e5",
+    "Pasażerowie statków wycieczkowych mogą wymienić walutę w porcie, a bankomaty znajdują się niedaleko, w kierunku Mercado del Puerto."
+  ],
+  "zones.2.name": [
+    "3fa606f9",
+    "Punta del Este"
+  ],
+  "zones.2.summary": [
+    "880d1f96",
+    "Kantory wzdłuż Avenida Gorlero, głównej ulicy. W szczycie sezonu mogą tworzyć się kolejki, a w bankomatach może brakować dolarów."
+  ],
+  "zones.2.tips.0": [
+    "1063deb8",
+    "Latem i w tygodniu wielkanocnym bankomaty szybko się opróżniają: wypłacaj pieniądze wcześniej i zachowaj zapas."
+  ],
+  "zones.2.tips.1": [
+    "e4c20d9e",
+    "Postaw na płatności kartami i kodami QR, aby nie polegać wyłącznie na gotówce."
+  ],
+  "zones.3.name": [
+    "2ed532f4",
+    "Kolonia Sacramento"
+  ],
+  "zones.3.summary": [
+    "764221b5",
+    "Bankomaty znajdują się w Barrio Histórico i przy terminalu promowym, kilka kroków od starej dzielnicy, do której przybywają jednodniowi turyści z Buenos Aires."
+  ],
+  "zones.3.tips.0": [
+    "d7ebee8b",
+    "Po przyjeździe wypłać niewielką kwotę pesos i zapłać resztę kartą."
+  ],
+  "zones.3.tips.1": [
+    "e09f3851",
+    "Wiele sklepów z pamiątkami przyjmuje dolary, choć po niekorzystnym kursie."
+  ],
+  "zones.4.name": [
+    "ed7917f9",
+    "Terminale promowe (Buquebus / Colonia Express)"
+  ],
+  "zones.4.summary": [
+    "ac18ddf9",
+    "Bankomaty znajdują się na terminalach Montevideo i Colonia. W terminalach i na pokładzie statku kurs wymiany walut jest zazwyczaj niekorzystny."
+  ],
+  "zones.4.tips.0": [
+    "b5a97e0f",
+    "Unikaj wymiany dużych kwot na terminalu lub na pokładzie statku – kursy są niekorzystne."
+  ],
+  "zones.4.tips.1": [
+    "91b3c105",
+    "Lepiej skorzystać z bankomatu lub wymienić pieniądze w miejskim kantorze."
+  ],
+  "zones.5.name": [
+    "66cc7244",
+    "Wnętrze i mniejsze miasta"
+  ],
+  "zones.5.summary": [
+    "fc9a5afd",
+    "Poza dużymi miastami i głównymi kurortami bankomaty są rzadkością."
+  ],
+  "zones.5.tips.0": [
+    "48821abe",
+    "Zanim udasz się w głąb lądu, zaopatrz się w gotówkę w Montevideo, Punta del Este lub Colonii."
+  ],
+  "zones.5.tips.1": [
+    "02573d37",
+    "Na wybrzeżu Rocha warto uzupełnić zapasy w większych miejscowościach, takich jak Chuy lub La Paloma."
+  ],
+  "steps.0.name": [
+    "aa213b75",
+    "Znajdź bankomat, który akceptuje Twoją kartę"
+  ],
+  "steps.0.text": [
+    "2f5d9e7c",
+    "Szukaj bankomatów z logo Visa, Mastercard, Cirrus, Plus lub Maestro; najlepiej sprawdzają się bankomaty znajdujące się na terenie banków lub centrów handlowych."
+  ],
+  "steps.1.name": [
+    "4209811a",
+    "Wybierz dolary lub pesos"
+  ],
+  "steps.1.text": [
+    "f338ade4",
+    "Zabieraj ze sobą peso na codzienne wydatki, a dolary tylko wtedy, gdy potrzebujesz gotówki; dolary wydawane są w banknotach 100-dolarowych."
+  ],
+  "steps.2.name": [
+    "24d1a5da",
+    "Odrzuć konwersję na swoją walutę"
+  ],
+  "steps.2.text": [
+    "3f2be811",
+    "Jeśli istnieje możliwość obciążenia rachunku w Twojej walucie krajowej, wybierz opcję „bez konwersji” lub walutę lokalną, aby uniknąć narzutu DCC."
+  ],
+  "steps.3.name": [
+    "4e44a3f9",
+    "Wypłać maksymalnie jedną transakcję"
+  ],
+  "steps.3.text": [
+    "831b2ec9",
+    "Ponieważ obowiązuje stała opłata za wypłatę, zastosuj się do dozwolonego limitu, aby rozłożyć koszt na większą ilość gotówki."
+  ],
+  "steps.4.name": [
+    "6fcb61ed",
+    "Zachowaj paragon i policz gotówkę"
+  ],
+  "steps.4.text": [
+    "30d70c06",
+    "Sprawdź wypłaconą kwotę, zachowaj paragon i podziel gotówkę na więcej niż jedno miejsce, zanim opuścisz bankomat."
+  ],
+  "faq.0.q": [
+    "e44ca992",
+    "Czy mogę wypłacić dolary amerykańskie z bankomatów w Urugwaju?"
+  ],
+  "faq.0.a": [
+    "eb6339a1",
+    "Tak. W przeciwieństwie do Argentyny, wiele bankomatów w Urugwaju wypłaca zarówno dolary, jak i peso, zazwyczaj w banknotach 100-dolarowych. Limity wypłat z kart zagranicznych są niskie."
+  ],
+  "faq.1.q": [
+    "33423670",
+    "Ile opłat pobierają bankomaty za korzystanie z zagranicznych kart?"
+  ],
+  "faq.1.a": [
+    "68121602",
+    "Lokalna dopłata jest niska (rzędu kilku dolarów za wypłatę). Większy koszt to zazwyczaj opłata za transakcje zagraniczne pobierana przez Twój bank (zwykle 1–3%)."
+  ],
+  "faq.2.q": [
+    "bf2fe8ff",
+    "Jaka jest maksymalna kwota, jaką mogę wypłacić w ramach jednej transakcji?"
+  ],
+  "faq.3.q": [
+    "66601510",
+    "Czy powinienem wymienić pieniądze na lotnisku?"
+  ],
+  "faq.3.a": [
+    "82d5704c",
+    "Nie za duże kwoty: lotnisko i terminale promowe płacą zauważalnie mniej. Wymień tylko tyle, ile potrzeba na dojazd do miasta, a następnie skorzystaj z kantoru wymiany walut lub bankomatu w centrum miasta."
+  ],
+  "faq.4.q": [
+    "44d07e17",
+    "Gotówka czy karta w Urugwaju?"
+  ],
+  "faq.4.a": [
+    "11ded5ec",
+    "W Urugwaju bardzo łatwo jest płacić kartami (Visa i Mastercard prawie wszędzie, płatności zbliżeniowe i QR). Warto mieć przy sobie trochę peso w gotówce na drobne zakupy i płacić większe kwoty kartą."
+  ],
+  "faq.5.q": [
+    "2d0dd094",
+    "Jaką walutę powinienem zabrać?"
+  ],
+  "faq.5.a": [
+    "cc8484ac",
+    "Gotówka w dolarach amerykańskich: najlepsze kursy i akceptowane w każdym kantorze. Euro jest na drugim miejscu. Jadąc z Argentyny, zabierz dolary, a nie peso argentyńskie."
+  ],
+  "faq.6.q": [
+    "b71d8d92",
+    "Czy jako turysta mogę liczyć na ulgę podatkową?"
+  ],
+  "faq.6.a": [
+    "49712ab8",
+    "Tak: oprócz obowiązku zakwaterowania, ogólna dziewięciopunktowa obniżka cen posiłków i wynajmu samochodów bez kierowcy obejmuje również osoby niebędące rezydentami do 30 kwietnia 2027 r., za opłaconą drogą elektroniczną przez osobę fizyczną konsumpcję. Sezonowe całkowite zwolnienie wymaga osobnego rozporządzenia i dat; nie można go wywnioskować z tego przedłużenia."
+  ],
+  "faq.7.q": [
+    "04fb59ce",
+    "Co się stanie, jeśli bankomat odrzuci moją kartę?"
+  ],
+  "faq.7.a": [
+    "15f0167b",
+    "Spróbuj innej karty i innej sieci (RedBROU i Banred są ze sobą połączone, ale warto mieć przy sobie obie). Sprawdź, czy bankomat wyświetla logo Visa/Mastercard/Cirrus/Plus i poinformuj bank, że będziesz z niego korzystać w Urugwaju."
+  ],
+  "related.0.label": [
+    "9371cd8d",
+    "Dolary na podróże"
+  ],
+  "related.1.label": [
+    "89470d17",
+    "Kupowanie dolarów w najlepszej cenie"
+  ],
+  "related.2.label": [
+    "7b531a45",
+    "Domy wymiany walut i oddziały"
+  ],
+  "related.3.label": [
+    "574f3e27",
+    "Porównaj stawki"
+  ]
+}

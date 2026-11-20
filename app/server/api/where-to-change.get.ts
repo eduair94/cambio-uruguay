@@ -51,7 +51,9 @@ async function buildRecommendation(
 
   // Plain/cash quotes only (skip interbank/cable rows) for a fair house
   // comparison. `!r.type` already covers the empty-string ("plain") quote type.
-  const market = rates.filter(r => r.code === currency && !r.type && r.origin !== 'bcu')
+  const market = rates.filter(
+    r => r.code === currency && (!r.type || r.type === 'BILLETE') && r.origin !== 'bcu'
+  )
 
   // Deterministic ranking grounds the prompt; amount=1 keeps the prose generic.
   const { ranked, marketAverage } = rankExchanges(market, currency, op, 1)
@@ -98,7 +100,8 @@ export default defineCachedEventHandler(
   {
     maxAge: 60 * 45, // regenerate every 45 min
     staleMaxAge: 60 * 60 * 4, // serve stale up to 4h while revalidating
-    name: 'where-to-change-uy',
+    // Invalidate prose cached before the ranking used the market guard.
+    name: 'where-to-change-uy-eligible-rates',
     getKey: event => {
       const q = getQuery(event)
       const currency = String(q.currency ?? 'USD')

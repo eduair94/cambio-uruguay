@@ -218,11 +218,15 @@ const GROUP_SPECS: Array<{ verdict: RemittanceVerdict; title: string; note: stri
 
 const groups = GROUP_SPECS.map(group => ({ ...group, entries: remittanceEntries(group.verdict) }))
 
-// El layout le agrega " | Cambio Uruguay" (17 caracteres) al title, así que la parte propia se
-// queda corta a propósito: con la cifra adentro el conjunto entra en el ancho que Google muestra,
-// y una descripción con números corre ~1,4 % de CTR contra 0,03-0,2 % de una genérica desde la
-// misma posición. Las cifras salen de la lista, nunca escritas a mano, para que no envejezcan.
-const metaTitle = `Dónde cobrar un giro del exterior en Uruguay: ${counts.agents} casas`
+// El layout le agrega " | Cambio Uruguay" (17 caracteres) al title, así que la parte propia tiene
+// 43 y no 60. El título decía «Dónde cobrar un giro del exterior en Uruguay: N casas» y medía 71
+// con la marca: el SERP cortaba en «…en Urugu» y se llevaba justo la cifra, que es lo único que
+// este título puede decir y la caja de respuesta de Google no. Sale «Dónde» —la pregunta ya la
+// escribió quien busca— y sale «en Uruguay», que la marca repite; queda la cifra. Una descripción
+// con números corre ~1,4 % de CTR contra 0,03-0,2 % de una genérica desde la misma posición, y el
+// renglón del título se mide igual. Las cifras salen de la lista, nunca escritas a mano, para que
+// no envejezcan.
+const metaTitle = `Cobrar un giro del exterior: ${counts.agents} casas`
 const metaDescription = `${counts.westernUnion} casas de cambio uruguayas se declaran agentes de Western Union y ${counts.moneyGram} de MoneyGram; otras ${counts.international} hacen giros del exterior y ${counts.declines} avisan que no. Fuente por casa.`
 
 useSeoMeta({

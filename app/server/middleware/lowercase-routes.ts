@@ -1,4 +1,5 @@
 import { canonicalRoutePath } from '../../utils/routeCase'
+import { rawRequestPath } from '../utils/rawRequestPath'
 
 // 301 hacia la grafía canónica de `/historico/**` y `/sucursales/**`.
 //
@@ -16,7 +17,10 @@ export default defineEventHandler(event => {
   const method = event.method
   if (method !== 'GET' && method !== 'HEAD') return
 
-  const raw = event.path || ''
+  // Cruda y no `event.path`: h3 la decodifica, y `canonicalRoutePath` espera la ruta codificada
+  // (decodifica, baja y vuelve a codificar cada segmento). Con la decodificada, un segmento con
+  // caracteres fuera de latin1 viajaba tal cual al Location y Node respondía 500.
+  const raw = rawRequestPath(event)
   const queryAt = raw.indexOf('?')
   const path = queryAt === -1 ? raw : raw.slice(0, queryAt)
   const query = queryAt === -1 ? '' : raw.slice(queryAt)

@@ -96,14 +96,14 @@
         <AccountApiClientsAdminPanel />
       </VTabsWindowItem>
     </VTabsWindow>
-    <RentalAlertDialog />
+    <RentalAlertDialogHost />
   </VContainer>
 </template>
 
 <script setup lang="ts">
 import RentalAlertPanel from '~/components/rentals/RentalAlertPanel.vue'
 import RentalAlertResume from '~/components/rentals/RentalAlertResume.vue'
-import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'
+import RentalAlertDialogHost from '~/components/rentals/RentalAlertDialogHost.vue'
 definePageMeta({ middleware: 'auth' })
 
 // Private account area — behind auth, never a search landing page.

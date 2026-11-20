@@ -7,6 +7,7 @@ import {
   equiparProductosWithout,
   type EquiparProductosQuery,
   type EquiparProductosResponse,
+  type EquiparQueryKey,
   type RetailProductosVertical,
 } from '~/utils/equiparProductos'
 
@@ -70,7 +71,7 @@ export async function useEquiparProductosDirectorio(
     router.replace({ query: params })
   }
 
-  const remove = (keys: ReadonlyArray<keyof EquiparProductosQuery>) =>
+  const remove = (keys: ReadonlyArray<EquiparQueryKey>) =>
     update(equiparProductosWithout(query.value, keys))
 
   const clear = () =>

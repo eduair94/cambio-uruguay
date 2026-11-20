@@ -331,6 +331,11 @@ STORY: Set a budget and a type, watch the count fall, open the chair that fits.
 
 <script setup lang="ts">
 import {
+  CHAIR_SHARE_QUERY_KEYS,
+  chairFiltersFromQuery,
+  chairFiltersToQuery,
+} from '~/utils/catalogShareQuery'
+import {
   bestChairOffer,
   chairSourceIcon,
   emptyChairFilters,
@@ -360,7 +365,12 @@ const props = withDefaults(
 const { t, locale } = useI18n()
 const localePath = useLocalePath()
 
-const filters = reactive<ChairDirectoryFilters>(emptyChairFilters())
+const filters = reactive<ChairDirectoryFilters>(chairFiltersFromQuery(useRoute().query))
+useCatalogShareQuery(
+  CHAIR_SHARE_QUERY_KEYS,
+  () => chairFiltersToQuery(filters),
+  query => Object.assign(filters, chairFiltersFromQuery(query))
+)
 const pageSize = ref(24)
 const filtersOpen = ref(false)
 

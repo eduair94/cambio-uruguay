@@ -36,6 +36,7 @@ export const NEVER_LINKED_PREFIXES: readonly string[] = Object.freeze([
   // Meta sobre el propio sitio. Ninguna contesta una pregunta de plata.
   "/estadisticas-del-sitio",
   "/estadisticas-reddit",
+  "/origen-del-trafico",
   "/analiticas",
   "/estado",
   "/buscar",

@@ -8,9 +8,9 @@
  * Revalidar siempre, y NADA sobre cachés compartidas.
  *
  * `max-age=0, must-revalidate` es la mitad que le habla al navegador. La otra
- * mitad, `s-maxage`, se omite a propósito: agregarla acá haría edge-cacheable
- * una respuesta que hoy no lo es, y este sitio manda `Set-Cookie: lang` y
- * contenido por idioma en páginas que nunca se midieron para eso.
+ * mitad, `s-maxage`, NO va acá: este middleware corre antes del render y no sabe
+ * si la página va a terminar en 404 o 503. La agrega `server/plugins/edge-cache.ts`
+ * al final, sólo a un 200 (ver `utils/edgeCache.ts`).
  */
 export const defaultHtmlCacheControl = 'public, max-age=0, must-revalidate'
 

@@ -5,13 +5,18 @@
 //
 // Por qué existe y cuál es la regla: `classes/revenueplan/debtFree.ts`.
 //
-// QUÉ CUBRE Y QUÉ NO. Los tres trinquetes que declaran su deuda como una lista de rutas, que son
-// los que contestan «¿cuál puedo tocar?» con un nombre propio. Los otros dos pozos de deuda de SEO
-// —las migas de `seoContract.test.ts` y los snippets de guía pasados de `guideSnippetBudget.test.ts`—
-// declaran un NÚMERO y calculan sus miembros desde el árbol de páginas y el catálogo de guías, así
-// que acá no se pueden nombrar sin reimplementar esa cuenta, y una segunda cuenta que se separe de
-// la primera en silencio es exactamente lo que este archivo existe para no hacer. Quedan afuera a
-// propósito; cubrirlas pide que esos dos trinquetes declaren sus miembros como los otros tres.
+// QUÉ CUBRE. Los NUEVE pozos de deuda de SEO del app, cada uno declarado como una lista en el
+// trinquete que lo mide. El cuarto y el quinto entraron el 2026-10-20 y eran los que faltaban: las
+// migas de `seoContract.test.ts` y los dos snippets pasados de `guideSnippetBudget.test.ts` declaraban un
+// NÚMERO y nada más, así que este informe no los podía nombrar y la respuesta a «¿cuál puedo tocar
+// hoy?» para esos tres pozos vivía en prosa, dentro del comentario de cada presupuesto y con fecha
+// de vencimiento escrita a mano («las diez entran cuando su ventana cierre, la última el
+// 2026-10-26»). La salida era reimplementar la cuenta acá, que es la segunda cuenta que se separa
+// de la primera en silencio que este archivo existe para no hacer; la entrada fue la que el
+// encabezado viejo pedía: que esos dos trinquetes declararan sus miembros como los otros tres. Lo
+// hacen, y además los exigen EXACTOS, así que ahora el número no se puede compensar solo.
+//
+// Cada lista se lee como texto y no se copia, por lo que dice `classes/revenueplan/debtFree.ts`.
 import fs from "fs";
 import path from "path";
 
@@ -54,6 +59,83 @@ const POOLS: Array<{
     file: "enlacesDeContexto.test.ts",
     list: "DEUDA_SIN_ENLACE",
     budget: "DEUDA_MAXIMA",
+  },
+  {
+    pool: "sin migas",
+    file: "seoContract.test.ts",
+    list: "DEUDA_SIN_MIGAS",
+    budget: "BREADCRUMB_BUDGET",
+  },
+  {
+    pool: "título pasado de 60",
+    file: "guideSnippetBudget.test.ts",
+    list: "DEUDA_TITULO_LARGO",
+    budget: "TITLE_OVER_BUDGET",
+    toRoute: (slug) => `/guias/${slug}`,
+  },
+  {
+    pool: "descripción pasada de 155",
+    file: "guideSnippetBudget.test.ts",
+    list: "DEUDA_DESCRIPCION_LARGA",
+    budget: "DESCRIPTION_OVER_BUDGET",
+    toRoute: (slug) => `/guias/${slug}`,
+  },
+  // El sexto, desde el 2026-11-02. Es el pozo que nació de un AGUJERO y no de una deuda que alguien
+  // decidiera dejar para después: `seoDescriptionBudget.test.ts` medía sólo las descripciones
+  // escritas con comillas, así que las 13 que se escriben con una PLANTILLA no las veía nadie y
+  // cuatro ya salían cortadas del SERP —la peor con 498 caracteres, en una página del tramo que
+  // rinde 8×—. El trinquete viejo decía «pozo pagado: 0» y era verdad de lo que medía, que es el
+  // mismo modo de fallar de una ruta mal tipeada en `value.ts`: no hay rojo, hay una medición que
+  // no alcanza a la página. Las plantillas se miden por PISO (su texto fijo, ignorando los
+  // `${...}`, que sólo pueden agregar), así que este pozo condena y no absuelve.
+  {
+    pool: "descripción de plantilla pasada de 155",
+    file: "seoDescriptionBudget.test.ts",
+    list: "DEUDA_DESCRIPCION_PLANTILLA",
+    budget: "TEMPLATE_OVER_BUDGET",
+  },
+  // El séptimo, desde el 2026-11-03, y nació del mismo agujero que el sexto pero del lado del
+  // TÍTULO, que es la línea sobre la que se hace clic. `seoTitleBudget.test.ts` ya barría las
+  // páginas, pero su lector se queda en la línea del `title:` — y cuando el título es largo
+  // prettier parte esa línea, así que el punto ciego estaba CORRELACIONADO con el defecto: el
+  // título que no entra en el SERP es el que tiende a no entrar en una línea. Resolvía 190 de las 300
+  // páginas que declaran un `title:` y entre las 110 que no leía había una de 94 caracteres, del
+  // tramo que rinde 8×. El lector nuevo llega a 247 y mide el PISO (los `${...}` que no resuelven
+  // aportan vacío), así que condena y no absuelve.
+  {
+    pool: "piso de título pasado de 60",
+    file: "seoTitleBudget.test.ts",
+    list: "DEUDA_TITULO_PISO",
+    budget: "TITLE_FLOOR_OVER_BUDGET",
+  },
+  // El octavo, desde el 2026-11-11, y es el MISMO agujero del sexto y del séptimo corrido un
+  // archivo más allá: los dos lectores de `seoTitleBudget.test.ts` leen el `.vue`, así que ninguno
+  // podía medir `title: () => t('seo.algoTitle')` —el texto vive en `i18n/locales/json/*.json`— y
+  // las ocho claves sin parámetros que titulan ocho páginas no las contaba nadie. Siete de ellas
+  // estaban pasadas en alguno de los tres idiomas, la peor con 80 caracteres en español. Las tres
+  // claves de título CON parámetros siguen fuera y el comentario del pozo dice por qué y cuánto
+  // miden, que es la parte que no se puede dejar en una medición ausente.
+  {
+    pool: "título de i18n pasado de 60",
+    file: "seoTitleBudget.test.ts",
+    list: "DEUDA_TITULO_I18N",
+    budget: "I18N_OVER_BUDGET",
+  },
+  // El noveno, desde el 2026-11-12, y es la mitad SIMÉTRICA del octavo: el octavo midió las claves
+  // `seo.*Title` que viven en i18n y nadie contaba, y la descripción de esas mismas ocho páginas
+  // seguía sin medir. Los dos lectores de `seoDescriptionBudget.test.ts` leen el `.vue` —comillas y
+  // plantillas, 188 páginas—, así que ninguno puede medir `description: () => t('seo.algoDescription')`,
+  // donde el texto vive en `i18n/locales/json/*.json`: son 95 de las 309 páginas que declaran un
+  // `description:`, y de las claves que las alimentan la única con test propio era
+  // `homeDescriptionLive`, contra 160 y no contra los 155 del resto del repo. Tres de las ocho
+  // claves sin parámetros estaban pasadas en algún idioma, la peor con 227 caracteres en la home.
+  // Las cuatro claves CON parámetros siguen fuera y el comentario del pozo dice por qué y cuánto
+  // miden, que es la parte que no se puede dejar en una medición ausente.
+  {
+    pool: "descripción de i18n pasada de 155",
+    file: "seoDescriptionI18n.test.ts",
+    list: "DEUDA_DESCRIPCION_I18N",
+    budget: "I18N_DESCRIPTION_OVER_BUDGET",
   },
 ];
 
@@ -104,7 +186,8 @@ function main(): void {
   }
   console.log(
     "\nUna ruta libre acá NO es una mejora: sigue haciendo falta que el cambio le sirva a un lector.\n" +
-      "Y las migas y los snippets de guía no se cuentan acá (ver el encabezado de este archivo)."
+      "Los nueve pozos con lista están contados; las dos deudas que no son de ruta (el título y la\n" +
+      "descripción de una MISMA guía) salen como dos filas, porque se arreglan por separado."
   );
 }
 

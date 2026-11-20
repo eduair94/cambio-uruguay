@@ -175,7 +175,7 @@ export const JOURNEY_STAGES: JourneyStage[] = [
       {
         to: '/equipar-casa-uruguay',
         label: 'Qué comprar y cuánto sale',
-        hint: '38 categorías con precio vivo y tres canastas ya sumadas',
+        hint: '39 categorías con precio vivo y tres canastas ya sumadas',
         icon: 'mdi-sofa-outline',
         lead: true,
       },

@@ -110,6 +110,7 @@ Same component both times so the two can never drift apart.
 </template>
 
 <script setup lang="ts">
+import { VSlider } from 'vuetify/components'
 import {
   formatChairPrice,
   type ChairCategory,

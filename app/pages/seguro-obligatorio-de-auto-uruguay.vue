@@ -215,6 +215,9 @@
       </VTable>
     </section>
 
+    <!-- La unidad intermedia, antes de las preguntas: mismo corte que FaqSection (ver
+         docs/seo/adsense-growth-loop.md, 31/10/2026). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <section class="mb-10">
       <h2 class="text-h5 font-weight-bold mb-4">Preguntas frecuentes</h2>
       <VExpansionPanels variant="accordion">
@@ -347,6 +350,11 @@ const relatedLinks = [
     to: '/conviene-auto-moto-o-omnibus-uruguay',
     label: '¿Auto, moto u ómnibus?',
     description: 'Cuánto sale por mes cada modo, con el SOA adentro.',
+  },
+  {
+    to: '/llevar-el-auto-a-brasil-o-argentina',
+    label: 'Llevar el auto a Brasil o Argentina',
+    description: 'Afuera no alcanza el SOA: piden la carta verde del Mercosur.',
   },
   {
     to: '/indicadores/unidad-indexada',

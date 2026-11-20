@@ -139,6 +139,39 @@ export interface SerpAssessment {
   weak: number;
 }
 
+/** Diagnóstico acotado: nunca lleva consultas, respuestas ni objetos de error. */
+export type SerpFailureReason =
+  | "http"
+  | "timeout"
+  | "network"
+  | "empty-results"
+  | "invalid-response"
+  | "unexpected";
+
+export interface SerpFailure {
+  status: "failed";
+  reason: SerpFailureReason;
+  httpStatus?: number;
+}
+
+export type SerpCheck =
+  | { status: "classified" }
+  | SerpFailure
+  | { status: "not-attempted"; reason: "budget" | "disabled" };
+
+/** Ausencia en un documento viejo no prueba que se agotara el presupuesto. */
+export function serpDiagnosticReason(check?: SerpCheck): string {
+  if (check?.status === "failed") {
+    return "sin clasificar: falló la evaluación del SERP, hay que mirarlo a mano";
+  }
+  if (check?.status === "not-attempted") {
+    return check.reason === "budget"
+      ? "sin clasificar: no llegó al presupuesto de SERP, hay que mirarlo a mano"
+      : "sin clasificar: la etapa SERP se omitió, hay que mirarlo a mano";
+  }
+  return "sin clasificar: no hay diagnóstico del intento SERP, hay que mirarlo a mano";
+}
+
 const domainOf = (value: string): string =>
   String(value || "")
     .replace(/^https?:\/\//, "")
@@ -226,6 +259,8 @@ export interface Candidate {
   /** La página que más se le parece, si hay alguna. */
   bestPath: string | null;
   serp?: SerpAssessment;
+  /** Opcional para leer colas anteriores sin reconstruir sus intentos. */
+  serpCheck?: SerpCheck;
   /** Presente cuando el sitio YA aparece en Google para esta consulta exacta. */
   known?: KnownPosition;
 }
@@ -278,7 +313,7 @@ export function scoreCandidate(c: Candidate): ScoredCandidate {
       ? c.serp?.reason || "sin evaluar el SERP"
       : gap < 0.3
         ? `ya hay algo parecido en ${c.bestPath ?? "el sitio"}`
-        : c.serp?.reason || "sin clasificar: no llegó al presupuesto de SERP, hay que mirarlo a mano";
+        : c.serp?.reason || serpDiagnosticReason(c.serpCheck);
 
   return { ...c, score, why };
 }

@@ -1,4 +1,5 @@
 import * as bcuHistory from '../../utils/bcuHistory'
+import * as ogCardText from '../../utils/ogCardText'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { runInNewContext } from 'node:vm'
@@ -21,6 +22,10 @@ function runSource(source: string, modules: Record<string, unknown>, globals = {
     ...globals,
     require: (name: string) => {
       if (name in modules) return modules[name]
+      // Pages import their occasional Vuetify components themselves; nothing renders them here.
+      if (name === 'vuetify/components') {
+        return new Proxy({}, { get: () => ({ render: () => null }) })
+      }
       throw new Error(`Unexpected module ${name}`)
     },
   }
@@ -114,7 +119,7 @@ it('returns HTTP 404 through app.vue and the installed Nuxt SSR runtime after hi
   page.ssrRender = () => {}
   const appComponent = sfc(
     'app.vue',
-    { vue, 'vue/server-renderer': serverRenderer },
+    { vue, 'vue/server-renderer': serverRenderer, '~/utils/ogCardText': ogCardText },
     {
       defineOgImageComponent: () => {},
       useHead: () => {},

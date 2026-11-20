@@ -83,7 +83,7 @@ For stdio set `MCP_TOOLSETS=alquileres,autos` (default: all).
 
 | Tool | Description |
 |---|---|
-| `search_rentals` | The whole rental directory with every filter: neighbourhoods, type, bedrooms, m², price in pesos, **monthly total with common expenses**, pets, parking, furnished or unfurnished, lease period (year-round or winter), accepted guarantee (ANDA, Contaduría, insurer, deposit, BHU), amenities, owner-direct, portal, free text, near a point + radius, neighbourhood quality (few crime reports, few water cuts). |
+| `search_rentals` | The whole rental directory with every filter: neighbourhoods, type, bedrooms, m², price in pesos, **monthly total with common expenses**, pets, parking, furnished or unfurnished, lease period (year-round or winter), accepted guarantee (ANDA, Contaduría, insurer, deposit, BHU), amenities, owner-direct, hidden portals, free text, near an address or coordinates + radius, neighbourhood quality (few crime reports, few water cuts). |
 | `rank_rentals_for_household` | The personalised one: scores every current home for a household of 1–8 people with incomes, remote days and up to 4 daily destinations each (work/study, days per week, travel mode). Budget share, what is left each month, distance per person and destination, reasons and warnings. |
 | `get_rental` | One home: every advert that publishes it (price per portal), description, amenities, guarantee text, market comparison, similar homes, neighbourhood profile. |
 | `rental_market_stats` | Median and typical range of rent, common expenses, monthly total and price per m², by department/neighbourhood/type/bedrooms; cheapest and priciest neighbourhoods. |
@@ -107,7 +107,7 @@ For stdio set `MCP_TOOLSETS=alquileres,autos` (default: all).
 
 | Tool | Description |
 |---|---|
-| `search_products` | One search over phones, desk chairs, 38 home categories and e-scooters/e-bikes: cheapest plausible offer with seller and link, typical new/used band, used savings. |
+| `search_products` | One search over phones, desk chairs, 38 home categories and e-scooters/e-bikes. Mobility returns actual adverts matching brand, title, variant, seller, source, condition and price range, with seller, last-seen date and a link that preserves the directory filters; home categories include typical new/used bands and used savings. |
 | `plan_home_setup` | What equipping an empty home costs (minimal/decent/complete), minus what the person already has; says when a total is partial. |
 | `check_online_store` | Dated trust signals of an online store (domain age, Google, Trustpilot, Reddit mentions, policies, payments). Never a verdict. |
 | `supermarket_prices` | Official SIPC prices per article and the cheapest supermarkets of a department by matched basket. |

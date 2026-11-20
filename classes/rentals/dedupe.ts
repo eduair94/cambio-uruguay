@@ -310,6 +310,8 @@ function toOffer(listing: Candidate, context: DedupeContext): RentalOffer {
     priceUyu: listing.priceUyu,
     commonExpenses: listing.commonExpenses === null ? null : Math.round(listing.commonExpenses),
     commonExpensesCurrency: listing.commonExpensesCurrency,
+    // The page labels a figure read from the advert's own words; a portal's figure carries nothing.
+    ...(listing.commonExpenses !== null && listing.commonExpensesSource === "description" ? { commonExpensesSource: "description" as const } : {}),
     sellerName: listing.sellerName,
     sellerType: listing.sellerType,
     image: listing.image,

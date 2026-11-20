@@ -218,15 +218,18 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
               >
             </div>
           </div>
-          <div v-if="!error" class="opportunities__list">
-            <OpportunityCard
-              v-for="item in items"
-              :key="item.subject.id"
-              :item="item"
-              :signal="query.signal"
-              :stale="data?.stale"
-              @preview="openPreview"
-            />
+          <div v-if="!error" ref="resultsList" class="opportunities__list">
+            <FeedEdge :feed="feed" edge="top" />
+            <template v-for="(item, index) in feed.items" :key="item.subject.id">
+              <FeedAd :index="index" :feed="feed" />
+              <OpportunityCard
+                :item="item"
+                :signal="query.signal"
+                :stale="data?.stale"
+                @preview="openPreview"
+              />
+            </template>
+            <FeedEdge :feed="feed" edge="bottom" />
           </div>
           <PropertyPhotoLightbox
             v-model="previewOpen"
@@ -235,24 +238,28 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
             :source="preview?.source || null"
             :detail-href="preview?.detailHref || ''"
           />
-          <nav
-            v-if="!error && (data?.pages ?? 0) > 1"
-            class="opportunities__pagination"
-            :aria-label="t('page', { n: data?.page ?? 1, total: data?.pages ?? 1 })"
-          >
-            <VBtn
-              :disabled="pending || (data?.page ?? 1) <= 1"
-              variant="outlined"
-              @click="changePage((data?.page ?? 1) - 1)"
-              >{{ t('previous') }}</VBtn
-            ><span>{{ t('page', { n: data?.page ?? 1, total: data?.pages ?? 1 }) }}</span
-            ><VBtn
-              :disabled="pending || (data?.page ?? 1) >= (data?.pages ?? 1)"
-              variant="outlined"
-              @click="changePage((data?.page ?? 1) + 1)"
-              >{{ t('next') }}</VBtn
-            >
-          </nav>
+          <FeedControls v-if="!error" :feed="feed">
+            <template #pagination>
+              <nav
+                v-if="(data?.pages ?? 0) > 1"
+                class="opportunities__pagination"
+                :aria-label="t('page', { n: data?.page ?? 1, total: data?.pages ?? 1 })"
+              >
+                <VBtn
+                  :disabled="pending || (data?.page ?? 1) <= 1"
+                  variant="outlined"
+                  @click="changePage((data?.page ?? 1) - 1)"
+                  >{{ t('previous') }}</VBtn
+                ><span>{{ t('page', { n: data?.page ?? 1, total: data?.pages ?? 1 }) }}</span
+                ><VBtn
+                  :disabled="pending || (data?.page ?? 1) >= (data?.pages ?? 1)"
+                  variant="outlined"
+                  @click="changePage((data?.page ?? 1) + 1)"
+                  >{{ t('next') }}</VBtn
+                >
+              </nav>
+            </template>
+          </FeedControls>
           <!--
             Después de los resultados: arriba empujaba la comparación de la primera tarjeta fuera de
             la primera pantalla en el celular (cinco e2e de property-opportunities), como en el
@@ -303,7 +310,7 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
       </div>
     </div>
     <VSnackbar v-model="showSnackbar" :timeout="5000">{{ snackbar }}</VSnackbar>
-    <RentalAlertDialog />
+    <RentalAlertDialogHost />
   </VContainer>
 </template>
 
@@ -314,7 +321,7 @@ import { useDisplay } from 'vuetify'
 import OpportunityFilters from '~/components/property-opportunities/Filters.vue'
 import OpportunityCard from '~/components/property-opportunities/OpportunityCard.vue'
 import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
-import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'
+import RentalAlertDialogHost from '~/components/rentals/RentalAlertDialogHost.vue'
 import type { PropertyPreviewRequest } from '~/utils/photoViewer'
 import { propertyOpportunityMessages } from '~/utils/propertyOpportunityMessages'
 import {
@@ -371,6 +378,26 @@ const { data, pending, error, refresh } = await useAsyncData<PropertyOpportuniti
 const items = computed(() =>
   !pending.value && data.value?.operation === query.value.operation ? data.value.items : []
 )
+// "Cargar más al bajar" (composables/useInfiniteFeed.ts): la lista recorre `feed.items`.
+const resultsList = ref<HTMLElement | null>(null)
+const feed = useInfiniteFeed<PropertyOpportunitiesResponse['items'][number]>({
+  id: 'oportunidades-inmobiliarias',
+  itemKey: item => item.subject.id,
+  list: resultsList,
+  items: () => items.value,
+  page: () => query.value.page,
+  pageCount: () => data.value?.pages ?? 1,
+  perPage: () => data.value?.perPage ?? 24,
+  resetKey: () => JSON.stringify({ ...query.value, page: 1 }),
+  fetchPage: (page, signal) =>
+    $fetch<PropertyOpportunitiesResponse>('/api/property-opportunities', {
+      query: availability.withRevision({ ...query.value, page }),
+      signal,
+    }).then(response => response.items),
+  enabled: () => !budgetMode.value && !error.value,
+  goToPage: page => void changePage(page),
+  anchorId: 'opportunity-results',
+})
 availability.watchChanges(async () => {
   if (budgetMode.value) return
   await refresh()
@@ -952,8 +979,10 @@ useHead(() => ({
 }
 @media (max-width: 700px) {
   .opportunities {
-    /* The layout already contributes 12px: retain 16px total at each edge. */
-    padding: 4px 4px 56px;
+    /* The layout already contributes 12px; 16px more puts the content at x=28 like every other
+       page under the section bar (FamiliaNav). With 4px the cards stood 12px wider than the bar on
+       each side, the inconsistency a reader reported from a phone on 2026-11-11. */
+    padding: 4px 16px 56px;
   }
   .opportunities__breadcrumbs {
     display: none;

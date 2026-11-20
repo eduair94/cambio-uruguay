@@ -28,6 +28,28 @@
           <ShareButtons label variant="tonal" color="white" class="cu-footer__share" />
           <ClientOnly><PwaInstallAction /></ClientOnly>
 
+          <!-- The suggestion box and the bug report, from every page. Plain links to the form on
+               /contacto (works without JS, no modal); `?tipo=bug` preselects the report. -->
+          <div class="cu-footer__feedback" @click="onDirectoryClick">
+            <p class="cu-footer__feedback-title">{{ fbT('footer.title') }}</p>
+            <a
+              :href="localePath('/contacto') + '#sugerencias'"
+              class="cu-footer__feedback-link"
+              data-cta="footer_suggest"
+            >
+              <VIcon size="18" aria-hidden="true">mdi-lightbulb-on-outline</VIcon>
+              {{ fbT('footer.suggest') }}
+            </a>
+            <a
+              :href="localePath('/contacto') + '?tipo=bug#sugerencias'"
+              class="cu-footer__feedback-link"
+              data-cta="footer_bug"
+            >
+              <VIcon size="18" aria-hidden="true">mdi-bug-outline</VIcon>
+              {{ fbT('footer.bug') }}
+            </a>
+          </div>
+
           <!-- External + connect channels. Native title + aria-label instead of
                VTooltip: avoids empty role=tooltip overlays that fail the
                aria-tooltip-name audit. -->
@@ -52,18 +74,43 @@
              NAV_SECTIONS so the footer, header and drawer can never disagree
              about what exists. This is where crawlers pick up the long-tail
              pages, so the links stay — they're just packed tighter now. -->
-        <nav class="cu-footer__dir" :aria-label="$t('nav.sitemap')">
+        <!-- Plain anchors + one delegated click handler, not NuxtLink: see utils/spaLinks.ts. -->
+        <!-- En el teléfono cada sección es un desplegable CERRADO: abiertas, las once sumaban 7.290 px
+             de 12.153 en una página de indicador (16/11/2026) — el 60 % del alto de la página era
+             pie. Los enlaces siguen todos en el HTML del servidor (es CSS lo que los pliega), el
+             botón aparece recién al hidratar y sólo bajo 600 px, y sin JavaScript el <noscript> del
+             head (useHead, abajo) las deja abiertas. -->
+        <nav class="cu-footer__dir" :aria-label="$t('nav.sitemap')" @click="onDirectoryClick">
           <div v-for="section in footerSections" :key="section.id" class="cu-footer__col">
-            <h2 class="cu-footer__heading">{{ $t(section.titleKey) }}</h2>
-            <ul class="cu-footer__list">
+            <h2 class="cu-footer__heading">
+              <button
+                v-if="compact"
+                type="button"
+                class="cu-footer__toggle"
+                :aria-expanded="isOpen(section.id)"
+                :aria-controls="`cu-footer-dir-${section.id}`"
+                @click.stop="toggle(section.id)"
+              >
+                <span>{{ $t(section.titleKey) }}</span>
+                <VIcon size="18" aria-hidden="true">
+                  {{ isOpen(section.id) ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
+                </VIcon>
+              </button>
+              <template v-else>{{ $t(section.titleKey) }}</template>
+            </h2>
+            <ul
+              :id="`cu-footer-dir-${section.id}`"
+              class="cu-footer__list"
+              :class="{ 'cu-footer__list--open': isOpen(section.id) }"
+            >
               <li v-for="entry in section.entries" :key="entry.to">
-                <NuxtLink
-                  :to="localePath(entry.to as string)"
+                <a
+                  :href="localePath(entry.to as string)"
                   class="cu-footer__link"
                   :data-cta="entry.to === '/mapa-del-sitio' ? 'footer-sitemap' : undefined"
                 >
                   {{ $t(entry.labelKey) }}
-                </NuxtLink>
+                </a>
               </li>
             </ul>
           </div>
@@ -106,8 +153,15 @@
 
 <script setup lang="ts">
 import { NAV_SECTIONS } from '~/utils/siteNav'
+import { createSpaLinkHandler } from '~/utils/spaLinks'
+import { siteFeedbackMessages } from '~/utils/siteFeedbackMessages'
+
+/** The same breakpoint the stylesheet folds the directory at. */
+const FOOTER_COMPACT_QUERY = '(max-width: 599.98px)'
 
 const localePath = useLocalePath()
+const { t: fbT } = useI18n({ useScope: 'local', messages: siteFeedbackMessages })
+const onDirectoryClick = createSpaLinkHandler(path => navigateTo(path))
 const { reopen } = useConsent()
 const reopenConsent = () => reopen()
 
@@ -161,6 +215,39 @@ const socialLinks = [
     icon: 'mdi-heart',
   },
 ] as const
+
+// The directory folds on phones (see the template). `compact` starts false so the server and the
+// first client render agree; the media query decides after mount and follows a rotation.
+const compact = ref(false)
+const openSections = ref<ReadonlySet<string>>(new Set())
+const isOpen = (id: string) => openSections.value.has(id)
+function toggle(id: string) {
+  const next = new Set(openSections.value)
+  if (!next.delete(id)) next.add(id)
+  openSections.value = next
+}
+let stopWatchingViewport: (() => void) | null = null
+onMounted(() => {
+  if (typeof window.matchMedia !== 'function') return
+  const query = window.matchMedia(FOOTER_COMPACT_QUERY)
+  const sync = () => {
+    compact.value = query.matches
+  }
+  sync()
+  query.addEventListener('change', sync)
+  stopWatchingViewport = () => query.removeEventListener('change', sync)
+})
+onBeforeUnmount(() => stopWatchingViewport?.())
+// Without JavaScript nothing can open a section: leave them all open. In the head because a
+// <noscript> inside a hydrated template is parsed as text by a scripting browser and mismatches.
+useHead({
+  noscript: [
+    {
+      key: 'cu-footer-dir',
+      innerHTML: '<style>.cu-footer__list{display:flex!important}</style>',
+    },
+  ],
+})
 
 // Internal routes only: the external links have their own icon row above.
 const footerSections = computed(() =>
@@ -239,6 +326,40 @@ $teal: #4dd0e1;
   margin-bottom: 14px;
 }
 
+// The suggestion box: a quiet two-link block under the share action. Same muted ink as the
+// tagline for the question, white links with the teal accent on the icon, 44px rows to tap.
+.cu-footer__feedback {
+  display: grid;
+  justify-items: start;
+  margin: 4px 0 14px;
+}
+.cu-footer__feedback-title {
+  margin: 0 0 2px;
+  color: $muted;
+  font-size: 0.82rem;
+}
+.cu-footer__feedback-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: $ink;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+
+  .v-icon {
+    color: $teal;
+  }
+  &:hover {
+    text-decoration: underline;
+  }
+  &:focus-visible {
+    outline: 2px solid $teal;
+    outline-offset: 2px;
+  }
+}
+
 .cu-footer__social {
   display: flex;
   flex-wrap: wrap;
@@ -292,6 +413,31 @@ $teal: #4dd0e1;
   line-height: 1.2;
   letter-spacing: 0.07em;
   text-transform: uppercase;
+}
+
+.cu-footer__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: start;
+  text-transform: inherit;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid $teal;
+    outline-offset: 2px;
+    border-radius: 4px;
+    color: $ink;
+  }
 }
 
 .cu-footer__list {
@@ -399,8 +545,34 @@ $teal: #4dd0e1;
     padding: 32px 16px 18px;
   }
 
+  // One column of closed sections: a heading per row, its links one tap away.
   .cu-footer__dir {
-    gap: 20px 16px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .cu-footer__col {
+    border-bottom: 1px solid $line;
+  }
+
+  .cu-footer__heading {
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+    margin: 0;
+  }
+
+  .cu-footer__list {
+    display: none;
+    padding-bottom: 14px;
+  }
+
+  .cu-footer__list--open {
+    display: flex;
+  }
+
+  .cu-footer__link {
+    padding-block: 5px;
   }
 
   .cu-footer__bar {

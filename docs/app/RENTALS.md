@@ -1,5 +1,188 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Una búsqueda nueva tardaba 10–14 s: cinco conexiones a Mongo — 8 de noviembre de 2026
+
+Cambiar un filtro, el orden o la página en Montevideo sin caché (`/api/rentals` sin la entrada del
+memo de 5 min) tardaba **10–14 s** (página 25: 14,4 s; dormitorios + tope: 8,6 s), medido desde
+afuera el 8/11. Las mismas tuberías, armadas con el código del sitio y corridas a mano contra la
+base del VPS, cuestan ~3 s en paralelo (ítems 2,8 s, cantidad 1,5 s, departamentos 1,8 s, barrios
+1,4 s, dimensiones 2,1 s) y 0,4 s la de dormitorios: lo que faltaba no era Mongo. Era el pool:
+`server/utils/db.ts` abría **5 conexiones por worker** desde junio, cuando la app sólo guardaba
+cuentas, y una sola búsqueda lanza ocho operaciones a la vez mientras cada SSR concurrente usa el
+mismo pool, así que se hacían casi en fila (la suma serial, ~10 s, es lo que se veía). Ahora son 25
+por worker (mongod local con ~50.000 libres). De paso, el índice de reportes de disponibilidad
+buscaba sus avisos sin la intercalación del índice `rental_advert_id_es_v1` y leía las ~90.000
+propiedades (335 ms) cada vez que había reportes activos: ahora usa `RENTAL_COLLATION` y lee los
+seis que coinciden. Lo vigila `tests/unit/mongoPoolAndCollation.test.ts`.
+
+Lo que queda caro de verdad es el pase de ítems de Montevideo (2,8 s): `$match` por departamento lee
+las ~65.000 propiedades del departamento (3,5 KB de media) y les filtra las ofertas una por una. Bajar
+de ahí pide una colección pública ya proyectada (sólo ofertas vigentes, sin evidencia), no un índice.
+
+## Barrio de Casasweb, texto de Mercado Libre y gastos comunes de la descripción — 8 de noviembre de 2026
+
+**Casasweb lee el barrio de su etiqueta.** Desde el 2026-11-03 las tarjetas llevan tipo y zona en
+`<span class="badge-zona-resultado">Apartamento - Pocitos Nuevo</span>` (52 de 52 tarjetas de la
+búsqueda de apartamentos de Montevideo; todas las de casas de Maldonado, garajes de Montevideo y
+terrenos de Canelones medidas el 8/11) y dejaron las superficies donde estaba el barrio:
+`<b>Edificados:</b> 40 m²<br><b>Area Total:</b> 40 m²`. El lector sacaba los `<b>` y publicaba
+"40 m2 40 m2" como barrio: al menos 1.055 propiedades en Montevideo, 258 en Canelones y 69 en
+Maldonado (las facetas cortan en 250 valores), todas sin superficie, cinco páginas de barrio
+indexables (`/alquiler/montevideo/60-m2-60-m2`…) en el sitemap y en las medianas de cada barrio.
+Ahora `readCasaswebCard` (`classes/rentals/sources/casasweb.ts`):
+
+- El tipo es la **primera** parte de la etiqueta y el barrio la **última**: la zona puede traer su
+  propio guion ("Casa - Punta del Este - Pinares" es una casa en Pinares). Los acentos llegan bien.
+- La superficie es la **edificada**; si la tarjeta no la dice, el "Area Total", salvo en una casa,
+  donde es el terreno (lo mismo que dice la ficha propia, `propertysales/casasweb.ts`) y la tarjeta
+  queda sin superficie. Una cifra en hectáreas ("1 ha") no se convierte.
+- La tarjeta vieja (`<b>Apartamento - <i>45m²</i></b><br>Nuevo París`) se sigue leyendo, y sólo si
+  el barrio que da puede ser uno.
+- **No es barrio** (`plausibleCasaswebNeighborhood`) un texto con una superficie en cualquier parte
+  ("40 m2 40 m2", "60 mts"), sólo números, una cuenta de hectáreas ("4 H") o "Uruguay". "25 de Mayo"
+  y "18 de Julio" sí lo son: empezar con un número no descalifica.
+- **Guarda semántica** (`casaswebCardsUnrecognised`): una página de dos tarjetas o más cuyas
+  tarjetas se leen pero menos de la mitad nombra un barrio plausible falla la búsqueda con «tarjetas
+  irreconocibles» y no escribe ningún aviso de esa página. La nota de `rentalmetas` lo dice y la
+  corrida no se declara completa, así que nada caduca por ausencia. La única guarda era "cuenta
+  resultados y no hay tarjetas", y el cambio del 3/11 pasó cinco días sin un aviso. Una tarjeta sola
+  no prueba nada del markup (una última página, un tipo cuya etiqueta no nombra zona) y se publica
+  sin barrio.
+- **«Tarjetas irreconocibles» no es una caída** (las dos guardas: la de barrio y la de "cuenta
+  resultados y no hay tarjetas"): el portal contestó, y la misma página después de la pausa se lee
+  igual. Esa búsqueda falla enseguida, **sin segunda lectura**, y **no cuenta** para el corte de tres
+  fallas seguidas: lo reinicia, como cualquier respuesta. Contada, tres búsquedas vecinas con
+  tarjetas raras (oficinas, locales y depósitos de un departamento) cortaban el barrido de todos los
+  departamentos siguientes (revisión del 8/11). Un cambio de markup en todas las páginas sigue
+  fallando todas las búsquedas, una lectura cada una (209 en la completa, menos de lo que lee una
+  corrida normal; antes eran 6 y una pausa de un minuto), y la nota lo dice con el total.
+- Las URLs ya acuñadas con el barrio basura (`montevideo-60-m2-60-m2-1ua7c8h`) conservan su clave y
+  toman el barrio bueno en la próxima lectura; lo que ya no se ve caduca a los 4 días de una cosecha
+  completa de Casasweb. Una tarjeta suelta sin barrio se publica sin barrio.
+- **Ventas** (`classes/propertysales/casasweb.ts`) usa el mismo lector y la misma guarda (una página
+  irreconocible cuenta como página fallida, no como vacía, y tampoco cuenta para su corte de tres
+  páginas fallidas seguidas; con todas las páginas así, `casaswebHarvestRefusal` rechaza la cosecha
+  por la proporción de páginas fallidas). Con la tarjeta nueva el tipo se leía
+  "edificados:area total:" y se descartaba **toda** tarjeta: la fuente llevaba 12 días sin datos
+  nuevos. La búsqueda de apartamentos en venta de Montevideo del 8/11 da 39 avisos con barrio y
+  superficie.
+- El filtro defensivo de barrios del lado del app (otro PR) tiene que rechazar y aceptar exactamente
+  lo mismo que `plausibleCasaswebNeighborhood`. Rechaza: "40 m2 40 m2", "60 m² 60 m²", "10 m2",
+  "45 mts", "45 mts.", "60 metros", "4 H", "4H", "1 ha", "2 has", "3 hectáreas", "120", "Uruguay",
+  "". Acepta: "25 de Mayo", "18 de Julio", "Pocitos Nuevo", "Cordón", "Maldonado". La lista es la de
+  `tests/rentals/newSources.test.ts`; las reglas: una superficie en cualquier parte
+  (`\d[\d.,]*\s*(?:m2|m²|mts?\.?|metros?)` sin letra después), sólo dígitos, espacios, puntos y comas,
+  una cuenta de hectáreas (`^\d+(?:[.,]\d+)?\s*(?:h|has?|hect[aá]reas?)\.?$`) o "uruguay" sin acentos
+  ni mayúsculas.
+
+**Mercado Libre: descripción, fecha de publicación y tienda oficial.** La ficha que
+`currency-rentals-ml-detail` ya baja traía las tres cosas y no se guardaban: el 40 % de las fichas
+decía "Todavía no tenemos una descripción", y como el aviso no tenía fecha, "Más recientes"
+(`freshAt` = el día que lo vimos primero) subía avisos de hace un mes. En la página 1 por defecto,
+24 de 24 tarjetas tenían `publishedAt` null. Ahora (`classes/rentals/mlDetail.ts`):
+
+- `parseMlRentalDescription`: el bloque "Descripción" con el depurador de siempre (sin teléfonos,
+  correos, enlaces ni markup; ver [PROPERTY_ADVERTISERS.md](PROPERTY_ADVERTISERS.md)), hasta 2.400
+  caracteres. Sin bloque, null: no se guarda un vacío como si se hubiera leído.
+- `parseMlRentalPublishedAgo`: "Publicado hace N días" (y horas o minutos) da `publishedAt` = día de
+  la lectura − N. Semanas, meses y años **nunca** dan fecha: ML los redondea. De un aviso
+  republicado es la edad de la republicación.
+- `parseMlOfficialStore`: "Tienda oficial <nombre>" pasa a `sellerName`, sólo sobre el genérico
+  "Mercado Libre" (nunca sobre "Particular"). El apodo de un vendedor no se toma, y el nombre no crea
+  una inmobiliaria (`agency`) ni sube el tipo a "inmobiliaria". Pero la insignia es la palabra de ML
+  de que publica un comercio (un particular no tiene tienda), así que **contradice** un "dueño
+  directo" leído del título, y una contradicción veta la declaración ([PROPERTY_ADVERTISERS.md](PROPERTY_ADVERTISERS.md)):
+  `officialStoreSeller` deja `ownerDirect: null` y un "particular" que sólo esa declaración hacía
+  pasa a "desconocido". `null` y no ausente: con `undefined`, la retención
+  (`advertiserRetention.ts`) volvía a poner la declaración de una lectura anterior. Sin esto la
+  tarjeta decía "Dueño directo · Remax Único" (revisión del 8/11). La escritura inmediata
+  (`writeMlDetailSeller`) hace lo mismo. Efecto a mirar: con anunciante, esos avisos pasan a poder
+  ser comparables en `/oportunidades-inmobiliarias-uruguay` (`comparisonSample` descarta a los que
+  no tienen) y cuentan para el tope por anunciante; ver [PROPERTY_OPPORTUNITIES.md](PROPERTY_OPPORTUNITIES.md).
+- Las tres se guardan siempre en `rentalmldetails`. La fecha y la tienda se escriben enseguida en
+  `rentallistings`, sólo en campos vacíos, y la cosecha las reaplica (`applyMlDetails`). La
+  descripción va al aviso sólo con `RENTALS_ML_DETAIL_TEXT=1`, junto con las garantías que nombra;
+  muebles, plazo y (con su bandera) gastos comunes la leen después, como la de cualquier portal.
+- Las filas leídas antes no tienen estos campos y se releen **una vez** (`mlDetailIsCurrent`; los
+  tres se escriben juntos y `publishedAt` los marca): ~28.000, unos 5 días a 240 por hora, sin
+  pedidos de más y siempre después de los avisos nunca leídos. El avance se mide con
+  `db.rentalmldetails.countDocuments({description:{$exists:true}})` (`withTextReadStored` en el log).
+- **Guarda de relecturas** (`mlRereadRefusal`): cada relectura reemplaza su fila entera
+  (`saveMlDetails`), así que si la página que ML le sirve a nuestra UA cambiara en medio de esas
+  ~28.000, los gastos comunes, pines y fotos guardados se volverían null y la cosecha dejaría de
+  ponerlos. Cada relectura lleva lo que su fila guardada decía (`MlDetailTarget.stated`, de la misma
+  consulta que ya decide qué toca leer), y una corrida en la que **la mitad o más** de las relecturas
+  que tenían un campo (con **20 como mínimo**) lo pierde no guarda nada —ni las relecturas ni las
+  primeras lecturas, que vienen de la misma página cambiada y se vuelven a leer en la próxima— y
+  sale con 1 ("nada guardado, la ficha de Mercado Libre cambió: …" en la nota). Lo que la corrida ya
+  escribió en `rentallistings` sólo completó campos vacíos. Mientras dura la relectura conviene mirar
+  igual que `withExpensesStored`, `withPinStored` y `withImagesStored` del log no bajen.
+
+**Gastos comunes que dice la descripción** (`classes/rentals/textFacts.ts`, `RENTALS_GC_FROM_TEXT=1`).
+Entre el 21 % y el 40 % de los avisos de InfoCasas y El País sin gastos comunes del portal los dicen
+en su texto ("Gastos comunes: $U11.000.-"), y sin ellos la tarjeta no tiene total, "Menor total
+mensual" la pone última y el tope de total la saca. Se leen con el lector de las leyendas de video
+(`captionAmounts`: rótulo pegado a la cifra, "sin / no paga gastos comunes" = 0, $U, U$S y USD,
+teléfonos fuera) y **sólo** cuando el portal no dio nada:
+
+- InfoCasas, El País, Casasweb y Mercado Libre, y sólo la descripción **publicada**
+  (`details.description`): el rótulo de la página tiene que señalar una cifra que el lector encuentre.
+- Se abstiene ante dos cifras distintas, "incluidos" (también "incluídos", "(incluidos en el precio)",
+  "- incluidos", "incluidos los gastos comunes"), un total con ellos ("Precio total con GC $ 30.000",
+  "Alquiler + GC: $ 33.000"), la cifra de un período que no es el mes (anual, bimestral,
+  trimestral, semestral, "por trimestre", "cada 3 meses"), un número sin moneda junto a un alquiler
+  en dólares, un "sin gastos comunes" condicional ("los primeros 6 meses") y cualquier cifra que las
+  estadísticas de zona no aceptarían del mismo texto (`zoneOwnCommonExpenses`). "Sin gastos comunes
+  elevados" (o altos, caros…) no es "sin gastos comunes": se saca antes de leer las cifras.
+- La banda de ML, en pesos al dólar de la corrida: ≥ $ 200 y no más que el alquiler (US$ 8.500 de
+  alquiler con $ 26.000 de gastos comunes es válido); una cifra **igual** al alquiler es el alquiler
+  repetido, no un mes de gastos comunes.
+- Medido en la revisión del 8/11 (sondas locales, sin base): las 26 redacciones difíciles de la
+  revisión y 14 más dan lo esperado, y sobre los 44 fragmentos reales de las muestras de la auditoría
+  lee 43 y se abstiene en 1 ("Muy razonables, $6.000"), lo mismo que antes de estas abstenciones.
+- La oferta lleva `commonExpensesSource: "description"` y la página la rotula. Una cifra del portal
+  nunca se pisa y siempre gana: la tabla de ML y la ficha de Casasweb se reaplican antes.
+- La corrida completa la aplica también a lo guardado (`refreshStoredRentalTextFacts`, con el dólar
+  de la corrida; `--reapply-text` usa el del último resumen). Con la bandera apagada, una cifra
+  leída del texto se retira en la próxima completa.
+- **Antes de prenderla**: `npm run rentals_gc_text_sample -- --n=150 > muestra.json` lista N avisos
+  con la cifra que publicaría y el texto alrededor de cada rótulo, para marcar a mano cada uno
+  (`correct`). Se prende con ≥ 95 % de aciertos sobre ≥ 100 avisos. `--all` agrega las abstenciones
+  (lo que se pierde) y `--source=` filtra por portal. **Es sólo lectura**: el `.env` local apunta a
+  la base de producción (`tests/rentals/gcTextSample.test.ts` lo vigila). Se espera recuperar del
+  20 % al 40 %, no el 41–68 % de la primera muestra, que contaba el mismo aviso de El País varias
+  veces.
+- **Las oportunidades no la usan** (decidido el 8/11): `/oportunidades-inmobiliarias-uruguay` lee
+  `commonExpenses` de la oferta (`classes/propertyopportunities/rentalAdapter.ts`), y una cifra
+  leída de la descripción entraría al total comparado como si la hubiera dado el portal, con su
+  control "los gastos comunes del texto concuerdan con el campo" comparando el texto contra sí
+  mismo. El adaptador trata `commonExpensesSource: "description"` como sin cifra: la bandera no
+  cambia nada de lo que el motor compara. Las estadísticas de zona sí la cuentan, porque
+  `zoneOwnCommonExpenses` relee el mismo texto con sus reglas y sólo acepta lo que coincide.
+- **Medido el 8/11/2026** (muestra de sólo lectura en el VPS, 1.080 avisos sorteados de los últimos
+  10 días): 163 publicarían una cifra (117 "stated", 46 "none"; El País 74, InfoCasas 89; Casasweb y
+  ML no tienen descripción publicada sin cifra del portal). Dos etiquetadores a ciegas (dos agentes de
+  IA independientes, no personas) marcaron los 163 con el texto completo y coincidieron en todos:
+  **161 correctos (98,8 %, cota inferior de Wilson al 95 % 95,6 %)**. Los dos errores eran "none" de
+  InfoCasas: "Sin gastos comunes reportados" (no informarlos no es no tenerlos) y "gastos comunes
+  mínimos" en el mismo texto que "Sin Gastos Comunes". Los dos se abstienen ahora (`GC_UNREPORTED`,
+  `GC_SMALL` en `textFacts.ts`); sobre la muestra cambian sólo esos dos.
+
+**Estado de las banderas (8/11/2026):** `RENTALS_GC_FROM_TEXT=1` en el `.env` raíz del VPS desde el
+día del deploy de las fichas, como declara la fila `fichas-alquiler-calle-precio-total-y-miga-al-barrio`
+de `docs/seo/experiments.json`. `RENTALS_ML_DETAIL_TEXT` **queda apagada hasta el 6/12** (cierre de
+esa ventana): la relectura de las fichas de ML con texto arrancó el mismo 8/11 y llevaba 1.331 de
+27.689 avisos vivos, así que prenderla ahora cambiaría las fichas de ML dentro de la ventana medida.
+Después del 6/12 se prende con su propia fila. Medido el 9/11 a las 07:27 UTC: 4.623 fichas con
+texto, ~210 por hora (la estimación del 8/11 de ~5 % por día era baja: la relectura termina hacia el
+13/11).
+
+**9/11/2026, primera corrida completa con la bandera:** 1.355 ofertas vivas con gastos comunes del
+texto (InfoCasas 820, El País 535; de las 1.766 rotuladas, vivas o no, 610 son ceros de "sin gastos
+comunes"); 10 vivas tomadas al azar y leídas por un agente de IA, 10 correctas. Esa corrida destapó
+que `currency-property-opportunities` sí las usaba: ver «Datos y privacidad» en
+[PROPERTY_OPPORTUNITIES.md](PROPERTY_OPPORTUNITIES.md).
+
 ## Opiniones de quienes lo usan — 19 de octubre de 2026
 
 Al final de los resultados y de la ficha, «¿Encontraste lo que buscabas?» (Sí / En parte / No → qué
@@ -1742,6 +1925,8 @@ Lo que pasó ese día, y lo que cambió por eso:
 | `RENTALS_ML_TIME_BUDGET_MS` | 2400000 / 240000 | tiempo global de ML en full / fast; conserva los avisos aceptados al cortar |
 | `RENTALS_CW_MAX_PAGES` | 60 | tope de páginas por departamento/tipo en Casasweb; la rápida toma una página por búsqueda |
 | `RENTALS_CW_PAUSE_MS` | 60000 | pausa única por corrida antes de la segunda lectura de las búsquedas de Casasweb que fallaron |
+| `RENTALS_ML_DETAIL_TEXT` | — | `1` pone en el aviso la descripción de su ficha de Mercado Libre (y las garantías que nombra). Se guarda en `rentalmldetails` igual; la fecha de publicación y la tienda oficial se publican siempre |
+| `RENTALS_GC_FROM_TEXT` | — | `1` publica los gastos comunes que dice la descripción cuando el portal no los da, rotulados `commonExpensesSource: "description"`. Sólo con ≥ 95 % de aciertos medidos con `npm run rentals_gc_text_sample`. Prendida en el VPS desde el 8/11/2026 (161 de 163) |
 | `RENTALS_FB_ENABLED` | — | `0` apaga Marketplace |
 | `RENTALS_FB_BROWSER` | — | `0` vuelve al puente `:9657` (20–26 tarjetas por búsqueda) |
 | `RENTALS_FB_BROWSER_MINUTES` | 150 / 12 | tope de reloj del lector por navegador en full / fast; al cortar conserva lo leído |
@@ -2000,3 +2185,118 @@ operaciones, `utils/propertyInsight.ts#buildPropertyInsight`; los cargadores est
   a reformar y en pozo.
 - El bloque se pinta sólo después de montar: el servidor nunca lo renderiza y la petición ya está en
   curso durante la hidratación (sin la bandera, mismatch medido en dev).
+
+
+## Ficha: snippet, ficha caída, copias y frescura — 8 de noviembre de 2026
+
+Medido antes del cambio (auditoría del 8/11):
+- Títulos de 72 a 109 caracteres con el precio después del carácter ~60, el barrio en las
+  mayúsculas del portal («POCITOS») y una descripción que repetía el título sin gastos comunes ni
+  total.
+- Las búsquedas por dirección son la intención declarada más grande del grupo (posición ~9, CTR
+  0,7 %).
+- 119 de 931 vistas uruguayas de fichas (12,8 %) caían en «ya no está» sin nada para seguir.
+- «Otras propiedades para comparar» listaba copias del mismo apartamento.
+
+Se mide como experimento `fichas-alquiler-calle-precio-total-y-miga-al-barrio` en
+`docs/seo/experiments.json` (rutas `/alquileres/` y `/alquiler/`).
+
+- **Título y descripción** (`utils/rentalPageSnippet.ts`).
+  - El título es el primer candidato de ≤ 60 caracteres, en este orden: calle + barrio con «en
+    alquiler», calle + barrio, barrio + departamento, barrio con «en alquiler», barrio.
+  - La calle nunca va sin el barrio, y sólo con un número de puerta de 2 a 5 dígitos que el aviso
+    publica: nunca un Plus Code, una esquina, «18 de Julio», «km», «al 1300» ni un código postal.
+  - La ficha deja sin el sufijo « | Cambio Uruguay» (`titleTemplate: '%s'`) sólo el título que arma
+    este módulo; una ficha caída lo conserva.
+  - La descripción (≤ 155 caracteres) dice alquiler + gastos comunes = total cuando se conocen: un
+    0 publicado es «sin gastos comunes», y si no hay dato dice «gastos comunes no informados».
+- **Nombres de lugar** (`utils/rentalDisplayPlace.ts`).
+  - Sólo para mostrar: «Pocitos», «Punta del Este», nunca «POCITOS» ni «60 m2 60 m2».
+  - `property.neighborhood` sigue siendo la clave de filtros, zona oficial y enlace al barrio.
+  - La miga y el BreadcrumbList enlazan la página del barrio cuando es indexable.
+- **Barrios basura fuera** (`utils/rentalBarrioName.ts`). Es copia a mano de
+  `plausibleCasaswebNeighborhood` (`classes/rentals/sources/casasweb.ts`), y
+  `tests/unit/rentalBarrioNameParity.test.ts` las compara corriendo las dos: se cambian juntas. Como
+  `casasweb.ts` y `normalize.ts` están en `appContracts` de `deploy.yml`, una edición sólo de backend
+  corre también la suite del app.
+- **Direcciones fuera de los selectores** (`utils/rentalBarrioOption.ts`). Es una regla sólo del
+  app y **no** entra en el contrato de paridad de arriba.
+  - Qué hace: dejan de ofrecer direcciones guardadas como barrio los cuatro selectores de barrio de
+    los alquileres:
+    - el del directorio (`facets.neighborhoods` de `/api/rentals`);
+    - el de zonas (`components/rentals/zones/Explorer.vue`, en el directorio, `/alquiler-ideal-uruguay`
+      y `/barrios-alquileres-uruguay`);
+    - el de `/oportunidades-inmobiliarias-uruguay` por presupuesto (`BudgetRentals.vue`);
+    - el del estimador de `/analisis-alquileres-uruguay` (`PriceEstimator.vue`).
+  - El de zonas no filtraba nada antes, así que además deja de ofrecer superficies y "Uruguay", la
+    regla de las páginas de barrio. En todo el país (apartamentos) pasa de 1.025 zonas a 426, y en
+    Montevideo de 547 a 127. Una zona ya elegida sigue en la lista mientras el selector está abierto.
+  - Por qué pasaba: la tarjeta de Mercado Libre trae "<calle>, <barrio>, <departamento>" y en el
+    interior suele saltear el barrio, así que "Sarandí 888, Maldonado" guardaba "Sarandí 888".
+  - Medido el 8/11: eran 153 de los 647 nombres que ofrecía el selector del directorio (68 de 205 en
+    Maldonado, 40 de 55 en Paysandú). Leyendo fuente por fuente, Montevideo tenía 77 más.
+  - Precisión antes que cobertura:
+    - Quedan la calle pelada ("Leandro Gómez") y la esquina sin marca ("Ituzaingó y Sarandí").
+    - Los lugares reales con forma de dirección se exceptúan por nombre: localidades del árbol de
+      Mercado Libre como "Ruta 37 Y 9" y "Kilometro 18", y barrios de la IM como "Km 16 Cno.
+      Maldonado".
+    - El nombre de un asentamiento ("Barrio 2000", "Villa La Ruta", "Fracc. Cno. Andaluz Y R.84")
+      puede llevar un tipo de vía o un número; las demás marcas de una dirección valen igual.
+    - Un nombre con la codificación rota (el "Malvín Norte" que llegó con "Ã") no se ofrece.
+    - Validado contra los 1.850 nombres distintos del árbol de Mercado Libre, las 595 localidades
+      del INE (con sus otros nombres) y 2.703 lugares de OpenStreetMap. Sólo esconde "Otras",
+      "Uruguay", manzanas, códigos de relevamiento y dos plazas.
+  - Alcance: sólo los selectores. La ficha nombra la calle a propósito (experimento
+    `fichas-alquiler-calle-precio-total-y-miga-al-barrio`, hasta el 6/12) y las páginas de barrio
+    siguen con `utils/rentalBarrioName.ts`. Una URL que ya filtra por una dirección sigue andando. Al
+    cerrar el experimento, decidir si la ficha también la usa.
+  - El selector del directorio lee los 5.000 barrios con más avisos, filtra y recién ahí corta en
+    250. Antes el corte iba primero, y lo descartado ocupaba lugares de lo leído (con empates por
+    orden alfabético, una superficie va antes que cualquier barrio con los mismos avisos):
+    - leyendo 250, Montevideo terminaba en los barrios con 4 avisos;
+    - leyendo 1.000 (#276), en los de 2, porque las superficies de Casasweb solas pasaban de 1.000
+      nombres distintos; Retiro y Chacarita, con un aviso cada uno, seguían afuera.
+- **«Avisos recientes» del barrio** (`/alquiler/<departamento>/<barrio>`).
+  - Lee las 80 filas más recientes por `freshAt`, forzando el índice
+    `{department, neighborhood, priceUyu}`.
+  - Cada tarjeta pasa el mismo control de calidad que la ficha indexable.
+  - Una tarjeta por vivienda; dos propiedades que comparten un aviso no ganan tarjeta.
+- **Ficha caída** (404, noindex, follow).
+  - La API responde el 404 con `{gone, lookalike, similar ≤ 6, barrioLink}` en el cuerpo, sin
+    lanzarlo, porque Nitro fuerza `no-cache` en un 404 lanzado.
+  - Se cachea 5 min sólo el 404 que trae alternativas (`s-maxage=300`). Un 404 pelado dura 30 s y un
+    503 nunca se guarda.
+  - Cada lectura está topada en 3 s (`RENTAL_GONE_QUERY_MAX_MS`); si una falla, sale el 404 simple.
+  - Orden en pantalla: «Dejó de verse el…», la copia viva («Puede ser la misma vivienda…»), los
+    enlaces al barrio y las parecidas.
+  - Una clave ya podada busca el prefijo `<departamento>-<barrio>` más largo entre todos los barrios
+    conocidos, y sólo enlaza el barrio si es indexable.
+- **Copias en las listas de recomendación** (`utils/rentalLookalike.ts`).
+  - SÓLO para mostrar: nunca identidad, unión ni alertas.
+  - Regla: título plegado de 60 caracteres + dormitorios + baños + precio y moneda exactos, con
+    superficie a ±10 % (o ±5 % obligatoria si el título es genérico).
+  - Las coordenadas sólo vetan, entre puntos de InfoCasas/El País a más de 300 m; los pines de ML
+    pueden estar a ~1 km.
+  - Segunda regla: mismo anunciante + misma coordenada + mismo precio, dormitorios y baños (la
+    inmobiliaria que publica una unidad en tres barrios).
+- **Frescura** (`utils/rentalSeenLabel.ts`).
+  - Los días se cuentan en UTC contra `renderedAt`, así servidor y cliente dicen lo mismo.
+  - Hoy y ayer: «Visto hoy/ayer en <portal>».
+  - De 2 a 4 días: «No lo volvimos a ver desde hace N días».
+  - 5 o más: tono de aviso.
+- **Condiciones no declaradas.** Los filtros de mascotas, dueño directo y garantías avisan que sólo
+  cuentan los avisos que lo declaran. En la ficha, «El aviso no lo dice: preguntale al anunciante».
+- **Estafas.** En avisos de Facebook, TikTok, Instagram o dueño directo, «Antes de coordinar la
+  visita» suma tres líneas (no pagar seña antes de ver y firmar, pedir título o autorización, un
+  precio muy bajo es señal) con enlace a `/alquilar-en-uruguay#estafas`.
+- **Compartir** (`utils/rentalShareText.ts`). `navigator.share` lleva título, texto con alquiler +
+  gastos comunes = total, y la URL canónica.
+- **Medición.**
+  - `LINK_AREAS`: `rental_gone`, `rental_similar`, `rental_insight`, `rental_breadcrumb`,
+    `rental_barrio`.
+  - Más valores fijos de `data-cta` en los botones de ficha y directorio, que
+    `tests/unit/rentalMeasurement.test.ts` controla.
+  - La dimensión `cta` tiene que estar registrada en GA4 (lo hace el dueño, no es retroactivo).
+- **Gastos comunes del texto.** `offers[].commonExpensesSource: 'description'` viaja en la
+  proyección pública y se etiqueta «según la descripción del aviso». Queda inerte hasta
+  `RENTALS_GC_FROM_TEXT=1` (ver «Variables de entorno»).

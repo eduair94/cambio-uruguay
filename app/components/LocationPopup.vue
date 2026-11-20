@@ -10,7 +10,8 @@
       <span>{{ $t('locationTooltip') }}</span>
     </v-tooltip>
     <v-dialog v-model="dialog" persistent fullscreen width="700px" hide-overlay>
-      <v-card>
+      <!-- Masked for session recordings: the map and the address are the visitor's position. -->
+      <v-card data-clarity-mask="true">
         <v-toolbar dark color="primary">
           <v-toolbar-title>{{ $t('confirmarUbicacion') }}</v-toolbar-title>
           <v-spacer />

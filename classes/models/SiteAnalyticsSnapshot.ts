@@ -22,6 +22,8 @@ const SiteAnalyticsSnapshotSchema = new Schema(
     countries: { type: [Schema.Types.Mixed], default: [] },
     devices: { type: [Schema.Types.Mixed], default: [] },
     events: { type: [Schema.Types.Mixed], default: [] },
+    // Readers in Uruguay only (classes/site-analytics/types.ts, AnalyticsAudience). Optional.
+    uruguay: { type: Schema.Types.Mixed },
   },
   { timestamps: true }
 );

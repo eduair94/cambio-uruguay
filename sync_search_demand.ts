@@ -54,9 +54,6 @@ async function main(): Promise<void> {
         `${queue.inScope} además dentro de las temáticas, ` +
         `${queue.probed} clasificadas por SERP, ${queue.items.length} en la cola`
     );
-    for (const item of queue.items.slice(0, 10)) {
-      console.log(`  ${item.score.toFixed(2)}  [${item.topic}] "${item.query}" — ${item.why}`);
-    }
 
     if (dryRun) {
       console.log("[demand] DRY RUN: no se escribió nada");
@@ -80,15 +77,15 @@ async function main(): Promise<void> {
       const body = top.map((i) => `• _${i.query}_ — ${i.why}`).join("\n");
       await notifyAdmin(`*Qué escribir* (${queue.asOf})\n${body}`);
     }
-  } catch (e: any) {
-    const detail = e?.response?.data ? JSON.stringify(e.response.data) : e?.message || String(e);
-    console.error(`[demand] la corrida falló, se conserva la cola anterior: ${detail}`);
+  } catch {
+    // Los errores de clientes pueden incluir consultas, credenciales o cuerpos del proveedor.
+    console.error("[demand] la corrida falló, se conserva la cola anterior");
     process.exit(1);
   }
   process.exit(0);
 }
 
-main().catch((e) => {
-  console.error("[demand] sync failed", e);
+main().catch(() => {
+  console.error("[demand] sync failed");
   process.exit(1);
 });

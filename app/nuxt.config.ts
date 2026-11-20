@@ -1,6 +1,27 @@
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { CONSENT_STRICT_REGIONS } from './utils/consent'
+import { EXTRA_LOCALES } from './utils/locales'
+import {
+  ANY_LOCALE_PREFIX_PATTERN,
+  SHARED_LINK_PATTERN,
+  SITEMAP_NOINDEX_PATTERN,
+  localePrefixPattern,
+} from './utils/sitemapFilters'
+import { extraMessagesVersion } from './i18n/extraMessagesVersion'
+import { I18N_MESSAGE_SOURCES, i18nMessagesVersion } from './i18n/messagesVersion'
+
+// The machine-translated messages, served as public JSON (i18n/locales/extra.ts explains why
+// they are not bundled). The hash goes in their URL so a deploy with new copy is a new URL.
+const EXTRA_MESSAGES_DIR = fileURLToPath(new URL('./i18n/extra', import.meta.url))
+const extraLocalesVersion = extraMessagesVersion(EXTRA_MESSAGES_DIR)
+
+// The route the browser fetches vue-i18n messages from before hydrating, versioned by CONTENT
+// (i18n/messagesVersion.ts explains why the module's own hash is not enough). With the version in
+// the path the response is immutable: server/plugins/i18n-messages-cache.ts says so, and
+// server/routes/_i18n/[...path].ts forwards a stale version to this one.
+const I18N_DIR = fileURLToPath(new URL('./i18n', import.meta.url))
+const i18nMessagesVersionId = i18nMessagesVersion(I18N_DIR, I18N_MESSAGE_SOURCES)
 
 // Read only this checkout: app remains a self-contained deploy surface. PM2
 // need not load .env again; Nuxt serializes these build defaults into runtimeConfig.
@@ -27,6 +48,21 @@ const sentryDefaults = {
   environment: process.env.SENTRY_ENVIRONMENT || 'production',
   release: sentryRelease,
 }
+
+// robots.txt: the translated used-car adverts (`/fr/autos-usados-uruguay/ml-…`). An advert is
+// noindex in every language and expires within weeks; since every page answers in every locale,
+// ClaudeBot alone asked for 3.729 of them on 2026-11-06 (none the day before), a full SSR each,
+// and the site workers stalled. The Spanish advert stays crawlable (noindex, follow). The longer
+// Allow rules win over the Disallow: the translated model and budget pages stay open, and so do
+// the share cards (`/__og-image__/image/en/autos-usados-uruguay/og.png`), which the `*` also
+// reaches and which social crawlers read through the wildcard group.
+// Both robots groups list these: an explicit group does not inherit the wildcard group's rules.
+const TRANSLATED_ADVERTS_DISALLOW = ['/*/autos-usados-uruguay/']
+const TRANSLATED_ADVERTS_ALLOW = [
+  '/*/autos-usados-uruguay/precios/',
+  '/*/autos-usados-uruguay/hasta-',
+  '/__og-image__/image/*autos-usados-uruguay/',
+]
 
 export default defineNuxtConfig({
   // Keep opt-in validation/CI builds isolated from a running dev server or another staging build.
@@ -141,8 +177,13 @@ export default defineNuxtConfig({
           name: 'robots',
           content: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
         },
-        { name: 'googlebot', content: 'index, follow' },
-        { name: 'bingbot', content: 'index, follow' },
+        // No `googlebot` / `bingbot` here. A page that wants out of the index
+        // replaces `robots` above with `noindex, follow`, but a per-bot tag set
+        // site-wide stayed `index, follow` next to it: every used-car advert, every
+        // sale dossier outside the reviewed pilot and every filtered directory told
+        // Bingbot the opposite of what it told everyone else, and Bing reported them
+        // as "important pages missing from the sitemap" (2026-10-20). `robots`
+        // already speaks to every crawler. Tripwire: tests/unit/robotsMetaContract.test.ts.
         // Same value as the Referrer-Policy header on '/': other sites see only the
         // origin, never the path or query. Was 'no-referrer' until 2026-09-17, which
         // got every OSM map tile replaced by an "Access blocked" image. Checked
@@ -277,6 +318,27 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
+    '/s/**': {
+      sitemap: false,
+      headers: {
+        'cache-control': 'private, no-store, max-age=0, must-revalidate',
+        'X-Robots-Tag': 'noindex, follow',
+      },
+    },
+    '/en/s/**': {
+      sitemap: false,
+      headers: {
+        'cache-control': 'private, no-store, max-age=0, must-revalidate',
+        'X-Robots-Tag': 'noindex, follow',
+      },
+    },
+    '/pt/s/**': {
+      sitemap: false,
+      headers: {
+        'cache-control': 'private, no-store, max-age=0, must-revalidate',
+        'X-Robots-Tag': 'noindex, follow',
+      },
+    },
     // The browser half is stated out loud here, but this line alone does NOT
     // decide what a visitor gets — the zone's Browser Cache TTL does, and this
     // comment exists because that took two measurements to learn.
@@ -827,6 +889,9 @@ export default defineNuxtConfig({
       gzip: true,
       brotli: true,
     },
+    // /i18n-messages/<code>.json — the extra locales' messages (i18n/locales/extra.ts). A day
+    // of cache is safe: the loader asks for `?v=<hash of the files>`.
+    publicAssets: [{ baseURL: '/i18n-messages', dir: EXTRA_MESSAGES_DIR, maxAge: 60 * 60 * 24 }],
     // Client assets stay minified by Vite. Minifying the private Node server
     // bundle adds substantial CPU/RAM cost without reducing browser payloads.
     minify: false,
@@ -1201,9 +1266,9 @@ export default defineNuxtConfig({
         },
       },
     ],
-    // Declarative, spring-physics animations (v-motion directive) for the
-    // home hero + card grids. SSR-safe, scroll-triggered via visibleOnce.
-    '@vueuse/motion/nuxt',
+    // NOT '@vueuse/motion/nuxt': it registered the v-motion directive app-wide, putting
+    // @vueuse/motion + popmotion (~30 KB) in every page's entry chunk for one page. The home
+    // registers the directive itself (pages/index.vue).
   ],
 
   // Web Vitals tracking
@@ -1215,48 +1280,48 @@ export default defineNuxtConfig({
 
   // Robots Configuration
   robots: {
+    // Every rule written ONCE, with `/*/…` standing for "under any locale prefix". With
+    // `autoI18n` the module copied each rule under the 35 locales (776 rules), and
+    // @nuxtjs/sitemap tests every sitemap URL against every rule with a matcher that allocates
+    // an array per rule: 41–47 s of synchronous CPU per 10.000 URLs, during which the site
+    // worker answered nothing else (2026-11-06: a car advert took 10–74 s and es-ES.xml
+    // answered 524). Tripwire: tests/unit/robotsRules.test.ts.
+    // Checked against the 110.654 distinct paths of the access log: the only new verdicts are
+    // the CSS chunks of the private pages themselves (`/_nuxt/estadisticas-de-busqueda.*.css`,
+    // which only blocked pages load) and two bot probes (`/apps/admin/…`, `/wp-content/…/server/…`).
+    autoI18n: false,
     // /estadisticas-de-busqueda is the owner's Search Console dashboard: it renders the queries
     // visitors typed, so it is disallowed here AND noindexed on the page AND gated server-side.
     // /_nuxt/ serves the public JS, CSS and fonts needed to render the site.
     // Crawlers must be able to fetch those assets, including in the explicit groups below.
     disallow: [
       '/admin/',
+      '/*/admin/',
       '/server/',
+      '/*/server/',
       '/api-reference',
-      '/estadisticas-de-busqueda',
-      // El ranking privado de páginas por visita: misma lógica que el tablero de Search Console.
-      '/estadisticas-por-pagina',
-      // La encuesta de alquileres (se llega desde los correos) y su panel privado de respuestas.
-      '/opinion-alquileres',
-      '/opiniones-alquileres',
-      // Lista de autores de r/CharruaDevs con nombre propio: noindex en la pagina y fuera del
-      // rastreo. Los mismos datos, agregados y sin nombres, estan en /mercado-it-uruguay.
-      '/ranking-usuarios-charruadevs',
+      ...[
+        '/estadisticas-de-busqueda',
+        // El ranking privado de páginas por visita: misma lógica que el tablero de Search Console.
+        '/estadisticas-por-pagina',
+        // El panel privado de contactos comerciales (requireAdmin).
+        '/contactos-comerciales',
+        // La encuesta de alquileres (se llega desde los correos) y su panel privado de respuestas.
+        '/opinion-alquileres',
+        '/opiniones-alquileres',
+        // Lista de autores de r/CharruaDevs con nombre propio: noindex en la pagina y fuera del
+        // rastreo. Los mismos datos, agregados y sin nombres, estan en /mercado-it-uruguay.
+        '/ranking-usuarios-charruadevs',
+      ].flatMap(path => [path, `/*${path}`]),
       // El teléfono del vendedor de un auto: se pide con un clic, con noindex y sin caché. Ningún
       // rastreador tiene nada que hacer ahí (docs/app/AUTOS_CONTACTOS.md).
       '/api/cars/contact/',
+      ...TRANSLATED_ADVERTS_DISALLOW,
     ],
-    allow: [
-      '/',
-      '/avanzado',
-      '/historico',
-      '/sucursales',
-      '/noticias',
-      '/comparar',
-      '/dolar',
-      '/cotizacion',
-      '/casa',
-      '/guias',
-      '/herramientas',
-      '/glosario',
-      '/convertir',
-      '/indicadores',
-      '/blog',
-      '/acerca',
-      '/publicidad',
-      '/conectar',
-      '/desarrolladores',
-    ],
+    // `/` and the exceptions to the translated adverts: nothing else disallowed above overlaps a
+    // public section, so the per-section `Allow` lines it used to list (/guias, /historico…) never
+    // changed a verdict — they only made every sitemap URL pay for 19 × 35 more rules.
+    allow: ['/', ...TRANSLATED_ADVERTS_ALLOW],
     // Explicitly welcome AI search/answer crawlers so the site can be cited by
     // Google AI Overviews/Gemini, ChatGPT Search, Perplexity and Claude. These
     // are answer engines (not just training scrapers); citation drives traffic.
@@ -1277,10 +1342,17 @@ export default defineNuxtConfig({
           'Amazonbot',
           'cohere-ai',
         ],
-        allow: ['/'],
+        allow: ['/', ...TRANSLATED_ADVERTS_ALLOW],
         // Un grupo propio NO hereda el disallow general: el teléfono del vendedor de un auto va
         // repetido acá, o Bingbot y los rastreadores de IA quedan habilitados a pedirlo.
-        disallow: ['/admin/', '/server/', '/api/cars/contact/'],
+        disallow: [
+          '/admin/',
+          '/*/admin/',
+          '/server/',
+          '/*/server/',
+          '/api/cars/contact/',
+          ...TRANSLATED_ADVERTS_DISALLOW,
+        ],
       },
     ],
     // El índice, no /sitemap.xml.
@@ -1290,6 +1362,12 @@ export default defineNuxtConfig({
     // robots.txt terminaba anunciando las dos URLs para el mismo archivo.
     sitemap: 'https://cambio-uruguay.com/sitemap_index.xml',
     credits: false,
+    // No X-Robots-Tag. The module computes it from the rules above, which know
+    // nothing about a page's own `robots` meta, so it said `index, follow` on
+    // every used-car advert, every sale dossier outside the pilot and every
+    // filtered directory while their meta said `noindex` (measured 2026-10-20).
+    // The meta tag is the one each page controls.
+    header: false,
   },
 
   // Sitemap Configuration
@@ -1298,47 +1376,47 @@ export default defineNuxtConfig({
     // Keep the existing language URLs and isolate the growing image-rich rental
     // catalogue. Explicit locale filters replace the module's automatic mapping.
     sitemaps: {
-      'en-US': { includeAppSources: true, include: ['/en/**'] },
-      'es-ES': { includeAppSources: true, exclude: ['/en/**', '/pt/**'] },
-      'pt-PT': { includeAppSources: true, include: ['/pt/**'] },
+      // RegExp rules only (utils/sitemapFilters.ts): string rules cost a radix router per URL.
+      'en-US': { includeAppSources: true, include: [localePrefixPattern(['en'])] },
+      'es-ES': { includeAppSources: true, exclude: [ANY_LOCALE_PREFIX_PATTERN] },
+      'pt-PT': { includeAppSources: true, include: [localePrefixPattern(['pt'])] },
+      // One per extra locale: what each language has translated enough to stand on its own
+      // (server/utils/sitemapLocales.ts), and Search Console counts it per language.
+      ...Object.fromEntries(
+        EXTRA_LOCALES.map(({ code }) => [
+          code,
+          { includeAppSources: true, include: [localePrefixPattern([code])] },
+        ])
+      ),
       rentals: {
         includeAppSources: false,
         sources: [['/api/__sitemap__/rentals', { timeout: 60_000 }]],
         chunks: 1000,
+      },
+      // Agency profiles (/inmobiliarias-uruguay/<key>) in es/en/pt, gated by the
+      // same `agencyIndexable` the profile's own robots meta uses. Own sitemap and
+      // own cached source: the directory is two aggregations over the rental and
+      // sale catalogues (~4 s live), past the module's 5 s default under load.
+      inmobiliarias: {
+        includeAppSources: false,
+        sources: [['/api/__sitemap__/agencies', { timeout: 60_000 }]],
       },
     },
     // Serve the large sitemap on demand and reuse it for one hour. This keeps
     // production builds independent from catalogue growth while preserving the
     // same public /sitemap.xml URL for crawlers.
     cacheMaxAgeSeconds: 60 * 60,
-    // Keep non-search pages out of the sitemap so they don't waste crawl budget
-    // or show as "not indexed" in Search Console. These are auto-discovered from
-    // pages/; the custom source above no longer emits them either. They're also
-    // noindex'd at the page level. Globs cover the /en and /pt locale prefixes.
-    exclude: [
-      '/offline',
-      '/widget',
-      '/cuenta',
-      '/estado',
-      '/api-reference',
-      '/estadisticas-de-busqueda',
-      '/estadisticas-por-pagina',
-      '/opinion-alquileres',
-      '/opiniones-alquileres',
-      '/descuentos-con-tarjeta-uruguay/cerca-de-mi',
-      '/ranking-usuarios-charruadevs',
-      '/*/offline',
-      '/*/widget',
-      '/*/cuenta',
-      '/*/estado',
-      '/*/api-reference',
-      '/*/estadisticas-de-busqueda',
-      '/*/estadisticas-por-pagina',
-      '/*/opinion-alquileres',
-      '/*/opiniones-alquileres',
-      '/*/descuentos-con-tarjeta-uruguay/cerca-de-mi',
-      '/*/ranking-usuarios-charruadevs',
-    ],
+    // The built XML, on disk: shared by the two site workers (pm2 cluster ×2, each with its own
+    // memory) and kept across deploys (`.data` sits beside `.output`, which deploy.sh swaps).
+    // In memory every worker rebuilt every sitemap, and every deploy started both cold: crawlers
+    // asking for the 35 sitemaps right after a release kept the workers busy building them
+    // (2026-11-06). Tripwire: tests/unit/sitemapCache.test.ts.
+    runtimeCacheStorage: { driver: 'fs', base: './.data/sitemap' },
+    // Keep non-search pages out of the sitemap so they don't waste crawl budget or show as
+    // "not indexed" in Search Console: the always-noindex pages, in Spanish and under every
+    // locale prefix (utils/sitemapFilters.ts — one RegExp, see why there).
+    // y los enlaces guardados de Compartir (`/s/<id>`, selecciones del lector, noindex).
+    exclude: [SITEMAP_NOINDEX_PATTERN, SHARED_LINK_PATTERN],
   },
 
   // Scalar API reference. The module always registers one standalone page; we
@@ -1360,6 +1438,15 @@ export default defineNuxtConfig({
       width: 1200,
       height: 630,
     },
+    // Rendered cards, per worker, bounded in BYTES. Without this the module caches in Nitro's root
+    // memory storage, which never evicts: each distinct card URL stayed as base64 for its 3-day
+    // TTL, on a heap capped at 512 MB (ecosystem.config.cjs). A count alone bounds nothing, since
+    // an entry weighs what its card weighs; with `maxSize` unstorage's lru-cache driver measures
+    // each entry, ~350 ordinary cards fit, and the least recently used one goes first. Only clean
+    // card URLs get this far (server/middleware/og-image-locale.ts redirects any with a query).
+    // The `lru-cache` package is a dependency of unstorage and already in the server build: the
+    // module's own payload cache uses the same driver. Rollback: remove this line.
+    runtimeCacheStorage: { driver: 'lru-cache', max: 500, maxSize: 48 * 1024 * 1024 },
   },
 
   // i18n Configuration
@@ -1371,6 +1458,17 @@ export default defineNuxtConfig({
       { code: 'en', language: 'en-US', name: 'English', file: 'en.ts' },
       { code: 'es', language: 'es-ES', name: 'Español', file: 'es.ts' },
       { code: 'pt', language: 'pt-PT', name: 'Português', file: 'pt.ts' },
+      // Every page answers in each of them: the chrome comes from machine-translated vue-i18n
+      // messages (scripts/i18n/translate.mjs), the body from the translation memory
+      // (utils/autoTranslate.ts). See utils/locales.ts.
+      ...EXTRA_LOCALES.map(({ code, language, name, dir }) => ({
+        code,
+        language,
+        name,
+        // `<html dir>` (useLocaleHead in the layout); Vuetify follows in plugins/vuetify.ts.
+        ...(dir ? { dir } : {}),
+        file: { path: 'extra.ts', cache: false },
+      })),
     ],
     defaultLocale: 'es',
     strategy: 'prefix_except_default',
@@ -1381,6 +1479,16 @@ export default defineNuxtConfig({
     // URL (`switchLocalePath`) y las versiones /en y /pt siguen indexadas por hreflang, así que
     // quien quiere otro idioma lo encuentra; Googlebot no manda Accept-Language, no cambia nada.
     detectBrowserLanguage: false,
+    // fallbackLocale for the extra locales (see the file).
+    vueI18n: './i18n.config.ts',
+    // `/_i18n/<content version>/<module hash>/<locale>/messages.json`. The version is what makes the
+    // URL safe to cache for a year (see `i18nMessagesVersionId` above); the module's hash alone
+    // stays the same when a JSON changes.
+    serverRoutePrefix: `/_i18n/${i18nMessagesVersionId}`,
+    // One `/:locale(en|pt|fr|…)/<path>` record per page instead of one per locale: every page
+    // answers in all 35 locales and the entry chunk does not grow with them. Guarded by
+    // modules/extra-locales.ts, which fails the build if no route comes out compacted.
+    experimental: { compactRoutes: true },
     // imports: false, // Disable vue-i18n composable auto-imports (removed, not supported)
   },
 
@@ -1493,11 +1601,20 @@ export default defineNuxtConfig({
     newsletter: {
       delayMs: process.env.NEWSLETTER_SEND_DELAY_MS || '1000',
     },
+    // Site feedback (suggestion box, bug reports): where the email goes. The owner's own inbox is
+    // set as FEEDBACK_EMAIL in the server's app/.env, never in the repo (it is public); until then
+    // it goes to the site's public contact address. Runtime override: NUXT_FEEDBACK_TO.
+    feedback: {
+      to: process.env.FEEDBACK_EMAIL || 'admin@cambio-uruguay.com',
+    },
     rentalAlerts: {
       enabled: process.env.RENTAL_ALERTS_ENABLED !== '0',
     },
+    // Server-only: where server/routes/_i18n/[...path].ts sends a request for a previous version.
+    i18nMessagesVersion: i18nMessagesVersionId,
     // Public keys (exposed to client-side)
     public: {
+      extraLocalesVersion,
       // DSN is the public ingestion address, never an auth token. Runtime
       // overrides are NUXT_PUBLIC_SENTRY_* / NUXT_SENTRY_* respectively.
       sentry: {

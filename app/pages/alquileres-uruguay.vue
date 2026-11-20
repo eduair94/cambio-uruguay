@@ -82,6 +82,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
               <VListItem
                 prepend-icon="mdi-bookmark-plus-outline"
                 :title="t('saveSearch')"
+                data-cta="rental-save-search"
                 @click="saveSearch"
               />
               <VListItem
@@ -92,6 +93,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
               <VListItem
                 prepend-icon="mdi-share-variant-outline"
                 :title="t('share')"
+                data-cta="rental-share-search"
                 @click="shareSearch"
               />
             </VList>
@@ -118,6 +120,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             :icon="smAndDown"
             :aria-label="t('saveSearch')"
             :title="t('saveSearch')"
+            data-cta="rental-save-search"
             @click="saveSearch"
           >
             <VIcon v-if="smAndDown" icon="mdi-bookmark-plus-outline" /><template v-else>{{
@@ -143,6 +146,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             :icon="smAndDown"
             :aria-label="t('share')"
             :title="t('share')"
+            data-cta="rental-share-search"
             @click="shareSearch"
           >
             <VIcon v-if="smAndDown" icon="mdi-share-variant-outline" /><template v-else>{{
@@ -205,7 +209,9 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             >
           </div>
           <div v-if="referencePoint" class="rentals-reference" data-testid="rental-reference">
-            <p v-if="query.refLabel">
+            <!-- The label can be the visitor's own address, like the input it came from
+                 (ReferenceAddress): kept out of session recordings. -->
+            <p v-if="query.refLabel" data-clarity-mask="true">
               <strong>{{ query.refLabel }}</strong>
             </p>
             <p>{{ t('distanceHint') }}</p>
@@ -234,7 +240,9 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                 <ReferenceAddress @select="selectReferenceAddress" @edit="clearDraftReference" />
                 <p id="rental-point-instructions">{{ t('pickPointHint') }}</p>
                 <p v-if="pointError" role="alert">{{ t('pointOutsideUruguay') }}</p>
-                <p v-if="draftPoint" role="status">{{ draftPointLabel || t('pointSelected') }}</p>
+                <p v-if="draftPoint" role="status" data-clarity-mask="true">
+                  {{ draftPointLabel || t('pointSelected') }}
+                </p>
                 <div class="rentals-reference__actions">
                   <VBtn variant="outlined" :disabled="!mapReady" @click="useMapCenter">
                     {{ t('useMapCenter') }}
@@ -351,6 +359,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
           </div>
           <div
             v-if="view === 'lista' && !error"
+            ref="resultsList"
             class="rentals-grid"
             :class="`rentals-grid--${layout}`"
             data-testid="rental-results-grid"
@@ -375,271 +384,295 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
                 >{{ t(`quick-${key}`) }}</VChip
               >
             </div>
-            <article v-for="(property, index) in items" :key="property.key" class="rental-card">
-              <div class="rental-card__visual">
-                <!-- Con fotos, un carrusel: se pasan sin salir de la búsqueda y tocar una abre el
-                     visor en esa foto. Sin foto no hay nada que mirar y el destino útil sigue
-                     siendo la ficha. -->
-                <div v-if="hasPhoto(property)" class="rental-card__media">
-                  <PropertyPhotoCarousel
-                    :photos="rentalCardPhotoRefs(property)"
-                    :total="property.photoCount"
-                    :source="gallerySource(property)"
-                    :title="property.title"
-                    :eager="index < 3"
-                    :raised-indicator="property.sources.length > 1"
-                    @open="openPhotoPreview(property, $event)"
-                    @failed="failedImages.add(property.key)"
-                  />
-                  <span class="rental-card__zoom" aria-hidden="true">
-                    <VIcon size="16">mdi-image-multiple-outline</VIcon>
-                    <span class="rental-card__zoom-label">{{ t('viewPhotos') }}</span>
-                  </span>
-                  <span v-if="property.sources.length > 1" class="rental-card__badge">{{
-                    t('portals', { n: property.sources.length })
-                  }}</span>
-                </div>
-                <NuxtLink
-                  v-else
-                  :to="rentalPropertyPath(property.key)"
-                  class="rental-card__media"
-                  :aria-label="`${t('detail')}: ${property.title}`"
-                  @pointerdown="rememberRentalSearch(route.fullPath)"
-                  @click="rememberRentalSearch(route.fullPath)"
-                >
-                  <span class="rental-card__noimage">
-                    <VIcon size="36">mdi-home-city-outline</VIcon>
-                    <span>{{ t('noPhoto') }}</span>
-                  </span>
-                  <span v-if="property.sources.length > 1" class="rental-card__badge">{{
-                    t('portals', { n: property.sources.length })
-                  }}</span>
-                </NuxtLink>
-                <VBtn
-                  class="rental-card__save"
-                  :icon="isFavorite(property.key) ? 'mdi-heart' : 'mdi-heart-outline'"
-                  :color="isFavorite(property.key) ? 'primary' : undefined"
-                  :aria-label="`${t(isFavorite(property.key) ? 'unfavorite' : 'favorite')}: ${property.title}`"
-                  :aria-pressed="isFavorite(property.key)"
-                  variant="flat"
-                  size="small"
-                  @click="toggleFavorite(property)"
-                />
-              </div>
-              <div class="rental-card__body">
-                <div class="rental-card__main">
-                  <div class="rental-card__overview">
-                    <p class="rental-card__where">
-                      {{
-                        [property.neighborhood, property.department].filter(Boolean).join(', ') ||
-                        t('unknown')
-                      }}
-                    </p>
-                    <p
-                      v-if="referencePoint && !pending"
-                      class="rental-card__distance"
-                      data-testid="rental-card-distance"
-                    >
-                      {{ distanceLabel(property.distanceKm) }}
-                    </p>
-                    <div class="rental-card__cost">
-                      <p class="rental-card__price" data-testid="rental-card-price">
-                        {{
-                          monthlyTotal(property) !== null
-                            ? '$ ' + numberFormat(monthlyTotal(property)!)
-                            : priceLabel(property)
-                        }}
-                      </p>
-                      <p class="rental-card__cost-label">
-                        {{ t(monthlyTotal(property) !== null ? 'rentAndExpenses' : 'rent') }}
-                      </p>
-                      <p v-if="monthlyTotal(property) !== null" class="rental-card__expenses">
-                        {{ priceLabel(property) }} {{ t('rent').toLowerCase() }} ·
-                        {{ expensesLabel(property) }}
-                      </p>
-                      <p v-else class="rental-card__expenses">{{ expensesLabel(property) }}</p>
-                      <p
-                        v-if="displayOffer(property)?.currencyInferred"
-                        class="rental-card__expenses"
-                        data-testid="rental-card-currency-inferred"
-                      >
-                        {{ t('currencyInferred') }}
-                      </p>
-                      <p
-                        v-if="displayOffer(property)?.stayPriceSuspect"
-                        class="rental-card__stay"
-                        data-testid="rental-card-stay-price"
-                        :title="t('stayPriceNote')"
-                      >
-                        <VIcon size="14" aria-hidden="true">mdi-weather-night</VIcon>
-                        {{ t('stayPriceChip') }}
-                      </p>
-                      <p
-                        v-if="priceGaps.get(property.key)"
-                        class="rental-card__gap"
-                        data-testid="rental-card-gap"
-                        :title="t('gapNote')"
-                      >
-                        <VIcon size="14" aria-hidden="true">mdi-swap-horizontal</VIcon>
-                        {{
-                          t('gapLine', {
-                            cheap: sourceLabel(priceGaps.get(property.key)!.cheapestSource),
-                            dear: sourceLabel(priceGaps.get(property.key)!.runnerUpSource),
-                            diff: '$ ' + numberFormat(priceGaps.get(property.key)!.diffUyu),
-                            pct: numberFormat(Math.round(priceGaps.get(property.key)!.diffPct)),
-                          })
-                        }}
-                      </p>
-                      <p
-                        v-if="property.priceDrop"
-                        class="rental-card__gap"
-                        data-testid="rental-card-drop"
-                        :title="t('dropNote')"
-                      >
-                        <VIcon size="14" aria-hidden="true">mdi-arrow-down</VIcon>
-                        {{
-                          t('dropLine', {
-                            pct: numberFormat(property.priceDrop.pct),
-                            from: rentalPriceLabel(
-                              property.priceDrop.from,
-                              property.priceDrop.currency,
-                              0
-                            ),
-                            date: dateLabel(property.priceDrop.at),
-                          })
-                        }}
-                      </p>
-                    </div>
-
-                    <h3>
-                      <NuxtLink
-                        :to="rentalPropertyPath(property.key)"
-                        @pointerdown="rememberRentalSearch(route.fullPath)"
-                        @click="rememberRentalSearch(route.fullPath)"
-                        >{{ property.title }}</NuxtLink
-                      >
-                    </h3>
-                    <p class="rental-card__specs">{{ specsLabel(property) }}</p>
-                    <p v-if="property.address" class="rental-card__address">
-                      {{ property.address }}
-                    </p>
-                  </div>
-                  <div class="rental-card__tags">
-                    <VChip
-                      v-if="listedFor.get(property.key)"
-                      size="small"
-                      variant="tonal"
-                      color="warning"
-                      data-testid="rental-card-listed"
-                      :title="
-                        listedFor.get(property.key)!.basis === 'observed'
-                          ? t('listedObservedNote')
-                          : undefined
-                      "
-                      >{{
-                        t(
-                          listedFor.get(property.key)!.basis === 'published'
-                            ? 'listedPublished'
-                            : 'listedObserved',
-                          { days: listedFor.get(property.key)!.days }
-                        )
-                      }}</VChip
-                    >
-                    <VChip
-                      v-if="displayOffer(property)?.ownerDirect?.declared"
-                      size="small"
-                      variant="tonal"
-                      color="primary"
-                      >{{ t('owner') }}</VChip
-                    >
-                    <VChip
-                      v-if="displayOffer(property)?.petsAllowed"
-                      size="small"
-                      variant="tonal"
-                      >{{ t('pets') }}</VChip
-                    ><VChip
-                      v-if="(displayOffer(property)?.parkingSpaces ?? 0) > 0"
-                      size="small"
-                      variant="tonal"
-                      >{{ t('parking') }}</VChip
-                    ><VChip v-if="displayOffer(property)?.furnished" size="small" variant="tonal">{{
-                      t('furnished')
-                    }}</VChip
-                    ><VChip
-                      v-if="displayOffer(property)?.furnished === false"
-                      size="small"
-                      variant="tonal"
-                      >{{ t('unfurnished') }}</VChip
-                    ><VChip
-                      v-if="displayOffer(property)?.terms?.includes('invernal')"
-                      size="small"
-                      variant="tonal"
-                      color="info"
-                      >{{ t('winter') }}</VChip
-                    ><VChip
-                      v-for="guarantee in publishedGuarantees(property)"
-                      :key="guarantee"
-                      size="small"
-                      variant="outlined"
-                      >{{ t(guarantee) }}</VChip
-                    >
-                  </div>
-                  <RentalsZoneBars
-                    :place="{
-                      zone: property.officialZone?.zone,
-                      department: property.department,
-                      neighborhood: property.neighborhood,
-                    }"
-                  />
-                  <div class="rental-card__footnote">
-                    <p class="rental-card__meta">{{ sellerLabel(property) }}</p>
-                    <RentalsAvailabilityReport
-                      :offers="property.offers"
-                      :summary="property.availability"
-                      :preferred="displayOffer(property)"
+            <FeedEdge :feed="feed" edge="top" />
+            <!-- `--lead` y no `:first-of-type`: con "cargar más al bajar", el primer aviso del DOM
+                 cambia cada vez que una página sale de la ventana y la fila de atajos saltaría. -->
+            <template v-for="(property, index) in feed.items" :key="property.key">
+              <FeedAd :index="index" :feed="feed" />
+              <article
+                class="rental-card"
+                :class="{ 'rental-card--lead': index === 0 && feed.atStart }"
+              >
+                <div class="rental-card__visual">
+                  <!-- Con fotos, un carrusel: se pasan sin salir de la búsqueda y tocar una abre el
+                       visor en esa foto. Sin foto no hay nada que mirar y el destino útil sigue
+                       siendo la ficha. -->
+                  <div v-if="hasPhoto(property)" class="rental-card__media">
+                    <PropertyPhotoCarousel
+                      cta="rental-photo-open"
+                      :photos="rentalCardPhotoRefs(property)"
+                      :total="property.photoCount"
+                      :source="gallerySource(property)"
                       :title="property.title"
+                      :eager="index < 3"
+                      :raised-indicator="property.sources.length > 1"
+                      @open="openPhotoPreview(property, $event)"
+                      @failed="failedImages.add(property.key)"
                     />
-                    <p class="rental-card__meta">
-                      {{
-                        t('seen', {
-                          date: dateLabel(displayOffer(property)?.lastSeen || property.lastSeen),
-                        })
-                      }}
-                    </p>
-                  </div>
-                </div>
-                <div class="rental-card__rail">
-                  <div class="rental-card__offers">
-                    <a
-                      v-for="offer in property.offers"
-                      :key="offer.listingId"
-                      :href="offer.url"
-                      target="_blank"
-                      rel="noopener noreferrer nofollow"
-                      class="rental-card__offer"
-                      :class="{
-                        'rental-card__offer--selected':
-                          offer.listingId === displayOffer(property)?.listingId,
-                      }"
-                      ><span>{{ sourceLabel(offer.source) }}</span
-                      ><strong>{{ offerPrice(offer) }}</strong
-                      ><VIcon size="16">mdi-open-in-new</VIcon></a
-                    >
+                    <span class="rental-card__zoom" aria-hidden="true">
+                      <VIcon size="16">mdi-image-multiple-outline</VIcon>
+                      <span class="rental-card__zoom-label">{{ t('viewPhotos') }}</span>
+                    </span>
+                    <span v-if="property.sources.length > 1" class="rental-card__badge">{{
+                      t('portals', { n: property.sources.length })
+                    }}</span>
                   </div>
                   <NuxtLink
+                    v-else
                     :to="rentalPropertyPath(property.key)"
-                    class="rental-card__detail"
-                    data-testid="rental-card-detail-link"
+                    class="rental-card__media"
                     :aria-label="`${t('detail')}: ${property.title}`"
                     @pointerdown="rememberRentalSearch(route.fullPath)"
                     @click="rememberRentalSearch(route.fullPath)"
                   >
-                    {{ t('detailsAndServices') }}
-                    <VIcon size="20" aria-hidden="true">mdi-arrow-right</VIcon>
+                    <span class="rental-card__noimage">
+                      <VIcon size="36">mdi-home-city-outline</VIcon>
+                      <span>{{ t('noPhoto') }}</span>
+                    </span>
+                    <span v-if="property.sources.length > 1" class="rental-card__badge">{{
+                      t('portals', { n: property.sources.length })
+                    }}</span>
                   </NuxtLink>
+                  <VBtn
+                    class="rental-card__save"
+                    :icon="isFavorite(property.key) ? 'mdi-heart' : 'mdi-heart-outline'"
+                    :color="isFavorite(property.key) ? 'primary' : undefined"
+                    :aria-label="`${t(isFavorite(property.key) ? 'unfavorite' : 'favorite')}: ${property.title}`"
+                    :aria-pressed="isFavorite(property.key)"
+                    variant="flat"
+                    size="small"
+                    @click="toggleFavorite(property)"
+                  />
                 </div>
-              </div>
-            </article>
+                <div class="rental-card__body">
+                  <div class="rental-card__main">
+                    <div class="rental-card__overview">
+                      <p class="rental-card__where">
+                        {{ rentalDisplayZone(property) || t('unknown') }}
+                      </p>
+                      <p
+                        v-if="referencePoint && !pending"
+                        class="rental-card__distance"
+                        data-testid="rental-card-distance"
+                        data-clarity-mask="true"
+                      >
+                        {{ distanceLabel(property.distanceKm) }}
+                      </p>
+                      <div class="rental-card__cost">
+                        <p class="rental-card__price" data-testid="rental-card-price">
+                          {{
+                            monthlyTotal(property) !== null
+                              ? '$ ' + numberFormat(monthlyTotal(property)!)
+                              : priceLabel(property)
+                          }}
+                        </p>
+                        <p class="rental-card__cost-label">
+                          {{ t(monthlyTotal(property) !== null ? 'rentAndExpenses' : 'rent') }}
+                        </p>
+                        <p v-if="monthlyTotal(property) !== null" class="rental-card__expenses">
+                          {{ priceLabel(property) }} {{ t('rent').toLowerCase() }} ·
+                          {{ expensesLabel(property)
+                          }}<template
+                            v-if="displayOffer(property)?.commonExpensesSource === 'description'"
+                          >
+                            ({{ t('expensesFromDescription') }})</template
+                          >
+                        </p>
+                        <p v-else class="rental-card__expenses">
+                          {{ expensesLabel(property)
+                          }}<template
+                            v-if="displayOffer(property)?.commonExpensesSource === 'description'"
+                          >
+                            ({{ t('expensesFromDescription') }})</template
+                          >
+                        </p>
+                        <p
+                          v-if="displayOffer(property)?.currencyInferred"
+                          class="rental-card__expenses"
+                          data-testid="rental-card-currency-inferred"
+                        >
+                          {{ t('currencyInferred') }}
+                        </p>
+                        <p
+                          v-if="displayOffer(property)?.stayPriceSuspect"
+                          class="rental-card__stay"
+                          data-testid="rental-card-stay-price"
+                          :title="t('stayPriceNote')"
+                        >
+                          <VIcon size="14" aria-hidden="true">mdi-weather-night</VIcon>
+                          {{ t('stayPriceChip') }}
+                        </p>
+                        <p
+                          v-if="priceGaps.get(property.key)"
+                          class="rental-card__gap"
+                          data-testid="rental-card-gap"
+                          :title="t('gapNote')"
+                        >
+                          <VIcon size="14" aria-hidden="true">mdi-swap-horizontal</VIcon>
+                          {{
+                            t('gapLine', {
+                              cheap: sourceLabel(priceGaps.get(property.key)!.cheapestSource),
+                              dear: sourceLabel(priceGaps.get(property.key)!.runnerUpSource),
+                              diff: '$ ' + numberFormat(priceGaps.get(property.key)!.diffUyu),
+                              pct: numberFormat(Math.round(priceGaps.get(property.key)!.diffPct)),
+                            })
+                          }}
+                        </p>
+                        <p
+                          v-if="property.priceDrop"
+                          class="rental-card__gap"
+                          data-testid="rental-card-drop"
+                          :title="t('dropNote')"
+                        >
+                          <VIcon size="14" aria-hidden="true">mdi-arrow-down</VIcon>
+                          {{
+                            t('dropLine', {
+                              pct: numberFormat(property.priceDrop.pct),
+                              from: rentalPriceLabel(
+                                property.priceDrop.from,
+                                property.priceDrop.currency,
+                                0
+                              ),
+                              date: dateLabel(property.priceDrop.at),
+                            })
+                          }}
+                        </p>
+                      </div>
+
+                      <h3>
+                        <NuxtLink
+                          :to="rentalPropertyPath(property.key)"
+                          @pointerdown="rememberRentalSearch(route.fullPath)"
+                          @click="rememberRentalSearch(route.fullPath)"
+                          >{{ property.title }}</NuxtLink
+                        >
+                      </h3>
+                      <p class="rental-card__specs">{{ specsLabel(property) }}</p>
+                      <p v-if="property.address" class="rental-card__address">
+                        {{ property.address }}
+                      </p>
+                    </div>
+                    <div class="rental-card__tags">
+                      <VChip
+                        v-if="listedFor.get(property.key)"
+                        size="small"
+                        variant="tonal"
+                        color="warning"
+                        data-testid="rental-card-listed"
+                        :title="
+                          listedFor.get(property.key)!.basis === 'observed'
+                            ? t('listedObservedNote')
+                            : undefined
+                        "
+                        >{{
+                          t(
+                            listedFor.get(property.key)!.basis === 'published'
+                              ? 'listedPublished'
+                              : 'listedObserved',
+                            { days: listedFor.get(property.key)!.days }
+                          )
+                        }}</VChip
+                      >
+                      <VChip
+                        v-if="displayOffer(property)?.ownerDirect?.declared"
+                        size="small"
+                        variant="tonal"
+                        color="primary"
+                        >{{ t('owner') }}</VChip
+                      >
+                      <VChip
+                        v-if="displayOffer(property)?.petsAllowed"
+                        size="small"
+                        variant="tonal"
+                        >{{ t('pets') }}</VChip
+                      ><VChip
+                        v-if="(displayOffer(property)?.parkingSpaces ?? 0) > 0"
+                        size="small"
+                        variant="tonal"
+                        >{{ t('parking') }}</VChip
+                      ><VChip
+                        v-if="displayOffer(property)?.furnished"
+                        size="small"
+                        variant="tonal"
+                        >{{ t('furnished') }}</VChip
+                      ><VChip
+                        v-if="displayOffer(property)?.furnished === false"
+                        size="small"
+                        variant="tonal"
+                        >{{ t('unfurnished') }}</VChip
+                      ><VChip
+                        v-if="displayOffer(property)?.terms?.includes('invernal')"
+                        size="small"
+                        variant="tonal"
+                        color="info"
+                        >{{ t('winter') }}</VChip
+                      ><VChip
+                        v-for="guarantee in publishedGuarantees(property)"
+                        :key="guarantee"
+                        size="small"
+                        variant="outlined"
+                        >{{ t(guarantee) }}</VChip
+                      >
+                    </div>
+                    <RentalsZoneBars
+                      :place="{
+                        zone: property.officialZone?.zone,
+                        department: property.department,
+                        neighborhood: property.neighborhood,
+                      }"
+                    />
+                    <div class="rental-card__footnote">
+                      <p class="rental-card__meta">{{ sellerLabel(property) }}</p>
+                      <RentalsAvailabilityReport
+                        :offers="property.offers"
+                        :summary="property.availability"
+                        :preferred="displayOffer(property)"
+                        :title="property.title"
+                      />
+                      <p class="rental-card__meta">
+                        {{
+                          t('seen', {
+                            date: dateLabel(displayOffer(property)?.lastSeen || property.lastSeen),
+                          })
+                        }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="rental-card__rail">
+                    <div class="rental-card__offers">
+                      <a
+                        v-for="offer in property.offers"
+                        :key="offer.listingId"
+                        :href="offer.url"
+                        target="_blank"
+                        rel="noopener noreferrer nofollow"
+                        class="rental-card__offer"
+                        data-cta="rental-card-offer"
+                        :class="{
+                          'rental-card__offer--selected':
+                            offer.listingId === displayOffer(property)?.listingId,
+                        }"
+                        ><span>{{ sourceLabel(offer.source) }}</span
+                        ><strong>{{ offerPrice(offer) }}</strong
+                        ><VIcon size="16">mdi-open-in-new</VIcon></a
+                      >
+                    </div>
+                    <NuxtLink
+                      :to="rentalPropertyPath(property.key)"
+                      class="rental-card__detail"
+                      data-testid="rental-card-detail-link"
+                      :aria-label="`${t('detail')}: ${property.title}`"
+                      @pointerdown="rememberRentalSearch(route.fullPath)"
+                      @click="rememberRentalSearch(route.fullPath)"
+                    >
+                      {{ t('detailsAndServices') }}
+                      <VIcon size="20" aria-hidden="true">mdi-arrow-right</VIcon>
+                    </NuxtLink>
+                  </div>
+                </div>
+              </article>
+            </template>
+            <FeedEdge :feed="feed" edge="bottom" />
           </div>
           <PropertyPhotoLightbox
             v-model="previewOpen"
@@ -649,29 +682,33 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
             :start-index="previewIndex"
             :detail-href="previewProperty ? rentalPropertyPath(previewProperty.key) : ''"
           />
-          <div v-if="pageCount > 1 && view === 'lista' && !error" class="mt-6">
-            <VPagination
-              :model-value="query.page"
-              :length="pageCount"
-              :total-visible="smAndDown ? 1 : 7"
-              @update:model-value="onPageChange"
-            >
-              <template #prev="props">
-                <VBtn v-bind="paginationLinkProps(props, query.page - 1)" />
-              </template>
-              <template #item="{ key, page, props }">
-                <VBtn v-bind="paginationLinkProps(props, typeof key === 'number' ? key : null)">
-                  {{ page }}
-                </VBtn>
-              </template>
-              <template #next="props">
-                <VBtn v-bind="paginationLinkProps(props, query.page + 1)" />
-              </template>
-            </VPagination>
-            <p v-if="smAndDown" class="text-caption text-center mt-1">
-              {{ t('pageStatus', { current: query.page, total: pageCount }) }}
-            </p>
-          </div>
+          <FeedControls v-if="view === 'lista' && !error" :feed="feed">
+            <template #pagination>
+              <div v-if="pageCount > 1" class="mt-6">
+                <VPagination
+                  :model-value="query.page"
+                  :length="pageCount"
+                  :total-visible="smAndDown ? 1 : 7"
+                  @update:model-value="onPageChange"
+                >
+                  <template #prev="props">
+                    <VBtn v-bind="paginationLinkProps(props, query.page - 1)" />
+                  </template>
+                  <template #item="{ key, page, props }">
+                    <VBtn v-bind="paginationLinkProps(props, typeof key === 'number' ? key : null)">
+                      {{ page }}
+                    </VBtn>
+                  </template>
+                  <template #next="props">
+                    <VBtn v-bind="paginationLinkProps(props, query.page + 1)" />
+                  </template>
+                </VPagination>
+                <p v-if="smAndDown" class="text-caption text-center mt-1">
+                  {{ t('pageStatus', { current: query.page, total: pageCount }) }}
+                </p>
+              </div>
+            </template>
+          </FeedControls>
           <!--
             Después de los resultados y no antes: arriba, sus 160 px más el anuncio automático dejaban
             el primer precio fuera de la primera pantalla en 320, 390 y 430 px (el e2e de
@@ -759,11 +796,12 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
       </details>
     </section>
     <VSnackbar v-model="snackbar" :timeout="4500" role="status">{{ feedback }}</VSnackbar>
-    <RentalAlertDialog />
+    <RentalAlertDialogHost />
   </VContainer>
 </template>
 
 <script setup lang="ts">
+import { VPagination } from 'vuetify/components'
 import { rentalAvailabilityCopy } from '~/utils/rentalAvailabilityMessages'
 import { useDisplay } from 'vuetify'
 import SearchFilters from '~/components/rentals/SearchFilters.vue'
@@ -771,7 +809,7 @@ import ReferenceAddress from '~/components/rentals/ReferenceAddress.vue'
 import SavedPanel from '~/components/rentals/SavedPanel.vue'
 import MapPropertyDetail from '~/components/rentals/MapPropertyDetail.vue'
 import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
-import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'
+import RentalAlertDialogHost from '~/components/rentals/RentalAlertDialogHost.vue'
 import { rentalMessages } from '~/utils/rentalMessages'
 import {
   rentalCardPhotoRefs,
@@ -813,6 +851,7 @@ import {
 import { MUTUALISTA_SEDES } from '~/utils/mutualistaSedes'
 import { DIRECTORIOS_HUB } from '~/utils/directorios'
 import { rentalPricePerM2 } from '~/utils/rentalPricePerM2'
+import { rentalReferenceQuery, splitRentalReference } from '~/utils/rentalReference'
 import {
   RENTAL_SAVED_STORAGE_ID,
   RENTAL_SAVED_FAVORITE_LIMIT,
@@ -832,6 +871,8 @@ import {
   writeRentalLayout,
   type RentalLayout,
 } from '~/utils/rentalLayout'
+// The card names the place as the ficha does: "Pocitos", never the portal's "POCITOS".
+import { rentalDisplayZone } from '~/utils/rentalDisplayPlace'
 
 const LocationsMap = defineAsyncComponent(() => import('~/components/map/LocationsMap.vue'))
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalMessages })
@@ -865,9 +906,22 @@ async function restoreFilterContext() {
 watch(smAndDown, mobile => {
   if (!mobile) mobileFiltersOpen.value = false
 })
-const query = computed(() => normalizeRentalQuery(route.query))
+// The filters come from the address bar and the reference point from session state, read as ONE
+// query. The point never goes back into the URL: GA4, the Google tag and every AdSense ad request
+// read the page URL, and the point can be the visitor's own address (utils/rentalReference.ts).
+const rentalReference = useRentalReference()
+const query = computed(() =>
+  normalizeRentalQuery({ ...route.query, ...rentalReferenceQuery(rentalReference.reference.value) })
+)
 const agencyName = useAgencySelection(() => query.value.agency)
-const requestParams = computed(() => rentalQueryToParams(query.value))
+// The site's own API gets the point's coordinates, to measure and sort by distance, and never its
+// label: the server does not read it, and it can be the address the visitor typed.
+const requestParams = computed(() =>
+  rentalQueryToParams(query.value, { includeReference: 'point' })
+)
+// Navigations start from the whole query, label included: navigate() moves the point into the new
+// history entry's state and leaves the address bar without it.
+const navigationParams = computed(() => rentalQueryToParams(query.value))
 const requestKey = computed(() => JSON.stringify(requestParams.value))
 const view = computed(() => (route.query.view === 'mapa' ? 'mapa' : 'lista'))
 // El mosaico o las filas son gusto del visitante, no otra dirección: viven en
@@ -891,7 +945,7 @@ const listedNow = computed(() => new Date(renderedAt.value))
 // puede traer 24 filas.
 const priceGaps = computed(() => {
   const map = new Map<string, PortalPriceGap>()
-  for (const property of items.value) {
+  for (const property of feed.items) {
     const gap = portalPriceGap(property)
     if (gap) map.set(property.key, gap)
   }
@@ -899,7 +953,7 @@ const priceGaps = computed(() => {
 })
 const listedFor = computed(() => {
   const map = new Map<string, ReturnType<typeof rentalListedFor>>()
-  for (const property of items.value) {
+  for (const property of feed.items) {
     const listed = rentalListedFor(property, listedNow.value)
     if (listed) map.set(property.key, listed)
   }
@@ -911,6 +965,32 @@ const coverage = computed(() => data.value?.coverage ?? null)
 const medianUyu = computed(() => data.value?.medianUyu ?? 0)
 const usdUyu = computed(() => meta.value?.usdUyu ?? 0)
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / (data.value?.perPage || 24))))
+// "Cargar más al bajar": la grilla recorre `feed.items`, que en modo páginas son los mismos avisos
+// de la página y en modo scroll la ventana cargada (ver composables/useInfiniteFeed.ts).
+const resultsList = ref<HTMLElement | null>(null)
+const feedResetKey = computed(() => {
+  const filters = { ...requestParams.value }
+  delete filters.page
+  return JSON.stringify(filters)
+})
+const feed = useInfiniteFeed<RentalListItem>({
+  id: 'alquileres',
+  itemKey: property => property.key,
+  list: resultsList,
+  items: () => items.value,
+  page: () => query.value.page,
+  pageCount: () => pageCount.value,
+  perPage: () => data.value?.perPage || 24,
+  resetKey: () => feedResetKey.value,
+  fetchPage: (page, signal) =>
+    $fetch<RentalsResponse>('/api/rentals', {
+      query: availability.withRevision({ ...requestParams.value, page: String(page) }),
+      signal,
+    }).then(response => response.items),
+  enabled: () => view.value === 'lista' && !error.value,
+  goToPage: page => void onPageChange(page),
+  anchorId: 'rental-results',
+})
 const externalSourceKeys = computed(
   () =>
     new Set(
@@ -939,8 +1019,14 @@ const sortItems = computed(() =>
 const failedImages = reactive(new Set<string>())
 
 // Confirmed URL filters alone fetch results. Back/Forward restores the complete draft form.
-function navigate(params: Record<string, string>) {
-  return router.push({ query: { ...params, ...(view.value === 'mapa' ? { view: 'mapa' } : {}) } })
+// Params built from a full query carry the point; it is split off here into the new history
+// entry's state, so every navigation of the page leaves the address bar without it.
+function navigate(params: Record<string, string>, nextView: string = view.value) {
+  const { params: addressBar, reference } = splitRentalReference(params)
+  return rentalReference.navigate(
+    { query: { ...addressBar, ...(nextView === 'mapa' ? { view: 'mapa' } : {}) } },
+    reference
+  )
 }
 function focusSearchResults() {
   const results = document.getElementById('rental-results')
@@ -979,7 +1065,7 @@ function removeFilter(keys: string[]) {
     return
   }
   const params = Object.fromEntries(
-    Object.entries(requestParams.value).filter(([key]) => ![...keys, 'page'].includes(key))
+    Object.entries(navigationParams.value).filter(([key]) => ![...keys, 'page'].includes(key))
   )
   void navigate(params)
 }
@@ -995,9 +1081,7 @@ function changeSort(sort: RentalQuery['sort']) {
   search({ ...query.value, sort })
 }
 function changeView(next: string) {
-  void router.push({
-    query: { ...requestParams.value, ...(next === 'mapa' ? { view: 'mapa' } : {}) },
-  })
+  void navigate(navigationParams.value, next)
 }
 function changeViewMode(next: string) {
   if (next === 'mapa') {
@@ -1017,8 +1101,11 @@ function paginationLinkProps(props: Record<string, unknown>, page: number | null
   return {
     ...props,
     variant: 'text' as const,
+    // A real link, so never with the point: crawlers, new tabs and session tools read it as is.
     href: enabled
-      ? router.resolve({ query: rentalQueryToParams({ ...query.value, page }) }).href
+      ? router.resolve({
+          query: rentalQueryToParams({ ...query.value, page }, { includeReference: false }),
+        }).href
       : undefined,
     // Keep native link behavior for new tabs and crawlers; ordinary clicks retain scroll context.
     onClick: (event: MouseEvent) => {
@@ -1233,7 +1320,7 @@ watch(view, () => {
 })
 async function startPointSelection() {
   await closeMapProperty(false)
-  await router.push({ query: { ...requestParams.value, view: 'mapa' } })
+  await navigate(navigationParams.value, 'mapa')
   draftPoint.value = referencePoint.value
   draftPointLabel.value = query.value.refLabel
   pointError.value = false
@@ -1282,7 +1369,8 @@ async function applyReference() {
     page: 1,
   }
   cancelPointSelection()
-  await router.push({ query: rentalQueryToParams(next) })
+  // Back to the list, sorted from the point; the point itself goes to the entry's state.
+  await navigate(rentalQueryToParams(next), 'lista')
   await nextTick()
   focusSearchResults()
 }
@@ -1520,6 +1608,8 @@ function persist() {
 }
 function saveSearch() {
   const label = filterChips.value.map(chip => chip.label).join(' · ') || t('country')
+  // Saved like a shared link, filters only: saveRentalSearch drops the point, which is this tab's
+  // session and nothing keeps after that (utils/rentalReference.ts).
   const next = saveRentalSearch(saved.value, label, query.value)
   if (
     saved.value.searches.some(
@@ -1825,7 +1915,7 @@ useSchemaOrg([
   }
   /* Una sola fila que se desliza, y después del primer aviso: a 320×640 el primer precio
      quedaba a 15 px del borde y la fila mide 26. */
-  .rentals-grid > article.rental-card:first-of-type {
+  .rentals-grid > article.rental-card--lead {
     order: -2;
   }
   .rentals-quick {

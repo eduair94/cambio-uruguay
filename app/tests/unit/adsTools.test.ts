@@ -75,6 +75,10 @@ function directive(node: Node, name: string): string {
   return prop?.exp?.content ?? ''
 }
 
+function hasDirective(node: Node, name: string): boolean {
+  return (node.props ?? []).some(p => p.type === DIRECTIVE && p.name === name)
+}
+
 function adSlots(root: Node): Node[] {
   return elements(root).filter(node => node.tag === 'AdSlot')
 }
@@ -229,32 +233,52 @@ describe('useAds: calculadoras con el interruptor encendido', () => {
 // 3. Dónde va la unidad.
 // ---------------------------------------------------------------------------------------------
 
-describe('ToolShell: la unidad va después del resultado y de su explicación', () => {
+describe('ToolShell: la unidad va después de la calculadora y antes de su explicación', () => {
+  // Hasta el 2026-10-31 iba después de la explicación y de la advertencia. En el teléfono la
+  // explicación cae debajo de la calculadora, así que casi nadie llegaba a la unidad (una impresión
+  // cada diez vistas). Ahora va pegada a la calculadora entera —campos y resultado— y antes del
+  // texto que la explica; nunca entre los campos y el resultado, que es lo que las sacó de Auto Ads.
   const shell = readSfc('components/ToolShell.vue')
   const root = elementChildren(shell.template!.ast as unknown as Node)[0]!
   const units = adSlots(root)
+  const branches = elementChildren(root).filter(
+    child => directive(child, 'if') === 'asideLayout' || hasDirective(child, 'else')
+  )
 
-  it('tiene exactamente una unidad, la de las calculadoras, sólo en cliente', () => {
-    expect(units).toHaveLength(1)
-    expect(attr(units[0]!, 'placement')).toBe('after-tool')
-    const wrapper = elementChildren(root).find(child => elementChildren(child).includes(units[0]!))
-    expect(wrapper?.tag).toBe('ClientOnly')
+  it('una unidad por diseño, la de las calculadoras, sólo en cliente', () => {
+    expect(branches).toHaveLength(2)
+    expect(units).toHaveLength(2)
+    for (const branch of branches) {
+      const own = adSlots(branch)
+      expect(own).toHaveLength(1)
+      expect(attr(own[0]!, 'placement')).toBe('after-tool')
+      const wrapper = elements(branch).find(node => elementChildren(node).includes(own[0]!))
+      expect(wrapper?.tag).toBe('ClientOnly')
+    }
   })
 
-  it('es hija directa del contenedor, después de la calculadora, la explicación y la advertencia', () => {
-    const children = elementChildren(root)
-    const at = children.findIndex(child => elementChildren(child).includes(units[0]!))
-    expect(at).toBeGreaterThan(-1)
-    const before = children.slice(0, at)
-    const after = children.slice(at + 1)
-    // Los tres slots de la página (campos + resultado, explicación, consejos) viven ANTES.
-    const slotsBefore = before.flatMap(elements).filter(node => node.tag === 'slot')
-    const slotNames = slotsBefore.map(node => attr(node, 'name') ?? 'default')
-    expect(new Set(slotNames)).toEqual(new Set(['default', 'content', 'tips', 'disclaimer']))
-    expect(after.flatMap(elements).some(node => node.tag === 'slot')).toBe(false)
-    // La advertencia sobre el resultado es la hermana inmediatamente anterior.
-    expect(before[before.length - 1]?.tag).toBe('VAlert')
-    expect(directive(before[before.length - 1]!, 'if')).toBe('!hideDisclaimer')
+  it('en cada diseño va después de la calculadora y antes de la explicación', () => {
+    for (const branch of branches) {
+      const order = elements(branch)
+      const at = order.findIndex(node => node.tag === 'AdSlot')
+      const calc = order.findIndex(node => node.tag === 'slot' && !attr(node, 'name'))
+      const explainer = order.findIndex(
+        node => node.tag === 'slot' && attr(node, 'name') === 'content'
+      )
+      expect(calc).toBeGreaterThan(-1)
+      expect(explainer).toBeGreaterThan(-1)
+      expect(at).toBeGreaterThan(calc)
+      // En el diseño de columna, la explicación vive en la columna de al lado: después en el
+      // documento, debajo en el teléfono.
+      expect(at).toBeLessThan(explainer)
+    }
+  })
+
+  it('ninguna unidad fuera de los dos diseños', () => {
+    const outside = elementChildren(root)
+      .filter(child => !branches.includes(child))
+      .flatMap(adSlots)
+    expect(outside).toEqual([])
   })
 })
 

@@ -268,6 +268,14 @@
       </VAlert>
     </section>
 
+    <!-- La otra comparación que se hace mucho —Prex contra un fondo de liquidez—, en video, de un
+         creador uruguayo (utils/creatorVideos.ts) -->
+    <CreatorVideos
+      page="/cuenta-remunerada-uruguay"
+      title="¿Y contra un fondo de liquidez? En video"
+      intro="Un creador uruguayo compara la cuenta remunerada de Prex con el Fondo Centenario de Liquidez de Gletir: costos, liquidez y qué mirar antes de elegir. Si te sirve, suscribite a su canal."
+    />
+
     <!-- ¿Va a bajar? -->
     <section class="mb-6" aria-labelledby="baja-title">
       <h2 id="baja-title" class="text-h6 font-weight-bold mb-1">
@@ -666,8 +674,10 @@
       </VAlert>
 
       <p class="text-caption text-disabled mt-3 mb-0">
-        Estimación educativa. La tasa por defecto es la Tasa de Política Monetaria del BCU, en
-        {{ fmtNum(TPM_PCT) }}% anual: el COPOM la mantuvo en ese nivel en su comunicado del
+        Estimación educativa. La tasa por defecto es la
+        <NuxtLink :to="localePath('/guias/tasa-de-politica-monetaria-uruguay')"
+          >Tasa de Política Monetaria del BCU</NuxtLink
+        >, en {{ fmtNum(TPM_PCT) }}% anual: el COPOM la dejó en ese nivel en su comunicado del
         {{ fmtDate(TPM_CONFIRMED) }}. Es la referencia del papel que compran estos fondos, no una
         tasa que alguien te prometa. No es asesoramiento financiero.
       </p>
@@ -752,6 +762,9 @@
       </ul>
     </VCard>
 
+    <!-- La unidad intermedia, antes de las preguntas: mismo corte que FaqSection (ver
+         docs/seo/adsense-growth-loop.md, 31/10/2026). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <!-- FAQ -->
     <VCard variant="flat" class="pa-4 pa-sm-5 mb-5">
       <h2 class="text-h6 font-weight-bold mb-3">Preguntas frecuentes</h2>
@@ -970,11 +983,11 @@ const faqs = [
   },
   {
     q: '¿Cuánto paga exactamente?',
-    a: 'Ninguno de los dos publica una tasa. Mercado Pago comunicó que la <strong>referencia</strong> es la Tasa de Política Monetaria del BCU, en 5,75 % anual al lanzamiento; Prex muestra en la app una <strong>tasa indicativa</strong> calculada sobre el desempeño del fondo en los últimos 30 días. Ambas se mueven todos los días. Cualquier número fijo que veas publicado en otro lado conviene chequearlo contra la app.',
+    a: 'Ninguno de los dos publica una tasa. Mercado Pago comunicó que la <strong>referencia</strong> es la Tasa de Política Monetaria del BCU, en 5,75 % anual al lanzamiento —desde el 8/10/2026 está en 6 %—; Prex muestra en la app una <strong>tasa indicativa</strong> calculada sobre el desempeño del fondo en los últimos 30 días. Ambas se mueven todos los días. Cualquier número fijo que veas publicado en otro lado conviene chequearlo contra la app.',
   },
   {
     q: '¿Y el 20,81 % de TNA que leí?',
-    a: 'Es de <strong>Prex Argentina</strong>, en pesos argentinos. Aparece en notas de medios argentinos que cubren el producto del otro país. En Uruguay es imposible: la TPM está en 5,75 % anual y estos fondos compran papel del BCU y del Estado uruguayo.',
+    a: 'Es de <strong>Prex Argentina</strong>, en pesos argentinos. Aparece en notas de medios argentinos que cubren el producto del otro país. En Uruguay es imposible: la TPM está en 6 % anual y estos fondos compran papel del BCU y del Estado uruguayo.',
   },
   {
     q: '¿Me conviene contra un plazo fijo?',

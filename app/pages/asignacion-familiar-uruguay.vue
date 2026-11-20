@@ -194,6 +194,9 @@
       </VCard>
     </section>
 
+    <!-- La unidad intermedia, antes de las preguntas: mismo corte que FaqSection (ver
+         docs/seo/adsense-growth-loop.md, 31/10/2026). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <!-- FAQ -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-4">Preguntas frecuentes</h2>
@@ -289,9 +292,13 @@ const verifiedAt = new Date(`${ASIGNACION_FAMILIAR_VERIFIED_AT}T12:00:00Z`).toLo
 )
 
 const canonicalUrl = 'https://cambio-uruguay.com/asignacion-familiar-uruguay'
-const title = 'Asignación familiar del BPS: cuánto es'
+// El título y la descripción llevan los montos y la edad tope porque son lo que se busca
+// ("cuánto es la asignación por hijo", "hasta qué edad se cobra"). Son literales para que
+// `seoTitleBudget` y `seoDescriptionBudget` los midan; que no se despeguen de FRANJAS_CONTRIBUTIVAS,
+// EQUIDAD_BASE y la vigencia lo vigila `snippetConLaRespuesta.test.ts`.
+const title = 'Asignación familiar: $ 1.347 o $ 2.686,51'
 const description =
-  'La contributiva paga $ 1.347 o $ 674 por mes por hijo según el ingreso del hogar; el Plan de Equidad, $ 2.686,51 por el primero. Incompatibles. BPS 1/2026.'
+  'Contributiva: $ 1.347 o $ 674 al mes por hijo, según el ingreso del hogar. Plan de Equidad: $ 2.686,51 por el primero. Hasta los 18 si estudia. BPS 1/2026.'
 
 defineOgImageComponent('Cambio', {
   title: 'Asignación familiar en Uruguay',

@@ -11,6 +11,7 @@ import { pagosGuides } from '../../utils/guidesPagos'
 import { tramitesGuides } from '../../utils/guidesTramites'
 import { trabajoBpsGuides } from '../../utils/guidesTrabajoBps'
 import { viviendaGuides } from '../../utils/guidesVivienda'
+import { listIndicatorSlugs } from '../../utils/indicators'
 
 // Tanda del 2026-09-13: 30 guías minadas de Reddit y de la cola de demanda del autocompletado.
 // Estas reglas son las del brief con el que se redactaron; acá quedan ejecutables para que la
@@ -50,7 +51,10 @@ function staticRoutes(): Set<string> {
 const ROUTES = staticRoutes()
 const GUIDE_ROUTES = new Set(guides.map(g => `/guias/${g.slug}`))
 const HUB_ROUTES = new Set(hubSlugs().map(s => `/temas/${s}`))
-const resolves = (to: string) => ROUTES.has(to) || GUIDE_ROUTES.has(to) || HUB_ROUTES.has(to)
+// `pages/indicadores/[indicador].vue` es dinámica: sus rutas válidas son las del catálogo.
+const INDICATOR_ROUTES = new Set(listIndicatorSlugs().map(s => `/indicadores/${s}`))
+const resolves = (to: string) =>
+  ROUTES.has(to) || GUIDE_ROUTES.has(to) || HUB_ROUTES.has(to) || INDICATOR_ROUTES.has(to)
 
 // Palabras sueltas que, al principio de un título, entierran a la página canónica en el buscador
 // interno (ver el scorer de siteNav y `searchIndex.test.ts`).
@@ -80,7 +84,13 @@ describe('tanda de guías 2026-09-13 › forma', () => {
     expect(BANNED_TAGS.has(g.tag), g.tag).toBe(false)
     expect(g.description.length).toBeGreaterThanOrEqual(100)
     expect(g.description.length).toBeLessThanOrEqual(190)
-    expect(g.updatedAt).toMatch(/^2026-09-\d\d$/)
+    // La fecha de la tanda era parte del brief, pero el brief se aplica a los SEIS módulos
+    // enteros, no a las treinta guías de ese día: una guía agregada después trae su propia fecha
+    // de verificación y exigirle setiembre de 2026 es pedirle que mienta. Lo que sigue valiendo
+    // es que ninguna guía de estos módulos quede DEBAJO de la fecha del brief, que es lo que
+    // detectaría una fecha copiada de una guía vieja o un placeholder.
+    expect(g.updatedAt, g.slug).toMatch(/^20\d\d-\d\d-\d\d$/)
+    expect(g.updatedAt >= '2026-09-13', `${g.slug}: ${g.updatedAt}`).toBe(true)
     expect(g.sections.length).toBeGreaterThanOrEqual(4)
     expect(g.sections.length).toBeLessThanOrEqual(9)
     expect(g.faqs?.length ?? 0).toBeGreaterThanOrEqual(3)

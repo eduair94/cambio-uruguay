@@ -120,6 +120,29 @@ describe("scoreCandidate", () => {
     expect(s.why).toMatch(/a mano/);
   });
 
+  it("el diagnóstico no cambia el puntaje ni convierte una falla en un descarte", () => {
+    const { serp, ...unclassified } = base;
+    const legacy = scoreCandidate(unclassified);
+    const failed = scoreCandidate({ ...unclassified, serpCheck: { status: "failed", reason: "timeout" } });
+    const budget = scoreCandidate({ ...unclassified, serpCheck: { status: "not-attempted", reason: "budget" } });
+    const disabled = scoreCandidate({ ...unclassified, serpCheck: { status: "not-attempted", reason: "disabled" } });
+    expect([failed.score, budget.score, disabled.score]).toEqual([legacy.score, legacy.score, legacy.score]);
+    expect(failed.score).toBeGreaterThan(0);
+    expect(failed.serp).toBeUndefined();
+    expect(failed.why).toMatch(/falló/);
+    expect(failed.why).not.toMatch(/presupuesto/);
+    expect(budget.why).toMatch(/presupuesto/);
+    expect(disabled.why).toMatch(/omitió/);
+    expect(legacy.why).toMatch(/no hay diagnóstico/);
+  });
+
+  it("el motivo de ranking o cobertura conserva precedencia sobre el diagnóstico", () => {
+    const { serp, ...unclassified } = base;
+    const check = { status: "failed", reason: "network" } as const;
+    expect(scoreCandidate({ ...unclassified, serpCheck: check, known: { impressions: 50, clicks: 1, position: 8 } }).why).toMatch(/ya aparecés/);
+    expect(scoreCandidate({ ...unclassified, serpCheck: check, coverage: 0.9, bestPath: "/cubierta" }).why).toContain("/cubierta");
+  });
+
   // Search Console es la única señal que dice qué hace GOOGLE, no qué tenemos nosotros. Una
   // consulta donde el sitio ya aparece no es una página que falta: es una que hay que mejorar, y
   // escribir una segunda para la misma consulta fabrica la cannibalización que a este sitio le

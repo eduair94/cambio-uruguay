@@ -46,8 +46,11 @@ export async function harvestRentalMarket(mode: "full" | "fast", usdUyu: number)
   ]);
   const runs: RentalSourceResult[] = [mercadolibre, infocasas, facebook, casasweb, elpais, ...social, alquileresuy];
   // What each advert's own words say about furniture and the contract period (textFacts.ts), the
-  // same rule for every portal.
-  for (const run of runs) run.listings = run.listings.map(applyRentalTextFacts);
+  // same rule for every portal; and, with `RENTALS_GC_FROM_TEXT=1`, the gastos comunes a description
+  // states when the portal gave none, judged against the run's rate. After each harvester put back
+  // what the advert pages stated (Mercado Libre's spec table, Casasweb's data list), so a figure the
+  // portal published always wins over one read from text.
+  for (const run of runs) run.listings = run.listings.map((listing) => applyRentalTextFacts(listing, { usdUyu }));
 
   const listings = runs.flatMap(run => run.listings);
   await enrichAgencyContacts(listings, { maxProfiles: mode === "fast" ? 12 : 80 });

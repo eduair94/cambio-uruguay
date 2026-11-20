@@ -413,6 +413,9 @@
       </VCard>
     </section>
 
+    <!-- La unidad intermedia, antes de las preguntas: mismo corte que FaqSection (ver
+         docs/seo/adsense-growth-loop.md, 31/10/2026). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <!-- 9. FAQ -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-4">Preguntas frecuentes</h2>
@@ -468,6 +471,7 @@
 </template>
 
 <script setup lang="ts">
+import { VSlider } from 'vuetify/components'
 import { guideDiscoveryMessages } from '~/utils/guideDiscoveryMessages'
 import {
   BEFORE_BUYING_STEPS,
@@ -544,7 +548,9 @@ const fmtDate = (iso: string) =>
 const verifiedAt = fmtDate(CAR_DEBT_VERIFIED_AT)
 
 const canonicalUrl = 'https://cambio-uruguay.com/comprar-auto-con-deuda-uruguay'
-const title = 'Comprar un auto con deuda: patente y multas'
+// La respuesta en el título: «se puede transferir con deuda» y «qué pasa si compro un auto con deuda
+// de patentes» se contestan con una línea (TO SUCIVE 2026, art. 45: no se transfiere con deuda).
+const title = 'Auto con deuda de patente: no se transfiere'
 const description =
   'La deuda no pasa a ser tuya, pero bloquea la transferencia: comprás un auto que no podés poner a tu nombre. Calculadora del costo real con mora y recargo.'
 

@@ -5,7 +5,7 @@ export const equiparEn: EquiparCopy = {
   title: 'What it costs to furnish an empty home in Uruguay',
   shortTitle: 'Furnishing a home',
   description:
-    'What to buy first for an unfurnished home and what it costs today: 38 categories priced from Uruguayan storefronts, Mercado Libre and Facebook Marketplace, ranked by necessity, with three budgets already added up.',
+    'What to buy first for an unfurnished home and what it costs today: 39 categories priced from Uruguayan storefronts, Mercado Libre and Facebook Marketplace, ranked by necessity, with three budgets already added up.',
   intro:
     'You found the rental and it is empty. This page ranks what to buy first, puts today’s market price next to each thing, shows the second-hand price where one exists, and adds up three baskets so you do not have to.',
   navLabel: 'Page sections',
@@ -135,6 +135,11 @@ export const equiparEn: EquiparCopy = {
       hint: 'Costs and paperwork at signing',
     },
     { to: '/alquileres-uruguay', label: 'Rentals', hint: 'The listings directory' },
+    {
+      to: '/cuanto-gastar-en-un-sommier-uruguay',
+      label: 'How much to spend on a sommier',
+      hint: 'Where paying more stops buying anything (in Spanish)',
+    },
     { to: '/plan-de-vida-uruguay', label: 'Life plan', hint: 'The order of every peso' },
     { to: '/sillas-escritorio-uruguay', label: 'Desk chairs', hint: 'The same harvest, in detail' },
     {

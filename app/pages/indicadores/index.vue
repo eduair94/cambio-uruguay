@@ -157,10 +157,15 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
+// Rendered once on the server and reused from the payload: with `new Date()` the block differed
+// after hydration and unhead appended a second copy (see pages/cotizacion/[moneda].vue).
+const renderedAt = useState('indicadores-rendered-at', () => new Date().toISOString())
+
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl }],
   script: [
     {
+      key: 'indicadores-jsonld',
       type: 'application/ld+json',
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
@@ -171,7 +176,7 @@ useHead({
             url: canonicalUrl,
             name: 'Indicadores económicos de Uruguay hoy: UI, UR y BPC',
             inLanguage: 'es',
-            dateModified: new Date().toISOString(),
+            dateModified: renderedAt.value,
             isPartOf: { '@id': 'https://cambio-uruguay.com/#website' },
             speakable: { '@type': 'SpeakableSpecification', cssSelector: ['.indicadores-intro'] },
           },

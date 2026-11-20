@@ -44,6 +44,9 @@ const EquiparListingSchema = new Schema(
     observedAt: { type: String, required: true },
     firstSeen: { type: String, required: true },
     lastSeen: { type: String, required: true },
+    // Heladeras, lavarropas, televisores y aires: la ficha técnica (classes/equipar/specs/). La
+    // escriben `sync_equipar.ts` y `sync_equipar_specs.ts` con la misma función (`enrichEquiparRow`).
+    ficha: { type: Schema.Types.Mixed, default: null },
   },
   { timestamps: true }
 );

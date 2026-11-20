@@ -102,6 +102,33 @@
     </VAlert>
 
     <template v-else>
+      <!-- Qué visitas se cuentan. Uruguay por defecto: con todos los países, la mayoría de lo que
+           GA4 mide es tráfico automatizado, y la página dice cuánto en vez de pedir que le crean
+           (utils/siteAnalytics.ts, outsideUruguay). Sin el bloque de Uruguay no hay nada que elegir. -->
+      <div v-if="hasUruguay" class="site-stats__scope mb-5">
+        <VBtnToggle
+          v-model="scope"
+          mandatory
+          color="primary"
+          variant="outlined"
+          density="comfortable"
+          :aria-label="scopeT('scope.aria')"
+        >
+          <VBtn value="uruguay">{{ scopeT('scope.uruguay') }}</VBtn>
+          <VBtn value="all">{{ scopeT('scope.all') }}</VBtn>
+        </VBtnToggle>
+        <p class="text-body-2 text-medium-emphasis mt-2 mb-0">
+          {{ scopeT(scope === 'uruguay' ? 'scope.noteUruguay' : 'scope.noteAll') }}
+          <template v-if="abroad">
+            {{
+              scopeT('scope.abroad', {
+                share: formatPercent(abroad.share, locale, 0),
+                bounce: formatPercent(abroad.bounceRate, locale, 0),
+              })
+            }}
+          </template>
+        </p>
+      </div>
       <VAlert
         v-if="stale"
         type="warning"
@@ -262,6 +289,11 @@
             <div v-if="!group.rows.length" class="text-body-2 text-medium-emphasis">
               {{ t('siteStats.noData') }}
             </div>
+            <p v-if="group.key === 'channels'" class="text-body-2 mb-3">
+              <NuxtLink :to="localePath('/origen-del-trafico')" class="stats-link">
+                {{ t('siteStats.sourcesLink') }}
+              </NuxtLink>
+            </p>
             <div v-for="row in group.rows" :key="row.label" class="share-row">
               <div class="d-flex align-center justify-space-between ga-2">
                 <span class="text-body-2">{{ group.translate(row.label) }}</span>
@@ -371,6 +403,7 @@ import { useTheme } from 'vuetify'
 // unknown element (silently — no console error, just an empty box where the chart should be).
 import LineChart from '~/components/charts/LineChart.vue'
 import {
+  audienceView,
   formatCount,
   formatDay,
   formatDelta,
@@ -388,21 +421,30 @@ import {
   isStale,
   hasLiveActivity,
   realtimeAgeSeconds,
+  outsideUruguay,
   sparklineHeights,
+  type AudienceScope,
   type TrendDirection,
   type RealtimeSnapshot,
   type SiteAnalyticsSnapshot,
   type SummaryMetric,
 } from '~/utils/siteAnalytics'
+import { siteStatsScopeMessages } from '~/utils/siteStatsScopeMessages'
 
 const { t, locale } = useI18n()
+const { t: scopeT } = useI18n({ useScope: 'local', messages: siteStatsScopeMessages })
 const localePath = useLocalePath()
 const theme = useTheme()
 
 // Not lazy: the numbers are the page, so they must be in the server-rendered HTML — the endpoint is
 // cached for an hour and the document is a few KB.
 const { data, pending } = await useFetch<SiteAnalyticsSnapshot | null>('/api/site-analytics')
-const snapshot = computed(() => data.value || null)
+// The document as stored, and the audience the page reads it as (Uruguay unless asked otherwise).
+const stored = computed(() => data.value || null)
+const scope = ref<AudienceScope>('uruguay')
+const hasUruguay = computed(() => !!stored.value?.uruguay)
+const snapshot = computed(() => audienceView(stored.value, scope.value))
+const abroad = computed(() => outsideUruguay(stored.value))
 
 // The live half. Also resolved on the server so the panel is in the first paint (the backend caches
 // it 45 s, this route 30 s, so an SSR hit is cheap), then refreshed on a timer from the client.

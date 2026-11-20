@@ -45,6 +45,8 @@ export interface SendMailOptions {
   text: string
   listUnsubscribeUrl?: string
   messageId?: string
+  /** Where a reply goes (e.g. the person who left feedback), instead of the no-reply sender. */
+  replyTo?: string
 }
 
 export async function sendMail(opts: SendMailOptions): Promise<void> {
@@ -62,5 +64,6 @@ export async function sendMail(opts: SendMailOptions): Promise<void> {
     text: opts.text,
     headers,
     ...(opts.messageId ? { messageId: opts.messageId } : {}),
+    ...(opts.replyTo ? { replyTo: opts.replyTo } : {}),
   })
 }

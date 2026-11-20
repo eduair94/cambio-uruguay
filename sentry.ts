@@ -11,8 +11,9 @@ const sentryInit = () => {
       // exits when another listener exists, so a crashed worker would keep serving. Exit, as v7 did.
       Sentry.onUncaughtExceptionIntegration({ exitEvenIfOtherHandlersAreRegistered: true }),
     ],
-    // v11 attaches the caller's IP, headers, cookies and request bodies by default; v7 sent none.
-    dataCollection: { userInfo: false, cookies: false, httpHeaders: false, httpBodies: [] },
+    // v11 attaches the caller's IP, headers, cookies, request bodies and query strings by default;
+    // v7 sent none. A query here can be a coordinate (/position_stack?query=<lat>,<lng>).
+    dataCollection: { userInfo: false, cookies: false, httpHeaders: false, httpBodies: [], urlQueryParams: false },
     // The load-time module hooks only feed tracing and Express auto-capture, neither used here.
     enableRuntimeChannelInjection: false,
   });

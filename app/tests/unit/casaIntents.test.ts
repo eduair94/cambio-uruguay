@@ -60,6 +60,7 @@ function facts(overrides: Partial<CasaFacts> = {}): CasaFacts {
     marketBestSell: 40.63,
     marketBestBuy: 40.03,
     marketSize: 43,
+    buyMarketSize: 43,
     sellRank: 37,
     buyRank: 30,
     rating: { score: 4.2, count: 180 },
@@ -291,7 +292,7 @@ describe('currency markets', () => {
     expect(quotedCurrenciesFor(mixed, 'gales')).toEqual(['EUR', 'BRL'])
   })
 
-  // Thin markets are the whole reason `offMarketDetector` stands down below ten
+  // Thin markets are the whole reason `offMarketSide` stands down below ten
   // quotes: with five boards, one of them being 4% off the median is normal.
   it('crowns a winner even in a market too thin to judge outliers', () => {
     const thin = marketRows('PYG', [
@@ -463,5 +464,129 @@ describe('market position', () => {
   it('returns nothing when the casa publishes no quote', () => {
     expect(marketPositionSentence('comprar-dolares', facts({ usd: null }))).toBe('')
     expect(marketPositionSentence('vender-dolares', facts({ marketBestBuy: null }))).toBe('')
+  })
+})
+
+// A price better than the best one the market crowns can only be one the site refused to crown
+// (utils/marketOutlier.ts): the board frozen since July at 39,55 read "tiene la venta más barata del
+// mercado" on its own page (2026-11-11).
+describe('a price the market rejects is not called the best', () => {
+  it('on the dollar sell', () => {
+    const text = marketPositionSentence(
+      'comprar-dolares',
+      facts({ marketBestSell: 42, sellRank: null })
+    )
+    expect(text).not.toContain('la venta más barata')
+    expect(text).toContain('muy por debajo del resto')
+    expect(text).toContain('42,00')
+    expect(text).toContain('confirmalo')
+  })
+
+  it('on the dollar buy', () => {
+    const text = marketPositionSentence(
+      'vender-dolares',
+      facts({ marketBestBuy: 38, buyRank: null })
+    )
+    expect(text).not.toContain('es quien mejor paga')
+    expect(text).toContain('muy por encima del resto')
+    expect(text).toContain('38,00')
+  })
+
+  it('on another currency, one side at a time', () => {
+    const rows = marketRows('EUR', [
+      ...Array.from({ length: 12 }, (_, i) => ({
+        origin: `c${i}`,
+        buy: 44 + i * 0.01,
+        sell: 48 + i * 0.01,
+      })),
+      // A real cheapest sell and a buy 6,7 % over the median.
+      { origin: 'gales', buy: 47, sell: 47.5 },
+    ])
+    const text = currencyPositionSentence(
+      facts({ currency: currencyFactsFor(rows, 'gales', 'euro') })
+    )
+    expect(text).toContain('Es la venta más barata')
+    expect(text).toContain('su compra está muy por encima')
+    expect(text).not.toContain('quien mejor lo paga')
+    expect(text.match(/confirmalo/g)).toHaveLength(1)
+  })
+})
+
+// The board the backend marks frozen (utils/marketOutlier.ts): cambio_principal's euro buy, 45 for
+// 100 days and 1 % over the best live one (2026-11-11). Its own page must not call it the best, and
+// "muy por encima del resto" would be false — the price is close; what is wrong is that it is old.
+describe('a frozen board is not called the best on its own page', () => {
+  const frozenUsd = { buy: 39.2, sell: 40.6, type: '', frozen: true, frozenDays: 100 }
+
+  it('on the dollar sell, it says why without calling the price far off', () => {
+    const text = marketPositionSentence(
+      'comprar-dolares',
+      facts({ usd: frozenUsd, marketBestSell: 40.63, sellRank: null })
+    )
+    expect(text).not.toContain('la venta más barata')
+    expect(text).not.toContain('muy por debajo')
+    expect(text).toContain('lleva 100 días sin cambiar')
+    expect(text).toContain('40,63')
+  })
+
+  it('a tie with the best live price is the same case', () => {
+    const text = marketPositionSentence(
+      'comprar-dolares',
+      facts({ usd: { ...frozenUsd, sell: 40.63 }, marketBestSell: 40.63, sellRank: null })
+    )
+    expect(text).not.toContain('la venta más barata')
+    expect(text).toContain('sin cambiar')
+  })
+
+  it('on the dollar buy', () => {
+    const text = marketPositionSentence(
+      'vender-dolares',
+      facts({ usd: { ...frozenUsd, buy: 40.5 }, marketBestBuy: 40.03, buyRank: null })
+    )
+    expect(text).not.toContain('es quien mejor paga')
+    expect(text).not.toContain('muy por encima')
+    expect(text).toContain('lleva 100 días sin cambiar')
+  })
+
+  it('behind the best live price, it reads like any other casa', () => {
+    const text = marketPositionSentence(
+      'comprar-dolares',
+      facts({ usd: { ...frozenUsd, sell: 41.6 } })
+    )
+    expect(text).not.toContain('sin cambiar')
+    expect(text).toContain('Está 37º de 43 casas')
+  })
+
+  it('on the euro, through the market the page builds', () => {
+    const rows = [
+      ...marketRows('EUR', [
+        ...Array.from({ length: 12 }, (_, i) => ({
+          origin: `c${i}`,
+          buy: 44 + i * 0.01,
+          sell: 48 + i * 0.01,
+        })),
+      ]),
+      {
+        origin: 'gales',
+        code: 'EUR',
+        type: '',
+        buy: 44.5,
+        sell: 49,
+        frozen: true,
+        frozenDays: 100,
+      },
+    ]
+    const currency = currencyFactsFor(rows, 'gales', 'euro')!
+    expect(currency.bestBuy).toBe(44.11)
+    expect(currency.buyRank).toBeNull()
+    // Behind on the sell: still ranked among the casas.
+    expect(currency.sellRank).toBe(13)
+    const text = currencyPositionSentence(facts({ currency }))
+    expect(text).toContain(
+      'Y publica que lo compra a $ 44,50, pero la pizarra lleva 100 días sin cambiar'
+    )
+    expect(text).not.toContain('muy por encima')
+    expect(text).not.toContain('confirmalo')
+    expect(text.match(/Confirmá el precio/g)).toHaveLength(1)
   })
 })

@@ -6,6 +6,7 @@ import {
   type PropertyInsightListing,
 } from '../../utils/propertyInsight'
 import { propertySaleLivingArea, propertySalePricePerM2 } from '../../utils/propertySalePricePerM2'
+import { rentalLookalikeFacts, rentalLookalikes } from '../../utils/rentalLookalike'
 
 let serial = 0
 function home(overrides: Partial<PropertyInsightListing> = {}): PropertyInsightListing {
@@ -185,6 +186,76 @@ describe('buildPropertyInsight — picks', () => {
     expect(insight.picks.find(item => item.kind === 'closest-similar')?.listing.key).toBe(
       closest.key
     )
+  })
+
+  it('never offers a copy of the advert itself, with the rental rule plugged in', () => {
+    // 8/11/2026, nh6byn-10rlmiq: "la parecida más cercana" was the same flat on InfoCasas, 0 m away.
+    const facts = (listing: PropertyInsightListing) =>
+      rentalLookalikeFacts({
+        title: listing.title,
+        bedrooms: listing.bedrooms,
+        bathrooms: listing.bathrooms,
+        area: listing.area,
+        latitude: null,
+        longitude: null,
+        offers: [
+          { source: 'infocasas', price: listing.shown.amount, currency: listing.shown.currency },
+        ],
+      })
+    const sameUnit = (a: PropertyInsightListing, b: PropertyInsightListing) =>
+      rentalLookalikes(facts(a), facts(b))
+    const subject = home({
+      title: 'Alquiler 2 Dormitorios Y Servicio, Cochera, Balcón',
+      bathrooms: 3,
+      area: 84,
+      price: 30_000,
+      pricePerM2: 357,
+    })
+    const copy = home({
+      title: 'Alquiler 2 dormitorios y servicio, cochera, balcón',
+      bathrooms: 3,
+      area: 90,
+      price: 30_000,
+      pricePerM2: null,
+      distanceKm: 0.0006,
+    })
+    const closest = home({ price: 31_000, distanceKm: 0.05 })
+    const peers = [...input().peers, copy, closest]
+    const closestPick = (picks: ReturnType<typeof buildPropertyInsight>['picks']) =>
+      picks.find(item => item.kind === 'closest-similar')?.listing.key
+    // Without the rule (sales) the copy still wins, as it did in production.
+    expect(closestPick(buildPropertyInsight(input({ subject, peers })).picks)).toBe(copy.key)
+    const insight = buildPropertyInsight(input({ subject, peers, sameUnit }))
+    expect(closestPick(insight.picks)).toBe(closest.key)
+    expect(insight.picks.map(item => item.listing.key)).not.toContain(copy.key)
+    // The statistics still count every advert: the rule only decides what is offered.
+    expect(insight.comparables).toBe(buildPropertyInsight(input({ subject, peers })).comparables)
+  })
+
+  it('never offers two copies of one other home either', () => {
+    const facts = (listing: PropertyInsightListing) =>
+      rentalLookalikeFacts({
+        title: listing.title,
+        bedrooms: listing.bedrooms,
+        bathrooms: listing.bathrooms,
+        area: listing.area,
+        latitude: null,
+        longitude: null,
+        offers: [
+          { source: 'infocasas', price: listing.shown.amount, currency: listing.shown.currency },
+        ],
+      })
+    const sameUnit = (a: PropertyInsightListing, b: PropertyInsightListing) =>
+      rentalLookalikes(facts(a), facts(b))
+    // The cheapest home nearby, published twice: once it is the cheapest, it is not also "closest".
+    const cheap = { title: 'Apartamento sobre la rambla con terraza', price: 26_000, area: 60 }
+    const first = home({ ...cheap, distanceKm: 0.3 })
+    const second = home({ ...cheap, distanceKm: 0.01 })
+    const insight = buildPropertyInsight(
+      input({ peers: [...input().peers, first, second], sameUnit })
+    )
+    const keys = insight.picks.map(item => item.listing.key)
+    expect(keys.filter(key => key === first.key || key === second.key)).toHaveLength(1)
   })
 })
 

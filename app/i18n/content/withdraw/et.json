@@ -1,0 +1,522 @@
+{
+  "title": [
+    "1229e1ce",
+    "Kust Uruguays sularaha välja võtta: sularahaautomaadid, tasud ja turismisihtkohad"
+  ],
+  "metaTitle": [
+    "3e82d293",
+    "Sularahaautomaadid Uruguays: võtke välja dollareid või peesosid"
+  ],
+  "description": [
+    "3eb63bbe",
+    "Kuidas ja kust Uruguays turistina sularaha saada: sularahaautomaadid, mis väljastavad nii USA dollareid kui ka peesosid, tasud, väljavõtmise limiidid, valuutakonverteerimise lõks (DCC) ning parimad väljavõtmise kohad lennujaamas, Montevideos, Punta del Estes ja Colonias."
+  ],
+  "keywords": [
+    "4acfb17e",
+    "sularaha väljavõtmine uruguay, raha väljavõtmine uruguay, sularahaautomaat uruguay turist, dollarid sularahaautomaadist uruguay, raha vahetamine uruguay, sularahaautomaadi tasud uruguay, casas de cambio uruguay"
+  ],
+  "tldr.0": [
+    "5f1561fe",
+    "Uruguay sularahaautomaadid väljastavad nii USA dollareid kui ka peesosid – see on haruldane piirkondlik eelis (Argentiinas on see peaaegu võimatu)."
+  ],
+  "tldr.1": [
+    "7b41d73f",
+    "Võrke on kaks: RedBROU ja Banred. Kui üks ebaõnnestub, proovige teist; kandke kaasas nii Visa kui ka Mastercard."
+  ],
+  "tldr.2": [
+    "c5aa36e3",
+    "Kui sularahaautomaat pakub sulle debiteerimist sinu koduvaluutas, vali alati kohalik valuuta: „konverteerimine” varjab halba vahetuskurssi."
+  ],
+  "tldr.3": [
+    "b73d4126",
+    "Väldi suurte summade vahetamist lennujaamas või parvlaevaterminalides – nende kursid on märgatavalt halvemad."
+  ],
+  "tldr.4": [
+    "83b2ff36",
+    "Maksa hotellides ja restoranides välismaise kaardiga: lisaks käibemaksusoodustusele on sul kaasas vähem sularaha."
+  ],
+  "ui.backToTools": [
+    "950196fc",
+    "Tööriistad"
+  ],
+  "ui.tldrTitle": [
+    "799c628c",
+    "Lühidalt"
+  ],
+  "ui.networksTitle": [
+    "90dd37e5",
+    "Kaks sularahaautomaatide võrku: RedBROU ja Banred"
+  ],
+  "ui.tableNetwork": [
+    "6974ad65",
+    "Võrk"
+  ],
+  "ui.tableReach": [
+    "c549e23b",
+    "Katvus"
+  ],
+  "ui.tableUsd": [
+    "47b34a69",
+    "Ülempiir USA dollarites / väljamakse"
+  ],
+  "ui.tableUyu": [
+    "7d4e5b12",
+    "Ülempiir $U / väljamakse"
+  ],
+  "ui.tableNote": [
+    "0ff01b6a",
+    "Märkused"
+  ],
+  "ui.zonesTitle": [
+    "126f8827",
+    "Kust turismipiirkonnas sularaha saada"
+  ],
+  "ui.zonesIntro": [
+    "e4c560b0",
+    "Tsooni- ja maamärgitaseme viited (mitte täpsed aadressid, mis muutuvad). Sularahaautomaadid asuvad tavaliselt pankade, kaubanduskeskuste või Abitabi ja Redpagose müügikohtade sees."
+  ],
+  "ui.stepsTitle": [
+    "3e1ff2e0",
+    "Kuidas sularaha välja võtta, samm-sammult"
+  ],
+  "ui.faqTitle": [
+    "e466bfa9",
+    "Korduma kippuvad küsimused"
+  ],
+  "ui.sourcesTitle": [
+    "105bfcc3",
+    "Allikad ja viited"
+  ],
+  "ui.relatedTitle": [
+    "ac7a8ccc",
+    "Jätka lugemist"
+  ],
+  "ui.ctaTitle": [
+    "60dda6a1",
+    "Võrdle enne vahetust"
+  ],
+  "ui.ctaText": [
+    "fe6b01a6",
+    "Vaata dollari kurssi enam kui 40 valuutavahetuspunktis, mida uuendatakse iga 10 minuti järel, ja vali parim tegutsemiskoht."
+  ],
+  "ui.ctaButton": [
+    "9efd557a",
+    "Ava võrdlusaken"
+  ],
+  "ui.mapButton": [
+    "4e8c8db6",
+    "Vaata väljastuspunkte kaardil"
+  ],
+  "ui.disclaimer": [
+    "b166cfce",
+    "Turistidele mõeldud viiteteave, mitte finantsnõustamine. Tasud, limiidid ja maksusoodustused muutuvad: kinnitage need saabumisel ja oma kaardi väljastajaga. Me ei ole seotud mainitud pankade ega valuutavahetuspunktidega."
+  ],
+  "ui.lastChecked": [
+    "9182e108",
+    "Viimati kontrollitud: juuni 2026"
+  ],
+  "ivaLive.heading": [
+    "5af716c3",
+    "Täna kehtivad turistidele mõeldud käibemaksusoodustused"
+  ],
+  "ivaLive.asOf": [
+    "dd801240",
+    "Staatus seisuga {date}:"
+  ],
+  "ivaLive.hotel": [
+    "152a8c47",
+    "Majutus (hotellid ja sarnased asutused): 0% käibemaksu aastaringselt."
+  ],
+  "ivaLive.base": [
+    "9856855a",
+    "Juhita einestamine ja autorent: {points}-punkti käibemaksuvähendus lõpptarbimisele, mis on makstud eraisiku kaardiga, sealhulgas välismaiste kaartidega, kuni 30. aprillini 2027 (määrus 235/026; allikas kontrollitud 23. oktoobril 2026)."
+  ],
+  "ivaLive.baseUnconfirmed": [
+    "d65944df",
+    "Söögikohad ja autorent: kinnitatud pikendus lõppes 30. aprillil 2027. Kontrollige DGI-st, milline soodustus kehtib teie ostukuupäeval."
+  ],
+  "ivaLive.seasonalOn": [
+    "41748da1",
+    "Suvine täielik käibemaksuvabastus: AKTIIVNE (kuni {end})."
+  ],
+  "ivaLive.seasonalOff": [
+    "015a1161",
+    "Suvine täielik käibemaksuvabastus: selle kuupäeva kohta pole meil kinnitatud perioodi. Enne selle soodustuse kasutamist kontrollige DGI-ga."
+  ],
+  "sections.0.heading": [
+    "90dd37e5",
+    "Kaks sularahaautomaatide võrku: RedBROU ja Banred"
+  ],
+  "sections.0.paragraphs.0": [
+    "0f52a7fe",
+    "Uruguayl on kaks sularahaautomaatide võrgustikku: RedBROU, mida haldab riigipank (BROU), ja Banred, mis on erapankade võrgustik. Need kaks on omavahel ühendatud ja lingitud rahvusvaheliste võrkudega (Mastercardi Cirrus/Maestro ja Visa Plus), seega töötab välismaine kaart mõlemas."
+  ],
+  "sections.0.paragraphs.1": [
+    "208b768b",
+    "Veendumaks, et sularahaautomaat teie kaarti aktsepteerib, otsige masinalt Visa, Mastercardi, Cirruse, Plusi või Maestro logosid. Praktiline nipp: kandke kaasas erinevate kontode Visa ja Mastercardi kaarte; kui üks kaart või masin rikki läheb, proovige teist võrku."
+  ],
+  "sections.1.heading": [
+    "612974f0",
+    "Dollarid või peesod? Uruguays saab mõlemat vastu võtta."
+  ],
+  "sections.1.paragraphs.0": [
+    "d9928d31",
+    "Erinevalt Argentinast väljastavad paljud Uruguay sularahaautomaadid lisaks Uruguay peesodele ka USA dollareid. See on tõeline eelis, kui soovite dollareid sularahas vahetada ilma valuutavahetuspunkti minemata. Dollareid väljastatakse tavaliselt 100 USA dollari suuruste rahatähtedena, mis koos väljavõtmise piirangutega võib tähendada, et korraga saate kätte ainult ühe rahatähe."
+  ],
+  "sections.1.paragraphs.1": [
+    "cd694b7a",
+    "Lihtne reegel: võta peesosid igapäevaste kulutuste jaoks (taksod, turud, väikepoed) ja dollareid ainult siis, kui sul neid tõesti sularahas vaja on. Enamiku suuremate maksete puhul on kaart parem kui sularaha."
+  ],
+  "sections.2.heading": [
+    "9ce97b34",
+    "Tasud ja väljamakselimiidid"
+  ],
+  "sections.2.paragraphs.0": [
+    "e28a7f0e",
+    "Uruguay sularahaautomaadi lisatasu välismaise kaardi puhul on paljude riikidega võrreldes madal (umbes paar dollarit iga väljavõtmise kohta). Suurem kulu on tavaliselt teie enda pangal: välismakse tehingutasu (tavaliselt 1–3%) pluss mõnikord kindel rahvusvahelise väljavõtmise tasu. Reisikaart ilma valuutavahetustasuta säästab teid peaaegu kogu selle summa."
+  ],
+  "sections.2.paragraphs.1": [
+    "154c6f01",
+    "Välismaiste kaartide väljavõtmise limiidid määravad kohalikud võrgud, mitte teie pank, ja need on madalad. Teie pank kehtestab ka oma päevalimiiti. Enne reisi helistage oma pangale limiidi tõstmiseks ja võtke tehingu kohta välja maksimaalne summa, et fikseeritud tasu suurema summa peale jaotada."
+  ],
+  "sections.2.bullets.0": [
+    "befd8df3",
+    "Kohaliku väljamakse lisatasu: ligikaudne, suurusjärgus paar dollarit (enne kinnitamist kontrollige ekraanil kuvatavat summat)."
+  ],
+  "sections.2.bullets.1": [
+    "0f872d39",
+    "Teie panga/kaardi väljastaja tasu: tavaliselt suurem kulu; kontrollige, kas teie kaart võtab välismaksete eest tasu."
+  ],
+  "sections.2.bullets.3": [
+    "4aacdc05",
+    "Päevalimiit: määrab teie pank; selle tõstmiseks teavitage panka enne reisi."
+  ],
+  "sections.3.heading": [
+    "6bd46a0c",
+    "Valuutakonverteerimise (DCC) lõks: vali alati kohalik valuuta"
+  ],
+  "sections.3.paragraphs.0": [
+    "29fe4c81",
+    "Paljud sularahaautomaadid ja kaarditerminalid pakuvad Uruguay peesode või dollarite asemel võimalust maksta teie koduvaluutas. See kõlab mugavalt (\"vaadake, kui palju see teie rahas on\"), kuid dünaamiline valuutakonverteerimine (DCC) rakendab ülepaisutatud vahetuskurssi pluss varjatud tasu. Te kaotate peaaegu alati."
+  ],
+  "sections.3.paragraphs.1": [
+    "34380f1f",
+    "Vali alati „ilma konverteerimiseta” või kohalik valuuta: Uruguay peesod, kui võtad vastu peesosid, dollarid, kui võtad vastu dollareid. Lase oma pangal konverteerimine teha – selle kurss on tavaliselt parem."
+  ],
+  "sections.4.heading": [
+    "cc573fd8",
+    "Valuutavahetuspunktid, sularahaautomaadid või pangad: kumb on parem?"
+  ],
+  "sections.4.paragraphs.0": [
+    "1116ae4f",
+    "Valuutavahetuspunktid (näiteks Varlix, Indumex, Gales, Aspen, Cambio Sir, Cambio Inglés ja Global Exchange) on klassikaline viis sularaha vahetamiseks. Need pakuvad dollari suhtes parimaid hindu väikese kursivahega ja ilma vahendustasuta; euro on teine parim valuuta, Brasiilia reaal on vastuvõetav ja Argentina peeso on halvim. Tavaliselt küsivad nad teie passi."
+  ],
+  "sections.4.paragraphs.1": [
+    "b7c83296",
+    "Lahtiolekuajad: tänavakontorid on avatud esmaspäevast reedeni (umbes kell 9–19) ja laupäeva hommikul; paljud on pühapäeviti suletud. Kaubanduskeskustes asuvad kontorid on avatud iga päev ja hiljem. Päevase hinna võrdlemiseks eri majade lõikes kasutage meie võrdlusprogrammi ja kontorite lehte."
+  ],
+  "sections.5.heading": [
+    "f8b82759",
+    "Kui palju sularaha kaasa võtta ja millist valuutat kaasa võtta"
+  ],
+  "sections.5.paragraphs.0": [
+    "e22fd664",
+    "Uruguay on väga kaardisõbralik: Visa ja Mastercardi kaarte aktsepteeritakse peaaegu kõikjal, kontaktivabad ja QR-kaardiga maksed (Mercado Pago) on laialt levinud. Väiksemate ostude puhul võtke kaasa vaid mõned peesod sularahas ja makske suuremad summad kaardiga."
+  ],
+  "sections.5.paragraphs.1": [
+    "f9b88276",
+    "Kui võtad sularaha vahetuseks kaasa, on parim valuuta USA dollar (parimad kursid, aktsepteeritakse igas majas). Teisel kohal on euro. Argentinast tulles võta kaasa dollareid, mitte Argentina peesosid – Uruguays muutub peeso väga halvasti. Brasiiliast tulles kehtib päris dollar, eriti piiri lähedal, kuigi dollarid on siiski mugavamad."
+  ],
+  "sections.6.heading": [
+    "97a59b72",
+    "Turistidele mõeldud käibemaksusoodustus (välismaise kaardiga makstes)"
+  ],
+  "sections.6.paragraphs.0": [
+    "88ea76fc",
+    "Uruguay tagastab osa käibemaksust mitteresidentidele, kes maksavad välisriigi väljastatud kaardiga. Majutuse (registreeritud hotellid ja sarnased asutused) puhul on mitteresidentidele, kes esitavad välisriigi isikutunnistuse ja maksavad välisriigi kaardiga, aastaringselt käibemaks 0% – see on püsiv soodustus."
+  ],
+  "sections.6.paragraphs.1": [
+    "7f51f9e2",
+    "Juhita einestamise ja autorendi puhul säilitab määrus 235/026 üldise üheksa protsendipunkti suuruse maksusoodustuse kuni 30. aprillini 2027 lõpptarbimise puhul, mille eest on tasutud abikõlblike elektrooniliste vahenditega. Hooajaline täielik maksuvabastus on eraldi soodustus, millel on oma määrus ja kuupäevad: üheksa protsendipunkti suuruse maksusoodustuse pikendamine ei kinnita täielikku maksuvabastust. Enne reisi pidage nõu DGI-ga."
+  ],
+  "sections.6.paragraphs.2": [
+    "f963de1e",
+    "Igal juhul on allahindlus automaatne: maksad oma välismaise kaardiga ja soodustus kajastub kviitungil või kaardiväljavõttel. Sularahas makstes kaotad selle. Seega tasub hotellid ja restoranid kaardile lisada ja vähem sularaha välja võtta."
+  ],
+  "sections.6.bullets.0": [
+    "fc6c4026",
+    "Hotellid/majutus: mitteresidentidele (püsivad elanikud) aastaringselt 0% käibemaksu."
+  ],
+  "sections.6.bullets.1": [
+    "02f7d683",
+    "Restoranid ja autorent ilma juhita: üheksa punkti kuni 30. aprillini 2027, arvestades elektroonilise makse nõudeid. Hooajaline täielik vabastus vajab eraldi kinnitust."
+  ],
+  "sections.6.bullets.2": [
+    "bf5ed0b5",
+    "Igal režiimil on oma nõuded. Üldine üheksapunktiline vähendus eeldab lõpptarbimist ja isiku valduses olevat sobivat elektroonilist makseviisi; välismaine emiteerimine ei ole nõutav."
+  ],
+  "sections.7.heading": [
+    "84fbae56",
+    "Turvalisuse näpunäited sularaha väljavõtmisel"
+  ],
+  "sections.7.paragraphs.0": [
+    "e227f80c",
+    "Uruguay on piirkonna üks ohutumaid riike, kuid pisivargusi esineb, eriti Montevideo Ciudad Viejas, sadamapiirkonnas ja rannakuurortides kõrghooajal. Kasutage pankade, kaubanduskeskuste või klaasfuajeede sees asuvaid sularahaautomaate, eelistatavalt päevavalguses, ja olge oma ümbrusest teadlik."
+  ],
+  "sections.7.bullets.0": [
+    "d234b5e4",
+    "Võtke sularaha välja päevavalguses ja sularahaautomaatidest suletud ruumides, mitte öösel tänaval."
+  ],
+  "sections.7.bullets.1": [
+    "f9f5f149",
+    "Kanna kaasas kahte erinevate kontode kaarti ja hoia sularaha mitmes kohas."
+  ],
+  "sections.7.bullets.3": [
+    "d7920a67",
+    "Liikuge ringi Uberi, Cabify või registreeritud taksodega; ärge jätke väärisesemeid autosse."
+  ],
+  "sections.7.link.label": [
+    "d8570bac",
+    "Juba on mul suur küsimus küljes: kust saada peenraha ja münte"
+  ],
+  "networkRows.0.network": [
+    "7ee344a0",
+    "RedBROU"
+  ],
+  "networkRows.0.reach": [
+    "4a5d053e",
+    "Riikliku panga BROU võrgustik; üle 400 sularahaautomaadi üle riigi, lisaks Abitab ja Redpagos."
+  ],
+  "networkRows.0.usdPerTxn": [
+    "f41a726d",
+    "≈ 200 USA dollarit"
+  ],
+  "networkRows.0.note": [
+    "786a7e5f",
+    "Paljud automaadid väljastavad dollareid. Välismaiste kaartide puhul on ülempiirid ligikaudsed."
+  ],
+  "networkRows.1.network": [
+    "6823b06d",
+    "Keelatud"
+  ],
+  "networkRows.1.reach": [
+    "331e78b2",
+    "Erapankade võrgustik; üle 370 punkti kõigis 19 osakonnas."
+  ],
+  "networkRows.1.usdPerTxn": [
+    "75830c42",
+    "≈ 300 USA dollarit"
+  ],
+  "networkRows.1.note": [
+    "9f2f1329",
+    "Ühendatud RedBROU-ga. Kui üks võrk teie kaardi tagasi lükkab, proovige teist."
+  ],
+  "zones.0.name": [
+    "8a4dc608",
+    "Carrasco lennujaam (MVD), Montevideo"
+  ],
+  "zones.0.tips.0": [
+    "d6202725",
+    "Lennujaamas vahetusraha on märgatavalt väiksem: vahetage vaid nii palju raha, et linna jõuda."
+  ],
+  "zones.0.tips.1": [
+    "99e81ace",
+    "Kui vajate kohe sularaha, võtke sularahaautomaadist väike summa välja ja vahetage ülejäänu kesklinnas."
+  ],
+  "zones.1.name": [
+    "034a744d",
+    "Montevideo (Centro, Ciudad Vieja ja sadam)"
+  ],
+  "zones.1.summary": [
+    "04c221eb",
+    "Valuutavahetuspunktid asuvad Avenida 18 de Julio (Centro) ääres ja Ciudad Vieja kaudu. Kruiisiterminal asub Ciudad Vieja kõrval ning seal on valuutavahetus ja sularahaautomaadid."
+  ],
+  "zones.1.tips.0": [
+    "a26e5af3",
+    "Centros ja Ciudad Viejas on mitu valuutavahetuskohta, mida võrrelda."
+  ],
+  "zones.1.tips.1": [
+    "4139b3e5",
+    "Kruiisireisijad saavad valuutat vahetada sadamas ja sularahaautomaadid asuvad lühikese jalutuskäigu kaugusel, Mercado del Puerto suunas."
+  ],
+  "zones.2.name": [
+    "3fa606f9",
+    "Punta del Este"
+  ],
+  "zones.2.summary": [
+    "880d1f96",
+    "Valuutavahetuspunktid asuvad peatänaval Avenida Gorlero. Tipphooajal võivad tekkida järjekorrad ja sularahaautomaatidest saavad dollarid otsa."
+  ],
+  "zones.2.tips.0": [
+    "1063deb8",
+    "Suvel ja lihavõttenädalal tühjenevad sularahaautomaadid kiiresti: võtke raha ette välja ja hoidke varu."
+  ],
+  "zones.2.tips.1": [
+    "e4c20d9e",
+    "Toetu kaartidele ja QR-koodiga maksetele, et sa ei sõltuks ainult sularahast."
+  ],
+  "zones.3.name": [
+    "2ed532f4",
+    "Colonia del Sacramento"
+  ],
+  "zones.3.summary": [
+    "764221b5",
+    "Sularahaautomaadid Barrio Históricos ja parvlaevaterminalis, vaid mõne sammu kaugusel vanalinnast, kuhu saabuvad Buenos Airesest päevareisijad."
+  ],
+  "zones.3.tips.0": [
+    "d7ebee8b",
+    "Saabumisel võtke väike summa peesosid välja ja makske ülejäänu kaardiga."
+  ],
+  "zones.3.tips.1": [
+    "e09f3851",
+    "Paljud turismipoed võtavad dollareid, kuigi ebasoodsa kursiga."
+  ],
+  "zones.4.name": [
+    "ed7917f9",
+    "Parvlaevaterminalid (Buquebus / Colonia Express)"
+  ],
+  "zones.4.summary": [
+    "ac18ddf9",
+    "Montevideo ja Colonia terminalides on sularahaautomaadid. Sularahavahetus terminalides ja rongis kipub pakkuma madalaid hindu."
+  ],
+  "zones.4.tips.0": [
+    "b5a97e0f",
+    "Väldi suurte summade vahetamist terminalis või rongis – kursid on halvad."
+  ],
+  "zones.4.tips.1": [
+    "91b3c105",
+    "Parem on kasutada sularahaautomaati või vahetada raha linna valuutavahetuspunktis."
+  ],
+  "zones.5.name": [
+    "66cc7244",
+    "Sisemaa ja väiksemad linnad"
+  ],
+  "zones.5.summary": [
+    "fc9a5afd",
+    "Väljaspool suuremaid linnu ja kuurorte on sularahaautomaate vähe."
+  ],
+  "zones.5.tips.0": [
+    "48821abe",
+    "Enne sisemaale suundumist varu sularaha Montevideos, Punta del Estes või Colonias."
+  ],
+  "zones.5.tips.1": [
+    "02573d37",
+    "Rocha rannikul tanki suuremates linnades nagu Chuy või La Paloma."
+  ],
+  "steps.0.name": [
+    "aa213b75",
+    "Leidke sularahaautomaat, mis teie kaarti aktsepteerib"
+  ],
+  "steps.0.text": [
+    "2f5d9e7c",
+    "Otsi Visa, Mastercardi, Cirruse, Plusi või Maestro logosid; eelista pankades või kaubanduskeskustes asuvaid sularahaautomaate."
+  ],
+  "steps.1.name": [
+    "4209811a",
+    "Valige dollarit või peesot"
+  ],
+  "steps.1.text": [
+    "f338ade4",
+    "Võtke peesosid igapäevasteks kulutusteks ja dollareid ainult siis, kui vajate neid sularahas; dollarid väljastatakse 100 USA dollari suuruste rahatähtedena."
+  ],
+  "steps.2.name": [
+    "24d1a5da",
+    "Keeldu konverteerimisest oma valuutasse"
+  ],
+  "steps.2.text": [
+    "3f2be811",
+    "Kui pakutakse arveldamist teie kohalikus valuutas, valige DCC juurdehindluse vältimiseks „ilma konverteerimiseta” või kohalik valuuta."
+  ],
+  "steps.3.name": [
+    "4e44a3f9",
+    "Maksimaalne väljamakse tehingu kohta"
+  ],
+  "steps.3.text": [
+    "831b2ec9",
+    "Kuna väljamaksetasu on fikseeritud, kasutage lubatud ülempiiri, et jaotada kulu suurema summa peale."
+  ],
+  "steps.4.name": [
+    "6fcb61ed",
+    "Hoidke kviitung alles ja lugege sularaha üle"
+  ],
+  "steps.4.text": [
+    "30d70c06",
+    "Kontrolli väljastatud summat, hoia kviitung alles ja jaga sularaha enne sularahaautomaadist lahkumist mitme koha vahel."
+  ],
+  "faq.0.q": [
+    "e44ca992",
+    "Kas ma saan Uruguays sularahaautomaatidest USA dollareid välja võtta?"
+  ],
+  "faq.0.a": [
+    "eb6339a1",
+    "Jah. Erinevalt Argentinast väljastavad paljud Uruguay sularahaautomaadid lisaks peesodele ka dollareid, tavaliselt 100 USA dollari suuruste rahatähtedena. Välismaiste kaartide väljavõtmise ülempiirid on madalad."
+  ],
+  "faq.1.q": [
+    "33423670",
+    "Kui palju sularahaautomaadid välismaiste kaartide eest tasu võtavad?"
+  ],
+  "faq.1.a": [
+    "68121602",
+    "Kohalik lisatasu on madal (umbes paar dollarit väljavõtmise kohta). Suurem kulu on tavaliselt teie enda panga välismaksete tasu (tavaline on 1–3%)."
+  ],
+  "faq.2.q": [
+    "bf2fe8ff",
+    "Kui palju ma ühe tehingu kohta maksimaalselt välja võtta saan?"
+  ],
+  "faq.3.q": [
+    "66601510",
+    "Kas peaksin lennujaamas raha vahetama?"
+  ],
+  "faq.3.a": [
+    "82d5704c",
+    "Mitte suurte summade puhul: lennujaamas ja parvlaevaterminalides on märgatavalt vähem raha. Vaheta raha vaid nii palju, et linna jõuda, ja seejärel kasuta kesklinna valuutavahetuspunkti või sularahaautomaati."
+  ],
+  "faq.4.q": [
+    "44d07e17",
+    "Sularaha või kaart Uruguays?"
+  ],
+  "faq.4.a": [
+    "11ded5ec",
+    "Uruguay on väga kaardisõbralik (Visa ja Mastercard peaaegu kõikjal, kontaktivabad ja QR-kaardid). Väiksemate ostude jaoks võtke kaasa sularaha peesosid ja suuremate summade maksmiseks kasutage kaarti."
+  ],
+  "faq.5.q": [
+    "2d0dd094",
+    "Millist valuutat peaksin kaasa võtma?"
+  ],
+  "faq.5.a": [
+    "cc8484ac",
+    "Sularaha USA dollarites: parimad kursid ja aktsepteeritakse igas valuutavahetuspunktis. Euro on teisejärguline. Argentinast tulles palun võtke kaasa dollareid, mitte Argentina peesosid."
+  ],
+  "faq.6.q": [
+    "b71d8d92",
+    "Kas ma saan turistina maksusoodustust?"
+  ],
+  "faq.6.a": [
+    "49712ab8",
+    "Jah: lisaks majutusrežiimile kehtib üldine üheksa protsendipunkti suurune soodustus toitlustamisele ja juhita autorendile kuni 30. aprillini 2027 ka mitteresidentidele, kui lõpptarbimine on tasutud elektrooniliselt üksikisiku poolt. Hooajaline täielik maksuvabastus nõuab oma määrust ja kuupäevi; seda ei saa sellest pikendusest järeldada."
+  ],
+  "faq.7.q": [
+    "04fb59ce",
+    "Mis saab siis, kui sularahaautomaat mu kaardi tagasi lükkab?"
+  ],
+  "faq.7.a": [
+    "15f0167b",
+    "Proovi teist kaarti ja teist võrku (RedBROU ja Banred on omavahel ühendatud, aga mõlema olemasolust on abi). Kontrolli, kas sularahaautomaadil on Visa/Mastercard/Cirrus/Plus logod ja ütle oma pangale, et kavatsed seda Uruguays kasutada."
+  ],
+  "related.0.label": [
+    "9371cd8d",
+    "Dollareid reisimiseks"
+  ],
+  "related.1.label": [
+    "89470d17",
+    "Parima hinnaga dollarite ostmine"
+  ],
+  "related.2.label": [
+    "7b531a45",
+    "Valuutavahetuspunktid ja filiaalid"
+  ],
+  "related.3.label": [
+    "574f3e27",
+    "Võrdle hindu"
+  ]
+}

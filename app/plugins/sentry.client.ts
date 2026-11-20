@@ -2,11 +2,13 @@ import * as Sentry from '@sentry/nuxt'
 import {
   isAutomatedBrowser,
   sentryBrowserTag,
+  sentryDocumentStatus,
   sentryErrorOptions,
   sentryErrorsEnabled,
   sentryHttpStatus,
   sentryPageName,
   sentryRouteCategory,
+  sentryThrownShape,
   sentryVueTags,
 } from '~/utils/sentryPrivacy'
 
@@ -37,13 +39,28 @@ export default defineNuxtPlugin({
           tags: () => ({ browser, page: page() }),
         })
       )
-    const capture = (error: unknown, instance?: unknown, info?: unknown) => {
+    // CAMBIO-URUGUAY-BACKEND-Y: browser "HTTP 500" reports with no frames, no `page` and no
+    // matching Nitro event. Three fixed-shape facts separate the hypotheses: which Nuxt hook
+    // saw it, whether the app had finished its first render, and the HTTP status the
+    // document itself was served with (a 500 here is the SSR answer; a 200 means the 500
+    // was produced in the browser).
+    let started = false
+    nuxtApp.hook('app:suspense:resolve', () => {
+      started = true
+    })
+    const capture = (hook: 'app' | 'vue', error: unknown, instance?: unknown, info?: unknown) => {
       const status = sentryHttpStatus(error)
       if (status && status < 500) return
+      const documentStatus = sentryDocumentStatus(globalThis.performance)
       Sentry.captureException(error, {
         tags: {
           route: sentryRouteCategory(window.location.pathname),
           ...(status ? { http_status: String(status) } : {}),
+          nuxt_hook: hook,
+          nuxt_phase: started ? 'navigation' : 'startup',
+          ...(documentStatus ? { document_status: documentStatus } : {}),
+          // What was thrown (class only) and whether it had a stack: a frameless 500.
+          ...sentryThrownShape(error),
           // Only the component's file name and Vue's lifecycle code, never the instance itself.
           ...sentryVueTags(instance, info),
         },
@@ -51,7 +68,7 @@ export default defineNuxtPlugin({
     }
     // GlobalHandlers also captures window errors and unhandled rejections.
     // Never pass Vue instances, component props or hook info to the SDK.
-    nuxtApp.hook('vue:error', (error, instance, info) => capture(error, instance, info))
-    nuxtApp.hook('app:error', error => capture(error))
+    nuxtApp.hook('vue:error', (error, instance, info) => capture('vue', error, instance, info))
+    nuxtApp.hook('app:error', error => capture('app', error))
   },
 })

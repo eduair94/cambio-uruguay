@@ -36,6 +36,22 @@ export function money(amount: number | null | undefined, currency = "UYU"): stri
   return `${prefix} ${fmt(Math.round(amount))}`;
 }
 
+/**
+ * A photo URL a client may put in an `<img>`: https, no credentials, and of a sane length.
+ *
+ * Only for the structured payload: the photo is for a chat that draws cards (cambio-uruguay.com's
+ * /asistente-ia), never part of the text the model reads, which it would cost tokens and add nothing.
+ */
+export function safeImage(url: unknown): string | undefined {
+  if (typeof url !== "string" || !url || url.length > 1000) return undefined;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "https:" && !parsed.username && !parsed.password ? url : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /** 0.271 → "27 %". */
 export function pct(ratio: number | null | undefined, digits = 0): string {
   if (ratio === null || ratio === undefined || !Number.isFinite(ratio)) return "s/d";

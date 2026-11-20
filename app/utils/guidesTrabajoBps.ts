@@ -17,12 +17,56 @@
 // «3 meses», reafiliación automática, efecto en la devolución). Fuentes: BPS 23321, 4802, 18239, 6486, 10576,
 // 24521, 17508; IMPO Ley 18.731 art. 30, Ley 18.211, Decretos 317/025 y 163/026, Ley 20.486; ASSE; MSP ajustes
 // 07/2026; MTSS prórrogas; FONASA Chile sólo para desambiguar la consulta.
+// 2026-11-08: trabajo-domestico-uruguay. `/cuanto-me-tienen-que-pagar-uruguay` dice en su cuerpo que
+// el ámbito doméstico tiene negociación propia y ahí deja al lector; el sitio no tenía ni el laudo del
+// Grupo 21, ni el cuadro de aportes, ni los descansos de la Ley 18.065. Cifras y plazos verificados el
+// 2026-11-08 contra BPS (comunicado R 14/2026, la guía de afiliación y aportación de junio de 2026, la
+// tabla de categorías 24279 y el folleto de derechos 24455), MTSS (gub.uy, trabajo doméstico) e IMPO
+// (Ley 18.065, arts. 2 a 11, y Ley 19.690 por el fondo de garantía). Los números viven en
+// `utils/domesticWork.ts` y esta guía los compone: no hay un segundo literal que pueda separarse.
+// 2026-11-13: cuenta-sueldo-elegir-banco-uruguay. «¿Me pueden obligar a cobrar el sueldo en el banco
+// que eligió la empresa?» vivía en UNA tarjeta de `/preguntas-economia-personal` y en ninguna página
+// propia; el Decreto 263/015 no se nombraba en ningún otro archivo del sitio, así que los dos plazos
+// de diez días hábiles, la excepción por nueva relación laboral y la lista de servicios que la cuenta
+// debe dar sin cobrar no estaban publicados. Plazos y mínimos verificados el 2026-11-13 en el texto
+// ACTUALIZADO de IMPO (Ley 19.210 arts. 10, 11 y 15; Decreto 263/015 arts. 1, 9, 11, 14, 15, 16 y 23)
+// más las dos vías del MTSS para consultar y denunciar. Las cifras viven en `utils/payrollAccount.ts`
+// y esta guía las compone.
 import type { Guide } from './guides'
+import {
+  DOMESTIC_WORK_CATEGORIES,
+  DOMESTIC_WORK_CONTRIBUTIONS,
+  DOMESTIC_WORK_HEALTH_MINIMUM,
+  DOMESTIC_WORK_LEGAL_LIMITS,
+  DOMESTIC_WORK_SOURCES,
+  DOMESTIC_WORK_WAGE_PERIOD,
+  domesticWorkCategory,
+  formatDomesticWorkUyu as uyu,
+} from './domesticWork'
+import {
+  PAYROLL_ACCOUNT_CHOICE_DAYS,
+  PAYROLL_ACCOUNT_DEADLINES,
+  PAYROLL_ACCOUNT_FREE_SERVICES,
+  PAYROLL_ACCOUNT_NOTICE_DAYS,
+  PAYROLL_ACCOUNT_REVIEWED,
+  PAYROLL_ACCOUNT_SOURCES,
+  PAYROLL_FREE_CARD_REPLACEMENTS,
+  PAYROLL_FREE_TRANSFERS,
+  PAYROLL_FREE_WITHDRAWALS,
+  PAYROLL_NETWORK_MIN_POPULATION,
+  PAYROLL_NETWORK_NEARBY_KM,
+  payrollFreeTransferCap,
+  payrollMiles,
+} from './payrollAccount'
+
+/** El mínimo de la categoría, en pesos ya formateados. `'general'` → `'32.051'`. */
+const minimo = (slug: 'general' | 'cocina' | 'cuidados') =>
+  uyu(domesticWorkCategory(slug)!.monthlyUyu)
 
 export const trabajoBpsGuides: readonly Guide[] = [
   {
     slug: 'me-quede-sin-trabajo-mutualista-fonasa-uruguay',
-    title: 'FONASA sin trabajo: cuánto dura la cobertura (2026)',
+    title: 'FONASA sin trabajo: hasta fin de mes (2026)',
     description:
       'Si te despiden, renunciás o termina el seguro de paro, FONASA cubre hasta el último día de ese mes; tus hijos, 12 meses más. Qué opciones quedan en 2026.',
     tag: 'FONASA',
@@ -946,9 +990,9 @@ export const trabajoBpsGuides: readonly Guide[] = [
   },
   {
     slug: 'aguinaldo-casos-especiales-uruguay',
-    title: 'Aguinaldo con 3 meses, en negro o enfermo: casos 2026',
+    title: 'Aguinaldo con 3 meses: cobrás proporcional',
     description:
-      'Sí: se cobra con cualquier antigüedad, en proporción a lo pagado en dinero. Quién paga en BPS, recargo del 10 % por atraso, plazos 2026 y jubilados.',
+      'Sí: se cobra con cualquier antigüedad, en proporción a lo pagado en dinero. Enfermo lo paga el BPS, en negro el derecho existe y el atraso recarga 10 %.',
     tag: 'AGUINALDO',
     updatedAt: '2026-09-22',
     sections: [
@@ -1263,5 +1307,705 @@ export const trabajoBpsGuides: readonly Guide[] = [
         publisher: 'DGI',
       },
     ],
+  },
+  {
+    // El racimo del BPS del sitio cubre once prestaciones y ésta no aparecía en ningún archivo.
+    // Es la única donde el beneficiario además se vuelve EMPLEADOR del asistente, que es la parte
+    // que las dos fichas oficiales no dicen de frente.
+    //
+    // Cifras verificadas el 2026-10-23 contra la ficha del BPS (9973, que declaraba su última
+    // actualización el 22/10/2026) y la del Sistema Nacional de Cuidados (gub.uy, node/640).
+    // Las dos cuentas NUESTRAS van declaradas como tales en el texto: pasar las BPC de los tramos
+    // a pesos con la BPC de 2026 ($ 6.864) y resolver el 67 % y el 33 % del subsidio.
+    slug: 'asistente-personal-bps-uruguay',
+    title: 'Asistente personal del BPS: hasta $ 31.574',
+    description:
+      'El BPS subsidia hasta 4,6 BPC ($ 31.574,40) por 80 horas mensuales de asistente personal: total hasta 3 BPC de ingreso, 67 % hasta 6 BPC y 33 % hasta 11.',
+    tag: 'CUIDADOS',
+    updatedAt: '2026-10-23',
+    sections: [
+      {
+        heading: '¿Cuánto paga el BPS por un asistente personal?',
+        body: 'El subsidio del Programa de Asistentes Personales es de 4,6 BPC, que el BPS publica como $ 31.574,40 por mes, por un mínimo de 80 horas mensuales. Conviene no leerlo como un sueldo: el mismo monto tiene que cubrir el salario del asistente, los aportes patronales, el aguinaldo y el salario vacacional. La propia ficha publica el salario nominal al lado, $ 24.377 por esas 80 horas con vigencia 1/2026, así que lo que queda para todo lo demás son $ 7.197,40. Y casi nadie lo cobra entero: el porcentaje que pone el programa baja con el ingreso del hogar, y lo que el programa no pone lo pone la familia.',
+        table: {
+          headers: ['Concepto', 'Monto publicado por el BPS'],
+          rows: [
+            ['Subsidio total, por mes', '4,6 BPC = $ 31.574,40'],
+            ['Salario nominal del asistente, por 80 horas', '$ 24.377 (vigencia 1/2026)'],
+            ['Resto, para aportes patronales, aguinaldo y salario vacacional', '$ 7.197,40'],
+            ['Horas mensuales que cubre', 'Un mínimo de 80'],
+          ],
+        },
+      },
+      {
+        heading: 'Quién puede pedirlo, y la franja que queda afuera',
+        body: 'Lo primero, porque descarta a mucha gente que llega buscando el trámite: la ficha del BPS acota el programa a personas con dependencia severa «de hasta 29 años de edad o mayores de 80». Entre los 30 y los 79 no hay programa, por más severa que sea la dependencia; no es un papel que falte, es una franja que la prestación deja fuera. Los otros tres requisitos son el nivel de dependencia, que determina un equipo del MIDES en una visita al domicilio y no un certificado que se presente; residir en su domicilio particular dentro del territorio nacional, lo que deja afuera a una persona institucionalizada; y tener ciudadanía natural o legal, o diez años de residencia en el país.',
+      },
+      {
+        heading: 'Cuánto te cubren según el ingreso del hogar',
+        body: 'El BPS cubre el total, el 67 %, el 33 % o nada. Los cuatro tramos están publicados sólo en BPC, así que la columna en pesos de la tabla es una cuenta nuestra con la BPC de 2026 ($ 6.864), igual que las dos últimas columnas, que son el 67 % y el 33 % de $ 31.574,40. Lo que importa de esa última columna: cuando la cobertura es parcial, el beneficiario paga la diferencia al asistente personal, y la diferencia es sobre el paquete entero, no sobre el salario. La obligación con el asistente no baja porque baje el subsidio, así que en el tramo del 33 % el hogar pone más plata que el programa.',
+        table: {
+          headers: [
+            'Ingreso del hogar',
+            'En pesos (cuenta nuestra)',
+            'Cubre el BPS',
+            'Queda a tu cargo',
+          ],
+          rows: [
+            ['Hasta 3 BPC por persona', 'Hasta $ 20.592', 'Subsidio total: $ 31.574,40', '$ 0'],
+            ['De 3 BPC a 6 BPC', '$ 20.592 a $ 41.184', '67 %: $ 21.154,85', '$ 10.419,55'],
+            ['De 6 BPC a 11 BPC', '$ 41.184 a $ 75.504', '33 %: $ 10.419,55', '$ 21.154,85'],
+            ['A partir de 11 BPC', 'Más de $ 75.504', '0 %', '$ 31.574,40'],
+          ],
+        },
+      },
+      {
+        heading: 'El dato que la ficha no resuelve: ¿por persona o por hogar?',
+        body: 'La tabla de arriba tiene un agujero que no es nuestro y que conviene conocer antes de hacer cuentas. El BPS la presenta diciendo que «el porcentaje de cobertura variará en función de los ingresos del núcleo familiar» y define ese núcleo como las «personas que vivan bajo el mismo techo», o sea el total del hogar; pero el primer tramo dice «hasta 3 BPC POR PERSONA» y los otros tres no aclaran nada. Las dos lecturas no se parecen: un hogar de cuatro personas con $ 80.000 de ingreso total está en el tramo del subsidio total si se mide por persona ($ 20.000 cada una) y en el de 0 % si se mide sobre el total, porque $ 80.000 pasa las 11 BPC. No encontramos norma que lo resuelva, así que acá no se arbitra: el nivel que vale es el que el BPS informa con los ingresos reales del hogar, después de la visita del MIDES y antes de ir a la oficina.',
+      },
+      {
+        heading: 'Quien recibe el subsidio es el empleador del asistente',
+        body: 'Es la parte que ninguna de las dos fichas dice de frente y la que más plata mueve: el subsidio no contrata a nadie, lo contrata el beneficiario, que queda como patrón del asistente personal. Por eso el monto incluye los aportes patronales, el aguinaldo y el salario vacacional, y por eso hay una obligación que el subsidio no cubre nunca, ni con cobertura total: «en caso de despido, la indemnización siempre es a cargo del beneficiario». Vale leer cuánto es esa indemnización antes de contratar, no después, y tener presente que el aguinaldo y el salario vacacional del asistente se rigen por las mismas reglas que los de cualquier trabajador.',
+        links: [
+          { label: 'Indemnización por despido', to: '/indemnizacion-por-despido-uruguay' },
+          { label: 'Salario vacacional', to: '/salario-vacacional-uruguay' },
+          {
+            label: 'Cuándo se cobra el aguinaldo',
+            to: '/cuando-se-cobra-el-aguinaldo-uruguay',
+          },
+        ],
+      },
+      {
+        heading: 'Lo que esta guía no te puede decir',
+        body: 'Tres cosas, y ninguna por falta de ganas. Si la persona califica como dependencia severa: el nivel lo determina el equipo del MIDES en el domicilio y no se publica como puntaje, así que no se puede anticipar desde una pantalla. Cuál de las dos lecturas de los tramos rige: ya está explicado arriba, y publicar una de las dos como si fuera la buena sería hacerle planificar mal a la mitad de los lectores. Y cuánto se espera: ninguna de las dos fichas oficiales publica plazos ni una lista de prioridad, y un plazo inventado es peor que ninguno cuando hay un cuidado de por medio.',
+      },
+    ],
+    steps: [
+      {
+        name: 'Escribir al Sistema Nacional de Cuidados',
+        text: 'La persona o quien la represente escribe a sistemadecuidados@mides.gub.uy. Es el único canal que la ficha oficial publica: no figura un teléfono.',
+      },
+      {
+        name: 'Recibir la visita del MIDES',
+        text: 'El Ministerio de Desarrollo Social envía un equipo al domicilio, pregunta por la situación de la persona y determina el nivel de dependencia y si corresponde el servicio.',
+      },
+      {
+        name: 'Conocer el porcentaje de subsidio',
+        text: 'Si corresponde, se informa el nivel de subsidio según los ingresos del hogar confirmados por el BPS. Ese es el número con el que se planifica.',
+      },
+      {
+        name: 'Completar el trámite en el BPS',
+        text: 'Con el subsidio informado, la persona se dirige a la oficina del BPS de su localidad y completa el trámite para acceder al registro de asistentes personales autorizados.',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Cuánto paga el BPS por un asistente personal?',
+        a: 'El subsidio total es de 4,6 BPC, que el BPS publica como $ 31.574,40 por mes, por un mínimo de 80 horas mensuales. No es el sueldo del asistente: tiene que cubrir el salario nominal ($ 24.377, vigencia 1/2026), los aportes patronales, el aguinaldo y el salario vacacional.',
+      },
+      {
+        q: '¿Quién puede pedir un asistente personal?',
+        a: 'Personas en situación de dependencia severa de hasta 29 años de edad o mayores de 80, que vivan en su domicilio particular dentro del territorio nacional, con ciudadanía natural o legal o diez años de residencia. Entre los 30 y los 79 años el programa no está abierto.',
+      },
+      {
+        q: '¿El subsidio es el mismo para todos?',
+        a: 'No. El BPS cubre el total, el 67 %, el 33 % o nada según los ingresos del núcleo familiar medidos en BPC. Cuando la cobertura es parcial, el beneficiario paga la diferencia al asistente personal, y esa diferencia es sobre el paquete entero: $ 10.419,55 en el tramo del 67 % y $ 21.154,85 en el del 33 %.',
+      },
+      {
+        q: '¿Los tramos de ingreso se miden por persona o por el total del hogar?',
+        a: 'La ficha del BPS no lo resuelve: introduce la tabla hablando de los ingresos del núcleo familiar y define el núcleo como las personas que viven bajo el mismo techo, pero el primer tramo dice «hasta 3 BPC por persona» y los otros tres no aclaran. Las dos lecturas dan resultados opuestos, así que el nivel que vale es el que el BPS informa con los ingresos reales del hogar.',
+      },
+      {
+        q: '¿Quién es el empleador del asistente personal?',
+        a: 'El beneficiario. Por eso el subsidio incluye los aportes patronales, el aguinaldo y el salario vacacional, y por eso la indemnización por despido corre siempre por cuenta del beneficiario, incluso con subsidio total.',
+      },
+      {
+        q: '¿Y si el subsidio me queda en 0 %?',
+        a: 'Según el Sistema de Cuidados, la persona igual puede acceder al registro de asistentes personales formados, autorizados y supervisados, pagando ella el servicio.',
+      },
+      {
+        q: '¿Se pueden contratar más de 80 horas?',
+        a: 'El programa cubre un mínimo de 80 horas mensuales, que se distribuyen de común acuerdo entre la persona y el asistente. Las horas que el hogar quiera agregar por encima de esas 80 no las cubre el subsidio.',
+      },
+    ],
+    related: [
+      { label: 'Jubilación por incapacidad', to: '/jubilacion-por-incapacidad-uruguay' },
+      { label: 'Pensión a la vejez', to: '/pension-a-la-vejez-uruguay' },
+      { label: 'Vivir con $ 25.000', to: '/vivir-con-25000-pesos-uruguay' },
+    ],
+    sources: [
+      {
+        label:
+          'Programa de Asistentes Personales: requisitos, horas, subsidio y tabla de cobertura',
+        url: 'https://www.bps.gub.uy/9973/programa-de-asistentes-personales.html',
+        publisher: 'BPS',
+      },
+      {
+        label: '¿Cómo postularse al Programa de Asistentes Personales?',
+        url: 'https://www.gub.uy/sistema-cuidados/node/640',
+        publisher: 'Sistema Nacional de Cuidados',
+      },
+      {
+        label: 'Ley 19.353, Sistema Nacional Integrado de Cuidados (art. 8, población objetivo)',
+        url: 'https://www.impo.com.uy/bases/leyes/19353-2015',
+        publisher: 'IMPO',
+      },
+    ],
+  },
+  {
+    // 2026-10-24: jubilacion-parcial-uruguay. El hueco era entero: «jubilación parcial» no aparecía
+    // en ninguna de las 146 guías ni en ninguna página, teniendo el sitio `/cuando-me-puedo-jubilar-uruguay`,
+    // `/jubilacion-por-incapacidad-uruguay`, `/pension-por-sobrevivencia-uruguay` y cuatro guías de AFAP
+    // y reforma. Y lo que se lee afuera suele ser el régimen DEROGADO: la Ley 19.160 (del 1/11/2013)
+    // la derogó el art. 208 de la Ley 20.130, así que lo vigente es la jubilación parcial flexible del
+    // art. 203 de la 20.130 con el Decreto 231/023.
+    //
+    // Verificado el 2026-10-24 contra la ficha del BPS 9776 (declara última actualización el 09/09/2026,
+    // de donde salen el rango de un tercio a la mitad, el ejemplo del 40 %, las cuatro
+    // incompatibilidades, el VF 163, el primer día hábil del mes y el 100 % al cesar), el art. 203 de
+    // la Ley 20.130 y los arts. 11 a 13 del Decreto 231/023 en IMPO, y la ficha del BPS 20886 para los
+    // pasos de la empresa. NINGUNA cifra en pesos: el valor base del suplemento solidario y la
+    // jubilación de cada uno se mueven, y el porcentaje es toda la aritmética que la norma fija.
+    slug: 'jubilacion-parcial-uruguay',
+    title: 'Jubilación parcial: cobrás lo que recortás',
+    description:
+      'Recortás entre un tercio y la mitad del horario y del sueldo, y el BPS paga la jubilación en ese mismo porcentaje: Ley 20.130, art. 203, y el VF 163.',
+    tag: 'JUBILACIÓN',
+    updatedAt: '2026-10-24',
+    sections: [
+      {
+        heading: '¿Cuánto cobrás si te jubilás a medias?',
+        body: 'La jubilación parcial flexible te deja empezar a cobrar la jubilación sin dejar el trabajo, y la aritmética es una sola: acordás con tu empleador una reducción «de entre una tercera parte y la mitad de la carga horaria semanal o mensual y de la remuneración», y el BPS te paga «una cuota parte de la jubilación total que le correspondería, que será equivalente al porcentaje en que se reduce la remuneración». La propia ficha lo ejemplifica: si reducís la remuneración en un 40 %, cobrás el 40 % del monto de la jubilación. Dos cosas que conviene leer despacio: los dos recortes van juntos —no existe bajar el horario dejando el sueldo igual ni al revés— y el porcentaje se aplica sobre la jubilación ENTERA que te correspondería, que no es tu sueldo ni se parece necesariamente a él.',
+        table: {
+          headers: ['Lo que acordás recortar', 'Sueldo que seguís cobrando', 'Lo que paga el BPS'],
+          rows: [
+            ['Un tercio, que es el mínimo', 'Dos tercios del sueldo', 'Un tercio de la jubilación'],
+            ['El 40 % del ejemplo del BPS', 'El 60 % del sueldo', 'El 40 % de la jubilación'],
+            ['La mitad, que es el máximo', 'La mitad del sueldo', 'La mitad de la jubilación'],
+          ],
+        },
+      },
+      {
+        heading: 'Lo que el porcentaje no dice: el suplemento solidario y el mínimo',
+        body: 'Acá está la parte que el ejemplo del 40 % no muestra, y es la que decide si te conviene. Mientras sigas en actividad, el BPS avisa dos cosas: en las jubilaciones por regímenes jubilatorios anteriores «no se realizará el ajuste al valor mínimo de la jubilación», y en las del Nuevo Sistema Previsional Común «no corresponderá el pago del Suplemento solidario». El decreto dice lo mismo desde el otro lado: el monto es proporcional a la reducción y «no incluirá ninguna partida adicional para alcanzar los montos mínimos de prestación jubilatoria», y la remuneración por esta actividad «será deducible en su totalidad del suplemento solidario», sin el mínimo no deducible que rige en otros casos. O sea que para quien hoy cobraría el mínimo o el suplemento, media jubilación no es la mitad de lo que esperaba: es la mitad de la prestación sin esos complementos. El mismo artículo 13 prevé un incremento del 30 % de esa proporción para las personas sin otros ingresos del literal D del artículo 177 de la Ley 20.130, y sólo cuando lo que suman los dos conceptos queda por debajo del 50 % del valor base del suplemento solidario.',
+        links: [{ label: 'Qué es el suplemento solidario', to: '/suplemento-solidario-bps' }],
+      },
+      {
+        heading: 'El acuerdo es con tu empleador, y seis meses no se toca',
+        body: 'No es un derecho que se ejerce solo: el decreto exige que la continuación en tiempo parcial «requerirá el acuerdo escrito entre empleador y afiliado», con las condiciones puestas por escrito. Si la empresa no acepta, no hay jubilación parcial flexible, y la norma no da una vía para saltearla. Lo que sí protege al que firma es el plazo: las condiciones acordadas no pueden variar dentro de los seis meses, salvo fuerza mayor o circunstancias que constituyan notoria mala conducta, y si se modifican después hay que fijarlas por un plazo similar. Y hay un detalle que cambia la cuenta de quien ya venía trabajando menos: el recorte no se mide contra lo que hacías el mes pasado sino contra la carga horaria, los días de trabajo y la remuneración del último año de servicios, debidamente actualizados.',
+      },
+      {
+        heading: 'Las cuatro incompatibilidades',
+        body: 'La ficha del BPS las lista por nombre, y conviene mirarlas antes de pedir una cita: tres de las cuatro son jubilaciones que YA tenés o estás pidiendo, no situaciones de la empresa. La cuarta es la que deja afuera a mucha gente que llega buscando esto: la jubilación parcial flexible es para trabajadores DEPENDIENTES, así que una actividad por cuenta propia o una afiliación notarial o profesional no entra, aunque recortes las horas.',
+        table: {
+          headers: ['Situación', 'Jubilación parcial flexible'],
+          rows: [
+            [
+              'Jubilación por imposibilidad física para todo trabajo, o subsidio transitorio por incapacidad parcial',
+              'Incompatible',
+            ],
+            [
+              'Jubilación en base a años de trabajo bonificados, con actividad de la misma naturaleza',
+              'Incompatible, salvo docentes',
+            ],
+            ['Jubilación anticipada por extensa carrera laboral', 'Incompatible'],
+            ['Actividad no dependiente, o afiliación notarial o profesional', 'Incompatible'],
+          ],
+        },
+      },
+      {
+        heading: 'El trámite, y el número que la empresa tiene que poner',
+        body: 'El trámite empieza como cualquier jubilación —por la solicitud de jubilación— y el acuerdo con la empresa se presenta después de iniciada, en la oficina del BPS donde se está haciendo. Recién ahí aparece la fecha: el BPS les informa a los dos por correo electrónico el momento a partir del cual se puede iniciar la reducción, «que siempre debe ser desde el primer día hábil del mes». Por eso un acuerdo firmado un 12 no arranca ese día. Lo último es de la empresa y es el error más fácil de cometer: tiene que modificar el vínculo funcional del trabajador a «163 - Jubilación parcial flexible» en Modificar actividad, y mantener ese VF 163 en la declaración mensual de nómina.',
+      },
+      {
+        heading: 'Cuando dejás de trabajar, el 100 % hay que pedirlo',
+        body: 'La prestación vive «hasta el cese de la actividad», y lo que sigue no es automático: «una vez cesante, el beneficiario debe solicitar el 100 % del monto jubilatorio». Es un trámite más, y no pedirlo es quedarse cobrando la cuota parte. La garantía que el BPS escribe al lado es la que vuelve reversible la decisión: «la asignación jubilatoria no podrá ser inferior a la que le hubiera correspondido», así que haber pasado por el régimen parcial no puede dejarte con una jubilación más baja que la que te daba jubilarte entero.',
+      },
+      {
+        heading: 'Y lo que leíste en otra parte: la Ley 19.160 está derogada',
+        body: 'Si encontraste una página que habla de «jubilación parcial» sin la palabra flexible y con un único empleador, es la Ley 19.160 del 1/11/2013, y la derogó el artículo 208 de la Ley 20.130 con una salvedad escrita: «las situaciones jurídicas constituidas a su amparo continuarán rigiéndose por sus disposiciones». O sea que sigue valiendo para quien ya estaba adentro, y no para quien pregunta hoy. Las diferencias no son de redacción: el artículo 2 de la 19.160 sólo comprendía a quien trabajaba únicamente como dependiente «para un único empleador» con afiliación «Industria y Comercio» o «Rural o Doméstico», y el artículo 3 circunscribía el régimen a la solidaridad intergeneracional del BPS y determinaba el cese de la aportación al régimen de ahorro individual obligatorio de la Ley 16.713.',
+      },
+      {
+        heading: 'Lo que esta guía no te puede decir',
+        body: 'Tres cosas, y ninguna por falta de ganas. Cuánto es tu jubilación entera: depende de tu historia laboral y de tu generación, así que el porcentaje de acá hay que aplicarlo sobre el monto que el BPS te estime, no sobre una cifra de ejemplo. Si tu empleador va a aceptar: la norma pide el acuerdo escrito y no obliga a nadie a firmarlo. Y cuánto es en pesos el incremento del 30 % del artículo 13: se mide contra el valor base del suplemento solidario, que se actualiza, y publicar un número viejo al lado de una decisión de este tamaño es peor que no publicarlo.',
+        links: [
+          { label: '¿Cuándo me puedo jubilar?', to: '/cuando-me-puedo-jubilar-uruguay' },
+          {
+            label: 'Cómo funciona la jubilación y la AFAP',
+            to: '/guias/jubilacion-y-afap-como-funciona-uruguay',
+          },
+        ],
+      },
+    ],
+    steps: [
+      {
+        name: 'Confirmar que configurás causal',
+        text: 'La jubilación parcial flexible exige configurar causal de jubilación, salvo las incompatibilidades que la ficha del BPS lista. Sin causal no hay nada que recortar.',
+      },
+      {
+        name: 'Iniciar la solicitud de jubilación',
+        text: 'El trámite empieza por la solicitud de jubilación común, no por un trámite propio: la jubilación parcial flexible se pide dentro de esa solicitud.',
+      },
+      {
+        name: 'Firmar el acuerdo con la empresa',
+        text: 'El acuerdo escrito fija la reducción del horario y de la remuneración, entre una tercera parte y la mitad, y lo firman el trabajador y la empresa. El BPS publica el formulario.',
+      },
+      {
+        name: 'Presentarlo en la oficina donde se hace la solicitud',
+        text: 'El trabajador lo entrega en la oficina del BPS donde está haciendo la solicitud de jubilación. El BPS les avisa por correo a los dos desde cuándo puede empezar la reducción.',
+      },
+      {
+        name: 'La empresa pone el VF 163',
+        text: 'Cuando la reducción empieza —siempre desde el primer día hábil de un mes—, la empresa modifica el vínculo funcional a 163 y lo mantiene en la declaración mensual de nómina.',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Puedo jubilarme y seguir trabajando en el mismo empleo?',
+        a: 'Sí, por la jubilación parcial flexible de la Ley 20.130 (art. 203): es compatible con el desempeño de actividades de la misma afiliación, para trabajadores dependientes, siempre que acordés con el empleador recortar el horario y el sueldo.',
+      },
+      {
+        q: '¿Cuánto tengo que recortar?',
+        a: 'Entre una tercera parte y la mitad, tanto de la carga horaria como de la remuneración. El mínimo de un tercio está en el art. 203 de la Ley 20.130 y el tope de la mitad lo pone el Decreto 231/023 (art. 11.1).',
+      },
+      {
+        q: '¿Qué parte de la jubilación cobro?',
+        a: 'El mismo porcentaje en que se reduce la remuneración: con un recorte del 40 % cobrás el 40 % del monto de la jubilación que te correspondería entera. No es un porcentaje del sueldo.',
+      },
+      {
+        q: '¿Me pagan el suplemento solidario mientras trabajo?',
+        a: 'No. Mientras te mantengas en actividad, en las jubilaciones del Nuevo Sistema Previsional Común no corresponde el pago del suplemento solidario, y en las de regímenes anteriores no se hace el ajuste al valor mínimo de la jubilación. El decreto agrega que la remuneración por esta actividad se deduce en su totalidad del suplemento.',
+      },
+      {
+        q: '¿Mi empleador puede decir que no?',
+        a: 'Sí. La continuación en tiempo parcial requiere el acuerdo escrito entre empleador y afiliado, y la norma no prevé una vía para acceder sin ese acuerdo. Una vez firmado, las condiciones no pueden variar dentro de los seis meses, salvo fuerza mayor o notoria mala conducta.',
+      },
+      {
+        q: '¿Qué pasa cuando dejo de trabajar?',
+        a: 'La prestación va hasta el cese de la actividad y después hay que solicitar el 100 % del monto jubilatorio: no se ajusta solo. La asignación no puede ser inferior a la que te hubiera correspondido.',
+      },
+      {
+        q: '¿Sigue vigente la jubilación parcial de la Ley 19.160?',
+        a: 'No para quien pregunta hoy: la Ley 20.130 la derogó en su art. 208, aunque las situaciones jurídicas constituidas a su amparo siguen rigiéndose por sus disposiciones. Lo vigente es la jubilación parcial flexible.',
+      },
+    ],
+    related: [
+      { label: '¿Cuándo me puedo jubilar?', to: '/cuando-me-puedo-jubilar-uruguay' },
+      { label: 'Suplemento solidario', to: '/suplemento-solidario-bps' },
+      { label: 'IASS: impuesto a las jubilaciones', to: '/iass-uruguay' },
+    ],
+    sources: [
+      {
+        label:
+          'Jubilación parcial flexible: condiciones, el ejemplo del 40 %, incompatibilidades, VF 163 y el 100 % al cesar',
+        url: 'https://www.bps.gub.uy/9776/jubilacion-parcial.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'Ley 20.130, art. 203: jubilación parcial flexible y la reducción de al menos un tercio',
+        url: 'https://www.impo.com.uy/bases/leyes/20130-2023/203',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Decreto 231/023, arts. 11 a 13: el tope de la mitad, el acuerdo escrito, los seis meses y el monto',
+        url: 'https://www.impo.com.uy/bases/decretos/231-2023',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 19.160, derogada por el art. 208 de la Ley 20.130 (con las situaciones ya constituidas a salvo)',
+        url: 'https://www.impo.com.uy/bases/leyes/19160-2013',
+        publisher: 'IMPO',
+      },
+      {
+        label: 'Qué debe hacer la empresa: el acuerdo, el registro y el VF 163 en la nómina',
+        url: 'https://www.bps.gub.uy/20886/un-trabajador-de-mi-empresa-quiere-reducir-su-jornada-de-trabajo-y-acceder-a-una-jubilacion-parcial-flexible-que-debo-hacer.html',
+        publisher: 'BPS',
+      },
+    ],
+  },
+  {
+    // POR QUÉ EXISTE: `/asignacion-familiar-uruguay` explica las dos asignaciones familiares y
+    // cuánto paga cada una, pero medido hoy con grep sobre `pages/` y `utils/` el sitio tenía CERO
+    // menciones de «ayuda extraordinaria» y ninguna de la asignación DOBLE. O sea que el hogar que
+    // más cobra —el que tiene un hijo con discapacidad— no encontraba su caso en ninguna página, y
+    // es el caso donde la diferencia de plata y la fecha límite importan más.
+    //
+    // Verificado el 2026-11-04 contra tres fichas del BPS (5470 «Asignación familiar», que declara
+    // última actualización el 03/06/2026; 23669 «¿A quiénes les corresponde Asignación familiar
+    // doble?», 05/12/2025; y 3540 «Plan de equidad», 11/09/2026) y los textos vigentes en IMPO del
+    // Decreto-Ley 15.084 y de la Ley 18.227.
+    //
+    // LO QUE NO SE PUBLICA, y está escrito en la última sección de la guía: el monto de las ayudas
+    // extraordinarias (la ficha del BPS dice que existen y para qué son, pero no publica un importe
+    // vigente), el monto del art. 4 literal C de la Ley 18.227 como si fuera de hoy (está escrito
+    // en pesos de 2007) y cualquier umbral numérico de vulnerabilidad del Plan de Equidad, por el
+    // mismo motivo que ya tiene escrito `utils/asignacionFamiliar.ts`.
+    slug: 'asignacion-familiar-doble-uruguay',
+    title: 'Asignación familiar doble por discapacidad',
+    description:
+      'El BPS paga doble por discapacidad: $ 2.694 por mes en la contributiva o $ 3.837,89 fijos del Plan de Equidad (1/2026). Se pide antes de los 18 años.',
+    tag: 'BPS',
+    updatedAt: '2026-11-04',
+    sections: [
+      {
+        heading: '¿Cuánto es la asignación familiar doble?',
+        body: 'En el régimen contributivo —el que se genera por trabajar, el del Decreto-Ley 15.084— la ficha del BPS lo dice en una línea: «Las personas con discapacidad tendrán derecho a la asignación familiar doble, de por vida o hasta que perciban otra prestación del BPS». El doble de qué, lo publica la misma ficha: con vigencia 1/2026 la asignación simple es de $ 1.347 por mes por beneficiario si los ingresos del hogar no pasan de $ 50.502, y de $ 674 si no pasan de $ 84.688. Duplicar esos dos valores es toda la cuenta, y la hacemos acá para que esté a la vista: $ 2.694 y $ 1.348. Los importes son los publicados por el BPS y la multiplicación es nuestra; la liquidación y su redondeo son del BPS. Y como son pesos, caducan: se ajustan en las mismas oportunidades que las remuneraciones de la Administración Central, así que el número vale con su vigencia al lado y no solo.',
+        table: {
+          headers: [
+            'Tope de ingresos del hogar',
+            'Asignación simple (1/2026)',
+            'Doble, por discapacidad',
+          ],
+          rows: [
+            ['Hasta $ 50.502', '$ 1.347 por mes', '$ 2.694 por mes'],
+            ['Hasta $ 84.688', '$ 674 por mes', '$ 1.348 por mes'],
+            ['Por encima de $ 84.688', 'No corresponde', 'No corresponde'],
+          ],
+        },
+      },
+      {
+        heading: 'Las dos condiciones que deciden: el certificado y los 18 años',
+        body: 'La ficha del BPS pone dos requisitos y el segundo es una fecha límite que no se recupera: «Los niños deben contar con certificado de la Comisión Honoraria del Centro Martínez Visca (ex Patronato)» y «deben solicitarla antes de cumplir los 18 años de edad». Quien llega después de ese cumpleaños no entra por esta puerta, y por eso conviene no dejarlo para cuando el trámite «haga falta». La duración, en cambio, es lo más generoso que tiene esta prestación, y no la inventa el BPS: el numeral 3 del artículo 5 del Decreto-Ley 15.084 extiende el beneficio «De por vida o hasta que perciba otra prestación de la seguridad social, cuando el beneficiario padezca de una incapacidad síquica o física tal que impida su incorporación a todo tipo de tarea remunerada». Hay además una bifurcación que la ficha escribe en dos frases y que vale leer despacio, porque reparte el mismo derecho en dos cosas muy distintas: «Si no perciben pensión por invalidez, tendrán derecho a una asignación especial de por vida» y «De lo contrario, podrán acceder a una asignación simple hasta los 15 años».',
+      },
+      {
+        heading: 'En el Plan de Equidad no es doble: es un monto fijo, y más alto',
+        body: 'La otra asignación familiar, la del Plan de Equidad de la Ley 18.227, no duplica nada: tiene su propio valor para estos beneficiarios y con vigencia 1/2026 es de $ 3.837,89 por cada beneficiario con discapacidad, contra $ 2.686,51 del beneficiario en gestación, menor de 5 años o escolar. Y trae tres diferencias que no son de monto. La primera es que ese importe no se diluye: la ficha dice que «El monto es fijo para beneficiarios que padezcan incapacidad física o psíquica», mientras que para el resto varía según la cantidad de beneficiarios del hogar y el nivel educativo. La segunda es que la exigencia de asistir a una institución educativa rige «a excepción de las personas con discapacidad». La tercera es la revisión: «Los mayores de 18 años de edad con discapacidad deberán asistir a revisión médica cada tres años», que es el mismo máximo que fija el literal D del artículo 6 de la ley, y que también admite acreditar la discapacidad psíquica de niños y adolescentes con el certificado del Registro creado por la Ley 13.711 además del de los servicios médicos del BPS. Lo que no se puede es sumar las dos: la ficha del Plan de Equidad dice que «Es incompatible con cualquier otro tipo de asignación familiar» y el artículo 9 de la Ley 18.227 la declara incompatible con las del Decreto-Ley 15.084, dejando al beneficiario la opción de pasarse a este régimen en cualquier momento. Las cifras de al lado no son una recomendación: al Plan de Equidad se entra por una determinación de vulnerabilidad socioeconómica que hace el BPS, no eligiendo la columna más alta.',
+        table: {
+          headers: ['', 'Contributiva (DL 15.084)', 'Plan de Equidad (Ley 18.227)'],
+          rows: [
+            ['Monto con discapacidad (1/2026)', '$ 2.694 o $ 1.348 por mes', '$ 3.837,89 por mes'],
+            ['Cómo se llega al monto', 'El doble de la asignación simple', 'Valor propio, fijo'],
+            ['Baja si hay más hijos en el hogar', 'No', 'No, para este beneficiario'],
+            ['Se genera por', 'Trabajar o haber trabajado', 'Vulnerabilidad socioeconómica'],
+            ['Las dos juntas', 'Incompatibles', 'Incompatibles'],
+          ],
+        },
+        links: [
+          {
+            label: 'Las dos asignaciones familiares, lado a lado',
+            to: '/asignacion-familiar-uruguay',
+          },
+        ],
+      },
+      {
+        heading: 'El otro caso de doble: los nacimientos múltiples',
+        body: 'La discapacidad no es el único caso. La ficha del BPS que contesta a quiénes les corresponde la asignación doble nombra dos, y el segundo es acotado y con fecha: también corresponde, en el caso de «nacimientos múltiples (dos hijos o más)», «para niños y niñas nacidos antes del 1.º de agosto de 2024, que tengan entre 6 y 12 años». Es una ventana que se cierra sola con el calendario, así que si el nacimiento múltiple es posterior a esa fecha, lo que corresponde es la asignación común y no esta.',
+      },
+      {
+        heading: 'Lo que esta guía no publica, y por qué',
+        body: 'Tres cosas, a propósito. La primera son las ayudas extraordinarias: la ficha del BPS dice que las personas con discapacidad «tienen derecho a percibir ayudas económicas, destinadas a favorecer su inserción social, educativa y cultural», pero no publica un importe vigente, y los montos que circulan son de 2022. Decimos que existen y mandamos a preguntarlas; no inventamos la cifra. La segunda es el artículo 4 literal C de la Ley 18.227, que sí fija un monto propio para los beneficiarios con incapacidad, pero escrito en pesos de 2007 y ajustado desde entonces: ese número no sirve como el de hoy y por eso acá va el que publica el BPS. Y la tercera es de dónde sale la duplicación en el régimen contributivo: la afirma el BPS, que es el organismo que liquida, y el texto del Decreto-Ley 15.084 que consultamos no la contiene —lo que sí contiene es la duración de por vida del numeral 3 del artículo 5—. Lo decimos así, con la fuente de cada mitad, en vez de atribuirle a la ley una frase que no leímos en ella.',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Cuánto es la asignación familiar doble en 2026?',
+        a: 'En el régimen contributivo, $ 2.694 por mes por beneficiario si los ingresos del hogar no pasan de $ 50.502, y $ 1.348 si no pasan de $ 84.688: son el doble de los $ 1.347 y $ 674 que publica el BPS con vigencia 1/2026. En el Plan de Equidad no se duplica nada y el valor propio del beneficiario con discapacidad es de $ 3.837,89 por mes, también con vigencia 1/2026. Los tres son pesos y se ajustan, así que verificá la vigencia antes de hacer cuentas.',
+      },
+      {
+        q: '¿Hasta cuándo se puede pedir?',
+        a: 'Antes de cumplir los 18 años. Lo dicen las dos fichas del BPS, la del régimen contributivo y la del Plan de Equidad, y es una fecha límite para SOLICITARLA: una vez otorgada, el beneficio es de por vida o hasta que la persona perciba otra prestación del BPS si no tiene derecho a pensión por invalidez.',
+      },
+      {
+        q: '¿Qué certificado hay que presentar?',
+        a: 'El de la Comisión Honoraria del Centro Martínez Visca (ex Patronato), que es el que nombran las dos fichas del BPS. En el Plan de Equidad, el literal D del artículo 6 de la Ley 18.227 agrega que la discapacidad se acredita con certificado de los servicios médicos del BPS y que, para la discapacidad psíquica de niños y adolescentes, también sirve el certificado del Registro creado por la Ley 13.711, con revisiones periódicas como máximo cada tres años.',
+      },
+      {
+        q: '¿Se pueden cobrar las dos asignaciones familiares a la vez?',
+        a: 'No. La ficha del Plan de Equidad dice que «Es incompatible con cualquier otro tipo de asignación familiar», y el artículo 9 de la Ley 18.227 declara su prestación incompatible con las del Decreto-Ley 15.084. El mismo artículo deja optar por el Plan de Equidad en cualquier momento, pero es una opción entre una y otra, no una suma.',
+      },
+      {
+        q: '¿Y si el hijo ya cobra pensión por invalidez?',
+        a: 'Cambia el derecho. La ficha del BPS lo separa en dos frases: si no perciben pensión por invalidez «tendrán derecho a una asignación especial de por vida»; «De lo contrario, podrán acceder a una asignación simple hasta los 15 años». No es la misma prestación ni la misma duración, así que antes de contar con la doble conviene chequear en el BPS cuál de las dos situaciones es la tuya.',
+      },
+    ],
+    related: [
+      {
+        label: 'Asignación familiar: cuánto es y quién la cobra',
+        to: '/asignacion-familiar-uruguay',
+      },
+      { label: 'Jubilación por incapacidad', to: '/jubilacion-por-incapacidad-uruguay' },
+      { label: 'Pensión por sobrevivencia', to: '/pension-por-sobrevivencia-uruguay' },
+      { label: 'Certificados del BPS', to: '/certificados-bps-uruguay' },
+    ],
+    sources: [
+      {
+        label:
+          'Asignación familiar: «Las personas con discapacidad tendrán derecho a la asignación familiar doble, de por vida o hasta que perciban otra prestación del BPS», el certificado del Centro Martínez Visca, el plazo de los 18 años, la bifurcación por pensión de invalidez, las ayudas extraordinarias y los montos de $ 1.347 y $ 674 con vigencia 1/2026 (ficha con última actualización del 03/06/2026)',
+        url: 'https://www.bps.gub.uy/5470/asignacion-familiar.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          '¿A quiénes les corresponde Asignación familiar doble?: los dos casos, incluido el de nacimientos múltiples «para niños y niñas nacidos antes del 1.º de agosto de 2024, que tengan entre 6 y 12 años» (ficha con última actualización del 05/12/2025)',
+        url: 'https://www.bps.gub.uy/23669/a-quienes-les-corresponde-asignacion-familiar-doble.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'Plan de equidad: «$ 3.837,89 por cada beneficiario con discapacidad» y «$ 2.686,51 por un beneficiario en gestación, menor de 5 años o escolar» con vigencia 1/2026, «El monto es fijo para beneficiarios que padezcan incapacidad física o psíquica», la asistencia educativa «a excepción de las personas con discapacidad», la revisión médica cada tres años desde los 18 y «Es incompatible con cualquier otro tipo de asignación familiar» (ficha con última actualización del 11/09/2026)',
+        url: 'https://www.bps.gub.uy/3540/plan-de-equidad.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'Decreto-Ley 15.084, art. 5 numeral 3 (texto vigente): «De por vida o hasta que perciba otra prestación de la seguridad social, cuando el beneficiario padezca de una incapacidad síquica o física tal que impida su incorporación a todo tipo de tarea remunerada». El texto consultado no contiene la duplicación del monto',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/15084-1980/5',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.227: art. 4 literal C (monto propio para beneficiarios con incapacidad, escrito en pesos de 2007), art. 6 literal D (certificación por los servicios médicos del BPS o por el Registro de la Ley 13.711, con revisiones «como máximo cada tres años») y art. 9 (incompatibilidad con el Decreto-Ley 15.084 y opción en cualquier momento)',
+        url: 'https://www.impo.com.uy/bases/leyes/18227-2007',
+        publisher: 'IMPO',
+      },
+    ],
+  },
+  {
+    // POR QUÉ EXISTE: ver la nota del encabezado. Es la pregunta que el hogar que contrata hace una
+    // vez y no vuelve a hacer, y la que más fácil se contesta mal, porque hay DOS fuentes oficiales
+    // con números distintos: el MTSS publica los mínimos «de referencia» al 30/6/2026 del acuerdo
+    // del 5/12/2025 y el BPS publica los que rigen hoy. Acá va el del BPS, que es el que emite la
+    // factura, y la diferencia se cuenta en voz alta en la primera sección.
+    slug: 'trabajo-domestico-uruguay',
+    title: `Trabajo doméstico: $ ${minimo('general')} por 44 horas`,
+    description: `Mínimos del Grupo 21 hasta el 31/12/2026: $ ${minimo('general')} general, $ ${minimo('cocina')} cocina y $ ${minimo('cuidados')} cuidados por 44 horas. Al BPS, 15 % y 7,5 %.`,
+    tag: 'TRABAJO',
+    updatedAt: '2026-11-08',
+    sections: [
+      {
+        heading: '¿Cuánto hay que pagar como mínimo?',
+        body: `Desde el 1.º de julio de 2026 el sector tiene tres categorías y cada una su propio mínimo, según cuál sea la tarea PRINCIPAL de la jornada —el 50 % más una hora, dice el BPS—, no según todo lo que la persona haga. Los valores que rigen ${DOMESTIC_WORK_WAGE_PERIOD.label} los publica el comunicado R 14/2026 del BPS, y son los de la tabla. Dos avisos antes de usarlos. El primero: el mensual y el por hora se publican por separado y no se derivan uno del otro, así que para una jornada de menos de 44 horas semanales la cuenta va con el valor por hora o con una regla de tres sobre el mensual, nunca con el mensual entero. El segundo es una discrepancia real entre dos fuentes oficiales, y conviene saberla: la página del MTSS sigue publicando los mínimos «de referencia» al 30 de junio de 2026 que fijó el acuerdo del 5 de diciembre de 2025 —$ 32.875 para cocina y $ 33.935 para cuidados—, que son anteriores al ajuste de julio. Acá publicamos los del BPS porque es el organismo que liquida y emite la factura, y lo decimos en vez de elegir en silencio.`,
+        table: {
+          headers: [
+            'Categoría',
+            `Mensual por 44 h (${DOMESTIC_WORK_WAGE_PERIOD.label})`,
+            'Por hora',
+          ],
+          rows: DOMESTIC_WORK_CATEGORIES.map(category => [
+            category.name,
+            `$ ${uyu(category.monthlyUyu)}`,
+            `$ ${uyu(category.hourlyUyu)}`,
+          ]),
+        },
+      },
+      {
+        heading: 'Qué tarea cae en cada categoría',
+        body: `La categoría no la elige el hogar: la decide la tarea principal, y el BPS asignó de oficio la categoría general a todas las personas que ya estaban activas al 1.º de julio de 2026, así que si la tarea principal es cocina o cuidados hay que modificarla en el trámite de trabajo doméstico. Quien está en una categoría puede hacer tareas de las categorías de menor remuneración; al revés no, porque entonces la tarea principal pasó a ser otra. Hay dos bordes que el MTSS escribe con nombre propio y valen más que cualquier resumen: servir comida ya preparada o lavar la vajilla no convierten la tarea en cocina, y cocinar o cuidar hasta el 50 % del tiempo trabajado sigue siendo categoría general.`,
+        table: {
+          headers: ['Categoría', 'Qué comprende'],
+          rows: DOMESTIC_WORK_CATEGORIES.map(category => [category.name, category.tasks]),
+        },
+      },
+      {
+        heading: 'Lo que se paga además del sueldo',
+        body: 'El mínimo de la tabla es el sueldo, no el costo. Arriba de eso van siete cosas y ninguna es opcional: el aguinaldo, que se paga en dos fracciones, en junio y en diciembre; la licencia anual de 20 días continuos por año completo, o 1,67 días por mes cada 25 días trabajados; el salario vacacional, que se paga ANTES de la licencia y no después; el salario vacacional complementario, una suma adicional equivalente al 15 % del salario vacacional vigente; la prima por presentismo, que se abona junto con el aguinaldo y es la cuarta parte de este si no hubo inasistencias en el semestre —se prorratea mes a mes, y las faltas por enfermedad, huelga o licencias autorizadas no la hacen perder—; la prima por antigüedad, del 0,5 % por año trabajado con tope de 10 años, ajustable cada 1.º de enero; y la compensación por nocturnidad, del 15 % entre las 22:00 y las 6:00, que sube al 20 % si en ese horario se trabajan 5 horas o más. El 19 de agosto, Día de la Trabajadora y el Trabajador Doméstico, es feriado pago. Sin retiro se agregan dos obligaciones que no son dinero: alimentación completa y una habitación privada, amueblada e higiénica.',
+        links: [
+          {
+            label: 'Cómo se calcula el aguinaldo',
+            to: '/guias/como-se-calcula-el-aguinaldo-uruguay',
+          },
+          {
+            label: 'Licencia y salario vacacional',
+            to: '/guias/licencia-y-salario-vacacional-uruguay',
+          },
+        ],
+      },
+      {
+        heading: 'El cuadro de aportes del BPS',
+        body: 'Los aportes se calculan sobre la remuneración nominal REAL, que no puede ser menor al mínimo del laudo, e incluyen las demás partidas que correspondan, como la prima por antigüedad. El cuadro de abajo es el de la guía de afiliación y aportación del BPS de junio de 2026. Tres lecturas que no se ven mirando los porcentajes. La primera: el seguro de accidentes del BSE ya no es una póliza aparte que haya que ir a contratar, viene en la misma factura mensual del BPS con una tasa del 1,87 % desde julio de 2025, y la cobertura es automática para toda persona registrada. La segunda: Fonasa es el único concepto que no tiene un número cerrado, porque la tasa personal va del 3 % al 8 % según cónyuge o concubino, hijos a cargo y si la remuneración pasa de 2,5 BPC, y la patronal lleva además el complemento de cuota mutual. La tercera: si corresponde, el hogar empleador también es agente de retención del IRPF. Por eso acá no hay un total «lo que sale por mes»: ese número depende del caso y escribirlo sería inventarlo.',
+        table: {
+          headers: ['Concepto', 'Aporte personal', 'Aporte patronal'],
+          rows: DOMESTIC_WORK_CONTRIBUTIONS.map(row => [row.concept, row.personal, row.employer]),
+        },
+      },
+      {
+        heading: 'El alta tiene fecha, y vencerla cuesta 1 UR',
+        body: 'La inscripción no es un trámite que se pueda hacer después. El BPS lo pone en plazos: la afiliación del titular y el ingreso de la persona trabajadora, desde 10 días corridos antes del comienzo de la actividad y hasta el día de ingreso —o sea que cuando empieza a trabajar ya tiene que estar registrada—, y el egreso, hasta 5 días hábiles después. Vencido el plazo se genera una multa de 1 UR por la afiliación fuera de fecha y otra por el ingreso o egreso tardío. Si es el primer trabajador, el registro del empleador se hace en la misma gestión, por única vez, y sólo hace falta el usuario personal BPS, que se obtiene con la cédula en Abitab, Red Pagos, ANDA o en cualquier sucursal del organismo. Después, dos obligaciones mensuales: entregar copia del recibo de sueldo en cada pago, que es la constancia laboral de la persona trabajadora, y pagar la factura que el BPS calcula con los jornales y salarios declarados. Y una que viene de la ley de inclusión financiera: a las personas registradas como mensuales el sueldo se les paga por medios electrónicos, con una excepción acotada para el empleador que al 31 de diciembre de 2017 ya percibía jubilación, pensión o retiro.',
+      },
+      {
+        heading: 'Las horas y los descansos los fija la ley, no el acuerdo',
+        body: 'El Consejo de Salarios fija cuánto; la Ley 18.065 fija el resto, y lo escribió en horas. Su artículo 2 limita la jornada «en un máximo legal de ocho horas diarias, y de cuarenta y cuatro horas semanales» y su artículo 4 dice que el descanso semanal «será de treinta y seis horas ininterrumpidas, que comprenderá todo el día domingo, pudiendo acordar las partes el día de la semana en que se gozará el descanso restante». El descanso intermedio depende del régimen y no es un detalle: con retiro son 30 minutos pagados como trabajo efectivo, y sin retiro un mínimo de dos horas que no se pagan pero de las que la persona dispone libremente. Sin retiro hay además un descanso nocturno de nueve horas continuas que el empleador no puede interrumpir. Dos cosas más de la misma ley: la indemnización por despido se gana desde los 90 días corridos de iniciada la relación laboral, tanto para mensuales como para jornaleros, y la edad mínima es de 18 años, con autorización del INAU desde los 15 por razones fundadas. Sobre el despido en el embarazo la ley remite a una indemnización especial, que el BPS cuantifica en 6 sueldos, desde la notificación del embarazo y hasta 180 días después del reintegro de la licencia por maternidad.',
+        table: {
+          headers: ['Lo que fija la ley', 'Valor', 'Ley 18.065'],
+          rows: DOMESTIC_WORK_LEGAL_LIMITS.map(limit => [limit.label, limit.value, limit.article]),
+        },
+      },
+      {
+        heading: 'La cobertura de salud tiene un mínimo de actividad',
+        body: `Registrar no alcanza por sí solo para que la persona entre al Seguro Nacional de Salud: el BPS pide un mínimo de ${DOMESTIC_WORK_HEALTH_MINIMUM.jornales} jornales o ${DOMESTIC_WORK_HEALTH_MINIMUM.monthlyHours} horas mensuales, o una remuneración mayor o igual a 1,25 bases de prestación y contribución (BPC). Se cumple con cualquiera de las tres. Y se puede llegar sumando empleadores: en ese caso cada uno aporta su parte proporcional del complemento de cuota mutual, pero si los mínimos ya se alcanzan con UN empleador, es ese el que debe otorgar la cobertura y no hay acumulación posible. Un hogar que no llega a esos mínimos puede igual darle el beneficio haciéndose cargo del complemento. La cobertura alcanza a los hijos menores de 18 años o mayores con discapacidad, propios o del cónyuge o concubino, y al cónyuge o concubino que no tenga cobertura propia. El umbral va en BPC y no en pesos a propósito: la BPC se ajusta y un literal envejece mal.`,
+        links: [{ label: 'Cuánto vale la BPC hoy', to: '/indicadores/bpc' }],
+      },
+      {
+        heading: 'Lo que esta guía no publica, y por qué',
+        body: 'Cuatro cosas, a propósito. La primera es el total: no decimos «contratar sale tanto por mes», porque la suma depende de la cobertura de salud, de la prima por antigüedad, de la nocturnidad y del IRPF que pueda corresponder, y un total promedio no describe a ningún hogar. La segunda es Fonasa en pesos, por lo mismo: su tasa personal tiene seis combinaciones y la patronal lleva un complemento que depende del valor de la cuota mutual. La tercera es el mínimo de la categoría general al 30 de junio de 2026: el MTSS publica los de cocina y cuidados de ese corte y no el de general, así que no completamos el que falta. Y la cuarta son los ejemplos de aportación que el BPS trae en su folleto: están calculados sobre sueldos nominales muy por debajo de los mínimos vigentes —$ 4.628, $ 7.267 y $ 23.920—, así que sirven para ver el mecanismo y no como referencia de lo que paga un hogar hoy.',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Cuál es el salario mínimo del trabajo doméstico en Uruguay?',
+        a: `Depende de la categoría, y las tres rigen ${DOMESTIC_WORK_WAGE_PERIOD.label}: $ ${minimo('general')} mensuales por 44 horas semanales en la categoría general, $ ${minimo('cocina')} en cocina y $ ${minimo('cuidados')} en cuidados, según el comunicado R 14/2026 del BPS. Por hora, para jornaleros, son $ 169, $ 178 y $ 184. Son pesos y se ajustan, así que verificá la vigencia antes de hacer cuentas.`,
+      },
+      {
+        q: '¿Cuánto se paga de aportes al BPS por una trabajadora doméstica?',
+        a: 'El aporte jubilatorio es del 22,5 % en total: 15 % que se le descuenta a la persona trabajadora y 7,5 % a cargo del hogar. Arriba de eso, FRL 0,10 % cada parte, el seguro de accidentes del BSE al 1,87 % patronal —que viene en la misma factura del BPS—, el fondo de garantía de créditos laborales al 0,025 % patronal y el fondo social al 0,03 % por parte, que es opcional. Fonasa no tiene un número único: la tasa personal va del 3 % al 8 % según cónyuge e hijos a cargo y la remuneración, y la patronal es 5 % más el complemento de cuota mutual.',
+      },
+      {
+        q: '¿Cuándo hay que inscribirla en el BPS?',
+        a: 'Antes de que empiece a trabajar: el plazo va desde 10 días corridos antes del comienzo de la actividad y hasta el día de ingreso, y cuando empieza ya debe estar registrada. La baja, hasta 5 días hábiles después del egreso. Fuera de plazo el BPS aplica una multa de 1 UR por la afiliación tardía del titular y otra por el ingreso o egreso tardío del trabajador.',
+      },
+      {
+        q: '¿Cuántas horas puede trabajar y qué descansos le corresponden?',
+        a: 'La Ley 18.065 limita la jornada a 8 horas diarias y 44 semanales. El descanso semanal es de 36 horas ininterrumpidas que comprenden todo el domingo, y las partes acuerdan el día del descanso restante. El descanso intermedio es de 30 minutos pagados en el régimen con retiro y de un mínimo de 2 horas, no remuneradas, sin retiro. Sin retiro hay además un descanso nocturno de 9 horas continuas que no se puede interrumpir.',
+      },
+      {
+        q: '¿Con cuántas horas accede a la mutualista?',
+        a: `Con un mínimo de ${DOMESTIC_WORK_HEALTH_MINIMUM.jornales} jornales o ${DOMESTIC_WORK_HEALTH_MINIMUM.monthlyHours} horas mensuales, o una remuneración mayor o igual a 1,25 BPC; cualquiera de las tres alcanza. Los mínimos se pueden llegar a cumplir sumando varios empleadores, y en ese caso cada uno aporta proporcionalmente el complemento de cuota mutual. Si ya se alcanzan con un solo empleador, es ese el que debe dar la cobertura.`,
+      },
+      {
+        q: '¿Desde cuándo tiene derecho a indemnización por despido?',
+        a: 'Desde los 90 días corridos de iniciada la relación laboral, y vale tanto para mensuales como para jornaleros: lo dice el artículo 7 de la Ley 18.065. Si el despido ocurre después de haberse notificado el embarazo y hasta 180 días después del reintegro de la licencia por maternidad, corresponde además una indemnización especial, que el BPS cuantifica en 6 sueldos.',
+      },
+    ],
+    related: [
+      { label: 'Cuánto me tienen que pagar', to: '/cuanto-me-tienen-que-pagar-uruguay' },
+      { label: 'Entender tu recibo de sueldo', to: '/guias/entender-tu-recibo-de-sueldo-uruguay' },
+      { label: 'Despido y liquidación', to: '/guias/despido-y-liquidacion-uruguay' },
+      { label: 'Trabajo en negro: qué hacer', to: '/guias/trabajo-en-negro-uruguay' },
+      { label: 'Valor de la BPC', to: '/indicadores/bpc' },
+    ],
+    sources: DOMESTIC_WORK_SOURCES.map(source => ({ ...source })),
+  },
+  {
+    slug: 'cuenta-sueldo-elegir-banco-uruguay',
+    title: 'Cuenta sueldo: el banco lo elegís vos',
+    description: `La Ley 19.210 te deja elegir dónde cobrás: ${PAYROLL_ACCOUNT_CHOICE_DAYS} días hábiles desde que la empresa avisa, y la cuenta da ${PAYROLL_FREE_WITHDRAWALS} extracciones y ${PAYROLL_FREE_TRANSFERS} transferencias gratis por mes.`,
+    tag: 'TRABAJO',
+    updatedAt: PAYROLL_ACCOUNT_REVIEWED,
+    sections: [
+      {
+        heading: '¿Te pueden obligar a cobrar en el banco de la empresa?',
+        body: 'No. El artículo 11 de la Ley 19.210 lo escribe sin condiciones: cuando el sueldo se paga por acreditación, «el trabajador tendrá derecho a elegir libremente la institución de intermediación financiera o la institución emisora de dinero electrónico en la cual cobrar su remuneración y toda otra partida en dinero que tenga derecho a percibir». La empresa puede elegir por vos, pero sólo si vos no elegiste, y esa elección vale «hasta tanto el trabajador haga uso de su facultad de elegir la institución»: para pisarla no hay que esperar ningún plazo ni pedir permiso. El plazo aparece recién del otro lado — cuando la elección la hacés vos, el mismo artículo le da vigencia por un año. Y una aclaración previa que se confunde seguido: lo que se elige acá es la INSTITUCIÓN, no la forma de pago. Que el sueldo se pague en efectivo o en cuenta es una modalidad que el artículo 11 manda acordar entre trabajador y empleador al inicio de la relación laboral, y el artículo 10 sigue empezando con «sin perjuicio de la modalidad de pago en efectivo».',
+      },
+      {
+        heading: 'Los dos plazos de diez días hábiles del Decreto 263/015',
+        body: `El derecho lo da la ley; los plazos los pone el Decreto 263/015, y son los que deciden si lo podés ejercer hoy o dentro de un año. El artículo 1.º dice que al iniciar la relación laboral indicás la institución elegida, y que si no lo indicás el empleador debe elegir por vos «previa notificación». Esa notificación tiene reglas: va con ${PAYROLL_ACCOUNT_NOTICE_DAYS} días hábiles de antelación como mínimo ANTES de abrir la cuenta, y tiene que informarte dos cosas — que durante los ${PAYROLL_ACCOUNT_CHOICE_DAYS} días hábiles siguientes podés elegir vos, y que si no lo hacés recién vas a poder cambiar al año de concretada la apertura. El empleador además debe conservar copia de esos avisos por un año. Y ahí está la trampa del caso más común: si entrás a un trabajo nuevo y te dicen que cobrás en tal banco, el año de permanencia NO te alcanza, porque el artículo 11 dice que ese mínimo «no será exigible (…) cuando el cambio de institución esté asociado al inicio de una nueva relación laboral». Dato que conviene saber por si te lo discuten: el inciso que obligaba al empleador a no dar curso a un cambio antes del año fue derogado en 2017 por el Decreto 106/017.`,
+        table: {
+          headers: ['Qué se cuenta', 'Cuánto', 'Norma'],
+          rows: PAYROLL_ACCOUNT_DEADLINES.map(deadline => [
+            deadline.label,
+            deadline.value,
+            deadline.article,
+          ]),
+        },
+      },
+      {
+        heading: 'Cómo se avisa, y el papel que te tienen que dar',
+        body: 'El trámite lo describe el artículo 14 del decreto y tiene dos mitades que conviene no saltear. La tuya: notificás al empleador la institución elegida «presentando la documentación que les haya entregado dicha institución», que como mínimo tiene que traer tus datos identificatorios y los de la cuenta o del instrumento de dinero electrónico donde acreditar los fondos. O sea que no alcanza con decir el nombre del banco: hay que ir al banco primero y traer el papel. La del empleador, que es la que se olvida: «deberá entregar al trabajador una copia firmada de la documentación emitida por la institución elegida como constancia de recepción, indicando la fecha en que recibió la comunicación». Guardá esa copia con la fecha. Es la única prueba de que avisaste y de cuándo, y es exactamente lo que hace falta si después el sueldo sigue cayendo en la cuenta vieja.',
+        links: [
+          {
+            label: 'Entender tu recibo de sueldo',
+            to: '/guias/entender-tu-recibo-de-sueldo-uruguay',
+          },
+        ],
+      },
+      {
+        heading: 'Qué tiene que ser gratis en esa cuenta',
+        body: `Elegir la institución es la mitad del asunto; la otra es que la cuenta donde cae el sueldo no es una cuenta común. El artículo 15 del decreto dice que la institución elegida «no podrá cobrar cargo alguno a ninguna de las partes» por estos servicios de pago, y le prohíbe condicionarlos a que contrates otra cosa: un banco no puede pedirte un paquete, una tarjeta de crédito ni un seguro para darte la cuenta donde cobrás. El artículo 16 enumera el piso, y es la tabla de abajo. Tres lecturas que no se ven en la lista. La primera: son MÍNIMOS, así que lo que cada banco dé por encima es su propia oferta y lo que cobre por encima de ese mínimo es su tarifario — acá no publicamos ninguna tarifa, porque cambian sin aviso. La segunda: el tope de la transferencia gratuita está escrito en unidades indexadas y no en pesos, así que para saber cuánto es hoy hay que mirar el valor de la UI. La tercera: un mismo titular tiene derecho a UNA cuenta con estas características, no a una por empleo.`,
+        table: {
+          headers: ['Qué tiene que dar la cuenta', 'Mínimo que fija la norma', 'Decreto 263/015'],
+          rows: PAYROLL_ACCOUNT_FREE_SERVICES.map(service => [
+            service.label,
+            service.value,
+            service.article,
+          ]),
+        },
+        links: [
+          { label: 'Valor de la Unidad Indexada', to: '/indicadores/unidad-indexada' },
+          { label: 'Comparar bancos de Uruguay', to: '/mejores-bancos-uruguay' },
+        ],
+      },
+      {
+        heading: 'Dónde son gratis esas extracciones',
+        body: `Las ${PAYROLL_FREE_WITHDRAWALS} extracciones gratis del mes no son «en cualquier cajero»: son en la red que el artículo 23 obliga a poner a disposición, formada por los puntos de la propia institución más los de otras entidades que ella habilite. Esa red tiene una exigencia de cobertura escrita en el decreto: puntos en todas las localidades de más de ${payrollMiles(PAYROLL_NETWORK_MIN_POPULATION)} habitantes, salvo las que estén a menos de ${PAYROLL_NETWORK_NEARBY_KM} kilómetros de otra localidad que ya tenga uno. Fuera de esa red la institución puede cobrar, y el mismo artículo la obliga a informarte el costo, igual que el de las extracciones que superen el mínimo gratuito. Por eso la pregunta útil al abrir la cuenta no es «¿cuántas extracciones gratis tengo?» —eso ya lo fija la norma— sino «¿qué red es, y hay un punto donde vivo?». Aparte de eso, el literal B) del artículo 16 te garantiza algo distinto y que no se cuenta en esas cinco: al menos un mecanismo para retirar TODO lo acreditado del mes en un único movimiento y sin costo.`,
+        links: [{ label: 'Dónde retirar efectivo', to: '/retirar-efectivo-uruguay' }],
+      },
+      {
+        heading: 'Jubilaciones y pensiones: el mismo derecho, otro plazo',
+        body: 'Quien cobra una jubilación, pensión o retiro tiene el derecho por el artículo 15 de la Ley 19.210, y con dos diferencias respecto del sueldo. La primera: puede cobrar en efectivo u optar «en cualquier momento» por la acreditación en cuenta, y la elección se notifica al organismo que paga —directamente o a través de la institución elegida—, no a un empleador. La segunda: pasado un año de hecha esa elección puede cambiar de institución o volver a cobrar en efectivo o por los otros medios que el organismo ponga a disposición. Ese año de permanencia es exigible sólo para quienes eligieron después del 1.º de enero de 2019; quien eligió antes no lo tiene. La cuenta, en cambio, es la misma: las características mínimas del artículo 16 valen también para estas prestaciones.',
+      },
+      {
+        heading: 'Si igual te condicionan el pago',
+        body: 'Dos vías y las dos son gratis. La consulta laboral y salarial del MTSS sirve para preguntar antes de discutir, con los recibos y las fechas a mano. Y para denunciar, el propio artículo 9 del decreto nombra al organismo competente: «competerá a la Inspección General del Trabajo y la Seguridad Social del Ministerio de Trabajo y Seguridad Social las actuaciones derivadas de las denuncias por incumplimiento de las obligaciones dispuestas en el presente artículo», que son justamente el aviso previo y sus plazos. Llevá la copia firmada del artículo 14 si ya notificaste tu elección, y los recibos que muestren dónde se acreditó el sueldo.',
+        links: [{ label: 'A quién le reclamo cada cosa', to: '/a-quien-le-reclamo-uruguay' }],
+      },
+      {
+        heading: 'Lo que esta guía no publica, y por qué',
+        body: 'Tres cosas, a propósito. Ninguna tarifa de banco: lo que la norma fija es un mínimo gratuito, y lo que cada institución cobra por encima de ese mínimo vive en su tarifario y se mueve sin aviso, así que un número acá envejecería mal y además no sería el derecho de nadie. El tope de la transferencia gratuita en pesos: el decreto lo escribe en unidades indexadas y la UI se ajusta a diario, así que publicamos la cifra en la unidad en que está escrita y dejamos la conversión del lado del lector. Y los nombres comerciales: «cuenta sueldo» es como le dice la gente, pero la norma habla de cuentas en instituciones de intermediación financiera e instrumentos de dinero electrónico, y cada banco bautiza su producto como quiere — pedir la cuenta por el nombre del artículo 16 funciona mejor que pedirla por el nombre que usa el de al lado.',
+      },
+    ],
+    steps: [
+      {
+        name: 'Elegí la institución',
+        text: 'Puede ser un banco o una emisora de dinero electrónico, y no tiene que ser la que eligió la empresa.',
+      },
+      {
+        name: 'Pedile a esa institución la documentación de la cuenta',
+        text: 'Tiene que traer tus datos identificatorios y los de la cuenta o instrumento donde acreditar el sueldo.',
+      },
+      {
+        name: 'Notificá al empleador presentando ese papel',
+        text: 'El artículo 14 del Decreto 263/015 pide la notificación con la documentación de la institución elegida.',
+      },
+      {
+        name: 'Pedí la copia firmada con la fecha',
+        text: 'El empleador debe entregarte copia firmada como constancia de recepción, indicando la fecha en que la recibió.',
+      },
+      {
+        name: 'Si no se cumple, reclamá',
+        text: 'Consulta laboral del MTSS para preguntar, Inspección General del Trabajo para denunciar el incumplimiento.',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Puede la empresa obligarme a cobrar el sueldo en el banco que eligió ella?',
+        a: 'No. El artículo 11 de la Ley 19.210 te da derecho a elegir libremente la institución donde cobrás tu remuneración. La empresa puede elegir por vos sólo si no elegiste, y esa elección rige «hasta tanto el trabajador haga uso de su facultad de elegir la institución»: no hay plazo que esperar para pisarla.',
+      },
+      {
+        q: 'Entré a un trabajo nuevo y me impusieron el banco. ¿Tengo que esperar un año?',
+        a: 'No. El año de permanencia del artículo 11 del Decreto 263/015 «no será exigible (…) cuando el cambio de institución esté asociado al inicio de una nueva relación laboral». El año sí corre si ya venías en ese empleo, no elegiste nada y el empleador te abrió la cuenta: en ese caso se cuenta desde que la apertura se concretó.',
+      },
+      {
+        q: '¿Cuánto tiempo tengo para elegir cuando la empresa me avisa?',
+        a: `${PAYROLL_ACCOUNT_CHOICE_DAYS} días hábiles. El artículo 9 del decreto obliga al empleador a avisarte con ${PAYROLL_ACCOUNT_NOTICE_DAYS} días hábiles de antelación como mínimo antes de abrirte la cuenta, y a informarte en ese aviso que durante los ${PAYROLL_ACCOUNT_CHOICE_DAYS} días hábiles siguientes podés ejercer la libre elección y qué pasa si no la ejercés.`,
+      },
+      {
+        q: '¿Me pueden cobrar por la cuenta donde cobro el sueldo?',
+        a: `No por los servicios que el artículo 16 del Decreto 263/015 fija como mínimos: no tiene costo de apertura, mantenimiento ni cierre, no exige saldo mínimo, incluye tarjeta de débito con un mínimo de ${PAYROLL_FREE_CARD_REPLACEMENTS} reposiciones sin costo, ${PAYROLL_FREE_WITHDRAWALS} extracciones gratis por mes en la red, ${PAYROLL_FREE_TRANSFERS} transferencias domésticas gratis de hasta ${payrollFreeTransferCap()} cada una y consultas de saldo ilimitadas. Por servicios adicionales que contrates aparte, sí.`,
+      },
+      {
+        q: '¿Pueden pedirme contratar un paquete o una tarjeta de crédito para darme la cuenta?',
+        a: 'No. El artículo 15 del decreto dice que ninguna institución «podrá condicionar la prestación de los servicios de pago» a contratar servicios adicionales. Podés acordar otros servicios y por esos sí te pueden cobrar, pero no como requisito de la cuenta donde cobrás.',
+      },
+      {
+        q: '¿Puedo seguir cobrando el sueldo en efectivo?',
+        a: 'La modalidad no la elige una sola parte: el artículo 11 de la Ley 19.210 dice que se acuerda entre trabajador y empleador al inicio de la relación laboral y rige por un año, prorrogable por igual período si no se acuerda otra. Lo que la ley no derogó es el efectivo: el artículo 10 arranca con «sin perjuicio de la modalidad de pago en efectivo». Distinto es el derecho a elegir la institución, que ahí sí es tuyo y unilateral.',
+      },
+      {
+        q: '¿Cobro una jubilación: tengo el mismo derecho?',
+        a: 'Sí, por el artículo 15 de la Ley 19.210: podés cobrar en efectivo u optar en cualquier momento por acreditación en cuenta, eligiendo libremente la institución, y la notificación va al organismo que paga. Pasado un año de esa elección podés cambiar de institución o volver al efectivo. Ese año rige para quienes eligieron después del 1.º de enero de 2019.',
+      },
+    ],
+    related: [
+      { label: 'Comparar bancos de Uruguay', to: '/mejores-bancos-uruguay' },
+      { label: 'Abrir una cuenta bancaria', to: '/guias/abrir-una-cuenta-bancaria-uruguay' },
+      { label: 'Entender tu recibo de sueldo', to: '/guias/entender-tu-recibo-de-sueldo-uruguay' },
+      { label: 'Cuánto me tienen que pagar', to: '/cuanto-me-tienen-que-pagar-uruguay' },
+      { label: 'Dónde retirar efectivo', to: '/retirar-efectivo-uruguay' },
+      { label: 'Valor de la Unidad Indexada', to: '/indicadores/unidad-indexada' },
+    ],
+    sources: PAYROLL_ACCOUNT_SOURCES.map(source => ({ ...source })),
   },
 ]

@@ -3,7 +3,7 @@ export const growthEntryMessages = {
     cards: {
       title: 'Mejores tarjetas de crédito en Uruguay: puntos y beneficios',
       lead: 'Compará {count} programas por costo anual, puntos, canje y descuentos. Cada puntaje tiene un criterio publicado y cada ficha muestra sus condiciones.',
-      seoTitle: 'Tarjetas de crédito Uruguay 2026: anualidad',
+      seoTitle: 'Mejores tarjetas de crédito Uruguay 2026',
       description:
         'Anualidad, puntos y tasa de 23 tarjetas de crédito, reverificadas el 22/9/2026 contra cada tarifario: Santander UI 895–1.560, PassCard $133,75/mes, OCA 1 Metro cada $120.',
       question: '¿Qué tarjeta de crédito te conviene?',
@@ -32,7 +32,7 @@ export const growthEntryMessages = {
     cards: {
       title: 'Best credit cards in Uruguay: points and benefits',
       lead: 'Compare {count} programmes by annual fee, points, redemption and discounts. Each score follows published criteria, and each entry shows its conditions.',
-      seoTitle: 'Credit cards in Uruguay 2026: annual fees',
+      seoTitle: 'Best credit cards in Uruguay 2026',
       description:
         'Annual fee, points and rates of 23 credit cards in Uruguay, re-checked on 22/9/2026 against each issuer tariff: Santander UI 895–1,560, PassCard $133.75/month, OCA 1 Metro per $120.',
       question: 'Which credit card suits you?',
@@ -61,7 +61,7 @@ export const growthEntryMessages = {
     cards: {
       title: 'Melhores cartões de crédito no Uruguai: pontos e benefícios',
       lead: 'Compare {count} programas por anuidade, pontos, resgate e descontos. Cada nota segue critérios publicados e cada ficha mostra suas condições.',
-      seoTitle: 'Cartões de crédito Uruguai 2026: anuidade',
+      seoTitle: 'Melhores cartões de crédito no Uruguai 2026',
       description:
         'Anuidade, pontos e taxas de 23 cartões de crédito do Uruguai, reverificados em 22/9/2026 em cada tarifário: Santander UI 895–1.560, PassCard $133,75/mês, OCA 1 Metro a cada $120.',
       question: 'Qual cartão de crédito combina com você?',

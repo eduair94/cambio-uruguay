@@ -109,6 +109,9 @@
       </VCard>
     </section>
 
+    <!-- La unidad intermedia, antes de las preguntas: mismo corte que FaqSection (ver
+         docs/seo/adsense-growth-loop.md, 31/10/2026). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <!-- FAQ -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-5">Preguntas frecuentes</h2>
@@ -197,7 +200,12 @@ const verifiedAt = new Date(BPS_CERTIFICATES_VERIFIED_AT).toLocaleDateString('es
 })
 
 const canonicalUrl = 'https://cambio-uruguay.com/certificados-bps-uruguay'
-const title = 'Certificados del BPS: común y especial'
+// El título publica la cifra por la que se busca —cuánto vale un certificado del BPS— en vez de
+// enumerar los dos tipos: «común y especial» describe la página y no contesta nada, y la distinción
+// ya viaja en la descripción («qué actos exigen el especial»). Son los 180 días corridos de
+// `BPS_CERTIFICATE_VALIDITY_DAYS`, y por ser un literal lo ata al catálogo el test de abajo
+// (`tests/unit/bpsCertificates.test.ts`), que falla si el BPS cambia el plazo y el título no.
+const title = 'Certificados del BPS: valen 180 días'
 // La descripción arranca por la cifra y no por lo que la página es: medido en este sitio, un
 // snippet con el número corre a ~1,4 % de CTR y uno genérico a 0,03–0,2 % desde la misma
 // posición. Entra entera en los 155 caracteres que el SERP publica (`seoDescriptionBudget`).

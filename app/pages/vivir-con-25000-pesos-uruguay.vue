@@ -538,6 +538,16 @@
         corresponde, cuánto es, y por qué puerta se pide. Todos los montos que siguen están
         publicados por BPS, MIDES, UTE u OSE, con su fecha de vigencia.
       </p>
+      <p class="section-intro text-medium-emphasis mb-5">
+        Hay uno que no está en esta lista y conviene decir por qué, porque es el gasto más grande de
+        la tabla de arriba: el alquiler. El MVOT subsidia alquileres, pero no el contrato que ya
+        tenés — lo hace sobre viviendas propias, por llamado y sorteo, y pide un ingreso del hogar
+        de
+        <strong>15 UR como mínimo</strong>, que para un sueldo solo de este tamaño es casi todo el
+        líquido. No es un monto que se cobre ni una puerta que esté abierta todos los meses, así que
+        no entra en la cuenta: cómo funciona y cuándo mirar está en
+        <NuxtLink :to="localePath('/subsidio-de-alquiler-uruguay')">subsidio de alquiler</NuxtLink>.
+      </p>
 
       <VCard variant="flat" class="calc-card pa-5 pa-md-6 mb-6">
         <VRow dense>
@@ -693,9 +703,14 @@
               <p v-if="it.apoyo.alerta" class="mb-2 text-warning">
                 <strong>Ojo.</strong> {{ it.apoyo.alerta }}
               </p>
-              <a :href="it.apoyo.url" target="_blank" rel="noopener noreferrer">
-                Ver la fuente oficial
-              </a>
+              <div class="d-flex flex-wrap ga-4">
+                <a :href="it.apoyo.url" target="_blank" rel="noopener noreferrer">
+                  Ver la fuente oficial
+                </a>
+                <NuxtLink v-if="it.apoyo.to" :to="localePath(it.apoyo.to)">
+                  Cómo funciona, tramo por tramo
+                </NuxtLink>
+              </div>
             </VExpansionPanelText>
           </VExpansionPanel>
         </VExpansionPanels>
@@ -764,6 +779,9 @@
       </VRow>
     </section>
 
+    <!-- La unidad intermedia, antes de las preguntas: mismo corte que FaqSection (ver
+         docs/seo/adsense-growth-loop.md, 31/10/2026). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <!-- ── 7. FAQ ────────────────────────────────────────────────────────── -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-4">Preguntas frecuentes</h2>
@@ -1404,7 +1422,7 @@ const censusDate = fmtDate(BOARD_CENSUS.fecha)
 
 const canonicalUrl = 'https://cambio-uruguay.com/vivir-con-25000-pesos-uruguay'
 const title = 'Vivir con 25.000 pesos en Uruguay'
-const description = `Guía para vivir con un sueldo de 25.000 a 30.000 pesos en Uruguay. Qué dice la ley de la jornada y del mínimo (${SMN_VIGENTE} pesos desde julio de 2026), cuánto queda líquido, cuánto sale una pensión o una habitación, y sobre todo qué ingreso le corresponde a ese hogar además del sueldo: asignación familiar del BPS y del Plan de Equidad, Tarjeta Uruguay Social, el Bono Social de UTE que descuenta hasta el 90 % de la luz, la tarifa social de OSE y los comedores del INDA, con montos oficiales y cómo se piden.`
+const description = `El mínimo es $ ${SMN_VIGENTE.toLocaleString('es-UY')} desde julio de 2026, y a ese sueldo se le suman asignación familiar del BPS, Tarjeta Uruguay Social y Bono Social de UTE.`
 
 defineOgImageComponent('Cambio', {
   title: '¿Se puede vivir con 25.000 por 9 horas?',

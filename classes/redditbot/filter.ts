@@ -141,7 +141,7 @@ const sentencesOf = (text: string): string[] =>
     .map((part) => part.trim())
     .filter(Boolean);
 
-function looksLikeAQuestion(title: string, body: string): boolean {
+export function looksLikeAQuestion(title: string, body: string): boolean {
   const whole = `${title} ${body}`;
   if (whole.includes("?") || whole.includes("¿")) return true;
 
@@ -226,6 +226,22 @@ export const strip = (text: string): string =>
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/\s+/g, " ")
     .trim();
+
+// Las tres listas de abajo, como predicados, para la cola de /oportunidades-reddit
+// (`classes/redditopps/screen.ts`). Una persona que contesta a mano tiene las mismas razones que el
+// bot para no entrar en esos hilos, y dos copias de las listas terminarían divergiendo.
+
+/** ¿El hilo es de los que necesitan una persona y no un enlace? `text` ya pasó por {@link strip}. */
+export const isSensitive = (text: string): boolean => SENSITIVE_TERMS.some((term) => text.includes(term));
+
+/** ¿El hilo pide ayuda para burlar un control? `text` ya pasó por {@link strip}. */
+export const isEvasion = (text: string): boolean => EVASION_TERMS.some((term) => text.includes(term));
+
+/** ¿El flair dice meme, política o noticia? Acepta el flair tal como viene de Reddit. */
+export function hasBlockedFlair(rawFlair: string | undefined): boolean {
+  const flair = strip(rawFlair || "");
+  return !!flair && BLOCKED_FLAIRS.some((f) => flair.includes(strip(f)));
+}
 
 export type SkipReason =
   | "too_new"
@@ -331,8 +347,7 @@ export function screenPost(post: RedditPostRaw, cfg: BotConfig, now: number = Da
     return { ok: false, reason: "deleted_author", matched: [] };
   }
 
-  const flair = strip(post.linkFlair || "");
-  if (flair && BLOCKED_FLAIRS.some((f) => flair.includes(strip(f)))) {
+  if (hasBlockedFlair(post.linkFlair)) {
     return { ok: false, reason: "blocked_flair", matched: [] };
   }
 
@@ -350,12 +365,12 @@ export function screenPost(post: RedditPostRaw, cfg: BotConfig, now: number = Da
     return { ok: false, reason: "already_linked", matched: [] };
   }
 
-  if (SENSITIVE_TERMS.some((term) => text.includes(term))) {
+  if (isSensitive(text)) {
     return { ok: false, reason: "sensitive", matched: [] };
   }
 
   // Pedir ayuda para burlar un control no es un tema del sitio, es una respuesta que no se da.
-  if (EVASION_TERMS.some((term) => text.includes(term))) {
+  if (isEvasion(text)) {
     return { ok: false, reason: "evasion", matched: [] };
   }
 

@@ -733,6 +733,31 @@ useHead(() => ({
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
         '@graph': [
+          // El eslabón del medio es la guía general a la que el propio pie de la página vuelve,
+          // así que el rastro promete una sección que existe y que el lector ya vio.
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: 'https://cambio-uruguay.com',
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Derechos del consumidor en compras online',
+                item: 'https://cambio-uruguay.com/derechos-consumidor-compras-online',
+              },
+              {
+                '@type': 'ListItem',
+                position: 3,
+                name: 'Sodimac canceló tu compra',
+                item: canonicalUrl,
+              },
+            ],
+          },
           {
             '@type': 'Article',
             headline: title,

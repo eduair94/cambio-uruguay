@@ -42,6 +42,17 @@ export const ADUANA_FAQ_CARGOS_OPERADOR_VERIFIED_AT = '2026-08-12'
  */
 export const ADUANA_FAQ_HECHOS_IMPORTACION_VERIFIED_AT = '2026-08-15'
 
+/**
+ * Same rule again, for the 2026-10-19 pass that brought seven answers up to the rules in force that
+ * month: the seller registry after RG DNA 26/2026 (`vendedor-registrado`,
+ * `registrar-vendedor-extranjero`, `origen-estados-unidos`, `tiendamia`), the MSP rule cited to the MSP's own
+ * page instead of art. 19 of Decreto 18/020, which is the medicines regulation and only grounds the
+ * exception (`medicamentos-suplementos`), and what art. 27 of Decreto 96/990 really taxes — make-up,
+ * false lashes and nails, make-up brushes and razors included (`cosmeticos-perfume`,
+ * `lentes-afeitadoras-higiene`).
+ */
+export const ADUANA_FAQ_REGLAS_OCTUBRE_VERIFIED_AT = '2026-10-19'
+
 export type AduanaFaqCategoryId =
   | 'antes-de-comprar'
   | 'franquicia-impuestos'
@@ -238,6 +249,13 @@ export const ADUANA_FAQ_SOURCES: Readonly<Record<string, AduanaFaqSource>> = Obj
     label: 'RG DNA 21/2026 — exigibilidad desde el 1.º de octubre de 2026',
     authority: 'Dirección Nacional de Aduanas',
     url: 'https://www.aduanas.gub.uy/innovaportal/file/28613/1/rg-21-2026.pdf',
+    kind: 'norma',
+  },
+  'rg-dna-26-2026': {
+    label:
+      'RG DNA 26/2026 — desde el 5/10/2026, alta de vendedores de oficio y a pedido del operador postal, lista publicada por la DNA y validación automática corrida al 3/11/2026',
+    authority: 'Dirección Nacional de Aduanas',
+    url: 'https://www.aduanas.gub.uy/innovaportal/file/28724/1/rg-26-2026-exoneracion-iva-encomiendas-postales.pdf',
     kind: 'norma',
   },
   'mef-datos-franquicia': {
@@ -501,9 +519,9 @@ export const ADUANA_FAQ_SOURCES: Readonly<Record<string, AduanaFaqSource>> = Obj
   },
   'msp-productos-salud': {
     label:
-      'MSP — «el MSP no autoriza el ingreso al país de productos de salud del exterior por particulares»; excepción de producto no registrado (Decreto 18/020, art. 19)',
+      'MSP — ¿Puedo ingresar al país productos de salud desde el exterior? «El MSP no autoriza el ingreso al país de productos de salud del exterior por particulares»; la única excepción es el producto no registrado con prescripción médica específica',
     authority: 'Ministerio de Salud Pública',
-    url: 'https://www.gub.uy/ministerio-salud-publica/',
+    url: 'https://www.gub.uy/ministerio-salud-publica/Puedo-ingresar-al-pa%C3%ADs-productos-de-salud-desde-el-exterior',
     kind: 'fuente-oficial',
   },
   'msp-medicamentos-no-registrados': {
@@ -515,9 +533,9 @@ export const ADUANA_FAQ_SOURCES: Readonly<Record<string, AduanaFaqSource>> = Obj
   },
   'decreto-96-990': {
     label:
-      'Decreto 96/990 (reglamento del IMESI), art. 27 — jabones de tocador, jabones y cremas de afeitar, dentífricos, cepillos de dientes, aguas colonias, desodorantes, talco, champúes y protectores solares registrados NO están gravados por IMESI',
+      'Decreto 96/990 (reglamento del IMESI), art. 27 — grava cosméticos, perfumería, artículos para el embellecimiento del cuerpo, máquinas de afeitar y adminículos para aplicar cosméticos; NO grava jabones de tocador, jabones, cremas y brochas de afeitar, dentífricos, cepillos de dientes, aguas colonias, desodorantes, talco, champúes ni protectores solares registrados',
     authority: 'IMPO',
-    url: 'https://www.impo.com.uy/bases/decretos/96-1990',
+    url: 'https://www.impo.com.uy/bases/decretos/96-1990/27',
     kind: 'norma',
   },
   'decreto-345-020': {
@@ -717,11 +735,11 @@ export const ADUANA_FAQS: readonly AduanaFaq[] = Object.freeze([
     id: 'vendedor-registrado',
     question: '¿Cómo sé si el vendedor de Estados Unidos está registrado?',
     shortAnswer:
-      'Aduanas ya publica la lista; hay que revisarla en su página oficial antes de comprar.',
+      'En la lista que la Aduana tiene que publicar en su sitio. El requisito ya corre, y tu courier puede pedir que agreguen a un vendedor que falta.',
     answer:
-      'El requisito empieza a exigirse el 1.º de octubre de 2026, salvo nueva prórroga. Al 26 de julio la lista oficial incluye Xipron Inc (Tiendamía), United States Xpress Inc, Grinbox Corp, Netbox Corp, Miami box latinoamérica LLC y Eshop Miami INC. La lista puede cambiar: verificá siempre la página de Aduanas.',
+      'La exoneración de IVA de las compras de EE.UU. exige que el vendedor que emite la factura figure en el registro de empresas extranjeras de la DNA (RG 09/2026). Las fechas no coinciden: la RG 21/2026 lo hizo exigible desde el 1.º de octubre de 2026 y la página de franquicia de la DNA lo anuncia «a partir del 3 de noviembre», que es cuando arranca la validación automática del sistema (RG 26/2026 num. 10). Contá con que ya se exige. Desde el 5 de octubre la lista ya no depende sólo de que cada empresa se presente: la DNA puede incorporar vendedores de oficio, el operador postal puede pedir el alta de uno que falta y la DNA tiene que publicar la lista en su sitio (RG 26/2026). Al 26 de julio la lista oficial incluía Xipron Inc (Tiendamía), United States Xpress Inc, Grinbox Corp, Netbox Corp, Miami box latinoamérica LLC y Eshop Miami INC; con las altas nuevas puede haber cambiado, así que verificá siempre la página de Aduanas.',
     category: 'antes-de-comprar',
-    sourceIds: ['rg-dna-09-2026', 'rg-dna-21-2026', 'dna-franquicia'],
+    sourceIds: ['rg-dna-09-2026', 'rg-dna-21-2026', 'rg-dna-26-2026', 'dna-franquicia'],
     basis: 'procedimiento',
     tags: ['vendedor registrado', 'tiendamia', 'usx', 'grinbox', 'netbox', 'eshop miami'],
     related: {
@@ -732,23 +750,32 @@ export const ADUANA_FAQS: readonly AduanaFaq[] = Object.freeze([
   {
     id: 'registrar-vendedor-extranjero',
     question: '¿Puedo registrar yo a un vendedor o una empresa de Estados Unidos?',
-    shortAnswer: 'No como comprador: el trámite corresponde a la propia empresa extranjera.',
+    shortAnswer:
+      'Vos no, pero desde el 5 de octubre de 2026 tu courier puede pedir que lo agreguen.',
     answer:
-      'La RG DNA 09/2026 regula el registro de empresas residentes fiscales en Estados Unidos que venden mercadería hacia Uruguay. El comprador no puede inscribir a Amazon, eBay ni a un vendedor por su cuenta. Si la empresa quiere participar, debe seguir el procedimiento de la resolución ante Aduanas; como comprador, solo podés verificar la lista pública vigente.',
+      'El comprador no puede inscribir a Amazon, eBay ni a ningún vendedor por su cuenta. Hasta octubre el único camino era que la propia empresa se presentara ante la DNA, con certificación notarial (RG DNA 09/2026). Desde el 5 de octubre de 2026 la RG 26/2026 suma dos más: la DNA puede incorporar vendedores de oficio, y el operador postal —el courier o el Correo— puede pedir el alta de un vendedor por el sistema LUCIA, con su nombre, su domicilio de residencia fiscal y el criterio con que la comprobó (que la factura la diga, que la tienda la publique en su sitio o una fuente pública del país); la DNA analiza el pedido en 48 horas hábiles. Lo que sí podés hacer es pedirle a tu courier que lo solicite. Es una facultad del operador, no una obligación, y la resolución no dice si un alta posterior alcanza a un envío que ya se declaró.',
     category: 'antes-de-comprar',
-    sourceIds: ['rg-dna-09-2026', 'dna-franquicia'],
+    sourceIds: ['rg-dna-09-2026', 'rg-dna-26-2026', 'dna-franquicia'],
     basis: 'norma',
-    tags: ['registrar empresa usa', 'registrar vendedor', 'empresa extranjera', 'amazon', 'ebay'],
+    tags: [
+      'registrar empresa usa',
+      'registrar vendedor',
+      'empresa extranjera',
+      'amazon',
+      'ebay',
+      'courier',
+      'operador postal',
+    ],
   },
   {
     id: 'origen-estados-unidos',
     question: '¿Alcanza con que el paquete pase por Miami para ser “de Estados Unidos”?',
     shortAnswer:
-      'No; la procedencia se acredita con la factura del vendedor residente fiscal en EE.UU.',
+      'No: cuenta la residencia fiscal del vendedor que factura, y ese vendedor tiene que estar en el registro de la Aduana.',
     answer:
-      'Aduanas define como procedente de Estados Unidos al envío embarcado por el vendedor residente fiscal allí, con destino a Uruguay, y exige acreditarlo con la factura. Reenviar por un casillero de Miami una compra hecha a un vendedor de otro país no cambia por sí solo la procedencia fiscal.',
+      'El Decreto 50/026 (art. 3) define como procedente de Estados Unidos al envío embarcado por el vendedor residente fiscal allí, con destino a Uruguay, y dice que eso se acredita con la factura. La RG DNA 09/2026 lo ata al registro: el país de procedencia es el de residencia fiscal del emisor de la factura registrado ante la DNA (Anexo I num. 3), y no cuenta como procedencia de EE.UU. si la documentación muestra que la mercadería se embarcó en otro país (num. 10 lit. b). Reenviar por un casillero de Miami una compra hecha a un vendedor de otro país no la convierte en una compra de EE.UU.: el vendedor sigue siendo el de afuera.',
     category: 'antes-de-comprar',
-    sourceIds: ['dna-franquicia', 'rg-dna-09-2026'],
+    sourceIds: ['decreto-50-026', 'dna-franquicia', 'rg-dna-09-2026'],
     basis: 'procedimiento',
     tags: ['origen usa', 'miami', 'casillero', 'residencia fiscal', 'factura'],
   },
@@ -1259,7 +1286,7 @@ export const ADUANA_FAQS: readonly AduanaFaq[] = Object.freeze([
     question: '¿Tiendamia tiene una franquicia distinta?',
     shortAnswer: 'No; es un operador/plataforma y usa el mismo régimen del destinatario.',
     answer:
-      'Tiendamia puede integrar compra, flete, gestión y tributos, pero no crea un cupo adicional. Xipron Inc (Tiendamía) figura actualmente en el registro de vendedores; desde octubre igual conviene verificar la lista oficial vigente.',
+      'Tiendamia puede integrar compra, flete, gestión y tributos, pero no crea un cupo adicional. Xipron Inc (Tiendamía) figuraba en la lista oficial de vendedores registrados al 26 de julio de 2026; como el registro ya se exige y la lista cambia, verificá la vigente antes de comprar.',
     category: 'correo-courier-plataformas',
     sourceIds: ['dna-franquicia', 'rg-dna-09-2026'],
     basis: 'procedimiento',
@@ -1340,7 +1367,7 @@ export const ADUANA_FAQS: readonly AduanaFaq[] = Object.freeze([
     shortAnswer:
       'Casi nunca: el MSP no autoriza el ingreso de productos de salud por particulares, salvo la excepción de producto no registrado.',
     answer:
-      'Acá no hay un trámite que uno saque y listo. El propio MSP publica que «no autoriza el ingreso al país de productos de salud del exterior por particulares», y el art. 19 del reglamento anexo al Decreto 18/020 es la base: no existe una franja general de «uso personal» que dispense del control. La única puerta es la excepción: un producto NO registrado en el país, con prescripción médica específica, consentimiento informado del paciente y sin equivalente registrado acá. Se tramita ante el MSP-DGS, es gratuito y exige dos formularios firmados por el usuario, el médico tratante y el Director Técnico de su prestador de salud; el canal es el correo de la Unidad de Farmacovigilancia, no VUCE. No hay cantidad máxima publicada: el médico declara la cantidad a ingresar y la duración del tratamiento. Suplementos y vitaminas caen bajo el mismo control del MSP y, salvo que estén inscriptos como medicamento, especialidad farmacéutica o alimento de uso medicinal, pagan IVA 22%. Y ojo con la consecuencia: sin la autorización previa, el art. 7 del Decreto 50/026 deja el envío fuera del régimen entero —ni franquicia ni 60%— y sólo queda devolverlo a origen a tu costo dentro de los 30 días.',
+      'Acá no hay un trámite que uno saque y listo. El propio MSP publica que «no autoriza el ingreso al país de productos de salud del exterior por particulares», y nombra entre ellos a los medicamentos y a los suplementos: no existe una franja general de «uso personal» que dispense del control. La única puerta es la excepción: un producto NO registrado en el país, con prescripción médica específica, consentimiento informado del paciente y sin equivalente registrado acá; para un medicamento, la sostiene el art. 19 del reglamento aprobado por el Decreto 18/020. Se tramita ante el MSP-DGS, es gratuito y exige dos formularios firmados por el usuario, el médico tratante y el Director Técnico de su prestador de salud; el canal es el correo de la Unidad de Farmacovigilancia, no VUCE. No hay cantidad máxima publicada: el médico declara la cantidad a ingresar y la duración del tratamiento. Suplementos y vitaminas caen bajo el mismo control del MSP y, salvo que estén inscriptos como medicamento, especialidad farmacéutica o alimento de uso medicinal, pagan IVA 22%. Y ojo con la consecuencia: sin la autorización previa, el art. 7 del Decreto 50/026 deja el envío fuera del régimen entero —ni franquicia ni 60%— y sólo queda devolverlo a origen a tu costo dentro de los 30 días.',
     category: 'productos-permisos',
     sourceIds: [
       'msp-productos-salud',
@@ -1355,9 +1382,9 @@ export const ADUANA_FAQS: readonly AduanaFaq[] = Object.freeze([
     id: 'cosmeticos-perfume',
     question: '¿Puedo traer cosméticos o perfume por courier?',
     shortAnswer:
-      'La cosmética común no paga IMESI y no queda fuera por eso; la perfumería sí, y por eso queda excluida del régimen postal.',
+      'El perfume y el maquillaje pagan IMESI y quedan fuera del régimen postal; el champú, el jabón, el dentífrico o el desodorante no, y entran pagando IVA.',
     answer:
-      'Hay que separar dos cosas que se mezclan todo el tiempo. Primero el IMESI: el art. 27 del Decreto 96/990, en la redacción del Decreto 396/012, deja expresamente NO gravados los jabones de tocador, los jabones, cremas y brochas de afeitar, las pastas dentífricas, los cepillos de dientes, las aguas colonias, los desodorantes y antisudorales, el talco y el polvo para el cuerpo, los champúes y los protectores solares registrados ante el MSP; y pone en tasa 0% a acondicionadores y cremas de enjuague, decolorantes, tintes y fijadores de cabello y lociones para después de afeitar. Nada de eso queda fuera del régimen postal por IMESI: la exclusión absoluta del art. 633 de la Ley 20.446 alcanza a la mercadería gravada, y eso sí abarca a la perfumería, que por ese motivo no entra ni por franquicia ni por el 60%. Todos pagan IVA 22%. Segundo, el control sanitario: el MSP controla cosméticos y rige su regla general de que no autoriza el ingreso de productos de salud por particulares. Consultá el producto exacto, no la categoría comercial genérica.',
+      'Hay que separar dos cosas que se mezclan todo el tiempo. Primero el IMESI. El art. 27 del Decreto 96/990, en la redacción del Decreto 396/012, grava los cosméticos, la perfumería, los artículos que se aplican al cuerpo para su exclusivo embellecimiento (las pestañas o uñas postizas encajan en esa definición), las máquinas de afeitar y los adminículos para aplicar cosméticos, como brochas y esponjas de maquillaje. Todo eso queda fuera del régimen postal: el art. 633 de la Ley 20.446 dice que el régimen no se aplica «en ningún caso» a la mercadería gravada por IMESI, así que no entra ni por franquicia ni por el 60%. El mismo artículo deja expresamente NO gravados los jabones de tocador, los jabones, cremas y brochas de afeitar, las pastas dentífricas, los cepillos de dientes, las aguas colonias, los desodorantes y antisudorales, el talco y el polvo para el cuerpo, los champúes y los protectores solares registrados ante el MSP; y pone en tasa 0% a acondicionadores y cremas de enjuague, decolorantes, tintes y fijadores de cabello y lociones para después de afeitar. Eso no queda fuera del régimen postal por IMESI y paga IVA 22%. Segundo, el control sanitario: el MSP nombra a los cosméticos entre los productos de salud que evalúa y publica que no autoriza su ingreso por particulares. Consultá el producto exacto, no la categoría comercial genérica.',
     category: 'productos-permisos',
     sourceIds: [
       'decreto-96-990',
@@ -1367,15 +1394,26 @@ export const ADUANA_FAQS: readonly AduanaFaq[] = Object.freeze([
       'dna-prohibidos',
     ],
     basis: 'norma',
-    tags: ['cosmeticos', 'perfume', 'belleza', 'msp', 'imesi', 'champu', 'protector solar'],
+    tags: [
+      'cosmeticos',
+      'perfume',
+      'maquillaje',
+      'belleza',
+      'pestañas postizas',
+      'brochas',
+      'msp',
+      'imesi',
+      'champu',
+      'protector solar',
+    ],
   },
   {
     id: 'lentes-afeitadoras-higiene',
     question: '¿Puedo traer lentes, armazones, afeitadoras o artículos de higiene?',
     shortAnswer:
-      'Los anteojos graduados y armazones no pueden ingresar a nombre de una persona física; los artículos de tocador no pagan IMESI.',
+      'Los anteojos graduados y armazones no pueden ingresar a nombre de una persona física; la máquina de afeitar paga IMESI y queda fuera del régimen postal, la higiene común no.',
     answer:
-      'Lo óptico es el caso duro. Según el comunicado del MSP del 26 de agosto de 2024, que invoca los Decretos 474/968 y 03/008, los anteojos graduados, lentes de contacto, cristales y armazones no pueden ingresar a nombre de una persona física: sólo por empresas habilitadas ante el MSP. La única excepción cuantificada es la de los lentes de sol: un particular puede pedir, por única vez, la liberación de hasta 2 unidades para uso personal, con trámite pago en VUCE y declaración jurada de un técnico óptico habilitado. Sobre el IMESI, cuidado con lo que publica el listado orientativo de Aduanas: el art. 27 del Decreto 96/990 deja expresamente NO gravados a los jabones de tocador, jabones, cremas y brochas de afeitar, dentífricos, cepillos de dientes, aguas colonias, desodorantes, talco y champúes, así que la higiene común no queda fuera del régimen postal por ese motivo. La norma no nombra a la máquina de afeitar eléctrica: ahí no lo resolvemos. Todo esto paga IVA 22%.',
+      'Lo óptico es el caso duro. Según el comunicado del MSP del 26 de agosto de 2024, que invoca los Decretos 474/968 y 03/008, los anteojos graduados, lentes de contacto, cristales y armazones no pueden ingresar a nombre de una persona física: sólo por empresas habilitadas ante el MSP. La única excepción cuantificada es la de los lentes de sol: un particular puede pedir, por única vez, la liberación de hasta 2 unidades para uso personal, con trámite pago en VUCE y declaración jurada de un técnico óptico habilitado. Sobre el IMESI, el art. 27 del Decreto 96/990 grava las «máquinas de afeitar», que define como «instrumento que se usa para rasurar, con el aditamento o no de un elemento cortante»; la definición no distingue entre manual y eléctrica, y el listado orientativo de Aduanas las nombra entre lo gravado. Por eso una afeitadora no entra por el régimen postal: lo gravado por IMESI queda fuera «en ningún caso» (Ley 20.446 art. 633). El mismo artículo deja expresamente NO gravados a los jabones de tocador, jabones, cremas y brochas de afeitar, dentífricos, cepillos de dientes, aguas colonias, desodorantes, talco y champúes, así que la higiene común no queda fuera del régimen postal por ese motivo y paga IVA 22%.',
     category: 'productos-permisos',
     sourceIds: [
       'decreto-96-990',
@@ -2190,6 +2228,7 @@ export function aduanaFaqLastModified(): string {
     ADUANA_FAQ_IDENTIDAD_Y_TRIBUTOS_VERIFIED_AT,
     ADUANA_FAQ_CARGOS_OPERADOR_VERIFIED_AT,
     ADUANA_FAQ_HECHOS_IMPORTACION_VERIFIED_AT,
+    ADUANA_FAQ_REGLAS_OCTUBRE_VERIFIED_AT,
   ]
   // ISO-8601 dates sort lexicographically, so the last one is the most recent.
   return [...stamps].sort().at(-1)!

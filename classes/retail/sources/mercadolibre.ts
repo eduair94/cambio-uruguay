@@ -11,6 +11,8 @@ const API_BASE = (
   process.env.CHAIR_ML_API ||
   "http://104.234.204.107:9656/mercadolibre"
 ).replace(/\/+$/, "");
+/** El puente propio de ML; también lo usa la ficha de monopatines (`classes/movilidad/specs/read.ts`). */
+export const ML_API_BASE = API_BASE;
 const PAGE_SIZE = 50;
 const MAX_PAGES_PER_QUERY = Number(process.env.RETAIL_ML_MAX_PAGES || process.env.CHAIR_ML_MAX_PAGES || 4);
 

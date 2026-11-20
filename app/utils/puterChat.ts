@@ -247,9 +247,10 @@ const parseArgs = (raw: string): Record<string, unknown> => {
 
 /** One user message with Puter: the same tool loop as runChatTurn, in OpenAI message format. */
 export async function runPuterTurn(opts: PuterTurnOptions): Promise<PuterTurnResult> {
-  const conversation: OpenAiMessage[] = opts.messages.length
-    ? [...opts.messages]
-    : [{ role: 'system', content: opts.system }]
+  const conversation: OpenAiMessage[] = [
+    { role: 'system', content: opts.system },
+    ...opts.messages.filter(message => message.role !== 'system'),
+  ]
   conversation.push({ role: 'user', content: opts.userText })
   const tools: string[] = []
   const maxRounds = opts.maxRounds ?? MAX_TOOL_ROUNDS

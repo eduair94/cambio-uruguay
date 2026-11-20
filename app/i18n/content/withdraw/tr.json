@@ -1,0 +1,542 @@
+{
+  "title": [
+    "1229e1ce",
+    "Uruguay'da nakit çekme yerleri: ATM'ler, ücretler ve turistik mekanlar"
+  ],
+  "metaTitle": [
+    "3e82d293",
+    "Uruguay'daki ATM'lerden dolar veya peso çekebilirsiniz."
+  ],
+  "description": [
+    "3eb63bbe",
+    "Uruguay'da turist olarak nasıl ve nereden nakit para çekebilirsiniz: Hem ABD doları hem de peso veren ATM'ler, ücretler, para çekme limitleri, döviz çevrimi (DCC) tuzağı ve havaalanında, Montevideo'da, Punta del Este'de ve Colonia'da para çekmek için en iyi yerler."
+  ],
+  "keywords": [
+    "4acfb17e",
+    "uruguay nakit çekme, uruguay para çekme, uruguay ATM turisti, uruguay ATM'sinden dolar, uruguay para alışverişi, uruguay ATM ücretleri, uruguay casas de cambio uruguay"
+  ],
+  "tldr.0": [
+    "5f1561fe",
+    "Uruguay'daki ATM'ler hem ABD doları hem de peso veriyor; bu, bölgede nadir görülen bir avantaj (Arjantin'de bu neredeyse imkansız)."
+  ],
+  "tldr.1": [
+    "7b41d73f",
+    "İki ağ var: RedBROU ve Banred. Biri çalışmazsa diğerini deneyin; hem Visa hem de Mastercard bulundurun."
+  ],
+  "tldr.2": [
+    "c5aa36e3",
+    "ATM size kendi para biriminizde işlem yapmayı teklif ettiğinde, her zaman yerel para birimini seçin: \"dönüştürme\" kötü bir döviz kurunu gizler."
+  ],
+  "tldr.3": [
+    "b73d4126",
+    "Havalimanı veya feribot terminallerinde büyük miktarlarda para bozdurmaktan kaçının; çünkü döviz kurları belirgin şekilde daha yüksektir."
+  ],
+  "tldr.4": [
+    "83b2ff36",
+    "Otel ve restoranlarda yabancı kartla ödeme yapın: KDV avantajının yanı sıra, daha az nakit taşırsınız."
+  ],
+  "ui.backToTools": [
+    "950196fc",
+    "Aletler"
+  ],
+  "ui.tldrTitle": [
+    "799c628c",
+    "Kısacası"
+  ],
+  "ui.networksTitle": [
+    "90dd37e5",
+    "İki ATM ağı: RedBROU ve Banred"
+  ],
+  "ui.tableNetwork": [
+    "6974ad65",
+    "Ağ"
+  ],
+  "ui.tableReach": [
+    "c549e23b",
+    "Kapsam"
+  ],
+  "ui.tableUsd": [
+    "47b34a69",
+    "ABD Doları cinsinden limit / çekim"
+  ],
+  "ui.tableUyu": [
+    "7d4e5b12",
+    "Sınır $U / para çekme"
+  ],
+  "ui.tableNote": [
+    "0ff01b6a",
+    "Notlar"
+  ],
+  "ui.zonesTitle": [
+    "126f8827",
+    "Turist bölgesinde nakit para nereden alınır?"
+  ],
+  "ui.zonesIntro": [
+    "e4c560b0",
+    "Bölge ve yer işareti düzeyindeki referanslar (tam adresler değil, çünkü adresler değişebilir). ATM'ler genellikle bankaların, alışveriş merkezlerinin veya Abitab ve Redpagos satış noktalarının içinde bulunur."
+  ],
+  "ui.stepsTitle": [
+    "3e1ff2e0",
+    "Adım adım nakit çekme işlemi nasıl yapılır?"
+  ],
+  "ui.faqTitle": [
+    "e466bfa9",
+    "Sıkça sorulan sorular"
+  ],
+  "ui.sourcesTitle": [
+    "105bfcc3",
+    "Kaynaklar ve referanslar"
+  ],
+  "ui.relatedTitle": [
+    "ac7a8ccc",
+    "Okumaya devam edin"
+  ],
+  "ui.ctaTitle": [
+    "60dda6a1",
+    "Değişim yapmadan önce karşılaştırın"
+  ],
+  "ui.ctaText": [
+    "fe6b01a6",
+    "40'tan fazla döviz bürosundaki dolar kurunu her 10 dakikada bir güncellenmiş olarak görün ve işlem yapmak için en iyi yeri seçin."
+  ],
+  "ui.ctaButton": [
+    "9efd557a",
+    "Karşılaştırıcıyı açın"
+  ],
+  "ui.mapButton": [
+    "4e8c8db6",
+    "Haritada geri çekilme noktalarına bakın."
+  ],
+  "ui.disclaimer": [
+    "b166cfce",
+    "Bu bilgiler turistler içindir, finansal tavsiye niteliği taşımaz. Ücretler, limitler ve vergi avantajları değişebilir: bunları varışta ve kartınızı veren kuruluştan teyit edin. Bahsedilen bankalar veya döviz bürolarıyla herhangi bir bağlantımız yoktur."
+  ],
+  "ui.lastChecked": [
+    "9182e108",
+    "Son kontrol tarihi: Haziran 2026"
+  ],
+  "ivaLive.heading": [
+    "5af716c3",
+    "Bugün itibariyle geçerli olan turist KDV avantajları"
+  ],
+  "ivaLive.asOf": [
+    "dd801240",
+    "{date} itibariyle durum:"
+  ],
+  "ivaLive.hotel": [
+    "152a8c47",
+    "Konaklama (oteller ve benzeri): Yıl boyunca %0 KDV."
+  ],
+  "ivaLive.base": [
+    "9856855a",
+    "Şoförsüz yemek ve araç kiralama: 30 Nisan 2027 tarihine kadar bireysel kartla (yabancı kartlar dahil) yapılan nihai tüketim ödemelerinde {points} puanlık KDV indirimi (235/026 sayılı Kararname; kaynak kontrolü 23 Ekim 2026)."
+  ],
+  "ivaLive.baseUnconfirmed": [
+    "d65944df",
+    "Yemek ve araç kiralama: Onaylanmış uzatma 30 Nisan 2027'de sona erdi. Satın alma tarihinizde hangi indirimin geçerli olduğunu DGI ile teyit edin."
+  ],
+  "ivaLive.seasonalOn": [
+    "41748da1",
+    "Yaz dönemi boyunca tam KDV muafiyeti: AKTİF ({end}'ye kadar)."
+  ],
+  "ivaLive.seasonalOff": [
+    "015a1161",
+    "Yaz dönemi tam KDV muafiyeti: Bu tarih için kesin bir dönemimiz yok. Bu avantajdan yararlanmadan önce lütfen DGI ile iletişime geçin."
+  ],
+  "sections.0.heading": [
+    "90dd37e5",
+    "İki ATM ağı: RedBROU ve Banred"
+  ],
+  "sections.0.paragraphs.0": [
+    "0f52a7fe",
+    "Uruguay'da iki ATM ağı bulunmaktadır: Devlet bankası (BROU) tarafından işletilen RedBROU ve özel bankaların ağı olan Banred. İki ağ birbirine bağlıdır ve uluslararası ağlarla (Mastercard'ın Cirrus/Maestro ve Visa'nın Plus ağları) bağlantılıdır, bu nedenle yabancı bir kart her ikisinde de çalışır."
+  ],
+  "sections.0.paragraphs.1": [
+    "208b768b",
+    "ATM'nin kartınızı kabul edip etmediğinden emin olmak için, makine üzerinde Visa, Mastercard, Cirrus, Plus veya Maestro logolarını arayın. Pratik ipucu: Farklı hesaplardan bir Visa ve bir Mastercard taşıyın; bir kart veya makine çalışmazsa, diğer ağı deneyin."
+  ],
+  "sections.1.heading": [
+    "612974f0",
+    "Dolar mı, peso mu? Uruguay'da ikisini de kabul edebilirsiniz."
+  ],
+  "sections.1.paragraphs.0": [
+    "d9928d31",
+    "Arjantin'in aksine, Uruguay'daki birçok ATM hem ABD doları hem de Uruguay pesosu veriyor. Bu, döviz bürosuna gitmeden nakit dolar almak isteyenler için gerçek bir avantaj. Dolarlar genellikle 100 dolarlık banknotlar halinde veriliyor ve bu da, çekim başına limitlerle birleştiğinde, bir seferde yalnızca tek bir banknot alabileceğiniz anlamına geliyor."
+  ],
+  "sections.1.paragraphs.1": [
+    "cd694b7a",
+    "Basit kural: Günlük harcamalarınız için (taksi, market, küçük dükkanlar) peso alın, doları ise sadece gerçekten nakit ihtiyacınız olduğunda kullanın. Daha büyük ödemelerin çoğunda kart nakitten daha avantajlıdır."
+  ],
+  "sections.2.heading": [
+    "9ce97b34",
+    "Ücretler ve para çekme limitleri"
+  ],
+  "sections.2.paragraphs.0": [
+    "e28a7f0e",
+    "Uruguay ATM'lerinin yabancı kartlardan aldığı ek ücret, birçok ülkeye kıyasla düşüktür (çekim başına birkaç dolar civarında). Daha büyük maliyet genellikle kendi bankanızdan kaynaklanır: yabancı işlem ücreti (tipik olarak %1-3) ve bazen de sabit bir uluslararası para çekme ücreti. Döviz kuru ücreti olmayan bir seyahat kartı, size bunların neredeyse tamamından tasarruf sağlar."
+  ],
+  "sections.2.paragraphs.1": [
+    "154c6f01",
+    "Yabancı kartlar için para çekme limitleri, bankanız tarafından değil, yerel ağlar tarafından belirlenir ve düşüktür. Bankanız ayrıca kendi günlük limitini de uygular. Seyahate çıkmadan önce bankanızı arayarak limiti yükseltin ve sabit ücreti daha fazla nakde yaymak için işlem başına maksimum miktarı çekin."
+  ],
+  "sections.2.bullets.0": [
+    "befd8df3",
+    "Yerel para çekme ek ücreti: yaklaşık olarak birkaç dolar tutarındadır (onaylamadan önce ekrandaki tutarı kontrol edin)."
+  ],
+  "sections.2.bullets.1": [
+    "0f872d39",
+    "Bankanız/kartınızı veren kuruluşun ücreti: genellikle daha yüksek bir maliyettir; kartınızın yabancı işlem ücreti alıp almadığını kontrol edin."
+  ],
+  "sections.2.bullets.2": [
+    "8301e954",
+    "Para çekme işlemi başına limit: Şebekeye bağlı olarak yaklaşık 200-300 ABD doları veya 5.000 ABD doları (yaklaşık, değişebilir)."
+  ],
+  "sections.2.bullets.3": [
+    "4aacdc05",
+    "Günlük limit: Bankanız tarafından belirlenir; limiti artırmak için seyahate çıkmadan önce bankanıza bildirin."
+  ],
+  "sections.3.heading": [
+    "6bd46a0c",
+    "Para birimi dönüştürme tuzağı: Her zaman yerel para birimini seçin."
+  ],
+  "sections.3.paragraphs.0": [
+    "29fe4c81",
+    "Birçok ATM ve kart terminali, Uruguay pesosu veya doları yerine \"kendi para biriminizde ödeme yapma\" seçeneği sunuyor. Bu kulağa kullanışlı geliyor (\"paranızın ne kadar olduğunu görün\"), ancak bu dinamik para birimi dönüştürme (DCC) şişirilmiş bir döviz kuru ve gizli bir ücret uyguluyor. Neredeyse her zaman kaybedersiniz."
+  ],
+  "sections.3.paragraphs.1": [
+    "34380f1f",
+    "Her zaman \"dönüştürme olmadan\" veya yerel para birimini seçin: Uruguay pesosu alırken Uruguay pesosu, dolar alırken dolar. Döviz çevrimini kendi bankanıza yaptırın; genellikle onların kuru daha iyidir."
+  ],
+  "sections.4.heading": [
+    "cc573fd8",
+    "Döviz büroları, ATM'ler mi yoksa bankalar mı: hangisi en iyisi?"
+  ],
+  "sections.4.paragraphs.0": [
+    "1116ae4f",
+    "Döviz büroları (Varlix, Indumex, Gales, Aspen, Cambio Sir, Cambio Inglés ve Global Exchange gibi yerler) nakit değiştirmenin klasik yoludur. Dolar için en iyi oranları, çok düşük bir farkla ve komisyon almadan sunarlar; euro ikinci en iyi para birimidir, Brezilya reali kabul edilebilir, Arjantin pesosu ise en kötüsüdür. Genellikle pasaportunuzu isterler."
+  ],
+  "sections.4.paragraphs.1": [
+    "b7c83296",
+    "Çalışma Saatleri: Cadde üzerindeki şubeler Pazartesi-Cuma (yaklaşık 9-19 arası) ve Cumartesi sabahları açıktır; çoğu Pazar günleri kapalıdır. Alışveriş merkezlerinin içindeki şubeler her gün ve daha geç saatlere kadar açıktır. Farklı şubeler arasındaki günlük fiyatları karşılaştırmak için karşılaştırma aracımızı ve şubeler sayfasını kullanın."
+  ],
+  "sections.5.heading": [
+    "f8b82759",
+    "Yanımda ne kadar nakit taşımalıyım ve hangi para birimini getirmeliyim?"
+  ],
+  "sections.5.paragraphs.0": [
+    "e22fd664",
+    "Uruguay'da kart kullanımı oldukça yaygın: Visa ve Mastercard neredeyse her yerde kabul ediliyor, temassız ve QR ödemeler (Mercado Pago) de oldukça yaygın. Küçük alışverişler için yanınızda sadece birkaç peso nakit bulundurun ve daha büyük miktarları kartla ödeyin."
+  ],
+  "sections.5.paragraphs.1": [
+    "f9b88276",
+    "Yanınızda bozuk para getirecekseniz, ABD doları en iyi para birimidir (en iyi kurlar, her yerde kabul edilir). Euro ikinci sırada gelir. Arjantin'den geliyorsanız, Arjantin pesosu değil, dolar getirin; çünkü peso Uruguay'da çok kötü bir şekilde döviz kuruna sahip. Brezilya'dan geliyorsanız, özellikle sınır yakınlarında real işe yarar, ancak dolar yine de daha kullanışlıdır."
+  ],
+  "sections.6.heading": [
+    "97a59b72",
+    "Turistlere özel KDV avantajı (yabancı kartla ödeme yapıldığında)"
+  ],
+  "sections.6.paragraphs.0": [
+    "88ea76fc",
+    "Uruguay, yabancı kartla ödeme yapan yerleşik olmayan turistlere KDV'nin bir kısmını iade ediyor. Konaklama (kayıtlı oteller ve benzeri) yabancı kimlik gösteren ve yabancı kartla ödeme yapan yerleşik olmayanlar için yıl boyunca %0 KDV'dir - bu kalıcı bir avantajdır."
+  ],
+  "sections.6.paragraphs.1": [
+    "7f51f9e2",
+    "Yemek ve şoförsüz araç kiralama için, 235/026 sayılı Kararname, uygun elektronik ödeme yöntemleriyle yapılan nihai tüketim ödemelerinde 30 Nisan 2027 tarihine kadar geçerli olan dokuz puanlık genel indirimi korumaktadır. Mevsimlik tam muafiyet, kendi kararnamesi ve tarihleri olan ayrı bir haktır: dokuz puanlık indirimin uzatılması, tam muafiyeti teyit etmez. Seyahate çıkmadan önce DGI ile iletişime geçin."
+  ],
+  "sections.6.paragraphs.2": [
+    "f963de1e",
+    "Her durumda indirim otomatik olarak uygulanır: yabancı kartınızla ödeme yaparsınız ve indirim fişinizde veya kart ekstrenizde görünür. Nakit ödeme yaparsanız bu avantajı kaybedersiniz. Bu nedenle otel ve restoran ödemelerinizi karta yüklemek ve daha az nakit çekmek avantajlıdır."
+  ],
+  "sections.6.bullets.0": [
+    "fc6c4026",
+    "Oteller/konaklama yerleri: Yerleşik olmayanlar (kalıcı ikamet edenler) için yıl boyunca %0 KDV."
+  ],
+  "sections.6.bullets.1": [
+    "02f7d683",
+    "Şoförsüz restoran ve araç kiralama: 30 Nisan 2027'ye kadar dokuz puan indirim, elektronik ödeme şartlarına tabidir. Sezonluk tam muafiyet için ayrı onay gereklidir."
+  ],
+  "sections.6.bullets.2": [
+    "bf5ed0b5",
+    "Her rejimin kendine özgü şartları vardır. Genel dokuz puanlık indirim, nihai tüketimi ve bireyin elinde bulunan uygun bir elektronik ödeme yöntemini gerektirir; yabancı menşeili olması şart değildir."
+  ],
+  "sections.7.heading": [
+    "84fbae56",
+    "Nakit çekerken dikkat edilmesi gereken güvenlik ipuçları"
+  ],
+  "sections.7.paragraphs.0": [
+    "e227f80c",
+    "Uruguay, bölgedeki en güvenli ülkeler arasında yer alıyor, ancak özellikle Montevideo'nun Ciudad Vieja bölgesinde, liman bölgesinde ve yüksek sezonda sahil beldelerinde küçük hırsızlık olayları yaşanabiliyor. Bankaların, alışveriş merkezlerinin veya camlı lobilerin içindeki ATM'leri, tercihen gündüz saatlerinde kullanın ve çevrenize dikkat edin."
+  ],
+  "sections.7.bullets.0": [
+    "d234b5e4",
+    "Para çekme işlemlerini gündüz ve kapalı mekanlardaki ATM'lerden yapın, gece sokakta yapmayın."
+  ],
+  "sections.7.bullets.1": [
+    "f9f5f149",
+    "Farklı hesaplara ait iki kart taşıyın ve nakit paranızı birden fazla yerde saklayın."
+  ],
+  "sections.7.bullets.3": [
+    "d7920a67",
+    "Uber, Cabify veya kayıtlı taksileri kullanın; değerli eşyalarınızı arabada bırakmayın."
+  ],
+  "sections.7.link.label": [
+    "d8570bac",
+    "Büyük bir banknotla başım dertte: bozuk para ve madeni paraları nereden bulabilirim?"
+  ],
+  "networkRows.0.network": [
+    "7ee344a0",
+    "RedBROU"
+  ],
+  "networkRows.0.reach": [
+    "4a5d053e",
+    "Devlet bankası BROU'nun ülke çapında 400'den fazla ATM'si, ayrıca Abitab ve Redpagos şubeleri."
+  ],
+  "networkRows.0.usdPerTxn": [
+    "f41a726d",
+    "≈ 200 ABD doları"
+  ],
+  "networkRows.0.uyuPerTxn": [
+    "255d9345",
+    "≈ 5.000 ABD Doları"
+  ],
+  "networkRows.0.note": [
+    "786a7e5f",
+    "Birçok makine dolar vermektedir. Yabancı kartlar için limitler yaklaşık değerlerdir."
+  ],
+  "networkRows.1.network": [
+    "6823b06d",
+    "Yasaklandı"
+  ],
+  "networkRows.1.reach": [
+    "331e78b2",
+    "Özel bankaların ağı; 19 departmanın tamamında 370'ten fazla şube."
+  ],
+  "networkRows.1.usdPerTxn": [
+    "75830c42",
+    "≈ 300 ABD doları"
+  ],
+  "networkRows.1.uyuPerTxn": [
+    "255d9345",
+    "≈ 5.000 ABD Doları"
+  ],
+  "networkRows.1.note": [
+    "9f2f1329",
+    "RedBROU ile bağlantılıdır. Bir ağ kartınızı reddederse, diğerini deneyin."
+  ],
+  "zones.0.name": [
+    "8a4dc608",
+    "Carrasco Havalimanı (MVD), Montevideo"
+  ],
+  "zones.0.summary": [
+    "462aaacd",
+    "Global Exchange büroları 24 saat açık, terminalde ATM'ler (bir Santander ATM'si olduğu doğrulandı) ve bir banka şubesi bulunmaktadır."
+  ],
+  "zones.0.tips.0": [
+    "d6202725",
+    "Havalimanındaki döviz bürosu belirgin şekilde daha az para veriyor: sadece şehre ulaşmak için yeterli miktarda para verin."
+  ],
+  "zones.0.tips.1": [
+    "99e81ace",
+    "Acilen nakde ihtiyacınız varsa, ATM'den küçük bir miktar çekin ve geri kalanını şehir merkezinde bozdurun."
+  ],
+  "zones.1.name": [
+    "034a744d",
+    "Montevideo (Centro, Ciudad Vieja ve liman)"
+  ],
+  "zones.1.summary": [
+    "04c221eb",
+    "Döviz büroları Avenida 18 de Julio (Centro) ve Ciudad Vieja boyunca yoğunlaşmıştır. Kruvaziyer terminali, döviz büroları ve ATM'leriyle birlikte Ciudad Vieja'nın yanında yer almaktadır."
+  ],
+  "zones.1.tips.0": [
+    "a26e5af3",
+    "Centro ve Ciudad Vieja'da karşılaştırma yapabileceğiniz birçok döviz bürosu bulacaksınız."
+  ],
+  "zones.1.tips.1": [
+    "4139b3e5",
+    "Gemi yolcuları liman içinde döviz bozdurabilir ve Mercado del Puerto'ya doğru kısa bir yürüyüş mesafesinde ATM'ler bulunmaktadır."
+  ],
+  "zones.2.name": [
+    "3fa606f9",
+    "Punta del Este"
+  ],
+  "zones.2.summary": [
+    "880d1f96",
+    "Ana cadde olan Avenida Gorlero boyunca döviz büroları bulunmaktadır. Yoğun sezonda kuyruklar oluşabilir ve ATM'lerde dolar kalmayabilir."
+  ],
+  "zones.2.tips.0": [
+    "1063deb8",
+    "Yaz aylarında ve Paskalya haftasında ATM'ler hızla boşalır: önceden para çekin ve bir miktar yedek para bulundurun."
+  ],
+  "zones.2.tips.1": [
+    "e4c20d9e",
+    "Nakit paraya tamamen bağımlı kalmak yerine, kartlı ve QR kodlu ödeme yöntemlerine de yönelin."
+  ],
+  "zones.3.name": [
+    "2ed532f4",
+    "Sacramento Kolonisi"
+  ],
+  "zones.3.summary": [
+    "764221b5",
+    "Barrio Histórico'da ve Buenos Aires'ten günübirlik gelenlerin uğradığı eski şehre birkaç adım mesafedeki feribot terminalinde ATM'ler bulunmaktadır."
+  ],
+  "zones.3.tips.0": [
+    "d7ebee8b",
+    "Varışta az miktarda peso çekin ve kalanını kartla ödeyin."
+  ],
+  "zones.3.tips.1": [
+    "e09f3851",
+    "Pek çok turistik eşya dükkanı dolar kabul ediyor, ancak elverişsiz bir kurla."
+  ],
+  "zones.4.name": [
+    "ed7917f9",
+    "Feribot terminalleri (Buquebus / Colonia Express)"
+  ],
+  "zones.4.summary": [
+    "ac18ddf9",
+    "Montevideo ve Colonia terminallerinde ATM'ler bulunmaktadır. Terminallerin içinde ve uçakta döviz bozdurma işlemleri genellikle düşük kurlar sunmaktadır."
+  ],
+  "zones.4.tips.0": [
+    "b5a97e0f",
+    "Terminalde veya uçakta büyük miktarlarda para bozdurmaktan kaçının; kurlar çok yüksek."
+  ],
+  "zones.4.tips.1": [
+    "91b3c105",
+    "ATM kullanmak veya şehirdeki bir döviz bürosundan para bozdurmak daha iyidir."
+  ],
+  "zones.5.name": [
+    "66cc7244",
+    "İç kesimler ve daha küçük kasabalar"
+  ],
+  "zones.5.summary": [
+    "fc9a5afd",
+    "Büyük şehirler ve ana tatil beldeleri dışında ATM'ler nadirdir."
+  ],
+  "zones.5.tips.0": [
+    "48821abe",
+    "İç bölgelere gitmeden önce Montevideo, Punta del Este veya Colonia'da nakit para temin edin."
+  ],
+  "zones.5.tips.1": [
+    "02573d37",
+    "Rocha kıyısında, Chuy veya La Paloma gibi daha büyük kasabalarda yakıt ikmali yapabilirsiniz."
+  ],
+  "steps.0.name": [
+    "aa213b75",
+    "Kartınızı kabul eden bir ATM bulun."
+  ],
+  "steps.0.text": [
+    "2f5d9e7c",
+    "Visa, Mastercard, Cirrus, Plus veya Maestro logolarını arayın; bankaların veya alışveriş merkezlerinin içindeki ATM'leri tercih edin."
+  ],
+  "steps.1.name": [
+    "4209811a",
+    "Dolar veya peso seçin."
+  ],
+  "steps.1.text": [
+    "f338ade4",
+    "Günlük harcamalarınız için peso, nakit paraya ihtiyacınız olursa da dolar alın; dolarlar 100 dolarlık banknotlar halinde verilir."
+  ],
+  "steps.2.name": [
+    "24d1a5da",
+    "Para biriminize dönüştürmeyi reddedin"
+  ],
+  "steps.2.text": [
+    "3f2be811",
+    "Ödemeyi kendi para biriminizde yapmanız teklif edildiğinde, DCC komisyonundan kaçınmak için \"dönüştürme olmadan\" veya yerel para birimini seçin."
+  ],
+  "steps.3.name": [
+    "4e44a3f9",
+    "İşlem başına maksimum çekim tutarını çekin."
+  ],
+  "steps.3.text": [
+    "831b2ec9",
+    "Para çekme işleminde sabit bir ücret olduğu için, maliyeti daha fazla nakde yaymak adına izin verilen üst sınırı kullanın."
+  ],
+  "steps.4.name": [
+    "6fcb61ed",
+    "Fişi saklayın ve parayı sayın."
+  ],
+  "steps.4.text": [
+    "30d70c06",
+    "Çekilen miktarı kontrol edin, fişi saklayın ve ATM'den ayrılmadan önce parayı birden fazla yere dağıtın."
+  ],
+  "faq.0.q": [
+    "e44ca992",
+    "Uruguay'daki ATM'lerden ABD doları çekebilir miyim?"
+  ],
+  "faq.0.a": [
+    "eb6339a1",
+    "Evet. Arjantin'in aksine, Uruguay'daki birçok ATM'de peso'nun yanı sıra dolar da veriliyor, genellikle 100 ABD doları banknotlar halinde. Yabancı kartlar için para çekme limitleri düşük."
+  ],
+  "faq.1.q": [
+    "33423670",
+    "ATM'ler yabancı kartlardan ne kadar işlem ücreti alıyor?"
+  ],
+  "faq.1.a": [
+    "68121602",
+    "Yerel işlem ücreti düşüktür (para çekme başına birkaç dolar civarında). Daha büyük maliyet genellikle kendi bankanızın uyguladığı yabancı işlem ücretidir (yaygın olarak %1-3)."
+  ],
+  "faq.2.q": [
+    "bf2fe8ff",
+    "Tek işlemde en fazla ne kadar para çekebilirim?"
+  ],
+  "faq.2.a": [
+    "7a64ef6d",
+    "Şebekeye (RedBROU veya Banred) bağlı olarak, çekim başına yaklaşık 200-300 ABD doları veya 5.000 ABD doları limitiniz vardır. Bankanız da kendi günlük limitini belirler, bu nedenle seyahate çıkmadan önce bankanıza bildirin."
+  ],
+  "faq.3.q": [
+    "66601510",
+    "Havalimanında para değiştirmeli miyim?"
+  ],
+  "faq.3.a": [
+    "82d5704c",
+    "Büyük meblağlar için uygun değil: havaalanı ve feribot terminalleri belirgin şekilde daha az ödeme yapıyor. Sadece şehre ulaşmak için yeterli miktarda para üstü verin, ardından şehir merkezindeki bir döviz bürosunu veya ATM'yi kullanın."
+  ],
+  "faq.4.q": [
+    "44d07e17",
+    "Uruguay'da nakit mi yoksa kart mı?"
+  ],
+  "faq.4.a": [
+    "11ded5ec",
+    "Uruguay'da kart kullanımı oldukça yaygın (Visa ve Mastercard neredeyse her yerde, temassız ve QR kodlu ödeme seçenekleri mevcut). Küçük alışverişler için yanınızda bir miktar peso bulundurun ve daha büyük tutarları kartla ödeyin."
+  ],
+  "faq.5.q": [
+    "2d0dd094",
+    "Yanımda hangi para birimini getirmeliyim?"
+  ],
+  "faq.5.a": [
+    "cc8484ac",
+    "Nakit ABD doları: En iyi oranlar ve her döviz bürosunda kabul edilir. Euro ikinci sırada. Arjantin'den geliyorsanız, Arjantin pesosu değil, dolar getirin."
+  ],
+  "faq.6.q": [
+    "b71d8d92",
+    "Turist olarak vergi indirimi alabilir miyim?"
+  ],
+  "faq.6.a": [
+    "49712ab8",
+    "Evet: konaklama rejimine ek olarak, yemek ve şoförsüz araç kiralama konusunda uygulanan genel dokuz puanlık indirim, 30 Nisan 2027 tarihine kadar, bireysel olarak elektronik ortamda ödenen nihai tüketim için ikamet etmeyenleri de kapsamaktadır. Mevsimsel tam muafiyet kendi kararnamesini ve tarihlerini gerektirir; bu uzatmadan çıkarılamaz."
+  ],
+  "faq.7.q": [
+    "04fb59ce",
+    "ATM kartımı reddederse ne olacak?"
+  ],
+  "faq.7.a": [
+    "15f0167b",
+    "Başka bir kart ve başka bir ağ deneyin (RedBROU ve Banred birbirine bağlıdır, ancak ikisini de yanınızda bulundurmak faydalı olur). ATM'nin Visa/Mastercard/Cirrus/Plus logolarını gösterdiğinden emin olun ve bankanıza Uruguay'da kullanacağınızı bildirin."
+  ],
+  "related.0.label": [
+    "9371cd8d",
+    "Seyahat için dolarlar"
+  ],
+  "related.1.label": [
+    "89470d17",
+    "En iyi fiyattan dolar satın almak"
+  ],
+  "related.2.label": [
+    "7b531a45",
+    "Döviz büroları ve şubeleri"
+  ],
+  "related.3.label": [
+    "574f3e27",
+    "Fiyatları karşılaştırın"
+  ]
+}

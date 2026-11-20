@@ -16,7 +16,10 @@ import { consumoGuides } from './guidesConsumo'
 import { deudasGuides } from './guidesDeudas'
 import { importacionGuides } from './guidesImportacion'
 import { pagosGuides } from './guidesPagos'
+import { patrimonioGuides } from './guidesPatrimonio'
+import { politicaMonetariaGuides } from './guidesPoliticaMonetaria'
 import { parejaGuides } from './guidesPareja'
+import { primavera2026Guides } from './guidesPrimavera2026'
 import { redditGuides } from './guidesReddit'
 import { trabajoBpsGuides } from './guidesTrabajoBps'
 import { tramitesGuides } from './guidesTramites'
@@ -123,6 +126,23 @@ export interface Guide {
    * names and compares with public tariffs; the guide text never changes because of the link.
    */
   affiliateIds?: string[]
+  /**
+   * La página raíz que se queda con la señal de búsqueda de esta guía, cuando las dos cubren la
+   * MISMA intención y el sitio tenía dos URLs compitiendo por la misma consulta.
+   *
+   * Por qué existe y no se borra la guía: `tests/unit/slugCollision.test.ts` documenta el defecto
+   * —`/<x>` y `/guias/<x>` las dos `index, follow`, las dos canónicas de sí mismas, las dos en el
+   * sitemap, así que Google reparte entre ellas los enlaces internos, las impresiones y los clics—
+   * y escribe el arreglo: la guía pasa a canónica HACIA la página y sale del sitemap, conservando
+   * sus enlaces entrantes. Borrarla tiraría la señal que esos enlaces acumularon; consolidarla la
+   * mueve a la URL que se queda.
+   *
+   * Con el campo puesto, `pages/guias/[slug].vue` emite `rel=canonical` y `og:url` hacia acá y se
+   * declara `noindex, follow` (sigue pasando autoridad por sus enlaces), y
+   * `server/api/__sitemap__/urls.get.ts` no la publica — las tres señales que una consolidación
+   * necesita decir a la vez. Ruta del sitio, absoluta y sin dominio (`/impuesto-temu-uruguay`).
+   */
+  consolidatedInto?: string
 }
 
 /**
@@ -138,7 +158,7 @@ export const guides: readonly Guide[] = [
     slug: 'conviene-comprar-dolares-hoy',
     title: '¿Conviene comprar dólares hoy en Uruguay?',
     description:
-      'Cómo decidir si conviene comprar dólares hoy en Uruguay: qué mirar en la cotización, el spread entre casas de cambio y tu propio horizonte de necesidad.',
+      'Si comprás, lo que pagás es la venta de la casa, y del mejor al peor puede haber varios pesos por dólar. Con plazo largo, escaloná y no adivines el piso.',
     tag: 'DECISIÓN',
     updatedAt: '2026-06-16',
     sections: [
@@ -175,7 +195,7 @@ export const guides: readonly Guide[] = [
     slug: 'billete-cable-transferencia',
     title: 'BILLETE es efectivo; CABLE va al exterior',
     description:
-      'Qué significan BILLETE, CABLE, TRANSFERENCIA, eBROU e INTERBANCARIO en las cotizaciones del dólar en Uruguay y por qué cada tipo tiene un precio distinto.',
+      'BILLETE es el efectivo en mano y suele pagar más spread; TRANSFERENCIA mueve saldos entre cuentas; CABLE va al exterior; el INTERBANCARIO no es público.',
     tag: 'TIPOS',
     updatedAt: '2026-06-16',
     sections: [
@@ -307,7 +327,7 @@ export const guides: readonly Guide[] = [
     slug: 'comprar-online-exterior-impuestos',
     title: 'Compras del exterior: USD 800 al año o 60 %',
     description:
-      'Cómo funciona la franquicia courier de USD 800, cuándo pagás el 60% del régimen simplificado y cómo estimar el costo total de una compra online del exterior en Uruguay.',
+      'USD 800 al año y 3 envíos de franquicia; por fuera, el 60 % del régimen simplificado. Y un piso de USD 20 de IVA por envío que a una compra chica le pesa.',
     tag: 'IMPORTACIÓN',
     updatedAt: '2026-08-15',
     sections: [
@@ -329,7 +349,7 @@ export const guides: readonly Guide[] = [
       },
       {
         heading: 'La franquicia anual de USD 800',
-        body: 'Desde mayo de 2026 rige una franquicia anual de hasta USD 800 por persona, que se puede usar hasta 3 veces al año, con un máximo de 20 kg por envío. Lo que entra dentro de la franquicia queda exento de aranceles, pero igual paga IVA: 22% para la mayoría de los productos, 10% para los que están en la tasa mínima (los medicamentos, por ejemplo) y nada para los que están exonerados, como los libros y el material educativo, que por el artículo 41 del Título 10 y el artículo 8 literal C de la Ley 15.913 están libres de todo tributo nacional, gravámenes aduaneros y tasas consulares. A eso se suman dos casos exentos de todo tributo: las compras de origen estadounidense de hasta USD 200 (acuerdo TIFA) y los obsequios familiares. Ojo con el piso, porque cambia la cuenta: el IVA de un envío postal no puede ser inferior a USD 20 por envío (Título 10 del T.O. 2023, art. 13 literal B, inciso agregado por el art. 660 de la Ley 20.446, y RG DNA 11/2026), salvo que el envío esté integrado exclusivamente por bienes exonerados. O sea que con franquicia una compra chica no paga "22% y listo": por debajo de USD 90,91 a la tasa básica —o de USD 200 a la mínima— pagás igual los USD 20. Hay que decirlo con todas las letras porque ni el MEF ni la Aduana lo mencionan al explicar la franquicia en sus preguntas frecuentes: ahí el mínimo aparece sólo asociado al 60%. La franquicia exige además ser mayor de edad, con documento uruguayo, para uso personal y pagando con una tarjeta internacional o dinero electrónico cuyo titular seas vos y que además seas el destinatario. Y no todo consume cupo: los libros y los medicamentos de uso personal —estos últimos, con la debida autorización del Ministerio de Salud Pública— quedan fuera del tope de USD 800 y de los 3 envíos (Decreto 50/026 art. 4 y RG DNA 11/2026 num. 26). Eso no sale solo: la declaración lleva un campo de tipo de envío y los libros van por el código J/01, "Material al amparo de la Ley N.º 15.913/87" (RG DNA 11/2026 num. 28 lit. c), mientras que lo que marca el operador por defecto es la franquicia. Y preparate para pelearla, porque la excepción no aparece en las preguntas frecuentes del MEF ni en las de la Aduana, y una noticia oficial de la propia Aduana de abril de 2026 dice, sin mencionarla, que todos los envíos de franquicia consumen tanto el cupo en dólares como el de los 3 envíos. La clave es que es anual: conviene administrarla y no agotarla en una compra chica si pensás traer más cosas.',
+        body: 'Desde mayo de 2026 rige una franquicia anual de hasta USD 800 por persona, que se puede usar hasta 3 veces al año, con un máximo de 20 kg por envío. Lo que entra dentro de la franquicia queda exento de aranceles, pero igual paga IVA: 22% para la mayoría de los productos, 10% para los que están en la tasa mínima (los medicamentos, por ejemplo) y nada para los que están exonerados, como los libros y el material educativo, que por el artículo 41 del Título 10 y el artículo 8 literal C de la Ley 15.913 están libres de todo tributo nacional, gravámenes aduaneros y tasas consulares. A eso se suman dos casos exentos de todo tributo: las compras de origen estadounidense de hasta USD 200 (acuerdo TIFA), siempre que el vendedor que factura figure en el registro de empresas extranjeras de la Aduana, y los obsequios familiares. Ojo con el piso, porque cambia la cuenta: el IVA de un envío postal no puede ser inferior a USD 20 por envío (Título 10 del T.O. 2023, art. 13 literal B, inciso agregado por el art. 660 de la Ley 20.446, y RG DNA 11/2026), salvo que el envío esté integrado exclusivamente por bienes exonerados. O sea que con franquicia una compra chica no paga "22% y listo": por debajo de USD 90,91 a la tasa básica —o de USD 200 a la mínima— pagás igual los USD 20. Hay que decirlo con todas las letras porque ni el MEF ni la Aduana lo mencionan al explicar la franquicia en sus preguntas frecuentes: ahí el mínimo aparece sólo asociado al 60%. La franquicia exige además ser mayor de edad, con documento uruguayo, para uso personal y pagando con una tarjeta internacional o dinero electrónico cuyo titular seas vos y que además seas el destinatario. Y no todo consume cupo: los libros y los medicamentos de uso personal —estos últimos, con la debida autorización del Ministerio de Salud Pública— quedan fuera del tope de USD 800 y de los 3 envíos (Decreto 50/026 art. 4 y RG DNA 11/2026 num. 26). Eso no sale solo: la declaración lleva un campo de tipo de envío y los libros van por el código J/01, "Material al amparo de la Ley N.º 15.913/87" (RG DNA 11/2026 num. 28 lit. c), mientras que lo que marca el operador por defecto es la franquicia. Y preparate para pelearla, porque la excepción no aparece en las preguntas frecuentes del MEF ni en las de la Aduana, y una noticia oficial de la propia Aduana de abril de 2026 dice, sin mencionarla, que todos los envíos de franquicia consumen tanto el cupo en dólares como el de los 3 envíos. La clave es que es anual: conviene administrarla y no agotarla en una compra chica si pensás traer más cosas.',
       },
       {
         heading: 'El régimen simplificado: 60% sobre el valor',
@@ -372,7 +392,7 @@ export const guides: readonly Guide[] = [
       },
       {
         q: '¿Qué no puedo traer por este régimen?',
-        a: 'Nada gravado por IMESI: bebidas alcohólicas, bebidas concentradas sin alcohol y suplementos concentrados, tabaco y cigarrillos, aceites y grasas lubricantes, vehículos y perfumería. Cuidado con meter toda la cosmética en la misma bolsa: el Decreto 96/990 (art. 27) deja expresamente fuera del IMESI al jabón de tocador, la pasta dentífrica, el desodorante, el talco, el champú, el agua colonia y el protector solar registrado ante el MSP, así que esos productos no quedan afuera del régimen postal por ese motivo. Tampoco podés traer por correo semillas, plantas, frutas y verduras frescas, animales vivos, alimentos de origen animal, fertilizantes ni plaguicidas: la Resolución MGAP 1.720/021 los prohíbe en encomienda o correo, sin franja de uso personal y sin ningún trámite que una persona física pueda hacer para habilitarlos. Sumá lo prohibido por seguridad (inflamables, gases comprimidos, explosivos, corrosivos) y las armas, que según la Aduana no entran por este canal. Las baterías de litio sueltas son otra cosa: no hay prohibición aduanera uruguaya, es una restricción del transporte aéreo (IATA/OACI) y una política propia del Correo Uruguayo, que no las admite en envíos internacionales. Y hay casos con trámite previo: los lentes de sol se limitan a dos unidades por única vez, con trámite pago en VUCE y declaración jurada de un técnico óptico habilitado. Por encima de 20 kg o de USD 800 el envío sale del régimen y necesita despachante de aduana.',
+        a: 'Nada gravado por IMESI: bebidas alcohólicas, bebidas concentradas sin alcohol y suplementos concentrados, tabaco y cigarrillos, aceites y grasas lubricantes, vehículos, perfumería, cosméticos como el maquillaje y máquinas de afeitar (Decreto 96/990, art. 27). Cuidado con meter toda la cosmética en la misma bolsa: ese mismo artículo deja expresamente fuera del IMESI al jabón de tocador, la pasta dentífrica, el desodorante, el talco, el champú, el agua colonia y el protector solar registrado ante el MSP, así que esos productos no quedan afuera del régimen postal por ese motivo. Tampoco podés traer por correo semillas, plantas, frutas y verduras frescas, animales vivos, alimentos de origen animal, fertilizantes ni plaguicidas: la Resolución MGAP 1.720/021 los prohíbe en encomienda o correo, sin franja de uso personal y sin ningún trámite que una persona física pueda hacer para habilitarlos. Sumá lo prohibido por seguridad (inflamables, gases comprimidos, explosivos, corrosivos) y las armas, que según la Aduana no entran por este canal. Las baterías de litio sueltas son otra cosa: no hay prohibición aduanera uruguaya, es una restricción del transporte aéreo (IATA/OACI) y una política propia del Correo Uruguayo, que no las admite en envíos internacionales. Y hay casos con trámite previo: los lentes de sol se limitan a dos unidades por única vez, con trámite pago en VUCE y declaración jurada de un técnico óptico habilitado. Por encima de 20 kg o de USD 800 el envío sale del régimen y necesita despachante de aduana.',
       },
       {
         q: '¿Qué pasa si no declaro o no pago?',
@@ -405,13 +425,20 @@ export const guides: readonly Guide[] = [
       },
       {
         label:
-          'RG DNA 11/2026 — num. 26 (libros y medicamentos fuera del cupo), num. 27 (mínimo de USD 20 de IVA) y num. 28 lit. c (códigos de tipo de envío: G franquicia, H prestación única, J exceptuados)',
+          'RG DNA 11/2026 — num. 26 (libros y medicamentos fuera del cupo), num. 27 (mínimo de USD 20 de IVA) y num. 28 (códigos de tipo de envío: H prestación única, lit. a; G franquicia, lit. b; J exceptuados, lit. c)',
         url: 'https://www.aduanas.gub.uy/innovaportal/file/28447/1/rg-11_2026.pdf',
         publisher: 'Dirección Nacional de Aduanas',
       },
       {
-        label: 'Decreto 96/990 art. 27 — cosmética de uso corriente no gravada por IMESI',
-        url: 'https://www.impo.com.uy/bases/decretos/96-1990',
+        label:
+          'RG DNA 26/2026 — registro de empresas extranjeras de EE.UU.: alta de oficio y a pedido del operador postal, lista publicada por la DNA (vigente desde el 5/10/2026)',
+        url: 'https://www.aduanas.gub.uy/innovaportal/file/28724/1/rg-26-2026-exoneracion-iva-encomiendas-postales.pdf',
+        publisher: 'Dirección Nacional de Aduanas',
+      },
+      {
+        label:
+          'Decreto 96/990 art. 27 — grava cosméticos, perfumería y máquinas de afeitar; no grava jabón de tocador, dentífrico, desodorante, champú ni protector solar registrado',
+        url: 'https://www.impo.com.uy/bases/decretos/96-1990/27',
         publisher: 'IMPO',
       },
       {
@@ -443,7 +470,7 @@ export const guides: readonly Guide[] = [
     slug: 'enviar-recibir-dinero-exterior',
     title: 'Cobrar del exterior: el costo es al retirar',
     description:
-      'Cuánto te cuesta cobrar un pago del exterior en Uruguay: Payoneer, Wise, Prex, PayPal, SWIFT al banco y plataformas de contrato, con las tarifas que publica cada uno.',
+      'Recibir casi no cuesta; sacarlo sí: Payoneer 1,2 % a 4 % al banco, Wise USD 22,37 por USD 1.000, PayPal $ 200 y las plataformas de contrato (16/9/2026).',
     tag: 'COBRAR',
     updatedAt: '2026-09-16',
     // Los dos socios que la guía compara por nombre y con tarifas públicas. Sin URL en
@@ -717,7 +744,7 @@ export const guides: readonly Guide[] = [
     description:
       'Ventajas y riesgos de ahorrar en dólares o en pesos en Uruguay: inflación, tasas de plazo fijo, unidad indexada y cómo elegir según tus gastos futuros.',
     tag: 'AHORRO',
-    updatedAt: '2026-06-17',
+    updatedAt: '2026-11-06',
     sections: [
       {
         heading: 'La pregunta clave: ¿en qué vas a gastar?',
@@ -726,6 +753,10 @@ export const guides: readonly Guide[] = [
       {
         heading: 'Pesos: rinden más, pero pierden con la inflación',
         body: 'Los plazos fijos en pesos suelen pagar tasas más altas que los de dólares para compensar la inflación. El punto es que esa tasa tiene que superar a la inflación para que ganes poder de compra real. Si la inflación se come buena parte del interés, el rendimiento real es bajo. Mirá siempre la tasa frente a la inflación esperada, no en abstracto.',
+        links: [
+          { label: 'Calculadora de plazo fijo', to: '/herramientas/calculadora-plazo-fijo' },
+          { label: 'Inflación, UI, UR y tasas', to: '/indicadores' },
+        ],
       },
       {
         heading: 'Dólares: estabilidad, pero menor tasa',
@@ -734,12 +765,15 @@ export const guides: readonly Guide[] = [
       {
         heading: 'La opción indexada: Unidad Indexada (UI)',
         body: 'Entre ambos extremos están los instrumentos en Unidad Indexada, que ajustan su valor por la inflación (IPC). Permiten ahorrar en pesos sin perder poder de compra frente a la suba de precios. Son una alternativa interesante para quien quiere mantener valor real sin asumir riesgo cambiario.',
+        links: [{ label: 'Qué es la Unidad Indexada', to: '/guias/unidad-indexada-explicada' }],
       },
       {
         heading: 'Diversificar suele ser lo más prudente',
         body: 'No tenés que elegir todo o nada. Muchos ahorristas reparten entre pesos, dólares e instrumentos indexados según sus metas y horizonte. Lo importante es decidir con criterio y no por impulso. Y cuando compres o vendas dólares, compará en Cambio Uruguay para hacerlo al mejor precio.',
+        links: [{ label: 'Comparar el dólar entre casas de cambio', to: '/comparar' }],
       },
     ],
+    related: [{ label: 'Dónde invertir en Uruguay', to: '/inversiones-uruguay' }],
   },
   {
     slug: 'cambiar-pesos-argentinos-uruguay',
@@ -747,11 +781,15 @@ export const guides: readonly Guide[] = [
     description:
       'Cómo y dónde cambiar pesos argentinos en Uruguay, por qué su cotización es volátil y tiene spreads amplios, y consejos para zonas de frontera y turismo.',
     tag: 'FRONTERA',
-    updatedAt: '2026-06-17',
+    updatedAt: '2026-11-06',
     sections: [
       {
         heading: 'Una moneda volátil y de spread amplio',
         body: 'El peso argentino es una de las monedas más volátiles que se operan en Uruguay por la historia inflacionaria y cambiaria del país vecino. Eso se traduce en cotizaciones que varían mucho entre casas de cambio y en spreads (brecha compra-venta) más amplios que los del dólar. Comparar antes de operar es todavía más importante con esta moneda.',
+        links: [
+          { label: 'Dólar blue y la brecha con el oficial', to: '/dolar-blue-hoy' },
+          { label: 'El dólar en Argentina y la región', to: '/cotizaciones-de-la-region' },
+        ],
       },
       {
         heading: 'Dónde se cambia mejor',
@@ -764,8 +802,15 @@ export const guides: readonly Guide[] = [
       {
         heading: 'Compará en Cambio Uruguay',
         body: 'Antes de cambiar pesos argentinos, mirá la cotización de la moneda en las casas de cambio relevadas y quedate con la que más te convenga según vayas a comprar o vender. Tener una referencia clara del mercado te protege de aceptar un precio muy por debajo del disponible.',
+        links: [
+          {
+            label: 'Cotización del peso argentino, casa por casa',
+            to: '/cotizacion/peso-argentino',
+          },
+        ],
       },
     ],
+    related: [{ label: 'La pizarra: dólar, euro, real y peso argentino', to: '/pizarra' }],
   },
   {
     slug: 'euros-reales-donde-cambiar',
@@ -773,7 +818,7 @@ export const guides: readonly Guide[] = [
     description:
       'Su precio sale por arbitraje: la cotización internacional de cada moneda frente al dólar más el dólar/peso local. Al operarse menos, el spread se ensancha.',
     tag: 'DIVISAS',
-    updatedAt: '2026-06-17',
+    updatedAt: '2026-11-05',
     sections: [
       {
         heading: 'Por qué euros y reales se mueven con el dólar',
@@ -789,15 +834,20 @@ export const guides: readonly Guide[] = [
       },
       {
         heading: 'Compará antes de operar',
-        body: 'Tanto para euros como para reales, entrá a Cambio Uruguay, mirá la cotización en las casas de cambio y elegí según vayas a comprar o vender. Una buena comparación te asegura que no estás dejando dinero sobre la mesa con monedas que, por su menor liquidez, pueden tener precios muy dispares.',
+        body: 'Tanto para euros como para reales, mirá la cotización de la moneda que te importa en las casas de cambio relevadas y elegí según vayas a comprar o vender: si comprás mirás la venta más baja, y si vendés la compra más alta. Una buena comparación te asegura que no estás dejando dinero sobre la mesa con monedas que, por su menor liquidez, pueden tener precios muy dispares.',
+        links: [
+          { label: 'Cotización del euro, casa por casa', to: '/cotizacion/euro' },
+          { label: 'Cotización del real, casa por casa', to: '/cotizacion/real' },
+        ],
       },
     ],
+    related: [{ label: 'La pizarra: dólar, euro, real y peso argentino', to: '/pizarra' }],
   },
   {
     slug: 'casas-de-cambio-vs-bancos',
     title: 'Tu banco no siempre da el mejor cambio',
     description:
-      'Diferencias entre cambiar divisas en casas de cambio o en bancos en Uruguay: cotizaciones, comodidad, requisitos y cuándo conviene cada opción.',
+      'El banco no da automáticamente el mejor precio: en montos chicos la comodidad puede justificar una diferencia, y en efectivo la referencia son las casas.',
     tag: 'COMPARATIVA',
     updatedAt: '2026-06-17',
     sections: [
@@ -826,7 +876,7 @@ export const guides: readonly Guide[] = [
     slug: 'como-leer-cotizacion-dolar',
     title: 'Leer la cotización: la compra te la pagan',
     description:
-      'Aprendé a leer la cotización del dólar en Uruguay: compra y venta, spread, tipos de operación y cómo identificar rápido el mejor precio para tu caso.',
+      'Los dos números son de la casa: compra es lo que te paga y venta lo que te cobra. El spread es la brecha, y el interbancario no es un precio al público.',
     tag: 'BÁSICOS',
     updatedAt: '2026-06-17',
     sections: [
@@ -852,7 +902,7 @@ export const guides: readonly Guide[] = [
     slug: 'unidad-indexada-explicada',
     title: 'Unidad Indexada: ajusta por el IPC',
     description:
-      'Qué es la Unidad Indexada (UI) en Uruguay, por qué ajusta por inflación, en qué contratos aparece y cómo convertir UI a pesos uruguayos.',
+      'La UI se ajusta todos los días por el IPC y el BCU publica su valor: multiplicás las UI por el del día. No es la UR, que ajusta por salarios.',
     tag: 'INDEXACIÓN',
     updatedAt: '2026-06-17',
     sections: [
@@ -878,7 +928,7 @@ export const guides: readonly Guide[] = [
     slug: 'inflacion-y-dolar-uruguay',
     title: 'Inflación y dólar no van siempre juntos',
     description:
-      'Cómo se relacionan la inflación y el dólar en Uruguay, por qué muchos ahorran en dólares y qué mirar para entender el poder de compra del peso.',
+      'No se mueven juntos ni en la misma magnitud: el dólar también sube o baja por oferta y demanda, la región y el BCU. La inflación la mide el IPC del INE.',
     tag: 'ECONOMÍA',
     updatedAt: '2026-06-17',
     sections: [
@@ -904,7 +954,7 @@ export const guides: readonly Guide[] = [
     slug: 'evitar-comisiones-cambio',
     title: 'La comisión se esconde en la cotización',
     description:
-      'Identificá y evitá comisiones ocultas, mínimos y malas cotizaciones al cambiar divisas en Uruguay, y aprendé a comparar el costo real de cada operación.',
+      'Un lugar sin comisión puede salir más caro por la cotización: pedí el total a pagar o a recibir, y en montos altos pedí que te mejoren el precio.',
     tag: 'COSTOS',
     updatedAt: '2026-06-17',
     sections: [
@@ -953,7 +1003,15 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'glosario-terminos-cambiarios',
-    title: 'Glosario rápido de términos cambiarios en Uruguay',
+    // 49 → 36 caracteres (66 → 53 con la marca) el 2026-11-10. Lo que se soltó es relleno: «rápido»
+    // y «en Uruguay», que la marca del título ya repite. Medido contra el propio buscador del sitio
+    // antes de tocarlo, porque la razón anotada seis veces para NO tocarlo era que un título de 43
+    // perdería las consultas que esta guía gana: con este texto gana «terminos cambiarios» con 80
+    // en vez de 62 (sigue primera, ahora con margen), conserva los 136 de «glosario terminos
+    // cambiarios» y los 92 de «glosario cambiario», y en «glosario» sigue segunda detrás de
+    // `/glosario`, que es la que corresponde. No hay consulta perdida: el bloqueo era redactar un
+    // título que ABRIERA por un término —y cada término ya lo gana su ficha—, no recortar el relleno.
+    title: 'Términos cambiarios: glosario rápido',
     description:
       'Los términos clave del mercado cambiario uruguayo explicados en simple: cotización, spread, billete, cable, transferencia, interbancario y más.',
     tag: 'GLOSARIO',
@@ -985,7 +1043,7 @@ export const guides: readonly Guide[] = [
     slug: 'como-afecta-la-fed-al-dolar',
     title: 'Fed: más tasa tiende a un dólar más fuerte',
     description:
-      'Qué es la Reserva Federal de EE.UU., cómo sus decisiones de tasas mueven al dólar en el mundo y por qué eso llega hasta la cotización en Uruguay.',
+      'Si la Fed sube la tasa, invertir en dólares rinde más y el dólar global tiende a fortalecerse; si la baja, a debilitarse. Acá se mezcla con el BCU.',
     tag: 'GLOBAL',
     updatedAt: '2026-06-17',
     sections: [
@@ -1011,7 +1069,7 @@ export const guides: readonly Guide[] = [
     slug: 'proteger-ahorros-de-la-inflacion',
     title: 'Contra la inflación: dólares o indexados',
     description:
-      'Estrategias prácticas para que la inflación no licúe tus ahorros en Uruguay: dólares, Unidad Indexada, plazos fijos y diversificación.',
+      'El dólar conviene si tus metas son en dólares; si gastás en pesos suma riesgo de cambio. Los instrumentos en UI ajustan por inflación y ahorran en pesos.',
     tag: 'AHORRO',
     updatedAt: '2026-06-17',
     sections: [
@@ -1063,7 +1121,7 @@ export const guides: readonly Guide[] = [
     slug: 'precio-del-oro-en-uruguay',
     title: 'Precio del oro: la onza troy es 31,1035 g',
     description:
-      'Cómo se forma el precio del oro en Uruguay, qué es la onza troy, cómo pasar el valor a gramos según los quilates y dónde comparar para comprar o vender al mejor precio.',
+      'El gramo sale de dividir la onza entre 31,1035 y ajustar por pureza: el 18k es 75 % de oro y el 14k cerca del 58 %. En pesos lo mueven el oro y el dólar.',
     tag: 'ORO',
     updatedAt: '2026-06-20',
     sections: [
@@ -1096,9 +1154,9 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'ui-ur-bpc-diferencias',
-    title: 'UI, UR y BPC: qué son y en qué se diferencian',
+    title: 'UI diaria, UR mensual, BPC: la diferencia',
     description:
-      'Qué es la Unidad Indexada (UI), la Unidad Reajustable (UR) y la Base de Prestaciones y Contribuciones (BPC), cómo se ajusta cada una y para qué se usan en Uruguay.',
+      'La UI se ajusta todos los días por el IPC, la UR una vez al mes por los salarios y la BPC una vez al año por decreto. Para qué se usa cada una.',
     tag: 'INDICADORES',
     updatedAt: '2026-06-20',
     sections: [
@@ -1133,7 +1191,7 @@ export const guides: readonly Guide[] = [
     slug: 'cambiar-monedas-poco-comunes-uruguay',
     title: 'Cambiar yen, franco o guaraní: más spread',
     description:
-      'Dónde y cómo cambiar monedas menos habituales en Uruguay como el yen, el franco suizo, el guaraní o el peso chileno: qué casas las cotizan y cómo comparar el precio.',
+      'Cuanto menos se opera una moneda, menos casas la cotizan y más grande es el spread. Con yen, franco, guaraní o peso chileno, llamá antes por el efectivo.',
     tag: 'MONEDAS',
     updatedAt: '2026-06-20',
     sections: [
@@ -1169,7 +1227,7 @@ export const guides: readonly Guide[] = [
     slug: 'dolar-cripto-usdt-uruguay',
     title: 'Dólar cripto: USDT ≈ USD 1, no es billete',
     description:
-      'Qué es el dólar cripto y el USDT, cómo se vinculan con el dólar billete en Uruguay, para qué se usan y qué riesgos conviene tener en cuenta antes de operar.',
+      'El USDT no es efectivo ni un depósito: es un activo digital sin garantía bancaria, y su precio en pesos suma el spread y la comisión de la plataforma.',
     tag: 'CRIPTO',
     updatedAt: '2026-06-20',
     sections: [
@@ -1275,7 +1333,7 @@ export const guides: readonly Guide[] = [
     slug: 'devolucion-iva-turistas-uruguay',
     title: 'Hoteles sin IVA para turistas y Tax Free',
     description:
-      'Cómo funcionan los beneficios de IVA para turistas extranjeros en Uruguay: hoteles sin IVA todo el año, reducción en gastronomía por temporada y devolución Tax Free al salir.',
+      'El hotel va sin IVA todo el año pagando con tarjeta del exterior, nunca en efectivo, y la gastronomía lleva nueve puntos menos hasta el 30/04/2027.',
     tag: 'IMPUESTOS',
     updatedAt: '2026-06-20',
     sections: [
@@ -1288,8 +1346,8 @@ export const guides: readonly Guide[] = [
         body: 'El hospedaje en hoteles y alojamientos para turistas no residentes está exonerado del IVA de forma permanente, durante todo el año. En la práctica, la factura se emite directamente sin el impuesto cuando se paga con medios electrónicos del exterior, así que no hay que pedir ninguna devolución posterior: el beneficio se aplica solo. Es uno de los incentivos turísticos más estables de Uruguay.',
       },
       {
-        heading: 'Gastronomía: reducción de IVA por temporada',
-        body: 'Para restaurantes, bares y cafeterías (independientes del hospedaje), Uruguay aplica una reducción del IVA cuando se paga con tarjeta extranjera, pero este beneficio se otorga por períodos —típicamente la temporada alta de verano— y su porcentaje y vigencia pueden cambiar de un año a otro mediante decreto. Por eso, antes de viajar conviene verificar si el beneficio está vigente en las fechas de tu visita y con qué alcance, ya que fuera del período promocional la gastronomía paga el IVA normal.',
+        heading: 'Gastronomía: reducción general y beneficios de temporada',
+        body: 'En los servicios gastronómicos comprendidos, independientes del hospedaje, la reducción general de nueve puntos de IVA alcanza a residentes y no residentes hasta el 30 de abril de 2027 (Decreto 235/026; guía DGI del 02/10/2026 consultada el 23/10/2026). Exige consumo final y pago con tarjeta de crédito, débito, dinero electrónico o instrumento análogo cuyo titular sea una persona física; si el pago es parcial, la reducción es proporcional. Es distinta de una exoneración total de temporada para no residentes: consultá a la DGI por esa posibilidad según las fechas del viaje.',
       },
       {
         heading: 'Tax Free: devolución del IVA en compras de bienes',
@@ -1380,7 +1438,7 @@ export const guides: readonly Guide[] = [
     slug: 'cajeros-automaticos-uruguay-turistas',
     title: 'Cajeros para turistas: pagás dos comisiones',
     description:
-      'Cómo sacar pesos (o dólares) con tarjeta extranjera en Uruguay: redes Banred y RedBROU, límites por extracción, comisiones y cuándo conviene una casa de cambio.',
+      'Con tarjeta del exterior pagás dos comisiones: la del cajero y la de tu banco. Las redes son RedBROU y Banred y los billetes suelen salir de 100 en 100.',
     tag: 'CAJEROS',
     updatedAt: '2026-06-20',
     sections: [
@@ -1412,27 +1470,41 @@ export const guides: readonly Guide[] = [
   },
   {
     slug: 'documentos-para-cambiar-dolares-uruguay',
-    title: 'Cambiar dólares: documento desde USD 3.000',
+    title: 'Cambiar dólares: qué documento llevar',
     description:
-      'Por debajo del orden de USD 3.000 diarios se cambia sin documento; por encima piden cédula o pasaporte. Con USD 10.000 o más se declara en aduana.',
+      'Llevá cédula o pasaporte. No asumas cambio sin documento: la excepción hasta USD 3.000 tiene condiciones. Aduanas: declarar por más de USD 10.000.',
     tag: 'TRÁMITES',
-    updatedAt: '2026-06-20',
+    updatedAt: '2026-11-05',
     sections: [
       {
-        heading: 'Para montos chicos, normalmente sin trámite',
-        body: 'Para cambiar montos pequeños de dólares en una casa de cambio uruguaya, en general no te piden más que el efectivo: las operaciones por debajo de cierto umbral diario se hacen sin necesidad de mostrar documento. Ese umbral suele ubicarse en el orden de los USD 3.000 por día, por debajo del cual la operación es directa. Es lo habitual para un turista que cambia unos cientos de dólares para sus gastos.',
+        heading: 'Llevá tu documento, aunque cambies un monto chico',
+        body: 'Para cambiar dólares en Uruguay, llevá cédula o pasaporte y consultá qué documento acepta la casa de cambio, especialmente si sos turista. No cuentes con poder operar sin identificación sólo porque el monto sea pequeño. La normativa del Banco Central exige identificar a clientes habituales y ocasionales, con una excepción limitada para ciertas operaciones de clientes ocasionales. Esa excepción no garantiza que cualquier casa atienda sin documento.',
       },
       {
-        heading: 'Montos altos: cédula o pasaporte y declaración jurada',
-        body: 'Cuando la operación supera ese umbral (del orden de USD 3.000 diarios), las casas de cambio están obligadas, por las normas de prevención de lavado de activos del Banco Central, a pedirte un documento de identidad (cédula o pasaporte) y, según el monto, una declaración jurada sobre el origen y el destino de los fondos. No es una sospecha hacia vos: es un requisito legal que aplica a todos por igual, y conviene llevar el documento si pensás cambiar sumas importantes.',
+        heading: 'La excepción de USD 3.000 es por operación individual',
+        body: 'El artículo 296 de la Recopilación de Normas de Regulación y Control del Sistema Financiero permite exceptuar de la identificación a clientes ocasionales cuando el importe individual no supera USD 3.000 o su equivalente en otras monedas: incluye exactamente USD 3.000. No es un cupo diario. La excepción no abarca transferencias de fondos ni se aplica si se intenta fraccionar una operación para eludir la identificación. Si hay indicios o sospecha de lavado de activos u otros delitos contemplados por la norma, corresponde identificar al cliente cualquiera sea el monto.',
       },
       {
-        heading: 'Entrar o salir con más de USD 10.000: declarar en aduana',
-        body: 'Aparte del cambio en sí, hay una regla aduanera importante: si entrás o salís de Uruguay con dinero en efectivo (o instrumentos al portador) por un valor igual o superior a USD 10.000, debés declararlo ante la Dirección Nacional de Aduanas. Aplica tanto al ingreso como al egreso del país y suma todas las monedas convertidas a dólares. No declararlo puede derivar en sanciones, así que si viajás con sumas grandes, hacé la declaración correspondiente.',
+        heading: 'Qué información pueden pedirte',
+        body: 'Cuando corresponde identificar a una persona física como cliente ocasional, el artículo 297 contempla nombre y apellido, copia del documento o constancia de su consulta o verificación en una fuente oficial, domicilio y teléfono. Otros requisitos dependen del tipo de cliente y de la operación. Antes de ir, consultá qué documentación y respaldo sobre el origen de los fondos te pedirán; no conviene asumir que alcanza con una declaración jurada genérica. Si actuás por otra persona, avisalo al consultar.',
       },
       {
-        heading: 'Consejo práctico para turistas',
-        body: 'Para la mayoría de los viajeros, que cambian montos moderados, alcanza con llevar el pasaporte por las dudas. Si pensás operar sumas grandes —por una compra importante, por ejemplo—, anticipá que te pedirán identificación y, posiblemente, una declaración de origen de fondos, y tené presente el límite de USD 10.000 de aduana al entrar o salir. Informarte antes evita demoras en el mostrador.',
+        heading: 'Viajar con más de USD 10.000: declarar en Aduanas',
+        body: 'La declaración al cruzar la frontera es una obligación distinta de la identificación en la casa de cambio. Para un viajero, el artículo 29 de la Ley 19.574 exige declarar ante la Dirección Nacional de Aduanas el transporte de efectivo, metales preciosos u otros instrumentos monetarios por un monto superior a USD 10.000 o su equivalente en otras monedas. El texto vigente dice superior, no igual o superior. Aplica al entrar o salir de Uruguay; verificá también las reglas del otro país de tu viaje.',
+      },
+    ],
+    sources: [
+      {
+        label:
+          'Identificación y excepción para clientes ocasionales: artículos 294, 296 y 297. PDF consolidado con última circular 2512 del 4/9/2026, consultado el 5/11/2026',
+        url: 'https://www.bcu.gub.uy/Acerca-de-BCU/Normativa/Documents/Reordenamiento%20de%20la%20Recopilaci%C3%B3n/Sistema%20Financiero/RNRCSF.pdf',
+        publisher: 'Banco Central del Uruguay',
+      },
+      {
+        label:
+          'Ley 19.574, artículo 29: declaración de dinero y otros valores al cruzar la frontera. Texto actualizado, consultado el 5/11/2026',
+        url: 'https://www.impo.com.uy/bases/leyes/19574-2017/29',
+        publisher: 'IMPO',
       },
     ],
     related: [
@@ -1510,7 +1582,7 @@ export const guides: readonly Guide[] = [
     slug: 'horarios-casas-de-cambio-uruguay',
     title: 'Casas de cambio: domingo casi todas cierran',
     description:
-      'A qué hora abren las casas de cambio en Uruguay, qué pasa los sábados y domingos, y dónde cambiar fuera de horario: aeropuerto de Carrasco, terminales y shoppings.',
+      'En general de 9:00 a 18:00 o 19:00 de lunes a viernes, el sábado medio día y el domingo casi todas cerradas: el precio del viernes rige hasta el lunes.',
     tag: 'HORARIOS',
     updatedAt: '2026-06-20',
     sections: [
@@ -1548,7 +1620,7 @@ export const guides: readonly Guide[] = [
     slug: 'tipo-de-cambio-fiscal-dgi-uruguay',
     title: 'Dólar fiscal: compra del BROU, día anterior',
     description:
-      'Qué tipo de cambio se usa para facturar en dólares y liquidar IVA e IRPF en Uruguay: la cotización de compra del Banco República del día hábil anterior. Cómo encontrarla.',
+      'El tipo de cambio para facturar es la COMPRA del BROU del día hábil anterior, no la venta ni la del día: con esa convertís a pesos el IVA y el IRPF.',
     tag: 'FACTURACIÓN',
     updatedAt: '2026-06-20',
     sections: [
@@ -1602,7 +1674,7 @@ export const guides: readonly Guide[] = [
     slug: 'criptomonedas-regulacion-impuestos-uruguay',
     title: 'Criptomonedas: activos, no moneda legal',
     description:
-      'Cómo están reguladas las criptomonedas en Uruguay tras la Ley de Activos Virtuales, qué rol tiene el Banco Central y por qué su tratamiento impositivo todavía no está resuelto. Guía informativa.',
+      'No hay norma que diga cómo tributan, así que acá no hay porcentaje: la Ley 20.345 de activos virtuales regula a los exchanges ante el BCU, no tu ganancia.',
     tag: 'CRIPTO',
     updatedAt: '2026-07-12',
     sections: [
@@ -1642,7 +1714,7 @@ export const guides: readonly Guide[] = [
     slug: 'dolares-deteriorados-billetes-rechazados-uruguay',
     title: 'Dólares rotos pagan menos; la cara chica no',
     description:
-      'Por qué algunas casas de cambio rechazan o pagan menos por dólares rotos, manchados o de serie vieja en Uruguay, y por qué el mito de la "cara chica" no aplica acá.',
+      'Lo que baja el precio es el deterioro, no el diseño: acá toda emisión es de curso legal. Algunos bancos reciben el billete roto cobrando comisión.',
     tag: 'BILLETES',
     updatedAt: '2026-06-20',
     sections: [
@@ -1677,7 +1749,7 @@ export const guides: readonly Guide[] = [
     slug: 'proyeccion-dolar-uruguay-se-puede-predecir',
     title: '¿A cuánto llega el dólar? Nadie lo predice',
     description:
-      'Si se puede predecir el dólar en Uruguay, qué muestran las expectativas del mercado y la encuesta del BCU, y por qué conviene una estrategia en lugar de adivinar el precio.',
+      'El dólar flota y nadie lo predice. La referencia que hay es la mediana de la Encuesta de Expectativas del BCU, que se ajusta mes a mes y no es garantía.',
     tag: 'PROYECCIÓN',
     updatedAt: '2026-06-20',
     sections: [
@@ -1732,6 +1804,19 @@ export const guides: readonly Guide[] = [
   // Importación y aduana: el "impuesto Temu" (IVA de las compras web del exterior) y BFE Express.
   // Mismo cableado gratis; guardada por `tests/unit/guidesImportacion.test.ts`.
   ...importacionGuides,
+  // Tanda del 2026-10-21: cómo saber si tengo deudas, comprar en Shein e IRPF de alquileres.
+  // Guardadas por `tests/unit/guiasPrimavera2026*.test.ts`.
+  ...primavera2026Guides,
+  // El Impuesto al Patrimonio de las personas físicas, 2026-11-01: el impuesto de TENER, que el
+  // sitio sólo nombraba como keyword de la página del impuesto a las RENTAS. Deliberadamente sin
+  // tasa —el art. 53 la manda reducir cada año y ninguna publicación de la DGI imprime el
+  // resultado—; el motivo entero está en la cabecera de `guidesPatrimonio.ts`.
+  ...patrimonioGuides,
+  // La Tasa de Política Monetaria del BCU, 2026-11-02: la cifra que cuatro archivos del sitio
+  // usaban como parámetro de otra cuenta y ninguno contestaba. Su cuerpo se arma con plantillas
+  // sobre `utils/monetaryPolicyRate.ts` porque el número escrito a mano ya envejeció una vez: el
+  // COPOM lo subió el 8/10/2026 y tres páginas publicaron 5,75 % hasta hoy.
+  ...politicaMonetariaGuides,
 ]
 
 /**
@@ -1746,4 +1831,19 @@ export function getGuide(slug: string): Guide | undefined {
 /** Every guide slug, in catalogue order. Used by the route guard and sitemap. */
 export function guideSlugs(): string[] {
   return guides.map(guide => guide.slug)
+}
+
+/**
+ * La ruta canónica de una guía: la suya, o la página raíz que la consolidó.
+ *
+ * Es la única cuenta de dónde vive la señal de una guía, para que la página, el sitemap y el test
+ * de colisión no puedan separarse en silencio.
+ */
+export function guideCanonicalPath(slug: string): string {
+  return getGuide(slug)?.consolidatedInto ?? `/guias/${slug}`
+}
+
+/** True cuando la guía cedió su señal a una página raíz (ver {@link Guide.consolidatedInto}). */
+export function isGuideConsolidated(slug: string): boolean {
+  return Boolean(getGuide(slug)?.consolidatedInto)
 }

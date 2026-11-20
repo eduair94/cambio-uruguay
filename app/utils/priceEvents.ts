@@ -29,11 +29,12 @@ export interface PriceEventCalendarEntry {
 }
 
 /**
- * Verificado el 16–17/9/2026 (ver `docs/superpowers/plans/2026-09-16-directorios-d-eventos.md`):
- * CyberLunes lo organiza la CEDU dos veces por año, junio y noviembre. La edición de noviembre de
- * 2026 TODAVÍA NO TIENE FECHA PUBLICADA — se muestra "a confirmar por la CEDU" hasta que un humano
- * cargue la fecha real con su fuente, acá y en el espejo de la raíz. Nunca inventar una fecha para
- * completar esta lista.
+ * Verificado el 16–17/9/2026 (ver `docs/superpowers/plans/2026-09-16-directorios-d-eventos.md`) y
+ * de nuevo el 19/10/2026: CyberLunes lo organiza la CEDU dos veces por año, junio y noviembre; la
+ * edición de noviembre de 2026 es del lunes 2 al miércoles 4 (nota de la CEDU del 16/9/2026 y
+ * ciberlunes.uy). Black Friday es el viernes siguiente al Día de Acción de Gracias de EE.UU. (jueves
+ * 26 de noviembre de 2026 según la OPM). Una edición nueva se carga con su fuente, acá y en el
+ * espejo de la raíz. Nunca inventar una fecha para completar esta lista.
  */
 export const PRICE_EVENT_CALENDAR: readonly PriceEventCalendarEntry[] = [
   {
@@ -55,16 +56,16 @@ export const PRICE_EVENT_CALENDAR: readonly PriceEventCalendarEntry[] = [
     source: 'https://www.sodimac.com.uy/sodimac-uy/content/Ciberlunes/',
     note: '',
   },
+  // Keep byte-for-byte in sync with classes/priceevents/calendar.ts (parity test).
   {
     id: 'ciberlunes-2026-11',
     label: 'CyberLunes noviembre 2026',
-    start: null,
-    end: null,
-    confirmed: false,
-    source: 'https://www.cedu.org.uy/ciberlunes/',
-    // Final review I4: dated so a stale page reads as stale, not silently wrong once CEDU announces.
-    // Keep byte-for-byte in sync with classes/priceevents/calendar.ts (parity test).
-    note: 'Al 17 de setiembre de 2026 la CEDU no había publicado la fecha.',
+    start: '2026-11-02',
+    end: '2026-11-04',
+    confirmed: true,
+    source:
+      'https://www.cedu.org.uy/camara-de-la-economia-digital-del-uruguay-invita-a-empresas-a-sumarse-al-ciberlunes/',
+    note: 'Lo organiza la Cámara de la Economía Digital del Uruguay (CEDU), que publicó la fecha el 16 de setiembre de 2026.',
   },
   {
     id: 'black-friday-2026',
@@ -72,11 +73,14 @@ export const PRICE_EVENT_CALENDAR: readonly PriceEventCalendarEntry[] = [
     start: '2026-11-27',
     end: '2026-11-30',
     confirmed: true,
-    source: null,
-    note: 'Del viernes 27 al lunes 30 de noviembre (Cyber Monday de EE.UU.).',
+    source: 'https://www.opm.gov/policy-data-oversight/pay-leave/federal-holidays/',
+    note: 'Es el viernes siguiente al Día de Acción de Gracias de EE.UU. (jueves 26 de noviembre). Lo seguimos hasta el lunes 30, el Cyber Monday de EE.UU.',
   },
 ]
 
+// La ventana adivinada de una edición SIN fecha. Hoy ninguna la usa (la de noviembre de 2026 se
+// fechó el 16/9/2026) y está escrita para esa edición: antes de cargar otra sin fecha, moverla acá y
+// en la raíz (`classes/priceevents/calendar.ts`, cuyo test falla si aparece una edición sin fecha).
 const PRICE_EVENT_UNCONFIRMED_WINDOW_START = '2026-11-01'
 const PRICE_EVENT_UNCONFIRMED_WINDOW_END = '2026-11-08'
 
@@ -110,9 +114,10 @@ export function priceEventActiveEvent(today: string): PriceEventCalendarEntry | 
  * "en curso", no "primer día" (ese fue el bug: clamplear `daysUntilStart` a 0 con `Math.max(0, …)`
  * hacía que CUALQUIER día de un evento de varios días — 28, 29 y 30 de noviembre, no sólo el 27 —
  * mostrara "Hoy es el primer día de Black Friday").
- * `undated`: no hay ningún evento confirmado activo ni por venir, pero la edición sin fecha
- * (CyberLunes noviembre 2026) todavía puede razonablemente ser "la próxima" — `today` cae dentro de
- * su ventana adivinada (ver `priceEventWindowOf`).
+ * `undated`: no hay ningún evento confirmado activo ni por venir, pero una edición sin fecha (fue el
+ * caso de CyberLunes noviembre 2026 hasta que la CEDU la fechó el 16/9/2026; hoy no hay ninguna)
+ * todavía puede razonablemente ser "la próxima" — `today` cae dentro de su ventana adivinada (ver
+ * `priceEventWindowOf`).
  * `none`: no hay ningún evento confirmado Y la edición sin fecha ya pasó su ventana adivinada sin que
  * nadie haya cargado la fecha real. Ese fue el segundo bug: sin este estado, la página seguía
  * anunciando "CyberLunes noviembre 2026: a confirmar por la CEDU" en diciembre, cuando esa ventana
@@ -151,12 +156,16 @@ function priceEventDaysBetween(fromIso: string, toIso: string): number {
  * `today` es un parámetro (nunca `Date.now()` adentro): la página lo calcula una sola vez en el
  * servidor con `useState` y no abre un reloj que tickea en el cliente (ver el global constraint del
  * plan: el countdown no puede renderizar un reloj vivo).
+ *
+ * `calendar` existe sólo para los tests: desde que la CEDU fechó noviembre de 2026 el calendario real
+ * no tiene ninguna edición sin fecha, y las ramas `undated`/`none` se siguen probando con uno
+ * sintético en vez de quedar sin probar hasta la próxima edición anunciada sin fecha.
  */
-export function priceEventCountdown(today: string): PriceEventCountdown {
-  const confirmedActiveOrUpcoming = PRICE_EVENT_CALENDAR.filter(
-    (entry): entry is PriceEventCalendarEntry & { start: string; end: string } =>
-      entry.confirmed && entry.start !== null && entry.end !== null && entry.end >= today
-  ).sort((a, b) => a.start.localeCompare(b.start))
+export function priceEventCountdown(
+  today: string,
+  calendar: readonly PriceEventCalendarEntry[] = PRICE_EVENT_CALENDAR
+): PriceEventCountdown {
+  const confirmedActiveOrUpcoming = priceEventUpcomingEditions(today, calendar)
 
   if (confirmedActiveOrUpcoming.length) {
     const event = confirmedActiveOrUpcoming[0]!
@@ -175,12 +184,105 @@ export function priceEventCountdown(today: string): PriceEventCountdown {
     return { event, status: 'in-progress', daysUntilStart: null, endsOn: event.end }
   }
 
-  const unconfirmed = PRICE_EVENT_CALENDAR.find(entry => !entry.confirmed) ?? null
+  const unconfirmed = calendar.find(entry => !entry.confirmed) ?? null
   if (unconfirmed && today <= priceEventWindowOf(unconfirmed).end) {
     return { event: unconfirmed, status: 'undated', daysUntilStart: null, endsOn: null }
   }
 
   return { event: null, status: 'none', daysUntilStart: null, endsOn: null }
+}
+
+/**
+ * Las ediciones CONFIRMADAS que todavía no terminaron (por venir o en curso hoy), en orden
+ * cronológico. La cuenta regresiva titula sólo con la primera, pero quien llega buscando "cuándo es
+ * el Black Friday" a fines de octubre tiene que ver también esa fecha, aunque antes venga el
+ * CyberLunes: por eso el bloque "Cuándo es" las lista todas.
+ */
+export function priceEventUpcomingEditions(
+  today: string,
+  calendar: readonly PriceEventCalendarEntry[] = PRICE_EVENT_CALENDAR
+): (PriceEventCalendarEntry & { start: string; end: string })[] {
+  return calendar
+    .filter(
+      (entry): entry is PriceEventCalendarEntry & { start: string; end: string } =>
+        entry.confirmed && entry.start !== null && entry.end !== null && entry.end >= today
+    )
+    .sort((a, b) => a.start.localeCompare(b.start))
+}
+
+/** `'2026-11-02'` -> `'lunes 2'` (día de la semana y número, en UTC: es una fecha calendario). */
+function priceEventWeekdayAndDay(iso: string): string {
+  const date = new Date(`${iso}T00:00:00Z`)
+  const weekday = date.toLocaleDateString(dateLocale('es'), { weekday: 'long', timeZone: 'UTC' })
+  return `${weekday} ${date.getUTCDate()}`
+}
+
+/** `'2026-11-02'` -> `'noviembre'`, sacado de la fecha larga (que sí lo da en minúscula: el mes
+ * suelto, `{ month: 'long' }`, sale con mayúscula inicial en es-UY). */
+function priceEventMonthName(iso: string): string {
+  return priceEventFormatDate(iso)
+    .replace(/^\d+ de /, '')
+    .replace(/ de \d{4}$/, '')
+}
+
+/**
+ * `'2026-11-27'` -> `'El viernes 27 de noviembre de 2026'`. Con el día de la semana porque quien
+ * busca "cuándo es" planea la compra por día, no por número.
+ */
+export function priceEventDayLabelLong(iso: string): string {
+  const label = `el ${priceEventWeekdayAndDay(iso)} de ${priceEventMonthName(iso)} de ${iso.slice(0, 4)}`
+  return label.charAt(0).toUpperCase() + label.slice(1)
+}
+
+/**
+ * El rango de una edición, con los días de la semana: `'Del lunes 2 al miércoles 4 de noviembre de
+ * 2026'`; si cruza de mes, `'Del sábado 30 de mayo al lunes 1 de junio de 2026'`; si cruza de año,
+ * cada punta lleva el suyo. `''` para una edición sin fecha (nunca se inventa una).
+ */
+export function priceEventRangeLabel(
+  entry: Pick<PriceEventCalendarEntry, 'start' | 'end'>
+): string {
+  const { start, end } = entry
+  if (!start || !end) return ''
+  if (start === end) return priceEventDayLabelLong(start)
+  const startYear = start.slice(0, 4)
+  const endYear = end.slice(0, 4)
+  const endPart = `${priceEventWeekdayAndDay(end)} de ${priceEventMonthName(end)} de ${endYear}`
+  let startPart = priceEventWeekdayAndDay(start)
+  if (start.slice(0, 7) !== end.slice(0, 7)) startPart += ` de ${priceEventMonthName(start)}`
+  if (startYear !== endYear) startPart += ` de ${startYear}`
+  return `Del ${startPart} al ${endPart}`
+}
+
+/** `'2026-11-02'`/`'2026-11-04'` -> `'2-4/11'`, la forma corta que entra en el `<title>`. */
+export function priceEventShortRange(
+  entry: Pick<PriceEventCalendarEntry, 'start' | 'end'>
+): string {
+  const { start, end } = entry
+  if (!start || !end) return ''
+  const day = (iso: string) => String(Number(iso.slice(8, 10)))
+  const month = (iso: string) => String(Number(iso.slice(5, 7)))
+  if (start === end) return `${day(start)}/${month(start)}`
+  if (start.slice(0, 7) === end.slice(0, 7)) return `${day(start)}-${day(end)}/${month(end)}`
+  return `${day(start)}/${month(start)}-${day(end)}/${month(end)}`
+}
+
+/**
+ * La edición confirmada más reciente (por `start`) cuyo `id` empieza con `prefix` — `'ciberlunes-'`
+ * o `'black-friday-'`. La usa la FAQ de fechas, que así contesta la edición vigente sin que nadie
+ * reescriba la pregunta cuando se cargue la del año que viene.
+ */
+export function priceEventLatestEdition(
+  prefix: string,
+  calendar: readonly PriceEventCalendarEntry[] = PRICE_EVENT_CALENDAR
+): (PriceEventCalendarEntry & { start: string; end: string }) | null {
+  const editions = calendar
+    .filter(
+      (entry): entry is PriceEventCalendarEntry & { start: string; end: string } =>
+        entry.confirmed && entry.start !== null && entry.end !== null && entry.id.startsWith(prefix)
+    )
+    .sort((a, b) => b.start.localeCompare(a.start))
+  return editions[0] ?? null
 }
 
 /**
@@ -239,20 +341,26 @@ export function priceEventCountdownHeadline(countdown: PriceEventCountdown): str
  * cuando su ventana adivinada ya venció — la misma regla que hace caer a `priceEventCountdown` en
  * `'none'`: una edición vencida nunca es "la próxima", ni siquiera como nota aparte.
  */
-export function priceEventOtherUnconfirmed(today: string): PriceEventCalendarEntry | null {
-  const unconfirmed = PRICE_EVENT_CALENDAR.find(entry => !entry.confirmed)
+export function priceEventOtherUnconfirmed(
+  today: string,
+  calendar: readonly PriceEventCalendarEntry[] = PRICE_EVENT_CALENDAR
+): PriceEventCalendarEntry | null {
+  const unconfirmed = calendar.find(entry => !entry.confirmed)
   if (!unconfirmed) return null
   if (today > priceEventWindowOf(unconfirmed).end) return null
-  const headline = priceEventCountdown(today)
+  const headline = priceEventCountdown(today, calendar)
   if (headline.event?.id === unconfirmed.id) return null
   return unconfirmed
 }
 
 /** Ediciones ya cerradas (`end < today`), en orden cronológico — para el bloque "ediciones pasadas". */
-export function priceEventPastEditions(today: string): PriceEventCalendarEntry[] {
-  return PRICE_EVENT_CALENDAR.filter(entry => entry.end !== null && entry.end < today).sort(
-    (a, b) => (a.start ?? '').localeCompare(b.start ?? '')
-  )
+export function priceEventPastEditions(
+  today: string,
+  calendar: readonly PriceEventCalendarEntry[] = PRICE_EVENT_CALENDAR
+): PriceEventCalendarEntry[] {
+  return calendar
+    .filter(entry => entry.end !== null && entry.end < today)
+    .sort((a, b) => (a.start ?? '').localeCompare(b.start ?? ''))
 }
 
 /**
@@ -483,7 +591,19 @@ function priceEventInternalHref(
   if (doc.vertical === 'sillas') {
     return '/sillas-escritorio-uruguay'
   }
+  // `sync_movilidad.ts` también graba `pricewatchoffers` (vertical `movilidad`) y el detector de
+  // verticales lo suma solo; su `category` es la clave del registro (`classes/movilidad/registry.ts`),
+  // y cada una tiene su página. Una categoría que no sea ninguna de las dos no enlaza adentro.
+  const movilidadHref = doc.category ? PRICE_EVENT_MOVILIDAD_PAGES[doc.category] : undefined
+  if (doc.vertical === 'movilidad' && movilidadHref) {
+    return movilidadHref
+  }
   return null
+}
+
+const PRICE_EVENT_MOVILIDAD_PAGES: Record<string, string> = {
+  'monopatin-electrico': '/monopatines-electricos-uruguay',
+  'bicicleta-electrica': '/bicicletas-electricas-uruguay',
 }
 
 export function priceEventDropRows(
@@ -504,7 +624,8 @@ export interface PriceEventFaqItem {
 }
 
 /**
- * FAQ de la página. Las dos primeras preguntas explican la regla siempre, con o sin datos; la de
+ * FAQ de la página. Abren las fechas de la edición vigente de Black Friday y de CyberLunes (del
+ * calendario); después, dos preguntas explican la regla siempre, con o sin datos; la de
  * "desde cuándo" sólo aparece si el snapshot trae `trackingSince` (nunca se inventa una fecha). Sin
  * adjetivos: describe la regla y nunca acusa a una tienda puntual — ver el global constraint "Sin
  * acusaciones" del plan.
@@ -515,9 +636,40 @@ export interface PriceEventFaqItem {
  * alimenta el JSON-LD de la página (schema.org FAQPage), así que la precisión acá no es cosmética.
  */
 export function priceEventFaq(
-  current: Pick<PriceEventSnapshotResponse, 'trackingSince'> | null
+  current: Pick<PriceEventSnapshotResponse, 'trackingSince'> | null,
+  calendar: readonly PriceEventCalendarEntry[] = PRICE_EVENT_CALENDAR
 ): PriceEventFaqItem[] {
-  const faq: PriceEventFaqItem[] = [
+  const faq: PriceEventFaqItem[] = []
+
+  // Las fechas van primero: "cuándo es el black friday en uruguay 2026" y sus variantes son casi
+  // todas las impresiones de la página en Search Console (20/9–17/10/2026). Salen del calendario,
+  // nunca de un literal, así que la respuesta y el bloque "Cuándo es" no pueden contradecirse.
+  const blackFriday = priceEventLatestEdition('black-friday-', calendar)
+  if (blackFriday) {
+    faq.push({
+      id: 'ciberlunes-cuando-es-black-friday',
+      question: `¿Cuándo es el ${blackFriday.label} en Uruguay?`,
+      answer: [`${priceEventDayLabelLong(blackFriday.start)}.`, blackFriday.note]
+        .filter(Boolean)
+        .join(' '),
+    })
+  }
+  const ciberlunes = priceEventLatestEdition('ciberlunes-', calendar)
+  if (ciberlunes) {
+    faq.push({
+      id: 'ciberlunes-cuando-es-ciberlunes',
+      question: `¿Cuándo es el ${ciberlunes.label}?`,
+      answer: [
+        `${priceEventRangeLabel(ciberlunes)}.`,
+        ciberlunes.note,
+        'Se hace dos veces por año, en junio y en noviembre.',
+      ]
+        .filter(Boolean)
+        .join(' '),
+    })
+  }
+
+  faq.push(
     {
       id: 'ciberlunes-que-es-baja-real',
       question: '¿Qué es una "baja real"?',
@@ -536,8 +688,8 @@ export function priceEventFaq(
         'días de datos). Es una comparación contra lo que nosotros vimos, no una prueba de que ese ' +
         'precio anterior nunca existió: sólo relevamos las tiendas de nuestro directorio, desde la ' +
         'fecha que decimos abajo.',
-    },
-  ]
+    }
+  )
 
   if (current?.trackingSince) {
     faq.push({
@@ -555,7 +707,8 @@ export function priceEventFaq(
     question: '¿Por qué no aparecen todas las tiendas de Uruguay?',
     answer:
       'Porque sólo podemos comparar el historial de las tiendas que relevamos todos los días para ' +
-      '/equipar-casa-uruguay, /sillas-escritorio-uruguay y /celulares-uruguay. Una tienda fuera de ' +
+      '/equipar-casa-uruguay, /sillas-escritorio-uruguay, /celulares-uruguay, ' +
+      '/monopatines-electricos-uruguay y /bicicletas-electricas-uruguay. Una tienda fuera de ' +
       'esa lista puede tener una baja real o un precio tachado por encima de su historial y esta ' +
       'página no lo va a mostrar, simplemente porque no lo medimos.',
   })

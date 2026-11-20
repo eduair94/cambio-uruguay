@@ -9,6 +9,7 @@ import {
   ADUANA_FAQ_IDENTIDAD_Y_TRIBUTOS_VERIFIED_AT,
   ADUANA_FAQ_LAST_REVIEWED,
   ADUANA_FAQ_POSTAL_VERIFIED_AT,
+  ADUANA_FAQ_REGLAS_OCTUBRE_VERIFIED_AT,
   ADUANA_FAQ_SOURCES,
   ADUANA_FAQS,
   aduanaFaqGroups,
@@ -123,6 +124,7 @@ describe('aduana FAQ catalogue', () => {
     expect(modified >= ADUANA_FAQ_IDENTIDAD_Y_TRIBUTOS_VERIFIED_AT).toBe(true)
     expect(modified >= ADUANA_FAQ_CARGOS_OPERADOR_VERIFIED_AT).toBe(true)
     expect(modified >= ADUANA_FAQ_HECHOS_IMPORTACION_VERIFIED_AT).toBe(true)
+    expect(modified >= ADUANA_FAQ_REGLAS_OCTUBRE_VERIFIED_AT).toBe(true)
     expect(modified).toBe(
       [
         ADUANA_FAQ_LAST_REVIEWED,
@@ -130,6 +132,7 @@ describe('aduana FAQ catalogue', () => {
         ADUANA_FAQ_IDENTIDAD_Y_TRIBUTOS_VERIFIED_AT,
         ADUANA_FAQ_CARGOS_OPERADOR_VERIFIED_AT,
         ADUANA_FAQ_HECHOS_IMPORTACION_VERIFIED_AT,
+        ADUANA_FAQ_REGLAS_OCTUBRE_VERIFIED_AT,
       ]
         .sort()
         .at(-1)
@@ -367,5 +370,52 @@ describe('aduana FAQ catalogue', () => {
     expect(byId.get('saldo-franquicia-no-alcanza')?.answer).toContain(
       'No atribuimos esta conclusión al art. 15'
     )
+  })
+
+  // Las cuatro correcciones del 19/10/2026, contra la norma leída ese día. Cada una ya estuvo mal
+  // publicada: el test las clava para que una edición futura no las devuelva al texto viejo.
+  describe('las reglas de octubre de 2026', () => {
+    const byId = new Map(ADUANA_FAQS.map(faq => [faq.id, faq]))
+    const faq = (id: string) => byId.get(id)!
+
+    it('cita la regla del MSP a la página del MSP, no al art. 19 del reglamento de medicamentos', () => {
+      // El art. 19 del reglamento del Decreto 18/020 sólo regula la excepción de un medicamento no
+      // registrado; la frase "no autoriza el ingreso ... por particulares" es del MSP.
+      expect(ADUANA_FAQ_SOURCES['msp-productos-salud']!.url).toBe(
+        'https://www.gub.uy/ministerio-salud-publica/Puedo-ingresar-al-pa%C3%ADs-productos-de-salud-desde-el-exterior'
+      )
+      expect(ADUANA_FAQ_SOURCES['msp-productos-salud']!.label).not.toContain('18/020')
+      for (const item of ADUANA_FAQS) {
+        expect(item.answer, item.id).not.toMatch(/art\. 19[^.]*Decreto 18\/020 es la base/)
+      }
+    })
+
+    it('dice que el art. 27 del Decreto 96/990 grava las máquinas de afeitar', () => {
+      const lentes = faq('lentes-afeitadoras-higiene')
+      expect(lentes.answer).not.toMatch(/no nombra a la máquina de afeitar/)
+      expect(lentes.answer).toContain('máquinas de afeitar')
+      expect(lentes.shortAnswer).toMatch(/afeitar paga IMESI/)
+      expect(ADUANA_FAQ_SOURCES['decreto-96-990']!.label).toContain('máquinas de afeitar')
+    })
+
+    it('no dice que la cosmética no paga IMESI: el maquillaje sí', () => {
+      const cosmeticos = faq('cosmeticos-perfume')
+      expect(cosmeticos.shortAnswer).not.toMatch(/cosmética común no paga IMESI/)
+      expect(cosmeticos.shortAnswer).toMatch(/maquillaje pagan IMESI/)
+      expect(cosmeticos.answer).toContain('adminículos para aplicar cosméticos')
+    })
+
+    it('trae el registro de vendedores al régimen de la RG 26/2026', () => {
+      for (const id of ['vendedor-registrado', 'registrar-vendedor-extranjero']) {
+        expect(faq(id).sourceIds, id).toContain('rg-dna-26-2026')
+      }
+      // "Empieza a exigirse el 1.º de octubre" era futuro hasta el 30/9.
+      expect(faq('vendedor-registrado').answer).not.toMatch(/empieza a exigirse/)
+      expect(faq('vendedor-registrado').answer).toContain('3 de noviembre')
+      // El comprador sigue sin poder registrar a nadie, pero el operador postal sí puede pedirlo.
+      expect(faq('registrar-vendedor-extranjero').answer).toContain('operador postal')
+      // La factura sola no alcanza: cuenta el emisor registrado.
+      expect(faq('origen-estados-unidos').shortAnswer).toContain('registro')
+    })
   })
 })

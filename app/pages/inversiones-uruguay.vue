@@ -354,6 +354,9 @@
     </VCard>
 
     <!-- AFAP editorial section -->
+    <!-- La unidad intermedia, en un corte de sección a mitad de página (ver
+         docs/seo/adsense-growth-loop.md, decimotercera iteración). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <VCard variant="flat" class="inversiones-section mb-6 pa-5 pa-sm-6">
       <h2 class="text-h6 font-weight-bold mb-3 inversiones-group-title">
         <VIcon start size="small" color="primary">mdi-piggy-bank-outline</VIcon>
@@ -605,6 +608,14 @@
         <em>“educación antes que especulación”</em>.
       </p>
     </VCard>
+
+    <!-- Aprender en video: un creador uruguayo (utils/creatorVideos.ts) -->
+    <CreatorVideos
+      page="/inversiones-uruguay"
+      title="Aprender a invertir, en video"
+      intro="Un creador uruguayo que habla de inversión desde acá y, sobre todo, de la parte que más cuesta: las decisiones que tomamos con la plata. Si te sirve, suscribite a su canal."
+      class="mt-6"
+    />
 
     <!-- CTA -->
     <VCard class="cta-inversiones mt-6 pa-6 text-center" variant="flat">

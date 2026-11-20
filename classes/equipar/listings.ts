@@ -15,6 +15,8 @@ import { conditionOf, NOT_A_BRAND, toOffer } from "./catalog";
 import { categoryFor, itemKey, norm, variantFor } from "./classify";
 import { EQUIPAR_CATEGORIES } from "./registry";
 import type { RetailListing } from "../retail/types";
+import type { MonopatinSpecs } from "../movilidad/specs/types";
+import type { EquiparFicha } from "./specs/fields";
 import type { EquiparCategory, EquiparRegime, EquiparRoom, EquiparTier } from "./types";
 
 export interface EquiparListingRow {
@@ -59,6 +61,19 @@ export interface EquiparListingRow {
   observedAt: string;
   /** `observedAt` as a date: the freshness window and the prune both read this. */
   lastSeen: string;
+  /**
+   * Sólo movilidad (monopatín): la ficha técnica y el precio por km de autonomía declarada. Esta
+   * función nunca los escribe; los agrega `enrichMovilidadRow` (classes/movilidad/specs/enrich.ts).
+   */
+  specs?: MonopatinSpecs | null;
+  uyuPerKm?: number | null;
+  /** Monopatines: la página de su modelo (classes/movilidad/models/), si pertenece a uno. */
+  modelSlug?: string | null;
+  /**
+   * Heladeras, lavarropas, televisores y aires: la ficha técnica (classes/equipar/specs/). Esta
+   * función nunca la escribe; la agrega `enrichEquiparRow`.
+   */
+  ficha?: EquiparFicha | null;
 }
 
 export interface BuildListingsInput {

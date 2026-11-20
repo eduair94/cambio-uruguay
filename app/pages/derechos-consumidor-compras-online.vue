@@ -315,6 +315,9 @@
       </VRow>
     </section>
 
+    <!-- La unidad intermedia, antes de las preguntas: mismo corte que FaqSection (ver
+         docs/seo/adsense-growth-loop.md, 31/10/2026). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <!-- FAQ -->
     <section class="mb-8">
       <h2 class="section-heading mb-4">Preguntas frecuentes</h2>
@@ -400,6 +403,7 @@
 </template>
 
 <script setup lang="ts">
+import { VAutocomplete } from 'vuetify/components'
 import {
   buildConsumerComplaint,
   COMPLAINT_STEPS,
@@ -521,7 +525,9 @@ async function copyReply() {
 }
 
 // --- SEO ---
-const title = 'Derechos del consumidor en compras online'
+// La respuesta en el título: las consultas citan el art. 16 de la Ley 17.250 y el «derecho de
+// arrepentimiento», y la respuesta es el plazo (5 días hábiles en la venta a distancia).
+const title = 'Compras online: retracto de 5 días hábiles'
 const description =
   'El art. 33 de la Ley 17.250 te deja elegir cumplimiento, sustitución o devolución actualizada, y la venta a distancia tiene retracto de 5 días hábiles.'
 

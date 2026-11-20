@@ -437,6 +437,7 @@
 </template>
 
 <script setup lang="ts">
+import { VSlider } from 'vuetify/components'
 import {
   matchStudentHousing,
   studentHousingVerdict,

@@ -57,6 +57,12 @@ describe('site content index', () => {
   it('drops the consent banner the crawler read from the page chrome', () => {
     expect(cleanSiteChunkText(CHUNKS[0]!.text)).not.toMatch(/Cookies/)
     expect(index.pages.get('/franquicia-courier-uruguay')![0]!.text).toMatch(/^Cuánto podés/)
+    // The banner's wording since it names Microsoft Clarity: pages crawled after the change.
+    expect(
+      cleanSiteChunkText(
+        'Cookies para medir visitas, ver cómo se usa el sitio y mostrar anuncios. Política de privacidad\nCuánto podés traer.'
+      )
+    ).toBe('Cuánto podés traer.')
   })
 
   it('folds accents and drops stopwords', () => {

@@ -115,9 +115,12 @@ export function rentalSavedSafeUrl(value: unknown): string | null {
 
 function savedParams(input: unknown): Record<string, string> | null {
   if (!record(input)) return null
-  const query = normalizeRentalQuery(input)
+  // Never the reference point: it is the tab's session, and its label can be the visitor's own
+  // address (utils/rentalReference.ts). A search saved before 2026-11-08 loses it here. It goes
+  // BEFORE normalising, so its distance order reads as the default now and on every later read.
+  const query = normalizeRentalQuery({ ...input, refLat: null, refLng: null, refLabel: '' })
   // Reopening a search starts at its first results. Normalisation also discards unknown params.
-  const params = rentalQueryToParams({ ...query, page: 1 })
+  const params = rentalQueryToParams({ ...query, page: 1 }, { includeReference: false })
   return Object.fromEntries(Object.entries(params).sort(([a], [b]) => a.localeCompare(b)))
 }
 
@@ -247,9 +250,25 @@ function browserStorage(): RentalSavedStorage | undefined {
   }
 }
 
+/** A stored search from before 2026-11-08 that still has the reference point's keys. */
+const STORED_REFERENCE = /"ref(?:Lat|Lng|Label)"\s*:/
+
 export function readRentalSaved(storage = browserStorage()): RentalSavedState {
   try {
-    return parseRentalSaved(storage?.getItem(RENTAL_SAVED_STORAGE_ID))
+    const raw = storage?.getItem(RENTAL_SAVED_STORAGE_ID)
+    const state = parseRentalSaved(raw)
+    // Reading already drops an old search's point; writing the result back takes it out of the
+    // browser too, instead of waiting for the next save. What is written is exactly what any next
+    // write would have stored, so nothing readable is lost, and a list that reads as empty
+    // (corrupt, obsolete) is left alone rather than replaced by nothing.
+    if (
+      storage &&
+      typeof raw === 'string' &&
+      STORED_REFERENCE.test(raw) &&
+      (state.searches.length || state.favorites.length)
+    )
+      writeRentalSaved(state, storage)
+    return state
   } catch {
     return emptyRentalSaved()
   }
@@ -274,7 +293,11 @@ export function saveRentalSearch(
   query: RentalQuery,
   now = new Date().toISOString()
 ): RentalSavedState {
-  const search = parseSearch({ label, params: rentalQueryToParams(query), savedAt: now })
+  const search = parseSearch({
+    label,
+    params: rentalQueryToParams(query, { includeReference: false }),
+    savedAt: now,
+  })
   if (!search) return state
   return {
     ...state,

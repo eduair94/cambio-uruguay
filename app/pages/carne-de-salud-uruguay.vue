@@ -191,6 +191,9 @@
       </VRow>
     </section>
 
+    <!-- La unidad intermedia, antes de las preguntas: mismo corte que FaqSection (ver
+         docs/seo/adsense-growth-loop.md, 31/10/2026). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <!-- Preguntas -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-4">Preguntas frecuentes</h2>
@@ -299,11 +302,12 @@ const verifiedDisplay = computed(() =>
 )
 
 const canonicalUrl = 'https://cambio-uruguay.com/carne-de-salud-uruguay'
-// 40 caracteres: con la marca que agrega app.vue quedan 57 y el SERP no lo
-// corta. El H1 puede ser más largo; el <title> no.
-const title = 'Carné de salud Uruguay: cuándo es gratis'
+// La respuesta en el título, no la pregunta: la consulta de cabeza es «carnet de salud gratis
+// asse» y la página lo contesta en su primera tarjeta (Decreto 274/017: sin costo en tu mutualista,
+// tu seguro o ASSE si sos usuario). 43 caracteres: con la marca que agrega app.vue quedan 60.
+const title = 'Carné de salud: gratis en mutualista o ASSE'
 const description =
-  'Carné de salud sin costo en tu mutualista cada 2 años si lo pide el trabajo (Decreto 274/017). En ASSE sin ser usuario, 0,4 UR; el provisorio dura 6 meses.'
+  'Sin costo cada 2 años en tu mutualista, tu seguro o ASSE si sos usuario, si lo pide el trabajo (Decreto 274/017). Sin ser usuario de ASSE, 0,4 UR.'
 
 defineOgImageComponent('Cambio', { title, subtitle: description, tag: 'SALUD' })
 

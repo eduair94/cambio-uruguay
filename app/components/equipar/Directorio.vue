@@ -34,7 +34,7 @@
         <CarsToolbar
           v-if="smAndDown"
           :sort="query.orden"
-          :items="EQUIPAR_PRODUCTOS_SORT_ITEMS"
+          :items="sortItems"
           :active-count="chips.length"
           :open="filtersOpen"
           @open="filtersOpen = true"
@@ -57,7 +57,7 @@
           <VSelect
             v-if="!smAndDown"
             :model-value="query.orden"
-            :items="EQUIPAR_PRODUCTOS_SORT_ITEMS"
+            :items="sortItems"
             label="Ordenar"
             density="compact"
             variant="outlined"
@@ -67,6 +67,8 @@
           />
         </div>
 
+        <slot name="before-results" />
+
         <VAlert v-if="error" type="warning" variant="outlined" class="mb-4">
           El directorio se está actualizando. Probá de nuevo en unos minutos.
         </VAlert>
@@ -75,16 +77,19 @@
           usado a la vez.
         </p>
 
-        <div v-if="data?.items.length" class="eq-grid">
-          <EquiparListingCard
-            v-for="producto in data.items"
-            :key="producto.listingId"
-            :producto="producto"
-            :in-list="!hideList && lista.has(producto.listingId)"
-            :hide-category="Boolean(fixedCategoria) || hideCategory"
-            :hide-list="hideList"
-            @toggle="toggle"
-          />
+        <div v-if="data?.items.length" ref="resultsList" class="eq-grid">
+          <FeedEdge :feed="feed" edge="top" />
+          <template v-for="(producto, index) in feed.items" :key="producto.listingId">
+            <FeedAd :index="index" :feed="feed" />
+            <EquiparListingCard
+              :producto="producto"
+              :in-list="!hideList && lista.has(producto.listingId)"
+              :hide-category="Boolean(fixedCategoria) || hideCategory"
+              :hide-list="hideList"
+              @toggle="toggle"
+            />
+          </template>
+          <FeedEdge :feed="feed" edge="bottom" />
         </div>
         <p
           v-if="!hideList && lista.limited.value"
@@ -94,31 +99,39 @@
           La lista llegó a {{ EQUIPAR_LISTA_MAX }} ítems. Sacá alguno para agregar otro.
         </p>
 
-        <VPagination
-          v-if="data && data.total > data.perPage"
-          :model-value="query.page"
-          :length="Math.min(500, Math.ceil(data.total / data.perPage))"
-          :total-visible="3"
-          class="mt-6"
-          @update:model-value="page => changePage(page)"
-        />
+        <FeedControls v-if="data" :feed="feed">
+          <template #pagination>
+            <VPagination
+              v-if="data.total > data.perPage"
+              :model-value="query.page"
+              :length="pageCount"
+              :total-visible="3"
+              class="mt-6"
+              @update:model-value="page => changePage(page)"
+            />
+          </template>
+        </FeedControls>
       </template>
     </CarsSidebarLayout>
   </div>
 </template>
 
 <script setup lang="ts">
+import { VPagination } from 'vuetify/components'
 import { useDisplay } from 'vuetify'
 import {
   EQUIPAR_LISTA_MAX,
   EQUIPAR_PRODUCTOS_SORT_ITEMS,
+  MOVILIDAD_PRODUCTOS_SORT_ITEMS,
   equiparListaFromProducto,
+  equiparProductosParams,
   type EquiparFilterChip,
   type EquiparProductoPublic,
   type EquiparProductosFacets,
   type EquiparProductosQuery,
   type EquiparProductosResponse,
   type EquiparProductosSort,
+  type EquiparQueryKey,
   type RetailProductosVertical,
 } from '~/utils/equiparProductos'
 
@@ -152,11 +165,19 @@ const props = withDefaults(
 )
 const emit = defineEmits<{
   update: [query: EquiparProductosQuery]
-  remove: [keys: ReadonlyArray<keyof EquiparProductosQuery>]
+  remove: [keys: ReadonlyArray<EquiparQueryKey>]
   clear: []
 }>()
 
 const { smAndDown } = useDisplay()
+// Los órdenes por ficha técnica sólo existen donde hay ficha leída: monopatines y, desde el
+// 4/11/2026, bicicletas.
+const sortItems = computed(() =>
+  props.vertical === 'movilidad' &&
+  (props.fixedCategoria === 'monopatin-electrico' || props.fixedCategoria === 'bicicleta-electrica')
+    ? MOVILIDAD_PRODUCTOS_SORT_ITEMS
+    : EQUIPAR_PRODUCTOS_SORT_ITEMS
+)
 const filtersOpen = ref(false)
 // The drawer is mobile-only: if the window grows with it open, the column already shows the filters.
 watch(smAndDown, mobile => {
@@ -179,6 +200,32 @@ function changePage(page: number) {
   emit('update', { ...props.query, page })
   scrollToPageTop(props.anchorId)
 }
+
+const pageCount = computed(() =>
+  props.data ? Math.min(500, Math.ceil(props.data.total / props.data.perPage)) : 1
+)
+// "Cargar más al bajar" (composables/useInfiniteFeed.ts). Las dos verticales contestan la misma
+// forma en rutas distintas (`server/utils/retailProductos.ts`), igual que en el composable que
+// pide la primera página.
+const resultsList = ref<HTMLElement | null>(null)
+const feed = useInfiniteFeed<EquiparProductoPublic>({
+  id: props.vertical,
+  itemKey: producto => producto.listingId,
+  list: resultsList,
+  items: () => props.data?.items ?? [],
+  page: () => props.query.page,
+  pageCount: () => pageCount.value,
+  perPage: () => props.data?.perPage ?? 24,
+  resetKey: () => JSON.stringify(equiparProductosParams({ ...props.query, page: 1 })),
+  fetchPage: (page, signal) =>
+    $fetch<EquiparProductosResponse>(
+      props.vertical === 'movilidad' ? '/api/movilidad/productos' : '/api/equipar/productos',
+      { query: equiparProductosParams({ ...props.query, page }), signal }
+    ).then(response => response.items),
+  enabled: () => !props.error,
+  goToPage: changePage,
+  anchorId: props.anchorId,
+})
 </script>
 
 <style scoped>

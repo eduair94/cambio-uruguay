@@ -154,7 +154,12 @@
               </td>
               <td data-label="Qué pide">{{ l.pide }}</td>
               <td data-label="Clearing">{{ l.clearing }}</td>
-              <td data-label="Tasa y gastos">{{ l.tasa }}</td>
+              <td data-label="Tasa y gastos">
+                {{ l.tasa }}
+                <div v-if="l.readOn" class="text-caption text-medium-emphasis">
+                  Releído el {{ fmtDate(l.readOn) }}.
+                </div>
+              </td>
               <td data-label="Montos y plazos">{{ l.montos }}</td>
             </tr>
           </tbody>
@@ -170,8 +175,8 @@
         >. El BCU republica la tabla todos los meses sobre una ventana móvil de tres meses: las
         filas de consumo en pesos y en dólares salen de la grilla que el sitio lee del BCU; las de
         autorización de descuento, retención de haberes y crédito de nómina son una lectura del PDF
-        del {{ fmtDate(SOLO_CEDULA_REVIEWED) }}. Tope = media más 55 %; con retención de haberes,
-        más 30 %; crédito de nómina, más 20 %; mora, más 80 %.
+        del {{ fmtDate(BCU_CAPS_READ_ON) }}. Tope = media más 55 %; con retención de haberes, más 30
+        %; crédito de nómina, más 20 %; mora, más 80 %.
       </p>
       <VCard variant="outlined" class="mb-3">
         <VTable class="cu-mobile-cards loan-np__table" density="comfortable">
@@ -208,9 +213,10 @@
       </VCard>
       <p class="text-caption text-medium-emphasis mb-4">
         Fuente: BCU — Tasas medias de interés,
-        <a :href="BCU_CAPS_SOURCE_URL" target="_blank" rel="noopener noreferrer">PDF del BCU</a>,
-        visto el {{ fmtDate(SOLO_CEDULA_REVIEWED) }}. En dólares el BCU publica una sola celda de
-        consumo, sin partir por tramo de UI ni por autorización de descuento.
+        <a :href="BCU_CAPS_SOURCE_URL" target="_blank" rel="noopener noreferrer">comunicación</a>
+        {{ BCU_CAPS_COMUNICACION }} (PDF), visto el {{ fmtDate(BCU_CAPS_READ_ON) }}. En dólares el
+        BCU publica una sola celda de consumo, sin partir por tramo de UI ni por autorización de
+        descuento.
       </p>
 
       <VCard variant="flat" class="pa-4 pa-sm-5 mb-4 door-card">
@@ -346,9 +352,10 @@
       </ul>
       <p class="text-caption text-medium-emphasis mt-3 mb-0">
         Citas de las tres puertas verificadas contra la página de cada institución el
-        {{ fmtDate(NOPAYSLIP_LOANS_REVIEWED) }}; la tabla de "sólo con cédula", los topes del BCU y
-        la parte de jubilados, el {{ fmtDate(SOLO_CEDULA_REVIEWED) }}. No tenemos acuerdos
-        comerciales con ninguna. Informativo, no es asesoramiento financiero.
+        {{ fmtDate(NOPAYSLIP_LOANS_REVIEWED) }}; la tabla de "sólo con cédula" y la parte de
+        jubilados, el {{ fmtDate(SOLO_CEDULA_REVIEWED) }}; los topes del BCU, el
+        {{ fmtDate(BCU_CAPS_READ_ON) }}. No tenemos acuerdos comerciales con ninguna. Informativo,
+        no es asesoramiento financiero.
       </p>
     </VCard>
   </VContainer>
@@ -359,7 +366,9 @@ import { computed } from 'vue'
 import { BCU_CAPS, BCU_IN_FORCE_SINCE, type BcuCapRow } from '~/utils/cashAdvance'
 import type { FaqItem } from '~/utils/faqAnswers'
 import {
+  BCU_CAPS_COMUNICACION,
   BCU_CAPS_PERIOD,
+  BCU_CAPS_READ_ON,
   BCU_CAPS_SOURCE_URL,
   NOPAYSLIP_CAPS,
   NOPAYSLIP_DOORS,

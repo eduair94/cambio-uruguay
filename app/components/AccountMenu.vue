@@ -18,7 +18,9 @@
   <VMenu v-else location="bottom end">
     <template #activator="{ props }">
       <VBtn icon v-bind="props" :aria-label="$t('auth.account')">
-        <VAvatar size="34" color="primary">
+        <!-- The account's photo (its URL names the Google or Discord account) and initials, in
+             the header of every page: masked for Microsoft Clarity. -->
+        <VAvatar size="34" color="primary" class="account-avatar" data-clarity-mask="true">
           <VImg v-if="store.user?.photo" :src="store.user.photo" />
           <span v-else>{{ initials }}</span>
         </VAvatar>
@@ -46,7 +48,9 @@
 </template>
 
 <script setup lang="ts">
-import { fbAuth, isSignInWithEmailLink, signInWithEmailLink } from '~/stores/firebaseAuthApi'
+import { isAuthHandoffUrl, loadFirebaseAuth } from '~/services/firebaseLazy'
+import { withoutSignInHandoff } from '~/utils/analyticsUrl'
+import { isExtraLocale } from '~/utils/locales'
 
 const store = useAuthStore()
 const localePath = useLocalePath()
@@ -74,7 +78,14 @@ const logoutCopy = computed(() => {
       close: 'Fechar',
     },
   }
-  return messages[locale.value === 'en' || locale.value === 'pt' ? locale.value : 'es']
+  // The machine-translated locales read English: closer to them than Spanish.
+  return messages[
+    locale.value === 'en' || locale.value === 'pt'
+      ? locale.value
+      : isExtraLocale(locale.value)
+        ? 'en'
+        : 'es'
+  ]
 })
 
 async function logout() {
@@ -95,11 +106,18 @@ const initials = computed(() => {
   return n.slice(0, 1).toUpperCase()
 })
 
-// Complete a magic-link sign-in when the user lands on the emailed URL.
+// Complete a magic-link sign-in when the user lands on the emailed URL. Only such a URL loads the
+// Firebase SDK here; any other page leaves it unloaded.
+const route = useRoute()
+const router = useRouter()
 onMounted(async () => {
+  const href = window.location.href
+  if (!isAuthHandoffUrl(href)) return
+  let emailedLink = false
   try {
-    const href = window.location.href
+    const { fbAuth, isSignInWithEmailLink, signInWithEmailLink } = await loadFirebaseAuth()
     if (!isSignInWithEmailLink(fbAuth(), href)) return
+    emailedLink = true
     let email = window.localStorage.getItem('cu_magic_email')
     if (!email) email = window.prompt(t('auth.email')) || ''
     if (email) {
@@ -108,6 +126,15 @@ onMounted(async () => {
     }
   } catch {
     /* ignore – surfaced via the normal sign-in flow */
+  } finally {
+    // The link's one-time code leaves the address bar once used (or refused): analytics starts
+    // only when it is gone (plugins/gtag-init.client.ts, utils/analyticsUrl.ts), and a bookmarked
+    // or shared URL must not carry it. Firebase already got the original, `href` above.
+    if (emailedLink) {
+      await router
+        .replace({ path: route.path, query: withoutSignInHandoff(route.query), hash: route.hash })
+        .catch(() => {})
+    }
   }
 })
 </script>

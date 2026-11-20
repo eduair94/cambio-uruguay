@@ -272,6 +272,9 @@
 
     <VMain id="main" tabindex="-1" :class="formatNameRoute()">
       <CookieConsent />
+      <!-- A quien lee español y cayó en otra versión: la misma página, en español (un enlace, nunca
+           una redirección). Regla en utils/languageHint.ts. -->
+      <LanguageHint />
       <!-- `--rail` sólo cuando el riel de escritorio va a renderizar: sin el id de la unidad la
            clase no se aplica y la grilla no existe (una grilla vacía robaría 300 px a toda página
            de densidad normal y dejaría de colapsar los márgenes entre hijos). -->
@@ -299,16 +302,21 @@
                tema, desde utils/guideHubs.ts. Recíproco por construcción. -->
           <TemaVecinos />
           <RelatedPages />
-          <!-- The end-of-article ask. Long reads only (`utils/capture.ts`), and it
-               sits after the recirculation block: giving the reader somewhere to go
-               costs them nothing, asking for an email costs them something. -->
-          <NewsletterCapture />
+          <!-- "¿Te sirvió esta página?": one tap, then the review ask or a line of what was missing.
+               Client-only (it reads what this browser already answered) and lazy, so it costs the
+               entry chunk nothing. Rules in utils/siteFeedback.ts. -->
+          <ClientOnly><LazyFeedbackPageHelpful /></ClientOnly>
+          <!-- One contextual invitation after the content (share + newsletter or account), sharing
+               the same attention budget; the newsletter card (`NewsletterCapture`, long reads only)
+               now lives inside it. -->
+          <ReaderFollowUp />
         </div>
         <!-- The one ad every allowed route carries: after the content, before
              the footer, never in the middle of a tool. Routes opt out through
              `utils/ads.ts` or `definePageMeta({ ads: false })`; long articles
              may add a single <AdSlot placement="in-article" /> of their own. -->
-        <!-- Home uses this space budget for ConLaTuyaBanner after its rates. -->
+        <!-- Home spends its one-unit budget in the page itself (pages/index.vue, after the rate
+             lookup and the nearby-casa finder): nobody scrolls the home page to its footer. -->
         <ClientOnly v-if="normalizeAdPath(route.path) !== '/'">
           <!-- The layout survives navigation. A new page needs its own lazy slot,
                including after an ad-free page or an unfilled response. Query and
@@ -329,7 +337,8 @@
     </VMain>
 
     <Footer />
-    <ClientOnly><AuthDialog /></ClientOnly>
+    <ClientOnly><LazyAuthDialog v-if="authDialogActivated" /></ClientOnly>
+    <ClientOnly><ExternalNavigationDialog /></ClientOnly>
 
     <!-- Memory Monitor for debugging (only shows in development) -->
     <!-- <ClientOnly>
@@ -342,6 +351,7 @@
 import { useLocalePath } from '#imports'
 import { useLoadingStore } from '~/stores/loading'
 import { normalizeAdPath } from '~/utils/ads'
+import { LOCALE_PREFIX_RE } from '~/utils/locales'
 import { authorReference } from '~/utils/authorEntity'
 import { NAV_SECTIONS, type NavEntry, type NavSection } from '~/utils/siteNav'
 
@@ -410,8 +420,9 @@ watch(
 // Methods
 const isActiveRoute = (path: string) => {
   if (path === '/') {
+    // The home in any locale: `/`, `/es`, `/en`, `/fr`…
     return (
-      route.path === '/' || route.path === '/es' || route.path === '/en' || route.path === '/pt'
+      route.path === '/' || route.path === '/es' || route.path.replace(LOCALE_PREFIX_RE, '') === ''
     )
   }
   return route.path.startsWith(path)
@@ -488,6 +499,17 @@ const paletteActivated = ref(false)
 const searchHref = computed(() => localePath('/buscar'))
 const track = useTrack()
 
+// Login dialog: loaded the first time it opens, like the palette. Once loaded it stays mounted.
+const authStore = useAuthStore()
+const authDialogActivated = ref(false)
+watch(
+  () => authStore.dialogOpen,
+  open => {
+    if (open) authDialogActivated.value = true
+  },
+  { immediate: true }
+)
+
 function openPalette() {
   paletteActivated.value = true
   paletteOpen.value = true
@@ -542,11 +564,22 @@ onUnmounted(() => window.removeEventListener('keydown', onGlobalKeydown))
 // useHead below to avoid clobbering the existing canonical/meta/JSON-LD.
 // Unhead deduplicates `id`; i18n's legacy default `hid` is no longer recognized.
 const i18nHead = useLocaleHead()
-useHead(() => ({
-  htmlAttrs: i18nHead.value.htmlAttrs ?? {},
-  link: i18nHead.value.link ?? [],
-  meta: i18nHead.value.meta ?? [],
-}))
+useHead(() => {
+  const head = i18nHead.value
+  // i18n emits an og:locale:alternate for EVERY configured locale, page or no page — with the
+  // machine-translated locales (utils/locales.ts) that was 34 tags on every Spanish-only page.
+  // Keep the ones whose hreflang link exists, which i18n only emits for routes that exist.
+  const linked = new Set(
+    (head.link ?? []).map(link => String(link.hreflang ?? '').replace(/-/g, '_'))
+  )
+  return {
+    htmlAttrs: head.htmlAttrs ?? {},
+    link: head.link ?? [],
+    meta: (head.meta ?? []).filter(
+      meta => meta.property !== 'og:locale:alternate' || linked.has(String(meta.content))
+    ),
+  }
+})
 
 // Head configuration
 //

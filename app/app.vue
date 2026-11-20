@@ -17,6 +17,8 @@
 </template>
 
 <script setup lang="ts">
+import { OG_IMAGE_ALT_FLOOR } from '~/utils/ogCardText'
+
 // Site-wide default branded OG image. Pages override via defineOgImageComponent.
 defineOgImageComponent('Cambio')
 
@@ -36,10 +38,21 @@ useHead({
 // Site-wide default og:image:alt / twitter:image:alt. nuxt-og-image emits the
 // image + dimensions but never an alt, so without this the branded preview has
 // no alt text on any page. Pages with a more specific alt override via their
-// own useSeoMeta({ ogImageAlt }); this is the floor so every page has one.
+// own useSeoMeta({ ogImageAlt }); this is the floor so every page has one, and
+// plugins/01.og-image-alt.ts swaps it for the page's og:title when it reaches
+// the head unchanged (the card's title is the page's, not the dollar's).
 useSeoMeta({
-  ogImageAlt: 'Cambio Uruguay: cotización del dólar hoy y comparador de casas de cambio',
-  twitterImageAlt: 'Cambio Uruguay: cotización del dólar hoy y comparador de casas de cambio',
+  ogImageAlt: OG_IMAGE_ALT_FLOOR,
+  twitterImageAlt: OG_IMAGE_ALT_FLOOR,
+  // nuxt.config's `app.head` also says "Cambio Uruguay", but that block exists only in the
+  // server render. After hydration the one live entry was nuxt-seo-utils' low-priority default,
+  // `site.name` ("Cambio Uruguay - Cotización del Dólar en Uruguay Hoy"), and it rewrote the tag
+  // on every page: share previews read the short name from the HTML, while Google, which renders
+  // the page, read the long one (measured 2026-11-09 on 505 of 505 templates). An entry here runs
+  // on both sides, so the two agree. Error pages render error.vue instead of this component and
+  // keep the module's value; they answer 404 and are not indexed.
+  // Tripwire: tests/unit/headHydrationParity.test.ts.
+  ogSiteName: 'Cambio Uruguay',
 })
 
 // Google AdSense: inject the loader + account meta only when a publisher id is

@@ -8,7 +8,7 @@
 // Types come from the shared API contract; imported relatively so this module
 // stays runtime-agnostic.
 import type { ExchangeRate, ExchangeType } from '../types/api'
-import { offMarketDetector } from './marketOutlier'
+import { offMarketSide } from './marketOutlier'
 import { BCU_ORIGIN } from './rateSource'
 
 /** Supported display locales for currency names. */
@@ -234,7 +234,7 @@ export function currencyContext(code: CurrencyCode): string {
 export interface CurrencyQuote {
   /** Exchange house id / `origin` (e.g. `'itau'`). */
   origin: string
-  /** Display name of the house, falling back to `origin` when missing. */
+  /** Display name of the house, from its `origin` (and `localData` when given), never `row.name`. */
   name: string
   /** Buy price (UYU the house pays for 1 unit), or `null` when not quoted. */
   buy: number | null
@@ -244,6 +244,9 @@ export interface CurrencyQuote {
   bestBuy: boolean
   /** True for the row with the lowest sell price (best place to BUY the currency). */
   bestSell: boolean
+  /** The backend's mark: this board has not changed for days (see `ExchangeRate.frozen`). */
+  frozen?: boolean
+  frozenDays?: number
 }
 
 /**
@@ -260,33 +263,52 @@ export interface CurrencyQuote {
  * quotes the currency with a plain/cash row.
  */
 /**
- * Re-crown `bestBuy`/`bestSell` ignoring boards the outlier detector rejects.
+ * Re-crown `bestBuy`/`bestSell` ignoring prices the outlier detector rejects.
  *
  * `/casas-de-cambio`, `/pizarra` and the per-casa pages all refuse to crown a
- * quote sitting more than {@link OFF_MARKET_PCT} from the market median — the
- * signature of a stale or misparsed pizarra. The home did not, so it was
- * advertising "se vende desde $39,55" (a board 4,6% under the median) while
- * every other surface on the site named a different, reachable winner. That
- * discrepancy is now in the meta description and the ExchangeRateSpecification
- * JSON-LD, which is a price claim, so the home has to apply the same rule.
+ * price sitting outside its currency's band around the market median
+ * (`utils/marketOutlier.ts`) — the signature of a stale or misparsed pizarra.
+ * The home did not, so it was advertising "se vende desde $39,55" (a board 4,6%
+ * under the median) while every other surface on the site named a different,
+ * reachable winner. That discrepancy is now in the meta description and the
+ * ExchangeRateSpecification JSON-LD, which is a price claim, so the home has to
+ * apply the same rule.
+ *
+ * Each crown is judged on its own side: the best sell by the sells, the best buy
+ * by the buys, with the band of `code`. With one 3 % band for both sides at
+ * once, /cotizacion/real said "se vende desde $8,45" while four live casas sold
+ * at 8,00–8,10, and /cotizacion/peso-argentino named a board at 0,05 (2026-11-09).
  *
  * The rejected quotes stay in the list — they are real published boards and the
  * table still shows them. Only the crown moves.
+ *
+ * `reference` is the whole national market for `code`, when `quotes` is a
+ *   subset (a department): a handful of boards is too few to judge.
  */
-export function rankUsableQuotes(quotes: readonly CurrencyQuote[]): CurrencyQuote[] {
+export function rankUsableQuotes(
+  quotes: readonly CurrencyQuote[],
+  code: CurrencyCode,
+  reference: readonly CurrencyQuote[] = quotes
+): CurrencyQuote[] {
   const ranked = quotes.map(quote => ({ ...quote, bestBuy: false, bestSell: false }))
-  const isOffMarket = offMarketDetector(ranked)
-  const usable = ranked.filter(quote => !isOffMarket(quote))
+  const buyOff = offMarketSide(reference, code, 'buy', ranked)
+  const sellOff = offMarketSide(reference, code, 'sell', ranked)
 
   let bestBuy: CurrencyQuote | null = null
   let bestSell: CurrencyQuote | null = null
-  for (const quote of usable) {
-    if (quote.buy !== null && quote.buy > 0 && (bestBuy === null || quote.buy > bestBuy.buy!)) {
+  for (const quote of ranked) {
+    if (
+      quote.buy !== null &&
+      quote.buy > 0 &&
+      !buyOff(quote) &&
+      (bestBuy === null || quote.buy > bestBuy.buy!)
+    ) {
       bestBuy = quote
     }
     if (
       quote.sell !== null &&
       quote.sell > 0 &&
+      !sellOff(quote) &&
       (bestSell === null || quote.sell < bestSell.sell!)
     ) {
       bestSell = quote
@@ -297,9 +319,52 @@ export function rankUsableQuotes(quotes: readonly CurrencyQuote[]): CurrencyQuot
   return ranked
 }
 
+/**
+ * Lo que el slug de una casa no puede reconstruir solo: siglas y tildes.
+ *
+ * El nombre visible de una casa sale de su `origin`, NUNCA de `row.name`: en la API ese campo es lo
+ * que cada casa puso en su pizarra para nombrar la moneda ("Real", "REAL", "Dólar USA" y hasta
+ * `http://rynder.com.uy/img/bra.jpg`). Hasta el 2026-10-31 `/cotizacion/<moneda>`, `/frontera/*` y
+ * `/banco-o-casa-de-cambio-uruguay` mostraban esa etiqueta como si fuera la casa ("Mejor lugar
+ * para comprar: Real"), y la frontera de Rocha publicaba la URL de una imagen.
+ */
+const ORIGIN_DISPLAY_NAMES: Readonly<Record<string, string>> = Object.freeze({
+  brou: 'BROU',
+  bcu: 'BCU',
+  itau: 'Itaú',
+  oca: 'OCA',
+  bbva: 'BBVA',
+  hsbc: 'HSBC',
+  cambio_sir: 'Cambio SIR',
+  cambio_fenix: 'Cambio Fénix',
+  cambio_ingles: 'Cambio Inglés',
+  cambio_romantico: 'Cambio Romántico',
+  mas_cambio: 'Más Cambio',
+})
+
+/**
+ * El nombre visible de una casa: el de `localData` si la página lo tiene, si no el de la tabla de
+ * arriba, si no el slug humanizado ("cambio_pando" → "Cambio Pando"). Nunca `row.name`.
+ */
+export function casaDisplayName(
+  origin: string,
+  localData?: Readonly<Record<string, { name?: string | null } | undefined>> | null
+): string {
+  const fromData = localData?.[origin]?.name
+  if (typeof fromData === 'string' && fromData.trim()) return fromData.trim()
+  const known = ORIGIN_DISPLAY_NAMES[origin]
+  if (known) return known
+  return String(origin || '')
+    .replace(/[-_]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/(^|\s)(\p{L})/gu, (_m, sep: string, ch: string) => sep + ch.toUpperCase())
+}
+
 export function quotesForCurrency(
   rows: readonly ExchangeRate[],
-  code: CurrencyCode
+  code: CurrencyCode,
+  localData?: Readonly<Record<string, { name?: string | null } | undefined>> | null
 ): CurrencyQuote[] {
   const byOrigin = new Map<string, CurrencyQuote>()
 
@@ -311,11 +376,12 @@ export function quotesForCurrency(
 
     byOrigin.set(row.origin, {
       origin: row.origin,
-      name: row.name && row.name.trim() ? row.name : row.origin,
+      name: casaDisplayName(row.origin, localData),
       buy: typeof row.buy === 'number' ? row.buy : null,
       sell: typeof row.sell === 'number' ? row.sell : null,
       bestBuy: false,
       bestSell: false,
+      ...(row.frozen === true ? { frozen: true, frozenDays: row.frozenDays } : {}),
     })
   }
 

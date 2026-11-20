@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createI18n } from 'vue-i18n'
@@ -262,7 +262,18 @@ function staticTitle(source: string): string | null {
 // `utils/seasonalRental.ts`: el plazo de 120 días que imprime es la definición legal del contrato
 // y no se mueve con el día, y que no se despegue de la constante lo vigila
 // `seasonalRental.test.ts`.
-const MEASURABLE = 181
+// 181 → 193 el 2026-11-09, y las doce de diferencia son UNA sola de esta corrida: la página nueva
+// `/coeficiente-de-reajuste-de-alquileres-uruguay`, apretada en el mismo commit que la publica. Las
+// otras once son el sobrante que las cinco notas de arriba describen como el único accidente que
+// este número existe para evitar — once títulos medidos se podrían volver dinámicos, o sea salir del
+// control del largo y del de canibalización, sin que nada se ponga en rojo. Se publicaron de a una
+// sin volver a apretarlo, que es exactamente cómo esto se desajusta. Queda otra vez en el conteo
+// real.
+//
+// El título de la página nueva entra acá porque es un literal de la página y no una cadena armada
+// desde `utils/rentAdjustment.ts`; que no se despegue del último decreto de la serie lo vigila
+// `rentAdjustment.test.ts`, que es lo que impide que el literal envejezca en silencio.
+const MEASURABLE = 193
 // 44 → 33 el 2026-09-07: once de los títulos más largos reescritos a 43 caracteres o menos. Los
 // once perdían la cola en el SERP, y la cola era el dato — «2 puntos o 9», «mora y 72 h», «1 mes
 // por año», «6 países», «13 temas», «ChauDeudas o MiDeuda» —, así que en cada uno se conservó la
@@ -348,5 +359,446 @@ describe('los títulos escritos en las páginas entran en el SERP', () => {
       .map(page => `${page.rendered.length} ${page.file}: ${page.rendered}`)
       .sort()
     expect(offenders.length, offenders.join('\n')).toBeLessThanOrEqual(OVER_BUDGET)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// El mismo presupuesto, aplicado a los títulos que el lector de arriba no alcanzaba
+// ---------------------------------------------------------------------------
+
+/**
+ * El PISO del `<title>`, para las páginas que `staticTitle` no puede leer.
+ *
+ * POR QUÉ HACE FALTA UN SEGUNDO LECTOR. `OVER_BUDGET` quedó en 0 el 2026-09-12 y el comentario lo
+ * declara contrato: «un título nuevo que no entre en el SERP pone CI en rojo el día que se escribe».
+ * Era verdad de lo que `staticTitle` mide, que es el mismo modo de fallar que
+ * `seoDescriptionBudget.test.ts` se encontró el 2026-11-02 con las descripciones escritas con
+ * plantilla: no hay rojo, hay una medición que no alcanza a la página. Medido hoy, `staticTitle`
+ * resolvía 190 de las 300 páginas que declaran un `title:` dentro de `useSeoMeta` (185 por sí mismo
+ * más los 5 de catálogo i18n; su propio `MEASURABLE` está en 181, o sea con nueve de sobra), y entre
+ * las 110 que no leía había un título de **94 caracteres** —`/prestamos-uruguay`, del tramo que
+ * rinde 8×— y otros cuatro pasados de 60. El lector nuevo llega a 247; las 53 que faltan arman su
+ * título con un `computed(() => { ... })` o una clave de i18n dinámica y siguen fuera de los dos.
+ *
+ * Y LO PEOR ES QUE EL PUNTO CIEGO ESTÁ CORRELACIONADO CON EL DEFECTO. `staticTitle` saca la
+ * expresión con `block.match(/\n\s*title:\s*(.+)/)`, o sea lee lo que queda de ESA línea. Cuando el
+ * título es largo, `  title: () =>` más la cadena pasa de las 100 columnas y prettier parte la
+ * línea; a partir de ahí la expresión que el lector ve es `() =>` y la página deja de contarse. El
+ * título que no entra en el SERP es exactamente el que tiende a no entrar en una línea, así que el
+ * control se iba apagando justo en los casos que existía para atrapar.
+ *
+ * Las otras dos formas que se le escapaban no son de largo sino de escritura, y las tres salieron de
+ * las cinco páginas medidas:
+ *
+ *   title: () =>            ← el valor en la línea siguiente (`/prestamos-uruguay`, 94)
+ *     'cadena larga',
+ *   title: metaTitle,       ← un identificador pelado, sin la plantilla de la marca
+ *   title: () => `${title} | Cambio Uruguay`,  con  const title = `… ${dato} …`
+ *
+ * LA MEDICIÓN ES UN PISO, igual que en las descripciones de plantilla: un `${...}` que no resuelve a
+ * un literal se descarta, así que lo que se cuenta es el texto FIJO y el título real sólo puede ser
+ * más largo. Este pozo CONDENA Y NO ABSUELVE: un piso que pasa de 60 está cortado seguro; uno que
+ * entra no prueba nada, y por eso el lector de arriba y sus tests se quedan donde están.
+ *
+ * La diferencia con el pozo de las descripciones es que acá el piso NO alcanza solo: la forma más
+ * común de este repo es `title: () => \`${title} | Cambio Uruguay\``, cuyo texto fijo son los 17
+ * caracteres de la marca. Sin resolver el identificador, el piso de 192 páginas sería 17 y la
+ * medición no diría nada — así que se sigue el `const` del mismo archivo, y lo que no se puede
+ * seguir aporta vacío.
+ */
+const PAGES_WITH_TITLE = pageFiles().map(file => relative(PAGES_DIR, file))
+
+/** De `x.vue` y `x/index.vue` a la ruta del sitio, como en `seoDescriptionBudget.test.ts`. */
+const routeOf = (file: string) =>
+  file === 'index.vue' ? '/' : `/${file.replace(/\/index\.vue$/, '').replace(/\.vue$/, '')}`
+
+/**
+ * Las líneas del objeto de `useSeoMeta`. El `})` de cierre va anclado a la columna 0 porque la
+ * llamada vive siempre en el nivel superior del `<script setup>`: recorrer por líneas es exacto y
+ * evita el backtracking de un `[\s\S]*?` sobre archivos de mil líneas.
+ */
+function seoMetaLines(lines: string[]): string[] {
+  const start = lines.findIndex(line => line.startsWith('useSeoMeta({'))
+  if (start === -1) return []
+  const end = lines.indexOf('})', start)
+  return end === -1 ? [] : lines.slice(start + 1, end)
+}
+
+/**
+ * La expresión del `title:` CON sus líneas de continuación, que es la mitad que le faltaba al lector
+ * de arriba. Corta en la siguiente entrada del objeto, y la siguiente entrada puede venir abreviada
+ * (`description,`) además de con dos puntos — por eso el corte acepta `:` o `,`.
+ */
+function titleExpression(block: string[]): string | null {
+  const head = block.findIndex(line => /^ {2}title:/.test(line))
+  if (head === -1) return null
+  const parts = [block[head]!.replace(/^ {2}title:/, '')]
+  for (let i = head + 1; i < block.length; i++) {
+    if (/^ {2}[a-z_$][\w$]*\s*[:,]/i.test(block[i]!)) break
+    parts.push(block[i]!)
+  }
+  return parts.join('\n').trim().replace(/,$/, '')
+}
+
+/** El valor de un `const NAME = ...` del nivel superior, con sus líneas de continuación. */
+function constantExpression(lines: string[], name: string): string | null {
+  const head = lines.findIndex(line => new RegExp(`^(?:const|let) ${name} =`).test(line))
+  if (head === -1) return null
+  const first = lines[head]!.replace(new RegExp(`^(?:const|let) ${name} =`), '')
+  const parts = [first]
+  let previous = first
+  for (let i = head + 1; i < lines.length; i++) {
+    if (
+      previous.trim() !== '' &&
+      !previous.trimEnd().endsWith('+') &&
+      !previous.trimEnd().endsWith('=')
+    )
+      break
+    parts.push(lines[i]!)
+    previous = lines[i]!
+  }
+  return parts.join('\n').trim().replace(/,$/, '')
+}
+
+/** Saca las envolturas que no aportan texto: `computed(...)` y la flecha sin argumentos. */
+function unwrapTitle(expression: string): string {
+  let current = expression.trim()
+  for (let depth = 0; depth < 4; depth++) {
+    const inner =
+      /^computed\(([\s\S]*)\)$/.exec(current)?.[1] ?? /^\(\)\s*=>([\s\S]*)$/.exec(current)?.[1]
+    if (inner === undefined) break
+    current = inner.trim()
+  }
+  return current
+}
+
+/**
+ * El texto FIJO de una expresión de título: cadenas y plantillas concatenadas, siguiendo los
+ * identificadores del mismo archivo. Lo que no se puede resolver —una llamada, un ternario, un
+ * `${a.b.c}`— aporta vacío, que es lo que hace de esto un piso.
+ */
+function titleFloor(expression: string, lines: string[], depth = 0): string {
+  if (depth > 3) return ''
+  let rest = unwrapTitle(expression)
+  let text = ''
+  for (let step = 0; step < 40 && rest.length > 0; step++) {
+    rest = rest.replace(/^[\s+]+/, '')
+    if (rest.length === 0) break
+
+    const quoted = /^'((?:[^'\\]|\\.)*)'/.exec(rest)
+    if (quoted) {
+      text += quoted[1]!.replace(/\\'/g, "'")
+      rest = rest.slice(quoted[0].length)
+      continue
+    }
+
+    if (rest.startsWith('`')) {
+      const close = rest.indexOf('`', 1)
+      if (close === -1) break
+      text += rest.slice(1, close).replace(/\$\{[^}]*\}/g, hole => {
+        const name = /^\$\{\s*([A-Za-z_$][\w$]*)(?:\.value)?\s*\}$/.exec(hole)?.[1]
+        if (name === undefined) return ''
+        const declaration = constantExpression(lines, name)
+        return declaration === null ? '' : titleFloor(declaration, lines, depth + 1)
+      })
+      rest = rest.slice(close + 1)
+      continue
+    }
+
+    const identifier = /^([A-Za-z_$][\w$]*)(?:\.value)?(?![\w$(])/.exec(rest)
+    if (identifier) {
+      const declaration = constantExpression(lines, identifier[1]!)
+      if (declaration !== null) text += titleFloor(declaration, lines, depth + 1)
+      rest = rest.slice(identifier[0].length)
+      continue
+    }
+
+    break
+  }
+  return text
+}
+
+/** El piso del título de una página, o `null` cuando no queda nada fijo que medir. */
+function pageTitleFloor(source: string): string | null {
+  const lines = source.split('\n')
+  const block = seoMetaLines(lines)
+  if (block.length === 0) return null
+  const expression = titleExpression(block)
+  if (expression === null) return null
+  const floor = titleFloor(expression, lines).replace(/\s+/g, ' ').trim()
+  return floor === '' ? null : floor
+}
+
+/**
+ * Las rutas cuyo PISO de título ya pasa los 60 con la marca. **SÓLO PUEDE BAJAR.**
+ *
+ * 5 → 4 el 2026-11-03, la primera medición. Se cura `/prestamos-uruguay` (94 con la marca, el peor
+ * del sitio y el único del tramo `contenido` entre los cinco), que era además la única de las cinco
+ * con la ruta libre de toda ventana de medición abierta junto con `/tiendas-online-uruguay`
+ * (`npm run seo_debt`), y entre esas dos manda el tramo: 8× contra 0,2×.
+ *
+ * 4 → 3 el 2026-11-04. Se cura `/tiendas-online-uruguay` (74), que era la que quedaba libre: las
+ * otras tres siguen reservadas hasta el 9 y el 24 de noviembre, así que la cola de este pozo no
+ * tiene nada más que se pueda tocar hoy. Entra con la cifra puesta —cuántas de las tiendas
+ * relevadas tienen reseñas públicas de Google o Trustpilot— y su medición exacta vive en
+ * `titlesCutBySerp.test.ts`, como la de los otros títulos con datos adentro.
+ *
+ * Las tres que quedan, con el día en que se libera cada una:
+ *
+ *   - `/banco-o-casa-de-cambio-uruguay` (75) y `/cobrar-giro-del-exterior-uruguay` (68) — reservadas
+ *     por `casas-grupo-antes-de-cambiar` (2026-10-11), se liberan el 2026-11-09.
+ *   - `/declarar-dinero-en-efectivo-uruguay` (73 de piso, 80 con el umbral puesto) — reservada por
+ *     `dos-huerfanas-de-aduana-entran-a-su-tema` (2026-10-26), se libera el 2026-11-24.
+ *
+ * 3 → 1 el 2026-11-09, que es el día exacto que el párrafo de arriba tenía anotado: la fila
+ * `casas-grupo-antes-de-cambiar` del 11/10 cumple hoy 29 días y las DOS que reservaba salen juntas
+ * de la ventana que `experiments_overlap.test.ts` protege (el solape es `|Δfecha| ≤ 28`). Se curan
+ * las dos y no una, porque las dos las libera la MISMA fila: dejar una en la cola no reservaría
+ * nada que no estuviera ya libre.
+ *
+ * Las dos pagaban el recorte con el mismo defecto que este archivo documenta desde la primera
+ * corrida — la segunda mitad ANUNCIABA la pregunta en vez de contestarla — y las dos la contestan
+ * ahora con lo que la página ya calcula:
+ *
+ *   - `/banco-o-casa-de-cambio-uruguay` (75 → 58) pasa a llevar el VEREDICTO del día («¿Banco o
+ *     casa de cambio? Hoy gana la casa»), tomado del mismo `compareInstitutionKinds` que firma la
+ *     respuesta del cuerpo, con el empate dicho como empate y la pregunta como vuelta atrás si no
+ *     hay lectura. Su piso mide 42 porque el veredicto vive en su propio `computed`; la medición
+ *     con el veredicto puesto está en `titlesCutBySerp.test.ts`.
+ *   - `/cobrar-giro-del-exterior-uruguay` (68 → 54) suelta «Dónde» —la pregunta la escribió quien
+ *     busca— y «en Uruguay», que la marca ya repite, y conserva la cifra: cuántas casas de cambio
+ *     declaran ser agentes de una red internacional.
+ *
+ * Queda una y está RESERVADA: `/declarar-dinero-en-efectivo-uruguay` se libera el 2026-11-24.
+ */
+const DEUDA_TITULO_PISO = [
+  // El comentario va DENTRO de la lista por lo que `DEUDA_SIN_ENLACE` en `enlacesDeContexto.test.ts`
+  // deja escrito: `classes/revenueplan/debtFree.ts::parseStringList` corta en el primer `\n]`, o sea
+  // exige que el cierre abra su propia línea, y prettier aplasta a una sola línea cualquier array
+  // que entre en 100 columnas salvo los que llevan un comentario.
+  '/declarar-dinero-en-efectivo-uruguay',
+]
+
+const TITLE_FLOOR_OVER_BUDGET = 1
+
+// 247 el 2026-11-03, el conteo real y por el mismo motivo que `MEASURABLE`: si el piso fuera más
+// bajo, un título nuevo podría dejar de leerse acá sin poner nada en rojo. Sube con cada página que
+// nace y baja sólo si alguien vuelve ilegible un título que hoy se mide, que es lo que tiene que
+// delatar.
+// 247 → 252 el 2026-11-09: una es la página nueva de esta corrida, apretada en el mismo commit que
+// la publica, y las otras cuatro son sobrante acumulado desde el 3/11. Queda en el conteo real por
+// el mismo motivo que `MEASURABLE`.
+const FLOOR_MEASURABLE = 252
+
+describe('los títulos que el lector de una línea no alcanzaba también entran en el SERP', () => {
+  const floors = PAGES_WITH_TITLE.map(file => ({
+    file,
+    route: routeOf(file),
+    floor: pageTitleFloor(readFileSync(join(PAGES_DIR, file), 'utf8')),
+  })).filter((page): page is { file: string; route: string; floor: string } => page.floor !== null)
+
+  const over = floors.filter(page => withBrand(page.floor).length > MAX_TITLE)
+
+  it(`lee el piso de ${FLOOR_MEASURABLE} páginas sin ejecutar la app`, () => {
+    expect(floors.length).toBeGreaterThanOrEqual(FLOOR_MEASURABLE)
+  })
+
+  // El guard que impide que los dos lectores se separen en silencio: todo lo que `staticTitle` lee,
+  // este piso lo tiene que leer también. Sin esto, un refactor podría dejar el lector nuevo ciego a
+  // una página que el viejo sí medía y el total seguiría pareciendo sano.
+  it('alcanza a todas las páginas que el lector de arriba ya leía', () => {
+    const conPiso = new Set(floors.map(page => page.file))
+    const perdidas = PAGES_WITH_TITLE.filter(
+      file =>
+        staticTitle(readFileSync(join(PAGES_DIR, file), 'utf8')) !== null && !conPiso.has(file)
+    )
+    expect(perdidas, perdidas.join('\n')).toEqual([])
+  })
+
+  it(`tiene como mucho ${TITLE_FLOOR_OVER_BUDGET} pisos pasados de ${MAX_TITLE} caracteres`, () => {
+    const offenders = over
+      .map(page => `${withBrand(page.floor).length} ${page.route}: ${withBrand(page.floor)}`)
+      .sort()
+    expect(offenders.length, offenders.join('\n')).toBeLessThanOrEqual(TITLE_FLOOR_OVER_BUDGET)
+  })
+
+  // La deuda dice la verdad: una ruta ya curada tiene que delatarse acá en vez de inflar el
+  // presupuesto y dejar que el próximo título nazca cortado contra un contador que sobra.
+  it('cada ruta en deuda sigue pasada, y la deuda nombra a todas las que lo están', () => {
+    expect(over.map(page => page.route).sort()).toEqual([...DEUDA_TITULO_PISO].sort())
+  })
+
+  it('ninguna ruta en deuda es inventada', () => {
+    const known = floors.map(page => page.route)
+    expect(DEUDA_TITULO_PISO.filter(route => !known.includes(route))).toEqual([])
+  })
+
+  it('lee las tres formas que se le escapaban al lector de una línea, y nada más', () => {
+    // La línea partida: `titleExpression` devuelve la expresión ENTERA (la flecha la saca después
+    // `unwrapTitle`), que es justo lo que el lector de arriba perdía al quedarse en su propia línea.
+    const wrapped = [
+      'useSeoMeta({',
+      '  title: () =>',
+      "    'Una cadena larga',",
+      '  description,',
+      '})',
+    ]
+    expect(titleExpression(seoMetaLines(wrapped))).toBe("() =>\n    'Una cadena larga'")
+    expect(pageTitleFloor(wrapped.join('\n'))).toBe('Una cadena larga')
+
+    const lines = [
+      "const metaTitle = 'Banco o casa de cambio'",
+      'useSeoMeta({',
+      '  title: metaTitle,',
+      '})',
+    ]
+    expect(pageTitleFloor(lines.join('\n'))).toBe('Banco o casa de cambio')
+
+    const template = [
+      'const title = `Hasta US$ ${THRESHOLD} no declarás nada`',
+      'useSeoMeta({',
+      '  title: () => `${title} | Cambio Uruguay`,',
+      '})',
+    ]
+    expect(pageTitleFloor(template.join('\n'))).toBe('Hasta US$ no declarás nada | Cambio Uruguay')
+
+    // Lo que no resuelve aporta vacío, nunca un largo inventado.
+    expect(titleFloor('() => t(claveDinamica)', [])).toBe('')
+    expect(titleFloor('() => `${data.value.name} | Cambio Uruguay`', [])).toBe(' | Cambio Uruguay')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// El octavo pozo: los títulos que viven en i18n y no en la página
+// ---------------------------------------------------------------------------
+
+/**
+ * POR QUÉ HACE FALTA UN TERCER LECTOR, Y POR QUÉ ES EL MISMO AGUJERO DEL SEXTO Y DEL SÉPTIMO.
+ *
+ * Los dos lectores de arriba leen el `.vue`: `staticTitle` mide 193 páginas y el piso del 2026-11-03
+ * llega a 252. Ninguno de los dos puede medir `title: () => t('seo.algoTitle')`, porque el texto no
+ * está en la página sino en `i18n/locales/json/*.json`: para `staticTitle` es una llamada, y para el
+ * piso la llamada no aporta nada fijo, así que devuelve `null` y la página sale del conteo. Son 59
+ * de las 313 que declaran un `title:`, y los tres bloques de i18n de arriba miden a mano TRES
+ * claves (`homeTitle`, `homeTitleLive` y, por su propio mensaje, `dolarDepto`/`frontera`).
+ *
+ * O sea el modo de fallar de siempre: los dos presupuestos decían 0 y era verdad de lo que medían,
+ * mientras **ocho claves de i18n titulaban ocho páginas que nadie contaba**. Medido el 2026-11-11,
+ * con la marca puesta y sobre los tres idiomas, siete estaban pasadas:
+ *
+ *   - `sucursalesIndexTitle` 80 (es), 75 (pt), 66 (en) — veinte caracteres de más en español, el
+ *     peor del archivo: «Directorio de Sucursales - Todas las Casas de Cambio en Uruguay» se corta
+ *     antes de «en Uruguay» y abre por dos palabras de relleno («Directorio de», «Todas las») en
+ *     vez de por la que se busca. Pasa a «Sucursales de casas de cambio en Uruguay» (57).
+ *   - `historicalTitle` 63 (es) — suelta «en Uruguay», que la marca ya repite, que es exactamente
+ *     lo que se le hizo a `/cobrar-giro-del-exterior-uruguay` el 2026-11-09 (52).
+ *   - `advancedTitle` 68 (pt), 63 (en) — el español entra justo en 60 y se queda como está.
+ *   - `nearbyCasasTitle` 62 (pt) — suelta «no Uruguai» y CONSERVA «Melhor», que es la palabra de la
+ *     consulta (51).
+ *
+ * LO QUE ESTE POZO NO MIDE, DICHO EN VOZ ALTA. Las tres claves de título con parámetros
+ * (`historicalOriginTitle`, `historicalDetailTitle`, `sucursalesTitle`) quedan fuera: su largo real
+ * depende del nombre de la casa, que llega del payload y no de un catálogo, así que medirlas pide
+ * una fijación de peor caso como la de `LONGEST_DEPARTMENTS` y no una lectura del JSON. No es una
+ * absolución: con el nombre más largo del catálogo de `utils/casasDirectory.ts` («BROU (Banco
+ * República)», 23 caracteres) `historicalOriginTitle` da 82 (es), 77 (pt) y 74 (en), y su texto fijo
+ * mide 60 sin el `{origin}`, o sea que **se pasa con cualquier nombre**; `historicalDetailTitle` da
+ * 73/70/71. Las dos titulan rutas que ahora mismo toca un PR abierto (#156, `/historico/[origin]` y
+ * su detalle), así que se arreglan ahí o en su propia corrida, con el peor caso medido y no con un
+ * nombre inventado. `sucursalesTitle` entra (53).
+ *
+ * CONDENA Y NO ABSUELVE, como el sexto y el séptimo: una clave que entra en 60 acá no prueba que la
+ * página entre —el `.vue` puede envolverla— y por eso los dos lectores de arriba se quedan donde
+ * están.
+ */
+const I18N_TITLE_ROUTES = {
+  advancedTitle: '/avanzado',
+  compareTitle: '/comparar',
+  historicalTitle: '/historico',
+  homeTitle: '/',
+  mapaTitle: '/mapa',
+  nearbyCasasTitle: '/casa-de-cambio-cerca-de-mi',
+  offlineTitle: '/offline',
+  sucursalesIndexTitle: '/sucursales',
+} as const
+
+/** El archivo de página de una ruta: `/historico` → `historico/index.vue`, `/` → `index.vue`. */
+const pageFileOf = (route: string) =>
+  route === '/' ? ['index.vue'] : [`${route.slice(1)}.vue`, `${route.slice(1)}/index.vue`]
+
+const DEUDA_TITULO_I18N = [
+  // POZO PAGADO el 2026-11-11, el día que nació: las ocho claves sin parámetros entran en el SERP
+  // en los tres idiomas. Las siete que no entraban se reescribieron en el mismo commit, porque un
+  // pozo que nace con deuda propia nace reservando su propia cola.
+  //
+  // Esa marca literal es la que `classes/revenueplan/debtFree.ts::parseStringList` busca para
+  // distinguir «este pozo se terminó» de su propio modo de fallar, que es devolver `[]` cuando no
+  // entiende la forma de la lista.
+  //
+  // Y el comentario va DENTRO de la lista por lo que `DEUDA_SIN_ENLACE` en
+  // `enlacesDeContexto.test.ts` deja escrito: `parseStringList` corta en el primer `\n]`, o sea
+  // exige que el cierre abra su propia línea, y prettier aplasta a una sola línea cualquier array
+  // que entre en 100 columnas salvo los que llevan un comentario.
+]
+
+const I18N_OVER_BUDGET = 0
+
+describe('los títulos que viven en i18n también entran en el SERP', () => {
+  const KEYS = Object.keys(I18N_TITLE_ROUTES) as (keyof typeof I18N_TITLE_ROUTES)[]
+
+  // El guard que cierra el agujero: una clave `*Title` nueva y sin parámetros queda medida sola. Sin
+  // esto el pozo mide ocho claves para siempre y la novena nace fuera de todo presupuesto, que es
+  // justo cómo llegaron acá las siete de hoy.
+  it('la tabla nombra exactamente las claves `seo.*Title` sin parámetros', () => {
+    const seo = es.seo as Record<string, unknown>
+    const sinParametros = Object.entries(seo)
+      .filter(
+        ([key, value]) => key.endsWith('Title') && typeof value === 'string' && !value.includes('{')
+      )
+      .map(([key]) => key)
+      .sort()
+    expect(sinParametros).toEqual([...KEYS].sort())
+  })
+
+  // Una clave renombrada o una página movida dejarían la tabla apuntando al vacío y el presupuesto
+  // seguiría verde contra una ruta que ya no existe, igual que en los otros pozos.
+  it('cada ruta de la tabla es una página real', () => {
+    for (const key of KEYS) {
+      const route = I18N_TITLE_ROUTES[key]
+      const found = pageFileOf(route).some(file => existsSync(join(PAGES_DIR, file)))
+      expect(found, `${key} → ${route}`).toBe(true)
+    }
+  })
+
+  for (const [code, messages] of LOCALES) {
+    const t = translator(code, messages)
+
+    it(`${code}: las ${KEYS.length} claves entran en ${MAX_TITLE} caracteres con la marca`, () => {
+      const offenders = KEYS.map(name => ({ name, title: withBrand(t(`seo.${name}`)) }))
+        .filter(entry => entry.title.length > MAX_TITLE)
+        .map(
+          entry =>
+            `${entry.title.length} ${I18N_TITLE_ROUTES[entry.name]} (${entry.name}): ${entry.title}`
+        )
+        .sort()
+      expect(offenders.length, offenders.join('\n')).toBeLessThanOrEqual(I18N_OVER_BUDGET)
+    })
+  }
+
+  // La deuda dice la verdad, en los tres idiomas a la vez: una ruta ya curada tiene que delatarse
+  // acá en vez de inflar el presupuesto y dejar que el próximo título nazca cortado.
+  it('la deuda nombra exactamente las rutas que siguen pasadas', () => {
+    const over = new Set<string>()
+    for (const [code, messages] of LOCALES) {
+      const t = translator(code, messages)
+      for (const key of KEYS)
+        if (withBrand(t(`seo.${key}`)).length > MAX_TITLE) over.add(I18N_TITLE_ROUTES[key])
+    }
+    expect([...over].sort()).toEqual([...DEUDA_TITULO_I18N].sort())
+  })
+
+  it('ninguna ruta en deuda es inventada', () => {
+    const known: string[] = KEYS.map(key => I18N_TITLE_ROUTES[key])
+    expect(DEUDA_TITULO_I18N.filter(route => !known.includes(route))).toEqual([])
   })
 })

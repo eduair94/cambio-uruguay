@@ -1704,7 +1704,10 @@ export const PERSONAL_FAQS: readonly PersonalFaq[] = Object.freeze([
     basis: 'norma',
     tags: ['cuenta sueldo', 'banco impuesto', 'Ley 19.210', 'libre elección', 'IGTSS'],
     howCommon: 'muy_comun',
-    related: [{ label: 'Comparar bancos', to: '/mejores-bancos-uruguay' }],
+    related: [
+      { label: 'La cuenta sueldo, en detalle', to: '/guias/cuenta-sueldo-elegir-banco-uruguay' },
+      { label: 'Comparar bancos', to: '/mejores-bancos-uruguay' },
+    ],
   }),
 
   // ── Precios e inflación ─────────────────────────────────────────────────────

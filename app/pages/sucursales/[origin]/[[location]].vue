@@ -119,7 +119,7 @@
             </span>
           </v-card-title>
 
-          <v-data-table
+          <VDataTable
             v-if="branchesData?.length"
             :headers="headers"
             :items="branchesData"
@@ -174,7 +174,7 @@
                 {{ ((item as any).distance / 1000).toFixed(1) }} km
               </v-chip>
             </template>
-          </v-data-table>
+          </VDataTable>
 
           <!-- No data state -->
           <v-card-text v-else class="text-center pa-8">
@@ -223,8 +223,17 @@
 </template>
 
 <script setup lang="ts">
+import { VDataTable } from 'vuetify/components'
 import LocationsMap from '~/components/map/LocationsMap.vue'
-import { deptKey, deptLabel, humaniseOrigin, type BranchPage } from '~/utils/branches'
+import {
+  BANK_ORIGINS,
+  deptKey,
+  deptLabel,
+  dominantWeekdayHours,
+  humaniseOrigin,
+  spokenClock,
+  type BranchPage,
+} from '~/utils/branches'
 import { applyBranchCorrections, type BranchFieldSources } from '~/utils/branchCorrections'
 import { casaHubPath } from '~/utils/casaBrandPage'
 
@@ -418,7 +427,45 @@ const seoTitle = computed(() => {
     : t(one ? 'seo.sucursalesWithCountOne' : 'seo.sucursalesWithCount', { origin: name, count })
 })
 
+/**
+ * Bancos y financieras: la descripción arranca por el horario, que es lo que su consulta pide
+ * («horario itau», «oca horarios»), calculado con el horario que publica cada sucursal. Ver
+ * `BANK_ORIGINS` y la fila `sucursales-bancos-horario-primero` de `docs/seo/experiments.json`.
+ */
+const bankDescription = computed(() => {
+  const name = exchangeHouseName.value
+  const count = branchCount.value
+  if (!BANK_ORIGINS.has(origin) || !count) return null
+  const hours = dominantWeekdayHours(directoryBranches.value.map(branch => branch.hours))
+  const clock = hours
+    ? { opens: spokenClock(hours.opens), closes: spokenClock(hours.closes) }
+    : null
+  // Un local solo: la frase «en 1 de sus 1 sucursales» no se dice. Sin horario legible queda la
+  // descripción de siempre.
+  if (count === 1) {
+    return clock && location
+      ? t('seo.sucursalesBankHoursSingle', {
+          origin: name,
+          location: locationLabel.value,
+          ...clock,
+        })
+      : null
+  }
+  const where = location ? ` ${t('seo.sucursalesWhere', { location: locationLabel.value })}` : ''
+  if (!hours || !clock) return t('seo.sucursalesBankNoHours', { origin: name, count, where })
+  return hours.matching === hours.total
+    ? t('seo.sucursalesBankHoursAll', { origin: name, count, where, ...clock })
+    : t('seo.sucursalesBankHoursSome', {
+        origin: name,
+        count,
+        matching: hours.matching,
+        where,
+        ...clock,
+      })
+})
+
 const seoDescription = computed(() => {
+  if (bankDescription.value) return bankDescription.value
   const name = exchangeHouseName.value
   const count = branchCount.value
   const one = count === 1

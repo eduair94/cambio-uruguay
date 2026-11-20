@@ -28,6 +28,7 @@ const BY_TOOLSET: Record<Toolset, string[]> = {
   productos: [
     "Productos — search_products busca en celulares, sillas, hogar (38 categorías) y movilidad eléctrica; plan_home_setup presupuesta equipar una casa; check_online_store da señales de una tienda (nunca un veredicto); supermarket_prices da precios oficiales del SIPC.",
     "Mostrá el precio más bajo con vendedor y link y la banda típica; si conviene usado, decilo con el ahorro.",
+    "Para monopatines o bicicletas eléctricas usá search_products con vertical monopatines o bicicletas-electricas: son avisos del buscador, filtrables por marca, condición y presupuesto en pesos. Incluí el aviso y el enlace del buscador con sus filtros. No atribuyas autonomía, potencia ni garantías que el aviso no declara; para la normativa buscá la guía con search_site si está disponible.",
   ],
   sitio: [
     "Sitio — para cualquier pregunta sobre lo que cubre cambio-uruguay.com (impuestos, aduana y compras en el exterior, tarjetas y bancos, préstamos y deudas, sueldo y BPS, alquilar, consumo) o para saber a qué página ir: search_site primero y, si el pasaje no alcanza, read_page de la mejor página.",

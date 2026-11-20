@@ -88,6 +88,13 @@ const PROGRAMMATIC_PAGES: Array<{ file: string; sitemapMarker: string }> = [
     file: 'celulares-uruguay/[modelo].vue',
     sitemapMarker: '`/celulares-uruguay/${slug}`',
   },
+  // Una página por institución del tarifario IAMC del MSP. Su hub es /tickets-mutualistas-uruguay,
+  // que es trilingüe y por eso no entra a este contrato (su marcador de sitemap no es una ruta
+  // literal); la ficha es sólo-español como las de courier, así que sí.
+  {
+    file: 'mutualista/[institucion].vue',
+    sitemapMarker: '`/mutualista/${slug}`',
+  },
 ]
 
 describe('the programmatic families exist on disk', () => {
@@ -179,14 +186,25 @@ const NOINDEXED = [
   // Autos usados: the directory and the model pages index at their own URL; filter combinations,
   // thin models and single adverts (they expire within weeks) opt out.
   'autos-usados-uruguay/[key].vue',
+  // El comparador de AVISOS: hasta tres que elige el lector, siempre noindex. El hub indexable de
+  // "comparar autos usados" es el de modelos (comparar-autos-usados-uruguay.vue).
+  'autos-usados-uruguay/comparar.vue',
   // Por presupuesto: se indexa con modelos suficientes en el tramo; si no, noindex.
   'autos-usados-uruguay/hasta-[monto]-dolares.vue',
   'autos-usados-uruguay/index.vue',
   'autos-usados-uruguay/precios/[slug].vue',
   // Las dos páginas de movilidad eléctrica llevan su directorio de avisos ADENTRO (2026-09-22):
-  // la URL limpia se indexa y cada combinación de filtros se sale, igual que equipar y autos.
-  'bicicletas-electricas-uruguay.vue',
+  // la URL limpia se indexa y cada combinación de filtros se sale, igual que equipar y autos. Desde
+  // el 4/11/2026 bicicletas tiene, como monopatines, una página por modelo (se indexa con dos
+  // vendedores y ficha) y un comparador, que es una combinación elegida por el lector: noindex.
+  'bicicletas-electricas-uruguay/[modelo].vue',
+  'bicicletas-electricas-uruguay/comparar.vue',
+  'bicicletas-electricas-uruguay/index.vue',
   'buscar.vue',
+  // El comparador de modelos se indexa en su URL; cada combinación de modelos se sale, como el asesor.
+  'comparar-autos-usados-uruguay.vue',
+  // Panel privado de contactos comerciales (requireAdmin).
+  'contactos-comerciales.vue',
   // El tasador se indexa en su URL; cada combinación de marca, modelo y año se sale.
   'cuanto-vale-mi-auto-uruguay.vue',
   'cuenta/index.vue',
@@ -205,10 +223,20 @@ const NOINDEXED = [
   // El ranking privado de páginas por visita: mismo trato que el tablero de Search Console.
   'estadisticas-por-pagina.vue',
   'estado.vue',
+  // Las guías se indexan en su URL; una guía CONSOLIDADA se sale (`Guide.consolidatedInto`), porque
+  // su canónica es la página raíz que se quedó con la misma intención — el par que
+  // `slugCollision.test.ts` documenta. Que esta página siga declarando canónica, robots y
+  // estructurados desde el campo y no a mano lo mide `guideConsolidation.test.ts`, que es lo que
+  // cubre el hueco de sacarla de `OWES_OWN_SEO`.
+  'guias/[slug].vue',
   // Agency pages exclude empty/error states, thin profiles and filtered directory copies.
   'inmobiliarias-uruguay/[key].vue',
   'inmobiliarias-uruguay/index.vue',
-  'monopatines-electricos-uruguay.vue',
+  // Monopatines por modelo (4/11/2026): se indexa con dos vendedores y ficha; un modelo flaco
+  // se sale. El comparador es una combinación de modelos elegida por el lector: siempre noindex.
+  'monopatines-electricos-uruguay/[modelo].vue',
+  'monopatines-electricos-uruguay/comparar.vue',
+  'monopatines-electricos-uruguay/index.vue',
   // Motos usadas: el directorio y la ficha por modelo se indexan en su URL limpia; una
   // combinación de filtros y un modelo sin grupo se salen, igual que autos usados.
   'motos-usadas-uruguay/[key].vue',
@@ -222,6 +250,8 @@ const NOINDEXED = [
   'oportunidades-autos-usados-uruguay.vue',
   // Index the opportunity directory itself; query combinations opt out like rental filters.
   'oportunidades-inmobiliarias-uruguay.vue',
+  // Los hilos de Reddit para contestar: pública por enlace y noindex (casi todo es texto de Reddit).
+  'oportunidades-reddit.vue',
   // La ficha por articulo del SIPC es INDEXABLE cuando la muestra alcanza; opta
   // por salir solo cuando menos de 30 locales del pais declaran ese articulo,
   // porque ahi la pagina no puede prometer la comparacion que promete su titulo.
@@ -231,6 +261,8 @@ const NOINDEXED = [
   // El ranking de autores de r/CharruaDevs nombra personas: se llega desde el termometro y no entra
   // al indice. La pagina que SI se indexa es /mercado-it-uruguay, con los mismos datos sin nombres.
   'ranking-usuarios-charruadevs.vue',
+  // Los enlaces guardados de Compartir: selecciones del lector, nunca contenido propio.
+  's/[id].vue',
   // Sale dossiers use the same reviewed, fresh pilot gate as their sitemap entries.
   'venta-viviendas-uruguay/[key].vue',
   // Las formas de vivir con el salario mínimo se indexan en su URL; cada combinación de decisiones
@@ -337,7 +369,104 @@ const LEGACY_BUDGET = { seoMeta: 0, canonical: 0, structuredData: 0 }
  * ninguno el rastro se queda en dos eslabones. Un rastro con un padre inventado es peor que uno
  * corto: le promete al visitante una sección que no existe.
  */
-const BREADCRUMB_BUDGET = 8
+/**
+ * Las páginas de esa deuda, por nombre. **SÓLO PUEDE BAJAR.**
+ *
+ * El presupuesto de arriba dice CUÁNTAS son y nunca dijo cuáles, y el comentario que lo acompaña
+ * resuelve esa falta en prosa, a mano y con fecha de vencimiento escrita («las diez entran cuando
+ * su ventana cierre, la última el 2026-10-26»). Esa frase es el único lugar donde vivía la
+ * respuesta a la pregunta que abre cada corrida de SEO: de la deuda que queda, cuál se puede tocar
+ * HOY sin pisar una ventana de medición abierta del libro de cambios.
+ *
+ * `npm run seo_debt` contesta eso cruzando rutas contra `docs/seo/experiments.json`, y hasta hoy
+ * no podía incluir este pozo porque acá no había rutas que leer. El encabezado de
+ * `scripts/oneoff/seo_debt_report.ts` lo decía: «cubrirlas pide que esos dos trinquetes declaren
+ * sus miembros como los otros tres». Esto es eso (2026-10-20).
+ *
+ * Son rutas y no nombres de archivo a propósito: la ruta es la unidad del libro de cambios, y
+ * convertir archivo → ruta en el informe sería una segunda cuenta que puede separarse de ésta en
+ * silencio.
+ */
+const DEUDA_SIN_MIGAS = [
+  // POZO PAGADO el 2026-10-27: ninguna página del sitio emite estructurados con el rastro vacío.
+  //
+  // Esa marca literal es la que `classes/revenueplan/debtFree.ts::parseStringList` busca para
+  // distinguir «este pozo se terminó» de su propio modo de fallar, que es devolver `[]` cuando no
+  // entiende la forma de la lista: sin la marca, una lista vacía sigue tirando excepción, porque
+  // un `const` renombrado tiene que romper el informe y no vaciarlo en silencio.
+  //
+  // Y el comentario está DENTRO de la lista por el motivo de siempre, que ahora es el único que la
+  // mantiene abierta en varias líneas: el lector exige que el `]` abra su propia línea y prettier
+  // colapsa cualquier array que entre en 100 columnas, salvo los que llevan un comentario. Sin
+  // esto, `npm run lintfix` la aplasta y `tests/revenueplan/debt_free.test.ts` se pone rojo en el
+  // otro paquete.
+]
+
+/**
+ * 8 → 6 el 2026-10-23: `/cotizaciones-de-la-region` y `/meal-prep-uruguay`, que son las DOS únicas
+ * de las ocho que hoy están libres en el libro de cambios (`npm run seo_debt`). Las otras seis
+ * siguen reservadas por una ventana de medición abierta sobre su propia descripción, y la primera
+ * se libera el 25/10.
+ *
+ * Las dos emitían UN nodo suelto —`Dataset` una, `WebApplication` la otra— así que el contador de
+ * `structuredData` las daba por buenas con el rastro vacío. Ahora el nodo viaja dentro de un
+ * `@graph` con el `BreadcrumbList` primero, que es la forma que ya usan `/dolar-hoy` y
+ * `/por-que-sube-el-dolar`.
+ *
+ * El rastro se queda en DOS eslabones en las dos, y eso es deliberado: ninguna de las dos le
+ * muestra al lector una página padre —la del tablero regional enlaza a `/dolar-blue-hoy` y a su
+ * propia API, que son hermanas, y la de meal prep no enlaza a ninguna—, y un eslabón intermedio
+ * inventado le promete al visitante una sección que no existe.
+ *
+ * 6 → 3 el 2026-10-25, y es exactamente el día que el comentario de arriba tenía anotado: las
+ * cuatro filas que reservaban `/api-cotizacion-intradia`, `/hecho-a-pedido`,
+ * `/reclamo-sodimac-compra-cancelada` y `/plan-de-vida-uruguay` se publicaron el 2026-09-26, así
+ * que hoy cumplen 29 días y salen de la ventana que `experiments_overlap.test.ts` protege (el
+ * solape es `|Δfecha| ≤ 28`). Se tocan TRES y la cuarta queda para la próxima corrida: bajar el
+ * trinquete de a poco mantiene una página libre en la cola, y una corrida que se queda sin deuda
+ * tocable es la que termina eligiendo una página reservada.
+ *
+ * Las tres tenían el `@graph` o el nodo suelto y el rastro vacío. El eslabón del medio sale, otra
+ * vez, de lo que la página YA le muestra al lector: el botón «Toda la API» de la del endpoint
+ * intradía y el `back-link` al final del caso de Sodimac, que vuelve a la guía general de derechos
+ * del consumidor. `/hecho-a-pedido` se queda en DOS eslabones porque sus tres botones
+ * (`/contacto`, GitHub, `/desarrolladores`) son hermanas, no su sección.
+ *
+ * Las tres que siguen: `/api-cotizaciones-regionales` se libera el 26/10 y
+ * `/por-que-el-bcu-quiere-mas-pesos` el 27/10; `/plan-de-vida-uruguay` ya está libre.
+ *
+ * 3 → 1 el 2026-10-26: las DOS que el cruce declara libres hoy (`npm run seo_debt`).
+ * `/api-cotizaciones-regionales` es el día exacto que el párrafo de arriba tenía anotado —su fila
+ * `descripciones-del-tramo-dato-vivo` del 27/9 cumple hoy 29 días— y
+ * `/plan-de-vida-uruguay` es la cuarta que la corrida del 25/10 dejó a propósito en la cola.
+ *
+ * Las dos emitían UN nodo suelto o un `@graph` con el rastro vacío, así que el contador de
+ * `structuredData` las daba por buenas. El eslabón del medio de la primera es el que ya le muestra
+ * al lector («Toda la API» → /desarrolladores, igual que /api-cotizacion-intradia); la segunda se
+ * queda en DOS porque todo lo que enlaza es hermano suyo.
+ *
+ * 1 → 0 el 2026-10-27: entra `/por-que-el-bcu-quiere-mas-pesos`, la última, el día exacto que el
+ * párrafo de arriba tenía anotado (su fila `descripciones-respuesta-primero-10` del 28/9 cumple
+ * hoy 29 días). Emitía un `Article` suelto, así que el contador de `structuredData` la daba por
+ * buena con el rastro vacío; ahora el `Article` va dentro de un `@graph` con el `BreadcrumbList`
+ * como primer nodo, que es la forma que ya usaban las dos del dólar. Lleva TRES eslabones y
+ * ninguno inventado: el botón de volver de la página dice «Economía» y va a /economia-uruguay,
+ * que es además el hub que la enlaza.
+ *
+ * **Este es el primer pozo de deuda que llega a cero**, y por eso dejó a la vista que el lector
+ * del informe (`classes/revenueplan/debtFree.ts`) no sabía decir «pagado»: tiraba excepción ante
+ * cualquier lista vacía, porque su modo de fallar es devolver `[]` y hacer pasar un `const`
+ * renombrado por «no hay deuda». La lista de abajo lo declara ahora en voz alta y el lector
+ * reconoce esa marca; todo lo demás sigue rompiendo el informe, que es lo que tiene que hacer.
+ */
+const BREADCRUMB_BUDGET = 0
+
+/**
+ * De archivo de página a ruta: `plan-de-vida-uruguay.vue` → `/plan-de-vida-uruguay`,
+ * `importar/index.vue` → `/importar`. Mismo criterio que `enlacesDeContexto.test.ts` usa para
+ * armar sus rutas raíz.
+ */
+const routeOf = (file: string) => `/${file.replace(/\.vue$/, '').replace(/\/index$/, '')}`
 
 function missing(predicate: (source: string) => boolean): string[] {
   return OWES_OWN_SEO.filter(file => predicate(read(file))).sort()
@@ -390,14 +519,29 @@ describe('the legacy SEO debt only shrinks', () => {
     expect(offenders).toHaveLength(LEGACY_BUDGET.structuredData)
   })
 
+  const sinMigas = missing(
+    source =>
+      source.includes('application/ld+json') &&
+      !source.includes('BreadcrumbList') &&
+      !buildsSchema(source)
+  )
+
   it(`has at most ${BREADCRUMB_BUDGET} pages whose JSON-LD carries no BreadcrumbList`, () => {
-    const offenders = missing(
-      source =>
-        source.includes('application/ld+json') &&
-        !source.includes('BreadcrumbList') &&
-        !buildsSchema(source)
-    )
-    expect(offenders.length, offenders.join('\n')).toBeLessThanOrEqual(BREADCRUMB_BUDGET)
+    expect(sinMigas.length, sinMigas.join('\n')).toBeLessThanOrEqual(BREADCRUMB_BUDGET)
+  })
+
+  // Y cuáles son, no sólo cuántas: es lo que `npm run seo_debt` lee para decir qué deuda de migas
+  // se puede tocar hoy. Exacta, además, porque un número solo deja que se arregle una página y se
+  // rompa otra sin que nada avise.
+  it('las páginas sin migas son exactamente las declaradas', () => {
+    expect(sinMigas.map(routeOf).sort()).toEqual([...DEUDA_SIN_MIGAS].sort())
+  })
+
+  // Una ruta renombrada dejaría su entrada vieja acá y el informe mandaría a arreglar una página
+  // que ya no existe, igual que en `temaHuerfanas.test.ts` y `enlacesDeContexto.test.ts`.
+  it('la lista no nombra una página que no existe', () => {
+    const existen = new Set(files.map(routeOf))
+    for (const route of DEUDA_SIN_MIGAS) expect(existen.has(route), route).toBe(true)
   })
 
   // The loophole guard, and the reason excusing the shell children is safe.

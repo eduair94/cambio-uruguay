@@ -1,0 +1,1163 @@
+<!--
+  THESIS: Alguien busca "monopatín eléctrico uruguay" para saber cuánto sale hoy, no cuál es "el
+  mejor". Contestar con la mediana por tipo, nuevo y usado, las ofertas más baratas con su fecha, y
+  la normativa departamental con su fuente — nunca un ranking de marca.
+  OWN-WORLD: Mismas superficies, tipografía y azul de enlace que /equipar-casa-uruguay y
+  /tiendas-online-uruguay, de donde sale este mismo patrón de página.
+  FAMILY: Sólo español (como comparativas, sucursal y tiendas-online-uruguay): el canonical es
+  literal, sin prefijo de idioma, aunque la ruta exista bajo /en/ y /pt/ por la estrategia
+  `prefix_except_default`.
+-->
+<template>
+  <VContainer class="movilidad-page py-6 py-md-10">
+    <VBreadcrumbs class="px-0 pb-2" :items="crumbs" />
+
+    <header class="movilidad-header">
+      <h1>Precio de monopatines eléctricos en Uruguay</h1>
+      <p class="lead">{{ intro }}</p>
+      <p v-if="asOf" class="as-of">Actualizado el {{ movilidadLongDate(asOf) }}.</p>
+    </header>
+
+    <!-- ── Cuánto sale, por tipo ─────────────────────────────────────────── -->
+    <section class="movilidad-section" aria-labelledby="variantes-title">
+      <h2 id="variantes-title">Cuánto sale hoy, por tipo</h2>
+      <p v-if="!variants.length" class="empty-note">
+        Todavía no tenemos avisos recientes de monopatines eléctricos. La página se completa sola
+        con la próxima lectura de tiendas y Mercado Libre.
+      </p>
+
+      <div v-else class="variant-grid">
+        <article v-for="item in variants" :key="item.key" class="variant-card">
+          <div class="variant-head">
+            <MovilidadVariantThumb
+              :src="item.image ?? null"
+              :alt="`Monopatín eléctrico ${item.variantLabel.toLowerCase()}`"
+              icon="mdi-scooter-electric"
+            />
+            <h3>{{ item.variantLabel }}</h3>
+          </div>
+
+          <template v-if="item.newBand">
+            <p class="variant-median">
+              <span class="amount">{{ movilidadMoney(item.newBand.median) }}</span>
+              <span class="variant-tag">mediana nuevo</span>
+            </p>
+            <p class="variant-band">
+              La mitad de los avisos entre {{ movilidadMoney(item.newBand.p25) }} y
+              {{ movilidadMoney(item.newBand.p75) }} ({{ item.newBand.n }} avisos nuevos).
+            </p>
+          </template>
+          <p v-else class="muted">Nuevo: sin datos suficientes.</p>
+
+          <p v-if="item.usedBand" class="variant-used">
+            Usado: mediana {{ movilidadMoney(item.usedBand.median) }} ({{
+              item.usedBand.n
+            }}
+            avisos)<span v-if="item.usedSavingPct" class="saving">
+              , alrededor de {{ Math.round(item.usedSavingPct) }} % menos que la mediana nueva</span
+            >.
+          </p>
+          <p v-else class="variant-used muted">Usado: sin datos suficientes.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ── Asesor ────────────────────────────────────────────────────────── -->
+    <section class="movilidad-section" aria-labelledby="asesor-title">
+      <h2 id="asesor-title">¿Cuál te conviene?</h2>
+      <p class="section-intro">
+        Contanos cómo lo vas a usar y elegimos entre los monopatines con ficha técnica leída: el más
+        barato que cumple, el que da más kilómetros por tu plata y el más liviano o el más potente.
+        Las reglas están a la vista, abajo.
+      </p>
+      <MovilidadMonopatinAsesor @ver="verDesdeAsesor" />
+    </section>
+
+    <!-- ── Modelos ───────────────────────────────────────────────────────── -->
+    <!-- Desde el 4/11/2026 los avisos del mismo modelo se juntan entre vendedores
+         (classes/movilidad/models/); sin ese catálogo, la tabla vieja de abajo. -->
+    <section v-if="modelRows.length" class="movilidad-section" aria-labelledby="modelos-title">
+      <h2 id="modelos-title">Modelos y sus mejores ofertas</h2>
+      <p class="section-intro">
+        Juntamos los avisos del mismo modelo de todos los vendedores: {{ modelRows.length }} modelos
+        con dos avisos o más. Cada uno tiene su página con todas las ofertas y la ficha técnica.
+        Marcá hasta {{ MONOPATIN_COMPARE_MAX }} para compararlos lado a lado.
+      </p>
+      <VTable class="cu-mobile-cards products-table" density="compact">
+        <thead>
+          <tr>
+            <th scope="col">Modelo</th>
+            <th scope="col">Ficha técnica</th>
+            <th scope="col" class="text-right">Vendedores</th>
+            <th scope="col" class="text-right">Desde</th>
+            <th scope="col"><span class="d-sr-only">Comparar</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(model, index) in modelRows"
+            v-show="showAllModels || index < MODELS_SHOWN"
+            :key="model.slug"
+          >
+            <td data-label="">
+              <div class="product-cell">
+                <MovilidadVariantThumb
+                  :src="model.image ?? null"
+                  :alt="model.name"
+                  icon="mdi-scooter-electric"
+                />
+                <span class="product-cell__text">
+                  <NuxtLink :to="`/monopatines-electricos-uruguay/${model.slug}`" class="cat-link">
+                    <strong>{{ model.name }}</strong>
+                  </NuxtLink>
+                  <span class="cu-cell-note">
+                    {{ variantLabelOf(model.variant) }} · {{ model.listings }} avisos
+                  </span>
+                </span>
+              </div>
+            </td>
+            <td data-label="Ficha técnica">
+              <MovilidadSpecStrip
+                v-if="model.specs"
+                :specs="{ ...model.specs, fromFicha: true }"
+                compact
+              />
+              <span v-else class="muted" aria-label="Sin ficha técnica leída">—</span>
+            </td>
+            <td data-label="Vendedores" class="text-right">{{ model.sellers }}</td>
+            <td data-label="Desde" class="text-right price">
+              <template v-if="model.newMin">{{ movilidadMoney(model.newMin) }}</template>
+              <template v-else-if="model.usedMin">
+                {{ movilidadMoney(model.usedMin) }} <span class="cu-cell-note">usado</span>
+              </template>
+            </td>
+            <td data-label="Comparar">
+              <VCheckbox
+                :model-value="isCompared(model.slug)"
+                :disabled="!isCompared(model.slug) && compare.length >= MONOPATIN_COMPARE_MAX"
+                :aria-label="`Comparar ${model.name}`"
+                label="Comparar"
+                density="compact"
+                hide-details
+                @update:model-value="toggleCompare(model)"
+              />
+            </td>
+          </tr>
+        </tbody>
+      </VTable>
+      <VBtn
+        v-if="modelRows.length > MODELS_SHOWN && !showAllModels"
+        class="mt-3"
+        variant="tonal"
+        @click="showAllModels = true"
+      >
+        Ver los {{ modelRows.length }} modelos
+      </VBtn>
+    </section>
+
+    <section
+      v-else-if="productRows.length"
+      class="movilidad-section"
+      aria-labelledby="modelos-title"
+    >
+      <h2 id="modelos-title">Modelos y sus mejores ofertas</h2>
+      <p class="section-intro">
+        Cada modelo con lo que declara su ficha (autonomía, velocidad, potencia y peso), cuántos
+        vendedores lo tienen, el precio más bajo que encontramos y hasta tres ofertas para comparar.
+      </p>
+      <VTable class="cu-mobile-cards products-table" density="compact">
+        <thead>
+          <tr>
+            <th scope="col">Producto</th>
+            <th v-if="hasProductSpecs" scope="col">Ficha técnica</th>
+            <th scope="col" class="text-right">Vendedores</th>
+            <th scope="col" class="text-right">Mejor precio</th>
+            <th scope="col">Ofertas</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="row in productRows" :key="row.key">
+            <td data-label="">
+              <div class="product-cell">
+                <MovilidadVariantThumb
+                  :src="row.product.image ?? null"
+                  :alt="row.product.name"
+                  icon="mdi-scooter-electric"
+                />
+                <span class="product-cell__text">
+                  <strong>{{ row.product.name }}</strong>
+                  <span class="cu-cell-note">{{ row.variantLabel }}</span>
+                </span>
+              </div>
+            </td>
+            <td v-if="hasProductSpecs" data-label="Ficha técnica">
+              <MovilidadSpecStrip v-if="row.product.specs" :specs="row.product.specs" compact />
+              <span v-else class="muted" aria-label="Sin ficha técnica leída">—</span>
+            </td>
+            <td data-label="Vendedores" class="text-right">{{ row.product.sellers }}</td>
+            <td data-label="Mejor precio" class="text-right price">
+              {{ movilidadMoney(row.product.bestPriceUyu) }}
+            </td>
+            <td data-label="Ofertas" class="cu-cell-prose">
+              <ul class="offer-mini">
+                <li v-for="(offer, index) in row.product.offers" :key="`${row.key}:${index}`">
+                  <a :href="offer.url" target="_blank" rel="nofollow noopener" class="cat-link">{{
+                    sellerLabel(offer)
+                  }}</a>
+                  <NuxtLink
+                    v-if="storeKeyFor(offer.seller, offer.source)"
+                    :to="
+                      localePath(
+                        `/tiendas-online-uruguay/${storeKeyFor(offer.seller, offer.source)}`
+                      )
+                    "
+                    :aria-label="`Ficha de ${offer.seller}`"
+                    class="cat-link seller-ficha"
+                  >
+                    (ficha)
+                  </NuxtLink>
+                  {{ movilidadMoney(offer.priceUyu) }} · {{ movilidadShortDate(offer.observedAt) }}
+                  <span
+                    v-if="offerMove(offer)"
+                    class="offer-move"
+                    :class="offerMove(offer)!.down ? 'is-down' : 'is-up'"
+                    >· {{ offerMove(offer)!.text }}</span
+                  >
+                </li>
+              </ul>
+            </td>
+          </tr>
+        </tbody>
+      </VTable>
+    </section>
+
+    <!-- ── Los más baratos ───────────────────────────────────────────────── -->
+    <section
+      v-if="cheapestNew.length || cheapestUsed.length"
+      class="movilidad-section"
+      aria-labelledby="baratos-title"
+    >
+      <h2 id="baratos-title">Las ofertas más baratas</h2>
+      <p class="section-intro">
+        Las ofertas más baratas de la última lectura, con quién la publica y la fecha en que la
+        vimos. El precio cambia todos los días: confirmalo en el aviso antes de comprar.
+        <template v-if="suspectDropped">
+          Dejamos afuera {{ suspectDropped }} {{ suspectDropped === 1 ? 'aviso' : 'avisos' }} con
+          precios muy por debajo del resto de su tipo: no entran en las medianas, en esta lista ni
+          en la tabla de modelos.
+        </template>
+      </p>
+
+      <div class="cheap-grid">
+        <div v-if="cheapestNew.length">
+          <h3 class="cheap-title">Nuevos</h3>
+          <div class="offer-grid">
+            <MovilidadOfferCard
+              v-for="row in cheapestNew"
+              :key="row.key"
+              :offer="row.offer"
+              :variant-label="row.variantLabel"
+              categoria="monopatin-electrico"
+            />
+          </div>
+        </div>
+        <div v-if="cheapestUsed.length">
+          <h3 class="cheap-title">Usados</h3>
+          <div class="offer-grid">
+            <MovilidadOfferCard
+              v-for="row in cheapestUsed"
+              :key="row.key"
+              :offer="row.offer"
+              :variant-label="row.variantLabel"
+              categoria="monopatin-electrico"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Directorio con filtros ────────────────────────────────────────── -->
+    <section v-if="hasDirectorio" class="movilidad-section" aria-labelledby="directorio-title">
+      <h2 id="directorio-title">Todos los monopatines eléctricos en venta</h2>
+      <p class="section-intro">
+        Todos los avisos vigentes, con foto y filtros por tipo, condición, marca, vendedor, precio y
+        ficha técnica: autonomía, velocidad, potencia, peso que soporta, peso del monopatín y
+        ruedas. Es la misma lectura que arma las medianas de arriba: un aviso que la banda descartó
+        por precio dudoso tampoco aparece acá.
+      </p>
+      <EquiparDirectorio
+        :query="dirQuery"
+        :data="dirData"
+        :error="dirError"
+        :facets="dirFacets"
+        :chips="dirChips"
+        fixed-categoria="monopatin-electrico"
+        hide-list
+        hide-category
+        vertical="movilidad"
+        anchor-id="movilidad-resultados"
+        class="movilidad-directorio"
+        @update="dirUpdate"
+        @remove="dirRemove"
+        @clear="dirClear"
+      >
+        <template #before-results>
+          <AssistantCta
+            topic="monopatines"
+            :filters="dirChips.map(chip => chip.label)"
+            class="mb-4"
+          />
+        </template>
+      </EquiparDirectorio>
+    </section>
+
+    <!-- ── Qué esperar de cada tipo ──────────────────────────────────────── -->
+    <section v-if="specRows.length" class="movilidad-section" aria-labelledby="tipos-title">
+      <h2 id="tipos-title">Qué esperar de cada tipo</h2>
+      <p class="section-intro">
+        La mediana de lo que declaran las fichas técnicas de {{ fmt(specStats!.withFicha) }} de los
+        {{ fmt(specStats!.total) }} monopatines a la venta. La mitad declara más y la mitad menos:
+        es lo típico, no un mínimo.
+      </p>
+      <VTable class="cu-mobile-cards cu-roomy spec-table" density="compact">
+        <thead>
+          <tr>
+            <th scope="col">Tipo</th>
+            <th scope="col" class="text-right">Autonomía</th>
+            <th scope="col" class="text-right">Velocidad máx.</th>
+            <th scope="col" class="text-right">Potencia</th>
+            <th scope="col" class="text-right">Peso</th>
+            <th scope="col" class="text-right">Soporta</th>
+            <th scope="col" class="text-right">Carga completa</th>
+            <th scope="col" class="text-right">Una carga cuesta</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="row in specRows" :key="row.variant">
+            <td data-label="">
+              <strong>{{ row.label }}</strong>
+              <span class="cu-cell-note">{{ fmt(row.n) }} avisos</span>
+            </td>
+            <td data-label="Autonomía" class="text-right num">{{ unit(row.rangeKm, 'km') }}</td>
+            <td data-label="Velocidad máx." class="text-right num">
+              {{ unit(row.maxSpeedKmh, 'km/h') }}
+            </td>
+            <td data-label="Potencia" class="text-right num">{{ unit(row.motorW, 'W') }}</td>
+            <td data-label="Peso" class="text-right num">{{ unit(row.weightKg, 'kg') }}</td>
+            <td data-label="Soporta" class="text-right num">{{ unit(row.maxLoadKg, 'kg') }}</td>
+            <td data-label="Carga completa" class="text-right num">
+              {{ unit(row.chargeHours, 'h') }}
+            </td>
+            <td data-label="Una carga cuesta" class="text-right num">
+              {{ chargeCost(row.batteryWh) }}
+            </td>
+          </tr>
+        </tbody>
+      </VTable>
+      <p class="section-intro">
+        "Una carga cuesta" es la batería mediana (V × Ah) a {{ kwhLabel }} el kWh — UTE, tarifa
+        residencial simple, escalón de 101 a 600 kWh, con IVA — más un
+        {{ Math.round(MONOPATIN_CHARGER_LOSS * 100) }} % que se pierde en el cargador.
+        <template v-if="specStats!.withSpeed">
+          {{ fmt(specStats!.over25) }} de los {{ fmt(specStats!.withSpeed) }} que declaran su
+          velocidad pasan los 25 km/h, el máximo para circular en Montevideo y en San José.
+        </template>
+      </p>
+    </section>
+
+    <!-- ── Normativa ─────────────────────────────────────────────────────── -->
+    <section class="movilidad-section" aria-labelledby="normativa-title">
+      <h2 id="normativa-title">Normativa por departamento</h2>
+      <MovilidadNormativaTable />
+    </section>
+
+    <!-- ── Cómo elegir ───────────────────────────────────────────────────── -->
+    <section class="movilidad-section" aria-labelledby="elegir-title">
+      <h2 id="elegir-title">Cómo elegir un monopatín eléctrico</h2>
+      <p class="section-intro">
+        No recomendamos marcas: esto es lo que diferencia un monopatín de otro, con lo que declara
+        hoy el mercado uruguayo al lado. Para cruzarlo con tu caso, usá el asesor de arriba.
+      </p>
+      <ul class="guide-list">
+        <li>
+          <strong>Autonomía.</strong> Los kilómetros que declara el vendedor por carga
+          completa<template v-if="allStats?.rangeKm">
+            (la mediana del mercado hoy es {{ unit(allStats.rangeKm, 'km') }})</template
+          >. Contá con alrededor del 65 %: los fabricantes la miden en llano, con unos 75 kg y a
+          velocidad baja, y el frío, el viento y las subidas la bajan. Para 10 km por día, buscá 16
+          km declarados o más.
+        </li>
+        <li>
+          <strong>Potencia y subidas.</strong> Los vatios (W) que publica el vendedor dicen cuánta
+          subida tolera<template v-if="allStats?.motorW">
+            (la mediana es {{ unit(allStats.motorW, 'W') }})</template
+          >. Para un trayecto llano alcanza con 250–350 W; con subidas largas o empinadas, 500 W o
+          más. Si el aviso dice "potencia máxima", es el pico, no la continua.
+        </li>
+        <li>
+          <strong>Peso que soporta.</strong> Tiene que pasar tu peso con margen para la
+          mochila<template v-if="allStats?.maxLoadKg">
+            (lo típico es {{ unit(allStats.maxLoadKg, 'kg') }})</template
+          >. Por encima del máximo el motor y los frenos trabajan fuera de lo que se probó.
+        </li>
+        <li>
+          <strong>Peso del monopatín.</strong> Hasta 15 kg se sube a una escalera o a un ómnibus sin
+          problema<template v-if="allStats?.weightKg">
+            ; la mediana del mercado pesa {{ unit(allStats.weightKg, 'kg') }}</template
+          >. Más autonomía es más batería, y la batería es lo que más pesa.
+        </li>
+        <li>
+          <strong>Tiempo y costo de carga.</strong> Se carga en un enchufe común<template
+            v-if="allStats?.chargeHours"
+          >
+            en unas {{ unit(allStats.chargeHours, 'h') }}</template
+          ><template v-if="allChargeCost">
+            y una carga completa cuesta cerca de {{ allChargeCost }} de luz</template
+          >. Cuidá la batería: no la dejes descargada semanas ni al sol, y guardala a media carga si
+          no lo vas a usar.
+        </li>
+        <li>
+          <strong>Ruedas, frenos y suspensión.</strong> Ruedas de 10″ o más y neumáticas absorben
+          mejor el adoquín y los pozos que las de 8,5″ macizas. Freno a disco (o dos frenos, uno en
+          cada rueda) frena más corto que uno eléctrico solo. Si lo vas a usar con lluvia, mirá que
+          declare protección IP (IPX4 o más).
+        </li>
+        <li>
+          <strong>Velocidad y normativa.</strong> En Montevideo y en San José el máximo para
+          circular es 25 km/h, con casco obligatorio. Un monopatín que declara más se puede usar
+          limitado, pero esa velocidad no es la que te permite la norma.
+        </li>
+        <li>
+          <strong>Garantía.</strong> Cuántos meses cubre el vendedor y si la batería —la pieza que
+          más se degrada— tiene la misma garantía que el resto.
+        </li>
+      </ul>
+    </section>
+
+    <!-- ── Si se rompe ───────────────────────────────────────────────────── -->
+    <section class="movilidad-section" aria-labelledby="garantia-title">
+      <h2 id="garantia-title">Si se rompe</h2>
+      <p class="section-intro">
+        Comprado en una tienda o a un vendedor habilitado en Uruguay, un monopatín eléctrico tiene
+        la garantía legal de la Ley 17.250 de Defensa del Consumidor: si llega con un defecto de
+        fabricación tenés derecho a la reparación, el cambio o la devolución del dinero. Guardá la
+        factura o el comprobante de la compra.
+      </p>
+      <p class="section-intro">
+        <NuxtLink :to="localePath('/derechos-consumidor-compras-online')" class="cat-link">
+          Qué hacer si compraste online y no te entregan o el producto llega roto
+        </NuxtLink>
+      </p>
+    </section>
+
+    <!-- `:ad="false"`: la segunda unidad de la página ya la pone el directorio, en la grilla
+         (components/feed/Ad.vue). Con las dos, la página pasaría el tope de maxAdSlots. -->
+    <FaqSection :items="faqItems" heading="Preguntas frecuentes" :expanded="true" :ad="false" />
+
+    <!-- ── Otras páginas ─────────────────────────────────────────────────── -->
+    <section class="movilidad-section related" aria-labelledby="related-title">
+      <h2 id="related-title">Seguí leyendo</h2>
+      <ul class="related-list">
+        <li>
+          <NuxtLink :to="localePath('/bicicletas-electricas-uruguay')" class="cat-link">
+            Precio de bicicletas eléctricas en Uruguay
+          </NuxtLink>
+        </li>
+        <li>
+          <NuxtLink :to="localePath('/equipar-casa-uruguay')" class="cat-link">
+            Equipar una casa vacía: qué comprar y cuánto sale
+          </NuxtLink>
+        </li>
+        <li>
+          <NuxtLink :to="localePath('/ciberlunes-y-black-friday-uruguay')" class="cat-link">
+            CyberLunes y Black Friday: si el descuento es real
+          </NuxtLink>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ── Método ────────────────────────────────────────────────────────── -->
+    <section class="movilidad-section" aria-labelledby="metodo-title">
+      <h2 id="metodo-title">De dónde salen estos precios</h2>
+      <p class="section-intro">
+        Relevamos avisos de tiendas online uruguayas y Mercado Libre. Nuevo y usado son dos mercados
+        y nunca se promedian: cada uno tiene su propia mediana, y un tipo con pocos avisos dice "sin
+        datos suficientes" en vez de inventar un número. Sólo publicamos lo visto en los últimos 4
+        días.
+      </p>
+      <p class="section-intro">
+        La ficha técnica sale de la página propia de cada aviso de Mercado Libre y de cada tienda
+        (la tabla de características y la descripción del vendedor), leída una vez y vuelta a leer
+        cada 45 días. Es lo que declara quien vende, no una medición nuestra: un valor imposible (un
+        monopatín de 260 kg) se descarta en vez de corregirse, y de Facebook Marketplace sólo usamos
+        lo que dice el título.
+      </p>
+    </section>
+
+    <MovilidadCompareTray
+      :items="compare"
+      @remove="slug => (compare = compare.filter(item => item.slug !== slug))"
+      @clear="compare = []"
+    />
+  </VContainer>
+</template>
+
+<script setup lang="ts">
+import {
+  movilidadCheapestOffers,
+  movilidadLongDate,
+  movilidadMoney,
+  movilidadPlausibleProducts,
+  movilidadPrecioTipicoAnswer,
+  movilidadSellerLabel,
+  movilidadShortDate,
+  movilidadUsadoAnswer,
+  type MonopatinSpecStatsRow,
+  type MovilidadCategoryResponse,
+  type MovilidadItemDoc,
+  type MovilidadOffer,
+  type MovilidadProduct,
+} from '~/utils/movilidad'
+import { storeSlugForSeller } from '~/utils/storeDirectory'
+import {
+  MONOPATIN_CHARGER_LOSS,
+  MONOPATIN_KWH_UYU,
+  monopatinChargeCostUyu,
+  type MovilidadFichaQuery,
+} from '~/utils/monopatinFicha'
+import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
+import {
+  MONOPATIN_COMPARE_MAX,
+  type MonopatinModelListResponse,
+  type MonopatinModelSummary,
+} from '~/utils/monopatinModelos'
+
+const localePath = useLocalePath()
+
+// El nombre del vendedor enlaza a su ficha (/tiendas-online-uruguay/<key>) sólo cuando esa tienda
+// tiene ficha propia — la ruta 404s de verdad si no. `storeProfileKeys` es la lista compartida con
+// /sillas-escritorio-uruguay/[slug].vue y /equipar-casa-uruguay/[categoria].vue (useStoreProfileKeys.ts).
+const storeProfileKeys = useStoreProfileKeys()
+// `source` es opcional para que cualquier llamada siga compilando; una oferta de Facebook nunca
+// enlaza, aunque el nombre del vendedor resuelva a una tienda curada: el nombre visible de un
+// vendedor particular de Marketplace no es la identidad de una empresa (mismo motivo que en las
+// páginas hermanas). `storeSlugForSeller` además nunca resuelve "Mercado Libre" a la ficha de
+// Mercado Libre (`classes/stores/match.ts`/`storeDirectory.ts`, `EXCLUDED_ALIAS_NORMS`), así que un
+// vendedor sin identificar de ML tampoco enlaza aunque no hiciera falta este guard para eso.
+const storeKeyFor = (seller: string, source?: string): string | null => {
+  if (source === 'facebook') return null
+  const key = storeSlugForSeller(seller)
+  return key && storeProfileKeys.value.includes(key) ? key : null
+}
+
+const PRODUCT_OFFERS_SHOWN = 3
+
+// Server-rendered: las medianas tienen que estar en el HTML que lee el buscador. `products`/`offers`
+// llegan recortados del servidor (Task 5, `movilidadCategoryProjection`); `transform` sólo acota lo
+// que además esta página muestra (3 ofertas por modelo), antes de escribir el payload.
+const { data } = await useFetch('/api/movilidad/monopatin-electrico', {
+  key: 'movilidad-monopatin',
+  transform: (response: MovilidadCategoryResponse): MovilidadCategoryResponse => ({
+    ...response,
+    items: (response?.items ?? []).map(item => ({
+      ...item,
+      products: (item.products ?? []).map(product => ({
+        ...product,
+        offers: (product.offers ?? []).slice(0, PRODUCT_OFFERS_SHOWN),
+      })),
+    })),
+  }),
+})
+
+// El directorio con filtros de abajo: misma maquinaria que /equipar-casa-uruguay/productos sobre
+// `movilidadlistings` (una fila por aviso que la banda aceptó). La clave de `useAsyncData` es propia
+// por vertical: dos páginas con la misma se pisan la respuesta.
+const {
+  query: dirQuery,
+  data: dirData,
+  error: dirError,
+  facets: dirFacets,
+  chips: dirChips,
+  filtered: dirFiltered,
+  update: dirUpdate,
+  remove: dirRemove,
+  clear: dirClear,
+} = await useEquiparProductosDirectorio('monopatin-electrico', {
+  apiPath: '/api/movilidad/productos',
+  vertical: 'movilidad',
+  key: 'movilidad-productos-monopatin',
+})
+
+/**
+ * El directorio sólo se dibuja cuando hay avisos que mostrar, o cuando el lector puso un filtro
+ * (ahí tiene que poder sacarlo aunque el resultado sea cero). Sin esto, una base todavía sin
+ * escribir —el job publica esta colección desde el 22/9/2026— abriría una sección vacía diciendo
+ * "probá sacar la marca" cuando el lector no filtró nada.
+ */
+const hasDirectorio = computed(() => (dirData.value?.total ?? 0) > 0 || dirFiltered.value)
+
+const items = computed<MovilidadItemDoc[]>(() => data.value?.items ?? [])
+
+// ── Ficha técnica ────────────────────────────────────────────────────────
+// Las medianas por tipo vienen del snapshot que deja currency-movilidad-specs cada hora
+// (classes/movilidad/specs/snapshot.ts): esta página no agrega nada sobre la base.
+const specStats = computed(() => data.value?.specStats ?? null)
+const allStats = computed(() => specStats.value?.all ?? null)
+const hasStat = (row: MonopatinSpecStatsRow) =>
+  [row.rangeKm, row.maxSpeedKmh, row.motorW, row.weightKg, row.maxLoadKg, row.chargeHours].some(
+    value => value !== null
+  )
+const VARIANT_ORDER: Record<string, number> = { infantil: 1, urbano: 2, 'alto-rendimiento': 3 }
+const specRows = computed(() => {
+  const stats = specStats.value
+  if (!stats) return []
+  const rows = [...stats.byVariant]
+    .filter(hasStat)
+    .sort((a, b) => (VARIANT_ORDER[a.variant] ?? 9) - (VARIANT_ORDER[b.variant] ?? 9))
+  return rows.length && hasStat(stats.all) ? [...rows, { ...stats.all, label: 'Todos' }] : rows
+})
+const fmt = (value: number) => value.toLocaleString('es-UY')
+/** Espacio duro: "45 km" y "$ 5" nunca se parten entre dos líneas en un teléfono. */
+const NB = String.fromCharCode(160)
+const unit = (value: number | null | undefined, suffix: string) =>
+  typeof value === 'number'
+    ? `${value.toLocaleString('es-UY', { maximumFractionDigits: 1 })}${NB}${suffix}`
+    : '—'
+const money = (value: number) => `$${NB}${fmt(value)}`
+const chargeCost = (wh: number | null) => {
+  const cost = monopatinChargeCostUyu(wh)
+  return cost === null ? '—' : money(cost)
+}
+const kwhLabel = `$${NB}${MONOPATIN_KWH_UYU.toLocaleString('es-UY', { minimumFractionDigits: 2 })}`
+const allChargeCost = computed(() => {
+  const cost = monopatinChargeCostUyu(allStats.value?.batteryWh ?? null)
+  return cost === null ? null : money(cost)
+})
+
+/** El botón del asesor: sus requisitos pasan a ser los filtros del directorio de abajo. */
+async function verDesdeAsesor(patch: {
+  ficha: MovilidadFichaQuery
+  precioMax: number | null
+  condicion: '' | 'nuevo'
+}) {
+  dirUpdate({
+    ...dirQuery.value,
+    ficha: patch.ficha,
+    precioMax: patch.precioMax,
+    precioMin: null,
+    condicion: patch.condicion,
+    orden: 'precio_asc',
+    page: 1,
+  })
+  await nextTick()
+  scrollToPageTop('movilidad-resultados')
+}
+const asOf = computed(() => data.value?.generatedAt ?? null)
+
+const variants = computed(() =>
+  [...items.value].sort((a, b) => (a.variantRank ?? 1) - (b.variantRank ?? 1))
+)
+
+/** El vendedor sin identificar de Mercado Libre se rotula; el nombre real de una tienda enlaza a
+ * su ficha por separado, vía `storeKeyFor` (nunca a partir de este texto rotulado). */
+function sellerLabel(offer: MovilidadOffer): string {
+  return movilidadSellerLabel(offer.seller, offer.source)
+}
+
+const productRows = computed(() =>
+  variants.value
+    .flatMap(item =>
+      movilidadPlausibleProducts(item).map((product: MovilidadProduct) => ({
+        key: `${item.key}:${product.slug}`,
+        variantLabel: item.variantLabel,
+        product,
+      }))
+    )
+    .filter(row => row.product.bestPriceUyu > 0)
+    .sort(
+      (a, b) =>
+        b.product.sellers - a.product.sellers || a.product.bestPriceUyu - b.product.bestPriceUyu
+    )
+    .slice(0, 12)
+)
+
+// ── Modelos agrupados ────────────────────────────────────────────────────
+// El catálogo que arma currency-movilidad-specs (classes/movilidad/models/). Server-rendered: los
+// enlaces a las páginas de modelo tienen que estar en el HTML que lee el buscador. Si falla o
+// todavía está vacío, la sección cae a la tabla vieja (`productRows`).
+const { data: modelsData } = await useFetch<MonopatinModelListResponse>('/api/movilidad/modelos', {
+  key: 'monopatin-modelos',
+})
+const modelRows = computed<MonopatinModelSummary[]>(() => modelsData.value?.models ?? [])
+/** Las primeras 15 a la vista; el resto queda en el HTML (v-show) para que sus enlaces se rastreen. */
+const MODELS_SHOWN = 15
+const showAllModels = ref(false)
+const variantLabelOf = (variant: string) =>
+  items.value.find(item => item.variant === variant)?.variantLabel ?? ''
+
+const compare = ref<Array<{ slug: string; name: string }>>([])
+const isCompared = (slug: string) => compare.value.some(item => item.slug === slug)
+function toggleCompare(model: MonopatinModelSummary) {
+  if (isCompared(model.slug)) compare.value = compare.value.filter(item => item.slug !== model.slug)
+  else if (compare.value.length < MONOPATIN_COMPARE_MAX)
+    compare.value = [...compare.value, { slug: model.slug, name: model.name }]
+}
+
+/** La columna de ficha sólo aparece cuando algún modelo la tiene (antes de la primera corrida, ninguno). */
+const hasProductSpecs = computed(() => productRows.value.some(row => row.product.specs))
+
+const cheapestNew = computed(() => movilidadCheapestOffers(variants.value, 'new', 8))
+const cheapestUsed = computed(() => movilidadCheapestOffers(variants.value, 'used', 6))
+const suspectDropped = computed(() =>
+  items.value.reduce((sum, item) => sum + (item.suspectDropped ?? 0), 0)
+)
+
+const intro =
+  'Relevamos precios de monopatines eléctricos en tiendas online uruguayas y Mercado Libre: la ' +
+  'mediana por tipo, nuevo y usado, las ofertas más baratas con su fecha y la ficha técnica de ' +
+  'cada aviso (autonomía, velocidad, potencia, peso). No es un ranking de "mejor monopatín": es ' +
+  'lo que efectivamente se está vendiendo hoy, con un asesor para elegir según tu trayecto.'
+
+const crumbs = [
+  { title: 'Inicio', to: localePath('/') },
+  { title: DIRECTORIOS_HUB.label, to: localePath(DIRECTORIOS_HUB.path) },
+  { title: 'Monopatines eléctricos', disabled: true },
+]
+
+// ── FAQ ──────────────────────────────────────────────────────────────────
+const faqItems = computed(() => [
+  {
+    id: 'movilidad-monopatin-precio',
+    question: '¿Cuánto sale un monopatín eléctrico en Uruguay?',
+    answer: movilidadPrecioTipicoAnswer(variants.value, 'monopatines eléctricos', asOf.value),
+  },
+  {
+    id: 'movilidad-monopatin-licencia',
+    question: '¿Necesito licencia o registro para andar en monopatín eléctrico?',
+    answer:
+      'Depende del departamento. En Montevideo no se empadronan (no hacen falta trámites de ' +
+      'matrícula) pero hay una edad mínima; en San José hace falta anotarlo en un Registro ' +
+      'Departamental gratuito. La mayoría de los departamentos no tiene una norma propia que ' +
+      'hayamos encontrado. Mirá la tabla de normativa de arriba para el tuyo.',
+  },
+  {
+    id: 'movilidad-monopatin-donde',
+    question: '¿Por dónde puedo circular?',
+    answer:
+      'Otra vez, depende del departamento: en Montevideo es por la calzada, salvo donde haya ' +
+      'infraestructura para bicicletas (ahí es obligatorio usarla); en San José está prohibido ' +
+      'circular por veredas, espacios peatonales y rutas nacionales. Donde no encontramos una ' +
+      'norma departamental no podemos afirmar una regla.',
+  },
+  {
+    id: 'movilidad-monopatin-autonomia',
+    question: '¿Cuánta autonomía tiene un monopatín eléctrico?',
+    answer: allStats.value?.rangeKm
+      ? `La mediana de lo que declaran las fichas de los monopatines a la venta en Uruguay es ${unit(allStats.value.rangeKm, 'km')} por carga${
+          specRows.value.length > 2
+            ? `, y cambia mucho por tipo (${specRows.value
+                .filter(row => row.label !== 'Todos' && row.rangeKm)
+                .map(row => `${row.label.toLowerCase()}: ${unit(row.rangeKm, 'km')}`)
+                .join('; ')})`
+            : ''
+        }. En el uso real contá con alrededor del 65 %: los fabricantes la miden en llano, con unos 75 kg y a velocidad baja.`
+      : 'Depende del modelo: los infantiles declaran menos de 10 km y los de alto rendimiento más de 50. En el uso real contá con alrededor del 65 % de lo que declara el fabricante, que la mide en llano, con unos 75 kg y a velocidad baja.',
+  },
+  {
+    id: 'movilidad-monopatin-carga',
+    question: '¿Cuánto tarda en cargarse y cuánto cuesta la luz?',
+    answer: `${
+      allStats.value?.chargeHours
+        ? `La mediana de las fichas declara ${unit(allStats.value.chargeHours, 'h')} para una carga completa, en un enchufe común.`
+        : 'Entre 4 y 8 horas para una carga completa, en un enchufe común.'
+    } ${
+      allChargeCost.value
+        ? `Con la batería mediana del mercado, una carga cuesta cerca de ${allChargeCost.value} de luz con la tarifa residencial simple de UTE.`
+        : 'Una carga cuesta pocos pesos de luz: la batería de un monopatín urbano tiene entre 250 y 500 Wh.'
+    }`,
+  },
+  {
+    id: 'movilidad-monopatin-peso-usuario',
+    question: '¿Qué monopatín sirve para una persona de 100 kg?',
+    answer:
+      'Uno cuya ficha declare que soporta al menos 110 kg (tu peso más una mochila), con 500 W o más si hay subidas. ' +
+      'Con más de 90 kg la autonomía real baja: contá con el 55 % de la declarada. ' +
+      'En el directorio de arriba podés filtrar por "Peso que soporta" y "Potencia del motor", o dejar que el asesor lo calcule.',
+  },
+  {
+    id: 'movilidad-monopatin-velocidad',
+    question: '¿A qué velocidad se puede andar en monopatín eléctrico?',
+    answer: `En Montevideo y en San José, hasta 25 km/h, con casco obligatorio.${
+      specStats.value?.withSpeed
+        ? ` De los ${fmt(specStats.value.withSpeed)} monopatines a la venta que declaran su velocidad, ${fmt(specStats.value.over25)} pasan ese tope: se pueden usar limitados, pero la velocidad que declaran no es la permitida.`
+        : ''
+    } En los departamentos sin norma propia no podemos afirmar un límite.`,
+  },
+  {
+    id: 'movilidad-monopatin-usado',
+    question: '¿Conviene comprarlo usado?',
+    answer: movilidadUsadoAnswer(
+      variants.value,
+      true,
+      'La batería es la pieza que más se degrada: un monopatín usado sin fecha ni ciclos de ' +
+        'carga declarados es una apuesta.'
+    ),
+  },
+])
+
+// ── SEO ──────────────────────────────────────────────────────────────────
+// Absoluto y LITERAL, nunca construido con `localePath` (esta familia es sólo en español y el
+// canonical tiene que ser el mismo string en /en/ y /pt/ también — ver
+// tiendas-online-uruguay/index.vue y equipar-casa-uruguay/[categoria].vue, mismo patrón).
+const CANONICAL = 'https://cambio-uruguay.com/monopatines-electricos-uruguay'
+
+/** Lo que la ficha declara, como `PropertyValue` de schema.org (unidades UN/CEFACT). */
+function productProperties(specs: MovilidadProduct['specs']) {
+  if (!specs) return []
+  const rows: Array<[string, number | null, string]> = [
+    ['Autonomía', specs.rangeKm, 'KMT'],
+    ['Velocidad máxima', specs.maxSpeedKmh, 'KMH'],
+    ['Potencia del motor', specs.motorW, 'WTT'],
+    ['Peso', specs.weightKg, 'KGM'],
+    ['Peso máximo soportado', specs.maxLoadKg, 'KGM'],
+  ]
+  return rows
+    .filter(([, value]) => value !== null)
+    .map(([name, value, unitCode]) => ({ '@type': 'PropertyValue', name, value, unitCode }))
+}
+
+const modelsLd = computed(() =>
+  modelRows.value
+    .filter(model => model.indexable)
+    .map((model, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: model.name,
+      url: `https://cambio-uruguay.com/monopatines-electricos-uruguay/${model.slug}`,
+    }))
+)
+
+const productsLd = computed(() =>
+  productRows.value
+    .map(row => {
+      const offer = [...row.product.offers].sort((a, b) => a.priceUyu - b.priceUyu)[0]
+      if (!offer?.url || !(offer.priceUyu > 0)) return null
+      return {
+        '@type': 'Product',
+        name: row.product.name,
+        ...(row.product.image ? { image: row.product.image } : {}),
+        ...(row.product.brand ? { brand: { '@type': 'Brand', name: row.product.brand } } : {}),
+        ...(productProperties(row.product.specs).length
+          ? { additionalProperty: productProperties(row.product.specs) }
+          : {}),
+        offers: {
+          '@type': 'Offer',
+          price: Math.round(offer.priceUyu),
+          priceCurrency: 'UYU',
+          url: offer.url,
+        },
+      }
+    })
+    .filter(Boolean)
+    .slice(0, 10)
+)
+
+defineOgImageComponent('Cambio', {
+  title: 'Precio de monopatines eléctricos en Uruguay',
+  subtitle: 'Nuevo, usado y normativa por departamento',
+  tag: 'PRECIOS',
+})
+
+const seoTitle = 'Precio de monopatines eléctricos en Uruguay | Cambio Uruguay'
+const seoDescription =
+  'Monopatines eléctricos en Uruguay: precio, autonomía, velocidad y potencia de cada aviso, ' +
+  'un asesor según tu trayecto y la normativa por departamento.'
+
+useSeoMeta({
+  title: seoTitle,
+  description: seoDescription,
+  ogTitle: 'Precio de monopatines eléctricos en Uruguay',
+  ogDescription: seoDescription,
+  ogType: 'website',
+  ogUrl: CANONICAL,
+  twitterCard: 'summary_large_image',
+  twitterTitle: 'Precio de monopatines eléctricos en Uruguay',
+  twitterDescription: seoDescription,
+  // Cada combinación de filtros del directorio es una copia delgada de esta página: sólo la URL
+  // limpia se indexa (mismo criterio que /equipar-casa-uruguay/productos).
+  robots: () => (dirFiltered.value ? 'noindex, follow' : 'index, follow'),
+})
+
+// FAQPage lo emite FaqSection: no se repite acá.
+useHead(() => ({
+  link: [{ rel: 'canonical', href: CANONICAL }],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@graph': [
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: 'https://cambio-uruguay.com/',
+              },
+              directoriosHubListItem(2),
+              {
+                '@type': 'ListItem',
+                position: 3,
+                name: 'Monopatines eléctricos',
+                item: CANONICAL,
+              },
+            ],
+          },
+          // Con el catálogo de modelos, la lista enlaza a cada página de modelo indexable (el
+          // Product con su AggregateOffer vive en esa página); sin él, la lista vieja de productos.
+          ...(modelsLd.value.length
+            ? [
+                {
+                  '@type': 'ItemList',
+                  name: 'Modelos de monopatines eléctricos a la venta en Uruguay',
+                  numberOfItems: modelsLd.value.length,
+                  itemListElement: modelsLd.value,
+                },
+              ]
+            : productsLd.value.length
+              ? [
+                  {
+                    '@type': 'ItemList',
+                    name: 'Modelos de monopatines eléctricos a la venta en Uruguay',
+                    numberOfItems: productsLd.value.length,
+                    itemListElement: productsLd.value.map((product, index) => ({
+                      '@type': 'ListItem',
+                      position: index + 1,
+                      item: product,
+                    })),
+                  },
+                ]
+              : []),
+        ],
+      }),
+    },
+  ],
+}))
+
+/** "bajó 9 %": la variación del propio aviso, cuando tenemos dos lecturas suyas. */
+function offerMove(offer: { priceHistory?: { changePct: number | null; points: unknown[] } }): {
+  text: string
+  down: boolean
+} | null {
+  const series = offer.priceHistory
+  const label = priceChangeLabel(series?.changePct ?? null)
+  if (!series || !label || series.points.length < 2) return null
+  return { text: label, down: (series.changePct ?? 0) < 0 }
+}
+</script>
+
+<style scoped>
+.movilidad-page {
+  max-width: 1120px;
+}
+.movilidad-page p {
+  margin: 12px 0 0;
+}
+.movilidad-header h1 {
+  margin: 0;
+  font-size: clamp(1.55rem, 4.4vw, 2.5rem);
+  line-height: 1.2;
+  text-wrap: balance;
+}
+.lead {
+  max-width: 68ch;
+  font-size: 1.075rem;
+}
+.as-of {
+  font-size: 0.875rem;
+  opacity: 0.7;
+}
+.movilidad-section {
+  margin-top: 40px;
+}
+.movilidad-section h2 {
+  margin: 0;
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  line-height: 1.25;
+}
+.movilidad-section h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+.section-intro {
+  max-width: 70ch;
+  font-size: 0.95rem;
+  opacity: 0.88;
+}
+.empty-note {
+  padding: 16px;
+  border-radius: 8px;
+  background: rgba(var(--v-theme-on-surface), 0.04);
+  font-size: 0.95rem;
+}
+/* Enlaces chicos: el azul de enlace del tema, que pasa AA en los dos modos (nunca primary). */
+.cat-link {
+  color: rgb(var(--v-theme-link));
+  font-weight: 600;
+}
+
+/* Tarjetas por tipo */
+.variant-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+.variant-card {
+  padding: 20px;
+  border: 1px solid rgba(var(--v-border-color), 0.25);
+  border-radius: 12px;
+  background: rgb(var(--v-theme-surface));
+}
+.variant-median {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+.variant-median .amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.variant-tag {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+.variant-band,
+.variant-used {
+  font-size: 0.875rem;
+}
+.saving {
+  font-weight: 700;
+  color: rgb(var(--v-theme-success));
+}
+.muted {
+  opacity: 0.66;
+  font-size: 0.875rem;
+}
+
+/* Modelos */
+.products-table {
+  margin-top: 16px;
+}
+
+/* Qué esperar de cada tipo */
+.spec-table {
+  margin-top: 16px;
+}
+.num {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.price {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.cu-cell-note {
+  display: block;
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+.offer-mini {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8rem;
+}
+.offer-mini li {
+  padding: 2px 0;
+}
+.seller-ficha {
+  /* Label step (DESIGN.md): 0.75rem es el piso del ramp, nada renderiza por debajo. */
+  font-size: 0.75rem;
+  font-weight: 400;
+  opacity: 0.85;
+}
+
+/* Más baratos */
+.cheap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px 32px;
+  margin-top: 18px;
+}
+
+/* Guía */
+.guide-list {
+  max-width: 70ch;
+  margin: 12px 0 0;
+  padding-left: 22px;
+  font-size: 0.95rem;
+}
+.guide-list li {
+  padding: 4px 0;
+}
+
+.related-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px 20px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.variant-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.product-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.product-cell__text {
+  display: block;
+  min-width: 0;
+}
+.cheap-title {
+  margin-bottom: 12px;
+}
+.offer-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+@media (min-width: 600px) {
+  .offer-grid {
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 16px;
+  }
+}
+.movilidad-directorio {
+  margin-top: 24px;
+}
+
+.offer-move {
+  font-weight: 600;
+}
+.offer-move.is-down {
+  color: rgb(var(--v-theme-success));
+}
+.offer-move.is-up {
+  color: rgb(var(--v-theme-error));
+}
+</style>

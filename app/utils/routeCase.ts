@@ -20,6 +20,8 @@
 // resto del sitio ya nacen en minúscula, y una regla que toque todo es una regla que algún día
 // rompe una ruta que necesitaba su mayúscula.
 
+import { PREFIXED_LOCALE_CODES } from './locales'
+
 /** Familias cuya cola de segmentos se normaliza a minúscula. */
 export const LOWERCASE_ROUTE_FAMILIES: readonly string[] = Object.freeze([
   'historico',
@@ -27,7 +29,7 @@ export const LOWERCASE_ROUTE_FAMILIES: readonly string[] = Object.freeze([
 ])
 
 /** Prefijos de idioma que el router puede anteponer. */
-const LOCALE_PREFIXES = new Set(['en', 'pt'])
+const LOCALE_PREFIXES = new Set(PREFIXED_LOCALE_CODES)
 
 /**
  * Baja a minúscula un segmento de URL **decodificándolo primero**.

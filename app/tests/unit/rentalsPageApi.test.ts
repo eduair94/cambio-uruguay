@@ -18,7 +18,13 @@ vi.mock('../../server/utils/db', () => ({ connectDb }))
 vi.mock('../../server/models/RentalMeta', () => ({
   RentalMetaModel: { findOne: () => ({ select: () => ({ lean }) }) },
 }))
-vi.mock('../../server/models/RentalListing', () => ({ RentalListingModel: { aggregate } }))
+// `findOne` is the gone page's lookup (rentalFichaGone.test.ts covers it): here the row is pruned.
+vi.mock('../../server/models/RentalListing', () => ({
+  RentalListingModel: {
+    aggregate,
+    findOne: () => ({ select: () => ({ maxTimeMS: () => ({ lean: async () => null }) }) }),
+  },
+}))
 vi.mock('../../server/utils/rentalAvailability', () => ({
   loadRentalAvailabilityIndex: async () => ({}),
   annotateRentalAvailability: (property: unknown) => property,
@@ -34,6 +40,7 @@ const resolveIndexableBarrioLink = vi.fn(async () => ({
   label: 'Pocitos',
 }))
 vi.mock('../../server/utils/rentalBarrio', () => ({
+  RENTAL_BARRIO_LINK_TIMEOUT_MS: 1500,
   startIndexableRentalBarrioLinks: () => Promise.resolve(null),
   resolveIndexableBarrioLink,
 }))
@@ -49,7 +56,9 @@ vi.mock('../../server/utils/rentalPage', () => ({
 }))
 const { getRouterParam, getQuery } = installNitroGlobals()
 const setResponseHeader = vi.fn()
+const setResponseStatus = vi.fn()
 vi.stubGlobal('setResponseHeader', setResponseHeader)
+vi.stubGlobal('setResponseStatus', setResponseStatus)
 const handler = (await import('../../server/api/rentals/ficha/[key].get')).default
 
 describe('canonical rental page API', () => {
@@ -94,7 +103,16 @@ describe('canonical rental page API', () => {
   })
   it('preserves an honest 404 for an absent/expired property instead of returning a thin 200', async () => {
     collation.mockReset().mockResolvedValue([])
-    await expect(handler({} as any)).rejects.toMatchObject({ statusCode: 404 })
+    // Answered, not thrown: a thrown 404 gets Nitro's `no-cache`, and this one is edge-cacheable.
+    // `canonical-key` names no department, so there is nothing to offer instead: a bare 404, which
+    // keeps thirty seconds (rentalFichaGone.test.ts covers the five-minute one with alternatives).
+    expect(await handler({} as any)).toMatchObject({ error: true, statusCode: 404 })
+    expect(setResponseStatus).toHaveBeenCalledWith({}, 404, 'Rental property is not available')
+    expect(setResponseHeader).toHaveBeenCalledWith(
+      {},
+      'cache-control',
+      'public, max-age=0, s-maxage=30'
+    )
     expect(buildRentalPage).not.toHaveBeenCalled()
     expect(aggregate).toHaveBeenCalledTimes(1)
   })
@@ -112,7 +130,7 @@ describe('canonical rental page API', () => {
   })
   it('rejects invalid keys before opening a connection', async () => {
     getRouterParam.mockReturnValue(' '.repeat(3))
-    await expect(handler({} as any)).rejects.toMatchObject({ statusCode: 404 })
+    expect(await handler({} as any)).toMatchObject({ statusCode: 404 })
     expect(connectDb).not.toHaveBeenCalled()
   })
   it('sends an old dossier without measured search demand to noindex, keeping its canonical', async () => {

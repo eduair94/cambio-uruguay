@@ -91,12 +91,14 @@
               >({{ favorites.keys.value.length }})</span
             >
           </VBtn>
-          <VBtn
-            icon="mdi-share-variant-outline"
+          <ShareButtons
+            :url="shareUrl"
+            :text="t('title')"
+            :description="chips.map(chip => chip.label).join(' · ')"
+            :label="false"
+            color="primary"
             variant="text"
-            :aria-label="t('share')"
             data-testid="sale-share-trigger"
-            @click="shareSearch"
           />
           <!-- Built from the URL query, never from the saved-only view: favourites are not a search.
                On mobile it sits next to the sort instead: at 320 px a fifth control wraps this bar. -->
@@ -120,7 +122,7 @@
           <VBtn size="small" variant="text" @click="clearFilters">{{ t('clear') }}</VBtn>
         </div>
         <div class="sales-directory__result-head">
-          <h2 ref="resultsHeading" tabindex="-1" aria-live="polite">
+          <h2 id="sales-results" ref="resultsHeading" tabindex="-1" aria-live="polite">
             {{
               savedEmpty
                 ? t('savedEmpty')
@@ -192,17 +194,20 @@
             @list="setView('lista')"
             @zone="selectZone"
           />
-          <div v-else-if="data?.items.length" class="sales-directory__grid">
-            <PropertySalesListingCard
-              v-for="item in data.items"
-              :key="item.key"
-              :property="item"
-              :area-basis="query.areaBasis"
-              :compareable="savedOnly"
-              :compared="compared.includes(item.key)"
-              @compare="toggleCompare"
-              @preview="openPreview"
-            />
+          <div v-else-if="data?.items.length" ref="resultsList" class="sales-directory__grid">
+            <FeedEdge :feed="feed" edge="top" />
+            <template v-for="(item, index) in feed.items" :key="item.key">
+              <FeedAd :index="index" :feed="feed" />
+              <PropertySalesListingCard
+                :property="item"
+                :area-basis="query.areaBasis"
+                :compareable="savedOnly"
+                :compared="compared.includes(item.key)"
+                @compare="toggleCompare"
+                @preview="openPreview"
+              />
+            </template>
+            <FeedEdge :feed="feed" edge="bottom" />
           </div>
           <div v-else class="sales-directory__empty">
             <VIcon icon="mdi-home-search-outline" size="42" />
@@ -218,29 +223,33 @@
             :detail-href="preview?.detailHref || ''"
           />
         </div>
-        <nav
-          v-if="!savedEmpty && !pending && query.view === 'lista' && (data?.pages || 0) > 1"
-          class="sales-directory__pagination"
-          :aria-label="t('page', { page: data?.page, pages: data?.pages })"
-        >
-          <VBtn
-            :disabled="query.page <= 1"
-            variant="outlined"
-            prepend-icon="mdi-chevron-left"
-            @click="goPage(query.page - 1)"
-          >
-            {{ t('previous') }}
-          </VBtn>
-          <span>{{ t('page', { page: data?.page, pages: data?.pages }) }}</span>
-          <VBtn
-            :disabled="query.page >= (data?.pages || 1)"
-            variant="outlined"
-            append-icon="mdi-chevron-right"
-            @click="goPage(query.page + 1)"
-          >
-            {{ t('next') }}
-          </VBtn>
-        </nav>
+        <FeedControls v-if="!savedEmpty && query.view === 'lista'" :feed="feed">
+          <template #pagination>
+            <nav
+              v-if="!pending && (data?.pages || 0) > 1"
+              class="sales-directory__pagination"
+              :aria-label="t('page', { page: data?.page, pages: data?.pages })"
+            >
+              <VBtn
+                :disabled="query.page <= 1"
+                variant="outlined"
+                prepend-icon="mdi-chevron-left"
+                @click="goPage(query.page - 1)"
+              >
+                {{ t('previous') }}
+              </VBtn>
+              <span>{{ t('page', { page: data?.page, pages: data?.pages }) }}</span>
+              <VBtn
+                :disabled="query.page >= (data?.pages || 1)"
+                variant="outlined"
+                append-icon="mdi-chevron-right"
+                @click="goPage(query.page + 1)"
+              >
+                {{ t('next') }}
+              </VBtn>
+            </nav>
+          </template>
+        </FeedControls>
         <section id="sales-coverage" class="sales-directory__coverage">
           <h2>{{ t('coverage') }}</h2>
           <p>{{ t('coverageText') }}</p>
@@ -269,13 +278,13 @@
     </div>
     <PropertySalesComparison v-model:open="compareOpen" :items="compareItems" />
     <VSnackbar v-model="toastOpen" timeout="4000">{{ toast }}</VSnackbar>
-    <RentalAlertDialog />
+    <RentalAlertDialogHost />
   </VContainer>
 </template>
 <script setup lang="ts">
 import { useDisplay } from 'vuetify'
 import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
-import RentalAlertDialog from '~/components/rentals/RentalAlertDialog.vue'
+import RentalAlertDialogHost from '~/components/rentals/RentalAlertDialogHost.vue'
 import {
   normalizePropertySalesQuery,
   propertySalesQueryToParams,
@@ -334,6 +343,31 @@ const { data, pending, error, refresh } = await useAsyncData(
       : $fetch<PropertySalesResponse>('/api/property-sales', { query: params.value }),
   { watch: [params, savedEmpty] }
 )
+// "Cargar más al bajar" (composables/useInfiniteFeed.ts). No en "Guardadas": esa vista trae
+// todas las guardadas en una sola página.
+const resultsList = ref<HTMLElement | null>(null)
+const feed = useInfiniteFeed<PropertySalesResponse['items'][number]>({
+  id: 'venta-viviendas',
+  itemKey: item => item.key,
+  list: resultsList,
+  items: () => data.value?.items ?? [],
+  page: () => query.value.page,
+  pageCount: () => data.value?.pages ?? 1,
+  perPage: () => data.value?.perPage ?? 24,
+  resetKey: () => {
+    const filters = { ...params.value }
+    delete filters.page
+    return JSON.stringify(filters)
+  },
+  fetchPage: (page, signal) =>
+    $fetch<PropertySalesResponse>('/api/property-sales', {
+      query: { ...params.value, page: String(page) },
+      signal,
+    }).then(response => response.items),
+  enabled: () => !savedOnly.value && query.value.view === 'lista' && !error.value,
+  goToPage: page => void goPage(page),
+  anchorId: 'sales-results',
+})
 const compareItems = computed(() =>
   (data.value?.items || []).filter(item => compared.value.includes(item.key))
 )
@@ -491,20 +525,12 @@ const date = (value: string) =>
     dateStyle: 'medium',
     timeZone: 'America/Montevideo',
   }).format(new Date(value))
-async function shareSearch() {
-  const url = new URL(route.path, window.location.origin)
+const shareUrl = computed(() => {
+  const url = new URL(route.path, 'https://cambio-uruguay.com')
   const shareQuery = propertySalesQueryToParams(effectiveQuery.value)
   Object.entries(shareQuery).forEach(([key, value]) => url.searchParams.set(key, value))
-  try {
-    if (navigator.share) await navigator.share({ title: t('title'), url: url.href })
-    else {
-      await navigator.clipboard.writeText(url.href)
-      announce(t('copied'))
-    }
-  } catch (err) {
-    if ((err as Error).name !== 'AbortError') announce(t('shareError'))
-  }
-}
+  return url.href
+})
 watch(
   () => favorites.keys.value,
   keys => {
@@ -598,7 +624,8 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('seoDescrip
 <style scoped>
 .sales-directory {
   max-width: 1280px;
-  padding: 12px;
+  /* 16px at the sides: the same x=28 edge as every page under the section bar (FamiliaNav). */
+  padding: 12px 16px;
 }
 :where(.sales-directory) :where(h1, h2, h3, p) {
   margin: 0;

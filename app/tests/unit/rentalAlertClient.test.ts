@@ -50,18 +50,18 @@ beforeEach(() => {
 })
 
 describe('saved-search drafts for every directory', () => {
-  it('offers price drops by default except for opportunities', () => {
+  it('offers price drops by default except for opportunities', async () => {
     const alerts = useRentalAlerts()
-    alerts.begin('car-search', { brand: 'citroen', sort: 'price_asc' })
+    await alerts.begin('car-search', { brand: 'citroen', sort: 'price_asc' })
     expect(alerts.draft.value).toMatchObject({
       kind: 'car-search',
       filters: { brand: 'citroen' },
       priceDrops: true,
     })
-    alerts.begin('rental-opportunity', {})
+    await alerts.begin('rental-opportunity', {})
     expect(alerts.draft.value?.priceDrops).toBe(false)
   })
-  it('recovers a used-car draft after login with its price-drop choice', () => {
+  it('recovers a used-car draft after login with its price-drop choice', async () => {
     sessionStorage.setItem(
       'cu_rental_alert_draft_v1',
       JSON.stringify({
@@ -80,12 +80,12 @@ describe('saved-search drafts for every directory', () => {
       })
     )
     const alerts = useRentalAlerts()
-    alerts.recover()
+    await alerts.recover()
     expect(alerts.draft.value).toMatchObject({ kind: 'car-search', priceDrops: false })
   })
   it('sends the price-drop choice when creating', async () => {
     const alerts = useRentalAlerts()
-    alerts.begin('sale-search', { department: 'Montevideo' })
+    await alerts.begin('sale-search', { department: 'Montevideo' })
     alerts.draft.value!.channels.email = true
     request.mockResolvedValue({ item: { ...item, kind: 'sale-search' }, alreadyExists: false })
     await alerts.save()
@@ -97,7 +97,7 @@ describe('rental alert client account isolation', () => {
   for (const mutation of ['save', 'pause', 'delete'] as const)
     it(`does not publish an old account's ${mutation} response into the new account`, async () => {
       const alerts = useRentalAlerts()
-      alerts.begin('rental-search', { department: 'Montevideo' })
+      await alerts.begin('rental-search', { department: 'Montevideo' })
       alerts.items.value = [item]
       request.mockImplementation(async () => {
         auth.user = { uid: 'account-b' }
@@ -117,7 +117,7 @@ describe('rental alert client account isolation', () => {
 
   it('does not send a request with the next account token', async () => {
     const alerts = useRentalAlerts()
-    alerts.begin('rental-search', {})
+    await alerts.begin('rental-search', {})
     auth.getToken.mockImplementation(async () => {
       auth.user = { uid: 'account-b' }
       return 'token-b'
@@ -128,7 +128,7 @@ describe('rental alert client account isolation', () => {
 
   it('clears account-owned edit drafts on account change', async () => {
     const alerts = useRentalAlerts()
-    alerts.edit(item)
+    await alerts.edit(item)
     expect(alerts.draft.value?.ownerUid).toBe('account-a')
     auth.user = { uid: 'account-b' }
     await nextTick()
@@ -139,9 +139,9 @@ describe('rental alert client account isolation', () => {
 
   it('keeps a newer public draft if an earlier create response arrives', async () => {
     const alerts = useRentalAlerts()
-    alerts.begin('rental-search', { department: 'Montevideo' })
+    await alerts.begin('rental-search', { department: 'Montevideo' })
     request.mockImplementation(async () => {
-      alerts.begin('rental-search', { department: 'Canelones' })
+      await alerts.begin('rental-search', { department: 'Canelones' })
       return { item, alreadyExists: false }
     })
     await alerts.save()
@@ -150,7 +150,7 @@ describe('rental alert client account isolation', () => {
 
   it('reactivates a channel-less subscription only with explicitly chosen channels', async () => {
     const alerts = useRentalAlerts()
-    alerts.edit({ ...item, active: false, channels: { email: false, push: false } }, true)
+    await alerts.edit({ ...item, active: false, channels: { email: false, push: false } }, true)
     alerts.draft.value!.channels.email = true
     request.mockResolvedValue({ item })
     await alerts.save()

@@ -10,7 +10,7 @@ describe('rental sitemap cold failure', () => {
     ;(plugin as unknown as (app: unknown) => void)({ hooks: { hook } })
     expect(hook.mock.calls[0]?.[0]).toBe('sitemap:input')
     const guard = hook.mock.calls[0]![1]
-    for (const sitemapName of ['rentals', 'rentals-0', 'rentals-99']) {
+    for (const sitemapName of ['rentals', 'rentals-0', 'rentals-99', 'inmobiliarias']) {
       expect(() => guard({ sitemapName, urls: [] })).toThrowError(
         expect.objectContaining({ statusCode: 503 })
       )

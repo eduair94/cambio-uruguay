@@ -108,6 +108,23 @@ describe("medición", () => {
     expect(result.note).toMatch(/no existía antes del cambio/);
   });
 
+  it("una página nueva con muchos clics en dos días sigue esperando el resto del archivo", () => {
+    const days = archive(from, EXPERIMENT_WINDOW_DAYS + 3, "/guias/x", (i) => (i > EXPERIMENT_WINDOW_DAYS ? 20 : 0), () => 100);
+    const result = measureExperiment(spec, days, today);
+    expect(result).toMatchObject({ verdict: "esperando", daysAfter: 2, daysMissing: 26 });
+    expect(result.after.clicks).toBe(40);
+    expect(result.note).toMatch(/40 clic\(s\).*2 día\(s\)/);
+    expect(result.note).toMatch(/faltan 26 día\(s\) de archivo/i);
+  });
+
+  it.each([
+    [9, "sin cambio"],
+    [10, "mejoró"],
+  ] as const)("una página nueva con 28 días y %i clics cierra como %s", (clicks, verdict) => {
+    const days = archive(from, EXPERIMENT_WINDOW_DAYS * 2 + 1, "/guias/x", (i) => (i === EXPERIMENT_WINDOW_DAYS * 2 ? clicks : 0), () => 100);
+    expect(measureExperiment(spec, days, today)).toMatchObject({ verdict, daysAfter: 28, daysMissing: 0 });
+  });
+
   it("sin ventana anterior en el archivo dice que no sabe, en vez de inventar un veredicto", () => {
     const days = archive(shift(shippedOn, -2), EXPERIMENT_WINDOW_DAYS + 5, "/guias/x", () => 2, () => 100);
     expect(measureExperiment(spec, days, today).verdict).toBe("sin datos");

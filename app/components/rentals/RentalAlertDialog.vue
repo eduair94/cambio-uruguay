@@ -47,7 +47,9 @@
             {{ t(!auth.user ? 'loginTitle' : 'accountRequired') }}
           </p>
           <p>{{ t('loginHint') }}</p>
-          <VBtn color="primary" class="mt-3" @click="alerts.signIn()">{{ t('login') }}</VBtn>
+          <VBtn color="primary" class="mt-3" :data-cta="loginCta" @click="alerts.signIn()">{{
+            t('login')
+          }}</VBtn>
         </VAlert>
         <section class="rental-alert-dialog__section">
           <h3>{{ t('summary') }}</h3>
@@ -207,6 +209,10 @@ const headingId = useId()
 const heading = ref<HTMLElement | null>(null)
 const isOpen = alerts.open
 const draft = alerts.draft
+// GA4 `cta_click` and Clarity: rental-alert-login, car-alert-login… (the button, the same way).
+const loginCta = computed(
+  () => `${(draft.value?.kind ?? 'rental-search').replace(/-search$/, '')}-alert-login`
+)
 const capabilities = alerts.capabilities
 const support = ref<Awaited<ReturnType<typeof getPushSupport>> | null>(null)
 const saving = ref(false)
@@ -361,7 +367,12 @@ watch(
 )
 onMounted(() => {
   alerts.recover()
-  if (isOpen.value) void check()
+  // Mounted on first open by RentalAlertDialogHost: the draft begin() just set predates the
+  // watcher above, so save it here as the watcher would have.
+  if (isOpen.value) {
+    alerts.persist()
+    void check()
+  }
 })
 </script>
 

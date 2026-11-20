@@ -52,6 +52,9 @@ describe('applyFinancingOverrides', () => {
       res({ plazoFijoBrou: 8, fondoPesos: 7 }, ['plazoFijoBrou', 'fondoPesos'])
     )
     expect(INSTRUMENTOS.find(i => i.id === 'brou-pf-ebrou')!.bruto).toBe(brouBefore)
-    expect(MACRO.tpm.value).toBe(5.75)
+    // 5,75 → 6: el COPOM del 8/10/2026 la subió 25 puntos básicos por unanimidad. El valor va
+    // clavado en el test a propósito, porque es el ancla de la que cuelga todo lo que puede pagar
+    // una inversión en pesos: si se mueve sin que nadie lo note, la página publica una tasa vieja.
+    expect(MACRO.tpm.value).toBe(6)
   })
 })

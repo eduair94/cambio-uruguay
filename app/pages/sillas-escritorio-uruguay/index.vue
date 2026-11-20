@@ -731,6 +731,7 @@ FORM: Grounded structure 5, diagnosis-before-doctrine staging, surface seed aa73
 </template>
 
 <script setup lang="ts">
+import { VSlider } from 'vuetify/components'
 import {
   affordableChairOffers,
   chairGallery,

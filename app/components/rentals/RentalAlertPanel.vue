@@ -172,7 +172,7 @@ function showError(cause: unknown) {
 }
 async function toggle(item: RentalAlertSubscription) {
   if (!item.active && !item.channels.email && !item.channels.push) {
-    alerts.edit(item, true)
+    await alerts.edit(item, true)
     return
   }
   busy.value = item.id

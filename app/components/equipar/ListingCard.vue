@@ -45,6 +45,25 @@
       <p v-if="priceMove" class="eq-card__move" :class="priceMove.down ? 'is-down' : 'is-up'">
         {{ priceMove.text }}
       </p>
+      <!-- Sólo monopatines y bicicletas: la ficha técnica declarada (currency-movilidad-specs). Una
+           fila de equipar no trae `specs`, así que esta tarjeta sale igual que siempre allá. -->
+      <MovilidadSpecStrip
+        v-if="producto.specs"
+        :specs="producto.specs"
+        :uyu-per-km="producto.uyuPerKm ?? null"
+        :categoria="producto.category"
+      />
+      <!-- Heladeras, lavarropas, televisores y aires: la ficha técnica declarada
+           (currency-equipar-specs). -->
+      <EquiparFichaStrip
+        v-if="producto.ficha"
+        :ficha="producto.ficha"
+        :categoria="producto.category"
+      />
+      <!-- Sólo con modelo identificado: todas las ofertas del mismo modelo juntas. -->
+      <NuxtLink v-if="producto.modelSlug && modelPath" :to="modelPath" class="eq-card__model">
+        Ver el modelo en todos los vendedores
+      </NuxtLink>
       <p class="eq-card__facts">{{ facts }}</p>
       <p class="eq-card__source">
         {{ producto.sellerName
@@ -70,6 +89,7 @@
 
 <script setup lang="ts">
 import { priceChangeLabel } from '~/utils/priceHistory'
+import { movilidadModelPath } from '~/utils/movilidadModelos'
 import {
   EQUIPAR_SOURCE_LABELS,
   equiparMoneyNbsp,
@@ -128,7 +148,7 @@ const roomIcon = computed(() => {
     )
   )
     return 'mdi-silverware-fork-knife'
-  if (/colchon|sabanas|almohada|acolchado|ropero/.test(category)) return 'mdi-bed-outline'
+  if (/colchon|sommier|sabanas|almohada|acolchado|ropero/.test(category)) return 'mdi-bed-outline'
   if (/calefon|toallas|cortina/.test(category)) return 'mdi-shower'
   if (/lavarropas|secarropas|limpieza|tacho|plancha|aspiradora/.test(category))
     return 'mdi-washing-machine'
@@ -138,6 +158,13 @@ const roomIcon = computed(() => {
   if (/bicicleta/.test(category)) return 'mdi-bicycle-electric'
   return 'mdi-sofa-outline'
 })
+
+/** La página del modelo, en el hub de su categoría (monopatines o bicicletas). */
+const modelPath = computed(() =>
+  props.producto.modelSlug
+    ? movilidadModelPath(props.producto.category, props.producto.modelSlug)
+    : null
+)
 </script>
 
 <style scoped>
@@ -237,6 +264,11 @@ const roomIcon = computed(() => {
   font-size: 1.25rem;
   font-weight: 700;
   margin: 0;
+}
+.eq-card__model {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgb(var(--v-theme-link));
 }
 .eq-card__approx,
 .eq-card__facts,

@@ -10,10 +10,22 @@ if [ "$#" -ne 1 ] || [[ "$REPO_DIR" != /* ]] || [ ! -d "$REPO_DIR" ]; then
   exit 2
 fi
 
+# Milliseconds from a monotonic clock. The wall clock can step backwards while a
+# phase runs (NTP on a CI runner printed "Fast-forward merge: -860 ms"), so the
+# phase time comes from /proc/uptime and only falls back to `date` without it.
+monotonic_ms() {
+  local uptime _
+  if read -r uptime _ </proc/uptime 2>/dev/null && [[ "$uptime" =~ ^([0-9]+)\.([0-9]{2})$ ]]; then
+    printf '%d\n' "$((10#${BASH_REMATCH[1]} * 1000 + 10#${BASH_REMATCH[2]} * 10))"
+  else
+    date +%s%3N
+  fi
+}
+
 run_step() {
-  local label="$1" started finished status
+  local label="$1" started finished status elapsed
   shift
-  started="$(date +%s%3N)"
+  started="$(monotonic_ms)"
   # Remote URLs can contain credentials. Keep Git's raw diagnostics out of CI
   # logs; the phase and exit code identify what needs attention on the host.
   if "$@" >/dev/null 2>&1; then
@@ -21,9 +33,13 @@ run_step() {
   else
     status=$?
   fi
-  finished="$(date +%s%3N)"
+  finished="$(monotonic_ms)"
+  elapsed=$((finished - started))
+  if [ "$elapsed" -lt 0 ]; then
+    elapsed=0
+  fi
   printf '[deploy:source] %s: %d ms (exit %d).\n' \
-    "$label" "$((finished - started))" "$status"
+    "$label" "$elapsed" "$status"
   if [ "$status" -ne 0 ]; then
     printf '[deploy:source] %s failed; source synchronization stopped.\n' "$label" >&2
   fi

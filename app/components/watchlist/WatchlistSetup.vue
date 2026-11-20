@@ -81,7 +81,9 @@
           mostramos lo que opera ahí más lo que funciona a nivel nacional.
         </p>
 
-        <div v-if="store.list.zone" class="wl-current">
+        <!-- Masked in session recordings: the zone can be the visitor's position, and the
+             distances below place them. -->
+        <div v-if="store.list.zone" class="wl-current" data-clarity-mask="true">
           <VChip color="primary" variant="flat" size="small" label>
             <VIcon start size="14">{{
               store.list.zone.mode === 'point' ? 'mdi-map-marker' : 'mdi-map'
@@ -111,7 +113,7 @@
           Todavía no hay cotizaciones para mostrar acá. Probá con un radio más grande o con todo el
           departamento.
         </div>
-        <ul v-else class="wl-origins">
+        <ul v-else class="wl-origins" data-clarity-mask="true">
           <li v-for="o in originOptions" :key="o.origin" class="wl-origin">
             <VCheckbox
               :model-value="store.list.origins.includes(o.origin)"

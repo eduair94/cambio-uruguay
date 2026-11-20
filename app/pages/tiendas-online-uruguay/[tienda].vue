@@ -256,12 +256,7 @@ FAMILY: Spanish only, like the hub and equipar-casa-uruguay: the canonical carri
 <script setup lang="ts">
 import type { StoreDetailResponse } from '~/server/api/stores/[slug].get'
 import type { StoresIndexResponse } from '~/server/api/stores/index.get'
-import {
-  isStoreDirectoryKey,
-  storeDirectoryEntry,
-  STORE_RUBRO_LABELS,
-  type StoreRubro,
-} from '~/utils/storeDirectory'
+import { storeDirectoryEntry, STORE_RUBRO_LABELS, type StoreRubro } from '~/utils/storeDirectory'
 import {
   storeAddress,
   storeBuyingAdvice,
@@ -280,7 +275,10 @@ import {
 // Un slug fuera del registro curado es 404 de verdad. `validate` se extrae en build, así que solo
 // puede usar una función importada, nunca una closure sobre estado del componente.
 definePageMeta({
-  validate: route => isStoreDirectoryKey(String(route.params.tienda ?? '')),
+  validate: async route => {
+    const catalogue = await import('~/utils/storeDirectory')
+    return catalogue.isStoreDirectoryKey(String(route.params.tienda ?? ''))
+  },
 })
 
 const route = useRoute()

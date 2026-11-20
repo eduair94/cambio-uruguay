@@ -21,7 +21,13 @@ export function connectDb(): Promise<typeof mongoose> {
   if (!promise) {
     const uri = useRuntimeConfig().mongoUri
     if (!uri) throw new Error('MONGO_URI is not configured')
-    promise = mongoose.connect(uri, { maxPoolSize: 5 })
+    // 25 connections per worker, not 5. The 5 dates from the first Mongo use of the app (auth, June
+    // 2026); since then one /api/rentals search alone runs six aggregations, the coverage count and
+    // the meta read at once, and every concurrent SSR shares the same pool. Measured on 2026-11-08,
+    // a cold Montevideo search: the pipelines take ~3 s in parallel straight against Mongo, the API
+    // answered in 10–14 s, about what they cost one after the other — they were queueing for five
+    // connections. Two workers x 25 is nothing for the local mongod (~50.000 connections free).
+    promise = mongoose.connect(uri, { maxPoolSize: 25 })
     promise.catch(() => {
       promise = null // allow retry on next call after a failed connect
     })

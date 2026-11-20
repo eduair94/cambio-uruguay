@@ -27,9 +27,14 @@ import { normalizeRentalQuery, rentalQueryToParams } from '../../utils/rentals'
  * corrida de 4,5 s. `rentalQueryToParams` ya deja sólo lo que difiere del default, así que la clave
  * es la misma URL que el sitio publica. Vive acá y no en la ruta para que el calentador y su test
  * la compartan sin cargar los globales de Nitro.
+ *
+ * Del punto de referencia, sólo las coordenadas (`'point'`): la respuesta no depende de la etiqueta,
+ * que puede ser la dirección que alguien escribió, así que ni acuña otra entrada ni queda en la clave.
  */
 export const rentalDirectoryCacheKey = (input: Record<string, unknown>) =>
-  new URLSearchParams(rentalQueryToParams(normalizeRentalQuery(input))).toString() || 'default'
+  new URLSearchParams(
+    rentalQueryToParams(normalizeRentalQuery(input), { includeReference: 'point' })
+  ).toString() || 'default'
 
 export const RENTAL_DIRECTORY_WARM_QUERIES: ReadonlyArray<Readonly<Record<string, string>>> = [
   {},

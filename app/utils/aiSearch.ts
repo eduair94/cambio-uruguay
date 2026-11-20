@@ -75,7 +75,7 @@ export const AI_TOOLSETS: readonly AiToolset[] = Object.freeze([
     icon: 'mdi-tag-search-outline',
     url: `${MCP_ENDPOINT}/productos`,
     summary:
-      'Celulares, sillas, 38 categorías para equipar la casa, monopatines y bicicletas eléctricas, tiendas online y precios oficiales de supermercado.',
+      'Celulares, sillas, 39 categorías para equipar la casa, monopatines y bicicletas eléctricas, tiendas online y precios oficiales de supermercado.',
     tools: [
       { name: 'search_products', what: 'precio más bajo, banda nuevo/usado y dónde comprar' },
       { name: 'plan_home_setup', what: 'cuánto sale equipar la casa, restando lo que ya tenés' },
@@ -249,6 +249,14 @@ export const AI_PROMPT_EXAMPLES: readonly AiPromptExample[] = Object.freeze([
   {
     vertical: 'productos',
     text: '¿Dónde está más barato un iPhone 13 de 128 GB? ¿Y es confiable la tienda?',
+  },
+  {
+    vertical: 'productos',
+    text: 'Busco un monopatín eléctrico nuevo de hasta $30.000. Compará los avisos por precio y marca, y dejame el enlace al buscador con esos filtros.',
+  },
+  {
+    vertical: 'productos',
+    text: 'Busco una bicicleta eléctrica usada. Mostrame los precios relevados y los enlaces a los avisos; si no hay opciones, decímelo.',
   },
   {
     vertical: 'sitio',

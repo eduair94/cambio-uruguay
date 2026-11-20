@@ -21,6 +21,15 @@ export default defineEventHandler(async event => {
   ) {
     throw createError({ statusCode: 400, statusMessage: 'invalid alert' })
   }
+  const channels = {
+    push: b?.channels?.push !== false,
+    email: b?.channels?.email !== false,
+    // El panel manda el canal Telegram; antes se descartaba y la alerta nunca salía por ahí.
+    telegram: b?.channels?.telegram === true,
+  }
+  // Una alerta sin ningún canal no le avisa a nadie (la misma regla que al encenderla, [id].patch.ts).
+  if (!channels.push && !channels.email && !channels.telegram)
+    throw createError({ statusCode: 400, statusMessage: 'no-channel' })
   await connectDb()
   return AlertModel.create({
     uid,
@@ -29,11 +38,6 @@ export default defineEventHandler(async event => {
     op,
     target,
     origin: String(b?.origin ?? 'any'),
-    channels: {
-      push: b?.channels?.push !== false,
-      email: b?.channels?.email !== false,
-      // El panel manda el canal Telegram; antes se descartaba y la alerta nunca salía por ahí.
-      telegram: b?.channels?.telegram === true,
-    },
+    channels,
   })
 })

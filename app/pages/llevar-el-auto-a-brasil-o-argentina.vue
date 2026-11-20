@@ -43,6 +43,19 @@
               la página de la UI </NuxtLink
             >.
           </p>
+          <p class="section-intro">
+            Y hay un borde del SOA que importa justo acá, antes de cruzar con alguien más en el
+            auto: el artículo 6 de la Ley 18.412 saca de la condición de tercero al propietario, al
+            tomador del seguro, al conductor y a su familia cercana respecto del seguro del mismo
+            vehículo, así que el SOA no cubre a quien viaja en él.
+            <NuxtLink
+              :to="localePath('/seguro-obligatorio-de-auto-uruguay')"
+              class="car-abroad-link"
+            >
+              Qué cubre el SOA y a quién no le paga
+            </NuxtLink>
+            está en su propia página, con el artículo al lado de cada caso.
+          </p>
           <ul class="plain-list">
             <li v-for="row in insurance" :key="row.id">
               <strong>{{ row.label }}.</strong> {{ row.detail }}

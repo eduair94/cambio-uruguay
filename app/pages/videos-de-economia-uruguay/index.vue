@@ -21,8 +21,7 @@
         icon="mdi-clock-outline"
       >
         Última lectura: <strong>{{ capturedLabel }}</strong
-        >. Se releen los canales cada 6 horas.
-        <strong>{{ snapshot.counts.videos }} videos</strong> de
+        >. Se releen los canales cada hora. <strong>{{ snapshot.counts.videos }} videos</strong> de
         <strong>{{ snapshot.counts.channelsOk }} canales</strong>, de los cuales
         {{ snapshot.counts.uruguayan }} son de canales uruguayos. Los videos son de sus autores: acá
         sólo los listamos, con el enlace a YouTube y al canal.
@@ -37,8 +36,8 @@
       class="mb-8"
       icon="mdi-cloud-off-outline"
     >
-      Todavía no hay una lectura guardada. El proceso que lee los canales corre cada 6 horas; si
-      esto sigue así, es que no llegó a escribir ninguna.
+      Todavía no hay una lectura guardada. El proceso que lee los canales corre cada hora; si esto
+      sigue así, es que no llegó a escribir ninguna.
     </VAlert>
 
     <template v-else>
@@ -164,8 +163,8 @@
         <div class="method">
           <ol class="method-list">
             <li>
-              Una vez cada 6 horas leemos el feed público de cada canal de la lista de arriba. No
-              usamos la API de YouTube ni ninguna clave: es el mismo XML que YouTube publica para
+              Una vez por hora leemos el feed público de cada canal de la lista de arriba. No usamos
+              la API de YouTube ni ninguna clave: es el mismo XML que YouTube publica para
               cualquiera.
             </li>
             <li>
@@ -324,7 +323,7 @@ const faqItems = [
     id: 'cada-cuanto',
     question: '¿Cada cuánto se actualiza?',
     answer:
-      'Los canales se releen cada 6 horas, todos los días. La fecha y la hora de la última lectura están arriba de todo, y cada video muestra su propia fecha de publicación.',
+      'Los canales se releen cada hora, todos los días. La fecha y la hora de la última lectura están arriba de todo, y cada video muestra su propia fecha de publicación.',
   },
   {
     id: 'como-se-eligen',
@@ -354,7 +353,7 @@ const faqItems = [
 
 const title = 'Videos de economía en Uruguay: 13 temas'
 const description =
-  'Los videos de YouTube sobre economía uruguaya en 13 temas —dólar, inflación, sueldos, impuestos, inversiones, vivienda—, releídos cuatro veces por día.'
+  'Los videos de YouTube sobre economía uruguaya en 13 temas —dólar, inflación, sueldos, impuestos, inversiones, vivienda—, releídos cada hora.'
 const canonicalUrl = `${SITE_URL}/videos-de-economia-uruguay`
 
 // Branded OG image, same template as the rest of the site.
@@ -422,7 +421,9 @@ useHead(() => ({
   letter-spacing: 0.08em;
   font-size: 0.75rem;
   font-weight: 700;
-  color: rgb(var(--v-theme-primary));
+  /* Tinta de enlace y no `primary`: el azul de relleno da 4:1 sobre el fondo oscuro, corto para
+     un texto de 12 px. */
+  color: rgb(var(--v-theme-link));
   margin-bottom: 0.35rem;
 }
 
@@ -460,12 +461,23 @@ useHead(() => ({
   margin-bottom: 0.25rem;
 }
 
+/* Se parte en dos líneas cuando hace falta: con `nowrap`, "Ver los 8 videos de ahorro y finanzas
+   personales" medía más que un teléfono de 360 px y ensanchaba la página entera (scroll lateral).
+   Flex en línea para que la flecha quede pegada al texto y no huérfana en su propio renglón. */
 .topic-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   font-size: 0.85rem;
   font-weight: 600;
-  white-space: nowrap;
-  color: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-link));
   text-decoration: none;
+}
+
+@media (pointer: coarse) {
+  .topic-more {
+    min-height: 44px;
+  }
 }
 
 .topic-more:hover {
@@ -474,13 +486,13 @@ useHead(() => ({
 
 .video-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
   gap: 1.25rem;
 }
 
 .channel-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
   gap: 1rem;
 }
 

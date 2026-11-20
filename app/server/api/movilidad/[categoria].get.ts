@@ -1,5 +1,8 @@
 import { MovilidadItemModel } from '../../models/MovilidadItem'
 import { MovilidadMetaModel } from '../../models/MovilidadMeta'
+import { MovilidadListingModel } from '../../models/MovilidadListing'
+import { MovilidadSpecSnapshotModel } from '../../models/MovilidadSpecSnapshot'
+import { monopatinSpecsPublic } from '../../../utils/monopatinFicha'
 import { connectDb } from '../../utils/db'
 import { pricewatchHistory } from '../../utils/priceHistory'
 import {
@@ -10,6 +13,7 @@ import {
   type MovilidadCategoryResponse,
   type MovilidadItemDoc,
   type MovilidadRunDoc,
+  type MonopatinSpecStats,
 } from '../../../utils/movilidad'
 
 /**
@@ -57,6 +61,59 @@ async function attachOfferHistory<T extends { offers: any[]; products?: { offers
   }))
 }
 
+/**
+ * Monopatín y bicicleta: la ficha técnica de cada modelo (la primera de sus ofertas que tenga ficha
+ * propia leída; sólo monopatín tiene `products`, bicicleta es régimen commodity) y las medianas por
+ * tipo del snapshot de currency-movilidad-specs, que se guarda uno por categoría. Un `$in` acotado a
+ * las ofertas que la página muestra, contra el índice único de `listingId`: no agrega sobre la
+ * colección. Si algo falla, la página sale igual sin ficha.
+ */
+async function attachMovilidadSpecs<T extends { products?: { offers: any[] }[] }>(
+  items: T[],
+  category: string
+): Promise<{ items: T[]; specStats: MonopatinSpecStats | null }> {
+  const ids = items.flatMap(item =>
+    (item.products ?? []).flatMap(product =>
+      (product.offers ?? []).map(offer => offer?.listingId).filter(Boolean)
+    )
+  )
+  const [rows, snapshot] = await Promise.all([
+    ids.length
+      ? MovilidadListingModel.find({ listingId: { $in: ids } })
+          .select({ _id: 0, listingId: 1, specs: 1 })
+          .maxTimeMS(5_000)
+          .lean()
+          .catch(() => [])
+      : Promise.resolve([]),
+    MovilidadSpecSnapshotModel.findOne({ key: category })
+      .select({ _id: 0, stats: 1 })
+      .maxTimeMS(5_000)
+      .lean()
+      .catch(() => null),
+  ])
+  const byId = new Map<string, ReturnType<typeof monopatinSpecsPublic>>()
+  for (const row of rows as Array<{ listingId: string; specs?: unknown }>) {
+    const specs = monopatinSpecsPublic(row.specs)
+    if (specs?.fromFicha) byId.set(row.listingId, specs)
+  }
+  return {
+    specStats: ((snapshot as { stats?: MonopatinSpecStats } | null)?.stats ?? null) || null,
+    items: items.map(item =>
+      item.products
+        ? {
+            ...item,
+            products: item.products.map(product => {
+              const found = (product.offers ?? [])
+                .map(offer => byId.get(offer?.listingId))
+                .find(Boolean)
+              return found ? { ...product, specs: found } : product
+            }),
+          }
+        : item
+    ),
+  }
+}
+
 export default defineEventHandler(async (event): Promise<MovilidadCategoryResponse> => {
   const slug = String(getRouterParam(event, 'categoria') || '')
   if (!isMovilidadCategorySlug(slug)) {
@@ -88,6 +145,11 @@ export default defineEventHandler(async (event): Promise<MovilidadCategoryRespon
       'public, max-age=600, s-maxage=600, stale-while-revalidate=86400'
     )
 
+    const items = await attachOfferHistory(
+      movilidadCategoryProjection(movilidadSortItems((rows as unknown as MovilidadItemDoc[]) ?? []))
+    )
+    const withSpecs = await attachMovilidadSpecs(items, slug)
+
     return {
       category: slug,
       generatedAt: metaDoc?.generatedAt ?? null,
@@ -97,11 +159,8 @@ export default defineEventHandler(async (event): Promise<MovilidadCategoryRespon
         ok: run.ok,
         listings: run.listings,
       })),
-      items: await attachOfferHistory(
-        movilidadCategoryProjection(
-          movilidadSortItems((rows as unknown as MovilidadItemDoc[]) ?? [])
-        )
-      ),
+      items: withSpecs.items,
+      specStats: withSpecs.specStats,
     }
   } catch {
     setResponseHeader(event, 'cache-control', 'no-store')

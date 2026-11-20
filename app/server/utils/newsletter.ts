@@ -5,6 +5,8 @@ import { fetchNews } from './news'
 import { sanitizeAi } from './ai'
 import { aiMarkdownToEmailHtml, cleanAiCommentary } from '../../utils/newsletterIssue'
 import { rentalSurveyUrl } from '../../utils/rentalFeedback'
+import { isExtraLocale } from '../../utils/locales'
+import { offMarketSide } from '../../utils/marketOutlier'
 
 export type NewsletterLang = 'es' | 'en' | 'pt'
 
@@ -24,7 +26,9 @@ export function newToken(): string {
 
 export function normalizeNewsletterLang(x?: string): NewsletterLang {
   const base = (x || '').slice(0, 2).toLowerCase()
-  return base === 'en' || base === 'pt' ? base : 'es'
+  if (base === 'en' || base === 'pt') return base
+  // The issue is written in es/en/pt; a reader who subscribed from /fr or /ja gets English.
+  return isExtraLocale(base) || isExtraLocale((x || '').toLowerCase()) ? 'en' : 'es'
 }
 
 // ---- Digest data ------------------------------------------------------------
@@ -91,6 +95,35 @@ interface RateRow {
   date?: string
 }
 
+/**
+ * The day's best sell (lowest) and best buy (highest) among one currency's retail boards, without
+ * the prices the rest of the site refuses to crown (`utils/marketOutlier.ts`: one side at a time,
+ * with the band of each currency — the same rule as /cotizacion, /pizarra and /casas-de-cambio).
+ *
+ * Without it a board frozen since July at $39,55 — the backend's staleness check marks it
+ * `extreme: "min-sell"` — was "la mejor venta" of 84 of the 87 archived issues (2026-08-15 to
+ * 2026-11-07, measured 2026-11-09): their title, their description and the email. One side at a
+ * time, because the narrow-spread casas buy well above a median the wide-spread majority keeps low
+ * and are real; with each currency's band, because the real and the Argentine peso spread far
+ * wider than the dollar (a 3 % band dropped 28 and 37 of their 39 boards on 2026-11-09). The
+ * Argentine peso's band still drops tradelix's 0,15 buy against a 0,02 median, which the issue of
+ * 2026-11-06 named "la mejor compra". A market too thin to judge flags nothing.
+ */
+export function bestDigestQuotes<T extends { buy: number; sell: number }>(
+  code: string,
+  rows: readonly T[]
+): { bestSell: T; bestBuy: T } | null {
+  if (!rows.length) return null
+  const sellOff = offMarketSide(rows, code, 'sell')
+  const buyOff = offMarketSide(rows, code, 'buy')
+  const sellers = rows.filter(row => !sellOff(row))
+  const buyers = rows.filter(row => !buyOff(row))
+  return {
+    bestSell: (sellers.length ? sellers : rows).reduce((a, b) => (b.sell < a.sell ? b : a)),
+    bestBuy: (buyers.length ? buyers : rows).reduce((a, b) => (b.buy > a.buy ? b : a)),
+  }
+}
+
 function dayOverDayPct(evolution: Array<{ date: string; sell?: number }>): number {
   const byDay = new Map<string, number>()
   for (const p of evolution) {
@@ -121,10 +154,12 @@ export async function buildDigestData(lang: NewsletterLang): Promise<DigestData>
   let date = new Date().toISOString().slice(0, 10)
 
   for (const code of REPORT_CURRENCIES) {
-    const rows = rates.filter(r => r.code === code && isRetail(r))
-    if (rows.length === 0) continue
-    const bestSell = rows.reduce((a, b) => (b.sell < a.sell ? b : a))
-    const bestBuy = rows.reduce((a, b) => (b.buy > a.buy ? b : a))
+    const best = bestDigestQuotes(
+      code,
+      rates.filter(r => r.code === code && isRetail(r))
+    )
+    if (!best) continue
+    const { bestSell, bestBuy } = best
     if (bestSell.date) date = bestSell.date.slice(0, 10)
     let changePct: number
     try {

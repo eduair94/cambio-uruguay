@@ -158,6 +158,9 @@
       </div>
     </section>
 
+    <!-- La unidad intermedia, antes de las preguntas: mismo corte que FaqSection (ver
+         docs/seo/adsense-growth-loop.md, 31/10/2026). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <!-- FAQ -->
     <section v-if="faqs.length" class="mb-8" aria-label="Preguntas frecuentes">
       <h2 class="section-heading mb-3">Preguntas frecuentes</h2>

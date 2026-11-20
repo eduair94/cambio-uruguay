@@ -314,6 +314,15 @@
           {{ formatNumber(demand.probed) }} clasificadas mirando el SERP. El orden del
           autocompletado es un proxy de frecuencia relativa, no un volumen de búsquedas.
         </p>
+        <p class="text-caption text-medium-emphasis mb-2">
+          {{ scDemandRunSummary(demand.serpRun) }}
+          <template v-if="demand.serpRun">
+            Etapa: {{ demand.serpRun.startedAt }} a {{ demand.serpRun.finishedAt }} (UTC).
+          </template>
+        </p>
+        <p v-if="scDemandFailureSummary(demand.serpRun)" class="text-caption mb-2">
+          {{ scDemandFailureSummary(demand.serpRun) }}
+        </p>
         <VTable v-if="demand.items.length" density="compact" class="mb-8 cu-mobile-cards">
           <thead>
             <tr>
@@ -331,7 +340,7 @@
               <td data-label="Tema" class="text-caption">{{ item.topic }}</td>
               <td data-label="SERP">
                 <VChip size="x-small" variant="tonal" :color="scDemandColor(item.serp?.verdict)">
-                  {{ scDemandLabel(item.serp?.verdict) }}
+                  {{ scDemandLabel(item.serp?.verdict, item.serpCheck) }}
                 </VChip>
               </td>
               <td data-label="Cobertura" class="text-right">
@@ -351,14 +360,13 @@
                 </span>
                 <span v-else class="text-medium-emphasis">no</span>
               </td>
-              <td data-label="Por qué" class="text-caption">{{ item.why }}</td>
+              <td data-label="Por qué" class="text-caption">{{ scDemandWhy(item) }}</td>
             </tr>
           </tbody>
         </VTable>
         <VAlert v-else type="warning" variant="tonal" density="compact" class="mb-8">
-          La última corrida no encontró ningún hueco: o el sitio ya cubre lo que el autocompletado
-          sugiere, o el servidor de SERP no contestó. Los dos casos se ven igual acá, y se
-          distinguen en el log de <code>currency-search-demand</code>.
+          La cola guardada no contiene candidatos. Su ausencia no permite deducir demanda ni
+          disponibilidad del servidor; el diagnóstico de la corrida figura arriba cuando existe.
         </VAlert>
       </template>
 
@@ -589,7 +597,14 @@ import {
   type ScOpportunity,
   type SearchConsoleSnapshot,
 } from '~/utils/searchConsole'
-import { scDemandColor, scDemandLabel, type SearchDemandQueue } from '~/utils/searchDemand'
+import {
+  scDemandColor,
+  scDemandLabel,
+  scDemandWhy,
+  scDemandRunSummary,
+  scDemandFailureSummary,
+  type SearchDemandQueue,
+} from '~/utils/searchDemand'
 import { formatRevenue, type SiteRevenueSnapshot } from '~/utils/siteRevenue'
 import {
   rpBasisLabel,

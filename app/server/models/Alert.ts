@@ -11,6 +11,8 @@ export interface AlertDoc {
   active: boolean
   armed: boolean
   lastFiredAt: Date | null
+  /** One-click email unsubscribe (RFC 8058). Minted with the first email; never sent to clients. */
+  unsubscribeToken?: string
 }
 
 const AlertSchema = new Schema<AlertDoc>(
@@ -29,8 +31,14 @@ const AlertSchema = new Schema<AlertDoc>(
     active: { type: Boolean, default: true },
     armed: { type: Boolean, default: true },
     lastFiredAt: { type: Date, default: null },
+    unsubscribeToken: { type: String, select: false },
   },
   { timestamps: true }
+)
+// Partial: the alerts created before the token existed have none until their next email.
+AlertSchema.index(
+  { unsubscribeToken: 1 },
+  { unique: true, partialFilterExpression: { unsubscribeToken: { $type: 'string' } } }
 )
 
 export const AlertModel: Model<AlertDoc> =

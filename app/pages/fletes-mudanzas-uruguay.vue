@@ -145,6 +145,7 @@ FORM: Extension of the rental journey: searchable directory with progressively d
       <div class="next-links">
         <NuxtLink :to="localePath('/primer-alquiler-uruguay')">{{ c.paperwork }}</NuxtLink>
         <NuxtLink :to="localePath('/equipar-casa-uruguay')">{{ c.furnish }}</NuxtLink>
+        <NuxtLink :to="localePath('/armadores-de-muebles-montevideo')">{{ c.assemblers }}</NuxtLink>
       </div>
     </section>
 

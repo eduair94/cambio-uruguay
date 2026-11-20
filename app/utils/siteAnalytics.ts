@@ -53,6 +53,17 @@ export interface AnalyticsRange {
   days: number
 }
 
+/** The same breakdowns for readers in Uruguay only (classes/site-analytics/types.ts). */
+export interface AnalyticsAudience {
+  totals: AnalyticsTotals
+  previousTotals: AnalyticsTotals
+  daily: AnalyticsDailyPoint[]
+  topPages: AnalyticsPageRow[]
+  channels: AnalyticsShareRow[]
+  devices: AnalyticsShareRow[]
+  events: AnalyticsEventRow[]
+}
+
 export interface SiteAnalyticsSnapshot {
   key: string
   propertyId: string
@@ -68,6 +79,49 @@ export interface SiteAnalyticsSnapshot {
   countries: AnalyticsShareRow[]
   devices: AnalyticsShareRow[]
   events: AnalyticsEventRow[]
+  /** Absent until the backend job has written it, or when that half of its batch came back empty. */
+  uruguay?: AnalyticsAudience
+}
+
+/** Which visits the page counts. Uruguay is the default: see {@link outsideUruguay} for why. */
+export type AudienceScope = 'uruguay' | 'all'
+
+/**
+ * The snapshot as one audience reads it: the Uruguay block laid over the whole-property document.
+ *
+ * `countries` stays the whole property's on purpose — it is the breakdown that shows where the
+ * rest comes from. Without a Uruguay block (an older document, a failed half) every scope is the
+ * whole property, so the page never renders empty because of a missing field.
+ */
+export function audienceView(
+  snapshot: SiteAnalyticsSnapshot | null | undefined,
+  scope: AudienceScope
+): SiteAnalyticsSnapshot | null {
+  if (!snapshot) return null
+  if (scope !== 'uruguay' || !snapshot.uruguay) return snapshot
+  return { ...snapshot, ...snapshot.uruguay }
+}
+
+/**
+ * What "all countries" adds on top of Uruguay, from the two totals the document already carries.
+ *
+ * Measured 2026-11-16: 73 % of the sessions in the window came from abroad and 97 % of those were
+ * one page and under ten seconds — which is how the whole-property view came to say "21 %
+ * engagement". The page states both numbers next to the switch instead of asking to be believed.
+ */
+export function outsideUruguay(
+  snapshot: SiteAnalyticsSnapshot | null | undefined
+): { sessions: number; share: number; bounceRate: number } | null {
+  const uruguay = snapshot?.uruguay?.totals
+  if (!snapshot || !uruguay) return null
+  const sessions = snapshot.totals.sessions - uruguay.sessions
+  if (!(sessions > 0) || !(snapshot.totals.sessions > 0)) return null
+  const engaged = Math.max(0, snapshot.totals.engagedSessions - uruguay.engagedSessions)
+  return {
+    sessions,
+    share: sessions / snapshot.totals.sessions,
+    bounceRate: Math.min(1, Math.max(0, 1 - engaged / sessions)),
+  }
 }
 
 // --- "Ahora mismo" (GA4 Realtime, served on demand by the API, not by the daily job) ---

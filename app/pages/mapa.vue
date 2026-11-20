@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="pa-2 pa-sm-4">
+  <v-container fluid class="px-4 py-2 pa-sm-4">
     <h1 class="text-h5 mb-2">{{ t('map.title') }}</h1>
     <p class="text-body-2 mb-4">{{ t('map.subtitle') }}</p>
 
@@ -35,7 +35,7 @@
       <v-col cols="12" sm="6" md="3" class="d-flex align-center">
         <div class="px-1 flex-grow-1">
           <span class="text-caption">{{ t('map.radius') }}: {{ radiusKm }} km</span>
-          <v-slider
+          <VSlider
             v-model="radiusKm"
             :min="1"
             :max="50"
@@ -91,7 +91,13 @@
           <v-card-title class="text-subtitle-1">
             {{ userLocation ? t('map.bestNearby') : t('map.setLocationPrompt') }}
           </v-card-title>
-          <v-card-text v-if="userLocation && ranked.length" class="pa-0">
+          <!-- Sorted by distance from the visitor: the order alone says where they are. Masked
+               for Microsoft Clarity, like the map. -->
+          <v-card-text
+            v-if="userLocation && ranked.length"
+            class="pa-0 mapa-cercanos"
+            data-clarity-mask="true"
+          >
             <v-list density="compact">
               <v-list-item
                 v-for="(r, i) in ranked"
@@ -124,6 +130,7 @@
 </template>
 
 <script setup lang="ts">
+import { VSlider } from 'vuetify/components'
 import { computed, onMounted, ref } from 'vue'
 import LocationsMap from '~/components/map/LocationsMap.vue'
 import ReferenceAddress from '~/components/rentals/ReferenceAddress.vue'

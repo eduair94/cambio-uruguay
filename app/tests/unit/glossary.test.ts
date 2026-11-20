@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   GLOSSARY_CATEGORIES,
@@ -122,5 +124,29 @@ describe('despachante de aduana', () => {
     // Aduanas llevará el Registro de Despachantes de Aduana y de Apoderados").
     expect(term.body).toContain('art. 23')
     expect(term.body).toContain('Registro de Despachantes de Aduana y de Apoderados')
+  })
+})
+
+describe('the link from a term to the page that goes deeper', () => {
+  // A route typo would not break anything: it would ship a link to a 404 inside the definition.
+  it('points every `page` link at a page that exists', () => {
+    const pages = join(__dirname, '..', '..', 'pages')
+    for (const term of glossary.filter(t => t.page)) {
+      const to = term.page!.to
+      expect(to, term.slug).toMatch(/^\/[a-z0-9-]+$/)
+      const exists =
+        existsSync(join(pages, `${to}.vue`)) || existsSync(join(pages, to, 'index.vue'))
+      expect(exists, `${term.slug} → ${to}`).toBe(true)
+      expect(term.page!.text.trim().length, term.slug).toBeGreaterThan(20)
+      expect(term.page!.label.trim().length, term.slug).toBeGreaterThan(5)
+    }
+  })
+
+  // The LRM page (PR #157) is where the cut-off rate of each auction lives; the definition used to
+  // mention "las tasas de las LRM" without saying where to read them.
+  it('sends the LRM definition to the LRM page', () => {
+    expect(getTerm('letras-regulacion-monetaria')?.page?.to).toBe(
+      '/letras-de-regulacion-monetaria-uruguay'
+    )
   })
 })

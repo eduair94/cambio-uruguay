@@ -16,6 +16,7 @@ import {
 } from '../../utils/blog'
 import { fetchNewsFrom, type NewsItem } from './news'
 import { generateChat } from './ai'
+import { offMarketSide } from '../../utils/marketOutlier'
 
 /** System prompt for the blog articles (Spanish analyst, no LaTeX). */
 const BLOG_SYSTEM_PROMPT = `Sos un analista financiero experto en el mercado cambiario de Uruguay. Escribís artículos de blog claros, útiles y bien estructurados en español, en formato Markdown, con un tono informativo y accesible.
@@ -98,14 +99,20 @@ export function rateContext(rates: Rate[]): string {
     r => r.code === 'USD' && (!r.type || r.type === '') && r.origin !== 'bcu' && r.sell > 0
   )
 
-  // The best sell and the best buy are almost never the same casa: the cheapest
-  // seller today is Baluma at 39,55 while the best payer is Fénix at 40,25.
-  // Both numbers are true, and stating them side by side without saying WHOSE
-  // they are reads as one market quoting a negative spread — a free 0,70 a
-  // dollar. The model believed it and reasoned from it, so the pairing is now
-  // explicit and the line says out loud that these are two different houses.
-  const bestSellRow = usd.length ? usd.reduce((a, b) => (b.sell < a.sell ? b : a)) : null
-  const withBuy = usd.filter(r => r.buy > 0)
+  // The best sell and the best buy are almost never the same casa. Stating them
+  // side by side without saying WHOSE they are reads as one market quoting a
+  // negative spread, and the model believed it and reasoned from it, so the
+  // pairing is explicit and the line says out loud that these are two houses.
+  //
+  // Both come through the site's outlier rule (utils/marketOutlier.ts, one side
+  // at a time). The raw minimum was a board frozen since July at 39,55, below
+  // what the best casa paid, and 15 of the 40 latest posts (measured 2026-11-11)
+  // quoted it as the market's cheapest dollar.
+  const sellOff = offMarketSide(usd, 'USD', 'sell')
+  const buyOff = offMarketSide(usd, 'USD', 'buy')
+  const sellers = usd.filter(r => !sellOff(r))
+  const bestSellRow = sellers.length ? sellers.reduce((a, b) => (b.sell < a.sell ? b : a)) : null
+  const withBuy = usd.filter(r => r.buy > 0 && !buyOff(r))
   const bestBuyRow = withBuy.length ? withBuy.reduce((a, b) => (b.buy > a.buy ? b : a)) : null
 
   const marketLine =
@@ -157,10 +164,74 @@ function parseArticle(
   return { title, summary, body }
 }
 
+type BlogStore = ReturnType<typeof useStorage>
+
+function isSummary(v: unknown): v is BlogPostSummary {
+  if (!v || typeof v !== 'object') return false
+  const o = v as Record<string, unknown>
+  return (
+    typeof o.slug === 'string' &&
+    typeof o.date === 'string' &&
+    typeof o.category === 'string' &&
+    typeof o.title === 'string'
+  )
+}
+
+function toSummary(post: BlogPost): BlogPostSummary {
+  return {
+    slug: post.slug,
+    date: post.date,
+    category: post.category,
+    title: post.title,
+    summary: post.summary,
+    createdAt: post.createdAt,
+  }
+}
+
+/**
+ * Rebuild the index from the stored posts themselves. The posts are the source
+ * of truth; the index is only a cache of their summaries.
+ */
+async function rebuildIndex(store: BlogStore): Promise<BlogPostSummary[]> {
+  const keys = await store.getKeys('posts')
+  const out: BlogPostSummary[] = []
+  for (const key of keys) {
+    const post = await store.getItem<BlogPost>(key).catch(() => null)
+    if (isSummary(post) && parseBlogSlug(post.slug)) out.push(toSummary(post))
+  }
+  await store.setItem(INDEX_KEY, out).catch(() => {})
+  return out
+}
+
+let rebuilding: Promise<BlogPostSummary[]> | null = null
+
+/**
+ * Read the index, healing it when the stored value is not an array.
+ *
+ * The app runs as a pm2 cluster of two and the `fs` driver writes the index
+ * non-atomically, so both instances generating the day's posts at the
+ * Montevideo midnight rollover can leave a half-written or interleaved file.
+ * unstorage's `destr` then hands back the raw (non-JSON) string, and every
+ * `.filter()` on it threw — `/api/blog` answered 500 on every request from
+ * 03:00 UTC on 2026-11-15 (CAMBIO-URUGUAY-BACKEND-1J), and `savePost` could
+ * never repair it because it threw the same way.
+ */
+async function readIndex(store: BlogStore): Promise<BlogPostSummary[]> {
+  const raw = await store.getItem<unknown>(INDEX_KEY).catch(() => undefined)
+  if (raw == null) return []
+  if (Array.isArray(raw)) return raw.filter(isSummary)
+  if (!rebuilding) {
+    rebuilding = rebuildIndex(store).finally(() => {
+      rebuilding = null
+    })
+  }
+  return rebuilding
+}
+
 /** Read the post index (newest first), or [] when empty/unavailable. */
 export async function listPosts(limit?: number): Promise<BlogPostSummary[]> {
   const store = useStorage(STORAGE)
-  const index = ((await store.getItem<BlogPostSummary[]>(INDEX_KEY)) || []).filter(Boolean)
+  const index = [...(await readIndex(store))]
   index.sort((a, b) =>
     a.date < b.date ? 1 : a.date > b.date ? -1 : a.category.localeCompare(b.category)
   )
@@ -177,17 +248,9 @@ export async function getPost(slug: string): Promise<BlogPost | null> {
 async function savePost(post: BlogPost): Promise<void> {
   const store = useStorage(STORAGE)
   await store.setItem(`posts:${post.slug}`, post)
-  const index = (await store.getItem<BlogPostSummary[]>(INDEX_KEY)) || []
-  const summary: BlogPostSummary = {
-    slug: post.slug,
-    date: post.date,
-    category: post.category,
-    title: post.title,
-    summary: post.summary,
-    createdAt: post.createdAt,
-  }
+  const index = await readIndex(store)
   const next = index.filter(p => p.slug !== post.slug)
-  next.push(summary)
+  next.push(toSummary(post))
   await store.setItem(INDEX_KEY, next)
 }
 

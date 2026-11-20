@@ -1,8 +1,14 @@
 <template>
   <client-only>
-    <div ref="el" class="locations-map" :style="{ height }" />
+    <!-- Masked for session recordings: the map centres on the visitor or on the reference point
+         they chose, and every tile URL is a position. -->
+    <div ref="el" class="locations-map" :style="{ height }" data-clarity-mask="true" />
     <template #fallback>
-      <div class="locations-map locations-map--loading" :style="{ height }">
+      <div
+        class="locations-map locations-map--loading"
+        :style="{ height }"
+        data-clarity-mask="true"
+      >
         <v-progress-circular indeterminate color="primary" />
       </div>
     </template>

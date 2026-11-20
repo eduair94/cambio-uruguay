@@ -388,7 +388,11 @@
           de UTE, cortes de agua de OSE, reclamos de saneamiento, limpieza y alumbrado de la
           Intendencia y servicios cercanos de OpenStreetMap. Cada barrio se compara con todos los
           barrios medidos: "menos denuncias que el 70 %" quiere decir que el 70 % de los barrios
-          tiene más. Son registros, no un riesgo individual.
+          tiene más. Son registros, no un riesgo individual. El de agua se publica entero, zona por
+          zona, en
+          <NuxtLink :to="localePath('/cortes-de-agua-por-barrio-uruguay')"
+            >cortes de agua programados por barrio</NuxtLink
+          >, con cuántos avisó OSE en cada una.
         </li>
         <li>
           <strong>El orden.</strong> Cada barrio se puntúa en precio, metros por la plata,

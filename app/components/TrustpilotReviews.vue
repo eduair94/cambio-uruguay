@@ -1,7 +1,5 @@
 <template>
-  <!-- Removed entirely if the third-party widget fails: a heading with an empty
-       box under it is worse than no social proof at all. -->
-  <section v-if="!failed" v-reveal class="reviews-section py-12">
+  <section v-reveal class="reviews-section py-12">
     <VContainer>
       <VRow>
         <VCol cols="12" md="10" lg="8" class="mx-auto text-center mb-8">
@@ -18,12 +16,12 @@
             </template>
 
             <ClientOnly>
-              <div
-                ref="mountEl"
+              <iframe
                 class="reviews-widget"
-                :style="heightStyle"
-                role="region"
-                :aria-label="t('reviews.a11yRegion')"
+                :src="widgetUrl"
+                :title="t('reviews.a11yRegion')"
+                :height="TRUSTPILOT_WIDGET_HEIGHT"
+                loading="eager"
               />
               <template #fallback>
                 <div class="reviews-skeleton" :style="heightStyle" />
@@ -62,10 +60,8 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 
-import type { TrustpilotWidgetHandle } from 'trustpilot-iframe-widget/vanilla'
 import {
-  buildWidgetConfig,
-  probeWidgetReachable,
+  buildWidgetUrl,
   TRUSTPILOT_PROFILE_URL,
   TRUSTPILOT_REVIEW_URL,
   TRUSTPILOT_WIDGET_HEIGHT,
@@ -74,101 +70,17 @@ import {
 const { t } = useI18n()
 const { applied } = useThemeMode()
 
-// Backstop only: catches "loads but never signals ready" after the widget has
-// actually been created. It does NOT detect a blocked/downed host — the library
-// sets `iframe.onload = onReady`, and browsers fire `load` even for a blocked or
-// failed navigation (the browser just loads an error document into the frame).
-// That case is caught earlier, by `probeWidgetReachable` in `mountWidget`.
-const READY_TIMEOUT_MS = 8_000
-
-const mountEl = ref<HTMLElement>()
-const failed = ref(false)
+const reducedMotion = ref(false)
 const heightStyle = { minHeight: `${TRUSTPILOT_WIDGET_HEIGHT}px` }
+const widgetUrl = computed(() =>
+  buildWidgetUrl({ theme: applied.value, reducedMotion: reducedMotion.value })
+)
 
-let widget: TrustpilotWidgetHandle | null = null
-let readyTimer: ReturnType<typeof setTimeout> | null = null
-let mounting = false
-let unmounted = false
-
-function clearReadyTimer() {
-  if (readyTimer) {
-    clearTimeout(readyTimer)
-    readyTimer = null
-  }
-}
-
-// Single teardown path. The soft-fail below removes the section via `v-if`
-// WITHOUT unmounting this component (the parent still renders it), so
-// `onBeforeUnmount` alone never runs on that path — the widget's autoplay
-// interval and listeners would leak for the rest of the visit. Every exit
-// (fail, unmount) must route through here to actually release the widget.
-function teardown() {
-  clearReadyTimer()
-  widget?.destroy()
-  widget = null
-}
-
-function fail() {
-  teardown()
-  failed.value = true
-}
-
-async function mountWidget(target: HTMLElement) {
-  if (widget || mounting || unmounted) return
-  mounting = true
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  try {
-    // The root entry imports React. Always the /vanilla subpath.
-    //
-    // The /vanilla subpath ships UMD (dist/vanilla.umd.js). Nuxt's production
-    // build collapses that to a DEFAULT-ONLY ESM export, so the named
-    // `createTrustpilotWidget` is `undefined` in prod — the destructure only
-    // worked in dev/unminified. Calling `undefined(...)` threw, the catch below
-    // swallowed it, and the whole section soft-failed on every production visit.
-    // Read the factory off `default` as well.
-    const mod = await import('trustpilot-iframe-widget/vanilla')
-    const createTrustpilotWidget =
-      mod.createTrustpilotWidget ??
-      (mod as { default?: typeof mod }).default?.createTrustpilotWidget
-    if (!createTrustpilotWidget) return fail()
-    // The import is uncancellable; if we were torn down while it was in flight,
-    // do not create a widget attached to an orphaned node with an unclearable timer.
-    if (unmounted) return
-    // onReady/onError below cannot detect a blocked or downed host (see the
-    // READY_TIMEOUT_MS comment), so decide reachability here instead.
-    if (!(await probeWidgetReachable(globalThis.fetch))) return fail()
-    if (unmounted) return
-    readyTimer = setTimeout(fail, READY_TIMEOUT_MS)
-    widget = createTrustpilotWidget({
-      target,
-      ...buildWidgetConfig({ theme: applied.value, reducedMotion }),
-      onReady: clearReadyTimer,
-      onError: fail,
-    })
-    // createTrustpilotWidget is synchronous and can invoke onError from inside the
-    // constructor — before this assignment lands, so teardown()'s destroy() would
-    // have no-opped on a still-null handle. Re-check and release the zombie.
-    if (unmounted || failed.value) teardown()
-  } catch {
-    // Chunk fetch blocked (ad-blockers routinely match "trustpilot"), or the
-    // service is down. Either way: no section.
-    fail()
-  } finally {
-    mounting = false
-  }
-}
-
-// IntersectionWrapper only renders its slot once scrolled into view, so the ref
-// arrives late. Watching it is what defers the iframe past LCP.
-watch(mountEl, el => {
-  if (el) void mountWidget(el)
-})
-
-watch(applied, theme => widget?.updateConfig({ theme }))
-
-onBeforeUnmount(() => {
-  unmounted = true
-  teardown()
+// IntersectionWrapper defers the navigation until this section is near view.
+// Keep the frame visible while it loads: its `load` event also waits for remote
+// assets, so it is not a deadline for displaying reviews that already rendered.
+onMounted(() => {
+  reducedMotion.value = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 })
 </script>
 
@@ -176,6 +88,11 @@ onBeforeUnmount(() => {
 .reviews-widget,
 .reviews-skeleton {
   width: 100%;
+}
+
+.reviews-widget {
+  display: block;
+  border: 0;
 }
 
 .reviews-skeleton {

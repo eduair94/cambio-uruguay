@@ -16,6 +16,13 @@ export interface ExchangeRate {
   name: string
   buy?: number
   sell?: number
+  /**
+   * The backend's mark on today's rows (classes/frozen_marks.ts): this board has published the same
+   * buy and sell for days beyond what its own group considers normal. Absent when it moves.
+   */
+  frozen?: boolean
+  /** Days the board has gone without changing, when `frozen` (the window's length is a floor). */
+  frozenDays?: number
 }
 
 export interface PreferentialRateBand {

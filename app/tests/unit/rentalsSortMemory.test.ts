@@ -5,6 +5,7 @@ import ts from 'typescript'
 import mongoose from 'mongoose'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import * as rentals from '../../utils/rentals'
+import * as rentalBarrioOption from '../../utils/rentalBarrioOption'
 import * as rentalDistance from '../../utils/rentalDistance'
 import * as rentalPricePerM2 from '../../utils/rentalPricePerM2'
 import { rentalPublicPropertyProjection } from '../../server/utils/rentalDetail'
@@ -17,7 +18,11 @@ const compiled = ts.transpileModule(route, {
 }).outputText
 
 /** Execute the actual endpoint with IO stubs, retaining its exact Mongo pipelines. */
-async function capture(query: Record<string, string> = {}, total = 240) {
+async function capture(
+  query: Record<string, string> = {},
+  total = 240,
+  neighborhoods: Array<{ _id: string; count: number }> = []
+) {
   const pipelines: Stage[][] = []
   const options: Array<{ allowDiskUse?: boolean }> = []
   const dependencies: Record<string, unknown> = {
@@ -32,14 +37,18 @@ async function capture(query: Record<string, string> = {}, total = 240) {
               execution.allowDiskUse = enabled
               return chain
             },
-            collation: () =>
-              Promise.resolve(
-                pipeline.some(stage => stage.$count)
-                  ? [{ total }]
-                  : pipeline.some(stage => stage.$facet)
-                    ? [{}]
+            collation: () => {
+              const facet = pipeline.find(stage => stage.$facet)?.$facet
+              // The count, and the barrio counts when their filter is the search's own, are
+              // branches of the facet pass.
+              return Promise.resolve(
+                facet
+                  ? [{ total: [{ total }], ...(facet.neighborhoods ? { neighborhoods } : {}) }]
+                  : pipeline.some(stage => stage.$group?._id === '$neighborhood')
+                    ? neighborhoods
                     : []
-              ),
+              )
+            },
           }
           return chain
         },
@@ -62,6 +71,7 @@ async function capture(query: Record<string, string> = {}, total = 240) {
       annotateRentalAvailability: (property: unknown) => property,
     },
     '../../../utils/rentals': rentals,
+    '../../../utils/rentalBarrioOption': rentalBarrioOption,
     '../../../utils/rentalDistance': rentalDistance,
     '../../../utils/rentalPricePerM2': rentalPricePerM2,
   }
@@ -81,16 +91,18 @@ async function capture(query: Record<string, string> = {}, total = 240) {
     createError: ({ statusMessage }: { statusMessage: string }) => new Error(statusMessage),
     console,
   })
-  await module.exports.default!({})
+  const response = (await module.exports.default!({})) as rentals.RentalsResponse
   // The median is a branch of the facet pass (rentalMedianFacet), not a seventh aggregation.
   const facets = pipelines.find(pipeline => pipeline.some(stage => stage.$facet))!
   const median = facets.find(stage => stage.$facet)!.$facet.median as Stage[]
   return {
+    response,
     items: pipelines[0]!,
     median,
     facets,
     itemsOptions: options[0]!,
     count: pipelines.length,
+    pipelines,
   }
 }
 
@@ -136,9 +148,112 @@ describe('rental endpoint sort input', () => {
 
   it('takes the median in the facet pass instead of a seventh aggregation over the inventory', async () => {
     // 2026-10-08: the separate pass ran after the other six and cost ~1,4 s of every uncached search.
-    const { count, median } = await capture({ source: 'casasweb' })
-    expect(count).toBe(5)
+    const { median } = await capture({ source: 'casasweb' })
     expect(median.at(-2)).toEqual({ $group: { _id: null, prices: { $push: '$priceUyu' } } })
+  })
+
+  // 2026-11-13 (CAMBIO-URUGUAY-BACKEND-12): every pass is a full scan of the inventory, and their
+  // bursts starved other routes' 4 s queries on the shared mongod. Count, departments and barrios
+  // ride the facet pass whenever they would select exactly the search's own properties.
+  it('reads the unfiltered directory twice: the page, and one facet pass with every count', async () => {
+    for (const query of [{}, { source: 'casasweb' }, { sort: 'precio', page: '3' }]) {
+      const { count, facets, response } = await capture(query)
+      expect(count).toBe(2)
+      const facet = facets.find(stage => stage.$facet)!.$facet
+      expect(Object.keys(facet).sort()).toEqual(
+        ['departments', 'median', 'neighborhoods', 'price', 'sources', 'total', 'types'].sort()
+      )
+      expect(facet.total).toEqual([{ $count: 'total' }])
+      expect(facet.departments.at(-1)).toEqual({ $limit: 25 })
+      expect(facet.neighborhoods.at(-1)).toEqual({ $limit: 5000 })
+      expect(response.total).toBe(240)
+    }
+  })
+
+  it('keeps a separate pass only for a facet that must ignore part of the search', async () => {
+    // A department: the department facet still offers the other departments.
+    const department = await capture({ department: 'Montevideo' })
+    expect(department.count).toBe(3)
+    const departments = department.pipelines.find(pipeline =>
+      pipeline.some(stage => stage.$group?._id === '$department')
+    )!
+    expect(departments[0]!.$match).not.toHaveProperty('department')
+    const departmentFacet = department.facets.find(stage => stage.$facet)!.$facet
+    expect(departmentFacet).not.toHaveProperty('departments')
+    expect(departmentFacet).toHaveProperty('neighborhoods')
+    expect(department.facets[0]!.$match.department).toBe('Montevideo')
+
+    // And a barrio: the barrio facet still offers the other barrios of that department.
+    const barrio = await capture({ department: 'Montevideo', neighborhood: 'Pocitos' })
+    expect(barrio.count).toBe(4)
+    const barrios = barrio.pipelines.find(pipeline =>
+      pipeline.some(stage => stage.$group?._id === '$neighborhood')
+    )!
+    expect(barrios[0]!.$match.department).toBe('Montevideo')
+    expect(barrios[0]!.$match).not.toHaveProperty('neighborhood')
+    const barrioFacet = barrio.facets.find(stage => stage.$facet)!.$facet
+    expect(barrioFacet).not.toHaveProperty('neighborhoods')
+    expect(barrioFacet.total).toEqual([{ $count: 'total' }])
+    expect(barrio.response.total).toBe(240)
+  })
+
+  it('never offers a surface or a country as a barrio in the facet', async () => {
+    // 2026-11-07: Casasweb's '40 m2 40 m2' (49), '60 m2 60 m2' (36), '10 m2' (26) and Maldonado's
+    // '4 H' sat between the real Montevideo barrios of the selector.
+    const { response } = await capture({ department: 'Montevideo' }, 240, [
+      { _id: 'Pocitos', count: 900 },
+      { _id: '40 m2 40 m2', count: 49 },
+      { _id: '25 de Mayo', count: 12 },
+      { _id: '10 m2', count: 26 },
+      { _id: '4 H', count: 3 },
+      { _id: 'Uruguay', count: 2 },
+    ])
+    expect(response.facets.neighborhoods).toEqual([
+      { value: 'Pocitos', count: 900 },
+      { value: '25 de Mayo', count: 12 },
+    ])
+  })
+
+  it('reads 5,000 barrios and offers the first 250 that are neither surfaces nor addresses', async () => {
+    // 2026-11-08: the cut ran before the filter, so dropped names took places in what was read.
+    // Reading 1,000 still left out every Montevideo barrio with one advert (Retiro, Chacarita):
+    // Casasweb's surfaces alone made over 1,000 distinct names.
+    const junk = Array.from({ length: 60 }, (_, i) => ({ _id: `Calle ${100 + i}`, count: 500 - i }))
+    const places = Array.from({ length: 260 }, (_, i) => ({
+      _id: `Paraje ${String.fromCharCode(65 + (i % 26))}${String.fromCharCode(65 + Math.floor(i / 26))}`,
+      count: 400 - i,
+    }))
+    const { response, facets } = await capture({ department: 'Montevideo' }, 240, [
+      ...junk,
+      ...places,
+    ])
+    // With no barrio chosen the barrio counts are a branch of the facet pass.
+    const barrios = facets.find(stage => stage.$facet)!.$facet.neighborhoods as Stage[]
+    expect(barrios.at(-1)).toEqual({ $limit: 5000 })
+    expect(response.facets.neighborhoods).toEqual(
+      places.slice(0, 250).map(row => ({ value: row._id, count: row.count }))
+    )
+  })
+
+  it('never offers a street address as a barrio in the facet', async () => {
+    // 2026-11-08: 68 of Maldonado's 205 options were Mercado Libre addresses ("Sarandí 888, Maldonado"
+    // keeps the street where the barrio goes) and portal filler.
+    const { response } = await capture({ department: 'Maldonado' }, 240, [
+      { _id: 'Punta del Este', count: 2929 },
+      { _id: 'ruta 39', count: 14 },
+      { _id: 'Av. Leandro Gómez', count: 4 },
+      { _id: 'Pda. 37 Mansa', count: 2 },
+      { _id: 'Otras', count: 6 },
+      { _id: 'Sarandí 888', count: 1 },
+      { _id: '25 De Mayo Esquina Yerbal', count: 1 },
+      { _id: 'Leandro Gomez', count: 1 },
+      { _id: '18 De Julio', count: 1 },
+    ])
+    expect(response.facets.neighborhoods).toEqual([
+      { value: 'Punta del Este', count: 2929 },
+      { value: 'Leandro Gomez', count: 1 },
+      { value: '18 De Julio', count: 1 },
+    ])
   })
 
   it('prices per m² with the advert chosen by the filters, before projecting and paging', async () => {

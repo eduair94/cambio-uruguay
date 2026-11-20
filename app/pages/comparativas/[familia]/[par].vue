@@ -225,8 +225,15 @@ import {
 // rendering. `validate` is extracted at build time; editing the catalogue needs
 // a dev-server restart.
 definePageMeta({
-  validate: route =>
-    Boolean(getComparativaPair(String(route.params.familia ?? ''), String(route.params.par ?? ''))),
+  validate: async route => {
+    const catalogue = await import('~/utils/comparativas')
+    return Boolean(
+      catalogue.getComparativaPair(
+        String(route.params.familia ?? ''),
+        String(route.params.par ?? '')
+      )
+    )
+  },
 })
 
 const localePath = useLocalePath()

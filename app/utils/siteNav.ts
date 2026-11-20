@@ -52,6 +52,12 @@ export interface NavEntry {
   changefreq?: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never'
   /** Backed by live data: emit today's `lastmod` as a re-crawl hint. */
   fresh?: boolean
+  /**
+   * The page is translated and its /en and /pt URLs are canonical of themselves. Without it the
+   * page is Spanish-only: /en/<to> and /pt/<to> still render, but their canonical is the Spanish
+   * URL, so the sitemap lists only the Spanish one. See `utils/localizedRoutes.ts`.
+   */
+  localized?: boolean
 }
 
 /** A titled group of navigation entries. `id` doubles as the search-result group key. */
@@ -97,6 +103,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/pizarra',
+        localized: true,
         labelKey: 'nav.pizarra',
         icon: 'mdi-view-headline',
         priority: 0.9,
@@ -114,6 +121,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/historico',
+        localized: true,
         labelKey: 'historico',
         icon: 'mdi-chart-line',
         priority: 0.9,
@@ -124,6 +132,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/comparar',
+        localized: true,
         labelKey: 'compare.nav',
         icon: 'mdi-chart-multiple',
         priority: 0.8,
@@ -191,6 +200,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/comparar-plataformas-dolar-uruguay',
+        localized: true,
         labelKey: 'platformComparison.nav',
         icon: 'mdi-scale-balance',
         priority: 0.7,
@@ -347,6 +357,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
     entries: [
       {
         to: '/sucursales',
+        localized: true,
         labelKey: 'sucursalesMenu',
         icon: 'mdi-bank-outline',
         priority: 0.9,
@@ -373,6 +384,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/mapa',
+        localized: true,
         labelKey: 'map.nav',
         icon: 'mdi-map-marker-radius',
         priority: 0.8,
@@ -382,6 +394,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/casas-de-cambio',
+        localized: true,
         labelKey: 'nav.casasDirectory',
         icon: 'mdi-store-outline',
         priority: 0.8,
@@ -424,6 +437,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/casa-de-cambio-cerca-de-mi',
+        localized: true,
         labelKey: 'nav.nearby',
         icon: 'mdi-map-marker-account',
         priority: 0.8,
@@ -449,6 +463,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/casas-de-cambio-abiertas-fin-de-semana',
+        localized: true,
         labelKey: 'nav.weekendOpen',
         icon: 'mdi-calendar-weekend',
         priority: 0.8,
@@ -481,6 +496,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'feriados pagos uruguay',
           'feriados laborables',
           'que feriados no se corren',
+        ],
+      },
+      {
+        to: '/feriados-2027-uruguay',
+        labelKey: 'nav.feriadosDelAnio',
+        icon: 'mdi-calendar-month',
+        priority: 0.7,
+        changefreq: 'monthly',
+        keywords: [
+          'feriados 2027',
+          'feriados 2027 uruguay',
+          'calendario de feriados 2027',
+          'fines de semana largos 2027',
+          'carnaval 2027',
+          'semana de turismo 2027',
+          'cuando es carnaval 2027',
+          'cuantos feriados hay en 2027',
         ],
       },
       {
@@ -679,6 +711,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/preguntas-frecuentes',
+        localized: true,
         labelKey: 'faq.nav',
         icon: 'mdi-frequently-asked-questions',
         priority: 0.7,
@@ -733,6 +766,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/noticias',
+        localized: true,
         labelKey: 'noticias.nav',
         icon: 'mdi-newspaper-variant-outline',
         priority: 0.7,
@@ -742,6 +776,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/economia-uruguay',
+        localized: true,
         labelKey: 'economia.nav',
         icon: 'mdi-chart-box-outline',
         priority: 0.7,
@@ -816,6 +851,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/sillas-escritorio-uruguay',
+        localized: true,
         labelKey: 'nav.chairTiers',
         icon: 'mdi-chair-rolling',
         priority: 0.7,
@@ -1523,6 +1559,29 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // La deuda del BCU en pesos: el sitio la nombraba en prosa en cinco páginas y ninguna
+        // decía a qué tasa cortó la última licitación ni cuándo es la próxima. La tasa la lee
+        // `currency-lrm` de la planilla oficial del BCU dos veces por día.
+        to: '/letras-de-regulacion-monetaria-uruguay',
+        labelKey: 'nav.letrasRegulacionMonetaria',
+        icon: 'mdi-bank-outline',
+        priority: 0.7,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'letras de regulacion monetaria',
+          'tasas lrm uruguay',
+          'lrm bcu',
+          'licitacion lrm',
+          'como comprar letras de regulacion monetaria',
+          'letras del bcu',
+          'proxima licitacion bcu',
+          'lrm o plazo fijo',
+          'lrm pagan irpf',
+          'notas del tesoro en ui',
+        ],
+      },
+      {
         to: '/declaracion-de-irpf-uruguay',
         labelKey: 'nav.declaracionIrpf',
         icon: 'mdi-file-document-edit-outline',
@@ -1703,6 +1762,29 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // La página de al lado separa los tres regímenes de prescripción y al llegar al privado
+        // —el que más se pregunta— sólo podía decir «plazos distintos según el título», porque el
+        // plazo no estaba en ninguna parte del sitio. Esta lo contesta: los dos relojes del Código
+        // Civil (ejecutar y acción personal) más el del vale, que es el documento que se firma en
+        // una financiera y prescribe antes que los dos.
+        to: '/prescripcion-de-deudas-privadas-uruguay',
+        labelKey: 'nav.prescripcionDeudasPrivadas',
+        icon: 'mdi-file-clock-outline',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'cuando prescribe una deuda',
+          'prescripcion de deudas privadas uruguay',
+          'prescripcion deuda tarjeta de credito',
+          'prescripcion de un vale o pagare',
+          'articulo 1216 codigo civil',
+          'articulo 1217 codigo civil',
+          'deuda vieja estudio de cobranza',
+          'prescribe una deuda con el banco',
+        ],
+      },
+      {
         // Las franjas del IASS ya estaban en el sitio, pero dentro de
         // `/impuestos-inversiones-uruguay`, en una sección que su propio texto abre diciendo que
         // «el IASS no grava inversiones». El dato estaba bien y estaba donde quien lo busca no
@@ -1748,7 +1830,11 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'impuestos broker exterior',
           'residencia fiscal uruguay',
           'tax holiday uruguay',
-          'impuesto al patrimonio',
+          // `impuesto al patrimonio` se fue de acá el 2026-11-01: ahora lo contesta
+          // `/guias/impuesto-al-patrimonio-uruguay`, que lo tiene en el título. Dejarlo como
+          // keyword de esta página —que habla del impuesto a las RENTAS— la hacía ganar la consulta
+          // por el bono de 30 puntos de `scoreDocs` contra la que la contesta de verdad, que es la
+          // canibalización que `seoTitleBudget.test.ts` mide para el directorio de páginas.
           'irnr',
           'declaracion jurada irpf',
         ],
@@ -1789,6 +1875,31 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'sociedad de hecho',
           'monotributo social mides',
           'irpf servicios personales',
+        ],
+      },
+      {
+        // Lo que sale registrar la marca del emprendimiento, que no estaba escrito en ninguna
+        // página: ni «marca registrada» ni «propiedad industrial» ni «DNPI» aparecían en el repo.
+        // El ángulo propio es que NO HAY un precio del trámite —la tasa se cobra por clase de Niza y
+        // la marca con logo sale exactamente 40 % más— y que dos de las tasas que todos los
+        // resúmenes listan ya no se cobran: la búsqueda de antecedentes la suprimió el art. 138 de
+        // la Ley 19.670 y la publicación en el Boletín no se cobra por la circular 3/2018.
+        to: '/registrar-una-marca-uruguay',
+        labelKey: 'nav.registrarMarca',
+        icon: 'mdi-trademark',
+        priority: 0.7,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'registrar una marca uruguay',
+          'cuanto sale registrar una marca',
+          'tasas dnpi marcas',
+          'marca registrada uruguay',
+          'clasificacion de niza',
+          'renovar una marca uruguay',
+          'oposicion de marca uruguay',
+          'ley 17011 marcas',
+          'propiedad industrial uruguay',
         ],
       },
       {
@@ -1998,6 +2109,32 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'jubilacion por edad avanzada',
           'jubilacion bps 30 anos de trabajo',
           'me jubilo a los 60 o a los 65',
+        ],
+      },
+      {
+        // El año de servicios que suma cada hijo, que no estaba escrito en ninguna página: la
+        // palabra «cómputo por hijo» no aparecía ni acá ni en `searchIndex.ts`. Y el ángulo propio
+        // es que la norma que citan casi todos los resúmenes —el art. 14 de la Ley 18.395— está
+        // DEROGADA por el art. 43 de la Ley 20.130, que es el que la reemplazó: el año por hijo no
+        // cambió, pero sí los dos años por hijo con discapacidad severa fuera del tope, la división
+        // entre padres y, sobre todo, que a tres cajas las alcanza la ley y a otras tres sólo les
+        // da la facultad de aplicarlo.
+        to: '/computo-por-hijo-jubilacion-uruguay',
+        labelKey: 'nav.computoPorHijo',
+        icon: 'mdi-account-child-outline',
+        priority: 0.7,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'computo por hijo jubilacion',
+          'anos por hijo jubilacion uruguay',
+          'los hijos suman anos para la jubilacion',
+          'computo ficto por cuidados',
+          'cinco anos por hijos bps',
+          'ley 20130 articulo 43',
+          'jubilacion de la mujer uruguay',
+          'un ano por hijo bps',
+          'computo por hijo discapacidad severa',
         ],
       },
       {
@@ -2233,6 +2370,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/tickets-mutualistas-uruguay',
+        localized: true,
         labelKey: 'nav.ticketsMutualistas',
         icon: 'mdi-receipt-text-outline',
         priority: 0.8,
@@ -2840,6 +2978,46 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/permiso-de-menor-para-viajar-uruguay',
+        labelKey: 'nav.permisoDeMenor',
+        icon: 'mdi-airplane-check',
+        priority: 0.7,
+        changefreq: 'monthly',
+        keywords: [
+          'permiso de menor uruguay',
+          'permiso para viajar con menores uruguay',
+          'cuanto sale el permiso de menor',
+          'permiso de menor migracion uruguay',
+          'menor viaja con un solo padre uruguay',
+          'carta poder permiso de menor',
+          'salida del pais menores uruguay',
+          'permiso de menor pasaporte uruguayo',
+        ],
+      },
+      {
+        // La multa del voto obligatorio es sólo la mitad de la consulta: lo que la gente descubre
+        // años después es que la credencial sin el sello traba ocho actos (Ley 16.017, arts. 9 a
+        // 11), y uno de ellos —entrar a la Administración Pública— la propia ley dice que NO se
+        // arregla pagando. Va en este tramo porque la pregunta llega pegada a un trámite frenado,
+        // no a una elección. `/elecciones-bps-2026` cubre el comicio del 22/11/2026 y su régimen
+        // propio; esta página cubre el general.
+        to: '/multa-por-no-votar-uruguay',
+        labelKey: 'nav.multaPorNoVotar',
+        icon: 'mdi-vote-outline',
+        priority: 0.7,
+        changefreq: 'monthly',
+        keywords: [
+          'multa por no votar uruguay',
+          'cuanto es la multa por no votar',
+          'no vote que pasa uruguay',
+          'justificar la no emision del voto',
+          'credencial civica sin sello',
+          'ley 16017 voto obligatorio',
+          'pagar multa corte electoral',
+          'constancia de voto para tramites',
+        ],
+      },
+      {
         to: '/declarar-dinero-en-efectivo-uruguay',
         labelKey: 'nav.declararEfectivo',
         icon: 'mdi-cash-multiple',
@@ -2899,6 +3077,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/primer-alquiler-uruguay',
+        localized: true,
         labelKey: 'nav.primerAlquiler',
         icon: 'mdi-home-account',
         priority: 0.8,
@@ -2917,6 +3096,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/equipar-casa-uruguay',
+        localized: true,
         labelKey: 'nav.equiparCasa',
         icon: 'mdi-fridge-outline',
         priority: 0.8,
@@ -2935,7 +3115,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         // El directorio de avisos detrás de equipar: una fila por aviso de ML, Marketplace y
-        // tiendas, con filtros. Las 38 páginas por categoría cuelgan de él (DYNAMIC_ROUTE_KEYS).
+        // tiendas, con filtros. Las 39 páginas por categoría cuelgan de él (DYNAMIC_ROUTE_KEYS).
         to: '/equipar-casa-uruguay/productos',
         labelKey: 'nav.equiparProductos',
         icon: 'mdi-view-grid-outline',
@@ -2949,6 +3129,28 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'avisos electrodomesticos uruguay',
           'muebles usados montevideo',
           'lista para amueblar la casa',
+        ],
+      },
+      {
+        // La pregunta llegó tal cual a r/uruguay el 19/10/2026: cuánto gastar en un sommier de 2
+        // plazas, y hasta dónde es inversión. La contesta la misma cosecha de equipar, que desde ese
+        // día mide el sommier en su propia fila: la banda del día, qué compra cada tramo según el
+        // título de sus avisos y cuánto se aleja el precio tachado de lo que cobra el mercado.
+        to: '/cuanto-gastar-en-un-sommier-uruguay',
+        labelKey: 'nav.sommier',
+        icon: 'mdi-bed-king-outline',
+        priority: 0.7,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'cuanto gastar en un sommier',
+          'cuanto sale un sommier 2 plazas',
+          'precio sommier 2 plazas uruguay',
+          'sommier o colchon',
+          'sommier caro vale la pena',
+          'sommier pocket o bonnell',
+          'sommier ortopedico',
+          'primera mudanza que comprar',
         ],
       },
       {
@@ -2973,6 +3175,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/fletes-mudanzas-uruguay',
+        localized: true,
         labelKey: 'nav.mudanzas',
         icon: 'mdi-truck-outline',
         priority: 0.8,
@@ -2983,6 +3186,24 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'armado desarmado muebles',
           'guardamuebles deposito limpieza retiro muebles',
           'alquiler casa mudarse servicios',
+        ],
+      },
+      {
+        // Job diario `currency-armadores`: avisos de Marketplace y Mercado Libre, fichas de Google y
+        // tarifas relevadas. Sólo en español: la canónica es la URL española.
+        to: '/armadores-de-muebles-montevideo',
+        labelKey: 'nav.armadores',
+        icon: 'mdi-hammer-screwdriver',
+        priority: 0.8,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'armador de muebles montevideo',
+          'armado de muebles a domicilio precio',
+          'cuanto cobra un armador de muebles',
+          'precio armar ropero placard cama',
+          'armadores de muebles por barrio pocitos cordon malvin',
+          'desarmado de muebles mudanza',
         ],
       },
       {
@@ -3049,6 +3270,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/analisis-alquileres-uruguay',
+        localized: true,
         labelKey: 'nav.rentalAnalysis',
         icon: 'mdi-chart-box-outline',
         priority: 0.8,
@@ -3091,6 +3313,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/alquileres-uruguay',
+        localized: true,
         labelKey: 'nav.alquileres',
         icon: 'mdi-home-city-outline',
         // Updated by a cron and re-indexed often: it is the only page here whose CONTENT changes
@@ -3148,6 +3371,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/alquiler-ideal-uruguay',
+        localized: true,
         labelKey: 'nav.rentalFit',
         icon: 'mdi-home-account',
         priority: 0.7,
@@ -3165,6 +3389,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/barrios-alquileres-uruguay',
+        localized: true,
         labelKey: 'nav.rentalZones',
         icon: 'mdi-map-search-outline',
         priority: 0.7,
@@ -3179,6 +3404,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/venta-viviendas-uruguay',
+        localized: true,
         labelKey: 'nav.propertySales',
         icon: 'mdi-home-search-outline',
         priority: 0.8,
@@ -3211,6 +3437,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/inmobiliarias-uruguay',
+        localized: true,
         labelKey: 'nav.realEstateAgencies',
         icon: 'mdi-office-building-outline',
         priority: 0.7,
@@ -3226,6 +3453,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/oportunidades-inmobiliarias-uruguay',
+        localized: true,
         labelKey: 'nav.propertyOpportunities',
         icon: 'mdi-home-search-outline',
         priority: 0.8,
@@ -3282,6 +3510,32 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'alquiler por temporada en dolares',
           'airbnb uruguay hay que registrarse',
           'cuantos dias dura un alquiler de temporada',
+        ],
+      },
+      {
+        // El número que decide cuánto sube el alquiler en el aniversario del contrato, y que no
+        // estaba en ninguna página: el art. 15 del Decreto-Ley 14.219 manda multiplicar por la
+        // MENOR de dos variaciones de doce meses, el Poder Ejecutivo lo publica en un decreto por
+        // mes y la serie no existe junta en ningún lado — hay que ir decreto por decreto. El art. 3
+        // además habilita al inquilino a optar por este coeficiente cuando el aumento pactado lo
+        // supera, y eso no aparecía escrito en el sitio.
+        to: '/coeficiente-de-reajuste-de-alquileres-uruguay',
+        labelKey: 'nav.coeficienteReajusteAlquileres',
+        icon: 'mdi-home-percent-outline',
+        priority: 0.7,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'coeficiente de reajuste de alquileres',
+          'cra alquileres uruguay',
+          'reajuste de alquiler uruguay',
+          'aumento de alquiler uruguay',
+          'cuanto me pueden aumentar el alquiler',
+          'unidad reajustable de alquileres',
+          'ura uruguay',
+          'decreto ley 14219 articulo 15',
+          'coeficiente alquileres octubre 2026',
+          'ajuste anual del alquiler uruguay',
         ],
       },
       {
@@ -3358,6 +3612,37 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'ley 19889 arrendamiento sin garantia',
           'requisitos garantia de alquiler anv',
           'tope de alquiler fga ur',
+        ],
+      },
+      {
+        // La pregunta que sigue a las tres de al lado: quien no llega al alquiler con su ingreso no
+        // pregunta por otra garantía, pregunta si el Estado pone algo. La palabra «subsidio de
+        // alquiler» no aparecía en NINGÚN archivo del sitio.
+        //
+        // Va al lado de la garantía porque es la confusión que hay que deshacer: la garantía
+        // respalda un contrato privado y este programa es una vivienda pública con subsidio
+        // adentro, a la que se entra por llamado y sorteo. El ángulo propio es el mismo lever de
+        // `/cooperativas-de-vivienda-uruguay` y `/garantia-de-alquiler-uruguay` —los topes del MVOT
+        // están sólo en UR y el sitio tiene la UR del día; la propia ficha manda a buscar la UR a
+        // la DGI— más uno nuevo: la tabla general NO es la que rige, y el único llamado publicado
+        // pidió 13 UR de alquiler donde la ficha topea en 10.
+        to: '/subsidio-de-alquiler-uruguay',
+        labelKey: 'nav.subsidioAlquiler',
+        icon: 'mdi-home-heart',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'subsidio de alquiler uruguay',
+          'abriendo puertas alquiler mvot',
+          'subsidio de alquiler mvot requisitos',
+          'como pedir subsidio de alquiler',
+          'llamado alquiler mvot',
+          'alquiler social uruguay',
+          'vivienda publica en alquiler uruguay',
+          'tope de alquiler en ur mvot',
+          'ingresos para subsidio de alquiler',
+          'subsidio de alquiler para jovenes uruguay',
         ],
       },
       {
@@ -3580,6 +3865,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/retirar-efectivo-uruguay',
+        localized: true,
         labelKey: 'nav.retirar',
         icon: 'mdi-cash-multiple',
         priority: 0.8,
@@ -3653,6 +3939,42 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/cortes-de-agua-por-barrio-uruguay',
+        labelKey: 'nav.cortesDeAgua',
+        icon: 'mdi-water-off-outline',
+        priority: 0.7,
+        changefreq: 'weekly',
+        fresh: true,
+        keywords: [
+          'cortes de agua por barrio',
+          'cortes de agua uruguay',
+          'ose cortes programados',
+          'corte de agua montevideo',
+          'cuantos cortes de agua tiene mi barrio',
+          'interrupciones programadas ose',
+          'barrios con mas cortes de agua',
+          'ose aviso de corte de agua',
+        ],
+      },
+      {
+        to: '/reclamos-a-la-intendencia-por-barrio-uruguay',
+        labelKey: 'nav.reclamosIntendencia',
+        icon: 'mdi-clipboard-alert-outline',
+        priority: 0.7,
+        changefreq: 'weekly',
+        fresh: true,
+        keywords: [
+          'reclamos intendencia de montevideo',
+          'sistema unico de reclamos',
+          'reclamo alumbrado montevideo',
+          'reclamo saneamiento montevideo',
+          'reclamo limpieza montevideo',
+          'foco quemado montevideo reclamo',
+          'contenedor quemado reclamo',
+          'barrios con mas reclamos montevideo',
+        ],
+      },
+      {
         to: '/que-pasa-si-no-pago-antel',
         labelKey: 'nav.deudaAntel',
         icon: 'mdi-router-wireless-off',
@@ -3674,6 +3996,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/donde-conseguir-monedas-uruguay',
+        localized: true,
         labelKey: 'nav.monedas',
         icon: 'mdi-hand-coin-outline',
         priority: 0.7,
@@ -3860,6 +4183,49 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'mejor auto usado uruguay',
           'repuestos baratos auto',
           'patente auto usado',
+        ],
+      },
+      {
+        // El comparador de modelos: la misma tabla del asesor, dos o tres modelos lado a lado con un
+        // veredicto calculado. Ver docs/app/AUTOS.md, "El comparador de modelos".
+        to: '/comparar-autos-usados-uruguay',
+        labelKey: 'nav.usedCarCompare',
+        icon: 'mdi-compare-horizontal',
+        priority: 0.8,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'comparar autos usados',
+          'comparar autos',
+          'comparador de autos',
+          'cual auto es mejor',
+          'onix o 208',
+          'hilux o amarok',
+          'que auto conviene mas',
+          'comparar modelos de auto uruguay',
+        ],
+      },
+      {
+        // Los ensayos de Latin NCAP ya estaban en el repo (`utils/latinNcap.ts`, verificados el
+        // 24/9/2026) pero sólo se veían DENTRO de la ficha de un modelo del asesor, o sea después
+        // de declarar presupuesto y prioridades. Quien busca «cuántas estrellas tiene el Onix» ya
+        // eligió el auto. Demanda de MARCA, el mismo reparto que /historico ↔ /historico/<casa>.
+        to: '/latin-ncap-uruguay',
+        labelKey: 'nav.latinNcap',
+        icon: 'mdi-shield-car',
+        priority: 0.7,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'latin ncap uruguay',
+          'latin ncap',
+          'cuantas estrellas tiene mi auto',
+          'estrellas de seguridad auto',
+          'autos mas seguros uruguay',
+          'latin ncap onix',
+          'latin ncap tucson',
+          'ensayo de choque auto uruguay',
+          'airbags auto usado uruguay',
         ],
       },
       {
@@ -4125,6 +4491,30 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // La demanda estaba medida y anotada desde setiembre («reclamo por corte de luz» +70 % en
+        // Trends, `docs/seo/2026-09-15-google-trends-oportunidades.md`) y el sitio tenía cero: la
+        // página de cortes mide los minutos sin luz por barrio y `/a-quien-le-reclamo-uruguay`
+        // rutea a URSEA, pero ninguna contestaba si te tienen que devolver algo. El ángulo propio
+        // es que la respuesta es contraintuitiva y está en la fuente: esa compensación NO se
+        // reclama, la calcula URSEA por semestre y viaja como descuento en la factura.
+        to: '/compensacion-por-corte-de-luz-uruguay',
+        labelKey: 'nav.compensacionCorteDeLuz',
+        icon: 'mdi-flash-alert-outline',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'compensacion por corte de luz',
+          'reclamo por corte de luz ute',
+          'ute me tiene que compensar',
+          'descuento en la factura por cortes de luz',
+          'reclamo ursea ute',
+          'cuanto compensa ute por un corte',
+          'se me quemo un artefacto por un corte de luz',
+          'calidad del servicio electrico uruguay',
+        ],
+      },
+      {
         to: '/derechos-consumidor-compras-online',
         labelKey: 'nav.derechosConsumidor',
         icon: 'mdi-cart-check',
@@ -4165,6 +4555,30 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'clausulas abusivas uruguay',
           'audiencia administrativa consumidor',
           'no vino a la audiencia',
+        ],
+      },
+      {
+        // El paso que seguía después de `/defensa-al-consumidor-uruguay`, que termina diciendo que
+        // la restitución la ordena un juez y ahí dejaba al lector. Medido el 2026-11-03: cero
+        // menciones de «menor cuantía» y de la Ley 18.507 en todo el sitio. Mismo ángulo propio que
+        // `/elecciones-bps-2026`: los dos topes están en UR y la UR viva los pasa a pesos de hoy.
+        to: '/reclamar-sin-abogado-uruguay',
+        labelKey: 'nav.reclamarSinAbogado',
+        icon: 'mdi-gavel',
+        priority: 0.7,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'reclamar sin abogado uruguay',
+          'demandar sin abogado uruguay',
+          'juzgado de paz uruguay reclamo',
+          'ley 18507',
+          'proceso de menor cuantia consumo uruguay',
+          'cuanto puedo reclamar sin abogado',
+          'juicio de menor cuantia uruguay',
+          'conciliacion previa uruguay',
+          'timbre poder judicial uruguay',
+          'demanda sin abogado juzgado de paz',
         ],
       },
       {
@@ -4311,6 +4725,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
     entries: [
       {
         to: '/conectar',
+        localized: true,
         labelKey: 'conectar.nav',
         icon: 'mdi-connection',
         priority: 0.6,
@@ -4358,6 +4773,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/desarrolladores',
+        localized: true,
         labelKey: 'dev.nav',
         icon: 'mdi-api',
         priority: 0.6,
@@ -4378,6 +4794,25 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'pizarra',
           'monitoreo competencia',
           'b2b',
+        ],
+      },
+      {
+        to: '/datos-abiertos-uruguay',
+        labelKey: 'openData.nav',
+        icon: 'mdi-database-export-outline',
+        priority: 0.7,
+        changefreq: 'weekly',
+        keywords: [
+          'datos abiertos',
+          'open data',
+          'api alquileres',
+          'api autos usados',
+          'api precios',
+          'precio alquiler por barrio',
+          'mediana alquiler',
+          'dataset',
+          'mcp',
+          'diario norte',
         ],
       },
       {
@@ -4434,6 +4869,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
       },
       {
         to: '/newsletter',
+        localized: true,
         labelKey: 'newsletter.nav',
         icon: 'mdi-email-newsletter',
         priority: 0.6,
@@ -4543,6 +4979,26 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // De dónde viene la gente: buscadores, IA, redes y los sitios que enlazan
+        // (classes/site-analytics/trafficSources.ts).
+        to: '/origen-del-trafico',
+        labelKey: 'nav.origenDelTrafico',
+        icon: 'mdi-source-branch',
+        priority: 0.4,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'origen del trafico',
+          'de donde vienen las visitas',
+          'fuentes de trafico',
+          'backlinks',
+          'enlaces entrantes',
+          'sitios que enlazan',
+          'referidos',
+          'trafico desde chatgpt',
+        ],
+      },
+      {
         to: '/estadisticas-reddit',
         labelKey: 'redditStats.nav',
         icon: 'mdi-reddit',
@@ -4617,6 +5073,11 @@ export const EXCLUDED_ROUTES: readonly string[] = Object.freeze([
   // final de los resultados, no es contenido para buscadores. Y su panel privado de lectura.
   '/opinion-alquileres',
   '/opiniones-alquileres',
+  // Los hilos de Reddit para contestar: pública y para compartir por enlace, pero `noindex`. Es
+  // casi entera texto de Reddit citado, y eso no tiene lugar en el menú ni en el sitemap.
+  '/oportunidades-reddit',
+  // El panel privado de contactos comerciales (requireAdmin, noindex): no es contenido.
+  '/contactos-comerciales',
   // "¿Tengo descuento acá?": una herramienta cuya respuesta depende de dónde está parado quien la
   // abre. No hay nada que indexar; se llega desde el mapa.
   '/descuentos-con-tarjeta-uruguay/cerca-de-mi',
@@ -4624,6 +5085,15 @@ export const EXCLUDED_ROUTES: readonly string[] = Object.freeze([
   // desde /mercado-it-uruguay y no se indexa — buscar un nombre propio no tiene por que traer a
   // alguien a "los mas negativos del sub".
   '/ranking-usuarios-charruadevs',
+  // El comparador de monopatines: cada combinación de modelos la elige el lector (noindex). Se
+  // llega desde la tabla de modelos y desde cada página de modelo, no desde el menú.
+  '/monopatines-electricos-uruguay/comparar',
+  // Lo mismo para bicicletas eléctricas (4/11/2026).
+  '/bicicletas-electricas-uruguay/comparar',
+  // Y el de avisos de autos: hasta tres avisos que elige el lector (14/11/2026). El hub indexable
+  // para "comparar autos usados" es /comparar-autos-usados-uruguay (modelos); se llega desde el
+  // directorio, las tarjetas y cada ficha.
+  '/autos-usados-uruguay/comparar',
 ])
 
 /**
@@ -4643,6 +5113,8 @@ export const UNLISTED_ROUTES: ReadonlyArray<{ to: string; priority: number; chan
  * filesystem exactly, so a new dynamic route cannot be silently orphaned.
  */
 export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freeze({
+  // Saved public selections are deliberately excluded from the sitemap in nuxt.config.ts.
+  's/[id]': 'consumer',
   'alquileres/[key]': 'consumer',
   'alquiler/[departamento]/[barrio]': 'consumer',
   'autos-usados-uruguay/hasta-[monto]-dolares': 'consumer',
@@ -4663,6 +5135,10 @@ export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freez
   'tarjetas-de-credito-uruguay/[programa]': 'banking',
   'tarjetas-de-debito-uruguay/[tarjeta]': 'banking',
   'casas-de-cambio/[tipo]': 'houses',
+  // Una página por institución del tarifario IAMC del MSP (/mutualista/casmu, /mutualista/comepa…).
+  // Los slugs son los del propio archivo (utils/mutualistaPages.ts), el mismo mapa puro que leen el
+  // sitemap y la guarda de la ruta; misma sección que su hub, /tickets-mutualistas-uruguay.
+  'mutualista/[institucion]': 'invest',
   'convertir/[slug]': 'tools',
   // Una página por categoría de /equipar-casa-uruguay (heladera, colchón, aire acondicionado…). Los
   // slugs son el espejo del registro en utils/equiparCategoryPages.ts; misma sección que el hub.
@@ -4677,6 +5153,10 @@ export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freez
   // es la propia `key` del modelo (classes/phones/identify.ts) y GET /api/phones/<slug> es la
   // misma fuente que decide si existe.
   'celulares-uruguay/[modelo]': 'consumer',
+  // Una página por modelo de monopatín (4/11/2026): cuelga del hub de monopatines eléctricos.
+  'monopatines-electricos-uruguay/[modelo]': 'consumer',
+  // Una página por modelo de bicicleta eléctrica (4/11/2026): mismo catálogo, otro hub.
+  'bicicletas-electricas-uruguay/[modelo]': 'consumer',
   // Las páginas individuales de descuentos: una por emisor y una por rubro, ambas alimentadas por
   // el mismo catálogo de Bankos que el mapa de /descuentos-con-tarjeta-uruguay.
   'descuentos-con-tarjeta-uruguay/[banco]': 'banking',

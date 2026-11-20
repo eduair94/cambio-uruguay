@@ -3,6 +3,7 @@
 // Reuses the existing backend AI endpoint (/ai/insights, type=custom) so the API
 // key, caching and validation already configured on the API are reused as-is.
 import { fetchNews } from '../utils/news'
+import { offMarketSide } from '../../utils/marketOutlier'
 
 interface Rate {
   origin: string
@@ -50,11 +51,15 @@ async function buildInsight(lang: string): Promise<{ insight: string | null; asO
   const usdMarket = rates.filter(
     r => r.code === 'USD' && (!r.type || r.type === '') && r.origin !== 'bcu' && r.sell > 0
   )
-  const bestSell = usdMarket.length ? Math.min(...usdMarket.map(r => r.sell)) : 0 // cheapest to buy USD
-  const bestBuy = usdMarket.length ? Math.max(...usdMarket.map(r => r.buy)) : 0 // pays most for your USD
-  const avgSell = usdMarket.length
-    ? usdMarket.reduce((s, r) => s + r.sell, 0) / usdMarket.length
-    : 0
+  // Through the site's outlier rule (utils/marketOutlier.ts): the raw minimum was a board frozen
+  // since July at 39,55, and the summary repeated it as the market's best sell.
+  const sellOff = offMarketSide(usdMarket, 'USD', 'sell')
+  const buyOff = offMarketSide(usdMarket, 'USD', 'buy')
+  const sells = usdMarket.filter(r => !sellOff(r)).map(r => r.sell)
+  const buys = usdMarket.filter(r => !buyOff(r)).map(r => r.buy)
+  const bestSell = sells.length ? Math.min(...sells) : 0 // cheapest to buy USD
+  const bestBuy = buys.length ? Math.max(...buys) : 0 // pays most for your USD
+  const avgSell = sells.length ? sells.reduce((s, r) => s + r, 0) / sells.length : 0
 
   const headlines = news
     .slice(0, 8)

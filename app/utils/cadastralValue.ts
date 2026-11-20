@@ -153,6 +153,47 @@ export const CEDULA_DATOS: readonly { readonly regimen: string; readonly datos: 
   ])
 
 /**
+ * Cómo se saca la cédula catastral común, en el orden en que se hace.
+ *
+ * POR QUÉ (2026-11-15). La página contestaba el trámite, pero con el vocabulario de «valor
+ * catastral»: en Search Console (2026-10-17..11-13) la consulta «cedula catastral» sola trajo
+ * 5.191 impresiones en posición 9,8, y sus variantes —«cedula catastral comun», «cedula catastral
+ * informada», «emision de cedula catastral», «cédula catastral por padrón», «descargar cedula
+ * catastral»— otras ~3.000, todas en la segunda mitad de la primera página. Quien escribe eso no
+ * quiere saber qué es el valor: quiere sacar el papel. Ningún título de la página nombraba la
+ * cédula.
+ *
+ * NO AGREGA NINGÚN HECHO. Cada paso sale de lo que este módulo ya tiene cotejado contra las fichas
+ * del 2026-10-12: los datos por régimen ({@link CEDULA_DATOS}), que la emisión y la validación son
+ * de acceso libre ({@link CADASTRAL_FREE_ACCESS}), que la cédula se imprime al final del trámite y
+ * que la informada pide usuario y una tasa ({@link CADASTRAL_SERVICES}). Lo que la ficha no dice
+ * —el formato del archivo, cuánto tarda, qué código trae para validarla— no se escribe.
+ */
+export const CEDULA_PASOS: readonly { readonly paso: string; readonly detalle: string }[] =
+  Object.freeze([
+    Object.freeze({
+      paso: 'Buscá el número de padrón',
+      detalle:
+        'Está en la factura de la contribución inmobiliaria. Para un padrón rural alcanza con el departamento y ese número; para uno urbano también hacen falta la localidad catastral, el block, el entrepiso o subsuelo y la unidad.',
+    }),
+    Object.freeze({
+      paso: 'Entrá a la Sede Electrónica de Catastro, sin usuario',
+      detalle:
+        'La emisión de cédulas catastrales está entre los servicios de acceso libre de la Sede Electrónica de la Dirección Nacional de Catastro: no hace falta crear una cuenta ni pagar.',
+    }),
+    Object.freeze({
+      paso: 'Cargá los datos e imprimí la cédula',
+      detalle:
+        'Con los datos del padrón, la cédula catastral común se imprime al final del trámite en línea. Es el documento con valor legal que certifica el valor catastral base del inmueble.',
+    }),
+    Object.freeze({
+      paso: 'Si quien la recibe necesita comprobarla',
+      detalle:
+        'La misma Sede tiene la «Validación de cédula catastral común», también de acceso libre: el escribano, el banco o la inmobiliaria pueden verificarla sin cuenta.',
+    }),
+  ])
+
+/**
  * Lo que la Sede Electrónica abre SIN usuario registrado, textual de la ficha del MEF.
  *
  * Va en la página porque es la parte que nadie espera: la lista de servicios de
@@ -233,6 +274,21 @@ export const CADASTRAL_FAQ: readonly CadastralFaq[] = Object.freeze([
     question: '¿Necesito crear una cuenta para sacar la cédula?',
     answer:
       'Para la cédula catastral común, no: la emisión de cédulas está entre los servicios de acceso libre de la Sede Electrónica. Sí hace falta usuario registrado para la cédula informada y para la revisión de valor cuando se piden en línea.',
+  }),
+  Object.freeze({
+    question: '¿Qué diferencia hay entre la cédula catastral común y la informada?',
+    answer:
+      'La común certifica el valor catastral base del padrón, no tiene costo y se emite sin usuario registrado. La informada trae los mismos datos más los antecedentes inmediatos del padrón —el número de padrón anterior o el plano de mensura que lo origina—, cuesta una tasa catastral de 0,5 UR y, por la vía en línea, pide usuario de la Sede Electrónica.',
+  }),
+  Object.freeze({
+    question: '¿Se puede sacar la cédula catastral con el número de padrón?',
+    answer:
+      'Sí. Para un padrón rural alcanza con el departamento y el número de padrón. Para uno urbano, además, la localidad catastral, el block, el entrepiso o subsuelo y la unidad. El número de padrón figura en la factura de la contribución inmobiliaria.',
+  }),
+  Object.freeze({
+    question: '¿Cómo se valida una cédula catastral común?',
+    answer:
+      'La Sede Electrónica de Catastro tiene un servicio de «Validación de cédula catastral común» entre los de acceso libre, así que quien la recibe —un escribano, un banco, una inmobiliaria— puede comprobarla sin crear una cuenta.',
   }),
   Object.freeze({
     question: '¿Qué datos tengo que tener a mano?',

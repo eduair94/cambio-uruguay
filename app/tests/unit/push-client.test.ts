@@ -12,7 +12,7 @@ const h = vi.hoisted(() => ({
   show: vi.fn(),
   order: [] as string[],
 }))
-vi.mock('../../stores/firebaseMessagingApi', () => ({
+vi.mock('../../services/firebaseMessagingApi', () => ({
   isSupported: h.supported,
   getMessaging: () => ({}),
   getToken: h.getToken,

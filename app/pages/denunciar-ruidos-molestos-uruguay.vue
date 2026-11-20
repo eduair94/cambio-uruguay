@@ -175,7 +175,7 @@
               <code>[completar]</code>.
             </p>
 
-            <VCard variant="flat" class="noise-form pa-4 mb-4">
+            <VCard variant="flat" class="noise-form pa-4 mb-4" data-clarity-mask="true">
               <VRow dense>
                 <VCol cols="12" sm="6">
                   <VTextField
@@ -266,7 +266,7 @@
             </VAlert>
 
             <VCard variant="flat" class="noise-output pa-4">
-              <pre class="noise-text">{{ complaintText }}</pre>
+              <pre class="noise-text" data-clarity-mask="true">{{ complaintText }}</pre>
               <div class="d-flex flex-wrap ga-2 mt-4">
                 <VBtn
                   color="primary"
@@ -300,6 +300,9 @@
             </p>
           </section>
 
+          <!-- La unidad intermedia, antes de las preguntas: mismo corte que FaqSection (ver
+               docs/seo/adsense-growth-loop.md, 31/10/2026). Sólo dibuja en densidad normal. -->
+          <AdSlot placement="in-article" class="mb-6" />
           <!-- 6. FAQ -->
           <section class="mb-8">
             <h2 class="text-h5 font-weight-bold mb-3">Preguntas frecuentes</h2>

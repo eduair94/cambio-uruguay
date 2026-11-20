@@ -60,6 +60,13 @@ export interface RedditPostRaw {
    * just "que es esto?", so a bot that only reads text is answering a question it cannot see.
    */
   imageUrl?: string;
+  /**
+   * Why Reddit took the post down, when it did (`moderator`, `deleted`, `automod_filtered`, …).
+   *
+   * Optional and only informative: the pipelines that predate it never read it. The opportunity
+   * queue (`classes/redditopps`) does, so a thread a moderator removed stops being suggested.
+   */
+  removedBy?: string;
 }
 
 export interface RedditCommentRaw {
@@ -225,6 +232,7 @@ interface RawPost {
   link_flair_text?: string | null;
   post_hint?: string;
   preview?: { images?: Array<{ source?: { url?: string } }> };
+  removed_by_category?: string | null;
 }
 
 /** Image extensions Reddit actually serves for a submission. */
@@ -280,6 +288,7 @@ function toPost(d: RawPost): RedditPostRaw {
     isSelf: Boolean(d.is_self),
     linkFlair: d.link_flair_text ?? "",
     imageUrl: imageUrlOfRawPost(d),
+    removedBy: d.removed_by_category ?? undefined,
   };
 }
 

@@ -173,10 +173,10 @@ function verdictOf(before: WindowSum, after: WindowSum, lift: number | null, day
   // Una PÁGINA NUEVA no tiene ventana anterior, y su porción de partida no es ruido: es cero de
   // verdad. Medirla con el cociente daría infinito o "sin datos", y las dos respuestas esconden lo
   // único que se quería saber — si la página existe en la búsqueda. Así que el cero se trata como
-  // el caso especial que es, y sólo una vez que hay clics suficientes del otro lado.
+  // el caso especial que es, pero espera la misma ventana completa que una página existente.
   if (before.clicks === 0 && before.impressions === 0) {
-    if (daysMissing > 0 && after.clicks < MIN_BEFORE_CLICKS) return "esperando";
-    return after.clicks >= MIN_BEFORE_CLICKS ? "mejoró" : daysMissing > 0 ? "esperando" : "sin cambio";
+    if (daysMissing > 0) return "esperando";
+    return after.clicks >= MIN_BEFORE_CLICKS ? "mejoró" : "sin cambio";
   }
   if (before.clicks < MIN_BEFORE_CLICKS) return "sin datos";
   if (daysMissing > 0) return "esperando";
@@ -217,7 +217,8 @@ export function finishExperiment(acc: ExperimentAccumulator, today: string): Exp
     note =
       `no existía antes del cambio (cero impresiones en los ${before.days} días previos) y lleva ` +
       `${after.clicks} clic(s) y ${after.impressions} impresiones en ${after.days} día(s). ` +
-      "Acá no hay porción que comparar: el punto de partida es cero de verdad.";
+      "Acá no hay porción que comparar: el punto de partida es cero de verdad." +
+      (verdict === "esperando" ? ` Faltan ${daysMissing} día(s) de archivo para cerrar la ventana.` : "");
   } else if (verdict === "esperando") {
     note =
       `faltan ${daysMissing} día(s) de archivo para cerrar la ventana ` +

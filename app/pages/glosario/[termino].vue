@@ -47,6 +47,13 @@
           <article class="term-article">
             <h2 class="text-h6 font-weight-bold mb-3">Definición</h2>
             <p class="text-body-1 text-grey-lighten-1 term-prose">{{ term.body }}</p>
+            <p v-if="term.page" class="text-body-1 text-grey-lighten-1 term-prose term-page-link">
+              {{ term.page.text }}
+              <NuxtLink :to="localePath(term.page.to)" data-cta="glosario-pagina-propia">{{
+                term.page.label
+              }}</NuxtLink
+              >.
+            </p>
 
             <VCard v-if="term.example" variant="flat" class="example-box pa-4 my-5">
               <div class="text-overline text-primary mb-1">Ejemplo</div>
@@ -224,6 +231,9 @@ useHead({
 }
 .term-prose {
   line-height: 1.8;
+}
+.term-page-link {
+  margin-top: 1rem;
 }
 .example-box {
   background: rgba(33, 150, 243, 0.08);

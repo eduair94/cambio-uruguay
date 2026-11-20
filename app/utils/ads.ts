@@ -15,9 +15,36 @@
 // PURE (no Vue/Nuxt imports) so the layout, plugins and tests all share it.
 
 import { isBareRoute } from './bareRoutes'
+import { PREFIXED_LOCALE_CODES } from './locales'
 
-/** Locale prefixes the router can put in front of a path. */
-const LOCALE_PREFIXES = ['/en', '/pt'] as const
+/**
+ * Locale prefixes the router can put in front of a path — every one of them, the
+ * machine-translated locales included: `/fr/pizarra` must keep the pizarra's no-ads rule.
+ */
+const LOCALE_PREFIXES = PREFIXED_LOCALE_CODES.map(code => `/${code}`)
+
+/**
+ * Locales whose pages may not carry Google ad code at all, whatever the route.
+ *
+ * AdSense only serves ads on pages whose content is primarily in one of its supported languages,
+ * and the Publisher Policies forbid the code on any other page (support.google.com/adsense/answer/9727,
+ * read 2026-11-06: 50 languages, Persian is not one of them). The body translation of 2026-11-04
+ * publishes `/fa/*` pages that are 97 % Persian, indexable and in their own sitemap, so the rule
+ * cannot depend on the route table — it is a property of the language. A violation is charged to
+ * the account, not to the page.
+ *
+ * Adding a locale to `utils/locales.ts` forces a decision here: `ads.test.ts` checks every prefixed
+ * locale against Google's list.
+ */
+export const ADSENSE_UNSUPPORTED_LOCALES: readonly string[] = Object.freeze(['fa'])
+
+/** True when `path` is served in a language AdSense does not support (`/fa`, `/fa/...`). */
+export function inUnsupportedAdLanguage(path: string): boolean {
+  const clean = path.split('?')[0] ?? ''
+  return ADSENSE_UNSUPPORTED_LOCALES.some(
+    code => clean === `/${code}` || clean.startsWith(`/${code}/`)
+  )
+}
 
 /**
  * Routes that carry no ads at all.
@@ -31,6 +58,8 @@ const LOCALE_PREFIXES = ['/en', '/pt'] as const
  * `isBareRoute`, which is also what keeps the loader script off them.
  */
 const NO_ADS = [
+  // A saved selection is a hand-off to the content, not an editorial ad surface.
+  '/s',
   '/alquiler-ideal-uruguay',
   '/cuenta',
   '/conectar',
@@ -48,6 +77,10 @@ const NO_ADS = [
   // panel privado.
   '/opinion-alquileres',
   '/opiniones-alquileres',
+  '/contactos-comerciales',
+  // Los hilos de Reddit para contestar: casi todo el texto es de Reddit citado, y AdSense trata un
+  // anuncio al lado de contenido ajeno como contenido raspado — una sanción a la cuenta, no a la página.
+  '/oportunidades-reddit',
   // El media kit: la página ES la conversión (un anunciante leyendo condiciones), y un anuncio de
   // AdSense al lado de "qué no vendemos" es exactamente lo que no vendemos.
   '/publicidad',
@@ -125,6 +158,7 @@ export function adsFlagOn(value: unknown): boolean {
  * that is how a comparison site trains people to use a different one.
  */
 const LIGHT = [
+  '/autos-usados-uruguay/comparar',
   '/',
   // Un planificador es un instrumento: una sola unidad, que no se meta en la tabla.
   '/meal-prep-uruguay',
@@ -182,6 +216,7 @@ function matches(path: string, list: readonly string[]): boolean {
  */
 export function adDensityForPath(path: string, options: AdPolicyOptions = {}): AdDensity {
   if (isBareRoute(path)) return 'none'
+  if (inUnsupportedAdLanguage(path)) return 'none'
   const clean = normalizeAdPath(path)
   if (NO_ADS_EXACT.includes(clean as (typeof NO_ADS_EXACT)[number])) return 'none'
   if (matches(clean, NO_ADS)) return 'none'
@@ -204,3 +239,16 @@ export function maxAdSlots(density: AdDensity): number {
   if (density === 'light') return 1
   return 0
 }
+
+/**
+ * Where the one unit of a directory goes: in the grid, as a full row, after this many listings.
+ *
+ * A directory is `normal` density, but until 2026-10-31 it spent its second unit nowhere: the only
+ * ad was the layout's close, and a directory's close sits under 24 cards, the pagination and a
+ * table of prices per model. Measured on 28 days to 30/10/2026: 0,3 ad impressions per view on
+ * the cars and rentals directories against 5 on a guide. On a phone the unit comes after the
+ * first four listings, not before them: the reader saw what they came for before anything else.
+ * On a wider grid `dense` packing fills the row above it, so it always sits between two full
+ * rows. Only in page mode (components/feed/Ad.vue).
+ */
+export const FEED_AD_AFTER = 4

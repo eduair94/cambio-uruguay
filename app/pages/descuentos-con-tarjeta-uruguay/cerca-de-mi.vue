@@ -6,18 +6,51 @@
       tarjetas.
     </p>
 
-    <!-- Sin tarjetas no hay nada que contestar. Es el primer muro y tiene que decir qué hacer. -->
-    <VAlert v-if="!cards.length" type="info" variant="tonal" class="mb-4">
-      Primero elegí tus tarjetas en el mapa de descuentos. Después volvé y con un toque te digo si
-      alguna sirve en este comercio.
-      <div class="mt-2">
-        <NuxtLink :to="localePath('/descuentos-con-tarjeta-uruguay')" class="cu-link">
-          Ir a elegir mis tarjetas
-        </NuxtLink>
+    <details
+      class="cards-picker mb-4"
+      :open="pickerOpen || !cards.length"
+      @toggle="pickerOpen = ($event.target as HTMLDetailsElement).open"
+    >
+      <summary class="text-subtitle-1 font-weight-medium">
+        {{ cards.length ? cardText('selection', { count: cards.length }) : cardText('choose') }}
+      </summary>
+      <p class="text-body-2 text-medium-emphasis mt-3 mb-3">{{ cardText('hint') }}</p>
+      <div
+        v-for="group in cardGroups"
+        :key="group.id"
+        class="cards-picker__row"
+        role="group"
+        :aria-label="group.name"
+      >
+        <span class="text-body-2 font-weight-medium">{{ group.name }}</span>
+        <div class="d-flex flex-wrap ga-2">
+          <VBtn
+            v-for="card in group.cards"
+            :key="card.id"
+            :variant="cards.includes(card.id) ? 'flat' : 'outlined'"
+            :color="cards.includes(card.id) ? 'primary' : undefined"
+            :aria-pressed="cards.includes(card.id)"
+            :aria-label="`${group.name} ${cardKindLabel(group, card)}`"
+            size="small"
+            class="cards-picker__choice"
+            @click="cardsStore.toggle(card.id)"
+          >
+            {{ cardKindLabel(group, card) }}
+          </VBtn>
+        </div>
       </div>
-    </VAlert>
+      <div class="d-flex align-center flex-wrap ga-2 mt-3">
+        <VBtn v-if="cards.length" variant="tonal" color="primary" @click="pickerOpen = false">
+          {{ cardText('done') }}
+        </VBtn>
+        <VBtn v-if="cards.length" variant="text" @click="cardsStore.clear()">
+          {{ cardText('clear') }}
+        </VBtn>
+        <span class="text-caption text-medium-emphasis">{{ cardText('saved') }}</span>
+      </div>
+    </details>
 
-    <template v-else>
+    <template v-if="cards.length">
       <VBtn
         v-if="state !== 'ready'"
         color="primary"
@@ -124,7 +157,13 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { dayRestrictionLabel } from '~/utils/bankos'
+import {
+  BANKOS_BANKS,
+  BANKOS_CARDS,
+  dayRestrictionLabel,
+  type BankosBank,
+  type BankosCard,
+} from '~/utils/bankos'
 import { NEARBY_RADII, distanceLabel, verdictFor, type NearbyBrand } from '~/utils/bankosNearby'
 import { useBankosCardsStore } from '~/stores/bankosCards'
 
@@ -139,6 +178,55 @@ useHead({
 const localePath = useLocalePath()
 const cardsStore = useBankosCardsStore()
 const cards = computed(() => cardsStore.cards)
+const pickerOpen = ref(false)
+const cardGroups = BANKOS_BANKS.map(bank => ({
+  ...bank,
+  cards: BANKOS_CARDS.filter(card => card.bankId === bank.id),
+}))
+const { t: cardText } = useI18n({
+  useScope: 'local',
+  messages: {
+    es: {
+      choose: 'Elegí tus tarjetas',
+      selection: 'Tus tarjetas ({count})',
+      hint: 'Marcá las que usás para consultar los descuentos de este lugar. No pedimos números de tarjeta.',
+      saved: 'Tu selección queda guardada en este navegador.',
+      done: 'Listo',
+      clear: 'Quitar todas',
+      credit: 'Crédito',
+      debit: 'Débito',
+      card: 'Tarjeta',
+    },
+    en: {
+      choose: 'Choose your cards',
+      selection: 'Your cards ({count})',
+      hint: 'Select the cards you use to check discounts here. We never ask for card numbers.',
+      saved: 'Your selection is saved in this browser.',
+      done: 'Done',
+      clear: 'Clear all',
+      credit: 'Credit',
+      debit: 'Debit',
+      card: 'Card',
+    },
+    pt: {
+      choose: 'Escolha seus cartões',
+      selection: 'Seus cartões ({count})',
+      hint: 'Marque os cartões que você usa para consultar os descontos deste lugar. Não pedimos números de cartão.',
+      saved: 'Sua seleção fica salva neste navegador.',
+      done: 'Pronto',
+      clear: 'Remover todos',
+      credit: 'Crédito',
+      debit: 'Débito',
+      card: 'Cartão',
+    },
+  },
+})
+
+function cardKindLabel(bank: BankosBank, card: BankosCard) {
+  if (bank.unique === 'QR') return 'QR'
+  if (bank.unique === 'Tarjeta') return cardText('card')
+  return cardText(card.type)
+}
 
 type State = 'idle' | 'locating' | 'loading' | 'ready' | 'denied'
 const state = ref<State>('idle')
@@ -148,8 +236,12 @@ const query = ref('')
 const brands = ref<NearbyBrand[]>([])
 const found = ref(0)
 const coords = ref<{ lat: number; lng: number } | null>(null)
+let requestSequence = 0
 
-onMounted(() => cardsStore.loadLocal())
+onMounted(() => {
+  cardsStore.loadLocal()
+  pickerOpen.value = !cards.value.length
+})
 
 /**
  * Una sola lectura, no `watchPosition`.
@@ -182,7 +274,13 @@ function locate() {
 }
 
 async function fetchNearby() {
-  if (!coords.value) return
+  const request = ++requestSequence
+  if (!coords.value || !cards.value.length) {
+    brands.value = []
+    found.value = 0
+    state.value = 'idle'
+    return
+  }
   state.value = 'loading'
   try {
     const res = await $fetch<{ brands: NearbyBrand[]; found: number }>('/api/bankos/cerca', {
@@ -193,18 +291,20 @@ async function fetchNearby() {
         cards: [...cards.value].sort().join(','),
       },
     })
+    if (request !== requestSequence) return
     brands.value = res.brands || []
     found.value = res.found || 0
     state.value = 'ready'
   } catch {
+    if (request !== requestSequence) return
     state.value = 'denied'
     errorMessage.value = 'No se pudo consultar el catálogo de descuentos.'
   }
 }
 
-// Cambiar el radio vuelve a preguntar: el filtro vive del lado del servidor, que es lo que hace
-// que la respuesta pese kilobytes y no megabytes.
-watch(radius, () => {
+// Radio y tarjetas filtran en el servidor. Reusar la ubicación evita otro permiso de GPS;
+// la secuencia impide que una consulta anterior reponga beneficios de tarjetas ya quitadas.
+watch([radius, () => cards.value.join(',')], () => {
   if (coords.value) void fetchNearby()
 })
 
@@ -220,6 +320,31 @@ const dayLabel = (days: number[] | null) => dayRestrictionLabel(days)
 </script>
 
 <style scoped>
+.cards-picker {
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 8px;
+  padding: 16px;
+}
+.cards-picker summary {
+  cursor: pointer;
+  min-height: 44px;
+  align-content: center;
+}
+.cards-picker summary:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 4px;
+}
+.cards-picker__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding-block: 6px;
+}
+.cards-picker__choice {
+  min-height: 44px;
+}
 .verdict-yes {
   border-left: 4px solid rgb(var(--v-theme-success));
 }

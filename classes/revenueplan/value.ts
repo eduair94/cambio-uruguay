@@ -192,10 +192,12 @@ export const DIRECTORIO_PATHS = new Set([
   "/autos-usados-uruguay",
   "/oportunidades-autos-usados-uruguay",
   "/mercado-de-autos-usados-uruguay",
+  "/comparar-autos-usados-uruguay",
   "/autos-chocados-y-con-deuda-uruguay",
   "/motos-usadas-uruguay",
   "/celulares-uruguay",
   "/equipar-casa-uruguay",
+  "/armadores-de-muebles-montevideo",
   "/monopatines-electricos-uruguay",
   "/bicicletas-electricas-uruguay",
   "/tiendas-online-uruguay",
@@ -276,6 +278,272 @@ export const CONTENIDO_PATHS = new Set([
   "/embargo-de-sueldo-uruguay",
   "/carne-de-salud-uruguay",
   "/denunciar-trabajo-en-negro-uruguay",
+  // 2026-10-22: las 84 que salieron del cotejo contra `app/utils/ads.ts`, que es la otra mitad del
+  // error que `value_routes.test.ts` documenta para los directorios — y la mitad que faltaba, que
+  // es la que más páginas toca.
+  //
+  // El defecto: `bucketOf` sólo pliega las familias que se abren en muchas URLs, así que una página
+  // de problema con ruta propia conserva su path entero y tiene que estar listada ACÁ o no clasifica.
+  // Las veinte de arriba entraron por la alerta `unclassified-families`, que sólo nombra lo que
+  // GA4 reportó CON tráfico en la ventana; una página de problema sin muestra todavía nunca se
+  // asomaba por ahí. Medido el 2026-10-22 sobre las 223 páginas raíz: 161 caían en `otro` y valían
+  // 1×, el promedio del sitio, teniendo la forma del tramo que mide 8×.
+  //
+  // Por qué importa y no es un número feo en un tablero: lo que ordena la cola de trabajo es
+  // `clics × multiplicador`, así que una página de problema quedaba OCHO VECES por debajo de la
+  // guía equivalente de `/guias/*` —la misma clase de página, con la misma intención de búsqueda, a
+  // un lado y al otro de una línea que es un accidente de `bucketOf`— y apenas 5× por encima de un
+  // directorio en vez de 40×. Es exactamente la decisión que este archivo existe para corregir,
+  // cometida en el otro sentido.
+  //
+  // DE DÓNDE SALE EL TRAMO, Y POR QUÉ NO ES UNA SUPOSICIÓN. No se les mide nada nuevo: se las cuenta
+  // en el tramo que su forma declara, que es lo que un tramo ES («hereda el multiplicador de su
+  // TRAMO» cuando no hay medición propia). Lo que lo hace cotejable en vez de opinable es que el
+  // sitio ya declara esa forma en otro archivo y con plata de por medio: `adDensityForPath` en
+  // `app/utils/ads.ts` le da a cada ruta `normal` —dos unidades EN FLUJO, «the long reads where an
+  // in-flow unit is ordinary and expected»— o `light` —una sola unidad, después del contenido, en
+  // «tool and rate surfaces»—. Y el `why` de `TIER_DATO_VIVO`, escrito mucho antes de este cotejo,
+  // ya razonaba desde ahí: «cotización, conversor, histórico, sucursal: alrededor del promedio del
+  // sitio, Y UNA SOLA UNIDAD DE ANUNCIO». O sea que la superficie de anuncio es el mecanismo del que
+  // vive la diferencia de RPM, no una pista de ella. Los dos registros COINCIDEN donde los dos
+  // opinan: cero páginas `normal` valuadas `dato-vivo` y cero páginas `light` valuadas `contenido`.
+  //
+  // Y se quedó corto a propósito, por la regla 3 de la cabecera («NUNCA se le inventa un
+  // multiplicador alto»): de las 161 entran 84 y las otras 62 quedan en `otro` y en la alerta, con
+  // su motivo escrito en `app/tests/unit/contenidoTramoParity.test.ts`. La línea es mecánica: una
+  // página que pide un dato en vivo en su propio `<script setup>` puede ser una guía que muestra una
+  // cifra fresca (la de préstamos, que es la que más rinde) o puede ser una serie con texto
+  // alrededor, y desde acá no se distingue — así que no se promueve ninguna y se las decide de a
+  // tandas, como se retiró la deuda de descripciones. Fuera quedan también las tres listas CURADAS
+  // (`/apps-utiles-uruguay` y sus dos hermanas), por lo mismo que la excepción que
+  // `directoriosTramoParity.test.ts` ya les escribió, y las doce que no son páginas de lectura
+  // (lo legal, lo que habla del propio sitio, la referencia para desarrolladores): ésas llevan
+  // `normal` porque es el DEFAULT de `ads.ts`, no porque alguien las haya juzgado lectura larga.
+  //
+  // Las 84 no son un tema ni un racimo: son todo lo que cumple las condiciones de arriba, que es la
+  // razón por la que esta lista se puede cotejar sola de ahora en más.
+  "/a-quien-le-reclamo-uruguay",
+  "/accidente-de-trabajo-uruguay",
+  "/alquilar-en-uruguay",
+  "/alquilar-sin-recibo-de-sueldo",
+  "/alternativa-a-bankos-uruguay",
+  "/asignacion-familiar-uruguay",
+  "/cambiar-de-mutualista-uruguay",
+  "/certificado-unico-dgi-uruguay",
+  "/certificados-bps-uruguay",
+  "/cheques-uruguay",
+  "/clonacion-de-tarjetas-uruguay",
+  "/cobrar-en-dolares-gastar-en-pesos",
+  "/cobrar-giro-del-exterior-uruguay",
+  "/comisiones-mercado-pago-uruguay",
+  "/compensacion-por-corte-de-luz-uruguay",
+  "/comprar-o-alquilar-uruguay",
+  "/computo-por-hijo-jubilacion-uruguay",
+  "/contractor-en-uruguay",
+  "/contribucion-inmobiliaria-uruguay",
+  "/conviene-pagar-todo-con-credito-uruguay",
+  "/credito-fiscal-por-alquiler-uruguay",
+  "/cuando-me-puedo-jubilar-uruguay",
+  "/cuando-se-cobra-el-aguinaldo-uruguay",
+  "/cuanto-me-tienen-que-pagar-uruguay",
+  "/cuanto-sale-el-pasaporte-uruguayo",
+  "/cuanto-sale-la-cedula-de-identidad-uruguaya",
+  "/cuanto-sale-la-partida-de-nacimiento-uruguay",
+  "/cuanto-vale-una-milla-itau-uruguay",
+  "/cuenta-remunerada-uruguay",
+  "/declaracion-de-irpf-uruguay",
+  "/defensa-al-consumidor-uruguay",
+  "/derechos-consumidor-compras-online",
+  "/desalojo-de-alquiler-uruguay",
+  "/descuento-de-iva-con-tarjeta-uruguay",
+  "/desvincularme-de-la-afap-uruguay",
+  "/deuda-de-gastos-comunes-uruguay",
+  "/devolucion-fonasa-uruguay",
+  "/donde-conseguir-monedas-uruguay",
+  "/donde-te-entregan-el-paquete-uruguay",
+  "/factura-de-ose-uruguay",
+  "/factura-de-ute-uruguay",
+  "/facturar-en-monotributo-uruguay",
+  "/fecha-de-cobro-bps-uruguay",
+  "/feriados-2027-uruguay",
+  "/feriados-que-se-corren-uruguay",
+  "/fondo-de-solidaridad-uruguay",
+  "/franquicia-viajero-uruguay",
+  "/grabacion-sin-consentimiento-uruguay",
+  "/horas-extras-uruguay",
+  "/impuesto-a-las-trasmisiones-patrimoniales-uruguay",
+  "/impuesto-autos-electricos-uruguay",
+  "/impuesto-de-primaria-uruguay",
+  "/impuesto-temu-uruguay",
+  "/indemnizacion-por-despido-uruguay",
+  "/invertir-en-proyectos-uruguayos",
+  "/jubilacion-por-incapacidad-uruguay",
+  "/licencia-de-la-construccion-uruguay",
+  "/licencia-por-maternidad-y-paternidad-uruguay",
+  "/licencias-especiales-uruguay",
+  "/me-cobran-algo-que-no-autorice",
+  "/mudarme-a-uruguay-residencia",
+  "/pagar-cuentas-con-tarjeta",
+  "/pagar-el-alquiler-en-efectivo-uruguay",
+  "/peajes-uruguay",
+  "/pension-a-la-vejez-uruguay",
+  "/pension-alimenticia-uruguay",
+  "/pension-por-sobrevivencia-uruguay",
+  "/permiso-de-menor-para-viajar-uruguay",
+  "/por-que-el-bcu-quiere-mas-pesos",
+  "/por-que-no-baja-el-alquiler-uruguay",
+  "/preguntas-economia-personal",
+  "/preguntas-frecuentes-aduana-uruguay",
+  "/prescripcion-de-deudas-con-el-estado-uruguay",
+  "/prescripcion-de-deudas-privadas-uruguay",
+  "/primer-alquiler-uruguay",
+  "/que-empresa-abrir-uruguay",
+  "/recibir-regalos-del-exterior-uruguay",
+  "/reclamo-sodimac-compra-cancelada",
+  "/reconocer-anos-trabajados-uruguay",
+  "/registrar-una-marca-uruguay",
+  "/renunciar-al-trabajo-uruguay",
+  "/retirar-efectivo-uruguay",
+  "/salario-vacacional-uruguay",
+  "/salir-del-clearing",
+  "/seguro-de-paro-uruguay",
+  "/suplemento-solidario-bps",
+  "/tarjetas-de-socio-uruguay",
+  "/vivir-con-25000-pesos-uruguay",
+  // Revisión semántica (2026-10-24): es una guía para consultar el valor catastral. Su lectura
+  // de UR sólo convierte la tasa auxiliar del trámite; no publica padrones ni una serie de datos.
+  "/valor-catastral-uruguay",
+  // Página nueva del 2026-10-26, clasificada en el mismo commit que la publica: lectura larga sobre
+  // una tabla FIJA que vive en el repo (`app/utils/latinNcap.ts`, verificada el 24/9/2026), sin un
+  // solo dato en vivo en su `<script setup>` — o sea, del lado claro de la línea mecánica que la
+  // tanda del 22/10 trazó. Sin esta línea entraría a `otro` y la cola de trabajo la ordenaría
+  // ocho veces por debajo de la guía equivalente de `/guias/*`.
+  "/latin-ncap-uruguay",
+  // Tanda del 2026-10-28, y es la primera que retira dos rutas de la DEUDA mirando la pagina, que
+  // es el procedimiento que esa lista describe («cada tanda elige su tramo mirando la pagina y
+  // escribe por que»). Las dos son el libro de cortes de un servicio del hogar por barrio: piden
+  // UN dato en vivo que llena dos tablas, y el resto del cuerpo es explicacion —como se mide, que
+  // no dice el numero, donde se reclama—, o sea lectura larga y no una serie con texto alrededor.
+  // El racimo decide: sus tres vecinas de hub (`/factura-de-ute-uruguay`, `/factura-de-ose-uruguay`
+  // y `/que-pasa-si-no-pago-antel`) ya estan aca, y la de agua nace en el mismo commit que la
+  // publica. Sin estas dos lineas la cola de trabajo las ordenaria ocho veces por debajo de la
+  // guia equivalente de `/guias/*`.
+  "/cortes-de-agua-por-barrio-uruguay",
+  "/cortes-de-luz-por-barrio-uruguay",
+  // La tercera de esa serie (2026-10-30): los reclamos de alumbrado, saneamiento y limpieza que la
+  // IM registra por barrio. Mismo racimo y mismo motivo que las dos de arriba — es lectura larga,
+  // `ads.ts` le da dos unidades en flujo y `contenidoTramoParity.test.ts` lo exige.
+  "/reclamos-a-la-intendencia-por-barrio-uruguay",
+  // Pagina nueva del 2026-10-31, clasificada en el mismo commit que la publica: la multa del voto
+  // obligatorio y los ocho actos que la Ley 16.017 traba. Es lectura larga de norma sobre un
+  // catalogo FIJO del repo (`app/utils/votingFine.ts`, verificado el 31/10/2026), sin un solo dato
+  // en vivo en su `<script setup>`, y `ads.ts` le da dos unidades en flujo. Sin esta linea entraria
+  // a `otro` y la cola de trabajo la ordenaria ocho veces por debajo de la guia equivalente de
+  // `/guias/*`; su vecina `/elecciones-bps-2026` tampoco esta aca, pero esa SI lee la UR viva.
+  "/multa-por-no-votar-uruguay",
+  // Pagina nueva del 2026-11-03, clasificada en el mismo commit que la publica:
+  // `/reclamar-sin-abogado-uruguay`, los dos topes para comparecer sin abogado (100 UR del proceso
+  // de consumo de la Ley 18.507 y 20 UR del art. 37.2 del CGP). Lectura larga de norma sobre un
+  // catalogo FIJO del repo (`app/utils/smallClaims.ts`) y `ads.ts` le da dos unidades en flujo.
+  //
+  // Lee UN dato en vivo —la UR, para imprimir esos dos topes en pesos de hoy— y eso no la hace
+  // `dato-vivo`: es el mismo criterio con el que las seis del racimo `deudas-y-credito-uruguay`
+  // salieron de la deuda unas lineas mas abajo, que piden la grilla de topes de usura del BCU para
+  // lo mismo. Lo que la pagina AFIRMA son los articulos; la UR solo convierte un tope fijo. La
+  // vecina `/elecciones-bps-2026` sigue en la deuda de `contenidoTramoParity.test.ts` por su propio
+  // motivo: ahi la cifra en pesos es la multa que el BPS liquida, no una conversion de un tope.
+  "/reclamar-sin-abogado-uruguay",
+  // Pagina nueva del 2026-11-09, clasificada en el mismo commit que la publica:
+  // `/coeficiente-de-reajuste-de-alquileres-uruguay`, el coeficiente legal de reajuste del alquiler
+  // (art. 15 del Decreto-Ley 14.219: la MENOR de dos variaciones de doce meses, publicada en un
+  // decreto por mes). Lectura larga de norma sobre un catalogo FIJO del repo
+  // (`app/utils/rentAdjustment.ts`, cada fila leida en el art. 4 de su propio decreto en IMPO) y
+  // `ads.ts` le da dos unidades en flujo.
+  //
+  // No lee NINGUN dato en vivo, ni siquiera la UR: la URA es un promedio de tres meses de UR
+  // (art. 14) y el coeficiente es el menor de dos cocientes, asi que reconstruirlo desde la UR del
+  // dia seria inventar un numero que el decreto ya dice. Su vecina
+  // `/garantia-de-alquiler-uruguay` SI convierte topes en UR a pesos de hoy, y por eso entra con la
+  // tanda de abajo: la conversion de un tope fijo no es un dato en vivo.
+  "/coeficiente-de-reajuste-de-alquileres-uruguay",
+  // ---------------------------------------------------------------------------------------------
+  // Tanda del 2026-11-09: las ocho que ya cumplian la linea escrita el 11-03 y nadie habia barrido.
+  //
+  // La linea NO es nueva. La escribio seis dias antes el comentario de `/reclamar-sin-abogado-uruguay`
+  // unas lineas mas arriba, textual: leer la UR en vivo para imprimir un tope fijo en pesos de hoy
+  // «no la hace `dato-vivo`» porque «lo que la pagina AFIRMA son los articulos; la UR solo convierte
+  // un tope fijo». Lo que faltaba era aplicarla, y se ve en que el comentario de la pagina de arriba
+  // —escrito HOY— daba por sentado que `/garantia-de-alquiler-uruguay` seguia en deuda justamente
+  // por convertir topes en UR, que es la operacion que el 11-03 habia declarado inocente. No eran
+  // dos criterios: era un criterio sin barrer. El motivo es el que
+  // `contenidoTramoParity.test.ts` ya explica: la lista se llenaba desde la alerta
+  // `unclassified-families`, que solo nombra lo que GA4 reporto CON trafico en la ventana.
+  //
+  // El barrido es mecanico y por eso es reproducible: de las 54 rutas en deuda, estas son TODAS las
+  // que tienen exactamente UNA lectura viva, esa lectura es un indicador (UR o UI), su unico uso es
+  // expresar en pesos una cifra que una norma fija en esas unidades, y no llaman a ninguna API del
+  // sitio. Las nueve que cumplen la forma son diez menos una: `/elecciones-bps-2026` tiene la misma
+  // firma y se queda afuera porque el comentario de arriba ya la juzgo por su propio motivo —ahi la
+  // cifra en pesos es la multa que el BPS liquida, no la conversion de un tope—. Las demas de la
+  // deuda quedan donde estan: o piden una serie a una ruta propia del sitio (`/api/market-series`,
+  // `/api/aduana`, `/api/cars/*`), o no leen nada y su motivo es otro.
+  //
+  // Las ocho son lectura larga con catalogo FIJO en `app/utils/` y dos unidades en flujo en
+  // `ads.ts`, y cada una convierte una cifra escrita en la norma:
+  //   - `/apostillar-un-documento-uruguay`: el arancel de la apostilla (Dto. 274/017), en UR.
+  //   - `/certificado-de-antecedentes-judiciales-uruguay`: el arancel del CAJ, en UI.
+  //   - `/cooperativas-de-vivienda-uruguay`: el tope de ingresos del hogar del MVOT, en UR.
+  //   - `/garantia-de-alquiler-uruguay`: los montos de cada garantia, en UR.
+  //   - `/libreta-de-conducir-uruguay`: la escala del arancel por anos de libreta, en UR.
+  //   - `/llevar-el-auto-a-brasil-o-argentina`: la cobertura del SOA (Ley 18.412), en UI. Sin
+  //     lectura publica el tope en UI, «como lo escribe la ley», que es la prueba de que la cifra
+  //     es de la norma y no del dia.
+  //   - `/prestamo-hipotecario-uruguay`: el tope de ingresos del FGCH, en UR.
+  //   - `/subsidio-de-alquiler-uruguay`: los topes de alquiler por dormitorios, en UR.
+  //
+  // Sin estas ocho lineas la cola de trabajo las ordena OCHO VECES por debajo de la guia
+  // equivalente de `/guias/*`, que es la misma clase de pagina y la misma intencion de busqueda.
+  "/apostillar-un-documento-uruguay",
+  "/certificado-de-antecedentes-judiciales-uruguay",
+  "/cooperativas-de-vivienda-uruguay",
+  "/garantia-de-alquiler-uruguay",
+  "/libreta-de-conducir-uruguay",
+  "/llevar-el-auto-a-brasil-o-argentina",
+  "/prestamo-hipotecario-uruguay",
+  "/subsidio-de-alquiler-uruguay",
+  // Tanda decidida el 2026-10-29 y mergeada el 11-01 (el PR esperó un re-run de CI). Es la primera
+  // que toma el HUB como racimo en vez de ir ruta por ruta, y la primera que lo deja atornillado: el
+  // tema `deudas-y-credito-uruguay` declara quince entradas en `resources` (`app/utils/guideHubs.ts`)
+  // y estaba partido por la mitad en dos tramos que se diferencian por OCHO VECES: ocho ya estaban
+  // acá, una es la calculadora (`/herramientas/*`, dato vivo, y ahí está bien) y las seis de abajo
+  // valían 1× en la deuda de `contenidoTramoParity.test.ts`. Es el peor lugar del sitio para que
+  // pase: `REVENUE_PLAN.md` registra la guía de préstamo a sola firma como la familia de mayor
+  // multiplicador MEDIDO de todo el sitio, y dos de las ocho vecinas ya clasificadas
+  // —`/prestamos-uruguay` y `/mejores-prestamos-uruguay`— entraron por la alerta
+  // `unclassified-families`, o sea CON tráfico e ingreso medidos y no por su forma. La cola de
+  // trabajo estaba ordenando el vecindario que más rinde como si fuera la portada.
+  //
+  // Por qué las seis salen de la deuda, que es lo que esa lista pide escribir («cada tanda elige su
+  // tramo mirando la página»): las seis piden UN dato en vivo y es siempre de la misma clase —la
+  // grilla de topes de usura del BCU (`/api/bcu-rates` en cuatro de ellas), los topes de
+  // `/api/debt-relief` o las tasas de referencia de `/api/financing-rates`—, o sea el número LEGAL
+  // contra el que el texto razona, no un relevamiento propio que la página publique. El cuerpo es
+  // explicación: la ley de usura recorre los seis topes del art. 11, qué entra en la cuenta y a
+  // quién reclamarle, con la tabla viva como UNA de sus secciones; saldar deudas tiene ocho
+  // secciones y cita el tope dentro de una oración. Ninguna es una serie con texto alrededor, que
+  // es lo que la línea mecánica del 22/10 no podía distinguir desde acá.
+  //
+  // Y de paso queda escrito qué NO era la línea: los controles interactivos no sacan a una página
+  // del tramo. `/conviene-pagar-todo-con-credito-uruguay` tiene dieciocho y entró en la tanda del
+  // 22/10 sin discusión, porque no pide ningún dato en vivo. Lo único que parkeaba a estas seis era
+  // el `useFetch`, así que `/conviene-comprar-en-cuotas` y `/adelanto-de-efectivo-tarjeta-de-credito`
+  // entran por la misma puerta que su vecina: su calculadora es una sección de una lectura larga.
+  "/adelanto-de-efectivo-tarjeta-de-credito",
+  "/conviene-comprar-en-cuotas",
+  "/ley-de-usura-uruguay",
+  "/prestamo-sin-recibo-de-sueldo-uruguay",
+  "/prestamos-para-jubilados-uruguay",
+  "/saldar-deudas-uruguay",
 ]);
 
 export function tierOf(bucket: string): Tier {

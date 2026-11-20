@@ -12,6 +12,13 @@
 
   En la miniatura angosta de la tarjeta horizontal (menos de 200 px) no entran flechas ni contador:
   quedan los puntos, que dicen lo mismo en una línea.
+
+  Sólo la foto que se ve y sus dos vecinas piden archivo (`carouselSrcWindow`); las demás son un
+  hueco vacío con su número, que se llena al deslizar. Con `loading="lazy"` no alcanzaba: Chrome
+  baja igual las imágenes de una tira horizontal que está en pantalla, y cada tarjeta descargaba sus
+  ocho fotos para mostrar una (7,8 MB por página de 24 en un teléfono, medido el 2026-11-08). Y
+  cada foto va en el tamaño de la tarjeta (`cardPhotoUrl`), no en el de la galería; si ese archivo
+  falla se reintenta una vez el original antes de darla por perdida.
 -->
 <template>
   <div
@@ -29,13 +36,17 @@
         :key="photo.url"
         type="button"
         class="photo-carousel__slide"
+        :data-cta="cta || undefined"
         :tabindex="position === index ? 0 : -1"
         :aria-label="t('photoViewer.openPhoto', { n: position + 1, total: count })"
         @click="emit('open', position)"
       >
+        <span v-if="failed.has(photo.url)" class="photo-carousel__missing" aria-hidden="true">
+          <VIcon size="28">mdi-image-off-outline</VIcon>
+        </span>
         <img
-          v-if="!failed.has(photo.url)"
-          :src="photo.url"
+          v-else-if="started.has(photo.url)"
+          :src="slideSrc(photo.url)"
           :alt="t('photoViewer.photoAlt', { title, n: position + 1 })"
           :loading="eager && position === 0 ? 'eager' : 'lazy'"
           decoding="async"
@@ -43,11 +54,9 @@
           height="260"
           referrerpolicy="no-referrer"
           @load="checkLoaded(photo.url, $event.target as HTMLImageElement)"
-          @error="markFailed(photo.url)"
+          @error="onImageError(photo.url)"
         />
-        <span v-else class="photo-carousel__missing" aria-hidden="true">
-          <VIcon size="28">mdi-image-off-outline</VIcon>
-        </span>
+        <span v-else class="photo-carousel__pending" aria-hidden="true" />
       </button>
     </div>
     <template v-if="count > 1">
@@ -79,6 +88,7 @@
 
 <script setup lang="ts">
 import type { PropertyGallerySource, PropertyPhotoRef } from '~/utils/photoViewer'
+import { cardPhotoUrl, carouselSrcWindow } from '~/utils/photoSizes'
 
 const props = withDefaults(
   defineProps<{
@@ -93,8 +103,10 @@ const props = withDefaults(
     eager?: boolean
     /** Sube los puntos cuando hay una chapa al pie de la foto (la de "N portales"). */
     raisedIndicator?: boolean
+    /** data-cta of the slide button (track-clicks): each directory names its own, e.g. rental-photo-open. */
+    cta?: string | null
   }>(),
-  { total: null, source: null, eager: false, raisedIndicator: false }
+  { total: null, source: null, eager: false, raisedIndicator: false, cta: null }
 )
 const emit = defineEmits<{ open: [index: number]; failed: [] }>()
 const { t } = useI18n()
@@ -103,6 +115,10 @@ const { load, cached, checkLoaded, real } = usePropertyGalleries()
 const track = ref<HTMLElement | null>(null)
 const index = ref(0)
 const failed = ref(new Set<string>())
+/** Fotos cuyo archivo chico falló: muestran el original. */
+const fallback = ref(new Set<string>())
+/** Fotos que ya tienen `src`: la ventana alrededor de la actual, y las que ya se cargaron. */
+const started = ref(new Set<string>())
 const asked = ref(false)
 
 const slides = computed(() => {
@@ -112,6 +128,32 @@ const slides = computed(() => {
 })
 // Sin el total de la búsqueda, lo que se sabe es lo cargado; una vez pedida la galería, eso es todo.
 const count = computed(() => Math.max(slides.value.length, asked.value ? 0 : props.total || 0))
+
+/** Da `src` a la foto actual y a sus vecinas. Una foto que ya lo tuvo no lo pierde al alejarse. */
+function startWindow() {
+  const { start, end } = carouselSrcWindow(index.value, slides.value.length)
+  const next = slides.value
+    .slice(start, end + 1)
+    .map(photo => photo.url)
+    .filter(url => !started.value.has(url))
+  if (next.length) started.value = new Set([...started.value, ...next])
+}
+// En el servidor también: la primera foto de las tarjetas de arriba llega en el HTML.
+startWindow()
+watch([index, slides], startWindow)
+
+function slideSrc(url: string): string {
+  return fallback.value.has(url) ? url : cardPhotoUrl(url)
+}
+
+/** El archivo chico no es un contrato del portal: si falla, una vez el original. */
+function onImageError(url: string) {
+  if (!fallback.value.has(url) && cardPhotoUrl(url) !== url) {
+    fallback.value = new Set(fallback.value).add(url)
+    return
+  }
+  markFailed(url)
+}
 
 // Hasta 8 puntos: con más fotos, cada punto es un tramo y se enciende el que contiene la actual.
 const DOTS = 8
@@ -186,9 +228,29 @@ watch(index, position => {
   if (position >= slides.value.length - 2 && count.value > slides.value.length) void loadMore()
 })
 
+/**
+ * A photo that fails gives its turn to the first one that has not asked for its file yet. Only the
+ * window asks, so without this a removed advert whose photos all answer 404 never got past its
+ * first two and kept a broken photo instead of "sin foto"; this way a dead gallery still gets
+ * there one request at a time, and a live one pays at most one extra request per failure.
+ */
 function markFailed(url: string) {
   failed.value = new Set(failed.value).add(url)
-  if (slides.value.every(photo => failed.value.has(photo.url))) emit('failed')
+  if (slides.value.every(photo => failed.value.has(photo.url))) {
+    emit('failed')
+    return
+  }
+  const next = slides.value.find(photo => !started.value.has(photo.url))
+  if (next) started.value = new Set(started.value).add(next.url)
+}
+
+/**
+ * Sin ninguna foto la tarjeta pasa a "sin foto" como si todas hubieran fallado: pasa cuando la única
+ * foto del aviso es un enlace firmado que ya venció (`rentalPhotos` lo deja afuera) y la tarjeta
+ * sólo miró que el aviso tuviera portada. Antes esa foto daba 403 y llegaba acá por `markFailed`.
+ */
+function failIfEmpty() {
+  if (!slides.value.length) emit('failed')
 }
 
 watch(
@@ -197,25 +259,41 @@ watch(
     index.value = 0
     heading = null
     failed.value = new Set()
+    fallback.value = new Set()
+    started.value = new Set()
     asked.value = false
+    startWindow()
     track.value?.scrollTo({ left: 0 })
+    failIfEmpty()
   }
 )
 
-// La primera foto de las tarjetas de arriba llega en el HTML del servidor y puede estar cargada
-// antes de hidratar, cuando `load` ya no se vuelve a disparar: se revisa a mano.
+// La primera foto de las tarjetas de arriba llega en el HTML del servidor y puede estar cargada (o
+// haber fallado) antes de hidratar, cuando `load` y `error` ya no se vuelven a disparar: se revisa a
+// mano, por diapositiva, porque las que esperan su turno todavía no tienen imagen.
 // Si cambia el ancho (girar el teléfono, el panel del mapa que pasa a miniatura) la tira vuelve a
 // encajar sola, pero en la foto más cercana al desplazamiento viejo, que ya es otra: se la devuelve
 // a la que se estaba mirando.
 let resize: ResizeObserver | null = null
 
 onMounted(() => {
-  track.value?.querySelectorAll('img').forEach((image, position) => {
+  failIfEmpty()
+  Array.from(track.value?.children ?? []).forEach((slide, position) => {
+    const image = slide.querySelector('img')
     const photo = slides.value[position]
-    if (image.complete && photo) checkLoaded(photo.url, image)
+    if (!image?.complete || !photo) return
+    if (image.naturalWidth) checkLoaded(photo.url, image)
+    else onImageError(photo.url)
   })
   const element = track.value
-  if (!element || typeof ResizeObserver === 'undefined') return
+  if (!element) return
+  // The strip scrolls without JavaScript: on a slow phone the visitor may already be on photo 3
+  // when this runs, and with `index` still at 0 that photo would stay an empty box.
+  if (element.clientWidth) {
+    const position = Math.round(element.scrollLeft / element.clientWidth)
+    index.value = Math.min(Math.max(position, 0), Math.max(slides.value.length - 1, 0))
+  }
+  if (typeof ResizeObserver === 'undefined') return
   trackWidth = element.clientWidth
   resize = new ResizeObserver(() => {
     if (!element.clientWidth || element.clientWidth === trackWidth) return
@@ -282,6 +360,13 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   color: rgba(var(--v-theme-on-surface), 0.6);
+  background: rgba(var(--v-theme-on-surface), 0.06);
+}
+/* La foto que todavía no pidió archivo: el mismo fondo, sin ícono, porque no falló nada. */
+.photo-carousel__pending {
+  display: block;
+  width: 100%;
+  height: 100%;
   background: rgba(var(--v-theme-on-surface), 0.06);
 }
 /* 44 px de blanco, 36 de botón dibujado: la cara es lo que se ve, el botón es lo que se toca. */

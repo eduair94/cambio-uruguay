@@ -24,7 +24,7 @@
           <v-card-text>
             <v-row align="start">
               <v-col cols="12" md="4">
-                <v-autocomplete
+                <VAutocomplete
                   v-model="selectedCurrency"
                   :items="currencyOptions"
                   item-title="title"
@@ -38,7 +38,7 @@
                 />
               </v-col>
               <v-col cols="12" md="5">
-                <v-autocomplete
+                <VAutocomplete
                   v-model="selectedOrigins"
                   :items="originOptions"
                   item-title="title"
@@ -54,6 +54,7 @@
                   density="compact"
                   variant="outlined"
                   data-testid="compare-houses"
+                  class="compare-houses"
                   :error="tooManyHouses"
                   :error-messages="tooManyHouses ? $t('compare.maxHouses') : undefined"
                 />
@@ -96,8 +97,33 @@
     </v-row>
 
     <template v-else>
+      <v-row v-if="evolutions.failedOrigins.length">
+        <v-col cols="12">
+          <v-alert type="warning" variant="tonal" data-testid="compare-unavailable">
+            <p class="mb-3">
+              {{ $t('compare.unavailable', { houses: failedHouseNames }) }}
+            </p>
+            <v-btn
+              variant="outlined"
+              :loading="loading"
+              :disabled="loading"
+              data-testid="compare-retry"
+              @click="retry"
+            >
+              {{ $t('compare.retry') }}
+            </v-btn>
+          </v-alert>
+        </v-col>
+      </v-row>
+      <v-row v-if="evolutions.emptyOrigins.length">
+        <v-col cols="12">
+          <v-alert type="info" variant="tonal" data-testid="compare-no-history">
+            {{ $t('compare.noHistory', { houses: emptyHouseNames }) }}
+          </v-alert>
+        </v-col>
+      </v-row>
       <!-- Chart -->
-      <v-row class="mt-2">
+      <v-row v-if="evolutions.series.length" class="mt-2">
         <v-col cols="12">
           <v-card>
             <v-card-title class="d-flex align-center flex-wrap ga-2 py-3">
@@ -158,7 +184,7 @@
       </v-row>
 
       <!-- Summary table -->
-      <v-row class="mt-2">
+      <v-row v-if="evolutions.series.length" class="mt-2">
         <v-col cols="12">
           <v-card>
             <v-card-title class="py-3">
@@ -169,7 +195,7 @@
                  horizontally on mobile — far more legible than stacked cards
                  when comparing several houses column-by-column. -->
             <div class="table-scroll">
-              <v-data-table
+              <VDataTable
                 :headers="headers"
                 :items="summaryRows"
                 :mobile="false"
@@ -203,7 +229,7 @@
                 <template #item.avg="{ item }">
                   {{ formatCurrency(item.avg) }}
                 </template>
-              </v-data-table>
+              </VDataTable>
             </div>
           </v-card>
         </v-col>
@@ -223,12 +249,13 @@
 </template>
 
 <script setup lang="ts">
+import { VAutocomplete, VDataTable } from 'vuetify/components'
 import { useSeoMeta } from '#imports'
 import { format, parseISO } from 'date-fns'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import LineChart from '~/components/charts/LineChart.vue'
-import type { EvolutionResponse } from '~/types/api'
+import { loadComparisonEvolutions } from '~/utils/comparisonLoad'
 import {
   buildComparisonChartData,
   datasetStats,
@@ -353,21 +380,29 @@ const evolutionKey = computed(
 // so we want the series resolved during SSR. That way the chart branch hydrates
 // directly instead of flickering loading→chart on the client — the latter leaves
 // the <ClientOnly> chart wrapper stuck on its fallback spinner. With no houses
-// selected the handler returns [] instantly, so the default page stays fast.
-const { data: evolutions, pending: loading } = await useAsyncData<EvolutionResponse[]>(
+// selected the handler returns an empty result instantly, so the default page stays fast.
+const {
+  data: evolutions,
+  pending: loading,
+  refresh,
+} = await useAsyncData(
   'compare-evolutions',
   async () => {
-    const origins = selectedOrigins.value.slice(0, MAX_HOUSES)
-    if (origins.length === 0) return []
-
-    const results = await Promise.all(
-      origins.map(origin => getEvolutionData(origin, selectedCurrency.value))
+    return loadComparisonEvolutions(
+      selectedOrigins.value.slice(0, MAX_HOUSES),
+      selectedCurrency.value,
+      getEvolutionData
     )
-    // Drop any house whose fetch errored; keep strict typing on the rest.
-    return results.filter(r => !r.error && r.data).map(r => r.data as EvolutionResponse)
   },
-  { default: () => [], watch: [evolutionKey] }
+  { default: () => ({ series: [], failedOrigins: [], emptyOrigins: [] }), watch: [evolutionKey] }
 )
+
+const failedHouseNames = computed(() => evolutions.value.failedOrigins.map(originName).join(', '))
+const emptyHouseNames = computed(() => evolutions.value.emptyOrigins.map(originName).join(', '))
+
+function retry() {
+  if (!loading.value) void refresh()
+}
 
 // Reset house selection when the currency changes (a house may not quote it).
 watch(selectedCurrency, () => {
@@ -378,7 +413,7 @@ watch(selectedCurrency, () => {
 
 // --- Chart -------------------------------------------------------------------
 const labelledSeries = computed<LabelledSeries[]>(() =>
-  (evolutions.value ?? []).map(evo => ({
+  evolutions.value.series.map(evo => ({
     label: originName(evo.origin),
     points: evo.evolution,
   }))
@@ -578,6 +613,12 @@ useHead(() => ({
 </script>
 
 <style scoped>
+/* Keep the chip selector's height when its input loses focus. Otherwise it can
+   move the retry button between pointerdown and pointerup on narrow screens. */
+.compare-houses :deep(.v-field__input > input) {
+  min-width: 64px;
+}
+
 /* Horizontal scroll container for the chart: on narrow screens the inner wrap
    keeps a minimum width so the line and its date ticks stay legible instead of
    crushing together, and the user swipes sideways to read the rest. */

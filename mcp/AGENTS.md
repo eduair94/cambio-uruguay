@@ -1,6 +1,6 @@
 # mcp/ — AGENTS
 
-Open-source MCP server (`cambio-uruguay-mcp`, published to npm) wrapping the public cambio-uruguay rates API AND the site API (rentals, used cars, products) as 26 read-only tools in 4 toolsets, plus a Claude skill; isolated package with its own build and deploy surface.
+Open-source MCP server (`cambio-uruguay-mcp`, published to npm) wrapping the public cambio-uruguay rates API AND the site API (rentals, used cars, products) as 29 read-only tools in 5 toolsets, plus a Claude skill; isolated package with its own build and deploy surface.
 
 Start with `mcp/README.md` (client configs, tool list, env table) and `mcp/DEPLOY.md` (hosted endpoint, nginx). This file = only what's beyond them.
 
@@ -45,6 +45,12 @@ at initialisation; `src/register/prompts.ts` holds 6 guided workflows.
   intersection and sometimes answers 503. `geocodeItems` retries without the street type; errors advise lat/lng.
 - **Category offer lists are not curated** (a 20-peso fridge, a paring knife under "chef knife"): an offer only
   counts when it reaches 60 % of the p25 of the band for its condition (`plausibleOffers`).
+- **Mobility searches use the advert directory**, `/api/movilidad/productos`, not category summaries.
+  Matching a brand against a category's keywords and returning its cheapest offer can recommend another
+  brand. `src/products/mobility.ts` forwards the page's filters (text, brand, variant, seller, source,
+  condition and price range) and preserves them in the public link. The API accepts integer pesos and
+  facet keys only; reject invalid keys or crossed ranges instead of letting its normalizer drop them.
+  `total` is the filtered directory total, not the number of returned rows (24 per upstream page).
 - **`/api/rentals/fit`** is 10 req/min per IP and 30/min per worker, and a cold worker needs 30–60 s to load the
   catalogue (Cloudflare can 502 once): the hosted server shares one IP, so heavy use hits 429.
 - The car valuation `diesel` coefficient is computed but not advice (it measures the version); it is not shown.
@@ -64,6 +70,8 @@ at initialisation; `src/register/prompts.ts` holds 6 guided workflows.
 - **Rate convention** (baked into tool descriptions): buy a currency = house `sell` price → best is LOWEST sell; sell it = house `buy` price → best is HIGHEST buy. Getting this backwards is the classic bug.
 - **HTTP transport is stateless**: fresh `McpServer`+`StreamableHTTPServerTransport` per request (`sessionIdGenerator: undefined`), closed on `res` close. No session affinity. Behind nginx, responses are SSE — proxy must NOT buffer (`proxy_buffering off`; see DEPLOY.md).
 - Handlers `throw` on empty results (e.g. `No retail rates found for currency "X"`) — surfaced as MCP tool errors.
+- **`tools/list` is what every client pays for on every session** (~10.1k tokens for `/mcp`), and public monitors grade it (Glimind, 2026-10-28: 78/100 for undescribed params, a 2.2k-token `search_rentals` and no annotations on the exchange tools). `test/readiness.test.ts` enforces: a `.describe()` on every parameter, nested ones too (format + example); `annotations: READ_ONLY` from `src/register/annotations.ts` on every tool, all four hints spelled out (the spec defaults `destructiveHint` to true); ≤ 4,600 chars per definition (Glimind counts ~2.4 % over chars/4, so that is ~1,180 of its tokens, under the 1,200 it flags); and no `$ref`. To fit, `search_rentals` dropped what a caller can already say another way (`source` = `excludeSources` of the rest, `excludeTypes` = list the others in `types`), folded `near` into one string that also takes `"lat,lng"`, and dropped five niche filters (`agency`, `expensesMaxUyu`, `areaMax`, `hideReported`, `hidePerNightPrices`; each result already flags reported and per-night prices with ⚠). Adding a filter now means paying for it in text elsewhere: long explanations go in the skill references, not in descriptions.
+- **Never reuse one zod instance twice inside a tool**: zod-to-json-schema emits the second use as a `$ref`. Shared fields are factories (`lat()`, `page(max)` in `register/rentals.ts`).
 
 ## Production
 - pm2 app **`currency-mcp`** in repo-root `../ecosystem.config.js` (fork mode, `cwd: ./mcp`, `script: dist/index.js`, env `MCP_TRANSPORT=http` / `MCP_HTTP_PORT=8788` / `API_BASE_URL`). Live at `https://mcp.cambio-uruguay.com/mcp`.

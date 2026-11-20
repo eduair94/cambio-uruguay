@@ -55,9 +55,14 @@
               />
             </button>
           </div>
+          <ListingPresentationButton
+            :source="{ kind: 'car', car, cohort: data.cohort }"
+            class="mt-3"
+          />
         </VCol>
         <VCol cols="12" md="6">
           <h1 class="text-h5 font-weight-bold mb-2">{{ car.title }}</h1>
+          <CarsCompareLink :car-key="car.key" class="mb-3" />
           <p class="text-h4 font-weight-bold mb-1">{{ formatCarPrice(car) }}</p>
           <p v-if="carListedPriceNote(car)" class="text-body-2 mb-2" data-testid="car-listed-price">
             {{ carListedPriceNote(car) }}
@@ -215,6 +220,12 @@
         </VCol>
       </VRow>
 
+      <!-- La unidad intermedia de la ficha, en el primer corte después de lo que la persona vino
+           a ver (fotos, precio y contacto). La ficha es densidad normal: con el cierre del layout
+           son dos, el tope de maxAdSlots. Ver docs/seo/adsense-growth-loop.md, decimotercera
+           iteración. -->
+      <AdSlot placement="in-article" />
+
       <section v-if="car.specs && hasSpecSheet" class="mt-8" data-testid="car-specs">
         <h2 class="text-h6 mb-1">Ficha técnica</h2>
         <p class="text-body-2 text-medium-emphasis mb-4">
@@ -353,7 +364,6 @@ import {
   CAR_SELLER_LABELS,
   CAR_TRANSMISSION_LABELS,
   CARS_PATH,
-  carKeyValid,
   carMarketPath,
   carPath,
   formatCarDate,
@@ -378,7 +388,10 @@ import {
 // antes de que nuxt-og-image vuelva a pedir la página para leer su payload: `validate` corre
 // fuera de setup, igual que en equipar/productos. La macro sólo ve imports, nunca constantes.
 definePageMeta({
-  validate: route => carKeyValid(String(route.params.key ?? '')),
+  validate: async route => {
+    const catalogue = await import('~/utils/cars')
+    return catalogue.carKeyValid(String(route.params.key ?? ''))
+  },
 })
 
 const route = useRoute()

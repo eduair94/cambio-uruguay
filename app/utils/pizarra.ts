@@ -12,7 +12,7 @@
 //
 // PURE (no Vue/Nuxt imports) so it is unit-testable in plain Node.
 
-import { offMarketDetector } from './marketOutlier'
+import { offMarketSide } from './marketOutlier'
 import { isPublicRate } from './rateSource'
 
 /** The four currencies the board shows, in display order. */
@@ -28,6 +28,9 @@ export interface PizarraRow {
   sell?: number
   /** Wholesale/reference marker set by the API service. */
   isInterBank?: boolean
+  /** The backend's mark on today's rows: the board has not changed for days (utils/marketOutlier.ts). */
+  frozen?: boolean
+  frozenDays?: number
   /** Non-empty when the quote needs a condition met (eBROU, Prex account…). */
   condition?: string
   localData?: { name?: string } | null
@@ -63,7 +66,8 @@ const houseName = (row: PizarraRow): string => row.localData?.name?.trim() || ro
  *
  * - Non-public quotes. A headline advertising the BCU reference or an interbank
  *   price would be a number no reader can actually get.
- * - Off-market quotes. The best buy and the best sell come from DIFFERENT
+ * - Off-market prices, judged one side at a time with the currency's band
+ *   (`utils/marketOutlier.ts`). The best buy and the best sell come from DIFFERENT
  *   houses, so one stale board is enough to print an inverted spread — live,
  *   the board read "compra 40,20 / venta 39,55" because a single casa's whole
  *   pizarra sat ~5% low. Both are still listed in the table below, labelled.
@@ -74,16 +78,16 @@ export function buildBoard(rows: readonly PizarraRow[]): BoardEntry[] {
   return BOARD_CURRENCIES.map(code => {
     const entry: BoardEntry = { code, buy: emptySide(), sell: emptySide() }
     const candidates = rows.filter(r => r.code === code && isPublicRate(r))
-    const isOffMarket = offMarketDetector(candidates)
+    const buyOff = offMarketSide(candidates, code, 'buy')
+    const sellOff = offMarketSide(candidates, code, 'sell')
 
     for (const row of candidates) {
-      if (isOffMarket(row)) continue
-      if (typeof row.buy === 'number' && row.buy > 0) {
+      if (typeof row.buy === 'number' && row.buy > 0 && !buyOff(row)) {
         if (entry.buy.value === null || row.buy > entry.buy.value) {
           entry.buy = { value: row.buy, origin: row.origin, name: houseName(row) }
         }
       }
-      if (typeof row.sell === 'number' && row.sell > 0) {
+      if (typeof row.sell === 'number' && row.sell > 0 && !sellOff(row)) {
         if (entry.sell.value === null || row.sell < entry.sell.value) {
           entry.sell = { value: row.sell, origin: row.origin, name: houseName(row) }
         }
@@ -117,6 +121,8 @@ export interface ComparisonRow {
   bestBuy: boolean
   /** True when this is the market's best sell for its currency (cash only). */
   bestSell: boolean
+  /** The backend's mark: the board has not changed for days (utils/marketOutlier.ts). */
+  frozen?: boolean
 }
 
 /** The full market for one currency, best-first, nothing filtered out. */
@@ -132,9 +138,10 @@ const num = (v: unknown): number | null =>
  * Every quote in the market, grouped by currency and sorted cheapest-sell
  * first, with the wholesale/official/conditional ones kept and labelled.
  *
- * `bestBuy`/`bestSell` are computed over publicly-obtainable quotes only, so
- * the green "best" marker can never land on a price nobody can transact at —
- * the row is still shown, just not crowned.
+ * `bestBuy`/`bestSell` are computed over publicly-obtainable quotes only, and
+ * without the off-market prices the board above leaves out, so the green "best"
+ * marker can never land on a price nobody can transact at — the row is still
+ * shown, just not crowned.
  */
 export function buildComparison(rows: readonly PizarraRow[]): ComparisonGroup[] {
   const byCode = new Map<string, ComparisonRow[]>()
@@ -154,6 +161,7 @@ export function buildComparison(rows: readonly PizarraRow[]): ComparisonGroup[] 
       sell,
       bestBuy: false,
       bestSell: false,
+      ...(row.frozen === true ? { frozen: true } : {}),
     })
     byCode.set(row.code, list)
   }
@@ -161,8 +169,15 @@ export function buildComparison(rows: readonly PizarraRow[]): ComparisonGroup[] 
   const groups: ComparisonGroup[] = []
   for (const [code, list] of byCode) {
     const obtainable = list.filter(r => r.kind === 'cash' || r.kind === 'conditional')
-    const bestBuy = Math.max(...obtainable.map(r => r.buy ?? -Infinity))
-    const bestSell = Math.min(...obtainable.map(r => r.sell ?? Infinity))
+    // The green marker follows the board above it (`buildBoard`): judged against the market,
+    // one side at a time. On 2026-11-11 the headline already said Prex 40,96 and this table
+    // still painted the board frozen since July at 39,55 as the best sell.
+    const buyOff = offMarketSide(obtainable, code, 'buy')
+    const sellOff = offMarketSide(obtainable, code, 'sell')
+    const bestBuy = Math.max(...obtainable.map(r => (buyOff(r) ? -Infinity : (r.buy ?? -Infinity))))
+    const bestSell = Math.min(
+      ...obtainable.map(r => (sellOff(r) ? Infinity : (r.sell ?? Infinity)))
+    )
     for (const r of list) {
       if (r.kind === 'wholesale' || r.kind === 'official') continue
       if (r.buy !== null && r.buy === bestBuy) r.bestBuy = true

@@ -4,7 +4,7 @@
 // AI context sentence. Visible page text and FAQPage schema both come from these items.
 import type { ExchangeRate } from '../types/api'
 import { humaniseOriginName, rankExchanges, type RankableRate } from './recommendation'
-import { offMarketDetector } from './marketOutlier'
+import { offMarketSide } from './marketOutlier'
 
 export const FAQ_LANGS = ['es', 'en', 'pt'] as const
 export type FaqLang = (typeof FAQ_LANGS)[number]
@@ -86,19 +86,29 @@ function factsFor(rates: ExchangeRate[], code: string): RateFacts | null {
   // ExchangeRateSpecification —que ya pasaban por `rankUsableQuotes`— y $39,55 en el FAQPage, que
   // salía de acá. El comentario de currencyPages.ts:262 describe ese $39,55 como "una pizarra
   // 4,6 % bajo la mediana", o sea un precio inalcanzable; Google leía las dos afirmaciones juntas.
-  const isOffMarket = offMarketDetector(all)
-  const market = all.filter(r => !isOffMarket(r))
+  // Cada lado se juzga por separado y con la banda de la moneda: la venta más barata por las
+  // ventas, la compra mejor pagada por las compras. `rankExchanges` aplica la misma regla.
+  const sellOff = offMarketSide(all, code, 'sell')
+  const buyOff = offMarketSide(all, code, 'buy')
+  const market = all.filter(r => !sellOff(r) && !buyOff(r))
 
-  const sells = market.map(r => r.sell ?? 0).filter(v => v > 0)
-  const buys = market.map(r => r.buy ?? 0).filter(v => v > 0)
+  const sells = all
+    .filter(r => !sellOff(r))
+    .map(r => r.sell ?? 0)
+    .filter(v => v > 0)
+  const buys = all
+    .filter(r => !buyOff(r))
+    .map(r => r.buy ?? 0)
+    .filter(v => v > 0)
   if (!sells.length || !buys.length) return null
 
   const avgSell = sells.reduce((a, b) => a + b, 0) / sells.length
-  const rankable = market as RankableRate[]
+  const rankable = all as RankableRate[]
   const buyRank = rankExchanges(rankable, code, 'buy', 1).ranked[0] // lowest sell
   const sellRank = rankExchanges(rankable, code, 'sell', 1).ranked[0] // highest buy
 
-  // Lowest per-house spread (sell - buy), one row per origin.
+  // Lowest per-house spread (sell - buy), one row per origin, among boards with both sides
+  // in the market.
   const spreads = market
     .filter(r => (r.buy ?? 0) > 0 && (r.sell ?? 0) > 0)
     .map(r => ({

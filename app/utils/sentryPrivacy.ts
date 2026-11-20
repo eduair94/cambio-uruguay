@@ -1,4 +1,5 @@
 import type { Event, EventHint, StackFrame } from '@sentry/nuxt'
+import { LOCALE_PREFIX_RE } from './locales'
 
 export interface SentryErrorConfig {
   dsn?: string
@@ -81,6 +82,74 @@ export function sentryPageName(name: unknown): string | undefined {
  * The string code from the error or its cause chain (`ERR_HTTP_HEADERS_SENT`, `ECONNRESET`,
  * `RENTAL_ANALYSIS_STALE`): a fixed enum naming what failed, never on what.
  */
+/**
+ * The HTTP status the current document was served with (Navigation Timing
+ * `responseStatus`), or undefined where the browser does not expose it.
+ */
+export function sentryDocumentStatus(performanceLike: unknown): string | undefined {
+  try {
+    const entry = (
+      performanceLike as { getEntriesByType?: (type: string) => unknown[] } | undefined
+    )?.getEntriesByType?.('navigation')?.[0] as { responseStatus?: unknown } | undefined
+    const status = entry?.responseStatus
+    return Number.isInteger(status) && (status as number) >= 100 && (status as number) <= 599
+      ? String(status)
+      : undefined
+  } catch {
+    return undefined
+  }
+}
+
+const THROWN_CLASS =
+  /^(?:Error|TypeError|RangeError|ReferenceError|SyntaxError|URIError|AggregateError|DOMException|ChunkLoadError|FetchError|H3Error|NuxtError|Event|ErrorEvent|ProgressEvent|PromiseRejectionEvent|CloseEvent|Response|XMLHttpRequest)$/
+
+/**
+ * What was really thrown, as two fixed-shape facts (CAMBIO-URUGUAY-BACKEND-Y): `thrown_kind`,
+ * the class of the innermost value of the cause chain (Nuxt's createError wraps the original
+ * there) from a fixed list, else `object` for a plain object, `string`, `unlisted` or
+ * `primitive`; and `stack_status`, whether the reported error carries a stack Sentry can read.
+ * A startup 500 with no frames is a non-Error (an Event, a Response, a plain object) that
+ * createError turned into a stackless 500. Never reads a message, a key or a value.
+ */
+export function sentryThrownShape(error: unknown): Record<string, string> {
+  const seen = new Set<unknown>()
+  let current: unknown = error
+  for (let depth = 0; depth < 4; depth += 1) {
+    if (!current || typeof current !== 'object' || seen.has(current)) break
+    seen.add(current)
+    let cause: unknown
+    try {
+      cause = (current as { cause?: unknown }).cause
+    } catch {
+      break
+    }
+    if (cause === undefined || cause === null) break
+    current = cause
+  }
+  let kind = 'primitive'
+  try {
+    if (typeof current === 'string') kind = 'string'
+    else if (current && (typeof current === 'object' || typeof current === 'function')) {
+      const proto = Object.getPrototypeOf(current)
+      if (proto === Object.prototype || proto === null) kind = 'object'
+      else {
+        const name = (proto as { constructor?: { name?: unknown } })?.constructor?.name
+        kind = typeof name === 'string' && THROWN_CLASS.test(name) ? name : 'unlisted'
+      }
+    }
+  } catch {
+    kind = 'unlisted'
+  }
+  let stack = 'absent'
+  try {
+    const value = (error as { stack?: unknown } | null)?.stack
+    if (typeof value === 'string' && /\n\s*(?:at |\S*@)/.test(value)) stack = 'present'
+  } catch {
+    stack = 'absent'
+  }
+  return { thrown_kind: kind, stack_status: stack }
+}
+
 export function sentryErrorCode(error: unknown): string | undefined {
   const seen = new Set<unknown>()
   let current = error
@@ -159,8 +228,7 @@ export function sentryRouteCategory(value: unknown): string {
   let path: string
   try {
     path =
-      new URL(value, 'https://cambio-uruguay.com').pathname.replace(/^\/(?:en|pt)(?=\/|$)/, '') ||
-      '/'
+      new URL(value, 'https://cambio-uruguay.com').pathname.replace(LOCALE_PREFIX_RE, '') || '/'
   } catch {
     return '/other'
   }
@@ -171,7 +239,7 @@ export function sentryRouteCategory(value: unknown): string {
   if (ogRoute) {
     const page = (ogRoute[2] || '/')
       .replace(/\/og\.(?:png|jpe?g|webp|svg|json|html)$/, '')
-      .replace(/^\/(?:en|pt)(?=\/|$)/, '')
+      .replace(LOCALE_PREFIX_RE, '')
     return `/__og-image__/${ogRoute[1]}${pageRouteCategory(page || '/')}`
   }
   return pageRouteCategory(path)
@@ -293,6 +361,11 @@ const diagnosticTags: Array<[string, RegExp]> = [
     /^(?:(?:Chrome|Edge|Firefox|Safari|Samsung|Opera) \d{1,3}|Facebook app|Instagram app|Other)$/,
   ],
   ['asset_status', /^(?:[1-5]\d{2}|network)$/],
+  ['nuxt_hook', /^(?:app|vue)$/],
+  ['nuxt_phase', /^(?:startup|navigation)$/],
+  ['document_status', /^[1-5]\d{2}$/],
+  ['thrown_kind', /^(?:[A-Z][A-Za-z]{1,30}|object|string|unlisted|primitive)$/],
+  ['stack_status', /^(?:present|absent)$/],
 ]
 
 /** An allowlist, so future SDK integrations cannot silently add private data. */

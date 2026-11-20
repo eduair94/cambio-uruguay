@@ -83,27 +83,81 @@ describe("planExperimentWork", () => {
 
   it("no vuelve a medir lo que ya cerró", () => {
     const previous = plan("2026-09-19", 40, [closed("a", "2026-05-01")]);
-    const work = planExperimentWork([spec("a", "2026-05-01"), spec("b", "2026-09-16")], previous);
+    const work = planExperimentWork([spec("a", "2026-05-01"), spec("b", "2026-09-16")], previous, "2026-09-19");
     expect(work.reuse.map((r) => r.id)).toEqual(["a"]);
     expect(work.measure.map((r) => r.id)).toEqual(["b"]);
   });
 
+  it.each([
+    { daysAfter: 2, daysMissing: 26 },
+    { daysAfter: 2, daysMissing: 0 },
+    { daysAfter: 28, daysMissing: 1 },
+  ])("vuelve a medir un veredicto legado con una ventana incompleta: %j", (coverage) => {
+    const prior = { ...closed("a", "2026-09-16"), ...coverage };
+    prior.after.days = coverage.daysAfter;
+    const work = planExperimentWork([spec("a", "2026-09-16")], plan("2026-09-21", 40, [prior]), "2026-10-21");
+    expect(work.reuse).toEqual([]);
+    expect(work.measure.map((r) => r.id)).toEqual(["a"]);
+  });
+
   it("si cambió el sujeto, el veredicto guardado ya no le corresponde", () => {
     const previous = plan("2026-09-19", 40, [closed("a", "2026-05-01")]);
-    const work = planExperimentWork([{ ...spec("a", "2026-05-01"), routes: ["/otra-cosa"] }], previous);
+    const work = planExperimentWork([{ ...spec("a", "2026-05-01"), routes: ["/otra-cosa"] }], previous, "2026-09-19");
     expect(work.measure.map((r) => r.id)).toEqual(["a"]);
   });
 
   it("corta por el tope de archivo dejando afuera lo viejo, no lo recién publicado", () => {
-    const work = planExperimentWork([spec("viejo", "2026-01-01"), spec("nuevo", "2026-09-16")], null, 90);
+    const work = planExperimentWork([spec("viejo", "2026-01-01"), spec("nuevo", "2026-09-16")], null, "2026-09-20", 90);
     expect(work.measure.map((r) => r.id)).toEqual(["nuevo"]);
     expect(work.dropped.map((r) => r.id)).toEqual(["viejo"]);
   });
 
   it("el rango pedido cubre las dos ventanas de lo que sí se mide", () => {
-    const work = planExperimentWork([spec("uno", "2026-09-16")], null);
+    const work = planExperimentWork([spec("uno", "2026-09-16")], null, "2026-10-21");
     expect(work.from).toBe("2026-08-19");
     expect(work.to).toBe("2026-10-14");
+  });
+
+  it("los días futuros de una fila nueva no expulsan una ventana que ya puede medirse", () => {
+    const work = planExperimentWork(
+      [spec("maduro", "2026-09-14"), spec("nuevo", "2026-10-21")],
+      null,
+      "2026-10-21"
+    );
+    expect(work.measure.map((r) => r.id)).toEqual(["nuevo", "maduro"]);
+    expect(work.dropped).toEqual([]);
+    expect(work.from).toBe("2026-08-17");
+    expect(work.to).toBe("2026-10-21");
+
+    // El archivo todavía cierra con atraso: recortar la lectura no inventa los días que faltan.
+    const days = Array.from({ length: 63 }, (_, i) => ({
+      day: new Date(Date.parse("2026-08-17T00:00:00Z") + i * 86400000).toISOString().slice(0, 10),
+      totals: { clicks: 100, impressions: 10000, ctr: 0.01, position: 8 },
+      queries: [],
+      pages: [{ key: "/maduro", clicks: i > 28 ? 4 : 1, impressions: 100, ctr: 0.01, position: 6 }],
+      countries: [],
+      devices: [],
+      queryRowsSeen: 0,
+      pageRowsSeen: 1,
+    }));
+    const accs = startExperiments(work.measure);
+    feedExperiments(accs, days);
+    const results = accs.map((acc) => finishExperiment(acc, "2026-10-21"));
+    expect(results.find((r) => r.id === "maduro")).toMatchObject({ verdict: "mejoró", daysAfter: 28, daysMissing: 0 });
+    expect(results.find((r) => r.id === "nuevo")).toMatchObject({ verdict: "esperando", daysAfter: 0, daysMissing: 28 });
+  });
+
+  it("una ventana enteramente futura no pide un rango invertido ni consume presupuesto", () => {
+    const future = spec("futuro", "2026-11-20");
+    const empty = planExperimentWork([future], null, "2026-10-21");
+    expect(empty.measure).toEqual([future]);
+    expect(empty.from).toBeNull();
+    expect(empty.to).toBeNull();
+
+    const work = planExperimentWork([future, spec("maduro", "2026-09-14")], null, "2026-10-21");
+    expect(work.dropped).toEqual([]);
+    expect(work.from).toBe("2026-08-17");
+    expect(work.to).toBe("2026-10-12");
   });
 });
 

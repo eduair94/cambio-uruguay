@@ -135,14 +135,19 @@ describe('the navigation model has no dead links', () => {
   // the navigation AND from the SEO ratchet, so it must stay small and every addition deliberate.
   it('excludes exactly the non-content routes', () => {
     expect([...EXCLUDED_ROUTES].sort()).toEqual([
+      '/autos-usados-uruguay/comparar',
+      '/bicicletas-electricas-uruguay/comparar',
+      '/contactos-comerciales',
       '/cuenta',
       '/descuentos-con-tarjeta-uruguay/cerca-de-mi',
       '/equipar-casa-uruguay/mi-lista',
       '/estadisticas-de-busqueda',
       '/estadisticas-por-pagina',
+      '/monopatines-electricos-uruguay/comparar',
       '/offline',
       '/opinion-alquileres',
       '/opiniones-alquileres',
+      '/oportunidades-reddit',
       '/ranking-usuarios-charruadevs',
       '/widget',
     ])

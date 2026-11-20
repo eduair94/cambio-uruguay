@@ -21,7 +21,17 @@ import { RentalMetaModel } from "../models/RentalMeta";
 import { inferPropertyType, looksLikeRentalAdvert, opensWithResidence } from "./normalize";
 import { detachedRentalKey, partitionRentalOffers, propertyFromRentalOffers } from "./reconcile";
 import { RENTAL_FULL_META_KEY, RENTAL_META_KEY, type RentalMeta, type RentalOffer, type RentalProperty, type RentalPropertyType, type RentalSource, type RentalTerm } from "./types";
-import { combineFurnished, furnishedFromText, rentalTermsFromText } from "./textFacts";
+import {
+  combineFurnished,
+  commonExpensesToday,
+  furnishedFromText,
+  gcFromTextEnabled,
+  rentalTermsFromText,
+  sameCommonExpenses,
+  withCommonExpenses,
+  type CommonExpensesState,
+  type RentalTextFactsOptions,
+} from "./textFacts";
 
 const CHUNK = 400;
 
@@ -397,10 +407,13 @@ export async function retypeStoredRentalOffers(): Promise<{ offers: number; prop
   return { offers, properties: operations.length };
 }
 
-type TextFactsOffer = Pick<RentalOffer, "source" | "title" | "furnished" | "furnishedPortal" | "terms" | "details" | "identity">;
+type TextFactsOffer = Pick<RentalOffer, "source" | "title" | "furnished" | "furnishedPortal" | "terms" | "details" | "identity" |
+  "price" | "currency" | "commonExpenses" | "commonExpensesCurrency" | "commonExpensesSource">;
 
-/** The offer's furniture and periods as today's rules read its own words (textFacts.ts). */
-function textFactsToday(offer: TextFactsOffer): { furnished: boolean | null; furnishedPortal: boolean | undefined; terms: RentalTerm[] } {
+/** The offer's furniture, periods and (text) gastos comunes as today's rules read its own words (textFacts.ts). */
+export function textFactsToday(offer: TextFactsOffer, options: RentalTextFactsOptions = {}): {
+  furnished: boolean | null; furnishedPortal: boolean | undefined; terms: RentalTerm[]; expenses: CommonExpensesState | null;
+} {
   const description = offer.details?.description || offer.identity?.description || "";
   // Before 2026-10-09 only InfoCasas' structured facility ever set `furnished`, so a stored `true`
   // without the separate field is that facility.
@@ -411,30 +424,54 @@ function textFactsToday(offer: TextFactsOffer): { furnished: boolean | null; fur
     furnished: combineFurnished(portal, furnishedFromText(String(offer.title || ""), description)),
     furnishedPortal: portal,
     terms: rentalTermsFromText(String(offer.title || ""), description),
+    // A portal's own figure comes back null here: it is not this rule's to move.
+    expenses: commonExpensesToday(offer, options),
   };
 }
 
 const sameTerms = (a: readonly RentalTerm[] | undefined, b: readonly RentalTerm[]): boolean =>
   (a ?? []).join() === b.join();
 
+/** Whether today's rules read a stored advert differently from how it is stored. */
+export function textFactsStale(offer: TextFactsOffer, options: RentalTextFactsOptions = {}): boolean {
+  const today = textFactsToday(offer, options);
+  return (offer.furnished ?? null) !== today.furnished || offer.furnishedPortal !== today.furnishedPortal ||
+    !sameTerms(offer.terms, today.terms) || (today.expenses !== null && !sameCommonExpenses(offer, today.expenses));
+}
+
+/** The stored advert rewritten with today's reading of its own words. */
+export function withTodaysTextFacts(offer: RentalOffer, options: RentalTextFactsOptions = {}): RentalOffer {
+  const today = textFactsToday(offer, options);
+  const { furnishedPortal: _drop, terms: _terms, ...rest } = offer;
+  const next: RentalOffer = {
+    ...rest,
+    furnished: today.furnished,
+    ...(typeof today.furnishedPortal === "boolean" ? { furnishedPortal: today.furnishedPortal } : {}),
+    ...(today.terms.length ? { terms: today.terms } : {}),
+  };
+  return today.expenses ? withCommonExpenses(next, today.expenses) : next;
+}
+
 /**
- * Re-reads furniture and contract period on every stored advert with today's rules. A fresh read
- * applies them on the way in (sources/index.ts), but the partial portals only re-read a slice, and
- * the reader's filter has to find the home whatever day it was last read. Streams the rows (the
- * descriptions are heavy) and loads and writes only the few that change.
+ * Re-reads furniture, contract period and the gastos comunes a description states on every stored
+ * advert with today's rules. A fresh read applies them on the way in (sources/index.ts), but the
+ * partial portals only re-read a slice, and the reader's filter has to find the home whatever day it
+ * was last read. Streams the rows (the descriptions are heavy) and loads and writes only the few
+ * that change. `usdUyu` is the run's rate, for the gastos comunes band (textFacts.ts).
  */
-export async function refreshStoredRentalTextFacts(): Promise<{ offers: number; properties: number }> {
+export async function refreshStoredRentalTextFacts(options: RentalTextFactsOptions = {}): Promise<{ offers: number; properties: number }> {
+  // Read once for the whole sweep: every advert is judged by the same rule.
+  const rules: RentalTextFactsOptions = { ...options, gcFromText: options.gcFromText ?? gcFromTextEnabled() };
   const cursor = RentalListingModel.find({})
     .select({
       _id: 0, key: 1, "offers.source": 1, "offers.title": 1, "offers.furnished": 1, "offers.furnishedPortal": 1,
       "offers.terms": 1, "offers.details.description": 1, "offers.identity.description": 1,
+      "offers.price": 1, "offers.currency": 1, "offers.commonExpenses": 1, "offers.commonExpensesCurrency": 1,
+      "offers.commonExpensesSource": 1,
     })
     .lean()
     .cursor({ batchSize: 500 }) as AsyncIterable<{ key: string; offers?: TextFactsOffer[] }>;
-  const stale = (offer: TextFactsOffer): boolean => {
-    const today = textFactsToday(offer);
-    return (offer.furnished ?? null) !== today.furnished || offer.furnishedPortal !== today.furnishedPortal || !sameTerms(offer.terms, today.terms);
-  };
+  const stale = (offer: TextFactsOffer): boolean => textFactsStale(offer, rules);
   const affected: string[] = [];
   for await (const row of cursor) {
     if ((row.offers || []).some(stale)) affected.push(row.key);
@@ -451,14 +488,7 @@ export async function refreshStoredRentalTextFacts(): Promise<{ offers: number; 
       const next = property.offers.map((offer) => {
         if (!stale(offer)) return offer;
         changed++;
-        const today = textFactsToday(offer);
-        const { furnishedPortal: _drop, terms: _terms, ...rest } = offer;
-        return {
-          ...rest,
-          furnished: today.furnished,
-          ...(typeof today.furnishedPortal === "boolean" ? { furnishedPortal: today.furnishedPortal } : {}),
-          ...(today.terms.length ? { terms: today.terms } : {}),
-        };
+        return withTodaysTextFacts(offer, rules);
       });
       if (!changed) continue;
       offers += changed;

@@ -9,7 +9,7 @@ import { advertiserClassification, ownerDirectDeclaration } from "../advertiser"
 // search page renders it: `attributes_list` for "2 dormitorios | 1 baño | 40 m² cubiertos" and
 // `location` for "Av. Garzón 1975 Bis, Colón, Montevideo".
 import { appDbConfigured } from "../../appdb";
-import { applyMlDetails } from "../mlDetail";
+import { applyMlDetails, ML_SELLER_PLACEHOLDER } from "../mlDetail";
 import { fetchJson } from "../net";
 import { flatten, inferPropertyType, isPlausibleRent, looksLikeRentalAdvert, opensWithResidence, parseAttributes, parseLocationLine } from "../normalize";
 import type { RawRental, RentalCurrency, RentalPropertyType } from "../types";
@@ -113,7 +113,8 @@ export function toRawRental(card: Polycard, observedAt = new Date().toISOString(
     // field stays null and the page shows "no informa".
     commonExpenses: null,
     commonExpensesCurrency: null,
-    sellerName: "Mercado Libre",
+    // The card never names who publishes; the item page's official store replaces this (mlDetail.ts).
+    sellerName: ML_SELLER_PLACEHOLDER,
     sellerType: advertiserClassification({ title }).sellerType,
     ownerDirect: ownerDirectDeclaration({ title }, permalink, observedAt) ?? undefined,
     image: String(params.get("picture") || params.get("thumbnail") || "").trim() || null,
@@ -319,18 +320,13 @@ export async function harvestMercadoLibre(mode: "full" | "fast", usdUyu: number)
   const detail = `categorías[${totals}]; cortes[falla:${cuts.failed},filtro:${cuts.filters},repetida:${cuts.repeated},tope:${cuts.pages},presupuesto:${cuts.budget},sinPartición:${cuts.unpartitioned},residual:${cuts.residual},totalDesconocido:${cuts.shortUnknown},vacía:${cuts.empty}]; etapas[${phaseNotes.join(";")}]`;
   console.log(`[rentals] ML ${mode}: ${pages} páginas/${requests} solicitudes, ${byId.size} IDs, ${duplicates} repetidos, ${detail}`);
   const listings = [...byId.values()];
-  // The card never carries gastos comunes nor the gallery; what the advert's own page stated
-  // (currency-rentals-ml-detail, see mlDetail.ts) goes back on before saving, or this harvest would
-  // blank it every hour.
-  let withExpenses = 0;
-  let withBedrooms = 0;
-  let withImages = 0;
+  // The card never carries gastos comunes, the gallery, the publication day, the store nor the
+  // description; what the advert's own page stated (currency-rentals-ml-detail, see mlDetail.ts)
+  // goes back on before saving, or this harvest would blank it every hour.
+  let filled = { expenses: 0, bedrooms: 0, images: 0, publishedAt: 0, sellers: 0, descriptions: 0 };
   if (appDbConfigured()) {
     try {
-      const filled = await applyMlDetails(listings, usdUyu);
-      withExpenses = filled.expenses;
-      withBedrooms = filled.bedrooms;
-      withImages = filled.images;
+      filled = await applyMlDetails(listings, usdUyu);
     } catch (error) {
       console.warn("[rentals] ML: no se pudieron reaplicar los datos de las fichas", error);
     }
@@ -339,6 +335,9 @@ export async function harvestMercadoLibre(mode: "full" | "fast", usdUyu: number)
     key: "mercadolibre", complete: false,
     ok: reachable && byId.size > 0,
     listings,
-    note: `${pages} páginas, ${byId.size} avisos, ${rejected} descartados, ${pets.size} admiten mascotas, ${particulars.size} de particular, ${withExpenses} con gastos comunes de su ficha, ${withBedrooms} con dormitorios de su ficha, ${withImages} con fotos de su ficha; cobertura parcial; ${detail}`,
+    note: `${pages} páginas, ${byId.size} avisos, ${rejected} descartados, ${pets.size} admiten mascotas, ${particulars.size} de particular, ` +
+      `${filled.expenses} con gastos comunes de su ficha, ${filled.bedrooms} con dormitorios de su ficha, ${filled.images} con fotos de su ficha, ` +
+      `${filled.publishedAt} con fecha de publicación de su ficha, ${filled.sellers} con su tienda oficial, ${filled.descriptions} con descripción de su ficha; ` +
+      `cobertura parcial; ${detail}`,
   };
 }

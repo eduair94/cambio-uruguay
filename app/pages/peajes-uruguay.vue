@@ -269,6 +269,9 @@
       </VCard>
     </section>
 
+    <!-- La unidad intermedia, antes de las preguntas: mismo corte que FaqSection (ver
+         docs/seo/adsense-growth-loop.md, 31/10/2026). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <!-- FAQ -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-4">Preguntas frecuentes</h2>
@@ -366,12 +369,16 @@ const tripRows = computed(() => {
   ]
 })
 
-const title = 'Peajes en Uruguay: cuánto sale cada uno'
+// El título contesta las dos consultas que traen la página ("cuánto está el peaje en Uruguay",
+// "las motos pagan peaje"): el precio del auto con TAG y la exoneración de las motos.
 // La descripción arranca por la cifra y no por lo que la página es: medido en este sitio, un
 // snippet con el dato corre a ~1,4 % de CTR y uno genérico a 0,03–0,2 % desde la misma posición.
-// Entra entera en los 155 caracteres que el SERP publica (`seoDescriptionBudget`).
+// Entra entera en los 155 caracteres que el SERP publica (`seoDescriptionBudget`). Las tarifas
+// cambian el 1° de diciembre y el 1° de junio (TOLL_NEXT_ADJUSTMENT): que título y descripción no
+// se despeguen de TOLL_CATEGORIES lo vigila `snippetConLaRespuesta.test.ts`.
+const title = 'Peajes: auto $ 167 con TAG, motos no pagan'
 const description =
-  'Un auto paga $ 167 con TAG y $ 214 si el cobro cae al SUCIVE: 28 % más por el mismo paso. Los 15 puestos del MTOP, las 7 categorías y quién no paga.'
+  'Un auto paga $ 167 con TAG, $ 196,57 en la barrera y $ 214 por SUCIVE: 28 % más por el mismo paso. Las motos no pagan. Los 15 puestos y las 7 categorías.'
 
 defineOgImageComponent('Cambio', {
   title: 'Peajes en Uruguay',

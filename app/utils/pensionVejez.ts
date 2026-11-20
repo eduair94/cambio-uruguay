@@ -20,6 +20,7 @@ import {
   PENSION_VEJEZ_INVALIDEZ_2026,
 } from './bpsFigures2026'
 import type { FaqItem } from './faqAnswers'
+import { formatUYU } from './format'
 
 export const PENSION_VERIFIED_AT = '2026-09-16'
 
@@ -46,6 +47,17 @@ export const AGE_REQUIREMENT: AgeRequirement = {
   caregiverFrom: 65,
   caregiverYears: 7,
 }
+
+/**
+ * La meta description de la página, armada con las MISMAS constantes que imprime el cuerpo: el
+ * monto y las dos edades no se pueden despegar de la tarjeta "Monto 2026" ni de los requisitos.
+ *
+ * Arranca por la respuesta porque la consulta es "cuánto es" (GSC, 1–28/10/2026: posición 9-10 y
+ * cero clics con la cifra a mitad de frase), y nombra al MIDES porque "pensión a la vejez mides
+ * monto" es la tercera consulta de la página: la asistencia a la vejez es otra prestación.
+ * `snippetConLaRespuesta.test.ts` mide que entre en los 155 caracteres del SERP.
+ */
+export const PENSION_SNIPPET_DESCRIPTION = `El BPS paga ${formatUYU(AMOUNT_2026, 0)} por mes en 2026 a mayores de ${AGE_REQUIREMENT.base} años (${AGE_REQUIREMENT.caregiverFrom} con cuidados) sin jubilación y con carencia de recursos. No es la asistencia del MIDES.`
 
 export const CAREGIVER_DETAIL =
   'La excepción de los 65 años exige al menos 7 años dedicados al cuidado directo y no remunerado de hijos, hermanos, cónyuge o concubino, o padres, en todos los casos con discapacidad severa.'

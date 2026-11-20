@@ -52,7 +52,9 @@
 
           <!-- 2. Los tres trámites -->
           <section class="mb-8">
-            <h2 class="text-h5 font-weight-bold mb-3">Los tres trámites, y cuál te toca</h2>
+            <h2 class="text-h5 font-weight-bold mb-3">
+              Cédula catastral común, informada o revisión: cuál te toca
+            </h2>
             <p class="text-body-1 cat-prose mb-4">
               El primero resuelve el caso normal y es gratis. Los otros dos existen para los dos
               casos en que la cédula común no alcanza: cuando necesitás el historial del padrón y
@@ -133,6 +135,22 @@
             </p>
           </section>
 
+          <!-- 3b. La cédula común, paso a paso (2026-11-15): ver CEDULA_PASOS -->
+          <section class="mb-8">
+            <h2 class="text-h5 font-weight-bold mb-3">
+              Cómo sacar la cédula catastral común, paso a paso
+            </h2>
+            <ol class="cat-steps mb-0">
+              <li v-for="item in cedulaPasos" :key="item.paso">
+                <strong>{{ item.paso }}.</strong> {{ item.detalle }}
+              </li>
+            </ol>
+            <p class="text-body-2 cat-note">
+              ¿Necesitás el historial del padrón? Eso es la cédula informada:
+              <strong>{{ tasaLabel }}</strong> y usuario registrado en la Sede Electrónica.
+            </p>
+          </section>
+
           <!-- 4. Si el valor está mal -->
           <section class="mb-8">
             <h2 class="text-h5 font-weight-bold mb-3">Si creés que el valor está mal</h2>
@@ -174,6 +192,9 @@
             <p class="text-body-2 cat-note">{{ office.note }}</p>
           </section>
 
+          <!-- La unidad intermedia, antes de las preguntas: mismo corte que FaqSection (ver
+               docs/seo/adsense-growth-loop.md, 31/10/2026). Sólo dibuja en densidad normal. -->
+          <AdSlot placement="in-article" class="mb-6" />
           <!-- 7. FAQ -->
           <section class="mb-8">
             <h2 class="text-h5 font-weight-bold mb-3">Preguntas frecuentes</h2>
@@ -264,6 +285,7 @@ import {
   CADASTRAL_UNPUBLISHED,
   CADASTRAL_VERIFIED_AT,
   CEDULA_DATOS,
+  CEDULA_PASOS,
   REVISION_REQUISITOS,
   TASA_CATASTRAL_UR,
   TASA_CATASTRAL_VIGENCIA,
@@ -280,6 +302,7 @@ const sources = CADASTRAL_SOURCES
 const unpublished = CADASTRAL_UNPUBLISHED
 const freeAccess = CADASTRAL_FREE_ACCESS
 const cedulaDatos = CEDULA_DATOS
+const cedulaPasos = CEDULA_PASOS
 const revisionRequisitos = REVISION_REQUISITOS
 const office = CADASTRAL_OFFICE
 const organismo = CADASTRAL_ORGANISMO
@@ -490,6 +513,16 @@ useHead(() => ({
 
 .cat-list li + li {
   margin-top: 8px;
+}
+
+.cat-steps {
+  margin-top: 0;
+  padding-left: 1.4rem;
+  line-height: 1.7;
+}
+
+.cat-steps li + li {
+  margin-top: 10px;
 }
 
 .table-scroll {

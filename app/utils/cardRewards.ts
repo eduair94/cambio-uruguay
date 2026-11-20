@@ -26,6 +26,9 @@
  */
 export const CARD_REWARDS_LAST_REVIEWED = '2026-09-22'
 
+// Corrección sólo de IVA gastronómico el 23/10/2026: DGI + Decreto 235/026.
+// No actualiza la verificación de programas, tarifas ni puntuaciones del 22/9.
+
 /**
  * Valor de la Unidad Indexada usado para convertir a pesos los costos que los
  * emisores publican en UI (Itaú, Scotiabank, BBVA, OCA, Santander). Fuente: INE,
@@ -1109,7 +1112,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     redemptionNote:
       "Canje de puntos por productos exclusivos, descuentos y beneficios en la tienda 'Dale' (andatienda.com.uy).",
     discountNote:
-      "'Días de descuentos' por rubro para socios; convenios en educación, deporte, salud, hogar y recreación. Con la prepaga DEANDA se accede a los descuentos de IVA por ley: −2 puntos en comercios en general y −9 puntos en gastronomía hasta el 30/9/2026, porque desde el 1/10/2026 esa reducción baja a 5 puntos porcentuales (4,1% de descuento para contribuyentes de IVA Mínimo, según DGI). También devolución de IMESI en estaciones de la franja fronteriza. Planes de 2 a 6 o hasta 12 cuotas sin recargo en comercios adheridos. La Tarjeta ANDA VISA es internacional, sin costo anual, sin comisión por compra internacional ni por retiro de efectivo en el exterior, con tipo de cambio preferencial definido por ANDA y aceptación en toda la red VISA (más de 45.000 comercios en el país); la tarjeta ANDA vieja sigue funcionando hasta el recambio.",
+      "'Días de descuentos' por rubro para socios; convenios en educación, deporte, salud, hogar y recreación. Con la prepaga DEANDA se accede a los descuentos de IVA por ley: −2 puntos en comercios en general y −9 puntos en gastronomía hasta el 30/4/2027 (Decreto 235/026; DGI consultada el 23/10/2026), con 7,38% sobre el total para contribuyentes de IVA Mínimo. También devolución de IMESI en estaciones de la franja fronteriza. Planes de 2 a 6 o hasta 12 cuotas sin recargo en comercios adheridos. La Tarjeta ANDA VISA es internacional, sin costo anual, sin comisión por compra internacional ni por retiro de efectivo en el exterior, con tipo de cambio preferencial definido por ANDA y aceptación en toda la red VISA (más de 45.000 comercios en el país); la tarjeta ANDA vieja sigue funcionando hasta el recambio.",
     feeNote:
       'La tarjeta no tiene costo anual (ni la ANDA ni la ANDA VISA) y los adicionales son sin cargo. Financiación de compras a T.E.A. 27,30% + IVA según la ficha oficial leída el 22/9/2026 (la revisión del 17/8/2026 publicaba 27,40%), la más baja del segmento no bancario por amplio margen. Lo que sí se paga es la cuota social: Socio Integral $U 831, Socio suscriptor 50 UI (≈ $U 332 con la UI del 22/9/2026) en las categorías turismo y financiero, y servicio fúnebre $U 132 con IVA. Retiros de préstamos en Abitab, Redpagos, cajeros Banred y sucursales ANDA. Se puede acceder a la tarjeta estando en el Clearing de Informes (según antecedentes, eventualmente con garantía) y el pago se hace por retención de haberes.',
     pros: [
@@ -1253,11 +1256,11 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
     redemptionNote:
       'No aplica: no hay canje de puntos. El retorno al cliente pasa por descuentos y beneficios directos, no por acumulación.',
     discountNote:
-      'Beneficios centrados en descuentos, no en puntos: reducción de 9 puntos del IVA en gastronomía al pagar con la tarjeta (Ley 17.934) hasta el 30/9/2026, porque desde el 1/10/2026 esa reducción baja a 5 puntos porcentuales (4,1% de descuento para contribuyentes de IVA Mínimo, según DGI); aviso gratis vía SMS por cada compra. Perfil de banca Premier/premium (hoy "Excellence" en BTG) más que de acumulación de puntos.',
+      'Beneficios centrados en descuentos, no en puntos: reducción de 9 puntos del IVA en gastronomía al pagar con la tarjeta (Ley 17.934) hasta el 30/4/2027 (Decreto 235/026; DGI consultada el 23/10/2026), con 7,38% sobre el total para contribuyentes de IVA Mínimo; aviso gratis vía SMS por cada compra. Perfil de banca Premier/premium (hoy "Excellence" en BTG) más que de acumulación de puntos.',
     feeNote:
       'Costos oficiales de la cartilla de tarjetas de crédito de BTG (fecha julio 2026, releída el 22/9/2026; una sola tabla, todo + IVA). Visa: Classic US$ 85/año, Oro US$ 100 e Infinite US$ 120, adicionales sin costo, reimpresión US$ 10 + IVA, recargo en el exterior 3% / 3% / 1% + IVA; sin tarifa distinta para no residentes. Mastercard Platinum: residente $U 5.974/año con adicionales a $U 2.827, no residente $U 7.294 con adicionales a $U 3.642, todo + IVA, reimpresión sin costo, exterior 3% + IVA, importes ajustables trimestralmente por IPC. Sin costo de emisión el primer año. Ingreso mínimo: $U 25.000 nominales/mes o $U 15.000 (nómina). Corrección de la revisión del 17/8/2026: esa ficha atribuía a un "tarifario de Banca Persona" una Mastercard Internacional, una Mastercard Excellence, una tarifa Visa distinta para no residentes y un costo mensual de estado de cuenta; nada de eso está en la cartilla vigente, así que se retiró.',
     pros: [
-      'Reducción de 9 puntos de IVA en gastronomía al pagar con la tarjeta (baja a 5 puntos el 1/10/2026).',
+      'Reducción de 9 puntos de IVA en gastronomía al pagar con la tarjeta, hasta el 30/4/2027 (Decreto 235/026).',
       'Aviso por SMS de cada consumo (control y seguridad).',
       'Primer año sin costo de emisión (Visa/Mastercard) y adicionales sin costo en Visa.',
       'Tarjetas de alto rango (Visa Infinite / Mastercard Platinum) para perfil premium y uso internacional.',
@@ -1286,7 +1289,7 @@ export const CARD_PROGRAMS: readonly CardProgram[] = Object.freeze([
       cobertura: 55,
     },
     rationale:
-      'Ultimo puesto de forma objetiva: estas tarjetas NO tienen programa de puntos ni recompensas —verificado en la cartilla propia de BTG de julio de 2026, ya bajo la marca nueva, no en la heredada de HSBC, y releida el 22/9/2026—, por lo que carecen de acumulacion y canje, las dos dimensiones de mayor peso. El retorno se limita a la reduccion de IVA en gastronomia (9 puntos hasta el 30/9/2026, 5 desde el 1/10) y al aviso por SMS. Costo baja de 48 a 42 al leerse la cartilla completa: aparecen el tramo no residente de la Mastercard, las adicionales pagas de Mastercard ($U 2.827 a $U 3.642 + IVA) y el recargo de 3% + IVA por compras en el exterior (1% en Infinite).',
+      'Ultimo puesto de forma objetiva: estas tarjetas NO tienen programa de puntos ni recompensas —verificado en la cartilla propia de BTG de julio de 2026, ya bajo la marca nueva, no en la heredada de HSBC, y releida el 22/9/2026—, por lo que carecen de acumulacion y canje, las dos dimensiones de mayor peso. El retorno se limita a la reduccion de IVA en gastronomia (9 puntos hasta el 30/4/2027, Decreto 235/026) y al aviso por SMS. Costo baja de 48 a 42 al leerse la cartilla completa: aparecen el tramo no residente de la Mastercard, las adicionales pagas de Mastercard ($U 2.827 a $U 3.642 + IVA) y el recargo de 3% + IVA por compras en el exterior (1% en Infinite).',
     verified: true,
   },
 ])
@@ -1492,7 +1495,8 @@ export const CARD_REWARDS_SOURCES: readonly CardRewardsSource[] = Object.freeze(
     ],
   },
   {
-    label: 'DGI — Reducción de 9 puntos de IVA en gastronomía (baja a 5 el 1/10/2026)',
+    label:
+      'DGI — Nueve puntos de IVA en gastronomía hasta el 30/4/2027 (Decreto 235/026; consultado el 23/10/2026)',
     url: 'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/reduccion-9-puntos-iva-determinados-servicios-siempre-sean-abonados',
     programs: ['btg-uruguay-tdc', 'tarjeta-anda'],
   },
@@ -1693,7 +1697,7 @@ export const CARD_REWARDS_FAQ: readonly CardRewardsFaqItem[] = Object.freeze([
     id: 'iva-tarjeta-credito',
     question: '¿Pagar con tarjeta de crédito descuenta IVA en Uruguay?',
     answer:
-      'No en compras generales: la rebaja de 2 puntos de la Ley 19.210 es sólo para débito y dinero electrónico (guía DGI del 08/04/2026). Con crédito, débito o dinero electrónico rige la rebaja de gastronomía (restaurantes, bares, hoteles sin hospedaje): 9 puntos hasta el 30/9/2026 y 5 puntos desde el 1/10/2026 (4,1% en comercios de IVA mínimo), según la guía DGI del 05/05/2026.',
+      'No en compras generales: la rebaja de 2 puntos de la Ley 19.210 es sólo para débito y dinero electrónico (guía DGI del 08/04/2026). Con crédito, débito o dinero electrónico rige la rebaja de gastronomía (restaurantes, bares, hoteles sin hospedaje): 9 puntos hasta el 30/4/2027 (7,38% sobre el total en comercios de IVA Mínimo), por el Decreto 235/026 y la guía DGI del 02/10/2026, consultada el 23/10/2026. El beneficio es para consumo final, con un medio de pago de una persona física, residente o no.',
   },
   {
     id: 'scotia-puntos-2026',

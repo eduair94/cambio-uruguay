@@ -14,6 +14,8 @@ const SearchDemandQueueSchema = new Schema(
     local: { type: Number, default: 0 },
     inScope: { type: Number, default: 0 },
     probed: { type: Number, default: 0 },
+    // Sin default: un snapshot viejo no informa cuántos intentos hubo.
+    serpRun: { type: Schema.Types.Mixed },
     items: { type: [Schema.Types.Mixed], default: [] },
   },
   { timestamps: true }

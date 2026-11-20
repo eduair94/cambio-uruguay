@@ -607,6 +607,9 @@
       </p>
     </section>
 
+    <!-- La unidad intermedia, antes de las preguntas: mismo corte que FaqSection (ver
+         docs/seo/adsense-growth-loop.md, 31/10/2026). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <!-- FAQ: coupons / discounts and the USD 200 line -->
     <section class="mb-8">
       <h2 class="section-heading mb-1">Preguntas frecuentes</h2>

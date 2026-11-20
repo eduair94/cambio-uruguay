@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="pa-2 pa-sm-4">
+  <v-container fluid class="px-4 py-2 pa-sm-4">
     <h1 class="text-h5 text-sm-h4 mb-2">Descuentos con tarjeta en Uruguay: el mapa por banco</h1>
     <p class="text-body-2 text-medium-emphasis mb-3" style="max-width: 70ch">
       Elegí tus tarjetas y mirá en el mapa qué comercios tienen descuento con cada una — Itaú, BROU,
@@ -206,7 +206,7 @@
       <v-row v-if="userLocation" dense class="mb-1">
         <v-col cols="12" md="6" class="d-flex align-center">
           <span class="text-caption mr-2">Radio: {{ radiusKm }} km</span>
-          <v-slider
+          <VSlider
             v-model="radiusKm"
             :min="1"
             :max="30"
@@ -267,7 +267,15 @@
             <v-card-text v-else-if="!filtered.length">
               Ningún comercio coincide con el filtro.
             </v-card-text>
-            <v-card-text v-else class="pa-0">
+            <!-- With the visitor's position the list is "Más cercanos", in distance order: masked
+                 for Microsoft Clarity. Clarity reads the mask once, when it first sees an element,
+                 so the key gives the masked list an element of its own. -->
+            <v-card-text
+              v-else
+              :key="userLocation ? 'cercanos' : 'todos'"
+              class="pa-0 comercios-lista"
+              :data-clarity-mask="userLocation ? 'true' : undefined"
+            >
               <v-list density="compact" lines="two">
                 <v-list-item
                   v-for="item in visibleList"
@@ -349,6 +357,11 @@
       </v-row>
     </template>
 
+    <!-- La unidad intermedia, después del mapa (lo que la persona vino a usar) y no arriba de las
+         preguntas, que quedan debajo de marcas, bancos y rubros: la página daba 1,06 impresiones
+         por vista (28 días al 30/10/2026). FaqSection va con :ad="false": el tope sigue en dos. -->
+    <AdSlot placement="in-article" class="mt-8" />
+
     <!-- Marcas con descuento. Server-rendered a propósito: es lo único de esta página que el
          buscador puede leer, porque el mapa depende de una selección que sólo existe en el
          navegador de cada quien. -->
@@ -392,7 +405,10 @@
         </p>
         <p class="text-caption text-medium-emphasis">
           Datos de Bankos (bankos.uy). Este sitio no está afiliado a Bankos ni a los bancos
-          mencionados.
+          mencionados. Si llegaste buscando la app, acá está
+          <NuxtLink :to="localePath('/alternativa-a-bankos-uruguay')"
+            >en qué se diferencia de este mapa</NuxtLink
+          >, incluido lo que la app hace mejor.
         </p>
       </v-card-text>
     </v-card>
@@ -478,11 +494,13 @@
       :items="BANKOS_FAQ"
       heading="Preguntas frecuentes sobre descuentos con tarjeta"
       :expanded="true"
+      :ad="false"
     />
   </v-container>
 </template>
 
 <script setup lang="ts">
+import { VSlider } from 'vuetify/components'
 import { computed, onMounted, ref, watch } from 'vue'
 import LocationsMap from '~/components/map/LocationsMap.vue'
 import {

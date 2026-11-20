@@ -7,6 +7,8 @@
 // SEGUNDA, y es la que este test cuida de verdad: la pregunta más buscada —si el que compra hereda
 // la deuda— NO la contestan estas normas. Decir que sí o que no citándolas sería inventar sobre
 // una decisión de comprar un inmueble.
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   EL_REPARTO,
@@ -18,6 +20,7 @@ import {
   SIN_RESPUESTA,
   type ReglaGasto,
 } from '../../utils/gastosComunes'
+import { titleFits } from '../../utils/liveRateSeo'
 
 const TODAS: ReglaGasto[] = [...LA_DEUDA, ...EL_REPARTO, ORDEN_PUBLICO]
 
@@ -116,5 +119,43 @@ describe('fuentes', () => {
     expect(new Date(`${GASTOS_COMUNES_VERIFIED_AT}T00:00:00Z`).getTime()).toBeLessThanOrEqual(
       Date.now()
     )
+  })
+})
+
+// El título del SERP, que es la línea sobre la que se hace clic, y la única de la página que no
+// traía la respuesta.
+//
+// Hasta el 2026-11-10 decía «Deuda de gastos comunes en Uruguay»: 51 caracteres con la marca, o sea
+// que ENTRABA en el SERP y no lo delataba ningún presupuesto — el pozo de `seoTitleBudget` sólo
+// puede ver a los que se pasan de 60. Lo que le faltaba es lo otro: nombraba el tema y no contestaba
+// nada, mientras la respuesta ya estaba publicada cuatro veces en la misma página (el H1, la bajada,
+// la descripción y el subtítulo de la imagen, que dice «4 años, 12 % y sin capitalizar»).
+//
+// Este test ata las dos puntas, que es la parte que un presupuesto de caracteres no cuida: la cifra
+// del título tiene que ser la MISMA que publica la regla de `LA_DEUDA`, con su artículo al lado. Si
+// alguien corrige la norma en el módulo —la redacción vigente del art. 14 es de 2018 y podría volver
+// a cambiar— el título queda mintiendo en el único lugar donde Google lo publica, y eso no lo ve
+// nadie leyendo el `.vue`.
+describe('el título lleva la respuesta y no sólo el tema', () => {
+  const source = readFileSync(
+    join(__dirname, '..', '..', 'pages', 'deuda-de-gastos-comunes-uruguay.vue'),
+    'utf8'
+  )
+
+  it('la regla de la que sale la cifra sigue diciendo cuatro años, con su artículo', () => {
+    const regla = LA_DEUDA.find(r => /prescriben/i.test(r.titulo))
+    expect(regla).toBeTruthy()
+    expect(regla!.titulo).toMatch(/cuatro años/i)
+    expect(regla!.texto).toMatch(/cuatro años/i)
+    expect(regla!.articulo).toContain('Decreto-Ley 14.560, art. 14')
+  })
+
+  it('el título declara el plazo y entra en el SERP con la marca', () => {
+    expect(source).toContain("const title = 'Gastos comunes: prescriben a los 4 años'")
+    expect(titleFits('Gastos comunes: prescriben a los 4 años')).toBe(true)
+  })
+
+  it('no vuelve a anunciar el tema sin contestarlo', () => {
+    expect(source).not.toContain("const title = 'Deuda de gastos comunes en Uruguay'")
   })
 })

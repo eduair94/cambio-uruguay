@@ -6,10 +6,9 @@ import { z } from "zod";
 import { safe } from "../output.js";
 import type { SiteApi } from "../site.js";
 import { readPage, searchSite, siteSections } from "../sitio/site.js";
+import { READ_ONLY } from "./annotations.js";
 
 export const SITE_TOOLS = ["search_site", "read_page", "site_sections"] as const;
-
-const READ_ONLY = { readOnlyHint: true, openWorldHint: true } as const;
 
 export function registerSite(server: McpServer, site: SiteApi): void {
   server.registerTool(

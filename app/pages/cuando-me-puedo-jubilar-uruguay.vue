@@ -122,6 +122,27 @@
           </tr>
         </tbody>
       </VTable>
+
+      <p class="body-text mt-6 mb-0">
+        Antes de dar por buena la cuenta, mirá que estén todos los años: la historia laboral del BPS
+        arranca el <strong>1/4/1996</strong> y lo trabajado antes no figura ahí ni cuenta, salvo que
+        pidas que se reconozca. La Ley 20.130 le puso a ese pedido un plazo por fecha de nacimiento
+        —el de los nacidos hasta el 1/6/1968 vence el 31/5/2027— y el cuadro entero está en
+        <NuxtLink :to="localePath('/reconocer-anos-trabajados-uruguay')"
+          >reconocer años trabajados antes de 1996</NuxtLink
+        >.
+      </p>
+
+      <p class="body-text mt-4 mb-0">
+        Y hay años que no se trabajaron y se computan igual: el artículo 43 de la misma Ley 20.130
+        da a las madres <strong>un año de servicios por cada hijo</strong>, con un tope de cinco,
+        más dos años por cada hijo en situación de discapacidad severa que quedan fuera de ese tope.
+        Para quien le falta poco para la causal eso puede ser la diferencia, y el detalle —a qué
+        cajas alcanza y cuándo lo puede usar el padre— está en
+        <NuxtLink :to="localePath('/computo-por-hijo-jubilacion-uruguay')"
+          >el cómputo por hijo</NuxtLink
+        >.
+      </p>
     </section>
 
     <!-- Régimen anterior -->
@@ -282,6 +303,9 @@
       </p>
     </section>
 
+    <!-- La unidad intermedia, antes de las preguntas: mismo corte que FaqSection (ver
+         docs/seo/adsense-growth-loop.md, 31/10/2026). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <!-- FAQ -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-4">Preguntas frecuentes</h2>
@@ -374,7 +398,7 @@ const relatedLinks = [
 ]
 
 const canonicalUrl = 'https://cambio-uruguay.com/cuando-me-puedo-jubilar-uruguay'
-const title = '¿Cuándo me puedo jubilar en Uruguay?'
+const title = 'Cuándo me puedo jubilar: de 60 a 65 años'
 const description =
   'Nacidos antes del 1/1/1973: 60 años y 30 de trabajo. Desde 1973, la Ley 20.130 sube la edad un año por generación hasta los 65 según tu año de nacimiento.'
 

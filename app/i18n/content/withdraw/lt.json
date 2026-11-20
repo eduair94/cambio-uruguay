@@ -1,0 +1,530 @@
+{
+  "title": [
+    "1229e1ce",
+    "Kur išsigryninti grynuosius pinigus Urugvajuje: bankomatai, mokesčiai ir turistų lankomos vietos"
+  ],
+  "metaTitle": [
+    "3e82d293",
+    "Bankomatai Urugvajuje: išgryninkite dolerius arba pesus"
+  ],
+  "description": [
+    "3eb63bbe",
+    "Kaip ir kur turistui gauti grynųjų pinigų Urugvajuje: bankomatai, išduodantys ir JAV dolerius, ir pesus, mokesčiai, išėmimo limitai, valiutos konvertavimo (DCC) spąstai ir geriausios vietos išsigryninti pinigus oro uoste, Montevidėjuje, Punta del Estėje ir Kolonijoje."
+  ],
+  "keywords": [
+    "4acfb17e",
+    "išsiimti grynųjų urugvajus, išsiimti pinigų urugvajus, bankomatas urugvajaus turistas, dolerius iš bankomato urugvajus, pinigų keitimas urugvajus, bankomatų mokesčiai urugvajus, casas de cambio uruguay"
+  ],
+  "tldr.0": [
+    "5f1561fe",
+    "Urugvajaus bankomatai išduoda ir JAV dolerius, ir pesus – tai retas regioninis pranašumas (Argentinoje tai beveik neįmanoma)."
+  ],
+  "tldr.1": [
+    "7b41d73f",
+    "Yra du tinklai: „RedBROU“ ir „Banred“. Jei vienas neveikia, pabandykite kitą; turėkite ir „Visa“, ir „Mastercard“."
+  ],
+  "tldr.2": [
+    "c5aa36e3",
+    "Kai bankomatas siūlo nuskaityti pinigus jūsų šalies valiuta, visada rinkitės vietinę valiutą: „konversija“ slepia blogą valiutos kursą."
+  ],
+  "tldr.3": [
+    "b73d4126",
+    "Venkite keisti dideles sumas oro uoste ar keltų terminaluose – jų kursai yra pastebimai mažesni."
+  ],
+  "tldr.4": [
+    "83b2ff36",
+    "Mokėkite viešbučiuose ir restoranuose užsienio kortele: be PVM lengvatos, su savimi turėsite mažiau grynųjų pinigų."
+  ],
+  "ui.backToTools": [
+    "950196fc",
+    "Įrankiai"
+  ],
+  "ui.tldrTitle": [
+    "799c628c",
+    "Trumpai tariant"
+  ],
+  "ui.networksTitle": [
+    "90dd37e5",
+    "Du bankomatų tinklai: „RedBROU“ ir „Banred“."
+  ],
+  "ui.tableNetwork": [
+    "6974ad65",
+    "Tinklas"
+  ],
+  "ui.tableReach": [
+    "c549e23b",
+    "Aprėptis"
+  ],
+  "ui.tableUsd": [
+    "47b34a69",
+    "Išgryninimo limitas (USD)"
+  ],
+  "ui.tableUyu": [
+    "7d4e5b12",
+    "Maksimali išėmimo suma ($U)"
+  ],
+  "ui.tableNote": [
+    "0ff01b6a",
+    "Pastabos"
+  ],
+  "ui.zonesTitle": [
+    "126f8827",
+    "Kur gauti grynųjų pinigų turistinėje zonoje"
+  ],
+  "ui.zonesIntro": [
+    "e4c560b0",
+    "Nuorodos į zonas ir orientyrus (ne tikslius adresus, kurie keičiasi). Bankomatai paprastai yra bankuose, prekybos centruose arba „Abitab“ ir „Redpagos“ parduotuvėse."
+  ],
+  "ui.stepsTitle": [
+    "3e1ff2e0",
+    "Kaip išsiimti pinigus, žingsnis po žingsnio"
+  ],
+  "ui.faqTitle": [
+    "e466bfa9",
+    "Dažnai užduodami klausimai"
+  ],
+  "ui.sourcesTitle": [
+    "105bfcc3",
+    "Šaltiniai ir nuorodos"
+  ],
+  "ui.relatedTitle": [
+    "ac7a8ccc",
+    "Skaitykite toliau"
+  ],
+  "ui.ctaTitle": [
+    "60dda6a1",
+    "Palyginkite prieš keisdami"
+  ],
+  "ui.ctaText": [
+    "fe6b01a6",
+    "Peržiūrėkite dolerio kursą daugiau nei 40 valiutų keityklų, atnaujinamą kas 10 minučių, ir išsirinkite geriausią vietą veikti."
+  ],
+  "ui.ctaButton": [
+    "9efd557a",
+    "Atidarykite lygintuvą"
+  ],
+  "ui.mapButton": [
+    "4e8c8db6",
+    "Žiūrėkite išėmimo vietas žemėlapyje"
+  ],
+  "ui.disclaimer": [
+    "b166cfce",
+    "Turistams skirta informacinė informacija, o ne finansinė konsultacija. Mokesčiai, limitai ir mokesčių lengvatos keičiasi: pasitikrinkite juos atvykę ir su kortelės išdavėju. Nesame susiję su minėtais bankais ar keityklomis."
+  ],
+  "ui.lastChecked": [
+    "9182e108",
+    "Paskutinį kartą patikrinta: 2026 m. birželis"
+  ],
+  "ivaLive.heading": [
+    "5af716c3",
+    "Šiandien galiojančios turistinės PVM lengvatos"
+  ],
+  "ivaLive.asOf": [
+    "dd801240",
+    "Būsena nuo {date}:"
+  ],
+  "ivaLive.hotel": [
+    "152a8c47",
+    "Apgyvendinimas (viešbučiai ir panašios įstaigos): 0 % PVM ištisus metus."
+  ],
+  "ivaLive.base": [
+    "9856855a",
+    "Maitinimas ir automobilių nuoma be vairuotojo: {points} PVM lengvata galutiniam vartojimui, apmokėtam asmens kortele, įskaitant užsienio korteles, iki 2027 m. balandžio 30 d. (Dekretas 235/026; šaltinis patikrintas 2026 m. spalio 23 d.)."
+  ],
+  "ivaLive.baseUnconfirmed": [
+    "d65944df",
+    "Maitinimas ir automobilių nuoma: patvirtintas pratęsimas baigėsi 2027 m. balandžio 30 d. Pasitikrinkite DGI, kokia nuolaida taikoma jūsų pirkimo dieną."
+  ],
+  "ivaLive.seasonalOn": [
+    "41748da1",
+    "Visiškas vasaros PVM atleidimas: AKTYVUS (iki {end})."
+  ],
+  "ivaLive.seasonalOff": [
+    "015a1161",
+    "Visiškas vasaros PVM atleidimas: šiai datai patvirtinto laikotarpio neturime. Prieš pasinaudodami šia lengvata, pasitarkite su DGI."
+  ],
+  "sections.0.heading": [
+    "90dd37e5",
+    "Du bankomatų tinklai: „RedBROU“ ir „Banred“."
+  ],
+  "sections.0.paragraphs.0": [
+    "0f52a7fe",
+    "Urugvajus turi du bankomatų tinklus: „RedBROU“, kurį valdo valstybinis bankas (BROU), ir „Banred“, privačių bankų tinklą. Jie abu yra tarpusavyje susiję ir prisijungę prie tarptautinių tinklų („Mastercard“ „Cirrus/Maestro“ ir „Visa“ „Plus“), todėl užsienio kortelė veikia abiejuose."
+  ],
+  "sections.0.paragraphs.1": [
+    "208b768b",
+    "Norėdami įsitikinti, kad bankomatas priima jūsų kortelę, ieškokite ant aparato „Visa“, „Mastercard“, „Cirrus“, „Plus“ arba „Maestro“ logotipų. Praktinis patarimas: turėkite „Visa“ ir „Mastercard“ korteles iš skirtingų sąskaitų; jei viena kortelė ar aparatas sugenda, pabandykite naudoti kitą tinklą."
+  ],
+  "sections.1.heading": [
+    "612974f0",
+    "Doleriai ar pesai? Urugvajuje galite atsiimti abu."
+  ],
+  "sections.1.paragraphs.0": [
+    "d9928d31",
+    "Kitaip nei Argentinoje, daugelis Urugvajaus bankomatų išduoda ne tik Urugvajaus pesus, bet ir JAV dolerius. Tai tikras privalumas, jei norite išsigryninti dolerių neeidami į valiutų keityklą. Doleriai paprastai išduodami 100 JAV dolerių kupiūromis, o tai, kartu su apribojimais vienam išėmimui, gali reikšti, kad vienu metu galite gauti tik vieną kupiūrą."
+  ],
+  "sections.1.paragraphs.1": [
+    "cd694b7a",
+    "Paprasta taisyklė: kasdienėms išlaidoms (taksi, turguje, mažose parduotuvėse) imkite pesus, o grynuosius pinigus – tik tuo atveju, jei jų tikrai reikia grynaisiais. Daugumai didesnių mokėjimų kortelė pranoksta grynuosius pinigus."
+  ],
+  "sections.2.heading": [
+    "9ce97b34",
+    "Mokesčiai ir išėmimo limitai"
+  ],
+  "sections.2.paragraphs.0": [
+    "e28a7f0e",
+    "Urugvajaus bankomato taikomas papildomas mokestis už užsienio kortelę yra nedidelis, palyginti su daugeliu šalių (maždaug keli doleriai už išgryninimą). Didesnę kainą paprastai moka jūsų bankas: užsienio operacijos mokestis (paprastai 1–3 %) ir kartais fiksuotas tarptautinio pinigų išgryninimo mokestis. Kelionių kortelė be valiutų keitimo mokesčio sutaupo beveik visą šį mokestį."
+  ],
+  "sections.2.paragraphs.1": [
+    "154c6f01",
+    "Užsienio kortelių pinigų išėmimo limitus nustato vietiniai tinklai, o ne jūsų bankas, ir jie yra žemi. Jūsų bankas taip pat taiko savo dienos limitą. Prieš kelionę paskambinkite savo bankui, kad padidintumėte limitą, ir išgryninkite maksimalią sumą vienai operacijai, kad fiksuotas mokestis būtų paskirstytas didesniam grynųjų pinigų kiekiui."
+  ],
+  "sections.2.bullets.0": [
+    "befd8df3",
+    "Vietinis pinigų išėmimo mokestis: apytikslis, apie kelis dolerius (prieš patvirtindami patikrinkite ekrane rodomą sumą)."
+  ],
+  "sections.2.bullets.1": [
+    "0f872d39",
+    "Jūsų banko / kortelės išdavėjo mokestis: paprastai didesnis; patikrinkite, ar jūsų kortelėje taikomas mokestis už operacijas užsienyje."
+  ],
+  "sections.2.bullets.3": [
+    "4aacdc05",
+    "Dienos limitas: nustatomas jūsų banko; prieš kelionę praneškite bankui, jei norite jį padidinti."
+  ],
+  "sections.3.heading": [
+    "6bd46a0c",
+    "Valiutos konvertavimo (DCC) spąstai: visada rinkitės vietinę valiutą"
+  ],
+  "sections.3.paragraphs.0": [
+    "29fe4c81",
+    "Daugelyje bankomatų ir kortelių skaitytuvų siūloma „nuskaityti jūsų namų valiuta“, o ne Urugvajaus pesais ar doleriais. Tai skamba patogiai („pažiūrėkite, kiek tai kainuoja jūsų pinigais“), tačiau dinaminis valiutos konvertavimas (DCC) taiko padidintą valiutos kursą ir paslėptą mokestį. Jūs beveik visada pralaimite."
+  ],
+  "sections.3.paragraphs.1": [
+    "34380f1f",
+    "Visada rinkitės „be konvertavimo“ arba vietinę valiutą: Urugvajaus pesus, kai priimate pesus, dolerius, kai priimate dolerius. Leiskite konvertavimą atlikti savo bankui – jo kursas paprastai yra geresnis."
+  ],
+  "sections.4.heading": [
+    "cc573fd8",
+    "Keitykla, bankomatai ar bankai: kuris geriau?"
+  ],
+  "sections.4.paragraphs.0": [
+    "1116ae4f",
+    "Valiutų keityklos („casas de cambio“, tokios kaip „Varlix“, „Indumex“, „Gales“, „Aspen“, „Cambio Sir“, „Cambio Inglés“ ir „Global Exchange“) yra klasikinis būdas keistis grynaisiais. Jos siūlo geriausius kursus už dolerį su nedideliu skirtumu ir be komisinių; euras yra antra geriausia valiuta, Brazilijos realas yra priimtinas, o Argentinos pesas – blogiausias. Paprastai jos prašo pateikti pasą."
+  ],
+  "sections.4.paragraphs.1": [
+    "b7c83296",
+    "Darbo laikas: gatvės filialai dirba nuo pirmadienio iki penktadienio (apie 9–19 val.) ir šeštadienio rytais; daugelis nedirba sekmadieniais. Prekybos centruose esantys filialai dirba kiekvieną dieną ir vėliau. Norėdami palyginti dienos įkainį skirtinguose namuose, naudokitės mūsų palyginimo įrankiu ir filialų puslapiu."
+  ],
+  "sections.5.heading": [
+    "f8b82759",
+    "Kiek grynųjų pinigų su savimi turėti ir kokią valiutą atsinešti"
+  ],
+  "sections.5.paragraphs.0": [
+    "e22fd664",
+    "Urugvajus labai palankus atsiskaitymams kortelėmis: „Visa“ ir „Mastercard“ kortelės priimamos beveik visur, plačiai paplitę bekontakčiai ir QR mokėjimai („Mercado Pago“). Nedideliems pirkiniams grynaisiais turėkite tik šiek tiek pesų, o didesnes sumas mokėkite kortele."
+  ],
+  "sections.5.paragraphs.1": [
+    "f9b88276",
+    "Jei grąžai atsinešite grynųjų, geriausia valiuta yra JAV doleris (geriausias kursas, priimami kiekvienuose namuose). Antroje vietoje – euras. Atvykus iš Argentinos, rinkitės dolerius, o ne Argentinos pesus – Urugvajuje pesas keičiasi labai prastai. Brazilijoje, ypač netoli sienos, veikia realusis pesas, nors doleriai vis tiek patogesni."
+  ],
+  "sections.6.heading": [
+    "97a59b72",
+    "Turistinė PVM lengvata (atsiskaitant užsienio kortele)"
+  ],
+  "sections.6.paragraphs.0": [
+    "88ea76fc",
+    "Urugvajus grąžina dalį PVM nerezidentams turistams, kurie atsiskaito užsienio išduota kortele. Apgyvendinimui (registruotiems viešbučiams ir panašioms įstaigoms) ištisus metus taikomas 0 % PVM nerezidentams, kurie pateikia užsienio asmens tapatybės kortelę ir atsiskaito užsienio kortele – tai nuolatinė lengvata."
+  ],
+  "sections.6.paragraphs.1": [
+    "7f51f9e2",
+    "Maitinimo ir automobilių nuomos be vairuotojo paslaugoms pagal 235/026 dekretą iki 2027 m. balandžio 30 d. taikomas bendras devynių punktų lengvatinis mokestis už galutinį vartojimą, apmokėtą tinkamomis elektroninėmis priemonėmis. Sezoninis visiškas atleidimas nuo mokesčio yra atskira lengvata, turinti savo dekretą ir datas: devynių punktų lengvatos pratęsimas nepatvirtina visiško atleidimo nuo mokesčio. Prieš kelionę pasitarkite su DGI."
+  ],
+  "sections.6.paragraphs.2": [
+    "f963de1e",
+    "Visais atvejais nuolaida taikoma automatiškai: mokate užsienio kortele, o nauda matoma kvite arba kortelės išraše. Sumokėkite grynaisiais ir prarasite. Todėl apsimoka įtraukti viešbučius ir restoranus į kortelę ir išsigryninti mažiau grynųjų."
+  ],
+  "sections.6.bullets.0": [
+    "fc6c4026",
+    "Viešbučiai / apgyvendinimas: 0 % PVM taikomas ištisus metus nerezidentams (nuolatiniams gyventojams)."
+  ],
+  "sections.6.bullets.1": [
+    "02f7d683",
+    "Restoranams ir automobilių nuomai be vairuotojo: devyni taškai iki 2027 m. balandžio 30 d., atsižvelgiant į elektroninių mokėjimų reikalavimus. Sezoniniam visiškam atleidimui nuo mokesčių reikalingas atskiras patvirtinimas."
+  ],
+  "sections.6.bullets.2": [
+    "bf5ed0b5",
+    "Kiekvienas režimas turi savo reikalavimus. Bendras devynių punktų sumažinimas reikalauja galutinio vartojimo ir asmens turimo tinkamo elektroninio mokėjimo būdo; užsienio emisija nereikalinga."
+  ],
+  "sections.7.heading": [
+    "84fbae56",
+    "Saugos patarimai išimant grynuosius pinigus"
+  ],
+  "sections.7.paragraphs.0": [
+    "e227f80c",
+    "Urugvajus yra viena saugiausių regiono šalių, tačiau smulkių vagysčių pasitaiko, ypač Montevidėjo Ciudad Vieja rajone, uosto rajone ir paplūdimio kurortuose sezono metu. Naudokitės bankomatais bankuose, prekybos centruose ar stiklinėse vestibiulio patalpose, geriausia dienos šviesoje, ir stebėkite aplinką."
+  ],
+  "sections.7.bullets.0": [
+    "d234b5e4",
+    "Išgryninkite pinigus dienos metu ir iš bankomatų uždarose patalpose, o ne gatvėje naktį."
+  ],
+  "sections.7.bullets.1": [
+    "f9f5f149",
+    "Nešiokitės dvi korteles iš skirtingų sąskaitų ir laikykite grynuosius pinigus daugiau nei vienoje vietoje."
+  ],
+  "sections.7.bullets.3": [
+    "d7920a67",
+    "Keliaukite su „Uber“, „Cabify“ arba registruotais taksi; nepalikite vertingų daiktų automobilyje."
+  ],
+  "sections.7.link.label": [
+    "d8570bac",
+    "Jau įstrigo didelis raštelis: kur gauti smulkių monetų ir smulkių pinigų"
+  ],
+  "networkRows.0.network": [
+    "7ee344a0",
+    "RedBROU"
+  ],
+  "networkRows.0.reach": [
+    "4a5d053e",
+    "Valstybinio banko BROU tinklas; daugiau nei 400 bankomatų visoje šalyje, taip pat „Abitab“ ir „Redpagos“."
+  ],
+  "networkRows.0.usdPerTxn": [
+    "f41a726d",
+    "≈ 200 JAV dolerių"
+  ],
+  "networkRows.0.uyuPerTxn": [
+    "255d9345",
+    "≈ 5 000 JAV dolerių"
+  ],
+  "networkRows.0.note": [
+    "786a7e5f",
+    "Daugelis aparatų išduoda dolerius. Užsienio kortelių atveju didžiausios sumos yra apytikslės."
+  ],
+  "networkRows.1.network": [
+    "6823b06d",
+    "Uždraustas"
+  ],
+  "networkRows.1.reach": [
+    "331e78b2",
+    "Privačių bankų tinklas; daugiau nei 370 taškų visuose 19 skyrių."
+  ],
+  "networkRows.1.usdPerTxn": [
+    "75830c42",
+    "≈ 300 JAV dolerių"
+  ],
+  "networkRows.1.uyuPerTxn": [
+    "255d9345",
+    "≈ 5 000 JAV dolerių"
+  ],
+  "networkRows.1.note": [
+    "9f2f1329",
+    "Sujungta su „RedBROU“. Jei vienas tinklas atmeta jūsų kortelę, pabandykite kitą."
+  ],
+  "zones.0.name": [
+    "8a4dc608",
+    "Karasko oro uostas (MVD), Montevidėjas"
+  ],
+  "zones.0.tips.0": [
+    "d6202725",
+    "Valiutos keitykla oro uoste kainuoja pastebimai mažiau: grąžinkite tik tiek pinigų, kiek reikia norint pasiekti miestą."
+  ],
+  "zones.0.tips.1": [
+    "99e81ace",
+    "Jei jums reikia grynųjų pinigų nedelsiant, išsiimkite nedidelę sumą bankomate, o likusią dalį išsikeiskite miesto centre."
+  ],
+  "zones.1.name": [
+    "034a744d",
+    "Montevidėjas (Centro, Ciudad Vieja ir uostas)"
+  ],
+  "zones.1.summary": [
+    "04c221eb",
+    "Keityklų punktai išsidėstę Avenida 18 de Julio (Centro) gatvėje ir per Ciudad Vieja. Kruizinių laivų terminalas yra šalia Ciudad Vieja, jame yra keitykla ir bankomatai."
+  ],
+  "zones.1.tips.0": [
+    "a26e5af3",
+    "Centro ir Ciudad Vieja rajonuose rasite keletą mainų namų, kuriuos galėsite palyginti."
+  ],
+  "zones.1.tips.1": [
+    "4139b3e5",
+    "Kruizinių laivų keleiviai gali išsikeisti valiutą uoste, o bankomatai yra netoliese, netoli Mercado del Puerto."
+  ],
+  "zones.2.name": [
+    "3fa606f9",
+    "Punta del Estė"
+  ],
+  "zones.2.summary": [
+    "880d1f96",
+    "Valiutų keityklų punktai yra pagrindinėje Gorlero gatvėje. Sezono metu gali būti eilės, o bankomatuose gali pritrūkti dolerių."
+  ],
+  "zones.2.tips.0": [
+    "1063deb8",
+    "Vasarą ir Velykų savaitę bankomatai greitai ištuštėja: išsigryninkite pinigus iš anksto ir turėkite atsargų."
+  ],
+  "zones.2.tips.1": [
+    "e4c20d9e",
+    "Pasikliaukite kortelėmis ir QR kodų mokėjimais, kad nereikėtų pasikliauti vien grynaisiais pinigais."
+  ],
+  "zones.3.name": [
+    "2ed532f4",
+    "Sakramento kolonija"
+  ],
+  "zones.3.summary": [
+    "764221b5",
+    "Bankomatai yra istoriniame rajone (Barrio Histórico) ir keltų terminale, vos už kelių žingsnių nuo senamiesčio, į kurį atvyksta vienos dienos turistai iš Buenos Airių."
+  ],
+  "zones.3.tips.0": [
+    "d7ebee8b",
+    "Atvykę išsigryninkite nedidelę pesų sumą, o likusią sumą sumokėkite kortele."
+  ],
+  "zones.3.tips.1": [
+    "e09f3851",
+    "Daugelis turistinių parduotuvių ima dolerius, nors ir nepalankiu kursu."
+  ],
+  "zones.4.name": [
+    "ed7917f9",
+    "Keltų terminalai („Buquebus“ / „Colonia Express“)"
+  ],
+  "zones.4.summary": [
+    "ac18ddf9",
+    "Bankomatų yra Montevidėjo ir Kolonijos terminaluose. Valiutos keitykla terminaluose ir traukiniuose paprastai siūlo žemus kursus."
+  ],
+  "zones.4.tips.0": [
+    "b5a97e0f",
+    "Venkite keisti dideles sumas terminale ar traukinyje – kursai yra prasti."
+  ],
+  "zones.4.tips.1": [
+    "91b3c105",
+    "Geriau pasinaudoti bankomatu arba išsikeisti pinigus miesto keitykloje."
+  ],
+  "zones.5.name": [
+    "66cc7244",
+    "Vidus ir mažesni miesteliai"
+  ],
+  "zones.5.summary": [
+    "fc9a5afd",
+    "Už didžiųjų miestų ir pagrindinių kurortų ribų bankomatų yra nedaug."
+  ],
+  "zones.5.tips.0": [
+    "48821abe",
+    "Prieš išvykdami į šalies gilumą, apsirūpinkite grynaisiais Montevidėjuje, Punta del Estėje arba Kolonijoje."
+  ],
+  "zones.5.tips.1": [
+    "02573d37",
+    "Rocha pakrantėje papildykite degalų didesniuose miesteliuose, tokiuose kaip Chuy arba La Paloma."
+  ],
+  "steps.0.name": [
+    "aa213b75",
+    "Raskite bankomatą, kuris priima jūsų kortelę"
+  ],
+  "steps.0.text": [
+    "2f5d9e7c",
+    "Ieškokite „Visa“, „Mastercard“, „Cirrus“, „Plus“ arba „Maestro“ logotipų; pirmenybę teikite bankomatams, esantiems bankuose ar prekybos centruose."
+  ],
+  "steps.1.name": [
+    "4209811a",
+    "Pasirinkite dolerius arba pesus"
+  ],
+  "steps.1.text": [
+    "f338ade4",
+    "Kasdienėms išlaidoms imkite pesus, o dolerius – tik tuo atveju, jei jų reikia grynaisiais; doleriai išduodami 100 JAV dolerių kupiūromis."
+  ],
+  "steps.2.name": [
+    "24d1a5da",
+    "Atmesti konvertavimą į jūsų valiutą"
+  ],
+  "steps.2.text": [
+    "3f2be811",
+    "Kai siūloma atsiskaityti jūsų šalies valiuta, pasirinkite „be konvertavimo“ arba vietinę valiutą, kad išvengtumėte DCC antkainio."
+  ],
+  "steps.3.name": [
+    "4e44a3f9",
+    "Išgryninti maksimalią sumą vienai operacijai"
+  ],
+  "steps.3.text": [
+    "831b2ec9",
+    "Kadangi yra fiksuotas išėmimo mokestis, pasinaudokite leistina riba, kad paskirstytumėte išlaidas didesniam grynųjų pinigų kiekiui."
+  ],
+  "steps.4.name": [
+    "6fcb61ed",
+    "Išsaugokite kvitą ir suskaičiuokite pinigus"
+  ],
+  "steps.4.text": [
+    "30d70c06",
+    "Prieš išeidami iš bankomato, patikrinkite išduotą sumą, išsaugokite kvitą ir grynuosius pinigus padalinkite keliose vietose."
+  ],
+  "faq.0.q": [
+    "e44ca992",
+    "Ar galiu išsigryninti JAV dolerius iš bankomatų Urugvajuje?"
+  ],
+  "faq.0.a": [
+    "eb6339a1",
+    "Taip. Kitaip nei Argentinoje, daugelis Urugvajaus bankomatų išduoda ne tik pesus, bet ir dolerius, dažniausiai 100 JAV dolerių kupiūromis. Užsienio kortelėmis išgryninamų pinigų limitai yra maži."
+  ],
+  "faq.1.q": [
+    "33423670",
+    "Kiek bankomatai ima mokestį už užsienio korteles?"
+  ],
+  "faq.1.a": [
+    "68121602",
+    "Vietinis papildomas mokestis yra nedidelis (maždaug keli doleriai už kiekvieną pinigų išėmimą). Didesnė kaina paprastai yra jūsų banko užsienio operacijų mokestis (įprastas yra 1–3 %)."
+  ],
+  "faq.2.q": [
+    "bf2fe8ff",
+    "Kokia yra maksimali suma, kurią galiu išsiimti per vieną operaciją?"
+  ],
+  "faq.3.q": [
+    "66601510",
+    "Ar turėčiau išsikeisti pinigus oro uoste?"
+  ],
+  "faq.3.a": [
+    "82d5704c",
+    "Ne didelėms sumoms: oro uoste ir keltų terminaluose mokama pastebimai mažiau. Grąžinkite tik tiek pinigų, kad pasiektumėte miestą, o tada naudokitės miesto centro valiutos keitykla arba bankomatu."
+  ],
+  "faq.4.q": [
+    "44d07e17",
+    "Grynieji pinigai ar kortelė Urugvajuje?"
+  ],
+  "faq.4.a": [
+    "11ded5ec",
+    "Urugvajus labai palankiai vertina atsiskaitymą kortelėmis (beveik visur galima atsiskaityti „Visa“ ir „Mastercard“, bekontakčiai ir QR kodais). Nedideliems pirkiniams turėkite grynųjų pesų, o didesnes sumas mokėkite kortele."
+  ],
+  "faq.5.q": [
+    "2d0dd094",
+    "Kokią valiutą turėčiau atsinešti?"
+  ],
+  "faq.5.a": [
+    "cc8484ac",
+    "Grynieji JAV doleriai: geriausi kursai ir priimami visose valiutų keityklose. Euras yra antroje vietoje. Atvykus iš Argentinos, atsineškite dolerių, o ne Argentinos pesų."
+  ],
+  "faq.6.q": [
+    "b71d8d92",
+    "Ar man, kaip turistui, taikoma mokesčių nuolaida?"
+  ],
+  "faq.6.a": [
+    "49712ab8",
+    "Taip: be apgyvendinimo režimo, bendras devynių punktų nuolaidos mokestis už maitinimą ir automobilio nuomą be vairuotojo taip pat taikomas nerezidentams iki 2027 m. balandžio 30 d., kai galutinį vartojimą elektroniniu būdu apmoka asmuo. Sezoniniam visiškam atleidimui nuo mokesčių reikalingas atskiras įstatymas ir datos; jo negalima daryti iš to pratęsimo."
+  ],
+  "faq.7.q": [
+    "04fb59ce",
+    "O kas, jei bankomatas atmeta mano kortelę?"
+  ],
+  "faq.7.a": [
+    "15f0167b",
+    "Išbandykite kitą kortelę ir kitą tinklą („RedBROU“ ir „Banred“ yra sujungti, bet naudinga turėti abi). Patikrinkite, ar bankomate matyti „Visa“ / „Mastercard“ / „Cirrus“ / „Plus“ logotipai, ir pasakykite bankui, kad naudosite ją Urugvajuje."
+  ],
+  "related.0.label": [
+    "9371cd8d",
+    "Doleriai kelionėms"
+  ],
+  "related.1.label": [
+    "89470d17",
+    "Pirkti dolerius už geriausią kainą"
+  ],
+  "related.2.label": [
+    "7b531a45",
+    "Valiutų keityklų ir filialų"
+  ],
+  "related.3.label": [
+    "574f3e27",
+    "Palyginti įkainius"
+  ]
+}

@@ -61,6 +61,24 @@
           </VCard>
         </VCol>
       </VRow>
+      <p class="text-body-2 text-medium-emphasis mt-5 mb-0" style="max-width: 72ch">
+        Los cinco toman reclamos contra una empresa. Si del otro lado no hay una empresa sino una
+        persona —alguien publicó un video tuyo sin tu consentimiento—, ninguno de los cinco es
+        competente: ese caso va a la Unidad Reguladora y de Control de Datos Personales, que es
+        gratis y no pide abogado, y a la Fiscalía cuando además hay delito.
+        <NuxtLink :to="localePath('/grabacion-sin-consentimiento-uruguay')">
+          Cómo se pide el retiro del video y qué plazos corren</NuxtLink
+        >.
+      </p>
+      <p class="text-body-2 text-medium-emphasis mt-4 mb-0" style="max-width: 72ch">
+        Y hay un caso que tampoco es ninguno de los cinco porque del otro lado no hay una empresa:
+        la luminaria apagada de tu cuadra, la boca de tormenta tapada o el contenedor quemado. Eso
+        lo atiende la Intendencia por su propio sistema de reclamos, con su número y su expediente.
+        <NuxtLink :to="localePath('/reclamos-a-la-intendencia-por-barrio-uruguay')">
+          Cuántos reclamos de alumbrado, saneamiento y limpieza registra cada barrio de
+          Montevideo</NuxtLink
+        >, de los datos abiertos de la propia IM.
+      </p>
     </section>
 
     <!-- Deadlines -->
@@ -106,6 +124,9 @@
       </VCard>
     </section>
 
+    <!-- La unidad intermedia, antes de las preguntas: mismo corte que FaqSection (ver
+         docs/seo/adsense-growth-loop.md, 31/10/2026). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <!-- FAQ -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-4">Preguntas frecuentes</h2>
@@ -134,6 +155,13 @@
         </VBtn>
         <VBtn :to="localePath('/factura-de-ute-uruguay')" variant="tonal" size="small">
           Factura de UTE
+        </VBtn>
+        <VBtn
+          :to="localePath('/compensacion-por-corte-de-luz-uruguay')"
+          variant="tonal"
+          size="small"
+        >
+          Compensación por corte de luz
         </VBtn>
         <VBtn :to="localePath('/cuanto-me-tienen-que-pagar-uruguay')" variant="tonal" size="small">
           Si te pagan menos del laudo

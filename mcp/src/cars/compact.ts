@@ -1,7 +1,7 @@
 // One used-car advert → the compact shape every car tool returns, and its line of
 // text. Prices are in US dollars; a currency the site had to infer is flagged.
 
-import { compact, fmt, isoDay, money, PUBLIC_SITE } from "../format.js";
+import { compact, fmt, isoDay, money, PUBLIC_SITE, safeImage } from "../format.js";
 
 export interface RawCar {
   key: string;
@@ -30,6 +30,8 @@ export interface RawCar {
   sellerType?: string | null;
   dealerName?: string | null;
   permalink?: string;
+  /** The advert's photo, already limited by the site to each source's own picture host. */
+  picture?: string | null;
   firstSeen?: string;
   lastSeen?: string;
   priceDrop?: { from?: number; to?: number; at?: string; pct?: number } | null;
@@ -56,6 +58,8 @@ export function compactCar(c: RawCar) {
   return compact({
     key: c.key,
     title: c.title,
+    // For clients that draw cards; carLine never prints it.
+    image: safeImage(c.picture),
     brand: c.brand,
     model: c.model,
     modelSlug: c.marketSlug,

@@ -15,7 +15,7 @@
           <v-card-text>
             <v-row>
               <v-col cols="12" md="3">
-                <v-autocomplete
+                <VAutocomplete
                   v-model="selectedOrigin"
                   :items="originOptions"
                   item-value="value"
@@ -30,7 +30,7 @@
                 />
               </v-col>
               <v-col cols="12" md="3">
-                <v-autocomplete
+                <VAutocomplete
                   v-model="selectedCurrency"
                   :items="currencyOptions"
                   :label="$t('historical.currency')"
@@ -44,7 +44,7 @@
                 />
               </v-col>
               <v-col cols="12" md="3">
-                <v-autocomplete
+                <VAutocomplete
                   v-model="selectedType"
                   :items="typeOptions"
                   :label="$t('historical.type')"
@@ -84,7 +84,7 @@
             </v-row>
           </v-card-text>
           <!-- Tabla de datos -->
-          <v-data-table
+          <VDataTable
             :headers="headers"
             :items="filteredItems"
             :search="search"
@@ -184,7 +184,7 @@
                 </p>
               </div>
             </template>
-          </v-data-table>
+          </VDataTable>
         </v-card>
       </v-col>
     </v-row>
@@ -204,6 +204,7 @@
 </template>
 
 <script setup lang="ts">
+import { VAutocomplete, VDataTable } from 'vuetify/components'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'

@@ -133,11 +133,19 @@ const rankableRows = computed(() => {
         buy: row.buy,
         sell: row.sell,
         name: (row as { localData?: { name?: string } }).localData?.name ?? origin,
+        // The backend's mark (utils/marketOutlier.ts): without it a frozen board heads the ranking.
+        ...(row.frozen === true ? { frozen: true } : {}),
       },
     ]
   })
 })
 
+// `rankExchanges` leaves out the sells the site refuses to crown (utils/marketOutlier.ts, the rule
+// of /cotizacion, /pizarra, /casas-de-cambio and this page's own FAQ). Before it did, the answer
+// of this page — its description, the named winner and #1 of the list — was a board frozen since
+// July at $39,55, which the backend's staleness check marks `extreme: "min-sell"` (measured
+// 2026-11-09), while the FAQ below named another casa. An off-market board keeps its own casa
+// page; it just does not rank here.
 const ranking = computed(() => rankExchanges(rankableRows.value, 'USD', 'buy', REFERENCE_AMOUNT))
 
 const winner = computed(() => ranking.value.ranked[0] ?? null)

@@ -212,6 +212,7 @@
 </template>
 
 <script setup lang="ts">
+import { VAutocomplete, VDatePicker } from 'vuetify/components'
 interface Props {
   selectedExchangeHouse: any[]
   exchangeHouseOptions: any[]

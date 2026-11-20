@@ -3,7 +3,7 @@ import {
   rememberPushDevice,
   readPushDevice,
   revokeBrowserPush,
-} from '../../stores/firebaseMessagingApi'
+} from '../../services/firebaseMessagingApi'
 const h = vi.hoisted(() => ({ supported: vi.fn(), deleteToken: vi.fn(), fetch: vi.fn() }))
 vi.mock('firebase/messaging', () => ({
   getMessaging: () => ({}),

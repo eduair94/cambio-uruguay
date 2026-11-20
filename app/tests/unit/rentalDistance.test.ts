@@ -35,6 +35,8 @@ describe('map reference query', () => {
       sort: 'precio',
       type: 'vivienda',
     })
+    // A saved search keeps the filters and never the point (utils/rentalReference.ts, since
+    // 2026-11-08): without one, its distance order reads as the default.
     const saved = saveRentalSearch(
       emptyRentalSaved(),
       'Cerca del trabajo',
@@ -45,6 +47,9 @@ describe('map reference query', () => {
       normalizeRentalQuery(parseRentalSaved(JSON.stringify(saved)).searches[0]!.params)
     ).toEqual({
       ...query,
+      refLat: null,
+      refLng: null,
+      sort: 'recientes',
       page: 1,
     })
   })

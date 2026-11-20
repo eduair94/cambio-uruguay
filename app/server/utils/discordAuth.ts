@@ -27,11 +27,25 @@ export interface DiscordProfile {
   verified: boolean
 }
 
+/**
+ * A verified Discord address matched an account whose own address was never verified. Whoever
+ * opened it (an email/password sign-up can use anyone's address, and its creator keeps the
+ * password) may still have a way in, so a Discord login never takes it over: its owner verifies
+ * the address first (or takes the account with "forgot password"), then Discord links to it.
+ */
+export class DiscordUnverifiedAccountError extends Error {
+  constructor() {
+    super('discord-unverified-account')
+    this.name = 'DiscordUnverifiedAccountError'
+  }
+}
+
 export interface UidDeps {
-  getUserByEmail: (email: string) => Promise<{ uid: string }>
+  getUserByEmail: (email: string) => Promise<{ uid: string; emailVerified?: boolean }>
   createUser: (props: {
     uid?: string
     email?: string
+    emailVerified?: boolean
     displayName?: string
     photoURL?: string
   }) => Promise<{ uid: string }>
@@ -40,20 +54,27 @@ export interface UidDeps {
 
 /**
  * Resolve the Firebase uid for a Discord identity.
- * - Verified email matching an existing user → link to that account.
+ * - Verified email matching an existing user whose address is verified → link to that account.
+ * - Verified email matching an account with an unverified address → DiscordUnverifiedAccountError.
  * - Verified email with no account → create an email-based user.
  * - No/unverified email → a stable `discord:<id>` user (created on first login).
  */
 export async function resolveDiscordUid(p: DiscordProfile, deps: UidDeps): Promise<string> {
   if (p.email && p.verified) {
+    let existing: { uid: string; emailVerified?: boolean } | null = null
     try {
-      const u = await deps.getUserByEmail(p.email)
-      return u.uid
+      existing = await deps.getUserByEmail(p.email)
     } catch (e: any) {
       if (e?.code !== 'auth/user-not-found') throw e
-      const created = await deps.createUser({ email: p.email })
-      return created.uid
     }
+    if (existing) {
+      if (existing.emailVerified !== true) throw new DiscordUnverifiedAccountError()
+      return existing.uid
+    }
+    // Discord verified this address: the new account carries it as verified, or the newsletter and
+    // the alert emails (which require a verified address) would never reach it.
+    const created = await deps.createUser({ email: p.email, emailVerified: true })
+    return created.uid
   }
   const uid = `discord:${p.id}`
   try {

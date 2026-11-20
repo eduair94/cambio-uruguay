@@ -633,6 +633,7 @@
 </template>
 
 <script setup lang="ts">
+import { VSlider } from 'vuetify/components'
 import {
   PERSONA_FISICA_MAX_DUA_PER_YEAR,
   POSTAL_MAX_INVOICE_USD,

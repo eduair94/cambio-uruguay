@@ -268,6 +268,33 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // La ficha técnica de los monopatines de /monopatines-electricos-uruguay (sync_movilidad_specs.ts):
+      // lee la ficha propia de ML y de las tiendas (autonomía, velocidad, potencia, peso, carga
+      // soportada, tiempo de carga…) a la colección privada movilidadspecs, la reaplica a
+      // movilidadlistings y guarda el snapshot del asesor (movilidadspecsnapshots). La ficha de ML se
+      // pide al PUENTE (:9656, /product/<id>): desde la IP del VPS la página de producto de ML redirige
+      // al muro de login (medido 3/11/2026). Por eso corre en el hueco de los consumidores horarios del
+      // puente (movilidad :07, sillas :23, autos :29, celulares :37, motos :44, alquileres :47,
+      // equipar :53): a los :01, 60 fichas a 3 s (~4 min).
+      name: "currency-movilidad-specs",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_movilidad_specs.js",
+      cron_restart: "1 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // La ficha técnica de heladeras, lavarropas, televisores y aires de /equipar-casa-uruguay
+      // (sync_equipar_specs.ts): 40 fichas de ML por el puente, a 3 s (~2 min). A los :40, entre
+      // celulares (:37, ~1 min) y motos (:44), en el hueco de los consumidores horarios del puente.
+      name: "currency-equipar-specs",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_equipar_specs.js",
+      cron_restart: "40 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // El directorio de motos usadas de `/motos-usadas-uruguay`. Reusa el puente de MercadoLibre de
       // autos contra la categoria MLU1763, con la cilindrada leida del titulo.
       //
@@ -565,6 +592,21 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Letras de Regulación Monetaria para /letras-de-regulacion-monetaria-uruguay: la planilla
+      // oficial «Operaciones BCU y MEF local.xlsx» (todas las licitaciones desde 2019) más el
+      // calendario tentativo de las dos semanas siguientes → APP DB `lrmsnapshots`. Dos veces por
+      // día: el BCU licita de lunes a viernes a las 14:00 y sube la planilla a última hora (la del
+      // 16/10/2026 dice 22:32 UTC), así que 23:31 UTC la agarra el mismo día y 11:31 UTC, a la
+      // mañana siguiente, si llegó tarde. Minuto 31: fuera de todas las grillas horarias. Needs
+      // APP_MONGO_URI.
+      name: "currency-lrm",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_lrm.js",
+      cron_restart: "31 11,23 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Daily AI directional lean + external forecast comparison per live currency, for the
       // PricePredictionCard on /historico. Writes `pricepredictions` in the NUXT APP's database
       // (classes/appdb.ts, APP_MONGO_URI) — the SAME collection
@@ -673,6 +715,24 @@ module.exports = {
       exec_mode: "fork",
       script: "dist/sync_search_demand.js",
       cron_restart: "40 6 * * 0",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // La cola de hilos de Reddit para contestar a mano (/oportunidades-reddit, privada).
+      //
+      // Lee `/new` de los 11 subs uruguayos activos hasta 30 días atrás, filtra sin red, arma
+      // candidatas (reglas de intención + brazo léxico del índice RAG, cero embeddings) y las hace
+      // juzgar por Gemini de a 10. NO PUBLICA NADA EN REDDIT y no redacta respuestas: las cuentas del
+      // sitio están suspendidas desde el 7/10/2026 y quien contesta es una persona.
+      //
+      // Diario 10:21 UTC (07:21 en Uruguay): la cola está fresca a la mañana, y el minuto no choca
+      // con los otros clientes de la API de Reddit (:06 el bot, :09 su vigilante, :48 las
+      // estadísticas). Necesita APP_MONGO_URI y las credenciales de Reddit del .env de la raíz.
+      name: "currency-reddit-opportunities",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_reddit_opportunities.js",
+      cron_restart: "21 10 * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
@@ -998,13 +1058,15 @@ module.exports = {
     {
       // Videos de economía (/videos-de-economia-uruguay). Reads the public YouTube Atom feed of
       // every channel in classes/videos/channels.ts — no API key, no quota — so it is cheap enough
-      // to run four times a day. Offset from the other :00 jobs so the box is not doing everything
-      // at once. Needs APP_MONGO_URI: the snapshot lives in the Nuxt app's database.
+      // to run every hour. Hourly since 2026-11-13 (was every six): /feeds/videos.xml tweets each
+      // new video 90 minutes after it was published (app/utils/videoPosts.ts), which assumes the
+      // snapshot is at most an hour old. Offset from the other :00 jobs so the box is not doing
+      // everything at once. Needs APP_MONGO_URI: the snapshot lives in the Nuxt app's database.
       name: "currency-videos",
       autorestart: false,
       exec_mode: "fork",
       script: "dist/sync_videos.js",
-      cron_restart: "26 */6 * * *",
+      cron_restart: "26 * * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
@@ -1018,6 +1080,35 @@ module.exports = {
       exec_mode: "fork",
       script: "dist/sync_useful_apps.js",
       cron_restart: "34 1 * * 4",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // Armadores de muebles (/armadores-de-muebles-montevideo): relevamiento editorial + Google
+      // Places por el proxy :2221 (semanal, cuota) + Facebook Marketplace (Chrome del perfil por
+      // CDP, puente :9657 de respaldo; lee la ficha de los avisos nuevos) + MercadoLibre Servicios
+      // por el puente :9656 (barrio por el filtro de ciudad de ML). UN documento en la base del APP
+      // (`armadorsnapshots`). Diario 18:05 UTC: el minuto :05 no lo usa ningún consumidor horario de
+      // los puentes de ML y FB (sillas :23, autos :29, celulares :37, motos :44, alquileres :47,
+      // equipar :53, movilidad :07), y una fuente caída conserva sus filas. Needs APP_MONGO_URI.
+      name: "currency-armadores",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_armadores.js",
+      cron_restart: "5 18 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // Traducción por máquina de las páginas (app/utils/autoTranslate.ts): recorre el sitemap
+      // español por prioridad, corta cada página con el mismo código que la traduce al renderizar,
+      // traduce lo que falta con tr-file (inglés y portugués primero) y mide la cobertura por página
+      // e idioma. Corre DESDE app/ (sus dependencias y su .env: MONGO_URI y NUXT_API_ADMIN_TOKEN).
+      // Cada 10 minutos, con tope de caracteres y de tiempo por corrida y un lease en la base para
+      // que dos corridas no se pisen. Ver app/AGENTS.md, "Traducción por máquina".
+      name: "currency-autotranslate",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "app/scripts/i18n/autotranslate-job.mjs",
+      cron_restart: "4-59/10 * * * *",
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {

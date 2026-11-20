@@ -403,10 +403,29 @@ export const IRPF_CONTRIBUTION_RATES = Object.freeze({
   frlPct: 0.1,
 })
 
+/** Un enlace interno escrito dentro de la tarjeta de una deducción. */
+export interface IrpfDeductionLink {
+  /** Lo que lee quien decide si lo sigue. */
+  readonly label: string
+  /** Ruta interna del sitio, siempre con barra inicial. */
+  readonly to: string
+}
+
 export interface IrpfDeduction {
   id: string
   label: string
   detail: string
+  /**
+   * Un enlace de contexto anclado a la tarjeta que deja la pregunta abierta, no al pie. Es la
+   * distinción que mide `tests/unit/enlacesDeContexto.test.ts`: el bloque de relacionadas del
+   * final aparece recién a 11.341 px de una página de 15.868, así que un enlace que vive sólo ahí
+   * está puesto para un rastreador y no para quien lee. Mismo campo y mismo motivo que
+   * `WithdrawSection.link` en `utils/withdrawCash.ts`.
+   *
+   * Opcional a propósito: sólo lo lleva la deducción cuyo texto crea la necesidad. Un enlace que
+   * la tarjeta no pide es relleno, que es lo que ese trinquete no cuenta como arreglo.
+   */
+  readonly link?: IrpfDeductionLink
 }
 
 /** Lo que resta, en el orden en que aparece en el recibo. */
@@ -438,7 +457,14 @@ export const IRPF_DEDUCTIONS: readonly IrpfDeduction[] = Object.freeze([
     id: 'solidaridad',
     label: 'Fondo de Solidaridad y aportes a cajas profesionales',
     detail:
-      'Se deducen si los declarás en el 3100. BPS publica los valores mensuales por categoría.',
+      'Se deducen si los declarás en el 3100. BPS publica los valores mensuales por categoría. ' +
+      'El Fondo de Solidaridad es otro tributo y otro organismo, y no lo paga todo egresado: ' +
+      'la Ley 16.524 pone la contribución desde el quinto año del egreso y sólo con ingresos ' +
+      'mensuales superiores a 8 BPC, y es un aporte anual, no mensual.',
+    link: {
+      label: 'Quién paga el Fondo de Solidaridad y cuánto',
+      to: '/fondo-de-solidaridad-uruguay',
+    },
   },
   {
     id: 'hipoteca',

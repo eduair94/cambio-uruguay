@@ -85,7 +85,6 @@ import { marked } from 'marked'
 import DOMPurify from 'isomorphic-dompurify'
 import {
   BLOG_CATEGORY_META,
-  parseBlogSlug,
   type BlogCategory,
   type BlogPost,
   type BlogPostSummary,
@@ -96,7 +95,10 @@ const route = useRoute()
 const slug = computed(() => String(route.params.slug ?? ''))
 
 definePageMeta({
-  validate: route => parseBlogSlug(String(route.params.slug ?? '')) !== null,
+  validate: async route => {
+    const catalogue = await import('~/utils/blog')
+    return catalogue.parseBlogSlug(String(route.params.slug ?? '')) !== null
+  },
 })
 
 const { data: post, error } = await useAsyncData(`blog-${slug.value}`, () =>

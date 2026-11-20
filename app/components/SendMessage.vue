@@ -15,7 +15,14 @@
       {{ triggerLabel }}
     </VBtn>
 
-    <VDialog v-model="open" max-width="460" :aria-label="dialogTitle">
+    <!-- Masked in session recordings: each action's href carries the whole generated message
+         (a mailto body, a WhatsApp text), and the dialog renders outside the page's own masks. -->
+    <VDialog
+      v-model="open"
+      max-width="460"
+      :aria-label="dialogTitle"
+      :content-props="{ 'data-clarity-mask': 'true' }"
+    >
       <VCard rounded="lg">
         <VCardTitle id="send-msg-title" class="d-flex align-center pe-2">
           <VIcon start color="primary">mdi-send-outline</VIcon>

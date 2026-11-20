@@ -1,5 +1,6 @@
 <template>
-  <section class="api-keys-panel">
+  <section class="api-keys-panel" data-clarity-mask="true">
+    <!-- Masked in session recordings: a new key is printed in full, and the list names companies. -->
     <h2 class="text-h6 font-weight-bold mb-1">Claves de la API</h2>
     <p class="text-body-2 text-medium-emphasis mb-4 api-keys-panel__intro">
       Con una clave, la API te identifica, mide tu uso y aplica tu plan. Sin clave también funciona,

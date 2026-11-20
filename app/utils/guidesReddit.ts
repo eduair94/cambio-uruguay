@@ -25,10 +25,10 @@
 //     del 35 % del nominal, 30 % en garantía de alquiler y cooperativas) y el plazo del Clearing, que
 //     lo publica la Unidad Defensa del Consumidor (10 años, y la base NO actualiza saldos) — el
 //     Clearing es privado y de la Ley 18.331, nunca atribuirlo al BCU.
-//   - `feriados-en-uruguay-como-se-pagan`: los CINCO feriados pagos son los del art. 18 de la Ley
-//     12.590 y nada más. Carnaval y Semana de Turismo NO están: son feriados comunes y no se pagan
-//     doble. El traslado al lunes es de la Ley 16.805 (ampliada por la 17.414) y los cinco pagos
-//     están todos en la lista de excepciones, así que nunca se mueven.
+//   - `feriados-en-uruguay-como-se-pagan`: las cinco fechas del art. 18 de la Ley 12.590 son el
+//     régimen general; los convenios pueden reconocer otros feriados pagos. Carnaval y Semana de
+//     Turismo son comunes en ese régimen. El traslado al lunes es de la Ley 16.805 (ampliada por
+//     la 17.414) y los cinco pagos están en la lista de excepciones, así que nunca se mueven.
 //   - `trabajo-en-negro-uruguay`: la historia laboral nominada arranca el 1/4/1996 y ese es el
 //     alcance del servicio de denuncia del BPS. No se publican montos de multas ni plazos de
 //     resolución, y se dice explícitamente que la denuncia de aportes NO cobra lo adeudado.
@@ -260,7 +260,7 @@ import type { Guide } from './guides'
 export const redditGuides: readonly Guide[] = [
   {
     slug: 'no-pagar-prestamo-e-irse-del-pais-uruguay',
-    title: '¿Qué pasa si no pago un préstamo en Uruguay (y me voy del país)?',
+    title: 'No pagar un préstamo no es delito (art. 52)',
     description:
       'No pagar un préstamo no es delito: la Constitución prohíbe la prisión por deudas (art. 52). Hay juicio ejecutivo y embargo, e irte del país no lo borra.',
     tag: 'DEUDA',
@@ -329,35 +329,41 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'como-rescindir-contrato-alquiler-uruguay',
-    title: 'Rescindir el alquiler: avisá por telegrama',
+    title: 'Rescindir alquiler: preaviso y garantía',
     description:
-      'Cómo terminar un alquiler antes de tiempo en Uruguay: preaviso, multas, cómo notificar en forma válida y recuperar el depósito o liberar la garantía.',
+      'El preaviso y la salida anticipada dependen del contrato y régimen. Telegrama, trámite de CGN, entrega de llaves y retiro del depósito.',
     tag: 'ALQUILER',
     updatedAt: '2026-07-18',
     sections: [
       {
-        heading: 'Primero mirá qué tipo de contrato tenés',
-        body: 'No todos los alquileres se rescinden igual. Un contrato de vivienda con plazo (lo habitual, dos años) en principio obliga a las dos partes hasta el vencimiento, pero eso no significa que quedes atrapado: además de las causas que fije el contrato, la normativa uruguaya suele reconocerle al inquilino un derecho a rescindir de forma anticipada una vez cumplido cierto tiempo, cumpliendo el preaviso y la indemnización que correspondan. Un contrato sin plazo o vencido que sigue de hecho es más flexible: se puede terminar avisando con antelación. También cambia si el contrato se firmó bajo el régimen común (Decreto-Ley de alquileres) o bajo el de arrendamiento sin garantía de la LUC, que tiene plazos y preavisos propios. Antes de hacer nada, releé tu contrato entero: ahí figura el plazo, el preaviso pactado y la penalidad. Esa cláusula rige en todo lo que no contradiga la ley, que en materia de alquileres es de orden público y protege al inquilino.',
+        heading: 'Salir antes y no renovar son situaciones distintas',
+        body: 'Antes de fijar la mudanza, identificá el régimen del alquiler, su vencimiento y la cláusula de salida anticipada. El contrato obliga a las partes y puede terminarse de común acuerdo, según los artículos 1291 y 1294 del Código Civil. Para irte durante el plazo, revisá si hay una cláusula que lo permita, un acuerdo con el arrendador o una causa legal aplicable. No des por hecho que cumplir seis meses o un año te habilita a salir sin otras condiciones. Si el contrato va a vencer, revisá por separado cómo evitar una renovación o prórroga. Fuentes sobre régimen de salida, comunicaciones y trámite CGN consultadas el 8/11/2026; documentación BHU consultada el 3/11/2026.',
       },
       {
-        heading: 'El preaviso: cuánto tiempo antes avisar',
-        body: 'La mayoría de los contratos de vivienda incluyen una cláusula que te deja salir antes, casi siempre después de cumplir cierto tiempo (habitualmente los primeros seis meses o el primer año) y avisando con anticipación. Ese preaviso suele ser de unos 60 días en el régimen común, mientras que en el arrendamiento sin garantía de la LUC lo habitual es un preaviso de unos 30 días; en algunos contratos se pacta otro plazo. Verificá el que corresponde a tu contrato y a tu régimen. El punto clave es que el aviso empieza a contar recién cuando el propietario lo recibe de forma fehaciente, no cuando vos lo decidís. Si te vas antes de cumplir el mínimo pactado o sin respetar el preaviso, casi siempre hay una penalidad. Revisá la fecha exacta de tu cláusula para no pagar de más.',
+        heading: 'Qué significan los 30 días del régimen sin garantía',
+        body: 'No todo alquiler sin depósito pertenece al régimen especial de la LUC. El artículo 421 de la Ley 19.889 exige conjuntamente destino de vivienda, ausencia de garantías de cualquier naturaleza, contrato escrito, plazo y precio expresos, y que las partes hayan manifestado su voluntad de acogerse a ese régimen. Para esos contratos, el artículo 422 prevé la prórroga si ninguna parte notifica lo contrario dentro de los treinta días anteriores al vencimiento. Esa regla trata la prórroga al vencer, no una autorización general para irse en cualquier momento avisando treinta días antes. En otro régimen o ante una salida anticipada, verificá la cláusula y la norma aplicable; no traslades automáticamente ese plazo.',
       },
       {
-        heading: 'Multas y penalidades: qué es legítimo cobrar',
-        body: 'La penalidad por salir antes debe surgir del contrato o de la normativa aplicable; si no está pactada, el propietario no puede inventar cualquier monto. Lo más común es que se pacte una indemnización de uno o dos meses de alquiler. Ojo con las cláusulas que pretenden cobrarte todos los meses que faltan hasta el vencimiento: cuando la ley reconoce el derecho a rescindir, la indemnización suele estar acotada, así que un reclamo por el total del plazo puede ser abusivo. Una cosa es la penalidad por rescisión y otra son deudas reales que sí debés (alquiler impago, gastos comunes, servicios, daños). El propietario no puede retenerte por cosas ya cubiertas ni cobrar dos veces lo mismo. Si la penalidad te parece abusiva o no figura en el contrato, conviene consultar con un abogado o con una liga de defensa del inquilino antes de firmar cualquier acuerdo.',
+        heading: 'Preaviso y penalidad: pedí el fundamento de cada importe',
+        body: 'Buscá qué cláusula permite terminar antes, desde cuándo puede usarse, cómo exige comunicarlo y qué costo establece. Si acordás una salida con el arrendador, dejá por escrito la fecha de finalización, la entrega de llaves y los saldos que se reconocen. La penalidad por salida anticipada es distinta de los alquileres, servicios o daños que se reclamen. Pedí un detalle de cada concepto y su fundamento antes de aceptar una liquidación. No apliques por defecto sesenta días de preaviso ni uno o dos meses de penalidad. El artículo 1785 del Código Civil prevé el pago del precio correspondiente al tiempo que falta si el arrendatario devuelve la cosa antes del término convenido. Su aplicación al caso requiere revisar el régimen, las cláusulas de salida y los acuerdos o causas legales que correspondan: no significa que todos los contratos deban liquidarse de la misma forma.',
       },
       {
-        heading: 'Cómo notificar para que valga',
-        body: 'Un WhatsApp o un mail no alcanzan como prueba si después hay discusión. La forma segura y estándar en Uruguay es el telegrama colacionado con aviso de retorno, que enviás por el correo y deja constancia de qué dijiste y cuándo lo recibió la otra parte. Otra opción más formal es una notificación por escribano mediante acta notarial. Guardá siempre el comprobante: es lo que fija la fecha desde la cual corre el preaviso. Redactá el texto en forma clara indicando que rescindís, desde qué fecha y que ofrecés coordinar la entrega de la vivienda y las llaves. Ese papel te protege si el propietario luego alega que nunca le avisaste.',
+        heading: 'Cómo comunicar la salida y conservar prueba',
+        body: 'Usá el medio que corresponda según el contrato, el régimen y el trámite de la garantía. Si se exige un telegrama colacionado o una actuación notarial, cumplí esa formalidad y conservá la constancia de contenido y recepción. La Ley 18.600 reconoce valor jurídico a los documentos electrónicos, pero mantiene las reglas que rigen cada acto: no permite afirmar que cualquier correo o WhatsApp sea suficiente para rescindir, ni que nunca pueda servir como prueba. Dejá clara la fecha que proponés, identificá el contrato y guardá las respuestas. Si se discuten la recepción, la firma o el plazo, consultá antes de dar por terminado el alquiler.',
       },
       {
-        heading: 'Recuperar el depósito y cerrar bien',
-        body: 'Al entregar la vivienda, el propietario puede descontar del depósito o de las garantías lo que le corresponda legítimamente: alquileres o gastos comunes impagos, servicios pendientes y daños que excedan el desgaste normal por el uso. No puede quedarse con el depósito por el simple hecho de que te vas antes si eso ya lo cubre la penalidad pactada. Conviene entregar la casa limpia, hacer un acta o inventario de salida con fotos, y pedir por escrito la constancia de que no quedan deudas. Si tu contrato es bajo el arrendamiento sin garantía de la LUC no hay garantía que liberar, pero si usaste garantía de ANDA o de la Contaduría General de la Nación (CGN), avisá también a esa institución para liberar la garantía; en el caso de la CGN suele haber un trámite específico de rescisión.',
+        heading: 'Con garantía CGN hay que tramitar la rescisión',
+        body: 'La ficha de CGN actualizada el 4/11/2026 permite gestionar la entrega cuando venció el plazo. Si sigue vigente, pide autorización del arrendador o la aplicación de la cláusula de rescisión anticipada emitida por sus inspectores, cuando corresponda. Para la vía con inspección se presenta el formulario firmado y se entregan las llaves con la finca vacía y limpia; la agenda es en línea y la presentación continúa presencialmente. Seguí la ficha y su documentación según tu situación. La CGN aclara además que rescindir no extingue las deudas pendientes. No basta con avisar informalmente al garante ni con mudarte para considerar cerrado el contrato.',
       },
       {
-        heading: 'Esto es información general, no asesoramiento',
-        body: 'Cada contrato y cada situación son distintos, y la aplicación concreta depende del régimen del contrato y de las cláusulas que firmaste. Esta guía te orienta, pero no reemplaza el consejo de un profesional ni la lectura de la normativa vigente y de los trámites oficiales (por ejemplo, en gub.uy). Si hay conflicto, dinero importante en juego o el propietario reclama sumas altas, consultá con un abogado o con una liga o asociación de inquilinos antes de firmar acuerdos o pagar penalidades. Para los aspectos formales de la notificación, un escribano puede darte certeza. Y guardá siempre copia de tu contrato, de los recibos y de toda comunicación fehaciente.',
+        heading: 'Entrega de llaves, depósito y otras garantías',
+        body: 'Coordiná la entrega y guardá una constancia con la fecha, el estado de la vivienda y los saldos que queden pendientes. Con otra garantía, consultá su procedimiento de cierre y conservá la confirmación. Si tenés un depósito en el BHU, usá los requisitos de retiro de esa cuenta: la documentación consultada el 3/11/2026 distingue el retiro autorizado y el desacuerdo que requiere la vía judicial. El fin del alquiler no libera automáticamente esos fondos ni habilita a una parte a decidir por sí sola cuánto retirar. La guía específica explica el trámite y sus límites.',
+        links: [
+          {
+            label: 'Retirar el depósito de alquiler y resolver desacuerdos',
+            to: '/guias/deposito-de-alquiler-uruguay',
+          },
+        ],
       },
     ],
     related: [
@@ -367,24 +373,71 @@ export const redditGuides: readonly Guide[] = [
     ],
     steps: [
       {
-        name: 'Releé tu contrato',
-        text: 'Ubicá la cláusula de rescisión anticipada y fijate también qué te habilita la ley según tu régimen: desde cuándo podés irte, con cuánto preaviso y qué penalidad corresponde. Eso define todo lo demás.',
+        name: 'Identificá régimen y vencimiento',
+        text: 'Leé la cláusula de salida anticipada y separala de las condiciones para no renovar al vencimiento.',
       },
       {
-        name: 'Calculá fechas y costo',
-        text: 'Fijate si ya cumpliste el mínimo para salir sin penalidad y contá los días de preaviso. Estimá cuánto te tocaría pagar si te vas antes y verificá que la penalidad no exceda lo que la ley permite.',
+        name: 'Revisá fechas y saldos',
+        text: 'Comprobá el preaviso y los importes aplicables a tu contrato. Si pactás una salida, dejá sus condiciones por escrito.',
       },
       {
-        name: 'Notificá en forma fehaciente',
-        text: 'Enviá un telegrama colacionado con aviso de retorno (o notificación por escribano) diciendo que rescindís y desde qué fecha. Guardá el comprobante.',
+        name: 'Comunicá por el medio correspondiente',
+        text: 'Seguí la formalidad del contrato o trámite y guardá el contenido, la constancia de recepción y la respuesta.',
       },
       {
-        name: 'Coordiná la entrega',
-        text: 'Acordá día para devolver la vivienda y las llaves. Dejá la casa en condiciones y hacé un acta de salida con fotos del estado.',
+        name: 'Tramitá el cierre de la garantía',
+        text: 'Con CGN, consultá la ficha de rescisión y presentá la autorización, formulario y demás documentación que corresponda. Con otro garante, revisá su procedimiento.',
       },
       {
-        name: 'Cerrá cuentas y liberá garantías',
-        text: 'Pagá servicios y común pendientes, pedí constancia escrita de que no quedan deudas y avisá a ANDA o a la Contaduría (CGN) para liberar la garantía si la usaste.',
+        name: 'Documentá la entrega y el retiro',
+        text: 'Conservá la entrega de llaves, el estado de la vivienda y la liquidación de saldos. Gestioná por separado el retiro del depósito si existe.',
+      },
+    ],
+    sources: [
+      {
+        label: 'Artículo 1785: devolución antes del término y precio del tiempo restante',
+        url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/1785',
+        publisher: 'IMPO — Código Civil',
+      },
+      {
+        label: 'Artículo 1291: efectos del contrato y buena fe',
+        url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/1291',
+        publisher: 'IMPO — Código Civil',
+      },
+      {
+        label: 'Artículo 1294: extinción de obligaciones por mutuo consentimiento',
+        url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/1294',
+        publisher: 'IMPO — Código Civil',
+      },
+      {
+        label: 'Artículo 421: requisitos conjuntos del régimen sin garantía',
+        url: 'https://www.impo.com.uy/bases/leyes/19889-2020/421',
+        publisher: 'IMPO — Ley 19.889',
+      },
+      {
+        label: 'Artículo 422: plazo y prórroga del contrato sin garantía',
+        url: 'https://www.impo.com.uy/bases/leyes/19889-2020/422',
+        publisher: 'IMPO — Ley 19.889',
+      },
+      {
+        label: 'Artículo 458: normas complementarias del régimen sin garantía',
+        url: 'https://www.impo.com.uy/bases/leyes/19889-2020/458',
+        publisher: 'IMPO — Ley 19.889',
+      },
+      {
+        label: 'Artículo 1: documentos electrónicos y conservación de las reglas del acto',
+        url: 'https://www.impo.com.uy/bases/leyes/18600-2009/1',
+        publisher: 'IMPO — Ley 18.600',
+      },
+      {
+        label: 'Rescisiones de contratos con garantía CGN: requisitos y entrega de la finca',
+        url: 'https://www.gub.uy/tramites/rescisiones-contratos-alquiler-relacionados-servicio-garantia-alquileres-cgn',
+        publisher: 'MEF — Contaduría General de la Nación',
+      },
+      {
+        label: 'Inquilinos: rescisión, inspección, servicios y deuda pendiente',
+        url: 'https://www.gub.uy/ministerio-economia-finanzas/politicas-y-gestion/inquilinos',
+        publisher: 'MEF — Servicio de Garantía de Alquileres',
       },
     ],
   },
@@ -392,7 +445,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'garantias-de-alquiler-uruguay',
     title: 'Garantía de alquiler: 3 % mensual o prima',
     description:
-      'Comparativa de las garantías de alquiler en Uruguay: cuánto cuesta cada una, cuánto podés alquilar y cuál acepta más rápido, con lo que publica cada proveedor.',
+      'Comparativa: las garantías de retención (Contaduría, ANDA, fondo estatal) cobran 3 % mensual y las aseguradoras no publican la prima. Topes del 30 al 40 %.',
     tag: 'GARANTÍAS',
     updatedAt: '2026-09-15',
     sections: [
@@ -581,35 +634,99 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'deposito-de-alquiler-uruguay',
-    title: 'Depósito de alquiler: es tuyo y se devuelve',
+    title: 'Depósito de alquiler: monto y devolución',
     description:
-      'Qué es el depósito de alquiler en Uruguay, cuánto suele ser, para qué puede usarlo el propietario y cómo reclamar su devolución.',
+      'Depósito de alquiler en Uruguay: topes según destino, cuenta en UI, comisión del BHU y retiro con autorización o por orden judicial.',
     tag: 'DEPÓSITO',
-    updatedAt: '2026-07-18',
+    updatedAt: '2026-11-03',
     sections: [
       {
-        heading: 'Qué es el depósito y qué no es',
-        body: 'El depósito es una suma de dinero que entregás al inicio del alquiler como respaldo frente a posibles deudas o daños. Es tuyo: no es un pago a fondo perdido ni un mes de alquiler adelantado. Queda retenido durante el contrato y te lo tienen que devolver al final si no dejaste deudas ni daños que superen el desgaste normal. Ojo con no confundirlo: el depósito en garantía es distinto de la garantía de alquileres (Contaduría General de la Nación, ANDA, seguro de fianza) y también de los depósitos que a veces piden UTE u OSE para habilitar servicios. Cada uno tiene su propia lógica y su propia devolución.',
+        heading: 'Qué garantiza y de quién es el dinero',
+        body: 'El depósito respalda posibles adeudos del alquiler. En la cuenta del BHU el dinero pertenece al depositante, que puede ser el inquilino u otra persona que aporte los fondos. El beneficiario puede ser el arrendador, administrador o propietario que figure en la cuenta. Tener el dinero a tu nombre no permite retirarlo libremente: hay condiciones para liberarlo. Esta guía explica el depósito comprendido en el Decreto-Ley 14.219 y, por separado, el trámite del BHU. El alquiler adelantado, los seguros de fianza, las garantías personales y el régimen especial de alquiler sin garantía tienen reglas diferentes.',
       },
       {
-        heading: 'Cuánto suele ser',
-        body: 'En el mercado uruguayo el depósito equivale con frecuencia a uno o más meses de alquiler, según lo que se pacte y el tipo de garantía que uses. La normativa vigente fija un tope máximo para el depósito en garantía de vivienda, del orden de varios meses de alquiler, así que conviene verificar el límite actual en el Banco Hipotecario del Uruguay (BHU) o con un profesional; dentro de ese margen no hay un monto único fijo y el número sale del acuerdo entre las partes y figura en el contrato. Cuando el depósito funciona como garantía principal, el efectivo suele constituirse en el BHU en Unidades Indexadas, según prevé la normativa. Antes de firmar, dejá claro por escrito cuánto entregás, en qué concepto y bajo qué condiciones se devuelve. Que quede documentado es lo que te va a permitir reclamarlo después sin discusiones sobre si existió o cuánto fue.',
+        heading: 'Cuánto pueden pedir y en qué moneda',
+        body: 'El artículo 38 del Decreto-Ley 14.219 fija estos máximos para el depósito en garantía. El monto concreto se acuerda: cinco meses no es un mínimo obligatorio. La Ley 18.795, artículo 25, establece que estos depósitos se realizan en Unidades Indexadas y no generan intereses. También habilita a bancos y cooperativas de intermediación financiera a recibirlos; no establece exclusividad del BHU. Si tu contrato pertenece a un régimen especial, verificá su encuadre antes de aplicar esta regla.',
+        table: {
+          headers: ['Destino', 'Máximo del depósito'],
+          rows: [
+            ['Vivienda', 'Cinco meses de alquiler'],
+            ['Otros destinos', 'Diez meses de alquiler'],
+          ],
+        },
       },
       {
-        heading: 'Para qué puede usarlo el propietario',
-        body: 'El propietario puede descontar del depósito lo que legítimamente le debas al terminar el contrato: alquileres o gastos comunes impagos, servicios pendientes a tu nombre y daños en la vivienda que excedan el desgaste normal del uso. Eso último es clave: paredes marcadas por el paso del tiempo, pintura gastada o cosas propias del uso razonable no son daños que puedas pagar vos. Sí lo son roturas, faltantes o deterioros claros. Lo que el propietario no puede hacer es quedarse con el depósito porque sí, ni usarlo para financiar mejoras que le suman valor a su propiedad más allá de reparar lo que rompiste.',
+        heading: 'Qué cobra el BHU y qué documentación pide',
+        body: 'Según la documentación del BHU consultada el 3/11/2026, la comisión de constitución es del 5% sobre los montos depositados, no gravada por IVA. Ese costo es distinto del dinero que queda como garantía. La cuenta no tiene mantenimiento administrativo y permite acordar hasta diez cuotas con el arrendador. Para la apertura pide identificación vigente y constancias de domicilio e ingresos; las especificaciones detallan alternativas según quién intervenga. Consultá los requisitos antes de iniciar la solicitud. Al retirar puede haber cargos por el medio de pago: el BHU publica 10 UI para transferencias y 100 UI para letras de cambio.',
       },
       {
-        heading: 'El inventario de entrada y salida',
-        body: 'Tu mejor defensa es documentar el estado de la vivienda al entrar y al salir. Al mudarte, hacé un inventario con fotos y, si podés, un acta firmada por las dos partes que describa el estado de pisos, paredes, artefactos, aberturas y cualquier detalle. Al irte, repetí el registro. Con esa comparación es difícil que te imputen daños que ya existían o que son desgaste normal. Sin inventario, quedás expuesto a la palabra del propietario. Guardá todo con fecha. Este simple hábito es lo que más discusiones evita a la hora de recuperar tu plata.',
+        heading: 'Cómo retirar cuando hay acuerdo',
+        body: 'Para retirar total o parcialmente en el BHU, el depositante necesita autorización expresa del beneficiario. Coordiná la cita y el formulario FO.AHR.39 de autorización de retiro, y llevá documento vigente. Si algún firmante no concurre, el formulario requiere certificación notarial de su firma; poderes y fallecimientos tienen requisitos propios. El final del contrato no libera automáticamente la cuenta. Revisá también el medio de cobro y sus cargos antes de concurrir.',
       },
       {
-        heading: 'Cómo reclamar la devolución',
-        body: 'Al finalizar, entregá la vivienda limpia y las llaves, y pedí por escrito la constancia de que no quedan deudas. El depósito debería devolverse una vez verificado que está todo en orden y saldados los servicios. Si el propietario se demora o retiene sin justificación, reclamá primero por escrito de forma fehaciente (telegrama colacionado), detallando el monto y el concepto. Si aun así no lo devuelve, tené presente que en Uruguay los conflictos de arrendamiento suelen exigir una instancia de conciliación o mediación previa (Centro de Mediación del Poder Judicial) antes de la vía judicial ante el Juzgado de Paz competente por la ubicación del inmueble. Un abogado puede ayudarte a encauzar el reclamo. Tener el contrato, el comprobante del depósito y los inventarios convierte tu reclamo en algo sólido y demostrable.',
+        heading: 'Qué ocurre si hay deudas o desacuerdo',
+        body: 'El contrato del BHU prevé que, por adeudos derivados de la ocupación, se entreguen al beneficiario los fondos que el depositante autorice expresamente. Si no hay acuerdo, el retiro se tramita ante el juzgado competente y se realiza con la orden judicial correspondiente. No alcanza con que una parte decida cuánto descontar. Pedí el detalle de lo reclamado y sus comprobantes, conservá tu documentación y consultá asesoramiento para tu caso; existen supuestos especiales, como un embargo, que requieren revisar las reglas aplicables. Los Centros de Mediación del Poder Judicial ofrecen una vía gratuita y voluntaria de diálogo: no son una mediación obligatoria ni sustituyen el trámite judicial que corresponda.',
       },
       {
-        heading: 'Información general, no asesoramiento',
-        body: 'Esta guía te explica cómo funciona en general el depósito, pero cada contrato define sus propias condiciones y el resultado depende de lo que hayas firmado y documentado, además de la normativa vigente. No sustituye el consejo de un profesional. Si el monto retenido es importante o hay desacuerdo sobre daños, consultá con un abogado antes de resignar tu plata, y recordá que los arrendamientos se tramitan ante el Juzgado de Paz y que suele exigirse una instancia de mediación previa ante el Poder Judicial. Guardá siempre copia del contrato, el recibo del depósito y los inventarios: son la base de cualquier reclamo.',
+        heading: 'Qué guardar para discutir daños o saldos',
+        body: 'Guardá contrato, comprobantes de cada depósito, pagos y constancia de entrega de llaves. Documentá con inventario y fotos fechadas el estado al entrar y al salir. El Código Civil distingue el deterioro por tiempo y uso legítimo de los daños que correspondan al inquilino; no toda marca permite un descuento ni toda rotura queda exenta. Si el contrato no describe el estado inicial, el artículo 1827 establece una presunción de buena conservación, salvo prueba en contrario. La comparación documentada ayuda a discutir hechos concretos. Esta guía no fija un plazo universal de devolución ni resuelve la responsabilidad por un daño particular.',
+      },
+    ],
+    sources: [
+      {
+        label: 'Artículo 38: máximo del depósito según el destino del inmueble',
+        url: 'https://www.impo.com.uy/bases/decretos-ley/14219-1974/38',
+        publisher: 'IMPO — Decreto-Ley 14.219',
+      },
+      {
+        label: 'Artículo 25: depósitos en UI, sin intereses e instituciones habilitadas',
+        url: 'https://www.impo.com.uy/bases/leyes/18795-2011/25',
+        publisher: 'IMPO — Ley 18.795',
+      },
+      {
+        label: 'Garantía de alquiler: agenda, requisitos y documentos vigentes',
+        url: 'https://www.bhu.com.uy/ahorro/garantia-de-alquiler',
+        publisher: 'BHU',
+      },
+      {
+        label: 'Preguntas frecuentes: arancel y mantenimiento de la cuenta',
+        url: 'https://www.bhu.com.uy/garantia-de-alquiler',
+        publisher: 'BHU',
+      },
+      {
+        label: 'Especificaciones ES.AHR.04, versión 21: titulares, costos y retiros',
+        url: 'https://www.bhu.com.uy/sites/default/files/2023-04/ES.AHR.04.pdf',
+        publisher: 'BHU',
+      },
+      {
+        label: 'Contrato FO.AHR.04, versión 13: liberación y ejecución de la garantía',
+        url: 'https://www.bhu.com.uy/sites/default/files/2023-04/FO.AHR.04_-_Contrato_de_dep_sito_en_garant_a_de_alquiler_-_reducido_menor_a_5MB.pdf',
+        publisher: 'BHU',
+      },
+      {
+        label: 'Formulario FO.AHR.39: autorización para retirar la garantía',
+        url: 'https://bhu.com.uy/sites/default/files/2023-04/FO.AHR.39_Autorizaci_n_para_retiro_de_garant_a_de_alquiler.pdf',
+        publisher: 'BHU',
+      },
+      {
+        label: 'Comisiones aplicables por retiro: transferencias y letras de cambio',
+        url: 'https://bhu.com.uy/comisiones-aplicables-por-retiro',
+        publisher: 'BHU',
+      },
+      {
+        label: 'Artículo 1819: deterioros por tiempo y uso legítimo',
+        url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/1819',
+        publisher: 'IMPO — Código Civil',
+      },
+      {
+        label: 'Artículo 1827: estado de entrega y devolución del inmueble',
+        url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/1827',
+        publisher: 'IMPO — Código Civil',
+      },
+      {
+        label: 'Centros de Mediación: servicio gratuito y voluntario',
+        url: 'https://www.poderjudicial.gub.uy/institucional/centros-de-mediacion',
+        publisher: 'Poder Judicial',
       },
     ],
     related: [
@@ -619,24 +736,24 @@ export const redditGuides: readonly Guide[] = [
     ],
     steps: [
       {
-        name: 'Documentá al entrar',
-        text: 'Hacé un inventario con fotos fechadas del estado de la vivienda y, si podés, un acta firmada por las dos partes.',
+        name: 'Identificá el depósito',
+        text: 'Revisá quién figura como depositante y beneficiario, dónde está la cuenta y cuánto se integró.',
       },
       {
-        name: 'Guardá el comprobante',
-        text: 'Que el contrato o un recibo digan cuánto entregaste, en qué concepto y bajo qué condiciones se devuelve el depósito.',
+        name: 'Documentá el cierre',
+        text: 'Conservá la entrega de llaves, el inventario de salida y los comprobantes de pagos o saldos reclamados.',
       },
       {
-        name: 'Entregá y registrá la salida',
-        text: 'Devolvé la vivienda limpia y las llaves, y repetí el inventario con fotos para probar el estado en que la dejás.',
+        name: 'Acordá el retiro',
+        text: 'Si hay acuerdo, definí el importe que se liberará y coordiná con la contraparte la autorización requerida por el BHU.',
       },
       {
-        name: 'Pedí la constancia sin deudas',
-        text: 'Solicitá por escrito que no quedan alquileres, común ni servicios pendientes, y coordiná la devolución del depósito.',
+        name: 'Consultá los requisitos',
+        text: 'Revisá la agenda, el formulario FO.AHR.39, la identificación, las firmas y el costo del medio de retiro.',
       },
       {
-        name: 'Reclamá si no te lo devuelven',
-        text: 'Enviá un reclamo fehaciente por telegrama colacionado; si persiste, pasá por la mediación previa y la vía judicial ante el Juzgado de Paz, idealmente con asesoramiento de un abogado.',
+        name: 'Si hay desacuerdo',
+        text: 'Pedí asesoramiento sobre el trámite judicial para la liberación de los fondos; la mediación es una opción voluntaria.',
       },
     ],
   },
@@ -711,7 +828,7 @@ export const redditGuides: readonly Guide[] = [
     sections: [
       {
         heading: 'El aumento de la renta y su índice',
-        body: 'El alquiler de vivienda no se ajusta cuando el propietario quiere ni por el monto que se le ocurra. En Uruguay el reajuste se hace, por regla, una vez al año en la fecha aniversario del contrato, y siguiendo un índice objetivo pactado en el propio contrato: habitualmente el Índice de Precios al Consumo o algún coeficiente de reajuste de alquileres que publica el Instituto Nacional de Estadística. En el mercado libre el índice lo fijan las partes, e incluso puede pactarse en dólares o en otra unidad. Lo que manda es lo que figura en tu contrato. El propietario debe comunicarte el nuevo valor con antelación, según lo acordado. Un aumento fuera de fecha, sin aviso o por encima del índice pactado no es exigible. Verificá el coeficiente vigente en el INE.',
+        body: 'El alquiler de vivienda no se ajusta cuando el propietario quiere ni por el monto que se le ocurra. En Uruguay el reajuste se hace, por regla, una vez al año en la fecha aniversario del contrato, y siguiendo un índice objetivo pactado en el propio contrato: habitualmente el Índice de Precios al Consumo, la Unidad Indexada o la Unidad Reajustable. En el mercado libre el índice lo fijan las partes, e incluso puede pactarse en dólares o en otra unidad. Lo que manda es lo que figura en tu contrato. El propietario debe comunicarte el nuevo valor con antelación, según lo acordado. Un aumento fuera de fecha, sin aviso o por encima del índice pactado no es exigible. Y hay un coeficiente legal además del pactado: el Coeficiente de Reajuste de Alquileres del artículo 15 del Decreto-Ley 14.219, que publica el Poder Ejecutivo en el Diario Oficial, no el INE, en un decreto por mes.',
       },
       {
         heading: 'Reparaciones: quién paga qué',
@@ -731,13 +848,17 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         heading: 'Información general, no asesoramiento',
-        body: 'Los derechos concretos dependen del régimen de tu contrato y de sus cláusulas, así que esta guía es orientativa y no reemplaza el consejo profesional. Si enfrentás un desalojo, un aumento abusivo o un conflicto serio, consultá cuanto antes con un abogado o con una liga o asociación de inquilinos, que suelen dar asesoramiento accesible. Para índices y coeficientes de reajuste, la fuente oficial es el Instituto Nacional de Estadística. Guardá tu contrato, los recibos y toda comunicación fehaciente: son la base para hacer valer tus derechos.',
+        body: 'Los derechos concretos dependen del régimen de tu contrato y de sus cláusulas, así que esta guía es orientativa y no reemplaza el consejo profesional. Si enfrentás un desalojo, un aumento abusivo o un conflicto serio, consultá cuanto antes con un abogado o con una liga o asociación de inquilinos, que suelen dar asesoramiento accesible. El Índice de Precios del Consumo lo publica el Instituto Nacional de Estadística; el coeficiente legal de reajuste de alquileres lo fija un decreto del Poder Ejecutivo y se publica en el Diario Oficial. Guardá tu contrato, los recibos y toda comunicación fehaciente: son la base para hacer valer tus derechos.',
       },
     ],
     related: [
       { label: 'Guía para alquilar', to: '/alquilar-en-uruguay' },
       { label: 'Rescindir el contrato', to: '/guias/como-rescindir-contrato-alquiler-uruguay' },
       { label: 'Qué revisar antes de firmar', to: '/guias/que-revisar-antes-de-firmar-alquiler' },
+      {
+        label: 'El coeficiente legal, mes por mes',
+        to: '/coeficiente-de-reajuste-de-alquileres-uruguay',
+      },
     ],
   },
   {
@@ -1158,7 +1279,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'bhu-como-funciona',
     title: 'El BHU da el crédito, no la ANV',
     description:
-      'Qué es el Banco Hipotecario del Uruguay, sus planes de ahorro previo y líneas de crédito para vivienda, la diferencia con la ANV y para quién conviene.',
+      'Presta en Unidades Indexadas o en pesos, así que la cuota en pesos sube con la inflación; los créditos viejos van en UR, que ajusta por salarios.',
     tag: 'VIVIENDA',
     updatedAt: '2026-07-18',
     sections: [
@@ -1404,7 +1525,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'hacer-un-testamento-uruguay',
     title: 'Cómo hacer un testamento en Uruguay',
     description:
-      'Cómo hacer un testamento en Uruguay: tipos abierto y cerrado, qué podés y qué no podés disponer por la legítima, rol del escribano, costos y cómo revocarlo.',
+      'Con hijos, la legítima ya reserva la mayor parte y sólo disponés del resto; el honorario notarial no tiene arancel único, así que se pide presupuesto.',
     tag: 'TESTAMENTO',
     updatedAt: '2026-07-18',
     sections: [
@@ -1607,7 +1728,13 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         heading: 'Comparar con ahorrar y esperar',
-        body: 'Antes de tomar el crédito, hacé la cuenta de la alternativa: cuánto tardarías en juntar la plata ahorrando esa misma cuota, y cuánto interés total te ahorrarías comprando de contado o con un adelanto más grande. Un adelanto mayor baja el monto financiado y por lo tanto el interés total. Si podés esperar unos meses y ahorrar, muchas veces terminás pagando bastante menos por el mismo auto. Podés estimar todo esto con la calculadora de préstamos de Cambio Uruguay, cargando monto, plazo y tasa para ver el costo total y comparar contra ahorrar, antes de comprometerte.',
+        body: 'Antes de tomar el crédito, hacé la cuenta de la alternativa: cuánto tardarías en juntar la plata ahorrando esa misma cuota, y cuánto interés total te ahorrarías comprando de contado o con un adelanto más grande. Un adelanto mayor baja el monto financiado y por lo tanto el interés total. Si podés esperar unos meses y ahorrar, muchas veces terminás pagando bastante menos por el mismo auto. La calculadora de préstamos de Cambio Uruguay estima cuotas e intereses en pesos con el monto, el plazo y la tasa que ingreses. Indicá si la tasa es efectiva anual (TEA) o nominal anual y activá la opción de sumar IVA a los intereses si corresponde a tu oferta. No incluye el seguro, las comisiones ni otros gastos, ni proyecta el valor futuro de la UI o cuánto acumularías ahorrando. Sumá los cargos de tu oferta por separado y hacé aparte la cuenta del ahorro.',
+        links: [
+          {
+            label: 'Estimar cuotas e intereses del préstamo',
+            to: '/herramientas/calculadora-prestamo',
+          },
+        ],
       },
       {
         heading: 'Información general, no asesoría',
@@ -1634,7 +1761,7 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         name: 'Compará con ahorrar',
-        text: 'Usá la calculadora de préstamos para ver cuánto interés total pagarías y contrastalo con juntar la plata ahorrando esa misma cuota.',
+        text: 'Estimá cuotas e intereses en pesos con la calculadora, eligiendo TEA o nominal anual e IVA sobre los intereses si corresponde. Sumá seguro, comisiones y gastos por separado; la herramienta no proyecta el ahorro ni el valor futuro de la UI.',
       },
       {
         name: 'Leé el contrato antes de firmar',
@@ -1770,7 +1897,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'prestamo-a-sola-firma-uruguay',
     title: 'Sola firma: compará el costo total',
     description:
-      'Cómo funcionan los préstamos a sola firma en Uruguay, por qué son caros, cómo leer la tasa efectiva y el costo total, y cuándo tienen sentido.',
+      'Sin garantía ni garante: alcanza tu firma; el riesgo lo cubren con la tasa. Lo que compara no es la cuota ni la TNA: es la tasa implícita que mide el BCU.',
     tag: 'PRÉSTAMOS',
     updatedAt: '2026-07-18',
     sections: [
@@ -1809,7 +1936,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'entender-tea-tna-y-cft',
     title: 'TEA, TNA y CFT: el costo total, no la cuota',
     description:
-      'Qué son la TNA, la TEA y el costo financiero total, por qué la cuota chica engaña y cómo comparar créditos por su costo real en Uruguay.',
+      'La TEA no incluye comisiones ni seguros. El costo real es la tasa implícita, la misma que el BCU usa para medir usura, más el total a pagar en pesos.',
     tag: 'TASAS',
     updatedAt: '2026-07-18',
     sections: [
@@ -1848,7 +1975,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'refinanciar-deudas-uruguay',
     title: 'Refinanciar: mirá el total, no la cuota',
     description:
-      'Qué significa refinanciar o unificar deudas en Uruguay, cuándo baja el costo, cuándo solo lo esconde y qué señales de alarma mirar.',
+      'Si la TEA no baja, refinanciar sólo estira el plazo y el total sube. Compará la TEA y el total a pagar de la deuda vieja contra la nueva, no las cuotas.',
     tag: 'DEUDA',
     updatedAt: '2026-07-18',
     sections: [
@@ -1887,7 +2014,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'mejorar-historial-crediticio-uruguay',
     title: 'Historial crediticio: dos registros, no uno',
     description:
-      'Diferencia entre el Clearing de Informes y la Central de Riesgos del BCU, cómo salir del clearing y hábitos para reconstruir tu perfil.',
+      'El Clearing lo opera una empresa privada; la Central de Riesgos es del BCU y sólo lista instituciones reguladas. Podés estar limpio en uno y no en el otro.',
     tag: 'HISTORIAL',
     updatedAt: '2026-07-18',
     sections: [
@@ -1948,7 +2075,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'ser-garante-o-codeudor-riesgos-uruguay',
     title: 'Garante solidario: te pueden cobrar a vos',
     description:
-      'Qué asumís al firmar como garante, fiador o codeudor en Uruguay, cómo te afecta si el titular no paga y cómo protegerte.',
+      'El codeudor es deudor desde el primer día y el fiador solidario resigna que le cobren primero al titular. Podés ir al Clearing por una deuda ajena.',
     tag: 'GARANTÍA',
     updatedAt: '2026-07-18',
     sections: [
@@ -1990,7 +2117,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'salir-de-deudas-de-tarjeta-uruguay',
     title: 'Deudas de tarjeta: con el mínimo no salís',
     description:
-      'Por qué el pago mínimo es una trampa, cómo aplicar bola de nieve o avalancha y cómo negociar con el emisor para salir de la tarjeta.',
+      'Lo que no pagás va al rotativo y los intereses se cobran sobre intereses. Bola de nieve ordena por monto y avalancha por tasa, que paga menos en total.',
     tag: 'TARJETA',
     updatedAt: '2026-07-18',
     sections: [
@@ -2270,7 +2397,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'despido-y-liquidacion-uruguay',
-    title: 'Despido y liquidación en Uruguay: qué te corresponde',
+    title: 'Despido y liquidación: un mes por año',
     description:
       'Un mes de sueldo por año o fracción, con tope de seis mensualidades, y el jornalero por su propio régimen en jornales. Qué entra en esa base de cálculo.',
     tag: 'DESPIDO',
@@ -2609,7 +2736,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'trabajar-para-el-exterior-desde-uruguay',
-    title: 'Trabajar para el exterior desde Uruguay: cómo facturar y tributar',
+    title: 'Trabajar para el exterior: facturás sin IVA',
     description:
       'Facturar al exterior sale sin IVA porque la operación no está gravada: no es una «tasa cero», que en Uruguay no existe. Unipersonal, Literal E, IRAE y BPS.',
     tag: 'EXTERIOR',
@@ -3594,7 +3721,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'importar-de-aliexpress-a-uruguay',
     title: 'AliExpress a Uruguay: USD 800 al año o 60 %',
     description:
-      'Cómo importar de AliExpress a Uruguay: la franquicia anual de USD 800, el 60% con mínimo de USD 20 por envío, por qué AliExpress parte tu pedido en varios trackings y qué cobra el Correo aparte del impuesto.',
+      'El mínimo de USD 20 es por tracking y AliExpress parte el pedido en varios: un carrito de USD 40 puede pagar USD 60. El «USD 200 libre» es sólo de EE.UU.',
     tag: 'IMPORTACIÓN',
     updatedAt: '2026-08-12',
     sections: [
@@ -3779,7 +3906,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'comprar-en-amazon-desde-uruguay',
-    title: 'Comprar en Amazon desde Uruguay: courier, aduana y costo real',
+    title: 'Comprar en Amazon: el IVA es todo o nada',
     description:
       'Hasta USD 200 de EE.UU. no pagás IVA, y es todo o nada: con USD 201 pagás sobre el total. Más la franquicia anual de USD 800 en hasta 3 envíos.',
     tag: 'IMPORTACIÓN',
@@ -3803,7 +3930,7 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         heading: 'El cambio de octubre de 2026: el vendedor registrado',
-        body: 'Hay una condición nueva que conviene tener en el radar. A partir del 1 de octubre de 2026, para que una compra de EE.UU. mantenga la exoneración de IVA, el emisor de la factura (el vendedor o la plataforma, no el courier) tiene que estar registrado ante la Aduana, y el sistema lo valida de forma automática. Si el vendedor no está registrado, el envío pagaría IVA aunque sea de EE.UU. y esté por debajo de USD 200. Esa fecha ya se postergó dos veces, así que podría moverse de nuevo; antes de una compra grande, verificá si ya está en vigencia. Es la diferencia entre pagar o no pagar el IVA, así que no la pases por alto.',
+        body: 'Hay una condición nueva que ya corre. Para que una compra de EE.UU. mantenga la exoneración de IVA, el emisor de la factura (el vendedor o la plataforma, no el courier) tiene que figurar en el registro de empresas extranjeras de la Aduana. Las fechas no coinciden: la RG DNA 21/2026 lo hizo exigible desde el 1 de octubre de 2026, después de dos prórrogas, y la página de franquicia de la Aduana lo anuncia "a partir del 3 de noviembre", que es cuando arranca la validación automática del sistema (RG DNA 26/2026). Contá con que ya se exige. Si el vendedor no está registrado, el envío paga IVA aunque sea de EE.UU. y esté por debajo de USD 200. Desde el 5 de octubre la lista ya no depende sólo de que cada empresa se presente: la Aduana puede sumar vendedores de oficio, tu courier puede pedir el alta de uno que falta y la Aduana tiene que publicar la lista en su sitio. Antes de una compra grande, fijate que el vendedor esté en esa lista. Es la diferencia entre pagar o no pagar el IVA, así que no la pases por alto.',
       },
       {
         heading: 'Estimá el costo y desconfiá de las páginas viejas',
@@ -3840,7 +3967,7 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         q: '¿Qué es lo del "vendedor registrado" desde octubre de 2026?',
-        a: 'Desde el 1 de octubre de 2026, para conservar la exoneración de IVA en compras de EE.UU., el emisor de la factura (el vendedor o la plataforma) debe estar registrado ante la Aduana, con validación automática del sistema. Si no lo está, el envío pagaría IVA aunque sea de EE.UU. y esté por debajo de USD 200. La fecha ya se postergó dos veces y podría moverse otra vez, así que conviene verificar si ya rige antes de una compra importante.',
+        a: 'Para conservar la exoneración de IVA en compras de EE.UU., el emisor de la factura (el vendedor o la plataforma) tiene que figurar en el registro de empresas extranjeras de la Aduana. Se exige desde el 1 de octubre de 2026 (RG DNA 21/2026), y la validación automática del sistema arranca el 3 de noviembre (RG DNA 26/2026). Si no figura, el envío paga IVA aunque sea de EE.UU. y esté por debajo de USD 200. Vos no podés registrarlo, pero desde el 5 de octubre tu courier puede pedir que lo agreguen; antes de una compra importante, revisá la lista que publica la Aduana.',
       },
       {
         q: 'Si Amazon me lo manda por correo común en vez de courier, ¿cambia algo?',
@@ -3871,13 +3998,25 @@ export const redditGuides: readonly Guide[] = [
         url: 'https://www.aduanas.gub.uy/innovaportal/file/28613/1/rg-21-2026.pdf',
         publisher: 'Dirección Nacional de Aduanas',
       },
+      {
+        label:
+          'Resolución General 26/2026 — alta de vendedores de oficio y a pedido del operador postal, lista publicada por la DNA y validación automática desde el 3/11/2026',
+        url: 'https://www.aduanas.gub.uy/innovaportal/file/28724/1/rg-26-2026-exoneracion-iva-encomiendas-postales.pdf',
+        publisher: 'Dirección Nacional de Aduanas',
+      },
+      {
+        label:
+          'DNA — régimen de franquicia: el registro del emisor de la factura y la lista de vendedores de EE.UU. registrados',
+        url: 'https://www.aduanas.gub.uy/innovaportal/v/28221/1/innova.front/',
+        publisher: 'Dirección Nacional de Aduanas',
+      },
     ],
   },
   {
     slug: 'elegir-tarjeta-credito-beneficios-uruguay',
     title: 'Qué tarjeta elegir: depende de cómo gastás',
     description:
-      'Cómo comparar tarjetas de crédito en Uruguay por sus beneficios reales: la red de descuentos, la acumulación de puntos o millas, el canje, el costo anual y cómo elegir la tarjeta que rinde para cómo gastás vos.',
+      'Cinco factores deciden: red de descuentos, acumulación, canje, costo anual y flexibilidad. Para el gasto diario el descuento en la caja gana a los puntos.',
     tag: 'TARJETAS',
     updatedAt: '2026-07-18',
     sections: [
@@ -3980,7 +4119,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'tarjeta-debito-vs-credito-uruguay',
     title: 'Débito gasta lo tuyo; crédito te presta',
     description:
-      'Tarjeta de débito o de crédito en Uruguay: diferencias reales, la rebaja de IVA en pagos electrónicos (Ley 19.210), protección ante fraude, cómo cuidar el presupuesto y cuándo conviene cada una.',
+      'El débito gasta lo tuyo y suma la rebaja de IVA en pagos electrónicos (Ley 19.210); el crédito da más protección ante un fraude: desconocés antes de pagar.',
     tag: 'TARJETAS',
     updatedAt: '2026-07-18',
     sections: [
@@ -4033,7 +4172,7 @@ export const redditGuides: readonly Guide[] = [
     slug: 'reforma-jubilatoria-uruguay-que-cambia',
     title: 'Reforma jubilatoria: edad por generación',
     description:
-      'Qué cambia con la reforma jubilatoria (Ley 20.130) en Uruguay: el nuevo Sistema Previsional Común, cómo sube la edad de retiro según el año en que naciste y cómo afecta tu jubilación.',
+      'La edad va a 65 por generación: antes de 1973 siguen 60 años y 30 de servicios, y 1973-1976 suben uno por año. Ley 20.130 y el Sistema Previsional Común.',
     tag: 'REFORMA',
     updatedAt: '2026-08-10',
     sections: [
@@ -4498,7 +4637,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'horas-extra-en-uruguay',
-    title: 'Horas extra en Uruguay: cuándo se generan y cómo se pagan',
+    title: 'Horas extra: el doble, y 150 % en feriado',
     description:
       'La hora extra vale 100 % más en día hábil y 150 % en descanso o feriado (Ley 15.996). Es irrenunciable y se genera pasadas las 8 diarias o 44/48 semanales.',
     tag: 'HORAS EXTRA',
@@ -4593,7 +4732,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'llegar-tarde-tolerancia-y-sanciones-uruguay',
-    title: 'Llegar tarde, tolerancia y sanciones en el trabajo (Uruguay)',
+    title: 'Llegar tarde: sanciones sí, multas no',
     description:
       'Ninguna ley obliga a dar tolerancia en el privado: la fija tu convenio. Dentro de ella no hay falta, y el descuento es proporcional, nunca una multa.',
     tag: 'PUNTUALIDAD',
@@ -4685,7 +4824,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'me-certifique-subsidio-por-enfermedad-uruguay',
-    title: 'Me certifiqué: cuánto cobro, desde qué día, quién paga, y si me pueden despedir',
+    title: 'Me certifiqué: cobro el 70 % desde el día 4',
     description:
       'El BPS paga el 70 % desde el cuarto día certificado —el primero si hay internación—, tope de $ 67.754 (01/2026). Despedirte certificado cuesta el doble.',
     tag: 'ENFERMEDAD',
@@ -4986,7 +5125,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'me-deben-el-sueldo-uruguay',
-    title: 'Me deben el sueldo: cómo reclamar en Uruguay',
+    title: 'Me deben el sueldo: reclamar con 10 % más',
     description:
       'Si cobrás por mes, pasado el día 10 corrido ya es incumplimiento (Ley 10.449) y corre solo un recargo del 10 % (Ley 18.572). Un año para reclamar.',
     tag: 'RECLAMO',
@@ -5118,7 +5257,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'abogado-gratis-uruguay',
-    title: 'Abogado gratis en Uruguay: qué puerta te corresponde',
+    title: 'Abogado gratis: cada problema, su puerta',
     description:
       'El Consultorio Jurídico atiende gratis en Montevideo hasta $ 55.000 nominales (2026); lo laboral lo asesora el MTSS y el juicio, la Defensoría Pública.',
     tag: 'ACCESO',
@@ -5227,7 +5366,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'estudio-de-cobranza-uruguay',
-    title: 'Te llama un estudio de cobranza: qué puede y qué no',
+    title: 'Cobranza: el estudio no retiene tu sueldo',
     description:
       'Un cobrador no puede retenerte el sueldo: la Ley 17.829 tasa las retenciones y deja un piso del 35 %. En el Clearing el registro dura hasta 10 años.',
     tag: 'COBRANZA',
@@ -5323,19 +5462,19 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'feriados-en-uruguay-como-se-pagan',
-    title: 'Cinco feriados se pagan doble, el resto no',
+    title: 'Feriados pagos: cuándo se cobra doble',
     description:
-      'Sólo cinco días se pagan doble (1/1, 1/5, 18/7, 25/8 y 25/12), por el art. 18 de la Ley 12.590. Carnaval y Semana de Turismo son feriado común.',
+      'Cinco feriados pagos generales; Carnaval y Semana de Turismo son comunes, salvo convenio. Cómo se paga y qué cambia al redistribuir las horas del sábado.',
     tag: 'FERIADOS',
-    updatedAt: '2026-08-11',
+    updatedAt: '2026-11-04',
     sections: [
       {
-        heading: 'Hay dos clases de feriado y solo una se paga doble',
-        body: 'El error más común del año es tratar a todos los feriados igual. En Uruguay conviven los feriados pagos —también llamados no laborables— y los feriados comunes o laborables. En los pagos se cobra el día se trabaje o no, y trabajarlo se remunera doble. En los comunes no hay pago extra por el solo hecho de ser feriado: el mensual cobra su sueldo como cualquier día y el jornalero cobra únicamente si trabaja. Que el comercio cierre o que el día "sea feriado" en el calendario no cambia esa clasificación.',
+        heading: 'Primero, distinguí el régimen general de tu convenio',
+        body: 'Para calcular el pago de un feriado en la actividad privada, importa su clasificación y el convenio que te corresponde. En el régimen general, los feriados pagos se cobran aunque no se trabajen y trabajar ese día se remunera doble. En los comunes no hay un adicional por el solo hecho de ser feriado. Un convenio colectivo puede reconocer otros feriados pagos para una rama de actividad: revisalo antes de concluir que sólo te corresponden las cinco fechas generales. Que el comercio cierre no alcanza para decidir cómo se liquida ese día.',
       },
       {
-        heading: 'Los cinco feriados pagos',
-        body: 'La lista está en el artículo 18 de la Ley 12.590 y son cinco: 1º de enero, 1º de mayo, 18 de julio, 25 de agosto y 25 de diciembre. La norma dice que en esos días todo trabajador percibirá remuneración como si trabajara y que, en caso de trabajar, recibirá doble paga. Todo el resto del calendario —6 de enero, Carnaval, Semana de Turismo, 19 de abril, 18 de mayo, 19 de junio, 12 de octubre, 2 de noviembre y los asuetos que se dispongan— entra en la categoría de feriado común, por más que sean días de descanso efectivo en buena parte del país.',
+        heading: 'Los cinco feriados pagos del régimen general',
+        body: 'El artículo 18 de la Ley 12.590 enumera cinco fechas: 1º de enero, 1º de mayo, 18 de julio, 25 de agosto y 25 de diciembre. En ellas se cobra como si se trabajara y, si se trabaja, corresponde doble paga. Carnaval y Semana de Turismo son feriados comunes en el régimen general; un convenio puede mejorar ese piso. La lista del artículo 18 no permite clasificar cualquier asueto o día especial: hay que leer la disposición que lo establece y a quién alcanza.',
       },
       {
         heading: 'Si sos mensual',
@@ -5349,25 +5488,29 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         heading: 'Si sos jornalero',
-        body: 'Acá la diferencia es mucho más grande, porque el jornalero cobra por día trabajado. En un feriado pago que no trabaja, igual cobra el jornal; si lo trabaja, cobra doble jornal. En un feriado común que no trabaja no cobra nada por ese día, y si lo trabaja cobra su jornal simple. Por eso, para un jornalero, la diferencia entre que el 25 de agosto caiga en su día de trabajo o no es plata concreta, mientras que para un mensual el sueldo del mes no se mueve.',
+        body: 'En el régimen general, el jornalero cobra el jornal del feriado pago aunque no trabaje ese día; si lo trabaja, cobra doble jornal. En un feriado común que no trabaja no cobra el jornal, y si lo trabaja cobra su jornal simple. Antes de liquidarlo, comprobá si el convenio de tu actividad establece una condición más favorable.',
+      },
+      {
+        heading: 'Si las horas del sábado se reparten de lunes a viernes',
+        body: 'Si el sábado coincide con uno de los cinco feriados pagos y sus horas se trabajaron distribuidas de lunes a viernes, el MTSS indica que esas horas redistribuidas se pagan dobles. La condición es haber sustituido el trabajo del sábado por más horas en los otros días: no basta con que el feriado caiga sábado. Revisá tu distribución horaria y el recibo para identificar esas horas.',
       },
       {
         heading: 'Destajistas y remuneraciones variables',
-        body: 'Cuando la retribución no es fija, el criterio del Ministerio de Trabajo es tomar el promedio de lo percibido en las últimas doce jornadas trabajadas antes del feriado: eso es lo que se paga si el trabajador descansa, y el doble si trabaja el feriado pago. Para trabajadores rurales rige además el Decreto 216/012, con su propio régimen. Si tu remuneración mezcla fijo y variable, el promedio se calcula sobre la parte variable y no sobre el total del recibo.',
+        body: 'Para una remuneración variable, el MTSS indica tomar el promedio de lo ganado en los doce últimos días anteriores al feriado. Su explicación no lo define como las últimas doce jornadas efectivamente trabajadas ni detalla cómo combinar componentes fijos y variables. Si tu recibo mezcla ambos, pedí el desglose de la liquidación y contrastalo con el régimen aplicable. Para trabajadores rurales, la fuente también remite al Decreto 216/012.',
       },
       {
         heading: 'Por qué algunos feriados se corren al lunes y otros no',
         body: 'La Ley 16.805 estableció que los feriados que caen martes o miércoles se trasladan al lunes anterior, y los que caen jueves o viernes al lunes siguiente; los que caen sábado, domingo o lunes se mantienen. Pero hay una lista de excepciones que se observan siempre en su fecha, sin importar el día de la semana: Carnaval y Semana de Turismo, 1º y 6 de enero, 1º de mayo, 19 de junio, 18 de julio, 25 de agosto, 2 de noviembre y 25 de diciembre —lista que la Ley 17.414 amplió—. Notá que los cinco feriados pagos están todos dentro de las excepciones: nunca se mueven. La ley aclara además que el traslado no afecta el derecho del trabajador a su descanso semanal.',
       },
       {
-        heading: 'El error caro: creer que Carnaval o Semana de Turismo se pagan doble',
-        body: 'Son los dos casos que más discusiones generan en febrero y en abril. Ninguno de los dos está en el artículo 18 de la Ley 12.590, así que ninguno es feriado pago: son feriados comunes. Si trabajás esos días siendo mensual, no corresponde adicional; si sos jornalero, cobrás el jornal simple por haber trabajado. Puede ocurrir que el convenio de tu grupo de actividad mejore ese piso —los consejos de salarios pueden acordar condiciones más favorables—, y ahí manda el convenio. Pero el piso legal es el que dice la ley, y confundirlo lleva a reclamar un doble jornal que no existe o, peor, a no reclamar el que sí corresponde en los cinco días pagos.',
+        heading: 'Carnaval y Semana de Turismo: revisá el convenio',
+        body: 'Carnaval y Semana de Turismo son feriados comunes en el régimen general, no fechas pagas del artículo 18 de la Ley 12.590. Por ese régimen, el mensual que trabaja cobra su sueldo sin adicional y el jornalero cobra el jornal simple. Si el convenio aplicable reconoce una condición más favorable, corresponde considerar esa regla. La respuesta no se decide sólo mirando el calendario: necesitás saber cómo cobrás y qué convenio rige tu actividad.',
       },
     ],
     faqs: [
       {
         q: '¿Cuáles son los feriados pagos en Uruguay?',
-        a: 'Cinco: 1º de enero, 1º de mayo, 18 de julio, 25 de agosto y 25 de diciembre, según el artículo 18 de la Ley 12.590. En esos días se cobra como si se trabajara y, si se trabaja, se paga doble.',
+        a: 'El régimen general del artículo 18 de la Ley 12.590 establece cinco: 1º de enero, 1º de mayo, 18 de julio, 25 de agosto y 25 de diciembre. Se cobran aunque no se trabajen y, si se trabajan, se pagan doble. Un convenio colectivo puede reconocer otros feriados pagos para una actividad.',
       },
       {
         q: 'Soy mensual y trabajé un feriado pago, ¿cuánto me corresponde?',
@@ -5375,7 +5518,7 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         q: '¿Semana de Turismo se paga doble?',
-        a: 'No. No está entre los cinco feriados pagos del artículo 18 de la Ley 12.590: es feriado común. El mensual cobra su sueldo sin adicional y el jornalero cobra jornal simple si trabaja. Un convenio colectivo puede mejorar ese piso.',
+        a: 'En el régimen general es feriado común: el mensual cobra su sueldo sin adicional y el jornalero cobra jornal simple si trabaja. Un convenio colectivo puede mejorar ese piso; comprobá el que corresponde a tu actividad antes de liquidar el día.',
       },
       {
         q: '¿Por qué algunos feriados se pasan al lunes?',
@@ -5405,7 +5548,7 @@ export const redditGuides: readonly Guide[] = [
       },
       {
         label:
-          'Feriados — clasificación en pagos y comunes y forma de pago para mensuales, jornaleros y destajistas',
+          'Feriados — pago de mensuales, jornaleros y remuneraciones variables; convenios sectoriales y horas del sábado redistribuidas. Consultado el 4/11/2026',
         url: 'https://www.gub.uy/ministerio-trabajo-seguridad-social/institucional/derecho-laboral-uruguayo/feriados',
         publisher: 'MTSS',
       },

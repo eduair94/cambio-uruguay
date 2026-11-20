@@ -195,4 +195,89 @@ describe('las cifras que no se pueden publicar', () => {
     expect(libros.regimes.franquicia.tone).toBe('good')
     expect(allText(libros)).toMatch(/exonerad/i)
   })
+
+  // El código J del campo "Tipo de envío" tiene ocho subcategorías desde la RG DNA 30/2026 (vigente
+  // el 12/10/2026). Las fichas decían "cuatro" cuando la RG 11 original ya traía siete: una lista
+  // que nombra la valija diplomática (J/04) tiene que seguir hasta J/07 y J/99.
+  it('no publica el código J con menos subcategorías de las que tiene', () => {
+    for (const category of IMPORT_CATEGORIES) {
+      for (const text of allStrings(category)) {
+        expect(text, `${category.slug}: "${text}"`).not.toMatch(
+          /J\/01 a J\/04|(?:cuatro|4) (?:subcategor|publicad)|son cuatro/i
+        )
+        if (/J\/04/.test(text)) {
+          expect(text, `${category.slug}: lista del J incompleta`).toMatch(/J\/07/)
+          expect(text, `${category.slug}: lista del J incompleta`).toMatch(/J\/99/)
+        }
+      }
+    }
+  })
+
+  // G (franquicia) es el lit. b y H (prestación única) el lit. a del num. 28 de la RG 11/2026; el
+  // lit. c es sólo el código J. Citar "num. 28 lit. c" al definir G era citar el literal equivocado.
+  it('no cita el lit. c del num. 28 para definir G o H', () => {
+    for (const category of IMPORT_CATEGORIES) {
+      for (const text of allStrings(category)) {
+        expect(text, `${category.slug}: "${text}"`).not.toMatch(/num\. 28 lit\. c[^.;]+\b[GH]\b/)
+      }
+    }
+  })
+})
+
+describe('el registro de vendedores y la regla del MSP', () => {
+  // La RG DNA 09/2026 (Anexo I nums. 3 y 10) ata la procedencia al emisor de la factura REGISTRADO
+  // ante la DNA, y la RG 26/2026 abrió el alta a pedido del operador postal. "La residencia se
+  // acredita con la factura" sola dejó de describir lo que se exige.
+  it('no presenta la factura como prueba suficiente de la residencia del vendedor', () => {
+    for (const category of IMPORT_CATEGORIES) {
+      expect(allText(category), category.slug).not.toMatch(/se acredita con la factura/)
+    }
+  })
+
+  it('toda ficha que ofrece la exoneración de EE.UU. cita la RG 26/2026', () => {
+    for (const category of IMPORT_CATEGORIES.filter(c => /TIFA/.test(allText(c)))) {
+      expect(allText(category), category.slug).toMatch(/RG 26\/2026/)
+      expect(allText(category), category.slug).toMatch(/registro de empresas extranjeras/)
+    }
+  })
+
+  // El art. 19 del reglamento del Decreto 18/020 regula la excepción de un medicamento no
+  // registrado; la regla "no autoriza el ingreso ... por particulares" la publica el MSP en su
+  // página. Ninguna frase puede volver a atribuírsela al decreto.
+  it('no atribuye la regla del MSP al Decreto 18/020', () => {
+    for (const category of IMPORT_CATEGORIES) {
+      for (const text of allStrings(category)) {
+        expect(text, `${category.slug}: "${text}"`).not.toMatch(/no autoriza[^.]*\(Decreto 18\/020/)
+      }
+    }
+  })
+
+  it('enlaza la página del MSP que publica la regla, no la portada del ministerio', () => {
+    for (const category of IMPORT_CATEGORIES) {
+      for (const source of category.sources.filter(s => /puedo ingresar/i.test(s.label))) {
+        expect(source.url, category.slug).toMatch(/Puedo-ingresar-al-pa/)
+      }
+    }
+  })
+
+  it('avisa en electrónica que la máquina de afeitar paga IMESI', () => {
+    const electronica = getImportCategory('electronica')!
+    expect(electronica.notIncluded?.some(item => /afeitar/i.test(item))).toBe(true)
+    expect(allText(electronica)).toMatch(/Decreto 96\/990/)
+  })
+})
+
+describe('el sello de una corrección parcial', () => {
+  // `revised` no reemplaza a `verifiedAt`: dice qué se volvió a leer y cuándo, sin afirmar que la
+  // ficha entera se contrastó de nuevo.
+  it.each(IMPORT_CATEGORIES.filter(c => c.revised).map(c => [c.slug, c] as const))(
+    '%s fecha su revisión después del contraste y nombra qué revisó',
+    (_slug, category) => {
+      const revised = category.revised!
+      expect(revised.at).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+      expect(revised.at >= category.verifiedAt).toBe(true)
+      expect(revised.topics.length).toBeGreaterThan(0)
+      for (const topic of revised.topics) expect(topic.length).toBeGreaterThan(5)
+    }
+  )
 })

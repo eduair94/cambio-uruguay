@@ -34,8 +34,8 @@ async function run(name, fn) {
 
 await run("geocode_uy_address", () => geocodeAddress(site, { address: "18 de Julio 1234", department: "Montevideo" }));
 await run("search_rentals", () => searchRentals(site, { department: "Montevideo", types: ["apartamento"], bedrooms: 2, priceMaxUyu: 35000, pets: true, perPage: 3 }));
-await run("search_rentals near address", () => searchRentals(site, { department: "Montevideo", near: { address: "Avenida Rivera 2500", radiusKm: 2 }, types: ["vivienda"], perPage: 3 }));
-await run("search_rentals near point", () => searchRentals(site, { near: { lat: -34.918, lng: -56.166, label: "Facultad de Ingeniería", radiusKm: 1.5 }, types: ["vivienda"], perPage: 3 }));
+await run("search_rentals near address", () => searchRentals(site, { department: "Montevideo", near: "Avenida Rivera 2500", radiusKm: 2, types: ["vivienda"], perPage: 3 }));
+await run("search_rentals near point", () => searchRentals(site, { near: "-34.918,-56.166", radiusKm: 1.5, types: ["vivienda"], perPage: 3 }));
 const firstKey = results.search_rentals?.data.items?.[0]?.key;
 if (firstKey) await run("get_rental", () => getRental(site, { key: firstKey }));
 await run("rank_rentals_for_household", () =>
@@ -65,6 +65,8 @@ await run("car_market_report depreciation", () => carMarketReport(site, { sectio
 await run("list_directories", () => listDirectories(site));
 await run("search_products", () => searchProducts(site, { text: "heladera", limit: 3 }));
 await run("search_products phones", () => searchProducts(site, { vertical: "celulares", text: "iphone", limit: 3 }));
+await run("search_products scooters", () => searchProducts(site, { vertical: "monopatines", condition: "new", maxPriceUyu: 30000, limit: 3 }));
+await run("search_products e-bikes", () => searchProducts(site, { vertical: "bicicletas-electricas", condition: "used", limit: 3 }));
 await run("plan_home_setup", () => planHomeSetup(site, { level: "minima", have: ["heladera", "colchón"] }));
 await run("check_online_store", () => checkOnlineStore(site, { name: "temu" }));
 await run("supermarket_prices", () => supermarketPrices(site, { text: "aceite", department: "Montevideo", limit: 3 }));

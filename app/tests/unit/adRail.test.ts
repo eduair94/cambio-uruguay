@@ -349,7 +349,14 @@ describe('la unidad editorial de las guías', () => {
     expect(loop.tag).toBe('template')
     expect(directive(loop, 'for')).toContain('guide.sections')
     const siblings = elementChildren(loop)
-    expect(siblings.map(sibling => sibling.tag)).toEqual(['section', 'ClientOnly'])
+    // The `nav` after it is the guide's inline recommendations (guideInlineNext): it renders after
+    // the SECOND section, so the unit still sits between the first section and the second.
+    expect(siblings.map(sibling => sibling.tag)).toEqual([
+      'section',
+      'details',
+      'ClientOnly',
+      'nav',
+    ])
     const article = nodes.find(({ node: n }) => n === loop)!.parent!
     expect(hasClass(article, 'guide-article')).toBe(true)
   })

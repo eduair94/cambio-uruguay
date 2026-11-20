@@ -39,6 +39,11 @@ const MovilidadListingSchema = new Schema(
     observedAt: { type: String, required: true },
     firstSeen: { type: String, required: true },
     lastSeen: { type: String, required: true },
+    // Ficha técnica de un monopatín (classes/movilidad/specs/) y precio por km de autonomía.
+    specs: { type: Schema.Types.Mixed, default: null },
+    uyuPerKm: { type: Number, default: null },
+    // La página del modelo del aviso (/monopatines-electricos-uruguay/<modelo>), o null.
+    modelSlug: { type: String, default: null },
   },
   { timestamps: true }
 )
@@ -50,5 +55,5 @@ MovilidadListingSchema.index({ brandKey: 1 })
 MovilidadListingSchema.index({ sellerKey: 1 })
 
 export const MovilidadListingModel: Model<EquiparListingDoc> =
-  (mongoose.models.EquiparListing as Model<EquiparListingDoc>) ||
+  (mongoose.models.MovilidadListing as Model<EquiparListingDoc>) ||
   mongoose.model<EquiparListingDoc>('MovilidadListing', MovilidadListingSchema, 'movilidadlistings')

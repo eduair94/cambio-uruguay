@@ -156,6 +156,11 @@ const IMPO_18083 = 'https://www.impo.com.uy/bases/leyes/18083-2006'
 const IMPO_18874 = 'https://www.impo.com.uy/bases/leyes/18874-2011'
 const IMPO_19942 = 'https://www.impo.com.uy/bases/leyes/19942-2021'
 const IMPO_CT_94 = 'https://www.impo.com.uy/bases/codigo-tributario/14306-1974/94'
+const IMPO_CT_38 = 'https://www.impo.com.uy/bases/codigo-tributario/14306-1974/38'
+/** El instructivo de prescripción de ATYR (BPS): plazos, interrupción, suspensión. Es un PDF. */
+const BPS_PRESCRIPCION = 'https://www.bps.gub.uy/11053/'
+const BPS_PRESCRIPCION_TRAMITE =
+  'https://www.bps.gub.uy/11296/peticion---prescripcion-de-adeudos-tributarios.html'
 
 const V = MONO_INVOICING_VERIFIED_AT
 
@@ -439,6 +444,27 @@ export const LEYENDAS = [
 
 export const MONO_CASOS_VERIFIED_AT = '2026-09-22'
 
+/**
+ * La segunda tanda (2026-10-19, para mergear desde el 2026-10-30). No reemplaza la fecha de
+ * arriba: cada fuente agregada ese día lleva SU fecha en `seenOn`, y la página la imprime al lado
+ * de la fuente cuando no es la de la primera tanda. Lo que se agregó, por la cola de demanda:
+ *   - «Qué pasa si debo monotributo» no decía qué pasa con una deuda VIEJA. Prescribe como
+ *     cualquier tributo (Código Tributario, art. 38: cinco años desde el fin del año civil, diez en
+ *     los supuestos agravados), no se aplica sola (trámite «Prescripción de adeudos», BPS,
+ *     actualizado el 30/6/2026) y el instructivo de prescripción de ATYR dice tres cosas que nadie
+ *     cuenta: pedir un convenio sobre una deuda ya prescrita es renuncia tácita a la prescripción,
+ *     lo pagado de una deuda prescrita no se devuelve, y con sentencia firme en el juicio ejecutivo
+ *     el plazo pasa a veinte años.
+ *   - «Qué pasa si tengo monotributo y no facturo» tiene una segunda lectura —vendo y no hago la
+ *     boleta— que no se contestaba: DGI exige documentar todas las operaciones; las exceptuadas por
+ *     monto van en un comprobante diario global (Res. DGI 688/992, numeral 27). NO se publica una
+ *     sanción concreta (multa, clausura): el artículo que circula es del Texto Ordenado 1996 y no lo
+ *     encontramos en el vigente con ese número, así que no se afirma.
+ *   - La pregunta del tope se busca con «me excedo en la facturación»: se titula así.
+ *   - El tope anual del Mides se lleva también a promedio mensual (división por doce, no un tope).
+ */
+export const MONO_CASOS_EXTENDED_AT = '2026-10-19'
+
 export interface DatedSource {
   label: string
   url: string
@@ -466,6 +492,12 @@ export interface Caso {
 
 const S = MONO_CASOS_VERIFIED_AT
 const src = (label: string, url: string): DatedSource => ({ label, url, seenOn: S })
+/** Una fuente leída en la segunda tanda: lleva su propia fecha, no la de la primera. */
+const src2 = (label: string, url: string): DatedSource => ({
+  label,
+  url,
+  seenOn: MONO_CASOS_EXTENDED_AT,
+})
 
 /** Vencimientos 2026 del monotributo sin dependientes y del Mides (se paga a mes vencido). */
 export const MONO_VENCIMIENTOS_2026 = [
@@ -522,6 +554,7 @@ export const CASOS: readonly Caso[] = [
       'Si seguiste trabajando durante la suspensión, BPS indica pagar los adeudos y pedir el reinicio (trámite en línea, un timbre; si el reinicio es retroactivo más de un año, por petición en Mesa de Entrada). Si no trabajaste, BPS indica clausurar.',
       'Si sabés que vas a parar un tiempo: BPS no lista un trámite de inactividad para el monotributo unipersonal de industria y comercio (sí para servicios personales, sociedades de hecho y Monotributo Social Mides). La vía que documenta es la clausura —hasta 30 días corridos desde la fecha de cierre, un timbre profesional de $270 en 2026, y el formulario 0453 ante DGI si tenías talonario— y después «reiniciar empresa» con el mismo RUT. Confirmalo con BPS antes de decidir: es lo que lista, no una regla escrita.',
       'El Monotributo Social Mides es distinto: el tributo se debe sólo por los meses con actividad efectiva (ley 18.874, art. 8), y tiene trámite de inactividad en línea con un plazo de 30 días corridos que «en ningún caso» se tramita fuera de plazo. Mientras está inactivo no se paga, no se factura y, si tenías FONASA, te quedás sin cobertura.',
+      'Y si la pregunta es la otra —vendés, pero no hacés la boleta—, el monotributo no te exime de documentar: DGI exige que todas las operaciones de los impuestos que administra estén «debidamente documentadas». Lo que sí existe es un monto que DGI fija cada año por resolución por debajo del cual una operación no se documenta de a una, pero esas ventas van juntas en un comprobante diario global (numeral 27 de la resolución DGI 688/992), que se emite y se guarda. Estar exceptuado de la factura electrónica cambia el formato, no la obligación.',
     ],
     table: {
       headers: ['Mes de pago 2026', 'Vence el'],
@@ -542,14 +575,18 @@ export const CASOS: readonly Caso[] = [
       src('BPS — Vencimientos de monotributo social Mides 2026', BPS_VENCIMIENTOS_MIDES),
       src('IMPO — Ley 18.083, art. 75 (suspensión de oficio a los 2 meses)', IMPO_18083),
       src('IMPO — Ley 18.874, art. 8 (el Mides se debe sólo por meses con actividad)', IMPO_18874),
+      src2(
+        'DGI — Documentación de las operaciones (todas documentadas; comprobantes diarios globales para las exceptuadas por monto; 05/12/2023)',
+        DGI_DOCUMENTACION
+      ),
     ],
   },
   {
     id: 'me-paso-del-tope',
-    question: '¿Qué pasa si me paso del tope del monotributo?',
+    question: '¿Qué pasa si me excedo en la facturación del monotributo?',
     short: 'Salís del régimen en ese mismo ejercicio y no podés volver hasta el cuarto año.',
     detail: [
-      'El tope 2026 de ingresos anuales es $1.175.537 para la unipersonal (183.000 UI, el 60 % del literal E) y $1.959.229 para la sociedad de hecho (305.000 UI). Publicamos los pesos que fijan BPS y DGI, no una conversión propia: multiplicar las UI por la cotización del mes no da la cifra oficial. Hay además un tope de activos de $979.614 (152.500 UI) que no rige para el Mides.',
+      'Excederte en la facturación del año —pasarte del tope— te saca del régimen. El tope 2026 de ingresos anuales es $1.175.537 para la unipersonal (183.000 UI, el 60 % del literal E) y $1.959.229 para la sociedad de hecho (305.000 UI). Publicamos los pesos que fijan BPS y DGI, no una conversión propia: multiplicar las UI por la cotización del mes no da la cifra oficial. Hay además un tope de activos de $979.614 (152.500 UI) que no rige para el Mides.',
       'Cuando en el transcurso del ejercicio dejás de cumplir una condición —el tope de ingresos, el de activos, un segundo local, vender a empresas fuera de las excepciones— dejás de estar en monotributo desde ese momento y pasás a tributar IVA y los aportes a la seguridad social por el régimen general, más IRAE e Impuesto al Patrimonio si corresponde (decreto 199/007, art. 13). No hay un «exceso tolerado» ni un aviso previo. DGI controla con la información de las tarjetas y de las compras del Estado; el monotributista no presenta declaración jurada.',
       'El escalón siguiente para la mayoría es la pequeña empresa de IVA mínimo (literal E, ingresos hasta $1.959.229): en 2026 paga $5.910 por mes a DGI, y una empresa nueva paga $1.478 los primeros 12 meses y $2.955 los segundos —ese descuento no aplica a reinicios—, más los aportes a BPS. Se paga desde la primera venta del año hasta el último mes del ejercicio aunque después no haya ingresos.',
       'La regla que nadie cuenta: quien sale del monotributo, por exceso o por optar por otro régimen, recién puede volver cuando termine el tercer año civil posterior a la salida. Salir en 2026 significa poder volver desde el 1 de enero de 2030 (decreto 199/007, art. 14). También se puede salir por opción en cualquier momento del ejercicio (art. 12).',
@@ -609,6 +646,8 @@ export const CASOS: readonly Caso[] = [
       'A los dos meses consecutivos sin pagar, BPS suspende de oficio el registro justamente para que la deuda no siga creciendo. Pero esos dos meses quedan debidos, y para reiniciar hay que tributarlos (decreto 199/007, art. 14 bis); en el Mides se pagan «con las multas y recargos correspondientes».',
       'Para pagar en cuotas hay dos caminos en BPS. El convenio («Asesoramiento y firma de facilidades de pago», presencial o en línea con firma electrónica avanzada): antes hay que clausurar o inactivar si la actividad cesó, la primera cuota se paga el día de la firma, y se puede simular en «Consultar obligaciones pendientes, financiación de deudas y pagos realizados». Y el plan de pagos por petición: vencimientos cada 30 días y un plazo máximo de 12 meses, según la deuda.',
       'Las 72 cuotas al 2 % anual y sin multas de la ley 19.942 no están abiertas: eran sólo para deuda de monotributo devengada hasta el 23 de marzo de 2021. En el Monotributo Social Mides sí hay una excepción vigente: para reiniciar tras la suspensión de oficio no se exige pagar las deudas generadas entre marzo de 2020 y marzo de 2023 (BPS, 9/6/2026), y las deudas de una actividad patronal anterior no impiden inscribirse como Mides (ley 18.874, art. 12).',
+      'Si la deuda es vieja: las cuotas de BPS prescriben como cualquier tributo, a los cinco años contados desde el fin del año civil en que se generaron, y a los diez si, por ejemplo, la empresa nunca se inscribió o no presentó las declaraciones que debía (Código Tributario, art. 38). Pero no se borra sola: hay que pedirla con el trámite «Prescripción de adeudos» de BPS —en línea, en las solicitudes de ATYR, con una nota que detalle los períodos y, si sos unipersonal, con domicilio electrónico constituido—.',
+      'El instructivo de prescripción de BPS agrega tres cosas que conviene saber antes de mover nada. Reconocer la deuda o pagar una parte reinicia el plazo, y con un convenio vigente el plazo recién vuelve a correr cuando el convenio caduca. Pedir un convenio sobre una deuda que ya prescribió cuenta como renuncia tácita a la prescripción, salvo que dejes constancia expresa y documentada de que no renunciás. Y lo que pagues de una deuda prescrita no se devuelve, salvo que lo hayas pagado con esa misma reserva por escrito. Si BPS ya te inició el juicio ejecutivo y hay sentencia firme, el plazo pasa a ser de veinte años.',
     ],
     table: {
       headers: ['Cuándo pagás', 'Multa por mora', 'Recargo'],
@@ -632,6 +671,15 @@ export const CASOS: readonly Caso[] = [
         BPS_MIDES_SUSPENSION
       ),
       src('IMPO — Ley 18.874, art. 12 (deudas anteriores no impiden el alta)', IMPO_18874),
+      src2('IMPO — Código Tributario, art. 38 (prescripción: cinco años, diez)', IMPO_CT_38),
+      src2(
+        'BPS — Petición: prescripción de adeudos tributarios (actualizado 30/06/2026)',
+        BPS_PRESCRIPCION_TRAMITE
+      ),
+      src2(
+        'BPS — Prescripción: plazos, interrupción y suspensión (instructivo de ATYR, PDF)',
+        BPS_PRESCRIPCION
+      ),
     ],
   },
   {
@@ -737,7 +785,7 @@ export const CASOS: readonly Caso[] = [
       'Es el monotributo para personas de hogares por debajo de la línea de pobreza del INE o en situación de vulnerabilidad socioeconómica (ley 18.874, art. 1). Puede ser un emprendimiento personal o asociativo de hasta cinco socios, sin empleados, en cualquier rubro salvo el servicio doméstico y la construcción del decreto-ley 14.411 (las pequeñas obras de mantenimiento de la ley 19.291 sí entran). A diferencia del monotributo común, puede venderle a empresas y al Estado.',
       'Exige una calificación previa del MIDES —formulario web y declaración jurada de ingresos del hogar con comprobantes de todos los integrantes, en una oficina territorial— que vale un año y se revisa anualmente; para reiniciar un Mides suspendido, esa calificación tiene que estar vigente. Es compatible con un salario, una jubilación o una pensión mientras el hogar siga calificando, y con integrar más de un emprendimiento Mides; otra actividad patronal hay que clausurarla antes, y ni el costo de esa clausura ni las deudas anteriores impiden el alta.',
       'Cuánto se paga en 2026: $659 por mes el primer año, $1.320 el segundo, $1.979 el tercero y $2.637 desde el mes 37, por integrante y sin FONASA (25/50/75/100 % en tramos de 12 meses de actividad registrada). Con FONASA la parte de salud se paga entera desde el primer mes: de $4.761 (sin hijos ni cónyuge a cargo, año 1) a $7.888 (con hijos y cónyuge a cargo, desde el mes 37). El tributo se debe sólo por los meses con actividad efectiva.',
-      'El tope anual de facturación es el mismo del monotributo común: $1.175.537 (183.000 UI) para la unipersonal y $1.959.229 (305.000 UI) para la sociedad de hecho en 2026, según DGI (12/1/2026) y el MIDES. No importa lo que se facture mes a mes y no tiene tope de activos. Si el hogar pierde la calificación, el MIDES notifica y hay 30 días para adecuar el registro o clausurar; si no, exclusión de oficio.',
+      'El tope anual de facturación es el mismo del monotributo común: $1.175.537 (183.000 UI) para la unipersonal y $1.959.229 (305.000 UI) para la sociedad de hecho en 2026, según DGI (12/1/2026) y el MIDES. No importa lo que se facture mes a mes: el límite es del año. Dividido entre doce da $97.961 por mes de promedio para la unipersonal y $163.269 para la sociedad de hecho, pero un mes puede pasar de esa cifra mientras el año no supere el tope. Y no tiene tope de activos. Si el hogar pierde la calificación, el MIDES notifica y hay 30 días para adecuar el registro o clausurar; si no, exclusión de oficio.',
       'Una cosa que se pregunta seguido: el MIDES asume el costo de impresión de los primeros 100 comprobantes (decreto 220/012, art. 16), no «todo el talonario». El monto es «suficiente» y se actualiza cada año según valores de mercado.',
     ],
     table: {
@@ -1215,19 +1263,19 @@ export const FAQ: readonly Faq[] = [
     question: '¿Qué pasa si tengo monotributo y no facturo?',
     short: 'La cuota se debe igual.',
     answer:
-      'La cuota es fija y se debe todos los meses, hayas facturado o no. Si dejás de pagar dos meses seguidos, BPS suspende de oficio el registro (ley 18.083, art. 75, desde la ley 19.942) y esos dos meses quedan debidos con multa y recargo; para reiniciar hay que pagarlos, al contado o con convenio. Si vas a parar un tiempo, BPS no lista un trámite de inactividad para el monotributo unipersonal común: lo que documenta es clausurar (30 días corridos de plazo, timbre de $270 en 2026) y reiniciar después con el mismo RUT. El Monotributo Social Mides sí tiene inactividad y sólo debe los meses con actividad.',
+      'La cuota es fija y se debe todos los meses, hayas facturado o no. Si dejás de pagar dos meses seguidos, BPS suspende de oficio el registro (ley 18.083, art. 75, desde la ley 19.942) y esos dos meses quedan debidos con multa y recargo; para reiniciar hay que pagarlos, al contado o con convenio. Si vas a parar un tiempo, BPS no lista un trámite de inactividad para el monotributo unipersonal común: lo que documenta es clausurar (30 días corridos de plazo, timbre de $270 en 2026) y reiniciar después con el mismo RUT. El Monotributo Social Mides sí tiene inactividad y sólo debe los meses con actividad. Y si lo que pasa es que vendés sin hacer la boleta: el monotributo no exime de documentar; lo exceptuado por monto va junto en un comprobante diario global.',
   },
   {
-    question: '¿Qué pasa si me paso del tope del monotributo?',
+    question: '¿Qué pasa si me excedo en la facturación del monotributo?',
     short: 'Salís del régimen ese mismo ejercicio.',
     answer:
-      'Desde el momento en que superás $1.175.537 (unipersonal, 183.000 UI) o $1.959.229 (sociedad de hecho, 305.000 UI) en el ejercicio dejás de estar en monotributo y pasás a tributar IVA y aportes por régimen general, más IRAE e Impuesto al Patrimonio si corresponde (decreto 199/007, art. 13). El escalón siguiente suele ser la pequeña empresa de IVA mínimo: $5.910 por mes a DGI en 2026 ($1.478 y $2.955 los dos primeros años si es nueva), más los aportes a BPS. Y no podés volver al monotributo hasta que termine el tercer año civil posterior a la salida: quien sale en 2026 vuelve recién desde 2030.',
+      'Excederte en la facturación —pasarte del tope del año— te saca del régimen. Desde el momento en que superás $1.175.537 (unipersonal, 183.000 UI) o $1.959.229 (sociedad de hecho, 305.000 UI) en el ejercicio dejás de estar en monotributo y pasás a tributar IVA y aportes por régimen general, más IRAE e Impuesto al Patrimonio si corresponde (decreto 199/007, art. 13). El escalón siguiente suele ser la pequeña empresa de IVA mínimo: $5.910 por mes a DGI en 2026 ($1.478 y $2.955 los dos primeros años si es nueva), más los aportes a BPS. Y no podés volver al monotributo hasta que termine el tercer año civil posterior a la salida: quien sale en 2026 vuelve recién desde 2030.',
   },
   {
     question: '¿Qué pasa si debo monotributo?',
     short: 'Multa del 5, 10 o 20 % más recargo.',
     answer:
-      'La deuda paga multa por mora del 5 % si pagás dentro de los 5 días hábiles del vencimiento, 10 % hasta los 90 días corridos y 20 % después (Código Tributario, art. 94), más el recargo de BPS de 0,80 % mensual capitalizable cuatrimestralmente (setiembre de 2026). A los dos meses seguidos sin pagar, BPS suspende el registro para que la deuda no siga creciendo, pero esos dos meses hay que pagarlos para reiniciar. Se puede firmar un convenio de facilidades de pago en BPS (la primera cuota se paga el día de la firma; si cesaste la actividad, primero clausurar o inactivar) o pedir un plan de pagos de hasta 12 meses.',
+      'La deuda paga multa por mora del 5 % si pagás dentro de los 5 días hábiles del vencimiento, 10 % hasta los 90 días corridos y 20 % después (Código Tributario, art. 94), más el recargo de BPS de 0,80 % mensual capitalizable cuatrimestralmente (setiembre de 2026). A los dos meses seguidos sin pagar, BPS suspende el registro para que la deuda no siga creciendo, pero esos dos meses hay que pagarlos para reiniciar. Se puede firmar un convenio de facilidades de pago en BPS (la primera cuota se paga el día de la firma; si cesaste la actividad, primero clausurar o inactivar) o pedir un plan de pagos de hasta 12 meses. Una deuda vieja prescribe a los cinco años desde el fin del año en que se generó (diez si la empresa nunca se inscribió), pero hay que pedirlo a BPS con el trámite «Prescripción de adeudos»; pedir un convenio sobre una deuda ya prescrita cuenta como renuncia a la prescripción, y lo pagado de una deuda prescrita no se devuelve si no lo pagaste con reserva por escrito.',
   },
   {
     question: '¿Con monotributo puedo no pagar FONASA?',
@@ -1251,7 +1299,7 @@ export const FAQ: readonly Faq[] = [
     question: '¿Cuál es la facturación anual máxima del Monotributo Social MIDES?',
     short: 'La misma del monotributo común.',
     answer:
-      'La misma que la del monotributo común: $1.175.537 (183.000 UI) para la unipersonal y $1.959.229 (305.000 UI) para la sociedad de hecho en 2026, según DGI (12/1/2026) y el MIDES. No hay tope mensual y el Mides no tiene tope de activos. Si se supera, ese ejercicio se tributa por la normativa general y para volver al año siguiente hace falta el aval del MIDES. La cuota 2026 es $659 por mes el primer año, $1.320 el segundo, $1.979 el tercero y $2.637 desde el mes 37, sin FONASA; con FONASA la parte de salud se paga entera desde el primer mes.',
+      'La misma que la del monotributo común: $1.175.537 (183.000 UI) para la unipersonal y $1.959.229 (305.000 UI) para la sociedad de hecho en 2026, según DGI (12/1/2026) y el MIDES. No hay tope mensual —dividido entre doce da un promedio de $97.961 por mes la unipersonal y $163.269 la sociedad de hecho, pero el control es anual— y el Mides no tiene tope de activos. Si se supera, ese ejercicio se tributa por la normativa general y para volver al año siguiente hace falta el aval del MIDES. La cuota 2026 es $659 por mes el primer año, $1.320 el segundo, $1.979 el tercero y $2.637 desde el mes 37, sin FONASA; con FONASA la parte de salud se paga entera desde el primer mes.',
   },
 ] as const
 

@@ -24,7 +24,8 @@ const TAIL = [
   'DirectorioAnalisis',
   'TemaVecinos',
   'RelatedPages',
-  'NewsletterCapture',
+  'LazyFeedbackPageHelpful',
+  'ReaderFollowUp',
 ]
 
 const filename = resolve(__dirname, '../../layouts/default.vue')

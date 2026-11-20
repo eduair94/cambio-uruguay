@@ -38,6 +38,9 @@ const EquiparListingSchema = new Schema(
     observedAt: { type: String, required: true },
     firstSeen: { type: String, required: true },
     lastSeen: { type: String, required: true },
+    // Heladeras, lavarropas, televisores y aires: la ficha técnica que escribe el backend
+    // (classes/equipar/specs/). El app sólo la lee.
+    ficha: { type: Schema.Types.Mixed, default: null },
   },
   { timestamps: true }
 )

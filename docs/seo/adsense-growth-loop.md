@@ -212,9 +212,140 @@ Identificador opcional `NUXT_PUBLIC_ADSENSE_SLOT_TOOLS`: vacío, la unidad usa e
 
 Hipótesis: la familia `/herramientas/*` pasa de no rendir a rendir con una sola unidad después de la respuesta, sin perder uso, porque la unidad no compite con la tarea de la visita. Guarda: sesiones con interacción y el evento `tool_view` de GA4 por calculadora, y CLS de campo, siete días cerrados antes y después.
 
-Medición: informe de AdSense **por unidad** con el identificador propio (o, sin él, la fila del cierre por diferencia), visibilidad e impresiones por vista; y el ingreso por familia del tablero privado (`siterevenuesnapshots`), donde `/herramientas/*` es una familia aparte del índice y hasta hoy no tenía ninguna unidad propia. Cuando esa familia junte la muestra que pide `currency-revenue-plan` (≥ 500 vistas y ≥ 100 impresiones de anuncio), el plan valúa sus oportunidades de búsqueda con el rendimiento medido en lugar del que asume el tramo; con el interruptor apagado esa muestra no se junta. La fecha de activación es la del build con la variable en el `.env`, no la del despliegue del código: registrarla el día que se complete. **No va en `experiments.json`**: no es un cambio de tráfico, no toca el texto que mide la búsqueda y el efecto buscado es ingreso por vista.
+Medición: informe de AdSense **por unidad** con el identificador propio (sin él, el bloque de cierre mezcla herramientas con otras páginas y no permite atribución por una simple resta), visibilidad e impresiones por vista; y el ingreso por familia del tablero privado (`siterevenuesnapshots`), donde `/herramientas/*` es una familia aparte del índice y hasta hoy no tenía ninguna unidad propia. Cuando esa familia junte la muestra que pide `currency-revenue-plan` (≥ 500 vistas y ≥ 100 impresiones de anuncio), el plan valúa sus oportunidades de búsqueda con el rendimiento medido en lugar del que asume el tramo; con el interruptor apagado esa muestra no se junta. La fecha de activación es la del build con la variable en el `.env`, no la del despliegue del código: registrarla el día que se complete. **No va en `experiments.json`**: no es un cambio de tráfico, no toca el texto que mide la búsqueda y el efecto buscado es ingreso por vista.
 
 Validación local: `tests/unit/adsTools.test.ts` (apagado = sin loader ni unidad en ninguna calculadora y en ningún idioma; encendido = loader y exactamente una unidad, `after-tool`, con el cierre del layout y el riel apagados en esas rutas; el interruptor leído igual como cadena del build o valor de runtime; la unidad de ToolShell como hija directa del contenedor, después de los slots de campos, explicación y consejos y justo después de la advertencia; cada calculadora con su única unidad; el índice sin cambios), más las suites existentes de anuncios y de layout.
+
+## Comprobación de cuenta y medición: 23/10/2026
+
+La sesión autorizada de AdSense vuelve a permitir leer el informe directo del sitio en USD y
+horario de Montevideo. Se conserva la serie de siete días cerrados en el registro privado; el
+objetivo sigue sin alcanzarse. Las cifras de GA4 siguen siendo atribución, con otro corte diario.
+
+La cuenta ya tiene guardadas las tres exclusiones de **todas las páginas de la sección** para
+`/herramientas/`, `/en/herramientas/` y `/pt/herramientas/`. Los anuncios automáticos están activos,
+la optimización automática desactivada y no hay formatos de superposición habilitados. El HTML
+público de la calculadora de aguinaldo confirma `adsTools: "1"` y el slot propio vacío: usa el
+fallback de cierre. Esta revisión no cambió la configuración ni ejecutó anuncios del sitio.
+La fecha de observación **no es la fecha de activación**, que sigue sin acreditarse.
+
+Por tanto, no corresponde activar otra vez ni añadir otra unidad. Medir la familia de herramientas
+con su muestra y su período explícitos; el bloque compartido `contentEnd` no permite aislar sus
+ingresos por una simple resta. `tool_view` mide el montaje, no un cálculo completado. La muestra
+actual de la familia todavía no cumple el mínimo del plan. Conservar siete días para guardas y
+una ventana mayor con muestra suficiente antes de decidir, anotando los cambios editoriales y de
+instrumentación que se superponen.
+
+Se completó además el registro de `link_area` y `read_percent` en GA4, verificado en la lista de
+definiciones. No se cambiaron permisos, eventos clave ni filtros. Su disponibilidad en informes y
+los resultados de las mejoras de lectura del 23/10 se comprobarán después de acumular datos;
+el registro de las dimensiones no es un resultado de retención.
+
+## Corrección factual: 25/10/2026
+
+La guía `/guias/casarse-por-civil-uruguay` presentaba la partida de nacimiento como
+requisito general para ambos contrayentes. La [ficha oficial del Registro Civil](https://www.gub.uy/tramites/inscripcion-matrimonio),
+consultada el 25/10 y actualizada el 29/05/2026, vincula ese documento a los hijos que
+corresponda legitimar; enumera el documento de identidad para contrayentes y testigos.
+Se corrigió el párrafo para distinguir la documentación según la situación.
+
+Es una corrección de información al lector durante la ventana existente. El título, la
+descripción y los enlaces mantienen la versión medida; el tramo final de esa ventana
+incluye esta precisión y debe interpretarse con esa salvedad. No se declara como una
+prueba de adquisición ni como una mejora de ingresos.
+
+## Decimotercera iteración: 31/10/2026 (tres unidades donde la visita sí llega)
+
+Lectura previa (tablero privado, 2/10–29/10; montos sólo en `docs/seo/data/`): el sitio sirve
+alrededor de **una impresión de anuncio por vista**. Las guías, con su unidad `in-article`, el
+cierre y el riel, sirven unas **cinco** por vista y rinden ~4× el promedio. Tres superficies con
+mucho tráfico quedaban casi sin anuncios propios:
+
+- **La portada** (la página con más vistas): **cero** unidades propias. El layout le cedía su
+  cierre a un banner propio y lo único que veía la visita eran automáticos (~0,3 por vista).
+- **Las páginas sueltas de contenido** (la familia que más creció en búsqueda en octubre): sólo el
+  cierre del layout, al pie, después de "Seguí leyendo" y del newsletter.
+- **Las calculadoras**: su única unidad iba después de la explicación. En el teléfono la
+  explicación cae debajo de la calculadora y casi nadie llegaba (~0,1 por vista).
+
+Cambios:
+
+1. **`FaqSection` abre con una unidad `in-article`.** Es el corte de sección que comparten ~70
+   páginas de contenido. Sólo dibuja en densidad `normal`, así que una página llega a su tope de
+   `maxAdSlots('normal')` = 2 con el cierre. Una página que ya pone su propia `in-article` pasa
+   `:ad="false"` (`tests/unit/faqSectionAd.test.ts`; hoy ninguna lo necesita).
+2. **La portada gasta su presupuesto `light` (una unidad) en la página**, después de cotizaciones,
+   ranking de casas y buscador de casas cercanas, no al pie. El banner propio y la fila
+   patrocinada siguen donde estaban.
+3. **La unidad de la calculadora va pegada a la calculadora entera** (campos y resultado), antes
+   de la explicación, en los dos diseños de `ToolShell`. Sigue sin ir nunca entre los campos y el
+   resultado, que es lo que sacó a las calculadoras de los automáticos.
+
+4. **Las 78 páginas que arman sus preguntas a mano** (con `VExpansionPanels`, no con `FaqSection`;
+   entre ellas varias de las que más rinden) llevan la misma unidad, puesta en cada página antes
+   del bloque de preguntas. Medido en producción después del primer deploy: la unidad de
+   `FaqSection` no les llegaba. `faqSectionAd.test.ts` exige que todas sean de densidad `normal` y
+   que ninguna ponga dos.
+
+5. **Los directorios con tarjetas** (alquileres, autos, autos chocados, oportunidades de autos e
+   inmobiliarias, inmobiliarias, venta de viviendas, equipar/movilidad y alquileres por
+   presupuesto) llevan su segunda unidad **adentro de la grilla**, como una fila entera después del
+   cuarto aviso (`components/feed/Ad.vue`, `FEED_AD_AFTER`). Hasta acá gastaban una sola, la del
+   cierre, debajo de 24 tarjetas, la paginación y las tablas de precios: ~0,3 impresiones por
+   vista en autos y alquileres, la familia con más vistas después de la portada. Sólo en modo
+   páginas: con "cargar más al bajar" la lista es virtual y una celda que no es aviso le rompe la
+   cuenta al composable. Monopatines y bicicletas, que embeben el directorio de equipar, apagan la
+   unidad de `FaqSection` para no pasar de dos (`tests/unit/feedAd.test.ts`).
+6. **Las fichas de aviso** (auto, alquiler, venta) llevan su unidad `in-article` en el primer corte
+   después de lo que la persona vino a ver: en autos, después de fotos, precio y contacto y antes
+   de la ficha técnica; en alquiler y venta, después de la descripción y antes de la ubicación.
+   Hasta acá llegaban al pie con el cierre solo, debajo del historial de precio, la comparación y
+   los parecidos (~0,7 impresiones por vista en las fichas de autos, ~1,1 en alquileres). Son
+   densidad `normal`: con el cierre llegan al tope de dos (`tests/unit/fichaAd.test.ts`).
+
+7. **Seis páginas de finanzas sin bloque de preguntas** (`/mejores-bancos-uruguay`,
+   `/inversiones-uruguay`, `/mejores-prestamos-uruguay`, `/prestamos-uruguay`,
+   `/impuestos-inversiones-uruguay`, `/impuesto-autos-electricos-uruguay`) no recibían ninguna de
+   las unidades anteriores y servían 0,6–1,0 impresiones por vista. Llevan la suya en un corte de
+   sección a mitad de página; son el tema con los anunciantes que más pagan por clic.
+   `faqSectionAd.test.ts` ya exige densidad normal y una sola por página.
+
+Ninguno agrega formatos de superposición, anclaje ni viñeta, y ninguno toca la consola: los
+automáticos siguen como estaban. Todas las unidades reservan su alto y cargan a 400 px.
+
+**Medición, con control:** impresiones de anuncio por vista e ingreso por vista **por familia**
+en `siterevenuesnapshots`, catorce días cerrados antes y después del deploy. Las guías no cambian
+(control); `/` y `/herramientas/*` son familias propias, y las páginas sueltas de contenido son
+cada una su familia; los directorios (`/alquileres-uruguay`, `/autos-usados-uruguay`,
+`/venta-viviendas-uruguay`…) y las fichas (`/autos-usados-uruguay/*`, `/alquileres/*`) también,
+y su tratamiento empieza uno o dos deploys después. Registrar la fecha efectiva por familia antes
+de formar las ventanas. Si una familia tratada sube sus impresiones por vista y las guías no,
+es una señal compatible con la ubicación, no una atribución causal por sí sola: también pueden
+cambiar la procedencia de las visitas, los textos y la mezcla de páginas. Guardas: sesiones con
+interacción y tiempo de lectura de esas familias en GA4, y CLS de campo. Si una guarda cae,
+se revierte esa unidad sola. **No va en
+`experiments.json`**: no toca el texto que mide la búsqueda.
+
+## Diagnóstico de la cola de demanda: 2/11/2026
+
+La cola privada confundía dos situaciones: un candidato fuera del presupuesto de consultas y
+un intento que falló recibían la misma explicación. La próxima corrida conserva por candidato
+si se clasificó, falló o no se intentó; distingue presupuesto y etapa omitida. El resumen guarda
+fechas UTC, límite, intentos, fallos por categoría y códigos HTTP, y cuenta todo el conjunto
+antes de recortar la tabla a cuarenta filas. `probed` sigue contando sólo clasificaciones.
+
+Los documentos anteriores no permiten reconstruir ese diagnóstico. El tablero los muestra como
+«sin diagnóstico» y conserva sus evaluaciones válidas; no interpreta la ausencia como fallo ni
+como agotamiento del presupuesto. Los logs nuevos contienen categorías y conteos, sin consultas,
+respuestas del proveedor ni errores completos. Los datos de demanda siguen detrás del acceso
+de administrador, fuera del sitemap y sin caché pública.
+
+La última corrida semanal disponible volvió a clasificar candidatos; este cambio mejora la
+lectura de futuras corridas, no acredita una reparación del proveedor. No cambia el horario,
+el presupuesto, el puntaje ni publica contenido. Las pruebas simulan las respuestas sin consumir
+consultas reales. El primer diagnóstico persistido se comprobará después de la siguiente corrida
+ordinaria; no se relanza para obtenerlo. No va en `experiments.json`: es instrumentación privada,
+sin una intervención de adquisición que medir.
 
 ## Próximas decisiones
 
@@ -223,7 +354,7 @@ Validación local: `tests/unit/adsTools.test.ts` (apagado = sin loader ni unidad
 - Medir la ampliación IRPF con la ventana prevista y conservar sus límites sobre créditos antiguos. Reutilizar la investigación ya guardada antes de ampliar el alcance; la cola propone una hipótesis editorial y no demuestra volumen de adquisición.
 - Dejar los títulos y series BCU estables durante la ventana de evaluación. La revisión pública no acreditó un canal adicional de adquisición a escala: no construir otro exportador, catálogo o URL por fecha por esa sola hipótesis. Si se autoriza Bing Webmaster, obtener las consultas que faltan antes de ampliar el piloto.
 - La lectura publicitaria y de controles ya está completada. Una futura prueba de colocación requiere una alternativa observable y un control; no repetir el diagnóstico general ni aumentar densidad por baja cobertura. El límite del componente manual no es un límite global de anuncios automáticos.
-- AdSense confirma anuncios automáticos activos, optimización automática desactivada y cero exclusiones de páginas en la cuenta. El límite de `utils/ads.ts` regula las unidades manuales: **no certifica un límite global de anuncios automáticos**. No interpretar el código como prueba de la configuración de la cuenta. La unidad de las calculadoras (duodécima iteración) exige agregar las exclusiones de `/herramientas/` ANTES de prender `NUXT_PUBLIC_ADS_TOOLS`; registrar acá la fecha de cada paso.
+- La comprobación del 23/10 confirma las tres exclusiones de herramientas y el interruptor activo. Acreditar la fecha previa de activación antes de construir un antes/después. El límite de `utils/ads.ts` regula las unidades manuales: **no certifica un límite global de anuncios automáticos**. Conservar por separado la evidencia de cuenta y de código.
 - Reutilizar la comparación de formatos y ubicaciones ya guardada antes de otro experimento de visibilidad. El informe por bloque manual no suma todo el ingreso de la cuenta.
 - Revisar pérdidas de clics sobre páginas con demanda comprobada y el rendimiento de las guías/fichas publicadas el 13/9. Verificar indexación y enlaces antes de crear más URL.
 - Revisar atribuciones anómalas y separar uso propio/pruebas de audiencia real antes de invertir por volumen bruto de vistas. No bloquear países por suposición.

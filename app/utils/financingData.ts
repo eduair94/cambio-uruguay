@@ -23,12 +23,12 @@ export interface Figure {
 /** Macro anchors. Everything a peso investment can pay hangs off these. */
 export const MACRO = {
   tpm: {
-    value: 5.75,
+    value: 6,
     label: 'Tasa de Política Monetaria (BCU)',
     unit: '%',
-    asOf: '2026-07-01',
+    asOf: '2026-10-08',
     source: 'BCU — COPOM, decisión unánime',
-    nota: 'Bajó de 7,50% a 5,75% en el primer semestre de 2026. El mercado descuenta subas hacia 6,5%.',
+    nota: 'Bajó de 7,50% a 5,75% en el primer semestre de 2026 y el 8/10/2026 el COPOM la subió 25 puntos básicos hasta 6%: el primer movimiento al alza del año, y la suba que el mercado venía descontando.',
   },
   inflacion: {
     value: 4.25,
@@ -359,13 +359,13 @@ export const BAD_NUMBERS = Object.freeze([
     dato: 'LRM a 8,54% / 8,74% / 8,78%',
     donde: 'Ámbito, 28-jun-2026 — primer resultado de búsqueda',
     porQueEsFalso:
-      'Contradice la TPM de 5,75%, la call de 5,80% y una Nota del Tesoro a 19 meses que cortó a 6,61%. Una letra a 30 días no puede pagar 275 puntos por encima de la tasa de política: los bancos la arbitrarían al instante. Las LRM pagan ~6%.',
+      'Contradecía la TPM de 5,75% vigente en junio de 2026, la call de 5,80% y una Nota del Tesoro a 19 meses que cortó a 6,61%. Una letra a 30 días no puede pagar 275 puntos por encima de la tasa de política: los bancos la arbitrarían al instante. Las LRM pagan ~6%, y desde el 8/10/2026 la TPM también.',
   },
   {
     dato: 'Prex 20,81% TNA · AstroPay 17%',
     donde: 'Buscadores, al mezclar marcas iguales',
     porQueEsFalso:
-      'Son productos en pesos ARGENTINOS. Con la TPM en 5,75%, ningún instrumento en pesos uruguayos paga eso.',
+      'Son productos en pesos ARGENTINOS. Con la TPM en 6%, ningún instrumento en pesos uruguayos paga eso.',
   },
   {
     dato: 'Débito da 4 puntos de IVA',

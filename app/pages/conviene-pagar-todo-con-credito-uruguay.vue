@@ -377,6 +377,12 @@
       </p>
     </VCard>
 
+    <!-- El mismo tema en video, de un creador uruguayo (utils/creatorVideos.ts) -->
+    <CreatorVideos
+      page="/conviene-pagar-todo-con-credito-uruguay"
+      title="¿Débito o crédito? En video"
+    />
+
     <!-- FAQ -->
     <FaqSection :items="faqs" class="mb-5" />
 
@@ -536,7 +542,7 @@ const WINS = [
   {
     icon: 'mdi-silverware-fork-knife',
     title: 'Gastronomía y turismo',
-    body: 'El régimen de nueve puntos de la Ley 17.934 nombra a la tarjeta de crédito entre los medios habilitados, igual que al débito. Ahí no resignás nada y el flote queda limpio. Ojo con el calendario: el Decreto 83/026 los prorrogó hasta el 30 de setiembre de 2026 y desde el 1º de octubre la rebaja pasa a cinco puntos.',
+    body: 'El régimen de nueve puntos de la Ley 17.934 nombra a la tarjeta de crédito entre los medios habilitados, igual que al débito. Ahí no resignás nada y el flote queda limpio. El Decreto 235/026 mantiene los nueve puntos hasta el 30 de abril de 2027, según la guía DGI del 02/10/2026 consultada el 23/10/2026. Se mantienen los requisitos de consumo final y de titularidad del medio de pago por una persona física.',
   },
   {
     icon: 'mdi-receipt-text-outline',
@@ -615,8 +621,8 @@ const SOURCES = [
     url: 'https://www.mercadopago.com.uy/ayuda/retirar-para-cuenta-bancaria_273',
   },
   {
-    label: 'BCU — el COPOM mantiene la Tasa de Política Monetaria en 5,75 %',
-    url: 'https://www.bcu.gub.uy/Comunicaciones/Paginas/Comunicado-COPOM.aspx',
+    label: 'BCU — el COPOM incrementa la Tasa de Política Monetaria a 6 % (8/10/2026)',
+    url: 'https://www.bcu.gub.uy/Comunicaciones/Paginas/Detalle-Noticia.aspx?noticia=554&title=El-BCU-incrementa-la-Tasa-de-Pol%C3%ADtica-Monetaria-en-25-puntos-b%C3%A1sicos-hasta-6',
   },
 ]
 

@@ -61,3 +61,31 @@ describe('rankNearby', () => {
     expect(rankNearby(branches, rates, user, 0.0001, 'USD', 'buy')).toEqual([])
   })
 })
+
+describe('buildRatesByOrigin leaves out what no branch charges', () => {
+  it('reads the counter row, not the online or interbank one that came after it', () => {
+    const r = buildRatesByOrigin([
+      { origin: 'brou', code: 'USD', type: '', buy: 39.7, sell: 40.5 },
+      { origin: 'brou', code: 'USD', type: 'EBROU', buy: 40, sell: 40.2 },
+      { origin: 'brou', code: 'USD', type: 'INTERBANCARIO', buy: 40.1, sell: 40.1 },
+      { origin: 'bcu', code: 'USD', type: '', buy: 40.1, sell: 40.1 },
+    ])
+    expect(r.brou!.USD).toEqual({ buy: 39.7, sell: 40.5 })
+    expect(r.bcu).toBeUndefined()
+  })
+
+  // Near Punta del Este the board frozen since July at 39,55 headed "Mejores cotizaciones cerca".
+  it('nulls a price the whole market rejects, on its own side only', () => {
+    const market = Array.from({ length: 12 }, (_, i) => ({
+      origin: `c${i}`,
+      code: 'USD',
+      buy: 39 + i * 0.01,
+      sell: 41 + i * 0.01,
+    }))
+    const r = buildRatesByOrigin([
+      ...market,
+      { origin: 'baluma_cambio', code: 'USD', buy: 37.15, sell: 39.55 },
+    ])
+    expect(r.baluma_cambio!.USD).toEqual({ buy: 37.15, sell: null })
+  })
+})

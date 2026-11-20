@@ -115,6 +115,8 @@ const SIN_LECTOR_QUE_LA_NECESITE = [
   '/offline', // fallback de la PWA, noindex
   '/opinion-alquileres', // la encuesta: se llega desde los correos y la pregunta, noindex
   '/opiniones-alquileres', // privada, requireAdmin
+  '/contactos-comerciales', // privada, requireAdmin
+  '/oportunidades-reddit', // noindex, se comparte por enlace
   '/preguntas-frecuentes', // sobre el propio sitio
   '/terminos',
   '/widget', // para embeber, noindex
@@ -147,24 +149,116 @@ const SIN_LECTOR_QUE_LA_NECESITE = [
  * no cuenta como arreglo aunque ponga el test en verde.
  */
 const DEUDA_SIN_ENLACE = [
-  '/alternativa-a-bankos-uruguay',
-  '/apostillar-un-documento-uruguay',
-  '/apps-utiles-uruguay',
-  '/cambios-de-precio-uruguay',
-  '/certificado-unico-dgi-uruguay',
-  '/cheques-uruguay',
-  '/cortes-de-luz-por-barrio-uruguay',
-  '/fondo-de-solidaridad-uruguay',
-  '/grabacion-sin-consentimiento-uruguay',
-  '/impuesto-temu-uruguay',
-  '/llevar-el-auto-a-brasil-o-argentina',
-  '/precio-del-boleto-montevideo',
-  '/reconocer-anos-trabajados-uruguay',
-  '/ropa-por-kilo-uruguay',
-  '/seguro-obligatorio-de-auto-uruguay',
+  // POZO PAGADO el 2026-11-08: ninguna página de lectura del sitio queda sin un enlace desde el
+  // contenido de otra. La última fue `/seguro-obligatorio-de-auto-uruguay`, que era además la
+  // ÚNICA ruta libre de los siete pozos ese día (`npm run seo_debt`: 1 de 17).
+  //
+  // Esa marca literal es la que `classes/revenueplan/debtFree.ts::parseStringList` busca para
+  // distinguir «este pozo se terminó» de su propio modo de fallar, que es devolver `[]` cuando no
+  // entiende la forma de la lista: sin la marca, una lista vacía sigue tirando excepción, porque un
+  // `const` renombrado tiene que romper el informe y no vaciarlo en silencio.
+  //
+  // Y el comentario va DENTRO de la lista y no arriba, por el mismo motivo que `DEUDA_SIN_MIGAS` en
+  // `seoContract.test.ts` deja escrito: el lector corta en el primer `\n]`, o sea exige que el
+  // cierre abra su propia línea, y prettier colapsa a una sola línea cualquier array que entre en
+  // 100 columnas salvo los que llevan un comentario. Sin esto `npm run lintfix` la aplasta y
+  // `tests/revenueplan/debt_free.test.ts` se pone rojo en el OTRO paquete — que es exactamente lo
+  // que pasó al bajar el trinquete de 3 a 1 (run 41405643945, 2026-11-02).
 ]
 
 /** El trinquete. Sólo puede bajar: subirlo es publicar una página que nadie enlaza. */
+// 1 → 0 el 2026-11-08, y con esto el pozo se termina: `/seguro-obligatorio-de-auto-uruguay` era la
+// única ruta libre de los siete pozos ese día (`npm run seo_debt`: 1 de 17) y la última entrada de
+// esta lista.
+//
+// El enlace sale de `/llevar-el-auto-a-brasil-o-argentina`, cuya fila `llevar-el-auto-al-exterior`
+// (5/10) también estaba libre, y lo necesita su propio lector de la manera más directa que hubo
+// acá: esa página se abre diciendo «afuera no te piden el SOA», su tarjeta «Los dos seguros, que no
+// son el mismo» publica el tope del SOA en UI y en pesos y lo define como «el que exige Uruguay
+// para circular acá» —el encabezado de `utils/carAbroad.ts` deja escrito que la pregunta que la
+// trae es literalmente «¿me alcanza el SOA?»—, y después de contestar que no, nunca decía dónde
+// está lo que ese seguro sí hace. Lo nombra en la entradilla, en la bajada de esa tarjeta, en el
+// rótulo de su primera fila y en el sexto documento que pide la norma —cuatro veces en lo que el
+// lector ve, más su propia descripción del SERP— y no lo enlazaba ninguna.
+//
+// El párrafo nuevo va DENTRO de esa tarjeta, no en el bloque «Seguir por acá» del pie, y agrega el
+// borde que importa justo antes de cruzar: el artículo 6 de la Ley 18.412 saca de la condición de
+// tercero al propietario, al tomador, al conductor y a su familia cercana respecto del seguro del
+// mismo vehículo, así que el SOA no cubre a quien viaja en el auto. Es el mismo dato que la página
+// de destino publica con su literal al lado (`SOA_NON_THIRD_PARTIES`, art. 6 literal A) y que su
+// propia descripción lleva al SERP; no hay ninguna cifra ni afirmación nueva.
+//
+// El vínculo queda recíproco, como el del 13/10: la página del SOA suma la frontera a su «Seguir
+// por acá», que es contenido escrito a mano y por eso cuenta. Lo exige la última prueba de este
+// archivo, para que borrar uno de los dos no vuelva a dejar la página sin enlace en silencio.
+// 5 → 4 el 2026-10-29: `/fondo-de-solidaridad-uruguay`, que era la ÚNICA ruta libre de los cinco
+// pozos ese día (`npm run seo_debt`: 1 de 58) y que además cumplió el 2026-10-28 los 29 días de su
+// propia fila `fondo-de-solidaridad`, del 30/9.
+//
+// El enlace sale de `/declaracion-de-irpf-uruguay`, cuya última fila es del 27/9 —libre, igual que
+// el destino— y lo necesita el lector que está mirando qué le descuentan: la tarjeta «Fondo de
+// Solidaridad y aportes a cajas profesionales» de la lista de deducciones decía que se deducen si
+// se declaran en el 3100 y mandaba los valores a buscar al BPS, sin decir nunca quién lo paga. Son
+// dos cosas distintas en una tarjeta: el aporte a la caja profesional es mensual y por categoría,
+// y el Fondo es ANUAL y no lo debe todo egresado —la Ley 16.524 lo pone desde el quinto año del
+// egreso y sólo con ingresos mensuales mayores a 8 BPC—, así que quien egresó hace dos años o gana
+// por debajo del umbral puede estar buscando cómo deducir algo que no aporta. La página de destino
+// es la que contesta las dos mitades, y es además la única del sitio que publica el aporte en
+// pesos, porque la escala de la norma está en BPC y el sitio tiene la BPC del año auditada.
+//
+// Es el caso que el encabezado de `utils/solidarityFund.ts` ya dejaba escrito al nacer la página:
+// el Fondo «aparecía en nueve archivos del sitio (la calculadora de sueldo líquido, las
+// deducciones del IRPF, los gastos del hogar) SIEMPRE como un descuento que hay que meter en otra
+// cuenta, y en ninguno como la pregunta propia». Nueve menciones y ningún enlace es exactamente la
+// deuda que este trinquete mide.
+//
+// La mención de la calculadora de sueldo líquido es la más directa de las nueve —es el `hint` de
+// un campo que el lector tiene que llenar con un número que quizá no deba— y NO se tocó: esa ruta
+// está reservada hasta el 2026-11-17 por la fila `calculadora-sueldo-liquido-con-ejemplo` del
+// 19/10, y escribir el enlace ahí le cambiaría el sujeto a una ventana abierta. Entra cuando
+// cierre.
+//
+// El enlace va DENTRO de la tarjeta de la deducción (`IrpfDeduction.link`, campo nuevo y opcional,
+// calcado de `WithdrawSection.link`), no en el bloque del pie que este archivo no cuenta como
+// arreglo. `irpfCasos.test.ts` lo exige junto con el dato que lo hace seguir.
+// 10 → 9 el 2026-10-22: `/alternativa-a-bankos-uruguay`, la única de las diez con la ruta libre de
+// toda ventana de medición abierta (`npm run seo_debt`), y con el ORIGEN también libre, que es lo que
+// bloqueó a varias candidatas de los días anteriores.
+//
+// El enlace sale de `/descuentos-con-tarjeta-uruguay`, y lo necesita su propio lector de la manera
+// más directa que hubo en esta lista: el párrafo de atribución de esa página NOMBRA a Bankos dos
+// veces —«Datos de Bankos (bankos.uy)», «no está afiliado a Bankos»— y la página entera se presenta
+// como «los datos son de la app Bankos», sin decir nunca en qué se diferencia de ella. Quien llega
+// por el nombre de la app —que es la consulta de marca que trae a esa página— queda con la pregunta
+// hecha y sin a dónde ir, teniendo el sitio una página que la contesta y que además declara lo que
+// la app hace mejor. No se le tocó el snippet ni el resto del cuerpo: una frase en el párrafo donde
+// Bankos ya estaba nombrado.
+// 12 → 10 el 2026-10-21 (segunda corrida del día), las dos desde páginas cuyo lector las necesita.
+// `/certificado-unico-dgi-uruguay` salió sin ir a buscarla: la guía nueva
+// `/guias/como-saber-si-tengo-deudas-uruguay` la necesita en la sección de BPS y DGI, porque quien
+// pregunta si tiene deudas con la DGI llega a la pregunta de cómo probar que no las tiene.
+// `/cheques-uruguay` entra el día que estaba anotado abajo, desde `/salir-del-clearing`, cuya fila
+// `clearing-que-pasa-y-categorias-bcu` cerró el 20/10: esa página dice «son dos cosas distintas» y
+// ahora nombra el tercer registro, el de infractores del BCU (Decreto-Ley 14.412, art. 66), con la
+// rehabilitación que hay que pedir (art. 64). En el mismo párrafo enlaza la guía de deudas para lo
+// que no está en ninguno de los tres registros (patente, intendencia, servicios).
+// 15 → 14 el 2026-10-20, y por primera vez con el ORIGEN libre, que es lo que bloqueó a las dos
+// candidatas de ayer: `/impuesto-temu-uruguay` recibe su enlace de
+// `/importar-para-revender-uruguay`, que no tiene ninguna fila en el libro de cambios. Es la única
+// de las quince que hoy estaba libre en los dos pozos —acá y en `temaHuerfanas.test.ts`—, así que
+// la página queda con tema y con enlace en la misma corrida.
+//
+// El lector lo necesita de verdad y la frase ya existía a medias: la pregunta «¿Puedo hacer muchos
+// envíos de US$ 800 en el año?» advierte que fraccionar un pedido «es la clase de maniobra que la
+// Aduana mira» y nunca dice que, antes del riesgo, hay una cuenta — el mínimo de US$ 20 es POR
+// ENVÍO (Ley 20.446 art. 627 para la prestación única, art. 660 para el IVA de la franquicia), así
+// que una caja de menos de US$ 20 paga más de impuesto que de mercadería. La página del impuesto
+// Temu es la que resuelve esos cuatro casos con el mismo motor que la calculadora, y es además la
+// única que dice desde dónde factura cada plataforma, que es lo que decide si la exoneración del
+// TIFA le alcanza al revendedor o no.
+//
+// Las dos de ayer siguen esperando a su origen: `/cheques-uruguay` al 21/10 (`/salir-del-clearing`)
+// y `/alternativa-a-bankos-uruguay` al 27/10 (`/apps-de-beneficios-uruguay`).
 // 16 → 15 el 2026-10-19, sin ir a buscarlo, como el 15 y el 18/10: la página nueva
 // `/prestamos-para-jubilados-uruguay` necesita a `/jubilacion-por-incapacidad-uruguay` en su propio
 // contenido. Desde la Resolución de Gerencia General 403/2024 el BPS no da préstamos sociales nuevos
@@ -257,7 +351,147 @@ const DEUDA_SIN_ENLACE = [
 // cambios, y la reserva que la nota de arriba describe no se rompe: lo que esas filas miden es su
 // propia descripción, y el enlace entrante nace en una página publicada hoy, sin tráfico todavía.
 // Es además lo que ya hace cada página nueva del repo con su bloque de relacionadas.
-const DEUDA_MAXIMA = 15
+// 13 → 12 el 2026-10-21, y ésta salió sin ir a buscarla, que es como salieron casi todas:
+// `/cortes-de-luz-por-barrio-uruguay` lo necesita la página nueva
+// `/compensacion-por-corte-de-luz-uruguay` en su propio contenido, porque quien acaba de leer que la
+// compensación se mide por SEMESTRE y por grupo de suministros necesita saber cuánto estuvo sin luz
+// su zona, y ese libro —los minutos por barrio integrados del mapa público de UTE— es justo el dato
+// que ninguna fuente oficial publica por barrio. La ruta medida tiene fila abierta del libro de
+// cambios hasta el 1/11 y la reserva NO se rompe, por lo mismo que el 15 y el 18/10: el enlace
+// entrante nace en una página publicada hoy, sin tráfico todavía, y al archivo de la página medida
+// no se lo tocó —ni el snippet, ni el cuerpo, ni un enlace de salida—.
+//
+// Y por eso el enlace de ENTRADA de la página nueva tampoco salió de ahí: salió de
+// `/a-quien-le-reclamo-uruguay`, que no tiene ventana abierta y cuyo lector lo necesita de verdad
+// —esa página rutea «luz y agua son URSEA, 15 días hábiles» y su bloque «el detalle de cada caso»
+// ya lleva la factura de UTE, pero nunca decía que por los cortes hay una compensación que no se
+// reclama—.
+//
+// 14 → 13 el 2026-10-21 (la otra mitad de la misma corrida): `/cambios-de-precio-uruguay`, que
+// estaba en este pozo y en el de los temas
+// a la vez y es la única de los dos con la ruta libre hoy (`npm run seo_debt`), así que se cierran
+// sus dos deudas juntas en vez de dejarla medio arreglada.
+//
+// El enlace salió de `/evolucion-precio-autos-usados-uruguay`, que no tiene ventana abierta, y lo
+// necesita su propio lector: esa página mide la COHORTE (la mediana del modelo-año, que se mueve
+// también cuando cambia la mezcla publicada) y su sección «Cómo lo medimos» dedica una viñeta entera
+// a avisar de eso, sin tener a dónde mandar a quien lo que quiere es el aviso. El movimiento aviso
+// por aviso es justo lo que lista la página enlazada, y la relación ya era recíproca del otro lado:
+// `/cambios-de-precio-uruguay` cierra enlazando a las tres `/evolucion-precio-*` como «lo que sí
+// contesta el nivel del mercado». Lo que faltaba era la vuelta.
+//
+// 9 → 8 el 2026-10-23: `/apostillar-un-documento-uruguay`, la otra mitad de la misma corrida que la
+// mete en su tema (`temaHuerfanas.test.ts`). Era una de las dos rutas libres de este pozo y la
+// única cuyo ORIGEN también está libre: las dos páginas que podrían enlazar a la otra
+// (`/denunciar-ruidos-molestos-uruguay`, `/derechos-consumidor-compras-online`) están reservadas.
+//
+// El enlace sale de `/mudarme-a-uruguay-residencia`, que no tiene ninguna fila en el libro de
+// cambios, y lo necesita su propio lector: las tres vías de esa página piden los papeles
+// «apostillado y traducido» —dos de los tres listados lo dicen con esas palabras— y la página nunca
+// dice qué pasa cuando no hay apostilla que pedir, que es el caso de todo documento que viene de un
+// país que no ratificó el Convenio. Ese papel va visado por el consulado uruguayo del país donde se
+// firmó y legalizado acá ante Cancillería, y la página enlazada es la única del sitio que separa los
+// dos trámites y dice cuál corresponde: su fila `legalizacion` es textual en el caso de entrada
+// —«cuando el documento viene del exterior y tiene que valer en Uruguay»—, y la misma cadena la cita
+// la ficha del BPS para la carta poder firmada afuera (`utils/guidesTrabajoBps.ts`).
+//
+// El enlace va DENTRO de la sección de las tres vías, debajo de las tarjetas que piden el requisito,
+// y no en el bloque de relacionadas del pie, que es lo que el encabezado de este archivo no cuenta
+// como arreglo. No se le tocó el snippet ni el resto del cuerpo a la página de origen.
+// 8 → 7 el 2026-10-24: `/grabacion-sin-consentimiento-uruguay`, la otra mitad de la misma corrida
+// que la mete en su tema (`temaHuerfanas.test.ts`). Las notas del 23 y del 24/10 la daban por
+// bloqueada por el ORIGEN: buscaban quién habla de GRABAR, encontraban dos páginas reservadas y
+// ninguna que plantee su problema («grabar el ruido como prueba no es que te hayan grabado a vos»).
+//
+// El origen no era una página que hable de grabar: es la página a la que ÉSTA ya enlaza de ida
+// sola. El chip «¿A quién le reclamo?» de su bloque «Seguí leyendo» apunta a
+// `/a-quien-le-reclamo-uruguay`, que no tiene ninguna fila en el libro de cambios (fue el origen
+// libre del enlace del 21/10 a `/compensacion-por-corte-de-luz-uruguay`), así que el enlace no le
+// cambia el sujeto a ningún experimento. Es el mismo hallazgo que el 13/10 con
+// `/pension-alimenticia-uruguay`, el 18/10 con `/donde-conseguir-monedas-uruguay` y el 21/10 con
+// `/cambios-de-precio-uruguay`: lo que faltaba era la vuelta.
+//
+// Y el lector lo necesita de verdad, porque la ida sola deja un callejón: la página de la grabación
+// manda a preguntar «qué organismo corresponde a tu caso» y los cinco de esa página —DNC, URSEA,
+// URSEC, BCU y MTSS— toman reclamos contra una EMPRESA. Quien llega con un video publicado por una
+// persona no encaja en ninguno y la página no lo decía. El enlace va DENTRO de la sección
+// `#organismos`, debajo de las cinco tarjetas que crean el callejón, y no en el bloque de
+// relacionadas del pie, que es lo que el encabezado de este archivo no cuenta como arreglo. A la
+// página de origen no se le tocó el snippet ni el resto del cuerpo.
+// 7 → 6 el 2026-10-27: `/reconocer-anos-trabajados-uruguay`, que hoy es la ÚNICA de las siete con
+// la ruta libre de toda ventana de medición abierta — las otras seis llevan una fila declarada
+// entre el 30/9 y el 9/10 y la primera que se libera, `/fondo-de-solidaridad-uruguay`, entra el
+// 29/10.
+//
+// El origen es `/cuando-me-puedo-jubilar-uruguay`, y es el único candidato que tiene el problema
+// que la página contesta: publica la escala de años de trabajo exigidos y nunca decía que los años
+// anteriores al 1/4/1996 NO están en la historia laboral, así que un lector podía contarse treinta
+// años de trabajo contra una tabla que su propio registro del BPS no respalda. No se eligió por
+// afinidad temática: la vuelta tampoco existía (la página de la jubilación no la enlazaba de
+// ninguna forma) y esa ruta no tiene ninguna fila en el libro de cambios, así que el enlace no le
+// cambia el sujeto a ningún experimento.
+//
+// El enlace va DENTRO de la sección «Si no llegás a 30 años de trabajo», debajo de la tabla que
+// crea el malentendido, y no en el bloque de relacionadas del pie, que es lo que el encabezado de
+// este archivo no cuenta como arreglo. A la página de origen no se le tocó el snippet ni el resto
+// del cuerpo. Los tres datos que el párrafo nombra (1/4/1996, Ley 20.130, 31/5/2027) son los que la
+// página de destino ya publica con fuente (BPS 20542/11452 e IMPO Ley 20.130, en
+// `utils/workYearsRecognition.ts`): el enlace no estrena ninguna cifra.
+// 6 → 5 el mismo día, y esta baja no la decidió una corrida de deuda: la trajo puesta la página
+// nueva `/permiso-de-menor-para-viajar-uruguay`. Sus chips de «Antes de viajar» enlazan
+// `/llevar-el-auto-a-brasil-o-argentina`, que estaba en esta lista con su ruta reservada hasta el
+// 29/10 por la fila `llevar-el-auto-al-exterior` del 5/10.
+//
+// La reserva no se pisó y no hace falta esperarla: a esa página no se le tocó ni una línea —el
+// enlace nace del otro lado— y la fila que el libro de cambios declara hoy es la de la página
+// nueva, no una segunda fila sobre esta ruta. Lo que cambia es el hecho medido, y esta lista
+// describe hechos: dejarla declarada sabiendo que ya recibe un enlace de contexto es justo el modo
+// de fallar que el trinquete de arriba persigue —un contador inflado contra una deuda menor, con
+// lugar de sobra para que la próxima página nazca huérfana y siga en verde—.
+// 4 → 3 el 2026-10-31: `/ropa-por-kilo-uruguay`, una de las dos únicas rutas libres de los cinco
+// pozos ese día (`npm run seo_debt`: 2 de 37) y la única de las dos cuyo ORIGEN natural también
+// estaba libre — `/importar-para-revender-uruguay` no tiene ninguna fila en el libro de cambios.
+//
+// El lector lo necesita y es el caso más fuerte que hubo en esta lista, porque el origen no le
+// contesta mal: le contesta BIEN la pregunta equivocada. Su simulador resuelve la RUTA (factura y
+// peso contra los topes de la prestación única) y, para 20 kg de ropa usada, devuelve «entra por
+// courier al 60 %: sin DUA y sin despachante», que es verdad y es una decisión comercial ruinosa.
+// Le faltan las dos mitades que la página de destino sí tiene con fuente y fecha (verificada el
+// 2026-10-02): que las prendas NUEVAS de los capítulos 61 y 62 necesitan licencia de importación de
+// la Dirección Nacional de Industrias (Decreto 8/022) sin excepción postal —que es justo el caso que
+// la FAQ «¿Y si mi producto necesita un certificado y no lo tengo?» describe con el art. 7 del
+// Decreto 50/026— mientras la usada (partida 6309) queda fuera de esa licencia; y que el flete
+// aéreo por kilo cuesta varias veces lo que vale el kilo en origen, así que el régimen entra y el
+// negocio no cierra. Su cuadro «Trámites extra, producto por producto» son accesorios de celular:
+// la ropa no estaba ahí ni en ninguna otra parte de la página.
+//
+// El enlace va en el cuerpo VISIBLE de ese cuadro y no en el acordeón de preguntas: la nota se lee
+// sin abrir nada, en la sección donde está parado quien pregunta qué trámites lleva su producto.
+// No se le restató ninguna cifra del destino —el porcentaje del flete y el precio por kilo en
+// origen envejecen con las tarifas, y un número correcto en su momento publicado como vigente es el
+// modo de fallar que este repo ya tiene escrito—: la nota nombra las normas y el orden de magnitud,
+// y el detalle lo sirve el destino.
+// 3 → 1 el 2026-11-02: las DOS que `npm run seo_debt` declara libres hoy (3 de 26 rutas libres en
+// los cinco pozos, y dos de esas tres son estas). La tercera, `/seguro-obligatorio-de-auto-uruguay`,
+// sigue reservada por su fila `pagina-seguro-obligatorio-de-auto` hasta el 2026-11-07. Las dos
+// tienen además el ORIGEN libre, que es lo que bloqueó a varias candidatas de los días anteriores.
+//
+// `/precio-del-boleto-montevideo` recibe el suyo de `/conviene-auto-moto-o-omnibus-uruguay`, y es
+// el caso más directo que hubo en esta lista: el boleto es la PRIMERA fila de la tabla de cifras
+// vivas de esa página y lo que su propio aviso declara imprescindible («sin el precio del boleto no
+// hay contra qué comparar: se publican los costos de cada modo, pero no el veredicto»), y la grilla
+// que reúne «las páginas que la cuenta USA pero no compara» tenía la de la nafta —el otro precio
+// que la cuenta consume— y no la del boleto. El enlace es además de vuelta: la página del boleto ya
+// enlazaba a la de la comparación.
+//
+// `/apps-utiles-uruguay` lo recibe de la página del boleto, dentro de la tarjeta donde ya se
+// publica el mínimo de recarga de la tarjeta STM, que es la frase que deja al lector buscando una
+// app. Lo que el destino le agrega no está en ningún otro lado del sitio: cuál es la oficial. La
+// app del STM de la Intendencia se llama «Cómo ir» y la MÁS DESCARGADA, «STM Montevideo», no es de
+// la IM —la hace un desarrollador independiente con los datos abiertos—, así que el lector que baja
+// la primera que aparece baja la que no es. No se copió ninguna cifra del destino: la nota nombra
+// las dos apps y su desarrollador, y las notas de cada tienda las sirve el destino.
+const DEUDA_MAXIMA = 0
 
 describe('ninguna página de lectura queda sin un enlace de contexto', () => {
   it('las páginas sin enlace son exactamente las declaradas', () => {
@@ -301,6 +535,19 @@ describe('ninguna página de lectura queda sin un enlace de contexto', () => {
     )
     expect([...(entrantes.get('/embargo-de-sueldo-uruguay') ?? [])]).toContain(
       'pages/pension-alimenticia-uruguay.vue'
+    )
+  })
+
+  // Lo mismo para el par que pagó el pozo el 2026-11-08. Con la lista en cero, la primera prueba de
+  // este archivo ya no tiene ninguna entrada que delatar: si alguien borra el párrafo de la tarjeta
+  // «Los dos seguros», la página del SOA vuelve a quedar sin enlace de contexto y el conteo lo diría
+  // sólo como una diferencia contra `SIN_LECTOR_QUE_LA_NECESITE`. Esto lo nombra.
+  it('el SOA y la página de la frontera se enlazan en los dos sentidos', () => {
+    expect([...(entrantes.get('/seguro-obligatorio-de-auto-uruguay') ?? [])]).toContain(
+      'pages/llevar-el-auto-a-brasil-o-argentina.vue'
+    )
+    expect([...(entrantes.get('/llevar-el-auto-a-brasil-o-argentina') ?? [])]).toContain(
+      'pages/seguro-obligatorio-de-auto-uruguay.vue'
     )
   })
 })

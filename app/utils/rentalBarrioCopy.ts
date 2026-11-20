@@ -4,6 +4,8 @@
 // sólo existe si hay un dato que la conteste: nada de "consultá con una inmobiliaria".
 import type { FaqItem } from './faqAnswers'
 import type { RentalBarrioCell, RentalBarrioPage as FullBarrioPage } from './rentalBarrio'
+import { rentalMoney } from './rentalPresentation'
+import type { RentalCurrency } from './rentals'
 import type { RentalZoneBedrooms, RentalZonePropertyType } from './rentalZoneTypes'
 
 /** Lo que llega al cliente: las grafías crudas se quedan en el servidor. */
@@ -36,6 +38,29 @@ const dateFormat = new Intl.DateTimeFormat('es-UY', {
 export function formatUyu(value: number | null): string {
   if (value === null || !Number.isFinite(value)) return '—'
   return `$ ${uyu.format(value)}`
+}
+
+/** What a card of "Avisos recientes" knows about its cost, from ONE advert. */
+export interface RentalBarrioCardCost {
+  currency: RentalCurrency
+  commonExpenses: number | null
+  commonExpensesCurrency: RentalCurrency | null
+  totalUyu: number | null
+}
+
+/**
+ * The line under the rent: "+ $ 13.400 de gastos comunes = $ 55.400 por mes". A total that needed
+ * a dollar conversion says "≈"; zero gastos comunes only when the advert publishes it.
+ */
+export function rentalBarrioCardCost(card: RentalBarrioCardCost): string {
+  const { commonExpenses: expenses, commonExpensesCurrency: expensesCurrency } = card
+  if (expenses === 0) return 'Sin gastos comunes'
+  if (expenses === null || !(expenses > 0) || !expensesCurrency)
+    return 'Gastos comunes no informados'
+  const line = `+ ${rentalMoney(expenses, expensesCurrency)} de gastos comunes`
+  if (card.totalUyu === null || !Number.isFinite(card.totalUyu)) return line
+  const converted = card.currency === 'USD' || expensesCurrency === 'USD'
+  return `${line} ${converted ? '≈' : '='} ${formatUyu(card.totalUyu)} por mes`
 }
 
 /** "4 de octubre de 2026" desde `rentalDataAsOf` (o `generatedAt`), en hora de Montevideo. */
@@ -120,6 +145,23 @@ export function rentalBarrioDescription(page: RentalBarrioPage): string {
   const full = `${lead}, con gastos comunes y rango por dormitorio.${when}`
   // El dato y la fecha van adelante: si no entra en el SERP, se cae la coletilla, no la cifra.
   return full.length <= MAX_DESCRIPTION ? full : `${lead}.${when}`
+}
+
+/**
+ * La tarjeta para compartir la página (components/OgImage/Cambio.vue): el barrio con su
+ * departamento y, abajo, la misma mediana con la que arranca la descripción, con su fecha. Sin
+ * tarjeta propia la página usaba la del sitio: "… | Cambio Uruguay" sobre "Compará +40 casas de
+ * cambio en tiempo real". Sin mediana no hay subtítulo y la tarjeta usa la descripción.
+ */
+export function rentalBarrioCard(page: RentalBarrioPage): { title: string; subtitle: string } {
+  const title = `Alquiler en ${page.neighborhood}, ${page.department}`
+  const best =
+    DESCRIPTION_CELLS.map(([type, bedrooms]) => cellOf(page, type, bedrooms)).find(Boolean) ?? null
+  if (!best) return { title, subtitle: '' }
+  const what = subject(best.propertyType, best.bedrooms)
+  const median = `${what.charAt(0).toUpperCase()}${what.slice(1)} a ${formatUyu(best.prices.rent.median)} por mes de mediana`
+  const date = rentalBarrioDate(page)
+  return { title, subtitle: date ? `${median} · datos del ${date}` : median }
 }
 
 export function rentalBarrioIntro(page: RentalBarrioPage): string {

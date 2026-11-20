@@ -471,6 +471,252 @@ la tabla de modelos), nunca `AggregateRating`.
   tiendas (`classes/stores/registry.ts`) Y que ya tiene perfil escrito (`GET /api/stores`,
   `hasProfile`) — las dos condiciones son necesarias, ver [TIENDAS_ONLINE.md](TIENDAS_ONLINE.md).
 
+## Ficha técnica, filtros por especificación y asesor (3/11/2026)
+
+`/monopatines-electricos-uruguay` contestaba "cuánto sale" pero no lo que decide la compra y lo que
+cualquier tienda de monopatines pone arriba de la ficha: autonomía, velocidad, potencia, peso que
+soporta, peso del aparato, tiempo de carga, ruedas, frenos, plegable. Medido el 3/11/2026: la tarjeta
+de búsqueda de Mercado Libre llega con `attributes: []` (por eso la faceta de marca tenía 7 avisos con
+marca de 782), pero **la ficha propia de ML trae la tabla entera** (`ui-vpp-striped-specs`) y las
+tiendas la escriben como texto rotulado. Sobre 22 avisos reales leídos con el código nuevo: 22 de 22
+leídos, autonomía en 21, ruedas en 20, potencia en 19, velocidad y carga soportada en 18, peso y
+tiempo de carga en 14. Con la primera corrida sobre una copia local de los 783 avisos, la faceta de
+marca pasó de 7 avisos con marca a 486 (Xiaomi 237, Atom 46, Mistyle 39…).
+
+**Sólo monopatín.** El código es genérico; bicicletas queda para después.
+
+### El job `currency-movilidad-specs` (`sync_movilidad_specs.ts`, `1 * * * *`)
+
+1. Cola (`classes/movilidad/specs/queue.ts`): monopatines frescos (4 días) y no sospechosos, nunca
+   Facebook (la ficha de Marketplace exige la sesión; lo único público es el título). Tiendas primero,
+   después ML nunca leídos, después relecturas. 60 por corrida a 3 s, tope 8 min
+   (`MOVILIDAD_SPECS_MAX` / `_GAP_MS` / `_MINUTES`). A los :01, en el hueco de los consumidores
+   horarios del puente de ML (movilidad :07, sillas :23, autos :29, celulares :37, motos :44,
+   alquileres :47, equipar :53).
+2. **Toda lectura se guarda**, buena o mala, en la colección privada `movilidadspecs`. La mala vuelve
+   con espera de 1, 3 y 7 días y a la cuarta falla seguida se abandona por un mes; un aviso que ya no
+   existe (404/410) espera 7 días y no cuenta como falla. Una página 200 SIN
+   ficha es falla y no "borrado": es el aspecto de un desafío anti-bot, y contarlo como borrado mandaría
+   la cola entera 7 días afuera sin que el corte se entere. Es la
+   lección de Casasweb (9-10/10/2026): no guardar la falla + orden determinista + corte por fallas
+   seguidas = cola trabada para siempre. Cortan cinco pedidos seguidos sin respuesta o sin ficha. Una
+   relectura que falla, o que carga pero no trae ficha, no borra la ficha buena anterior
+   (`write.ts`); si la mitad de las leídas no trae datos, el log avisa `ALERTA`. Ficha buena se relee a
+   los 45 días.
+3. Lectura (`read.ts`): **ML = el puente propio, `/product/<id>`** (tabla `specifications` +
+   descripción + marca/modelo). La primera corrida en producción (3/11/2026 23:37 UTC) leyó las 19
+   fichas de tiendas y cortó en las de ML: desde la IP del VPS toda página de producto de ML (`/up/`,
+   `/p/`, `articulo.`) redirige a `/gz/account-verification`, el muro de login — los clasificados
+   (`auto.`, `casa.`) siguen abiertos, por eso autos-detail y rentals-ml-detail no lo ven. El muro no se
+   rodea con otra IP: se usa la vía que el repo ya tiene para ML. El puente acepta ids de producto de
+   usuario (`/up/MLUU…`) y de catálogo (`/p/MLU…`), 609 de 618 avisos; los 9 `articulo.…` no tienen id
+   y la cola no los pide (quedan con lo del título). La guarda de "página 200 sin ficha = falla" fue la
+   que hizo cortar la corrida en vez de marcar 90 avisos como borrados. Shopify =
+   `<producto>.json` (`body_html`, `vendor` como marca); resto de tiendas = HTML sin scripts, cortado en
+   "Productos relacionados". UA propia `MOVILIDAD_SPECS_USER_AGENT`.
+4. Reaplica la ficha a TODAS las filas frescas de `movilidadlistings` con `enrichMovilidadRow`
+   (`enrich.ts`), la misma función que usa `sync_movilidad.ts` antes de guardar: si sólo la aplicara
+   este job, la horaria de movilidad volvería a dejar la marca vacía cada hora. Si la colección de
+   fichas no se puede leer, `sync_movilidad.ts` guarda las filas sin `specs`/`uyuPerKm` en el `$set`
+   (lo guardado sobrevive).
+5. Guarda el snapshot `movilidadspecsnapshots` (`key: monopatin-electrico`): candidatos del asesor
+   (sólo avisos con ficha propia, no sospechosos, nunca Facebook) y medianas por tipo. Las medianas
+   cuentan sólo lo que dijo la ficha o la descripción, nunca el título, y exigen 5 datos.
+
+### El parser (`parse.ts`, puro)
+
+- Tabla de ML (`mlSpecRows`, HTML o JSON escapado) → `specsFromRows`; texto → `specsFromText` en tres
+  pasadas: pares con dos puntos ("Ruedas: 8,5”", una tabla) antes que pares sueltos ("Rodado 10") y los
+  dos antes que la prosa ("45 km de autonomía"). Superbikers dice "rodado 10”" en la prosa y "Ruedas:
+  8,5”" en su tabla: gana la tabla.
+- Rangos hacia el lado conservador del filtro: autonomía y carga soportada toman el extremo bajo
+  ("20–25 km" → 20); peso del aparato, tiempo de carga y velocidad, el alto.
+- "Potencia máxima"/"pico" va a `motorPeakW`, nunca a `motorW` ("motor de 600 W (potencia máxima)").
+- Millas, mph y libras se convierten sólo con la unidad escrita.
+- Bandas de cordura (`SPEC_BANDS`): fuera de banda el campo queda en `null`, no se corrige ("Largo =
+  100 m" en una ficha real de un infantil).
+- Título (`specsFromTitle`): lo mismo, más "45km" suelto como autonomía (en un título sólo puede ser
+  eso; "25 km/h" no). Procedencia por campo en `specs.from` (`ficha` | `descripcion` | `titulo`).
+- Marca (`brands.ts`): la de la ficha salvo genéricos ("Monopatin", "Genérica"); si no, la primera
+  marca conocida del título ("Go Green Mod. Zero" es Gogreen, por eso Zero no está en la lista).
+
+### Directorio: filtros, facetas y órdenes
+
+Sólo con `vertical: 'movilidad'` (equipar normaliza exactamente como antes; el `toEqual` de su test
+no cambió): `autonomia` (mínimo km), `velocidad` (`hasta-25`|`25-35`|`mas-35`), `potencia` (tramos),
+`potenciaMin` (la que pide el asesor: un tramo no puede decir "350 W o más"), `carga` (mínimo kg),
+`peso` (máximo kg), `rueda`, `rasgos` (`plegable,suspension,disco,app`), `ficha=1`. Órdenes nuevos sólo
+para monopatín: mayor autonomía, menor precio por km (`uyuPerKm`, sólo con autonomía de ficha) y más
+liviano — estos dos dejan afuera a los avisos sin el dato en vez de ponerlos primero. Facetas
+(`server/utils/monopatinFichaFacets.ts`): un `$group` con `$cond` por opción, cada dimensión sin su
+propio filtro; **toda condición va con `$isNumber`**, porque en agregación `null` es menor que
+cualquier número y "hasta 25 km/h" contaría a todos los que no declaran velocidad. Un aviso sin el
+dato no cumple ese filtro, y el panel lo dice con el conteo de los que tienen ficha.
+
+### El asesor "¿Cuál te conviene?" (`utils/monopatinAsesor.ts`)
+
+Corre en el navegador sobre `/api/movilidad/monopatin-asesor` (sólo lee el snapshot, caché 300 s,
+`server: false`): los controles responden en el acto, como el comparador de transporte. Reglas
+publicadas en la página: autonomía real 65 % de la declarada (55 % sobre 90 kg), carga soportada ≥
+peso + 10 kg, 350 W con algunas subidas y 500 W con muchas, liviano ≤ 15 kg. Tres elecciones con nombre
+y porqué: la más barata que cumple, más kilómetros por tu plata, y la más liviana (si lo carga o es llano)
+o la más potente. Si declara más de 25 km/h lo dice contra la norma de Montevideo y San José, nunca
+"ilegal". Si nadie cumple, nombra el requisito que más deja afuera. El botón lleva los mismos
+requisitos al directorio (`asesorQueryFicha`).
+
+### En la página
+
+Asesor después de "Cuánto sale hoy, por tipo"; columna "Ficha técnica" en la tabla de modelos (la
+ficha de la primera oferta del modelo con ficha propia, `$in` acotado en `/api/movilidad/<categoria>`);
+franja de ficha en cada tarjeta del directorio (`MovilidadSpecStrip`, sólo si el aviso trae `specs`:
+equipar no cambia); "Qué esperar de cada tipo" con las medianas y el costo de una carga (batería
+mediana × UTE simple 101–600 kWh con IVA + 15 % de pérdida del cargador); "Cómo elegir" y cuatro
+preguntas frecuentes con esas cifras; `Product.additionalProperty` en el JSON-LD.
+
+## Páginas por modelo y comparador (4/11/2026)
+
+**Por qué.** La tabla "Modelos y sus mejores ofertas" salía del régimen `modelo` de equipar, que
+identifica por el texto entero del título: en producción eran 23 "productos" con un aviso cada uno
+("Xiaomi 5 Max" tres veces). Con la marca y el modelo que trae la ficha de ML, los 774 avisos vivos
+daban 190 grupos y 37 con dos vendedores o más. Y la ficha de entidad es lo que rankea (sillas,
+celulares, autos); el hub no.
+
+**Identidad** (`classes/movilidad/models/identify.ts`, puro). Precisión sobre recall:
+- la marca es la del aviso (ficha → título); una marca desconocida que el título no nombra suele ser
+  el vendedor ("Like Latam") y no da modelo;
+- el modelo son hasta tres palabras que siguen a la marca, salteando genéricas al principio
+  ("Monopatín Eléctrico Electric Xiaomi Scooter 5 Pro 25km/h" → `xiaomi-5-pro`) y cortando en la
+  primera medida (`350w`, `25 km`), color, conector, número pelado > 99 o número después de un código
+  ("Sgx3 10", "E9pro 25");
+- `e9pro` se parte en `e9 pro` (sufijo de gama pegado), el guion separa, "Move 2.0" es `move-2`, y la
+  generación se escribe de cinco formas (`Gen2`, `Gen 2`, `2nd`, `2da Gen`, `segunda`) que son `gen2`;
+- el modelo de la ficha se usa si el título no trae, o si el título es ese mismo modelo con ruido
+  ("Enxuta 45 Meenx552n" con ficha MEENX552N), **nunca para sacarle la gama** (un "6 Pro" con ficha
+  "Electric Scooter 6" sigue siendo 6 Pro);
+- los avisos del mismo producto de catálogo de ML (`/p/MLU…`) toman el modelo mayoritario.
+Facebook nunca entra. Nunca se une por precio, foto ni parecido de texto.
+
+**Catálogo** (`classes/movilidad/models/build.ts`), escrito por `currency-movilidad-specs` en APP DB
+`movilidadmodels` después del re-enriquecimiento:
+- un modelo con un solo aviso no se publica;
+- ofertas una por aviso, la más barata primero (tope 40); bandas nuevo y usado separadas;
+- **ficha de consenso**: por campo numérico la MODA si un valor se repite más que los demás, si no la
+  mediana BAJA — nunca un promedio: con 12 V y 48 V la mediana par publicaba 30 V, que ninguna ficha
+  dijo (Mistyle ME500, 4/11). `agree` dice cuántas fichas coinciden con el valor (±5 %) y `spread`
+  el rango cuando no coinciden; la página muestra el rango si coincide menos de la mitad;
+- `indexable` = dos vendedores o más y tres datos numéricos de ficha; si no, la página va `noindex,
+  follow` y no entra al sitemap;
+- `history`: un punto diario `{ newMin, newMedian, n }` desde el 4/11 (tope 400). No se dibuja
+  todavía: no se reconstruye hacia atrás, así que se empieza a guardar ya;
+- un modelo que deja de verse conserva su documento; la API sólo sirve `lastSeen` de los últimos 7
+  días (después 404). Corrida que arma menos del 40 % de los modelos frescos guardados: no escribe
+  modelos ni toca el `modelSlug` de los avisos.
+
+Medido el 4/11 sobre los 774 avisos: 54 modelos, 41 indexables, 386 avisos enlazados (Xiaomi 6 Lite:
+36 avisos de 11 vendedores).
+
+**App.** `GET /api/movilidad/modelos` (resúmenes) y `/api/movilidad/modelos/<slug>` (modelo + hasta 4
+del mismo tipo con el precio más parecido); slug malo 404 sin base, base caída 503 no-store.
+- `/monopatines-electricos-uruguay/<modelo>` (`pages/monopatines-electricos-uruguay/[modelo].vue`):
+  nuevo/usado desde, todas las ofertas, ficha con "N de M fichas" o el rango, autonomía real (65 %) y
+  costo de carga con la tarifa de UTE, normativa si declara más de 25 km/h, "Comparalo con", FAQ.
+  `Product` + `AggregateOffer` sólo con ofertas nuevas. Título con el precio (`monopatinModelTitle`,
+  forma corta "Monopatín Xiaomi 6 Pro: desde $ X" si el nombre largo no entra en 60).
+- `/monopatines-electricos-uruguay/comparar?m=a,b,c`: hasta 3 modelos, el mejor de cada fila marcado
+  sólo donde más (o menos) es mejor — la velocidad no se premia (25 km/h en Montevideo y San José), ni
+  el voltaje, la capacidad o la rueda. `noindex`, en `EXCLUDED_ROUTES`.
+- El hub pasó a `pages/monopatines-electricos-uruguay/index.vue` (misma URL). Su tabla de modelos lee
+  el catálogo nuevo (con casilla "Comparar" y bandeja fija) y cae a la tabla vieja si está vacío. Las
+  tarjetas del directorio y las elecciones del asesor enlazan a su modelo (`modelSlug`).
+- Enlaces a la familia literales, sin `localePath`: es sólo español, como las fichas de celulares.
+
+## Bicicletas: ficha, asesor, modelos y directorio limpio (4/11/2026)
+
+Lo que monopatines ganó el 3 y el 4/11 (ficha técnica, filtros y órdenes por ficha, asesor, catálogo
+de modelos, página por modelo, comparador), aplicado a `/bicicletas-electricas-uruguay`. No es un
+fork: la maquinaria recibe la categoría y cambia lo que una bici declara distinto. Diseño en
+`docs/superpowers/specs/2026-11-04-bicicletas-ficha-modelos-design.md`.
+
+### Lo medido antes de escribir nada
+
+- 478 avisos frescos de bici (330 de ML, 308 con id de producto que el puente lee; 30 de tiendas; 118
+  de Facebook). **17 con marca**, cero fichas, cero modelos.
+- **30 eran accesorios** que pasaban `include` por nombrar la bici a la que van ("Luz Trasera … Para
+  Bicicleta", "Portabicicletas Para Ebike", "Cadena Kmc … Ebike", "Set De Frenos … Para Bicicleta
+  Eléctrica") y 4 trueques de Facebook ("cambio por bici eléctrica"). En bici el accesorio casi nunca
+  ABRE el título con una pieza de la lista de autos: por eso `PIEZA_ABRE_EL_TITULO` no los veía.
+- La ficha de ML de una bici trae Rodado ("20x4.0", "27,5"), Potencia, Velocidad máxima, Voltaje y
+  Capacidad, Peso, Peso máximo soportado, Es plegable, **Con batería removible**, **Con acelerador
+  independiente**, Altura recomendada. La descripción: "Shimano Tourney 7 velocidades", "Autonomía:
+  35-70 km".
+
+### Directorio limpio (`registry.ts`, `BICI_ACCESORIO`)
+
+Cuatro formas que una bici real no tiene: "para / compatible con / apto para" + bici (o "cadena");
+un accesorio que abre el título (luz, cadena, cesto, portabicicletas, camiseta, remolque, medidor,
+indicador, conmutador, set, chip, "1 par") o marca + pieza ("Bafang Pantalla"); sustantivos de
+importación (headlight, holder, bracket, hitch, apparel) y los suyos en español (portabicicletas,
+empuñadura, deslimitador); y "cambio/permuto por bici". Sobre los 478: **37 fuera, cero bicis
+reales**. "Luz", "canasto" y "cesta" sólo cuentan si abren el título: "Nakto 250w C/ Canasto" y "Fat
+Bike Luz Señaleros" son bicis. Variante nueva `infantil` (por palabra, nunca por rodado: la Gyroor C3
+de 14″ es para adultos). Las filas ya guardadas que dejan de clasificar se sirven 4 días más; para
+borrarlas antes, `npm run movilidad_prune_listings -- --apply` en el VPS.
+
+### Ficha por perfil (`classes/movilidad/specs/profiles.ts`)
+
+- El perfil de cada categoría: bandas propias (`BICICLETA_SPEC_BANDS`: rodado 12–29″, peso 8–60 kg,
+  potencia hasta 3.000 W, autonomía hasta 200 km) y si se leen los campos de bici. Sin categoría es
+  monopatín, que sale **idéntico** (los 258 tests de antes pasan sin tocarlos).
+- Campos nuevos, sólo bici: `gears`, `removableBattery`, `throttle`, `centralMotor`. Rodado desde
+  "R20", "Rod. 28", "Rodado 20x4.0", "26x1.95" (una bici casi nunca escribe las comillas). "3
+  velocidades" en un monopatín son los modos del acelerador: ahí nunca se leen cambios.
+- `brands.ts` por categoría: 38 marcas de bici medidas (Swft va antes que Trinx: "Trinx Swft Zip S" es
+  una Swft). Marca: 17 → 291 de los 441 avisos sin accesorios.
+- `currency-movilidad-specs` lee las dos categorías con una sola cola y el mismo presupuesto (60 por
+  corrida): ~340 fichas de bici se leen en ~6 corridas. Un snapshot por categoría
+  (`movilidadspecsnapshots`, `key` = categoría) y un catálogo de modelos por categoría con su guarda de
+  corrida flaca.
+
+### Modelos de bici (`identify.ts` con perfil, `movilidadmodels.category`)
+
+- El rodado ANTES del código no es el modelo ("Gyroor 20 Eb033" → EB033); en el medio sí lo es,
+  porque "Ado Air 20" y "Ado Air 28" son dos bicis. "R20" después del código lo cierra. "Eb-041" =
+  "EB041", "27,5" = 27.5. Bosch, Shimano, Bafang y las palabras de bici no nombran un modelo; los
+  vendedores que firman el título al final ("Mmsports", "Circuit", "Albion") tampoco.
+- Medido sobre los 441: 206 avisos con modelo, 89 modelos, 36 con dos avisos o más, 20 con dos
+  vendedores o más (Gyroor C3: 18 avisos, 3 vendedores; S-Pro E-Clipper: 9 avisos, 6 vendedores).
+- `movilidadmodels` suma `category`. **Un documento sin `category` es de monopatín** (anterior a las
+  bicis): el filtro de monopatín es `{ category: { $in: ['monopatin-electrico', null] } }`
+  (`classes/movilidad/models/category.ts` y `app/utils/movilidadModelos.ts`). Las APIs de modelos
+  (`?categoria=`), el sitemap y los hermanos filtran por categoría: sin eso una bici salía en la tabla y
+  el sitemap de monopatines. Un slug que ya es de la otra categoría (guardado o armado antes en la
+  misma corrida) no se pisa.
+
+### En la página
+
+- El hub pasó a `pages/bicicletas-electricas-uruguay/index.vue` (misma URL): asesor, tabla de modelos
+  con comparar y bandeja (`MovilidadCompareTray` con `compare-path`), ItemList de modelos indexables,
+  "Qué esperar de cada tipo" con rodado y costo de carga, ficha en la tarjeta (rodado primero) y
+  filtros por ficha con el perfil de bici (`movilidadFichaPerfil`: autonomía 30–100 km, peso 20–30 kg,
+  **rodado** en vez de rueda, rasgos batería removible / acelerador / motor central), órdenes por ficha.
+- Asesor (`utils/bicicletaAsesor.ts`, `MovilidadBicicletaAsesor.vue`, estilos compartidos en
+  `components/movilidad/asesor.css`): autonomía real 60 % (50 % sobre 90 kg) porque el fabricante la
+  mide con la asistencia más baja; peso + 10 kg; 350/500 W con algunas/muchas subidas; "la más fácil de
+  subir" = plegable o 22 kg o menos; acelerador como requisito duro si se pide. Más de 25 km/h se dice
+  contra la norma europea de pedaleo asistido (EN 15194, corta la ayuda a los 25 km/h), **no** contra
+  el decreto de Montevideo, que fija los 25 km/h para monopatines y plataformas, no para bicis.
+- `/bicicletas-electricas-uruguay/<modelo>` (`utils/bicicletaModelos.ts`: título "Bicicleta eléctrica
+  X: desde $ N" o "Bici eléctrica X…" si no entra en 60) y `/comparar` (noindex, en
+  `EXCLUDED_ROUTES`, fuera del sitemap y de las más visitadas). El comparador no premia el rodado.
+
+### Otros tipos de artículo
+
+El perfil es el punto de entrada para una categoría nueva: bandas + campos propios en `profiles.ts`,
+marcas en `brands.ts`, palabras genéricas en `identify.ts`, opciones de filtro en
+`movilidadFichaPerfil`. Equipar (heladeras, lavarropas, televisores…) no se activó: tiene ~25.000
+avisos frescos (~12.000 en categorías de régimen `modelo`) y a 60 fichas por hora del puente, que
+comparten diez jobs, leerlos lleva semanas. Es una decisión de presupuesto del puente, no de código.
+
 ## Tests
 
 - `tests/movilidad/registry.test.ts` — forma del registro (claves sin colisión con equipar, room

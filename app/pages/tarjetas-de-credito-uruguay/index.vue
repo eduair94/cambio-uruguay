@@ -104,185 +104,203 @@
       </VChip>
     </div>
 
-    <!-- Full ranking -->
-    <div v-for="p in visible" :id="`programa-${p.id}`" :key="p.id" class="rank-card mb-3">
-      <div class="rank-head pa-4 pa-sm-5">
-        <div class="d-flex align-start ga-3">
-          <div class="rank-badge" :class="rankTone(p.rank)">
-            <span v-if="medalFor(p.rank)" class="rank-medal">{{ medalFor(p.rank) }}</span>
-            <span v-else class="rank-num">{{ p.rank }}</span>
-          </div>
-          <div class="flex-grow-1">
-            <div class="d-flex align-center ga-2 flex-wrap mb-1">
-              <h3 class="text-subtitle-1 font-weight-bold mb-0">
-                <NuxtLink v-if="programLink(p.id)" :to="programLink(p.id)" class="rank-name-link">
-                  {{ p.name }}
-                </NuxtLink>
-                <template v-else>{{ p.name }}</template>
-              </h3>
-              <VChip
-                v-if="p.verified"
-                size="x-small"
-                color="success"
-                variant="tonal"
-                class="font-weight-medium"
-              >
-                <VIcon start size="11">mdi-check-decagram-outline</VIcon>
-                Verificado
-              </VChip>
+    <!-- Full ranking. La unidad intermedia va en el ranking, después de la cuarta tarjeta (la regla
+         de los directorios, utils/ads.ts → FEED_AD_AFTER), y no arriba de las preguntas: ahí
+         quedaba debajo de 23 tarjetas y la página daba 0,74 impresiones por vista (28 días al
+         30/10/2026) contra 5 de una guía. FaqSection va con :ad="false" y el tope sigue en dos. -->
+    <template v-for="(p, index) in visible" :key="p.id">
+      <AdSlot v-if="index === rankingAdIndex" placement="in-article" class="mb-3" />
+      <div :id="`programa-${p.id}`" class="rank-card mb-3">
+        <div class="rank-head pa-4 pa-sm-5">
+          <div class="d-flex align-start ga-3">
+            <div class="rank-badge" :class="rankTone(p.rank)">
+              <span v-if="medalFor(p.rank)" class="rank-medal">{{ medalFor(p.rank) }}</span>
+              <span v-else class="rank-num">{{ p.rank }}</span>
             </div>
-            <div class="d-flex align-center ga-2 flex-wrap mb-1">
-              <span class="text-caption text-grey-lighten-1">{{ p.issuer }}</span>
-              <VChip size="x-small" variant="tonal">{{ ISSUER_TYPE_LABELS[p.issuerType] }}</VChip>
-              <VChip v-for="n in p.networks" :key="n" size="x-small" variant="outlined">
-                {{ NETWORK_LABELS[n] }}
-              </VChip>
+            <div class="flex-grow-1">
+              <div class="d-flex align-center ga-2 flex-wrap mb-1">
+                <h3 class="text-subtitle-1 font-weight-bold mb-0">
+                  <NuxtLink v-if="programLink(p.id)" :to="programLink(p.id)" class="rank-name-link">
+                    {{ p.name }}
+                  </NuxtLink>
+                  <template v-else>{{ p.name }}</template>
+                </h3>
+                <VChip
+                  v-if="p.verified"
+                  size="x-small"
+                  color="success"
+                  variant="tonal"
+                  class="font-weight-medium"
+                >
+                  <VIcon start size="11">mdi-check-decagram-outline</VIcon>
+                  Verificado
+                </VChip>
+              </div>
+              <div class="d-flex align-center ga-2 flex-wrap mb-1">
+                <span class="text-caption text-grey-lighten-1">{{ p.issuer }}</span>
+                <VChip size="x-small" variant="tonal">{{ ISSUER_TYPE_LABELS[p.issuerType] }}</VChip>
+                <VChip v-for="n in p.networks" :key="n" size="x-small" variant="outlined">
+                  {{ NETWORK_LABELS[n] }}
+                </VChip>
+              </div>
+            </div>
+            <div class="rank-overall text-center flex-shrink-0">
+              <div class="rank-overall-num" :style="{ color: scoreColor(p.overall) }">
+                {{ p.overall }}
+              </div>
+              <div class="text-caption text-grey-lighten-1">/ 100</div>
             </div>
           </div>
-          <div class="rank-overall text-center flex-shrink-0">
-            <div class="rank-overall-num" :style="{ color: scoreColor(p.overall) }">
-              {{ p.overall }}
-            </div>
-            <div class="text-caption text-grey-lighten-1">/ 100</div>
-          </div>
-        </div>
 
-        <!-- Score bars -->
-        <div class="score-bars mt-4">
-          <div v-for="dim in rubric" :key="dim.id" class="score-row">
-            <span class="score-dim">{{ dim.label }}</span>
-            <div class="score-track">
-              <div
-                class="score-fill"
-                :style="{ width: p.scores[dim.id] + '%', background: scoreColor(p.scores[dim.id]) }"
-              />
+          <!-- Score bars -->
+          <div class="score-bars mt-4">
+            <div v-for="dim in rubric" :key="dim.id" class="score-row">
+              <span class="score-dim">{{ dim.label }}</span>
+              <div class="score-track">
+                <div
+                  class="score-fill"
+                  :style="{
+                    width: p.scores[dim.id] + '%',
+                    background: scoreColor(p.scores[dim.id]),
+                  }"
+                />
+              </div>
+              <span class="score-val">{{ p.scores[dim.id] }}</span>
             </div>
-            <span class="score-val">{{ p.scores[dim.id] }}</span>
           </div>
-        </div>
-        <ContentTaskLinks
-          v-if="mapaDescuentos(p.id)"
-          class="mt-3"
-          :label="
-            t('cards.bankDiscounts', { bank: bankosBankName(BANKOS_BANK_BY_CREDIT_PROGRAM[p.id]) })
-          "
-          placement="program_summary"
-          :items="[
-            {
-              label: t('cards.bankDiscounts', {
+          <ContentTaskLinks
+            v-if="mapaDescuentos(p.id)"
+            class="mt-3"
+            :label="
+              t('cards.bankDiscounts', {
                 bank: bankosBankName(BANKOS_BANK_BY_CREDIT_PROGRAM[p.id]),
-              }),
-              to: mapaDescuentos(p.id),
-            },
-          ]"
-        />
+              })
+            "
+            placement="program_summary"
+            :items="[
+              {
+                label: t('cards.bankDiscounts', {
+                  bank: bankosBankName(BANKOS_BANK_BY_CREDIT_PROGRAM[p.id]),
+                }),
+                to: mapaDescuentos(p.id),
+              },
+            ]"
+          />
+        </div>
+
+        <!-- Details (expandable). `eager` so the rich content ships in the SSR HTML
+             (indexable + accessible) even while visually collapsed. -->
+        <VExpansionPanels flat class="rank-details">
+          <VExpansionPanel eager>
+            <VExpansionPanelTitle class="rank-details-title">
+              <span class="text-body-2">Ver acumulación, canje, descuentos, pros y contras</span>
+            </VExpansionPanelTitle>
+            <VExpansionPanelText>
+              <p v-if="p.rationale" class="rank-rationale text-body-2 mb-4">
+                <VIcon size="14" color="primary" class="mr-1">mdi-gavel</VIcon>
+                {{ p.rationale }}
+              </p>
+
+              <dl class="rank-facts">
+                <div>
+                  <dt>Programa</dt>
+                  <dd>{{ p.pointsProgramName }}</dd>
+                </div>
+                <div>
+                  <dt>Acumulación</dt>
+                  <dd>{{ p.earnRateNote }}</dd>
+                </div>
+                <div v-if="p.pointValueNote">
+                  <dt>Valor del punto</dt>
+                  <dd>{{ p.pointValueNote }}</dd>
+                </div>
+                <div>
+                  <dt>Canje</dt>
+                  <dd>{{ p.redemptionNote }}</dd>
+                </div>
+                <div>
+                  <dt>Descuentos y beneficios</dt>
+                  <dd>
+                    {{ p.discountNote }}
+                    <!-- El texto describe la promo; estas dos salidas dicen DÓNDE cae. El mapa
+                         entra con el banco y el tipo ya preseleccionados; la guía es la lista
+                         completa por rubro, con el texto de cada tramo de descuento. -->
+                    <span v-if="mapaDescuentos(p.id)" class="d-block mt-1">
+                      <NuxtLink :to="mapaDescuentos(p.id)" class="rank-map-link">
+                        <VIcon size="14" class="mr-1">mdi-map-marker-radius-outline</VIcon>
+                        Ver en el mapa
+                      </NuxtLink>
+                      <span class="mx-2 text-disabled">·</span>
+                      <NuxtLink :to="guiaDescuentos(p.id)" class="rank-map-link">
+                        <VIcon size="14" class="mr-1">mdi-tag-multiple-outline</VIcon>
+                        Todos los comercios con descuento {{ mapaDescuentosLabel(p.id) }}
+                      </NuxtLink>
+                    </span>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Costo</dt>
+                  <dd>{{ p.feeNote }}</dd>
+                </div>
+                <div v-if="p.note">
+                  <dt>Nota</dt>
+                  <dd>{{ p.note }}</dd>
+                </div>
+                <!-- Qué documento del emisor se leyó y cuándo, ficha por ficha: la fecha global de
+                     la página no alcanza cuando una cartilla es de marzo y un manual de setiembre. -->
+                <div v-if="p.verifiedOn" class="rank-verified">
+                  <dt>Verificado</dt>
+                  <dd>
+                    <strong>{{ dateLabel(p.verifiedOn) }}</strong>
+                    <template v-if="p.verifiedNote"> · {{ p.verifiedNote }}</template>
+                  </dd>
+                </div>
+              </dl>
+
+              <VRow class="mt-1">
+                <VCol cols="12" sm="6">
+                  <p class="rank-plabel rank-plabel-pro">A favor</p>
+                  <ul class="rank-list rank-pro">
+                    <li v-for="(x, i) in p.pros" :key="i">{{ x }}</li>
+                  </ul>
+                </VCol>
+                <VCol cols="12" sm="6">
+                  <p class="rank-plabel rank-plabel-con">En contra</p>
+                  <ul class="rank-list rank-con">
+                    <li v-for="(x, i) in p.cons" :key="i">{{ x }}</li>
+                  </ul>
+                </VCol>
+              </VRow>
+              <p class="text-caption text-grey-lighten-1 mb-0 mt-2">
+                <VIcon size="13">mdi-account-check-outline</VIcon>
+                Ideal para: {{ p.bestFor }}
+              </p>
+              <p v-if="programLink(p.id)" class="text-body-2 mb-0 mt-2">
+                <NuxtLink :to="programLink(p.id)" class="rank-map-link">
+                  Ver la ficha completa: puntaje eje por eje, preguntas frecuentes y comparativas
+                </NuxtLink>
+              </p>
+
+              <!-- What Uruguayans say about this issuer on Reddit (daily snapshot) -->
+              <RedditEntityBlock
+                :entity-id="PROGRAM_REDDIT_ENTITY[p.id]"
+                note="Comentarios reales de uruguayos sobre el emisor, no editados. Reddit se queja más de lo que elogia: es una señal, no el veredicto — no toca el puntaje de arriba."
+              />
+            </VExpansionPanelText>
+          </VExpansionPanel>
+        </VExpansionPanels>
       </div>
-
-      <!-- Details (expandable). `eager` so the rich content ships in the SSR HTML
-           (indexable + accessible) even while visually collapsed. -->
-      <VExpansionPanels flat class="rank-details">
-        <VExpansionPanel eager>
-          <VExpansionPanelTitle class="rank-details-title">
-            <span class="text-body-2">Ver acumulación, canje, descuentos, pros y contras</span>
-          </VExpansionPanelTitle>
-          <VExpansionPanelText>
-            <p v-if="p.rationale" class="rank-rationale text-body-2 mb-4">
-              <VIcon size="14" color="primary" class="mr-1">mdi-gavel</VIcon>
-              {{ p.rationale }}
-            </p>
-
-            <dl class="rank-facts">
-              <div>
-                <dt>Programa</dt>
-                <dd>{{ p.pointsProgramName }}</dd>
-              </div>
-              <div>
-                <dt>Acumulación</dt>
-                <dd>{{ p.earnRateNote }}</dd>
-              </div>
-              <div v-if="p.pointValueNote">
-                <dt>Valor del punto</dt>
-                <dd>{{ p.pointValueNote }}</dd>
-              </div>
-              <div>
-                <dt>Canje</dt>
-                <dd>{{ p.redemptionNote }}</dd>
-              </div>
-              <div>
-                <dt>Descuentos y beneficios</dt>
-                <dd>
-                  {{ p.discountNote }}
-                  <!-- El texto describe la promo; estas dos salidas dicen DÓNDE cae. El mapa
-                       entra con el banco y el tipo ya preseleccionados; la guía es la lista
-                       completa por rubro, con el texto de cada tramo de descuento. -->
-                  <span v-if="mapaDescuentos(p.id)" class="d-block mt-1">
-                    <NuxtLink :to="mapaDescuentos(p.id)" class="rank-map-link">
-                      <VIcon size="14" class="mr-1">mdi-map-marker-radius-outline</VIcon>
-                      Ver en el mapa
-                    </NuxtLink>
-                    <span class="mx-2 text-disabled">·</span>
-                    <NuxtLink :to="guiaDescuentos(p.id)" class="rank-map-link">
-                      <VIcon size="14" class="mr-1">mdi-tag-multiple-outline</VIcon>
-                      Todos los comercios con descuento {{ mapaDescuentosLabel(p.id) }}
-                    </NuxtLink>
-                  </span>
-                </dd>
-              </div>
-              <div>
-                <dt>Costo</dt>
-                <dd>{{ p.feeNote }}</dd>
-              </div>
-              <div v-if="p.note">
-                <dt>Nota</dt>
-                <dd>{{ p.note }}</dd>
-              </div>
-              <!-- Qué documento del emisor se leyó y cuándo, ficha por ficha: la fecha global de
-                   la página no alcanza cuando una cartilla es de marzo y un manual de setiembre. -->
-              <div v-if="p.verifiedOn" class="rank-verified">
-                <dt>Verificado</dt>
-                <dd>
-                  <strong>{{ dateLabel(p.verifiedOn) }}</strong>
-                  <template v-if="p.verifiedNote"> · {{ p.verifiedNote }}</template>
-                </dd>
-              </div>
-            </dl>
-
-            <VRow class="mt-1">
-              <VCol cols="12" sm="6">
-                <p class="rank-plabel rank-plabel-pro">A favor</p>
-                <ul class="rank-list rank-pro">
-                  <li v-for="(x, i) in p.pros" :key="i">{{ x }}</li>
-                </ul>
-              </VCol>
-              <VCol cols="12" sm="6">
-                <p class="rank-plabel rank-plabel-con">En contra</p>
-                <ul class="rank-list rank-con">
-                  <li v-for="(x, i) in p.cons" :key="i">{{ x }}</li>
-                </ul>
-              </VCol>
-            </VRow>
-            <p class="text-caption text-grey-lighten-1 mb-0 mt-2">
-              <VIcon size="13">mdi-account-check-outline</VIcon>
-              Ideal para: {{ p.bestFor }}
-            </p>
-            <p v-if="programLink(p.id)" class="text-body-2 mb-0 mt-2">
-              <NuxtLink :to="programLink(p.id)" class="rank-map-link">
-                Ver la ficha completa: puntaje eje por eje, preguntas frecuentes y comparativas
-              </NuxtLink>
-            </p>
-
-            <!-- What Uruguayans say about this issuer on Reddit (daily snapshot) -->
-            <RedditEntityBlock
-              :entity-id="PROGRAM_REDDIT_ENTITY[p.id]"
-              note="Comentarios reales de uruguayos sobre el emisor, no editados. Reddit se queja más de lo que elogia: es una señal, no el veredicto — no toca el puntaje de arriba."
-            />
-          </VExpansionPanelText>
-        </VExpansionPanel>
-      </VExpansionPanels>
-    </div>
+    </template>
 
     <!-- Where this ranking got used as evidence, and what we answered -->
     <PressMentions page="/tarjetas-de-credito-uruguay" class="mt-8" />
+
+    <!-- El mismo tema en video, de un creador uruguayo (utils/creatorVideos.ts) -->
+    <CreatorVideos
+      page="/tarjetas-de-credito-uruguay"
+      title="¿Débito o crédito? En video"
+      class="mt-8"
+    />
 
     <!-- The other half of the saving: knowing where today's discount is -->
     <DiscountFinders context="credito" />
@@ -364,7 +382,7 @@
     <VCard variant="flat" class="tarjetas-section mt-4 pa-5 pa-sm-6">
       <h2 class="text-subtitle-1 font-weight-bold mb-3 tarjetas-section-title">
         <VIcon start size="small" color="primary">mdi-calendar-alert</VIcon>
-        Dos beneficios que no dependen del emisor (y uno cambia el 1º de octubre)
+        Beneficios que no dependen del emisor
       </h2>
       <p class="text-body-2 mb-3">
         Buena parte de lo que se publicita como "beneficio de la tarjeta" en realidad lo da la ley y
@@ -379,10 +397,11 @@
         </li>
         <li>
           <strong>9 puntos menos de IVA en gastronomía</strong> pagando con tarjeta o dinero
-          electrónico (Ley 17.934) —hoy vigentes por el Decreto 83/026—, pero
-          <strong>desde el 1º de octubre de 2026 la reducción baja a 5 puntos</strong> (4,1% de
-          descuento para contribuyentes de IVA Mínimo, según la guía DGI del 05/05/2026). Cualquier
-          tarjeta que hoy promocione "9% de IVA en restaurantes" queda desactualizada esa semana.
+          electrónico de una persona física, para consumo final (Ley 17.934).
+          <strong>El Decreto 235/026 mantiene los nueve puntos hasta el 30 de abril de 2027</strong
+          >. La DGI publica un descuento de 7,38% del total para contribuyentes de IVA Mínimo; nueve
+          puntos no son un 9% del ticket. Alcanza a residentes y no residentes. Fuente DGI del
+          02/10/2026, consultada el 23/10/2026.
         </li>
         <li>
           <strong>Devolución de IMESI en combustible</strong>: no es un beneficio de emisor sino un
@@ -400,6 +419,7 @@
       :items="faq"
       heading="Preguntas frecuentes sobre anualidad, puntos y tasas"
       expanded
+      :ad="false"
     />
 
     <!-- Sources -->
@@ -478,6 +498,7 @@ import {
   medalFor,
   type IssuerType,
 } from '~/utils/cardRewards'
+import { FEED_AD_AFTER } from '~/utils/ads'
 import { BANKOS_BANK_BY_CREDIT_PROGRAM, bankosBankName, bankosMapPath } from '~/utils/bankos'
 import { bankPageForBankId } from '~/utils/bankosPages'
 import { directoriosHubListItem } from '~/utils/directorios'
@@ -535,6 +556,12 @@ const issuerTypes = computed(() => {
 })
 const visible = computed(() =>
   selectedType.value === 'all' ? ranked : ranked.filter(p => p.issuerType === selectedType.value)
+)
+
+// Dónde va la unidad intermedia: después de la cuarta tarjeta, o antes de la última si un filtro
+// deja menos; con una sola tarjeta no va ninguna (nunca antes de lo que la persona vino a ver).
+const rankingAdIndex = computed(() =>
+  visible.value.length > 1 ? Math.min(FEED_AD_AFTER, visible.value.length - 1) : -1
 )
 
 /** Green → amber → red gradient by score. */

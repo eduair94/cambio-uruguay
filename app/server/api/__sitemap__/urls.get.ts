@@ -1,4 +1,10 @@
-import type { BranchPage } from '../../../utils/branches'
+import { deptKey, type BranchPage } from '../../../utils/branches'
+import {
+  CORE_LOCALES,
+  DEFAULT_LOCALE,
+  EXTRA_LOCALES,
+  hasExtraLocales,
+} from '../../../utils/locales'
 import { intentsFor } from '../../../utils/casaIntents'
 import { casaTypePaths } from '../../../utils/casasDirectory'
 import { comparativaFamilySlugs, comparativaPaths } from '../../../utils/comparativas'
@@ -15,8 +21,16 @@ import { importCategoryIndexSlugs } from '../../../utils/importCategoryIndex'
 import { hubSlugs } from '../../../utils/guideHubs'
 import { guides } from '../../../utils/guides'
 import { listIndicatorSlugs } from '../../../utils/indicators'
+import { mutualistaPageSlugs } from '../../../utils/mutualistaPages'
 import { PRECIOS_MIN_OBSERVATIONS, preciosSlug } from '../../../utils/preciosCatalog'
 import { NAV_SECTIONS, UNLISTED_ROUTES } from '../../../utils/siteNav'
+import { MovilidadModelModel } from '../../models/MovilidadModel'
+import { monopatinModelFreshFloor } from '../../../utils/monopatinModelos'
+import {
+  MOVILIDAD_MODEL_CATEGORIES,
+  MOVILIDAD_MODEL_HUBS,
+  movilidadModelCategoryFilter,
+} from '../../../utils/movilidadModelos'
 import { toolSlugs } from '../../../utils/tools'
 import { videoTopicSlugs } from '../../../utils/videoTopics'
 import { isEquiparCategorySlug } from '../../../utils/equiparCategoryPages'
@@ -45,8 +59,8 @@ interface SitemapUrl {
   alternatives?: Array<{ hreflang: string; href: string }>
 }
 
-const LOCALES = ['es', 'en', 'pt']
-const DEFAULT_LOCALE = 'es'
+// hreflang per core locale (nuxt.config `language`); the extra locales carry their own.
+const CORE_HREFLANG: Record<string, string> = { es: 'es-ES', en: 'en-US', pt: 'pt-PT' }
 
 /**
  * Only submit per-casa currency-history pages for currencies with real search
@@ -86,15 +100,29 @@ export default defineEventHandler(async _event => {
   ) => {
     // Explicit per-language sitemap filtering happens before the module builds
     // alternates. Preserve reciprocal translations on dynamic URLs at the source.
+    // Emitted for every route; server/plugins/sitemap-locales.ts then drops the
+    // /en and /pt variants (and these alternates) of Spanish-only routes, whose
+    // canonical is the Spanish URL. `utils/localizedRoutes.ts` decides which.
+    // The extra locales (utils/locales.ts) exist only on `EXTRA_LOCALE_ROUTES`.
+    const localeHref = (code: string) => (code === DEFAULT_LOCALE ? path : `/${code}${path}`)
+    const locales = [
+      ...CORE_LOCALES.map(code => ({ code, hreflang: CORE_HREFLANG[code]! })),
+      ...(hasExtraLocales(path)
+        ? EXTRA_LOCALES.map(({ code, language }) => ({ code, hreflang: language }))
+        : []),
+    ]
     const alternatives = [
-      { hreflang: 'es-ES', href: path },
-      { hreflang: 'en-US', href: `/en${path}` },
-      { hreflang: 'pt-PT', href: `/pt${path}` },
+      ...locales.map(({ code, hreflang }) => ({ hreflang, href: localeHref(code) })),
       { hreflang: 'x-default', href: path },
     ]
-    LOCALES.forEach(locale => {
-      const loc = locale === DEFAULT_LOCALE ? path : `/${locale}${path}`
-      urls.push({ loc, changefreq, priority, alternatives, ...(lastmod ? { lastmod } : {}) })
+    locales.forEach(({ code }) => {
+      urls.push({
+        loc: localeHref(code),
+        changefreq,
+        priority,
+        alternatives,
+        ...(lastmod ? { lastmod } : {}),
+      })
     })
   }
 
@@ -123,9 +151,12 @@ export default defineEventHandler(async _event => {
   // puts in `dateModified`. Without it the 146 guides were the one content family with no lastmod
   // at all, while 1.859 live-data URLs said "changed today": seven guides, six of them from
   // September, were still not indexed on 2026-10-08 and Google had never crawled them.
-  guides.forEach(guide =>
-    addUrlsForAllLocales(`/guias/${guide.slug}`, 0.7, 'weekly', guide.updatedAt)
-  )
+  // Una guía consolidada (`Guide.consolidatedInto`) NO se publica: su canónica es otra URL, así que
+  // mandarla al sitemap sería pedirle a Google que indexe una página que ella misma declara que no
+  // es la buena. Sus enlaces entrantes se conservan, que es lo que mueve la señal a la que se queda.
+  guides
+    .filter(guide => !guide.consolidatedInto)
+    .forEach(guide => addUrlsForAllLocales(`/guias/${guide.slug}`, 0.7, 'weekly', guide.updatedAt))
   importCategoryIndexSlugs().forEach(slug =>
     addUrlsForAllLocales(`/importar/${slug}`, 0.7, 'monthly')
   )
@@ -198,6 +229,13 @@ export default defineEventHandler(async _event => {
   )
   entityPageSlugs('tarjetas-de-debito').forEach(slug =>
     urls.push({ loc: `/tarjetas-de-debito-uruguay/${slug}`, changefreq: 'monthly', priority: 0.7 })
+  )
+  // Una página por institución del tarifario IAMC del MSP. Mismo catálogo puro que lee la guarda de
+  // la ruta, así que el sitemap no puede declarar un slug que 404ee, y español solamente como las
+  // comparativas y las fichas de courier: el cuerpo es prosa en español. `monthly` porque el MSP
+  // republica el tarifario por semestre, no por día.
+  mutualistaPageSlugs().forEach(slug =>
+    urls.push({ loc: `/mutualista/${slug}`, changefreq: 'monthly', priority: 0.6 })
   )
   // El índice de tiendas online: una URL fija, español solamente (como comparativas/sucursal), que
   // no depende de Mongo — a diferencia de sus fichas por tienda, que sí (más abajo, junto a chairs
@@ -474,6 +512,39 @@ export default defineEventHandler(async _event => {
     await disconnectDbAfterPrerender()
   }
 
+  // --- Monopatín y bicicleta: páginas de modelo, sólo las indexables ------------------------
+  // Sólo español, como celulares. `indexable` lo decide currency-movilidad-specs (dos vendedores o
+  // más y tres datos de ficha): es el MISMO criterio que pone `noindex` en la página, así que el
+  // sitemap nunca manda una URL que la página misma pide no indexar. Fresco = visto en la semana.
+  // Cada categoría bajo su hub y con su filtro: desde el 4/11/2026 la colección tiene las dos, y sin
+  // el filtro una bici salía en el sitemap como /monopatines-electricos-uruguay/<bici>.
+  try {
+    await connectDb()
+    const today = new Date().toISOString().slice(0, 10)
+    for (const categoria of MOVILIDAD_MODEL_CATEGORIES) {
+      const modelos = await MovilidadModelModel.find({
+        ...movilidadModelCategoryFilter(categoria),
+        indexable: true,
+        lastSeen: { $gte: monopatinModelFreshFloor(today) },
+      })
+        .select({ _id: 0, slug: 1, lastSeen: 1 })
+        .lean()
+      modelos.forEach(({ slug, lastSeen }) => {
+        urls.push({
+          loc: `${MOVILIDAD_MODEL_HUBS[categoria]}/${slug}`,
+          lastmod: lastSeen,
+          changefreq: 'daily',
+          priority: 0.6,
+        })
+      })
+      if (modelos.length) console.log(`- ${categoria} model pages: ${modelos.length} routes`)
+    }
+  } catch (monopatinError) {
+    console.warn('Failed to add movilidad model pages to sitemap:', monopatinError)
+  } finally {
+    await disconnectDbAfterPrerender()
+  }
+
   // --- Per-branch pages: BCU feed, independently fallible -------------------
   // One URL per physical counter. Default locale only: the body (address, hours,
   // "cómo llegar") is Spanish prose about a Uruguayan street, so three locales
@@ -481,6 +552,13 @@ export default defineEventHandler(async _event => {
   //
   // The slugs come from the SAME cached `/api/branches` route the pages and the
   // directory read, so the sitemap can never advertise a slug the page 404s.
+  //
+  // The /sucursales/<casa>/<departamento> pairs come from it too: that page 404s a
+  // department where the casa has no branch in this feed, and `localData` (the
+  // source these pairs used to come from) still listed ten such pairs on
+  // 2026-10-20. Null when the feed is unavailable: the pairs then fall back to
+  // localData below rather than leaving the sitemap.
+  let branchLocationPairs: Set<string> | null = null
   try {
     const directory = await $fetch<{
       branches: BranchPage[]
@@ -498,6 +576,20 @@ export default defineEventHandler(async _event => {
       })
     })
     if (branches.length) console.log(`- Branch pages: ${branches.length} routes`)
+
+    // First branch wins, in feed order: the page's canonical spells the department
+    // the same way (`directoryBranches[0].dept`).
+    if (branches.length) {
+      const seenDepartments = new Set<string>()
+      branchLocationPairs = new Set()
+      for (const branch of branches) {
+        if (!branch.origin || !branch.dept || !directory?.casas?.[branch.origin]) continue
+        const key = `${branch.origin}|${deptKey(branch.dept)}`
+        if (seenDepartments.has(key)) continue
+        seenDepartments.add(key)
+        branchLocationPairs.add(`${branch.origin}/${branch.dept.toLocaleLowerCase('es')}`)
+      }
+    }
 
     // Per-casa intent pages, gated by the SAME availability rule the route guard
     // uses. Submitting `/casa/x/telefono` for a casa with no published phone
@@ -591,11 +683,14 @@ export default defineEventHandler(async _event => {
         // (e.g. "TREINTA%2520Y%2520TRES"), which Google never indexed.
         // En minúscula por lo mismo que las monedas: el departamento llega en mayúscula
         // ("MONTEVIDEO") y las dos grafías respondían 200 autocanonizándose.
-        sucursalesLocationPairs.add(`${origin}/${department.toLocaleLowerCase('es')}`)
+        if (!branchLocationPairs) {
+          sucursalesLocationPairs.add(`${origin}/${department.toLocaleLowerCase('es')}`)
+        }
         const deptSlug = slugifyDepartment(department)
         if (deptSlug) departmentSlugs.add(deptSlug)
       })
     })
+    branchLocationPairs?.forEach(pair => sucursalesLocationPairs.add(pair))
 
     origins.forEach(origin => addUrlsForAllLocales(`/historico/${origin}`, 0.8, 'daily', today))
     originCurrencyPairs.forEach(pair =>
@@ -647,7 +742,7 @@ export default defineEventHandler(async _event => {
       `\n- Precio article pages: ${precioArticleSlugs} routes`,
       `\n- Cotizacion currency pages: ${currencySlugs.length} routes`,
       `\n- Casa pages: ${sucursalesOrigins.size} routes`,
-      `\n- Total across ${LOCALES.length} locales: ${urls.length} URLs`
+      `\n- Total across ${CORE_LOCALES.length + EXTRA_LOCALES.length} locales: ${urls.length} URLs`
     )
   } catch (error) {
     console.error('Error adding API-derived sitemap URLs:', error)

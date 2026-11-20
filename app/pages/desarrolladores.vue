@@ -123,6 +123,26 @@ npm run dev</code></pre>
         </div>
       </VCard>
 
+      <VCard variant="tonal" color="teal" class="pa-4 mt-6">
+        <div class="d-flex flex-column flex-md-row align-md-center ga-3">
+          <div class="flex-grow-1">
+            <div class="d-flex align-center ga-2 mb-1">
+              <VIcon>mdi-database-export-outline</VIcon>
+              <h2 class="text-subtitle-1 font-weight-bold">{{ t('openData.nav') }}</h2>
+            </div>
+            <code class="text-body-2 dev-wrap">GET /api/datos/mercado/actual?mercado=alquiler</code>
+          </div>
+          <VBtn
+            :to="localePath('/datos-abiertos-uruguay')"
+            color="teal"
+            variant="flat"
+            prepend-icon="mdi-arrow-right"
+          >
+            {{ t('openData.nav') }}
+          </VBtn>
+        </div>
+      </VCard>
+
       <VCard variant="outlined" class="preferential-api-card pa-4 mt-6">
         <div class="d-flex flex-column flex-md-row align-md-center ga-3">
           <div class="flex-grow-1">
@@ -302,6 +322,9 @@ useHead(() => ({
 </script>
 
 <style scoped>
+.dev-wrap {
+  overflow-wrap: anywhere;
+}
 .dev-codeblock {
   background: rgba(127, 127, 127, 0.12);
   border-radius: 8px;

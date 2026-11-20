@@ -7,6 +7,35 @@ import type { EquiparRoom, EquiparTier } from './equipar'
 import { equiparMoney } from './equipar'
 import { isEquiparCategorySlug } from './equiparCategoryPages'
 import { isMovilidadCategorySlug } from './movilidad'
+import {
+  BICICLETA_RODADO_RANGOS,
+  MONOPATIN_FICHA_EMPTY,
+  MONOPATIN_POTENCIA_RANGOS,
+  MONOPATIN_RASGO_CAMPOS,
+  MONOPATIN_RUEDA_RANGOS,
+  MONOPATIN_VELOCIDAD_RANGOS,
+  monopatinAutonomiaLabel,
+  monopatinCargaLabel,
+  monopatinFichaActive,
+  monopatinFichaNormalize,
+  monopatinFichaParams,
+  monopatinPesoLabel,
+  monopatinPotenciaMinLabel,
+  type MonopatinRasgo,
+  type MonopatinSpecsPublic,
+  type MovilidadFichaKey,
+  type MovilidadFichaQuery,
+} from './monopatinFicha'
+import {
+  equiparFichaActive,
+  equiparFichaChips,
+  equiparFichaNormalize,
+  equiparFichaParams,
+  equiparFichaWithout,
+  type EquiparFichaFacetas,
+  type EquiparFichaPublic,
+  type EquiparFichaQuery,
+} from './equiparFicha'
 
 export const EQUIPAR_PRODUCTOS_PATH = '/equipar-casa-uruguay/productos'
 export const EQUIPAR_LISTA_PATH = '/equipar-casa-uruguay/mi-lista'
@@ -18,7 +47,10 @@ export const equiparProductoPath = (categoria: string): string =>
   `${EQUIPAR_PRODUCTOS_PATH}/${categoria}`
 
 export const EQUIPAR_PRODUCTOS_SORTS = ['precio_asc', 'precio_desc', 'reciente'] as const
-export type EquiparProductosSort = (typeof EQUIPAR_PRODUCTOS_SORTS)[number]
+/** Sólo el directorio de monopatines: equipar los normaliza a `precio_asc`. */
+export const MOVILIDAD_PRODUCTOS_SORTS = ['autonomia_desc', 'precio_km', 'peso_asc'] as const
+export type EquiparProductosSort =
+  (typeof EQUIPAR_PRODUCTOS_SORTS)[number] | (typeof MOVILIDAD_PRODUCTOS_SORTS)[number]
 /** `short` is what the mobile toolbar button says; `title`, what the menu says. */
 export const EQUIPAR_PRODUCTOS_SORT_ITEMS: ReadonlyArray<{
   title: string
@@ -28,6 +60,21 @@ export const EQUIPAR_PRODUCTOS_SORT_ITEMS: ReadonlyArray<{
   { title: 'Menor precio', value: 'precio_asc', short: 'Menor precio' },
   { title: 'Mayor precio', value: 'precio_desc', short: 'Mayor precio' },
   { title: 'Vistos más recientemente', value: 'reciente', short: 'Más recientes' },
+]
+/** Los órdenes del directorio de monopatines: los de siempre más los de la ficha técnica. */
+export const MOVILIDAD_PRODUCTOS_SORT_ITEMS: ReadonlyArray<{
+  title: string
+  value: EquiparProductosSort
+  short: string
+}> = [
+  ...EQUIPAR_PRODUCTOS_SORT_ITEMS,
+  { title: 'Mayor autonomía declarada', value: 'autonomia_desc', short: 'Más autonomía' },
+  {
+    title: 'Menor precio por km (sólo con autonomía declarada)',
+    value: 'precio_km',
+    short: '$ por km',
+  },
+  { title: 'Más liviano (sólo con peso declarado)', value: 'peso_asc', short: 'Más liviano' },
 ]
 
 export type EquiparProductoCondicion = 'nuevo' | 'usado'
@@ -121,6 +168,14 @@ export interface EquiparProductoPublic {
   location: string | null
   freeShipping: boolean | null
   lastSeen: string
+  /** Sólo monopatín: la ficha técnica declarada (classes/movilidad/specs/). */
+  specs?: MonopatinSpecsPublic
+  /** Sólo monopatín: precio dividido por la autonomía declarada en la ficha. */
+  uyuPerKm?: number
+  /** Sólo monopatín: /monopatines-electricos-uruguay/<modelSlug>, cuando el aviso es de un modelo. */
+  modelSlug?: string
+  /** Heladeras, lavarropas, televisores y aires: la ficha técnica declarada (classes/equipar/specs/). */
+  ficha?: EquiparFichaPublic
 }
 
 export interface EquiparProductosFacet {
@@ -137,6 +192,24 @@ export interface EquiparProductosFacets {
   vendedores: EquiparProductosFacet[]
   fuentes: EquiparProductosFacet[]
   condiciones: EquiparProductosFacet[]
+  /** Sólo el directorio de monopatines: cada opción contada sin su propio filtro. */
+  ficha?: MonopatinFichaFacets
+  /** Heladeras, lavarropas, televisores y aires: los grupos de ficha, cada opción contada. */
+  eqficha?: EquiparFichaFacetas
+}
+
+export interface MonopatinFichaFacets {
+  autonomia: EquiparProductosFacet[]
+  velocidad: EquiparProductosFacet[]
+  potencia: EquiparProductosFacet[]
+  carga: EquiparProductosFacet[]
+  peso: EquiparProductosFacet[]
+  rueda: EquiparProductosFacet[]
+  /** Sólo bicicleta (vacío en monopatín, que filtra por `rueda`). */
+  rodado?: EquiparProductosFacet[]
+  rasgos: EquiparProductosFacet[]
+  /** De los avisos de la consulta, cuántos tienen ficha propia leída. */
+  conFicha: number
 }
 
 export const EQUIPAR_PRODUCTOS_EMPTY_FACETS: EquiparProductosFacets = {
@@ -175,7 +248,18 @@ export interface EquiparProductosQuery {
   q: string
   orden: EquiparProductosSort
   page: number
+  /** Sólo con la vertical de movilidad: los filtros por ficha técnica. Ausente en equipar. */
+  ficha?: MovilidadFichaQuery
+  /** Sólo equipar con una categoría con ficha (heladera, lavarropas, tv, aire): sus filtros. */
+  eqficha?: EquiparFichaQuery
 }
+
+/** Una clave que un chip puede sacar: un campo de la consulta o uno de la ficha. */
+export type EquiparQueryKey =
+  | keyof EquiparProductosQuery
+  | `ficha.${MovilidadFichaKey}`
+  | `ficha.rasgos.${MonopatinRasgo}`
+  | `eqficha.${string}`
 
 const EQUIPAR_Q_MAX = 80
 const SLUG = /^[a-z0-9-]{1,60}$/
@@ -228,7 +312,11 @@ export function equiparProductosNormalize(
   const page = Number.parseInt(text(raw.page), 10)
   const precioMin = money(raw.precioMin)
   const precioMax = money(raw.precioMax)
-  return {
+  const sorts: readonly string[] =
+    vertical === 'movilidad'
+      ? [...EQUIPAR_PRODUCTOS_SORTS, ...MOVILIDAD_PRODUCTOS_SORTS]
+      : EQUIPAR_PRODUCTOS_SORTS
+  const query: EquiparProductosQuery = {
     categoria: validCategoria,
     variante: validCategoria ? slugOf(raw.variante, KEY) : '',
     condicion: condicion === 'nuevo' || condicion === 'usado' ? condicion : '',
@@ -239,11 +327,15 @@ export function equiparProductosNormalize(
     // A range whose ends crossed is a typo, not a query: keep the lower bound only.
     precioMax: precioMin !== null && precioMax !== null && precioMax < precioMin ? null : precioMax,
     q: text(raw.q).slice(0, EQUIPAR_Q_MAX),
-    orden: (EQUIPAR_PRODUCTOS_SORTS as readonly string[]).includes(orden)
-      ? (orden as EquiparProductosSort)
-      : 'precio_asc',
+    orden: sorts.includes(orden) ? (orden as EquiparProductosSort) : 'precio_asc',
     page: Number.isFinite(page) && page >= 1 ? Math.min(page, 500) : 1,
   }
+  if (vertical === 'movilidad') query.ficha = monopatinFichaNormalize(raw, query.categoria)
+  if (vertical === 'equipar') {
+    const eqficha = equiparFichaNormalize(raw, query.categoria)
+    if (eqficha) query.eqficha = eqficha
+  }
+  return query
 }
 
 /** Only what differs from the defaults, so a clean URL stays clean. */
@@ -260,7 +352,7 @@ export function equiparProductosParams(query: EquiparProductosQuery): Record<str
   if (query.q) params.q = query.q
   if (query.orden !== 'precio_asc') params.orden = query.orden
   if (query.page > 1) params.page = String(query.page)
-  return params
+  return { ...params, ...monopatinFichaParams(query.ficha), ...equiparFichaParams(query.eqficha) }
 }
 
 const EQUIPAR_FILTER_KEYS: ReadonlyArray<keyof EquiparProductosQuery> = [
@@ -280,6 +372,8 @@ export function equiparProductosFiltered(
   query: EquiparProductosQuery,
   ignore: ReadonlyArray<keyof EquiparProductosQuery> = []
 ): boolean {
+  if (!ignore.includes('ficha') && monopatinFichaActive(query.ficha)) return true
+  if (!ignore.includes('eqficha') && equiparFichaActive(query.eqficha)) return true
   return EQUIPAR_FILTER_KEYS.some(key => {
     if (ignore.includes(key)) return false
     const value = query[key]
@@ -287,12 +381,36 @@ export function equiparProductosFiltered(
   })
 }
 
+function fichaWithout(
+  ficha: MovilidadFichaQuery,
+  keys: ReadonlyArray<EquiparQueryKey>
+): MovilidadFichaQuery {
+  if (keys.includes('ficha')) return { ...MONOPATIN_FICHA_EMPTY, rasgos: [] }
+  const next: MovilidadFichaQuery = { ...ficha, rasgos: [...ficha.rasgos] }
+  for (const key of keys) {
+    if (!key.startsWith('ficha.')) continue
+    const field = key.slice('ficha.'.length)
+    if (field.startsWith('rasgos.')) {
+      next.rasgos = next.rasgos.filter(rasgo => rasgo !== field.slice('rasgos.'.length))
+    } else if (field in MONOPATIN_FICHA_EMPTY) {
+      const empty = MONOPATIN_FICHA_EMPTY[field as MovilidadFichaKey]
+      ;(next as unknown as Record<string, unknown>)[field] = Array.isArray(empty) ? [] : empty
+    }
+  }
+  return next
+}
+
 export function equiparProductosWithout(
   query: EquiparProductosQuery,
-  keys: ReadonlyArray<keyof EquiparProductosQuery>
+  keys: ReadonlyArray<EquiparQueryKey>
 ): EquiparProductosQuery {
   const next: EquiparProductosQuery = { ...query, page: 1 }
-  for (const key of keys) {
+  if (query.ficha) next.ficha = fichaWithout(query.ficha, keys)
+  if (query.eqficha) next.eqficha = equiparFichaWithout(query.eqficha, keys)
+  for (const raw of keys) {
+    if (raw === 'ficha' || raw.startsWith('ficha.')) continue
+    if (raw === 'eqficha' || raw.startsWith('eqficha.')) continue
+    const key = raw as Exclude<keyof EquiparProductosQuery, 'ficha' | 'eqficha'>
     if (key === 'precioMin' || key === 'precioMax') next[key] = null
     else if (key === 'orden') next.orden = 'precio_asc'
     else if (key === 'page') next.page = 1
@@ -306,7 +424,7 @@ export function equiparProductosWithout(
 export interface EquiparFilterChip {
   key: string
   label: string
-  keys: Array<keyof EquiparProductosQuery>
+  keys: Array<EquiparQueryKey>
 }
 
 const facetName = (
@@ -374,7 +492,35 @@ export function equiparProductosChips(
       keys: ['precioMax'],
     })
   }
+  if (query.ficha) chips.push(...fichaChips(query.ficha))
+  if (query.eqficha)
+    chips.push(
+      ...equiparFichaChips(query.eqficha, query.categoria).map(chip => ({
+        ...chip,
+        keys: chip.keys as EquiparQueryKey[],
+      }))
+    )
   if (query.q) chips.push({ key: 'q', label: `“${query.q}”`, keys: ['q'] })
+  return chips
+}
+
+function fichaChips(ficha: MovilidadFichaQuery): EquiparFilterChip[] {
+  const chips: EquiparFilterChip[] = []
+  const add = (key: EquiparQueryKey, label: string) => chips.push({ key, label, keys: [key] })
+  if (ficha.autonomia !== null) add('ficha.autonomia', monopatinAutonomiaLabel(ficha.autonomia))
+  if (ficha.velocidad) add('ficha.velocidad', MONOPATIN_VELOCIDAD_RANGOS[ficha.velocidad].label)
+  if (ficha.potencia) add('ficha.potencia', MONOPATIN_POTENCIA_RANGOS[ficha.potencia].label)
+  if (ficha.potenciaMin !== null)
+    add('ficha.potenciaMin', monopatinPotenciaMinLabel(ficha.potenciaMin))
+  if (ficha.carga !== null) add('ficha.carga', monopatinCargaLabel(ficha.carga))
+  if (ficha.peso !== null) add('ficha.peso', monopatinPesoLabel(ficha.peso))
+  if (ficha.rueda)
+    add('ficha.rueda', `Ruedas: ${MONOPATIN_RUEDA_RANGOS[ficha.rueda].label.toLowerCase()}`)
+  if (ficha.rodado)
+    add('ficha.rodado', `Rodado: ${BICICLETA_RODADO_RANGOS[ficha.rodado].label.toLowerCase()}`)
+  for (const rasgo of ficha.rasgos)
+    add(`ficha.rasgos.${rasgo}`, MONOPATIN_RASGO_CAMPOS[rasgo].label)
+  if (ficha.soloFicha) add('ficha.soloFicha', 'Sólo con ficha técnica')
   return chips
 }
 

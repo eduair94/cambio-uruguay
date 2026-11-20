@@ -178,6 +178,14 @@
         equivale a 12% × 87,5%, o sea que asume alrededor de 12,5% de gastos. Podés dejar esa
         retención como definitiva o liquidar por lo real, si tus gastos reales son mayores.
       </p>
+      <p class="text-body-2 mb-3">
+        Si cobrás vos, sin administradora, el mismo {{ pct(RENT_WITHHOLDING_PCT) }} lo adelantás
+        cada mes con el boleto 2908. Cómo se arma, cuándo vence cada mes y cómo se pide la
+        constancia de exoneración, en
+        <NuxtLink :to="localePath('/guias/irpf-de-alquileres-uruguay')"
+          >IRPF de alquileres, paso a paso</NuxtLink
+        >.
+      </p>
       <p class="text-body-2 mb-2"><strong>Deducciones admitidas</strong> (Título 7, art. 16):</p>
       <ul class="imp-list mb-3">
         <li v-for="d in rentDeductions" :key="d">{{ d }}</li>
@@ -208,6 +216,9 @@
     </VCard>
 
     <!-- 6. Ganancias de capital -->
+    <!-- La unidad intermedia, en un corte de sección a mitad de página (ver
+         docs/seo/adsense-growth-loop.md, decimotercera iteración). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <VCard variant="flat" class="imp-section mb-6 pa-5 pa-sm-6">
       <h2 class="text-h6 font-weight-bold mb-3 imp-title">
         <VIcon start size="small" color="primary">mdi-trending-up</VIcon>

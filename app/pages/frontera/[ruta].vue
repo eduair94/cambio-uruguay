@@ -98,7 +98,7 @@
               }}
             </v-card-title>
 
-            <v-data-table
+            <VDataTable
               v-if="quotes.length"
               :headers="headers"
               :items="quotes"
@@ -164,7 +164,7 @@
                   </v-btn>
                 </div>
               </template>
-            </v-data-table>
+            </VDataTable>
 
             <!-- No quotes -->
             <v-card-text v-else class="text-center pa-8" data-testid="frontera-empty">
@@ -264,6 +264,7 @@
 </template>
 
 <script setup lang="ts">
+import { VDataTable } from 'vuetify/components'
 import { useSeoMeta } from '#imports'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -286,7 +287,10 @@ import {
 // allowlist is pure data, so this needs no I/O (cf. /dolar/:departamento, which
 // must fetch the live department list).
 definePageMeta({
-  validate: route => fronteraFromSlug(String(route.params.ruta ?? '')) !== null,
+  validate: async route => {
+    const catalogue = await import('~/utils/frontera')
+    return catalogue.fronteraFromSlug(String(route.params.ruta ?? '')) !== null
+  },
 })
 
 const { t, locale } = useI18n()
@@ -411,11 +415,16 @@ useSeoMeta({
   twitterDescription: () => metaDescription.value,
 })
 
+// Rendered once on the server and reused from the payload: with `new Date()` the block differed
+// after hydration and unhead appended a second copy (see pages/cotizacion/[moneda].vue).
+const renderedAt = useState('frontera-rendered-at', () => new Date().toISOString())
+
 // ExchangeRateSpecification + Place + BreadcrumbList JSON-LD for rich results.
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl }],
   script: [
     {
+      key: 'frontera-jsonld',
       type: 'application/ld+json',
       innerHTML: computed(() =>
         JSON.stringify({
@@ -427,7 +436,7 @@ useHead({
               url: canonicalUrl.value,
               name: metaTitle.value,
               inLanguage: locale.value,
-              dateModified: new Date().toISOString(),
+              dateModified: renderedAt.value,
               isPartOf: { '@id': 'https://cambio-uruguay.com/#website' },
               speakable: {
                 '@type': 'SpeakableSpecification',

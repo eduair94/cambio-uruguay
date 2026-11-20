@@ -496,7 +496,7 @@
                 {{ bcuText.dualNote }}
               </p>
             </v-card-text>
-            <v-data-table
+            <VDataTable
               :headers="headers"
               :items="tableData"
               :mobile="smAndDown"
@@ -536,7 +536,7 @@
                 </v-chip>
                 <span v-else>-</span>
               </template>
-            </v-data-table>
+            </VDataTable>
           </v-card>
         </v-col>
       </v-row>
@@ -579,6 +579,7 @@
 </template>
 
 <script setup lang="ts">
+import { VDataTable } from 'vuetify/components'
 import { useSeoMeta } from '#imports'
 import {
   BarElement,

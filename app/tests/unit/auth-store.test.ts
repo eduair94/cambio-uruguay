@@ -15,9 +15,9 @@ const h = vi.hoisted(() => ({
   currentUser: null as any,
   revokeBrowserPush: vi.fn(),
 }))
-vi.mock('../../stores/firebaseMessagingApi', () => ({ revokeBrowserPush: h.revokeBrowserPush }))
+vi.mock('../../services/firebaseMessagingApi', () => ({ revokeBrowserPush: h.revokeBrowserPush }))
 
-vi.mock('../../stores/firebaseAuthApi', () => ({
+vi.mock('../../services/firebaseAuthApi', () => ({
   fbAuth: () => ({ currentUser: h.currentUser }),
   GoogleAuthProvider: vi.fn(),
   signInWithPopup: h.signInWithPopup,
@@ -58,6 +58,45 @@ describe('auth store', () => {
     const s = useAuthStore()
     await s.signInWithEmail('a@b.com', 'bad')
     expect(s.error).toBe('auth/wrong-password')
+  })
+
+  it('opens only one Google popup while sign-in is pending and releases the busy state', async () => {
+    let finish: () => void = () => {}
+    h.signInWithPopup.mockReturnValue(
+      new Promise<void>(resolve => {
+        finish = resolve
+      })
+    )
+    const store = useAuthStore()
+    store.openDialog()
+    const firstAttempt = store.signInWithGoogle()
+    expect(store.googlePending).toBe(true)
+    await store.signInWithGoogle()
+    expect(h.signInWithPopup).toHaveBeenCalledOnce()
+    finish()
+    await firstAttempt
+    expect(store.googlePending).toBe(false)
+    expect(store.dialogOpen).toBe(false)
+  })
+
+  it('lets users cancel Google sign-in without an error and retry later', async () => {
+    h.signInWithPopup.mockRejectedValueOnce({ code: 'auth/popup-closed-by-user' })
+    const store = useAuthStore()
+    store.openDialog()
+    await store.signInWithGoogle()
+    expect(store.error).toBeNull()
+    expect(store.googlePending).toBe(false)
+    expect(store.dialogOpen).toBe(true)
+    await store.signInWithGoogle()
+    expect(h.signInWithPopup).toHaveBeenCalledTimes(2)
+  })
+
+  it('keeps actionable Google failures visible and allows retrying', async () => {
+    h.signInWithPopup.mockRejectedValueOnce({ code: 'auth/popup-blocked' })
+    const store = useAuthStore()
+    await store.signInWithGoogle()
+    expect(store.error).toBe('auth/popup-blocked')
+    expect(store.googlePending).toBe(false)
   })
 
   it('logout clears the user', async () => {

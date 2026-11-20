@@ -1,0 +1,518 @@
+{
+  "title": [
+    "1229e1ce",
+    "Hvor man kan ta ut kontanter i Uruguay: minibanker, gebyrer og turistattraksjoner"
+  ],
+  "metaTitle": [
+    "3e82d293",
+    "Minibanker i Uruguay: ta ut dollar eller pesos"
+  ],
+  "description": [
+    "3eb63bbe",
+    "Hvordan og hvor man kan ta ut kontanter i Uruguay som turist: minibanker som utbetaler både amerikanske dollar og pesos, gebyrer, uttaksgrenser, valutavekslingsfellen (DCC) og de beste stedene å ta ut penger på flyplassen i Montevideo, Punta del Este og Colonia."
+  ],
+  "keywords": [
+    "4acfb17e",
+    "ta ut penger uruguay, ta ut penger uruguay, minibank uruguay turist, dollar fra minibank uruguay, veksle penger uruguay, minibank avgifter uruguay, casas de cambio uruguay"
+  ],
+  "tldr.0": [
+    "5f1561fe",
+    "Uruguayanske minibanker utleverer både amerikanske dollar og pesos – en sjelden regional fordel (i Argentina er det nesten umulig)."
+  ],
+  "tldr.1": [
+    "7b41d73f",
+    "Det finnes to nettverk: RedBROU og Banred. Hvis det ene feiler, prøv det andre; ha med deg både Visa og Mastercard."
+  ],
+  "tldr.2": [
+    "c5aa36e3",
+    "Når minibanken tilbyr å belaste deg i din lokale valuta, velg alltid den lokale valutaen: «konverteringen» skjuler en dårlig valutakurs."
+  ],
+  "tldr.3": [
+    "b73d4126",
+    "Unngå å veksle store summer på flyplassen eller fergeterminalene – prisene deres er merkbart dårligere."
+  ],
+  "tldr.4": [
+    "83b2ff36",
+    "Betal hoteller og restauranter med et utenlandsk kort: i tillegg til momsfordelen har du med deg mindre kontanter."
+  ],
+  "ui.backToTools": [
+    "950196fc",
+    "Verktøy"
+  ],
+  "ui.tldrTitle": [
+    "799c628c",
+    "Kort sagt"
+  ],
+  "ui.networksTitle": [
+    "90dd37e5",
+    "De to minibanknettverkene: RedBROU og Banred"
+  ],
+  "ui.tableNetwork": [
+    "6974ad65",
+    "Nettverk"
+  ],
+  "ui.tableReach": [
+    "c549e23b",
+    "Dekning"
+  ],
+  "ui.tableUsd": [
+    "47b34a69",
+    "Grense USD / uttak"
+  ],
+  "ui.tableUyu": [
+    "7d4e5b12",
+    "Grense $U / uttak"
+  ],
+  "ui.tableNote": [
+    "0ff01b6a",
+    "Notater"
+  ],
+  "ui.zonesTitle": [
+    "126f8827",
+    "Hvor man kan få kontanter i turistsonen"
+  ],
+  "ui.zonesIntro": [
+    "e4c560b0",
+    "Referanser på sone- og landemerkenivå (ikke eksakte adresser, som endres). Minibanker er vanligvis inne i banker, kjøpesentre eller Abitab- og Redpagos-utsalgssteder."
+  ],
+  "ui.stepsTitle": [
+    "3e1ff2e0",
+    "Slik tar du ut penger, trinn for trinn"
+  ],
+  "ui.faqTitle": [
+    "e466bfa9",
+    "Ofte stilte spørsmål"
+  ],
+  "ui.sourcesTitle": [
+    "105bfcc3",
+    "Kilder og referanser"
+  ],
+  "ui.relatedTitle": [
+    "ac7a8ccc",
+    "Fortsett å lese"
+  ],
+  "ui.ctaTitle": [
+    "60dda6a1",
+    "Sammenlign før du bytter"
+  ],
+  "ui.ctaText": [
+    "fe6b01a6",
+    "Se dollarkursen på tvers av over 40 vekslingshus, oppdatert hvert 10. minutt, og velg det beste stedet å operere."
+  ],
+  "ui.ctaButton": [
+    "9efd557a",
+    "Åpne komparatoren"
+  ],
+  "ui.mapButton": [
+    "4e8c8db6",
+    "Se uttakspunkter på kartet"
+  ],
+  "ui.disclaimer": [
+    "b166cfce",
+    "Referanseinformasjon for turister, ikke økonomisk rådgivning. Gebyrer, grenser og skattefordeler endres: bekreft dem ved ankomst og med kortutstederen din. Vi er ikke tilknyttet bankene eller vekslingshusene som er nevnt."
+  ],
+  "ui.lastChecked": [
+    "9182e108",
+    "Sist sjekket: juni 2026"
+  ],
+  "ivaLive.heading": [
+    "5af716c3",
+    "Fordeler med turist-MVA som gjelder i dag"
+  ],
+  "ivaLive.asOf": [
+    "dd801240",
+    "Status per {date}:"
+  ],
+  "ivaLive.hotel": [
+    "152a8c47",
+    "Overnatting (hoteller og lignende): 0 % mva. året rundt."
+  ],
+  "ivaLive.base": [
+    "9856855a",
+    "Servering og bilutleie uten sjåfør: en {points}-poengs momsreduksjon for sluttforbruk betalt med et privatpersonkort, inkludert utenlandske kort, frem til 30. april 2027 (dekret 235/026; kilde sjekket 23. oktober 2026)."
+  ],
+  "ivaLive.baseUnconfirmed": [
+    "d65944df",
+    "Servering og bilutleie: den bekreftede forlengelsen utløp 30. april 2027. Sjekk med DGI hvilken reduksjon som gjelder på kjøpsdatoen."
+  ],
+  "ivaLive.seasonalOn": [
+    "41748da1",
+    "Fullt momsfritak om sommeren: AKTIV (frem til {end})."
+  ],
+  "ivaLive.seasonalOff": [
+    "015a1161",
+    "Fullt momsfritak for sommeren: Vi har ingen bekreftet periode for denne datoen. Sjekk med DGI før du benytter deg av denne fordelen."
+  ],
+  "sections.0.heading": [
+    "90dd37e5",
+    "De to minibanknettverkene: RedBROU og Banred"
+  ],
+  "sections.0.paragraphs.0": [
+    "0f52a7fe",
+    "Uruguay har to minibanknettverk: RedBROU, drevet av statsbanken (BROU), og Banred, nettverket av private banker. De to er sammenkoblet og koblet til de internasjonale nettverkene (Mastercards Cirrus/Maestro og Visas Plus), så et utenlandsk kort fungerer på begge."
+  ],
+  "sections.0.paragraphs.1": [
+    "208b768b",
+    "For å forsikre deg om at en minibank tar kortet ditt, se etter Visa-, Mastercard-, Cirrus-, Plus- eller Maestro-logoene på maskinen. Praktisk tips: ha med deg et Visa- og Mastercard-kort fra forskjellige kontoer. Hvis ett kort eller en maskin svikter, prøv det andre nettverket."
+  ],
+  "sections.1.heading": [
+    "612974f0",
+    "Dollar eller pesos? I Uruguay kan du ta begge deler"
+  ],
+  "sections.1.paragraphs.0": [
+    "d9928d31",
+    "I motsetning til Argentina, utbetaler mange minibanker i Uruguay amerikanske dollar i tillegg til uruguayanske pesos. Det er en reell fordel hvis du vil ha kontanter i dollar uten å måtte gå til et vekslekontor. Dollar kommer vanligvis ut i 100-dollarsedler, som, kombinert med grensene per uttak, kan bety at du bare får én seddel om gangen."
+  ],
+  "sections.1.paragraphs.1": [
+    "cd694b7a",
+    "Enkel regel: ta pesos til daglige utgifter (drosjer, markeder, småbutikker) og dollar bare hvis du virkelig trenger dem i kontanter. For de fleste større betalinger er kort bedre enn kontanter."
+  ],
+  "sections.2.heading": [
+    "9ce97b34",
+    "Gebyrer og uttaksgrenser"
+  ],
+  "sections.2.paragraphs.0": [
+    "e28a7f0e",
+    "Tilleggsgebyret en uruguayansk minibank tar for et utenlandsk kort er lavt sammenlignet med mange land (i størrelsesorden noen få dollar per uttak). Den største kostnaden er vanligvis din egen bank: gebyret for utenlandstransaksjoner (vanligvis 1–3 %) pluss noen ganger et fast gebyr for internasjonale uttak. Et reisekort uten valutagebyr sparer deg for nesten alt dette."
+  ],
+  "sections.2.paragraphs.1": [
+    "154c6f01",
+    "Grenser per uttak for utenlandske kort settes av de lokale nettverkene, ikke banken din, og de er lave. Banken din har også sin egen daglige grense. Ring banken din før du reiser for å heve grensen, og ta ut maksimumsbeløpet per transaksjon for å fordele det faste gebyret over mer kontanter."
+  ],
+  "sections.2.bullets.0": [
+    "befd8df3",
+    "Lokalt uttaksgebyr: omtrentlig, i størrelsesorden noen få dollar (sjekk beløpet på skjermen før du bekrefter)."
+  ],
+  "sections.2.bullets.1": [
+    "0f872d39",
+    "Bank-/utstedergebyr: vanligvis den største kostnaden; sjekk om kortet ditt har et gebyr for utenlandstransaksjoner."
+  ],
+  "sections.2.bullets.3": [
+    "4aacdc05",
+    "Daglig grense: satt av banken din; gi beskjed før du reiser for å heve den."
+  ],
+  "sections.3.heading": [
+    "6bd46a0c",
+    "Valutakonverteringsfellen (DCC-fellen): velg alltid lokal valuta"
+  ],
+  "sections.3.paragraphs.0": [
+    "29fe4c81",
+    "Mange minibanker og kortterminaler tilbyr å «lade i din lokale valuta» i stedet for i uruguayanske pesos eller dollar. Det høres praktisk ut («se hvor mye det er i dine penger»), men den dynamiske valutakonverteringen (DCC) bruker en oppblåst valutakurs pluss et skjult gebyr. Du taper nesten alltid."
+  ],
+  "sections.3.paragraphs.1": [
+    "34380f1f",
+    "Velg alltid «uten veksling» eller lokal valuta: uruguayanske pesos når du tar imot pesos, dollar når du tar imot dollar. La din egen bank gjøre vekslingen – kursen deres er vanligvis bedre."
+  ],
+  "sections.4.heading": [
+    "cc573fd8",
+    "Vekslehus, minibanker eller banker: hva er best?"
+  ],
+  "sections.4.paragraphs.0": [
+    "1116ae4f",
+    "Vekslehus (casas de cambio som Varlix, Indumex, Gales, Aspen, Cambio Sir, Cambio Inglés og Global Exchange) er den klassiske måten å veksle kontanter på. De gir de beste kursene for dollar, med en liten spread og ingen provisjon; euro er den nest beste valutaen, den brasilianske realen er akseptabel, og den argentinske pesoen er den verste. De ber vanligvis om passet ditt."
+  ],
+  "sections.4.paragraphs.1": [
+    "b7c83296",
+    "Åpningstider: Filialer i gatene er åpne mandag til fredag (rundt 9 til 19) og lørdag morgen; mange stenger på søndager. Filialer inne i kjøpesentre åpner hver dag og senere. For å sammenligne dagsprisen på tvers av hus, bruk vår sammenligningstjeneste og filialsiden."
+  ],
+  "sections.5.heading": [
+    "f8b82759",
+    "Hvor mye kontanter man skal ha med seg og hvilken valuta man skal ta med seg"
+  ],
+  "sections.5.paragraphs.0": [
+    "e22fd664",
+    "Uruguay er svært kortvennlig: Visa og Mastercard aksepteres nesten overalt, og kontaktløs betaling og QR-betaling (Mercado Pago) er utbredt. Ta med deg bare noen pesos kontant for små kjøp og betal større beløp med kort."
+  ],
+  "sections.5.paragraphs.1": [
+    "f9b88276",
+    "Hvis du tar med kontanter for å veksle, er amerikanske dollar den beste valutaen (beste kurser, aksepteres i alle hus). Euroen kommer på andreplass. Kommer du fra Argentina, ta med dollar, ikke argentinske pesos – pesoen veksler svært dårlig i Uruguay. Fra Brasil fungerer den ekte valutaen, spesielt nær grensen, selv om dollar fortsatt er mer praktisk."
+  ],
+  "sections.6.heading": [
+    "97a59b72",
+    "Turist-momsfordel (når du betaler med utenlandsk kort)"
+  ],
+  "sections.6.paragraphs.0": [
+    "88ea76fc",
+    "Uruguay refunderer deler av momsen til ikke-bosatte turister som betaler med et utenlandsk utstedt kort. Overnatting (registrerte hoteller og lignende) har 0 % moms året rundt for ikke-bosatte som viser utenlandsk ID og betaler med et utenlandsk kort – en permanent fordel."
+  ],
+  "sections.6.paragraphs.1": [
+    "7f51f9e2",
+    "For bespisning og leiebil uten sjåfør opprettholder dekret 235/026 den generelle ni-poengsrabatten frem til 30. april 2027 for sluttforbruk betalt med kvalifiserte elektroniske midler. Et sesongbasert fullt fritak er en separat fordel med eget dekret og datoer: forlengelse av ni-poengsrabatten bekrefter ikke et fullt fritak. Sjekk med DGI før du reiser."
+  ],
+  "sections.6.paragraphs.2": [
+    "f963de1e",
+    "I alle tilfeller er rabatten automatisk: du betaler med ditt utenlandske kort, og fordelen vises på kvitteringen eller kortutskriften. Betal kontant, og du mister den. Så det lønner seg å sette hoteller og restauranter på et kort og ta ut mindre kontanter."
+  ],
+  "sections.6.bullets.0": [
+    "fc6c4026",
+    "Hoteller/overnatting: 0 % mva. året rundt for ikke-bosatte (fastboende)."
+  ],
+  "sections.6.bullets.1": [
+    "02f7d683",
+    "Restauranter og bilutleie uten sjåfør: ni prikker frem til 30. april 2027, med forbehold om krav til elektronisk betaling. Et sesongbasert fullt fritak krever separat bekreftelse."
+  ],
+  "sections.6.bullets.2": [
+    "bf5ed0b5",
+    "Hvert regime har sine egne krav. Den generelle ni-punktsreduksjonen krever sluttforbruk og en kvalifisert elektronisk betalingsmetode som innehas av en person; utenlandsk utstedelse er ikke påkrevd."
+  ],
+  "sections.7.heading": [
+    "84fbae56",
+    "Sikkerhetstips ved uttak av kontanter"
+  ],
+  "sections.7.paragraphs.0": [
+    "e227f80c",
+    "Uruguay er blant de tryggeste landene i regionen, men småtyveri forekommer, spesielt i Montevideos Ciudad Vieja, havneområdet og strandferiestedene i høysesongen. Bruk minibanker inne i banker, kjøpesentre eller glasslobbyer, helst i dagslys, og vær oppmerksom på omgivelsene dine."
+  ],
+  "sections.7.bullets.0": [
+    "d234b5e4",
+    "Ta ut penger i dagslys og fra minibanker i lukkede lokaler, ikke på gaten om natten."
+  ],
+  "sections.7.bullets.1": [
+    "f9f5f149",
+    "Ha med deg to kort fra forskjellige kontoer og oppbevar kontanter på mer enn ett sted."
+  ],
+  "sections.7.bullets.3": [
+    "d7920a67",
+    "Reise rundt med Uber, Cabify eller registrerte drosjer; ikke la verdisaker ligge igjen i bilen."
+  ],
+  "sections.7.link.label": [
+    "d8570bac",
+    "Allerede fastlåst med en stor seddel: hvor får man tak i småpenger og mynter"
+  ],
+  "networkRows.0.network": [
+    "7ee344a0",
+    "RedBROU"
+  ],
+  "networkRows.0.reach": [
+    "4a5d053e",
+    "Statsbanken BROUs nettverk; 400+ minibanker over hele landet, pluss Abitab og Redpagos."
+  ],
+  "networkRows.0.usdPerTxn": [
+    "f41a726d",
+    "≈ 200 amerikanske dollar"
+  ],
+  "networkRows.0.note": [
+    "786a7e5f",
+    "Mange automater bruker dollar. Beløpsgrensene for utenlandske kort er omtrentlige."
+  ],
+  "networkRows.1.network": [
+    "6823b06d",
+    "Utestengt"
+  ],
+  "networkRows.1.reach": [
+    "331e78b2",
+    "Privatbanknettverk; 370+ punkter på tvers av alle 19 avdelinger."
+  ],
+  "networkRows.1.usdPerTxn": [
+    "75830c42",
+    "≈ 300 amerikanske dollar"
+  ],
+  "networkRows.1.note": [
+    "9f2f1329",
+    "Koblet til RedBROU. Hvis ett nettverk avviser kortet ditt, kan du prøve det andre."
+  ],
+  "zones.0.name": [
+    "8a4dc608",
+    "Carrasco lufthavn (MVD), Montevideo"
+  ],
+  "zones.0.tips.0": [
+    "d6202725",
+    "Vekslepenger på flyplassen betaler seg merkbart mindre: veksle bare nok til å komme seg til byen."
+  ],
+  "zones.0.tips.1": [
+    "99e81ace",
+    "Hvis du trenger kontanter med en gang, ta ut et lite beløp i minibanken og veksle resten i sentrum."
+  ],
+  "zones.1.name": [
+    "034a744d",
+    "Montevideo (Centro, Ciudad Vieja og havnen)"
+  ],
+  "zones.1.summary": [
+    "04c221eb",
+    "Vekslingshus ligger i klynge langs Avenida 18 de Julio (Centro) og gjennom Ciudad Vieja. Cruiseterminalen ligger ved siden av Ciudad Vieja, med veksling og minibanker."
+  ],
+  "zones.1.tips.0": [
+    "a26e5af3",
+    "I Centro og Ciudad Vieja finner du flere byttehus å sammenligne."
+  ],
+  "zones.1.tips.1": [
+    "4139b3e5",
+    "Cruisepassasjerer har vekslingsmuligheter inne i havnen, og det finnes minibanker en kort spasertur unna, mot Mercado del Puerto."
+  ],
+  "zones.2.name": [
+    "3fa606f9",
+    "Punta del Este"
+  ],
+  "zones.2.summary": [
+    "880d1f96",
+    "Bytte hus langs Avenida Gorlero, hovedgaten. I høysesongen kan det være køer og minibanker som går tom for dollar."
+  ],
+  "zones.2.tips.0": [
+    "1063deb8",
+    "I sommeren og påskeuken tømmes minibankene fort: ta ut penger på forhånd og ha en buffer."
+  ],
+  "zones.2.tips.1": [
+    "e4c20d9e",
+    "Stol på kort og QR-betalinger, slik at du ikke bare er avhengig av kontanter."
+  ],
+  "zones.3.name": [
+    "2ed532f4",
+    "Colonia del Sacramento"
+  ],
+  "zones.3.summary": [
+    "764221b5",
+    "Minibanker i Barrio Histórico og ved fergeterminalen, bare noen skritt fra den gamle bydelen hvor dagsturister ankommer fra Buenos Aires."
+  ],
+  "zones.3.tips.0": [
+    "d7ebee8b",
+    "Ta ut et lite beløp i pesos ved ankomst og betal resten med kort."
+  ],
+  "zones.3.tips.1": [
+    "e09f3851",
+    "Mange turistbutikker tar dollar, men til en ugunstig kurs."
+  ],
+  "zones.4.name": [
+    "ed7917f9",
+    "Fergeterminaler (Buquebus / Colonia Express)"
+  ],
+  "zones.4.summary": [
+    "ac18ddf9",
+    "Det finnes minibanker ved terminalene i Montevideo og Colonia. Vekslepenger inne i terminalene og om bord har en tendens til å tilby dårlige kurser."
+  ],
+  "zones.4.tips.0": [
+    "b5a97e0f",
+    "Unngå å veksle store summer på terminalen eller om bord – kursene er dårlige."
+  ],
+  "zones.4.tips.1": [
+    "91b3c105",
+    "Det er bedre å bruke en minibank eller veksle på et vekslingskontor i byen."
+  ],
+  "zones.5.name": [
+    "66cc7244",
+    "Innlandet og mindre byer"
+  ],
+  "zones.5.summary": [
+    "fc9a5afd",
+    "Utenfor de store byene og de største feriestedene er det lite med minibanker."
+  ],
+  "zones.5.tips.0": [
+    "48821abe",
+    "Hamstre penger i Montevideo, Punta del Este eller Colonia før du drar inn i landet."
+  ],
+  "zones.5.tips.1": [
+    "02573d37",
+    "På Rocha-kysten kan du fylle opp i større byer som Chuy eller La Paloma."
+  ],
+  "steps.0.name": [
+    "aa213b75",
+    "Finn en minibank som tar kortet ditt"
+  ],
+  "steps.0.text": [
+    "2f5d9e7c",
+    "Se etter Visa-, Mastercard-, Cirrus-, Plus- eller Maestro-logoene; foretrekk minibanker inne i banker eller kjøpesentre."
+  ],
+  "steps.1.name": [
+    "4209811a",
+    "Velg dollar eller pesos"
+  ],
+  "steps.2.name": [
+    "24d1a5da",
+    "Avslå konvertering til din valuta"
+  ],
+  "steps.2.text": [
+    "3f2be811",
+    "Når det tilbys å bli belastet i din lokale valuta, velg «uten konvertering» eller lokal valuta for å unngå DCC-påslaget."
+  ],
+  "steps.3.name": [
+    "4e44a3f9",
+    "Ta ut maksimalt beløp per transaksjon"
+  ],
+  "steps.3.text": [
+    "831b2ec9",
+    "Fordi det er et fast uttaksgebyr, bruk det tillatte taket for å fordele kostnaden over mer kontanter."
+  ],
+  "steps.4.name": [
+    "6fcb61ed",
+    "Ta vare på kvitteringen og tell opp kontantene"
+  ],
+  "steps.4.text": [
+    "30d70c06",
+    "Sjekk beløpet som er utbetalt, ta vare på kvitteringen og fordel kontantene på mer enn ett sted før du forlater minibanken."
+  ],
+  "faq.0.q": [
+    "e44ca992",
+    "Kan jeg ta ut amerikanske dollar fra minibanker i Uruguay?"
+  ],
+  "faq.0.a": [
+    "eb6339a1",
+    "Ja. I motsetning til Argentina, utbetaler mange uruguayanske minibanker dollar i tillegg til pesos, vanligvis i amerikanske dollarsedler på 100 dollar. Grensene per uttak for utenlandske kort er lave."
+  ],
+  "faq.1.q": [
+    "33423670",
+    "Hvor mye gebyr tar minibanker for utenlandske kort?"
+  ],
+  "faq.1.a": [
+    "68121602",
+    "Det lokale tillegget er lavt (i størrelsesorden noen få dollar per uttak). Den største kostnaden er vanligvis din egen banks gebyr for utenlandstransaksjoner (1–3 % er vanlig)."
+  ],
+  "faq.2.q": [
+    "bf2fe8ff",
+    "Hva er det maksimale uttaket jeg kan ta ut per transaksjon?"
+  ],
+  "faq.3.q": [
+    "66601510",
+    "Bør jeg veksle penger på flyplassen?"
+  ],
+  "faq.3.a": [
+    "82d5704c",
+    "Ikke for store summer: flyplassen og fergeterminalene betaler merkbart mindre. Veksle bare nok til å komme til byen, og bruk deretter en vekslingskontor eller minibank i sentrum."
+  ],
+  "faq.4.q": [
+    "44d07e17",
+    "Kontanter eller kort i Uruguay?"
+  ],
+  "faq.4.a": [
+    "11ded5ec",
+    "Uruguay er svært kortvennlig (Visa og Mastercard nesten overalt, kontaktløs betaling og QR). Ha med deg noen pesos kontant for små kjøp og betal større beløp med kort."
+  ],
+  "faq.5.q": [
+    "2d0dd094",
+    "Hvilken valuta bør jeg ta med?"
+  ],
+  "faq.5.a": [
+    "cc8484ac",
+    "Kontanter i amerikanske dollar: beste kurser og aksepteres på alle vekslingskontorer. Euroen er nummer to. Kommer du fra Argentina, ta med dollar, ikke argentinske pesos."
+  ],
+  "faq.6.q": [
+    "b71d8d92",
+    "Får jeg skatterabatt som turist?"
+  ],
+  "faq.6.a": [
+    "49712ab8",
+    "Ja: i tillegg til overnattingsordningen gjelder den generelle ni-poengsrabatten på bespisning og leiebil uten sjåfør også for ikke-bosatte frem til 30. april 2027, for sluttforbruk betalt elektronisk av en person. Et sesongbasert fullt fritak krever sin egen forordning og datoer; det kan ikke utledes fra denne utvidelsen."
+  ],
+  "faq.7.q": [
+    "04fb59ce",
+    "Hva om minibanken avviser kortet mitt?"
+  ],
+  "faq.7.a": [
+    "15f0167b",
+    "Prøv et annet kort og det andre nettverket (RedBROU og Banred er sammenkoblet, men det hjelper å ha med seg begge). Sjekk at minibanken viser Visa/Mastercard/Cirrus/Plus-logoene, og fortell banken din at du skal bruke det i Uruguay."
+  ],
+  "related.0.label": [
+    "9371cd8d",
+    "Dollar til reiser"
+  ],
+  "related.1.label": [
+    "89470d17",
+    "Kjøpe dollar til den beste prisen"
+  ],
+  "related.2.label": [
+    "7b531a45",
+    "Børshus og filialer"
+  ],
+  "related.3.label": [
+    "574f3e27",
+    "Sammenlign priser"
+  ]
+}

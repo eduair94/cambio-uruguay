@@ -21,10 +21,13 @@
   `excludedNeighborhoods`.
 - **Exploración → `search_rentals`.** Para vivir, `types: ["vivienda"]` o `["apartamento"]` (sin eso
   aparecen locales y oficinas). `monthlyMaxUyu` filtra por total con GC pero descarta los que no
-  publican GC; para no perderlos usá `priceMaxUyu` y explicá el riesgo.
-- **Cerca de un punto → `near`**: `address` o `lat`/`lng` + `radiusKm`. Sólo cuentan avisos con
-  ubicación propia. `address` acepta dirección, esquina, barrio o nombre del lugar («Facultad de
-  Ingeniería»); si no aparece, pasá coordenadas aproximadas en vez de reintentar variantes.
+  publican GC; para no perderlos usá `priceMaxUyu` y explicá el riesgo. Para dejar afuera un tipo,
+  listá los que sí van en `types` (sin habitaciones: `["apartamento", "casa"]`); para un solo portal,
+  ocultá el resto con `excludeSources`.
+- **Cerca de un punto → `near`** + `radiusKm`. `near` es un texto: dirección, esquina, barrio, nombre
+  del lugar («Facultad de Ingeniería») o coordenadas `"-34.918,-56.166"`. Sólo cuentan avisos con
+  ubicación propia. Si un lugar no aparece, pasá coordenadas aproximadas en vez de reintentar
+  variantes.
 - **Referencia de precio → `rental_market_stats`** (zona) o **`estimate_fair_rent`** (una vivienda
   concreta, con `askingPrice`).
 - **Elegir barrio → `compare_neighborhoods`** (precio, denuncias, cortes de agua, reclamos, servicios).
@@ -35,8 +38,9 @@
 - Avisos vistos en los últimos 10 días; se unen avisos de distintos portales sólo cuando hay
   evidencia fuerte de que es la misma vivienda. Una vivienda puede tener varios avisos con precios
   distintos: `get_rental` los muestra todos (a veces conviene contactar por el más barato).
-- "Reportado como no disponible" viene de la comunidad del sitio. Por defecto se ocultan los que
-  tienen 2 o más reportes.
+- "Reportado como no disponible" viene de la comunidad del sitio. Se ocultan los que tienen 2 o más
+  reportes; los de uno salen con ⚠. También sale con ⚠ un precio en dólares muy por debajo de su
+  zona: casi siempre es por noche (temporada en la costa), no por mes.
 - Particular ≠ necesariamente dueño directo; sólo `ownerDirect` filtra dueños declarados.
 - Muebles y plazo salen de lo que DICE cada aviso: `furnished: true`/`false` y `term: "invernal"`
   sólo encuentran los que lo aclaran. Un invernal tiene precio mensual pero de temporada baja: no lo

@@ -41,11 +41,19 @@ it('captures Vue, window errors and unhandled promise rejections without DOM/ses
   plugin.setup({
     hook: (name: string, fn: (error: unknown) => unknown) => hooks.set(name, fn),
   } as never)
+  // The document was served with 500: the tag must say so (CAMBIO-URUGUAY-BACKEND-Y).
+  vi.spyOn(window.performance, 'getEntriesByType').mockReturnValue([
+    { responseStatus: 500 } as unknown as PerformanceEntry,
+  ])
   const vueError = new TypeError(
     'Cannot read properties of undefined (reading private-email@example.invalid)'
   )
   hooks.get('vue:error')!(vueError)
   hooks.get('app:error')!(vueError)
+  // A startup app:error (before the first render resolved) with a 500 status.
+  hooks.get('app:error')!(Object.assign(new Error('private-startup'), { statusCode: 500 }))
+  hooks.get('app:suspense:resolve')!(undefined)
+  hooks.get('app:error')!(Object.assign(new Error('private-later'), { statusCode: 502 }))
   // Invoke the handlers installed by the real GlobalHandlers integration;
   // direct rejected promises would incorrectly fail Vitest's own runner.
   window.onerror!(
@@ -67,12 +75,34 @@ it('captures Vue, window errors and unhandled promise rejections without DOM/ses
     'Error: ad failure\n    at f (https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js:1:2)'
   window.onerror!('ad failure', 'https://pagead2.googlesyndication.com/x.js', 1, 2, adError)
   await BrowserSentry.flush(1000)
-  expect(envelopes).toHaveLength(3)
+  expect(envelopes).toHaveLength(5)
   expect(envelopes.flatMap(envelope => envelope[1].map(item => item[0].type))).toEqual([
     'event',
     'event',
     'event',
+    'event',
+    'event',
   ])
+  const tagsOf = (envelope: Envelope) =>
+    (envelope[1][0][1] as { tags: Record<string, string> }).tags
+  expect(tagsOf(envelopes[0])).toMatchObject({
+    nuxt_hook: 'vue',
+    nuxt_phase: 'startup',
+    document_status: '500',
+  })
+  expect(tagsOf(envelopes[1])).toMatchObject({
+    nuxt_hook: 'app',
+    nuxt_phase: 'startup',
+    http_status: '500',
+    // What was thrown reaches the event (sentryThrownShape), as a class and a stack flag.
+    thrown_kind: 'Error',
+    stack_status: 'present',
+  })
+  expect(tagsOf(envelopes[2])).toMatchObject({
+    nuxt_hook: 'app',
+    nuxt_phase: 'navigation',
+    http_status: '502',
+  })
   const body = JSON.stringify(envelopes)
   expect(body).toContain('Cannot read a property of null or undefined')
   expect(body).toContain('Maximum call stack size exceeded')

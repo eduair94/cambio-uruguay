@@ -41,6 +41,8 @@
       </VBtn>
     </div>
 
+    <AssistantDirectories class="mb-8" />
+
     <h2 class="text-h6 font-weight-bold mb-3">Qué le podés pedir</h2>
     <VRow class="mb-6">
       <VCol v-for="group in exampleGroups" :key="group.id" cols="12" md="4">

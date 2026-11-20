@@ -203,6 +203,7 @@
                     <VCol cols="12" lg="6" class="converter-col converter-col--result">
                       <!-- Conversion Result -->
                       <VCard
+                        v-if="hasConversionRate"
                         class="conversion-result pa-4 mb-md-4"
                         color="rgba(76, 175, 80, 0.1)"
                         variant="outlined"
@@ -218,6 +219,7 @@
                           >
                             {{ selectedExchangeHouseName }}
                           </VChip>
+                          <StaleRateChip :entry="selectedQuoteFrozen" class="ml-2" />
                         </div>
                         <VRow align="center" justify="center" class="conversion-display-row">
                           <VCol cols="5" sm="4" class="text-center align-self-start">
@@ -340,6 +342,24 @@
                           </VBtn>
                         </div>
                       </VCard>
+                      <VAlert
+                        v-else
+                        type="info"
+                        variant="tonal"
+                        data-testid="conversion-unavailable"
+                      >
+                        {{ t('whereToChange.noData') }}
+                        <!-- The card (and its toggle) is gone: without this the reader who flipped
+                             into a missing quote had no way back to the amount they typed. -->
+                        <template #append>
+                          <DirectionToggle
+                            :is-forward="isForward"
+                            size="32"
+                            color="success"
+                            @toggle="toggleDirection"
+                          />
+                        </template>
+                      </VAlert>
                     </VCol>
                   </VRow>
 
@@ -435,6 +455,12 @@
                         </VBtn>
                       </template>
                     </VAlert>
+                    <RateComparisonContext
+                      :amount="comparisonSubjectAmount"
+                      :currency="subjectCode"
+                      :excluded-count="recommendationExcludedCount"
+                      :selected-off-market="selectedQuoteOffMarket"
+                    />
                     <VRow class="best-rates-grid">
                       <VCol v-if="primaryRatesForSubject.length" cols="12" lg="6">
                         <!-- First card: current intent (sell or buy) -->
@@ -479,9 +505,16 @@
                                     ${{ rate.rate.toFixed(2) }}
                                   </div>
                                   <div class="rate-type text-caption">
-                                    {{ intentIsSellingSubject ? t('buy') : t('sell') }}
+                                    {{ intentIsSellingSubject ? t('sell') : t('buy') }}
                                     {{ t('codes.' + subjectCode) }}
                                   </div>
+                                  <RateAmountComparison
+                                    :amount="comparisonSubjectAmount"
+                                    :rate="rate.rate"
+                                    :best-rate="primaryRatesForSubject[0]!.rate"
+                                    :selling="intentIsSellingSubject"
+                                    :first="index === 0"
+                                  />
                                   <StaleRateChip
                                     :entry="frozenFor(rate.origin, subjectCode, rate.type)"
                                     dense
@@ -537,9 +570,16 @@
                                     ${{ rate.rate.toFixed(2) }}
                                   </div>
                                   <div class="rate-type text-caption">
-                                    {{ intentIsSellingSubject ? t('sell') : t('buy') }}
+                                    {{ intentIsSellingSubject ? t('buy') : t('sell') }}
                                     {{ t('codes.' + subjectCode) }}
                                   </div>
+                                  <RateAmountComparison
+                                    :amount="comparisonSubjectAmount"
+                                    :rate="rate.rate"
+                                    :best-rate="secondaryRatesForSubject[0]!.rate"
+                                    :selling="!intentIsSellingSubject"
+                                    :first="index === 0"
+                                  />
                                   <StaleRateChip
                                     :entry="frozenFor(rate.origin, subjectCode, rate.type)"
                                     dense
@@ -700,6 +740,16 @@
       </VContainer>
     </section>
 
+    <!-- La única unidad propia de la portada. La densidad de `/` es `light` (utils/ads.ts): una
+         unidad. El cierre del layout no se dibuja en la portada (layouts/default.vue), así que ésta
+         es esa una, en un corte de sección y no al pie: la portada es la página con más visitas del
+         sitio y casi nadie llega hasta el final. Va después de las cotizaciones, el ranking de
+         casas y el buscador de casas cercanas —lo que la visita vino a resolver— y nunca entre el
+         conversor y su resultado. Reserva su alto y se colapsa si AdSense no tiene qué servir. -->
+    <VContainer class="py-0">
+      <AdSlot placement="content-end" class="home-ad" />
+    </VContainer>
+
     <!-- Promo video: short branded clip, lazy + autoplay-in-view (muted), the
          visitor can tap to unmute. Sits between the rates and the how-it-works
          steps so it reinforces "compare before you change" organically. -->
@@ -763,6 +813,10 @@
     <!-- Social proof: real Trustpilot reviews. Lazily mounted and self-removing
          on failure, so a third-party outage never leaves an empty box here. -->
     <TrustpilotReviews />
+
+    <!-- Nos mencionaron en YouTube: el canal que nos citó y algunos de sus videos, con botón para
+         suscribirse (utils/creatorVideos.ts). Reproductores diferidos: nada de YouTube hasta el play. -->
+    <HomeCreatorMention />
 
     <!-- AI Insights Section -->
     <AIInsights />
@@ -1115,6 +1169,8 @@
 </template>
 
 <script setup lang="ts">
+import { VAutocomplete } from 'vuetify/components'
+import { MotionDirective } from '@vueuse/motion'
 import { useLocalePath } from '#imports'
 import { prLabel } from '~/utils/pageRanking'
 import { topicOf, type TopPageRow, type TopPagesSnapshot } from '~/utils/topPages'
@@ -1122,15 +1178,16 @@ import DirectionToggle from '@/components/DirectionToggle.vue'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { HOME_FAQ_IDS, type FaqItem } from '~/utils/faqAnswers'
-import { quotesForCurrency, rankUsableQuotes } from '~/utils/currencyPages'
+import { quotesForCurrency, rankUsableQuotes, type CurrencyCode } from '~/utils/currencyPages'
 import { useDisplay } from 'vuetify'
 import {
   convert as convertAmount,
   formatAmount,
-  marketAverageSavings,
+  currencyAmountSavings,
   parseAmount,
   type RateRow,
 } from '@/utils/conversion'
+import { crownable } from '@/utils/marketOutlier'
 import { publicRates } from '@/utils/rateSource'
 import {
   matchesChannel,
@@ -1150,6 +1207,9 @@ const { mobile } = useDisplay()
 // are server-rendered — this avoids a hydration mismatch and never leaves cards
 // stuck hidden if JS is slow/absent. Once mounted, the from-state kicks in and
 // `visibleOnce` springs each card up as it scrolls into view.
+// The directive is registered here, not app-wide: this is the only page that animates, and the
+// global module put @vueuse/motion + popmotion (~30 KB) in every page's entry chunk.
+const vMotion = MotionDirective()
 const motionReady = ref(false)
 onMounted(() => {
   motionReady.value = true
@@ -1229,30 +1289,33 @@ const hubCasas = computed(() => {
 // headline and the ExchangeRateSpecification JSON-LD are both built from it, so
 // the schema can never advertise a price the page does not show.
 const usdQuotes = computed(() =>
-  rankUsableQuotes(quotesForCurrency(sharedRealRows.value ?? [], 'USD'))
+  rankUsableQuotes(quotesForCurrency(sharedRealRows.value ?? [], 'USD'), 'USD')
 )
 const usdBestSell = computed(() => usdQuotes.value.find(q => q.bestSell)?.sell ?? null)
 const usdBestBuy = computed(() => usdQuotes.value.find(q => q.bestBuy)?.buy ?? null)
 
+// La respuesta del hero, en el idioma de la página (`home.heroAnswer`). Estaba escrita acá en
+// castellano y /en y /pt la mostraban tal cual, y decía que los datos "se basan en el registro del
+// BCU" cuando son las pizarras de cada casa. El separador decimal y la fecha siguen al idioma, igual
+// que el título y la descripción del head.
 const usdHeadline = computed<string | null>(() => {
   const quotes = usdQuotes.value
   if (usdBestSell.value === null || usdBestBuy.value === null) return null
+  const lang = dateLocale(locale.value)
   const fmt = (n: number) =>
-    n.toLocaleString('es-UY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  const minSell = fmt(usdBestSell.value)
-  const maxBuy = fmt(usdBestBuy.value)
-  const today = new Date().toLocaleDateString('es-UY', {
+    n.toLocaleString(lang, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const date = new Date().toLocaleDateString(lang, {
     timeZone: 'America/Montevideo',
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   })
-  return (
-    `Hoy ${today}, el dólar estadounidense se vende desde $${minSell} y se compra hasta ` +
-    `$${maxBuy} comparando ${quotes.length} casas de cambio de Uruguay. Para comprar conviene ` +
-    `el precio de venta más bajo; para vender, el de compra más alto. Los datos se basan en el ` +
-    `registro del Banco Central del Uruguay (BCU) y se actualizan automáticamente cada ~10 minutos.`
-  )
+  return t('home.heroAnswer', {
+    date,
+    sell: fmt(usdBestSell.value),
+    buy: fmt(usdBestBuy.value),
+    count: quotes.length,
+  })
 })
 
 // Branded OG image with the live USD rate (og-rate route is cached 10 min).
@@ -1682,67 +1745,38 @@ const topExchanges = computed(() => {
     selectedCurrency.value !== 'UYU' && selectedTargetCurrency.value === 'UYU'
   const isConvertingTo = selectedCurrency.value === 'UYU' && selectedTargetCurrency.value !== 'UYU'
 
+  // Best first among the prices the site crowns (utils/marketOutlier.ts): sorted raw, "UYU → USD"
+  // put the board frozen since July at 39,55 first while the converter above named another casa.
+  // `type` is the house's side: what it pays (`buy`, the user sells) or charges (`sell`).
+  const best = (code: string, type: 'buy' | 'sell') =>
+    crownable(
+      currencyData.filter(item => item.code === code),
+      marketFor.value(code),
+      code,
+      type
+    ).map(item => ({
+      source: item.localData?.name || item.origin,
+      rate: item[type],
+      type,
+      origin: item.origin,
+      name: item.localData.name,
+      code: item.code,
+      isRegulated: item.localData.bcu || false,
+    }))
+
   let rates = []
-
   if (isConvertingFrom) {
-    // User is selling the selected currency (FROM currency TO UYU)
-    // Show top 4 selling rates (highest buy rates = best for user selling)
-    rates = currencyData
-      .map(item => ({
-        source: item.localData?.name || item.origin,
-        rate: item.buy,
-        type: 'buy' as const, // This is what the exchange house pays (buys from user)
-        origin: item.origin,
-        name: item.localData.name,
-        code: item.code,
-        isRegulated: item.localData.bcu || false,
-      }))
-      .sort((a, b) => b.rate - a.rate) // Highest buy rate first
+    // User is selling the selected currency (FROM currency TO UYU): highest buy first.
+    rates = best(selectedCurrency.value, 'buy')
   } else if (isConvertingTo) {
-    // User is buying the selected currency (FROM UYU TO currency)
-    // Show top 4 buying rates (lowest sell rates = best for user buying)
-    rates = currencyData
-      .map(item => ({
-        source: item.localData?.name || item.origin,
-        rate: item.sell,
-        type: 'sell' as const, // This is what the exchange house sells (user buys)
-        origin: item.origin,
-        code: item.code,
-        name: item.localData.name,
-        isRegulated: item.localData.bcu || false,
-      }))
-      .sort((a, b) => a.rate - b.rate) // Lowest sell rate first
+    // User is buying the selected currency (FROM UYU TO currency): lowest sell first.
+    rates = best(selectedTargetCurrency.value, 'sell')
   } else {
-    // For other conversions, show mixed rates (2 buy + 2 sell)
-    const buyRates = currencyData
-      .filter(item => item.code === selectedCurrency.value)
-      .map(item => ({
-        source: item.localData?.name || item.origin,
-        rate: item.buy,
-        type: 'buy' as const,
-        origin: item.origin,
-        code: item.code,
-        name: item.localData.name,
-        isRegulated: item.localData.bcu || false,
-      }))
-      .sort((a, b) => b.rate - a.rate)
-      .slice(0, 4)
-
-    const sellRates = currencyData
-      .filter(item => item.code === selectedTargetCurrency.value)
-      .map(item => ({
-        source: item.localData?.name || item.origin,
-        rate: item.sell,
-        type: 'sell' as const,
-        code: item.code,
-        origin: item.origin,
-        name: item.localData.name,
-        isRegulated: item.localData.bcu || false,
-      }))
-      .sort((a, b) => a.rate - b.rate)
-      .slice(0, 4)
-
-    rates = [...buyRates, ...sellRates]
+    // For other conversions, show mixed rates (4 buy + 4 sell)
+    rates = [
+      ...best(selectedCurrency.value, 'buy').slice(0, 4),
+      ...best(selectedTargetCurrency.value, 'sell').slice(0, 4),
+    ]
   }
 
   // Remove duplicates based on source name and type
@@ -1852,14 +1886,17 @@ const desiredRightAmountRaw = ref(0)
 const leftForReverse = ref(0)
 
 // Conversion result computed property
-const setConversionRate = () => {
+const setConversionRate = (preserveRightAmount = false) => {
   // Core forward/reverse math comes from the pure util (unit-tested).
+  // Judged against the whole market: a department or a channel alone is too few boards to tell
+  // a frozen one (utils/marketOutlier.ts).
   const core = convertAmount(
     rateRows.value,
     Number(amount.value),
     selectedCurrency.value,
     selectedTargetCurrency.value,
-    selectedExchangeHouse.value
+    selectedExchangeHouse.value,
+    realExchangeData.value as RateRow[]
   )
   const rate = core.rate
   const reverseRate = core.reverseRate
@@ -1873,6 +1910,16 @@ const setConversionRate = () => {
   }
   // Forward amount (entered amount converted to target)
   dualConversion.value.forwardToAmount = conversionResult.value.convertedAmount
+  // Market/filter updates recalculate the displayed figure too. Preserve it
+  // only when the user flips direction (which adjusts the left amount).
+  if (!preserveRightAmount || desiredRightAmountRaw.value <= 0) {
+    desiredRightAmountRaw.value = isForward.value
+      ? rawConvertedAmount
+      : reverseRate > 0
+        ? Number(amount.value) / reverseRate
+        : 0
+    desiredRightAmount.value = round2(desiredRightAmountRaw.value)
+  }
   // Reverse summary:
   // - In forward mode: target to sell to get the entered left amount
   // - In reverse mode: show the fixed right-hand amount (avoid double rounding)
@@ -1888,18 +1935,6 @@ const setConversionRate = () => {
   }
   // end setConversionRate
 
-  // Maintain invariants for UI:
-  // - desiredRightAmount remains the target shown on the right
-  if (desiredRightAmountRaw.value <= 0) {
-    if (isForward.value) {
-      // Forward: initialize from forward conversion
-      desiredRightAmountRaw.value = rawConvertedAmount
-    } else {
-      // Reverse: initialize from reverse math (right needed to obtain left)
-      desiredRightAmountRaw.value = reverseRate > 0 ? Number(amount.value) / reverseRate : 0
-    }
-    desiredRightAmount.value = round2(desiredRightAmountRaw.value)
-  }
   // - leftForReverse display depends on direction
   if (isForward.value) {
     // Forward: show how much you'd get on the left if you sell the right amount
@@ -1943,14 +1978,71 @@ const intentIsSellingSubject = computed(() => {
   return isForward.value ? fromIsSubject : !fromIsSubject
 })
 
+const hasConversionRate = computed(() =>
+  isForward.value ? conversionResult.value.rate > 0 : conversionResult.value.reverseRate > 0
+)
+
+// All house comparisons use the same quantity of the foreign currency, whichever side of the
+// converter holds the pesos.
+const comparisonSubjectAmount = computed(() => {
+  if (!hasConversionRate.value) return 0
+  if (selectedCurrency.value === subjectCode.value && selectedTargetCurrency.value === 'UYU') {
+    return Number(amount.value)
+  }
+  if (selectedTargetCurrency.value === subjectCode.value && selectedCurrency.value === 'UYU') {
+    return desiredRightAmount.value
+  }
+  return 0
+})
+
+/** The side the ranking crowns: selling dollars, the houses' buy price. */
+const rankedSide = computed<'buy' | 'sell'>(() => (intentIsSellingSubject.value ? 'buy' : 'sell'))
+
+// How many boards of this currency the ranking leaves out (the site's one crown rule,
+// utils/marketOutlier.ts), so the reader is told rather than left to wonder.
+const recommendationExcludedCount = computed(() => {
+  const code = subjectCode.value
+  const side = rankedSide.value
+  const items = filteredExchangeData.value.filter(
+    row => row.code === code && row.localData?.name && (row[side] ?? 0) > 0
+  )
+  if (!items.length) return 0
+  return items.length - crownable(items, marketFor.value(code), code, side).length
+})
+
+const selectedHouseQuote = computed(() => {
+  if (selectedExchangeHouse.value === 'best') return null
+  const side = rankedSide.value
+  return (
+    filteredExchangeData.value
+      .filter(
+        row =>
+          row.origin === selectedExchangeHouse.value &&
+          row.code === subjectCode.value &&
+          (row[side] ?? 0) > 0
+      )
+      .sort((a, b) => (side === 'buy' ? b.buy - a.buy : a.sell - b.sell))[0] ?? null
+  )
+})
+const selectedQuoteFrozen = computed(() => {
+  const row = selectedHouseQuote.value
+  return row ? frozenFor(row.origin, row.code, row.type) : null
+})
+const selectedQuoteOffMarket = computed(() => {
+  const row = selectedHouseQuote.value
+  if (!row) return false
+  return !crownable([row], marketFor.value(row.code), row.code, rankedSide.value).length
+})
+
 // Savings of the best rate vs. the market average for the subject currency.
 // Only meaningful when one side is UYU and there are >= 2 quotes to average.
 const savingsInfo = computed(() =>
-  marketAverageSavings(
+  currencyAmountSavings(
     rateRows.value,
     subjectCode.value,
-    Number(amount.value),
-    intentIsSellingSubject.value ? 'sell' : 'buy'
+    comparisonSubjectAmount.value,
+    intentIsSellingSubject.value ? 'sell' : 'buy',
+    realExchangeData.value as RateRow[]
   )
 )
 const showSavings = computed(
@@ -1980,11 +2072,29 @@ const copyResult = async (): Promise<void> => {
   }
 }
 
+// The prices the site refuses to crown (utils/marketOutlier.ts) are judged on the whole market of
+// each currency, one board per house, one side at a time: the "best to buy" list put the board
+// frozen since July at 39,55 first (2026-11-11), and a department or a channel alone is too few
+// boards to tell.
+const marketFor = computed(() => {
+  const cache = new Map<string, ReturnType<typeof quotesForCurrency>>()
+  return (code: string) => {
+    if (!cache.has(code)) {
+      cache.set(code, quotesForCurrency(realExchangeData.value as any, code as CurrencyCode))
+    }
+    return cache.get(code)!
+  }
+})
+
 // Build top 4 lists for subject currency: sell (houses buy) and buy (houses sell)
 const top4SellRatesForSubject = computed(() => {
   if (!filteredExchangeData.value.length || !subjectCode.value) return []
-  const items = filteredExchangeData.value
-    .filter(item => item.code === subjectCode.value && item.buy > 0 && item.localData?.name)
+  const code = subjectCode.value
+  const items = filteredExchangeData.value.filter(
+    item => item.code === code && item.localData?.name
+  )
+  return crownable(items, marketFor.value(code), code, 'buy')
+    .slice(0, 4)
     .map(item => ({
       origin: item.origin,
       source: item.localData?.name || item.origin,
@@ -1992,22 +2102,22 @@ const top4SellRatesForSubject = computed(() => {
       // La punta importa: una casa puede tener el mostrador quieto y el eBROU moviendose.
       type: item.type || '',
     }))
-    .sort((a, b) => b.rate - a.rate)
-  return items.slice(0, 4)
 })
 
 const top4BuyRatesForSubject = computed(() => {
   if (!filteredExchangeData.value.length || !subjectCode.value) return []
-  const items = filteredExchangeData.value
-    .filter(item => item.code === subjectCode.value && item.sell > 0 && item.localData?.name)
+  const code = subjectCode.value
+  const items = filteredExchangeData.value.filter(
+    item => item.code === code && item.localData?.name
+  )
+  return crownable(items, marketFor.value(code), code, 'sell')
+    .slice(0, 4)
     .map(item => ({
       origin: item.origin,
       source: item.localData?.name || item.origin,
       rate: item.sell,
       type: item.type || '',
     }))
-    .sort((a, b) => a.rate - b.rate)
-  return items.slice(0, 4)
 })
 
 // Primary/secondary intent-ordered lists and titles
@@ -2130,7 +2240,7 @@ const applyExchangeData = (data: ExchangeItem[]) => {
 watch(
   [sharedRows, sharedPending] as const,
   ([rows, pending]) => {
-    if (rows && rows.length) applyExchangeData(rows as unknown as ExchangeItem[])
+    if (rows?.length || !pending) applyExchangeData((rows ?? []) as unknown as ExchangeItem[])
     if (!pending) initialLoading.value = false
   },
   { immediate: true }
@@ -2214,7 +2324,7 @@ const toggleDirection = () => {
     amountInput.value = amount.value
   }
   amountDisplay.value = plainAmountString(amountInput.value)
-  setConversionRate()
+  setConversionRate(true)
   // Reflect current direction in the URL
   updateQueryParams()
   // Save form data to localStorage
@@ -2222,7 +2332,14 @@ const toggleDirection = () => {
 }
 
 // SEO Configuration - Comprehensive JSON-LD Schema Markup
-const currentDate = new Date().toISOString().split('T')[0]
+// The day of the server render, reused from the payload. `/` is cached at the edge for an hour,
+// so HTML rendered at 23:30 UTC hydrates after midnight: with `new Date()` here the WebPage block
+// read another day, unhead could not match the server's <script> and appended a second one
+// (see pages/cotizacion/[moneda].vue and tests/unit/headHydrationParity.test.ts).
+const currentDate = useState(
+  'home-rendered-day',
+  () => new Date().toISOString().split('T')[0]
+).value
 
 // 1. WebApplication Schema
 const webApplicationSchema = computed(() => ({
@@ -2458,6 +2575,7 @@ useHead({
       innerHTML: computed(() => JSON.stringify(breadcrumbSchema.value)),
     },
     {
+      key: 'home-webpage-jsonld',
       type: 'application/ld+json',
       innerHTML: computed(() => JSON.stringify(currencyServiceSchema.value)),
     },
@@ -2503,14 +2621,20 @@ const fmtRate = (value: number) =>
  *
  * Falls back to the translated copy whenever the market payload is missing, so
  * an upstream outage degrades to the old description rather than to a stub.
+ *
+ * La plantilla vive en i18n (`seo.homeDescriptionLive`), como el título. Estuvo escrita acá en
+ * castellano y /en y /pt la servían tal cual —"se vende desde $40.63" en la página inglesa, con
+ * un "$" pelado que un lector anglo toma por dólares—, y decía "Datos del BCU" cuando las cifras
+ * son las pizarras de las casas: el BCU no publica la cotización de ninguna. Cada idioma pone su
+ * símbolo y entra en 160 con cifras de tres dígitos (`homeDescriptionLive.test.ts`).
  */
 const homeDescription = computed(() => {
   if (usdBestSell.value === null || usdBestBuy.value === null) return t('seo.homeDescription')
-  return (
-    `Dólar hoy en Uruguay: se vende desde $${fmtRate(usdBestSell.value)} y se compra hasta ` +
-    `$${fmtRate(usdBestBuy.value)} comparando ${usdQuotes.value.length} casas de cambio. ` +
-    `Datos del BCU actualizados cada 10 minutos. También euro, real y peso argentino.`
-  ).slice(0, 300)
+  return t('seo.homeDescriptionLive', {
+    sell: fmtRate(usdBestSell.value),
+    buy: fmtRate(usdBestBuy.value),
+    count: usdQuotes.value.length,
+  })
 })
 
 /**
@@ -2673,23 +2797,42 @@ useSeoMeta({
 }
 
 .live-dot {
+  position: relative;
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: var(--good);
-  box-shadow: 0 0 0 0 rgba(43, 212, 125, 0.55);
+}
+
+/* The pulse is a disc behind the dot that grows and fades. It used to be an animated
+   box-shadow, which the compositor cannot run: the browser repainted it on the main thread
+   every frame, forever, on the home page (Lighthouse "non-composited animation"). Scale and
+   opacity stay on the compositor. 8px scaled 3.25x = the old 9px spread on each side. */
+.live-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgb(43, 212, 125);
+  opacity: 0;
   animation: livePulse 2.2s infinite;
 }
 
 @keyframes livePulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(43, 212, 125, 0.5);
+    transform: scale(1);
+    opacity: 0.5;
   }
-  70% {
-    box-shadow: 0 0 0 9px rgba(43, 212, 125, 0);
-  }
+  70%,
   100% {
-    box-shadow: 0 0 0 0 rgba(43, 212, 125, 0);
+    transform: scale(3.25);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot::after {
+    animation: none;
   }
 }
 

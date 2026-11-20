@@ -50,6 +50,7 @@ const FUERA_DE_TEMA_POR_DISENO = [
   '/buscar-con-ia', // sobre el propio sitio
   '/conectar', // área de cuenta
   '/contacto',
+  '/datos-abiertos-uruguay', // referencia para desarrolladores
   '/desarrolladores',
   '/directorios-uruguay', // índice de los directorios del sitio
   '/empresas', // planes de la API
@@ -65,6 +66,9 @@ const FUERA_DE_TEMA_POR_DISENO = [
   '/offline', // fallback de la PWA, noindex
   '/opinion-alquileres', // encuesta, se llega desde los correos; noindex
   '/opiniones-alquileres', // privada, noindex
+  '/contactos-comerciales', // privada, noindex
+  '/oportunidades-reddit', // noindex, se comparte por enlace
+  '/origen-del-trafico', // sobre el propio sitio, como /estadisticas-del-sitio
   '/paginas-mas-visitadas', // sobre el propio sitio, como /estadisticas-del-sitio
   '/preguntas-frecuentes', // sobre el propio sitio
   '/privacidad',
@@ -99,31 +103,87 @@ const FUERA_DE_TEMA_POR_DISENO = [
  * —los dos beneficios de tarjeta que el sitio mide en plata—, y los tickets de mutualista entre
  * los otros gastos fijos del mes de "Finanzas personales" (supermercado, supergas, meal prep).
  *
+ * 7 → 5 el 2026-10-26: las dos huérfanas de aduana entran a `importaciones-y-aduana-uruguay`.
+ * Hoy hay cinco de las siete con la ruta libre de toda ventana de medición abierta
+ * (`npm run seo_debt`: 6 libres entre las 71 de los cinco pozos, y cinco de esas seis son de este
+ * pozo), así que por una vez la lista no la recortó el libro de cambios sino la decisión editorial.
+ * Estas dos van juntas en UNA fila porque son UN hueco del mismo tema y no dos cambios: el hub
+ * cubría la franquicia postal y la del viajero, y no cubría ni quién puede usar la primera ni qué
+ * pasa con la plata en la mano en el mismo cruce.
+ *
+ * El tema es el suyo por la regla de siempre —a donde ya vive su vecina más cercana— y acá la
+ * vecina es literal en los dos casos: `/importar-a-uruguay-siendo-extranjero` contesta quién puede
+ * usar la franquicia que `/franquicia-aduana-uruguay` explica (el Decreto 50/026 exige documento
+ * nacional uruguayo), y `/declarar-dinero-en-efectivo-uruguay` es el otro mostrador del cruce que
+ * `/franquicia-viajero-uruguay` ya cubre de un lado. La primera es además la más huérfana de las
+ * siete en proporción a su tamaño: 1.224 líneas y, fuera del menú, un solo enlace de contenido
+ * entrante (`utils/aduanaFaq.ts`), contra los tres que ya recibe la de efectivo.
+ *
+ * De las otras tres libres de este pozo: `/cambiar-de-mutualista-uruguay` no entró porque el sitio
+ * no tiene tema de salud y su vecindario natural —las fichas `/mutualista/<institucion>` nacidas el
+ * 2026-10-25— está dentro de su propia ventana de medición abierta, así que elegirle un tema hoy es
+ * elegirlo sin el dato que falta; `/tendencias-uruguay` y `/temas-de-dinero-reddit` son radares del
+ * propio sitio y la decisión pendiente es si son páginas de lectura, no a qué tema van.
+ *
+ * 4 → 0 el 2026-10-28: el pozo queda pagado, y las cuatro entraron el mismo día porque las cuatro
+ * están libres de toda ventana de medición abierta (`npm run seo_debt`: las únicas 4 libres de las
+ * 65 de los cinco pozos son exactamente estas). Las dos decisiones que quedaban pendientes se
+ * resolvieron, y las dos en el mismo sentido:
+ *
+ * - Los dos radares SÍ son páginas de lectura. Lo que mira el sitio no es el sitio: ninguna de las
+ *   dos publica una cifra propia del tráfico de cambio-uruguay.com (eso es `/estadisticas-del-sitio`
+ *   y `/paginas-mas-visitadas`, que por eso están arriba en `FUERA_DE_TEMA_POR_DISENO`); publican
+ *   qué BUSCA y qué PREGUNTA el país sobre plata, que es materia del tema igual que `/noticias` o
+ *   `/economia-uruguay`. Las dos van a `economia-y-mercado-uruguay`, y en el caso de
+ *   `/temas-de-dinero-reddit` el tema no hubo que deducirlo: su propio botón de volver apunta a
+ *   `/economia-uruguay`, que es una página del hub, y su etiqueta de OG ya dice «ECONOMÍA».
+ * - `/cambiar-de-mutualista-uruguay` no necesitaba un tema de salud. La regla de siempre —a donde
+ *   ya vive su vecina más cercana— alcanzaba: la mitad de la página es el tope de la devolución de
+ *   FONASA, y `/devolucion-fonasa-uruguay` más la guía `me-quede-sin-trabajo-mutualista-fonasa-uruguay`
+ *   viven las dos en `sueldo-trabajo-e-impuestos-uruguay`, porque el aporte que se devuelve sale
+ *   del sueldo. Un tema nuevo para una sola página habría sido un hub de un miembro.
+ *
+ * `/comparar-plataformas-dolar-uruguay` era el único caso sin discusión y sólo esperaba la fecha:
+ * su fila de septiembre cumplió 29 días el 2026-10-27.
+ *
  * Para bajar este número: una entrada en `resources` del tema que corresponda
  * (`utils/guideHubs.ts`), con etiqueta y una línea de descripción, y regenerar el índice
  * (`npx vitest run tests/unit/temaIndex.test.ts -u`). El vínculo queda recíproco solo.
+ *
+ * Si CI falla acá, agregaste una página raíz de lectura sin tema: no hay número que subir, elegile
+ * el tema donde ya vive su vecina más cercana (o declarala en `FUERA_DE_TEMA_POR_DISENO` si no es
+ * una página de lectura, que es una afirmación y se escribe con su motivo).
  */
 const DEUDA_SIN_TEMA = [
-  '/accidente-de-trabajo-uruguay',
-  '/apostillar-un-documento-uruguay',
-  '/cambiar-de-mutualista-uruguay',
-  '/cambios-de-precio-uruguay',
-  '/comparar-plataformas-dolar-uruguay',
-  '/cuanto-sale-la-partida-de-nacimiento-uruguay',
-  '/declarar-dinero-en-efectivo-uruguay',
-  '/factura-de-ose-uruguay',
-  '/factura-de-ute-uruguay',
-  '/garantia-de-alquiler-uruguay',
-  '/grabacion-sin-consentimiento-uruguay',
-  '/importar-a-uruguay-siendo-extranjero',
-  '/impuesto-temu-uruguay',
-  '/prestamo-hipotecario-uruguay',
-  '/que-pasa-si-no-pago-antel',
-  '/temas-de-dinero-reddit',
-  '/tendencias-uruguay',
-  '/trabajo-para-menores-de-edad-uruguay',
+  // POZO PAGADO el 2026-10-28: ninguna página raíz de lectura queda fuera de todos los temas.
+  //
+  // Esa marca literal es la que `classes/revenueplan/debtFree.ts::parseStringList` busca para
+  // distinguir «este pozo se terminó» de su propio modo de fallar, que es devolver `[]` cuando no
+  // entiende la forma de la lista. Es el segundo pozo que la usa, después de `DEUDA_SIN_MIGAS` el
+  // 27/10, y el comentario va DENTRO de la lista por lo mismo: el lector exige que el `]` abra su
+  // propia línea y prettier colapsa cualquier array que entre en 100 columnas salvo los que llevan
+  // un comentario.
 ]
 
+/**
+ * 18 → 17 el 2026-10-20: `/impuesto-temu-uruguay` entra a `importaciones-y-aduana-uruguay`, y es
+ * la ÚNICA de las dieciocho que hoy está libre en los dos pozos a la vez —sin tema y sin enlace de
+ * contexto—, así que las dos deudas de esa página se cierran en la misma corrida en vez de dejarla
+ * medio arreglada. De las otras dos rutas libres del día, `/factura-de-ose-uruguay` sigue esperando
+ * por lo que dice la nota de abajo (su racimo se libera el 21 y el 25/10) y la tercera no es de este
+ * pozo.
+ *
+ * El tema es el suyo sin discusión: el hub ya lleva la GUÍA homónima del catálogo
+ * (`guideSlugs: ['impuesto-temu-uruguay', …]`) y la página, que es la que calcula los cuatro casos,
+ * no figuraba en ningún `resources`. Las etiquetas se separan a propósito —la guía explica, la
+ * página calcula— porque son dos URLs sobre el mismo nombre popular.
+ *
+ * Y eso deja a la vista una deuda que este trinquete no mide y que hoy no se puede tocar: el
+ * título de la guía («Impuesto Temu: qué es y cuánto pagás») y el de la página («Impuesto Temu:
+ * cuánto pagás en Uruguay») se disputan la misma consulta. Re-angular la guía es un cambio de
+ * snippet y su ruta está reservada hasta el 2026-11-05 por
+ * `descripciones-de-las-guias-respuesta-primero-2`.
+ */
 /**
  * 19 → 18 el 2026-10-19: `/cuanto-me-tienen-que-pagar-uruguay` entra a
  * `sueldo-trabajo-e-impuestos-uruguay`, y es una de las DOS únicas de las diecinueve con la ruta
@@ -146,7 +206,176 @@ const DEUDA_SIN_TEMA = [
  *
  * Sólo puede bajar: subirlo es publicar una página huérfana.
  */
-const DEUDA_MAXIMA = 18
+/**
+ * 16 → 14 el 2026-10-22: las DOS rutas de este pozo que hoy están libres de toda ventana de medición
+ * abierta y que además no son de un racimo. Las otras dos libres siguen siendo
+ * `/factura-de-ose-uruguay` y `/que-pasa-si-no-pago-antel`, y siguen esperando por lo que dice la
+ * nota de más abajo: su tercera hermana, `/factura-de-ute-uruguay`, se libera el 25/10 y entrar antes
+ * partiría el racimo de «los tres servicios del hogar con la misma gramática» en filas del libro de
+ * cambios medidas por separado.
+ *
+ * `/cuanto-sale-la-partida-de-nacimiento-uruguay` entra a `tramites-y-documentos-uruguay` por la
+ * regla de siempre —a donde ya vive su vecina más cercana—, y acá la vecindad es casi literal: el hub
+ * ya publica «Cuánto sale la cédula» y «Cuánto sale el pasaporte», los otros dos documentos que se
+ * piden en la misma ventanilla de Identificación Civil, y le faltaba el tercero.
+ *
+ * `/garantia-de-alquiler-uruguay` entra a `alquiler-y-vivienda-uruguay`, que es el tema que la nota
+ * del 21/10 ya le había adjudicado dejándole pendiente «mirarla junto con las otras páginas de
+ * garantía antes de elegirle el `resources`». Mirado: el hub lleva la GUÍA homónima del catálogo
+ * (`garantias-de-alquiler-uruguay`, en plural) y además `alquilar-sin-garantia-uruguay` y
+ * `deposito-de-alquiler-uruguay`, o sea que lo que explica la garantía ya estaba y lo que faltaba es
+ * lo único que ninguna de las tres hace: el precio. Es la misma separación que esta lista declaró
+ * para `/impuesto-temu-uruguay` el 20/10 —la guía explica, la página calcula— y por eso la etiqueta
+ * dice «Cuánto cuesta la garantía» y no repite el nombre de la guía: son dos URLs sobre el mismo
+ * nombre y no se las manda a disputar la misma consulta.
+ *
+ * 17 → 16 el 2026-10-21: `/cambios-de-precio-uruguay` entra a `economia-y-mercado-uruguay`, y es
+ * una de las CUATRO rutas de este pozo que hoy están libres de toda ventana de medición abierta
+ * (`npm run seo_debt`). De esas cuatro es la única que además está libre en el pozo de al lado —sin
+ * enlace de contexto—, así que sus dos deudas se cierran en la misma corrida en vez de dejarla medio
+ * arreglada, que es el criterio que esta lista ya aplicó el 2026-10-20 con `/impuesto-temu-uruguay`.
+ *
+ * Las otras tres no entraron por lo que ya dice la nota de abajo: `/factura-de-ose-uruguay` y
+ * `/que-pasa-si-no-pago-antel` son dos de los «tres servicios del hogar con la misma gramática» y la
+ * tercera hermana, `/factura-de-ute-uruguay`, sigue reservada hasta el 25/10, así que entrar ahora
+ * partiría el racimo en filas del libro de cambios medidas por separado; y `/garantia-de-alquiler-uruguay`
+ * no es de este racimo pero tampoco es una página sola: su tema natural es el de alquiler, donde
+ * conviene mirarla junto con las otras páginas de garantía antes de elegirle el `resources`.
+ *
+ * El tema no se eligió por afinidad amplia sino por la regla de siempre —a donde ya vivía su vecina
+ * más cercana—: el hub ya lista las tres páginas `/evolucion-precio-*`, que miden el NIVEL de cada
+ * cohorte, y ésta es la que mide el mismo movimiento aviso por aviso. Es el vecino que le faltaba a
+ * esas tres, no una página nueva en un tema ajeno.
+ */
+/**
+ * 14 → 13 el 2026-10-23: `/apostillar-un-documento-uruguay` entra a `tramites-y-documentos-uruguay`.
+ * `npm run seo_debt` imprimió 7 rutas libres entre las 85 de los cinco pozos, cinco de ellas de
+ * este pozo, y ésta es una de las DOS que además está libre en el de al lado —sin enlace de
+ * contexto—, así que sus dos deudas se cierran en la misma corrida en vez de dejarla medio
+ * arreglada, que es el criterio que esta lista aplica desde `/impuesto-temu-uruguay` el 20/10.
+ *
+ * De esas dos se eligió ésta y no `/grabacion-sin-consentimiento-uruguay` por el ORIGEN, que es lo
+ * que decide cuando el destino está libre: las dos únicas páginas del sitio que hablan de grabar
+ * —`/denunciar-ruidos-molestos-uruguay` y `/derechos-consumidor-compras-online`— están reservadas
+ * hasta el 17/11 y el 24/10, y además ninguna de las dos plantea el problema de esa página (grabar
+ * el ruido como prueba no es que te hayan grabado a vos), así que el enlace sería relleno.
+ *
+ * El tema es el de siempre —a donde ya vive su vecina más cercana— y acá la vecina es el paso
+ * siguiente: el hub ya publica los cuatro documentos que se apostillan (antecedentes judiciales,
+ * cédula, pasaporte y la partida de nacimiento que entró el 22/10) y ninguno decía qué se hace
+ * cuando el papel tiene que valer afuera. El encabezado de `utils/apostille.ts` describe el mismo
+ * hueco al revés: hasta que nació esa página, la única mención del arancel en todo el sitio era
+ * una línea del FAQ de la partida.
+ *
+ * Las otras tres libres de este pozo no entraron: `/factura-de-ose-uruguay` y
+ * `/que-pasa-si-no-pago-antel` siguen esperando a su tercera hermana `/factura-de-ute-uruguay`
+ * (reservada hasta el 25/10) por lo que dice la nota del 19/10 sobre el racimo, y
+ * `/temas-de-dinero-reddit` es una página sobre lo que se pregunta en Reddit, no sobre un tema del
+ * sitio: elegirle un hub pide mirarla junto con `/estadisticas-reddit`, que está declarada fuera de
+ * tema por diseño.
+ */
+/**
+ * 10 → 7 el 2026-10-25: el racimo de los servicios del hogar entero, que es la única entrada de
+ * esta lista que estaba AGENDADA. Cinco corridas seguidas —el 19, 20, 21, 22, 23 y 24/10— lo
+ * dejaron pasar escribiendo la misma razón y la misma fecha: `/factura-de-ose-uruguay` y
+ * `/que-pasa-si-no-pago-antel` estaban libres, pero su tercera hermana `/factura-de-ute-uruguay`
+ * seguía reservada «hasta el 25/10» y entrar sin ella habría partido el racimo en filas del libro
+ * de cambios medidas por separado. Hoy `npm run seo_debt` la da libre junto con las otras dos, así
+ * que las tres entran en la misma fila y por fin se mide el racimo y no sus pedazos.
+ *
+ * Son un racimo porque ellas mismas lo declaran: el encabezado `OWN-WORLD` de
+ * `/factura-de-ose-uruguay` nombra a las otras dos —«los tres servicios del hogar con la misma
+ * gramática»— y su sección «Las otras dos facturas del hogar» las enlaza. Eso es justamente lo
+ * que hacía caro el agujero: las tres se enlazaban ENTRE ELLAS y ninguna figuraba en ningún
+ * `resources`, o sea tres páginas del tramo `contenido` (las tres ya valuadas así en
+ * `classes/revenueplan/value.ts`, 8× el promedio del sitio) formando una isla a la que el bloque
+ * «Más sobre este tema» no llega desde ninguna página del sitio. Un racimo cerrado sobre sí mismo
+ * no se arregla solo: cuantas más puertas tiene hacia adentro, menos se nota que no tiene ninguna
+ * desde afuera.
+ *
+ * Las tres al MISMO tema, `finanzas-personales-y-jubilacion-uruguay`, por la regla de siempre —a
+ * donde ya vive su vecina más cercana—: el hub ya publicaba todo gasto recurrente del hogar —la
+ * guía `precio-supergas-garrafa-uruguay`, `/precios-de-supermercado-uruguay`,
+ * `/tickets-mutualistas-uruguay`, `/meal-prep-uruguay`— y además las tres páginas que reparten un
+ * sueldo entre esos gastos (`/plan-de-vida-uruguay`, `/vivir-con-25000-pesos-uruguay`,
+ * `/vivir-con-el-salario-minimo-uruguay`), y le faltaban exactamente los tres gastos que llegan
+ * como FACTURA. No fueron a `alquiler-y-vivienda-uruguay`, que es el otro candidato y tiene
+ * `/cortes-de-luz-por-barrio-uruguay`: ese hub trata la operación de alquilar —garantía, depósito,
+ * rescisión, desalojo, portales— y los cortes por barrio están ahí como señal para elegir dónde
+ * vivir, no como una factura. Estas tres las lee igual quien alquila y quien es propietario.
+ *
+ * Sólo puede bajar: subirlo es publicar una página huérfana.
+ */
+/**
+ * 13 → 11 el 2026-10-24: `/accidente-de-trabajo-uruguay` y `/trabajo-para-menores-de-edad-uruguay`
+ * entran a `sueldo-trabajo-e-impuestos-uruguay`. Son DOS de las siete rutas de este pozo libres hoy
+ * de toda ventana de medición abierta, y las dos únicas que además no arrastran la salvedad que las
+ * otras cinco arrastran: tres son el racimo de los servicios del hogar que todavía espera a
+ * `/factura-de-ute-uruguay` (se libera el 25/10), `/temas-de-dinero-reddit` sigue pendiente de
+ * mirarse junto con `/estadisticas-reddit` por lo que dice la nota del 23/10, y
+ * `/grabacion-sin-consentimiento-uruguay` no tiene hoy una página que la necesite en prosa, que es
+ * la condición del pozo de al lado.
+ *
+ * Entran JUNTAS y al mismo tema porque son el mismo tema: el hub ya publica `/seguro-de-paro-uruguay`,
+ * `/indemnizacion-por-despido-uruguay`, `/denunciar-trabajo-en-negro-uruguay` y la guía
+ * `me-certifique-subsidio-por-enfermedad-uruguay`, o sea todo lo que pasa cuando el trabajo se
+ * interrumpe, y le faltaban las dos puntas: la del accidente (el BSE, que es por dónde se cobra esa
+ * interrupción) y la del que recién entra al mercado. Ninguna de las dos estaba en ningún
+ * `resources`, así que el bloque «Más sobre este tema» no las enlazaba desde ninguna página.
+ *
+ * Sólo puede bajar: subirlo es publicar una página huérfana.
+ */
+/**
+ * 11 → 10 el 2026-10-24 (segunda corrida del día): `/grabacion-sin-consentimiento-uruguay` entra a
+ * `derechos-y-reclamos-uruguay`. La nota de arriba, de esta misma mañana, la había dejado afuera
+ * diciendo que «no tiene hoy una página que la necesite en prosa, que es la condición del pozo de
+ * al lado», y la del 23/10 explicaba por qué: las dos únicas páginas del sitio que hablan de GRABAR
+ * están reservadas y además ninguna plantea su problema.
+ *
+ * Las dos notas buscaban el origen por el tema del texto —quién habla de grabar— y por eso no
+ * miraban el único candidato que importaba: la página a la que ESTA página ya enlaza. El chip
+ * «¿A quién le reclamo?» de su bloque «Seguí leyendo» apunta a `/a-quien-le-reclamo-uruguay`, de
+ * ida sola, que es exactamente el caso de `/pension-alimenticia-uruguay` (13/10),
+ * `/donde-conseguir-monedas-uruguay` (18/10) y `/cambios-de-precio-uruguay` (21/10). Esa ruta no
+ * tiene ninguna fila en el libro de cambios —ya fue el origen libre del enlace del 21/10 a
+ * `/compensacion-por-corte-de-luz-uruguay`—, así que las dos deudas de esta página se cierran en la
+ * misma corrida.
+ *
+ * El tema es el de siempre —a donde ya vive su vecina más cercana—: el hub ya publica
+ * `/a-quien-le-reclamo-uruguay`, `/defensa-al-consumidor-uruguay`, `/estafas-uruguay` y
+ * `/denunciar-ruidos-molestos-uruguay`, o sea el mapa de ventanillas y los conflictos que no son de
+ * consumo, y le faltaba el único de esa familia donde del otro lado no hay una empresa.
+ *
+ * Sólo puede bajar: subirlo es publicar una página huérfana.
+ */
+/**
+ * 5 → 4 el 2026-10-27: `/prestamo-hipotecario-uruguay` entra a `comprar-vivienda-uruguay`. Su fila
+ * `prestamo-hipotecario` es del 2026-09-28, así que hoy cumple 29 días y sale de la ventana que
+ * `experiments_overlap.test.ts` protege (el solape es `|Δfecha| ≤ 28`): es la única de las cinco
+ * que se libera hoy, y la única libre que además tiene un tema evidente. De las otras tres libres,
+ * las tres siguen esperando por lo que la nota del 26/10 ya razonó —`/cambiar-de-mutualista-uruguay`
+ * por falta de un tema de salud, y los dos radares del propio sitio porque la decisión pendiente es
+ * si son páginas de lectura—, y `/comparar-plataformas-dolar-uruguay` se libera mañana.
+ *
+ * El tema es el suyo sin discusión y por una vez no hay que deducirlo del vecindario: el `seoTitle`
+ * del hub ES el nombre de la página («Comprar vivienda en Uruguay: crédito hipotecario, BHU y
+ * escrituración») y el hub ya lleva la guía `credito-hipotecario-uruguay`, que explica el crédito,
+ * más `bhu-como-funciona`. Lo único que no hacía ninguna de las dos es lo que esta página contesta:
+ * en qué MONEDA queda la cuota (UI o UR, nunca dólares). De ahí la etiqueta, que no repite el
+ * nombre de la guía — misma separación que esta lista ya declaró para `/impuesto-temu-uruguay` y
+ * para `/garantia-de-alquiler-uruguay`: dos URLs sobre el mismo nombre no se mandan a disputar la
+ * misma consulta.
+ *
+ * Y el presupuesto baja de 10 a 4, o sea hasta la deuda real. Los 10 venían de cuando la lista no
+ * existía y el trinquete era sólo un número; con la lista declarada, seis de holgura no son margen
+ * inofensivo: absorben seis páginas nuevas publicadas huérfanas sin que nada se ponga rojo, que es
+ * el único accidente que este archivo existe para atajar. Es el mismo argumento que `seoContract`
+ * escribió al bajar `canonical` de 23 a 0.
+ *
+ * Y de 4 a 0 el 2026-10-28, con la lista vacía: el trinquete pasó de contar deuda a ser un
+ * contrato. No queda número que subir.
+ */
+const DEUDA_MAXIMA = 0
 
 describe('ninguna página de lectura queda fuera de todos los temas', () => {
   const sinTema = rootRoutes.filter(route => temasDeRuta(route).length === 0)
@@ -212,28 +441,17 @@ describe('ninguna página de lectura queda fuera de todos los temas', () => {
  * (`npx vitest run tests/unit/temaIndex.test.ts -u`). El vínculo queda recíproco solo.
  */
 const GUIAS_SIN_TEMA = [
-  'ahorrar-en-dolares-o-pesos',
-  'billetes-y-monedas-de-uruguay',
   'cajeros-automaticos-uruguay-turistas',
-  'cambiar-dolares-aeropuerto-carrasco',
   'cambiar-monedas-poco-comunes-uruguay',
-  'cambiar-pesos-argentinos-uruguay',
-  'comprar-dolares-online-uruguay',
   'criptomonedas-regulacion-impuestos-uruguay',
   'devolucion-iva-turistas-uruguay',
-  'documentos-para-cambiar-dolares-uruguay',
   'dolar-cripto-usdt-uruguay',
   'dolares-deteriorados-billetes-rechazados-uruguay',
-  'dolares-para-viajar',
-  'euros-reales-donde-cambiar',
   'horarios-casas-de-cambio-uruguay',
-  'moneda-de-uruguay',
-  'pagar-en-dolares-o-pesos-uruguay',
   'precio-del-oro-en-uruguay',
   'propinas-en-uruguay',
   'proyeccion-dolar-uruguay-se-puede-predecir',
   'tipo-de-cambio-fiscal-dgi-uruguay',
-  'ui-ur-bpc-diferencias',
 ]
 
 /**
@@ -257,7 +475,158 @@ const GUIAS_SIN_TEMA = [
  *
  * Sólo puede bajar: subirlo es publicar una guía huérfana.
  */
-const DEUDA_MAXIMA_GUIAS = 22
+/**
+ * 22 → 21 el 2026-10-21: `ui-ur-bpc-diferencias` entra a `economia-y-mercado-uruguay`, y es la única
+ * de las 22 con la ruta libre hoy (las otras 21 llevan fila abierta, de la del 29/10 a la del 13/11).
+ *
+ * El tema es el suyo sin inventar ningún padre, que es la regla que la nota de arriba dejó escrita el
+ * 15/10 al NO mover `propinas-en-uruguay`: el `intro` de este hub ya anuncia «los indicadores que
+ * mueven todo (UI, UR, BPC)», su `resources` ya lleva `/indicadores` y el conversor de UI, y entre sus
+ * guías ya estaba `unidad-indexada-explicada`. Esta guía es la que compara las tres, así que el hueco
+ * que tapa está adentro del tema y no al lado.
+ *
+ * Sólo puede bajar: subirlo es publicar una guía huérfana.
+ */
+/**
+ * 21 → 19 el 2026-11-01: `comprar-dolares-online-uruguay` y `billetes-y-monedas-de-uruguay` entran a
+ * `dolar-y-casas-de-cambio-uruguay`, y son las DOS únicas de las 21 con la ruta libre hoy
+ * (`npm run seo_debt`: 3 libres entre las 28 de los cinco pozos, y la tercera no es de este pozo;
+ * las otras 19 llevan fila abierta, de la del 2026-11-02 a la del 2026-11-30).
+ *
+ * Ninguna de las dos inventa un padre, que es la regla que la nota del 15/10 dejó escrita al NO
+ * mover `propinas-en-uruguay`. La de online es la más literal de todo el racimo: el hub ya lleva
+ * `dolar-ebrou` y `dolar-transferencia` entre sus `terms` y la guía `billete-cable-transferencia`
+ * entre las suyas, o sea que el tema ya explicaba la cotización por transferencia y nunca decía
+ * dónde se opera. La de billetes y monedas entra al lado de `/donde-conseguir-monedas-uruguay`, que
+ * ya es `resources` de este hub, y del término `peso-uruguayo`, que ya es uno de sus `terms`: sus
+ * tres `related` escritos a mano apuntan justamente ahí (`/glosario/peso-uruguayo` y
+ * `/cotizacion/dolar`).
+ *
+ * Y la de online es además la peor huérfana de las 21, porque le faltaban las DOS mitades a la vez:
+ * `guideNextSteps` (`utils/guideReading.ts`) arma «seguí leyendo» con `guide.related`, después con
+ * los `links` de las secciones y recién después con los `resources` del hub, y esta guía no tiene
+ * ninguna de las tres cosas — sin tema, su página terminaba sin un solo enlace de salida. Entrar al
+ * tema le da el bloque de vecinos Y los tres próximos pasos de un saque.
+ *
+ * 19 → 18 el 2026-11-02: `documentos-para-cambiar-dolares-uruguay` entra a
+ * `dolar-y-casas-de-cambio-uruguay`, y era la ÚNICA de las diecinueve con la ruta libre de toda
+ * ventana de medición abierta (`npm run seo_debt`: 3 de 26 libres, y de esas tres sólo ésta es una
+ * guía). Las otras dieciocho siguen reservadas, la primera hasta el 2026-11-03.
+ *
+ * El tema NO es inventado, que es la regla que dejó a `propinas-en-uruguay` afuera dos veces: el
+ * hub ya reúne la mecánica de ir al mostrador —`comprar-dolares-mejor-precio`,
+ * `casas-de-cambio-vs-bancos`, `evitar-comisiones-cambio`— y esta guía contesta qué hay que llevar
+ * a ese mismo mostrador (sin documento por debajo del orden de USD 3.000 diarios, cédula o
+ * pasaporte por encima, declaración en aduana desde USD 10.000). Quien está comparando dónde
+ * cambiar la necesita antes de salir de casa, y sus vecinos del bloque le contestan algo.
+ *
+ * Sólo puede bajar: subirlo es publicar una guía huérfana.
+ */
+/**
+ * 18 → 17 el 2026-11-03: `cambiar-dolares-aeropuerto-carrasco`, que era la ÚNICA de las dieciocho
+ * con la ruta libre de toda ventana de medición abierta (`npm run seo_debt`: 1 de 24 libres, y es
+ * ésta). Las otras diecisiete siguen reservadas, la primera hasta el 2026-11-04.
+ *
+ * El tema no es inventado, que es la regla que dejó a `propinas-en-uruguay` afuera dos veces:
+ * `dolar-y-casas-de-cambio-uruguay` ya reúne dónde conseguir el mejor precio
+ * (`comprar-dolares-mejor-precio`, `casas-de-cambio-vs-bancos`, `evitar-comisiones-cambio`) y esta
+ * guía contesta esa misma pregunta en el punto de llegada: en Carrasco la cotización suele ser peor
+ * que en el centro, así que conviene cambiar sólo lo justo para el traslado. Su propio cuerpo manda
+ * a una casa de cambio del centro, que es lo que los vecinos del bloque le contestan.
+ *
+ * Sólo puede bajar: subirlo es publicar una guía huérfana.
+ */
+/**
+ * 17 → 14 el 2026-11-04: `moneda-de-uruguay`, `pagar-en-dolares-o-pesos-uruguay` y
+ * `dolares-para-viajar` entran a `dolar-y-casas-de-cambio-uruguay`, y son las TRES únicas de las
+ * diecisiete con la ruta libre de toda ventana de medición abierta (`npm run seo_debt`: 3 libres de
+ * 26, y las tres son de este pozo). Las otras catorce siguen reservadas, la primera hasta el
+ * 2026-11-05.
+ *
+ * Ninguna de las tres inventa un padre, que es la regla que dejó a `propinas-en-uruguay` afuera dos
+ * veces, y las tres caen del mismo lado de la línea por el mismo motivo: su consejo operativo ES la
+ * tesis del hub —cambiar en una casa de cambio comparando dónde dan más— y no un tema de al lado.
+ *
+ * - `moneda-de-uruguay` es la más literal de las tres: el término `peso-uruguayo` ya es uno de los
+ *   `terms` del hub, `billetes-y-monedas-de-uruguay` ya es una de sus guías (entró el 2026-11-01) y
+ *   `/donde-conseguir-monedas-uruguay` ya es uno de sus `resources`. Sus CUATRO `related` escritos a
+ *   mano caen todos adentro de este tema —`/glosario/peso-uruguayo`,
+ *   `/guias/billetes-y-monedas-de-uruguay` y `/cotizacion/dolar` ya eran miembros, y el cuarto es
+ *   `pagar-en-dolares-o-pesos-uruguay`, que entra hoy con ella—, o sea que el vínculo que el bloque
+ *   le da es el que la guía ya declaraba a mano. Y su sección «En Uruguay no hay dólar blue» cae al
+ *   lado del término `dolar-blue` y del recurso `/dolar-blue-hoy`, que el hub ya lleva.
+ * - `pagar-en-dolares-o-pesos-uruguay` contesta, del lado del mostrador del comercio, la misma
+ *   pregunta que `evitar-comisiones-cambio` y `cambiar-dolares-aeropuerto-carrasco` contestan del
+ *   lado de la casa de cambio: el comercio turístico aplica su propio tipo de cambio y conviene
+ *   cambiar el efectivo donde paguen mejor. Quien llega preguntando si puede pagar en dólares
+ *   recibe del bloque exactamente el vecino que necesita.
+ * - `dolares-para-viajar` es la peor huérfana de las diecisiete, por el motivo que el 2026-11-01
+ *   hacía peor a la de online: no tiene `related` ni `links` de sección, así que
+ *   `guideNextSteps` (`utils/guideReading.ts`) no tenía ninguna de sus tres fuentes y la página
+ *   terminaba sin UN SOLO enlace de salida. El hub ya lleva `/llevar-dolares-o-reales-a-brasil`
+ *   entre sus `resources` y la guía del aeropuerto entre las suyas, que es el consejo que esta guía
+ *   da en su tercera sección («el peor lugar para cambiar suele ser el aeropuerto»).
+ *
+ * Sólo puede bajar: subirlo es publicar una guía huérfana.
+ */
+/**
+ * 14 → 13 el 2026-11-05: `euros-reales-donde-cambiar` entra a `dolar-y-casas-de-cambio-uruguay`, y
+ * era la ÚNICA de las catorce con la ruta libre de toda ventana de medición abierta
+ * (`npm run seo_debt`: 1 libre de 23, y es ésta). Las otras trece siguen reservadas, la primera
+ * hasta el 2026-11-06.
+ *
+ * Acá no hay que argumentar que el padre no es inventado, que es la regla que dejó a
+ * `propinas-en-uruguay` afuera dos veces: **el `intro` del hub ya la nombra**. Dice, textual, «si
+ * querés comprar o vender dólares, euros o reales sin dejar plata en el camino, empezá por acá», y
+ * su recurso `/pizarra` se describe como «Dólar, euro, real y peso argentino». O sea que el tema
+ * venía prometiendo el euro y el real desde su primera línea y la única guía del catálogo que los
+ * explica no era miembro — el hueco estaba adentro del tema, no al lado, igual que con
+ * `ui-ur-bpc-diferencias` el 2026-10-21.
+ *
+ * Y era de las peores huérfanas por la razón del 2026-11-01 y del 2026-11-04: sin `related` ni
+ * `links` de sección, `guideNextSteps` (`utils/guideReading.ts`) no tenía ninguna de sus tres
+ * fuentes y la página cerraba sin un solo enlace de salida, con las cuatro secciones diciéndole al
+ * lector que compare. Hoy la última sección enlaza `/cotizacion/euro` y `/cotizacion/real` donde la
+ * prosa lo pide, y `related` agrega la pizarra.
+ *
+ * Sólo puede bajar: subirlo es publicar una guía huérfana.
+ */
+/**
+ * 13 → 11 el 2026-11-06: `cambiar-pesos-argentinos-uruguay` y `ahorrar-en-dolares-o-pesos`, que son
+ * las DOS únicas de las trece con la ruta libre de toda ventana de medición abierta
+ * (`npm run seo_debt`: 2 libres de 22, y las dos son de este pozo). Las otras once siguen
+ * reservadas, la primera hasta el 2026-11-07.
+ *
+ * Van a temas DISTINTOS y por eso declaran dos filas del libro de cambios y no una: no son un hueco
+ * del mismo hub, como sí lo eran las tres guías de viaje del 2026-11-04.
+ *
+ * Y ninguna de las dos inventa un padre, que es la regla que dejó a `propinas-en-uruguay` afuera dos
+ * veces:
+ *
+ * - `cambiar-pesos-argentinos-uruguay` → `dolar-y-casas-de-cambio-uruguay`, y acá no hay que
+ *   argumentar nada: `peso-argentino` ya es uno de los `terms` del hub, su recurso `/pizarra` se
+ *   describe textual como «Dólar, euro, real y peso argentino», `/dolar-blue-hoy` ya es otro de sus
+ *   recursos y `/cotizaciones-de-la-region` abre por Argentina. O sea que el tema venía nombrando
+ *   esta moneda en tres lugares y la única guía del catálogo que explica cómo cambiarla no era
+ *   miembro — el mismo hueco adentro del tema que `euros-reales-donde-cambiar` el 2026-11-05.
+ * - `ahorrar-en-dolares-o-pesos` → `ahorrar-e-invertir-uruguay`, cuyo `intro` ya promete «la
+ *   decisión de ahorrar en dólares» y cuyos recursos son los TRES datos que esta guía le pide mirar
+ *   al lector sin enlazar ninguno: la tasa del plazo fijo (`/herramientas/calculadora-plazo-fijo`),
+ *   la inflación y la UI (`/indicadores`) y dónde se opera (`/inversiones-uruguay`). El hub ya lleva
+ *   `conviene-ahorrar-en-dolares-uruguay`, que contesta «¿conviene?»; ésta contesta «¿en qué moneda,
+ *   según en qué vas a gastar?», que es la separación que esta lista declaró para
+ *   `/impuesto-temu-uruguay` el 20/10 y por eso las etiquetas no se repiten.
+ *
+ * Las dos eran además de las peores huérfanas por la razón del 2026-11-01, del 04 y del 05: sin
+ * `related` ni `links` de sección, `guideNextSteps` (`utils/guideReading.ts`) no tenía ninguna de
+ * sus tres fuentes y las dos páginas cerraban sin UN SOLO enlace de salida, con la última sección de
+ * cada una diciéndole al lector que compare. Hoy cada una enlaza donde su prosa lo pide —la del peso
+ * argentino `/cotizacion/peso-argentino`, la del ahorro la calculadora de plazo fijo, los
+ * indicadores, la guía de la UI y `/comparar`— y `related` agrega la pizarra y dónde invertir.
+ *
+ * Sólo puede bajar: subirlo es publicar una guía huérfana.
+ */
+const DEUDA_MAXIMA_GUIAS = 11
 
 describe('ninguna guía queda fuera de todos los temas', () => {
   const sinTema = guides

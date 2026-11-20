@@ -97,7 +97,7 @@ const MAX_TRUNK_L: Partial<Record<PublicCarBodyType, number>> = {
  * Lo que la ficha dice y no puede ser: un hatchback de 7 plazas, o un baúl de 985 litros en un auto
  * chico (es la cifra con los asientos rebatidos). Se trata como que la ficha no lo dice.
  */
-function sensibleModel(model: PublicCarAdvisorModel): PublicCarAdvisorModel {
+export function sensibleModel(model: PublicCarAdvisorModel): PublicCarAdvisorModel {
   const small = !!model.body && FIVE_SEAT_BODIES.includes(model.body)
   const seats = model.seats
   const badSeats = seats !== null && (seats < 2 || (seats > 5 && small))

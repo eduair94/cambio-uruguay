@@ -210,6 +210,24 @@ describe('el snippet de la página dice lo mismo que la tabla', () => {
     expect(description).toContain(`${evictionStep('comun', 'desalojo')?.days} días`)
   })
 
+  // El título es un literal igual que la descripción, y publica los dos plazos para desocupar. Lo
+  // mide acá y no en `seoTitleBudget.test.ts` por lo mismo que la descripción: ese trinquete mide el
+  // LARGO, y lo que puede separarse del catálogo sin que nada avise es la CIFRA.
+  const title =
+    PAGE.match(/const title = '((?:[^'\\]|\\.)*)'/)?.[1] ??
+    (() => {
+      throw new Error('no se pudo leer el título de la página')
+    })()
+
+  it('el título entra en el SERP con la marca puesta', () => {
+    expect(`${title} | Cambio Uruguay`.length).toBeLessThanOrEqual(60)
+  })
+
+  it('el título publica los dos plazos para desocupar, no la palabra «plazos»', () => {
+    expect(title).toContain(String(evictionStep('sinGarantia', 'desalojo')?.days))
+    expect(title).toContain(String(evictionStep('comun', 'desalojo')?.days))
+  })
+
   it('publica el 40 % y no el 60 %', () => {
     expect(description).toContain('40 %')
     expect(description).not.toContain('60 %')

@@ -51,6 +51,7 @@
           :key="video.videoId"
           :video="video"
           :hide-topic="topic.slug"
+          anchor
         />
       </div>
     </section>
@@ -133,12 +134,15 @@
 <script setup lang="ts">
 import type { VideosSnapshotDoc } from '~/server/models/VideosSnapshot'
 import { buildVideoPageSchema, SITE_URL } from '~/utils/videoSchema'
-import { getVideoTopicPage, VIDEO_TOPIC_PAGES, videoTopicSlugs } from '~/utils/videoTopics'
+import { getVideoTopicPage, VIDEO_TOPIC_PAGES } from '~/utils/videoTopics'
 
 // Un slug que no está en el catálogo es 404 de verdad, no una página vacía. OJO: `validate` se
 // extrae en build, así que editar la lista exige reiniciar el dev server.
 definePageMeta({
-  validate: route => videoTopicSlugs().includes(String(route.params.tema ?? '')),
+  validate: async route => {
+    const catalogue = await import('~/utils/videoTopics')
+    return catalogue.videoTopicSlugs().includes(String(route.params.tema ?? ''))
+  },
 })
 
 /** Mirrors `MAX_AGE_DAYS` in classes/videos/refresh.ts; see the note on the hub page. */
@@ -252,7 +256,9 @@ useHead(() => ({
   letter-spacing: 0.08em;
   font-size: 0.75rem;
   font-weight: 700;
-  color: rgb(var(--v-theme-primary));
+  /* Tinta de enlace y no `primary`: el azul de relleno da 4:1 sobre el fondo oscuro, corto para
+     un texto de 12 px. */
+  color: rgb(var(--v-theme-link));
   margin-bottom: 0.35rem;
 }
 
@@ -268,13 +274,13 @@ useHead(() => ({
 
 .video-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
   gap: 1.25rem;
 }
 
 .channel-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
   gap: 1rem;
 }
 

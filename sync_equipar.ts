@@ -20,6 +20,9 @@ import { fetchUsdUyuRate } from "./classes/chairs/catalog";
 import { buildBaskets } from "./classes/equipar/basket";
 import { buildEquiparCatalog, uncoveredCategories } from "./classes/equipar/catalog";
 import { buildEquiparListings } from "./classes/equipar/listings";
+import { enrichEquiparRow, withoutEmptyBrand } from "./classes/equipar/specs/enrich";
+import { isEquiparFichaCategory } from "./classes/equipar/specs/fields";
+import { loadEquiparFichas } from "./classes/equipar/specs/store";
 import { equiparSpecs } from "./classes/equipar/classify";
 import { EQUIPAR_CATEGORIES } from "./classes/equipar/registry";
 import {
@@ -46,8 +49,12 @@ import { recordPricewatch } from "./classes/pricewatch/record";
  * catalogue. These two do — they are searched per term — so they take a budget, and the plan is
  * ordered by the registry, which puts the fridge, the washing machine and the mattress first. A run
  * that hits the ceiling loses the tea towels, never the line that decides the total.
+ *
+ * 72 since 2026-10-20: the sommier row brought its own two searches, and at 70 they would have come
+ * out of the tail (the daily run lost "ventilador de techo" and "estufa electrica", the hourly one
+ * "aspiradora"). Every category that was searched before is still searched, in the same run.
  */
-const ML_BUDGET = Number(process.env.EQUIPAR_ML_MAX_SCANS || 70);
+const ML_BUDGET = Number(process.env.EQUIPAR_ML_MAX_SCANS || 72);
 /**
  * Marketplace searches per run. Until 2026-10-11 the daily run read 26 of the plan's 47 and every
  * hourly run the same first 13, so the twelve categories from acolchado on had no Marketplace offer
@@ -179,7 +186,20 @@ async function main(): Promise<void> {
   // listing it did not read. Own try/catch: a failure here never costs the catalogue just saved.
   try {
     const built = buildEquiparListings({ listings, usdUyu });
-    const saved = await saveEquiparListings(built.rows, today);
+    // La ficha técnica de heladeras, lavarropas, televisores y aires viaja en cada reescritura (la
+    // misma función que usa sync_equipar_specs.ts); si las fichas no se pueden leer, las filas se
+    // guardan sin `ficha` en el $set y sin la marca vacía de las de ML: lo guardado sigue ahí.
+    let rows = built.rows;
+    try {
+      const fichas = await loadEquiparFichas(
+        rows.filter((row) => isEquiparFichaCategory(row.category)).map((row) => row.listingId)
+      );
+      rows = rows.map((row) => enrichEquiparRow(row, fichas.get(row.listingId)));
+    } catch (error) {
+      console.error("[equipar] no se pudieron leer las fichas técnicas; las filas se guardan sin ellas", error);
+      rows = rows.map(withoutEmptyBrand);
+    }
+    const saved = await saveEquiparListings(rows, today);
     console.log(
       `[equipar] avisos: ${saved.written} escritos, ${saved.pruned} podados, ${built.rejected} rechazados por la banda, ${built.suspect} sospechosos`
     );

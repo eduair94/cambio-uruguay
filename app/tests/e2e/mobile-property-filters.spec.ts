@@ -166,7 +166,11 @@ for (const width of [320, 390]) {
       await expect(budget).toHaveValue(directory.next)
       await budget.focus()
       await page.setViewportSize({ width, height: 360 })
-      await expectReachable(dialog.getByRole('button', { name: directory.apply, exact: true }))
+      const applyButton = dialog.getByRole('button', { name: directory.apply, exact: true })
+      // Navigation can finish before the catalogue: Vuetify intentionally disables pointer events
+      // while loading. Check geometry once that state ends, without weakening the hit-test.
+      await expect(applyButton).not.toHaveAttribute('aria-busy', 'true')
+      await expectReachable(applyButton)
       await expectReachable(dialog.getByRole('button', { name: 'Cerrar filtros', exact: true }))
       await page.keyboard.press('Tab')
       expect(await dialog.evaluate(element => element.contains(document.activeElement))).toBe(true)

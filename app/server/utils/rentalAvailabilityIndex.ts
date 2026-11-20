@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import type { PipelineStage } from 'mongoose'
-import { RENTAL_STALE_DAYS, rentalPublicStages } from '../../utils/rentals'
+import { RENTAL_COLLATION, RENTAL_STALE_DAYS, rentalPublicStages } from '../../utils/rentals'
 import {
   emptyRentalAvailability,
   rentalAvailabilityAdvertId,
@@ -119,7 +119,12 @@ export async function loadAvailabilityOwners(
         'offers.details.description': 1,
       },
     },
-  ] as PipelineStage[]).option({ maxTimeMS: 10_000 })
+  ] as PipelineStage[])
+    // The advert-id index (`rental_advert_id_es_v1`) is built with the site's collation, and Mongo
+    // only uses an index whose collation matches the query's. Without it this lookup read all
+    // ~90.000 properties (COLLSCAN, ~335 ms, measured 2026-11-08); with it, the six matching ones.
+    .collation(RENTAL_COLLATION)
+    .option({ maxTimeMS: 10_000 })
   return resolveAvailabilityOwners(rows, now)
 }
 

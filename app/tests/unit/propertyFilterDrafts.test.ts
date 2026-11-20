@@ -15,6 +15,7 @@ import * as availabilityMessages from '../../utils/rentalAvailabilityMessages'
 import * as rentals from '../../utils/rentals'
 import * as presentation from '../../utils/rentalPresentation'
 import * as saved from '../../utils/rentalSaved'
+import * as barrioOption from '../../utils/rentalBarrioOption'
 
 // Execute the real SFC setup, including watchers and event handlers, without a server.
 const imports: Record<string, unknown> = {
@@ -28,6 +29,7 @@ const imports: Record<string, unknown> = {
   '~/utils/rentals': rentals,
   '~/utils/rentalPresentation': presentation,
   '~/utils/rentalSaved': saved,
+  '~/utils/rentalBarrioOption': barrioOption,
 }
 const teardown: (() => void)[] = []
 afterEach(() => teardown.splice(0).forEach(stop => stop()))
@@ -118,6 +120,8 @@ async function setup(name: 'sales' | 'opportunities' | 'budget', mobile = true) 
     useRouter: () => ({ push }),
     useLocalePath: () => (path: string) => path,
     useAgencySelection: () => vue.ref(''),
+    // El scroll infinito del listado (composables/useInfiniteFeed.ts) no es lo que se prueba acá.
+    useInfiniteFeed: () => vue.reactive({ active: false, items: [] }),
     useRentalAvailability: () => ({
       withRevision: (value: unknown) => value,
       watchChanges: () => {},

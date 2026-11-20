@@ -6,6 +6,7 @@ import type { RentalOffer } from '~/utils/rentals'
 
 const props = defineProps<{ offer: RentalOffer; usdUyu: number }>()
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalPageMessages })
+const open = ref(false)
 const values = ref<Record<'expenses' | 'services' | 'entry' | 'budget', string | number>>({
   expenses: '',
   services: '',
@@ -49,8 +50,13 @@ watch(
 </script>
 
 <template>
-  <details class="rental-budget" data-testid="rental-budget">
-    <summary>{{ t('planner') }}</summary>
+  <details
+    class="rental-budget"
+    data-testid="rental-budget"
+    @toggle="open = ($event.target as HTMLDetailsElement).open"
+  >
+    <!-- Mide quién lo abre, no quién lo cierra: el clic se lee antes de que el panel cambie. -->
+    <summary :data-cta="open ? undefined : 'rental-budget-open'">{{ t('planner') }}</summary>
     <p>{{ t('plannerHint') }}</p>
     <div class="rental-budget__inputs">
       <label v-if="needsExpenses"

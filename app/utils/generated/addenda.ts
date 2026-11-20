@@ -107,6 +107,133 @@ export const PAGE_ADDENDA: readonly PageAddendum[] = Object.freeze([
       },
     ],
   },
+  {
+    route: '/preguntas-frecuentes-aduana-uruguay',
+    updatedAt: '2026-10-21',
+    items: [
+      {
+        question:
+          'Tengo que comprar solo un procesador para armar una PC, sin wifi ni bluetooth: ¿necesito algún permiso de URSEC o LATU además de la declaración y los impuestos?',
+        answer:
+          'No. El certificado de URSEC solo se exige para equipos que emiten radiofrecuencias usando el espectro de radiocomunicaciones (routers, cámaras, auriculares, etc.); un procesador de PC no emite nada por el aire, así que ni siquiera entra en esa categoría y no te pide ese trámite en VUCE. Te queda solamente la declaración y los tributos que ya se explican en la nota principal, sin paso adicional en URSEC.',
+        sources: [
+          {
+            title: 'gub.uy',
+            url: 'https://www.gub.uy/tramites/certificado-habilitar-ingreso-pais-equipos-radioelectricos-bajo-regimen-importacion-empresa',
+          },
+        ],
+      },
+      {
+        question:
+          'Si compro en Tiendamía, ¿el trámite de declaración ante Aduanas lo hace la plataforma, o yo igual tengo que registrar el envío como con cualquier otro courier?',
+        answer:
+          'Tiendamía está acreditada ante la Dirección Nacional de Aduanas desde el 22/04/2026 para operar la exoneración de IVA en los envíos postales que llegan desde Estados Unidos, así que es la plataforma la que gestionó esa habilitación directamente con Aduanas, no vos. Aun así, para que te aplique la exoneración la factura tiene que confirmar que el país de residencia fiscal de quien te vende es Estados Unidos, porque ese es el requisito de procedencia que pide la normativa.',
+        sources: [
+          {
+            title: 'aduanas.gub.uy',
+            url: 'https://www.aduanas.gub.uy/innovaportal/v/28435/1/innova.front/tiendamia-quedo-habilitada-para-hacer-uso-de-las-exoneraciones-impositivas-previstas-para-el-epi.html',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    route: '/declaracion-de-irpf-uruguay',
+    updatedAt: '2026-10-27',
+    items: [
+      {
+        question:
+          'Tengo dos trabajos y mis ingresos superan el límite: ¿qué tengo que marcar exactamente en el Formulario 3100 y a quién se lo entrego?',
+        answer:
+          'Si la suma de tus ingresos supera las 7 BPC mensuales, en el Rubro 4 del formulario marcás SI en el casillero de "Aplicación del Mínimo no Imponible ante este Empleador", para indicarle a ese empleador que te retenga sobre la totalidad del ingreso sin aplicar el mínimo no imponible mensualizado. El formulario se presenta en 2 vías (una queda para el empleador y otra para vos) ante el empleador o empleadores correspondientes. Si tus ingresos no llegan a las 7 BPC, dejás ese casillero vacío.',
+        sources: [
+          {
+            title: 'gub.uy',
+            url: 'https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/instructivo-formulario-3100',
+          },
+          {
+            title: 'memory.com.uy',
+            url: 'https://memory.com.uy/blog/obligaciones-fiscales/guia-formulario-3100-irpf-dgi/',
+          },
+        ],
+      },
+      {
+        question:
+          'Si tengo más de un empleador y me corresponde declarar, ¿cuándo y con qué formulario presento la declaración jurada?',
+        answer:
+          'Si tuviste multi-ingreso simultáneo (como tener más de un empleador) y no presentaste el Formulario 3100, quedás obligado a hacer la declaración jurada de IRPF. Se presenta con el Formulario 1102 si es individual, o con el 1103 si optás por núcleo familiar, dentro del plazo que va del 29 de junio al 31 de agosto de 2026.',
+        sources: [
+          {
+            title: 'elobservador.com.uy',
+            url: 'https://www.elobservador.com.uy/nacional/irpf-2026-quienes-estan-obligados-presentar-declaracion-jurada-la-dgi-y-cual-es-la-fecha-limite-n6044492',
+          },
+          {
+            title: 'elobservador.com.uy',
+            url: 'https://www.elobservador.com.uy/nacional/declaracion-jurada-irpf-2026-cuando-hay-que-presentarla-quienes-deben-hacerlo-y-como-realizar-el-tramite-n6047056',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    route: '/alquilar-sin-recibo-de-sueldo',
+    updatedAt: '2026-11-01',
+    items: [
+      {
+        question: 'Soy argentino, ¿qué tengo que hacer para conseguir la cédula uruguaya?',
+        answer:
+          'Tenés que iniciar la Residencia Permanente Mercosur en gub.uy (se puede empezar 100% online). Te piden documento de identidad vigente, foto carné, certificado de antecedentes penales del país donde viviste los últimos 5 años (si residiste ahí más de 6 meses) y el certificado de vacunas uruguayo vigente. El trámite cuesta 557,30 UI más 55,70 UI del certificado migratorio para la cédula en la DNIC, y mientras no te otorguen la residencia, cada vez que salís del país tenés que pagar un permiso de reingreso de 225,60 UI.',
+        sources: [
+          {
+            title: 'gub.uy',
+            url: 'https://www.gub.uy/tramites/residencia-legal-permanente-mercosur',
+          },
+        ],
+      },
+      {
+        question: '¿Qué pide MAPFRE puntualmente para la garantía si soy empleado en blanco?',
+        answer:
+          'Si sos dependiente, Mapfre te exige una antigüedad laboral mínima de 3 meses. Como comprobante de ingresos pide el último recibo de sueldo si tu ingreso es fijo, o los últimos 6 recibos si es variable. Además, si no llegás sola/o al monto exigido, podés sumar ingresos de hasta 5 personas.',
+        sources: [
+          { title: 'mapfre.com.uy', url: 'https://www.mapfre.com.uy/seguros-garantia-alquiler/' },
+        ],
+      },
+    ],
+  },
+  {
+    route: '/elecciones-bps-2026',
+    updatedAt: '2026-11-19',
+    items: [
+      {
+        question:
+          '¿El trámite para justificar se hace online o hay que ir en persona a alguna oficina de la Corte Electoral?',
+        answer:
+          'Podés elegir cualquiera de las dos vías. Online, entrando con tu usuario ID Uruguay (podés hacerlo vos o pedirle a otra persona que te ayude a justificar), a través del portal que la Corte Electoral habilita al día siguiente de la elección, sin límite de justificaciones por usuario. O presencial, yendo a cualquier Oficina Electoral Departamental u Oficina Inscriptora Delegada de la Corte Electoral.',
+        sources: [
+          {
+            title: 'gub.uy',
+            url: 'https://www.gub.uy/corte-electoral/comunicacion/publicaciones/justificacion-multas-voto-elecciones-del-bps-2026',
+          },
+        ],
+      },
+      {
+        question:
+          'Si justifico por vivir en otro departamento, ¿qué comprobante concreto me piden? ¿alcanza una factura de UTE, Antel u OSE?',
+        answer:
+          'La Corte Electoral no exige un papel único: pide "documentación fehaciente" que acredite tu domicilio real. En ediciones anteriores de esta misma causal, la propia Corte dio como ejemplos válidos la constancia de domicilio, constancia laboral, de estudios o de seccional policial, pero no menciona en ningún lado si una factura de servicios por sí sola cumple ese requisito, así que no hay confirmación oficial de que alcance. Tené en cuenta además que esta causal no aplica a mandatarios de empresa.',
+        sources: [
+          {
+            title: 'gub.uy',
+            url: 'https://www.gub.uy/corte-electoral/comunicacion/publicaciones/justificacion-multas-voto-elecciones-del-bps-2026',
+          },
+          {
+            title: 'montevideo.com.uy',
+            url: 'https://www.montevideo.com.uy/Noticias/Cuales-son-las-razones-para-justificar-no-votar-en-las-elecciones-de-BPS-y-como-se-hace-uc805293?plantilla=1385',
+          },
+        ],
+      },
+    ],
+  },
   // <<< generated-addenda >>>
 ])
 

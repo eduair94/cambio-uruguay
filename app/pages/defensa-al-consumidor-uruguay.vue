@@ -16,7 +16,14 @@
           <VIcon icon="mdi-scale-balance" color="primary" class="mr-3 mt-1" />
           <div>
             <div class="text-overline mb-2">Lo primero</div>
-            <p class="mb-0">{{ DEFENSE_THESIS }}</p>
+            <p class="mb-2">{{ DEFENSE_THESIS }}</p>
+            <p class="mb-0 text-body-2">
+              Y a ese juez podés ir vos: hasta 100 UR, un reclamo de consumo tramita ante el Juzgado
+              de Paz sin asistencia letrada obligatoria (Ley 18.507). Está en
+              <NuxtLink :to="localePath('/reclamar-sin-abogado-uruguay')" class="def-link">
+                reclamar sin abogado: hasta cuánto y por qué vía </NuxtLink
+              >, con el tope en pesos de hoy, el timbre del 1 % y los plazos de la audiencia.
+            </p>
           </div>
         </div>
       </VCard>
@@ -209,6 +216,9 @@
       </VCard>
     </section>
 
+    <!-- La unidad intermedia, antes de las preguntas: mismo corte que FaqSection (ver
+         docs/seo/adsense-growth-loop.md, 31/10/2026). Sólo dibuja en densidad normal. -->
+    <AdSlot placement="in-article" class="mb-6" />
     <!-- FAQ -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-4">Preguntas frecuentes</h2>
@@ -231,6 +241,9 @@
       <div class="d-flex flex-wrap ga-2">
         <VBtn :to="localePath('/derechos-consumidor-compras-online')" variant="tonal" size="small">
           Comprar online: tus derechos
+        </VBtn>
+        <VBtn :to="localePath('/reclamar-sin-abogado-uruguay')" variant="tonal" size="small">
+          Reclamar sin abogado
         </VBtn>
         <VBtn :to="localePath('/a-quien-le-reclamo-uruguay')" variant="tonal" size="small">
           A quién le reclamo
@@ -362,6 +375,15 @@ useHead(() => ({
 </script>
 
 <style scoped>
+.def-link {
+  color: rgb(var(--v-theme-link));
+  font-weight: 600;
+  text-decoration: none;
+}
+.def-link:hover {
+  text-decoration: underline;
+}
+
 .def-page {
   max-width: 1180px;
 }

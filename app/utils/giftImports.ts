@@ -16,7 +16,10 @@
 //   - Decreto 96/990 art. 27 (qué cosmética NO está gravada por IMESI)
 //     https://www.impo.com.uy/bases/decretos/96-1990
 //   - Resolución MGAP 1.720/021 (nómina de lo que no puede ingresar por correo)
-//   - Decreto 18/020 art. 19 (el MSP no autoriza el ingreso por particulares)
+//   - MSP, "¿Puedo ingresar al país productos de salud desde el exterior?" (el MSP no autoriza el
+//     ingreso por particulares; la regla es del MSP, no de un decreto) — releída el 2026-10-31
+//     https://www.gub.uy/ministerio-salud-publica/Puedo-ingresar-al-pa%C3%ADs-productos-de-salud-desde-el-exterior
+//   - Decreto 18/020 art. 19 (sólo la excepción: el medicamento no registrado con receta específica)
 //   - Resoluciones URSEC 275/021 y 297/021 (Wi-Fi y Bluetooth no requieren intervención)
 //   - DNA, preguntas frecuentes EPI https://www.aduanas.gub.uy/innovaportal/v/28231/1/innova.front/
 //   - DNA, productos que requieren permisos o no pueden ingresar
@@ -498,6 +501,12 @@ export const GIFT_SOURCES: GiftSource[] = [
     label:
       'Resolución 1.720/021 — nómina de productos que no pueden ingresar por encomienda o correo: semillas, plantas, frutas y verduras frescas, animales vivos, alimentos de origen animal, fertilizantes y plaguicidas',
     url: 'https://www.gub.uy/ministerio-ganaderia-agricultura-pesca/comunicacion/publicaciones/nomina-productos-autorizados-ingresar-pais',
+  },
+  {
+    org: 'MSP',
+    label:
+      '¿Puedo ingresar al país productos de salud desde el exterior? — «el MSP no autoriza el ingreso al país de productos de salud del exterior por particulares», y nombra entre ellos a medicamentos, suplementos y cosméticos',
+    url: 'https://www.gub.uy/ministerio-salud-publica/Puedo-ingresar-al-pa%C3%ADs-productos-de-salud-desde-el-exterior',
   },
   {
     org: 'MSP',

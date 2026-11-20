@@ -4,12 +4,14 @@ import {
   CONSENT_MAX_AGE,
   parseConsent,
   consentSignals,
+  insertStoredConsent,
   type ConsentDecision,
 } from '~/utils/consent'
 
 // Single source of truth for the user's cookie-consent decision. Backed by a
-// first-party cookie (cu_consent). Applies Google Consent Mode v2 updates to
-// gtag when the user accepts; the denied default is configured in nuxt.config.
+// first-party cookie (cu_consent). Each decision is announced on `window` as a
+// `cu:consent` event (Microsoft Clarity listens) and applied to gtag as a
+// Consent Mode v2 update; the region-scoped defaults live in nuxt.config.
 export function useConsent() {
   const cookie = useCookie<string | null>(CONSENT_COOKIE_NAME, {
     maxAge: CONSENT_MAX_AGE,
@@ -26,9 +28,23 @@ export function useConsent() {
 
   const apply = (d: ConsentDecision) => {
     if (!import.meta.client) return
+    // For the scripts that are not gtag (plugins/clarity.client.ts), and BEFORE gtag hears it:
+    // Clarity also listens to Consent Mode, and a 'denied' reaching it while it records restarts
+    // it without cookies and uploads once more. Stopped first, it ignores that signal.
     try {
-      const { gtag } = useGtag()
-      gtag('consent', 'update', consentSignals(d))
+      window.dispatchEvent(new CustomEvent('cu:consent', { detail: d }))
+    } catch {
+      // A listener that throws must not keep the decision from reaching gtag.
+    }
+    try {
+      // While gtag.js has not loaded (it can be held back: plugins/gtag-init.client.ts waits for a
+      // clean address bar), a plain update lands after the queued `config` commands and the first
+      // page_view would still go out under the region default. Ahead of `js` it wins.
+      const signals = consentSignals(d)
+      if (!insertStoredConsent((window as { dataLayer?: unknown }).dataLayer, signals)) {
+        const { gtag } = useGtag()
+        gtag('consent', 'update', signals)
+      }
     } catch {
       // gtag not available (module disabled / SSR) — cookie still records intent.
     }

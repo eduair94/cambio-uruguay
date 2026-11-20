@@ -1,0 +1,522 @@
+{
+  "title": [
+    "1229e1ce",
+    "Kur izņemt skaidru naudu Urugvajā: bankomāti, komisijas maksas un tūristu iecienītās vietas"
+  ],
+  "metaTitle": [
+    "3e82d293",
+    "Bankomāti Urugvajā: izņemiet dolārus vai peso"
+  ],
+  "description": [
+    "3eb63bbe",
+    "Kā un kur tūristam saņemt skaidru naudu Urugvajā: bankomāti, kas izsniedz gan ASV dolārus, gan peso, komisijas maksas, izņemšanas limiti, valūtas konvertācijas (DCC) slazds un labākās vietas naudas izņemšanai lidostā, Montevideo, Punta del Estē un Kolonijā."
+  ],
+  "keywords": [
+    "4acfb17e",
+    "skaidras naudas izņemšana urugvaja, naudas izņemšana urugvaja, bankomāts urugvajas tūrists, dolāri no bankomāta urugvaja, naudas maiņa urugvaja, bankomāta maksas urugvaja, casas de cambio uruguay"
+  ],
+  "tldr.0": [
+    "5f1561fe",
+    "Urugvajas bankomāti izsniedz gan ASV dolārus, gan peso — reta reģionāla priekšrocība (Argentīnā tas ir gandrīz neiespējami)."
+  ],
+  "tldr.1": [
+    "7b41d73f",
+    "Ir divi tīkli: RedBROU un Banred. Ja viens neizdodas, pamēģiniet otru; nēsājiet līdzi gan Visa, gan Mastercard."
+  ],
+  "tldr.2": [
+    "c5aa36e3",
+    "Kad bankomāts piedāvā iekasēt maksu jūsu mājas valūtā, vienmēr izvēlieties vietējo valūtu: \"konversija\" slēpj sliktu valūtas kursu."
+  ],
+  "tldr.3": [
+    "b73d4126",
+    "Izvairieties mainīt lielas summas lidostā vai prāmju termināļos — to likmes ir ievērojami zemākas."
+  ],
+  "tldr.4": [
+    "83b2ff36",
+    "Maksājiet viesnīcās un restorānos ar ārzemju karti: papildus PVN atvieglojumiem jums ir mazāk skaidras naudas."
+  ],
+  "ui.backToTools": [
+    "950196fc",
+    "Instrumenti"
+  ],
+  "ui.tldrTitle": [
+    "799c628c",
+    "Īsumā"
+  ],
+  "ui.networksTitle": [
+    "90dd37e5",
+    "Divi bankomātu tīkli: RedBROU un Banred"
+  ],
+  "ui.tableNetwork": [
+    "6974ad65",
+    "Tīkls"
+  ],
+  "ui.tableReach": [
+    "c549e23b",
+    "Pārklājums"
+  ],
+  "ui.tableUsd": [
+    "47b34a69",
+    "Maksimālais izņemšanas apjoms ASV dolāros"
+  ],
+  "ui.tableUyu": [
+    "7d4e5b12",
+    "Maksimālais izņemšanas apjoms $U"
+  ],
+  "ui.tableNote": [
+    "0ff01b6a",
+    "Piezīmes"
+  ],
+  "ui.zonesTitle": [
+    "126f8827",
+    "Kur iegūt skaidru naudu tūrisma zonā"
+  ],
+  "ui.zonesIntro": [
+    "e4c560b0",
+    "Atsauces zonas un orientieru līmenī (nevis precīzas adreses, kas mainās). Bankomāti parasti atrodas bankās, tirdzniecības centros vai Abitab un Redpagos tirdzniecības vietās."
+  ],
+  "ui.stepsTitle": [
+    "3e1ff2e0",
+    "Kā izņemt skaidru naudu, soli pa solim"
+  ],
+  "ui.faqTitle": [
+    "e466bfa9",
+    "Bieži uzdotie jautājumi"
+  ],
+  "ui.sourcesTitle": [
+    "105bfcc3",
+    "Avoti un atsauces"
+  ],
+  "ui.relatedTitle": [
+    "ac7a8ccc",
+    "Turpiniet lasīt"
+  ],
+  "ui.ctaTitle": [
+    "60dda6a1",
+    "Salīdziniet pirms apmaiņas"
+  ],
+  "ui.ctaText": [
+    "fe6b01a6",
+    "Skatiet dolāra kursu vairāk nekā 40 valūtas maiņas punktos, kas tiek atjaunināts ik pēc 10 minūtēm, un izvēlieties labāko darbības vietu."
+  ],
+  "ui.ctaButton": [
+    "9efd557a",
+    "Atveriet salīdzinātāju"
+  ],
+  "ui.mapButton": [
+    "4e8c8db6",
+    "Skatīt izņemšanas punktus kartē"
+  ],
+  "ui.disclaimer": [
+    "b166cfce",
+    "Uzziņu informācija tūristiem, nevis finanšu padoms. Maksas, limiti un nodokļu atvieglojumi mainās: apstipriniet tos, ierodoties, un sazinoties ar kartes izdevēju. Mēs neesam saistīti ar minētajām bankām vai valūtas maiņas punktiem."
+  ],
+  "ui.lastChecked": [
+    "9182e108",
+    "Pēdējoreiz pārbaudīts: 2026. gada jūnijā"
+  ],
+  "ivaLive.heading": [
+    "5af716c3",
+    "Tūristu PVN atvieglojumi ir spēkā šodien"
+  ],
+  "ivaLive.asOf": [
+    "dd801240",
+    "Statuss no {date}:"
+  ],
+  "ivaLive.hotel": [
+    "152a8c47",
+    "Izmitināšana (viesnīcas un līdzīgas): 0% PVN visu gadu."
+  ],
+  "ivaLive.base": [
+    "9856855a",
+    "Ēdināšana un automašīnu noma bez vadītāja: {points} punktu PVN samazinājums gala patēriņam, kas apmaksāts ar personas karti, ieskaitot ārvalstu kartes, līdz 2027. gada 30. aprīlim (Dekrēts 235/026; avots pārbaudīts 2026. gada 23. oktobrī)."
+  ],
+  "ivaLive.baseUnconfirmed": [
+    "d65944df",
+    "Ēdināšana un automašīnu noma: verificētais pagarinājums beidzās 2027. gada 30. aprīlī. Pārbaudiet DGI, kurš atlaides apjoms ir spēkā jūsu pirkuma datumā."
+  ],
+  "ivaLive.seasonalOn": [
+    "41748da1",
+    "Pilnīgs PVN atbrīvojums vasarā: AKTĪVS (līdz {end})."
+  ],
+  "ivaLive.seasonalOff": [
+    "015a1161",
+    "Pilnīgs PVN atbrīvojums vasarā: šim datumam nav apstiprināta perioda. Pirms šīs priekšrocības izmantošanas sazinieties ar DGI."
+  ],
+  "sections.0.heading": [
+    "90dd37e5",
+    "Divi bankomātu tīkli: RedBROU un Banred"
+  ],
+  "sections.0.paragraphs.0": [
+    "0f52a7fe",
+    "Urugvajā ir divi bankomātu tīkli: RedBROU, ko pārvalda valsts banka (BROU), un Banred, privāto banku tīkls. Abi ir savstarpēji savienoti un pieslēgti starptautiskajiem tīkliem (Mastercard Cirrus/Maestro un Visa Plus), tāpēc ārzemju karte darbojas abos."
+  ],
+  "sections.0.paragraphs.1": [
+    "208b768b",
+    "Lai pārliecinātos, ka bankomāts pieņem jūsu karti, meklējiet uz bankomāta Visa, Mastercard, Cirrus, Plus vai Maestro logotipus. Praktisks padoms: nēsājiet līdzi Visa un Mastercard kartes no dažādiem kontiem; ja viena karte vai bankomāts neizdodas, izmēģiniet otru tīklu."
+  ],
+  "sections.1.heading": [
+    "612974f0",
+    "Dolāri vai peso? Urugvajā var ņemt abus."
+  ],
+  "sections.1.paragraphs.0": [
+    "d9928d31",
+    "Atšķirībā no Argentīnas, daudzi Urugvajas bankomāti izsniedz gan ASV dolārus, gan Urugvajas peso. Tā ir reāla priekšrocība, ja vēlaties saņemt dolārus skaidrā naudā, neapmeklējot valūtas maiņas punktu. Dolāri parasti tiek izdoti 100 ASV dolāru banknotēs, kas apvienojumā ar ierobežojumiem vienas izņemšanas reizes laikā var nozīmēt, ka vienlaikus varat saņemt tikai vienu banknoti."
+  ],
+  "sections.1.paragraphs.1": [
+    "cd694b7a",
+    "Vienkāršs noteikums: ikdienas tēriņiem (taksometriem, tirgiem, maziem veikaliem) ņemiet līdzi peso un dolārus tikai tad, ja tie jums patiešām ir nepieciešami skaidrā naudā. Lielākajai daļai lielāku maksājumu karte ir labāka par skaidru naudu."
+  ],
+  "sections.2.heading": [
+    "9ce97b34",
+    "Maksas un izņemšanas limiti"
+  ],
+  "sections.2.paragraphs.0": [
+    "e28a7f0e",
+    "Urugvajas bankomāta iekasētā komisijas maksa par ārzemju karti ir zema, salīdzinot ar daudzām citām valstīm (apmēram daži dolāri par katru izņemšanu). Lielākas izmaksas parasti sedz jūsu pašu banka: ārvalstu darījumu maksa (parasti 1–3%) plus dažreiz fiksēta maksa par starptautisko izņemšanu. Ceļojumu karte bez valūtas maiņas komisijas maksas ietaupa gandrīz visu šo maksu."
+  ],
+  "sections.2.paragraphs.1": [
+    "154c6f01",
+    "Ārvalstu karšu izņemšanas limitus nosaka vietējie tīkli, nevis jūsu banka, un tie ir zemi. Jūsu banka piemēro arī savu dienas limitu. Pirms ceļojuma sazinieties ar savu banku, lai paaugstinātu limitu, un izņemiet maksimālo summu par darījumu, lai sadalītu fiksēto maksu lielākā skaidras naudas daļā."
+  ],
+  "sections.2.bullets.0": [
+    "befd8df3",
+    "Vietējās izņemšanas komisijas maksa: aptuvenā, dažu dolāru apmērā (pirms apstiprināšanas pārbaudiet ekrānā redzamo summu)."
+  ],
+  "sections.2.bullets.1": [
+    "0f872d39",
+    "Jūsu bankas/izdevēja maksa: parasti lielākā maksa; pārbaudiet, vai jūsu kartei tiek piemērota maksa par ārvalstu darījumiem."
+  ],
+  "sections.2.bullets.3": [
+    "4aacdc05",
+    "Dienas limits: nosaka jūsu banka; pirms ceļojuma informējiet banku, lai to palielinātu."
+  ],
+  "sections.3.heading": [
+    "6bd46a0c",
+    "Valūtas konvertācijas (DCC) slazds: vienmēr izvēlieties vietējo valūtu"
+  ],
+  "sections.3.paragraphs.0": [
+    "29fe4c81",
+    "Daudzi bankomāti un karšu termināļi piedāvā \"iekasēt jūsu mājas valūtā\", nevis Urugvajas peso vai dolāros. Tas izklausās ērti (\"redzēt, cik tas ir jūsu naudā\"), taču dinamiskā valūtas konvertācija (DCC) piemēro paaugstinātu valūtas kursu plus slēptu maksu. Jūs gandrīz vienmēr zaudējat."
+  ],
+  "sections.3.paragraphs.1": [
+    "34380f1f",
+    "Vienmēr izvēlieties \"bez konvertācijas\" vai vietējo valūtu: Urugvajas peso, ja pieņemat peso, dolārus, ja pieņemat dolārus. Ļaujiet konvertāciju veikt savai bankai — tās kurss parasti ir labāks."
+  ],
+  "sections.4.heading": [
+    "cc573fd8",
+    "Valūtas maiņas punkti, bankomāti vai bankas: kurš ir labāks?"
+  ],
+  "sections.4.paragraphs.0": [
+    "1116ae4f",
+    "Valūtas maiņas punkti (piemēram, Varlix, Indumex, Gales, Aspen, Cambio Sir, Cambio Inglés un Global Exchange) ir klasisks veids, kā mainīt skaidru naudu. Tie piedāvā vislabākos kursus dolāram ar nelielu starpību un bez komisijas maksas; eiro ir otra labākā valūta, Brazīlijas reāls ir pieņemams, bet Argentīnas peso ir vissliktākais. Parasti viņi lūdz uzrādīt pasi."
+  ],
+  "sections.4.paragraphs.1": [
+    "b7c83296",
+    "Darba laiks: ielu filiāles ir atvērtas no pirmdienas līdz piektdienai (apmēram no plkst. 9 līdz 19) un sestdienas rītos; daudzas tiek slēgtas svētdienās. Tirdzniecības centru filiāles atveras katru dienu un vēlāk. Lai salīdzinātu dienas cenu dažādās mājās, izmantojiet mūsu salīdzinātāju un filiāļu lapu."
+  ],
+  "sections.5.heading": [
+    "f8b82759",
+    "Cik daudz skaidras naudas ņemt līdzi un kādu valūtu ņemt līdzi"
+  ],
+  "sections.5.paragraphs.0": [
+    "e22fd664",
+    "Urugvaja ir ļoti draudzīga norēķiniem ar kartēm: Visa un Mastercard tiek pieņemtas gandrīz visur, plaši izplatīti ir bezkontakta un QR maksājumi (Mercado Pago). Nelieliem pirkumiem nēsājiet līdzi tikai dažus peso skaidrā naudā un lielākas summas maksājiet ar karti."
+  ],
+  "sections.5.paragraphs.1": [
+    "f9b88276",
+    "Ja ņemat līdzi skaidru naudu maiņai, vislabākā valūta ir ASV dolārs (vislabākie kursi, tiek pieņemti katrā mājā). Otra svarīgākā valūta ir eiro. Braucot no Argentīnas, ņemiet līdzi dolārus, nevis Argentīnas peso — Urugvajā peso mainās ļoti slikti. Braucot no Brazīlijas, der īstais peso, īpaši robežas tuvumā, lai gan dolāri joprojām ir ērtāki."
+  ],
+  "sections.6.heading": [
+    "97a59b72",
+    "Tūristu PVN atvieglojums (maksājot ar ārzemju karti)"
+  ],
+  "sections.6.paragraphs.0": [
+    "88ea76fc",
+    "Urugvaja atmaksā daļu no PVN tūristiem, kas nav Urugvajas iedzīvotāji un norēķinās ar ārvalstī izdotu karti. Izmitināšanai (reģistrētām viesnīcām un līdzīgām iestādēm) visu gadu tiek piemērota 0% PVN likme nerezidentiem, kuri uzrāda ārvalstī izdotu personas apliecību un norēķinās ar ārvalstī izdotu karti — pastāvīga priekšrocība."
+  ],
+  "sections.6.paragraphs.1": [
+    "7f51f9e2",
+    "Attiecībā uz ēdināšanu un automašīnu nomu bez vadītāja Dekrēts Nr. 235/026 saglabā vispārējo deviņu punktu atlaidi līdz 2027. gada 30. aprīlim gala patēriņam, kas apmaksāts ar atbilstošiem elektroniskiem līdzekļiem. Sezonāls pilnīgs atbrīvojums ir atsevišķs atvieglojums ar savu dekrētu un datumiem: deviņu punktu atlaides pagarināšana neapstiprina pilnīgu atbrīvojumu. Pirms ceļojuma sazinieties ar DGI."
+  ],
+  "sections.6.paragraphs.2": [
+    "f963de1e",
+    "Visos gadījumos atlaide ir automātiska: jūs maksājat ar savu ārzemju karti, un ieguvums tiek parādīts čekā vai kartes izrakstā. Maksājot skaidrā naudā, jūs to pazaudējat. Tāpēc ir izdevīgāk viesnīcas un restorānus iekļaut kartē un izņemt mazāk skaidras naudas."
+  ],
+  "sections.6.bullets.0": [
+    "fc6c4026",
+    "Viesnīcas/izmitināšana: 0% PVN visu gadu nerezidentiem (pastāvīgajiem iedzīvotājiem)."
+  ],
+  "sections.6.bullets.1": [
+    "02f7d683",
+    "Restorāni un automašīnu noma bez vadītāja: deviņi punkti līdz 2027. gada 30. aprīlim, ievērojot elektronisko maksājumu prasības. Sezonālam pilnīgam atbrīvojumam ir nepieciešams atsevišķs apstiprinājums."
+  ],
+  "sections.6.bullets.2": [
+    "bf5ed0b5",
+    "Katram režīmam ir savas prasības. Vispārējais deviņu punktu samazinājums paredz galapatēriņu un fiziskai personai piederošu atbilstošu elektronisko maksāšanas metodi; ārvalstu emisija nav nepieciešama."
+  ],
+  "sections.7.heading": [
+    "84fbae56",
+    "Drošības padomi, izņemot skaidru naudu"
+  ],
+  "sections.7.paragraphs.0": [
+    "e227f80c",
+    "Urugvaja ir viena no drošākajām valstīm reģionā, taču pastāv sīkas zādzības, īpaši Montevideo Ciudad Vieja, ostas zonā un pludmales kūrortos sezonas laikā. Izmantojiet bankomātus bankās, tirdzniecības centros vai stikla vestibilos, vēlams, dienasgaismā, un esiet informēts par apkārtni."
+  ],
+  "sections.7.bullets.0": [
+    "d234b5e4",
+    "Izņemiet naudu dienasgaismā un no bankomātiem slēgtās telpās, nevis naktī uz ielas."
+  ],
+  "sections.7.bullets.1": [
+    "f9f5f149",
+    "Nēsājiet divas kartes no dažādiem kontiem un glabājiet skaidru naudu vairāk nekā vienā vietā."
+  ],
+  "sections.7.bullets.3": [
+    "d7920a67",
+    "Pārvietojieties ar Uber, Cabify vai reģistrētiem taksometriem; neatstājiet vērtslietas automašīnā."
+  ],
+  "sections.7.link.label": [
+    "d8570bac",
+    "Jau iestrēdzis ar lielu zīmīti: kur dabūt sīknaudu un monētas"
+  ],
+  "networkRows.0.network": [
+    "7ee344a0",
+    "RedBROU"
+  ],
+  "networkRows.0.reach": [
+    "4a5d053e",
+    "Valsts bankas BROU tīkls; vairāk nekā 400 bankomātu visā valstī, kā arī Abitab un Redpagos."
+  ],
+  "networkRows.0.usdPerTxn": [
+    "f41a726d",
+    "≈ 200 ASV dolāri"
+  ],
+  "networkRows.0.note": [
+    "786a7e5f",
+    "Daudzi automāti izsniedz dolārus. Ārvalstu karšu maksimālās summas ir aptuvenas."
+  ],
+  "networkRows.1.network": [
+    "6823b06d",
+    "Aizliegts"
+  ],
+  "networkRows.1.reach": [
+    "331e78b2",
+    "Privātbanku tīkls; vairāk nekā 370 punkti visās 19 nodaļās."
+  ],
+  "networkRows.1.usdPerTxn": [
+    "75830c42",
+    "≈ 300 ASV dolāri"
+  ],
+  "networkRows.1.note": [
+    "9f2f1329",
+    "Savstarpēji savienots ar RedBROU. Ja viens tīkls noraida jūsu karti, mēģiniet otru."
+  ],
+  "zones.0.name": [
+    "8a4dc608",
+    "Karasko lidosta (MVD), Montevideo"
+  ],
+  "zones.0.tips.0": [
+    "d6202725",
+    "Lidostas maiņas maksa ir ievērojami mazāka: jāpārskaita tikai tik daudz, lai nokļūtu pilsētā."
+  ],
+  "zones.0.tips.1": [
+    "99e81ace",
+    "Ja jums nekavējoties nepieciešama skaidra nauda, izņemiet nelielu summu bankomātā un pārējo nomainiet pilsētas centrā."
+  ],
+  "zones.1.name": [
+    "034a744d",
+    "Montevideo (Centro, Ciudad Vieja un osta)"
+  ],
+  "zones.1.summary": [
+    "04c221eb",
+    "Valūtas maiņas punkti atrodas uz Avenida 18 de Julio (Centro) un caur Ciudad Vieja. Kruīzu terminālis atrodas blakus Ciudad Vieja, un tajā ir valūtas maiņa un bankomāti."
+  ],
+  "zones.1.tips.0": [
+    "a26e5af3",
+    "Centro un Ciudad Vieja rajonā atradīsiet vairākas valūtas maiņas iestādes, kuras varēsiet salīdzināt."
+  ],
+  "zones.1.tips.1": [
+    "4139b3e5",
+    "Kruīza pasažieriem ir pieejama valūtas maiņa ostā, un bankomāti atrodas nelielā attālumā, Mercado del Puerto virzienā."
+  ],
+  "zones.2.name": [
+    "3fa606f9",
+    "Punta del Este"
+  ],
+  "zones.2.summary": [
+    "880d1f96",
+    "Valūtas maiņas punkti atrodas galvenajā ielā Avenida Gorlero. Sezonas laikā var veidoties rindas un bankomātos var beigties dolāri."
+  ],
+  "zones.2.tips.0": [
+    "1063deb8",
+    "Vasarā un Lieldienu nedēļā bankomāti ātri tukšojas: izņemiet naudu iepriekš un saglabājiet rezervi."
+  ],
+  "zones.2.tips.1": [
+    "e4c20d9e",
+    "Paļaujieties uz kartēm un QR maksājumiem, lai nebūtu jāpaļaujas tikai uz skaidru naudu."
+  ],
+  "zones.3.name": [
+    "2ed532f4",
+    "Kolonija del Sakramento"
+  ],
+  "zones.3.summary": [
+    "764221b5",
+    "Bankomāti atrodas vēsturiskajā rajonā (Barrio Histórico) un prāmju terminālī, dažu soļu attālumā no vecpilsētas, kur ierodas vienas dienas braucēji no Buenosairesas."
+  ],
+  "zones.3.tips.0": [
+    "d7ebee8b",
+    "Ierodoties, izņemiet nelielu summu peso un pārējo samaksājiet ar karti."
+  ],
+  "zones.3.tips.1": [
+    "e09f3851",
+    "Daudzi tūristu veikali pieņem dolārus, lai gan par nelabvēlīgu kursu."
+  ],
+  "zones.4.name": [
+    "ed7917f9",
+    "Prāmju termināļi (Buquebus / Colonia Express)"
+  ],
+  "zones.4.summary": [
+    "ac18ddf9",
+    "Montevideo un Kolonijas termināļos ir bankomāti. Valūtas maiņa termināļos un uz kuģa parasti piedāvā zemas likmes."
+  ],
+  "zones.4.tips.0": [
+    "b5a97e0f",
+    "Izvairieties mainīt lielas summas terminālī vai uz kuģa — likmes ir sliktas."
+  ],
+  "zones.4.tips.1": [
+    "91b3c105",
+    "Labāk izmantot bankomātu vai mainīt naudu pilsētas valūtas maiņas punktā."
+  ],
+  "zones.5.name": [
+    "66cc7244",
+    "Iekšzemes un mazākās pilsētas"
+  ],
+  "zones.5.summary": [
+    "fc9a5afd",
+    "Ārpus lielākajām pilsētām un galvenajiem kūrortiem bankomāti ir reti sastopami."
+  ],
+  "zones.5.tips.0": [
+    "48821abe",
+    "Pirms došanās iekšzemē uzkrājiet skaidru naudu Montevideo, Punta del Estē vai Kolonijā."
+  ],
+  "zones.5.tips.1": [
+    "02573d37",
+    "Ročas piekrastē uzpildiet degvielas uzpildes iespējas lielākās pilsētās, piemēram, Čujā vai La Palomā."
+  ],
+  "steps.0.name": [
+    "aa213b75",
+    "Atrodiet bankomātu, kas pieņem jūsu karti"
+  ],
+  "steps.0.text": [
+    "2f5d9e7c",
+    "Meklējiet Visa, Mastercard, Cirrus, Plus vai Maestro logotipus; dodiet priekšroku bankomātiem bankās vai tirdzniecības centros."
+  ],
+  "steps.1.name": [
+    "4209811a",
+    "Izvēlieties dolārus vai peso"
+  ],
+  "steps.1.text": [
+    "f338ade4",
+    "Ikdienas tēriņiem ņemiet līdzi peso un dolārus tikai tad, ja tie nepieciešami skaidrā naudā; dolāri tiek izsniegti 100 ASV dolāru banknotēs."
+  ],
+  "steps.2.name": [
+    "24d1a5da",
+    "Noraidīt konvertāciju uz jūsu valūtu"
+  ],
+  "steps.2.text": [
+    "3f2be811",
+    "Kad tiek piedāvāts norēķināties jūsu mītnes valsts valūtā, izvēlieties \"bez konvertācijas\" vai vietējo valūtu, lai izvairītos no DCC uzcenojuma."
+  ],
+  "steps.3.name": [
+    "4e44a3f9",
+    "Izņemiet maksimālo summu vienā darījumā"
+  ],
+  "steps.3.text": [
+    "831b2ec9",
+    "Tā kā ir fiksēta izņemšanas maksa, izmantojiet atļauto limitu, lai sadalītu izmaksas vairāk skaidras naudas."
+  ],
+  "steps.4.name": [
+    "6fcb61ed",
+    "Saglabājiet čeku un saskaitiet naudu"
+  ],
+  "steps.4.text": [
+    "30d70c06",
+    "Pirms iziešanas no bankomāta pārbaudiet izsniegto summu, saglabājiet čeku un sadaliet skaidru naudu vairākās vietās."
+  ],
+  "faq.0.q": [
+    "e44ca992",
+    "Vai es varu izņemt ASV dolārus no bankomātiem Urugvajā?"
+  ],
+  "faq.0.a": [
+    "eb6339a1",
+    "Jā. Atšķirībā no Argentīnas, daudzi Urugvajas bankomāti izsniedz gan dolārus, gan peso, parasti 100 ASV dolāru banknotēs. Ārvalstu karšu izņemšanas limiti ir zemi."
+  ],
+  "faq.1.q": [
+    "33423670",
+    "Cik lielas komisijas maksas bankomāti iekasē no ārzemju kartēm?"
+  ],
+  "faq.1.a": [
+    "68121602",
+    "Vietējā komisijas maksa ir zema (apmēram daži dolāri par katru naudas izņemšanu). Lielāka maksa parasti ir jūsu bankas ārvalstu darījumu maksa (izplatītākā ir 1–3 %)."
+  ],
+  "faq.2.q": [
+    "bf2fe8ff",
+    "Kāda ir maksimālā summa, ko varu izņemt vienā darījumā?"
+  ],
+  "faq.3.q": [
+    "66601510",
+    "Vai man vajadzētu apmainīt naudu lidostā?"
+  ],
+  "faq.3.a": [
+    "82d5704c",
+    "Ne lielām summām: lidostā un prāmju termināļos ir jāmaksā ievērojami mazāk. Pārlieciet tikai tik daudz naudas, lai nokļūtu pilsētā, un pēc tam izmantojiet pilsētas centra valūtas maiņas punktu vai bankomātu."
+  ],
+  "faq.4.q": [
+    "44d07e17",
+    "Skaidra nauda vai karte Urugvajā?"
+  ],
+  "faq.4.a": [
+    "11ded5ec",
+    "Urugvaja ir ļoti draudzīga karšu lietotājiem (Visa un Mastercard gandrīz visur, bezkontakta un QR kartes). Nelieliem pirkumiem nēsājiet līdzi skaidru naudu, bet lielākas summas maksājiet ar karti."
+  ],
+  "faq.5.q": [
+    "2d0dd094",
+    "Kādu valūtu man vajadzētu ņemt līdzi?"
+  ],
+  "faq.5.a": [
+    "cc8484ac",
+    "Skaidrā naudā ASV dolāri: labākie kursi, un tos pieņem katrā valūtas maiņas punktā. Otra valūta ir eiro. Braucot no Argentīnas, līdzi jāņem dolāri, nevis Argentīnas peso."
+  ],
+  "faq.6.q": [
+    "b71d8d92",
+    "Vai es kā tūrists saņemu nodokļu atlaidi?"
+  ],
+  "faq.6.a": [
+    "49712ab8",
+    "Jā: papildus izmitināšanas režīmam vispārējā deviņu punktu atlaide par ēdināšanu un automašīnu nomu bez vadītāja attiecas arī uz nerezidentiem līdz 2027. gada 30. aprīlim, ja galapatēriņu elektroniski apmaksā fiziska persona. Sezonālam pilnīgam atbrīvojumam ir nepieciešams savs lēmums un datumi; to nevar secināt no šī pagarinājuma."
+  ],
+  "faq.7.q": [
+    "04fb59ce",
+    "Ko darīt, ja bankomāts noraida manu karti?"
+  ],
+  "faq.7.a": [
+    "15f0167b",
+    "Izmēģiniet citu karti un otru tīklu (RedBROU un Banred ir savstarpēji savienoti, bet ir noderīgi, ja ir pieejami abi). Pārbaudiet, vai bankomātā ir redzami Visa/Mastercard/Cirrus/Plus logotipi, un informējiet banku, ka to izmantosiet Urugvajā."
+  ],
+  "related.0.label": [
+    "9371cd8d",
+    "Dolāri ceļojumiem"
+  ],
+  "related.1.label": [
+    "89470d17",
+    "Dolāru pirkšana par vislabāko cenu"
+  ],
+  "related.2.label": [
+    "7b531a45",
+    "Valūtas maiņas nami un filiāles"
+  ],
+  "related.3.label": [
+    "574f3e27",
+    "Salīdzināt cenas"
+  ]
+}

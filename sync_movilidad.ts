@@ -32,11 +32,14 @@ import {
   loadStoreSnapshot,
   saveMovilidadCatalog,
   saveMovilidadListings,
+  loadFichaByListingId,
   saveStoreSnapshot,
   withHistory,
   type PreviousItem,
 } from "./classes/movilidad/store";
 import type { MovilidadMeta } from "./classes/movilidad/types";
+import { enrichMovilidadRow } from "./classes/movilidad/specs/enrich";
+import { isSpecCategory } from "./classes/movilidad/specs/profiles";
 import { recordPricewatch } from "./classes/pricewatch/record";
 import { harvestRetail } from "./classes/retail/harvest";
 import { retailStores } from "./classes/retail/stores";
@@ -193,7 +196,19 @@ export async function main(): Promise<void> {
   // corridas (diaria y horaria) lo escriben — cada aviso con el `observedAt` que realmente tiene.
   try {
     const built = buildEquiparListings({ listings, usdUyu, registry: MOVILIDAD_CATEGORIES });
-    const saved = await saveMovilidadListings(built.rows, today);
+    // La ficha técnica y la marca que dejó currency-movilidad-specs viajan en cada reescritura; si la
+    // colección de fichas no se puede leer, las filas se guardan como vinieron (sin `specs` ni
+    // `uyuPerKm` en el $set, así que lo que ya estaba guardado sigue ahí).
+    let rows = built.rows;
+    try {
+      const fichas = await loadFichaByListingId(
+        rows.filter((row) => isSpecCategory(row.category)).map((row) => row.listingId)
+      );
+      rows = rows.map((row) => enrichMovilidadRow(row, fichas.get(row.listingId)));
+    } catch (error) {
+      console.error("[movilidad] no se pudieron leer las fichas técnicas; las filas se guardan sin ellas", error);
+    }
+    const saved = await saveMovilidadListings(rows, today);
     console.log(
       `[movilidad] avisos: ${saved.written} escritos, ${saved.pruned} podados, ${built.rejected} rechazados por la banda, ${built.suspect} sospechosos`
     );

@@ -2,7 +2,7 @@
 // PURE (no Vue/Nuxt imports) so unit tests and server code can import freely.
 
 import { operationForRate, requiresAccount, type OperationKind } from './exchangeChannel'
-import { offMarketDetector } from './marketOutlier'
+import { offMarketSide } from './marketOutlier'
 
 /** Date the reputation snapshot (ratings, press, strengths) was researched. */
 export const CASAS_LAST_RESEARCHED = '2026-07-24'
@@ -16,6 +16,9 @@ export interface UsdRateRow {
   buy: number
   sell: number
   isInterBank?: boolean
+  /** The backend's mark on today's rows: the board has not changed for days (utils/marketOutlier.ts). */
+  frozen?: boolean
+  frozenDays?: number
 }
 
 export interface UsdComparisonEntry {
@@ -33,8 +36,15 @@ export interface UsdComparisonEntry {
   operation: OperationKind
   /** True when you must be a client of the institution to get this price. */
   requiresAccount: boolean
-  /** True when the quote sits implausibly far from the market — see below. */
+  /** True when either price sits implausibly far from the market — see below. */
   offMarket: boolean
+  /** The sell is off-market: it is never crowned the cheapest. */
+  offMarketSell: boolean
+  /** The buy is off-market: it is never crowned the best payer. */
+  offMarketBuy: boolean
+  /** The backend's mark: the board has not changed for days (utils/marketOutlier.ts). */
+  frozen?: boolean
+  frozenDays?: number
 }
 
 /**
@@ -70,10 +80,15 @@ export function buildUsdComparison(rows: UsdRateRow[]): UsdComparisonEntry[] {
   }
   const picked = [...byOrigin.values()]
   if (picked.length === 0) return []
-  const bestSell = Math.min(...picked.map(r => r.sell))
-  const bestBuy = Math.max(...picked.map(r => r.buy))
-  // Shared with /pizarra: median-based, and it stands down on a thin market.
-  const isOffMarket = offMarketDetector(picked)
+  // Shared with /pizarra: median-based, one side at a time, and it stands down on a thin market.
+  const sellOff = offMarketSide(picked, 'USD', 'sell')
+  const buyOff = offMarketSide(picked, 'USD', 'buy')
+  // The gaps are measured against the best price the table crowns. Against the raw extremes,
+  // every casa read "x % más cara" than a board frozen since July at 39,55 (2026-11-11).
+  const sells = picked.filter(r => !sellOff(r)).map(r => r.sell)
+  const buys = picked.filter(r => !buyOff(r)).map(r => r.buy)
+  const bestSell = Math.min(...(sells.length ? sells : picked.map(r => r.sell)))
+  const bestBuy = Math.max(...(buys.length ? buys : picked.map(r => r.buy)))
   return picked.map(r => ({
     origin: r.origin,
     buy: r.buy,
@@ -84,7 +99,10 @@ export function buildUsdComparison(rows: UsdRateRow[]): UsdComparisonEntry[] {
     gapBuyPct: ((bestBuy - r.buy) / bestBuy) * 100,
     operation: operationForRate(r.origin, r.type),
     requiresAccount: requiresAccount(r.origin, r.type),
-    offMarket: isOffMarket(r),
+    offMarket: sellOff(r) || buyOff(r),
+    offMarketSell: sellOff(r),
+    offMarketBuy: buyOff(r),
+    ...(r.frozen === true ? { frozen: true, frozenDays: r.frozenDays } : {}),
   }))
 }
 
@@ -2692,7 +2710,7 @@ const CONTENT: Record<'es' | 'en' | 'pt', CasasContent> = {
       'Este precio solo se consigue siendo cliente de la institución (eBROU, transferencia bancaria, Prex, OCA). No es comparable con el mostrador de una casa de cambio, donde no hace falta ser cliente.',
     offMarket: 'verificar',
     offMarketHint:
-      'Esta cotización se aparta más de 3% de la mediana del mercado. Puede ser una pizarra desactualizada en el sitio de la casa: confirmá antes de viajar.',
+      'Esta cotización queda demasiado lejos del resto del mercado, o la pizarra lleva días sin cambiar mientras el mercado se mueve. Puede estar desactualizada en el sitio de la casa: confirmá antes de viajar.',
     emptyTitle: 'Ninguna casa coincide con estos filtros',
     emptyText: 'Probá con otro departamento o quitá el filtro de tipo.',
     clearFilters: 'Limpiar filtros',
@@ -2855,7 +2873,7 @@ const CONTENT: Record<'es' | 'en' | 'pt', CasasContent> = {
       'This price is only available to clients of the institution (eBROU, bank transfer, Prex, OCA). It is not comparable to an exchange house counter, where you need no account at all.',
     offMarket: 'check first',
     offMarketHint:
-      'This quote sits more than 3% away from the market median. It may be a stale board on the house’s own site — confirm before travelling.',
+      'This quote sits too far from the rest of the market, or the board has not changed for days while the market moves. It may be stale on the house’s own site — confirm before travelling.',
     emptyTitle: 'No house matches these filters',
     emptyText: 'Try another department, or drop the type filter.',
     clearFilters: 'Clear filters',
@@ -3018,7 +3036,7 @@ const CONTENT: Record<'es' | 'en' | 'pt', CasasContent> = {
       'Este preço só está disponível para clientes da instituição (eBROU, transferência bancária, Prex, OCA). Não é comparável com o balcão de uma casa de câmbio, onde não é preciso ser cliente.',
     offMarket: 'verificar',
     offMarketHint:
-      'Esta cotação está a mais de 3% da mediana do mercado. Pode ser um quadro desatualizado no site da casa — confirme antes de viajar.',
+      'Esta cotação está longe demais do resto do mercado, ou o quadro está há dias sem mudar enquanto o mercado se move. Pode estar desatualizado no site da casa — confirme antes de viajar.',
     emptyTitle: 'Nenhuma casa corresponde a estes filtros',
     emptyText: 'Tente outro departamento ou remova o filtro de tipo.',
     clearFilters: 'Limpar filtros',

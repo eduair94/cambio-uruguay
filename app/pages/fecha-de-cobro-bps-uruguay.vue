@@ -216,7 +216,7 @@ const verifiedAt = new Date(`${BPS_COBRO_VERIFIED_AT}T00:00:00Z`).toLocaleDateSt
 const canonicalUrl = 'https://cambio-uruguay.com/fecha-de-cobro-bps-uruguay'
 const title = 'Fecha de cobro del BPS: cuándo y dónde'
 const description =
-  'Mandá COBRO y tu cédula al 1997 y el BPS te dice tu fecha. Por banco o Midinero, DeAnda, Prex y OCA Blue cobrás el primer día; presencial, según calendario.'
+  'Mandá COBRO y tu cédula al 1997 y el BPS te dice tu fecha. Por banco o Midinero, DeAnda, Prex y OCA Blue cobrás el primer día; presencial, por calendario.'
 
 defineOgImageComponent('Cambio', {
   title: 'Fecha de cobro del BPS',

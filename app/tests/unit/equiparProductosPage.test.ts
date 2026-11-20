@@ -89,13 +89,12 @@ describe.each([
 
 describe('productos/[categoria].vue', () => {
   const src = read(CATEGORY_FILE)
-  const script = src.slice(src.indexOf('<script setup'))
 
-  it('valida el slug en definePageMeta con la función importada', () => {
+  it('valida el slug en definePageMeta importando el catálogo adentro', () => {
     const meta = pageMeta(src)
     expect(meta).toContain('validate')
     expect(meta).toContain('isEquiparCategorySlug')
-    expect(script).toMatch(/import\s*\{[^}]*\bisEquiparCategorySlug\b[^}]*\}\s*from/)
+    expect(meta).toContain("await import('~/utils/equiparCategoryPages')")
   })
 
   it('fija la categoría por la ruta, no por la query', () => {

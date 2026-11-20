@@ -437,6 +437,7 @@ import { rentalEstimateMessages } from '~/utils/rentalEstimateMessages'
 import { rentalAnalysisLocationName } from '~/utils/rentalAnalysisComparison'
 import { rentalPropertyPath } from '~/utils/rentalPresentation'
 import { RENTAL_SOURCE_LABEL, type RentalCurrency } from '~/utils/rentals'
+import { rentalBarrioOptionPlausible } from '~/utils/rentalBarrioOption'
 
 const props = defineProps<{
   department: string
@@ -501,7 +502,9 @@ const neighborhoodOptions = computed(() => {
       ? props.neighborhoods
       : []
     : localNeighborhoods.value
-  return [...new Set([...available, form.neighborhood].filter(Boolean))]
+  // No street address offered as a barrio (utils/rentalBarrioOption.ts); the chosen one stays.
+  const offerable = available.filter(name => rentalBarrioOptionPlausible(name))
+  return [...new Set([...offerable, form.neighborhood].filter(Boolean))]
 })
 const numberLocale = computed(() =>
   locale.value === 'en' ? 'en-US' : locale.value === 'pt' ? 'pt-BR' : 'es-UY'
@@ -827,7 +830,7 @@ onBeforeUnmount(() => {
   font-weight: 400;
   line-height: 1.4;
   border: 1px solid rgba(var(--v-theme-on-surface), 0.42);
-  border-radius: 6px;
+  border-radius: 4px;
   background: rgb(var(--v-theme-surface));
   color: rgb(var(--v-theme-on-surface));
 }
@@ -917,7 +920,7 @@ onBeforeUnmount(() => {
 }
 .rent-estimator__range dd {
   margin: 6px 0 0;
-  font-size: clamp(1.1rem, 2vw, 1.6rem);
+  font-size: clamp(1.075rem, 2vw, 1.5rem);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
@@ -947,7 +950,7 @@ onBeforeUnmount(() => {
   display: flex;
   height: 16px;
   margin-top: 14px;
-  border-radius: 3px;
+  border-radius: 4px;
   overflow: hidden;
   background: rgba(var(--v-theme-on-surface), 0.12);
 }

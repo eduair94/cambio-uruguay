@@ -63,11 +63,20 @@ export const guideHubs: readonly GuideHub[] = [
       'conviene-comprar-dolares-hoy',
       'comprar-dolares-mejor-precio',
       'billete-cable-transferencia',
+      'comprar-dolares-online-uruguay',
       'mejor-momento-cambiar-divisas',
       'como-leer-cotizacion-dolar',
       'glosario-terminos-cambiarios',
       'casas-de-cambio-vs-bancos',
       'evitar-comisiones-cambio',
+      'euros-reales-donde-cambiar',
+      'cambiar-pesos-argentinos-uruguay',
+      'billetes-y-monedas-de-uruguay',
+      'moneda-de-uruguay',
+      'pagar-en-dolares-o-pesos-uruguay',
+      'documentos-para-cambiar-dolares-uruguay',
+      'cambiar-dolares-aeropuerto-carrasco',
+      'dolares-para-viajar',
     ],
     resources: [
       {
@@ -166,6 +175,12 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Qué moneda conviene llevar a Brasil y dónde cambiarla.',
         to: '/llevar-dolares-o-reales-a-brasil',
       },
+      {
+        label: 'Comparar plataformas de cotizaciones',
+        description:
+          'Cambio Uruguay, DólarAhora, Dólar Uruguay y cotizacion.uy, criterio por criterio.',
+        to: '/comparar-plataformas-dolar-uruguay',
+      },
     ],
     terms: [
       'cotizacion',
@@ -203,8 +218,17 @@ export const guideHubs: readonly GuideHub[] = [
       'impuesto-temu-uruguay',
       'importar-de-aliexpress-a-uruguay',
       'comprar-en-amazon-desde-uruguay',
+      'comprar-en-shein-desde-uruguay',
     ],
     resources: [
+      {
+        // El nombre con el que la gente busca este régimen. La guía homónima del catálogo lo
+        // EXPLICA; esta página lo CALCULA (cuatro compras resueltas por el mismo motor que la
+        // calculadora), así que las etiquetas se separan a propósito.
+        label: 'Impuesto Temu: la cuenta de cada compra',
+        description: 'Cuatro compras calculadas y el mínimo de US$ 20 de IVA por envío postal.',
+        to: '/impuesto-temu-uruguay',
+      },
       {
         label: 'Cómo declarar una compra del exterior',
         description: 'Correo, courier, Amazon Global, Temu y régimen general.',
@@ -221,6 +245,14 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/franquicia-aduana-uruguay',
       },
       {
+        // Quién puede usar esa franquicia, que es la pregunta que la página de al lado no contesta:
+        // el Decreto 50/026 pide documento nacional uruguayo, así que un DNI, un CPF o un pasaporte
+        // identifican ante el operador pero no habilitan la franquicia.
+        label: 'Importar siendo extranjero',
+        description: 'Sin cédula uruguaya podés recibir el envío, pero no usar la franquicia.',
+        to: '/importar-a-uruguay-siendo-extranjero',
+      },
+      {
         label: 'Recibir regalos del exterior',
         description: 'Obsequios sin pagar IVA y la carta adentro del paquete.',
         to: '/recibir-regalos-del-exterior-uruguay',
@@ -229,6 +261,14 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Franquicia del viajero',
         description: 'Qué traer del exterior sin impuestos.',
         to: '/franquicia-viajero-uruguay',
+      },
+      {
+        // El otro mostrador del mismo cruce: la franquicia del viajero mide lo que traés en la
+        // valija y esto mide la plata que llevás encima. Desde la redacción de 2026 del art. 29 de
+        // la Ley 19.574 el deber de declarar alcanza también los cruces terrestres, no sólo Carrasco.
+        label: 'Declarar efectivo en la Aduana',
+        description: 'Hasta US$ 10.000 no se declara; por encima, en cualquier frontera.',
+        to: '/declarar-dinero-en-efectivo-uruguay',
       },
       {
         label: 'Problemas con la aduana',
@@ -304,6 +344,8 @@ export const guideHubs: readonly GuideHub[] = [
       'como-afecta-la-fed-al-dolar',
       'proteger-ahorros-de-la-inflacion',
       'unidad-indexada-explicada',
+      'ui-ur-bpc-diferencias',
+      'tasa-de-politica-monetaria-uruguay',
     ],
     resources: [
       {
@@ -320,6 +362,11 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Evolución del precio de los autos',
         description: 'Cómo cambia lo que se pide por un auto usado, por modelo.',
         to: '/evolucion-precio-autos-usados-uruguay',
+      },
+      {
+        label: 'Qué bajó y qué subió de precio',
+        description: 'Los avisos que cambiaron de precio, cada uno contra el suyo de ayer.',
+        to: '/cambios-de-precio-uruguay',
       },
       {
         label: 'Histórico del dólar',
@@ -377,6 +424,17 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Pasá de UI a pesos y viceversa.',
         to: '/herramientas/conversor-unidad-indexada',
       },
+      {
+        label: 'Lo que Uruguay busca hoy',
+        description:
+          'Las tendencias de búsqueda del día y los titulares de economía, releídos cada 3 horas.',
+        to: '/tendencias-uruguay',
+      },
+      {
+        label: 'De qué habla Uruguay sobre plata',
+        description: 'Los temas de dinero que más se repiten en Reddit Uruguay, con los hilos.',
+        to: '/temas-de-dinero-reddit',
+      },
     ],
     terms: [
       'bcu',
@@ -416,6 +474,7 @@ export const guideHubs: readonly GuideHub[] = [
       'derechos-del-inquilino-uruguay',
       'que-revisar-antes-de-firmar-alquiler',
       'alquiler-temporario-uruguay',
+      'irpf-de-alquileres-uruguay',
     ],
     resources: [
       {
@@ -428,6 +487,12 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Análisis del alquiler',
         description: 'Cuánto se pide por zona, tipo y dormitorios, calculado cada semana.',
         to: '/analisis-alquileres-uruguay',
+      },
+      {
+        label: 'Subsidio de alquiler',
+        description:
+          'Lo que el MVOT paga y lo que no: topes de 8 a 12 UR, llamado y sorteo, no tu contrato.',
+        to: '/subsidio-de-alquiler-uruguay',
       },
       {
         label: 'Evolución del alquiler',
@@ -469,6 +534,14 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Primer alquiler: gastos y trámites',
         description: 'Presupuesto de entrada, garantía CGN, UTE, OSE y tributos.',
         to: '/primer-alquiler-uruguay',
+      },
+      {
+        // La guía homónima del catálogo (`garantias-de-alquiler-uruguay`, arriba) explica los tipos;
+        // esta página es la que CALCULA el precio y convierte los topes en UR a pesos del día. Dos
+        // URLs sobre el mismo nombre, y las etiquetas se separan por eso, igual que /impuesto-temu-*.
+        label: 'Cuánto cuesta la garantía',
+        description: '3 % del alquiler por mes a cada parte y el tope de 18 UR, en pesos de hoy.',
+        to: '/garantia-de-alquiler-uruguay',
       },
       {
         label: 'Alquilar sin recibo de sueldo',
@@ -516,6 +589,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/alquiler-de-temporada-uruguay',
       },
       {
+        label: 'Reajuste de alquileres',
+        description: 'El coeficiente legal de cada mes, con el decreto que lo fija.',
+        to: '/coeficiente-de-reajuste-de-alquileres-uruguay',
+      },
+      {
         label: 'Costo de vida',
         description: 'Cuánto necesitás para vivir donde querés.',
         to: '/herramientas/costo-de-vida',
@@ -524,6 +602,11 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Fletes y mudanzas',
         description: 'Cuánto sale mudarse y a quién contratar.',
         to: '/fletes-mudanzas-uruguay',
+      },
+      {
+        label: 'Armadores de muebles',
+        description: 'Quién arma muebles en tu barrio y cuánto cobra por cada uno.',
+        to: '/armadores-de-muebles-montevideo',
       },
       {
         label: 'Equipar una casa',
@@ -535,6 +618,11 @@ export const guideHubs: readonly GuideHub[] = [
         description:
           'Heladeras, colchones, lavarropas y más, nuevos y usados, con filtros y tu lista.',
         to: '/equipar-casa-uruguay/productos',
+      },
+      {
+        label: 'Cuánto gastar en un sommier',
+        description: 'Qué compra cada tramo de precio y cuándo pagar más ya no compra nada.',
+        to: '/cuanto-gastar-en-un-sommier-uruguay',
       },
       {
         label: 'Pensiones estudiantiles',
@@ -597,6 +685,11 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Cooperativas de vivienda',
         description: 'El tope de ingresos del MVOT, pasado a pesos de hoy.',
         to: '/cooperativas-de-vivienda-uruguay',
+      },
+      {
+        label: 'Préstamo hipotecario',
+        description: 'Por qué la cuota se firma en UI o UR, y nunca en dólares.',
+        to: '/prestamo-hipotecario-uruguay',
       },
       {
         label: 'Calculadora de préstamo',
@@ -703,6 +796,7 @@ export const guideHubs: readonly GuideHub[] = [
       'hablar-de-dinero-en-pareja-uruguay',
       'division-de-bienes-en-el-divorcio-uruguay',
       'proteger-tu-patrimonio-en-pareja-uruguay',
+      'asignacion-familiar-doble-uruguay',
     ],
     resources: [
       {
@@ -785,9 +879,20 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/que-auto-comprar-uruguay',
       },
       {
+        label: 'Comparar autos usados',
+        description:
+          'Dos o tres modelos lado a lado: a qué año llegás con tu plata, cuánto cuesta tenerlo y en qué gana cada uno.',
+        to: '/comparar-autos-usados-uruguay',
+      },
+      {
         label: '¿Cuánto vale mi auto?',
         description: 'El precio de mercado de tu auto, con los avisos de hoy.',
         to: '/cuanto-vale-mi-auto-uruguay',
+      },
+      {
+        label: 'Latin NCAP: los ensayos',
+        description: 'Las estrellas de cada versión ensayada, con el enlace al resultado oficial.',
+        to: '/latin-ncap-uruguay',
       },
       {
         label: 'Evolución del precio de los autos',
@@ -918,6 +1023,7 @@ export const guideHubs: readonly GuideHub[] = [
       'cancelar-prestamo-antes-de-tiempo-uruguay',
       'me-compraron-la-deuda-uruguay',
       'saldo-a-favor-tarjeta-de-credito-uruguay',
+      'como-saber-si-tengo-deudas-uruguay',
     ],
     resources: [
       {
@@ -981,6 +1087,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/prescripcion-de-deudas-con-el-estado-uruguay',
       },
       {
+        label: 'Cuándo prescribe una deuda privada',
+        description: '5 años para ejecutar, 10 para demandar y 3 si firmaste un vale.',
+        to: '/prescripcion-de-deudas-privadas-uruguay',
+      },
+      {
         label: '¿Cuotas o contado?',
         description: 'La tasa que el comercio no te dice, contra lo que rinde la plata quieta.',
         to: '/conviene-comprar-en-cuotas',
@@ -1022,6 +1133,8 @@ export const guideHubs: readonly GuideHub[] = [
       'como-funciona-el-irpf-uruguay',
       'trabajar-para-el-exterior-desde-uruguay',
       'salario-minimo-uruguay-cuanto-es',
+      'trabajo-domestico-uruguay',
+      'cuenta-sueldo-elegir-banco-uruguay',
       'me-quede-sin-trabajo-mutualista-fonasa-uruguay',
       'como-pedir-un-aumento-de-sueldo-uruguay',
       'pedir-que-me-despidan-uruguay',
@@ -1059,6 +1172,12 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/devolucion-fonasa-uruguay',
       },
       {
+        label: 'Cambiar de mutualista',
+        description:
+          'El mes que te toca por el último dígito de la cédula, y a ASSE en cualquier momento.',
+        to: '/cambiar-de-mutualista-uruguay',
+      },
+      {
         label: 'Fondo de Solidaridad',
         description: 'Quién aporta, cuánto por año en pesos y hasta cuándo se paga.',
         to: '/fondo-de-solidaridad-uruguay',
@@ -1094,6 +1213,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/feriados-que-se-corren-uruguay',
       },
       {
+        label: 'Feriados 2027',
+        description: 'Las 15 fechas, los 6 fines de semana largos y los 4 que caen fin de semana.',
+        to: '/feriados-2027-uruguay',
+      },
+      {
         label: 'Cuándo se cobra el aguinaldo',
         description:
           'Hasta el 20 de diciembre de 2026 por decreto; la cuota de junio y quién paga.',
@@ -1123,6 +1247,17 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Licencia de la construcción',
         description: 'En la obra las paga el BPS: tres pagos al año y el tope de 16 días.',
         to: '/licencia-de-la-construccion-uruguay',
+      },
+      {
+        label: 'Accidente de trabajo',
+        description:
+          'La Ley 16.074 (art. 9) mantiene la indemnización aun con culpa grave tuya: sólo se pierde si fue a propósito.',
+        to: '/accidente-de-trabajo-uruguay',
+      },
+      {
+        label: 'Trabajar antes de los 18',
+        description: 'Desde los 15 con el carné del INAU: hasta 6 horas por día y entre 6 y 22.',
+        to: '/trabajo-para-menores-de-edad-uruguay',
       },
       {
         label: 'Mercado IT',
@@ -1171,6 +1306,17 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/a-quien-le-reclamo-uruguay',
       },
       {
+        label: 'Reclamos a la Intendencia por barrio',
+        description:
+          'Alumbrado, saneamiento y limpieza: cuántos reclamos registra cada barrio de Montevideo.',
+        to: '/reclamos-a-la-intendencia-por-barrio-uruguay',
+      },
+      {
+        label: 'Compensación por corte de luz',
+        description: 'No se pide: la calcula URSEA por semestre y se descuenta de la factura.',
+        to: '/compensacion-por-corte-de-luz-uruguay',
+      },
+      {
         label: 'Defensa del Consumidor',
         description: 'Qué puede hacer por vos y qué no.',
         to: '/defensa-al-consumidor-uruguay',
@@ -1179,6 +1325,11 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Derechos en compras online',
         description: 'Retracto, vicios y remedios de la Ley 17.250.',
         to: '/derechos-consumidor-compras-online',
+      },
+      {
+        label: 'Reclamar sin abogado',
+        description: 'Hasta 100 UR el reclamo de consumo va al Juzgado de Paz.',
+        to: '/reclamar-sin-abogado-uruguay',
       },
       {
         label: 'Estafas en Uruguay',
@@ -1215,6 +1366,11 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Dónde y cómo denunciar ruidos en tu barrio.',
         to: '/denunciar-ruidos-molestos-uruguay',
       },
+      {
+        label: 'Me grabaron y publicaron el video',
+        description: 'Qué norma te ampara, por dónde se pide el retiro y qué plazos corren.',
+        to: '/grabacion-sin-consentimiento-uruguay',
+      },
     ],
     relatedHubs: [
       'sueldo-trabajo-e-impuestos-uruguay',
@@ -1239,9 +1395,17 @@ export const guideHubs: readonly GuideHub[] = [
       'invertir-en-la-bolsa-de-usa-desde-uruguay',
       'bonos-y-renta-fija-uruguay',
       'conviene-ahorrar-en-dolares-uruguay',
+      // La de al lado contesta "¿conviene?" y ésta "¿en qué moneda, según en qué vas a gastar?":
+      // dos preguntas distintas sobre la misma plata, y por eso las etiquetas no se repiten.
+      'ahorrar-en-dolares-o-pesos',
       'interes-compuesto-explicado-uruguay',
       'errores-y-estafas-al-invertir-uruguay',
       'comprar-criptomonedas-en-uruguay',
+      // El impuesto de TENER va en este tema y no en el del sueldo: este hub ya lleva como recurso
+      // `/impuestos-inversiones-uruguay`, que es el impuesto de lo que RINDE, así que acá el par
+      // queda completo. Y el lector que cruza los $ 6.653.000 llegó ahí ahorrando o comprando, que
+      // es de lo que habla el `intro` de este tema.
+      'impuesto-al-patrimonio-uruguay',
     ],
     resources: [
       {
@@ -1263,6 +1427,11 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Calculadora de plazo fijo',
         description: 'Simulá el rendimiento.',
         to: '/herramientas/calculadora-plazo-fijo',
+      },
+      {
+        label: 'Letras de Regulación Monetaria',
+        description: 'La tasa de la última licitación del BCU y si le gana al plazo fijo.',
+        to: '/letras-de-regulacion-monetaria-uruguay',
       },
       {
         label: 'Calculadora de impuestos a inversiones',
@@ -1328,7 +1497,9 @@ export const guideHubs: readonly GuideHub[] = [
       'como-evitar-estafas-financieras-uruguay',
       'educacion-financiera-para-jovenes-uruguay',
       'subsidio-expensas-funerarias-bps-uruguay',
+      'asistente-personal-bps-uruguay',
       'cobrar-jubilacion-uruguaya-desde-el-exterior',
+      'jubilacion-parcial-uruguay',
       'canasta-fin-de-ano-bps-uruguay',
       'precio-supergas-garrafa-uruguay',
     ],
@@ -1359,6 +1530,12 @@ export const guideHubs: readonly GuideHub[] = [
         label: '¿Cuándo me puedo jubilar?',
         description: 'La edad y los años de trabajo que pide tu generación, según la Ley 20.130.',
         to: '/cuando-me-puedo-jubilar-uruguay',
+      },
+      {
+        label: 'Cómputo por hijo',
+        description:
+          'Un año de servicios por hijo, hasta cinco, y dos más por discapacidad severa.',
+        to: '/computo-por-hijo-jubilacion-uruguay',
       },
       {
         label: 'IASS: impuesto a las jubilaciones',
@@ -1443,6 +1620,35 @@ export const guideHubs: readonly GuideHub[] = [
         description: 'Una semana de comidas en un día de cocina, con precios del SIPC.',
         to: '/meal-prep-uruguay',
       },
+      // Los tres servicios del hogar, que entran juntos porque son un racimo: sus propias
+      // páginas se declaran hermanas («los tres servicios del hogar con la misma gramática») y se
+      // enlazan entre ellas, pero ninguna figuraba en ningún `resources`, así que el racimo era
+      // una isla que el bloque «Más sobre este tema» no alcanzaba desde ninguna página. El tema es
+      // el suyo por la vecina más cercana: acá ya estaba TODO gasto recurrente de la casa —la
+      // garrafa de supergas, la canasta del supermercado, los tickets de mutualista, la semana de
+      // comidas— menos los tres que llegan como factura.
+      {
+        label: 'Factura de UTE alta',
+        description:
+          'Qué tarifa te conviene: los escalones del kWh son progresivos y la potencia se paga sin consumir.',
+        to: '/factura-de-ute-uruguay',
+      },
+      {
+        label: 'Factura de OSE',
+        description:
+          'El saneamiento vuelve a cobrar cada metro cúbico: es el 100 % del cargo variable del agua.',
+        to: '/factura-de-ose-uruguay',
+      },
+      {
+        label: 'Cortes de agua por barrio',
+        description: 'Cuántos cortes programados avisó OSE en cada zona, archivados uno por uno.',
+        to: '/cortes-de-agua-por-barrio-uruguay',
+      },
+      {
+        label: 'Deuda con Antel',
+        description: 'Corta por facturas impagas y no por días, y la reconexión no tiene cargo.',
+        to: '/que-pasa-si-no-pago-antel',
+      },
       {
         label: 'Sillas de escritorio',
         description: 'Precios por modelo en tiendas uruguayas, y qué opina r/CharruaDevs.',
@@ -1483,6 +1689,11 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Facturar en monotributo',
         description: 'Talonario o e-factura: cuál te obliga la DGI y cuál te sale menos.',
         to: '/facturar-en-monotributo-uruguay',
+      },
+      {
+        label: 'Registrar una marca',
+        description: 'La tasa de la DNPI va por clase de Niza, y con logo sale 40 % más.',
+        to: '/registrar-una-marca-uruguay',
       },
       {
         label: 'Ropa por kilo y fardos',
@@ -1701,6 +1912,29 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/cuanto-sale-el-pasaporte-uruguayo',
       },
       {
+        label: 'Cuánto sale la partida de nacimiento',
+        description: 'Digital y sin costo desde 2022; antes de eso es manuscrita y tiene arancel.',
+        to: '/cuanto-sale-la-partida-de-nacimiento-uruguay',
+      },
+      {
+        // El paso que viene DESPUÉS de los documentos de arriba, cuando tienen que valer afuera:
+        // la apostilla autentica una firma ya registrada ante Cancillería, así que según quién
+        // firmó el papel hay otro organismo antes. La etiqueta no repite «cuánto sale» porque lo
+        // que la página agrega al arancel es el ORDEN.
+        label: 'Apostillar un documento',
+        description: 'Apostilla o legalización, y el organismo que firma antes según quién firmó.',
+        to: '/apostillar-un-documento-uruguay',
+      },
+      {
+        // El único trámite del tema que no se arregla el día que te acordás: lo firma el padre que
+        // NO viaja. La etiqueta dice «cuándo hace falta» y no «cuánto sale» porque la mitad de las
+        // familias que lo buscan no lo necesita, y ése es el dato que la página pone adelante.
+        label: 'Permiso de menor para viajar',
+        description:
+          'Con pasaporte uruguayo no se exige; con cédula sí, y lo firma quien se queda.',
+        to: '/permiso-de-menor-para-viajar-uruguay',
+      },
+      {
         label: 'Mudarse a Uruguay',
         description: 'Residencia legal, paso a paso.',
         to: '/mudarme-a-uruguay-residencia',
@@ -1724,6 +1958,14 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Apps útiles y del Estado',
         description: 'Las que todos deberían tener y cómo reconocer la oficial en cada tienda.',
         to: '/apps-utiles-uruguay',
+      },
+      {
+        // Va en este tema y no en uno de elecciones porque la consulta llega pegada a un trámite
+        // frenado: la credencial sin el sello traba ocho actos de la Ley 16.017, y uno de ellos
+        // la propia ley dice que no se arregla pagando.
+        label: 'Multa por no votar',
+        description: '1 UR la primera vez, 3 UR cada siguiente, y los 8 trámites que traba.',
+        to: '/multa-por-no-votar-uruguay',
       },
     ],
     terms: ['residencia-fiscal', 'dgi'],

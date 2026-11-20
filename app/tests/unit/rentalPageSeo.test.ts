@@ -165,4 +165,35 @@ describe('individual rental structured data', () => {
     )
     expect(nodes.find(node => node['@type'] === 'Apartment')?.['@id']).toBe(`${url}#property`)
   })
+
+  it('names the locality the way the page does, and leaves out one that is not a barrio', () => {
+    const address = (options: Parameters<typeof schema>[0]) =>
+      graph(options).find(node => node['@type'] === 'Apartment')!.address
+    // 9fedu4 published `addressLocality: 'POCITOS'` while the page said Pocitos.
+    expect(
+      address({ property: { ...property, neighborhood: 'POCITOS' }, addressLocality: 'Pocitos' })
+    ).toMatchObject({ addressLocality: 'Pocitos', addressRegion: 'Montevideo' })
+    expect(
+      address({ property: { ...property, neighborhood: '60 m2 60 m2' }, addressLocality: null })
+    ).not.toHaveProperty('addressLocality')
+    // Without the option the stored neighborhood is kept, as before.
+    expect(address({})).toMatchObject({ addressLocality: 'Cordón' })
+  })
+
+  it('publishes the street the page cleaned, and none when nothing is left of it', () => {
+    const address = (options: Parameters<typeof schema>[0]) =>
+      graph(options).find(node => node['@type'] === 'Apartment')!.address
+    // An El País advert carried "Casasweb" as its address; others "11300, Uruguay".
+    expect(
+      address({ property: { ...property, address: 'Casasweb' }, streetAddress: '' })
+    ).not.toHaveProperty('streetAddress')
+    expect(
+      address({
+        property: { ...property, address: 'Chana 1800, Cordón' },
+        streetAddress: 'Chana 1800',
+      })
+    ).toMatchObject({ streetAddress: 'Chana 1800', addressLocality: 'Cordón' })
+    // Without the option the advert's own string is kept, as before.
+    expect(address({})).toMatchObject({ streetAddress: 'Chana 1800' })
+  })
 })

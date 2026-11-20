@@ -3,23 +3,20 @@
 // per-IP limit kept in memory (no IP is stored) and closed lists for every answer
 // (utils/rentalFeedback.ts). An answer that came from an alert keeps that alert's zone, and answering
 // the same survey again from a later email updates the first answer instead of adding a second.
+//
+// The micro-survey posts on the first tap (Sí / En parte / No) and gets the row's id back: what
+// fell short and the comment come later, if at all, through PATCH /api/rental-feedback/:id, which
+// only the same browser can send within FEEDBACK_FOLLOW_UP_MINUTES.
 import { isValidObjectId } from 'mongoose'
 import { connectDb } from '../../utils/db'
 import { RentalFeedbackModel } from '../../models/RentalFeedback'
 import { RentalAlertModel } from '../../models/RentalAlert'
 import { carContactRateOk } from '../../utils/carContacts'
-import { escapeTelegramMarkdown, sendTelegram } from '../../utils/telegram'
-import {
-  optionLabel,
-  FOUND_OPTIONS,
-  sanitizeRentalFeedback,
-  type RentalFeedbackInput,
-} from '../../../utils/rentalFeedback'
+import { noticeRentalFeedback } from '../../utils/rentalFeedbackNotice'
+import { sanitizeRentalFeedback, type RentalFeedbackInput } from '../../../utils/rentalFeedback'
 
 const perMinute = new Map<string, { count: number; resetAt: number }>()
 const perDay = new Map<string, { count: number; resetAt: number }>()
-/** Telegram notices per hour, so a burst of answers cannot flood the admin chat. */
-const notices = new Map<string, { count: number; resetAt: number }>()
 
 function alertZone(filters: Record<string, string> | undefined): string | null {
   if (!filters) return null
@@ -65,6 +62,7 @@ export default defineEventHandler(async event => {
   }
 
   const doc = { ...record, alertKind }
+  let id: string | null = null
   if (record.kind === 'survey' && record.alertId) {
     await RentalFeedbackModel.updateOne(
       { kind: 'survey', surveyVersion: record.surveyVersion, alertId: record.alertId },
@@ -72,19 +70,11 @@ export default defineEventHandler(async event => {
       { upsert: true }
     )
   } else {
-    await RentalFeedbackModel.create(doc)
+    const created = await RentalFeedbackModel.create(doc)
+    id = String(created._id)
   }
 
-  const chatId = String(useRuntimeConfig().telegram?.adminChatId || '')
-  if (record.comment && chatId && carContactRateOk(notices, 'admin', 10, 3_600_000)) {
-    const where = [record.surface, record.zone, record.propertyKey].filter(Boolean).join(' · ')
-    const found = record.found ? ` · ${optionLabel(FOUND_OPTIONS, record.found)}` : ''
-    void sendTelegram(
-      chatId,
-      escapeTelegramMarkdown(
-        `Opinión de alquileres (${record.kind}${found}) — ${where}\n\n${record.comment}`
-      )
-    )
-  }
-  return { ok: true }
+  noticeRentalFeedback(record)
+  // Only the micro-survey completes its row later; the other kinds are whole when they arrive.
+  return record.kind === 'micro' && id ? { ok: true, id } : { ok: true }
 })

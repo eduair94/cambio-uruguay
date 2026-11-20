@@ -58,6 +58,14 @@ export interface EquiparCategory {
   include: RegExp;
   /** …and not this. */
   exclude?: RegExp;
+  /**
+   * …and the TITLE alone must not match this. `exclude` also reads what the store says around the
+   * title (its category path, the description), which is right for an accessory and wrong for a word
+   * a store prints on a whole aisle: "Colchones y Sommiers" is the category of every mattress at the
+   * store that has it, so excluding "sommier" there would empty the mattress row. Whether a listing
+   * is a mattress or a sommier set is something only its own title can say.
+   */
+  titleExclude?: RegExp;
   urlHint?: RegExp;
   storeQueries: readonly string[];
   mlQueries: readonly string[];

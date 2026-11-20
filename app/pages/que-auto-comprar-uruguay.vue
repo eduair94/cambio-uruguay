@@ -153,6 +153,12 @@
               {{ excludedText }}
             </span>
           </p>
+          <p v-if="compareLink" class="text-body-2 mb-4">
+            <NuxtLink :to="compareLink.to">
+              Comparar las {{ compareLink.count === 2 ? 'dos' : 'tres' }} primeras lado a
+              lado</NuxtLink
+            >: en qué gana cada una con tu plata, el gráfico de precio por año y la tabla completa.
+          </p>
 
           <article
             v-for="(result, index) in advice.results"
@@ -372,6 +378,11 @@
       </VCol>
     </VRow>
 
+    <!-- La unidad intermedia, después del asesor y su resultado (lo que la persona vino a usar) y
+         no arriba de las preguntas: la página daba 0,47 impresiones por vista (28 días al
+         30/10/2026). FaqSection va con :ad="false": el tope sigue en dos. -->
+    <AdSlot placement="in-article" class="mt-10" />
+
     <section class="mt-10">
       <h2 class="text-h5 mb-3">Antes de señar</h2>
       <ol class="advisor-checklist pl-5">
@@ -440,6 +451,13 @@
           relee cada dos semanas.
         </li>
         <li>
+          <strong>La seguridad.</strong> Los ensayos de Latin NCAP del modelo, que se muestran y no
+          puntúan: cada uno es de una versión con sus airbags y casi nunca dice desde qué año vale.
+          La lista completa de los ensayos de los modelos que se venden acá, con el enlace a cada
+          resultado oficial, está en
+          <NuxtLink :to="localePath('/latin-ncap-uruguay')">los ensayos de Latin NCAP</NuxtLink>.
+        </li>
+        <li>
           <strong>El orden.</strong> Cada opción se puntúa contra las demás que pasaron tus filtros
           en siete cosas: antigüedad, costo de tenerlo, reventa, repuestos, seguridad, espacio y
           ajuste a tu uso. Lo que marcás como importante pesa el triple. Un dato que falta vale el
@@ -456,7 +474,12 @@
       </p>
     </section>
 
-    <FaqSection :items="[...CAR_ADVISOR_FAQ]" heading="Preguntas frecuentes" :expanded="true" />
+    <FaqSection
+      :items="[...CAR_ADVISOR_FAQ]"
+      heading="Preguntas frecuentes"
+      :expanded="true"
+      :ad="false"
+    />
 
     <AssistantCta topic="autos" :filters="assistantFilters" class="mt-8" />
   </VContainer>
@@ -484,6 +507,7 @@ import {
   PATENTE_2026,
   latinNcapLabel,
 } from '~/utils/carAdvisorFigures'
+import { CAR_COMPARE_PATH, carCompareQueryParams, type CarComparePick } from '~/utils/carCompare'
 import { PATENTE_CONSULTA_URL } from '~/utils/trafficFines'
 import {
   CAR_BODY_LABELS,
@@ -680,6 +704,30 @@ function depreciationText(result: CarAdvisorResult): string {
   if (result.costs.depreciationFromMarket) return 'caída típica del mercado'
   return `${carReportPercent(result.annualDrop, 1)} por año`
 }
+
+// Las tres primeras opciones de modelos distintos, con su versión y el mismo presupuesto, en el
+// comparador (/comparar-autos-usados-uruguay).
+const compareLink = computed(() => {
+  const picks: CarComparePick[] = []
+  for (const result of advice.value?.results ?? []) {
+    if (picks.some(pick => pick.slug === result.marketSlug)) continue
+    picks.push({ slug: result.marketSlug, fuel: result.fuel, transmission: result.transmission })
+    if (picks.length === 3) break
+  }
+  if (picks.length < 2 || !query.value.budget) return null
+  return {
+    count: picks.length,
+    to: localePath({
+      path: CAR_COMPARE_PATH,
+      query: carCompareQueryParams({
+        picks,
+        year: null,
+        budget: query.value.budget,
+        kmYear: query.value.kmYear,
+      }),
+    }),
+  }
+})
 
 const generatedDay = computed(() => {
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(advice.value?.generatedAt ?? '')

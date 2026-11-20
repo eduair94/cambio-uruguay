@@ -364,16 +364,33 @@ const calculatorLink = computed(() => ({
 
 const canonicalUrl = computed(() => `https://cambio-uruguay.com/importar/${slug.value}`)
 
-const verifiedDisplay = computed(() =>
-  category.value
-    ? new Date(category.value.verifiedAt).toLocaleDateString(dateLocale(locale.value), {
-        timeZone: siteTimeZone(category.value.verifiedAt),
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
-    : ''
-)
+/** Una fecha YYYY-MM-DD en el idioma de la página, sin correrse de día. */
+function displayDate(iso: string): string {
+  return new Date(iso).toLocaleDateString(dateLocale(locale.value), {
+    timeZone: siteTimeZone(iso),
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
+/** «a», «a y b», «a, b y c». */
+function joinTopics(topics: string[]): string {
+  return topics.length < 2
+    ? (topics[0] ?? '')
+    : `${topics.slice(0, -1).join(', ')} y ${topics.at(-1)}`
+}
+
+// Una ficha con una corrección parcial (`revised`) publica las dos fechas: la del contraste entero
+// y la de lo que se volvió a leer. La plantilla le pone el punto final. Una ficha sin `revised`
+// imprime exactamente lo mismo que antes.
+const verifiedDisplay = computed(() => {
+  const c = category.value
+  if (!c) return ''
+  const verified = displayDate(c.verifiedAt)
+  if (!c.revised) return verified
+  return `${verified}. El ${displayDate(c.revised.at)} se actualizó, contra la norma vigente, lo que dice sobre ${joinTopics(c.revised.topics)}`
+})
 
 defineOgImageComponent('Cambio', {
   title: () => category.value?.title ?? 'Importar a Uruguay',
@@ -408,7 +425,7 @@ useHead({
               description: category.value?.description,
               image: `https://cambio-uruguay.com/__og-image__/image/importar/${slug.value}/og.png`,
               datePublished: category.value?.verifiedAt,
-              dateModified: category.value?.verifiedAt,
+              dateModified: category.value?.revised?.at ?? category.value?.verifiedAt,
               inLanguage: 'es-UY',
               mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl.value },
               speakable: {

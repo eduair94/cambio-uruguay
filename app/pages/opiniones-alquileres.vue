@@ -7,10 +7,15 @@
 <template>
   <VContainer fluid class="op-admin py-6">
     <h1 class="text-h4">Opiniones de alquileres</h1>
-    <p class="text-body-2 text-medium-emphasis mt-1 mb-6">
+    <p class="text-body-2 text-medium-emphasis mt-1 mb-3">
       Panel privado. Las respuestas de los últimos 120 días: la pregunta al final de los resultados
       y de la ficha, la caja de sugerencias y la encuesta (correos de alertas y newsletter). Sólo lo
       ven las cuentas de <code>NUXT_ADMIN_EMAILS</code>.
+    </p>
+    <p class="text-body-2 text-medium-emphasis mb-6">
+      Una <strong>pregunta</strong> se guarda con el primer toque (Sí / En parte / No): qué faltó y
+      el comentario llegan después, sólo si la persona los agrega en los 30 minutos siguientes. Una
+      fila con la respuesta sola es una respuesta completa, no una a medias.
     </p>
 
     <VAlert v-if="notice" :type="notice.type" variant="tonal" class="mb-4">{{
@@ -26,6 +31,10 @@
         <div v-for="(n, kind) in data.byKind" :key="kind">
           <span class="op-admin__stat">{{ n }}</span
           ><span class="op-admin__label">{{ KIND_LABEL[kind] || kind }}</span>
+        </div>
+        <div v-if="data.byKind.micro">
+          <span class="op-admin__stat">{{ data.microWithDetail ?? 0 }}</span
+          ><span class="op-admin__label">preguntas con qué faltó o comentario</span>
         </div>
         <div v-if="data.survey.nps !== null">
           <span class="op-admin__stat">{{ data.survey.nps }}</span>
@@ -135,6 +144,8 @@ interface FeedbackRow {
 interface FeedbackSummary {
   total: number
   byKind: Record<string, number>
+  /** Micro-survey answers completed after the tap with reasons or a comment. */
+  microWithDetail?: number
   bySurface: Record<string, number>
   found: Record<string, number>
   reasons: Record<string, number>

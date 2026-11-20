@@ -1,6 +1,6 @@
 # Equipar una casa vacía (`/equipar-casa-uruguay`)
 
-Cuánto sale llenar una vivienda sin amueblar en Uruguay: 38 categorías con precio vivo, ordenadas
+Cuánto sale llenar una vivienda sin amueblar en Uruguay: 39 categorías con precio vivo, ordenadas
 por necesidad, con el mercado de usados al lado del nuevo y tres canastas ya sumadas.
 
 Origen: el hilo https://www.reddit.com/r/uruguay/comments/1w9c2r6/independizarse/ (2026-09-06), que
@@ -51,7 +51,8 @@ chica de otro para nada.
 tienda Fenicio es el correcto para una categoría y truncaría 38 en orden de sitemap, lo que sesga en
 silencio todas las bandas hacia lo que la tienda lista primero.
 
-Presupuestos: `EQUIPAR_ML_MAX_SCANS` (70) y `EQUIPAR_FB_MAX_QUERIES` (60 la diaria;
+Presupuestos: `EQUIPAR_ML_MAX_SCANS` (72 desde el 20/10/2026: las dos búsquedas del sommier trajeron su
+propio presupuesto, ver abajo) y `EQUIPAR_FB_MAX_QUERIES` (60 la diaria;
 `EQUIPAR_FB_FAST_QUERIES`, 13, la horaria). Los planes van **intercalados por categoría**, así que
 un corte le cuesta a cada categoría su cola y no a una categoría todo. El orden es el del registro,
 que pone heladera, colchón y lavarropas arriba: si se corta, se cortan los repasadores.
@@ -167,7 +168,7 @@ con una letra adelante. `tests/equipar/registry.test.ts` exige ese texto.
 - **A (11)** lavarropas · microondas · mesa+sillas · ropero · tabla de picar · escurridor · plancha ·
   estufa · ventilador · almohada · acolchado
 - **B (8)** TV · sofá · mixer · pava · aspiradora · tostadora · aire acondicionado · cortina de baño
-- **C (5)** secarropas · deshumidificador · impresora · horno eléctrico · cafetera
+- **C (6)** secarropas · deshumidificador · impresora · horno eléctrico · cafetera · sommier
 
 Los cuatro ítems que el hilo discute (secarropas, deshumidificador, impresora, tabla de picar) quedan
 donde el hilo los deja, con el motivo citado.
@@ -293,7 +294,7 @@ datos reales:
 
 El tier C nunca entra a una canasta. El colchón nunca se compra usado, ni siquiera en la mínima: es
 la única categoría del catálogo donde la opción barata es el mal consejo, y el registro lo declara
-(`usedOk: false`).
+(`usedOk: false`). El sommier hereda la misma regla porque lo trae adentro.
 
 ## La página
 
@@ -344,6 +345,80 @@ de un usado, y donde el plan excluye la categoría no agrega la ventana de compr
 El sitemap sólo declara las categorías con alguna banda vista en los últimos 4 días —la misma ventana
 que sirve la API—, así que nunca manda a Google una página que sólo puede decir "todavía no hay
 avisos". Cada tarjeta del índice enlaza a su categoría.
+
+## El sommier, y la página que contesta cuánto gastar (2026-10-20)
+
+La pregunta llegó tal cual a r/uruguay el 19/10/2026: «cuánto se debería gastar en un sommier de 2
+plazas, hasta cuándo es inversión y cuándo ya pasa a ser una estafa o dinero mal gastado». El hilo
+se contesta, no se cosecha.
+
+**Hasta ese día el sommier no se medía, y la fila del colchón se quedaba con todos los conjuntos.**
+En una tienda uruguaya "sommier" es la base CON su colchón, y el mismo conjunto se vende como
+"Sommier + Colchón", "Colchón y base" o "Base sommier con colchón": todos dicen "colchón", así que
+`colchon.include` los aceptaba y la banda del colchón de 2 plazas mezclaba colchones con conjuntos.
+Desde este cambio:
+
+- **`sommier` es su propia categoría** (tier C, `modelo`, `usedOk: false`, variantes queen, 1 plaza
+  y 2 plazas). Tier C porque lo que el conjunto suma sobre el colchón —que ya es tier S— es la base,
+  y eso puede esperar; y tier C además porque ninguna canasta suma ese tier: con el sommier adentro
+  el colchón se contaría dos veces. El planificador tampoco lo compra (sólo S, A y B).
+- **`titleExclude`** (`classes/equipar/types.ts`): un filtro que mira SÓLO el título. `exclude`
+  mira también la ruta de categoría y la descripción de la tienda, y medio rubro archiva cada
+  colchón bajo "Colchones y Sommiers": excluir "sommier" ahí vaciaba la fila del colchón. El
+  colchón excluye por título exactamente lo que el sommier reclama (`SOMMIER_SET` en el registro),
+  así un conjunto nunca se cuenta dos veces ni cae entre las dos filas.
+- **La base sola no es un sommier**: un título que nombra la base y no vende el colchón con ella
+  ("Base Sommier 2 Plazas", "Cama Box Base Para Colchón") queda afuera de las dos filas, igual que
+  un título que ABRE con la sábana, el protector, la almohada, la pollera o el respaldo "para
+  sommier": ése vende el accesorio, y la categoría del accesorio lo toma más abajo.
+- **La variante queen se prueba primero**: "2 1/2 plazas" y "2 plazas y media" son queen, y "1 1/2
+  plaza" se normaliza a "1 1 2 plaza", que el patrón de 2 plazas leería como "2 plaza".
+- **Va antes de la ropa de cama en el registro**, por el orden de coincidencia y no por prioridad:
+  un conjunto "con 2 almohadas de regalo" dice "almohada". Su búsqueda de tienda cae después de
+  las primeras 24 (la horaria no cambia) y sus dos búsquedas de Mercado Libre vinieron con dos
+  más de presupuesto (`ML_BUDGET` 70 → 72), así que ninguna categoría perdió una búsqueda que
+  tenía. En Marketplace suma una búsqueda al final del plan (es `usedOk: false`).
+
+**La serie del colchón da un escalón el día del despliegue.** Como pasó con el aire de 12.000 BTU,
+la banda del colchón deja de incluir los conjuntos desde la primera corrida con este registro: la
+mediana puede bajar de un día para el otro, y es la muestra la que cambió, no el precio.
+
+### `/cuanto-gastar-en-un-sommier-uruguay`
+
+Sólo en español (canonical sin prefijo), como las fichas. Lee `GET /api/sommier`
+(`app/server/api/sommier.get.ts`), que cruza dos cosas que la cosecha ya deja y devuelve SÓLO
+agregados —ni títulos, ni vendedores, ni enlaces—; la cuenta es pura y está en
+`app/utils/sommierBudget.ts`:
+
+- **La banda** de cada medida sale de `equiparitems`, la MISMA que imprime
+  `/equipar-casa-uruguay/sommier`: el sitio no dice dos medianas distintas del mismo día.
+- **Qué compra cada tramo de precio** sale de `equiparlistings` (nuevos, 4 días, sin
+  sospechosos): por tramo (debajo de p25, p25–p75, hasta el p90 de los avisos, más arriba) cuenta
+  qué dice el título de cada aviso sobre el núcleo (pocket, Bonnell, "resortes" a secas, espuma, no
+  lo dice), si trae capa de confort, si dice "ortopédico/terapéutico/postural" y si muestra un
+  precio tachado. Es lo que el aviso dice de sí mismo: no probamos colchones, así que nada de eso
+  mide comodidad ni duración, y la página lo aclara.
+- **El precio tachado contra el mercado**: cuántos avisos tachan un precio, el descuento que
+  declaran en mediana y cuántos tachan un precio por encima del p90 de lo que cobra el mercado de
+  la misma medida. El tachado se pasa a pesos con la cotización implícita del propio aviso
+  (`priceUyu / price`), porque `listPrice` viaja en la moneda del aviso.
+- **"Ortopédico" contra el resto** sólo con 8 avisos de cada lado.
+- **Lo que suma la base**: la mediana del conjunto contra la del colchón solo de la misma medida,
+  dicho como diferencia de medianas de dos grupos de avisos, nunca como el precio de una base.
+- **El precio por noche** en 5, 8 y 10 años y una calculadora: los años son un horizonte que elige
+  el lector, no una vida útil (ésa es la garantía escrita de cada fabricante, que no medimos).
+
+Pisos: una mediana desde 8 avisos (el mismo de `bands.ts`), una proporción de tramo desde 5. Sin
+banda del sommier la página lo dice y da el colchón solo como piso. La respuesta del encabezado y
+el FAQ hablan siempre de 2 plazas, que es la pregunta; el selector de medida cambia las secciones de
+abajo. Enlaces de entrada: el "Seguí leyendo" del hub (es/en/pt) y la guía de compra de las fichas
+del colchón y del sommier (`decisionGuide` en `equiparCategoryPages.ts`). Fila en el libro de
+cambios: `pagina-cuanto-gastar-en-un-sommier`.
+
+Tests: `tests/equipar/sommier.test.ts` (conjunto contra colchón, base sola, accesorios, medidas,
+fuera de las canastas), `app/tests/unit/sommierBudget.test.ts` (tramos sin huecos ni dobles,
+pisos de muestra, tachado en pesos, respuesta sin banda) y `app/tests/unit/sommierSizesParity.test.ts`
+(las medidas de la página son las variantes del registro).
 
 ## El directorio de avisos y la lista del lector (2026-09-21)
 
@@ -420,3 +495,50 @@ Reusa de autos `CarsSidebarLayout`, `CarsFilterPanel` y `CarsToolbar`; lo propio
 - Facebook fuera de Montevideo (hoy `location=montevideo`; ampliar es más fan-out de consultas).
 - La primera corrida real todavía no ocurrió: los números de cobertura por categoría hay que medirlos
   contra producción antes de citarlos afuera.
+
+## Ficha técnica, filtros y asesor de tamaño (4/11/2026)
+
+Para heladeras, lavarropas, televisores y aires: las compras más caras de la lista y las que se
+eligen por especificación. Diseño en `docs/superpowers/specs/2026-11-04-equipar-ficha-tecnica-design.md`.
+
+**Lo medido.** Avisos frescos: heladera 379 de ML + 202 de tiendas + 242 de Facebook; lavarropas
+372 + 117 + 150; tv 573 + 127 + 147; aire 373 + 67 + 93. Todos los de ML tienen id de producto. La
+ficha de ML por el puente es regular ("Capacidad total = 245 L", "Tipo de deshielo = No frost",
+"Capacidad del lavarropas = 12 kg", "Tipo de carga = Frontal", "Tamaño de la pantalla = 50 \"",
+"Tipo de resolución = 4K", "Capacidad de refrigeración = 12.000 BTU", "Tipo de climatización =
+Frío/Calor") y viene en formato uruguayo: punto de miles y coma decimal, salvo las medidas.
+
+**Backend** (`classes/equipar/specs/`):
+- `fields.ts`: los campos de cada categoría con su banda (afuera queda vacío, nunca se corrige).
+- `parse.ts`: filas de ML → ficha (`fichaFromRows`), título → ficha (`fichaFromTitle`), y la ficha
+  gana campo por campo (`mergeFicha`). Datos sucios reales: un portátil titulado "12000 Btu" declara
+  4.095 en la ficha (gana la ficha); una tele "Full HD" dice "Resolución máxima 3840 x 2160" (manda
+  "Tipo de resolución"). "Frío seco" es no frost. Las frigorías salen de los BTU y al revés (3,968).
+- `store.ts`: `equiparspecs` guarda las FILAS CRUDAS, no la interpretación; una lectura sin tabla
+  nunca borra las filas buenas. `enrich.ts`: `enrichEquiparRow` reinterpreta en cada escritura, así un
+  parser mejor se aplica a todo el catálogo sin volver a leer, y la usan `sync_equipar.ts` y
+  `sync_equipar_specs.ts` (si no, la horaria vaciaría la marca cada hora).
+- `currency-equipar-specs` (`:40`): 40 fichas de ML por corrida, la misma cola con espera de
+  monopatines (`classes/movilidad/specs/queue.ts`). ~1.700 fichas: unos dos días de lectura inicial.
+  Tiendas y Facebook: sólo el título.
+- `snapshot.ts`: `equiparspecsnapshots`, un documento por categoría con los avisos con ficha del
+  vendedor (ni sospechosos ni de Facebook), para el asesor.
+
+**App:**
+- `utils/equiparFicha.ts`: los filtros son DATOS (grupos y opciones por categoría); normalizar la URL,
+  el `$match` sobre `ficha.values.*`, las facetas (`server/utils/equiparFichaFacets.ts`, con
+  `$isNumber`), los chips y la franja de la tarjeta (`EquiparFichaStrip`) salen de la misma tabla. Sólo
+  con la vertical equipar y estas cuatro categorías; las claves (`capacidad`, `carga`, `rasgos`…) viven
+  en `query.eqficha`, separadas de las homónimas de movilidad.
+- Asesor "¿Qué tamaño necesitás?" (`utils/equiparAsesor.ts`, `EquiparTamanoAsesor`) en
+  `/equipar-casa-uruguay/<categoria>`: heladera 130 L + 65 L por persona y ancho del hueco; lavarropas
+  5 kg + 1 por persona, hasta 12; televisor entre la distancia/5,5 y la distancia/4 en pulgadas (SMPTE,
+  30°); aire 115 frigorías por m² (+15 % sol, +10 % último piso) redondeado al tamaño comercial
+  siguiente. Tres elecciones con nombre, y "Ver los que cumplen" lleva los requisitos al directorio
+  como **tamaño libre** (`capacidad=desde-325`, `pulgadas=45-a-63`), no como tramo: un tramo no dice
+  "o más", y el que contiene el mínimo mostraba lo que no alcanza y escondía lo que sobra.
+- Una cifra que la ficha declara fuera de banda queda `descartado` y el título no la completa (ni por
+  la otra unidad: BTU y frigorías son la misma cantidad).
+
+**Siguiente:** páginas por modelo de electrodoméstico (el código de modelo de la ficha de ML es exacto)
+y las fichas de tienda.

@@ -38,7 +38,6 @@ describe("rentalSearchParams", () => {
       amenities: ["ascensor"],
       ownerDirect: true,
       monthlyMaxUyu: 40000,
-      expensesMaxUyu: 6000,
       text: "terraza",
       neighborhoodQuality: ["denuncias"],
       perPage: 3,
@@ -50,7 +49,6 @@ describe("rentalSearchParams", () => {
       comodidades: ["ascensor"],
       dueno: true,
       monthlyMax: 40000,
-      expensesMax: 6000,
       q: "terraza",
       servicios: ["denuncias"],
       availability: "hide_multiple",
@@ -61,30 +59,26 @@ describe("rentalSearchParams", () => {
   it("maps the exclusions to the site's sin* params", () => {
     const q = rentalSearchParams({
       excludeNeighborhoods: ["Centro", "Cordón"],
-      excludeTypes: ["habitacion"],
       excludeSources: ["facebook"],
       excludeWords: ["temporario", "pension"],
       roomsAndResidences: "hide",
     });
     expect(q).toMatchObject({
       sinBarrios: "Centro,Cordón",
-      sinTipos: "habitacion",
       sinPortales: "facebook",
       sinPalabras: "temporario,pension",
       residencias: "ocultar",
     });
     expect(rentalSearchParams({ roomsAndResidences: "only" }).residencias).toBe("solo");
-    expect(rentalSearchParams({ hidePerNightPrices: true }).sinNoche).toBe(1);
-    expect(rentalSearchParams({}).sinNoche).toBeUndefined();
     expect(rentalSearchParams({}).sinBarrios).toBeUndefined();
   });
 
   it("uses a single neighborhood param and forces distance sort near a point", () => {
-    const q = rentalSearchParams({ neighborhoods: ["Centro"], sort: "precio", hideReported: "none" }, { lat: -34.9, lng: -56.2, label: "Trabajo" });
+    const q = rentalSearchParams({ neighborhoods: ["Centro"], sort: "precio" }, { lat: -34.9, lng: -56.2, label: "Trabajo" });
     expect(q.neighborhood).toBe("Centro");
     expect(q.sort).toBe("distancia");
     expect(q.refLat).toBe(-34.9);
-    expect(q.availability).toBeUndefined();
+    expect(q.availability).toBe("hide_multiple");
   });
 });
 
@@ -115,11 +109,25 @@ describe("searchRentals", () => {
       "https://google-maps-proxy.checkleaked.cc/geocode": { status: "OK", results: [{ formatted_address: "Av. 18 de Julio 1234, Montevideo", geometry: { location: { lat: -34.9, lng: -56.18 }, location_type: "ROOFTOP" } }] },
       "/api/rentals": { ...response, items: [rental({ key: "near", distanceKm: 0.8 }), rental({ key: "far", distanceKm: 4 })] },
     });
-    const out = await searchRentals(site, { near: { address: "18 de Julio 1234", radiusKm: 2 } });
+    const out = await searchRentals(site, { near: "18 de Julio 1234", radiusKm: 2 });
     expect(calls[0]!.path).toBe("https://google-maps-proxy.checkleaked.cc/geocode");
     expect(calls[0]!.query).toMatchObject({ components: "country:UY" });
     expect(calls[1]!.query).toMatchObject({ refLat: -34.9, sort: "distancia" });
     expect((out.data.items as Array<{ key: string }>).map((i) => i.key)).toEqual(["near"]);
+  });
+
+  it("takes coordinates in near without geocoding them", async () => {
+    const { site, calls } = fakeSite({ "/api/rentals": { ...response, items: [rental({ key: "near", distanceKm: 0.8 })] } });
+    const out = await searchRentals(site, { near: " -34.918, -56.166 ", radiusKm: 1.5 });
+    expect(calls).toHaveLength(1);
+    expect(calls[0]!.query).toMatchObject({ refLat: -34.918, refLng: -56.166, sort: "distancia" });
+    expect(out.text).toContain("km del punto");
+  });
+
+  it("rejects coordinates outside Uruguay instead of geocoding them", async () => {
+    const { site, calls } = fakeSite({});
+    await expect(searchRentals(site, { near: "40.4, -3.7" })).rejects.toThrow(/no cae en Uruguay/);
+    expect(calls).toHaveLength(0);
   });
 });
 

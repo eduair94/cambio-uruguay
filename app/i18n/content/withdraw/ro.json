@@ -1,0 +1,542 @@
+{
+  "title": [
+    "1229e1ce",
+    "Unde se pot retrage numerar în Uruguay: bancomate, comisioane și atracții turistice"
+  ],
+  "metaTitle": [
+    "3e82d293",
+    "Bancomate în Uruguay: retragere dolari sau pesos"
+  ],
+  "description": [
+    "3eb63bbe",
+    "Cum și de unde să obții numerar în Uruguay ca turist: bancomate care distribuie atât dolari americani, cât și pesos, comisioane, limite de retragere, capcana conversiei valutare (DCC) și cele mai bune locuri de retras bani la aeroport, Montevideo, Punta del Este și Colonia."
+  ],
+  "keywords": [
+    "4acfb17e",
+    "retrage numerar uruguay, retrage bani uruguay, ATM uruguay tourist, dolari de la ATM uruguay, schimb bani uruguay, taxe ATM uruguay, casas de cambio uruguay"
+  ],
+  "tldr.0": [
+    "5f1561fe",
+    "Bancomatele uruguayene distribuie atât dolari americani, cât și pesos - un avantaj regional rar (în Argentina este aproape imposibil)."
+  ],
+  "tldr.1": [
+    "7b41d73f",
+    "Există două rețele: RedBROU și Banred. Dacă una eșuează, încercați cealaltă; aveți la dumneavoastră atât un card Visa, cât și un card Mastercard."
+  ],
+  "tldr.2": [
+    "c5aa36e3",
+    "Când bancomatul oferă să vă încaseze banii în moneda locală, alegeți întotdeauna moneda locală: „conversia” ascunde un curs de schimb valutar negativ."
+  ],
+  "tldr.3": [
+    "b73d4126",
+    "Evitați să schimbați sume mari la aeroport sau la terminalele de feribot - tarifele lor sunt vizibil mai mici."
+  ],
+  "tldr.4": [
+    "83b2ff36",
+    "Plătește hoteluri și restaurante cu un card străin: pe lângă avantajul TVA, ai mai puțin numerar pe tine."
+  ],
+  "ui.backToTools": [
+    "950196fc",
+    "Instrumente"
+  ],
+  "ui.tldrTitle": [
+    "799c628c",
+    "În scurt"
+  ],
+  "ui.networksTitle": [
+    "90dd37e5",
+    "Cele două rețele de bancomate: RedBROU și Banred"
+  ],
+  "ui.tableNetwork": [
+    "6974ad65",
+    "Reţea"
+  ],
+  "ui.tableReach": [
+    "c549e23b",
+    "Acoperire"
+  ],
+  "ui.tableUsd": [
+    "47b34a69",
+    "Plafon USD / retragere"
+  ],
+  "ui.tableUyu": [
+    "7d4e5b12",
+    "Plafon $U / retragere"
+  ],
+  "ui.tableNote": [
+    "0ff01b6a",
+    "Note"
+  ],
+  "ui.zonesTitle": [
+    "126f8827",
+    "Unde se pot obține bani în funcție de zona turistică"
+  ],
+  "ui.zonesIntro": [
+    "e4c560b0",
+    "Referințe la nivel de zonă și reper (nu adrese exacte, care se schimbă). Bancomatele se află de obicei în interiorul băncilor, centrelor comerciale sau al punctelor de vânzare Abitab și Redpagos."
+  ],
+  "ui.stepsTitle": [
+    "3e1ff2e0",
+    "Cum să retragi numerar, pas cu pas"
+  ],
+  "ui.faqTitle": [
+    "e466bfa9",
+    "Întrebări frecvente"
+  ],
+  "ui.sourcesTitle": [
+    "105bfcc3",
+    "Surse și referințe"
+  ],
+  "ui.relatedTitle": [
+    "ac7a8ccc",
+    "Continuă să citești"
+  ],
+  "ui.ctaTitle": [
+    "60dda6a1",
+    "Compară înainte de a face schimb"
+  ],
+  "ui.ctaText": [
+    "fe6b01a6",
+    "Vedeți cursul dolarului la peste 40 de case de schimb valutar, actualizat la fiecare 10 minute, și alegeți cel mai bun loc pentru a opera."
+  ],
+  "ui.ctaButton": [
+    "9efd557a",
+    "Deschideți comparatorul"
+  ],
+  "ui.mapButton": [
+    "4e8c8db6",
+    "Vedeți punctele de retragere pe hartă"
+  ],
+  "ui.disclaimer": [
+    "b166cfce",
+    "Informații de referință pentru turiști, nu sfaturi financiare. Taxele, limitele și avantajele fiscale se modifică: confirmați-le la sosire și cu emitentul cardului dumneavoastră. Nu suntem afiliați cu băncile sau casele de schimb valutar menționate."
+  ],
+  "ui.lastChecked": [
+    "9182e108",
+    "Ultima verificare: iunie 2026"
+  ],
+  "ivaLive.heading": [
+    "5af716c3",
+    "Beneficiile TVA pentru turiști sunt în vigoare astăzi"
+  ],
+  "ivaLive.asOf": [
+    "dd801240",
+    "Starea la data de {date}:"
+  ],
+  "ivaLive.hotel": [
+    "152a8c47",
+    "Cazare (hoteluri și similare): TVA 0% pe tot parcursul anului."
+  ],
+  "ivaLive.base": [
+    "9856855a",
+    "Restaurante și închirieri auto fără șofer: o reducere de TVA de {points} puncte pentru consumul final plătit cu cardul unei persoane fizice, inclusiv carduri străine, până la 30 aprilie 2027 (Decretul 235/026; sursa verificată la 23 octombrie 2026)."
+  ],
+  "ivaLive.baseUnconfirmed": [
+    "d65944df",
+    "Restaurant și închiriere auto: prelungirea verificată a expirat pe 30 aprilie 2027. Verificați cu DGI ce reducere se aplică la data achiziției."
+  ],
+  "ivaLive.seasonalOn": [
+    "41748da1",
+    "Scutire completă de TVA pe timpul verii: ACTIVĂ (până la {end})."
+  ],
+  "ivaLive.seasonalOff": [
+    "015a1161",
+    "Scutire completă de TVA pe timpul verii: nu avem o perioadă confirmată pentru această dată. Verificați cu DGI înainte de a beneficia de acest beneficiu."
+  ],
+  "sections.0.heading": [
+    "90dd37e5",
+    "Cele două rețele de bancomate: RedBROU și Banred"
+  ],
+  "sections.0.paragraphs.0": [
+    "0f52a7fe",
+    "Uruguay are două rețele de bancomate: RedBROU, administrată de banca de stat (BROU), și Banred, rețeaua băncilor private. Cele două sunt interconectate și se conectează la rețelele internaționale (Cirrus/Maestro de la Mastercard și Plus de la Visa), așadar un card străin funcționează pe ambele."
+  ],
+  "sections.0.paragraphs.1": [
+    "208b768b",
+    "Pentru a vă asigura că un bancomat acceptă cardul, căutați siglele Visa, Mastercard, Cirrus, Plus sau Maestro pe bancomat. Sfat practic: purtați un card Visa și un card Mastercard de la conturi diferite; dacă un card sau un bancomat nu funcționează, încercați cealaltă rețea."
+  ],
+  "sections.1.heading": [
+    "612974f0",
+    "Dolari sau pesos? În Uruguay poți lua ambele"
+  ],
+  "sections.1.paragraphs.0": [
+    "d9928d31",
+    "Spre deosebire de Argentina, multe bancomate din Uruguay oferă dolari americani, precum și pesos uruguayeni. Acesta este un avantaj real dacă doriți dolari în numerar fără a merge la o casă de schimb valutar. Dolarii sunt de obicei eliberați în bancnote de 100 de dolari americani, ceea ce, combinat cu limitele per retragere, poate însemna că primiți o singură bancnotă odată."
+  ],
+  "sections.1.paragraphs.1": [
+    "cd694b7a",
+    "Regulă simplă: luați pesos pentru cheltuielile zilnice (taxiuri, piețe, magazine mici) și dolari doar dacă aveți nevoie cu adevărat de ei în numerar. Pentru majoritatea plăților mari, cardul este mai bun decât numerarul."
+  ],
+  "sections.2.heading": [
+    "9ce97b34",
+    "Taxe și limite de retragere"
+  ],
+  "sections.2.paragraphs.0": [
+    "e28a7f0e",
+    "Suprataxa percepută de un bancomat uruguayan de la un card străin este mică în comparație cu multe alte țări (de ordinul câtorva dolari per retragere). Costul mai mare este de obicei al propriei bănci: comisionul pentru tranzacțiile externe (de obicei 1-3%), plus uneori un comision fix pentru retragerile internaționale. Un card de călătorie fără comision valutar vă economisește aproape toate aceste costuri."
+  ],
+  "sections.2.paragraphs.1": [
+    "154c6f01",
+    "Limitele per retragere pentru cardurile străine sunt stabilite de rețelele locale, nu de banca dvs., și sunt mici. Banca dvs. aplică, de asemenea, propria limită zilnică. Sunați-vă banca înainte de a călători pentru a crește limita și retrageți suma maximă per tranzacție pentru a distribui comisionul fix pe o sumă mai mare de numerar."
+  ],
+  "sections.2.bullets.0": [
+    "befd8df3",
+    "Suprataxă pentru retragere locală: aproximativă, de ordinul câtorva dolari (verificați suma de pe ecran înainte de confirmare)."
+  ],
+  "sections.2.bullets.1": [
+    "0f872d39",
+    "Comisionul bancar/emitentului: de obicei, costul este mai mare; verificați dacă cardul dvs. percepe un comision pentru tranzacțiile în străinătate."
+  ],
+  "sections.2.bullets.2": [
+    "8301e954",
+    "Plafon per retragere: aproximativ 200–300 USD sau 5.000 USD, în funcție de rețea (aproximativ, se poate modifica)."
+  ],
+  "sections.2.bullets.3": [
+    "4aacdc05",
+    "Limită zilnică: stabilită de bancă; anunțați banca înainte de a călători pentru a o mări."
+  ],
+  "sections.3.heading": [
+    "6bd46a0c",
+    "Capcana conversiei valutare (DCC): alegeți întotdeauna moneda locală"
+  ],
+  "sections.3.paragraphs.0": [
+    "29fe4c81",
+    "Multe bancomate și terminale de carduri oferă posibilitatea de a „încărca în moneda locală” în loc de pesos sau dolari uruguayeni. Pare convenabil („vezi cât este în banii tăi”), dar conversia dinamică valutară (DCC) aplică un curs de schimb umflat plus o taxă ascunsă. Aproape întotdeauna pierzi."
+  ],
+  "sections.3.paragraphs.1": [
+    "34380f1f",
+    "Alegeți întotdeauna „fără conversie” sau moneda locală: pesos uruguayeni când acceptați pesos, dolari când acceptați dolari. Lăsați banca dvs. să facă conversia - cursul acesteia este de obicei mai bun."
+  ],
+  "sections.4.heading": [
+    "cc573fd8",
+    "Case de schimb valutar, bancomate sau bănci: care este cel mai potrivit?"
+  ],
+  "sections.4.paragraphs.0": [
+    "1116ae4f",
+    "Casele de schimb valutar (casas de cambio precum Varlix, Indumex, Gales, Aspen, Cambio Sir, Cambio Inglés și Global Exchange) sunt modalitatea clasică de a schimba numerar. Acestea oferă cele mai bune cursuri pentru dolar, cu un spread mic și fără comision; euro este a doua cea mai bună monedă, realul brazilian este acceptabil, iar pesoul argentinian este cel mai slab. De obicei, vă cer pașaportul."
+  ],
+  "sections.5.heading": [
+    "f8b82759",
+    "Câți bani să transportați și ce valută să aduceți"
+  ],
+  "sections.5.paragraphs.0": [
+    "e22fd664",
+    "Uruguayul este foarte prietenos cu cardurile: Visa și Mastercard sunt acceptate aproape peste tot, plățile contactless și cu QR (Mercado Pago) fiind răspândite pe scară largă. Luați cu dumneavoastră doar câțiva pesos în numerar pentru achiziții mici și plătiți sume mai mari cu cardul."
+  ],
+  "sections.5.paragraphs.1": [
+    "f9b88276",
+    "Dacă aduceți bani cash pentru rest, dolarul american este cea mai bună monedă (cu cele mai bune cursuri, acceptat la orice casă). Euro este a doua. Dacă veniți din Argentina, aduceți dolari, nu pesos argentinieni - peso-ul se schimbă foarte puțin în Uruguay. Din Brazilia, realul funcționează, mai ales în apropierea graniței, deși dolarii sunt încă mai convenabili."
+  ],
+  "sections.6.heading": [
+    "97a59b72",
+    "Beneficiu TVA pentru turiști (când plătiți cu un card străin)"
+  ],
+  "sections.6.paragraphs.0": [
+    "88ea76fc",
+    "Uruguay rambursează o parte din TVA turiștilor nerezidenți care plătesc cu un card emis în străinătate. Cazarea (hoteluri înregistrate și similare) este cu TVA de 0% pe tot parcursul anului pentru nerezidenții care prezintă un act de identitate străin și plătesc cu un card străin - un beneficiu permanent."
+  ],
+  "sections.6.paragraphs.1": [
+    "7f51f9e2",
+    "Pentru restaurante și închirieri de mașini fără șofer, Decretul 235/026 menține reducerea generală de nouă puncte procentuale până la 30 aprilie 2027 pentru consumul final plătit prin mijloace electronice eligibile. O scutire totală sezonieră este un beneficiu separat, cu propriul decret și date: prelungirea reducerii de nouă puncte procentuale nu confirmă o scutire totală. Verificați cu DGI înainte de a călători."
+  ],
+  "sections.6.paragraphs.2": [
+    "f963de1e",
+    "În fiecare caz, reducerea este automată: plătiți cu cardul străin, iar beneficiul apare pe chitanță sau pe extrasul de cont. Plătiți în numerar și pierdeți banii. Așadar, merită să includeți hoteluri și restaurante pe card și să retrageți mai puțin numerar."
+  ],
+  "sections.6.bullets.0": [
+    "fc6c4026",
+    "Hoteluri/cazare: TVA 0% pe tot parcursul anului pentru nerezidenți (permanenți)."
+  ],
+  "sections.6.bullets.1": [
+    "02f7d683",
+    "Restaurante și închirieri auto fără șofer: nouă puncte până la 30 aprilie 2027, sub rezerva cerințelor de plată electronică. O scutire totală sezonieră necesită o confirmare separată."
+  ],
+  "sections.6.bullets.2": [
+    "bf5ed0b5",
+    "Fiecare regim are propriile cerințe. Reducerea generală de nouă puncte impune consumul final și o metodă de plată electronică eligibilă deținută de o persoană fizică; emisiunea străină nu este obligatorie."
+  ],
+  "sections.7.heading": [
+    "84fbae56",
+    "Sfaturi de siguranță la retragerea de numerar"
+  ],
+  "sections.7.paragraphs.0": [
+    "e227f80c",
+    "Uruguay se numără printre cele mai sigure țări din regiune, dar există furturi mărunte, în special în Ciudad Vieja din Montevideo, în zona portuară și în stațiunile de plajă în plin sezon. Folosiți bancomatele din interiorul băncilor, mall-urilor sau a recepțiilor de sticlă, de preferință la lumina zilei, și fiți atenți la împrejurimi."
+  ],
+  "sections.7.bullets.0": [
+    "d234b5e4",
+    "Retrageți banii la lumina zilei și de la bancomatele din incinte închise, nu pe stradă noaptea."
+  ],
+  "sections.7.bullets.1": [
+    "f9f5f149",
+    "Poartă două carduri din conturi diferite și păstrează numerarul în mai multe locuri."
+  ],
+  "sections.7.bullets.2": [
+    "aa71ad4f",
+    "Cereți bancnote mici (100, 200, 500): Bancnotele de 1.000 și 2.000 sunt greu de spart."
+  ],
+  "sections.7.bullets.3": [
+    "d7920a67",
+    "Deplasați-vă cu Uber, Cabify sau taxiuri înregistrate; nu lăsați obiecte de valoare în mașină."
+  ],
+  "sections.7.link.label": [
+    "d8570bac",
+    "Deja blocat cu o notă importantă: de unde să fac rost de mărunțiș și monede"
+  ],
+  "networkRows.0.network": [
+    "7ee344a0",
+    "RedBROU"
+  ],
+  "networkRows.0.reach": [
+    "4a5d053e",
+    "Rețeaua băncii de stat BROU; peste 400 de bancomate la nivel național, plus Abitab și Redpagos."
+  ],
+  "networkRows.0.usdPerTxn": [
+    "f41a726d",
+    "≈ 200 USD"
+  ],
+  "networkRows.0.uyuPerTxn": [
+    "255d9345",
+    "≈ 5.000 USD"
+  ],
+  "networkRows.0.note": [
+    "786a7e5f",
+    "Multe aparate distribuie dolari. Plafoanele sunt aproximative pentru cardurile străine."
+  ],
+  "networkRows.1.network": [
+    "6823b06d",
+    "Interzis"
+  ],
+  "networkRows.1.reach": [
+    "331e78b2",
+    "Rețea de bănci private; peste 370 de puncte în toate cele 19 departamente."
+  ],
+  "networkRows.1.usdPerTxn": [
+    "75830c42",
+    "≈ 300 USD"
+  ],
+  "networkRows.1.uyuPerTxn": [
+    "255d9345",
+    "≈ 5.000 USD"
+  ],
+  "networkRows.1.note": [
+    "9f2f1329",
+    "Interconectat cu RedBROU. Dacă o rețea respinge cardul dvs., încercați cealaltă."
+  ],
+  "zones.0.name": [
+    "8a4dc608",
+    "Aeroportul Carrasco (MVD), Montevideo"
+  ],
+  "zones.0.summary": [
+    "462aaacd",
+    "Birourile de schimb valutar globale sunt deschise 24 de ore din 24, bancomatele sunt în terminal (este confirmat și un bancomat Santander) și o sucursală bancară."
+  ],
+  "zones.0.tips.0": [
+    "d6202725",
+    "Schimbul valutar de la aeroport este considerabil mai ieftin: rest doar cât să ajungi în oraș."
+  ],
+  "zones.0.tips.1": [
+    "99e81ace",
+    "Dacă aveți nevoie imediat de numerar, retrageți o sumă mică de la bancomat și schimbați restul în centrul orașului."
+  ],
+  "zones.1.name": [
+    "034a744d",
+    "Montevideo (Centro, Ciudad Vieja și portul)"
+  ],
+  "zones.1.summary": [
+    "04c221eb",
+    "Casele de schimb valutar sunt grupate pe Avenida 18 de Julio (Centro) și prin Ciudad Vieja. Terminalul de croazieră se află lângă Ciudad Vieja și are birouri de schimb valutar și bancomate."
+  ],
+  "zones.1.tips.0": [
+    "a26e5af3",
+    "În Centro și Ciudad Vieja veți găsi mai multe case de schimb valutar pentru a compara."
+  ],
+  "zones.1.tips.1": [
+    "4139b3e5",
+    "Pasagerii de croazieră au la dispoziție un schimb valutar în port, iar bancomatele sunt la mică distanță, spre Mercado del Puerto."
+  ],
+  "zones.2.name": [
+    "3fa606f9",
+    "Punta del Este"
+  ],
+  "zones.2.summary": [
+    "880d1f96",
+    "Case de schimb valutar de-a lungul Avenida Gorlero, strada principală. În sezonul de vârf pot exista cozi și bancomate care rămân fără dolari."
+  ],
+  "zones.2.tips.0": [
+    "1063deb8",
+    "Vara și în săptămâna Paștelui, bancomatele se golesc repede: retrageți bani în avans și păstrați o rezervă."
+  ],
+  "zones.2.tips.1": [
+    "e4c20d9e",
+    "Bazează-te pe plăți cu cardul și cu QR, astfel încât să nu depinzi doar de numerar."
+  ],
+  "zones.3.name": [
+    "2ed532f4",
+    "Colonia del Sacramento"
+  ],
+  "zones.3.summary": [
+    "764221b5",
+    "Bancomate în Barrio Histórico și la terminalul de feribot, la câțiva pași de cartierul vechi, unde sosesc excursioniștii de o zi din Buenos Aires."
+  ],
+  "zones.3.tips.0": [
+    "d7ebee8b",
+    "Retrageți o sumă mică de pesos la sosire și plătiți restul cu cardul."
+  ],
+  "zones.3.tips.1": [
+    "e09f3851",
+    "Multe magazine turistice acceptă dolari, deși la un curs nefavorabil."
+  ],
+  "zones.4.name": [
+    "ed7917f9",
+    "Terminale de feribot (Buquebus / Colonia Express)"
+  ],
+  "zones.4.summary": [
+    "ac18ddf9",
+    "Există bancomate la terminalele din Montevideo și Colonia. Schimbul de bani în interiorul terminalelor și la bordul aeroporturilor are, de obicei, rate mici."
+  ],
+  "zones.4.tips.0": [
+    "b5a97e0f",
+    "Evitați să schimbați sume mari la terminal sau la bord — ratele sunt mici."
+  ],
+  "zones.4.tips.1": [
+    "91b3c105",
+    "Este mai bine să folosiți un bancomat sau să schimbați la o casă de schimb valutar din oraș."
+  ],
+  "zones.5.name": [
+    "66cc7244",
+    "Interiorul și orașele mai mici"
+  ],
+  "zones.5.summary": [
+    "fc9a5afd",
+    "În afara orașelor mari și a stațiunilor principale, bancomatele sunt rare."
+  ],
+  "zones.5.tips.0": [
+    "48821abe",
+    "Faceți provizii de bani în Montevideo, Punta del Este sau Colonia înainte de a vă îndrepta spre interior."
+  ],
+  "zones.5.tips.1": [
+    "02573d37",
+    "Pe coasta Rocha, încărcați în orașe mai mari, cum ar fi Chuy sau La Paloma."
+  ],
+  "steps.0.name": [
+    "aa213b75",
+    "Găsește un bancomat care îți acceptă cardul"
+  ],
+  "steps.0.text": [
+    "2f5d9e7c",
+    "Căutați siglele Visa, Mastercard, Cirrus, Plus sau Maestro; preferați bancomatele din interiorul băncilor sau al centrelor comerciale."
+  ],
+  "steps.1.name": [
+    "4209811a",
+    "Alegeți dolari sau pesos"
+  ],
+  "steps.1.text": [
+    "f338ade4",
+    "Luați pesos pentru cheltuielile zilnice și dolari doar dacă aveți nevoie de ei în numerar; dolarii vin în bancnote de 100 de dolari americani."
+  ],
+  "steps.2.name": [
+    "24d1a5da",
+    "Refuzați conversia în moneda dvs."
+  ],
+  "steps.2.text": [
+    "3f2be811",
+    "Când se oferă posibilitatea de a fi taxat în moneda locală, alegeți „fără conversie” sau moneda locală pentru a evita adaosul DCC."
+  ],
+  "steps.3.name": [
+    "4e44a3f9",
+    "Retrageți suma maximă per tranzacție"
+  ],
+  "steps.3.text": [
+    "831b2ec9",
+    "Deoarece există o taxă fixă de retragere, profitați de plafonul permis pentru a distribui costul pe mai mulți bani."
+  ],
+  "steps.4.name": [
+    "6fcb61ed",
+    "Păstrează chitanța și numără banii"
+  ],
+  "steps.4.text": [
+    "30d70c06",
+    "Verificați suma eliberată, păstrați bonul fiscal și împărțiți numerarul în mai multe locuri înainte de a părăsi bancomatul."
+  ],
+  "faq.0.q": [
+    "e44ca992",
+    "Pot retrage dolari americani de la bancomatele din Uruguay?"
+  ],
+  "faq.0.a": [
+    "eb6339a1",
+    "Da. Spre deosebire de Argentina, multe bancomate uruguayene oferă atât dolari, cât și pesos, de obicei în bancnote de 100 de dolari americani. Plafoanele per retragere pentru cardurile străine sunt mici."
+  ],
+  "faq.1.q": [
+    "33423670",
+    "Cât percep comisioane bancomatele pentru cardurile străine?"
+  ],
+  "faq.1.a": [
+    "68121602",
+    "Suprataxa locală este mică (de ordinul câtorva dolari per retragere). Costul mai mare este de obicei comisionul pentru tranzacțiile externe al propriei bănci (1-3% este o sumă obișnuită)."
+  ],
+  "faq.2.q": [
+    "bf2fe8ff",
+    "Care este suma maximă pe care o pot retrage per tranzacție?"
+  ],
+  "faq.2.a": [
+    "7a64ef6d",
+    "Aproximativ 200–300 USD sau 5.000 USD per retragere, în funcție de rețea (RedBROU sau Banred). Banca dumneavoastră își stabilește și ea propria limită zilnică, așa că anunțați-o înainte de a călători."
+  ],
+  "faq.3.q": [
+    "66601510",
+    "Ar trebui să schimb bani la aeroport?"
+  ],
+  "faq.3.a": [
+    "82d5704c",
+    "Nu pentru sume mari: aeroportul și terminalele de feribot plătesc considerabil mai puțin. Schimbați doar cât să ajungeți în oraș, apoi folosiți o casă de schimb valutar sau un bancomat din centrul orașului."
+  ],
+  "faq.4.q": [
+    "44d07e17",
+    "Numerar sau card în Uruguay?"
+  ],
+  "faq.4.a": [
+    "11ded5ec",
+    "Uruguayul este foarte prietenos cu plata cu cardul (Visa și Mastercard aproape peste tot, contactless și QR). Luați niște pesos în numerar pentru cumpărături mici și plătiți sume mai mari cu cardul."
+  ],
+  "faq.5.q": [
+    "2d0dd094",
+    "Ce monedă ar trebui să aduc?"
+  ],
+  "faq.5.a": [
+    "cc8484ac",
+    "Numerar dolari americani: cele mai bune cursuri și acceptate la orice casă de schimb valutar. Euro este a doua variantă. Dacă veniți din Argentina, aduceți dolari, nu pesos argentinieni."
+  ],
+  "faq.6.q": [
+    "b71d8d92",
+    "Primesc o reducere de taxe ca turist?"
+  ],
+  "faq.6.a": [
+    "49712ab8",
+    "Da: pe lângă regimul de cazare, reducerea generală de nouă puncte procentuale pentru mese și închirierea de mașini fără șofer acoperă și nerezidenții până la 30 aprilie 2027, pentru consumul final plătit electronic de către o persoană fizică. O scutire totală sezonieră necesită propriul decret și propriile date; nu poate fi dedusă din această prelungire."
+  ],
+  "faq.7.q": [
+    "04fb59ce",
+    "Ce se întâmplă dacă bancomatul îmi respinge cardul?"
+  ],
+  "faq.7.a": [
+    "15f0167b",
+    "Încearcă un alt card și cealaltă rețea (RedBROU și Banred sunt interconectate, dar este util să le folosești pe amândouă). Verifică dacă bancomatul are siglele Visa/Mastercard/Cirrus/Plus și spune băncii tale că îl vei folosi în Uruguay."
+  ],
+  "related.0.label": [
+    "9371cd8d",
+    "Dolari pentru călătorii"
+  ],
+  "related.1.label": [
+    "89470d17",
+    "Cumpărarea de dolari la cel mai bun preț"
+  ],
+  "related.2.label": [
+    "7b531a45",
+    "Case de schimb valutar și sucursale"
+  ],
+  "related.3.label": [
+    "574f3e27",
+    "Comparați tarifele"
+  ]
+}

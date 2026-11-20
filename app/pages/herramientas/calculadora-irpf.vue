@@ -1,5 +1,11 @@
 <template>
-  <ToolShell slug="calculadora-irpf" :faq="faq" :sources="sources">
+  <ToolShell
+    slug="calculadora-irpf"
+    :faq="faq"
+    :sources="sources"
+    :seo-title="seoTitle"
+    :seo-description="seoDescription"
+  >
     <VCard class="pa-4 pa-sm-6">
       <VRow class="g-input">
         <VCol cols="12" sm="7">
@@ -123,6 +129,12 @@ const sources = [
   { label: 'DGI — IRPF (rentas del trabajo)', url: 'https://www.dgi.gub.uy' },
   { label: 'BPS — Escalas y valores IRPF 2026', url: 'https://www.bps.gub.uy' },
 ]
+
+// La respuesta que busca casi todo el que llega: hasta dónde no se paga. Sale de la misma tabla
+// que la calculadora (la franja al 0 %), así que cambia sola cuando cambia la BPC.
+const exemptUpTo = formatUYU(irpfBracketsUyu(URUGUAY.bpc)[0]!.upTo, 0)
+const seoTitle = `Calculadora de IRPF: exento hasta ${exemptUpTo} | Cambio Uruguay`
+const seoDescription = `Con sueldo nominal de hasta ${exemptUpTo} (7 BPC) no pagás IRPF; por encima, cada franja paga del 10 % al 36 %. Calculá tu IRPF mensual con el desglose.`
 
 const r = computed(() =>
   progressiveTax(salary.value || 0, irpfBracketsUyu(bpc.value || URUGUAY.bpc))

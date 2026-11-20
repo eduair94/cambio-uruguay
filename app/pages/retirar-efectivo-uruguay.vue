@@ -238,17 +238,23 @@ import {
   WITHDRAW_SOURCES,
 } from '~/utils/withdrawCash'
 import { resolveIvaStatus } from '~/utils/ivaStatus'
+import { isExtraLocale } from '~/utils/locales'
 
 const { locale } = useI18n()
 const localePath = useLocalePath()
 
-// Localized content tree for the active UI locale (falls back to es).
-const c = computed(() => getWithdrawContent(locale.value))
+// Localized content tree for the active UI locale (falls back to es). The extra locales read
+// the English tree with its machine translation laid over it (useContentTranslation).
+const translation = await useContentTranslation('withdraw')
+const c = computed(() =>
+  isExtraLocale(locale.value)
+    ? translatedTree(getWithdrawContent('en'), locale.value, translation.value)
+    : getWithdrawContent(locale.value)
+)
 const sources = WITHDRAW_SOURCES
 
-// Live tourist-IVA status, derived purely from today's date. The page always
-// states the currently-in-force benefits (it flips on 2026-10-01 and each
-// season) — kept honest by the withdraw:iva-check watchdog task.
+// Resolve only the encoded benefit periods. Beyond the confirmed base extension,
+// show the verification notice instead of silently assuming a future rate.
 const ivaNow = resolveIvaStatus(new Date())
 const fmtDate = (iso: string) =>
   new Date(`${iso}T00:00:00Z`).toLocaleDateString(dateLocale(c.value.lang), {
@@ -259,7 +265,9 @@ const fmtDate = (iso: string) =>
   })
 const ivaAsOf = computed(() => c.value.ivaLive.asOf.replace('{date}', fmtDate(ivaNow.date)))
 const ivaBase = computed(() =>
-  c.value.ivaLive.base.replace('{points}', String(ivaNow.baseReductionPoints))
+  ivaNow.baseReductionPoints === null
+    ? c.value.ivaLive.baseUnconfirmed
+    : c.value.ivaLive.base.replace('{points}', String(ivaNow.baseReductionPoints))
 )
 const ivaSeasonal = computed(() =>
   ivaNow.seasonalActive && ivaNow.seasonalWindow
@@ -276,7 +284,7 @@ const ogImageUrl = computed(
 
 // Short uppercase OG tag, localized.
 const ogTag = computed(
-  () => ({ es: 'EFECTIVO', en: 'CASH', pt: 'DINHEIRO' })[locale.value] ?? 'EFECTIVO'
+  () => ({ es: 'EFECTIVO', en: 'CASH', pt: 'DINHEIRO' })[locale.value] ?? 'CASH'
 )
 
 defineOgImageComponent('Cambio', {

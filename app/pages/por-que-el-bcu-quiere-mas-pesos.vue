@@ -546,20 +546,51 @@ useHead({
       type: 'application/ld+json',
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
-        '@type': 'Article',
-        headline: '¿Por qué el Banco Central quiere incentivar el uso del peso?',
-        description: 'Análisis objetivo de la desdolarización y el bimonetarismo uruguayo.',
-        datePublished: '2026-07-12',
-        dateModified: '2026-07-12',
-        inLanguage: 'es-UY',
-        mainEntityOfPage: canonical,
-        author: { '@type': 'Organization', name: 'Cambio Uruguay' },
-        publisher: {
-          '@type': 'Organization',
-          name: 'Cambio Uruguay',
-          url: 'https://cambio-uruguay.com',
-        },
-        citation: sources.map(s => s.url),
+        '@graph': [
+          // El eslabón del medio NO se inventa: es el padre que la página ya le muestra al
+          // lector, el botón de volver que dice «Economía» y lleva a /economia-uruguay. Ese hub
+          // es además el que enlaza este análisis, así que el rastro que ve Google y el que ve
+          // el visitante son el mismo.
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Cambio Uruguay',
+                item: 'https://cambio-uruguay.com',
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Economía',
+                item: 'https://cambio-uruguay.com/economia-uruguay',
+              },
+              {
+                '@type': 'ListItem',
+                position: 3,
+                name: '¿Por qué el BCU quiere más pesos?',
+                item: canonical,
+              },
+            ],
+          },
+          {
+            '@type': 'Article',
+            headline: '¿Por qué el Banco Central quiere incentivar el uso del peso?',
+            description: 'Análisis objetivo de la desdolarización y el bimonetarismo uruguayo.',
+            datePublished: '2026-07-12',
+            dateModified: '2026-07-12',
+            inLanguage: 'es-UY',
+            mainEntityOfPage: canonical,
+            author: { '@type': 'Organization', name: 'Cambio Uruguay' },
+            publisher: {
+              '@type': 'Organization',
+              name: 'Cambio Uruguay',
+              url: 'https://cambio-uruguay.com',
+            },
+            citation: sources.map(s => s.url),
+          },
+        ],
       }),
     },
   ],

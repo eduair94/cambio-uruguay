@@ -80,17 +80,30 @@
         {
           "to": "/llevar-dolares-o-reales-a-brasil",
           "label": "¿Dólares o reales para Brasil?"
+        },
+        {
+          "to": "/comparar-plataformas-dolar-uruguay",
+          "label": "Comparar plataformas de cotizaciones"
         }
       ],
       "guides": [
         "conviene-comprar-dolares-hoy",
         "comprar-dolares-mejor-precio",
         "billete-cable-transferencia",
+        "comprar-dolares-online-uruguay",
         "mejor-momento-cambiar-divisas",
         "como-leer-cotizacion-dolar",
         "glosario-terminos-cambiarios",
         "casas-de-cambio-vs-bancos",
-        "evitar-comisiones-cambio"
+        "evitar-comisiones-cambio",
+        "euros-reales-donde-cambiar",
+        "cambiar-pesos-argentinos-uruguay",
+        "billetes-y-monedas-de-uruguay",
+        "moneda-de-uruguay",
+        "pagar-en-dolares-o-pesos-uruguay",
+        "documentos-para-cambiar-dolares-uruguay",
+        "cambiar-dolares-aeropuerto-carrasco",
+        "dolares-para-viajar"
       ],
       "terms": [
         {
@@ -169,6 +182,10 @@
       "icon": "mdi-package-variant-closed",
       "resources": [
         {
+          "to": "/impuesto-temu-uruguay",
+          "label": "Impuesto Temu: la cuenta de cada compra"
+        },
+        {
           "to": "/declarar-compra-exterior-uruguay",
           "label": "Cómo declarar una compra del exterior"
         },
@@ -181,12 +198,20 @@
           "label": "Franquicia de aduana"
         },
         {
+          "to": "/importar-a-uruguay-siendo-extranjero",
+          "label": "Importar siendo extranjero"
+        },
+        {
           "to": "/recibir-regalos-del-exterior-uruguay",
           "label": "Recibir regalos del exterior"
         },
         {
           "to": "/franquicia-viajero-uruguay",
           "label": "Franquicia del viajero"
+        },
+        {
+          "to": "/declarar-dinero-en-efectivo-uruguay",
+          "label": "Declarar efectivo en la Aduana"
         },
         {
           "to": "/problemas-con-la-aduana-uruguay",
@@ -229,7 +254,8 @@
         "comprar-online-exterior-impuestos",
         "impuesto-temu-uruguay",
         "importar-de-aliexpress-a-uruguay",
-        "comprar-en-amazon-desde-uruguay"
+        "comprar-en-amazon-desde-uruguay",
+        "comprar-en-shein-desde-uruguay"
       ],
       "terms": [
         {
@@ -284,6 +310,10 @@
           "label": "Evolución del precio de los autos"
         },
         {
+          "to": "/cambios-de-precio-uruguay",
+          "label": "Qué bajó y qué subió de precio"
+        },
+        {
           "to": "/historico",
           "label": "Histórico del dólar"
         },
@@ -330,13 +360,23 @@
         {
           "to": "/herramientas/conversor-unidad-indexada",
           "label": "Conversor de Unidad Indexada"
+        },
+        {
+          "to": "/tendencias-uruguay",
+          "label": "Lo que Uruguay busca hoy"
+        },
+        {
+          "to": "/temas-de-dinero-reddit",
+          "label": "De qué habla Uruguay sobre plata"
         }
       ],
       "guides": [
         "inflacion-y-dolar-uruguay",
         "como-afecta-la-fed-al-dolar",
         "proteger-ahorros-de-la-inflacion",
-        "unidad-indexada-explicada"
+        "unidad-indexada-explicada",
+        "ui-ur-bpc-diferencias",
+        "tasa-de-politica-monetaria-uruguay"
       ],
       "terms": [
         {
@@ -419,6 +459,10 @@
           "label": "Análisis del alquiler"
         },
         {
+          "to": "/subsidio-de-alquiler-uruguay",
+          "label": "Subsidio de alquiler"
+        },
+        {
           "to": "/evolucion-precio-alquileres-uruguay",
           "label": "Evolución del alquiler"
         },
@@ -449,6 +493,10 @@
         {
           "to": "/primer-alquiler-uruguay",
           "label": "Primer alquiler: gastos y trámites"
+        },
+        {
+          "to": "/garantia-de-alquiler-uruguay",
+          "label": "Cuánto cuesta la garantía"
         },
         {
           "to": "/alquilar-sin-recibo-de-sueldo",
@@ -487,6 +535,10 @@
           "label": "Alquiler de temporada"
         },
         {
+          "to": "/coeficiente-de-reajuste-de-alquileres-uruguay",
+          "label": "Reajuste de alquileres"
+        },
+        {
           "to": "/herramientas/costo-de-vida",
           "label": "Costo de vida"
         },
@@ -495,12 +547,20 @@
           "label": "Fletes y mudanzas"
         },
         {
+          "to": "/armadores-de-muebles-montevideo",
+          "label": "Armadores de muebles"
+        },
+        {
           "to": "/equipar-casa-uruguay",
           "label": "Equipar una casa"
         },
         {
           "to": "/equipar-casa-uruguay/productos",
           "label": "Avisos para equipar la casa"
+        },
+        {
+          "to": "/cuanto-gastar-en-un-sommier-uruguay",
+          "label": "Cuánto gastar en un sommier"
         },
         {
           "to": "/pensiones-estudiantiles-uruguay",
@@ -514,7 +574,8 @@
         "alquilar-sin-garantia-uruguay",
         "derechos-del-inquilino-uruguay",
         "que-revisar-antes-de-firmar-alquiler",
-        "alquiler-temporario-uruguay"
+        "alquiler-temporario-uruguay",
+        "irpf-de-alquileres-uruguay"
       ],
       "terms": [
         {
@@ -563,6 +624,10 @@
         {
           "to": "/cooperativas-de-vivienda-uruguay",
           "label": "Cooperativas de vivienda"
+        },
+        {
+          "to": "/prestamo-hipotecario-uruguay",
+          "label": "Préstamo hipotecario"
         },
         {
           "to": "/herramientas/calculadora-prestamo",
@@ -705,7 +770,8 @@
         "cuenta-conjunta-o-separada-pareja-uruguay",
         "hablar-de-dinero-en-pareja-uruguay",
         "division-de-bienes-en-el-divorcio-uruguay",
-        "proteger-tu-patrimonio-en-pareja-uruguay"
+        "proteger-tu-patrimonio-en-pareja-uruguay",
+        "asignacion-familiar-doble-uruguay"
       ],
       "terms": []
     },
@@ -727,8 +793,16 @@
           "label": "¿Qué auto usado comprar?"
         },
         {
+          "to": "/comparar-autos-usados-uruguay",
+          "label": "Comparar autos usados"
+        },
+        {
           "to": "/cuanto-vale-mi-auto-uruguay",
           "label": "¿Cuánto vale mi auto?"
+        },
+        {
+          "to": "/latin-ncap-uruguay",
+          "label": "Latin NCAP: los ensayos"
         },
         {
           "to": "/evolucion-precio-autos-usados-uruguay",
@@ -888,6 +962,10 @@
           "label": "Deudas con el Estado"
         },
         {
+          "to": "/prescripcion-de-deudas-privadas-uruguay",
+          "label": "Cuándo prescribe una deuda privada"
+        },
+        {
           "to": "/conviene-comprar-en-cuotas",
           "label": "¿Cuotas o contado?"
         },
@@ -910,7 +988,8 @@
         "cuando-prescribe-una-deuda-uruguay",
         "cancelar-prestamo-antes-de-tiempo-uruguay",
         "me-compraron-la-deuda-uruguay",
-        "saldo-a-favor-tarjeta-de-credito-uruguay"
+        "saldo-a-favor-tarjeta-de-credito-uruguay",
+        "como-saber-si-tengo-deudas-uruguay"
       ],
       "terms": [
         {
@@ -957,6 +1036,10 @@
           "label": "Devolución de FONASA"
         },
         {
+          "to": "/cambiar-de-mutualista-uruguay",
+          "label": "Cambiar de mutualista"
+        },
+        {
           "to": "/fondo-de-solidaridad-uruguay",
           "label": "Fondo de Solidaridad"
         },
@@ -985,6 +1068,10 @@
           "label": "Feriados que se corren al lunes"
         },
         {
+          "to": "/feriados-2027-uruguay",
+          "label": "Feriados 2027"
+        },
+        {
           "to": "/cuando-se-cobra-el-aguinaldo-uruguay",
           "label": "Cuándo se cobra el aguinaldo"
         },
@@ -1009,6 +1096,14 @@
           "label": "Licencia de la construcción"
         },
         {
+          "to": "/accidente-de-trabajo-uruguay",
+          "label": "Accidente de trabajo"
+        },
+        {
+          "to": "/trabajo-para-menores-de-edad-uruguay",
+          "label": "Trabajar antes de los 18"
+        },
+        {
           "to": "/mercado-it-uruguay",
           "label": "Mercado IT"
         }
@@ -1027,6 +1122,8 @@
         "como-funciona-el-irpf-uruguay",
         "trabajar-para-el-exterior-desde-uruguay",
         "salario-minimo-uruguay-cuanto-es",
+        "trabajo-domestico-uruguay",
+        "cuenta-sueldo-elegir-banco-uruguay",
         "me-quede-sin-trabajo-mutualista-fonasa-uruguay",
         "como-pedir-un-aumento-de-sueldo-uruguay",
         "pedir-que-me-despidan-uruguay"
@@ -1080,12 +1177,24 @@
           "label": "A quién le reclamo"
         },
         {
+          "to": "/reclamos-a-la-intendencia-por-barrio-uruguay",
+          "label": "Reclamos a la Intendencia por barrio"
+        },
+        {
+          "to": "/compensacion-por-corte-de-luz-uruguay",
+          "label": "Compensación por corte de luz"
+        },
+        {
           "to": "/defensa-al-consumidor-uruguay",
           "label": "Defensa del Consumidor"
         },
         {
           "to": "/derechos-consumidor-compras-online",
           "label": "Derechos en compras online"
+        },
+        {
+          "to": "/reclamar-sin-abogado-uruguay",
+          "label": "Reclamar sin abogado"
         },
         {
           "to": "/estafas-uruguay",
@@ -1114,6 +1223,10 @@
         {
           "to": "/denunciar-ruidos-molestos-uruguay",
           "label": "Denunciar ruidos molestos"
+        },
+        {
+          "to": "/grabacion-sin-consentimiento-uruguay",
+          "label": "Me grabaron y publicaron el video"
         }
       ],
       "guides": [
@@ -1146,6 +1259,10 @@
           "label": "Calculadora de plazo fijo"
         },
         {
+          "to": "/letras-de-regulacion-monetaria-uruguay",
+          "label": "Letras de Regulación Monetaria"
+        },
+        {
           "to": "/herramientas/calculadora-impuestos-inversiones",
           "label": "Calculadora de impuestos a inversiones"
         },
@@ -1169,9 +1286,11 @@
         "invertir-en-la-bolsa-de-usa-desde-uruguay",
         "bonos-y-renta-fija-uruguay",
         "conviene-ahorrar-en-dolares-uruguay",
+        "ahorrar-en-dolares-o-pesos",
         "interes-compuesto-explicado-uruguay",
         "errores-y-estafas-al-invertir-uruguay",
-        "comprar-criptomonedas-en-uruguay"
+        "comprar-criptomonedas-en-uruguay",
+        "impuesto-al-patrimonio-uruguay"
       ],
       "terms": [
         {
@@ -1270,6 +1389,10 @@
           "label": "¿Cuándo me puedo jubilar?"
         },
         {
+          "to": "/computo-por-hijo-jubilacion-uruguay",
+          "label": "Cómputo por hijo"
+        },
+        {
           "to": "/iass-uruguay",
           "label": "IASS: impuesto a las jubilaciones"
         },
@@ -1334,6 +1457,22 @@
           "label": "Meal prep"
         },
         {
+          "to": "/factura-de-ute-uruguay",
+          "label": "Factura de UTE alta"
+        },
+        {
+          "to": "/factura-de-ose-uruguay",
+          "label": "Factura de OSE"
+        },
+        {
+          "to": "/cortes-de-agua-por-barrio-uruguay",
+          "label": "Cortes de agua por barrio"
+        },
+        {
+          "to": "/que-pasa-si-no-pago-antel",
+          "label": "Deuda con Antel"
+        },
+        {
           "to": "/sillas-escritorio-uruguay",
           "label": "Sillas de escritorio"
         }
@@ -1350,7 +1489,9 @@
         "como-evitar-estafas-financieras-uruguay",
         "educacion-financiera-para-jovenes-uruguay",
         "subsidio-expensas-funerarias-bps-uruguay",
+        "asistente-personal-bps-uruguay",
         "cobrar-jubilacion-uruguaya-desde-el-exterior",
+        "jubilacion-parcial-uruguay",
         "canasta-fin-de-ano-bps-uruguay",
         "precio-supergas-garrafa-uruguay"
       ],
@@ -1393,6 +1534,10 @@
         {
           "to": "/facturar-en-monotributo-uruguay",
           "label": "Facturar en monotributo"
+        },
+        {
+          "to": "/registrar-una-marca-uruguay",
+          "label": "Registrar una marca"
         },
         {
           "to": "/ropa-por-kilo-uruguay",
@@ -1600,6 +1745,18 @@
           "label": "Cuánto sale el pasaporte"
         },
         {
+          "to": "/cuanto-sale-la-partida-de-nacimiento-uruguay",
+          "label": "Cuánto sale la partida de nacimiento"
+        },
+        {
+          "to": "/apostillar-un-documento-uruguay",
+          "label": "Apostillar un documento"
+        },
+        {
+          "to": "/permiso-de-menor-para-viajar-uruguay",
+          "label": "Permiso de menor para viajar"
+        },
+        {
           "to": "/mudarme-a-uruguay-residencia",
           "label": "Mudarse a Uruguay"
         },
@@ -1618,6 +1775,10 @@
         {
           "to": "/apps-utiles-uruguay",
           "label": "Apps útiles y del Estado"
+        },
+        {
+          "to": "/multa-por-no-votar-uruguay",
+          "label": "Multa por no votar"
         }
       ],
       "guides": [

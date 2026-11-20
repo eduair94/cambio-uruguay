@@ -22,10 +22,11 @@
 // exercise the ranking directly — same contract as `siteNav.ts` and `ads.ts`.
 
 import { isBareRoute } from './bareRoutes'
+import { PREFIXED_LOCALE_CODES } from './locales'
 import { NAV_SECTIONS, tokenize } from './siteNav'
 
-/** Locale prefixes the router can put in front of a path. */
-const LOCALE_PREFIXES = ['/en', '/pt'] as const
+/** Locale prefixes the router can put in front of a path, the machine-translated ones included. */
+const LOCALE_PREFIXES = PREFIXED_LOCALE_CODES.map(code => `/${code}`)
 
 /**
  * Routes that show no "what to read next" block.
@@ -78,6 +79,7 @@ const NEVER_SUGGEST = new Set<string>([
   '/acerca',
   '/estadisticas-del-sitio',
   '/paginas-mas-visitadas',
+  '/origen-del-trafico',
   '/analiticas',
 ])
 
@@ -478,6 +480,12 @@ export const CURATED: Readonly<Record<string, readonly string[]>> = Object.freez
     '/indicadores',
     '/salud-financiera',
   ],
+  // IVA: the next question is how much of it comes back with a card, and what an import pays.
+  '/herramientas/calculadora-iva': [
+    '/descuento-de-iva-con-tarjeta-uruguay',
+    '/impuesto-temu-uruguay',
+    '/franquicia-aduana-uruguay',
+  ],
   '/herramientas/calculadora-sueldo-liquido': [
     '/cuanto-me-tienen-que-pagar-uruguay',
     '/vivir-con-25000-pesos-uruguay',
@@ -557,9 +565,19 @@ export const CURATED: Readonly<Record<string, readonly string[]>> = Object.freez
   ],
   '/fletes-mudanzas-uruguay': [
     '/alquileres-uruguay',
+    '/armadores-de-muebles-montevideo',
     '/primer-alquiler-uruguay',
     '/equipar-casa-uruguay',
     '/alquilar-en-uruguay',
+    '/sillas-escritorio-uruguay',
+  ],
+  // Después de la mudanza viene armar lo que se compró: el flete trae las cajas, el armador las
+  // arma, y equipar dice qué falta comprar.
+  '/armadores-de-muebles-montevideo': [
+    '/fletes-mudanzas-uruguay',
+    '/equipar-casa-uruguay',
+    '/alquileres-uruguay',
+    '/primer-alquiler-uruguay',
     '/sillas-escritorio-uruguay',
   ],
   '/herramientas/costo-de-vida': [

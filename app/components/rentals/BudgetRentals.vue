@@ -108,12 +108,13 @@
             ><span>{{ compactBandLabel(query.band) }}</span></template
           ></VSelect
         >
-        <VBtn
+        <ShareButtons
           v-if="!smAndDown"
-          icon="mdi-share-variant-outline"
+          :label="false"
+          color="primary"
           variant="text"
-          :aria-label="t('share')"
-          @click="share"
+          :text="t('title')"
+          :description="chips.map(chip => chip.label).join(' · ')"
         />
       </div>
       <div v-if="chips.length" class="budget-chips" :aria-label="t('activeFilters')">
@@ -165,123 +166,129 @@
             <p>{{ t('emptyHint') }}</p>
             <VBtn variant="tonal" @click="clear">{{ t('clear') }}</VBtn>
           </div>
-          <div class="budget-list">
-            <article
-              v-for="item in pending ? [] : data?.items || []"
-              :key="item.key"
-              class="budget-card"
-              data-testid="budget-rental-card"
-            >
-              <div class="budget-card__intro">
-                <NuxtLink
-                  :to="rentalPropertyPath(item.key)"
-                  class="budget-card__photo"
-                  tabindex="-1"
-                  aria-hidden="true"
-                >
-                  <img
-                    v-if="photo(item) && !failedImages.has(item.key)"
-                    :src="photo(item)!"
-                    alt=""
-                    width="300"
-                    height="225"
-                    loading="lazy"
-                    decoding="async"
-                    referrerpolicy="no-referrer"
-                    @error="failedImages.add(item.key)"
-                  />
-                  <span v-else><VIcon icon="mdi-home-outline" size="32" />{{ t('noImage') }}</span>
-                </NuxtLink>
-                <div>
-                  <p class="budget-card__zone">
-                    {{ [item.neighborhood, item.department].filter(Boolean).join(' · ') }}
-                  </p>
-                  <h3>
-                    <NuxtLink :to="rentalPropertyPath(item.key)">{{ item.title }}</NuxtLink>
-                  </h3>
-                  <strong class="budget-card__price">{{ money(item.budget.amountUyu) }}</strong>
-                  <p class="budget-card__basis">
-                    {{ t(query.basis === 'monthly' ? 'total' : 'rentLabel') }}
-                  </p>
-                </div>
-              </div>
-              <div class="budget-card__body">
-                <p class="budget-card__specs">{{ specs(item) }}</p>
-                <dl class="budget-card__costs">
-                  <div>
-                    <dt>{{ t('rentLabel') }}</dt>
-                    <dd>{{ money(item.budget.rentUyu) }}</dd>
-                  </div>
-                  <div>
-                    <dt>{{ t('expenses') }}</dt>
-                    <dd>
-                      {{
-                        item.budget.expensesUyu === null
-                          ? t('expensesUnknown')
-                          : money(item.budget.expensesUyu)
-                      }}
-                    </dd>
-                  </div>
-                  <div v-if="item.budget.monthlyUyu !== null">
-                    <dt>{{ t('total') }}</dt>
-                    <dd>{{ money(item.budget.monthlyUyu) }}</dd>
-                  </div>
-                </dl>
-                <p class="budget-card__source">{{ t('source', { source: source(item) }) }}</p>
-                <p v-if="offer(item)?.currency === 'USD'" class="budget-hint">
-                  {{
-                    t('originalPrice', { price: rentalMoney(offer(item)!.price, 'USD', locale) })
-                  }}
-                </p>
-                <p class="budget-hint">
-                  {{
-                    t('read', {
-                      date: rentalDate(offer(item)?.lastSeen, locale) || t('unknownDate'),
-                    })
-                  }}
-                </p>
-                <RentalsAvailabilityReport
-                  :offers="item.offers"
-                  :summary="item.availability"
-                  :preferred="offer(item)"
-                  :title="item.title"
-                />
-                <div class="budget-card__actions">
-                  <VBtn :to="rentalPropertyPath(item.key)" color="link" variant="tonal">{{
-                    t('detail')
-                  }}</VBtn>
-                  <VBtn
-                    v-if="original(item)"
-                    :href="original(item)!"
-                    target="_blank"
-                    rel="noopener noreferrer nofollow"
-                    variant="text"
-                    append-icon="mdi-open-in-new"
-                    >{{ t('original') }}</VBtn
+          <div ref="resultsList" class="budget-list">
+            <FeedEdge :feed="feed" edge="top" />
+            <template v-for="(item, index) in feed.items" :key="item.key">
+              <FeedAd :index="index" :feed="feed" />
+              <article class="budget-card" data-testid="budget-rental-card">
+                <div class="budget-card__intro">
+                  <NuxtLink
+                    :to="rentalPropertyPath(item.key)"
+                    class="budget-card__photo"
+                    tabindex="-1"
+                    aria-hidden="true"
                   >
+                    <img
+                      v-if="photo(item) && !failedImages.has(item.key)"
+                      :src="photo(item)!"
+                      alt=""
+                      width="300"
+                      height="225"
+                      loading="lazy"
+                      decoding="async"
+                      referrerpolicy="no-referrer"
+                      @error="failedImages.add(item.key)"
+                    />
+                    <span v-else
+                      ><VIcon icon="mdi-home-outline" size="32" />{{ t('noImage') }}</span
+                    >
+                  </NuxtLink>
+                  <div>
+                    <p class="budget-card__zone">
+                      {{ [item.neighborhood, item.department].filter(Boolean).join(' · ') }}
+                    </p>
+                    <h3>
+                      <NuxtLink :to="rentalPropertyPath(item.key)">{{ item.title }}</NuxtLink>
+                    </h3>
+                    <strong class="budget-card__price">{{ money(item.budget.amountUyu) }}</strong>
+                    <p class="budget-card__basis">
+                      {{ t(query.basis === 'monthly' ? 'total' : 'rentLabel') }}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </article>
+                <div class="budget-card__body">
+                  <p class="budget-card__specs">{{ specs(item) }}</p>
+                  <dl class="budget-card__costs">
+                    <div>
+                      <dt>{{ t('rentLabel') }}</dt>
+                      <dd>{{ money(item.budget.rentUyu) }}</dd>
+                    </div>
+                    <div>
+                      <dt>{{ t('expenses') }}</dt>
+                      <dd>
+                        {{
+                          item.budget.expensesUyu === null
+                            ? t('expensesUnknown')
+                            : money(item.budget.expensesUyu)
+                        }}
+                      </dd>
+                    </div>
+                    <div v-if="item.budget.monthlyUyu !== null">
+                      <dt>{{ t('total') }}</dt>
+                      <dd>{{ money(item.budget.monthlyUyu) }}</dd>
+                    </div>
+                  </dl>
+                  <p class="budget-card__source">{{ t('source', { source: source(item) }) }}</p>
+                  <p v-if="offer(item)?.currency === 'USD'" class="budget-hint">
+                    {{
+                      t('originalPrice', { price: rentalMoney(offer(item)!.price, 'USD', locale) })
+                    }}
+                  </p>
+                  <p class="budget-hint">
+                    {{
+                      t('read', {
+                        date: rentalDate(offer(item)?.lastSeen, locale) || t('unknownDate'),
+                      })
+                    }}
+                  </p>
+                  <RentalsAvailabilityReport
+                    :offers="item.offers"
+                    :summary="item.availability"
+                    :preferred="offer(item)"
+                    :title="item.title"
+                  />
+                  <div class="budget-card__actions">
+                    <VBtn :to="rentalPropertyPath(item.key)" color="link" variant="tonal">{{
+                      t('detail')
+                    }}</VBtn>
+                    <VBtn
+                      v-if="original(item)"
+                      :href="original(item)!"
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      variant="text"
+                      append-icon="mdi-open-in-new"
+                      >{{ t('original') }}</VBtn
+                    >
+                  </div>
+                </div>
+              </article>
+            </template>
+            <FeedEdge :feed="feed" edge="bottom" />
           </div>
-          <nav
-            v-if="data && data.pages > 1"
-            class="budget-pagination"
-            :aria-label="t('page', { n: data.page, pages: data.pages })"
-          >
-            <VBtn
-              variant="outlined"
-              :disabled="pending || data.page <= 1"
-              @click="changePage(data.page - 1)"
-              >{{ t('previous') }}</VBtn
-            >
-            <span>{{ t('page', { n: data.page, pages: data.pages }) }}</span>
-            <VBtn
-              variant="outlined"
-              :disabled="pending || data.page >= data.pages"
-              @click="changePage(data.page + 1)"
-              >{{ t('next') }}</VBtn
-            >
-          </nav>
+          <FeedControls :feed="feed">
+            <template #pagination>
+              <nav
+                v-if="data && data.pages > 1"
+                class="budget-pagination"
+                :aria-label="t('page', { n: data.page, pages: data.pages })"
+              >
+                <VBtn
+                  variant="outlined"
+                  :disabled="pending || data.page <= 1"
+                  @click="changePage(data.page - 1)"
+                  >{{ t('previous') }}</VBtn
+                >
+                <span>{{ t('page', { n: data.page, pages: data.pages }) }}</span>
+                <VBtn
+                  variant="outlined"
+                  :disabled="pending || data.page >= data.pages"
+                  @click="changePage(data.page + 1)"
+                  >{{ t('next') }}</VBtn
+                >
+              </nav>
+            </template>
+          </FeedControls>
         </template>
       </section>
       <p class="budget-note">{{ t('eligibility') }}</p>
@@ -298,13 +305,12 @@
           >{{ t('sales') }}</NuxtLink
         >
       </nav>
-      <VSnackbar v-model="snackbarOpen" timeout="3500">{{ snackbar }}</VSnackbar>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { VDialog } from 'vuetify/components'
+import { VAutocomplete, VDialog } from 'vuetify/components'
 import { useDisplay } from 'vuetify'
 import { rentalBudgetMessages } from '~/utils/rentalBudgetMessages'
 import { rentalAvailabilityCopy } from '~/utils/rentalAvailabilityMessages'
@@ -320,6 +326,7 @@ import {
 import { RENTAL_SOURCE_LABEL } from '~/utils/rentals'
 import { rentalDate, rentalMoney, rentalPropertyPath } from '~/utils/rentalPresentation'
 import { rentalSavedSafeUrl } from '~/utils/rentalSaved'
+import { rentalBarrioOptionPlausible } from '~/utils/rentalBarrioOption'
 
 const { t, locale } = useI18n({ useScope: 'local', messages: rentalBudgetMessages })
 const { smAndDown } = useDisplay()
@@ -337,6 +344,27 @@ const { data, pending, error, refresh } = await useAsyncData<RentalBudgetRespons
   () => $fetch('/api/rentals/budget', { query: availability.withRevision(params.value) }),
   { watch: [requestKey] }
 )
+const pageItems = computed(() => (pending.value ? [] : (data.value?.items ?? [])))
+// "Cargar más al bajar" (composables/useInfiniteFeed.ts): la lista recorre `feed.items`.
+const resultsList = ref<HTMLElement | null>(null)
+const feed = useInfiniteFeed<RentalBudgetResponse['items'][number]>({
+  id: 'alquiler-presupuesto',
+  itemKey: item => item.key,
+  list: resultsList,
+  items: () => pageItems.value,
+  page: () => query.value.page,
+  pageCount: () => data.value?.pages ?? 1,
+  perPage: () => query.value.perPage,
+  resetKey: () => JSON.stringify(rentalBudgetQueryToParams({ ...query.value, page: 1 })),
+  fetchPage: (page, signal) =>
+    $fetch<RentalBudgetResponse>('/api/rentals/budget', {
+      query: availability.withRevision(rentalBudgetQueryToParams({ ...query.value, page })),
+      signal,
+    }).then(response => response.items),
+  enabled: () => !error.value,
+  goToPage: page => void changePage(page),
+  anchorId: 'budget-results',
+})
 const open = ref(false),
   draft = ref({ ...query.value })
 const heading = ref<HTMLElement | null>(null),
@@ -411,11 +439,14 @@ const departmentItems = computed(() => [
     ),
   ].map(value => ({ value, title: value })),
 ])
+// No street address offered as a barrio (utils/rentalBarrioOption.ts); the chosen one stays.
 const neighborhoodItems = computed(() => [
   ...new Set(
     [
       draft.value.neighborhood,
-      ...(facetOverride.value?.neighborhoods || data.value?.facets.neighborhoods || []),
+      ...(facetOverride.value?.neighborhoods || data.value?.facets.neighborhoods || []).filter(
+        name => rentalBarrioOptionPlausible(name)
+      ),
     ].filter(Boolean)
   ),
 ])
@@ -602,23 +633,6 @@ availability.watchChanges(async () => {
   await refresh()
   if (query.value.availability !== 'all') await focusResults()
 })
-const snackbarOpen = ref(false),
-  snackbar = ref('')
-async function share() {
-  try {
-    if (navigator.share) await navigator.share({ title: t('title'), url: window.location.href })
-    else {
-      await navigator.clipboard.writeText(window.location.href)
-      snackbar.value = t('copied')
-      snackbarOpen.value = true
-    }
-  } catch (error) {
-    if ((error as Error).name !== 'AbortError') {
-      snackbar.value = t('shareError')
-      snackbarOpen.value = true
-    }
-  }
-}
 </script>
 
 <style scoped>
@@ -657,7 +671,7 @@ async function share() {
 }
 .budget-filters h2 {
   margin: 0;
-  font-size: 1.15rem;
+  font-size: 1.25rem;
 }
 .budget-filters__body {
   display: grid;
@@ -724,7 +738,7 @@ async function share() {
 }
 .budget-results h2 {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
 }
 .budget-results__heading p {
   margin: 4px 0 0;
@@ -858,7 +872,7 @@ async function share() {
   padding: 24px 0;
 }
 .budget-empty h3 {
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   margin: 0;
 }
 .budget-note {

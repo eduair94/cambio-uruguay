@@ -1,8 +1,12 @@
 import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import * as cheerio from "cheerio";
 import { beforeEach, describe, expect, it, vi, afterEach } from "vitest";
-import { parseCasaswebPage, casaswebSearchUrl, harvestCasasweb } from "../../classes/rentals/sources/casasweb";
+import {
+  casaswebCardArea, casaswebCardsUnrecognised, casaswebSearchUrl, harvestCasasweb, parseCasaswebPage,
+  plausibleCasaswebNeighborhood, readCasaswebCard,
+} from "../../classes/rentals/sources/casasweb";
 import { elpaisCategoryUrls, elpaisToRawRental, extractElpaisRows, harvestElpais } from "../../classes/rentals/sources/elpais";
 import { isPlausibleRent } from "../../classes/rentals/normalize";
 import { toRawRental as infoCasas } from "../../classes/rentals/sources/infocasas";
@@ -26,7 +30,7 @@ afterEach(() => vi.resetAllMocks());
 describe("Casasweb's public monthly-rental cards", () => {
   it("reads every card of the redesigned search page, keeping the rent when the card also advertises a sale", () => {
     const parsed = parseCasaswebPage(fixture("casasweb"))!;
-    expect(parsed).toMatchObject({ total: 1135, department: 1, propertyType: "a", currentPage: 1, cardCount: 4 });
+    expect(parsed).toMatchObject({ total: 1135, department: 1, propertyType: "a", currentPage: 1, cardCount: 4, placedCount: 4 });
     expect(parsed.listings.map(row => row.listingId)).toEqual(["casasweb:CW255368", "casasweb:CW255283", "casasweb:CW258047", "casasweb:TKA7919965"]);
     expect(parsed.listings[0]).toMatchObject({
       currency: "UYU", price: 16000, department: "Montevideo", neighborhood: "Nuevo París", propertyType: "apartamento",
@@ -86,6 +90,77 @@ describe("Casasweb's public monthly-rental cards", () => {
     expect(fetchText).toHaveBeenCalledTimes(6);
     expect(run).toMatchObject({ ok: false, complete: false, listings: [] });
     expect(run.note).toContain("departamentos consultados: 1");
+  });
+});
+
+// From 2026-11-03 the cards carry type and barrio in a badge and the surfaces where the barrio was.
+// Read the old way, ~1.350 adverts were published in barrios called "40 m2 40 m2", with no area,
+// and five of those "barrios" became indexable pages. The fixture is seven cards of that markup.
+describe("Casasweb's cards since 2026-11", () => {
+  const cards = (html: string) => {
+    const $ = cheerio.load(html);
+    return $("a[href]").filter((_, node) => $(node).find(".item-info").length > 0).toArray().map(node => $(node));
+  };
+
+  it("takes the barrio from the badge and the area from what the card states as built", () => {
+    const parsed = parseCasaswebPage(fixture("casasweb-2026-11"))!;
+    expect(parsed).toMatchObject({ total: 1068, department: 1, propertyType: "a", currentPage: 1, cardCount: 7, placedCount: 7 });
+    expect(parsed.nextUrl).toBe("https://casasweb.com/alquiler/apartamentos/montevideo?pag=2");
+    expect(parsed.listings.map(row => row.neighborhood)).toEqual([
+      "Pocitos Nuevo", "Buceo", "Punta Carretas", "Cordón", "Flor de Maroñas", "Jardines Hipódromo", "Conciliación",
+    ]);
+    expect(parsed.listings.filter(row => /\bm(?:2|²)/i.test(row.neighborhood))).toEqual([]);
+    expect(parsed.listings.every(row => row.propertyType === "apartamento" && row.department === "Montevideo")).toBe(true);
+    const byId = new Map(parsed.listings.map(row => [row.listingId, row]));
+    expect(byId.get("casasweb:CW236952")).toMatchObject({ neighborhood: "Buceo", area: 40, price: 24_500, currency: "UYU", sellerName: "Mtz Propiedades" });
+    // "Edificados: 43 m² · Area Total: 45 m²": the built surface.
+    expect(byId.get("casasweb:CW228358")).toMatchObject({ neighborhood: "Punta Carretas", area: 43 });
+    // An apartment that states only "Area Total: 35 m²".
+    expect(byId.get("casasweb:CW259162")?.area).toBe(35);
+    // The same card also sells it for USD 45.000; the rent is what is kept.
+    expect(byId.get("casasweb:CW255283")).toMatchObject({ price: 14_900, currency: "UYU" });
+    expect(byId.get("casasweb:TKA7919965")).toMatchObject({ neighborhood: "Conciliación", area: 50 });
+  });
+
+  it("declares the badge's type, and splits a zone that has its own dash on the last one", () => {
+    expect(readCasaswebCard(cards(fixture("casasweb-2026-11"))[0]!)).toEqual({
+      declaredType: "Apartamento", neighborhood: "Pocitos Nuevo", builtArea: 33, totalArea: 33, legacyArea: null,
+    });
+    // Maldonado's houses, 2026-11-08: "Casa - Punta del Este - Pinares", lot only.
+    const pinares = cards(`<a href="/ALQUILER__KW_ONE_CASA_PUNTA_DEL_ESTE___PINARES_MALDONADO_TKA1"><span class="badge-zona-resultado">Casa - Punta del Este - Pinares</span>` +
+      `<div class="card-body item-info"><div class="tipo-propiedad-zona"><small><b>Area Total:</b> 400 m<sup>2</sup></small><small><strong>TKA1</strong><br>Maldonado</small></div></div></a>`)[0]!;
+    const card = readCasaswebCard(pinares);
+    expect(card).toMatchObject({ declaredType: "Casa", neighborhood: "Pinares", builtArea: null, totalArea: 400 });
+    // A house's total is its lot, never its built surface; an apartment's is close enough.
+    expect(casaswebCardArea(card, "casa")).toBeNull();
+    expect(casaswebCardArea(card, "apartamento")).toBe(400);
+    expect(casaswebCardArea({ ...card, builtArea: 140 }, "casa")).toBe(140);
+  });
+
+  it("never takes a surface for a barrio, and keeps the localities whose name opens with a number", () => {
+    // The app-side barrio filter mirrors exactly these cases (docs/app/RENTALS.md, 2026-11-08).
+    for (const junk of ["40 m2 40 m2", "60 m² 60 m²", "10 m2", "45 mts", "45 mts.", "60 metros", "4 H", "4H", "1 ha", "2 has", "3 hectáreas", "120", "Uruguay", ""]) {
+      expect(plausibleCasaswebNeighborhood(junk), junk).toBe(false);
+    }
+    for (const place of ["25 de Mayo", "18 de Julio", "Pocitos Nuevo", "Cordón", "Maldonado"]) {
+      expect(plausibleCasaswebNeighborhood(place), place).toBe(true);
+    }
+  });
+
+  it("knows a page whose cards name no barrio is not one it can read", () => {
+    // The 2026-11 markup without its badge is what the old parser read as "40 m2 40 m2".
+    const junk = fixture("casasweb-2026-11").replace(/<span class="badge-zona-resultado">[^<]*<\/span>/g, "");
+    const parsed = parseCasaswebPage(junk)!;
+    expect(parsed).toMatchObject({ cardCount: 7, placedCount: 0 });
+    expect(parsed.listings.map(row => row.neighborhood)).toEqual(["", "", "", "", "", "", ""]);
+    expect(casaswebCardsUnrecognised(parsed.cardCount, parsed.placedCount)).toBe(true);
+    expect(casaswebCardsUnrecognised(4, 2)).toBe(false);
+    expect(casaswebCardsUnrecognised(3, 1)).toBe(true);
+    expect(casaswebCardsUnrecognised(2, 0)).toBe(true);
+    expect(casaswebCardsUnrecognised(2, 1)).toBe(false);
+    expect(casaswebCardsUnrecognised(0, 0)).toBe(false);
+    // One card alone proves nothing about the markup: it goes out without a barrio.
+    expect(casaswebCardsUnrecognised(1, 0)).toBe(false);
   });
 });
 
