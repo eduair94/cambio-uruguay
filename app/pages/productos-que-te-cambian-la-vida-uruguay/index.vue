@@ -15,7 +15,7 @@ cliente y sólo cambia el atributo `hidden` de cada producto.
         { title: DIRECTORIOS_HUB.label, to: localePath(DIRECTORIOS_HUB.path) },
         { title: 'Productos que te cambian la vida', disabled: true },
       ]"
-      class="px-0 pb-2"
+      class="vida-crumbs px-0 pb-2"
     />
 
     <header class="vida-header">
@@ -65,6 +65,7 @@ cliente y sólo cambia el atributo `hidden` de cada producto.
           :has-prices="hasPrices"
           :domain="domain"
           :read-on="pricesReadOn"
+          :read-day="pricesReadDay"
           :eager="index === 0"
         />
       </ol>
@@ -166,6 +167,7 @@ import {
   productosVidaLead,
   productosVidaLongDate,
   productosVidaMoney,
+  productosVidaMontevideoDay,
   productosVidaQueryFromState,
   productosVidaRanks,
   productosVidaResultLine,
@@ -283,12 +285,16 @@ function onRecover(event: MouseEvent, patch: Partial<ProductosVidaState>) {
 const lead = computed(() => productosVidaLead(PRODUCTOS_VIDA_PRODUCTS, hasPrices.value))
 const threadReadOn = productosVidaLongDate(PRODUCTOS_VIDA_THREAD.readOn)
 const threadPostedOn = PRODUCTOS_VIDA_THREAD.postedOn.split('-').reverse().join('/')
+// Arriba, las fechas cortas («20/11/2026», «20/11, 04:19»): con las largas la nota ocupaba tres
+// renglones a 390 px. La sección del método repite la del hilo entera.
+const threadReadOnShort = PRODUCTOS_VIDA_THREAD.readOn.split('-').reverse().join('/')
 const asofTail = computed(() => {
-  const read = `el ${threadReadOn}, con sus ${PRODUCTOS_VIDA_THREAD.comments} comentarios.`
+  const read = `el ${threadReadOnShort}, con ${PRODUCTOS_VIDA_THREAD.comments} comentarios.`
   const prices = productosVidaDateTime(response.value.generatedAt)
   return prices ? `${read} Precios de Mercado Libre del ${prices}.` : read
 })
 const pricesReadOn = computed(() => productosVidaLongDate(response.value.generatedAt))
+const pricesReadDay = computed(() => productosVidaMontevideoDay(response.value.generatedAt))
 const usdRate = computed(() =>
   response.value.usdUyu === null
     ? ''
@@ -434,12 +440,34 @@ useSchemaOrg([
   letter-spacing: -0.02em;
   text-wrap: balance;
 }
+/* En el celular la bajada va en el paso de cuerpo secundario: con el tamaño de bajada eran cinco
+   renglones antes de los filtros, y quien llega viene por la lista. Desde 600 px vuelve al suyo. */
 .vida-lead {
   max-width: 68ch;
   margin-bottom: 8px;
-  font-size: 1.075rem;
-  line-height: 1.65;
+  font-size: 0.95rem;
+  line-height: 1.5;
   color: rgba(var(--v-theme-on-surface), 0.76);
+}
+@media (min-width: 600px) {
+  .vida-lead {
+    font-size: 1.075rem;
+    line-height: 1.65;
+  }
+}
+/* La miga actual en un solo renglón en el celular (el H1 de abajo la dice entera): partida, eran dos
+   renglones a 390 px y cuatro a 320. */
+@media (max-width: 599px) {
+  .vida-crumbs {
+    flex-wrap: nowrap;
+  }
+  .vida-crumbs :deep(.v-breadcrumbs-item--disabled) {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 .v-theme--dark .vida-lead {
   color: rgba(var(--v-theme-on-surface), 0.82);
@@ -556,15 +584,21 @@ useSchemaOrg([
   font-size: 0.95rem;
   line-height: 1.5;
 }
+/* En línea y no flex: partido en dos renglones dentro de un flex, el texto ocupaba todo el ancho y la
+   flecha quedaba sola contra el borde. Así sigue a la última palabra. 10 + 24 + 10 = 44. */
 .vida-link {
-  display: inline-flex;
-  gap: 4px;
-  align-items: center;
+  display: inline-block;
   min-height: 44px;
+  padding-block: 10px;
   color: rgb(var(--v-theme-link));
   font-size: 0.95rem;
   font-weight: 600;
+  line-height: 24px;
   text-underline-offset: 2px;
+}
+.vida-link .v-icon {
+  margin-inline-start: 4px;
+  vertical-align: -3px;
 }
 .vida-share {
   margin-top: 32px;

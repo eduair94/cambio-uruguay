@@ -4,35 +4,26 @@
   salto sin leer un número. Del p25 al p75 la banda, la mediana como una marca y, con presupuesto,
   la línea del presupuesto.
 
+  Es sólo la pista: los rótulos de la escala ($ 100 … $ 1.000.000) los dibuja UNA vez por panel
+  `ProductosVidaAxis`, debajo de todas las variantes. Repetirlos bajo cada variante era un eje
+  entero por fila para decir siempre lo mismo.
+
   Todo sale del servidor como porcentajes en variables CSS: la barra ya está en su lugar en el HTML
-  y la caja tiene alto fijo, así que nada se mueve al hidratar. Es `aria-hidden`: el texto de arriba
+  y la caja tiene alto fijo, así que nada se mueve al hidratar. Es `aria-hidden`: el texto de al lado
   dice cada valor que la regla dibuja.
 -->
 <template>
   <div class="vida-ruler" aria-hidden="true" :style="vars">
-    <div class="vida-ruler__track">
-      <span
-        v-for="tick in domain.ticks"
-        :key="tick.value"
-        class="vida-ruler__tick"
-        :style="{ left: `${tick.pct}%` }"
-      />
-      <span class="vida-ruler__band" />
-      <span class="vida-ruler__mid" />
-      <span v-if="positions.cap !== null" class="vida-ruler__cap" />
-    </div>
+    <span class="vida-ruler__track" />
     <span
-      v-for="(tick, index) in labelled"
+      v-for="tick in domain.ticks"
       :key="tick.value"
-      class="vida-ruler__label"
-      :class="{
-        'vida-ruler__label--first': index === 0 && tick.pct === 0,
-        'vida-ruler__label--last': tick.pct === 100,
-      }"
+      class="vida-ruler__tick"
       :style="{ left: `${tick.pct}%` }"
-    >
-      {{ tick.label }}
-    </span>
+    />
+    <span class="vida-ruler__band" />
+    <span class="vida-ruler__mid" />
+    <span v-if="positions.cap !== null" class="vida-ruler__cap" />
   </div>
 </template>
 
@@ -50,7 +41,6 @@ const props = defineProps<{
 }>()
 
 const positions = computed(() => productosVidaRulerPositions(props.band, props.domain, props.hasta))
-const labelled = computed(() => props.domain.ticks.filter(tick => tick.label !== null))
 const vars = computed(() => ({
   '--from': `${positions.value.from}%`,
   '--to': `${positions.value.to}%`,
@@ -60,70 +50,54 @@ const vars = computed(() => ({
 </script>
 
 <style scoped>
-/* Alto fijo (32 = 18 de barra con sus marcas + 14 de rótulos): la caja existe entera en el HTML del
-   servidor y no empuja nada al hidratar. */
+/* Alto fijo de 16 px y todo centrado en su mitad (8 px): una pista fina de 4, la banda de 8, la
+   mediana de 16 y el presupuesto de 24, que sobresale 4 px arriba y abajo sin empujar nada. */
 .vida-ruler {
   position: relative;
-  height: 32px;
+  height: 16px;
+}
+.vida-ruler > span {
+  position: absolute;
+  top: 50%;
 }
 .vida-ruler__track {
-  position: absolute;
-  inset: 4px 0 auto;
-  height: 8px;
+  inset-inline: 0;
+  height: 4px;
   border-radius: 999px;
-  background: rgba(var(--v-theme-on-surface), 0.1);
+  background: rgba(var(--v-theme-on-surface), 0.12);
+  transform: translateY(-50%);
 }
+/* Una marca por potencia de diez, las mismas en todas las filas: con el eje debajo, se leen como
+   una grilla. */
 .vida-ruler__tick {
-  position: absolute;
-  top: 0;
   width: 1px;
   height: 8px;
-  background: rgba(var(--v-theme-on-surface), 0.3);
-  transform: translateX(-0.5px);
+  background: rgba(var(--v-theme-on-surface), 0.32);
+  transform: translate(-0.5px, -50%);
 }
+/* La mitad central de los avisos. El azul de enlace del tema y no el primario: es el que mide ≥ 3:1
+   contra la superficie en los dos temas. */
 .vida-ruler__band {
-  position: absolute;
-  top: 0;
   left: var(--from);
-  width: max(4px, calc(var(--to) - var(--from)));
+  width: max(6px, calc(var(--to) - var(--from)));
   height: 8px;
   border-radius: 999px;
-  background: rgba(var(--v-theme-primary), 0.45);
+  background: rgba(var(--v-theme-link), 0.72);
+  transform: translateY(-50%);
 }
-/* La mediana: 2 × 14 px centrada sobre la barra (−3 px arriba y abajo). */
 .vida-ruler__mid {
-  position: absolute;
-  top: -3px;
   left: var(--mid);
   width: 2px;
-  height: 14px;
+  height: 16px;
   background: rgb(var(--v-theme-on-surface));
-  transform: translateX(-1px);
+  transform: translate(-1px, -50%);
 }
-/* El presupuesto: ámbar de relleno, nunca de texto. 2 × 20 px centrada sobre la barra. */
+/* El presupuesto: ámbar de relleno, nunca de texto. */
 .vida-ruler__cap {
-  position: absolute;
-  top: -6px;
   left: var(--cap);
   width: 2px;
-  height: 20px;
+  height: 24px;
   background: rgb(var(--v-theme-secondary));
-  transform: translateX(-1px);
-}
-.vida-ruler__label {
-  position: absolute;
-  top: 18px;
-  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
-  font-size: 0.75rem;
-  font-variant-numeric: tabular-nums;
-  line-height: 14px;
-  white-space: nowrap;
-  transform: translateX(-50%);
-}
-.vida-ruler__label--first {
-  transform: none;
-}
-.vida-ruler__label--last {
-  transform: translateX(-100%);
+  transform: translate(-1px, -50%);
 }
 </style>
