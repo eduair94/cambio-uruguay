@@ -721,7 +721,7 @@ describe('montos y fechas', () => {
     const iso = '2026-11-21T00:13:00Z'
     expect(productosVidaLongDate(iso)).toBe('20 de noviembre de 2026')
     expect(productosVidaShortDate(iso)).toBe('20/11')
-    expect(productosVidaDateTime(iso)).toBe('20/11 a las 21:13')
+    expect(productosVidaDateTime(iso)).toBe('20/11, 21:13')
     expect(productosVidaMontevideoDay(iso)).toBe('2026-11-20')
     expect(productosVidaDateTime('2026-11-20')).toBe('')
   })

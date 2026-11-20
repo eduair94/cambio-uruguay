@@ -273,8 +273,8 @@ function onSelect(event: MouseEvent, patch: Partial<ProductosVidaState>) {
   display: flex;
   gap: 12px;
   align-items: center;
-  min-height: 52px;
-  padding: 8px 12px 8px 16px;
+  min-height: 48px;
+  padding: 4px 12px 4px 16px;
   cursor: pointer;
   list-style: none;
   user-select: none;
