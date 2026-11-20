@@ -16,12 +16,14 @@ import {
   DAYS_PER_MONTH,
   SICK_LEAVE_AGUINALDO_DIVISOR,
   SICK_LEAVE_CAP_SINCE,
+  SICK_LEAVE_LEY_18725_MAX_BPC,
   SICK_LEAVE_MONTHLY_CAP,
   SICK_LEAVE_RATE,
   SICK_LEAVE_RURAL_PATRON_CAP,
   SICK_LEAVE_VERIFIED_AT,
   SICK_LEAVE_WAITING_DAYS,
   baseWhereCapBites,
+  capInBpc,
   computeSickLeave,
 } from '../../utils/sickLeaveBenefit'
 
@@ -33,15 +35,25 @@ describe('las cifras que publica el BPS', () => {
     expect(SICK_LEAVE_MONTHLY_CAP).toBe(67754)
     expect(SICK_LEAVE_CAP_SINCE).toBe('01/2026')
     expect(SICK_LEAVE_RURAL_PATRON_CAP).toBe(40655)
-    expect(SICK_LEAVE_VERIFIED_AT).toBe('2026-11-17')
+    expect(SICK_LEAVE_VERIFIED_AT).toBe('2026-11-20')
   })
 
-  // La trampa que `unemploymentBenefit.ts` ya documenta: la Ley 19.003 re-basó el tope, así que la
-  // cantidad de BPC de la escala de la Ley 18.725 ya no da el número que se paga. Si alguien algún
-  // día "simplifica" el tope a `8 * URUGUAY.bpc`, la página empieza a publicar $ 12.842 de menos.
+  // La trampa que `unemploymentBenefit.ts` ya documenta: la Ley 19.003 indexó el tope por la UR
+  // desde 2012 y recién en 2021 lo pasó a BPC, así que la cantidad de BPC de la escala de la Ley
+  // 18.725 ya no da el número que se paga. Si alguien algún día "simplifica" el tope a
+  // `8 * URUGUAY.bpc`, la página empieza a publicar $ 12.842 de menos.
   it('el tope NO es ocho BPC, que es lo que diría la escala original', () => {
-    expect(8 * URUGUAY.bpc).not.toBe(SICK_LEAVE_MONTHLY_CAP)
-    expect(SICK_LEAVE_MONTHLY_CAP).toBeGreaterThan(8 * URUGUAY.bpc)
+    expect(SICK_LEAVE_LEY_18725_MAX_BPC).toBe(8)
+    expect(SICK_LEAVE_LEY_18725_MAX_BPC * URUGUAY.bpc).not.toBe(SICK_LEAVE_MONTHLY_CAP)
+    expect(SICK_LEAVE_MONTHLY_CAP).toBeGreaterThan(SICK_LEAVE_LEY_18725_MAX_BPC * URUGUAY.bpc)
+  })
+
+  // La cifra que la página publica para mostrarlo: $ 67.754 entre la BPC de 2026 ($ 6.864).
+  it('el tope de hoy son 9,87 BPC, y la cuenta no explota con una BPC inválida', () => {
+    expect(URUGUAY.bpc).toBe(6864)
+    expect(capInBpc(URUGUAY.bpc)).toBe(9.87)
+    expect(capInBpc(0)).toBe(0)
+    expect(capInBpc(Number.NaN)).toBe(0)
   })
 
   it('el 70 %, los tres días y la doceava son las del decreto-ley y su reglamento', () => {
@@ -169,10 +181,44 @@ describe('la página de la calculadora', () => {
     expect(source).toContain('arts. 6 y 8')
   })
 
-  it('cita las cuatro fuentes oficiales', () => {
+  it('cita las fuentes oficiales, todas legibles sin suscripción', () => {
     expect(source).toContain('https://www.bps.gub.uy/4774/subsidio-por-enfermedad.html')
     expect(source).toContain('https://www.impo.com.uy/bases/decretos-ley/14407-1975')
     expect(source).toContain('https://www.impo.com.uy/bases/decretos/7-1976')
-    expect(source).toContain('https://www.impo.com.uy/bases/leyes/18725-2011/2')
+    // La Ley 18.725 en IMPO contesta «Acceso no válido» sin suscripción: va el PDF que enlaza el BPS.
+    expect(source).toContain('https://www.bps.gub.uy/3620/')
+    expect(source).not.toContain('impo.com.uy/bases/leyes/18725')
+    expect(source).toContain('https://www.impo.com.uy/bases/leyes/19003-2012')
+    expect(source).toContain('https://www.bps.gub.uy/10502/')
+  })
+
+  // El borrador decía que la Ley 19.003 «sólo lo indexa desde 2021». El texto original de esa ley
+  // lo ajusta por la unidad reajustable desde el 1/1/2012; la BPC llega con la Ley 19.924 (2021).
+  it('cuenta los dos tramos de la indexación de la Ley 19.003, no sólo el de 2021', () => {
+    const prose = source.replace(/\s+/g, ' ')
+    expect(prose).not.toContain('sólo lo indexa desde 2021')
+    expect(prose).toContain('por la unidad reajustable desde el 1/1/2012')
+    expect(prose).toContain('por la BPC desde el 1/1/2021')
+    expect(prose).toContain('capBpc')
+  })
+
+  // El art. 27 dice «superior al triple del monto…»: la cita del borrador («el triple…») no estaba.
+  it('cita el art. 27 con sus palabras', () => {
+    const prose = source.replace(/\s+/g, ' ')
+    expect(prose).toContain(
+      '«un subsidio mensual superior al triple del monto del salario mínimo nacional»'
+    )
+  })
+
+  // La fila de los días sin cubrir va después del «+ aguinaldo» en una tabla que suma: con un «−»
+  // se leía como otro descuento sobre el total, que ya los excluye.
+  it('los días sin cubrir no se muestran como una resta más del total', () => {
+    expect(source).not.toContain('− {{ formatUYU(result.lostToWaitingDays) }}')
+    expect(source).toContain('ya fuera del total')
+  })
+
+  it('el divisor del FAQ es la constante, no un 30 escrito a mano', () => {
+    expect(source).not.toContain('el mensual entre 30')
+    expect(source).toContain('el mensual entre ${daysPerMonth}')
   })
 })

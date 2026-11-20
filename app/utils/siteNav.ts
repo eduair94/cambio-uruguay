@@ -4151,10 +4151,10 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
-        // La guía `/guias/transferir-un-auto-uruguay` contesta el CÓMO y, sobre los requisitos,
-        // manda a «consultar de antemano en la intendencia correspondiente». Esta página contesta
-        // el CUÁNTO y hace ese trabajo: el arancel y la lista de las nueve fichas oficiales que
-        // existen, con su fecha. Son dos consultas distintas y por eso son dos URLs.
+        // La guía `/guias/transferir-un-auto-uruguay` contesta el CÓMO. Esta página contesta el
+        // CUÁNTO (la libreta: el importe nacional del Texto Ordenado del SUCIVE) y compara lo que
+        // piden las nueve fuentes oficiales leídas, con su fecha. Son dos consultas distintas y
+        // por eso son dos URLs.
         to: '/cuanto-sale-transferir-un-auto-uruguay',
         labelKey: 'nav.transferirAutoCosto',
         icon: 'mdi-car-key',

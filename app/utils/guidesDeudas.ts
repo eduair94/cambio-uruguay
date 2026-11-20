@@ -165,6 +165,7 @@ export const deudasGuides: readonly Guide[] = [
       { label: 'Salir del Clearing', to: '/salir-del-clearing' },
       { label: 'Te llama un estudio de cobranza', to: '/guias/estudio-de-cobranza-uruguay' },
       { label: 'Saldar y negociar deudas', to: '/saldar-deudas-uruguay' },
+      { label: 'Bien de familia: que no embarguen la casa', to: '/guias/bien-de-familia-uruguay' },
     ],
     sources: [
       {
@@ -455,6 +456,7 @@ export const deudasGuides: readonly Guide[] = [
         label: 'Cómo evitar estafas financieras',
         to: '/guias/como-evitar-estafas-financieras-uruguay',
       },
+      { label: 'Bien de familia: que no embarguen la casa', to: '/guias/bien-de-familia-uruguay' },
     ],
     sources: [
       {
@@ -607,18 +609,21 @@ export const deudasGuides: readonly Guide[] = [
     ],
   },
   {
-    // La única figura del derecho uruguayo que saca la casa del alcance de un acreedor, y la que
-    // nadie encuentra: el sitio tenía /embargo-de-sueldo-uruguay y quince guías de deuda, y la
+    // La figura del Decreto-Ley 15.597 que saca la casa del alcance de los acreedores, y la que
+    // nadie encontraba: el sitio tenía /embargo-de-sueldo-uruguay y quince guías de deuda, y la
     // palabra "bien de familia" no aparecía en ninguna. Lo que la hace una guía y no una ficha de
     // trámite es la fecha: protege para adelante, así que a quien ya lo están ejecutando no le
     // sirve, y eso es exactamente lo que se busca saber. Verificado el 2026-11-14 en IMPO
-    // (Decreto-Ley 15.597, arts. 1 a 17; Decreto 504/984, art. 1).
+    // (Decreto-Ley 15.597, arts. 1 a 17; Decreto 504/984, art. 1) y releído el 2026-11-20 contra
+    // el texto de IMPO y el Arancel Oficial de la AEU (versión de octubre de 2025): el honorario
+    // de la escritura sí tiene arancel publicado (UR 12, art. 2.º literal C), y el art. 16 no
+    // cubre la publicación en el diario local que el art. 8 exige.
     slug: 'bien-de-familia-uruguay',
     title: 'Bien de familia: 4.500 UR y deudas nuevas',
     description:
       'El inmueble declarado bien de familia no se embarga por deudas posteriores: tope de 4.500 UR, tasación del BHU, diez días de avisos e inscripción gratis.',
     tag: 'INEMBARGABLE',
-    updatedAt: '2026-11-14',
+    updatedAt: '2026-11-20',
     sections: [
       {
         heading: 'Qué protege, y la fecha que decide todo',
@@ -627,7 +632,7 @@ export const deudasGuides: readonly Guide[] = [
       },
       {
         heading: 'Cuánto puede valer el inmueble',
-        body: 'Hay un tope, y no lo fija la ley: el art. 5 encarga al Poder Ejecutivo fijarlo todos los años, asesorado por el Banco Hipotecario, con un valor distinto para la casa-habitación y para la finca rústica, y con la opción de fijarlo por zonas del país. La misma norma agrega dos reglas que importan: mientras no se actualice sigue rigiendo el anterior, y el valor fijado al constituirlo no se altera porque el inmueble después valga más. El único decreto de tope que encontramos publicado es el 504/984, que fijó 4.500 unidades reajustables para la casa-habitación —o casa con tienda o taller— y 7.000 para la finca rústica. No encontramos ninguno posterior que lo actualice, así que confirmá el tope vigente con el Banco Hipotecario antes de ir al escribano. Que el tope esté expresado en UR y no en pesos es lo que lo mantiene con sentido cuarenta años después: la UR se mueve con el índice medio de salarios.',
+        body: 'Hay un tope, y no lo fija la ley: el art. 5 encarga al Poder Ejecutivo fijarlo todos los años, asesorado por el Banco Hipotecario, con un valor distinto para la casa-habitación y para la finca rústica, y con la opción de fijarlo por zonas del país. La misma norma agrega dos reglas que importan: mientras no se actualice sigue rigiendo el anterior, y el valor fijado al constituirlo no se altera porque el inmueble después valga más. El único decreto de tope que encontramos publicado es el 504/984, que fijó 4.500 unidades reajustables para la casa-habitación —o casa con tienda o taller— y 7.000 para la finca rústica. No encontramos ninguno posterior que lo actualice, así que confirmá el tope vigente con el Banco Hipotecario antes de ir al escribano. Que el tope esté expresado en UR y no en pesos es lo que lo mantiene con sentido más de cuarenta años después: el valor de la UR se corrige según la variación del índice medio de salarios (Ley 13.728, art. 38).',
         links: [
           { label: 'Valor de la UR hoy', to: '/indicadores/unidad-reajustable' },
           { label: 'UI, UR y BPC: en qué se diferencian', to: '/guias/ui-ur-bpc-diferencias' },
@@ -635,7 +640,7 @@ export const deudasGuides: readonly Guide[] = [
       },
       {
         heading: 'Qué inmueble, y quién lo puede declarar',
-        body: 'Puede constituirlo toda persona capaz de contratar, sobre un inmueble propio (art. 1). Tiene que ser una casa habitación, una casa con tienda o taller, o una finca rústica, en todos los casos ocupada o explotada por la familia (art. 2). No se puede declarar un inmueble en indivisión (art. 3) y nadie puede ser titular de más de un bien de familia (art. 4). El art. 6 ordena los casos: un cónyuge sobre su bien propio, en beneficio de los dos o de los descendientes; los dos cónyuges juntos sobre un bien ganancial, y si uno no da el consentimiento lo suple el juez; el cónyuge o concubino sobreviviente, o los cónyuges divorciados o separados de hecho, para los hijos menores o con discapacidad, que es la redacción que le dio la Ley 18.651 de 2010; el padre o la madre natural para sus hijos menores; y cualquier persona en beneficio de otra, siempre que no se afecte la legítima de los herederos forzosos.',
+        body: 'Puede constituirlo toda persona capaz de contratar, sobre un inmueble propio (art. 1). Tiene que ser una casa habitación, una casa con tienda o taller, o una finca rústica, en todos los casos ocupada y explotada por la familia (art. 2). No se puede declarar un inmueble en indivisión (art. 3) y nadie puede ser titular de más de un bien de familia (art. 4). El art. 6 ordena los casos: un cónyuge sobre su bien propio, en beneficio de los dos o de los descendientes; los dos cónyuges juntos sobre un bien ganancial, y si uno no da el consentimiento lo suple el juez; el cónyuge o concubino sobreviviente, o los cónyuges divorciados o separados de hecho, para los hijos menores o con discapacidad, que es la redacción que le dio la Ley 18.651 de 2010; el padre o la madre natural para sus hijos menores; y cualquier persona en beneficio de otra, siempre que no se afecte la legítima de los herederos forzosos.',
         links: [
           {
             label: 'Legítima y herederos forzosos',
@@ -645,7 +650,7 @@ export const deudasGuides: readonly Guide[] = [
       },
       {
         heading: 'Los tres pasos, y los dos que no se pueden saltear',
-        body: 'El art. 8 pide tres cosas. Primero, escritura pública o testamento, con la tasación del Banco Hipotecario y la descripción completa del inmueble; si el dueño no acepta esa tasación, el valor lo fijan tres peritos, uno designado por el Banco, uno por el reclamante y un tercero por esos dos. Segundo, la publicación en el Diario Oficial y en un diario local durante diez días, o en uno de la capital si en la localidad no hay. Tercero, la inscripción en el Registro de la Propiedad, Sección Inmobiliaria. Los dos últimos no son un trámite accesorio: el propio artículo dice que si faltan, la constitución no es oponible a terceros, o sea que no te protege de ningún acreedor. El art. 16 deja varias cosas sin costo: las tasaciones y certificados del Banco Hipotecario, los certificados de los registros públicos, las publicaciones en el Diario Oficial y las inscripciones.',
+        body: 'El art. 8 pide tres cosas. Primero, escritura pública o testamento, con la tasación del Banco Hipotecario y la descripción completa del inmueble; si el dueño no acepta esa tasación, el valor lo fijan peritos: uno designado por el Banco, uno por el reclamante y, si no coinciden, un tercero designado por esos dos. Segundo, la publicación en el Diario Oficial y en un diario local durante diez días, o en uno de la capital si en la localidad no hay. Tercero, la inscripción en el Registro de la Propiedad, Sección Inmobiliaria. Los dos últimos no son un trámite accesorio: el propio artículo dice que si faltan, la constitución no es oponible a terceros, o sea que no te protege de ningún acreedor. El art. 16 deja varias cosas sin costo: las tasaciones y certificados del Banco Hipotecario, los certificados de los registros públicos, las publicaciones en el Diario Oficial y las inscripciones en el Registro de la Propiedad. La publicación en el diario local no está en esa lista.',
       },
       {
         heading: 'Lo que ya no vas a poder hacer con esa casa',
@@ -653,14 +658,15 @@ export const deudasGuides: readonly Guide[] = [
       },
       {
         heading: 'Si alguien muere o la pareja se separa',
-        body: 'El decreto-ley resuelve esos casos sin que haya que volver al escribano. Si muere uno de los cónyuges, las condiciones no cambian y la administración pasa al que sobrevive; si mueren los dos, el inmueble queda en indivisión bajo un tutor hasta que todos los hijos sean mayores (art. 13). En el divorcio o la separación de hecho tampoco cambian las condiciones: la administración y la ocupación van al cónyuge que tiene la tenencia de los hijos, hasta que lleguen a la mayoría de edad. Si el que muere es el padre natural con hijos menores, el inmueble queda bajo el otro progenitor que tenga la patria potestad, o bajo un tutor (art. 14). Y si el bien era ganancial, el cónyuge sobreviviente puede quedarse con el inmueble entero al valor de la tasación aprobada judicialmente, pagándoles a los herederos su parte en dinero (art. 15).',
+        body: 'El decreto-ley resuelve esos casos sin que haya que volver al escribano. Si muere uno de los cónyuges, las condiciones no cambian y la administración pasa al que sobrevive; si mueren los dos, el inmueble queda en indivisión bajo un tutor hasta que todos los hijos sean mayores (art. 13). En el divorcio o la separación de hecho tampoco cambian las condiciones: la administración y la ocupación van al cónyuge al que el juez le confiera la guarda de los hijos, hasta que lleguen a la mayoría de edad. Si el que muere es el padre natural con hijos menores, el inmueble queda en indivisión bajo la administración del otro progenitor, si ejerce la patria potestad, o si no de un tutor, hasta que los hijos sean mayores (art. 14). Y si el bien era ganancial, el cónyuge sobreviviente puede quedarse con el inmueble entero al valor de la tasación aprobada judicialmente, pagándoles a los herederos su parte en dinero (art. 15).',
         links: [
           { label: 'Cómo funciona una sucesión', to: '/guias/como-funciona-una-sucesion-uruguay' },
         ],
       },
       {
-        heading: 'Los dos números que no publicamos',
-        body: 'Faltan dos cifras en esta guía, y faltan a propósito. Una es el tope vigente: el art. 5 manda actualizarlo cada año y el único decreto que encontramos publicado es el de 1984, así que publicamos ése con su fecha en vez de inventar el de hoy. La otra son los honorarios del escribano, que son el gasto grande del trámite y no tienen arancel oficial publicado, así que pedí presupuesto por escrito antes de empezar. Esta guía es información general y no asesoramiento legal: la constitución pasa por escribano y, según el caso, por el juzgado.',
+        heading: 'Lo que cobra el escribano, y el número que no publicamos',
+        body: 'El honorario del escribano sí tiene una cifra publicada: el Arancel Oficial de la Asociación de Escribanos del Uruguay, en su versión actualizada a octubre de 2025, fija UR 12 por la escritura de constitución de bien de familia (art. 2.º, literal C). Si la tasación del Banco Hipotecario no supera las UR 1.000, esa constitución no devenga honorarios cuando la hace la Clínica y Consultoría Notarial de la Facultad de Derecho (art. 29, literal f, del mismo arancel). A eso se suma la publicación en el diario local, que el art. 16 del decreto-ley no hace gratuita. La cifra que sí falta es el tope vigente: el art. 5 manda actualizarlo cada año y el único decreto que encontramos publicado es el de 1984, así que publicamos ése con su fecha en vez de inventar el de hoy. Esta guía es información general y no asesoramiento legal: la constitución pasa por escribano y, según el caso, por el juzgado.',
+        links: [{ label: 'Valor de la UR hoy', to: '/indicadores/unidad-reajustable' }],
       },
     ],
     steps: [
@@ -670,7 +676,7 @@ export const deudasGuides: readonly Guide[] = [
       },
       {
         name: 'Firmá la escritura pública o el testamento',
-        text: 'Con la tasación y la descripción completa del inmueble; si no aceptás el valor del Banco, lo fijan tres peritos.',
+        text: 'Con la tasación y la descripción completa del inmueble; si no aceptás el valor del Banco, lo fijan peritos: uno del Banco, uno tuyo y, si no coinciden, un tercero.',
       },
       {
         name: 'Publicá los avisos durante diez días',
@@ -696,7 +702,7 @@ export const deudasGuides: readonly Guide[] = [
       },
       {
         q: '¿Cuánto sale constituirlo?',
-        a: 'El art. 16 declara sin costo las tasaciones y certificados del Banco Hipotecario, los certificados de los registros públicos, las publicaciones en el Diario Oficial y las inscripciones. Lo que se paga son los honorarios del escribano, que no tienen arancel oficial publicado.',
+        a: 'El art. 16 declara sin costo las tasaciones y certificados del Banco Hipotecario, los certificados de los registros públicos, las publicaciones en el Diario Oficial y las inscripciones en el Registro de la Propiedad. Lo que se paga es la publicación en el diario local que exige el art. 8, que el art. 16 no incluye, y los honorarios del escribano: el Arancel Oficial de la Asociación de Escribanos del Uruguay fija UR 12 por la escritura de constitución (art. 2.º, literal C), y la Clínica y Consultoría Notarial de la Facultad de Derecho no cobra honorarios si la tasación del Banco no supera las UR 1.000.',
       },
       {
         q: '¿Sirve contra el concurso o la quiebra?',
@@ -728,6 +734,18 @@ export const deudasGuides: readonly Guide[] = [
         label: 'Cómo pedir la tasación para constituir un inmueble en bien de familia',
         url: 'https://www.bhu.com.uy/node/258',
         publisher: 'Banco Hipotecario del Uruguay',
+      },
+      {
+        label:
+          'Ley 13.728, art. 38 — el Poder Ejecutivo corrige anualmente el valor de la Unidad Reajustable "de acuerdo a la variación registrada en el índice medio de salarios"',
+        url: 'https://www.impo.com.uy/bases/leyes/13728-1968/38',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Arancel Oficial, versión actualizada a octubre de 2025 — art. 2.º, literal C: por la "constitución de bien de familia" "se cobrará como honorario UR 12"; art. 29, literal f: no devenga honorarios en la Clínica y Consultoría Notarial de la Facultad de Derecho "la constitución de bien de familia relativa a bienes inmuebles cuya tasación del Banco no supere las UR 1.000"',
+        url: 'https://www.aeu.org.uy/categoria/Documento-actualizado-519',
+        publisher: 'Asociación de Escribanos del Uruguay',
       },
     ],
   },

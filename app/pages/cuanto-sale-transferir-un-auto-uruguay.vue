@@ -6,13 +6,14 @@
         ¿Cuánto sale transferir un auto en Uruguay?
       </h1>
       <p class="lead mb-6">
-        La transferencia es un trámite <strong>departamental</strong>: el registro de vehículos lo
-        lleva la intendencia donde está empadronado el auto, y cada una fija su arancel y su lista
-        de requisitos. De los <strong>{{ cubiertos }} departamentos</strong> con fuente oficial
-        legible, <strong>{{ modalCount }}</strong> publican
-        <strong>{{ pesos(CAR_TRANSFER_MODAL_FEE) }}</strong> por la libreta nueva;
-        {{ fueraDeModa }}. Son los importes del bloque «Costos» de cada ficha, leídas el
-        {{ verificado }}.
+        La transferencia se hace en la intendencia donde está empadronado el auto, y las listas de
+        requisitos que publican las intendencias no coinciden. El precio, en cambio, es uno solo: la
+        libreta nueva sale <strong>{{ pesos(CAR_TRANSFER_DIV_2026) }}</strong> en
+        {{ CAR_TRANSFER_DIV_YEAR }} en cualquier departamento, porque el importe lo fija el
+        <strong>Texto Ordenado del SUCIVE</strong> que el Congreso de Intendentes remite a todas las
+        intendencias. Las <strong>{{ modalCount }}</strong> fichas oficiales actualizadas en
+        {{ CAR_TRANSFER_DIV_YEAR }} lo publican redondeado, {{ pesos(CAR_TRANSFER_MODAL_FEE) }}; las
+        que dicen otro número son fichas viejas. Fuentes leídas el {{ verificado }}.
       </p>
 
       <VCard class="answer-card pa-5 pa-md-6" variant="flat">
@@ -21,11 +22,12 @@
           <div>
             <div class="text-overline mb-2">La respuesta corta</div>
             <p class="callout-text mb-0">
-              Entre <strong>{{ pesos(minimo) }}</strong> y
-              <strong>{{ pesos(maximo) }}</strong> según el departamento, y eso es
-              <strong>lo que cobra la intendencia</strong>. El escribano, el certificado de libre de
-              prenda y la inspección técnica van aparte: ninguna de las {{ cubiertos }} fichas los
-              tarifa. Lo único que piden las {{ cubiertos }}: {{ universales }}.
+              <strong>{{ pesos(CAR_TRANSFER_DIV_2026) }}</strong> en cualquier departamento, y eso
+              es <strong>lo que cobra la intendencia</strong>: la libreta nueva a nombre del
+              comprador. El escribano, el certificado de libre de prenda y la inspección técnica van
+              aparte: ninguna de las {{ cubiertos }} fuentes los tarifa. Lo único que piden las
+              {{ cubiertos }}: {{ universales }}. Y con deuda de patente o multas no se transfiere
+              en ningún departamento.
             </p>
           </div>
         </div>
@@ -34,18 +36,36 @@
 
     <!-- El cuadro de aranceles -->
     <section class="mb-12">
-      <h2 class="text-h5 font-weight-bold mb-2">El arancel, departamento por departamento</h2>
+      <h2 class="text-h5 font-weight-bold mb-2">Lo que dice cada ficha</h2>
       <p class="section-intro text-medium-emphasis mb-5">
-        Cada fila trae la fecha que la propia ficha muestra como «Última actualización», porque es
-        la mitad de la respuesta: la ficha más nueva del lote es de noviembre de 2026 y la más
-        vieja, de 2022.
+        El importe vigente es el mismo en todas; lo que cambia es lo que cada ficha alcanzó a
+        escribir. Por eso cada fila trae la fecha que la propia ficha muestra como «Última
+        actualización»: las {{ modalCount }} actualizadas en {{ CAR_TRANSFER_DIV_YEAR }} dicen
+        {{ pesos(CAR_TRANSFER_MODAL_FEE) }}, y las que dicen otro número son de 2025 o antes.
       </p>
+
+      <VCard class="answer-card pa-5 mb-6" variant="flat">
+        <div class="text-overline mb-2">El importe nacional</div>
+        <p class="note-text mb-2">
+          {{ CAR_TRANSFER_DIV_2026_SOURCE.label }}: <q>{{ CAR_TRANSFER_DIV_2026_SOURCE.quote }}</q
+          >.
+        </p>
+        <a
+          :href="CAR_TRANSFER_DIV_2026_SOURCE.url"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="ficha-link text-body-2"
+        >
+          Leer el Texto Ordenado (PDF, gub.uy)
+          <VIcon icon="mdi-open-in-new" size="x-small" />
+        </a>
+      </VCard>
 
       <VTable class="transfer-table cu-mobile-cards" density="comfortable">
         <thead>
           <tr>
             <th>Departamento</th>
-            <th class="text-right">Arancel publicado</th>
+            <th class="text-right">Importe que publica</th>
             <th>Qué cubre</th>
             <th>Turno</th>
             <th>Ficha actualizada</th>
@@ -56,7 +76,7 @@
             <td data-label="Departamento">
               <span class="font-weight-medium">{{ dept.departamento }}</span>
             </td>
-            <td data-label="Arancel publicado" class="text-right text-no-wrap">
+            <td data-label="Importe que publica" class="text-right text-no-wrap">
               <VChip :color="dept.arancel === null ? 'grey' : 'info'" variant="tonal" size="small">
                 {{ dept.arancel === null ? 'No publica' : pesos(dept.arancel) }}
               </VChip>
@@ -74,7 +94,7 @@
         <div class="d-flex align-start">
           <VIcon icon="mdi-calendar-alert" color="warning" class="mr-3 mt-1" />
           <div>
-            <div class="text-overline mb-2">Por qué la diferencia puede no ser el departamento</div>
+            <div class="text-overline mb-2">Por qué dos fichas dicen otro número</div>
             <p class="note-text mb-0">{{ CAR_TRANSFER_FEE_SPREAD_NOTE }}</p>
           </div>
         </div>
@@ -152,21 +172,32 @@
     <!-- Los que no tienen ficha -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-2">
-        Los {{ CAR_TRANSFER_NO_FICHA.length }} departamentos sin ficha en gub.uy
+        Los {{ CAR_TRANSFER_NO_FICHA.length }} departamentos sin ficha en el catálogo nacional
       </h2>
       <VCard class="unpublished-card pa-5" variant="flat">
         <div class="d-flex align-start">
           <VIcon icon="mdi-file-remove-outline" color="grey" class="mr-3 mt-1" />
           <div>
             <p class="note-text mb-3">
-              Buscando el {{ verificado }} en el catálogo nacional de trámites, en Google
-              restringido a gub.uy y probando directamente las seis formas de URL que el propio
-              catálogo usa para este trámite, no encontramos ficha para
-              <strong>{{ sinFicha }}</strong
-              >. El trámite existe en los {{ URUGUAY_DEPARTMENTS }} departamentos: lo que falta es
-              la ficha donde el buscador manda a quien pregunta, así que ahí hay que llamar a la
-              intendencia.
+              Buscando el {{ verificado }} en el catálogo nacional de trámites (gub.uy/tramites) y
+              probando directamente las seis formas de URL que el propio catálogo usa para este
+              trámite, no encontramos ficha para <strong>{{ sinFicha }}</strong
+              >. El trámite existe en los {{ URUGUAY_DEPARTMENTS }} departamentos y el importe de la
+              libreta es el mismo; lo que falta es la lista de requisitos en el catálogo.
             </p>
+            <p class="note-text mb-2">
+              {{ CAR_TRANSFER_OWN_PORTALS.length }} de ellos publican el trámite en el portal de su
+              intendencia (no entran en las tablas de arriba):
+            </p>
+            <ul class="sources-list mb-3">
+              <li v-for="portal in CAR_TRANSFER_OWN_PORTALS" :key="portal.url">
+                <a :href="portal.url" target="_blank" rel="noopener noreferrer">{{
+                  portal.departamento
+                }}</a
+                >: {{ portal.publica }}.
+              </li>
+            </ul>
+            <p class="note-text mb-3">En los demás, hay que preguntarlo en la intendencia.</p>
             <p class="note-text mb-0 text-medium-emphasis">
               Si tu intendencia publicó la suya y no está acá, escribinos y la agregamos con su
               fecha.
@@ -180,8 +211,8 @@
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-2">Lo que esta página no publica</h2>
       <p class="section-intro text-medium-emphasis mb-5">
-        Cuatro preguntas que la gente hace y que contestaríamos de memoria. Las fuentes oficiales no
-        las traen, así que acá no hay número.
+        Preguntas que la gente hace y que contestaríamos de memoria. Las fuentes oficiales no las
+        traen, así que acá no hay número.
       </p>
       <VRow dense>
         <VCol v-for="item in CAR_TRANSFER_UNPUBLISHED" :key="item.topic" cols="12" md="6">
@@ -219,8 +250,9 @@
     <section>
       <h2 class="text-h5 font-weight-bold mb-3">Fuentes</h2>
       <p class="sources-note text-medium-emphasis mb-4">
-        Todas las cifras de esta página salen del bloque «Costos» de estas fichas, leídas el
-        {{ verificado }}. Ninguna está estimada ni arrastrada de un departamento a otro.
+        El importe vigente sale del Texto Ordenado del SUCIVE; lo que publica cada departamento, del
+        bloque «Costos» de su ficha. Todo leído el {{ verificado }}. Ninguna cifra está estimada ni
+        arrastrada de un departamento a otro.
       </p>
       <ul class="sources-list">
         <li v-for="source in CAR_TRANSFER_SOURCES" :key="source.url">
@@ -234,20 +266,21 @@
 <script setup lang="ts">
 import {
   CAR_TRANSFER_DEPARTMENTS,
+  CAR_TRANSFER_DIV_2026,
+  CAR_TRANSFER_DIV_2026_SOURCE,
+  CAR_TRANSFER_DIV_YEAR,
   CAR_TRANSFER_FAQ,
   CAR_TRANSFER_FEE_SPREAD_NOTE,
   CAR_TRANSFER_MODAL_FEE,
   CAR_TRANSFER_NO_FICHA,
+  CAR_TRANSFER_OWN_PORTALS,
   CAR_TRANSFER_REQUISITO_LABELS,
   CAR_TRANSFER_SOURCES,
   CAR_TRANSFER_UNPUBLISHED,
   CAR_TRANSFER_VERIFIED_AT,
   URUGUAY_DEPARTMENTS,
   carTransferCoveredCount,
-  carTransferMaxFee,
-  carTransferMinFee,
   carTransferModalCount,
-  carTransferOffModal,
   carTransferRequisitoCount,
   carTransferUniversalRequisitos,
   type CarTransferRequisitos,
@@ -269,14 +302,7 @@ const fecha = (iso: string) => FECHA.format(new Date(`${iso}T00:00:00Z`))
 const verificado = fecha(CAR_TRANSFER_VERIFIED_AT)
 
 const cubiertos = carTransferCoveredCount()
-const minimo = carTransferMinFee()
-const maximo = carTransferMaxFee()
 const modalCount = carTransferModalCount()
-
-/** «Canelones $1.620 y San José $1.419» — la excepción escrita como excepción. */
-const fueraDeModa = carTransferOffModal()
-  .map(dept => `${dept.departamento} ${pesos(dept.arancel)}`)
-  .join(' y ')
 
 const universales = carTransferUniversalRequisitos()
   .map(req => req.prose)
@@ -316,19 +342,20 @@ const RELATED = [
 const canonicalUrl = 'https://cambio-uruguay.com/cuanto-sale-transferir-un-auto-uruguay'
 // 40 caracteres, 57 con la marca que agrega `titleTemplate`: entra en los ~60 que publica Google.
 // La cifra va adelante porque es la consulta, y «la libreta» aclara qué paga ese importe, que es la
-// confusión que la página corrige (no paga el escribano).
+// confusión que la página corrige (no paga el escribano). Es el importe del SUCIVE redondeado al
+// peso, como lo publican las fichas al día; el cuerpo y la descripción dan los centésimos.
 const title = `Transferencia de auto: ${pesos(CAR_TRANSFER_MODAL_FEE)} la libreta`
-// 143 caracteres resueltos, dentro de los 155 que mide `seoDescriptionBudget`. La longitud la
+// 137 caracteres resueltos, dentro de los 155 que mide `seoDescriptionBudget`. La longitud la
 // verifica RESUELTA `tests/unit/carTransferFees.test.ts`, y no es un detalle: el lector de ese
 // presupuesto sustituye cada interpolación por vacío, así que a una descripción armada con cifras
-// le mide de menos y se le escapa justo cuando crece (la primera versión de esta resolvía a 172).
-// Las tres cifras van primero y la segunda oración aclara qué NO cubre el importe, que es la
-// confusión que manda a la gente a presupuestar de menos.
-const description = `${modalCount} intendencias publican ${pesos(CAR_TRANSFER_MODAL_FEE)}, ${fueraDeModa}. Es lo que cobra la intendencia: el escribano y los certificados van aparte.`
+// le mide de menos y se le escapa justo cuando crece. La cifra va primero, con quién la fija (es la
+// misma en todo el país), y la segunda oración aclara qué NO cubre, que es la confusión que manda
+// a la gente a presupuestar de menos.
+const description = `La libreta nueva sale ${pesos(CAR_TRANSFER_DIV_2026)} en ${CAR_TRANSFER_DIV_YEAR} en todo el país: la fija el SUCIVE. Qué pide cada intendencia y qué va aparte, como el escribano.`
 
 defineOgImageComponent('Cambio', {
   title: 'Cuánto sale transferir un auto',
-  subtitle: `${pesos(CAR_TRANSFER_MODAL_FEE)} la libreta en ${modalCount} departamentos · ${cubiertos} fichas oficiales`,
+  subtitle: `${pesos(CAR_TRANSFER_DIV_2026)} la libreta en ${CAR_TRANSFER_DIV_YEAR} · ${cubiertos} fuentes oficiales`,
   tag: 'VEHÍCULOS',
 })
 

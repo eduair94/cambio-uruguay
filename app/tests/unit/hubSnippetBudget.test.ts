@@ -48,10 +48,10 @@ const HUB_PAGE = readFileSync(join(__dirname, '..', '..', 'pages', 'temas', '[sl
 /**
  * Los temas con el título pasado. **SÓLO PUEDE BAJAR.**
  *
- * 16 → 0 el 2026-11-17, en la misma corrida que descubre el pozo. Los dieciséis entran en una sola
- * tanda y no de a uno porque son UN cambio —el snippet de los dieciséis temas— y una fila por tema
- * en el libro de cambios se pisaría con las otras quince (`experiments_overlap.test.ts`): la fila
- * es `temas-snippet-que-entra-al-serp`, sobre `/temas/*`.
+ * 16 → 0 el 2026-11-20, en la misma tanda que descubre el pozo (medido el 2026-11-17). Los
+ * dieciséis entran en una sola tanda y no de a uno porque son UN cambio —el snippet de los
+ * dieciséis temas— y una fila por tema en el libro de cambios se pisaría con las otras quince
+ * (`experiments_overlap.test.ts`): la fila es `temas-snippet-que-entra-al-serp`, sobre `/temas/*`.
  *
  * Ninguno de los dieciséis era un título largo por descuido: los dieciséis eran el nombre del tema
  * seguido de la lista de sus sub-temas, o sea gastaban los 43 caracteres que el SERP publica en
@@ -69,7 +69,7 @@ const HUB_PAGE = readFileSync(join(__dirname, '..', '..', 'pages', 'temas', '[sl
  * trámites.
  */
 const DEUDA_HUB_TITULO = [
-  // POZO PAGADO el 2026-11-17: ningún tema sale con el título cortado del SERP.
+  // POZO PAGADO el 2026-11-20: ningún tema sale con el título cortado del SERP.
   //
   // La marca literal es la que `classes/revenueplan/debtFree.ts::parseStringList` busca para
   // distinguir «este pozo se terminó» de su propio modo de fallar, que es devolver `[]` cuando no
@@ -81,7 +81,7 @@ const DEUDA_HUB_TITULO = [
 /**
  * Los temas con la descripción pasada. **SÓLO PUEDE BAJAR.**
  *
- * 13 → 0 el 2026-11-17, en la misma tanda y por el mismo motivo que los títulos: es el otro lado
+ * 13 → 0 el 2026-11-20, en la misma tanda y por el mismo motivo que los títulos: es el otro lado
  * del mismo snippet. Las tres que ya entraban (`ahorrar-e-invertir-uruguay` 152,
  * `deudas-y-credito-uruguay` 149, `comprar-vivienda-uruguay` 146) no se tocaron.
  *
@@ -100,10 +100,15 @@ const DEUDA_HUB_TITULO = [
  * deuda, las facturas del hogar que entraron a finanzas el 2026-10-25). Dos claims que la versión
  * vieja arrastraba se cayeron a propósito en vez de recortarse: «por qué no hay impuesto a la
  * herencia» pasa a «qué paga una sucesión», porque la sucesión sí paga ITP, y la «e-factura» de
- * emprender no es miembro declarado de ese hub.
+ * emprender no es miembro declarado de ese hub. Y una tercera se corrigió en la revisión del
+ * 2026-11-20: la de economía decía «cuánto es la inflación», y ningún miembro de ese hub publica
+ * una cifra de inflación (la guía `inflacion-y-dolar-uruguay` explica que la mide el IPC del INE,
+ * `/indicadores` da UI, UR y BPC, y la calculadora de inflación no es miembro del tema). Ahora
+ * dice «qué es la inflación y cómo la mide el INE», que es lo que el hub tiene. La ata el último
+ * test de este archivo.
  */
 const DEUDA_HUB_DESCRIPCION = [
-  // POZO PAGADO el 2026-11-17: ninguna descripción de tema sale cortada del SERP. Misma marca y
+  // POZO PAGADO el 2026-11-20: ninguna descripción de tema sale cortada del SERP. Misma marca y
   // mismo motivo que la lista de arriba.
 ]
 
@@ -201,5 +206,17 @@ describe('el snippet de los temas entra en el SERP', () => {
     expect(HUB_PAGE).toContain('${hub.value?.seoTitle ?? ')
     expect(HUB_PAGE).toContain('| Cambio Uruguay`')
     expect(HUB_PAGE).toContain('description: () => hub.value?.description')
+  })
+
+  // La descripción de un tema es su entradilla, la bajada de su OG y su tarjeta en `/temas`: lo
+  // que promete lo tiene que dar un miembro del hub. «Cuánto es la inflación» prometía una cifra que
+  // ningún miembro de economía publica (revisión del 2026-11-20); lo que el hub sí explica es qué es
+  // y cómo la mide el INE, y eso lo da la guía `inflacion-y-dolar-uruguay`.
+  it('el tema de economía no promete una cifra de inflación que ningún miembro publica', () => {
+    const economia = guideHubs.find(hub => hub.slug === 'economia-y-mercado-uruguay')
+    expect(economia, 'economia-y-mercado-uruguay').toBeDefined()
+    expect(economia!.description).not.toMatch(/cu[aá]nto es la inflaci[oó]n/i)
+    if (/inflaci[oó]n/i.test(economia!.description))
+      expect(economia!.guideSlugs).toContain('inflacion-y-dolar-uruguay')
   })
 })

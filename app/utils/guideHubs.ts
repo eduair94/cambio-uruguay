@@ -334,7 +334,7 @@ export const guideHubs: readonly GuideHub[] = [
     title: 'Economía y mercado en Uruguay',
     seoTitle: 'Economía de Uruguay: dólar, inflación y UI',
     description:
-      'Por qué sube el dólar, cuánto es la inflación, qué valen la UI, la UR y la BPC, y cómo proteger tus ahorros cuando los precios suben.',
+      'Por qué sube el dólar, qué es la inflación y cómo la mide el INE, qué valen la UI, la UR y la BPC, y cómo proteger tus ahorros cuando los precios suben.',
     tag: 'ECONOMÍA',
     icon: 'mdi-chart-areaspline',
     intro:
@@ -923,7 +923,7 @@ export const guideHubs: readonly GuideHub[] = [
       {
         label: 'Cuánto sale transferir un auto',
         description:
-          'El arancel de la libreta departamento por departamento y qué pide cada ficha oficial.',
+          'La libreta sale $1.779,52 en 2026 en todo el país (SUCIVE), y qué piden las fichas oficiales.',
         to: '/cuanto-sale-transferir-un-auto-uruguay',
       },
       {
@@ -1198,6 +1198,11 @@ export const guideHubs: readonly GuideHub[] = [
         label: 'Calculadora de aguinaldo',
         description: 'Tu SAC según lo ganado.',
         to: '/herramientas/calculadora-aguinaldo',
+      },
+      {
+        label: 'Calculadora del subsidio por enfermedad',
+        description: 'Cuánto paga el BPS por los días certificados.',
+        to: '/herramientas/calculadora-subsidio-por-enfermedad',
       },
       {
         label: 'Seguro de paro',
@@ -1974,9 +1979,9 @@ export const guideHubs: readonly GuideHub[] = [
         // hacen falta los dos: el de salud lo exige el Reglamento Bromatológico a todo el personal
         // de una empresa alimentaria, el de manipulación lo da cada intendencia. La etiqueta dice
         // el rango y no «cuánto sale» porque lo que la página agrega es justamente que no hay UN
-        // precio: el mismo documento es gratis en Montevideo y $ 850 en Paysandú.
+        // precio: el mismo documento no se cobra en Montevideo ni en Rivera y sale $ 962 en Salto.
         label: 'Carné de manipulación de alimentos',
-        description: 'Gratis en Montevideo, $ 850 en Paysandú: lo cobra cada intendencia.',
+        description: 'Gratis en Montevideo y Rivera, $ 962 en Salto: lo cobra cada intendencia.',
         to: '/carne-de-manipulacion-de-alimentos-uruguay',
       },
       {

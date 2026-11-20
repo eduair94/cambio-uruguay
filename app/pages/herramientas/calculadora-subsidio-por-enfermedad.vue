@@ -85,9 +85,11 @@
             <td>+ {{ formatUYU(result.aguinaldoShare) }}</td>
           </tr>
           <tr v-if="result.unpaidDays > 0">
-            <th scope="row">{{ result.unpaidDays }} primeros días, sin cubrir</th>
+            <th scope="row">
+              {{ result.unpaidDays }} primeros días, sin cubrir (ya fuera del total)
+            </th>
             <td />
-            <td>− {{ formatUYU(result.lostToWaitingDays) }}</td>
+            <td>{{ formatUYU(result.lostToWaitingDays) }}</td>
           </tr>
         </tbody>
       </table>
@@ -128,11 +130,14 @@
         }}).
       </p>
       <p>
-        Ese tope no se calcula, se copia. El artículo 27 del Decreto-Ley 14.407 escribe el máximo
-        como «el triple del monto del salario mínimo nacional», la Ley 18.725 lo reescribió en BPC y
-        la Ley 19.003 sólo lo indexa desde 2021: hoy la cantidad de BPC ya no es la de la escala
-        original, así que multiplicar da otro número. El que se paga es el que el BPS publica cada
-        enero. La historia completa de esa cadena está en
+        Ese tope no se calcula, se copia. El artículo 27 del Decreto-Ley 14.407 prohíbe pagar «un
+        subsidio mensual superior al triple del monto del salario mínimo nacional», la Ley 18.725 lo
+        reescribió en BPC ({{ scaleMaxBpc }} BPC desde 2015) y la Ley 19.003 lo indexa: por la
+        unidad reajustable desde el 1/1/2012 y por la BPC desde el 1/1/2021, cuando convirtió a BPC
+        «los topes vigentes al 31 de diciembre de 2020». Con esa indexación el tope dejó de ser
+        {{ scaleMaxBpc }} BPC: los {{ formatUYU(cap, 0) }} de hoy son {{ capBpc }} BPC, así que
+        multiplicar da otro número. El que se paga es el que publica el BPS, con su vigencia al
+        lado. La historia completa de esa cadena está en
         <NuxtLink :to="localePath('/guias/me-certifique-subsidio-por-enfermedad-uruguay')"
           >la guía del subsidio por enfermedad</NuxtLink
         >.
@@ -149,9 +154,9 @@
       <p>
         La excepción es una sola y es la <strong>internación</strong>: «En los casos que el
         beneficiario haya sido hospitalizado no habrá período de pérdida del subsidio, a partir de
-        la internación» (art. 14), y el BPS la aplica también a la internación domiciliaria. Una
-        cirugía ambulatoria, sin internación, no aparece amparada por esa excepción en ninguna de
-        las fuentes, así que no cuentes con ella sin preguntar antes.
+        la internación» (art. 14), y el BPS la aplica también a la internación domiciliaria: «En
+        caso de internación, en la mutualista o en el domicilio, se abonará a partir del primer
+        día».
       </p>
       <h2>El aguinaldo del subsidio no se pierde</h2>
       <p>
@@ -181,6 +186,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { URUGUAY } from '~/utils/calculators'
 import { formatUYU } from '~/utils/format'
 import {
   DAYS_PER_MONTH,
@@ -188,12 +194,14 @@ import {
   SICK_LEAVE_AVERAGE_WINDOW_DAYS,
   SICK_LEAVE_CAP_SINCE,
   SICK_LEAVE_EXTENSION_YEARS,
+  SICK_LEAVE_LEY_18725_MAX_BPC,
   SICK_LEAVE_MAX_YEARS,
   SICK_LEAVE_MONTHLY_CAP,
   SICK_LEAVE_RATE,
   SICK_LEAVE_RURAL_PATRON_CAP,
   SICK_LEAVE_WAITING_DAYS,
   baseWhereCapBites,
+  capInBpc,
   computeSickLeave,
 } from '~/utils/sickLeaveBenefit'
 
@@ -217,6 +225,8 @@ const cap = SICK_LEAVE_MONTHLY_CAP
 const capSince = SICK_LEAVE_CAP_SINCE
 const ruralCap = SICK_LEAVE_RURAL_PATRON_CAP
 const capBitesAt = baseWhereCapBites()
+const scaleMaxBpc = SICK_LEAVE_LEY_18725_MAX_BPC
+const capBpc = capInBpc(URUGUAY.bpc).toLocaleString('es-UY', { maximumFractionDigits: 2 })
 const waitingDays = SICK_LEAVE_WAITING_DAYS
 const daysPerMonth = DAYS_PER_MONTH
 const averageWindow = SICK_LEAVE_AVERAGE_WINDOW_DAYS
@@ -239,8 +249,16 @@ const sources = [
     url: 'https://www.impo.com.uy/bases/decretos/7-1976',
   },
   {
-    label: 'IMPO — Ley 18.725, art. 2: la base es la materia gravada desde el 1/1/2011',
-    url: 'https://www.impo.com.uy/bases/leyes/18725-2011/2',
+    label: 'BPS — Ley 18.725 (PDF): el tope en BPC y la materia gravada como base desde 2011',
+    url: 'https://www.bps.gub.uy/3620/',
+  },
+  {
+    label: 'IMPO — Ley 19.003, art. 1: el tope se ajusta por la BPC desde 2021 (texto vigente)',
+    url: 'https://www.impo.com.uy/bases/leyes/19003-2012',
+  },
+  {
+    label: 'BPS — Ley 19.003 (PDF, texto original): el ajuste por la unidad reajustable desde 2012',
+    url: 'https://www.bps.gub.uy/10502/',
   },
 ]
 
@@ -267,7 +285,7 @@ const faq = [
   },
   {
     q: '¿El monto de la calculadora es lo que me llega al banco?',
-    a: 'No exactamente. Es nominal: el BPS calcula los aportes «sobre la base del monto del subsidio» y descuenta el aporte obrero al pagar (Decreto 7/976, arts. 6 y 8). Y el monto diario es una estimación nuestra, porque ninguna de las dos normas fija cuántos días tiene el mes para liquidar: acá se divide el mensual entre 30.',
+    a: `No exactamente. Es nominal: el BPS calcula los aportes «sobre la base del monto del subsidio» y descuenta el aporte obrero al pagar (Decreto 7/976, arts. 6 y 8). Y el monto diario es una estimación nuestra, porque ninguna de las dos normas fija cuántos días tiene el mes para liquidar: acá se divide el mensual entre ${daysPerMonth}.`,
   },
 ]
 </script>

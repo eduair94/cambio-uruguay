@@ -163,7 +163,10 @@
         <p class="text-body-2 text-medium-emphasis mb-0">
           La cuenta que sí podés hacer: el precio de mercado que te da el tasador menos lo que te
           ofrecen es lo que te cuesta no vender por tu cuenta. A veces vale la pena —no tenés que
-          mostrarlo, ni cobrar, ni hacer la transferencia—; decidilo sabiendo el número.
+          mostrarlo, ni cobrar, ni hacer la
+          <NuxtLink :to="localePath('/cuanto-sale-transferir-un-auto-uruguay')"
+            >transferencia</NuxtLink
+          >—; decidilo sabiendo el número.
         </p>
       </section>
 

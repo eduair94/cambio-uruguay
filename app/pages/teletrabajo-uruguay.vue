@@ -13,14 +13,22 @@
     </h1>
 
     <p class="text-body-1 mb-4" style="max-width: 68ch">
-      El teletrabajo tiene ley propia desde 2021 y reglamento desde 2022, y casi todo lo que la
-      gente discute por WhatsApp está escrito ahí: quién pone la computadora, cuántas horas podés no
-      contestar, si la hora de más de un martes es extra y en qué plazo se puede volver a la
-      oficina. Acá está cada respuesta con el artículo al lado.
+      El teletrabajo tiene ley propia desde 2021 y reglamento desde 2022, y las preguntas de siempre
+      están contestadas ahí: quién pone la computadora, cuántas horas podés no contestar, si la hora
+      de más de un martes es extra y en qué plazo se puede volver a la oficina. Acá está cada
+      respuesta con el artículo al lado.
     </p>
 
+    <!-- A quién se aplica, antes que nada: decide si el resto de la página te toca. -->
+    <VAlert type="warning" variant="tonal" class="mb-6" density="comfortable">
+      <p class="text-body-2 mb-0">
+        <strong>A quién se aplica.</strong> {{ TELETRABAJO_ALCANCE.texto }}
+        <span class="text-medium-emphasis">({{ TELETRABAJO_ALCANCE.articulo }})</span>
+      </p>
+    </VAlert>
+
     <!-- Los cuatro números primero: son la pregunta. -->
-    <h2 class="text-h6 font-weight-bold mb-2">Los cuatro plazos de la ley</h2>
+    <h2 class="text-h6 font-weight-bold mb-2">Los cuatro plazos de la ley y su decreto</h2>
     <div class="table-wrap mb-6">
       <VTable density="comfortable" class="cu-mobile-cards">
         <thead>
@@ -49,8 +57,7 @@
     <h2 class="text-h6 font-weight-bold mb-2">Lo que pone la empresa</h2>
     <p class="text-body-2 text-medium-emphasis mb-3" style="max-width: 68ch">
       La provisión de las herramientas se acuerda entre las partes y tiene que constar en el
-      contrato. Lo que la norma resuelve es el caso en que no se acordó nada, que es el caso de la
-      mayoría.
+      contrato. Lo que la norma resuelve es el caso en que no se acordó nada.
     </p>
     <VList density="comfortable" class="mb-6 rules">
       <VListItem v-for="o in TELETRABAJO_OBLIGACIONES" :key="o.titular">
@@ -73,16 +80,17 @@
         La ley no nombra la factura de la luz ni el internet
       </p>
       <p class="text-body-2 mb-0">
-        Dice «servicios», y de ahí sale la regla del desacuerdo: si no se pactó nada, el empleador
-        debe proporcionar los equipos, los insumos y los servicios que el trabajo requiere (Ley
-        19.978, art. 12). Lo que está escrito con todas las letras son los costos del equipo
-        —instalación, operación, funcionamiento, reemplazo y mantenimiento (Decreto 86/022, art.
-        8)—. Una página que te diga «la empresa te paga UTE» está afirmando algo que la norma no
-        escribió. Lo que sí podés hacer es pactarlo, porque el acuerdo manda.
+        Dice «servicios», y de ahí sale la regla del desacuerdo: si no hay acuerdo, el empleador
+        debe proporcionar los equipos, los insumos y los servicios necesarios para teletrabajar (Ley
+        19.978, art. 12). En ese mismo caso, lo que está escrito con todas las letras son los costos
+        de los equipos —instalación, operación, funcionamiento, reemplazo y mantenimiento (Ley
+        19.978, art. 12; Decreto 86/022, art. 8)—. Una página que te diga «la empresa te paga UTE»
+        está afirmando algo que la norma no escribió. Lo que sí podés hacer es pactarlo, porque la
+        regla del desacuerdo rige sólo cuando no hay acuerdo.
       </p>
     </VAlert>
 
-    <h2 class="text-h6 font-weight-bold mb-2">Lo que podés negarte a hacer</h2>
+    <h2 class="text-h6 font-weight-bold mb-2">Tus derechos como teletrabajador</h2>
     <VList density="comfortable" class="mb-6 rules">
       <VListItem v-for="d in TELETRABAJO_DERECHOS" :key="d.derecho">
         <template #prepend>
@@ -97,8 +105,8 @@
 
     <h2 class="text-h6 font-weight-bold mb-2">Qué tiene que decir el acuerdo por escrito</h2>
     <p class="text-body-2 text-medium-emphasis mb-3" style="max-width: 68ch">
-      El decreto enumera el contenido mínimo. Si alguno de estos puntos no está en tu contrato o en
-      su anexo, falta, y es justo el que después se discute.
+      El decreto enumera lo que tiene que constar en el documento. Si alguno de estos puntos no está
+      en tu contrato o en su anexo, falta, y es justo el que después se discute.
     </p>
     <VList density="compact" class="mb-6 rules">
       <VListItem v-for="punto in TELETRABAJO_ACUERDO" :key="punto">
@@ -111,8 +119,9 @@
       </VListItem>
     </VList>
     <p class="text-caption text-medium-emphasis mb-6">
-      Decreto 86/022, art. 3. El trabajador, por su parte, tiene que comunicar los cambios de
-      domicilio y de las condiciones de seguridad y salud del lugar donde teletrabaja.
+      Decreto 86/022, art. 3. El trabajador, por su parte, tiene que comunicar cualquier cambio de
+      domicilio o de las condiciones de salud y seguridad del lugar de trabajo, sea transitorio o
+      permanente.
     </p>
 
     <!-- El `FAQPage` lo escribe el `@graph` de abajo, con las mismas preguntas: el componente no
@@ -122,7 +131,8 @@
     <h2 class="text-h6 font-weight-bold mt-8 mb-2">De dónde sale todo esto</h2>
     <p class="text-body-2 text-medium-emphasis mb-2" style="max-width: 68ch">
       Del texto vigente de cada norma, leído artículo por artículo, no de un resumen. Última
-      lectura: {{ verifiedAt }}. Son {{ articulos.length }} artículos entre las tres normas.
+      lectura: {{ verifiedAt }}. Son {{ articulos.length }} artículos entre la Ley 19.978, el
+      Decreto 86/022 y la Ley 16.074.
     </p>
     <ul class="sources mb-6">
       <li v-for="src in TELETRABAJO_SOURCES" :key="src.url">
@@ -153,6 +163,7 @@
 <script setup lang="ts">
 import {
   TELETRABAJO_ACUERDO,
+  TELETRABAJO_ALCANCE,
   TELETRABAJO_DERECHOS,
   TELETRABAJO_FAQ,
   TELETRABAJO_OBLIGACIONES,
@@ -185,11 +196,11 @@ const faq: FaqItem[] = TELETRABAJO_FAQ.map((item, index) => ({
 const canonicalUrl = 'https://cambio-uruguay.com/teletrabajo-uruguay'
 const title = 'Teletrabajo: 8 horas de desconexión'
 const description =
-  'Sin acuerdo escrito, el equipo y los servicios los pone el empleador (Ley 19.978, art. 12), y hay 8 horas continuas de desconexión entre jornadas.'
+  'Sin acuerdo, el equipo, los insumos y los servicios los pone el empleador (Ley 19.978, art. 12), y hay 8 horas continuas de desconexión entre jornadas.'
 
 defineOgImageComponent('Cambio', {
   title: 'Teletrabajo en Uruguay',
-  subtitle: '8 horas de desconexión, y el equipo lo pone la empresa',
+  subtitle: '8 horas de desconexión y, sin acuerdo, el equipo lo pone la empresa',
   tag: 'TRABAJO',
 })
 

@@ -100,11 +100,12 @@ describe('integridad', () => {
   })
 })
 
-// El título de la página, atado al conteo del que salió. Mismo patrón y misma razón que
-// `snippetConLaRespuesta.test.ts`: el título es un literal del `.vue` y un literal no se
-// entera cuando cambia la lista que lo respalda. El día que entre o salga un organismo,
-// esto se pone en rojo en vez de dejar en el SERP un número que la propia página ya
-// desmiente.
+// El título de la página. Mismo patrón que `snippetConLaRespuesta.test.ts`: el título es
+// un literal del `.vue`. El borrador decía «Son cinco organismos», atado a
+// `ROUTING_BODIES.length`, y era falso como afirmación sobre Uruguay: las cinco tarjetas son
+// las que toman reclamos contra una empresa, y la misma sección de la página manda otros
+// casos a la URCDP, a la Fiscalía y a la Intendencia. El largo de una lista de tarjetas no
+// es cuántos organismos hay, así que el título no lleva conteo y esto impide que vuelva.
 describe('/a-quien-le-reclamo-uruguay: el título contesta', () => {
   const source = readFileSync(
     join(__dirname, '..', '..', 'pages', 'a-quien-le-reclamo-uruguay.vue'),
@@ -112,12 +113,20 @@ describe('/a-quien-le-reclamo-uruguay: el título contesta', () => {
   )
   const title = source.match(/\nconst title = '((?:[^'\\]|\\.)*)'/)?.[1]
 
-  it('contesta con el conteo en vez de devolver la pregunta', () => {
-    expect(title).toBe('¿A quién le reclamo? Son cinco organismos')
-    // «cinco» es `ROUTING_BODIES`, no un número escrito a mano.
-    expect(ROUTING_BODIES).toHaveLength(5)
+  it('contesta en vez de devolver la pregunta', () => {
+    expect(title).toBe('¿A quién le reclamo? Depende del servicio')
     // Y no vuelve a ser la consulta con «en Uruguay» pegado atrás.
     expect(title).not.toMatch(/reclamo en Uruguay\?$/)
+  })
+
+  it('no afirma cuántos organismos hay: la página misma nombra más que las tarjetas', () => {
+    expect(title).not.toMatch(/\b(dos|tres|cuatro|cinco|seis|siete|ocho|\d+) organismos\b/i)
+    // Lo que respalda que el conteo sería falso: el cuerpo deriva casos fuera de las tarjetas.
+    // (espacios normalizados: prettier puede volver a partir los renglones del template)
+    const body = source.replace(/\s+/g, ' ')
+    expect(body).toContain('ninguno de los cinco es competente')
+    expect(body).toContain('Unidad Reguladora y de Control de Datos Personales')
+    expect(body).toContain('lo atiende la Intendencia')
   })
 
   it('entra en los 60 caracteres que publica el SERP, con la marca puesta', () => {

@@ -11,13 +11,20 @@
 // MÓDULO PURO (sin Vue/Nuxt), compartido por la página y `app/tests/unit/sickLeaveBenefit.test.ts`.
 //
 // EL TOPE NO SE CALCULA, SE COPIA, y es la misma trampa que `unemploymentBenefit.ts` documenta en
-// `BENEFIT_FLOOR`: el art. 27 del decreto-ley escribe el máximo como «el triple del monto del
-// salario mínimo nacional», la Ley 18.725 art. 1 lo reescribió en BPC (4 BPC desde el 1/1/2011,
-// +1 por año hasta 8 BPC desde el 1/1/2015) y la Ley 19.003 —art. 1 en la redacción vigente, la
-// del art. 739 de la Ley 19.924— sólo lo INDEXA, convirtiendo a BPC los topes vigentes al
-// 31/12/2020. O sea que la cantidad de BPC ya no vale 8: con la BPC de 2026 ($ 6.864, ver
-// `URUGUAY.bpc`) ocho darían $ 54.912 y el BPS publica $ 67.754. Multiplicar da OTRO número; el
-// que se paga es el que el BPS publica cada enero, y por eso va copiado con su fecha al lado.
+// `BENEFIT_FLOOR`: el art. 27 del decreto-ley prohíbe pagar «un subsidio mensual superior al triple
+// del monto del salario mínimo nacional», la Ley 18.725 art. 1 lo reescribió en BPC (4 BPC desde el
+// 1/1/2011, +1 por año hasta 8 BPC desde el 1/1/2015) y la Ley 19.003 lo INDEXA, en dos tramos:
+//   - texto ORIGINAL (art. 1, vigente desde el 1/1/2012): los topes «se ajustarán a partir del 1°
+//     de enero de 2012, por la variación de la unidad reajustable», convertidos a UR «sin
+//     perjuicio de lo dispuesto por la Ley N° 18.725»;
+//   - redacción VIGENTE (art. 739 de la Ley 19.924): «se ajustarán a partir del 1° de enero de
+//     2021 por la variación en la Base de Prestaciones y Contribuciones», convirtiendo a BPC «los
+//     topes vigentes al 31 de diciembre de 2020».
+// La conversión de 2021 sola no cambia la cantidad de BPC: lo que el tope era en pesos al
+// 31/12/2020 ya venía de nueve años de ajuste por la UR, no por la BPC, y eso es lo que quedó
+// congelado en BPC. Por eso ocho BPC de 2026 ($ 6.864, ver `URUGUAY.bpc`) darían $ 54.912 y el
+// BPS publica $ 67.754, que son 9,87 BPC. Multiplicar da OTRO número; el que se paga es el que el
+// BPS publica con su vigencia, y por eso va copiado con su fecha al lado.
 //
 // LO QUE ESTE MÓDULO NO AFIRMA, a propósito y en la misma línea que el resto del sitio:
 //
@@ -43,31 +50,44 @@
 //     ponen a cargo del empleador: quedan fuera de la prestación. Si un convenio de rama los paga,
 //     sale del convenio, no de esta ley.
 //
-// FUENTES PRIMARIAS, verificadas el 2026-11-17:
+// FUENTES PRIMARIAS, verificadas el 2026-11-17 y releídas el 2026-11-20:
 //   - BPS, «Subsidio por enfermedad» (beneficiarios, 70 % de materia gravada, promedio de 180
 //     días, tope de $ 67.754 con vigencia 01/2026, tope del patrón rural de $ 40.655, pago desde
 //     el cuarto día de certificación y desde el primero con internación, duración y prórroga).
-//     Página con «Última actualización: 08/09/2026».
+//     Página con «Última actualización: 19/11/2026», mismas cifras.
 //     https://www.bps.gub.uy/4774/subsidio-por-enfermedad.html
 //   - IMPO, texto VIGENTE del Decreto-Ley 14.407: art. 13 num. 2 (el 70 %), art. 14 (cuarto día,
-//     internación, un año más un año de prórroga), art. 28 (cuota parte de aguinaldo).
+//     internación, un año más un año de prórroga), art. 15 (ventana de cuatro años), art. 27 (el
+//     máximo), art. 28 (cuota parte de aguinaldo).
 //     https://www.impo.com.uy/bases/decretos-ley/14407-1975
+//   - Ley 19.003: texto vigente en IMPO y texto original en el PDF que enlaza el BPS.
+//     https://www.impo.com.uy/bases/leyes/19003-2012
+//     https://www.bps.gub.uy/10502/
 //   - IMPO, Decreto 7/976, reglamento: art. 7 num. II (promedio de los 180 días anteriores y topes
 //     de 1976), art. 12 («Conjuntamente con el pago del subsidio el trabajador percibirá la
 //     doceava parte del mismo en concepto de aguinaldo»), arts. 6 y 8 (aportes sobre el subsidio).
 //     https://www.impo.com.uy/bases/decretos/7-1976
-//   - IMPO, Ley 18.725 art. 2: desde el 1/1/2011 la base son «todas las que constituyan materia
-//     gravada», que es por qué el BPS no liquida sobre el «sueldo básico» del art. 13 num. 2.
-//     https://www.impo.com.uy/bases/leyes/18725-2011/2
+//   - Ley 18.725, en el PDF que el BPS enlaza bajo «Normativa asociada» (la ficha de IMPO contesta
+//     «Acceso no válido» sin suscripción): art. 1 (la escala de 4 a 8 BPC) y art. 2, desde el
+//     1/1/2011 la base son «todas las que constituyan materia gravada», que es por qué el BPS no
+//     liquida sobre el «sueldo básico» del art. 13 num. 2.
+//     https://www.bps.gub.uy/3620/
 
 /** Fecha en que cada cifra de este módulo se contrastó con las fuentes de arriba. */
-export const SICK_LEAVE_VERIFIED_AT = '2026-11-17'
+export const SICK_LEAVE_VERIFIED_AT = '2026-11-20'
 
 /** El 70 % del art. 13 num. 2 del Decreto-Ley 14.407, que el BPS liquida sobre materia gravada. */
 export const SICK_LEAVE_RATE = 0.7
 
 /** Tope mensual que publica el BPS, con su vigencia. NO se calcula: ver el encabezado. */
 export const SICK_LEAVE_MONTHLY_CAP = 67754
+
+/**
+ * El último escalón de la Ley 18.725 art. 1, lit. E: «8 BPC (ocho Bases de Prestaciones y
+ * Contribuciones), a partir del 1° de enero de 2015». Sólo para contar la historia: el tope que se
+ * paga es {@link SICK_LEAVE_MONTHLY_CAP}, no esto por la BPC (ver el encabezado).
+ */
+export const SICK_LEAVE_LEY_18725_MAX_BPC = 8
 
 /** Vigencia del tope, tal como el BPS la escribe. */
 export const SICK_LEAVE_CAP_SINCE = '01/2026'
@@ -179,4 +199,13 @@ export function computeSickLeave(input: SickLeaveInput): SickLeaveResult {
 /** La base mensual a partir de la cual el tope empieza a morder. */
 export function baseWhereCapBites(): number {
   return round2(SICK_LEAVE_MONTHLY_CAP / SICK_LEAVE_RATE)
+}
+
+/**
+ * Cuántas BPC son hoy el tope que publica el BPS. Sirve para mostrar que ya no son las 8 de la
+ * escala de la Ley 18.725 (ver el encabezado): es una división de dos cifras publicadas, no una
+ * regla. Dos decimales.
+ */
+export function capInBpc(bpc: number): number {
+  return Number.isFinite(bpc) && bpc > 0 ? round2(SICK_LEAVE_MONTHLY_CAP / bpc) : 0
 }

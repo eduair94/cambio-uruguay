@@ -207,14 +207,13 @@ const verifiedAt = new Date(ROUTING_VERIFIED_AT).toLocaleDateString('es-UY', {
 const canonicalUrl = 'https://cambio-uruguay.com/a-quien-le-reclamo-uruguay'
 // El título CONTESTA en vez de devolver la consulta. El anterior era la pregunta del
 // lector con «en Uruguay» pegado atrás, o sea gastaba el renglón en repetirla, y la
-// respuesta de esta página —que no hay un solo mostrador: son cinco, y presentarlo en el
-// equivocado no te redirige— ya estaba en su propio encabezado. El número sale de
-// `ROUTING_BODIES` y `complaintRouting.test.ts` lo ata: si entra un sexto organismo, el
-// título deja de decir la verdad y se pone en rojo. Los cinco no entran en los 43
-// caracteres que deja la marca, y nombrar cuatro omitiría justo al que es el default
-// (Defensa del Consumidor), así que el título lleva el conteo y la descripción sigue
-// llevando el ruteo por servicio.
-const title = '¿A quién le reclamo? Son cinco organismos'
+// respuesta de esta página —no hay un solo mostrador: depende del servicio, y presentarlo
+// en el equivocado no te redirige— ya estaba en su propio encabezado. NO lleva un conteo:
+// las cinco tarjetas de `ROUTING_BODIES` son las que toman reclamos contra una empresa, y
+// la misma sección manda otros casos a la URCDP, a la Fiscalía y a la Intendencia, así que
+// «son cinco organismos» lo desmentía el propio cuerpo. `complaintRouting.test.ts` impide
+// que vuelva un número. El ruteo por servicio sigue en la descripción.
+const title = '¿A quién le reclamo? Depende del servicio'
 const description =
   'Luz y agua son URSEA, celular e internet URSEC, bancos y seguros el BCU, lo laboral el MTSS. Plazos: 15 días hábiles en URSEA, 15 corridos en el BCU.'
 

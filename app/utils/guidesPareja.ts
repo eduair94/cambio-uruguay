@@ -99,11 +99,11 @@ export const parejaGuides: readonly Guide[] = [
     description:
       'La unión concubinaria de la Ley 18.246: convivencia de al menos cinco años, reconocimiento judicial y los derechos patrimoniales y de pensión que genera.',
     tag: 'CONCUBINATO',
-    updatedAt: '2026-11-14',
+    updatedAt: '2026-11-20',
     sections: [
       {
         heading: 'Qué es la unión concubinaria',
-        body: 'La unión concubinaria está regulada por la Ley 18.246, vigente en Uruguay desde 2008. Reconoce que dos personas que conviven de forma estable, en una relación de tipo afectivo y sexual, exclusiva, singular y a la vista de todos, sin estar casadas entre sí, pueden generar derechos y obligaciones parecidos en varios aspectos a los del matrimonio. Aplica tanto a parejas del mismo sexo como de distinto sexo. La ley vino a dar amparo jurídico a una realidad muy común: mucha gente en Uruguay arma su vida en pareja sin pasar por el Registro Civil, y esa convivencia, cumplidos ciertos requisitos, tiene consecuencias legales.',
+        body: 'La unión concubinaria está regulada por la Ley 18.246, vigente en Uruguay desde 2008. Reconoce que dos personas que conviven en una relación afectiva de índole sexual, exclusiva, singular, estable y permanente (art. 2), sin estar casadas entre sí, pueden generar derechos y obligaciones parecidos en varios aspectos a los del matrimonio. Aplica tanto a parejas del mismo sexo como de distinto sexo. La ley vino a dar amparo jurídico a una realidad muy común: mucha gente en Uruguay arma su vida en pareja sin pasar por el Registro Civil, y esa convivencia, cumplidos ciertos requisitos, tiene consecuencias legales.',
       },
       {
         heading: 'El requisito de convivencia',
@@ -111,7 +111,7 @@ export const parejaGuides: readonly Guide[] = [
       },
       {
         heading: 'El reconocimiento no es automático',
-        body: 'Este es el punto que más confusión genera. Convivir muchos años no equivale a estar casado, ni crea por sí solo una sociedad de bienes entre la pareja. Para que la unión concubinaria despliegue sus efectos patrimoniales hace falta, en general, un reconocimiento judicial de la unión, que puede promoverse en vida por uno o ambos concubinos, o incluso después. A partir de ese reconocimiento inscripto la comunidad de bienes se vuelve efectiva frente a terceros. En otras palabras: la convivencia es el hecho, pero el reconocimiento es lo que le da forma legal. Para la seguridad social el camino es otro: la prueba de los requisitos se hace en principio ante el organismo previsional (art. 20, en la redacción de la Ley 20.212), y el BPS pide probar un mínimo de cinco años de convivencia a la fecha del fallecimiento o la desaparición, con testigos, declaraciones de los domicilios compartidos y documentos como facturas de servicios, contratos de alquiler o estados de cuenta. Una sentencia sirve ante el BPS cuando el organismo fue parte en el juicio, que es lo que ese mismo artículo exige para que el fallo le sea vinculante.',
+        body: 'Este es el punto que más confusión genera. Convivir muchos años no equivale a estar casado, ni crea por sí solo una sociedad de bienes entre la pareja. Para que la unión concubinaria despliegue sus efectos patrimoniales hace falta, en general, un reconocimiento judicial de la unión, que puede promoverse en vida por uno o ambos concubinos, o incluso después. A partir de ese reconocimiento inscripto la comunidad de bienes se vuelve efectiva frente a terceros. En otras palabras: la convivencia es el hecho, pero el reconocimiento es lo que le da forma legal. Para la seguridad social el camino es otro: la prueba de los requisitos se hace en principio ante el organismo previsional (art. 20, en la redacción de la Ley 20.212), y el BPS pide probar un mínimo de cinco años de convivencia hasta la fecha del fallecimiento o la desaparición, con testigos, declaraciones de los domicilios compartidos y documentos como recibos de servicios, contratos de arrendamiento o estados de cuenta. Una sentencia alcanza ante el BPS cuando el organismo fue citado como parte en el juicio, que es lo que ese mismo artículo exige para que el fallo le sea vinculante: quien quiera hacerlo valer ante un instituto de previsión tiene que emplazarlo en el proceso.',
       },
       {
         heading: 'Qué derechos genera',
@@ -136,20 +136,24 @@ export const parejaGuides: readonly Guide[] = [
         to: '/guias/legitima-y-herederos-forzosos-uruguay',
       },
       { label: 'Jubilación y AFAP', to: '/guias/jubilacion-y-afap-como-funciona-uruguay' },
+      // El art. 6 c) del Decreto-Ley 15.597 deja al concubino sobreviviente constituir bien de
+      // familia a favor de los hijos menores o con discapacidad de la unión.
+      { label: 'Bien de familia: que no embarguen la casa', to: '/guias/bien-de-familia-uruguay' },
     ],
     // Esta guía afirmaba reglas legales —cinco años, sociedad de bienes, derechos sucesorios— y no
     // citaba ni una norma, que es justo lo que el campo `sources` existe para evitar (ver su
-    // comentario en `guides.ts`). Verificado el 2026-11-14 artículo por artículo en IMPO.
+    // comentario en `guides.ts`). Verificado el 2026-11-14 artículo por artículo en IMPO y releído
+    // el 2026-11-20 (art. 2 y art. 20 contra IMPO; la prueba ante el BPS contra su propia página).
     sources: [
       {
         label:
-          'Ley 18.246 de 27/12/2007 — convivencia ininterrumpida de al menos cinco años (art. 1), caracteres e impedimentos (art. 2), asistencia recíproca y auxilios por un plazo no mayor al de la convivencia (art. 3), sociedad de bienes desde el reconocimiento inscripto (art. 5) y derechos sucesorios del art. 1026 del Código Civil, con uso y habitación a los sesenta años y diez de convivencia (art. 11)',
+          'Ley 18.246 de 27/12/2007 — convivencia ininterrumpida de al menos cinco años (art. 1), caracteres e impedimentos (art. 2), asistencia recíproca y auxilios por un plazo no mayor al de la convivencia (art. 3), sociedad de bienes desde el reconocimiento inscripto (art. 5) y derechos sucesorios del art. 1026 del Código Civil, con uso y habitación a los sesenta años y diez de convivencia (art. 11); la prueba se hace "en principio en el organismo previsional", y quien invoque el fallo judicial ante un instituto "deberá necesariamente emplazarlo" o no le será vinculante (art. 20, en la redacción de la Ley 20.212)',
         url: 'https://www.impo.com.uy/bases/leyes/18246-2007',
         publisher: 'IMPO',
       },
       {
         label:
-          'Qué necesito para probar un concubinato — mínimo de cinco años de convivencia a la fecha del fallecimiento, con testigos, domicilios y documentos; la sentencia alcanza si el BPS fue parte en el juicio',
+          'Qué necesito para probar un concubinato — "un mínimo de 5 años de convivencia hasta la fecha de fallecimiento o desaparición", con testigos, domicilios y documentos; "en caso de que el BPS haya sido citado como parte en el proceso judicial, la sentencia dictada es válida y suficiente"',
         url: 'https://www.bps.gub.uy/20593/que-necesito-para-probar-un-concubinato.html',
         publisher: 'BPS',
       },

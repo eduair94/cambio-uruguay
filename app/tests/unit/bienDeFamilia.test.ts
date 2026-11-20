@@ -70,7 +70,57 @@ describe('la guía del bien de familia', () => {
     expect(urls).toContain('https://www.impo.com.uy/bases/decretos/504-1984/1')
   })
 
-  it('no publica honorarios de escribano, que no tienen arancel oficial', () => {
-    expect(prose()).toMatch(/no tienen arancel oficial publicado/)
+  // Hasta el 2026-11-20 la guía decía que los honorarios del escribano "no tienen arancel oficial
+  // publicado" y que eran lo único que se pagaba. Las dos cosas eran falsas: el Arancel Oficial de
+  // la AEU (versión de octubre de 2025) fija UR 12 por la "constitución de bien de familia"
+  // (art. 2.º, literal C), y el art. 16 del decreto-ley no hace gratuita la publicación en el
+  // diario local que exige el art. 8 b).
+  it('publica el honorario del Arancel Oficial con su artículo, y su fuente', () => {
+    const text = prose()
+    expect(text).toMatch(/Arancel Oficial de la Asociación de Escribanos del Uruguay/)
+    expect(text).toMatch(/UR 12 por la escritura de constitución/)
+    expect(text).toMatch(/art\. 2\.º, literal C/)
+    expect(text).toMatch(/no supera las UR 1\.000/)
+    expect(text).not.toMatch(/no tienen? arancel/i)
+    const aeu = (guide!.sources ?? []).find(source => source.url.includes('aeu.org.uy'))
+    expect(aeu?.label).toMatch(/se cobrará como honorario UR 12/)
+    expect(aeu?.label).toMatch(/octubre de 2025/)
+  })
+
+  it('no presenta al escribano como el único gasto: el diario local no es gratis', () => {
+    const faq = (guide!.faqs ?? []).find(f => /cuánto sale/i.test(f.q))
+    expect(faq?.a).toMatch(/diario local/)
+    expect(faq?.a).not.toMatch(/Lo que se paga son los honorarios del escribano\b[^,]*\.$/)
+    expect(prose()).toMatch(/publicación en el diario local no está en esa lista/)
+  })
+
+  it('cuenta los peritos y el art. 13 como dice la norma', () => {
+    const text = prose()
+    // Art. 8 a): el tercer perito se designa sólo "en el caso de discordia".
+    expect(text).not.toMatch(/tres peritos/)
+    expect(text).toMatch(/si no coinciden, un tercero/)
+    // Art. 2: "ocupada y explotada", no "o".
+    expect(text).toMatch(/ocupada y explotada/)
+    // Art. 13: "a quien se le confiera judicialmente la guarda de los hijos".
+    expect(text).toMatch(/el juez le confiera la guarda de los hijos/)
+    expect(text).not.toMatch(/tenencia de los hijos/)
+  })
+
+  it('la enlazan al menos tres guías vecinas, no sólo el hub', () => {
+    // "Más sobre este tema" lista los recursos del hub, no sus guías: estar en `guideSlugs` no le
+    // pone un enlace en ninguna página hermana, así que los enlaces entrantes se declaran a mano.
+    const linking = [
+      'cuando-prescribe-una-deuda-uruguay',
+      'me-compraron-la-deuda-uruguay',
+      'union-concubinaria-uruguay',
+    ]
+    for (const slug of linking) {
+      const g = getGuide(slug)
+      const targets = [
+        ...(g?.related ?? []).map(link => link.to),
+        ...(g?.sections ?? []).flatMap(s => (s.links ?? []).map(link => link.to)),
+      ]
+      expect(targets, slug).toContain('/guias/bien-de-familia-uruguay')
+    }
   })
 })

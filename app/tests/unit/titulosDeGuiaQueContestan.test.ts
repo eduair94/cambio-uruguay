@@ -25,6 +25,14 @@ import { getGuide } from '../../utils/guides'
  * de la misma página. Si alguien reescribe el cuerpo y la respuesta cambia, el título se cae con
  * él en vez de quedar mintiendo en el SERP.
  *
+ * EL TÍTULO NO ES SÓLO EL RENGLÓN DEL SERP. `guide.title` es también el H1 de
+ * `pages/guias/[slug].vue`, el og:title/twitter:title, la imagen OG, el texto de compartir y el
+ * `name` del JSON-LD: cambiarlo cambia todo eso. Por eso dos de los cinco conservan al frente la
+ * consulta con la que la guía YA tenía impresiones («herederos forzosos», «licencia y salario
+ * vacacional»): sacarla del título y del H1 a la vez arriesgaba justo la posición que trae la
+ * muestra. Y cada afirmación del título se cita en la tarjeta de Fuentes de su guía (la norma o el
+ * operador), no sólo en el cuerpo.
+ *
  * El largo no se mide acá: lo mide `guideSnippetBudget.test.ts` sobre las 154 guías, con la marca
  * incluida (`rendered()` suma « | Cambio Uruguay», o sea 17 caracteres, así que el techo real del
  * título del catálogo es 43).
@@ -49,30 +57,42 @@ const TITULOS = [
     titulo: 'Alquilar sin garantía: seguro, ANDA o LUC',
     nombrabaElTema: 'Cómo alquilar sin garantía en Uruguay',
     respaldo: [/seguro de fianza/i, /ANDA/, /Ley de Urgente Consideración/i],
+    fuente: 'https://www.impo.com.uy/bases/leyes/19889-2020/421',
   },
   {
     slug: 'legitima-y-herederos-forzosos-uruguay',
-    titulo: 'Legítima: mitad con un hijo, 2/3 con dos',
+    // «Herederos forzosos» se queda al frente: es la consulta con la que la guía ya rankea
+    // (posición ~5 en «herederos forzosos uruguay», ~4 en «heredero forzoso»).
+    titulo: 'Herederos forzosos: legítima 1/2, 2/3 o 3/4',
     nombrabaElTema: 'Legítima y herederos forzosos en Uruguay',
-    respaldo: [/la mitad del patrimonio/i, /dos tercios/i],
+    respaldo: [/la mitad del patrimonio/i, /dos tercios/i, /tres cuartos/i, /herederos forzosos/i],
+    fuente: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/887',
   },
   {
     slug: 'hay-impuesto-a-la-herencia-uruguay',
     titulo: 'No hay impuesto a la herencia: sí el ITP',
     nombrabaElTema: '¿Hay impuesto a la herencia en Uruguay?',
     respaldo: [/no hay un impuesto sucesorio o a la herencia/i, /\bITP\b/],
+    // La nota de IMPO sobre la Ley 12.804: el Impuesto a las Herencias, Legados y Donaciones lo
+    // derogó el Decreto Ley 14.252 (art. 318, 1974). Lo que queda es el ITP por causa de muerte.
+    fuente: 'https://www.impo.com.uy/bases/leyes/12804-1960/147',
   },
   {
     slug: 'licencia-y-salario-vacacional-uruguay',
-    titulo: 'Licencia: 20 días y uno más cada 4 años',
+    // «Licencia y salario vacacional» se queda: las consultas donde la guía entra al top 10 son
+    // las de «salario vacacional y licencia es lo mismo». «Base» porque los 20 días son el mínimo
+    // (Ley 12.590 art. 1) y la antigüedad suma más (art. 2), que la descripción explica.
+    titulo: 'Licencia y salario vacacional: 20 días base',
     nombrabaElTema: 'Licencia y salario vacacional en Uruguay',
-    respaldo: [/veinte días/i, /cada cuatro años/i],
+    respaldo: [/veinte días como mínimo/i, /cada cuatro años/i],
+    fuente: 'https://www.impo.com.uy/bases/leyes/12590-1958/1',
   },
   {
     slug: 'elegir-o-cambiar-de-afap-uruguay',
     titulo: 'Cambiar de AFAP: gratis, mirá la comisión',
     nombrabaElTema: 'Cómo elegir o cambiarte de AFAP en Uruguay',
     respaldo: [/trámite gratuito/i, /comisión de administración/i],
+    fuente: 'https://www.rafap.com.uy/mvdcms/Contenidos/Traspaso-cambio-de-AFAP--uc1022',
   },
 ] as const
 
@@ -96,4 +116,19 @@ describe('los cinco títulos de guía que pasaron a contestar', () => {
       for (const marca of caso.respaldo) expect(texto, `${caso.slug} ${marca}`).toMatch(marca)
     }
   )
+
+  // Y la afirmación del título tiene que poder chequearse contra la norma o el operador: cada
+  // guía cita en su tarjeta de Fuentes el texto primario que sostiene lo que el título publica.
+  it.each(TITULOS.map(t => [t.slug, t] as const))(
+    '%s cita en Fuentes el texto primario que sostiene el título',
+    (_slug, caso) => {
+      const urls = (getGuide(caso.slug)?.sources ?? []).map(s => s.url)
+      expect(urls).toContain(caso.fuente)
+    }
+  )
+
+  // Presupuesto del renglón: con « | Cambio Uruguay» (17) cada título entra en 60.
+  it.each(TITULOS.map(t => [t.slug, t] as const))('%s entra en 43 caracteres', (_slug, caso) => {
+    expect(caso.titulo.length).toBeLessThanOrEqual(43)
+  })
 })

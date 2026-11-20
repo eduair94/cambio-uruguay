@@ -1,4 +1,4 @@
-// Cuánto sale transferir un auto en Uruguay: el arancel de la libreta y qué pide
+// Cuánto sale transferir un auto en Uruguay: el importe de la libreta y qué pide
 // cada intendencia.
 //
 // Módulo PURO (sin Vue/Nuxt, sin estado global, imports relativos) para que
@@ -7,43 +7,34 @@
 // `utils/idCard.ts`.
 //
 // POR QUÉ ESTA PÁGINA. El sitio ya tenía la guía `/guias/transferir-un-auto-uruguay`,
-// y lo que esa guía contesta sobre los requisitos es, textual, «Cada intendencia
+// y lo que esa guía contestaba sobre los requisitos era, textual, «Cada intendencia
 // puede pedir requisitos algo distintos, así que conviene consultar de antemano en
-// la intendencia correspondiente». Eso es verdad y no es una respuesta: manda a
-// hacer el trabajo a quien vino a que se lo hicieran. La transferencia es un
-// trámite DEPARTAMENTAL —el registro de vehículos lo lleva la intendencia donde
-// está empadronado el auto—, así que no hay un requisito nacional que listar: hay
-// diecinueve listas, cada una en su propia ficha, y nadie las pone en una pantalla.
-// Ése es exactamente el SERP institucional e ilegible en el que este sitio sí
-// entra.
+// la intendencia correspondiente». La transferencia se hace en la intendencia donde
+// está empadronado el auto, y las listas de requisitos que publican las intendencias
+// no coinciden (y no todas publican una): esta página pone en una pantalla las que
+// pudimos leer.
 //
-// LA RESPUESTA QUE NINGUNA FICHA SOLA PUEDE DAR: el arancel es el mismo en cinco
-// de los siete departamentos que lo publican ({@link CAR_TRANSFER_MODAL_FEE}), y
-// los dos que se salen de ese número tienen la ficha más vieja del lote. O sea que
-// la dispersión que un lector interpretaría como «en mi departamento sale más
-// barato» se explica, al menos en parte, por la FECHA de la ficha y no por el
-// departamento: ver {@link CAR_TRANSFER_FEE_SPREAD_NOTE}.
+// EL PRECIO NO ES DEPARTAMENTAL. La primera versión de esta página (16/11/2026)
+// leyó tres importes distintos en las fichas —$1.780, $1.620 y $1.419— y escribió
+// que «cada intendencia fija su arancel». No es así: el importe de la libreta (el
+// Documento de Identificación Vehicular, DIV) lo fija el Congreso de Intendentes en
+// el Texto Ordenado del SUCIVE, que se remite «a todas las Intendencias», y para
+// 2026 es {@link CAR_TRANSFER_DIV_2026} ({@link CAR_TRANSFER_DIV_2026_SOURCE}). Las
+// cinco fichas actualizadas en 2026 lo publican redondeado; San José publica
+// exactamente el importe del Texto Ordenado de 2022 ({@link CAR_TRANSFER_DIV_2022})
+// en una ficha que no se toca desde 2022. Los números distintos son fichas viejas,
+// no departamentos más baratos, y la página lo dice como hecho.
 //
-// LA REGLA DE LAS CIFRAS. Todo importe sale textual del bloque «Costos» de la
-// ficha oficial del trámite, leída una por una el {@link CAR_TRANSFER_VERIFIED_AT},
-// y cada departamento guarda la URL y la fecha de «Última actualización» que la
-// propia ficha muestra ({@link CarTransferDepartment.fichaUpdatedAt}). No hay
-// ningún importe estimado, promediado ni arrastrado de un departamento a otro.
+// LA REGLA DE LAS CIFRAS. El importe nacional sale textual del Texto Ordenado. Lo
+// que dice cada ficha sale textual de su bloque «Costos», leída una por una el
+// {@link CAR_TRANSFER_VERIFIED_AT}, y cada departamento guarda la URL y la fecha de
+// «Última actualización» que la propia ficha muestra
+// ({@link CarTransferDepartment.fichaUpdatedAt}).
 //
-// LO QUE NO SE PUBLICA, A PROPÓSITO (ver {@link CAR_TRANSFER_UNPUBLISHED}):
-//
-//  1. El costo del escribano. Es casi siempre el gasto más grande de la operación
-//     y ninguna ficha lo tarifa, porque no lo cobra la intendencia. Publicar un
-//     número «de mercado» sería inventarlo.
-//  2. El arancel de Montevideo. Su ficha viva (`tramites.montevideo.gub.uy`) no se
-//     puede leer de forma automática —responde con una verificación de navegador—,
-//     y el documento oficial que sí se lee es el instructivo del Servicio de
-//     Contralor y Registro de Vehículos, que lista requisitos pero no costo. Media
-//     ciudad del país queda entonces sin cifra publicada acá, y eso se dice en vez
-//     de taparlo con el número de otro departamento.
-//  3. El plazo del Digesto montevideano para presentar la transferencia. Aparece
-//     citado en resúmenes de buscador, pero `normativa.montevideo.gub.uy` no
-//     contestó al leerlo el {@link CAR_TRANSFER_VERIFIED_AT}, así que no se afirma.
+// LO QUE NO SE PUBLICA, A PROPÓSITO (ver {@link CAR_TRANSFER_UNPUBLISHED}): el costo
+// del escribano (ninguna ficha lo tarifa, porque no lo cobra la intendencia), el
+// precio del libre de prenda y de la inspección, y el plazo del Digesto montevideano
+// para presentar la transferencia (`normativa.montevideo.gub.uy` no contestó).
 
 /** Una fuente primaria: etiqueta legible + URL oficial. */
 export interface CarTransferSource {
@@ -51,14 +42,78 @@ export interface CarTransferSource {
   readonly url: string
 }
 
-/** Fecha en la que se leyó ficha por ficha todo lo que hay en este archivo. */
-export const CAR_TRANSFER_VERIFIED_AT = '2026-11-16'
+/** Una cita textual de una fuente primaria, con su URL. */
+export interface CarTransferQuote {
+  readonly label: string
+  readonly url: string
+  readonly quote: string
+}
+
+/** Fecha en la que se leyó fuente por fuente todo lo que hay en este archivo. */
+export const CAR_TRANSFER_VERIFIED_AT = '2026-11-20'
 
 /** Ruta de la página; el mismo slug en los tres idiomas (i18n prefija /en y /pt). */
 export const CAR_TRANSFER_PATH = '/cuanto-sale-transferir-un-auto-uruguay'
 
 /** Cuántos departamentos tiene el país, para decir «N de 19» sin escribir 19 dos veces. */
 export const URUGUAY_DEPARTMENTS = 19
+
+// ---------------------------------------------------------------------------
+// El importe nacional: Texto Ordenado del SUCIVE
+// ---------------------------------------------------------------------------
+
+/** Año de vigencia de {@link CAR_TRANSFER_DIV_2026}. */
+export const CAR_TRANSFER_DIV_YEAR = 2026
+
+/**
+ * La libreta de propiedad y circulación (DIV) en 2026: 700 unidades de 2013 por el
+ * factor de actualización 2,542173922.
+ */
+export const CAR_TRANSFER_DIV_2026 = 1779.52
+
+/** Las unidades de 2013 que el Texto Ordenado asigna al DIV, y el factor de 2026. */
+export const CAR_TRANSFER_DIV_UNITS = 700
+export const CAR_TRANSFER_DIV_FACTOR_2026 = 2.542173922
+
+export const CAR_TRANSFER_DIV_2026_SOURCE: CarTransferQuote = Object.freeze({
+  label:
+    'Texto Ordenado del SUCIVE 2026 (Circular DAV 180/2025 del Congreso de Intendentes, aprobado en la 6.ª sesión plenaria del 14/11/2025)',
+  url: 'https://www.gub.uy/congreso-intendentes/sites/congreso-intendentes/files/2026-02/CIRCULAR%20DAV%20180-25%20texto%20ordenado%202026,%20info%20sistema%20(23.12.25).pdf',
+  quote: 'LIBRETA DE PROPIEDAD Y CIRCULACION 700 x 2,542173922= 1.779,52',
+})
+
+/** A quién se remite el Texto Ordenado: a todas las intendencias, no a una. */
+export const CAR_TRANSFER_TOS_SCOPE_QUOTE =
+  'Se remite a todas las Intendencias, a los efectos de los artículos 273 y 275 de la Constitución, el TEXTO ORDENADO DEL SUCIVE 2026'
+
+/**
+ * Artículo 9 del mismo Texto Ordenado: qué se puede cobrar por un trámite de un
+ * vehículo. En una transferencia que mantiene la matrícula, lo que se entrega es la
+ * libreta nueva.
+ */
+export const CAR_TRANSFER_TOS_ART9_QUOTE =
+  'Por todas las acciones, trámites y/o gestiones que los contribuyentes y/o interesados realicen en las oficinas Departamentales o Municipales referidas a un vehículo de transporte, solo pagarán los siguientes conceptos'
+
+/**
+ * La salvedad del mismo artículo 9: las tasas propias de cada intendencia por el
+ * servicio al que está afectado el vehículo. Por eso el «no cambia según el
+ * departamento» vale para un auto particular y la FAQ lo dice.
+ */
+export const CAR_TRANSFER_TOS_ART9_EXCEPTION_QUOTE =
+  'Sin perjuicio de lo anterior, se abonarán las tasas y/o precios específicos que cada Gobierno Departamental tenga establecido por acciones, trámites y/o gestiones relacionadas con la inscripción, habilitación y/o control exigible como consecuencia del servicio a que está afectado el vehículo.'
+
+/** Artículo 45: la deuda bloquea la transferencia, en todo el SUCIVE. */
+export const CAR_TRANSFER_TOS_ART45_QUOTE =
+  'No podrá transferirse un vehículo que deba patente, multas, cuotas de convenios interdepartamentales o montos por chapas matrículas o DIV, aunque no haya vencido el plazo para su pago.'
+
+/** El DIV en el Texto Ordenado de 2022, que es el número que publica San José. */
+export const CAR_TRANSFER_DIV_2022 = 1419.24
+
+export const CAR_TRANSFER_DIV_2022_SOURCE: CarTransferQuote = Object.freeze({
+  label: 'Texto Ordenado del SUCIVE 2022 (publicado por la Intendencia de Montevideo)',
+  url: 'https://montevideo.gub.uy/sites/default/files/biblioteca/sucivetextoordenado2022_0.pdf',
+  quote: 'Libreta de propiedad y circulación 700x2,027491826= 1.419,24',
+})
 
 // ---------------------------------------------------------------------------
 // Los requisitos, como ejes comparables
@@ -128,7 +183,7 @@ export const CAR_TRANSFER_REQUISITO_LABELS: readonly {
 export type CarTransferTurno = 'agenda-previa' | 'orden-de-llegada' | 'en-linea' | 'no-figura'
 
 // ---------------------------------------------------------------------------
-// Un departamento con ficha oficial publicada
+// Un departamento con fuente oficial leída
 // ---------------------------------------------------------------------------
 
 export interface CarTransferDepartment {
@@ -136,8 +191,9 @@ export interface CarTransferDepartment {
   readonly slug: string
   readonly departamento: string
   /**
-   * El arancel que la ficha publica, en pesos uruguayos, o `null` si la ficha
-   * existe pero no lo cifra.
+   * El importe que la ficha publica, en pesos uruguayos, o `null` si la ficha
+   * existe pero no lo cifra. Es lo que DICE la ficha, no lo que se cobra: el importe
+   * vigente es {@link CAR_TRANSFER_DIV_2026} en todas.
    */
   readonly arancel: number | null
   /** Textual del bloque «Costos» de la ficha. */
@@ -147,7 +203,7 @@ export interface CarTransferDepartment {
   readonly fichaUrl: string
   /** La fecha de «Última actualización» que muestra la ficha, en ISO. */
   readonly fichaUpdatedAt: string
-  /** `catalogo` = gub.uy; `portal-propio` = el sitio de la intendencia. */
+  /** `catalogo` = gub.uy/tramites; `portal-propio` = el sitio de la intendencia. */
   readonly fuente: 'catalogo' | 'portal-propio'
   readonly turno: CarTransferTurno
   readonly requisitos: CarTransferRequisitos
@@ -156,13 +212,11 @@ export interface CarTransferDepartment {
 }
 
 /**
- * Las fichas leídas, ordenadas por arancel descendente y, a igual arancel, por
- * fecha de actualización: adelante lo más caro y mejor fechado, que es lo que un
- * lector tiene que presupuestar.
+ * Las fuentes leídas, ordenadas por importe publicado descendente y, a igual
+ * importe, por fecha de actualización.
  *
  * Montevideo va al final a propósito y no por orden: es el único cuya fuente no es
- * el catálogo nacional y el único sin arancel publicado, así que cualquier orden
- * que lo mezclara con los demás insinuaría que su casilla vacía es un cero.
+ * el catálogo nacional y su instructivo no cifra el trámite.
  */
 export const CAR_TRANSFER_DEPARTMENTS: readonly CarTransferDepartment[] = Object.freeze([
   {
@@ -186,7 +240,7 @@ export const CAR_TRANSFER_DEPARTMENTS: readonly CarTransferDepartment[] = Object
       domicilio: 'no-figura',
     },
     particularidad:
-      'La única que pide una promesa de compraventa con firmas certificadas entre quien figura en la libreta y el nuevo titular.',
+      'La única que nombra la promesa de compraventa con firmas certificadas, suscrita entre quien figura en la libreta y el nuevo titular, como alternativa a la fotocopia de los títulos.',
   },
   {
     slug: 'paysandu',
@@ -209,7 +263,7 @@ export const CAR_TRANSFER_DEPARTMENTS: readonly CarTransferDepartment[] = Object
       domicilio: 'no-figura',
     },
     particularidad:
-      'Exige el libre de prenda y embargo con vigencia de no más de 24 horas, y exonera de él a las motos y a los tráilers de carga menor a 10.000 kg.',
+      'Exonera del libre de prenda y embargo a las motos y a los tráilers de carga menor a 10.000 kg. A los demás se lo pide con no más de 24 horas, como Treinta y Tres.',
   },
   {
     slug: 'maldonado',
@@ -243,7 +297,8 @@ export const CAR_TRANSFER_DEPARTMENTS: readonly CarTransferDepartment[] = Object
     fichaUrl: 'https://www.gub.uy/tramites/transferencia-vehiculos-autos-similares-cerro-largo',
     fichaUpdatedAt: '2026-05-12',
     fuente: 'catalogo',
-    turno: 'no-figura',
+    // «Retira un número para ser atendido y solicita el trámite.»
+    turno: 'orden-de-llegada',
     requisitos: {
       identidad: 'si',
       div: 'si',
@@ -316,6 +371,7 @@ export const CAR_TRANSFER_DEPARTMENTS: readonly CarTransferDepartment[] = Object
     fichaUrl: 'https://www.gub.uy/tramites/cambio-titularidad-transferencias-vehiculos-san-jose',
     fichaUpdatedAt: '2022-07-06',
     fuente: 'catalogo',
+    // «Trámite sin agenda, por número en orden de llegada»
     turno: 'orden-de-llegada',
     requisitos: {
       identidad: 'si',
@@ -328,7 +384,7 @@ export const CAR_TRANSFER_DEPARTMENTS: readonly CarTransferDepartment[] = Object
       domicilio: 'no-figura',
     },
     particularidad:
-      'El arancel más bajo del lote, y también la ficha más vieja: la suya no se actualiza desde 2022.',
+      'La ficha más vieja del lote, sin actualizar desde 2022: publica $1.419, que es exactamente el importe del Texto Ordenado del SUCIVE de 2022 ($1.419,24).',
   },
   {
     slug: 'treinta-y-tres',
@@ -339,7 +395,8 @@ export const CAR_TRANSFER_DEPARTMENTS: readonly CarTransferDepartment[] = Object
     fichaUrl: 'https://www.gub.uy/tramites/transferencia-municipal-vehicular-treinta-tres',
     fichaUpdatedAt: '2024-02-21',
     fuente: 'catalogo',
-    turno: 'orden-de-llegada',
+    // La ficha no dice nada de turnos ni de agenda.
+    turno: 'no-figura',
     requisitos: {
       identidad: 'si',
       div: 'no-figura',
@@ -351,7 +408,7 @@ export const CAR_TRANSFER_DEPARTMENTS: readonly CarTransferDepartment[] = Object
       domicilio: 'no-figura',
     },
     particularidad:
-      'Tiene ficha y no publica el arancel: dice «Consultar en dependencia». El pago se hace en la Red de Cobranzas.',
+      'Tiene ficha y no publica el importe: dice «Consultar en dependencia», y el pago se hace en la Red de Cobranzas. Pide el libre de prendas con vigencia de 24 horas, como Paysandú.',
   },
   {
     slug: 'montevideo',
@@ -384,54 +441,44 @@ export const CAR_TRANSFER_MONTEVIDEO = CAR_TRANSFER_DEPARTMENTS.find(
   d => d.slug === 'montevideo'
 ) as CarTransferDepartment
 
-/** Las fichas del catálogo nacional de trámites (gub.uy), sin Montevideo. */
+/** Las fichas del catálogo nacional de trámites (gub.uy/tramites), sin Montevideo. */
 export const CAR_TRANSFER_CATALOGUE = Object.freeze(
   CAR_TRANSFER_DEPARTMENTS.filter(d => d.fuente === 'catalogo')
 )
 
-/** Las que publican un arancel. Las únicas que entran en cualquier estadística de precio. */
+/** Las que publican un importe. */
 export const CAR_TRANSFER_WITH_FEE = Object.freeze(
   CAR_TRANSFER_DEPARTMENTS.filter(
     (d): d is CarTransferDepartment & { arancel: number } => typeof d.arancel === 'number'
   )
 )
 
-/** El arancel más bajo publicado. */
-export const carTransferMinFee = () => Math.min(...CAR_TRANSFER_WITH_FEE.map(d => d.arancel))
-
-/** El arancel más alto publicado. */
-export const carTransferMaxFee = () => Math.max(...CAR_TRANSFER_WITH_FEE.map(d => d.arancel))
-
 /**
- * El arancel que más departamentos publican.
- *
- * Es la MODA y no el promedio a propósito: promediar $1.780 cinco veces con un
- * $1.419 de 2022 devuelve un número que ninguna intendencia cobra, que es
- * exactamente el error que `docs/app/PRECIOS.md` deja escrito sobre las canastas.
+ * Lo que publican las fichas al día: {@link CAR_TRANSFER_DIV_2026} redondeado al
+ * peso. Es el número que imprime el título de la página.
  */
 export const CAR_TRANSFER_MODAL_FEE = 1780
 
-/** Cuántos departamentos publican {@link CAR_TRANSFER_MODAL_FEE}. */
-export const carTransferModalCount = () =>
-  CAR_TRANSFER_WITH_FEE.filter(d => d.arancel === CAR_TRANSFER_MODAL_FEE).length
+/** Las fichas que publican {@link CAR_TRANSFER_MODAL_FEE}. */
+export const carTransferCurrentFichas = () =>
+  CAR_TRANSFER_WITH_FEE.filter(d => d.arancel === CAR_TRANSFER_MODAL_FEE)
 
-/** Los que se salen de la moda, del más caro al más barato. */
+/** Cuántas fichas publican {@link CAR_TRANSFER_MODAL_FEE}. */
+export const carTransferModalCount = () => carTransferCurrentFichas().length
+
+/** Las fichas que publican otro número (desactualizadas), de la más cara a la más barata. */
 export const carTransferOffModal = () =>
   CAR_TRANSFER_WITH_FEE.filter(d => d.arancel !== CAR_TRANSFER_MODAL_FEE).sort(
     (a, b) => b.arancel - a.arancel
   )
 
 /**
- * Por qué la dispersión no se lee como «acá sale más barato».
- *
- * Los dos departamentos que se salen de la moda tienen las dos fichas más viejas
- * del lote (Canelones 2025, San José 2022), y las cinco que coinciden en $1.780
- * están todas actualizadas en 2026. La hipótesis más simple es que el arancel se
- * reajusta y las fichas no se reescriben al mismo ritmo. No se afirma como hecho:
- * es lo que se ve, y la página lo dice así.
+ * Por qué dos fichas dicen otro número. Es un hecho y no una hipótesis: San José
+ * publica el importe exacto del Texto Ordenado de 2022, y ninguna de las dos publica
+ * el de 2026.
  */
 export const CAR_TRANSFER_FEE_SPREAD_NOTE =
-  'Los dos aranceles más bajos son también las dos fichas más viejas: la de Canelones es de 2025 y la de San José, de 2022. Las cinco que coinciden en el importe más alto se actualizaron en 2026. Antes de contar con el número más bajo, confirmalo en la intendencia.'
+  'Los números distintos no son departamentos más baratos: son fichas sin actualizar. San José publica $1.419 en una ficha de 2022, y $1.419,24 es exactamente lo que fijaba el Texto Ordenado del SUCIVE de 2022. Canelones publica $1.620 en una ficha de febrero de 2025. En las dos se paga el importe vigente, que en 2026 es $1.779,52.'
 
 /** Cuántas fichas piden un requisito con «sí» (sin contar las condicionales). */
 export const carTransferRequisitoCount = (field: keyof CarTransferRequisitos) =>
@@ -442,9 +489,9 @@ export const carTransferRequisitoCountWithConditional = (field: keyof CarTransfe
   CAR_TRANSFER_DEPARTMENTS.filter(d => d.requisitos[field] !== 'no-figura').length
 
 /**
- * Los requisitos que piden TODAS las fichas leídas.
+ * Los requisitos que piden TODAS las fuentes leídas.
  *
- * Es la única parte de esta página que vale como lista de preparación nacional: lo
+ * Es la única parte de esta página que vale como lista de preparación común: lo
  * que no está acá hay que mirarlo en la ficha del departamento donde está
  * empadronado el auto.
  */
@@ -453,25 +500,28 @@ export const carTransferUniversalRequisitos = () =>
     ({ field }) => carTransferRequisitoCount(field) === CAR_TRANSFER_DEPARTMENTS.length
   )
 
+/** Los departamentos con un turno dado, en el orden del catálogo. */
+export const carTransferByTurno = (turno: CarTransferTurno) =>
+  CAR_TRANSFER_DEPARTMENTS.filter(d => d.turno === turno).map(d => d.departamento)
+
 // ---------------------------------------------------------------------------
-// Los departamentos sin ficha publicada
+// Los departamentos sin ficha en el catálogo nacional
 // ---------------------------------------------------------------------------
 
 /**
- * Los departamentos para los que NO se encontró ficha del trámite.
+ * Los departamentos sin ficha del trámite en el catálogo nacional de trámites
+ * (gub.uy/tramites).
  *
- * Buscado el {@link CAR_TRANSFER_VERIFIED_AT} de dos maneras: el buscador del
- * catálogo nacional y Google restringido a gub.uy, y además una prueba directa de
- * seis formas de URL que el propio catálogo usa para este trámite
- * (`transferencia-vehiculos-<depto>`, `transferencia-vehiculo-<depto>`,
- * `cambio-titularidad-vehiculo-transferencia-<depto>`,
+ * Buscado en el buscador del catálogo y probando seis formas de URL que el propio
+ * catálogo usa para este trámite (`transferencia-vehiculos-<depto>`,
+ * `transferencia-vehiculo-<depto>`, `cambio-titularidad-vehiculo-transferencia-<depto>`,
  * `cambio-titularidad-transferencias-vehiculos-<depto>`,
  * `transferencia-municipal-vehicular-<depto>` y
  * `transferencia-cambio-titularidad-vehiculo-<depto>`): ninguna contestó 200.
  *
  * Esto NO dice que el trámite no exista ahí —existe en los diecinueve— ni que la
- * intendencia no lo publique en su propio sitio. Dice que el catálogo nacional, que
- * es donde el buscador manda a quien pregunta, no lo tiene.
+ * intendencia no lo publique en su propio sitio: tres sí lo hacen
+ * ({@link CAR_TRANSFER_OWN_PORTALS}). Dice que el catálogo nacional no lo tiene.
  */
 export const CAR_TRANSFER_NO_FICHA: readonly string[] = Object.freeze([
   'Artigas',
@@ -486,11 +536,44 @@ export const CAR_TRANSFER_NO_FICHA: readonly string[] = Object.freeze([
   'Tacuarembó',
 ])
 
-/** Cuántos departamentos tienen fuente oficial leída acá. */
+export interface CarTransferOwnPortal {
+  readonly departamento: string
+  readonly url: string
+  /** Qué publica esa página, en una línea. */
+  readonly publica: string
+}
+
+/**
+ * Departamentos sin ficha en el catálogo nacional que publican el trámite en el
+ * portal propio de la intendencia. No entran en las tablas comparadas (que se
+ * armaron sobre las nueve fuentes de {@link CAR_TRANSFER_DEPARTMENTS}); se listan
+ * con lo que muestran, leídos el {@link CAR_TRANSFER_VERIFIED_AT}.
+ */
+export const CAR_TRANSFER_OWN_PORTALS: readonly CarTransferOwnPortal[] = Object.freeze([
+  {
+    departamento: 'Salto',
+    url: 'https://www.salto.gub.uy/servicios/transferencia',
+    publica: 'dirección y horario de atención, sin requisitos ni costo',
+  },
+  {
+    departamento: 'Tacuarembó',
+    url: 'https://tacuarembo.gub.uy/?p=394',
+    publica:
+      'los requisitos de la transferencia presencial, por carta poder y por título, sin costo',
+  },
+  {
+    departamento: 'Río Negro',
+    url: 'https://www.rionegro.gub.uy/gabinete-2025-2030/departamento-de-transito/',
+    publica:
+      'los requisitos y una tabla de valores actualizada el 25/01/2024, con «Transferencia $ 1.621»',
+  },
+])
+
+/** Cuántos departamentos tienen fuente oficial leída y comparada acá. */
 export const carTransferCoveredCount = () => CAR_TRANSFER_DEPARTMENTS.length
 
 // ---------------------------------------------------------------------------
-// Lo que el arancel no incluye, y lo que no se publica
+// Lo que el importe no incluye, y lo que no se publica
 // ---------------------------------------------------------------------------
 
 export interface CarTransferUnpublished {
@@ -504,16 +587,12 @@ export const CAR_TRANSFER_UNPUBLISHED: readonly CarTransferUnpublished[] = Objec
     why: 'No lo cobra la intendencia y ninguna ficha lo tarifa. Suele ser el gasto más grande de la operación, así que ponerle un número de memoria sería el peor lugar para equivocarse.',
   },
   {
-    topic: 'El arancel de Montevideo',
-    why: 'Su ficha viva responde con una verificación de navegador que no se puede leer de forma automática, y el instructivo oficial del Servicio de Contralor y Registro de Vehículos —que sí se lee— lista requisitos sin costo.',
-  },
-  {
     topic: 'El certificado de libre de prenda y la inspección técnica',
-    why: 'Tres fichas los exigen y ninguna de las nueve los cifra: se pagan aparte del arancel que figura más arriba.',
+    why: 'El libre de prenda figura en tres fichas y la inspección en cuatro (más dos que la piden en algún caso); ninguna de las nueve los cifra: se pagan aparte de la libreta.',
   },
   {
     topic: 'El plazo para presentar la transferencia en Montevideo',
-    why: 'El Digesto departamental fija uno, pero normativa.montevideo.gub.uy no contestó al leerlo, así que no lo publicamos de segunda mano.',
+    why: 'No pudimos leer el Digesto departamental (normativa.montevideo.gub.uy no contestó), así que no publicamos un plazo de segunda mano.',
   },
 ])
 
@@ -530,32 +609,32 @@ export const CAR_TRANSFER_FAQ: readonly CarTransferFaq[] = Object.freeze([
   {
     question: '¿Cuánto sale transferir un auto en Uruguay?',
     answer:
-      'Cinco de los nueve departamentos con fuente oficial leída publican $1.780 por la libreta nueva (Lavalleja, Paysandú, Maldonado, Cerro Largo y Rivera), Canelones publica $1.620 y San José $1.419. Treinta y Tres tiene ficha y remite a consultar en la dependencia, y el instructivo de Montevideo que se puede leer no publica costo. Ese importe es el del documento del vehículo: el escribano, el libre de prenda y la inspección van aparte y ninguna ficha los tarifa.',
+      'Lo que cobra la intendencia es la libreta nueva (el Documento de Identificación Vehicular), y en 2026 sale $1.779,52 en cualquier departamento: el importe lo fija el Texto Ordenado del SUCIVE que el Congreso de Intendentes remite a todas las intendencias. Las cinco fichas oficiales actualizadas en 2026 (Lavalleja, Paysandú, Maldonado, Cerro Largo y Rivera) lo publican redondeado, $1.780. El escribano, el libre de prenda y la inspección van aparte y ninguna ficha los tarifa.',
   },
   {
-    question: '¿Por qué el precio cambia según el departamento?',
+    question: '¿El precio cambia según el departamento?',
     answer:
-      'Porque la transferencia es un trámite departamental: el registro de vehículos lo lleva la intendencia donde está empadronado el auto, y cada una fija su arancel. Además, los dos importes más bajos son también las dos fichas más viejas (Canelones 2025 y San José 2022), mientras las cinco que coinciden en $1.780 se actualizaron en 2026, así que parte de la diferencia puede ser la fecha de la ficha y no el departamento.',
+      'No, para un auto particular. El Texto Ordenado del SUCIVE dice que por los trámites de un vehículo «solo pagarán» las matrículas, el documento de identificación del vehículo (DIV) y los documentos que se pidan, por los importes que fija ese mismo texto, el que el Congreso de Intendentes remite a todas las intendencias. La única salvedad que prevé el mismo artículo son las tasas propias de cada intendencia por la inscripción, habilitación o control que exija «el servicio a que está afectado el vehículo», como un taxi, un remise o un transporte de carga. Si una ficha dice otro número es porque está desactualizada: San José publica $1.419 en una ficha de 2022, que es el importe del Texto Ordenado de 2022 ($1.419,24), y Canelones $1.620 en una ficha de febrero de 2025.',
   },
   {
     question: '¿Qué piden todas las intendencias?',
     answer:
-      'Sólo dos cosas figuran en las nueve fichas leídas: documento de identidad de quien firma y Seguro Obligatorio de Automotores (SOA) vigente. Un título o compraventa que acredite la titularidad aparece en ocho de nueve. Lo demás varía: la libreta de propiedad y la patente al día figuran en seis, la inspección del vehículo en cuatro (más dos que la piden sólo en ciertos casos), el libre de prenda y embargo en tres y la constancia de domicilio en dos.',
+      'Sólo dos cosas figuran en las nueve fuentes leídas: documento de identidad de quien firma y Seguro Obligatorio de Automotores (SOA) vigente. Un título o compraventa que acredite la titularidad aparece en ocho de nueve. Lo demás varía: la libreta de propiedad y la patente al día figuran en seis, la inspección del vehículo en cuatro (más dos que la piden sólo en ciertos casos), el libre de prenda y embargo en tres y la constancia de domicilio en dos.',
   },
   {
     question: '¿Se puede hacer en línea?',
     answer:
-      'De las fichas leídas, sólo Canelones permite iniciar el trámite en línea. Paysandú, Maldonado, Lavalleja y Montevideo piden agenda previa; San José y Treinta y Tres atienden por orden de llegada. Que el trámite arranque en línea no evita la firma certificada ni la presentación del vehículo cuando corresponde.',
+      'De las fuentes leídas, sólo Canelones permite iniciar el trámite en línea. Lavalleja, Paysandú, Maldonado y Montevideo piden agenda previa; Cerro Largo y San José atienden por número, en orden de llegada. Que el trámite arranque en línea no evita la firma certificada ni la presentación del vehículo cuando corresponde.',
   },
   {
     question: '¿Puedo transferir un auto con deuda de patente?',
     answer:
-      'Seis de las nueve fichas exigen estar al día con la patente y sin multas pendientes para hacer el cambio de titular. La deuda sigue al vehículo a través del SUCIVE, así que no desaparece al cambiar de dueño: lo que hace es bloquear el trámite hasta que se pague o se convenga.',
+      'No, en ningún departamento. El Texto Ordenado del SUCIVE (artículo 45) dice: «No podrá transferirse un vehículo que deba patente, multas, cuotas de convenios interdepartamentales o montos por chapas matrículas o DIV, aunque no haya vencido el plazo para su pago». Es la regla de todo el sistema, aunque sólo seis de las nueve fichas pongan la patente al día en su lista.',
   },
   {
     question: '¿Cuántos departamentos publican su ficha?',
     answer:
-      'Buscando el 16 de noviembre de 2026 en el catálogo nacional de trámites encontramos ficha para ocho departamentos, y Montevideo publica su instructivo en su propio portal. Para los diez restantes —Artigas, Colonia, Durazno, Flores, Florida, Río Negro, Rocha, Salto, Soriano y Tacuarembó— no encontramos ficha en gub.uy: el trámite existe igual, hay que preguntarlo en la intendencia.',
+      'En el catálogo nacional de trámites (gub.uy/tramites) encontramos ficha para ocho departamentos, y Montevideo publica su instructivo en su propio portal. Los diez restantes —Artigas, Colonia, Durazno, Flores, Florida, Río Negro, Rocha, Salto, Soriano y Tacuarembó— no tienen ficha en el catálogo; Salto, Tacuarembó y Río Negro publican el trámite en el portal de su intendencia, y en los demás hay que preguntarlo en la intendencia.',
   },
 ])
 
@@ -564,16 +643,22 @@ export const CAR_TRANSFER_FAQ: readonly CarTransferFaq[] = Object.freeze([
 // ---------------------------------------------------------------------------
 
 export const CAR_TRANSFER_SOURCES: readonly CarTransferSource[] = Object.freeze([
+  { label: CAR_TRANSFER_DIV_2026_SOURCE.label, url: CAR_TRANSFER_DIV_2026_SOURCE.url },
+  { label: CAR_TRANSFER_DIV_2022_SOURCE.label, url: CAR_TRANSFER_DIV_2022_SOURCE.url },
   ...CAR_TRANSFER_DEPARTMENTS.map(d => ({
     label: `${d.departamento} — ${d.arancelTextual} (actualizada ${d.fichaUpdatedAt.split('-').reverse().join('/')})`,
     url: d.fichaUrl,
+  })),
+  ...CAR_TRANSFER_OWN_PORTALS.map(p => ({
+    label: `${p.departamento} — portal de la intendencia: ${p.publica}`,
+    url: p.url,
   })),
   {
     label: 'Intendencia de Montevideo — Cambio de titular en libreta de circulación (ficha viva)',
     url: 'https://tramites.montevideo.gub.uy/tramites-y-tributos/solicitud/cambio-de-titular-en-libreta-de-circulacion-por-parte-del-vendedor-vehiculos-con-afectacion',
   },
   {
-    label: 'Ley 18.412 — Seguro Obligatorio de Automotores, que las nueve fichas exigen vigente',
+    label: 'Ley 18.412 — Seguro Obligatorio de Automotores, que las nueve fuentes exigen vigente',
     url: 'https://www.impo.com.uy/bases/leyes/18412-2008',
   },
 ])

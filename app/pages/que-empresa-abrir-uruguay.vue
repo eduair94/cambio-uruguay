@@ -1035,7 +1035,10 @@
           </thead>
           <tbody>
             <tr v-for="t in tramites" :key="t.org">
-              <td class="font-weight-bold" data-label="">{{ t.org }}</td>
+              <td class="font-weight-bold" data-label="">
+                <NuxtLink v-if="t.to" :to="localePath(t.to)">{{ t.org }}</NuxtLink>
+                <template v-else>{{ t.org }}</template>
+              </td>
               <td data-label="¿Obligatorio?">
                 <VChip size="x-small" variant="tonal" :color="t.always ? 'error' : 'primary'">
                   {{ t.always ? 'SIEMPRE' : 'Condicional' }}
@@ -1816,6 +1819,12 @@ const tramites = [
     org: 'Carné de salud',
     always: false,
     when: 'Para quien trabaja. Es gratis en tu prestador y vale 2 años.',
+  },
+  {
+    org: 'Carné de manipulación de alimentos',
+    always: false,
+    when: 'Rubro alimentos. Lo da la intendencia, con precio y vigencia propios de cada una.',
+    to: '/carne-de-manipulacion-de-alimentos-uruguay',
   },
 ]
 

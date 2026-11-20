@@ -5,13 +5,17 @@
 // que la página rompa: es que alguien rellene un hueco. Las tres cosas que este test impide son
 // exactamente las tres tentaciones:
 //
-//   1. Poner una vigencia donde la ficha no publica ninguna (tres de las siete no la publican).
+//   1. Poner una vigencia donde la fuente no publica ninguna (cuatro de las diez no la publican).
 //   2. Convertir a pesos un importe que la ficha expresa en UR. Canelones habla de una «U.R.
 //      Municipal» que se ajusta semestralmente y no dice que sea la del INE: `costPesos` tiene que
 //      quedar en `null` para toda fila que no cobre en pesos.
-//   3. Que el snippet publique un rango que el catálogo ya no respalda. El título dice «de $ 0 a
-//      $ 850» y esas dos cifras tienen que salir de `foodHandlerPesoRange()`, no de la memoria de
-//      quien lo escribió.
+//   3. Que el snippet publique un rango que el catálogo no respalda. El primer borrador titulaba
+//      «de $ 0 a $ 850» como si fuera el rango del país, y Salto cobra $ 962: el rango de
+//      `foodHandlerPesoRange()` es sólo el de las fuentes en pesos, así que el título no lleva
+//      importes y la descripción tiene que traer el máximo que sale del catálogo.
+//
+// Y una cuarta, que nació de la verificación: cada importe y cada vigencia tienen que estar en la
+// frase textual de su fuente (`quotes`), para que un número cambiado a mano no pase callado.
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -26,7 +30,9 @@ import {
   FOOD_HANDLER_TOTAL_DEPARTMENTS,
   FOOD_HANDLER_WITHOUT_SHEET,
   foodHandlerChannelLabel,
+  foodHandlerFree,
   foodHandlerPesoRange,
+  foodHandlerSourceLabel,
   foodHandlerValidityLabel,
   foodHandlerValidityYears,
   foodHandlerWithoutValidity,
@@ -111,9 +117,48 @@ describe('las fichas departamentales', () => {
       expect(row.note.length, row.department).toBeGreaterThan(40)
       expect(row.documentName.length, row.department).toBeGreaterThan(5)
     }
-    // Tres fichas no publican vigencia. Si alguna vez la publican, el número baja; si alguien se
-    // la inventa, este test no lo ve, pero el de arriba exige que siga saliendo del catálogo.
-    expect(foodHandlerWithoutValidity().sort()).toEqual(['Flores', 'Lavalleja', 'Maldonado'])
+    // Cuatro fuentes no publican vigencia. Si alguna vez la publican, la lista cambia; si alguien
+    // se la inventa, el test de las frases textuales de abajo lo frena.
+    expect(foodHandlerWithoutValidity().sort()).toEqual([
+      'Flores',
+      'Lavalleja',
+      'Maldonado',
+      'Rivera',
+    ])
+  })
+
+  it('cada importe en pesos y cada vigencia están en la frase textual de su fuente', () => {
+    const YEAR_WORDS: Record<number, string> = { 3: 'tres', 5: 'cinco' }
+    for (const row of FOOD_HANDLER_DEPARTMENTS) {
+      expect(row.quotes.length, row.department).toBeGreaterThan(0)
+      const text = row.quotes.join(' ')
+      if (row.costKind === 'sin-costo') expect(text, row.department).toContain('No tiene costo')
+      if (row.costKind === 'pesos') {
+        expect(text.replace(/\s/g, ''), row.department).toContain(`$${row.costPesos}`)
+      }
+      if (row.validityYears !== null) {
+        const asDigit = new RegExp(`\\b${row.validityYears} años`)
+        const asWord = YEAR_WORDS[row.validityYears]
+        expect(
+          asDigit.test(text) || (asWord !== undefined && text.includes(`${asWord} años`)),
+          `${row.department}: la vigencia no está en la frase de la fuente`
+        ).toBe(true)
+      }
+    }
+  })
+
+  it('una noticia lleva fecha de publicación y se rotula noticia, no ficha', () => {
+    for (const row of FOOD_HANDLER_DEPARTMENTS) {
+      if (row.sourceKind === 'noticia') expect(row.updatedAt, row.department).not.toBeNull()
+    }
+    expect(foodHandlerSourceLabel('noticia')).toEqual({
+      link: 'Noticia oficial',
+      dated: 'publicada el',
+    })
+    expect(foodHandlerSourceLabel('ficha')).toEqual({
+      link: 'Ficha oficial',
+      dated: 'actualizada el',
+    })
   })
 
   it('traen una fecha ISO de actualización, o null cuando la ficha no publica ninguna', () => {
@@ -141,7 +186,7 @@ describe('las fichas departamentales', () => {
 
 describe('los derivados que imprime la página', () => {
   it('calcula el rango en pesos sólo con lo publicado en pesos', () => {
-    expect(foodHandlerPesoRange()).toEqual({ min: 0, max: 850 })
+    expect(foodHandlerPesoRange()).toEqual({ min: 0, max: 962 })
     expect(foodHandlerPesoRange([])).toBeNull()
   })
 
@@ -171,16 +216,29 @@ describe('el snippet publica el mismo rango que el catálogo', () => {
     expect(description.length, description).toBeLessThanOrEqual(MAX_DESCRIPTION)
   })
 
-  it('el título trae las dos puntas del rango que calcula el catálogo', () => {
-    expect(title).toContain(`$ ${range.min}`)
-    expect(title).toContain(`$ ${range.max}`)
+  it('el título no publica un rango de importes como si fuera el del país', () => {
+    // El rango en pesos deja afuera las UR (Canelones cobra 1 UR el urgente) y nueve departamentos.
+    expect(title).not.toMatch(/\$/)
   })
 
-  it('la descripción nombra las dos vigencias y la cantidad de fichas', () => {
+  it('la descripción nombra las vigencias, el máximo en pesos y los que no cobran', () => {
     const years = foodHandlerValidityYears()
     for (const value of years) expect(description).toMatch(new RegExp(`\\b${value}\\b`))
-    expect(description).toContain(`${FOOD_HANDLER_DEPARTMENTS.length} fichas`)
     expect(description).toContain(`$ ${range.max}`)
+    const top = FOOD_HANDLER_DEPARTMENTS.find(row => row.costPesos === range.max)!
+    expect(description).toContain(top.department)
+    expect(range.min).toBe(0)
+    for (const name of foodHandlerFree()) expect(description).toContain(name)
+    // La cantidad de fuentes sale del catálogo, y nunca vuelve a afirmar que la tabla es la
+    // totalidad de lo publicado.
+    const COUNT_WORDS: Record<number, string> = { 10: 'Diez' }
+    expect(description).toContain(`${COUNT_WORDS[FOOD_HANDLER_DEPARTMENTS.length]} fuentes`)
+    expect(description).not.toMatch(/fichas oficiales publicadas|por departamento/)
+  })
+
+  it('el texto de la página no afirma que la tabla es todo lo publicado', () => {
+    expect(source).not.toMatch(/fichas oficiales\s+publicadas/)
+    expect(source).not.toMatch(/el único de los siete/)
   })
 })
 
@@ -209,6 +267,22 @@ describe('las preguntas y los enlaces', () => {
     for (const rule of FOOD_HANDLER_NATIONAL_RULES) {
       expect(rule.quote.length, rule.headline).toBeGreaterThan(80)
       expect(rule.article, rule.headline).toMatch(/5\.5\.\d/)
+      // Cada apartado transcripto con su número está nombrado en la etiqueta, y al revés: el primer
+      // borrador citaba 5.5.4 y parafraseaba 5.5.5 bajo la etiqueta del 5.5.4.
+      const named = rule.article.match(/5\.5\.\d/g) ?? []
+      const quoted = rule.quote.match(/5\.5\.\d(?=\.)/g) ?? []
+      if (quoted.length > 0) expect([...quoted].sort()).toEqual([...named].sort())
+    }
+    const suspension = FOOD_HANDLER_NATIONAL_RULES.find(rule => /suspen/.test(rule.detail))!
+    expect(suspension.article).toContain('5.5.5')
+    expect(suspension.quote).toContain('quedará en suspenso la vigencia del carné de salud')
+  })
+
+  it('ningún «es el único» queda sin acotar a la tabla', () => {
+    for (const row of FOOD_HANDLER_DEPARTMENTS) {
+      if (/únic[oa]/.test(row.note)) {
+        expect(row.note, row.department).toMatch(/De las fuentes de esta tabla, es la única/)
+      }
     }
   })
 })

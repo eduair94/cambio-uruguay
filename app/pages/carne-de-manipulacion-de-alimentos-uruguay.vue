@@ -7,10 +7,10 @@
       </h1>
       <p class="lead mb-6">
         No hay un precio nacional porque no hay un carné nacional. Lo emite cada intendencia, y por
-        eso el mismo documento sale <strong>$ 0 en Montevideo</strong> y
-        <strong>$ 850 en Paysandú</strong>, y vale <strong>5 años</strong> en una y
-        <strong>3</strong> en la otra. Acá están las {{ departments.length }} fichas oficiales
-        publicadas, con lo que cada una declara y con lo que no.
+        eso el mismo documento <strong>no se cobra en Montevideo</strong> y sale
+        <strong>$ 962 en Salto</strong>, y vale <strong>5 años</strong> en Montevideo y
+        <strong>3</strong> en Canelones. Acá están las {{ departments.length }} fuentes oficiales
+        que encontramos, una por departamento, con lo que cada una declara y con lo que no.
       </p>
 
       <VCard class="warn-card pa-5 pa-md-6" variant="flat">
@@ -22,10 +22,10 @@
               El carné de manipulación y el
               <NuxtLink :to="localePath('/carne-de-salud-uruguay')">carné de salud</NuxtLink>
               son documentos distintos y hacen falta los dos. El de salud lo exige una norma
-              nacional a todo el personal de cualquier empresa alimentaria y se saca en tu
-              prestador; el de manipulación acredita capacitación en inocuidad y lo da tu
-              intendencia. Lavalleja, de hecho, pide el de salud vigente para dejarte empezar el
-              otro.
+              nacional a todo el personal de cualquier empresa alimentaria; el de manipulación
+              acredita capacitación en inocuidad y lo da tu intendencia. Lavalleja, de hecho, pide
+              el de salud vigente para dejarte empezar el otro, y San José una fotocopia para
+              inscribirte.
             </p>
           </div>
         </div>
@@ -75,10 +75,10 @@
                     :href="sourceFor(row.sourceIndex).url"
                     target="_blank"
                     rel="noopener noreferrer"
-                    >Ficha oficial</a
+                    >{{ sourceLabel(row.sourceKind).link }}</a
                   >
                   <template v-if="row.updatedAt">
-                    — actualizada el {{ shortDate(row.updatedAt) }}
+                    — {{ sourceLabel(row.sourceKind).dated }} {{ shortDate(row.updatedAt) }}
                   </template>
                   <template v-else> — sin fecha de actualización publicada </template>
                 </span>
@@ -89,23 +89,24 @@
       </VCard>
 
       <VAlert type="info" variant="tonal" density="comfortable" class="table-alert">
-        <strong>{{ withoutValidity.length }} de las {{ departments.length }}</strong> fichas —{{
+        <strong>{{ withoutValidity.length }} de las {{ departments.length }}</strong> fuentes —{{
           withoutValidity.join(', ')
         }}— no publican la vigencia del carné. Acá no se les pone «3 años» por parecido con las
         vecinas: vale la fecha impresa en el tuyo.
       </VAlert>
     </section>
 
-    <!-- Los doce que no publican -->
+    <!-- Los departamentos sin fuente en la tabla -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-2">
-        Los otros {{ withoutSheet.length }} departamentos lo exigen igual
+        Los otros {{ withoutSheet.length }} departamentos: preguntá en la intendencia
       </h2>
       <p class="section-intro text-medium-emphasis mb-5">
-        Estos {{ withoutSheet.length }} no tenían ficha del trámite en el catálogo de gub.uy cuando
-        se revisó, el {{ checkedDisplay }}. Que no esté publicada no quiere decir que sea gratis ni
-        que no haga falta: quiere decir que el importe y el plazo hay que preguntarlos en la
-        intendencia.
+        Para estos {{ withoutSheet.length }} esta página no tiene una fuente oficial con el importe
+        y el plazo: no encontramos su ficha en el catálogo de trámites de gub.uy al
+        {{ checkedDisplay }}. Eso no quiere decir que el carné sea gratis ni que no haga falta, ni
+        que la intendencia no publique nada: San José y Salto, que tampoco encontramos en gub.uy, sí
+        publican el importe en su propio sitio, y a otra puede pasarle lo mismo.
       </p>
       <div class="d-flex flex-wrap ga-2">
         <VChip v-for="name in withoutSheet" :key="name" variant="outlined" size="small">
@@ -119,8 +120,8 @@
       <h2 class="text-h5 font-weight-bold mb-2">Lo que sí dice la norma nacional</h2>
       <p class="section-intro text-medium-emphasis mb-5">
         El Reglamento Bromatológico Nacional (Decreto 315/994) regula al personal que manipula
-        alimentos y nunca nombra un «carné de manipulación»: se leyó su texto consolidado sección
-        por sección el {{ checkedDisplay }}. Lo que sí exige es esto, con la transcripción textual
+        alimentos y nunca nombra un «carné de manipulación»: se leyó su texto consolidado capítulo
+        por capítulo el {{ checkedDisplay }}. Lo que sí exige es esto, con la transcripción textual
         de cada apartado.
       </p>
 
@@ -147,10 +148,10 @@
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-2">Montevideo: gratis, en línea y por cinco años</h2>
       <p class="section-intro text-medium-emphasis mb-5">
-        Es el único de los siete que no cobra nada, y el único donde el trámite entero —inscripción,
-        curso y examen— se resuelve sin pasar por una caja ni por un mostrador. Vale la pena el
-        detalle de los plazos: entre que te inscribís y que tenés el certificado pasan dos esperas
-        de 15 días hábiles, con el curso en el medio.
+        Junto con Rivera, es de los que no cobran nada, y de las fuentes de esta tabla es la única
+        donde el trámite entero —inscripción, curso y examen— se resuelve sin pasar por una caja ni
+        por un mostrador. Vale la pena el detalle de los plazos: entre que te inscribís y que tenés
+        el certificado pasan dos esperas de unos 15 días hábiles, con el curso en el medio.
       </p>
 
       <VRow dense>
@@ -208,8 +209,8 @@
     <section>
       <h2 class="text-h6 font-weight-bold mb-3">Fuentes</h2>
       <p class="text-body-2 text-medium-emphasis mb-3">
-        Cada ficha se leyó en su fuente oficial el {{ checkedDisplay }}. Esta página es informativa:
-        quien resuelve tu trámite es la intendencia de tu departamento.
+        Cada fuente oficial se leyó el {{ checkedDisplay }}. Esta página es informativa: quien
+        resuelve tu trámite es la intendencia de tu departamento.
       </p>
       <ul class="sources-list">
         <li v-for="s in sources" :key="s.url">
@@ -233,6 +234,7 @@ import {
   FOOD_HANDLER_SOURCES,
   FOOD_HANDLER_WITHOUT_SHEET,
   foodHandlerChannelLabel,
+  foodHandlerSourceLabel,
   foodHandlerValidityLabel,
   foodHandlerWithoutValidity,
 } from '~/utils/foodHandlerCard'
@@ -249,6 +251,7 @@ const sources = FOOD_HANDLER_SOURCES
 const withoutValidity = foodHandlerWithoutValidity()
 const channelLabel = foodHandlerChannelLabel
 const validityLabel = foodHandlerValidityLabel
+const sourceLabel = foodHandlerSourceLabel
 
 const sourceFor = (index: number) => FOOD_HANDLER_SOURCES[index] ?? FOOD_HANDLER_SOURCES[0]!
 
@@ -264,13 +267,13 @@ const MVD_STEPS = [
     detail: 'En línea. Hay que poder entrar al correo que se declara: por ahí llega todo lo demás.',
   },
   {
-    when: '15 días hábiles',
+    when: '~15 días hábiles',
     title: 'Llega el acceso al curso',
     detail:
       'El curso es 100 % virtual y autogestionado, desde el celular o la computadora, y queda abierto 3 meses desde la inscripción.',
   },
   {
-    when: '+15 días hábiles',
+    when: '+~15 días hábiles',
     title: 'Se emite el certificado',
     detail:
       'Después de aprobar la evaluación final. El estado se consulta con el número de documento, y vale 5 años.',
@@ -296,13 +299,14 @@ const shortDate = (iso: string) =>
 const checkedDisplay = computed(() => dateFormat(FOOD_HANDLER_CHECKED_AT))
 
 const canonicalUrl = 'https://cambio-uruguay.com/carne-de-manipulacion-de-alimentos-uruguay'
-// La respuesta en el título, no la pregunta. La consulta de cabeza pide un precio y la respuesta
-// honesta es que no hay uno: va el rango de lo que las fichas publican en pesos, que es lo que
-// `foodHandlerPesoRange()` calcula sobre el mismo catálogo que imprime la tabla (Montevideo 0,
-// Paysandú 850). 37 caracteres: con la marca que agrega app.vue quedan 53.
-const title = 'Carné de manipulación: de $ 0 a $ 850'
+// La consulta de cabeza pide un precio y la respuesta honesta es que no hay uno. El título NO
+// lleva un rango «de $ X a $ Y»: el que calcula `foodHandlerPesoRange()` es sólo el de las fuentes
+// que cobran en pesos —Canelones cobra 1 UR el urgente y nueve departamentos no están—, así que
+// presentado como el del país sería falso. La descripción sí lleva las puntas, nombrando el
+// departamento de cada una. 40 caracteres: con la marca que agrega app.vue quedan 57.
+const title = 'Carné de manipulación: precio y vigencia'
 const description =
-  'Lo emite cada intendencia: Montevideo no cobra y dura 5 años, Paysandú cobra $ 850 y dura 3. Las 7 fichas oficiales publicadas, con su fuente.'
+  'Lo cobra cada intendencia: gratis en Montevideo y Rivera, $ 850 en Paysandú, $ 962 en Salto. Dura 3 o 5 años. Diez fuentes oficiales, con su fecha.'
 
 defineOgImageComponent('Cambio', { title, subtitle: description, tag: 'SALUD' })
 

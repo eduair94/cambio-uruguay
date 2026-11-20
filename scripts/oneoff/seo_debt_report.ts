@@ -137,7 +137,7 @@ const POOLS: Array<{
     list: "DEUDA_DESCRIPCION_I18N",
     budget: "I18N_DESCRIPTION_OVER_BUDGET",
   },
-  // El décimo y el undécimo, desde el 2026-11-17, y son el MISMO agujero del sexto, del séptimo,
+  // El décimo y el undécimo, desde el 2026-11-20, y son el MISMO agujero del sexto, del séptimo,
   // del octavo y del noveno corrido un archivo más allá: los dieciséis temas (`/temas/<slug>`). Los
   // dos lectores de `seoDescriptionBudget.test.ts` y los dos de `seoTitleBudget.test.ts` leen el
   // `.vue`, y `app/pages/temas/[slug].vue` no declara ninguna cadena — arma su snippet con una
