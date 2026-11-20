@@ -4,9 +4,11 @@
   STORY: One question, an explicit external destination, one action.
   FIRST VIEWPORT: Compact horizontal band; on phones, copy precedes a full-width link.
   FORM: Local extension of the homepage, in document flow, with no timed or floating UI.
+  LANDMARK: a plain block, not an aside named "Publicidad": that name belongs to the ad units, and
+  the visible label already says what this is (axe landmark-unique, tests/unit/landmarks.test.ts).
 -->
 <template>
-  <aside ref="banner" class="conlatuya-banner on-dark" :aria-label="$t('ads.label')">
+  <div ref="banner" class="conlatuya-banner on-dark">
     <div class="conlatuya-banner__identity">
       <span class="conlatuya-banner__label">{{ $t('ads.label') }}</span>
       <span class="conlatuya-banner__brand">{{ $t('conLaTuyaPromo.brand') }}</span>
@@ -32,7 +34,7 @@
       <span class="conlatuya-banner__destination">conlatuya.checkleaked.cc</span>
       <span class="conlatuya-banner__external">{{ $t('conLaTuyaPromo.external') }}</span>
     </div>
-  </aside>
+  </div>
 </template>
 
 <script setup lang="ts">

@@ -187,11 +187,16 @@
           <!-- Other branches of the same casa -->
           <section v-if="siblings.length" class="mb-8">
             <h2 class="text-h5 font-weight-bold mb-3">Otras sucursales de {{ branch.casaName }}</h2>
-            <VList density="comfortable" class="branch-list">
+            <!-- A VList of links renders role="list" with role="link" children and no list item
+                 (axe aria-required-children), so it is presentation. Vuetify gives every link of a
+                 VList tabindex="-2" and keeps the list as the only tab stop; with the list at -1
+                 each link has to be a tab stop of its own, hence tabindex="0" on the items. -->
+            <VList density="comfortable" class="branch-list" role="presentation" tabindex="-1">
               <VListItem
                 v-for="sibling in siblings"
                 :key="sibling.slug"
                 :to="localePath(`/sucursal/${sibling.slug}`)"
+                tabindex="0"
               >
                 <template #prepend>
                   <VIcon size="small" color="primary">mdi-store-marker-outline</VIcon>
@@ -220,11 +225,16 @@
               Antes de cambiar conviene mirar al menos dos pizarras: en un mismo departamento la
               diferencia entre la mejor y la peor cotización suele ser de varios pesos por dólar.
             </p>
-            <VList density="comfortable" class="branch-list">
+            <!-- A VList of links renders role="list" with role="link" children and no list item
+                 (axe aria-required-children), so it is presentation. Vuetify gives every link of a
+                 VList tabindex="-2" and keeps the list as the only tab stop; with the list at -1
+                 each link has to be a tab stop of its own, hence tabindex="0" on the items. -->
+            <VList density="comfortable" class="branch-list" role="presentation" tabindex="-1">
               <VListItem
                 v-for="competitor in competitors"
                 :key="competitor.slug"
                 :to="localePath(`/sucursal/${competitor.slug}`)"
+                tabindex="0"
               >
                 <template #prepend>
                   <VIcon size="small" color="primary">mdi-bank-outline</VIcon>

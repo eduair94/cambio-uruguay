@@ -5,6 +5,7 @@ import {
   CONSENT_COOKIE_NAME,
   CONSENT_MAX_AGE,
   CONSENT_STRICT_REGIONS,
+  consentBannerRendered,
   parseConsent,
   serializeConsent,
   consentSignals,
@@ -50,6 +51,34 @@ describe('consent core', () => {
       ad_user_data: 'denied',
       ad_personalization: 'denied',
     })
+  })
+})
+
+describe('the inline banner is rendered the same for everyone until the page has hydrated', () => {
+  // The edge stores ONE copy of each page's HTML and hands it to every visitor, whoever asked for
+  // it first. Measured in production on 2026-11-20: a request that carried `cu_consent=granted`
+  // got HTML WITHOUT the banner, that copy was cached (cf-cache-status HIT two seconds later), and
+  // a visitor with no cookie received it — no consent notice until hydration, which then inserted
+  // 123 px on top of the page. The other way round, a decided visitor got the banner HTML and
+  // hydration removed it with a mismatch. The server cannot know who is looking, so it must not ask.
+  const before = (hasDecided: boolean) =>
+    consentBannerRendered({ settled: false, hasDecided, dialogOpen: false })
+  const after = (hasDecided: boolean, dialogOpen = false) =>
+    consentBannerRendered({ settled: true, hasDecided, dialogOpen })
+
+  it('on the server and during hydration the cookie does not change the answer', () => {
+    expect(before(false)).toBe(true)
+    expect(before(true)).toBe(true)
+  })
+
+  it('once mounted, the visitor decision applies', () => {
+    expect(after(false)).toBe(true)
+    expect(after(true)).toBe(false)
+  })
+
+  it('"Configurar cookies" reopens it for a visitor who already decided', () => {
+    expect(after(true, true)).toBe(true)
+    expect(consentBannerRendered({ settled: false, hasDecided: true, dialogOpen: true })).toBe(true)
   })
 })
 

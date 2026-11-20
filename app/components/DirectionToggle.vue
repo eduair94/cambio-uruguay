@@ -95,6 +95,10 @@ const color = computed(() => props.color ?? 'success')
 .direction-toggle {
   /* Extra hit area without changing visual size */
   padding: 6px;
+  /* Never narrower than a finger: in a 2/12 column on a 360 px phone it measured 23x48. */
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .icon-wrapper {

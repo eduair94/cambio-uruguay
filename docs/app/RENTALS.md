@@ -34,6 +34,89 @@ moneda de la oferta y por lo tanto sin tocar la identidad. El trabajo hecho (la 
 la evaluación sobre las 118 filas) quedó guardado fuera del repo; no hay que volver a medirlo para
 retomarlo, sí a recontar la población.
 
+## La corrida completa se tiraba la mitad de los días — 20 de noviembre de 2026
+
+**Qué pasaba.** El barrido diario se niega a guardar una corrida "derrumbada"
+(`RENTALS_COLLAPSE_RATIO`, 50 %). La comparaba contra **todo lo almacenado**, y lo almacenado no es
+lo que una corrida lee: Mercado Libre, InfoCasas y Facebook son parciales, sus avisos no vistos se
+conservan hasta 21 días y las tandas horarias suman novedades todo el día. Medido el 20/11:
+89.590 propiedades guardadas contra 42–54 mil avisos por corrida completa. Una corrida **sana** lee
+entre el 47 % y el 61 % de lo guardado, así que el umbral caía de un lado u otro según cuánto
+trajera Facebook ese día.
+
+| corrida | propiedades | contra lo guardado | resultado | avisos contra la última completa guardada |
+|---|---|---|---|---|
+| 11/11 | 43.830 | 49,8 % de 87.999 | tirada | |
+| 12/11 | 44.181 | 49,6 % de 89.054 | tirada | |
+| 13/11 | (log rotado) | | guardada | |
+| 14/11 | 42.163 | 48,1 % de 87.585 | tirada | |
+| 15/11 | 48.239 | ≈ 55 % | guardada | |
+| 16/11 | 48.279 | ≈ 56 % | guardada | |
+| 17/11 | 54.488 | ≈ 63 % | guardada | |
+| 18/11 | 49.628 | ≈ 57 % | guardada | |
+| 19/11 | 44.088 | 49,8 % de 88.505 | tirada | 44.090 = 89 % de 49.630 |
+| 20/11 | 42.199 | 47,1 % de 89.590 | tirada | 42.202 = 85 % de 49.630 |
+
+(Las cifras salen del log de pm2 de cada día. En los días guardados el log no imprime el total
+previo y el porcentaje es contra el total publicado al cierre. Del 13/11 sólo queda que no hubo
+línea de error: el log de salida de ese día ya rotó.)
+
+Cinco de las últimas diez corridas completas, enteras: una hora de lectura sin guardar, y ese día
+sin poda, sin "bajó de precio", sin corrección de monedas y sin relectura de textos guardados. No
+se notaba porque la negativa sale **antes** de escribir el resumen de la corrida (`rentalmetas`):
+lo único que quedaba era una línea en el log de errores de pm2 y el código de salida 1.
+
+**Qué cambió.** Dos varas (`classes/rentals/collapse.ts`, `rentalCollapseVerdict`):
+
+1. **La última corrida completa que llegó a guardarse** — el documento `uy-rentals-last-full`,
+   que ya existía —, aviso contra aviso: menos de la mitad es una caída. Sin Mercado Libre ni
+   InfoCasas queda el 28 % y se rechaza.
+2. **Un piso contra lo almacenado**, la mitad del umbral (25 %), que no se mueve con cada corrida.
+   Hace falta porque la vara 1 se renueva sola: un día sin Mercado Libre trae el 56 % de la
+   anterior y se guarda; al siguiente, también sin InfoCasas, trae el 50,01 % de **ésa** y pasaría
+   por tres avisos; en tres días queda el 17 % sin una sola negativa. Contra lo almacenado ese
+   segundo día es el 15,6 % y se rechaza. Las corridas sanas están entre el 47 % y el 61 %.
+
+Sin el documento de la última corrida completa (base nueva) queda la regla anterior.
+
+**Y avisa**, que era la otra mitad del problema:
+
+- una negativa manda un **Telegram** (`notifyAdmin`), además de salir con 1; también cuando en la
+  corrida completa no responde ningún portal, que sale antes de llegar a la guarda;
+- el log nombra cada fuente de más de 1.000 avisos por corrida que trajo menos de la mitad de **su
+  vara** (`rentalSourceDrops`). El 20/11 habría dicho: Facebook 1.884 contra 5.668 (cortado a dos
+  búsquedas) y El País 1.899 contra 5.471 (lecturas incompletas);
+- si la que cae es una fuente **grande** — 10.000 avisos o más por corrida: hoy Mercado Libre
+  (21,6 mil) e InfoCasas (14 mil), que son parejas día a día — también va al Telegram. Facebook y
+  El País (5,5 mil) varían solas y quedan en el log. Grande es por tamaño y no por parte de la
+  corrida: el total lo mueve Facebook, y el 17/11 InfoCasas era el 25,7 % de una corrida de 54.488.
+
+**La vara de cada fuente es la mediana de sus últimas siete corridas completas guardadas**, no lo
+de ayer (`rentalSourceReference`; el resumen `uy-rentals-last-full` guarda `sources[].recent`, que
+nunca se copia al resumen público). Contra lo de ayer una fuente que pierde el 40 % por día nunca
+trae menos de la mitad que el día anterior (21.606 → 12.964 → 7.778 → …) y se desangra sin una
+línea; contra la mediana se nombra el segundo día. Y un portal que no contesta (`ok: false`) se
+nombra **cada día mientras siga caído**: su lectura fallida no entra en la historia, así que la
+vara queda en su nivel sano. Una fuente que el job apaga a propósito (lectura real de cero) deja
+de nombrarse cuando la mediana la alcanza, a los cuatro días. El umbral de esta comprobación es
+fijo (la mitad): `RENTALS_COLLAPSE_RATIO=0` apaga la guarda, no el aviso.
+
+**Lo que la guarda no cubre, a sabiendas.** Perder UNA fuente grande pasa: sin Mercado Libre queda
+el 56 % de la corrida anterior y el 31 % de lo almacenado. Está bien que pase — las demás fuentes
+se guardan frescas, y una corrida flaca guardada no da de baja nada por ausencia en las fuentes
+parciales (`sourcesAllowingExpiry`) —, pero por eso el aviso: si la fuente sigue caída, sus
+propiedades dejan de mostrarse a los 10 días (`RENTAL_STALE_DAYS`) y `pruneStaleRentals` las borra
+a los 21, sea completa o no la fuente, y con ellas su `firstSeen`.
+
+**La salida para una baja permanente y sabida** (un portal que se saca): `RENTALS_COLLAPSE_RATIO=0`
+apaga las dos varas. Mientras una corrida se rechaza la vara 1 no se renueva, así que sin eso una
+baja definitiva de más de la mitad se rechazaría todos los días.
+
+De paso, `notifyAdmin` tiene plazo (15 s): se llama justo antes de salir y con el candado del job
+tomado, y sin plazo un Telegram que no contesta lo dejaba colgado.
+
+Tests: `tests/rentals/collapse.test.ts`, con los números de producción de esas corridas.
+
 ## Una búsqueda nueva tardaba 10–14 s: cinco conexiones a Mongo — 8 de noviembre de 2026
 
 Cambiar un filtro, el orden o la página en Montevideo sin caché (`/api/rentals` sin la entrada del
@@ -1847,7 +1930,10 @@ Tres propiedades que el job mantiene:
 
 1. Un portal que falla **degrada** la corrida, no la voltea: la página dice cuál falta y las filas de
    ese portal se conservan en vez de borrarse como "ya no está".
-2. Se niega a publicar un directorio derrumbado sobre uno sano (`RENTALS_COLLAPSE_RATIO`, 50 %).
+2. Se niega a publicar un directorio derrumbado sobre uno sano (`RENTALS_COLLAPSE_RATIO`, 50 %):
+   menos de la mitad de los avisos de la **última corrida completa guardada**, o menos de un cuarto
+   de lo almacenado, y avisa por Telegram (hasta el 20/11/2026 comparaba sólo contra todo lo
+   almacenado y tiraba la mitad de las corridas sanas; ver arriba).
 3. `mergeOffers` conserva las ofertas que una fuente parcial o la corrida horaria no vio. Sólo
    una cosecha full exitosa marcada explícitamente `complete: true` puede aplicar la caducidad de
    ofertas por ausencia; la poda histórica de propiedades sigue teniendo su ventana separada.

@@ -77,6 +77,9 @@
               <template #item.sell="{ item }">
                 {{ formatRate(item.sell) }}
               </template>
+              <template #header.actions>
+                <span class="d-sr-only">{{ actionsHeaderLabel(locale) }}</span>
+              </template>
               <template #item.actions="{ item }">
                 <v-btn
                   :to="localePath(`/sucursales/${item.origin}`)"
@@ -165,6 +168,7 @@ import {
 } from '~/utils/departments'
 import { pickOriginRate } from '~/utils/rateSource'
 import { bestOf, pickDescription, pickTitle, seoRate } from '~/utils/liveRateSeo'
+import { actionsHeaderLabel } from '~/utils/a11yLabels'
 import { quotesForCurrency } from '~/utils/currencyPages'
 import { offMarketSide } from '~/utils/marketOutlier'
 

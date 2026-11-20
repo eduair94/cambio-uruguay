@@ -51,6 +51,9 @@
       </VCard>
 
       <p v-if="query && isSuggestion" class="text-body-1 mb-4">{{ $t('search.didYouMean') }}</p>
+      <!-- A rescued typo can be the wrong page ("impreza" -> "Qué empresa abrir"): when the words
+           name a directory, offer it too. Renders nothing when they name none. -->
+      <SearchDirectoryLinks v-if="query && isSuggestion" :q="query" variant="page" />
 
       <!-- Result pages are noindex, so the question in the link is never a crawlable URL family. -->
       <p v-if="query && results.length" class="search-page__ask-ai mb-4">
@@ -69,6 +72,8 @@
       >
         <VIcon size="40" class="mb-3">mdi-magnify-close</VIcon>
         <p class="text-body-1 mb-4">{{ $t('search.empty', { q: query }) }}</p>
+        <!-- The index has no car, motorbike or phone models; the directories do. -->
+        <SearchDirectoryLinks :q="query" variant="page" />
         <VBtn
           :to="askAiTo"
           color="primary"
@@ -143,7 +148,12 @@ const popular = computed(() =>
 )
 
 onMounted(() => {
-  if (query.value) track('search_results_view', { q: query.value, count: results.value.length })
+  if (query.value)
+    track('search_results_view', {
+      q: query.value,
+      search_term: query.value,
+      count: results.value.length,
+    })
 })
 
 // Result pages are infinite and thin, so they are noindex. The bare landing is

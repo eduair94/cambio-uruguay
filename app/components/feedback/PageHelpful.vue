@@ -13,7 +13,13 @@
   reader is looking at.
 -->
 <template>
-  <aside v-if="visible" class="page-helpful" :aria-labelledby="titleId" data-testid="page-helpful">
+  <aside
+    v-if="visible"
+    ref="root"
+    class="page-helpful"
+    :aria-labelledby="titleId"
+    data-testid="page-helpful"
+  >
     <div v-if="!noSent" class="page-helpful__row">
       <p :id="titleId" ref="heading" class="page-helpful__q" tabindex="-1">
         <template v-if="answer === 'yes'">
@@ -75,6 +81,7 @@
 </template>
 
 <script setup lang="ts">
+import { createHelpfulExposure, HELPFUL_VIEW_RATIO } from '~/utils/helpfulExposure'
 import {
   helpfulAllowedForPath,
   reviewAskFor,
@@ -109,14 +116,78 @@ onMounted(evaluate)
 // The layout survives navigation: a new page gets a fresh question (or none).
 watch(() => route.path, evaluate)
 
-let viewed = ''
-const stopView = watch(visible, show => {
-  if (show && viewed !== route.path) {
-    viewed = route.path
-    track('helpful_view', { content_path: route.path })
+// `helpful_view` = the box was half on screen (utils/helpfulExposure.ts), not "it mounted": sent
+// on mount it counted every view whose reader never scrolled 13-58 screens down to it.
+const root = ref<HTMLElement | null>(null)
+const exposure = createHelpfulExposure()
+let observer: IntersectionObserver | null = null
+let frame = 0
+// Between a confirmed navigation and the new page being on screen the box must not count. When
+// the page component stays the same (/cotizacion/usd → /cotizacion/eur, /sucursal/a → /b) Nuxt
+// syncs useRoute() in router.afterEach, while Suspense still shows the OLD page at the OLD scroll
+// (the bottom, where the reader just clicked a link above this box): the same gate as
+// plugins/track-recommendations.client.ts. `page:loading:end` is when the new page is in.
+let settled = true
+function disarm() {
+  if (frame) cancelAnimationFrame(frame)
+  frame = 0
+  observer?.disconnect()
+  observer = null
+}
+function arm() {
+  disarm()
+  const el = root.value
+  const path = route.path
+  if (!settled || !el || exposure.seen(path) || typeof IntersectionObserver === 'undefined') return
+  // Two frames: Nuxt applies the scroll in the rAF it queues at page:loading:end (after this one),
+  // so the second frame is the first one at the new page's scroll. The old scroll position must
+  // not be credited to the new page.
+  frame = requestAnimationFrame(() => {
+    frame = requestAnimationFrame(() => {
+      frame = 0
+      const current = new IntersectionObserver(
+        entries => {
+          if (observer !== current || route.path !== path) return
+          const ratio = Math.max(
+            0,
+            ...entries.map(e => (e.isIntersecting ? e.intersectionRatio : 0))
+          )
+          const mark = exposure.observe(path, ratio, document.visibilityState === 'visible')
+          if (!mark) return
+          disarm()
+          track('helpful_view', mark)
+        },
+        { threshold: [HELPFUL_VIEW_RATIO] }
+      )
+      observer = current
+      current.observe(el)
+    })
+  })
+}
+// The box appearing, or a new page under a box that stayed (the layout survives navigation).
+watch([root, () => route.path], arm, { flush: 'post' })
+const removeRouteHook = useRouter().afterEach((to, from, failure) => {
+  if (!failure && to.path !== from.path) {
+    settled = false
+    disarm()
   }
 })
-onScopeDispose(stopView)
+const removePageHook = useNuxtApp().hook('page:loading:end', () => {
+  settled = true
+  arm()
+})
+// A box that crossed 50 % in a hidden tab gets no second callback while it stays on screen:
+// observing again on return delivers a fresh initial entry.
+function onVisibility() {
+  if (document.visibilityState === 'visible') arm()
+}
+onMounted(() => document.addEventListener('visibilitychange', onVisibility))
+onScopeDispose(() => {
+  disarm()
+  removeRouteHook()
+  removePageHook()
+  document.removeEventListener('visibilitychange', onVisibility)
+})
 
 async function choose(value: HelpfulAnswer) {
   busy.value = true

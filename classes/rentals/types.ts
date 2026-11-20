@@ -364,6 +364,13 @@ export interface RentalSourceRun {
   lastOkAt?: string;
   /** The first run of the current failing streak; absent while the source is ok. */
   failingSince?: string;
+  /**
+   * Adverts this source brought in each of the last saved FULL runs, oldest first and this run last
+   * (at most RENTAL_SOURCE_HISTORY). Only in the summary kept under `RENTAL_FULL_META_KEY`: it is the
+   * yardstick of `rentalSourceDrops`, which must not move with a single run. Never in the public
+   * summary (`saveRentalMeta` drops it there).
+   */
+  recent?: number[];
 }
 
 /** One document: what the last run did. Mirrors ChairCatalogMeta. */

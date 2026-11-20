@@ -1,4 +1,20 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
+
+/**
+ * The converter is in the server HTML (since 2026-11-20), so the amount field is
+ * visible before Vue hydrates: a fill or a click that lands before hydration is
+ * lost or overwritten. Click the 1000 preset until the field reads it back —
+ * the default amount is 100, so only a hydrated page can pass. Same
+ * click-until-hydrated idea as casas-directory.spec.ts; `toPass` bounds the
+ * retries, so it fails after 90 s instead of looping forever.
+ */
+async function waitHydrated(page: Page) {
+  const amountInput = page.getByTestId('amount-input').locator('input')
+  await expect(async () => {
+    await page.getByTestId('preset-1000').click()
+    await expect(amountInput).toHaveValue('1000', { timeout: 2_000 })
+  }).toPass({ timeout: 90_000 })
+}
 
 // e2e for the "Cambio Rápido" converter on the home page. Uses the dev server
 // configured via `baseURL` in playwright.config.ts.
@@ -10,10 +26,11 @@ test.describe('currency converter', () => {
   test('converts an amount, applies a preset, and swaps currencies', async ({ page }) => {
     await page.goto('/')
 
-    // The converter is gated behind an initial-loading spinner that clears once
-    // the live rate data resolves. Wait for the amount input to render.
+    // The converter is server-rendered with the rates, so the amount input is
+    // visible before hydration: wait for it, then for Vue to take over.
     const amountInput = page.getByTestId('amount-input').locator('input')
     await expect(amountInput).toBeVisible({ timeout: 90_000 })
+    await waitHydrated(page)
 
     // Enter an amount.
     await amountInput.fill('250')
@@ -65,6 +82,7 @@ test.describe('currency converter', () => {
 
     const amountInput = page.getByTestId('amount-input').locator('input')
     await expect(amountInput).toBeVisible({ timeout: 90_000 })
+    await waitHydrated(page)
 
     await amountInput.click()
     await amountInput.press('Control+A')
@@ -89,6 +107,7 @@ test.describe('currency converter', () => {
 
     const amountInput = page.getByTestId('amount-input').locator('input')
     await expect(amountInput).toBeVisible({ timeout: 90_000 })
+    await waitHydrated(page)
 
     await amountInput.click()
     await amountInput.press('Control+A')

@@ -30,6 +30,8 @@
               :alt="car.title"
               width="720"
               height="480"
+              fetchpriority="high"
+              decoding="async"
               referrerpolicy="no-referrer"
             />
             <VIcon v-else icon="mdi-car-outline" size="64" />

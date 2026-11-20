@@ -31,6 +31,19 @@ describe("notifyAdmin", () => {
     expect(hitUrl).toContain("/bott/sendMessage");
   });
 
+  it("bounds the request so a silent Telegram cannot hang a job that is about to exit", async () => {
+    process.env.TELEGRAM_BOT_TOKEN = "t";
+    process.env.TELEGRAM_ADMIN_CHAT_ID = "1";
+    let signal: AbortSignal | null | undefined;
+    const fake = (async (_url: string, init: RequestInit) => {
+      signal = init.signal;
+      return { json: async () => ({ ok: true }) };
+    }) as unknown as typeof fetch;
+    await expect(notifyAdmin("hi", fake)).resolves.toBe(true);
+    expect(signal).toBeInstanceOf(AbortSignal);
+    expect(signal?.aborted).toBe(false);
+  });
+
   it("returns false (never throws) when the API call errors", async () => {
     process.env.TELEGRAM_BOT_TOKEN = "t";
     process.env.TELEGRAM_ADMIN_CHAT_ID = "1";

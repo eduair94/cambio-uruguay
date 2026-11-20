@@ -142,6 +142,9 @@
                   {{ formatRate(item.sell) }}
                 </span>
               </template>
+              <template #header.actions>
+                <span class="d-sr-only">{{ actionsHeaderLabel(locale) }}</span>
+              </template>
               <template #item.actions="{ item }">
                 <div class="d-flex ga-1 justify-end flex-wrap">
                   <v-btn
@@ -270,6 +273,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDisplay } from 'vuetify'
 import type { ExchangeRate } from '~/types/api'
+import { actionsHeaderLabel } from '~/utils/a11yLabels'
 import { currencyDisplayName, type CurrencyLang, type CurrencyQuote } from '~/utils/currencyPages'
 import type { LocalDataMap } from '~/utils/departments'
 import {

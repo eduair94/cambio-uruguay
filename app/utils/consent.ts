@@ -65,6 +65,34 @@ export const CONSENT_STRICT_REGIONS: readonly string[] = Object.freeze([
 type ConsentSignalKey = 'ad_storage' | 'analytics_storage' | 'ad_user_data' | 'ad_personalization'
 export type ConsentSignals = Record<ConsentSignalKey, 'granted' | 'denied'>
 
+/**
+ * Whether `CookieConsent.vue` renders the banner.
+ *
+ * The edge stores ONE copy of each page's HTML and hands it to every visitor, so what the server
+ * renders must not depend on who asked. It did: the server read `cu_consent`, and the copy the edge
+ * kept was the answer to whoever asked first. Measured in production on 2026-11-20 — a request
+ * carrying `cu_consent=granted` got HTML without the banner, the edge stored it (`cf-cache-status:
+ * HIT` two seconds later), and a visitor with no cookie received that copy: no consent notice until
+ * hydration, which then inserted it on top of the page (123 px on a phone). The other way round a
+ * decided visitor got the banner HTML and hydration threw it away with a mismatch
+ * ("Hydration completed but contains mismatches", on every page view of every returning visitor).
+ *
+ * So until the component has mounted (`settled`), the answer is the same for everyone: rendered.
+ * The server sends the first-visit HTML always, the browser hydrates exactly that, and only then
+ * does the visitor's own decision apply. A decided visitor does not see it in between: the inline
+ * script of `nuxt.config.ts` (PREPAINT_CONSENT_SCRIPT) marks `<html data-cu-consent>` before the
+ * first paint and `critical.css` does not paint the banner.
+ */
+export function consentBannerRendered(state: {
+  /** The component has mounted in this browser. Always false on the server. */
+  settled: boolean
+  hasDecided: boolean
+  /** "Configurar cookies" in the footer reopened it as a dialog. */
+  dialogOpen: boolean
+}): boolean {
+  return state.dialogOpen || !state.settled || !state.hasDecided
+}
+
 export function parseConsent(raw: string | null | undefined): ConsentDecision | null {
   return raw === 'granted' || raw === 'denied' ? raw : null
 }

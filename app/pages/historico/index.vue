@@ -125,7 +125,7 @@
                 size="small"
               >
                 <v-avatar size="20" class="mr-2">
-                  <CurrencyFlag :item="item" />
+                  <CurrencyFlag :item="item" decorative />
                 </v-avatar>
                 {{ item.code }}
               </v-btn>

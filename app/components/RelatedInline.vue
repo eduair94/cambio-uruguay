@@ -30,32 +30,18 @@
 // líquido, y el bloque del pie en la pantalla 5–7 del teléfono. Esto pone las TRES primeras
 // recomendaciones de la misma lista (`relatedFor`, mismo orden) justo debajo del resultado.
 //
-// Las anota en `relatedInlineShown` para que el bloque del pie no las repita: se llena con otras
-// tres en vez de mostrar dos veces lo mismo. Sin ClientOnly, como el del pie: los enlaces van en
-// el HTML del servidor.
-import { relatedEnabledForPath, relatedFor } from '~/utils/relatedPages'
-import { RELATED_INLINE_LIMIT, relatedInlineStateKey } from '~/utils/relatedInline'
+// El bloque del pie no las repite: llama a la MISMA función con los mismos argumentos y las
+// excluye, así se llena con otras tres. Nada de estado compartido: con un `useState` escrito desde
+// un `watchEffect`, el servidor pintaba el pie antes de la anotación en las páginas con `await` y
+// cada tarjeta quedaba con el título de una página y el enlace de otra (utils/relatedInline.ts).
+// Sin ClientOnly, como el del pie: los enlaces van en el HTML del servidor.
+import { relatedInlineItems } from '~/utils/relatedInline'
 
 const route = useRoute()
 const localePath = useLocalePath()
 const { t } = useI18n()
 
-const items = computed(() =>
-  relatedEnabledForPath(route.path)
-    ? relatedFor(route.path, RELATED_INLINE_LIMIT, {
-        operation: route.query.operation,
-        mode: route.query.mode,
-      })
-    : []
-)
-
-const shown = useState<{ path: string; routes: string[] }>(relatedInlineStateKey, () => ({
-  path: '',
-  routes: [],
-}))
-watchEffect(() => {
-  shown.value = { path: route.path, routes: items.value.map(item => item.to) }
-})
+const items = computed(() => relatedInlineItems(route.path, route.query))
 </script>
 
 <style scoped>

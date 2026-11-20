@@ -25,7 +25,14 @@
             </VChip>
           </div>
           <div v-if="aiPending" class="d-flex align-center text-grey-lighten-1 text-body-2">
-            <VProgressCircular indeterminate size="20" width="2" color="primary" class="mr-3" />
+            <VProgressCircular
+              indeterminate
+              size="20"
+              width="2"
+              color="primary"
+              class="mr-3"
+              aria-hidden="true"
+            />
             {{ t('noticias.aiLoading') }}
           </div>
           <!-- eslint-disable-next-line vue/no-v-html -->
