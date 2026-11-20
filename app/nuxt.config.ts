@@ -22,6 +22,13 @@ const extraLocalesVersion = extraMessagesVersion(EXTRA_MESSAGES_DIR)
 // server/routes/_i18n/[...path].ts forwards a stale version to this one.
 const I18N_DIR = fileURLToPath(new URL('./i18n', import.meta.url))
 const ATOMIC_FS_DRIVER = fileURLToPath(new URL('./server/storage/atomicFs.mjs', import.meta.url))
+// The atomic driver is for POSIX, which is where the site builds and runs. On Windows it can do
+// neither of its two jobs: `rename` over a file another process has open is refused (EPERM), and
+// Nitro hands the driver's absolute path to Node's import(), where `C:\\...` is not a specifier
+// ("Received protocol 'c:'"). From 2026-11-20 (#350) to this line, `nuxi prepare` and `nuxt build`
+// failed on every Windows checkout. A Windows machine keeps unstorage's own `fs` driver: it only
+// ever serves one local process.
+const SITEMAP_CACHE_DRIVER = process.platform === 'win32' ? 'fs' : ATOMIC_FS_DRIVER
 const i18nMessagesVersionId = i18nMessagesVersion(I18N_DIR, I18N_MESSAGE_SOURCES)
 
 // Read only this checkout: app remains a self-contained deploy surface. PM2
@@ -1442,7 +1449,7 @@ export default defineNuxtConfig({
     // The driver is `fs` with atomic writes (server/storage/atomicFs.mjs): with the plain `fs`
     // driver a worker reading while the other was still writing got half a document and Nitro
     // reported "Malformed data read from cache." (CAMBIO-URUGUAY-BACKEND-1E).
-    runtimeCacheStorage: { driver: ATOMIC_FS_DRIVER, base: './.data/sitemap' },
+    runtimeCacheStorage: { driver: SITEMAP_CACHE_DRIVER, base: './.data/sitemap' },
     // Keep non-search pages out of the sitemap so they don't waste crawl budget or show as
     // "not indexed" in Search Console: the always-noindex pages, in Spanish and under every
     // locale prefix (utils/sitemapFilters.ts — one RegExp, see why there).

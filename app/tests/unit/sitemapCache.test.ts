@@ -1,7 +1,8 @@
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, readdirSync, rmSync } from 'node:fs'
+import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { createStorage } from 'unstorage'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import atomicFs from '../../server/storage/atomicFs.mjs'
@@ -34,7 +35,18 @@ describe('sitemap cache', () => {
   it('is on disk, shared by both workers and kept across deploys', () => {
     const storage = sitemap.runtimeCacheStorage as { driver: string; base: string }
     expect(storage.base).toBe('./.data/sitemap')
-    expect(storage.driver.replace(/\\/g, '/')).toMatch(/\/app\/server\/storage\/atomicFs\.mjs$/)
+    // POSIX (where the site builds and runs) gets the atomic driver. Windows keeps unstorage's own
+    // `fs`: there `rename` over an open file is refused and an absolute path is not an import
+    // specifier, so the atomic driver broke `nuxi prepare` and `nuxt build` on every Windows checkout.
+    if (process.platform === 'win32') expect(storage.driver).toBe('fs')
+    else
+      expect(storage.driver.replace(/\\/g, '/')).toMatch(/\/app\/server\/storage\/atomicFs\.mjs$/)
+    // Whatever machine runs this test, the choice is written down once and the other branch is real.
+    const config = readFileSync(join(__dirname, '../../nuxt.config.ts'), 'utf8')
+    expect(config).toContain("process.platform === 'win32' ? 'fs' : ATOMIC_FS_DRIVER")
+    expect(config).toContain(
+      "runtimeCacheStorage: { driver: SITEMAP_CACHE_DRIVER, base: './.data/sitemap' }"
+    )
   })
 })
 
@@ -69,7 +81,8 @@ describe('atomic fs driver', () => {
   // Nitro also loads the driver with Node's own import() while building, and the server's Node
   // does not strip TypeScript: as `.ts` the deploy failed (run 44730280599).
   it('loads in plain Node, without TypeScript stripping', () => {
-    const driver = (sitemap.runtimeCacheStorage as { driver: string }).driver
+    // The file itself, as a file: URL, so the check also runs where the config picks another driver.
+    const driver = pathToFileURL(join(__dirname, '../../server/storage/atomicFs.mjs')).href
     const out = execFileSync(
       process.execPath,
       [
@@ -98,9 +111,14 @@ describe('atomic fs driver', () => {
     await writer.setItem('sitemap:xml:key.json', entry(0))
     let done = false
     let malformed = 0
+    // `finally`: a write that throws must end the read loop and fail the test with its own error,
+    // not leave the reader spinning until the timeout.
     const writes = (async () => {
-      for (let i = 1; i <= 30; i++) await writer.setItem('sitemap:xml:key.json', entry(i))
-      done = true
+      try {
+        for (let i = 1; i <= 30; i++) await writer.setItem('sitemap:xml:key.json', entry(i))
+      } finally {
+        done = true
+      }
     })()
     while (!done) {
       const value = await reader.getItem('sitemap:xml:key.json')
@@ -110,7 +128,13 @@ describe('atomic fs driver', () => {
     return malformed
   }
 
-  it('never hands a reader a half-written entry while another process writes', async () => {
-    expect(await malformedReads(atomicFs)).toBe(0)
-  }, 60_000)
+  // POSIX only: there `rename` replaces a file another process holds open, which is the point of
+  // the driver. Windows refuses it (EPERM), and Windows does not use this driver (nuxt.config.ts).
+  it.skipIf(process.platform === 'win32')(
+    'never hands a reader a half-written entry while another process writes',
+    async () => {
+      expect(await malformedReads(atomicFs)).toBe(0)
+    },
+    60_000
+  )
 })
