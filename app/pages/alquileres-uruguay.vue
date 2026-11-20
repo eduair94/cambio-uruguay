@@ -995,9 +995,14 @@ const feed = useInfiniteFeed<RentalListItem>({
   pageCount: () => pageCount.value,
   perPage: () => data.value?.perPage || 24,
   resetKey: () => feedResetKey.value,
+  // Only the cards: the scroll already holds page 1's counts (utils/rentalDirectoryParts.ts).
   fetchPage: (page, signal) =>
-    $fetch<RentalsResponse>('/api/rentals', {
-      query: availability.withRevision({ ...requestParams.value, page: String(page) }),
+    $fetch<Pick<RentalsResponse, 'items'>>('/api/rentals', {
+      query: availability.withRevision({
+        ...requestParams.value,
+        page: String(page),
+        parts: 'items',
+      }),
       signal,
     }).then(response => response.items),
   enabled: () => view.value === 'lista' && !error.value,
@@ -1153,8 +1158,9 @@ async function loadNeighborhoods(department: string) {
   }
   neighborhoodOverride.value = []
   try {
-    const result = await $fetch<RentalsResponse>('/api/rentals', {
-      query: { department, perPage: 6 },
+    // Only the counts: this reads the barrio list and nothing else.
+    const result = await $fetch<Pick<RentalsResponse, 'facets'>>('/api/rentals', {
+      query: { department, parts: 'facets' },
     })
     if (request === neighborhoodRequest) neighborhoodOverride.value = result.facets.neighborhoods
   } catch {

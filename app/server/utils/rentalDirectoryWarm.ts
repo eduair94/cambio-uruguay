@@ -19,6 +19,7 @@
  * cada uno tiene que calentarlo. Lo único que se evita es que una corrida se apile sobre otra del
  * mismo proceso (un calentamiento lento que llega al siguiente minuto programado).
  */
+import { normalizeRentalDirectoryParts } from '../../utils/rentalDirectoryParts'
 import { normalizeRentalQuery, rentalQueryToParams } from '../../utils/rentals'
 
 /**
@@ -30,18 +31,30 @@ import { normalizeRentalQuery, rentalQueryToParams } from '../../utils/rentals'
  *
  * Del punto de referencia, sólo las coordenadas (`'point'`): la respuesta no depende de la etiqueta,
  * que puede ser la dirección que alguien escribió, así que ni acuña otra entrada ni queda en la clave.
+ *
+ * La parte pedida (`parts`, utils/rentalDirectoryParts.ts) va como PREFIJO cuando no es la
+ * respuesta entera (`items_page=2`, `facets_department=Montevideo`): una página de tarjetas sola o
+ * las facetas solas nunca pueden contestar un pedido completo. Prefijo y no un `&parts=` al final
+ * porque Nitro guarda la entrada con la clave escapada (`escapeKey` borra todo carácter que no es de
+ * palabra): `department=Montevideo&parts=facets` y un departamento escrito como «Montevideo parts
+ * facets» quedaban en la misma entrada. Una clave completa siempre empieza por el nombre de un
+ * parámetro de `rentalQueryToParams` o es `default`, y ninguno empieza por `items` ni por `facets`.
  */
-export const rentalDirectoryCacheKey = (input: Record<string, unknown>) =>
-  new URLSearchParams(
+export const rentalDirectoryCacheKey = (input: Record<string, unknown>) => {
+  const base = new URLSearchParams(
     rentalQueryToParams(normalizeRentalQuery(input), { includeReference: 'point' })
-  ).toString() || 'default'
+  ).toString()
+  const parts = normalizeRentalDirectoryParts(input.parts)
+  return parts === 'all' ? base || 'default' : `${parts}_${base}`
+}
 
+// La segunda página con `parts=items`: es la clave que pide el scroll de la página desde 2026-11-20.
 export const RENTAL_DIRECTORY_WARM_QUERIES: ReadonlyArray<Readonly<Record<string, string>>> = [
   {},
   { department: 'Montevideo' },
   { department: 'Canelones' },
   { department: 'Maldonado' },
-  { page: '2' },
+  { page: '2', parts: 'items' },
 ]
 
 export type RentalDirectoryWarmFetcher = (query: Record<string, string>) => Promise<unknown>
