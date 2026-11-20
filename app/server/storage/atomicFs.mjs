@@ -18,29 +18,34 @@ import fsDriver from 'unstorage/drivers/fs'
 // `rename`, which on one filesystem swaps the whole file at once. A reader sees
 // the previous document or the new one, never a partial one. Reads, keys and
 // removal are the `fs` driver's own; temporary files are hidden from `getKeys`.
+//
+// Plain JavaScript on purpose: Nitro also loads storage drivers with Node's own
+// `import()` while it builds, and the server's Node does not strip TypeScript.
+// As `.ts` the deploy failed with 'Unknown file extension ".ts"' (run 44730280599).
 
 const PATH_TRAVERSE_RE = /\.\.:|\.\.$/
 const TMP_SUFFIX = '.tmp-write'
 
-export interface AtomicFsOptions {
-  base: string
-  readOnly?: boolean
-  ignore?: string[]
-}
-
-export default defineDriver((options: AtomicFsOptions) => {
+/** @param {{ base: string, readOnly?: boolean, ignore?: string[] }} options */
+export default defineDriver(options => {
   if (!options?.base) throw new Error('[unstorage] [atomic-fs] Missing required option `base`.')
   const inner = fsDriver({
     ...options,
     ignore: [...(options.ignore || ['**/node_modules/**', '**/.git/**']), `**/*${TMP_SUFFIX}`],
   })
   const base = resolve(options.base)
-  const path = (key: string) => {
+  /** @param {string} key */
+  const path = key => {
     if (PATH_TRAVERSE_RE.test(key))
       throw new Error(`[unstorage] [atomic-fs] Invalid key: ${JSON.stringify(key)}.`)
     return join(base, key.replace(/:/g, '/'))
   }
-  async function write(key: string, value: string | Uint8Array, encoding?: BufferEncoding) {
+  /**
+   * @param {string} key
+   * @param {string | Uint8Array} value
+   * @param {BufferEncoding} [encoding]
+   */
+  async function write(key, value, encoding) {
     if (options.readOnly) return
     const target = path(key)
     await fsp.mkdir(dirname(target), { recursive: true })
@@ -57,7 +62,7 @@ export default defineDriver((options: AtomicFsOptions) => {
     ...inner,
     name: 'atomic-fs',
     options,
-    setItem: (key: string, value: string) => write(key, value, 'utf8'),
-    setItemRaw: (key: string, value: string | Uint8Array) => write(key, value),
+    setItem: (key, value) => write(key, value, 'utf8'),
+    setItemRaw: (key, value) => write(key, value),
   }
 })

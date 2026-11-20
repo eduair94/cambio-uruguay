@@ -1,9 +1,10 @@
+import { execFileSync } from 'node:child_process'
 import { mkdtempSync, readdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createStorage } from 'unstorage'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
-import atomicFs from '../../server/storage/atomicFs'
+import atomicFs from '../../server/storage/atomicFs.mjs'
 
 // The site runs as two pm2 workers. With the module's default (memory) cache each one built
 // every sitemap on its own, and each deploy started both empty: the crawlers asking for the 35
@@ -33,7 +34,7 @@ describe('sitemap cache', () => {
   it('is on disk, shared by both workers and kept across deploys', () => {
     const storage = sitemap.runtimeCacheStorage as { driver: string; base: string }
     expect(storage.base).toBe('./.data/sitemap')
-    expect(storage.driver.replace(/\\/g, '/')).toMatch(/\/app\/server\/storage\/atomicFs\.ts$/)
+    expect(storage.driver.replace(/\\/g, '/')).toMatch(/\/app\/server\/storage\/atomicFs\.mjs$/)
   })
 })
 
@@ -63,6 +64,23 @@ describe('atomic fs driver', () => {
     expect(readdirSync(join(base, 'sitemap', 'xml'))).toEqual(['a.json'])
     await storage.removeItem('sitemap:xml:a.json')
     expect(await storage.hasItem('sitemap:xml:a.json')).toBe(false)
+  })
+
+  // Nitro also loads the driver with Node's own import() while building, and the server's Node
+  // does not strip TypeScript: as `.ts` the deploy failed (run 44730280599).
+  it('loads in plain Node, without TypeScript stripping', () => {
+    const driver = (sitemap.runtimeCacheStorage as { driver: string }).driver
+    const out = execFileSync(
+      process.execPath,
+      [
+        '--no-experimental-strip-types',
+        '--input-type=module',
+        '-e',
+        `const m = await import(${JSON.stringify(driver)}); console.log(typeof m.default)`,
+      ],
+      { cwd: join(__dirname, '../..'), encoding: 'utf8' }
+    )
+    expect(out.trim()).toBe('function')
   })
 
   it('rejects keys that leave the base directory', async () => {
