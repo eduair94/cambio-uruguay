@@ -15,14 +15,15 @@
     <!-- Hero -->
     <VCard class="overflow-hidden mb-5" elevation="8">
       <div class="hero pa-6 pa-md-8">
-        <p class="hero-eyebrow">Vivienda · Clearing · Verificado en julio de 2026</p>
+        <p class="hero-eyebrow">Vivienda · Clearing · Verificado en {{ reviewedMonthLabel }}</p>
         <h1 class="hero-title">{{ t('clearing.title') }}</h1>
         <p class="hero-lead">
           “Nunca alquilé y estoy en el clearing por una deuda con la telefónica.” Se puede: lo que
-          cambia es <strong>por qué puerta entrás</strong>. El seguro de alquiler te rechaza porque
-          revisa tu historial, pero el depósito, el dueño directo, un garante y hasta la garantía
-          del Estado <strong>no dependen de tu clearing</strong> o lo toleran. Acá está cuál te
-          sirve, con la fuente de cada dato.
+          cambia es <strong>por qué puerta entrás</strong>. El seguro de alquiler es donde llega el
+          rechazo (Porto Seguro lo publica como excluyente), pero el depósito, el dueño directo, un
+          garante y hasta la garantía del Estado <strong>no dependen de tu clearing</strong> o lo
+          toleran, y ANDA y FIDECIU publican que estudian tu caso. Acá está cuál te sirve, con la
+          fuente de cada dato.
         </p>
         <div class="d-flex justify-start justify-md-end mt-4">
           <ShareButtons text="Cómo alquilar estando en el clearing en Uruguay" />
@@ -39,6 +40,39 @@
         { label: t('clearing.listings'), to: localePath('/alquileres-uruguay') },
       ]"
     />
+
+    <!-- The short answer, derived from the same data as the table and the cards below -->
+    <section class="mb-8" aria-labelledby="respuesta-corta">
+      <h2 id="respuesta-corta" class="section-heading mb-3 clearing-entry-anchor">
+        La respuesta corta: quién te acepta estando en el clearing
+      </h2>
+      <div class="answer-grid">
+        <div
+          v-for="group in answerGroups"
+          :key="group.id"
+          class="answer-group"
+          :class="`answer-group--${group.id}`"
+        >
+          <h3 class="answer-title">{{ group.title }}</h3>
+          <ul class="answer-list">
+            <li v-for="route in group.routes" :key="route.id">
+              <a :href="`#garantia-${route.id}`" class="answer-link">{{ route.name }}</a
+              >: {{ route.verdictLine }}
+            </li>
+            <li v-if="group.id === 'rechazan'">
+              <a href="#aseguradoras" class="answer-link">{{ otherInsurersNames }}</a
+              >: ninguna publica que acepte personas en el Clearing.
+            </li>
+          </ul>
+        </div>
+      </div>
+      <p class="text-body-2 text-medium-emphasis mt-3 mb-0">
+        Leído en el sitio de cada una el {{ lastReviewedLabel }}.
+        <NuxtLink :to="localePath('/garantia-de-alquiler-uruguay')" class="answer-link">
+          Cuánto cuesta cada garantía y los topes del Estado en pesos
+        </NuxtLink>
+      </p>
+    </section>
 
     <!-- Where does the debt sit -->
     <h2 class="section-heading mb-1">Primero: ¿dónde figura tu deuda?</h2>
@@ -79,7 +113,10 @@
             con una telefónica <strong>no</strong> aparece acá.
           </p>
           <ul class="reg-list">
-            <li>La categoría <strong>4 o 5</strong> es la que bloquea la garantía estatal.</li>
+            <li>
+              La categoría <strong>4 o 5</strong> es la que bloquea el Fondo de Garantía de
+              Alquiler.
+            </li>
             <li>Podés estar en el Clearing y no en el BCU (y al revés).</li>
             <li>La consulta de tu situación es gratis y online.</li>
           </ul>
@@ -103,7 +140,7 @@
       Tu situación: ¿qué garantía te conviene?
     </h2>
     <p class="text-body-2 text-medium-emphasis mb-4">
-      Respondé cinco cosas y te ordenamos las rutas de mejor a peor para tu caso. No promete
+      Respondé seis cosas y te ordenamos las rutas de mejor a peor para tu caso. No promete
       aprobación: te dice dónde tenés más chance y dónde vas a chocar, con el motivo.
     </p>
 
@@ -159,6 +196,16 @@
             hide-details
           />
         </VCol>
+        <VCol cols="12" sm="6">
+          <VSelect
+            v-model="form.cgn"
+            :items="cgnOptions"
+            label="¿Funcionario público o jubilado?"
+            variant="outlined"
+            density="comfortable"
+            hide-details
+          />
+        </VCol>
       </VRow>
 
       <VDivider class="my-5" />
@@ -178,6 +225,7 @@
                 size="x-small"
                 variant="tonal"
                 label
+                class="check-chip"
               >
                 {{ checkLabel[item.route.checksClearing] }}
               </VChip>
@@ -227,7 +275,13 @@
             <tr v-for="route in routes" :key="route.id">
               <td class="font-weight-medium" data-label="">{{ route.name }}</td>
               <td data-label="¿Mira tu clearing?">
-                <VChip :color="checkColor(route.checksClearing)" size="small" variant="tonal" label>
+                <VChip
+                  :color="checkColor(route.checksClearing)"
+                  size="small"
+                  variant="tonal"
+                  label
+                  class="check-chip"
+                >
                   {{ checkLabel[route.checksClearing] }}
                 </VChip>
               </td>
@@ -239,6 +293,41 @@
         </VTable>
       </div>
     </VCard>
+
+    <h3 class="text-subtitle-1 font-weight-bold mb-3">Cada garantía, una por una</h3>
+    <div class="route-detail-list mb-6">
+      <article
+        v-for="route in routes"
+        :id="`garantia-${route.id}`"
+        :key="route.id"
+        class="route-detail clearing-entry-anchor"
+      >
+        <h4 class="route-detail-title">{{ route.name }}</h4>
+        <p class="route-detail-summary">{{ route.summary }}</p>
+        <VChip
+          :color="checkColor(route.checksClearing)"
+          size="small"
+          variant="tonal"
+          label
+          class="check-chip"
+        >
+          {{ checkLabel[route.checksClearing] }}
+        </VChip>
+        <p class="route-detail-text mt-2">{{ route.forClearing }}</p>
+        <p class="route-detail-text"><strong>Ojo:</strong> {{ route.caveat }}</p>
+        <p class="route-detail-source mb-0">
+          <a
+            v-if="route.sourceUrl"
+            :href="route.sourceUrl"
+            :aria-label="`Fuente: ${route.name}`"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Fuente</a
+          >
+          <span v-else>Sin fuente oficial: es práctica de mercado.</span>
+        </p>
+      </article>
+    </div>
 
     <!-- Ley 20.212 -->
     <VCard variant="flat" class="law-card pa-5 pa-sm-6 mb-6">
@@ -256,10 +345,64 @@
       </p>
       <p class="text-body-2 mb-0">
         Ojo con el alcance: protege el acceso a servicios <strong>públicos</strong>, no obliga a una
-        inmobiliaria ni a una aseguradora privada. Y la garantía estatal igual mira el BCU (no podés
-        ser categoría 4 o 5) y pide ingreso formal.
+        inmobiliaria ni a una aseguradora privada. Y el Fondo de Garantía de Alquiler igual mira el
+        BCU (no podés ser categoría 4 o 5) y pide ingreso formal.
       </p>
     </VCard>
+
+    <!-- Insurers -->
+    <h2 id="aseguradoras" class="section-heading mb-1 clearing-entry-anchor">
+      Aseguradoras: qué publica cada una sobre el clearing
+    </h2>
+    <p class="text-body-2 text-medium-emphasis mb-4">
+      Lo que dice cada aseguradora en su propio sitio, con el enlace para que lo confirmes.
+    </p>
+    <VCard variant="flat" class="section-card pa-2 pa-sm-4 mb-3">
+      <div class="table-scroll">
+        <VTable density="comfortable" class="cu-mobile-cards">
+          <thead>
+            <tr>
+              <th>Aseguradora</th>
+              <th>Qué hace</th>
+              <th>Qué publica</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="insurer in insurers" :key="insurer.id">
+              <td class="font-weight-medium" data-label="">{{ insurer.name }}</td>
+              <td data-label="Qué hace">
+                <VChip
+                  :color="insurerColor(insurer.verdict)"
+                  size="small"
+                  variant="tonal"
+                  label
+                  class="check-chip"
+                >
+                  {{ insurerLabel[insurer.verdict] }}
+                </VChip>
+              </td>
+              <td class="evaluates-cell cu-cell-prose text-body-2" data-label="Qué publica">
+                <span>
+                  {{ insurer.published }}
+                  <a
+                    :href="insurer.sourceUrl"
+                    :aria-label="`Fuente: ${insurer.name}`"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="source-link"
+                    >Fuente</a
+                  >
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+      </div>
+    </VCard>
+    <p class="text-body-2 text-medium-emphasis mb-6">
+      Ninguna de las siete publica que acepte personas en el Clearing. Leído en el sitio de cada una
+      el {{ lastReviewedLabel }}.
+    </p>
 
     <!-- What usually happens -->
     <h2 class="section-heading mb-1">Lo que suele pasar</h2>
@@ -315,7 +458,7 @@
     <!-- FAQ -->
     <h2 class="section-heading mb-3">Preguntas frecuentes</h2>
     <VExpansionPanels variant="accordion" class="faq-panels mb-6">
-      <VExpansionPanel v-for="faq in faqs" :key="faq.q">
+      <VExpansionPanel v-for="faq in faqs" :key="faq.q" eager>
         <VExpansionPanelTitle>{{ faq.q }}</VExpansionPanelTitle>
         <VExpansionPanelText>
           <p class="mb-0">{{ faq.a }}</p>
@@ -411,14 +554,18 @@ import {
   CLEARING_CHECK_LABEL,
   FIT_LABEL,
   GUARANTEE_ROUTES,
+  INSURER_STANCES,
+  INSURER_VERDICT_LABEL,
   RENT_CLEARING_LAST_REVIEWED,
   RENT_CLEARING_SOURCES,
+  clearingAnswerGroups,
   matchRentRoutes,
   type AdvanceKind,
   type ClearingCheck,
   type DebtKind,
   type Fit,
   type IncomeKind,
+  type InsurerVerdict,
   type YesNoUnknown,
 } from '~/utils/rentClearing'
 import { growthEntryMessages } from '~/utils/growthEntryMessages'
@@ -430,6 +577,13 @@ const routes = GUARANTEE_ROUTES
 const sources = RENT_CLEARING_SOURCES
 const checkLabel = CLEARING_CHECK_LABEL
 const fitLabel = FIT_LABEL
+const insurers = INSURER_STANCES
+const insurerLabel = INSURER_VERDICT_LABEL
+const answerGroups = clearingAnswerGroups()
+
+// The insurers other than the one the "seguro" route already names, for the short answer.
+const otherInsurers = INSURER_STANCES.filter(i => i.verdict !== 'rechaza').map(i => i.name)
+const otherInsurersNames = `${otherInsurers.slice(0, -1).join(', ')} y ${otherInsurers.at(-1)}`
 
 const form = reactive({
   debt: 'telco-servicios' as DebtKind,
@@ -437,6 +591,7 @@ const form = reactive({
   guarantor: 'no-se' as YesNoUnknown,
   advance: 'poco' as AdvanceKind,
   directOwner: 'no-se' as YesNoUnknown,
+  cgn: 'no-se' as YesNoUnknown,
 })
 
 const debtOptions = [
@@ -446,7 +601,7 @@ const debtOptions = [
   { title: 'No estoy seguro/a', value: 'no-se' },
 ]
 const incomeOptions = [
-  { title: 'Trabajo formal con recibo', value: 'formal' },
+  { title: 'Sueldo, jubilación o pensión con recibo', value: 'formal' },
   { title: 'Ingresos informales o por mi cuenta', value: 'informal' },
   { title: 'Sin ingresos comprobables ahora', value: 'ninguno' },
 ]
@@ -465,6 +620,11 @@ const directOwnerOptions = [
   { title: 'Prefiero inmobiliaria', value: 'no' },
   { title: 'No sé', value: 'no-se' },
 ]
+const cgnOptions = [
+  { title: 'Sí (o pensionista, o mi empresa tiene convenio con la Contaduría)', value: 'si' },
+  { title: 'No', value: 'no' },
+  { title: 'No sé', value: 'no-se' },
+]
 
 const ranked = computed(() => matchRentRoutes({ ...form }))
 
@@ -475,10 +635,19 @@ function checkColor(check: ClearingCheck): string {
   return {
     excluyente: 'error',
     tolerante: 'success',
-    'evalua-no-publica': 'warning',
+    'ley-impide-negar': 'success',
+    'admite-con-aprobacion': 'success',
     'no-mira-tu-clearing': 'success',
     'no-confirmado': 'grey',
   }[check]
+}
+function insurerColor(verdict: InsurerVerdict): string {
+  return {
+    rechaza: 'error',
+    'consulta-clearing': 'warning',
+    'analisis-crediticio': 'warning',
+    'no-publica': 'grey',
+  }[verdict]
 }
 
 const patterns = [
@@ -492,7 +661,7 @@ const patterns = [
     icon: 'mdi-shield-remove-outline',
     color: 'error',
     title: 'El seguro de alquiler es donde llega el rechazo',
-    text: 'Como el clearing es excluyente, la aseguradora rebota la solicitud. No es mala suerte: es su criterio publicado.',
+    text: 'Porto Seguro publica el clearing como requisito excluyente, y ninguna de las siete aseguradoras que leímos publica que acepte personas en él. No es mala suerte: es su criterio.',
   },
   {
     icon: 'mdi-account-check-outline',
@@ -503,7 +672,7 @@ const patterns = [
   {
     icon: 'mdi-hand-coin-outline',
     color: 'success',
-    title: 'La garantía estatal es más flexible de lo que se cree',
+    title: 'El Fondo de Garantía de Alquiler es más flexible de lo que se cree',
     text: 'Tolera incumplimientos del Clearing con refinanciación y, por ley, no puede negarte por ser deudor; pide ingreso formal.',
   },
 ]
@@ -519,7 +688,19 @@ const script = [
 const faqs = [
   {
     q: '¿Puedo alquilar estando en el clearing?',
-    a: 'Sí. El seguro de alquiler te rechaza porque revisa tu historial, pero el depósito en garantía, el dueño directo, un garante y el régimen sin garantía no dependen de tu clearing, y la garantía estatal FGA lo tolera dentro de ciertos límites.',
+    a: 'Sí. El depósito en garantía, el contrato sin garantía, un garante y el dueño directo no dependen de tu clearing. Si sos funcionario público, jubilado o pensionista, la Contaduría no puede negarte su garantía por figurar en él; el Fondo de Garantía de Alquiler lo tolera hasta 4 incumplimientos con refinanciación, y ANDA y FIDECIU publican que estudian cada caso. La que te rechaza es la aseguradora: Porto Seguro lo declara excluyente.',
+  },
+  {
+    q: '¿ANDA da garantía de alquiler estando en el clearing?',
+    a: 'ANDA publica que se puede pedir: en sus preguntas frecuentes para propietarios e inmobiliarias dice “Personas registradas en Clearing de Informes pueden acceder al servicio”, con todos los casos sujetos a su aprobación. Pide ser socio, que el alquiler no pase del 40 % de tu ingreso nominal y 4 meses de antigüedad en la actividad privada, y cuesta el 3 % del alquiler por mes más la cuota social. Su reglamento le permite negar una solicitud sin explicar el motivo: preguntá por tu caso antes de afiliarte.',
+  },
+  {
+    q: '¿Puedo hacerme socio de ANDA estando en el clearing?',
+    a: 'Sí. ANDA lo dice en sus preguntas frecuentes de préstamos: “podés afiliarte a ANDA y solicitar tu préstamo estando en el Clearing de Informes”; según el tipo de antecedente puede pedirte una garantía. La cuota social que publica para el Socio Integral es de $ 831.',
+  },
+  {
+    q: 'Soy jubilado o funcionario público y estoy en el clearing, ¿qué garantía me corresponde?',
+    a: 'La de la Contaduría General de la Nación (Servicio de Garantía de Alquileres). El artículo 631 de la Ley 20.212 la nombra entre los servicios que no pueden negarse a una persona por figurar en el Clearing. Pide el Informe de Líquido Disponible y la cédula, cuesta el 3 % del alquiler por mes a cada parte y el alquiler se descuenta de tu recibo. El Fondo de Garantía de Alquiler del Ministerio excluye a quienes pueden usar la Contaduría.',
   },
   {
     q: 'Mi deuda es con una telefónica, ¿me deja en el BCU?',
@@ -527,15 +708,19 @@ const faqs = [
   },
   {
     q: '¿El seguro de alquiler chequea el clearing?',
-    a: 'Sí. En Porto Seguro “no estar en el Clearing” es un requisito excluyente: si alguno de los solicitantes figura, se rechaza la solicitud. Tras pagar la deuda, piden esperar al menos 6 meses antes de reevaluar. Otras aseguradoras no publican sus criterios.',
+    a: 'Sí. Porto Seguro lo publica como excluyente: si alguno de los solicitantes figura en el Clearing rechaza la solicitud, y después de pagar la deuda pide esperar al menos 6 meses. San Cristóbal dice que controla el Clearing y la calificación del BCU; Mapfre, el BSE, SBI y Sancor hacen un análisis crediticio antes de emitir, y SURA no publica el criterio. Ninguna de las siete publica que acepte personas en el Clearing.',
   },
   {
     q: '¿La garantía del Estado me sirve estando en clearing?',
-    a: 'El Fondo de Garantía de Alquileres (CGN/MVOT) tolera hasta 4 incumplimientos del Clearing si presentás su refinanciación, y por la Ley 20.212 no puede negarte por ser deudor. Pero exige ingreso formal (15 a 100 UR) y no estar en categoría 4 o 5 de la Central de Riesgos del BCU.',
+    a: 'El Fondo de Garantía de Alquileres (CGN/MVOT) tolera hasta 4 incumplimientos del Clearing si presentás su refinanciación, y por la Ley 20.212 no puede negarte por ser deudor. Pero exige ingreso formal (15 a 100 UR) y no estar en categoría 4 o 5 de la Central de Riesgos del BCU. Cubre alquileres de hasta 18 UR (21 UR en vivienda promovida). Si sos funcionario público, jubilado o pensionista, la garantía del Estado que te corresponde es la de la Contaduría, que el artículo 631 de esa ley nombra entre los servicios que no pueden negarte por el Clearing.',
+  },
+  {
+    q: 'Pagué la deuda, ¿cuándo me aceptan?',
+    a: 'El acreedor tiene 5 días hábiles para avisarle al Clearing que cancelaste y el Clearing 3 días hábiles para actualizar el dato (Ley 18.331, art. 22). La deuda queda registrada como cancelada hasta 5 años, no renovables. Porto Seguro pide esperar al menos 6 meses desde el pago; el Fondo de Garantía de Alquiler acepta hasta 4 incumplimientos si presentás la refinanciación.',
   },
   {
     q: '¿Cuánto tiempo quedo en el clearing?',
-    a: 'Por la Ley 18.331, un dato negativo se registra 5 años desde que se incorpora. Si la deuda sigue impaga, puede reinscribirse una sola vez por otros 5 años. Una vez cancelada, queda 5 años no renovables desde la cancelación (Equifax usa 3 para operaciones canceladas con atraso).',
+    a: 'Por la Ley 18.331, un dato negativo se registra 5 años desde que se incorpora. Si la deuda sigue impaga, puede reinscribirse una sola vez por otros 5 años. Una vez cancelada, queda 5 años no renovables desde la cancelación (Equifax usa 3 para operaciones canceladas con atraso). Las deudas con UTE, OSE y Antel fijo permanecen sólo cinco años.',
   },
   {
     q: '¿Alguien puede borrarme del clearing por plata?',
@@ -543,15 +728,16 @@ const faqs = [
   },
 ]
 
-function formatReviewedDate(iso: string) {
+function formatReviewedDate(iso: string, withDay = true) {
   return new Date(`${iso}T00:00:00Z`).toLocaleDateString('es-UY', {
-    day: 'numeric',
+    day: withDay ? 'numeric' : undefined,
     month: 'long',
     year: 'numeric',
     timeZone: 'UTC',
   })
 }
 const lastReviewedLabel = formatReviewedDate(RENT_CLEARING_LAST_REVIEWED)
+const reviewedMonthLabel = formatReviewedDate(RENT_CLEARING_LAST_REVIEWED, false)
 
 const canonicalUrl = 'https://cambio-uruguay.com/alquilar-estando-en-clearing'
 const title = computed(() => t('clearing.seoTitle'))
@@ -740,6 +926,95 @@ useHead(() => ({
 }
 .rc-list-move {
   transition: transform 0.3s ease;
+}
+
+/* The clearing labels run to ~45 characters: let them wrap instead of clipping at 320 px. */
+.check-chip {
+  max-width: 100%;
+  height: auto !important;
+  min-height: 20px;
+  padding-block: 2px;
+  white-space: normal;
+}
+
+/* Short answer */
+.answer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 12px;
+}
+.answer-group {
+  border: 1px solid rgba(var(--v-border-color), 0.16);
+  border-left-width: 4px;
+  border-radius: 12px;
+  padding: 14px 16px;
+  min-width: 0;
+}
+.answer-group--no-miran,
+.answer-group--aceptan {
+  border-left-color: rgb(var(--v-theme-success));
+}
+.answer-group--rechazan {
+  border-left-color: rgb(var(--v-theme-error));
+}
+.answer-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+.answer-list {
+  padding-left: 18px;
+  margin: 0;
+}
+.answer-list li {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  margin-bottom: 6px;
+  overflow-wrap: anywhere;
+}
+.answer-link,
+.source-link,
+.route-detail-source a {
+  font-weight: 700;
+  color: rgb(var(--v-theme-primary));
+}
+.v-theme--light .answer-link,
+.v-theme--light .source-link,
+.v-theme--light .route-detail-source a {
+  color: #0d47a1;
+}
+
+/* One card per guarantee */
+.route-detail-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 12px;
+}
+.route-detail {
+  border: 1px solid rgba(var(--v-border-color), 0.16);
+  border-radius: 12px;
+  padding: 14px 16px;
+  min-width: 0;
+}
+.route-detail-title {
+  font-size: 0.98rem;
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+.route-detail-summary {
+  font-size: 0.83rem;
+  line-height: 1.5;
+  color: rgba(var(--v-theme-on-surface), 0.68);
+  margin-bottom: 8px;
+}
+.route-detail-text {
+  font-size: 0.86rem;
+  line-height: 1.55;
+  margin-bottom: 8px;
+}
+.route-detail-source {
+  font-size: 0.83rem;
+  color: rgba(var(--v-theme-on-surface), 0.68);
 }
 
 .table-scroll {

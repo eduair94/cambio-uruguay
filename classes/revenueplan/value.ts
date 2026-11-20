@@ -349,6 +349,7 @@ export const CONTENIDO_PATHS = new Set([
   "/cuanto-sale-el-pasaporte-uruguayo",
   "/cuanto-sale-la-cedula-de-identidad-uruguaya",
   "/cuanto-sale-la-partida-de-nacimiento-uruguay",
+  "/cuanto-sale-transferir-un-auto-uruguay",
   "/cuanto-vale-una-milla-itau-uruguay",
   "/cuenta-remunerada-uruguay",
   "/declaracion-de-irpf-uruguay",
@@ -466,6 +467,11 @@ export const CONTENIDO_PATHS = new Set([
   // `/garantia-de-alquiler-uruguay` SI convierte topes en UR a pesos de hoy, y por eso entra con la
   // tanda de abajo: la conversion de un tope fijo no es un dato en vivo.
   "/coeficiente-de-reajuste-de-alquileres-uruguay",
+  // Pagina nueva del 2026-11-20, clasificada en el mismo commit que la publica: Ley 19.978,
+  // Decreto 86/022 y Ley 16.074 sobre un catalogo FIJO del repo (app/utils/teletrabajo.ts), sin un
+  // solo dato en vivo en su <script setup>; misma clase que sus vecinas de hub
+  // /horas-extras-uruguay y /licencias-especiales-uruguay.
+  "/teletrabajo-uruguay",
   // ---------------------------------------------------------------------------------------------
   // Tanda del 2026-11-09: las ocho que ya cumplian la linea escrita el 11-03 y nadie habia barrido.
   //
@@ -544,6 +550,14 @@ export const CONTENIDO_PATHS = new Set([
   "/prestamo-sin-recibo-de-sueldo-uruguay",
   "/prestamos-para-jubilados-uruguay",
   "/saldar-deudas-uruguay",
+  // 2026-11-20: nace `/carne-de-manipulacion-de-alimentos-uruguay` y entra clasificada, en el mismo
+  // commit que la publica, que es lo que la deuda de `contenidoTramoParity.test.ts` pide de toda
+  // pagina nueva de lectura larga. No pide NINGUN dato en vivo —su `<script setup>` no tiene un
+  // solo `useFetch`: la tabla de las diez intendencias y las tres transcripciones del Reglamento
+  // Bromatologico salen de `app/utils/foodHandlerCard.ts`—, asi que la linea mecanica del 22/10 la
+  // resuelve sin dudar: es texto, no una serie con texto alrededor. Y es la misma clase de pagina
+  // que su vecina de hub `/carne-de-salud-uruguay`, ya clasificada arriba.
+  "/carne-de-manipulacion-de-alimentos-uruguay",
 ]);
 
 export function tierOf(bucket: string): Tier {

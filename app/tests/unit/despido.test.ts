@@ -14,6 +14,7 @@ import {
   prescribeEl,
   tieneDerechoAJubilacion,
 } from '../../utils/despido'
+import { DOMESTIC_WORK_LEGAL_LIMITS } from '../../utils/domesticWork'
 
 describe('mensualidadesPorDespido', () => {
   it('paga un mes por año de actividad', () => {
@@ -176,5 +177,35 @@ describe('el catálogo que se muestra', () => {
       .toLowerCase()
     expect(texto).not.toMatch(/25 jornales/)
     expect(texto).not.toMatch(/veinticinco jornales/)
+  })
+
+  it('el piso de antigüedad del trabajo doméstico son 90 días, no el año de la ley de 1958', () => {
+    // CORREGIDO el 2026-11-20. La página publicaba «una antigüedad mínima de un año continuado»
+    // citando la Ley 12.597, art. 7 (1958). La Ley 18.065, art. 7 (2006), verificada ese día en
+    // https://www.impo.com.uy/bases/leyes/18065-2006/7, da derecho a indemnización «desde los
+    // noventa días corridos de iniciada la relación laboral». Le contestaba «no te corresponde
+    // nada» a quien sí tenía derecho, así que queda atado acá para que no vuelva.
+    const domestico = DESPIDO_REGLAS.find(r => r.key === 'domestico')
+    expect(domestico).toBeDefined()
+    expect(domestico!.label).toMatch(/90 días/)
+    expect(domestico!.label.toLowerCase()).not.toMatch(/necesita un año/)
+    expect(domestico!.source).toBe('Ley 18.065, art. 7')
+    // La cita textual del art. 7, tal como está en IMPO.
+    expect(domestico!.detail).toContain(
+      '«Las/os trabajadoras/es domésticas/os, tanto mensuales como jornaleros, tendrán derecho a indemnización por despido desde los noventa días corridos de iniciada la relación laboral, rigiéndose en lo demás por las normas generales sobre despido»'
+    )
+    expect(
+      DESPIDO_SOURCES.some(s => s.url === 'https://www.impo.com.uy/bases/leyes/18065-2006/7')
+    ).toBe(true)
+  })
+
+  it('dice lo mismo que la guía de trabajo doméstico sobre el despido', () => {
+    // /guias/trabajo-domestico-uruguay publica la misma regla desde utils/domesticWork.ts: si una
+    // de las dos páginas cambia el piso, el sitio se vuelve a contradecir y esto falla.
+    const enLaGuia = DOMESTIC_WORK_LEGAL_LIMITS.find(l => l.article === 'art. 7')
+    expect(enLaGuia?.value).toMatch(/90 días corridos/)
+    const domestico = DESPIDO_REGLAS.find(r => r.key === 'domestico')
+    expect(domestico!.source).toContain('18.065, art. 7')
+    expect(domestico!.label).toMatch(/90 días corridos/)
   })
 })

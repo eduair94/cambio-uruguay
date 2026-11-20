@@ -143,7 +143,7 @@ export const CLEARING_CONSEQUENCES: readonly ClearingConsequence[] = Object.free
   {
     id: 'prestamos',
     title: 'Los bancos y casi todas las financieras te dicen que no',
-    text: 'OCA exige "no figurar actualmente en el clearing", Crédito de la Casa pide no tener incumplimientos en Infocred ni Clearing ni siquiera para su línea chica, República Microfinanzas exige "sin morosidad vigente en Clearing de informes y/o sistema financiero" y el BROU pide no tener información negativa. La única que dice en su propia página que presta estando en el clearing es Pronto!, sujeto a evaluación, y la puerta que queda abierta es la cara: la tasa se acerca al tope legal.',
+    text: 'OCA exige "no figurar actualmente en el clearing", Crédito de la Casa pide no tener incumplimientos en Infocred ni Clearing ni siquiera para su línea chica, República Microfinanzas exige "sin morosidad vigente en Clearing de informes y/o sistema financiero" y el BROU pide no tener información negativa. Las que dicen en su propia página que prestan estando en el clearing son financieras, ninguna es un banco y en todas queda sujeto a evaluación (leídas el 20 de noviembre de 2026): con recibo de sueldo, ANDA y Cash; sin recibo, Pronto! y Volvé; Pago Después también lo dice y no publica si pide recibo. La tasa cambia mucho de una a otra, y cada una la republica todos los meses.',
   },
   {
     id: 'despues-de-pagar',
@@ -177,7 +177,7 @@ export function clearingFaq(): FaqItem[] {
       id: 'que-pasa',
       question: '¿Qué pasa si estoy en clearing?',
       answer:
-        'Te rechazan tarjetas, préstamos de banco y de la mayoría de las financieras, y una garantía de alquiler puede trabarse: un usuario con reporte 1C fue rechazado inicialmente por Porto y lo aceptaron al reenviar la solicitud con su reporte Clearing. Del sueldo no te descuentan nada por figurar; una retención sólo existe si la autorizaste. Lo que queda es caro (la única financiera que publica que presta estando en el clearing es Pronto!), así que el primer paso es mirar el informe gratis y corregir lo que esté mal.',
+        'Te rechazan tarjetas, préstamos de banco y de la mayoría de las financieras, y una garantía de alquiler puede trabarse: un usuario con reporte 1C fue rechazado inicialmente por Porto y lo aceptaron al reenviar la solicitud con su reporte Clearing. Del sueldo no te descuentan nada por figurar; una retención sólo existe si la autorizaste. Prestar, prestan algunas financieras que lo dicen en su propia página: ANDA y Cash con recibo de sueldo, Pronto! y Volvé sin recibo (leídas el 20 de noviembre de 2026). Antes de pedir, el primer paso es mirar el informe gratis y corregir lo que esté mal.',
       link: {
         label: 'Quién presta sólo con la cédula y a qué tasa',
         to: '/prestamo-sin-recibo-de-sueldo-uruguay',

@@ -118,7 +118,10 @@
       <h2 class="text-h5 font-weight-bold mb-2">Lo que no viene con la facturación</h2>
       <p class="text-medium-emphasis mb-5" style="max-width: 72ch">
         No es un argumento en contra —muchas veces la tarifa compensa de sobra— pero es lo que hay
-        que sumarle al sueldo del otro lado para comparar en serio.
+        que sumarle al sueldo del otro lado para comparar en serio. Y si el trabajo en relación de
+        dependencia es remoto, la
+        <NuxtLink :to="localePath('/teletrabajo-uruguay')">ley de teletrabajo</NuxtLink> agrega lo
+        suyo: sin acuerdo, los equipos, los insumos y los servicios los pone la empresa.
       </p>
       <VRow>
         <VCol v-for="b in CONTRACTOR_LOST_BENEFITS" :key="b.label" cols="12" md="6">

@@ -647,6 +647,28 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'apps que todo uruguayo deberia tener',
         ],
       },
+      {
+        // Las apps y webs que hacen desarrolladores uruguayos por su cuenta. No entran en
+        // /apps-utiles-uruguay (sólo apps de tienda publicadas por quien presta el servicio); la
+        // lista nació del hilo «Recopilatorio apps uruguayas» de r/CharruaDevs (17/11/2026).
+        to: '/apps-hechas-en-uruguay',
+        labelKey: 'nav.appsHechasEnUruguay',
+        icon: 'mdi-cellphone-text',
+        priority: 0.6,
+        changefreq: 'monthly',
+        keywords: [
+          'apps uruguayas',
+          'apps hechas en uruguay',
+          'aplicaciones uruguayas',
+          'apps de desarrolladores uruguayos',
+          'software uruguayo',
+          'proyectos de charruadevs',
+          'luce',
+          'carpincho',
+          'subtitio',
+          'kiosko',
+        ],
+      },
     ],
   },
   {
@@ -2199,6 +2221,34 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // El teletrabajo tiene ley propia desde 2021 (19.978) y reglamento desde 2022 (86/022), y
+        // el sitio no lo nombraba en ninguna página: la palabra sólo aparecía como keyword
+        // («teletrabajo vivienda») en este archivo y en `tools.ts`. Las preguntas que se buscan son
+        // de plata y las contesta la norma: quién pone el equipo, quién paga los servicios, cuántas
+        // horas podés no contestar y si la hora de más de un día es extra (no lo es: el exceso
+        // diario se compensa en la misma semana, art. 8).
+        to: '/teletrabajo-uruguay',
+        labelKey: 'nav.teletrabajo',
+        icon: 'mdi-laptop-account',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'teletrabajo uruguay',
+          'ley de teletrabajo uruguay',
+          'ley 19978',
+          'decreto 86022 teletrabajo',
+          'derecho a la desconexion uruguay',
+          'quien paga la luz en el teletrabajo',
+          'teletrabajo derechos uruguay',
+          'me pueden obligar a teletrabajar',
+          'volver a la oficina teletrabajo',
+          'teletrabajo horas extras uruguay',
+          'acuerdo de teletrabajo uruguay',
+          'teletrabajo hibrido uruguay',
+        ],
+      },
+      {
         to: '/licencias-especiales-uruguay',
         labelKey: 'nav.licenciasEspeciales',
         icon: 'mdi-calendar-heart',
@@ -2591,6 +2641,34 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'requisitos carne de salud',
           'control en salud decreto 274/017',
           'carne de salud provisorio',
+        ],
+      },
+      {
+        // «carne de manipulacion de alimentos» se busca como un precio y como un
+        // plazo, y afuera se contesta con UNA cifra. No hay una: el carné no es
+        // nacional. El Reglamento Bromatológico exige el carné de salud y pone la
+        // capacitación a cargo del empleador; el carné lo crea, lo cobra y lo
+        // fecha cada intendencia, así que sale $ 0 en Montevideo y $ 850 en
+        // Paysandú. Ninguna página del sitio lo contestaba.
+        to: '/carne-de-manipulacion-de-alimentos-uruguay',
+        labelKey: 'nav.carneManipulacionAlimentos',
+        icon: 'mdi-silverware-fork-knife',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'carne de manipulacion de alimentos',
+          'carne de manipulador de alimentos',
+          'carne de manipulacion de alimentos uruguay',
+          'cuanto sale el carne de manipulacion de alimentos',
+          'carne de manipulacion de alimentos montevideo',
+          'carne de manipulacion de alimentos online',
+          'curso de manipulacion de alimentos uruguay',
+          'certificado de habilitacion en manipulacion de alimentos',
+          'carne de manipulacion de alimentos canelones',
+          'carne de manipulacion de alimentos maldonado',
+          'cuanto dura el carne de manipulacion de alimentos',
+          'renovar carne de manipulacion de alimentos',
         ],
       },
       {
@@ -4092,6 +4170,30 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'retiro de placas deuda patente',
           'comprar auto usado uruguay',
           'me sacan el auto por deuda',
+        ],
+      },
+      {
+        // La guía `/guias/transferir-un-auto-uruguay` contesta el CÓMO. Esta página contesta el
+        // CUÁNTO (la libreta: el importe nacional del Texto Ordenado del SUCIVE) y compara lo que
+        // piden las nueve fuentes oficiales leídas, con su fecha. Son dos consultas distintas y
+        // por eso son dos URLs.
+        to: '/cuanto-sale-transferir-un-auto-uruguay',
+        labelKey: 'nav.transferirAutoCosto',
+        icon: 'mdi-car-key',
+        priority: 0.8,
+        changefreq: 'monthly',
+        fresh: true,
+        keywords: [
+          'cuanto sale transferir un auto uruguay',
+          'transferencia de auto uruguay',
+          'cambio de titularidad vehiculo uruguay',
+          'costo transferencia auto uruguay',
+          'libreta de propiedad precio uruguay',
+          'documento de identificacion vehicular',
+          'requisitos transferencia auto intendencia',
+          'transferencia vehiculo canelones',
+          'transferencia vehiculo maldonado',
+          'transferir una moto uruguay',
         ],
       },
       {
