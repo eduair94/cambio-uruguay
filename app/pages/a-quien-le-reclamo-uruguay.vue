@@ -205,7 +205,15 @@ const verifiedAt = new Date(ROUTING_VERIFIED_AT).toLocaleDateString('es-UY', {
 })
 
 const canonicalUrl = 'https://cambio-uruguay.com/a-quien-le-reclamo-uruguay'
-const title = '¿A quién le reclamo en Uruguay?'
+// El título CONTESTA en vez de devolver la consulta. El anterior era la pregunta del
+// lector con «en Uruguay» pegado atrás, o sea gastaba el renglón en repetirla, y la
+// respuesta de esta página —no hay un solo mostrador: depende del servicio, y presentarlo
+// en el equivocado no te redirige— ya estaba en su propio encabezado. NO lleva un conteo:
+// las cinco tarjetas de `ROUTING_BODIES` son las que toman reclamos contra una empresa, y
+// la misma sección manda otros casos a la URCDP, a la Fiscalía y a la Intendencia, así que
+// «son cinco organismos» lo desmentía el propio cuerpo. `complaintRouting.test.ts` impide
+// que vuelva un número. El ruteo por servicio sigue en la descripción.
+const title = '¿A quién le reclamo? Depende del servicio'
 const description =
   'Luz y agua son URSEA, celular e internet URSEC, bancos y seguros el BCU, lo laboral el MTSS. Plazos: 15 días hábiles en URSEA, 15 corridos en el BCU.'
 

@@ -307,8 +307,11 @@
       salario vacacional (tenés la
       <NuxtLink :to="localePath('/herramientas/calculadora-aguinaldo')">
         calculadora de aguinaldo </NuxtLink
-      >), ni partidas variables. Informativo, no asesoramiento fiscal: confirmá con tu recibo, BPS o
-      tu contador.
+      >), ni partidas variables. Si estás certificado, el BPS paga un subsidio que se calcula
+      distinto: está en la
+      <NuxtLink :to="localePath('/herramientas/calculadora-subsidio-por-enfermedad')">
+        calculadora del subsidio por enfermedad </NuxtLink
+      >. Informativo, no asesoramiento fiscal: confirmá con tu recibo, BPS o tu contador.
     </template>
   </ToolShell>
 </template>
