@@ -1,5 +1,39 @@
 # Directorio de alquileres (`/alquileres-uruguay`)
 
+## Dólares que son pesos: medido y no construido — 20 de noviembre de 2026
+
+El espejo de «Pesos que son dólares» (8/10): el portal mismo trae la moneda equivocada porque quien
+publica eligió dólares para un alquiler en pesos. Un apartamento de un dormitorio y 40 m² en Tres
+Cruces a "USD 19.800" no se alquila por $ 826.650 al mes, se alquila por $ 19.800. Esos precios
+encabezaban "más caros" por encima de todo alquiler de lujo real, y algunos llegaban arriba de
+"Más recientes" (eso último ya lo saca el orden nuevo de la misma fecha, que no mira el precio).
+
+**Lo medido** (producción, sólo lectura). Candidatos: los 65 avisos en dólares cuya lectura en
+dólares es ≥ 1,5× el p90 de su cohorte (barrio, o viviendas del departamento con los mismos
+dormitorios) y en pesos cae entre 0,4× el p10 y 2× el p90; más los 23 avisos del historial
+`marketpricelogs` donde el propio anunciante pasó el MISMO número de dólares a pesos, y una muestra
+sembrada de 30 que una regla angosta conservaría (3–10× el p90): **118 filas marcadas a mano**. La
+regla angosta (casa o apartamento, 0 a 2 dormitorios, m² declarados hasta 150, fuera de Maldonado y
+Rocha, sin palabras de oficina, empresa o temporada, sin un signo de dólar en el texto propio, como
+dólares ≥ 10× el p90 de su cohorte y como pesos un alquiler común de esa cohorte) corrige **14
+viviendas distintas** (27 filas: el mismo apartamento está en dos, tres o cuatro portales), y las 14
+son pesos en dos lecturas independientes. De los 11 alquileres
+reales en dólares a 10× o más del p90 de su cohorte (edificios, pisos de oficinas, una casa para
+empresas en Carrasco) **no toca ninguno**.
+
+**Por qué no se construyó.** La vara del repo para un campo deducido es ≥ 95 % de acierto en ≥ 100
+filas revisadas a mano, y esa población no existe: 14 viviendas en cuatro meses son todas las que
+hay y angostar la regla no fabrica más. 14 de 14 tiene una cota inferior de Wilson (95 %) de 78 %.
+Además, para que dos portales de la misma vivienda (uno con m², otro sin) no partieran la propiedad
+y su URL al quedar a 41× de precio, había que tocar la identidad (`matchEvidence.ts`, `dedupe.ts`,
+`reconcile.ts`), la parte más delicada del directorio, por el 0,02 % de él.
+
+**Qué cambiaría la decisión.** Una población de 100 o más filas corregidas que se puedan revisar a
+mano, o una forma de marcar el precio (fuera de "más caros", fuera de las medianas) sin cambiar la
+moneda de la oferta y por lo tanto sin tocar la identidad. El trabajo hecho (la regla, sus tests y
+la evaluación sobre las 118 filas) quedó guardado fuera del repo; no hay que volver a medirlo para
+retomarlo, sí a recontar la población.
+
 ## Una búsqueda nueva tardaba 10–14 s: cinco conexiones a Mongo — 8 de noviembre de 2026
 
 Cambiar un filtro, el orden o la página en Montevideo sin caché (`/api/rentals` sin la entrada del

@@ -107,10 +107,11 @@ async function capture(
 }
 
 describe('rental endpoint sort input', () => {
-  it.each(['precio', 'precio-desc', 'metros', 'recientes', 'total', 'precio-m2'])(
+  it.each(['precio', 'precio-desc', 'metros', 'recientes', 'total', 'precio-m2', 'baja'])(
     'retains every %s sort key while removing private evidence before buffering',
     async sort => {
-      const { items, median, itemsOptions } = await capture({ sort, source: 'casasweb' })
+      const query = { sort, source: 'casasweb' }
+      const { items, median, itemsOptions } = await capture(query)
       expect(itemsOptions.allowDiskUse).toBe(true)
       for (const pipeline of [items, median]) {
         const projection = pipeline.findIndex(stage => stage.$project)
@@ -118,13 +119,19 @@ describe('rental endpoint sort input', () => {
         expect(projection).toBeLessThan(pipeline.findIndex(stage => stage.$sort))
       }
       const projection = items.find(stage => stage.$project)!.$project
-      // "Más recientes" breaks a same-day tie by the document's ObjectId, projected under a
-      // temporary name because the public projection drops `_id` (see RENTAL_INSERTED_SORT_FIELD).
-      for (const key of Object.keys(rentals.rentalMongoSort(sort as rentals.RentalSort)))
-        expect(projection[key]).toBe(key === rentals.RENTAL_INSERTED_SORT_FIELD ? '$_id' : 1)
+      // "Más recientes" sorts on fields computed in this same projection (the homes-first tier and
+      // the hash of the key), so the blocking sort never sees the whole document.
+      const recentSortFields = rentals.rentalRecentSortProjection(
+        rentals.normalizeRentalQuery(query)
+      )
+      for (const key of Object.keys(rentals.rentalMongoSort(sort as rentals.RentalSort))) {
+        // `priceDrop.pct` rides the public `priceDrop`.
+        const projected = key === 'priceDrop.pct' ? 'priceDrop' : key
+        expect(projection[projected]).toEqual(key in recentSortFields ? recentSortFields[key] : 1)
+      }
       expect(projection).toEqual({
         ...rentalPublicPropertyProjection,
-        ...rentals.rentalInsertedProjection(sort as rentals.RentalSort),
+        ...recentSortFields,
         ...(sort === 'total'
           ? Object.fromEntries(rentals.RENTAL_TOTAL_SORT_FIELDS.map(field => [field, 1]))
           : {}),
@@ -136,8 +143,12 @@ describe('rental endpoint sort input', () => {
       })
       if (sort === 'total')
         expect(items.at(-1)).toEqual({ $unset: [...rentals.RENTAL_TOTAL_SORT_FIELDS] })
-      if (sort === 'recientes')
-        expect(items.at(-1)).toEqual({ $unset: [rentals.RENTAL_INSERTED_SORT_FIELD] })
+      if (sort === 'recientes' || sort === 'baja')
+        expect(items.at(-1)).toEqual({ $unset: [...rentals.RENTAL_RECENT_SORT_FIELDS] })
+      else
+        expect(JSON.stringify(items)).not.toMatch(
+          new RegExp(rentals.RENTAL_RECENT_SORT_FIELDS.join('|'))
+        )
       if (sort === 'precio-m2')
         expect(items.at(-1)).toEqual({
           $unset: [...rentalPricePerM2.RENTAL_PRICE_PER_M2_SORT_FIELDS],
@@ -383,6 +394,137 @@ describe.skipIf(!uri)('real Mongo rental sort memory regression', () => {
       })
       .toArray()
 
+  /** Position of each key in `$toHashedIndexKey` order, computed by the server under test. */
+  const hashRank = async (keys: string[]) => {
+    const ordered = await client
+      .db()
+      .aggregate([
+        { $documents: keys.map(key => ({ key })) },
+        { $set: { mix: { $toHashedIndexKey: '$key' } } },
+        { $sort: { mix: 1 } },
+      ])
+      .toArray()
+    return new Map(ordered.map((row, index) => [String(row.key), index]))
+  }
+
+  // NOT COVERED BY CI, AND NEVER RUN ON PRODUCTION'S MONGO: this is the only test that checks the
+  // real order of "más recientes", it is skipped without RENTALS_SORT_TEST_MONGO_URI (CI sets none),
+  // and its fixtures come in through `$documents`, which needs MongoDB 5.1 or later — production runs
+  // 4.4.21, where this test cannot run at all. The 4.4 behaviour was checked once, read-only, on
+  // production on 2026-11-20 with the real route pipelines (out/verify2_A.js of that day's workflow:
+  // nothing of an older day above a newer one, homes before the rest, deterministic, pages tile).
+  it('orders "más recientes" by day, homes first, newest hour, then a fixed mix that is not the price', async () => {
+    const today = new Date().toISOString().slice(0, 10)
+    const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10)
+    // The ObjectId is when we first saved the property: runs of today at 08:00, 15:00 and 20:00 UTC.
+    const savedAt = (hour: number, second: number) =>
+      mongoose.mongo.ObjectId.createFromTime(
+        Date.parse(`${today}T00:00:00Z`) / 1000 + hour * 3600 + second
+      )
+    const property = (
+      key: string,
+      propertyType: string,
+      price: number,
+      day: string,
+      _id: mongoose.mongo.ObjectId
+    ) => ({
+      _id,
+      key,
+      title: 'Vivienda de prueba',
+      propertyType,
+      department: 'Montevideo',
+      neighborhood: 'Cordón',
+      lastSeen: today,
+      firstSeen: day,
+      freshAt: day,
+      offers: [
+        {
+          source: 'infocasas',
+          listingId: key,
+          url: `https://www.infocasas.com.uy/fixture/${key}`,
+          title: 'Alquiler mensual',
+          price,
+          priceUyu: price,
+          currency: 'UYU',
+          lastSeen: today,
+          firstSeen: day,
+          publishedAt: day,
+          details: { description: 'PRIVATE-' },
+        },
+      ],
+    })
+    // Inside each run the price RISES in insertion order: the artefact the ObjectId turned into the
+    // order of the first page.
+    const savedRun = (hour: number, homes: string[][]) =>
+      homes.map(([key, type], i) =>
+        property(key!, type!, 20000 + i * 10000, today, savedAt(hour, i))
+      )
+    const morningHomes = savedRun(8, [
+      ['montevideo-cordon-ejemplo-uno', 'apartamento'],
+      ['montevideo-cordon-ejemplo-dos', 'casa'],
+      ['montevideo-cordon-ejemplo-tres', 'apartamento'],
+    ])
+    const afternoonHomes = savedRun(15, [
+      ['montevideo-cordon-ejemplo-cuatro', 'apartamento'],
+      ['montevideo-cordon-ejemplo-cinco', 'casa'],
+      ['montevideo-cordon-ejemplo-seis', 'apartamento'],
+    ])
+    const todayHomes = [...morningHomes, ...afternoonHomes]
+    // Saved after every home of today: the tier still puts them below the morning's homes.
+    const todayOffices = ['montevideo-centro-oficina-uno', 'montevideo-centro-oficina-dos'].map(
+      (key, i) => property(key, 'oficina', 15000, today, savedAt(20, i))
+    )
+    const yesterdayHomes = [
+      'montevideo-pocitos-ayer-uno',
+      'montevideo-pocitos-ayer-dos',
+      'montevideo-pocitos-ayer-tres',
+    ].map((key, i) => property(key, 'apartamento', 25000, yesterday, savedAt(-10, i)))
+    const documents = [...todayHomes, ...todayOffices, ...yesterdayHomes]
+    const run = async (query: Record<string, string>) => {
+      const { items } = await capture(query)
+      return client
+        .db()
+        .aggregate([{ $documents: documents }, ...items], {
+          collation: rentals.RENTAL_COLLATION,
+          maxTimeMS: 30000,
+        })
+        .toArray()
+    }
+    const inHashOrder = async (rows: Array<{ key: string }>) => {
+      const rank = await hashRank(rows.map(row => row.key))
+      return [...rows].sort((a, b) => rank.get(a.key)! - rank.get(b.key)!).map(row => row.key)
+    }
+
+    const rows = await run({ perPage: '48' })
+    expect(rows.map(row => row.key)).toEqual([
+      ...(await inHashOrder(afternoonHomes)),
+      ...(await inHashOrder(morningHomes)),
+      ...(await inHashOrder(todayOffices)),
+      ...(await inHashOrder(yesterdayHomes)),
+    ])
+    // Not the insertion (= price) order inside a run.
+    expect(rows.slice(0, 3).map(row => row.key)).not.toEqual(afternoonHomes.map(row => row.key))
+    expect(JSON.stringify(rows)).not.toMatch(/_rental|PRIVATE-/)
+    // Deterministic, and the pages tile the list.
+    expect((await run({ perPage: '48' })).map(row => row.key)).toEqual(rows.map(row => row.key))
+    const paged = [
+      ...(await run({ perPage: '4', page: '1' })),
+      ...(await run({ perPage: '4', page: '2' })),
+      ...(await run({ perPage: '4', page: '3' })),
+    ]
+    expect(paged.map(row => row.key)).toEqual(rows.map(row => row.key))
+
+    // With types chosen no chosen type outranks another: the 20:00 oficinas come first, by hour.
+    const chosen = await run({ perPage: '48', types: 'apartamento,oficina' })
+    const notCasa = (homes: typeof todayHomes) => homes.filter(row => row.propertyType !== 'casa')
+    expect(chosen.map(row => row.key)).toEqual([
+      ...(await inHashOrder(todayOffices)),
+      ...(await inHashOrder(notCasa(afternoonHomes))),
+      ...(await inHashOrder(notCasa(morningHomes))),
+      ...(await inHashOrder(yesterdayHomes)),
+    ])
+  })
+
   it('reproduces Mongo error292 when the same endpoint projection is delayed until after sort', async () => {
     const pipelines = await capture({ sort: 'precio', page: '5', perPage: '24' })
     for (const pipeline of [pipelines.items, pipelines.median]) {
@@ -408,6 +550,8 @@ describe.skipIf(!uri)('real Mongo rental sort memory regression', () => {
       const { items } = await capture({ sort, page: '5', perPage: '24', source: 'casasweb' })
       const rows = await execute(240, items)
       const fields = Object.entries(rentals.rentalMongoSort(sort as rentals.RentalSort))
+      // The hash of "más recientes" is Mongo's: read its order from the same server.
+      const mix = await hashRank(Array.from({ length: 240 }, (_, i) => `qa-${i}`))
       const oracle = Array.from({ length: 240 }, (_, i) => ({
         key: `qa-${i}`,
         priceUyu: 12000 + i,
@@ -415,6 +559,10 @@ describe.skipIf(!uri)('real Mongo rental sort memory regression', () => {
         freshAt: date,
         _rentalMonthlyUnknown: false,
         _rentalMonthlyTotal: 12100 + i,
+        _rentalTier: 0,
+        // The fixtures have no `_id`: the hour is null for all of them and ties.
+        _rentalHour: null,
+        _rentalMix: mix.get(`qa-${i}`)!,
       })).sort((a, b) => {
         for (const [key, direction] of fields) {
           const x = a[key as keyof typeof a],

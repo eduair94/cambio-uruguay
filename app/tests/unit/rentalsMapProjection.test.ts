@@ -1,7 +1,12 @@
 // Executes the actual map route against read-only Mongo $documents fixtures; never writes rows.
 import mongoose from 'mongoose'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { RentalMapResponse } from '../../utils/rentals'
+import {
+  RENTAL_SORTS,
+  normalizeRentalQuery,
+  rentalMongoSort,
+  type RentalMapResponse,
+} from '../../utils/rentals'
 
 const state = vi.hoisted(() => ({
   query: {} as Record<string, unknown>,
@@ -44,6 +49,84 @@ vi.mock('../../server/utils/db', () => ({ connectDb: async () => {} }))
 vi.mock('../../server/utils/rentalAvailability', () => ({
   loadRentalAvailabilityIndex: async () => ({ excludedAdvertIds: () => [], byAdvertId: new Map() }),
 }))
+
+// Mongo sorts a field the projection dropped as null, without an error: every row ties and the map
+// silently falls to the next key. Until 2026-11-20 "baja" sorted the map on `priceDrop.pct`, which
+// it never projected, and "precio-m2" on per-m² fields it never computed. No database needed.
+describe('map sort keys survive the slim projection', () => {
+  let handler: (event: any) => Promise<RentalMapResponse>
+  beforeAll(async () => {
+    state.run = async () => []
+    vi.stubGlobal('defineEventHandler', (callback: unknown) => callback)
+    vi.stubGlobal('getQuery', () => state.query)
+    vi.stubGlobal('setResponseHeader', () => {})
+    vi.stubGlobal('createError', (value: any) =>
+      Object.assign(new Error(value.statusMessage), value)
+    )
+    handler = (await import('../../server/api/rentals/mapa.get')).default
+  })
+  afterAll(() => vi.unstubAllGlobals())
+
+  const sortedPass = async (query: Record<string, unknown>) => {
+    state.pipelines = []
+    state.query = query
+    await handler({})
+    const pipeline = state.pipelines.find(stages => stages.some(stage => stage.$sort))!
+    const sortAt = pipeline.findIndex(stage => stage.$sort)
+    const projectAt = pipeline.findLastIndex((stage, index) => index < sortAt && stage.$project)
+    return { pipeline, sortAt, projectAt }
+  }
+
+  it.each(RENTAL_SORTS.map(option => option.value))(
+    'computes or projects every %s sort key before the sort',
+    async sort => {
+      const query = sort === 'distancia' ? { sort, refLat: '-34.9', refLng: '-56.17' } : { sort }
+      const { pipeline, sortAt, projectAt } = await sortedPass(query)
+      expect(projectAt).toBeGreaterThanOrEqual(0)
+      const keys = Object.keys(pipeline[sortAt]!.$sort)
+      expect(pipeline[sortAt]!.$sort).toEqual(rentalMongoSort(normalizeRentalQuery(query).sort))
+      const projection = pipeline[projectAt]!.$project as Record<string, unknown>
+      const setIn = (stages: Array<Record<string, any>>) =>
+        stages.flatMap(stage => Object.keys(stage.$set ?? stage.$addFields ?? {}))
+      const setBefore = setIn(pipeline.slice(0, projectAt))
+      const setAfter = setIn(pipeline.slice(projectAt + 1, sortAt))
+      for (const key of keys) {
+        const paths = key.split('.').map((_, i, parts) => parts.slice(0, i + 1).join('.'))
+        const computed = typeof projection[key] === 'object' && projection[key] !== null
+        // A stored field only has to be kept; a temporary `_rental*` one also has to be computed.
+        const kept =
+          computed ||
+          (paths.some(path => projection[path] === 1) &&
+            (!key.startsWith('_rental') || setBefore.includes(key)))
+        expect(kept || setAfter.includes(key), `${sort}: ${key}`).toBe(true)
+      }
+    }
+  )
+
+  it('keeps the size of the drop for "baja" and computes per-m² on the chosen advert', async () => {
+    const baja = await sortedPass({ sort: 'baja' })
+    expect(baja.pipeline[baja.projectAt]!.$project['priceDrop.pct']).toBe(1)
+
+    // An offer filter, so `rentalOfferStages` really chooses an advert: without one it returns no
+    // stage, `chosen` is -1 and the order of the two steps would go unchecked.
+    const perM2 = await sortedPass({ sort: 'precio-m2', pets: '1' })
+    const computed = perM2.pipeline.findIndex(stage => stage.$set?._rentalPricePerM2)
+    const chosen = perM2.pipeline.findLastIndex(stage => stage.$set?.priceUyu)
+    expect(chosen).toBeGreaterThanOrEqual(0)
+    expect(computed).toBeGreaterThan(chosen)
+    expect(computed).toBeLessThan(perM2.projectAt)
+  })
+
+  it('computes the "más recientes" tier, hour and mix in the projection, not on whole documents', async () => {
+    const { pipeline, projectAt } = await sortedPass({})
+    const projection = pipeline[projectAt]!.$project
+    expect(projection._rentalTier).toHaveProperty('$cond')
+    expect(projection._rentalHour).toHaveProperty('$trunc')
+    expect(projection._rentalMix).toEqual({ $toHashedIndexKey: '$key' })
+    for (const field of ['_rentalTier', '_rentalHour', '_rentalMix'])
+      expect(pipeline.slice(0, projectAt).some(stage => stage.$set?.[field])).toBe(false)
+  })
+})
 
 const uri = process.env.RENTALS_TEST_MONGO_URI
 describe.skipIf(!uri)('map projection and ordering in actual route (read-only Mongo)', () => {

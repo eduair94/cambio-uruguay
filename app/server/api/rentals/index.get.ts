@@ -1,3 +1,4 @@
+import type { PipelineStage } from 'mongoose'
 import { loadRentalServiceZoneIds } from '../../utils/rentalZoneServices'
 import { setHeaderUnlessSent } from '../../utils/cachedResponseHeader'
 import { publicRentalAdvertisers, rentalPublicPropertyProjection } from '../../utils/rentalDetail'
@@ -29,18 +30,19 @@ import {
 import {
   RENTAL_COLLATION,
   RENTAL_STALE_DAYS,
-  RENTAL_INSERTED_SORT_FIELD,
+  RENTAL_RECENT_SORT_FIELDS,
   RENTAL_TOTAL_SORT_FIELDS,
-  rentalInsertedProjection,
   rentalMedianFacet,
   buildRentalFilter,
   normalizeRentalQuery,
   rentalMongoSort,
   rentalOfferStages,
   rentalPublicStages,
+  rentalRecentSortProjection,
   type RentalFacetValue,
   type RentalMeta,
   type RentalProperty,
+  type RentalQuery,
   type RentalsResponse,
 } from '../../../utils/rentals'
 
@@ -97,6 +99,47 @@ function sameRentalFilter(a: Record<string, unknown>, b: Record<string, unknown>
   )
 }
 
+/**
+ * The items pass: one page of the search, sorted. Pure, and exported so the production check of an
+ * order change runs THIS array and not a copy of it that can drift from the route.
+ * `publicStages` is `rentalPublicStages(filter, …)` and `offerStages` is `rentalOfferStages(query, …)`.
+ */
+export function rentalDirectoryItemsPipeline(
+  query: RentalQuery,
+  publicStages: object[],
+  offerStages: object[]
+): PipelineStage[] {
+  const recentSortFields = rentalRecentSortProjection(query)
+  return [
+    ...publicStages,
+    ...offerStages,
+    ...rentalDistanceStages(query),
+    // On the advert chosen above: the card divides this same price by the same area.
+    ...(query.sort === 'precio-m2' ? rentalPricePerM2Stages() : []),
+    // Rich source evidence must not enter the blocking sort buffer.
+    {
+      $project: {
+        ...rentalPublicPropertyProjection,
+        ...rentalDistanceProjection(query),
+        ...recentSortFields,
+        ...(query.sort === 'total'
+          ? Object.fromEntries(RENTAL_TOTAL_SORT_FIELDS.map(field => [field, 1]))
+          : {}),
+        ...(query.sort === 'precio-m2'
+          ? Object.fromEntries(RENTAL_PRICE_PER_M2_SORT_FIELDS.map(field => [field, 1]))
+          : {}),
+      },
+    },
+    { $sort: rentalMongoSort(query.sort) },
+    { $skip: (query.page - 1) * query.perPage },
+    { $limit: query.perPage },
+    ...(query.sort === 'total' ? [{ $unset: [...RENTAL_TOTAL_SORT_FIELDS] }] : []),
+    ...(Object.keys(recentSortFields).length ? [{ $unset: [...RENTAL_RECENT_SORT_FIELDS] }] : []),
+    ...(query.sort === 'precio-m2' ? [{ $unset: [...RENTAL_PRICE_PER_M2_SORT_FIELDS] }] : []),
+    ...(query.refLat !== null ? [{ $unset: [...RENTAL_DISTANCE_SORT_FIELDS] }] : []),
+  ] as PipelineStage[]
+}
+
 /** Lo que el navegador y el borde pueden guardar; la memoria del proceso se rige por `maxAge`. */
 export const RENTAL_DIRECTORY_CACHE_CONTROL = 'public, max-age=30, s-maxage=300'
 
@@ -138,7 +181,6 @@ const cachedDirectory = defineCachedEventHandler(
         usdUyu,
         serviceZones
       )
-      const sort = rentalMongoSort(query.sort)
       const offerStages = rentalOfferStages(query, usdUyu)
       // Sorting alone must not change the rental-price statistics for the same search.
       const priceStages = rentalOfferStages({ ...query, sort: 'precio' }, usdUyu)
@@ -155,36 +197,7 @@ const cachedDirectory = defineCachedEventHandler(
       const foldNeighborhoods = sameRentalFilter(withoutNeighborhood, filter)
 
       const [items, departmentRows, neighborhoodRows, dimensions, coverage] = await Promise.all([
-        RentalListingModel.aggregate([
-          ...publicStages,
-          ...offerStages,
-          ...rentalDistanceStages(query),
-          // On the advert chosen above: the card divides this same price by the same area.
-          ...(query.sort === 'precio-m2' ? rentalPricePerM2Stages() : []),
-          // Rich source evidence must not enter the blocking sort buffer.
-          {
-            $project: {
-              ...rentalPublicPropertyProjection,
-              ...rentalDistanceProjection(query),
-              ...rentalInsertedProjection(query.sort),
-              ...(query.sort === 'total'
-                ? Object.fromEntries(RENTAL_TOTAL_SORT_FIELDS.map(field => [field, 1]))
-                : {}),
-              ...(query.sort === 'precio-m2'
-                ? Object.fromEntries(RENTAL_PRICE_PER_M2_SORT_FIELDS.map(field => [field, 1]))
-                : {}),
-            },
-          },
-          { $sort: sort },
-          { $skip: (query.page - 1) * query.perPage },
-          { $limit: query.perPage },
-          ...(query.sort === 'total' ? [{ $unset: [...RENTAL_TOTAL_SORT_FIELDS] }] : []),
-          ...(Object.keys(rentalInsertedProjection(query.sort)).length
-            ? [{ $unset: [RENTAL_INSERTED_SORT_FIELD] }]
-            : []),
-          ...(query.sort === 'precio-m2' ? [{ $unset: [...RENTAL_PRICE_PER_M2_SORT_FIELDS] }] : []),
-          ...(query.refLat !== null ? [{ $unset: [...RENTAL_DISTANCE_SORT_FIELDS] }] : []),
-        ])
+        RentalListingModel.aggregate(rentalDirectoryItemsPipeline(query, publicStages, offerStages))
           // Deep offsets retain every preceding public row in Mongo's top-k sort. Even the slim
           // projection can exceed 100 MiB at this inventory size; allow bounded disk spill.
           .allowDiskUse(true)
