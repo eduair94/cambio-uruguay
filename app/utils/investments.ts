@@ -20,6 +20,8 @@ import {
   type Currency as TaxCurrency,
   type DepositTerm,
 } from './capitalTax'
+// Sólo el tipo: lrm.ts importa este módulo al cargar, así que un import de valores sería un ciclo.
+import type { LrmSeller } from './lrm'
 import type { ReviewSource } from './reviews'
 
 export type InvestmentCategory =
@@ -41,6 +43,11 @@ export interface InvestmentOption {
   riskLevel: RiskLevel
   /** Minimum entry ticket, or null when no published minimum / quote-only. */
   minInvestment: { amount: number; currency: 'UYU' | 'USD' | 'UI' } | null
+  /**
+   * The row's own source states there is NO minimum. Without it a `null` minimum means "not
+   * published / not verified" and prints as such: a missing figure is never a zero.
+   */
+  noMinimum?: true
   feesNote: string
   regulation: RegulationStatus
   regulationNote: string
@@ -54,6 +61,13 @@ export interface InvestmentOption {
   rating: number | null
   reviewsNote?: string
   reviewSources: ReviewSource[]
+  /**
+   * A bank that sells Letras de Regulación Monetaria to its own clients: its row in
+   * `LRM_WHERE_TO_BUY` (utils/lrm.ts, the table of /letras-de-regulacion-monetaria-uruguay) and the
+   * fee it publishes for them. Restated instead of imported because lrm.ts imports this module at
+   * load time; `tests/unit/lrmBanksAgree.test.ts` fails if the two pages stop saying the same.
+   */
+  lrm?: { seller: LrmSeller['id']; publishedFee: LrmSeller['publishedFee'] }
 }
 
 export interface InvestmentSafetyDimension {
@@ -87,7 +101,7 @@ export const INVESTMENTS: InvestmentOption[] = [
     riskLevel: 'variable',
     minInvestment: { amount: 1000, currency: 'USD' },
     feesNote:
-      'Fondos: 1% + IVA de entrada, sin salida ni custodia. Bonos/acciones extranjeros en custodia: 2,75% + IVA sobre cupones/dividendos. Comisión por operación: no publicado',
+      'Letras de Regulación Monetaria: 2 puntos de la tasa al comprar y 1 punto al vender antes del vencimiento, sin costo de custodia. Fondos: 1% + IVA de entrada, sin salida ni custodia. Bonos: 1,5% + IVA al comprar y 1% + IVA al vender; acciones comunes: 1% + IVA al comprar y 1,5% + IVA al vender; en los dos, mínimo de USD 100 + IVA. Custodia de bonos y acciones: 3,5% + IVA sobre cupones y dividendos (2,75% en Personal Bank). Tarifario, versión del 1/11/2026, apartado 10',
     regulation: 'bcu',
     regulationNote:
       'Supervisado por el BCU como banco (intermediación financiera); NO figura en el registro de Corredores de Bolsa/Agentes de Valores del BCU',
@@ -96,18 +110,19 @@ export const INVESTMENTS: InvestmentOption[] = [
     online: true,
     website: 'https://www.itau.com.uy',
     source: 'https://www.itau.com.uy/inst/paratiInversiones.html',
-    note: 'Sin marca de "brokerage" propia; ofrece fondos de inversión propios y compra/custodia directa de bonos y acciones extranjeros y LRM para clientes de Banca Personal. Tarifario: https://www.itau.com.uy/inst/aci/docs/tarifario.pdf',
+    note: 'Sin marca de "brokerage" propia. A sus clientes les vende online, desde la web del banco (Inversiones): fondos de Itaú Asset, plazo fijo, fondos de inversión en dólares (mínimo U$S 1.000), Letras de Regulación Monetaria (mínimo $ 100.000, a 30, 90, 180 o 360 días) y certificados de depósito; el tarifario cobra además la compra y venta de bonos y acciones. Página leída el 20/11/2026: https://www.itau.com.uy/inst/paratiInversiones.html. Tarifario: https://www.itau.com.uy/inst/aci/docs/tarifario.pdf',
     rating: null,
     reviewSources: [],
+    lrm: { seller: 'itau', publishedFee: 'lrm' },
   },
   {
     id: 'santander-inversiones',
     name: 'Santander Uruguay (Arquitectura Abierta — Select / Private Banking)',
     category: 'banco_broker',
     riskLevel: 'variable',
-    minInvestment: { amount: 100000, currency: 'USD' },
+    minInvestment: { amount: 10000, currency: 'USD' },
     feesNote:
-      'No publicado (no se encontró tarifario público con comisiones por operación/custodia)',
+      'Compra y venta de valores: 2% sobre el precio más una comisión fija de USD 40 + IVA (las operaciones con valores públicos nacionales están exoneradas de IVA); no tiene un renglón propio para letras. Mínimo por operación: USD 10.000, EUR 10.000 o $ 100.000. Custodia: comisión mensual sobre la cartera, de 0,20% a 1,60% + IVA anual según el segmento y el volumen; los fondos de inversión (salvo ETF) no la pagan. Manual de tarifas de inversión, leído el 20/11/2026',
     regulation: 'bcu',
     regulationNote:
       'Supervisado por el Banco Central del Uruguay como banco; NO figura en el registro de Corredores de Bolsa/Agentes de Valores del BCU',
@@ -115,10 +130,11 @@ export const INVESTMENTS: InvestmentOption[] = [
       'Intereses de depósitos, ONs y otros títulos con oferta pública: la tasa NO es un 12% plano — sale de la matriz por moneda y plazo del Título 7, art. 37 lit. A (va de 0,5% a 12%: un depósito en pesos a más de 3 años paga 0,5%, uno en dólares al mismo plazo 7%). La matriz completa está en la guía de impuestos sobre inversiones. Dividendos de contribuyentes de IRAE: 7%. Restantes rentas de capital: 12%. Desde 2026 (Ley 20.446) las ganancias de capital del exterior también pagan IRPF al 12%. El 8% no es una tasa: es una retención reducida que solo puede aplicar la entidad uruguaya que intermedia y además ejerce la custodia de esos activos, y es definitiva solo si optás por ella. Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025',
     online: false,
     website: 'https://www.santander.com.uy',
-    source: 'https://www.santander.com.uy/productos-servicios/inversiones',
-    note: 'Producto de fondos/bonos/acciones/ETFs reservado a segmentos Select (USD 100.000) y Private Banking (USD 500.000); USD 150.000 para no residentes. Sin producto de brokerage minorista de acceso general',
+    source: 'https://www.santander.com.uy/manual-de-tarifas?tipo=inversion',
+    note: 'Santander Select ofrece, con un ejecutivo certificado en inversiones, plazo fijo, fondos de inversión, bonos, acciones, Letras de Regulación Monetaria y commercial papers (https://www.santander.com.uy/select), y las letras tienen página propia (https://www.santander.com.uy/Inversiones/Letras-de-Regulaci%C3%B3n-Monetaria-y-Notas-emitidas-por-el-Gobierno-Central). La App Inversiones se habilita en una instancia presencial o por videollamada con el ejecutivo Select o Private Banking (https://www.santander.com.uy/santander-digital/app-inversiones). El banco no publica un patrimonio mínimo para ser Select: los tramos de custodia de su manual incluyen clientes Select con menos de USD 100.000. Páginas leídas el 20/11/2026',
     rating: null,
     reviewSources: [],
+    lrm: { seller: 'santander', publishedFee: 'valores' },
   },
   {
     id: 'brou-instrumentos-financieros',
@@ -127,18 +143,19 @@ export const INVESTMENTS: InvestmentOption[] = [
     riskLevel: 'variable',
     minInvestment: null,
     feesNote:
-      'Tarifario menciona comisiones de compra/venta/custodia/administración pero los porcentajes exactos no fueron extraíbles del PDF (no verificado)',
+      'Letras de Regulación Monetaria y demás instrumentos que operan por tasa, en pesos: 1,50 % anual sobre el valor nominal hasta $ 250.000, 1 % hasta $ 9.999.999 y 0,50 % desde $ 10.000.000, ponderado por el plazo, con un mínimo de $ 2.500 por operación. Bonos y acciones (operan por precio): de 1,25% a 0,50% según el monto; en dólares, 1,25% por debajo de USD 10.000 y 0,50% desde USD 500.000. Custodia: 0,08% + IVA por trimestre en acciones y ETF (mínimo USD 25 + IVA); el resto, sin cargo. Tarifario de servicios financieros, apartados 2 y 3, leído el 20/11/2026',
     regulation: 'bcu',
     regulationNote:
       'Supervisado por el BCU como banco; NO figura en el registro de Corredores de Bolsa/Agentes de Valores del BCU',
     taxNote:
       'Los títulos comprados "NO constituyen un depósito en el banco" (sin cobertura del seguro de depósitos). Intereses de depósitos, ONs y otros títulos con oferta pública: la tasa NO es un 12% plano — sale de la matriz por moneda y plazo del Título 7, art. 37 lit. A (va de 0,5% a 12%: un depósito en pesos a más de 3 años paga 0,5%, uno en dólares al mismo plazo 7%). La matriz completa está en la guía de impuestos sobre inversiones. Dividendos de contribuyentes de IRAE: 7%. Restantes rentas de capital: 12%; la deuda pública uruguaya está exenta (T7 art. 38 lit. A). Desde 2026 las ganancias de capital del exterior pagan IRPF al 12%; el 8% no es una tasa sino una retención reducida que solo puede aplicar la entidad uruguaya que también ejerce la custodia de esos activos, y solo es definitiva si optás por ella. Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025',
-    online: true,
+    online: false,
     website: 'https://www.brou.com.uy',
     source: 'https://www.brou.com.uy/personas/inversiones/instrumentos-financieros',
-    note: 'Obligaciones Negociables, Letras y otros títulos vía Cuenta Cliente / e-BROU. Sin mínimo publicado para bonos/acciones individuales; el fondo "República Renta Pesos" sí publica un mínimo de $5.000 UYU',
+    note: 'Letras, bonos, acciones y obligaciones negociables, con un Ejecutivo de Negocios: a «¿Dónde puedo realizar mis inversiones en el Banco República?» sus preguntas frecuentes responden «En nuestras dependencias» (https://www.brou.com.uy/personas/inversiones/instrumentos-financieros/preguntas-frecuentes, leídas el 20/11/2026), y su sitio no describe una compra de títulos por e-BROU. Tarifario: https://www.brou.com.uy/documents/20182/112335/Tarifario_Sitio.pdf/681aecbe-2ba8-4616-844a-97ebd97e0175. Sin mínimo publicado para bonos/acciones individuales; el fondo "República Renta Pesos" sí publica un mínimo de $5.000 UYU',
     rating: null,
     reviewSources: [],
+    lrm: { seller: 'brou', publishedFee: 'lrm' },
   },
   {
     id: 'scotiabank-inversiones',
@@ -146,7 +163,8 @@ export const INVESTMENTS: InvestmentOption[] = [
     category: 'banco_broker',
     riskLevel: 'variable',
     minInvestment: null,
-    feesNote: 'No publicado',
+    feesNote:
+      'No publicado: su página de inversiones sólo dice que el plazo fijo no cobra comisión',
     regulation: 'bcu',
     regulationNote:
       'Supervisado por el BCU como banco; NO figura en el registro de Corredores de Bolsa/Agentes de Valores del BCU',
@@ -155,9 +173,10 @@ export const INVESTMENTS: InvestmentOption[] = [
     online: false,
     website: 'https://www.scotiabank.com.uy',
     source: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/int_Valores.aspx',
-    note: 'Ofrece fondos + plazo fijo dentro de Banca Premium; para bonos/LRM/letras de tesorería remite explícitamente a un corredor de bolsa autorizado externo (listado en bvm.com.uy) — no ofrece canal de compra directa propio',
+    note: 'En Banca Premium (pide ingresos líquidos de $ 300.000 por mes o inversiones por más de USD 100.000) ofrece como productos propios plazo fijo, Letras de Regulación Monetaria y Notas (de 30 a 360 días, acreditadas en cuenta al vencer; «Aplica mínimos», sin decir cuál), Notas del MEF, bonos uruguayos y letras y bonos del Tesoro de EE.UU. Páginas leídas el 20/11/2026: https://www.scotiabank.com.uy/Banca-Premium/default y https://www.scotiabank.com.uy/Banca-Premium/Inversiones/default',
     rating: null,
     reviewSources: [],
+    lrm: { seller: 'scotiabank', publishedFee: 'none' },
   },
   {
     id: 'bbva-inversiones',
@@ -165,7 +184,8 @@ export const INVESTMENTS: InvestmentOption[] = [
     category: 'banco_broker',
     riskLevel: 'variable',
     minInvestment: null,
-    feesNote: 'No verificado',
+    feesNote:
+      'Letras de Regulación Monetaria: 1,20% sobre todos los importes, con un mínimo de USD 50; el manual no dice si es anual ni si se pondera por el plazo. Bonos: 1,10% hasta USD 49.999 y 1% desde USD 50.000, con un mínimo de USD 150. Fondos, al comprar: 1% renta fija, 1,25% mixta y 1,50% variable; vender no cuesta. Custodia de valores: 0,80% como máximo, IVA incluido. Manual de tarifas y comisiones del 3/9/2026, secciones 42 y 43, leído el 20/11/2026',
     regulation: 'bcu',
     regulationNote:
       'Supervisado por el BCU como banco (BIC BBVAUYMM); NO figura en el registro de Corredores de Bolsa/Agentes de Valores del BCU',
@@ -174,9 +194,10 @@ export const INVESTMENTS: InvestmentOption[] = [
     online: false,
     website: 'https://www.bbva.com.uy',
     source: 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/int_Valores.aspx',
-    note: 'Publica una "Cartilla Contractual — Instrumentos Financieros" pero el contenido detallado (marca de un eventual servicio de brokerage) no pudo verificarse (PDF devolvió 403)',
+    note: 'Su manual de tarifas y comisiones publica qué cobra por comprar Letras de Regulación Monetaria, bonos, acciones y fondos, y por la custodia de valores; no dice por qué canal se compran. Manual: https://www.bbva.com.uy/content/dam/public-web/uruguay/documents/NuevoTarifario2024.pdf',
     rating: null,
     reviewSources: [],
+    lrm: { seller: 'bbva', publishedFee: 'lrm' },
   },
   // ── Fintech ──────────────────────────────────────────────────────────────────
   {
@@ -247,6 +268,7 @@ export const INVESTMENTS: InvestmentOption[] = [
     category: 'broker_internacional',
     riskLevel: 'variable',
     minInvestment: null,
+    noMinimum: true,
     feesNote:
       'Sin mínimo para abrir cuenta; comisión de ~0,5% sobre operaciones citada por fuentes secundarias, pero no confirmada en un tarifario oficial de Balanz Uruguay (no verificado)',
     regulation: 'bcu',
@@ -288,6 +310,7 @@ export const INVESTMENTS: InvestmentOption[] = [
     category: 'broker_internacional',
     riskLevel: 'alto',
     minInvestment: null,
+    noMinimum: true,
     feesNote:
       'Acciones/ETFs sin comisión hasta EUR 100.000/mes de volumen, luego 0,2% (mín. EUR 10); conversión de moneda 0,5%; inactividad EUR 10/mes tras 12 meses sin actividad y 90 días sin depósito; retiros gratuitos',
     regulation: 'exterior_regulado',
@@ -309,9 +332,9 @@ export const INVESTMENTS: InvestmentOption[] = [
     name: 'Plazo fijo bancario (UYU/USD/UI/EUR)',
     category: 'renta_fija_local',
     riskLevel: 'bajo',
-    minInvestment: null,
+    minInvestment: { amount: 5000, currency: 'UYU' },
     feesNote:
-      'Sin comisión de entrada/salida típica; minimos varían por banco y NO son fijados por el BCU (indicativo: Itaú sugiere ~$5.000 en pesos / ~USD 500 en dólares en su tarifario)',
+      'Sin comisión de entrada/salida típica. El mínimo lo publica cada banco y no lo fija el BCU: BROU $ 5.000, US$ 500 o UI 1.500; Itaú (Itaú Link) y BBVA (online) $ 10.000 o US$ 1.000',
     regulation: 'bcu',
     regulationNote:
       'Depósito bancario supervisado por el BCU; los bancos deben divulgar la TEA y cualquier mínimo de depósito',
@@ -337,10 +360,10 @@ export const INVESTMENTS: InvestmentOption[] = [
       'Instrumento emitido y regulado por el BCU; los inversores minoristas no pueden comprar directamente al BCU, sólo a través de intermediarios regulados (bancos, corredores de bolsa u otros agentes autorizados por el BCU)',
     taxNote:
       'Exentas de IRPF, y no solo el interés: el Título 7, art. 38 lit. A exonera cualquier rendimiento de capital o incremento patrimonial derivado de la tenencia o transferencia de deuda pública uruguaya (también la ganancia al venderlas antes del vencimiento). No computan para el Impuesto al Patrimonio (Título 14, art. 23). Igual tratamiento para no residentes (IRNR, Título 8, art. 19 lit. A)',
-    online: false,
+    online: true,
     website: 'https://www.bvm.com.uy',
     source: 'https://www.bcu.gub.uy/Comunicaciones/Paginas/Detalle-Noticia.aspx?noticia=309',
-    note: 'Cotiza en la BVM con cantidad negociable mínima de 100 (https://www.bvm.com.uy/operativa/instrumento/id/LRM$). El mínimo de ~UYU 100.000 es citado por fuentes de educación financiera, no un mínimo fijo publicado por el BCU; el rendimiento se fija en cada licitación (variable)',
+    note: 'Cotiza en la BVM con cantidad negociable mínima de 100 (https://www.bvm.com.uy/operativa/instrumento/id/LRM$). El mínimo de $ 100.000 lo fija el BCU: «La cantidad mínima que admitida por el sistema para el ingreso de propuestas es de $100.000, exigiéndose múltiplos de $10.000» (Instrumentos emitidos por el Banco Central del Uruguay, punto 1.2, leído el 20/11/2026: https://www.bcu.gub.uy/Politica-Economica-y-Mercados/Documents/caracteristicas_instrumentos_BCU.pdf). Itaú las vende online desde $ 100.000. El rendimiento se fija en cada licitación (variable)',
     rating: null,
     reviewSources: [],
   },
@@ -1690,9 +1713,12 @@ export function riskLabel(risk: RiskLevel): string {
   return labels[risk]
 }
 
-/** A minimum-investment cell: `US$ 1.000`, `$ 5.000`, `UI 10.000`, or `Sin mínimo` when null. */
+/**
+ * A minimum-investment cell: `US$ 1.000`, `$ 5.000`, `UI 10.000`; `Sin mínimo` only when the row's
+ * source says so (`noMinimum`), and `No publicado` for every other null.
+ */
 export function minInvestmentLabel(opt: InvestmentOption): string {
-  if (opt.minInvestment == null) return 'Sin mínimo'
+  if (opt.minInvestment == null) return opt.noMinimum ? 'Sin mínimo' : 'No publicado'
   const { amount, currency } = opt.minInvestment
   const prefix = currency === 'USD' ? 'US$ ' : currency === 'UI' ? 'UI ' : '$ '
   return `${prefix}${amount.toLocaleString('es-UY', { maximumFractionDigits: 0 })}`

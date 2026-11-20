@@ -1,0 +1,2174 @@
+{
+  "day": "2026-11-19",
+  "basket": {
+    "day": "2026-11-19",
+    "basketVersion": 1,
+    "basketPinnedAt": "2026-09-07",
+    "basketItems": 33,
+    "qualifiedStores": 373,
+    "nationalRatio": 0.9720528622746598,
+    "nationalCost": {
+      "food": 8008.599999999999,
+      "nonFood": 1527,
+      "total": 9535.599999999999,
+      "itemsPriced": 33,
+      "foodItems": 26,
+      "nonFoodItems": 7,
+      "items": 33
+    },
+    "scopes": [
+      {
+        "scope": "dept:Canelones",
+        "median": 0.9264155932459488,
+        "stores": 57,
+        "qualified": true
+      },
+      {
+        "scope": "dept:Montevideo",
+        "median": 0.9743595520807518,
+        "stores": 175,
+        "qualified": true
+      },
+      {
+        "scope": "dept:Colonia",
+        "median": 0.9470773076653508,
+        "stores": 10,
+        "qualified": true
+      },
+      {
+        "scope": "dept:San José",
+        "median": 0.9334038454274167,
+        "stores": 14,
+        "qualified": true
+      },
+      {
+        "scope": "dept:Rivera",
+        "median": 1.0086346109481594,
+        "stores": 3,
+        "qualified": false
+      },
+      {
+        "scope": "dept:Maldonado",
+        "median": 0.9799301569461729,
+        "stores": 44,
+        "qualified": true
+      },
+      {
+        "scope": "dept:Soriano",
+        "median": 0.9573905488611039,
+        "stores": 8,
+        "qualified": true
+      },
+      {
+        "scope": "dept:Durazno",
+        "median": 0.9264155932459488,
+        "stores": 5,
+        "qualified": true
+      },
+      {
+        "scope": "dept:Río Negro",
+        "median": 0.9815142120360445,
+        "stores": 4,
+        "qualified": false
+      },
+      {
+        "scope": "dept:Florida",
+        "median": 0.9699369806928111,
+        "stores": 3,
+        "qualified": false
+      },
+      {
+        "scope": "dept:Salto",
+        "median": 0.943078810909235,
+        "stores": 9,
+        "qualified": true
+      },
+      {
+        "scope": "dept:Lavalleja",
+        "median": 0.9684903464054913,
+        "stores": 6,
+        "qualified": true
+      },
+      {
+        "scope": "dept:Flores",
+        "median": 0.9424273660901769,
+        "stores": 5,
+        "qualified": true
+      },
+      {
+        "scope": "dept:Cerro Largo",
+        "median": 0.9586175892104526,
+        "stores": 5,
+        "qualified": true
+      },
+      {
+        "scope": "dept:Treinta y Tres",
+        "median": 0.9684903464054913,
+        "stores": 4,
+        "qualified": false
+      },
+      {
+        "scope": "dept:Rocha",
+        "median": 0.9684903464054913,
+        "stores": 10,
+        "qualified": true
+      },
+      {
+        "scope": "dept:Tacuarembó",
+        "median": 1.015038804624352,
+        "stores": 6,
+        "qualified": true
+      },
+      {
+        "scope": "dept:Paysandú",
+        "median": 1.0150611343637743,
+        "stores": 4,
+        "qualified": false
+      },
+      {
+        "scope": "dept:Artigas",
+        "median": 1.0036911313976866,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO LA CASONA",
+        "median": 0.8483092190301463,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:RED MARKET",
+        "median": 0.9241560630995868,
+        "stores": 6,
+        "qualified": true
+      },
+      {
+        "scope": "chain:SUPERMERCADO PERSA",
+        "median": 0.8644526330519147,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:EL MASTILAZO",
+        "median": 0.9154421411702965,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:LA PANALERA",
+        "median": 0.8326461994156028,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:MERCADO HELVETICO",
+        "median": 0.8904398727943039,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER COCO",
+        "median": 0.9080012664525761,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:PLANETA BELLONI",
+        "median": 0.9310376035114712,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO UNICENTRO",
+        "median": 0.8791367756029878,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO LA PAZ",
+        "median": 0.9233818532656572,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER COVADONGA",
+        "median": 0.9220096229159674,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO ZUM FELDE",
+        "median": 0.9310376035114712,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO IMPERIO DEL ESTE",
+        "median": 0.9073949112848808,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO ITALIA",
+        "median": 0.9221147076640962,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO PLANETA",
+        "median": 0.9310376035114712,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO DON PAULINO",
+        "median": 0.9310376035114712,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:ECO MARKET",
+        "median": 0.9242504601753346,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:MULTIMARKET",
+        "median": 0.9493544189770795,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO EL GRILLITO",
+        "median": 0.8901415375970219,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:TA - TA",
+        "median": 1.0124331178671946,
+        "stores": 84,
+        "qualified": true
+      },
+      {
+        "scope": "chain:MICROMACRO",
+        "median": 0.9470773076653508,
+        "stores": 6,
+        "qualified": true
+      },
+      {
+        "scope": "chain:MACROMERCADO",
+        "median": 0.913638024415406,
+        "stores": 8,
+        "qualified": true
+      },
+      {
+        "scope": "chain:EL DORADO",
+        "median": 0.9684903464054913,
+        "stores": 48,
+        "qualified": true
+      },
+      {
+        "scope": "chain:SUPERMERCADO LA CHACRA",
+        "median": 0.9143411179495827,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER PRISMA",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO EL MORRO",
+        "median": 0.9334038454274167,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:JOY MARKET",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER RODI",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO DONATO EXPRESS",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO ALTO SUR 4",
+        "median": 0.9573905488611039,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO AVENIDA SUR",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER JARDINES",
+        "median": 0.9334038454274167,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:ECOMARKET 3",
+        "median": 0.9334038454274167,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO ALTO SUR 6",
+        "median": 0.9573905488611039,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO LA FAMILIA",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO AVENIDA NORTE",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:CARNETEL",
+        "median": 0.93623692063612,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER PANDO",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO ALTO SUR 3",
+        "median": 0.9573905488611039,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO ALTO SUR 1",
+        "median": 0.9573905488611039,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SANTA CECILIA",
+        "median": 0.9258489782042082,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER EXPRES 3",
+        "median": 0.923015902995505,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:EXPRES 1",
+        "median": 0.9334038454274167,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER EXPRES 7",
+        "median": 0.9243380047595664,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER EXPRES 6",
+        "median": 0.9334038454274167,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO ALTO SUR 5",
+        "median": 0.9573905488611039,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:OCHO24 ALMACENES",
+        "median": 0.9464359913874515,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:EXPRES MOLINO",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER NATIVO SUAREZ",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO PAZ PLAZA",
+        "median": 0.9334038454274167,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER NUEVO PARIS",
+        "median": 0.9151966154194842,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:EXPRES CENTRO SAN JOSE",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER FUENTES",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:ALMENARA MALL",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO BETINA",
+        "median": 0.9532730879435751,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER 2 HERMANOS",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER SAN RAMON",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SANTA ROSA",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:KAMPANTE",
+        "median": 0.9334038454274167,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER K-53",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER UNO",
+        "median": 0.9334038454274167,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO 18",
+        "median": 0.9264155932459488,
+        "stores": 2,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER DEL FUERTE",
+        "median": 0.9356703055943792,
+        "stores": 2,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER ARIEL 4",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER ARIEL 2",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:NATIVO RED EXPRES",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO EL TIO II",
+        "median": 0.9307596418992937,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER NATIVO B. BLANCOS",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:EXPRES CENTRO",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:HIPERPRECIOS",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:EXPRES PALERMO",
+        "median": 0.9307596418992937,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO DONATO",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:DEL SOL",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:EL TANO",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO MULTIECO",
+        "median": 0.965267064170454,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER XXI",
+        "median": 0.8828349523786905,
+        "stores": 3,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO GATTI",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER EXPRES 8",
+        "median": 0.9334038454274167,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:COSTA VERDE",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER EL TIO 1",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER COMVA",
+        "median": 0.9334038454274167,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:LA CUEVA",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER ARIEL 3",
+        "median": 0.9264155932459488,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER DOS",
+        "median": 0.9334038454274167,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:MARTIN PESCADOR SRL",
+        "median": 0.9587980788314215,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:LA BOHEMIA",
+        "median": 0.962767435398722,
+        "stores": 2,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO DON PEPE",
+        "median": 0.9545374797140227,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:FRIGOREY",
+        "median": 0.8877465962767437,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER CONTINENTE",
+        "median": 0.9022076398889499,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER AVENIDA",
+        "median": 0.9410996318726993,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER SAN JOSE 2",
+        "median": 0.943078810909235,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER SAN JOSE",
+        "median": 0.9414954676800065,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:ESTEFAN SUPERMERCADOS",
+        "median": 0.9424273660901769,
+        "stores": 3,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER FELICE",
+        "median": 0.943078810909235,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:HIPER VITAL",
+        "median": 0.9643788010425718,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:EXPRES 2",
+        "median": 0.9823646804871097,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:FRAY BENTOS II",
+        "median": 0.9739694135591862,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER VARELENSE",
+        "median": 0.8826738875641597,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER TICO",
+        "median": 0.9621720319136269,
+        "stores": 5,
+        "qualified": true
+      },
+      {
+        "scope": "chain:QUITO´S",
+        "median": 0.8909077172968686,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:MARESCA",
+        "median": 1.0083658807078453,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:MARYMAR",
+        "median": 0.912347304289257,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:EL DORADO ECILDA PAULLIER",
+        "median": 0.9515714687111149,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERSOL",
+        "median": 0.9398794416243657,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:DISCO",
+        "median": 0.9743595520807518,
+        "stores": 29,
+        "qualified": true
+      },
+      {
+        "scope": "chain:EL REVOLTIJO",
+        "median": 0.9039066117515172,
+        "stores": 2,
+        "qualified": false
+      },
+      {
+        "scope": "chain:DEVOTO",
+        "median": 0.9743595520807518,
+        "stores": 23,
+        "qualified": true
+      },
+      {
+        "scope": "chain:MERCADITO RIVERA",
+        "median": 0.9709798796836628,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:CENTRAL MAYORISTA",
+        "median": 0.970303945204245,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:FRESH MARKET EL PINAR",
+        "median": 0.9743595520807518,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:HIPERMERCADO GEANT",
+        "median": 0.9708672239370932,
+        "stores": 2,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER CARYLU",
+        "median": 0.9103531668265021,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:TIENDA INGLESA",
+        "median": 0.9706783002642729,
+        "stores": 19,
+        "qualified": true
+      },
+      {
+        "scope": "chain:DEVOTO EXPRESS",
+        "median": 1.011192057546021,
+        "stores": 24,
+        "qualified": true
+      },
+      {
+        "scope": "chain:NUEVO PORVENIR",
+        "median": 1.0389831148717563,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPER VITER",
+        "median": 0.9054027632950992,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO VITER",
+        "median": 0.9054027632950992,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:DEVOTO SOLANAS",
+        "median": 1.0079309645585024,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO BACHINO",
+        "median": 0.9544260517866822,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:SUPERMERCADO EL PALMAR",
+        "median": 0.9636622728892057,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:COMAG",
+        "median": 0.972477737384518,
+        "stores": 1,
+        "qualified": false
+      },
+      {
+        "scope": "chain:MINIMERCADO EL MAGO",
+        "median": 1.0776383271483967,
+        "stores": 1,
+        "qualified": false
+      }
+    ],
+    "cheapestStores": [
+      {
+        "storeId": 310,
+        "storeName": "La Pañalera- Suc. La Pañalera",
+        "department": "Colonia",
+        "ratio": 0.8326461994156028,
+        "cost": 4160.400000000001,
+        "coverage": 0.7272727272727273
+      },
+      {
+        "storeId": 1082,
+        "storeName": "Supermercado La Casona- Suc.",
+        "department": "Canelones",
+        "ratio": 0.8483092190301463,
+        "cost": 4069,
+        "coverage": 0.7272727272727273
+      },
+      {
+        "storeId": 304,
+        "storeName": "Supermercado Persa- Suc. Supermercado Persa",
+        "department": "Canelones",
+        "ratio": 0.8644526330519147,
+        "cost": 5559.9,
+        "coverage": 0.7272727272727273
+      }
+    ],
+    "rankedStores": [
+      {
+        "storeId": 310,
+        "storeName": "La Pañalera- Suc. La Pañalera",
+        "department": "Colonia",
+        "chain": "La Pañalera",
+        "address": "Aparicio Saravia  767",
+        "ratio": 0.8326,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 1082,
+        "storeName": "Supermercado La Casona- Suc.",
+        "department": "Canelones",
+        "chain": "Supermercado La Casona",
+        "address": "JOSE BATLLE Y ORDOÑEZ 529",
+        "ratio": 0.8483,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 304,
+        "storeName": "Supermercado Persa- Suc. Supermercado Persa",
+        "department": "Canelones",
+        "chain": "Supermercado Persa",
+        "address": "Avda. Gral. Artigas   483",
+        "ratio": 0.8645,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 336,
+        "storeName": "Supermercado Unicentro- Suc. Supermercado Unicentro",
+        "department": "Montevideo",
+        "chain": "Supermercado Unicentro",
+        "address": "Veraguas  1907",
+        "ratio": 0.8791,
+        "coverage": 0.8182
+      },
+      {
+        "storeId": 1098,
+        "storeName": "SUPER VARELENSE- Suc.",
+        "department": "Lavalleja",
+        "chain": "SUPER VARELENSE",
+        "address": "Calle Treinta y Tres 470",
+        "ratio": 0.8827,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 289,
+        "storeName": "Super XXI- Suc. Super XXI",
+        "department": "Canelones",
+        "chain": "Super XXI",
+        "address": "P.Butler M 94  S 19 1",
+        "ratio": 0.8828,
+        "coverage": 0.9394
+      },
+      {
+        "storeId": 291,
+        "storeName": "Super XXI- Suc. Super XXI",
+        "department": "Canelones",
+        "chain": "Super XXI",
+        "address": "Av. A esq.14 M427 S10 1",
+        "ratio": 0.8828,
+        "coverage": 0.9394
+      },
+      {
+        "storeId": 365,
+        "storeName": "Frigorey- Suc. Frigorey",
+        "department": "Montevideo",
+        "chain": "Frigorey",
+        "address": "A. Zum Felde  2047",
+        "ratio": 0.8877,
+        "coverage": 0.7576
+      },
+      {
+        "storeId": 298,
+        "storeName": "Supermercado El Grillito- Suc. Supermercado El Grillito",
+        "department": "Canelones",
+        "chain": "Supermercado El Grillito",
+        "address": "Avda. del Parque manz. 16 solar 1 161",
+        "ratio": 0.8901,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 311,
+        "storeName": "Mercado Helvético- Suc. Mercado Helvético",
+        "department": "Colonia",
+        "chain": "Mercado Helvético",
+        "address": "Luis Dreyer  1294",
+        "ratio": 0.8904,
+        "coverage": 0.8485
+      },
+      {
+        "storeId": 312,
+        "storeName": "Quito´s- Suc. Quito´s",
+        "department": "Colonia",
+        "chain": "Quito´s",
+        "address": "Artigas 1737",
+        "ratio": 0.8909,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 292,
+        "storeName": "Super XXI- Suc. Super XXI",
+        "department": "Canelones",
+        "chain": "Super XXI",
+        "address": "Maciel 103 1",
+        "ratio": 0.8913,
+        "coverage": 0.9394
+      },
+      {
+        "storeId": 349,
+        "storeName": "Red Market- Suc. Nº 10 - Grias",
+        "department": "Montevideo",
+        "chain": "Red Market",
+        "address": "Avda. Lezica  6309",
+        "ratio": 0.8924,
+        "coverage": 0.8788
+      },
+      {
+        "storeId": 276,
+        "storeName": "Red Market - Suc. Nº 11 - Los Bulevares",
+        "department": "Montevideo",
+        "chain": "Red Market",
+        "address": "Ideario Artiguista 2016",
+        "ratio": 0.8942,
+        "coverage": 0.8485
+      },
+      {
+        "storeId": 344,
+        "storeName": "Super Continente- Suc. Super Continente",
+        "department": "Montevideo",
+        "chain": "Super Continente",
+        "address": "Avda. José Belloni  4752",
+        "ratio": 0.9022,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 268,
+        "storeName": "El Revoltijo- Suc. El Revoltijo Batlle",
+        "department": "Salto",
+        "chain": "El Revoltijo",
+        "address": "Avda. Batlle  2525",
+        "ratio": 0.9039,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 269,
+        "storeName": "El Revoltijo- Suc. El Revoltijo Uruguay",
+        "department": "Salto",
+        "chain": "El Revoltijo",
+        "address": "Uruguay esq. Soca 0",
+        "ratio": 0.9039,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 294,
+        "storeName": "Super Viter- Suc. Super Viter",
+        "department": "Montevideo",
+        "chain": "Super Viter",
+        "address": "Maria Orticochea  5621",
+        "ratio": 0.9054,
+        "coverage": 0.7576
+      },
+      {
+        "storeId": 885,
+        "storeName": "Supermercado viter- Suc. 2",
+        "department": "Montevideo",
+        "chain": "Supermercado viter",
+        "address": "Millán  5956",
+        "ratio": 0.9054,
+        "coverage": 0.7576
+      },
+      {
+        "storeId": 145,
+        "storeName": "El Dorado- Suc. Melo - Herrera y Muniz",
+        "department": "Cerro Largo",
+        "chain": "El Dorado",
+        "address": "Luis A. De Herrera",
+        "ratio": 0.9073,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 927,
+        "storeName": "SUPERMERCADO IMPERIO DEL ESTE- Suc.",
+        "department": "Canelones",
+        "chain": "SUPERMERCADO IMPERIO DEL ESTE",
+        "address": "RUTA INTERBALNEARIA KM36700 5216",
+        "ratio": 0.9074,
+        "coverage": 0.7576
+      },
+      {
+        "storeId": 857,
+        "storeName": "El Dorado- Suc. Melo",
+        "department": "Cerro Largo",
+        "chain": "El Dorado",
+        "address": "Castellanos casi Gral Muñoz 0",
+        "ratio": 0.9076,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 416,
+        "storeName": "SUPER COCO- Suc.",
+        "department": "Canelones",
+        "chain": "SUPER COCO",
+        "address": "Cesar Mayo Gutirrez 12",
+        "ratio": 0.908,
+        "coverage": 0.9394
+      },
+      {
+        "storeId": 351,
+        "storeName": "Red Market- Suc. Nº 9 - La Barra",
+        "department": "Montevideo",
+        "chain": "Red Market",
+        "address": "Avda. Luis Batlle Berres  230",
+        "ratio": 0.9083,
+        "coverage": 0.8788
+      },
+      {
+        "storeId": 1075,
+        "storeName": "Super Carylu- Suc.",
+        "department": "Canelones",
+        "chain": "Super Carylu",
+        "address": "Ruta 6 KM 22.500 15700",
+        "ratio": 0.9104,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 264,
+        "storeName": "Marymar- Suc. Marymar",
+        "department": "Montevideo",
+        "chain": "Marymar",
+        "address": "Avda. José Belloni  4208",
+        "ratio": 0.9123,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 219,
+        "storeName": "Micromacro- Suc. 21 de Setiembre N°41",
+        "department": "Montevideo",
+        "chain": "Micromacro",
+        "address": "21 de Setiembre  2973",
+        "ratio": 0.9126,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 147,
+        "storeName": "Macromercado- Suc. Oeste N°4",
+        "department": "Montevideo",
+        "chain": "Macromercado",
+        "address": "Avda. Luis Batlle Berres  6149",
+        "ratio": 0.9136,
+        "coverage": 0.9394
+      },
+      {
+        "storeId": 148,
+        "storeName": "Macromercado- Suc. La Teja N°5",
+        "department": "Montevideo",
+        "chain": "Macromercado",
+        "address": "Avda. Dr. Carlos Ma. Ramírez  574",
+        "ratio": 0.9136,
+        "coverage": 0.9394
+      },
+      {
+        "storeId": 149,
+        "storeName": "Macromercado- Suc. Carrasco N°3",
+        "department": "Canelones",
+        "chain": "Macromercado",
+        "address": "Avda. al Parque Roosvelt  2495",
+        "ratio": 0.9136,
+        "coverage": 0.9394
+      },
+      {
+        "storeId": 151,
+        "storeName": "Macromercado- Suc. Casa Central / San Martín N°1",
+        "department": "Montevideo",
+        "chain": "Macromercado",
+        "address": "Pugnalini  1847",
+        "ratio": 0.9136,
+        "coverage": 0.9394
+      },
+      {
+        "storeId": 950,
+        "storeName": "Macromercado- Suc. Las Piedras N°16",
+        "department": "Canelones",
+        "chain": "Macromercado",
+        "address": "Ruta 5 Km 22 22",
+        "ratio": 0.9136,
+        "coverage": 0.9394
+      },
+      {
+        "storeId": 122,
+        "storeName": "El Dorado- Suc. Maldonado - Bvar. Artigas",
+        "department": "Maldonado",
+        "chain": "El Dorado",
+        "address": "Tacuarembó",
+        "ratio": 0.9139,
+        "coverage": 0.9697
+      },
+      {
+        "storeId": 262,
+        "storeName": "Supermercado La Chacra- Suc. Supermercado La Chacra",
+        "department": "Montevideo",
+        "chain": "Supermercado La Chacra",
+        "address": "Avda. José Belloni 6389",
+        "ratio": 0.9143,
+        "coverage": 0.8182
+      },
+      {
+        "storeId": 146,
+        "storeName": "Macromercado- Suc. Punta de Rieles N°7",
+        "department": "Montevideo",
+        "chain": "Macromercado",
+        "address": "Camino Maldonado 6783",
+        "ratio": 0.9146,
+        "coverage": 0.9091
+      },
+      {
+        "storeId": 302,
+        "storeName": "El Mastilazo- Suc. El Mastilazo",
+        "department": "Canelones",
+        "chain": "El Mastilazo",
+        "address": "Avda. Gral. Artigas esq. R. Argentina 478",
+        "ratio": 0.9154,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 430,
+        "storeName": "Macromercado- Suc. Rivera N°9",
+        "department": "Rivera",
+        "chain": "Macromercado",
+        "address": "Julio M. Sosa 1726",
+        "ratio": 0.9179,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 305,
+        "storeName": "Super Covadonga- Suc. Super Covadonga",
+        "department": "Canelones",
+        "chain": "Super Covadonga",
+        "address": "Avda. Artigas y Wilson Ferreira 1",
+        "ratio": 0.922,
+        "coverage": 0.8182
+      },
+      {
+        "storeId": 277,
+        "storeName": "Supermercado  Italia- Suc. Supermercado  Italia",
+        "department": "San José",
+        "chain": "Supermercado  Italia",
+        "address": "Asamblea  693",
+        "ratio": 0.9221,
+        "coverage": 0.7576
+      },
+      {
+        "storeId": 301,
+        "storeName": "Supermercado La Paz- Suc. Supermercado La Paz",
+        "department": "Canelones",
+        "chain": "Supermercado La Paz",
+        "address": "José E. Rodó 359",
+        "ratio": 0.9234,
+        "coverage": 1
+      },
+      {
+        "storeId": 962,
+        "storeName": "Santa Cecilia- Suc.",
+        "department": "San José",
+        "chain": "Santa Cecilia",
+        "address": "Rio de la plata 7 y 1/2 1",
+        "ratio": 0.9258,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 258,
+        "storeName": "Supermercado Gatti- Suc.",
+        "department": "Canelones",
+        "chain": "Supermercado Gatti",
+        "address": "Avda. Gral. Artigas 780",
+        "ratio": 0.9264,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 315,
+        "storeName": "Supermercado 18- Suc. Supermercado 18",
+        "department": "Durazno",
+        "chain": "Supermercado 18",
+        "address": "Dr. Herrera  868",
+        "ratio": 0.9264,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 377,
+        "storeName": "Supermercado Avenida Norte- Suc. Supermercado Avenida Norte",
+        "department": "San José",
+        "chain": "Supermercado Avenida Norte",
+        "address": "Artigas s/n esq. Manuel de Rodríguez 480",
+        "ratio": 0.9264,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 379,
+        "storeName": "Supermercado Avenida Sur- Suc. Supermercado Avenida Sur",
+        "department": "San José",
+        "chain": "Supermercado Avenida Sur",
+        "address": "Herrera 480 (Treinta y Tres esq. Herrera) 480",
+        "ratio": 0.9264,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 513,
+        "storeName": "Supermercado 18- Suc.",
+        "department": "Durazno",
+        "chain": "Supermercado 18",
+        "address": "Pablo Galarza 653",
+        "ratio": 0.9264,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 900,
+        "storeName": "El Tano- Suc.",
+        "department": "Maldonado",
+        "chain": "El Tano",
+        "address": "Av. Artigas 1768 1768",
+        "ratio": 0.9264,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 906,
+        "storeName": "Hiperprecios- Suc.",
+        "department": "Maldonado",
+        "chain": "Hiperprecios",
+        "address": "Camino de los Gauchos esq. Basilio Araujo 1",
+        "ratio": 0.9264,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 907,
+        "storeName": "Del sol- Suc.",
+        "department": "Maldonado",
+        "chain": "Del sol",
+        "address": "Roman Guerra 846 esq Florida 846",
+        "ratio": 0.9264,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 959,
+        "storeName": "Expres Molino- Suc.",
+        "department": "San José",
+        "chain": "Expres Molino",
+        "address": "Nicolás Guerra 223",
+        "ratio": 0.9264,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 960,
+        "storeName": "Expres Centro San Jose- Suc.",
+        "department": "San José",
+        "chain": "Expres Centro San Jose",
+        "address": "Colon 700",
+        "ratio": 0.9264,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 969,
+        "storeName": "Supermercado La Familia- Suc.",
+        "department": "Durazno",
+        "chain": "Supermercado La Familia",
+        "address": "19 de abril 939",
+        "ratio": 0.9264,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 1026,
+        "storeName": "Nativo Red Expres- Suc. Abast Florida - local 240",
+        "department": "Florida",
+        "chain": "Nativo Red Expres",
+        "address": "Heber Usher 1404 1",
+        "ratio": 0.9264,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 217,
+        "storeName": "Macromercado- Suc. Colonia N°17",
+        "department": "Colonia",
+        "chain": "Macromercado",
+        "address": "Luis A. de Herrera 1400",
+        "ratio": 0.9306,
+        "coverage": 0.9091
+      },
+      {
+        "storeId": 904,
+        "storeName": "Super Uno- Suc.",
+        "department": "San José",
+        "chain": "Super Uno",
+        "address": "Ex Ruta 1, km. 28.5 1",
+        "ratio": 0.9334,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 905,
+        "storeName": "Super Dos- Suc.",
+        "department": "San José",
+        "chain": "Super Dos",
+        "address": "Ex Ruta 1, km. 26 1",
+        "ratio": 0.9334,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 265,
+        "storeName": "Carnetel- Suc. Carnetel",
+        "department": "Río Negro",
+        "chain": "Carnetel",
+        "address": "Las Piedras 1624",
+        "ratio": 0.9362,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 123,
+        "storeName": "El Dorado- Suc.  Minas - 18 de Julio",
+        "department": "Lavalleja",
+        "chain": "El Dorado",
+        "address": "Williman",
+        "ratio": 0.94,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 1085,
+        "storeName": "SUPER AVENIDA- Suc. SUPER AVENIDA",
+        "department": "Salto",
+        "chain": "SUPER AVENIDA",
+        "address": "ENRIQUE AMORIN  2836",
+        "ratio": 0.9411,
+        "coverage": 0.7576
+      },
+      {
+        "storeId": 1083,
+        "storeName": "SUPER SAN JOSE- Suc. SUPER SAN JOSE",
+        "department": "Salto",
+        "chain": "SUPER SAN JOSE",
+        "address": "VARELA 2399",
+        "ratio": 0.9415,
+        "coverage": 0.7576
+      },
+      {
+        "storeId": 316,
+        "storeName": "Estefan Supermercados- Suc. Estefan Supermercados",
+        "department": "Flores",
+        "chain": "Estefan Supermercados",
+        "address": "Alfredo J. Puig  611",
+        "ratio": 0.9424,
+        "coverage": 0.7576
+      },
+      {
+        "storeId": 1019,
+        "storeName": "estefan Supermercados- Suc.",
+        "department": "Flores",
+        "chain": "estefan Supermercados",
+        "address": "ines duran 850 2",
+        "ratio": 0.9424,
+        "coverage": 0.7576
+      },
+      {
+        "storeId": 1020,
+        "storeName": "estefan Supermercados- Suc. Supermercado Atlantic",
+        "department": "Flores",
+        "chain": "estefan Supermercados",
+        "address": "Aparicio saravia 1193 3",
+        "ratio": 0.9424,
+        "coverage": 0.7576
+      },
+      {
+        "storeId": 1084,
+        "storeName": "SUPER SAN JOSE 2- Suc. SUPER SAN JOSE 2",
+        "department": "Salto",
+        "chain": "SUPER SAN JOSE 2",
+        "address": "APOLON 1058",
+        "ratio": 0.9431,
+        "coverage": 0.7576
+      },
+      {
+        "storeId": 1086,
+        "storeName": "SUPER FELICE - Suc. SUPER FELICE",
+        "department": "Salto",
+        "chain": "SUPER FELICE",
+        "address": "AV BARBIERI 1350",
+        "ratio": 0.9431,
+        "coverage": 0.7576
+      },
+      {
+        "storeId": 961,
+        "storeName": "Ocho24 Almacenes- Suc.",
+        "department": "San José",
+        "chain": "Ocho24 Almacenes",
+        "address": "Dr. Becerro de Bengoa 398",
+        "ratio": 0.9464,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 212,
+        "storeName": "Micromacro- Suc. J.P Varela N°44 - Colonia",
+        "department": "Colonia",
+        "chain": "Micromacro",
+        "address": "José Pedro Varela  401",
+        "ratio": 0.9471,
+        "coverage": 0.8788
+      },
+      {
+        "storeId": 213,
+        "storeName": "Micromacro- Suc. Gral. Rivera N°45 - Colonia",
+        "department": "Colonia",
+        "chain": "Micromacro",
+        "address": "Gral. Rivera  185",
+        "ratio": 0.9471,
+        "coverage": 0.8788
+      },
+      {
+        "storeId": 990,
+        "storeName": "Micromacro- Suc. Piriápolis N°40",
+        "department": "Maldonado",
+        "chain": "Micromacro",
+        "address": "Celedonio Rojas Salon 01 esq Rambla de los Argentinos 40",
+        "ratio": 0.9495,
+        "coverage": 0.8485
+      },
+      {
+        "storeId": 214,
+        "storeName": "Micromacro- Suc. Libertad N°43",
+        "department": "San José",
+        "chain": "Micromacro",
+        "address": "Ruta 1 km.52 /Lavalleja 52",
+        "ratio": 0.9496,
+        "coverage": 0.8485
+      },
+      {
+        "storeId": 996,
+        "storeName": "El Dorado Ecilda Paullier- Suc.",
+        "department": "San José",
+        "chain": "El Dorado Ecilda Paullier",
+        "address": "Av. Gral. Artigas 1576 0",
+        "ratio": 0.9516,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 135,
+        "storeName": "El Dorado- Suc. San Carlos - Ceberio",
+        "department": "Maldonado",
+        "chain": "El Dorado",
+        "address": "Ceberio",
+        "ratio": 0.9556,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 847,
+        "storeName": "El Dorado- Suc. Vialidad",
+        "department": "Maldonado",
+        "chain": "El Dorado",
+        "address": "Juana Cardenas esquina María Manduy 0",
+        "ratio": 0.9557,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 141,
+        "storeName": "El Dorado- Suc. Treinta y Tres - Basilio Araújo",
+        "department": "Treinta y Tres",
+        "chain": "El Dorado",
+        "address": "Basilio Araujo 1067",
+        "ratio": 0.9573,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 433,
+        "storeName": "El Dorado- Suc. Rocha - Gral. Artigas",
+        "department": "Rocha",
+        "chain": "El Dorado",
+        "address": "General Artigas  169",
+        "ratio": 0.9573,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 719,
+        "storeName": "El Dorado- Suc. PASO DE LOS TOROS",
+        "department": "Tacuarembó",
+        "chain": "El Dorado",
+        "address": "Dr Berruiti 45",
+        "ratio": 0.9573,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 963,
+        "storeName": "Supermercado Alto Sur 1- Suc.",
+        "department": "Soriano",
+        "chain": "Supermercado Alto Sur 1",
+        "address": "Constituyente 820",
+        "ratio": 0.9574,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 964,
+        "storeName": "Supermercado Alto Sur 3- Suc.",
+        "department": "Soriano",
+        "chain": "Supermercado Alto Sur 3",
+        "address": "Leandro Gómez 296",
+        "ratio": 0.9574,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 965,
+        "storeName": "Supermercado Alto Sur 4- Suc.",
+        "department": "Soriano",
+        "chain": "Supermercado Alto Sur 4",
+        "address": "Paysandú 1228",
+        "ratio": 0.9574,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 967,
+        "storeName": "Supermercado Alto Sur 5- Suc.",
+        "department": "Soriano",
+        "chain": "Supermercado Alto Sur 5",
+        "address": "28 de Febrero 500",
+        "ratio": 0.9574,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 968,
+        "storeName": "Supermercado Alto Sur 6- Suc.",
+        "department": "Soriano",
+        "chain": "Supermercado Alto Sur 6",
+        "address": "Rivas 1254",
+        "ratio": 0.9574,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 109,
+        "storeName": "El Dorado- Suc. Chuy - Arachanes",
+        "department": "Rocha",
+        "chain": "El Dorado",
+        "address": "Arachanes  559",
+        "ratio": 0.9586,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 139,
+        "storeName": "El Dorado- Suc. Río Branco - Uriarte",
+        "department": "Cerro Largo",
+        "chain": "El Dorado",
+        "address": "José H. Uriarte",
+        "ratio": 0.9586,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 756,
+        "storeName": "El Dorado- Suc. DOLORES",
+        "department": "Soriano",
+        "chain": "El Dorado",
+        "address": "Carlos P. Puig esquina Adalberto Schuster 1410",
+        "ratio": 0.9618,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 836,
+        "storeName": "Supermercado El Palmar- Suc.",
+        "department": "Rocha",
+        "chain": "Supermercado El Palmar",
+        "address": "19 de abril esquina Pintos 1",
+        "ratio": 0.9637,
+        "coverage": 0.7576
+      },
+      {
+        "storeId": 136,
+        "storeName": "El Dorado- Suc. La Paloma - Sagitario y Alfa",
+        "department": "Rocha",
+        "chain": "El Dorado",
+        "address": "Av. Sagitario",
+        "ratio": 0.9643,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 134,
+        "storeName": "El Dorado- Suc. Pan de Azúcar - Félix de Lizarza",
+        "department": "Maldonado",
+        "chain": "El Dorado",
+        "address": "Félix de Lizarza 775",
+        "ratio": 0.9663,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 480,
+        "storeName": "El Dorado- Suc. Rocha - Solari y Antares",
+        "department": "Rocha",
+        "chain": "El Dorado",
+        "address": "Av. Nicolas Solari  1",
+        "ratio": 0.9663,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 142,
+        "storeName": "El Dorado- Suc.  Maldonado - 18 de Julio",
+        "department": "Maldonado",
+        "chain": "El Dorado",
+        "address": "Dodera  882",
+        "ratio": 0.9669,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 112,
+        "storeName": "El Dorado- Suc. Maldonado - Cerro Pelado",
+        "department": "Maldonado",
+        "chain": "El Dorado",
+        "address": "Cuchilla de la India Muerta y Tpanbaé 1",
+        "ratio": 0.9685,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 117,
+        "storeName": "El Dorado- Suc. Treinta y Tres - Enrique Rodó",
+        "department": "Treinta y Tres",
+        "chain": "El Dorado",
+        "address": "Enrique Rodó  1559",
+        "ratio": 0.9685,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 125,
+        "storeName": "El Dorado- Suc. Treinta y Tres - Meléndez y Juan Rosas",
+        "department": "Treinta y Tres",
+        "chain": "El Dorado",
+        "address": "Manuel Meléndez 852",
+        "ratio": 0.9685,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 127,
+        "storeName": "El Dorado- Suc. Minas - Ruta 8",
+        "department": "Lavalleja",
+        "chain": "El Dorado",
+        "address": "Luis A. de Herrera  515",
+        "ratio": 0.9685,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 132,
+        "storeName": "El Dorado- Suc. Punta del Este - Virazón",
+        "department": "Maldonado",
+        "chain": "El Dorado",
+        "address": "Virazón 1",
+        "ratio": 0.9685,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 133,
+        "storeName": "El Dorado- Suc. Minas - Morales Arrillaga",
+        "department": "Lavalleja",
+        "chain": "El Dorado",
+        "address": "Morales Arrillaga  757",
+        "ratio": 0.9685,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 137,
+        "storeName": "El Dorado- Suc. Maldonado - Lussich y  Messina",
+        "department": "Maldonado",
+        "chain": "El Dorado",
+        "address": "Camino Lussich",
+        "ratio": 0.9685,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 140,
+        "storeName": "El Dorado- Suc. San Carlos - Sarandí",
+        "department": "Maldonado",
+        "chain": "El Dorado",
+        "address": "25 de Agosto",
+        "ratio": 0.9685,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 398,
+        "storeName": "El Dorado- Suc.  Rocha - Ruta 9",
+        "department": "Rocha",
+        "chain": "El Dorado",
+        "address": "Ruta 9 Km. 207 1",
+        "ratio": 0.9685,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 759,
+        "storeName": "El Dorado- Suc. San Carlos 3",
+        "department": "Maldonado",
+        "chain": "El Dorado",
+        "address": "Wilson Ferreira Aldunate esquina Islas Canarias 352",
+        "ratio": 0.9685,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 138,
+        "storeName": "El Dorado- Suc. Piriápolis - Av. Piria",
+        "department": "Maldonado",
+        "chain": "El Dorado",
+        "address": "Tucumán",
+        "ratio": 0.9687,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 481,
+        "storeName": "El Dorado- Suc. San José - Playa Pascual",
+        "department": "San José",
+        "chain": "El Dorado",
+        "address": "Río de la Plata  1",
+        "ratio": 0.9699,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 757,
+        "storeName": "El Dorado- Suc. SARANDÍ GRANDE",
+        "department": "Florida",
+        "chain": "El Dorado",
+        "address": "Libertad 1034",
+        "ratio": 0.9699,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 121,
+        "storeName": "El Dorado- Suc. Lascano - 25 de Agosto y Rincón",
+        "department": "Rocha",
+        "chain": "El Dorado",
+        "address": "25 de Agosto",
+        "ratio": 0.9703,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 482,
+        "storeName": "Disco - Suc. Libertad",
+        "department": "San José",
+        "chain": "Disco",
+        "address": "Wilson Ferreira Aldunate  y 25 de agosto 1116",
+        "ratio": 0.9737,
+        "coverage": 0.9394
+      },
+      {
+        "storeId": 994,
+        "storeName": "Fray Bentos II- Suc. Fray Bentos II",
+        "department": "Río Negro",
+        "chain": "Fray Bentos II",
+        "address": "Espinillo y Coronilla 0",
+        "ratio": 0.974,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 69,
+        "storeName": "Ta - Ta - Suc. San Jose",
+        "department": "San José",
+        "chain": "Ta - Ta",
+        "address": "Asamblea  620",
+        "ratio": 0.9758,
+        "coverage": 0.8485
+      },
+      {
+        "storeId": 837,
+        "storeName": "El Dorado- Suc. Super Eco Varela",
+        "department": "Lavalleja",
+        "chain": "El Dorado",
+        "address": "Dr. Podestá Carnelli 0",
+        "ratio": 0.9812,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 78,
+        "storeName": "Ta - Ta - Suc. Young",
+        "department": "Río Negro",
+        "chain": "Ta - Ta",
+        "address": "18 de Julio  1923",
+        "ratio": 0.9815,
+        "coverage": 0.9091
+      },
+      {
+        "storeId": 131,
+        "storeName": "El Dorado- Suc. La Paloma - Solari y Sirio",
+        "department": "Rocha",
+        "chain": "El Dorado",
+        "address": "Solari",
+        "ratio": 0.9815,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 110,
+        "storeName": "El Dorado- Suc. La Pedrera - Ruta 10",
+        "department": "Rocha",
+        "chain": "El Dorado",
+        "address": "Ruta 10 Y calle Principal 0",
+        "ratio": 0.9857,
+        "coverage": 0.7273
+      },
+      {
+        "storeId": 95,
+        "storeName": "Ta - Ta - Suc. Hiper Shopping Ss",
+        "department": "Paysandú",
+        "chain": "Ta - Ta",
+        "address": "Dr Luis Alberto De Herrera  925",
+        "ratio": 0.9899,
+        "coverage": 0.8788
+      },
+      {
+        "storeId": 88,
+        "storeName": "Ta - Ta - Suc. Minas",
+        "department": "Lavalleja",
+        "chain": "Ta - Ta",
+        "address": "18 de Julio  620",
+        "ratio": 0.995,
+        "coverage": 0.8485
+      },
+      {
+        "storeId": 195,
+        "storeName": "Ta - Ta - Suc. Fondar (Trinidad)",
+        "department": "Flores",
+        "chain": "Ta - Ta",
+        "address": "Francisco Fondar  785",
+        "ratio": 0.9975,
+        "coverage": 0.8182
+      },
+      {
+        "storeId": 82,
+        "storeName": "Ta - Ta - Suc. Rosario",
+        "department": "Colonia",
+        "chain": "Ta - Ta",
+        "address": "Artigas  200",
+        "ratio": 0.9991,
+        "coverage": 0.8485
+      },
+      {
+        "storeId": 98,
+        "storeName": "Ta - Ta - Suc. Hiper Tacuarembo",
+        "department": "Tacuarembó",
+        "chain": "Ta - Ta",
+        "address": "Joaquin Suárez  259",
+        "ratio": 1.0014,
+        "coverage": 0.9091
+      },
+      {
+        "storeId": 83,
+        "storeName": "Ta - Ta - Suc. Hiper Colonia",
+        "department": "Colonia",
+        "chain": "Ta - Ta",
+        "address": "Avenida Franklin D. Roosevelt  458",
+        "ratio": 1.0015,
+        "coverage": 0.9091
+      },
+      {
+        "storeId": 74,
+        "storeName": "Ta - Ta - Suc. Durazno",
+        "department": "Durazno",
+        "chain": "Ta - Ta",
+        "address": "18 de Julio  580",
+        "ratio": 1.0019,
+        "coverage": 0.7576
+      },
+      {
+        "storeId": 209,
+        "storeName": "Ta - Ta - Suc. W.F.Aldunate (Durazno)",
+        "department": "Durazno",
+        "chain": "Ta - Ta",
+        "address": "Wilson Ferreira Aldunate  419",
+        "ratio": 1.003,
+        "coverage": 0.9091
+      },
+      {
+        "storeId": 190,
+        "storeName": "Ta - Ta - Suc. Florida",
+        "department": "Florida",
+        "chain": "Ta - Ta",
+        "address": "Fructuoso Rivera  3320",
+        "ratio": 1.0032,
+        "coverage": 0.9091
+      },
+      {
+        "storeId": 87,
+        "storeName": "Ta - Ta - Suc. Hiper Mercedes",
+        "department": "Soriano",
+        "chain": "Ta - Ta",
+        "address": "Jose Enrique Rodo  758",
+        "ratio": 1.0037,
+        "coverage": 0.9091
+      },
+      {
+        "storeId": 100,
+        "storeName": "Ta - Ta - Suc. Hiper Artigas",
+        "department": "Artigas",
+        "chain": "Ta - Ta",
+        "address": "Av, Dr. Luis Alberto de Herrera  539",
+        "ratio": 1.0037,
+        "coverage": 0.8485
+      },
+      {
+        "storeId": 205,
+        "storeName": "Ta - Ta - Suc. D.Lamas (Salto)",
+        "department": "Salto",
+        "chain": "Ta - Ta",
+        "address": "Diego Lamas  2274",
+        "ratio": 1.0044,
+        "coverage": 0.8788
+      },
+      {
+        "storeId": 93,
+        "storeName": "Ta - Ta - Suc. Hiper Carmelo",
+        "department": "Colonia",
+        "chain": "Ta - Ta",
+        "address": "Juan Zorrilla de San Martin  278",
+        "ratio": 1.0047,
+        "coverage": 0.9091
+      },
+      {
+        "storeId": 881,
+        "storeName": "Ta - Ta- Suc. Paso de los Toros",
+        "department": "Tacuarembó",
+        "chain": "Ta - Ta",
+        "address": "Leandro Gomez 325",
+        "ratio": 1.0052,
+        "coverage": 0.8788
+      },
+      {
+        "storeId": 86,
+        "storeName": "Ta - Ta - Suc. Hiper Melo",
+        "department": "Cerro Largo",
+        "chain": "Ta - Ta",
+        "address": "Villanueva Saravia  777",
+        "ratio": 1.0073,
+        "coverage": 0.9091
+      },
+      {
+        "storeId": 99,
+        "storeName": "Ta - Ta - Suc. Hiper Trinidad",
+        "department": "Flores",
+        "chain": "Ta - Ta",
+        "address": "Presidente Berro  474",
+        "ratio": 1.0081,
+        "coverage": 0.8788
+      },
+      {
+        "storeId": 201,
+        "storeName": "Ta - Ta - Suc. Mercedes",
+        "department": "Soriano",
+        "chain": "Ta - Ta",
+        "address": "Don Bosco  734",
+        "ratio": 1.0086,
+        "coverage": 0.9091
+      },
+      {
+        "storeId": 106,
+        "storeName": "Ta - Ta - Suc. Hiper Rivera",
+        "department": "Rivera",
+        "chain": "Ta - Ta",
+        "address": "Sarandí  950",
+        "ratio": 1.0086,
+        "coverage": 0.8485
+      },
+      {
+        "storeId": 77,
+        "storeName": "Ta - Ta - Suc. Hiper Plaza Ss",
+        "department": "Paysandú",
+        "chain": "Ta - Ta",
+        "address": "Zelmar Michelini  947",
+        "ratio": 1.0118,
+        "coverage": 0.8485
+      },
+      {
+        "storeId": 103,
+        "storeName": "Ta - Ta - Suc. Treinta Y Tres",
+        "department": "Treinta y Tres",
+        "chain": "Ta - Ta",
+        "address": "Juan. A Lavalleja  1774",
+        "ratio": 1.0118,
+        "coverage": 0.8788
+      },
+      {
+        "storeId": 79,
+        "storeName": "Ta - Ta - Suc. Fray Bentos",
+        "department": "Río Negro",
+        "chain": "Ta - Ta",
+        "address": "18 de Julio  1625",
+        "ratio": 1.0121,
+        "coverage": 0.9091
+      },
+      {
+        "storeId": 70,
+        "storeName": "Ta - Ta - Suc. Melo",
+        "department": "Cerro Largo",
+        "chain": "Ta - Ta",
+        "address": "Aparicio Saravia  665",
+        "ratio": 1.0124,
+        "coverage": 0.8788
+      },
+      {
+        "storeId": 181,
+        "storeName": "Ta - Ta - Suc. N.Ferreira (Tcbo)",
+        "department": "Tacuarembó",
+        "chain": "Ta - Ta",
+        "address": "Nelson Ferreira  130",
+        "ratio": 1.015,
+        "coverage": 0.8485
+      },
+      {
+        "storeId": 81,
+        "storeName": "Ta - Ta - Suc. Hiper Norte Ss",
+        "department": "Paysandú",
+        "chain": "Ta - Ta",
+        "address": "Zorrilla de San Martin  1705",
+        "ratio": 1.0151,
+        "coverage": 0.8485
+      },
+      {
+        "storeId": 105,
+        "storeName": "Ta - Ta - Suc. Hiper Superstar",
+        "department": "Paysandú",
+        "chain": "Ta - Ta",
+        "address": "Bulevar Artigas  1673",
+        "ratio": 1.0168,
+        "coverage": 0.8788
+      },
+      {
+        "storeId": 97,
+        "storeName": "Ta - Ta - Suc. Hiper Rocha",
+        "department": "Rocha",
+        "chain": "Ta - Ta",
+        "address": "General Artigas 221  221",
+        "ratio": 1.0172,
+        "coverage": 0.8788
+      },
+      {
+        "storeId": 101,
+        "storeName": "Ta - Ta - Suc. Hiper Salto",
+        "department": "Salto",
+        "chain": "Ta - Ta",
+        "address": "Dr Fco Soca  220",
+        "ratio": 1.0174,
+        "coverage": 0.9091
+      },
+      {
+        "storeId": 207,
+        "storeName": "Ta - Ta - Suc. Glra Flores (Tcbo)",
+        "department": "Tacuarembó",
+        "chain": "Ta - Ta",
+        "address": "Gral. Flores  315",
+        "ratio": 1.0178,
+        "coverage": 0.8788
+      },
+      {
+        "storeId": 160,
+        "storeName": "Ta - Ta - Suc. Rivera II",
+        "department": "Rivera",
+        "chain": "Ta - Ta",
+        "address": "Av. Sepé  51",
+        "ratio": 1.0188,
+        "coverage": 0.7879
+      },
+      {
+        "storeId": 84,
+        "storeName": "Ta - Ta - Suc. Juan Lacaze",
+        "department": "Colonia",
+        "chain": "Ta - Ta",
+        "address": "José Salvo 100  100",
+        "ratio": 1.0214,
+        "coverage": 0.8788
+      },
+      {
+        "storeId": 415,
+        "storeName": "Ta - Ta - Suc. Hiper Salto II",
+        "department": "Salto",
+        "chain": "Ta - Ta",
+        "address": "Grito de Asencio  1499",
+        "ratio": 1.0229,
+        "coverage": 0.9091
+      },
+      {
+        "storeId": 180,
+        "storeName": "Ta - Ta - Suc. Mimatec 18 Tacuaremb",
+        "department": "Tacuarembó",
+        "chain": "Ta - Ta",
+        "address": "18 de Julio  430",
+        "ratio": 1.024,
+        "coverage": 0.8485
+      }
+    ]
+  }
+}

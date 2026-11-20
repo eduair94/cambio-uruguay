@@ -17,10 +17,12 @@
         </h1>
         <p class="text-body-1 text-grey-lighten-2 mb-0">
           Sin recibo de sueldo <strong class="text-white">sí te prestan</strong>:
-          {{ rows.length }} instituciones atienden a trabajadores independientes o a quien deja una
-          garantía<template v-if="spreadLabel">, con tasas publicadas de {{ spreadLabel }}</template
-          >. Lo que cambia es la puerta: con un certificado de contador conseguís las tasas bajas;
-          sólo con la cédula, las más caras.
+          {{ rows.length }} instituciones lo hacen con un certificado de contador, sólo con la
+          cédula o contra una garantía<template v-if="spreadLabel"
+            >, con tasas publicadas de {{ spreadLabel }}</template
+          >. Con certificado conseguís las tasas bajas; sólo con la cédula, las más caras. Si además
+          estás en el clearing, {{ conRecibo }} prestan con recibo de sueldo y {{ sinRecibo }} sin
+          recibo: <a href="#clearing" class="text-white">mirá la tabla</a>.
         </p>
       </div>
     </VCard>
@@ -116,6 +118,74 @@
       </p>
     </section>
 
+    <!-- Estando en el clearing: con recibo y sin recibo -->
+    <section id="clearing" class="mb-6" aria-labelledby="clearing-title">
+      <h2 id="clearing-title" class="text-h6 font-weight-bold mb-1">
+        Préstamos estando en el clearing: con recibo y sin recibo de sueldo
+      </h2>
+      <p class="text-body-2 mb-3">
+        Estando en el clearing prestan, según su propia página,
+        <strong>{{ CLEARING_LENDERS.length }} instituciones</strong>. Con recibo de sueldo:
+        <strong>{{ conRecibo }}</strong
+        >. Sin recibo: <strong>{{ sinRecibo }}</strong
+        >. Ninguna de las {{ CLEARING_LENDERS.length }} es un banco y en todas queda sujeto a
+        evaluación. Leído en la página de cada una el {{ fmtDate(CLEARING_REVIEWED) }}.
+      </p>
+      <VCard variant="outlined" class="mb-3">
+        <VTable class="cu-mobile-cards loan-np__table" density="comfortable">
+          <thead>
+            <tr>
+              <th>Institución</th>
+              <th>¿Pide recibo?</th>
+              <th>Qué dice del clearing</th>
+              <th>Qué pide</th>
+              <th>Tasa y gastos</th>
+              <th>Montos y plazos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="l in CLEARING_LENDERS" :key="l.name">
+              <td data-label="Institución" class="font-weight-medium">
+                <a :href="l.sourceUrl" target="_blank" rel="noopener noreferrer nofollow">{{
+                  l.name
+                }}</a>
+              </td>
+              <td data-label="¿Pide recibo?" class="text-no-wrap">
+                {{ PAYSLIP_LABELS[l.recibo] }}
+              </td>
+              <td data-label="Qué dice del clearing">{{ l.dice }}</td>
+              <td data-label="Qué pide">{{ l.pide }}</td>
+              <td data-label="Tasa y gastos">{{ l.tasa }}</td>
+              <td data-label="Montos y plazos">{{ l.montos }}</td>
+            </tr>
+          </tbody>
+        </VTable>
+      </VCard>
+      <p class="text-body-2 mb-1">
+        Exigen no tener antecedentes, aunque atiendan a quien no tiene recibo:
+      </p>
+      <ul class="checklist text-body-2 mb-3">
+        <li v-for="c in CLEARING_CLOSED" :key="c.name">
+          <strong>{{ c.name }}</strong
+          >: {{ c.quote }}.
+          <a :href="c.sourceUrl" target="_blank" rel="noopener noreferrer">Fuente</a>
+        </li>
+      </ul>
+      <p class="text-body-2 mb-0">
+        Lo que cuestan los antecedentes está en la tabla: ANDA puede pedir una garantía y Volvé
+        empieza con un préstamo de $ 1.000. En tasas, {{ clearingRates }} Está también el
+        <NuxtLink :to="localePath({ path: '/mejores-prestamos-uruguay', hash: '#con-clearing' })"
+          >ranking completo de quién presta si estás en el clearing</NuxtLink
+        >, y antes de pedir conviene mirar
+        <NuxtLink :to="localePath('/salir-del-clearing')">cómo salir del clearing</NuxtLink>,
+        <NuxtLink :to="localePath('/saldar-deudas-uruguay')">cómo saldar las deudas</NuxtLink> y, si
+        buscás vivienda,
+        <NuxtLink :to="localePath('/alquilar-estando-en-clearing')"
+          >cómo alquilar estando en el clearing</NuxtLink
+        >.
+      </p>
+    </section>
+
     <!-- Sólo con cédula: quién presta y a qué tasa -->
     <section class="mb-6" aria-labelledby="cedula-title">
       <h2 id="cedula-title" class="text-h6 font-weight-bold mb-1">
@@ -126,9 +196,10 @@
         >. "Sólo con cédula" quiere decir <strong>sin comprobante de ingresos</strong>, no "sin
         mirar el clearing": son dos requisitos distintos y cada financiera se para en un lugar
         diferente. OCA exige no figurar en el clearing y Crédito de la Casa lo exige hasta para su
-        línea chica; la única que dice en su propia página que presta estando en el clearing es
-        Pronto!. Lo que sigue está leído de la página de cada institución el
-        {{ fmtDate(SOLO_CEDULA_REVIEWED) }}.
+        línea chica; de las que anuncian la cédula sola, la que dice prestar estando en el clearing
+        es Pronto!; las demás que lo dicen están en <a href="#clearing">la tabla de arriba</a>. Lo
+        que sigue está leído de la página de cada institución el
+        {{ fmtDate(SOLO_CEDULA_REVIEWED) }} (las filas releídas después llevan su fecha).
       </p>
       <VCard variant="outlined" class="mb-4">
         <VTable class="cu-mobile-cards loan-np__table" density="comfortable">
@@ -173,10 +244,12 @@
         Tasas medias del período <strong>{{ capsPeriodo }}</strong
         >, vigentes desde el <strong>{{ capSince }}</strong
         >. El BCU republica la tabla todos los meses sobre una ventana móvil de tres meses: las
-        filas de consumo en pesos y en dólares salen de la grilla que el sitio lee del BCU; las de
-        autorización de descuento, retención de haberes y crédito de nómina son una lectura del PDF
-        del {{ fmtDate(BCU_CAPS_READ_ON) }}. Tope = media más 55 %; con retención de haberes, más 30
-        %; crédito de nómina, más 20 %; mora, más 80 %.
+        cuatro filas de consumo en pesos sin autorización de descuento salen de la grilla que el
+        sitio lee del BCU; las de dólares, autorización de descuento, retención de haberes y crédito
+        de nómina son una lectura, hecha el {{ fmtDate(BCU_CAPS_READ_ON) }}, de la Comunicación
+        {{ BCU_CAPS_COMUNICACION }} del BCU ({{ fmtDate(BCU_CAPS_COMUNICACION_DATE) }}). Tope =
+        media más 55 %; con retención de haberes, más 30 %; crédito de nómina, más 20 %; mora, más
+        80 %.
       </p>
       <VCard variant="outlined" class="mb-3">
         <VTable class="cu-mobile-cards loan-np__table" density="comfortable">
@@ -225,7 +298,16 @@
         </h3>
         <p class="text-body-2 mb-2">
           El tope se mide sobre la tasa implícita, y la ley deja fuera del cálculo algunos gastos
-          fijos. Con la UI de agosto de 2026 ($ 6,6371), 120 UI son unos $ 796.
+          fijos.
+          <template v-if="uiValue && ui120 != null && ui10k != null">
+            Con la UI
+            {{ uiReading?.date ? `del ${fmtDate(uiReading.date)}` : 'vigente' }}
+            ({{ fmtUyu(uiValue, 4) }}), 120 UI son unos {{ fmtUyu(ui120, 0) }}, y el corte de 10.000
+            UI que separa las filas de la tabla de topes queda en unos {{ fmtUyu(ui10k, 0) }}.
+          </template>
+          <template v-else>
+            El corte que separa las filas de la tabla de topes es de 10.000 UI.
+          </template>
         </p>
         <ul class="checklist text-body-2">
           <li v-for="c in USURY_EXCLUDED_COSTS" :key="c.id">{{ c.text }}</li>
@@ -250,8 +332,9 @@
             plazo y la afectación bajan con la edad (hasta 70 años, 60 meses y 35 % del nominal;
             desde 90 años, 12 meses y 20 %). No cobra comisión de concesión ni seguro, pero su
             página de préstamos con convenio prevé una comisión por cancelación anticipada. Tasas
-            vigentes desde el 1 de setiembre de 2026: de 15 % a 22 % + IVA (preferencial por eBROU)
-            a 20 % a 27 % + IVA (estándar en sucursal); los calificados 3 en el BCU pagan 1,22 %
+            vigentes desde el {{ fmtDate(BROU_RATES_IN_FORCE_SINCE) }}: de
+            {{ brouRange.cheapest }} + IVA (preferencial por eBROU) a {{ brouRange.dearest }} + IVA
+            (estándar en sucursal); los calificados 3 en el BCU pagan {{ brouSpreadLabel }} puntos
             más.
             <a
               href="https://www.brou.com.uy/personas/prestamos/prestamo-consumo/prestamos-con-convenio-en-pesos"
@@ -268,30 +351,29 @@
             >
           </li>
           <li>
-            La campaña anual <strong>Préstamos a Pasivos</strong> del BROU va en noviembre y
-            diciembre. En 2025 arrancó el 7 de noviembre por eBROU, con atención presencial desde el
-            9 de diciembre por dígito de cédula y cierre el 30 de diciembre, a una tasa "en el
-            entorno del 20 % anual en pesos". Al {{ fmtDate(SOLO_CEDULA_REVIEWED) }} el banco no
-            publicó fechas de la edición 2026.
+            La campaña <strong>Préstamos a Pasivos 2026</strong> del BROU va en noviembre y
+            diciembre: por eBROU desde el 9 de noviembre y, si cobrás menos de $ 30.000 nominales,
+            por WhatsApp (2 1996 000) del 16 de noviembre al 22 de diciembre. En sucursales atiende
+            dos dígitos verificadores de la cédula por día: quien cobra la pasividad en el BROU, del
+            16 al 20 de noviembre y del 9 al 15 de diciembre; quien no, del 24 al 30 de noviembre y
+            del 16 al 22 de diciembre. Desde el 23 de diciembre, todos los pasivos. Durante la
+            campaña no exige un porcentaje mínimo de cuotas pagas para renovar. Leído el
+            {{ fmtDate(BROU_PASIVOS_CAMPAIGN.readOn) }} en la
             <a
-              href="https://www.gub.uy/presidencia/comunicacion/noticias/140000-jubilados-pensionistas-accederan-prestamos-para-pasivos-del-banco"
+              :href="BROU_PASIVOS_CAMPAIGN.sourceUrl"
               target="_blank"
               rel="noopener noreferrer"
-              >Fuente (Presidencia)</a
-            >
-            ·
-            <a
-              href="https://www.montevideo.com.uy/Noticias/BROU-lanzo-prestamos-especiales-para-jubilados-con-una-novedad-como-y-cuando-acceder-uc943682"
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              >fecha de inicio (Montevideo Portal)</a
-            >
+              title="BROU — Campaña Préstamos a Pasivos 2026"
+              >página de la campaña del BROU</a
+            >.
           </li>
           <li>
             <strong>ANDA, nómina para pasivos</strong>: hasta 80 años, cobro por banco o IEDE,
-            buenos antecedentes y "Contrato Persona" de BPS firmado; 29,40 % o 29,60 % + IVA en
-            setiembre de 2026. <strong>Creditel</strong>: adelanto de jubilación hasta $ 40.000 a 30
-            días (las fuentes de ANDA y Creditel están en la tabla de arriba). Por la
+            buenos antecedentes y "Contrato Persona" de BPS firmado; 29,10 % (menos de 10.000 UI) o
+            28,30 % (10.000 UI o más) + IVA en noviembre de 2026, leído el
+            {{ fmtDate(CLEARING_REVIEWED) }}. <strong>Creditel</strong>: adelanto de jubilación
+            hasta $ 40.000 a 30 días (las fuentes de ANDA y Creditel están en la tabla de arriba).
+            Por la
             <a
               href="https://www.impo.com.uy/bases/leyes/17829-2004"
               target="_blank"
@@ -301,6 +383,12 @@
             tenés que cobrar en mano al menos el 35 % del nominal después de impuestos y aportes.
           </li>
         </ul>
+        <p class="text-body-2 mt-2 mb-0">
+          Todo el detalle —BPS, BROU y cuánto te pueden descontar— está en
+          <NuxtLink :to="localePath('/prestamos-para-jubilados-uruguay')"
+            >préstamos para jubilados</NuxtLink
+          >.
+        </p>
       </VCard>
     </section>
 
@@ -331,7 +419,7 @@
       </ul>
     </VCard>
 
-    <FaqSection :items="faq" heading="Preguntas frecuentes" />
+    <FaqSection :items="faq" heading="Preguntas frecuentes" expanded />
 
     <VCard variant="flat" class="pa-4 pa-sm-5 mt-5">
       <h2 class="text-subtitle-1 font-weight-bold mb-2">También te puede servir</h2>
@@ -349,13 +437,24 @@
         <li>
           <NuxtLink :to="localePath('/prestamos-uruguay')">Tasas de préstamos en Uruguay</NuxtLink>
         </li>
+        <li>
+          <NuxtLink :to="localePath('/prestamos-para-jubilados-uruguay')"
+            >Préstamos para jubilados y pensionistas</NuxtLink
+          >
+        </li>
+        <li>
+          <NuxtLink :to="localePath('/guias/como-saber-si-tengo-deudas-uruguay')"
+            >Cómo saber si tengo deudas</NuxtLink
+          >
+        </li>
       </ul>
       <p class="text-caption text-medium-emphasis mt-3 mb-0">
         Citas de las tres puertas verificadas contra la página de cada institución el
-        {{ fmtDate(NOPAYSLIP_LOANS_REVIEWED) }}; la tabla de "sólo con cédula" y la parte de
-        jubilados, el {{ fmtDate(SOLO_CEDULA_REVIEWED) }}; los topes del BCU, el
-        {{ fmtDate(BCU_CAPS_READ_ON) }}. No tenemos acuerdos comerciales con ninguna. Informativo,
-        no es asesoramiento financiero.
+        {{ fmtDate(NOPAYSLIP_LOANS_REVIEWED) }}; la tabla del clearing, el
+        {{ fmtDate(CLEARING_REVIEWED) }}; la tabla de "sólo con cédula" y la parte de jubilados, el
+        {{ fmtDate(SOLO_CEDULA_REVIEWED) }} (lo releído después lleva su fecha); los topes del BCU,
+        el {{ fmtDate(BCU_CAPS_READ_ON) }}. No tenemos acuerdos comerciales con ninguna.
+        Informativo, no es asesoramiento financiero.
       </p>
     </VCard>
   </VContainer>
@@ -363,30 +462,92 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import type { ExchangeRate } from '~/types/api'
 import { BCU_CAPS, BCU_IN_FORCE_SINCE, type BcuCapRow } from '~/utils/cashAdvance'
+import { pesosForUi } from '~/utils/criminalRecord'
 import type { FaqItem } from '~/utils/faqAnswers'
+import { indicatorFromSlug, liveIndicatorReading } from '~/utils/indicators'
 import {
   BCU_CAPS_COMUNICACION,
+  BCU_CAPS_COMUNICACION_DATE,
   BCU_CAPS_PERIOD,
   BCU_CAPS_READ_ON,
   BCU_CAPS_SOURCE_URL,
+  BROU_PASIVOS_CAMPAIGN,
+  CLEARING_CLOSED,
+  CLEARING_LENDERS,
+  CLEARING_REVIEWED,
   NOPAYSLIP_CAPS,
   NOPAYSLIP_DOORS,
   NOPAYSLIP_LOANS_REVIEWED,
+  PAYSLIP_LABELS,
   SOLO_CEDULA_LABELS,
   SOLO_CEDULA_LENDERS,
   SOLO_CEDULA_REVIEWED,
   USURY_EXCLUDED_COSTS,
   buildNoPayslipFaq,
+  clearingNames,
+  clearingRatesSentence,
   mergeNoPayslipCaps,
   noPayslipLenders,
   pctEs,
   teaSpread,
 } from '~/utils/loanNoPayslip'
 import { LENDER_TIERLIST, mergeLenderFacts, type LoanTierSnapshot } from '~/utils/loanTierlist'
+import {
+  BROU_PASIVOS,
+  BROU_RATES_IN_FORCE_SINCE,
+  BROU_SPREAD_CALIFICADOS_3,
+} from '~/utils/retireeLoans'
 import { usuryPct } from '~/utils/usuryCaps'
 
 const localePath = useLocalePath()
+const { getProcessedExchangeData } = useApiService()
+
+const conRecibo = clearingNames('pide')
+const sinRecibo = clearingNames('no-pide')
+
+// La tasa del BROU para pasivos y su vigencia salen del mismo PDF que lee
+// /prestamos-para-jubilados-uruguay (retireeLoans.ts): no se tipean a mano en dos páginas.
+const brouChannelRange = (id: string): string => {
+  const rates = BROU_PASIVOS.find(c => c.id === id)?.teaPct ?? []
+  if (!rates.length) return ''
+  const lo = Math.min(...rates)
+  const hi = Math.max(...rates)
+  return lo === hi ? pctEs(lo) : `${lo.toLocaleString('es-UY')} % a ${pctEs(hi)}`
+}
+const brouRange = {
+  cheapest: brouChannelRange('preferencial-ebrou'),
+  dearest: brouChannelRange('estandar-sucursal'),
+}
+const brouSpreadLabel = BROU_SPREAD_CALIFICADOS_3.toLocaleString('es-UY')
+
+// Los gastos del art. 14 están en UI: la conversión usa la UI vigente, la misma que lee
+// /indicadores/unidad-indexada. Sin lectura viva, sólo se muestran las UI, nunca un peso inventado.
+// La fecha impresa es la de la fila leída (puede no ser la de hoy), o "vigente" si no trae una.
+const uiIndicator = indicatorFromSlug('unidad-indexada')
+const { data: uiReading } = await useAsyncData('npay-ui-reading', async () => {
+  if (!uiIndicator) return null
+  try {
+    const result = await getProcessedExchangeData('')
+    const rows = (result?.exchangeData ?? []) as ExchangeRate[]
+    const reading = liveIndicatorReading(rows, uiIndicator)
+    const value = reading?.value
+    if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return null
+    const date =
+      typeof reading?.date === 'string' && /^\d{4}-\d{2}-\d{2}/.test(reading.date)
+        ? reading.date.slice(0, 10)
+        : null
+    return { value, date }
+  } catch {
+    return null
+  }
+})
+const uiValue = computed(() => uiReading.value?.value ?? null)
+const ui120 = computed(() => pesosForUi(120, uiValue.value))
+const ui10k = computed(() => pesosForUi(10_000, uiValue.value))
+const fmtUyu = (n: number, decimals: number): string =>
+  `$ ${n.toLocaleString('es-UY', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`
 
 // Same weekly-refreshed facts as /mejores-prestamos-uruguay (same key: one response for both).
 const { data: snapshot } = await useFetch<LoanTierSnapshot | null>('/api/loan-tiers', {
@@ -432,6 +593,7 @@ const capRow = computed(() => {
   return row ?? BCU_CAPS[0]!
 })
 const capLabel = computed(() => usuryPct(capRow.value.tope * 100))
+const clearingRates = computed(() => clearingRatesSentence(capLabel.value))
 const capSince = computed(() => fmtDate(liveCaps.value?.vigenteDesde || BCU_IN_FORCE_SINCE))
 
 // The full grid for the "sólo con cédula" section: live rows where the BCU feed has them, dated
@@ -450,6 +612,7 @@ const faq = computed<FaqItem[]>(() =>
     spread: spread.value,
     capLabel: capLabel.value,
     capSince: capSince.value,
+    clearingReviewedLabel: fmtDate(CLEARING_REVIEWED),
   })
 )
 

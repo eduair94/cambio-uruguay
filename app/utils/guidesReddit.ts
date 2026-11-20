@@ -972,6 +972,10 @@ export const redditGuides: readonly Guide[] = [
     related: [
       { label: 'Guía para alquilar', to: '/alquilar-en-uruguay' },
       { label: 'Cómo funciona el IRPF', to: '/guias/como-funciona-el-irpf-uruguay' },
+      {
+        label: 'IRPF de alquileres: el 10,5 % o la exoneración',
+        to: '/guias/irpf-de-alquileres-uruguay',
+      },
       { label: 'Derechos del inquilino', to: '/guias/derechos-del-inquilino-uruguay' },
     ],
   },

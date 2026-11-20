@@ -35,6 +35,116 @@
       </div>
     </VCard>
 
+    <!-- Por monto: las consultas con cifra que la página recibe. Las cuentas son de
+         utils/inversionesResumen.ts y cada número trae su fecha. -->
+    <section id="por-monto" class="mb-6">
+      <h2 class="text-h6 font-weight-bold mb-2 inversiones-group-title">
+        ¿En qué invertir 1.000, 5.000 o 10.000 dólares? ¿Y 2 millones de pesos?
+      </h2>
+      <p class="text-body-2 mb-3">
+        En dólares, lo más simple de riesgo bajo es el plazo fijo: devuelve el capital y un interés
+        pactado. Los bonos y notas del Tesoro, que también hay en dólares, figuran como riesgo bajo
+        en el catálogo de abajo, pero venderlos antes del vencimiento se hace al precio de ese día.
+        Fondos, acciones y ETF pueden valer menos el día que los necesites. Las cuentas de abajo
+        usan tasas y tarifas publicadas, cada una con su fecha.
+      </p>
+      <VRow dense>
+        <VCol v-for="card in cards" :key="card.id" cols="12" md="6">
+          <div class="custodia-card h-100">
+            <h3 class="text-subtitle-1 font-weight-bold mb-2">{{ card.title }}</h3>
+            <ul class="gletir-list">
+              <li v-for="line in card.lines" :key="line.id">
+                <strong class="d-block">{{ line.label }}</strong>
+                {{ line.text }}
+                <template v-if="line.link">
+                  <a
+                    v-if="line.link.external"
+                    :href="line.link.to"
+                    target="_blank"
+                    rel="noopener"
+                    class="inversiones-link"
+                    >{{ line.link.label }}</a
+                  >
+                  <NuxtLink v-else :to="localePath(line.link.to)" class="inversiones-link">{{
+                    line.link.label
+                  }}</NuxtLink>
+                </template>
+              </li>
+            </ul>
+          </div>
+        </VCol>
+      </VRow>
+      <p class="text-caption text-medium-emphasis mt-3 mb-0">
+        Es información, no una recomendación: más abajo están el riesgo y la regulación de cada
+        opción.
+      </p>
+    </section>
+
+    <!-- Lo que paga hoy cada opción de riesgo bajo, con su fecha, su IRPF y su salida. -->
+    <section id="bajo-riesgo-hoy" class="mb-6">
+      <h2 class="text-h6 font-weight-bold mb-3 inversiones-group-title">
+        Cuánto paga hoy lo de bajo riesgo
+      </h2>
+      <VCard class="inversiones-card pa-4 pa-sm-6">
+        <VTable density="comfortable" class="inversiones-table cu-mobile-cards cu-roomy">
+          <thead>
+            <tr>
+              <th>Opción</th>
+              <th>Qué paga hoy</th>
+              <th>IRPF</th>
+              <th>Mínimo</th>
+              <th>¿Cómo se sale?</th>
+              <th>Ver</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in lowRisk" :key="row.id">
+              <td class="font-weight-medium" data-label="">
+                {{ row.option }}
+                <a
+                  :href="row.sourceUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="d-block text-caption inversiones-link"
+                  >Fuente: {{ row.sourceLabel }}</a
+                >
+              </td>
+              <td class="cu-cell-prose" data-label="Qué paga hoy">
+                <span v-for="line in row.pays" :key="line" class="d-block inversiones-note">{{
+                  line
+                }}</span>
+              </td>
+              <td class="cu-cell-prose" data-label="IRPF">
+                <span class="inversiones-note">{{ row.irpf }}</span>
+              </td>
+              <td class="cu-cell-prose" data-label="Mínimo">
+                <span class="inversiones-note">{{ row.minimum }}</span>
+              </td>
+              <td class="cu-cell-prose" data-label="¿Cómo se sale?">
+                <span class="inversiones-note">{{ row.exit }}</span>
+              </td>
+              <td data-label="Ver">
+                <a
+                  v-if="row.link.external"
+                  :href="row.link.to"
+                  target="_blank"
+                  rel="noopener"
+                  class="inversiones-link"
+                  >{{ row.link.label }}</a
+                >
+                <NuxtLink v-else :to="localePath(row.link.to)" class="inversiones-link">{{
+                  row.link.label
+                }}</NuxtLink>
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+        <p class="text-caption text-medium-emphasis mt-3 mb-0">
+          {{ lowRiskNote }} Pizarra e-BROU: tasas efectivas anuales, sólo para personas físicas.
+        </p>
+      </VCard>
+    </section>
+
     <!-- Risk framework -->
     <VAlert type="info" variant="tonal" density="comfortable" class="mb-4" icon="mdi-scale-balance">
       Cada opción de esta guía tiene un <strong>riesgo</strong> y una
@@ -405,6 +515,13 @@
         (compra del inmueble, impuestos de compraventa, escribano y gastos de mantenimiento), además
         de menor liquidez: vender un inmueble puede tomar meses.
       </p>
+      <p class="text-body-2 mb-3">
+        Para mirar precios pedidos está el directorio de
+        <NuxtLink :to="ventaPath" class="inversiones-link">viviendas en venta</NuxtLink>; las
+        <NuxtLink :to="zonaPath" class="inversiones-link">oportunidades inmobiliarias</NuxtLink>
+        comparan cada aviso con los de su zona. Las dos miran lo que se pide, no calculan
+        rentabilidad.
+      </p>
       <p class="text-body-2 mb-0">
         No encontramos evidencia de que exista actualmente una plataforma de
         <em>crowdfunding</em> inmobiliario específica de Uruguay en funcionamiento; si estás
@@ -500,6 +617,10 @@
         </VBtn>
       </VAlert>
     </VCard>
+
+    <!-- Las preguntas que antes sólo estaban en el JSON-LD. FaqSection emite el FAQPage; la página
+         ya pone su propia unidad in-article, así que la del bloque va apagada. -->
+    <FaqSection :items="faq" heading="Preguntas frecuentes" expanded :ad="false" class="mb-6" />
 
     <!-- Disclaimer -->
     <VAlert
@@ -654,9 +775,47 @@ import {
   minInvestmentLabel,
   type RegulationStatus,
 } from '~/utils/investments'
+import {
+  amountCards,
+  buildInversionesFaq,
+  lowRiskCaption,
+  lowRiskRows,
+} from '~/utils/inversionesResumen'
+import { LRM_BASELINE, usableSnapshot, type LrmSnapshotDoc } from '~/utils/lrm'
 
 const localePath = useLocalePath()
 const groups = computed(() => investmentsByCategory())
+const ventaPath = localePath('/venta-viviendas-uruguay')
+const zonaPath = localePath('/oportunidades-inmobiliarias-uruguay')
+
+// Las licitaciones del BCU que sirve el job `currency-lrm`. Clave propia y forma recortada: la página
+// de las LRM guarda la foto entera bajo 'lrm' (172 licitaciones) y acá sólo hacen falta las últimas
+// de cada plazo y las Notas del Tesoro. Sin foto, la planilla leída a mano, que dice su fecha.
+const { data: lrmData } = await useFetch<LrmSnapshotDoc | null>(
+  '/api/letras-regulacion-monetaria',
+  {
+    key: 'lrm-resumen',
+    default: () => null,
+    transform: (d: LrmSnapshotDoc | null) =>
+      d
+        ? {
+            key: d.key,
+            capturedAt: d.capturedAt,
+            sources: d.sources,
+            latest: d.latest,
+            recent: [],
+            treasury: d.treasury,
+            calendar: null,
+            counts: d.counts,
+          }
+        : null,
+  }
+)
+const snapshot = computed<LrmSnapshotDoc>(() => usableSnapshot(lrmData.value) ?? LRM_BASELINE)
+const cards = computed(() => amountCards(snapshot.value))
+const lowRisk = computed(() => lowRiskRows(snapshot.value))
+const lowRiskNote = computed(() => lowRiskCaption(snapshot.value))
+const faq = computed(() => buildInversionesFaq(snapshot.value))
 
 // CUSTODY_VERIFIED_AT es ISO para poder ordenarlo/testearlo; acá se muestra en es-UY.
 const custodyVerifiedAt = new Date(CUSTODY_VERIFIED_AT).toLocaleDateString('es-UY', {
@@ -824,51 +983,6 @@ useHead(() => ({
                 position: 2,
                 name: 'Inversiones en Uruguay',
                 item: canonicalUrl,
-              },
-            ],
-          },
-          {
-            '@type': 'FAQPage',
-            mainEntity: [
-              {
-                '@type': 'Question',
-                name: '¿Dónde puedo invertir mi dinero en Uruguay?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'En Uruguay podés invertir a través de cuentas de inversión en bancos (Itaú, Santander, BROU, Scotiabank, BBVA), fintech como Prex, brokers internacionales accesibles desde Uruguay (eToro, XTB, Balanz, este último regulado localmente), instrumentos de renta fija local (plazo fijo, Letras de Regulación Monetaria del BCU, bonos y notas del Tesoro), fondos de inversión locales (República AFISA, Delta Asset Management y otras administradoras registradas ante el BCU) y exchanges de criptomonedas. Cada opción tiene distinto riesgo, mínimo de inversión, regulación y tratamiento impositivo.',
-                },
-              },
-              {
-                '@type': 'Question',
-                name: '¿Cuál es la opción de menor riesgo para invertir en Uruguay?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'El plazo fijo bancario y las Letras de Regulación Monetaria del BCU son las opciones de menor riesgo, ya que devuelven capital e interés pactado sin exposición a variaciones de mercado, y ambas están supervisadas por el BCU. Los fondos de inversión y las carteras de bonos/acciones tienen riesgo variable según el instrumento, mientras que acciones, ETFs y criptomonedas tienen riesgo alto, ya que su valor puede subir o bajar significativamente según el mercado.',
-                },
-              },
-              {
-                '@type': 'Question',
-                name: '¿Es seguro invertir mediante Gletir en Uruguay?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'Gletir es un corredor de bolsa activo, supervisado por el BCU y miembro de la Bolsa de Valores de Montevideo, lo que ofrece un marco local más sólido que una plataforma no habilitada. No es una inversión garantizada: Gletir Global opera mediante GTN, custodios extranjeros y cuentas ómnibus, y el riesgo del capital depende del instrumento. Además, el BCU impuso en 2025 una multa de UI 150.000 por incumplimientos materiales detectados en 2024 sobre información al inversor, perfiles, registros, custodias y controles. La resolución también recoge medidas correctivas de Gletir. La evaluación objetiva es seguridad media del intermediario y riesgo variable o alto según el activo.',
-                },
-              },
-              {
-                '@type': 'Question',
-                name: 'Si el corredor de bolsa quiebra, ¿qué pasa con mis títulos? ¿Hay algo tipo COPAB para inversiones?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'No hay un COPAB para inversiones. El Fondo de Garantía de Depósitos Bancarios que administra la COPAB tiene por objeto garantizar los depósitos en bancos y cooperativas de intermediación financiera, hasta el equivalente a USD 10.000 para el total de los depósitos en moneda extranjera y UI 250.000 en moneda nacional, por persona y por institución: no alcanza a los valores, ni a las cuotapartes de fondos de inversión, ni al efectivo que tenés en un corredor de bolsa. En Uruguay tampoco consta que exista un fondo de compensación al inversor equivalente al SIPC de Estados Unidos. Lo que sí hay es separación patrimonial: la Ley 18.627 establece en su artículo 109 que el dinero y los valores que un intermediario de valores adquiera o mantenga en custodia por cuenta de sus clientes no pueden ser embargados por deudas del intermediario y, en caso de liquidación por insolvencia, no integran la masa activa de la liquidación. Es una regla de propiedad, no un seguro: te saca de la fila de acreedores, pero no repone lo que el intermediario no compró o no tiene. Por eso importa el registro: si custodia valores a nombre propio debe anotarlos separadamente en su contabilidad y en un registro especial con la individualización de cada cliente (art. 103), debe llevar registro de los titulares reales de los valores escriturales (art. 28) y responde civilmente por omisiones, inexactitudes y retrasos de registro (art. 30). El liquidador es el Banco Central del Uruguay, en sede administrativa (art. 108). Además, el intermediario debe mantener una garantía a favor del BCU no inferior a UI 2.000.000, que es un piso por entidad y no una cobertura por inversor.',
-                },
-              },
-              {
-                '@type': 'Question',
-                name: '¿Cómo se pagan impuestos por invertir en Uruguay?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'Los residentes fiscales uruguayos pagan IRPF Categoría I sobre las rentas de capital (intereses, dividendos, alquileres y ganancias de capital) a una tasa general del 12%; los dividendos de fuente uruguaya, al 7%. Los depósitos a plazo tienen tasas reducidas según moneda y plazo: en pesos 5,5% (hasta 1 año), 2,5% (1 a 3 años) y 0,5% (más de 3 años); en UI 10%, 7% y 5%; en moneda extranjera 12%, 12% y 7%. Al vender valores, la regla por defecto es el régimen real: 12% sobre la ganancia (precio menos costo fiscal actualizado); la base ficta del 20% del precio (≈ 2,4% efectivo) es obligatoria solo si no se puede probar el costo, no es el régimen general. Desde 2026 (Ley 20.446) el IRPF también grava las rentas y ganancias de capital de fuente extranjera, al 12%: el 8% no es una tasa, es una retención reducida que solo puede aplicar un bróker o custodio uruguayo que ejerza la custodia de los activos, y es definitiva solo si el contribuyente opta por ella. Con un bróker del exterior no hay retención uruguaya: corresponden anticipos semestrales o declaración jurada (Formulario 1101). Para activos que coticen en bolsas de reconocido prestigio adquiridos antes del 31/12/2025, el costo fiscal es su cotización al 31/12/2025. La deuda pública uruguaya (Bonos del Tesoro, Letras de Tesorería, LRM) está exenta de IRPF, tanto el interés como la ganancia de capital al transferirla. Los no residentes tributan IRNR. Consultá siempre con un contador y las publicaciones oficiales de la DGI antes de declarar.',
-                },
               },
             ],
           },
