@@ -1,0 +1,5605 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`rentalPublicStages: key insertion order > everything, with excluded adverts 1`] = `
+[
+  "$[0].$match: lastSeen, propertyType, freshAt, priceDrop.at, bedrooms, bathrooms, area, officialZone.zone, $or, $and, latitude, longitude, department, neighborhood",
+  "$[0].$match.area: $type, $gte, $lte",
+  "$[0].$match.$and[0].offers.details.amenities: $regex, $options",
+  "$[0].$match.$and[1].offers.details.amenities: $regex, $options",
+  "$[0].$match.$and[2].$nor[1]: propertyType, priceUyu, title",
+  "$[0].$match.$and[2].$nor[1].priceUyu: $type, $lte",
+  "$[0].$match.$and[2].$nor[1].title: $regex, $options",
+  "$[0].$match.$and[2].$nor[2]: propertyType, priceUyu, title",
+  "$[0].$match.$and[2].$nor[2].priceUyu: $type, $lte",
+  "$[0].$match.$and[2].$nor[2].title: $regex, $options",
+  "$[0].$match.neighborhood: $in, $nin",
+  "$[1].$set.offers.$filter: input, as, cond",
+  "$[1].$set.offers.$filter.cond.$and[4].$not[0].$in[0].$let: vars, in",
+  "$[1].$set.offers.$filter.cond.$and[4].$not[0].$in[0].$let.vars: source, id",
+  "$[1].$set.offers.$filter.cond.$and[4].$not[0].$in[0].$let.vars.source.$convert: input, to, onError, onNull",
+  "$[1].$set.offers.$filter.cond.$and[4].$not[0].$in[0].$let.vars.id.$convert: input, to, onError, onNull",
+  "$[3].$set: sources, petsAllowed, furnished, terms, parkingSpaces, guarantees, lastSeen, freshAt, priceDrop, matchingOffer",
+  "$[3].$set.terms.$reduce: input, initialValue, in",
+  "$[3].$set.guarantees.$reduce: input, initialValue, in",
+  "$[3].$set.matchingOffer.$reduce: input, initialValue, in",
+  "$[4].$set: priceUyu, price, currency",
+  "$[5].$match: lastSeen, propertyType, freshAt, priceDrop.at, bedrooms, bathrooms, area, sources.1, officialZone.zone, petsAllowed, parkingSpaces, furnished, guarantees, offers, priceUyu, $expr, $or, $and, latitude, longitude, department, neighborhood",
+  "$[5].$match.area: $type, $gte, $lte",
+  "$[5].$match.offers.$elemMatch: source, stayPriceSuspect, currency, ownerDirect.declared, agency.key, petsAllowed, furnished, $or, parkingSpaces, guarantees, commonExpenses, priceUyu",
+  "$[5].$match.offers.$elemMatch.parkingSpaces: $type, $gte, $lte",
+  "$[5].$match.offers.$elemMatch.guarantees: $type, $in",
+  "$[5].$match.offers.$elemMatch.commonExpenses: $type, $gte",
+  "$[5].$match.offers.$elemMatch.priceUyu: $type, $gte, $lte",
+  "$[5].$match.$expr.$anyElementTrue[0].$map: input, as, in",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let: vars, in",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.vars.expenses.$let: vars, in",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.vars.expenses.$let.vars.converted.$cond[1].$switch: branches, default",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.vars.expenses.$let.vars.converted.$cond[1].$switch.branches[0]: case, then",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.vars.expenses.$let.vars.converted.$cond[1].$switch.branches[1]: case, then",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.vars.expenses.$let.vars.converted.$cond[1].$switch.branches[2]: case, then",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[5].$and[0].$gte[0].$convert: input, to, onError, onNull",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[5].$and[1].$lte[0].$convert: input, to, onError, onNull",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[6].$or[0].$and[1].$regexMatch: input, regex",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[6].$or[1].$and[1].$regexMatch: input, regex",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[6].$or[2].$and[1].$regexMatch: input, regex",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[6].$or[3].$and[1].$regexMatch: input, regex",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[6].$or[4].$and[1].$regexMatch: input, regex",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[7].$regexMatch: input, regex",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[12].$and[0].$gte[0].$convert: input, to, onError, onNull",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[12].$and[1].$lte[0].$convert: input, to, onError, onNull",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[13].$or[0].$and[1].$regexMatch: input, regex",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[13].$or[1].$and[1].$regexMatch: input, regex",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[13].$or[2].$and[1].$regexMatch: input, regex",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[13].$or[3].$and[1].$regexMatch: input, regex",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[13].$or[4].$and[1].$regexMatch: input, regex",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[21].$lte[0].$floor.$add[0].$convert: input, to, onError, onNull",
+  "$[5].$match.$and[0].offers.details.amenities: $regex, $options",
+  "$[5].$match.$and[1].offers.details.amenities: $regex, $options",
+  "$[5].$match.$and[2].$nor[1]: propertyType, priceUyu, title",
+  "$[5].$match.$and[2].$nor[1].priceUyu: $type, $lte",
+  "$[5].$match.$and[2].$nor[1].title: $regex, $options",
+  "$[5].$match.$and[2].$nor[2]: propertyType, priceUyu, title",
+  "$[5].$match.$and[2].$nor[2].priceUyu: $type, $lte",
+  "$[5].$match.$and[2].$nor[2].title: $regex, $options",
+  "$[5].$match.neighborhood: $in, $nin",
+]
+`;
+
+exports[`rentalPublicStages: key insertion order > everything, without excluded adverts 1`] = `
+[
+  "$[0].$match: lastSeen, propertyType, freshAt, priceDrop.at, bedrooms, bathrooms, area, officialZone.zone, $or, $and, latitude, longitude, department, neighborhood",
+  "$[0].$match.area: $type, $gte, $lte",
+  "$[0].$match.$and[0].offers.details.amenities: $regex, $options",
+  "$[0].$match.$and[1].offers.details.amenities: $regex, $options",
+  "$[0].$match.$and[2].$nor[1]: propertyType, priceUyu, title",
+  "$[0].$match.$and[2].$nor[1].priceUyu: $type, $lte",
+  "$[0].$match.$and[2].$nor[1].title: $regex, $options",
+  "$[0].$match.$and[2].$nor[2]: propertyType, priceUyu, title",
+  "$[0].$match.$and[2].$nor[2].priceUyu: $type, $lte",
+  "$[0].$match.$and[2].$nor[2].title: $regex, $options",
+  "$[0].$match.neighborhood: $in, $nin",
+  "$[1].$set.offers.$filter: input, as, cond",
+  "$[3].$set: sources, petsAllowed, furnished, terms, parkingSpaces, guarantees, lastSeen, freshAt, priceDrop, matchingOffer",
+  "$[3].$set.terms.$reduce: input, initialValue, in",
+  "$[3].$set.guarantees.$reduce: input, initialValue, in",
+  "$[3].$set.matchingOffer.$reduce: input, initialValue, in",
+  "$[4].$set: priceUyu, price, currency",
+  "$[5].$match: lastSeen, propertyType, freshAt, priceDrop.at, bedrooms, bathrooms, area, sources.1, officialZone.zone, petsAllowed, parkingSpaces, furnished, guarantees, offers, priceUyu, $expr, $or, $and, latitude, longitude, department, neighborhood",
+  "$[5].$match.area: $type, $gte, $lte",
+  "$[5].$match.offers.$elemMatch: source, stayPriceSuspect, currency, ownerDirect.declared, agency.key, petsAllowed, furnished, $or, parkingSpaces, guarantees, commonExpenses, priceUyu",
+  "$[5].$match.offers.$elemMatch.parkingSpaces: $type, $gte, $lte",
+  "$[5].$match.offers.$elemMatch.guarantees: $type, $in",
+  "$[5].$match.offers.$elemMatch.commonExpenses: $type, $gte",
+  "$[5].$match.offers.$elemMatch.priceUyu: $type, $gte, $lte",
+  "$[5].$match.$expr.$anyElementTrue[0].$map: input, as, in",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let: vars, in",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.vars.expenses.$let: vars, in",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.vars.expenses.$let.vars.converted.$cond[1].$switch: branches, default",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.vars.expenses.$let.vars.converted.$cond[1].$switch.branches[0]: case, then",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.vars.expenses.$let.vars.converted.$cond[1].$switch.branches[1]: case, then",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.vars.expenses.$let.vars.converted.$cond[1].$switch.branches[2]: case, then",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[5].$and[0].$gte[0].$convert: input, to, onError, onNull",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[5].$and[1].$lte[0].$convert: input, to, onError, onNull",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[6].$or[0].$and[1].$regexMatch: input, regex",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[6].$or[1].$and[1].$regexMatch: input, regex",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[6].$or[2].$and[1].$regexMatch: input, regex",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[6].$or[3].$and[1].$regexMatch: input, regex",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[6].$or[4].$and[1].$regexMatch: input, regex",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[7].$regexMatch: input, regex",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[12].$and[0].$gte[0].$convert: input, to, onError, onNull",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[12].$and[1].$lte[0].$convert: input, to, onError, onNull",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[13].$or[0].$and[1].$regexMatch: input, regex",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[13].$or[1].$and[1].$regexMatch: input, regex",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[13].$or[2].$and[1].$regexMatch: input, regex",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[13].$or[3].$and[1].$regexMatch: input, regex",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[10].$and[13].$or[4].$and[1].$regexMatch: input, regex",
+  "$[5].$match.$expr.$anyElementTrue[0].$map.in.$let.in.$and[21].$lte[0].$floor.$add[0].$convert: input, to, onError, onNull",
+  "$[5].$match.$and[0].offers.details.amenities: $regex, $options",
+  "$[5].$match.$and[1].offers.details.amenities: $regex, $options",
+  "$[5].$match.$and[2].$nor[1]: propertyType, priceUyu, title",
+  "$[5].$match.$and[2].$nor[1].priceUyu: $type, $lte",
+  "$[5].$match.$and[2].$nor[1].title: $regex, $options",
+  "$[5].$match.$and[2].$nor[2]: propertyType, priceUyu, title",
+  "$[5].$match.$and[2].$nor[2].priceUyu: $type, $lte",
+  "$[5].$match.$and[2].$nor[2].title: $regex, $options",
+  "$[5].$match.neighborhood: $in, $nin",
+]
+`;
+
+exports[`rentalPublicStages: key insertion order > hand-built: every derived key 1`] = `
+[
+  "$[0].$match: key, offers.listingId, freshAt, priceDrop.at, lastSeen",
+  "$[1].$set.offers.$filter: input, as, cond",
+  "$[3].$set: sources, petsAllowed, furnished, terms, parkingSpaces, guarantees, lastSeen, freshAt, priceDrop, matchingOffer",
+  "$[3].$set.terms.$reduce: input, initialValue, in",
+  "$[3].$set.guarantees.$reduce: input, initialValue, in",
+  "$[3].$set.matchingOffer.$reduce: input, initialValue, in",
+  "$[4].$set: priceUyu, price, currency",
+  "$[5].$match: key, offers, offers.listingId, sources, sources.1, petsAllowed, furnished, terms, parkingSpaces, guarantees, priceUyu, $expr, freshAt, priceDrop.at, lastSeen",
+]
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > agency 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "$expr": {
+          "$anyElementTrue": [
+            {
+              "$map": {
+                "as": "offer",
+                "in": {
+                  "$let": {
+                    "in": {
+                      "$and": [
+                        {
+                          "$isNumber": "$$offer.priceUyu",
+                        },
+                        {
+                          "$gt": [
+                            "$$offer.priceUyu",
+                            0,
+                          ],
+                        },
+                        {
+                          "$lte": [
+                            "$$offer.priceUyu",
+                            1.7976931348623157e+308,
+                          ],
+                        },
+                        {
+                          "$and": [
+                            {
+                              "$eq": [
+                                "$$offer.agency.key",
+                                "infocasas:inmo-pocitos",
+                              ],
+                            },
+                            {
+                              "$eq": [
+                                "$$offer.agency.version",
+                                1,
+                              ],
+                            },
+                            {
+                              "$ne": [
+                                {
+                                  "$ifNull": [
+                                    "$$offer.sellerType",
+                                    "",
+                                  ],
+                                },
+                                "particular",
+                              ],
+                            },
+                            {
+                              "$eq": [
+                                "$$offer.source",
+                                "infocasas",
+                              ],
+                            },
+                            {
+                              "$ne": [
+                                {
+                                  "$cond": [
+                                    {
+                                      "$eq": [
+                                        {
+                                          "$type": "$$offer.agency.name",
+                                        },
+                                        "string",
+                                      ],
+                                    },
+                                    "$$offer.agency.name",
+                                    "",
+                                  ],
+                                },
+                                "",
+                              ],
+                            },
+                            {
+                              "$and": [
+                                {
+                                  "$gte": [
+                                    {
+                                      "$convert": {
+                                        "input": "$$offer.agency.observedAt",
+                                        "onError": null,
+                                        "onNull": null,
+                                        "to": "date",
+                                      },
+                                    },
+                                    2026-02-13T23:30:00.000Z,
+                                  ],
+                                },
+                                {
+                                  "$lte": [
+                                    {
+                                      "$convert": {
+                                        "input": "$$offer.agency.observedAt",
+                                        "onError": null,
+                                        "onNull": null,
+                                        "to": "date",
+                                      },
+                                    },
+                                    2026-03-15T23:35:00.000Z,
+                                  ],
+                                },
+                              ],
+                            },
+                            {
+                              "$or": [
+                                {
+                                  "$and": [
+                                    {
+                                      "$eq": [
+                                        "$$offer.source",
+                                        "infocasas",
+                                      ],
+                                    },
+                                    {
+                                      "$regexMatch": {
+                                        "input": {
+                                          "$cond": [
+                                            {
+                                              "$eq": [
+                                                {
+                                                  "$type": "$$offer.agency.profileUrl",
+                                                },
+                                                "string",
+                                              ],
+                                            },
+                                            "$$offer.agency.profileUrl",
+                                            "",
+                                          ],
+                                        },
+                                        "regex": "^https?://(?:infocasas\\.com\\.uy|www\\.infocasas\\.com\\.uy)(?:/|$)",
+                                      },
+                                    },
+                                  ],
+                                },
+                                {
+                                  "$and": [
+                                    {
+                                      "$eq": [
+                                        "$$offer.source",
+                                        "casasweb",
+                                      ],
+                                    },
+                                    {
+                                      "$regexMatch": {
+                                        "input": {
+                                          "$cond": [
+                                            {
+                                              "$eq": [
+                                                {
+                                                  "$type": "$$offer.agency.profileUrl",
+                                                },
+                                                "string",
+                                              ],
+                                            },
+                                            "$$offer.agency.profileUrl",
+                                            "",
+                                          ],
+                                        },
+                                        "regex": "^https?://(?:casasweb\\.com|www\\.casasweb\\.com)(?:/|$)",
+                                      },
+                                    },
+                                  ],
+                                },
+                                {
+                                  "$and": [
+                                    {
+                                      "$eq": [
+                                        "$$offer.source",
+                                        "elpais",
+                                      ],
+                                    },
+                                    {
+                                      "$regexMatch": {
+                                        "input": {
+                                          "$cond": [
+                                            {
+                                              "$eq": [
+                                                {
+                                                  "$type": "$$offer.agency.profileUrl",
+                                                },
+                                                "string",
+                                              ],
+                                            },
+                                            "$$offer.agency.profileUrl",
+                                            "",
+                                          ],
+                                        },
+                                        "regex": "^https?://(?:inmuebles\\.elpais\\.com\\.uy)(?:/|$)",
+                                      },
+                                    },
+                                  ],
+                                },
+                                {
+                                  "$and": [
+                                    {
+                                      "$eq": [
+                                        "$$offer.source",
+                                        "mercadolibre",
+                                      ],
+                                    },
+                                    {
+                                      "$regexMatch": {
+                                        "input": {
+                                          "$cond": [
+                                            {
+                                              "$eq": [
+                                                {
+                                                  "$type": "$$offer.agency.profileUrl",
+                                                },
+                                                "string",
+                                              ],
+                                            },
+                                            "$$offer.agency.profileUrl",
+                                            "",
+                                          ],
+                                        },
+                                        "regex": "^https?://(?:mercadolibre\\.com\\.uy|www\\.mercadolibre\\.com\\.uy|inmueble\\.mercadolibre\\.com\\.uy|apartamento\\.mercadolibre\\.com\\.uy|casa\\.mercadolibre\\.com\\.uy|terreno\\.mercadolibre\\.com\\.uy)(?:/|$)",
+                                      },
+                                    },
+                                  ],
+                                },
+                                {
+                                  "$and": [
+                                    {
+                                      "$eq": [
+                                        "$$offer.source",
+                                        "facebook",
+                                      ],
+                                    },
+                                    {
+                                      "$regexMatch": {
+                                        "input": {
+                                          "$cond": [
+                                            {
+                                              "$eq": [
+                                                {
+                                                  "$type": "$$offer.agency.profileUrl",
+                                                },
+                                                "string",
+                                              ],
+                                            },
+                                            "$$offer.agency.profileUrl",
+                                            "",
+                                          ],
+                                        },
+                                        "regex": "^https?://(?:facebook\\.com|www\\.facebook\\.com)(?:/|$)",
+                                      },
+                                    },
+                                  ],
+                                },
+                              ],
+                            },
+                            {
+                              "$regexMatch": {
+                                "input": {
+                                  "$cond": [
+                                    {
+                                      "$eq": [
+                                        {
+                                          "$type": "$$offer.agency.profileUrl",
+                                        },
+                                        "string",
+                                      ],
+                                    },
+                                    "$$offer.agency.profileUrl",
+                                    "",
+                                  ],
+                                },
+                                "regex": "^https?://(?:www\\.)?infocasas\\.com\\.uy/inmobiliarias/(?:perfil/)?inmo-pocitos(?:-|/|$)",
+                              },
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                    "vars": {
+                      "expenses": {
+                        "$let": {
+                          "in": {
+                            "$cond": [
+                              {
+                                "$and": [
+                                  {
+                                    "$ne": [
+                                      "$$converted",
+                                      null,
+                                    ],
+                                  },
+                                  {
+                                    "$lte": [
+                                      "$$converted",
+                                      1.7976931348623157e+308,
+                                    ],
+                                  },
+                                ],
+                              },
+                              "$$converted",
+                              null,
+                            ],
+                          },
+                          "vars": {
+                            "converted": {
+                              "$cond": [
+                                {
+                                  "$and": [
+                                    {
+                                      "$isNumber": "$$offer.commonExpenses",
+                                    },
+                                    {
+                                      "$gte": [
+                                        "$$offer.commonExpenses",
+                                        0,
+                                      ],
+                                    },
+                                    {
+                                      "$lte": [
+                                        "$$offer.commonExpenses",
+                                        1.7976931348623157e+308,
+                                      ],
+                                    },
+                                  ],
+                                },
+                                {
+                                  "$switch": {
+                                    "branches": [
+                                      {
+                                        "case": {
+                                          "$eq": [
+                                            "$$offer.commonExpenses",
+                                            0,
+                                          ],
+                                        },
+                                        "then": 0,
+                                      },
+                                      {
+                                        "case": {
+                                          "$eq": [
+                                            "$$offer.commonExpensesCurrency",
+                                            "UYU",
+                                          ],
+                                        },
+                                        "then": "$$offer.commonExpenses",
+                                      },
+                                      {
+                                        "case": {
+                                          "$eq": [
+                                            "$$offer.commonExpensesCurrency",
+                                            "USD",
+                                          ],
+                                        },
+                                        "then": {
+                                          "$multiply": [
+                                            "$$offer.commonExpenses",
+                                            41.5,
+                                          ],
+                                        },
+                                      },
+                                    ],
+                                    "default": null,
+                                  },
+                                },
+                                null,
+                              ],
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+                "input": {
+                  "$cond": [
+                    {
+                      "$isArray": "$offers",
+                    },
+                    "$offers",
+                    [],
+                  ],
+                },
+              },
+            },
+          ],
+        },
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "offers": {
+          "$elemMatch": {
+            "agency.key": "infocasas:inmo-pocitos",
+          },
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > area min 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "area": {
+          "$gte": 60,
+          "$type": "number",
+        },
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "area",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+      "area",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "area",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > area range 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "area": {
+          "$gte": 40,
+          "$lte": 120,
+          "$type": "number",
+        },
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "area",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+      "area",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "area",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > availability hide_any 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > bajo 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "priceDrop.at": {
+          "$gte": "2026-02-13",
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "priceDrop.at",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+      "priceDrop.at",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "priceDrop.at",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > bathrooms 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "bathrooms": {
+          "$gte": 2,
+        },
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "bathrooms",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+      "bathrooms",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "bathrooms",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > bedrooms 0 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "bedrooms": 0,
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "bedrooms",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+      "bedrooms",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "bedrooms",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > bedrooms 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "bedrooms": {
+          "$gte": 2,
+        },
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "bedrooms",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+      "bedrooms",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "bedrooms",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > bedrooms exact 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "bedrooms": 3,
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "bedrooms",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+      "bedrooms",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "bedrooms",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > comodidades 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "$and": [
+          {
+            "offers.details.amenities": {
+              "$options": "i",
+              "$regex": "^(gimnasio|gym)$",
+            },
+          },
+          {
+            "offers.details.amenities": {
+              "$options": "i",
+              "$regex": "^piscina( climatizada| abierta| cerrada)?$",
+            },
+          },
+        ],
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "$and",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+      "$and",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "$and",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > currency 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "offers": {
+          "$elemMatch": {
+            "currency": "USD",
+          },
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > default 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > department + neighborhood 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "department": "Montevideo",
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "neighborhood": {
+          "$in": [
+            "Pocitos",
+          ],
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "department",
+      "neighborhood",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "department",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > department 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "department": "Montevideo",
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "department",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "department",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > dias 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "freshAt": {
+          "$gte": "2026-03-08",
+        },
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "freshAt",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+      "freshAt",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "freshAt",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > dueno 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "$expr": {
+          "$anyElementTrue": [
+            {
+              "$map": {
+                "as": "offer",
+                "in": {
+                  "$let": {
+                    "in": {
+                      "$and": [
+                        {
+                          "$isNumber": "$$offer.priceUyu",
+                        },
+                        {
+                          "$gt": [
+                            "$$offer.priceUyu",
+                            0,
+                          ],
+                        },
+                        {
+                          "$lte": [
+                            "$$offer.priceUyu",
+                            1.7976931348623157e+308,
+                          ],
+                        },
+                        {
+                          "$and": [
+                            {
+                              "$eq": [
+                                "$$offer.ownerDirect.declared",
+                                true,
+                              ],
+                            },
+                            {
+                              "$in": [
+                                "$$offer.ownerDirect.evidence",
+                                [
+                                  "source_field",
+                                  "advert_text",
+                                ],
+                              ],
+                            },
+                            {
+                              "$eq": [
+                                {
+                                  "$ifNull": [
+                                    "$$offer.agency",
+                                    null,
+                                  ],
+                                },
+                                null,
+                              ],
+                            },
+                            {
+                              "$ne": [
+                                {
+                                  "$ifNull": [
+                                    "$$offer.sellerType",
+                                    "",
+                                  ],
+                                },
+                                "inmobiliaria",
+                              ],
+                            },
+                            {
+                              "$and": [
+                                {
+                                  "$gte": [
+                                    {
+                                      "$convert": {
+                                        "input": "$$offer.ownerDirect.observedAt",
+                                        "onError": null,
+                                        "onNull": null,
+                                        "to": "date",
+                                      },
+                                    },
+                                    2026-02-13T23:30:00.000Z,
+                                  ],
+                                },
+                                {
+                                  "$lte": [
+                                    {
+                                      "$convert": {
+                                        "input": "$$offer.ownerDirect.observedAt",
+                                        "onError": null,
+                                        "onNull": null,
+                                        "to": "date",
+                                      },
+                                    },
+                                    2026-03-15T23:35:00.000Z,
+                                  ],
+                                },
+                              ],
+                            },
+                            {
+                              "$or": [
+                                {
+                                  "$and": [
+                                    {
+                                      "$eq": [
+                                        "$$offer.source",
+                                        "infocasas",
+                                      ],
+                                    },
+                                    {
+                                      "$regexMatch": {
+                                        "input": {
+                                          "$cond": [
+                                            {
+                                              "$eq": [
+                                                {
+                                                  "$type": "$$offer.ownerDirect.sourceUrl",
+                                                },
+                                                "string",
+                                              ],
+                                            },
+                                            "$$offer.ownerDirect.sourceUrl",
+                                            "",
+                                          ],
+                                        },
+                                        "regex": "^https?://(?:infocasas\\.com\\.uy|www\\.infocasas\\.com\\.uy)(?:/|$)",
+                                      },
+                                    },
+                                  ],
+                                },
+                                {
+                                  "$and": [
+                                    {
+                                      "$eq": [
+                                        "$$offer.source",
+                                        "casasweb",
+                                      ],
+                                    },
+                                    {
+                                      "$regexMatch": {
+                                        "input": {
+                                          "$cond": [
+                                            {
+                                              "$eq": [
+                                                {
+                                                  "$type": "$$offer.ownerDirect.sourceUrl",
+                                                },
+                                                "string",
+                                              ],
+                                            },
+                                            "$$offer.ownerDirect.sourceUrl",
+                                            "",
+                                          ],
+                                        },
+                                        "regex": "^https?://(?:casasweb\\.com|www\\.casasweb\\.com)(?:/|$)",
+                                      },
+                                    },
+                                  ],
+                                },
+                                {
+                                  "$and": [
+                                    {
+                                      "$eq": [
+                                        "$$offer.source",
+                                        "elpais",
+                                      ],
+                                    },
+                                    {
+                                      "$regexMatch": {
+                                        "input": {
+                                          "$cond": [
+                                            {
+                                              "$eq": [
+                                                {
+                                                  "$type": "$$offer.ownerDirect.sourceUrl",
+                                                },
+                                                "string",
+                                              ],
+                                            },
+                                            "$$offer.ownerDirect.sourceUrl",
+                                            "",
+                                          ],
+                                        },
+                                        "regex": "^https?://(?:inmuebles\\.elpais\\.com\\.uy)(?:/|$)",
+                                      },
+                                    },
+                                  ],
+                                },
+                                {
+                                  "$and": [
+                                    {
+                                      "$eq": [
+                                        "$$offer.source",
+                                        "mercadolibre",
+                                      ],
+                                    },
+                                    {
+                                      "$regexMatch": {
+                                        "input": {
+                                          "$cond": [
+                                            {
+                                              "$eq": [
+                                                {
+                                                  "$type": "$$offer.ownerDirect.sourceUrl",
+                                                },
+                                                "string",
+                                              ],
+                                            },
+                                            "$$offer.ownerDirect.sourceUrl",
+                                            "",
+                                          ],
+                                        },
+                                        "regex": "^https?://(?:mercadolibre\\.com\\.uy|www\\.mercadolibre\\.com\\.uy|inmueble\\.mercadolibre\\.com\\.uy|apartamento\\.mercadolibre\\.com\\.uy|casa\\.mercadolibre\\.com\\.uy|terreno\\.mercadolibre\\.com\\.uy)(?:/|$)",
+                                      },
+                                    },
+                                  ],
+                                },
+                                {
+                                  "$and": [
+                                    {
+                                      "$eq": [
+                                        "$$offer.source",
+                                        "facebook",
+                                      ],
+                                    },
+                                    {
+                                      "$regexMatch": {
+                                        "input": {
+                                          "$cond": [
+                                            {
+                                              "$eq": [
+                                                {
+                                                  "$type": "$$offer.ownerDirect.sourceUrl",
+                                                },
+                                                "string",
+                                              ],
+                                            },
+                                            "$$offer.ownerDirect.sourceUrl",
+                                            "",
+                                          ],
+                                        },
+                                        "regex": "^https?://(?:facebook\\.com|www\\.facebook\\.com)(?:/|$)",
+                                      },
+                                    },
+                                  ],
+                                },
+                              ],
+                            },
+                            {
+                              "$eq": [
+                                {
+                                  "$cond": [
+                                    {
+                                      "$eq": [
+                                        {
+                                          "$type": "$$offer.ownerDirect.sourceUrl",
+                                        },
+                                        "string",
+                                      ],
+                                    },
+                                    "$$offer.ownerDirect.sourceUrl",
+                                    "",
+                                  ],
+                                },
+                                {
+                                  "$cond": [
+                                    {
+                                      "$eq": [
+                                        {
+                                          "$type": "$$offer.url",
+                                        },
+                                        "string",
+                                      ],
+                                    },
+                                    "$$offer.url",
+                                    "",
+                                  ],
+                                },
+                              ],
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                    "vars": {
+                      "expenses": {
+                        "$let": {
+                          "in": {
+                            "$cond": [
+                              {
+                                "$and": [
+                                  {
+                                    "$ne": [
+                                      "$$converted",
+                                      null,
+                                    ],
+                                  },
+                                  {
+                                    "$lte": [
+                                      "$$converted",
+                                      1.7976931348623157e+308,
+                                    ],
+                                  },
+                                ],
+                              },
+                              "$$converted",
+                              null,
+                            ],
+                          },
+                          "vars": {
+                            "converted": {
+                              "$cond": [
+                                {
+                                  "$and": [
+                                    {
+                                      "$isNumber": "$$offer.commonExpenses",
+                                    },
+                                    {
+                                      "$gte": [
+                                        "$$offer.commonExpenses",
+                                        0,
+                                      ],
+                                    },
+                                    {
+                                      "$lte": [
+                                        "$$offer.commonExpenses",
+                                        1.7976931348623157e+308,
+                                      ],
+                                    },
+                                  ],
+                                },
+                                {
+                                  "$switch": {
+                                    "branches": [
+                                      {
+                                        "case": {
+                                          "$eq": [
+                                            "$$offer.commonExpenses",
+                                            0,
+                                          ],
+                                        },
+                                        "then": 0,
+                                      },
+                                      {
+                                        "case": {
+                                          "$eq": [
+                                            "$$offer.commonExpensesCurrency",
+                                            "UYU",
+                                          ],
+                                        },
+                                        "then": "$$offer.commonExpenses",
+                                      },
+                                      {
+                                        "case": {
+                                          "$eq": [
+                                            "$$offer.commonExpensesCurrency",
+                                            "USD",
+                                          ],
+                                        },
+                                        "then": {
+                                          "$multiply": [
+                                            "$$offer.commonExpenses",
+                                            41.5,
+                                          ],
+                                        },
+                                      },
+                                    ],
+                                    "default": null,
+                                  },
+                                },
+                                null,
+                              ],
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+                "input": {
+                  "$cond": [
+                    {
+                      "$isArray": "$offers",
+                    },
+                    "$offers",
+                    [],
+                  ],
+                },
+              },
+            },
+          ],
+        },
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "offers": {
+          "$elemMatch": {
+            "ownerDirect.declared": true,
+          },
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > everything 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "$and": [
+          {
+            "offers.details.amenities": {
+              "$options": "i",
+              "$regex": "^(gimnasio|gym)$",
+            },
+          },
+          {
+            "offers.details.amenities": {
+              "$options": "i",
+              "$regex": "^piscina( climatizada| abierta| cerrada)?$",
+            },
+          },
+          {
+            "$nor": [
+              {
+                "propertyType": "habitacion",
+              },
+              {
+                "priceUyu": {
+                  "$lte": 30000,
+                  "$type": "number",
+                },
+                "propertyType": {
+                  "$in": [
+                    "casa",
+                    "apartamento",
+                    "otro",
+                  ],
+                },
+                "title": {
+                  "$options": "i",
+                  "$regex": "\\b(?:residencias?|hogar(?:es)?|alojamientos?)\\s+(?:(?:para|de)\\s+)?(?:estudiantes|estudiantil(?:es)?|universitari[oa]s?|femenin[oa]s?|masculin[oa]s?|mixt[oa]s?|deportistas|trabajador[ae]s|j[oó]venes|se[nñ]oritas|chic[oa]s|varones|mujeres|hombres)\\b|\\bpensi[oó]n(?:es)?\\s+(?:(?:para|de)\\s+)?(?:estudiantes|estudiantil(?:es)?|universitari[oa]s?|femenin[oa]s?|masculin[oa]s?|mixt[oa]s?|deportistas|trabajador[ae]s|j[oó]venes|se[nñ]oritas|chic[oa]s|varones|mujeres|hombres)\\b|\\b(?:habitaci[oó]n(?:es)?|piezas?|cuartos?|casa|apartamento|apto|vivienda|departamento|alquiler)\\s+compartid[oa]s?\\b|\\bcompartid[oa]s?\\s+(?:con|para|entre)\\s+(?:\\d+\\s+)?(?:otr[oa]s|personas|estudiantes|estudiantil(?:es)?|universitari[oa]s?|femenin[oa]s?|masculin[oa]s?|mixt[oa]s?|deportistas|trabajador[ae]s|j[oó]venes|se[nñ]oritas|chic[oa]s|varones|mujeres|hombres)\\b|\\bhabitaci[oó]n(?:es)?\\s+(?:individual(?:es)?|(?:para\\s+)?(?:estudiantes|estudiantil(?:es)?|universitari[oa]s?|femenin[oa]s?|masculin[oa]s?|mixt[oa]s?|deportistas|trabajador[ae]s|j[oó]venes|se[nñ]oritas|chic[oa]s|varones|mujeres|hombres)|(?:para\\s+)?estudiante)\\b|\\b(?:renta|alquiler|alquilo|alquila|alquilan|arriendo)\\s+(?:de\\s+)?(?:cuartos?|piezas?|habitaci[oó]n(?:es)?)\\b",
+                },
+              },
+              {
+                "priceUyu": {
+                  "$lte": 15000,
+                  "$type": "number",
+                },
+                "propertyType": {
+                  "$in": [
+                    "casa",
+                    "apartamento",
+                    "otro",
+                  ],
+                },
+                "title": {
+                  "$options": "i",
+                  "$regex": "\\b(?:residencias?|pensi[oó]n(?:es)?|hostel(?:es)?|hospedajes?|alojamientos?|co-?living)\\b",
+                },
+              },
+            ],
+          },
+          {
+            "title": {
+              "$not": /\\(\\?:\\^\\|\\[\\^a-z0-9áàâäéèêëíìîïóòôöúùûüñç\\]\\)\\(\\?:g\\[aáàâä\\]r\\[aáàâä\\]j\\[eéèêë\\]\\|m\\[oóòôö\\]\\[nñ\\]\\[oóòôö\\]\\[aáàâä\\]mb\\[iíìîï\\]\\[eéèêë\\]\\[nñ\\]t\\[eéèêë\\]\\)/i,
+            },
+          },
+          {
+            "$or": [
+              {
+                "$expr": {
+                  "$lte": [
+                    {
+                      "$multiply": [
+                        6371,
+                        {
+                          "$acos": {
+                            "$min": [
+                              1,
+                              {
+                                "$add": [
+                                  {
+                                    "$multiply": [
+                                      -0.5463255309733072,
+                                      {
+                                        "$sin": {
+                                          "$degreesToRadians": "$latitude",
+                                        },
+                                      },
+                                    ],
+                                  },
+                                  {
+                                    "$multiply": [
+                                      0.8375729306793135,
+                                      {
+                                        "$cos": {
+                                          "$degreesToRadians": "$latitude",
+                                        },
+                                      },
+                                      {
+                                        "$cos": {
+                                          "$subtract": [
+                                            {
+                                              "$degreesToRadians": "$longitude",
+                                            },
+                                            -1.0177932091260735,
+                                          ],
+                                        },
+                                      },
+                                    ],
+                                  },
+                                ],
+                              },
+                            ],
+                          },
+                        },
+                      ],
+                    },
+                    2,
+                  ],
+                },
+              },
+              {
+                "$expr": {
+                  "$lte": [
+                    {
+                      "$multiply": [
+                        6371,
+                        {
+                          "$acos": {
+                            "$min": [
+                              1,
+                              {
+                                "$add": [
+                                  {
+                                    "$multiply": [
+                                      -0.5463181530429235,
+                                      {
+                                        "$sin": {
+                                          "$degreesToRadians": "$latitude",
+                                        },
+                                      },
+                                    ],
+                                  },
+                                  {
+                                    "$multiply": [
+                                      0.8375777430518129,
+                                      {
+                                        "$cos": {
+                                          "$degreesToRadians": "$latitude",
+                                        },
+                                      },
+                                      {
+                                        "$cos": {
+                                          "$subtract": [
+                                            {
+                                              "$degreesToRadians": "$longitude",
+                                            },
+                                            -1.017719587647566,
+                                          ],
+                                        },
+                                      },
+                                    ],
+                                  },
+                                ],
+                              },
+                            ],
+                          },
+                        },
+                      ],
+                    },
+                    2,
+                  ],
+                },
+              },
+            ],
+          },
+        ],
+        "$expr": {
+          "$anyElementTrue": [
+            {
+              "$map": {
+                "as": "offer",
+                "in": {
+                  "$let": {
+                    "in": {
+                      "$and": [
+                        {
+                          "$isNumber": "$$offer.priceUyu",
+                        },
+                        {
+                          "$gt": [
+                            "$$offer.priceUyu",
+                            0,
+                          ],
+                        },
+                        {
+                          "$lte": [
+                            "$$offer.priceUyu",
+                            1.7976931348623157e+308,
+                          ],
+                        },
+                        {
+                          "$ne": [
+                            "$$expenses",
+                            null,
+                          ],
+                        },
+                        {
+                          "$isNumber": "$$offer.commonExpenses",
+                        },
+                        {
+                          "$gte": [
+                            "$$offer.commonExpenses",
+                            0,
+                          ],
+                        },
+                        {
+                          "$lte": [
+                            "$$offer.commonExpenses",
+                            1.7976931348623157e+308,
+                          ],
+                        },
+                        {
+                          "$not": [
+                            {
+                              "$in": [
+                                "$$offer.source",
+                                [
+                                  "facebook",
+                                  "tiktok",
+                                ],
+                              ],
+                            },
+                          ],
+                        },
+                        {
+                          "$ne": [
+                            "$$offer.stayPriceSuspect",
+                            true,
+                          ],
+                        },
+                        {
+                          "$eq": [
+                            "$$offer.currency",
+                            "UYU",
+                          ],
+                        },
+                        {
+                          "$and": [
+                            {
+                              "$eq": [
+                                "$$offer.agency.key",
+                                "infocasas:inmo-pocitos",
+                              ],
+                            },
+                            {
+                              "$eq": [
+                                "$$offer.agency.version",
+                                1,
+                              ],
+                            },
+                            {
+                              "$ne": [
+                                {
+                                  "$ifNull": [
+                                    "$$offer.sellerType",
+                                    "",
+                                  ],
+                                },
+                                "particular",
+                              ],
+                            },
+                            {
+                              "$eq": [
+                                "$$offer.source",
+                                "infocasas",
+                              ],
+                            },
+                            {
+                              "$ne": [
+                                {
+                                  "$cond": [
+                                    {
+                                      "$eq": [
+                                        {
+                                          "$type": "$$offer.agency.name",
+                                        },
+                                        "string",
+                                      ],
+                                    },
+                                    "$$offer.agency.name",
+                                    "",
+                                  ],
+                                },
+                                "",
+                              ],
+                            },
+                            {
+                              "$and": [
+                                {
+                                  "$gte": [
+                                    {
+                                      "$convert": {
+                                        "input": "$$offer.agency.observedAt",
+                                        "onError": null,
+                                        "onNull": null,
+                                        "to": "date",
+                                      },
+                                    },
+                                    2026-02-13T23:30:00.000Z,
+                                  ],
+                                },
+                                {
+                                  "$lte": [
+                                    {
+                                      "$convert": {
+                                        "input": "$$offer.agency.observedAt",
+                                        "onError": null,
+                                        "onNull": null,
+                                        "to": "date",
+                                      },
+                                    },
+                                    2026-03-15T23:35:00.000Z,
+                                  ],
+                                },
+                              ],
+                            },
+                            {
+                              "$or": [
+                                {
+                                  "$and": [
+                                    {
+                                      "$eq": [
+                                        "$$offer.source",
+                                        "infocasas",
+                                      ],
+                                    },
+                                    {
+                                      "$regexMatch": {
+                                        "input": {
+                                          "$cond": [
+                                            {
+                                              "$eq": [
+                                                {
+                                                  "$type": "$$offer.agency.profileUrl",
+                                                },
+                                                "string",
+                                              ],
+                                            },
+                                            "$$offer.agency.profileUrl",
+                                            "",
+                                          ],
+                                        },
+                                        "regex": "^https?://(?:infocasas\\.com\\.uy|www\\.infocasas\\.com\\.uy)(?:/|$)",
+                                      },
+                                    },
+                                  ],
+                                },
+                                {
+                                  "$and": [
+                                    {
+                                      "$eq": [
+                                        "$$offer.source",
+                                        "casasweb",
+                                      ],
+                                    },
+                                    {
+                                      "$regexMatch": {
+                                        "input": {
+                                          "$cond": [
+                                            {
+                                              "$eq": [
+                                                {
+                                                  "$type": "$$offer.agency.profileUrl",
+                                                },
+                                                "string",
+                                              ],
+                                            },
+                                            "$$offer.agency.profileUrl",
+                                            "",
+                                          ],
+                                        },
+                                        "regex": "^https?://(?:casasweb\\.com|www\\.casasweb\\.com)(?:/|$)",
+                                      },
+                                    },
+                                  ],
+                                },
+                                {
+                                  "$and": [
+                                    {
+                                      "$eq": [
+                                        "$$offer.source",
+                                        "elpais",
+                                      ],
+                                    },
+                                    {
+                                      "$regexMatch": {
+                                        "input": {
+                                          "$cond": [
+                                            {
+                                              "$eq": [
+                                                {
+                                                  "$type": "$$offer.agency.profileUrl",
+                                                },
+                                                "string",
+                                              ],
+                                            },
+                                            "$$offer.agency.profileUrl",
+                                            "",
+                                          ],
+                                        },
+                                        "regex": "^https?://(?:inmuebles\\.elpais\\.com\\.uy)(?:/|$)",
+                                      },
+                                    },
+                                  ],
+                                },
+                                {
+                                  "$and": [
+                                    {
+                                      "$eq": [
+                                        "$$offer.source",
+                                        "mercadolibre",
+                                      ],
+                                    },
+                                    {
+                                      "$regexMatch": {
+                                        "input": {
+                                          "$cond": [
+                                            {
+                                              "$eq": [
+                                                {
+                                                  "$type": "$$offer.agency.profileUrl",
+                                                },
+                                                "string",
+                                              ],
+                                            },
+                                            "$$offer.agency.profileUrl",
+                                            "",
+                                          ],
+                                        },
+                                        "regex": "^https?://(?:mercadolibre\\.com\\.uy|www\\.mercadolibre\\.com\\.uy|inmueble\\.mercadolibre\\.com\\.uy|apartamento\\.mercadolibre\\.com\\.uy|casa\\.mercadolibre\\.com\\.uy|terreno\\.mercadolibre\\.com\\.uy)(?:/|$)",
+                                      },
+                                    },
+                                  ],
+                                },
+                                {
+                                  "$and": [
+                                    {
+                                      "$eq": [
+                                        "$$offer.source",
+                                        "facebook",
+                                      ],
+                                    },
+                                    {
+                                      "$regexMatch": {
+                                        "input": {
+                                          "$cond": [
+                                            {
+                                              "$eq": [
+                                                {
+                                                  "$type": "$$offer.agency.profileUrl",
+                                                },
+                                                "string",
+                                              ],
+                                            },
+                                            "$$offer.agency.profileUrl",
+                                            "",
+                                          ],
+                                        },
+                                        "regex": "^https?://(?:facebook\\.com|www\\.facebook\\.com)(?:/|$)",
+                                      },
+                                    },
+                                  ],
+                                },
+                              ],
+                            },
+                            {
+                              "$regexMatch": {
+                                "input": {
+                                  "$cond": [
+                                    {
+                                      "$eq": [
+                                        {
+                                          "$type": "$$offer.agency.profileUrl",
+                                        },
+                                        "string",
+                                      ],
+                                    },
+                                    "$$offer.agency.profileUrl",
+                                    "",
+                                  ],
+                                },
+                                "regex": "^https?://(?:www\\.)?infocasas\\.com\\.uy/inmobiliarias/(?:perfil/)?inmo-pocitos(?:-|/|$)",
+                              },
+                            },
+                            {
+                              "$eq": [
+                                "$$offer.ownerDirect.declared",
+                                true,
+                              ],
+                            },
+                            {
+                              "$in": [
+                                "$$offer.ownerDirect.evidence",
+                                [
+                                  "source_field",
+                                  "advert_text",
+                                ],
+                              ],
+                            },
+                            {
+                              "$eq": [
+                                {
+                                  "$ifNull": [
+                                    "$$offer.agency",
+                                    null,
+                                  ],
+                                },
+                                null,
+                              ],
+                            },
+                            {
+                              "$ne": [
+                                {
+                                  "$ifNull": [
+                                    "$$offer.sellerType",
+                                    "",
+                                  ],
+                                },
+                                "inmobiliaria",
+                              ],
+                            },
+                            {
+                              "$and": [
+                                {
+                                  "$gte": [
+                                    {
+                                      "$convert": {
+                                        "input": "$$offer.ownerDirect.observedAt",
+                                        "onError": null,
+                                        "onNull": null,
+                                        "to": "date",
+                                      },
+                                    },
+                                    2026-02-13T23:30:00.000Z,
+                                  ],
+                                },
+                                {
+                                  "$lte": [
+                                    {
+                                      "$convert": {
+                                        "input": "$$offer.ownerDirect.observedAt",
+                                        "onError": null,
+                                        "onNull": null,
+                                        "to": "date",
+                                      },
+                                    },
+                                    2026-03-15T23:35:00.000Z,
+                                  ],
+                                },
+                              ],
+                            },
+                            {
+                              "$or": [
+                                {
+                                  "$and": [
+                                    {
+                                      "$eq": [
+                                        "$$offer.source",
+                                        "infocasas",
+                                      ],
+                                    },
+                                    {
+                                      "$regexMatch": {
+                                        "input": {
+                                          "$cond": [
+                                            {
+                                              "$eq": [
+                                                {
+                                                  "$type": "$$offer.ownerDirect.sourceUrl",
+                                                },
+                                                "string",
+                                              ],
+                                            },
+                                            "$$offer.ownerDirect.sourceUrl",
+                                            "",
+                                          ],
+                                        },
+                                        "regex": "^https?://(?:infocasas\\.com\\.uy|www\\.infocasas\\.com\\.uy)(?:/|$)",
+                                      },
+                                    },
+                                  ],
+                                },
+                                {
+                                  "$and": [
+                                    {
+                                      "$eq": [
+                                        "$$offer.source",
+                                        "casasweb",
+                                      ],
+                                    },
+                                    {
+                                      "$regexMatch": {
+                                        "input": {
+                                          "$cond": [
+                                            {
+                                              "$eq": [
+                                                {
+                                                  "$type": "$$offer.ownerDirect.sourceUrl",
+                                                },
+                                                "string",
+                                              ],
+                                            },
+                                            "$$offer.ownerDirect.sourceUrl",
+                                            "",
+                                          ],
+                                        },
+                                        "regex": "^https?://(?:casasweb\\.com|www\\.casasweb\\.com)(?:/|$)",
+                                      },
+                                    },
+                                  ],
+                                },
+                                {
+                                  "$and": [
+                                    {
+                                      "$eq": [
+                                        "$$offer.source",
+                                        "elpais",
+                                      ],
+                                    },
+                                    {
+                                      "$regexMatch": {
+                                        "input": {
+                                          "$cond": [
+                                            {
+                                              "$eq": [
+                                                {
+                                                  "$type": "$$offer.ownerDirect.sourceUrl",
+                                                },
+                                                "string",
+                                              ],
+                                            },
+                                            "$$offer.ownerDirect.sourceUrl",
+                                            "",
+                                          ],
+                                        },
+                                        "regex": "^https?://(?:inmuebles\\.elpais\\.com\\.uy)(?:/|$)",
+                                      },
+                                    },
+                                  ],
+                                },
+                                {
+                                  "$and": [
+                                    {
+                                      "$eq": [
+                                        "$$offer.source",
+                                        "mercadolibre",
+                                      ],
+                                    },
+                                    {
+                                      "$regexMatch": {
+                                        "input": {
+                                          "$cond": [
+                                            {
+                                              "$eq": [
+                                                {
+                                                  "$type": "$$offer.ownerDirect.sourceUrl",
+                                                },
+                                                "string",
+                                              ],
+                                            },
+                                            "$$offer.ownerDirect.sourceUrl",
+                                            "",
+                                          ],
+                                        },
+                                        "regex": "^https?://(?:mercadolibre\\.com\\.uy|www\\.mercadolibre\\.com\\.uy|inmueble\\.mercadolibre\\.com\\.uy|apartamento\\.mercadolibre\\.com\\.uy|casa\\.mercadolibre\\.com\\.uy|terreno\\.mercadolibre\\.com\\.uy)(?:/|$)",
+                                      },
+                                    },
+                                  ],
+                                },
+                                {
+                                  "$and": [
+                                    {
+                                      "$eq": [
+                                        "$$offer.source",
+                                        "facebook",
+                                      ],
+                                    },
+                                    {
+                                      "$regexMatch": {
+                                        "input": {
+                                          "$cond": [
+                                            {
+                                              "$eq": [
+                                                {
+                                                  "$type": "$$offer.ownerDirect.sourceUrl",
+                                                },
+                                                "string",
+                                              ],
+                                            },
+                                            "$$offer.ownerDirect.sourceUrl",
+                                            "",
+                                          ],
+                                        },
+                                        "regex": "^https?://(?:facebook\\.com|www\\.facebook\\.com)(?:/|$)",
+                                      },
+                                    },
+                                  ],
+                                },
+                              ],
+                            },
+                            {
+                              "$eq": [
+                                {
+                                  "$cond": [
+                                    {
+                                      "$eq": [
+                                        {
+                                          "$type": "$$offer.ownerDirect.sourceUrl",
+                                        },
+                                        "string",
+                                      ],
+                                    },
+                                    "$$offer.ownerDirect.sourceUrl",
+                                    "",
+                                  ],
+                                },
+                                {
+                                  "$cond": [
+                                    {
+                                      "$eq": [
+                                        {
+                                          "$type": "$$offer.url",
+                                        },
+                                        "string",
+                                      ],
+                                    },
+                                    "$$offer.url",
+                                    "",
+                                  ],
+                                },
+                              ],
+                            },
+                          ],
+                        },
+                        {
+                          "$eq": [
+                            "$$offer.petsAllowed",
+                            true,
+                          ],
+                        },
+                        {
+                          "$eq": [
+                            "$$offer.furnished",
+                            true,
+                          ],
+                        },
+                        {
+                          "$or": [
+                            {
+                              "$in": [
+                                "anual",
+                                {
+                                  "$cond": [
+                                    {
+                                      "$isArray": "$$offer.terms",
+                                    },
+                                    "$$offer.terms",
+                                    [],
+                                  ],
+                                },
+                              ],
+                            },
+                            {
+                              "$not": [
+                                {
+                                  "$in": [
+                                    "invernal",
+                                    {
+                                      "$cond": [
+                                        {
+                                          "$isArray": "$$offer.terms",
+                                        },
+                                        "$$offer.terms",
+                                        [],
+                                      ],
+                                    },
+                                  ],
+                                },
+                              ],
+                            },
+                          ],
+                        },
+                        {
+                          "$isNumber": "$$offer.parkingSpaces",
+                        },
+                        {
+                          "$gte": [
+                            "$$offer.parkingSpaces",
+                            1,
+                          ],
+                        },
+                        {
+                          "$lte": [
+                            "$$offer.parkingSpaces",
+                            1.7976931348623157e+308,
+                          ],
+                        },
+                        {
+                          "$gt": [
+                            {
+                              "$size": {
+                                "$setIntersection": [
+                                  {
+                                    "$cond": [
+                                      {
+                                        "$isArray": "$$offer.guarantees",
+                                      },
+                                      "$$offer.guarantees",
+                                      [],
+                                    ],
+                                  },
+                                  [
+                                    "anda",
+                                    "aseguradora",
+                                  ],
+                                ],
+                              },
+                            },
+                            0,
+                          ],
+                        },
+                        {
+                          "$gte": [
+                            "$$offer.priceUyu",
+                            15000,
+                          ],
+                        },
+                        {
+                          "$lte": [
+                            "$$offer.priceUyu",
+                            45000,
+                          ],
+                        },
+                        {
+                          "$lte": [
+                            "$$expenses",
+                            8000,
+                          ],
+                        },
+                        {
+                          "$lte": [
+                            {
+                              "$floor": {
+                                "$add": [
+                                  {
+                                    "$convert": {
+                                      "input": "$$offer.priceUyu",
+                                      "onError": null,
+                                      "onNull": null,
+                                      "to": "double",
+                                    },
+                                  },
+                                  "$$expenses",
+                                  0.5,
+                                ],
+                              },
+                            },
+                            50000,
+                          ],
+                        },
+                      ],
+                    },
+                    "vars": {
+                      "expenses": {
+                        "$let": {
+                          "in": {
+                            "$cond": [
+                              {
+                                "$and": [
+                                  {
+                                    "$ne": [
+                                      "$$converted",
+                                      null,
+                                    ],
+                                  },
+                                  {
+                                    "$lte": [
+                                      "$$converted",
+                                      1.7976931348623157e+308,
+                                    ],
+                                  },
+                                ],
+                              },
+                              "$$converted",
+                              null,
+                            ],
+                          },
+                          "vars": {
+                            "converted": {
+                              "$cond": [
+                                {
+                                  "$and": [
+                                    {
+                                      "$isNumber": "$$offer.commonExpenses",
+                                    },
+                                    {
+                                      "$gte": [
+                                        "$$offer.commonExpenses",
+                                        0,
+                                      ],
+                                    },
+                                    {
+                                      "$lte": [
+                                        "$$offer.commonExpenses",
+                                        1.7976931348623157e+308,
+                                      ],
+                                    },
+                                  ],
+                                },
+                                {
+                                  "$switch": {
+                                    "branches": [
+                                      {
+                                        "case": {
+                                          "$eq": [
+                                            "$$offer.commonExpenses",
+                                            0,
+                                          ],
+                                        },
+                                        "then": 0,
+                                      },
+                                      {
+                                        "case": {
+                                          "$eq": [
+                                            "$$offer.commonExpensesCurrency",
+                                            "UYU",
+                                          ],
+                                        },
+                                        "then": "$$offer.commonExpenses",
+                                      },
+                                      {
+                                        "case": {
+                                          "$eq": [
+                                            "$$offer.commonExpensesCurrency",
+                                            "USD",
+                                          ],
+                                        },
+                                        "then": {
+                                          "$multiply": [
+                                            "$$offer.commonExpenses",
+                                            41.5,
+                                          ],
+                                        },
+                                      },
+                                    ],
+                                    "default": null,
+                                  },
+                                },
+                                null,
+                              ],
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+                "input": {
+                  "$cond": [
+                    {
+                      "$isArray": "$offers",
+                    },
+                    "$offers",
+                    [],
+                  ],
+                },
+              },
+            },
+          ],
+        },
+        "$or": [
+          {
+            "title": /pocitos \\\\\\(vista/i,
+          },
+          {
+            "address": /pocitos \\\\\\(vista/i,
+          },
+          {
+            "neighborhood": /pocitos \\\\\\(vista/i,
+          },
+        ],
+        "area": {
+          "$gte": 40,
+          "$lte": 120,
+          "$type": "number",
+        },
+        "bathrooms": {
+          "$gte": 1,
+        },
+        "bedrooms": {
+          "$gte": 2,
+        },
+        "department": "Montevideo",
+        "freshAt": {
+          "$gte": "2026-03-08",
+        },
+        "furnished": true,
+        "guarantees": {
+          "$in": [
+            "anda",
+            "aseguradora",
+          ],
+        },
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "latitude": {
+          "$type": "number",
+        },
+        "longitude": {
+          "$type": "number",
+        },
+        "neighborhood": {
+          "$in": [
+            "Pocitos",
+            "Punta Carretas",
+          ],
+          "$nin": [
+            "Centro",
+          ],
+        },
+        "offers": {
+          "$elemMatch": {
+            "$or": [
+              {
+                "terms": "anual",
+              },
+              {
+                "terms": {
+                  "$ne": "invernal",
+                },
+              },
+            ],
+            "agency.key": "infocasas:inmo-pocitos",
+            "commonExpenses": {
+              "$gte": 0,
+              "$type": "number",
+            },
+            "currency": "UYU",
+            "furnished": true,
+            "guarantees": {
+              "$in": [
+                "anda",
+                "aseguradora",
+              ],
+              "$type": "array",
+            },
+            "ownerDirect.declared": true,
+            "parkingSpaces": {
+              "$gte": 1,
+              "$lte": 1.7976931348623157e+308,
+              "$type": "number",
+            },
+            "petsAllowed": true,
+            "priceUyu": {
+              "$gte": 15000,
+              "$lte": 45000,
+              "$type": "number",
+            },
+            "source": {
+              "$nin": [
+                "facebook",
+                "tiktok",
+              ],
+            },
+            "stayPriceSuspect": {
+              "$ne": true,
+            },
+          },
+        },
+        "officialZone.zone": {
+          "$in": [
+            "montevideo:pocitos",
+            "montevideo:buceo",
+          ],
+        },
+        "parkingSpaces": {
+          "$gte": 1,
+        },
+        "petsAllowed": true,
+        "priceDrop.at": {
+          "$gte": "2026-02-13",
+        },
+        "priceUyu": {
+          "$lte": 45000,
+        },
+        "propertyType": {
+          "$in": [
+            "apartamento",
+            "casa",
+          ],
+        },
+        "sources.1": {
+          "$exists": true,
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "propertyType",
+      "freshAt",
+      "priceDrop.at",
+      "bedrooms",
+      "bathrooms",
+      "area",
+      "officialZone.zone",
+      "$or",
+      "$and",
+      "latitude",
+      "longitude",
+      "department",
+      "neighborhood",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+      "propertyType",
+      "freshAt",
+      "priceDrop.at",
+      "bedrooms",
+      "bathrooms",
+      "area",
+      "officialZone.zone",
+      "$or",
+      "$and",
+      "latitude",
+      "longitude",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "propertyType",
+      "freshAt",
+      "priceDrop.at",
+      "bedrooms",
+      "bathrooms",
+      "area",
+      "officialZone.zone",
+      "$or",
+      "$and",
+      "latitude",
+      "longitude",
+      "department",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > expensesMax 0 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "$expr": {
+          "$anyElementTrue": [
+            {
+              "$map": {
+                "as": "offer",
+                "in": {
+                  "$let": {
+                    "in": {
+                      "$and": [
+                        {
+                          "$isNumber": "$$offer.priceUyu",
+                        },
+                        {
+                          "$gt": [
+                            "$$offer.priceUyu",
+                            0,
+                          ],
+                        },
+                        {
+                          "$lte": [
+                            "$$offer.priceUyu",
+                            1.7976931348623157e+308,
+                          ],
+                        },
+                        {
+                          "$ne": [
+                            "$$expenses",
+                            null,
+                          ],
+                        },
+                        {
+                          "$lte": [
+                            "$$expenses",
+                            0,
+                          ],
+                        },
+                      ],
+                    },
+                    "vars": {
+                      "expenses": {
+                        "$let": {
+                          "in": {
+                            "$cond": [
+                              {
+                                "$and": [
+                                  {
+                                    "$ne": [
+                                      "$$converted",
+                                      null,
+                                    ],
+                                  },
+                                  {
+                                    "$lte": [
+                                      "$$converted",
+                                      1.7976931348623157e+308,
+                                    ],
+                                  },
+                                ],
+                              },
+                              "$$converted",
+                              null,
+                            ],
+                          },
+                          "vars": {
+                            "converted": {
+                              "$cond": [
+                                {
+                                  "$and": [
+                                    {
+                                      "$isNumber": "$$offer.commonExpenses",
+                                    },
+                                    {
+                                      "$gte": [
+                                        "$$offer.commonExpenses",
+                                        0,
+                                      ],
+                                    },
+                                    {
+                                      "$lte": [
+                                        "$$offer.commonExpenses",
+                                        1.7976931348623157e+308,
+                                      ],
+                                    },
+                                  ],
+                                },
+                                {
+                                  "$switch": {
+                                    "branches": [
+                                      {
+                                        "case": {
+                                          "$eq": [
+                                            "$$offer.commonExpenses",
+                                            0,
+                                          ],
+                                        },
+                                        "then": 0,
+                                      },
+                                      {
+                                        "case": {
+                                          "$eq": [
+                                            "$$offer.commonExpensesCurrency",
+                                            "UYU",
+                                          ],
+                                        },
+                                        "then": "$$offer.commonExpenses",
+                                      },
+                                      {
+                                        "case": {
+                                          "$eq": [
+                                            "$$offer.commonExpensesCurrency",
+                                            "USD",
+                                          ],
+                                        },
+                                        "then": {
+                                          "$multiply": [
+                                            "$$offer.commonExpenses",
+                                            41.5,
+                                          ],
+                                        },
+                                      },
+                                    ],
+                                    "default": null,
+                                  },
+                                },
+                                null,
+                              ],
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+                "input": {
+                  "$cond": [
+                    {
+                      "$isArray": "$offers",
+                    },
+                    "$offers",
+                    [],
+                  ],
+                },
+              },
+            },
+          ],
+        },
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "offers": {
+          "$elemMatch": {
+            "commonExpenses": {
+              "$gte": 0,
+              "$type": "number",
+            },
+          },
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > furnished 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "furnished": true,
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "offers": {
+          "$elemMatch": {
+            "furnished": true,
+          },
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > garantia 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "guarantees": {
+          "$in": [
+            "anda",
+            "contaduria",
+          ],
+        },
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "offers": {
+          "$elemMatch": {
+            "guarantees": {
+              "$in": [
+                "anda",
+                "contaduria",
+              ],
+              "$type": "array",
+            },
+          },
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > gc 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "offers": {
+          "$elemMatch": {
+            "commonExpenses": {
+              "$gte": 0,
+              "$type": "number",
+            },
+          },
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > hand-built: empty 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {},
+    },
+    "prefilterKeys": [],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > hand-built: every derived key 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "$expr": {
+          "$gt": [
+            {
+              "$size": "$offers",
+            },
+            0,
+          ],
+        },
+        "freshAt": {
+          "$gte": "2026-03-01",
+        },
+        "furnished": false,
+        "guarantees": {
+          "$in": [
+            "anda",
+          ],
+        },
+        "key": {
+          "$ne": "casa-pocitos",
+        },
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "offers": {
+          "$elemMatch": {
+            "source": "infocasas",
+          },
+        },
+        "offers.listingId": {
+          "$in": [
+            "infocasas:uno",
+            "infocasas:dos",
+          ],
+        },
+        "parkingSpaces": {
+          "$gte": 1,
+        },
+        "petsAllowed": true,
+        "priceDrop.at": {
+          "$gte": "2026-02-13",
+        },
+        "priceUyu": {
+          "$lte": 30000,
+        },
+        "sources": "infocasas",
+        "sources.1": {
+          "$exists": true,
+        },
+        "terms": "invernal",
+      },
+    },
+    "prefilterKeys": [
+      "key",
+      "offers.listingId",
+      "freshAt",
+      "priceDrop.at",
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > hand-built: key list 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "key": {
+          "$in": [
+            "casa-pocitos",
+            "apto-buceo",
+          ],
+        },
+      },
+    },
+    "prefilterKeys": [
+      "key",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > hand-built: offers dotted path 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "offers.agency.key": "infocasas:inmo-pocitos",
+      },
+    },
+    "prefilterKeys": [
+      "offers.agency.key",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > hand-built: rooms under a price 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "priceUyu": {
+          "$lte": 25000,
+        },
+        "propertyType": "habitacion",
+      },
+    },
+    "prefilterKeys": [
+      "propertyType",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > map located box 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "bedrooms": {
+          "$gte": 2,
+        },
+        "department": "Montevideo",
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "latitude": {
+          "$gte": -35.5,
+          "$lte": -30,
+          "$type": "number",
+        },
+        "longitude": {
+          "$gte": -58.6,
+          "$lte": -53,
+          "$type": "number",
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "bedrooms",
+      "department",
+      "latitude",
+      "longitude",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > monthlyMax 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "$expr": {
+          "$anyElementTrue": [
+            {
+              "$map": {
+                "as": "offer",
+                "in": {
+                  "$let": {
+                    "in": {
+                      "$and": [
+                        {
+                          "$isNumber": "$$offer.priceUyu",
+                        },
+                        {
+                          "$gt": [
+                            "$$offer.priceUyu",
+                            0,
+                          ],
+                        },
+                        {
+                          "$lte": [
+                            "$$offer.priceUyu",
+                            1.7976931348623157e+308,
+                          ],
+                        },
+                        {
+                          "$ne": [
+                            "$$expenses",
+                            null,
+                          ],
+                        },
+                        {
+                          "$lte": [
+                            {
+                              "$floor": {
+                                "$add": [
+                                  {
+                                    "$convert": {
+                                      "input": "$$offer.priceUyu",
+                                      "onError": null,
+                                      "onNull": null,
+                                      "to": "double",
+                                    },
+                                  },
+                                  "$$expenses",
+                                  0.5,
+                                ],
+                              },
+                            },
+                            40000,
+                          ],
+                        },
+                      ],
+                    },
+                    "vars": {
+                      "expenses": {
+                        "$let": {
+                          "in": {
+                            "$cond": [
+                              {
+                                "$and": [
+                                  {
+                                    "$ne": [
+                                      "$$converted",
+                                      null,
+                                    ],
+                                  },
+                                  {
+                                    "$lte": [
+                                      "$$converted",
+                                      1.7976931348623157e+308,
+                                    ],
+                                  },
+                                ],
+                              },
+                              "$$converted",
+                              null,
+                            ],
+                          },
+                          "vars": {
+                            "converted": {
+                              "$cond": [
+                                {
+                                  "$and": [
+                                    {
+                                      "$isNumber": "$$offer.commonExpenses",
+                                    },
+                                    {
+                                      "$gte": [
+                                        "$$offer.commonExpenses",
+                                        0,
+                                      ],
+                                    },
+                                    {
+                                      "$lte": [
+                                        "$$offer.commonExpenses",
+                                        1.7976931348623157e+308,
+                                      ],
+                                    },
+                                  ],
+                                },
+                                {
+                                  "$switch": {
+                                    "branches": [
+                                      {
+                                        "case": {
+                                          "$eq": [
+                                            "$$offer.commonExpenses",
+                                            0,
+                                          ],
+                                        },
+                                        "then": 0,
+                                      },
+                                      {
+                                        "case": {
+                                          "$eq": [
+                                            "$$offer.commonExpensesCurrency",
+                                            "UYU",
+                                          ],
+                                        },
+                                        "then": "$$offer.commonExpenses",
+                                      },
+                                      {
+                                        "case": {
+                                          "$eq": [
+                                            "$$offer.commonExpensesCurrency",
+                                            "USD",
+                                          ],
+                                        },
+                                        "then": {
+                                          "$multiply": [
+                                            "$$offer.commonExpenses",
+                                            41.5,
+                                          ],
+                                        },
+                                      },
+                                    ],
+                                    "default": null,
+                                  },
+                                },
+                                null,
+                              ],
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+                "input": {
+                  "$cond": [
+                    {
+                      "$isArray": "$offers",
+                    },
+                    "$offers",
+                    [],
+                  ],
+                },
+              },
+            },
+          ],
+        },
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "offers": {
+          "$elemMatch": {
+            "commonExpenses": {
+              "$gte": 0,
+              "$type": "number",
+            },
+          },
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > monthlyMax without rate 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "$expr": {
+          "$anyElementTrue": [
+            {
+              "$map": {
+                "as": "offer",
+                "in": {
+                  "$let": {
+                    "in": {
+                      "$and": [
+                        {
+                          "$isNumber": "$$offer.priceUyu",
+                        },
+                        {
+                          "$gt": [
+                            "$$offer.priceUyu",
+                            0,
+                          ],
+                        },
+                        {
+                          "$lte": [
+                            "$$offer.priceUyu",
+                            1.7976931348623157e+308,
+                          ],
+                        },
+                        {
+                          "$ne": [
+                            "$$expenses",
+                            null,
+                          ],
+                        },
+                        {
+                          "$lte": [
+                            {
+                              "$floor": {
+                                "$add": [
+                                  {
+                                    "$convert": {
+                                      "input": "$$offer.priceUyu",
+                                      "onError": null,
+                                      "onNull": null,
+                                      "to": "double",
+                                    },
+                                  },
+                                  "$$expenses",
+                                  0.5,
+                                ],
+                              },
+                            },
+                            40000,
+                          ],
+                        },
+                      ],
+                    },
+                    "vars": {
+                      "expenses": {
+                        "$let": {
+                          "in": {
+                            "$cond": [
+                              {
+                                "$and": [
+                                  {
+                                    "$ne": [
+                                      "$$converted",
+                                      null,
+                                    ],
+                                  },
+                                  {
+                                    "$lte": [
+                                      "$$converted",
+                                      1.7976931348623157e+308,
+                                    ],
+                                  },
+                                ],
+                              },
+                              "$$converted",
+                              null,
+                            ],
+                          },
+                          "vars": {
+                            "converted": {
+                              "$cond": [
+                                {
+                                  "$and": [
+                                    {
+                                      "$isNumber": "$$offer.commonExpenses",
+                                    },
+                                    {
+                                      "$gte": [
+                                        "$$offer.commonExpenses",
+                                        0,
+                                      ],
+                                    },
+                                    {
+                                      "$lte": [
+                                        "$$offer.commonExpenses",
+                                        1.7976931348623157e+308,
+                                      ],
+                                    },
+                                  ],
+                                },
+                                {
+                                  "$switch": {
+                                    "branches": [
+                                      {
+                                        "case": {
+                                          "$eq": [
+                                            "$$offer.commonExpenses",
+                                            0,
+                                          ],
+                                        },
+                                        "then": 0,
+                                      },
+                                      {
+                                        "case": {
+                                          "$eq": [
+                                            "$$offer.commonExpensesCurrency",
+                                            "UYU",
+                                          ],
+                                        },
+                                        "then": "$$offer.commonExpenses",
+                                      },
+                                      {
+                                        "case": {
+                                          "$eq": [
+                                            "$$offer.commonExpensesCurrency",
+                                            "USD",
+                                          ],
+                                        },
+                                        "then": null,
+                                      },
+                                    ],
+                                    "default": null,
+                                  },
+                                },
+                                null,
+                              ],
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+                "input": {
+                  "$cond": [
+                    {
+                      "$isArray": "$offers",
+                    },
+                    "$offers",
+                    [],
+                  ],
+                },
+              },
+            },
+          ],
+        },
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "offers": {
+          "$elemMatch": {
+            "commonExpenses": {
+              "$gte": 0,
+              "$type": "number",
+            },
+          },
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > multi 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "sources.1": {
+          "$exists": true,
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > neighborhoods 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "neighborhood": {
+          "$in": [
+            "Pocitos",
+            "Punta Carretas",
+          ],
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "neighborhood",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > parking 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "offers": {
+          "$elemMatch": {
+            "parkingSpaces": {
+              "$gte": 1,
+              "$lte": 1.7976931348623157e+308,
+              "$type": "number",
+            },
+          },
+        },
+        "parkingSpaces": {
+          "$gte": 1,
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > pets 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "offers": {
+          "$elemMatch": {
+            "petsAllowed": true,
+          },
+        },
+        "petsAllowed": true,
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > plazo anual 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "offers": {
+          "$elemMatch": {
+            "$or": [
+              {
+                "terms": "anual",
+              },
+              {
+                "terms": {
+                  "$ne": "invernal",
+                },
+              },
+            ],
+          },
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > plazo invernal 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "offers": {
+          "$elemMatch": {
+            "terms": "invernal",
+          },
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > price range 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "offers": {
+          "$elemMatch": {
+            "priceUyu": {
+              "$gte": 15000,
+              "$lte": 30000,
+              "$type": "number",
+            },
+          },
+        },
+        "priceUyu": {
+          "$lte": 30000,
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > priceMax 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "offers": {
+          "$elemMatch": {
+            "priceUyu": {
+              "$lte": 30000,
+              "$type": "number",
+            },
+          },
+        },
+        "priceUyu": {
+          "$lte": 30000,
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > priceMin 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "offers": {
+          "$elemMatch": {
+            "priceUyu": {
+              "$gte": 15000,
+              "$type": "number",
+            },
+          },
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > q 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "$or": [
+          {
+            "title": /pocitos \\\\\\(vista/i,
+          },
+          {
+            "address": /pocitos \\\\\\(vista/i,
+          },
+          {
+            "neighborhood": /pocitos \\\\\\(vista/i,
+          },
+        ],
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "$or",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+      "$or",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "$or",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > reference point, sort distancia 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > residencias ocultar 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "$and": [
+          {
+            "$nor": [
+              {
+                "propertyType": "habitacion",
+              },
+              {
+                "priceUyu": {
+                  "$lte": 30000,
+                  "$type": "number",
+                },
+                "propertyType": {
+                  "$in": [
+                    "casa",
+                    "apartamento",
+                    "otro",
+                  ],
+                },
+                "title": {
+                  "$options": "i",
+                  "$regex": "\\b(?:residencias?|hogar(?:es)?|alojamientos?)\\s+(?:(?:para|de)\\s+)?(?:estudiantes|estudiantil(?:es)?|universitari[oa]s?|femenin[oa]s?|masculin[oa]s?|mixt[oa]s?|deportistas|trabajador[ae]s|j[oó]venes|se[nñ]oritas|chic[oa]s|varones|mujeres|hombres)\\b|\\bpensi[oó]n(?:es)?\\s+(?:(?:para|de)\\s+)?(?:estudiantes|estudiantil(?:es)?|universitari[oa]s?|femenin[oa]s?|masculin[oa]s?|mixt[oa]s?|deportistas|trabajador[ae]s|j[oó]venes|se[nñ]oritas|chic[oa]s|varones|mujeres|hombres)\\b|\\b(?:habitaci[oó]n(?:es)?|piezas?|cuartos?|casa|apartamento|apto|vivienda|departamento|alquiler)\\s+compartid[oa]s?\\b|\\bcompartid[oa]s?\\s+(?:con|para|entre)\\s+(?:\\d+\\s+)?(?:otr[oa]s|personas|estudiantes|estudiantil(?:es)?|universitari[oa]s?|femenin[oa]s?|masculin[oa]s?|mixt[oa]s?|deportistas|trabajador[ae]s|j[oó]venes|se[nñ]oritas|chic[oa]s|varones|mujeres|hombres)\\b|\\bhabitaci[oó]n(?:es)?\\s+(?:individual(?:es)?|(?:para\\s+)?(?:estudiantes|estudiantil(?:es)?|universitari[oa]s?|femenin[oa]s?|masculin[oa]s?|mixt[oa]s?|deportistas|trabajador[ae]s|j[oó]venes|se[nñ]oritas|chic[oa]s|varones|mujeres|hombres)|(?:para\\s+)?estudiante)\\b|\\b(?:renta|alquiler|alquilo|alquila|alquilan|arriendo)\\s+(?:de\\s+)?(?:cuartos?|piezas?|habitaci[oó]n(?:es)?)\\b",
+                },
+              },
+              {
+                "priceUyu": {
+                  "$lte": 15000,
+                  "$type": "number",
+                },
+                "propertyType": {
+                  "$in": [
+                    "casa",
+                    "apartamento",
+                    "otro",
+                  ],
+                },
+                "title": {
+                  "$options": "i",
+                  "$regex": "\\b(?:residencias?|pensi[oó]n(?:es)?|hostel(?:es)?|hospedajes?|alojamientos?|co-?living)\\b",
+                },
+              },
+            ],
+          },
+        ],
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "$and",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+      "$and",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "$and",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > residencias solo 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "$and": [
+          {
+            "$or": [
+              {
+                "propertyType": "habitacion",
+              },
+              {
+                "priceUyu": {
+                  "$lte": 30000,
+                  "$type": "number",
+                },
+                "propertyType": {
+                  "$in": [
+                    "casa",
+                    "apartamento",
+                    "otro",
+                  ],
+                },
+                "title": {
+                  "$options": "i",
+                  "$regex": "\\b(?:residencias?|hogar(?:es)?|alojamientos?)\\s+(?:(?:para|de)\\s+)?(?:estudiantes|estudiantil(?:es)?|universitari[oa]s?|femenin[oa]s?|masculin[oa]s?|mixt[oa]s?|deportistas|trabajador[ae]s|j[oó]venes|se[nñ]oritas|chic[oa]s|varones|mujeres|hombres)\\b|\\bpensi[oó]n(?:es)?\\s+(?:(?:para|de)\\s+)?(?:estudiantes|estudiantil(?:es)?|universitari[oa]s?|femenin[oa]s?|masculin[oa]s?|mixt[oa]s?|deportistas|trabajador[ae]s|j[oó]venes|se[nñ]oritas|chic[oa]s|varones|mujeres|hombres)\\b|\\b(?:habitaci[oó]n(?:es)?|piezas?|cuartos?|casa|apartamento|apto|vivienda|departamento|alquiler)\\s+compartid[oa]s?\\b|\\bcompartid[oa]s?\\s+(?:con|para|entre)\\s+(?:\\d+\\s+)?(?:otr[oa]s|personas|estudiantes|estudiantil(?:es)?|universitari[oa]s?|femenin[oa]s?|masculin[oa]s?|mixt[oa]s?|deportistas|trabajador[ae]s|j[oó]venes|se[nñ]oritas|chic[oa]s|varones|mujeres|hombres)\\b|\\bhabitaci[oó]n(?:es)?\\s+(?:individual(?:es)?|(?:para\\s+)?(?:estudiantes|estudiantil(?:es)?|universitari[oa]s?|femenin[oa]s?|masculin[oa]s?|mixt[oa]s?|deportistas|trabajador[ae]s|j[oó]venes|se[nñ]oritas|chic[oa]s|varones|mujeres|hombres)|(?:para\\s+)?estudiante)\\b|\\b(?:renta|alquiler|alquilo|alquila|alquilan|arriendo)\\s+(?:de\\s+)?(?:cuartos?|piezas?|habitaci[oó]n(?:es)?)\\b",
+                },
+              },
+              {
+                "priceUyu": {
+                  "$lte": 15000,
+                  "$type": "number",
+                },
+                "propertyType": {
+                  "$in": [
+                    "casa",
+                    "apartamento",
+                    "otro",
+                  ],
+                },
+                "title": {
+                  "$options": "i",
+                  "$regex": "\\b(?:residencias?|pensi[oó]n(?:es)?|hostel(?:es)?|hospedajes?|alojamientos?|co-?living)\\b",
+                },
+              },
+            ],
+          },
+        ],
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "$and",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+      "$and",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "$and",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > sede 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "$and": [
+          {
+            "$expr": {
+              "$lte": [
+                {
+                  "$multiply": [
+                    6371,
+                    {
+                      "$acos": {
+                        "$min": [
+                          1,
+                          {
+                            "$add": [
+                              {
+                                "$multiply": [
+                                  -0.5463255309733072,
+                                  {
+                                    "$sin": {
+                                      "$degreesToRadians": "$latitude",
+                                    },
+                                  },
+                                ],
+                              },
+                              {
+                                "$multiply": [
+                                  0.8375729306793135,
+                                  {
+                                    "$cos": {
+                                      "$degreesToRadians": "$latitude",
+                                    },
+                                  },
+                                  {
+                                    "$cos": {
+                                      "$subtract": [
+                                        {
+                                          "$degreesToRadians": "$longitude",
+                                        },
+                                        -1.0177932091260735,
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                },
+                2,
+              ],
+            },
+          },
+        ],
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "latitude": {
+          "$type": "number",
+        },
+        "longitude": {
+          "$type": "number",
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "latitude",
+      "longitude",
+      "$and",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+      "latitude",
+      "longitude",
+      "$and",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "latitude",
+      "longitude",
+      "$and",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > sedes 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "$and": [
+          {
+            "$or": [
+              {
+                "$expr": {
+                  "$lte": [
+                    {
+                      "$multiply": [
+                        6371,
+                        {
+                          "$acos": {
+                            "$min": [
+                              1,
+                              {
+                                "$add": [
+                                  {
+                                    "$multiply": [
+                                      -0.5463255309733072,
+                                      {
+                                        "$sin": {
+                                          "$degreesToRadians": "$latitude",
+                                        },
+                                      },
+                                    ],
+                                  },
+                                  {
+                                    "$multiply": [
+                                      0.8375729306793135,
+                                      {
+                                        "$cos": {
+                                          "$degreesToRadians": "$latitude",
+                                        },
+                                      },
+                                      {
+                                        "$cos": {
+                                          "$subtract": [
+                                            {
+                                              "$degreesToRadians": "$longitude",
+                                            },
+                                            -1.0177932091260735,
+                                          ],
+                                        },
+                                      },
+                                    ],
+                                  },
+                                ],
+                              },
+                            ],
+                          },
+                        },
+                      ],
+                    },
+                    1.5,
+                  ],
+                },
+              },
+              {
+                "$expr": {
+                  "$lte": [
+                    {
+                      "$multiply": [
+                        6371,
+                        {
+                          "$acos": {
+                            "$min": [
+                              1,
+                              {
+                                "$add": [
+                                  {
+                                    "$multiply": [
+                                      -0.5463181530429235,
+                                      {
+                                        "$sin": {
+                                          "$degreesToRadians": "$latitude",
+                                        },
+                                      },
+                                    ],
+                                  },
+                                  {
+                                    "$multiply": [
+                                      0.8375777430518129,
+                                      {
+                                        "$cos": {
+                                          "$degreesToRadians": "$latitude",
+                                        },
+                                      },
+                                      {
+                                        "$cos": {
+                                          "$subtract": [
+                                            {
+                                              "$degreesToRadians": "$longitude",
+                                            },
+                                            -1.017719587647566,
+                                          ],
+                                        },
+                                      },
+                                    ],
+                                  },
+                                ],
+                              },
+                            ],
+                          },
+                        },
+                      ],
+                    },
+                    1.5,
+                  ],
+                },
+              },
+            ],
+          },
+        ],
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "latitude": {
+          "$type": "number",
+        },
+        "longitude": {
+          "$type": "number",
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "latitude",
+      "longitude",
+      "$and",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+      "latitude",
+      "longitude",
+      "$and",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "latitude",
+      "longitude",
+      "$and",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > servicios 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "officialZone.zone": {
+          "$in": [
+            "montevideo:pocitos",
+            "montevideo:buceo",
+          ],
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "officialZone.zone",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+      "officialZone.zone",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "officialZone.zone",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > servicios not applied 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > servicios without snapshot 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "officialZone.zone": {
+          "$in": [],
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "officialZone.zone",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+      "officialZone.zone",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "officialZone.zone",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > sinBarrios + neighborhoods 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "neighborhood": {
+          "$in": [
+            "Pocitos",
+            "Buceo",
+          ],
+          "$nin": [
+            "Centro",
+          ],
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "neighborhood",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > sinBarrios 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "neighborhood": {
+          "$nin": [
+            "Centro",
+            "Cerro",
+          ],
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "neighborhood",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > sinMuebles 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "furnished": false,
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "offers": {
+          "$elemMatch": {
+            "furnished": false,
+          },
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > sinNoche 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "offers": {
+          "$elemMatch": {
+            "stayPriceSuspect": {
+              "$ne": true,
+            },
+          },
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > sinPalabras 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "$and": [
+          {
+            "title": {
+              "$not": /\\(\\?:\\^\\|\\[\\^a-z0-9áàâäéèêëíìîïóòôöúùûüñç\\]\\)\\(\\?:g\\[aáàâä\\]r\\[aáàâä\\]j\\[eéèêë\\]\\|m\\[oóòôö\\]\\[nñ\\]\\[oóòôö\\]\\[aáàâä\\]mb\\[iíìîï\\]\\[eéèêë\\]\\[nñ\\]t\\[eéèêë\\]\\)/i,
+            },
+          },
+        ],
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "$and",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+      "$and",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "$and",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > sinPortales 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "offers": {
+          "$elemMatch": {
+            "source": {
+              "$nin": [
+                "facebook",
+                "tiktok",
+              ],
+            },
+          },
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > sinTipos 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "propertyType": {
+          "$nin": [
+            "habitacion",
+            "local",
+          ],
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "propertyType",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+      "propertyType",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "propertyType",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > sort precio-m2 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > sort total 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "offers": {
+          "$elemMatch": {
+            "commonExpenses": {
+              "$gte": 0,
+              "$type": "number",
+            },
+          },
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > source 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "offers": {
+          "$elemMatch": {
+            "source": "mercadolibre",
+          },
+        },
+        "sources": "mercadolibre",
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > type 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "propertyType": "apartamento",
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "propertyType",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+      "propertyType",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "propertyType",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > types - sinTipos 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "propertyType": {
+          "$in": [
+            "apartamento",
+            "casa",
+          ],
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "propertyType",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+      "propertyType",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "propertyType",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: prefilter and final match, filter by filter > types 1`] = `
+{
+  "filter": {
+    "match": {
+      "$match": {
+        "lastSeen": {
+          "$gte": "2026-03-05",
+        },
+        "propertyType": {
+          "$in": [
+            "apartamento",
+            "casa",
+          ],
+        },
+      },
+    },
+    "prefilterKeys": [
+      "lastSeen",
+      "propertyType",
+    ],
+  },
+  "nonLocation": {
+    "prefilterKeys": [
+      "lastSeen",
+      "propertyType",
+    ],
+  },
+  "withoutNeighborhood": {
+    "prefilterKeys": [
+      "lastSeen",
+      "propertyType",
+    ],
+  },
+}
+`;
+
+exports[`rentalPublicStages: the stages every filter shares > another staleDays moves only the cutoff 1`] = `
+[
+  {
+    "$set": {
+      "offers": {
+        "$filter": {
+          "as": "offer",
+          "cond": {
+            "$and": [
+              {
+                "$eq": [
+                  {
+                    "$type": "$$offer.lastSeen",
+                  },
+                  "string",
+                ],
+              },
+              {
+                "$gte": [
+                  "$$offer.lastSeen",
+                  "2026-03-11",
+                ],
+              },
+              {
+                "$isNumber": "$$offer.priceUyu",
+              },
+              {
+                "$gt": [
+                  "$$offer.priceUyu",
+                  0,
+                ],
+              },
+            ],
+          },
+          "input": {
+            "$cond": [
+              {
+                "$isArray": "$offers",
+              },
+              "$offers",
+              [],
+            ],
+          },
+        },
+      },
+    },
+  },
+  {
+    "$set": {
+      "offers": {
+        "$filter": {
+          "as": "offer",
+          "cond": {
+            "$and": [
+              {
+                "$eq": [
+                  {
+                    "$type": "$$offer.lastSeen",
+                  },
+                  "string",
+                ],
+              },
+              {
+                "$gte": [
+                  "$$offer.lastSeen",
+                  "2026-03-11",
+                ],
+              },
+              {
+                "$isNumber": "$$offer.priceUyu",
+              },
+              {
+                "$gt": [
+                  "$$offer.priceUyu",
+                  0,
+                ],
+              },
+              {
+                "$not": [
+                  {
+                    "$in": [
+                      {
+                        "$let": {
+                          "in": {
+                            "$concat": [
+                              "rent:",
+                              "$$source",
+                              ":",
+                              {
+                                "$cond": [
+                                  {
+                                    "$eq": [
+                                      {
+                                        "$indexOfCP": [
+                                          "$$id",
+                                          {
+                                            "$concat": [
+                                              "$$source",
+                                              ":",
+                                            ],
+                                          },
+                                        ],
+                                      },
+                                      0,
+                                    ],
+                                  },
+                                  {
+                                    "$substrCP": [
+                                      "$$id",
+                                      {
+                                        "$add": [
+                                          {
+                                            "$strLenCP": "$$source",
+                                          },
+                                          1,
+                                        ],
+                                      },
+                                      {
+                                        "$strLenCP": "$$id",
+                                      },
+                                    ],
+                                  },
+                                  "$$id",
+                                ],
+                              },
+                            ],
+                          },
+                          "vars": {
+                            "id": {
+                              "$convert": {
+                                "input": "$$offer.listingId",
+                                "onError": "",
+                                "onNull": "",
+                                "to": "string",
+                              },
+                            },
+                            "source": {
+                              "$convert": {
+                                "input": "$$offer.source",
+                                "onError": "",
+                                "onNull": "",
+                                "to": "string",
+                              },
+                            },
+                          },
+                        },
+                      },
+                      [
+                        "rent:mercadolibre:MLU900100",
+                        "rent:facebook:fb-aviso",
+                        "rent:elpais:ep-7",
+                      ],
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          "input": {
+            "$cond": [
+              {
+                "$isArray": "$offers",
+              },
+              "$offers",
+              [],
+            ],
+          },
+        },
+      },
+    },
+  },
+]
+`;
+
+exports[`rentalPublicStages: the stages every filter shares > one excluded advert 1`] = `
+{
+  "$set": {
+    "offers": {
+      "$filter": {
+        "as": "offer",
+        "cond": {
+          "$and": [
+            {
+              "$eq": [
+                {
+                  "$type": "$$offer.lastSeen",
+                },
+                "string",
+              ],
+            },
+            {
+              "$gte": [
+                "$$offer.lastSeen",
+                "2026-03-05",
+              ],
+            },
+            {
+              "$isNumber": "$$offer.priceUyu",
+            },
+            {
+              "$gt": [
+                "$$offer.priceUyu",
+                0,
+              ],
+            },
+            {
+              "$not": [
+                {
+                  "$in": [
+                    {
+                      "$let": {
+                        "in": {
+                          "$concat": [
+                            "rent:",
+                            "$$source",
+                            ":",
+                            {
+                              "$cond": [
+                                {
+                                  "$eq": [
+                                    {
+                                      "$indexOfCP": [
+                                        "$$id",
+                                        {
+                                          "$concat": [
+                                            "$$source",
+                                            ":",
+                                          ],
+                                        },
+                                      ],
+                                    },
+                                    0,
+                                  ],
+                                },
+                                {
+                                  "$substrCP": [
+                                    "$$id",
+                                    {
+                                      "$add": [
+                                        {
+                                          "$strLenCP": "$$source",
+                                        },
+                                        1,
+                                      ],
+                                    },
+                                    {
+                                      "$strLenCP": "$$id",
+                                    },
+                                  ],
+                                },
+                                "$$id",
+                              ],
+                            },
+                          ],
+                        },
+                        "vars": {
+                          "id": {
+                            "$convert": {
+                              "input": "$$offer.listingId",
+                              "onError": "",
+                              "onNull": "",
+                              "to": "string",
+                            },
+                          },
+                          "source": {
+                            "$convert": {
+                              "input": "$$offer.source",
+                              "onError": "",
+                              "onNull": "",
+                              "to": "string",
+                            },
+                          },
+                        },
+                      },
+                    },
+                    [
+                      "rent:mercadolibre:MLU900100",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        "input": {
+          "$cond": [
+            {
+              "$isArray": "$offers",
+            },
+            "$offers",
+            [],
+          ],
+        },
+      },
+    },
+  },
+}
+`;
+
+exports[`rentalPublicStages: the stages every filter shares > the cutoff is the UTC date of now minus staleDays, on both sides of UTC midnight 1`] = `
+{
+  "2026-03-15T23:59:59.999Z staleDays 10 excluded": [
+    "2026-03-05",
+  ],
+  "2026-03-15T23:59:59.999Z staleDays 10 plain": [
+    "2026-03-05",
+  ],
+  "2026-03-15T23:59:59.999Z staleDays 4 excluded": [
+    "2026-03-11",
+  ],
+  "2026-03-15T23:59:59.999Z staleDays 4 plain": [
+    "2026-03-11",
+  ],
+  "2026-03-16T00:00:00.000Z staleDays 10 excluded": [
+    "2026-03-06",
+  ],
+  "2026-03-16T00:00:00.000Z staleDays 10 plain": [
+    "2026-03-06",
+  ],
+  "2026-03-16T00:00:00.000Z staleDays 4 excluded": [
+    "2026-03-12",
+  ],
+  "2026-03-16T00:00:00.000Z staleDays 4 plain": [
+    "2026-03-12",
+  ],
+}
+`;
+
+exports[`rentalPublicStages: the stages every filter shares > with excluded adverts 1`] = `
+[
+  {
+    "$set": {
+      "offers": {
+        "$filter": {
+          "as": "offer",
+          "cond": {
+            "$and": [
+              {
+                "$eq": [
+                  {
+                    "$type": "$$offer.lastSeen",
+                  },
+                  "string",
+                ],
+              },
+              {
+                "$gte": [
+                  "$$offer.lastSeen",
+                  "2026-03-05",
+                ],
+              },
+              {
+                "$isNumber": "$$offer.priceUyu",
+              },
+              {
+                "$gt": [
+                  "$$offer.priceUyu",
+                  0,
+                ],
+              },
+              {
+                "$not": [
+                  {
+                    "$in": [
+                      {
+                        "$let": {
+                          "in": {
+                            "$concat": [
+                              "rent:",
+                              "$$source",
+                              ":",
+                              {
+                                "$cond": [
+                                  {
+                                    "$eq": [
+                                      {
+                                        "$indexOfCP": [
+                                          "$$id",
+                                          {
+                                            "$concat": [
+                                              "$$source",
+                                              ":",
+                                            ],
+                                          },
+                                        ],
+                                      },
+                                      0,
+                                    ],
+                                  },
+                                  {
+                                    "$substrCP": [
+                                      "$$id",
+                                      {
+                                        "$add": [
+                                          {
+                                            "$strLenCP": "$$source",
+                                          },
+                                          1,
+                                        ],
+                                      },
+                                      {
+                                        "$strLenCP": "$$id",
+                                      },
+                                    ],
+                                  },
+                                  "$$id",
+                                ],
+                              },
+                            ],
+                          },
+                          "vars": {
+                            "id": {
+                              "$convert": {
+                                "input": "$$offer.listingId",
+                                "onError": "",
+                                "onNull": "",
+                                "to": "string",
+                              },
+                            },
+                            "source": {
+                              "$convert": {
+                                "input": "$$offer.source",
+                                "onError": "",
+                                "onNull": "",
+                                "to": "string",
+                              },
+                            },
+                          },
+                        },
+                      },
+                      [
+                        "rent:mercadolibre:MLU900100",
+                        "rent:facebook:fb-aviso",
+                        "rent:elpais:ep-7",
+                      ],
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          "input": {
+            "$cond": [
+              {
+                "$isArray": "$offers",
+              },
+              "$offers",
+              [],
+            ],
+          },
+        },
+      },
+    },
+  },
+  {
+    "$match": {
+      "offers.0": {
+        "$exists": true,
+      },
+    },
+  },
+  {
+    "$set": {
+      "freshAt": {
+        "$ifNull": [
+          {
+            "$max": "$offers.publishedAt",
+          },
+          {
+            "$max": "$offers.firstSeen",
+          },
+        ],
+      },
+      "furnished": {
+        "$cond": [
+          {
+            "$in": [
+              true,
+              "$offers.furnished",
+            ],
+          },
+          {
+            "$cond": [
+              {
+                "$in": [
+                  false,
+                  "$offers.furnished",
+                ],
+              },
+              null,
+              true,
+            ],
+          },
+          {
+            "$cond": [
+              {
+                "$in": [
+                  false,
+                  "$offers.furnished",
+                ],
+              },
+              false,
+              null,
+            ],
+          },
+        ],
+      },
+      "guarantees": {
+        "$reduce": {
+          "in": {
+            "$setUnion": [
+              "$$value",
+              {
+                "$cond": [
+                  {
+                    "$isArray": "$$this.guarantees",
+                  },
+                  "$$this.guarantees",
+                  [],
+                ],
+              },
+            ],
+          },
+          "initialValue": [],
+          "input": "$offers",
+        },
+      },
+      "lastSeen": {
+        "$max": "$offers.lastSeen",
+      },
+      "matchingOffer": {
+        "$reduce": {
+          "in": {
+            "$cond": [
+              {
+                "$or": [
+                  {
+                    "$eq": [
+                      "$$value",
+                      null,
+                    ],
+                  },
+                  {
+                    "$lt": [
+                      "$$this.priceUyu",
+                      "$$value.priceUyu",
+                    ],
+                  },
+                ],
+              },
+              "$$this",
+              "$$value",
+            ],
+          },
+          "initialValue": null,
+          "input": "$offers",
+        },
+      },
+      "parkingSpaces": {
+        "$max": "$offers.parkingSpaces",
+      },
+      "petsAllowed": {
+        "$cond": [
+          {
+            "$in": [
+              true,
+              "$offers.petsAllowed",
+            ],
+          },
+          true,
+          null,
+        ],
+      },
+      "priceDrop": {
+        "$cond": [
+          {
+            "$in": [
+              "$priceDrop.listingId",
+              "$offers.listingId",
+            ],
+          },
+          "$priceDrop",
+          "$$REMOVE",
+        ],
+      },
+      "sources": {
+        "$setUnion": [
+          "$offers.source",
+          [],
+        ],
+      },
+      "terms": {
+        "$reduce": {
+          "in": {
+            "$setUnion": [
+              "$$value",
+              {
+                "$cond": [
+                  {
+                    "$isArray": "$$this.terms",
+                  },
+                  "$$this.terms",
+                  [],
+                ],
+              },
+            ],
+          },
+          "initialValue": [],
+          "input": "$offers",
+        },
+      },
+    },
+  },
+  {
+    "$set": {
+      "currency": "$matchingOffer.currency",
+      "price": "$matchingOffer.price",
+      "priceUyu": "$matchingOffer.priceUyu",
+    },
+  },
+]
+`;
+
+exports[`rentalPublicStages: the stages every filter shares > without excluded adverts 1`] = `
+[
+  {
+    "$set": {
+      "offers": {
+        "$filter": {
+          "as": "offer",
+          "cond": {
+            "$and": [
+              {
+                "$eq": [
+                  {
+                    "$type": "$$offer.lastSeen",
+                  },
+                  "string",
+                ],
+              },
+              {
+                "$gte": [
+                  "$$offer.lastSeen",
+                  "2026-03-05",
+                ],
+              },
+              {
+                "$isNumber": "$$offer.priceUyu",
+              },
+              {
+                "$gt": [
+                  "$$offer.priceUyu",
+                  0,
+                ],
+              },
+            ],
+          },
+          "input": {
+            "$cond": [
+              {
+                "$isArray": "$offers",
+              },
+              "$offers",
+              [],
+            ],
+          },
+        },
+      },
+    },
+  },
+  {
+    "$match": {
+      "offers.0": {
+        "$exists": true,
+      },
+    },
+  },
+  {
+    "$set": {
+      "freshAt": {
+        "$ifNull": [
+          {
+            "$max": "$offers.publishedAt",
+          },
+          {
+            "$max": "$offers.firstSeen",
+          },
+        ],
+      },
+      "furnished": {
+        "$cond": [
+          {
+            "$in": [
+              true,
+              "$offers.furnished",
+            ],
+          },
+          {
+            "$cond": [
+              {
+                "$in": [
+                  false,
+                  "$offers.furnished",
+                ],
+              },
+              null,
+              true,
+            ],
+          },
+          {
+            "$cond": [
+              {
+                "$in": [
+                  false,
+                  "$offers.furnished",
+                ],
+              },
+              false,
+              null,
+            ],
+          },
+        ],
+      },
+      "guarantees": {
+        "$reduce": {
+          "in": {
+            "$setUnion": [
+              "$$value",
+              {
+                "$cond": [
+                  {
+                    "$isArray": "$$this.guarantees",
+                  },
+                  "$$this.guarantees",
+                  [],
+                ],
+              },
+            ],
+          },
+          "initialValue": [],
+          "input": "$offers",
+        },
+      },
+      "lastSeen": {
+        "$max": "$offers.lastSeen",
+      },
+      "matchingOffer": {
+        "$reduce": {
+          "in": {
+            "$cond": [
+              {
+                "$or": [
+                  {
+                    "$eq": [
+                      "$$value",
+                      null,
+                    ],
+                  },
+                  {
+                    "$lt": [
+                      "$$this.priceUyu",
+                      "$$value.priceUyu",
+                    ],
+                  },
+                ],
+              },
+              "$$this",
+              "$$value",
+            ],
+          },
+          "initialValue": null,
+          "input": "$offers",
+        },
+      },
+      "parkingSpaces": {
+        "$max": "$offers.parkingSpaces",
+      },
+      "petsAllowed": {
+        "$cond": [
+          {
+            "$in": [
+              true,
+              "$offers.petsAllowed",
+            ],
+          },
+          true,
+          null,
+        ],
+      },
+      "priceDrop": {
+        "$cond": [
+          {
+            "$in": [
+              "$priceDrop.listingId",
+              "$offers.listingId",
+            ],
+          },
+          "$priceDrop",
+          "$$REMOVE",
+        ],
+      },
+      "sources": {
+        "$setUnion": [
+          "$offers.source",
+          [],
+        ],
+      },
+      "terms": {
+        "$reduce": {
+          "in": {
+            "$setUnion": [
+              "$$value",
+              {
+                "$cond": [
+                  {
+                    "$isArray": "$$this.terms",
+                  },
+                  "$$this.terms",
+                  [],
+                ],
+              },
+            ],
+          },
+          "initialValue": [],
+          "input": "$offers",
+        },
+      },
+    },
+  },
+  {
+    "$set": {
+      "currency": "$matchingOffer.currency",
+      "price": "$matchingOffer.price",
+      "priceUyu": "$matchingOffer.priceUyu",
+    },
+  },
+]
+`;
