@@ -1554,6 +1554,10 @@
           "label": "Registrar una marca"
         },
         {
+          "to": "/apps-hechas-en-uruguay",
+          "label": "Apps hechas en Uruguay"
+        },
+        {
           "to": "/ropa-por-kilo-uruguay",
           "label": "Ropa por kilo y fardos"
         },
