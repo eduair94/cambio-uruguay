@@ -166,6 +166,16 @@ jobs:
               # array; a root-only edit here (e.g. the November-date manual update) must still run the
               # app suite so priceEventsCalendarParity.test.ts catches a mismatch before it deploys.
               - 'classes/priceevents/calendar.ts'
+              # Las dos mitades del cotejo de tramos del plan de ingreso
+              # (app/tests/unit/contenidoTramoParity.test.ts y directoriosTramoParity.test.ts) leen
+              # este archivo: una exige que cada página de lectura larga esté en un tramo y la otra
+              # que cada directorio declarado valga como directorio. Las tandas que retiran esa
+              # deuda tocan SÓLO este archivo del lado del backend, así que sin esta línea una ruta
+              # clasificada acá y no retirada de `DEUDA_SIN_TRAMO` deja el push en verde (la suite
+              # del app no corre) y el rojo aparece recién en el próximo cambio de `app/`, contra
+              # otro autor. Mismo motivo que las dos líneas de `app/tests/unit/` en
+              # `backendContracts`, al revés.
+              - 'classes/revenueplan/value.ts'
             backendContracts:
               - 'app/utils/**'
               # La copia del MCP de la regla de "fuera de mercado": tests/market_outlier_parity.test.ts
