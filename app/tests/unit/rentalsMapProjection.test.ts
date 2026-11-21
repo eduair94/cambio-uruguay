@@ -1,9 +1,13 @@
 // Executes the actual map route against read-only Mongo $documents fixtures; never writes rows.
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import mongoose from 'mongoose'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { rentalDistanceProjection } from '../../utils/rentalDistance'
 import {
   RENTAL_SORTS,
   normalizeRentalQuery,
+  rentalMatchingOffer,
   rentalMongoSort,
   type RentalMapResponse,
 } from '../../utils/rentals'
@@ -28,11 +32,13 @@ vi.mock('../../server/models/RentalListing', () => ({
           options.allowDiskUse = enabled
           return chain
         },
+        option: () => chain,
         collation: async (collation: Record<string, unknown>) => {
           state.pipelines.push(pipeline)
           const rows = await state.run(pipeline, collation, options)
-          if (pipeline.some(stage => stage.$sort)) {
-            state.mapRows = rows
+          // The points pass: one `$facet` document, its `points` branch sorted and capped.
+          if (pipeline.some(stage => stage.$facet)) {
+            state.mapRows = rows[0]?.points ?? []
             state.sortDiskUse = options.allowDiskUse
           }
           return rows
@@ -42,6 +48,11 @@ vi.mock('../../server/models/RentalListing', () => ({
     },
   },
 }))
+// Every test here changes rows or fixtures under the same queries: no memo between them.
+vi.mock('../../server/utils/rentalMemo', async original => {
+  const memo = await original<typeof import('../../server/utils/rentalMemo')>()
+  return { ...memo, rentalMemo: memo.createRentalMemo({ enabled: () => false }) }
+})
 vi.mock('../../server/models/RentalMeta', () => ({
   RentalMetaModel: { findOne: () => ({ select: () => ({ lean: async () => ({ usdUyu: 40 }) }) }) },
 }))
@@ -67,29 +78,35 @@ describe('map sort keys survive the slim projection', () => {
   })
   afterAll(() => vi.unstubAllGlobals())
 
+  // The points pass ends in ONE `$facet`: `located` counts every row of the search, `points`
+  // sorts and caps them. The sort lives in that branch, after the slim `$project`.
   const sortedPass = async (query: Record<string, unknown>) => {
     state.pipelines = []
     state.query = query
     await handler({})
-    const pipeline = state.pipelines.find(stages => stages.some(stage => stage.$sort))!
-    const sortAt = pipeline.findIndex(stage => stage.$sort)
-    const projectAt = pipeline.findLastIndex((stage, index) => index < sortAt && stage.$project)
-    return { pipeline, sortAt, projectAt }
+    const pipeline = state.pipelines.find(stages => stages.some(stage => stage.$facet))!
+    const facetAt = pipeline.findIndex(stage => stage.$facet)
+    const projectAt = pipeline.findLastIndex((stage, index) => index < facetAt && stage.$project)
+    const facet = pipeline[facetAt]!.$facet as Record<string, Array<Record<string, any>>>
+    return { pipeline, facetAt, projectAt, facet, sort: facet.points![0]!.$sort }
   }
+
+  const sortQuery = (sort: string) =>
+    sort === 'distancia' ? { sort, refLat: '-34.9', refLng: '-56.17' } : { sort }
 
   it.each(RENTAL_SORTS.map(option => option.value))(
     'computes or projects every %s sort key before the sort',
     async sort => {
-      const query = sort === 'distancia' ? { sort, refLat: '-34.9', refLng: '-56.17' } : { sort }
-      const { pipeline, sortAt, projectAt } = await sortedPass(query)
+      const query = sortQuery(sort)
+      const { pipeline, facetAt, projectAt, sort: sortStage } = await sortedPass(query)
       expect(projectAt).toBeGreaterThanOrEqual(0)
-      const keys = Object.keys(pipeline[sortAt]!.$sort)
-      expect(pipeline[sortAt]!.$sort).toEqual(rentalMongoSort(normalizeRentalQuery(query).sort))
+      const keys = Object.keys(sortStage)
+      expect(sortStage).toEqual(rentalMongoSort(normalizeRentalQuery(query).sort))
       const projection = pipeline[projectAt]!.$project as Record<string, unknown>
       const setIn = (stages: Array<Record<string, any>>) =>
         stages.flatMap(stage => Object.keys(stage.$set ?? stage.$addFields ?? {}))
       const setBefore = setIn(pipeline.slice(0, projectAt))
-      const setAfter = setIn(pipeline.slice(projectAt + 1, sortAt))
+      const setAfter = setIn(pipeline.slice(projectAt + 1, facetAt))
       for (const key of keys) {
         const paths = key.split('.').map((_, i, parts) => parts.slice(0, i + 1).join('.'))
         const computed = typeof projection[key] === 'object' && projection[key] !== null
@@ -125,6 +142,67 @@ describe('map sort keys survive the slim projection', () => {
     expect(projection._rentalMix).toEqual({ $toHashedIndexKey: '$key' })
     for (const field of ['_rentalTier', '_rentalHour', '_rentalMix'])
       expect(pipeline.slice(0, projectAt).some(stage => stage.$set?.[field])).toBe(false)
+  })
+
+  // A marker needs its key, its point, its price and its barrio; the offer Mongo chose gives the
+  // price and the advert id the availability reports hang on. Bedrooms, area, the offer count and
+  // the link were 47.7 % of the bytes and nothing on the page read them (spec P4).
+  const MARKER_FIELDS = [
+    'key',
+    'latitude',
+    'longitude',
+    'neighborhood',
+    'price',
+    'currency',
+    'matchingOffer.price',
+    'matchingOffer.currency',
+    'matchingOffer.source',
+    'matchingOffer.listingId',
+  ]
+
+  it.each(RENTAL_SORTS.map(option => option.value))(
+    'projects the marker fields, the distance and the %s sort keys, and nothing else',
+    async sort => {
+      for (const query of [
+        sortQuery(sort),
+        { ...sortQuery(sort), refLat: '-34.9', refLng: '-56.17' },
+      ]) {
+        const { pipeline, projectAt } = await sortedPass(query)
+        const normalized = normalizeRentalQuery(query)
+        const projection = pipeline[projectAt]!.$project as Record<string, unknown>
+        expect(projection._id).toBe(0)
+        expect(new Set(Object.keys(projection))).toEqual(
+          new Set([
+            '_id',
+            ...MARKER_FIELDS,
+            ...Object.keys(rentalDistanceProjection(normalized)),
+            ...Object.keys(rentalMongoSort(normalized.sort)),
+          ])
+        )
+        for (const field of MARKER_FIELDS) expect(projection[field], field).toBe(1)
+      }
+    }
+  )
+
+  it('counts the located homes and caps the points in the same pass', async () => {
+    const { pipeline, facetAt, facet } = await sortedPass({ sort: 'precio' })
+    // The `$facet` is the last stage: nothing runs on its one output document.
+    expect(facetAt).toBe(pipeline.length - 1)
+    expect(Object.keys(facet).sort()).toEqual(['located', 'points'])
+    expect(facet.located).toEqual([{ $count: 'n' }])
+    expect(facet.points).toHaveLength(2)
+    const limit = facet.points![1]!.$limit as number
+    // One `$facet` output is one document (16 MB): 3,000 marker rows with their sort keys were
+    // 1.07 MB on production. Raising the cap past 5,000 needs this test raised, on purpose.
+    expect(limit).toBeLessThanOrEqual(5000)
+    state.pipelines = []
+    expect((await handler({})).limit).toBe(limit)
+  })
+
+  it('never re-chooses the offer in JavaScript', () => {
+    // The point's price is Mongo's `matchingOffer`, the offer the list card shows.
+    const source = readFileSync(join(__dirname, '../../server/api/rentals/mapa.get.ts'), 'utf8')
+    expect(source).not.toContain('rentalMatchingOffer')
   })
 })
 
@@ -229,16 +307,23 @@ describe.skipIf(!uri)('map projection and ordering in actual route (read-only Mo
     expect(state.sortDiskUse).toBe(true)
     expect(result.points.map(point => point.key)).toEqual(keys)
     expect([result.total, result.located, result.shown]).toEqual([4, 4, 4])
-    const stages = state.pipelines.find(pipeline => pipeline.some(stage => stage.$sort))!
+    const stages = state.pipelines.find(pipeline => pipeline.some(stage => stage.$facet))!
     const projected = stages.findIndex(stage => stage.$project)
-    expect(projected).toBeLessThan(stages.findIndex(stage => stage.$sort))
-    expect(stages[projected].$project).toMatchObject({ key: 1, area: 1, priceUyu: 1, freshAt: 1 })
+    expect(projected).toBeLessThan(stages.findIndex(stage => stage.$facet))
+    expect(stages[projected].$project).toMatchObject({
+      key: 1,
+      latitude: 1,
+      longitude: 1,
+      'matchingOffer.price': 1,
+    })
     expect(JSON.stringify(state.mapRows)).not.toContain('PRIVATE_')
     expect(JSON.stringify(fixtures).length / JSON.stringify(state.mapRows).length).toBeGreaterThan(
       20
     )
-    expect(result.points[0]).not.toHaveProperty('priceUyu')
-    expect(result.points[0]).not.toHaveProperty('freshAt')
+    for (const point of result.points)
+      expect(Object.keys(point).sort()).toEqual(
+        ['currency', 'key', 'lat', 'lng', 'neighborhood', 'price'].sort()
+      )
   })
 
   it('keeps source, currency, owner and monthly costs on one advert before projection/sort', async () => {
@@ -302,16 +387,13 @@ describe.skipIf(!uri)('map projection and ordering in actual route (read-only Mo
     }
     const result = await handler({})
     expect(result.points.map(point => point.key)).toEqual(['cheaper', 'eligible'])
-    expect(result.points[1]).toMatchObject({
-      price: 750,
-      currency: 'USD',
-      url: 'https://casasweb.com/fixture-selected',
-    })
+    // The selected advert's price, not the cheaper `low-headline` one of another portal.
+    expect(result.points[1]).toMatchObject({ price: 750, currency: 'USD' })
     expect(state.mapRows.find(row => row.key === 'eligible')?.priceUyu).toBe(30000)
     expect(JSON.stringify(result)).not.toContain('PRIVATE_')
   })
 
-  it('keeps own advertised conditions through the slim projection and chooses the same map price/link', async () => {
+  it('keeps own advertised conditions through the slim projection and chooses the same map price', async () => {
     const terms = { petsAllowed: true, furnished: true, parkingSpaces: 1, guarantees: ['anda'] }
     fixtures = [
       property('eligible', 18000, 40, 0, [
@@ -332,13 +414,35 @@ describe.skipIf(!uri)('map projection and ordering in actual route (read-only Mo
     }
     const result = await handler({})
     expect([result.total, result.located, result.shown]).toEqual([1, 1, 1])
-    expect(result.points[0]).toMatchObject({
-      key: 'eligible',
-      price: 22000,
-      url: 'https://www.infocasas.com.uy/fixture/selected',
-    })
+    // The pets offer (22,000), not the cheaper `cheap` one (18,000) without pets.
+    expect(result.points[0]).toMatchObject({ key: 'eligible', price: 22000 })
     state.query.priceMax = '20000'
     expect((await handler({})).points).toEqual([])
+  })
+
+  // The one filter where the map before 2026-11-20 and this one differ, on purpose: the old JS
+  // mapper chose among offers projected WITHOUT `stayPriceSuspect`, so with "sinNoche" it still
+  // pinned the per-night price. Mongo's `matchingOffer` sees the flag, as the list card does.
+  it('with sinNoche pins the monthly advert, not a cheaper per-night one, as the list does', async () => {
+    const offers = [
+      advert('per-night', 2000, { stayPriceSuspect: true }),
+      advert('monthly', 750, { priceUyu: 30000, currency: 'USD' }),
+    ]
+    fixtures = [property('home', 2000, 40, 0, offers)]
+    state.query = { sinNoche: '1' }
+    const result = await handler({})
+    expect([result.total, result.located, result.shown]).toEqual([1, 1, 1])
+    expect(result.points[0]).toMatchObject({ key: 'home', price: 750, currency: 'USD' })
+    // The same advert the list's rule picks over the FULL offers (flag included).
+    const listOffer = rentalMatchingOffer(offers as never, normalizeRentalQuery(state.query), 40)
+    expect(listOffer).toMatchObject({ listingId: 'monthly' })
+    expect(result.points[0]).toMatchObject({
+      price: listOffer!.price,
+      currency: listOffer!.currency,
+    })
+    // Without the filter the per-night advert is the cheapest and stays the headline.
+    state.query = {}
+    expect((await handler({})).points[0]).toMatchObject({ price: 2000, currency: 'UYU' })
   })
 
   it('shows the selected monthly-total advert and keeps homes with unknown expenses last', async () => {
@@ -353,10 +457,8 @@ describe.skipIf(!uri)('map projection and ordering in actual route (read-only Mo
     state.query = { sort: 'total' }
     const result = await handler({})
     expect(result.points.map(point => point.key)).toEqual(['known', 'next', 'unknown'])
-    expect(result.points[0]).toMatchObject({
-      price: 20000,
-      url: 'https://www.infocasas.com.uy/fixture/total-cheaper',
-    })
+    // The advert with the lower monthly total (20,000 + 0), not the lower rent (18,000 + 8,000).
+    expect(result.points[0]).toMatchObject({ price: 20000 })
     expect(result.points).toHaveLength(3)
     expect(JSON.stringify(result)).not.toContain('_rentalMonthly')
   })
@@ -397,13 +499,13 @@ describe.skipIf(!uri)('map projection and ordering in actual route (read-only Mo
     expect([result.total, result.located, result.shown]).toEqual([5, 4, 4])
     expect(result.points[0]!.distanceKm).toBeCloseTo(0.111195, 5)
     expect(result.points[3]!.distanceKm).toBeNull()
-    const pipeline = state.pipelines.find(rows => rows.some(stage => stage.$sort))!
+    const pipeline = state.pipelines.find(rows => rows.some(stage => stage.$facet))!
     expect(pipeline.findIndex(stage => stage.$set?.distanceKm)).toBeLessThan(
       pipeline.findIndex(stage => stage.$project)
     )
-    expect(pipeline.findIndex(stage => stage.$sort)).toBeLessThan(
-      pipeline.findIndex(stage => stage.$limit)
-    )
+    const points = pipeline.find(stage => stage.$facet)!.$facet.points as Array<Record<string, any>>
+    expect(points.findIndex(stage => stage.$sort)).toBe(0)
+    expect(points.findIndex(stage => stage.$limit)).toBe(1)
     expect(JSON.stringify(result)).not.toMatch(/PRIVATE|identity|_rentalDistance/)
 
     state.query.sort = 'precio'

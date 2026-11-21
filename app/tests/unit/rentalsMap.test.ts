@@ -16,22 +16,28 @@ const APP = join(__dirname, '..', '..')
 const pagina = readFileSync(join(APP, 'pages', 'alquileres-uruguay.vue'), 'utf8')
 const mapa = readFileSync(join(APP, 'server', 'api', 'rentals', 'mapa.get.ts'), 'utf8')
 const lista = readFileSync(join(APP, 'server', 'api', 'rentals', 'index.get.ts'), 'utf8')
+// Since 2026-11-20 (P5) the list reaches `rentallistings` through its memo module: the filter, the
+// aggregate call and the facet stages live there, the route only decorates the cards.
+const datos = readFileSync(join(APP, 'server', 'utils', 'rentalDirectoryData.ts'), 'utf8')
 
 describe('el filtro es uno solo', () => {
   it('las dos rutas lo piden a la misma función', () => {
-    for (const route of [mapa, lista])
+    for (const route of [mapa, datos])
       expect(route).toMatch(
         /buildRentalFilter\(\s*query,\s*STALE_DAYS,\s*usdUyu,\s*serviceZones\s*\)/
       )
     // The neighbourhood-service filter is resolved the same way in both, or map and list diverge.
-    for (const route of [mapa, lista])
+    for (const route of [mapa, datos])
       expect(route).toMatch(
         /serviceZones = query\.servicios\?\.length\s*\?\s*await loadRentalServiceZoneIds\(query\.servicios\)\s*:\s*undefined/
       )
   })
 
   it('lista, mapa, conteos y facetas comparan barrios sin distinguir mayúsculas ni tildes', () => {
-    for (const route of [mapa, lista]) {
+    // The list route itself issues no aggregation: every one goes through the module's helper.
+    expect(lista).not.toMatch(/\.aggregate\(/)
+    expect(lista).toContain("from '../../utils/rentalDirectoryData'")
+    for (const route of [mapa, datos]) {
       const queries = route.match(/RentalListingModel\.aggregate\(/g) || []
       const collations = route.match(/\.collation\(\s*RENTAL_COLLATION\s*\)/g) || []
       expect(queries.length).toBeGreaterThan(0)
@@ -42,21 +48,24 @@ describe('el filtro es uno solo', () => {
   })
 
   it('filtra la vigencia de cada aviso antes de contar, filtrar y producir las facetas', () => {
-    for (const route of [mapa, lista]) {
+    for (const route of [mapa, datos]) {
       expect(route).toContain('rentalPublicStages(')
       expect(route).not.toContain('.countDocuments(')
     }
-    expect(lista).toContain('rentalPublicStages(nonLocation, STALE_DAYS, excluded)')
-    expect(lista).toContain('rentalPublicStages(withoutNeighborhood, STALE_DAYS, excluded)')
+    expect(lista).not.toContain('.countDocuments(')
+    expect(datos).toContain('rentalPublicStages(nonLocation, STALE_DAYS, excluded)')
+    expect(datos).toContain('rentalPublicStages(withoutNeighborhood, STALE_DAYS, excluded)')
   })
 
   it('la lista ya no arma el suyo a mano', () => {
-    expect(lista).not.toContain('nonLocation.propertyType = query.type')
+    for (const source of [lista, datos])
+      expect(source).not.toContain('nonLocation.propertyType = query.type')
   })
 
   it('los dos usan la misma ventana de frescura', () => {
-    const ventana = (src: string) => /const STALE_DAYS = (\d+)/.exec(src)?.[1]
-    expect(ventana(mapa)).toBe(ventana(lista))
+    const ventana = (src: string) => /const STALE_DAYS = (\w+)/.exec(src)?.[1]
+    expect(ventana(mapa)).toBeTruthy()
+    expect(ventana(mapa)).toBe(ventana(datos))
   })
 })
 

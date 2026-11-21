@@ -1067,24 +1067,23 @@ export function rentalSpecsLabel(
   return parts.join(' · ')
 }
 
-/** Un punto del mapa: lo mínimo para dibujar un marcador y su globo. */
+/**
+ * Un punto del mapa: lo mínimo para dibujar un marcador. Dormitorios, metros, la cantidad de
+ * avisos y el enlace los trae la ficha que la página pide al elegir el punto
+ * (`/api/rentals/propiedad/<key>`); en cada punto eran casi la mitad de los bytes del mapa.
+ */
 export interface RentalMapPoint {
+  /** Reports on the point's advert, added when serving (never memoised); absent without any. */
   availability?: RentalAvailabilitySummary
   key: string
   lat: number
   lng: number
   /** Approximate straight-line distance; absent without a reference, null without own evidence. */
   distanceKm?: number | null
-  /** Precio en la moneda del aviso, ya formateado por el servidor para no mandar dos campos. */
+  /** Precio en la moneda del aviso que eligió el filtro (el mismo que muestra la tarjeta). */
   price: number
   currency: RentalCurrency
-  bedrooms: number | null
-  area: number | null
   neighborhood: string
-  /** Cuántos portales publican esta misma propiedad. */
-  offers: number
-  /** El aviso al que lleva el globo. */
-  url: string
 }
 
 export interface RentalMapResponse {
