@@ -287,6 +287,7 @@
     "h1": "Importvarukorg: den slutliga kostnaden för dina utlandsköp",
     "intro": "Lägg till produkter från Amazon, eBay eller MercadoLibre (klistra in länken eller skriv in dem för hand) och räkna ut vad de kostade landat i Uruguay: skatter per kategori, franchise, frakt och totalt i pesos.",
     "ogSubtitle": "Skatter, franchise och frakt för dina onlinebeställningar, i pesos",
+    "metaTitle": "Importvagn: slutkostnaden",
     "metaDescription": "Bygg en varukorg med dina Amazon-, eBay- eller MercadoLibre-beställningar och se slutkostnaden i Uruguay: skatter, franchisen på 800 USD, frakt och totalt i pesos.",
     "yourCart": "Din varukorg",
     "clear": "Rensa",
@@ -353,8 +354,7 @@
       "saveHint": "Logga in för att spara din varukorg och se den från vilken enhet som helst."
     },
     "disclaimer": "Referensberäkning. Faktiska skatter beror på kategori, ursprung och tull.",
-    "fullCalculator": "Öppna hela kalkylatorn",
-    "metaTitle": "Importvagn: slutkostnaden"
+    "fullCalculator": "Öppna hela kalkylatorn"
   },
   "share": {
     "label": "Dela:",
@@ -1056,8 +1056,8 @@
   },
   "faq": {
     "nav": "Vanliga frågor",
-    "metaTitle": "Vanliga frågor om dollarn och växelkurser i Uruguay",
-    "metaDescription": "Tydliga svar om dagens kurser för amerikanska dollar, euro, real och argentinsk peso i Uruguay: var man kan köpa, var man kan sälja, spreadar och hur man väljer en börs. Uppdateras var 10:e minut.",
+    "metaTitle": "Vanliga frågor: dollar och växelkurser",
+    "metaDescription": "Var man kan köpa och sälja dollar, euro, real och argentinsk peso i Uruguay idag, varje hus spread och hur man väljer. Uppdateras var 10:e minut.",
     "title": "Vanliga frågor",
     "intro": "Svar på de vanligaste frågorna om växelkurser i Uruguay, med realtidsdata från över 40 växlingskontor."
   },
@@ -1090,8 +1090,8 @@
     "tag": "GUIDER",
     "h1": "Guider om dollar och valutaväxling i Uruguay",
     "intro": "Tydliga, praktiska guider för att förstå Uruguays valutamarknad: hur man köper dollar till bästa pris, vad de olika offerttyperna betyder och när det är bäst att växla valuta.",
-    "metaTitle": "Guider om dollarn och växlingshus i Uruguay",
-    "metaDescription": "Praktiska guider för att köpa dollar till bästa pris i Uruguay, förstå BILLETE, CABLE och TRANSFERENCIA, och välja den bästa tiden att växla valuta. Data från över 40 växlingskontor.",
+    "metaTitle": "Guider för dollar och växelhus",
+    "metaDescription": "Över 150 guider om dollar, banker, BPS, DGI, uthyrning och import i Uruguay: vad regeln säger, vad det kostar och vilken procedur du behöver.",
     "readGuide": "Läs guiden",
     "updated": "Uppdaterad {date}",
     "byAuthor": "av",
@@ -1487,8 +1487,8 @@
     }
   },
   "porQueDolar": {
-    "metaTitle": "Varför stiger eller faller dollarn i Uruguay? Analys och korrelation",
-    "metaDescription": "Vad påverkar dollarn i Uruguay: den verkliga korrelationen med den brasilianska realen, den globala dollarn och amerikanska växelkurser, med prishoppningarna förklarade dag för dag.",
+    "metaTitle": "Varför dollarn stiger eller faller i Uruguay",
+    "metaDescription": "Vad som påverkar dollarn i Uruguay, mätt: dess korrelation med den brasilianska realen, den globala dollarn, amerikanska obligationer och Argentinas blå valuta, hopp för hopp.",
     "title": "Varför stiger eller faller dollarn i Uruguay?",
     "subtitle": "Vilka faktorer påverkar växelkursen, mätt med data.",
     "todayTitle": "Vad påverkar dollarn idag?",
@@ -2379,7 +2379,7 @@
   },
   "pizarra": {
     "h1": "Uruguayansk dollarns ombord — idag",
-    "metaTitle": "Uruguayansk dollartavla idag — Köp- och säljkurser i realtid",
+    "metaTitle": "Dollartavlan idag: köp och sälj i realtid",
     "metaDescription": "Live-omgång för dollar, euro, real och argentinsk peso i Uruguay: köp och sälj från alla växlingshus, ingen registrering, inga cookies, ingen väntetid.",
     "keywords": "Uruguays dollartavla, dollar idag Uruguay, live växelkurs Uruguay, köp sälj dollar Uruguay",
     "boardLabel": "Dagens priser",

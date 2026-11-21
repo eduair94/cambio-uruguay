@@ -1056,8 +1056,8 @@
   },
   "faq": {
     "nav": "KKK",
-    "metaTitle": "Korduma kippuvad küsimused dollari ja vahetuskursside kohta Uruguays",
-    "metaDescription": "Selged vastused Uruguay tänaste USA dollari, euro, reaali ja Argentina peeso kursside kohta: kust osta, kus müüa, kursivahed ja kuidas valida valuutavahetuskohta. Uuendatakse iga 10 minuti järel.",
+    "metaTitle": "KKK: dollar ja vahetuskursid",
+    "metaDescription": "Kus Uruguays täna dollareid, eurosid, reaale ja Argentina peesosid osta ja müüa, iga maja kursivahe ja kuidas valida. Uuendatakse iga 10 minuti järel.",
     "title": "Korduma kippuvad küsimused",
     "intro": "Vastused Uruguay vahetuskursside kohta käivatele levinumatele küsimustele koos reaalajas andmetega enam kui 40 valuutavahetuspunktist."
   },
@@ -1090,8 +1090,8 @@
     "tag": "JUHENDID",
     "h1": "Juhendid dollari ja valuutavahetuse kohta Uruguays",
     "intro": "Selged ja praktilised juhendid Uruguay valuutaturu mõistmiseks: kuidas osta dollareid parima hinnaga, mida tähendavad erinevad noteeringutüübid ja millal on kõige parem valuutat vahetada.",
-    "metaTitle": "Juhendid dollari ja valuutavahetusmajade kohta Uruguays",
-    "metaDescription": "Praktilised juhendid dollarite ostmiseks Uruguays parima hinnaga, BILLETE, CABLE ja TRANSFERENCIA mõistmiseks ning parima valuutavahetusaja valimiseks. Andmed enam kui 40 valuutavahetuspunktist.",
+    "metaTitle": "Dollari ja valuutavahetuspunktide juhendid",
+    "metaDescription": "Üle 150 juhendi dollari, pankade, BPS, DGI, rentimise ja impordi kohta Uruguays: mida reegel ütleb, kui palju see maksab ja millist protseduuri vajate.",
     "readGuide": "Loe juhendit",
     "updated": "Uuendatud {date}",
     "byAuthor": "kõrval",
@@ -1487,8 +1487,8 @@
     }
   },
   "porQueDolar": {
-    "metaTitle": "Miks dollar Uruguays tõuseb või langeb? Analüüs ja korrelatsioon",
-    "metaDescription": "Mis liigutab dollarit Uruguays: tegelik korrelatsioon Brasiilia reaali, globaalse dollari ja USA kurssidega, hinnatõusu selgitatakse päevast päeva.",
+    "metaTitle": "Miks dollar Uruguays tõuseb või langeb?",
+    "metaDescription": "Mis liigutab Uruguay dollarit, mõõdetuna: selle korrelatsioon Brasiilia reaali, globaalse dollari, USA võlakirjade ja Argentina sinise dollariga, hüpe hüppe haaval.",
     "title": "Miks dollar Uruguays tõuseb või langeb?",
     "subtitle": "Millised tegurid mõjutavad vahetuskurssi, mõõdetuna andmetega.",
     "todayTitle": "Mis liigutab dollarit täna?",
@@ -2379,7 +2379,7 @@
   },
   "pizarra": {
     "h1": "Uruguay dollari vahetuskurss – täna",
-    "metaTitle": "Uruguay dollari vahetuskurss täna – reaalajas ostu- ja müügikursid",
+    "metaTitle": "Dollari board täna: otseülekannete ost ja müük",
     "metaDescription": "Otseülekanne dollari, euro, reaali ja Argentina peeso kohta Uruguays: osta ja müü igast vahetuspunktist, registreerumist, küpsiseid ega ootamist pole vaja.",
     "keywords": "Uruguay dollari tabel, dollar täna Uruguay, reaalajas vahetuskurss Uruguay, osta ja müü dollar Uruguay",
     "boardLabel": "Tänased hinnad",

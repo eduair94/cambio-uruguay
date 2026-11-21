@@ -1056,8 +1056,8 @@
   },
   "faq": {
     "nav": "Bieži uzdotie jautājumi",
-    "metaTitle": "Bieži uzdotie jautājumi par dolāru un valūtas kursiem Urugvajā",
-    "metaDescription": "Skaidras atbildes par šodienas ASV dolāra, eiro, reāla un Argentīnas peso kursiem Urugvajā: kur pirkt, kur pārdot, spredi un kā izvēlēties valūtas maiņas punktu. Atjaunināts ik pēc 10 minūtēm.",
+    "metaTitle": "Bieži uzdotie jautājumi: dolārs un valūtas kursi",
+    "metaDescription": "Kur šodien Urugvajā pirkt un pārdot dolārus, eiro, reālus un Argentīnas peso, katras mājas spreds un izvēles iespējas. Atjaunināts ik pēc 10 minūtēm.",
     "title": "Bieži uzdotie jautājumi",
     "intro": "Atbildes uz visbiežāk uzdotajiem jautājumiem par valūtas kursiem Urugvajā, ar reāllaika datiem no vairāk nekā 40 valūtas maiņas punktiem."
   },
@@ -1090,8 +1090,8 @@
     "tag": "ROKASGRĀMATA",
     "h1": "Ceļveži par dolāra un valūtas maiņu Urugvajā",
     "intro": "Skaidras, praktiskas rokasgrāmatas Urugvajas valūtas tirgus izpratnei: kā iegādāties dolārus par vislabāko cenu, ko nozīmē dažādie kotācijas veidi un kad vislabāk ir apmainīt valūtu.",
-    "metaTitle": "Ceļveži par dolāru un valūtas maiņas namiem Urugvajā",
-    "metaDescription": "Praktiski ceļveži dolāru iegādei par vislabāko cenu Urugvajā, BILLETES, CABLE un TRANSFERENCIA izpratnei un labākā valūtas maiņas laika izvēlei. Dati no vairāk nekā 40 valūtas maiņas punktiem.",
+    "metaTitle": "Dolāru un valūtas maiņas punktu ceļveži",
+    "metaDescription": "Vairāk nekā 150 ceļvežu par dolāru, bankām, BPS, DGI, īri un importu Urugvajā: ko paredz noteikumi, cik tie maksā un kāda procedūra jums nepieciešama.",
     "readGuide": "Lasīt ceļvedi",
     "updated": "Atjaunināts {date}",
     "byAuthor": "ar",
@@ -1487,8 +1487,8 @@
     }
   },
   "porQueDolar": {
-    "metaTitle": "Kāpēc Urugvajā dolārs pieaug vai krītas? Analīze un korelācija",
-    "metaDescription": "Kas ietekmē dolāru Urugvajā: reāla korelācija ar Brazīlijas reālu, globālo dolāru un ASV likmēm, cenu lēcienus skaidrojot dienu no dienas.",
+    "metaTitle": "Kāpēc dolāra vērtība Urugvajā pieaug vai samazinās",
+    "metaDescription": "Kas ietekmē dolāru Urugvajā, mērot: tā korelācija ar Brazīlijas reālu, globālo dolāru, ASV obligācijām un Argentīnas zilo dolāru, lēcienu pa lēcienam.",
     "title": "Kāpēc Urugvajā dolārs pieaug vai krītas?",
     "subtitle": "Kādi faktori ietekmē valūtas kursu, mērot ar datiem.",
     "todayTitle": "Kas šodien ietekmē dolāra kursu?",
@@ -2379,7 +2379,7 @@
   },
   "pizarra": {
     "h1": "Urugvajas dolāra valūta — šodien",
-    "metaTitle": "Urugvajas dolāra valūta šodien — tiešsaistes pirkšanas un pārdošanas kursi",
+    "metaTitle": "Dolāra dēlis šodien: tiešraides pirkšana un pārdošana",
     "metaDescription": "Tiešraides dēlis dolāram, eiro, reālam un Argentīnas peso Urugvajā: pērciet un pārdodiet no katras valūtas maiņas vietas, nav jāreģistrējas, nav sīkfailu, nav jāgaida.",
     "keywords": "Urugvajas dolāra valūta, dolārs šodien Urugvajā, valūtas kurss Urugvajā tiešsaistē, pirkt un pārdot Urugvajas dolāru",
     "boardLabel": "Šodienas likmes",

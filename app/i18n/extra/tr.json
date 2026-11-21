@@ -287,6 +287,7 @@
     "h1": "İthalat sepeti: Yurtdışı alışverişlerinizin nihai maliyeti",
     "intro": "Amazon, eBay veya MercadoLibre'den ürünler ekleyin (bağlantıyı yapıştırın veya elle girin) ve Uruguay'a ithalat maliyetlerini hesaplayın: kategoriye göre vergiler, bayilik, kargo ve toplam tutar (peso cinsinden).",
     "ogSubtitle": "Çevrimiçi siparişlerinizin vergileri, franchise ücretleri ve kargo ücretleri (peso cinsinden).",
+    "metaTitle": "Sepeti içe aktar: nihai maliyet",
     "metaDescription": "Amazon, eBay veya MercadoLibre siparişlerinizle bir sepet oluşturun ve Uruguay'daki nihai maliyeti görün: vergiler, 800 USD franchise ücreti, kargo ve toplam tutar (peso cinsinden).",
     "yourCart": "Sepetiniz",
     "clear": "Temizlemek",
@@ -353,8 +354,7 @@
       "saveHint": "Sepetinizi kaydetmek ve herhangi bir cihazdan görüntülemek için oturum açın."
     },
     "disclaimer": "Tahmini referans. Gerçek vergiler kategoriye, menşe ülkeye ve gümrüğe bağlıdır.",
-    "fullCalculator": "Hesap makinesinin tamamını açın",
-    "metaTitle": "Sepeti içe aktar: nihai maliyet"
+    "fullCalculator": "Hesap makinesinin tamamını açın"
   },
   "share": {
     "label": "Paylaşmak:",
@@ -1056,8 +1056,8 @@
   },
   "faq": {
     "nav": "SSS",
-    "metaTitle": "Uruguay'da dolar ve döviz kurları hakkında SSS",
-    "metaDescription": "Uruguay'da bugün geçerli olan ABD doları, euro, real ve Arjantin pesosu kurları hakkında net cevaplar: nerede alım yapılır, nerede satılır, spreadler ve döviz bürosu seçimi nasıl yapılır. Her 10 dakikada bir güncellenir.",
+    "metaTitle": "Sıkça Sorulan Sorular: Dolar ve Döviz Kurları",
+    "metaDescription": "Bugün Uruguay'da dolar, euro, real ve Arjantin pesosu nerede alınıp satılır, her bir döviz bürosunun fiyat aralığı ve nasıl seçim yapılır. Her 10 dakikada bir güncellenir.",
     "title": "Sıkça sorulan sorular",
     "intro": "Uruguay'daki döviz kurları hakkında en sık sorulan soruların cevapları, 40'tan fazla döviz bürosundan alınan gerçek zamanlı verilerle."
   },
@@ -1090,8 +1090,8 @@
     "tag": "KILAVUZLAR",
     "h1": "Uruguay'da dolar ve döviz kuru hakkında rehberler",
     "intro": "Uruguay döviz piyasasını anlamak için açık ve pratik rehberler: en iyi fiyattan dolar nasıl alınır, farklı kur türlerinin anlamı nedir ve döviz değişimi için en uygun zaman ne zamandır.",
-    "metaTitle": "Uruguay'da dolar ve döviz büroları hakkında rehberler",
-    "metaDescription": "Uruguay'da en iyi fiyattan dolar satın almak, BILLETE, CABLE ve TRANSFERENCIA'yı anlamak ve döviz bozdurmak için en uygun zamanı seçmek için pratik rehberler. 40'tan fazla döviz bürosundan elde edilen veriler.",
+    "metaTitle": "Dolar ve döviz bürosu rehberleri",
+    "metaDescription": "Uruguay'da dolar, bankalar, BPS, DGI, kiralama ve ithalat konularında 150'den fazla rehber: kurallar ne diyor, maliyetleri ne ve hangi prosedürü izlemeniz gerekiyor.",
     "readGuide": "Kılavuzu okuyun",
     "updated": "{date} güncellendi",
     "byAuthor": "ile",
@@ -1487,8 +1487,8 @@
     }
   },
   "porQueDolar": {
-    "metaTitle": "Uruguay'da dolar neden yükseliyor veya düşüyor? Analiz ve korelasyon",
-    "metaDescription": "Uruguay'da doları hareket ettiren faktörler: Brezilya reali, küresel dolar ve ABD faiz oranlarıyla olan gerçek korelasyon ve fiyat sıçramalarının günlük açıklaması.",
+    "metaTitle": "Uruguay'da doların yükselişi veya düşüşü neden kaynaklanıyor?",
+    "metaDescription": "Uruguay'da doların hareketini etkileyen faktörler; Brezilya reali, küresel dolar, ABD tahvilleri ve Arjantin mavisi ile olan korelasyonu, adım adım ölçülmüştür.",
     "title": "Uruguay'da dolar neden yükseliyor veya düşüyor?",
     "subtitle": "Döviz kurunu etkileyen faktörler nelerdir, verilerle ölçülmüştür?",
     "todayTitle": "Bugün doları hareketlendiren nedir?",
@@ -2379,7 +2379,7 @@
   },
   "pizarra": {
     "h1": "Uruguay doları kurulu — bugün",
-    "metaTitle": "Uruguay Dolar Piyasası Bugün — Canlı Alış ve Satış Kurları",
+    "metaTitle": "Bugünkü dolar piyasası: canlı alım satım",
     "metaDescription": "Uruguay'da dolar, euro, real ve Arjantin pesosu için canlı işlem platformu: Her döviz bürosundan alım satım yapın, kayıt gerekmez, çerez kullanılmaz, bekleme yoktur.",
     "keywords": "Uruguay dolar kurulu, Uruguay'da bugünkü dolar kuru, Uruguay'da canlı döviz kuru, Uruguay'da dolar alım satımı",
     "boardLabel": "Bugünkü fiyatlar",

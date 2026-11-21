@@ -3922,6 +3922,32 @@
         "/por-que-sube-el-dolar"
       ],
       "hypothesis": "El titulo de la pagina media 81 caracteres con la marca en espanol (89 en ingles, 79 en portugues) y la descripcion 156 en espanol y 158 en portugues, asi que el SERP cortaba las dos: el titulo repetia la pregunta del lector y le agregaba una etiqueta generica ('Analisis y correlacion') que se perdia junto con la marca, y la descripcion nombraba tres de las cuatro series que la pagina correlaciona (se le caia el blue argentino, que es un driversFor('USD') como el real, el indice dolar y el bono a 10 anios). Ahora el titulo entra en 59/57/57 conservando las dos formas de la consulta ('sube o baja') y la descripcion en 151/148/146 nombrando las cuatro series y el dia a dia, que es lo que la pagina publica y ninguna nota de opinion tiene. Se espera mas clics desde la misma posicion, sin tocar el H1 ni el cuerpo."
+    },
+    {
+      "id": "hubs-guias-faq-pizarra-entran-en-el-serp",
+      "shippedOn": "2026-11-21",
+      "routes": [
+        "/guias",
+        "/preguntas-frecuentes",
+        "/pizarra"
+      ],
+      "hypothesis": "Los tres hubs que npm run seo_debt daba libres del pozo de titulos y descripciones de catalogo de mensajes. Lo que servian: /preguntas-frecuentes un titulo de 82 caracteres con la marca en espanol (76 en portugues, el mas cortado del pozo) y una descripcion de 195/186/191; /guias 66/68/65 y 189/186/192; /pizarra 78/69/74. Los tres titulos sueltan 'en Uruguay' (la marca ya lo dice, la misma linea con que se curaron /dolar-hoy y /por-que-sube-el-dolar) y la etiqueta decorativa del final que el SERP se comia junto con la marca ('Compra y Venta al Instante'), y quedan en 59/47/55, 50/49/49 y 54/54/54. Las dos descripciones pasan a decir lo que su pagina tiene y ninguna otra: la del FAQ nombra las cuatro monedas, el spread por casa y cada cuanto se actualiza (145/146/148); la del hub de guias cambia 'datos de mas de 40 casas de cambio' -que es verdad del sitio y no dice nada del hub- por 'mas de 150 guias' y los temas que cubren (144/143/135), con el piso atado al catalogo por un test. Se esperan mas clics desde la misma posicion; no se toca ningun H1 ni cuerpo."
+    },
+    {
+      "id": "historia-laboral-bps-pagina-nueva",
+      "shippedOn": "2026-11-21",
+      "routes": [
+        "/guias/historia-laboral-bps-uruguay"
+      ],
+      "queries": [
+        "historia laboral bps",
+        "como ver mi historia laboral",
+        "consultar mis aportes bps",
+        "constancia de historia laboral nominada",
+        "aportes no registrados bps",
+        "puesta de manifiesto historia laboral"
+      ],
+      "hypothesis": "Pagina nueva en el hueco que quedaba entre dos paginas que ya existen: /reconocer-anos-trabajados-uruguay cubre lo anterior al 1/4/1996 y /denunciar-trabajo-en-negro-uruguay la relacion laboral no declarada, y ninguna habla del registro en si. Contesta tres cosas con fuente: como se baja hoy (servicio Consultar mis aportes con Usuario Personal BPS, la app BPS Personas, la constancia con QR, y la via presencial con cedula, apoderado o herederos), que revisar ademas de si el periodo figura (fechas de alta y baja, remuneraciones declaradas, empresas ajenas) y el plazo que casi no esta escrito en ningun lado legible: el articulo 90 de la Ley 16.713 en la redaccion de la Ley 20.130 da un ano para observar el registro desde su puesta de manifiesto y despues queda inmodificable salvo inspeccion del BPS o sentencia firme, y el Decreto 228/023 articulo 19 fija la primera puesta de manifiesto para el 31/12/2027, cada 3 anios despues. Lleva una tabla de decision con el tramite que corresponde segun el periodo y la edad, que declara las DOS excepciones por separado porque pueden darse juntas y el BPS no publica cual manda. Va como guia y no como pagina raiz: /guias/* es una familia que el plan de ingreso ya valua como lectura larga, y la pagina raiz habria pedido clasificarla en el backend. No publica ningun importe: ninguna pagina del BPS que describe estos tramites publica un costo. Parte de cero: diez clics o mas en los 28 dias archivados es mejoro, y sin cambio es el resultado esperable para una pagina de tramite que recien entra al indice."
     }
   ]
 }

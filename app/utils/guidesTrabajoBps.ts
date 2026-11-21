@@ -32,7 +32,28 @@
 // ACTUALIZADO de IMPO (Ley 19.210 arts. 10, 11 y 15; Decreto 263/015 arts. 1, 9, 11, 14, 15, 16 y 23)
 // más las dos vías del MTSS para consultar y denunciar. Las cifras viven en `utils/payrollAccount.ts`
 // y esta guía las compone.
+// 2026-11-21: historia-laboral-bps-uruguay. El sitio tenía las dos mitades de al lado y no el
+// medio: `/reconocer-anos-trabajados-uruguay` cubre lo anterior al 1/4/1996 y
+// `/denunciar-trabajo-en-negro-uruguay` la relación laboral no declarada, pero NADA hablaba del
+// registro en sí —cómo se baja, qué revisar— ni del plazo que lo cierra. Verificado el 2026-11-21
+// contra el BPS (fichas 11438 «Constancia de historia laboral nominada», 11439 «Denuncias de
+// trabajadores», 19111 el servicio en línea, 20831 los años posteriores a abril de 1996 y 11452 el
+// reconocimiento) y el texto vigente de IMPO (Ley 16.713 arts. 87, 89 y 90, el 90 en la redacción
+// del art. 226 de la Ley 20.130, y Decreto 228/023 arts. 19 y 20). El dato que ninguna otra página
+// publica: la primera puesta de manifiesto es el 31/12/2027 y recién desde ahí corre el año para
+// observar. Las fechas, los trámites y las citas viven en `utils/historiaLaboral.ts` y esta guía
+// las compone.
 import type { Guide } from './guides'
+import {
+  HILA_CHECKS,
+  HILA_DECISION,
+  HILA_DISCLOSURE_EVERY_YEARS,
+  HILA_FAQ,
+  HILA_FIRST_DISCLOSURE,
+  HILA_SOURCES,
+  HILA_START,
+  HILA_VIAS,
+} from './historiaLaboral'
 import {
   DOMESTIC_WORK_CATEGORIES,
   DOMESTIC_WORK_CONTRIBUTIONS,
@@ -62,6 +83,32 @@ import {
 /** El mínimo de la categoría, en pesos ya formateados. `'general'` → `'32.051'`. */
 const minimo = (slug: 'general' | 'cocina' | 'cuidados') =>
   uyu(domesticWorkCategory(slug)!.monthlyUyu)
+
+/**
+ * Una fecha ISO del catálogo de historia laboral, escrita como la lee una persona.
+ *
+ * Existe para que las dos fechas que sostienen esa guía —el 1.º de abril de 1996 y la primera
+ * puesta de manifiesto— se compongan desde `utils/historiaLaboral.ts` en vez de quedar escritas a
+ * mano en la prosa, donde podrían separarse de la constante sin que nada avise.
+ */
+const MESES_ES = [
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'setiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
+]
+const hilaFecha = (iso: string) => {
+  const [year, month, day] = iso.split('-').map(Number) as [number, number, number]
+  return `${day === 1 ? '1.º' : day} de ${MESES_ES[month - 1]} de ${year}`
+}
 
 export const trabajoBpsGuides: readonly Guide[] = [
   {
@@ -2007,5 +2054,99 @@ export const trabajoBpsGuides: readonly Guide[] = [
       { label: 'Valor de la Unidad Indexada', to: '/indicadores/unidad-indexada' },
     ],
     sources: PAYROLL_ACCOUNT_SOURCES.map(source => ({ ...source })),
+  },
+  {
+    slug: 'historia-laboral-bps-uruguay',
+    title: 'Historia laboral del BPS: cómo verla',
+    description:
+      'El BPS la pone de manifiesto por primera vez el 31/12/2027 y desde ahí corre un año para observarla. Cómo bajarla hoy y qué vía va si falta un período.',
+    tag: 'BPS',
+    updatedAt: '2026-11-21',
+    sections: [
+      {
+        heading: 'Qué es, y por qué conviene mirarla antes de necesitarla',
+        body: `La historia laboral nominada es, en palabras del propio BPS, «un detalle de los servicios y remuneraciones registradas en BPS a partir del 1/4/1996». O sea: lo que las empresas declararon a tu nombre desde el ${hilaFecha(HILA_START)}, que es la base con la que después se calcula tu jubilación. Se baja en el momento desde los servicios en línea y no cuesta nada. Lo que casi nadie sabe —y es el motivo de esta guía— es que ese registro no queda abierto para siempre: la ley te da un año para observarlo desde que el BPS lo pone de manifiesto, y pasado ese año lo registrado queda firme.`,
+        links: [
+          {
+            label: 'Lo anterior a abril de 1996',
+            to: '/reconocer-anos-trabajados-uruguay',
+          },
+        ],
+      },
+      {
+        heading: `El reloj todavía no arrancó: ${hilaFecha(HILA_FIRST_DISCLOSURE)}`,
+        body: `Son dos normas que hay que leer juntas. El artículo 90 de la Ley 16.713, en la redacción que le dio el artículo 226 de la Ley 20.130, dice que el afiliado «dispondrá de un plazo de un año para observar la información del registro de historia laboral», contado desde que esa información se pone de manifiesto; y el Decreto 228/023 fija en su artículo 19 que la puesta de manifiesto «se efectuará por primera vez el ${hilaFecha(HILA_FIRST_DISCLOSURE)}» y que «en lo sucesivo se pondrá de manifiesto actualizada cada ${HILA_DISCLOSURE_EVERY_YEARS} años en igual fecha». Mientras tanto no hay plazo corriendo, pero tampoco hay excusa: el artículo 89 dice que la información «estará en todo momento disponible para sus titulares en la página web» y pone en cabeza del interesado la carga de consultarla periódicamente.`,
+      },
+      {
+        heading: 'Qué pasa si no la observás, y las dos excepciones',
+        body: 'El numeral 7 del mismo artículo 90 es el que conviene leer despacio: no observar dentro del plazo determina que el afiliado acepta la información registrada, y el registro queda inmodificable a todos los efectos. Después de eso quedan dos puertas y ninguna depende de vos: lo que surja de una inspección o investigación del propio BPS, y lo que pruebe una sentencia judicial firme en un juicio en el que el organismo haya sido parte. Hay una salida para quien sigue trabajando cuando vence el plazo: la ley le permite reservar su derecho a observar, y en ese caso el año corre desde que termina la relación laboral. El artículo 20 del decreto la acota: esa reserva alcanza únicamente al período generado en el vínculo laboral vigente al vencimiento del plazo, no a toda tu historia.',
+      },
+      {
+        heading: 'Qué revisar, además de si el período figura',
+        body: `El plazo cierra la información entera y no sólo la existencia de un empleo, así que una fecha de alta corrida o un sueldo declarado por menos también quedan firmes si nadie los observa. ${HILA_CHECKS.map(check => `${check.title}: ${check.body.charAt(0).toLowerCase()}${check.body.slice(1)}`).join(' ')}`,
+      },
+      {
+        heading: 'Si falta un período, ¿por dónde se reclama?',
+        body: 'El BPS no tiene un trámite sino cuatro, y cuál te toca depende de cuándo fue el período y de tu edad. Las dos excepciones del medio —haber nacido hasta el 1/6/1968 y estar a menos de seis meses de los 60 sin trabajar— pueden darse juntas, y el BPS no publica cuál manda en ese caso: si te reconocés en las dos filas, preguntá por Consúltenos antes de iniciar una. La última fila es el caso general.',
+        table: {
+          headers: ['Cuándo fue el período', 'Tu situación', 'El trámite del BPS'],
+          rows: HILA_DECISION.map(row => [row.periodo, row.condicion, HILA_VIAS[row.via].tramite]),
+        },
+        links: [
+          { label: 'Reconocer años trabajados', to: '/reconocer-anos-trabajados-uruguay' },
+          { label: 'Cuándo me puedo jubilar', to: '/cuando-me-puedo-jubilar-uruguay' },
+        ],
+      },
+      {
+        heading: 'Por qué un período puede no estar aunque hayas trabajado',
+        body: 'Porque el registro se arma con las declaraciones que presentan los empleadores, no con los pagos. El artículo 87 de la Ley 16.713 obliga a presentar esa declaración y agrega, textual, que «deberá presentarse se hayan o no efectuado los aportes correspondientes». Son dos cosas separadas: una actividad puede figurar con el aporte impago, y si el período no figura lo que falta es la declaración. Eso es exactamente lo que el trámite de denuncia pide corregir, y el BPS lo admite también cuando lo declarado está mal —menos sueldo del que cobrabas o fechas de entrada y salida distintas—, no sólo cuando falta todo.',
+        links: [
+          {
+            label: 'Si lo que no se declaró es el trabajo entero',
+            to: '/denunciar-trabajo-en-negro-uruguay',
+          },
+        ],
+      },
+      {
+        heading: 'Lo que esta guía no publica',
+        body: `Ninguna de las páginas del BPS que describen estos trámites publica un costo, así que acá no vas a encontrar ninguno: preguntalo en el BPS antes de ir. Tampoco inventamos el desempate entre las dos excepciones de la tabla, por el mismo motivo. Las fuentes se leyeron el ${hilaFecha('2026-11-21')} y están todas enlazadas abajo, con el artículo exacto en los casos de la ley y el decreto.`,
+      },
+    ],
+    steps: [
+      {
+        name: 'En línea, con Usuario Personal BPS',
+        text: 'Es el servicio «Consultar mis aportes». La constancia que baja de ahí sale con código QR, así que el BPS aclara que no hace falta ir a una oficina a sellarla.',
+      },
+      {
+        name: 'O desde la app BPS Personas',
+        text: 'El mismo servicio está en la aplicación del BPS, con el mismo usuario.',
+      },
+      {
+        name: 'En una oficina, si no tenés usuario',
+        text: 'El titular va con su cédula de identidad vigente y en buen estado; también puede pedirla un apoderado inscripto en el BPS, con su cédula y la del titular.',
+      },
+      {
+        name: 'Revisá período por período',
+        text: 'Mirá que estén todos los empleos, las fechas de entrada y salida, las remuneraciones declaradas y que ninguna empresa sea ajena.',
+      },
+      {
+        name: 'Si falta algo, elegí la vía de la tabla',
+        text: 'Juntá los recibos de sueldo, sentencias o documentos que lo prueben y seguí el trámite que corresponde a tu caso.',
+      },
+    ],
+    faqs: HILA_FAQ.map(item => ({ q: item.question, a: item.answer })),
+    related: [
+      { label: 'Reconocer años trabajados', to: '/reconocer-anos-trabajados-uruguay' },
+      { label: 'Cuándo me puedo jubilar', to: '/cuando-me-puedo-jubilar-uruguay' },
+      { label: 'Certificados del BPS', to: '/certificados-bps-uruguay' },
+      { label: 'Trabajo no declarado', to: '/denunciar-trabajo-en-negro-uruguay' },
+      { label: 'Cómputo por hijo', to: '/computo-por-hijo-jubilacion-uruguay' },
+      { label: 'Fecha de cobro del BPS', to: '/fecha-de-cobro-bps-uruguay' },
+    ],
+    sources: HILA_SOURCES.map(source => ({
+      label: source.label,
+      url: source.url,
+      publisher: source.url.includes('impo.com.uy') ? 'IMPO' : 'BPS',
+    })),
   },
 ]

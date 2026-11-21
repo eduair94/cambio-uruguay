@@ -37,6 +37,32 @@ describe('guides catalogue integrity', () => {
     expect(guides.length).toBeGreaterThanOrEqual(16)
   })
 
+  /**
+   * La cifra que el snippet de `/guias` le promete al lector.
+   *
+   * La descripción del hub decía «datos de más de 40 casas de cambio», que es verdad del sitio y no
+   * dice nada del hub: la cifra que distingue a esta página de cualquier otra es cuántas guías
+   * tiene. Desde el 2026-11-21 dice «más de 150 guías» en los tres idiomas, y esto es lo que ata la
+   * promesa al catálogo: si alguien retira guías y el total baja de 150, la página queda mintiendo
+   * y CI se pone rojo en vez de dejarla publicada.
+   *
+   * No se escribe el total exacto a propósito: una cifra exacta en un archivo de traducciones
+   * envejece el día que entra la guía siguiente, y el piso no.
+   */
+  it('respalda el «más de 150» que prometen las tres descripciones de /guias', () => {
+    const floor = 150
+    expect(guides.length).toBeGreaterThan(floor)
+    for (const code of ['es', 'en', 'pt'] as const) {
+      const messages = JSON.parse(
+        readFileSync(
+          fileURLToPath(new URL(`../../i18n/locales/json/${code}.json`, import.meta.url)),
+          'utf8'
+        )
+      ) as { guias: { metaDescription: string } }
+      expect(messages.guias.metaDescription, code).toContain(String(floor))
+    }
+  })
+
   it('has unique slugs', () => {
     const slugs = guides.map(g => g.slug)
     expect(new Set(slugs).size).toBe(slugs.length)

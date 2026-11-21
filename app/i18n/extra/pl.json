@@ -1056,8 +1056,8 @@
   },
   "faq": {
     "nav": "Często zadawane pytania",
-    "metaTitle": "Najczęściej zadawane pytania dotyczące dolara i kursów walut w Urugwaju",
-    "metaDescription": "Jasne odpowiedzi na temat dzisiejszych kursów dolara amerykańskiego, euro, reala i peso argentyńskiego w Urugwaju: gdzie kupić, gdzie sprzedać, spready i jak wybrać kantor wymiany walut. Aktualizowane co 10 minut.",
+    "metaTitle": "FAQ: dolar i kursy walut",
+    "metaDescription": "Gdzie dziś kupić i sprzedać dolara, euro, reala i peso argentyńskie w Urugwaju, spread dla każdego domu i jak dokonać wyboru. Aktualizowane co 10 minut.",
     "title": "Często zadawane pytania",
     "intro": "Odpowiedzi na najczęstsze pytania dotyczące kursów walut w Urugwaju, wraz z danymi w czasie rzeczywistym z ponad 40 kantorów."
   },
@@ -1090,8 +1090,8 @@
     "tag": "PRZEWODNIKI",
     "h1": "Przewodniki po dolarze i wymianie walut w Urugwaju",
     "intro": "Przejrzyste, praktyczne przewodniki pomagające zrozumieć urugwajski rynek walutowy: jak kupić dolary po najlepszej cenie, co oznaczają różne rodzaje notowań i kiedy najlepiej wymienić walutę.",
-    "metaTitle": "Przewodniki po dolarze i kantorach wymiany walut w Urugwaju",
-    "metaDescription": "Praktyczne przewodniki, jak kupić dolary w najlepszej cenie w Urugwaju, zrozumieć pojęcia BILLETE, CABLE i TRANSFERENCIA oraz wybrać najlepszy czas na wymianę waluty. Dane z ponad 40 kantorów.",
+    "metaTitle": "Przewodniki po dolarach i kantorach",
+    "metaDescription": "Ponad 150 poradników na temat dolara, banków, BPS, DGI, wynajmu i importu w Urugwaju: co mówią przepisy, ile to kosztuje i jakiej procedury należy przestrzegać.",
     "readGuide": "Przeczytaj przewodnik",
     "updated": "Zaktualizowano {date}",
     "byAuthor": "przez",
@@ -1487,8 +1487,8 @@
     }
   },
   "porQueDolar": {
-    "metaTitle": "Dlaczego dolar rośnie lub spada w Urugwaju? Analiza i korelacja",
-    "metaDescription": "Co wpływa na wartość dolara w Urugwaju: realna korelacja z brazylijskim realem, światowym dolarem i kursami amerykańskimi, z objaśnieniem skoków cenowych dzień po dniu.",
+    "metaTitle": "Dlaczego dolar rośnie lub spada w Urugwaju",
+    "metaDescription": "Co wpływa na kurs dolara w Urugwaju, mierzone: jego korelacja z brazylijskim realem, dolarem światowym, obligacjami amerykańskimi i argentyńską walutą, skokowo.",
     "title": "Dlaczego dolar rośnie lub spada w Urugwaju?",
     "subtitle": "Jakie czynniki wpływają na kurs walutowy, mierzone danymi.",
     "todayTitle": "Co dziś porusza dolarem",
@@ -2379,7 +2379,7 @@
   },
   "pizarra": {
     "h1": "Tablica z dolarem urugwajskim — dziś",
-    "metaTitle": "Kurs dolara urugwajskiego dzisiaj — aktualne kursy kupna i sprzedaży",
+    "metaTitle": "Dzisiaj na tablicy dolara: kupno i sprzedaż na żywo",
     "metaDescription": "Transakcje na żywo za dolary, euro, reale i peso argentyńskie w Urugwaju: kupuj i sprzedawaj w każdym kantorze, bez rejestracji, bez ciasteczek, bez czekania.",
     "keywords": "Tablica cen dolara urugwajskiego, dolar dzisiaj urugwaj, kurs wymiany walut urugwaj na żywo, kupno i sprzedaż dolara urugwajskiego",
     "boardLabel": "Dzisiejsze stawki",

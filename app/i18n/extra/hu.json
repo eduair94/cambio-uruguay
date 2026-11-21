@@ -1056,8 +1056,8 @@
   },
   "faq": {
     "nav": "GYIK",
-    "metaTitle": "GYIK a dollárról és az uruguayi árfolyamokról",
-    "metaDescription": "Világos válaszok a mai amerikai dollár, euró, real és argentin peso árfolyamokról Uruguayban: hol lehet vásárolni, hol lehet eladni, spreadek és hogyan válasszunk tőzsdét. 10 percenként frissítve.",
+    "metaTitle": "GYIK: dollár és árfolyamok",
+    "metaDescription": "Hol lehet ma dollárt, eurót, realt és argentin pesót venni és eladni Uruguayban, az egyes házak spreadje és a választás módja. 10 percenként frissítve.",
     "title": "Gyakran ismételt kérdések",
     "intro": "Válaszok az uruguayi árfolyamokkal kapcsolatos leggyakoribb kérdésekre, több mint 40 tőzsde valós idejű adataival."
   },
@@ -1090,8 +1090,8 @@
     "tag": "ÚTMUTATÓK",
     "h1": "Útmutatók a dollárról és a pénzváltásról Uruguayban",
     "intro": "Világos, gyakorlati útmutatók Uruguay devizapiacának megértéséhez: hogyan vásároljunk dollárt a legjobb áron, mit jelentenek a különböző árfolyamtípusok, és mikor a legjobb valutát váltani.",
-    "metaTitle": "Útmutatók a dollárról és a váltóházakról Uruguayban",
-    "metaDescription": "Gyakorlati útmutatók a dollár vásárlásához a legjobb áron Uruguayban, a BILLETE, CABLE és TRANSFERENCIA megértése, valamint a legjobb valutaváltási időpont kiválasztása. Adatok több mint 40 valutaváltótól.",
+    "metaTitle": "Dollár- és pénzváltó kalauzok",
+    "metaDescription": "Több mint 150 útmutató a dollárról, bankokról, BPS-ről, DGI-ről, bérlésről és importról Uruguayban: mit mondanak a szabályok, mennyibe kerülnek, és milyen eljárásra van szükség.",
     "readGuide": "Útmutató elolvasása",
     "updated": "Frissítve {date}",
     "byAuthor": "által",
@@ -1487,8 +1487,8 @@
     }
   },
   "porQueDolar": {
-    "metaTitle": "Miért emelkedik vagy esik a dollár Uruguayban? Elemzés és összefüggés",
-    "metaDescription": "Mi mozgatja a dollárt Uruguayban: valós összefüggés a brazil reállal, a globális dollárral és az amerikai árfolyamokkal, a napról napra magyarázott áremelkedésekkel.",
+    "metaTitle": "Miért emelkedik vagy esik a dollár Uruguayban?",
+    "metaDescription": "Mi mozgatja a dollárt Uruguayban, mérve: a brazil reállal, a globális dollárral, az amerikai kötvényekkel és Argentína dollárral való korrelációja, ugrásról ugrásra.",
     "title": "Miért emelkedik vagy esik a dollár Uruguayban?",
     "subtitle": "Milyen tényezők mozgatják az árfolyamot, adatokkal mérve.",
     "todayTitle": "Mi mozgatja ma a dollárt?",
@@ -2379,7 +2379,7 @@
   },
   "pizarra": {
     "h1": "Uruguayi dollár árfolyama – ma",
-    "metaTitle": "Uruguayi dollár árfolyam ma — Élő vételi és eladási árfolyamok",
+    "metaTitle": "Dollár tőzsde ma: élő vétel és eladás",
     "metaDescription": "Élő tőzsdei árfolyamok dollárra, euróra, realra és argentin pesóra Uruguayban: vétel és eladás minden tőzsdén, regisztráció, sütik és várakozás nélkül.",
     "keywords": "uruguayi dollár kereskedési felület, dollár ma uruguayban, élő uruguayi árfolyam, vétel és eladás uruguayi dollárban",
     "boardLabel": "Mai árfolyamok",

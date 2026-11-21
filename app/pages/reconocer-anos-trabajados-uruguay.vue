@@ -334,6 +334,11 @@ const RELATED = [
     body: 'La edad y los años de trabajo que te exige la Ley 20.130 según tu año de nacimiento.',
   },
   {
+    to: '/guias/historia-laboral-bps-uruguay',
+    title: 'Mirar la historia laboral',
+    body: 'Lo registrado desde abril de 1996: cómo bajarla y el año que da la ley para observarla.',
+  },
+  {
     to: '/denunciar-trabajo-en-negro-uruguay',
     title: 'Trabajo no declarado',
     body: 'Qué hacer si un período posterior a abril de 1996 no aparece en tu historia laboral.',

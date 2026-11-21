@@ -1056,8 +1056,8 @@
   },
   "faq": {
     "nav": "Vanlige spørsmål",
-    "metaTitle": "Vanlige spørsmål om dollar og valutakurser i Uruguay",
-    "metaDescription": "Klare svar om dagens kurser for amerikanske dollar, euro, real og argentinsk peso i Uruguay: hvor man skal kjøpe, hvor man skal selge, spreader og hvordan man velger et børskontor. Oppdateres hvert 10. minutt.",
+    "metaTitle": "Vanlige spørsmål: dollar og valutakurser",
+    "metaDescription": "Hvor kan man kjøpe og selge dollar, euro, real og argentinsk peso i Uruguay i dag, spreaden for hvert hus og hvordan man velger. Oppdateres hvert 10. minutt.",
     "title": "Ofte stilte spørsmål",
     "intro": "Svar på de vanligste spørsmålene om valutakurser i Uruguay, med sanntidsdata fra over 40 vekslingshus."
   },
@@ -1090,8 +1090,8 @@
     "tag": "GUIDER",
     "h1": "Guider om dollar og valutaveksling i Uruguay",
     "intro": "Tydelige, praktiske guider for å forstå Uruguays valutamarked: hvordan kjøpe dollar til den beste prisen, hva de ulike tilbudstypene betyr, og når det er best å veksle valuta.",
-    "metaTitle": "Guider om dollar og vekslingsboliger i Uruguay",
-    "metaDescription": "Praktiske guider for å kjøpe dollar til den beste prisen i Uruguay, forstå BILLETE, CABLE og TRANSFERENCIA, og velg det beste tidspunktet å veksle valuta. Data fra over 40 vekslingskontorer.",
+    "metaTitle": "Guider til dollar- og vekslingshus",
+    "metaDescription": "Over 150 guider om dollar, banker, BPS, DGI, leie og import i Uruguay: hva regelverket sier, hva det koster og hvilken prosedyre du trenger.",
     "readGuide": "Les veiledningen",
     "updated": "Oppdatert {date}",
     "byAuthor": "ved",
@@ -1487,8 +1487,8 @@
     }
   },
   "porQueDolar": {
-    "metaTitle": "Hvorfor stiger eller faller dollaren i Uruguay? Analyse og korrelasjon",
-    "metaDescription": "Hva beveger dollaren i Uruguay: reell korrelasjon med den brasilianske realen, den globale dollaren og amerikanske kurser, med prishoppene forklart dag for dag.",
+    "metaTitle": "Hvorfor dollaren stiger eller faller i Uruguay",
+    "metaDescription": "Hva beveger dollaren i Uruguay, målt: korrelasjonen med den brasilianske realen, den globale dollaren, amerikanske obligasjoner og Argentinas blå, hopp for hopp.",
     "title": "Hvorfor stiger eller faller dollaren i Uruguay?",
     "subtitle": "Hvilke faktorer påvirker valutakursen, målt med data.",
     "todayTitle": "Hva beveger dollaren i dag",
@@ -2379,7 +2379,7 @@
   },
   "pizarra": {
     "h1": "Uruguayansk dollartavle — i dag",
-    "metaTitle": "Uruguayansk dollar-tavle i dag — Kjøp- og salgskurser i sanntid",
+    "metaTitle": "Dollartavle i dag: kjøp og salg i sanntid",
     "metaDescription": "Live-forum for dollar, euro, real og argentinsk peso i Uruguay: kjøp og selg fra alle børser, ingen registrering, ingen informasjonskapsler, ingen venting.",
     "keywords": "Uruguay dollartavle, dollar i dag Uruguay, live valutakurs Uruguay, kjøp og selg dollar Uruguay",
     "boardLabel": "Dagens priser",

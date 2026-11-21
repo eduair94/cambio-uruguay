@@ -1056,8 +1056,8 @@
   },
   "faq": {
     "nav": "Veelgestelde vragen",
-    "metaTitle": "Veelgestelde vragen over de dollar en wisselkoersen in Uruguay",
-    "metaDescription": "Duidelijke antwoorden over de actuele wisselkoersen van de Amerikaanse dollar, euro, real en Argentijnse peso in Uruguay: waar te kopen, waar te verkopen, spreads en hoe u een wisselkantoor kiest. Wordt elke 10 minuten bijgewerkt.",
+    "metaTitle": "Veelgestelde vragen: dollar en wisselkoersen",
+    "metaDescription": "Waar kunt u vandaag in Uruguay dollars, euro's, real en Argentijnse peso's kopen en verkopen? Wat zijn de prijzen per valutahuis en hoe kiest u de juiste? Wordt elke 10 minuten bijgewerkt.",
     "title": "Veelgestelde vragen",
     "intro": "Antwoorden op de meest gestelde vragen over wisselkoersen in Uruguay, met realtime gegevens van meer dan 40 wisselkantoren."
   },
@@ -1090,8 +1090,8 @@
     "tag": "GIDSEN",
     "h1": "Handleidingen over de dollar en valutawissel in Uruguay",
     "intro": "Duidelijke, praktische handleidingen om de Uruguayaanse valutamarkt te begrijpen: hoe u dollars tegen de beste prijs kunt kopen, wat de verschillende koerstypen betekenen en wanneer u het beste valuta kunt wisselen.",
-    "metaTitle": "Gidsen over de dollar en wisselkantoren in Uruguay",
-    "metaDescription": "Praktische handleidingen om dollars te kopen tegen de beste prijs in Uruguay, inzicht te krijgen in BILLETE, CABLE en TRANSFERENCIA, en het beste moment te kiezen om geld te wisselen. Gegevens van meer dan 40 wisselkantoren.",
+    "metaTitle": "Dollar- en wisselkantoorgidsen",
+    "metaDescription": "Meer dan 150 handleidingen over de dollar, banken, BPS, DGI, autoverhuur en import in Uruguay: wat de regels inhouden, wat het kost en welke procedure je moet volgen.",
     "readGuide": "Lees de handleiding",
     "updated": "Bijgewerkte {date}",
     "byAuthor": "door",
@@ -1487,8 +1487,8 @@
     }
   },
   "porQueDolar": {
-    "metaTitle": "Waarom stijgt of daalt de dollar in Uruguay? Analyse en correlatie.",
-    "metaDescription": "Wat de dollar in Uruguay beïnvloedt: de werkelijke correlatie met de Braziliaanse real, de wereldwijde dollar en de Amerikaanse wisselkoersen, waarbij de prijsschommelingen dagelijks worden toegelicht.",
+    "metaTitle": "Waarom de dollar in Uruguay stijgt of daalt",
+    "metaDescription": "Wat de dollar in Uruguay beweegt, gemeten aan de hand van: de correlatie met de Braziliaanse real, de wereldwijde dollar, Amerikaanse obligaties en de Argentijnse blauwe munt, sprong voor sprong.",
     "title": "Waarom stijgt of daalt de dollar in Uruguay?",
     "subtitle": "Welke factoren beïnvloeden de wisselkoers, gemeten aan de hand van data?",
     "todayTitle": "Wat zorgt er vandaag voor dat de dollar in beweging komt?",
@@ -2379,7 +2379,7 @@
   },
   "pizarra": {
     "h1": "Uruguayaanse dollarbeurs — vandaag",
-    "metaTitle": "Uruguayaanse dollarbeurs vandaag — Live koop- en verkoopkoersen",
+    "metaTitle": "Dollarboard vandaag: live kopen en verkopen",
     "metaDescription": "Live beurs voor de dollar, euro, real en Argentijnse peso in Uruguay: koop en verkoop bij alle wisselkantoren, geen registratie, geen cookies, geen wachttijd.",
     "keywords": "Uruguayaanse dollar, dollar vandaag Uruguay, live wisselkoers Uruguay, dollar kopen en verkopen Uruguay",
     "boardLabel": "De huidige tarieven",

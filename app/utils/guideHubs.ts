@@ -1532,6 +1532,7 @@ export const guideHubs: readonly GuideHub[] = [
       'asistente-personal-bps-uruguay',
       'cobrar-jubilacion-uruguaya-desde-el-exterior',
       'jubilacion-parcial-uruguay',
+      'historia-laboral-bps-uruguay',
       'canasta-fin-de-ano-bps-uruguay',
       'precio-supergas-garrafa-uruguay',
     ],

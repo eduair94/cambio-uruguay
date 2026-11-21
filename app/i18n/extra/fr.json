@@ -1056,8 +1056,8 @@
   },
   "faq": {
     "nav": "FAQ",
-    "metaTitle": "FAQ sur le dollar et les taux de change en Uruguay",
-    "metaDescription": "Des réponses claires sur les taux de change du dollar américain, de l'euro, du real et du peso argentin en Uruguay : où acheter, où vendre, les spreads et comment choisir un bureau de change. Mise à jour toutes les 10 minutes.",
+    "metaTitle": "FAQ : le dollar et les taux de change",
+    "metaDescription": "Où acheter et vendre des dollars, des euros, des réaux et des pesos argentins en Uruguay aujourd'hui ? Découvrez les taux pratiqués par chaque établissement et comment choisir. Mise à jour toutes les 10 minutes.",
     "title": "Foire aux questions",
     "intro": "Réponses aux questions les plus fréquentes sur les taux de change en Uruguay, avec des données en temps réel provenant de plus de 40 bureaux de change."
   },
@@ -1090,8 +1090,8 @@
     "tag": "GUIDES",
     "h1": "Guides sur le dollar et le change de devises en Uruguay",
     "intro": "Des guides clairs et pratiques pour comprendre le marché des changes en Uruguay : comment acheter des dollars au meilleur prix, que signifient les différents types de cotations et quand il est préférable d’échanger des devises.",
-    "metaTitle": "Guides sur le dollar et les bureaux de change en Uruguay",
-    "metaDescription": "Guides pratiques pour acheter des dollars au meilleur prix en Uruguay, comprendre les termes BILLETE, CABLE et TRANSFERENCIA, et choisir le meilleur moment pour changer des devises. Données provenant de plus de 40 bureaux de change.",
+    "metaTitle": "Guides sur le dollar et les bureaux de change",
+    "metaDescription": "Plus de 150 guides sur le dollar, les banques, BPS, DGI, la location et les importations en Uruguay : ce que disent les règles, ce que cela coûte et quelle procédure suivre.",
     "readGuide": "Lire le guide",
     "updated": "{date} mis à jour",
     "byAuthor": "par",
@@ -1487,8 +1487,8 @@
     }
   },
   "porQueDolar": {
-    "metaTitle": "Pourquoi le dollar s'apprécie-t-il ou se déprécie-t-il en Uruguay ? Analyse et corrélation",
-    "metaDescription": "Qu'est-ce qui fait fluctuer le dollar uruguayen ? Corrélation réelle avec le real brésilien, le dollar mondial et les taux de change américains, avec une explication quotidienne des variations de prix.",
+    "metaTitle": "Pourquoi le dollar monte ou descend en Uruguay",
+    "metaDescription": "Ce qui influence le dollar uruguayen, mesuré étape par étape : sa corrélation avec le real brésilien, le dollar mondial, les obligations américaines et le real argentin.",
     "title": "Pourquoi le dollar monte-t-il ou descend-il en Uruguay ?",
     "subtitle": "Quels sont les facteurs qui influencent le taux de change, mesurés par des données ?",
     "todayTitle": "Qu'est-ce qui influence le dollar aujourd'hui ?",
@@ -2379,7 +2379,7 @@
   },
   "pizarra": {
     "h1": "Conseil du dollar uruguayen — aujourd'hui",
-    "metaTitle": "Bourse du dollar uruguayen aujourd'hui — Taux d'achat et de vente en direct",
+    "metaTitle": "Dollar Board aujourd'hui : achat et vente en direct",
     "metaDescription": "Tableau de change en direct du dollar, de l'euro, du real et du peso argentin en Uruguay : achetez et vendez auprès de tous les bureaux de change, sans inscription, sans cookies, sans attente.",
     "keywords": "Bourse du dollar uruguayen, dollar uruguayen aujourd'hui, taux de change en direct, acheter et vendre des dollars uruguayens",
     "boardLabel": "Tarifs d’aujourd’hui",

@@ -1046,8 +1046,8 @@
   },
   "faq": {
     "nav": "FAQ",
-    "metaTitle": "FAQ about the dollar and exchange rates in Uruguay",
-    "metaDescription": "Clear answers about today's US dollar, euro, real and Argentine peso rates in Uruguay: where to buy, where to sell, spreads and how to choose an exchange house. Updated every 10 minutes.",
+    "metaTitle": "FAQ: dollar and exchange rates",
+    "metaDescription": "Where to buy and sell the dollar, euro, real and Argentine peso in Uruguay today, each house's spread and how to choose. Updated every 10 minutes.",
     "title": "Frequently asked questions",
     "intro": "Answers to the most common questions about exchange rates in Uruguay, with real-time data from over 40 exchange houses."
   },
@@ -1080,8 +1080,8 @@
     "tag": "GUIDES",
     "h1": "Guides on the dollar and currency exchange in Uruguay",
     "intro": "Clear, practical guides to understand Uruguay's currency market: how to buy dollars at the best price, what the different quote types mean, and when it's best to exchange currency.",
-    "metaTitle": "Guides on the dollar and exchange houses in Uruguay",
-    "metaDescription": "Practical guides to buy dollars at the best price in Uruguay, understand BILLETE, CABLE and TRANSFERENCIA, and pick the best time to exchange currency. Data from over 40 exchange houses.",
+    "metaTitle": "Dollar and exchange house guides",
+    "metaDescription": "Over 150 guides on the dollar, banks, BPS, DGI, renting and imports in Uruguay: what the rule says, what it costs and which procedure you need.",
     "readGuide": "Read guide",
     "updated": "Updated {date}",
     "byAuthor": "by",
@@ -2368,7 +2368,7 @@
   },
   "pizarra": {
     "h1": "Uruguay dollar board — today",
-    "metaTitle": "Uruguay Dollar Board Today — Live Buy and Sell Rates",
+    "metaTitle": "Dollar board today: live buy and sell",
     "metaDescription": "Live board for the dollar, euro, real and Argentine peso in Uruguay: buy and sell from every exchange house, no signup, no cookies, no waiting.",
     "keywords": "uruguay dollar board, dollar today uruguay, live exchange rate uruguay, buy sell dollar uruguay",
     "boardLabel": "Today’s rates",

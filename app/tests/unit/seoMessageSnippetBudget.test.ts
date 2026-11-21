@@ -292,9 +292,16 @@ const DEUDA_TITULO_MENSAJE = [
   // correlación») que el SERP cortaba junto con la marca; ahora conserva las dos formas de la
   // consulta («sube o baja») y gasta el resto en lo que la página sí contesta.
   //
-  // Las diez que quedan no se tocaron. `/dolar/records` está reservada hasta el 2026-11-29;
-  // `/alquilar-estando-en-clearing` (68 en inglés, 70 en portugués: el español entra) tenía su
-  // página en manos de otra rama. `npm run seo_debt` dice cuál se puede tocar hoy.
+  // 10 → 7 el 2026-11-21: los tres hubs que `npm run seo_debt` daba libres, que son los más vistos
+  // de esta lista — `/preguntas-frecuentes` (82 en español, 76 en portugués: el título más cortado
+  // del pozo), `/guias` (66/68/65) y `/pizarra` (78/69/74). Los tres sueltan «en Uruguay» / «in
+  // Uruguay», que la marca ya dice, y la etiqueta decorativa del final («Compra y Venta al
+  // Instante», «Live Buy and Sell Rates») que el SERP se comía junto con la marca. Quedan en
+  // 59/47/55, 50/49/49 y 54/54/54.
+  //
+  // Las siete que quedan no se tocaron. `/dolar/records` está reservada hasta el 2026-11-29 y
+  // `/alquilar-estando-en-clearing` (68 en inglés, 70 en portugués: el español entra) hasta el
+  // 2026-12-19. `npm run seo_debt` dice cuál se puede tocar hoy.
   //
   // El comentario va DENTRO de la lista por lo que `DEUDA_SIN_ENLACE` en `enlacesDeContexto.test.ts`
   // deja escrito: `classes/revenueplan/debtFree.ts::parseStringList` corta en el primer `\n]`, y
@@ -304,9 +311,6 @@ const DEUDA_TITULO_MENSAJE = [
   '/analiticas',
   '/conectar',
   '/dolar/records',
-  '/guias',
-  '/pizarra',
-  '/preguntas-frecuentes',
   '/sillas-escritorio-uruguay',
   '/sillas-escritorio-uruguay/precios',
   '/ultimos-cambios',
@@ -324,6 +328,13 @@ const DEUDA_DESCRIPCION_MENSAJE = [
   // y de paso pasa a nombrar las CUATRO series que la página correlaciona: le faltaba el blue
   // argentino, que es un `driversFor('USD')` como el real, el índice dólar y el bono a 10 años.
   //
+  // 14 → 12 el 2026-11-21: `/preguntas-frecuentes` (195/186/191 → 145/146/148) y `/guias`
+  // (189/186/192 → 144/143/135), en la misma corrida que sus títulos. Las dos pasan a decir lo que
+  // su página tiene y ninguna otra: la del FAQ nombra las cuatro monedas, el spread por casa y cada
+  // cuánto se actualiza; la del hub cambia «datos de más de 40 casas de cambio» —que es verdad del
+  // sitio y no dice nada del hub— por «más de 150 guías» y los temas que cubren, con el piso atado
+  // al catálogo en `guides.test.ts`.
+  //
   // Reservadas ese día: `/comparar-plataformas-dolar-uruguay` hasta el 2026-11-26,
   // `/grabacion-sin-consentimiento-uruguay` (sólo el inglés, 158) hasta el 2026-11-22 y
   // `/tarjetas-de-credito-uruguay` hasta el 2026-11-30. Mismo motivo que arriba para el comentario
@@ -336,9 +347,7 @@ const DEUDA_DESCRIPCION_MENSAJE = [
   '/economia-uruguay',
   '/estadisticas-reddit',
   '/grabacion-sin-consentimiento-uruguay',
-  '/guias',
   '/noticias',
-  '/preguntas-frecuentes',
   '/sillas-escritorio-uruguay',
   '/sillas-escritorio-uruguay/precios',
   '/tarjetas-de-credito-uruguay',

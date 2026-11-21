@@ -1056,8 +1056,8 @@
   },
   "faq": {
     "nav": "Často kladené otázky",
-    "metaTitle": "Často kladené otázky o dolári a výmenných kurzoch v Uruguaji",
-    "metaDescription": "Jasné odpovede o dnešných kurzoch amerického dolára, eura, realu a argentínskeho pesa v Uruguaji: kde kúpiť, kde predať, spready a ako si vybrať zmenáreň. Aktualizované každých 10 minút.",
+    "metaTitle": "Často kladené otázky: dolár a výmenné kurzy",
+    "metaDescription": "Kde dnes v Uruguaji kúpiť a predať dolár, euro, real a argentínske peso, spread každého domu a ako si vybrať. Aktualizované každých 10 minút.",
     "title": "Často kladené otázky",
     "intro": "Odpovede na najčastejšie otázky o výmenných kurzoch v Uruguaji s údajmi v reálnom čase z viac ako 40 zmenární."
   },
@@ -1090,8 +1090,8 @@
     "tag": "PRÍRUČKY",
     "h1": "Sprievodcovia po dolári a výmene mien v Uruguaji",
     "intro": "Jasné a praktické príručky na pochopenie uruguajského menového trhu: ako kúpiť doláre za najlepšiu cenu, čo znamenajú rôzne typy kurzov a kedy je najlepšie si menu zameniť.",
-    "metaTitle": "Sprievodcovia po dolári a zmenárňach v Uruguaji",
-    "metaDescription": "Praktické návody na nákup dolárov za najlepšiu cenu v Uruguaji, pochopenie BILLETE, CABLE a TERFERENCIA a výber najlepšieho času na výmenu meny. Údaje z viac ako 40 zmenární.",
+    "metaTitle": "Sprievodcovia dolármi a zmenárňami",
+    "metaDescription": "Viac ako 150 sprievodcov o dolári, bankách, BPS, DGI, prenájme a dovoze v Uruguaji: čo hovorí pravidlo, koľko to stojí a aký postup potrebujete.",
     "readGuide": "Prečítajte si sprievodcu",
     "updated": "Aktualizované {date}",
     "byAuthor": "od",
@@ -1487,8 +1487,8 @@
     }
   },
   "porQueDolar": {
-    "metaTitle": "Prečo dolár v Uruguaji rastie alebo klesá? Analýza a korelácia",
-    "metaDescription": "Čo hýbe dolárom v Uruguaji: reálna korelácia s brazílskym realom, globálnym dolárom a americkými sadzbami, pričom cenové skoky sú vysvetlené deň čo deň.",
+    "metaTitle": "Prečo dolár v Uruguaji rastie alebo klesá",
+    "metaDescription": "Čo hýbe dolárom v Uruguaji, merané: jeho korelácia s brazílskym realom, globálnym dolárom, americkými dlhopismi a argentínskou modrou kryptomenou, skok po skoku.",
     "title": "Prečo dolár v Uruguaji rastie alebo klesá?",
     "subtitle": "Aké faktory ovplyvňujú výmenný kurz, merané pomocou údajov.",
     "todayTitle": "Čo dnes hýbe dolárom",
@@ -2379,7 +2379,7 @@
   },
   "pizarra": {
     "h1": "Uruguajská dolárová dolára – dnes",
-    "metaTitle": "Uruguajský dolár dnes – aktuálne kurzy nákupu a predaja",
+    "metaTitle": "Dolárová doska dnes: živý nákup a predaj",
     "metaDescription": "Živá burza pre dolár, euro, real a argentínske peso v Uruguaji: nakupujte a predávajte z každej zmenárne, bez registrácie, bez súborov cookie, bez čakania.",
     "keywords": "uruguajský dolárový kurz, dolár dnes uruguaj, aktuálny kurz uruguaj, kúpiť/predať dolár uruguaj",
     "boardLabel": "Dnešné sadzby",

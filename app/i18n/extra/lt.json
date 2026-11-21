@@ -1056,8 +1056,8 @@
   },
   "faq": {
     "nav": "DUK",
-    "metaTitle": "DUK apie dolerį ir valiutų kursus Urugvajuje",
-    "metaDescription": "Aiškūs atsakymai apie šiandienos JAV dolerio, euro, realo ir Argentinos peso kursus Urugvajuje: kur pirkti, kur parduoti, spredai ir kaip išsirinkti valiutų keityklą. Atnaujinama kas 10 minučių.",
+    "metaTitle": "DUK: doleris ir valiutų kursai",
+    "metaDescription": "Kur šiandien Urugvajuje pirkti ir parduoti dolerius, eurus, realus ir Argentinos pesus, kiekvieno namo spredas ir kaip išsirinkti. Atnaujinama kas 10 minučių.",
     "title": "Dažnai užduodami klausimai",
     "intro": "Atsakymai į dažniausiai užduodamus klausimus apie valiutų kursus Urugvajuje, pateikiant realaus laiko duomenis iš daugiau nei 40 valiutų keityklų."
   },
@@ -1090,8 +1090,8 @@
     "tag": "VADOVAI",
     "h1": "Vadovai apie dolerį ir valiutos keitimą Urugvajuje",
     "intro": "Aiškūs, praktiški vadovai, padėsiantys suprasti Urugvajaus valiutų rinką: kaip nusipirkti dolerių geriausia kaina, ką reiškia skirtingi kainų tipai ir kada geriausia keistis valiuta.",
-    "metaTitle": "Gidai apie dolerį ir valiutų keityklas Urugvajuje",
-    "metaDescription": "Praktiniai vadovai, kaip nusipirkti dolerių geriausia kaina Urugvajuje, suprasti BILLETĖ, CABLE ir TRANSFERENCIA bei pasirinkti geriausią laiką valiutai keistis. Duomenys iš daugiau nei 40 valiutos keityklų.",
+    "metaTitle": "Dolerių ir valiutos keityklų gidai",
+    "metaDescription": "Daugiau nei 150 vadovų apie dolerį, bankus, BPS, DGI, nuomą ir importą Urugvajuje: ką sako taisyklės, kiek jos kainuoja ir kokios procedūros jums reikia.",
     "readGuide": "Skaityti vadovą",
     "updated": "Atnaujinta {date}",
     "byAuthor": "pagal",
@@ -1487,8 +1487,8 @@
     }
   },
   "porQueDolar": {
-    "metaTitle": "Kodėl Urugvajuje doleris kyla arba krenta? Analizė ir koreliacija",
-    "metaDescription": "Kas judina dolerį Urugvajuje: reali koreliacija su Brazilijos realu, pasauliniu doleriu ir JAV kursais, o kainų šuoliai aiškinami diena iš dienos.",
+    "metaTitle": "Kodėl Urugvajuje doleris kyla arba krenta",
+    "metaDescription": "Kas judina dolerį Urugvajuje, matuojant: jo koreliacija su Brazilijos realu, pasauliniu doleriu, JAV obligacijomis ir Argentinos mėlynąja valiuta, šuolis po šuolio.",
     "title": "Kodėl Urugvajuje doleris kyla arba krenta?",
     "subtitle": "Kokie veiksniai keičia valiutos kursą, matuojami duomenimis.",
     "todayTitle": "Kas šiandien keičia dolerio kursą",
@@ -2379,7 +2379,7 @@
   },
   "pizarra": {
     "h1": "Urugvajaus dolerio valiuta – šiandien",
-    "metaTitle": "Urugvajaus dolerio valiutų kursas šiandien – tiesioginiai pirkimo ir pardavimo kursai",
+    "metaTitle": "Dolerio lenta šiandien: pirk ir parduok tiesiogiai",
     "metaDescription": "Tiesioginė dolerio, euro, realo ir Argentinos peso keitimo platforma Urugvajuje: pirkite ir parduokite kiekvienoje valiutų keitykloje, nereikia registracijos, slapukų ar laukimo.",
     "keywords": "Urugvajaus dolerio lenta, doleris šiandien Urugvajuje, tiesioginis Urugvajaus valiutos kursas, pirkti ir parduoti Urugvajaus dolerį",
     "boardLabel": "Šiandienos įkainiai",

@@ -1056,8 +1056,8 @@
   },
   "faq": {
     "nav": "Câu hỏi thường gặp",
-    "metaTitle": "Câu hỏi thường gặp về đô la và tỷ giá hối đoái tại Uruguay",
-    "metaDescription": "Thông tin rõ ràng về tỷ giá đô la Mỹ, euro, real và peso Argentina hiện tại ở Uruguay: mua ở đâu, bán ở đâu, chênh lệch giá và cách chọn nhà đổi tiền. Cập nhật 10 phút một lần.",
+    "metaTitle": "Câu hỏi thường gặp: Đô la và tỷ giá hối đoái",
+    "metaDescription": "Hôm nay, nơi mua và bán đô la, euro, real và peso Argentina tại Uruguay, chênh lệch giá của từng nhà môi giới và cách lựa chọn. Cập nhật 10 phút một lần.",
     "title": "Câu hỏi thường gặp",
     "intro": "Giải đáp những câu hỏi thường gặp nhất về tỷ giá hối đoái tại Uruguay, với dữ liệu thời gian thực từ hơn 40 nhà đổi tiền."
   },
@@ -1090,8 +1090,8 @@
     "tag": "HƯỚNG DẪN",
     "h1": "Hướng dẫn về đô la và tỷ giá hối đoái tại Uruguay",
     "intro": "Hướng dẫn rõ ràng, thiết thực để hiểu thị trường tiền tệ Uruguay: cách mua đô la với giá tốt nhất, ý nghĩa của các loại tỷ giá khác nhau và thời điểm tốt nhất để đổi tiền.",
-    "metaTitle": "Hướng dẫn về đô la và các nhà đổi tiền tại Uruguay",
-    "metaDescription": "Hướng dẫn thực tế để mua đô la với giá tốt nhất tại Uruguay, hiểu về BILLETE, CABLE và TRANSFERENCIA, và chọn thời điểm đổi tiền tốt nhất. Dữ liệu từ hơn 40 điểm đổi tiền.",
+    "metaTitle": "Hướng dẫn về đô la và tỷ giá hối đoái",
+    "metaDescription": "Hơn 150 hướng dẫn về đô la Mỹ, ngân hàng, BPS, DGI, thuê nhà và nhập khẩu tại Uruguay: quy định, chi phí và thủ tục cần thiết.",
     "readGuide": "Đọc hướng dẫn",
     "updated": "Đã cập nhật {date}",
     "byAuthor": "qua",
@@ -1487,8 +1487,8 @@
     }
   },
   "porQueDolar": {
-    "metaTitle": "Tại sao đồng đô la lại tăng hoặc giảm ở Uruguay? Phân tích và tương quan.",
-    "metaDescription": "Điều gì tác động đến đồng đô la Uruguay: mối tương quan thực tế với đồng real Brazil, đồng đô la toàn cầu và lãi suất của Mỹ, với những biến động giá được giải thích từng ngày.",
+    "metaTitle": "Vì sao đồng đô la tăng hoặc giảm ở Uruguay?",
+    "metaDescription": "Các yếu tố tác động đến đồng đô la Uruguay, được đo lường bằng: mối tương quan của nó với đồng real Brazil, đồng đô la toàn cầu, trái phiếu Mỹ và đồng blue của Argentina, theo từng bước nhảy vọt.",
     "title": "Tại sao đồng đô la lại tăng hoặc giảm ở Uruguay?",
     "subtitle": "Những yếu tố nào tác động đến tỷ giá hối đoái, được đo lường bằng số liệu?",
     "todayTitle": "Điều gì đang tác động đến đồng đô la hôm nay?",
@@ -2379,7 +2379,7 @@
   },
   "pizarra": {
     "h1": "Bảng tỷ giá đô la Uruguay — hôm nay",
-    "metaTitle": "Bảng tỷ giá Đô la Uruguay hôm nay — Tỷ giá mua và bán trực tiếp",
+    "metaTitle": "Bảng giao dịch Dollar hôm nay: mua và bán trực tiếp",
     "metaDescription": "Bảng giao dịch trực tiếp đô la Mỹ, euro, real Argentina và peso Argentina tại Uruguay: mua và bán từ mọi sàn giao dịch, không cần đăng ký, không cần cookie, không cần chờ đợi.",
     "keywords": "Bảng tỷ giá đô la Uruguay, đô la Uruguay hôm nay, tỷ giá hối đoái trực tiếp Uruguay, mua bán đô la Uruguay",
     "boardLabel": "Tỷ giá hôm nay",

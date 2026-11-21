@@ -1056,8 +1056,8 @@
   },
   "faq": {
     "nav": "Pertanyaan yang Sering Diajukan (FAQ)",
-    "metaTitle": "Pertanyaan yang Sering Diajukan (FAQ) tentang dolar dan nilai tukar di Uruguay",
-    "metaDescription": "Jawaban jelas tentang kurs dolar AS, euro, real Argentina, dan peso Argentina hari ini di Uruguay: tempat membeli, tempat menjual, spread, dan cara memilih tempat penukaran mata uang. Diperbarui setiap 10 menit.",
+    "metaTitle": "Pertanyaan yang Sering Diajukan (FAQ): dolar dan nilai tukar",
+    "metaDescription": "Di mana membeli dan menjual dolar, euro, real, dan peso Argentina di Uruguay hari ini, spread masing-masing pasar, dan cara memilihnya. Diperbarui setiap 10 menit.",
     "title": "Pertanyaan yang sering diajukan",
     "intro": "Jawaban atas pertanyaan paling umum tentang nilai tukar di Uruguay, dengan data waktu nyata dari lebih dari 40 lembaga penukaran mata uang."
   },
@@ -1090,8 +1090,8 @@
     "tag": "PANDUAN",
     "h1": "Panduan mengenai dolar dan nilai tukar mata uang di Uruguay",
     "intro": "Panduan yang jelas dan praktis untuk memahami pasar mata uang Uruguay: cara membeli dolar dengan harga terbaik, arti berbagai jenis kuotasi, dan kapan waktu terbaik untuk menukar mata uang.",
-    "metaTitle": "Panduan mengenai dolar dan tempat penukaran uang di Uruguay",
-    "metaDescription": "Panduan praktis untuk membeli dolar dengan harga terbaik di Uruguay, memahami BILLETE, CABLE, dan TRANSFERENCIA, serta memilih waktu terbaik untuk menukar mata uang. Data dari lebih dari 40 tempat penukaran mata uang.",
+    "metaTitle": "Panduan tentang dolar dan tempat penukaran uang.",
+    "metaDescription": "Lebih dari 150 panduan tentang dolar, bank, BPS, DGI, penyewaan, dan impor di Uruguay: apa yang dikatakan aturan, berapa biayanya, dan prosedur apa yang Anda perlukan.",
     "readGuide": "Baca panduan",
     "updated": "{date} diperbarui",
     "byAuthor": "oleh",
@@ -1487,8 +1487,8 @@
     }
   },
   "porQueDolar": {
-    "metaTitle": "Mengapa nilai tukar dolar naik atau turun di Uruguay? Analisis dan korelasi.",
-    "metaDescription": "Faktor yang memengaruhi pergerakan dolar di Uruguay: korelasi riil dengan real Brasil, dolar global, dan suku bunga AS, dengan penjelasan lonjakan harga dari hari ke hari.",
+    "metaTitle": "Mengapa nilai tukar dolar naik atau turun di Uruguay?",
+    "metaDescription": "Faktor-faktor yang memengaruhi pergerakan dolar di Uruguay, diukur dari: korelasinya dengan real Brasil, dolar global, obligasi AS, dan indeks biru Argentina, secara bertahap.",
     "title": "Mengapa nilai tukar dolar naik atau turun di Uruguay?",
     "subtitle": "Faktor apa saja yang memengaruhi nilai tukar, diukur dengan data.",
     "todayTitle": "Apa yang menggerakkan nilai tukar dolar hari ini?",
@@ -2379,7 +2379,7 @@
   },
   "pizarra": {
     "h1": "Bursa dolar Uruguay — hari ini",
-    "metaTitle": "Bursa Dolar Uruguay Hari Ini — Kurs Beli dan Jual Langsung",
+    "metaTitle": "Papan harga dolar hari ini: jual beli langsung",
     "metaDescription": "Bursa pertukaran langsung untuk dolar, euro, real, dan peso Argentina di Uruguay: beli dan jual dari setiap rumah pertukaran, tanpa pendaftaran, tanpa cookie, tanpa menunggu.",
     "keywords": "Bursa dolar Uruguay, nilai tukar dolar Uruguay hari ini, kurs tukar langsung Uruguay, beli jual dolar Uruguay",
     "boardLabel": "Tarif hari ini",

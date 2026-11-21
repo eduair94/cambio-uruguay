@@ -1056,8 +1056,8 @@
   },
   "faq": {
     "nav": "Često postavljana pitanja",
-    "metaTitle": "Često postavljana pitanja o dolaru i tečajevima u Urugvaju",
-    "metaDescription": "Jasni odgovori o današnjim tečajevima američkog dolara, eura, reala i argentinskog peza u Urugvaju: gdje kupiti, gdje prodati, rasponi tečajeva i kako odabrati mjenjačnicu. Ažurira se svakih 10 minuta.",
+    "metaTitle": "Često postavljana pitanja: dolar i tečajevi",
+    "metaDescription": "Gdje danas u Urugvaju kupiti i prodati dolar, euro, real i argentinski pezo, raspon svake kuće i kako odabrati. Ažurira se svakih 10 minuta.",
     "title": "Često postavljana pitanja",
     "intro": "Odgovori na najčešća pitanja o tečajevima u Urugvaju, s podacima u stvarnom vremenu iz preko 40 mjenjačnica."
   },
@@ -1090,8 +1090,8 @@
     "tag": "VODIČI",
     "h1": "Vodiči o dolaru i mjenjačnici valuta u Urugvaju",
     "intro": "Jasni, praktični vodiči za razumijevanje urugvajskog deviznog tržišta: kako kupiti dolare po najboljoj cijeni, što znače različite vrste kotacija i kada je najbolje zamijeniti valutu.",
-    "metaTitle": "Vodiči o dolaru i mjenjačnicama u Urugvaju",
-    "metaDescription": "Praktični vodiči za kupnju dolara po najpovoljnijoj cijeni u Urugvaju, razumijevanje BILLETE, CABLE i TRANSFERENCIA te odabir najboljeg vremena za razmjenu valute. Podaci iz preko 40 mjenjačnica.",
+    "metaTitle": "Vodiči za dolar i mjenjačnice",
+    "metaDescription": "Preko 150 vodiča o dolaru, bankama, BPS, DGI, najmu i uvozu u Urugvaju: što pravilo kaže, koliko košta i koji vam je postupak potreban.",
     "readGuide": "Pročitajte vodič",
     "updated": "Ažurirano {date}",
     "byAuthor": "po",
@@ -1487,8 +1487,8 @@
     }
   },
   "porQueDolar": {
-    "metaTitle": "Zašto dolar raste ili pada u Urugvaju? Analiza i korelacija",
-    "metaDescription": "Što pokreće dolar u Urugvaju: stvarna korelacija s brazilskim realom, globalnim dolarom i američkim tečajem, s objašnjenjima skokova cijena iz dana u dan.",
+    "metaTitle": "Zašto dolar raste ili pada u Urugvaju",
+    "metaDescription": "Što pokreće dolar u Urugvaju, mjereno: njegova korelacija s brazilskim realom, globalnim dolarom, američkim obveznicama i argentinskim plavim dolarom, skok po skok.",
     "title": "Zašto dolar raste ili pada u Urugvaju?",
     "subtitle": "Koji čimbenici utječu na tečaj, mjereno podacima.",
     "todayTitle": "Što danas pokreće dolar",
@@ -2379,7 +2379,7 @@
   },
   "pizarra": {
     "h1": "Urugvajska dolarska ploča — danas",
-    "metaTitle": "Urugvajski dolar danas — tečajevi kupnje i prodaje uživo",
+    "metaTitle": "Dolarska ploča danas: kupnja i prodaja uživo",
     "metaDescription": "Ploča uživo za dolar, euro, real i argentinski pezo u Urugvaju: kupujte i prodajte iz svake mjenjačnice, bez registracije, bez kolačića, bez čekanja.",
     "keywords": "ploča urugvajskog dolara, dolar danas urugvaj, tečaj uživo urugvaj, kupnja i prodaja dolara urugvaj",
     "boardLabel": "Današnje cijene",

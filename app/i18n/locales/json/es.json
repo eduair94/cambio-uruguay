@@ -1056,8 +1056,8 @@
   },
   "faq": {
     "nav": "Preguntas frecuentes",
-    "metaTitle": "Preguntas frecuentes sobre el dólar y las cotizaciones en Uruguay",
-    "metaDescription": "Respuestas claras sobre la cotización del dólar, euro, real y peso argentino hoy en Uruguay: dónde comprar, dónde vender, spreads y cómo elegir casa de cambio. Datos actualizados cada 10 minutos.",
+    "metaTitle": "Preguntas frecuentes: dólar y cotizaciones",
+    "metaDescription": "Dónde comprar y vender dólar, euro, real y peso argentino hoy en Uruguay, qué spread cobra cada casa y cómo elegir. Se actualiza cada 10 minutos.",
     "title": "Preguntas frecuentes",
     "intro": "Respuestas a las dudas más comunes sobre las cotizaciones en Uruguay, con datos en tiempo real de más de 40 casas de cambio."
   },
@@ -1090,8 +1090,8 @@
     "tag": "GUÍAS",
     "h1": "Guías sobre el dólar y el cambio de divisas en Uruguay",
     "intro": "Guías prácticas y claras para entender el mercado cambiario uruguayo: cómo comprar dólares al mejor precio, qué significan los distintos tipos de cotización y cuándo conviene cambiar divisas.",
-    "metaTitle": "Guías sobre el dólar y casas de cambio en Uruguay",
-    "metaDescription": "Guías prácticas para comprar dólares al mejor precio en Uruguay, entender BILLETE, CABLE y TRANSFERENCIA, y elegir el mejor momento para cambiar divisas. Datos de más de 40 casas de cambio.",
+    "metaTitle": "Guías del dólar y casas de cambio",
+    "metaDescription": "Más de 150 guías sobre dólar, bancos, BPS, DGI, alquiler e importación en Uruguay: qué dice la norma, cuánto cuesta y qué trámite hay que hacer.",
     "readGuide": "Leer guía",
     "updated": "Actualizada el {date}",
     "byAuthor": "por",
@@ -2379,7 +2379,7 @@
   },
   "pizarra": {
     "h1": "Pizarra del dólar en Uruguay hoy",
-    "metaTitle": "Pizarra del Dólar Hoy en Uruguay — Compra y Venta al Instante",
+    "metaTitle": "Pizarra del dólar hoy: compra y venta",
     "metaDescription": "Pizarra en vivo del dólar, euro, real y peso argentino en Uruguay: compra y venta de todas las casas de cambio, sin registro, sin cookies y sin esperas.",
     "keywords": "pizarra dolar uruguay, dolar hoy uruguay, cotizacion dolar en vivo, compra venta dolar, pizarra casas de cambio",
     "boardLabel": "Cotizaciones del día",

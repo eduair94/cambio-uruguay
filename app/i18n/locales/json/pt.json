@@ -1039,8 +1039,8 @@
   },
   "faq": {
     "nav": "Perguntas frequentes",
-    "metaTitle": "Perguntas frequentes sobre o dólar e as cotações no Uruguai",
-    "metaDescription": "Respostas claras sobre a cotação do dólar, euro, real e peso argentino hoje no Uruguai: onde comprar, onde vender, spreads e como escolher casa de câmbio. Dados atualizados a cada 10 minutos.",
+    "metaTitle": "Perguntas frequentes: dólar e cotações",
+    "metaDescription": "Onde comprar e vender dólar, euro, real e peso argentino hoje no Uruguai, qual spread cada casa cobra e como escolher. Atualizado a cada 10 minutos.",
     "title": "Perguntas frequentes",
     "intro": "Respostas às dúvidas mais comuns sobre as cotações no Uruguai, com dados em tempo real de mais de 40 casas de câmbio."
   },
@@ -1073,8 +1073,8 @@
     "tag": "GUIAS",
     "h1": "Guias sobre o dólar e a troca de divisas no Uruguai",
     "intro": "Guias práticos e claros para entender o mercado cambial uruguaio: como comprar dólares pelo melhor preço, o que significam os diferentes tipos de cotação e quando vale a pena trocar divisas.",
-    "metaTitle": "Guias sobre o dólar e casas de câmbio no Uruguai",
-    "metaDescription": "Guias práticos para comprar dólares pelo melhor preço no Uruguai, entender BILLETE, CABLE e TRANSFERENCIA, e escolher o melhor momento para trocar divisas. Dados de mais de 40 casas de câmbio.",
+    "metaTitle": "Guias do dólar e casas de câmbio",
+    "metaDescription": "Mais de 150 guias sobre dólar, bancos, BPS, DGI, aluguel e importação no Uruguai: o que diz a norma, quanto custa e qual trâmite fazer.",
     "readGuide": "Ler guia",
     "updated": "Atualizado em {date}",
     "byAuthor": "por",
@@ -2361,7 +2361,7 @@
   },
   "pizarra": {
     "h1": "Cotação do dólar no Uruguai hoje",
-    "metaTitle": "Cotação do Dólar no Uruguai Hoje — Compra e Venda ao Vivo",
+    "metaTitle": "Cotação do dólar hoje: compra e venda",
     "metaDescription": "Painel ao vivo do dólar, euro, real e peso argentino no Uruguai: compra e venda de todas as casas de câmbio, sem cadastro, sem cookies e sem espera.",
     "keywords": "cotacao dolar uruguai, dolar hoje uruguai, cambio ao vivo uruguai, compra venda dolar uruguai",
     "boardLabel": "Cotações do dia",

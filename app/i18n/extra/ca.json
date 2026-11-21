@@ -1056,8 +1056,8 @@
   },
   "faq": {
     "nav": "Preguntes freqüents",
-    "metaTitle": "Preguntes freqüents sobre el dòlar i els tipus de canvi a l'Uruguai",
-    "metaDescription": "Respostes clares sobre els tipus de canvi actuals del dòlar americà, l'euro, el real i el peso argentí a l'Uruguai: on comprar, on vendre, diferencials i com triar una casa de canvi. S'actualitza cada 10 minuts.",
+    "metaTitle": "Preguntes freqüents: dòlar i tipus de canvi",
+    "metaDescription": "On comprar i vendre el dòlar, l'euro, el real i el peso argentí a l'Uruguai avui, el spread de cada casa i com triar. Actualitzat cada 10 minuts.",
     "title": "Preguntes freqüents",
     "intro": "Respostes a les preguntes més freqüents sobre els tipus de canvi a l'Uruguai, amb dades en temps real de més de 40 cases de canvi."
   },
@@ -1090,8 +1090,8 @@
     "tag": "GUIES",
     "h1": "Guies sobre el dòlar i el canvi de moneda a l'Uruguai",
     "intro": "Guies clares i pràctiques per entendre el mercat de divises de l'Uruguai: com comprar dòlars al millor preu, què signifiquen els diferents tipus de cotització i quan és millor canviar moneda.",
-    "metaTitle": "Guies sobre el dòlar i les cases de canvi a l'Uruguai",
-    "metaDescription": "Guies pràctiques per comprar dòlars al millor preu a l'Uruguai, entendre el BILLETE, el CABLE i la TRANSFERÈNCIA, i triar el millor moment per canviar moneda. Dades de més de 40 cases de canvi.",
+    "metaTitle": "Guies de dòlars i cases de canvi",
+    "metaDescription": "Més de 150 guies sobre el dòlar, els bancs, BPS, DGI, el lloguer i les importacions a l'Uruguai: què diu la norma, quant costa i quin tràmit necessites.",
     "readGuide": "Llegeix la guia",
     "updated": "{date} actualitzat",
     "byAuthor": "per",
@@ -1487,8 +1487,8 @@
     }
   },
   "porQueDolar": {
-    "metaTitle": "Per què puja o baixa el dòlar a l'Uruguai? Anàlisi i correlació",
-    "metaDescription": "Què mou el dòlar a l'Uruguai: correlació real amb el real brasiler, el dòlar global i els tipus de canvi nord-americans, amb els salts de preus explicats dia a dia.",
+    "metaTitle": "Per què puja o baixa el dòlar a l'Uruguai",
+    "metaDescription": "Què mou el dòlar a l'Uruguai, mesurat: la seva correlació amb el real brasiler, el dòlar global, els bons nord-americans i el blau argentí, salt a salt.",
     "title": "Per què puja o baixa el dòlar a l'Uruguai?",
     "subtitle": "Quins factors mouen el tipus de canvi, mesurats amb dades.",
     "todayTitle": "Què mou el dòlar avui?",
@@ -2379,7 +2379,7 @@
   },
   "pizarra": {
     "h1": "Tassa del dòlar uruguaià — avui",
-    "metaTitle": "Taula del dòlar uruguaià avui: tipus de canvi de compra i venda en directe",
+    "metaTitle": "Taula del dòlar avui: compra i venda en directe",
     "metaDescription": "Tauler en directe per al dòlar, l'euro, el real i el peso argentí a l'Uruguai: compra i ven des de totes les cases de canvi, sense registre, sense galetes, sense esperes.",
     "keywords": "tauler de dòlars uruguaians, dòlar uruguaià avui, tipus de canvi uruguaià en directe, comprar vendre dòlars uruguaians",
     "boardLabel": "Tarifes d'avui",
