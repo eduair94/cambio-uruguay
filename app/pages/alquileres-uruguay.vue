@@ -1303,7 +1303,8 @@ const mapMarkers = computed(() =>
     hours: '',
     lat: point.lat,
     lng: point.lng,
-    mapUrl: point.url,
+    // No advert link on the point: `popups` is off and the detail panel carries it.
+    mapUrl: '',
     source: 'alquileres',
   }))
 )

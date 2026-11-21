@@ -207,11 +207,7 @@ function mapFixturePoint(item: RentalProperty, lat: number, lng: number): Rental
     lng,
     price: matched.price,
     currency: matched.currency,
-    bedrooms: item.bedrooms,
-    area: item.area,
     neighborhood: item.neighborhood,
-    offers: item.offers.length,
-    url: matched.url,
   }
 }
 
