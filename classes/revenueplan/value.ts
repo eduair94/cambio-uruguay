@@ -559,6 +559,42 @@ export const CONTENIDO_PATHS = new Set([
   // resuelve sin dudar: es texto, no una serie con texto alrededor. Y es la misma clase de pagina
   // que su vecina de hub `/carne-de-salud-uruguay`, ya clasificada arriba.
   "/carne-de-manipulacion-de-alimentos-uruguay",
+  // ---------------------------------------------------------------------------------------------
+  // Tanda del 2026-11-21: las tres del hub de aduana que el 11-09 quedaron afuera por el ENDPOINT
+  // que piden, cuando lo que decide es qué hacen con la respuesta.
+  //
+  // El barrido del 11-09 dejó escrito, unas líneas más arriba, que «las demás de la deuda quedan
+  // donde están: o piden una serie a una ruta propia del sitio (`/api/market-series`,
+  // `/api/aduana`, `/api/cars/*`), o no leen nada y su motivo es otro». Para `/api/aduana` eso
+  // mezcla dos cosas distintas, y se ve mirando a sus CUATRO consumidores de la deuda:
+  //
+  //   - `/problemas-con-la-aduana-uruguay` lee el corpus entero y lo DIBUJA: `facts`, `problems`,
+  //     `sources` y `pendingReview` salen a la pantalla con su fecha y su fuente. Ahí la respuesta
+  //     ES el cuerpo de la página, o sea una serie con texto alrededor, y se queda en la deuda.
+  //   - las tres de abajo no tocan el corpus. La respuesta entra por `regimeRulesFromPayload`
+  //     (`app/utils/regimeOverlay.ts`) y por ningún otro lado —`aduanaData` se nombra exactamente
+  //     dos veces en cada una: el `useFetch` y el `computed` del overlay—, y esa función arranca de
+  //     `DEFAULT_REGIME_RULES` (el catálogo FIJO de `app/utils/importRules.ts`) y le mapea encima
+  //     CINCO identificadores de hecho: el tope anual de la franquicia, la tasa y el mínimo de la
+  //     prestación única, la exoneración de IVA de la TIFA y la fecha desde la que se exige el
+  //     registro del vendedor. Todo lo demás del payload se ignora, un campo malo nunca puede
+  //     borrar una regla y sin respuesta la página sirve la baseline y sigue funcionando.
+  //
+  // O sea que es la MISMA operación que las ocho del 11-09 —convertir en pesos de hoy una cifra que
+  // una norma fija— con una sola diferencia: ahí el número vive en UR o UI y acá viene escrito en
+  // dólares y fechas en el propio decreto, así que en vez de un indicador se lee el parámetro. Lo
+  // que la página AFIRMA son los regímenes; el overlay sólo mantiene al día sus montos. La línea
+  // mecánica del 22/10 no podía decidirlas porque mira SI hay un `useFetch`; la señal no era el
+  // endpoint, era el consumidor.
+  //
+  // Y el racimo decide, como en la tanda del 29/10: el hub `importaciones-y-aduana-uruguay` declara
+  // diecisiete entradas y tenía ocho acá y cuatro en la deuda, con la familia hermana `/importar/*`
+  // ya en `CONTENIDO_BUCKETS`. Las tres son lectura larga y `ads.ts` les da dos unidades en flujo;
+  // sin estas líneas la cola de trabajo las ordena OCHO VECES por debajo de la guía equivalente de
+  // `/guias/*`, que es la misma clase de página y la misma intención de búsqueda.
+  "/envio-directo-o-casillero-uruguay",
+  "/franquicia-aduana-uruguay",
+  "/importar-a-uruguay-siendo-extranjero",
 ]);
 
 export function tierOf(bucket: string): Tier {

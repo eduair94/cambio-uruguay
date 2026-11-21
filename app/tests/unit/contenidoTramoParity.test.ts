@@ -125,6 +125,20 @@ const LISTA_CURADA = [
  * en pesos es la multa que el BPS liquida, no la conversion de un tope, y `value.ts` ya la juzgo
  * asi. El motivo por pagina esta en `classes/revenueplan/value.ts`.
  *
+ * 43 el 2026-11-21, cuando se separa el ENDPOINT del CONSUMIDOR. La tanda del 11-09 dejo a los
+ * cuatro consumidores de `/api/aduana` en la deuda con un motivo de una linea («piden una serie a
+ * una ruta propia del sitio»), y ese motivo describe a UNO de los cuatro:
+ * `/problemas-con-la-aduana-uruguay` dibuja el corpus entero —`facts`, `problems`, `sources`,
+ * `pendingReview`, con su fecha y su fuente— y por eso se queda. Las otras tres no tocan el corpus:
+ * nombran `aduanaData` exactamente dos veces (el `useFetch` y el `computed`) y la respuesta entra
+ * sola por `regimeRulesFromPayload`, que arranca del catalogo FIJO `DEFAULT_REGIME_RULES` y le mapea
+ * encima cinco parametros del regimen, ignora el resto del payload, nunca borra una regla y sin
+ * respuesta sirve la baseline. Es la misma operacion que las ocho del 11-09 —poner en pesos de hoy
+ * una cifra que una norma fija— con el numero escrito en dolares y fechas en vez de en UR o UI. El
+ * motivo por pagina esta en `classes/revenueplan/value.ts`, y el racimo lo confirma: el hub
+ * `importaciones-y-aduana-uruguay` tenia ocho miembros en el tramo y cuatro en la deuda, con la
+ * familia hermana `/importar/*` ya en `CONTENIDO_BUCKETS`.
+ *
  * 54 el 2026-10-29, cuando sale el racimo del hub `deudas-y-credito-uruguay`: ese tema declaraba
  * quince entradas partidas por la mitad entre dos tramos que se diferencian por ocho veces —ocho ya
  * eran contenido, una es la calculadora (`/herramientas/*`, dato vivo) y seis estaban acá—, y es el
@@ -175,15 +189,12 @@ const DEUDA_SIN_TRAMO = [
   '/donde-vivir-uruguay',
   '/economia-uruguay',
   '/elecciones-bps-2026',
-  '/envio-directo-o-casillero-uruguay',
   '/estafas-uruguay',
   '/evolucion-precio-alquileres-uruguay',
   '/evolucion-precio-autos-usados-uruguay',
   '/evolucion-precio-viviendas-uruguay',
   '/fletes-mudanzas-uruguay',
-  '/franquicia-aduana-uruguay',
   '/iass-uruguay',
-  '/importar-a-uruguay-siendo-extranjero',
   '/impuestos-inversiones-uruguay',
   '/letras-de-regulacion-monetaria-uruguay',
   '/llevar-dolares-o-reales-a-brasil',
@@ -208,7 +219,7 @@ const DEUDA_SIN_TRAMO = [
   '/vivir-con-el-salario-minimo-uruguay',
 ]
 
-const DEUDA_MAXIMA = 46
+const DEUDA_MAXIMA = 43
 
 const TRAMO_POR_NOMBRE: Record<string, unknown> = {
   contenido: TIER_CONTENIDO,
@@ -330,6 +341,41 @@ describe('las páginas que el sitio monetiza como lectura larga están valuadas 
       ruta => !pideDatoVivo(ruta) && !NO_LA_DECIDE_LA_LINEA.has(ruta)
     )
     expect(sinMotivo, sinMotivo.join('\n')).toEqual([])
+  })
+
+  /**
+   * La tanda del 2026-11-21, atornillada: lo que saca del tramo no es el endpoint sino el uso.
+   *
+   * Las tres entraron porque el payload de `/api/aduana` les llega SOLO por `regimeRulesFromPayload`
+   * —un overlay de cinco parámetros sobre el catálogo fijo `DEFAULT_REGIME_RULES`, con baseline si la
+   * llamada falla— y no como un corpus que la página dibuje. Si mañana una de ellas empieza a
+   * renderizar `problems`/`pendingReview`, pasa a ser una serie con texto alrededor y el tramo que
+   * hereda deja de estar fundado: este test lo dice en vez de dejarlo pasar.
+   *
+   * Y el otro lado del hallazgo, que es el que lo hace cotejable: `/problemas-con-la-aduana-uruguay`
+   * pide el MISMO endpoint, dibuja el corpus y sigue en la deuda. Si alguna vez deja de dibujarlo,
+   * su motivo caducó y hay que valuarla.
+   */
+  it('las tres de la tanda del 21/11 leen el régimen, no el corpus', () => {
+    const POR_OVERLAY = [
+      '/envio-directo-o-casillero-uruguay',
+      '/franquicia-aduana-uruguay',
+      '/importar-a-uruguay-siendo-extranjero',
+    ]
+    const fuente = (ruta: string) => readFileSync(join(PAGES, `${ruta.slice(1)}.vue`), 'utf8')
+    for (const ruta of POR_OVERLAY) {
+      expect(tierOf(bucketOf(ruta)), ruta).toBe(TIER_CONTENIDO)
+      const texto = fuente(ruta)
+      // El payload entra por el overlay y por ningún otro lado: `aduanaData` se nombra dos veces,
+      // el `useFetch` y el `computed`.
+      expect(texto.includes('regimeRulesFromPayload('), ruta).toBe(true)
+      expect(texto.match(/aduanaData/g)?.length, ruta).toBe(2)
+      expect(/pendingReview|\.problems/.test(texto), ruta).toBe(false)
+    }
+    const corpus = fuente('/problemas-con-la-aduana-uruguay')
+    expect(corpus.includes('pendingReview')).toBe(true)
+    expect(corpus.includes('regimeRulesFromPayload')).toBe(false)
+    expect(DEUDA_SIN_TRAMO).toContain('/problemas-con-la-aduana-uruguay')
   })
 
   /**
