@@ -1,30 +1,86 @@
+// The coverage of the catalogue (server/utils/rentalCoverage.ts) is read from the default search's
+// facet entry since 2026-11-20 (P5). That is only honest if the default facet IS the coverage pass:
+// the same public stages, counted the same way. The first test proves it on the pipeline the
+// directory actually issues.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createRentalCoverageReader } from '../../server/utils/rentalCoverage'
+import * as rentals from '../../utils/rentals'
+import { rentalCoverageFromFacet, rentalCoverageStages } from '../../server/utils/rentalCoverage'
+import {
+  createRentalDirectoryAggregate,
+  createRentalDirectoryData,
+  type RentalAggregateChain,
+} from '../../server/utils/rentalDirectoryData'
+import { createRentalMemo } from '../../server/utils/rentalMemo'
 
-const result = (count = 3) => [
-  {
-    properties: [{ count }],
-    sources: [
-      { _id: 'infocasas', properties: 2 },
-      { _id: 'mercadolibre', properties: 1 },
-      { _id: 'casasweb', properties: 1 },
-    ],
-  },
-]
+type Stage = Record<string, any>
 
-describe('global rental coverage cache', () => {
+describe('the coverage of the catalogue', () => {
   beforeEach(() => {
-    vi.useFakeTimers()
+    vi.useFakeTimers({ toFake: ['Date'] })
     vi.setSystemTime('2026-09-05T03:00:00Z')
   })
   afterEach(() => {
     vi.useRealTimers()
-    vi.restoreAllMocks()
   })
 
-  it('keeps the unique total separate from overlapping sources and includes successful zeros', async () => {
-    const read = createRentalCoverageReader(vi.fn().mockResolvedValue(result()))
-    const coverage = await read('latest-fast-run', 10)
+  it('is the default facet pass: the same public stages, the same counts', async () => {
+    const issued: Stage[][] = []
+    const start = (pipeline: Stage[]): RentalAggregateChain => {
+      issued.push(pipeline)
+      const chain: RentalAggregateChain = {
+        allowDiskUse: () => chain,
+        option: () => chain,
+        collation: () =>
+          Promise.resolve([{ total: [{ total: 3 }], sources: [{ _id: 'casasweb', count: 1 }] }]),
+      }
+      return chain
+    }
+    const data = createRentalDirectoryData({
+      aggregate: createRentalDirectoryAggregate(start as never),
+      memo: createRentalMemo({ log: () => {}, schedule: () => () => {} }),
+    })
+    // A fresh worker builds the default facet in the background, from the request's exchange rate.
+    expect(data.coverage({ usdUyu: 41.75 })).toBeNull()
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(issued).toHaveLength(1)
+    const facet = issued[0]!
+    const coverage = rentalCoverageStages(rentals.RENTAL_STALE_DAYS)
+    // Everything before the `$facet`: the default filter's public stages, no advert excluded.
+    expect(facet.slice(0, -1)).toEqual(coverage.slice(0, -1))
+    expect(facet.slice(0, -1)).toEqual(
+      rentals.rentalPublicStages(
+        rentals.buildRentalFilter(rentals.normalizeRentalQuery({}), rentals.RENTAL_STALE_DAYS)
+          .filter,
+        rentals.RENTAL_STALE_DAYS
+      )
+    )
+    // And the two counts the coverage reads: every property once, each portal once per property.
+    const branches = facet.at(-1)!.$facet
+    expect(branches.total).toEqual([{ $count: 'total' }])
+    expect(branches.sources.slice(0, 2)).toEqual([
+      { $unwind: '$sources' },
+      { $group: { _id: '$sources', count: { $sum: 1 } } },
+    ])
+    expect((coverage.at(-1) as Stage).$facet.sources).toEqual([
+      { $unwind: '$sources' },
+      { $group: { _id: '$sources', properties: { $sum: 1 } } },
+    ])
+    expect(data.coverage({ usdUyu: 41.75 })?.properties).toBe(3)
+  })
+
+  it('keeps the unique total separate from overlapping sources and includes successful zeros', () => {
+    const builtAt = Date.now()
+    const coverage = rentalCoverageFromFacet(
+      {
+        total: 3,
+        sources: [
+          { value: 'infocasas', count: 2 },
+          { value: 'mercadolibre', count: 1 },
+          { value: 'casasweb', count: 1 },
+        ],
+      },
+      builtAt
+    )
     expect(coverage).toEqual({
       computedAt: '2026-09-05T03:00:00.000Z',
       properties: 3,
@@ -42,74 +98,25 @@ describe('global rental coverage cache', () => {
     })
   })
 
-  it('reuses and coalesces the global result across requests until its short cache expires', async () => {
-    const aggregate = vi.fn().mockResolvedValue(result())
-    const read = createRentalCoverageReader(aggregate)
-    const [first, second] = await Promise.all([read('sync-1', 10), read('sync-1', 10)])
-    expect(second).toEqual(first)
-    expect(aggregate).toHaveBeenCalledTimes(1)
-    vi.setSystemTime('2026-09-05T03:00:59Z')
-    expect(await read('sync-1', 10)).toEqual(first)
-    expect(aggregate).toHaveBeenCalledTimes(1)
-    vi.setSystemTime('2026-09-05T03:01:00Z')
-    expect((await read('sync-1', 10))?.computedAt).toBe('2026-09-05T03:01:00.000Z')
-    expect(aggregate).toHaveBeenCalledTimes(2)
-  })
-
-  it('invalidates immediately when a sync changes or the UTC visibility cutoff advances', async () => {
-    const aggregate = vi.fn().mockResolvedValue(result())
-    const read = createRentalCoverageReader(aggregate)
-    vi.setSystemTime('2026-09-05T23:59:55Z')
-    await read('sync-1', 10)
-    await read('sync-2', 10)
-    expect(aggregate).toHaveBeenCalledTimes(2)
-    vi.setSystemTime('2026-09-06T00:00:00Z')
-    await read('sync-2', 10)
-    expect(aggregate).toHaveBeenCalledTimes(3)
-    expect(aggregate.mock.calls[2][0][0]).toEqual({
-      $match: { lastSeen: { $gte: '2026-08-27' } },
-    })
-  })
-
-  it('does not let an older pending sync overwrite a newer completed snapshot', async () => {
-    let resolveOld!: (value: ReturnType<typeof result>) => void
-    const aggregate = vi
-      .fn()
-      .mockImplementationOnce(
-        () => new Promise<ReturnType<typeof result>>(resolve => (resolveOld = resolve))
-      )
-      .mockResolvedValueOnce(result(8))
-    const read = createRentalCoverageReader(aggregate)
-    const old = read('sync-1', 10)
-    await Promise.resolve()
-    const current = await read('sync-2', 10)
-    resolveOld(result(3))
-    expect((await old)?.properties).toBe(3)
-    expect(await read('sync-2', 10)).toEqual(current)
-    expect(current?.properties).toBe(8)
-    expect(aggregate).toHaveBeenCalledTimes(2)
-  })
-
-  it('returns unavailable on failure without substituting a zero or caching that failure', async () => {
-    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined)
-    const aggregate = vi
-      .fn()
-      .mockRejectedValueOnce(new Error('aggregation unavailable'))
-      .mockResolvedValueOnce(result())
-    const read = createRentalCoverageReader(aggregate)
-    expect(await read('sync-1', 10)).toBeNull()
-    expect(log).toHaveBeenCalledTimes(1)
-    expect((await read('sync-1', 10))?.properties).toBe(3)
-    expect(aggregate).toHaveBeenCalledTimes(2)
-  })
-
-  it('distinguishes an empty visible catalogue from an unavailable count', async () => {
-    const read = createRentalCoverageReader(
-      vi.fn().mockResolvedValue([{ properties: [], sources: [] }])
+  it('dates the coverage when its facet was read, not when it is served', () => {
+    const builtAt = Date.parse('2026-09-05T02:56:00Z')
+    expect(rentalCoverageFromFacet({ total: 1, sources: [] }, builtAt).computedAt).toBe(
+      '2026-09-05T02:56:00.000Z'
     )
-    const coverage = await read(undefined, 10)
-    expect(coverage?.properties).toBe(0)
-    expect(coverage?.sources).toHaveLength(9)
-    expect(coverage?.sources.every(source => source.properties === 0)).toBe(true)
+  })
+
+  it('distinguishes an empty visible catalogue from an unavailable count', () => {
+    const coverage = rentalCoverageFromFacet({ total: 0, sources: [] }, Date.now())
+    expect(coverage.properties).toBe(0)
+    expect(coverage.sources).toHaveLength(9)
+    expect(coverage.sources.every(source => source.properties === 0)).toBe(true)
+  })
+
+  it('ignores a portal the site does not list', () => {
+    const coverage = rentalCoverageFromFacet(
+      { total: 1, sources: [{ value: 'otro', count: 1 }] },
+      Date.now()
+    )
+    expect(coverage.sources.map(source => source.key)).not.toContain('otro')
   })
 })

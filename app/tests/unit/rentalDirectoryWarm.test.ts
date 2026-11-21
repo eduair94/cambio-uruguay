@@ -1,13 +1,17 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   RENTAL_DIRECTORY_WARM_QUERIES,
+  rentalDirectoryBootWarmDelay,
   rentalDirectoryCacheKey,
+  rentalDirectoryWarmFetcher,
   runRentalDirectoryWarm,
   warmRentalDirectory,
 } from '../../server/utils/rentalDirectoryWarm'
 
 describe('rental directory warm-up', () => {
-  it('warms the front page, the three big departments and the scroll page 2, in order and one at a time', async () => {
+  it('warms the front page and the three big departments, in order and one at a time', async () => {
     const seen: string[] = []
     let active = 0
     let maxActive = 0
@@ -24,8 +28,6 @@ describe('rental directory warm-up', () => {
       'department=Montevideo',
       'department=Canelones',
       'department=Maldonado',
-      // The infinite scroll asks for the cards alone since 2026-11-20 (utils/rentalDirectoryParts.ts).
-      'page=2&parts=items',
     ])
     expect(maxActive).toBe(1)
     expect(report.failed).toEqual([])
@@ -36,12 +38,7 @@ describe('rental directory warm-up', () => {
     const report = await warmRentalDirectory(async query => {
       if (query.department === 'Canelones') throw new Error('Mongo unavailable')
     })
-    expect(report.warmed).toEqual([
-      '',
-      'department=Montevideo',
-      'department=Maldonado',
-      'page=2&parts=items',
-    ])
+    expect(report.warmed).toEqual(['', 'department=Montevideo', 'department=Maldonado'])
     expect(report.failed).toEqual([{ query: 'department=Canelones', error: 'Mongo unavailable' }])
   })
 
@@ -63,15 +60,11 @@ describe('rental directory warm-up', () => {
     // A warm-up that lands on a different key than the visitor's request warms nothing.
     for (const query of RENTAL_DIRECTORY_WARM_QUERIES) {
       const key = rentalDirectoryCacheKey({ ...query })
-      const { parts, ...search } = query
-      const base = new URLSearchParams(search).toString()
-      expect(key).toBe(parts ? `${parts}_${base}` : base || 'default')
+      expect(key).toBe(new URLSearchParams(query).toString() || 'default')
     }
-    // The scroll's request for page 2 (pages/alquileres-uruguay.vue `fetchPage`: the search's
-    // params, the page and `parts: 'items'`) lands on the warmed entry.
-    expect(rentalDirectoryCacheKey({ page: String(2), parts: 'items' })).toBe(
-      rentalDirectoryCacheKey({ ...RENTAL_DIRECTORY_WARM_QUERIES.at(-1)! })
-    )
+    // Only whole responses: a scroll page (`parts=items`) no longer goes through Nitro's memo
+    // (server/api/rentals/index.get.ts), its window is the inner memo's entry the first page warms.
+    expect(RENTAL_DIRECTORY_WARM_QUERIES.every(query => !('parts' in query))).toBe(true)
     // `?page=1`, `?` and a stray tracking parameter all collapse into the front-page entry.
     expect(rentalDirectoryCacheKey({ page: '1' })).toBe('default')
     expect(rentalDirectoryCacheKey({ utm_source: 'x' })).toBe('default')
@@ -131,5 +124,105 @@ describe('rental directory warm-up', () => {
       expect(escaped.startsWith('items')).toBe(false)
       expect(escaped.startsWith('facets')).toBe(false)
     }
+  })
+
+  it('warms the inner memo before the outer one, for each query', async () => {
+    const calls: string[] = []
+    const fetcher = rentalDirectoryWarmFetcher(
+      async query => {
+        calls.push(`inner ${new URLSearchParams(query)}`)
+      },
+      async query => {
+        calls.push(`outer ${new URLSearchParams(query)}`)
+        return 'ok'
+      }
+    )
+    const report = await warmRentalDirectory(fetcher, [{}, { department: 'Montevideo' }])
+    expect(calls).toEqual([
+      'inner ',
+      'outer ',
+      'inner department=Montevideo',
+      'outer department=Montevideo',
+    ])
+    expect(report.warmed).toEqual(['', 'department=Montevideo'])
+    // A failed inner warm-up is reported, and the outer request for that query is not sent.
+    const failing = rentalDirectoryWarmFetcher(
+      async () => {
+        throw new Error('Mongo unavailable')
+      },
+      async query => calls.push(`outer ${new URLSearchParams(query)}`)
+    )
+    calls.length = 0
+    const failed = await warmRentalDirectory(failing, [{}])
+    expect(failed.failed).toEqual([{ query: '', error: 'Mongo unavailable' }])
+    expect(calls).toEqual([])
+  })
+})
+
+describe('the warm-up at boot', () => {
+  const production = { NODE_ENV: 'production' }
+
+  it('waits 5 s plus 25 s per pm2 instance', () => {
+    expect(rentalDirectoryBootWarmDelay({ dev: false, prerender: false, env: production })).toBe(
+      5_000
+    )
+    for (const [instance, delay] of [
+      ['0', 5_000],
+      ['1', 30_000],
+      ['2', 55_000],
+      ['x', 5_000],
+      ['-1', 5_000],
+    ] as const)
+      expect(
+        rentalDirectoryBootWarmDelay({
+          dev: false,
+          prerender: false,
+          env: { ...production, NODE_APP_INSTANCE: instance },
+        }),
+        instance
+      ).toBe(delay)
+  })
+
+  it('never runs in dev, in the prerender, in tests or in the deploy preflight', () => {
+    expect(rentalDirectoryBootWarmDelay({ dev: true, prerender: false, env: production })).toBe(
+      null
+    )
+    expect(rentalDirectoryBootWarmDelay({ dev: false, prerender: true, env: production })).toBe(
+      null
+    )
+    expect(
+      rentalDirectoryBootWarmDelay({ dev: false, prerender: false, env: { NODE_ENV: 'test' } })
+    ).toBe(null)
+    // scripts/check-staging.cjs forks the candidate build like this: production, no instance.
+    expect(
+      rentalDirectoryBootWarmDelay({
+        dev: false,
+        prerender: false,
+        env: { NODE_ENV: 'production', CU_DEPLOY_PREFLIGHT: '1' },
+      })
+    ).toBe(null)
+  })
+
+  it('is what the plugin asks, with a one-shot timer that never holds the process', () => {
+    const plugin = readFileSync(
+      join(__dirname, '../../server/plugins/rental-directory-warm.ts'),
+      'utf8'
+    )
+    expect(plugin).toMatch(/rentalDirectoryBootWarmDelay\(\{\s*dev: import\.meta\.dev,/)
+    expect(plugin).toContain('prerender: import.meta.prerender')
+    expect(plugin).toContain('env: process.env')
+    expect(plugin).toContain('if (delay === null) return')
+    expect(plugin).toMatch(/const timer = setTimeout\(/)
+    expect(plugin).toContain('timer.unref?.()')
+    expect(plugin).not.toMatch(/setInterval\(/)
+    // The same warm-up as the task at :51 and :56: inner memo first, then the route.
+    const task = readFileSync(
+      join(__dirname, '../../server/tasks/rentals/directory-warm.ts'),
+      'utf8'
+    )
+    for (const source of [plugin, task])
+      expect(source).toMatch(
+        /runRentalDirectoryWarm\(\s*rentalDirectoryWarmFetcher\(rentalDirectoryData\.warm, query =>\s*\$fetch\('\/api\/rentals', \{ query \}\)\s*\)\s*\)/
+      )
   })
 })

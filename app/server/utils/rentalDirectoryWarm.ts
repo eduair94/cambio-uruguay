@@ -1,16 +1,17 @@
 /**
- * Recalentar el memo de /api/rentals para que ningún visitante pague la corrida fría.
+ * Recalentar los memos de /api/rentals para que ningún visitante pague la corrida fría.
  *
  * La regla de la casa (AGENTS.md raíz, `rentals:analysis-weekly`): lo que procesa la base se
- * calcula periódicamente y se guarda; el pedido sólo lee. `/api/rentals` ya es un memo de cinco
- * minutos por consulta (`defineCachedEventHandler`, ver server/api/rentals/index.get.ts), pero un
- * memo vacío lo llena el primer visitante después de cada deploy o reinicio, y ése espera 4,5 s
+ * calcula periódicamente y se guarda; el pedido sólo lee. `/api/rentals` tiene dos memos: el de
+ * cada parte cara (ventanas del orden y facetas, server/utils/rentalDirectoryData.ts) y el de la
+ * respuesta entera (`defineCachedEventHandler`, ver server/api/rentals/index.get.ts). Un memo vacío
+ * lo llena el primer visitante después de cada deploy o reinicio, y ése espera varios segundos
  * dentro de uno de los dos permisos de SSR de propiedades. Esta lista son las consultas que
- * importan: la portada sin filtros (la que Google y el 90 % de las visitas piden), los tres
- * departamentos que son el 92 % del catálogo y la segunda página.
+ * importan: la portada sin filtros (la que Google y el 90 % de las visitas piden) y los tres
+ * departamentos que son el 92 % del catálogo.
  *
- * Corre SECUENCIAL a propósito: cada fallo de caché son seis agregaciones sobre todo el inventario,
- * y cinco en paralelo pisarían justo el pedido de un visitante real. Nitro deduplica los fallos en
+ * Corre SECUENCIAL a propósito: cada consulta son pasadas sobre todo el inventario, y cuatro en
+ * paralelo pisarían justo el pedido de un visitante real. Los dos memos deduplican los fallos en
  * vuelo por clave, así que un calentamiento que coincide con un pedido real comparte UNA corrida.
  *
  * Sobre el doble disparo del cluster de pm2 (dos workers, dos `scheduledTasks`): acá NO va un lock
@@ -48,16 +49,53 @@ export const rentalDirectoryCacheKey = (input: Record<string, unknown>) => {
   return parts === 'all' ? base || 'default' : `${parts}_${base}`
 }
 
-// La segunda página con `parts=items`: es la clave que pide el scroll de la página desde 2026-11-20.
+// Sin la segunda página desde P5 (2026-11-20): `parts=items` ya no pasa por el memo de Nitro (salvo
+// con el memo interno apagado), y su ventana de 20 páginas es la misma entrada del memo interno que
+// calienta la primera.
 export const RENTAL_DIRECTORY_WARM_QUERIES: ReadonlyArray<Readonly<Record<string, string>>> = [
   {},
   { department: 'Montevideo' },
   { department: 'Canelones' },
   { department: 'Maldonado' },
-  { page: '2', parts: 'items' },
 ]
 
 export type RentalDirectoryWarmFetcher = (query: Record<string, string>) => Promise<unknown>
+
+/**
+ * Una consulta del calentamiento: primero el memo interno (la ventana 0 y la faceta, forzadas y en
+ * el carril de fondo: server/utils/rentalDirectoryData.ts), después la respuesta entera por la ruta,
+ * para el memo de Nitro, que entonces se arma desde aciertos. La tarea de :51/:56 y el arranque usan
+ * esta misma.
+ */
+export function rentalDirectoryWarmFetcher(
+  warmInner: (query: Record<string, string>) => Promise<unknown>,
+  fetchOuter: RentalDirectoryWarmFetcher
+): RentalDirectoryWarmFetcher {
+  return async query => {
+    await warmInner({ ...query })
+    return fetchOuter({ ...query })
+  }
+}
+
+/**
+ * Cuándo calienta el arranque de un worker, o `null` si no debe. Nunca en `nuxt dev`, en el
+ * prerender ni en los tests (la .env local apunta a la base de producción), y NUNCA en la
+ * verificación previa al deploy: scripts/check-staging.cjs arranca el build candidato con
+ * `NODE_ENV=production`, `CU_DEPLOY_PREFLIGHT=1` y sin `NODE_APP_INSTANCE`, y sin esta guarda cada
+ * deploy le mandaría a producción pasadas sobre todo el inventario desde el proceso de prueba
+ * (server/entry.ts ya no arranca las tareas programadas ahí). Cada worker a los 5 s más 25 s por
+ * instancia, para que los dos no lean el inventario a la vez.
+ */
+export function rentalDirectoryBootWarmDelay(options: {
+  dev: boolean | undefined
+  prerender: boolean | undefined
+  env: Readonly<Record<string, string | undefined>>
+}): number | null {
+  const { dev, prerender, env } = options
+  if (dev || prerender || env.NODE_ENV === 'test' || env.CU_DEPLOY_PREFLIGHT) return null
+  const instance = Number(env.NODE_APP_INSTANCE ?? 0)
+  return 5_000 + (Number.isInteger(instance) && instance > 0 ? instance : 0) * 25_000
+}
 
 export interface RentalDirectoryWarmReport {
   status: 'warmed' | 'busy'

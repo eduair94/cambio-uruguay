@@ -1,16 +1,26 @@
-import { RentalListingModel } from '../models/RentalListing'
+/**
+ * The visible catalogue of /alquileres-uruguay (how many properties, how many from each portal),
+ * independent from the reader's filters and from the latest scraper run.
+ *
+ * Until 2026-11-20 it was a pass of its own: the whole public inventory, every `all` request whose
+ * 60-second cache had expired (2.06 s on production that day). Since P5 it is READ from the default
+ * search's facet entry (server/utils/rentalDirectoryData.ts), which is the same pass by
+ * construction: the default search has no filter, and its availability (`all`) never excludes an
+ * advert (utils/rentalAvailability.ts), so its public stages are exactly `rentalCoverageStages`'
+ * (tests/unit/rentalsCoverage.test.ts proves it), and its facet counts the properties and their
+ * portals the same way.
+ */
 import {
-  RENTAL_COLLATION,
   RENTAL_SOURCE_LABEL,
   buildRentalFilter,
   normalizeRentalQuery,
   rentalPublicStages,
   type RentalCoverage,
+  type RentalFacetValue,
   type RentalSource,
 } from '../../utils/rentals'
 
-const CACHE_MS = 60_000
-
+/** The pass coverage used to be. Kept as the definition the default facet is tested against. */
 export function rentalCoverageStages(staleDays: number) {
   const { filter } = buildRentalFilter(normalizeRentalQuery(), staleDays)
   return [
@@ -28,56 +38,21 @@ export function rentalCoverageStages(staleDays: number) {
   ]
 }
 
-interface CoverageRow {
-  properties: Array<{ count: number }>
-  sources: Array<{ _id: string; properties: number }>
-}
-
-type AggregateCoverage = (
-  stages: ReturnType<typeof rentalCoverageStages>
-) => PromiseLike<CoverageRow[]>
-
-/** One small process-local cache; changing a sync or the UTC visibility cutoff invalidates it. */
-export function createRentalCoverageReader(aggregate: AggregateCoverage) {
-  let cached: { key: string; expires: number; value: RentalCoverage } | null = null
-  let revision = 0
-  const pending = new Map<string, Promise<RentalCoverage | null>>()
-
-  return (generatedAt: string | undefined, staleDays: number): Promise<RentalCoverage | null> => {
-    const cutoff = new Date(Date.now() - staleDays * 86_400_000).toISOString().slice(0, 10)
-    const key = JSON.stringify([generatedAt ?? null, staleDays, cutoff])
-    if (cached?.key === key && cached.expires > Date.now()) return Promise.resolve(cached.value)
-    const existing = pending.get(key)
-    if (existing) return existing
-
-    const requestRevision = ++revision
-    const promise = Promise.resolve()
-      .then(() => aggregate(rentalCoverageStages(staleDays)))
-      .then(rows => {
-        const row = rows[0]
-        const counts = new Map(row?.sources.map(source => [source._id, source.properties]) ?? [])
-        const value: RentalCoverage = {
-          computedAt: new Date().toISOString(),
-          properties: row?.properties[0]?.count ?? 0,
-          sources: (Object.keys(RENTAL_SOURCE_LABEL) as RentalSource[]).map(key => ({
-            key,
-            properties: counts.get(key) ?? 0,
-          })),
-        }
-        // An older in-flight sync must not replace a newer snapshot that finished first.
-        if (requestRevision === revision) cached = { key, expires: Date.now() + CACHE_MS, value }
-        return value
-      })
-      .catch(error => {
-        console.error('[api/rentals] coverage unavailable', error)
-        return null
-      })
-      .finally(() => pending.delete(key))
-    pending.set(key, promise)
-    return promise
+/**
+ * The coverage of the default facet: its count, and every portal with its properties (a portal
+ * with none is a successful zero, never left out). `builtAt` is when that facet was read.
+ */
+export function rentalCoverageFromFacet(
+  facet: { total: number; sources: readonly RentalFacetValue[] },
+  builtAt: number
+): RentalCoverage {
+  const counts = new Map(facet.sources.map(source => [source.value, source.count]))
+  return {
+    computedAt: new Date(builtAt).toISOString(),
+    properties: facet.total,
+    sources: (Object.keys(RENTAL_SOURCE_LABEL) as RentalSource[]).map(key => ({
+      key,
+      properties: counts.get(key) ?? 0,
+    })),
   }
 }
-
-export const getRentalCoverage = createRentalCoverageReader(stages =>
-  RentalListingModel.aggregate<CoverageRow>(stages).collation(RENTAL_COLLATION)
-)

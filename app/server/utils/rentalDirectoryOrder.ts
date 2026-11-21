@@ -10,17 +10,76 @@
  *
  * Both passes keep the route's derivation UNCHANGED: the keys pass runs the same
  * `rentalPublicStages` and `rentalOfferStages` before its projection, and the cards pass IS the
- * route's single-pass pipeline (`rentalDirectoryItemsPipeline` in server/api/rentals/index.get.ts),
- * run over those keys. A card therefore cannot differ from the card the single pass returned.
+ * single-pass pipeline (`rentalDirectoryItemsPipeline` below, which the route re-exports), run over
+ * those keys. A card therefore cannot differ from the card the single pass returned.
  *
- * Pure: no Mongo, no Nitro. The cards builder takes the route's pipeline as an argument instead of
- * importing it, because a util that imports a route file would run that route's
- * `defineCachedEventHandler` on load.
+ * Pure: no Mongo, no Nitro. Since 2026-11-20 (P5) the single pass lives here and not in the route
+ * file, because the passes are issued from server/utils/rentalDirectoryData.ts, and a util that
+ * imported a route file would run that route's `defineCachedEventHandler` on load.
  */
 import type { PipelineStage } from 'mongoose'
-import { rentalDistanceStages } from '../../utils/rentalDistance'
-import { rentalPricePerM2Stages } from '../../utils/rentalPricePerM2'
-import { rentalMongoSort, rentalRecentSortProjection, type RentalQuery } from '../../utils/rentals'
+import {
+  RENTAL_DISTANCE_SORT_FIELDS,
+  rentalDistanceProjection,
+  rentalDistanceStages,
+} from '../../utils/rentalDistance'
+import {
+  RENTAL_PRICE_PER_M2_SORT_FIELDS,
+  rentalPricePerM2Stages,
+} from '../../utils/rentalPricePerM2'
+import {
+  RENTAL_RECENT_SORT_FIELDS,
+  RENTAL_TOTAL_SORT_FIELDS,
+  rentalMongoSort,
+  rentalRecentSortProjection,
+  type RentalQuery,
+} from '../../utils/rentals'
+import { rentalPublicPropertyProjection } from './rentalDetail'
+
+/**
+ * The single pass: one page of the search, sorted, cards included. `publicStages` is
+ * `rentalPublicStages(filter, …)` and `offerStages` is `rentalOfferStages(query, …)`.
+ *
+ * Since 2026-11-20 the route no longer runs it over the whole search: it is the CARDS pass, run
+ * over the keys of the page, and the fallback when the order or the cards pass fail for any reason
+ * but a timeout. Exported (and re-exported by server/api/rentals/index.get.ts) so the production
+ * check of an order change runs THIS array and not a copy of it that can drift.
+ */
+export function rentalDirectoryItemsPipeline(
+  query: RentalQuery,
+  publicStages: object[],
+  offerStages: object[]
+): PipelineStage[] {
+  const recentSortFields = rentalRecentSortProjection(query)
+  return [
+    ...publicStages,
+    ...offerStages,
+    ...rentalDistanceStages(query),
+    // On the advert chosen above: the card divides this same price by the same area.
+    ...(query.sort === 'precio-m2' ? rentalPricePerM2Stages() : []),
+    // Rich source evidence must not enter the blocking sort buffer.
+    {
+      $project: {
+        ...rentalPublicPropertyProjection,
+        ...rentalDistanceProjection(query),
+        ...recentSortFields,
+        ...(query.sort === 'total'
+          ? Object.fromEntries(RENTAL_TOTAL_SORT_FIELDS.map(field => [field, 1]))
+          : {}),
+        ...(query.sort === 'precio-m2'
+          ? Object.fromEntries(RENTAL_PRICE_PER_M2_SORT_FIELDS.map(field => [field, 1]))
+          : {}),
+      },
+    },
+    { $sort: rentalMongoSort(query.sort) },
+    { $skip: (query.page - 1) * query.perPage },
+    { $limit: query.perPage },
+    ...(query.sort === 'total' ? [{ $unset: [...RENTAL_TOTAL_SORT_FIELDS] }] : []),
+    ...(Object.keys(recentSortFields).length ? [{ $unset: [...RENTAL_RECENT_SORT_FIELDS] }] : []),
+    ...(query.sort === 'precio-m2' ? [{ $unset: [...RENTAL_PRICE_PER_M2_SORT_FIELDS] }] : []),
+    ...(query.refLat !== null ? [{ $unset: [...RENTAL_DISTANCE_SORT_FIELDS] }] : []),
+  ] as PipelineStage[]
+}
 
 /**
  * The `$project` of the keys pass: the key and EVERY key of the sort, nothing else.
@@ -52,6 +111,8 @@ export interface RentalDirectoryKeysWindow {
 /**
  * The keys pass: the page's keys in the search's order, as `{ key }` rows. With `count`, one
  * document `{ n: [{ n }], keys: [{ key }…] }`, so the count and the keys come from one snapshot.
+ * Since P5 the route runs it once per 20-page WINDOW (server/utils/rentalDirectoryData.ts), not
+ * once per page.
  *
  * The distance stages only `$set` (utils/rentalDistance.ts), so they are needed only when the
  * distance is a sort key; the per-m² stages likewise.
@@ -110,7 +171,8 @@ export type RentalDirectoryItemsPipeline = (
 ) => PipelineStage[]
 
 /**
- * The cards pass: the route's own single-pass pipeline, on page 1 with `perPage = n`, over
+ * The cards pass: the single-pass pipeline (`rentalDirectoryItemsPipeline`), on page 1 with
+ * `perPage = n`, over
  * `publicStagesForKeys = rentalDirectoryCardsStages(publicStages, keys)`. The `key: {$in}` reaches
  * the first `$match`, so Mongo reads those documents by index and derives nothing else.
  */

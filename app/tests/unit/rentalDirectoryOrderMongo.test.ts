@@ -3,23 +3,28 @@
 // on MongoDB 6+ (never production: CI sets none, and production is 4.4, which has no $documents).
 //
 // What it proves: for every sort and a spread of filters, the page the route answers with its
-// keys pass + cards pass is deep-equal to the page today's single pass answers, on pages 1, 2 and
+// window pass + cards pass is deep-equal to the page today's single pass answers, on pages 1, 2 and
 // the last. Both answers come from the ROUTE FILE itself, run in a VM with every Mongo call sent to
-// the test server: the two passes as the route issues them, and the single pass as its fallback.
+// the test server through the route's memo module (server/utils/rentalDirectoryData.ts, with a
+// fresh memo per request): the window and the cards as the route issues them, and the single pass
+// as its fallback.
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { runInNewContext } from 'node:vm'
 import ts from 'typescript'
 import mongoose from 'mongoose'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import * as rentals from '../../utils/rentals'
-import * as rentalBarrioOption from '../../utils/rentalBarrioOption'
 import * as rentalDirectoryParts from '../../utils/rentalDirectoryParts'
-import * as rentalDistance from '../../utils/rentalDistance'
-import * as rentalPricePerM2 from '../../utils/rentalPricePerM2'
 import * as rentalDetail from '../../server/utils/rentalDetail'
 import * as rentalDirectoryOrder from '../../server/utils/rentalDirectoryOrder'
 import * as rentalGalleryPreview from '../../server/utils/rentalGalleryPreview'
+import * as rentalMemo from '../../server/utils/rentalMemo'
+import {
+  createRentalDirectoryAggregate,
+  createRentalDirectoryData,
+  type RentalAggregateChain,
+} from '../../server/utils/rentalDirectoryData'
 
 type Stage = Record<string, any>
 type Row = Record<string, any> & { key: string }
@@ -161,7 +166,7 @@ const FILTERS: Array<[string, Record<string, string>, { excluded?: string[] }?]>
   ['a reported advert', { availability: 'hide_any' }, { excluded: ['rent:infocasas:ab'] }],
 ]
 
-describe.skipIf(!uri)('/api/rentals keys + cards against the single pass (read-only)', () => {
+describe.skipIf(!uri)('/api/rentals window + cards against the single pass (read-only)', () => {
   let client: mongoose.mongo.MongoClient
   let documents: ReturnType<typeof fixtureDocuments>
 
@@ -180,10 +185,10 @@ describe.skipIf(!uri)('/api/rentals keys + cards against the single pass (read-o
     { singlePass = false, excluded = [] as string[] } = {}
   ) {
     const roles: string[] = []
-    const aggregate = (pipeline: Stage[]) => {
+    const start = (pipeline: Stage[]): RentalAggregateChain => {
       let role = ''
       let allowDiskUse = false
-      const chain = {
+      const chain: RentalAggregateChain = {
         allowDiskUse: (value: boolean) => {
           allowDiskUse = value
           return chain
@@ -195,7 +200,7 @@ describe.skipIf(!uri)('/api/rentals keys + cards against the single pass (read-o
         collation: (collation: object) => {
           roles.push(role)
           // A failure that is not a timeout makes the route run today's single pass instead.
-          if (singlePass && role === 'keys') return Promise.reject(new Error('single pass'))
+          if (singlePass && role === 'win') return Promise.reject(new Error('single pass'))
           return client
             .db()
             .aggregate([{ $documents: documents }, ...pipeline], {
@@ -208,34 +213,38 @@ describe.skipIf(!uri)('/api/rentals keys + cards against the single pass (read-o
       }
       return chain
     }
+    const data = createRentalDirectoryData({
+      aggregate: createRentalDirectoryAggregate(start),
+      // A fresh memo per request: each answer is read from the server, never from another one.
+      memo: rentalMemo.createRentalMemo({ log: () => {}, schedule: () => () => {} }),
+      io: {
+        connect: async () => {},
+        loadAvailability: async () =>
+          ({
+            excludedAdvertIds: (filter: string) => (filter === 'hide_any' ? excluded : []),
+            byAdvertId: new Map(),
+          }) as never,
+        loadMeta: async () => ({ usdUyu: 40 }) as never,
+        loadRentalServiceZoneIds: async () => [],
+      },
+    })
     const dependencies: Record<string, unknown> = {
       '../../models/RentalListing': {
-        RentalListingModel: { aggregate, find: () => ({ lean: () => Promise.resolve([]) }) },
+        RentalListingModel: { find: () => ({ lean: () => Promise.resolve([]) }) },
       },
-      '../../models/RentalMeta': {
-        RentalMetaModel: {
-          findOne: () => ({ select: () => ({ lean: async () => ({ usdUyu: 40 }) }) }),
-        },
-      },
-      '../../utils/db': { connectDb: async () => {} },
       '../../utils/cachedResponseHeader': { setHeaderUnlessSent: () => true },
-      '../../utils/rentalZoneServices': { loadRentalServiceZoneIds: async () => [] },
-      '../../utils/rentalCoverage': { getRentalCoverage: async () => null },
       '../../utils/rentalDirectoryWarm': { rentalDirectoryCacheKey: () => 'default' },
+      '../../utils/rentalDirectoryData': { rentalDirectoryData: data },
+      '../../utils/rentalMemo': rentalMemo,
+      '../../utils/rentalFlags': { rentalFlag: () => true },
       '../../utils/rentalDirectoryOrder': rentalDirectoryOrder,
       '../../utils/rentalDetail': rentalDetail,
       '../../utils/rentalGalleryPreview': rentalGalleryPreview,
       '../../utils/rentalAvailability': {
-        loadRentalAvailabilityIndex: async () => ({
-          excludedAdvertIds: (filter: string) => (filter === 'hide_any' ? excluded : []),
-        }),
         annotateRentalAvailability: (property: unknown) => property,
       },
       '../../../utils/rentals': rentals,
-      '../../../utils/rentalBarrioOption': rentalBarrioOption,
       '../../../utils/rentalDirectoryParts': rentalDirectoryParts,
-      '../../../utils/rentalDistance': rentalDistance,
-      '../../../utils/rentalPricePerM2': rentalPricePerM2,
     }
     const module = { exports: {} as { default?: (event: unknown) => Promise<unknown> } }
     runInNewContext(compiled, {
@@ -248,11 +257,15 @@ describe.skipIf(!uri)('/api/rentals keys + cards against the single pass (read-o
       defineEventHandler: (handler: unknown) => handler,
       defineCachedEventHandler: (handler: unknown) => handler,
       getQuery: () => query,
+      process,
       createError: ({ statusMessage, cause }: { statusMessage: string; cause: unknown }) =>
         Object.assign(new Error(statusMessage), { cause }),
       console: { ...console, warn: () => {} },
     })
-    const response = (await module.exports.default!({})) as { items: Row[]; total: number | null }
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const response = (await module.exports.default!({ context: {} }).finally(() =>
+      warn.mockRestore()
+    )) as { items: Row[]; total: number | null }
     return { response, roles }
   }
 
@@ -287,8 +300,8 @@ describe.skipIf(!uri)('/api/rentals keys + cards against the single pass (read-o
           const paged = { ...query, page: String(page), parts: 'items' }
           const twoPasses = await route(paged, options)
           const singlePass = await route(paged, { ...options, singlePass: true })
-          expect(twoPasses.roles, label).toEqual(['keys', 'cards'])
-          expect(singlePass.roles, label).toEqual(['keys', 'legacy'])
+          expect(twoPasses.roles, label).toEqual(['win', 'cards'])
+          expect(singlePass.roles, label).toEqual(['win', 'legacy'])
           const rows = twoPasses.response.items
           expect(rows.length, `${label} page ${page}`).toBe(
             page < lastPage ? 6 : total - (lastPage - 1) * 6
@@ -302,7 +315,7 @@ describe.skipIf(!uri)('/api/rentals keys + cards against the single pass (read-o
           expect(JSON.stringify(rows)).not.toMatch(/_rental|PRIVATE/)
         }
         // The whole response pages exactly like the items-only one.
-        expect(whole.roles).toContain('keys')
+        expect(whole.roles).toContain('win')
         expect(whole.response.items).toEqual(
           (await route({ ...query, parts: 'items' }, options)).response.items
         )
