@@ -457,8 +457,10 @@ const formatRate = (value: number | null): string => {
   })
 }
 
+// Canonical per locale (2026-11-30): the /en and /pt pages are whole vue-i18n translations, so
+// each one is the canonical of itself, and the route is localized (utils/localizedRoutes.ts).
 const canonicalUrl = computed(
-  () => `https://cambio-uruguay.com/cotizacion/${currencySlug(code.value)}`
+  () => `https://cambio-uruguay.com${localePath(`/cotizacion/${currencySlug(code.value)}`)}`
 )
 
 // Branded OG image for the currency page.

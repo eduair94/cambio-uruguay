@@ -2646,10 +2646,16 @@ useHead({
       ),
     },
   ],
+  // Canonical per locale (2026-11-30): /en and /pt are the whole home in English and Portuguese,
+  // so each is the canonical of itself; the Spanish one keeps its URL without a trailing slash.
   link: [
     {
       rel: 'canonical',
-      href: 'https://cambio-uruguay.com',
+      href: computed(() =>
+        locale.value === 'es'
+          ? 'https://cambio-uruguay.com'
+          : `https://cambio-uruguay.com${localePath('/')}`
+      ),
     },
   ],
 })
