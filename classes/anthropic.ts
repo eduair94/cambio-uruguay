@@ -259,3 +259,126 @@ export async function askClaudePlain(prompt: string, opts: ClaudeCallOptions = {
   const text = textOf(res.message);
   return text ? { text, model: String(res.message?.model || anthropicModel()), keyLabel: label(res.key) } : null;
 }
+
+// ── Structured output and images ──────────────────────────────────────────────────────────────
+
+/** Keys Claude's structured outputs reject or ignore; the SDK would strip some, we strip them all. */
+const SCHEMA_DROP = new Set([
+  "minimum",
+  "maximum",
+  "exclusiveMinimum",
+  "exclusiveMaximum",
+  "multipleOf",
+  "minLength",
+  "maxLength",
+  "pattern",
+  "maxItems",
+  "uniqueItems",
+  "minProperties",
+  "maxProperties",
+  "propertyOrdering",
+  "example",
+  "default",
+  "nullable",
+]);
+const SCHEMA_FORMATS = new Set(["date-time", "time", "date", "duration", "email", "hostname", "uri", "ipv4", "ipv6", "uuid"]);
+const SCHEMA_CHILD_LISTS = new Set(["anyOf", "allOf", "oneOf", "prefixItems"]);
+const SCHEMA_CHILD_MAPS = new Set(["properties", "$defs", "definitions"]);
+
+function convertSchema(node: any): any {
+  if (Array.isArray(node)) return node.map(convertSchema);
+  if (!node || typeof node !== "object") return node;
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(node)) {
+    if (SCHEMA_DROP.has(key)) continue;
+    if (key === "minItems") {
+      if (value === 0 || value === 1) out.minItems = value;
+    } else if (key === "format") {
+      if (typeof value === "string" && SCHEMA_FORMATS.has(value)) out.format = value;
+    } else if (key === "type") {
+      out.type = Array.isArray(value)
+        ? value.map((t) => (typeof t === "string" ? t.toLowerCase() : t))
+        : typeof value === "string"
+          ? value.toLowerCase()
+          : value;
+    } else if (SCHEMA_CHILD_MAPS.has(key) && value && typeof value === "object") {
+      out[key] = Object.fromEntries(Object.entries(value).map(([name, child]) => [name, convertSchema(child)]));
+    } else if (key === "items" || SCHEMA_CHILD_LISTS.has(key)) {
+      out[key] = convertSchema(value);
+    } else {
+      out[key] = value;
+    }
+  }
+  if (out.type === "object") out.additionalProperties = false;
+  return node.nullable === true ? { anyOf: [out, { type: "null" }] } : out;
+}
+
+/**
+ * A schema written for Gemini (OpenAPI subset, sometimes upper-case types) as Claude's structured
+ * outputs want it: every object closed with `additionalProperties: false`, unsupported constraints
+ * removed, `nullable` as `anyOf … null`. Never mutates its input.
+ */
+export function toClaudeSchema(schema: unknown): Record<string, unknown> {
+  return convertSchema(schema) as Record<string, unknown>;
+}
+
+/** Strict parse first; then the object/array inside fences or prose, which should not happen under a schema. */
+function parseJsonText(text: string): unknown | undefined {
+  try {
+    return JSON.parse(text);
+  } catch {
+    const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1];
+    const candidate = fenced ?? text.match(/\{[\s\S]*\}|\[[\s\S]*\]/)?.[0];
+    if (!candidate) return undefined;
+    try {
+      return JSON.parse(candidate.trim());
+    } catch {
+      return undefined;
+    }
+  }
+}
+
+/** One question whose answer must match `schema`. `null` on refusal, truncation or anything unparseable. */
+export async function askClaudeJSON<T>(
+  prompt: string,
+  schema: unknown,
+  opts: ClaudeCallOptions = {}
+): Promise<{ value: T; model: string } | null> {
+  const params = baseParams(prompt, opts, { format: { type: "json_schema", schema: toClaudeSchema(schema) } });
+  const res = await callClaude(params, opts.timeoutMs ?? DEFAULT_TIMEOUT_MS);
+  if (!res || res.message?.stop_reason === "refusal" || res.message?.stop_reason === "max_tokens") return null;
+  const value = parseJsonText(textOf(res.message));
+  return value === undefined ? null : { value: value as T, model: String(res.message?.model || anthropicModel()) };
+}
+
+/** What Claude's vision accepts. Anything else goes to Gemini rather than failing here. */
+export const CLAUDE_IMAGE_MIME: ReadonlySet<string> = new Set(["image/jpeg", "image/png", "image/gif", "image/webp"]);
+
+/**
+ * A question about images we already downloaded, images first and the question after them.
+ * With `schema`, the reply is parsed and returned as `value`.
+ */
+export async function askClaudeWithImages(
+  prompt: string,
+  images: ReadonlyArray<{ data: Buffer; mimeType: string }>,
+  opts: ClaudeCallOptions & { schema?: unknown } = {}
+): Promise<{ text: string; value?: unknown; model: string } | null> {
+  if (!images.length || images.some((image) => !CLAUDE_IMAGE_MIME.has(image.mimeType))) return null;
+  const content = [
+    ...images.map((image) => ({
+      type: "image",
+      source: { type: "base64", media_type: image.mimeType, data: image.data.toString("base64") },
+    })),
+    { type: "text", text: prompt },
+  ];
+  const format = opts.schema ? { format: { type: "json_schema", schema: toClaudeSchema(opts.schema) } } : {};
+  const res = await callClaude(baseParams(content, opts, format), opts.timeoutMs ?? DEFAULT_TIMEOUT_MS);
+  if (!res || res.message?.stop_reason === "refusal") return null;
+  const text = textOf(res.message);
+  if (!text) return null;
+  const model = String(res.message?.model || anthropicModel());
+  if (!opts.schema) return { text, model };
+  if (res.message?.stop_reason === "max_tokens") return null;
+  const value = parseJsonText(text);
+  return value === undefined ? null : { text, value, model };
+}
