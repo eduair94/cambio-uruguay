@@ -66,6 +66,8 @@ const NO_ADS = [
   '/buscar-con-ia',
   '/asistente-ia',
   '/contacto',
+  // El registro de mejoras: una página de confianza, no una superficie para anuncios.
+  '/novedades',
   '/offline',
   '/estado',
   // The owner's Search Console dashboard. One reader, logged in, and an ad next to the keyword

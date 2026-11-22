@@ -69,6 +69,7 @@ const es = {
     title: '¿Algo para mejorar?',
     suggest: 'Enviar una sugerencia',
     bug: 'Reportar un error',
+    changelog: 'Lo que arreglamos',
   },
 }
 
@@ -141,6 +142,7 @@ const en: Messages = {
     title: 'Something to improve?',
     suggest: 'Send a suggestion',
     bug: 'Report a bug',
+    changelog: 'What we fixed',
   },
 }
 
@@ -210,6 +212,7 @@ const pt: Messages = {
     title: 'Algo para melhorar?',
     suggest: 'Enviar uma sugestão',
     bug: 'Reportar um erro',
+    changelog: 'O que corrigimos',
   },
 }
 
