@@ -6,12 +6,29 @@
 // characters Google shows), so every `title` below has to stay at 43 or less. The
 // three are cut to the same rule and not only the Spanish one: the test measures
 // `es`, and leaving `en`/`pt` long would hide the same defect in two languages.
+//
+// 2026-11-22 — THE SNIPPET ANSWERS THE QUERY INSTEAD OF NAMING THE TOPIC. Both halves
+// were written as a label: the title was the subject of the page ("Grabación sin
+// consentimiento en Uruguay") and not the phrase people type, which the 2026-10-24 row
+// of `docs/seo/experiments.json` lists as "me grabaron sin consentimiento uruguay" and
+// which is also this page's own H1. And the description spent its whole budget restating
+// the reader's situation — filmed, video on TikTok or Instagram — before promising, in
+// the abstract, that the law and the deadlines are inside; the English one did it in 158
+// characters, so Google cut the promise too.
+//
+// Now each one leads with what the page answers and nobody else puts side by side: the
+// in-app Report button is the wrong queue (the privacy form is the right one, which is
+// the whole thesis of the page) and the two deadlines that are already running, both
+// from this page's own sourced table in `recordingConsent.ts`: injuria lapses in 3
+// months (arts. 334/339 of the Criminal Code) and a deletion request has to be answered
+// in 5 working days (art. 15 of Law 18.331). No new claim: the figures are the ones the
+// page already prints with their source.
 export const recordingConsentMessages = {
   es: {
     heading: 'Me grabaron sin consentimiento y subieron el video: qué puedo hacer',
-    title: 'Grabación sin consentimiento en Uruguay',
+    title: 'Me grabaron sin consentimiento: qué hacer',
     description:
-      'Te grabaron sin permiso y el video está en TikTok o Instagram. Qué dice la ley uruguaya, por dónde se pide el retiro y qué plazos corren.',
+      'El botón "Reportar" no alcanza: va el formulario de privacidad. La injuria prescribe a los 3 meses y el borrado de datos se contesta en 5 días hábiles.',
     navigation: 'Ir a una sección de la guía',
     useTemplate: 'Escribir el reclamo',
     platforms: 'Dónde reportarlo',
@@ -25,9 +42,9 @@ export const recordingConsentMessages = {
   },
   en: {
     heading: 'Someone filmed me without consent and posted the video: what can I do',
-    title: 'Filmed without consent in Uruguay',
+    title: 'Filmed without consent: what to do',
     description:
-      'You were filmed without permission and the video is on TikTok or Instagram. What Uruguayan law says, where to request removal and which deadlines are running.',
+      'The in-app Report button is the wrong queue: use the privacy form. Insult lapses in 3 months and a data-deletion request is answered in 5 working days.',
     navigation: 'Jump to a section of the guide',
     useTemplate: 'Write the request',
     platforms: 'Where to report it',
@@ -41,9 +58,9 @@ export const recordingConsentMessages = {
   },
   pt: {
     heading: 'Me gravaram sem consentimento e publicaram o vídeo: o que posso fazer',
-    title: 'Gravação sem consentimento no Uruguai',
+    title: 'Me gravaram sem consentimento: o que fazer',
     description:
-      'Gravaram você sem permissão e o vídeo está no TikTok ou no Instagram. O que diz a lei uruguaia, onde pedir a remoção e quais prazos estão correndo.',
+      'O botão "Denunciar" não é a fila certa: é o formulário de privacidade. A injúria prescreve em 3 meses e a exclusão de dados é respondida em 5 dias úteis.',
     navigation: 'Ir a uma seção do guia',
     useTemplate: 'Escrever a solicitação',
     platforms: 'Onde denunciar',

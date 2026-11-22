@@ -339,6 +339,20 @@ const DEUDA_DESCRIPCION_MENSAJE = [
   // `/grabacion-sin-consentimiento-uruguay` (sólo el inglés, 158) hasta el 2026-11-22 y
   // `/tarjetas-de-credito-uruguay` hasta el 2026-11-30. Mismo motivo que arriba para el comentario
   // adentro.
+  //
+  // 12 → 11 el 2026-11-22: `/grabacion-sin-consentimiento-uruguay`, el primer día en que su ventana
+  // está cerrada y la única ruta del tramo `contenido` (8×) que `npm run seo_debt` daba libre hoy en
+  // los quince pozos. El inglés era el que se pasaba (158), pero las tres descripciones tenían el
+  // mismo defecto y se reescribieron juntas: gastaban el presupuesto entero en repetirle al lector
+  // su propia situación («te grabaron, el video está en TikTok o Instagram») y prometían en
+  // abstracto que adentro estaban la ley y los plazos. Ahora abren por lo que la página contesta y
+  // ninguna otra pone al lado —el botón «Reportar» no es la cola que corresponde, el formulario de
+  // privacidad sí— y traen las dos cifras de su propia tabla con fuente: la injuria prescribe a los
+  // 3 meses (arts. 334/339 del Código Penal) y el borrado de datos se contesta en 5 días hábiles
+  // (art. 15 de la Ley 18.331). Quedan en 151/151/153. El título va en la misma corrida: pasa de
+  // nombrar el tema a usar la consulta («Me grabaron sin consentimiento: qué hacer», 58 con la
+  // marca), que es el H1 de la página y la consulta que declara su fila del 2026-10-24; no estaba en
+  // deuda de largo (56/50/54) y sigue sin estarlo (58/51/59).
   '/acerca',
   '/autos-usados-uruguay/comparar',
   '/barrios-alquileres-uruguay',
@@ -346,14 +360,13 @@ const DEUDA_DESCRIPCION_MENSAJE = [
   '/conectar',
   '/economia-uruguay',
   '/estadisticas-reddit',
-  '/grabacion-sin-consentimiento-uruguay',
   '/noticias',
   '/sillas-escritorio-uruguay',
   '/sillas-escritorio-uruguay/precios',
   '/tarjetas-de-credito-uruguay',
 ]
 
-const MESSAGE_DESCRIPTION_OVER_BUDGET = 14
+const MESSAGE_DESCRIPTION_OVER_BUDGET = 13
 
 // El conteo real del 2026-11-20, por el mismo motivo que `MEASURABLE` en `seoTitleBudget.test.ts`:
 // si el piso fuera más bajo, una página podría dejar de leerse acá sin poner nada en rojo.
