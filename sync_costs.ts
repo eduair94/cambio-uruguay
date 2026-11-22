@@ -1,6 +1,7 @@
 // Cost-of-living live figures (pm2 app `currency-costs`, daily 09:43 UTC ≈ 06:43
 // America/Montevideo). Never blanks the stored figures on a failure — a failed refresh just
 // means the previous good figures (or the app's own baseline) keep serving.
+import "./sentry_job";
 import "dotenv/config";
 
 import { groundedConfigured } from "./classes/llm";

@@ -1,14 +1,13 @@
+import "./sentry_job";
 import moment from "moment";
 import { cambio_info } from "./classes/cambioInfo";
 import { MongooseServer } from "./classes/database";
 import { isSheetPermissionError, openSpreadsheet, sheetPermissionHelp } from "./classes/sheets";
-import sentryInit from "./sentry";
 import * as credentials from "./sheet_key.json";
 
 const SHEET_ID = "1rnP2b0TT-cqDzP0nrJSU1BVCJx6eynJuuQx-ZIFuWCo";
 
 const main = async () => {
-  sentryInit();
   await MongooseServer.startConnectionPromise();
   const info = await cambio_info.get_data();
   const document = openSpreadsheet(SHEET_ID, credentials);

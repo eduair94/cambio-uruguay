@@ -1,3 +1,4 @@
+import "./sentry_job";
 import "dotenv/config";
 import { appConnection, appDbConfigured } from "./classes/appdb";
 import { runWaterHarvest } from "./classes/utilities/water/run";

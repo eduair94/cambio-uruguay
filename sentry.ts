@@ -1,23 +1,12 @@
-import * as Sentry from "@sentry/node";
 import "dotenv/config";
+import { initBackendSentry } from "./classes/sentry/init";
 
+/**
+ * Sentry for the API (currency-server). The setup itself — release, Logs, scrubbing — lives in
+ * classes/sentry/init.ts, shared with the pm2 jobs (sentry_job.ts).
+ */
 const sentryInit = () => {
-  Sentry.init({
-    dsn: process.env.sentry_dsn,
-    integrations: [
-      // Frames as app:///classes/foo.js, relative to dist/ (this file's folder once compiled).
-      Sentry.rewriteFramesIntegration({ root: __dirname }),
-      // pm2 cluster workers already listen for uncaughtException, and since v8 Sentry no longer
-      // exits when another listener exists, so a crashed worker would keep serving. Exit, as v7 did.
-      Sentry.onUncaughtExceptionIntegration({ exitEvenIfOtherHandlersAreRegistered: true }),
-    ],
-    // v11 attaches the caller's IP, headers, cookies, request bodies and query strings by default;
-    // v7 sent none. A query here can be a coordinate (/position_stack?query=<lat>,<lng>).
-    dataCollection: { userInfo: false, cookies: false, httpHeaders: false, httpBodies: [], urlQueryParams: false },
-    // The load-time module hooks only feed tracing and Express auto-capture, neither used here.
-    enableRuntimeChannelInjection: false,
-  });
-  console.log("Sentry Started");
+  if (initBackendSentry({ runtime: "api", root: __dirname })) console.log("Sentry Started");
 };
 
 export default sentryInit;

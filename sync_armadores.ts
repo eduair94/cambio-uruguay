@@ -12,6 +12,7 @@
 // `notes`. Nunca pisa un buen snapshot con una corrida flaca: sale con 1 sin escribir.
 // `--dry-run` lee todo, no escribe en la base y funciona sin APP_MONGO_URI (`--json=<archivo>` guarda el
 // snapshot en un archivo). `--google` fuerza Google.
+import "./sentry_job";
 import "dotenv/config";
 
 import { appConnection, appDbConfigured } from "./classes/appdb";

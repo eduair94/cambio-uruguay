@@ -16,6 +16,7 @@
 // Igual que `sync_movilidad.ts`: ninguna salida llama a `process.exit` desde `main()`; cada negativa
 // es un `Error`, `main` se exporta, y el proceso sólo corre detrás de `require.main === module` —
 // así un test puede importarlo y correrlo contra colaboradores falsos sin tocar una base real.
+import "./sentry_job";
 import dotenv from "dotenv";
 import "dotenv/config";
 dotenv.config({ path: "app/.env", quiet: true });

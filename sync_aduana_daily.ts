@@ -4,6 +4,7 @@
 // sync every day, because a prórroga (or a new condition) can land on any date and a week of
 // staleness right before 1/10 is too long. Idempotent with the Monday run: the guardrail dedupes
 // overrides by id and re-confirms unchanged values, so a second same-day pass changes nothing.
+import "./sentry_job";
 import { inDecreeWindow } from "./classes/aduana/window";
 
 if (!inDecreeWindow(new Date())) {

@@ -18,6 +18,7 @@
 // La ficha de Mercado Libre se pide al puente propio (:9656, `/product/<id>`): desde la IP del VPS la
 // página de producto redirige al muro de login (medido 3/11/2026, ver classes/movilidad/specs/read.ts).
 // A los :01, en el hueco de los consumidores horarios del puente, 60 fichas a 3 s son ~4 min.
+import "./sentry_job";
 import dotenv from "dotenv";
 import "dotenv/config";
 dotenv.config({ path: "app/.env", quiet: true });

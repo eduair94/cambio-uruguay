@@ -18,6 +18,7 @@
 //   --dry-run          cosecha y clasifica, imprime, no escribe
 //   --no-serp          saltea la etapa del SERP (la única que sale a Google)
 //   --serp-budget=N    cuántos candidatos se clasifican mirando el SERP (25 por defecto)
+import "./sentry_job";
 import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";

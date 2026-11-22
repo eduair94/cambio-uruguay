@@ -10,6 +10,7 @@
 //     the page shows which source is missing.
 //   * The run refuses to publish an empty catalogue over a good one. A total outage keeps the last
 //     known market rather than blanking the directory.
+import "./sentry_job";
 import dotenv from "dotenv";
 import "dotenv/config";
 dotenv.config({ path: "app/.env", quiet: true });

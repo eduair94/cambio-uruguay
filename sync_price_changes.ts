@@ -6,6 +6,7 @@
 // "los análisis que procesan la base se calculan de forma periódica y se guardan").
 //
 // Un flag: --dry-run lee, arma la foto y la imprime, sin escribir ni podar.
+import "./sentry_job";
 import dotenv from "dotenv";
 import "dotenv/config";
 dotenv.config({ path: "app/.env", quiet: true });

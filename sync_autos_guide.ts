@@ -1,5 +1,6 @@
 // Daily read of Mercado Libre's price guide for the model-years the used-car directory holds
 // (see classes/autos/catalog/guide.ts). Private APP DB rows; sync_autos.ts publishes them.
+import "./sentry_job";
 import "dotenv/config";
 import fs from "fs";
 import { appConnection, appDbConfigured } from "./classes/appdb";

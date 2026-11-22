@@ -15,6 +15,7 @@
 // desde adentro de `main()`: cada negativa es un `throw`, `main()` se exporta, y el proceso sólo
 // corre (y sólo sale una vez, con la conexión cerrada) detrás de `require.main === module`. Así un
 // test puede importar `main` y llamarla contra colaboradores mockeados, sin proceso ni base.
+import "./sentry_job";
 import dotenv from "dotenv";
 import "dotenv/config";
 dotenv.config({ path: "app/.env", quiet: true });

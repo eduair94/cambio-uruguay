@@ -6,6 +6,7 @@
 //
 //   --dry-run                lee y calcula, no escribe nada.
 //   --only=alquiler,autos    sólo esos mercados.
+import "./sentry_job";
 import dotenv from "dotenv";
 import "dotenv/config";
 dotenv.config({ path: "app/.env", quiet: true });

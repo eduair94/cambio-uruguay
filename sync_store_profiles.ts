@@ -42,6 +42,7 @@
 // Flags: `--dry-run` (print, never write), `--only=<key,key>` (a subset of the registry), and
 // `--reddit-only` (Task 13: ask Reddit only — every other source keeps last week's value untouched —
 // meant to run nightly so the 24-month Reddit backfill finishes in ~8 nights instead of ~8 weeks).
+import "./sentry_job";
 import dotenv from "dotenv";
 import "dotenv/config";
 dotenv.config({ path: "app/.env", quiet: true });

@@ -14,6 +14,7 @@
 // with no new page after 6 minutes from process start. pm2 launches a cron app the moment it is
 // registered, recreated or resurrected, at any minute, so outside :13–:14 of 00/04/16/20 UTC `main()`
 // leaves one log line and exits without a request or a connection.
+import "./sentry_job";
 import dotenv from "dotenv";
 import "dotenv/config";
 dotenv.config({ path: "app/.env", quiet: true });

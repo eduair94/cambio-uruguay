@@ -2,6 +2,7 @@
 // directory holds (classes/autos/modelInfo/). APP DB `carmodelinfos`, read as is by the advert page
 // and the model's price page. `--dry-run` reads and prints, writes nothing; `--only=slug,slug`
 // reads just those models (with --dry-run, the way to try it on the VPS before a deploy).
+import "./sentry_job";
 import "dotenv/config";
 import { appConnection, appDbConfigured } from "./classes/appdb";
 import { mergeModelInfo, planModelInfoTargets, type CarModelReading, type CarModelTarget } from "./classes/autos/modelInfo/refresh";

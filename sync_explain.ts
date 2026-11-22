@@ -13,6 +13,7 @@
 // using yesterday's driver snapshot and the attribution is weaker (or empty) — it still records
 // the move and the narrative. It is idempotent: re-running it later that day
 // (`node dist/sync_explain.js`) repairs the row.
+import "./sentry_job";
 import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";

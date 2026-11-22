@@ -11,6 +11,7 @@
 // (a 404 hides that store's button) is refused too. Failed reads are retried with backoff, within a
 // per-run budget. A failed read keeps the previous value WITH ITS OLD DATE, and the page stops
 // trusting it after 60 days.
+import "./sentry_job";
 import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";

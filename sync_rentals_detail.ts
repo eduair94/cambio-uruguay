@@ -16,6 +16,7 @@
 // --reapply no abre Facebook: vuelve a pasar TODAS las fichas ya guardadas por la misma escritura
 // (sólo campos vacíos, compare-and-set). Para cuando `facebookDetailUpdate` aprende a completar un
 // campo nuevo: si no, sólo lo verían los avisos que se lean de acá en adelante.
+import "./sentry_job";
 import "dotenv/config";
 import { appConnection, appDbConfigured } from "./classes/appdb";
 import { FB_ITEM_URL, FacebookSessionError, connectFacebookBrowser, facebookSessionOk, readFacebookPageTexts, sleep } from "./classes/facebook/browser";
