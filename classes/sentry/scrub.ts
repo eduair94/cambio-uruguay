@@ -39,10 +39,13 @@ const RULES: Array<[RegExp, string]> = [
   [/\b(?=[A-Za-z_]*\d)(?=\d*[A-Za-z_])[A-Za-z\d_]{32,}\b/g, "[token]"],
   // E-mail addresses (advertisers, newsletter readers).
   [/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g, "[email]"],
-  // Uruguayan mobile numbers, with or without +598 and separators (09X XXX XXX).
-  [/(?<![\d])(?:\+?598[\s.-]?)?0?9\d(?:[\s.-]?\d){6}(?![\d])/g, "[phone]"],
-  // IPv4 (visitors on the API; proxies in the jobs).
+  // IPv4 (visitors on the API; proxies in the jobs). BEFORE the phone rule: "147.93.12.34" holds
+  // a "9" followed by seven digits and dots, and the phone rule ate it ("147.[phone]", seen in the
+  // first production logs of 2026-11-22).
   [/(?<![\d.])(?:25[0-5]|2[0-4]\d|1?\d?\d)(?:\.(?:25[0-5]|2[0-4]\d|1?\d?\d)){3}(?![\d.])/g, "[ip]"],
+  // Uruguayan mobile numbers, with or without +598 and separators (09X XXX XXX); never the tail
+  // of a dotted number ("Tel.099…" still is one).
+  [/(?<!\d)(?<!\d\.)(?:\+?598[\s.-]?)?0?9\d(?:[\s.-]?\d){6}(?![\d])/g, "[phone]"],
 ];
 
 export function scrubText(input: unknown, maxLength = 2000): string {

@@ -128,6 +128,13 @@ export const API_LOG_BUDGET: LogBudget = { perMinute: 60, perProcess: Infinity, 
 export const JOB_LOG_BUDGET: LogBudget = { perMinute: 60, perProcess: 300, perDay: 1_500 };
 
 /**
+ * Attributes the SDK itself sets, kept as they are: scrubbed, the release's 40-hex commit read as
+ * a token and every production log said `cambio-uruguay-backend@[token]`. The message template
+ * and its parameters (`sentry.message.*`) are the caller's text and stay scrubbed.
+ */
+const SDK_LOG_ATTRIBUTE = /^(?:sentry\.(?:release|environment|sdk\.name|sdk\.version|origin|trace\.parent_span_id|replay_id|timestamp\.sequence)|server\.address)$/;
+
+/**
  * Drops logs over a per-minute, per-process and per-day budget, and scrubs what it keeps.
  * `guard.usedToday()` is what a job persists at exit so its next run continues the day's count.
  */
@@ -154,8 +161,9 @@ export function createLogGuard(budget: LogBudget, now: () => number = Date.now) 
     today += 1;
     const attributes: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(log.attributes || {})) {
-      attributes[key] =
-        typeof value === "string"
+      attributes[key] = SDK_LOG_ATTRIBUTE.test(key)
+        ? value
+        : typeof value === "string"
           ? scrubText(value, 500)
           : value !== null && typeof value === "object"
             ? scrubText(JSON.stringify(scrubValue(value)), 500)
