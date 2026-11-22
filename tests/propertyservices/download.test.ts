@@ -90,6 +90,13 @@ describe("official Geofabrik download redirects", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(hop.cancel).toHaveBeenCalledOnce();
   });
+  it("names the rejected destination without credentials, query or fragment", async () => {
+    const hop = redirect("https://user:password@mirror.example/south-america/uruguay-latest.osm.pbf?token=secret#frag");
+    fetchMock.mockResolvedValueOnce(new Response(checksum)).mockResolvedValueOnce(hop.response);
+    const error = await downloadServicePbf().then(() => null, (failure: Error) => failure);
+    expect(error?.message).toContain("not an official Uruguay extract: https://mirror.example/south-america/uruguay-latest.osm.pbf");
+    expect(error?.message).not.toMatch(/password|token|secret|frag/);
+  });
   it("rejects loops without retrying or requesting the same URL again", async () => {
     const first = redirect(dated), second = redirect(SERVICE_SOURCE);
     fetchMock.mockResolvedValueOnce(new Response(checksum)).mockResolvedValueOnce(first.response).mockResolvedValueOnce(second.response);

@@ -65,7 +65,10 @@ export async function downloadServicePbf(): Promise<{ file: string; sourceSha256
         if (target.origin !== "https://download.geofabrik.de" || target.username || target.password ||
           target.href.includes("?") || target.href.includes("#") ||
           !/^\/south-america\/uruguay-(?:latest|\d{6})\.osm\.pbf(?:\.md5)?$/.test(target.pathname)) {
-          throw new Error("Geofabrik redirect destination is not an official Uruguay extract");
+          // Name where it went (origin + path only: never credentials, query or fragment), or
+          // the next weekly failure is as undiagnosable as CAMBIO-URUGUAY-BACKEND-1S was.
+          const where = `${target.protocol}//${target.host}${target.pathname}`.replace(/[^\x21-\x7e]/g, "").slice(0, 160);
+          throw new Error(`Geofabrik redirect destination is not an official Uruguay extract: ${where}`);
         }
         if (visited.has(target.href)) throw new Error("Geofabrik redirect loop");
         visited.add(target.href);
