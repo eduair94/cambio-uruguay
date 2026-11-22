@@ -7,9 +7,19 @@
 // answer that did not come back costs Gemini money. So the whole module is built around one
 // question — "is there a key that can still spend?" — and around answering it cheaply.
 //
-//  1. THREE KEYS, ROTATED. `ANTHROPIC_API_KEYS` (comma-separated), `ANTHROPIC_API_KEY_1..9` or the
-//     bare `ANTHROPIC_API_KEY`. Round-robin over the usable ones: new accounts sit on a low
-//     requests-per-minute tier, and spreading a burst over three of them triples the headroom.
+//  1. THREE KEYS, ROTATED. `ANTHROPIC_API_KEYS` or `CLAUDE_CREDIT_KEYS` (the pool format the
+//     owner's other projects use: `label=sk-ant-...` entries separated by commas, semicolons or
+//     newlines), `ANTHROPIC_API_KEY_1..9` or the bare `ANTHROPIC_API_KEY`. Round-robin over the
+//     usable ones: spreading a burst over three organisations triples the per-minute headroom.
+//     They are the MONTHLY credits included with Claude plans: no rollover, unused is lost.
+//
+//  1b. A MONTHLY CAP PER KEY, ESTIMATED HERE. The Console stops a key when its included credit runs
+//     out, unless that organisation also holds purchased credit or has auto-reload on: then it
+//     keeps going and bills a card, which is the opposite of the point. So every call's estimated
+//     cost is appended to `.anthropic-usage/<YYYY-MM>.jsonl` (label and dollars, never the key),
+//     shared by every cron process, and a key whose month reaches ANTHROPIC_KEY_MONTHLY_CAP_USD
+//     (default 25; 0 = no cap) is skipped until the month turns. Other projects spend the same
+//     keys, so this cap is this project's share, not the organisation's total.
 //
 //  2. A DEAD KEY IS LEARNED ONCE PER PROCESS. No credit left (402, or the 400 that says "credit
 //     balance is too low"), a spend cap reached, a revoked key (401) or a disabled organisation
@@ -34,6 +44,8 @@ import Anthropic, {
   RateLimitError,
 } from "@anthropic-ai/sdk";
 import "dotenv/config";
+import fs from "fs";
+import path from "path";
 import type { GroundedReply, GroundingSupport } from "./gemini";
 
 /** Same price as gemini-*-flash-lite per token: every dollar of credit replaces about a dollar of Gemini. */
@@ -107,6 +119,7 @@ interface KeyUsage {
   outputTokens: number;
   searches: number;
   failures: number;
+  costUsd: number;
 }
 const usage = new Map<string, KeyUsage>();
 let roundRobin = 0;
@@ -137,18 +150,137 @@ export function __resetAnthropicForTests(): void {
   roundRobin = 0;
   outageStreak = 0;
   outageUntil = 0;
+  ledger = null;
+  cappedWarned.clear();
+  ledgerWriteWarned = false;
 }
 
-const label = (key: string): string => `…${key.slice(-4)}`;
+export interface PoolKey {
+  label: string;
+  key: string;
+}
 
-/** Every key the environment declares, deduplicated, in declaration order. */
-export function anthropicKeys(): string[] {
+/** Every key the environment declares, deduplicated, in declaration order, with its label. */
+export function anthropicKeyPool(): PoolKey[] {
   const raw = [
-    ...(process.env.ANTHROPIC_API_KEYS || "").split(","),
-    ...Array.from({ length: 9 }, (_v, i) => process.env[`ANTHROPIC_API_KEY_${i + 1}`] || ""),
-    process.env.ANTHROPIC_API_KEY || "",
-  ];
-  return [...new Set(raw.map((k) => k.trim()).filter(Boolean))];
+    process.env.ANTHROPIC_API_KEYS,
+    process.env.CLAUDE_CREDIT_KEYS,
+    ...Array.from({ length: 9 }, (_v, i) => process.env[`ANTHROPIC_API_KEY_${i + 1}`]),
+    process.env.ANTHROPIC_API_KEY,
+  ].join("\n");
+  const seen = new Set<string>();
+  const pool: PoolKey[] = [];
+  for (const item of raw.split(/[\s,;]+/)) {
+    if (!item) continue;
+    const eq = item.indexOf("=");
+    const key = (eq > 0 ? item.slice(eq + 1) : item).trim();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    pool.push({ label: (eq > 0 ? item.slice(0, eq).trim() : "") || `…${key.slice(-4)}`, key });
+  }
+  return pool;
+}
+
+export function anthropicKeys(): string[] {
+  return anthropicKeyPool().map((entry) => entry.key);
+}
+
+/** The key's label from the pool, or "…" + its last four characters. Never the key. */
+function label(key: string): string {
+  return anthropicKeyPool().find((entry) => entry.key === key)?.label ?? `…${key.slice(-4)}`;
+}
+
+// ── Monthly cap (see 1b in the header) ─────────────────────────────────────────────────────────
+
+const DEFAULT_MONTHLY_CAP_USD = 25;
+const LEDGER_REFRESH_MS = 5 * 60_000;
+
+function monthlyCapUsd(): number {
+  const raw = (process.env.ANTHROPIC_KEY_MONTHLY_CAP_USD ?? "").trim();
+  if (!raw) return DEFAULT_MONTHLY_CAP_USD;
+  const value = Number(raw);
+  return Number.isFinite(value) && value >= 0 ? value : DEFAULT_MONTHLY_CAP_USD;
+}
+
+const usageDir = (): string => process.env.ANTHROPIC_USAGE_DIR || path.join(process.cwd(), ".anthropic-usage");
+const monthOf = (t: number): string => new Date(t).toISOString().slice(0, 7);
+
+/** Price per million tokens [input, output]. Unknown models priced like the most expensive tier. */
+const PRICES: Array<[RegExp, number, number]> = [
+  [/^claude-haiku-5/, 0.1, 0.5],
+  [/^claude-haiku-4/, 1, 5],
+  [/^claude-sonnet-(5|4-6)/, 2, 10],
+  [/^claude-opus-5-5/, 4, 20],
+  [/^claude-opus/, 5, 25],
+];
+const UNKNOWN_PRICE: [number, number] = [10, 50];
+const SEARCH_USD = 0.01;
+
+/** Estimated dollars for one response's usage block. Errs high where unsure. */
+export function estimateClaudeCostUsd(model: string, used: any): number {
+  const known = PRICES.find(([pattern]) => pattern.test(model));
+  let [inPrice, outPrice] = known ? [known[1], known[2]] : UNKNOWN_PRICE;
+  const input = Number(used?.input_tokens) || 0;
+  const cacheWrite = Number(used?.cache_creation_input_tokens) || 0;
+  const cacheRead = Number(used?.cache_read_input_tokens) || 0;
+  // Haiku 5.5 bills prompts above 100K tokens at a higher rate.
+  if (/^claude-haiku-5/.test(model) && input + cacheWrite + cacheRead > 100_000) [inPrice, outPrice] = [0.5, 2.5];
+  const tokens =
+    input * inPrice + cacheWrite * inPrice * 1.25 + cacheRead * inPrice * 0.1 + (Number(used?.output_tokens) || 0) * outPrice;
+  return tokens / 1_000_000 + (Number(used?.server_tool_use?.web_search_requests) || 0) * SEARCH_USD;
+}
+
+let ledger: { month: string; byLabel: Map<string, number>; loadedAt: number } | null = null;
+const cappedWarned = new Set<string>();
+let ledgerWriteWarned = false;
+
+/** This month's spend per label, from the file every process appends to; re-read every 5 minutes. */
+function monthSpend(): Map<string, number> {
+  const month = monthOf(now());
+  if (!ledger || ledger.month !== month || now() - ledger.loadedAt > LEDGER_REFRESH_MS) {
+    const byLabel = new Map<string, number>();
+    try {
+      for (const line of fs.readFileSync(path.join(usageDir(), `${month}.jsonl`), "utf8").split("\n")) {
+        if (!line.trim()) continue;
+        try {
+          const row = JSON.parse(line);
+          if (typeof row?.k === "string" && Number.isFinite(row?.usd)) byLabel.set(row.k, (byLabel.get(row.k) ?? 0) + row.usd);
+        } catch {
+          /* a torn line from a concurrent writer costs one entry, not the ledger */
+        }
+      }
+    } catch {
+      /* no file yet this month */
+    }
+    ledger = { month, byLabel, loadedAt: now() };
+  }
+  return ledger.byLabel;
+}
+
+function recordSpend(keyLabel: string, model: string, usd: number): void {
+  const spend = monthSpend();
+  spend.set(keyLabel, (spend.get(keyLabel) ?? 0) + usd);
+  try {
+    fs.mkdirSync(usageDir(), { recursive: true });
+    const line = JSON.stringify({ t: new Date(now()).toISOString(), k: keyLabel, m: model, usd: Math.round(usd * 1e6) / 1e6 });
+    fs.appendFileSync(path.join(usageDir(), `${monthOf(now())}.jsonl`), `${line}\n`);
+  } catch (e: any) {
+    if (!ledgerWriteWarned) console.warn(`[anthropic] no pude anotar el gasto en ${usageDir()}: ${e?.message || e}`);
+    ledgerWriteWarned = true;
+  }
+}
+
+function overCap(key: string): boolean {
+  const cap = monthlyCapUsd();
+  if (cap <= 0) return false;
+  const name = label(key);
+  const spent = monthSpend().get(name) ?? 0;
+  if (spent < cap) return false;
+  if (!cappedWarned.has(name)) {
+    cappedWarned.add(name);
+    console.warn(`[anthropic] clave ${name}: US$ ${spent.toFixed(2)} estimados este mes, tope US$ ${cap} — se saltea hasta el mes que viene`);
+  }
+  return true;
 }
 
 /** `AI_LLM_PROVIDER=gemini` turns Claude off without a deploy — to reproduce an answer, or in an emergency. */
@@ -158,7 +290,7 @@ function usableKeys(): string[] {
   const t = now();
   return anthropicKeys().filter((key) => {
     const state = states.get(key);
-    return !state?.retired && (state?.restUntil ?? 0) <= t;
+    return !state?.retired && (state?.restUntil ?? 0) <= t && !overCap(key);
   });
 }
 
@@ -180,7 +312,7 @@ function effort(opts: ClaudeCallOptions): ClaudeEffort {
 function usageFor(key: string): KeyUsage {
   let row = usage.get(key);
   if (!row) {
-    row = { key: label(key), calls: 0, inputTokens: 0, outputTokens: 0, searches: 0, failures: 0 };
+    row = { key: label(key), calls: 0, inputTokens: 0, outputTokens: 0, searches: 0, failures: 0, costUsd: 0 };
     usage.set(key, row);
   }
   return row;
@@ -200,7 +332,8 @@ function installExitSummary(): void {
     const parts = rows.map(
       (row) =>
         `${row.key}: ${row.calls} llamadas, ${row.inputTokens} in / ${row.outputTokens} out` +
-        `${row.searches ? `, ${row.searches} búsquedas` : ""}${row.failures ? `, ${row.failures} fallas` : ""}`
+        `${row.searches ? `, ${row.searches} búsquedas` : ""}${row.failures ? `, ${row.failures} fallas` : ""}` +
+        `, ~US$ ${row.costUsd.toFixed(4)} (mes: ~US$ ${(monthSpend().get(row.key) ?? 0).toFixed(2)})`
     );
     console.log(`[anthropic] uso de esta corrida (${anthropicModel()}) — ${parts.join(" · ")}`);
   });
@@ -257,6 +390,10 @@ async function callClaude(params: Record<string, unknown>, timeoutMs: number): P
       row.inputTokens += Number(message?.usage?.input_tokens) || 0;
       row.outputTokens += Number(message?.usage?.output_tokens) || 0;
       row.searches += Number(message?.usage?.server_tool_use?.web_search_requests) || 0;
+      const model = String(message?.model || params.model || "");
+      const usd = estimateClaudeCostUsd(model, message?.usage);
+      row.costUsd += usd;
+      recordSpend(row.key, model, usd);
       return { message, key };
     } catch (error) {
       row.failures += 1;
@@ -452,7 +589,8 @@ export function webSearchToolFor(model: string): Record<string, unknown> {
     type: /^claude-haiku/i.test(model) ? "web_search_20250305" : "web_search_20260209",
     name: "web_search",
     max_uses: 5,
-    user_location: { type: "approximate", country: "UY", timezone: "America/Montevideo" },
+    // No `country`: measured 2026-11-22, the API answers 400 "Country code UY is not supported".
+    user_location: { type: "approximate", timezone: "America/Montevideo" },
   };
 }
 

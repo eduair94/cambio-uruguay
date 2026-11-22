@@ -49,7 +49,7 @@ function fakeClient(answer: any) {
 describe("askClaudeGrounded", () => {
   beforeEach(() => {
     for (const name of Object.keys(process.env)) {
-      if (name.startsWith("ANTHROPIC_") || name === "AI_LLM_PROVIDER") delete process.env[name];
+      if ((name.startsWith("ANTHROPIC_") && name !== "ANTHROPIC_USAGE_DIR") || name === "AI_LLM_PROVIDER" || name === "CLAUDE_CREDIT_KEYS") delete process.env[name];
     }
     process.env.ANTHROPIC_API_KEYS = "sk-ant-api-test0001";
     process.env.ANTHROPIC_GROUNDED = "1";
@@ -73,7 +73,7 @@ describe("askClaudeGrounded", () => {
   it("searches from Uruguay", async () => {
     const calls = fakeClient(SEARCH_REPLY);
     await askClaudeGrounded("¿tasa?");
-    expect(calls[0].tools[0].user_location).toMatchObject({ type: "approximate", country: "UY" });
+    expect(calls[0].tools[0].user_location).toEqual({ type: "approximate", timezone: "America/Montevideo" });
   });
 
   it("maps results to sourceUris, chunks (hostname as title) and resolvedByChunk", async () => {

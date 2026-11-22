@@ -51,7 +51,7 @@ const KEYS = ["sk-ant-api-aaaa1111", "sk-ant-api-bbbb2222", "sk-ant-api-cccc3333
 describe("classes/anthropic client", () => {
   beforeEach(() => {
     for (const name of Object.keys(process.env)) {
-      if (name.startsWith("ANTHROPIC_") || name === "AI_LLM_PROVIDER") delete process.env[name];
+      if ((name.startsWith("ANTHROPIC_") && name !== "ANTHROPIC_USAGE_DIR") || name === "AI_LLM_PROVIDER" || name === "CLAUDE_CREDIT_KEYS") delete process.env[name];
     }
     process.env.ANTHROPIC_API_KEYS = KEYS.join(",");
     __resetAnthropicForTests();

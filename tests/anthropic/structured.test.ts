@@ -79,7 +79,7 @@ describe("toClaudeSchema", () => {
 describe("askClaudeJSON / askClaudeWithImages", () => {
   beforeEach(() => {
     for (const name of Object.keys(process.env)) {
-      if (name.startsWith("ANTHROPIC_") || name === "AI_LLM_PROVIDER") delete process.env[name];
+      if ((name.startsWith("ANTHROPIC_") && name !== "ANTHROPIC_USAGE_DIR") || name === "AI_LLM_PROVIDER" || name === "CLAUDE_CREDIT_KEYS") delete process.env[name];
     }
     process.env.ANTHROPIC_API_KEYS = "sk-ant-api-test0001";
     __resetAnthropicForTests();
