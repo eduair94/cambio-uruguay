@@ -117,6 +117,8 @@ regul-snapshot.yml
 *.stackdump
 .sdd-*
 .superpowers/
+# classes/anthropic.ts monthly spend ledger (per key label, never the key), lives on the VPS
+.anthropic-usage/
 # SEO analysis private data + service-account keys (never commit)
 docs/seo/data/
 .agents

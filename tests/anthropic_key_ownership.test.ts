@@ -19,7 +19,7 @@ describe("the Anthropic API keys have exactly one owner", () => {
         if (e.isDirectory()) walk(full);
         else if (e.name.endsWith(".ts") && !e.name.endsWith(".test.ts")) {
           const src = fs.readFileSync(full, "utf8");
-          if (/@anthropic-ai\/sdk|ANTHROPIC_API_KEY/.test(src)) owners.push(path.relative(ROOT, full).split(path.sep).join("/"));
+          if (/@anthropic-ai\/sdk|ANTHROPIC_API_KEY|CLAUDE_CREDIT_KEYS/.test(src)) owners.push(path.relative(ROOT, full).split(path.sep).join("/"));
         }
       }
     };
