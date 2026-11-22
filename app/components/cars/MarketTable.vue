@@ -166,12 +166,34 @@
           :key="`${row.year}-${row.trim}-${row.engine}-${row.transmission}`"
           :class="{ 'has-version': showVersion }"
         >
-          <td class="mt-year">{{ row.year }}</td>
+          <td class="mt-year">
+            <!-- Clarity medía toques sobre el año y el rango de cada fila (precios de la S10, la
+                 T-Cross, la Strada, 19–21/11/2026): la gente quiere ver esos avisos. -->
+            <NuxtLink
+              v-if="yearTo"
+              :to="yearTo(row.year)"
+              class="mt-year-link"
+              :aria-label="`Ver los avisos del ${row.year}`"
+            >
+              {{ row.year }}
+            </NuxtLink>
+            <template v-else>{{ row.year }}</template>
+          </td>
           <td v-if="showVersion" class="mt-version">
             <span class="mt-trim">{{ displayTrim(row.trim) }}</span>
             <span v-if="specOf(row)" class="mt-spec">{{ specOf(row) }}</span>
           </td>
-          <td class="mt-num mt-n" data-label="Avisos">{{ row.n }}</td>
+          <td class="mt-num mt-n" data-label="Avisos">
+            <NuxtLink
+              v-if="yearTo"
+              :to="yearTo(row.year)"
+              class="mt-n-link"
+              tabindex="-1"
+              aria-hidden="true"
+              >{{ row.n }}</NuxtLink
+            >
+            <template v-else>{{ row.n }}</template>
+          </td>
           <td class="mt-range" data-label="Rango central">
             <span class="mt-range-text">
               {{ formatCarUsd(row.p25) }} – {{ formatCarUsd(row.p75).replace('US$ ', '') }}
@@ -203,6 +225,7 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref, useId, watch } from 'vue'
+import type { RouteLocationRaw } from 'vue-router'
 import { CAR_TRANSMISSION_LABELS, formatCarKm, formatCarUsd } from '~/utils/cars'
 import {
   CAR_MARKET_DEFAULT_SORT,
@@ -228,6 +251,8 @@ const props = withDefaults(
     showVersion?: boolean
     /** Filtros por versión, año, motor, caja y presupuesto. El orden está siempre. */
     filterable?: boolean
+    /** El directorio con los avisos de ese año: sin esto el año es texto. */
+    yearTo?: (year: number) => RouteLocationRaw
   }>(),
   { showVersion: false, filterable: false }
 )
@@ -439,6 +464,11 @@ const scale = computed(() => carMarketScale(props.rows))
   font-weight: 700;
   white-space: nowrap;
 }
+.mt-year-link,
+.mt-n-link {
+  color: rgb(var(--v-theme-link));
+  text-underline-offset: 3px;
+}
 .mt-version {
   min-width: 140px;
 }
@@ -562,6 +592,14 @@ const scale = computed(() => carMarketScale(props.rows))
     border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
     border-radius: 12px;
     background: rgb(var(--v-theme-surface));
+    /* Ancla del enlace del año, que en el teléfono cubre la tarjeta entera de la fila. */
+    position: relative;
+  }
+  .mt-year-link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
   }
   .mt-table :deep(tbody tr.has-version) {
     grid-template-areas:

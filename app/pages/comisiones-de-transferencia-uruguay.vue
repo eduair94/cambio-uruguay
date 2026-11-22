@@ -252,9 +252,25 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="row in ranking" :key="row.origin">
+            <!-- Tocar una fila la elige como destino de la calculadora de arriba: Clarity medía
+                 cientos de toques sobre el nombre y las comisiones de cada fila (19–21/11/2026)
+                 que no hacían nada. El botón es el camino por teclado; la fila, el atajo. -->
+            <tr
+              v-for="row in ranking"
+              :key="row.origin"
+              class="pick-row"
+              :class="{ 'is-picked': row.origin === via }"
+              @click="onRankingRowClick($event, row.origin)"
+            >
               <td data-label="Destino">
-                {{ row.label }}
+                <button
+                  type="button"
+                  class="pick-dest"
+                  :aria-pressed="row.origin === via"
+                  @click="pickVia(row.origin)"
+                >
+                  {{ row.label }}
+                </button>
                 <VChip v-if="row.origin === via" size="x-small" color="primary" class="ml-1">
                   elegido
                 </VChip>
@@ -554,6 +570,28 @@ const ranking = computed(() =>
     .sort((a, b) => b.result.netUyu - a.result.netUyu)
 )
 
+/** Elige un destino desde el ranking y sube a la calculadora, que es donde se ve su cuenta. */
+function pickVia(origin: string) {
+  via.value = origin
+  if (!import.meta.client) return
+  const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  nextTick(() =>
+    document
+      .getElementById('calculadora')
+      ?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+  )
+}
+/**
+ * El toque en cualquier parte de la fila. No cuando el toque es del botón (ya eligió) ni cuando
+ * se está seleccionando texto: un número de esta tabla también se copia.
+ */
+function onRankingRowClick(event: MouseEvent, origin: string) {
+  const target = event.target as Element | null
+  if (target?.closest('button, a')) return
+  if (window.getSelection?.()?.toString()) return
+  pickVia(origin)
+}
+
 /** La pizarra que se está usando para decidir, si lleva días quieta. */
 const frozenNotice = computed<string | null>(() => {
   const q = quoteFor(via.value)
@@ -819,6 +857,31 @@ useHead(() => ({
 }
 .table-scroll {
   overflow-x: auto;
+}
+#calculadora {
+  scroll-margin-top: 96px;
+}
+.pick-row {
+  cursor: pointer;
+}
+.pick-row:hover,
+.pick-row.is-picked {
+  background: rgba(var(--v-theme-primary), 0.06);
+}
+.pick-dest {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: rgb(var(--v-theme-link));
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.pick-dest:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
 }
 .band-list {
   padding-left: 1.1rem;

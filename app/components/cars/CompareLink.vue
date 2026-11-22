@@ -1,6 +1,9 @@
 <template>
+  <!-- nofollow: cada tarjeta de auto enlaza a SU comparación (`?autos=<key>`, noindex y fuera de
+       robots.txt), una URL por aviso que no le sirve a ningún buscador. -->
   <VBtn
     :to="localePath(carComparisonLocation(carKey))"
+    :rel="carKey ? 'nofollow' : undefined"
     variant="outlined"
     size="small"
     prepend-icon="mdi-compare-horizontal"

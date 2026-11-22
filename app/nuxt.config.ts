@@ -65,7 +65,15 @@ const sentryDefaults = {
 // the share cards (`/__og-image__/image/en/autos-usados-uruguay/og.png`), which the `*` also
 // reaches and which social crawlers read through the wildcard group.
 // Both robots groups list these: an explicit group does not inherit the wildcard group's rules.
-const TRANSLATED_ADVERTS_DISALLOW = ['/*/autos-usados-uruguay/']
+const TRANSLATED_ADVERTS_DISALLOW = [
+  '/*/autos-usados-uruguay/',
+  // The advert comparison with a selection (`?autos=<key>`): every car card in the directory, the
+  // model and the budget pages links to its own one, so each advert minted a noindex URL that
+  // crawlers kept fetching. Clarity (2026-11-19/21): ~30 sessions of 0 s on those URLs, all
+  // Windows Chrome from the US, Brazil, Colombia, Malaysia, Hong Kong, Russia and China. The bare
+  // comparison page stays open.
+  '/autos-usados-uruguay/comparar?',
+]
 const TRANSLATED_ADVERTS_ALLOW = [
   '/*/autos-usados-uruguay/precios/',
   '/*/autos-usados-uruguay/hasta-',

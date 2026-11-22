@@ -125,6 +125,16 @@ describe('robots.txt rules', () => {
     }
   })
 
+  // Every car card links to a comparison of its own advert (`?autos=<key>`, noindex): one URL per
+  // advert for crawlers to fetch. The selection is closed, the bare comparison page is not.
+  it('keep crawlers out of the advert comparisons with a selection, not out of the page', () => {
+    for (const group of groups()) {
+      expect(blocked(group, '/autos-usados-uruguay/comparar?autos=ml-MLU1513098568')).toBe(true)
+      expect(blocked(group, '/autos-usados-uruguay/comparar?autos=fb-1,julio-26444')).toBe(true)
+      expect(blocked(group, '/autos-usados-uruguay/comparar')).toBe(false)
+    }
+  })
+
   it('never block a public page, in any locale, for any group', () => {
     for (const group of groups()) {
       const closed = PUBLIC_PATHS.flatMap(underEveryLocale).filter(path => blocked(group, path))

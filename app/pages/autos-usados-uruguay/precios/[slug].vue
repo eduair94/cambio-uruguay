@@ -67,6 +67,7 @@
         <h2 class="text-h6 mb-2">Precio por año</h2>
         <CarsMarketTable
           :rows="data.market.years"
+          :year-to="yearDirectoryLink"
           caption="Todas las versiones juntas; sólo años con 5 avisos o más."
         />
       </section>
@@ -75,6 +76,7 @@
         <h2 class="text-h6 mb-2">Precio por año y versión</h2>
         <CarsMarketTable
           :rows="data.market.rows"
+          :year-to="yearDirectoryLink"
           show-version
           filterable
           caption="Misma versión, motor y caja; sólo combinaciones con 5 avisos o más."
@@ -167,6 +169,19 @@ const directoryLink = computed(() =>
     query: data.value ? { brand: data.value.market.brandSlug, model: data.value.market.slug } : {},
   })
 )
+/** Los avisos de este modelo y ese año en el directorio (la fila de la tabla de precios). */
+const yearDirectoryLink = (year: number) =>
+  localePath({
+    path: CARS_PATH,
+    query: data.value
+      ? {
+          brand: data.value.market.brandSlug,
+          model: data.value.market.slug,
+          yearMin: String(year),
+          yearMax: String(year),
+        }
+      : {},
+  })
 const name = computed(() =>
   data.value ? `${data.value.market.brand} ${data.value.market.model}` : 'Auto'
 )
