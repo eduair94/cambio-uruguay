@@ -18,7 +18,7 @@
 
 import axios from "axios";
 import { askClaudeJson, claudeSaturated } from "../claude";
-import { askGrounded, groundedHeadlines } from "../gemini";
+import { askGrounded, groundedHeadlines } from "../llm";
 import { preferredProvider } from "../ai_text";
 import type { GapCluster } from "./cluster";
 

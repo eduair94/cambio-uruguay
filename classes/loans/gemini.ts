@@ -9,7 +9,7 @@
 // wrapper), not `chunk.web.title` — see classes/gemini.ts's own comment: title is the source
 // domain only by convention, is not verified, and is not a security boundary. The app's version
 // trusted `web.title` as if it were a checked hostname, which it never was.
-import { askGrounded, geminiConfigured, groundedHeadlines } from "../gemini";
+import { askGrounded, groundedConfigured, groundedHeadlines } from "../llm";
 import type { LoanLender } from "./catalog";
 import { TEA_MAX, TEA_MIN, toNum } from "./scraper";
 
@@ -45,7 +45,7 @@ function buildPrompt(lender: Pick<LoanLender, "name" | "website">): string {
 export async function fetchLenderRateFromGemini(
   lender: Pick<LoanLender, "id" | "name" | "website" | "source">
 ): Promise<GeminiRateResult | null> {
-  if (!geminiConfigured()) return null;
+  if (!groundedConfigured()) return null;
 
   const reply = await askGrounded(buildPrompt(lender));
   if (!reply) return null;

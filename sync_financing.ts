@@ -5,7 +5,7 @@
 // baseline) keep serving.
 import "dotenv/config";
 
-import { geminiConfigured } from "./classes/gemini";
+import { groundedConfigured } from "./classes/llm";
 import { refreshLiveFinancing } from "./classes/financing/refresh";
 import { saveFinancing } from "./classes/financing/store";
 import { MongooseServer, withTimeout } from "./classes/database";
@@ -21,7 +21,7 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  if (!geminiConfigured()) {
+  if (!groundedConfigured()) {
     console.warn("[financing] no GEMINI_API_KEY — nothing to do, keeping the stored figures");
     process.exit(0);
   }

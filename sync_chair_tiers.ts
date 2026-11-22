@@ -6,7 +6,7 @@ import "dotenv/config";
 dotenv.config({ path: "app/.env", quiet: true });
 
 import { appDbConfigured } from "./classes/appdb";
-import { geminiConfigured } from "./classes/gemini";
+import { llmConfigured } from "./classes/llm";
 import { redditConfigured } from "./classes/reddit";
 import { buildChairTierSnapshot } from "./classes/chairs/analyze";
 import { harvestChairDiscussions, readChairCorpus } from "./classes/chairs/harvest";
@@ -27,7 +27,7 @@ async function main(): Promise<void> {
     console.warn("[chair-tiers] Reddit credentials are missing — keeping the stored snapshot");
     process.exit(0);
   }
-  if (!geminiConfigured()) {
+  if (!llmConfigured()) {
     console.warn(
       "[chair-tiers] Gemini credentials are missing — using the local conservative classifier"
     );

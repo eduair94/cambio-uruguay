@@ -5,7 +5,7 @@
 //   2. A chair nobody has reviewed gets no opinion at all — it gets a factual line built from the
 //      offers we found. "Sin reseñas suficientes" is a valid answer; inventing a verdict is not.
 import { createHash } from "crypto";
-import { askPlain, geminiConfigured } from "../gemini";
+import { askPlain, llmConfigured } from "../llm";
 import type { ChairCatalogProduct, ChairReviewPoint, ChairTierItem } from "./types";
 
 const MAX_AI_PRODUCTS = Number(process.env.CHAIR_REVIEW_LIMIT || 40);
@@ -167,7 +167,7 @@ export async function synthesizeChairReviews(
     else product.verdict = factualVerdict(product);
   }
 
-  if (!pending.length || !geminiConfigured() || process.env.CHAIR_ANALYSIS_LOCAL_ONLY === "1") {
+  if (!pending.length || !llmConfigured() || process.env.CHAIR_ANALYSIS_LOCAL_ONLY === "1") {
     for (const product of pending) if (!product.verdict) product.verdict = factualVerdict(product);
     return 0;
   }

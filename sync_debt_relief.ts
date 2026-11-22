@@ -3,7 +3,7 @@
 // the previous good caps (or the verified baseline) keep serving for up to a month.
 import "dotenv/config";
 
-import { geminiConfigured } from "./classes/gemini";
+import { groundedConfigured } from "./classes/llm";
 import { refreshLiveDebtRelief } from "./classes/debt/refresh";
 import { saveDebtRelief } from "./classes/debt/store";
 import { MongooseServer, withTimeout } from "./classes/database";
@@ -19,7 +19,7 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  if (!geminiConfigured()) {
+  if (!groundedConfigured()) {
     console.warn("[debt-relief] no GEMINI_API_KEY — nothing to do, keeping the stored caps");
     process.exit(0);
   }

@@ -6,7 +6,7 @@
 // Moved out of the Nuxt app (server/utils/uyFiguresLive.ts). The DRIFT WATCHDOG did NOT move —
 // it stayed in the app (nitro task figures:drift) because it needs the app's Telegram config and
 // its own dedupe state, and it spends no Gemini call at all.
-import { askGrounded, geminiConfigured, groundedHeadlines } from "../gemini";
+import { askGrounded, groundedConfigured, groundedHeadlines } from "../llm";
 import { applyFigureBands, baselineFigures, type UyFigures } from "./bands";
 
 const PROMPT = `Buscá con búsqueda web real y citable los valores ACTUALES en Uruguay de estos indicadores oficiales:
@@ -34,7 +34,7 @@ function parseJsonLoose(text: string): Record<string, unknown> | null {
  */
 export async function refreshUyFigures(): Promise<UyFigures> {
   const baseline = baselineFigures();
-  if (!geminiConfigured()) return baseline;
+  if (!groundedConfigured()) return baseline;
 
   const reply = await askGrounded(PROMPT);
   if (!reply) return baseline;

@@ -10,7 +10,7 @@ import { aiService } from "./classes/ai_service";
 import { aggregateFromCorpus, refreshLabels } from "./classes/aduana/classify";
 import { buildAlerts } from "./classes/aduana/alerts";
 import { discoverNewNorms, knownRgNumbers, type NormCandidate } from "./classes/aduana/discover";
-import { geminiConfigured } from "./classes/aduana/gemini";
+import { groundedConfigured } from "./classes/aduana/gemini";
 import { harvestAduana } from "./classes/aduana/harvest";
 import { refreshNorms } from "./classes/aduana/norms";
 import { loadAduanaDoc, saveAduanaDoc } from "./classes/aduana/store";
@@ -43,7 +43,7 @@ async function main(): Promise<void> {
   // nothing, the page kept claiming a fresh sync every week, and `stale` could never fire.
   const redditWasConfigured = redditConfigured();
   const aiWasConfigured = aiService.isConfigured();
-  const geminiWasConfigured = geminiConfigured();
+  const geminiWasConfigured = groundedConfigured();
 
   let posts = 0;
   let comments = 0;

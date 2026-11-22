@@ -7,11 +7,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { AduanaDoc, AduanaFact, Source } from "../../classes/aduana/types";
 
 vi.mock("../../classes/aduana/gemini", () => ({
-  geminiConfigured: vi.fn(() => true),
+  groundedConfigured: vi.fn(() => true),
   askGrounded: vi.fn(async () => null),
 }));
 
-import { askGrounded, geminiConfigured } from "../../classes/aduana/gemini";
+import { askGrounded, groundedConfigured } from "../../classes/aduana/gemini";
 import { BASELINE, DENYLIST_URLS } from "../../classes/aduana/baseline";
 import { applyProposals, refreshNorms } from "../../classes/aduana/norms";
 
@@ -266,7 +266,7 @@ describe("applyProposals — auto-publish guardrail", () => {
   });
 });
 
-const mockedConfigured = vi.mocked(geminiConfigured);
+const mockedConfigured = vi.mocked(groundedConfigured);
 const mockedAsk = vi.mocked(askGrounded);
 
 const docWith = (facts: AduanaFact[], pendingReview: string[] = []): AduanaDoc => ({
