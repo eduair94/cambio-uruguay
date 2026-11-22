@@ -74,6 +74,41 @@ const TRANSLATED_ADVERTS_DISALLOW = [
   // comparison page stays open.
   '/autos-usados-uruguay/comparar?',
 ]
+// The rules every crawler gets (the `*` group and the search-engine group below). /_nuxt/ serves
+// the public JS, CSS and fonts needed to render the site, so it is never here.
+const SITE_DISALLOW = [
+  '/admin/',
+  '/*/admin/',
+  '/server/',
+  '/*/server/',
+  '/api-reference',
+  ...[
+    // The owner's Search Console dashboard: it renders the queries visitors typed, so it is
+    // disallowed here AND noindexed on the page AND gated server-side.
+    '/estadisticas-de-busqueda',
+    // El ranking privado de páginas por visita: misma lógica que el tablero de Search Console.
+    '/estadisticas-por-pagina',
+    // El tablero privado de uso (currency-usage-insights): tráfico por página, requireAdmin.
+    '/estadisticas-de-uso',
+    // El panel privado de contactos comerciales (requireAdmin).
+    '/contactos-comerciales',
+    // La encuesta de alquileres (se llega desde los correos) y su panel privado de respuestas.
+    '/opinion-alquileres',
+    '/opiniones-alquileres',
+    // Lista de autores de r/CharruaDevs con nombre propio: noindex en la pagina y fuera del
+    // rastreo. Los mismos datos, agregados y sin nombres, estan en /mercado-it-uruguay.
+    '/ranking-usuarios-charruadevs',
+  ].flatMap(path => [path, `/*${path}`]),
+  // El teléfono del vendedor de un auto: se pide con un clic, con noindex y sin caché. Ningún
+  // rastreador tiene nada que hacer ahí (docs/app/AUTOS_CONTACTOS.md).
+  '/api/cars/contact/',
+  ...TRANSLATED_ADVERTS_DISALLOW,
+]
+// The site's API, closed to crawlers that do not render pages (see the `robots` block), and the
+// open data under it that stays open to all of them.
+const API_DISALLOW = ['/api/']
+// Without the trailing slash: /llms.txt links the index `/api/datos` itself.
+const API_OPEN = ['/api/datos']
 const TRANSLATED_ADVERTS_ALLOW = [
   '/*/autos-usados-uruguay/precios/',
   '/*/autos-usados-uruguay/hasta-',
@@ -1331,40 +1366,18 @@ export default defineNuxtConfig({
     // the CSS chunks of the private pages themselves (`/_nuxt/estadisticas-de-busqueda.*.css`,
     // which only blocked pages load) and two bot probes (`/apps/admin/…`, `/wp-content/…/server/…`).
     autoI18n: false,
-    // /estadisticas-de-busqueda is the owner's Search Console dashboard: it renders the queries
-    // visitors typed, so it is disallowed here AND noindexed on the page AND gated server-side.
-    // /_nuxt/ serves the public JS, CSS and fonts needed to render the site.
-    // Crawlers must be able to fetch those assets, including in the explicit groups below.
-    disallow: [
-      '/admin/',
-      '/*/admin/',
-      '/server/',
-      '/*/server/',
-      '/api-reference',
-      ...[
-        '/estadisticas-de-busqueda',
-        // El ranking privado de páginas por visita: misma lógica que el tablero de Search Console.
-        '/estadisticas-por-pagina',
-        // El tablero privado de uso (currency-usage-insights): tráfico por página, requireAdmin.
-        '/estadisticas-de-uso',
-        // El panel privado de contactos comerciales (requireAdmin).
-        '/contactos-comerciales',
-        // La encuesta de alquileres (se llega desde los correos) y su panel privado de respuestas.
-        '/opinion-alquileres',
-        '/opiniones-alquileres',
-        // Lista de autores de r/CharruaDevs con nombre propio: noindex en la pagina y fuera del
-        // rastreo. Los mismos datos, agregados y sin nombres, estan en /mercado-it-uruguay.
-        '/ranking-usuarios-charruadevs',
-      ].flatMap(path => [path, `/*${path}`]),
-      // El teléfono del vendedor de un auto: se pide con un clic, con noindex y sin caché. Ningún
-      // rastreador tiene nada que hacer ahí (docs/app/AUTOS_CONTACTOS.md).
-      '/api/cars/contact/',
-      ...TRANSLATED_ADVERTS_DISALLOW,
-    ],
+    // The site's own API (`/api/…`, the Nuxt server routes the pages call from the browser) is
+    // closed to every crawler that does not render pages for a search engine. Clarity's bot
+    // activity (Cloudflare logs, 2026-11-21): 4.390 bot requests to /api/ in one day — AhrefsBot
+    // 1.815, Applebot 1.044, OpenAI 495 — on endpoints like /api/rentals/zone-profile that take
+    // seconds without cache. Googlebot (375) and Bingbot (146) keep it: they run the page's
+    // JavaScript, and a blocked call is a part of the page they would index empty. The open data
+    // (`/api/datos`, published for reuse) stays open to everyone.
+    disallow: [...SITE_DISALLOW, ...API_DISALLOW],
     // `/` and the exceptions to the translated adverts: nothing else disallowed above overlaps a
     // public section, so the per-section `Allow` lines it used to list (/guias, /historico…) never
     // changed a verdict — they only made every sitemap URL pay for 19 × 35 more rules.
-    allow: ['/', ...TRANSLATED_ADVERTS_ALLOW],
+    allow: ['/', ...TRANSLATED_ADVERTS_ALLOW, ...API_OPEN],
     // Explicitly welcome AI search/answer crawlers so the site can be cited by
     // Google AI Overviews/Gemini, ChatGPT Search, Perplexity and Claude. These
     // are answer engines (not just training scrapers); citation drives traffic.
@@ -1381,13 +1394,12 @@ export default defineNuxtConfig({
           'Perplexity-User',
           'Google-Extended',
           'Applebot-Extended',
-          'Bingbot',
           'Amazonbot',
           'cohere-ai',
         ],
-        allow: ['/', ...TRANSLATED_ADVERTS_ALLOW],
+        allow: ['/', ...TRANSLATED_ADVERTS_ALLOW, ...API_OPEN],
         // Un grupo propio NO hereda el disallow general: el teléfono del vendedor de un auto va
-        // repetido acá, o Bingbot y los rastreadores de IA quedan habilitados a pedirlo.
+        // repetido acá, o los rastreadores de IA quedan habilitados a pedirlo.
         disallow: [
           '/admin/',
           '/*/admin/',
@@ -1395,7 +1407,17 @@ export default defineNuxtConfig({
           '/*/server/',
           '/api/cars/contact/',
           ...TRANSLATED_ADVERTS_DISALLOW,
+          ...API_DISALLOW,
         ],
+      },
+      {
+        // The two search engines that render pages: the general rules WITHOUT the API block (see
+        // above). Bingbot moved here from the AI group on 2026-11-22; it is also Copilot's crawler,
+        // and that group now closes /api/. Google's own ads crawlers (AdsBot, Mediapartners) never
+        // read the `*` group, so they are unaffected either way.
+        userAgent: ['Googlebot', 'Bingbot'],
+        allow: ['/', ...TRANSLATED_ADVERTS_ALLOW],
+        disallow: SITE_DISALLOW,
       },
     ],
     // El índice, no /sitemap.xml.
