@@ -25,7 +25,7 @@ import { connectDb } from './db'
 const HIT_TTL = 60 * 60 * 1000
 const MISS_TTL = 10 * 60 * 1000
 const PAGE_TTL = 10 * 60 * 1000
-// The app workers run with a 512 MB heap (ecosystem.config.cjs); ~200 bytes an entry keeps this
+// The app workers run with a 1024 MB heap (ecosystem.config.cjs); ~200 bytes an entry keeps this
 // cache around 30 MB at its fullest.
 const MAX_CACHED = 150_000
 
