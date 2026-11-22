@@ -1,5 +1,5 @@
 <template>
-  <VContainer class="py-6 py-md-10">
+  <VContainer class="cars-directory py-6 py-md-10">
     <VBreadcrumbs
       :items="[
         { title: 'Inicio', to: localePath('/') },
@@ -10,7 +10,7 @@
     />
     <header class="mb-6">
       <h1 class="text-h4 font-weight-bold mb-2">Autos usados en venta en Uruguay</h1>
-      <p class="text-body-1 mb-2">
+      <p class="cars-lead text-body-1 mb-2">
         Los avisos de autos usados de Mercado Libre, Facebook Marketplace, Clasiautos y las webs de
         automotoras en un solo buscador, con el precio en dólares, los kilómetros y la comparación
         contra autos iguales.
@@ -397,6 +397,23 @@ useHead({
 </script>
 
 <style scoped>
+/* El layout liberó el tope global de 1280 para esta ruta (layouts/default.vue): con él, a 2048 px
+   la columna quedaba centrada con 376 px vacíos de cada lado y la lista mostraba dos tarjetas por
+   fila. El buscador (filtros + grilla) usa el ancho; el tope de 2200 es el de /alquileres-uruguay
+   y sólo importa sin riel de anuncios. Lo que viene DESPUÉS de la grilla es lectura (mercado,
+   modelos, preguntas): vuelve a 1224, centrado, que es el ancho interior de `.layout-tail` del
+   layout, así cae en la misma columna que los bloques que el layout agrega al final. Por selector
+   y no envuelto en un div, para que lo que se agregue entre esos bloques herede el tope. */
+.cars-directory {
+  max-width: 2200px;
+}
+.cars-layout ~ * {
+  max-width: 1224px;
+  margin-inline: auto;
+}
+.cars-lead {
+  max-width: 56rem;
+}
 .cars-grid {
   display: grid;
   /* En mobile la ficha es una fila a todo el ancho; el minmax recien parte en columnas
