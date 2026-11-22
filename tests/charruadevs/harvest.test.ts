@@ -51,6 +51,28 @@ describe("harvest", () => {
     expect(urls[2]).toContain("after=101");
   });
 
+  it("retries Arctic Shift's 422 query timeout instead of failing the run", async () => {
+    vi.useFakeTimers();
+    try {
+      const responses = [
+        new Response('{"data":null,"error":"Timeout. Maybe slow down a bit"}', { status: 422 }),
+        page([{ id: "a", created_utc: 100 }]),
+        page([]),
+      ];
+      vi.stubGlobal("fetch", vi.fn(async () => responses.shift()!));
+      const run = fetchRange("posts", 100, 200);
+      await vi.advanceTimersByTimeAsync(20000);
+      expect((await run).map((x) => x.id)).toEqual(["a"]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("still throws on a 422 that is not a timeout", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response('{"error":"invalid field"}', { status: 422 })));
+    await expect(fetchRange("posts", 1, 2)).rejects.toThrow(/422/);
+  });
+
   it("throws on a 400 (a bad query must not look like an empty month)", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response('{"error":"bad"}', { status: 400 })));
     await expect(fetchRange("posts", 1, 2)).rejects.toThrow(/400/);

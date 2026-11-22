@@ -28,7 +28,18 @@ async function getPage(url: string): Promise<Array<{ id: string; created_utc: nu
       await sleep((Number(res.headers.get("retry-after")) || 5 * (attempt + 1)) * 1000);
       continue;
     }
-    if (!res.ok) throw new Error(`arctic-shift HTTP ${res.status}: ${(await res.text()).slice(0, 160)}`);
+    if (!res.ok) {
+      const body = (await res.text()).slice(0, 160);
+      // Arctic Shift contesta 422 "Timeout. Maybe slow down a bit" cuando SU consulta vence por
+      // carga (CAMBIO-URUGUAY-BACKEND-1T, 22/11/2026): es transitorio y pide bajar el ritmo, así
+      // que se espera más y se reintenta. Cualquier otro 4xx sigue siendo "la consulta está mal".
+      if (res.status === 422 && /timeout/i.test(body)) {
+        last = `HTTP 422: ${body}`;
+        await sleep(15000 * (attempt + 1));
+        continue;
+      }
+      throw new Error(`arctic-shift HTTP ${res.status}: ${body}`);
+    }
     const json = (await res.json()) as { data?: Array<{ id: string; created_utc: number }> | null };
     return json.data ?? [];
   }
