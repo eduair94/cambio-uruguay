@@ -199,7 +199,6 @@ defineOgImageComponent('Cambio', {
   font-size: 1.25rem;
   font-weight: 500;
   line-height: 1.6;
-  text-transform: capitalize;
 }
 .nov-list {
   list-style: none;

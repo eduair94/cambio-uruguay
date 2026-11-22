@@ -80,6 +80,6 @@ describe('/novedades: the public changelog', () => {
   // the server HTML and the hydrated page.
   it('formats dates without depending on the time zone', () => {
     expect(formatChangeDate('2026-11-01')).toMatch(/^1 de noviembre$/)
-    expect(formatChangeMonth('2026-11')).toMatch(/^noviembre de 2026$/)
+    expect(formatChangeMonth('2026-11')).toBe('Noviembre de 2026')
   })
 })

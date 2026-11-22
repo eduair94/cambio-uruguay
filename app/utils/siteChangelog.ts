@@ -214,10 +214,12 @@ export function formatChangeDate(date: string): string {
   })
 }
 
+/** «Noviembre de 2026»: sólo la primera letra en mayúscula (un `text-transform` subía la «de»). */
 export function formatChangeMonth(month: string): string {
-  return new Date(`${month}-15T12:00:00Z`).toLocaleDateString('es-UY', {
+  const label = new Date(`${month}-15T12:00:00Z`).toLocaleDateString('es-UY', {
     month: 'long',
     year: 'numeric',
     timeZone: 'UTC',
   })
+  return label.charAt(0).toUpperCase() + label.slice(1)
 }
