@@ -7,8 +7,30 @@ export { loadOfficialPropertyZoneGeometry, officialZoneName } from './geometry';
 
 export const CRIME_DATASET_URL = 'https://catalogodatos.gub.uy/dataset/ministerio-del-interior-delitos_denunciados_en_el_uruguay';
 export const CRIME_METADATA_URL = 'https://catalogodatos.gub.uy/api/3/action/package_show?id=ministerio-del-interior-delitos_denunciados_en_el_uruguay';
-export const CRIME_RESOURCE_ID = 'c8c4cc18-57cf-448b-9c68-901b3752fc11';
-export const CRIME_CSV_URL = `https://catalogodatos.gub.uy/dataset/999f2edc-5ef5-4d41-bed7-824a5635ea8d/resource/${CRIME_RESOURCE_ID}/download/otros-delitos.csv`;
+export const CRIME_DATASET_ID = '999f2edc-5ef5-4d41-bed7-824a5635ea8d';
+/**
+ * The CSV is found by its published name, not by a pinned id: on 2026-10-20 the Ministry re-uploaded
+ * it as a NEW resource (`c8c4cc18…` → `4d76b716…`, `otros-delitos-2.csv`), the old id vanished and
+ * the layer froze on 2026-06-30 while the job failed silently every day (Sentry CAMBIO-URUGUAY-BACKEND-1R).
+ * Everything else stays as strict as before: the dataset, an active CSV under this dataset's own
+ * download path, and exactly one candidate — two would be ambiguous, and nothing is guessed.
+ */
+export const CRIME_RESOURCE_NAME = 'Denuncias de otros delitos';
+const CRIME_CSV_URL_PATTERN = /^https:\/\/catalogodatos\.gub\.uy\/dataset\/999f2edc-5ef5-4d41-bed7-824a5635ea8d\/resource\/([\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12})\/download\/otros-delitos[\w.-]*\.csv$/;
+/** The resource as published on 2026-10-20 (tests and documentation; the job resolves it by name). */
+export const CRIME_RESOURCE_ID = '4d76b716-a06a-45dd-ba1c-01fc6d88ee99';
+export const CRIME_CSV_URL = `https://catalogodatos.gub.uy/dataset/${CRIME_DATASET_ID}/resource/${CRIME_RESOURCE_ID}/download/otros-delitos-2.csv`;
+
+/** The one active CSV named like the crime file, under this dataset's own download path; else null. */
+export function findCrimeResource(resources: unknown[]): Record<string, any> | null {
+  const candidates = resources.map(item => object(item)).filter(item => {
+    const url = typeof item.url === 'string' ? item.url : '';
+    const id = CRIME_CSV_URL_PATTERN.exec(url)?.[1];
+    return id === item.id && item.state === 'active' && item.format === 'CSV'
+      && typeof item.name === 'string' && item.name.trim().toLowerCase() === CRIME_RESOURCE_NAME.toLowerCase();
+  });
+  return candidates.length === 1 ? candidates[0]! : null;
+}
 const LICENSE_URL = 'https://www.gub.uy/agencia-gobierno-electronico-sociedad-informacion-conocimiento/sites/agencia-gobierno-electronico-sociedad-informacion-conocimiento/files/documentos/publicaciones/licencia_de_datos_abiertos_0.pdf';
 const USER_AGENT = 'CambioUruguayBot/1.0 (+https://cambio-uruguay.com)';
 
@@ -99,16 +121,16 @@ export async function loadPropertyZoneSources(options: PropertyZoneSourcesOption
     for await (const chunk of responseChunks(metadataResponse, 1024 * 1024)) chunks.push(Buffer.from(chunk));
     const metadata = object(JSON.parse(Buffer.concat(chunks).toString('utf8')));
     const result = object(metadata.result);
-    if (metadata.success !== true || result.id !== '999f2edc-5ef5-4d41-bed7-824a5635ea8d' || result.license_id !== 'odc-uy'
+    if (metadata.success !== true || result.id !== CRIME_DATASET_ID || result.license_id !== 'odc-uy'
       || !Array.isArray(result.resources)) throw new Error('Unexpected crime metadata');
-    const resource = object(result.resources.find((item: unknown) => object(item).id === CRIME_RESOURCE_ID));
-    if (resource.url !== CRIME_CSV_URL || resource.format !== 'CSV' || resource.state !== 'active'
+    const resource = object(findCrimeResource(result.resources));
+    if (typeof resource.id !== 'string' || typeof resource.url !== 'string'
       || typeof resource.temporal_coverage !== 'string' || !Number.isSafeInteger(resource.size)
       || resource.size < 1 || resource.size > CRIME_MAX_BYTES || typeof resource.last_modified !== 'string'
       || !Number.isFinite(Date.parse(resource.last_modified))) throw new Error('Unexpected crime resource');
     const period = crimeReportingPeriod(resource.temporal_coverage, now);
     const version = createHash('sha256').update(JSON.stringify({
-      parser: 1, geometry: geometry.source.version, id: CRIME_RESOURCE_ID,
+      parser: 1, geometry: geometry.source.version, id: resource.id,
       modified: resource.last_modified, size: resource.size, ...period,
     })).digest('hex');
     const source = {
@@ -120,7 +142,7 @@ export async function loadPropertyZoneSources(options: PropertyZoneSourcesOption
     if (cached) return { geometry, crime: { ...cached, source } };
     clearTimeout(timeout);
     timeout = setTimeout(abort, 240_000);
-    const response = await fetcher(CRIME_CSV_URL, { signal: controller.signal, redirect: 'error', headers: { 'User-Agent': USER_AGENT, Accept: 'text/csv' } });
+    const response = await fetcher(resource.url, { signal: controller.signal, redirect: 'error', headers: { 'User-Agent': USER_AGENT, Accept: 'text/csv' } });
     if (response.status !== 200) throw new Error('Official crime CSV unavailable');
     let received = 0;
     async function* counted() {

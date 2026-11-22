@@ -184,14 +184,14 @@ const OMNIBUS: TransportModeAssumptions = {
     0,
     '2026-09-22',
     'Horarios del STM procesados por el sitio',
-    'https://catalogodatos.gub.uy/dataset/horarios-de-omnibus-urbanos-por-parada-stm',
+    'https://catalogodatos.gub.uy/dataset/intendencia-montevideo-horarios-de-omnibus-urbanos-por-parada-stm',
     'La caminata y la espera ya están adentro del tiempo del viaje.'
   ),
   cruiseSpeedKmh: figure(
     16,
     '2026-09-22',
     'Medido sobre los horarios del STM',
-    'https://catalogodatos.gub.uy/dataset/horarios-de-omnibus-urbanos-por-parada-stm',
+    'https://catalogodatos.gub.uy/dataset/intendencia-montevideo-horarios-de-omnibus-urbanos-por-parada-stm',
     'Velocidad comercial promedio, sólo como respaldo cuando un par no tiene recorrido relevado.'
   ),
   storageMonthlyUyu: figure(

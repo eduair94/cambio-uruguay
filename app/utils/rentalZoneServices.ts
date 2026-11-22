@@ -62,7 +62,7 @@ export const UTE_ECSE_URL =
   'https://www.ute.com.uy/institucional/ute/utei/mapa-interactivo-de-la-situacion-del-servicio-electrico'
 export const OSE_NOTICES_URL = 'https://www.ose.com.uy/interrupciones/programados'
 export const IM_CLAIMS_URL =
-  'https://catalogodatos.gub.uy/dataset/reclamos-registrados-en-el-sistema-unico-de-reclamos-de-la-intendencia-de-montevideo'
+  'https://catalogodatos.gub.uy/dataset/intendencia-montevideo-reclamos-registrados-en-el-sistema-unico-de-reclamos-de-la-intendencia-d'
 const DATA_LICENSE =
   'https://www.gub.uy/agencia-gobierno-electronico-sociedad-informacion-conocimiento/sites/agencia-gobierno-electronico-sociedad-informacion-conocimiento/files/documentos/publicaciones/licencia_de_datos_abiertos_0.pdf'
 

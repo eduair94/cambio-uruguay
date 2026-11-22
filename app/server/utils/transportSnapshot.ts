@@ -390,7 +390,7 @@ export const TRANSPORT_ROUTER_ATTRIBUTION: Record<string, { label: string; url: 
 
 const STM_ATTRIBUTION = {
   label: 'Horarios y recorridos del STM — Intendencia de Montevideo, Catálogo de Datos Abiertos',
-  url: 'https://catalogodatos.gub.uy/dataset/horarios-de-omnibus-urbanos-por-parada-stm',
+  url: 'https://catalogodatos.gub.uy/dataset/intendencia-montevideo-horarios-de-omnibus-urbanos-por-parada-stm',
 }
 
 export function transportProjectComparador(
