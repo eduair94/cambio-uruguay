@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { aggregateCrimeCsv, crimeCsvRows, crimeReportingPeriod } from '../../classes/propertyzones/sources/crime';
 import { loadOfficialPropertyZoneGeometry, officialCrimeNeighborhoodCodes } from '../../classes/propertyzones/sources/geometry';
 import { CRIME_CSV_URL, CRIME_METADATA_URL, CRIME_RESOURCE_ID, CRIME_RESOURCE_NAME, findCrimeResource, loadPropertyZoneSources } from '../../classes/propertyzones/sources';
@@ -167,6 +169,43 @@ describe('offline metadata-versioned source loader', () => {
     const second = await loadPropertyZoneSources({ now: NOW, fetchImpl: fetcher as typeof fetch, previous: first });
     expect(second).toEqual(first);
     expect(fetcher.mock.calls.map(call => call[0])).toEqual([CRIME_METADATA_URL]);
+  });
+  it('falls back one month when the catalog declares a month the file does not have yet', async () => {
+    // The 2026-10-20 upload declares "2013-01 – 2026-10"; its last event is from 2026-09.
+    const input = csv(1200); // events July 2025 .. June 2026
+    const declaredAhead = fixtureFetcher(input, { temporal_coverage: '2013-01 – 2026-07' });
+    const loaded = await loadPropertyZoneSources({ now: NOW, fetchImpl: declaredAhead as typeof fetch });
+    expect({ from: loaded.crime.periodFrom, to: loaded.crime.periodTo, asOf: loaded.crime.source.dataAsOf }).toEqual(
+      { from: '2025-07-01', to: '2026-06-30', asOf: '2026-06-30' });
+    expect(loaded.crime.countsByOfficialCode['4'].total).toBe(1200);
+    // The fallback window is cached like the declared one.
+    const again = fixtureFetcher(input, { temporal_coverage: '2013-01 – 2026-07' });
+    expect(await loadPropertyZoneSources({ now: NOW, fetchImpl: again as typeof fetch, previous: loaded })).toEqual(loaded);
+    expect(again.mock.calls.map(call => call[0])).toEqual([CRIME_METADATA_URL]);
+    // Two months ahead is not a lag the import absorbs: it still refuses.
+    const twoAhead = fixtureFetcher(input, { temporal_coverage: '2013-01 – 2026-08' });
+    await expect(loadPropertyZoneSources({ now: NOW, fetchImpl: twoAhead as typeof fetch })).rejects.toThrow(/Incomplete crime aggregation/);
+  });
+  it('imports a CSV copied to disk when its size is exactly the catalog\'s, without downloading it', async () => {
+    // 2026-11-22: the catalog serves the VPS at ~80 KB/s and cuts the connection; the file is
+    // downloaded in Uruguay and copied to <dir>/<resource id>.csv.
+    const dir = mkdtempSync(join(tmpdir(), 'crime-csv-'));
+    try {
+      const input = csv(1200);
+      writeFileSync(join(dir, `${CRIME_RESOURCE_ID}.csv`), input);
+      const fetcher = fixtureFetcher(input);
+      const fromDisk = await loadPropertyZoneSources({ now: NOW, fetchImpl: fetcher as typeof fetch, localDir: dir });
+      expect(fetcher.mock.calls.map(call => call[0])).toEqual([CRIME_METADATA_URL]);
+      const downloaded = await loadPropertyZoneSources({ now: NOW, fetchImpl: fixtureFetcher(input) as typeof fetch });
+      expect(fromDisk.crime).toEqual({ ...downloaded.crime, source: { ...downloaded.crime.source, fetchedAt: fromDisk.crime.source.fetchedAt } });
+      // A file of another size is not the resource the catalog describes: it downloads instead.
+      writeFileSync(join(dir, `${CRIME_RESOURCE_ID}.csv`), input.slice(0, -10));
+      const other = fixtureFetcher(input);
+      await loadPropertyZoneSources({ now: NOW, fetchImpl: other as typeof fetch, localDir: dir });
+      expect(other.mock.calls.map(call => call[0])).toEqual([CRIME_METADATA_URL, CRIME_CSV_URL]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
   it('reloads after a resource modification and never returns old counts when that reload fails', async () => {
     const first = await loadPropertyZoneSources({ now: NOW, fetchImpl: fixtureFetcher() as typeof fetch });

@@ -26,6 +26,21 @@ export function crimeReportingPeriod(coverage: string, now = new Date()): { peri
   return { periodFrom: start.toISOString().slice(0, 10), periodTo: new Date(endExclusive.getTime() - 86400000).toISOString().slice(0, 10) };
 }
 
+export type CrimePeriod = { periodFrom: string; periodTo: string };
+
+/**
+ * The twelve whole months ending one month before `period`. The catalog's coverage can run ahead
+ * of the file: the upload of 2026-10-20 says "2013-01 – 2026-10" and its last event is from
+ * 2026-09, so the declared window holds 11 months and is rightly refused. This is the only other
+ * window ever tried, and the aggregation still has to prove it complete.
+ */
+export function previousCrimePeriod(period: CrimePeriod): CrimePeriod {
+  const [year, month] = period.periodTo.split('-').map(Number);
+  const endExclusive = new Date(Date.UTC(year, month - 1, 1));
+  const start = new Date(Date.UTC(year, month - 13, 1));
+  return { periodFrom: start.toISOString().slice(0, 10), periodTo: new Date(endExclusive.getTime() - 86400000).toISOString().slice(0, 10) };
+}
+
 /** Bounded UTF-8 CSV parser: quoted delimiters/newlines and escaped quotes work across stream boundaries. */
 export async function* crimeCsvRows(stream: AsyncIterable<Uint8Array>, maximumBytes = CRIME_MAX_BYTES): AsyncGenerator<string[]> {
   const decoder = new TextDecoder('utf-8', { fatal: true });
@@ -73,19 +88,37 @@ export interface CrimeAggregation {
 export async function aggregateCrimeCsv(
   stream: AsyncIterable<Uint8Array>,
   zones: OfficialPropertyZone[],
-  period: { periodFrom: string; periodTo: string },
+  period: CrimePeriod,
   options: { maximumBytes?: number; minimumEvents?: number } = {},
 ): Promise<CrimeAggregation> {
+  return (await aggregateCrimeCsvWindows(stream, zones, [period], options)).aggregation;
+}
+
+/**
+ * One pass over the CSV for several candidate windows (in order of preference), each with its own
+ * counts and its own completeness test; the first complete window wins. One pass because the file
+ * is 383 MB. A row that is malformed fails the whole import whatever window it falls in, as before.
+ */
+export async function aggregateCrimeCsvWindows(
+  stream: AsyncIterable<Uint8Array>,
+  zones: OfficialPropertyZone[],
+  periods: CrimePeriod[],
+  options: { maximumBytes?: number; minimumEvents?: number } = {},
+): Promise<{ period: CrimePeriod; aggregation: CrimeAggregation }> {
+  if (!periods.length) throw new Error('No crime reporting period');
   const codes = officialCrimeNeighborhoodCodes(zones);
   const departments = new Map(CRIME_DEPARTMENTS.map(name => [officialZoneName(name), name]));
-  const result: CrimeAggregation = {
-    countsByOfficialCode: Object.fromEntries(zones.map(zone => [zone.officialCode, emptyCounts()])),
-    countsByDepartment: Object.fromEntries(CRIME_DEPARTMENTS.map(name => [name, emptyCounts()])),
-    unassignedCount: 0,
-    diagnostics: { scannedRows: 0, includedEvents: 0, months: 0, unmatchedNeighborhoodNames: [] },
-  };
-  let header = false;
-  const seen = new Set<string>(), months = new Set<string>(), unmatched = new Set<string>();
+  const windows = periods.map(period => ({
+    period,
+    result: {
+      countsByOfficialCode: Object.fromEntries(zones.map(zone => [zone.officialCode, emptyCounts()])),
+      countsByDepartment: Object.fromEntries(CRIME_DEPARTMENTS.map(name => [name, emptyCounts()])),
+      unassignedCount: 0,
+      diagnostics: { scannedRows: 0, includedEvents: 0, months: 0, unmatchedNeighborhoodNames: [] },
+    } as CrimeAggregation,
+    seen: new Set<string>(), months: new Set<string>(), unmatched: new Set<string>(),
+  }));
+  let header = false, scannedRows = 0;
   for await (const row of crimeCsvRows(stream, options.maximumBytes)) {
     if (!header) {
       row[0] = row[0]?.replace(/^\uFEFF/, '');
@@ -93,39 +126,45 @@ export async function aggregateCrimeCsv(
       header = true; continue;
     }
     if (row.length !== HEADER.length) throw new Error('Invalid crime CSV columns');
-    result.diagnostics.scannedRows++;
+    scannedRows++;
     const dateMatch = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(row[5]);
     if (!dateMatch) throw new Error('Invalid crime event date');
     const [, dd, mm, yyyy] = dateMatch;
     const date = `${yyyy}-${mm}-${dd}`;
     if (Number(yyyy) !== Number(row[6]) || MONTH_NAMES[Number(mm) - 1] !== row[7]
       || new Date(Date.UTC(Number(yyyy), Number(mm) - 1, Number(dd))).toISOString().slice(0, 10) !== date) throw new Error('Invalid crime event date');
-    if (date < period.periodFrom || date > period.periodTo) continue;
+    const inside = windows.filter(window => date >= window.period.periodFrom && date <= window.period.periodTo);
+    if (!inside.length) continue;
     const offense = OFFENSES[officialZoneName(row[1])];
     const department = departments.get(officialZoneName(row[12]));
     if (!offense || !department || !['SI', 'NO'].includes(row[4]) || !/^[A-Za-z0-9]{1,64}$/.test(row[0])) throw new Error('Invalid crime event classification');
     const id = row[0];
-    if (seen.has(id)) throw new Error('Duplicate crime event in reporting period');
-    seen.add(id);
-    if (seen.size > 1_000_000) throw new Error('Crime reporting period exceeds event limit');
-    result.diagnostics.includedEvents++;
-    months.add(date.slice(0, 7));
+    const neighborhood = department === 'Montevideo' ? officialZoneName(row[14]) : '';
+    const code = neighborhood ? codes.get(neighborhood) : undefined;
     const increment = (counts: CrimeCounts) => { counts.total++; counts.byOffense[offense]++; };
-    increment(result.countsByDepartment[department]);
-    if (department === 'Montevideo') {
-      const neighborhood = officialZoneName(row[14]);
-      const code = codes.get(neighborhood);
-      if (code) increment(result.countsByOfficialCode[code]);
-      else {
-        result.unassignedCount++;
-        if (unmatched.size < 100 && neighborhood && neighborhood !== 'SIN CLASIFICAR') unmatched.add(neighborhood);
+    for (const { result, seen, months, unmatched } of inside) {
+      if (seen.has(id)) throw new Error('Duplicate crime event in reporting period');
+      seen.add(id);
+      if (seen.size > 1_000_000) throw new Error('Crime reporting period exceeds event limit');
+      result.diagnostics.includedEvents++;
+      months.add(date.slice(0, 7));
+      increment(result.countsByDepartment[department]);
+      if (department === 'Montevideo') {
+        if (code) increment(result.countsByOfficialCode[code]);
+        else {
+          result.unassignedCount++;
+          if (unmatched.size < 100 && neighborhood && neighborhood !== 'SIN CLASIFICAR') unmatched.add(neighborhood);
+        }
       }
     }
   }
-  result.diagnostics.months = months.size;
-  result.diagnostics.unmatchedNeighborhoodNames = [...unmatched].sort();
-  if (!header || months.size !== 12 || result.diagnostics.includedEvents < (options.minimumEvents ?? 1000)
-    || !result.countsByDepartment.Montevideo.total
-    || result.unassignedCount / result.countsByDepartment.Montevideo.total > 0.1) throw new Error('Incomplete crime aggregation');
-  return result;
+  for (const { period, result, months, unmatched } of windows) {
+    result.diagnostics.scannedRows = scannedRows;
+    result.diagnostics.months = months.size;
+    result.diagnostics.unmatchedNeighborhoodNames = [...unmatched].sort();
+    if (header && months.size === 12 && result.diagnostics.includedEvents >= (options.minimumEvents ?? 1000)
+      && result.countsByDepartment.Montevideo.total
+      && result.unassignedCount / result.countsByDepartment.Montevideo.total <= 0.1) return { period, aggregation: result };
+  }
+  throw new Error('Incomplete crime aggregation');
 }
