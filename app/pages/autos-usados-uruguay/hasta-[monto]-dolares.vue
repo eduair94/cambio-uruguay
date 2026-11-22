@@ -92,14 +92,7 @@
         </VBtn>
       </section>
 
-      <section class="mb-8">
-        <h2 class="text-h6 mb-2">Qué revisar antes de comprar</h2>
-        <ul class="budget-guides">
-          <li v-for="guide in GUIDES" :key="guide.to">
-            <NuxtLink :to="localePath(guide.to)">{{ guide.label }}</NuxtLink>
-          </li>
-        </ul>
-      </section>
+      <CarsBuyerGuides class="mb-8" />
 
       <section class="mb-8">
         <h2 class="text-h6 mb-2">Otros presupuestos</h2>
@@ -156,23 +149,6 @@ definePageMeta({
 })
 
 const SITE = 'https://cambio-uruguay.com'
-const GUIDES = [
-  { to: '/comprar-auto-con-deuda-uruguay', label: 'Auto usado con deuda: qué se hereda' },
-  {
-    to: '/guias/pagar-patente-sucive-uruguay',
-    label: 'Patente: cómo consultar en el SUCIVE cuánto debe el auto',
-  },
-  {
-    to: '/guias/titulo-del-auto-uruguay',
-    label: 'Título del auto: ¿hace falta o alcanza la libreta?',
-  },
-  { to: '/guias/transferir-un-auto-uruguay', label: 'Cómo transferir un auto' },
-  { to: '/cuanto-sale-transferir-un-auto-uruguay', label: 'Cuánto sale la transferencia' },
-  {
-    to: '/autos-chocados-y-con-deuda-uruguay',
-    label: 'Autos chocados y con deuda: lo que declaran los avisos',
-  },
-] as const
 
 const route = useRoute()
 const localePath = useLocalePath()
@@ -266,8 +242,5 @@ useHead(() => ({
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 16px;
-}
-.budget-guides {
-  padding-left: 1.25rem;
 }
 </style>

@@ -130,6 +130,8 @@
       @apply="applyShortcut"
     />
 
+    <CarsBuyerGuides class="mt-10" />
+
     <section v-if="data?.coverage.models.length" class="mt-10">
       <h2 class="text-h5 mb-3">Precios por modelo</h2>
       <p class="text-body-2 mb-3">

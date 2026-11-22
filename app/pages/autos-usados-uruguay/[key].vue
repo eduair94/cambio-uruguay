@@ -341,6 +341,8 @@
 
       <CarsModelInfo v-if="data.modelInfo" :info="data.modelInfo" for-advert class="mt-8" />
 
+      <CarsBuyerGuides class="mt-8" />
+
       <section v-if="data.similar.length" class="mt-8">
         <h2 class="text-h6 mb-3">Otros {{ car.brand }} {{ car.model }} parecidos</h2>
         <div class="cars-grid">

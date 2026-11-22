@@ -63,6 +63,11 @@
         </VAlert>
       </header>
 
+      <!-- Arriba de las tablas a propósito: quien llega acá desde un asistente de IA viene a
+           decidir una compra, y las guías de auto no tenían ningún enlace desde esta plantilla.
+           Ver utils/carBuyerGuides.ts. -->
+      <CarsBuyerGuides class="mb-8" />
+
       <section v-if="data.market.years.length" class="mb-8">
         <h2 class="text-h6 mb-2">Precio por año</h2>
         <CarsMarketTable
