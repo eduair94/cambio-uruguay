@@ -3948,6 +3948,21 @@
         "puesta de manifiesto historia laboral"
       ],
       "hypothesis": "Pagina nueva en el hueco que quedaba entre dos paginas que ya existen: /reconocer-anos-trabajados-uruguay cubre lo anterior al 1/4/1996 y /denunciar-trabajo-en-negro-uruguay la relacion laboral no declarada, y ninguna habla del registro en si. Contesta tres cosas con fuente: como se baja hoy (servicio Consultar mis aportes con Usuario Personal BPS, la app BPS Personas, la constancia con QR, y la via presencial con cedula, apoderado o herederos), que revisar ademas de si el periodo figura (fechas de alta y baja, remuneraciones declaradas, empresas ajenas) y el plazo que casi no esta escrito en ningun lado legible: el articulo 90 de la Ley 16.713 en la redaccion de la Ley 20.130 da un ano para observar el registro desde su puesta de manifiesto y despues queda inmodificable salvo inspeccion del BPS o sentencia firme, y el Decreto 228/023 articulo 19 fija la primera puesta de manifiesto para el 31/12/2027, cada 3 anios despues. Lleva una tabla de decision con el tramite que corresponde segun el periodo y la edad, que declara las DOS excepciones por separado porque pueden darse juntas y el BPS no publica cual manda. Va como guia y no como pagina raiz: /guias/* es una familia que el plan de ingreso ya valua como lectura larga, y la pagina raiz habria pedido clasificarla en el backend. No publica ningun importe: ninguna pagina del BPS que describe estos tramites publica un costo. Parte de cero: diez clics o mas en los 28 dias archivados es mejoro, y sin cambio es el resultado esperable para una pagina de tramite que recien entra al indice."
+    },
+    {
+      "id": "grabacion-snippet-respuesta-primero",
+      "shippedOn": "2026-11-22",
+      "routes": [
+        "/grabacion-sin-consentimiento-uruguay"
+      ],
+      "queries": [
+        "me grabaron sin consentimiento uruguay",
+        "publicaron un video mio sin permiso",
+        "bajar un video donde salgo tiktok",
+        "formulario de privacidad tiktok",
+        "injuria uruguay plazo"
+      ],
+      "hypothesis": "Solo el snippet: no se toco el cuerpo de la pagina ni su enlazado. Titulo y descripcion estaban escritos como etiqueta del tema y no como respuesta. El titulo era el sujeto de la pagina (Grabacion sin consentimiento en Uruguay) y no la frase que se escribe, que la fila del 2026-10-24 de esta misma ruta declara como me grabaron sin consentimiento uruguay y que ya es el H1 de la pagina. La descripcion gastaba los 137 caracteres del espanol en repetirle al lector su propia situacion (te grabaron, el video esta en TikTok o Instagram) y recien al final prometia, en abstracto, que adentro estaban la ley y los plazos; en ingles la misma forma ocupaba 158 y el SERP cortaba tambien la promesa (pozo DEUDA_DESCRIPCION_MENSAJE de seoMessageSnippetBudget.test.ts, 12 rutas a 11). Las tres pasan a abrir por lo unico que esta pagina contesta y ninguna otra pone al lado: el boton Reportar de la app no es la cola que corresponde, el formulario de privacidad si. Y cierran con las dos cifras de su propia tabla con fuente, no con una etiqueta: la injuria prescribe a los 3 meses (arts. 334 y 339 del Codigo Penal) y el borrado de datos se contesta en 5 dias habiles (art. 15 de la Ley 18.331). La regla medida del sitio es que la descripcion que trae la cifra adelante corre a un CTR varias veces mayor desde la misma posicion, asi que lo que se espera mover es el CTR y no la posicion. La pagina es del tramo contenido (8x el promedio del sitio) y era la unica ruta de ese tramo que los quince pozos de npm run seo_debt daban libre hoy. Quedan en 151/151/153 la descripcion y 58/51/59 el titulo con la marca, en es/en/pt."
     }
   ]
 }
