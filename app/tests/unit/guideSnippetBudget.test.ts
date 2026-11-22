@@ -77,8 +77,12 @@ const GUIDE_PAGE = readFileSync(join(__dirname, '..', '..', 'pages', 'guias', '[
  * mismo. Su título mide 41 caracteres —58 con la marca puesta— y su descripción 153, o sea que
  * nace dentro de los dos presupuestos y no toca ninguna de las dos deudas. Los dos llevan el
  * número adentro (4.500 UR, el tope del Decreto 504/984), que es la regla de oro de este archivo.
+ *
+ * 157 → 160 el 2026-11-22, en el commit que publica `utils/guidesVerano2027.ts`: el aumento de
+ * jubilaciones, el costo del sepelio y el Usuario personal BPS. Las tres nacen dentro de los dos
+ * presupuestos y sus títulos llevan la respuesta (1.720 UI, Abitab/Red Pagos/ANDA).
  */
-const MEASURED = 157
+const MEASURED = 160
 
 /**
  * 116 → 104 el 2026-10-02: los doce títulos más largos del catálogo, de 104 a 84 caracteres

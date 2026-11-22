@@ -3963,6 +3963,69 @@
         "injuria uruguay plazo"
       ],
       "hypothesis": "Solo el snippet: no se toco el cuerpo de la pagina ni su enlazado. Titulo y descripcion estaban escritos como etiqueta del tema y no como respuesta. El titulo era el sujeto de la pagina (Grabacion sin consentimiento en Uruguay) y no la frase que se escribe, que la fila del 2026-10-24 de esta misma ruta declara como me grabaron sin consentimiento uruguay y que ya es el H1 de la pagina. La descripcion gastaba los 137 caracteres del espanol en repetirle al lector su propia situacion (te grabaron, el video esta en TikTok o Instagram) y recien al final prometia, en abstracto, que adentro estaban la ley y los plazos; en ingles la misma forma ocupaba 158 y el SERP cortaba tambien la promesa (pozo DEUDA_DESCRIPCION_MENSAJE de seoMessageSnippetBudget.test.ts, 12 rutas a 11). Las tres pasan a abrir por lo unico que esta pagina contesta y ninguna otra pone al lado: el boton Reportar de la app no es la cola que corresponde, el formulario de privacidad si. Y cierran con las dos cifras de su propia tabla con fuente, no con una etiqueta: la injuria prescribe a los 3 meses (arts. 334 y 339 del Codigo Penal) y el borrado de datos se contesta en 5 dias habiles (art. 15 de la Ley 18.331). La regla medida del sitio es que la descripcion que trae la cifra adelante corre a un CTR varias veces mayor desde la misma posicion, asi que lo que se espera mover es el CTR y no la posicion. La pagina es del tramo contenido (8x el promedio del sitio) y era la unica ruta de ese tramo que los quince pozos de npm run seo_debt daban libre hoy. Quedan en 151/151/153 la descripcion y 58/51/59 el titulo con la marca, en es/en/pt."
+    },
+    {
+      "id": "guia-aumento-de-jubilaciones-2027",
+      "shippedOn": "2026-11-22",
+      "routes": [
+        "/guias/aumento-de-jubilaciones-uruguay"
+      ],
+      "queries": [
+        "aumento jubilaciones 2027",
+        "cuanto aumentan las jubilaciones en 2027",
+        "aumento de pasividades 2027",
+        "aumento jubilaciones bps 2027",
+        "cuando cobran los jubilados el aumento",
+        "ajuste de jubilaciones 2027 uruguay"
+      ],
+      "hypothesis": "Pagina nueva: el sitio no aparecia para el ajuste anual de pasividades, que se busca entre diciembre y marzo. Contesta de donde sale el numero (el IMSN del INE, no el IMS de los titulares, por el articulo 67 de la Constitucion), cuando se conoce (provisorio con el IMSN de enero a noviembre, cobrado en febrero con la pasividad de enero; definitivo con el de diciembre, cobrado en marzo con retroactivo), cuanto fue en 2025 y 2026 y por donde viene la cuenta de 2027 con el ultimo informe del INE como referencia y no como promesa. La guia se arma sola cuando se cargan las constantes del provisorio y del definitivo de 2027 (utils/aumentoJubilaciones.ts), que cargan las rutinas programadas de enero y febrero. Va en /guias/* por ser la familia que mas rinde por visita. Parte de cero: diez clics o mas en los 28 dias archivados es mejoro; la ventana cae antes del pico de enero, asi que sin cambio es un resultado posible y no un veredicto sobre la pagina."
+    },
+    {
+      "id": "guia-cuanto-cuesta-un-sepelio",
+      "shippedOn": "2026-11-22",
+      "routes": [
+        "/guias/cuanto-cuesta-un-sepelio-uruguay"
+      ],
+      "queries": [
+        "cuanto cuesta un sepelio",
+        "cuanto sale un velorio",
+        "servicios funebres uruguay",
+        "cuanto cuesta una cremacion en uruguay",
+        "cremacion montevideo precio",
+        "sepelio gratis intendencia de montevideo"
+      ],
+      "hypothesis": "Pagina nueva para consultas de costo donde el sitio no aparecia (autocompletado uruguayo: servicios funebres uruguay, cuanto cuesta un sepelio). Publica lo unico que se puede publicar con fuente: las tasas oficiales de los cementerios de Montevideo (Digesto, en UI y en pesos con la UI del dia de lectura) y de Canelones (planilla semestral), el servicio funebre gratuito de la Intendencia de Montevideo y el de Canelones, el tope del subsidio del BPS, la cuota publicada de ANDA y los plazos y partidas del Registro Civil. No publica precios de empresas funebres porque las que se revisaron no los publican, y lo dice. No le saca la consulta del reintegro a /guias/subsidio-expensas-funerarias-bps-uruguay: la enlaza. Parte de cero: diez clics o mas en los 28 dias archivados es mejoro."
+    },
+    {
+      "id": "guia-usuario-personal-bps",
+      "shippedOn": "2026-11-22",
+      "routes": [
+        "/guias/usuario-personal-bps-uruguay"
+      ],
+      "queries": [
+        "como realizar usuario bps",
+        "servicios en linea bps",
+        "usuario personal bps",
+        "como sacar usuario bps",
+        "olvide contraseña bps",
+        "usuario bps abitab"
+      ],
+      "hypothesis": "Pagina nueva: media docena de paginas del sitio mandan al lector a hacer algo con su Usuario personal BPS (historia laboral, recibos, devolucion de FONASA) y ninguna explicaba como se saca; el autocompletado uruguayo lo pide (como realizar usuario bps, servicios en linea bps). Contesta en el titulo lo que casi nadie dice: no se saca por internet sino en persona, en Abitab, Red Pagos, ANDA o el BPS (ficha 11444), y al portal web tambien se entra con ID Uruguay cuyo nivel intermedio se consigue por videollamada. Separa el usuario de la DGI, que es otro tramite. Parte de cero: diez clics o mas en los 28 dias archivados es mejoro."
+    },
+    {
+      "id": "canasta-fin-de-ano-2026-monto-y-fecha",
+      "shippedOn": "2026-11-22",
+      "routes": [
+        "/guias/canasta-fin-de-ano-bps-uruguay"
+      ],
+      "queries": [
+        "canasta de fin de año bps 2026",
+        "canasta fin de año jubilados 2026",
+        "cuando pagan la canasta de fin de año",
+        "canasta bps monto",
+        "canasta de fin de año bps"
+      ],
+      "hypothesis": "La guia decia que para 2026 no habia monto y el BPS lo publico el 18/11/2026: $ 3.293 desde el miercoles 2 de diciembre con las pasividades de noviembre, tope de $ 21.888 (3,1889 BPC), pensionistas de 65 anos o mas al 30/09/2026, y por primera vez escrito que los pensionistas por vejez e invalidez pueden tener otros ingresos dentro del tope. Titulo y descripcion pasan de contar 2025 a dar el monto y la fecha de 2026, que es lo que se busca en las dos semanas antes del pago; el cuerpo, la tabla y las preguntas se actualizan con las condiciones de la ficha 21733 y la noticia 24782. Dice que ningun texto del BPS cita un decreto de 2026. Se espera mover el CTR desde la misma posicion en plena temporada; la ventana de 28 dias contiene el pago del 2/12."
     }
   ]
 }

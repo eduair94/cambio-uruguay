@@ -36,5 +36,9 @@ export const JUBILACION_MINIMA_2026 = 20935
  */
 export const PENSION_VEJEZ_INVALIDEZ_2026 = 18575
 
-/** Ajuste general de jubilaciones y pensiones 2026: se paga desde marzo, retroactivo a enero. */
+/**
+ * Ajuste general de jubilaciones y pensiones 2026 (el definitivo). En febrero se cobró un provisorio
+ * de 5,72 % con la pasividad de enero y desde marzo la diferencia, retroactiva a enero (BPS, noticia
+ * 23862 del 30/1/2026). Ver `utils/aumentoJubilaciones.ts`.
+ */
 export const AJUSTE_PASIVIDADES_2026_PCT = 5.97

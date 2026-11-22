@@ -105,7 +105,16 @@ describe('video topic slugs never hijack the site search', () => {
     // Asserted as "not a video list" rather than as one exact route: what the top hit IS for
     // "impuestos" is the site's own ranking business (today a glossary entry), and pinning it here
     // would make this test fail for reasons that have nothing to do with videos.
-    for (const query of ['inversiones', 'impuestos', 'dolar', 'prestamos', 'aduana', 'clearing']) {
+    // "jubilaciones" joined this list on 2026-11-22 with /guias/aumento-de-jubilaciones-uruguay.
+    for (const query of [
+      'inversiones',
+      'impuestos',
+      'dolar',
+      'prestamos',
+      'aduana',
+      'clearing',
+      'jubilaciones',
+    ]) {
       const [top] = scoreDocs(query, docs)
       expect(top?.doc.to, `"${query}" must not land on a video list first`).not.toMatch(
         /^\/videos-de-economia-uruguay/
@@ -115,12 +124,10 @@ describe('video topic slugs never hijack the site search', () => {
 
   it('does take the top spot when the site has no page of its own', () => {
     // The mirror image, asserted so the rule above reads as a boundary and not as "video pages
-    // must never rank". Nothing on this site answers "jubilaciones" in prose, and the page closest
-    // to "economia uruguaya" is titled just "Economía" — in both cases the video list IS the best
-    // answer the corpus has. The day either page is written, this test is what says so.
-    expect(scoreDocs('jubilaciones', docs)[0]?.doc.to).toBe(
-      '/videos-de-economia-uruguay/jubilaciones-y-afap'
-    )
+    // must never rank". The page closest to "economia uruguaya" is titled just "Economía", so the
+    // video list IS the best answer the corpus has. "jubilaciones" used to be the second case here
+    // until /guias/aumento-de-jubilaciones-uruguay answered it in prose (2026-11-22). The day the
+    // economy page is written, this test is what says so.
     expect(scoreDocs('economia uruguaya', docs)[0]?.doc.to).toBe(
       '/videos-de-economia-uruguay/macroeconomia-y-bcu'
     )

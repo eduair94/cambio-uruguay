@@ -613,73 +613,74 @@ export const trabajoBpsGuides: readonly Guide[] = [
   },
   {
     slug: 'canasta-fin-de-ano-bps-uruguay',
-    title: 'En 2025 la canasta del BPS fue de $ 3.151',
+    title: 'Canasta del BPS 2026: $ 3.293 desde el 2/12',
     description:
-      'El Decreto 264/025 la fijó en $ 3.151 y se pagó con las pasividades de noviembre. Depende de un decreto nuevo cada año: para 2026 no hay monto aún.',
+      'El BPS paga $ 3.293 desde el miércoles 2 de diciembre, con las pasividades de noviembre, a quien cobra hasta $ 21.888 y no tiene otros ingresos.',
     tag: 'JUBILADOS',
-    updatedAt: '2026-09-13',
+    updatedAt: '2026-11-22',
     sections: [
       {
-        heading: 'Qué es la canasta de fin de año y cuánto fue en 2025',
-        body: 'A pesar del nombre, no es una caja con comida: es plata. El BPS la define como "una partida monetaria que se abona una vez al año a pasivos que reúnen ciertas condiciones", y el Decreto 264/025 autorizó al BPS a otorgar en 2025 "un beneficio especial consistente en una Canasta de Fin de Año en dinero, cuyo valor será de $ 3.151". Según el BPS, se pagó a partir del martes 2 de diciembre de 2025, cuando se abonaban las pasividades de noviembre, y llegó por el mismo medio por el que cada beneficiario cobra habitualmente. El propio organismo estimó que 165.244 personas podían acceder, por un monto total de 520,7 millones de pesos. Conviene no confundirla con un aumento: no es una suba de la jubilación ni se repite todos los meses, es un pago único en el año que se agrega a la pasividad de noviembre. Y como se verá más abajo, ni siquiera está garantizado que exista el año siguiente con el mismo monto.',
+        heading: 'Qué es la canasta de fin de año y cuánto es en 2026',
+        body: 'A pesar del nombre, no es una caja con comida: es plata. El BPS la define como "una partida monetaria que se abona una vez al año a pasivos que reúnen ciertas condiciones". El 18 de noviembre de 2026 anunció la de este año: $ 3.293, que se pagan a partir del miércoles 2 de diciembre, junto con las pasividades de noviembre y por el mismo medio por el que cada beneficiario cobra habitualmente. El propio organismo estima que la van a recibir unas 165.816 personas, por un total de 546 millones de pesos. En 2025 había sido de $ 3.151, pagada también desde el 2 de diciembre. Conviene no confundirla con un aumento: no es una suba de la jubilación ni se repite todos los meses, es un pago único en el año que se agrega a la pasividad de noviembre.',
       },
       {
-        heading: 'Cada año depende de un decreto nuevo',
-        body: 'Esto es lo que casi nadie aclara y lo que explica por qué la pregunta vuelve cada fin de año. La canasta no está fijada de una vez para siempre: el Poder Ejecutivo la autoriza por decreto, con su monto y sus condiciones. El Decreto 345/023, de octubre de 2023, la autorizó para 2023 y para 2024; el Decreto 264/025, firmado el 25 de noviembre de 2025, la autorizó para 2025. Para 2026, el monto recién existe cuando se publica el decreto, así que cualquier cifra que veas circular antes es una estimación y no un dato. Los dos últimos decretos se firmaron el 26 de octubre de 2023 y el 25 de noviembre de 2025, y en 2025 el pago acompañó a las pasividades de noviembre. La tabla muestra las tres ediciones con su monto oficial.',
+        heading: 'Cada año se fija de nuevo',
+        body: 'Esto es lo que casi nadie aclara y lo que explica por qué la pregunta vuelve cada fin de año. La canasta no está fijada de una vez para siempre: su monto y sus condiciones se definen para cada edición. El Decreto 345/023, de octubre de 2023, la autorizó para 2023 y para 2024; el Decreto 264/025, firmado el 25 de noviembre de 2025, la autorizó para 2025. Para 2026 el BPS publicó el monto y las condiciones el 18 de noviembre, pero ni su anuncio ni su ficha citan un decreto nuevo: la ficha sigue nombrando como normativa los Decretos 345/023 y 264/025, y al 22 de noviembre de 2026 no encontramos en IMPO un decreto de este año. La tabla muestra las cuatro ediciones con su monto oficial.',
         table: {
-          headers: ['Año', 'Monto', 'Decreto'],
+          headers: ['Año', 'Monto', 'Fuente'],
           rows: [
             ['2023', '$ 2.868', 'Decreto 345/023'],
             ['2024', '$ 2.987', 'Decreto 345/023'],
             ['2025', '$ 3.151', 'Decreto 264/025'],
+            ['2026', '$ 3.293', 'Anuncio del BPS del 18/11/2026'],
           ],
         },
       },
       {
-        heading: 'El tope: cobrar hasta la jubilación mínima',
-        body: 'La condición de ingresos no es un número inventado para la ocasión: está atada a la jubilación mínima. El artículo 2 del Decreto 264/025 alcanza a quienes perciben "hasta el monto mínimo vigente de jubilación y pensión" al 31 de octubre de 2025, y el BPS lo tradujo a pesos: pasividades de hasta $ 20.458 por mes, equivalentes a 3,111 BPC. En la práctica, la canasta es para quien cobra la mínima, no para quien cobra un poco más: con una pasividad de $ 20.500, en 2025 ya quedabas afuera. Si la próxima edición repite esa regla, el tope en pesos se va a mover con la jubilación mínima de ese año, por eso el número de 2025 no sirve para decidir si te toca en 2026. Para los pensionistas la vara no es sólo su propia pasividad: el artículo 4 los deja afuera si el ingreso por integrante de su hogar supera ese mismo mínimo, y a los pensionistas por sobrevivencia el BPS les pidió acreditarlo con una declaración jurada de que el promedio de ingresos de su núcleo familiar no supera los $ 20.458.',
+        heading: 'El tope: $ 21.888 por mes en 2026',
+        body: 'La condición de ingresos no es un número inventado para la ocasión. En 2026 el BPS la fija en ingresos personales de hasta $ 21.888 nominales por mes, equivalentes a 3,1889 BPC, y los evalúa a setiembre. En 2025 el tope era otro: el artículo 2 del Decreto 264/025 alcanzaba a quienes percibían "hasta el monto mínimo vigente de jubilación y pensión" al 31 de octubre de 2025, que el BPS tradujo a $ 20.458 por mes (3,111 BPC). Por eso el número de un año no sirve para decidir si te toca al siguiente. En la práctica la canasta es para quien cobra cerca de la mínima: con una pasividad de $ 22.000, en 2026 quedás afuera. Para los pensionistas por sobrevivencia la vara no es sólo su propia pasividad: el promedio de ingresos de su núcleo familiar tampoco puede pasar de esos 3,1889 BPC.',
       },
       {
         heading: 'Quién queda afuera aunque cobre poco',
-        body: 'Cobrar la mínima no alcanza, porque las exclusiones pesan tanto como el tope. El artículo 3 del Decreto 264/025 deja afuera a los jubilados que perciban "otros ingresos de cualquier cuantía, naturaleza u origen público o privado", a los que no residen en el país y a los que, estando amparados a un convenio internacional o a una acumulación de servicios, tienen menos del 50 % de sus servicios en el BPS. "De cualquier cuantía" hay que leerlo literal: no importa que el otro ingreso sea chico, alcanza con que exista. El artículo 4 aplica la misma exclusión por otros ingresos a los pensionistas, que además tienen que tener 65 años o más, y el BPS incluyó a los pensionistas por sobrevivencia, vejez e invalidez y a los beneficiarios de Asistencia a la Vejez que eran mayores de 65 años al 31 de octubre de 2025. Si cobrás tu jubilación del BPS viviendo en otro país, esta partida no te alcanza, por la exclusión de los no residentes.',
+        body: 'Cobrar poco no alcanza, porque las exclusiones pesan tanto como el tope. Según la ficha del BPS de 2026, los jubilados y los pensionistas por sobrevivencia no pueden tener otros ingresos de ninguna naturaleza: no importa que el otro ingreso sea chico, alcanza con que exista. Hay una excepción que en 2026 está escrita: los pensionistas por vejez e invalidez sí pueden tener otros ingresos, siempre que la pensión y esos ingresos sumados no pasen de 3,1889 BPC ($ 21.888). Además hay que residir en Uruguay, los pensionistas tienen que tener 65 años o más (el anuncio pide ser mayor de 65 años al 30 de setiembre de 2026) y los jubilados que cobran por acumulación con otras cajas o por un convenio internacional tienen que tener más del 50 % de sus servicios en el BPS. También la reciben los beneficiarios de Asistencia a la Vejez del MIDES que cumplen las condiciones. Si cobrás tu jubilación del BPS viviendo en otro país, esta partida no te alcanza.',
       },
       {
         heading: '¿Hay que anotarse para cobrarla?',
-        body: 'En la edición 2025, según el BPS, la canasta se pagó por el medio en el que cada beneficiario cobra habitualmente sus prestaciones, junto con las pasividades de noviembre. La gestión que pidió el organismo fue una declaración jurada de los pensionistas por sobrevivencia, para acreditar que el ingreso promedio de su núcleo familiar no superaba los $ 20.458. El BPS le puso un plazo concreto para los que no la habían cobrado: "Los pensionistas por sobrevivencia que no cobran el beneficio deberán realizar la declaración jurada hasta el 5 de enero de 2026". Es decir que la declaración no era sólo un paso previo al pago: servía también para reclamar la canasta cuando no había llegado en diciembre. Si sos pensionista por sobrevivencia y no la cobraste, ese era el camino, y es lo primero que conviene averiguar cuando se publique la edición siguiente, porque cada decreto puede cambiar quién tiene que declarar y hasta cuándo.',
+        body: 'En 2026 el BPS no pide ningún trámite: ni su anuncio ni su ficha mencionan una inscripción o una declaración jurada, y el pago llega por el medio de cobro habitual junto con las pasividades de noviembre. En la edición 2025 sí hubo una gestión para un grupo: los pensionistas por sobrevivencia que no la cobraron tenían que presentar una declaración jurada del ingreso promedio de su núcleo familiar, con plazo hasta el 5 de enero de 2026. Si sos pensionista por sobrevivencia y en diciembre no te llega, lo primero es consultar en el BPS si ese mismo camino vuelve a estar abierto este año, porque el organismo no lo publicó para 2026.',
       },
       {
         heading: 'Cómo saber si te corresponde, en cinco preguntas',
-        body: 'Con las reglas de 2025 en la mano, la respuesta sale de cinco preguntas que podés contestar con tu recibo de pasividad. ¿Vivís en Uruguay? Si no, no corresponde. ¿Tu pasividad llega como mucho a la jubilación mínima vigente, que al 31 de octubre de 2025 era de $ 20.458? ¿Tenés algún otro ingreso, de cualquier monto y origen? Si lo tenés, quedás afuera. Si sos pensionista, ¿tenés 65 años o más? Y si tu jubilación se calculó sumando años de otro país o de otra caja, ¿más de la mitad de tus servicios están en el BPS? Si las cinco respuestas te dan a favor y aun así no la cobraste, lo que corresponde es consultar en el BPS con tu cédula y tu último recibo, porque la liquidación la hace el organismo con sus propios registros y ahí se ve qué dato te dejó afuera. Tené presente que la próxima edición puede traer otro monto y otras condiciones, porque cada decreto las fija de nuevo.',
+        body: 'Con las reglas de 2026 en la mano, la respuesta sale de cinco preguntas que podés contestar con tu recibo de pasividad. ¿Vivís en Uruguay? Si no, no corresponde. ¿Tus ingresos personales llegan como mucho a $ 21.888 nominales por mes? ¿Tenés algún otro ingreso? Si sos jubilado o pensionista por sobrevivencia, cualquier otro ingreso te deja afuera; si tu pensión es por vejez o invalidez, el otro ingreso se suma a la pensión y el total no puede pasar de $ 21.888. Si sos pensionista, ¿tenés 65 años o más? Y si tu jubilación se calculó sumando años de otro país o de otra caja, ¿más de la mitad de tus servicios están en el BPS? Si las cinco respuestas te dan a favor y aun así no la cobraste, lo que corresponde es consultar en el BPS con tu cédula y tu último recibo, porque la liquidación la hace el organismo con sus propios registros y ahí se ve qué dato te dejó afuera.',
       },
       {
         heading: 'No confundirla con la prima por edad',
-        body: 'Hay otra prestación del BPS para jubilados de pocos recursos que conviene separar de la canasta, porque tiene otra edad, otro tope y otro trámite. La prima por edad, según el BPS, es para "los jubilados mayores de 70 años de menores recursos", con un tope de ingresos de 3,7006 BPC, medido a enero del año en que se controlan los ingresos, y exige una declaración jurada de los ingresos nominales personales y del núcleo familiar. La canasta, en cambio, se mide contra la jubilación mínima, no pide una edad mínima a los jubilados y, en la edición 2025, sólo pidió declaración a los pensionistas por sobrevivencia. Cumplir las condiciones de una no garantiza la otra: son dos prestaciones distintas, cada una con su propio control. Si tenés más de 70 años y cobrás poco, vale la pena revisar las dos por separado con tu recibo en la mano.',
+        body: 'Hay otra prestación del BPS para jubilados de pocos recursos que conviene separar de la canasta, porque tiene otra edad, otro tope y otro trámite. La prima por edad, según el BPS, es para "los jubilados mayores de 70 años de menores recursos", con un tope de ingresos de 3,7006 BPC, medido a enero del año en que se controlan los ingresos, y exige una declaración jurada de los ingresos nominales personales y del núcleo familiar. La canasta, en cambio, se mide contra un tope cercano a la jubilación mínima ($ 21.888 en 2026), no pide una edad mínima a los jubilados y en 2026 no pide ningún trámite. Cumplir las condiciones de una no garantiza la otra: son dos prestaciones distintas, cada una con su propio control. Si tenés más de 70 años y cobrás poco, vale la pena revisar las dos por separado con tu recibo en la mano.',
       },
     ],
     faqs: [
       {
         q: '¿Cómo saber si me corresponde la canasta del BPS?',
-        a: 'Con las reglas de 2025: vivir en Uruguay, cobrar hasta la jubilación mínima ($ 20.458 ese año), no tener otros ingresos de ningún monto, tener 65 años o más si sos pensionista y, si tu jubilación suma años de otro país o caja, tener más de la mitad de los servicios en el BPS.',
+        a: 'Con las reglas de 2026: vivir en Uruguay, tener ingresos personales de hasta $ 21.888 nominales por mes, no tener otros ingresos (los pensionistas por vejez e invalidez pueden, si el total no pasa ese tope), tener 65 años o más si sos pensionista y, si tu jubilación suma años de otro país o caja, tener más de la mitad de los servicios en el BPS.',
       },
       {
-        q: '¿Cuándo pagan la canasta de fin de año?',
-        a: 'En 2025 se pagó a partir del martes 2 de diciembre, junto con las pasividades de noviembre. Para 2026 la fecha y el monto dependen de que se publique un decreto nuevo.',
+        q: '¿Cuándo pagan la canasta de fin de año 2026?',
+        a: 'A partir del miércoles 2 de diciembre de 2026, junto con las pasividades de noviembre y por el medio de cobro habitual, según el anuncio del BPS del 18 de noviembre.',
       },
       {
         q: '¿De cuánto es la canasta de fin de año?',
-        a: 'Fue de $ 3.151 en 2025 según el Decreto 264/025, y de $ 2.987 en 2024 y $ 2.868 en 2023 según el Decreto 345/023. El monto de cada año lo fija su decreto.',
+        a: 'En 2026 es de $ 3.293. Fue de $ 3.151 en 2025 (Decreto 264/025), de $ 2.987 en 2024 y de $ 2.868 en 2023 (Decreto 345/023).',
       },
       {
         q: '¿Hay que anotarse para cobrar la canasta?',
-        a: 'En 2025 se pagó por el medio de cobro habitual. La gestión que pidió el BPS fue una declaración jurada de los pensionistas por sobrevivencia, con plazo hasta el 5 de enero de 2026 para quienes no la habían cobrado.',
+        a: 'En 2026 no: el BPS no menciona ningún trámite y la paga por el medio de cobro habitual. En 2025 los pensionistas por sobrevivencia que no la cobraron tenían que presentar una declaración jurada hasta el 5 de enero de 2026.',
       },
       {
-        q: 'Cobro la mínima pero tengo otro ingreso, ¿me corresponde?',
-        a: 'Con las reglas de 2025, no. El Decreto 264/025 excluye tanto a los jubilados (artículo 3) como a los pensionistas (artículo 4) que perciben otros ingresos "de cualquier cuantía, naturaleza u origen público o privado".',
+        q: 'Cobro poco pero tengo otro ingreso, ¿me corresponde?',
+        a: 'Si sos jubilado o pensionista por sobrevivencia, no: el BPS exige no tener otros ingresos de ninguna naturaleza. Si tu pensión es por vejez o invalidez, sí puede corresponder, siempre que la pensión y el otro ingreso sumados no pasen de $ 21.888 (3,1889 BPC).',
       },
       {
         q: 'Vivo afuera y cobro la jubilación del BPS, ¿me corresponde?',
-        a: 'No. El Decreto 264/025 excluye expresamente a los jubilados no residentes en el país.',
+        a: 'No. Residir en Uruguay es una de las condiciones de la canasta.',
       },
     ],
     related: [
@@ -696,7 +697,13 @@ export const trabajoBpsGuides: readonly Guide[] = [
     sources: [
       {
         label:
-          'Canasta de fin de año — "una partida monetaria que se abona una vez al año a pasivos que reúnen ciertas condiciones"; residencia en Uruguay, ingresos menores a $ 20.458, pensionistas de 65 años o más, más del 50 % de servicios en el BPS en acumulación o convenio, $ 3.151 (valor 2025) y declaración jurada de pensionistas por sobrevivencia hasta el 5/1/2026 (actualizado el 04/12/2025)',
+          'Partida especial de fin de año para personas jubiladas y pensionistas — $ 3.293 a partir del miércoles 2 de diciembre de 2026 con las pasividades de noviembre, por el medio de cobro habitual; jubilados con pasividades de hasta $ 21.888 nominales y pensionistas mayores de 65 años al 30/09/2026; residir en Uruguay y no percibir otros ingresos; unas 165.816 personas por 546 millones de pesos (18/11/2026)',
+        url: 'https://www.bps.gub.uy/24782/partida-especial-de-fin-de-ano-para-personas-jubiladas-y-pensionistas.html',
+        publisher: 'BPS',
+      },
+      {
+        label:
+          'Canasta de fin de año — "una partida monetaria que se abona una vez al año a pasivos que reúnen ciertas condiciones"; $ 3.293 (valor 2026), ingresos personales menores a $ 21.888 (3,1889 BPC) evaluados a setiembre, residencia en Uruguay, pensionistas de 65 años o más, núcleo familiar de los pensionistas por sobrevivencia, otros ingresos permitidos a pensionistas por vejez e invalidez dentro del tope, más del 50 % de servicios en el BPS; normativa citada: Decretos 345/023 y 264/025 (actualizado el 18/11/2026)',
         url: 'https://www.bps.gub.uy/21733/canasta-de-fin-de-ano.html',
         publisher: 'BPS',
       },
