@@ -1533,7 +1533,10 @@ export const guideHubs: readonly GuideHub[] = [
       'cobrar-jubilacion-uruguaya-desde-el-exterior',
       'jubilacion-parcial-uruguay',
       'historia-laboral-bps-uruguay',
+      'usuario-personal-bps-uruguay',
+      'aumento-de-jubilaciones-uruguay',
       'canasta-fin-de-ano-bps-uruguay',
+      'cuanto-cuesta-un-sepelio-uruguay',
       'precio-supergas-garrafa-uruguay',
     ],
     resources: [

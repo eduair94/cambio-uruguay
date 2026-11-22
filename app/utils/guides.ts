@@ -24,6 +24,7 @@ import { primavera2026Guides } from './guidesPrimavera2026'
 import { redditGuides } from './guidesReddit'
 import { trabajoBpsGuides } from './guidesTrabajoBps'
 import { tramitesGuides } from './guidesTramites'
+import { verano2027Guides } from './guidesVerano2027'
 import { viviendaGuides } from './guidesVivienda'
 
 /** An optional comparison table rendered below a section's prose. */
@@ -1808,6 +1809,7 @@ export const guides: readonly Guide[] = [
   // Tanda del 2026-10-21: cómo saber si tengo deudas, comprar en Shein e IRPF de alquileres.
   // Guardadas por `tests/unit/guiasPrimavera2026*.test.ts`.
   ...primavera2026Guides,
+  ...verano2027Guides,
   // El Impuesto al Patrimonio de las personas físicas, 2026-11-01: el impuesto de TENER, que el
   // sitio sólo nombraba como keyword de la página del impuesto a las RENTAS. Deliberadamente sin
   // tasa —el art. 53 la manda reducir cada año y ninguna publicación de la DGI imprime el

@@ -216,7 +216,10 @@ export const RETIREMENT_MAX_INTERGENERATIONAL_2026 = 79430
 export const RETIREMENT_MAX_TRANSITION_2026 = 117460
 export const RETIREMENT_ACCUMULATION_CAP_TRANSITION_2026 = 166080
 
-/** Ajuste de pasividades de 2026, en porcentaje. Se paga desde marzo con retroactividad a enero. */
+/**
+ * Ajuste de pasividades de 2026 (el definitivo), en porcentaje. El provisorio se cobró en febrero y
+ * la diferencia desde marzo, retroactiva a enero: ver `utils/aumentoJubilaciones.ts`.
+ */
 export const RETIREMENT_ADJUSTMENT_2026_PCT = AJUSTE_PASIVIDADES_2026_PCT
 
 /**
