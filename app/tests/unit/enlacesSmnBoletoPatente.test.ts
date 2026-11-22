@@ -25,7 +25,10 @@ describe('enlaces de contexto: salario mínimo, boleto y patente', () => {
   })
 
   it('las páginas de autos por presupuesto listan la patente entre lo que hay que revisar', () => {
-    const source = read('pages/autos-usados-uruguay/hasta-[monto]-dolares.vue')
-    expect(source).toContain("to: '/guias/pagar-patente-sucive-uruguay'")
+    // La lista vive desde el 2026-11-22 en utils/carBuyerGuides.ts, compartida con la página de
+    // modelo y la ficha del aviso: el tramo de presupuesto la dibuja con <CarsBuyerGuides>.
+    const tpl = template(read('pages/autos-usados-uruguay/hasta-[monto]-dolares.vue'))
+    expect(tpl).toContain('<CarsBuyerGuides')
+    expect(read('utils/carBuyerGuides.ts')).toContain("to: '/guias/pagar-patente-sucive-uruguay'")
   })
 })

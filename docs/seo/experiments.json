@@ -3963,6 +3963,27 @@
         "injuria uruguay plazo"
       ],
       "hypothesis": "Solo el snippet: no se toco el cuerpo de la pagina ni su enlazado. Titulo y descripcion estaban escritos como etiqueta del tema y no como respuesta. El titulo era el sujeto de la pagina (Grabacion sin consentimiento en Uruguay) y no la frase que se escribe, que la fila del 2026-10-24 de esta misma ruta declara como me grabaron sin consentimiento uruguay y que ya es el H1 de la pagina. La descripcion gastaba los 137 caracteres del espanol en repetirle al lector su propia situacion (te grabaron, el video esta en TikTok o Instagram) y recien al final prometia, en abstracto, que adentro estaban la ley y los plazos; en ingles la misma forma ocupaba 158 y el SERP cortaba tambien la promesa (pozo DEUDA_DESCRIPCION_MENSAJE de seoMessageSnippetBudget.test.ts, 12 rutas a 11). Las tres pasan a abrir por lo unico que esta pagina contesta y ninguna otra pone al lado: el boton Reportar de la app no es la cola que corresponde, el formulario de privacidad si. Y cierran con las dos cifras de su propia tabla con fuente, no con una etiqueta: la injuria prescribe a los 3 meses (arts. 334 y 339 del Codigo Penal) y el borrado de datos se contesta en 5 dias habiles (art. 15 de la Ley 18.331). La regla medida del sitio es que la descripcion que trae la cifra adelante corre a un CTR varias veces mayor desde la misma posicion, asi que lo que se espera mover es el CTR y no la posicion. La pagina es del tramo contenido (8x el promedio del sitio) y era la unica ruta de ese tramo que los quince pozos de npm run seo_debt daban libre hoy. Quedan en 151/151/153 la descripcion y 58/51/59 el titulo con la marca, en es/en/pt."
+    },
+    {
+      "id": "autos-guias-antes-de-comprar-en-modelo-ficha-y-directorio",
+      "shippedOn": "2026-12-20",
+      "routes": [
+        "/guias/credito-prendario-auto-uruguay",
+        "/guias/costos-de-tener-auto-uruguay",
+        "/guias/titulo-del-auto-uruguay",
+        "/comprar-auto-con-deuda-uruguay",
+        "/guias/transferir-un-auto-uruguay",
+        "/cuanto-sale-transferir-un-auto-uruguay",
+        "/guias/pagar-patente-sucive-uruguay",
+        "/autos-chocados-y-con-deuda-uruguay"
+      ],
+      "queries": [
+        "credito prendario auto uruguay",
+        "cuanto cuesta mantener un auto en uruguay",
+        "titulo del auto uruguay",
+        "comprar auto con deuda de patente"
+      ],
+      "hypothesis": "Solo enlazado interno: no se toco el texto de ninguna de las ocho guias de destino. La lista Que revisar antes de comprar vivia como constante local de /autos-usados-uruguay/hasta-<monto>-dolares y ninguna otra plantilla de autos la tenia; pasa a utils/carBuyerGuides.ts y la dibujan tambien la pagina de modelo (/autos-usados-uruguay/precios/<modelo>, arriba de la primera tabla), la ficha de cada aviso y el directorio, y suma credito prendario y costos de tener auto, que no tenian ningun enlace desde autos. Medido el 22/11/2026 en GA4: ChatGPT es la segunda fuente del sitio y su primer destino son justamente las paginas de modelo, una plantilla de tablas que mostraba pocos anuncios por visita frente a las guias. Se publica el 20/12 y no antes porque cinco de los ocho destinos y el propio directorio tenian ventanas abiertas hasta el 19/12. Lo que se espera mover es la porcion de clics de las guias de destino por el enlazado desde miles de paginas de modelo y fichas; sin cambio es un resultado posible porque las fichas casi no reciben clics de busqueda propios."
     }
   ]
 }
