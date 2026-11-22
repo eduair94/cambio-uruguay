@@ -32,11 +32,16 @@ export function envelopeUrl(dsn: DsnParts): string {
   return `${dsn.protocol}://${dsn.host}/api/${dsn.projectId}/envelope/?sentry_key=${dsn.publicId}&sentry_version=7&sentry_client=cambio-uruguay-job%2F1.0`;
 }
 
-/** `cambio-uruguay-backend@<sha>`: the commit the VPS built `dist/` from. */
+/**
+ * `cambio-uruguay-backend@<sha>`: the commit the VPS built `dist/` from, read from the checkout.
+ * NOT `GITHUB_SHA`: pm2 freezes the environment an app was registered with, and the CI's SSH
+ * session leaves a pull request's merge-ref commit there — on 2026-11-22 two apps reported a
+ * release that is not even in main's history.
+ */
 export function backendRelease(env: NodeJS.ProcessEnv, readSha: () => string = gitHead): string | undefined {
   const explicit = env.SENTRY_RELEASE || "";
   if (/^[\w.@+-]{1,160}$/.test(explicit)) return explicit;
-  const sha = (env.GITHUB_SHA || readSha() || "").trim();
+  const sha = (readSha() || "").trim();
   return /^[\da-f]{7,40}$/i.test(sha) ? `cambio-uruguay-backend@${sha.toLowerCase()}` : undefined;
 }
 

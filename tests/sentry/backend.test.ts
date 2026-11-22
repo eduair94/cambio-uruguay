@@ -56,6 +56,10 @@ describe("release, environment and job identity", () => {
     expect(backendRelease({ SENTRY_RELEASE: "x@1.2.3" }, () => "abc1234")).toBe("x@1.2.3");
     expect(backendRelease({}, () => "")).toBeUndefined();
     expect(backendRelease({}, () => "not-a-sha")).toBeUndefined();
+    // A stale GITHUB_SHA frozen into a pm2 app's environment must not win over the checkout.
+    expect(backendRelease({ GITHUB_SHA: "bb1546b8cc5324d1" }, () => "345c9f6b8cac")).toBe(
+      "cambio-uruguay-backend@345c9f6b8cac",
+    );
   });
 
   it("is production only under pm2 unless told otherwise", () => {
