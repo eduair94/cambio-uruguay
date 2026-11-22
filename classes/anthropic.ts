@@ -40,6 +40,7 @@ import Anthropic, {
   APIError,
   AuthenticationError,
   BadRequestError,
+  NotFoundError,
   PermissionDeniedError,
   RateLimitError,
 } from "@anthropic-ai/sdk";
@@ -72,7 +73,7 @@ export interface ClaudeReply {
 /** The slice of the SDK client this module uses — small on purpose, so a test can stand in for it. */
 interface MessagesClient {
   messages: {
-    stream(params: any, options?: { timeout?: number; signal?: AbortSignal }): { finalMessage(): Promise<any> };
+    stream(params: Anthropic.MessageStreamParams, options?: { timeout?: number; signal?: AbortSignal }): { finalMessage(): Promise<any> };
   };
 }
 
@@ -345,6 +346,8 @@ type Verdict = { kind: "retire" | "rest" | "call"; reason: string; restMs?: numb
 function classify(error: unknown): Verdict {
   const reason = ((error as any)?.message || String(error)).replace(/\s+/g, " ").slice(0, 200);
   if (error instanceof AuthenticationError || error instanceof PermissionDeniedError) return { kind: "retire", reason };
+  // A 404 on /v1/messages is a model this organisation cannot use: another key may serve it.
+  if (error instanceof NotFoundError) return { kind: "retire", reason };
   if (error instanceof APIError && error.status === 402) return { kind: "retire", reason };
   // A monthly spend cap arrives as a 429 (the SDK's EnforcedSpendLimitReachedError extends
   // RateLimitError) but it does not reset in a minute: checked BEFORE the 429 rest below.
@@ -365,7 +368,7 @@ function classify(error: unknown): Verdict {
  * One request, trying the usable keys in round-robin order until one answers or the failure is not
  * the key's. Returns the raw message, or null.
  */
-async function callClaude(params: Record<string, unknown>, timeoutMs: number): Promise<{ message: any; key: string } | null> {
+async function callClaude(params: Anthropic.MessageStreamParams, timeoutMs: number): Promise<{ message: any; key: string } | null> {
   if (pinnedToGemini() || now() < outageUntil) return null;
   const keys = usableKeys();
   if (!keys.length) return null;
@@ -404,6 +407,8 @@ async function callClaude(params: Record<string, unknown>, timeoutMs: number): P
         continue;
       }
       if (verdict.kind === "rest") {
+        // A concurrent call may have retired this key while this one waited: a dead key stays dead.
+        if (states.get(key)?.retired) continue;
         states.set(key, { restUntil: now() + (verdict.restMs ?? DEFAULT_REST_MS) });
         console.warn(`[anthropic] clave ${label(key)} en pausa ${Math.round((verdict.restMs ?? DEFAULT_REST_MS) / 1000)} s: ${verdict.reason}`);
         continue;
@@ -429,7 +434,11 @@ function textOf(message: any): string {
     .trim();
 }
 
-function baseParams(content: unknown, opts: ClaudeCallOptions, extraOutput: Record<string, unknown> = {}): Record<string, unknown> {
+function baseParams(
+  content: string | Anthropic.ContentBlockParam[],
+  opts: ClaudeCallOptions,
+  extraOutput: Partial<Anthropic.OutputConfig> = {}
+): Anthropic.MessageStreamParams {
   return {
     model: anthropicModel(),
     max_tokens: opts.maxTokens ?? DEFAULT_MAX_TOKENS,
@@ -533,7 +542,7 @@ export async function askClaudeJSON<T>(
   schema: unknown,
   opts: ClaudeCallOptions = {}
 ): Promise<{ value: T; model: string } | null> {
-  const params = baseParams(prompt, opts, { format: { type: "json_schema", schema: toClaudeSchema(schema) } });
+  const params = baseParams(prompt, opts, { format: { type: "json_schema" as const, schema: toClaudeSchema(schema) } });
   const res = await callClaude(params, opts.timeoutMs ?? DEFAULT_TIMEOUT_MS);
   if (!res || res.message?.stop_reason === "refusal" || res.message?.stop_reason === "max_tokens") return null;
   const value = parseJsonText(textOf(res.message));
@@ -542,6 +551,24 @@ export async function askClaudeJSON<T>(
 
 /** What Claude's vision accepts. Anything else goes to Gemini rather than failing here. */
 export const CLAUDE_IMAGE_MIME: ReadonlySet<string> = new Set(["image/jpeg", "image/png", "image/gif", "image/webp"]);
+
+export type ClaudeImageMime = "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+
+/**
+ * The image format from its first bytes, or null when it is none Claude reads.
+ *
+ * The callers label an image by its URL's extension, and a CDN serves whatever it likes behind it
+ * (a ".jpg" that is a WebP, an AVIF): Claude answers a mislabelled image with a 400, so every such
+ * photo used to cost a round trip and land on Gemini anyway.
+ */
+export function sniffImageMime(data: Buffer): ClaudeImageMime | null {
+  if (data.length >= 3 && data[0] === 0xff && data[1] === 0xd8 && data[2] === 0xff) return "image/jpeg";
+  if (data.length >= 8 && data.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return "image/png";
+  const head = data.subarray(0, 12).toString("latin1");
+  if (head.startsWith("GIF87a") || head.startsWith("GIF89a")) return "image/gif";
+  if (head.startsWith("RIFF") && head.slice(8, 12) === "WEBP") return "image/webp";
+  return null;
+}
 
 /**
  * A question about images we already downloaded, images first and the question after them.
@@ -552,15 +579,16 @@ export async function askClaudeWithImages(
   images: ReadonlyArray<{ data: Buffer; mimeType: string }>,
   opts: ClaudeCallOptions & { schema?: unknown } = {}
 ): Promise<{ text: string; value?: unknown; model: string } | null> {
-  if (!images.length || images.some((image) => !CLAUDE_IMAGE_MIME.has(image.mimeType))) return null;
-  const content = [
-    ...images.map((image) => ({
-      type: "image",
-      source: { type: "base64", media_type: image.mimeType, data: image.data.toString("base64") },
+  const mimes = images.map((image) => sniffImageMime(image.data));
+  if (!images.length || mimes.some((mime) => !mime)) return null;
+  const content: Anthropic.ContentBlockParam[] = [
+    ...images.map((image, i) => ({
+      type: "image" as const,
+      source: { type: "base64" as const, media_type: mimes[i] as ClaudeImageMime, data: image.data.toString("base64") },
     })),
-    { type: "text", text: prompt },
+    { type: "text" as const, text: prompt },
   ];
-  const format = opts.schema ? { format: { type: "json_schema", schema: toClaudeSchema(opts.schema) } } : {};
+  const format = opts.schema ? { format: { type: "json_schema" as const, schema: toClaudeSchema(opts.schema) } } : {};
   const res = await callClaude(baseParams(content, opts, format), opts.timeoutMs ?? DEFAULT_TIMEOUT_MS);
   if (!res || res.message?.stop_reason === "refusal" || res.message?.stop_reason === "max_tokens") return null;
   const text = textOf(res.message);
@@ -584,7 +612,7 @@ export function claudeGroundedEnabled(): boolean {
 }
 
 /** Haiku gets the basic tool; dynamic filtering (`_20260209`) needs Sonnet/Opus-class models. */
-export function webSearchToolFor(model: string): Record<string, unknown> {
+export function webSearchToolFor(model: string): Anthropic.WebSearchTool20250305 | Anthropic.WebSearchTool20260209 {
   return {
     type: /^claude-haiku/i.test(model) ? "web_search_20250305" : "web_search_20260209",
     name: "web_search",

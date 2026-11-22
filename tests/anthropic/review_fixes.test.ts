@@ -120,7 +120,7 @@ describe("classes/anthropic — review fixes", () => {
 
   it("returns null when an image answer without schema was cut by max_tokens", async () => {
     fakeClients({ [KEYS[0]]: [() => reply("una silla de", "max_tokens")] });
-    expect(await askClaudeWithImages("x", [{ data: Buffer.from("a"), mimeType: "image/jpeg" }])).toBeNull();
+    expect(await askClaudeWithImages("x", [{ data: Buffer.from([0xff, 0xd8, 0xff, 0xe0]), mimeType: "image/jpeg" }])).toBeNull();
   });
 
   it("after 3 outages in a row Claude is skipped for 5 minutes", async () => {

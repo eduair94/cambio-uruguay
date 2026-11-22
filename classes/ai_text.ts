@@ -15,8 +15,18 @@ import path from "path";
 import "dotenv/config";
 import { askClaude, askClaudeJson, claudeConfigured, claudeHasBudget, claudeSaturated } from "./claude";
 // The fallback leg goes through classes/llm.ts: prepaid Claude API credit first, then Gemini. So
-// "gemini" below means "not the subscription", not literally Gemini.
-import { askPlain, askWithImage, llmConfigured } from "./llm";
+// "gemini" below means "not the subscription" — EXCEPT when AI_TEXT_PROVIDER=gemini pins it: then
+// it is Gemini and nothing else, credit included, which is the point of pinning (reproducing who
+// wrote an answer).
+import * as gemini from "./gemini";
+import * as llm from "./llm";
+
+const pinnedToGemini = (): boolean => (process.env.AI_TEXT_PROVIDER || "").trim().toLowerCase() === "gemini";
+const llmConfigured = (): boolean => (pinnedToGemini() ? gemini.geminiConfigured() : llm.llmConfigured());
+const askPlain = (prompt: string, timeoutMs?: number): Promise<string | null> =>
+  pinnedToGemini() ? gemini.askPlain(prompt, timeoutMs) : llm.askPlain(prompt, timeoutMs);
+const askWithImage = (prompt: string, image: { data: Buffer; mimeType: string }, timeoutMs?: number): Promise<string | null> =>
+  pinnedToGemini() ? gemini.askWithImage(prompt, image, timeoutMs) : llm.askWithImage(prompt, image, timeoutMs);
 
 export type TextProvider = "claude" | "gemini";
 
