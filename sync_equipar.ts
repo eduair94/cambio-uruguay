@@ -11,6 +11,7 @@
 //     known market rather than blanking the page.
 //   * A basket total travels with the list of what could NOT be priced. A total that quietly skips
 //     the fridge is lower than the truth and reads as a better deal.
+import "./sentry_job";
 import dotenv from "dotenv";
 import "dotenv/config";
 dotenv.config({ path: "app/.env", quiet: true });

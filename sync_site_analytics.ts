@@ -19,6 +19,7 @@
 // (`sitetoppages`, served to /paginas-mas-visitadas — classes/site-analytics/publicTopPages.ts) and
 // where visitors come from (`sitetrafficsources`, served to /origen-del-trafico —
 // classes/site-analytics/trafficSources.ts).
+import "./sentry_job";
 import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";

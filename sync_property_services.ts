@@ -1,3 +1,4 @@
+import "./sentry_job";
 import "dotenv/config";
 import { writeFile, rm } from "node:fs/promises";
 import { resolve, sep } from "node:path";

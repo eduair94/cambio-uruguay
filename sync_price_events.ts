@@ -8,6 +8,7 @@
 //   --event-only  para el cron horario: si el calendario (classes/priceevents/calendar.ts) no marca
 //                 un evento activo HOY, sale en 0 SIN CONECTAR A LA BASE — 24 corridas por día, 365
 //                 días al año, casi todas sin nada que hacer, no deben costar ni una conexión.
+import "./sentry_job";
 import dotenv from "dotenv";
 import "dotenv/config";
 dotenv.config({ path: "app/.env", quiet: true });

@@ -11,6 +11,7 @@
 // Flags:
 //   --dry-run        lee y juzga, imprime, no escribe (anda sin APP_MONGO_URI, sin índice RAG)
 //   --judge-max=N    cuántos hilos nuevos se juzgan como máximo (600 por defecto)
+import "./sentry_job";
 import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";

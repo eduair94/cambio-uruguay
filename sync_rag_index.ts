@@ -6,6 +6,7 @@
 // than writing the index into the wrong database.
 //
 // Incremental by content hash: a normal day re-crawls everything and re-embeds almost nothing.
+import "./sentry_job";
 import "dotenv/config";
 
 import axios from "axios";

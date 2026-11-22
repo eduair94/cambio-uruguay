@@ -12,6 +12,7 @@
 //   - a run that verified too few lenders, or that claims most of the catalogue changed at once,
 //     is refused and the previous snapshot stands.
 // The page therefore degrades to "stale but correct", never to blank or wrong.
+import "./sentry_job";
 import dotenv from "dotenv";
 import "dotenv/config";
 dotenv.config({ path: "app/.env", quiet: true });

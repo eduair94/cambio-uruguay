@@ -34,6 +34,7 @@
 //   --clarity        en un dry run, permite las llamadas a Clarity.
 //
 // Ver docs/analytics/USAGE_INSIGHTS.md.
+import "./sentry_job";
 import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";

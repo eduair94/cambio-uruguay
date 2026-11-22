@@ -19,6 +19,7 @@
 //   * un artículo que no contesta degrada la corrida, nunca la falla;
 //   * se niega a reemplazar un día bueno con una corrida flaca;
 //   * nada se ordena por un total que no sea comparable entre locales.
+import "./sentry_job";
 import "dotenv/config";
 
 import { MongooseServer, withTimeout } from "./classes/database";

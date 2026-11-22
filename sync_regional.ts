@@ -30,6 +30,7 @@
 //   * it refuses to publish a collapsed board over a healthy one;
 //   * nothing is averaged across countries: every published figure keeps the
 //     market and the publisher it came from.
+import "./sentry_job";
 import "dotenv/config";
 
 import moment from "moment-timezone";

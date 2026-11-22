@@ -3,6 +3,7 @@
 // prices — they move on a scale of weeks, so a weekly cadence is enough. Never blanks the stored
 // figures on a failure — a failed refresh just means the previous good figures (or the app's own
 // baseline) keep serving.
+import "./sentry_job";
 import "dotenv/config";
 
 import { groundedConfigured } from "./classes/llm";

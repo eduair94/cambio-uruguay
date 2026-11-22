@@ -25,6 +25,7 @@
 // (`mlRereadRefusal`). Lo que ya escribió en `rentallistings` sólo completó campos vacíos.
 //
 // --dry-run lee y muestra, sin escribir.
+import "./sentry_job";
 import "dotenv/config";
 import { appConnection, appDbConfigured } from "./classes/appdb";
 import {

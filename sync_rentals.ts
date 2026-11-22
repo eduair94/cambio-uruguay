@@ -17,6 +17,7 @@
 //     that portal's rows are preserved rather than deleted as "off the market";
 //   * it refuses to publish a collapsed directory over a healthy one;
 //   * every price is stored in pesos with the run's rate, so two portals can be compared at all.
+import "./sentry_job";
 import dotenv from "dotenv";
 import "dotenv/config";
 import fs from "fs";

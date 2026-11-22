@@ -15,6 +15,7 @@
 // below) so tests/phones/dry_run.test.ts can call it directly with every heavy dependency mocked,
 // without a stray `process.exit` inside main() tearing down the test runner if a mock lets execution
 // fall through past it.
+import "./sentry_job";
 import dotenv from "dotenv";
 import "dotenv/config";
 dotenv.config({ path: "app/.env", quiet: true });

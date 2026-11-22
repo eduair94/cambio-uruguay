@@ -3,6 +3,7 @@
 //
 // This is the feedback half of auto-posting. See classes/redditbot/watch.ts for why it exists and
 // why the response to a bad signal is to stop rather than to keep going more carefully.
+import "./sentry_job";
 import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";

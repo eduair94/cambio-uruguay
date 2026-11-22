@@ -15,6 +15,7 @@
 // once, with the APP DB connection closed) behind `require.main === module` — so a test can import
 // `main` and call it directly, against mocked collaborators, without spawning a real process or
 // touching a real database.
+import "./sentry_job";
 import dotenv from "dotenv";
 import "dotenv/config";
 dotenv.config({ path: "app/.env", quiet: true });

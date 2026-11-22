@@ -17,6 +17,7 @@
 // A los :40 por el puente compartido: celulares corre a los :37 (8 búsquedas, ~1 min) y motos a los
 // :44; 40 fichas a 3 s son ~2 min. Las demás horarias del puente: :01 fichas de movilidad, :07
 // movilidad, :23 sillas, :29 autos, :47 alquileres, :53 equipar.
+import "./sentry_job";
 import dotenv from "dotenv";
 import "dotenv/config";
 dotenv.config({ path: "app/.env", quiet: true });

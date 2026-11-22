@@ -12,6 +12,7 @@
 //
 // Nunca deja la página vacía: una planilla flaca, más vieja que la guardada o sin las LRM a 30 y 90
 // días no se escribe (ver `refuseReasons`). `--dry-run` imprime lo que guardaría y no toca la base.
+import "./sentry_job";
 import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";

@@ -1,5 +1,6 @@
 // Precios de combustibles de ANCAP (pm2 `currency-combustibles`, 07:11 y 13:11 UTC). Lee la tabla
 // histórica pública, la valida y la guarda. No usa Gemini. Nunca borra lo guardado en un fallo.
+import "./sentry_job";
 import "dotenv/config";
 
 import { refreshFuelPrices } from "./classes/combustibles/refresh";

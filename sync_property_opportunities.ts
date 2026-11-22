@@ -1,3 +1,4 @@
+import "./sentry_job";
 import "dotenv/config";
 import fs from "fs";
 import { appConnection, appDbConfigured } from "./classes/appdb";

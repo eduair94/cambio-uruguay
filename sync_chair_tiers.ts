@@ -1,6 +1,7 @@
 // Weekly r/CharruaDevs chair-review harvest + Gemini sentiment classification.
 // Reddit and Gemini run only here in the backend. The Nuxt app reads the materialized snapshot
 // from its own MongoDB and never calls either provider during a page request.
+import "./sentry_job";
 import dotenv from "dotenv";
 import "dotenv/config";
 dotenv.config({ path: "app/.env", quiet: true });
