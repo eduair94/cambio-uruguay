@@ -1,12 +1,22 @@
 import { spawn, spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
+import { createRequire } from 'node:module'
 import type { AddressInfo } from 'node:net'
 import { basename, dirname, join, resolve } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const repoRoot = resolve(__dirname, '../../..')
 const helper = join(repoRoot, 'app/scripts/check-staging.cjs')
+
+// The live worker's budget, read from the file pm2 reads: the probe must run with the same heap.
+const worker = (
+  createRequire(import.meta.url)('../../ecosystem.config.cjs') as {
+    apps: Array<{ name: string; node_args: string; max_memory_restart: string }>
+  }
+).apps.find(app => app.name === 'cambio-uruguay')!
+const oldSpaceMiB = Number(/--max-old-space-size=(\d+)/.exec(worker.node_args)?.[1])
+const rssCutoffMiB = Number(/^(\d+)M$/.exec(worker.max_memory_restart)?.[1])
 let fixtureRoot: string | undefined
 
 async function freePort(): Promise<number> {
@@ -112,10 +122,13 @@ describe('staging readiness before publication', () => {
       const result = probe(output, await freePort(), nodeEnv)
       expect(result.status, result.stderr).toBe(0)
       expect(readFileSync(join(output, 'runtime-mode'), 'utf8')).toBe('production')
-      // V8 adds its young generation allowance to the configured 512 MiB old space.
+      // V8 adds its young generation allowance to the configured old space, and the whole heap
+      // has to stay under pm2's RSS cutoff so the worker collects before pm2 kills it.
+      expect(oldSpaceMiB).toBeGreaterThan(0)
+      expect(rssCutoffMiB).toBeGreaterThan(0)
       const heapMiB = Number(readFileSync(join(output, 'heap-limit'), 'utf8')) / 1024 ** 2
-      expect(heapMiB).toBeGreaterThanOrEqual(512)
-      expect(heapMiB).toBeLessThan(900)
+      expect(heapMiB).toBeGreaterThanOrEqual(oldSpaceMiB)
+      expect(heapMiB).toBeLessThan(rssCutoffMiB)
       await expectChildStopped(output)
     }
   )

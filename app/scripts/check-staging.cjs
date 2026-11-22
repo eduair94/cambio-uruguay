@@ -18,7 +18,7 @@ const child = fork(resolve(staging, 'server/index.mjs'), [], {
     NITRO_UNIX_SOCKET: '',
   },
   // Match the live worker's heap budget, not the build shell's larger allowance.
-  execArgv: ['--max-old-space-size=512'],
+  execArgv: ['--max-old-space-size=1024'],
   stdio: ['ignore', 'inherit', 'inherit', 'ipc'],
 })
 

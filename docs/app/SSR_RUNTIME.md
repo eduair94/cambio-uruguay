@@ -41,13 +41,16 @@ collection pressure. Neither changes the production RSS restart threshold.
 ## Configuration
 
 - `app/ecosystem.config.cjs` explicitly sets `env.NODE_ENV` to `production`.
-- Its `node_args` sets `--max-old-space-size=512`, allowing collection before the
-  process reaches PM2's 900 MiB RSS limit and leaving room for native allocations.
+- Its `node_args` sets `--max-old-space-size=1024`, allowing collection before the
+  process reaches PM2's 1400 MiB RSS limit and leaving room for native allocations.
+  (512 and 900 MiB until 2026-11-22. Regenerating several rentals sitemap chunks at once ran
+  512 MB out of heap on 2026-10-04, and the server was raised by hand that day without a
+  commit; the repo caught up on 2026-11-22.)
 - `app/scripts/check-staging.cjs` sets the same value after copying the deploy
   shell's environment and uses the same heap argument, so the preflight exercises
   the runtime that will serve users rather than the build's larger heap allowance.
-- The existing rolling reload, readiness check and 900 MiB limit remain in place.
-  The fix does not increase the memory allowance.
+- The existing rolling reload, readiness check and RSS limit remain in place.
+  The original fix did not increase the memory allowance; the 2026-10-04 raise did.
 - The deploy uses `pm2 startOrReload` with the ecosystem file and `--update-env`,
   so future releases retain the setting. A build alone cannot fix an already
   running worker's environment.

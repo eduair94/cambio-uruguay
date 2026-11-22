@@ -41,7 +41,7 @@ describe('worker entry selection', () => {
     const worker = apps.find((app: { name: string }) => app.name === 'cambio-uruguay')
     expect(worker.script).toBe('./.output/server/index.mjs')
     expect(worker.env.NODE_ENV).toBe('production')
-    expect(worker.node_args).toBe('--max-old-space-size=512')
+    expect(worker.node_args).toBe('--max-old-space-size=1024')
   })
 
   it('leaves the development worker entry and HMR transport to Nitro', () => {

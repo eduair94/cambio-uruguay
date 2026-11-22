@@ -1508,7 +1508,7 @@ export default defineNuxtConfig({
     },
     // Rendered cards, per worker, bounded in BYTES. Without this the module caches in Nitro's root
     // memory storage, which never evicts: each distinct card URL stayed as base64 for its 3-day
-    // TTL, on a heap capped at 512 MB (ecosystem.config.cjs). A count alone bounds nothing, since
+    // TTL, on a heap capped at 1024 MB (ecosystem.config.cjs). A count alone bounds nothing, since
     // an entry weighs what its card weighs; with `maxSize` unstorage's lru-cache driver measures
     // each entry, ~350 ordinary cards fit, and the least recently used one goes first. Only clean
     // card URLs get this far (server/middleware/og-image-locale.ts redirects any with a query).
