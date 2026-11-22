@@ -34,6 +34,7 @@ import Anthropic, {
   RateLimitError,
 } from "@anthropic-ai/sdk";
 import "dotenv/config";
+import type { GroundedReply, GroundingSupport } from "./gemini";
 
 /** Same price as gemini-*-flash-lite per token: every dollar of credit replaces about a dollar of Gemini. */
 const DEFAULT_MODEL = "claude-haiku-5-5";
@@ -381,4 +382,94 @@ export async function askClaudeWithImages(
   if (res.message?.stop_reason === "max_tokens") return null;
   const value = parseJsonText(text);
   return value === undefined ? null : { text, value, model };
+}
+
+// ── Web search, behind ANTHROPIC_GROUNDED=1 ─────────────────────────────────────────────────────
+//
+// Off by default, by the maintainer's decision of 2026-11-22: Claude bills $10 per 1,000 searches AND
+// bills the pages it reads as input tokens, which Gemini's grounding does not, so on these jobs a
+// dollar of credit buys 10–20 times less Gemini spend than on plain text. The adapter exists so the
+// switch is an env var, not a deploy.
+
+/** `"1"` and nothing else, so a typo never starts spending on searches. */
+export function claudeGroundedEnabled(): boolean {
+  return process.env.ANTHROPIC_GROUNDED === "1" && anthropicConfigured();
+}
+
+/** Haiku gets the basic tool; dynamic filtering (`_20260209`) needs Sonnet/Opus-class models. */
+export function webSearchToolFor(model: string): Record<string, unknown> {
+  return {
+    type: /^claude-haiku/i.test(model) ? "web_search_20250305" : "web_search_20260209",
+    name: "web_search",
+    max_uses: 5,
+    user_location: { type: "approximate", country: "UY", timezone: "America/Montevideo" },
+  };
+}
+
+const hostname = (url: string): string => {
+  try {
+    return new URL(url).hostname.replace(/^www\./i, "");
+  } catch {
+    return "";
+  }
+};
+
+/**
+ * A grounded question, answered in the shape classes/gemini.ts's `askGrounded` returns, so every
+ * caller and `groundedHeadlines` work unchanged:
+ * - `sourceUris`/`resolvedByChunk`: the result URLs, direct — Claude does not wrap them in redirects.
+ * - `chunks[].web.title`: the bare domain, the convention `groundedHeadlines` relies on.
+ * - `supports`: each cited text block, pointing at the chunks it cites.
+ * - `text`: only what was written after the last search. The narration before a tool call ("voy a
+ *   buscar…") is not part of the answer, and a caller that JSON.parses the reply would choke on it.
+ */
+export async function askClaudeGrounded(prompt: string, opts: ClaudeCallOptions = {}): Promise<GroundedReply | null> {
+  if (!claudeGroundedEnabled()) return null;
+  const model = anthropicModel();
+  const params = { ...baseParams(prompt, opts), tools: [webSearchToolFor(model)] };
+  const res = await callClaude(params, opts.timeoutMs ?? DEFAULT_TIMEOUT_MS);
+  const stop = res?.message?.stop_reason;
+  if (!res || stop === "refusal" || stop === "pause_turn") return null;
+
+  const blocks: any[] = Array.isArray(res.message?.content) ? res.message.content : [];
+  const urls: string[] = [];
+  const indexOf = (url: string): number => {
+    let i = urls.indexOf(url);
+    if (i === -1) i = urls.push(url) - 1;
+    return i;
+  };
+  let lastResult = -1;
+  blocks.forEach((block, i) => {
+    if (block?.type !== "web_search_tool_result") return;
+    lastResult = i;
+    for (const item of Array.isArray(block.content) ? block.content : []) {
+      if (item?.type === "web_search_result" && typeof item.url === "string") indexOf(item.url);
+    }
+  });
+
+  let text = "";
+  const supports: GroundingSupport[] = [];
+  for (const block of blocks.slice(lastResult + 1)) {
+    if (block?.type !== "text" || typeof block.text !== "string") continue;
+    const startIndex = text.length;
+    text += block.text;
+    const cited = (Array.isArray(block.citations) ? block.citations : [])
+      .filter((c: any) => typeof c?.url === "string")
+      .map((c: any) => indexOf(c.url));
+    if (cited.length && block.text.trim()) {
+      supports.push({
+        segment: { text: block.text.trim(), startIndex, endIndex: startIndex + block.text.length },
+        groundingChunkIndices: [...new Set<number>(cited)],
+      });
+    }
+  }
+  if (!text.trim()) return null;
+
+  return {
+    text: text.trim(),
+    sourceUris: [...urls],
+    chunks: urls.map((uri) => ({ web: { uri, title: hostname(uri) } })),
+    supports,
+    resolvedByChunk: [...urls],
+  };
 }
