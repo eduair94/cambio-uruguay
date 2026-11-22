@@ -49,6 +49,10 @@ describe("scrubText", () => {
     expect(scrubText("contacto juan.perez@gmail.com o 099 123 456")).toBe("contacto [email] o [phone]");
     expect(scrubText("tel +598 94 123 456")).toBe("tel [phone]");
     expect(scrubText("visitor 190.64.12.7 asked")).toBe("visitor [ip] asked");
+    // Production, 2026-11-22: an IPv4 with a 9 in the second octet came out as "147.[phone]".
+    expect(scrubText("FlareSolverr: http://147.93.12.34:8192/v1 failed")).toBe("FlareSolverr: http://[ip]:8192/v1 failed");
+    expect(scrubText("v 1.98.1234567")).not.toContain("[phone]");
+    expect(scrubText("Tel.099 123 456")).toBe("Tel.[phone]");
   });
 
   it("truncates and never throws on non-strings", () => {

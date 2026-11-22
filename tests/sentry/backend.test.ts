@@ -128,6 +128,24 @@ describe("log guard", () => {
     expect(guard.usedToday()).toEqual({ day: "1970-01-01", count: 3 });
   });
 
+  it("keeps the SDK's own attributes and scrubs the caller's", () => {
+    const guard = createLogGuard({ perMinute: 10, perProcess: 10, perDay: 10 });
+    const sha = "3d44792d43c4ee3f66cacb16b0d3d0e7079dfd72";
+    const kept = guard({
+      message: "m",
+      attributes: {
+        "sentry.release": `cambio-uruguay-backend@${sha}`,
+        "sentry.environment": "production",
+        "sentry.message.parameter.0": "http://u:p@1.2.3.4:80",
+      },
+    })!;
+    expect(kept.attributes).toEqual({
+      "sentry.release": `cambio-uruguay-backend@${sha}`,
+      "sentry.environment": "production",
+      "sentry.message.parameter.0": "http://[redacted]@[ip]:80",
+    });
+  });
+
   it("continues the day's count across runs and resets at UTC midnight", () => {
     const midnight = Date.UTC(2026, 10, 22);
     let now = midnight - 1_000;
