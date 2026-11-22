@@ -41,3 +41,21 @@ La fuente de delitos consulta primero metadatos oficiales. Si no cambió la vers
 La API Nuxt lee exclusivamente `market` y `context`, con caché corta compartida y proyección pública. No consulta portales, no recorre el catálogo ni descarga fuentes externas. Mercado: vigente hasta 36 horas, advertencia entre 36 y 72; después oculta cifras. Servicios: vigente hasta 14 días, advertencia hasta 45; después sin dato. Denuncias: período terminado hace hasta 180 días vigente, hasta 365 con advertencia; después sin dato. El período histórico siempre se muestra. Una capa ausente no oculta las otras.
 
 Comandos operativos: `npm run sync_property_zones`; `--dry-run` lee y valida sin escribir; `--force-sources` vuelve a leer la fuente oficial. No ejecutar dos refrescos simultáneos: el bloqueo de APP DB vence a los 30 minutos y sólo su propietario lo libera.
+
+### Delitos: el CSV se baja desde Uruguay (2026-11-22)
+
+El catálogo (catalogodatos.gub.uy) le sirve el CSV de denuncias al VPS a ~80 KB/s y corta la conexión a los ~225 s: de 383 MB llegan 18. Desde Uruguay baja a 3,7 MB/s. Por eso el import también lee el archivo desde disco: `~/.cache/cambio-uruguay/crime/<id del recurso>.csv` en el VPS (`PROPERTY_ZONES_CRIME_DIR` cambia la carpeta), y sólo si pesa EXACTAMENTE lo que el catálogo declara para ese recurso. El nombre lleva el id, así que un archivo de una subida vieja nunca se lee como la nueva, y el contenido se valida igual que una descarga (encabezado, 12 meses, mínimo de eventos, ≤ 10 % sin barrio).
+
+Cuando el Ministerio sube una versión nueva, el job falla con exit 1 (Sentry, «currency-property-zones exited with code 1») y deja en el log, y en Sentry Logs, la línea `[property-zones] crime CSV not imported (...): download <url> from Uruguay and copy it to <ruta> (exactly <N> bytes)`. Desde una máquina en Uruguay:
+
+```sh
+curl -fo <id>.csv '<url de esa línea>'          # verificar que pese <N> bytes
+gzip -k <id>.csv
+scp -P 2223 <id>.csv.gz root@104.234.204.107:/root/.cache/cambio-uruguay/crime/
+ssh -p 2223 root@104.234.204.107 'cd /root/.cache/cambio-uruguay/crime && gunzip -f <id>.csv.gz'
+ssh -p 2223 root@104.234.204.107 'pm2 restart currency-property-zones'   # o esperar a las 06:53 UTC
+```
+
+**La cobertura declarada puede ir un mes adelante del archivo**: la subida del 2026-10-20 dice «2013-01 – 2026-10» y su último evento es de 2026-09, así que la ventana declarada tiene 11 meses y se rechaza bien. El import prueba entonces la ventana que termina un mes antes (`previousCrimePeriod`), en la misma pasada; la ventana publicada es la que el archivo prueba completa, y `dataAsOf` la sigue. Dos meses adelante sigue fallando. El 2026-11-22 quedó Oct 2025 – Sep 2026: 84.985 denuncias en Montevideo, 874 sin barrio (1 %).
+
+La subida del 2026-10-20 además cambió el id del recurso (`c8c4cc18…` → `4d76b716…`): el recurso se busca por su nombre publicado («Denuncias de otros delitos») bajo la ruta del propio dataset (`findCrimeResource`), con un único candidato o nada.

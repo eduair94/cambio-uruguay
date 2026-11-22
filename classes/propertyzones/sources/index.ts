@@ -1,5 +1,8 @@
 import { createHash } from 'node:crypto';
-import { aggregateCrimeCsv, CRIME_DEPARTMENTS, CRIME_MAX_BYTES, crimeReportingPeriod } from './crime';
+import { createReadStream, statSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
+import { aggregateCrimeCsvWindows, CRIME_DEPARTMENTS, CRIME_MAX_BYTES, type CrimePeriod, crimeReportingPeriod, previousCrimePeriod } from './crime';
 import { loadOfficialPropertyZoneGeometry } from './geometry';
 import { CRIME_OFFENSES, CrimeCounts, PropertyZoneSources } from './types';
 export * from './types';
@@ -41,6 +44,28 @@ export interface PropertyZoneSourcesOptions {
   now?: Date;
   fetchImpl?: typeof fetch;
   signal?: AbortSignal;
+  /** Where a CSV downloaded by hand is looked for (default: crimeCsvLocalDir()). */
+  localDir?: string;
+}
+
+/**
+ * catalogodatos.gub.uy serves the VPS (Montreal) at ~80 KB/s and drops the connection after
+ * ~225 s, so the 383 MB file never arrives there (measured 2026-11-22; from Uruguay: 3.7 MB/s).
+ * The import therefore also takes the CSV from disk, downloaded in Uruguay and copied over:
+ * `<dir>/<resource id>.csv`, used only if its size is EXACTLY the catalog's for that resource.
+ * The name carries the id, so a file left from an older upload is never read as the new one, and
+ * the aggregator validates the content as it does for the download (header, 12 months, minimum).
+ */
+export function crimeCsvLocalDir(): string {
+  return process.env.PROPERTY_ZONES_CRIME_DIR || join(homedir(), '.cache', 'cambio-uruguay', 'crime');
+}
+
+function localFileSize(path: string): number {
+  try {
+    return statSync(path).size;
+  } catch {
+    return -1;
+  }
 }
 
 function object(value: unknown): Record<string, any> {
@@ -81,9 +106,10 @@ function projectCounts(raw: unknown): CrimeCounts | null {
 }
 
 /** Validate/project persisted aggregates; unknown fields are not republished. */
-function previousCrime(previous: PropertyZoneSources | undefined, version: string, period: { periodFrom: string; periodTo: string }): PropertyZoneSources['crime'] | null {
+function previousCrime(previous: PropertyZoneSources | undefined, version: string, periods: CrimePeriod[]): PropertyZoneSources['crime'] | null {
   const crime = object(previous?.crime);
-  if (object(crime.source).version !== version || crime.periodFrom !== period.periodFrom || crime.periodTo !== period.periodTo
+  const period = periods.find(candidate => crime.periodFrom === candidate.periodFrom && crime.periodTo === candidate.periodTo);
+  if (object(crime.source).version !== version || !period
     || crime.includesAttempts !== true || !Number.isSafeInteger(crime.unassignedCount) || crime.unassignedCount < 0) return null;
   const countsByOfficialCode: Record<string, CrimeCounts> = {}, countsByDepartment: Record<string, CrimeCounts> = {};
   for (let code = 1; code <= 62; code++) {
@@ -138,24 +164,47 @@ export async function loadPropertyZoneSources(options: PropertyZoneSourcesOption
       url: CRIME_DATASET_URL, licenseUrl: LICENSE_URL,
       dataAsOf: period.periodTo, fetchedAt: now.toISOString(), version, resourceModified: resource.last_modified,
     };
-    const cached = !options.force && previousCrime(options.previous, version, period);
-    if (cached) return { geometry, crime: { ...cached, source } };
+    // The declared window first, then one month earlier (previousCrimePeriod): the version still
+    // names the file, and the window is whichever the file proves complete.
+    const periods = [period, previousCrimePeriod(period)];
+    const cached = !options.force && previousCrime(options.previous, version, periods);
+    if (cached) return { geometry, crime: { ...cached, source: { ...source, dataAsOf: cached.periodTo } } };
     clearTimeout(timeout);
     timeout = setTimeout(abort, 240_000);
-    const response = await fetcher(resource.url, { signal: controller.signal, redirect: 'error', headers: { 'User-Agent': USER_AGENT, Accept: 'text/csv' } });
-    if (response.status !== 200) throw new Error('Official crime CSV unavailable');
+    const localPath = join(options.localDir ?? crimeCsvLocalDir(), `${resource.id}.csv`);
     let received = 0;
-    async function* counted() {
-      for await (const chunk of responseChunks(response, Math.min(resource.size, CRIME_MAX_BYTES))) { received += chunk.byteLength; yield chunk; }
+    let aggregated: Awaited<ReturnType<typeof aggregateCrimeCsvWindows>>;
+    if (localFileSize(localPath) === resource.size) {
+      clearTimeout(timeout);
+      async function* fromDisk() {
+        for await (const chunk of createReadStream(localPath, { highWaterMark: 1024 * 1024 })) {
+          received += (chunk as Buffer).byteLength;
+          yield chunk as Uint8Array;
+        }
+      }
+      aggregated = await aggregateCrimeCsvWindows(fromDisk(), geometry.zones, periods);
+    } else {
+      try {
+        const response = await fetcher(resource.url, { signal: controller.signal, redirect: 'error', headers: { 'User-Agent': USER_AGENT, Accept: 'text/csv' } });
+        if (response.status !== 200) throw new Error('Official crime CSV unavailable');
+        async function* counted() {
+          for await (const chunk of responseChunks(response, Math.min(resource.size, CRIME_MAX_BYTES))) { received += chunk.byteLength; yield chunk; }
+        }
+        aggregated = await aggregateCrimeCsvWindows(counted(), geometry.zones, periods);
+      } catch (error) {
+        // The one line an operator needs, in the job's log and in Sentry Logs.
+        console.warn(`[property-zones] crime CSV not imported (${error instanceof Error ? error.message : 'error'}): download ${resource.url} from Uruguay and copy it to ${localPath} (exactly ${resource.size} bytes)`);
+        throw error;
+      }
     }
-    const aggregated = await aggregateCrimeCsv(counted(), geometry.zones, period);
     if (received !== resource.size) throw new Error('Official crime CSV does not match metadata size');
     return {
       geometry,
       crime: {
-        ...period, countsByOfficialCode: aggregated.countsByOfficialCode,
-        countsByDepartment: aggregated.countsByDepartment,
-        unassignedCount: aggregated.unassignedCount, includesAttempts: true, source,
+        ...aggregated.period, countsByOfficialCode: aggregated.aggregation.countsByOfficialCode,
+        countsByDepartment: aggregated.aggregation.countsByDepartment,
+        unassignedCount: aggregated.aggregation.unassignedCount, includesAttempts: true,
+        source: { ...source, dataAsOf: aggregated.period.periodTo },
       },
     };
   } finally {
