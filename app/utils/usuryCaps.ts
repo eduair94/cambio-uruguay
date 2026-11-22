@@ -15,7 +15,7 @@
 // seis filas —consumo en pesos y en dólares, por tramo y por plazo— y no las de autorización de
 // descuento ni retención de haberes. Esas dos siguen siendo una lectura fechada a mano, y salen
 // marcadas como tales en vez de mezclarse con las vivas bajo la misma palabra "vigente".
-import type { BcuCapRow } from './cashAdvance'
+import { BCU_CAPS, BCU_IN_FORCE_SINCE, BCU_PERIOD, type BcuCapRow } from './cashAdvance'
 
 /** Qué fila de la grilla del BCU corresponde a cada segmento publicado. */
 export type UsuryGridKey =
@@ -97,6 +97,52 @@ export function mergeUsuryCaps(
 export function usuryCapOf(rows: readonly UsuryCapRow[], grid: UsuryGridKey): number | null {
   const row = rows.find(item => item.grid === grid)
   return row ? row.capPct : null
+}
+
+/** Lo que devuelve `/api/bcu-rates`, o lo que haya llegado de eso. */
+export interface LiveBcuGrid {
+  periodo?: string
+  vigenteDesde?: string
+  rows?: readonly BcuCapRow[]
+}
+
+export interface ConsumoCap {
+  /** Tope de interés, en porcentaje. */
+  capPct: number
+  /** Día desde el que rige (AAAA-MM-DD). */
+  since: string
+  /** El trimestre de tasas medias del que sale. */
+  periodo: string
+  /** `true` si salió de la grilla viva de hoy. */
+  live: boolean
+}
+
+/**
+ * El tope de consumo en pesos, menos de UI 10.000 y hasta 366 días —lo que una página llama "sin
+ * autorización de descuento"—, con la fecha desde la que rige.
+ *
+ * De la grilla viva si la trae, pasa la banda de magnitud y dice desde cuándo rige. Si no, la lectura
+ * fechada de `cashAdvance.ts` con SU fecha y SU trimestre: un número viejo con la fecha de hoy es
+ * justo lo que publicó `/saldar-deudas-uruguay` hasta el 2026-11-22.
+ */
+export function consumoShortTermCap(grid: LiveBcuGrid | null | undefined): ConsumoCap {
+  const key: UsuryGridKey = 'menor10kUI|corto|UYU'
+  const fresh = (grid?.rows || []).find(row => usuryGridKey(row) === key && usable(row))
+  if (fresh && grid?.vigenteDesde) {
+    return {
+      capPct: fresh.tope * PERCENT_PER_UNIT,
+      since: grid.vigenteDesde,
+      periodo: grid.periodo || '',
+      live: true,
+    }
+  }
+  const base = BCU_CAPS.find(row => usuryGridKey(row) === key)!
+  return {
+    capPct: base.tope * PERCENT_PER_UNIT,
+    since: BCU_IN_FORCE_SINCE,
+    periodo: BCU_PERIOD,
+    live: false,
+  }
 }
 
 /** `133,49 %` a partir de 133.4915. Dos decimales, coma decimal, como lo imprime el BCU. */
