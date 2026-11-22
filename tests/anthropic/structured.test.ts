@@ -112,17 +112,17 @@ describe("askClaudeJSON / askClaudeWithImages", () => {
 
   it("askClaudeWithImages sends base64 image blocks before the text", async () => {
     const calls = fakeClient(() => message("una silla"));
-    const out = await askClaudeWithImages("¿qué es?", [{ data: Buffer.from("abc"), mimeType: "image/jpeg" }]);
+    const out = await askClaudeWithImages("¿qué es?", [{ data: Buffer.from([0xff, 0xd8, 0xff, 0xe0]), mimeType: "image/jpeg" }]);
     expect(out?.text).toBe("una silla");
     expect(calls[0].messages[0].content).toEqual([
-      { type: "image", source: { type: "base64", media_type: "image/jpeg", data: Buffer.from("abc").toString("base64") } },
+      { type: "image", source: { type: "base64", media_type: "image/jpeg", data: Buffer.from([0xff, 0xd8, 0xff, 0xe0]).toString("base64") } },
       { type: "text", text: "¿qué es?" },
     ]);
   });
 
   it("askClaudeWithImages with a schema returns the parsed value", async () => {
     fakeClient(() => message('{"matchesAdvert":"no_se","damage":"no_se_ve","catalogPhotos":true,"note":"render"}'));
-    const out = await askClaudeWithImages("x", [{ data: Buffer.from("a"), mimeType: "image/png" }], { schema: CAR_VISION_SCHEMA });
+    const out = await askClaudeWithImages("x", [{ data: Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), mimeType: "image/png" }], { schema: CAR_VISION_SCHEMA });
     expect(out?.value).toMatchObject({ catalogPhotos: true });
   });
 
