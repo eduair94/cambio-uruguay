@@ -105,26 +105,53 @@ export function checkInStatus(exitCode: number): "ok" | "error" {
   return exitCode === 0 ? "ok" : "error";
 }
 
+/** UTC calendar day, the unit of the daily budgets. */
+export function utcDay(at: number): string {
+  return new Date(at).toISOString().slice(0, 10);
+}
+
+export interface LogBudget {
+  perMinute: number;
+  /** Per process (one job run); Infinity for the API. */
+  perProcess: number;
+  /** Per UTC day; for a job, across its runs (the count already spent comes from `usedToday`). */
+  perDay: number;
+  usedToday?: number;
+}
+
 /**
- * Drops logs over a per-minute and a per-process budget, and scrubs what it keeps. Long-lived
- * processes (the API) pass `perProcess: Infinity` and rely on the per-minute budget.
+ * Logs per day for the WHOLE org are 5 GB (~165 MB). The budgets below bound this repo's
+ * worst case, every job logging at its cap all day, to ~70 MB/day:
+ * API 5k lines/day per worker (2 workers), jobs 1.5k/day each and 300 per run.
  */
-export function createLogGuard(
-  options: { perMinute: number; perProcess: number },
-  now: () => number = Date.now,
-) {
+export const API_LOG_BUDGET: LogBudget = { perMinute: 60, perProcess: Infinity, perDay: 5_000 };
+export const JOB_LOG_BUDGET: LogBudget = { perMinute: 60, perProcess: 300, perDay: 1_500 };
+
+/**
+ * Drops logs over a per-minute, per-process and per-day budget, and scrubs what it keeps.
+ * `guard.usedToday()` is what a job persists at exit so its next run continues the day's count.
+ */
+export function createLogGuard(budget: LogBudget, now: () => number = Date.now) {
   let windowStart = 0;
   let inWindow = 0;
   let total = 0;
-  return <T extends { message: unknown; attributes?: Record<string, unknown> }>(log: T): T | null => {
+  let day = utcDay(now());
+  let today = Math.max(0, budget.usedToday || 0);
+  const guard = <T extends { message: unknown; attributes?: Record<string, unknown> }>(log: T): T | null => {
     const at = now();
     if (at - windowStart >= 60_000) {
       windowStart = at;
       inWindow = 0;
     }
-    if (inWindow >= options.perMinute || total >= options.perProcess) return null;
+    const currentDay = utcDay(at);
+    if (currentDay !== day) {
+      day = currentDay;
+      today = 0;
+    }
+    if (inWindow >= budget.perMinute || total >= budget.perProcess || today >= budget.perDay) return null;
     inWindow += 1;
     total += 1;
+    today += 1;
     const attributes: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(log.attributes || {})) {
       attributes[key] =
@@ -136,6 +163,7 @@ export function createLogGuard(
     }
     return { ...log, message: scrubText(String(log.message ?? ""), 2000), attributes };
   };
+  return Object.assign(guard, { usedToday: () => ({ day, count: today }) });
 }
 
 /** One remembered console line for the exit report. */
@@ -228,10 +256,27 @@ export function buildEnvelope(
 }
 
 /**
- * At most one exit report per job per window, across processes: an every-5-minutes job failing all day would
- * otherwise send 288 events (the whole org shares 50k a month). The issue still shows the run is
- * failing; the count is what is throttled.
+ * Exit reports are throttled twice, because the org's 50k errors a month (~1.6k/day) are shared
+ * with seven other projects and the issue already exists after its first event — repeats only
+ * add a count:
+ * - per job and exit code, one event every 6 hours (state file per job+code);
+ * - for all jobs together, 200 events per UTC day (one shared state file).
+ * Worst case, every job failing all day: 200/day, ~6k/month.
  */
-export function exitReportAllowed(lastSentAt: number | null, now: number, windowMs = 30 * 60_000): boolean {
+export const EXIT_REPORT_WINDOW_MS = 6 * 60 * 60_000;
+export const EXIT_REPORTS_PER_DAY = 200;
+
+export function exitReportAllowed(lastSentAt: number | null, now: number, windowMs = EXIT_REPORT_WINDOW_MS): boolean {
   return lastSentAt === null || !Number.isFinite(lastSentAt) || now - lastSentAt >= windowMs || lastSentAt > now;
+}
+
+/** The day's shared counter after one more report, or null when the daily cap is spent. */
+export function takeDailySlot(
+  state: { day?: unknown; count?: unknown } | null,
+  now: number,
+  cap = EXIT_REPORTS_PER_DAY,
+): { day: string; count: number } | null {
+  const day = utcDay(now);
+  const count = state && state.day === day && Number.isFinite(Number(state.count)) ? Number(state.count) : 0;
+  return count >= cap ? null : { day, count: count + 1 };
 }

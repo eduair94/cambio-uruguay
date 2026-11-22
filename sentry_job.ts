@@ -10,7 +10,8 @@
  * 2. An exit report: the jobs catch their own errors and `process.exit(1)` — a HANDLED error the
  *    SDK never sees. A run that ends with a non-zero code opens/updates the issue
  *    "<job> exited with code N" (one per job and code), with the run's last console lines as
- *    breadcrumbs. At most one per job every 30 min (state in the OS temp dir).
+ *    breadcrumbs. At most one per job and code every 6 h, and 200 a day for all jobs together
+ *    (the org's 50k errors a month are shared; state files in the OS temp dir).
  * 3. Cron check-ins, only for slugs in classes/sentry/backend.ts DEFAULT_CRON_MONITORS (plus
  *    `SENTRY_CRON_MONITORS`): the monitor must already exist in Sentry — no check-in carries a
  *    monitor config, so nothing here can create (and bill) a monitor. `in_progress` when the job
@@ -31,19 +32,23 @@ import path from "path";
 import { format } from "util";
 import * as Sentry from "@sentry/node";
 import {
+  JOB_LOG_BUDGET,
   backendEnvironment,
   backendRelease,
   buildEnvelope,
   checkInPayload,
   checkInStatus,
   type ConsoleLine,
+  createLogGuard,
   cronMonitorSlugs,
   envelopeUrl,
   exitReportAllowed,
   jobExitEvent,
   jobName,
   parseDsn,
+  takeDailySlot,
   underPm2,
+  utcDay,
   unhandledRejectionMode,
 } from "./classes/sentry/backend";
 import { deliverEnvelopeSync } from "./classes/sentry/deliverSync";
@@ -63,7 +68,32 @@ function setupJobSentry(): void {
   const startedAt = Date.now();
   const release = backendRelease(env);
   const environment = backendEnvironment(env);
-  initBackendSentry({ runtime: "job", root: __dirname, job, unhandledRejections: unhandledRejectionMode(job) });
+
+  // Small JSON state files shared by the runs of a job (and, for the daily cap, by all jobs).
+  const stateDir = env.SENTRY_JOB_STATE_DIR || os.tmpdir();
+  const statePath = (name: string) => path.join(stateDir, `cambio-uruguay-sentry-${name}.json`);
+  const readState = (name: string): Record<string, unknown> | null => {
+    try {
+      return JSON.parse(fs.readFileSync(statePath(name), "utf8"));
+    } catch {
+      return null;
+    }
+  };
+  const writeState = (name: string, value: Record<string, unknown>) => {
+    try {
+      fs.writeFileSync(statePath(name), JSON.stringify(value));
+    } catch {
+      // state is best effort: a lost write only loosens a throttle for one run
+    }
+  };
+
+  // The day's log budget continues across this job's runs.
+  const logsState = readState(`logs-${job}`);
+  const logGuard = createLogGuard({
+    ...JOB_LOG_BUDGET,
+    usedToday: logsState && logsState.day === utcDay(startedAt) ? Number(logsState.count) || 0 : 0,
+  });
+  initBackendSentry({ runtime: "job", root: __dirname, job, unhandledRejections: unhandledRejectionMode(job), logGuard });
 
   // The run's last console lines, for the exit report. Formatted now (the objects may mutate),
   // scrubbed only if a report is actually sent.
@@ -86,16 +116,6 @@ function setupJobSentry(): void {
     ? Sentry.captureCheckIn({ monitorSlug: job, status: "in_progress" })
     : undefined;
 
-  const stateFile = path.join(os.tmpdir(), `cambio-uruguay-sentry-exit-${job}.json`);
-  const readLastSent = (): number | null => {
-    try {
-      const value = Number(JSON.parse(fs.readFileSync(stateFile, "utf8")).sentAt);
-      return Number.isFinite(value) ? value : null;
-    } catch {
-      return null;
-    }
-  };
-
   process.on("exit", (code) => {
     try {
       const exitCode = typeof code === "number" ? code : Number(process.exitCode) || 0;
@@ -114,8 +134,18 @@ function setupJobSentry(): void {
           }),
         });
       }
+      const used = logGuard.usedToday();
+      if (used.count > 0) writeState(`logs-${job}`, used);
       // An error the SDK already reported (with its stack) needs no second issue.
-      if (exitCode !== 0 && !sentExceptionEvent() && exitReportAllowed(readLastSent(), endedAt)) {
+      const exitState = `exit-${job}-${exitCode}`;
+      const lastSent = Number(readState(exitState)?.sentAt);
+      const slot =
+        exitCode !== 0 && !sentExceptionEvent() && exitReportAllowed(Number.isFinite(lastSent) ? lastSent : null, endedAt)
+          ? takeDailySlot(readState("exit-day"), endedAt)
+          : null;
+      if (slot) {
+        writeState("exit-day", slot);
+        writeState(exitState, { sentAt: endedAt });
         items.push({
           type: "event",
           payload: jobExitEvent({
@@ -129,11 +159,6 @@ function setupJobSentry(): void {
             lines,
           }),
         });
-        try {
-          fs.writeFileSync(stateFile, JSON.stringify({ sentAt: endedAt }));
-        } catch {
-          // throttle state is best effort
-        }
       }
       if (items.length) deliverEnvelopeSync(envelopeUrl(dsn), buildEnvelope(dsn, items));
     } catch {

@@ -49,6 +49,7 @@ function runJob(mode: string, extraEnv: Record<string, string> = {}) {
       name: job,
       sentry_dsn: `http://examplepublicid@127.0.0.1:${port}/42`,
       SENTRY_CRON_MONITORS: job,
+      SENTRY_JOB_STATE_DIR: work, // throttle state of this test only
       ...extraEnv,
     },
   });
@@ -115,6 +116,18 @@ describe("pm2 job reporting", () => {
     // by ContextLines as they are, which is why `raw` is not checked here).
     expect(JSON.stringify(events[0].breadcrumbs)).not.toContain("hunter");
     expect(raw).toContain("[redacted]");
+  });
+
+  it("a second failure within 6 hours sends the check-in but no second event", () => {
+    const job = `test-job-repeat-${process.pid}-${Date.now()}`;
+    const first = runJob("fail", { name: job, SENTRY_CRON_MONITORS: job });
+    const second = runJob("fail", { name: job, SENTRY_CRON_MONITORS: job });
+    expect(first.items.filter((item) => item.type === "event")).toHaveLength(1);
+    expect(second.items.filter((item) => item.type === "event")).toHaveLength(0);
+    expect(second.items.filter((item) => item.type === "check_in").map((item) => item.payload.status)).toEqual([
+      "in_progress",
+      "error",
+    ]);
   });
 
   it("sends nothing outside pm2", () => {

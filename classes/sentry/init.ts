@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/node";
-import { backendEnvironment, backendRelease, createLogGuard } from "./backend";
+import { API_LOG_BUDGET, backendEnvironment, backendRelease, createLogGuard } from "./backend";
 import { scrubText } from "./scrub";
 
 /**
@@ -11,7 +11,7 @@ import { scrubText } from "./scrub";
  *   release) and "resolve in next release" only work with a release. Until now the backend sent
  *   none, so every issue was release-less.
  * - Sentry Logs (5 GB/month for the org): `console.warn`/`console.error` lines, scrubbed and
- *   budgeted per minute and per process. pm2 logs rotate daily and used to be flushed hourly;
+ *   budgeted per minute, per process and per day (backend.ts). pm2 logs rotate daily and used to be flushed hourly;
  *   Sentry keeps them searchable next to the issue they explain.
  * - Everything text-shaped is scrubbed (`scrub.ts`): exception values, messages, breadcrumbs,
  *   log lines. The jobs log proxy URLs with credentials and axios errors with API keys.
@@ -28,6 +28,8 @@ export interface BackendSentryOptions {
   job?: string;
   /** Jobs only: what an unhandled rejection does (see `unhandledRejectionMode` in backend.ts). */
   unhandledRejections?: "strict" | "warn";
+  /** The log budget; a job passes one that continues its day's count. Default: the API's. */
+  logGuard?: ReturnType<typeof createLogGuard>;
 }
 
 let exceptionSent = false;
@@ -46,9 +48,7 @@ export function initBackendSentry(options: BackendSentryOptions): boolean {
   const dsn = process.env.sentry_dsn || process.env.SENTRY_DSN || "";
   if (!dsn || Sentry.getClient()) return false;
   const logsEnabled = !LOGS_OFF.test(process.env.SENTRY_LOGS || "");
-  const guardLog = createLogGuard(
-    options.runtime === "api" ? { perMinute: 60, perProcess: Infinity } : { perMinute: 60, perProcess: 300 },
-  );
+  const guardLog = options.logGuard || createLogGuard(API_LOG_BUDGET);
   Sentry.init({
     dsn,
     release: backendRelease(process.env),

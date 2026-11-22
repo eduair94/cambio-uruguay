@@ -12,6 +12,7 @@ import {
   jobExitEvent,
   jobName,
   parseDsn,
+  takeDailySlot,
   unhandledRejectionMode,
 } from "../../classes/sentry/backend";
 
@@ -113,7 +114,7 @@ describe("cron monitors", () => {
 describe("log guard", () => {
   it("drops over the per-minute and per-process budgets and scrubs what it keeps", () => {
     let now = 0;
-    const guard = createLogGuard({ perMinute: 2, perProcess: 3 }, () => now);
+    const guard = createLogGuard({ perMinute: 2, perProcess: 3, perDay: 100 }, () => now);
     expect(guard({ message: "token=abc", attributes: { url: "https://x/?key=1", n: 1 } })).toEqual({
       message: "token=[redacted]",
       attributes: { url: "https://x/?key=[redacted]", n: 1 },
@@ -124,6 +125,18 @@ describe("log guard", () => {
     expect(guard({ message: "d" })).not.toBeNull();
     now = 120_000;
     expect(guard({ message: "e" })).toBeNull(); // per-process budget spent
+    expect(guard.usedToday()).toEqual({ day: "1970-01-01", count: 3 });
+  });
+
+  it("continues the day's count across runs and resets at UTC midnight", () => {
+    const midnight = Date.UTC(2026, 10, 22);
+    let now = midnight - 1_000;
+    const guard = createLogGuard({ perMinute: 100, perProcess: 100, perDay: 5, usedToday: 4 }, () => now);
+    expect(guard({ message: "a" })).not.toBeNull();
+    expect(guard({ message: "b" })).toBeNull(); // 5 of 5 for 2026-11-21
+    now = midnight + 61_000;
+    expect(guard({ message: "c" })).not.toBeNull();
+    expect(guard.usedToday()).toEqual({ day: "2026-11-22", count: 1 });
   });
 });
 
@@ -156,10 +169,20 @@ describe("job exit report", () => {
     expect(String(event.event_id)).toMatch(/^[\da-f]{32}$/);
   });
 
-  it("is throttled to one per job every 30 minutes", () => {
+  it("is throttled to one per job and code every 6 hours", () => {
+    const hour = 60 * 60_000;
     expect(exitReportAllowed(null, 1_000)).toBe(true);
-    expect(exitReportAllowed(0, 29 * 60_000)).toBe(false);
-    expect(exitReportAllowed(0, 30 * 60_000)).toBe(true);
+    expect(exitReportAllowed(0, 6 * hour - 1)).toBe(false);
+    expect(exitReportAllowed(0, 6 * hour)).toBe(true);
     expect(exitReportAllowed(10_000, 5_000)).toBe(true); // clock went back: do not stay silent
+  });
+
+  it("is capped for all jobs together at 200 a UTC day", () => {
+    const now = Date.UTC(2026, 10, 22, 12);
+    expect(takeDailySlot(null, now)).toEqual({ day: "2026-11-22", count: 1 });
+    expect(takeDailySlot({ day: "2026-11-22", count: 199 }, now)).toEqual({ day: "2026-11-22", count: 200 });
+    expect(takeDailySlot({ day: "2026-11-22", count: 200 }, now)).toBeNull();
+    expect(takeDailySlot({ day: "2026-11-21", count: 200 }, now)).toEqual({ day: "2026-11-22", count: 1 });
+    expect(takeDailySlot({ day: "2026-11-22", count: "garbage" }, now)).toEqual({ day: "2026-11-22", count: 1 });
   });
 });
