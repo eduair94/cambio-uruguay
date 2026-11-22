@@ -73,13 +73,36 @@ describe('robots.txt rules', () => {
   })
 
   // The ceiling is the measured problem (776 rules), not a target: each private page costs two
-  // rules (`/x` and `/*/x`) and 26 is the 24 of 2026-11-06 plus /estadisticas-de-uso (2026-11-20).
+  // rules (`/x` and `/*/x`) and 26 was the 24 of 2026-11-06 plus /estadisticas-de-uso (2026-11-20).
+  // 29 adds the advert comparison with a selection (2026-11-21) and the API block with its open-data
+  // exception (`/api/` + `/api/datos/`, 2026-11-22): still two orders of magnitude under 776.
   // A prefix shared by two private pages (`/estadisticas-de-`) would fit under 24, but it would also
   // block any future public `/estadisticas-de-…` page in silence, so each one keeps its own line.
   it('keep the wildcard group small enough to test every sitemap URL against', () => {
     const [wildcard] = groups()
-    expect(wildcard._rules.length).toBeLessThanOrEqual(26)
-    for (const group of groups()) expect(group._rules.length).toBeLessThanOrEqual(26)
+    expect(wildcard._rules.length).toBeLessThanOrEqual(29)
+    for (const group of groups()) expect(group._rules.length).toBeLessThanOrEqual(29)
+  })
+
+  // Clarity's bot activity, 2026-11-21: 4.390 bot requests to /api/ in one day, mostly AhrefsBot,
+  // Applebot and OpenAI. The engines that RENDER pages keep the API (a blocked call is a part of the
+  // page indexed empty); everyone keeps the open data.
+  it('close the site API to crawlers that do not render pages, never to Googlebot or Bingbot', () => {
+    const [wildcard, ai, renderers] = groups()
+    const api = ['/api/rentals/zone-profile', '/api/branches', '/api/rentals']
+    for (const group of [wildcard, ai]) {
+      expect(api.filter(path => !blocked(group, path))).toEqual([])
+      expect(blocked(group, '/api/datos/alquileres')).toBe(false)
+    }
+    const agents = (group: { userAgent: string[] }) => group.userAgent.map(ua => ua.toLowerCase())
+    expect(agents(renderers)).toEqual(expect.arrayContaining(['googlebot', 'bingbot']))
+    expect(agents(ai)).not.toContain('bingbot')
+    expect(api.filter(path => blocked(renderers, path))).toEqual([])
+    expect(blocked(renderers, '/api/datos/alquileres')).toBe(false)
+    // The search-engine group still gets every private page and the seller phone.
+    const privateOpen = PRIVATE_PAGES.filter(path => !blocked(renderers, path))
+    expect(privateOpen).toEqual([])
+    expect(blocked(renderers, '/api/cars/contact/ml-MLU1')).toBe(true)
   })
 
   it('block each private page, bare and under every locale prefix', () => {

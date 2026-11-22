@@ -343,6 +343,18 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Prueba mensual del correo del sitio (sync_mail_health.ts): un correo a admin@ con el mismo
+      // SMTP que el buzón, el newsletter y el monitor. Mantiene viva la clave de Brevo, que vence
+      // tras 90 días sin enviar, y deja en la bandeja la prueba de que el correo llega (22/11/2026:
+      // durante meses Brevo aceptaba y nada llegaba). Día 1 a las 13:23 UTC, un minuto libre.
+      name: "currency-mail-health",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_mail_health.js",
+      cron_restart: "23 13 1 * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // El comparador de transporte de `/conviene-auto-moto-o-omnibus-uruguay`: precios de cada modo,
       // la matriz de rutas entre las 68 zonas y los viajes en ómnibus armados con los horarios que
       // publica la Intendencia.
