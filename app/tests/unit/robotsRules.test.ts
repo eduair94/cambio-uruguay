@@ -93,6 +93,7 @@ describe('robots.txt rules', () => {
     for (const group of [wildcard, ai]) {
       expect(api.filter(path => !blocked(group, path))).toEqual([])
       expect(blocked(group, '/api/datos/alquileres')).toBe(false)
+      expect(blocked(group, '/api/datos')).toBe(false)
     }
     const agents = (group: { userAgent: string[] }) => group.userAgent.map(ua => ua.toLowerCase())
     expect(agents(renderers)).toEqual(expect.arrayContaining(['googlebot', 'bingbot']))

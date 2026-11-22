@@ -107,7 +107,8 @@ const SITE_DISALLOW = [
 // The site's API, closed to crawlers that do not render pages (see the `robots` block), and the
 // open data under it that stays open to all of them.
 const API_DISALLOW = ['/api/']
-const API_OPEN = ['/api/datos/']
+// Without the trailing slash: /llms.txt links the index `/api/datos` itself.
+const API_OPEN = ['/api/datos']
 const TRANSLATED_ADVERTS_ALLOW = [
   '/*/autos-usados-uruguay/precios/',
   '/*/autos-usados-uruguay/hasta-',
@@ -1371,7 +1372,7 @@ export default defineNuxtConfig({
     // 1.815, Applebot 1.044, OpenAI 495 — on endpoints like /api/rentals/zone-profile that take
     // seconds without cache. Googlebot (375) and Bingbot (146) keep it: they run the page's
     // JavaScript, and a blocked call is a part of the page they would index empty. The open data
-    // (`/api/datos/`, published for reuse) stays open to everyone.
+    // (`/api/datos`, published for reuse) stays open to everyone.
     disallow: [...SITE_DISALLOW, ...API_DISALLOW],
     // `/` and the exceptions to the translated adverts: nothing else disallowed above overlaps a
     // public section, so the per-section `Allow` lines it used to list (/guias, /historico…) never
