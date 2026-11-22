@@ -25,5 +25,6 @@ describe("the Anthropic API keys have exactly one owner", () => {
     };
     walk(ROOT);
     expect(owners).toEqual(["classes/anthropic.ts"]);
-  });
+    // A synchronous walk of the whole tree: seconds on a loaded Windows box, not a hang.
+  }, 120_000);
 });

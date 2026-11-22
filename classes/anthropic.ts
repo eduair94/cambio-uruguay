@@ -18,7 +18,7 @@
 //     returns null at once, and classes/llm.ts goes to Gemini without paying a round trip per call.
 //
 //  3. A 429 IS NOT DEATH. The per-minute limit resets, so the key rests 60 s — or what
-//     `retry-after` says — and comes back on its own. The SDK has already retried twice by then.
+//     `retry-after` says — and comes back on its own. The SDK does not retry (maxRetries: 0).
 //
 //  4. AN OUTAGE IS NOT THE KEY'S FAULT. 5xx, 529 overloaded, a timeout or a dropped socket fail
 //     this call (null → Gemini) and retire nothing: another key would hit the same outage.
@@ -60,18 +60,39 @@ export interface ClaudeReply {
 /** The slice of the SDK client this module uses — small on purpose, so a test can stand in for it. */
 interface MessagesClient {
   messages: {
-    stream(params: any, options?: { timeout?: number }): { finalMessage(): Promise<any> };
+    stream(params: any, options?: { timeout?: number; signal?: AbortSignal }): { finalMessage(): Promise<any> };
   };
 }
 
 type ClientFactory = (apiKey: string) => MessagesClient;
 
+/** Test seam: the real SDK client, with the network replaced. */
+let fetchOverride: ((input: any, init?: any) => Promise<Response>) | null = null;
+
+/**
+ * `maxRetries: 0`: the SDK's own retries run on the SAME key and sleep whatever `retry-after` says
+ * (any value, up to weeks) before this module's rotation ever sees the 429. Rotation is the retry,
+ * and Gemini is the retry after that.
+ *
+ * `baseURL` is fixed: the SDK otherwise reads ANTHROPIC_BASE_URL from the environment, and three
+ * credit-bearing keys must never be sent wherever that happens to point.
+ */
 const defaultFactory: ClientFactory = (apiKey) =>
-  new Anthropic({ apiKey, maxRetries: 2, timeout: DEFAULT_TIMEOUT_MS }) as unknown as MessagesClient;
+  new Anthropic({
+    apiKey,
+    baseURL: "https://api.anthropic.com",
+    maxRetries: 0,
+    timeout: DEFAULT_TIMEOUT_MS,
+    ...(fetchOverride ? { fetch: fetchOverride as any } : {}),
+  }) as unknown as MessagesClient;
 
 let factory: ClientFactory = defaultFactory;
 const clients = new Map<string, MessagesClient>();
 let now: () => number = () => Date.now();
+export function __setAnthropicFetchForTests(f: ((input: any, init?: any) => Promise<Response>) | null): void {
+  fetchOverride = f;
+  clients.clear();
+}
 
 interface KeyState {
   retired?: string;
@@ -91,6 +112,16 @@ const usage = new Map<string, KeyUsage>();
 let roundRobin = 0;
 let exitHookInstalled = false;
 
+/**
+ * Outages are not a key's fault, so they retire nothing — but during an Anthropic incident every
+ * call would still pay the full wait before Gemini. Three in a row and Claude is skipped for five
+ * minutes; any success resets the streak.
+ */
+const OUTAGE_STREAK_LIMIT = 3;
+const OUTAGE_COOLDOWN_MS = 5 * 60_000;
+let outageStreak = 0;
+let outageUntil = 0;
+
 /** Test seams. */
 export function __setAnthropicClientFactoryForTests(f: ClientFactory | null): void {
   factory = f ?? defaultFactory;
@@ -104,6 +135,8 @@ export function __resetAnthropicForTests(): void {
   usage.clear();
   clients.clear();
   roundRobin = 0;
+  outageStreak = 0;
+  outageUntil = 0;
 }
 
 const label = (key: string): string => `…${key.slice(-4)}`;
@@ -131,7 +164,7 @@ function usableKeys(): string[] {
 
 /** Is there a key that can spend right now? */
 export function anthropicConfigured(): boolean {
-  return !pinnedToGemini() && usableKeys().length > 0;
+  return !pinnedToGemini() && now() >= outageUntil && usableKeys().length > 0;
 }
 
 export function anthropicModel(): string {
@@ -180,7 +213,14 @@ function classify(error: unknown): Verdict {
   const reason = ((error as any)?.message || String(error)).replace(/\s+/g, " ").slice(0, 200);
   if (error instanceof AuthenticationError || error instanceof PermissionDeniedError) return { kind: "retire", reason };
   if (error instanceof APIError && error.status === 402) return { kind: "retire", reason };
-  if (error instanceof BadRequestError && /credit balance|usage limits|billing/i.test(reason)) return { kind: "retire", reason };
+  // A monthly spend cap arrives as a 429 (the SDK's EnforcedSpendLimitReachedError extends
+  // RateLimitError) but it does not reset in a minute: checked BEFORE the 429 rest below.
+  if (error instanceof APIError && (error.errorCode === "enforced_spend_limit_reached" || error.type === "billing_error")) {
+    return { kind: "retire", reason };
+  }
+  if (error instanceof BadRequestError && /credit balance|usage limits|billing/i.test(error.apiMessage ?? reason)) {
+    return { kind: "retire", reason };
+  }
   if (error instanceof RateLimitError) {
     const retryAfter = Number(error.headers?.get?.("retry-after"));
     return { kind: "rest", reason, restMs: Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : DEFAULT_REST_MS };
@@ -193,7 +233,7 @@ function classify(error: unknown): Verdict {
  * the key's. Returns the raw message, or null.
  */
 async function callClaude(params: Record<string, unknown>, timeoutMs: number): Promise<{ message: any; key: string } | null> {
-  if (pinnedToGemini()) return null;
+  if (pinnedToGemini() || now() < outageUntil) return null;
   const keys = usableKeys();
   if (!keys.length) return null;
   installExitSummary();
@@ -209,7 +249,10 @@ async function callClaude(params: Record<string, unknown>, timeoutMs: number): P
         client = factory(key);
         clients.set(key, client);
       }
-      const message = await client.messages.stream(params, { timeout: timeoutMs }).finalMessage();
+      const message = await client.messages
+        .stream(params, { timeout: timeoutMs, signal: AbortSignal.timeout(timeoutMs) })
+        .finalMessage();
+      outageStreak = 0;
       row.calls += 1;
       row.inputTokens += Number(message?.usage?.input_tokens) || 0;
       row.outputTokens += Number(message?.usage?.output_tokens) || 0;
@@ -229,6 +272,12 @@ async function callClaude(params: Record<string, unknown>, timeoutMs: number): P
         continue;
       }
       console.warn(`[anthropic] la llamada falló (${label(key)}), no es la clave: ${verdict.reason}`);
+      outageStreak += 1;
+      if (outageStreak >= OUTAGE_STREAK_LIMIT) {
+        outageStreak = 0;
+        outageUntil = now() + OUTAGE_COOLDOWN_MS;
+        console.warn(`[anthropic] ${OUTAGE_STREAK_LIMIT} fallas seguidas del servicio: Claude se saltea 5 min, todo va a Gemini`);
+      }
       return null;
     }
   }
@@ -256,7 +305,9 @@ function baseParams(content: unknown, opts: ClaudeCallOptions, extraOutput: Reco
 /** One question, prose back. `null` on anything at all going wrong, including "no usable key". */
 export async function askClaudePlain(prompt: string, opts: ClaudeCallOptions = {}): Promise<ClaudeReply | null> {
   const res = await callClaude(baseParams(prompt, opts), opts.timeoutMs ?? DEFAULT_TIMEOUT_MS);
-  if (!res || res.message?.stop_reason === "refusal") return null;
+  // A cut answer is not an answer: the callers parse JSON out of this text, and Gemini, which ran
+  // with no output cap, gets the chance to give the whole thing.
+  if (!res || res.message?.stop_reason === "refusal" || res.message?.stop_reason === "max_tokens") return null;
   const text = textOf(res.message);
   return text ? { text, model: String(res.message?.model || anthropicModel()), keyLabel: label(res.key) } : null;
 }
@@ -374,12 +425,11 @@ export async function askClaudeWithImages(
   ];
   const format = opts.schema ? { format: { type: "json_schema", schema: toClaudeSchema(opts.schema) } } : {};
   const res = await callClaude(baseParams(content, opts, format), opts.timeoutMs ?? DEFAULT_TIMEOUT_MS);
-  if (!res || res.message?.stop_reason === "refusal") return null;
+  if (!res || res.message?.stop_reason === "refusal" || res.message?.stop_reason === "max_tokens") return null;
   const text = textOf(res.message);
   if (!text) return null;
   const model = String(res.message?.model || anthropicModel());
   if (!opts.schema) return { text, model };
-  if (res.message?.stop_reason === "max_tokens") return null;
   const value = parseJsonText(text);
   return value === undefined ? null : { text, value, model };
 }
