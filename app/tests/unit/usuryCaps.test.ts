@@ -1,7 +1,15 @@
+import { readdirSync, readFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { USURY_CAPS } from '~/utils/p2pLending'
-import { mergeUsuryCaps, usuryCapOf, usuryGridKey, usuryPct } from '~/utils/usuryCaps'
-import type { BcuCapRow } from '~/utils/cashAdvance'
+import {
+  consumoShortTermCap,
+  mergeUsuryCaps,
+  usuryCapOf,
+  usuryGridKey,
+  usuryPct,
+} from '~/utils/usuryCaps'
+import { BCU_CAPS, BCU_IN_FORCE_SINCE, BCU_PERIOD, type BcuCapRow } from '~/utils/cashAdvance'
 
 // El 2026-09-03 el sitio publicaba DOS topes de usura a la vez y los dos decian "vigente":
 // /ley-de-usura-uruguay mostraba 133,49 % leido del PDF del BCU esa manana, y /prestamos-p2p-uruguay
@@ -71,4 +79,53 @@ describe('usuryCapOf y usuryPct', () => {
     expect(usuryPct(133.4915)).toBe('133,49%')
     expect(usuryPct(66.3245)).toBe('66,32%')
   })
+})
+
+// 2026-11-22: /saldar-deudas-uruguay decia "topes vigentes: marzo-mayo 2026 ... sin descuento,
+// tope 125,12 %" mientras el BCU publicaba 142,74 % vigente desde el 1/11. Leia el tope de
+// /api/debt-relief, que lo saca de una busqueda mensual y no del PDF.
+describe('consumoShortTermCap', () => {
+  it('toma el tope de la grilla viva con la fecha desde la que rige', () => {
+    const cap = consumoShortTermCap({
+      periodo: 'julio–setiembre de 2026',
+      vigenteDesde: '2026-11-01',
+      rows: [
+        row({ bracket: 'mayor10kUI', media: 0.3557, tope: 0.551335 }),
+        row({ media: 0.9209, tope: 1.427395 }),
+      ],
+    })
+    expect(cap.live).toBe(true)
+    expect(cap.capPct).toBeCloseTo(142.74, 2)
+    expect(cap.since).toBe('2026-11-01')
+    expect(cap.periodo).toBe('julio–setiembre de 2026')
+  })
+
+  it('sin grilla publica la lectura fechada con SU fecha, nunca con la de hoy', () => {
+    const base = BCU_CAPS.find(r => usuryGridKey(r) === 'menor10kUI|corto|UYU')!
+    for (const grid of [null, undefined, { rows: [] }]) {
+      const cap = consumoShortTermCap(grid)
+      expect(cap.live).toBe(false)
+      expect(cap.capPct).toBeCloseTo(base.tope * 100, 4)
+      expect(cap.since).toBe(BCU_IN_FORCE_SINCE)
+      expect(cap.periodo).toBe(BCU_PERIOD)
+    }
+  })
+
+  it('una fila fuera de banda o sin fecha de vigencia no se publica como vigente', () => {
+    expect(
+      consumoShortTermCap({ vigenteDesde: '2026-11-01', rows: [row({ tope: 84.47 })] }).live
+    ).toBe(false)
+    expect(consumoShortTermCap({ rows: [row()] }).live).toBe(false)
+  })
+})
+
+describe('ninguna pagina publica el tope de /api/debt-relief', () => {
+  it('el campo usuryCaps de ese endpoint no se imprime', () => {
+    const pagesDir = resolve(__dirname, '../../pages')
+    const offenders = readdirSync(pagesDir, { recursive: true })
+      .map(String)
+      .filter(file => file.endsWith('.vue'))
+      .filter(file => /\busuryCaps\s*(?:\[|\?\.)/.test(readFileSync(join(pagesDir, file), 'utf8')))
+    expect(offenders).toEqual([])
+  }, 60_000)
 })

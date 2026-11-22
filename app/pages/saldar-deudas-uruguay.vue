@@ -201,11 +201,12 @@
       <NuxtLink :to="localePath('/salir-del-clearing')">simulador de pago</NuxtLink>.
     </p>
 
-    <!-- Live usury caps note -->
-    <VAlert v-if="live" type="info" variant="text" density="compact" class="mb-6 text-caption">
-      Topes de usura vigentes: {{ live.period }}. Sin descuento &lt; 10.000 UI, tope
-      {{ formatNumber(live.usuryCaps[1]?.topeTasa ?? 0, 2) }}%. Si tu tasa real supera el tope,
-      podés reclamar.
+    <!-- Usury cap note: from the BCU grid (dated baseline when the grid is unreachable) -->
+    <VAlert type="info" variant="text" density="compact" class="mb-6 text-caption">
+      Tope de usura para consumo sin autorización de descuento, menos de 10.000 UI:
+      {{ usuryPct(cap.capPct) }}, vigente desde el {{ capSince }}
+      <template v-if="cap.periodo">(tasas medias de {{ cap.periodo }})</template>. Si tu tasa real
+      supera el tope, podés reclamar.
     </VAlert>
 
     <!-- Comparison table (computed rubric) -->
@@ -402,9 +403,9 @@ import {
   SALARY_DEBT_DOCUMENTS,
   SALARY_DEBT_CASE_CHECKLIST,
   SALARY_DEBT_FAQ,
-  type LiveDebtRelief,
 } from '~/utils/debtRelief'
-import { formatNumber } from '~/utils/format'
+import type { BcuCapRow } from '~/utils/cashAdvance'
+import { consumoShortTermCap, usuryPct } from '~/utils/usuryCaps'
 
 const localePath = useLocalePath()
 
@@ -433,10 +434,30 @@ const yearsMonths = (months: number) => {
 const ranked = rankedServices()
 const medal = (rank: number) => (rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '')
 
-// --- Live usury caps (non-blocking) ---
+// --- Usury cap (non-blocking) ---
 // Do NOT await: awaiting makes this an async component (Suspense) and triggers the
 // known first-click hydration bug. useLazyFetch is non-blocking by design.
-const { data: live } = useLazyFetch<LiveDebtRelief>('/api/debt-relief', { server: false })
+// The BCU grid, same key as every other page that names a cap (memory: un-solo-tope-de-usura).
+// Until 2026-11-22 this read /api/debt-relief, whose cap comes from a monthly web search, and
+// printed 125,12 % "vigente" while the BCU's own table said 142,74 % from 1/11.
+const { data: bcuGrid } = useLazyFetch<{
+  periodo: string
+  vigenteDesde: string
+  rows: BcuCapRow[]
+  live: boolean
+}>('/api/bcu-rates', { key: 'bcu-rates', server: true, default: () => null })
+const cap = computed(() => consumoShortTermCap(bcuGrid.value))
+const capSince = computed(() => {
+  const d = new Date(`${cap.value.since.slice(0, 10)}T12:00:00Z`)
+  return Number.isNaN(d.getTime())
+    ? cap.value.since
+    : d.toLocaleDateString('es-UY', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'UTC',
+      })
+})
 
 const sources = [
   {
