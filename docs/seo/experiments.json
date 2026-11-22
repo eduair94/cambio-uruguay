@@ -19,6 +19,21 @@
   ],
   "experiments": [
     {
+      "id": "cuanto-cuesta-un-empleado-pagina-nueva",
+      "shippedOn": "2026-11-22",
+      "routes": [
+        "/cuanto-cuesta-un-empleado-uruguay"
+      ],
+      "queries": [
+        "cuanto cuesta un empleado en uruguay",
+        "costo de contratar un empleado uruguay",
+        "aportes patronales uruguay",
+        "aporte patronal bps",
+        "costo laboral uruguay"
+      ],
+      "hypothesis": "Pagina nueva. El sitio contesta hace mucho la cuenta del que cobra (del nominal al liquido, con aportes personales e IRPF, en /herramientas/calculadora-sueldo-liquido) y no contestaba la del que paga. La frase aporte patronal aparecia suelta en tres paginas -/contractor-en-uruguay la pone como una linea de su tabla, /que-empresa-abrir-uruguay la nombra en una respuesta sobre el monotributo- y el numero no estaba en ninguna: para armarlo hay que sumar cuatro paginas del BPS. La pagina publica las cuatro tasas con su norma (7,5 % jubilatorio desde el 1/7/07, 5 % de FONASA, 0,10 % de FRL por la Ley 19.689 art. 17 y 0,025 % del Fondo de Garantia de Creditos Laborales por la Ley 19.690 art. 10, las dos ultimas desde el 1/1/2019), su suma de 12,625 % declarada como cuenta nuestra, la unica asimetria -el aguinaldo esta excluido del aporte patronal a FONASA por el Decreto 2/008 art. 4, asi que lleva 7,625 %- y el anio en nominales (14,59 con un sueldo parejo). El total se publica como PARCIAL con los cinco faltantes nombrados al lado: la prima del seguro del BSE (obligatoria por la Ley 16.074 art. 1, pero no encontramos una tasa unica publicada), el Complemento de Cuota Mutual, el salario vacacional (la ley lo fija sobre el jornal liquido, no sobre el nominal), la indemnizacion por despido y lo que no es sueldo. No se afirma nada sobre el tope de cotizacion del lado patronal: el tope verificado es del aporte personal y la pagina de topes del BPS no dice si alcanza al patronal, asi que los tres ejemplos quedan por debajo y la pagina lo dice. Recibe su enlace de contexto desde /contractor-en-uruguay (ruta libre, un parrafo despues de su cuadro de tasas) y entra al tema emprender-y-empresa-uruguay. Medir contra las 28 jornadas posteriores archivadas, sin el dia del deploy."
+    },
+    {
       "id": "jubilacion-y-franquicia-el-titulo-contesta",
       "shippedOn": "2026-11-14",
       "routes": [

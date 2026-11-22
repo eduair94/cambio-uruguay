@@ -159,6 +159,14 @@
       <VAlert type="info" variant="tonal" density="comfortable">
         {{ CONTRACTOR_JUBILACION_TAKEAWAY }}
       </VAlert>
+      <p class="mt-4 mb-0">
+        El 7,5 % patronal es el mismo que paga una empresa por alguien en planilla, y no es el
+        único: para comparar tu tarifa contra un sueldo sirve saber
+        <NuxtLink :to="localePath('/cuanto-cuesta-un-empleado-uruguay')">
+          cuánto le cuesta a una empresa un empleado
+        </NuxtLink>
+        — los cuatro aportes patronales sobre el nominal, con la norma de cada tasa.
+      </p>
     </section>
 
     <!-- La unidad intermedia, antes de las preguntas: mismo corte que FaqSection (ver

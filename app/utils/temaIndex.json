@@ -1552,6 +1552,10 @@
           "label": "Qué empresa abrir"
         },
         {
+          "to": "/cuanto-cuesta-un-empleado-uruguay",
+          "label": "Cuánto cuesta un empleado"
+        },
+        {
           "to": "/facturar-en-monotributo-uruguay",
           "label": "Facturar en monotributo"
         },

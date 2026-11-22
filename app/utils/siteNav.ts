@@ -1881,6 +1881,28 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // La otra mitad de la cuenta de la calculadora de sueldo líquido: lo que paga el que paga.
+        // «aporte patronal» aparecía suelto en tres páginas y el número no estaba en ninguna; hay
+        // que sumar cuatro páginas del BPS para armarlo (utils/employerCost.ts).
+        to: '/cuanto-cuesta-un-empleado-uruguay',
+        labelKey: 'nav.cuantoCuestaUnEmpleado',
+        icon: 'mdi-account-hard-hat',
+        priority: 0.7,
+        changefreq: 'monthly',
+        keywords: [
+          'cuanto cuesta un empleado uruguay',
+          'costo de contratar un empleado uruguay',
+          'aportes patronales uruguay',
+          'aporte patronal bps',
+          'cuanto le cuesta al empleador un sueldo',
+          'costo laboral uruguay',
+          'fonasa patronal',
+          'fondo de reconversion laboral',
+          'fondo de garantia de creditos laborales',
+          'tomar un empleado en planilla',
+        ],
+      },
+      {
         to: '/que-empresa-abrir-uruguay',
         labelKey: 'nav.queEmpresaAbrir',
         icon: 'mdi-store-outline',

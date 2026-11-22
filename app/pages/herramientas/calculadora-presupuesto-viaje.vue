@@ -1,5 +1,10 @@
 <template>
-  <ToolShell slug="calculadora-presupuesto-viaje" :faq="faq" hide-disclaimer>
+  <ToolShell
+    slug="calculadora-presupuesto-viaje"
+    seo-title="Presupuesto de viaje: dólares a llevar"
+    :faq="faq"
+    hide-disclaimer
+  >
     <VCard class="pa-4 pa-sm-6">
       <VRow class="g-input">
         <VCol cols="6" sm="3">
