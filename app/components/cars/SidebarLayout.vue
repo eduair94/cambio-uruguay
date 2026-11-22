@@ -29,7 +29,9 @@
 }
 @media (min-width: 960px) {
   .cars-layout {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+    /* Un cuarto del ancho, con techo: con 1fr/3fr los filtros crecían con la pantalla (550 px de
+       selects en una página de 2200). En las páginas con el tope de 1280 da lo mismo que antes. */
+    grid-template-columns: clamp(220px, 25%, 320px) minmax(0, 1fr);
   }
   .cars-layout__filters {
     grid-column: 1;
