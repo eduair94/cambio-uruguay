@@ -3,7 +3,7 @@
 // means the previous good figures (or the app's own baseline) keep serving.
 import "dotenv/config";
 
-import { geminiConfigured } from "./classes/gemini";
+import { groundedConfigured } from "./classes/llm";
 import { refreshLiveCosts } from "./classes/costs/refresh";
 import { saveCosts } from "./classes/costs/store";
 import { MongooseServer, withTimeout } from "./classes/database";
@@ -19,7 +19,7 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  if (!geminiConfigured()) {
+  if (!groundedConfigured()) {
     console.warn("[costs] no GEMINI_API_KEY — nothing to do, keeping the stored figures");
     process.exit(0);
   }

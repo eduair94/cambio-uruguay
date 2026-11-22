@@ -6,7 +6,7 @@
 // Moved out of the Nuxt app (server/utils/banksNews.ts), where it ran ON DEMAND: the first visitor
 // after a 24h cache expiry paid ~36 Gemini calls in-request. Here it is a weekly-ish cron job into
 // Mongo, and the page reads a store.
-import { askGrounded, askPlain, geminiConfigured, groundedHeadlines, type GroundedHeadline } from "../gemini";
+import { askGrounded, askPlain, groundedConfigured, groundedHeadlines, type GroundedHeadline } from "../llm";
 import { BANK_ENTITIES, KIND_LABELS } from "./entities";
 
 export type Lang = "es" | "en" | "pt";
@@ -107,7 +107,7 @@ export async function buildBanksBriefing(lang: Lang): Promise<BanksBriefing> {
   const langName = LANG_NAME[lang] ?? LANG_NAME.es;
   const asOf = new Date().toISOString();
 
-  if (!geminiConfigured()) return { items: [], analysis: null, asOf, unavailable: true };
+  if (!groundedConfigured()) return { items: [], analysis: null, asOf, unavailable: true };
 
   const raw = await mapPool(BANK_ENTITIES, 4, (entity) =>
     fetchEntityNews(entity.name, KIND_LABELS[entity.kind] ?? entity.kind, langName)

@@ -8,7 +8,7 @@
 // Writes classes/models/PricePrediction.ts, which is bound to the APP's Mongo (classes/appdb.ts)
 // — the SAME `pricepredictions` collection app/server/api/predictions/[currency].get.ts already
 // reads. This is a ledger, never truncated: recordTodayPrediction upserts on (currency, date).
-import { askGrounded, geminiConfigured, groundedHeadlines } from "../gemini";
+import { askGrounded, groundedConfigured, groundedHeadlines } from "../llm";
 import { PricePredictionModel } from "../models/PricePrediction";
 import { computePeriodChanges, parseAiReply, type AiPredictionParsed, type PeriodChange } from "./prompt";
 import { fetchRecentSeries, listActiveCurrencies } from "./series";
@@ -65,7 +65,7 @@ function buildForecastPrompt(currency: string): string {
  */
 async function searchExternalForecasts(currency: string): Promise<ExternalForecast[]> {
   if (!FORECAST_CURRENCIES.has(currency)) return [];
-  if (!geminiConfigured()) return [];
+  if (!groundedConfigured()) return [];
 
   const reply = await askGrounded(buildForecastPrompt(currency));
   if (!reply || isNoForecastText(reply.text)) return [];
@@ -106,7 +106,7 @@ function buildAiPrompt(currency: string, changes: PeriodChange[]): string {
 }
 
 async function fetchAiAnalysis(currency: string, changes: PeriodChange[]): Promise<AiPredictionParsed | null> {
-  if (!geminiConfigured()) return null;
+  if (!groundedConfigured()) return null;
   const reply = await askGrounded(buildAiPrompt(currency, changes));
   if (!reply) return null;
   return parseAiReply(reply.text);

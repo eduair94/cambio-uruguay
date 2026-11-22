@@ -5,7 +5,7 @@
 // nearest 500) stays in the app (app/server/utils/costsMerge.ts), because COST_MODEL stays there.
 //
 // Moved out of the Nuxt app (server/utils/costOfLivingLive.ts).
-import { askGrounded, geminiConfigured, groundedHeadlines } from "../gemini";
+import { askGrounded, groundedConfigured, groundedHeadlines } from "../llm";
 import { applyCostBands, type CostFigures } from "./bands";
 
 export interface LiveCosts {
@@ -44,7 +44,7 @@ export function emptyLiveCosts(): LiveCosts {
  */
 export async function refreshLiveCosts(): Promise<LiveCosts> {
   const empty = emptyLiveCosts();
-  if (!geminiConfigured()) return empty;
+  if (!groundedConfigured()) return empty;
 
   const reply = await askGrounded(PROMPT);
   if (!reply) return empty;

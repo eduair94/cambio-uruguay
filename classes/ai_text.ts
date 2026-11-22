@@ -14,7 +14,9 @@ import fs from "fs";
 import path from "path";
 import "dotenv/config";
 import { askClaude, askClaudeJson, claudeConfigured, claudeHasBudget, claudeSaturated } from "./claude";
-import { askPlain, askWithImage, geminiConfigured } from "./gemini";
+// The fallback leg goes through classes/llm.ts: prepaid Claude API credit first, then Gemini. So
+// "gemini" below means "not the subscription", not literally Gemini.
+import { askPlain, askWithImage, llmConfigured } from "./llm";
 
 export type TextProvider = "claude" | "gemini";
 
@@ -44,7 +46,7 @@ export async function resolveProvider(): Promise<TextProvider> {
   const preferred = preferredProvider();
   if (preferred === "claude" && !(await claudeHasBudget())) {
     console.warn("[ai] Claude sin cupo o inalcanzable — esta corrida usa Gemini");
-    resolved = geminiConfigured() ? "gemini" : "claude";
+    resolved = llmConfigured() ? "gemini" : "claude";
     return resolved;
   }
   resolved = preferred;
@@ -89,7 +91,7 @@ export async function askText(prompt: string, opts: TextOptions = {}): Promise<s
     if (text) return text;
     // One fall-through, not a retry loop: if Claude produced nothing, asking it again costs quota
     // to get the same nothing.
-    if (!geminiConfigured()) return null;
+    if (!llmConfigured()) return null;
     console.warn("[ai] Claude no devolvió nada — se prueba con Gemini");
   }
 
@@ -179,7 +181,7 @@ export async function askTextWithImage(
     }
   }
 
-  if (geminiConfigured()) {
+  if (llmConfigured()) {
     const hinted = opts.systemHint ? `${opts.systemHint}\n\n${prompt}` : prompt;
     const text = await askWithImage(hinted, { data: image.data, mimeType: image.mimeType }, opts.timeoutMs);
     if (text) return text;
@@ -211,7 +213,7 @@ export async function askStructured<T>(
       model: opts.model,
     });
     if (value) return value;
-    if (!geminiConfigured()) return null;
+    if (!llmConfigured()) return null;
     console.warn("[ai] Claude no devolvió el objeto — se prueba con Gemini");
   }
 

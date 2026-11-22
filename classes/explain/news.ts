@@ -4,7 +4,7 @@
 // The archived feed (classes/models/PriceNews.ts, app Mongo) is USD-only — nitro's drivers:daily
 // still writes it (archiveTodayNews('USD'), not Gemini, so that stage did not move). For EUR/ARS
 // there is simply no archived-headline fallback, same as today.
-import { askGrounded, groundedHeadlines, type GroundedHeadline } from "../gemini";
+import { askGrounded, groundedHeadlines, type GroundedHeadline } from "../llm";
 import { PriceNewsModel } from "../models/PriceNews";
 
 export interface MoveNewsResult {

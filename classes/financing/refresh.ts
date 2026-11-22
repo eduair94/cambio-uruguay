@@ -7,7 +7,7 @@
 //
 // Moved out of the Nuxt app (server/utils/financingLive.ts) as part of the Gemini→backend
 // migration — the app forbids Gemini (app/tests/unit/noGeminiInApp.test.ts).
-import { askGrounded, geminiConfigured, groundedHeadlines } from "../gemini";
+import { askGrounded, groundedConfigured, groundedHeadlines } from "../llm";
 import { applyFinancingBands, type FinancingFigures } from "./bands";
 
 export interface LiveFinancing {
@@ -53,7 +53,7 @@ export function emptyLiveFinancing(): LiveFinancing {
  */
 export async function refreshLiveFinancing(): Promise<LiveFinancing> {
   const empty = emptyLiveFinancing();
-  if (!geminiConfigured()) return empty;
+  if (!groundedConfigured()) return empty;
 
   const reply = await askGrounded(PROMPT);
   if (!reply) return empty;

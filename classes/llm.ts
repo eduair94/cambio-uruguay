@@ -65,19 +65,28 @@ export function preferredLlmModel(): string {
   return anthropicConfigured() ? anthropicModel() : gemini.GEMINI_MODEL;
 }
 
-export async function askPlainDetailed(prompt: string, timeoutMs?: number): Promise<LlmText | null> {
+/** Claude, then Gemini. The Gemini leg's model name is NOT read here: askPlain never returns it. */
+async function plain(prompt: string, timeoutMs?: number): Promise<{ text: string; claudeModel?: string } | null> {
   if (anthropicConfigured()) {
     const reply = await askClaudePlain(prompt, { timeoutMs: claudeTimeout(timeoutMs) });
-    if (reply) return { text: reply.text, model: reply.model, provider: "claude" };
+    if (reply) return { text: reply.text, claudeModel: reply.model };
     fellBack("texto");
   }
   const text = await gemini.askPlain(prompt, timeoutMs);
-  return text ? { text, model: gemini.GEMINI_MODEL, provider: "gemini" } : null;
+  return text ? { text } : null;
+}
+
+export async function askPlainDetailed(prompt: string, timeoutMs?: number): Promise<LlmText | null> {
+  const out = await plain(prompt, timeoutMs);
+  if (!out) return null;
+  return out.claudeModel
+    ? { text: out.text, model: out.claudeModel, provider: "claude" }
+    : { text: out.text, model: gemini.GEMINI_MODEL, provider: "gemini" };
 }
 
 /** Prose. Same contract as Gemini's `askPlain`: never throws, `null` when nobody answered. */
 export async function askPlain(prompt: string, timeoutMs?: number): Promise<string | null> {
-  return (await askPlainDetailed(prompt, timeoutMs))?.text ?? null;
+  return (await plain(prompt, timeoutMs))?.text ?? null;
 }
 
 export async function askWithImage(

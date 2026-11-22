@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { askPlain, GEMINI_MODEL, geminiConfigured } from "../gemini";
+import { askPlain, askPlainDetailed, llmConfigured, preferredLlmModel } from "../llm";
 import { ChairCommentAnalysisModel } from "../models/ChairCommentAnalysis";
 import { galleryForChair, mediaForChair, offersForChair } from "./offers";
 import {
@@ -318,7 +318,7 @@ export async function classifyChairComments(
     )
     .slice(0, MAX_ANALYSIS_SOURCES);
   const out: ChairClassification[] = classifyChairCommentsLocally(candidates);
-  if (!geminiConfigured() || localOnly()) return out;
+  if (!llmConfigured() || localOnly()) return out;
   const fingerprints = new Map<string, string>(
     candidates.map((source): [string, string] => {
       const parentText = source.parentId ? sourceById.get(source.parentId)?.body ?? "" : "";
@@ -352,8 +352,9 @@ export async function classifyChairComments(
 
   for (let start = 0; start < missing.length; start += BATCH_SIZE) {
     const batch = missing.slice(start, start + BATCH_SIZE);
-    const reply = await askPlain(buildPrompt(batch, sourceById), 60_000);
-    if (!reply) continue;
+    const answer = await askPlainDetailed(buildPrompt(batch, sourceById), 60_000);
+    if (!answer) continue;
+    const reply = answer.text;
     const sources = new Map(batch.map((comment) => [comment.commentId, comment]));
     const parsed = parseChairClassifications(reply, sources);
     out.push(...parsed);
@@ -373,7 +374,7 @@ export async function classifyChairComments(
           update: {
             $set: {
               sourceFingerprint: fingerprints.get(source.commentId),
-              classifierModel: GEMINI_MODEL,
+              classifierModel: answer.model,
               classifications: parsedById.get(source.commentId) ?? [],
               analyzedAt: new Date(),
             },
@@ -520,7 +521,7 @@ function parseGeneralReviews(text: string, items: ChairTierItem[]): Map<string, 
 }
 
 async function synthesizeGeneralReviews(items: ChairTierItem[]): Promise<void> {
-  if (!items.length || !geminiConfigured() || localOnly()) return;
+  if (!items.length || !llmConfigured() || localOnly()) return;
   const payload = items.map((item) => ({
     slug: item.slug,
     name: item.name,
@@ -748,8 +749,8 @@ export async function buildChairTierSnapshot(
     subreddit: "CharruaDevs",
     queries: [],
     classifierModel:
-      geminiConfigured() && !localOnly()
-        ? `${GEMINI_MODEL}+${LOCAL_CLASSIFIER_MODEL}`
+      llmConfigured() && !localOnly()
+        ? `${preferredLlmModel()}+${LOCAL_CLASSIFIER_MODEL}`
         : LOCAL_CLASSIFIER_MODEL,
     methodologyVersion: 2,
     corpus: {

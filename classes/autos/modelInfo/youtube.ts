@@ -10,7 +10,7 @@
 //  * el título tiene que nombrar el modelo, y se descartan juguetes, videojuegos y avisos de venta.
 // La IA no escribe nada que se publique: sólo apunta a páginas, y lo publicado sale de YouTube.
 import axios from "axios";
-import { askGrounded, geminiConfigured, type GroundedReply } from "../../gemini";
+import { askGrounded, groundedConfigured, type GroundedReply } from "../../llm";
 import { namesCar } from "./text";
 import type { CarModelVideo } from "./types";
 
@@ -98,7 +98,7 @@ export async function findModelVideos(
 ): Promise<CarModelVideo[]> {
   const ask = deps.ask ?? askGrounded;
   const oembed = deps.oembed ?? oembedVideo;
-  if (!deps.ask && !geminiConfigured()) throw new Error("gemini not configured");
+  if (!deps.ask && !groundedConfigured()) throw new Error("gemini not configured");
   // Medido: la misma pregunta a veces vuelve sin haber buscado (cero chunks) y a la siguiente trae
   // diez videos. Una segunda redacción antes de rendirse; sin ninguna página abierta es una FALLA
   // (se reintenta en una semana), no "este modelo no tiene videos".

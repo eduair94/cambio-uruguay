@@ -6,7 +6,7 @@
 import "dotenv/config";
 
 import { appDbConfigured } from "./classes/appdb";
-import { geminiConfigured } from "./classes/gemini";
+import { groundedConfigured } from "./classes/llm";
 import { refreshContentGaps } from "./classes/gaps/refresh";
 
 /** Montevideo date, so a draft's filename matches the day the maintainer will look for it. */
@@ -24,7 +24,7 @@ async function main(): Promise<void> {
     console.error("[gaps] APP_MONGO_URI no está seteada — los huecos viven en la Mongo de la app");
     process.exit(1);
   }
-  if (!geminiConfigured()) {
+  if (!groundedConfigured()) {
     console.warn("[gaps] sin GEMINI_API_KEY — se agrupa pero no se investiga nada");
   }
 

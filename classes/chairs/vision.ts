@@ -11,7 +11,7 @@
 //   3. Every accepted guess is stored with the image it came from, so the page can say the chair
 //      was identified from a photo and the same photo is never paid for twice.
 import { createHash } from "crypto";
-import { askWithImage, geminiConfigured } from "../gemini";
+import { askWithImage, llmConfigured } from "../llm";
 import { ChairVisionGuessModel } from "../models/ChairVisionGuess";
 import { fetchImage } from "./net";
 import { KNOWN_CHAIR_BRANDS } from "./normalize";
@@ -128,7 +128,7 @@ export async function identifyChairsFromImages(
   needsHelp: (listing: ChairListing) => boolean
 ): Promise<VisionStats> {
   const stats: VisionStats = { attempted: 0, cached: 0, identified: 0, rejected: 0, failed: 0 };
-  if (process.env.CHAIR_VISION_ENABLED === "0" || !geminiConfigured()) return stats;
+  if (process.env.CHAIR_VISION_ENABLED === "0" || !llmConfigured()) return stats;
 
   const candidates = listings
     .filter((listing) => listing.image && needsHelp(listing))

@@ -6,7 +6,7 @@
 import "dotenv/config";
 
 import { buildBanksBriefing, type Lang } from "./classes/banks/news";
-import { geminiConfigured } from "./classes/gemini";
+import { groundedConfigured } from "./classes/llm";
 import { saveBriefing } from "./classes/banks/store";
 import { MongooseServer, withTimeout } from "./classes/database";
 
@@ -23,7 +23,7 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  if (!geminiConfigured()) {
+  if (!groundedConfigured()) {
     console.warn("[banks-news] no GEMINI_API_KEY — nothing to do, keeping the stored briefings");
     process.exit(0);
   }

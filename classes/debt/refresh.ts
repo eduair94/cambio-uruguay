@@ -5,7 +5,7 @@
 //
 // Moved out of the Nuxt app (server/utils/debtReliefLive.ts). Same endpoint + graceful-null +
 // guardrail-band pattern as classes/costs/refresh.ts.
-import { askGrounded, geminiConfigured, groundedHeadlines } from "../gemini";
+import { askGrounded, groundedConfigured, groundedHeadlines } from "../llm";
 import { applyLiveCaps, BASELINE_CAPS, type UsuryCap } from "./bands";
 
 export interface LiveDebtRelief {
@@ -48,7 +48,7 @@ export function baselineDebtRelief(): LiveDebtRelief {
  */
 export async function refreshLiveDebtRelief(): Promise<LiveDebtRelief> {
   const baseline = baselineDebtRelief();
-  if (!geminiConfigured()) return baseline;
+  if (!groundedConfigured()) return baseline;
 
   const reply = await askGrounded(PROMPT);
   if (!reply) return baseline;

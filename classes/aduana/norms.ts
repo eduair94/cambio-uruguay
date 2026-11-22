@@ -27,7 +27,7 @@
 // from the AI sets `aiCheckedAt`, which the page renders as "último control automático", never as
 // "verificado contra la norma".
 import { DENYLIST_URLS, FACT_DATE_RANGES, FACT_RANGES, OFFICIAL_HOSTS } from "./baseline";
-import { askGrounded, geminiConfigured } from "./gemini";
+import { askGrounded, groundedConfigured } from "./gemini";
 import type { AduanaDoc, AduanaFact, AduanaOverride, Source } from "./types";
 
 /** Facts per AI call. One call for all 52 is ~2.5k tokens of reply — one truncation loses them all. */
@@ -317,7 +317,7 @@ function chunk<T>(items: T[], size: number): T[][] {
  * only ever grows is a list a human eventually stops reading.
  */
 export async function refreshNorms(doc: AduanaDoc, candidateUrls: string[] = []): Promise<AduanaDoc> {
-  if (!geminiConfigured()) {
+  if (!groundedConfigured()) {
     console.warn("[aduana] norms: no GEMINI_API_KEY — se omite el control de normas");
     return doc;
   }

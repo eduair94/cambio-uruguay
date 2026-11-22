@@ -8,7 +8,7 @@
 // corroborar lo que el vendedor YA declaró. Nunca para acusar: el sitio jamás publica "este auto
 // está chocado" sobre un aviso que no lo dice. Un modelo que se equivoca de un lado deja pasar una
 // oportunidad; del otro lado difama a una persona con nombre y teléfono en el aviso.
-import { askJSONWithImages, geminiConfigured } from "../../gemini";
+import { askJSONWithImagesDetailed, llmConfigured } from "../../llm";
 import { fetchBuffer } from "../../rentals/net";
 import { AUTOS_USER_AGENT } from "../detail";
 
@@ -67,7 +67,7 @@ const SYSTEM = [
 const MAX_BYTES_PER_PHOTO = 900_000;
 const MAX_PHOTOS = 4;
 
-export const visionConfigured = (): boolean => geminiConfigured();
+export const visionConfigured = (): boolean => llmConfigured();
 
 const mimeOf = (url: string): string => (/\.png(\?|$)/i.test(url) ? "image/png" : /\.webp(\?|$)/i.test(url) ? "image/webp" : "image/jpeg");
 
@@ -110,13 +110,16 @@ export async function inspectCarPhotos(
   if (!visionConfigured() || !subject.pictures.length) return null;
   const images = await downloadPhotos(subject.pictures, { fetcher: options.fetcher });
   if (!images.length) return null;
-  const model = options.model || process.env.AUTOS_VISION_MODEL || "gemini-2.5-flash-lite";
-  const reply = await askJSONWithImages<VisionReply>(visionPrompt(subject), images, SCHEMA, { system: SYSTEM, model });
-  if (!reply || !["si", "no", "no_se"].includes(reply.matchesAdvert)) return null;
+  // The Gemini model this job pins for its own leg; Claude, when it answers, uses ANTHROPIC_MODEL and
+  // the verdict records whichever actually looked at the photos.
+  const geminiModel = options.model || process.env.AUTOS_VISION_MODEL || "gemini-2.5-flash-lite";
+  const answer = await askJSONWithImagesDetailed<VisionReply>(visionPrompt(subject), images, SCHEMA, { system: SYSTEM, model: geminiModel });
+  const reply = answer?.value;
+  if (!answer || !reply || !["si", "no", "no_se"].includes(reply.matchesAdvert)) return null;
   const damage: CarPhotoDamage = ["ninguno", "leve", "grave", "no_se_ve"].includes(reply.damage) ? reply.damage : "no_se_ve";
   return {
     readAt: (options.now?.() ?? new Date()).toISOString(),
-    model,
+    model: answer.model,
     matchesAdvert: reply.matchesAdvert === "si" ? true : reply.matchesAdvert === "no" ? false : null,
     damage,
     catalogPhotos: !!reply.catalogPhotos,

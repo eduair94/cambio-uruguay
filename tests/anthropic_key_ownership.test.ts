@@ -13,7 +13,8 @@ describe("the Anthropic API keys have exactly one owner", () => {
     const owners: string[] = [];
     const walk = (dir: string): void => {
       for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-        if (["node_modules", "dist", ".git", "app", "mcp", "bots", "docs", ".claude", ".superpowers"].includes(e.name)) continue;
+        // `tests/` holds no callers, only helpers such as tests/setup/no_live_anthropic.ts, which blanks the keys.
+        if (["node_modules", "dist", ".git", "app", "mcp", "bots", "docs", ".claude", ".superpowers", "tests"].includes(e.name)) continue;
         const full = path.join(dir, e.name);
         if (e.isDirectory()) walk(full);
         else if (e.name.endsWith(".ts") && !e.name.endsWith(".test.ts")) {

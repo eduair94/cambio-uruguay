@@ -4,7 +4,7 @@
 // analysis on a failure — a failed run just keeps the previous good analysis (or the app baseline).
 import "dotenv/config";
 
-import { geminiConfigured } from "./classes/gemini";
+import { groundedConfigured } from "./classes/llm";
 import { appDbConfigured } from "./classes/appdb";
 import { readAppTopics } from "./classes/temas-analysis/appTopics";
 import { refreshTemasAnalysis } from "./classes/temas-analysis/refresh";
@@ -30,7 +30,7 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
-  if (!geminiConfigured()) {
+  if (!groundedConfigured()) {
     console.warn("[temas-analysis] no GEMINI_API_KEY — keeping the stored analysis");
     process.exit(0);
   }

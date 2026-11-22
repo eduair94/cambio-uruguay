@@ -6,7 +6,7 @@
 // needs the app's Telegram config and its own dedupe state, and it spends no Gemini call.
 import "dotenv/config";
 
-import { geminiConfigured } from "./classes/gemini";
+import { groundedConfigured } from "./classes/llm";
 import { refreshUyFigures } from "./classes/figures/refresh";
 import { saveFigures } from "./classes/figures/store";
 import { MongooseServer, withTimeout } from "./classes/database";
@@ -22,7 +22,7 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  if (!geminiConfigured()) {
+  if (!groundedConfigured()) {
     console.warn("[figures] no GEMINI_API_KEY — nothing to do, keeping the stored figures");
     process.exit(0);
   }

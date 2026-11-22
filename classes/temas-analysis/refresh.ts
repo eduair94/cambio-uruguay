@@ -5,7 +5,7 @@
 // This module interprets the DEMAND side only (the Reddit topic ranking). Content coverage and the
 // gap list are computed deterministically in the app (app/utils/topicMap.ts) from our own guides —
 // the backend has no access to the app's hub catalogue and should not guess it.
-import { askGrounded, geminiConfigured, groundedHeadlines } from "../gemini";
+import { askGrounded, groundedConfigured, groundedHeadlines } from "../llm";
 
 /** One topic's AI read. `trend` reflects recent momentum vs. the historical volume. */
 export interface TopicInsight {
@@ -77,7 +77,7 @@ export async function refreshTemasAnalysis(
   topics: AnalysisTopicInput[]
 ): Promise<TemasAnalysis> {
   const empty = emptyTemasAnalysis();
-  if (!geminiConfigured() || !topics.length) return empty;
+  if (!groundedConfigured() || !topics.length) return empty;
 
   const reply = await askGrounded(buildPrompt(topics));
   if (!reply) return empty;
