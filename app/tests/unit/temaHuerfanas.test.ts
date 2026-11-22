@@ -64,6 +64,7 @@ const FUERA_DE_TEMA_POR_DISENO = [
   '/mapa-de-temas', // ES el índice de temas
   '/mapa-del-sitio',
   '/mi-lista', // vive en el navegador de quien la abre
+  '/novedades', // sobre el propio sitio: lo que mejoramos y arreglamos
   '/offline', // fallback de la PWA, noindex
   '/opinion-alquileres', // encuesta, se llega desde los correos; noindex
   '/opiniones-alquileres', // privada, noindex

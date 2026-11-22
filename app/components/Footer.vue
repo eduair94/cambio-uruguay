@@ -48,6 +48,15 @@
               <VIcon size="18" aria-hidden="true">mdi-bug-outline</VIcon>
               {{ fbT('footer.bug') }}
             </a>
+            <!-- Lo que ya se arregló, a la vista de quien está por reportar (/novedades). -->
+            <NuxtLink
+              :to="localePath('/novedades')"
+              class="cu-footer__feedback-link"
+              data-cta="footer_changelog"
+            >
+              <VIcon size="18" aria-hidden="true">mdi-update</VIcon>
+              {{ fbT('footer.changelog') }}
+            </NuxtLink>
           </div>
 
           <!-- External + connect channels. Native title + aria-label instead of

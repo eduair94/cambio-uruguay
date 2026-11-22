@@ -5054,6 +5054,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         keywords: ['contacto', 'escribir', 'soporte', 'mail'],
       },
       {
+        // El registro público de mejoras y arreglos (utils/siteChangelog.ts).
+        to: '/novedades',
+        labelKey: 'legal.changelogNav',
+        icon: 'mdi-update',
+        priority: 0.5,
+        changefreq: 'weekly',
+        keywords: [
+          'novedades',
+          'changelog',
+          'actualizaciones',
+          'mejoras',
+          'arreglos',
+          'cambios del sitio',
+          'que hay de nuevo',
+        ],
+      },
+      {
         to: '/mapa-del-sitio',
         labelKey: 'nav.sitemap',
         icon: 'mdi-sitemap-outline',
