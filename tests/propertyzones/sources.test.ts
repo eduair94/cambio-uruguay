@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { aggregateCrimeCsv, crimeCsvRows, crimeReportingPeriod } from '../../classes/propertyzones/sources/crime';
 import { loadOfficialPropertyZoneGeometry, officialCrimeNeighborhoodCodes } from '../../classes/propertyzones/sources/geometry';
-import { CRIME_CSV_URL, CRIME_METADATA_URL, CRIME_RESOURCE_ID, loadPropertyZoneSources } from '../../classes/propertyzones/sources';
+import { CRIME_CSV_URL, CRIME_METADATA_URL, CRIME_RESOURCE_ID, CRIME_RESOURCE_NAME, findCrimeResource, loadPropertyZoneSources } from '../../classes/propertyzones/sources';
 
 // Keep fixtures compatible with the backend's TypeScript 4.9 DOM declarations.
 const jsonResponse = (value: unknown) => new Response(JSON.stringify(value), { headers: { 'content-type': 'application/json' } });
@@ -29,7 +29,7 @@ const metadata = (size: number, override: Record<string, unknown> = {}) => ({
   success: true,
   result: {
     id: '999f2edc-5ef5-4d41-bed7-824a5635ea8d', license_id: 'odc-uy',
-    resources: [{ id: CRIME_RESOURCE_ID, state: 'active', format: 'CSV', url: CRIME_CSV_URL, size,
+    resources: [{ id: CRIME_RESOURCE_ID, name: CRIME_RESOURCE_NAME, state: 'active', format: 'CSV', url: CRIME_CSV_URL, size,
       temporal_coverage: '2013-01 – 2026-06', last_modified: '2026-07-24T13:44:16.419527', datastore_active: true, ...override }],
   },
 });
@@ -40,6 +40,28 @@ function fixtureFetcher(input = csv(1200), override: Record<string, unknown> = {
     throw new Error('Unexpected URL');
   });
 }
+
+describe('finding the crime CSV in the catalog', () => {
+  const resource = (id: string, file = 'otros-delitos.csv', extra: Record<string, unknown> = {}) => ({
+    id, name: CRIME_RESOURCE_NAME, state: 'active', format: 'CSV',
+    url: `https://catalogodatos.gub.uy/dataset/999f2edc-5ef5-4d41-bed7-824a5635ea8d/resource/${id}/download/${file}`, ...extra,
+  });
+  const OLD = 'c8c4cc18-57cf-448b-9c68-901b3752fc11';
+  it('follows a re-upload under a new id (2026-10-20: c8c4cc18 → 4d76b716, otros-delitos-2.csv)', () => {
+    expect(findCrimeResource([resource(OLD)])?.id).toBe(OLD);
+    expect(findCrimeResource([{ id: 'x', name: 'Homicidios dolosos consumados', format: 'CSV' }, resource(CRIME_RESOURCE_ID, 'otros-delitos-2.csv')])?.id)
+      .toBe(CRIME_RESOURCE_ID);
+  });
+  it('abstains when ambiguous, inactive, not CSV, or downloaded from elsewhere', () => {
+    expect(findCrimeResource([resource(OLD), resource(CRIME_RESOURCE_ID, 'otros-delitos-2.csv')])).toBeNull();
+    expect(findCrimeResource([resource(CRIME_RESOURCE_ID, 'otros-delitos.csv', { state: 'deleted' })])).toBeNull();
+    expect(findCrimeResource([resource(CRIME_RESOURCE_ID, 'otros-delitos.csv', { format: 'XLSX' })])).toBeNull();
+    // The id in the URL must be the resource's own, and the path this dataset's.
+    expect(findCrimeResource([{ ...resource(CRIME_RESOURCE_ID), id: OLD }])).toBeNull();
+    expect(findCrimeResource([{ ...resource(CRIME_RESOURCE_ID), url: `https://example.com/resource/${CRIME_RESOURCE_ID}/download/otros-delitos.csv` }])).toBeNull();
+    expect(findCrimeResource([])).toBeNull();
+  });
+});
 
 describe('official INE 2011 neighborhood geometry', () => {
   it('contains exactly the 62 native codes, not the different 63-area cadastral map', () => {
