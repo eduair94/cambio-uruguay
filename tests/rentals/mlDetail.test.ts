@@ -573,6 +573,25 @@ describe("the photos of a Mercado Libre rental item page", () => {
     expect(parseMlRentalImages(elsewhere)).toBeNull();
   });
 
+  it("reads the photos ML serves since 2026-11 with the advert's slug in the URL", () => {
+    // The live markup of 2026-11-22, two photos of a 20-photo mosaic.
+    const figure = (n: number, id: string) =>
+      `<figure class="gallery-image vis-gallery-mosaic__image" aria-label="Imagen ${n} de 20 de Alquiler Invernal De 2 Dormitorios ">` +
+      `<a class="gallery-image__link" href="#"><img src="https://http2.mlstatic.com/D_NQ_NP_${id}-F-alquiler-invernal-de-2-dormitorios.webp" ` +
+      `alt="Imagen ${n} de 20" class="gallery-image__image"></a></figure>`;
+    const html = `<html><body>${figure(1, "905918-MLU118928162033_102026")}${figure(2, "920461-MLU118927813055_102026")}</body></html>`;
+    expect(parseMlRentalImages(html)).toEqual([full("905918-MLU118928162033_102026"), full("920461-MLU118927813055_102026")]);
+    // The card's cover, if it carries the slug too, is still the same photo as the gallery's.
+    expect(mlPictureId("https://http2.mlstatic.com/D_NQ_NP_2X_905918-MLU118928162033_102026-C-alquiler-invernal.webp")).toBe(
+      "905918-MLU118928162033_102026",
+    );
+    expect(mlPictureId("https://http2.mlstatic.com/D_NQ_NP_905918-MLU118928162033_102026-F-null.webp")).toBe(
+      "905918-MLU118928162033_102026",
+    );
+    // Still anchored: a path or query after the extension is not a photo URL.
+    expect(mlPictureId("https://http2.mlstatic.com/D_NQ_NP_905918-MLU118928162033_102026-F-x.webp/evil")).toBeNull();
+  });
+
   it("knows the card's cover and the page's photo are one picture", () => {
     const cover = "https://http2.mlstatic.com/D_NQ_NP_2X_846035-MLU117438763806_102026-C.webp";
     expect(mlPictureId(cover)).toBe(PAGE_IDS[0]);

@@ -151,7 +151,11 @@ export function parseMlRentalPin(html: string): RentalPin | null {
   return { latitude, longitude };
 }
 
-const PICTURE = /^https:\/\/http2\.mlstatic\.com\/D_N?Q_NP_(?:2X_)?(\d{3,9}-ML[A-Z]\d{6,15}_\d{4,8})-[A-Z]{1,2}(?:-null)?\.(?:webp|jpe?g|png)$/i;
+// Since ~2026-11-12 ML appends the advert's slug to every photo it serves our UA
+// (`…_102026-F-alquiler-invernal-de-2-dormitorios.webp`, same bytes as `…-F.webp`). The anchored
+// pattern without it read ZERO photos, and the reread guard then refused every run for ten days
+// (Sentry CAMBIO-URUGUAY-BACKEND-1Q, the first "exited with code 1" the job ever reported).
+const PICTURE = /^https:\/\/http2\.mlstatic\.com\/D_N?Q_NP_(?:2X_)?(\d{3,9}-ML[A-Z]\d{6,15}_\d{4,8})-[A-Z]{1,2}(?:-null|-[a-z\d]+(?:-[a-z\d]+)*)?\.(?:webp|jpe?g|png)$/i;
 
 /** The picture id behind any size of a photo: the card's `…_2X_<id>-C.webp` and the page's `…<id>-F.webp`. */
 export function mlPictureId(url: string): string | null {
