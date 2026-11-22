@@ -259,6 +259,21 @@ const modelPath = computed(() =>
 .eq-card__title a:focus-visible {
   text-decoration: underline;
 }
+/* El enlace del título cubre la tarjeta entera, como en la de autos: Clarity medía toques sobre la
+   etiqueta «Usado» y el resto de la tarjeta que no llevaban a ningún lado (/equipar-casa-uruguay/
+   productos/tv, 21/11/2026). La foto, el enlace al modelo y el botón de la lista quedan encima, con
+   su propio destino (las fichas técnicas no tienen controles). */
+.eq-card__title a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+.eq-card__photo,
+.eq-card__model,
+.eq-card__add {
+  position: relative;
+  z-index: 1;
+}
 .eq-card__price {
   /* Rol Title de DESIGN.md, con el peso del Headline: es la cifra por la que se lee la tarjeta. */
   font-size: 1.25rem;
