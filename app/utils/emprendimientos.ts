@@ -476,6 +476,7 @@ export function handleFromInput(raw: string | null | undefined): string | null {
   if (!/^[a-z0-9._]{1,30}$/.test(handle)) return null
   if (handle.startsWith('.') || handle.endsWith('.') || handle.includes('..')) return null
   if (RESERVED.has(handle) || !/[a-z]/.test(handle)) return null
+  if (handle.startsWith('www.')) return null
   return handle
 }
 

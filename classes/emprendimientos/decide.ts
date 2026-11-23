@@ -120,7 +120,9 @@ export function schedule(candidate: Pick<Candidate, "state" | "sources" | "lastR
   const after = (days: number): Date => new Date((read ?? t) + days * DAY);
   // Una lectura que no trajo perfil se reintenta con espera creciente (1, 2, 3… días, tope 7).
   if (read && candidate.lastReadStatus === "unreadable" && candidate.state !== "publicada") {
-    return { dueAt: after(Math.min(7, Math.max(1, candidate.unreadableStreak))), priority: 20 + best };
+    // Sin racha (la corrida estaba limitada por Instagram, no es la cuenta): se reintenta en 3 horas.
+    const days = candidate.unreadableStreak > 0 ? Math.min(7, candidate.unreadableStreak) : 0.125;
+    return { dueAt: after(days), priority: 20 + best };
   }
   switch (candidate.state) {
     case "baja":

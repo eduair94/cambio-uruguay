@@ -36,13 +36,15 @@ export interface RunOptions {
   proxy: string | null;
 }
 
-// 100 lecturas por corrida: el 23/11/2026 una corrida de prueba desde el VPS leyó 119 perfiles
-// seguidos (96 con perfil, 23 cuentas que no existen) sin un solo muro de login, en ~14 minutos.
-// Con los textos de curadoras, una corrida dura ~17 minutos y entra holgada entre dos de cada dos horas.
+// 50 lecturas de perfil por corrida, cada dos horas (~25 por hora, ~500 por día). El límite de
+// Instagram para una IP sin sesión, medido el 23/11/2026: 45 lecturas de producción, una prueba de
+// 125 una hora después y, en la corrida siguiente, a las 29 lecturas el perfil empezó a volver al
+// login con `is_from_rle` — unas 200 en hora y media. 119 seguidas en una ráfaga sí entraron: el
+// tope es por ventana, no por ráfaga. Los posts siguieron leyéndose con la IP limitada.
 export const DEFAULT_OPTIONS: RunOptions = {
-  maxReads: 100,
+  maxReads: 50,
   gapMs: 4_000,
-  readBudgetMs: 16 * 60_000,
+  readBudgetMs: 10 * 60_000,
   ueDetailsPerRun: 80,
   maxSnowball: 300,
   classifyBacklog: 60,
@@ -291,9 +293,10 @@ export async function runOnce(deps: RunDeps): Promise<RunResult> {
   const attempted = reads.reads.size;
   const okCount = [...reads.reads.values()].filter(read => read.status === "ok").length;
   const answered = [...reads.reads.values()].filter(read => read.status !== "unreadable").length;
-  // Una racha de "no se pudo leer" sólo cuenta en corridas donde Instagram contestó a la mayoría.
-  const healthy = attempted > 0 && answered * 2 >= attempted;
-  log(`instagram: ${attempted} lecturas, ${okCount} perfiles${reads.closed ? " — CERRADO" : ""}`);
+  // Una racha de "no se pudo leer" sólo cuenta en corridas donde Instagram contestó a la mayoría y
+  // no empezó a limitar: las lecturas del final de una corrida limitada no dicen nada de la cuenta.
+  const healthy = attempted > 0 && answered * 2 >= attempted && !reads.limited;
+  log(`instagram: ${attempted} lecturas, ${okCount} perfiles${reads.closed ? " — CERRADO" : reads.limited ? " — LIMITADO" : ""}`);
 
   const touched = new Map<string, CandidateRow>();
   for (const row of due) {
