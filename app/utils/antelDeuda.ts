@@ -82,7 +82,7 @@ export const ANTEL_DEUDA_SOURCES: readonly FuenteAntel[] = Object.freeze([
   {
     id: 'boletin-fija',
     label:
-      'Boletín de Tarifas de Servicios Telefónico y Telegráfico, vigencia enero 2026, §3.7.2 "Pagos fuera de fecha" (PDF)',
+      'Boletín de Tarifas de Servicios Telefónico y Telegráfico, vigencia enero 2026, §3.7.1 "Pagos fuera de fecha" (PDF)',
     publisher: 'Antel',
     url: 'https://www.antel.com.uy/documents/37544/9975947/boletin-tarifas-tel-fija-2026.pdf',
     seenOn: SEEN,
@@ -271,14 +271,14 @@ export const SECUENCIA: readonly HechoAntel[] = Object.freeze([
     respuesta:
       'Antel lo cuenta en facturas vencidas, no en días, y lo dice en tres documentos distintos según el servicio. Telefonía fija (tarifario vigente desde enero de 2026): la primera factura adeudada sólo genera la multa del 5 % y la segunda impaga bloquea las llamadas salientes de todos tus servicios. Móvil contractual (condiciones de abril de 2023): una factura impaga ya bloquea salientes y dos consecutivas bloquean todo. La tabla general de junio de 2023, hoy retirada del sitio, recién bloqueaba con la segunda vencida. La escalera completa de cada una va en la tabla de abajo.',
     fuente:
-      'Boletín de tarifas de telefonía fija, §3.7.2; Condiciones de contratación móvil, apartado VII',
+      'Boletín de tarifas de telefonía fija, §3.7.1; Condiciones de contratación móvil, apartado VII',
     fuenteIds: ['boletin-fija', 'cond-movil', 'regimen-2023'],
   },
   {
     pregunta: 'El único plazo en días que Antel publica',
     respuesta:
       'Está en el tarifario de telefonía fija: a los 30 días del bloqueo saliente, si no cancelaste toda la deuda vencida, se bloquean todos tus servicios. Para móvil e internet no hay ningún plazo en días publicado, sólo facturas. Cualquier "a los X días del vencimiento" que leas por ahí no sale de un documento de Antel.',
-    fuente: 'Boletín de tarifas de telefonía fija, vigencia enero 2026, §3.7.2 literal C',
+    fuente: 'Boletín de tarifas de telefonía fija, vigencia enero 2026, §3.7.1 literal C',
     fuenteIds: ['boletin-fija'],
   },
   {
@@ -286,7 +286,7 @@ export const SECUENCIA: readonly HechoAntel[] = Object.freeze([
     respuesta:
       'El bloqueo puede ser parcial o total de tus servicios, y el reglamento no distingue por producto: alcanza a todos los servicios del cliente, no sólo al que quedó impago. El tarifario de fija lo dice con todas las letras: el bloqueo saliente es "de todos los servicios del cliente". En móvil, bloqueado o cancelado por mora el servicio se comporta como prepago: podés recargar, pero la recarga no se carga en factura.',
     fuente:
-      'Reglamento General de Servicios, art. 4.3 inciso b; Boletín de fija §3.7.2 B; tabla de junio 2023, notas (*) y (**)',
+      'Reglamento General de Servicios, art. 4.3 inciso b; Boletín de fija §3.7.1 B; tabla de junio 2023, notas (*) y (**)',
     fuenteIds: ['reglamento', 'boletin-fija', 'regimen-2023'],
   },
   {
@@ -300,7 +300,7 @@ export const SECUENCIA: readonly HechoAntel[] = Object.freeze([
     pregunta: 'Qué pasa si la deuda sigue',
     respuesta:
       'Se procede a la supresión definitiva de todos los servicios del cliente, sin perjuicio de las acciones legales para cobrar lo adeudado. "Supresión" no es lo mismo que "bloqueo": el servicio se da de baja, no queda esperando. En fija, el tarifario la pone "pasado el 6.º vencimiento" de las facturas impagas; en móvil, la tabla de junio de 2023 la llamaba "cancelación por mora" y conservaba el número como prepago.',
-    fuente: 'Reglamento art. 4.3 inciso c; Boletín de fija §3.7.2 D; tabla de junio 2023',
+    fuente: 'Reglamento art. 4.3 inciso c; Boletín de fija §3.7.1 D; tabla de junio 2023',
     fuenteIds: ['reglamento', 'boletin-fija', 'regimen-2023'],
   },
   {
@@ -348,7 +348,7 @@ export const ESCALERAS: readonly EscaleraAntel[] = Object.freeze([
   {
     id: 'fija',
     servicio: 'Telefonía fija',
-    documento: 'Boletín de Tarifas de Servicios Telefónico y Telegráfico, §3.7.2',
+    documento: 'Boletín de Tarifas de Servicios Telefónico y Telegráfico, §3.7.1',
     vigencia: 'Vigente: edición enero 2026, enlazada desde el comunicado de tarifas del 23/12/2025',
     bloqueoSaliente:
       '2.ª factura impaga en fecha: bloqueo de llamadas salientes de todos los servicios del cliente. La 1.ª sólo genera la multa del 5 %, "como única sanción", hasta el vencimiento de la siguiente.',
@@ -397,7 +397,7 @@ export interface SancionAntel {
 export const SANCIONES: readonly SancionAntel[] = Object.freeze([
   {
     id: 'fija',
-    documento: 'Telefonía fija: Boletín de tarifas, vigencia enero 2026, §3.7.2',
+    documento: 'Telefonía fija: Boletín de tarifas, vigencia enero 2026, §3.7.1',
     multa:
       '5 % sobre la primera factura adeudada, "como única sanción", hasta el vencimiento de la siguiente. Si la segunda tampoco se paga en fecha: 5 % sobre el primer importe hasta completar el 10 %, más 5 % sobre lo facturado en esa segunda factura.',
     recargo:

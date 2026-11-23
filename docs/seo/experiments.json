@@ -4057,6 +4057,32 @@
         "medio dia 24 y 31 de diciembre"
       ],
       "hypothesis": "La pregunta se hace cada diciembre y el sitio no tenia pagina que la contestara: /feriados-que-se-corren-uruguay publica la lista y la regla del corrimiento, y /guias/feriados-en-uruguay-como-se-pagan la regla de pago, pero ninguna dice que el 24 y el 31 NO son feriados. Va como guia y no como pagina raiz porque es la familia que mas rinde por visita y /guias/* ya cae en el tramo de contenido. La respuesta es una negacion verificable (no figuran en el art. 2 de la Ley 16.805 ni entre los cinco feriados pagos del art. 18 de la Ley 12.590) mas el mecanismo real del medio dia, que es el convenio del grupo de Consejo de Salarios (art. 5 de la Ley 10.449) y no una norma general. Sin ningun monto: la pagina publica la regla de pago y las citas del MTSS, no una cifra. Parte de cero y la ventana de 28 dias contiene las dos fechas; diez clics o mas en los 28 dias archivados es mejoro."
+    },
+    {
+      "id": "fonasa-cesante-bonos-respuesta-primero",
+      "shippedOn": "2026-11-23",
+      "routes": [
+        "/guias/me-quede-sin-trabajo-mutualista-fonasa-uruguay"
+      ],
+      "queries": [
+        "puedo comprar bonos fonasa si estoy cesante",
+        "si dejo de trabajar pierdo fonasa",
+        "cuanto tiempo dura fonasa después de quedar sin trabajo"
+      ],
+      "hypothesis": "Escrito el 19/10 (804dafa7) y guardado hasta que cerrara la ventana de fonasa-sin-trabajo-respuesta-en-el-titulo (22/10). La pregunta del autocompletado tenia respuesta en el cuarto lugar del FAQ y con otras palabras. Pasa a ser la primera, con las palabras con que se busca y el camino uruguayo entero antes de la aclaracion chilena: en el seguro de paro seguis cubierto, sin el, hasta el ultimo dia del mes del cese, y despues ASSE (gratis bajo 62 UR mas 2,5 por integrante, enlazado al valor de la UR del mes) o socio individual. Releidas el 23/11/2026 con las mismas cifras: BPS 23321, BPS 4802 (actualizada el 28/9/2026), ASSE y el cuadro del MSP de julio de 2026. Titulo y descripcion sin cambios. Riesgo declarado: 'cesante' y 'bonos' son vocabulario chileno, asi que la consulta puede ser de Chile; el objetivo no es ganarla sino que el lector uruguayo que la escribe encuentre la respuesta en el FAQ. Si la porcion no se mueve, es una lectura esperable."
+    },
+    {
+      "id": "antel-bloqueo-por-mora-en-el-titulo",
+      "shippedOn": "2026-11-23",
+      "routes": [
+        "/que-pasa-si-no-pago-antel"
+      ],
+      "queries": [
+        "bloqueo por mora antel",
+        "con cuantas facturas impagas te cortan antel",
+        "antel bloqueo por mora"
+      ],
+      "hypothesis": "Search Console 1-28/10/2026: 'bloqueo por mora antel' 42 impresiones, 1 clic, posicion 8; 'con cuantas facturas impagas te cortan antel' 22 / 0 / 6,0; 'antel bloqueo por mora' 8 / 0 / 11. El titulo decia 'Antel: cuando te corta y 72 h para volver', sin las palabras de la consulta ni la cuenta en facturas. Pasa a 'Bloqueo por mora de Antel: 1 o 2 facturas' (58 con la marca) y la descripcion abre con la escalera de las dos fuentes vigentes, que la pagina ya publica: fijo, la 2.a impaga bloquea las salientes y a los 30 dias todo (boletin de tarifas de fija 2026, 3.7.1); movil, la 1.a (condiciones de abril de 2023, apartado VII); vuelve en 48 h habiles el fijo o 72 h internet (preguntas frecuentes de facturacion). Las tres releidas el 23/11/2026, sin cambios. El cuerpo no cambia. Patron de respuesta-en-el-titulo-1031; quedo afuera de esa fila porque tres-facturas-del-hogar-entran-a-su-tema (25/10) la reservaba hasta hoy."
     }
   ]
 }
