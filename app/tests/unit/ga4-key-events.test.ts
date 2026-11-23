@@ -23,6 +23,7 @@ describe('GA4 key events', () => {
     newsletter_signup: read('components/NewsletterSignup.vue'),
     where_to_change: read('components/WhereToChange.vue'),
     convert: read('pages/index.vue'),
+    purchase: read('pages/cuenta/sin-publicidad.vue'),
   }
 
   it.each(KEY_EVENTS)('%s is still emitted from its call site', event => {
@@ -76,6 +77,18 @@ describe('GA4 key events', () => {
       scan(dir)
     expect(collisions).toEqual([])
   }, 30_000)
+
+  it('purchase is the ad-free donation, counted once and only once the provider confirmed it', () => {
+    const src = sources.purchase
+    const confirmIdx = src.indexOf("'/api/me/ad-free/confirm'")
+    const trackIdx = src.indexOf("track('purchase'")
+    expect(confirmIdx).toBeGreaterThan(-1)
+    expect(trackIdx).toBeGreaterThan(confirmIdx)
+    // The order id dedupes a reload or a second confirmation in GA4; value and currency make it
+    // revenue in the monetization reports.
+    const call = src.slice(trackIdx, trackIdx + 400)
+    for (const key of ['transaction_id', 'value', 'currency', 'items']) expect(call).toContain(key)
+  })
 
   it('alert_created carries the alert shape, not a casa', () => {
     const src = sources.alert_created

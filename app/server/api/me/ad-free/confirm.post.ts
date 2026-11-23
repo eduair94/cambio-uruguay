@@ -25,6 +25,8 @@ export default defineEventHandler(async event => {
     throw createError({ statusCode: 404, statusMessage: 'No encontramos ese aporte.' })
   }
 
+  // What the page needs for the GA4 `purchase` (value, currency); never a provider id.
+  const orderInfo = { amount: order.amount, currency: order.currency, provider: order.provider }
   const statuses: DonationStatus[] = []
   try {
     if (order.provider === 'mercadopago' && mpConfigured()) {
@@ -49,7 +51,11 @@ export default defineEventHandler(async event => {
       `[ad-free] confirm ${order.provider} failed`,
       error instanceof Error ? error.message : error
     )
-    return { status: 'unknown' as const, summary: await adFreeSummary(uid) }
+    return { status: 'unknown' as const, order: orderInfo, summary: await adFreeSummary(uid) }
   }
-  return { status: bestDonationStatus(statuses), summary: await adFreeSummary(uid) }
+  return {
+    status: bestDonationStatus(statuses),
+    order: orderInfo,
+    summary: await adFreeSummary(uid),
+  }
 })

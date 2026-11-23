@@ -70,10 +70,10 @@ useSeoMeta({
 // worth more finished than monetised. The account meta stays unconditional so
 // site verification still works from any URL.
 const { pubId: adsensePubId, scriptAllowed } = useAds()
-// A donor's account (/cuenta/sin-publicidad) gets no loader at all: plugins/ad-free.client.ts
-// settles `viewer` right after hydration, and the loader waits for it (utils/adFree.ts).
-const adFreeViewer = useAdFreeViewer()
 if (adsensePubId) {
+  // A donor's account (/cuenta/sin-publicidad) gets no loader at all: plugins/ad-free.client.ts
+  // settles `viewer` right after hydration, and the loader waits for it (utils/adFree.ts).
+  const adFreeViewer = useAdFreeViewer()
   useHead({ meta: [{ name: 'google-adsense-account', content: adsensePubId }] })
   // The loader waits for hydration and never ships in the server HTML: Auto Ads drops its own
   // <div> into <main> the moment it runs, and mid-hydration Vue adopts that div as the layout's

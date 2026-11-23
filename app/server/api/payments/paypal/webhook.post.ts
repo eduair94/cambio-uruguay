@@ -5,7 +5,12 @@ import { AdFreeOrderModel } from '../../../models/AdFreeOrder'
 import { applyProviderPayment } from '../../../utils/adFreeStore'
 import { mapPpCapture, ppCaptureIdFromEvent } from '../../../utils/adFreeMapping'
 import { connectDb } from '../../../utils/db'
-import { getPpCapture, ppConfigured, reconcilePpOrder, verifyPpWebhook } from '../../../utils/paypal'
+import {
+  getPpCapture,
+  ppConfigured,
+  reconcilePpOrder,
+  verifyPpWebhook,
+} from '../../../utils/paypal'
 
 export default defineEventHandler(async event => {
   setResponseHeader(event, 'cache-control', 'no-store')

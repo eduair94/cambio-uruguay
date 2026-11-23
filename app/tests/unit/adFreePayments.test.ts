@@ -192,7 +192,9 @@ describe('ppCaptureIdFromEvent', () => {
   })
 
   it('is null for events that are not about a capture', () => {
-    expect(ppCaptureIdFromEvent({ event_type: 'CHECKOUT.ORDER.APPROVED', resource: { id: 'O' } })).toBeNull()
+    expect(
+      ppCaptureIdFromEvent({ event_type: 'CHECKOUT.ORDER.APPROVED', resource: { id: 'O' } })
+    ).toBeNull()
   })
 })
 

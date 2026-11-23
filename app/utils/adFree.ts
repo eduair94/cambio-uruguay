@@ -9,12 +9,7 @@
 export type AdFreeProvider = 'mercadopago' | 'paypal'
 export type AdFreeCurrency = 'UYU' | 'USD'
 export type DonationStatus =
-  | 'pending'
-  | 'approved'
-  | 'rejected'
-  | 'cancelled'
-  | 'refunded'
-  | 'charged_back'
+  'pending' | 'approved' | 'rejected' | 'cancelled' | 'refunded' | 'charged_back'
 
 export const AD_FREE_MONTHS = 12
 
@@ -56,7 +51,9 @@ export function validateAmount(
   if (Math.abs(scaled - Math.round(scaled)) > 1e-9) {
     return {
       ok: false,
-      error: limits.decimals ? 'Usá hasta dos decimales.' : 'Ingresá un monto en pesos, sin centésimos.',
+      error: limits.decimals
+        ? 'Usá hasta dos decimales.'
+        : 'Ingresá un monto en pesos, sin centésimos.',
     }
   }
   if (amount < limits.min) {

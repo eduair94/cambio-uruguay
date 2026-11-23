@@ -6,6 +6,7 @@
 // Ads already placed cannot be taken out (hiding them breaks AdSense's policy), so a visitor who
 // signs in mid-visit and turns out to be a donor gets one reload, and only if the loader ran.
 import { decideFromHint } from '~/utils/adFree'
+import { readAdFreeHint, useAdFree, writeAdFreeHint } from '~/composables/useAdFree'
 import { hasStoredFirebaseSession } from '~/services/firebaseLazy'
 
 const WAIT_FOR_SERVER_MS = 4000

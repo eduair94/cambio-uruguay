@@ -175,7 +175,7 @@ export function realtimeAgeSeconds(asOf: string, now: Date = new Date()): number
 }
 
 /**
- * The five events marked as key events (conversions) in the GA4 UI. Pinned here because GA4 matches
+ * The six events marked as key events (conversions) in the GA4 UI. Pinned here because GA4 matches
  * them by literal string: renaming one silently zeroes a conversion report weeks later.
  * `tests/unit/ga4-key-events.test.ts` asserts each is still emitted from its call site.
  */
@@ -185,6 +185,9 @@ export const KEY_EVENTS = [
   'newsletter_signup',
   'where_to_change',
   'convert',
+  // The ad-free donation, confirmed by the provider (pages/cuenta/sin-publicidad.vue). GA4 marks
+  // `purchase` as a key event by default; it carries value + currency, so it is also revenue.
+  'purchase',
 ] as const
 
 export type KeyEventName = (typeof KEY_EVENTS)[number]

@@ -43,7 +43,9 @@ export default defineEventHandler(async event => {
     currency: AD_FREE_AMOUNTS[provider].currency,
     providerRef: null,
   })
-  const siteUrl = String(useRuntimeConfig(event).public.siteUrl || 'https://cambio-uruguay.com').replace(/\/$/, '')
+  const siteUrl = String(
+    useRuntimeConfig(event).public.siteUrl || 'https://cambio-uruguay.com'
+  ).replace(/\/$/, '')
 
   try {
     const created =

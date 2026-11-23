@@ -8,7 +8,9 @@ import { AD_FREE_MONTHS } from '../../utils/adFree'
 const API = 'https://api.mercadopago.com'
 
 function token(): string {
-  return (useRuntimeConfig().adFree as { mercadopagoAccessToken?: string })?.mercadopagoAccessToken ?? ''
+  return (
+    (useRuntimeConfig().adFree as { mercadopagoAccessToken?: string })?.mercadopagoAccessToken ?? ''
+  )
 }
 
 export function mpConfigured(): boolean {

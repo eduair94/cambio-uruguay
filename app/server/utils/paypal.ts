@@ -33,15 +33,18 @@ export async function ppAccessToken(): Promise<string> {
   if (cached && cached.expiresAt > Date.now()) return cached.token
   const c = cfg()
   const basic = Buffer.from(`${c.paypalClientId}:${c.paypalClientSecret}`).toString('base64')
-  const res = await $fetch<{ access_token: string; expires_in: number }>(`${api()}/v1/oauth2/token`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Basic ${basic}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: 'grant_type=client_credentials',
-    timeout: 15_000,
-  })
+  const res = await $fetch<{ access_token: string; expires_in: number }>(
+    `${api()}/v1/oauth2/token`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${basic}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: 'grant_type=client_credentials',
+      timeout: 15_000,
+    }
+  )
   cached = {
     token: res.access_token,
     // A minute of margin: a token that expires mid-request is a failed capture.
@@ -50,7 +53,10 @@ export async function ppAccessToken(): Promise<string> {
   return cached.token
 }
 
-async function call<T>(path: string, opts: { method?: 'GET' | 'POST'; body?: unknown; requestId?: string } = {}) {
+async function call<T>(
+  path: string,
+  opts: { method?: 'GET' | 'POST'; body?: unknown; requestId?: string } = {}
+) {
   const token = await ppAccessToken()
   return $fetch<T>(`${api()}${path}`, {
     method: opts.method ?? 'GET',
@@ -113,7 +119,9 @@ export async function reconcilePpOrder(
   paypalOrderId: string,
   orderId: string
 ): Promise<{ captures: Record<string, any>[]; customId: string | null }> {
-  let order = await call<Record<string, any>>(`/v2/checkout/orders/${encodeURIComponent(paypalOrderId)}`)
+  let order = await call<Record<string, any>>(
+    `/v2/checkout/orders/${encodeURIComponent(paypalOrderId)}`
+  )
   if (order.status === 'APPROVED') {
     order = await call<Record<string, any>>(
       `/v2/checkout/orders/${encodeURIComponent(paypalOrderId)}/capture`,

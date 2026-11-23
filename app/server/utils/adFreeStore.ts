@@ -106,7 +106,8 @@ export async function applyProviderPayment(
   const until = await recomputeUser(order.uid)
 
   const newlyApproved = approvedNow && !previous?.approvedAt
-  const lost = previous?.status === 'approved' && (p.status === 'refunded' || p.status === 'charged_back')
+  const lost =
+    previous?.status === 'approved' && (p.status === 'refunded' || p.status === 'charged_back')
   if (newlyApproved || lost) {
     // Notices never decide anything and never fail the confirmation.
     void notify(order.uid, p, until, newlyApproved ? 'approved' : 'lost').catch(error =>

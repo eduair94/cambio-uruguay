@@ -74,7 +74,8 @@ export function mapPpCapture(
   fallbackOrderId?: string
 ): ProviderPayment | null {
   if (!raw || typeof raw.id !== 'string' || !raw.id) return null
-  const orderId = typeof raw.custom_id === 'string' && raw.custom_id ? raw.custom_id : fallbackOrderId
+  const orderId =
+    typeof raw.custom_id === 'string' && raw.custom_id ? raw.custom_id : fallbackOrderId
   const status = PP_STATUS[String(raw.status)]
   const currency = currencyOf(raw.amount?.currency_code)
   const amount = Number(raw.amount?.value)
@@ -98,7 +99,9 @@ export function checkAgainstOrder(
   p: ProviderPayment
 ): boolean {
   return (
-    p.orderId === order._id && p.currency === order.currency && Math.abs(p.amount - order.amount) < 0.005
+    p.orderId === order._id &&
+    p.currency === order.currency &&
+    Math.abs(p.amount - order.amount) < 0.005
   )
 }
 

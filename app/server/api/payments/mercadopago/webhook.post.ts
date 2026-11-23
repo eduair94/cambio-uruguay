@@ -3,7 +3,11 @@
 // (webhook format, `x-signature`) must carry a valid signature; the older IPN format arrives
 // unsigned, and reading the payment back from Mercado Pago is what makes it safe to act on.
 import { applyProviderPayment } from '../../../utils/adFreeStore'
-import { mapMpPayment, mpNotificationPaymentId, verifyMpSignature } from '../../../utils/adFreeMapping'
+import {
+  mapMpPayment,
+  mpNotificationPaymentId,
+  verifyMpSignature,
+} from '../../../utils/adFreeMapping'
 import { getMpPayment, mpConfigured } from '../../../utils/mercadoPago'
 
 export default defineEventHandler(async event => {
@@ -17,7 +21,8 @@ export default defineEventHandler(async event => {
 
   const xSignature = getHeader(event, 'x-signature') ?? null
   const secret =
-    (useRuntimeConfig().adFree as { mercadopagoWebhookSecret?: string })?.mercadopagoWebhookSecret ?? ''
+    (useRuntimeConfig().adFree as { mercadopagoWebhookSecret?: string })
+      ?.mercadopagoWebhookSecret ?? ''
   if (xSignature && secret) {
     const dataId = typeof query['data.id'] === 'string' ? query['data.id'] : (paymentId ?? '')
     const ok = verifyMpSignature({
@@ -36,7 +41,10 @@ export default defineEventHandler(async event => {
     if (payment) await applyProviderPayment(payment)
   } catch (error) {
     // A non-2xx makes Mercado Pago retry later, which is what a failed read needs.
-    console.warn('[ad-free] mercadopago webhook failed', error instanceof Error ? error.message : error)
+    console.warn(
+      '[ad-free] mercadopago webhook failed',
+      error instanceof Error ? error.message : error
+    )
     throw createError({ statusCode: 500, statusMessage: 'Retry later' })
   }
   return { ok: true }

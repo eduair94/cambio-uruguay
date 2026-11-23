@@ -6,8 +6,9 @@ const person = { anonymous: false }
 
 describe('checkoutRequestError', () => {
   it('refuses a guest session before anything is created', () => {
-    expect(checkoutRequestError({ anonymous: true }, { provider: 'mercadopago', amount: 400 }, both))
-      .toMatchObject({ status: 403 })
+    expect(
+      checkoutRequestError({ anonymous: true }, { provider: 'mercadopago', amount: 400 }, both)
+    ).toMatchObject({ status: 403 })
   })
 
   it('refuses an unknown provider', () => {
@@ -28,9 +29,9 @@ describe('checkoutRequestError', () => {
   })
 
   it('refuses an amount outside the provider limits', () => {
-    expect(checkoutRequestError(person, { provider: 'mercadopago', amount: 100 }, both)).toMatchObject(
-      { status: 400 }
-    )
+    expect(
+      checkoutRequestError(person, { provider: 'mercadopago', amount: 100 }, both)
+    ).toMatchObject({ status: 400 })
     expect(checkoutRequestError(person, { provider: 'paypal', amount: 501 }, both)).toMatchObject({
       status: 400,
     })

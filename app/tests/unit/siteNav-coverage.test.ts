@@ -139,6 +139,7 @@ describe('the navigation model has no dead links', () => {
       '/bicicletas-electricas-uruguay/comparar',
       '/contactos-comerciales',
       '/cuenta',
+      '/cuenta/sin-publicidad',
       '/descuentos-con-tarjeta-uruguay/cerca-de-mi',
       '/equipar-casa-uruguay/mi-lista',
       '/estadisticas-de-busqueda',

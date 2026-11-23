@@ -165,7 +165,9 @@ describe('el riel: la guarda', () => {
       expect(canRender(placement)).toBe(false)
     }
     // While the server answers, nobody else's layout moves: the units stay.
-    expect(useAdsAt('/franquicia-aduana-uruguay', RAIL, {}, 'unknown').canRender('sidebar')).toBe(true)
+    expect(useAdsAt('/franquicia-aduana-uruguay', RAIL, {}, 'unknown').canRender('sidebar')).toBe(
+      true
+    )
   })
 
   it('renders on a normal-density read once its unit id exists', () => {

@@ -5219,6 +5219,9 @@ export const EXCLUDED_ROUTES: readonly string[] = Object.freeze([
   '/equipar-casa-uruguay/mi-lista',
   '/widget',
   '/cuenta',
+  // The ad-free donation: account plumbing, noindex, reached from the account menu and the
+  // donation card, never from the navigation.
+  '/cuenta/sin-publicidad',
   // The owner's Search Console dashboard: not content, not for readers, and its whole point is that
   // the queries it renders never become a public page.
   '/estadisticas-de-busqueda',
