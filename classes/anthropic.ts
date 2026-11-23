@@ -60,9 +60,23 @@ export type ClaudeEffort = "low" | "medium" | "high";
 
 export interface ClaudeCallOptions {
   system?: string;
+  /**
+   * Mark the system prompt as a cache breakpoint. Worth it for a job that sends the same long
+   * instructions on every call within minutes (the photo jobs); a prefix under the model's minimum
+   * (512 tokens on Haiku 5.5) silently does not cache and costs nothing extra.
+   */
+  cacheSystem?: boolean;
   maxTokens?: number;
   timeoutMs?: number;
   effort?: ClaudeEffort;
+}
+
+/** Tokens of one call, as the response's usage block reports them. */
+export interface ClaudeUsage {
+  input: number;
+  output: number;
+  cacheRead: number;
+  cacheWrite: number;
 }
 
 export interface ClaudeReply {
@@ -466,7 +480,19 @@ function baseParams(
     max_tokens: opts.maxTokens ?? DEFAULT_MAX_TOKENS,
     messages: [{ role: "user", content }],
     output_config: { effort: effort(opts), ...extraOutput },
-    ...(opts.system ? { system: opts.system } : {}),
+    ...(opts.system
+      ? { system: opts.cacheSystem ? [{ type: "text" as const, text: opts.system, cache_control: { type: "ephemeral" as const } }] : opts.system }
+      : {}),
+  };
+}
+
+function usageOf(message: any): ClaudeUsage {
+  const used = message?.usage;
+  return {
+    input: Number(used?.input_tokens) || 0,
+    output: Number(used?.output_tokens) || 0,
+    cacheRead: Number(used?.cache_read_input_tokens) || 0,
+    cacheWrite: Number(used?.cache_creation_input_tokens) || 0,
   };
 }
 
@@ -600,7 +626,7 @@ export async function askClaudeWithImages(
   prompt: string,
   images: ReadonlyArray<{ data: Buffer; mimeType: string }>,
   opts: ClaudeCallOptions & { schema?: unknown } = {}
-): Promise<{ text: string; value?: unknown; model: string } | null> {
+): Promise<{ text: string; value?: unknown; model: string; usage: ClaudeUsage; costUsd: number } | null> {
   const mimes = images.map((image) => sniffImageMime(image.data));
   if (!images.length || mimes.some((mime) => !mime)) return null;
   const content: Anthropic.ContentBlockParam[] = [
@@ -616,9 +642,11 @@ export async function askClaudeWithImages(
   const text = textOf(res.message);
   if (!text) return null;
   const model = String(res.message?.model || anthropicModel());
-  if (!opts.schema) return { text, model };
+  const usage = usageOf(res.message);
+  const costUsd = estimateClaudeCostUsd(model, res.message?.usage);
+  if (!opts.schema) return { text, model, usage, costUsd };
   const value = parseJsonText(text);
-  return value === undefined ? null : { text, value, model };
+  return value === undefined ? null : { text, value, model, usage, costUsd };
 }
 
 // ── Web search, behind ANTHROPIC_GROUNDED=1 ─────────────────────────────────────────────────────

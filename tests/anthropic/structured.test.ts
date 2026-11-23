@@ -126,6 +126,26 @@ describe("askClaudeJSON / askClaudeWithImages", () => {
     expect(out?.value).toMatchObject({ catalogPhotos: true });
   });
 
+  it("askClaudeWithImages caches the system prompt only when asked to", async () => {
+    const calls = fakeClient(() => message("x"));
+    const jpeg = [{ data: Buffer.from([0xff, 0xd8, 0xff, 0xe0]), mimeType: "image/jpeg" }];
+    await askClaudeWithImages("x", jpeg, { system: "perito fijo", cacheSystem: true });
+    await askClaudeWithImages("x", jpeg, { system: "perito fijo" });
+    expect(calls[0].system).toEqual([{ type: "text", text: "perito fijo", cache_control: { type: "ephemeral" } }]);
+    expect(calls[1].system).toBe("perito fijo");
+  });
+
+  it("askClaudeWithImages reports the tokens and the estimated cost of the call", async () => {
+    fakeClient(() => ({
+      ...message("ok"),
+      usage: { input_tokens: 4000, output_tokens: 200, cache_read_input_tokens: 2500, cache_creation_input_tokens: 0 },
+    }));
+    const out = await askClaudeWithImages("x", [{ data: Buffer.from([0xff, 0xd8, 0xff, 0xe0]), mimeType: "image/jpeg" }]);
+    expect(out?.usage).toEqual({ input: 4000, output: 200, cacheRead: 2500, cacheWrite: 0 });
+    // Haiku 5.5: 4000 × 0.1 + 2500 × 0.01 + 200 × 0.5, per million.
+    expect(out?.costUsd).toBeCloseTo((4000 * 0.1 + 2500 * 0.01 + 200 * 0.5) / 1e6, 12);
+  });
+
   it("askClaudeWithImages returns null (without calling) when a mime is unsupported", async () => {
     const calls = fakeClient(() => message("x"));
     expect(await askClaudeWithImages("x", [{ data: Buffer.from("a"), mimeType: "image/avif" }])).toBeNull();
