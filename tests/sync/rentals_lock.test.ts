@@ -68,7 +68,11 @@ describe("shared rental process lock", () => {
     expect(compare([{ ...current[0], pm2_env: { ...current[0].pm2_env, exec_interpreter: "node" } }, current[1]])).toBe("currency-rentals");
     expect(deploy).toContain("rental_wait_started=$SECONDS");
     expect(deploy).toContain("SECONDS - rental_wait_started >= 3600");
-    expect(deploy.indexOf("for rental_app in $rental_recreate")).toBeLessThan(deploy.indexOf('for app in "${OTHER_APPS[@]}"'));
+    // The general registration pass (one pm2 snapshot for every OTHER_APP) must come after the
+    // rental launchers were migrated, or it would recreate them while a sync still runs.
+    const registration = deploy.indexOf('REGISTRATION_PLAN="$(pm2 jlist');
+    expect(registration).toBeGreaterThan(-1);
+    expect(deploy.indexOf("for rental_app in $rental_recreate")).toBeLessThan(registration);
   });
 
   it.skipIf(process.platform !== "linux")("skips hourly overlap, times out visibly, and lets the queued full sweep run after release", async () => {

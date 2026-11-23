@@ -55,6 +55,21 @@ LOCK="/tmp/cambio-uruguay-backend-deploy.lock"
 
 log() { printf '\n\033[1;36m[deploy-backend]\033[0m %s\n' "$*"; }
 
+# `--force` (input `force` del workflow_dispatch): compilar y recargar aunque la huella de más abajo
+# coincida con la del dist/ vivo.
+FORCE_BUILD=0
+for arg in "$@"; do
+  if [ "$arg" = "--force" ]; then FORCE_BUILD=1; fi
+done
+
+# npm install y tsc corren con prioridad baja: comparten el box con la API, el sitio y ~260 jobs de
+# pm2, y con el box ocioso `nice` no cuesta nada. `nice` siempre existe (coreutils), así que el
+# arreglo nunca queda vacío: en el bash 4.2 de CentOS 7 un arreglo vacío con `set -u` aborta.
+LOW_PRIORITY=(nice -n 10)
+if command -v ionice >/dev/null 2>&1; then
+  LOW_PRIORITY+=(ionice -c2 -n7)
+fi
+
 # 1. Serialize backend deploys — fail fast if one is already running. Deliberately
 # a DIFFERENT lock file from app/scripts/deploy.sh's (/tmp/cambio-uruguay-deploy.lock)
 # — see the race note above for how app-vs-backend ordering is actually guaranteed.
@@ -82,85 +97,162 @@ git -C "$REPO_DIR" pull --ff-only origin main
 # shellcheck disable=SC1090
 source <(grep -m1 '^OTHER_APPS=(' "$REPO_DIR/scripts/deploy-backend.sh")
 
-log "Installing deps (no-audit)…"
-npm install --no-audit --no-fund
-
-log "Building into staging dir ($STAGING) — live dist/ keeps serving…"
-rm -rf "$STAGING"
-npx tsc -p tsconfig.production.json --outDir "$STAGING"
-
-# Sanity: the staging build must have real entry points before we swap. A
-# failed/partial build must never take the live API down.
-if [ ! -f "$STAGING/index.js" ] || [ ! -f "$STAGING/sync.js" ]; then
-  echo "[deploy-backend] staging build incomplete ($STAGING/index.js or $STAGING/sync.js missing); aborting, live dist/ untouched." >&2
-  exit 1
+# Huella de lo que compila tsc y de lo que lee la API al arrancar; si coincide con la del dist/ vivo
+# no hay nada que compilar ni que recargar.
+#
+# El workflow_dispatch del automerge llama a este script en CADA PR, toque o no el backend (de los 40
+# PRs anteriores al 2026-11-23, 19 sólo tocaban `app/`), y una ráfaga de merges encola varios runs
+# sobre el mismo `main`. Cada uno pagaba npm install + tsc (~70 s) + un reload de la API.
+#
+# Entra todo lo versionado en la raíz salvo las superficies que este script no despliega (app/,
+# mcp/, bots/ tienen su build) y lo que no es código (docs/, .github/, .claude/, *.md) — de más es
+# un build innecesario, nunca uno de menos. Más los dos archivos fuera de git que el build o la API
+# leen: `.env` y `sheet_key.json` (sólo sus hashes, nunca el contenido), y la versión de Node. La
+# huella vive en dist/ y se escribe al candidato antes del swap: viaja con el build que describe.
+#
+# Lo que nunca se saltea: el registro de los jobs de pm2 de más abajo (un job que quedó "se recrea
+# en el próximo deploy" tiene que recrearse en el próximo deploy, compile o no) y el reload de la
+# API si alguna de sus instancias no está online.
+BUILD_STAMP=".build-fingerprint"
+backend_fingerprint() {
+  local tree node_version env_sum=none sheet_sum=none
+  command -v sha256sum >/dev/null 2>&1 || return 0
+  tree="$(git -C "$REPO_DIR" ls-tree HEAD 2>/dev/null |
+    awk -F '\t' '$2 !~ /^(app|docs|mcp|bots|\.github|\.claude)$/ && $2 !~ /\.md$/')" || return 0
+  [ -n "$tree" ] || return 0
+  node_version="$(node --version 2>/dev/null)" || return 0
+  if [ -f "$REPO_DIR/.env" ]; then
+    env_sum="$(sha256sum "$REPO_DIR/.env" | cut -d' ' -f1)"
+  fi
+  if [ -f "$REPO_DIR/sheet_key.json" ]; then
+    sheet_sum="$(sha256sum "$REPO_DIR/sheet_key.json" | cut -d' ' -f1)"
+  fi
+  printf '%s\nnode=%s env=%s sheet=%s\n' "$tree" "$node_version" "$env_sum" "$sheet_sum" |
+    sha256sum | cut -d' ' -f1
+}
+FINGERPRINT="$(backend_fingerprint || true)"
+LIVE_FINGERPRINT="$(cat "$REPO_DIR/dist/$BUILD_STAMP" 2>/dev/null || true)"
+SKIP_BUILD=0
+if [ "$FORCE_BUILD" = "1" ]; then
+  log "--force: se compila y se recarga aunque la huella coincida."
+elif [ -n "$FINGERPRINT" ] && [ "$FINGERPRINT" = "$LIVE_FINGERPRINT" ] &&
+  [ -f "$REPO_DIR/dist/index.js" ] && [ -f "$REPO_DIR/dist/sync.js" ]; then
+  SKIP_BUILD=1
+  log "Backend sin cambios respecto del dist/ vivo (huella ${FINGERPRINT:0:12}); se saltean npm install, tsc y el swap."
 fi
 
-log "Swapping staging build into dist/…"
-rm -rf "$PREV"
-[ -d "$REPO_DIR/dist" ] && mv "$REPO_DIR/dist" "$PREV"
-mv "$STAGING" "$REPO_DIR/dist"
+if [ "$SKIP_BUILD" != "1" ]; then
+  log "Installing deps (no-audit)…"
+  "${LOW_PRIORITY[@]}" npm install --no-audit --no-fund
 
-log "Checking $PM2_NAME's registered pm2 topology…"
-# `pm2 reload ecosystem.config.js --only …` — even passing the ecosystem file, NOT
-# just a bare `pm2 reload <name>` — re-reads env vars and the script path, but pm2
-# does NOT use it to change exec_mode or instance count of an ALREADY-REGISTERED
-# process: those live in pm2's own stored process config and only change via `pm2
-# delete` + `pm2 start` (or `pm2 scale`). currency-server is moving from fork/
-# 1-instance to cluster/2-instances (see ecosystem.config.js) — on a server where
-# it's still registered as fork/1, a plain reload would silently keep it that way
-# forever, and every "rolling" reload after that would actually be a hard restart
-# with a downtime blip. Detect the mismatch and fix it once, on purpose.
-#
-# No `jq` assumed on the VPS — parse `pm2 jlist` and ecosystem.config.js with node,
-# which is guaranteed present (it's what runs pm2 and this app). `pm2 jlist` emits
-# one array entry PER OS PROCESS, so a 2-instance cluster app appears as two entries
-# sharing the same `name` — counting matches gives the actual running instance count.
-CURRENT_TOPOLOGY="$(pm2 jlist | PM2_APP_NAME="$PM2_NAME" node -e '
-  let data = "";
-  process.stdin.on("data", (d) => { data += d; });
-  process.stdin.on("end", () => {
-    try {
-      const list = JSON.parse(data);
-      const procs = list.filter((p) => p.name === process.env.PM2_APP_NAME);
-      if (procs.length === 0) {
-        process.stdout.write("absent");
-      } else {
-        const mode = (procs[0].pm2_env && procs[0].pm2_env.exec_mode) || "unknown";
-        process.stdout.write(mode + " " + procs.length);
+  log "Building into staging dir ($STAGING) — live dist/ keeps serving…"
+  rm -rf "$STAGING"
+  "${LOW_PRIORITY[@]}" npx tsc -p tsconfig.production.json --outDir "$STAGING"
+
+  # Sanity: the staging build must have real entry points before we swap. A
+  # failed/partial build must never take the live API down.
+  if [ ! -f "$STAGING/index.js" ] || [ ! -f "$STAGING/sync.js" ]; then
+    echo "[deploy-backend] staging build incomplete ($STAGING/index.js or $STAGING/sync.js missing); aborting, live dist/ untouched." >&2
+    exit 1
+  fi
+  if [ -n "$FINGERPRINT" ]; then
+    printf '%s\n' "$FINGERPRINT" >"$STAGING/$BUILD_STAMP"
+  fi
+
+  log "Swapping staging build into dist/…"
+  rm -rf "$PREV"
+  [ -d "$REPO_DIR/dist" ] && mv "$REPO_DIR/dist" "$PREV"
+  mv "$STAGING" "$REPO_DIR/dist"
+fi
+
+# Todas las instancias de la API online y tantas como pide ecosystem.config.js. Sólo decide si un
+# deploy SIN build puede dejar la API como está; ante cualquier duda (pm2 ilegible) dice que no.
+api_settled() {
+  pm2 jlist 2>/dev/null | PM2_APP_NAME="$PM2_NAME" node -e '
+    let raw = "";
+    process.stdin.on("data", (d) => (raw += d)).on("end", () => {
+      try {
+        const name = process.env.PM2_APP_NAME;
+        const app = require(process.argv[1] + "/ecosystem.config.js").apps.find((a) => a.name === name);
+        const procs = JSON.parse(raw || "[]").filter((p) => p.name === name);
+        const wanted = (app && app.instances) || 1;
+        const online = procs.filter((p) => p.pm2_env && p.pm2_env.status === "online").length;
+        process.exit(procs.length === wanted && online === wanted ? 0 : 1);
+      } catch (e) {
+        process.exit(1);
       }
-    } catch (e) {
-      process.stdout.write("parse_error");
-    }
-  });
-')"
-DESIRED_TOPOLOGY="$(PM2_APP_NAME="$PM2_NAME" node -e '
-  const cfg = require("./ecosystem.config.js");
-  const app = cfg.apps.find((a) => a.name === process.env.PM2_APP_NAME);
-  if (!app) { process.stdout.write("missing_from_config"); process.exit(0); }
-  const mode = app.exec_mode === "cluster" ? "cluster_mode" : "fork_mode";
-  const instances = app.instances || 1;
-  process.stdout.write(mode + " " + instances);
-')"
-log "  registered: ${CURRENT_TOPOLOGY} | desired: ${DESIRED_TOPOLOGY}"
+    });
+  ' "$REPO_DIR"
+}
 
-if pm2 describe "$PM2_NAME" >/dev/null 2>&1; then
-  if [ "$CURRENT_TOPOLOGY" = "$DESIRED_TOPOLOGY" ]; then
-    log "Reloading $PM2_NAME (rolling, zero-downtime)…"
-    pm2 reload ecosystem.config.js --only "$PM2_NAME" --update-env
+reload_api() {
+  log "Checking $PM2_NAME's registered pm2 topology…"
+  # `pm2 reload ecosystem.config.js --only …` — even passing the ecosystem file, NOT
+  # just a bare `pm2 reload <name>` — re-reads env vars and the script path, but pm2
+  # does NOT use it to change exec_mode or instance count of an ALREADY-REGISTERED
+  # process: those live in pm2's own stored process config and only change via `pm2
+  # delete` + `pm2 start` (or `pm2 scale`). currency-server is moving from fork/
+  # 1-instance to cluster/2-instances (see ecosystem.config.js) — on a server where
+  # it's still registered as fork/1, a plain reload would silently keep it that way
+  # forever, and every "rolling" reload after that would actually be a hard restart
+  # with a downtime blip. Detect the mismatch and fix it once, on purpose.
+  #
+  # No `jq` assumed on the VPS — parse `pm2 jlist` and ecosystem.config.js with node,
+  # which is guaranteed present (it's what runs pm2 and this app). `pm2 jlist` emits
+  # one array entry PER OS PROCESS, so a 2-instance cluster app appears as two entries
+  # sharing the same `name` — counting matches gives the actual running instance count.
+  CURRENT_TOPOLOGY="$(pm2 jlist | PM2_APP_NAME="$PM2_NAME" node -e '
+    let data = "";
+    process.stdin.on("data", (d) => { data += d; });
+    process.stdin.on("end", () => {
+      try {
+        const list = JSON.parse(data);
+        const procs = list.filter((p) => p.name === process.env.PM2_APP_NAME);
+        if (procs.length === 0) {
+          process.stdout.write("absent");
+        } else {
+          const mode = (procs[0].pm2_env && procs[0].pm2_env.exec_mode) || "unknown";
+          process.stdout.write(mode + " " + procs.length);
+        }
+      } catch (e) {
+        process.stdout.write("parse_error");
+      }
+    });
+  ')"
+  DESIRED_TOPOLOGY="$(PM2_APP_NAME="$PM2_NAME" node -e '
+    const cfg = require("./ecosystem.config.js");
+    const app = cfg.apps.find((a) => a.name === process.env.PM2_APP_NAME);
+    if (!app) { process.stdout.write("missing_from_config"); process.exit(0); }
+    const mode = app.exec_mode === "cluster" ? "cluster_mode" : "fork_mode";
+    const instances = app.instances || 1;
+    process.stdout.write(mode + " " + instances);
+  ')"
+  log "  registered: ${CURRENT_TOPOLOGY} | desired: ${DESIRED_TOPOLOGY}"
+
+  if pm2 describe "$PM2_NAME" >/dev/null 2>&1; then
+    if [ "$CURRENT_TOPOLOGY" = "$DESIRED_TOPOLOGY" ]; then
+      log "Reloading $PM2_NAME (rolling, zero-downtime)…"
+      pm2 reload ecosystem.config.js --only "$PM2_NAME" --update-env
+    else
+      # Mismatch (or the topology couldn't be determined — "parse_error"/"absent" despite
+      # `pm2 describe` succeeding, e.g. a pm2 output-format change). Fail safe: delete and
+      # re-start from the ecosystem file rather than risk a silent reload-no-op. This is a
+      # ONE-TIME event — once registered as cluster/2, every future deploy takes the branch
+      # above (true rolling reload, no restart blip).
+      log "!!! ONE-TIME TOPOLOGY CONVERSION for $PM2_NAME: registered as '${CURRENT_TOPOLOGY}', ecosystem.config.js now wants '${DESIRED_TOPOLOGY}'. 'pm2 reload' cannot change exec_mode/instances on a running app, so this WILL cost one brief restart (not rolling) — every deploy after this one is zero-downtime again."
+      pm2 delete "$PM2_NAME"
+      pm2 start ecosystem.config.js --only "$PM2_NAME"
+    fi
   else
-    # Mismatch (or the topology couldn't be determined — "parse_error"/"absent" despite
-    # `pm2 describe` succeeding, e.g. a pm2 output-format change). Fail safe: delete and
-    # re-start from the ecosystem file rather than risk a silent reload-no-op. This is a
-    # ONE-TIME event — once registered as cluster/2, every future deploy takes the branch
-    # above (true rolling reload, no restart blip).
-    log "!!! ONE-TIME TOPOLOGY CONVERSION for $PM2_NAME: registered as '${CURRENT_TOPOLOGY}', ecosystem.config.js now wants '${DESIRED_TOPOLOGY}'. 'pm2 reload' cannot change exec_mode/instances on a running app, so this WILL cost one brief restart (not rolling) — every deploy after this one is zero-downtime again."
-    pm2 delete "$PM2_NAME"
+    log "  $PM2_NAME not registered yet — starting for the first time…"
     pm2 start ecosystem.config.js --only "$PM2_NAME"
   fi
+}
+
+if [ "$SKIP_BUILD" = "1" ] && api_settled; then
+  log "$PM2_NAME: mismo build y todas sus instancias online — no se recarga."
 else
-  log "  $PM2_NAME not registered yet — starting for the first time…"
-  pm2 start ecosystem.config.js --only "$PM2_NAME"
+  reload_api
 fi
 
 # pm2 keeps the script/interpreter with which an app was registered, just like
@@ -228,55 +320,76 @@ log "Ensuring other backend pm2 apps are registered…"
 # the lock simply did not exist). So each registered app's live signature — cron,
 # script, interpreter and args — is compared against the file, and only the ones
 # that drifted are re-created.
-for app in "${OTHER_APPS[@]}"; do
+#
+# Una sola foto de pm2 y una sola pasada de node para todas las apps. El bucle anterior lanzaba por
+# app un `pm2 describe`, un `pm2 jlist` y dos node (~0,8 s): con ~85 apps eran 70 s de cada deploy
+# del backend (run 45235277631) para concluir "leaving as-is" 85 veces. Una línea por app, con los
+# campos separados por \037 y no por tab, porque `read` junta tabs seguidos y un estado vacío
+# correría las columnas: nombre, acción (ok | missing | drift), estado en pm2, firma viva y firma
+# del archivo (cron_restart, script, intérprete y args, como antes).
+REGISTRATION_PLAN="$(pm2 jlist 2>/dev/null | node -e '
+  const path = require("path");
+  const repo = process.argv[1];
+  const names = process.argv.slice(2);
+  const apps = require(repo + "/ecosystem.config.js").apps;
+  const sep = "\x1f";
+  let raw = "";
+  process.stdin.on("data", (chunk) => (raw += chunk)).on("end", () => {
+    const list = JSON.parse(raw || "[]");
+    const rows = names.map((name) => {
+      const live = list.find((entry) => entry.name === name);
+      if (!live) return [name, "missing"];
+      const app = apps.find((entry) => entry.name === name);
+      if (!app) return [name, "ok"];
+      const wantedArgs = Array.isArray(app.args) ? app.args.join(" ") : String(app.args || "");
+      const wanted = [
+        String(app.cron_restart || ""),
+        path.posix.normalize(String(app.script || "")),
+        String(app.interpreter || "node"),
+        wantedArgs.trim(),
+      ].join("|");
+      if (!live.pm2_env) return [name, "drift", "", "", wanted];
+      const env = live.pm2_env;
+      // pm2 stores the script as an absolute path; the file declares it relative to the repo.
+      const script = path.posix.relative(repo, String(env.pm_exec_path || ""));
+      const interpreter = path.posix.basename(String(env.exec_interpreter || "node"));
+      const liveArgs = Array.isArray(env.args) ? env.args.join(" ") : String(env.args || "");
+      const current = [
+        String(env.cron_restart || ""),
+        script,
+        interpreter === "none" ? "bash" : interpreter,
+        liveArgs.trim(),
+      ].join("|");
+      return wanted === current ? [name, "ok"] : [name, "drift", String(env.status || ""), current, wanted];
+    });
+    process.stdout.write(rows.map((row) => row.join(sep)).join("\n") + "\n");
+  });
+' "$REPO_DIR" "${OTHER_APPS[@]}" 2>/dev/null || true)"
+# Sin foto legible de pm2 (jlist o el ecosystem fallaron) no se compara nada: cada app cae al camino
+# mínimo y seguro de abajo, arrancar sólo lo que pm2 no tiene registrado. Antes, la misma falla daba
+# una firma viva vacía para TODAS las apps y las recreaba a todas.
+if [ -z "$REGISTRATION_PLAN" ]; then
+  log "  No se pudo leer pm2 en una pasada; sólo se arrancan las apps que falten."
+  REGISTRATION_PLAN="$(printf '%s\037unknown\n' "${OTHER_APPS[@]}")"
+fi
+
+registered_ok=0
+while IFS=$'\037' read -r -u 3 app action status live wanted; do
+  [ -n "$app" ] || continue
   # Los dos lanzadores de alquileres tienen su propia migración más arriba, que espera a que la
   # corrida en curso termine antes de recrear. No se tocan acá.
   if [[ "$app" == "currency-rentals" || "$app" == "currency-rentals-hourly" ]]; then
     continue
   fi
-  if pm2 describe "$app" >/dev/null 2>&1; then
-    wanted="$(node -e '
-      const path = require("path");
-      const apps = require(process.argv[1] + "/ecosystem.config.js").apps;
-      const app = apps.find((entry) => entry.name === process.argv[2]);
-      if (!app) { process.stdout.write(""); process.exit(0); }
-      const args = Array.isArray(app.args) ? app.args.join(" ") : String(app.args || "");
-      process.stdout.write([
-        String(app.cron_restart || ""),
-        path.posix.normalize(String(app.script || "")),
-        String(app.interpreter || "node"),
-        args.trim(),
-      ].join("|"));
-    ' "$REPO_DIR" "$app" 2>/dev/null || true)"
-    live="$(pm2 jlist 2>/dev/null | node -e '
-      let raw = "";
-      process.stdin.on("data", (chunk) => (raw += chunk)).on("end", () => {
-        const path = require("path");
-        const list = JSON.parse(raw || "[]");
-        const app = list.find((entry) => entry.name === process.argv[1]);
-        if (!app || !app.pm2_env) { process.stdout.write(""); return; }
-        const env = app.pm2_env;
-        // pm2 stores the script as an absolute path; the file declares it relative to the repo.
-        const script = path.posix.relative(process.argv[2], String(env.pm_exec_path || ""));
-        const interpreter = path.posix.basename(String(env.exec_interpreter || "node"));
-        const args = Array.isArray(env.args) ? env.args.join(" ") : String(env.args || "");
-        process.stdout.write([
-          String(env.cron_restart || ""),
-          script,
-          interpreter === "none" ? "bash" : interpreter,
-          args.trim(),
-        ].join("|"));
-      });
-    ' "$app" "$REPO_DIR" 2>/dev/null || true)"
-
-    if [[ -n "$wanted" && "$wanted" != "$live" ]]; then
-      status="$(pm2 jlist 2>/dev/null | node -e '
-        let raw = "";
-        process.stdin.on("data", (chunk) => (raw += chunk)).on("end", () => {
-          const app = JSON.parse(raw || "[]").find((entry) => entry.name === process.argv[1]);
-          process.stdout.write(String((app && app.pm2_env && app.pm2_env.status) || ""));
-        });
-      ' "$app" 2>/dev/null || true)"
+  case "$action" in
+    ok)
+      registered_ok=$((registered_ok + 1))
+      ;;
+    missing)
+      log "  $app: not registered — starting for the first time…"
+      pm2 start ecosystem.config.js --only "$app"
+      ;;
+    drift)
       # Recrear mata la corrida en curso, y estos jobs guardan al final: si está trabajando, espera
       # al próximo deploy. Lo peor que pasa es que siga una hora con lo viejo, dicho en voz alta.
       if [[ "$status" == "online" || "$status" == "launching" ]]; then
@@ -286,14 +399,18 @@ for app in "${OTHER_APPS[@]}"; do
         pm2 delete "$app" >/dev/null 2>&1 || true
         pm2 start ecosystem.config.js --only "$app"
       fi
-    else
-      log "  $app: already registered, leaving as-is."
-    fi
-  else
-    log "  $app: not registered — starting for the first time…"
-    pm2 start ecosystem.config.js --only "$app"
-  fi
-done
+      ;;
+    *)
+      if pm2 describe "$app" >/dev/null 2>&1; then
+        registered_ok=$((registered_ok + 1))
+      else
+        log "  $app: not registered — starting for the first time…"
+        pm2 start ecosystem.config.js --only "$app"
+      fi
+      ;;
+  esac
+done 3<<<"$REGISTRATION_PLAN"
+log "  $registered_ok apps already registered, left as-is."
 
 log "Persisting pm2 process list (survives a reboot)…"
 pm2 save
