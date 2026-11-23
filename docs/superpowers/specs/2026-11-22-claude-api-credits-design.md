@@ -19,6 +19,16 @@ créditos se acaban (o una clave falla), todo tiene que seguir andando con Gemin
   US$ 10 por 1.000 búsquedas y además cobra como tokens las páginas que lee, así que ahí el crédito
   rinde de 10 a 20 veces menos. La variante con Claude queda construida y apagada:
   `ANTHROPIC_GROUNDED=1` la enciende.
+  - **Actualización 22/11/2026, encendida en producción por CALIDAD.** Medido en vivo en los cuatro
+    jobs de cifras: Claude contestó todo con fuentes y leyó el tope de usura nuevo del PDF del BCU;
+    Gemini devolvió las cuatro respuestas sin fuentes y con el trimestre anterior. Costo medido:
+    ~US$ 0,04 por llamada (búsquedas a US$ 0,01 más 36–76K tokens de páginas), contra búsquedas
+    casi gratis en Gemini (1.500 diarias incluidas). El dueño eligió calidad. Antes de encenderla
+    el tope mensual pasó a ser POR ETIQUETA (`ANTHROPIC_KEY_MONTHLY_CAP_USD=a=110,b=10,c=10`, un
+    número suelto vale para las demás): otro proyecto del dueño gasta las mismas claves con su propio
+    tope, y el único tope que garantiza no pasar el crédito incluido de una organización es "crédito
+    del plan − lo que reservan los otros proyectos", distinto para cada clave. Una clave al tope
+    devuelve la búsqueda a Gemini, así que el gasto no puede desbordar.
 
 ## Metas
 

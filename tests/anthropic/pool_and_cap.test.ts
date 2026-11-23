@@ -111,6 +111,34 @@ describe("classes/anthropic — labelled pool and monthly cap", () => {
     expect(calls).toHaveLength(2);
   });
 
+  it("caps each label on its own: `label=usd` entries, a bare number for the rest", async () => {
+    process.env.CLAUDE_CREDIT_KEYS = "a=sk-ant-usr-aaaa1111,b=sk-ant-usr-bbbb2222,c=sk-ant-usr-cccc3333";
+    // a has room, b is capped low, c falls to the bare default (also low).
+    process.env.ANTHROPIC_KEY_MONTHLY_CAP_USD = "0.001; a=1, b=0.001";
+    const calls = fakeClients({
+      "sk-ant-usr-aaaa1111": reply(20_000, 0),
+      "sk-ant-usr-bbbb2222": reply(20_000, 0),
+      "sk-ant-usr-cccc3333": reply(20_000, 0),
+    });
+    for (let i = 0; i < 6; i++) await askClaudePlain(String(i));
+    // Each key's first call costs $0.002: past b's and c's cap, far under a's.
+    const count = (key: string) => calls.filter((k) => k === key).length;
+    expect(count("sk-ant-usr-bbbb2222")).toBe(1);
+    expect(count("sk-ant-usr-cccc3333")).toBe(1);
+    expect(count("sk-ant-usr-aaaa1111")).toBe(4);
+  });
+
+  it("a label set to 0 has no cap; a label without entry and no bare number gets the default 25", async () => {
+    process.env.CLAUDE_CREDIT_KEYS = "a=sk-ant-usr-aaaa1111,b=sk-ant-usr-bbbb2222";
+    process.env.ANTHROPIC_KEY_MONTHLY_CAP_USD = "a=0, b=nonsense";
+    // $2 per call (4M tokens at Haiku's long-prompt rate): a never stops; b's 13th call takes it
+    // from $24 to $26, past the default $25, and it is skipped from then on.
+    const calls = fakeClients({ "sk-ant-usr-aaaa1111": reply(4_000_000, 0), "sk-ant-usr-bbbb2222": reply(4_000_000, 0) });
+    for (let i = 0; i < 40; i++) await askClaudePlain(String(i));
+    expect(calls.filter((k) => k === "sk-ant-usr-bbbb2222")).toHaveLength(13);
+    expect(calls.filter((k) => k === "sk-ant-usr-aaaa1111")).toHaveLength(27);
+  });
+
   it("ANTHROPIC_KEY_MONTHLY_CAP_USD=0 turns the cap off", async () => {
     process.env.CLAUDE_CREDIT_KEYS = "a=sk-ant-usr-aaaa1111";
     process.env.ANTHROPIC_KEY_MONTHLY_CAP_USD = "0";
