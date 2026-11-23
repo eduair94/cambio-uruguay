@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decodeEcseBody, runPowerSample } from "../../classes/utilities/power/run";
+import { decodeEcseBody, EcseTransientError, fetchEcseJson, isTransientEcseFailure, runPowerSample } from "../../classes/utilities/power/run";
 import { ECSE_DEPARTMENT_URL, ECSE_URBAN_URL } from "../../classes/utilities/power/ecse";
 import type { PowerDayIncrement, PowerState } from "../../classes/utilities/power/ledger";
 import type { PowerStore } from "../../classes/utilities/power/store";
@@ -71,5 +71,31 @@ describe("runPowerSample", () => {
   it("refuses timestamps from the future", async () => {
     const db = memory();
     await expect(runPowerSample({ store: db.store, fetchJson: fetcher(payload("20/09/2026 11:00:00")), now })).rejects.toThrow("future");
+  });
+});
+
+describe("fetchEcseJson retry", () => {
+  const timeout = () => Object.assign(new Error("The operation was aborted due to timeout"), { name: "TimeoutError" });
+
+  it("retries once after a timeout and returns the second answer", async () => {
+    let calls = 0;
+    const once = async () => { calls += 1; if (calls === 1) throw timeout(); return [1]; };
+    await expect(fetchEcseJson("u", { once, pauseMs: 0 })).resolves.toEqual([1]);
+    expect(calls).toBe(2);
+  });
+
+  it("retries a 5xx but fails when the retry fails too", async () => {
+    let calls = 0;
+    const once = async () => { calls += 1; throw new EcseTransientError("ECSE HTTP 503"); };
+    await expect(fetchEcseJson("u", { once, pauseMs: 0 })).rejects.toThrow("ECSE HTTP 503");
+    expect(calls).toBe(2);
+  });
+
+  it("does not retry a 4xx or a malformed body", async () => {
+    let calls = 0;
+    const once = async () => { calls += 1; throw new Error("ECSE HTTP 404"); };
+    await expect(fetchEcseJson("u", { once, pauseMs: 0 })).rejects.toThrow("ECSE HTTP 404");
+    expect(calls).toBe(1);
+    expect(isTransientEcseFailure(new SyntaxError("bad json"))).toBe(false);
   });
 });

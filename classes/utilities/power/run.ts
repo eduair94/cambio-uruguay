@@ -11,17 +11,47 @@ export function decodeEcseBody(text: string): unknown {
   return typeof value === "string" ? JSON.parse(value) : value;
 }
 
-export async function fetchEcseJson(url: string): Promise<unknown> {
+/** A timeout, a network failure or a 5xx: worth one more try. A 4xx or a bad body is not. */
+export class EcseTransientError extends Error {}
+
+export function isTransientEcseFailure(error: unknown): boolean {
+  if (error instanceof EcseTransientError) return true;
+  const name = (error as { name?: unknown } | null)?.name;
+  return name === "TimeoutError" || name === "AbortError" || error instanceof TypeError;
+}
+
+async function fetchEcseOnce(url: string): Promise<unknown> {
   const response = await fetch(url, { headers: { "user-agent": BOT_USER_AGENT, accept: "application/json" }, signal: AbortSignal.timeout(20_000) });
-  if (!response.ok) throw new Error(`ECSE HTTP ${response.status}`);
+  if (!response.ok) {
+    const message = `ECSE HTTP ${response.status}`;
+    throw response.status >= 500 ? new EcseTransientError(message) : new Error(message);
+  }
   return decodeEcseBody(await response.text());
+}
+
+/**
+ * ECSE times out now and then (2 of ~144 polls on 2026-11-23, CAMBIO-URUGUAY-BACKEND-1Y), and a
+ * missed poll is a 20-minute gap the ledger can only credit 10 minutes of. One retry after a short
+ * pause fits well inside the job's 4-minute deadline; a second failure still exits 1.
+ */
+export async function fetchEcseJson(
+  url: string,
+  { once = fetchEcseOnce, pauseMs = 5_000 }: { once?: (url: string) => Promise<unknown>; pauseMs?: number } = {}
+): Promise<unknown> {
+  try {
+    return await once(url);
+  } catch (error) {
+    if (!isTransientEcseFailure(error)) throw error;
+    await new Promise(resolve => setTimeout(resolve, pauseMs));
+    return once(url);
+  }
 }
 
 /**
  * One poll: both ECSE scopes, validated, folded into the ledger. The state is written BEFORE the
  * increments on purpose: a crash in between loses one interval instead of counting it twice.
  */
-export async function runPowerSample({ fetchJson = fetchEcseJson, store, now = new Date() }: {
+export async function runPowerSample({ fetchJson = (url: string) => fetchEcseJson(url), store, now = new Date() }: {
   fetchJson?: (url: string) => Promise<unknown>;
   store: PowerStore;
   now?: Date;
