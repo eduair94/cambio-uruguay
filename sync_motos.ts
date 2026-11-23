@@ -198,8 +198,11 @@ export async function main(): Promise<void> {
         if (!fbLastOkAt || doc.lastSeen > fbLastOkAt) fbLastOkAt = doc.lastSeen;
       }
       const saved = await saveFbMotos(accepted);
-      const savedKeys = new Set(saved.map(doc => doc.key));
-      stored = [...stored.filter(doc => !savedKeys.has(doc.key)), ...saved];
+      // Con Marketplace leído, lo de Facebook que se publica es SÓLO lo aceptado en esta corrida. Lo
+      // guardado de corridas anteriores que hoy no pasa (un filtro mejor, o la tarjeta dejó de
+      // verse) no puede seguir saliendo por estar en `motolistings`: medido el 23/11/2026, un
+      // «Honda CR-V 2.4I» siguió publicado una hora después de que el filtro nuevo lo rechazara.
+      stored = [...stored.filter(doc => doc.listing.source !== "facebook"), ...saved];
       fbOk = cards.length > 0;
       console.log(
         `[motos] Facebook Marketplace: ${cards.length} tarjetas con marca de moto, ${accepted.length} motos ` +

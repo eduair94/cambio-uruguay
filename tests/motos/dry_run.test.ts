@@ -323,6 +323,66 @@ describe("sync_motos main()", () => {
     expect(rows.map(row => row.key)).toEqual(["ml-MLU1"]);
   });
 
+  it("una moto de Facebook guardada antes que hoy no pasa el filtro deja de publicarse", async () => {
+    // Producción, 23/11/2026: «2004 Honda CR-V 2.4I» quedó en motolistings y siguió saliendo.
+    process.env.APP_MONGO_URI = "mongodb://fake-app-db/test";
+    setArgv("--fast");
+    const oldFb: StoredMoto = {
+      // Otra moto que la de ML (año, km, precio): si fueran gemelas, la deduplicación la sacaría
+      // antes y el test no probaría nada.
+      ...stored("1441292934288608", {
+        source: "facebook",
+        title: "2004 Honda CR-V 2.4I LX AT",
+        year: 2004,
+        km: null,
+        price: 8300,
+        permalink: "https://www.facebook.com/marketplace/item/1441292934288608/",
+      }),
+      key: ["fb", "1441292934288608"].join("-"),
+    };
+    loadStoredMotosMock.mockResolvedValue([stored("MLU1"), oldFb]);
+    loadFbMotoCardsMock.mockResolvedValue([
+      {
+        card: {
+          id: "1441292934288608",
+          title: "2004 Honda CR-V 2.4I LX AT,u$s8300,163792km,2WD,2004",
+          amount: 8300,
+          city: "Montevideo, Uruguay",
+          createdAt: null,
+          picture: null,
+          isSold: false,
+          isLive: true,
+        },
+        item: null,
+        firstSeen: NOW,
+        lastSeen: NOW,
+      },
+    ]);
+    await expect(main()).resolves.toBeUndefined();
+    const [rows] = publishMotoCatalogMock.mock.calls[0] as [Array<{ key: string }>, unknown];
+    expect(rows.map(row => row.key)).toEqual(["ml-MLU1"]);
+  });
+
+  it("si Facebook no se puede leer, lo de Facebook ya guardado se sigue publicando", async () => {
+    process.env.APP_MONGO_URI = "mongodb://fake-app-db/test";
+    setArgv("--fast");
+    const keptFb: StoredMoto = {
+      ...stored("987654321", {
+        source: "facebook",
+        year: 2018,
+        km: null,
+        price: 1300,
+        permalink: "https://www.facebook.com/marketplace/item/987654321/",
+      }),
+      key: ["fb", "987654321"].join("-"),
+    };
+    loadStoredMotosMock.mockResolvedValue([stored("MLU1"), keptFb]);
+    loadFbMotoCardsMock.mockRejectedValue(new Error("caída"));
+    await expect(main()).resolves.toBeUndefined();
+    const [rows] = publishMotoCatalogMock.mock.calls[0] as [Array<{ key: string }>, unknown];
+    expect(rows.map(row => row.key).sort()).toEqual([keptFb.key, "ml-MLU1"].sort());
+  });
+
   it("la horaria conserva el tipo y el tramo que midió la diaria, en vez de borrarlos", async () => {
     process.env.APP_MONGO_URI = "mongodb://fake-app-db/test";
     setArgv("--fast");
