@@ -11,11 +11,16 @@
 //   los cementerios y las coberturas; las empresas fúnebres no publican precios.
 // - /guias/usuario-personal-bps-uruguay (datos en `usuarioBps.ts`): media docena de páginas del
 //   sitio piden ese usuario y ninguna explicaba cómo se saca.
+// - /guias/trabajar-el-24-y-31-de-diciembre-uruguay (datos en `finDeAnioLaboral.ts`, 2026-11-23):
+//   si el 24 y el 31 son feriados. La lista de feriados y la regla de pago ya estaban publicadas por
+//   separado y ninguna contestaba la pregunta tal como se escribe; la respuesta es una negación que
+//   se DERIVA de la lista de la Ley 16.805, no un texto paralelo.
 //
 // Las tres tienen fila en `docs/seo/experiments.json` con el commit que las publica.
 
 import { aumentoJubilacionesGuide } from './guideVeranoAumentoJubilaciones'
 import { costoSepelioGuide } from './guideVeranoCostoSepelio'
+import { finDeAnioLaboralGuide } from './guideVeranoFinDeAnio'
 import type { Guide } from './guides'
 import { usuarioBpsGuide } from './guideVeranoUsuarioBps'
 
@@ -23,4 +28,5 @@ export const verano2027Guides: readonly Guide[] = [
   aumentoJubilacionesGuide,
   costoSepelioGuide,
   usuarioBpsGuide,
+  finDeAnioLaboralGuide,
 ]

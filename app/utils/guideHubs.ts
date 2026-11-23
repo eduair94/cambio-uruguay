@@ -1141,6 +1141,7 @@ export const guideHubs: readonly GuideHub[] = [
       'entender-tu-recibo-de-sueldo-uruguay',
       'horas-extra-en-uruguay',
       'feriados-en-uruguay-como-se-pagan',
+      'trabajar-el-24-y-31-de-diciembre-uruguay',
       'llegar-tarde-tolerancia-y-sanciones-uruguay',
       'como-se-calcula-el-aguinaldo-uruguay',
       'aguinaldo-casos-especiales-uruguay',

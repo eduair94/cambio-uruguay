@@ -2127,8 +2127,8 @@
       "any": "Mistahes",
       "from": "Alates {stars}-st ★"
     },
-    "metaTitle": "Lauatoolide hinnad Uruguays: igapäevane hinnavõrdlus",
-    "metaDescription": "Kõik Uruguays müügil olevad lauatoolid on ühel laual: Mercado Libre, Uruguay kauplused ja Marketplace, kusjuures iga platvormi hind on teiste kõrval ja iga tooli kohta on eraldi rida.",
+    "metaTitle": "Lauatoolide hinnad, uuendatakse iga päev",
+    "metaDescription": "Üks rida tooli kohta, iga platvormi hind teiste kõrval: Mercado Libre, Uruguay poed ja Marketplace, uued ja kasutatud, iga päev uuesti loetud.",
     "breadcrumb": "Hinnad",
     "ogSubtitle": "{products} toolid ja {offers} pakkumised, loe iga päev uuesti",
     "shareText": "Lauatooli hinnavõrdlus Uruguays",
@@ -2368,8 +2368,8 @@
     "moreReddit": "Avastage rohkem Redditi andmeid",
     "ogTitle": "Lauatoolid vastavalt r/CharruaDevsile",
     "ogSubtitle": "Tasemete loend koos reaalsete kommentaaride, valimi suuruse ja avatud meetodiga",
-    "metaTitle": "Parimad lauatoolid Uruguays vastavalt r/CharruaDevsile",
-    "metaDescription": "Parimad lauatoolid Uruguays r/CharruaDevsi postituste, kommentaaride ja vastuste põhjal koos plusside, miinuste, kohalike hindade ja eelarvekalkulaatoriga.",
+    "metaTitle": "Parimad lauatoolid: r/CharruaDevs edetabel",
+    "metaDescription": "Lauatoolide edetabel on koostatud r/CharruaDevsi kommentaaride põhjal: tasemed S-st D-ni, plussid ja miinused, kohalikud hinnad ja partnerlinkide puudumine.",
     "directory": {
       "kicker": "Hinnakataloog",
       "title": "Ja kui sa juba tooli tunned, siis vaata, mis see täna maksab",

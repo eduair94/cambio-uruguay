@@ -4026,6 +4026,37 @@
         "canasta de fin de año bps"
       ],
       "hypothesis": "La guia decia que para 2026 no habia monto y el BPS lo publico el 18/11/2026: $ 3.293 desde el miercoles 2 de diciembre con las pasividades de noviembre, tope de $ 21.888 (3,1889 BPC), pensionistas de 65 anos o mas al 30/09/2026, y por primera vez escrito que los pensionistas por vejez e invalidez pueden tener otros ingresos dentro del tope. Titulo y descripcion pasan de contar 2025 a dar el monto y la fecha de 2026, que es lo que se busca en las dos semanas antes del pago; el cuerpo, la tabla y las preguntas se actualizan con las condiciones de la ficha 21733 y la noticia 24782. Dice que ningun texto del BPS cita un decreto de 2026. Se espera mover el CTR desde la misma posicion en plena temporada; la ventana de 28 dias contiene el pago del 2/12."
+    },
+    {
+      "id": "snippets-de-sillas-que-el-serp-cortaba",
+      "shippedOn": "2026-11-23",
+      "routes": [
+        "/sillas-escritorio-uruguay",
+        "/sillas-escritorio-uruguay/precios"
+      ],
+      "queries": [
+        "mejores sillas de escritorio uruguay",
+        "sillas de escritorio uruguay",
+        "silla ergonomica uruguay",
+        "precios sillas de escritorio uruguay",
+        "silla de escritorio precio uruguay"
+      ],
+      "hypothesis": "Las dos paginas de sillas eran las unicas del pozo de catalogo que estaban en las DOS listas de deuda (titulo y descripcion) y las unicas libres de ventana. El titulo del tier list media 76/74/81 caracteres con la marca en es/en/pt y el de precios 78/71/79: el SERP los cortaba justo donde estaba el diferenciador. Quedan en 60/56/54 y 56/49/57 soltando 'en Uruguay', que la marca ya dice, y la etiqueta decorativa del final. Las descripciones (160 y 182/165/178) repetian el titulo y contaban el metodo en abstracto; ahora traen lo que cada pagina tiene y ninguna otra pone al lado: los tiers S a D, los pros y contras citados y que no hay enlaces de afiliados en el tier list, y la forma de la tabla con sus tres fuentes, nuevas y usadas, en la de precios. Se espera mover el CTR desde la misma posicion, sin tocar el cuerpo de ninguna de las dos."
+    },
+    {
+      "id": "veinticuatro-y-treintaiuno-de-diciembre-pagina-nueva",
+      "shippedOn": "2026-11-23",
+      "routes": [
+        "/guias/trabajar-el-24-y-31-de-diciembre-uruguay"
+      ],
+      "queries": [
+        "el 24 de diciembre es feriado en uruguay",
+        "se trabaja el 24 de diciembre",
+        "31 de diciembre es feriado uruguay",
+        "se trabaja el 31 de diciembre",
+        "medio dia 24 y 31 de diciembre"
+      ],
+      "hypothesis": "La pregunta se hace cada diciembre y el sitio no tenia pagina que la contestara: /feriados-que-se-corren-uruguay publica la lista y la regla del corrimiento, y /guias/feriados-en-uruguay-como-se-pagan la regla de pago, pero ninguna dice que el 24 y el 31 NO son feriados. Va como guia y no como pagina raiz porque es la familia que mas rinde por visita y /guias/* ya cae en el tramo de contenido. La respuesta es una negacion verificable (no figuran en el art. 2 de la Ley 16.805 ni entre los cinco feriados pagos del art. 18 de la Ley 12.590) mas el mecanismo real del medio dia, que es el convenio del grupo de Consejo de Salarios (art. 5 de la Ley 10.449) y no una norma general. Sin ningun monto: la pagina publica la regla de pago y las citas del MTSS, no una cifra. Parte de cero y la ventana de 28 dias contiene las dos fechas; diez clics o mas en los 28 dias archivados es mejoro."
     }
   ]
 }

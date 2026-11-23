@@ -2127,8 +2127,8 @@
       "any": "Mikä tahansa",
       "from": "{stars}:lta ★"
     },
-    "metaTitle": "Työtuolien hinnat Uruguayssa: päivittäinen hintavertailu",
-    "metaDescription": "Kaikki Uruguayssa alennuksessa olevat työtuolit yhdessä pöydässä: Mercado Libre, uruguaylaiset myymälät ja Marketplace, jossa jokainen taso on hinnoiteltu vierekkäin ja tuoli on rivissä.",
+    "metaTitle": "Työtuolien hinnat, päivitetään päivittäin",
+    "metaDescription": "Yksi rivi tuolia kohden, jokaisen korokkeen hinnat muiden vieressä: Mercado Libre, uruguaylaiset kaupat ja Marketplace, uusia ja käytettyjä, luettavissa joka päivä uudelleen.",
     "breadcrumb": "Hinnat",
     "ogSubtitle": "{products}-tuolit ja {offers}-tarjoukset, lue uudelleen joka päivä",
     "shareText": "Työtuolien hintavertailu Uruguayssa",
@@ -2368,8 +2368,8 @@
     "moreReddit": "Tutustu lisää Reddit-dataan",
     "ogTitle": "Pöytätuolit r/CharruaDevsin mukaan",
     "ogSubtitle": "Tasoluettelo, jossa on oikeita kommentteja, otoskoko ja avoin menetelmä",
-    "metaTitle": "Parhaat työtuolit Uruguayssa r/CharruaDevsin mukaan",
-    "metaDescription": "Parhaat työtuolit Uruguayssa r/CharruaDevs-julkaisuista, kommenteista ja vastauksista, plussat ja miinukset, paikalliset hinnat ja budjettilaskin.",
+    "metaTitle": "Parhaat työtuolit: r/CharruaDevs-ranking",
+    "metaDescription": "Työtuolien ranking rakennettu r/CharruaDevsin kommenttien perusteella: tasot S:stä D:hen, mainitut hyvät ja huonot puolet, paikalliset hinnat ja ei affiliate-linkkejä missään.",
     "directory": {
       "kicker": "Hintahakemisto",
       "title": "Ja jos tiedät jo tuolin, katso mitä se maksaa tänään",

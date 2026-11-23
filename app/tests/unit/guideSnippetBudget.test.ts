@@ -81,8 +81,13 @@ const GUIDE_PAGE = readFileSync(join(__dirname, '..', '..', 'pages', 'guias', '[
  * 157 → 160 el 2026-11-22, en el commit que publica `utils/guidesVerano2027.ts`: el aumento de
  * jubilaciones, el costo del sepelio y el Usuario personal BPS. Las tres nacen dentro de los dos
  * presupuestos y sus títulos llevan la respuesta (1.720 UI, Abitab/Red Pagos/ANDA).
+ *
+ * 160 → 161 el 2026-11-23, en el commit que publica `trabajar-el-24-y-31-de-diciembre-uruguay`, la
+ * cuarta de esa tanda. Nace dentro de los dos presupuestos —título de 39 caracteres, 56 con la
+ * marca, y descripción de 141— y el título es la consulta tal como se escribe, con la respuesta
+ * («no son feriados») en la primera oración de la descripción, donde el SERP no la corta.
  */
-const MEASURED = 160
+const MEASURED = 161
 
 /**
  * 116 → 104 el 2026-10-02: los doce títulos más largos del catálogo, de 104 a 84 caracteres

@@ -299,7 +299,18 @@ const DEUDA_TITULO_MENSAJE = [
   // Instante», «Live Buy and Sell Rates») que el SERP se comía junto con la marca. Quedan en
   // 59/47/55, 50/49/49 y 54/54/54.
   //
-  // Las siete que quedan no se tocaron. `/dolar/records` está reservada hasta el 2026-11-29 y
+  // 7 → 5 el 2026-11-23: las dos de sillas, que son las únicas de este pozo que estaban en las DOS
+  // listas (título y descripción) y las únicas libres hoy —`/analiticas`, `/conectar` y
+  // `/ultimos-cambios` también lo están, pero ninguna de las tres es una página de contenido que
+  // busque a nadie—. `/sillas-escritorio-uruguay` medía 76/74/81 con la marca y queda en 60/56/54:
+  // suelta «en Uruguay» (la marca ya lo dice) y «según», y conserva las dos cosas que ganan el clic,
+  // la consulta («mejores sillas de escritorio») y de dónde sale el ranking (r/CharruaDevs).
+  // `/sillas-escritorio-uruguay/precios` medía 78/71/79 y queda en 56/49/57: la etiqueta
+  // «comparador diario» se va y queda la frescura, que es lo que la página tiene y el tier list no.
+  // El español del tier list queda EXACTO en 60, que entra; si algún día hay que ganar margen, lo
+  // que sobra ahí es el prefijo «r/».
+  //
+  // Las cinco que quedan no se tocaron. `/dolar/records` está reservada hasta el 2026-11-29 y
   // `/alquilar-estando-en-clearing` (68 en inglés, 70 en portugués: el español entra) hasta el
   // 2026-12-19. `npm run seo_debt` dice cuál se puede tocar hoy.
   //
@@ -311,12 +322,13 @@ const DEUDA_TITULO_MENSAJE = [
   '/analiticas',
   '/conectar',
   '/dolar/records',
-  '/sillas-escritorio-uruguay',
-  '/sillas-escritorio-uruguay/precios',
   '/ultimos-cambios',
 ]
 
-const MESSAGE_TITLE_OVER_BUDGET = 10
+// Igual a la lista de arriba, a propósito: un presupuesto más alto que la deuda real es holgura, y
+// la holgura de un trinquete absorbe en silencio la página nueva que se publica sin snippet. Estuvo
+// en 10 sobre una deuda de 7 hasta el 2026-11-23.
+const MESSAGE_TITLE_OVER_BUDGET = 5
 
 /** Lo mismo para las descripciones, contra 155. **SÓLO PUEDE BAJAR**, y la lista es exacta. */
 const DEUDA_DESCRIPCION_MENSAJE = [
@@ -340,6 +352,15 @@ const DEUDA_DESCRIPCION_MENSAJE = [
   // `/tarjetas-de-credito-uruguay` hasta el 2026-11-30. Mismo motivo que arriba para el comentario
   // adentro.
   //
+  // 11 → 9 el 2026-11-23: las dos de sillas, en la misma corrida que sus títulos. La del tier list
+  // (160 en español; el inglés y el portugués entraban) decía «mejores sillas de escritorio en
+  // Uruguay según posts, comentarios y respuestas», que es el título otra vez y el método contado
+  // en abstracto; ahora dice lo que la página tiene y ninguna otra pone al lado: los tiers S a D,
+  // los pros y contras citados del comentario original y que no hay enlaces de afiliados. La de
+  // precios (182/165/178) abre por la forma de la tabla —una fila por silla, el precio de cada
+  // plataforma al lado— y nombra las tres fuentes, nuevas y usadas, y cada cuánto se relee. Quedan
+  // en 150/135/154 y 148/144/146.
+  //
   // 12 → 11 el 2026-11-22: `/grabacion-sin-consentimiento-uruguay`, el primer día en que su ventana
   // está cerrada y la única ruta del tramo `contenido` (8×) que `npm run seo_debt` daba libre hoy en
   // los quince pozos. El inglés era el que se pasaba (158), pero las tres descripciones tenían el
@@ -361,12 +382,11 @@ const DEUDA_DESCRIPCION_MENSAJE = [
   '/economia-uruguay',
   '/estadisticas-reddit',
   '/noticias',
-  '/sillas-escritorio-uruguay',
-  '/sillas-escritorio-uruguay/precios',
   '/tarjetas-de-credito-uruguay',
 ]
 
-const MESSAGE_DESCRIPTION_OVER_BUDGET = 13
+/** Igual a la lista, por el mismo motivo que el de los títulos. Estuvo en 13 sobre una deuda de 11. */
+const MESSAGE_DESCRIPTION_OVER_BUDGET = 9
 
 // El conteo real del 2026-11-20, por el mismo motivo que `MEASURABLE` en `seoTitleBudget.test.ts`:
 // si el piso fuera más bajo, una página podría dejar de leerse acá sin poner nada en rojo.

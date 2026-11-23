@@ -108,6 +108,19 @@
       </VListItem>
     </VList>
 
+    <!-- El medio día de fin de año se confunde con una licencia por ley, y esta página ya enseña el
+         mecanismo que lo explica: arriba dice que el convenio de la rama puede dar días que la ley
+         no da. Es el mismo caso, y el lector que llega en diciembre lo busca acá. -->
+    <p class="text-body-2 text-medium-emphasis mb-6" style="max-width: 68ch">
+      <strong>El medio día del 24 y del 31 de diciembre no es una de estas licencias.</strong>
+      Ninguna ley lo da: esos dos días no son feriados, y donde el medio día existe lo pone el
+      convenio de tu grupo de Consejo de Salarios, igual que los días por fallecimiento que la ley
+      no cubre.
+      <NuxtLink :to="localePath('/guias/trabajar-el-24-y-31-de-diciembre-uruguay')" class="cu-link">
+        Qué dice la ley del 24 y el 31 de diciembre </NuxtLink
+      >.
+    </p>
+
     <FaqSection :items="faq" heading="Preguntas frecuentes" expanded />
 
     <h2 class="text-h6 font-weight-bold mt-8 mb-2">De dónde salen estos días</h2>
