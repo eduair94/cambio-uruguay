@@ -296,6 +296,7 @@ import {
 import { propertySaleSourceName, propertySalesMessages } from '~/utils/propertySalesMessages'
 import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 import type { PropertyPreviewRequest } from '~/utils/photoViewer'
+import { trackFilterChanges } from '~/utils/directoryFilterTracking'
 const { t, locale } = useI18n({ useScope: 'local', messages: propertySalesMessages })
 const { t: globalT } = useI18n({ useScope: 'global' })
 // Un solo visor para toda la grilla: la tarjeta sólo dice qué foto tocaron.
@@ -420,8 +421,13 @@ function announce(message: string) {
   toast.value = message
   toastOpen.value = true
 }
+const track = useTrack()
 function navigate(next: PropertySalesQuery) {
-  return router.push({ path: route.path, query: propertySalesQueryToParams(next) })
+  const params = propertySalesQueryToParams(next)
+  // Todo cambio de filtro pasa por acá: qué filtro, por nombre y sin valor
+  // (utils/directoryFilterTracking.ts). La carga de la página no pasa, así que no cuenta.
+  trackFilterChanges(track, 'ventas', propertySalesQueryToParams(query.value), params)
+  return router.push({ path: route.path, query: params })
 }
 function openFilters(event: MouseEvent) {
   facetController?.abort()

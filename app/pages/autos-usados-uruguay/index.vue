@@ -241,6 +241,7 @@ import {
   type CarsResponse,
 } from '~/utils/cars'
 import type { PublicCarListing } from '~/utils/carsPublic'
+import { trackFilterChanges } from '~/utils/directoryFilterTracking'
 
 // Directorio: filtros + grilla con el ancho del marco (layouts/default.vue, `.container_custom--wide`).
 definePageMeta({ wide: true })
@@ -341,9 +342,14 @@ function changePage(page: number) {
   scrollToPageTop('cars-results')
 }
 
+const track = useTrack()
 function update(next: CarsQuery) {
   filtersOpen.value = false
-  router.replace({ query: carsQueryParams(next) })
+  const params = carsQueryParams(next)
+  // Todo cambio de filtro pasa por acá: qué filtro, por nombre y sin valor
+  // (utils/directoryFilterTracking.ts). La carga de la página no pasa, así que no cuenta.
+  trackFilterChanges(track, 'autos', carsQueryParams(query.value), params)
+  router.replace({ query: params })
 }
 
 /** Un atajo del bloque de mercado reemplaza los filtros, conserva el orden y sube a la lista. */

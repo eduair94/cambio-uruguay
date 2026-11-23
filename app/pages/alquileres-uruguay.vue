@@ -878,6 +878,7 @@ import {
 // The card names the place as the ficha does: "Pocitos", never the portal's "POCITOS".
 import { rentalDisplayZone } from '~/utils/rentalDisplayPlace'
 import { shareMatchingOffer } from '~/utils/rentalSharedOffer'
+import { trackFilterChanges } from '~/utils/directoryFilterTracking'
 
 const LocationsMap = defineAsyncComponent(() => import('~/components/map/LocationsMap.vue'))
 // Sólo se pinta mientras se elige un punto: la lista no precarga su JS ni espera su CSS. Puede ser
@@ -1148,9 +1149,13 @@ const neighborhoodFacets = computed(
   () => neighborhoodOverride.value ?? data.value?.facets.neighborhoods ?? []
 )
 let neighborhoodRequest = 0
-watch(requestKey, () => {
+const track = useTrack()
+watch(requestKey, (next, prev) => {
   neighborhoodRequest++
   neighborhoodOverride.value = null
+  // Qué filtro se tocó, por nombre y sin valor (utils/directoryFilterTracking.ts). La carga de la
+  // página no llega acá: el watcher sólo corre cuando la búsqueda cambia.
+  trackFilterChanges(track, 'alquileres', JSON.parse(prev), JSON.parse(next))
 })
 async function loadNeighborhoods(department: string) {
   const request = ++neighborhoodRequest
