@@ -639,7 +639,7 @@ watch(
   gap: 2px;
   padding: 12px 14px;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  border-radius: 10px;
+  border-radius: 12px;
   background: transparent;
   color: rgb(var(--v-theme-on-surface));
   text-align: start;
@@ -666,11 +666,11 @@ watch(
 
 .sin-publicidad__provider-name {
   font-weight: 700;
-  font-size: 0.9375rem;
+  font-size: 0.95rem;
 }
 
 .sin-publicidad__provider-methods {
-  font-size: 0.8125rem;
+  font-size: 0.8rem;
   line-height: 1.4;
   color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
 }
@@ -709,9 +709,9 @@ watch(
   border-radius: 999px;
   background: rgba(var(--v-theme-primary), 0.12);
   color: rgb(var(--v-theme-primary));
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.0333em;
   text-transform: uppercase;
   line-height: 1.6;
 }

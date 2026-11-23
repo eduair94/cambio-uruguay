@@ -194,7 +194,7 @@ onBeforeUnmount(() => stop?.())
 .ad-free-nudge__text {
   margin: 0;
   max-width: 62ch;
-  font-size: 0.9375rem;
+  font-size: 0.95rem;
   line-height: 1.5;
 }
 
