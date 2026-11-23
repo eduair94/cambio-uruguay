@@ -105,8 +105,10 @@ export default defineEventHandler(async (event): Promise<MotoListResponse> => {
       fuels,
       sellers,
       colors,
-      bands,
+      // El MISMO orden que la lista de abajo: el 23/11/2026 `bands` y `sources` salieron cruzados a
+      // producción por agregar la faceta de fuente en otra posición (motosApi.test.ts lo fija ahora).
       sources,
+      bands,
     ] = await Promise.all([
       MotoCatalogModel.countDocuments(match).maxTimeMS(10_000),
       MotoCatalogModel.find(match)
