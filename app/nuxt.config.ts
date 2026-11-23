@@ -73,6 +73,10 @@ const TRANSLATED_ADVERTS_DISALLOW = [
   // Windows Chrome from the US, Brazil, Colombia, Malaysia, Hong Kong, Russia and China. The bare
   // comparison page stays open.
   '/autos-usados-uruguay/comparar?',
+  // Lo mismo en motos (2026-11-23): la ficha de cada aviso traducida y la comparación con
+  // selección (`?motos=<key>`). Las fichas por MODELO traducidas siguen abiertas: no van acá.
+  '/*/motos-usadas-uruguay/aviso/',
+  '/motos-usadas-uruguay/comparar?',
 ]
 // The rules every crawler gets (the `*` group and the search-engine group below). /_nuxt/ serves
 // the public JS, CSS and fonts needed to render the site, so it is never here.

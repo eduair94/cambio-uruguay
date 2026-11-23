@@ -163,6 +163,8 @@ export function adsFlagOn(value: unknown): boolean {
  */
 const LIGHT = [
   '/autos-usados-uruguay/comparar',
+  // El comparador de avisos de motos (23/11/2026): la misma herramienta, la misma unidad única.
+  '/motos-usadas-uruguay/comparar',
   '/',
   // Un planificador es un instrumento: una sola unidad, que no se meta en la tabla.
   '/meal-prep-uruguay',

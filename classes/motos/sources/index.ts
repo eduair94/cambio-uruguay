@@ -16,6 +16,9 @@ export const MOTO_SOURCES: Readonly<Record<MotoSource, { name: string; priority:
   // `priority` decide quién gana cuando la misma moto aparece en dos fuentes: menor gana. ML primero
   // porque es la única que da marca y modelo desde un filtro APLICADO y no desde el título.
   mercadolibre: { name: "Mercado Libre", priority: 1 },
+  // Desde el 2026-11-23: las tarjetas de la categoría Vehículos que el lector de autos ya guarda en
+  // `carfbcards` (./facebook.ts). Va segunda: marca, modelo y año salen del texto.
+  facebook: { name: "Facebook Marketplace", priority: 2 },
 };
 
 export const MOTO_SOURCE_LIST: readonly MotoSource[] = Object.keys(MOTO_SOURCES) as MotoSource[];

@@ -242,6 +242,10 @@ const NOINDEXED = [
   // Motos usadas: el directorio y la ficha por modelo se indexan en su URL limpia; una
   // combinación de filtros y un modelo sin grupo se salen, igual que autos usados.
   'motos-usadas-uruguay/[key].vue',
+  // La ficha de cada aviso de moto (vence en semanas) y el comparador de avisos: siempre noindex,
+  // como sus pares de autos (23/11/2026).
+  'motos-usadas-uruguay/aviso/[key].vue',
+  'motos-usadas-uruguay/comparar.vue',
   'motos-usadas-uruguay/index.vue',
   'newsletter/archivo.vue',
   'offline.vue',

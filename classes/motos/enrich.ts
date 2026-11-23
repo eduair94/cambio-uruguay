@@ -1,24 +1,30 @@
 // De un aviso crudo a una moto con todo lo derivado ya calculado, y el filtro de lo que no es una
 // moto. Todo puro: ni red ni base, así que se prueba entero sin nada levantado.
-import { slugify, titleFlags, wordText } from "../autos/normalize";
+import { carColorFamily } from "../autos/bodyType";
+import { fold, slugify, titleFlags, wordText } from "../autos/normalize";
+import { declaredRisks, type CarRisk } from "../autos/risk";
+import { attachDisplacement, type DisplacementInput } from "./displacement";
 import {
   displacementBandOf,
-  displacementOf,
   motoProductKey,
   motoRejection,
   motoTypeFromTitle,
   type MotoRejection,
 } from "./identify";
 import { MOTO_SOURCES } from "./sources";
+import { motoFuelOf } from "./sources/mercadolibre";
 import type {
   MotoCurrency,
+  MotoDetail,
   MotoDisplacementBandId,
   MotoFuel,
   MotoKmQuality,
   MotoListing,
   MotoPricePoint,
   MotoType,
+  PublicMotoSpecs,
   RawMotoListing,
+  StoredMoto,
 } from "./types";
 
 /**
@@ -68,36 +74,194 @@ export interface EnrichMotoContext {
   declaredType?: MotoType | null;
   /** El tramo de cilindrada que declaró la faceta `ENGINE_DISPLACEMENT`, cuando la corrida la barrió. */
   declaredBand?: MotoDisplacementBandId | null;
+  /** La ficha propia del aviso, si `sync_motos_detail.ts` ya la leyó. */
+  detail?: MotoDetail | null;
+}
+
+/**
+ * La fila «Tipo de moto» de la ficha a la taxonomía de la faceta. Medido el 2026-11-23: casi siempre
+ * es la etiqueta de ML en plural ("Scooters", "Deportivas"); cuando es texto libre ("Yumbo 125 gtr")
+ * no matchea nada y no decide nada.
+ */
+const FICHA_TYPES: Array<[RegExp, MotoType]> = [
+  [/^calle$/, "calle"],
+  [/^naked$/, "naked"],
+  [/^scooters?$/, "scooter"],
+  [/^doble proposito$/, "doble-proposito"],
+  [/^deportivas?$/, "deportiva"],
+  [/^custom$/, "custom"],
+  [/^choppers?$/, "chopper"],
+  [/^cruceros?$/, "crucero"],
+  [/^cross$/, "cross"],
+  [/^enduro$/, "enduro"],
+  [/^trial$/, "trial"],
+  [/^turismo$/, "turismo"],
+  [/^(mini motos?|pit ?bikes?)$/, "mini"],
+];
+
+export function motoTypeFromFicha(typeText: string | null | undefined): MotoType | null {
+  const text = fold(String(typeText ?? "")).replace(/\s+/g, " ").trim();
+  return FICHA_TYPES.find(([pattern]) => pattern.test(text))?.[1] ?? null;
+}
+
+/** La ficha dice que no es una moto: los mismos tres tipos que la faceta excluye. */
+export function motoFichaExcluded(detail: MotoDetail | null | undefined): boolean {
+  return /^(cuatriciclos?|triciclos?|motocarros?)$/.test(fold(String(detail?.typeText ?? "")).trim());
+}
+
+/**
+ * Un aviso cuya ficha, leída DESPUÉS de la última vez que lo vimos en la búsqueda, dice que ya no
+ * está activo (pausado, finalizado): no se publica. Si la búsqueda lo volvió a mostrar después de
+ * leer la ficha, manda la búsqueda — se reactivó.
+ */
+export function motoInactive(doc: Pick<StoredMoto, "detail" | "lastSeen" | "detailGoneAt">): boolean {
+  if (doc.detailGoneAt && doc.detailGoneAt >= doc.lastSeen) return true;
+  return !!doc.detail && doc.detail.active === false && doc.detail.readAt >= doc.lastSeen;
+}
+
+const yesNo = (value: string | undefined): boolean | null => {
+  const text = fold(String(value ?? "")).trim();
+  return text === "si" ? true : text === "no" ? false : null;
+};
+
+/**
+ * La potencia declarada, sólo si se puede creer: la unidad tiene que ser hp, cv o kW y el número
+ * plausible para la moto. Medido: «636 hp» para una Ninja 636 (es la cilindrada en el campo de la
+ * potencia), «125 kW» para una Yumbo 125, «150 W» para una Vespa. Ninguna moto de calle pasa de
+ * 250 hp, y ninguna da más de 0,25 hp por cc.
+ */
+export function motoPowerOf(raw: string | null | undefined, displacement: number | null): string | null {
+  const match = /^(\d{1,3}(?:[.,]\d{1,2})?)\s*(hp|cv|kw)$/i.exec(String(raw ?? "").trim());
+  if (!match) return null;
+  const value = Number(match[1]!.replace(",", "."));
+  const unit = match[2]!.toLowerCase() === "kw" ? "kW" : match[2]!.toLowerCase();
+  const hp = unit === "kW" ? value * 1.341 : value;
+  if (!(hp >= 1 && hp <= 250)) return null;
+  if (displacement !== null && hp > displacement * 0.25 + 2) return null;
+  return `${match[1]} ${unit}`;
+}
+
+export function motoSpecsOf(detail: MotoDetail | null | undefined, displacement: number | null): PublicMotoSpecs | null {
+  if (!detail) return null;
+  const specs = detail.specs ?? {};
+  const engine = /^([24]) tiempos$/i.exec(String(specs["Motor"] ?? "").trim());
+  const gears = Number(String(specs["Numero de velocidades"] ?? specs["Número de velocidades"] ?? "").replace(/[^\d]/g, ""));
+  const short = (value: string | undefined) => (value && value.trim() ? value.trim().slice(0, 60) : null);
+  return {
+    engine: engine ? `${engine[1]} tiempos` : null,
+    brakes: short(specs["Frenos"]),
+    transmission: short(specs["Transmisión"]),
+    gears: Number.isInteger(gears) && gears >= 1 && gears <= 8 ? gears : null,
+    power: motoPowerOf(specs["Potencia"], displacement),
+    uniqueOwner: yesNo(specs["Único dueño"]),
+    tradeIn: yesNo(specs["Acepta permuta"]),
+    negotiable: yesNo(specs["Con precio negociable"]),
+    readAt: detail.readAt,
+  };
+}
+
+const ML_PICTURE = /^https:\/\/http2\.mlstatic\.com\//;
+
+/**
+ * Lo que declara el vendedor, con el detector de autos (`declaredRisks`) y dos correcciones propias,
+ * medidas sobre las 590 fichas leídas el 2026-11-23:
+ *   * La regla de deuda de autos cuenta CUALQUIER mención de "SUCIVE", así que «Documentación:
+ *     totalmente al día (SUCIVE pago, sin multas ni deudas)» salía como deuda — y la negación con
+ *     «ni» tampoco la ataja. Una cita de deuda que dice que está al día, paga o sin deudas, y no da
+ *     ningún monto ni un "debe", no es una deuda.
+ *   * «Puedo permutar auto al día o con deuda pagable» habla del vehículo que el vendedor ACEPTA en
+ *     parte de pago, no de la moto.
+ * No se toca el detector de autos desde acá: su página de riesgo publica estas citas y cambiarlo sin
+ * medir allá movería sus números.
+ */
+const DEUDA_NEGADA = /\b(al dia|sucive pago|pagad[oa]s?|sin (?:multas|deudas?)|ni (?:multas|deudas?)|libre de deudas?)\b/;
+const DEUDA_AFIRMADA = /\b(debe|adeuda\w*|impag\w*|atrasad\w*)\b|\$\s?\d|u\$s\s?\d/;
+const OTRO_VEHICULO_EN_PERMUTA = /\b(permut\w*|tomo|recibo|acepto)\b/;
+
+export function motoDeclaredRisks(title: string, description: string): CarRisk[] {
+  return declaredRisks(title, description).filter(risk => {
+    if (risk.category !== "deuda") return true;
+    const quote = fold(risk.quote);
+    if (OTRO_VEHICULO_EN_PERMUTA.test(quote)) return false;
+    return !(DEUDA_NEGADA.test(quote) && !DEUDA_AFIRMADA.test(quote));
+  });
+}
+
+/** Lo que la cascada de cilindrada necesita de una moto ya enriquecida. */
+const displacementInput = (listing: MotoListing, declaredBand: MotoDisplacementBandId | null): DisplacementInput => ({
+  marketSlug: listing.marketSlug,
+  model: listing.model,
+  title: listing.title,
+  declaredBand,
+  fichaDisplacement: listing.detail?.displacement ?? null,
+  electric: listing.fuel === "electrica",
+});
+
+/** Pone la cilindrada (y lo que cuelga de ella) que devolvió la cascada. */
+function withDisplacement(
+  listing: MotoListing,
+  declaredBand: MotoDisplacementBandId | null,
+  result: ReturnType<typeof attachDisplacement>[number]
+): MotoListing {
+  const derivedBand = displacementBandOf(result.displacement);
+  return {
+    ...listing,
+    displacement: result.displacement,
+    displacementBasis: result.displacementBasis,
+    displacementVotes: result.displacementVotes,
+    exactDisplacement: result.exactDisplacement,
+    // El tramo lo declara la faceta del origen; si la corrida no la barrió, sale de la cilindrada que
+    // haya, con la base de esa cilindrada. Nunca al revés: un tramo no inventa una cilindrada.
+    displacementBand: declaredBand ?? derivedBand,
+    displacementBandBasis: declaredBand ? "mercadolibre" : derivedBand ? result.displacementBasis : null,
+    // La identidad de producto sólo con el DATO del aviso: una estimación no parte cohortes.
+    productKey: motoProductKey(listing.brand, listing.model, result.exactDisplacement),
+    // La potencia se mide contra la mejor cilindrada que haya, también la estimada: «125 kW» en una
+    // GTR 125 sin cilindrada en la ficha pasaba con el tope absoluto (medido el 2026-11-23).
+    specs: listing.specs ? { ...listing.specs, power: motoPowerOf(listing.detail?.specs?.["Potencia"], result.displacement) } : null,
+  };
+}
+
+/**
+ * La cascada entera sobre el catálogo: el consenso del modelo necesita ver a todos los avisos a la
+ * vez, así que corre DESPUÉS de enriquecer uno por uno (que ya dejó ficha, título y nombre).
+ */
+export function attachMotoDisplacements(listings: readonly MotoListing[]): MotoListing[] {
+  const bandOf = (listing: MotoListing) => (listing.displacementBandBasis === "mercadolibre" ? listing.displacementBand : null);
+  const results = attachDisplacement(listings.map(listing => displacementInput(listing, bandOf(listing))));
+  return listings.map((listing, index) => withDisplacement(listing, bandOf(listing), results[index]!));
 }
 
 export function enrichMotoListing(raw: RawMotoListing, context: EnrichMotoContext): MotoListing {
   const brandSlug = slugify(raw.brand);
   const modelSlug = slugify(raw.model);
-  const displacement = displacementOf(raw.title);
+  const detail = context.detail ?? null;
   const titleType = motoTypeFromTitle(raw.title);
-  // La faceta del origen gana siempre: es lo que el vendedor eligió al publicar, no lo que una
-  // palabra del título sugiere. Mismo orden de evidencia que la carrocería de autos.
-  const type = context.declaredType ?? titleType;
-  // El tramo lo declara la faceta del origen, que lo sabe de casi todo el catálogo; si la corrida no
-  // llegó a barrerla, se deriva de la cilindrada exacta que haya dicho el título. Nunca al revés: un
-  // tramo no puede inventar la cilindrada exacta.
-  const titleBand = displacementBandOf(displacement);
-  const displacementBand = context.declaredBand ?? titleBand;
-  const fuel: MotoFuel | null = raw.fuel ?? (TITULO_ELECTRICA.test(wordText(raw.title)) ? "electrica" : null);
-  return {
+  const fichaType = motoTypeFromFicha(detail?.typeText);
+  // La faceta del origen gana siempre: es lo que el vendedor eligió al publicar. Después la ficha
+  // (la misma taxonomía, otra vía) y al final la palabra del título: el orden de la carrocería de autos.
+  const type = context.declaredType ?? fichaType ?? titleType;
+  const declaredBand = context.declaredBand ?? null;
+  const fuel: MotoFuel | null =
+    raw.fuel ??
+    motoFuelOf(detail?.specs?.["Tipo de combustible"] ?? "") ??
+    (TITULO_ELECTRICA.test(wordText(raw.title)) ? "electrica" : null);
+  const base: MotoListing = {
     ...raw,
     key: motoKey(raw.id, raw.source),
     sourceName: MOTO_SOURCES[raw.source].name,
     brandSlug,
     modelSlug,
     marketSlug: `${brandSlug}-${modelSlug}`,
-    displacement,
-    displacementBasis: displacement === null ? null : "title",
-    displacementBand,
-    displacementBandBasis: context.declaredBand ? "mercadolibre" : titleBand ? "title" : null,
+    displacement: null,
+    displacementBasis: null,
+    displacementVotes: null,
+    exactDisplacement: null,
+    displacementBand: declaredBand,
+    displacementBandBasis: declaredBand ? "mercadolibre" : null,
     type,
-    typeBasis: context.declaredType ? "mercadolibre" : titleType ? "title" : null,
-    productKey: motoProductKey(raw.brand, raw.model, displacement),
+    typeBasis: context.declaredType ? "mercadolibre" : fichaType ? "ficha" : titleType ? "title" : null,
+    productKey: motoProductKey(raw.brand, raw.model, null),
     kmQuality: motoKmQuality(raw.km),
     fuel,
     flags: titleFlags(raw.title, raw.price, raw.currency as MotoCurrency),
@@ -106,15 +270,25 @@ export function enrichMotoListing(raw: RawMotoListing, context: EnrichMotoContex
     // Mercado Libre declara la moneda en cada tarjeta, así que en v1 nunca se deduce. El campo viaja
     // igual porque el comparador de transporte lo LEE para descartar filas (`currencyInferred`), y
     // una fuente futura sin moneda declarada tiene que poder ponerlo en true sin cambiar el contrato.
-    currencyInferred: false,
+    currencyInferred: raw.currencyInferred === true,
     firstSeen: context.firstSeen,
     lastSeen: context.lastSeen,
     priceDrop: motoPriceDrop(raw, context.priceHistory),
+    pictures: (detail?.pictures ?? []).filter(url => ML_PICTURE.test(url)).slice(0, 8),
+    color: carColorFamily(detail?.color),
+    specs: motoSpecsOf(detail, null),
+    // El que afirma es el vendedor: la cita sale de su título o de su descripción.
+    risks: motoDeclaredRisks(raw.title, detail?.description ?? ""),
+    detail,
   };
+  // Sola, la cascada ve ficha, título y nombre del modelo; el consenso lo agrega
+  // `attachMotoDisplacements` cuando están todos.
+  const [single] = attachDisplacement([displacementInput(base, declaredBand)]);
+  return withDisplacement(base, declaredBand, single!);
 }
 
 export function motoKey(id: string, source: RawMotoListing["source"] = "mercadolibre"): string {
-  return `${source === "mercadolibre" ? "ml" : source}-${id}`;
+  return `${source === "mercadolibre" ? "ml" : source === "facebook" ? "fb" : source}-${id}`;
 }
 
 export interface MotoFilterResult<T> {

@@ -26,6 +26,9 @@ const saveHarvestMetaMock = vi.fn();
 const saveMotoHarvestMock = vi.fn();
 const saveRefusalMock = vi.fn();
 const publishMotoCatalogMock = vi.fn();
+const loadFbMotoCardsMock = vi.fn();
+const loadMotoDictionaryListingsMock = vi.fn();
+const saveFbMotosMock = vi.fn();
 const publishMotoModelsMock = vi.fn();
 vi.mock("../../classes/motos/store", async importOriginal => {
   // Las reglas puras (`collapseRefusal`, `motoHarvestMetaRecord`) se dejan REALES: lo que este
@@ -42,6 +45,9 @@ vi.mock("../../classes/motos/store", async importOriginal => {
     saveRefusal: (...args: unknown[]) => saveRefusalMock(...args),
     publishMotoCatalog: (...args: unknown[]) => publishMotoCatalogMock(...args),
     publishMotoModels: (...args: unknown[]) => publishMotoModelsMock(...args),
+    loadFbMotoCards: (...args: unknown[]) => loadFbMotoCardsMock(...args),
+    loadMotoDictionaryListings: (...args: unknown[]) => loadMotoDictionaryListingsMock(...args),
+    saveFbMotos: (...args: unknown[]) => saveFbMotosMock(...args),
   };
 });
 
@@ -125,6 +131,20 @@ beforeEach(() => {
   saveRefusalMock.mockResolvedValue(undefined);
   publishMotoCatalogMock.mockResolvedValue(undefined);
   publishMotoModelsMock.mockResolvedValue(undefined);
+  loadFbMotoCardsMock.mockResolvedValue([]);
+  loadMotoDictionaryListingsMock.mockResolvedValue([]);
+  saveFbMotosMock.mockImplementation(
+    async (results: Array<{ listing: RawMotoListing; firstSeen: string; lastSeen: string }>) =>
+      results.map(result => ({
+        key: `fb-${result.listing.id}`,
+        firstSeen: result.firstSeen,
+        lastSeen: result.lastSeen,
+        listing: result.listing,
+        priceHistory: [],
+        retiredAt: null,
+        missedFullSweeps: 0,
+      }))
+  );
   delete process.env.APP_MONGO_URI;
   delete process.env.MONGO_URI;
 });
@@ -257,6 +277,47 @@ describe("sync_motos main()", () => {
       stored("MLU3", { title: "Monopatin Xiaomi Lite 4 Gen 2" }),
       stored("MLU4", { title: "Zanella Zt 0 Km, 100% Financiada" }),
     ]);
+    await expect(main()).resolves.toBeUndefined();
+    const [rows] = publishMotoCatalogMock.mock.calls[0] as [Array<{ key: string }>, unknown];
+    expect(rows.map(row => row.key)).toEqual(["ml-MLU1"]);
+  });
+
+  it("una moto de Facebook Marketplace llega al catálogo, con la moneda deducida", async () => {
+    process.env.APP_MONGO_URI = "mongodb://fake-app-db/test";
+    setArgv("--fast");
+    loadStoredMotosMock.mockResolvedValue([stored("MLU1"), stored("MLU5"), stored("MLU6")]);
+    loadFbMotoCardsMock.mockResolvedValue([
+      {
+        card: {
+          id: "987654321",
+          title: "Vendo Yumbo GS 200 año 2020",
+          amount: 1500,
+          city: "Canelones, Uruguay",
+          createdAt: null,
+          picture: null,
+          isSold: false,
+          isLive: true,
+        },
+        item: null,
+        firstSeen: NOW,
+        lastSeen: NOW,
+      },
+    ]);
+    await expect(main()).resolves.toBeUndefined();
+    expect(saveFbMotosMock).toHaveBeenCalledTimes(1);
+    const [rows] = publishMotoCatalogMock.mock.calls[0] as [
+      Array<{ key: string; source: string; currencyInferred: boolean }>,
+      unknown,
+    ];
+    // El id del aviso de Facebook, armado: un literal `key === "fb-<dígitos>"` lo marca gitleaks.
+    const advert = ["fb", "987654321"].join("-");
+    expect(rows.find(row => row.key === advert)).toMatchObject({ source: "facebook", currencyInferred: true });
+  });
+
+  it("si Facebook no se puede leer, la corrida sigue con Mercado Libre", async () => {
+    process.env.APP_MONGO_URI = "mongodb://fake-app-db/test";
+    setArgv("--fast");
+    loadFbMotoCardsMock.mockRejectedValue(new Error("caída"));
     await expect(main()).resolves.toBeUndefined();
     const [rows] = publishMotoCatalogMock.mock.calls[0] as [Array<{ key: string }>, unknown];
     expect(rows.map(row => row.key)).toEqual(["ml-MLU1"]);

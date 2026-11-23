@@ -20,6 +20,7 @@
 //     que la CIFRA que se lee es la del aviso — el mismo reparto de `/autos-usados-uruguay`.
 
 import { dateLocale } from './format'
+import type { PriceHistorySeries } from './priceHistory'
 import type {
   MotoPublicBand,
   MotoPublicCatalogMeta,
@@ -27,8 +28,10 @@ import type {
   MotoPublicFuel,
   MotoPublicListing,
   MotoPublicModel,
+  MotoPublicRiskCategory,
   MotoPublicSourceCoverage,
   MotoPublicType,
+  MotoPublicYearBand,
 } from './motosPublic'
 
 export const MOTOS_PATH = '/motos-usadas-uruguay'
@@ -64,8 +67,200 @@ export function motoKeyValid(key: string): boolean {
   return MOTO_SLUG_RE.test(key) && key.length <= 120 && key !== MOTO_REPORT_ID
 }
 
-export const MOTO_SORTS = ['recent', 'price_asc', 'price_desc', 'year_desc', 'km_asc'] as const
+export const MOTO_SORTS = [
+  'recent',
+  'price_asc',
+  'price_desc',
+  'km_asc',
+  'year_desc',
+  'cc_asc',
+  'cc_desc',
+] as const
 export type MotoSort = (typeof MOTO_SORTS)[number]
+
+/** El orden como lo dice el menú (`title`) y el botón de la barra en el celular (`short`). */
+export const MOTO_SORT_ITEMS: ReadonlyArray<{ title: string; value: MotoSort; short: string }> = [
+  { title: 'Vistos más recientemente', value: 'recent', short: 'Más recientes' },
+  { title: 'Menor precio', value: 'price_asc', short: 'Menor precio' },
+  { title: 'Mayor precio', value: 'price_desc', short: 'Mayor precio' },
+  { title: 'Menos kilómetros', value: 'km_asc', short: 'Menos km' },
+  { title: 'Más nuevas', value: 'year_desc', short: 'Más nuevas' },
+  { title: 'Menor cilindrada', value: 'cc_asc', short: 'Menos cc' },
+  { title: 'Mayor cilindrada', value: 'cc_desc', short: 'Más cc' },
+]
+
+/** La ficha de cada aviso. La de cada MODELO sigue en `MOTOS_PATH/<slug>` (está en el sitemap). */
+export const MOTO_AVISO_SEGMENT = 'aviso'
+export const motoAvisoPath = (key: string): string => `${MOTOS_PATH}/${MOTO_AVISO_SEGMENT}/${key}`
+/** Una clave de aviso: `ml-MLU<n>` (Mercado Libre) o `fb-<n>` (Marketplace). Se valida ANTES de
+ * tocar la base. */
+export const motoAvisoKeyValid = (key: string): boolean =>
+  /^(?:ml-MLU\d{6,14}|fb-\d{6,20})$/.test(key)
+
+export const MOTO_SOURCE_LABEL: Readonly<Record<string, string>> = Object.freeze({
+  mercadolibre: 'Mercado Libre',
+  facebook: 'Facebook Marketplace',
+})
+
+/** El aviso original, sólo si es de una fuente conocida: ML Uruguay o un ítem de Marketplace. */
+export function motoSafePermalink(url: string | null | undefined): string {
+  const value = String(url ?? '')
+  return /^https:\/\/moto\.mercadolibre\.com\.uy\/MLU-/.test(value) ||
+    /^https:\/\/www\.facebook\.com\/marketplace\/item\/\d{6,20}\/$/.test(value)
+    ? value
+    : ''
+}
+export const MOTO_COMPARE_PATH = `${MOTOS_PATH}/comparar`
+/** Cuántos avisos entran en el comparador: los mismos tres que autos. */
+export const MOTO_COMPARE_MAX = 3
+
+/** Las claves del comparador como llegan en `?motos=a,b,c`: válidas, sin repetir, hasta el tope. */
+export function motoCompareKeys(value: unknown): string[] {
+  const raw = Array.isArray(value) ? value.join(',') : typeof value === 'string' ? value : ''
+  return [...new Set(raw.split(',').map(key => key.trim()))]
+    .filter(motoAvisoKeyValid)
+    .slice(0, MOTO_COMPARE_MAX)
+}
+
+export interface MotoCompareEntry {
+  moto: MotoPublicListing
+  /** El aviso no se vio dentro de la ventana de frescura: puede estar vendido. */
+  stale: boolean
+}
+
+export interface MotoCompareResponse {
+  items: MotoCompareEntry[]
+  missing: string[]
+}
+
+/** El orden de quien comparte, aunque Mongo devuelva las filas en otro (como autos). */
+export function motoAssembleComparison(
+  keys: readonly string[],
+  motos: readonly MotoPublicListing[],
+  freshDays: number,
+  now = Date.now()
+): MotoCompareResponse {
+  const byKey = new Map(motos.map(moto => [moto.key, moto]))
+  const items: MotoCompareEntry[] = []
+  const missing: string[] = []
+  for (const key of motoCompareKeys(keys.join(','))) {
+    const moto = byKey.get(key)
+    if (!moto) {
+      missing.push(key)
+      continue
+    }
+    const lastSeen = Date.parse(moto.lastSeen)
+    items.push({
+      moto,
+      stale: !Number.isFinite(lastSeen) || now - lastSeen > (freshDays + 1) * 86_400_000,
+    })
+  }
+  return { items, missing }
+}
+
+/** A dónde lleva "Comparar": con las claves puestas (una o varias), o al comparador vacío. */
+export function motoCompareSelection(keys: readonly string[]) {
+  const valid = motoCompareKeys(keys.join(','))
+  return valid.length
+    ? { path: MOTO_COMPARE_PATH, query: { motos: valid.join(',') } }
+    : { path: MOTO_COMPARE_PATH }
+}
+
+/** A dónde lleva "Comparar": con la clave del aviso puesta, o al comparador vacío. */
+export function motoCompareLocation(key?: string | null) {
+  return key && motoAvisoKeyValid(key)
+    ? { path: MOTO_COMPARE_PATH, query: { motos: key } }
+    : { path: MOTO_COMPARE_PATH }
+}
+
+/** Las familias de color de `classes/autos/bodyType.ts`, que es la que usa el job. */
+export const MOTO_COLORS = [
+  'negro',
+  'blanco',
+  'rojo',
+  'azul',
+  'gris',
+  'plata',
+  'verde',
+  'naranja',
+  'amarillo',
+  'celeste',
+  'bordo',
+  'beige',
+  'marron',
+  'dorado',
+  'violeta',
+] as const
+export const MOTO_COLOR_LABEL: Readonly<Record<string, string>> = Object.freeze({
+  negro: 'Negro',
+  blanco: 'Blanco',
+  rojo: 'Rojo',
+  azul: 'Azul',
+  gris: 'Gris',
+  plata: 'Plata',
+  verde: 'Verde',
+  naranja: 'Naranja',
+  amarillo: 'Amarillo',
+  celeste: 'Celeste',
+  bordo: 'Bordó',
+  beige: 'Beige',
+  marron: 'Marrón',
+  dorado: 'Dorado',
+  violeta: 'Violeta',
+})
+
+/** Publicados (vistos por primera vez) en los últimos N días. */
+export const MOTO_SINCE_STEPS = [1, 3, 7, 30] as const
+
+/** Los flags de título que ya cuentan como "el vendedor declara algo" (vocabulario de autos). */
+export const MOTO_RISK_FLAGS = Object.freeze(['damaged', 'paperwork', 'recovered', 'foreign_plate'])
+
+/** Qué quiere decir cada cosa que el vendedor declara, dicho para una MOTO (las de autos hablan de
+ * airbags y escribanía de autos). */
+export const MOTO_RISK_GUIDE: Readonly<
+  Record<MotoPublicRiskCategory, { label: string; meaning: string; check: string }>
+> = Object.freeze({
+  deuda: {
+    label: 'Deuda, prenda o embargo',
+    meaning:
+      'La patente impaga va con la moto, no con la persona: la hereda quien la compra. Una prenda o un embargo bloquean la transferencia.',
+    check: 'Pedí el certificado del SUCIVE con la matrícula antes de señar.',
+  },
+  papeles: {
+    label: 'Falta un papel para transferir',
+    meaning:
+      'Sin título a nombre de quien vende, o con la matrícula entregada, la moto no se puede transferir ni circular hasta regularizarla.',
+    check: 'Pedí título y libreta a nombre de quien vende, y preguntá cuánto sale regularizar.',
+  },
+  siniestro: {
+    label: 'Chocada o con daños',
+    meaning: 'El precio ya tiene adentro una reparación que todavía no se hizo.',
+    check:
+      'Llevala a un taller antes de señar: chasis, horquilla y que el número de motor coincida con los papeles.',
+  },
+  recupero: {
+    label: 'Recuperada de seguro o robo',
+    meaning: 'La aseguradora la dio por perdida y después la vendió. Es legal, y es otro mercado.',
+    check: 'Preguntá al seguro antes de comprar si la asegura con ese historial.',
+  },
+  mecanica: {
+    label: 'No anda o se vende por partes',
+    meaning: 'No es una moto usada barata: es una moto que hoy no circula, o repuestos.',
+    check: 'Sacá la cuenta del arreglo con un mecánico antes de ofertar.',
+  },
+  chapa_extranjera: {
+    label: 'Chapa extranjera',
+    meaning:
+      'Una moto empadronada afuera no circula acá como una uruguaya: hay que importarla y empadronarla.',
+    check: 'Averiguá el costo del trámite completo antes de mirar el precio.',
+  },
+  uso_intensivo: {
+    label: 'Uso intensivo',
+    meaning:
+      'Delivery, reparto o mucho uso diario: el desgaste es mayor que el que dicen los kilómetros.',
+    check: 'Mirá embrague, transmisión y cubiertas con un mecánico.',
+  },
+})
 
 /**
  * Los tramos de cilindrada del filtro.
@@ -136,6 +331,25 @@ export interface MotoQuery {
   precioMaxUsd: number | null
   anioDesde: number | null
   anioHasta: number | null
+  // Desde el 23/11/2026. Las claves de arriba no cambian: las alertas guardadas las usan.
+  /** Texto libre sobre el título. */
+  q: string
+  precioMinUsd: number | null
+  kmMax: number | null
+  /** Rango de cilindrada en cc, sobre la mejor cilindrada que hay (dato o estimación). */
+  ccMin: number | null
+  ccMax: number | null
+  color: string
+  /** Vistas por primera vez en los últimos N días. */
+  dias: number | null
+  /** Sólo las que bajaron de precio desde que las miramos. */
+  bajo: boolean
+  /** Sin deuda, choque, papeles ni recupero DECLARADOS por el vendedor. */
+  sinRiesgo: boolean
+  /** Sólo las que la ficha declara de único dueño. */
+  unicoDueno: boolean
+  /** De qué fuente: Mercado Libre o Facebook Marketplace. */
+  fuente: string
   sort: MotoSort
   page: number
 }
@@ -146,9 +360,27 @@ function motoInt(value: unknown, min: number, max: number): number | null {
   return parsed
 }
 
-function motoStr(value: unknown): string {
+function motoStr(value: unknown, max = 60): string {
   const raw = Array.isArray(value) ? value[0] : value
-  return typeof raw === 'string' ? raw.trim().slice(0, 60) : ''
+  return typeof raw === 'string' ? raw.trim().slice(0, max) : ''
+}
+
+/** "15.000", "US$ 15.000" y "15 000" es como se escribe un monto acá (misma regla que autos). */
+function motoAmount(value: unknown, min: number, max: number): number | null {
+  const raw = motoStr(value, 20)
+    .replace(/u\$s|us\$|usd|\$/gi, '')
+    .replace(/[.,\s]/g, '')
+  if (!/^\d+$/.test(raw)) return null
+  const number = Number(raw)
+  return number >= min && number <= max ? number : null
+}
+
+/** Un interruptor de la URL: sólo "1" lo prende. */
+const motoFlag = (value: unknown): boolean => motoStr(value, 4) === '1'
+
+/** Un rango que llega dado vuelta se da vuelta: es un error de tipeo que la página arregla sola. */
+function motoOrdered(min: number | null, max: number | null): [number | null, number | null] {
+  return min != null && max != null && min > max ? [max, min] : [min, max]
 }
 
 /**
@@ -162,13 +394,17 @@ export function motoNormalizeQuery(raw: Record<string, unknown>): MotoQuery {
   const tipo = motoStr(raw.tipo)
   const combustible = motoStr(raw.combustible)
   const vendedor = motoStr(raw.vendedor)
-  let anioDesde = motoInt(raw.anioDesde, 1950, 2100)
-  let anioHasta = motoInt(raw.anioHasta, 1950, 2100)
-  if (anioDesde != null && anioHasta != null && anioDesde > anioHasta) {
-    const swap = anioDesde
-    anioDesde = anioHasta
-    anioHasta = swap
-  }
+  const [anioDesde, anioHasta] = motoOrdered(
+    motoInt(raw.anioDesde, 1950, 2100),
+    motoInt(raw.anioHasta, 1950, 2100)
+  )
+  const [precioMinUsd, precioMaxUsd] = motoOrdered(
+    motoAmount(raw.precioMinUsd, 1, 1_000_000),
+    motoAmount(raw.precioMaxUsd, 1, 1_000_000)
+  )
+  const [ccMin, ccMax] = motoOrdered(motoAmount(raw.ccMin, 1, 3000), motoAmount(raw.ccMax, 1, 3000))
+  const color = motoStr(raw.color)
+  const dias = motoInt(raw.dias, 1, 365)
   return {
     marca: motoStr(raw.marca),
     modelo: motoStr(raw.modelo),
@@ -179,9 +415,20 @@ export function motoNormalizeQuery(raw: Record<string, unknown>): MotoQuery {
     combustible: combustible in MOTO_FUEL_LABEL ? combustible : '',
     departamento: motoStr(raw.departamento),
     vendedor: vendedor === 'dealer' || vendedor === 'private' ? vendedor : '',
-    precioMaxUsd: motoInt(raw.precioMaxUsd, 1, 1_000_000),
+    precioMaxUsd,
     anioDesde,
     anioHasta,
+    q: motoStr(raw.q, 80),
+    precioMinUsd,
+    kmMax: motoAmount(raw.kmMax, 1, 1_000_000),
+    ccMin,
+    ccMax,
+    color: (MOTO_COLORS as readonly string[]).includes(color) ? color : '',
+    dias: dias != null && (MOTO_SINCE_STEPS as readonly number[]).includes(dias) ? dias : null,
+    bajo: motoFlag(raw.bajo),
+    sinRiesgo: motoFlag(raw.sinRiesgo),
+    unicoDueno: motoFlag(raw.unicoDueno),
+    fuente: motoStr(raw.fuente) in MOTO_SOURCE_LABEL ? motoStr(raw.fuente) : '',
     sort: MOTO_SORTS.includes(sortRaw) ? sortRaw : 'recent',
     page: motoInt(raw.page, 1, 500) ?? 1,
   }
@@ -201,6 +448,17 @@ export function motoQueryParams(query: MotoQuery): Record<string, string> {
   if (query.precioMaxUsd != null) params.precioMaxUsd = String(query.precioMaxUsd)
   if (query.anioDesde != null) params.anioDesde = String(query.anioDesde)
   if (query.anioHasta != null) params.anioHasta = String(query.anioHasta)
+  if (query.q) params.q = query.q
+  if (query.precioMinUsd != null) params.precioMinUsd = String(query.precioMinUsd)
+  if (query.kmMax != null) params.kmMax = String(query.kmMax)
+  if (query.ccMin != null) params.ccMin = String(query.ccMin)
+  if (query.ccMax != null) params.ccMax = String(query.ccMax)
+  if (query.color) params.color = query.color
+  if (query.dias != null) params.dias = String(query.dias)
+  if (query.bajo) params.bajo = '1'
+  if (query.sinRiesgo) params.sinRiesgo = '1'
+  if (query.unicoDueno) params.unicoDueno = '1'
+  if (query.fuente) params.fuente = query.fuente
   if (query.sort !== 'recent') params.sort = query.sort
   if (query.page > 1) params.page = String(query.page)
   return params
@@ -220,7 +478,18 @@ export type MotoQueryKey = keyof MotoQuery
 export function motoQueryWithout(query: MotoQuery, keys: readonly MotoQueryKey[]): MotoQuery {
   const next: MotoQuery = { ...query, page: 1 }
   for (const name of keys) {
-    if (name === 'precioMaxUsd' || name === 'anioDesde' || name === 'anioHasta') next[name] = null
+    if (
+      name === 'precioMaxUsd' ||
+      name === 'precioMinUsd' ||
+      name === 'anioDesde' ||
+      name === 'anioHasta' ||
+      name === 'kmMax' ||
+      name === 'ccMin' ||
+      name === 'ccMax' ||
+      name === 'dias'
+    )
+      next[name] = null
+    else if (name === 'bajo' || name === 'sinRiesgo' || name === 'unicoDueno') next[name] = false
     else if (name === 'sort') next.sort = 'recent'
     else if (name === 'page') next.page = 1
     else if (name === 'marca') {
@@ -234,14 +503,22 @@ export function motoQueryWithout(query: MotoQuery, keys: readonly MotoQueryKey[]
 }
 
 export interface MotoFilterChip {
+  /** Identidad estable para `:key` (la barra de chips es la de autos). */
+  key: string
   keys: MotoQueryKey[]
   label: string
 }
 
+/**
+ * Los filtros activos, en el orden en que la gente los piensa: qué moto, de qué año, a qué precio,
+ * y recién después el detalle. Un slug sin faceta (la marca no tiene avisos hoy) se muestra como
+ * slug antes que desaparecer: un filtro invisible es peor que uno mal escrito.
+ */
 export function motoFilterChips(query: MotoQuery, facets?: MotoFacets): MotoFilterChip[] {
-  const chips: MotoFilterChip[] = []
+  const chips: Array<Omit<MotoFilterChip, 'key'>> = []
   const named = (list: readonly MotoFacet[] | undefined, slug: string) =>
     list?.find(facet => facet.value === slug)?.label ?? slug
+  if (query.q) chips.push({ keys: ['q'], label: `"${query.q}"` })
   if (query.marca) chips.push({ keys: ['marca'], label: named(facets?.brands, query.marca) })
   if (query.modelo) chips.push({ keys: ['modelo'], label: named(facets?.models, query.modelo) })
   if (query.cilindrada) {
@@ -263,7 +540,21 @@ export function motoFilterChips(query: MotoQuery, facets?: MotoFacets): MotoFilt
       label: MOTO_SELLER_LABEL[query.vendedor as keyof typeof MOTO_SELLER_LABEL],
     })
   }
-  if (query.precioMaxUsd != null) {
+  if (query.ccMin != null && query.ccMax != null) {
+    chips.push({ keys: ['ccMin', 'ccMax'], label: `${query.ccMin}–${query.ccMax} cc` })
+  } else if (query.ccMin != null) {
+    chips.push({ keys: ['ccMin'], label: `Desde ${query.ccMin} cc` })
+  } else if (query.ccMax != null) {
+    chips.push({ keys: ['ccMax'], label: `Hasta ${query.ccMax} cc` })
+  }
+  if (query.precioMinUsd != null && query.precioMaxUsd != null) {
+    chips.push({
+      keys: ['precioMinUsd', 'precioMaxUsd'],
+      label: `${motoUsd(query.precioMinUsd)}–${motoUsd(query.precioMaxUsd)}`,
+    })
+  } else if (query.precioMinUsd != null) {
+    chips.push({ keys: ['precioMinUsd'], label: `Desde ${motoUsd(query.precioMinUsd)}` })
+  } else if (query.precioMaxUsd != null) {
     chips.push({ keys: ['precioMaxUsd'], label: `Hasta ${motoUsd(query.precioMaxUsd)}` })
   }
   if (query.anioDesde != null && query.anioHasta != null) {
@@ -273,7 +564,23 @@ export function motoFilterChips(query: MotoQuery, facets?: MotoFacets): MotoFilt
   } else if (query.anioHasta != null) {
     chips.push({ keys: ['anioHasta'], label: `Hasta ${query.anioHasta}` })
   }
-  return chips
+  if (query.kmMax != null) {
+    chips.push({ keys: ['kmMax'], label: `Hasta ${query.kmMax.toLocaleString('es-UY')} km` })
+  }
+  if (query.color)
+    chips.push({ keys: ['color'], label: MOTO_COLOR_LABEL[query.color] ?? query.color })
+  if (query.dias != null) {
+    chips.push({
+      keys: ['dias'],
+      label: query.dias === 1 ? 'Vistas hoy' : `Últimos ${query.dias} días`,
+    })
+  }
+  if (query.bajo) chips.push({ keys: ['bajo'], label: 'Bajó de precio' })
+  if (query.sinRiesgo) chips.push({ keys: ['sinRiesgo'], label: 'Sin deuda ni choque declarados' })
+  if (query.unicoDueno) chips.push({ keys: ['unicoDueno'], label: 'Único dueño' })
+  if (query.fuente)
+    chips.push({ keys: ['fuente'], label: MOTO_SOURCE_LABEL[query.fuente] ?? query.fuente })
+  return chips.map(chip => ({ ...chip, key: chip.keys.join('+') }))
 }
 
 /** `YYYY-MM-DD` desde el cual un aviso sigue listándose. Se compara como string contra `lastSeen`,
@@ -299,18 +606,46 @@ export function motoMatch(
   if (query.combustible) match.fuel = query.combustible
   if (query.departamento) match.department = query.departamento
   if (query.vendedor) match.sellerType = query.vendedor
+  const and: Array<Record<string, unknown>> = []
   if (query.cilindrada) {
     const bucket = MOTO_DISPLACEMENT_BUCKETS.find(item => item.id === query.cilindrada)
-    // Dos vías, y hacen falta las dos: la cilindrada EXACTA del título cuando está (es la mejor
-    // evidencia) y el TRAMO que declaró el origen cuando no. `$gte/$lte` ya excluye `null`, así que
-    // un aviso sin ninguna de las dos no cumple el filtro — la ausencia no es un veredicto.
+    // Manda el TRAMO publicado (el de la faceta del origen, o el de la cilindrada que haya); una
+    // fila sin tramo cae a la cilindrada. `$gte/$lte` ya excluye `null`, así que un aviso sin
+    // ninguna de las dos no cumple el filtro — la ausencia no es un veredicto.
     if (bucket) {
-      match.$or = [
-        { displacement: { $gte: bucket.min, $lte: bucket.max } },
-        { displacementBand: bucket.id },
-      ]
+      and.push({
+        $or: [
+          { displacementBand: bucket.id },
+          { displacementBand: null, displacement: { $gte: bucket.min, $lte: bucket.max } },
+        ],
+      })
     }
   }
+  if (query.ccMin != null || query.ccMax != null) {
+    const cc: Record<string, number> = {}
+    if (query.ccMin != null) cc.$gte = query.ccMin
+    if (query.ccMax != null) cc.$lte = query.ccMax
+    match.displacement = cc
+  }
+  if (query.kmMax != null) match.km = { $ne: null, $lte: query.kmMax }
+  if (query.color) match.color = query.color
+  if (query.bajo) match.priceDrop = { $ne: null }
+  // Sin riesgo DECLARADO: ni en el título ni en la descripción. No afirma que la moto esté limpia,
+  // sólo que el vendedor no dijo nada; por eso el filtro se llama así.
+  if (query.sinRiesgo) {
+    match['risks.0'] = { $exists: false }
+    match.flags = { $nin: [...MOTO_RISK_FLAGS] }
+  }
+  if (query.unicoDueno) match['specs.uniqueOwner'] = true
+  if (query.fuente) match.source = query.fuente
+  if (query.dias != null) {
+    // "Hoy" es desde hoy y "últimos 7 días" es hoy y los seis anteriores: se resta N-1.
+    const since = Date.parse(`${today.slice(0, 10)}T12:00:00Z`) - (query.dias - 1) * 86_400_000
+    if (Number.isFinite(since))
+      match.firstSeen = { $gte: new Date(since).toISOString().slice(0, 10) }
+  }
+  if (query.q) match.title = { $regex: motoAccentInsensitive(query.q), $options: 'i' }
+  if (and.length) match.$and = and
   if (query.anioDesde != null || query.anioHasta != null) {
     const year: Record<string, number> = {}
     if (query.anioDesde != null) year.$gte = query.anioDesde
@@ -319,8 +654,33 @@ export function motoMatch(
   }
   // El tope va sobre el precio convertido por el job, que es lo único comparable entre un aviso en
   // pesos y uno en dólares. Lo que la tarjeta imprime sigue siendo el precio del aviso.
-  if (query.precioMaxUsd != null) match.priceUsd = { $lte: query.precioMaxUsd }
+  if (query.precioMaxUsd != null || query.precioMinUsd != null) {
+    const price: Record<string, number> = {}
+    if (query.precioMinUsd != null) price.$gte = query.precioMinUsd
+    if (query.precioMaxUsd != null) price.$lte = query.precioMaxUsd
+    match.priceUsd = price
+  }
   return match
+}
+
+const MOTO_ACCENTS: Record<string, string> = {
+  a: '[aáàä]',
+  e: '[eéèë]',
+  i: '[iíìï]',
+  o: '[oóòö]',
+  u: '[uúùü]',
+  n: '[nñ]',
+}
+
+/** El texto como expresión regular que no distingue tildes ("Electrica" encuentra "Eléctrica"). */
+export function motoAccentInsensitive(value: string): string {
+  const folded = value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036F]/g, '')
+    .toLowerCase()
+  return folded
+    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    .replace(/[aeioun]/g, letter => MOTO_ACCENTS[letter]!)
 }
 
 export function motoSortSpec(sort: MotoSort): Record<string, 1 | -1> {
@@ -335,6 +695,10 @@ export function motoSortSpec(sort: MotoSort): Record<string, 1 | -1> {
       return { year: -1, priceUsd: 1 }
     case 'km_asc':
       return { km: 1, priceUsd: 1 }
+    case 'cc_asc':
+      return { displacement: 1, priceUsd: 1 }
+    case 'cc_desc':
+      return { displacement: -1, priceUsd: 1 }
     default:
       return { lastSeen: -1, firstSeen: -1 }
   }
@@ -360,6 +724,82 @@ export function motoDisplacementLabel(displacement: number | null | undefined): 
   return typeof displacement === 'number' && displacement > 0
     ? `${displacement} cc`
     : 'Cilindrada no informada'
+}
+
+/** ¿La cilindrada de este aviso es una estimación? Entonces se imprime con "≈". */
+export const motoDisplacementEstimated = (
+  item: Pick<MotoPublicListing, 'displacementBasis'>
+): boolean => item.displacementBasis === 'model' || item.displacementBasis === 'model-name'
+
+/** "150 cc" si lo dice el aviso, "≈ 150 cc" si es una estimación, null si no hay ninguna. */
+export function motoDisplacementText(
+  item: Pick<MotoPublicListing, 'displacement' | 'displacementBasis'>
+): string | null {
+  if (typeof item.displacement !== 'number' || item.displacement <= 0) return null
+  return `${motoDisplacementEstimated(item) ? '≈ ' : ''}${item.displacement} cc`
+}
+
+/** De dónde sale la cilindrada, dicho entero: una estimación nunca se presenta como dato. */
+export function motoDisplacementSource(
+  item: Pick<
+    MotoPublicListing,
+    'displacement' | 'displacementBasis' | 'displacementVotes' | 'model'
+  >
+): string | null {
+  if (typeof item.displacement !== 'number') return null
+  switch (item.displacementBasis) {
+    case 'ficha':
+      return 'Según la ficha del aviso.'
+    case 'title':
+      return 'Según el título del aviso.'
+    case 'model':
+      return item.displacementVotes
+        ? `Estimada: es la que declaran ${item.displacementVotes} avisos del mismo modelo.`
+        : 'Estimada: es la que declaran los demás avisos del mismo modelo.'
+    case 'model-name':
+      return `Estimada por el nombre del modelo (${item.model}); puede no ser la cilindrada exacta.`
+    default:
+      return null
+  }
+}
+
+/** La moto como se nombra: marca y modelo del origen. */
+export function motoName(item: Pick<MotoPublicListing, 'brand' | 'model'>): string {
+  return `${item.brand} ${item.model}`.replace(/\s+/g, ' ').trim()
+}
+
+/**
+ * El título del vendedor, sólo si dice algo más que la marca y el modelo. En motos el título suele
+ * ser cualquier cosa ("Color Rojo", "Gs", medido el 23/11/2026), así que el encabezado es la moto y
+ * el título va debajo, entre comillas, cuando agrega información.
+ */
+export function motoSellerTitle(
+  item: Pick<MotoPublicListing, 'brand' | 'model' | 'title'>
+): string | null {
+  const fold = (text: string) =>
+    text
+      .normalize('NFD')
+      .replace(/[\u0300-\u036F]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim()
+  const title = fold(item.title ?? '')
+  if (!title) return null
+  const name = fold(motoName(item))
+  return title === name || name.endsWith(title) ? null : item.title.trim()
+}
+
+/** Lo que la tarjeta y la ficha dicen del vendedor en una línea. */
+export function motoPlace(
+  item: Pick<MotoPublicListing, 'neighborhood' | 'department' | 'sellerType'>
+): string {
+  return [
+    item.neighborhood,
+    item.department,
+    item.sellerType ? MOTO_SELLER_LABEL[item.sellerType] : null,
+  ]
+    .filter(Boolean)
+    .join(' · ')
 }
 
 /** El kilometraje que declara quien vende. `null` es "no informado" y NO es cero: el job ya tiró
@@ -414,6 +854,10 @@ export interface MotoFacets {
   types: MotoFacet[]
   fuels: MotoFacet[]
   sellers: MotoFacet[]
+  /** Desde el 23/11/2026. Opcionales: durante un despliegue la API vieja no los manda. */
+  colors?: MotoFacet[]
+  bands?: MotoFacet[]
+  sources?: MotoFacet[]
 }
 
 export const MOTO_EMPTY_FACETS: MotoFacets = Object.freeze({
@@ -423,6 +867,9 @@ export const MOTO_EMPTY_FACETS: MotoFacets = Object.freeze({
   types: [],
   fuels: [],
   sellers: [],
+  colors: [],
+  bands: [],
+  sources: [],
 })
 
 /** Lo que la página necesita de la corrida para poder decir qué se leyó y cuándo. Es un recorte de
@@ -438,6 +885,8 @@ export interface MotoCoverage {
   reportedTotal: number | null
   withoutDisplacement: number
   withoutDisplacementBand: number
+  displacementEstimated: number
+  withDetail: number
   models: Array<{ slug: string; brand: string; model: string; listings: number }>
   sources: MotoPublicSourceCoverage[]
 }
@@ -473,6 +922,66 @@ export interface MotoDetailResponse {
   coverage: MotoCoverage | null
 }
 
+/**
+ * El mercado en números del directorio: un recorte del informe que el job guarda en
+ * `motomarketsnapshots` bajo `_informe`. Sólo lo que el bloque dibuja; el informe entero no viaja.
+ */
+export interface MotoMarketSummary {
+  generatedAt: string
+  adverts: number
+  displacements: Array<{ band: string; label: string; adverts: number; medianUsd: number | null }>
+  types: Array<{ type: MotoPublicType; adverts: number }>
+  budgets: Array<{ maxUsd: number; adverts: number }>
+}
+
+/** El recorte, con piso para un informe incompleto: un campo que falta es una lista vacía. */
+export function motoMarketSummaryOf(report: unknown): MotoMarketSummary | null {
+  const value = report as Partial<{
+    generatedAt: string
+    adverts: number
+    displacements: MotoMarketSummary['displacements']
+    types: Array<{ type: MotoPublicType | 'sin-dato'; adverts: number }>
+    budgets: Array<{ maxUsd: number; adverts: number }>
+  }> | null
+  if (!value || typeof value.adverts !== 'number' || value.adverts <= 0) return null
+  return {
+    generatedAt: String(value.generatedAt ?? ''),
+    adverts: value.adverts,
+    displacements: (value.displacements ?? []).filter(row => row.adverts > 0),
+    types: (value.types ?? [])
+      .filter((row): row is { type: MotoPublicType; adverts: number } => row.type !== 'sin-dato')
+      .filter(row => row.type in MOTO_TYPE_LABEL && row.adverts > 0)
+      .slice(0, 8),
+    budgets: (value.budgets ?? [])
+      .filter(row => row.adverts > 0)
+      .map(row => ({ maxUsd: row.maxUsd, adverts: row.adverts })),
+  }
+}
+
+/** La ficha de UN aviso (`/motos-usadas-uruguay/aviso/<key>`). */
+export interface MotoAvisoResponse {
+  moto: MotoPublicListing
+  /** La ficha del modelo al que pertenece, si está publicada. */
+  model: MotoPublicModel | null
+  /** La banda del mismo modelo y año, si tiene muestra. */
+  yearBand: MotoPublicYearBand | null
+  /** Otras del mismo modelo, las de año más parecido primero. */
+  similar: MotoPublicListing[]
+  /** Cómo cambió el precio de ESTE aviso desde que lo medimos. */
+  priceHistory: PriceHistorySeries | null
+  generatedAt: string
+}
+
+/** Dónde queda el precio de un aviso contra una banda: debajo del p25, en el centro, arriba del p75. */
+export function motoPricePosition(
+  priceUsd: number,
+  band: Pick<MotoPublicBand, 'p25' | 'median' | 'p75'> | null | undefined
+): { tier: 'bajo' | 'centro' | 'alto'; vsMedian: number } | null {
+  if (!band || !(band.median > 0) || !(priceUsd > 0)) return null
+  const tier = priceUsd < band.p25 ? 'bajo' : priceUsd > band.p75 ? 'alto' : 'centro'
+  return { tier, vsMedian: Math.round(((priceUsd - band.median) / band.median) * 100) }
+}
+
 export function motoEmptyList(
   query: MotoQuery,
   status: MotoStatus = 'preparing'
@@ -503,6 +1012,8 @@ export function motoCoverageOf(
     reportedTotal: meta.reportedTotal ?? null,
     withoutDisplacement: meta.withoutDisplacement ?? 0,
     withoutDisplacementBand: meta.withoutDisplacementBand ?? 0,
+    displacementEstimated: meta.displacementEstimated ?? 0,
+    withDetail: meta.withDetail ?? 0,
     models: Array.isArray(meta.models) ? meta.models.slice(0, 60) : [],
     sources: Array.isArray(meta.sources) ? meta.sources : [],
   }
@@ -595,10 +1106,12 @@ export function motoMatchesDisplacement(
 ): boolean {
   const bucket = MOTO_DISPLACEMENT_BUCKETS.find(candidate => candidate.id === bucketId)
   if (!bucket) return false
+  // El mismo orden que la consulta: manda el tramo publicado, y sin tramo, la cilindrada.
+  if (item.displacementBand) return item.displacementBand === bucket.id
   if (typeof item.displacement === 'number') {
     return item.displacement >= bucket.min && item.displacement <= bucket.max
   }
-  return item.displacementBand === bucket.id
+  return false
 }
 
 export function motoCilindradaAnswer(
@@ -617,7 +1130,7 @@ export function motoCilindradaAnswer(
     .map(row => `${row.label.toLowerCase()} (${row.count.toLocaleString('es-UY')})`)
     .join('; ')
   const sinDato = coverage?.withoutDisplacementBand
-    ? ` ${coverage.withoutDisplacementBand.toLocaleString('es-UY')} avisos del catálogo no entran en ningún tramo: ni declaran la cilindrada en el título ni el vendedor los clasificó por cilindrada en Mercado Libre, y nunca la inferimos del modelo.`
-    : ' La cilindrada se lee del título del aviso y nunca se infiere del modelo.'
+    ? ` ${coverage.withoutDisplacementBand.toLocaleString('es-UY')} avisos del catálogo no entran en ningún tramo: ni su ficha ni su título dicen la cilindrada, el vendedor no los clasificó por cilindrada en Mercado Libre y no hay con qué estimarla.`
+    : ' La cilindrada sale de la ficha o del título del aviso; si no la dicen, se estima con los demás avisos del mismo modelo y se marca con ≈.'
   return `Por oferta relevada: ${detalle}.${sinDato}`
 }

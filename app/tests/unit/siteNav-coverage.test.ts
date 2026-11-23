@@ -145,6 +145,7 @@ describe('the navigation model has no dead links', () => {
       '/estadisticas-de-uso',
       '/estadisticas-por-pagina',
       '/monopatines-electricos-uruguay/comparar',
+      '/motos-usadas-uruguay/comparar',
       '/offline',
       '/opinion-alquileres',
       '/opiniones-alquileres',

@@ -3,11 +3,14 @@ import { MotoCatalogMetaModel } from '../../models/MotoCatalogMeta'
 import { connectDb } from '../../utils/db'
 import {
   MOTOS_PER_PAGE,
+  MOTO_COLOR_LABEL,
+  MOTO_DISPLACEMENT_BUCKETS,
   MOTO_FRESH_DAYS_FALLBACK,
   MOTO_FUEL_LABEL,
   MOTO_META_ID,
   MOTO_ROW_PROJECTION,
   MOTO_SELLER_LABEL,
+  MOTO_SOURCE_LABEL,
   MOTO_TYPE_LABEL,
   motoCoverageOf,
   motoEmptyList,
@@ -80,16 +83,35 @@ export default defineEventHandler(async (event): Promise<MotoListResponse> => {
     const coverage = motoCoverageOf(metaDoc?.meta ?? null)
     const freshDays = coverage?.freshDays ?? MOTO_FRESH_DAYS_FALLBACK
     const match = motoMatch(query, today, freshDays)
+    // "Menor cilindrada" y "menos km" no pueden abrir con los avisos sin el dato: en un orden
+    // ascendente de Mongo el null va primero. La misma regla que autos con km y consumo.
+    if (query.sort === 'cc_asc' || query.sort === 'cc_desc')
+      match.displacement = { ...((match.displacement as object) || {}), $ne: null }
+    if (query.sort === 'km_asc') match.km = { ...((match.km as object) || {}), $ne: null }
     /** El filtro SIN uno de los criterios de texto: un facet que se contara con su propio filtro
      * puesto devolvería una sola opción con el total de la pantalla, y el lector no podría ver
      * cuántos avisos hay del otro lado de ese filtro. */
-    const without = (field: 'departamento' | 'tipo' | 'combustible' | 'vendedor') =>
-      motoMatch({ ...query, [field]: '' }, today, freshDays)
+    const without = (
+      field: 'departamento' | 'tipo' | 'combustible' | 'vendedor' | 'color' | 'fuente'
+    ) => motoMatch({ ...query, [field]: '' }, today, freshDays)
 
-    const [total, items, brands, models, departments, types, fuels, sellers] = await Promise.all([
+    const [
+      total,
+      items,
+      brands,
+      models,
+      departments,
+      types,
+      fuels,
+      sellers,
+      colors,
+      bands,
+      sources,
+    ] = await Promise.all([
       MotoCatalogModel.countDocuments(match).maxTimeMS(10_000),
       MotoCatalogModel.find(match)
-        .select(MOTO_ROW_PROJECTION)
+        // La galería la usa la ficha del aviso, no la tarjeta: fuera del listado.
+        .select({ ...MOTO_ROW_PROJECTION, pictures: 0 })
         .sort(motoSortSpec(query.sort))
         .skip((query.page - 1) * MOTOS_PER_PAGE)
         .limit(MOTOS_PER_PAGE)
@@ -115,6 +137,23 @@ export default defineEventHandler(async (event): Promise<MotoListResponse> => {
       motoFacet(without('tipo'), 'type', 13),
       motoFacet(without('combustible'), 'fuel', 4),
       motoFacet(without('vendedor'), 'sellerType', 2),
+      motoFacet(without('color'), 'color', 15),
+      motoFacet(without('fuente'), 'source', 4),
+      // Los tres tramos, cada uno con el resto de los filtros puestos: el panel dice cuántas hay en
+      // cada uno antes de elegirlo. Son tres conteos sobre un catálogo de cientos de filas.
+      Promise.all(
+        MOTO_DISPLACEMENT_BUCKETS.map(async bucket => ({
+          value: bucket.id as string,
+          label: bucket.label as string,
+          count: await MotoCatalogModel.countDocuments(
+            motoMatch(
+              { ...query, cilindrada: bucket.id, ccMin: null, ccMax: null },
+              today,
+              freshDays
+            )
+          ).maxTimeMS(10_000),
+        }))
+      ),
     ])
 
     setResponseHeader(
@@ -146,6 +185,15 @@ export default defineEventHandler(async (event): Promise<MotoListResponse> => {
         sellers: sellers.map(facet => ({
           ...facet,
           label: MOTO_SELLER_LABEL[facet.value as keyof typeof MOTO_SELLER_LABEL] ?? facet.value,
+        })),
+        colors: colors.map(facet => ({
+          ...facet,
+          label: MOTO_COLOR_LABEL[facet.value] ?? facet.value,
+        })),
+        bands,
+        sources: sources.map(facet => ({
+          ...facet,
+          label: MOTO_SOURCE_LABEL[facet.value] ?? facet.value,
         })),
       },
       coverage,

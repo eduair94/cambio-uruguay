@@ -18,7 +18,15 @@ import {
   motoDepreciacionAnswer,
   motoEmptyList,
   motoFichaSlug,
+  motoAvisoKeyValid,
+  motoAvisoPath,
+  motoDisplacementSource,
+  motoDisplacementText,
   motoFilterChips,
+  motoName,
+  motoPricePosition,
+  motoSafePermalink,
+  motoSellerTitle,
   motoFiltered,
   motoFreshFloor,
   motoKeyValid,
@@ -226,14 +234,132 @@ describe('motoFilterChips', () => {
 
 describe('motoMatch', () => {
   it('un aviso sin cilindrada Y sin tramo no cumple ningún tramo de cilindrada', () => {
-    // Las dos vías: la cilindrada exacta del título cuando está, y el tramo que declaró el propio
-    // Mercado Libre cuando no. `$gte/$lte` y la igualdad excluyen `null` por definición, así que un
-    // aviso sin ninguna de las dos no entra — la cilindrada no se infiere nunca del modelo.
+    // Manda el tramo publicado; una fila sin tramo cae a la cilindrada. `$gte/$lte` y la igualdad
+    // excluyen `null` por definición, así que un aviso sin ninguna de las dos no entra.
     const match = motoMatch(motoNormalizeQuery({ cilindrada: 'hasta-125' }), '2026-09-22', 5)
-    expect(match.$or).toEqual([
-      { displacement: { $gte: 0, $lte: 125 } },
-      { displacementBand: 'hasta-125' },
+    expect(match.$and).toEqual([
+      {
+        $or: [
+          { displacementBand: 'hasta-125' },
+          { displacementBand: null, displacement: { $gte: 0, $lte: 125 } },
+        ],
+      },
     ])
+  })
+
+  it('las claves viejas de las alertas guardadas siguen leyéndose igual', () => {
+    const query = motoNormalizeQuery({
+      marca: 'yumbo',
+      modelo: 'yumbo-gs',
+      cilindrada: '126-250',
+      tipo: 'calle',
+      departamento: 'Montevideo',
+      combustible: 'nafta',
+      vendedor: 'private',
+      precioMaxUsd: '2500',
+      anioDesde: '2015',
+      anioHasta: '2020',
+    })
+    expect(motoQueryParams(query)).toEqual({
+      marca: 'yumbo',
+      modelo: 'yumbo-gs',
+      cilindrada: '126-250',
+      tipo: 'calle',
+      departamento: 'Montevideo',
+      combustible: 'nafta',
+      vendedor: 'private',
+      precioMaxUsd: '2500',
+      anioDesde: '2015',
+      anioHasta: '2020',
+    })
+  })
+
+  it('los filtros nuevos: texto, precio mínimo, km, cc, color, días, bajas, riesgo, único dueño', () => {
+    const query = motoNormalizeQuery({
+      q: 'Electrica',
+      precioMinUsd: 'US$ 1.500',
+      kmMax: '20.000',
+      ccMin: '300',
+      ccMax: '150',
+      color: 'rojo',
+      dias: '7',
+      bajo: '1',
+      sinRiesgo: '1',
+      unicoDueno: '1',
+    })
+    // El rango de cc llegó dado vuelta y se dio vuelta.
+    expect(query).toMatchObject({ precioMinUsd: 1500, kmMax: 20000, ccMin: 150, ccMax: 300 })
+    const match = motoMatch(query, '2026-11-23', 4)
+    expect(match.displacement).toEqual({ $gte: 150, $lte: 300 })
+    expect(match.priceUsd).toEqual({ $gte: 1500 })
+    expect(match.km).toEqual({ $ne: null, $lte: 20000 })
+    expect(match.color).toBe('rojo')
+    // "Últimos 7 días" = hoy y los seis anteriores; "Hoy" = desde hoy, no desde ayer.
+    expect(match.firstSeen).toEqual({ $gte: '2026-11-17' })
+    expect(motoMatch(motoNormalizeQuery({ dias: '1' }), '2026-11-23', 4).firstSeen).toEqual({
+      $gte: '2026-11-23',
+    })
+    expect(match.priceDrop).toEqual({ $ne: null })
+    expect(match['risks.0']).toEqual({ $exists: false })
+    expect(match['specs.uniqueOwner']).toBe(true)
+    const title = new RegExp(String((match.title as { $regex: string }).$regex), 'i')
+    expect(title.test('Moto eléctrica Yumbo')).toBe(true)
+    // Un color, unos días o un interruptor que no existen no filtran nada.
+    expect(motoNormalizeQuery({ color: 'fucsia', dias: '5', bajo: 'si' })).toMatchObject({
+      color: '',
+      dias: null,
+      bajo: false,
+    })
+    expect(motoFilterChips(query).map(chip => chip.label)).toEqual([
+      '"Electrica"',
+      '150–300 cc',
+      'Desde USD\u00A01.500',
+      'Hasta 20.000 km',
+      'Rojo',
+      'Últimos 7 días',
+      'Bajó de precio',
+      'Sin deuda ni choque declarados',
+      'Único dueño',
+    ])
+    const without = motoQueryWithout(query, ['bajo', 'ccMin', 'ccMax'])
+    expect(without).toMatchObject({ bajo: false, ccMin: null, ccMax: null, sinRiesgo: true })
+  })
+
+  it('la cilindrada estimada se dice estimada', () => {
+    expect(motoDisplacementText({ displacement: 150, displacementBasis: 'ficha' })).toBe('150 cc')
+    expect(motoDisplacementText({ displacement: 150, displacementBasis: 'model' })).toBe('≈ 150 cc')
+    expect(motoDisplacementText({ displacement: null, displacementBasis: null })).toBeNull()
+    expect(
+      motoDisplacementSource({
+        displacement: 150,
+        displacementBasis: 'model',
+        displacementVotes: 4,
+        model: 'GS',
+      })
+    ).toContain('4 avisos del mismo modelo')
+    expect(
+      motoDisplacementSource({
+        displacement: 125,
+        displacementBasis: 'model-name',
+        displacementVotes: null,
+        model: 'GTR 125',
+      })
+    ).toContain('nombre del modelo (GTR 125)')
+  })
+
+  it('la posición del precio contra la banda', () => {
+    const band = { p25: 1000, median: 1200, p75: 1500 }
+    expect(motoPricePosition(900, band)).toEqual({ tier: 'bajo', vsMedian: -25 })
+    expect(motoPricePosition(1200, band)).toEqual({ tier: 'centro', vsMedian: 0 })
+    expect(motoPricePosition(1800, band)).toEqual({ tier: 'alto', vsMedian: 50 })
+    expect(motoPricePosition(1200, null)).toBeNull()
+  })
+
+  it('la ficha de cada aviso valida su clave antes de tocar la base', () => {
+    expect(motoAvisoKeyValid('ml-MLU1544194156')).toBe(true)
+    expect(motoAvisoKeyValid('yumbo-gs-125')).toBe(false)
+    expect(motoAvisoKeyValid('ml-MLU1; drop')).toBe(false)
+    expect(motoAvisoPath('ml-MLU1544194156')).toBe('/motos-usadas-uruguay/aviso/ml-MLU1544194156')
   })
 
   it('el tope de precio va sobre el precio convertido, nunca sobre el del aviso', () => {
@@ -386,7 +512,7 @@ describe('textos calculados', () => {
     // Sin esa cifra, "no aparece en ningún tramo" se lee como "no existe".
     const answer = motoCilindradaAnswer([listing()], motoCoverageOf(META))
     expect(answer).toContain('42')
-    expect(answer).toContain('nunca la inferimos del modelo')
+    expect(answer).toContain('no hay con qué estimarla')
     expect(motoCilindradaAnswer([], null)).toContain('Todavía no relevamos')
   })
 })
@@ -408,5 +534,37 @@ describe('motoMedian', () => {
   it('la mediana de un par es el promedio de los dos del medio', () => {
     expect(motoMedian([10, 20, 30, 40])).toBe(25)
     expect(motoMedian([])).toBe(0)
+  })
+})
+
+describe('motoSellerTitle', () => {
+  it('el título del vendedor sólo si agrega algo a la marca y el modelo', () => {
+    const base = { brand: 'Yumbo', model: 'GTR 125' }
+    expect(motoSellerTitle({ ...base, title: 'Color Rojo' })).toBe('Color Rojo')
+    expect(motoSellerTitle({ ...base, title: 'Yumbo GTR 125' })).toBeNull()
+    expect(motoSellerTitle({ ...base, title: 'gtr 125' })).toBeNull()
+    expect(motoSellerTitle({ ...base, title: '' })).toBeNull()
+    expect(motoName(base)).toBe('Yumbo GTR 125')
+  })
+})
+
+describe('Facebook Marketplace en el directorio', () => {
+  it('la clave fb- es una ficha válida, y el enlace al original sólo si es de Marketplace o ML', () => {
+    expect(motoAvisoKeyValid('fb-987654321')).toBe(true)
+    expect(motoAvisoKeyValid('fb-12')).toBe(false)
+    expect(motoSafePermalink('https://www.facebook.com/marketplace/item/987654321/')).toBe(
+      'https://www.facebook.com/marketplace/item/987654321/'
+    )
+    expect(motoSafePermalink('https://moto.mercadolibre.com.uy/MLU-1-x-_JM')).toBe(
+      'https://moto.mercadolibre.com.uy/MLU-1-x-_JM'
+    )
+    expect(motoSafePermalink('https://evil.example/marketplace/item/1/')).toBe('')
+  })
+  it('el filtro de fuente', () => {
+    const query = motoNormalizeQuery({ fuente: 'facebook' })
+    expect(motoMatch(query, '2026-11-23', 4).source).toBe('facebook')
+    expect(motoQueryParams(query)).toEqual({ fuente: 'facebook' })
+    expect(motoFilterChips(query).map(chip => chip.label)).toEqual(['Facebook Marketplace'])
+    expect(motoNormalizeQuery({ fuente: 'olx' }).fuente).toBe('')
   })
 })

@@ -23,8 +23,8 @@
 /** Las dos únicas monedas que publica Mercado Libre Uruguay. */
 export type MotoPublicCurrency = 'USD' | 'UYU'
 
-/** v1 lee sólo Mercado Libre. Es una unión y no un literal porque ahí entra la segunda fuente. */
-export type MotoPublicSource = 'mercadolibre'
+/** Mercado Libre y, desde el 23/11/2026, Facebook Marketplace (las tarjetas que ya lee autos). */
+export type MotoPublicSource = 'mercadolibre' | 'facebook'
 
 export type MotoPublicFuel = 'nafta' | 'electrica' | 'hibrida' | 'diesel'
 
@@ -58,8 +58,40 @@ export type MotoPublicType =
   | 'turismo'
   | 'mini'
 
-/** De dónde salió el dato: la faceta aplicada del origen, o la palabra del título. Nunca se mezcla. */
-export type MotoPublicEvidence = 'mercadolibre' | 'title'
+/** De dónde salió el dato: la faceta aplicada del origen, la ficha del aviso o la palabra del
+ * título. Nunca se mezcla. */
+export type MotoPublicEvidence = 'mercadolibre' | 'ficha' | 'title'
+
+/**
+ * De dónde sale la cilindrada (`classes/motos/displacement.ts`). `ficha` y `title` son DATO del
+ * aviso; `model` (lo que declaran los demás avisos del mismo modelo) y `model-name` (el número del
+ * nombre del modelo) son ESTIMACIONES y la página las imprime con "≈".
+ */
+export type MotoPublicDisplacementBasis = 'ficha' | 'title' | 'model' | 'model-name'
+
+/** La ficha técnica que cargó el vendedor en Mercado Libre, curada por el job. No verificada. */
+export interface MotoPublicSpecs {
+  engine: string | null
+  brakes: string | null
+  transmission: string | null
+  gears: number | null
+  power: string | null
+  uniqueOwner: boolean | null
+  tradeIn: boolean | null
+  negotiable: boolean | null
+  readAt: string
+}
+
+/** Lo que el VENDEDOR declara en título o descripción, con su cita (vocabulario de autos). */
+export type MotoPublicRiskCategory =
+  'deuda' | 'papeles' | 'siniestro' | 'recupero' | 'mecanica' | 'chapa_extranjera' | 'uso_intensivo'
+
+export interface MotoPublicRisk {
+  category: MotoPublicRiskCategory
+  severity: 'alta' | 'media'
+  quote: string
+  from: 'title' | 'description'
+}
 
 /** Una fila pública de `motocatalog`: UN AVISO, no un modelo. */
 export interface MotoPublicListing {
@@ -91,7 +123,10 @@ export interface MotoPublicListing {
   /** Centímetros cúbicos leídos del TÍTULO, o `null` si el título no los dice. Nunca inferida del
    * modelo: precisión sobre recall, la misma regla que celulares. */
   displacement: number | null
-  displacementBasis: MotoPublicEvidence | null
+  displacementBasis: MotoPublicDisplacementBasis | null
+  /** Cuántos avisos del modelo sostienen la estimación (base `model`). Opcional: las filas
+   * publicadas antes del 23/11/2026 no lo traen. */
+  displacementVotes?: number | null
   /**
    * El TRAMO de cilindrada, tal como lo declara la faceta del propio Mercado Libre.
    *
@@ -101,7 +136,7 @@ export interface MotoPublicListing {
    * puede ofrecer cuatro tramos que no matchean casi nada, que es peor que no ofrecerlos.
    */
   displacementBand: MotoPublicDisplacementBandId | null
-  displacementBandBasis: MotoPublicEvidence | null
+  displacementBandBasis: MotoPublicEvidence | MotoPublicDisplacementBasis | null
   type: MotoPublicType | null
   typeBasis: MotoPublicEvidence | null
   fuel: MotoPublicFuel | null
@@ -116,6 +151,16 @@ export interface MotoPublicListing {
   priceDrop: { from: number; currency: MotoPublicCurrency; since: string } | null
   /** Lo que el propio VENDEDOR declara en el título (deuda, choque, papeles…). La cita es suya. */
   flags: string[]
+  // Lo que agrega la ficha propia del aviso (`currency-motos-detail`, desde el 23/11/2026). Todo
+  // opcional: durante el despliegue la API todavía puede contestar filas viejas sin estos campos, y
+  // la página los lee con `?? []` / `?? null`.
+  /** La galería propia, hasta 8 fotos. */
+  pictures?: string[]
+  /** Familia de color (las de autos). */
+  color?: string | null
+  specs?: MotoPublicSpecs | null
+  risks?: MotoPublicRisk[]
+  hasDetail?: boolean
 }
 
 /** Banda de precio de una cohorte. Descriptiva: es lo que se PIDE, no una tasación. En dólares,
@@ -196,6 +241,10 @@ export interface MotoPublicCatalogMeta {
    * origen. Es el número que hay que mostrar al lado del filtro, porque es el que de verdad queda
    * afuera de todos los tramos. */
   withoutDisplacementBand: number
+  /** Avisos con la cilindrada ESTIMADA (consenso o nombre del modelo). */
+  displacementEstimated?: number
+  /** Avisos con la ficha propia leída. */
+  withDetail?: number
   models: Array<{ slug: string; brand: string; model: string; listings: number }>
   sources: MotoPublicSourceCoverage[]
 }

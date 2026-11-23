@@ -25,29 +25,81 @@ el comparador de transporte no podía contestar el modo que más se consulta.
 | `depreciationOf` / `annualDropOf` de `classes/autos/report.ts` | **compartidas**: su firma se ensanchó de `CarListing[]` a `{ year, priceUsd }[]`, que es un widening y no rompió ningún llamador |
 | carrocería (`bodyType.ts`) | no aplica; su equivalente es el **tipo de moto** (calle, scooter, trail, custom, deportiva, cub) |
 
-## La cilindrada, y cuánto cuesta medirla bien
+## La cilindrada: la cascada (desde el 23/11/2026)
 
 La cilindrada es la dimensión que autos no tiene y que acá decide la cohorte: una Yumbo 125 y una
 Yumbo 200 no son la misma moto ni el mismo precio.
 
-**No sale de la faceta de MercadoLibre.** Medido el 22/9/2026, `ENGINE_DISPLACEMENT` devuelve tres
-tramos y no un número — `(*-125cc]` con 434 avisos, `[125cc-250cc]` con 568 y `[250cc-*)` con 633 —,
-que es exactamente la resolución que no sirve para separar una 125 de una 200.
+Hasta el 23/11/2026 salía SÓLO del título con la unidad escrita, y eso cubría el 10 % del catálogo
+(57 de 590). Ese día se midió la ficha propia del aviso (`moto.mercadolibre.com.uy/MLU-…`, la misma
+que autos lee para la versión): contesta 200 con la UA del bot y trae la fila «Cilindrada» en 19 de
+21 fichas. Desde entonces `currency-motos-detail` la lee (ver abajo) y `classes/motos/displacement.ts`
+aplica la misma cascada que la carrocería de autos:
 
-Sale del título, **con la unidad escrita** (`125cc`, `125 cc`, `125 c.c.`, `125 cm3`) y nunca de un
-número suelto: "Kawasaki Z900" y "Benda Dark Flag 500" nombran la cilindrada dentro del modelo, y
-leerla de ahí haría pasar por medición una coincidencia de nombre. Lo que no la declara queda con
-`displacement: null` y no entra en ninguna cohorte de cilindrada — precisión sobre recall, la misma
-regla que celulares.
+| orden | evidencia | base | se imprime |
+|---|---|---|---|
+| 1 | fila «Cilindrada» de la ficha propia | `ficha` | `150 cc` |
+| 2 | el título, con la unidad escrita | `title` | `150 cc` |
+| 3 | consenso de los avisos del mismo modelo | `model` | `≈ 150 cc` |
+| 4 | número del nombre del modelo de ML («GTR 125») | `model-name` | `≈ 125 cc` |
 
-**El costo de esa exigencia es alto y está medido**: en la corrida de prueba del 22/9/2026, de 73
-avisos publicables **71 quedaron sin cilindrada**. O sea que hoy la cilindrada es un dato de unas
-pocas filas, no una dimensión con la que se pueda filtrar el directorio entero, y la página no puede
-prometer lo contrario. La salida no es aflojar el filtro —leer "900" de "Z900" devolvería cobertura
-inventada— sino ir a buscar el dato donde sí está: la ficha de cada aviso de MercadoLibre publica
-`ENGINE_DISPLACEMENT` como atributo con su valor exacto, mientras que la faceta del listado sólo
-devuelve tres tramos (`(*-125cc]`, `[125cc-250cc]`, `[250cc-*)`). Queda pendiente una pasada por
-ficha, con presupuesto, como la que ya hace `currency-autos-detail`.
+- **Votan sólo ficha y título.** Si votaran las estimaciones, el modelo se enseñaría a sí mismo lo que
+  ya adivinó — la regla del diccionario de carrocerías.
+- **Consenso** = ≥ 3 votos y ≥ 80 % a ±10 % de la mediana; es más laxo que la carrocería (8 y 90 %)
+  porque el catálogo es ~35 veces más chico y "124" y "125" concuerdan.
+- **El tramo de la faceta de ML veta**: la ficha la carga el vendedor y se equivoca (una Bajaj Pulsar
+  de la muestra dice «2.000 cc» con el tramo «126 a 250 cc»). Con 10 % de tolerancia en el borde,
+  porque los tramos de ML se solapan en 125 y 250.
+- **Una ficha que contradice un consenso fuerte** (≥ 4 votos, a más de 30 %) es un tipeo: manda el
+  consenso.
+- **El nombre del modelo** es la evidencia más floja ("Svartpilen 401" tiene 373 cc): ubica a la moto
+  en su tramo, no afirma el número. Calla si los avisos reales del modelo dicen otra cosa, y debajo de
+  50 no es una cilindrada ("MT 03", "FZ25").
+- **Las estadísticas no usan estimaciones**: las bandas por cilindrada de la ficha del modelo y la
+  `productKey` cuentan sólo `ficha`/`title` (`exactDisplacement`).
+- El tramo publicado es el de la faceta o, si no, el de la cilindrada (cualquier base, con esa base):
+  así el filtro por tramo cubre todo lo que tiene alguna cilindrada.
+
+## La ficha del aviso (`currency-motos-detail`)
+
+`sync_motos_detail.ts`, a los :51 de cada hora: 120 fichas a 2 s, primero las nunca leídas (las vistas
+más recientemente arriba) y después las de más de 30 días. Guarda en `motolistings.detail` la tabla
+cruda, la descripción, la galería (hasta 8 fotos), la cilindrada, el color y el tipo. **Toda lectura
+deja rastro**: una falla anota `detailError` y espera un día, un 404/410 anota `detailGoneAt` y espera
+una semana — la cola de Casasweb se trabó por no hacerlo. No publica: lo toma la próxima corrida de
+`sync_motos.ts`.
+
+Lo que la ficha agrega al directorio: galería, color, tipo cuando la faceta falta, una ficha técnica
+curada (tiempos, frenos, transmisión, velocidades, potencia —sólo hp/cv/kW plausibles: medido «636 hp»
+en una Ninja 636—, único dueño, permuta, precio negociable) y **lo que el vendedor declara en la
+descripción** (`declaredRisks` de autos: deuda, papeles, choque, recupero, mecánica), con su cita. Un
+riesgo de severidad alta saca a la moto de las bandas. Una ficha de cuatriciclo/triciclo/motocarro
+saca al aviso, y una ficha inactiva leída DESPUÉS de la última aparición en la búsqueda también.
+
+## Facebook Marketplace (desde el 23/11/2026)
+
+La segunda fuente, y no le pide nada nuevo a Facebook: el lector de autos ya recorre la categoría
+«Vehículos» de Marketplace —que incluye motos— y guarda TODAS las tarjetas en `carfbcards`, aunque
+sólo las que son autos pasen a su directorio. Medido ese día: 23.767 tarjetas en cuatro días y ~1.100
+con pinta de moto. `classes/motos/sources/facebook.ts` las convierte con las reglas de la tarjeta de
+Facebook de autos y otro diccionario:
+
+- **Marca + modelo contra los avisos de Mercado Libre de 180 días**, nunca la marca sola ("Honda" es
+  también un auto). Un modelo se nombra entero o por su parte de letras cuando es única en la marca
+  ("gtr"), salvo que sea una palabra del idioma ("Suzuki EN 125" acortado a "en" se quedaba con
+  "Suzuki Vitara … en excelente estado") o que venga seguida de OTRO número ("zr200" no es la ZR 125).
+- **Un auto de una marca que hace motos** se descarta por sus palabras (camioneta, 1.6, automático…).
+- **Quien permuta POR una moto o la busca** no la vende ("Permuto por zanella").
+- **Año obligatorio** (título o descripción): sin año no hay cohorte.
+- **Moneda**: la que el texto declara o, si no, la que hace caer el monto entre 0,4 y 2,5 veces la
+  mediana de ML de la misma moto. Deducida = `currencyInferred`, «moneda estimada» en la página y
+  NUNCA en una banda. Sin referencia o con un monto que no cierra en ninguna, el aviso no entra.
+
+Primera medición sobre el volcado (diccionario de 590 avisos): 34 motos aceptadas, todas motos de
+verdad. La cuenta crece con el diccionario de producción, que tiene más modelos. Las motos de
+Marketplace se guardan en `motolistings` con clave `fb-<id>` (historia de precio y ficha propia) y
+salen solas a los cuatro días de que el lector de autos deje de ver la tarjeta. `MOTOS_FACEBOOK_ENABLED=0`
+las apaga.
 
 ## Qué queda afuera
 
@@ -80,6 +132,7 @@ ficha, con presupuesto, como la que ya hace `currency-autos-detail`.
 |---|---|---|
 | `currency-motos` | `38 13 * * *` | barrido completo |
 | `currency-motos-hourly` | `44 * * * *` | sólo precio; nunca retira por ausencia |
+| `currency-motos-detail` | `51 * * * *` | la ficha propia de cada aviso (ver arriba) |
 
 `:44` está libre en la hora y queda a siete minutos de celulares (`:37`) y de alquileres (`:47`), los
 dos consumidores vecinos del mismo puente de MercadoLibre. La diaria a las 13:38 cae después de
@@ -92,9 +145,23 @@ combustibles (13:11) y antes de movilidad (15:33) y del comparador de transporte
 - Sin `APP_MONGO_URI` se niega a correr; `--dry-run` funciona sin Mongo.
 - `MOTOS_<FUENTE>_ENABLED=0` apaga una fuente sin desplegar.
 
+## La página (desde el 23/11/2026)
+
+El directorio tiene la forma del de autos: columna de filtros (cajón en el celular), barra de orden,
+chips, tarjetas con foto y scroll infinito. Filtros: texto, marca, modelo, tipo, cilindrada (tramo y
+rango en cc), año, precio mínimo y máximo en dólares, km, departamento, motor, vendedor, color,
+publicado hace N días, bajó de precio, sin deuda ni choque declarados y único dueño. Las claves de URL
+de v1 no cambiaron (las alertas guardadas las usan).
+
+Cada aviso tiene su ficha en `/motos-usadas-uruguay/aviso/<key>` (`noindex`, como la de autos):
+galería, datos con la base de la cilindrada, ficha técnica declarada, lo que declara el vendedor,
+cómo cambió su precio, cómo está contra la misma moto (modelo+año y modelo) y otras parecidas. La
+ficha por MODELO sigue en `/motos-usadas-uruguay/<slug>`. Hay comparador de hasta cuatro avisos en
+`/motos-usadas-uruguay/comparar`.
+
 ## Quién lo lee
 
-- `/motos-usadas-uruguay` y la ficha por modelo.
+- `/motos-usadas-uruguay`, la ficha por modelo, la ficha por aviso y el comparador.
 - `classes/transporte/prices.ts`, que toma el p25 del catálogo como "precio de entrada" del modo
   `moto` del comparador y mide la depreciación con la recta compartida. El contrato es el documento
   `uy-motos` de `motocatalogmetas` y los campos `price`/`currency`/`currencyInferred`/`year` de

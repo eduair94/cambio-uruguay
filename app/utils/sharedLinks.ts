@@ -31,7 +31,10 @@ export function normalizeShareText(value: unknown, maxLength: number): string {
 
 // Public `noindex` pages that exist to be shared. EXCLUDED_ROUTES keeps them out of the menu and
 // the sitemap, but it also lists truly private pages (/cuenta), so it cannot mean "do not share".
-const SHAREABLE_EXCLUDED: ReadonlySet<string> = new Set(['/autos-usados-uruguay/comparar'])
+const SHAREABLE_EXCLUDED: ReadonlySet<string> = new Set([
+  '/autos-usados-uruguay/comparar',
+  '/motos-usadas-uruguay/comparar',
+])
 const staticRoutes = new Set([
   '/',
   ...navRoutes(),
@@ -78,8 +81,9 @@ const queryKeys: Record<string, Set<string>> = {
   '/autos-chocados-y-con-deuda-uruguay': carFilters,
   '/autos-usados-uruguay/comparar': keys('autos'),
   '/motos-usadas-uruguay': keys(
-    'marca modelo cilindrada tipo combustible departamento vendedor precioMaxUsd anioDesde anioHasta sort page'
+    'marca modelo cilindrada tipo combustible departamento vendedor precioMaxUsd anioDesde anioHasta q precioMinUsd kmMax ccMin ccMax color dias bajo sinRiesgo unicoDueno fuente sort page'
   ),
+  '/motos-usadas-uruguay/comparar': keys('motos'),
   '/alquileres-uruguay': rentalFilters,
   '/venta-viviendas-uruguay': propertyFilters,
   '/oportunidades-inmobiliarias-uruguay': keys(

@@ -76,12 +76,13 @@ describe('robots.txt rules', () => {
   // rules (`/x` and `/*/x`) and 26 was the 24 of 2026-11-06 plus /estadisticas-de-uso (2026-11-20).
   // 29 adds the advert comparison with a selection (2026-11-21) and the API block with its open-data
   // exception (`/api/` + `/api/datos/`, 2026-11-22): still two orders of magnitude under 776.
+  // 31 adds the moto adverts translated and the moto comparison with a selection (2026-11-23).
   // A prefix shared by two private pages (`/estadisticas-de-`) would fit under 24, but it would also
   // block any future public `/estadisticas-de-…` page in silence, so each one keeps its own line.
   it('keep the wildcard group small enough to test every sitemap URL against', () => {
     const [wildcard] = groups()
-    expect(wildcard._rules.length).toBeLessThanOrEqual(29)
-    for (const group of groups()) expect(group._rules.length).toBeLessThanOrEqual(29)
+    expect(wildcard._rules.length).toBeLessThanOrEqual(31)
+    for (const group of groups()) expect(group._rules.length).toBeLessThanOrEqual(31)
   })
 
   // Clarity's bot activity, 2026-11-21: 4.390 bot requests to /api/ in one day, mostly AhrefsBot,
@@ -156,6 +157,18 @@ describe('robots.txt rules', () => {
       expect(blocked(group, '/autos-usados-uruguay/comparar?autos=ml-MLU1513098568')).toBe(true)
       expect(blocked(group, '/autos-usados-uruguay/comparar?autos=fb-1,julio-26444')).toBe(true)
       expect(blocked(group, '/autos-usados-uruguay/comparar')).toBe(false)
+    }
+  })
+
+  // Motos copió la forma de autos el 2026-11-23: ficha por aviso y comparador con selección.
+  it('close the translated moto adverts and the moto comparison selection, not the pages', () => {
+    for (const group of groups()) {
+      expect(blocked(group, '/fr/motos-usadas-uruguay/aviso/ml-MLU1544194156')).toBe(true)
+      expect(blocked(group, '/motos-usadas-uruguay/comparar?motos=ml-MLU1544194156')).toBe(true)
+      expect(blocked(group, '/motos-usadas-uruguay/aviso/ml-MLU1544194156')).toBe(false)
+      expect(blocked(group, '/motos-usadas-uruguay/comparar')).toBe(false)
+      expect(blocked(group, '/en/motos-usadas-uruguay/yumbo-gtr-125')).toBe(false)
+      expect(blocked(group, '/motos-usadas-uruguay')).toBe(false)
     }
   })
 

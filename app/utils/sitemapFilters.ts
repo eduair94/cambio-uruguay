@@ -36,6 +36,8 @@ export const SITEMAP_NOINDEX_PATHS: readonly string[] = Object.freeze([
   '/bicicletas-electricas-uruguay/comparar',
   // Y el de avisos de autos (el hub indexable es /comparar-autos-usados-uruguay).
   '/autos-usados-uruguay/comparar',
+  // El de avisos de motos (23/11/2026): la misma herramienta, la selección la elige el lector.
+  '/motos-usadas-uruguay/comparar',
   // El panel privado de contactos comerciales (requireAdmin).
   '/contactos-comerciales',
 ])

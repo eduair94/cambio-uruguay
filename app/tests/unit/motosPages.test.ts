@@ -14,6 +14,11 @@ import { describe, expect, it } from 'vitest'
 const PAGES_DIR = join(__dirname, '..', '..', 'pages', 'motos-usadas-uruguay')
 const indexSrc = readFileSync(join(PAGES_DIR, 'index.vue'), 'utf8')
 const detailSrc = readFileSync(join(PAGES_DIR, '[key].vue'), 'utf8')
+const avisoSrc = readFileSync(join(PAGES_DIR, 'aviso', '[key].vue'), 'utf8')
+const compareSrc = readFileSync(join(PAGES_DIR, 'comparar.vue'), 'utf8')
+const COMPONENTS_DIR = join(__dirname, '..', '..', 'components', 'motos')
+const cardSrc = readFileSync(join(COMPONENTS_DIR, 'ListingCard.vue'), 'utf8')
+const filtersSrc = readFileSync(join(COMPONENTS_DIR, 'Filters.vue'), 'utf8')
 const pages: Array<[string, string]> = [
   ['index.vue', indexSrc],
   ['[key].vue', detailSrc],
@@ -65,7 +70,8 @@ describe.each(pages)('%s: contrato compartido', (_file, src) => {
   })
 
   it('renderiza en el servidor: el precio tiene que estar en el HTML que lee el buscador', () => {
-    expect(src).toContain('await useAsyncData')
+    // `await useAsyncData` o, como autos, `await Promise.all([useAsyncData(…), …])`.
+    expect(src).toMatch(/await (?:useAsyncData|Promise\.all\(\[\s*useAsyncData)/)
     expect(src).not.toContain('server: false')
   })
 
@@ -90,9 +96,8 @@ describe.each(pages)('%s: contrato compartido', (_file, src) => {
     expect(src).toContain('no precios de venta cerrados')
   })
 
-  it('la tabla ancha se apila como tarjetas en el celular', () => {
-    expect(src).toContain('cu-mobile-cards')
-    expect((src.match(/data-label=/g) ?? []).length).toBeGreaterThanOrEqual(5)
+  it('los avisos van en tarjetas con foto, como autos', () => {
+    expect(templateOf(src)).toContain('<MotosListingCard')
   })
 
   it('enlaza el comparador de transporte', () => {
@@ -123,22 +128,114 @@ describe('index.vue: el directorio', () => {
   })
 
   it('el tope de precio dice que es en dólares y por qué', () => {
-    expect(indexSrc).toContain('prefix="USD"')
+    expect(filtersSrc).toContain('US$ máx.')
     expect(indexSrc).toContain('única escala')
   })
 
   it('cada aviso se imprime en SU moneda, no convertido', () => {
-    expect(indexSrc).toContain('motoMoney(item.price, item.currency)')
+    expect(cardSrc).toContain('motoMoney(moto.price, moto.currency)')
   })
 
-  it('un aviso eléctrico enlaza a su propia ficha', () => {
-    // La ficha de una línea eléctrica es otra (`<marca-modelo>-electrica`): enlazar a la de nafta
-    // llevaría a la banda equivocada, o a un 404.
-    expect(indexSrc).toContain('motoFichaSlug(item)')
+  it('tiene la forma del directorio de autos: columna, cajón, barra, chips, grilla', () => {
+    const template = templateOf(indexSrc)
+    expect(template).toContain('<CarsSidebarLayout')
+    expect(template).toContain('<MotosFilters')
+    expect(template).toContain('mobile')
+    expect(template).toContain('<CarsToolbar')
+    expect(template).toContain('<CarsActiveFilters')
+    expect(template).toContain('<FeedEdge')
+    expect(indexSrc).toContain('definePageMeta({ wide: true })')
+  })
+
+  it('el cajón del celular vive FUERA de la grilla y nunca hay dos paneles', () => {
+    // Adentro de la celda, Vue moría en `shouldUpdateComponent` (medido en autos).
+    const template = templateOf(indexSrc)
+    expect(template.indexOf('<MotosFilters')).toBeLessThan(template.indexOf('<CarsSidebarLayout'))
+    expect(template).toMatch(/v-if="payload\.status === 'ok' && smAndDown"/)
+    expect(template).toMatch(/v-if="!smAndDown"/)
+  })
+
+  it('el mercado en números no frena la lista: va en paralelo y con tope corto', () => {
+    expect(indexSrc).toContain("'/api/motos/informe', { timeout: 2500, retry: 0 }")
+    expect(indexSrc).toContain('.catch(')
   })
 
   it('enlaza también el directorio de autos usados', () => {
     expect(indexSrc).toContain('MOTOS_AUTOS_PATH')
+  })
+})
+
+describe('components/motos: la tarjeta y los filtros', () => {
+  it('la tarjeta lleva a la ficha del aviso y la cilindrada estimada se marca', () => {
+    expect(cardSrc).toContain('motoAvisoPath(moto.key)')
+    expect(cardSrc).toContain('motoDisplacementEstimated(moto)')
+    expect(cardSrc).toContain('estimada')
+  })
+
+  it('una API vieja sin los campos nuevos no rompe la tarjeta ni el panel', () => {
+    // Durante un despliegue el navegador puede tener el JS nuevo y la API el JSON viejo.
+    expect(cardSrc).toContain('props.moto.risks ?? []')
+    expect(filtersSrc).toContain('props.facets.bands?.length')
+    expect(filtersSrc).toContain('props.facets.colors?.length')
+    expect(filtersSrc).toContain('(rows ?? [])')
+  })
+
+  it('los filtros nuevos están en el panel', () => {
+    for (const field of [
+      'draft.q',
+      'draft.ccMin',
+      'draft.precioMinUsd',
+      'draft.kmMax',
+      'draft.color',
+      'draft.dias',
+      'draft.bajo',
+      'draft.sinRiesgo',
+      'draft.unicoDueno',
+    ]) {
+      expect(filtersSrc).toContain(`v-model="${field}"`)
+    }
+  })
+})
+
+describe('aviso/[key].vue: la ficha del aviso', () => {
+  it('una clave imposible 404ea antes de entrar a setup', () => {
+    expect(avisoSrc).toContain('definePageMeta(')
+    expect(avisoSrc).toContain('motoAvisoKeyValid(')
+  })
+
+  it('no se indexa: un aviso vence en semanas', () => {
+    expect(avisoSrc).toContain("robots: 'noindex, follow'")
+  })
+
+  it('un fallo de base no se sirve como 404', () => {
+    expect(avisoSrc).toContain('failureCode')
+    expect(avisoSrc).toContain('no-store')
+  })
+
+  it('sobrevive a un aviso vencido sin lecturas ansiosas', () => {
+    expect(avisoSrc).toContain('data.value?.moto ?? null')
+    expect(avisoSrc).not.toContain('data.value!.')
+  })
+
+  it('dice de dónde sale la cilindrada y que la ficha técnica no está verificada', () => {
+    expect(avisoSrc).toContain('motoDisplacementSource(moto)')
+    expect(avisoSrc).toContain('no la verificamos')
+  })
+
+  it('no compara contra dos o tres avisos', () => {
+    expect(avisoSrc).toContain('Todavía no hay avisos suficientes')
+  })
+
+  it('enlaza el original sólo si es de una fuente conocida (ML Uruguay o Marketplace)', () => {
+    expect(avisoSrc).toContain('motoSafePermalink(')
+    expect(avisoSrc).toContain('rel="nofollow noopener"')
+  })
+})
+
+describe('comparar.vue: el comparador', () => {
+  it('la selección vive en la URL y la página no se indexa', () => {
+    expect(compareSrc).toContain('motoCompareKeys(route.query.motos)')
+    expect(compareSrc).toContain("robots: 'noindex, follow'")
   })
 })
 

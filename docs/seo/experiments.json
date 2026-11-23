@@ -4083,6 +4083,20 @@
         "antel bloqueo por mora"
       ],
       "hypothesis": "Search Console 1-28/10/2026: 'bloqueo por mora antel' 42 impresiones, 1 clic, posicion 8; 'con cuantas facturas impagas te cortan antel' 22 / 0 / 6,0; 'antel bloqueo por mora' 8 / 0 / 11. El titulo decia 'Antel: cuando te corta y 72 h para volver', sin las palabras de la consulta ni la cuenta en facturas. Pasa a 'Bloqueo por mora de Antel: 1 o 2 facturas' (58 con la marca) y la descripcion abre con la escalera de las dos fuentes vigentes, que la pagina ya publica: fijo, la 2.a impaga bloquea las salientes y a los 30 dias todo (boletin de tarifas de fija 2026, 3.7.1); movil, la 1.a (condiciones de abril de 2023, apartado VII); vuelve en 48 h habiles el fijo o 72 h internet (preguntas frecuentes de facturacion). Las tres releidas el 23/11/2026, sin cambios. El cuerpo no cambia. Patron de respuesta-en-el-titulo-1031; quedo afuera de esa fila porque tres-facturas-del-hogar-entran-a-su-tema (25/10) la reservaba hasta hoy."
+    },
+    {
+      "id": "motos-usadas-directorio-completo",
+      "shippedOn": "2026-11-23",
+      "routes": [
+        "/motos-usadas-uruguay"
+      ],
+      "queries": [
+        "motos usadas uruguay",
+        "motos usadas montevideo",
+        "moto usada 125 uruguay",
+        "venta de motos usadas uruguay"
+      ],
+      "hypothesis": "El directorio de motos era una tabla sin fotos, con nueve filtros en fila y la cilindrada exacta en el 10 % de los avisos (57 de 590). Pasa a tener la forma del de autos: tarjetas con foto, columna de filtros y cajon en el celular, filtros de texto, precio minimo, kilometros, rango de cc, color, novedades, bajas de precio, sin riesgo declarado y unico dueno, una ficha por aviso y un comparador. La cilindrada sale de la ficha propia del aviso en Mercado Libre (19 de cada 21 la declaran) y, cuando falta, de una cascada como la de la carroceria de autos: consenso de los avisos del mismo modelo y el numero del nombre del modelo, marcadas con aproximado. La apuesta es de interaccion antes que de puesto: una pagina que deja filtrar por lo que el lector busca (una 125, una 250, menos de 20.000 km) se queda con la visita que hoy vuelve a Mercado Libre. Mejoro si la porcion de clics de la ruta sube en los 28 dias archivados."
     }
   ]
 }

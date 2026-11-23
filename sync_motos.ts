@@ -28,20 +28,37 @@ import {
   motoSourceCoverage,
   MOTO_CATALOG_FRESH_DAYS,
 } from "./classes/motos/catalog";
-import { dedupeMotos, enrichMotoListing, filterMotos } from "./classes/motos/enrich";
+import {
+  attachMotoDisplacements,
+  dedupeMotos,
+  enrichMotoListing,
+  filterMotos,
+  motoFichaExcluded,
+  motoInactive,
+} from "./classes/motos/enrich";
 import { dropImplausibleMotoPrices, motoPriceDropSummary } from "./classes/motos/priceSanity";
 import { buildMotoReport } from "./classes/motos/report";
 import { harvestMercadoLibreMotos } from "./classes/motos/sources/mercadolibre";
+import {
+  buildMotoDictionary,
+  fbBrandPattern,
+  fbCardToMoto,
+  motoReferenceFrom,
+  type FbMotoResult,
+} from "./classes/motos/sources/facebook";
 import { motoSourceEnabled } from "./classes/motos/sources";
 import {
   collapseRefusal,
   countPublishedMotos,
   loadCatalogMeta,
   loadHarvestMeta,
+  loadFbMotoCards,
+  loadMotoDictionaryListings,
   loadStoredMotos,
   motoHarvestMetaRecord,
   publishMotoCatalog,
   publishMotoModels,
+  saveFbMotos,
   saveHarvestMeta,
   saveMotoHarvest,
   saveRefusal,
@@ -155,14 +172,57 @@ export async function main(): Promise<void> {
   }
 
   // 2. Lo guardado es la base del catálogo: la horaria publica el mercado entero, no sólo lo de hoy.
-  const stored: StoredMoto[] = dryRun ? (harvest ? storedFrom(harvest.listings) : []) : await loadStoredMotos(now);
+  let stored: StoredMoto[] = dryRun ? (harvest ? storedFrom(harvest.listings) : []) : await loadStoredMotos(now);
+
+  // 2b. Facebook Marketplace: las tarjetas de la categoría Vehículos que el lector de AUTOS ya guarda
+  // (classes/motos/sources/facebook.ts). No se le pide nada nuevo a Facebook, así que corre también en
+  // la horaria. Una lectura que falla deja la corrida con lo de Mercado Libre: degrada, no tumba.
+  let fbLastOkAt: string | null = null;
+  let fbOk = false;
+  if (motoSourceEnabled("facebook") && !dryRun) {
+    try {
+      const ml = stored.filter(doc => doc.listing.source === "mercadolibre").map(doc => doc.listing);
+      const dictionary = buildMotoDictionary([...(await loadMotoDictionaryListings(now)), ...ml]);
+      const since = new Date(now.getTime() - MOTO_CATALOG_FRESH_DAYS * 86_400_000).toISOString();
+      const cards = await loadFbMotoCards(since, fbBrandPattern(dictionary));
+      const context = { dictionary, usdUyu, maxYear: now.getUTCFullYear() + 1, referenceUsd: motoReferenceFrom(ml, usdUyu) };
+      const reasons: Record<string, number> = {};
+      const accepted: Array<FbMotoResult & { firstSeen: string; lastSeen: string }> = [];
+      for (const doc of cards) {
+        const result = fbCardToMoto(doc.card, doc.item, doc.lastSeen, context);
+        if ("rejected" in result) {
+          reasons[result.rejected] = (reasons[result.rejected] ?? 0) + 1;
+          continue;
+        }
+        accepted.push({ ...result, firstSeen: doc.firstSeen, lastSeen: doc.lastSeen });
+        if (!fbLastOkAt || doc.lastSeen > fbLastOkAt) fbLastOkAt = doc.lastSeen;
+      }
+      const saved = await saveFbMotos(accepted);
+      const savedKeys = new Set(saved.map(doc => doc.key));
+      stored = [...stored.filter(doc => !savedKeys.has(doc.key)), ...saved];
+      fbOk = cards.length > 0;
+      console.log(
+        `[motos] Facebook Marketplace: ${cards.length} tarjetas con marca de moto, ${accepted.length} motos ` +
+          `(${accepted.filter(result => result.listing.currencyInferred).length} con moneda deducida); descartes ${JSON.stringify(reasons)}`
+      );
+    } catch (error) {
+      console.error("[motos] Facebook Marketplace no se pudo leer; la corrida sigue con Mercado Libre", error);
+    }
+  }
 
   // 3. Lo que no es una moto usada en venta se va antes de cualquier estadística. Los cuatriciclos,
   // triciclos y motocarros salen de la faceta del propio ML: medido, 16 de sus 23 títulos distintos
   // no nombran su clase en ninguna parte.
   const excludedIds = new Set(harvest?.excludedIds ?? []);
+  // La ficha propia también lo dice (fila «Tipo de moto»), y vale aunque la corrida de hoy no haya
+  // barrido las facetas: la horaria nunca las barre.
+  for (const doc of stored) if (motoFichaExcluded(doc.detail)) excludedIds.add(doc.listing.id);
+  // Un aviso que su propia ficha da por pausado o finalizado no se lista, salvo que la búsqueda lo
+  // haya vuelto a mostrar después de leerla.
+  const inactive = stored.filter(motoInactive).length;
+  if (inactive) console.log(`[motos] ${inactive} avisos inactivos según su ficha: no se publican`);
   const filtered = filterMotos(
-    stored.map(doc => ({ ...doc, id: doc.listing.id, title: doc.listing.title })),
+    stored.filter(doc => !motoInactive(doc)).map(doc => ({ ...doc, id: doc.listing.id, title: doc.listing.title })),
     excludedIds
   );
   if (Object.keys(filtered.rejected).length) {
@@ -173,7 +233,7 @@ export async function main(): Promise<void> {
   const declaredBands = new Map<string, MotoDisplacementBandId>(
     (harvest?.displacements ?? []).map(entry => [entry.id, entry.band])
   );
-  const enriched: MotoListing[] = filtered.kept.map(doc =>
+  const single: MotoListing[] = filtered.kept.map(doc =>
     enrichMotoListing(doc.listing, {
       usdUyu,
       firstSeen: doc.firstSeen,
@@ -183,8 +243,19 @@ export async function main(): Promise<void> {
       // ~170 páginas del puente compartido), lo que dejó guardado la última corrida completa.
       declaredType: declaredTypes.get(doc.listing.id) ?? doc.facets?.type ?? null,
       declaredBand: declaredBands.get(doc.listing.id) ?? doc.facets?.displacementBand ?? null,
+      detail: doc.detail ?? null,
     })
   );
+  // La cilindrada con el consenso del modelo, que necesita ver a todos los avisos juntos
+  // (classes/motos/displacement.ts). Antes de la guarda de precios, que no la usa, y antes de las
+  // bandas, que sólo cuentan la cilindrada que dice el aviso.
+  const enriched = attachMotoDisplacements(single);
+  const bases = new Map<string, number>();
+  for (const listing of enriched) {
+    const basis = listing.displacementBasis ?? "sin dato";
+    bases.set(basis, (bases.get(basis) ?? 0) + 1);
+  }
+  console.log(`[motos] cilindrada por base: ${JSON.stringify(Object.fromEntries(bases))}`);
 
   // 4. Un precio que no puede ser el de esa moto se RETIRA antes del análisis, no se corrige: así el
   // veredicto vale a la vez para el catálogo, las bandas y el informe.
@@ -199,6 +270,7 @@ export async function main(): Promise<void> {
   const harvestOk = !!harvest && !harvest.note;
   const sourceMeta = new Map<MotoSource, { lastOkAt: string | null; ok: boolean }>([
     ["mercadolibre", { lastOkAt: harvestOk && harvest ? harvest.finishedAt : null, ok: harvestOk }],
+    ["facebook", { lastOkAt: fbLastOkAt, ok: fbOk }],
   ]);
   const catalog = buildMotoCatalog(deduped.kept, {
     now,

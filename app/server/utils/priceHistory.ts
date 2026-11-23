@@ -117,6 +117,29 @@ export async function carHistory(key: string): Promise<PriceHistorySeries | null
   return series ? publicSeries(series) : null
 }
 
+/** motos: `motolistings.priceHistory`, la misma forma que autos (un punto al cambiar el precio). */
+export async function motoHistory(key: string): Promise<PriceHistorySeries | null> {
+  if (!ID.test(key)) return null
+  const motos = collection('motolistings')
+  if (!motos) return null
+  const row = await motos.findOne(
+    { key },
+    {
+      projection: {
+        _id: 0,
+        key: 1,
+        firstSeen: 1,
+        lastSeen: 1,
+        priceHistory: 1,
+        'listing.currency': 1,
+      },
+      maxTimeMS: 4000,
+    }
+  )
+  const series = row ? seriesFromCarListing(row) : null
+  return series ? publicSeries(series) : null
+}
+
 /** alquiler y venta: `marketpricelogs`, un punto sólo cuando el precio cambia. */
 export async function marketHistory(
   vertical: 'alquiler' | 'venta',

@@ -80,7 +80,7 @@ describe("composición", () => {
       listing({ id: "700001", title: "Honda Wave 110 Cc", price: 900 }),
       listing({ id: "700002", title: "Honda Xr 150 Cc", price: 2_000 }),
       listing({ id: "700003", title: "Honda Cb 500 Cc", price: 6_000 }),
-      listing({ id: "700004", title: "Honda sin cilindrada declarada", price: 2_500 }),
+      listing({ id: "700004", title: "Honda sin cilindrada declarada", model: "XR", price: 2_500 }),
     ];
     const report = buildMotoReport(rows, { generatedAt: SEEN, usdUyu: 42, withoutDisplacement: 1, withoutDisplacementBand: 1 });
     expect(report.displacements.map(band => [band.band, band.adverts])).toEqual([

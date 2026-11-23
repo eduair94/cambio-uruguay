@@ -11,6 +11,7 @@ import { annualDropOf, depreciationOf } from "../autos/report";
 import { cleanPublicText } from "../autos/normalize";
 import { quantile } from "../autos/stats";
 import { ML_MOTOS_PERMALINK_PREFIX } from "./sources/mercadolibre";
+import { FB_MOTO_PERMALINK, safeFbPicture } from "./sources/facebook";
 import { MOTO_SOURCES } from "./sources";
 import type {
   MotoDisplacementBand,
@@ -65,7 +66,11 @@ export function bandEligible(listing: MotoListing): boolean {
     !listing.currencyInferred &&
     listing.priceUsd > 0 &&
     listing.year > 1950 &&
-    !listing.flags.some(flag => MOTO_EXCLUDING_FLAGS.has(flag))
+    !listing.flags.some(flag => MOTO_EXCLUDING_FLAGS.has(flag)) &&
+    // Lo mismo dicho en la DESCRIPCIÓN (que la ficha trae desde el 23/11/2026): deuda, papeles,
+    // siniestro, recupero o mecánica a reparar. Las de severidad media (chapa extranjera, uso
+    // intensivo) no sacan a la moto de la banda, igual que en autos.
+    !(listing.risks ?? []).some(risk => risk.severity === "alta")
   );
 }
 
@@ -100,8 +105,12 @@ function groupBy<T>(items: readonly T[], key: (item: T) => string): Map<string, 
 export function publicMotoListing(listing: MotoListing): PublicMotoListing | null {
   // Segunda validación del permalink, a propósito: si un día entra otra fuente con otro host, el
   // aviso no llega al público sin que alguien agregue su regla acá.
-  if (listing.source !== "mercadolibre" || !listing.permalink.startsWith(ML_MOTOS_PERMALINK_PREFIX)) return null;
-  const picture = listing.picture && /^https:\/\/http2\.mlstatic\.com\//.test(listing.picture) ? listing.picture : null;
+  const fromMl = listing.source === "mercadolibre" && listing.permalink.startsWith(ML_MOTOS_PERMALINK_PREFIX);
+  const fromFb = listing.source === "facebook" && FB_MOTO_PERMALINK.test(listing.permalink);
+  if (!fromMl && !fromFb) return null;
+  const pictureOk = (url: string): boolean =>
+    fromMl ? /^https:\/\/http2\.mlstatic\.com\//.test(url) : safeFbPicture(url);
+  const picture = listing.picture && pictureOk(listing.picture) ? listing.picture : null;
   return {
     key: listing.key,
     source: listing.source,
@@ -123,6 +132,7 @@ export function publicMotoListing(listing: MotoListing): PublicMotoListing | nul
     currencyInferred: listing.currencyInferred,
     displacement: listing.displacement,
     displacementBasis: listing.displacementBasis,
+    displacementVotes: listing.displacementVotes,
     displacementBand: listing.displacementBand,
     displacementBandBasis: listing.displacementBandBasis,
     type: listing.type,
@@ -138,6 +148,18 @@ export function publicMotoListing(listing: MotoListing): PublicMotoListing | nul
     lastSeen: listing.lastSeen,
     priceDrop: listing.priceDrop ? { ...listing.priceDrop } : null,
     flags: [...listing.flags],
+    // Se vuelven a validar contra el host de imágenes de ML aunque el enriquecido ya lo hizo.
+    pictures: (listing.pictures ?? []).filter(pictureOk).slice(0, 8),
+    color: listing.color ?? null,
+    specs: listing.specs ? { ...listing.specs } : null,
+    // La cita del vendedor, limpia de teléfonos y links (`declaredRisks` ya la limpia; acá se corta).
+    risks: (listing.risks ?? []).map(risk => ({
+      category: risk.category,
+      severity: risk.severity,
+      quote: cleanPublicText(risk.quote).slice(0, 240),
+      from: risk.from,
+    })),
+    hasDetail: !!listing.detail,
   };
 }
 
@@ -186,6 +208,8 @@ export function buildMotoCatalog(
       // declara el título y casi nunca lo hace (2 de 73 en la primera corrida real). Se publican los
       // dos números para que la página diga cuál de los dos filtros puede ofrecer y sobre cuántos.
       withoutDisplacementBand: rows.filter(row => row.displacementBand === null).length,
+      displacementEstimated: rows.filter(row => row.displacementBasis === "model" || row.displacementBasis === "model-name").length,
+      withDetail: rows.filter(row => row.hasDetail).length,
       models: [...models.values()].sort((a, b) => b.listings - a.listings || a.slug.localeCompare(b.slug)),
       sources: context.sources.map(source => ({ ...source })),
     },
@@ -216,13 +240,13 @@ export function buildMotoModels(
       .map(([, items]) => ({ year: items[0]!.year, ...bandOf(items) }))
       .sort((a, b) => b.year - a.year);
     const displacements: MotoDisplacementBand[] = [...groupBy(
-      // Una fila sin cilindrada declarada NO entra a ninguna cohorte de cilindrada. Es la regla de
-      // la spec escrita como código: precisión sobre recall.
-      clean.filter(listing => listing.displacement !== null),
-      listing => String(listing.displacement)
+      // Sólo la cilindrada que DICE el aviso (ficha o título) parte una cohorte: una estadística no
+      // se calcula sobre estimaciones. Precisión sobre recall, escrita como código.
+      clean.filter(listing => listing.exactDisplacement !== null),
+      listing => String(listing.exactDisplacement)
     )]
       .filter(([, items]) => items.length >= MOTO_BAND_MIN)
-      .map(([, items]) => ({ displacement: items[0]!.displacement!, ...bandOf(items) }))
+      .map(([, items]) => ({ displacement: items[0]!.exactDisplacement!, ...bandOf(items) }))
       .sort((a, b) => a.displacement - b.displacement);
     const types = [...groupBy(clean.filter(listing => listing.type), listing => listing.type!)]
       .map(([type, items]) => ({ type: type as MotoType, adverts: items.length }))
