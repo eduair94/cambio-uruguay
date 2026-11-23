@@ -361,7 +361,8 @@ and sits in the same column on every route. A bare `<div>` or a `<v-row>` at the
 the 12px — and Vuetify 4's grid no longer hides that behind the v3 negative row margins — which is
 how 57 of 214 templates measured 12px on 2026-09-12 while the rest measured 28. Use `fluid` where
 width is information (charts, wide tables, the branches directory) so the 1200px cap does not crop
-them; the full-bleed exceptions stay on the route class, never on the page.
+them; the full-bleed exceptions stay on the route class, never on the page. Directories are the
+one exception a page declares, and only as a flag the layout reads (The Directory Frame Rule).
 `tests/unit/pageContainer.test.ts` reads the source; `npm run audit:gutters` reads the rendered
 result.
 
@@ -402,6 +403,21 @@ sticks at 80px (the 64px bar plus the 16px the page keeps under it), and that is
 because it covers nothing: it lives in its own column. A rail whose unit goes unfilled leaves its
 column empty rather than reflowing the text to full width — a wider column mid-read is the
 layout shift the reserved box exists to prevent. `tests/unit/adRail.test.ts` reads the source.
+
+**The Directory Frame Rule.** A directory — filters beside a grid of results — is the one page where
+width is the content: inside the 1280px cap with a rail, a 2048px monitor showed two cards per row
+and 376px of empty screen on each side (`/autos-usados-uruguay`, 2026-11-22). Such a page declares
+`definePageMeta({ wide: true })` and the layout swaps the cap for a **frame**: 2200px, centred, with
+the page AND the rail inside it. So spare width always lands evenly on both sides; never the page
+flush left with the ad flush right. With the rail, the frame pads 28px on its right too, so the rail
+sits as far from the edge as the content does on the left (12 + 16). Inside the frame there is one
+left edge for everything. What uses the width is what the page marks `cu-listing` (the filter grid,
+the results, a sticky list bar). Every other block is reading: it stays at 1224px (the tail's inner
+width) and is **left-aligned**, not centred in a wide column. A loose paragraph in it keeps the
+56rem it had in the 900px column. The tail aligns left with them. A child route that is reading (a
+listing's own page) sets `wide: false`, which wins over its parent's meta. Text pages never take
+the flag: a guide's measure is its design, and an editorial hub with a directory embedded halfway
+down stays capped. `tests/unit/wideDirectories.test.ts` reads the source.
 
 **The Min-Width Zero Rule.** Any grid or flex item that can contain an image, a long thread title,
 or a URL carries `min-width: 0`. Without it the item's min-content floor silently widens the whole

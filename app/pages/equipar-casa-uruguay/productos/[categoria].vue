@@ -116,6 +116,8 @@ import {
 // A real 404 for an invented slug: `validate` runs before setup. Only the imported function is
 // visible to the macro, never a module constant.
 definePageMeta({
+  // Directorio: filtros + grilla con el ancho del marco (layouts/default.vue).
+  wide: true,
   validate: async route => {
     const catalogue = await import('~/utils/equiparCategoryPages')
     return catalogue.isEquiparCategorySlug(String(route.params.categoria ?? ''))

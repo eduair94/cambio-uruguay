@@ -212,6 +212,9 @@ import {
   type PropertySaleAreaBasis,
 } from '~/utils/propertySales'
 import { propertySaleSourceName, propertySalesMessages } from '~/utils/propertySalesMessages'
+// La ficha es lectura: no hereda el marco ancho del directorio padre (vue-router mezcla la meta
+// de los registros, y la del hijo gana).
+definePageMeta({ wide: false })
 const route = useRoute()
 const localePath = useLocalePath()
 const { t, locale } = useI18n({ useScope: 'local', messages: propertySalesMessages })

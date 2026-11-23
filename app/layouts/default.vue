@@ -197,7 +197,10 @@
       <!-- `--rail` sólo cuando el riel de escritorio va a renderizar: sin el id de la unidad la
            clase no se aplica y la grilla no existe (una grilla vacía robaría 300 px a toda página
            de densidad normal y dejaría de colapsar los márgenes entre hijos). -->
-      <div class="container_custom" :class="{ 'container_custom--rail': railOn }">
+      <div
+        class="container_custom"
+        :class="{ 'container_custom--rail': railOn, 'container_custom--wide': wideOn }"
+      >
         <!-- La familia de la página (directorio, sus páginas y sus análisis), ARRIBA: el bloque del
              pie no alcanzaba en páginas de 15.000 px. Sale de utils/directorios.ts. -->
         <FamiliaNav />
@@ -284,6 +287,9 @@ const loadingStore = useLoadingStore()
 // hidratación); el <ClientOnly> envuelve sólo la unidad, como en newsletter/[fecha].vue.
 const { canRender: canRenderAd } = useAds()
 const railOn = computed(() => canRenderAd('sidebar'))
+// Los directorios declaran `definePageMeta({ wide: true })` y usan un marco de 2200 en vez de la
+// columna de 1280 (ver `.container_custom--wide`). Es de la ruta, así que SSR y cliente coinciden.
+const wideOn = computed(() => route.meta.wide === true)
 
 const formatNameRoute = () => {
   // Format the route name to be used in class names
@@ -967,11 +973,19 @@ useSchemaOrg([
 .avanzado_main .container_custom {
   max-width: none;
 }
-/* Directorios con sidebar + grilla de tarjetas: el cap de 1280 deja media
-   pantalla vacía en monitores anchos. La página pone su propio tope. */
-.alquileres-uruguay_main .container_custom,
-.autos-usados-uruguay_main .container_custom {
-  max-width: none;
+/* Directorios (`definePageMeta({ wide: true })`): filtros + grilla de resultados. Con el tope de
+   1280 un monitor de 2048 mostraba dos tarjetas por fila con 376 px vacíos de cada lado. El marco
+   sigue centrado y con tope, pero de 2200, y ADENTRO van la página y el riel juntos: pasado ese
+   ancho el aire queda igual a los dos lados, nunca la página a un lado y el anuncio contra el borde.
+   Lo que pasa adentro del marco (qué bloque usa el ancho y cuál es lectura) está en el bloque sin
+   scope de abajo, junto al riel. */
+.container_custom--wide {
+  max-width: 2200px;
+}
+/* Los bloques del final arrancan en el mismo borde que la página (12 + 16 = 28 px), no centrados
+   en una columna ancha: un solo borde izquierdo para todo. */
+.container_custom--wide .layout-tail {
+  margin-inline: 0;
 }
 /* Ampliaciones, "Seguí leyendo" y newsletter son lectura: conservan el ancho que tienen en
    cualquier ruta con tope (1280 menos el padding de 12 + 12) aunque la ruta lo haya liberado, y
@@ -1058,5 +1072,30 @@ useSchemaOrg([
     grid-row: 1 / span 99;
     align-self: start;
   }
+  /* En el marco de un directorio (`--wide`) el riel queda a 28 px del borde derecho, lo mismo que
+     el contenido del izquierdo (12 del marco + 16 del <VContainer> de la página): con los 12 del
+     marco solos se veía pegado al borde. `.container_custom` repetido para ganarle al padding con
+     scope del layout sin depender del orden. */
+  .container_custom.container_custom--wide.container_custom--rail {
+    padding-inline-end: 28px;
+  }
+}
+
+/* Adentro del marco de un directorio (`--wide`, ver arriba). El <VContainer> de la página llena su
+   columna: Vuetify lo topa en 1000/1400 y varias páginas le ponían 1120 o 1280 propios, así que la
+   regla lleva `.container_custom` dos veces de especificidad para ganarles sin depender del orden.
+   Lo que usa el ancho es lo que la página marca `cu-listing` (filtros, grilla, barra de la lista);
+   todo lo demás es lectura y se queda en 1224, el ancho interior del pie del layout, alineado a la
+   izquierda con todo lo demás. Un párrafo suelto en esos bloques (la bajada del título, la entrada
+   de una sección) conserva los 56rem que tenía en la columna de 900. SIN scope por lo mismo que el
+   riel: el contenedor y sus hijos son de la página. */
+.container_custom.container_custom--wide > .v-container {
+  max-width: none;
+}
+.container_custom.container_custom--wide > .v-container > :not(.cu-listing) {
+  max-width: 1224px;
+}
+.container_custom.container_custom--wide > .v-container > :not(.cu-listing) > p {
+  max-width: 56rem;
 }
 </style>

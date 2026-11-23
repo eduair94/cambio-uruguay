@@ -33,8 +33,8 @@ FIRST VIEWPORT: Migas, H1, cuántos modelos y vendedores hay y cuándo se leyó,
     </header>
 
     <!-- ── Filtros ────────────────────────────────────────────────────────── -->
-    <AssistantCta topic="celulares" class="mb-6" />
-    <section v-if="cards.length" class="filters mb-6">
+    <AssistantCta topic="celulares" class="cu-listing mb-6" />
+    <section v-if="cards.length" class="filters cu-listing mb-6">
       <div class="d-flex flex-wrap ga-2 mb-4">
         <VChip
           size="small"
@@ -86,7 +86,7 @@ FIRST VIEWPORT: Migas, H1, cuántos modelos y vendedores hay y cuándo se leyó,
       <p v-if="!visibleCards.length" class="text-body-1 mb-6">
         Ningún modelo entra en ese rango. Subí el precio máximo o probá otra marca.
       </p>
-      <div v-else class="phone-grid mb-10">
+      <div v-else class="phone-grid cu-listing mb-10">
         <!-- La unidad intermedia, como fila entera después del cuarto modelo (utils/ads.ts →
              FEED_AD_AFTER) y no arriba de las preguntas, que quedan debajo de ~95 modelos: la
              página daba 0,63 impresiones por vista (28 días al 30/10/2026). FaqSection va con
@@ -273,6 +273,8 @@ import {
   PHONE_US_PRICES_VERIFIED_AT,
 } from '~/utils/phoneUsPrices'
 
+// Directorio: filtros + grilla con el ancho del marco (layouts/default.vue, `.container_custom--wide`).
+definePageMeta({ wide: true })
 const localePath = useLocalePath()
 
 // Server-rendered: los precios tienen que estar en el HTML que lee el buscador, no llegar después
@@ -505,9 +507,6 @@ useHead(() => ({
 </script>
 
 <style scoped>
-.phones-hub {
-  max-width: 1120px;
-}
 /* Rol Display de DESIGN.md (el idiom .hero-title), no text-h4: a 34 px fijos el título de 63
    caracteres ocupaba cinco líneas y 200 px a 390 px de ancho (medido 2026-09-22). */
 .phones-title {

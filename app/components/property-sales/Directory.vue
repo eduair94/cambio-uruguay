@@ -20,7 +20,7 @@
         <a href="#sales-coverage">{{ t('coverage') }}</a>
       </div>
     </header>
-    <div class="sales-directory__workspace">
+    <div class="sales-directory__workspace cu-listing">
       <aside class="sales-directory__sidebar" :aria-label="t('filters')">
         <PropertySalesSearchFilters
           v-model:open="filtersOpen"
@@ -623,8 +623,7 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('seoDescrip
 </script>
 <style scoped>
 .sales-directory {
-  max-width: 1280px;
-  /* 16px at the sides: the same x=28 edge as every page under the section bar (FamiliaNav). */
+  /* Sin tope propio: el ancho lo decide el marco del layout (`wide`, layouts/default.vue). 16px at the sides: the same x=28 edge as every page under the section bar (FamiliaNav). */
   padding: 12px 16px;
 }
 :where(.sales-directory) :where(h1, h2, h3, p) {
@@ -737,7 +736,9 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('seoDescrip
 }
 .sales-directory__grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Tantas columnas como entren de 280: en la columna de siempre (~596) son las dos de antes, y en
+     el marco ancho del layout (`wide`) suman columnas del mismo tamaño en vez de estirar dos. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
   gap: 16px;
 }
 .sales-directory__empty {

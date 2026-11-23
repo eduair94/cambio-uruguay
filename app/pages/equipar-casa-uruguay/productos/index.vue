@@ -108,6 +108,8 @@ import {
   equiparProductoPath,
 } from '~/utils/equiparProductos'
 
+// Directorio: filtros + grilla con el ancho del marco (layouts/default.vue, `.container_custom--wide`).
+definePageMeta({ wide: true })
 const localePath = useLocalePath()
 const { query, data, error, facets, chips, filtered, update, remove, clear } =
   await useEquiparProductosDirectorio()

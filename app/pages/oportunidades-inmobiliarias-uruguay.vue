@@ -43,7 +43,7 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
         />
       </div>
     </header>
-    <nav class="opportunities__modes" :aria-label="budgetCopy.modes">
+    <nav class="opportunities__modes cu-listing" :aria-label="budgetCopy.modes">
       <NuxtLink
         :to="modeLink('rent')"
         :aria-current="!budgetMode && query.operation === 'rent' ? 'page' : undefined"
@@ -58,8 +58,8 @@ MOBILE: Persistent filter access, a side drawer, and comparables expanded inside
         budgetCopy.modeBudget
       }}</NuxtLink>
     </nav>
-    <RentalsBudgetRentals v-if="budgetMode" />
-    <div v-else class="opportunities__workspace">
+    <RentalsBudgetRentals v-if="budgetMode" class="cu-listing" />
+    <div v-else class="opportunities__workspace cu-listing">
       <aside class="opportunities__sidebar" :aria-label="t('filters')">
         <OpportunityFilters
           v-model:open="filtersOpen"
@@ -341,6 +341,8 @@ const { t, locale } = useI18n({ useScope: 'local', messages: propertyOpportunity
 const availability = useRentalAvailability()
 const availabilityCopy = computed(() => rentalAvailabilityCopy(locale.value))
 const localePath = useLocalePath()
+// Directorio: filtros + grilla con el ancho del marco (layouts/default.vue, `.container_custom--wide`).
+definePageMeta({ wide: true })
 const route = useRoute()
 const router = useRouter()
 const { smAndDown } = useDisplay()
@@ -658,7 +660,7 @@ useHead(() => ({
 
 <style scoped>
 .opportunities {
-  max-width: 1280px;
+  /* Sin tope propio: el ancho lo decide el marco del layout (`wide`, layouts/default.vue). */
   padding-bottom: 56px;
 }
 .opportunities__header {
@@ -797,6 +799,10 @@ useHead(() => ({
 }
 .opportunities__list {
   display: grid;
+  /* Una columna en el ancho de siempre (~594) y dos, del mismo tamaño, cuando el marco ancho del
+     layout (`wide`) da lugar; `start` para que abrir los comparables de una no estire a su vecina. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 560px), 1fr));
+  align-items: start;
   gap: 20px;
 }
 .opportunities__results,

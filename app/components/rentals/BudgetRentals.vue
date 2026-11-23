@@ -771,6 +771,11 @@ availability.watchChanges(async () => {
 }
 .budget-list {
   display: grid;
+  /* Una columna en el ancho de siempre y dos, del mismo tamaño, cuando el marco ancho del layout
+     (`wide`, en /oportunidades-inmobiliarias-uruguay) da lugar; `start` para que una ficha alta no
+     estire a su vecina. FeedAd y FeedEdge ocupan la fila entera. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 560px), 1fr));
+  align-items: start;
   gap: 16px;
 }
 .budget-card {
