@@ -82,7 +82,38 @@ Diseño: `docs/superpowers/specs/2026-11-23-emprendimientos-instagram-design.md`
 - `node dist/sync_emprendimientos.js --dry-run [--handles=a,b] [--no-discovery] [--max-reads=N] [--json=archivo]`:
   arranca de las semillas en memoria, no toca ninguna base e imprime cada decisión.
 - `EMPRENDIMIENTOS_ENABLED=0` apaga el job sin desplegar. Otras variables:
-  `EMPRENDIMIENTOS_MAX_READS` (45), `EMPRENDIMIENTOS_GAP_MS` (4000),
-  `EMPRENDIMIENTOS_READ_MINUTES` (7), `EMPRENDIMIENTOS_UE_DETAILS` (25) y `EMPRENDIMIENTOS_PROXY`.
+  - `EMPRENDIMIENTOS_MAX_READS` (100);
+  - `EMPRENDIMIENTOS_GAP_MS` (4000);
+  - `EMPRENDIMIENTOS_READ_MINUTES` (16);
+  - `EMPRENDIMIENTOS_UE_DETAILS` (80);
+  - `EMPRENDIMIENTOS_WEB_QUERIES` (12; `0` apaga la búsqueda web);
+  - `EMPRENDIMIENTOS_POST_READS` (10; `0` apaga la lectura de posts de curadoras);
+  - `EMPRENDIMIENTOS_PROXY`.
 - `robots.txt` de instagram.com dice `Disallow: /`. Se leen páginas públicas porque lo pidió el
   dueño del sitio, igual que la fuente de Instagram de alquileres.
+
+## Búsqueda más profunda (23/11/2026, segunda tanda)
+
+La primera corrida de producción dejó 180 candidatas y 13 publicadas: el límite era el
+descubrimiento, no los filtros (de 31 perfiles leídos, 13 entraron). Lo que se agregó:
+
+- **Búsqueda web con Gemini** (`sources/web.ts`): 72 productos × 30 lugares más 180 búsquedas de
+  curadoras (ferias, mercados, tiendas colectivas, redes), unas 2.300 consultas que se recorren 12
+  por corrida (~20 días por vuelta). Una consulta medida devuelve de 2 a 9 cuentas en el texto;
+  las fuentes citadas casi nunca son perfiles de Instagram, así que las cuentas se toman del texto.
+  Gemini y no Claude: con `ANTHROPIC_GROUNDED=1` (el VPS desde el 22/11) `classes/llm.ts` mandaría
+  la búsqueda a Claude, que cobra por búsqueda. Una cuenta inventada contesta «no existe» al leerla
+  y nunca se publica. Es fuente «media»: hace falta el «sí» de la IA y ninguna marca extranjera.
+- **Texto de posts de curadoras**: después de los perfiles, en el mismo Chrome, 10 posts por
+  corrida repartidos entre curadoras (`postsToMine`). Se toman las @menciones del texto, las
+  cuentas etiquetadas en la foto y los coautores. Rinde poco con las tiendas colectivas (medido:
+  0,3 cuentas por post en @lacomarca.uy y @red_de_emprendedores.uy, que no etiquetan a sus marcas);
+  está para las ferias que publican a sus expositores. `minedCodes` evita releer un post.
+- **Más lecturas**: 100 perfiles por corrida. Una prueba desde el VPS leyó 119 seguidos (96 con
+  perfil, 23 que no existían) sin un muro de login. Uruguay Emprendedor pasa a 80 fichas por
+  corrida, con 1,5 s entre una y otra.
+- **Dos defectos de la primera tanda**:
+  - `mentionsIn` descartaba toda @mención terminada en `.uy`, tomándola por un dominio. La bola de
+    nieve perdía justo a las cuentas uruguayas.
+  - Un perfil con su nodo pero sin la grilla dibujada se rechazaba por «0 publicaciones»: le pasó a
+    `@red_de_emprendedores.uy`, que tiene 316. Ahora es «no se pudo leer» y se reintenta.

@@ -43,13 +43,16 @@ export function instagramLinksIn(text: string): string[] {
 /**
  * Las `@menciones` de un texto. Sólo con la arroba pegada al handle y sin una letra antes (un
  * correo `hola@tienda.com` no es una mención), y nunca un dominio (`@tienda.com.uy`).
+ *
+ * Un handle que TERMINA en `.uy` es un handle, no un dominio: `@retroka.uy`, `@bombshop.uy`. Hasta
+ * el 23/11/2026 la regla los descartaba y la bola de nieve perdía justo a las cuentas uruguayas.
  */
 export function mentionsIn(text: string): string[] {
   const out: string[] = [];
   const clean = String(text || "").replace(/\\_/g, "_");
   for (const match of clean.matchAll(/(?<![\w@.])@([A-Za-z0-9._]{2,30})/g)) {
     const raw = match[1]!.replace(/\.+$/, "");
-    if (/\.(?:com|uy|net|org|ar|es)(?:\.|$)/i.test(raw)) continue;
+    if (/\.(?:com|net|org|gub|edu)(?:\.[a-z]{2})?$/i.test(raw)) continue;
     const handle = normalizeHandle(raw);
     if (handle && !out.includes(handle)) out.push(handle);
   }

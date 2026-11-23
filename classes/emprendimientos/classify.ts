@@ -60,6 +60,7 @@ const SYSTEM = [
   "tipo: 'emprendimiento' = un negocio chico o mediano que vende productos o servicios (aunque tenga web o local).",
   "'marca-grande' = cadena, empresa conocida, franquicia o marca internacional. 'personal' = una persona, un influencer, un creador de contenido o una cuenta sin nada a la venta.",
   "'medio-o-comunidad' = medio, noticias, memes, comunidad, red o agenda de emprendedores, feria. 'tienda-colectiva' = una tienda que reúne a muchas marcas.",
+  "'otro' = equipos (deportivos o de facultad), clubes, instituciones, ONG, partidos, colegios y universidades: no venden nada aunque tengan seguidores.",
   "uruguaya: 'si' sólo si algo del texto lo indica (ciudad, barrio o departamento uruguayo, 🇺🇾, +598, envíos en Uruguay, pesos uruguayos). 'no' si indica otro país. 'dudoso' si no se sabe.",
   "rubro: elegí el que mejor describe lo que vende. etiquetas: hasta 5 productos concretos que vende, en minúscula y en singular (ej. 'torta', 'mate', 'tote bag').",
   "resumen: una oración en castellano rioplatense, de 8 a 18 palabras, que diga qué vende o hace, sin adjetivos de elogio ni signos de exclamación ni emojis. No repitas el nombre de la cuenta.",

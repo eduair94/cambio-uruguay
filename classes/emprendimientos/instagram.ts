@@ -11,8 +11,9 @@
 //   * una cuenta que no existe contesta `<title>Instagram</title>` sin nodo; un `GET` HTTP común no
 //     trae nada (la página se dibuja con JavaScript). Las fotos vencen a los ~4 días (`oe=`).
 import { launchChrome, sleep, type Page } from "../rentals/sources/social/chrome";
+import { postFromInstagramHtml } from "../rentals/sources/social/instagram/page";
 import { normalizeHandle, unwrapInstagramLink } from "./handles";
-import type { ProfilePost, ProfileRead } from "./types";
+import type { PostCaption, ProfilePost, ProfileRead } from "./types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Node = Record<string, any>;
@@ -131,6 +132,11 @@ export function parseProfile(html: string, handle: string, url: string, readAt: 
     return empty(want, MISSING.test(title) || MISSING.test(body) ? "missing" : "unreadable", readAt);
   }
   if (node.is_private === true) return { ...empty(want, "private", readAt), fullName: String(node.full_name || "").slice(0, 120) };
+  const posts = gridPosts(html);
+  // Un perfil público con el nodo y SIN grilla es una página que no terminó de dibujarse (pasó con
+  // @red_de_emprendedores.uy en la primera corrida de producción, 23/11/2026: rechazada por "0
+  // publicaciones" con 316 posts). Se trata como "no se pudo leer" y se reintenta, nunca se rechaza.
+  if (!posts.length) return empty(want, "unreadable", readAt);
   const pic = typeof node.profile_pic_url === "string" && CDN.test(node.profile_pic_url) ? node.profile_pic_url : null;
   return {
     status: "ok",
@@ -141,9 +147,34 @@ export function parseProfile(html: string, handle: string, url: string, readAt: 
     followers: count(node.follower_count ?? node.edge_followed_by?.count),
     following: count(node.following_count ?? node.edge_follow?.count),
     profilePic: pic,
-    posts: gridPosts(html),
+    posts,
     readAt,
   };
+}
+
+/**
+ * El texto de un post desde su propia página (`/p/<código>/`), con el lector de alquileres: el JSON
+ * embebido trae el nodo del post y los de otros posts de la cuenta, así que se toma el del código.
+ * El embed (`/p/<código>/embed/captioned/`) por HTTP plano contesta un muro de login sin texto
+ * (medido el 23/11/2026): hace falta el Chrome.
+ */
+export function captionFromHtml(html: string, code: string): PostCaption | null {
+  const post = postFromInstagramHtml(html, code);
+  if (!post) return null;
+  // Además del texto, las cuentas etiquetadas EN la foto y los coautores del post (una feria que
+  // muestra a un expositor lo suele etiquetar en la imagen). Medido el 23/11/2026 en @lacomarca.uy:
+  // los campos vienen y vacíos, así que esto suma cuando existe y no cuesta nada cuando no.
+  const tagged = new Set<string>();
+  for (const data of embeddedJson(html)) {
+    for (const node of walk(data)) {
+      if (node.code !== code || typeof node.taken_at !== "number") continue;
+      const tags = [node, ...(Array.isArray(node.carousel_media) ? node.carousel_media : [])].flatMap(item => (Array.isArray(item?.usertags?.in) ? item.usertags.in : []));
+      for (const tag of tags) if (typeof tag?.user?.username === "string") tagged.add(tag.user.username);
+      for (const coauthor of Array.isArray(node.coauthor_producers) ? node.coauthor_producers : []) if (typeof coauthor?.username === "string") tagged.add(coauthor.username);
+    }
+  }
+  const extra = [...tagged].map(handle => `@${handle}`).join(" ");
+  return { code, owner: post.author.uniqueId.toLowerCase(), text: `${post.lines.join("\n")}${extra ? `\n${extra}` : ""}`.slice(0, 3_000) };
 }
 
 export interface ReadPlan {
@@ -153,10 +184,14 @@ export interface ReadPlan {
   proxy: string | null;
   /** Corta si las primeras N lecturas no traen ningún perfil: Instagram está cerrado para nosotros. */
   stopAfterBlankStart: number;
+  /** Posts cuyo texto se lee DESPUÉS de los perfiles, en el mismo Chrome y con el mismo presupuesto. */
+  postCodes?: string[];
 }
 
 export interface ReadResults {
   reads: Map<string, ProfileRead>;
+  /** Los textos leídos de `postCodes` (los que la página no trajo, faltan). */
+  captions?: PostCaption[];
   launched: boolean;
   /** true cuando la corrida cortó porque Instagram no contestó perfiles. */
   closed: boolean;
@@ -166,11 +201,13 @@ export interface ReadResults {
 export type ProfileReader = (plan: ReadPlan) => Promise<ReadResults>;
 
 const NAV_TIMEOUT_MS = Number(process.env.EMPRENDIMIENTOS_NAV_MS || 45_000);
+/** El post se lee con `domcontentloaded` + esta espera, como en alquileres (~6 s por post medidos). */
+const POST_SETTLE_MS = Number(process.env.EMPRENDIMIENTOS_POST_SETTLE_MS || 2_500);
 
 /** Lee los perfiles en UN Chrome, con presupuesto, y lo cierra en `finally`. */
 export const readProfiles: ProfileReader = async plan => {
-  const results: ReadResults = { reads: new Map(), launched: false, closed: false, note: null };
-  if (!plan.handles.length) return results;
+  const results: ReadResults = { reads: new Map(), captions: [], launched: false, closed: false, note: null };
+  if (!plan.handles.length && !plan.postCodes?.length) return results;
   const deadline = Date.now() + plan.budgetMs;
   const started = await launchChrome(plan.proxy, "Emprendimientos");
   if (!started) {
@@ -202,6 +239,26 @@ export const readProfiles: ProfileReader = async plan => {
         results.reads.set(handle, read);
       } catch {
         results.reads.set(handle, empty(handle, "unreadable", readAt));
+      }
+    }
+    // Los textos de los posts, sólo si Instagram está contestando y queda presupuesto.
+    let misses = 0;
+    for (const code of results.closed ? [] : (plan.postCodes ?? [])) {
+      if (Date.now() > deadline || misses >= 5) break;
+      if (attempted) await sleep(plan.gapMs);
+      attempted++;
+      try {
+        await page.goto(`https://www.instagram.com/p/${encodeURIComponent(code)}/`, { waitUntil: "domcontentloaded", timeout: NAV_TIMEOUT_MS });
+        await sleep(POST_SETTLE_MS);
+        const caption = /\/accounts\/login/.test(String(page.url())) ? null : captionFromHtml(String(await page.content()), code);
+        if (caption) {
+          results.captions!.push(caption);
+          misses = 0;
+        } else {
+          misses++;
+        }
+      } catch {
+        misses++;
       }
     }
   } catch (error) {

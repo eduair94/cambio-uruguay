@@ -30,4 +30,13 @@ export const SEEDS: readonly Seed[] = Object.freeze([
   { handle: "lacomarca.uy", source: { kind: "semilla", label: "Tienda de emprendimientos", url: null } },
   { handle: "clubemprendedoresuy", source: { kind: "semilla", label: "Comunidad de emprendedores", url: null } },
   { handle: "uruguayemprendedor", source: { kind: "semilla", label: "Uruguay Emprendedor", url: null } },
+  // Más curadoras (relevamiento del 23/11/2026): redes de mujeres emprendedoras, la organización de
+  // empresarias, la semana de la moda y una cuenta de ferias. Si alguna resulta no ser uruguaya, la
+  // clasificación la rechaza como a cualquier otra.
+  { handle: "mujeresemprendedoras.uruguay", source: { kind: "semilla", label: "Red de mujeres emprendedoras", url: null } },
+  { handle: "mujeresemprendedorasuy", source: { kind: "semilla", label: "Comunidad de mujeres emprendedoras", url: null } },
+  { handle: "meclub.uy", source: { kind: "semilla", label: "Club de mujeres emprendedoras", url: null } },
+  { handle: "omeu_uy", source: { kind: "semilla", label: "Organización de mujeres empresarias", url: null } },
+  { handle: "mo_week", source: { kind: "semilla", label: "Semana de la moda uruguaya", url: null } },
+  { handle: "emprendedoresdeferia", source: { kind: "semilla", label: "Feria de emprendedores", url: null } },
 ]);

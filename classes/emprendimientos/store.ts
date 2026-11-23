@@ -23,6 +23,8 @@ export interface EmprendimientoStore {
   dueCandidates(now: Date, limit: number): Promise<CandidateRow[]>;
   /** Cuentas leídas que esperan clasificación (la IA no contestó en su corrida). */
   unclassified(limit: number): Promise<CandidateRow[]>;
+  /** Las curadoras con perfil leído: sus posts se leen buscando @menciones. */
+  curators(limit: number): Promise<CandidateRow[]>;
   saveCandidates(rows: readonly CandidateRow[]): Promise<void>;
   loadOptOuts(): Promise<Set<string>>;
   pendingSuggestions(limit: number): Promise<{ id: string; handle: string }[]>;
@@ -70,6 +72,9 @@ export const mongoStore: EmprendimientoStore = {
       ? await EmprendimientoCandidateModel.find({ ...base, handle: { $nin: [...taken] } }).sort({ priority: 1, dueAt: 1 }).limit(rest).lean<CandidateRow[]>().exec()
       : [];
     return [...first, ...listed, ...others];
+  },
+  async curators(limit) {
+    return EmprendimientoCandidateModel.find({ state: "curadora", "profile.status": "ok" }).sort({ lastReadAt: -1 }).limit(limit).lean<CandidateRow[]>().exec();
   },
   async unclassified(limit) {
     return EmprendimientoCandidateModel.find({ state: "pendiente", "profile.status": "ok", classification: null }).sort({ priority: 1 }).limit(limit).lean<CandidateRow[]>().exec();
@@ -158,6 +163,9 @@ export function memoryStore(initial: { candidates?: CandidateRow[]; optOuts?: st
       for (const row of listed) taken.add(row.handle);
       const others = due.filter(row => !taken.has(row.handle)).sort((a, b) => a.priority - b.priority || +a.dueAt - +b.dueAt).slice(0, Math.max(0, limit - first.length - listed.length));
       return [...first, ...listed, ...others].map(row => structuredClone(row));
+    },
+    async curators(limit: number) {
+      return [...candidates.values()].filter(row => row.state === "curadora" && row.profile?.status === "ok").slice(0, limit).map(row => structuredClone(row));
     },
     async unclassified(limit: number) {
       return [...candidates.values()].filter(row => row.state === "pendiente" && row.profile?.status === "ok" && !row.classification).slice(0, limit).map(row => structuredClone(row));

@@ -2,7 +2,7 @@
 // docs/superpowers/specs/2026-11-23-emprendimientos-instagram-design.md y docs/app/EMPRENDIMIENTOS.md.
 
 /** De dónde conocimos una cuenta. Ninguna fuente publica sola: toda cuenta se lee y se clasifica. */
-export type SourceKind = "uruguay-emprendedor" | "reddit" | "colaboracion" | "mencion" | "sugerencia" | "semilla";
+export type SourceKind = "uruguay-emprendedor" | "reddit" | "colaboracion" | "mencion" | "sugerencia" | "semilla" | "web";
 
 export interface SourceRef {
   kind: SourceKind;
@@ -109,6 +109,18 @@ export interface Candidate {
   goneStreak: number;
   classification: Classification | null;
   listedAt: string | null;
+  /**
+   * Sólo curadoras: los códigos de posts cuyo texto ya se leyó buscando @menciones (una feria o
+   * una tienda colectiva etiqueta a las marcas que muestra). Se guardan para no releerlos.
+   */
+  minedCodes?: string[];
+}
+
+/** El texto de un post leído para la bola de nieve: quién lo publicó y qué dice. */
+export interface PostCaption {
+  code: string;
+  owner: string;
+  text: string;
 }
 
 /** Una ficha pública: lo único que lee la API. Se arma campo por campo en `listing.ts`. */
@@ -182,6 +194,8 @@ export interface MetaState {
   ueRead: Record<string, string>;
   /** Fichas del último listado que todavía no se leyeron, con su departamento. */
   ueQueue: { slug: string; departamento: string; name: string }[];
+  /** Por dónde va la rotación de búsquedas web (índice en `webQueries()`). */
+  webCursor?: number;
 }
 
 export interface EmprendimientoMeta {
