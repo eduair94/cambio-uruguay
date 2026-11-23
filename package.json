@@ -113,6 +113,7 @@
     "http-proxy-agent": "^9.1.0",
     "https-proxy-agent": "^9.1.0",
     "ioredis": "^6.0.0",
+    "jpeg-js": "0.4.4",
     "moment": "^2.31.0",
     "moment-timezone": "^0.6.4",
     "mongoose": "^9.10.3",
