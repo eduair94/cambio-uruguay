@@ -214,6 +214,12 @@ const NOINDEXED = [
   // equipar se indexan en su URL limpia; cada combinación de filtros se sale, como autos.
   // El asesor de vivienda se indexa en su URL; cada combinación de respuestas se sale.
   'donde-vivir-uruguay.vue',
+  // Emprendimientos de Instagram: la portada y cada rubro con 5 cuentas o más se indexan en su URL
+  // limpia; una búsqueda, un filtro o la página 2 se salen. La ficha de cada cuenta es siempre
+  // `noindex, follow`: la búsqueda por el nombre la gana el propio Instagram.
+  'emprendimientos-de-instagram-uruguay/[rubro].vue',
+  'emprendimientos-de-instagram-uruguay/cuenta/[handle].vue',
+  'emprendimientos-de-instagram-uruguay/index.vue',
   'equipar-casa-uruguay/mi-lista.vue',
   'equipar-casa-uruguay/productos/[categoria].vue',
   'equipar-casa-uruguay/productos/index.vue',

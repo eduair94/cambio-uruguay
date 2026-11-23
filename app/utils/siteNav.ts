@@ -4700,6 +4700,24 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/emprendimientos-de-instagram-uruguay',
+        labelKey: 'nav.emprendimientosInstagram',
+        icon: 'mdi-instagram',
+        priority: 0.7,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'emprendimientos uruguayos instagram',
+          'emprendimientos instagram uruguay',
+          'tiendas de instagram uruguay',
+          'emprendimientos montevideo',
+          'tortas por encargo montevideo instagram',
+          'regalos originales uruguay',
+          'hecho en uruguay instagram',
+          'impresion 3d uruguay instagram',
+        ],
+      },
+      {
         to: '/cambios-de-precio-uruguay',
         labelKey: 'nav.cambiosDePrecio',
         icon: 'mdi-swap-vertical',
@@ -5291,6 +5309,10 @@ export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freez
   // Una ficha por tienda de /tiendas-online-uruguay. Los slugs son el registro curado de
   // utils/storeDirectory.ts; misma sección que el hub.
   'tiendas-online-uruguay/[tienda]': 'consumer',
+  // /emprendimientos-de-instagram-uruguay: una página por rubro de la taxonomía
+  // (utils/emprendimientos.ts) y una ficha por cuenta publicada (noindex). Misma sección que el hub.
+  'emprendimientos-de-instagram-uruguay/[rubro]': 'consumer',
+  'emprendimientos-de-instagram-uruguay/cuenta/[handle]': 'consumer',
   // Una página por modelo de celular (marca+familia+almacenamiento) de /celulares-uruguay. El slug
   // es la propia `key` del modelo (classes/phones/identify.ts) y GET /api/phones/<slug> es la
   // misma fuente que decide si existe.

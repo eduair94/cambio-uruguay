@@ -237,6 +237,17 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
     fuente: 'sin-cifra',
   },
   {
+    id: 'emprendimientos',
+    to: '/emprendimientos-de-instagram-uruguay',
+    familia: 'compras',
+    titulo: 'Emprendimientos de Instagram',
+    queCompara:
+      'Emprendimientos uruguayos que venden por Instagram, por rubro y departamento, con sus fotos y cuándo publicaron.',
+    icon: 'mdi-instagram',
+    unidad: 'emprendimientos',
+    fuente: 'relevado',
+  },
+  {
     id: 'tiendas',
     to: '/tiendas-online-uruguay',
     familia: 'compras',

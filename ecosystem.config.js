@@ -1163,6 +1163,23 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // Emprendimientos de Instagram (/emprendimientos-de-instagram-uruguay): descubre cuentas
+      // (semillas, sugerencias de la página, Reddit una vez por día, Uruguay Emprendedor una vez por
+      // semana y la bola de nieve de colaboraciones), lee hasta 45 perfiles públicos de Instagram
+      // por corrida en UN Chrome headless sin sesión (~6 min) y clasifica lo nuevo con los créditos
+      // de Claude (Gemini de respaldo). Diez corridas por día porque las fotos firmadas vencen a los
+      // ~4 días y cada cuenta publicada se relee antes; sin las 6 y las 8 UTC para no leer Instagram
+      // desde la misma IP que la corrida completa de alquileres (04:52, que lee sus cuentas de
+      // inmobiliarias). Sale con 1 si Instagram no devuelve perfiles, sin cambiar ningún estado.
+      // `EMPRENDIMIENTOS_ENABLED=0` la apaga. Needs APP_MONGO_URI.
+      name: "currency-emprendimientos",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_emprendimientos.js",
+      cron_restart: "28 0,2,4,10,12,14,16,18,20,22 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Traducción por máquina de las páginas (app/utils/autoTranslate.ts): recorre el sitemap
       // español por prioridad, corta cada página con el mismo código que la traduce al renderizar,
       // traduce lo que falta con tr-file (inglés y portugués primero) y mide la cobertura por página

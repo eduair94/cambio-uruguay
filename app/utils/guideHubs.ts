@@ -1738,6 +1738,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/apps-hechas-en-uruguay',
       },
       {
+        label: 'Emprendimientos de Instagram',
+        description: 'Los que venden por Instagram, por rubro y departamento. Sumá el tuyo.',
+        to: '/emprendimientos-de-instagram-uruguay',
+      },
+      {
         label: 'Ropa por kilo y fardos',
         description: 'Dónde compran los feriantes, cuánto deja un lote y qué dice la aduana.',
         to: '/ropa-por-kilo-uruguay',
