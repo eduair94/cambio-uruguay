@@ -12,7 +12,7 @@
 import { annualDropOf, depreciationOf } from "../autos/report";
 import { quantile } from "../autos/stats";
 import { bandEligible, propulsionOf } from "./catalog";
-import { MOTO_DISPLACEMENT_FACETS } from "./identify";
+import { motoHasNoModel, MOTO_DISPLACEMENT_FACETS } from "./identify";
 import type { MotoFuel, MotoListing, MotoReportDepreciation, MotoSellerType, MotoType, PublicMotoReport } from "./types";
 
 export const MOTO_REPORT_POLICY = {
@@ -111,7 +111,7 @@ export function buildMotoReport(listings: readonly MotoListing[], context: MotoR
   ];
 
   const depreciation: MotoReportDepreciation[] = [];
-  for (const [slug, items] of groupBy(clean, listing => listing.marketSlug)) {
+  for (const [slug, items] of groupBy(clean.filter(listing => !motoHasNoModel(listing)), listing => listing.marketSlug)) {
     if (items.length < MOTO_REPORT_POLICY.minimumAdverts) continue;
     const maxYear = Math.max(...items.map(listing => listing.year));
     const points = depreciationOf(
@@ -133,7 +133,7 @@ export function buildMotoReport(listings: readonly MotoListing[], context: MotoR
 
   const budgets = BUDGETS.map(maxUsd => {
     const items = clean.filter(listing => listing.priceUsd <= maxUsd);
-    const models = [...groupBy(items, listing => listing.marketSlug)]
+    const models = [...groupBy(items.filter(listing => !motoHasNoModel(listing)), listing => listing.marketSlug)]
       .map(([slug, group]) => ({ slug, brand: group[0]!.brand, model: group[0]!.model, adverts: group.length }))
       .sort((a, b) => b.adverts - a.adverts || a.slug.localeCompare(b.slug))
       .slice(0, 10);

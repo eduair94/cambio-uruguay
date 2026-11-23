@@ -158,6 +158,7 @@ export async function main(): Promise<void> {
     console.log(
       `[motos] cosecha ${harvest.mode}: ${harvest.listings.length} avisos, ${harvest.requests} pedidos, ` +
         `${harvest.failedPages} páginas fallidas, ${harvest.cooldowns} esperas por caída` +
+        (harvest.brandSweepAdded ? `, ${harvest.brandSweepAdded} sólo por el barrido de marca (sin modelo en la faceta)` : "") +
         (harvest.note ? `, ${harvest.note}` : "")
     );
   } else {

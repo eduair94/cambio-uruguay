@@ -76,6 +76,22 @@ descripción** (`declaredRisks` de autos: deuda, papeles, choque, recupero, mec�
 riesgo de severidad alta saca a la moto de las bandas. Una ficha de cuatriciclo/triciclo/motocarro
 saca al aviso, y una ficha inactiva leída DESPUÉS de la última aparición en la búsqueda también.
 
+## Los avisos de ML sin modelo (desde el 23/11/2026)
+
+El barrido recorría marca → modelo, y la faceta `MODEL` de Mercado Libre no cubre todos los avisos
+de la marca: los que el vendedor dejó sin modelo, o cuyo modelo la faceta no lista, nunca se leían.
+Medido el 23/11/2026: Honda declaraba 157 usadas y su faceta cubría 90; sumando las 84 marcas, **1.245
+declaradas contra 586 leídas**. Ahora, cuando la faceta no cubre el total de la marca, se pagina la
+marca entera (~60 pedidos más al puente por barrido completo). Lo que sólo ve ese barrido:
+
+- toma el modelo que su TÍTULO nombra entre los modelos de la marca (el emparejador de
+  Marketplace), y si no nombra ninguno queda en «Sin modelo» (`sin-modelo-<marca>`);
+- la ficha propia lo completa: `currency-motos-detail` lee primero los avisos sin modelo y la fila
+  «Modelo» de la ficha les pone el suyo (`motoModelFromFicha`);
+- mientras siga «Sin modelo» no hace ficha de modelo, no entra en la lista de precios por modelo, no
+  vota ni recibe cilindrada por consenso y no cuenta en la depreciación del informe. Sí aparece en el
+  directorio, nombrado por su marca y con el título del vendedor debajo.
+
 ## Facebook Marketplace (desde el 23/11/2026)
 
 La segunda fuente, y no le pide nada nuevo a Facebook: el lector de autos ya recorre la categoría

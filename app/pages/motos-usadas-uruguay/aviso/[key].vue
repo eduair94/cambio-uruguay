@@ -85,9 +85,13 @@ ficha técnica, historia de precio, comparación, parecidas).
                 <th scope="row">Modelo</th>
                 <td>
                   <NuxtLink v-if="data.model" :to="localePath(`${MOTOS_PATH}/${data.model.slug}`)">
-                    {{ moto.brand }} {{ moto.model }}
+                    {{ motoName(moto) }}
                   </NuxtLink>
-                  <template v-else>{{ moto.brand }} {{ moto.model }}</template>
+                  <template v-else>{{
+                    moto.model === MOTO_NO_MODEL
+                      ? `${moto.brand} (sin modelo informado)`
+                      : motoName(moto)
+                  }}</template>
                 </td>
               </tr>
               <tr>
@@ -194,7 +198,7 @@ ficha técnica, historia de precio, comparación, parecidas).
               variant="outlined"
               :to="localePath(`${MOTOS_PATH}/${data.model.slug}`)"
             >
-              Precios de la {{ moto.brand }} {{ moto.model }}
+              Precios de la {{ motoName(moto) }}
             </VBtn>
           </div>
         </VCol>
@@ -232,18 +236,17 @@ ficha técnica, historia de precio, comparación, parecidas).
       <section class="mt-8" data-testid="moto-price-position">
         <h2 class="text-h6 mb-2">¿Cómo está el precio?</h2>
         <p v-if="yearPosition && data.yearBand" class="text-body-1">
-          Para la {{ moto.brand }} {{ moto.model }} {{ moto.year }} hay {{ data.yearBand.n }} avisos
-          comparables: la mitad pide menos de <strong>{{ motoUsd(data.yearBand.median) }}</strong> y
-          el rango central va de {{ motoUsd(data.yearBand.p25) }} a
-          {{ motoUsd(data.yearBand.p75) }}. Este aviso pide {{ motoUsd(moto.priceUsd) }}:
-          {{ positionText(yearPosition) }}.
+          Para la {{ motoName(moto) }} {{ moto.year }} hay {{ data.yearBand.n }} avisos comparables:
+          la mitad pide menos de <strong>{{ motoUsd(data.yearBand.median) }}</strong> y el rango
+          central va de {{ motoUsd(data.yearBand.p25) }} a {{ motoUsd(data.yearBand.p75) }}. Este
+          aviso pide {{ motoUsd(moto.priceUsd) }}: {{ positionText(yearPosition) }}.
         </p>
         <p v-else-if="modelPosition && data.model?.band" class="text-body-1">
-          No hay avisos suficientes de la {{ moto.brand }} {{ moto.model }} {{ moto.year }} para
-          comparar el mismo año. Contra todos los años del modelo ({{ data.model.band.n }} avisos),
-          la mediana es <strong>{{ motoUsd(data.model.band.median) }}</strong> y el rango central va
-          de {{ motoUsd(data.model.band.p25) }} a {{ motoUsd(data.model.band.p75) }}; este aviso
-          pide {{ motoUsd(moto.priceUsd) }} ({{ positionText(modelPosition) }}). Ojo: mezcla años
+          No hay avisos suficientes de la {{ motoName(moto) }} {{ moto.year }} para comparar el
+          mismo año. Contra todos los años del modelo ({{ data.model.band.n }} avisos), la mediana
+          es <strong>{{ motoUsd(data.model.band.median) }}</strong> y el rango central va de
+          {{ motoUsd(data.model.band.p25) }} a {{ motoUsd(data.model.band.p75) }}; este aviso pide
+          {{ motoUsd(moto.priceUsd) }} ({{ positionText(modelPosition) }}). Ojo: mezcla años
           distintos.
         </p>
         <p v-else class="text-body-1">
@@ -251,13 +254,13 @@ ficha técnica, historia de precio, comparación, parecidas).
           preferimos no comparar contra dos o tres avisos.
         </p>
         <p v-if="data.model?.annualDrop != null" class="text-body-2 text-medium-emphasis mb-0">
-          En el catálogo, la {{ moto.brand }} {{ moto.model }} pierde alrededor de
+          En el catálogo, la {{ motoName(moto) }} pierde alrededor de
           {{ Math.round(data.model.annualDrop * 10) / 10 }} % por cada año de antigüedad.
         </p>
       </section>
 
       <section v-if="data.similar.length" class="mt-8">
-        <h2 class="text-h6 mb-3">Otras {{ moto.brand }} {{ moto.model }} publicadas</h2>
+        <h2 class="text-h6 mb-3">Otras {{ motoName(moto) }} publicadas</h2>
         <div class="motos-grid">
           <MotosListingCard v-for="other in data.similar" :key="other.key" :moto="other" />
         </div>
@@ -275,6 +278,7 @@ ficha técnica, historia de precio, comparación, parecidas).
 import {
   MOTOS_PATH,
   MOTO_COLOR_LABEL,
+  MOTO_NO_MODEL,
   MOTO_RISK_GUIDE,
   MOTO_SELLER_LABEL,
   motoAvisoPath,
