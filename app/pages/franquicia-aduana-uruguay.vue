@@ -1131,7 +1131,7 @@ const faqs = [
 const canonicalUrl = 'https://cambio-uruguay.com/franquicia-aduana-uruguay'
 const title = 'Franquicia aduana Uruguay: US$ 800 al año'
 const description =
-  'Franquicia de US$ 800 en 3 envíos, prestación única del 60 % (mínimo US$ 20) e IVA exonerado hasta US$ 200 de EE.UU. Registro del vendedor desde febrero de 2027.'
+  'Franquicia: US$ 800 en 3 envíos. IVA exonerado en compras elegibles de EE.UU. hasta US$ 200; registro del vendedor exigible desde el 1/2/2027.'
 
 defineOgImageComponent('Cambio', {
   title: '¿Tu compra del exterior paga IVA?',
