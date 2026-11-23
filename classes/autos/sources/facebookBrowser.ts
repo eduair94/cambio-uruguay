@@ -73,6 +73,17 @@ export const FB_MODEL_LISTS: readonly MarketplaceSearch[] = [
 ].map(query => ({ location: "montevideo", query }));
 
 /**
+ * Las búsquedas de MOTOS (2026-11-23). Este lector no publica motos: guarda toda tarjeta que ve en
+ * `carfbcards`, y de ahí las lee el directorio de motos (classes/motos/sources/facebook.ts), que ese
+ * día sacaba sus 34 motos de Marketplace sólo de lo que el feed y las búsquedas de AUTOS traían de
+ * rebote. Van al FINAL de la corrida diaria, después de las marcas de autos (facebookRun.ts): sólo
+ * gastan el presupuesto que los autos dejaron, y la regla de novedad las corta si no suman.
+ * Palabras que un vendedor de moto escribe y uno de auto no: "moto"/"motos" y las marcas que sólo
+ * hacen motos y concentran la oferta usada (Yumbo, Baccio, Winner, Zanella, Keeway).
+ */
+export const FB_MOTO_QUERIES: readonly string[] = ["moto", "motos", "yumbo", "baccio", "winner", "zanella", "keeway", "scooter"];
+
+/**
  * A first page this full (cards of any category) that never grows is Facebook's throttle, not a
  * short list. The vehicles feed's first page holds ~20 cards, 17 of them vehicles (2026-10-09).
  */
