@@ -801,7 +801,7 @@ useHead(() => ({
   display: grid;
   /* Una columna en el ancho de siempre (~594) y dos, del mismo tamaño, cuando el marco ancho del
      layout (`wide`) da lugar; `start` para que abrir los comparables de una no estire a su vecina. */
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 560px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr));
   align-items: start;
   gap: 20px;
 }

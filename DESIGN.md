@@ -409,8 +409,11 @@ width is the content: inside the 1280px cap with a rail, a 2048px monitor showed
 and 376px of empty screen on each side (`/autos-usados-uruguay`, 2026-11-22). Such a page declares
 `definePageMeta({ wide: true })` and the layout swaps the cap for a **frame**: 2200px, centred, with
 the page AND the rail inside it. So spare width always lands evenly on both sides; never the page
-flush left with the ad flush right. With the rail, the frame pads 28px on its right too, so the rail
-sits as far from the edge as the content does on the left (12 + 16). Inside the frame there is one
+flush left with the ad flush right. Its margin grows with the screen, as on any full-width listing
+(Airbnb steps 24, 40, 80): `clamp(28px, 5vw, 80px)` from the edge to the content — 28 on a phone,
+the site's usual, 55 at 1100, 72 at 1440, 80 from 1600. A fixed 28 left the grid flush against both
+edges of a 2048 screen. With the rail, the right side adds the page container's 16 too, so the rail
+sits exactly as far from the edge as the content does on the left. Inside the frame there is one
 left edge for everything. What uses the width is what the page marks `cu-listing` (the filter grid,
 the results, a sticky list bar). Every other block is reading: it stays at 1224px (the tail's inner
 width) and is **left-aligned**, not centred in a wide column. A loose paragraph in it keeps the

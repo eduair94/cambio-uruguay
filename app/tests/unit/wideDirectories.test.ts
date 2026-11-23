@@ -81,13 +81,19 @@ describe('directorios con marco ancho', () => {
     expect(layout).toMatch(/const wideOn = computed\(\(\) => route\.meta\.wide === true\)/)
   })
 
-  it('el marco contiene página y riel, centrado, con el riel a 28 px del borde como el texto', () => {
-    expect(px(rule(scoped, '.container_custom--wide'), 'max-width')).toBe(2200)
+  it('el marco contiene página y riel, centrado, con el riel a la distancia del texto', () => {
+    const frame = rule(scoped, '.container_custom--wide')
+    expect(px(frame, 'max-width')).toBe(2200)
     expect(rule(scoped, '.container_custom')).toMatch(/margin:\s*0 auto/)
+    // El margen crece con la pantalla: + los 16 del <VContainer> da clamp(28px, 5vw, 80px), con
+    // los 28 del teléfono de todo el sitio como piso (DESIGN.md → "The Page Brings Its Container").
+    expect(frame).toMatch(/--frame-gutter:\s*clamp\(12px,\s*5vw - 16px,\s*64px\)/)
+    expect(frame).toMatch(/padding-inline:\s*var\(--frame-gutter\)/)
     // Junto a la grilla del riel: sin scope y sólo desde 1280 (adRail.test.ts exige las dos cosas).
+    // Del lado del riel no hay <VContainer>, así que el marco le suma esos 16.
     const media = unscoped.slice(unscoped.indexOf('@media (min-width: 1280px)'))
     const railGap = rule(media, '.container_custom.container_custom--wide.container_custom--rail')
-    expect(px(railGap, 'padding-inline-end')).toBe(28)
+    expect(railGap).toMatch(/padding-inline-end:\s*calc\(var\(--frame-gutter\) \+ 16px\)/)
   })
 
   it('un solo borde izquierdo: la lectura va a 1224 sin centrar, y el pie del layout también', () => {
