@@ -6,6 +6,7 @@ import { declaredRisks, type CarRisk } from "../autos/risk";
 import { attachDisplacement, type DisplacementInput } from "./displacement";
 import {
   displacementBandOf,
+  motoHasNoModel,
   motoProductKey,
   motoRejection,
   motoTypeFromTitle,
@@ -189,7 +190,9 @@ export function motoDeclaredRisks(title: string, description: string): CarRisk[]
 
 /** Lo que la cascada de cilindrada necesita de una moto ya enriquecida. */
 const displacementInput = (listing: MotoListing, declaredBand: MotoDisplacementBandId | null): DisplacementInput => ({
-  marketSlug: listing.marketSlug,
+  // Un aviso todavía sin modelo es su propia cohorte: "Honda Sin modelo" junta motos distintas y su
+  // consenso inventaría una cilindrada.
+  marketSlug: motoHasNoModel(listing) ? `${listing.marketSlug}#${listing.key}` : listing.marketSlug,
   model: listing.model,
   title: listing.title,
   declaredBand,
@@ -232,10 +235,23 @@ export function attachMotoDisplacements(listings: readonly MotoListing[]): MotoL
   return listings.map((listing, index) => withDisplacement(listing, bandOf(listing), results[index]!));
 }
 
-export function enrichMotoListing(raw: RawMotoListing, context: EnrichMotoContext): MotoListing {
+/**
+ * El modelo de un aviso que Mercado Libre trajo sin modelo (el barrido por marca): la fila «Modelo»
+ * de su ficha propia, que es el mismo atributo que el vendedor dejó vacío en la búsqueda pero cargó
+ * en el aviso. Si la ficha no lo dice, sigue sin modelo.
+ */
+export function motoModelFromFicha(raw: RawMotoListing, detail: MotoDetail | null): RawMotoListing {
+  if (!motoHasNoModel(raw)) return raw;
+  const fichaModel = String(detail?.specs?.["Modelo"] ?? "").replace(/\s+/g, " ").trim().slice(0, 60);
+  if (!fichaModel || !slugify(fichaModel)) return raw;
+  return { ...raw, model: fichaModel, modelId: `ficha-${slugify(fichaModel)}` };
+}
+
+export function enrichMotoListing(input: RawMotoListing, context: EnrichMotoContext): MotoListing {
+  const detail = context.detail ?? null;
+  const raw = motoModelFromFicha(input, detail);
   const brandSlug = slugify(raw.brand);
   const modelSlug = slugify(raw.model);
-  const detail = context.detail ?? null;
   const titleType = motoTypeFromTitle(raw.title);
   const fichaType = motoTypeFromFicha(detail?.typeText);
   // La faceta del origen gana siempre: es lo que el vendedor eligió al publicar. Después la ficha

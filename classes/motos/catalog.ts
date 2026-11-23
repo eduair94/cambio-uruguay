@@ -11,6 +11,7 @@ import { annualDropOf, depreciationOf } from "../autos/report";
 import { cleanPublicText } from "../autos/normalize";
 import { quantile } from "../autos/stats";
 import { ML_MOTOS_PERMALINK_PREFIX } from "./sources/mercadolibre";
+import { MOTO_NO_MODEL, motoHasNoModel } from "./identify";
 import { FB_MOTO_PERMALINK, safeFbPicture } from "./sources/facebook";
 import { MOTO_SOURCES } from "./sources";
 import type {
@@ -185,6 +186,8 @@ export function buildMotoCatalog(
     .sort((a, b) => a.key.localeCompare(b.key));
   const models = new Map<string, { slug: string; brand: string; model: string; listings: number }>();
   for (const row of rows) {
+    // "Sin modelo" no es un modelo: no va a la lista de precios por modelo (no tiene ficha).
+    if (row.model === MOTO_NO_MODEL) continue;
     const entry = models.get(row.marketSlug) ?? { slug: row.marketSlug, brand: row.brand, model: row.model, listings: 0 };
     entry.listings++;
     models.set(row.marketSlug, entry);
@@ -231,7 +234,9 @@ export function buildMotoModels(
   const cutoff = options.now.getTime() - (options.freshDays ?? MOTO_CATALOG_FRESH_DAYS) * 86_400_000;
   const fresh = listings.filter(listing => Date.parse(listing.lastSeen) >= cutoff);
   const models: PublicMotoModel[] = [];
-  for (const [, group] of groupBy(fresh, listing => `${listing.marketSlug}|${propulsionOf(listing)}`)) {
+  // Un aviso todavía sin modelo no hace ficha: "Honda Sin modelo" juntaría motos distintas.
+  const withModel = fresh.filter(listing => !motoHasNoModel(listing));
+  for (const [, group] of groupBy(withModel, listing => `${listing.marketSlug}|${propulsionOf(listing)}`)) {
     const newest = [...group].sort((a, b) => b.lastSeen.localeCompare(a.lastSeen))[0]!;
     const propulsion = propulsionOf(newest);
     const clean = group.filter(bandEligible);

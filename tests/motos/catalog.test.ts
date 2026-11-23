@@ -207,3 +207,21 @@ describe("cobertura y duplicados", () => {
     expect(result.duplicates).toEqual({});
   });
 });
+
+describe("«Sin modelo» no es un modelo", () => {
+  it("no hace ficha de modelo ni aparece en la lista de precios por modelo", () => {
+    const rows = many(6, index => ({ id: `61000${index}`, model: "Sin modelo", modelId: "sin-modelo-2102273", sellerId: String(index) }));
+    expect(buildMotoModels(rows, { now: NOW, generatedAt: NOW.toISOString() })).toEqual([]);
+    const catalog = buildMotoCatalog(rows, {
+      now: NOW,
+      generatedAt: NOW.toISOString(),
+      usdUyu: 42,
+      lastFullReadAt: SEEN,
+      lastReadAt: SEEN,
+      reportedTotal: null,
+      sources: [],
+    });
+    expect(catalog.listings).toHaveLength(6);
+    expect(catalog.meta.models).toEqual([]);
+  });
+});

@@ -764,7 +764,12 @@ export function motoDisplacementSource(
 }
 
 /** La moto como se nombra: marca y modelo del origen. */
+/** El modelo de un aviso de Mercado Libre que no lo tiene cargado (`classes/motos/identify.ts`). */
+export const MOTO_NO_MODEL = 'Sin modelo'
+
 export function motoName(item: Pick<MotoPublicListing, 'brand' | 'model'>): string {
+  // "Honda Sin modelo" no nombra nada: la moto se nombra por la marca y el título va debajo.
+  if (item.model === MOTO_NO_MODEL) return item.brand.trim()
   return `${item.brand} ${item.model}`.replace(/\s+/g, ' ').trim()
 }
 
