@@ -7,6 +7,7 @@ import * as vue from 'vue'
 import { describe, expect, it } from 'vitest'
 import { adsenseLoaderScripts } from '../../composables/useAds'
 import * as ads from '../../utils/ads'
+import * as adFree from '../../utils/adFree'
 import {
   adDensityForPath,
   adsAllowed,
@@ -150,9 +151,11 @@ function useAdsAt(path: string, config: Record<string, unknown> = {}) {
     exports: {} as any,
     require: (name: string) => {
       if (name === '~/utils/ads') return ads
+      if (name === '~/utils/adFree') return adFree
       throw new Error(`Unexpected import: ${name}`)
     },
     computed: vue.computed,
+    useAdFreeViewer: () => vue.ref('unknown'),
     useRoute: () => ({ path, meta: {} }),
     useRuntimeConfig: () => ({
       public: { adsensePubId: 'ca-pub-test', adsenseSlots: SLOTS, ...config },

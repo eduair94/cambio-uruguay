@@ -6,6 +6,7 @@ import {
   maxAdSlots,
   type AdDensity,
 } from '~/utils/ads'
+import { viewerShowsAds } from '~/utils/adFree'
 
 /**
  * The places an ad is allowed to be.
@@ -107,8 +108,12 @@ export function useAds() {
    * default, on purpose: the slot ids are meant to be filled in *after* auto
    * ads are dialled back in the AdSense console, so the two never stack.
    */
+  // A confirmed donor gets no unit at all; `unknown` keeps them so nobody else's layout shifts.
+  const adFreeViewer = useAdFreeViewer()
+
   const canRender = (placement: AdPlacement) => {
     if (!pubId || !slotIdFor(placement)) return false
+    if (!viewerShowsAds(adFreeViewer.value)) return false
     if (density.value === 'none') return false
     // A calculator's one unit is ToolShell's, right after the result and its explainer. The layout
     // close would be a second unit, below "Más herramientas" and "Seguí leyendo", where a visitor

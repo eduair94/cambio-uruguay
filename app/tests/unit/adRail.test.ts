@@ -6,6 +6,7 @@ import ts from 'typescript'
 import * as vue from 'vue'
 import { describe, expect, it } from 'vitest'
 import * as ads from '../../utils/ads'
+import * as adFree from '../../utils/adFree'
 import { adDensityForPath, maxAdSlots } from '../../utils/ads'
 
 // El riel de escritorio (DESIGN.md → "The Rail Is Not The Column Rule") y la unidad editorial de
@@ -130,7 +131,8 @@ const composableSource = readFileSync(resolve(__dirname, '../../composables/useA
 function useAdsAt(
   path: string,
   config: { adsensePubId?: string; adsenseSlots?: Record<string, string> } = {},
-  meta: Record<string, unknown> = {}
+  meta: Record<string, unknown> = {},
+  viewer: 'unknown' | 'ads' | 'free' = 'unknown'
 ) {
   const { outputText } = ts.transpileModule(composableSource, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
@@ -139,9 +141,11 @@ function useAdsAt(
     exports: {} as any,
     require: (name: string) => {
       if (name === '~/utils/ads') return ads
+      if (name === '~/utils/adFree') return adFree
       throw new Error(`Unexpected import: ${name}`)
     },
     computed: vue.computed,
+    useAdFreeViewer: () => vue.ref(viewer),
     useRoute: () => ({ path, meta }),
     useRuntimeConfig: () => ({ public: { adsensePubId: 'ca-pub-test', ...config } }),
   }
@@ -155,6 +159,15 @@ function useAdsAt(
 const RAIL = { adsenseSlots: { contentEnd: 'close', inArticle: 'inside', sidebar: 'rail' } }
 
 describe('el riel: la guarda', () => {
+  it('never renders for an account that donated to browse without ads', () => {
+    const { canRender } = useAdsAt('/franquicia-aduana-uruguay', RAIL, {}, 'free')
+    for (const placement of ['content-end', 'in-article', 'sidebar', 'after-tool']) {
+      expect(canRender(placement)).toBe(false)
+    }
+    // While the server answers, nobody else's layout moves: the units stay.
+    expect(useAdsAt('/franquicia-aduana-uruguay', RAIL, {}, 'unknown').canRender('sidebar')).toBe(true)
+  })
+
   it('renders on a normal-density read once its unit id exists', () => {
     const { canRender, slotIdFor } = useAdsAt('/franquicia-aduana-uruguay', RAIL)
     expect(canRender('sidebar')).toBe(true)
