@@ -394,10 +394,12 @@ const faq: FaqItem[] = ANTEL_DEUDA_FAQ.map(f => ({
 }))
 
 const canonicalUrl = 'https://cambio-uruguay.com/que-pasa-si-no-pago-antel'
-const title = 'Antel: cuándo te corta y 72 h para volver'
+// La cifra que se busca («bloqueo por mora antel», «con cuántas facturas impagas te cortan antel»)
+// va en el título y la descripción, sacada de `ESCALERAS` y de `RECONEXION`:
+// `tests/unit/snippetConLaRespuesta.test.ts` la ata a esas constantes.
+const title = 'Bloqueo por mora de Antel: 1 o 2 facturas'
 const description =
-  'Antel corta por facturas, no por días: en fijo la 2.ª impaga bloquea salientes, en móvil la 1.ª. ' +
-  'Al pagar: 48 h hábiles el fijo, 72 h internet, sin cargo.'
+  'Antel bloquea por facturas, no por días: en fijo la 2.ª impaga corta las salientes y a los 30 días todo; en móvil, la 1.ª. Vuelve en 48 h hábiles o 72 h.'
 
 defineOgImageComponent('Cambio', {
   title: 'Deuda con Antel',

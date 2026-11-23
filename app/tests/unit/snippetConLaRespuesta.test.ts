@@ -15,6 +15,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
+import { ESCALERAS, RECONEXION } from '../../utils/antelDeuda'
 import {
   ASIGNACION_FAMILIAR_VIGENCIA,
   COMPARACION,
@@ -190,6 +191,37 @@ describe('/peajes-uruguay', () => {
     expect(description).toContain('motos no pagan')
     const minor = TOLL_EXEMPTIONS.find(exemption => exemption.who.includes('porte menor'))
     expect(minor?.who).toContain('motos')
+  })
+
+  it('entra en el SERP', () => {
+    expectFitsTheSerp(title, description)
+  })
+})
+
+// Agregada el 2026-11-23, cuando se liberó su ventana (fila `tres-facturas-del-hogar-entran-a-su-tema`,
+// 25/10). Las consultas: «bloqueo por mora antel» (42 impresiones, posición 8) y «con cuántas
+// facturas impagas te cortan antel» (22, posición 6), GSC 1–28/10/2026.
+describe('/que-pasa-si-no-pago-antel', () => {
+  const source = pageSource('que-pasa-si-no-pago-antel.vue')
+  const title = pageLiteral(source, 'title')
+  const description = pageLiteral(source, 'description')
+  const fija = ESCALERAS.find(e => e.id === 'fija')!
+  const movil = ESCALERAS.find(e => e.id === 'movil')!
+
+  it('el título nombra la consulta y la cuenta en facturas de las dos escaleras vigentes', () => {
+    expect(title).toMatch(/^Bloqueo por mora de Antel/)
+    expect(title).toContain('1 o 2 facturas')
+    expect(movil.bloqueoSaliente).toMatch(/^1 factura impaga/)
+    expect(fija.bloqueoSaliente).toMatch(/^2\.ª factura impaga/)
+  })
+
+  it('la descripción trae la escalera de fijo, la de móvil y el plazo de vuelta de la página', () => {
+    expect(description).toContain('en fijo la 2.ª impaga corta las salientes')
+    expect(description).toContain('a los 30 días todo')
+    expect(fija.bloqueoTotal).toMatch(/^A los 30 días del bloqueo saliente/)
+    expect(description).toContain('en móvil, la 1.ª')
+    expect(description).toContain('48 h hábiles o 72 h')
+    expect(RECONEXION[0]!.pregunta).toBe('Fijo: 48 horas hábiles. Internet: 72 horas')
   })
 
   it('entra en el SERP', () => {
