@@ -435,7 +435,7 @@ useHead({
    no estire a su vecina. FeedAd y FeedEdge ocupan la fila entera (grid-column: 1 / -1). */
 .cars-rows {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 560px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr));
   align-items: start;
   gap: 16px;
 }

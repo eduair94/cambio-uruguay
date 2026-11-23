@@ -978,12 +978,18 @@ useSchemaOrg([
    sigue centrado y con tope, pero de 2200, y ADENTRO van la página y el riel juntos: pasado ese
    ancho el aire queda igual a los dos lados, nunca la página a un lado y el anuncio contra el borde.
    Lo que pasa adentro del marco (qué bloque usa el ancho y cuál es lectura) está en el bloque sin
-   scope de abajo, junto al riel. */
+   scope de abajo, junto al riel.
+   El margen crece con la pantalla, como en cualquier listado a todo el ancho (Airbnb: 24, 40, 80):
+   del borde al contenido hay clamp(28px, 5vw, 80px) — 28 en el teléfono (el de todo el sitio), 55 a
+   1100, 72 a 1440 y 80 desde 1600. Con 28 fijos, a 2048 px la grilla quedaba pegada a los bordes.
+   `--frame-gutter` es la parte del marco; los otros 16 son del <VContainer> de la página. */
 .container_custom--wide {
+  --frame-gutter: clamp(12px, 5vw - 16px, 64px);
   max-width: 2200px;
+  padding-inline: var(--frame-gutter);
 }
-/* Los bloques del final arrancan en el mismo borde que la página (12 + 16 = 28 px), no centrados
-   en una columna ancha: un solo borde izquierdo para todo. */
+/* Los bloques del final arrancan en el mismo borde que la página (el margen del marco + 16), no
+   centrados en una columna ancha: un solo borde izquierdo para todo. */
 .container_custom--wide .layout-tail {
   margin-inline: 0;
 }
@@ -1072,12 +1078,12 @@ useSchemaOrg([
     grid-row: 1 / span 99;
     align-self: start;
   }
-  /* En el marco de un directorio (`--wide`) el riel queda a 28 px del borde derecho, lo mismo que
-     el contenido del izquierdo (12 del marco + 16 del <VContainer> de la página): con los 12 del
-     marco solos se veía pegado al borde. `.container_custom` repetido para ganarle al padding con
-     scope del layout sin depender del orden. */
+  /* En el marco de un directorio (`--wide`) el riel queda del borde derecho a la misma distancia
+     que el contenido del izquierdo (el margen del marco + los 16 del <VContainer> de la página):
+     con el margen del marco solo quedaba 16 px más cerca del borde. `.container_custom` repetido
+     para ganarle al padding con scope del layout sin depender del orden. */
   .container_custom.container_custom--wide.container_custom--rail {
-    padding-inline-end: 28px;
+    padding-inline-end: calc(var(--frame-gutter) + 16px);
   }
 }
 
