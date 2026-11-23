@@ -74,6 +74,10 @@ describe("lo que no entra, medido", () => {
   it("un auto de una marca que también hace motos («Suzuki … en excelente estado»)", () => {
     expect(convert("2017 Suzuki vitara gl plus automático 1.6 año 2017 impecable! en color gris", 12990)).toEqual({ rejected: "es-un-auto" });
     expect(convert("Camioneta Suzuki modelo Ertiga año 2020 en excelente estado", 14800)).toEqual({ rejected: "es-un-auto" });
+    // Producción, 23/11/2026: la cilindrada en litros con la letra pegada se colaba como moto.
+    expect(convert("2004 Honda CR-V 2.4I LX AT,u$s8300,163792km,2WD,2004,tomo,financio", 8300)).toEqual({ rejected: "es-un-auto" });
+    // Un monto con punto de miles no es una cilindrada en litros.
+    expect(convert("2018 HONDA XRE300 precio usd 5.300", 5300)).toMatchObject({ listing: { model: "XRE 300" } });
   });
 
   it("la forma corta de un modelo nunca es una palabra del idioma", () => {
