@@ -9,7 +9,7 @@
         <!-- The one donation that also buys something: twelve months without ads for the account
              (/cuenta/sin-publicidad). The two below stay as plain tips. -->
         <VBtn
-          v-if="!isDonor"
+          v-if="offered && !isDonor"
           :to="localePath('/cuenta/sin-publicidad')"
           variant="flat"
           color="primary"
@@ -59,7 +59,7 @@
 
 <script setup lang="ts">
 import { isExtraLocale } from '~/utils/locales'
-import { promotionParams } from '~/utils/adFreeFunnel'
+import { adFreeOffered, promotionParams } from '~/utils/adFreeFunnel'
 
 const localePath = useLocalePath()
 const { locale } = useI18n()
@@ -74,6 +74,7 @@ const removeAdsLabel = computed(() => {
 // A donor is not offered what they already have.
 const viewer = useAdFreeViewer()
 const isDonor = computed(() => viewer.value === 'free')
+const offered = adFreeOffered(useRuntimeConfig().public.adFree as any)
 const track = useTrack()
 function selectAdFree() {
   track('select_promotion', promotionParams('donation-card'))

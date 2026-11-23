@@ -3,6 +3,7 @@ import {
   AD_FREE_ITEM_ID,
   AD_FREE_PROMOTION,
   adFreeItems,
+  adFreeOffered,
   monthlyEquivalent,
   nudgeVariant,
   promotionParams,
@@ -71,5 +72,14 @@ describe('GA4 ecommerce payload', () => {
       creative_slot: 'content-end',
     })
     expect(Object.keys(params).some(k => /^(?:source|medium|campaign)/.test(k))).toBe(false)
+  })
+})
+
+describe('adFreeOffered', () => {
+  it('offers nothing while no payment medium is configured: the page would be a dead end', () => {
+    expect(adFreeOffered(undefined)).toBe(false)
+    expect(adFreeOffered({ mercadopago: false, paypal: false })).toBe(false)
+    expect(adFreeOffered({ mercadopago: true })).toBe(true)
+    expect(adFreeOffered({ paypal: true })).toBe(true)
   })
 })

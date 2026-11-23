@@ -49,6 +49,7 @@ import {
   NUDGE_DISMISS_KEY,
   NUDGE_PAGEVIEWS_KEY,
   NUDGE_SESSION_KEY,
+  adFreeOffered,
   nudgeVariant,
   promotionParams,
   type AdFreeSlot,
@@ -76,10 +77,7 @@ const decided = ref<'card' | 'link' | null>(null)
 const dismissed = ref(false)
 // Nothing for a donor, a page without ads, or a site with no payment medium configured.
 const eligible = computed(
-  () =>
-    scriptAllowed.value &&
-    viewerLoadsAdsense(viewer.value) &&
-    Boolean(configured.mercadopago || configured.paypal)
+  () => scriptAllowed.value && viewerLoadsAdsense(viewer.value) && adFreeOffered(configured)
 )
 const variant = computed(() => (!eligible.value || dismissed.value ? null : decided.value))
 const slot = computed<AdFreeSlot>(() =>

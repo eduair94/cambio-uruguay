@@ -63,6 +63,12 @@ export function adFreeItems(amount: number, _currency: AdFreeCurrency) {
   ]
 }
 
+/** Whether any payment medium is configured: without one the offer is a dead end, so no entry
+ * point links to it. */
+export function adFreeOffered(config: { mercadopago?: boolean; paypal?: boolean } | undefined) {
+  return Boolean(config?.mercadopago || config?.paypal)
+}
+
 export function promotionParams(slot: AdFreeSlot) {
   return {
     promotion_id: AD_FREE_PROMOTION.id,

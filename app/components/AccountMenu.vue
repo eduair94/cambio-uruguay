@@ -31,7 +31,7 @@
         <template #prepend><VIcon>mdi-view-dashboard</VIcon></template>
         <VListItemTitle>{{ $t('auth.account') }}</VListItemTitle>
       </VListItem>
-      <VListItem :to="localePath('/cuenta/sin-publicidad')" @click="selectAdFree">
+      <VListItem v-if="adFreeOn" :to="localePath('/cuenta/sin-publicidad')" @click="selectAdFree">
         <template #prepend><VIcon>mdi-cancel</VIcon></template>
         <VListItemTitle>{{ logoutCopy.adFree }}</VListItemTitle>
       </VListItem>
@@ -55,7 +55,7 @@
 import { isAuthHandoffUrl, loadFirebaseAuth } from '~/services/firebaseLazy'
 import { withoutSignInHandoff } from '~/utils/analyticsUrl'
 import { isExtraLocale } from '~/utils/locales'
-import { promotionParams } from '~/utils/adFreeFunnel'
+import { adFreeOffered, promotionParams } from '~/utils/adFreeFunnel'
 
 const store = useAuthStore()
 const localePath = useLocalePath()
@@ -110,6 +110,7 @@ async function logout() {
 }
 
 const track = useTrack()
+const adFreeOn = adFreeOffered(useRuntimeConfig().public.adFree as any)
 function selectAdFree() {
   track('select_promotion', promotionParams('account-menu'))
 }
