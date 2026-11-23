@@ -195,6 +195,24 @@ describe('GET /api/motos', () => {
     const response = await (await listHandler())({} as never)
     expect(response.facets.fuels).toEqual([{ value: 'electrica', label: 'Eléctrica', count: 35 }])
   })
+
+  it('cada faceta en su lugar: fuente con fuentes, cilindrada con tramos (23/11/2026)', async () => {
+    // Salieron cruzadas a producción: la desestructuración y el Promise.all en distinto orden.
+    metaFindOneLean.mockReturnValue(META_DOC)
+    catalogCount.mockReturnValue(7)
+    aggregateResult.mockImplementation((pipeline: unknown[]) =>
+      JSON.stringify(pipeline).includes('$source') ? [{ _id: 'facebook', count: 40 }] : []
+    )
+    const response = await (await listHandler())({} as never)
+    expect(response.facets.sources).toEqual([
+      { value: 'facebook', label: 'Facebook Marketplace', count: 40 },
+    ])
+    expect(response.facets.bands?.map(band => band.value)).toEqual([
+      'hasta-125',
+      '126-250',
+      'mas-250',
+    ])
+  })
 })
 
 describe('GET /api/motos/<key>', () => {
