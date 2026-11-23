@@ -57,6 +57,10 @@ function publicSources(candidate: Candidate): PublicSource[] {
       case "semilla":
         push({ kind: source.kind, label: source.label || "Relevamiento propio", url: source.url ?? null });
         break;
+      case "web":
+        // Sin la consulta: es nuestra, no algo que la cuenta o un tercero haya dicho.
+        push({ kind: source.kind, label: "Encontrada en una búsqueda web", url: null });
+        break;
     }
   }
   return out.slice(0, 4);

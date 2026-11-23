@@ -2,9 +2,11 @@
 // detrás de /emprendimientos-de-instagram-uruguay. Cada corrida (classes/emprendimientos/run.ts):
 //
 //   1. descubre cuentas: semillas, sugerencias de la página, Reddit (una vez por día), el listado de
-//      Uruguay Emprendedor (una vez por semana) y 25 de sus fichas por corrida;
-//   2. lee en Instagram, sin sesión y en un solo Chrome, hasta 45 perfiles: sugerencias y semillas
-//      primero, después las cuentas publicadas cuyas fotos vencen, después las nuevas;
+//      Uruguay Emprendedor (una vez por semana) y 80 de sus fichas por corrida, y 12 búsquedas web
+//      con Gemini (producto × lugar, rotando; classes/emprendimientos/sources/web.ts);
+//   2. lee en Instagram, sin sesión y en un solo Chrome, hasta 100 perfiles: sugerencias y semillas
+//      primero, después las cuentas publicadas cuyas fotos vencen, después las nuevas; y después el
+//      texto de 10 posts de curadoras (ferias, tiendas colectivas), buscando @menciones;
 //   3. clasifica lo nuevo (créditos de Claude, Gemini de respaldo) y decide qué se publica;
 //   4. suma las colaboraciones y menciones de lo publicado (bola de nieve) y reescribe las fichas.
 //
@@ -13,7 +15,8 @@
 //
 // `--dry-run` no toca ninguna base: arranca de las semillas (y de `--handles=a,b`), lee, clasifica
 // e imprime. `--json=<archivo>` guarda las fichas para mirar la página en dev
-// (`EMPRENDIMIENTOS_PREVIEW_FILE` en app/.env). `--no-discovery` saltea Reddit y Uruguay Emprendedor.
+// (`EMPRENDIMIENTOS_PREVIEW_FILE` en app/.env). `--no-discovery` saltea Reddit, Uruguay Emprendedor
+// y la búsqueda web.
 import "./sentry_job";
 import "dotenv/config";
 
@@ -23,6 +26,7 @@ import { readProfiles } from "./classes/emprendimientos/instagram";
 import { DEFAULT_OPTIONS, newCandidate, runOnce } from "./classes/emprendimientos/run";
 import { readReddit } from "./classes/emprendimientos/sources/reddit";
 import { readUeListings, ueFetch } from "./classes/emprendimientos/sources/uruguayEmprendedor";
+import { readWeb } from "./classes/emprendimientos/sources/web";
 import { memoryStore, mongoStore } from "./classes/emprendimientos/store";
 import { normalizeHandle } from "./classes/emprendimientos/handles";
 
@@ -60,11 +64,14 @@ export async function main(): Promise<number> {
     reddit: noDiscovery ? null : readReddit,
     ueListings: noDiscovery ? null : () => readUeListings(),
     ueFetch: noDiscovery ? null : ueFetch,
+    web: noDiscovery ? null : (cursor, count, day) => readWeb(cursor, count, day),
     options: {
       maxReads,
       gapMs: number("EMPRENDIMIENTOS_GAP_MS", DEFAULT_OPTIONS.gapMs),
-      readBudgetMs: number("EMPRENDIMIENTOS_READ_MINUTES", 7) * 60_000,
+      readBudgetMs: number("EMPRENDIMIENTOS_READ_MINUTES", DEFAULT_OPTIONS.readBudgetMs / 60_000) * 60_000,
       ueDetailsPerRun: number("EMPRENDIMIENTOS_UE_DETAILS", DEFAULT_OPTIONS.ueDetailsPerRun),
+      webQueriesPerRun: process.env.EMPRENDIMIENTOS_WEB_QUERIES === "0" ? 0 : number("EMPRENDIMIENTOS_WEB_QUERIES", DEFAULT_OPTIONS.webQueriesPerRun),
+      maxPostReads: process.env.EMPRENDIMIENTOS_POST_READS === "0" ? 0 : number("EMPRENDIMIENTOS_POST_READS", DEFAULT_OPTIONS.maxPostReads),
       proxy: process.env.EMPRENDIMIENTOS_PROXY || null,
     },
     log: line => console.log(`${TAG} ${line}`),

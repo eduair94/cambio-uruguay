@@ -1165,8 +1165,10 @@ module.exports = {
     {
       // Emprendimientos de Instagram (/emprendimientos-de-instagram-uruguay): descubre cuentas
       // (semillas, sugerencias de la página, Reddit una vez por día, Uruguay Emprendedor una vez por
-      // semana y la bola de nieve de colaboraciones), lee hasta 45 perfiles públicos de Instagram
-      // por corrida en UN Chrome headless sin sesión (~6 min) y clasifica lo nuevo con los créditos
+      // semana con 80 fichas por corrida, 12 búsquedas web por corrida con Gemini y la bola de nieve
+      // de colaboraciones, menciones y textos de posts de curadoras), lee hasta 100 perfiles públicos
+      // de Instagram por corrida en UN Chrome headless sin sesión (~17 min; el 23/11/2026 una prueba
+      // leyó 119 seguidos sin un muro de login) y clasifica lo nuevo con los créditos
       // de Claude (Gemini de respaldo). Diez corridas por día porque las fotos firmadas vencen a los
       // ~4 días y cada cuenta publicada se relee antes; sin las 6 y las 8 UTC para no leer Instagram
       // desde la misma IP que la corrida completa de alquileres (04:52, que lee sus cuentas de

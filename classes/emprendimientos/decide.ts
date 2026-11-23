@@ -23,8 +23,11 @@ export const GONE_STREAK = 2;
 
 /** Fuentes que son uruguayas por sí mismas: la cuenta tiene evidencia de Uruguay por venir de ahí. */
 const STRONG_SOURCES: ReadonlySet<SourceKind> = new Set(["uruguay-emprendedor", "semilla"]);
-/** Fuentes con contexto uruguayo, que alcanzan junto con un "sí" de la IA. */
-const MEDIUM_SOURCES: ReadonlySet<SourceKind> = new Set(["reddit", "colaboracion", "mencion", "sugerencia"]);
+/**
+ * Fuentes con contexto uruguayo, que alcanzan junto con un "sí" de la IA y sin marcas extranjeras.
+ * La búsqueda web pide "de Uruguay" pero puede traer cuentas de la región: por eso es de las medias.
+ */
+const MEDIUM_SOURCES: ReadonlySet<SourceKind> = new Set(["reddit", "colaboracion", "mencion", "sugerencia", "web"]);
 
 export interface Decision {
   state: CandidateState;
@@ -97,6 +100,7 @@ export const SOURCE_PRIORITY: Readonly<Record<SourceKind, number>> = Object.free
   "uruguay-emprendedor": 2,
   reddit: 3,
   colaboracion: 4,
+  web: 4,
   mencion: 5,
 });
 

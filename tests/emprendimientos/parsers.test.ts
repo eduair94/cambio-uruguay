@@ -35,6 +35,8 @@ describe("handles", () => {
   it("una @mención no es un correo ni un dominio", () => {
     expect(mentionsIn("Tienda online de @anina606 💕 escribinos a hola@tienda.com o @tienda.com.uy")).toEqual(["anina606"]);
     expect(mentionsIn("Proyecto @manos.veneguayas.")).toEqual(["manos.veneguayas"]);
+    // Un handle que termina en .uy es un handle: la mayoría de las cuentas uruguayas.
+    expect(mentionsIn("Gracias @retroka.uy y @velas_uy! Escribinos a @tienda.com.uy")).toEqual(["retroka.uy", "velas_uy"]);
   });
 
   it("desenvuelve l.instagram.com y distingue un sitio propio de una red o un agregador", () => {

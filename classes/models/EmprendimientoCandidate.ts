@@ -20,6 +20,7 @@ const EmprendimientoCandidateSchema = new Schema(
     goneStreak: { type: Number, default: 0 },
     classification: { type: Schema.Types.Mixed, default: null },
     listedAt: { type: String, default: null },
+    minedCodes: { type: [String], default: undefined },
     dueAt: { type: Date, required: true },
     priority: { type: Number, default: 9 },
   },

@@ -27,18 +27,32 @@ export interface RunOptions {
   classifyBacklog: number;
   redditEveryHours: number;
   ueListEveryDays: number;
+  /** Pausa entre fichas de Uruguay Emprendedor (HTTP plano). */
+  ueGapMs: number;
+  /** Cuántas búsquedas web (Gemini) por corrida. */
+  webQueriesPerRun: number;
+  /** Cuántos textos de posts de curadoras se leen por corrida, después de los perfiles. */
+  maxPostReads: number;
   proxy: string | null;
 }
 
+// 100 lecturas por corrida: el 23/11/2026 una corrida de prueba desde el VPS leyó 119 perfiles
+// seguidos (96 con perfil, 23 cuentas que no existen) sin un solo muro de login, en ~14 minutos.
+// Con los textos de curadoras, una corrida dura ~17 minutos y entra holgada entre dos de cada dos horas.
 export const DEFAULT_OPTIONS: RunOptions = {
-  maxReads: 45,
+  maxReads: 100,
   gapMs: 4_000,
-  readBudgetMs: 7 * 60_000,
-  ueDetailsPerRun: 25,
-  maxSnowball: 80,
-  classifyBacklog: 40,
+  readBudgetMs: 16 * 60_000,
+  ueDetailsPerRun: 80,
+  maxSnowball: 300,
+  classifyBacklog: 60,
   redditEveryHours: 20,
   ueListEveryDays: 7,
+  ueGapMs: 1_500,
+  webQueriesPerRun: 12,
+  // Poco: en las curadoras medidas el 23/11/2026 un post nombra 0,3 cuentas en promedio (las
+  // tiendas colectivas no etiquetan a sus marcas); las ferias que listan expositores rinden más.
+  maxPostReads: 10,
   proxy: null,
 };
 
@@ -50,8 +64,31 @@ export interface RunDeps {
   reddit?: ((plan: RedditPlan) => Promise<RedditResult>) | null;
   ueListings?: (() => Promise<{ cards: UeCard[]; pages: number; failed: number }>) | null;
   ueFetch?: UeFetcher | null;
+  /** Búsquedas web desde `cursor` (sources/web.ts). */
+  web?: ((cursor: number, count: number, day: string) => Promise<{ finds: { handle: string; source: SourceRef }[]; cursor: number; asked: number; answered: number }>) | null;
   options?: Partial<RunOptions>;
   log?: (line: string) => void;
+  sleep?: (ms: number) => Promise<void>;
+}
+
+/**
+ * Los posts de curadoras cuyo texto todavía no se leyó, repartidos entre ellas (uno de cada una por
+ * vuelta) hasta `limit`: así una feria con 12 posts no se lleva todas las lecturas de la corrida.
+ */
+export function postsToMine(curators: readonly CandidateRow[], limit: number): { code: string; owner: string }[] {
+  const queues = curators.map(row => {
+    const mined = new Set(row.minedCodes ?? []);
+    const profile = row.profile;
+    return profile ? profile.posts.filter(post => post.owner === profile.handle && !mined.has(post.code)).map(post => ({ code: post.code, owner: profile.handle })) : [];
+  });
+  const out: { code: string; owner: string }[] = [];
+  for (let round = 0; out.length < limit && queues.some(queue => queue.length > round); round++) {
+    for (const queue of queues) {
+      if (out.length >= limit) break;
+      if (queue[round]) out.push(queue[round]!);
+    }
+  }
+  return out;
 }
 
 export interface RunResult {
@@ -149,6 +186,7 @@ export function snowballHandles(profile: ProfileRead): { handle: string; kind: "
 export async function runOnce(deps: RunDeps): Promise<RunResult> {
   const options = { ...DEFAULT_OPTIONS, ...(deps.options ?? {}) };
   const { now, store } = deps;
+  const pause = deps.sleep ?? ((ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms)));
   const log = deps.log ?? (() => undefined);
   const day = uyDay(now);
   const previous = await store.loadMeta();
@@ -200,7 +238,8 @@ export async function runOnce(deps: RunDeps): Promise<RunResult> {
     const batch = state.ueQueue.slice(0, options.ueDetailsPerRun);
     const finds: { handle: string; source: SourceRef }[] = [];
     const done: string[] = [];
-    for (const card of batch) {
+    for (const [index, card] of batch.entries()) {
+      if (index) await pause(options.ueGapMs);
       const url = `${UE_BASE}/emprendimiento/${card.slug}/`;
       const html = await deps.ueFetch(url);
       if (!html) continue;
@@ -217,11 +256,37 @@ export async function runOnce(deps: RunDeps): Promise<RunResult> {
     log(`uruguay emprendedor: ${done.length} fichas leídas, ${finds.length} con Instagram (${merged.created} nuevas)`);
   }
 
+  if (deps.web && options.webQueriesPerRun > 0) {
+    const web = await deps.web(state.webCursor ?? 0, options.webQueriesPerRun, day);
+    state.webCursor = web.cursor;
+    if (web.answered) {
+      const merged = await mergeFinds(store, web.finds, optOuts, now);
+      discovered += merged.created;
+      sources.web = { at: now.toISOString(), found: web.finds.length, note: `${web.answered} de ${web.asked} búsquedas contestaron` };
+      log(`web: ${web.answered} de ${web.asked} búsquedas, ${web.finds.length} cuentas (${merged.created} nuevas)`);
+    } else {
+      sources.web = { ...(sources.web ?? { at: null, found: 0 }), note: "las búsquedas no contestaron" };
+      notes.push("búsqueda web no contestó");
+    }
+  }
+
   // --- 2. Leer --------------------------------------------------------------------------------
+  // Perfiles primero; después, en el mismo Chrome, el texto de posts de curadoras (ferias, tiendas
+  // colectivas, redes): cada uno etiqueta a varias marcas, y es la bola de nieve que más rinde.
   const due = (await store.dueCandidates(now, options.maxReads)).filter(row => !optOuts.has(row.handle));
-  const reads: ReadResults = due.length
-    ? await deps.readProfiles({ handles: due.map(row => row.handle), gapMs: options.gapMs, budgetMs: options.readBudgetMs, proxy: options.proxy, stopAfterBlankStart: 5 })
-    : { reads: new Map(), launched: false, closed: false, note: null };
+  const curators = options.maxPostReads > 0 ? await store.curators(40) : [];
+  const mining = postsToMine(curators, options.maxPostReads);
+  const reads: ReadResults =
+    due.length || mining.length
+      ? await deps.readProfiles({
+          handles: due.map(row => row.handle),
+          gapMs: options.gapMs,
+          budgetMs: options.readBudgetMs,
+          proxy: options.proxy,
+          stopAfterBlankStart: 5,
+          postCodes: mining.map(post => post.code),
+        })
+      : { reads: new Map(), launched: false, closed: false, note: null };
   if (reads.note) notes.push(reads.note);
   const attempted = reads.reads.size;
   const okCount = [...reads.reads.values()].filter(read => read.status === "ok").length;
@@ -292,6 +357,27 @@ export async function runOnce(deps: RunDeps): Promise<RunResult> {
   for (const row of touched.values()) {
     if ((row.state !== "publicada" && row.state !== "curadora") || reads.reads.get(row.handle)?.status !== "ok" || !row.profile) continue;
     for (const found of snowballHandles(row.profile)) snow.push({ handle: found.handle, source: { kind: found.kind, day, via: row.handle } });
+  }
+  // Los textos de los posts de curadoras: cada @mención es una cuenta candidata.
+  const captions = reads.captions ?? [];
+  const minedBy = new Map<string, string[]>();
+  for (const caption of captions) {
+    const curator = mining.find(post => post.code === caption.code)?.owner ?? caption.owner;
+    minedBy.set(curator, [...(minedBy.get(curator) ?? []), caption.code]);
+    for (const handle of mentionsIn(caption.text)) {
+      if (handle !== curator) snow.push({ handle, source: { kind: "mencion", day, via: curator } });
+    }
+  }
+  if (minedBy.size) {
+    const updated: CandidateRow[] = [];
+    for (const [handle, codes] of minedBy) {
+      const row = touched.get(handle) ?? curators.find(c => c.handle === handle);
+      if (!row) continue;
+      row.minedCodes = [...new Set([...(row.minedCodes ?? []), ...codes])].slice(-60);
+      updated.push(row);
+    }
+    await store.saveCandidates(updated);
+    log(`posts de curadoras: ${captions.length} de ${mining.length} leídos`);
   }
   const snowMerged = await mergeFinds(store, snow, optOuts, now, options.maxSnowball);
   discovered += snowMerged.created;
