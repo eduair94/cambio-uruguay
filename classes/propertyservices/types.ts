@@ -22,6 +22,9 @@ export interface ServiceMeta extends Omit<ServiceSnapshot, "points"> {
   total: number;
   previousSnapshotId?: string | null;
 }
-export const SERVICE_SOURCE = "https://download.geofabrik.de/south-america/uruguay-latest.osm.pbf";
+// Geofabrik moved Uruguay's files (latest and the dated history) into their own folder,
+// `/south-america/uruguay/`, in November 2026; the old `/south-america/uruguay-latest…` URL now
+// answers 301 to this one. Measured 2026-11-23 (CAMBIO-URUGUAY-BACKEND-1S).
+export const SERVICE_SOURCE = "https://download.geofabrik.de/south-america/uruguay/uruguay-latest.osm.pbf";
 export const SERVICE_MAX_POINTS = 100_000;
 export const SERVICE_MAX_BYTES = 120 * 1024 * 1024;

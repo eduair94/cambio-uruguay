@@ -64,7 +64,10 @@ export async function downloadServicePbf(): Promise<{ file: string; sourceSha256
         const target = new URL(url);
         if (target.origin !== "https://download.geofabrik.de" || target.username || target.password ||
           target.href.includes("?") || target.href.includes("#") ||
-          !/^\/south-america\/uruguay-(?:latest|\d{6})\.osm\.pbf(?:\.md5)?$/.test(target.pathname)) {
+          // Both layouts are official: the country file at the top of `/south-america/` (until
+          // November 2026, now a 301) and inside its own `/south-america/uruguay/` folder (since
+          // then). Only that folder and only Uruguay's own file names: another country never passes.
+          !/^\/south-america\/(?:uruguay\/)?uruguay-(?:latest|\d{6})\.osm\.pbf(?:\.md5)?$/.test(target.pathname)) {
           // Name where it went (origin + path only: never credentials, query or fragment), or
           // the next weekly failure is as undiagnosable as CAMBIO-URUGUAY-BACKEND-1S was.
           const where = `${target.protocol}//${target.host}${target.pathname}`.replace(/[^\x21-\x7e]/g, "").slice(0, 160);

@@ -8,7 +8,9 @@ import { SERVICE_SOURCE } from "../../classes/propertyservices/types";
 const root = process.cwd();
 const payload = Buffer.alloc(1_000_000, 42);
 const checksum = createHash("md5").update(payload).digest("hex");
+// The top-level layout Geofabrik used until November 2026: still an accepted redirect target.
 const dated = "https://download.geofabrik.de/south-america/uruguay-260906.osm.pbf";
+const folderDated = "https://download.geofabrik.de/south-america/uruguay/uruguay-260906.osm.pbf";
 let directory: string;
 let fetchMock: ReturnType<typeof vi.fn>;
 function redirect(location?: string, status = 302) {
@@ -70,10 +72,29 @@ describe("official Geofabrik download redirects", () => {
       .mockResolvedValueOnce(first.response).mockResolvedValueOnce(second.response).mockResolvedValueOnce(new Response(payload));
     const result = await downloadServicePbf();
     expect(result.sourceSha256).toBe(createHash("sha256").update(payload).digest("hex"));
-    expect(fetchMock.mock.calls[1][0]).toBe(dated + ".md5");
+    // Relative to the source, which since November 2026 lives in the `uruguay/` folder.
+    expect(fetchMock.mock.calls[1][0]).toBe(folderDated + ".md5");
     for (const hop of [check, first, second]) expect(hop.cancel).toHaveBeenCalledOnce();
   });
+  // What Geofabrik answered on 2026-11-23, after moving Uruguay into its own folder: the checksum
+  // straight, the extract as a 307 to the dated file inside the folder. The folder path used to be
+  // outside the allowlist, so the weekly job failed on its first request (CAMBIO-URUGUAY-BACKEND-1S).
+  it("follows the folder layout Geofabrik switched to in November 2026", async () => {
+    expect(SERVICE_SOURCE).toBe("https://download.geofabrik.de/south-america/uruguay/uruguay-latest.osm.pbf");
+    const hop = redirect("https://download.geofabrik.de/south-america/uruguay/uruguay-261122.osm.pbf", 307);
+    fetchMock.mockResolvedValueOnce(new Response(checksum + "  uruguay-latest.osm.pbf\n"))
+      .mockResolvedValueOnce(hop.response).mockResolvedValueOnce(new Response(payload));
+    const result = await downloadServicePbf();
+    expect(result.sourceSha256).toBe(createHash("sha256").update(payload).digest("hex"));
+    expect(fetchMock.mock.calls.map(call => call[0])).toEqual([
+      SERVICE_SOURCE + ".md5", SERVICE_SOURCE, "https://download.geofabrik.de/south-america/uruguay/uruguay-261122.osm.pbf",
+    ]);
+  });
   it.each([
+    "https://download.geofabrik.de/south-america/argentina/uruguay-latest.osm.pbf",
+    "https://download.geofabrik.de/south-america/uruguay/argentina-latest.osm.pbf",
+    "https://download.geofabrik.de/south-america/uruguay/uruguay/uruguay-latest.osm.pbf",
+    "https://download.geofabrik.de/south-america/uruguay/uruguay-latest.osm.pbf.torrent",
     "https://evil.example/south-america/uruguay-260906.osm.pbf",
     "https://download.geofabrik.de.evil.example/south-america/uruguay-260906.osm.pbf",
     "http://download.geofabrik.de/south-america/uruguay-260906.osm.pbf",
