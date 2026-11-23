@@ -185,6 +185,10 @@ export function normalizePhotoFacts(raw: unknown, photoCount: number): Normalize
     const kind = (PHOTO_KINDS as readonly string[]).includes(String(item.kind)) ? (item.kind as PhotoKind) : "otro";
     byIndex.set(index, { index, kind, render: item.render === true, watermark: item.watermark === true, collage: item.collage === true });
   }
+  // Numerar desde 1 corre todos los índices una foto: la portada y cada prueba apuntarían a otra.
+  // Sin la foto 0, o con una foto `photoCount`, la respuesta no se puede leer.
+  const rawIndexes = (Array.isArray(raw.photos) ? raw.photos : []).map(item => (isObject(item) ? item.i : undefined));
+  if (photoCount > 0 && (!byIndex.has(0) || rawIndexes.includes(photoCount))) return null;
   const photos = [...byIndex.values()].sort((a, b) => a.index - b.index);
   const evidence = (value: unknown, accept: (photo: PhotoVerdict) => boolean): number | null => {
     if (typeof value !== "number" || !Number.isInteger(value)) return null;

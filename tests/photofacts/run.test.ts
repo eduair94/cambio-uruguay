@@ -104,6 +104,28 @@ describe("runPhotoFacts", () => {
     expect(out.costUsd).toBeCloseTo(0.004, 9);
   });
 
+  it("stops without blaming the advert when the model is gone", async () => {
+    let available = true;
+    const { base, failed, saved } = deps({
+      ask: async s => {
+        if (s.id === "b") { available = false; return null; }
+        return answer();
+      },
+      modelAvailable: () => available,
+    });
+    const out = await runPhotoFacts(base);
+    expect(saved).toEqual(["a"]);
+    expect(failed).toEqual([]);
+    expect(out.stop).toBe("model");
+  });
+
+  it("stops after three null answers in a row", async () => {
+    const { base, failed } = deps({ subjects: ["a", "b", "c", "d", "e"].map(subject), ask: async () => null, modelAvailable: () => true });
+    const out = await runPhotoFacts(base);
+    expect(failed.map(([id]) => id)).toEqual(["a", "b", "c"]);
+    expect(out.stop).toBe("model");
+  });
+
   it("downloads the next advert while the model answers the current one", async () => {
     const events: string[] = [];
     let release!: () => void;

@@ -172,7 +172,9 @@ export const needsRecheck = (verdict: CarPhotoVerdict | null | undefined): boole
  * El tablero marca MUCHO más que lo que el aviso declara: el caso de r/AutosUy (130.000 declarados,
  * 208.936 en la foto). Más de 1,25 veces Y al menos 20.000 km de diferencia, para que una foto vieja
  * o un redondeo del vendedor (178.000 declarados, 168.709 en el tablero) no retire nada. Un tablero
- * que marca MENOS nunca retira: puede ser una foto anterior.
+ * que marca MENOS nunca retira: puede ser una foto anterior. Y una lectura de más de 5 veces lo
+ * declarado tampoco: es mucho más probable un dígito de más (el tambor de décimos de un odómetro
+ * analógico: 087412,3 leído 874.123) que un vendedor que declara la quinta parte.
  */
 export function odometerContradicts(
   verdict: Pick<CarPhotoVerdict, "odometerKm"> | null | undefined,
@@ -180,7 +182,7 @@ export function odometerContradicts(
 ): boolean {
   const read = verdict?.odometerKm;
   if (typeof read !== "number" || typeof declaredKm !== "number" || !(declaredKm >= 0)) return false;
-  return read > declaredKm * 1.25 && read - declaredKm >= 20_000;
+  return read > declaredKm * 1.25 && read - declaredKm >= 20_000 && read <= declaredKm * 5;
 }
 
 /**

@@ -41,7 +41,9 @@ atributo que pase la vara (abajo). Publicar es otro trabajo, por atributo, con s
 Se bajan con la UA del sitio y el espaciado por host de `classes/rentals/net.ts`; se descarta lo que
 pesa menos de 4 KB o mide menos de 400 px de lado mayor (el placeholder de El País pesa 2.353 bytes y
 mide 338×253) y lo repetido dentro del aviso, por SHA-1 de los bytes o por huella dHash a 4 bits o
-menos (la misma foto en otro tamaño). Las que pasan se achican a **1.024 px** de lado mayor y se
+menos (la misma foto en otro tamaño). Se prueban a lo sumo 10 URLs por aviso y se decodifica hasta 16 MP (más que eso no es una foto de
+aviso y en JS puro bloquea la CPU de una caja compartida); lo que no se pudo achicar y pasa lo que
+Claude acepta se descarta en vez de mandarse. Las que pasan se achican a **1.024 px** de lado mayor y se
 recodifican en JPEG calidad 80. Medido el 23/11: InfoCasas sirve 1920×1440, Casasweb 1634×1225 y ML
 1200 px. Todo en JS puro (`jpeg-js`): el VPS es CentOS 7 (glibc 2.17) y `sharp` no carga. A Mercado
 Libre se le pide la variante `.jpg` de cada foto, que el CDN sirve igual; lo que no es JPEG viaja tal
@@ -71,7 +73,11 @@ portal son ~7 s por el espaciado de 1,2 s por host y una respuesta ~6,5 s.
 
 Claude Haiku 5.5 con los créditos de API (`classes/anthropic.ts`), esfuerzo bajo, `system` cacheado.
 **Sin respaldo de Gemini**: en el piloto costaba 1,7 veces más y contestó peor; sin crédito de Claude
-la corrida no hace nada. El tope propio existe porque el pozo de créditos lo comparten todos los jobs
+la corrida no hace nada, y si deja de contestar a mitad de corrida (ninguna clave utilizable, o tres
+respuestas nulas seguidas) la corrida corta con `stop: "model"` sin anotarle la falla a los avisos, que
+si no quedarían días en espera por culpa del servicio. Una llamada cobrada que termina en negativa o
+cortada no llega con costo al job: la cuenta del mes puede quedar apenas por debajo de lo real, y el
+libro de gasto por clave de `classes/anthropic.ts` sí la cuenta. El tope propio existe porque el pozo de créditos lo comparten todos los jobs
 de IA, la búsqueda web incluida. Cada lectura **suma** su costo en `spend.<AAAA-MM>` en vez de
 pisarlo, así una relectura dentro del mes no esconde lo gastado.
 

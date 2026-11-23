@@ -91,6 +91,28 @@ describe('trackFilterChanges', () => {
     }
   })
 
+  it('cuenta una sola vez el mismo filtro escrito tecla por tecla', () => {
+    const track = vi.fn()
+    let clock = 1_000_000
+    const now = () => clock
+    for (const typed of ['2', '20', '202', '2026']) {
+      trackFilterChanges(track, 'motos', {}, { yearMin: typed }, now)
+      clock += 300
+    }
+    expect(track).toHaveBeenCalledTimes(1)
+    clock += 5_000
+    trackFilterChanges(track, 'motos', { yearMin: '2026' }, { yearMin: '2020' }, now)
+    expect(track).toHaveBeenCalledTimes(2)
+    trackFilterChanges(track, 'motos', { yearMin: '2020' }, {}, now)
+    trackFilterChanges(track, 'motos', {}, { yearMin: '2019' }, now)
+    expect(track.mock.calls.map(([, params]) => params.action)).toEqual([
+      'set',
+      'set',
+      'clear',
+      'set',
+    ])
+  })
+
   it('no manda nada si no cambió ningún filtro', () => {
     const track = vi.fn()
     trackFilterChanges(track, 'autos', { brand: 'toyota' }, { brand: 'toyota', page: '3' })

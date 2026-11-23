@@ -41,7 +41,15 @@ export interface RunDeps {
   /** Lo gastado este mes antes de la corrida. */
   spentUsd: number;
   now?: () => number;
+  /**
+   * ¿Hay una clave de Claude que pueda contestar ahora? Si no, una respuesta nula es culpa del
+   * servicio (tres fallas seguidas, una clave apartada o en su tope), no del aviso.
+   */
+  modelAvailable?: () => boolean;
 }
+
+/** Tantas respuestas nulas seguidas son el servicio, no los avisos: la corrida corta. */
+export const MAX_CONSECUTIVE_NO_ANSWER = 3;
 
 export interface RunSummary {
   considered: number;
@@ -53,7 +61,7 @@ export interface RunSummary {
   skipped: PhotoSkips;
   costUsd: number;
   cacheReadTokens: number;
-  stop: "done" | "max" | "time" | "budget";
+  stop: "done" | "max" | "time" | "budget" | "model";
 }
 
 export async function runPhotoFacts(deps: RunDeps): Promise<RunSummary> {
@@ -63,6 +71,7 @@ export async function runPhotoFacts(deps: RunDeps): Promise<RunSummary> {
     skipped: { small: 0, duplicate: 0, unreadable: 0, failed: 0 }, costUsd: 0, cacheReadTokens: 0, stop: "done",
   };
   let spent = deps.spentUsd;
+  let noAnswerStreak = 0;
   const subjects = deps.subjects;
   let pending: Promise<{ photos: PreparedPhoto[]; skipped: PhotoSkips }> | null = subjects.length ? deps.prepare(subjects[0]) : null;
   for (let i = 0; i < subjects.length; i++) {
@@ -81,10 +90,14 @@ export async function runPhotoFacts(deps: RunDeps): Promise<RunSummary> {
     }
     const answer = await deps.ask(subject, prepared.photos);
     if (!answer) {
+      // Sin modelo, el aviso no tiene la culpa: no se le anota una falla ni una espera.
+      if (deps.modelAvailable && !deps.modelAvailable()) { summary.stop = "model"; break; }
       summary.failed++;
       await deps.fail(subject, "no_answer", 0);
+      if (++noAnswerStreak >= MAX_CONSECUTIVE_NO_ANSWER) { summary.stop = "model"; break; }
       continue;
     }
+    noAnswerStreak = 0;
     spent += answer.costUsd;
     summary.costUsd += answer.costUsd;
     summary.cacheReadTokens += answer.usage.cacheRead;

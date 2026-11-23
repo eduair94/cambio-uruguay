@@ -77,6 +77,13 @@ describe("normalizePhotoFacts", () => {
     expect(normalizePhotoFacts(reply({ cover: 12 }), 4)!.cover).toBeNull();
   });
 
+  it("refuses a reply that numbered the photos from 1", () => {
+    const oneBased = reply({ photos: [photo(1, "living"), photo(2, "balcon_terraza"), photo(3, "dormitorio"), photo(4, "plano")] });
+    expect(normalizePhotoFacts(oneBased, 4)).toBeNull();
+    const noZero = reply({ photos: [photo(1, "living"), photo(2, "dormitorio")] });
+    expect(normalizePhotoFacts(noZero, 4)).toBeNull();
+  });
+
   it("caps the note and refuses a reply that is not an object", () => {
     expect(normalizePhotoFacts(reply({ note: "x".repeat(500) }), 4)!.note).toHaveLength(200);
     expect(normalizePhotoFacts(null, 4)).toBeNull();

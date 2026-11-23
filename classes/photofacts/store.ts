@@ -61,6 +61,8 @@ const base = (subject: PhotoSubject) => ({
   propertyKey: subject.propertyKey,
   source: subject.source,
   advertiser: subject.advertiser,
+  // El anunciante sin el portal: la misma inmobiliaria en dos portales es UN anunciante.
+  seller: subject.advertiser.split(":").slice(1).join(":"),
   department: subject.department,
   galleryHash: subject.galleryHash,
 });
@@ -129,8 +131,9 @@ export async function saveFailure(
 }
 
 /**
- * Cuántas fotos (por huella exacta) aparecen en avisos de DOS o más anunciantes distintos. Es una
- * medida y nada más: no une avisos ni acusa a nadie.
+ * Cuántas fotos (misma huella dHash) aparecen en avisos de DOS o más anunciantes distintos, contando
+ * a la misma inmobiliaria en dos portales como uno solo. Es una medida y nada más: no une avisos ni
+ * acusa a nadie.
  */
 export async function repeatedAcrossAdvertisers(): Promise<{ photos: number; listings: number }> {
   const rows = await collection()
@@ -138,7 +141,7 @@ export async function repeatedAcrossAdvertisers(): Promise<{ photos: number; lis
       { $match: { ok: true } },
       { $unwind: "$photos" },
       { $match: { "photos.dhash": { $type: "string" } } },
-      { $group: { _id: "$photos.dhash", advertisers: { $addToSet: "$advertiser" }, listings: { $addToSet: "$_id" } } },
+      { $group: { _id: "$photos.dhash", advertisers: { $addToSet: { $ifNull: ["$seller", "$advertiser"] } }, listings: { $addToSet: "$_id" } } },
       { $match: { "advertisers.1": { $exists: true } } },
       { $group: { _id: null, photos: { $sum: 1 }, listings: { $addToSet: "$listings" } } },
       { $project: { photos: 1, listings: { $size: { $reduce: { input: "$listings", initialValue: [], in: { $setUnion: ["$$value", "$$this"] } } } } } },

@@ -117,6 +117,11 @@ describe("odometerContradicts", () => {
     expect(odometerContradicts(null, 100_000)).toBe(false);
   });
 
+  it("distrusts a reading more than five times the advert: a tenths drum, not a seller", () => {
+    expect(odometerContradicts({ odometerKm: 874_123 }, 87_000)).toBe(false);
+    expect(odometerContradicts({ odometerKm: 400_000 }, 90_000)).toBe(true);
+  });
+
   it("becomes a silent photo_km rejection, after damage and catalog photos", () => {
     expect(photoRejection(verdict({ odometerKm: 208_936 }), 130_000)).toBe("photo_km");
     expect(photoRejection(verdict({ odometerKm: 208_936 }))).toBeNull();

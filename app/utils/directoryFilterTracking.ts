@@ -69,14 +69,31 @@ export function filterChanges(
   return changes.sort((a, b) => (a.filter < b.filter ? -1 : a.filter > b.filter ? 1 : 0))
 }
 
+/**
+ * Un campo de texto (el año en motos, el precio) llama al filtro en cada tecla: escribir "2026" eran
+ * cuatro eventos. El mismo filtro puesto otra vez dentro de esta ventana cuenta una sola vez.
+ */
+export const FILTER_REPEAT_WINDOW_MS = 2000
+const lastSet = new Map<string, number>()
+
 /** Un evento `directory_filter` por filtro cambiado, con el nombre y nunca el valor. */
 export function trackFilterChanges(
   track: (event: string, params?: Record<string, unknown>) => void,
   directory: FilterDirectory,
   prev: Record<string, unknown>,
-  next: Record<string, unknown>
+  next: Record<string, unknown>,
+  now: () => number = Date.now
 ): void {
   for (const { filter, action } of filterChanges(prev, next)) {
+    const key = `${directory}|${filter}`
+    const at = now()
+    if (action === 'set') {
+      const last = lastSet.get(key)
+      lastSet.set(key, at)
+      if (last !== undefined && at - last < FILTER_REPEAT_WINDOW_MS) continue
+    } else {
+      lastSet.delete(key)
+    }
     track('directory_filter', { directory, filter, action })
   }
 }

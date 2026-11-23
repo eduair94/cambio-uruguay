@@ -76,8 +76,9 @@ async function main(): Promise<void> {
   const results: Array<Record<string, unknown>> = [];
   const summary = await runPhotoFacts({
     subjects,
-    prepare: subject => preparePhotos(subject.photos, { max: 6 }),
+    prepare: subject => preparePhotos(subject.photos, { max: 6, maxAttempts: 10 }),
     ask,
+    modelAvailable: anthropicConfigured,
     save: async (row: PhotoFactsRow) => {
       if (probe) {
         results.push({ id: row.subject.id, source: row.subject.source, photos: row.sent.map(p => [p.url, p.width, p.height, p.resized]), ...row.result, costUsd: row.answer.costUsd, usage: row.answer.usage });

@@ -103,6 +103,26 @@ describe("preparePhotos", () => {
     expect(out.skipped.small).toBe(1);
   });
 
+  it("gives up on a gallery after maxAttempts URLs", async () => {
+    const asked: string[] = [];
+    const out = await preparePhotos(["a", "b", "c", "d", "e"], {
+      maxAttempts: 2,
+      fetcher: async url => {
+        asked.push(url);
+        return null;
+      },
+    });
+    expect(asked).toEqual(["a", "b"]);
+    expect(out.skipped.failed).toBe(2);
+  });
+
+  it("drops an oversized photo it cannot shrink instead of sending it", async () => {
+    const huge = Buffer.concat([webpHeader(9000, 6000), Buffer.alloc(10, 1)]);
+    const out = await preparePhotos(["w"], { fetcher: async () => huge });
+    expect(out.photos).toHaveLength(0);
+    expect(out.skipped.unreadable).toBe(1);
+  });
+
   it("asks Mercado Libre for the JPEG variant first and falls back to the original", async () => {
     const asked: string[] = [];
     const webp = "https://http2.mlstatic.com/D_NQ_NP_1-MLU2_082026-F.webp";

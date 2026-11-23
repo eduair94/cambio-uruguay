@@ -28,6 +28,14 @@ export const PHOTO_MAX_EDGE = 1024;
 const JPEG_QUALITY = 80;
 /** Dos huellas a esta distancia o menos son la misma escena (la misma foto en otro tamaño). */
 const SAME_SCENE_BITS = 4;
+/**
+ * Lo más grande que se decodifica: 16 MP son ~64 MB de RGBA y ~2 s de CPU en JS puro, en una caja que
+ * comparten ~260 apps de pm2. Una foto de portal mide 2–3 MP; más que esto no es una foto de aviso.
+ */
+const MAX_DECODE_MP = 16;
+/** Lo que Claude acepta por imagen; lo que no se pudo achicar y lo pasa se descarta, no se manda. */
+const CLAUDE_MAX_BYTES = 3_500_000;
+const CLAUDE_MAX_EDGE = 7_999;
 
 export interface PreparedPhoto {
   url: string;
@@ -161,7 +169,7 @@ function inspect(data: Buffer, maxEdge: number): Inspected {
   const hash = sha1(data);
   if (mime === "image/jpeg") {
     try {
-      const raw = decode(data, { useTArray: true, formatAsRGBA: true, maxResolutionInMP: 40, maxMemoryUsageInMB: 512 });
+      const raw = decode(data, { useTArray: true, formatAsRGBA: true, maxResolutionInMP: MAX_DECODE_MP, maxMemoryUsageInMB: 256 });
       const { width, height } = raw;
       if (Math.max(width, height) < PHOTO_MIN_EDGE) return "small";
       const scale = Math.min(1, maxEdge / Math.max(width, height));
@@ -178,6 +186,8 @@ function inspect(data: Buffer, maxEdge: number): Inspected {
   }
   const size = headerSize(data, mime);
   if (size && Math.max(...size) < PHOTO_MIN_EDGE) return "small";
+  // Sin achicar viaja tal cual: si pasa lo que Claude acepta, el 400 contaría como falla del servicio.
+  if (data.length > CLAUDE_MAX_BYTES || (size && Math.max(...size) > CLAUDE_MAX_EDGE)) return "unreadable";
   return { data, mimeType: mime, width: size?.[0] ?? null, height: size?.[1] ?? null, sha1: hash, dhash: null, resized: false };
 }
 
@@ -195,15 +205,17 @@ const defaultFetcher = (url: string): Promise<Buffer | null> => fetchBuffer(url,
  */
 export async function preparePhotos(
   urls: readonly string[],
-  options: { max?: number; maxEdge?: number; fetcher?: (url: string) => Promise<Buffer | null> } = {}
+  options: { max?: number; maxEdge?: number; maxAttempts?: number; fetcher?: (url: string) => Promise<Buffer | null> } = {}
 ): Promise<{ photos: PreparedPhoto[]; skipped: PhotoSkips }> {
   const max = options.max ?? 6;
+  // Tope de URLs probadas: una galería de 40 fotos rotas en un host lento no se come el reloj de la corrida.
+  const maxAttempts = options.maxAttempts ?? Number.POSITIVE_INFINITY;
   const maxEdge = options.maxEdge ?? PHOTO_MAX_EDGE;
   const fetcher = options.fetcher ?? defaultFetcher;
   const photos: PreparedPhoto[] = [];
   const skipped: PhotoSkips = { small: 0, duplicate: 0, unreadable: 0, failed: 0 };
   const seen = new Set<string>();
-  for (let index = 0; index < urls.length && photos.length < max; index++) {
+  for (let index = 0; index < urls.length && index < maxAttempts && photos.length < max; index++) {
     const url = urls[index];
     const variant = mlJpegVariant(url);
     let data = variant !== url ? await fetcher(variant) : null;
