@@ -266,7 +266,7 @@ export function analyzeCars(
       continue;
     }
     // Lo que las propias fotos del aviso contradicen no se publica como oportunidad.
-    const photoVerdict = photoRejection(subject.photoCheck);
+    const photoVerdict = photoRejection(subject.photoCheck, subject.km);
     if (photoVerdict) {
       bump(stats.rejectedByDetail, photoVerdict);
       continue;

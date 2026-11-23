@@ -12,7 +12,14 @@ import { fetchUsdUyuRate } from "./classes/chairs/catalog";
 import { detailTargets, queueSummary } from "./classes/autos/detailQueue";
 import { fetchCarDetails } from "./classes/autos/detail";
 import { declaredRisks } from "./classes/autos/risk";
-import { inspectCarPhotos, visionConfigured, type CarPhotoVerdict } from "./classes/autos/llm/vision";
+import {
+  inspectCarPhotos,
+  needsRecheck,
+  odometerContradicts,
+  photoRejection,
+  visionConfigured,
+  type CarPhotoVerdict,
+} from "./classes/autos/llm/vision";
 import { looseMedians } from "./classes/autos/detailQueue";
 import { loadStoredCars, saveCarDetails, saveCarPhotoChecks } from "./classes/autos/store";
 import { CarHarvestMetaModel } from "./classes/models/CarHarvestMeta";
@@ -32,25 +39,26 @@ async function runVision(
   stored: readonly StoredCar[],
   fresh: ReadonlyMap<string, CarDetail>,
   usdUyu: number,
-): Promise<{ asked: number; rejected: number; skipped: string }> {
+): Promise<VisionSummary> {
   const max = number("AUTOS_VISION_MAX", 30);
-  if (!visionConfigured()) return { asked: 0, rejected: 0, skipped: "sin GEMINI_API_KEY" };
+  if (!visionConfigured()) return { asked: 0, rejected: 0, odometerRead: 0, kmRejected: 0, rechecked: 0, costUsd: 0, skipped: "sin modelo configurado" };
   const medians = looseMedians(stored, usdUyu);
   // Presupuesto propio: el job es HORARIO y una tanda de visión sin techo lo hace solaparse consigo
   // mismo (medido: 25 llamadas con cuatro fotos se fueron a 25 minutos).
   const deadline = Date.now() + number("AUTOS_VISION_MINUTES", 8) * 60_000;
-  const candidates = stored
+  const eligible = stored
     .map(doc => ({ doc, detail: fresh.get(doc.key) ?? doc.detail }))
     .filter(({ doc, detail }) => {
-      if (doc.photoCheck || !detail?.pictures?.length) return false;
+      if ((doc.photoCheck && !needsRecheck(doc.photoCheck)) || !detail?.pictures?.length) return false;
       const group = medians.get(`${doc.listing.brandId}|${doc.listing.modelId}|${doc.listing.year}`);
       const priceUsd = doc.listing.currency === "USD" ? doc.listing.price : doc.listing.price / Math.max(1, usdUyu);
       const cheap = !!group && priceUsd > 0 && 1 - priceUsd / group.price >= 0.12;
       return cheap || declaredRisks(doc.listing.title, detail.description).length > 0;
-    })
-    .slice(0, max);
+    });
+  // Primero los que nunca se miraron; después los mirados con el esquema viejo, que no leía el tablero.
+  const candidates = [...eligible.filter(({ doc }) => !doc.photoCheck), ...eligible.filter(({ doc }) => !!doc.photoCheck)].slice(0, max);
   const checks = new Map<string, CarPhotoVerdict>();
-  let rejected = 0;
+  const summary: VisionSummary = { asked: 0, rejected: 0, odometerRead: 0, kmRejected: 0, rechecked: 0, costUsd: 0, skipped: "" };
   for (const { doc, detail } of candidates) {
     if (Date.now() >= deadline) break;
     const verdict = await inspectCarPhotos({
@@ -59,18 +67,38 @@ async function runVision(
       brand: doc.listing.brand,
       model: doc.listing.model,
       year: doc.listing.year,
-      trim: null,
+      trim: detail!.version ?? null,
       km: doc.listing.km,
       description: detail!.description,
       pictures: detail!.pictures ?? [],
     });
     if (!verdict) continue;
     checks.set(doc.key, verdict);
-    if (verdict.damage === "grave" || verdict.matchesAdvert === false || verdict.catalogPhotos) rejected++;
+    if (doc.photoCheck) summary.rechecked++;
+    // La misma regla que retira la oportunidad en classes/autos/analyze.ts, no otra.
+    if (photoRejection(verdict, doc.listing.km)) summary.rejected++;
+    if (verdict.odometerKm) summary.odometerRead++;
+    if (odometerContradicts(verdict, doc.listing.km)) summary.kmRejected++;
+    summary.costUsd += verdict.costUsd ?? 0;
   }
   await saveCarPhotoChecks(checks);
-  console.log(`[autos-detail] fotos revisadas ${checks.size} de ${candidates.length} candidatos, ${rejected} no pasan`);
-  return { asked: checks.size, rejected, skipped: "" };
+  summary.asked = checks.size;
+  summary.costUsd = Math.round(summary.costUsd * 1e5) / 1e5;
+  console.log(
+    `[autos-detail] fotos revisadas ${checks.size} de ${candidates.length} candidatos (${summary.rechecked} con esquema viejo),` +
+      ` ${summary.rejected} no pasan, ${summary.odometerRead} tableros leídos (${summary.kmRejected} contradicen los km), ~US$ ${summary.costUsd}`,
+  );
+  return summary;
+}
+
+interface VisionSummary {
+  asked: number;
+  rejected: number;
+  odometerRead: number;
+  kmRejected: number;
+  rechecked: number;
+  costUsd: number;
+  skipped: string;
 }
 
 async function main(): Promise<void> {
