@@ -18,8 +18,9 @@
 //     keeps going and bills a card, which is the opposite of the point. So every call's estimated
 //     cost is appended to `.anthropic-usage/<YYYY-MM>.jsonl` (label and dollars, never the key),
 //     shared by every cron process, and a key whose month reaches ANTHROPIC_KEY_MONTHLY_CAP_USD
-//     (default 25; 0 = no cap) is skipped until the month turns. Other projects spend the same
-//     keys, so this cap is this project's share, not the organisation's total.
+//     (default 25; 0 = no cap; one number or `label=usd` per key) is skipped until the month
+//     turns. Other projects spend the same keys, so this cap is this project's share, not the
+//     organisation's total — set it per label to "included credit − the other projects' caps".
 //
 //  2. A DEAD KEY IS LEARNED ONCE PER PROCESS. No credit left (402, or the 400 that says "credit
 //     balance is too low"), a spend cap reached, a revoked key (401) or a disabled organisation
@@ -196,11 +197,32 @@ function label(key: string): string {
 const DEFAULT_MONTHLY_CAP_USD = 25;
 const LEDGER_REFRESH_MS = 5 * 60_000;
 
-function monthlyCapUsd(): number {
-  const raw = (process.env.ANTHROPIC_KEY_MONTHLY_CAP_USD ?? "").trim();
-  if (!raw) return DEFAULT_MONTHLY_CAP_USD;
-  const value = Number(raw);
-  return Number.isFinite(value) && value >= 0 ? value : DEFAULT_MONTHLY_CAP_USD;
+const asCap = (raw: string): number | null => {
+  const value = Number(raw.trim());
+  return raw.trim() && Number.isFinite(value) && value >= 0 ? value : null;
+};
+
+/**
+ * The cap for one label. `ANTHROPIC_KEY_MONTHLY_CAP_USD` is either one number for every key (`25`)
+ * or per label, with an optional bare number as the default for the rest (`a=110,b=10,c=10` or
+ * `30;a=110`). Per label because the plans differ (an Ultra organisation includes twice the credit
+ * of a Max one) and so does what the owner's other projects already reserve on each key: the only
+ * cap that guarantees an organisation never spends past its included credit is "plan − the other
+ * projects' caps", and that number is different for every key. Unparseable entries are ignored.
+ */
+function monthlyCapUsd(keyLabel: string): number {
+  let fallback = DEFAULT_MONTHLY_CAP_USD;
+  let mine: number | null = null;
+  for (const item of (process.env.ANTHROPIC_KEY_MONTHLY_CAP_USD ?? "").split(/[\s,;]+/)) {
+    if (!item) continue;
+    const eq = item.indexOf("=");
+    if (eq < 0) {
+      fallback = asCap(item) ?? fallback;
+    } else if (item.slice(0, eq).trim() === keyLabel) {
+      mine = asCap(item.slice(eq + 1)) ?? mine;
+    }
+  }
+  return mine ?? fallback;
 }
 
 const usageDir = (): string => process.env.ANTHROPIC_USAGE_DIR || path.join(process.cwd(), ".anthropic-usage");
@@ -272,9 +294,9 @@ function recordSpend(keyLabel: string, model: string, usd: number): void {
 }
 
 function overCap(key: string): boolean {
-  const cap = monthlyCapUsd();
-  if (cap <= 0) return false;
   const name = label(key);
+  const cap = monthlyCapUsd(name);
+  if (cap <= 0) return false;
   const spent = monthSpend().get(name) ?? 0;
   if (spent < cap) return false;
   if (!cappedWarned.has(name)) {
@@ -601,10 +623,13 @@ export async function askClaudeWithImages(
 
 // ── Web search, behind ANTHROPIC_GROUNDED=1 ─────────────────────────────────────────────────────
 //
-// Off by default, by the maintainer's decision of 2026-11-22: Claude bills $10 per 1,000 searches AND
-// bills the pages it reads as input tokens, which Gemini's grounding does not, so on these jobs a
-// dollar of credit buys 10–20 times less Gemini spend than on plain text. The adapter exists so the
-// switch is an env var, not a deploy.
+// Off unless the env says "1". On in production since 2026-11-22, by the maintainer's decision, for
+// QUALITY, not money: measured that day on the four figures jobs, Claude answered every question
+// with sources and read the BCU's new usury cap, while Gemini's grounded replies came back with no
+// sources and the previous quarter's figure. It costs more credit — $10 per 1,000 searches plus the
+// pages read as input tokens, about $0.04 a call against Gemini's free 1,500 searches a day — which
+// is why it rides on the per-label monthly cap (1b): a key that reaches it sends the search back to
+// Gemini, and the caps are set so no organisation spends past its included credit.
 
 /** `"1"` and nothing else, so a typo never starts spending on searches. */
 export function claudeGroundedEnabled(): boolean {
