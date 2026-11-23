@@ -197,8 +197,8 @@ describe('phoneImportEstimate', () => {
     expect(generalRegime.savingTravelerUyu).toBe(round(50000 - generalRegime.traveler.totalUyu))
   })
 
-  it('today llega hasta courierImport: cruza SELLER_REGISTRY_ENFORCED_FROM (2026-10-01) y cambia el IVA', () => {
-    // Factura de US$ 180 (≤ US$ 200 de EE.UU., TIFA): antes del 1/10/2026 la exoneración de IVA no
+  it('today llega hasta courierImport: cruza SELLER_REGISTRY_ENFORCED_FROM (2027-02-01) y cambia el IVA', () => {
+    // Factura de US$ 180 (≤ US$ 200 de EE.UU., TIFA): antes del 1/2/2027 la exoneración de IVA no
     // exige vendedor registrado y el envío no paga IVA; desde esa fecha sí lo exige, y como esta
     // llamada nunca declara `sellerRegistered`, pasa a pagar 22 % sobre la factura. Si `today` no
     // llegara hasta `resolveRegime` (importRules.ts) esto no cambiaría entre las dos fechas.
@@ -214,7 +214,7 @@ describe('phoneImportEstimate', () => {
       salesTaxPct: 0,
       usdUyu: 40,
       localBestUyu: null,
-      today: new Date('2026-10-02T00:00:00.000Z'),
+      today: new Date('2027-02-02T00:00:00.000Z'),
     })
 
     expect(before.courier.regime).toBe('franquicia')

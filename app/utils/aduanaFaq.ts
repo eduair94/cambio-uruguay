@@ -1024,7 +1024,7 @@ export const ADUANA_FAQS: readonly AduanaFaq[] = Object.freeze([
     shortAnswer:
       'Puede contar como una guía, pero el valor total y todas las facturas siguen importando.',
     answer:
-      'Si el courier emite una única guía y declaración, normalmente se tramita como un envío. El total consolidado debe caber en el régimen y, desde octubre, si hay facturas de varios emisores estadounidenses, la presencia de uno no registrado puede hacer perder la exoneración de IVA a todo el envío.',
+      'Si el courier emite una única guía y declaración, normalmente se tramita como un envío. El total consolidado debe caber en el régimen y, desde el 1.º de febrero de 2027, si hay facturas de varios emisores estadounidenses, la presencia de uno no registrado puede hacer perder la exoneración de IVA a todo el envío.',
     category: 'franquicia-impuestos',
     sourceIds: ['rg-dna-09-2026', 'rg-dna-11-2026'],
     basis: 'procedimiento',

@@ -69,7 +69,7 @@ export interface CartSettings {
   franchiseAvailableUsd?: number
   /** Franchise shipments already used this calendar year (max 3). */
   shipmentsUsed?: number
-  /** Is the invoice issuer registered with the DNA? Only consulted from 2026-10-01. */
+  /** Is the invoice issuer registered with the DNA? Only consulted from 2027-02-01. */
   sellerRegistered?: boolean
   /** Resolution date — injectable so the dated rules are testable. */
   today?: Date

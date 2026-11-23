@@ -146,8 +146,20 @@ describe('courierImport', () => {
     expect(r.totalTax).toBe(60)
   })
 
-  it('from 2026-10-01 an unregistered US seller loses the IVA exoneration', () => {
-    const after = new Date('2026-10-01T00:00:00Z')
+  it('does not charge IVA to an eligible unregistered US seller on Black Friday 2026', () => {
+    const r = courierImport({
+      value: 200,
+      origin: 'usa',
+      useFranchise: true,
+      sellerRegistered: false,
+      today: new Date('2026-11-27T12:00:00Z'),
+    })
+    expect(r.ivaExempt).toBe(true)
+    expect(r.totalTax).toBe(0)
+  })
+
+  it('from 2027-02-01 an unregistered US seller loses the IVA exoneration', () => {
+    const after = new Date('2027-02-01T00:00:00Z')
     const exempt = courierImport({
       value: 150,
       origin: 'usa',

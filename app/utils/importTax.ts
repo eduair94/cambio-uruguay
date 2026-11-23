@@ -116,7 +116,7 @@ export interface CourierInput {
    * Omit to leave the fee out of the estimate entirely (the previous behaviour).
    */
   declarationTiming?: DeclarationTiming
-  /** Is the invoice issuer registered with the DNA? Only consulted from 2026-10-01. */
+  /** Is the invoice issuer registered with the DNA? Only consulted from 2027-02-01. */
   sellerRegistered?: boolean
   /** Simplified single rate (%); default 60. */
   ratePct?: number
@@ -149,7 +149,7 @@ export const TIFA_IVA_EXEMPTION_USD = USA_IVA_EXEMPTION_USD
  *
  *  - FRANQUICIA: the shipment fits in what is left of the USD 800 annual franchise (max 3
  *    shipments/year). Exempt from **aranceles**; still pays **IVA**, unless it is a US invoice
- *    of up to USD 200 (TIFA) — and, from 2026-10-01, unless the seller is also registered
+ *    of up to USD 200 (TIFA) — and, from 2027-02-01, unless the seller is also registered
  *    with the DNA.
  *  - PRESTACIÓN ÚNICA: everything else up to USD 800 — 60% of the invoice value, minimum
  *    **USD 20** per shipment. No IVA on top: it replaces all taxation of the shipment.

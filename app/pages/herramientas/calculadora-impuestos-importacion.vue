@@ -703,12 +703,16 @@
             superás, deja de estimar el 60% y te avisa.
           </p>
           <p>
-            <strong>Desde el 1.º de octubre de 2026</strong> la exoneración de IVA de EE.UU. exige,
-            además, que el <em>vendedor</em> que emite la factura figure en el registro de la Aduana
-            (RG 09/2026, prorrogada por la RG 21/2026). La página de franquicia de la DNA lo anuncia
-            "a partir del 3 de noviembre", cuando arranca la validación automática (RG 26/2026): la
-            calculadora toma la fecha más temprana. Si el vendedor no figura, tu courier puede pedir
-            que lo agreguen.
+            <strong>Desde el 1.º de febrero de 2027</strong>, la exoneración de IVA para envíos
+            elegibles de EE.UU. de hasta US$ 200 exigirá que el emisor de la factura figure en el
+            registro de la Aduana. Hasta entonces no se exige ese registro para acceder a la
+            exoneración, siempre que se cumplan las demás condiciones.
+            <a
+              href="https://www.aduanas.gub.uy/innovaportal/v/28219/9/innova.front/compras-web-y-envios.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Ver el aviso vigente de Aduanas</a
+            >. Si el vendedor no figura, tu courier puede pedir que lo agreguen.
           </p>
           <p>
             En este régimen el IVA y la tasa única se calculan siempre sobre el

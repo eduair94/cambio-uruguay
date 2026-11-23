@@ -4004,7 +4004,7 @@ export const redditGuides: readonly Guide[] = [
     description:
       'Hasta USD 200 de EE.UU. no pagás IVA, y es todo o nada: con USD 201 pagás sobre el total. Más la franquicia anual de USD 800 en hasta 3 envíos.',
     tag: 'IMPORTACIÓN',
-    updatedAt: '2026-07-20',
+    updatedAt: '2026-11-23',
     sections: [
       {
         heading: 'Amazon, EE.UU. y por qué el origen importa',
@@ -4023,8 +4023,8 @@ export const redditGuides: readonly Guide[] = [
         body: 'Además de la exoneración de EE.UU., tenés la franquicia anual de USD 800 en hasta 3 envíos por año calendario, con tope de 20 kg por envío, exenta de aranceles. Para una compra de EE.UU. de hasta USD 200, la franquicia combinada con la exoneración de IVA hace que el impuesto sea mínimo o nulo (te queda el costo del courier). Si tu compra supera los USD 200 pero no los USD 800, podés usar la franquicia igual: te ahorrás aranceles, pero pagás IVA sobre el total. Y por encima de USD 800 el envío pasa al régimen general, que es una importación formal.',
       },
       {
-        heading: 'El cambio de octubre de 2026: el vendedor registrado',
-        body: 'Hay una condición nueva que ya corre. Para que una compra de EE.UU. mantenga la exoneración de IVA, el emisor de la factura (el vendedor o la plataforma, no el courier) tiene que figurar en el registro de empresas extranjeras de la Aduana. Las fechas no coinciden: la RG DNA 21/2026 lo hizo exigible desde el 1 de octubre de 2026, después de dos prórrogas, y la página de franquicia de la Aduana lo anuncia "a partir del 3 de noviembre", que es cuando arranca la validación automática del sistema (RG DNA 26/2026). Contá con que ya se exige. Si el vendedor no está registrado, el envío paga IVA aunque sea de EE.UU. y esté por debajo de USD 200. Desde el 5 de octubre la lista ya no depende sólo de que cada empresa se presente: la Aduana puede sumar vendedores de oficio, tu courier puede pedir el alta de uno que falta y la Aduana tiene que publicar la lista en su sitio. Antes de una compra grande, fijate que el vendedor esté en esa lista. Es la diferencia entre pagar o no pagar el IVA, así que no la pases por alto.',
+        heading: 'Desde febrero de 2027: el vendedor registrado',
+        body: 'A partir del 1.º de febrero de 2027, para mantener la exoneración de IVA en envíos elegibles de EE.UU. de hasta US$ 200, el emisor de la factura (el vendedor o la plataforma, no el courier) deberá estar registrado ante la Aduana. Así lo confirma su página de Envíos Postales Internacionales, consultada el 23 de noviembre de 2026. Hasta esa fecha el registro no es exigible para esa exoneración; siguen vigentes las demás condiciones. Cuando se exija, un vendedor no registrado hará que el envío pague IVA aunque no supere US$ 200. Tu courier puede pedir el alta de un vendedor que falta y la Aduana publica la lista de registrados: revisala antes de comprar.',
       },
       {
         heading: 'Estimá el costo y desconfiá de las páginas viejas',
@@ -4060,8 +4060,8 @@ export const redditGuides: readonly Guide[] = [
         a: 'No. El valor que se mira es el total de la factura de compra: producto, sales tax y el envío que figure en la propia factura de Amazon. El flete que el courier te cobra por separado no forma parte de ese valor. Sumá bien lo que Amazon incluye en tu comprobante para no cruzar los USD 200 sin querer.',
       },
       {
-        q: '¿Qué es lo del "vendedor registrado" desde octubre de 2026?',
-        a: 'Para conservar la exoneración de IVA en compras de EE.UU., el emisor de la factura (el vendedor o la plataforma) tiene que figurar en el registro de empresas extranjeras de la Aduana. Se exige desde el 1 de octubre de 2026 (RG DNA 21/2026), y la validación automática del sistema arranca el 3 de noviembre (RG DNA 26/2026). Si no figura, el envío paga IVA aunque sea de EE.UU. y esté por debajo de USD 200. Vos no podés registrarlo, pero desde el 5 de octubre tu courier puede pedir que lo agreguen; antes de una compra importante, revisá la lista que publica la Aduana.',
+        q: '¿Desde cuándo se exige el vendedor registrado?',
+        a: 'Desde el 1.º de febrero de 2027, según el aviso vigente de Aduanas, el emisor de la factura deberá estar registrado para conservar la exoneración de IVA en envíos elegibles de EE.UU. de hasta US$ 200. Hasta entonces no se exige el registro para esa exoneración. Vos no podés registrarlo, pero tu courier puede pedir que lo agreguen; revisá la lista publicada por Aduanas.',
       },
       {
         q: 'Si Amazon me lo manda por correo común en vez de courier, ¿cambia algo?',
@@ -4087,14 +4087,13 @@ export const redditGuides: readonly Guide[] = [
         publisher: 'Dirección Nacional de Aduanas',
       },
       {
-        label:
-          'Resolución General 21/2026 — prórroga del registro de vendedores al 1.º de octubre de 2026',
-        url: 'https://www.aduanas.gub.uy/innovaportal/file/28613/1/rg-21-2026.pdf',
+        label: 'Aduanas — registro del emisor exigible desde el 1.º de febrero de 2027',
+        url: 'https://www.aduanas.gub.uy/innovaportal/v/28219/9/innova.front/compras-web-y-envios.html',
         publisher: 'Dirección Nacional de Aduanas',
       },
       {
         label:
-          'Resolución General 26/2026 — alta de vendedores de oficio y a pedido del operador postal, lista publicada por la DNA y validación automática desde el 3/11/2026',
+          'Resolución General 26/2026 — alta de vendedores de oficio y a pedido del operador postal, lista publicada por la DNA',
         url: 'https://www.aduanas.gub.uy/innovaportal/file/28724/1/rg-26-2026-exoneracion-iva-encomiendas-postales.pdf',
         publisher: 'Dirección Nacional de Aduanas',
       },

@@ -21,8 +21,8 @@ import {
   resolveRegime,
 } from '../../utils/importRules'
 
-const BEFORE = new Date('2026-07-11T00:00:00Z') // today: registry NOT yet enforceable
-const AFTER = new Date('2026-10-01T00:00:00Z') // the day the gate closes
+const BEFORE = new Date('2027-01-31T23:59:59Z') // today: registry NOT yet enforceable
+const AFTER = new Date('2027-02-01T00:00:00Z') // the day the gate closes
 
 const base = {
   valueUsd: 100,
@@ -56,10 +56,10 @@ describe('the seller-registration gate', () => {
     expect(isSellerRegistryEnforced(BEFORE)).toBe(false)
   })
 
-  it('is enforceable from 2026-10-01', () => {
-    expect(SELLER_REGISTRY_ENFORCED_FROM).toBe('2026-10-01')
+  it('is enforceable from 2027-02-01', () => {
+    expect(SELLER_REGISTRY_ENFORCED_FROM).toBe('2027-02-01')
     expect(isSellerRegistryEnforced(AFTER)).toBe(true)
-    expect(isSellerRegistryEnforced(new Date('2026-09-30T00:00:00Z'))).toBe(false)
+    expect(isSellerRegistryEnforced(new Date('2027-01-31T23:59:59Z'))).toBe(false)
   })
 
   it('today a US purchase under USD 200 is IVA-exempt regardless of the seller', () => {
@@ -68,7 +68,7 @@ describe('the seller-registration gate', () => {
     expect(d.ivaExempt).toBe(true)
   })
 
-  it('from 2026-10-01 the SAME purchase pays IVA if the seller is not registered', () => {
+  it('from 2027-02-01 the SAME purchase pays IVA if the seller is not registered', () => {
     // This is the bug: the old code would have kept exempting it forever.
     const d = resolveRegime({ ...base, valueUsd: 150, sellerRegistered: false, today: AFTER })
     expect(d.regime).toBe('franquicia')
@@ -76,13 +76,29 @@ describe('the seller-registration gate', () => {
     expect(d.reasons.join(' ')).toMatch(/registrado/i)
   })
 
-  it('from 2026-10-01 it stays exempt when the seller IS registered', () => {
+  it('from 2027-02-01 it stays exempt when the seller IS registered', () => {
     const d = resolveRegime({ ...base, valueUsd: 150, sellerRegistered: true, today: AFTER })
     expect(d.ivaExempt).toBe(true)
   })
 })
 
 describe('the US IVA exoneration is all-or-nothing', () => {
+  it.each(['2026-10-01', '2026-11-03', '2026-11-27', '2027-01-31'])(
+    'keeps eligible US shipments exempt during the postponement on %s',
+    date => {
+      const d = resolveRegime({
+        ...base,
+        valueUsd: 200,
+        sellerRegistered: false,
+        today: new Date(`${date}T12:00:00Z`),
+      })
+      expect(d.registryEnforced).toBe(false)
+      expect(d.ivaExempt).toBe(true)
+      expect(resolveRegime({ ...base, valueUsd: 201 }).ivaExempt).toBe(false)
+      expect(resolveRegime({ ...base, origin: 'other' }).ivaExempt).toBe(false)
+    }
+  )
+
   it('exempts a US shipment at exactly the threshold', () => {
     expect(resolveRegime({ ...base, valueUsd: 200 }).ivaExempt).toBe(true)
   })
@@ -257,14 +273,14 @@ describe('injectable RegimeRules overlay', () => {
   })
 
   it('uses the live overlay date, not the static constant', () => {
-    const rules: RegimeRules = { ...DEFAULT_REGIME_RULES, sellerRegistryEnforcedFrom: '2027-01-01' }
-    // A US$150 US shipment on 2026-11-01: enforced under the default (>= 2026-10-01), but a 3rd
-    // prórroga to 2027-01-01 means the seller-registration is NOT yet required, so it stays exempt.
-    expect(isSellerRegistryEnforced(new Date('2026-11-01T00:00:00Z'), rules)).toBe(false)
-    expect(isSellerRegistryEnforced(new Date('2026-11-01T00:00:00Z'))).toBe(true) // default = 2026-10-01
+    const rules: RegimeRules = { ...DEFAULT_REGIME_RULES, sellerRegistryEnforcedFrom: '2027-03-01' }
+    // A US$150 US shipment on 2027-02-15: enforced under the default (>= 2027-02-01), but another
+    // prórroga to 2027-03-01 means the seller-registration is NOT yet required, so it stays exempt.
+    expect(isSellerRegistryEnforced(new Date('2027-02-15T00:00:00Z'), rules)).toBe(false)
+    expect(isSellerRegistryEnforced(new Date('2027-02-15T00:00:00Z'))).toBe(true) // default = 2027-02-01
 
     const withPushedDate = resolveRegime(
-      { ...base, valueUsd: 150, sellerRegistered: false, today: new Date('2026-11-01T00:00:00Z') },
+      { ...base, valueUsd: 150, sellerRegistered: false, today: new Date('2027-02-15T00:00:00Z') },
       rules
     )
     expect(withPushedDate.regime).toBe('franquicia')

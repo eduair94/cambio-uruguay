@@ -126,6 +126,17 @@ describe("mergeAduanaDoc", () => {
 describe("mergeAduanaDoc — auto-published overrides", () => {
   const dateId = "registro_vendedor.exigible_desde";
 
+  it("serves the February postponement over the old stored date and its AI override", () => {
+    const merged = mergeAduanaDoc({
+      facts: [{ ...emptyAduanaDoc().facts.find((f) => f.id === dateId)!, value: "2026-10-01" }],
+      overrides: [{ id: dateId, value: "2026-11-03", basedOnValue: "2026-10-01", publishedAt: "2026-10-01", sources: ["a", "b"], prevValue: "2026-10-01" }],
+      pendingReview: [dateId],
+    });
+    expect(merged.facts.find((f) => f.id === dateId)?.value).toBe("2027-02-01");
+    expect(merged.overrides).toEqual([]);
+    expect(merged.pendingReview).toEqual([]);
+  });
+
   it("serves an AI override over the baseline value while the baseline is unchanged", () => {
     const base = emptyAduanaDoc();
     const f = base.facts.find((x) => x.id === dateId)!;
