@@ -53,6 +53,16 @@
                 navegador (la cookie <code>_ga</code>) para contar visitantes distintos. No los
                 cruzamos con tu cuenta ni con tu correo.
               </li>
+              <li>
+                <strong>Datos de un aporte (opcional):</strong> si hacés el aporte para navegar sin
+                anuncios, guardamos asociado a tu cuenta el monto, la moneda, la fecha, el medio de
+                pago, su estado y el identificador del pago que nos da Mercado Pago o PayPal, para
+                saber hasta cuándo tu cuenta no tiene anuncios y para poder devolvértelo. Los datos
+                de la tarjeta o de tu cuenta de pago los procesa el medio de pago y nunca llegan a
+                nosotros. En tu navegador queda una marca (<code>cu_adfree_v1</code>, en el
+                almacenamiento local) con hasta cuándo tu cuenta no tiene anuncios, para no esperar
+                al servidor en cada página.
+              </li>
               <li><strong>Cookies y tecnologías similares:</strong> ver la sección 4.</li>
               <li>
                 <strong>Datos de cuenta (opcional):</strong> podés entrar con Google, con correo y
@@ -454,7 +464,8 @@
               propios países (Telegram, OpenStreetMap, MapTiler y Positionstack). Cuando usás una
               función opcional que depende de uno de ellos (entrar con Discord, vincular Telegram,
               el asistente con IA), el envío es el necesario para darte esa función, que pediste
-              vos.
+              vos. Si hacés un aporte, el pago lo procesan Mercado Pago (en la región) o PayPal (en
+              Estados Unidos).
             </p>
           </section>
 
@@ -493,7 +504,7 @@
 const { t, locale } = useI18n()
 const localePath = useLocalePath()
 
-const LAST_UPDATED = '2026-11-08'
+const LAST_UPDATED = '2026-11-23'
 const rentalAlertPrivacy = computed(() => {
   if (locale.value.startsWith('en'))
     return 'Search alerts (rentals, homes for sale, used cars and motorcycles) are optional. We store your chosen filters, frequency, channels, whether you want price drops, your verified email address and delivery records to avoid repeating notifications. To detect price drops we keep the last and lowest price of each public listing, with no data about you. Push uses a device registration identifier. You can pause or delete an alert in your account; deleting it also removes its delivery history. Each email includes a link to unsubscribe from that alert’s emails independently of push notifications.'

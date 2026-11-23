@@ -208,6 +208,8 @@ const NOINDEXED = [
   // El tasador se indexa en su URL; cada combinación de marca, modelo y año se sale.
   'cuanto-vale-mi-auto-uruguay.vue',
   'cuenta/index.vue',
+  // El aporte sin anuncios: plumbing de la cuenta, como el panel (docs/app/SIN_PUBLICIDAD.md).
+  'cuenta/sin-publicidad.vue',
   // La herramienta "¿tengo descuento acá?": la respuesta depende de la ubicación de quien la abre.
   'descuentos-con-tarjeta-uruguay/cerca-de-mi.vue',
   // La lista del lector vive en su navegador: nada que indexar. Los dos directorios de avisos de

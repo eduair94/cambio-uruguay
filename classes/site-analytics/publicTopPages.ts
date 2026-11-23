@@ -47,6 +47,7 @@ export const PUBLIC_EXCLUDED_PATHS: readonly string[] = Object.freeze([
   "/equipar-casa-uruguay/mi-lista",
   "/widget",
   "/cuenta",
+  "/cuenta/sin-publicidad",
   "/estadisticas-de-busqueda",
   "/estadisticas-por-pagina",
   "/estadisticas-de-uso",

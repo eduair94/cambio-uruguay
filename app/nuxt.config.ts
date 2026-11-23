@@ -1652,6 +1652,20 @@ export default defineNuxtConfig({
       // Empty -> watchdog records state + logs but sends no Telegram.
       adminChatId: process.env.TELEGRAM_ADMIN_CHAT_ID || '',
     },
+    // El aporte único que deja la cuenta sin anuncios 12 meses (/cuenta/sin-publicidad,
+    // server/utils/adFreeStore.ts). Sólo servidor; se hornea en el build como todo lo demás. Sin
+    // credenciales el proveedor no aparece en la página y su checkout contesta 503.
+    adFree: {
+      mercadopagoAccessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || '',
+      // "Clave secreta" de la sección Webhooks del panel de la aplicación: firma `x-signature`.
+      mercadopagoWebhookSecret: process.env.MERCADOPAGO_WEBHOOK_SECRET || '',
+      paypalClientId: process.env.PAYPAL_CLIENT_ID || '',
+      paypalClientSecret: process.env.PAYPAL_CLIENT_SECRET || '',
+      // Id del webhook dado de alta en developer.paypal.com: sin él no se puede verificar la firma
+      // y el endpoint rechaza todo aviso (la vuelta del checkout sigue confirmando igual).
+      paypalWebhookId: process.env.PAYPAL_WEBHOOK_ID || '',
+      paypalEnv: process.env.PAYPAL_ENV === 'sandbox' ? 'sandbox' : 'live',
+    },
     // Discord OAuth2 login (server-side code exchange -> Firebase custom token).
     // Secrets are server-only; the client never sees clientSecret.
     discord: {
@@ -1748,6 +1762,12 @@ export default defineNuxtConfig({
       // se firma con su copia y su URL revisadas en un commit, no con una env suelta.
       sponsorships: {
         homeRow: process.env.NUXT_PUBLIC_SPONSORSHIPS_HOME_ROW || '',
+      },
+      // Qué medios de pago del aporte sin anuncios están configurados: la página sólo ofrece esos.
+      // Booleanos derivados de las credenciales privadas de arriba, nunca las credenciales.
+      adFree: {
+        mercadopago: Boolean(process.env.MERCADOPAGO_ACCESS_TOKEN),
+        paypal: Boolean(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET),
       },
       // Enlaces de afiliado (utils/affiliates.ts), una clave por id en camelCase. NUNCA en el
       // repo: un enlace de afiliado con el id de la cuenta adentro es media credencial. Vacío ->

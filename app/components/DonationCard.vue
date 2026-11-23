@@ -6,6 +6,19 @@
         <p>{{ $t('donation.helpMessage') }}</p>
       </div>
       <div class="donation-actions">
+        <!-- The one donation that also buys something: twelve months without ads for the account
+             (/cuenta/sin-publicidad). The two below stay as plain tips. -->
+        <VBtn
+          v-if="offered && !isDonor"
+          :to="localePath('/cuenta/sin-publicidad')"
+          variant="flat"
+          color="primary"
+          prepend-icon="mdi-cancel"
+          class="donation-link"
+          @click="selectAdFree"
+        >
+          {{ removeAdsLabel }}
+        </VBtn>
         <VBtn
           href="https://ko-fi.com/cambio_uruguay"
           target="_blank"
@@ -45,6 +58,28 @@
 </template>
 
 <script setup lang="ts">
+import { isExtraLocale } from '~/utils/locales'
+import { adFreeOffered, promotionParams } from '~/utils/adFreeFunnel'
+
+const localePath = useLocalePath()
+const { locale } = useI18n()
+// Inline like AccountMenu's copy: one label does not justify a key in every locale file, and the
+// machine-translated locales read English.
+const removeAdsLabel = computed(() => {
+  if (locale.value === 'pt') return 'Remover anúncios'
+  if (locale.value === 'en' || isExtraLocale(locale.value)) return 'Remove ads'
+  return 'Quitar anuncios'
+})
+
+// A donor is not offered what they already have.
+const viewer = useAdFreeViewer()
+const isDonor = computed(() => viewer.value === 'free')
+const offered = adFreeOffered(useRuntimeConfig().public.adFree as any)
+const track = useTrack()
+function selectAdFree() {
+  track('select_promotion', promotionParams('donation-card'))
+}
+
 const trackDonation = (platform: string) => {
   if (
     typeof window !== 'undefined' &&

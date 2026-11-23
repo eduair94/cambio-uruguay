@@ -77,6 +77,20 @@
               El sitio puede mostrar publicidad (por ejemplo, Google AdSense) y enlaces a sitios de
               terceros. No controlamos ni respaldamos su contenido y no somos responsables de ellos.
             </p>
+            <p class="legal-prose text-body-1 text-grey-lighten-1 mt-3">
+              <strong>Aporte para navegar sin anuncios.</strong> Con una cuenta (no de invitado)
+              podés hacer un aporte único desde
+              <!-- eslint-disable-next-line vue/max-attributes-per-line -->
+              <NuxtLink :to="localePath('/cuenta/sin-publicidad')" class="legal-link"
+                >Navegá sin anuncios</NuxtLink
+              >. Cada aporte acreditado deja esa cuenta sin anuncios durante 12 meses desde que se
+              acredita (o desde que termina el período anterior, si todavía tenías uno), en todos
+              los dispositivos donde inicies sesión con ella. No es una suscripción: no se renueva y
+              no hay cobros automáticos. El resto del sitio es igual para todos. El pago lo procesan
+              Mercado Pago o PayPal con sus propios términos. Podés pedir la devolución completa
+              dentro de los 5 días hábiles del pago escribiendo a contacto (Ley 17.250, artículo
+              16); un aporte devuelto o desconocido ante el banco termina su período.
+            </p>
           </section>
 
           <section class="mb-8">
@@ -107,7 +121,7 @@
 const { t, locale } = useI18n()
 const localePath = useLocalePath()
 
-const LAST_UPDATED = '2026-06-20'
+const LAST_UPDATED = '2026-11-23'
 const lastUpdatedDisplay = computed(() =>
   new Date(LAST_UPDATED).toLocaleDateString(dateLocale(locale.value), {
     timeZone: siteTimeZone(LAST_UPDATED),

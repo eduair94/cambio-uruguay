@@ -85,6 +85,8 @@ function mount(configuredId: string) {
     useTrack: () => track,
     useSponsorships: () => ({
       homeRow: vue.computed(() => resolveSponsoredRow(configuredId, 'home-after-rates', REGISTRY)),
+      // The real one also answers false for an ad-free account (tests/unit/adFreeViewer.test.ts).
+      canRender: () => true,
     }),
   })
   const root = document.createElement('div')
@@ -156,7 +158,7 @@ describe('the home mounts it OUTSIDE the ranking', () => {
     // Entre el v-for del ranking y la fila se cierra la sección del ranking: la fila no está
     // dentro de la grilla ni dentro del v-for.
     expect(home.slice(loop, mountAt)).toContain('</section>')
-    expect(home.slice(loop, mountAt)).toContain('<ConLaTuyaBanner />')
+    expect(home.slice(loop, mountAt)).toMatch(/<ConLaTuyaBanner[\s/>]/)
     // Una sola vez.
     expect(home.match(/<SponsoredCasaRow/g)).toHaveLength(1)
   })

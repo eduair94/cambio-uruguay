@@ -20,6 +20,8 @@ export const SITEMAP_NOINDEX_PATHS: readonly string[] = Object.freeze([
   '/offline',
   '/widget',
   '/cuenta',
+  // El aporte sin anuncios: plumbing de la cuenta, noindex (pages/cuenta/sin-publicidad.vue).
+  '/cuenta/sin-publicidad',
   '/estado',
   '/api-reference',
   '/estadisticas-de-busqueda',

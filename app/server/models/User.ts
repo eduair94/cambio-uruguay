@@ -13,6 +13,8 @@ export interface UserDoc {
   telegramChatId: string | null
   newsletter: { email: boolean; telegram: boolean }
   discordId: string | null
+  /** Last day without ads, derived from the approved donations (server/utils/adFreeStore.ts). */
+  adFreeUntil: Date | null
 }
 
 const UserSchema = new Schema<UserDoc>(
@@ -32,6 +34,7 @@ const UserSchema = new Schema<UserDoc>(
       telegram: { type: Boolean, default: false },
     },
     discordId: { type: String, default: null, index: true, sparse: true },
+    adFreeUntil: { type: Date, default: null },
   },
   { timestamps: true, _id: false }
 )

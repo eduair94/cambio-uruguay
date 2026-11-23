@@ -31,6 +31,10 @@
         <template #prepend><VIcon>mdi-view-dashboard</VIcon></template>
         <VListItemTitle>{{ $t('auth.account') }}</VListItemTitle>
       </VListItem>
+      <VListItem v-if="adFreeOn" :to="localePath('/cuenta/sin-publicidad')" @click="selectAdFree">
+        <template #prepend><VIcon>mdi-cancel</VIcon></template>
+        <VListItemTitle>{{ logoutCopy.adFree }}</VListItemTitle>
+      </VListItem>
       <VDivider />
       <VListItem :disabled="loggingOut" @click="logout">
         <template #prepend><VIcon>mdi-logout</VIcon></template>
@@ -51,6 +55,7 @@
 import { isAuthHandoffUrl, loadFirebaseAuth } from '~/services/firebaseLazy'
 import { withoutSignInHandoff } from '~/utils/analyticsUrl'
 import { isExtraLocale } from '~/utils/locales'
+import { adFreeOffered, promotionParams } from '~/utils/adFreeFunnel'
 
 const store = useAuthStore()
 const localePath = useLocalePath()
@@ -64,18 +69,21 @@ const logoutCopy = computed(() => {
         'No pudimos desvincular las notificaciones de este dispositivo. Tu sesión sigue abierta. Comprobá la conexión y volvé a intentar.',
       retry: 'Reintentar',
       close: 'Cerrar',
+      adFree: 'Sin anuncios',
     },
     en: {
       message:
         'We could not disconnect notifications on this device. You are still signed in. Check your connection and try again.',
       retry: 'Try again',
       close: 'Close',
+      adFree: 'No ads',
     },
     pt: {
       message:
         'Não foi possível desvincular as notificações deste dispositivo. Sua sessão continua aberta. Verifique a conexão e tente novamente.',
       retry: 'Tentar novamente',
       close: 'Fechar',
+      adFree: 'Sem anúncios',
     },
   }
   // The machine-translated locales read English: closer to them than Spanish.
@@ -99,6 +107,12 @@ async function logout() {
   } finally {
     loggingOut.value = false
   }
+}
+
+const track = useTrack()
+const adFreeOn = adFreeOffered(useRuntimeConfig().public.adFree as any)
+function selectAdFree() {
+  track('select_promotion', promotionParams('account-menu'))
 }
 
 const initials = computed(() => {

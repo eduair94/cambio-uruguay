@@ -18,6 +18,7 @@
 
 <script setup lang="ts">
 import { OG_IMAGE_ALT_FLOOR } from '~/utils/ogCardText'
+import { viewerLoadsAdsense } from '~/utils/adFree'
 
 // Site-wide default branded OG image. Pages override via defineOgImageComponent.
 defineOgImageComponent('Cambio')
@@ -70,6 +71,9 @@ useSeoMeta({
 // site verification still works from any URL.
 const { pubId: adsensePubId, scriptAllowed } = useAds()
 if (adsensePubId) {
+  // A donor's account (/cuenta/sin-publicidad) gets no loader at all: plugins/ad-free.client.ts
+  // settles `viewer` right after hydration, and the loader waits for it (utils/adFree.ts).
+  const adFreeViewer = useAdFreeViewer()
   useHead({ meta: [{ name: 'google-adsense-account', content: adsensePubId }] })
   // The loader waits for hydration and never ships in the server HTML: Auto Ads drops its own
   // <div> into <main> the moment it runs, and mid-hydration Vue adopts that div as the layout's
@@ -79,7 +83,11 @@ if (adsensePubId) {
     hydrated.value = true
   })
   useHead(() => ({
-    script: adsenseLoaderScripts(adsensePubId, scriptAllowed.value, hydrated.value),
+    script: adsenseLoaderScripts(
+      adsensePubId,
+      scriptAllowed.value && viewerLoadsAdsense(adFreeViewer.value),
+      hydrated.value
+    ),
   }))
 }
 </script>

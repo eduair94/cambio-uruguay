@@ -41,7 +41,7 @@ describe('AdSense loader', () => {
     expect(source).toMatch(/const hydrated = ref\(false\)/)
     expect(source).toMatch(/onNuxtReady\(\(\) => \{\s*hydrated\.value = true\s*\}\)/)
     expect(source).toMatch(
-      /adsenseLoaderScripts\(\s*adsensePubId,\s*scriptAllowed\.value,\s*hydrated\.value\s*\)/
+      /adsenseLoaderScripts\(\s*adsensePubId,\s*scriptAllowed\.value && viewerLoadsAdsense\(adFreeViewer\.value\),\s*hydrated\.value\s*\)/
     )
   })
 })

@@ -716,7 +716,8 @@
 
     <!-- The homepage's single manual promotion follows the main rate lookup. -->
     <VContainer class="py-4">
-      <ConLaTuyaBanner />
+      <!-- Labelled as advertising, so an ad-free account does not get it (utils/adFree.ts). -->
+      <ConLaTuyaBanner v-if="viewerShowsAds(adFreeViewer)" />
       <!-- La fila patrocinada: un bloque APARTE del ranking de arriba, nunca dentro de
            topExchanges (el orden lo determina siempre el precio). Sin `sponsorships.homeRow` en
            runtimeConfig no deja ni un nodo en el DOM. -->
@@ -1187,6 +1188,7 @@ import { VAutocomplete } from 'vuetify/components'
 import { MotionDirective } from '@vueuse/motion'
 import { useLocalePath } from '#imports'
 import { prLabel } from '~/utils/pageRanking'
+import { viewerShowsAds } from '~/utils/adFree'
 import { topicOf, type TopPageRow, type TopPagesSnapshot } from '~/utils/topPages'
 import DirectionToggle from '@/components/DirectionToggle.vue'
 import { computed, onBeforeUnmount, onMounted, onServerPrefetch, ref, watch } from 'vue'
@@ -1214,6 +1216,8 @@ import { replaceQueryInPlace } from '@/utils/historyQuery'
 import { formatUyuCurrency, keepCurrency } from '@/utils/homeConverter'
 
 /** Cuántas guías muestra la portada. */
+// An ad-free account (/cuenta/sin-publicidad) does not get the promotion labelled as advertising.
+const adFreeViewer = useAdFreeViewer()
 const HOME_GUIDES = 6
 
 const { mobile } = useDisplay()
