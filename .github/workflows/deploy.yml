@@ -9,7 +9,17 @@ on:
     # `ready_for_review` además de los tres de siempre: un borrador que pasa a listo tiene que
     # volver a correr para que el job `automerge` de abajo lo vea.
     types: [opened, synchronize, reopened, ready_for_review]
+  # Un dispatch (el del job `automerge` o uno a mano) corre los dos deploys, y cada script del VPS
+  # decide solo si hay algo que compilar: compara la huella de lo que compila (árbol de git, deps,
+  # Node, .env) con la que dejó el build que está sirviendo, y si coinciden saltea el build. Así una
+  # ráfaga de merges no recompila N veces el mismo `main`, y un PR que no tocó `app/` no paga un
+  # `nuxt build` de 12 minutos. `force` es la escotilla para recompilar igual.
   workflow_dispatch:
+    inputs:
+      force:
+        description: 'Recompilar aunque el VPS ya sirva un build con la misma huella'
+        type: boolean
+        default: false
 
 # PR checks can replace older PR checks without waiting for a production build.
 # Production deploys stay serialized and are never cancelled during a swap/reload.
@@ -44,17 +54,36 @@ jobs:
       # `npm install`, not `npm ci` — same as the server's deploy.sh. The cache
       # above only warms ~/.npm; it does not change how the tree is resolved.
       - run: npm install --force --no-audit --no-fund
+      - run: npm run test
+
+  # Lint corre en paralelo con los tests y no detrás de ellos: en el mismo job eran 2m18s de lint y
+  # 2m28s de tests en fila (run 45235277631), con los dos en el camino crítico del deploy.
+  lint:
+    name: Lint
+    needs: changes
+    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.appTests == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm install --force --no-audit --no-fund
       # Lint gates the deploy too, and not for tidiness: the guide-expansion bot
       # on the VPS runs `npm run lint` before it publishes anything, so a single
       # unformatted file merged to `main` makes EVERY expansion fail with the
       # same `prettier/prettier` wall until someone reformats it by hand. Nothing
       # in CI used to notice — `npm run test` passes on unformatted code.
       - run: npm run lint
-      - run: npm run test
 
   deploy:
     name: Zero-downtime deploy
-    needs: [secret-scan, test, backend-test, changes]
+    needs: [secret-scan, lint, test, backend-test, changes]
     # Deploy only for pushes to main (and manual dispatch on main); never for PRs
     # — AND only when the push actually touched the Nuxt app.
     #
@@ -66,10 +95,12 @@ jobs:
     # workflow has had a path filter since it was written; the app half never
     # got one.
     #
-    # `workflow_dispatch` deliberately bypasses the gate: it is the escape hatch
-    # for redeploying the current main by hand (recovering a bad server state,
-    # forcing a rebuild after an out-of-band change), and dorny/paths-filter has
-    # no meaningful base to diff against on a manual run anyway.
+    # `workflow_dispatch` deliberately bypasses the gate (dorny/paths-filter has
+    # no meaningful base to diff against on a manual run). It no longer means
+    # "rebuild": deploy.sh skips the build when the app tree, the deps, Node and
+    # app/.env all match the fingerprint stored in the live `.output`, and the
+    # app still answers 200. The `force` input is the escape hatch for rebuilding
+    # anyway (recovering a bad server state the health check cannot see).
     #
     # Safe to gate on `app/**` because the Nuxt app is self-contained: no
     # workspaces, no `file:` deps, no alias in nuxt.config pointing outside
@@ -80,6 +111,7 @@ jobs:
     if: >-
       !cancelled() &&
       needs.secret-scan.result == 'success' &&
+      needs.lint.result == 'success' &&
       needs.test.result == 'success' &&
       (needs.backend-test.result == 'success' || needs.backend-test.result == 'skipped') &&
       github.ref == 'refs/heads/main' &&
@@ -96,6 +128,8 @@ jobs:
           # Path to the app dir on the server. Override with a repo variable if
           # it ever moves; defaults to the documented location in deploy.sh.
           APP_DIR: ${{ vars.DEPLOY_APP_DIR || '/root/cambio-uruguay/app' }}
+          # Sin `--force`, deploy.sh saltea el build si la huella coincide con la del build vivo.
+          FORCE_FLAG: ${{ github.event_name == 'workflow_dispatch' && inputs.force && '--force' || '' }}
         run: |
           set -euo pipefail
           : "${SSH_KEY:?missing repository secret DEPLOY_SSH_KEY}"
@@ -113,7 +147,7 @@ jobs:
           # .output and `pm2 reload`s — the live site never goes down.
           ssh -i ~/.ssh/deploy_key -p "$PORT" -o IdentitiesOnly=yes \
             "$DEPLOY_USER@$HOST" \
-            "cd '$APP_DIR' && bash scripts/deploy.sh"
+            "cd '$APP_DIR' && bash scripts/deploy.sh $FORCE_FLAG"
 
   # --- Root Express backend (index.ts, classes/, sync*.ts, ecosystem.config.js…)
   # This is a SEPARATE deploy surface from app/ above: different repo area,
@@ -252,7 +286,7 @@ jobs:
 
   backend-deploy:
     name: Backend zero-downtime deploy
-    needs: [secret-scan, test, backend-test, changes, deploy]
+    needs: [secret-scan, lint, test, backend-test, changes, deploy]
     # `needs: deploy` (the app deploy job above) is not a functional dependency
     # — it exists purely to sequence the two deploy jobs so their SSH sessions
     # never `git pull` the SAME repo tree at the same time (see the race note in
@@ -263,6 +297,7 @@ jobs:
       always() &&
       needs.secret-scan.result == 'success' &&
       needs.backend-test.result == 'success' &&
+      (needs.lint.result == 'success' || needs.lint.result == 'skipped') &&
       (needs.test.result == 'success' || needs.test.result == 'skipped') &&
       github.ref == 'refs/heads/main' &&
       (github.event_name == 'workflow_dispatch' ||
@@ -279,6 +314,9 @@ jobs:
           # if it ever moves; defaults to the documented location in
           # scripts/deploy-backend.sh.
           REPO_DIR: ${{ vars.DEPLOY_REPO_DIR || '/root/cambio-uruguay' }}
+          # Sin `--force`, deploy-backend.sh saltea npm install, tsc y el reload de la API si la
+          # huella coincide con la del dist/ vivo (el registro de los jobs de pm2 corre siempre).
+          FORCE_FLAG: ${{ github.event_name == 'workflow_dispatch' && inputs.force && '--force' || '' }}
         run: |
           set -euo pipefail
           : "${SSH_KEY:?missing repository secret DEPLOY_SSH_KEY}"
@@ -300,7 +338,7 @@ jobs:
           # Deploy section.
           ssh -i ~/.ssh/deploy_key -p "$PORT" -o IdentitiesOnly=yes \
             "$DEPLOY_USER@$HOST" \
-            "cd '$REPO_DIR' && bash scripts/deploy-backend.sh"
+            "cd '$REPO_DIR' && bash scripts/deploy-backend.sh $FORCE_FLAG"
 
   # --- Los PRs propios se aprueban, se mergean y se despliegan solos ---------------------------
   # Los abren las sesiones de Claude (la corrida diaria en la nube, sesiones locales) con la cuenta
@@ -320,11 +358,12 @@ jobs:
   #
   # El deploy se DISPARA a mano después del merge: un push hecho con el GITHUB_TOKEN no dispara
   # workflows (regla de GitHub contra bucles), así que el `on: push` de arriba nunca vería este
-  # merge. `workflow_dispatch` sí está permitido, y ese camino corre los tests sobre `main` y
-  # despliega app y backend enteros (ver el comentario del job `deploy`).
+  # merge. `workflow_dispatch` sí está permitido, y ese camino corre los tests sobre `main` y llama
+  # a los dos deploys; cada uno compila sólo si su huella cambió respecto de lo que ya sirve el VPS
+  # (ver el comentario del job `deploy`), así que el lado que el PR no tocó termina en segundos.
   automerge:
     name: Auto-approve + merge
-    needs: [secret-scan, test, backend-test, changes]
+    needs: [secret-scan, lint, test, backend-test, changes]
     if: >-
       !cancelled() &&
       github.event_name == 'pull_request' &&
@@ -335,6 +374,7 @@ jobs:
       !contains(github.event.pull_request.labels.*.name, 'no-automerge') &&
       needs.changes.result == 'success' &&
       needs.secret-scan.result == 'success' &&
+      (needs.lint.result == 'success' || needs.lint.result == 'skipped') &&
       (needs.test.result == 'success' || needs.test.result == 'skipped') &&
       (needs.backend-test.result == 'success' || needs.backend-test.result == 'skipped')
     runs-on: ubuntu-latest

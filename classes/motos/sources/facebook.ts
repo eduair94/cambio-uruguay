@@ -215,7 +215,14 @@ const TITULO_ELECTRICA = /\b(electric[oa]s?|electronica|litio)\b/;
  * Un AUTO en la categoría Vehículos que nombra una marca que también hace motos (Suzuki, Honda,
  * BMW): la cilindrada en litros ("1.6"), la carrocería o la caja lo delatan.
  */
-const ES_UN_AUTO = /\b(camioneta|automovil|auto|sedan|hatch\w*|4x4|pick ?up|furgon\w*|minivan|suv|automatic[oa]|caja automatica|[1-6][.,]\d\s?(?:l|lts?|litros?|turbo|tsi|nafta|diesel)?)\b/;
+const ES_UN_AUTO = /\b(camioneta|automovil|auto|sedan|hatch\w*|4x4|4x2|2wd|4wd|awd|pick ?up|furgon\w*|minivan|suv|automatic[oa]|caja automatica)\b/;
+/**
+ * La cilindrada en LITROS es de auto: "1.6", "2.4i", "1,0 turbo". Ninguna moto se anuncia así. Va
+ * aparte de las palabras porque "2.4i" tiene la letra pegada y un `\b` no la separa: medido el
+ * 23/11/2026, «2004 Honda CR-V 2.4I LX AT» entró como moto «Honda CR250» por esa rendija. Un monto
+ * con punto de miles ("5.300") no matchea: el decimal tiene que ser una sola cifra.
+ */
+const LITROS_DE_AUTO = /(?:^|[^\d.,])[1-6][.,]\d(?![\d.,])/;
 
 export type FbMotoRejection =
   | "vendido"
@@ -252,7 +259,7 @@ export function fbCardToMoto(
   const rejection = motoRejection(title);
   if (rejection) return { rejected: rejection };
   if (NO_VENDE.test(fold(title))) return { rejected: "no-vende" };
-  if (ES_UN_AUTO.test(fold(title))) return { rejected: "es-un-auto" };
+  if (ES_UN_AUTO.test(fold(title)) || LITROS_DE_AUTO.test(fold(title))) return { rejected: "es-un-auto" };
   const words = motoWords(title);
   const brand = findBrand(words, context.dictionary);
   const model = brand ? findModel(words, brand) : null;
