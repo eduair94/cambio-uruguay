@@ -41,6 +41,13 @@ if [ "${1:-}" = "--reexec" ]; then
   shift
 fi
 
+# `--force` (lo pasa el input `force` del workflow_dispatch): compilar aunque la huella de abajo
+# coincida con la del build vivo. Viaja en "$@" y el re-exec lo conserva.
+FORCE_BUILD=0
+for arg in "$@"; do
+  if [ "$arg" = "--force" ]; then FORCE_BUILD=1; fi
+done
+
 log() { printf '
 [1;36m[deploy][0m %s
 ' "$*"; }
@@ -170,6 +177,54 @@ else
   fi
 fi
 
+# Huella de todo lo que decide qué sale del build, y salto cuando ya está sirviendo.
+#
+# Nuxt no tiene build incremental de producción: cada `nuxt build` arranca de cero (~12 min y hasta
+# 12 GB de heap en este box). Lo que sí se puede es no compilar lo que ya está compilado. El
+# workflow_dispatch del automerge llama a este script en CADA PR, toque o no `app/`, y una ráfaga
+# de merges encola varios runs que construyen el mismo `main`: de los 40 PRs anteriores al
+# 2026-11-23, 14 no tocaban `app/` y los 40 pagaron el build entero.
+#
+# Entra a la huella todo lo que el build lee: el árbol de `app/` en el commit (incluye este script,
+# nuxt.config, i18n y el lockfile), el estado de las deps, la versión de Node y `app/.env` (Nuxt lo
+# hornea al compilar y vive fuera de git; sólo su hash, nunca el contenido). Se guarda DENTRO de
+# `.output` al publicar, así que viaja con el build que describe: un build fallido no la toca y un
+# `.output` borrado o reemplazado a mano no tiene huella y se recompila.
+#
+# Lo que no puede salir mal en silencio: si cualquier parte no se puede calcular la huella queda
+# vacía y se compila (lento, nunca viejo); si la app no contesta 200 se compila igual; y `--force`
+# compila siempre.
+BUILD_STAMP=".build-fingerprint"
+build_fingerprint() {
+  local tree node_version env_sum=none
+  command -v sha256sum >/dev/null 2>&1 || return 0
+  [ -n "$DEPS_HASH" ] || return 0
+  tree="$(git -C "$REPO_DIR" rev-parse --verify -q 'HEAD:app' 2>/dev/null)" || return 0
+  [ -n "$tree" ] || return 0
+  node_version="$(node --version 2>/dev/null)" || return 0
+  if [ -f "$APP_DIR/.env" ]; then
+    env_sum="$(sha256sum "$APP_DIR/.env" | cut -d' ' -f1)"
+  fi
+  printf 'app-tree=%s deps=%s node=%s env=%s\n' "$tree" "$DEPS_HASH" "$node_version" "$env_sum" |
+    sha256sum | cut -d' ' -f1
+}
+FINGERPRINT="$(build_fingerprint || true)"
+LIVE_FINGERPRINT="$(cat "$APP_DIR/.output/$BUILD_STAMP" 2>/dev/null || true)"
+
+if [ "$FORCE_BUILD" = "1" ]; then
+  log "--force: se compila aunque la huella coincida."
+elif [ -n "$FINGERPRINT" ] && [ "$FINGERPRINT" = "$LIVE_FINGERPRINT" ] &&
+  [ -f "$APP_DIR/.output/server/index.mjs" ]; then
+  log "app/ sin cambios respecto del build que está sirviendo (huella ${FINGERPRINT:0:12}); si contesta 200, no hay nada que compilar."
+  if wait_healthy; then
+    # Ni purga de borde ni IndexNow: no cambió nada que servir. (Y no se escribe "Deploy complete":
+    # los tests de orden ubican la purga respecto de esa línea, la del final.)
+    log "Listo sin compilar: el build vivo ya corresponde a $(git -C "$REPO_DIR" rev-parse --short HEAD)."
+    exit 0
+  fi
+  log "Misma huella pero la app no contesta 200 en :$APP_PORT; se compila igual."
+fi
+
 timed "Clear staging and generated build files" rm -rf "$STAGING" "$APP_DIR/.nuxt"
 wait_for_load
 # 12288 heap: 4096 OOM'd after firebase-auth landed, and 8192 stopped fitting with the Nuxt 4.4 upgrade
@@ -178,7 +233,16 @@ wait_for_load
 # 10240 then ran out 3 minutes into the Nitro stage on 2026-11-05 (#241: 35 locales on every route, the
 # i18n route resources ~10x larger) while main's own Nitro stage was finishing right at the limit. The box
 # has 62 GB, ~15 GB available and 27 GB of free swap while serving.
-timed "Build staging output" env NODE_OPTIONS="--max-old-space-size=12288" NITRO_OUTPUT_DIR="$STAGING" npx nuxt build
+#
+# Prioridad baja de CPU y disco: el build comparte el box con la app que sirve, la API y ~260 jobs de
+# pm2. Con el box ocioso `nice` no cuesta nada (32 cores); cuando hay competencia, cede el build y no
+# el sitio. `ionice` se usa si existe; `nice` es de coreutils y siempre está (y así el arreglo nunca
+# queda vacío, que en el bash 4.2 de CentOS 7 con `set -u` aborta).
+LOW_PRIORITY=(nice -n 10)
+if command -v ionice >/dev/null 2>&1; then
+  LOW_PRIORITY+=(ionice -c2 -n7)
+fi
+timed "Build staging output" "${LOW_PRIORITY[@]}" env NODE_OPTIONS="--max-old-space-size=12288" NITRO_OUTPUT_DIR="$STAGING" npx nuxt build
 
 # Sanity: the staging build must have a server entry before we swap.
 if [ ! -f "$STAGING/server/index.mjs" ]; then
@@ -189,6 +253,12 @@ fi
 # A listening socket is not proof of working SSR. Validate the complete candidate
 # on a separate port BEFORE touching live output or asking PM2 to reload.
 timed "Check candidate SSR before the swap" node "$APP_DIR/scripts/check-staging.cjs" "$STAGING"
+
+# La huella entra al candidato recién validado y no antes: si algo de aquí en adelante aborta, el
+# `.output` vivo conserva la suya y el próximo deploy vuelve a compilar.
+if [ -n "$FINGERPRINT" ]; then
+  printf '%s\n' "$FINGERPRINT" >"$STAGING/$BUILD_STAMP"
+fi
 
 # The old workers still serve requests until each replacement has rendered SSR
 # and signalled ready. Their lazy server imports resolve through .output, too:
