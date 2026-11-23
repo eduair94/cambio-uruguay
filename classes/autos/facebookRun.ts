@@ -2,7 +2,7 @@
 // them privately, then turn every card of the last 4 days that names a dated car into a listing.
 import type { CarDictionary } from "./catalog/dictionary";
 import { fbCardToCar, fbDetailQueue, type FbCard, type FbItem } from "./sources/facebook";
-import { FB_MODEL_LISTS, FB_VEHICLE_LISTS, facebookSessionOk, readFacebookVehicles } from "./sources/facebookBrowser";
+import { FB_MODEL_LISTS, FB_MOTO_QUERIES, FB_VEHICLE_LISTS, facebookSessionOk, readFacebookVehicles } from "./sources/facebookBrowser";
 import { loadFbCards, loadFbWanted, saveFbItems, upsertFbCards } from "./store";
 import type { CarSourceResult } from "./types";
 
@@ -80,7 +80,8 @@ export async function runFacebook(options: {
     lists: options.fast ? [] : [...FB_VEHICLE_LISTS, ...FB_MODEL_LISTS],
     list: options.fast ? undefined : FB_BUDGET.full.list,
     runNovelty: options.fast ? undefined : FB_BUDGET.full.runNovelty,
-    queries: options.fast ? [] : options.brandQueries,
+    // Las de motos van al final: sólo usan lo que las marcas de autos dejaron (FB_MOTO_QUERIES).
+    queries: options.fast ? [] : [...options.brandQueries, ...FB_MOTO_QUERIES],
     query: budget.query,
     itemGapMs: FB_BUDGET.itemGapMs,
     maxDurationMs: budget.minutes * 60_000,
