@@ -193,6 +193,10 @@ describe("aduana baseline — las reglas de octubre de 2026", () => {
     expect(text).not.toMatch(/Antes de comprar \(a partir del 1\/10\/2026\)/);
     expect(text).not.toMatch(/Es una decisión del vendedor, no tuya/);
     expect(text).toMatch(/operador postal/);
-    expect(text).toMatch(/3\/11\/2026/);
+    expect(text).toMatch(/1 de febrero de 2027/);
+    expect(text).not.toMatch(/exigible desde el 1\/10\/2026|registro ya se exige/);
+    const date = BASELINE.facts.find((f) => f.id === "registro_vendedor.exigible_desde")!;
+    expect(date.value).toBe("2027-02-01");
+    expect(BASELINE.sources.find((s) => s.id === date.sourceId)?.kind).toBe("pagina-oficial");
   });
 });

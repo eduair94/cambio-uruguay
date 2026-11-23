@@ -3,7 +3,7 @@
 //
 // Las cifras (US$ 800 en tres envíos, IVA 22 %, el piso de US$ 20 por envío, la exoneración de
 // US$ 200 del acuerdo con Estados Unidos y el registro de vendedores, exigible desde el 1.º de
-// octubre de 2026 y abierto al pedido del operador postal por la RG DNA 26/2026)
+// febrero de 2027 y abierto al pedido del operador postal por la RG DNA 26/2026)
 // están alineadas a mano con `utils/aduanaFaq.ts` y `pages/franquicia-aduana-uruguay.vue`, que son
 // la fuente de verdad del sitio para este régimen: si alguna cambia ahí, cambia acá.
 //
@@ -64,7 +64,7 @@ export const importacionGuides: readonly Guide[] = [
       },
       {
         heading: 'Cuándo no pagás',
-        body: 'Hay dos puertas de salida y las dos son estrechas. La primera: los envíos procedentes de Estados Unidos de hasta US$ 200 por envío, que la Aduana exonera de IVA por el acuerdo comercial vigente con ese país. Ojo con el registro, porque cambia el resultado: la exoneración además exige que el vendedor que emite la factura figure en el registro de empresas extranjeras de la Aduana, y si no está en la lista oficial el envío paga. Se exige desde el 1.º de octubre de 2026 (la Aduana anuncia el 3 de noviembre, cuando arranca la validación automática), y desde el 5 de octubre tu courier puede pedir que agreguen a un vendedor que falta (RG DNA 26/2026). La segunda puerta: los obsequios familiares genuinos, de persona física a persona física, en cantidades razonables y para uso personal, con declaración de valor. Escribir "regalo" sobre una compra comercial no la convierte en obsequio. Y acá está el detalle que descoloca a todo el mundo: no pagar no es no consumir. Un envío exonerado igual te gasta uno de los tres del año y su valor se descuenta del cupo, así que si traés US$ 198 de Estados Unidos sin IVA te quedan US$ 602 y dos envíos.',
+        body: 'Hay dos puertas de salida y las dos son estrechas. La primera: los envíos procedentes de Estados Unidos de hasta US$ 200 por envío, que la Aduana exonera de IVA por el acuerdo comercial vigente con ese país. Ojo con el registro, porque cambia el resultado: desde el 1.º de febrero de 2027 la exoneración exigirá que el vendedor que emite la factura figure en el registro de empresas extranjeras de la Aduana, y si no está en la lista oficial el envío paga. Hasta entonces ese registro no es exigible, según el aviso vigente de Aduanas. Desde el 5 de octubre de 2026 tu courier puede pedir que agreguen a un vendedor que falta (RG DNA 26/2026). La segunda puerta: los obsequios familiares genuinos, de persona física a persona física, en cantidades razonables y para uso personal, con declaración de valor. Escribir "regalo" sobre una compra comercial no la convierte en obsequio. Y acá está el detalle que descoloca a todo el mundo: no pagar no es no consumir. Un envío exonerado igual te gasta uno de los tres del año y su valor se descuenta del cupo, así que si traés US$ 198 de Estados Unidos sin IVA te quedan US$ 602 y dos envíos.',
       },
       {
         heading: 'La franquicia nueva: US$ 800 en tres envíos',
@@ -133,7 +133,7 @@ export const importacionGuides: readonly Guide[] = [
       },
       {
         q: '¿Conviene comprar en EE.UU.?',
-        a: 'Para valores bajos, muchas veces sí: los envíos procedentes de Estados Unidos de hasta US$ 200 por envío están exonerados de IVA. Pero el vendedor que factura tiene que figurar en el registro de la Aduana: se exige desde el 1.º de octubre de 2026 y, si falta, tu courier puede pedir que lo agreguen (RG DNA 26/2026). Y el envío igual te consume uno de los tres del año.',
+        a: 'Para valores bajos, muchas veces sí: los envíos procedentes de Estados Unidos de hasta US$ 200 por envío están exonerados de IVA. Desde el 1.º de febrero de 2027 el vendedor que factura deberá figurar en el registro de la Aduana, según su aviso vigente y, si falta, tu courier puede pedir que lo agreguen (RG DNA 26/2026). Y el envío igual te consume uno de los tres del año.',
       },
     ],
     related: [
@@ -145,6 +145,11 @@ export const importacionGuides: readonly Guide[] = [
       { label: 'Declarar una compra del exterior', to: '/declarar-compra-exterior-uruguay' },
     ],
     sources: [
+      {
+        label: 'DNA — registro del emisor exigible desde el 1.º de febrero de 2027',
+        url: 'https://www.aduanas.gub.uy/innovaportal/v/28219/9/innova.front/compras-web-y-envios.html',
+        publisher: 'Dirección Nacional de Aduanas',
+      },
       {
         label:
           'Decreto 50/026 — régimen de envíos postales internacionales vigente desde mayo de 2026',

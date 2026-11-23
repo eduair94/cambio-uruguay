@@ -2848,7 +2848,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
           'vendedor registrado aduana',
           'tiendamia iva',
           'exoneracion iva estados unidos',
-          '1 de octubre 2026 aduana',
+          '1 de febrero 2027 aduana',
         ],
       },
       {

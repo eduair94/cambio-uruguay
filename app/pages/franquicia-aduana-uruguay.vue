@@ -595,15 +595,15 @@
 
       <p class="text-caption text-medium-emphasis mt-3 mb-0">
         <VIcon size="14" class="mr-1">mdi-calendar-alert</VIcon>
-        Si consultás en octubre o noviembre de 2026 y la compra es de EE.UU., hay dos fechas más en
-        juego, y salen de dos resoluciones distintas: desde el <strong>1/10/2026</strong> el
-        vendedor que emite la factura tiene que estar registrado ante la Aduana para que el envío de
-        hasta US$ 200 no pague IVA (RG 21/2026, que prorrogó hasta ahí la exigibilidad de la RG
-        09/2026); desde el <strong>3/11/2026</strong> rige además lo que la RG 26/2026 (num. 10)
-        difirió del numeral 13 del Anexo I de la RG 09/2026. La página "Régimen de Franquicia" de la
-        DNA redacta el 3 de noviembre como si fuera la fecha del requisito: es una imprecisión de
-        redacción de la DNA, no una contradicción entre normas. Todo lo de este bloque fue leído en
-        la DNA, IMPO y el MEF el 22 de setiembre de 2026.
+        La DNA confirma que el registro del emisor de la factura se exigirá desde el
+        <strong>1.º de febrero de 2027</strong> para exonerar el IVA en envíos elegibles de EE.UU.
+        de hasta US$ 200. Hasta entonces no se exige ese registro para la exoneración.
+        <a
+          href="https://www.aduanas.gub.uy/innovaportal/v/28219/9/innova.front/compras-web-y-envios.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Aviso vigente de Aduanas</a
+        >, consultado el 23 de noviembre de 2026.
       </p>
     </section>
 
@@ -639,7 +639,7 @@
       </VBtn>
     </section>
 
-    <!-- What changes on Oct 1 -->
+    <!-- Seller registry enforcement -->
     <section class="mb-8">
       <h2 class="section-heading mb-1">
         {{
@@ -660,10 +660,7 @@
           emite la factura, no el courier— esté <strong>registrado ante la Aduana</strong>: si no
           figura, no hay exoneración.
         </template>
-        La <em>validación automática</em> de LUCIA, en cambio, arranca el
-        <strong>3/11/2026</strong> (RG 26/2026 num. 10), así que hay 33 días en los que el requisito
-        rige sin que el sistema lo bloquee solo. El courier puede registrar al vendedor por vos y la
-        Aduana tiene que publicar la lista.
+        El courier puede solicitar el alta del vendedor y la Aduana publica la lista de registrados.
       </p>
 
       <VCard variant="flat" class="timeline pa-5">
@@ -700,10 +697,8 @@
       </VAlert>
 
       <VAlert type="info" variant="tonal" density="comfortable" class="mt-4" icon="mdi-history">
-        <strong>Puede volver a moverse.</strong> Esta fecha ya se corrió dos veces (primero al
-        1/7/2026, después al 1/10/2026), y la propia resolución que la corrió admite que "resta aún
-        cumplir con varias etapas ineludibles". Vamos a actualizar esta página si se vuelve a
-        prorrogar.
+        <strong>La fecha fue prorrogada.</strong> El aviso vigente de la DNA fija el 1.º de febrero
+        de 2027. Consultá la fuente oficial antes de comprar por si hay otra modificación.
       </VAlert>
 
       <VAlert
@@ -909,15 +904,9 @@ const timeline = [
   },
   {
     date: '25 de junio de 2026',
-    text: 'La Aduana prorroga —por segunda vez— la exigibilidad de ese requisito, ahora hasta el 1.º de octubre de 2026. Es la razón por la que hoy todavía no te preguntan por el vendedor.',
+    text: 'La Aduana prorroga —por segunda vez— la exigibilidad de ese requisito, ahora hasta el 1.º de octubre de 2026. Esa fecha fue prorrogada nuevamente.',
     norm: 'Resolución General 21/2026',
     url: 'https://www.aduanas.gub.uy/innovaportal/file/28613/1/rg-21-2026.pdf',
-  },
-  {
-    date: '1.º de octubre de 2026',
-    text: 'Empieza a exigirse el requisito de fondo: el emisor de cada factura del envío tiene que estar registrado. Si el envío trae facturas de varios vendedores y uno solo no figura, no hay exoneración para nada.',
-    norm: 'RG 09/2026, Anexo I num. 10 lit. a y num. 12 (exigible por RG 21/2026)',
-    url: 'https://www.aduanas.gub.uy/innovaportal/file/28428/1/resolucion-9_2026.pdf',
   },
   {
     date: '5 de octubre de 2026',
@@ -926,10 +915,10 @@ const timeline = [
     url: 'https://www.aduanas.gub.uy/innovaportal/file/28724/1/rg-26-2026-exoneracion-iva-encomiendas-postales.pdf',
   },
   {
-    date: '3 de noviembre de 2026',
-    text: 'Recién acá LUCIA empieza a validar sola los identificadores que declara el operador. O sea: entre el 1.º de octubre y esta fecha el requisito rige pero el bloqueo automático todavía no corre.',
-    norm: 'RG 26/2026, num. 10 (prorroga el num. 13 del Anexo I de la RG 09/2026)',
-    url: 'https://www.aduanas.gub.uy/innovaportal/file/28724/1/rg-26-2026-exoneracion-iva-encomiendas-postales.pdf',
+    date: '1.º de febrero de 2027',
+    text: 'Fecha de exigibilidad del registro del emisor para exonerar el IVA en envíos elegibles de EE.UU. de hasta US$ 200, según el aviso vigente de Aduanas consultado el 23/11/2026.',
+    norm: 'DNA — Envíos Postales Internacionales',
+    url: 'https://www.aduanas.gub.uy/innovaportal/v/28219/9/innova.front/compras-web-y-envios.html',
   },
 ]
 
@@ -1142,11 +1131,11 @@ const faqs = [
 const canonicalUrl = 'https://cambio-uruguay.com/franquicia-aduana-uruguay'
 const title = 'Franquicia aduana Uruguay: US$ 800 al año'
 const description =
-  'Franquicia de US$ 800 en 3 envíos, prestación única del 60 % (mínimo US$ 20) e IVA exonerado hasta US$ 200 de EE.UU. Qué cambia el 1.º de octubre de 2026.'
+  'Franquicia: US$ 800 en 3 envíos. IVA exonerado en compras elegibles de EE.UU. hasta US$ 200; registro del vendedor exigible desde el 1/2/2027.'
 
 defineOgImageComponent('Cambio', {
   title: '¿Tu compra del exterior paga IVA?',
-  subtitle: 'Franquicia, aduana y el cambio del 1/10/2026',
+  subtitle: 'Registro del vendedor desde el 1/2/2027',
   tag: 'ADUANA',
 })
 
@@ -1166,7 +1155,7 @@ useHead(() => ({
     {
       name: 'keywords',
       content:
-        'franquicia aduana uruguay, comprar en el exterior uruguay, iva compras exterior, courier uruguay impuestos, decreto 50/026, us$ 800 franquicia, tiendamia iva, aduana 1 de octubre 2026, cupon descuento aduana, descuento valor factura aduana, us 200 iva ee.uu., envio no expreso correo uruguayo, franquicia 50 dolares correo, ems casilla mia franquicia, declarar compra correo uruguayo, obsequio familiar aduana uruguay, cuantas franquicias me quedan, consultar franquicias aduana, franquicias uruguay consulta, cuando cambian las franquicias, franquicias uruguay 2026, luciakit aduanas',
+        'franquicia aduana uruguay, comprar en el exterior uruguay, iva compras exterior, courier uruguay impuestos, decreto 50/026, us$ 800 franquicia, tiendamia iva, aduana 1 de febrero 2027, cupon descuento aduana, descuento valor factura aduana, us 200 iva ee.uu., envio no expreso correo uruguayo, franquicia 50 dolares correo, ems casilla mia franquicia, declarar compra correo uruguayo, obsequio familiar aduana uruguay, cuantas franquicias me quedan, consultar franquicias aduana, franquicias uruguay consulta, cuando cambian las franquicias, franquicias uruguay 2026, luciakit aduanas',
     },
   ],
   script: [

@@ -40,7 +40,7 @@ export const DENYLIST_URLS: string[] = [
  * (or a date proposed for a numeric one) is rejected.
  */
 export const FACT_DATE_RANGES: Record<string, [string, string]> = {
-  // THE OCTOBER DATUM (fact `registro_vendedor.exigible_desde`): the seller-registry enforcement
+  // THE SELLER-REGISTRY DATUM (fact `registro_vendedor.exigible_desde`): the seller-registry enforcement
   // date, a DATE string validated against this window instead of a numeric FACT_RANGES entry. It
   // mirrors app/utils/importRules.ts#SELLER_REGISTRY_ENFORCED_FROM (the drift-guard asserts they
   // match). Already postponed twice (RG 12/2026 → 1/7, RG 21/2026 → 1/10); a third prórroga is
@@ -94,6 +94,14 @@ export const FACT_RANGES: Record<string, [number, number]> = {
 
 export const BASELINE: AduanaDoc = {
   sources: [
+    {
+      id: "dna-envios-postales",
+      title: "Envíos Postales Internacionales: registro del emisor desde el 1 de febrero de 2027",
+      norm: "Aviso vigente de la DNA",
+      url: "https://www.aduanas.gub.uy/innovaportal/v/28219/9/innova.front/compras-web-y-envios.html",
+      checkedAt: "2026-11-23",
+      kind: "pagina-oficial",
+    },
     {
       id: "ley-20446",
       title: "Presupuesto Nacional 2025-2029 — régimen de envíos postales internacionales",
@@ -574,10 +582,10 @@ export const BASELINE: AduanaDoc = {
     {
       id: "registro_vendedor.exigible_desde",
       label: "Fecha desde la que es exigible el registro del vendedor extranjero",
-      value: "2026-10-01",
-      sourceId: "rg-dna-21-2026",
-      article: "num. 1",
-      verifiedAt: "2026-07-12",
+      value: "2027-02-01",
+      sourceId: "dna-envios-postales",
+      article: "aviso de exigibilidad del registro",
+      verifiedAt: "2026-11-23",
       origin: "baseline",
     },
     {
@@ -1025,8 +1033,9 @@ export const BASELINE: AduanaDoc = {
       title: "Me piden documentación para no pagar IVA (compras de EE.UU.)",
       symptom: "Me piden documentación para no pagar IVA (compras de EE.UU.)",
       norm:
-        "Hay dos exigencias distintas que la gente mezcla. (a) Lo que se le exige al VENDEDOR extranjero — RG DNA 09/2026: la empresa extranjera debe registrarse ante el Departamento Escribanía de la DNA (Anexo I num. 4), con certificación notarial expedida en Uruguay (Anexo I num. 7 lit. c + Anexo II). Desde el 5/10/2026 ya no tiene que hacerlo sola: la RG 26/2026 permite que el operador postal la dé de alta por LUCIA (resuelto en 48 horas hábiles), habilita a la DNA a incorporarla de oficio y la obliga a publicar la lista de registradas en su web (nums. 1, 2 y 4). Esa misma resolución DEROGA la leyenda sobre residencia fiscal que la factura tenía que traer (num. 7, que deja sin efecto los nums. 5 y 6 del Anexo I de la RG 09/2026). Si el envío trae facturas de varios emisores, basta con que uno no esté registrado para que todo el envío pierda la exoneración (num. 12). El requisito de fondo es exigible desde el 1/10/2026, ya prorrogado dos veces (RG 21/2026 num. 1); la validación automática de LUCIA sobre los identificadores (num. 13) recién corre desde el 3/11/2026 (RG 26/2026 num. 10). El comprador uruguayo NO puede cumplir esta parte: el que se registra es el vendedor. (b) Lo que se le exige al COMPRADOR — Decreto 50/026 art. 4: persona física mayor de edad con documento uruguayo (lit. a); uso personal sin fines comerciales (lit. b); pago con tarjeta de crédito/débito internacional o dinero electrónico de una institución regulada por el BCU (lit. d); el titular del medio de pago debe coincidir con el titular de la compra y el destinatario (lit. e); autorización a las administradoras de tarjetas a informar a la DNA (lit. f, base Ley 20.446 art. 627 inc. 3); mecanismos de control de identidad digital de la DNA (lit. g); y registrarse por única vez ante la DNA (RG DNA 10/2026).",
+        "Hay dos exigencias distintas que la gente mezcla. (a) Lo que se le exige al VENDEDOR extranjero — RG DNA 09/2026: la empresa extranjera debe registrarse ante el Departamento Escribanía de la DNA (Anexo I num. 4), con certificación notarial expedida en Uruguay (Anexo I num. 7 lit. c + Anexo II). Desde el 5/10/2026 ya no tiene que hacerlo sola: la RG 26/2026 permite que el operador postal la dé de alta por LUCIA (resuelto en 48 horas hábiles), habilita a la DNA a incorporarla de oficio y la obliga a publicar la lista de registradas en su web (nums. 1, 2 y 4). Esa misma resolución DEROGA la leyenda sobre residencia fiscal que la factura tenía que traer (num. 7, que deja sin efecto los nums. 5 y 6 del Anexo I de la RG 09/2026). Desde que sea exigible el registro, si el envío trae facturas de varios emisores, basta con que uno no esté registrado para que todo el envío pierda la exoneración (num. 12). El aviso vigente de Envíos Postales Internacionales de la DNA, consultado el 23/11/2026, fija la exigibilidad del registro en el 1 de febrero de 2027 para exonerar el IVA en envíos elegibles de EE.UU. de hasta US$ 200. Hasta entonces no se exige el registro para esa exoneración; siguen vigentes las demás condiciones. El comprador uruguayo NO puede cumplir esta parte: el que se registra es el vendedor. (b) Lo que se le exige al COMPRADOR — Decreto 50/026 art. 4: persona física mayor de edad con documento uruguayo (lit. a); uso personal sin fines comerciales (lit. b); pago con tarjeta de crédito/débito internacional o dinero electrónico de una institución regulada por el BCU (lit. d); el titular del medio de pago debe coincidir con el titular de la compra y el destinatario (lit. e); autorización a las administradoras de tarjetas a informar a la DNA (lit. f, base Ley 20.446 art. 627 inc. 3); mecanismos de control de identidad digital de la DNA (lit. g); y registrarse por única vez ante la DNA (RG DNA 10/2026).",
       sourceIds: [
+        "dna-envios-postales",
         "rg-dna-09-2026",
         "decreto-50-026",
         "rg-dna-10-2026",
@@ -1036,15 +1045,15 @@ export const BASELINE: AduanaDoc = {
         "ley-20446",
       ],
       steps: [
-        "No busques un papel para \"arreglar\" la parte (a): si el vendedor no está registrado ante la DNA, no hay documento que vos puedas presentar. La exoneración de IVA no aplica y el envío tributa. El alta la pide la propia empresa o, desde el 5/10/2026, tu operador postal: vos no podés pedirla ante la DNA.",
-        "El registro ya se exige: antes de comprar, verificá que el vendedor figure en la lista de la página oficial «Régimen de Franquicia» de la DNA, que la DNA está obligada a publicar (RG 26/2026 num. 4). Al 26/07/2026 publicaba seis empresas: Xipron Inc (Tiendamía), United States Xpress Inc, Grinbox Corp, Netbox Corp, Miami box latinoamérica LLC y Eshop Miami INC; desde el 5/10/2026 la DNA puede sumar empresas de oficio, así que usá siempre la lista vigente.",
+        "Desde el 1 de febrero de 2027, no busques un papel para \"arreglar\" la parte (a): si el vendedor no está registrado ante la DNA, no hay documento que vos puedas presentar. La exoneración de IVA no aplica y el envío tributa. El alta la pide la propia empresa o, desde el 5/10/2026, tu operador postal: vos no podés pedirla ante la DNA.",
+        "El registro será exigible desde el 1 de febrero de 2027: antes de comprar, verificá que el vendedor figure en la lista de la página oficial «Régimen de Franquicia» de la DNA, que la DNA está obligada a publicar (RG 26/2026 num. 4). Al 26/07/2026 publicaba seis empresas: Xipron Inc (Tiendamía), United States Xpress Inc, Grinbox Corp, Netbox Corp, Miami box latinoamérica LLC y Eshop Miami INC; desde el 5/10/2026 la DNA puede sumar empresas de oficio, así que usá siempre la lista vigente.",
         "Si el vendedor no figura, pedile a tu courier o al Correo que solicite el alta: el operador postal la pide por LUCIA con el nombre, el domicilio de residencia fiscal y el criterio con que lo comprobó, y la DNA la analiza en 48 horas hábiles (RG 26/2026 nums. 2 y 3). Es una facultad del operador, no una obligación, y la resolución no dice si un alta posterior alcanza a un envío que ya se declaró.",
         "Para la parte (b): registrate en el registro de identidad de la DNA (RG 10/2026), con identidad digital de nivel intermedio (verificado) o superior, vía LUCIA en la web de la DNA. Hoy es voluntario (num. 1.2 y 7); cuando pase a obligatorio, sin registro no se libera la mercadería.",
         "Pagá siempre con tu propia tarjeta, a tu nombre, y que el destinatario del envío seas vos. Si la tarjeta es de otra persona, perdés la franquicia (Decreto 50/026 art. 4 lit. e).",
         "Si el envío ya está retenido pidiéndote documentación, seguí los pasos de «El paquete quedó retenido en la aduana».",
       ],
       deadline:
-        "El registro del vendedor es exigible desde el 1/10/2026 (RG 21/2026 num. 1); la validación automática de LUCIA corre desde el 3/11/2026 (RG 26/2026 num. 10). El registro del comprador es voluntario hasta que la DNA lo comunique (RG 10/2026 num. 7).",
+        "El registro del vendedor será exigible desde el 1 de febrero de 2027, según el aviso vigente de Envíos Postales Internacionales de la DNA (consultado el 23/11/2026). El registro del comprador es voluntario hasta que la DNA lo comunique (RG 10/2026 num. 7).",
       claimBody: "dna",
       claimTemplate:
         "Montevideo, {{fecha}}\n\nDirección Nacional de Aduanas — Área Gestión de Comercio Exterior\nRef.: Exoneración de IVA — Acuerdo Comercial EE.UU. — guía {{tracking}}\n\nQuien suscribe, [NOMBRE], CI [CI], destinatario del envío postal internacional guía {{tracking}},\nDICE:\n\n1. Que el envío procede de Estados Unidos de América, país declarado habilitado por el numeral 1\n   del Anexo I de la Resolución General DNA N° 09/2026.\n\n2. Que la factura comercial que acompaña el envío fue emitida por [VENDEDOR], y que conforme al\n   numeral 10 del Anexo I de la citada Resolución, su emisor se encuentra registrado ante la\n   Dirección Nacional de Aduanas. {{descripcion}}\n\n3. Que el valor de factura no supera los USD 200, umbral de la exoneración prevista en el artículo 7\n   de la Ley 18.761 (Acuerdo Marco sobre Comercio e Inversión con los Estados Unidos de América).\n\n4. Que se ha liquidado Impuesto al Valor Agregado sobre el envío, pese a cumplirse las condiciones\n   del artículo 3 del Decreto 50/026.\n\nPETITORIO: se revise la liquidación practicada y se aplique la exoneración del Impuesto al Valor\nAgregado que corresponde al envío de referencia.\n\n[FIRMA] — [NOMBRE] — CI [CI] — [TELÉFONO] — [EMAIL]",

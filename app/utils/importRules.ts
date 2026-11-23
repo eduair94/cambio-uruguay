@@ -5,7 +5,7 @@
 //
 // WHY THIS EXISTS: the regime was rewritten in 2026 (Ley 20.446 → Decreto 50/026 →
 // RG DNA 09/2026), and one of its conditions is on a clock that has ALREADY been
-// postponed twice. A bare constant cannot express "true today, false on 1 October",
+// postponed repeatedly. A bare constant cannot express a future enforcement date,
 // so the calculator silently keeps applying a rule after it stops being true. It
 // was doing exactly that.
 //
@@ -25,30 +25,13 @@
 export const LAST_RESEARCHED = '2026-07-26'
 
 /**
- * From this date the IVA exoneration for US shipments additionally requires the INVOICE
- * ISSUER (the seller/platform, NOT the courier) to be registered with the DNA, and LUCIA
- * validates it automatically — no informal grace.
- *
- * Already postponed twice (RG 12/2026 → 2026-07-01; RG 21/2026 → 2026-10-01) and RG 21's
- * own recitals concede that "resta aún cumplir con varias etapas ineludibles", so a third
- * postponement is likely. When it moves, change THIS CONSTANT — nothing else.
- * Source: RG 21/2026 num. 1.
- *
- * DISCREPANCIA ABIERTA (2026-08-19), deliberadamente NO resuelta a favor de la fecha más tardía:
- * la RG DNA 26/2026 (13/08/2026) num. 10 prorroga al 2026-11-03 únicamente el numeral 13 del
- * Anexo I de la RG 09/2026 — la VALIDACIÓN AUTOMÁTICA de LUCIA —, no la exigibilidad del
- * requisito de fondo, que sigue en 2026-10-01. Así lo lee el baseline del backend
- * (classes/aduana/baseline.ts, ficha "factura-exigida"). Pero la pagina de franquicia de la DNA
- * le dice al público otra cosa: "A partir del 3 de noviembre de 2026 (…) para acceder a la
- * exoneración del IVA, será exigible que el emisor de la factura se encuentre registrado".
- * Quedan 33 días en disputa. Mantenemos 2026-10-01 porque es la lectura CONSERVADORA: cobrar el
- * IVA antes de tiempo sobreestima el costo, prometer la exoneración de más lo subestima, y en una
- * página de plata el error caro es el segundo. Si un humano confirma la lectura de la DNA, mover
- * esta constante Y la ficha del backend juntas.
- * https://www.aduanas.gub.uy/innovaportal/file/28724/1/rg-26-2026-exoneracion-iva-encomiendas-postales.pdf
- * https://www.aduanas.gub.uy/innovaportal/v/28221/1/innova.front/
+ * The invoice issuer must be registered with the DNA for eligible US shipments of up to
+ * USD 200 to retain the IVA exemption from this date. The DNA's current public notice
+ * supersedes the October/November dates previously used here (checked 2026-11-23).
+ * Keep the backend fact and its app fallback in sync with this default.
+ * Source: https://www.aduanas.gub.uy/innovaportal/v/28219/9/innova.front/compras-web-y-envios.html
  */
-export const SELLER_REGISTRY_ENFORCED_FROM = '2026-10-01'
+export const SELLER_REGISTRY_ENFORCED_FROM = '2027-02-01'
 
 /** Annual franchise: USD 800 ACCUMULATED per calendar year (Decreto 50/026 art. 3 y 4 lit. c). */
 export const FRANCHISE_ANNUAL_USD = 800
@@ -121,7 +104,7 @@ export const POSTAL_IVA_MIN_USD = 20
 
 /**
  * The subset of regime figures that can move — the amounts the backend tracks as facts, plus the
- * October enforcement date. Passing a `rules` overlay to `resolveRegime` / `isSellerRegistryEnforced`
+ * seller-registry enforcement date. Passing a `rules` overlay to `resolveRegime` / `isSellerRegistryEnforced`
  * lets the live `/api/aduana` values drive the calculator and the semáforo; the constants above are
  * the baseline fallback, assembled here into `DEFAULT_REGIME_RULES`. `FRANCHISE_MAX_SHIPMENTS` and
  * `MAX_WEIGHT_KG` stay static on purpose — the decree in play changes the date and the amounts, not

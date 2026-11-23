@@ -594,7 +594,7 @@ export const ROUTE_TRAPS: RouteTrap[] = [
     id: 'miami-no-convierte',
     title: 'Pasar por Miami no vuelve estadounidense a la compra',
     detail:
-      'Es el error más repetido. La exoneración uruguaya sigue al VENDEDOR, no a la ruta: el envío tiene que ser "embarcado por el vendedor residente fiscal" en el país del acuerdo, y desde octubre de 2026 cuenta el emisor de la factura que figura en el registro de la DNA. Un casillero no vende ni factura. El reloj sigue siendo italiano después de dormir una semana en un depósito de Doral.',
+      'Es el error más repetido. La exoneración uruguaya sigue al VENDEDOR, no a la ruta: el envío tiene que ser "embarcado por el vendedor residente fiscal" en el país del acuerdo, y desde el 1.º de febrero de 2027 se exigirá el emisor de la factura que figura en el registro de la DNA. Un casillero no vende ni factura. El reloj sigue siendo italiano después de dormir una semana en un depósito de Doral.',
     sources: [
       {
         label: 'Decreto 50/026, art. 3',

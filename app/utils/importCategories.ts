@@ -22,23 +22,16 @@ import { IMPORT_PRODUCT_TYPES, type Organism } from './importProductTypes'
 // de la DNA; página del MSP). La ficha de cosmética NO usa estas constantes: tiene su propia
 // redacción, publicada ese mismo día y en medición hasta el 16/11/2026, y no se toca.
 
-/**
- * La condición del registro de vendedores para la exoneración de EE.UU., tal como rige desde
- * octubre de 2026. La factura sigue acompañando el envío (Decreto 50/026 art. 3), pero el país de
- * procedencia es el de residencia del emisor REGISTRADO ante la DNA (RG 09/2026 Anexo I nums. 3 y 10);
- * la RG 26/2026 derogó la leyenda que la factura tenía que traer (nums. 5 y 6) y abrió el alta a
- * pedido del operador postal. Las dos fechas se publican porque la DNA no las hace coincidir: la
- * lectura conservadora es la misma que usa el calculador (`SELLER_REGISTRY_ENFORCED_FROM`).
- */
+// Fecha de exigibilidad confirmada en el aviso público de la DNA el 23/11/2026:
+// https://www.aduanas.gub.uy/innovaportal/v/28219/9/innova.front/compras-web-y-envios.html
 const SELLER_REGISTRY_RULE =
-  'La factura sola ya no alcanza: el vendedor que la emite tiene que figurar en el registro de empresas extranjeras de la DNA (RG 09/2026), y si el envío trae facturas de varios vendedores tienen que figurar todos. Desde el 5/10/2026 el operador postal puede pedir que se agregue un vendedor que falta, la DNA analiza el pedido en 48 horas hábiles y tiene que publicar la lista en su sitio (RG 26/2026). Las fechas no coinciden: la RG 21/2026 lo hizo exigible desde el 1/10/2026 y la página de franquicia de la DNA lo anuncia "a partir del 3 de noviembre", cuando arranca la validación automática. Contá con que ya se exige.'
+  'Desde el 1.º de febrero de 2027, para acceder a la exoneración de IVA en envíos elegibles de EE.UU. de hasta US$ 200, el emisor de la factura deberá figurar en el registro de empresas extranjeras de la DNA. Hasta entonces el registro no es exigible para esa exoneración. Si el envío trae facturas de varios vendedores, cuando se exija deberán figurar todos. El operador postal puede pedir que se agregue un vendedor y la DNA publica la lista (RG 26/2026).'
 
-/** La misma condición, en una frase, para las listas de cosas a considerar. */
 const SELLER_REGISTRY_SHORT =
-  'siempre que ese vendedor figure en el registro de empresas extranjeras de la DNA: se exige desde el 1/10/2026 (la DNA anuncia el 3 de noviembre, cuando arranca la validación automática) y, si falta, el operador postal puede pedir que lo agreguen (RG 26/2026).'
+  'desde el 1.º de febrero de 2027, siempre que el emisor de la factura figure en el registro de empresas extranjeras de la DNA; hasta entonces ese registro no es exigible. Si falta, el operador postal puede pedir que lo agreguen (RG 26/2026).'
 
 const SELLER_REGISTRY_NORM =
-  'Decreto 50/026 art. 3; RG DNA 09/2026, prorrogada por las RG 12 y 21/2026 y modificada por la RG 26/2026'
+  'Decreto 50/026 art. 3; RG DNA 09/2026 y 26/2026; aviso vigente de Envíos Postales Internacionales de la DNA (consultado el 23/11/2026)'
 
 const RG_26_URL =
   'https://www.aduanas.gub.uy/innovaportal/file/28724/1/rg-26-2026-exoneracion-iva-encomiendas-postales.pdf'
@@ -2022,7 +2015,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       'El piso de US$ 20 de IVA cambia toda la matemática de esta categoría: un frasco de US$ 25 paga US$ 20, o sea casi un 80% efectivo. Por debajo de US$ 90,91 de factura siempre pagás el piso y no el 22%. Consolidar en un envío grande, y no en tres chicos, es la palanca más directa que tenés.',
       'Los suplementos consumen cupo como cualquier otra compra: 3 envíos y US$ 800 por año civil. No están entre las excepciones (esas son libros y medicamentos con autorización del MSP). Y el cupo se imputa por fecha de desaduanamiento, no por fecha de compra.',
       'El peso importa tanto como el monto: el tope de 20 kg por envío es independiente del de US$ 800. Con polvos de proteína o packs grandes se llega antes al kilaje que al dinero.',
-      'Si comprás en EE.UU. y el envío no pasa de US$ 200, corre la exoneración por origen dentro de la franquicia. Lo que la norma no resuelve es cómo se combina con el piso de US$ 20 de IVA, porque no hay ejemplo oficial publicado. Y el vendedor que emite la factura tiene que figurar en el registro de empresas extranjeras de la DNA: se exige desde el 1/10/2026 (la DNA anuncia el 3 de noviembre, cuando arranca la validación automática) y, si falta, el operador postal puede pedir que lo agreguen (RG 26/2026).',
+      'Si comprás en EE.UU. y el envío no pasa de US$ 200, corre la exoneración por origen dentro de la franquicia. Lo que la norma no resuelve es cómo se combina con el piso de US$ 20 de IVA, porque no hay ejemplo oficial publicado. Y el vendedor que emite la factura tiene que figurar en el registro de empresas extranjeras de la DNA: se exigirá desde el 1.º de febrero de 2027, según el aviso vigente de Aduanas y, si falta, el operador postal puede pedir que lo agreguen (RG 26/2026).',
       'El riesgo grande no es el impuesto, es el control sanitario. Si el producto necesita autorización del MSP y no la tenés, el envío queda afuera de los dos regímenes y la única salida publicada es devolverlo a origen pagando vos. Ese es el escenario que hay que sopesar antes de comprar, no después.',
       'Fijate qué tiene adentro además del principio activo. Los alimentos de origen animal están prohibidos por encomienda o correo, y los productos vegetales acondicionados al detalle lo están en envases de más de 500 gramos. La nómina del MGAP no es taxativa.',
       'No hay ningún ejemplo numérico oficial de una compra con franquicia que pague IVA. Presupuestá con el piso incluido y no te sorprendas si la cifra que te cotiza el operador no coincide con lo que leíste en una FAQ.',
@@ -2544,7 +2537,7 @@ export const IMPORT_CATEGORIES: ImportCategory[] = [
       {
         title: 'Exoneración por origen con acuerdo comercial (hasta US$ 200)',
         detail:
-          'Dentro de la franquicia, los envíos de hasta US$ 200 que vienen de un país con acuerdo comercial (EE.UU., por el TIFA) están exonerados de IVA, siempre que el vendedor que emite la factura figure en el registro de empresas extranjeras de la DNA. Desde el 5/10/2026 el operador postal puede pedir que se agregue un vendedor que falta, la DNA analiza el pedido en 48 horas hábiles y publica la lista en su sitio (RG 26/2026). Las fechas no coinciden: la RG 21/2026 lo hizo exigible desde el 1/10/2026 y la página de franquicia de la DNA lo anuncia "a partir del 3 de noviembre", cuando arranca la validación automática. Contá con que ya se exige. Sirve sólo para la cosmética que sí puede entrar por el régimen.',
+          'Dentro de la franquicia, los envíos de hasta US$ 200 que vienen de un país con acuerdo comercial (EE.UU., por el TIFA) están exonerados de IVA, siempre que el vendedor que emite la factura figure en el registro de empresas extranjeras de la DNA. Desde el 5/10/2026 el operador postal puede pedir que se agregue un vendedor que falta, la DNA analiza el pedido en 48 horas hábiles y publica la lista en su sitio (RG 26/2026). Según el aviso vigente de Aduanas, ese registro será exigible desde el 1.º de febrero de 2027; hasta entonces no se exige para esa exoneración. Sirve sólo para la cosmética que sí puede entrar por el régimen.',
         norm: 'Decreto 50/026 art. 3; RG DNA 09/2026, prorrogada por la RG 21/2026 y modificada por la RG 26/2026',
         url: 'https://www.aduanas.gub.uy/innovaportal/file/28724/1/rg-26-2026-exoneracion-iva-encomiendas-postales.pdf',
       },
