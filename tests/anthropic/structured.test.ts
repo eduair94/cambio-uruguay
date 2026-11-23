@@ -146,6 +146,15 @@ describe("askClaudeJSON / askClaudeWithImages", () => {
     expect(out?.costUsd).toBeCloseTo((4000 * 0.1 + 2500 * 0.01 + 200 * 0.5) / 1e6, 12);
   });
 
+  it("askClaudeWithImages can ask another model for one call", async () => {
+    const calls = fakeClient(() => message("x"));
+    const jpeg = [{ data: Buffer.from([0xff, 0xd8, 0xff, 0xe0]), mimeType: "image/jpeg" }];
+    await askClaudeWithImages("x", jpeg, { model: "claude-opus-5-5" });
+    await askClaudeWithImages("x", jpeg);
+    expect(calls[0].model).toBe("claude-opus-5-5");
+    expect(calls[1].model).toBe("claude-haiku-5-5");
+  });
+
   it("askClaudeWithImages returns null (without calling) when a mime is unsupported", async () => {
     const calls = fakeClient(() => message("x"));
     expect(await askClaudeWithImages("x", [{ data: Buffer.from("a"), mimeType: "image/avif" }])).toBeNull();

@@ -1,9 +1,10 @@
 # Lo que muestran las fotos (`currency-photo-facts`)
 
 Desde el 2026-11-23. Job horario (`12 * * * *`, `sync_photo_facts.ts`, `classes/photofacts/`) que
-mira hasta seis fotos de los avisos de alquiler y de venta con galería y guarda **en sombra** qué
-muestran. No publica nada: escribe sólo las colecciones privadas `photofacts` y `photofactsmetas` de
-la APP DB, que ninguna API del sitio lee.
+mira hasta seis fotos de los avisos de alquiler y de venta con galería y guarda qué muestran. El job
+escribe sólo las colecciones privadas `photofacts` y `photofactsmetas` de la APP DB; lo único que
+sale al sitio es el mobiliario y la cocina integrada que pasaron el etiquetado a ciegas, en la ficha
+de alquiler y a través de una proyección pública (abajo, «Lo que se publica»).
 
 ## Por qué existe y por qué en sombra
 
@@ -112,6 +113,51 @@ exporta un JSON. La muestra es estratificada: trae avisos donde el modelo afirm�
 (`PUBLISH_BAR` en `classes/photofacts/evaluate.ts`, la misma vara que se usó para los gastos comunes
 del texto). El veredicto también imprime la cota inferior de Wilson al 95 %. La muestra se repite
 cada vez que cambia el modelo o el esquema.
+
+## Etiquetado a ciegas por dos modelos (2026-11-23) y lo que se publica
+
+Sin una persona para etiquetar, se usó el precedente de los gastos comunes leídos del texto: dos
+modelos más fuertes etiquetan **a ciegas** —las mismas fotos, en el mismo orden, con la misma
+pregunta, sin ver la respuesta de Haiku y a 1.568 px— y sólo cuenta donde coinciden
+(`npm run photo_facts_ai_label`, `consensusLabels` en `classes/photofacts/evaluate.ts`). Lo que
+discuten queda afuera y se informa. Corrida del 23/11: 250 avisos de Montevideo (Mercado Libre 131,
+El País 69, InfoCasas 44, Casasweb 6), Claude Opus 5.5 y Sonnet 5.5, ~US$ 12,7 de créditos incluidos.
+
+| atributo | precisión de Haiku | afirmaciones | desacuerdos | veredicto |
+|---|---|---|---|---|
+| mobiliario | 98,6 % (sin muebles 92/92; amueblada 53/55) | 147 | 24 | **pasa** |
+| cocina integrada | 95,0 % (57/60) | 60 | 13 | **pasa** |
+| marca de agua (interna) | 99,1 % | 106 | 12 | pasa, no se publica |
+| aire acondicionado | 94,9 % (93/98) | 98 | 12 | no pasa |
+| parrillero | 95,5 % | 22 | 3 | no pasa (< 30) |
+| piscina | 100 % | 14 | 0 | no pasa (< 30) |
+| patio/jardín | 86,7 % | 30 | 13 | no pasa |
+| balcón/terraza | 77,1 % | 83 | 26 | no pasa |
+| render (interna) | 80 % | 10 | 1 | no pasa |
+
+Los dos "amueblada" equivocados eran de InfoCasas (6 de 8; sin InfoCasas, 47 de 47), el portal que
+les vende a sus anunciantes amueblar ambientes de forma virtual. Balcón falla porque es ambiguo:
+ventanales, balcones franceses y terrazas comunes; los dos etiquetadores discreparon en 26 avisos.
+
+**Lo que se publica**, desde el 23/11, en la ficha de alquiler (`app/components/rentals/RentalPhotoFacts.vue`,
+pedido por el navegador a `GET /api/rentals/fotos/<key>?oferta=<listingId>`), con la proyección
+campo por campo de `app/utils/photoFactsPublic.ts`:
+
+- "Se ve sin muebles" y "Se ve amueblada", **sólo si el aviso no declara nada** sobre el mobiliario,
+  y nunca "amueblada" para InfoCasas.
+- "Cocina integrada al living".
+- Cada rótulo con la foto que lo muestra ("ver la foto"), el aviso de que lo vio una IA y puede
+  equivocarse, y un "¿Está mal?" que guarda `{ listingId, fact, at }` en APP DB `photofactreports`
+  (sin IP; es la medida del daño por rótulo).
+- Sólo veredictos de `claude-haiku-5-5` con esquema 1 (`PHOTO_FACTS_MEASURED`): otro modelo u otro
+  esquema es otra serie y hay que volver a medir.
+
+El bloque lo pide el navegador después de pintar la ficha, así que no cambia el HTML que lee Google:
+el de las fichas está dentro de la ventana de `fichas-alquiler-calle-precio-total-y-miga-al-barrio`
+(docs/seo/experiments.json, hasta el 07/12/2026). Por lo mismo este cambio no lleva fila propia. El
+filtro del directorio ("amueblado" desde las fotos) queda para después: la API del listado la está
+reescribiendo `perf/alquileres-rapido-ola2`, y el mobiliario se filtra a nivel de oferta, que la
+cosecha reescribe cada hora.
 
 ## Lo que no se hace nunca
 

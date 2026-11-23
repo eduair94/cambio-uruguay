@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { claimsOf, evaluateLabels, stratifiedSample, wilsonLower, type Label } from "../../classes/photofacts/evaluate";
+import { claimsOf, consensusLabels, evaluateLabels, stratifiedSample, wilsonLower, type Label } from "../../classes/photofacts/evaluate";
 
 const labels = (attribute: string, positives: number, correctPositives: number, negatives: number, extraUnseen = 0): Label[] => [
   ...Array.from({ length: positives }, (_, i) => ({ id: `p${i}`, attribute, positive: true, verdict: i < correctPositives ? "correcto" : "incorrecto" }) as Label),
@@ -58,5 +58,64 @@ describe("stratifiedSample", () => {
 
   it("reads the claims off a stored document", () => {
     expect(claimsOf(doc("a", true, true))).toMatchObject({ pool: true, balconyTerrace: false, render: true, watermark: false, furniture: false });
+  });
+});
+
+describe("consensusLabels", () => {
+  const seen = (over: Record<string, number | null> = {}) => ({
+    balconyTerrace: null, patioGarden: null, barbecue: null, pool: null, acUnit: null, integratedKitchen: null, ...over,
+  });
+  const doc = (id: string, over: Record<string, unknown> = {}) => ({
+    _id: id,
+    facts: { furniture: "si", seen: seen({ balconyTerrace: 2 }) },
+    photos: [{ render: false, watermark: true }, { render: false, watermark: false }, { render: false, watermark: false }],
+    ...over,
+  });
+  const answer = (over: Record<string, unknown> = {}) => ({
+    facts: { furniture: "si", seen: seen({ balconyTerrace: 2 }) },
+    photos: [{ render: false, watermark: true }, { render: false, watermark: false }, { render: false, watermark: false }],
+    ...over,
+  });
+
+  it("judges the model only where both blind labelers agree", () => {
+    const out = consensusLabels(
+      [doc("a")],
+      new Map([["a", answer()]]),
+      new Map([["a", answer({ facts: { furniture: "no", seen: seen({ balconyTerrace: 1 }) } })]]),
+    );
+    expect(out.compared).toBe(1);
+    expect(out.disagreements).toEqual({ furniture: 1 });
+    const byAttribute = Object.fromEntries(out.labels.map(label => [label.attribute, label]));
+    expect(byAttribute.furniture).toBeUndefined();
+    expect(byAttribute.balconyTerrace).toMatchObject({ positive: true, verdict: "correcto" });
+    expect(byAttribute.pool).toMatchObject({ positive: false, verdict: "correcto" });
+    expect(byAttribute.watermark).toMatchObject({ positive: true, verdict: "correcto" });
+    expect(byAttribute.render).toMatchObject({ positive: false, verdict: "correcto" });
+    expect(out.evidence.balconyTerrace).toEqual({ confirmed: 1, samePhoto: 1 });
+  });
+
+  it("counts a false claim and a miss", () => {
+    const labelers = answer({ facts: { furniture: "no", seen: seen({ acUnit: 0 }) } });
+    const out = consensusLabels([doc("a")], new Map([["a", labelers]]), new Map([["a", labelers]]));
+    const byAttribute = Object.fromEntries(out.labels.map(label => [label.attribute, label]));
+    expect(byAttribute.balconyTerrace).toMatchObject({ positive: true, verdict: "incorrecto" });
+    expect(byAttribute.furniture).toMatchObject({ positive: true, verdict: "incorrecto" });
+    expect(byAttribute.acUnit).toMatchObject({ positive: false, verdict: "incorrecto" });
+  });
+
+  it("treats an abstention on furniture as a miss, and skips it when both labelers abstain", () => {
+    const unsure = doc("a", { facts: { furniture: "no_se", seen: seen() } });
+    const empty = answer({ facts: { furniture: "no", seen: seen() } });
+    const out = consensusLabels([unsure], new Map([["a", empty]]), new Map([["a", empty]]));
+    expect(out.labels.find(label => label.attribute === "furniture")).toMatchObject({ positive: false, verdict: "incorrecto" });
+    const both = answer({ facts: { furniture: "no_se", seen: seen() } });
+    const none = consensusLabels([unsure], new Map([["a", both]]), new Map([["a", both]]));
+    expect(none.labels.find(label => label.attribute === "furniture")).toBeUndefined();
+  });
+
+  it("skips adverts a labeler did not answer", () => {
+    const out = consensusLabels([doc("a"), doc("b")], new Map([["a", answer()]]), new Map([["b", answer()]]));
+    expect(out.compared).toBe(0);
+    expect(out.labels).toEqual([]);
   });
 });

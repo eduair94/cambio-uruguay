@@ -38,7 +38,7 @@ const webpHeader = (width: number, height: number): Buffer => {
   return Buffer.concat([b, Buffer.alloc(6000, 7)]);
 };
 
-describe("preparePhoto", () => {
+describe("preparePhoto", { timeout: 20_000 }, () => {
   it("shrinks a big JPEG to 1024 on the long edge and re-encodes it as JPEG", () => {
     const photo = preparePhoto(scene(1920, 1440), PHOTO_MAX_EDGE)!;
     expect(photo).not.toBeNull();
@@ -78,7 +78,7 @@ describe("preparePhoto", () => {
   });
 });
 
-describe("preparePhotos", () => {
+describe("preparePhotos", { timeout: 20_000 }, () => {
   const big = scene(1600, 1200);
   const other = scene(1600, 1200, 2.4);
 

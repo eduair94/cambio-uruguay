@@ -6,6 +6,7 @@ FIRST VIEWPORT: Title with the key-facts strip, the cover photo with its counter
 FORM: A portal-style property page (Mercado Libre / InfoCasas grammar) with the site's provenance demoted to footnotes, never removed.
 -->
 <script setup lang="ts">
+import RentalPhotoFacts from '~/components/rentals/RentalPhotoFacts.vue'
 import BudgetPlanner from '~/components/rentals/BudgetPlanner.vue'
 import PropertyGallery from '~/components/rentals/PropertyGallery.vue'
 import { rentalPageMessages } from '~/utils/rentalPageMessages'
@@ -839,6 +840,9 @@ useHead(() => ({
             </ul>
           </template>
           <p class="rental-page__note">{{ t('sourceFacts') }}</p>
+          <!-- Lo que las FOTOS del aviso elegido muestran y el aviso no dice, rotulado como visto por
+               una IA (utils/photoFactsPublic.ts). Lo pide el navegador: no cambia el HTML de la ficha. -->
+          <RentalPhotoFacts :property-key="propertyKey" :listing-id="selectedOffer.listingId" />
         </section>
         <!-- La variación del AVISO elegido, no de la vivienda: la misma vivienda publicada en tres
              portales tiene tres precios pedidos, y promediarlos sería un número que nadie publicó. -->
