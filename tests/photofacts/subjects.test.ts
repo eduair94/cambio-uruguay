@@ -52,6 +52,20 @@ describe("rentalSubjects", () => {
     expect(subject.photos).toHaveLength(5);
   });
 
+  it("reads lastSeen stored as a bare date as well as a full ISO instant", () => {
+    const ids = rentalSubjects(
+      [
+        property([
+          offer({ listingId: "infocasas:edge", lastSeen: "2026-11-13" }),
+          offer({ listingId: "infocasas:old", lastSeen: "2026-11-12" }),
+          offer({ listingId: "infocasas:iso", lastSeen: "2026-11-13T00:30:00.000Z" }),
+        ]),
+      ],
+      NOW,
+    ).map(s => s.listingId);
+    expect(ids).toEqual(["infocasas:edge", "infocasas:iso"]);
+  });
+
   it("names the advertiser by agency first, then seller, then the advert itself", () => {
     const [byAgency, byListing] = rentalSubjects(
       [property([offer({ agency: { key: "ag-77" } }), offer({ listingId: "infocasas:2", sellerName: "" })])],

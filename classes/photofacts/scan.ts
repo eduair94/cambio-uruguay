@@ -6,7 +6,7 @@ import { SALE_CATALOG_COLLECTION } from "../propertysales/store";
 import { PHOTO_FACTS_SCHEMA_VERSION } from "./schema";
 import { loadStates, type StoredStateWithFailures } from "./store";
 import {
-  OFFER_STALE_DAYS,
+  staleCutoff,
   RENTAL_PHOTO_SOURCES,
   SALE_PHOTO_SOURCES,
   orderSubjects,
@@ -58,7 +58,7 @@ interface Pass {
 }
 
 function passes(now: Date): Pass[] {
-  const cutoff = new Date(now.getTime() - OFFER_STALE_DAYS * 86_400_000).toISOString();
+  const cutoff = staleCutoff(now);
   const rentals = (department: unknown): Pass => ({
     name: `alquileres ${typeof department === "string" ? department : "resto"}`,
     collection: "rentallistings",

@@ -93,7 +93,7 @@ async function main(): Promise<void> {
       await saveFailure(subject, reason, costUsd, new Date(), states.get(subject.id)?.failures ?? 0);
     },
     max,
-    deadline: Date.now() + number("PHOTO_FACTS_MINUTES", 6) * 60_000,
+    deadline: Date.now() + number("PHOTO_FACTS_MINUTES", 8) * 60_000,
     monthlyUsd: probe ? Number.POSITIVE_INFINITY : monthlyUsd,
     spentUsd,
   });

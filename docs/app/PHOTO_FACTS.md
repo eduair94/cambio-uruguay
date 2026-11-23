@@ -65,7 +65,7 @@ portal son ~7 s por el espaciado de 1,2 s por host y una respuesta ~6,5 s.
 | variable | por defecto | qué hace |
 |---|---|---|
 | `PHOTO_FACTS_MAX` | 40 | avisos por corrida |
-| `PHOTO_FACTS_MINUTES` | 6 | no se empieza un aviso después |
+| `PHOTO_FACTS_MINUTES` | 8 | no se empieza un aviso después (medido el 23/11: ~9 s por aviso con la bajada solapada) |
 | `PHOTO_FACTS_MONTHLY_USD` | 8 | tope propio del mes, sumado de `spend.<AAAA-MM>` de la colección |
 | `PHOTO_FACTS_ENABLED` | — | `0` apaga el job |
 

@@ -121,7 +121,7 @@ con esquema viejo. `vision` en la meta suma `odometerRead`, `kmRejected` y `cost
   hechos, modelo, esquema, fecha, costo y tokens; una lectura fallida se guarda con espera creciente.
   `photofactsmetas` (`key: run`) con los contadores de la corrida y la cuenta de huellas repetidas
   entre anunciantes.
-- **Presupuesto**: `PHOTO_FACTS_MAX` (40 por corrida), `PHOTO_FACTS_MINUTES` (6),
+- **Presupuesto**: `PHOTO_FACTS_MAX` (40 por corrida), `PHOTO_FACTS_MINUTES` (8),
   `PHOTO_FACTS_MONTHLY_USD` (8, sumado de la propia colección), `PHOTO_FACTS_ENABLED=0` lo apaga.
   Sin clave de Claude utilizable sale en 0 sin hacer nada.
 - `--dry-run` elige y muestra los sujetos sin bajar fotos ni llamar al modelo.

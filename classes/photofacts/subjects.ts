@@ -17,6 +17,13 @@ export const MIN_GALLERY = 3;
 /** Una oferta que no se vio en estos días ya no está en el directorio (app/utils/rentals.ts). */
 export const OFFER_STALE_DAYS = 10;
 
+/**
+ * El corte como FECHA (AAAA-MM-DD), no como instante: `lastSeen` se guarda a veces como fecha sola y
+ * a veces como ISO completo, y una fecha compara bien contra los dos ("2026-11-13" ≤ "2026-11-13" y
+ * ≤ "2026-11-13T09:00…"). Un corte ISO dejaba afuera el día entero del borde.
+ */
+export const staleCutoff = (now: Date): string => new Date(now.getTime() - OFFER_STALE_DAYS * 86_400_000).toISOString().slice(0, 10);
+
 export interface PhotoSubject {
   /** `<vertical>:<listingId>`: el _id del documento en `photofacts`. */
   id: string;
@@ -89,7 +96,7 @@ function subjectOf(
 
 /** Las ofertas vigentes con galería de las propiedades de `rentallistings`. */
 export function rentalSubjects(docs: readonly unknown[], now: Date, maxPhotos = 6): PhotoSubject[] {
-  const cutoff = new Date(now.getTime() - OFFER_STALE_DAYS * 86_400_000).toISOString();
+  const cutoff = staleCutoff(now);
   const out: PhotoSubject[] = [];
   for (const doc of docs as Array<Record<string, any>>) {
     for (const offer of Array.isArray(doc?.offers) ? doc.offers : []) {
