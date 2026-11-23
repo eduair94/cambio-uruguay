@@ -4,6 +4,7 @@
 // `GET /v1/payments/<id>`.
 import type { AdFreeOrderDoc } from '../models/AdFreeOrder'
 import { AD_FREE_MONTHS } from '../../utils/adFree'
+import { mpNotificationUrl } from './adFreeMapping'
 
 const API = 'https://api.mercadopago.com'
 
@@ -48,7 +49,7 @@ export async function createMpPreference(
       metadata: { order_id: order._id },
       back_urls: { success: back, pending: back, failure: back },
       auto_return: 'approved',
-      notification_url: `${opts.siteUrl}/api/payments/mercadopago/webhook`,
+      notification_url: mpNotificationUrl(opts.siteUrl),
       statement_descriptor: 'CAMBIOURUGUAY',
       payment_methods: { installments: 1 },
     },

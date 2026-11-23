@@ -6,6 +6,7 @@ import {
   AD_FREE_HINT_KEY,
   isAdFreeActive,
   parseHint,
+  sessionVerdict,
   type AdFreeCurrency,
   type AdFreeHint,
   type AdFreeProvider,
@@ -64,24 +65,50 @@ export function useAdFree() {
    * Ask the server about the signed-in account, store the hint and settle `viewer`. Returns null
    * when nobody is signed in or the request failed; on a failure a donor's hint is left alone.
    */
+  /** What to do when the server cannot say: a donor's valid hint stands, anyone else sees ads. */
+  function keepDonorHintOrAds(uid: string | null) {
+    const hint = readAdFreeHint()
+    if (!(hint && (!uid || hint.uid === uid) && isAdFreeActive(hint.until))) viewer.value = 'ads'
+  }
+
   async function refresh(): Promise<AdFreeSummary | null> {
     const token = await store.getToken()
-    const uid = store.user?.uid
-    if (!token || !uid) {
+    const uid = store.user?.uid ?? null
+    const session = sessionVerdict({ ready: store.ready, hasUser: Boolean(uid) })
+    if (session === 'unknown') {
+      // The session is still being restored (getToken gave up waiting): not a sign-out. Keep a
+      // donor's hint, and ask again once the first auth state lands.
+      keepDonorHintOrAds(null)
+      const stop = watch(
+        () => store.ready,
+        ready => {
+          if (!ready) return
+          stop()
+          void refresh()
+        }
+      )
+      return null
+    }
+    if (session === 'signed-out' || !uid) {
       writeAdFreeHint(null)
       summary.value = null
       viewer.value = 'ads'
+      return null
+    }
+    if (!token) {
+      // Signed in but no token right now (offline, the SDK chunk failed): like a network error.
+      keepDonorHintOrAds(uid)
       return null
     }
     try {
       const fresh = await authFetch<AdFreeSummary>('/api/me/ad-free')
       summary.value = fresh
       writeAdFreeHint({ uid, until: fresh.until, checkedAt: new Date().toISOString() })
-      viewer.value = isAdFreeActive(fresh.until) ? 'free' : 'ads'
+      // The server's verdict, not this device's clock.
+      viewer.value = fresh.active ? 'free' : 'ads'
       return fresh
     } catch {
-      const hint = readAdFreeHint()
-      if (!(hint && hint.uid === uid && isAdFreeActive(hint.until))) viewer.value = 'ads'
+      keepDonorHintOrAds(uid)
       return null
     }
   }

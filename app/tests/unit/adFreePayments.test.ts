@@ -6,7 +6,9 @@ import {
   mapMpPayment,
   mapPpCapture,
   mpNotificationPaymentId,
+  mpNotificationUrl,
   ppCaptureIdFromEvent,
+  ppVerifyBody,
   verifyMpSignature,
 } from '../../server/utils/adFreeMapping'
 
@@ -226,5 +228,60 @@ describe('bestDonationStatus', () => {
     expect(bestDonationStatus(['rejected', 'cancelled'])).toBe('rejected')
     expect(bestDonationStatus(['refunded'])).toBe('refunded')
     expect(bestDonationStatus([])).toBe('none')
+  })
+})
+
+describe('review fixes', () => {
+  it('keeps the period when Mercado Pago reimbursed a chargeback to the seller', () => {
+    const p = mapMpPayment({
+      id: 9,
+      status: 'charged_back',
+      status_detail: 'reimbursed',
+      external_reference: 'order-1',
+      transaction_amount: 400,
+      currency_id: 'UYU',
+      date_approved: '2026-11-01T00:00:00Z',
+    })
+    expect(p?.status).toBe('approved')
+  })
+
+  it('starts a PayPal period when the capture completed, not when it was created pending', () => {
+    const p = mapPpCapture({
+      id: 'CAP9',
+      status: 'COMPLETED',
+      amount: { currency_code: 'USD', value: '10.00' },
+      custom_id: 'order-2',
+      create_time: '2026-11-20T00:00:00Z',
+      update_time: '2026-11-22T00:00:00Z',
+    })
+    expect(p?.approvedAt?.toISOString()).toBe('2026-11-22T00:00:00.000Z')
+  })
+
+  it('asks Mercado Pago for the webhook format only, so no unverifiable IPN arrives', () => {
+    expect(mpNotificationUrl('https://cambio-uruguay.com')).toBe(
+      'https://cambio-uruguay.com/api/payments/mercadopago/webhook?source_news=webhooks'
+    )
+  })
+
+  it('sends PayPal the webhook event byte for byte, as it was received', () => {
+    // Escapes kept as PayPal sent them: re-serializing would turn them into other bytes.
+    const raw = String.raw`{"id":"WH-1","resource":{"payer":"José \/ Ñandú"},"n":1.50}`
+    const body = ppVerifyBody(
+      {
+        'paypal-auth-algo': 'SHA256withRSA',
+        'paypal-cert-url': 'https://api.paypal.com/cert',
+        'paypal-transmission-id': 't-1',
+        'paypal-transmission-sig': 'sig',
+        'paypal-transmission-time': '2026-11-23T00:00:00Z',
+      },
+      'WH-ID',
+      raw
+    )
+    expect(body.endsWith(`"webhook_event":${raw}}`)).toBe(true)
+    expect(JSON.parse(body)).toMatchObject({ webhook_id: 'WH-ID', transmission_id: 't-1' })
+  })
+
+  it('refuses to build a verification without every PayPal header', () => {
+    expect(ppVerifyBody({}, 'WH-ID', '{}')).toBeNull()
   })
 })

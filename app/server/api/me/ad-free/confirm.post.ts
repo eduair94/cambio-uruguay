@@ -3,12 +3,10 @@
 // PayPal by the order id we stored, capturing it if the buyer approved and nobody captured yet).
 import { AdFreeOrderModel } from '../../../models/AdFreeOrder'
 import { requireUser } from '../../../utils/auth'
-import { adFreeSummary, applyProviderPayment } from '../../../utils/adFreeStore'
-import { bestDonationStatus, mapMpPayment, mapPpCapture } from '../../../utils/adFreeMapping'
+import { adFreeSummary } from '../../../utils/adFreeStore'
+import { bestDonationStatus } from '../../../utils/adFreeMapping'
+import { reconcileOrder } from '../../../utils/adFreeReconcile'
 import { connectDb } from '../../../utils/db'
-import { mpConfigured, searchMpPayments } from '../../../utils/mercadoPago'
-import { ppConfigured, reconcilePpOrder } from '../../../utils/paypal'
-import type { DonationStatus } from '../../../../utils/adFree'
 
 export default defineEventHandler(async event => {
   const { uid } = await requireUser(event)
@@ -24,26 +22,14 @@ export default defineEventHandler(async event => {
   if (!order || order.uid !== uid) {
     throw createError({ statusCode: 404, statusMessage: 'No encontramos ese aporte.' })
   }
-
   // What the page needs for the GA4 `purchase` (value, currency); never a provider id.
   const orderInfo = { amount: order.amount, currency: order.currency, provider: order.provider }
-  const statuses: DonationStatus[] = []
   try {
-    if (order.provider === 'mercadopago' && mpConfigured()) {
-      for (const raw of await searchMpPayments(order._id)) {
-        const payment = mapMpPayment(raw)
-        if (!payment) continue
-        const applied = await applyProviderPayment(payment)
-        if (applied.matched) statuses.push(payment.status)
-      }
-    } else if (order.provider === 'paypal' && ppConfigured() && order.providerRef) {
-      const { captures, customId } = await reconcilePpOrder(order.providerRef, order._id)
-      for (const raw of captures) {
-        const payment = mapPpCapture(raw, customId ?? order._id)
-        if (!payment) continue
-        const applied = await applyProviderPayment(payment)
-        if (applied.matched) statuses.push(payment.status)
-      }
+    const statuses = await reconcileOrder(order)
+    return {
+      status: bestDonationStatus(statuses),
+      order: orderInfo,
+      summary: await adFreeSummary(uid),
     }
   } catch (error) {
     // The provider being slow is not a verdict: the page retries, and the webhook still arrives.
@@ -52,10 +38,5 @@ export default defineEventHandler(async event => {
       error instanceof Error ? error.message : error
     )
     return { status: 'unknown' as const, order: orderInfo, summary: await adFreeSummary(uid) }
-  }
-  return {
-    status: bestDonationStatus(statuses),
-    order: orderInfo,
-    summary: await adFreeSummary(uid),
   }
 })

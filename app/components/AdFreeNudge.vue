@@ -39,7 +39,12 @@
 </template>
 
 <script setup lang="ts">
-import { AD_FREE_AMOUNTS, AD_FREE_MONTHS, formatAmount, viewerLoadsAdsense } from '~/utils/adFree'
+import {
+  AD_FREE_AMOUNTS,
+  AD_FREE_MONTHS,
+  formatAdFreeAmount,
+  viewerLoadsAdsense,
+} from '~/utils/adFree'
 import {
   NUDGE_DISMISS_KEY,
   NUDGE_PAGEVIEWS_KEY,
@@ -64,7 +69,7 @@ const offerPath = computed(() => localePath('/cuenta/sin-publicidad'))
 // "desde $ 200": the smallest suggestion of the first medium offered.
 const fromAmount = computed(() => {
   const limits = configured.mercadopago ? AD_FREE_AMOUNTS.mercadopago : AD_FREE_AMOUNTS.paypal
-  return formatAmount(limits.suggested[0]!, limits.currency)
+  return formatAdFreeAmount(limits.suggested[0]!, limits.currency)
 })
 
 const decided = ref<'card' | 'link' | null>(null)
@@ -117,9 +122,11 @@ function dismiss() {
   track('ad_free_nudge_dismiss', { content_path: route.path })
 }
 
-onMounted(() => {
-  // One page with ads seen in this browser. Counted only where this component mounts, which is
-  // exactly the pages that can carry the closing ad.
+// Decided once per page, when the viewer turns out to get ads on it (right after hydration, or a
+// few seconds later for a signed-in visitor the server had to answer about).
+function decide() {
+  // One page with ads seen in this browser, by a viewer who gets ads: donors and pages without
+  // ads do not count toward the card.
   const local = storage('local')
   let pageViews = 1
   try {
@@ -135,6 +142,18 @@ onMounted(() => {
     cardShownThisSession: storage('session')?.getItem(NUDGE_SESSION_KEY) === '1',
     now: Date.now(),
   })
+}
+
+onMounted(() => {
+  const stopWatching = watch(
+    eligible,
+    ok => {
+      if (!ok || decided.value) return
+      decide()
+      queueMicrotask(() => stopWatching())
+    },
+    { immediate: true }
+  )
 })
 
 watch(root, el => {

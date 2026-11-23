@@ -25,6 +25,13 @@ Diseño: `docs/superpowers/specs/2026-11-23-sin-publicidad-design.md`.
 
 Sin estas variables el medio de pago no aparece en la página y su endpoint contesta 503.
 
+### Antes que nada: Cloudflare
+
+`/api/payments/*` recibe POST de los servidores de Mercado Pago y de PayPal. Si una regla WAF, el
+modo de pelea contra bots o un desafío los alcanza, los avisos no llegan (la vuelta del checkout y
+la revisión de respaldo de `GET /api/me/ad-free` siguen confirmando, pero tarde). Agregar una regla
+`skip` para `starts_with(http.request.uri.path, "/api/payments/")`.
+
 ### Mercado Pago
 
 1. <https://www.mercadopago.com.uy/developers/panel/app> → crear aplicación («Pagos online»,
@@ -33,7 +40,18 @@ Sin estas variables el medio de pago no aparece en la página y su endpoint cont
 3. **Webhooks** → URL de producción `https://cambio-uruguay.com/api/payments/mercadopago/webhook`,
    evento **Pagos**. Copiar la **clave secreta** → `MERCADOPAGO_WEBHOOK_SECRET` (con ella se
    verifica `x-signature`; sin ella el aviso igual se re-lee de la API, que es lo que lo hace seguro).
-4. La preferencia ya manda su propio `notification_url`, así que el paso 3 es la firma, no la ruta.
+4. La preferencia ya manda su propio `notification_url` con `?source_news=webhooks` (sólo el
+   formato webhook; el IPN trae una firma que no se valida con el secreto), así que el paso 3 es la
+   firma, no la ruta. Un aviso con firma inválida se registra pero NO se rechaza: rechazarlo hace
+   que Mercado Pago reintente durante días, y el pago se relee igual de la API.
+5. Probar con credenciales de prueba antes de cargar el secreto de producción.
+
+### Respaldo si un aviso no llega
+
+`GET /api/me/ad-free` (lo pide el sitio en cada carga con sesión) vuelve a preguntar al proveedor
+por las órdenes de la cuenta de los últimos 3 días sin pago asentado, como mucho cada 2 minutos por
+orden y con 2 s de tope. Un pago en efectivo acreditado días después se ve en la próxima visita
+aunque el webhook nunca haya llegado.
 
 ### PayPal
 

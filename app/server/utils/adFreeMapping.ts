@@ -53,7 +53,9 @@ function dateOf(raw: unknown): Date | null {
 export function mapMpPayment(raw: Record<string, any> | null | undefined): ProviderPayment | null {
   if (!raw || raw.id === undefined || raw.id === null) return null
   const orderId = typeof raw.external_reference === 'string' ? raw.external_reference : ''
-  const status = MP_STATUS[String(raw.status)]
+  let status = MP_STATUS[String(raw.status)]
+  // A chargeback the seller won ("reimbursed") gives the money back to us: the period stands.
+  if (status === 'charged_back' && raw.status_detail === 'reimbursed') status = 'approved'
   const currency = currencyOf(raw.currency_id)
   const amount = Number(raw.transaction_amount)
   if (!orderId || !status || !currency || !Number.isFinite(amount)) return null
@@ -89,7 +91,8 @@ export function mapPpCapture(
     currency,
     status,
     statusDetail: typeof reason === 'string' ? reason : null,
-    approvedAt: status === 'approved' ? dateOf(raw.create_time) : null,
+    // A capture can sit PENDING for days: the period starts when it completed (its last update).
+    approvedAt: status === 'approved' ? (dateOf(raw.update_time) ?? dateOf(raw.create_time)) : null,
   }
 }
 
@@ -133,6 +136,45 @@ export function verifyMpSignature(input: {
   const expected = createHmac('sha256', input.secret).update(manifest).digest()
   const given = Buffer.from(v1, 'hex')
   return given.length === expected.length && timingSafeEqual(given, expected)
+}
+
+/**
+ * The `notification_url` of a preference. `source_news=webhooks` asks Mercado Pago for the webhook
+ * format only: without it the same URL also gets the IPN format, whose `x-signature` cannot be
+ * validated with the app secret.
+ */
+export function mpNotificationUrl(siteUrl: string): string {
+  return `${siteUrl.replace(/\/$/, '')}/api/payments/mercadopago/webhook?source_news=webhooks`
+}
+
+const PP_VERIFY_HEADERS = [
+  'paypal-auth-algo',
+  'paypal-cert-url',
+  'paypal-transmission-id',
+  'paypal-transmission-sig',
+  'paypal-transmission-time',
+] as const
+
+/**
+ * The body of PayPal's verify-webhook-signature call, with the event spliced in exactly as it was
+ * received: PayPal signs the bytes, and a parsed-then-reserialized event (escapes, accents, `\/`)
+ * fails verification. Null when a signing header is missing.
+ */
+export function ppVerifyBody(
+  headers: Record<string, string | undefined>,
+  webhookId: string,
+  rawEvent: string
+): string | null {
+  if (!webhookId || PP_VERIFY_HEADERS.some(h => !headers[h])) return null
+  const head = JSON.stringify({
+    auth_algo: headers['paypal-auth-algo'],
+    cert_url: headers['paypal-cert-url'],
+    transmission_id: headers['paypal-transmission-id'],
+    transmission_sig: headers['paypal-transmission-sig'],
+    transmission_time: headers['paypal-transmission-time'],
+    webhook_id: webhookId,
+  })
+  return `${head.slice(0, -1)},"webhook_event":${rawEvent}}`
 }
 
 /** The payment id a Mercado Pago notification is about (webhook or IPN format), or null. */

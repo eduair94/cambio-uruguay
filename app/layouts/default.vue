@@ -243,10 +243,11 @@
           <!-- The layout survives navigation. A new page needs its own lazy slot,
                including after an ad-free page or an unfilled response. Query and
                hash changes keep this instance: filtering is not a new page. -->
-          <!-- The offer to browse without ads, next to the ad it removes (components/AdFreeNudge.vue
-               decides whether this viewer and this page get it at all). -->
-          <LazyAdFreeNudge :key="`ad-free-${route.path}`" />
           <AdSlot :key="route.path" placement="content-end" />
+          <!-- The offer to browse without ads, right AFTER the ad it removes: appearing or being
+               closed, it never moves the ad (a moved ad under the pointer invites accidental
+               clicks). components/AdFreeNudge.vue decides whether this viewer and page get it. -->
+          <LazyAdFreeNudge :key="`ad-free-${route.path}`" />
         </ClientOnly>
         <!-- El riel de escritorio: 300x600 fijo a la DERECHA de la columna de lectura, nunca
              adentro (DESIGN.md → "The Rail Is Not The Column Rule"). ÚLTIMO hijo de

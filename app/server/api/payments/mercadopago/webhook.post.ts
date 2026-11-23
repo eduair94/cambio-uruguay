@@ -1,7 +1,8 @@
 // Mercado Pago notifications for the ad-free donation. The notification is only a hint: the
-// payment is read back with our own token and that answer is what gets applied. A signed delivery
-// (webhook format, `x-signature`) must carry a valid signature; the older IPN format arrives
-// unsigned, and reading the payment back from Mercado Pago is what makes it safe to act on.
+// payment is read back with our own token, and that answer is what gets applied. So a delivery is
+// never refused for its signature: Mercado Pago retries a refused one every 15 minutes for days,
+// and some deliveries carry an `x-signature` that cannot be validated with the app secret (the IPN
+// format, which `mpNotificationUrl` already asks it not to send). A bad signature is logged.
 import { applyProviderPayment } from '../../../utils/adFreeStore'
 import {
   mapMpPayment,
@@ -18,24 +19,24 @@ export default defineEventHandler(async event => {
   const query = getQuery(event) as Record<string, unknown>
   const body = await readBody(event).catch(() => null)
   const paymentId = mpNotificationPaymentId(query, body)
+  // Anything that is not a payment (merchant orders, tests from the panel) is acknowledged.
+  if (!paymentId) return { ok: true }
 
   const xSignature = getHeader(event, 'x-signature') ?? null
   const secret =
     (useRuntimeConfig().adFree as { mercadopagoWebhookSecret?: string })
       ?.mercadopagoWebhookSecret ?? ''
   if (xSignature && secret) {
-    const dataId = typeof query['data.id'] === 'string' ? query['data.id'] : (paymentId ?? '')
+    const dataId = typeof query['data.id'] === 'string' ? query['data.id'] : paymentId
     const ok = verifyMpSignature({
       xSignature,
       xRequestId: getHeader(event, 'x-request-id') ?? null,
       dataId,
       secret,
     })
-    if (!ok) throw createError({ statusCode: 401, statusMessage: 'Bad signature' })
+    if (!ok) console.warn('[ad-free] mercadopago notification with an unverifiable signature')
   }
 
-  // Anything that is not a payment (merchant orders, tests from the panel) is acknowledged.
-  if (!paymentId) return { ok: true }
   try {
     const payment = mapMpPayment(await getMpPayment(paymentId))
     if (payment) await applyProviderPayment(payment)

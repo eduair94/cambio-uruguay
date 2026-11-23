@@ -19,7 +19,7 @@
     >
       <div class="d-flex align-center ga-3">
         <VProgressCircular indeterminate size="20" width="2" />
-        <span>Confirmando tu pago con {{ returnProviderName }}…</span>
+        <span>Confirmando tu pago…</span>
       </div>
     </VAlert>
     <VAlert
@@ -33,7 +33,7 @@
       <span v-if="summary?.until">
         Tu cuenta no tiene anuncios hasta el {{ formatDay(summary.until) }}.
       </span>
-      Te mandamos la confirmación por correo.
+      <template v-if="store.user?.email">Te mandamos la confirmación por correo.</template>
     </VAlert>
     <VAlert
       v-else-if="returnState === 'pending'"
@@ -63,8 +63,8 @@
       class="mb-6"
       role="status"
     >
-      Todavía no tenemos la confirmación de {{ returnProviderName }}. Si el pago salió, la cuenta
-      queda sin anuncios sola en unos minutos.
+      Todavía no tenemos la confirmación {{ returnProviderName }}. Si el pago salió, la cuenta queda
+      sin anuncios sola en unos minutos.
       <VBtn variant="text" size="small" class="ml-1" @click="confirmReturn">Volver a revisar</VBtn>
     </VAlert>
 
@@ -88,26 +88,35 @@
         </VAlert>
 
         <template v-else>
-          <VBtnToggle
+          <!-- Two payment media as two pressable tiles (currency + what each accepts): the choice
+               reads at a glance and wraps on a phone, which a segmented toggle did not. -->
+          <div
             v-if="providers.length > 1"
-            v-model="provider"
-            mandatory
-            divided
-            variant="outlined"
-            class="mb-2 sin-publicidad__toggle"
+            class="sin-publicidad__providers mb-4"
+            role="group"
             aria-label="Moneda y medio de pago"
           >
-            <VBtn v-for="p in providers" :key="p" :value="p" class="text-none">
-              {{ PROVIDER_LABEL[p].toggle }}
-            </VBtn>
-          </VBtnToggle>
-          <p class="text-body-2 text-medium-emphasis mb-4">
+            <button
+              v-for="p in providers"
+              :key="p"
+              type="button"
+              class="sin-publicidad__provider"
+              :class="{ 'is-active': provider === p }"
+              :aria-pressed="provider === p"
+              @click="provider = p"
+            >
+              <span class="sin-publicidad__provider-name">{{ PROVIDER_LABEL[p].toggle }}</span>
+              <span class="sin-publicidad__provider-methods">{{ PROVIDER_LABEL[p].methods }}</span>
+            </button>
+          </div>
+          <p v-else class="text-body-2 text-medium-emphasis mb-4">
             {{ PROVIDER_LABEL[provider].methods }}
           </p>
 
           <VChipGroup
             v-model="choice"
             mandatory
+            column
             selected-class="text-primary"
             class="mb-2"
             aria-label="Monto del aporte"
@@ -120,7 +129,7 @@
               size="large"
               filter
             >
-              {{ formatAmount(value, limits.currency) }}
+              {{ formatAdFreeAmount(value, limits.currency) }}
               <!-- The middle amount is the default and is labelled as the suggestion: the anchor
                    that most people keep. Never «el más elegido»: there is no data that says so. -->
               <span v-if="value === suggestedDefault" class="sin-publicidad__badge">sugerido</span>
@@ -137,7 +146,7 @@
             :max="limits.max"
             :step="limits.decimals ? '0.01' : '1'"
             :prefix="limits.currency === 'USD' ? 'US$' : '$'"
-            :label="`Tu monto (mínimo ${formatAmount(limits.min, limits.currency)})`"
+            :label="`Tu monto (mínimo ${formatAdFreeAmount(limits.min, limits.currency)})`"
             :error-messages="customError ? [customError] : []"
             density="comfortable"
             class="mb-2 sin-publicidad__amount"
@@ -167,7 +176,7 @@
           >
             {{
               validAmount
-                ? `Aportar ${formatAmount(validAmount, limits.currency)} con ${PROVIDER_LABEL[provider].name}`
+                ? `Aportar ${formatAdFreeAmount(validAmount, limits.currency)} con ${PROVIDER_LABEL[provider].name}`
                 : 'Elegí un monto'
             }}
           </VBtn>
@@ -243,7 +252,7 @@
           <tbody>
             <tr v-for="(d, i) in summary.donations" :key="i">
               <td>{{ formatDay(d.approvedAt || d.createdAt) }}</td>
-              <td>{{ formatAmount(d.amount, d.currency) }}</td>
+              <td>{{ formatAdFreeAmount(d.amount, d.currency) }}</td>
               <td>{{ PROVIDER_LABEL[d.provider].name }}</td>
               <td>{{ STATUS_LABEL[d.status] }}</td>
             </tr>
@@ -306,7 +315,7 @@ import { adFreeItems, monthlyEquivalent } from '~/utils/adFreeFunnel'
 import {
   AD_FREE_AMOUNTS,
   AD_FREE_MONTHS,
-  formatAmount,
+  formatAdFreeAmount,
   validateAmount,
   type AdFreeCurrency,
   type AdFreeProvider,
@@ -458,12 +467,24 @@ const returnOrder = ref(
 const returnCancelled = route.query.cancelado === '1'
 const returnProvider = ref<AdFreeProvider | null>(null)
 const returnProviderName = computed(() =>
-  returnProvider.value ? PROVIDER_LABEL[returnProvider.value].name : 'el medio de pago'
+  returnProvider.value ? `de ${PROVIDER_LABEL[returnProvider.value].name}` : 'del medio de pago'
 )
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
-async function confirmReturn() {
+// One confirmation at a time: on a cold return the mount and the session restore both ask, and
+// two loops meant two captures racing and two `purchase` hits.
+let confirming: Promise<void> | null = null
+function confirmReturn(): Promise<void> {
+  confirming ??= runConfirm().finally(() => {
+    confirming = null
+    // The order id leaves the address bar once used: a reload must not confirm again.
+    if (route.query.orden) void router.replace({ path: route.path, query: {} }).catch(() => {})
+  })
+  return confirming
+}
+
+async function runConfirm() {
   const orderId = returnOrder.value
   if (!orderId) return
   returnState.value = 'confirming'
@@ -482,17 +503,10 @@ async function confirmReturn() {
         summary: AdFreeSummary
       }>('/api/me/ad-free/confirm', { method: 'POST', body: { orderId } })
       summary.value = res.summary
+      returnProvider.value = res.order.provider
       if (res.status === 'approved') {
         returnState.value = 'approved'
-        // GA4's recommended purchase: transaction_id dedupes a second confirmation of the same
-        // order, value + currency make it revenue. Key event (utils/siteAnalytics.ts).
-        track('purchase', {
-          transaction_id: orderId,
-          value: res.order.amount,
-          currency: res.order.currency,
-          payment_type: PROVIDER_LABEL[res.order.provider].name,
-          items: adFreeItems(res.order.amount, res.order.currency),
-        })
+        trackPurchaseOnce(orderId, res.order)
         await refresh()
         return
       }
@@ -513,6 +527,29 @@ async function confirmReturn() {
     await sleep(2500)
   }
   returnState.value = 'unknown'
+}
+
+/** GA4 `purchase` once per order in this browser, whatever path confirmed it. */
+function trackPurchaseOnce(
+  orderId: string,
+  order: { amount: number; currency: AdFreeCurrency; provider: AdFreeProvider }
+) {
+  const key = `cu_adfree_purchase_${orderId}`
+  try {
+    if (window.sessionStorage.getItem(key)) return
+    window.sessionStorage.setItem(key, '1')
+  } catch {
+    // Without storage GA4 still dedupes by transaction_id.
+  }
+  // GA4's recommended purchase: transaction_id dedupes a second confirmation of the same
+  // order, value + currency make it revenue. Key event (utils/siteAnalytics.ts).
+  track('purchase', {
+    transaction_id: orderId,
+    value: order.amount,
+    currency: order.currency,
+    payment_type: PROVIDER_LABEL[order.provider].name,
+    items: adFreeItems(order.amount, order.currency),
+  })
 }
 
 function formatDay(iso: string) {
@@ -538,8 +575,6 @@ onMounted(async () => {
   if (!store.isLoggedIn) return
   if (returnOrder.value) {
     await confirmReturn()
-    // The order id leaves the address bar once used: a reload must not confirm again.
-    await router.replace({ path: route.path, query: {} }).catch(() => {})
   } else {
     await refresh()
   }
@@ -593,9 +628,51 @@ watch(
   }
 }
 
-.sin-publicidad__toggle {
-  flex-wrap: wrap;
-  height: auto;
+.sin-publicidad__providers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.sin-publicidad__provider {
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 10px;
+  background: transparent;
+  color: rgb(var(--v-theme-on-surface));
+  text-align: start;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.sin-publicidad__provider:hover {
+  border-color: rgba(var(--v-theme-primary), 0.6);
+}
+
+.sin-publicidad__provider.is-active {
+  border-color: rgb(var(--v-theme-primary));
+  background: rgba(var(--v-theme-primary), 0.08);
+  box-shadow: inset 0 0 0 1px rgb(var(--v-theme-primary));
+}
+
+.sin-publicidad__provider:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
+}
+
+.sin-publicidad__provider-name {
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+.sin-publicidad__provider-methods {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
 }
 
 .sin-publicidad__amount {
@@ -642,6 +719,20 @@ watch(
 .sin-publicidad__cta {
   font-weight: 700;
   letter-spacing: 0.01em;
+}
+
+/* The label carries the amount and the medium: on a phone it takes two lines, so the button
+   grows instead of clipping it. */
+.sin-publicidad__cta.v-btn {
+  height: auto;
+  min-height: 52px;
+  padding-block: 10px;
+  white-space: normal;
+}
+
+.sin-publicidad__cta :deep(.v-btn__content) {
+  white-space: normal;
+  line-height: 1.3;
 }
 
 .sin-publicidad__trust {

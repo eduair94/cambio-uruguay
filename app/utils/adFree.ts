@@ -27,7 +27,7 @@ export const AD_FREE_AMOUNTS: Record<AdFreeProvider, AdFreeAmounts> = {
 }
 
 /** `$ 1.200`, `US$ 10`, `US$ 4,50`: the way the site writes money. */
-export function formatAmount(amount: number, currency: AdFreeCurrency): string {
+export function formatAdFreeAmount(amount: number, currency: AdFreeCurrency): string {
   const cents = Math.round(amount * 100)
   const whole = Math.trunc(cents / 100)
   const rest = Math.abs(cents % 100)
@@ -57,10 +57,16 @@ export function validateAmount(
     }
   }
   if (amount < limits.min) {
-    return { ok: false, error: `El aporte mínimo es ${formatAmount(limits.min, limits.currency)}.` }
+    return {
+      ok: false,
+      error: `El aporte mínimo es ${formatAdFreeAmount(limits.min, limits.currency)}.`,
+    }
   }
   if (amount > limits.max) {
-    return { ok: false, error: `El aporte máximo es ${formatAmount(limits.max, limits.currency)}.` }
+    return {
+      ok: false,
+      error: `El aporte máximo es ${formatAdFreeAmount(limits.max, limits.currency)}.`,
+    }
   }
   return { ok: true, amount }
 }
@@ -112,6 +118,19 @@ export function viewerLoadsAdsense(status: ViewerStatus): boolean {
 /** Manual units and the sponsored row stay for everyone but a confirmed donor (no layout shift). */
 export function viewerShowsAds(status: ViewerStatus): boolean {
   return status !== 'free'
+}
+
+/**
+ * Whether nobody is signed in, as far as this page load can tell. Until the first auth state is
+ * known (a slow phone restoring its session) the answer is `unknown`, never `signed-out`: treating
+ * it as signed out would erase a donor's marker and load the ads.
+ */
+export function sessionVerdict(s: {
+  ready: boolean
+  hasUser: boolean
+}): 'signed-in' | 'signed-out' | 'unknown' {
+  if (s.hasUser) return 'signed-in'
+  return s.ready ? 'signed-out' : 'unknown'
 }
 
 /** Remembered in localStorage so a page load can decide without waiting for the server. */

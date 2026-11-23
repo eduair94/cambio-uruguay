@@ -9,7 +9,7 @@
 -->
 <template>
   <aside
-    v-if="row"
+    v-if="row && canRender('home-after-rates')"
     ref="banner"
     class="sponsored-row on-dark"
     :aria-label="$t('ads.label')"
@@ -53,7 +53,8 @@ const banner = ref<HTMLElement | null>(null)
 const route = useRoute()
 const localePath = useLocalePath()
 const track = useTrack()
-const { homeRow: row } = useSponsorships()
+// `canRender` also hides it from an account that donated to browse without ads.
+const { homeRow: row, canRender } = useSponsorships()
 let observer: IntersectionObserver | undefined
 
 onMounted(() => {

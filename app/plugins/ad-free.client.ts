@@ -5,7 +5,7 @@
 // Only a browser with a session waits for the server (capped), and a donor's hint answers at once.
 // Ads already placed cannot be taken out (hiding them breaks AdSense's policy), so a visitor who
 // signs in mid-visit and turns out to be a donor gets one reload, and only if the loader ran.
-import { decideFromHint } from '~/utils/adFree'
+import { decideFromHint, isAdFreeActive } from '~/utils/adFree'
 import { readAdFreeHint, useAdFree, writeAdFreeHint } from '~/composables/useAdFree'
 import { hasStoredFirebaseSession } from '~/services/firebaseLazy'
 
@@ -13,6 +13,17 @@ const WAIT_FOR_SERVER_MS = 4000
 
 function adsenseAlreadyLoaded(): boolean {
   return Boolean(document.querySelector('script[src*="adsbygoogle.js"]'))
+}
+
+/**
+ * The ads already on the page cannot be taken out, so a viewer found to be a donor after the loader
+ * ran gets one reload. Only when the hint was actually stored: the reloaded page then holds the
+ * loader at once, and with storage blocked there is no reload at all (it would loop).
+ */
+function reloadIfDonorAfterAds(active: boolean | undefined) {
+  if (!active || !adsenseAlreadyLoaded()) return
+  if (!isAdFreeActive(readAdFreeHint()?.until)) return
+  window.location.reload()
 }
 
 export default defineNuxtPlugin({
@@ -31,14 +42,15 @@ export default defineNuxtPlugin({
       }
       if (plan.status !== 'wait') {
         // Revalidate in the background: a period that ended, a refund, a donation on another device.
-        await refresh()
+        reloadIfDonorAfterAds((await refresh())?.active)
         return
       }
       const timer = setTimeout(() => {
         if (viewer.value === 'unknown') viewer.value = 'ads'
       }, WAIT_FOR_SERVER_MS)
       try {
-        await refresh()
+        // Past the cap the loader may already be in: same rule as a background revalidation.
+        reloadIfDonorAfterAds((await refresh())?.active)
       } finally {
         clearTimeout(timer)
       }
@@ -56,9 +68,7 @@ export default defineNuxtPlugin({
             viewer.value = 'ads'
             return
           }
-          const loaderRan = adsenseAlreadyLoaded()
-          const fresh = await refresh()
-          if (fresh?.active && loaderRan) window.location.reload()
+          reloadIfDonorAfterAds((await refresh())?.active)
         }
       )
     }

@@ -15,6 +15,8 @@ export interface AdFreeOrderDoc {
   currency: AdFreeCurrency
   /** Mercado Pago preference id / PayPal order id, once the provider created it. */
   providerRef: string | null
+  /** Last time this order was reconciled against the provider (throttles the fallback check). */
+  checkedAt: Date | null
   createdAt: Date
 }
 
@@ -26,6 +28,7 @@ const AdFreeOrderSchema = new Schema<AdFreeOrderDoc>(
     amount: { type: Number, required: true },
     currency: { type: String, required: true, enum: ['UYU', 'USD'] },
     providerRef: { type: String, default: null, index: true, sparse: true },
+    checkedAt: { type: Date, default: null },
   },
   { timestamps: { createdAt: true, updatedAt: false }, _id: false, collection: 'adfreeorders' }
 )

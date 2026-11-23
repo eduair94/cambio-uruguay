@@ -4,7 +4,7 @@
 // The funnel uses GA4's recommended events (view_promotion → select_promotion → view_item →
 // begin_checkout → purchase) so the standard funnel and promotion reports work without custom
 // definitions, and `purchase` carries `transaction_id` so GA4 counts a confirmation once.
-import { AD_FREE_MONTHS, formatAmount, type AdFreeCurrency } from './adFree'
+import { AD_FREE_MONTHS, formatAdFreeAmount, type AdFreeCurrency } from './adFree'
 
 export const AD_FREE_ITEM_ID = 'sin-anuncios-12-meses'
 export const AD_FREE_PROMOTION = { id: 'sin-anuncios', name: 'Navegá sin anuncios' } as const
@@ -45,7 +45,7 @@ export function nudgeVariant(opts: {
 /** "$ 33" a month for $ 400: the price read as what it costs per month of reading. */
 export function monthlyEquivalent(amount: number, currency: AdFreeCurrency): string {
   const monthly = amount / AD_FREE_MONTHS
-  return formatAmount(
+  return formatAdFreeAmount(
     currency === 'UYU' ? Math.round(monthly) : Math.round(monthly * 100) / 100,
     currency
   )

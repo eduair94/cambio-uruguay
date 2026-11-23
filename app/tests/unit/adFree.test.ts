@@ -4,9 +4,10 @@ import {
   addMonths,
   computeAdFreeUntil,
   decideFromHint,
-  formatAmount,
+  formatAdFreeAmount,
   isAdFreeActive,
   parseHint,
+  sessionVerdict,
   validateAmount,
 } from '../../utils/adFree'
 
@@ -153,11 +154,21 @@ describe('decideFromHint', () => {
   })
 })
 
-describe('formatAmount', () => {
+describe('formatAdFreeAmount', () => {
   it('writes pesos and dollars the way the site does', () => {
-    expect(formatAmount(400, 'UYU')).toBe('$ 400')
-    expect(formatAmount(1200, 'UYU')).toBe('$ 1.200')
-    expect(formatAmount(10, 'USD')).toBe('US$ 10')
-    expect(formatAmount(4.5, 'USD')).toBe('US$ 4,50')
+    expect(formatAdFreeAmount(400, 'UYU')).toBe('$ 400')
+    expect(formatAdFreeAmount(1200, 'UYU')).toBe('$ 1.200')
+    expect(formatAdFreeAmount(10, 'USD')).toBe('US$ 10')
+    expect(formatAdFreeAmount(4.5, 'USD')).toBe('US$ 4,50')
+  })
+})
+
+describe('sessionVerdict', () => {
+  it('only calls it signed out once the first auth state is known', () => {
+    // A slow phone still restoring the session must not erase a donor's marker.
+    expect(sessionVerdict({ ready: false, hasUser: false })).toBe('unknown')
+    expect(sessionVerdict({ ready: true, hasUser: false })).toBe('signed-out')
+    expect(sessionVerdict({ ready: true, hasUser: true })).toBe('signed-in')
+    expect(sessionVerdict({ ready: false, hasUser: true })).toBe('signed-in')
   })
 })

@@ -4,6 +4,7 @@
 // capture) and refunds/reversals afterwards.
 import type { AdFreeOrderDoc } from '../models/AdFreeOrder'
 import { AD_FREE_MONTHS } from '../../utils/adFree'
+import { ppVerifyBody } from './adFreeMapping'
 
 interface PaypalConfig {
   paypalClientId?: string
@@ -118,20 +119,32 @@ export async function createPpOrder(
 export async function reconcilePpOrder(
   paypalOrderId: string,
   orderId: string
-): Promise<{ captures: Record<string, any>[]; customId: string | null }> {
-  let order = await call<Record<string, any>>(
-    `/v2/checkout/orders/${encodeURIComponent(paypalOrderId)}`
-  )
+): Promise<{ captures: Record<string, any>[]; customId: string | null; declined: boolean }> {
+  const path = `/v2/checkout/orders/${encodeURIComponent(paypalOrderId)}`
+  let order = await call<Record<string, any>>(path)
+  let declined = false
   if (order.status === 'APPROVED') {
-    order = await call<Record<string, any>>(
-      `/v2/checkout/orders/${encodeURIComponent(paypalOrderId)}/capture`,
-      { method: 'POST', requestId: `adfree-capture-${orderId}`, body: {} }
-    )
+    try {
+      order = await call<Record<string, any>>(`${path}/capture`, {
+        method: 'POST',
+        requestId: `adfree-capture-${orderId}`,
+        body: {},
+      })
+    } catch (error: any) {
+      const status = error?.statusCode ?? error?.status
+      const issue = String(error?.data?.details?.[0]?.issue ?? '')
+      if (status !== 422) throw error
+      // Captured meanwhile by the other path (webhook vs. return page): read what it left.
+      if (issue === 'ORDER_ALREADY_CAPTURED') order = await call<Record<string, any>>(path)
+      // The card or account was declined: nothing was charged, the buyer can start again.
+      else declined = true
+    }
   }
   const unit = order.purchase_units?.[0] ?? {}
   return {
     captures: Array.isArray(unit.payments?.captures) ? unit.payments.captures : [],
     customId: typeof unit.custom_id === 'string' ? unit.custom_id : null,
+    declined,
   }
 }
 
@@ -139,35 +152,27 @@ export function getPpCapture(captureId: string): Promise<Record<string, any>> {
   return call(`/v2/payments/captures/${encodeURIComponent(captureId)}`)
 }
 
-/** PayPal's own verdict on a webhook delivery (the documented verification call). */
+/**
+ * PayPal's own verdict on a webhook delivery. `rawEvent` is the request body exactly as received:
+ * PayPal signs those bytes (see `ppVerifyBody`).
+ */
 export async function verifyPpWebhook(
   headers: Record<string, string | undefined>,
-  event: unknown
+  rawEvent: string
 ): Promise<boolean> {
-  const webhookId = cfg().paypalWebhookId
-  if (!webhookId || !ppConfigured()) return false
-  const need = [
-    'paypal-auth-algo',
-    'paypal-cert-url',
-    'paypal-transmission-id',
-    'paypal-transmission-sig',
-    'paypal-transmission-time',
-  ]
-  if (need.some(h => !headers[h])) return false
+  const webhookId = cfg().paypalWebhookId ?? ''
+  if (!ppConfigured()) return false
+  const body = ppVerifyBody(headers, webhookId, rawEvent)
+  if (!body) return false
   try {
-    const res = await call<{ verification_status?: string }>(
-      '/v1/notifications/verify-webhook-signature',
+    const token = await ppAccessToken()
+    const res = await $fetch<{ verification_status?: string }>(
+      `${api()}/v1/notifications/verify-webhook-signature`,
       {
         method: 'POST',
-        body: {
-          auth_algo: headers['paypal-auth-algo'],
-          cert_url: headers['paypal-cert-url'],
-          transmission_id: headers['paypal-transmission-id'],
-          transmission_sig: headers['paypal-transmission-sig'],
-          transmission_time: headers['paypal-transmission-time'],
-          webhook_id: webhookId,
-          webhook_event: event,
-        },
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body,
+        timeout: 20_000,
       }
     )
     return res.verification_status === 'SUCCESS'

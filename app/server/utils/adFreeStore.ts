@@ -10,7 +10,7 @@ import { AdFreeOrderModel } from '../models/AdFreeOrder'
 import { UserModel } from '../models/User'
 import {
   computeAdFreeUntil,
-  formatAmount,
+  formatAdFreeAmount,
   isAdFreeActive,
   type AdFreeCurrency,
   type AdFreeProvider,
@@ -86,28 +86,36 @@ export async function applyProviderPayment(
     return { matched: false, newlyApproved: false, uid: order?.uid ?? null }
   }
 
-  const previous = await AdFreeDonationModel.findById(p.id, { status: 1, approvedAt: 1 }).lean()
-  const approvedNow = p.status === 'approved'
-  const approvedAt = previous?.approvedAt ?? (approvedNow ? (p.approvedAt ?? new Date()) : null)
-  await AdFreeDonationModel.updateOne(
+  // The status is what the provider says now; the previous one comes back from the same atomic
+  // write, so two handlers racing (the webhook and the return page arrive together) each see a
+  // different "before".
+  const before = await AdFreeDonationModel.findOneAndUpdate(
     { _id: p.id },
     {
       $set: {
         status: p.status,
         statusDetail: p.statusDetail,
-        approvedAt,
         amount: p.amount,
         currency: p.currency,
       },
-      $setOnInsert: { orderId: order._id, uid: order.uid, provider: p.provider },
+      $setOnInsert: { orderId: order._id, uid: order.uid, provider: p.provider, approvedAt: null },
     },
-    { upsert: true }
-  )
+    { upsert: true, returnDocument: 'before', projection: { status: 1 } }
+  ).lean()
+  // `approvedAt` is claimed once, by a conditional write: only the handler that actually set it
+  // reports a first approval (one thank-you mail, one Telegram notice).
+  let newlyApproved = false
+  if (p.status === 'approved') {
+    const claim = await AdFreeDonationModel.updateOne(
+      { _id: p.id, approvedAt: null },
+      { $set: { approvedAt: p.approvedAt ?? new Date() } }
+    )
+    newlyApproved = claim.modifiedCount === 1
+  }
   const until = await recomputeUser(order.uid)
 
-  const newlyApproved = approvedNow && !previous?.approvedAt
   const lost =
-    previous?.status === 'approved' && (p.status === 'refunded' || p.status === 'charged_back')
+    before?.status === 'approved' && (p.status === 'refunded' || p.status === 'charged_back')
   if (newlyApproved || lost) {
     // Notices never decide anything and never fail the confirmation.
     void notify(order.uid, p, until, newlyApproved ? 'approved' : 'lost').catch(error =>
@@ -138,8 +146,8 @@ async function notify(
     // Plain words only: sendTelegram uses Markdown and nothing here needs it.
     const text =
       kind === 'approved'
-        ? `Nuevo aporte sin anuncios: ${formatAmount(p.amount, p.currency)} por ${provider}.`
-        : `Aporte sin anuncios devuelto o desconocido (${p.status}): ${formatAmount(p.amount, p.currency)} por ${provider}.`
+        ? `Nuevo aporte sin anuncios: ${formatAdFreeAmount(p.amount, p.currency)} por ${provider}.`
+        : `Aporte sin anuncios devuelto o desconocido (${p.status}): ${formatAdFreeAmount(p.amount, p.currency)} por ${provider}.`
     await sendTelegram(adminChatId, text.replace(/[_*`[\]]/g, ''))
   }
   if (kind !== 'approved' || !until || !isMailerConfigured()) return
@@ -153,14 +161,14 @@ async function notify(
     subject: 'Gracias por tu aporte: tu cuenta no tiene anuncios',
     text:
       `Gracias por apoyar Cambio Uruguay.\n\n` +
-      `Recibimos tu aporte de ${formatAmount(p.amount, p.currency)} por ${provider}. ` +
+      `Recibimos tu aporte de ${formatAdFreeAmount(p.amount, p.currency)} por ${provider}. ` +
       `Tu cuenta no tiene anuncios hasta el ${untilText}, en todos los dispositivos donde inicies sesión.\n\n` +
       `No es una suscripción: no se renueva sola y no vamos a cobrarte nada más.\n\n` +
       `El comprobante del pago te lo manda ${provider}. Tus aportes: ${page}\n\n` +
       `Si querés que te devolvamos el aporte, respondé este correo dentro de los 5 días hábiles.`,
     html:
       `<p>Gracias por apoyar Cambio Uruguay.</p>` +
-      `<p>Recibimos tu aporte de <strong>${formatAmount(p.amount, p.currency)}</strong> por ${provider}. ` +
+      `<p>Recibimos tu aporte de <strong>${formatAdFreeAmount(p.amount, p.currency)}</strong> por ${provider}. ` +
       `Tu cuenta no tiene anuncios hasta el <strong>${untilText}</strong>, en todos los dispositivos donde inicies sesión.</p>` +
       `<p>No es una suscripción: no se renueva sola y no vamos a cobrarte nada más.</p>` +
       `<p>El comprobante del pago te lo manda ${provider}. <a href="${page}">Ver tus aportes</a>.</p>` +

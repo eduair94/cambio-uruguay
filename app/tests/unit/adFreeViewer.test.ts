@@ -27,4 +27,19 @@ describe('who sees ads', () => {
     expect(source('composables/useAds.ts')).toMatch(/viewerShowsAds\(/)
     expect(source('composables/useSponsorships.ts')).toMatch(/viewerShowsAds\(/)
   })
+
+  it('also hides the sponsored row and the home banner labelled as advertising', () => {
+    expect(source('components/SponsoredCasaRow.vue')).toMatch(/canRender\('home-after-rates'\)/)
+    expect(source('pages/index.vue')).toMatch(
+      /<ConLaTuyaBanner v-if="viewerShowsAds\(adFreeViewer\)"/
+    )
+  })
+
+  it('puts the offer AFTER the closing ad, so closing it never moves the ad under the pointer', () => {
+    const layout = source('layouts/default.vue')
+    const ad = layout.indexOf('placement="content-end"')
+    const nudge = layout.indexOf('<LazyAdFreeNudge')
+    expect(ad).toBeGreaterThan(-1)
+    expect(nudge).toBeGreaterThan(ad)
+  })
 })
