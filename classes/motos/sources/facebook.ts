@@ -20,7 +20,7 @@ import { fbDepartment, resolveFbCurrency } from "../../autos/sources/facebook";
 import { declaredCurrencyFor, kmFromText, yearFromText } from "../../autos/catalog/match";
 import { fold, slugify } from "../../autos/normalize";
 import { quantile } from "../../autos/stats";
-import { motoRejection, type MotoRejection } from "../identify";
+import { motoHasNoModel, motoRejection, type MotoRejection } from "../identify";
 import type { MotoCurrency, MotoDetail, MotoFuel, RawMotoListing } from "../types";
 
 export const FB_MOTO_PERMALINK = /^https:\/\/www\.facebook\.com\/marketplace\/item\/\d{6,20}\/$/;
@@ -111,7 +111,8 @@ export function buildMotoDictionary(
   const brands = new Map<string, { brandId: string; brand: string; models: Map<string, { modelId: string; model: string }> }>();
   for (const listing of listings) {
     const slug = slugify(listing.brand);
-    if (!slug || !listing.model) continue;
+    // Un aviso sin modelo no enseña ningún modelo: "Sin modelo" no es un nombre del catálogo.
+    if (!slug || !listing.model || motoHasNoModel(listing)) continue;
     const entry = brands.get(slug) ?? { brandId: listing.brandId, brand: listing.brand, models: new Map() };
     const modelSlug = slugify(listing.model);
     if (modelSlug && !entry.models.has(modelSlug)) entry.models.set(modelSlug, { modelId: listing.modelId, model: listing.model });
@@ -205,6 +206,18 @@ function findModel(text: string, brand: MotoDictionaryBrand): MotoDictionaryMode
 }
 
 /**
+ * El modelo que nombra un título, entre los modelos de UNA marca ya conocida. Lo usa el barrido de
+ * Mercado Libre para los avisos que no tienen modelo cargado (./mercadolibre.ts): la marca viene del
+ * filtro aplicado y sólo falta el modelo.
+ */
+export function motoModelInTitle(title: string, brandModels: MotoDictionary): { modelId: string; model: string } | null {
+  const brand = brandModels.brands[0];
+  if (!brand) return null;
+  const model = findModel(motoWords(title), brand);
+  return model ? { modelId: model.modelId, model: model.model } : null;
+}
+
+/**
  * Un aviso que no vende una moto aunque nombre una: el vendedor ofrece otra cosa a cambio de una
  * moto ("Permuto por zanella", "Busco moto"). Sólo al principio del título: "Permuto Yumbo speed 150"
  * sí ofrece la moto.
@@ -238,8 +251,11 @@ export interface FbMotoContext {
   dictionary: MotoDictionary;
   usdUyu: number;
   maxYear: number;
-  /** El precio de referencia en dólares de esa marca+modelo (y año, si alcanza), o null. */
-  referenceUsd: (brandId: string, modelId: string, year: number) => number | null;
+  /**
+   * El precio de referencia en dólares de esa marca+modelo (y año, si alcanza), o null. Por NOMBRE y
+   * no por id: el mismo modelo llega con el id de la faceta de ML o con uno derivado de la ficha.
+   */
+  referenceUsd: (brand: string, model: string, year: number) => number | null;
 }
 
 export interface FbMotoResult {
@@ -272,7 +288,7 @@ export function fbCardToMoto(
   const currency = resolveFbCurrency(
     amount,
     declaredCurrencyFor(text, amount),
-    context.referenceUsd(brand.brandId, model.modelId, year),
+    context.referenceUsd(brand.brand, model.model, year),
     context.usdUyu
   );
   if (!currency) return { rejected: "moneda-dudosa" };
@@ -336,21 +352,22 @@ export function safeFbPicture(url: string): boolean {
  * tres o más. Sin referencia no se deduce: el aviso queda afuera ("moneda-dudosa").
  */
 export function motoReferenceFrom(
-  listings: ReadonlyArray<Pick<RawMotoListing, "brandId" | "modelId" | "year" | "price" | "currency" | "fuel">>,
+  listings: ReadonlyArray<Pick<RawMotoListing, "brand" | "model" | "modelId" | "year" | "price" | "currency" | "fuel">>,
   usdUyu: number
 ): FbMotoContext["referenceUsd"] {
+  const keyOf = (brand: string, model: string) => `${slugify(brand)}|${slugify(model)}`;
   const byModel = new Map<string, Array<{ year: number; usd: number }>>();
   for (const listing of listings) {
-    if (listing.fuel === "electrica") continue;
+    if (listing.fuel === "electrica" || motoHasNoModel(listing)) continue;
     const usd = listing.currency === "USD" ? listing.price : listing.price / Math.max(1, usdUyu);
     if (!(usd > 0)) continue;
-    const key = `${listing.brandId}|${listing.modelId}`;
+    const key = keyOf(listing.brand, listing.model);
     const list = byModel.get(key) ?? [];
     list.push({ year: listing.year, usd });
     byModel.set(key, list);
   }
-  return (brandId, modelId, year) => {
-    const all = byModel.get(`${brandId}|${modelId}`) ?? [];
+  return (brand, model, year) => {
+    const all = byModel.get(keyOf(brand, model)) ?? [];
     const near = all.filter(entry => Math.abs(entry.year - year) <= 2);
     if (near.length >= 3) return quantile(near.map(entry => entry.usd), 0.5);
     if (all.length >= 3) return quantile(all.map(entry => entry.usd), 0.5);

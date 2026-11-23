@@ -268,3 +268,28 @@ describe("lo que declara el vendedor, sin falsos positivos medidos", () => {
     expect(listing.specs?.power).toBeNull();
   });
 });
+
+describe("los avisos de Mercado Libre sin modelo", () => {
+  const ficha = (specs: Record<string, string>) => ({
+    readAt: SEEN, price: 1500, currency: "USD", active: true, specs, displacement: null,
+    typeText: null, color: null, pictures: [], description: "",
+  });
+  const sinModelo = { model: "Sin modelo", modelId: "sin-modelo-2102273", title: "Moto impecable 2020" };
+
+  it("toman el modelo de la fila «Modelo» de su ficha", () => {
+    const listing = enrich(sinModelo, { detail: ficha({ Modelo: "GTR 125" }) });
+    expect(listing).toMatchObject({ model: "GTR 125", modelId: "ficha-gtr-125", marketSlug: "yumbo-gtr-125" });
+  });
+
+  it("sin ficha siguen sin modelo, y nunca arman consenso de cilindrada", () => {
+    const rows = attachMotoDisplacements([
+      enrich({ ...sinModelo, id: "s1" }, { detail: { ...ficha({}), displacement: 125 } }),
+      enrich({ ...sinModelo, id: "s2" }, { detail: { ...ficha({}), displacement: 125 } }),
+      enrich({ ...sinModelo, id: "s3" }, { detail: { ...ficha({}), displacement: 125 } }),
+      enrich({ ...sinModelo, id: "s4" }),
+    ]);
+    expect(rows[3]!.marketSlug).toBe("yumbo-sin-modelo");
+    // Tres "Sin modelo" con 125 no le dan 125 a un cuarto: no son la misma moto.
+    expect(rows[3]!.displacement).toBeNull();
+  });
+});

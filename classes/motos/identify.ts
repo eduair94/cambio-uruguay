@@ -224,6 +224,17 @@ export function motoTypeFromTitle(title: string): MotoType | null {
  * lleva `sincc`, así que esa fila convive con las demás del modelo pero NUNCA entra a una cohorte de
  * cilindrada — que es la regla de "precisión sobre recall" escrita como dato y no como comentario.
  */
+/**
+ * Un aviso de Mercado Libre SIN modelo cargado. Medido el 2026-11-23: ML declara 157 Honda usadas y
+ * su faceta de modelos cubre 90; sumando las 84 marcas, 1.245 declaradas contra 586 leídas, porque el
+ * barrido recorría sólo marca → modelo. Esos avisos se leen ahora paginando la marca y quedan en
+ * este modelo hasta que el título o la ficha digan cuál es. Nunca arman cohorte ni ficha de modelo.
+ */
+export const MOTO_NO_MODEL = "Sin modelo";
+export const motoNoModelId = (brandId: string): string => `sin-modelo-${brandId}`;
+export const motoHasNoModel = (listing: { modelId?: string | null } | null | undefined): boolean =>
+  typeof listing?.modelId === "string" && listing.modelId.startsWith("sin-modelo-");
+
 export function motoProductKey(brand: string, model: string, displacement: number | null): string {
   return `${slugify(brand)}|${slugify(model)}|${displacement ?? "sincc"}`;
 }

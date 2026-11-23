@@ -2,7 +2,7 @@ import type { Browser } from "puppeteer-core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { scrollFacebookList } from "../../classes/facebook/browser";
 import { FB_VEHICLES_CATEGORY } from "../../classes/autos/sources/facebook";
-import { FB_MODEL_LISTS, FB_VEHICLE_LISTS, readFacebookVehicles } from "../../classes/autos/sources/facebookBrowser";
+import { FB_MODEL_LISTS, FB_MOTO_QUERIES, FB_VEHICLE_LISTS, readFacebookVehicles } from "../../classes/autos/sources/facebookBrowser";
 import { marketplaceListUrl } from "../../classes/facebook/search";
 
 vi.mock("../../classes/facebook/browser", async importOriginal => ({
@@ -178,6 +178,20 @@ describe("readFacebookVehicles", () => {
     // "fiesta" brought 160 vehicles among 841 party dresses.
     expect(FB_MODEL_LISTS.map(list => list.query)).not.toContain("fiesta");
     expect(FB_MODEL_LISTS.filter(list => /^\d+$/.test(list.query.split(" ").pop()!)).map(list => list.query)).toEqual(["peugeot 208"]);
+  });
+
+  it("searches motorcycles for the moto directory, with words no car seller writes", () => {
+    expect(FB_MOTO_QUERIES).toContain("moto");
+    expect(FB_MOTO_QUERIES).toContain("yumbo");
+    // Brands that also make cars would bring cars back: they stay out.
+    for (const both of ["honda", "suzuki", "bmw", "peugeot"]) expect(FB_MOTO_QUERIES).not.toContain(both);
+  });
+
+  it("reads the motorcycle searches LAST, after the car brands, so they only spend what cars left", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    const run = readFileSync(join(__dirname, "../../classes/autos/facebookRun.ts"), "utf8");
+    expect(run).toContain("[...options.brandQueries, ...FB_MOTO_QUERIES]");
   });
 
   it("leaves Facebook alone while another job holds the profile", async () => {

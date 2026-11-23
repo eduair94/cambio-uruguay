@@ -253,6 +253,8 @@ export interface MotoHarvestResult {
   gaps: MotoHarvestGap[];
   reportedTotal: number | null;
   note: string | null;
+  /** Avisos que sólo vio el barrido por MARCA (sin modelo en la faceta), sumados a los del de modelo. */
+  brandSweepAdded?: number;
 }
 
 /** Banda de precio de una cohorte (modelo o modelo-año). Descriptiva: es lo que se PIDE, no una tasación. */

@@ -169,6 +169,56 @@ describe("la cosecha", () => {
     expect(harvest.reportedTotal).toBe(2);
   });
 
+  it("los avisos que la faceta de modelos no cubre se leen paginando la marca (23/11/2026)", async () => {
+    // Medido: la faceta de Honda cubría 90 de 157 avisos, y el barrido sólo por modelo se perdía el resto.
+    const visitedBrandPages: number[] = [];
+    fetchJsonMock.mockImplementation(async (url: string) => {
+      const params = new URL(url).searchParams;
+      const brand = params.get("BRAND");
+      const model = params.get("MODEL");
+      const offset = Number(params.get("offset"));
+      if (params.get("MOTO_TYPE")) return page({ applied: { MOTO_TYPE: params.get("MOTO_TYPE")! }, total: 0 });
+      if (!brand) return page({ total: 24, facets: { BRAND: [{ id: "2102273", name: "Yumbo", results: 24 }] } });
+      if (!model) {
+        visitedBrandPages.push(offset);
+        return page({
+          offset,
+          applied: { BRAND: brand },
+          total: 24,
+          facets: offset === 0 ? { MODEL: [{ id: "8801", name: "GS 200", results: 2 }, { id: "8802", name: "GTR 125", results: 1 }] } : {},
+          cards:
+            offset === 0
+              ? [card("MLU3000001"), card("MLU3000002")]
+              : [
+                  card("MLU3000003", { title: "Vendo Yumbo Gtr 125 2019 al día" }),
+                  card("MLU3000004", { title: "Moto impecable 2018" }),
+                ],
+        });
+      }
+      if (model === "8802") return page({ applied: { BRAND: brand, MODEL: model }, total: 0 });
+      return page({ applied: { BRAND: brand, MODEL: model }, total: 2, cards: [card("MLU3000001"), card("MLU3000002")] });
+    });
+
+    const harvest = await harvestMercadoLibreMotos({
+      mode: "full",
+      maxRequests: 50,
+      maxDurationMs: 30_000,
+      gapMs: 0,
+      apiBase: "http://bridge/mercadolibre",
+      now: () => new Date("2026-09-22T11:00:00.000Z"),
+    });
+
+    expect(visitedBrandPages).toEqual([0, 20]);
+    expect(harvest.brandSweepAdded).toBe(2);
+    const byId = new Map(harvest.listings.map(listing => [listing.id, listing]));
+    // Lo que vio el barrido por modelo conserva el modelo del filtro aplicado.
+    expect(byId.get("MLU3000001")).toMatchObject({ model: "GS 200", modelId: "8801" });
+    // El modelo que nombra el título, entre los de la marca.
+    expect(byId.get("MLU3000003")).toMatchObject({ model: "GTR 125", modelId: "8802" });
+    // Y si no lo nombra, "Sin modelo" hasta que la ficha lo diga.
+    expect(byId.get("MLU3000004")).toMatchObject({ model: "Sin modelo", modelId: "sin-modelo-2102273" });
+  });
+
   it("el tramo de cilindrada sale de la faceta, y el borde solapado cae al tramo de abajo", async () => {
     fetchJsonMock.mockImplementation(async (url: string) => {
       const params = new URL(url).searchParams;

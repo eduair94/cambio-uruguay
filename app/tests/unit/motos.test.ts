@@ -568,3 +568,11 @@ describe('Facebook Marketplace en el directorio', () => {
     expect(motoNormalizeQuery({ fuente: 'olx' }).fuente).toBe('')
   })
 })
+
+describe('avisos sin modelo', () => {
+  it('se nombran por la marca, y el título del vendedor va siempre debajo', () => {
+    const item = { brand: 'Honda', model: 'Sin modelo', title: 'Moto impecable 2020' }
+    expect(motoName(item)).toBe('Honda')
+    expect(motoSellerTitle(item)).toBe('Moto impecable 2020')
+  })
+})

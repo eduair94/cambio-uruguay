@@ -5,6 +5,7 @@
 // y sus fallas consecutivas la cortan. Acá toda lectura deja rastro: la buena en `detail`, la fallida
 // en `detailError` (espera un día) y la del aviso borrado en `detailGoneAt` (espera una semana).
 import { ML_MOTOS_PERMALINK_PREFIX } from "./sources/mercadolibre";
+import { motoHasNoModel } from "./identify";
 import type { StoredMoto } from "./types";
 
 export interface MotoDetailTarget {
@@ -44,7 +45,14 @@ export function motoDetailTargets(
       stale.push({ key: doc.key, permalink, reason: "vencido", readAt: doc.detail.readAt });
     }
   }
-  neverRead.sort((a, b) => b.lastSeen.localeCompare(a.lastSeen) || a.key.localeCompare(b.key));
+  // Primero los que no tienen modelo: su ficha es lo que les da uno (y con él, cohorte y cilindrada).
+  const noModel = new Set(stored.filter(doc => doc.listing && motoHasNoModel(doc.listing)).map(doc => doc.key));
+  neverRead.sort(
+    (a, b) =>
+      Number(noModel.has(b.key)) - Number(noModel.has(a.key)) ||
+      b.lastSeen.localeCompare(a.lastSeen) ||
+      a.key.localeCompare(b.key)
+  );
   stale.sort((a, b) => a.readAt.localeCompare(b.readAt) || a.key.localeCompare(b.key));
   for (const { key, permalink, reason } of [...neverRead, ...stale]) fresh.push({ key, permalink, reason });
   return fresh;

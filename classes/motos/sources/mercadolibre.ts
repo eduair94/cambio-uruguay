@@ -29,7 +29,15 @@ import {
   type MLCarCard,
   type MLCarPage,
 } from "../../autos/sources/mercadolibre";
-import { MOTO_DISPLACEMENT_FACETS, MOTO_EXCLUDED_TYPES, MOTO_TYPES, resolveDisplacementBand } from "../identify";
+import {
+  MOTO_DISPLACEMENT_FACETS,
+  MOTO_EXCLUDED_TYPES,
+  MOTO_NO_MODEL,
+  MOTO_TYPES,
+  motoNoModelId,
+  resolveDisplacementBand,
+} from "../identify";
+import { buildMotoDictionary, motoModelInTitle, type MotoDictionary } from "./facebook";
 import type { MotoDisplacementBandId, MotoFuel, MotoHarvestGap, MotoHarvestResult, MotoType, RawMotoListing } from "../types";
 
 export const ML_MOTOS_CATEGORY = "MLU1763";
@@ -206,6 +214,8 @@ export async function harvestMercadoLibreMotos(options: MotoHarvestOptions): Pro
   const maxYear = new Date(startedAt).getUTCFullYear() + 1;
   const base: Record<string, string> = options.mode === "fast" ? { since: "today" } : {};
   const listings = new Map<string, RawMotoListing>();
+  /** Lo que sólo vio el barrido por marca: se suma al final, sin pisar lo que el de modelo identificó. */
+  const unmodeled = new Map<string, RawMotoListing>();
   const types = new Map<string, MotoType>();
   // Un aviso puede caer en DOS tramos: los de ML se solapan en el borde (ver identify.ts), así que
   // se juntan todos los que se vieron y recién al final se resuelve uno solo.
@@ -365,6 +375,34 @@ export async function harvestMercadoLibreMotos(options: MotoHarvestOptions): Pro
     return tasks;
   };
 
+  /**
+   * Una página de la MARCA entera. Sólo aporta los avisos que el barrido por modelo no vio: los que no
+   * tienen modelo cargado o cuyo modelo no aparece en la faceta. A esos se les busca el modelo en el
+   * título, entre los modelos de la marca; si no aparece, quedan en "Sin modelo" hasta que su ficha
+   * lo diga (`enrichMotoListing`).
+   */
+  function acceptBrandPage(page: MLCarPage, brand: Named, brandModels: MotoDictionary): void {
+    const observedAt = clock().toISOString();
+    const cards = collectPolycards(page.components ?? page) as unknown as MLCarCard[];
+    for (const card of cards) {
+      const raw = toRawMoto(card, {
+        brandId: brand.id,
+        brand: brand.name,
+        modelId: motoNoModelId(brand.id),
+        model: MOTO_NO_MODEL,
+        observedAt,
+        maxYear,
+      });
+      if (!raw) continue;
+      const named = motoModelInTitle(raw.title, brandModels);
+      if (named) {
+        raw.modelId = named.modelId;
+        raw.model = named.model;
+      }
+      if (!unmodeled.has(raw.id)) unmodeled.set(raw.id, raw);
+    }
+  }
+
   const brandTask = (brand: Named): Task => async () => {
     const first = await read({ BRAND: brand.id }, 0);
     if (!first) {
@@ -374,9 +412,28 @@ export async function harvestMercadoLibreMotos(options: MotoHarvestOptions): Pro
     const models = facetValues(first, "MODEL");
     const total = count(first.paging?.total) ?? 0;
     const covered = models.reduce((sum, model) => sum + model.results, 0);
-    if (covered < total) gaps.push({ brandId: brand.id, brand: brand.name, missing: total - covered });
     options.onProgress?.(`[motos] ${brand.name}: ${models.length} modelos, ${total} avisos`);
-    return models.map(model => modelTask(brand, model));
+    const tasks = models.map(model => modelTask(brand, model));
+    if (covered < total) {
+      // Medido el 2026-11-23: la faceta de modelos de Honda cubre 90 de 157 avisos, y sumando las 84
+      // marcas el barrido por modelo leía 586 de 1.245. El resto se lee paginando la marca: ~60
+      // pedidos más por barrido completo, contra más del doble de avisos.
+      const brandModels = buildMotoDictionary(
+        models.map(model => ({ brandId: brand.id, brand: brand.name, modelId: model.id, model: model.name }))
+      );
+      acceptBrandPage(first, brand, brandModels);
+      const ceiling = Math.min(total, ML_OFFSET_CEILING);
+      if (total > ML_OFFSET_CEILING) gaps.push({ brandId: brand.id, brand: brand.name, missing: total - ML_OFFSET_CEILING });
+      for (let offset = ML_PAGE_SIZE; offset < ceiling; offset += ML_PAGE_SIZE) {
+        tasks.push(async () => {
+          const next = await read({ BRAND: brand.id }, offset);
+          if (next) acceptBrandPage(next, brand, brandModels);
+          else failedBrands.add(brand.id);
+          return [];
+        });
+      }
+    }
+    return tasks;
   };
 
   /** Recorre una faceta entera y le pasa a `collect` los ids de cada página. */
@@ -443,6 +500,15 @@ export async function harvestMercadoLibreMotos(options: MotoHarvestOptions): Pro
     });
   }
 
+  // El barrido por modelo manda: su modelo sale del filtro APLICADO. El de marca sólo suma lo que
+  // el otro no vio.
+  let brandSweepAdded = 0;
+  for (const [id, raw] of unmodeled) {
+    if (listings.has(id)) continue;
+    listings.set(id, raw);
+    brandSweepAdded++;
+  }
+
   const note = !root
     ? "el puente de Mercado Libre no respondió"
     : truncatedBrands
@@ -480,5 +546,6 @@ export async function harvestMercadoLibreMotos(options: MotoHarvestOptions): Pro
     gaps,
     reportedTotal,
     note,
+    brandSweepAdded,
   };
 }
