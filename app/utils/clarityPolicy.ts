@@ -227,7 +227,7 @@ const FAMILY_RULES: ReadonlyArray<[ClarityFamily, RegExp]> = [
   ['motos', /(?:^|-)motos?(?:-|$)/],
   [
     'productos',
-    /^(?:equipar-casa-uruguay|celulares-uruguay|sillas-escritorio-uruguay|monopatines-electricos-uruguay|bicicletas-electricas-uruguay|tiendas-online-uruguay|precios-de-supermercado-uruguay|precio|cambios-de-precio-uruguay|ciberlunes-y-black-friday-uruguay|productos-que-te-cambian-la-vida-uruguay)$/,
+    /^(?:equipar-casa-uruguay|celulares-uruguay|sillas-escritorio-uruguay|monopatines-electricos-uruguay|bicicletas-electricas-uruguay|tiendas-online-uruguay|precios-de-supermercado-uruguay|precio|cambios-de-precio-uruguay|ciberlunes-y-black-friday-uruguay|productos-que-te-cambian-la-vida-uruguay|emprendimientos-de-instagram-uruguay)$/,
   ],
   [
     'cotizaciones',

@@ -115,6 +115,11 @@ const RELEVADOS: Readonly<Record<string, Adapter>> = {
     const data = await get<{ stores?: unknown[]; reviewedAt?: string | null }>('/api/stores')
     return cifra(data?.stores?.length, data?.reviewedAt)
   },
+  async emprendimientos() {
+    // pages/emprendimientos-de-instagram-uruguay/index.vue: "{{ total }} emprendimientos de todo el país".
+    const data = await get<{ total?: number; generatedAt?: string | null }>('/api/emprendimientos')
+    return cifra(data?.total, data?.generatedAt)
+  },
   async precios() {
     // pages/precios-de-supermercado-uruguay.vue: "{{ count }} artículos".
     const data = await get<{ day?: string | null; count?: number }>('/api/precios')

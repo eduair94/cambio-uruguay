@@ -201,6 +201,7 @@ export const DIRECTORIO_PATHS = new Set([
   "/monopatines-electricos-uruguay",
   "/bicicletas-electricas-uruguay",
   "/productos-que-te-cambian-la-vida-uruguay",
+  "/emprendimientos-de-instagram-uruguay",
   "/tiendas-online-uruguay",
   "/sillas-escritorio-uruguay",
   "/precios-de-supermercado-uruguay",

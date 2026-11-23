@@ -40,6 +40,11 @@ import { isStoreDirectoryKey } from '../../../utils/storeDirectory'
 import { storeIndexable, type StorePublicProfile } from '../../../utils/storeProfiles'
 import { ChairCatalogProductModel } from '../../models/ChairCatalogProduct'
 import { EquiparItemModel } from '../../models/EquiparItem'
+import { EmprendimientoListingModel } from '../../models/EmprendimientoListing'
+import {
+  EMPRENDIMIENTOS_RUBRO_MIN_INDEX,
+  isEmprendimientoRubro,
+} from '../../../utils/emprendimientos'
 import { StoreProfileModel } from '../../models/StoreProfile'
 import { PhoneModelModel } from '../../models/PhoneModel'
 import { MotoMarketSnapshotModel } from '../../models/MotoMarketSnapshot'
@@ -424,6 +429,30 @@ export async function buildSitemapUrls(): Promise<{ urls: SitemapUrl[]; complete
     } catch (equiparError) {
       complete = false
       console.warn('Failed to add equipar category pages to sitemap:', equiparError)
+    }
+
+    // --- /emprendimientos-de-instagram-uruguay/<rubro>: one page per rubro with enough accounts ---
+    // The same gate the page uses for `index, follow` (EMPRENDIMIENTOS_RUBRO_MIN_INDEX): a rubro
+    // with four accounts is a thin page and stays out. The account pages (`/cuenta/<handle>`) are
+    // `noindex` and never enter. Spanish only, like the equipar categories. Own try.
+    try {
+      const rows = await EmprendimientoListingModel.aggregate<{
+        _id: string
+        n: number
+        last: string
+      }>([{ $group: { _id: '$rubro', n: { $sum: 1 }, last: { $max: '$readAt' } } }])
+      for (const row of rows) {
+        if (!isEmprendimientoRubro(row._id) || row.n < EMPRENDIMIENTOS_RUBRO_MIN_INDEX) continue
+        urls.push({
+          loc: `/emprendimientos-de-instagram-uruguay/${row._id}`,
+          lastmod: String(row.last || '').slice(0, 10) || undefined,
+          changefreq: 'daily',
+          priority: 0.5,
+        })
+      }
+    } catch (emprendimientosError) {
+      complete = false
+      console.warn('Failed to add emprendimientos rubro pages to sitemap:', emprendimientosError)
     }
 
     // --- /tiendas-online-uruguay/<slug>: one page per store profile the backend HAS written ---

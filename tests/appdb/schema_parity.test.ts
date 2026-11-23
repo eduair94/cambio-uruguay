@@ -53,6 +53,10 @@ import { ArmadorSnapshotModel } from "../../classes/models/ArmadorSnapshot";
 import { LrmSnapshotModel } from "../../classes/models/LrmSnapshot";
 import { RedditOpportunityModel } from "../../classes/models/RedditOpportunity";
 import { RedditOpportunityMetaModel } from "../../classes/models/RedditOpportunityMeta";
+import { EmprendimientoListingModel } from "../../classes/models/EmprendimientoListing";
+import { EmprendimientoMetaModel } from "../../classes/models/EmprendimientoMeta";
+import { EmprendimientoSuggestionModel } from "../../classes/models/EmprendimientoSuggestion";
+import { EmprendimientoOptOutModel } from "../../classes/models/EmprendimientoOptOut";
 
 const appModel = (name: string): string =>
   fs.readFileSync(path.join(__dirname, "..", "..", "app", "server", "models", `${name}.ts`), "utf8");
@@ -64,6 +68,32 @@ function appFields(src: string): string[] {
 }
 
 describe("app-Mongo schema parity", () => {
+  // /emprendimientos-de-instagram-uruguay: el job escribe fichas y meta y lee sugerencias y bajas
+  // que escribe el app. Un campo declarado de un solo lado se pierde en silencio.
+  it("EmprendimientoListing declares exactly the app's top-level fields", () => {
+    expect(Object.keys(EmprendimientoListingModel.schema.obj).sort()).toEqual(appFields(appModel("EmprendimientoListing")).sort());
+    expect(EmprendimientoListingModel.collection.name).toBe("emprendimientolistings");
+    expect(appModel("EmprendimientoListing")).toContain("'emprendimientolistings'");
+  });
+
+  it("EmprendimientoMeta declares exactly the app's top-level fields", () => {
+    expect(Object.keys(EmprendimientoMetaModel.schema.obj).sort()).toEqual(appFields(appModel("EmprendimientoMeta")).sort());
+    expect(EmprendimientoMetaModel.collection.name).toBe("emprendimientometas");
+    expect(appModel("EmprendimientoMeta")).toContain("'emprendimientometas'");
+  });
+
+  it("EmprendimientoSuggestion declares exactly the app's top-level fields", () => {
+    expect(Object.keys(EmprendimientoSuggestionModel.schema.obj).sort()).toEqual(appFields(appModel("EmprendimientoSuggestion")).sort());
+    expect(EmprendimientoSuggestionModel.collection.name).toBe("emprendimientosuggestions");
+    expect(appModel("EmprendimientoSuggestion")).toContain("'emprendimientosuggestions'");
+  });
+
+  it("EmprendimientoOptOut declares exactly the app's top-level fields", () => {
+    expect(Object.keys(EmprendimientoOptOutModel.schema.obj).sort()).toEqual(appFields(appModel("EmprendimientoOptOut")).sort());
+    expect(EmprendimientoOptOutModel.collection.name).toBe("emprendimientooptouts");
+    expect(appModel("EmprendimientoOptOut")).toContain("'emprendimientooptouts'");
+  });
+
   it("CompetitorMonitor declares exactly the app's top-level fields", () => {
     // La configuración del monitor la escribe el app y la lee el job: un campo que el job no declare
     // no se lee nunca, y el monitor ignora en silencio lo que la persona eligió.

@@ -4097,6 +4097,20 @@
         "venta de motos usadas uruguay"
       ],
       "hypothesis": "El directorio de motos era una tabla sin fotos, con nueve filtros en fila y la cilindrada exacta en el 10 % de los avisos (57 de 590). Pasa a tener la forma del de autos: tarjetas con foto, columna de filtros y cajon en el celular, filtros de texto, precio minimo, kilometros, rango de cc, color, novedades, bajas de precio, sin riesgo declarado y unico dueno, una ficha por aviso y un comparador. La cilindrada sale de la ficha propia del aviso en Mercado Libre (19 de cada 21 la declaran) y, cuando falta, de una cascada como la de la carroceria de autos: consenso de los avisos del mismo modelo y el numero del nombre del modelo, marcadas con aproximado. La apuesta es de interaccion antes que de puesto: una pagina que deja filtrar por lo que el lector busca (una 125, una 250, menos de 20.000 km) se queda con la visita que hoy vuelve a Mercado Libre. Mejoro si la porcion de clics de la ruta sube en los 28 dias archivados."
+    },
+    {
+      "id": "emprendimientos-de-instagram-pagina-nueva",
+      "shippedOn": "2026-11-23",
+      "routes": [
+        "/emprendimientos-de-instagram-uruguay"
+      ],
+      "queries": [
+        "emprendimientos uruguayos instagram",
+        "emprendimientos instagram uruguay",
+        "tiendas de instagram uruguay",
+        "emprendimientos montevideo"
+      ],
+      "hypothesis": "Pagina nueva: un directorio de emprendimientos uruguayos que venden por Instagram, por rubro y por departamento, con sus fotos, cuando publicaron por ultima vez y de donde los conocimos. Lo arma un job nuevo (currency-emprendimientos) que descubre cuentas en Uruguay Emprendedor, en hilos de r/uruguay, por las colaboraciones de las cuentas ya listadas y por sugerencias de los lectores, lee cada perfil publico y lo clasifica; entra solo lo que es un emprendimiento con una marca uruguaya escrita o una fuente uruguaya. Instagram no tiene un buscador por rubro y ciudad sin sesion, y el hilo de r/uruguay del 21/5/2026 lo pide con esas palabras. Parte de cero: diez clics o mas en los 28 dias archivados es mejoro. La apuesta principal es que la gente lo comparta y que los propios emprendimientos se sumen y lo enlacen, que esta medicion no ve."
     }
   ]
 }
