@@ -492,6 +492,17 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // What the photos of rental and sale adverts show, kept in the shadow (private `photofacts`,
+      // nothing published) until a person labels a sample (docs/app/PHOTO_FACTS.md). At :12, away
+      // from the harvest (:47) and the advert-page jobs (:25, :35) that read the same portals.
+      name: "currency-photo-facts",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_photo_facts.js",
+      cron_restart: "12 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Mercado Libre's price guide for the model-years the directory holds: the version catalogue
       // and a second opinion where our own sample is thin (it is ML's median, not a valuation).
       name: "currency-autos-guide",
