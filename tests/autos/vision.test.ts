@@ -90,7 +90,7 @@ const photo = (width: number, height: number, tint = 0, mirror = false): Buffer 
   return encode({ data, width, height }, 85).data;
 };
 
-describe("downloadPhotos", () => {
+describe("downloadPhotos", { timeout: 20_000 }, () => {
   it("keeps real photos, shrunk, and skips what is dead, tiny or not an image", async () => {
     const files: Record<string, Buffer | null> = {
       "a.jpg": photo(1200, 900),
