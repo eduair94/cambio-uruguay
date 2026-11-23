@@ -4,7 +4,13 @@
     bar on the server would hydrate against a different tree. Nothing shows while the list is empty.
   -->
   <ClientOnly>
-    <div v-if="ready && lines.length" class="eq-bar" role="status" data-testid="equipar-lista-bar">
+    <!-- `cu-listing`: as wide as the directory it sits under on a `wide` page. -->
+    <div
+      v-if="ready && lines.length"
+      class="eq-bar cu-listing"
+      role="status"
+      data-testid="equipar-lista-bar"
+    >
       <span class="eq-bar__text">
         <strong>{{ lines.length }}</strong> {{ lines.length === 1 ? 'ítem' : 'ítems' }} ·
         <strong>{{ equiparMoneyNbsp(total) }}</strong>

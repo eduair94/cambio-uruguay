@@ -9,7 +9,7 @@ MOBILE: Results first; persistent filters open a right-side drawer with fixed ac
 <template>
   <VContainer class="rentals pt-1 pt-sm-4" :class="{ 'rentals--mobile': smAndDown }">
     <VBreadcrumbs :items="breadcrumbs" density="compact" class="rentals-breadcrumbs px-0 py-1" />
-    <div class="rentals-workspace">
+    <div class="rentals-workspace cu-listing">
       <header class="rentals-head">
         <h1>{{ t('title') }}</h1>
         <p class="rentals-lead">{{ t('subtitle') }}</p>
@@ -891,6 +891,8 @@ const { t: globalT } = useI18n({ useScope: 'global' })
 const availability = useRentalAvailability()
 const availabilityCopy = computed(() => rentalAvailabilityCopy(locale.value))
 const localePath = useLocalePath()
+// Directorio: filtros + grilla con el ancho del marco (layouts/default.vue, `.container_custom--wide`).
+definePageMeta({ wide: true })
 const route = useRoute()
 const router = useRouter()
 const { smAndDown } = useDisplay()
@@ -1821,11 +1823,9 @@ useSchemaOrg([
 }
 
 .rentals {
-  /* El directorio es sidebar + grilla: con 1280 fijos un monitor de 2560
-     mostraba 2 tarjetas y media pantalla vacía. Medido a 2560: 2200 da 5
-     columnas de 348px (legibles) y sigue centrando; el tope va acá porque el
-     layout ya liberó el cap global para esta ruta. */
-  max-width: 2200px;
+  /* El directorio es sidebar + grilla: con 1280 fijos un monitor de 2560 mostraba 2 tarjetas y
+     media pantalla vacía. El tope ya no va acá: es el marco de 2200 del layout (`wide`), que
+     contiene también al riel, así el aire sobrante queda parejo a los dos lados. */
   padding-bottom: 48px;
 }
 .rentals--mobile {

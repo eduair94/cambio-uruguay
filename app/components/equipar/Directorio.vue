@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div class="cu-listing">
+    <!-- `cu-listing`: on a `wide` page the directory takes the frame's width (layouts/default.vue). -->
     <!--
       On mobile the filters are a drawer that teleports to the body, so it lives OUTSIDE the grid:
       inside the layout cell, the dialog's vnode patched against a cell that mobile does not

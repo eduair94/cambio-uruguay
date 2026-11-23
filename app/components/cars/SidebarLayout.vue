@@ -1,5 +1,6 @@
 <template>
-  <div class="cars-layout">
+  <div class="cars-layout cu-listing">
+    <!-- `cu-listing`: en una página `wide` la grilla usa el ancho del marco (layouts/default.vue). -->
     <div class="cars-layout__filters">
       <slot name="filters" />
     </div>

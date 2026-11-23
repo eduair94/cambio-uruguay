@@ -164,7 +164,7 @@
             No hay avisos que declaren esto con esos filtros. Que un auto no declare nada no quiere
             decir que esté limpio: quiere decir que su aviso no lo dice.
           </p>
-          <div ref="resultsList" class="d-flex flex-column ga-4">
+          <div ref="resultsList" class="cars-rows">
             <FeedEdge :feed="feed" edge="top" />
             <template v-for="(item, index) in feed.items" :key="item.subject.key">
               <FeedAd :index="index" :feed="feed" />
@@ -274,6 +274,8 @@ import {
   type CarRisksResponse,
 } from '~/utils/carsRisk'
 
+// Directorio: filtros + grilla con el ancho del marco (layouts/default.vue, `.container_custom--wide`).
+definePageMeta({ wide: true })
 const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()
@@ -428,6 +430,15 @@ useHead({
 </script>
 
 <style scoped>
+/* Las fichas son filas anchas: una columna en el ancho de siempre (~650) y dos, del mismo tamaño,
+   cuando el marco ancho del layout (`wide`) da lugar. `start` para que abrir los comparables de una
+   no estire a su vecina. FeedAd y FeedEdge ocupan la fila entera (grid-column: 1 / -1). */
+.cars-rows {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 560px), 1fr));
+  align-items: start;
+  gap: 16px;
+}
 .risk-filters {
   display: flex;
   flex-direction: column;
