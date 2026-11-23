@@ -525,21 +525,38 @@ Reglas, todas en `classes/autos/risk.ts` y `riskAnalyze.ts`:
 
 ## Las fotos, y qué se hace con la IA
 
-`classes/autos/llm/vision.ts` le pasa a Gemini hasta cuatro fotos del propio aviso con lo que ese aviso
-afirma y pregunta tres cosas: si el auto concuerda, si se ve daño, si son fotos de catálogo. Existe
-porque **tres de las cuatro brechas más grandes de la primera corrida en vivo eran autos chocados que
-el título no decía** y las fotos sí mostraban.
+`classes/autos/llm/vision.ts` le pasa al modelo (Claude Haiku 5.5 con los créditos de API, Gemini de
+respaldo, `classes/llm.ts`) hasta **seis** fotos del propio aviso con lo que ese aviso afirma —marca,
+modelo, año, **versión**, km y descripción— y pregunta: si el auto concuerda, si se ve daño, si son
+fotos de catálogo, **qué marca el tablero** y **qué palanca se ve**. Existe porque **tres de las cuatro
+brechas más grandes de la primera corrida en vivo eran autos chocados que el título no decía** y las
+fotos sí mostraban.
+
+**Desde el 2026-11-23 (esquema 2)** las fotos se achican a 1.024 px de lado mayor antes de mandarlas
+(`classes/vision/photos.ts`, en JS puro porque el VPS es CentOS 7 y `sharp` no carga), se descartan
+las diminutas y las repetidas, y el prompt fijo va cacheado. Seis fotos achicadas cuestan lo que
+costaban cuatro a tamaño original, y el tablero rara vez es de las primeras cuatro. La cola mira
+primero los avisos nunca mirados y después los mirados con el esquema 1, que no leía el tablero.
+`vision` en la meta `uy-cars-detail` lleva `asked`, `rejected` (contado con `photoRejection`, la
+misma regla que retira; hasta el 23/11 contaba también `matchesAdvert: false`, que no retira nada
+desde el 18/9), `odometerRead`, `kmRejected`, `rechecked` y `costUsd`.
 
 **La IA no publica, filtra.** Dos usos y ninguno más:
 
 1. Retirar en silencio una oportunidad que sus propias fotos contradicen (`photo_damage`,
-   `photo_mismatch`, `photo_catalog` en `rejectedByDetail`).
+   `photo_catalog` y `photo_km` en `rejectedByDetail`). `photo_km` es el tablero que marca **mucho
+   más** de lo que el aviso declara: más de 1,25 veces y al menos 20.000 km de diferencia
+   (`odometerContradicts`). Es el caso más votado de r/AutosUy (130.000 declarados, 208.936 en la
+   foto); un tablero que marca menos nunca retira, porque puede ser una foto vieja (el piloto vio
+   178.000 declarados contra 168.709 en el tablero). La palanca (`gearbox`) se guarda y todavía no
+   retira nada: su precisión no está medida.
 2. Corroborar lo que el vendedor YA declaró (`photoConfirms`).
 
-El sitio **nunca** publica "este auto está chocado" sobre un aviso que no lo dice: equivocarse de un
-lado cuesta una oportunidad; del otro, difama a una persona cuyo nombre y teléfono están en el aviso.
-Sólo lo inequívoco descalifica: "no se ve" no retira nada y el daño leve tampoco. Sin `GEMINI_API_KEY`
-el módulo es inerte y el resto del pipeline no cambia.
+El sitio **nunca** publica "este auto está chocado" ni "km adulterados" sobre un aviso que no lo dice:
+equivocarse de un lado cuesta una oportunidad; del otro, difama a una persona cuyo nombre y teléfono
+están en el aviso. Sólo lo inequívoco descalifica: "no se ve" no retira nada y el daño leve tampoco.
+El esquema le prohíbe al modelo transcribir matrículas, teléfonos o cualquier texto de las fotos. Sin
+ningún modelo configurado el módulo es inerte y el resto del pipeline no cambia.
 
 ## Versiones: el vocabulario se mina del corpus
 

@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { detailPictures } from "../../classes/autos/detail";
-import { downloadPhotos, photoCorroborates, photoRejection, visionPrompt, type CarPhotoVerdict } from "../../classes/autos/llm/vision";
+import { encode } from "jpeg-js";
+import {
+  CAR_VISION_SCHEMA,
+  downloadPhotos,
+  needsRecheck,
+  odometerContradicts,
+  photoCorroborates,
+  photoRejection,
+  visionPrompt,
+  type CarPhotoVerdict,
+} from "../../classes/autos/llm/vision";
 
 const verdict = (overrides: Partial<CarPhotoVerdict> = {}): CarPhotoVerdict => ({
   readAt: "2026-09-18T12:00:00.000Z",
@@ -67,12 +77,64 @@ describe("visionPrompt", () => {
   });
 });
 
+const photo = (width: number, height: number, tint = 0, mirror = false): Buffer => {
+  const data = Buffer.alloc(width * height * 4);
+  for (let i = 0; i < width * height; i++) {
+    const x = i % width;
+    const y = Math.floor(i / width);
+    data[i * 4] = ((mirror ? width - x : x) * 255) / width;
+    data[i * 4 + 1] = (y * 255) / height;
+    data[i * 4 + 2] = tint;
+    data[i * 4 + 3] = 255;
+  }
+  return encode({ data, width, height }, 85).data;
+};
+
 describe("downloadPhotos", () => {
-  it("skips what it cannot read and what is too heavy to send", () => {
-    const fetcher = async (url: string) =>
-      url.endsWith("big") ? Buffer.alloc(1_000_000) : url.endsWith("dead") ? null : Buffer.from("foto");
-    return downloadPhotos(["a.jpg", "b/big", "c/dead", "d.png"], { fetcher }).then(images => {
-      expect(images.map(image => image.mimeType)).toEqual(["image/jpeg", "image/png"]);
-    });
+  it("keeps real photos, shrunk, and skips what is dead, tiny or not an image", async () => {
+    const files: Record<string, Buffer | null> = {
+      "a.jpg": photo(1200, 900),
+      "b/tiny": photo(200, 150, 90),
+      "c/dead": null,
+      "d.jpg": Buffer.from("no soy una foto".repeat(500)),
+      "e.jpg": photo(1200, 900, 200, true),
+    };
+    const images = await downloadPhotos(Object.keys(files), { fetcher: async url => files[url] });
+    expect(images).toHaveLength(2);
+    expect(images.every(image => image.mimeType === "image/jpeg")).toBe(true);
+  });
+});
+
+describe("odometerContradicts", () => {
+  it("retires only a dashboard that reads far MORE than the advert says", () => {
+    expect(odometerContradicts({ odometerKm: 208_936 }, 130_000)).toBe(true);
+    expect(odometerContradicts({ odometerKm: 168_709 }, 178_000)).toBe(false);
+    expect(odometerContradicts({ odometerKm: 150_000 }, 140_000)).toBe(false);
+    expect(odometerContradicts({ odometerKm: 30_000 }, 10_000)).toBe(true);
+    expect(odometerContradicts({ odometerKm: 25_000 }, 10_000)).toBe(false);
+    expect(odometerContradicts({ odometerKm: 200_000 }, null)).toBe(false);
+    expect(odometerContradicts({ odometerKm: null }, 100_000)).toBe(false);
+    expect(odometerContradicts(null, 100_000)).toBe(false);
+  });
+
+  it("distrusts a reading more than five times the advert: a tenths drum, not a seller", () => {
+    expect(odometerContradicts({ odometerKm: 874_123 }, 87_000)).toBe(false);
+    expect(odometerContradicts({ odometerKm: 400_000 }, 90_000)).toBe(true);
+  });
+
+  it("becomes a silent photo_km rejection, after damage and catalog photos", () => {
+    expect(photoRejection(verdict({ odometerKm: 208_936 }), 130_000)).toBe("photo_km");
+    expect(photoRejection(verdict({ odometerKm: 208_936 }))).toBeNull();
+    expect(photoRejection(verdict({ odometerKm: 208_936, damage: "grave" }), 130_000)).toBe("photo_damage");
+    // La palanca se guarda pero todavía no retira nada.
+    expect(photoRejection(verdict({ gearbox: "manual" }), 90_000)).toBeNull();
+  });
+});
+
+describe("needsRecheck", () => {
+  it("re-reads verdicts from before the dashboard was asked for", () => {
+    expect(needsRecheck(verdict())).toBe(true);
+    expect(needsRecheck(verdict({ schema: CAR_VISION_SCHEMA }))).toBe(false);
+    expect(needsRecheck(null)).toBe(false);
   });
 });

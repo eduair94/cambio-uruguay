@@ -110,6 +110,8 @@ export interface JsonOptions {
   temperature?: number;
   maxOutputTokens?: number;
   timeoutMs?: number;
+  /** Claude only: cache the system prompt (classes/anthropic.ts, `cacheSystem`). */
+  cacheSystem?: boolean;
 }
 
 export async function askJSON<T>(prompt: string, schema: unknown, opts: JsonOptions = {}): Promise<T | null> {
@@ -130,15 +132,16 @@ export async function askJSONWithImagesDetailed<T>(
   images: ReadonlyArray<{ data: Buffer; mimeType: string }>,
   schema: unknown,
   opts: JsonOptions = {}
-): Promise<{ value: T; model: string; provider: LlmProvider } | null> {
+): Promise<{ value: T; model: string; provider: LlmProvider; costUsd?: number } | null> {
   if (anthropicConfigured() && images.length) {
     const reply = await askClaudeWithImages(prompt, images, {
       system: opts.system,
+      cacheSystem: opts.cacheSystem,
       schema,
       maxTokens: opts.maxOutputTokens,
       timeoutMs: claudeTimeout(opts.timeoutMs),
     });
-    if (reply && reply.value !== undefined) return { value: reply.value as T, model: reply.model, provider: "claude" };
+    if (reply && reply.value !== undefined) return { value: reply.value as T, model: reply.model, provider: "claude", costUsd: reply.costUsd };
     fellBack("JSON con imágenes");
   }
   const value = await gemini.askJSONWithImages<T>(prompt, images, schema, opts);

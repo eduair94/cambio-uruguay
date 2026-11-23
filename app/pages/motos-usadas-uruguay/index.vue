@@ -407,6 +407,7 @@ import { VPagination } from 'vuetify/components'
 import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
 import RentalAlertDialogHost from '~/components/rentals/RentalAlertDialogHost.vue'
+import { trackFilterChanges } from '~/utils/directoryFilterTracking'
 import type { FaqItem } from '~/utils/faqAnswers'
 import {
   MOTOS_AUTOS_PATH,
@@ -522,8 +523,13 @@ function numberOrNull(value: unknown): number | null {
   return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : null
 }
 
+const track = useTrack()
 function update(next: MotoQuery) {
-  router.replace({ query: motoQueryParams(next) })
+  const params = motoQueryParams(next)
+  // Todo cambio de filtro pasa por acá: qué filtro, por nombre y sin valor
+  // (utils/directoryFilterTracking.ts). La carga de la página no pasa, así que no cuenta.
+  trackFilterChanges(track, 'motos', motoQueryParams(query.value), params)
+  router.replace({ query: params })
 }
 
 function changePage(page: number) {
