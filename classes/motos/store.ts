@@ -7,7 +7,10 @@ import { MotoCatalogModel } from "../models/MotoCatalog";
 import { MotoListingModel } from "../models/MotoListing";
 import { MotoMarketSnapshotModel } from "../models/MotoMarketSnapshot";
 import { motoKey } from "./enrich";
+import { CarFbCardModel } from "../models/CarFbCard";
+import type { FbMotoCard, FbMotoItem, FbMotoResult } from "./sources/facebook";
 import type {
+  MotoDetail,
   MotoFacetEvidence,
   MotoHarvestResult,
   MotoPricePoint,
@@ -29,6 +32,8 @@ export const MOTO_HARVEST_META_KEY = "uy-motos-harvest";
  * Es el defecto que autos ya pagó (`uy-cars-publish`).
  */
 export const MOTO_PUBLISH_REFUSAL_KEY = "uy-motos-publish";
+/** La última corrida de `sync_motos_detail.ts`: cuántas fichas, cuántas fallaron, la cola. */
+export const MOTO_DETAIL_META_KEY = "uy-motos-detail";
 
 const CHUNK = 300;
 
@@ -95,6 +100,124 @@ export async function loadStoredMotos(now: Date, days = 21): Promise<StoredMoto[
     .find({ lastSeen: { $gte: cutoff }, retiredAt: null }, { projection: { _id: 0 } })
     .toArray();
   return rows as unknown as StoredMoto[];
+}
+
+/**
+ * Las tarjetas de Marketplace que el lector de AUTOS guardó en `carfbcards` (es la categoría
+ * Vehículos entera, motos incluidas). Se filtran en la base por las marcas del diccionario: son
+ * ~24.000 tarjetas en cuatro días y una de cada veinte nombra una marca de motos.
+ */
+export async function loadFbMotoCards(
+  since: string,
+  brandPattern: string
+): Promise<Array<{ card: FbMotoCard; item: FbMotoItem | null; firstSeen: string; lastSeen: string }>> {
+  if (!brandPattern) return [];
+  await nativeReady();
+  const rows = await appConnection()
+    .collection(CarFbCardModel.collection.name)
+    .find(
+      { lastSeen: { $gte: since }, "card.title": { $regex: brandPattern, $options: "i" } },
+      {
+        projection: {
+          _id: 0,
+          firstSeen: 1,
+          lastSeen: 1,
+          "card.id": 1,
+          "card.title": 1,
+          "card.amount": 1,
+          "card.city": 1,
+          "card.createdAt": 1,
+          "card.picture": 1,
+          "card.isSold": 1,
+          "card.isLive": 1,
+          "item.description": 1,
+          "item.isLive": 1,
+          "item.isSold": 1,
+          "item.readAt": 1,
+        },
+      }
+    )
+    .toArray();
+  return rows.map(row => ({
+    card: row.card as FbMotoCard,
+    item: (row.item as FbMotoItem | null) ?? null,
+    firstSeen: String(row.firstSeen),
+    lastSeen: String(row.lastSeen),
+  }));
+}
+
+/** Marca y modelo de los avisos de Mercado Libre de los últimos `days`: el diccionario de Facebook. */
+export async function loadMotoDictionaryListings(
+  now: Date,
+  days = 180
+): Promise<Array<Pick<RawMotoListing, "brandId" | "brand" | "modelId" | "model">>> {
+  await nativeReady();
+  const since = new Date(now.getTime() - days * 86_400_000).toISOString();
+  const rows = await listingsCollection()
+    .find(
+      { lastSeen: { $gte: since }, "listing.source": "mercadolibre" },
+      { projection: { _id: 0, "listing.brandId": 1, "listing.brand": 1, "listing.modelId": 1, "listing.model": 1 } }
+    )
+    .toArray();
+  return rows.map(row => row.listing as Pick<RawMotoListing, "brandId" | "brand" | "modelId" | "model">);
+}
+
+/**
+ * Guarda las motos de Marketplace en `motolistings`, como las de ML: así tienen su historia de precio
+ * y su ficha. `lastSeen` es la última vez que el lector de autos vio la TARJETA, no esta corrida: una
+ * tarjeta que Facebook dejó de mostrar envejece sola y sale del catálogo a los cuatro días.
+ */
+export async function saveFbMotos(
+  results: ReadonlyArray<FbMotoResult & { firstSeen: string; lastSeen: string }>
+): Promise<StoredMoto[]> {
+  if (!results.length) return [];
+  await nativeReady();
+  const collection = listingsCollection();
+  await collection.createIndex({ key: 1 }, { unique: true });
+  const saved: StoredMoto[] = [];
+  for (let index = 0; index < results.length; index += CHUNK) {
+    const chunk = results.slice(index, index + CHUNK);
+    const keys = chunk.map(result => motoKey(result.listing.id, result.listing.source));
+    const existing = new Map(
+      (await collection.find({ key: { $in: keys } }, { projection: { key: 1, priceHistory: 1, firstSeen: 1 } }).toArray()).map(
+        doc => [String(doc.key), doc]
+      )
+    );
+    const operations = chunk.map(result => {
+      const key = motoKey(result.listing.id, result.listing.source);
+      const before = existing.get(key);
+      const priceHistory = nextPriceHistory((before?.priceHistory as MotoPricePoint[] | undefined) ?? [], result.listing);
+      saved.push({
+        key,
+        firstSeen: String(before?.firstSeen ?? result.firstSeen),
+        lastSeen: result.lastSeen,
+        listing: result.listing,
+        priceHistory,
+        retiredAt: null,
+        missedFullSweeps: 0,
+        detail: result.detail,
+      });
+      return {
+        updateOne: {
+          filter: { key },
+          update: {
+            $set: {
+              listing: result.listing,
+              lastSeen: result.lastSeen,
+              priceHistory,
+              missedFullSweeps: 0,
+              retiredAt: null,
+              ...(result.detail ? { detail: result.detail } : {}),
+            },
+            $setOnInsert: { key, firstSeen: result.firstSeen },
+          },
+          upsert: true,
+        },
+      };
+    });
+    await collection.bulkWrite(operations, { ordered: false });
+  }
+  return saved;
 }
 
 /**
@@ -209,6 +332,39 @@ export async function saveMotoHarvest(harvest: MotoHarvestResult): Promise<{ ups
     );
   }
   return { upserted, retired };
+}
+
+/**
+ * Guarda lo que leyó `sync_motos_detail.ts`. Cada lectura deja rastro (ver ./detailQueue.ts): la
+ * buena reemplaza la ficha y limpia el error; la fallida anota el error SIN tocar la ficha anterior,
+ * que sigue siendo la última verdad que tenemos; el 404/410 anota la baja.
+ */
+export async function saveMotoDetails(
+  result: { details: ReadonlyMap<string, MotoDetail>; gone: readonly string[]; failed: ReadonlyArray<{ key: string; reason: string }> },
+  at: string
+): Promise<number> {
+  await nativeReady();
+  const operations = [
+    ...[...result.details].map(([key, detail]) => ({
+      updateOne: { filter: { key }, update: { $set: { detail, detailError: null, detailGoneAt: null } } },
+    })),
+    ...result.gone.map(key => ({ updateOne: { filter: { key }, update: { $set: { detailGoneAt: at } } } })),
+    ...result.failed.map(({ key, reason }) => ({
+      updateOne: { filter: { key }, update: { $set: { detailError: { at, reason: reason.slice(0, 80) } } } },
+    })),
+  ];
+  for (let index = 0; index < operations.length; index += CHUNK) {
+    await listingsCollection().bulkWrite(operations.slice(index, index + CHUNK), { ordered: false });
+  }
+  return operations.length;
+}
+
+export async function saveMotoDetailMeta(data: Record<string, unknown>, at: string): Promise<void> {
+  await MotoCatalogMetaModel.updateOne(
+    { key: MOTO_DETAIL_META_KEY },
+    { $set: { generatedAt: at, meta: data } },
+    { upsert: true }
+  );
 }
 
 export interface MotoHarvestMetaRecord {

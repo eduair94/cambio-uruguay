@@ -24,11 +24,11 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import type { CarFilterChip } from '~/utils/cars'
-
-defineProps<{ chips: CarFilterChip[] }>()
-const emit = defineEmits<{ remove: [keys: CarFilterChip['keys']]; clear: [] }>()
+<script setup lang="ts" generic="K extends string">
+// Genérico en las claves: lo usan autos (`CarFilterChip`) y motos (`MotoFilterChip`), cada uno con
+// su consulta. El chip sólo necesita una identidad, un texto y qué campos limpia su cruz.
+defineProps<{ chips: Array<{ key: string; label: string; keys: K[] }> }>()
+const emit = defineEmits<{ remove: [keys: K[]]; clear: [] }>()
 </script>
 
 <style scoped>

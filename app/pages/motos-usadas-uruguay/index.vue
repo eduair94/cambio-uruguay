@@ -23,19 +23,24 @@ idioma, aunque la ruta exista bajo /en/ y /pt/ por `prefix_except_default`.
     <header class="mb-6">
       <h1 class="motos-title">Motos usadas en venta en Uruguay: precios por modelo y cilindrada</h1>
       <p class="lead">
-        Los avisos vigentes de motos usadas con el precio, el año, la cilindrada y el departamento,
-        y la ficha de cada modelo con su rango de precios y cuánto pierde por año. Son precios
-        <strong>pedidos en avisos</strong>, no precios de venta cerrados.
+        Los avisos vigentes de motos usadas de Mercado Libre y Facebook Marketplace, con foto,
+        precio, año, kilómetros, cilindrada y departamento, la ficha de cada aviso con su historia
+        de precio y la comparación contra la misma moto, y la ficha de cada modelo con su rango de
+        precios y cuánto pierde por año. Son precios <strong>pedidos en avisos</strong>, no precios
+        de venta cerrados.
         <template v-if="payload.status === 'ok' && payload.total > 0">
           Hoy hay {{ payload.total.toLocaleString('es-UY') }}
-          {{ payload.total === 1 ? 'aviso' : 'avisos' }} con estos filtros<template v-if="readAt">
-            , última lectura el {{ readAt }}</template
-          >.
+          {{ payload.total === 1 ? 'aviso' : 'avisos' }} con estos filtros{{
+            readAt ? `, última lectura el ${readAt}` : ''
+          }}.
         </template>
       </p>
     </header>
 
-    <AssistantCta topic="motos" class="mb-6" />
+    <div class="d-flex flex-wrap ga-2 mb-4">
+      <MotosCompareLink />
+    </div>
+    <AssistantCta topic="motos" :filters="chips.map(chip => chip.label)" class="mb-6" />
 
     <!-- El relevamiento arranca: la página existe antes que el primer dato y lo dice, en vez de
          parecer un mercado vacío. -->
@@ -64,236 +69,166 @@ idioma, aunque la ruta exista bajo /en/ y /pt/ por `prefix_except_default`.
       leer. Probá de nuevo en unos minutos.
     </VAlert>
 
-    <!-- ── Filtros ────────────────────────────────────────────────────────── -->
-    <section v-if="payload.status === 'ok'" class="filters mb-6" aria-label="Filtros">
-      <VRow dense>
-        <VCol cols="12" sm="6" md="3">
-          <VSelect
-            :model-value="query.marca"
-            :items="itemsOf(payload.facets.brands, 'Todas las marcas')"
-            label="Marca"
-            density="compact"
-            variant="outlined"
-            hide-details
-            data-testid="filtro-marca"
-            @update:model-value="value => update({ ...query, marca: value, modelo: '', page: 1 })"
-          />
-        </VCol>
-        <VCol v-if="payload.facets.models.length > 1" cols="12" sm="6" md="3">
-          <VSelect
-            :model-value="query.modelo"
-            :items="itemsOf(payload.facets.models, 'Todos los modelos')"
-            label="Modelo"
-            density="compact"
-            variant="outlined"
-            hide-details
-            @update:model-value="value => update({ ...query, modelo: value, page: 1 })"
-          />
-        </VCol>
-        <VCol cols="12" sm="6" md="3">
-          <VSelect
-            :model-value="query.cilindrada"
-            :items="displacementItems"
-            label="Cilindrada"
-            density="compact"
-            variant="outlined"
-            hide-details
-            data-testid="filtro-cilindrada"
-            @update:model-value="value => update({ ...query, cilindrada: value, page: 1 })"
-          />
-        </VCol>
-        <VCol cols="12" sm="6" md="3">
-          <VSelect
-            :model-value="query.tipo"
-            :items="itemsOf(payload.facets.types, 'Cualquier tipo')"
-            label="Tipo"
-            density="compact"
-            variant="outlined"
-            hide-details
-            @update:model-value="value => update({ ...query, tipo: value, page: 1 })"
-          />
-        </VCol>
-        <VCol cols="12" sm="6" md="3">
-          <VSelect
-            :model-value="query.departamento"
-            :items="itemsOf(payload.facets.departments, 'Todo el país')"
-            label="Departamento"
-            density="compact"
-            variant="outlined"
-            hide-details
-            @update:model-value="value => update({ ...query, departamento: value, page: 1 })"
-          />
-        </VCol>
-        <VCol cols="12" sm="6" md="3">
-          <VSelect
-            :model-value="query.combustible"
-            :items="itemsOf(payload.facets.fuels, 'Cualquier motor')"
-            label="Motor"
-            density="compact"
-            variant="outlined"
-            hide-details
-            @update:model-value="value => update({ ...query, combustible: value, page: 1 })"
-          />
-        </VCol>
-        <VCol cols="6" sm="3" md="2">
-          <VTextField
-            :model-value="query.anioDesde ?? ''"
-            label="Año desde"
-            type="number"
-            density="compact"
-            variant="outlined"
-            hide-details
-            @update:model-value="
-              value => update({ ...query, anioDesde: numberOrNull(value), page: 1 })
-            "
-          />
-        </VCol>
-        <VCol cols="6" sm="3" md="2">
-          <VTextField
-            :model-value="query.anioHasta ?? ''"
-            label="Año hasta"
-            type="number"
-            density="compact"
-            variant="outlined"
-            hide-details
-            @update:model-value="
-              value => update({ ...query, anioHasta: numberOrNull(value), page: 1 })
-            "
-          />
-        </VCol>
-        <VCol cols="12" sm="6" md="4">
-          <VTextField
-            :model-value="query.precioMaxUsd ?? ''"
-            label="Precio máximo"
-            prefix="USD"
-            type="number"
-            density="compact"
-            variant="outlined"
-            hint="En dólares: es la única escala en la que un aviso en pesos y uno en dólares se pueden comparar. Cada aviso se muestra en su propia moneda."
-            persistent-hint
-            data-testid="filtro-precio"
-            @update:model-value="
-              value => update({ ...query, precioMaxUsd: numberOrNull(value), page: 1 })
-            "
-          />
-        </VCol>
-      </VRow>
+    <!--
+      En el celular los filtros son un cajón que se teletransporta al body, así que vive FUERA de la
+      grilla (la misma trampa que autos: adentro de la celda, Vue moría en `shouldUpdateComponent`).
+      Nunca hay dos: o está el cajón, o está la columna.
+    -->
+    <MotosFilters
+      v-if="payload.status === 'ok' && smAndDown"
+      v-model:open="filtersOpen"
+      :query="query"
+      :facets="payload.facets"
+      :total="payload.total"
+      mobile
+      @apply="update"
+    />
 
-      <div v-if="chips.length" class="chips mt-4">
-        <VChip
-          v-for="chip in chips"
-          :key="chip.label"
-          size="small"
-          variant="tonal"
-          closable
-          class="mr-2 mb-2"
-          @click:close="update(motoQueryWithout(query, chip.keys))"
-        >
-          {{ chip.label }}
-        </VChip>
-        <VBtn size="small" variant="text" @click="update(motoNormalizeQuery({}))">
-          Limpiar todo
-        </VBtn>
-      </div>
-    </section>
+    <CarsSidebarLayout v-if="payload.status === 'ok'">
+      <template #filters>
+        <MotosFilters
+          v-if="!smAndDown"
+          :query="query"
+          :facets="payload.facets"
+          :total="payload.total"
+          @apply="update"
+        />
+      </template>
+      <template #default>
+        <CarsToolbar
+          v-if="smAndDown"
+          :sort="query.sort"
+          :items="sortItems"
+          :active-count="chips.length"
+          :open="filtersOpen"
+          @open="filtersOpen = true"
+          @update:sort="value => update({ ...query, sort: value as MotoSort, page: 1 })"
+        />
+        <CarsActiveFilters
+          :chips="chips"
+          @remove="keys => update(motoQueryWithout(query, keys))"
+          @clear="update(motoNormalizeQuery({ sort: query.sort }))"
+        />
+        <div class="results-head">
+          <h2 id="motos-resultados" class="results-title motos-anchor">
+            {{ payload.total.toLocaleString('es-UY') }}
+            {{ payload.total === 1 ? 'aviso' : 'avisos' }}
+          </h2>
+          <div class="results-actions">
+            <RentalAlertButton
+              kind="moto-search"
+              :filters="motoQueryParams(query)"
+              :compact="smAndDown"
+              notify
+            />
+            <VSelect
+              v-if="!smAndDown"
+              :model-value="query.sort"
+              :items="sortItems"
+              label="Ordenar"
+              density="compact"
+              variant="outlined"
+              hide-details
+              class="sort-select"
+              @update:model-value="value => update({ ...query, sort: value, page: 1 })"
+            />
+          </div>
+        </div>
+        <p class="price-note">
+          El filtro de precio va en dólares: es la única escala en la que un aviso en pesos y uno en
+          dólares se pueden comparar. Cada aviso se muestra en su propia moneda.
+        </p>
 
-    <!-- ── Resultados ─────────────────────────────────────────────────────── -->
-    <section v-if="payload.status === 'ok'" class="mb-8">
-      <div class="results-head">
-        <h2 id="motos-resultados" class="results-title motos-anchor">
-          {{ payload.total.toLocaleString('es-UY') }}
-          {{ payload.total === 1 ? 'aviso' : 'avisos' }}
-        </h2>
-        <div class="results-actions">
-          <RentalAlertButton kind="moto-search" :filters="motoQueryParams(query)" notify />
-          <VSelect
-            :model-value="query.sort"
-            :items="sortItems"
-            label="Ordenar"
-            density="compact"
-            variant="outlined"
-            hide-details
-            class="sort-select"
-            @update:model-value="value => update({ ...query, sort: value, page: 1 })"
-          />
+        <p v-if="!payload.items.length" class="empty">
+          No hay avisos con esos filtros. Probá ampliar el año, el precio o la cilindrada.
+        </p>
+
+        <div v-else ref="resultsList" class="motos-grid">
+          <FeedEdge :feed="feed" edge="top" />
+          <template v-for="(item, index) in feed.items" :key="item.key">
+            <FeedAd :index="index" :feed="feed" />
+            <MotosListingCard :moto="item" />
+          </template>
+          <FeedEdge :feed="feed" edge="bottom" />
+        </div>
+
+        <FeedControls :feed="feed">
+          <template #pagination>
+            <VPagination
+              v-if="payload.total > payload.perPage"
+              :model-value="query.page"
+              :length="pageCount"
+              :total-visible="3"
+              class="mt-6"
+              @update:model-value="changePage"
+            />
+          </template>
+        </FeedControls>
+      </template>
+    </CarsSidebarLayout>
+
+    <!-- ── El mercado en números (del informe que publica el mismo job) ───── -->
+    <section
+      v-if="payload.status === 'ok' && market"
+      class="hub-section"
+      aria-labelledby="motos-mercado"
+    >
+      <h2 id="motos-mercado">El mercado en números</h2>
+      <p class="section-note">
+        Sobre {{ market.adverts.toLocaleString('es-UY') }} avisos vigentes sin riesgo declarado. Son
+        medianas de lo que se pide, en dólares. Tocá una fila para ver esos avisos.
+      </p>
+      <div class="market-grid">
+        <div v-if="market.displacements.length" class="market-block">
+          <h3>Por cilindrada</h3>
+          <ul class="market-list">
+            <li v-for="row in market.displacements" :key="row.band">
+              <button
+                v-if="row.band !== 'sin-dato'"
+                type="button"
+                class="market-row"
+                @click="applyShortcut({ cilindrada: row.band })"
+              >
+                <span>{{ row.label }}</span>
+                <span class="market-value">
+                  {{ row.medianUsd ? motoUsd(row.medianUsd) : '—' }}
+                  <small>{{ row.adverts.toLocaleString('es-UY') }} avisos</small>
+                </span>
+              </button>
+            </li>
+          </ul>
+        </div>
+        <div v-if="market.types.length" class="market-block">
+          <h3>Por tipo</h3>
+          <ul class="market-list">
+            <li v-for="row in market.types" :key="row.type">
+              <button type="button" class="market-row" @click="applyShortcut({ tipo: row.type })">
+                <span>{{ motoTypeLabel(row.type) }}</span>
+                <span class="market-value">
+                  <small>{{ row.adverts.toLocaleString('es-UY') }} avisos</small>
+                </span>
+              </button>
+            </li>
+          </ul>
+        </div>
+        <div v-if="market.budgets.length" class="market-block">
+          <h3>Qué se compra con cada presupuesto</h3>
+          <ul class="market-list">
+            <li v-for="row in market.budgets" :key="row.maxUsd">
+              <button
+                type="button"
+                class="market-row"
+                @click="applyShortcut({ precioMaxUsd: String(row.maxUsd) })"
+              >
+                <span>Hasta {{ motoUsd(row.maxUsd) }}</span>
+                <span class="market-value">
+                  <small>{{ row.adverts.toLocaleString('es-UY') }} avisos</small>
+                </span>
+              </button>
+            </li>
+          </ul>
         </div>
       </div>
-
-      <p v-if="!payload.items.length" class="empty">
-        No hay avisos con esos filtros. Probá ampliar el año, el precio o la cilindrada.
-      </p>
-
-      <div v-else class="table-wrap">
-        <VTable class="cu-mobile-cards motos-table" density="compact">
-          <thead>
-            <tr>
-              <th>Moto</th>
-              <th class="text-right">Año</th>
-              <th class="text-right">Cilindrada</th>
-              <th class="text-right">Kilómetros</th>
-              <th>Dónde</th>
-              <th class="text-right">Precio</th>
-            </tr>
-          </thead>
-          <tbody ref="resultsList">
-            <FeedEdge :feed="feed" edge="top" tag="tr" :colspan="6" />
-            <tr v-for="item in feed.items" :key="item.key">
-              <td data-label="Moto">
-                <a
-                  :href="item.permalink"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="moto-link"
-                >
-                  {{ item.title }}
-                </a>
-                <NuxtLink
-                  class="model-link"
-                  :to="localePath(`${MOTOS_PATH}/${motoFichaSlug(item)}`)"
-                >
-                  {{ item.brand }} {{ item.model }}
-                </NuxtLink>
-                <span v-if="item.fuel === 'electrica'" class="tag">Eléctrica</span>
-                <span v-for="flag in item.flags" :key="flag" class="tag tag-flag">
-                  {{ flag }}
-                </span>
-              </td>
-              <td data-label="Año" class="text-right">{{ item.year }}</td>
-              <td data-label="Cilindrada" class="text-right">
-                {{ motoDisplacementLabel(item.displacement) }}
-              </td>
-              <td data-label="Kilómetros" class="text-right">{{ motoKmLabel(item.km) }}</td>
-              <td data-label="Dónde">
-                {{ item.department || 'No informado' }}
-                <span v-if="item.sellerType" class="tag">
-                  {{ MOTO_SELLER_LABEL[item.sellerType] }}
-                </span>
-              </td>
-              <td data-label="Precio" class="text-right price">
-                {{ motoMoney(item.price, item.currency) }}
-                <span v-if="item.currency === 'UYU'" class="usd-note">
-                  ≈ {{ motoUsd(item.priceUsd) }}
-                </span>
-                <span v-if="item.currencyInferred" class="tag">moneda estimada</span>
-              </td>
-            </tr>
-            <FeedEdge :feed="feed" edge="bottom" tag="tr" :colspan="6" />
-          </tbody>
-        </VTable>
-      </div>
-
-      <FeedControls :feed="feed">
-        <template #pagination>
-          <VPagination
-            v-if="payload.total > payload.perPage"
-            :model-value="query.page"
-            :length="pageCount"
-            :total-visible="3"
-            class="mt-6"
-            @update:model-value="changePage"
-          />
-        </template>
-      </FeedControls>
     </section>
 
     <!-- ── Fichas por modelo ──────────────────────────────────────────────── -->
@@ -327,13 +262,19 @@ idioma, aunque la ruta exista bajo /en/ y /pt/ por `prefix_except_default`.
           medir es la oferta.
         </li>
         <li>
-          <strong>La cilindrada sale del título del aviso</strong>, con una expresión explícita
-          ("125 cc", "125cc", "125 c.c."). Si el vendedor no la escribe, el aviso queda sin
-          cilindrada y no entra en ningún tramo: precisión sobre recall, la misma regla que usamos
-          con los kilómetros de los autos.
-          <template v-if="payload.coverage?.withoutDisplacementBand">
+          <strong>La cilindrada sale de la ficha del aviso</strong> en Mercado Libre o, si no está,
+          del título con la unidad escrita ("125 cc"). Cuando el aviso no la dice, la estimamos con
+          lo que declaran los demás avisos del mismo modelo y, si no alcanzan, con el número del
+          nombre del modelo ("GTR 125"): esas van con <strong>≈</strong> y dicen de dónde salen. Un
+          valor que contradice el tramo que el vendedor eligió en Mercado Libre se descarta: las
+          fichas se cargan a mano y a veces dicen «2.000 cc» por 200.
+          <template v-if="payload.coverage?.displacementEstimated">
             Hoy hay
-            {{ payload.coverage.withoutDisplacementBand.toLocaleString('es-UY') }} avisos así.
+            {{ payload.coverage.displacementEstimated.toLocaleString('es-UY') }} avisos con la
+            cilindrada estimada<template v-if="payload.coverage.withoutDisplacement">
+              y {{ payload.coverage.withoutDisplacement.toLocaleString('es-UY') }} sin ningún dato
+              para estimarla</template
+            >.
           </template>
         </li>
         <li>
@@ -347,6 +288,13 @@ idioma, aunque la ruta exista bajo /en/ y /pt/ por `prefix_except_default`.
           porque es lo único comparable entre los dos; la cifra que leés es la del aviso.
         </li>
         <li>
+          <strong>Facebook Marketplace</strong> no trae marca, modelo, año ni moneda como datos: los
+          leemos del texto del aviso y sólo publicamos los que identificamos contra los modelos de
+          Mercado Libre y dicen su año. Cuando el aviso no escribe la moneda, la deducimos
+          comparando con la misma moto en Mercado Libre y lo marcamos como «moneda estimada»: esos
+          avisos nunca entran en los rangos de precio de los modelos.
+        </li>
+        <li>
           Los kilómetros son los que declara quien vende. Los valores de relleno (1, 111.111…) se
           muestran como "km no informado".
         </li>
@@ -355,6 +303,12 @@ idioma, aunque la ruta exista bajo /en/ y /pt/ por `prefix_except_default`.
           —cohorte fija de modelo, año, versión, motor y caja— no tiene equivalente medido en motos,
           y declarar una ganga sin esa cohorte es el error que el directorio de autos ya cometió y
           corrigió: de 125 supuestas gangas quedaron 11 al agregar la versión.
+        </li>
+        <li>
+          Lo que el vendedor declara en el título o la descripción (deuda, papeles, choque,
+          recupero, «no anda») se muestra con su cita en la ficha del aviso, y esas motos no entran
+          en los rangos de precio del modelo. «Sin deuda ni choque declarados» quiere decir que el
+          aviso no lo menciona, no que la moto esté libre.
         </li>
         <li>
           Tampoco publica teléfonos ni nada que esté detrás de un login o un captcha. El enlace va
@@ -392,7 +346,14 @@ idioma, aunque la ruta exista bajo /en/ y /pt/ por `prefix_except_default`.
       </VRow>
     </section>
 
-    <FaqSection :items="faq" heading="Preguntas frecuentes" :expanded="true" class="mb-8" />
+    <!-- :ad="false": el directorio ya lleva su unidad en la grilla (tests/unit/feedAd.test.ts). -->
+    <FaqSection
+      :items="faq"
+      heading="Preguntas frecuentes"
+      :expanded="true"
+      :ad="false"
+      class="mb-8"
+    />
 
     <VAlert type="info" variant="tonal" density="comfortable" icon="mdi-scale-balance">
       Esto es una comparación de precios pedidos en avisos públicos, con su fecha. No es una
@@ -404,6 +365,7 @@ idioma, aunque la ruta exista bajo /en/ y /pt/ por `prefix_except_default`.
 
 <script setup lang="ts">
 import { VPagination } from 'vuetify/components'
+import { useDisplay } from 'vuetify'
 import { DIRECTORIOS_HUB, directoriosHubListItem } from '~/utils/directorios'
 import RentalAlertButton from '~/components/rentals/RentalAlertButton.vue'
 import RentalAlertDialogHost from '~/components/rentals/RentalAlertDialogHost.vue'
@@ -413,41 +375,55 @@ import {
   MOTOS_AUTOS_PATH,
   MOTOS_COMPARADOR_PATH,
   MOTOS_PATH,
-  MOTO_DISPLACEMENT_BUCKETS,
-  MOTO_SELLER_LABEL,
+  MOTO_SORT_ITEMS,
   motoCilindradaAnswer,
-  motoDisplacementLabel,
   motoEmptyList,
-  motoFichaSlug,
   motoFilterChips,
   motoFiltered,
-  motoKmLabel,
   motoLongDate,
-  motoMoney,
   motoNormalizeQuery,
   motoPrecioTipicoAnswer,
   motoQueryParams,
   motoQueryWithout,
+  motoTypeLabel,
   motoUsd,
-  type MotoFacet,
   type MotoListResponse,
+  type MotoMarketSummary,
   type MotoQuery,
   type MotoSort,
 } from '~/utils/motos'
 
+// Directorio: filtros + grilla con el ancho del marco, como autos (`.container_custom--wide`).
+definePageMeta({ wide: true })
 const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()
+const { smAndDown } = useDisplay()
+const filtersOpen = ref(false)
+// El cajón es sólo del celular: si la ventana crece con él abierto, la columna ya está a la vista.
+watch(smAndDown, mobile => {
+  if (!mobile) filtersOpen.value = false
+})
 
 const query = computed<MotoQuery>(() => motoNormalizeQuery(route.query as Record<string, unknown>))
 
 // Server-rendered: los precios tienen que estar en el HTML que lee el buscador, no llegar después
 // por un fetch client-only.
-const { data } = await useAsyncData(
-  'motos-directorio',
-  () => $fetch<MotoListResponse>('/api/motos', { query: motoQueryParams(query.value) }),
-  { watch: [query] }
-)
+// El mercado en números sale del informe que publica el mismo job, en paralelo y con un tope corto:
+// si tarda o falla, el bloque no se dibuja y la lista sí (la misma regla que autos).
+const [{ data }, { data: marketData }] = await Promise.all([
+  useAsyncData(
+    'motos-directorio',
+    () => $fetch<MotoListResponse>('/api/motos', { query: motoQueryParams(query.value) }),
+    { watch: [query] }
+  ),
+  useAsyncData('motos-directorio-mercado', () =>
+    $fetch<MotoMarketSummary | null>('/api/motos/informe', { timeout: 2500, retry: 0 }).catch(
+      () => null
+    )
+  ),
+])
+const market = computed(() => marketData.value ?? null)
 
 /**
  * La respuesta, con la forma vacía como piso. Sin esto un fallo de red deja `data.value` en `null`
@@ -484,26 +460,7 @@ const feed = useInfiniteFeed<MotoListResponse['items'][number]>({
 
 const readAt = computed(() => motoLongDate(payload.value.coverage?.lastReadAt || null))
 
-/** Un facet como `:items` de un VSelect, con la opción "todas" adelante. */
-function itemsOf(facets: readonly MotoFacet[], allLabel: string) {
-  return [
-    { title: allLabel, value: '' },
-    ...facets.map(facet => ({ title: `${facet.label} (${facet.count})`, value: facet.value })),
-  ]
-}
-
-const displacementItems = [
-  { title: 'Cualquier cilindrada', value: '' },
-  ...MOTO_DISPLACEMENT_BUCKETS.map(bucket => ({ title: bucket.label, value: bucket.id })),
-]
-
-const sortItems: Array<{ title: string; value: MotoSort }> = [
-  { title: 'Vistos más recientemente', value: 'recent' },
-  { title: 'Menor precio', value: 'price_asc' },
-  { title: 'Mayor precio', value: 'price_desc' },
-  { title: 'Más nuevas', value: 'year_desc' },
-  { title: 'Menos kilómetros', value: 'km_asc' },
-]
+const sortItems = [...MOTO_SORT_ITEMS]
 
 const chips = computed(() => motoFilterChips(query.value, payload.value.facets))
 
@@ -517,14 +474,9 @@ const sourceLine = computed(() =>
     .join(' · ')
 )
 
-/** Un campo numérico vacío es `NaN`, no cero: el filtro se cae en vez de quedar en "hasta 0". */
-function numberOrNull(value: unknown): number | null {
-  const parsed = Number(value)
-  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : null
-}
-
 const track = useTrack()
 function update(next: MotoQuery) {
+  filtersOpen.value = false
   const params = motoQueryParams(next)
   // Todo cambio de filtro pasa por acá: qué filtro, por nombre y sin valor
   // (utils/directoryFilterTracking.ts). La carga de la página no pasa, así que no cuenta.
@@ -534,6 +486,12 @@ function update(next: MotoQuery) {
 
 function changePage(page: number) {
   update({ ...query.value, page })
+  scrollToPageTop('motos-resultados')
+}
+
+/** Un atajo del mercado en números reemplaza los filtros, conserva el orden y sube a la lista. */
+function applyShortcut(params: Record<string, string>) {
+  update(motoNormalizeQuery({ ...params, sort: query.value.sort }))
   scrollToPageTop('motos-resultados')
 }
 
@@ -561,6 +519,12 @@ const faq = computed<FaqItem[]>(() => [
     question: '¿Publican oportunidades o gangas?',
     answer:
       'Todavía no. La regla que usa el directorio de autos exige una cohorte fija de modelo, año, versión, motor y caja, y en motos no tenemos un equivalente medido. Declarar una ganga sin esa cohorte es el error que autos ya cometió y corrigió: de 125 supuestas gangas quedaron 11 cuando se agregó la versión.',
+  },
+  {
+    id: 'motos-cilindrada-estimada',
+    question: '¿Qué quiere decir la cilindrada con «≈»?',
+    answer:
+      'Que el aviso no la dice y la estimamos. Primero buscamos la cilindrada en la ficha del aviso y en el título; si no está, usamos la que declaran los demás avisos del mismo modelo (con al menos tres que coincidan) y, si no alcanzan, el número del nombre del modelo. La estimada ubica a la moto en su tramo, pero puede no ser el número exacto: confirmalo con el vendedor.',
   },
   {
     id: 'motos-electricas',
@@ -639,8 +603,81 @@ useHead(() => ({
 </script>
 
 <style scoped>
-.motos-hub {
-  max-width: 1120px;
+.motos-grid {
+  display: grid;
+  /* En el celular la ficha es una fila a todo el ancho; desde 600 px, tarjetas con foto. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+@media (min-width: 600px) {
+  .motos-grid {
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 16px;
+  }
+}
+.price-note {
+  margin: 0 0 12px;
+  font-size: 0.8rem;
+  max-width: 72ch;
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+}
+.market-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+.market-block {
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+.market-block h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.market-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.market-row {
+  display: flex;
+  width: 100%;
+  min-height: 40px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border: 0;
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.market-list li:first-child .market-row {
+  border-top: 0;
+}
+.market-row:hover span:first-child {
+  text-decoration: underline;
+}
+.market-row:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-link));
+  outline-offset: 2px;
+}
+.market-value {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.market-value small {
+  display: block;
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
 }
 /* Rol Display de DESIGN.md (el idiom .hero-title): a tamaño fijo un título de 60+ caracteres ocupa
    cinco líneas a 390 px de ancho. */
@@ -707,46 +744,6 @@ useHead(() => ({
   /* La barra del sitio es fixed (65 px): sin este margen el encabezado de la lista queda tapado
      justo después de paginar. */
   scroll-margin-top: 84px;
-}
-.table-wrap {
-  overflow-x: auto;
-}
-.motos-table .price {
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-.moto-link {
-  color: rgb(var(--v-theme-link));
-  font-weight: 600;
-  text-decoration: none;
-}
-.moto-link:hover {
-  text-decoration: underline;
-}
-.model-link {
-  display: block;
-  margin-top: 2px;
-  font-size: 0.8rem;
-  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
-}
-.usd-note {
-  display: block;
-  font-size: 0.8rem;
-  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
-}
-.tag {
-  display: inline-block;
-  margin-left: 6px;
-  padding: 1px 6px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  background: rgba(var(--v-theme-on-surface), 0.08);
-  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
-}
-/* Lo que declara el VENDEDOR (deuda, choque, papeles) se marca, pero sin color de sentimiento: no
-   es un veredicto nuestro sobre el aviso, es la palabra que él escribió. */
-.tag-flag {
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 .model-row {
   display: flex;

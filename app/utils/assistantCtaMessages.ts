@@ -7,7 +7,7 @@ import type { AssistantTopic } from './assistantPrompt'
  *
  * vue-i18n parses these strings: no `|` or `@`, and `{filters}` is the only placeholder.
  */
-export type AssistantCtaGroup = 'vivienda' | 'autos' | 'productos'
+export type AssistantCtaGroup = 'vivienda' | 'autos' | 'motos' | 'productos'
 
 export const ASSISTANT_CTA_GROUP: Readonly<Record<AssistantTopic, AssistantCtaGroup>> = {
   alquiler: 'vivienda',
@@ -16,7 +16,8 @@ export const ASSISTANT_CTA_GROUP: Readonly<Record<AssistantTopic, AssistantCtaGr
   oportunidadesVenta: 'vivienda',
   autos: 'autos',
   oportunidadesAutos: 'autos',
-  motos: 'autos',
+  // Motos tenía el texto de autos ('busca entre los autos publicados'): desde el 23/11/2026 el suyo.
+  motos: 'motos',
   equipar: 'productos',
   celulares: 'productos',
   sillas: 'productos',
@@ -41,6 +42,7 @@ export const assistantCtaMessages = {
     title: {
       vivienda: '¿No sabés cuál elegir? Preguntale a la IA',
       autos: '¿No sabés cuál elegir? Preguntale a la IA',
+      motos: '¿No sabés cuál elegir? Preguntale a la IA',
       productos: '¿No sabés qué comprar? Preguntale a la IA',
     },
     text: {
@@ -48,6 +50,8 @@ export const assistantCtaMessages = {
         'Contale tu presupuesto, dónde trabajás y lo que necesitás: el asistente busca entre estos avisos y te arma una lista corta con los links.',
       autos:
         'Contale tu presupuesto y para qué lo querés: el asistente busca entre los autos publicados, los compara con autos iguales y te dice cuáles valen la pena.',
+      motos:
+        'Contale tu presupuesto y para qué la querés: el asistente busca entre las motos publicadas, las compara con la misma moto y te dice cuáles valen la pena.',
       productos:
         'Contale qué necesitás y cuánto querés gastar: el asistente busca en los precios que relevamos cada día y te dice dónde está más barato.',
     },
@@ -95,6 +99,7 @@ export const assistantCtaMessages = {
     title: {
       vivienda: 'Not sure which one to pick? Ask the AI',
       autos: 'Not sure which one to pick? Ask the AI',
+      motos: 'Not sure which one to pick? Ask the AI',
       productos: 'Not sure what to buy? Ask the AI',
     },
     text: {
@@ -102,6 +107,8 @@ export const assistantCtaMessages = {
         'Tell it your budget, where you work and what you need: the assistant searches these listings and gives you a short list with links.',
       autos:
         'Tell it your budget and what you need the car for: the assistant searches the listed cars, compares them with identical ones and tells you which are worth it.',
+      motos:
+        'Tell it your budget and what you need the motorcycle for: the assistant searches the listed motorcycles, compares them with the same model and tells you which are worth it.',
       productos:
         'Tell it what you need and how much you want to spend: the assistant searches the prices we collect every day and tells you where it is cheapest.',
     },
@@ -150,6 +157,7 @@ export const assistantCtaMessages = {
     title: {
       vivienda: 'Não sabe qual escolher? Pergunte à IA',
       autos: 'Não sabe qual escolher? Pergunte à IA',
+      motos: 'Não sabe qual escolher? Pergunte à IA',
       productos: 'Não sabe o que comprar? Pergunte à IA',
     },
     text: {
@@ -157,6 +165,8 @@ export const assistantCtaMessages = {
         'Conte seu orçamento, onde você trabalha e do que precisa: o assistente busca entre estes anúncios e monta uma lista curta com os links.',
       autos:
         'Conte seu orçamento e para que quer o carro: o assistente busca entre os carros anunciados, compara com carros iguais e diz quais valem a pena.',
+      motos:
+        'Conte seu orçamento e para que quer a moto: o assistente busca entre as motos anunciadas, compara com o mesmo modelo e diz quais valem a pena.',
       productos:
         'Conte do que precisa e quanto quer gastar: o assistente busca nos preços que coletamos todos os dias e diz onde está mais barato.',
     },

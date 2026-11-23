@@ -6,6 +6,9 @@
 // expresión explícita (./identify.ts) y si no está queda en `null` — precisión sobre recall, la
 // misma regla que celulares.
 
+import type { CarRisk } from "../autos/risk";
+import type { MotoDisplacementBasis } from "./displacement";
+
 /** Las únicas dos monedas que publica Mercado Libre Uruguay. */
 export type MotoCurrency = "USD" | "UYU";
 
@@ -14,7 +17,7 @@ export type MotoCurrency = "USD" | "UYU";
  * `"mercadolibre"`) porque la precedencia de `dedupeMotos` y la tabla de `MOTO_SOURCES` son el
  * lugar donde entra la segunda, y así agregarla es una línea y no un refactor.
  */
-export type MotoSource = "mercadolibre";
+export type MotoSource = "mercadolibre" | "facebook";
 
 /** Nafta salvo prueba en contrario. La eléctrica NUNCA se promedia con las de nafta (ver ./catalog.ts). */
 export type MotoFuel = "nafta" | "electrica" | "hibrida" | "diesel";
@@ -59,8 +62,32 @@ export type MotoType =
  */
 export type MotoDisplacementBandId = "hasta-125" | "126-250" | "mas-250";
 
-/** De dónde salió el dato: la faceta aplicada del origen, o la palabra del título. Nunca se mezcla. */
-export type MotoEvidence = "mercadolibre" | "title";
+/**
+ * De dónde salió el dato: la faceta aplicada del origen, la ficha propia del aviso o la palabra del
+ * título. Nunca se mezcla.
+ */
+export type MotoEvidence = "mercadolibre" | "ficha" | "title";
+
+/** La base de la cilindrada (ver ./displacement.ts): dos son dato del aviso, dos son estimación. */
+export type { MotoDisplacementBasis } from "./displacement";
+
+/**
+ * La ficha técnica que el VENDEDOR cargó en Mercado Libre, curada: sólo filas vistas en fichas reales
+ * y con un valor que se puede leer. No se verifica; la página lo dice.
+ */
+export interface PublicMotoSpecs {
+  /** "2 tiempos" o "4 tiempos". */
+  engine: string | null;
+  brakes: string | null;
+  transmission: string | null;
+  gears: number | null;
+  /** "77 hp", sólo si la unidad es hp/cv/kW y el número es plausible para la cilindrada. */
+  power: string | null;
+  uniqueOwner: boolean | null;
+  tradeIn: boolean | null;
+  negotiable: boolean | null;
+  readAt: string;
+}
 
 export interface RawMotoListing {
   id: string;
@@ -84,6 +111,8 @@ export interface RawMotoListing {
   pictureCount: number | null;
   permalink: string;
   observedAt: string;
+  /** La moneda la DEDUJO el lector (Facebook dice "UYU" aunque el vendedor pida dólares). */
+  currencyInferred?: boolean;
 }
 
 export interface MotoPricePoint {
@@ -110,6 +139,31 @@ export interface MotoFacetEvidence {
   readAt: string;
 }
 
+/**
+ * La ficha propia del aviso (`moto.mercadolibre.com.uy/MLU-…`), leída por `sync_motos_detail.ts`.
+ *
+ * Privada entera: lo que cruza al público se arma campo por campo en ./catalog.ts. La tabla cruda
+ * (`specs`) y la descripción se guardan para poder auditar y para que un lector mejor se aplique
+ * sin volver a pedir nada.
+ */
+export interface MotoDetail {
+  readAt: string;
+  price: number;
+  currency: MotoCurrency;
+  /** `item_status` de la página: un aviso pausado o finalizado contesta 200 con otro estado. */
+  active: boolean;
+  /** La tabla «Características principales» tal cual, etiqueta → valor. */
+  specs: Record<string, string>;
+  /** La fila «Cilindrada», ya leída (null si no está o no es una cilindrada). */
+  displacement: number | null;
+  /** La fila «Tipo de moto»: casi siempre la etiqueta de ML ("Naked", "Scooters"), a veces texto libre. */
+  typeText: string | null;
+  color: string | null;
+  /** La galería propia, hasta 8 fotos del host de imágenes de ML. */
+  pictures: string[];
+  description: string;
+}
+
 /** Lo que se guarda por aviso en la colección PRIVADA `motolistings`. */
 export interface StoredMoto {
   key: string;
@@ -121,6 +175,12 @@ export interface StoredMoto {
   missedFullSweeps: number;
   /** Lo que declararon las facetas de ML la última vez que una corrida completa las barrió. */
   facets?: MotoFacetEvidence | null;
+  /** La última ficha leída bien. Una lectura fallida nunca la borra. */
+  detail?: MotoDetail | null;
+  /** La última lectura fallida (red, 5xx, página sin ficha): espera un día antes de reintentar. */
+  detailError?: { at: string; reason: string } | null;
+  /** Cuándo la ficha contestó 404/410: el aviso ya no existe y no se repide por una semana. */
+  detailGoneAt?: string | null;
 }
 
 /** Un aviso con todo lo derivado ya calculado. Sigue siendo interno. */
@@ -131,12 +191,16 @@ export interface MotoListing extends RawMotoListing {
   modelSlug: string;
   /** `marca-modelo`: la cohorte de la ficha del modelo. */
   marketSlug: string;
-  /** Centímetros cúbicos leídos del título, o null si el título no los dice. */
+  /** La mejor cilindrada que hay (ver ./displacement.ts), o null. */
   displacement: number | null;
-  displacementBasis: MotoEvidence | null;
-  /** El tramo: de la faceta del origen si la corrida la barrió, si no derivado de la cilindrada exacta. */
+  displacementBasis: MotoDisplacementBasis | null;
+  /** Cuántos avisos del modelo sostienen la estimación, con base `model`. */
+  displacementVotes: number | null;
+  /** Sólo el DATO del aviso (ficha o título): lo único que entra a una estadística por cilindrada. */
+  exactDisplacement: number | null;
+  /** El tramo: de la faceta del origen si la corrida la barrió, si no derivado de la cilindrada. */
   displacementBand: MotoDisplacementBandId | null;
-  displacementBandBasis: MotoEvidence | null;
+  displacementBandBasis: MotoEvidence | MotoDisplacementBasis | null;
   type: MotoType | null;
   typeBasis: MotoEvidence | null;
   /** `marca|modelo|cilindrada`: la identidad de producto de la spec. */
@@ -151,6 +215,15 @@ export interface MotoListing extends RawMotoListing {
   firstSeen: string;
   lastSeen: string;
   priceDrop: { from: number; currency: MotoCurrency; since: string } | null;
+  /** La galería propia de la ficha, o vacía si todavía no se leyó. */
+  pictures: string[];
+  /** Familia de color (`classes/autos/bodyType.ts`), de la ficha. */
+  color: string | null;
+  specs: PublicMotoSpecs | null;
+  /** Lo que el VENDEDOR declara en título y descripción (deuda, choque…), con su cita. */
+  risks: CarRisk[];
+  /** La ficha propia, tal cual se leyó (privada: no cruza al público). */
+  detail: MotoDetail | null;
 }
 
 export interface MotoHarvestGap {
@@ -244,9 +317,10 @@ export interface PublicMotoListing {
   priceConverted: boolean;
   currencyInferred: boolean;
   displacement: number | null;
-  displacementBasis: MotoEvidence | null;
+  displacementBasis: MotoDisplacementBasis | null;
+  displacementVotes: number | null;
   displacementBand: MotoDisplacementBandId | null;
-  displacementBandBasis: MotoEvidence | null;
+  displacementBandBasis: MotoEvidence | MotoDisplacementBasis | null;
   type: MotoType | null;
   typeBasis: MotoEvidence | null;
   fuel: MotoFuel | null;
@@ -260,6 +334,13 @@ export interface PublicMotoListing {
   lastSeen: string;
   priceDrop: { from: number; currency: MotoCurrency; since: string } | null;
   flags: string[];
+  /** La galería propia (hasta 8), sin la portada repetida adelante si coincide. */
+  pictures: string[];
+  color: string | null;
+  specs: PublicMotoSpecs | null;
+  risks: Array<Pick<CarRisk, "category" | "severity" | "quote" | "from">>;
+  /** Si la ficha propia del aviso ya se leyó. */
+  hasDetail: boolean;
 }
 
 export interface PublicMotoSourceCoverage {
@@ -283,10 +364,14 @@ export interface PublicMotoCatalogMeta {
   lastFullReadAt: string | null;
   lastReadAt: string | null;
   reportedTotal: number | null;
-  /** Cuántos avisos no dicen su cilindrada exacta. Se publica: la ausencia se declara, no se estima. */
+  /** Cuántos avisos quedan sin cilindrada, ni del aviso ni estimada. La ausencia se declara. */
   withoutDisplacement: number;
   /** Y cuántos ni siquiera tienen tramo, que es el dato que sí tiene casi todo el catálogo. */
   withoutDisplacementBand: number;
+  /** Cuántos llevan una cilindrada ESTIMADA (consenso del modelo o nombre del modelo). */
+  displacementEstimated: number;
+  /** Cuántos tienen la ficha propia leída. */
+  withDetail: number;
   models: Array<{ slug: string; brand: string; model: string; listings: number }>;
   sources: PublicMotoSourceCoverage[];
 }

@@ -10,6 +10,9 @@ import {
   MOTO_FRESH_DAYS_FALLBACK,
   MOTO_META_ID,
   motoCoverageOf,
+  motoAvisoKeyValid,
+  motoAvisoPath,
+  motoDisplacementText,
   motoMatch,
   motoNormalizeQuery,
 } from '../../utils/motos'
@@ -88,8 +91,9 @@ export function carAlertCandidate(row: Row): RentalAlertCandidate | null {
   ])
 }
 
-/** Motos have no page per advert: link the original only when it is Mercado Libre Uruguay. */
-const MOTO_PERMALINK = /^https:\/\/(?:[a-z0-9-]+\.)*mercadolibre\.com\.uy\/\S*$/i
+/** The advert's own page on the site (since 2026-11-23), plus the original when it is ML Uruguay. */
+const MOTO_PERMALINK =
+  /^https:\/\/(?:(?:[a-z0-9-]+\.)*mercadolibre\.com\.uy\/\S*|www\.facebook\.com\/marketplace\/item\/\d{6,20}\/)$/i
 export function motoAlertCandidate(row: Row): RentalAlertCandidate | null {
   const price = money(row.price, row.currency)
   if (typeof row.key !== 'string' || !/^[\w-]{1,80}$/.test(row.key) || !price) return null
@@ -98,8 +102,18 @@ export function motoAlertCandidate(row: Row): RentalAlertCandidate | null {
     `moto:${row.key}`,
     row,
     price,
-    '/motos-usadas-uruguay',
-    [year(row.year), count(row.displacement, 'cc'), text(row.department, 100)],
+    motoAvisoKeyValid(row.key) ? motoAvisoPath(row.key) : '/motos-usadas-uruguay',
+    [
+      year(row.year),
+      // La misma marca que la página: una cilindrada estimada nunca se avisa como dato del aviso.
+      typeof row.displacement === 'number' && row.displacement > 0
+        ? motoDisplacementText({
+            displacement: row.displacement,
+            displacementBasis: row.displacementBasis ?? null,
+          })
+        : null,
+      text(row.department, 100),
+    ],
     MOTO_PERMALINK.test(permalink) && permalink.length <= 500 ? { link: permalink } : {}
   )
 }

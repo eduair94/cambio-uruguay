@@ -90,6 +90,10 @@ describe('listing alert candidates', () => {
       facts: ['2022', '110 cc', 'Canelones'],
     })
     expect(motoAlertCandidate({ ...row, permalink: 'http://evil.example/x' })?.link).toBeUndefined()
+    // Una cilindrada estimada se avisa como estimada, igual que en la página.
+    expect(
+      motoAlertCandidate({ ...row, displacementBasis: 'model', permalink: '' })?.facts
+    ).toEqual(['2022', '≈ 110 cc', 'Canelones'])
     expect(
       motoAlertCandidate({ ...row, permalink: 'https://mercadolibre.com.uy.evil.example/x' })?.link
     ).toBeUndefined()

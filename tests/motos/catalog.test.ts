@@ -91,7 +91,7 @@ describe("el catálogo", () => {
   it("deja afuera lo que no se ve hace más de cuatro días y cuenta lo que no declara cilindrada", () => {
     const fresco = listing({ id: "200001", title: "Yumbo Gs 200 Cc 2020" });
     const viejo = { ...listing({ id: "200002" }), lastSeen: "2026-09-10T00:00:00.000Z" };
-    const sinCc = listing({ id: "200003", title: "Yumbo Gs 2020 impecable" });
+    const sinCc = listing({ id: "200003", title: "Yumbo Gs 2020 impecable", model: "GS" });
     const catalog = buildMotoCatalog([fresco, viejo, sinCc], {
       now: NOW,
       generatedAt: NOW.toISOString(),
@@ -195,6 +195,8 @@ describe("cobertura y duplicados", () => {
     const coverage = motoSourceCoverage(rows, { mercadolibre: 2 }, new Map([["mercadolibre", { lastOkAt: SEEN, ok: true }]]));
     expect(coverage).toEqual([
       { source: "mercadolibre", name: "Mercado Libre", listings: 1, duplicates: 2, lastReadAt: SEEN, ok: true },
+      // Facebook Marketplace es fuente desde el 23/11/2026: sin lectura en esta corrida, lo dice.
+      { source: "facebook", name: "Facebook Marketplace", listings: 0, duplicates: 0, lastReadAt: null, ok: false },
     ]);
   });
 

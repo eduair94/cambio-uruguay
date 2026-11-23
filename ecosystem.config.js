@@ -321,6 +321,18 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // La ficha propia de cada aviso de moto (classes/motos/detail.ts): cilindrada, color, tipo,
+      // galería y lo que declara la descripción. Va directo a moto.mercadolibre.com.uy, como
+      // currency-autos-detail (:11) y currency-rentals-ml-detail (:35): a los :51 ya terminaron las
+      // dos. 120 fichas a 2 s, unos cinco minutos; la toma currency-motos-hourly a los :44.
+      name: "currency-motos-detail",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_motos_detail.js",
+      cron_restart: "51 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Medidor de uso de la API (claves de empresas, classes/apikeys/): copia el hash de Redis de
       // ayer y de hoy a Mongo `api_usage_days` y anota el último uso de cada clave. Fuera de la API
       // porque currency-server es cluster ×2 y nada programado puede vivir adentro.

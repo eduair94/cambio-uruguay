@@ -58,6 +58,7 @@ export const PUBLIC_EXCLUDED_PATHS: readonly string[] = Object.freeze([
   "/monopatines-electricos-uruguay/comparar",
   "/bicicletas-electricas-uruguay/comparar",
   "/autos-usados-uruguay/comparar",
+  "/motos-usadas-uruguay/comparar",
   "/contactos-comerciales",
   "/buscar",
   "/conectar",

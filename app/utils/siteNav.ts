@@ -5233,6 +5233,8 @@ export const EXCLUDED_ROUTES: readonly string[] = Object.freeze([
   // para "comparar autos usados" es /comparar-autos-usados-uruguay (modelos); se llega desde el
   // directorio, las tarjetas y cada ficha.
   '/autos-usados-uruguay/comparar',
+  // El de avisos de motos, igual (23/11/2026).
+  '/motos-usadas-uruguay/comparar',
 ])
 
 /**
@@ -5261,6 +5263,7 @@ export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freez
   'venta-viviendas-uruguay/[key]': 'consumer',
   'autos-usados-uruguay/[key]': 'consumer',
   'motos-usadas-uruguay/[key]': 'consumer',
+  'motos-usadas-uruguay/aviso/[key]': 'consumer',
   'autos-usados-uruguay/precios/[slug]': 'consumer',
   'inmobiliarias-uruguay/[key]': 'consumer',
   'blog/[slug]': 'news',

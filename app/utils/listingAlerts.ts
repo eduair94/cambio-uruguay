@@ -34,6 +34,8 @@ const PRESENTATION = new Set([
   'keys',
   'sinceDays',
   'recent',
+  // El "publicado en los últimos N días" de motos: la misma idea que `sinceDays` de autos.
+  'dias',
   'refLat',
   'refLng',
   'refLabel',

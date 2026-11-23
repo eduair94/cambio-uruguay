@@ -158,51 +158,11 @@ FAMILY: Sólo español; canonical literal y absoluto.
         <template v-else>
           <p class="section-note">
             Los {{ listings.length }} más baratos de {{ listingsTotal.toLocaleString('es-UY') }},
-            cada uno en la moneda en la que se publicó. El enlace va al aviso original.
+            cada uno en la moneda en la que se publicó. Cada uno tiene su ficha, con la historia de
+            su precio y el enlace al aviso original.
           </p>
-          <div class="table-wrap">
-            <VTable class="cu-mobile-cards moto-table" density="compact">
-              <thead>
-                <tr>
-                  <th>Aviso</th>
-                  <th class="text-right">Año</th>
-                  <th class="text-right">Kilómetros</th>
-                  <th>Dónde</th>
-                  <th class="text-right">Precio</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="item in listings" :key="item.key">
-                  <td data-label="Aviso">
-                    <a
-                      :href="item.permalink"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="moto-link"
-                    >
-                      {{ item.title }}
-                    </a>
-                    <span v-for="flag in item.flags" :key="flag" class="tag tag-flag">
-                      {{ flag }}
-                    </span>
-                  </td>
-                  <td data-label="Año" class="text-right">{{ item.year }}</td>
-                  <td data-label="Kilómetros" class="text-right">{{ motoKmLabel(item.km) }}</td>
-                  <td data-label="Dónde">
-                    {{ item.department || 'No informado' }}
-                    <span v-if="item.sellerType" class="tag">
-                      {{ MOTO_SELLER_LABEL[item.sellerType] }}
-                    </span>
-                  </td>
-                  <td data-label="Precio" class="text-right price">
-                    {{ motoMoney(item.price, item.currency) }}
-                    <span v-if="item.currency === 'UYU'" class="usd-note">
-                      ≈ {{ motoUsd(item.priceUsd) }}
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </VTable>
+          <div class="motos-grid">
+            <MotosListingCard v-for="item in listings" :key="item.key" :moto="item" />
           </div>
         </template>
       </section>
@@ -290,13 +250,11 @@ import type { FaqItem } from '~/utils/faqAnswers'
 import {
   MOTOS_COMPARADOR_PATH,
   MOTOS_PATH,
-  MOTO_SELLER_LABEL,
   motoDepreciacionAnswer,
   motoDisplacementLabel,
   motoKmLabel,
   motoLongDate,
   motoModelName,
-  motoMoney,
   motoTypeLabel,
   motoUsd,
   motoYearRange,
@@ -496,6 +454,18 @@ useHead(() => ({
 </script>
 
 <style scoped>
+.motos-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+@media (min-width: 600px) {
+  .motos-grid {
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 16px;
+  }
+}
 .moto-ficha {
   max-width: 1000px;
 }
@@ -556,33 +526,6 @@ useHead(() => ({
 .moto-table .price {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-}
-.moto-link {
-  color: rgb(var(--v-theme-link));
-  font-weight: 600;
-  text-decoration: none;
-}
-.moto-link:hover {
-  text-decoration: underline;
-}
-.usd-note {
-  display: block;
-  font-size: 0.8rem;
-  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
-}
-.tag {
-  display: inline-block;
-  margin-left: 6px;
-  padding: 1px 6px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  background: rgba(var(--v-theme-on-surface), 0.08);
-  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
-}
-/* Lo que declara el VENDEDOR se marca sin color de sentimiento: no es un veredicto nuestro sobre el
-   aviso, es la palabra que él escribió. */
-.tag-flag {
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 .sibling-row {
   display: flex;
