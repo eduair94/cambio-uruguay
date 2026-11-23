@@ -10,7 +10,7 @@ export const parejaGuides: readonly Guide[] = [
     slug: 'regimen-patrimonial-matrimonio-uruguay',
     title: 'Al casarte rige la sociedad conyugal',
     description:
-      'En Uruguay, al casarte rige la sociedad conyugal salvo que pactes capitulaciones: qué son los bienes propios, los gananciales y la separación de bienes.',
+      'Lo que traías y lo que heredás queda tuyo; lo comprado durante el matrimonio se reparte por mitades, sin importar a nombre de quién figure.',
     tag: 'MATRIMONIO',
     updatedAt: '2026-07-18',
     sections: [
@@ -52,7 +52,7 @@ export const parejaGuides: readonly Guide[] = [
     slug: 'separacion-de-bienes-uruguay',
     title: 'Separación de bienes: se pacta antes',
     description:
-      'Qué es el régimen de separación de bienes en Uruguay, cómo pactarlo por capitulaciones ante escribano y cuándo conviene elegirlo.',
+      'Capitulaciones ante escribano antes del casamiento, inscriptas en Actos Personales. Ya casados no se pueden otorgar: queda la disolución judicial.',
     tag: 'BIENES',
     updatedAt: '2026-07-18',
     sections: [
@@ -163,7 +163,7 @@ export const parejaGuides: readonly Guide[] = [
     slug: 'como-dividir-gastos-en-pareja-uruguay',
     title: 'Gastos en pareja: 50/50, proporcional, pozo',
     description:
-      'Métodos prácticos para dividir los gastos en pareja: 50/50, proporcional al ingreso o pozo común, con sus ventajas y cómo elegir sin conflictos.',
+      'Ninguna ley fija el reparto: el 50/50 sirve si ganan parecido y, si hay brecha, cada uno aporta el porcentaje que pone del ingreso del hogar.',
     tag: 'PAREJA',
     updatedAt: '2026-07-18',
     sections: [
@@ -223,7 +223,7 @@ export const parejaGuides: readonly Guide[] = [
     slug: 'cuenta-conjunta-o-separada-pareja-uruguay',
     title: 'Cuenta conjunta: cualquiera retira todo',
     description:
-      'Cuenta conjunta, separada o mixta: cómo organizar las finanzas de pareja en Uruguay, cómo funciona una cuenta conjunta y qué riesgos tiene.',
+      'La cuenta conjunta indistinta se opera con una sola firma y queda expuesta al embargo de cualquiera de los dos: el saldo suele presumirse de ambos.',
     tag: 'FINANZAS',
     updatedAt: '2026-07-18',
     sections: [
@@ -265,7 +265,7 @@ export const parejaGuides: readonly Guide[] = [
     slug: 'hablar-de-dinero-en-pareja-uruguay',
     title: 'Dinero en pareja: no esconder las deudas',
     description:
-      'Cómo hablar de dinero en pareja sin conflictos: transparencia, objetivos comunes, presupuesto compartido y cómo manejar estilos distintos.',
+      'Lo que rompe la confianza es la deuda oculta, no el monto. Ayudan los números sobre la mesa, una revisión mensual y plata propia sin rendir cuentas.',
     tag: 'PAREJA',
     updatedAt: '2026-07-18',
     sections: [
@@ -353,7 +353,7 @@ export const parejaGuides: readonly Guide[] = [
     slug: 'proteger-tu-patrimonio-en-pareja-uruguay',
     title: 'En pareja, sin prueba se presume ganancial',
     description:
-      'Herramientas legítimas para proteger tu patrimonio en pareja en Uruguay: capitulaciones, separación de bienes, testamento y documentar aportes.',
+      'Guardá la escritura, la sucesión o la donación y documentá cada aporte. Y el concubinato no crea bienes comunes sin reconocimiento judicial de la unión.',
     tag: 'PATRIMONIO',
     updatedAt: '2026-07-18',
     sections: [
