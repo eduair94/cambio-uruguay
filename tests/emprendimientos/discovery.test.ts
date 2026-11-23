@@ -1,7 +1,7 @@
 // Las fuentes que agregó la búsqueda más profunda (23/11/2026): búsquedas web con Gemini y el texto
 // de los posts de las curadoras. Sin red.
 import { describe, expect, it } from "vitest";
-import { mentionsIn } from "../../classes/emprendimientos/handles";
+import { mentionsIn, normalizeHandle } from "../../classes/emprendimientos/handles";
 import { captionFromHtml, parseProfile } from "../../classes/emprendimientos/instagram";
 import { publicListing } from "../../classes/emprendimientos/listing";
 import { newCandidate, postsToMine, runOnce } from "../../classes/emprendimientos/run";
@@ -98,6 +98,34 @@ describe("el texto de un post", () => {
     expect(caption.owner).toBe("feria.a");
     expect(mentionsIn(caption.text).sort()).toEqual(["feria.b", "mates.del.sur", "tortas.de.ana", "velas.uy"]);
     expect(captionFromHtml(html, "OTRO_CODIGO")).toBeNull();
+  });
+});
+
+describe("el límite de Instagram", () => {
+  it("una lectura de una corrida limitada no suma racha y se reintenta en 3 horas", async () => {
+    const store = memoryStore({ candidates: [newCandidate("tortas.de.ana", { kind: "sugerencia", day: "2026-11-23" }, NOW)] });
+    await runOnce({
+      now: NOW,
+      store,
+      options: { maxReads: 50, maxPostReads: 0, webQueriesPerRun: 0 },
+      classify: async () => new Map(),
+      readProfiles: async plan => ({
+        reads: new Map(plan.handles.map(h => [h, { ...profile({ handle: h }), status: "unreadable" as const }])),
+        launched: true,
+        closed: false,
+        limited: true,
+        note: "limitado",
+      }),
+    });
+    const row = store.candidates.get("tortas.de.ana")!;
+    expect(row.unreadableStreak).toBe(0);
+    expect(row.state).toBe("pendiente");
+    expect(row.dueAt.getTime() - NOW.getTime()).toBe(3 * 3_600_000);
+    expect(store.meta!.lastRun!.note).toContain("limitado");
+  });
+
+  it("un handle que es una web pegada no es una cuenta", () => {
+    expect(normalizeHandle("www.mielpura.webs")).toBeNull();
   });
 });
 

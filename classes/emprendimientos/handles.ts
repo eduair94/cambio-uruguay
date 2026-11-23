@@ -17,6 +17,8 @@ export function normalizeHandle(raw: string | null | undefined): string | null {
   if (!HANDLE.test(handle)) return null;
   if (handle.endsWith(".") || handle.startsWith(".") || handle.includes("..")) return null;
   if (RESERVED.has(handle)) return null;
+  // "www.mielpura.webs": una web pegada donde iba el Instagram (Uruguay Emprendedor, 23/11/2026).
+  if (handle.startsWith("www.")) return null;
   // Un handle de sólo números o de sólo signos no es una tienda que alguien escribió a mano.
   if (!/[a-z]/.test(handle)) return null;
   return handle;

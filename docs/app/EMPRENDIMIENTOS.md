@@ -82,9 +82,9 @@ Diseño: `docs/superpowers/specs/2026-11-23-emprendimientos-instagram-design.md`
 - `node dist/sync_emprendimientos.js --dry-run [--handles=a,b] [--no-discovery] [--max-reads=N] [--json=archivo]`:
   arranca de las semillas en memoria, no toca ninguna base e imprime cada decisión.
 - `EMPRENDIMIENTOS_ENABLED=0` apaga el job sin desplegar. Otras variables:
-  - `EMPRENDIMIENTOS_MAX_READS` (100);
+  - `EMPRENDIMIENTOS_MAX_READS` (50);
   - `EMPRENDIMIENTOS_GAP_MS` (4000);
-  - `EMPRENDIMIENTOS_READ_MINUTES` (16);
+  - `EMPRENDIMIENTOS_READ_MINUTES` (10);
   - `EMPRENDIMIENTOS_UE_DETAILS` (80);
   - `EMPRENDIMIENTOS_WEB_QUERIES` (12; `0` apaga la búsqueda web);
   - `EMPRENDIMIENTOS_POST_READS` (10; `0` apaga la lectura de posts de curadoras);
@@ -109,9 +109,15 @@ descubrimiento, no los filtros (de 31 perfiles leídos, 13 entraron). Lo que se 
   cuentas etiquetadas en la foto y los coautores. Rinde poco con las tiendas colectivas (medido:
   0,3 cuentas por post en @lacomarca.uy y @red_de_emprendedores.uy, que no etiquetan a sus marcas);
   está para las ferias que publican a sus expositores. `minedCodes` evita releer un post.
-- **Más lecturas**: 100 perfiles por corrida. Una prueba desde el VPS leyó 119 seguidos (96 con
-  perfil, 23 que no existían) sin un muro de login. Uruguay Emprendedor pasa a 80 fichas por
-  corrida, con 1,5 s entre una y otra.
+- **Más lecturas, con el límite de Instagram medido**: una prueba desde el VPS leyó 119 perfiles
+  seguidos (96 con perfil, 23 que no existían) sin un muro de login, y se subió a 100 por corrida.
+  En la corrida siguiente, a las 29 lecturas, el perfil empezó a volver al login con `is_from_rle`
+  («rate limit exceeded»). Venían 45 lecturas de producción y 125 de la prueba en hora y media, así
+  que el tope es de unas 200 por ventana, no por ráfaga. Los posts se siguieron leyendo con la IP
+  limitada. Quedó en **50 lecturas por corrida** (unas 25 por hora), y la corrida corta sola tras 4
+  lecturas seguidas sin perfil: lo que no se leyó queda en la cola y una lectura bloqueada se
+  reintenta en 3 horas sin sumar racha. Uruguay Emprendedor pasa a 80 fichas por corrida, con 1,5 s
+  entre una y otra.
 - **Dos defectos de la primera tanda**:
   - `mentionsIn` descartaba toda @mención terminada en `.uy`, tomándola por un dominio. La bola de
     nieve perdía justo a las cuentas uruguayas.

@@ -44,6 +44,7 @@ describe('la taxonomía del job y la de la página son la misma', () => {
       'cuenta.',
       '12345',
       'a..b',
+      'www.mielpura.webs',
     ]) {
       expect(handleFromInput(raw), raw).toBe(normalizeHandle(raw))
     }

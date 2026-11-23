@@ -195,8 +195,13 @@ export interface ReadResults {
   launched: boolean;
   /** true cuando la corrida cortó porque Instagram no contestó perfiles. */
   closed: boolean;
+  /** true cuando Instagram empezó a limitar a mitad de la corrida (varias lecturas seguidas sin perfil). */
+  limited?: boolean;
   note: string | null;
 }
+
+/** Lecturas seguidas sin perfil que se toman como el límite de Instagram. */
+export const LIMITED_AFTER_BLANKS = 4;
 
 export type ProfileReader = (plan: ReadPlan) => Promise<ReadResults>;
 
@@ -218,6 +223,7 @@ export const readProfiles: ProfileReader = async plan => {
   const { browser, page } = started as { browser: { close(): Promise<void> }; page: Page };
   let attempted = 0;
   let readable = 0;
+  let blankRun = 0;
   try {
     for (const handle of plan.handles) {
       if (Date.now() > deadline) {
@@ -229,6 +235,15 @@ export const readProfiles: ProfileReader = async plan => {
         results.note = `Instagram no devolvió ningún perfil en las primeras ${attempted} lecturas`;
         break;
       }
+      // El límite de Instagram aparece A MITAD de una corrida: el 23/11/2026 las primeras 29
+      // lecturas anduvieron y las 71 siguientes volvieron al login con `is_from_rle` ("rate limit
+      // exceeded"). Seguir pidiendo no lee nada y puede alargar el castigo: se corta, y lo que no se
+      // leyó queda en la cola tal como estaba.
+      if (blankRun >= LIMITED_AFTER_BLANKS) {
+        results.limited = true;
+        results.note = `Instagram limitó las lecturas después de ${attempted - blankRun} perfiles; ${plan.handles.length - attempted} quedan para la próxima corrida`;
+        break;
+      }
       if (attempted) await sleep(plan.gapMs);
       attempted++;
       const readAt = new Date().toISOString();
@@ -236,8 +251,10 @@ export const readProfiles: ProfileReader = async plan => {
         await page.goto(`https://www.instagram.com/${encodeURIComponent(handle)}/`, { waitUntil: "networkidle2", timeout: NAV_TIMEOUT_MS }).catch(() => undefined);
         const read = parseProfile(String(await page.content()), handle, String(page.url()), readAt);
         if (read.status !== "unreadable") readable++;
+        blankRun = read.status === "unreadable" ? blankRun + 1 : 0;
         results.reads.set(handle, read);
       } catch {
+        blankRun++;
         results.reads.set(handle, empty(handle, "unreadable", readAt));
       }
     }

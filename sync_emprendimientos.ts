@@ -4,7 +4,7 @@
 //   1. descubre cuentas: semillas, sugerencias de la página, Reddit (una vez por día), el listado de
 //      Uruguay Emprendedor (una vez por semana) y 80 de sus fichas por corrida, y 12 búsquedas web
 //      con Gemini (producto × lugar, rotando; classes/emprendimientos/sources/web.ts);
-//   2. lee en Instagram, sin sesión y en un solo Chrome, hasta 100 perfiles: sugerencias y semillas
+//   2. lee en Instagram, sin sesión y en un solo Chrome, hasta 50 perfiles: sugerencias y semillas
 //      primero, después las cuentas publicadas cuyas fotos vencen, después las nuevas; y después el
 //      texto de 10 posts de curadoras (ferias, tiendas colectivas), buscando @menciones;
 //   3. clasifica lo nuevo (créditos de Claude, Gemini de respaldo) y decide qué se publica;
