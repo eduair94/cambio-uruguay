@@ -95,7 +95,8 @@
     "seo_debt": "ts-node scripts/oneoff/seo_debt_report.ts",
     "insights": "ts-node scripts/oneoff/usage_insights_report.ts",
     "photo_facts_label": "ts-node scripts/oneoff/photo_facts_label.ts",
-    "photo_facts_eval": "ts-node scripts/oneoff/photo_facts_eval.ts"
+    "photo_facts_eval": "ts-node scripts/oneoff/photo_facts_eval.ts",
+    "photo_facts_ai_label": "ts-node scripts/oneoff/photo_facts_ai_label.ts"
   },
   "author": "",
   "license": "ISC",

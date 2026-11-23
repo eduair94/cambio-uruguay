@@ -66,6 +66,12 @@ export interface ClaudeCallOptions {
    * (512 tokens on Haiku 5.5) silently does not cache and costs nothing extra.
    */
   cacheSystem?: boolean;
+  /**
+   * Another Claude model for this one call (default ANTHROPIC_MODEL). For a job that must not depend
+   * on the router's default — the blind labelers of classes/photofacts compare Haiku against Opus and
+   * Sonnet. Billed and capped like every other call.
+   */
+  model?: string;
   maxTokens?: number;
   timeoutMs?: number;
   effort?: ClaudeEffort;
@@ -476,7 +482,7 @@ function baseParams(
   extraOutput: Partial<Anthropic.OutputConfig> = {}
 ): Anthropic.MessageStreamParams {
   return {
-    model: anthropicModel(),
+    model: opts.model?.trim() || anthropicModel(),
     max_tokens: opts.maxTokens ?? DEFAULT_MAX_TOKENS,
     messages: [{ role: "user", content }],
     output_config: { effort: effort(opts), ...extraOutput },
