@@ -4174,6 +4174,21 @@
         "de donde salen las cotizaciones uruguay"
       ],
       "hypothesis": "Las tres descripciones del pozo de catalogo (seoMessageSnippetBudget.test.ts) que estaban libres de toda ventana abierta: /economia-uruguay media 223/183/221 caracteres en es/en/pt, /noticias 166 en espaniol y /acerca 182/182/181, o sea que el SERP cortaba justo la cola, que es donde iba el dato. Y el defecto no era solo el largo: las tres describian el TEMA de la pagina en vez de lo que la pagina tiene ('Ultimas noticias de economia de Uruguay por area' mas la enumeracion de las areas, que es el indice otra vez). Ahora abren por las cifras que el propio codigo fija y que ninguna otra pagina del sitio pone al lado: seis areas por seis titulares (fetchEconomyNews(6) sobre ECONOMY_TOPICS) con el medio y la hora de cada uno y la relectura cada 30 minutos del maxAge de /api/economy-news; los 12 de fetchNews(12) con su medio y su antiguedad, mas el resumen con IA y la cotizacion al lado; y en /acerca, el BCU y mas de 40 casas de cambio cada ~10 minutos y los cuatro tipos de cotizacion que la pagina explica uno por uno. Ninguna cifra es nueva: las tres salen del codigo que sirve esas paginas. Las tres se reescriben en los tres idiomas aunque solo /economia-uruguay y /acerca se pasaban en los tres, porque el defecto era el mismo en el ingles y el portugues de /noticias. Quedan en 149/151/153, 149/145/145 y 152/147/148, y el presupuesto baja con ellas: descripciones de catalogo 9 a 6, hasta la deuda real y no hasta un numero redondo. No se toco titulo, H1, cuerpo, URL, canonical, tema, enlace ni anuncio. Se espera mas clics desde la misma posicion, como midieron las tandas de titulos y descripciones de octubre y noviembre; se mide por cuota de clics del sitio con 28 dias archivados antes y despues, sin el dia del deploy."
+    },
+    {
+      "id": "declarar-efectivo-titulo-con-el-umbral",
+      "shippedOn": "2026-11-24",
+      "routes": [
+        "/declarar-dinero-en-efectivo-uruguay"
+      ],
+      "queries": [
+        "cuanto dinero puedo sacar de uruguay",
+        "declarar efectivo uruguay",
+        "declarar dolares aeropuerto uruguay",
+        "10000 dolares frontera uruguay",
+        "multa por no declarar dinero uruguay"
+      ],
+      "hypothesis": "El titulo de /declarar-dinero-en-efectivo-uruguay media 80 caracteres con la marca y era la ultima fila del pozo de piso de titulo de seoTitleBudget.test.ts, que con esto cierra en 0. Google publica unos 60: el SERP cortaba en 'Declarar efectivo en Uruguay: hasta US$ 10.000 no declaras', o sea se llevaba el 'nada' que contesta la consulta y la marca entera. Queda en 56 con el umbral puesto: suelta 'en Uruguay' (la marca lo repite) y el verbo que escribio quien busca, y conserva la cifra, que es la respuesta. La cifra sale de DECLARATION_THRESHOLD_USD y no de un literal congelado, como en /prestamos-uruguay, y su medicion exacta entra en titlesCutBySerp.test.ts, incluido el peor caso de un umbral dos ordenes de magnitud mayor. No se toco la descripcion (154, entra), ni el H1, que conserva la pregunta entera, ni el cuerpo, ni la URL, ni el canonical, ni el tema, ni un enlace, ni un anuncio. Se esperan mas clics desde la misma posicion, como midieron las tandas de titulos de octubre y noviembre; se mide por cuota de clics del sitio con 28 dias archivados antes y despues, sin el dia del deploy. Es el tramo contenido (8x el promedio del sitio)."
     }
   ]
 }
