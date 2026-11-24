@@ -52,6 +52,9 @@ export const LLMS_DIRECTORIO_FRESHNESS: Readonly<Record<string, string>> = Objec
   equipar: 'una lectura completa por día y una parcial cada hora',
   // currency-productos-vida: Mercado Libre por el puente, a las :13 de cuatro horas del día.
   'productos-vida': 'cuatro lecturas de Mercado Libre por día; cada producto lleva su fecha',
+  // currency-computadoras (diaria, todas las búsquedas) + currency-computadoras-hourly (novedades).
+  computadoras:
+    'novedades cada hora y lectura completa de Facebook Marketplace y Mercado Libre una vez por día',
   // currency-emprendimientos: once corridas por día; cada cuenta publicada se relee cada pocos días.
   emprendimientos: 'cuentas nuevas todos los días; cada cuenta se vuelve a leer cada pocos días',
   // currency-store-profiles (semanal) + currency-store-reddit (sólo Reddit, cada noche).

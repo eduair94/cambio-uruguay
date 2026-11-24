@@ -77,6 +77,9 @@ const TRANSLATED_ADVERTS_DISALLOW = [
   // selección (`?motos=<key>`). Las fichas por MODELO traducidas siguen abiertas: no van acá.
   '/*/motos-usadas-uruguay/aviso/',
   '/motos-usadas-uruguay/comparar?',
+  // Y en computadoras (2026-11-24): la ficha de cada aviso traducida. Vence en días y responde en
+  // los 38 idiomas; la española sigue abierta (noindex, follow), como las de autos y motos.
+  '/*/computadoras-usadas-uruguay/aviso/',
 ]
 // The rules every crawler gets (the `*` group and the search-engine group below). /_nuxt/ serves
 // the public JS, CSS and fonts needed to render the site, so it is never here.

@@ -84,6 +84,9 @@ const queryKeys: Record<string, Set<string>> = {
     'marca modelo cilindrada tipo combustible departamento vendedor precioMaxUsd anioDesde anioHasta q precioMinUsd kmMax ccMin ccMax color dias bajo sinRiesgo unicoDueno fuente sort page'
   ),
   '/motos-usadas-uruguay/comparar': keys('motos'),
+  '/computadoras-usadas-uruguay': keys(
+    'q tipo marca familia procesador placa dedicada ramMin ssd precioMinUsd precioMaxUsd departamento fuente sinFallas debajo dias orden pagina'
+  ),
   '/alquileres-uruguay': rentalFilters,
   '/venta-viviendas-uruguay': propertyFilters,
   '/oportunidades-inmobiliarias-uruguay': keys(

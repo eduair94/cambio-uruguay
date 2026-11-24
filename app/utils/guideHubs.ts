@@ -292,6 +292,17 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/celulares-uruguay',
       },
       {
+        label: 'Computadoras usadas',
+        description: 'Notebooks, PCs y piezas usadas, contra lo que salen hoy sus mismas piezas.',
+        to: '/computadoras-usadas-uruguay',
+      },
+      {
+        label: 'Precios de componentes de PC',
+        description:
+          'Procesadores, placas de video y RAM, nuevos y usados, y cuánto sale armar una PC.',
+        to: '/precios-componentes-pc-uruguay',
+      },
+      {
         label: 'Tiendas online',
         description: 'Señales fechadas de cada tienda que vende a Uruguay, antes de comprarle.',
         to: '/tiendas-online-uruguay',

@@ -237,6 +237,22 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
     fuente: 'sin-cifra',
   },
   {
+    id: 'computadoras',
+    to: '/computadoras-usadas-uruguay',
+    familia: 'compras',
+    titulo: 'Computadoras usadas',
+    queCompara:
+      'Notebooks, PCs y piezas usadas, cada PC comparada contra lo que salen hoy sus mismas piezas nuevas y usadas.',
+    icon: 'mdi-laptop',
+    // La página imprime "{{ payload.total }} avisos" de la vista por defecto, que son las
+    // computadoras enteras: las piezas sueltas se ven pidiéndolas.
+    unidad: 'avisos',
+    fuente: 'relevado',
+    tambien: Object.freeze([
+      { to: '/precios-componentes-pc-uruguay', label: 'Precios de componentes' },
+    ]),
+  },
+  {
     id: 'emprendimientos',
     to: '/emprendimientos-de-instagram-uruguay',
     familia: 'compras',

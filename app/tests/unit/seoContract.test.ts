@@ -203,6 +203,10 @@ const NOINDEXED = [
   'buscar.vue',
   // El comparador de modelos se indexa en su URL; cada combinación de modelos se sale, como el asesor.
   'comparar-autos-usados-uruguay.vue',
+  // Computadoras usadas: el directorio se indexa en su URL limpia y cada combinación de filtros
+  // se sale, como motos; la ficha de cada aviso es siempre noindex (vence en días).
+  'computadoras-usadas-uruguay/aviso/[slug].vue',
+  'computadoras-usadas-uruguay/index.vue',
   // Panel privado de contactos comerciales (requireAdmin).
   'contactos-comerciales.vue',
   // El tasador se indexa en su URL; cada combinación de marca, modelo y año se sale.

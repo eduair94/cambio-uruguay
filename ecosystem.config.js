@@ -333,6 +333,31 @@ module.exports = {
       log_date_format: "YYYY-MM-DD HH:mm Z",
     },
     {
+      // /computadoras-usadas-uruguay + /precios-componentes-pc-uruguay (docs/app/COMPUTADORAS.md):
+      // Marketplace entero, los usados de ML, las piezas nuevas de ML y de nueve tiendas uruguayas, y
+      // fichas de Facebook. Más de una hora: a las 17:17 no pisa ninguna diaria del puente de ML
+      // (sillas 11:41, equipar 12:47, motos 13:38, celulares 14:29, movilidad 15:33, armadores 18:05)
+      // y la horaria de las 18:03 se saltea sola (candado propio en sync_computadoras.ts).
+      name: "currency-computadoras",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_computadoras.js",
+      cron_restart: "17 17 * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
+      // Horaria: un tramo rotativo de búsquedas de Marketplace por más nuevas, hasta 20 fichas y la
+      // republicación sobre lo guardado. Ni ML ni tiendas. El minuto :03 no lo usa ningún consumidor
+      // del puente de ML ni del Chrome de Facebook (movilidad :07, rentals-detail :15, sillas :23).
+      name: "currency-computadoras-hourly",
+      autorestart: false,
+      exec_mode: "fork",
+      script: "dist/sync_computadoras.js",
+      args: "--fast",
+      cron_restart: "3 * * * *",
+      log_date_format: "YYYY-MM-DD HH:mm Z",
+    },
+    {
       // Medidor de uso de la API (claves de empresas, classes/apikeys/): copia el hash de Redis de
       // ayer y de hoy a Mongo `api_usage_days` y anota el último uso de cada clave. Fuera de la API
       // porque currency-server es cluster ×2 y nada programado puede vivir adentro.

@@ -4786,6 +4786,43 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // Computadoras y piezas usadas de Facebook Marketplace y Mercado Libre, cada PC comparada
+        // contra lo que salen hoy sus piezas (currency-computadoras). Va al lado de motos porque
+        // comparte la forma de directorio de avisos, no el tema.
+        to: '/computadoras-usadas-uruguay',
+        labelKey: 'nav.computadorasUsadas',
+        icon: 'mdi-laptop',
+        priority: 0.8,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'computadoras usadas uruguay',
+          'notebook usada uruguay',
+          'pc gamer usada uruguay',
+          'pc usada montevideo',
+          'placa de video usada uruguay',
+          'cuanto vale mi pc usada',
+        ],
+      },
+      {
+        // La tabla contra la que el directorio compara cada aviso, publicada sola: el precio de hoy
+        // de cada componente nuevo y usado, y cuánto sale armar unas PCs tipo.
+        to: '/precios-componentes-pc-uruguay',
+        labelKey: 'nav.preciosComponentesPc',
+        icon: 'mdi-chip',
+        priority: 0.7,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'precio placa de video uruguay',
+          'cuanto sale armar una pc uruguay',
+          'precio procesador uruguay',
+          'precio memoria ram uruguay',
+          'componentes de pc uruguay',
+          'armar pc gamer uruguay precio',
+        ],
+      },
+      {
         to: '/monopatines-electricos-uruguay',
         labelKey: 'nav.monopatines',
         icon: 'mdi-scooter-electric',
@@ -5285,6 +5322,9 @@ export const DYNAMIC_ROUTE_KEYS: Readonly<Record<string, string>> = Object.freez
   'autos-usados-uruguay/[key]': 'consumer',
   'motos-usadas-uruguay/[key]': 'consumer',
   'motos-usadas-uruguay/aviso/[key]': 'consumer',
+  // La ficha de cada aviso de computadora o pieza usada (noindex, vence en días). Misma sección que
+  // su directorio.
+  'computadoras-usadas-uruguay/aviso/[slug]': 'consumer',
   'autos-usados-uruguay/precios/[slug]': 'consumer',
   'inmobiliarias-uruguay/[key]': 'consumer',
   'blog/[slug]': 'news',

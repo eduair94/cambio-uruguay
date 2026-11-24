@@ -202,6 +202,12 @@ export const DIRECTORIO_PATHS = new Set([
   "/bicicletas-electricas-uruguay",
   "/productos-que-te-cambian-la-vida-uruguay",
   "/emprendimientos-de-instagram-uruguay",
+  "/computadoras-usadas-uruguay",
+  // La tabla contra la que el directorio de computadoras compara cada aviso: precios relevados por
+  // pieza, la misma forma que /precios-de-supermercado-uruguay. Sin medición propia todavía (nació
+  // el 2026-11-24); va con su directorio y no con contenido, porque lo que la página afirma son
+  // medianas relevadas y no texto.
+  "/precios-componentes-pc-uruguay",
   "/tiendas-online-uruguay",
   "/sillas-escritorio-uruguay",
   "/precios-de-supermercado-uruguay",
@@ -241,6 +247,7 @@ export const DIRECTORIO_PREFIXES = [
   "/alquiler-",
   "/autos-usados-uruguay/",
   "/celulares-uruguay/",
+  "/computadoras-usadas-uruguay/",
   "/equipar-casa-uruguay/",
   "/inmobiliarias-uruguay/",
   "/motos-usadas-uruguay/",

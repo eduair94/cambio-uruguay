@@ -43,6 +43,9 @@ import { PhoneMetaModel } from "../../classes/models/PhoneMeta";
 import { PriceChangeSnapshotModel } from "../../classes/models/PriceChangeSnapshot";
 import { SeoIndexAllowlistModel } from "../../classes/models/SeoIndexAllowlist";
 import { TransportSnapshotModel } from "../../classes/models/TransportSnapshot";
+import { ComputerCatalogModel } from "../../classes/models/ComputerCatalog";
+import { ComputerMetaModel } from "../../classes/models/ComputerMeta";
+import { ComputerPartModel } from "../../classes/models/ComputerPart";
 import { MotoCatalogModel } from "../../classes/models/MotoCatalog";
 import { MotoCatalogMetaModel } from "../../classes/models/MotoCatalogMeta";
 import { MotoMarketSnapshotModel } from "../../classes/models/MotoMarketSnapshot";
@@ -417,6 +420,22 @@ describe("app-Mongo schema parity", () => {
       appFields(appModel("MotoMarketSnapshot")).sort()
     );
     expect(MotoMarketSnapshotModel.collection.name).toBe("motomarketsnapshots");
+  });
+
+  it("las tres colecciones públicas de computadoras declaran exactamente los campos del app", () => {
+    // /computadoras-usadas-uruguay y /precios-componentes-pc-uruguay. El catálogo y la tabla de
+    // piezas son `strict: false` en los dos lados (la fila entera la arma classes/computadoras/); lo
+    // que se fija acá es la clave única y el nombre de la colección: uno mal escrito deja la página
+    // en «el relevamiento está arrancando» para siempre, sin un error.
+    expect(Object.keys(ComputerCatalogModel.schema.obj).sort()).toEqual(appFields(appModel("ComputerCatalog")).sort());
+    expect(ComputerCatalogModel.collection.name).toBe("computercatalog");
+    expect(appModel("ComputerCatalog")).toContain("'computercatalog'");
+    expect(Object.keys(ComputerPartModel.schema.obj).sort()).toEqual(appFields(appModel("ComputerPart")).sort());
+    expect(ComputerPartModel.collection.name).toBe("computerparts");
+    expect(appModel("ComputerPart")).toContain("'computerparts'");
+    expect(Object.keys(ComputerMetaModel.schema.obj).sort()).toEqual(appFields(appModel("ComputerMeta")).sort());
+    expect(ComputerMetaModel.collection.name).toBe("computermetas");
+    expect(appModel("ComputerMeta")).toContain("'computermetas'");
   });
 
   it("TransportSnapshot declares exactly the app's top-level fields", () => {

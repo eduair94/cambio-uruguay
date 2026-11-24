@@ -115,6 +115,12 @@ const RELEVADOS: Readonly<Record<string, Adapter>> = {
     const data = await get<{ stores?: unknown[]; reviewedAt?: string | null }>('/api/stores')
     return cifra(data?.stores?.length, data?.reviewedAt)
   },
+  async computadoras() {
+    // pages/computadoras-usadas-uruguay/index.vue imprime "{{ payload.total }} avisos" de la vista
+    // por defecto (las computadoras enteras): la misma ruta sin filtros, el mismo campo.
+    const data = await get<{ total?: number; generatedAt?: string }>('/api/computadoras')
+    return cifra(data?.total, data?.generatedAt)
+  },
   async emprendimientos() {
     // pages/emprendimientos-de-instagram-uruguay/index.vue: "{{ total }} emprendimientos de todo el país".
     const data = await get<{ total?: number; generatedAt?: string | null }>('/api/emprendimientos')
