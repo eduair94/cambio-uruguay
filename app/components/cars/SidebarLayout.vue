@@ -28,6 +28,15 @@
   grid-template-columns: minmax(0, 1fr);
   gap: 24px;
 }
+/* En el celular toda página pone sus filtros en un cajón (`v-if="!smAndDown"` en la celda), así que
+   la celda queda vacía. Vacía y todo es una fila de la grilla, y el `gap` la cobra: 24 px de aire
+   muerto sobre la barra de Filtros/orden, que se sumaban al margen del bloque de arriba (medido el
+   2026-11-24 en /computadoras-usadas-uruguay a 400 px: 56 px entre los botones y «Filtros», 32 sin
+   esta regla). Una celda vacía no ocupa fila, sea cual sea el ancho. `:empty` aguanta los dos
+   rellenos que deja Vue: los comentarios `[` `]` del SSR y los textos vacíos de la navegación. */
+.cars-layout__filters:empty {
+  display: none;
+}
 @media (min-width: 960px) {
   .cars-layout {
     /* Un cuarto del ancho, con techo: con 1fr/3fr los filtros crecían con la pantalla (550 px de
