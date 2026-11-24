@@ -125,6 +125,16 @@ mother, fuente ni gabinete»). Tope de 3 por vendedor de ML con nombre; los part
 id (`ml:unknown`, 1.778 de 1.784 usados) y no cuentan como un vendedor. Medido sobre la corrida del
 24/11/2026: 60 oportunidades (20 sólidas) de 2.154 avisos.
 
+**Revisadas una por una** las oportunidades de la primera publicación (24/11/2026), tres reglas más:
+
+- Una PC con un procesador SIN gráficos (Ryzen 5 5600X, i5-12400F) y la placa sin declarar no tiene
+  iguales: no es «sin placa dedicada», tiene una y no se sabe cuál. Esa cohorte dio una «sólida» de
+  52 %.
+- Sólo 4, 8, 16, 32 y 64 GB hacen cohorte por RAM: un «MacBook Pro M4 Pro 24 GB» se comparaba contra
+  «… y 32 GB». Los tamaños intermedios van a la cohorte sin RAM.
+- «(sin Pantalla)», «no funciona pantalla» y «con detalles» son fallas declaradas; «sin detalles» y
+  «Sin Touch Bar» no.
+
 ## Precios de notebooks (`classes/computadoras/report.ts`, `/precios-notebooks-usadas-uruguay`)
 
 Un documento (`computermetas`, `uy-computadoras-notebooks`) armado del catálogo ya publicado:

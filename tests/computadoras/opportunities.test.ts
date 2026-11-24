@@ -167,3 +167,24 @@ describe("el catálogo con línea, cohortes y oportunidades", () => {
     expect(buildNotebookReport(rows.slice(0, 3), new Map(), "2026-11-24T00:00:00.000Z")).toBeNull();
   });
 });
+
+describe("PC con procesador sin gráficos y la placa sin declarar", () => {
+  it("no tiene iguales: la placa existe y no se sabe cuál es", () => {
+    let serial = 300000001;
+    const ml = (title: string, price: number): RawComputerListing => {
+      const id = `MLU${serial++}`;
+      return { slug: `ml-${id}`, source: "mercadolibre", sourceId: id, url: `https://articulo.mercadolibre.com.uy/${id}`, title, price, currency: "USD", image: null, location: null, category: "MLU1649", condition: "Usado", officialStore: false, sellerId: "ml:unknown", firstSeen: "2026-11-24", lastSeen: "2026-11-24" };
+    };
+    const listings = [
+      ...[700, 750, 800, 760, 780, 900].map((price) => ml("Pc Gamer Amd Ryzen 5 5600x 16gb Ram", price)),
+      ml("Pc Gamer Amd Ryzen 5 5600x 16gb Ram Ssd 512gb", 358),
+      // Con gráficos integrados sí es una cohorte: «sin placa dedicada» describe la máquina.
+      ...[300, 320, 310, 330, 305, 315].map((price) => ml("Pc Amd Ryzen 5 5600g 16gb Ram Ssd 512gb", price)),
+    ];
+    const rows = buildComputerCatalog({ read: readListings(listings, new Map<string, FacebookComputerDetail>()), table: new Map(), notebookRefs: new Map(), usdUyu: 40, day: "2026-11-24" });
+    const cheap = rows.find((row) => row.price === 358)!;
+    expect(cheap.comparables).toBeNull();
+    expect(cheap.opportunity).toBeNull();
+    expect(rows.find((row) => row.price === 300)!.comparables).toMatchObject({ n: 6, basis: "cpu+gpu" });
+  });
+});

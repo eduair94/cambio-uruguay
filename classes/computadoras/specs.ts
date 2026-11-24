@@ -389,13 +389,15 @@ const FAULTS: Array<[Fault, RegExp]> = [
   ["no-enciende", /\bno\s*(?:enciende|prende|arranca|bootea|inicia|carga\s*(?:el\s*)?(?:windows|sistema))\b/],
   ["no-da-video", /\bno\s*da\s*(?:video|imagen|senal)\b|\b(?:tira|con)\s*artifacts?\b|\bartefactos\b/],
   ["para-repuesto", /\bpara\s*(?:res?puestos?|piezas|reparar|arreglar|tecnicos?|entendidos)\b|\ba\s*reparar\b|\bno\s*funciona\b/],
-  ["pantalla", /\bpantalla\s*(?:rota|partida|quebrada|rajada|con\s*(?:rayas?|lineas?|manchas?|pixeles?))\b|\b(?:display|lcd)\s*roto\b/],
+  // «(sin Pantalla)», «no funciona pantalla»: salieron como oportunidad el 24/11/2026.
+  ["pantalla", /\bpantalla\s*(?:rota|partida|quebrada|rajada|danada|con\s*(?:rayas?|lineas?|manchas?|pixeles?|detalles?))\b|\b(?:display|lcd)\s*roto\b|\bsin\s*pantalla\b|\bno\s*funciona\s*(?:la\s*)?pantalla\b/],
   ["teclado", /\b(?:falla|fallas|detalle|detalles|problema)\s*(?:en\s*(?:el\s*)?)?teclado\b|\bteclado\s*(?:no\s*funciona|roto|con\s*fallas?)\b/],
   ["bateria", /\bbateria\s*(?:no\s*(?:funciona|carga|anda|dura|sirve)|muerta|agotada|inflada|hinchada|mala)\b|\bsin\s*bateria\b/],
   ["bloqueada", /\bbloquead[ao]\b|\bicloud\b|\bclave\s*(?:de\s*)?(?:la\s*)?bios\b/],
   ["sin-disco", /\bsin\s*(?:disco|ssd|hdd|almacenamiento)\b/],
   ["sin-cargador", /\bsin\s*cargador\b/],
-  ["falla", /\b(?:con|tiene|presenta)\s*(?:una\s*|algunas?\s*)?fallas?\b|\bcarpeta\s*con\s*signo\b|\bpara\s*revisar\b/],
+  // «con detalles», «(detalles en …)»: el vendedor avisa que algo no está bien, aunque no diga qué.
+  ["falla", /\b(?:con|tiene|presenta)\s*(?:una\s*|algunas?\s*|pequenos?\s*)?(?:fallas?|detalles?)\b|\bdetalles?\s*(?:en|de)\s*(?:la\s*|el\s*)?(?:pantalla|carcasa|teclado|bateria|bisagra|placa)\b|\bcarpeta\s*con\s*signo\b|\bpara\s*revisar\b/],
 ];
 
 export function readFaults(text: string): Fault[] {

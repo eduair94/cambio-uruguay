@@ -7,7 +7,7 @@
 import { canonicalDepartment } from "../rentals/normalize";
 import { readCurrency } from "./currency";
 import { capBySeller, opportunityOf } from "./opportunity";
-import { partIdentityOf, partsOf } from "./parts";
+import { cpuLacksGraphics, partIdentityOf, partsOf } from "./parts";
 import { readComputerSpecs, specCount } from "./specs";
 import { median, norm, round } from "./text";
 import { isMachineKind, type Comparables, type ComputerCatalogRow, type ComputerSpecs, type FacebookComputerDetail, type PartObservation, type PartRow, type RawComputerListing, type Valuation } from "./types";
@@ -120,7 +120,9 @@ export function isPlaceholderPrice(price: number): boolean {
   return /([0-8])\1{4,}/.test(text) || ["1234", "12345", "123456", "1234567", "12345678"].includes(text);
 }
 
-const RAM_BUCKET = (gb: number | null): string => (gb ? String(gb <= 4 ? 4 : gb <= 8 ? 8 : gb <= 16 ? 16 : gb <= 32 ? 32 : 64) : "");
+// Sólo los tamaños de siempre hacen cohorte por RAM. 12, 20 o 24 GB caían en el tramo de arriba y
+// un «MacBook Pro M4 Pro 24 GB» se comparaba contra «… y 32 GB»: esos van a la cohorte sin RAM.
+const RAM_BUCKET = (gb: number | null): string => (gb && [4, 8, 16, 32, 64].includes(gb) ? String(gb) : "");
 // Cada tipo de máquina con los suyos: un Mac mini M1 (US$ 500) y un iMac M1 (US$ 1.000) comparten chip
 // y nada más, y juntos hacían del Mac mini una «oportunidad» (24/11/2026).
 const kindGroupOf = (kind: string): string => kind;
@@ -145,6 +147,10 @@ function cohortKeys(specs: ComputerSpecs): Cohort[] {
     if (!cpu?.slug) return keys;
     const dedicated = specs.gpu && !specs.gpu.integrated ? specs.gpu.baseSlug ?? specs.gpu.slug : null;
     if (specs.gpu && !specs.gpu.integrated && !dedicated) return keys;
+    // Un procesador SIN gráficos (Ryzen 5 5600X, i5-12400F) con la placa sin declarar no es «sin placa
+    // dedicada»: tiene una y no se sabe cuál, de una GTX 1650 a una RTX 4070. Juntarlas dio en
+    // producción una «oportunidad sólida» de 52 % (24/11/2026). Sin placa conocida no hay iguales.
+    if (!dedicated && cpuLacksGraphics(specs.cpu)) return keys;
     keys.push({
       key: `${group}|${cpu.slug}|${dedicated ?? "sin-dedicada"}`,
       label: `PCs con ${cpu.label} y ${dedicated ? specs.gpu!.model : "sin placa de video dedicada declarada"}`,

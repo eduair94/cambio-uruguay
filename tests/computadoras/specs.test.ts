@@ -154,3 +154,19 @@ describe("lo que la primera corrida de producción mostró (24/11/2026, 4.991 ta
     expect(specs.faults).toContain("para-repuesto");
   });
 });
+
+describe("fallas que salieron como oportunidad en producción (24/11/2026)", () => {
+  const faultsOf = (title: string) => readComputerSpecs({ title, mlCategory: "MLU1652" }).faults;
+
+  it("«sin pantalla» y «con detalles» son fallas declaradas", () => {
+    expect(faultsOf("Macbook Pro 13  2019 - I5 - 16gb - 256gb Ssd (sin Pantalla)")).toContain("pantalla");
+    expect(faultsOf("Macbook pro 15” modelo a1707 del 2017 ( no funciona pantalla)")).toContain("pantalla");
+    expect(faultsOf("Liquidación Mudanza Notebook Bangho MOV Intel Core i3 con Detalles")).toContain("falla");
+    expect(faultsOf("Apple Macbook Pro (13-inch, 2017, Sin Touch Bar) (detalles en carcasa)")).toContain("falla");
+  });
+
+  it("«sin detalles» y «sin Touch Bar» no lo son", () => {
+    expect(faultsOf("Macbook Air 2020 Apple M1 8gb Ram 256gb - sin detalles")).toEqual([]);
+    expect(faultsOf("Apple Macbook Pro (13-inch, 2017, Sin Touch Bar)")).toEqual([]);
+  });
+});
