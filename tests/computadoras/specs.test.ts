@@ -124,3 +124,33 @@ describe("fallas declaradas", () => {
     expect(fb("Macbook Air 2020 Apple M1 8gb Ram 256gb - sin detalles", "Funciona todo, no tiene fallas").faults).toEqual([]);
   });
 });
+
+describe("lo que la primera corrida de producción mostró (24/11/2026, 4.991 tarjetas de Marketplace)", () => {
+  const kindOf = (title: string, mlCategory?: string) => readComputerSpecs({ title, mlCategory });
+
+  it("la pieza que abre el título es lo que se vende, aunque nombre la máquina a la que va", () => {
+    expect(kindOf("Memoria notebook 8gb ddr4").kind).toBe("ram");
+    expect(kindOf('Disco Duro Interno Toshiba 1TB 2.5" SATA (Notebook / PS4 / PC)').kind).toBe("storage");
+    expect(kindOf("motherboard pc y notebook").kind).toBe("motherboard");
+    expect(kindOf("Memorias RAM de laptops 8gb cada una Por todas se hace precio").kind).toBe("ram");
+    expect(kindOf("Combo pc Motherboard as rock h87m con procesador i5 4440").kind).toBe("desktop");
+  });
+
+  it("muebles, audio, la caja vacía y el «all in one» de otros rubros no son computadoras", () => {
+    expect(kindOf("Mesa escritorio computadora")).toMatchObject({ kind: null, rejectReason: "accesorio" });
+    expect(kindOf("Parlante Gamer Xtrike Me Altavoz Pc Rgb Speaker Barra Sonido").kind).toBeNull();
+    expect(kindOf("Caja de tarjeta gráfica ASUS PHOENIX GEFORCE GTX 1650").kind).toBeNull();
+    expect(kindOf("Pioneer DJ XDJ-RX All-in-One + Case - Hasta 12 cuotas con recargo").kind).toBeNull();
+    expect(kindOf("Notebook Acer Aspire 3620 - Carcasa Y Partes", "MLU1652").kind).toBeNull();
+  });
+
+  it("varios equipos por un precio, dicho con palabras", () => {
+    expect(kindOf("Dos notebook Lenovo para repuesto")).toMatchObject({ kind: null, rejectReason: "multi" });
+  });
+
+  it("el título que llega con + por espacios, y «respuesto»", () => {
+    const specs = kindOf("Computadora+para+respuesto+");
+    expect(specs.kind).toBe("desktop");
+    expect(specs.faults).toContain("para-repuesto");
+  });
+});

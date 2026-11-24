@@ -279,6 +279,7 @@ export interface ComputerPublicMeta {
     withValuation: number
     withNewTotal: number
     withUsedTotal: number
+    heldForDetail?: number
     opportunities?: number
     detailRead: number
   }

@@ -17,7 +17,7 @@ import { tmpdir } from "os";
 import { dirname, join } from "path";
 import { appConnection, appDbConfigured } from "./classes/appdb";
 import { fetchUsdUyuRate } from "./classes/chairs/catalog";
-import { buildComputerCatalog, notebookRefKey, readListings, usageOf, usedPartObservations } from "./classes/computadoras/catalog";
+import { HOLD_MAX_UYU, buildComputerCatalog, notebookRefKey, readListings, usageOf, usedPartObservations } from "./classes/computadoras/catalog";
 import { isBareCase, buildPartTable, partIdentityOf } from "./classes/computadoras/parts";
 import { buildPresets } from "./classes/computadoras/presets";
 import { buildNotebookReport } from "./classes/computadoras/report";
@@ -104,7 +104,9 @@ async function readFacebookDetails(targets: readonly RawComputerListing[], fast:
   const release = await acquireFacebookProfile(fast ? "currency-computadoras-hourly-fichas" : "currency-computadoras-fichas", 8 * 60_000);
   if (!release) return [];
   const rows: FacebookComputerDetail[] = [];
-  const deadline = Date.now() + number("COMPUTADORAS_FB_DETAIL_MINUTES", fast ? 7 : 14) * 60_000;
+  // 40 fichas por hora y 60 en la diaria (como `currency-rentals-detail`, 60 por hora): con miles de
+  // avisos de Marketplace, 20 por hora tardaban días en llegar a los que esperan su ficha.
+  const deadline = Date.now() + number("COMPUTADORAS_FB_DETAIL_MINUTES", fast ? 11 : 16) * 60_000;
   try {
     const browser = await connectFacebookBrowser();
     try {
@@ -221,7 +223,13 @@ async function main(): Promise<void> {
   // Primero la ficha de los avisos de Facebook que serían oportunidad si la tuvieran: sin ficha no
   // entran a la lista, y es donde el vendedor dice lo que falla.
   const priority = db ? await loadOpportunityCandidates() : new Set<string>();
-  const targets = facebookDetailTargets(fresh, details, now, number(fast ? "COMPUTADORAS_FB_DETAIL_FAST_MAX" : "COMPUTADORAS_FB_DETAIL_MAX", fast ? 20 : 45), priority);
+  // …y la de las máquinas con precio dudoso, que no se publican hasta leerla (`waitsForDetail`).
+  for (const raw of fresh) {
+    if (raw.source !== "facebook" || raw.price > HOLD_MAX_UYU || raw.price <= 1 || details.has(raw.sourceId)) continue;
+    const specs = readComputerSpecs({ title: raw.title });
+    if (isMachineKind(specs.kind) && !specs.faults.length) priority.add(raw.sourceId);
+  }
+  const targets = facebookDetailTargets(fresh, details, now, number(fast ? "COMPUTADORAS_FB_DETAIL_FAST_MAX" : "COMPUTADORAS_FB_DETAIL_MAX", fast ? 40 : 60), priority);
   const readDetails = await readFacebookDetails(targets, fast);
   for (const detail of readDetails) details.set(detail.id, detail);
   if (db && !dryRun) await saveFacebookDetails(readDetails);
@@ -349,7 +357,8 @@ function assemble(input: AssembleInput): { rows: ComputerCatalogRow[]; parts: Pa
   const parts = buildPartTable({ newObservations: input.newObservations, usedObservations, previous: input.previousParts, newOk: input.newOk, day: dayOf(now), usage });
   const table = new Map(parts.map((row) => [row.slug, row]));
   const notebookRefs = new Map(Object.entries(input.notebookRefs));
-  const rows = buildComputerCatalog({ read: readFresh, table, notebookRefs, usdUyu, day: dayOf(now) });
+  const stats = { heldForDetail: 0 };
+  const rows = buildComputerCatalog({ read: readFresh, table, notebookRefs, usdUyu, day: dayOf(now), stats });
   const report = buildNotebookReport(rows, notebookRefs, now.toISOString());
   const presets = buildPresets(table);
 
@@ -372,6 +381,7 @@ function assemble(input: AssembleInput): { rows: ComputerCatalogRow[]; parts: Pa
       withNewTotal: rows.filter((row) => row.valuation?.newTotalUsd).length,
       withUsedTotal: rows.filter((row) => row.valuation?.usedTotalUsd).length,
       opportunities: rows.filter((row) => row.opportunity).length,
+      heldForDetail: stats.heldForDetail,
       detailRead: rows.filter((row) => row.detailRead).length,
     },
     sources,
