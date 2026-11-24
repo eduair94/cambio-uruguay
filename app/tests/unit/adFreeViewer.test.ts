@@ -42,4 +42,19 @@ describe('who sees ads', () => {
     expect(ad).toBeGreaterThan(-1)
     expect(nudge).toBeGreaterThan(ad)
   })
+
+  it('offers «Quitar anuncios» in the ad label, outside the ad itself', () => {
+    // AdSense forbids covering an ad or adding controls that look like the ad's own (a close
+    // cross that opens a payment is a deceptive implementation): the link lives in the site's
+    // label row above the unit, never on or inside the <ins> Google fills.
+    const slot = source('components/AdSlot.vue')
+    const label = slot.indexOf('class="cu-ad__label"')
+    const link = slot.indexOf('<AdFreeLink placement="ad-label"')
+    // The element, not a comment that names it (`<ins>`).
+    const ins = slot.search(/<ins\s/)
+    expect(label).toBeGreaterThan(-1)
+    expect(link).toBeGreaterThan(label)
+    expect(link).toBeLessThan(ins)
+    expect(slot).not.toMatch(/mdi-close|aria-label="Cerrar/)
+  })
 })

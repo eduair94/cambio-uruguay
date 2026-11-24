@@ -17,6 +17,7 @@ export type AdFreeSlot =
   | 'donation-section'
   | 'account-menu'
   | 'footer'
+  | 'ad-label'
 
 /** Pages with ads seen in this browser (one per route change), the engagement signal. */
 export const NUDGE_PAGEVIEWS_KEY = 'cu_adfree_pv'

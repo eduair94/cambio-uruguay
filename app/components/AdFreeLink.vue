@@ -14,6 +14,16 @@
     >
       {{ label }}
     </VBtn>
+    <!-- Inside an ad's label row: plain small text, no icon, and a 24px target that does not make
+         the row taller (the unit's reserved height is the anti-CLS measure). -->
+    <NuxtLink
+      v-else-if="variant === 'inline'"
+      :to="localePath('/cuenta/sin-publicidad')"
+      class="ad-free-link__inline"
+      @click="select"
+    >
+      {{ label }}
+    </NuxtLink>
     <NuxtLink
       v-else
       :to="localePath('/cuenta/sin-publicidad')"
@@ -32,9 +42,12 @@ import { adFreeOffered, promotionParams, type AdFreeSlot } from '~/utils/adFreeF
 import { isExtraLocale } from '~/utils/locales'
 import { observeFirstImpression } from '~/utils/newsletterFunnel'
 
-const props = withDefaults(defineProps<{ placement: AdFreeSlot; variant?: 'button' | 'link' }>(), {
-  variant: 'link',
-})
+const props = withDefaults(
+  defineProps<{ placement: AdFreeSlot; variant?: 'button' | 'link' | 'inline' }>(),
+  {
+    variant: 'link',
+  }
+)
 
 const localePath = useLocalePath()
 const { locale } = useI18n()
@@ -47,10 +60,15 @@ const offered = adFreeOffered(
 const shown = computed(() => offered && viewerShowsAds(viewer.value))
 
 // Inline like AccountMenu's copy; the machine-translated locales read English.
+// Next to an ad the action is the ad itself: «Quitar anuncios»; elsewhere, what you get.
 const label = computed(() => {
+  const english = locale.value === 'en' || isExtraLocale(locale.value)
+  if (props.variant === 'inline') {
+    if (locale.value === 'pt') return 'Remover anúncios'
+    return english ? 'Remove ads' : 'Quitar anuncios'
+  }
   if (locale.value === 'pt') return 'Navegar sem anúncios'
-  if (locale.value === 'en' || isExtraLocale(locale.value)) return 'Browse without ads'
-  return 'Navegá sin anuncios'
+  return english ? 'Browse without ads' : 'Navegá sin anuncios'
 })
 
 function select() {
@@ -97,5 +115,21 @@ onBeforeUnmount(() => stop?.())
 
 .ad-free-link__btn {
   font-weight: 700;
+}
+
+/* Inherits the ad label's size, case and ink; the padding/negative margin pair gives a 24px tap
+   target (WCAG 2.2 target size) without growing the label row. */
+.ad-free-link__inline {
+  display: inline-block;
+  padding: 6px 4px;
+  margin: -6px -4px;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.ad-free-link__inline:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 0;
 }
 </style>

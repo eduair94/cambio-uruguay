@@ -3,7 +3,14 @@
        "Publicidad" several times (axe landmark-unique on 44 page profiles). The visible label below
        still says what the box is. -->
   <div v-if="enabled && !unfilled" ref="root" class="cu-ad" :class="`cu-ad--${placement}`">
-    <span class="cu-ad__label">{{ $t('ads.label') }}</span>
+    <!-- The site's own label row, ABOVE the unit and outside the <ins> Google fills. The way to
+         browse without ads lives here as plain text: AdSense forbids covering an ad or giving it
+         controls that look like its own (a cross that opens a payment is deceptive), so there is
+         no close button on the ad. AdFreeLink hides itself for donors and without a medium. -->
+    <span class="cu-ad__label">
+      <span>{{ $t('ads.label') }}</span>
+      <AdFreeLink placement="ad-label" variant="inline" class="cu-ad__remove" />
+    </span>
     <ins
       v-if="near"
       ref="insEl"
@@ -213,7 +220,10 @@ onBeforeUnmount(() => {
 }
 
 .cu-ad__label {
-  display: block;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0 8px;
   grid-column: 1;
   grid-row: 1;
   margin-bottom: 4px;
@@ -223,6 +233,12 @@ onBeforeUnmount(() => {
   /* 0.55 gave #808182 on the page's #f6f7f9: 3.64:1, under the 4.5:1 that 11 px text needs
      (Lighthouse on /alquileres-uruguay, 2026-10-08). 0.72 is ~5.9:1 there, and more on white. */
   opacity: 0.72;
+}
+
+/* «Publicidad · Quitar anuncios»: the dot is CSS, so it goes away with the link (donors). */
+.cu-ad__remove::before {
+  content: '·';
+  margin-right: 8px;
 }
 
 /* `start`, not the grid's default stretch: the ins keeps the height AdSense gives it, as in
