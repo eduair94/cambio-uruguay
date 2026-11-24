@@ -300,6 +300,11 @@ export function buildComputerCatalog(input: CatalogInput): ComputerCatalogRow[] 
       if (input.stats) input.stats.heldForDetail++;
       continue;
     }
+    // La ficha se leyó y no resolvió nada: «PC Gamer — $ 650», sin una pieza declarada. Una máquina
+    // que se anuncia gamer por menos de $ 3.000, sin falla, no es creíble en pesos, y sin piezas no se
+    // puede decidir que sea en dólares. No se publica (24/11/2026: encabezaba «las más baratas»). Una
+    // «Notebook Toshiba — $ 1.180» sin la palabra sí: un equipo viejo vale eso.
+    if (raw.source === "facebook" && raw.currency === "UYU" && !inferred && machine && raw.price <= HOLD_MAX_UYU && !specs.faults.length && specCount(specs) === 0 && /\bgam(?:er|ers|ing)\b/.test(norm(`${raw.title} ${detail?.description ?? ""}`))) continue;
     const comparables = machine ? comparablesFor(specs, pool) : null;
     // Un precio que no puede ser de ese equipo (la regla de `priceSanity` de autos): menos del 15 % de
     // lo que piden por sus iguales, sin una falla que lo explique. Es un error de moneda o de tipeo, y

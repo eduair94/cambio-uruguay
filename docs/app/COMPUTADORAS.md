@@ -176,6 +176,11 @@ candidatos a oportunidad, y el presupuesto subió a 40 fichas por hora y 60 en l
 `currency-rentals-detail`). Con la ficha leída y sin nada que lo contradiga, el número va en pesos.
 `meta.counts.heldForDetail` dice cuántas esperan (313 en el volcado de esa corrida).
 
+Lo que la ficha no resuelve: «PC Gamer — $ 650» con una descripción que no dice ni una pieza. Una
+máquina que se anuncia gamer por menos de $ 3.000, sin falla y sin nada declarado, no es creíble en
+pesos y no se puede decidir que sea en dólares: no se publica. Una «Notebook Toshiba — $ 1.180» sin
+esa palabra sí.
+
 Las otras guardas de precio que salieron de la misma corrida: una pieza a menos del 15 % de la
 mediana usada de su identidad (≥ 3) o a más del doble de la nueva no es un precio («GTX 1650 —
 $ 1.000», «RTX 5080 — $ 186.497»); una máquina a más de 5 veces la mediana de sus iguales tampoco; y

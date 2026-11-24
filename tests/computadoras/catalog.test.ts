@@ -28,9 +28,11 @@ describe("el catálogo público", () => {
     raw("Laptop Toshiba buen estado", 1500, "UYU"),
     raw("Pc Gamer", 1300, "UYU"),
     raw("Notebook HP 15 Core i3 - Prende - Bloqueada - Sin Cargador", 2000, "UYU"),
+    raw("PC Gamer", 650, "UYU"),
   ];
   const details = new Map<string, FacebookComputerDetail>([
     [listings[12]!.sourceId, { id: listings[12]!.sourceId, readAt: "2026-11-23T00:00:00Z", found: true, description: "Anda bien, la vendo porque me compre otra", attributes: {}, createdAt: null, gone: false }],
+    [listings[15]!.sourceId, { id: listings[15]!.sourceId, readAt: "2026-11-23T00:00:00Z", found: true, description: "Vendo por viaje, escucho ofertas", attributes: {}, createdAt: null, gone: false }],
     [listings[4]!.sourceId, { id: listings[4]!.sourceId, readAt: "2026-11-23T00:00:00Z", found: true, description: "Procesador i5 10400f\nRTX 3060 12gb\n16gb ram ddr4\nSSD 480gb\nllamame al 099 123 456", attributes: { Condition: "used_good" }, createdAt: "2026-11-20T10:00:00.000Z", gone: false }],
   ]);
   const read = readListings(listings, details);
@@ -106,6 +108,12 @@ describe("el catálogo público", () => {
     expect(bySlug.get(listings[12]!.slug)).toMatchObject({ kind: "notebook", currency: "UYU", currencyInferred: false, detailRead: true });
     // Una falla declarada explica el precio: un equipo roto sí vale $ 2.000 y no espera.
     expect(bySlug.get(listings[14]!.slug)).toMatchObject({ kind: "notebook", currency: "UYU" });
+  });
+
+  it("gamer por menos de $ 3.000, con la ficha leída y sin una pieza declarada: no se publica", () => {
+    expect(bySlug.has(listings[15]!.slug)).toBe(false);
+    // No cuenta como «esperando su ficha»: ya se leyó.
+    expect(stats.heldForDetail).toBe(2);
   });
 
   it("los precios de relleno no entran", () => {
