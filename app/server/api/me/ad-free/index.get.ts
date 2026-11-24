@@ -4,14 +4,15 @@
 // the page-load check in plugins/ad-free.client.ts is never held up for long; what does not finish
 // in time keeps running and shows on the next request.
 import { requireUser } from '../../../utils/auth'
-import { adFreeSummary } from '../../../utils/adFreeStore'
+import { adFreeSummary, sessionIsComplimentary } from '../../../utils/adFreeStore'
 import { reconcileRecentOrders } from '../../../utils/adFreeReconcile'
 import { connectDb } from '../../../utils/db'
 
 const RECONCILE_BUDGET_MS = 2000
 
 export default defineEventHandler(async event => {
-  const { uid } = await requireUser(event)
+  const user = await requireUser(event)
+  const { uid } = user
   setResponseHeader(event, 'cache-control', 'private, no-store')
   await connectDb()
   const reconciling = reconcileRecentOrders(uid).catch(() => {})
@@ -19,5 +20,5 @@ export default defineEventHandler(async event => {
     reconciling,
     new Promise(resolve => setTimeout(resolve, RECONCILE_BUDGET_MS)),
   ])
-  return adFreeSummary(uid)
+  return adFreeSummary(uid, { complimentary: sessionIsComplimentary(user) })
 })

@@ -1608,6 +1608,10 @@ export default defineNuxtConfig({
     // so a process.env read would be undefined in prod. UNSET MEANS THE ROUTE 503s, on purpose:
     // the failure mode of an open default is publishing every query the site ranks for.
     adminEmails: process.env.NUXT_ADMIN_EMAILS || '',
+    // Accounts that browse without ads without paying (the site's owners), on top of the admin
+    // allowlist above, which already gets it. Separate so an owner account can skip the ads without
+    // getting the private dashboards. server/utils/adFreeOwners.ts.
+    adFreeEmails: process.env.NUXT_AD_FREE_EMAILS || '',
     // NOTE: predictionsIngestToken / POST /api/predictions/ingest is gone — the daily AI
     // price-lean + external-forecast record moved to the backend (classes/predictions/*, pm2
     // currency-predictions). The manual trigger it provided is now, on the VPS:

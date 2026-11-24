@@ -49,6 +49,12 @@
               class="donation_img"
             />
           </a>
+          <!-- The donation that also buys something: twelve months without ads. -->
+          <AdFreeLink
+            placement="donation-section"
+            variant="button"
+            class="ml-1 align-self-center"
+          />
         </div>
       </div>
       <div class="button_section mb-3 mt-3 mt-md-0" />

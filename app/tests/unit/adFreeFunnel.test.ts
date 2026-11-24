@@ -15,14 +15,13 @@ const now = Date.parse('2026-11-23T12:00:00Z')
 describe('nudgeVariant', () => {
   const base = { pageViews: 5, dismissedAt: null, cardShownThisSession: false, now }
 
-  it('shows the card to a reader who already saw ads on a few pages', () => {
+  it('shows the card from the second page with ads: a returning reader, not a search bounce', () => {
     expect(nudgeVariant(base)).toBe('card')
-    expect(nudgeVariant({ ...base, pageViews: 3 })).toBe('card')
+    expect(nudgeVariant({ ...base, pageViews: 2 })).toBe('card')
   })
 
-  it('keeps a first or second page to the quiet link', () => {
+  it('keeps the first page to the quiet link', () => {
     expect(nudgeVariant({ ...base, pageViews: 1 })).toBe('link')
-    expect(nudgeVariant({ ...base, pageViews: 2 })).toBe('link')
   })
 
   it('shows the card once per session', () => {

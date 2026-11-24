@@ -3,13 +3,15 @@
 // PayPal by the order id we stored, capturing it if the buyer approved and nobody captured yet).
 import { AdFreeOrderModel } from '../../../models/AdFreeOrder'
 import { requireUser } from '../../../utils/auth'
-import { adFreeSummary } from '../../../utils/adFreeStore'
+import { adFreeSummary, sessionIsComplimentary } from '../../../utils/adFreeStore'
 import { bestDonationStatus } from '../../../utils/adFreeMapping'
 import { reconcileOrder } from '../../../utils/adFreeReconcile'
 import { connectDb } from '../../../utils/db'
 
 export default defineEventHandler(async event => {
-  const { uid } = await requireUser(event)
+  const user = await requireUser(event)
+  const { uid } = user
+  const complimentary = sessionIsComplimentary(user)
   setResponseHeader(event, 'cache-control', 'private, no-store')
   const body = ((await readBody(event).catch(() => null)) ?? {}) as Record<string, unknown>
   const orderId = typeof body.orderId === 'string' ? body.orderId : ''
@@ -29,7 +31,7 @@ export default defineEventHandler(async event => {
     return {
       status: bestDonationStatus(statuses),
       order: orderInfo,
-      summary: await adFreeSummary(uid),
+      summary: await adFreeSummary(uid, { complimentary }),
     }
   } catch (error) {
     // The provider being slow is not a verdict: the page retries, and the webhook still arrives.
@@ -37,6 +39,10 @@ export default defineEventHandler(async event => {
       `[ad-free] confirm ${order.provider} failed`,
       error instanceof Error ? error.message : error
     )
-    return { status: 'unknown' as const, order: orderInfo, summary: await adFreeSummary(uid) }
+    return {
+      status: 'unknown' as const,
+      order: orderInfo,
+      summary: await adFreeSummary(uid, { complimentary }),
+    }
   }
 })

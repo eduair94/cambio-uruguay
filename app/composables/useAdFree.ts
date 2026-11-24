@@ -17,6 +17,8 @@ import {
 export interface AdFreeSummary {
   active: boolean
   until: string | null
+  /** A site owner's account: no ads, no date, nothing paid. */
+  complimentary?: boolean
   donations: {
     provider: AdFreeProvider
     amount: number

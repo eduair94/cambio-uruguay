@@ -17,6 +17,7 @@ import {
   type DonationStatus,
 } from '../../utils/adFree'
 import { checkAgainstOrder, type ProviderPayment } from './adFreeMapping'
+import { isComplimentaryAdFree } from './adFreeOwners'
 import { connectDb } from './db'
 import { isMailerConfigured, sendMail } from './mailer'
 import { sendTelegram } from './telegram'
@@ -33,7 +34,24 @@ export interface AdFreeDonationSummary {
 export interface AdFreeSummary {
   active: boolean
   until: string | null
+  /** A site owner's account (server/utils/adFreeOwners.ts): no ads, no date, nothing paid. */
+  complimentary: boolean
   donations: AdFreeDonationSummary[]
+}
+
+const COMPLIMENTARY_UNTIL = '2099-12-31T23:59:59.000Z'
+
+/** Whether this session is a site owner's: on the admin or the ad-free allowlist, verified. */
+export function sessionIsComplimentary(user: {
+  email: string | null
+  emailVerified: boolean
+  anonymous: boolean
+}): boolean {
+  const cfg = useRuntimeConfig() as { adminEmails?: unknown; adFreeEmails?: unknown }
+  return isComplimentaryAdFree(user, {
+    adminEmails: cfg.adminEmails,
+    adFreeEmails: cfg.adFreeEmails,
+  })
 }
 
 export async function recomputeUser(uid: string): Promise<Date | null> {
@@ -46,16 +64,26 @@ export async function recomputeUser(uid: string): Promise<Date | null> {
   return until
 }
 
-export async function adFreeSummary(uid: string): Promise<AdFreeSummary> {
+/**
+ * The account's period. `complimentary` (a site owner, decided by the caller from the session)
+ * wins over any date: it is not stored, so taking the address off the list ends it.
+ */
+export async function adFreeSummary(
+  uid: string,
+  opts: { complimentary?: boolean } = {}
+): Promise<AdFreeSummary> {
   await connectDb()
   const [user, donations] = await Promise.all([
     UserModel.findById(uid, { adFreeUntil: 1 }).lean(),
     AdFreeDonationModel.find({ uid }).sort({ createdAt: -1 }).limit(50).lean(),
   ])
   const until = user?.adFreeUntil ? new Date(user.adFreeUntil) : null
+  const complimentary = Boolean(opts.complimentary)
   return {
-    active: isAdFreeActive(until),
-    until: until ? until.toISOString() : null,
+    active: complimentary || isAdFreeActive(until),
+    // The client hint stores this date; a far one keeps an owner's page loads from waiting.
+    until: complimentary ? COMPLIMENTARY_UNTIL : until ? until.toISOString() : null,
+    complimentary,
     donations: donations.map(d => ({
       provider: d.provider,
       amount: d.amount,
