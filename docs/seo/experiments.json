@@ -4111,6 +4111,22 @@
         "emprendimientos montevideo"
       ],
       "hypothesis": "Pagina nueva: un directorio de emprendimientos uruguayos que venden por Instagram, por rubro y por departamento, con sus fotos, cuando publicaron por ultima vez y de donde los conocimos. Lo arma un job nuevo (currency-emprendimientos) que descubre cuentas en Uruguay Emprendedor, en hilos de r/uruguay, por las colaboraciones de las cuentas ya listadas y por sugerencias de los lectores, lee cada perfil publico y lo clasifica; entra solo lo que es un emprendimiento con una marca uruguaya escrita o una fuente uruguaya. Instagram no tiene un buscador por rubro y ciudad sin sesion, y el hilo de r/uruguay del 21/5/2026 lo pide con esas palabras. Parte de cero: diez clics o mas en los 28 dias archivados es mejoro. La apuesta principal es que la gente lo comparta y que los propios emprendimientos se sumen y lo enlacen, que esta medicion no ve."
+    },
+    {
+      "id": "computadoras-usadas-pagina-nueva",
+      "shippedOn": "2026-11-24",
+      "routes": [
+        "/computadoras-usadas-uruguay",
+        "/precios-componentes-pc-uruguay"
+      ],
+      "queries": [
+        "computadoras usadas uruguay",
+        "notebook usada uruguay",
+        "pc gamer usada uruguay",
+        "precio placa de video uruguay",
+        "cuanto sale armar una pc uruguay"
+      ],
+      "hypothesis": "Paginas nuevas: un directorio de computadoras y piezas usadas de Facebook Marketplace y Mercado Libre, donde cada PC de escritorio se compara contra lo que salen hoy sus mismas piezas nuevas (mediana de Mercado Libre Uruguay y de siete tiendas de informatica uruguayas) y usadas (mediana de las piezas sueltas), y la tabla de precios de componentes contra la que se compara, con cuanto sale armar una PC de oficina o una gamer. Lo arma un job nuevo (currency-computadoras). Nadie en Uruguay junta esas tres cosas: el aviso dice PC gamer i5 mas GTX 1060 y no hay contra que medirlo. Parten de cero: diez clics o mas en los 28 dias archivados entre las dos rutas es mejoro."
     }
   ]
 }

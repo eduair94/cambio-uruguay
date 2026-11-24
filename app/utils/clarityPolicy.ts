@@ -169,6 +169,7 @@ export const CLARITY_RESTART_CAPPED_ROUTES: readonly string[] = Object.freeze([
   '/alquileres-uruguay',
   '/autos-usados-uruguay',
   '/motos-usadas-uruguay',
+  '/computadoras-usadas-uruguay',
   '/equipar-casa-uruguay/productos',
   '/celulares-uruguay',
   '/venta-viviendas-uruguay',
@@ -227,7 +228,7 @@ const FAMILY_RULES: ReadonlyArray<[ClarityFamily, RegExp]> = [
   ['motos', /(?:^|-)motos?(?:-|$)/],
   [
     'productos',
-    /^(?:equipar-casa-uruguay|celulares-uruguay|sillas-escritorio-uruguay|monopatines-electricos-uruguay|bicicletas-electricas-uruguay|tiendas-online-uruguay|precios-de-supermercado-uruguay|precio|cambios-de-precio-uruguay|ciberlunes-y-black-friday-uruguay|productos-que-te-cambian-la-vida-uruguay|emprendimientos-de-instagram-uruguay)$/,
+    /^(?:equipar-casa-uruguay|celulares-uruguay|sillas-escritorio-uruguay|monopatines-electricos-uruguay|bicicletas-electricas-uruguay|tiendas-online-uruguay|precios-de-supermercado-uruguay|precio|cambios-de-precio-uruguay|ciberlunes-y-black-friday-uruguay|productos-que-te-cambian-la-vida-uruguay|emprendimientos-de-instagram-uruguay|computadoras-usadas-uruguay|precios-componentes-pc-uruguay)$/,
   ],
   [
     'cotizaciones',

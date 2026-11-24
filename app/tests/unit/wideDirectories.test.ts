@@ -18,6 +18,8 @@ const WIDE: Record<string, readonly string[]> = {
   'pages/autos-chocados-y-con-deuda-uruguay.vue': ['components/cars/SidebarLayout.vue'],
   // Motos tomó la forma de autos el 23/11/2026: la misma columna de filtros + grilla.
   'pages/motos-usadas-uruguay/index.vue': ['components/cars/SidebarLayout.vue'],
+  // Computadoras nació con la forma de motos (2026-11-24): la misma columna de filtros + grilla.
+  'pages/computadoras-usadas-uruguay/index.vue': ['components/cars/SidebarLayout.vue'],
   'pages/equipar-casa-uruguay/productos/index.vue': [
     'components/equipar/Directorio.vue',
     'components/equipar/ListaBar.vue',

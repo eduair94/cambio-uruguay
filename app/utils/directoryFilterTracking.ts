@@ -4,7 +4,7 @@
 // Viaja el NOMBRE del filtro y si se puso o se sacó, nunca su VALOR: un valor puede ser una
 // dirección, un precio o texto libre que escribió el visitante, y GA4 no es lugar para eso.
 
-export type FilterDirectory = 'alquileres' | 'ventas' | 'autos' | 'motos'
+export type FilterDirectory = 'alquileres' | 'ventas' | 'autos' | 'motos' | 'computadoras'
 
 /**
  * Lo que no es un filtro: paginación, orden y vista. Además el punto de referencia de alquileres

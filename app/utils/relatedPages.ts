@@ -596,6 +596,24 @@ export const CURATED: Readonly<Record<string, readonly string[]>> = Object.freez
   // tema» ya las muestra y RelatedPages las descartaría (temaVecinosRutas).
   // Quien recorre emprendimientos de Instagram está comprando algo chico o un regalo, y antes de
   // pagarle a una cuenta conviene saber qué hacer si sale mal.
+  // Quien compara una computadora usada está por gastar en tecnología y le compra a un particular:
+  // antes de pagar conviene saber qué hacer si sale mal, y si el precio de la tienda es real. Las
+  // vecinas de su propio tema (celulares, la calculadora de importación, tiendas online) ya las
+  // muestra «Más sobre este tema», y la tabla de componentes va en la barra de la familia: acá no
+  // se repiten (RelatedPages las descartaría).
+  '/computadoras-usadas-uruguay': [
+    '/estafas-uruguay',
+    '/ciberlunes-y-black-friday-uruguay',
+    '/cambios-de-precio-uruguay',
+    '/sillas-escritorio-uruguay',
+    '/mercado-it-uruguay',
+  ],
+  '/precios-componentes-pc-uruguay': [
+    '/ciberlunes-y-black-friday-uruguay',
+    '/cambios-de-precio-uruguay',
+    '/sillas-escritorio-uruguay',
+    '/estafas-uruguay',
+  ],
   '/emprendimientos-de-instagram-uruguay': [
     '/tiendas-online-uruguay',
     '/estafas-uruguay',

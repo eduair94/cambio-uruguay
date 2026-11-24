@@ -230,6 +230,14 @@
           "label": "Precio de celulares"
         },
         {
+          "to": "/computadoras-usadas-uruguay",
+          "label": "Computadoras usadas"
+        },
+        {
+          "to": "/precios-componentes-pc-uruguay",
+          "label": "Precios de componentes de PC"
+        },
+        {
           "to": "/tiendas-online-uruguay",
           "label": "Tiendas online"
         },

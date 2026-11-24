@@ -172,6 +172,18 @@ describe('robots.txt rules', () => {
     }
   })
 
+  // Computadoras (2026-11-24): la ficha de cada aviso traducida se cierra; el directorio, la ficha
+  // española y la tabla de componentes quedan abiertos en todos los idiomas.
+  it('close the translated computer adverts, not the pages', () => {
+    for (const group of groups()) {
+      expect(blocked(group, '/fr/computadoras-usadas-uruguay/aviso/fb-1234567890')).toBe(true)
+      expect(blocked(group, '/computadoras-usadas-uruguay/aviso/fb-1234567890')).toBe(false)
+      expect(blocked(group, '/computadoras-usadas-uruguay')).toBe(false)
+      expect(blocked(group, '/en/computadoras-usadas-uruguay')).toBe(false)
+      expect(blocked(group, '/precios-componentes-pc-uruguay')).toBe(false)
+    }
+  })
+
   it('never block a public page, in any locale, for any group', () => {
     for (const group of groups()) {
       const closed = PUBLIC_PATHS.flatMap(underEveryLocale).filter(path => blocked(group, path))
