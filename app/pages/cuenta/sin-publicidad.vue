@@ -653,6 +653,13 @@ watch(
   gap: 8px;
 }
 
+/* The grid owns the rhythm, so its paragraphs give up the browser's 1em margin: grid items do not
+   collapse margins, and a <p> added 14px to every 8px and 24px step (measured in production on
+   2026-11-24: 22px inside a group). */
+.sin-publicidad__form p {
+  margin: 0;
+}
+
 @media (max-width: 760px) {
   .sin-publicidad__grid {
     grid-template-columns: minmax(0, 1fr);

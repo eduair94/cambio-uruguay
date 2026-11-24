@@ -243,5 +243,6 @@ describe('a spacing utility never fights the element’s own CSS', () => {
       }
     }
     expect(offenders.sort()).toEqual([...KNOWN].sort())
-  })
+    // Parses every page, component and layout: seconds on a loaded CI runner.
+  }, 30_000)
 })
