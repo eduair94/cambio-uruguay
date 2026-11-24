@@ -84,20 +84,23 @@
     </VAlert>
 
     <div class="sin-publicidad__grid">
-      <VCard variant="outlined" class="pa-5 sin-publicidad__card">
-        <h2 class="text-h6 font-weight-bold mb-4">Elegí tu aporte</h2>
+      <!-- Spacing is owned here, not by utility classes: 8px inside a group, 24px between groups
+           (DESIGN.md). A utility on an element whose class also sets that side loses silently;
+           tests/unit/utilitySpacingConflict.test.ts catches it. -->
+      <VCard variant="outlined" class="sin-publicidad__card">
+        <h2 class="text-h6 font-weight-bold sin-publicidad__card-title">Elegí tu aporte</h2>
 
         <VAlert v-if="!providers.length" type="info" variant="tonal" density="compact">
           Los aportes todavía no están habilitados. Mientras tanto podés apoyar el sitio desde la
           portada, con una donación que no quita los anuncios.
         </VAlert>
 
-        <template v-else>
+        <div v-else class="sin-publicidad__form">
           <!-- Two payment media as two pressable tiles (currency + what each accepts): the choice
                reads at a glance and wraps on a phone, which a segmented toggle did not. -->
           <div
             v-if="providers.length > 1"
-            class="sin-publicidad__providers mb-4"
+            class="sin-publicidad__providers"
             role="group"
             aria-label="Moneda y medio de pago"
           >
@@ -114,83 +117,87 @@
               <span class="sin-publicidad__provider-methods">{{ PROVIDER_LABEL[p].methods }}</span>
             </button>
           </div>
-          <p v-else class="text-body-2 text-medium-emphasis mb-4">
+          <p v-else class="text-body-2 text-medium-emphasis">
             {{ PROVIDER_LABEL[provider].methods }}
           </p>
 
-          <VChipGroup
-            v-model="choice"
-            mandatory
-            column
-            selected-class="text-primary"
-            class="mb-2"
-            aria-label="Monto del aporte"
-          >
-            <VChip
-              v-for="value in limits.suggested"
-              :key="value"
-              :value="value"
-              variant="outlined"
-              size="large"
-              filter
+          <div class="sin-publicidad__group">
+            <VChipGroup
+              v-model="choice"
+              mandatory
+              column
+              selected-class="text-primary"
+              aria-label="Monto del aporte"
             >
-              {{ formatAdFreeAmount(value, limits.currency) }}
-              <!-- The middle amount is the default and is labelled as the suggestion: the anchor
-                   that most people keep. Never «el más elegido»: there is no data that says so. -->
-              <span v-if="value === suggestedDefault" class="sin-publicidad__badge">sugerido</span>
-            </VChip>
-            <VChip value="other" variant="outlined" size="large" filter>Otro monto</VChip>
-          </VChipGroup>
+              <VChip
+                v-for="value in limits.suggested"
+                :key="value"
+                :value="value"
+                variant="outlined"
+                size="large"
+                filter
+              >
+                {{ formatAdFreeAmount(value, limits.currency) }}
+                <!-- The middle amount is the default and is labelled as the suggestion: the anchor
+                     that most people keep. Never «el más elegido»: there is no data that says so. -->
+                <span v-if="value === suggestedDefault" class="sin-publicidad__pill">sugerido</span>
+              </VChip>
+              <VChip value="other" variant="outlined" size="large" filter>Otro monto</VChip>
+            </VChipGroup>
 
-          <VTextField
-            v-if="choice === 'other'"
-            v-model="custom"
-            type="number"
-            inputmode="decimal"
-            :min="limits.min"
-            :max="limits.max"
-            :step="limits.decimals ? '0.01' : '1'"
-            :prefix="limits.currency === 'USD' ? 'US$' : '$'"
-            :label="`Tu monto (mínimo ${formatAdFreeAmount(limits.min, limits.currency)})`"
-            :error-messages="customError ? [customError] : []"
-            density="comfortable"
-            class="mb-2 sin-publicidad__amount"
-            @keydown.enter.prevent="start"
-          />
+            <VTextField
+              v-if="choice === 'other'"
+              v-model="custom"
+              type="number"
+              inputmode="decimal"
+              :min="limits.min"
+              :max="limits.max"
+              :step="limits.decimals ? '0.01' : '1'"
+              :prefix="limits.currency === 'USD' ? 'US$' : '$'"
+              :label="`Tu monto (mínimo ${formatAdFreeAmount(limits.min, limits.currency)})`"
+              :error-messages="customError ? [customError] : []"
+              hide-details="auto"
+              density="comfortable"
+              class="sin-publicidad__amount"
+              @keydown.enter.prevent="start"
+            />
 
-          <p v-if="validAmount" class="text-body-2 text-medium-emphasis mb-4">
-            Equivale a
-            <strong>{{ monthlyEquivalent(validAmount, limits.currency) }} por mes</strong>
-            sin anuncios, pagado una sola vez.
-          </p>
+            <p v-if="validAmount" class="text-body-2 text-medium-emphasis">
+              Equivale a
+              <strong>{{ monthlyEquivalent(validAmount, limits.currency) }} por mes</strong>
+              sin anuncios, pagado una sola vez.
+            </p>
+          </div>
 
-          <VAlert v-if="error" type="error" variant="tonal" density="compact" class="mb-3">
-            {{ error }}
-          </VAlert>
+          <div class="sin-publicidad__group">
+            <VAlert v-if="error" type="error" variant="tonal" density="compact">
+              {{ error }}
+            </VAlert>
 
-          <!-- One button, signed in or not: the amount is chosen first and the sign-in comes only
-               when it is needed, then the checkout continues by itself (`continueAfterSignIn`). -->
-          <VBtn
-            color="primary"
-            size="large"
-            block
-            class="text-none sin-publicidad__cta"
-            :loading="starting"
-            :disabled="!validAmount"
-            @click="start"
-          >
-            {{
-              validAmount
-                ? `Aportar ${formatAdFreeAmount(validAmount, limits.currency)} con ${PROVIDER_LABEL[provider].name}`
-                : 'Elegí un monto'
-            }}
-          </VBtn>
-          <p v-if="!store.isLoggedIn" class="text-body-2 text-medium-emphasis mt-2 mb-0">
-            Te vamos a pedir que inicies sesión (Google, Discord o correo): el beneficio queda en tu
-            cuenta y así funciona en el celular, la compu y donde entres.
-          </p>
+            <!-- One button, signed in or not: the amount is chosen first and the sign-in comes only
+                 when it is needed, then the checkout continues by itself (`continueAfterSignIn`). -->
+            <VBtn
+              color="primary"
+              size="large"
+              block
+              class="text-none sin-publicidad__cta"
+              :loading="starting"
+              :disabled="!validAmount"
+              @click="start"
+            >
+              {{
+                validAmount
+                  ? `Aportar ${formatAdFreeAmount(validAmount, limits.currency)} con ${PROVIDER_LABEL[provider].name}`
+                  : 'Elegí un monto'
+              }}
+            </VBtn>
+            <p v-if="!store.isLoggedIn" class="text-body-2 text-medium-emphasis">
+              Te vamos a pedir que inicies sesión (Google, Discord o correo): el beneficio queda en
+              tu cuenta y así funciona en el celular, la compu y donde entres.
+            </p>
+          </div>
 
-          <ul class="sin-publicidad__trust mt-4" aria-label="Garantías del aporte">
+          <ul class="sin-publicidad__trust" aria-label="Garantías del aporte">
             <li>
               <VIcon size="16">mdi-lock</VIcon>
               Pagás en la página de {{ PROVIDER_LABEL[provider].name }}: nunca vemos tu tarjeta.
@@ -204,7 +211,7 @@
               Si te arrepentís, te lo devolvemos dentro de los 5 días hábiles.
             </li>
           </ul>
-        </template>
+        </div>
       </VCard>
 
       <section class="sin-publicidad__includes" aria-labelledby="sp-includes">
@@ -242,7 +249,7 @@
       </section>
     </div>
 
-    <section v-if="summary?.donations.length" class="mt-8" aria-labelledby="sp-history">
+    <section v-if="summary?.donations.length" class="mt-10" aria-labelledby="sp-history">
       <h2 id="sp-history" class="text-h6 font-weight-bold mb-3">Tus aportes</h2>
       <div class="sin-publicidad__table-wrap">
         <VTable density="comfortable" class="sin-publicidad__table">
@@ -266,7 +273,7 @@
       </div>
     </section>
 
-    <section class="mt-8 sin-publicidad__faq" aria-labelledby="sp-faq">
+    <section class="mt-10 sin-publicidad__faq" aria-labelledby="sp-faq">
       <h2 id="sp-faq" class="text-h6 font-weight-bold mb-3">Preguntas</h2>
       <VExpansionPanels variant="accordion">
         <VExpansionPanel title="¿Es una suscripción?">
@@ -622,8 +629,28 @@ watch(
 .sin-publicidad__grid {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: 32px;
+  gap: 40px;
   align-items: start;
+}
+
+/* The card's rhythm, owned in one place (DESIGN.md: 8px inside a group, 24px between groups):
+   title → medium → amount → action → guarantees. */
+.sin-publicidad__card {
+  padding: 24px;
+}
+
+.sin-publicidad__card-title {
+  margin-bottom: 16px;
+}
+
+.sin-publicidad__form {
+  display: grid;
+  gap: 24px;
+}
+
+.sin-publicidad__group {
+  display: grid;
+  gap: 8px;
 }
 
 @media (max-width: 760px) {
@@ -636,13 +663,13 @@ watch(
 .sin-publicidad__providers {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 
 .sin-publicidad__provider {
   display: grid;
-  gap: 2px;
-  padding: 12px 14px;
+  gap: 4px;
+  padding: 12px 16px;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   border-radius: 12px;
   background: transparent;
@@ -689,12 +716,12 @@ watch(
   padding: 0;
   margin: 0;
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 
 .sin-publicidad__list li {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: flex-start;
   line-height: 1.5;
 }
@@ -708,9 +735,9 @@ watch(
   overflow-x: auto;
 }
 
-.sin-publicidad__badge {
-  margin-left: 6px;
-  padding: 0 6px;
+.sin-publicidad__pill {
+  margin-left: 8px;
+  padding: 0 8px;
   border-radius: 999px;
   background: rgba(var(--v-theme-primary), 0.12);
   color: rgb(var(--v-theme-primary));
@@ -745,7 +772,7 @@ watch(
   padding: 0;
   margin: 0;
   display: grid;
-  gap: 6px;
+  gap: 8px;
   font-size: 0.875rem;
   color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
 }
