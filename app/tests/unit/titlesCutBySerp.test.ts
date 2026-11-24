@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { irpfBracketsUyu, URUGUAY } from '../../utils/calculators'
+import { DECLARATION_THRESHOLD_USD } from '../../utils/cashDeclarationRules'
 import { formatUYU } from '../../utils/format'
 import { ID_CARD_BY_KEY } from '../../utils/idCard'
 import { LENDERS } from '../../utils/loans'
@@ -143,6 +144,26 @@ describe('títulos que entran en el SERP', () => {
     expect(page('cobrar-giro-del-exterior-uruguay.vue')).toContain(
       'const metaTitle = `Cobrar un giro del exterior: ${counts.agents} casas`'
     )
+  })
+
+  // 80 con la marca hasta el 2026-11-24, el último del piso de `seoTitleBudget`: el SERP publicaba
+  // 60 y cortaba en «…no declarás», o sea se llevaba el «nada» que contesta la consulta y la marca
+  // entera. El título se queda con el umbral, que es la respuesta.
+  it('declarar efectivo: el título lleva el umbral y entra con la cifra puesta', () => {
+    const title = (threshold: number) =>
+      `Efectivo sin declarar: hasta US$ ${threshold.toLocaleString('es-UY')}`
+    expect(titleFits(title(DECLARATION_THRESHOLD_USD))).toBe(true)
+    // Y sigue entrando si alguna vez el umbral sube dos órdenes de magnitud, que es el único cambio
+    // que lo alargaría: la cifra es lo único variable del título.
+    expect(titleFits(title(1_000_000))).toBe(true)
+
+    // El umbral sale de la constante que decide la página, no de un literal congelado en el título,
+    // igual que la cifra de `/prestamos-uruguay`.
+    const source = page('declarar-dinero-en-efectivo-uruguay.vue')
+    expect(source).toContain(
+      "const title = `Efectivo sin declarar: hasta US$ ${DECLARATION_THRESHOLD_USD.toLocaleString('es-UY')}`"
+    )
+    expect(source).toContain('title: () => `${title} | Cambio Uruguay`')
   })
 
   it('retirar efectivo: los tres idiomas entran', () => {

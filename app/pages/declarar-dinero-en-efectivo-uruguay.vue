@@ -325,7 +325,13 @@ const faqs = [
 
 // --- SEO ---
 const canonicalUrl = 'https://cambio-uruguay.com/declarar-dinero-en-efectivo-uruguay'
-const title = `Declarar efectivo en Uruguay: hasta US$ ${DECLARATION_THRESHOLD_USD.toLocaleString('es-UY')} no declarás nada`
+// El `<title>` medía 80 caracteres con la marca: el SERP publicaba 60 y cortaba en «…no
+// declarás», o sea justo antes del «nada» que contesta la consulta, y la marca no salía nunca. La
+// respuesta es el umbral, así que el título se queda con el umbral y suelta lo que ya dicen otras
+// partes del SERP: «en Uruguay» (la marca lo repite) y el verbo que escribió quien busca. La cifra
+// sale de la constante y no de un literal congelado, como en `/prestamos-uruguay`; la medición
+// exacta con el umbral puesto vive en `titlesCutBySerp.test.ts`. El H1 conserva la pregunta entera.
+const title = `Efectivo sin declarar: hasta US$ ${DECLARATION_THRESHOLD_USD.toLocaleString('es-UY')}`
 const description =
   'Hasta US$ 10.000 entrás o salís sin declarar; por encima se declara en la Aduana. Desde marzo de 2026 la multa es 30 % del excedente (Ley 19.574 art. 29).'
 

@@ -572,17 +572,40 @@ function pageTitleFloor(source: string): string | null {
  *     busca— y «en Uruguay», que la marca ya repite, y conserva la cifra: cuántas casas de cambio
  *     declaran ser agentes de una red internacional.
  *
- * Queda una y está RESERVADA: `/declarar-dinero-en-efectivo-uruguay` se libera el 2026-11-24.
+ * 1 → 0 el 2026-11-24, el día exacto que el párrafo de arriba tenía anotado: la fila
+ * `dos-huerfanas-de-aduana-entran-a-su-tema` (26/10) cumple hoy 29 días y suelta la última, que es
+ * además del tramo `contenido` (8×). `/declarar-dinero-en-efectivo-uruguay` medía 80 con la marca
+ * —el peor de los cinco con los que nació este pozo, después de `/prestamos-uruguay`— y el SERP
+ * cortaba en «…no declarás», o sea se llevaba el «nada» que contesta la consulta y la marca
+ * entera. Queda en 56 con el umbral puesto: suelta «en Uruguay», que la marca repite, y el verbo
+ * que escribió quien busca, y conserva la cifra, que es la respuesta. Su medición exacta vive en
+ * `titlesCutBySerp.test.ts`, como la de los otros cuatro.
  */
+// Sin anotación de tipo a propósito, aunque esté vacía, por lo mismo que `DEUDA_TITULO_LARGO` en
+// `guideSnippetBudget.test.ts`: el lector de `npm run seo_debt` busca el texto exacto
+// `const DEUDA_TITULO_PISO = [` (`parseStringList` en `classes/revenueplan/debtFree.ts`) y un
+// `: string[]` en el medio lo hace fallar con «¿lo renombraron?».
 const DEUDA_TITULO_PISO = [
-  // El comentario va DENTRO de la lista por lo que `DEUDA_SIN_ENLACE` en `enlacesDeContexto.test.ts`
-  // deja escrito: `classes/revenueplan/debtFree.ts::parseStringList` corta en el primer `\n]`, o sea
-  // exige que el cierre abra su propia línea, y prettier aplasta a una sola línea cualquier array
-  // que entre en 100 columnas salvo los que llevan un comentario.
-  '/declarar-dinero-en-efectivo-uruguay',
+  // POZO PAGADO el 2026-11-24: ningún título del sitio pasa de 60 con la marca ni en su PISO, o sea
+  // contando sólo su texto fijo.
+  //
+  // Esa marca literal es la que `classes/revenueplan/debtFree.ts::parseStringList` busca para
+  // distinguir «este pozo se terminó» de su propio modo de fallar, que es devolver `[]` cuando no
+  // entiende la forma de la lista: sin la marca, una lista vacía sigue tirando excepción, porque un
+  // `const` renombrado tiene que romper el informe y no vaciarlo en silencio.
+  //
+  // Y el comentario va DENTRO de la lista por lo que `DEUDA_SIN_ENLACE` en `enlacesDeContexto.test.ts`
+  // deja escrito: `parseStringList` corta en el primer `\n]`, o sea exige que el cierre abra su
+  // propia línea, y prettier aplasta a una sola línea cualquier array que entre en 100 columnas
+  // salvo los que llevan un comentario.
+  //
+  // El cero es un CONTRATO y no un pozo vacío: de acá en adelante, un piso pasado de 60 es un
+  // título que se escribió hoy. Y el piso condena pero no absuelve —los `${...}` que no resuelven
+  // aportan vacío—, así que un piso que entra no prueba que el título entre: eso lo mide
+  // `titlesCutBySerp.test.ts` con los valores reales puestos.
 ]
 
-const TITLE_FLOOR_OVER_BUDGET = 1
+const TITLE_FLOOR_OVER_BUDGET = 0
 
 // 247 el 2026-11-03, el conteo real y por el mismo motivo que `MEASURABLE`: si el piso fuera más
 // bajo, un título nuevo podría dejar de leerse acá sin poner nada en rojo. Sube con cada página que
