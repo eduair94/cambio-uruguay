@@ -1,6 +1,7 @@
 import type {
   ComputerPublicListing,
   ComputerPublicMeta,
+  ComputerPublicNotebookReport,
   ComputerPublicPart,
 } from '../../utils/computadorasPublic'
 
@@ -9,6 +10,8 @@ export interface ComputerPreviewFile {
   meta: ComputerPublicMeta | null
   items: ComputerPublicListing[]
   parts: ComputerPublicPart[]
+  /** El informe de notebooks (`uy-computadoras-notebooks`), desde el 24/11/2026. */
+  notebookReport: ComputerPublicNotebookReport | null
 }
 
 /**
@@ -29,6 +32,7 @@ export async function readComputerPreview(): Promise<ComputerPreviewFile | null>
     meta: file?.meta ?? null,
     items: Array.isArray(file?.items) ? file.items : [],
     parts: Array.isArray(file?.parts) ? file.parts : [],
+    notebookReport: file?.notebookReport ?? null,
   }
 }
 

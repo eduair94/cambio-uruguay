@@ -26,6 +26,8 @@
 import { dateLocale } from './format'
 import type {
   ComputerPublicBasis,
+  ComputerPublicNotebookReport,
+  ComputerPublicOpportunity,
   ComputerPublicComparables,
   ComputerPublicCondition,
   ComputerPublicDrive,
@@ -287,6 +289,9 @@ export const COMPUTER_SORTS = Object.freeze([
   'relacion',
   'completos',
   'ram',
+  'ahorro',
+  'cpu_nuevo',
+  'disco',
 ] as const)
 export type ComputerSort = (typeof COMPUTER_SORTS)[number]
 
@@ -302,10 +307,38 @@ export const COMPUTER_SORT_ITEMS: ReadonlyArray<{
   { title: 'Mejor relación', value: 'relacion', short: 'Mejor relación' },
   { title: 'Más datos leídos', value: 'completos', short: 'Más completos' },
   { title: 'Más memoria RAM', value: 'ram', short: 'Más RAM' },
+  { title: 'Mayor ahorro', value: 'ahorro', short: 'Mayor ahorro' },
+  { title: 'Procesador más nuevo', value: 'cpu_nuevo', short: 'CPU más nuevo' },
+  { title: 'Más almacenamiento', value: 'disco', short: 'Más disco' },
 ])
 
 /** RAM mínima: los tres escalones en los que la gente piensa la memoria hoy. */
 export const COMPUTER_RAM_STEPS = Object.freeze([8, 16, 32] as const)
+/** Los que acepta la URL además de esos: el informe de notebooks enlaza cada fila de RAM (4, 12,
+ * 24 GB…) con su mínimo, y un enlace que el panel no ofrece igual tiene que filtrar. */
+const COMPUTER_RAM_ACCEPTED: readonly number[] = Object.freeze([4, 6, 8, 12, 16, 24, 32, 48, 64])
+/** «Procesador de 2020 o más nuevo»: el año de la SERIE, que es lo que el aviso deja saber. */
+export const COMPUTER_CPU_YEAR_STEPS = Object.freeze([2015, 2018, 2020, 2022, 2024] as const)
+export const COMPUTER_DISK_STEPS = Object.freeze([256, 512, 1000] as const)
+export const COMPUTER_VRAM_STEPS = Object.freeze([4, 6, 8, 12] as const)
+export const COMPUTER_RAM_TYPES = Object.freeze(['ddr3', 'ddr4', 'ddr5'] as const)
+/** La pantalla en tres tamaños, como se piensa una notebook: la que se lleva, la de todos los días
+ * y la que casi no sale de la casa. El hueco entre 14,5″ y 15″ es a propósito: no hay pantallas ahí. */
+export const COMPUTER_SCREEN_SIZES = Object.freeze({
+  chica: { label: 'Hasta 14,5″', min: null, max: 14.5 },
+  media: { label: 'De 15″ a 16,5″', min: 15, max: 16.5 },
+  grande: { label: '17″ o más', min: 17, max: null },
+} as const)
+export type ComputerScreenSize = keyof typeof COMPUTER_SCREEN_SIZES
+export const COMPUTER_SELLER_LABEL = Object.freeze({
+  tienda: 'Tienda',
+  particular: 'Particular',
+} as const)
+export const COMPUTER_TIER_LABEL = Object.freeze({
+  solida: 'Comparación sólida',
+  exploratoria: 'Comparación exploratoria',
+} as const)
+export type ComputerTier = keyof typeof COMPUTER_TIER_LABEL
 /** Publicados en los últimos N días. */
 export const COMPUTER_SINCE_STEPS = Object.freeze([1, 3, 7, 30] as const)
 /** Los veredictos que cuentan como «pide menos que sus piezas». */
@@ -343,6 +376,30 @@ export interface ComputerQuery {
   debajo: boolean
   /** Publicados en los últimos N días. */
   dias: number | null
+  // Desde el 24/11/2026. Las claves de arriba no cambian: hay enlaces compartidos con ellas.
+  /** La marca del EQUIPO (Lenovo, Apple…), no la del procesador. */
+  marcaEquipo: string
+  /** La línea de notebook (`thinkpad`, `macbook-air`…). */
+  linea: string
+  /** El procesador es de una serie de este año o más nueva. */
+  cpuAnio: number | null
+  ramTipo: '' | (typeof COMPUTER_RAM_TYPES)[number]
+  /** Almacenamiento total mínimo, en GB. */
+  discoMin: number | null
+  pantalla: '' | ComputerScreenSize
+  /** Memoria mínima de la placa de video, en GB. */
+  vramMin: number | null
+  estado: '' | ComputerPublicCondition
+  /** Tienda o particular: sólo lo sabe Mercado Libre. */
+  vendedor: '' | keyof typeof COMPUTER_SELLER_LABEL
+  /** Al menos tres datos leídos (procesador, RAM, disco…). */
+  conDatos: boolean
+  /** Incluye monitor. */
+  monitor: boolean
+  /** Sólo las que el job marcó como oportunidad. */
+  oportunidad: boolean
+  /** Sólo oportunidades con esa evidencia. */
+  evidencia: '' | ComputerTier
   orden: ComputerSort
   pagina: number
 }
@@ -374,6 +431,22 @@ function computerAmount(value: unknown, min: number, max: number): number | null
 
 const computerFlag = (value: unknown): boolean => computerStr(value, 4) === '1'
 
+/** Un valor de una lista cerrada, o vacío. */
+function computerOneOf<T extends string>(value: unknown, allowed: readonly T[]): T | '' {
+  const raw = computerStr(value) as T
+  return allowed.includes(raw) ? raw : ''
+}
+
+/** Un número de una lista cerrada de escalones, o null. */
+function computerStep(value: unknown, allowed: readonly number[]): number | null {
+  const parsed = computerInt(value, 1, 100_000)
+  return parsed != null && allowed.includes(parsed) ? parsed : null
+}
+
+/** La marca del equipo como la escribe el catálogo («Lenovo», «HP», «Apple»): letras, dígitos y
+ * pocos signos. Se compara sin distinguir mayúsculas, así que «lenovo» encuentra «Lenovo». */
+const COMPUTER_BRAND_RE = /^[\p{L}\p{N}][\p{L}\p{N} .&+-]{0,39}$/u
+
 /** Un slug de faceta: minúsculas, dígitos, guiones y puntos; la identidad de pieza lleva su rol
  * adelante con dos puntos. Cualquier otra forma no puede coincidir con un documento. */
 const COMPUTER_FACET_SLUG_RE = /^[a-z0-9][a-z0-9.+-]{0,60}$/
@@ -393,6 +466,8 @@ export function computerNormalizeQuery(raw: Record<string, unknown>): ComputerQu
   const orden = computerStr(raw.orden) as ComputerSort
   const ramMin = computerInt(raw.ramMin, 1, 1024)
   const dias = computerInt(raw.dias, 1, 365)
+  const marcaEquipo = computerStr(raw.marcaEquipo, 40)
+  const linea = computerStr(raw.linea).toLowerCase()
   let precioMinUsd = computerAmount(raw.precioMinUsd, 1, 100_000)
   let precioMaxUsd = computerAmount(raw.precioMaxUsd, 1, 100_000)
   if (precioMinUsd != null && precioMaxUsd != null && precioMinUsd > precioMaxUsd)
@@ -405,8 +480,7 @@ export function computerNormalizeQuery(raw: Record<string, unknown>): ComputerQu
     procesador: computerPieceSlug(raw.procesador, 'cpu'),
     placa: computerPieceSlug(raw.placa, 'gpu'),
     dedicada: computerFlag(raw.dedicada),
-    ramMin:
-      ramMin != null && (COMPUTER_RAM_STEPS as readonly number[]).includes(ramMin) ? ramMin : null,
+    ramMin: ramMin != null && COMPUTER_RAM_ACCEPTED.includes(ramMin) ? ramMin : null,
     ssd: computerFlag(raw.ssd),
     precioMinUsd,
     precioMaxUsd,
@@ -415,6 +489,28 @@ export function computerNormalizeQuery(raw: Record<string, unknown>): ComputerQu
     sinFallas: computerFlag(raw.sinFallas),
     debajo: computerFlag(raw.debajo),
     dias: dias != null && (COMPUTER_SINCE_STEPS as readonly number[]).includes(dias) ? dias : null,
+    marcaEquipo: COMPUTER_BRAND_RE.test(marcaEquipo) ? marcaEquipo : '',
+    linea: COMPUTER_FACET_SLUG_RE.test(linea) ? linea : '',
+    cpuAnio: computerStep(raw.cpuAnio, COMPUTER_CPU_YEAR_STEPS),
+    ramTipo: computerOneOf(raw.ramTipo, COMPUTER_RAM_TYPES),
+    discoMin: computerStep(raw.discoMin, COMPUTER_DISK_STEPS),
+    pantalla: computerOneOf(
+      raw.pantalla,
+      Object.keys(COMPUTER_SCREEN_SIZES) as ComputerScreenSize[]
+    ),
+    vramMin: computerStep(raw.vramMin, COMPUTER_VRAM_STEPS),
+    estado: computerOneOf(
+      raw.estado,
+      Object.keys(COMPUTER_CONDITION_LABEL) as ComputerPublicCondition[]
+    ),
+    vendedor: computerOneOf(
+      raw.vendedor,
+      Object.keys(COMPUTER_SELLER_LABEL) as Array<keyof typeof COMPUTER_SELLER_LABEL>
+    ),
+    conDatos: computerFlag(raw.conDatos),
+    monitor: computerFlag(raw.monitor),
+    oportunidad: computerFlag(raw.oportunidad),
+    evidencia: computerOneOf(raw.evidencia, Object.keys(COMPUTER_TIER_LABEL) as ComputerTier[]),
     orden: (COMPUTER_SORTS as readonly string[]).includes(orden) ? orden : 'recientes',
     pagina: computerInt(raw.pagina, 1, 500) ?? 1,
   }
@@ -440,6 +536,19 @@ export function computerQueryParams(query: ComputerQuery): Record<string, string
   if (query.sinFallas) params.sinFallas = '1'
   if (query.debajo) params.debajo = '1'
   if (query.dias != null) params.dias = String(query.dias)
+  if (query.marcaEquipo) params.marcaEquipo = query.marcaEquipo
+  if (query.linea) params.linea = query.linea
+  if (query.cpuAnio != null) params.cpuAnio = String(query.cpuAnio)
+  if (query.ramTipo) params.ramTipo = query.ramTipo
+  if (query.discoMin != null) params.discoMin = String(query.discoMin)
+  if (query.pantalla) params.pantalla = query.pantalla
+  if (query.vramMin != null) params.vramMin = String(query.vramMin)
+  if (query.estado) params.estado = query.estado
+  if (query.vendedor) params.vendedor = query.vendedor
+  if (query.conDatos) params.conDatos = '1'
+  if (query.monitor) params.monitor = '1'
+  if (query.oportunidad) params.oportunidad = '1'
+  if (query.evidencia) params.evidencia = query.evidencia
   if (query.orden !== 'recientes') params.orden = query.orden
   if (query.pagina > 1) params.pagina = String(query.pagina)
   return params
@@ -458,9 +567,25 @@ export function computerQueryWithout(
 ): ComputerQuery {
   const next: ComputerQuery = { ...query, pagina: 1 }
   for (const name of keys) {
-    if (name === 'ramMin' || name === 'precioMinUsd' || name === 'precioMaxUsd' || name === 'dias')
+    if (
+      name === 'ramMin' ||
+      name === 'precioMinUsd' ||
+      name === 'precioMaxUsd' ||
+      name === 'dias' ||
+      name === 'cpuAnio' ||
+      name === 'discoMin' ||
+      name === 'vramMin'
+    )
       next[name] = null
-    else if (name === 'dedicada' || name === 'ssd' || name === 'sinFallas' || name === 'debajo')
+    else if (
+      name === 'dedicada' ||
+      name === 'ssd' ||
+      name === 'sinFallas' ||
+      name === 'debajo' ||
+      name === 'conDatos' ||
+      name === 'monitor' ||
+      name === 'oportunidad'
+    )
       next[name] = false
     else if (name === 'orden') next.orden = 'recientes'
     else if (name === 'pagina') next.pagina = 1
@@ -473,9 +598,20 @@ export function computerQueryWithout(
     } else if (name === 'familia') {
       next.familia = ''
       next.procesador = ''
+    } else if (name === 'marcaEquipo') {
+      // Igual con el equipo: una línea (ThinkPad) sin su marca no se encuentra en ninguna lista.
+      next.marcaEquipo = ''
+      next.linea = ''
     } else if (name === 'tipo') next.tipo = ''
     else if (name === 'fuente') next.fuente = ''
-    else next[name] = ''
+    else if (name === 'ramTipo') next.ramTipo = ''
+    else if (name === 'pantalla') next.pantalla = ''
+    else if (name === 'estado') next.estado = ''
+    else if (name === 'vendedor') next.vendedor = ''
+    else if (name === 'evidencia') next.evidencia = ''
+    else if (name === 'q' || name === 'familia' || name === 'procesador' || name === 'placa')
+      next[name] = ''
+    else if (name === 'departamento' || name === 'linea') next[name] = ''
   }
   return next
 }
@@ -487,6 +623,12 @@ export function computerSlugText(slug: string): string {
     .replace(/^[a-z]+:/, '')
     .replace(/-/g, ' ')
     .toUpperCase()
+}
+
+/** `macbook-air` → «Macbook air»: el nombre de una línea cuando la faceta no lo trae. */
+export function computerSlugTitle(slug: string): string {
+  const text = slug.replace(/-/g, ' ')
+  return text.charAt(0).toUpperCase() + text.slice(1)
 }
 
 export function computerTipoLabel(tipo: ComputerTipo): string {
@@ -513,6 +655,16 @@ export function computerFilterChips(
     list?.find(facet => facet.value === slug)?.label ?? fallback
   if (query.q) chips.push({ keys: ['q'], label: `"${query.q}"` })
   if (query.tipo) chips.push({ keys: ['tipo'], label: computerTipoLabel(query.tipo) })
+  if (query.marcaEquipo)
+    chips.push({
+      keys: ['marcaEquipo'],
+      label: named(facets?.brands, query.marcaEquipo, query.marcaEquipo),
+    })
+  if (query.linea)
+    chips.push({
+      keys: ['linea'],
+      label: named(facets?.lines, query.linea, computerSlugTitle(query.linea)),
+    })
   if (query.marca) chips.push({ keys: ['marca'], label: COMPUTER_CPU_BRAND_LABEL[query.marca] })
   if (query.familia)
     chips.push({
@@ -526,10 +678,22 @@ export function computerFilterChips(
       keys: ['placa'],
       label: named(facets?.gpus, query.placa, computerSlugText(query.placa)),
     })
+  if (query.cpuAnio != null)
+    chips.push({ keys: ['cpuAnio'], label: `Procesador de ${query.cpuAnio} o más nuevo` })
   if (query.dedicada) chips.push({ keys: ['dedicada'], label: 'Con placa de video dedicada' })
+  if (query.vramMin != null)
+    chips.push({ keys: ['vramMin'], label: `Placa con ${query.vramMin} GB o más` })
   if (query.ramMin != null)
     chips.push({ keys: ['ramMin'], label: `${query.ramMin} GB de RAM o más` })
+  if (query.ramTipo) chips.push({ keys: ['ramTipo'], label: `RAM ${query.ramTipo.toUpperCase()}` })
   if (query.ssd) chips.push({ keys: ['ssd'], label: 'Con SSD' })
+  if (query.discoMin != null)
+    chips.push({ keys: ['discoMin'], label: `${computerGbLabel(query.discoMin)} o más de disco` })
+  if (query.pantalla)
+    chips.push({
+      keys: ['pantalla'],
+      label: `Pantalla ${COMPUTER_SCREEN_SIZES[query.pantalla].label.toLowerCase()}`,
+    })
   if (query.precioMinUsd != null && query.precioMaxUsd != null) {
     chips.push({
       keys: ['precioMinUsd', 'precioMaxUsd'],
@@ -544,6 +708,17 @@ export function computerFilterChips(
   if (query.fuente) chips.push({ keys: ['fuente'], label: COMPUTER_SOURCE_LABEL[query.fuente] })
   if (query.sinFallas) chips.push({ keys: ['sinFallas'], label: 'Sin fallas declaradas' })
   if (query.debajo) chips.push({ keys: ['debajo'], label: 'Pide menos de lo que vale' })
+  if (query.oportunidad) chips.push({ keys: ['oportunidad'], label: 'Sólo oportunidades' })
+  if (query.evidencia)
+    chips.push({ keys: ['evidencia'], label: COMPUTER_TIER_LABEL[query.evidencia] })
+  if (query.estado) chips.push({ keys: ['estado'], label: COMPUTER_CONDITION_LABEL[query.estado] })
+  if (query.vendedor)
+    chips.push({
+      keys: ['vendedor'],
+      label: `Vende: ${COMPUTER_SELLER_LABEL[query.vendedor].toLowerCase()}`,
+    })
+  if (query.conDatos) chips.push({ keys: ['conDatos'], label: 'Con al menos tres datos' })
+  if (query.monitor) chips.push({ keys: ['monitor'], label: 'Incluye monitor' })
   if (query.dias != null)
     chips.push({
       keys: ['dias'],
@@ -569,6 +744,11 @@ const COMPUTER_ACCENTS: Record<string, string> = {
   o: '[oóòö]',
   u: '[uúùü]',
   n: '[nñ]',
+}
+
+/** Un texto literal dentro de una expresión regular. */
+export function computerEscapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
 /** El texto como expresión regular que no distingue tildes ("monitor" encuentra "Mónitor"). */
@@ -628,6 +808,33 @@ export function computerMatch(
       match.publishedAt = { $gte: new Date(since).toISOString().slice(0, 10) }
   }
   if (query.q) match.title = { $regex: computerAccentInsensitive(query.q), $options: 'i' }
+  // La marca del equipo, sin distinguir mayúsculas: el informe enlaza con la etiqueta («Lenovo»)
+  // y el catálogo puede guardar otra capitalización. Anclada: «HP» no puede encontrar «HPE».
+  if (query.marcaEquipo)
+    match.brand = { $regex: `^${computerEscapeRegExp(query.marcaEquipo)}$`, $options: 'i' }
+  if (query.linea) match.line = query.linea
+  // `$gte` excluye null: un procesador sin año (un «i7» sin modelo) no cumple «de 2020 o más nuevo».
+  if (query.cpuAnio != null) match['cpu.year'] = { $gte: query.cpuAnio }
+  if (query.ramTipo) match.ramType = query.ramTipo
+  if (query.discoMin != null) match.storageGb = { $gte: query.discoMin }
+  if (query.pantalla) {
+    const size = COMPUTER_SCREEN_SIZES[query.pantalla]
+    const inches: Record<string, number> = {}
+    if (size.min != null) inches.$gte = size.min
+    if (size.max != null) inches.$lte = size.max
+    match.screenInches = inches
+  }
+  if (query.vramMin != null) match['gpu.vramGb'] = { $gte: query.vramMin }
+  if (query.estado) match.condition = query.estado
+  if (query.vendedor) match.sellerType = query.vendedor
+  if (query.conDatos) match.specCount = { $gte: 3 }
+  if (query.monitor) match['includes.monitor'] = true
+  if (query.oportunidad || query.evidencia) match.opportunity = { $ne: null }
+  if (query.evidencia) match['opportunity.tier'] = query.evidencia
+  // «Mayor ahorro» y «procesador más nuevo» sólo listan lo que tiene el dato, por la misma razón que
+  // «mejor relación»: el null abriría la lista (y en el descendente, la cerraría entera).
+  if (query.orden === 'ahorro') match['opportunity.savingsPct'] = { $ne: null }
+  if (query.orden === 'cpu_nuevo' && query.cpuAnio == null) match['cpu.year'] = { $ne: null }
   // «Mejor relación» no puede abrir con los avisos sin veredicto: en un orden ascendente de Mongo
   // el null va primero, y arriba quedarían justo los que no se pudieron comparar. Se sacan, como
   // motos con «menor cilindrada». Pedir el veredicto (y no sólo el cociente) deja afuera además lo
@@ -655,6 +862,12 @@ export function computerSortSpec(sort: ComputerSort): Record<string, 1 | -1> {
       // Descendente: el aviso sin RAM declarada (null) va al final solo, que es donde Mongo pone el
       // null en un orden descendente.
       return { ramGb: -1, priceUsd: 1, slug: 1 }
+    case 'ahorro':
+      return { 'opportunity.savingsPct': -1, priceUsd: 1, slug: 1 }
+    case 'cpu_nuevo':
+      return { 'cpu.year': -1, priceUsd: 1, slug: 1 }
+    case 'disco':
+      return { storageGb: -1, priceUsd: 1, slug: 1 }
     default:
       return { publishedAt: -1, lastSeen: -1, slug: 1 }
   }
@@ -807,6 +1020,10 @@ export interface ComputerFacets {
   sources: ComputerFacet[]
   /** Un conteo por escalón de RAM mínima, cada uno con el resto de los filtros puestos. */
   rams: ComputerFacet[]
+  /** Desde el 24/11/2026. Opcionales: durante un despliegue la API vieja no las manda. */
+  brands?: ComputerFacet[]
+  /** Las líneas, sólo con una marca de equipo elegida (sin marca serían cien opciones). */
+  lines?: ComputerFacet[]
 }
 
 export const COMPUTER_EMPTY_FACETS: ComputerFacets = Object.freeze({
@@ -817,6 +1034,8 @@ export const COMPUTER_EMPTY_FACETS: ComputerFacets = Object.freeze({
   departments: [],
   sources: [],
   rams: [],
+  brands: [],
+  lines: [],
 })
 
 /**
@@ -828,12 +1047,16 @@ export const COMPUTER_EMPTY_FACETS: ComputerFacets = Object.freeze({
  * producción dos facetas cruzadas por agregar una en otra posición de un `Promise.all`. Acá no hay
  * desestructuración por posición: cada faceta se guarda por su `name`.
  */
+export type ComputerFacetName = Exclude<keyof ComputerFacets, 'rams'>
+
 export const COMPUTER_FACET_SPECS: ReadonlyArray<{
-  name: Exclude<keyof ComputerFacets, 'rams'>
+  name: ComputerFacetName
   field: string
   limit: number
   labelField?: string
   relax: (query: ComputerQuery) => ComputerQuery
+  /** Si la faceta se cuenta con esta consulta (las líneas, sólo con una marca de equipo). */
+  when?: (query: ComputerQuery) => boolean
 }> = Object.freeze([
   // El tipo se cuenta sobre TODO (computadoras y piezas): es el control que lleva de una vista a
   // la otra, y contado sólo dentro de las computadoras nunca mostraría cuántas piezas hay.
@@ -866,6 +1089,21 @@ export const COMPUTER_FACET_SPECS: ReadonlyArray<{
     relax: query => ({ ...query, departamento: '' }),
   },
   { name: 'sources', field: 'source', limit: 2, relax: query => ({ ...query, fuente: '' }) },
+  // La marca del equipo sin la línea, por lo mismo que la del procesador sin la familia.
+  {
+    name: 'brands',
+    field: 'brand',
+    limit: 40,
+    relax: query => ({ ...query, marcaEquipo: '', linea: '' }),
+  },
+  {
+    name: 'lines',
+    field: 'line',
+    limit: 60,
+    labelField: 'lineLabel',
+    relax: query => ({ ...query, linea: '' }),
+    when: query => Boolean(query.marcaEquipo),
+  },
 ])
 
 /**
@@ -933,8 +1171,10 @@ export function computerFacetRowsInMemory(
 }
 
 const COMPUTER_FACET_LABELERS: Readonly<
-  Record<Exclude<keyof ComputerFacets, 'rams'>, (value: string, label: string) => string>
+  Record<ComputerFacetName, (value: string, label: string) => string>
 > = Object.freeze({
+  brands: (_value, label) => label,
+  lines: (value, label) => (label && label !== value ? label : computerSlugTitle(value)),
   kinds: value => COMPUTER_KIND_LABEL[value as ComputerPublicKind] ?? value,
   cpuBrands: value => COMPUTER_CPU_BRAND_LABEL[value as 'intel'] ?? value,
   cpuFamilies: value => computerCpuFamilyLabel(value),
@@ -950,7 +1190,7 @@ const COMPUTER_FACET_LABELERS: Readonly<
  * palabra no se escriba en dos lados.
  */
 export function computerLabelFacet(
-  name: Exclude<keyof ComputerFacets, 'rams'>,
+  name: ComputerFacetName,
   rows: readonly ComputerFacetRow[]
 ): ComputerFacet[] {
   return rows
@@ -1062,6 +1302,7 @@ export function computerListInMemory(
   )
   const facets: ComputerFacets = { ...COMPUTER_EMPTY_FACETS }
   for (const spec of COMPUTER_FACET_SPECS) {
+    if (spec.when && !spec.when(query)) continue
     const facetMatch = computerMatch(spec.relax(query), today, freshDays)
     facets[spec.name] = computerLabelFacet(
       spec.name,
@@ -1652,4 +1893,510 @@ export const COMPUTER_USED_FROM_NEW_NOTE =
 
 export function computerUsesNewForUsed(valuation: ComputerPublicValuation | null | undefined) {
   return (valuation?.parts ?? []).some(part => part.usedFromNew && part.usedUsd != null)
+}
+
+// ── Oportunidades e identidad de notebook (24/11/2026) ─────────────────────
+
+export const COMPUTER_OPPORTUNITIES_PATH = '/oportunidades-computadoras-usadas-uruguay'
+export const COMPUTER_NOTEBOOKS_PATH = '/precios-notebooks-usadas-uruguay'
+/** El documento del informe de notebooks en `computermetas`. */
+export const COMPUTER_NOTEBOOK_REPORT_ID = 'uy-computadoras-notebooks'
+
+/** Las palabras con que arranca una referencia y que en el medio de una frase van en minúscula
+ * («Pide 30 % menos que notebooks con Apple M1»). Una marca o un modelo no se tocan. */
+const COMPUTER_LOWER_STARTS = new Set([
+  'sus',
+  'su',
+  'notebooks',
+  'computadoras',
+  'otras',
+  'otros',
+  'la',
+  'las',
+  'los',
+  'el',
+  'misma',
+  'mismas',
+  'mismo',
+  'mismos',
+  'piezas',
+  'pcs',
+])
+
+function computerMidSentence(text: string): string {
+  const first = text.split(' ')[0] ?? ''
+  return COMPUTER_LOWER_STARTS.has(first.toLowerCase()) && first !== 'PCs'
+    ? text.charAt(0).toLowerCase() + text.slice(1)
+    : text
+}
+
+/**
+ * «Pide 32 % menos que la mediana de MacBook Air con Apple M2 (19 avisos)», con la evidencia aparte.
+ *
+ * La frase depende de la referencia: contra sus piezas usadas no hay mediana ni avisos que contar
+ * («…que sus piezas usadas, sin contar mother, fuente ni gabinete»); contra las iguales o la misma
+ * pieza usada, la referencia ES una mediana y se dice de cuántos avisos.
+ */
+export function computerOpportunityLine(
+  opportunity: ComputerPublicOpportunity | null | undefined
+): { text: string; tier: string } | null {
+  if (!opportunity || !(opportunity.savingsPct > 0)) return null
+  const pct = Math.round(opportunity.savingsPct * 100).toLocaleString('es-UY')
+  const label = opportunity.referenceLabel?.trim() || 'su referencia'
+  const text =
+    opportunity.reference === 'used'
+      ? `Pide ${pct} % menos que ${computerMidSentence(label)}`
+      : `Pide ${pct} % menos que la mediana de ${label}${
+          opportunity.n > 0
+            ? ` (${opportunity.n.toLocaleString('es-UY')} ${opportunity.n === 1 ? 'aviso' : 'avisos'})`
+            : ''
+        }`
+  return {
+    text,
+    tier: opportunity.tier === 'solida' ? 'comparación sólida' : 'comparación exploratoria',
+  }
+}
+
+/** La referencia en números, para la ficha: cuánto vale, cuánto pide este y cuánto menos. */
+export function computerOpportunityDetail(
+  listing: Pick<ComputerPublicListing, 'priceUsd' | 'opportunity'>
+): string | null {
+  const opportunity = listing.opportunity
+  if (!opportunity) return null
+  const what =
+    opportunity.reference === 'used'
+      ? `Sus piezas usadas suman ${computerUsd(opportunity.referenceUsd)}`
+      : `La mediana de ${opportunity.referenceLabel} es ${computerUsd(opportunity.referenceUsd)}`
+  return `${what}; este aviso pide ${computerUsd(listing.priceUsd)}, ${computerUsd(opportunity.savingsUsd)} menos.`
+}
+
+/** «MacBook Air · 2017», «ThinkPad · T490»: la línea, el modelo y el año que dijo el título. */
+export function computerIdentityLine(
+  listing: Pick<ComputerPublicListing, 'lineLabel' | 'model' | 'modelYear'>
+): string | null {
+  const model = listing.model?.trim() || null
+  const year =
+    typeof listing.modelYear === 'number' && !(model ?? '').includes(String(listing.modelYear))
+      ? String(listing.modelYear)
+      : null
+  const parts = [listing.lineLabel?.trim() || null, model, year].filter(Boolean)
+  return listing.lineLabel && parts.length ? parts.join(' · ') : null
+}
+
+// ── /oportunidades-computadoras-usadas-uruguay ─────────────────────────────
+
+/** El tipo en la página de oportunidades: los dos grupos o un tipo concreto. Vacío = todo, porque
+ * acá una placa de video barata es tan oportunidad como una notebook. */
+export type ComputerDealTipo = '' | 'computadoras' | 'piezas' | ComputerPublicKind
+export const COMPUTER_DEAL_SORTS = Object.freeze(['ahorro', 'precio', 'recientes'] as const)
+export type ComputerDealSort = (typeof COMPUTER_DEAL_SORTS)[number]
+export const COMPUTER_DEAL_SORT_ITEMS: ReadonlyArray<{
+  title: string
+  value: ComputerDealSort
+  short: string
+}> = Object.freeze([
+  { title: 'Mayor ahorro', value: 'ahorro', short: 'Mayor ahorro' },
+  { title: 'Menor precio', value: 'precio', short: 'Menor precio' },
+  { title: 'Más recientes', value: 'recientes', short: 'Más recientes' },
+])
+export const COMPUTER_DEALS_PER_PAGE = 24
+
+export interface ComputerDealQuery {
+  tipo: ComputerDealTipo
+  evidencia: '' | ComputerTier
+  marcaEquipo: string
+  precioMaxUsd: number | null
+  fuente: '' | ComputerPublicSource
+  orden: ComputerDealSort
+  pagina: number
+}
+
+export function computerDealNormalizeQuery(raw: Record<string, unknown>): ComputerDealQuery {
+  const tipo = computerStr(raw.tipo)
+  const orden = computerStr(raw.orden) as ComputerDealSort
+  const marcaEquipo = computerStr(raw.marcaEquipo, 40)
+  const fuente = computerStr(raw.fuente) as ComputerDealQuery['fuente']
+  return {
+    tipo:
+      tipo === 'computadoras' || tipo === 'piezas' || tipo in COMPUTER_KIND_LABEL
+        ? (tipo as ComputerDealTipo)
+        : '',
+    evidencia: computerOneOf(raw.evidencia, Object.keys(COMPUTER_TIER_LABEL) as ComputerTier[]),
+    marcaEquipo: COMPUTER_BRAND_RE.test(marcaEquipo) ? marcaEquipo : '',
+    precioMaxUsd: computerAmount(raw.precioMaxUsd, 1, 100_000),
+    fuente: fuente in COMPUTER_SOURCE_LABEL ? fuente : '',
+    orden: (COMPUTER_DEAL_SORTS as readonly string[]).includes(orden) ? orden : 'ahorro',
+    pagina: computerInt(raw.pagina, 1, 200) ?? 1,
+  }
+}
+
+export function computerDealQueryParams(query: ComputerDealQuery): Record<string, string> {
+  const params: Record<string, string> = {}
+  if (query.tipo) params.tipo = query.tipo
+  if (query.evidencia) params.evidencia = query.evidencia
+  if (query.marcaEquipo) params.marcaEquipo = query.marcaEquipo
+  if (query.precioMaxUsd != null) params.precioMaxUsd = String(query.precioMaxUsd)
+  if (query.fuente) params.fuente = query.fuente
+  if (query.orden !== 'ahorro') params.orden = query.orden
+  if (query.pagina > 1) params.pagina = String(query.pagina)
+  return params
+}
+
+/** Igual que el directorio: cada combinación de filtros es una copia fina y sólo la URL base se
+ * indexa. El orden no cuenta. */
+export function computerDealFiltered(query: ComputerDealQuery): boolean {
+  return Object.keys(computerDealQueryParams(query)).some(name => name !== 'orden')
+}
+
+export function computerDealTipoLabel(tipo: ComputerDealTipo): string {
+  if (!tipo) return 'Computadoras y piezas'
+  if (tipo === 'computadoras') return 'Computadoras'
+  if (tipo === 'piezas') return 'Piezas sueltas'
+  return COMPUTER_KIND_LABEL[tipo] ?? tipo
+}
+
+/** Los filtros activos de la página de oportunidades, para los chips. */
+export function computerDealChips(
+  query: ComputerDealQuery
+): Array<{ key: string; keys: Array<keyof ComputerDealQuery>; label: string }> {
+  const chips: Array<{ keys: Array<keyof ComputerDealQuery>; label: string }> = []
+  if (query.tipo) chips.push({ keys: ['tipo'], label: computerDealTipoLabel(query.tipo) })
+  if (query.evidencia)
+    chips.push({ keys: ['evidencia'], label: COMPUTER_TIER_LABEL[query.evidencia] })
+  if (query.marcaEquipo) chips.push({ keys: ['marcaEquipo'], label: query.marcaEquipo })
+  if (query.precioMaxUsd != null)
+    chips.push({ keys: ['precioMaxUsd'], label: `Hasta ${computerUsd(query.precioMaxUsd)}` })
+  if (query.fuente) chips.push({ keys: ['fuente'], label: COMPUTER_SOURCE_LABEL[query.fuente] })
+  return chips.map(chip => ({ ...chip, key: chip.keys.join('+') }))
+}
+
+/** La base de la página: las filas con oportunidad dentro de la ventana de frescura. */
+export function computerDealBaseMatch(today: string, freshDays: number): Record<string, unknown> {
+  const floor = computerFreshFloor(today, freshDays)
+  return { ...(floor ? { lastSeen: { $gte: floor } } : {}), opportunity: { $ne: null } }
+}
+
+/** El filtro de la página de oportunidades, con la misma semántica de Mongo que el directorio (lo
+ * evalúa `computerFilterMatches` en la vista previa). */
+export function computerDealMatch(
+  query: ComputerDealQuery,
+  today: string,
+  freshDays: number
+): Record<string, unknown> {
+  const match = computerDealBaseMatch(today, freshDays)
+  if (query.tipo === 'computadoras') match.kindGroup = 'computer'
+  else if (query.tipo === 'piezas') match.kindGroup = 'part'
+  else if (query.tipo) match.kind = query.tipo
+  if (query.evidencia) match['opportunity.tier'] = query.evidencia
+  if (query.marcaEquipo)
+    match.brand = { $regex: `^${computerEscapeRegExp(query.marcaEquipo)}$`, $options: 'i' }
+  if (query.precioMaxUsd != null) match.priceUsd = { $lte: query.precioMaxUsd }
+  if (query.fuente) match.source = query.fuente
+  return match
+}
+
+export function computerDealSortSpec(sort: ComputerDealSort): Record<string, 1 | -1> {
+  if (sort === 'precio') return { priceUsd: 1, slug: 1 }
+  if (sort === 'recientes') return { publishedAt: -1, lastSeen: -1, slug: 1 }
+  return { 'opportunity.savingsPct': -1, priceUsd: 1, slug: 1 }
+}
+
+/** Lo que el resumen necesita de cada fila: se lee la lista ENTERA, y con esto pesa poco. */
+export const COMPUTER_DEAL_SUMMARY_PROJECTION = Object.freeze({
+  _id: 0,
+  slug: 1,
+  priceUsd: 1,
+  kind: 1,
+  kindGroup: 1,
+  brand: 1,
+  'opportunity.tier': 1,
+  'opportunity.savingsPct': 1,
+})
+
+export type ComputerDealSummaryRow = Pick<
+  ComputerPublicListing,
+  'priceUsd' | 'kind' | 'kindGroup' | 'brand'
+> & { opportunity?: Pick<ComputerPublicOpportunity, 'tier' | 'savingsPct'> | null }
+
+/** La lista ENTERA, sin filtros, como el resumen de autos: las páginas filtradas van noindex, así
+ * que la URL indexada tiene que describir todo lo que hay y no sólo los primeros 24. */
+export interface ComputerDealSummary {
+  total: number
+  solid: number
+  exploratory: number
+  minUsd: number | null
+  maxUsd: number | null
+  medianUsd: number | null
+  medianSavingsPct: number | null
+  computers: number
+  parts: number
+  kinds: Array<{ kind: ComputerPublicKind; label: string; count: number }>
+  brands: ComputerFacet[]
+}
+
+export function computerDealSummary(rows: readonly ComputerDealSummaryRow[]): ComputerDealSummary {
+  const deals = rows.filter(row => row.opportunity)
+  const prices = deals.map(row => row.priceUsd).filter(price => price > 0)
+  const savings = deals.map(row => row.opportunity!.savingsPct).filter(pct => pct > 0)
+  const kinds = new Map<ComputerPublicKind, number>()
+  const brands = new Map<string, number>()
+  for (const row of deals) {
+    kinds.set(row.kind, (kinds.get(row.kind) ?? 0) + 1)
+    if (row.brand) brands.set(row.brand, (brands.get(row.brand) ?? 0) + 1)
+  }
+  return {
+    total: deals.length,
+    solid: deals.filter(row => row.opportunity!.tier === 'solida').length,
+    exploratory: deals.filter(row => row.opportunity!.tier === 'exploratoria').length,
+    minUsd: prices.length ? Math.min(...prices) : null,
+    maxUsd: prices.length ? Math.max(...prices) : null,
+    medianUsd: prices.length ? computerMedian(prices) : null,
+    medianSavingsPct: savings.length ? computerMedian(savings) : null,
+    computers: deals.filter(row => row.kindGroup === 'computer').length,
+    parts: deals.filter(row => row.kindGroup === 'part').length,
+    kinds: [...kinds.entries()]
+      .map(([kind, count]) => ({ kind, label: COMPUTER_KIND_LABEL[kind] ?? kind, count }))
+      .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'es')),
+    brands: [...brands.entries()]
+      .map(([value, count]) => ({ value, label: value, count }))
+      .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'es'))
+      .slice(0, 40),
+  }
+}
+
+export interface ComputerDealsResponse {
+  status: ComputerStatus
+  generatedAt: string
+  total: number
+  page: number
+  perPage: number
+  items: ComputerPublicListing[]
+  summary: ComputerDealSummary
+}
+
+export function computerDealsEmpty(
+  query: ComputerDealQuery,
+  status: ComputerStatus = 'preparing'
+): ComputerDealsResponse {
+  return {
+    status,
+    generatedAt: '',
+    total: 0,
+    page: query.pagina,
+    perPage: COMPUTER_DEALS_PER_PAGE,
+    items: [],
+    summary: computerDealSummary([]),
+  }
+}
+
+/** La página entera en memoria, con el mismo filtro y el mismo orden (vista previa de dev). */
+export function computerDealsInMemory(
+  rows: readonly ComputerPublicListing[],
+  meta: ComputerPublicMeta | null,
+  query: ComputerDealQuery,
+  today: string
+): ComputerDealsResponse {
+  const coverage = computerCoverageOf(meta)
+  const freshDays = coverage?.freshDays ?? COMPUTER_FRESH_DAYS_FALLBACK
+  const base = computerDealBaseMatch(today, freshDays)
+  const match = computerDealMatch(query, today, freshDays)
+  const matched = computerSortRows(
+    rows.filter(row => computerFilterMatches(match, row)),
+    computerDealSortSpec(query.orden)
+  )
+  const start = (query.pagina - 1) * COMPUTER_DEALS_PER_PAGE
+  return {
+    status: meta ? 'ok' : 'preparing',
+    generatedAt: coverage?.generatedAt ?? '',
+    total: matched.length,
+    page: query.pagina,
+    perPage: COMPUTER_DEALS_PER_PAGE,
+    items: matched.slice(start, start + COMPUTER_DEALS_PER_PAGE),
+    summary: computerDealSummary(rows.filter(row => computerFilterMatches(base, row))),
+  }
+}
+
+/** «32 %», sin decimales: un ahorro de 31,7 % no dice más que uno de 32. */
+export function computerPercent(share: number | null | undefined, digits = 0): string {
+  if (typeof share !== 'number' || !Number.isFinite(share)) return '—'
+  return `${(share * 100).toLocaleString('es-UY', { maximumFractionDigits: digits, minimumFractionDigits: digits })} %`
+}
+
+/** El resumen en palabras, para el párrafo de arriba y el FAQ. Sin oportunidades lo dice. */
+export function computerDealSummaryText(summary: ComputerDealSummary): string {
+  if (!summary.total)
+    return 'Hoy no hay ningún aviso que cumpla las condiciones. Es un resultado válido: la regla es exigente a propósito.'
+  const head =
+    summary.total === 1
+      ? `Hay 1 aviso que pide bastante menos que su referencia, con comparación ${summary.solid ? 'sólida' : 'exploratoria'}.`
+      : `Hay ${summary.total.toLocaleString('es-UY')} avisos que piden bastante menos que su referencia: ${summary.solid.toLocaleString('es-UY')} con comparación sólida y ${summary.exploratory.toLocaleString('es-UY')} exploratoria.`
+  const prices =
+    summary.minUsd != null && summary.maxUsd != null && summary.medianUsd != null
+      ? ` Piden entre ${computerUsd(summary.minUsd)} y ${computerUsd(summary.maxUsd)} (mediana ${computerUsd(summary.medianUsd)})`
+      : ''
+  const savings =
+    summary.medianSavingsPct != null
+      ? `${prices ? ' y' : ''} el ahorro mediano contra su referencia es de ${computerPercent(summary.medianSavingsPct)}.`
+      : prices
+        ? '.'
+        : ''
+  const groups =
+    summary.computers && summary.parts
+      ? ` Son ${summary.computers.toLocaleString('es-UY')} ${summary.computers === 1 ? 'computadora' : 'computadoras'} y ${summary.parts.toLocaleString('es-UY')} ${summary.parts === 1 ? 'pieza suelta' : 'piezas sueltas'}.`
+      : ''
+  return `${head}${prices}${savings}${groups}`
+}
+
+export function computerDealFaq(summary: ComputerDealSummary, generatedAt: string) {
+  const fecha = computerLongDate(generatedAt)
+  return [
+    {
+      id: 'pc-oportunidad-que-es',
+      question: '¿Qué es una oportunidad en una computadora usada?',
+      answer:
+        'Un aviso que pide entre el 15 % y el 55 % menos que su referencia: la suma de lo que salen hoy sus mismas piezas usadas (una PC de escritorio), lo que piden por máquinas iguales (una notebook, una all-in-one o una mini PC) o lo que piden por la misma pieza usada. Por debajo de eso queda afuera: un precio tan bajo es más seguido un error, una falla no dicha o una estafa que una ganga.',
+    },
+    {
+      id: 'pc-oportunidad-cuantas',
+      question: '¿Cuántas oportunidades hay hoy?',
+      answer: `${computerDealSummaryText(summary)}${fecha ? ` Cálculo del ${fecha}.` : ''}`,
+    },
+    {
+      id: 'pc-oportunidad-solida',
+      question: '¿Qué diferencia hay entre una comparación sólida y una exploratoria?',
+      answer:
+        'Cuánta evidencia hay detrás. Es sólida cuando la referencia es la suma completa de sus piezas usadas, o la mediana de al menos seis avisos iguales por procesador, placa o chip, o de al menos cinco piezas usadas iguales. Es exploratoria con menos avisos o con una igualdad más gruesa (la misma línea y familia de procesador, o un Mac por año): sirve para mirar, no para apurarse.',
+    },
+    {
+      id: 'pc-oportunidad-seguro',
+      question: '¿Es seguro comprar una oportunidad?',
+      answer:
+        'No lo sabemos, y nadie lo puede saber desde un aviso. Ninguna oportunidad declara una falla ni tiene la moneda deducida por nosotros, y en Facebook leímos la ficha de cada una, pero un precio bajo puede tener una explicación que el vendedor no escribió. Pedí verla encendida, probá teclado, pantalla y batería, y no pagues señas ni envíos antes de tenerla en la mano.',
+    },
+  ]
+}
+
+// ── /precios-notebooks-usadas-uruguay ──────────────────────────────────────
+
+export interface ComputerNotebookReportResponse {
+  status: ComputerStatus
+  generatedAt: string
+  report: ComputerPublicNotebookReport | null
+}
+
+/** El directorio de notebooks con unos filtros puestos: cada fila del informe lleva a sus avisos. */
+export function computerNotebookLink(params: Record<string, string | number | null | undefined>) {
+  const query: Record<string, string> = { tipo: 'notebook' }
+  for (const [key, value] of Object.entries(params))
+    if (value != null && value !== '') query[key] = String(value)
+  return { path: COMPUTADORAS_PATH, query }
+}
+
+/** «Hasta US$ 300», «US$ 300 a US$ 600», «Más de US$ 1.500». */
+export function computerBandLabel(minUsd: number, maxUsd: number | null): string {
+  if (!minUsd && maxUsd != null) return `Hasta ${computerUsd(maxUsd)}`
+  if (maxUsd == null) return `Más de ${computerUsd(minUsd)}`
+  return `${computerUsd(minUsd)} a ${computerUsd(maxUsd)}`
+}
+
+/** «core-i5-12» → «12.ª generación». */
+export function computerGenerationLabel(generation: number): string {
+  return `${generation}.ª generación`
+}
+
+/**
+ * «Lo que dicen los datos»: tres a cinco frases armadas con las celdas del informe, nunca con
+ * números escritos a mano. Una frase cuyas celdas no existen (no hay muestra) no se dice: es mejor
+ * una frase menos que una frase con un número que el informe no sostiene.
+ */
+export function computerNotebookFindings(report: ComputerPublicNotebookReport): string[] {
+  const findings: string[] = []
+  const n = (value: number) => value.toLocaleString('es-UY')
+
+  const brands = [...(report.brands ?? [])].sort((a, b) => a.medianUsd - b.medianUsd)
+  if (brands.length >= 2) {
+    const cheap = brands[0]!
+    const dear = brands[brands.length - 1]!
+    findings.push(
+      `Por marca, la mediana más baja es la de ${cheap.label} (${computerUsd(cheap.medianUsd)}, ${n(cheap.n)} avisos) y la más alta la de ${dear.label} (${computerUsd(dear.medianUsd)}, ${n(dear.n)} avisos): la marca dice mucho del precio porque arrastra el procesador y la línea.`
+    )
+  }
+
+  const chip = (line: string, step: string) =>
+    (report.macLadder ?? []).find(
+      cell => cell.line === line && cell.kind === 'chip' && cell.step.toLowerCase() === step
+    )
+  for (const line of ['macbook-air', 'macbook-pro']) {
+    const m1 = chip(line, 'm1')
+    const m2 = chip(line, 'm2')
+    if (m1 && m2 && m2.medianUsd > m1.medianUsd) {
+      const label = line === 'macbook-air' ? 'MacBook Air' : 'MacBook Pro'
+      findings.push(
+        `Pasar de una ${label} con M1 a una con M2 cuesta ${computerUsd(m2.medianUsd - m1.medianUsd)} más en mediana (${computerUsd(m1.medianUsd)} contra ${computerUsd(m2.medianUsd)}, con ${n(m1.n)} y ${n(m2.n)} avisos).`
+      )
+      break
+    }
+  }
+
+  const i5 = (report.generations ?? [])
+    .filter(cell => cell.family === 'core-i5')
+    .sort((a, b) => a.generation - b.generation)
+  if (i5.length >= 2) {
+    const old = i5[0]!
+    const recent = i5[i5.length - 1]!
+    if (recent.medianUsd > old.medianUsd)
+      findings.push(
+        `Un Core i5 de ${computerGenerationLabel(recent.generation)} pide ${computerUsd(recent.medianUsd)} en mediana y uno de ${computerGenerationLabel(old.generation)}, ${computerUsd(old.medianUsd)}: la generación pesa más que el número del i5.`
+      )
+  }
+
+  const ram = [...(report.ram ?? [])].sort((a, b) => a.gb - b.gb)
+  const r8 = ram.find(cell => cell.gb === 8)
+  const r16 = ram.find(cell => cell.gb === 16)
+  if (r8 && r16 && r16.medianUsd > r8.medianUsd)
+    findings.push(
+      `Con 16 GB de RAM la mediana es ${computerUsd(r16.medianUsd)}, contra ${computerUsd(r8.medianUsd)} con 8 GB: no es lo que cuesta la memoria, es que las de 16 GB suelen ser más nuevas.`
+    )
+
+  const shares = (report.usedVsNew ?? []).map(row => row.share).filter(share => share > 0)
+  if (shares.length >= 2)
+    findings.push(
+      `Contra la misma notebook nueva (mismo procesador), la usada pide en mediana el ${computerPercent(computerMedian(shares))} de lo que sale la nueva, sobre ${n(shares.length)} procesadores con las dos medidas.`
+    )
+  else if (report.headline && report.total)
+    findings.push(
+      `El ${computerPercent(report.headline.under300Share)} de las notebooks usadas pide menos de ${computerUsd(300)}, y el ${computerPercent(report.headline.dedicatedShare)} declara placa de video dedicada.`
+    )
+  return findings.slice(0, 5)
+}
+
+export function computerNotebookFaq(report: ComputerPublicNotebookReport | null) {
+  if (!report || !report.total) return []
+  const h = report.headline
+  return [
+    {
+      id: 'notebook-precio',
+      question: '¿Cuánto sale una notebook usada en Uruguay?',
+      answer: `La mediana de lo que se pide es ${computerUsd(h.medianUsd)}, y la mitad de los avisos pide entre ${computerUsd(h.p25Usd)} y ${computerUsd(h.p75Usd)}, sobre ${report.total.toLocaleString('es-UY')} notebooks publicadas sin fallas declaradas. Son precios pedidos en avisos, no precios de venta.`,
+    },
+    {
+      id: 'notebook-mac',
+      question: '¿Cuánto sale una MacBook usada?',
+      answer: (() => {
+        const cells = (report.macLadder ?? []).filter(cell => cell.kind === 'chip')
+        if (!cells.length)
+          return 'Todavía no hay avisos suficientes de cada chip para publicar una mediana.'
+        return `Depende del chip más que del año: ${cells
+          .slice(0, 6)
+          .map(cell => `${cell.label}, ${computerUsd(cell.medianUsd)}`)
+          .join('; ')}. Cada mediana sale de ${report.ladderSample} avisos o más.`
+      })(),
+    },
+    {
+      id: 'notebook-usada-o-nueva',
+      question: '¿Conviene una notebook usada o una nueva?',
+      answer:
+        'Depende de cuánto más barata sea la usada contra la misma nueva. Si la diferencia es chica, la nueva trae garantía y batería sin uso; si es grande, la usada rinde, pero probala antes de pagar: batería, pantalla, teclado y cargador.',
+    },
+  ]
 }

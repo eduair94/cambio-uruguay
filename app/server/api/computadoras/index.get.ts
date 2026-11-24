@@ -93,7 +93,14 @@ export default defineEventHandler(async (event): Promise<ComputerListResponse> =
         .lean(),
       // Cada faceta se guarda por su NOMBRE, no por su posición: motos sacó a producción dos facetas
       // cruzadas (23/11/2026) por agregar una en otro lugar de un `Promise.all` desestructurado.
-      Promise.all(COMPUTER_FACET_SPECS.map(async spec => ({ spec, rows: await facetRows(spec) }))),
+      // Una faceta con `when` (las líneas) sólo se cuenta cuando tiene sentido: sin marca de equipo
+      // serían cien opciones en un menú.
+      Promise.all(
+        COMPUTER_FACET_SPECS.filter(spec => !spec.when || spec.when(query)).map(async spec => ({
+          spec,
+          rows: await facetRows(spec),
+        }))
+      ),
       // Los tres escalones de RAM, cada uno con el resto de los filtros puestos: el panel dice
       // cuántas hay en cada uno antes de elegirlo.
       Promise.all(

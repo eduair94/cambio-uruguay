@@ -118,11 +118,16 @@ export const FB_DETAIL_REREAD_DAYS = 21;
 /** Una ficha que cargó a medias se reintenta antes. */
 export const FB_DETAIL_RETRY_DAYS = 2;
 
-/** Qué fichas leer: primero las nunca leídas (las más nuevas primero), después las viejas. */
-export function facebookDetailTargets(raws: readonly RawComputerListing[], details: ReadonlyMap<string, FacebookComputerDetail>, now: Date, max: number): RawComputerListing[] {
+/**
+ * Qué fichas leer: primero las de `priority` (las que serían oportunidad si tuvieran ficha), después
+ * las nunca leídas (las más nuevas primero) y al final las viejas.
+ */
+export function facebookDetailTargets(raws: readonly RawComputerListing[], details: ReadonlyMap<string, FacebookComputerDetail>, now: Date, max: number, priority: ReadonlySet<string> = new Set()): RawComputerListing[] {
   const age = (iso: string): number => (now.getTime() - new Date(iso).getTime()) / 86_400_000;
   const fresh = raws.filter((raw) => raw.source === "facebook" && raw.price > 1);
-  const never = fresh.filter((raw) => !details.has(raw.sourceId)).sort((a, b) => b.firstSeen.localeCompare(a.firstSeen));
+  const never = fresh
+    .filter((raw) => !details.has(raw.sourceId))
+    .sort((a, b) => Number(priority.has(b.sourceId)) - Number(priority.has(a.sourceId)) || b.firstSeen.localeCompare(a.firstSeen));
   const stale = fresh
     .filter((raw) => {
       const detail = details.get(raw.sourceId);

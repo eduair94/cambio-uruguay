@@ -238,6 +238,14 @@
           "label": "Precios de componentes de PC"
         },
         {
+          "to": "/oportunidades-computadoras-usadas-uruguay",
+          "label": "Oportunidades en computadoras usadas"
+        },
+        {
+          "to": "/precios-notebooks-usadas-uruguay",
+          "label": "Precios de notebooks usadas"
+        },
+        {
           "to": "/tiendas-online-uruguay",
           "label": "Tiendas online"
         },

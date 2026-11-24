@@ -608,6 +608,20 @@ export const CURATED: Readonly<Record<string, readonly string[]>> = Object.freez
     '/sillas-escritorio-uruguay',
     '/mercado-it-uruguay',
   ],
+  // Las dos páginas nuevas de la familia (24/11/2026): las mismas vecinas que el directorio. Las
+  // hermanas de la familia y las del tema ya las muestran la barra y «Más sobre este tema».
+  '/oportunidades-computadoras-usadas-uruguay': [
+    '/estafas-uruguay',
+    '/ciberlunes-y-black-friday-uruguay',
+    '/cambios-de-precio-uruguay',
+    '/sillas-escritorio-uruguay',
+  ],
+  '/precios-notebooks-usadas-uruguay': [
+    '/ciberlunes-y-black-friday-uruguay',
+    '/cambios-de-precio-uruguay',
+    '/sillas-escritorio-uruguay',
+    '/mercado-it-uruguay',
+  ],
   '/precios-componentes-pc-uruguay': [
     '/ciberlunes-y-black-friday-uruguay',
     '/cambios-de-precio-uruguay',

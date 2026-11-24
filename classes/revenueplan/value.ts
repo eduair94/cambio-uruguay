@@ -208,6 +208,10 @@ export const DIRECTORIO_PATHS = new Set([
   // el 2026-11-24); va con su directorio y no con contenido, porque lo que la página afirma son
   // medianas relevadas y no texto.
   "/precios-componentes-pc-uruguay",
+  // Sus oportunidades y el informe de notebooks (2026-11-24), como las de autos: la lista de
+  // oportunidades y el informe del mercado de autos ya están en este tramo.
+  "/oportunidades-computadoras-usadas-uruguay",
+  "/precios-notebooks-usadas-uruguay",
   "/tiendas-online-uruguay",
   "/sillas-escritorio-uruguay",
   "/precios-de-supermercado-uruguay",

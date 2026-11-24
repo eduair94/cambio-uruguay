@@ -6,6 +6,7 @@
 // que valen sus piezas o sus iguales), así que también va después de la tabla.
 import { canonicalDepartment } from "../rentals/normalize";
 import { readCurrency } from "./currency";
+import { capBySeller, opportunityOf } from "./opportunity";
 import { partIdentityOf, partsOf } from "./parts";
 import { readComputerSpecs, specCount } from "./specs";
 import { median, norm, round } from "./text";
@@ -120,14 +121,24 @@ export function isPlaceholderPrice(price: number): boolean {
 }
 
 const RAM_BUCKET = (gb: number | null): string => (gb ? String(gb <= 4 ? 4 : gb <= 8 ? 8 : gb <= 16 ? 16 : gb <= 32 ? 32 : 64) : "");
-const kindGroupOf = (kind: string): string => (kind === "desktop" ? "desktop" : kind === "notebook" ? "notebook" : kind === "all-in-one" || kind === "mini-pc" ? "compact" : kind);
+// Cada tipo de máquina con los suyos: un Mac mini M1 (US$ 500) y un iMac M1 (US$ 1.000) comparten chip
+// y nada más, y juntos hacían del Mac mini una «oportunidad» (24/11/2026).
+const kindGroupOf = (kind: string): string => kind;
 
 /** Las claves de cohorte de un aviso, de la más estrecha a la más ancha, con su etiqueta y su base. */
-function cohortKeys(specs: ComputerSpecs): Array<{ key: string; label: string; basis: Comparables["basis"] }> {
+interface Cohort {
+  key: string;
+  label: string;
+  basis: Comparables["basis"];
+  /** Cohorte por procesador, placa o chip exactos: la que sostiene una oportunidad sólida. */
+  strict: boolean;
+}
+
+function cohortKeys(specs: ComputerSpecs): Cohort[] {
   const kind = specs.kind!;
   const group = kindGroupOf(kind);
   const cpu = specs.cpu;
-  const keys: Array<{ key: string; label: string; basis: Comparables["basis"] }> = [];
+  const keys: Cohort[] = [];
   if (kind === "desktop") {
     // Siempre procesador + placa: «PCs con i7-8700» mezclaba una de oficina con una gamer con GTX
     // 1060, y la de oficina salía «muy por debajo» de la mediana de las otras (23/11/2026).
@@ -138,25 +149,42 @@ function cohortKeys(specs: ComputerSpecs): Array<{ key: string; label: string; b
       key: `${group}|${cpu.slug}|${dedicated ?? "sin-dedicada"}`,
       label: `PCs con ${cpu.label} y ${dedicated ? specs.gpu!.model : "sin placa de video dedicada declarada"}`,
       basis: "cpu+gpu",
+      strict: true,
     });
     return keys;
   }
   const ram = RAM_BUCKET(specs.ramGb);
   const what = kind === "notebook" ? "Notebooks" : kind === "all-in-one" ? "All-in-one" : "Mini PC";
+  // Un Mac se compara dentro de su línea: «Apple M1» junta una Air (US$ 799) con una Pro (US$ 900).
+  const mac = kind === "notebook" && specs.line && /^macbook/.test(specs.line) ? { line: specs.line, label: specs.lineLabel ?? "MacBook" } : null;
   if (cpu?.slug) {
-    if (ram) keys.push({ key: `${group}|${cpu.slug}|${ram}`, label: `${what} con ${cpu.label} y ${ram} GB`, basis: "cpu" });
-    keys.push({ key: `${group}|${cpu.slug}`, label: `${what} con ${cpu.label}`, basis: "cpu" });
-  } else if (cpu && cpu.generation && cpu.brand === "intel" && ram) {
+    const scope = mac ? `${mac.line}|` : "";
+    const name = mac ? mac.label : what;
+    if (ram) keys.push({ key: `${group}|${scope}${cpu.slug}|${ram}`, label: `${name} con ${cpu.label} y ${ram} GB`, basis: mac ? "line" : "cpu", strict: true });
+    keys.push({ key: `${group}|${scope}${cpu.slug}`, label: `${name} con ${cpu.label}`, basis: mac ? "line" : "cpu", strict: true });
+    return keys;
+  }
+  // Mac sin chip en el título: la línea y el año que dice («MacBook Air 2017»). Exploratoria: el año
+  // lo escribe el vendedor y dentro de un año hay más de una configuración.
+  if (mac && specs.modelYear) keys.push({ key: `${group}|${mac.line}|${specs.modelYear}`, label: `${mac.label} de ${specs.modelYear}`, basis: "line", strict: false });
+  // Línea + modelo + familia del procesador («ThinkPad T490 con Core i5»). Nunca sin familia: «IdeaPad
+  // 3» sola va de US$ 119 a US$ 1.100.
+  if (kind === "notebook" && specs.line && specs.model && cpu && !mac) {
+    keys.push({ key: `${group}|${specs.line}|${specs.model}|${cpu.family}`, label: `${specs.lineLabel} ${specs.model} con ${cpu.label.replace(/ de \d+ª generación$/, "")}`, basis: "line", strict: false });
+  }
+  if (cpu && cpu.generation && cpu.brand === "intel" && ram) {
     // Una familia SIN generación mezcla un i5 de 2013 con uno de 2023: no es una cohorte.
-    keys.push({ key: `${group}|${cpu.family}-gen${cpu.generation}|${ram}`, label: `${what} ${cpu.label} con ${ram} GB`, basis: "model" });
+    keys.push({ key: `${group}|${cpu.family}-gen${cpu.generation}|${ram}`, label: `${what} ${cpu.label} con ${ram} GB`, basis: "model", strict: false });
   }
   return keys;
 }
 
-function comparablesFor(specs: ComputerSpecs, pool: ReadonlyMap<string, number[]>): Comparables | null {
+type FoundComparables = Comparables & { strict: boolean };
+
+function comparablesFor(specs: ComputerSpecs, pool: ReadonlyMap<string, number[]>): FoundComparables | null {
   for (const cohort of cohortKeys(specs)) {
     const prices = pool.get(cohort.key) ?? [];
-    if (prices.length >= 4) return { label: cohort.label, medianUsd: round(median(prices)), n: prices.length, basis: cohort.basis };
+    if (prices.length >= 4) return { label: cohort.label, medianUsd: round(median(prices)), n: prices.length, basis: cohort.basis, strict: cohort.strict };
   }
   return null;
 }
@@ -182,7 +210,16 @@ export interface CatalogInput {
   /** La notebook nueva con el mismo procesador, por `notebook:<cpuSlug>`. */
   notebookRefs: ReadonlyMap<string, { label: string; medianUsd: number; n: number }>;
   usdUyu: number;
+  /** El día de la corrida (`AAAA-MM-DD`): una oportunidad tiene que haberse visto ayer u hoy. */
+  day?: string;
 }
+
+/**
+ * La clave de «la misma notebook nueva»: el procesador, y en un Mac también la línea («Apple M2»
+ * nueva junta una Air de US$ 1.300 con una Pro de US$ 2.500).
+ */
+export const notebookRefKey = (cpuSlug: string, line: string | null | undefined): string =>
+  line && /^macbook-(air|pro)$/.test(line) ? `notebook:${line}|${cpuSlug}` : `notebook:${cpuSlug}`;
 
 /** Un precio que no puede ser de una computadora ni de una pieza (0, «consultar», 1 peso). */
 export const PRICE_FLOOR_USD = 15;
@@ -228,6 +265,7 @@ export function buildComputerCatalog(input: CatalogInput): ComputerCatalogRow[] 
 
   const pool = poolOf(priced);
   const rows: ComputerCatalogRow[] = [];
+  const sellers = new Map<string, string | null>();
   for (const { item, priceUsd, inferred, ambiguous } of priced) {
     if (ambiguous || isPlaceholderPrice(item.raw.price)) continue;
     if (priceUsd < PRICE_FLOOR_USD || priceUsd > PRICE_CEIL_USD) continue;
@@ -244,7 +282,7 @@ export function buildComputerCatalog(input: CatalogInput): ComputerCatalogRow[] 
     if (machine && !specs.faults.length && hasModernParts(specs) && priceUsd < 60) continue;
     let valuation: Valuation | null;
     if (machine || kind === "combo") {
-      const sameNew = kind === "notebook" && specs.cpu?.slug ? input.notebookRefs.get(`notebook:${specs.cpu.slug}`) ?? null : null;
+      const sameNew = kind === "notebook" && specs.cpu?.slug ? input.notebookRefs.get(notebookRefKey(specs.cpu.slug, specs.line)) ?? null : null;
       valuation = valueListing({ specs, priceUsd, table, comparables, sameNew, currencyInferred: inferred });
     } else {
       const identity = partIdentityOf(specs, raw.title);
@@ -293,11 +331,32 @@ export function buildComputerCatalog(input: CatalogInput): ComputerCatalogRow[] 
       detailRead: !!detail?.found,
       specCount: specCount(specs),
       valuation,
-      comparables,
+      // `strict` es de este módulo: la fila pública lleva sólo lo que declara el contrato.
+      comparables: comparables ? { label: comparables.label, medianUsd: comparables.medianUsd, n: comparables.n, basis: comparables.basis } : null,
+      line: specs.line ?? null,
+      lineLabel: specs.lineLabel ?? null,
+      model: specs.model ?? null,
+      modelYear: specs.modelYear ?? null,
+      opportunity: opportunityOf({
+        kind,
+        source: raw.source,
+        priceUsd,
+        currencyInferred: inferred,
+        faults: specs.faults,
+        detailRead: !!detail?.found,
+        ageDays: input.day ? Math.max(0, Math.round((Date.parse(input.day) - Date.parse(raw.lastSeen.slice(0, 10))) / 86_400_000)) : 0,
+        valuation,
+        comparables,
+      }),
       firstSeen: raw.firstSeen,
       lastSeen: raw.lastSeen,
       publishedAt: detail?.createdAt ?? raw.firstSeen,
     });
+    sellers.set(raw.slug, raw.sellerId);
   }
+  // Como mucho tres oportunidades por vendedor de Mercado Libre: una tienda que retoca veinte
+  // precios el mismo día no puede ocupar la lista entera.
+  const kept = capBySeller(rows.filter((row) => row.opportunity).map((row) => ({ slug: row.slug, sellerId: sellers.get(row.slug) ?? null, savingsPct: row.opportunity!.savingsPct })));
+  for (const row of rows) if (row.opportunity && !kept.has(row.slug)) row.opportunity = null;
   return rows;
 }

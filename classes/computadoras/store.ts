@@ -65,6 +65,18 @@ export async function saveMeta(key: string, meta: unknown, at: string): Promise<
   await ComputerMetaModel.updateOne({ key }, { $set: { key, generatedAt: at, meta } }, { upsert: true });
 }
 
+/**
+ * Los avisos de Facebook publicados que piden menos que su referencia y todavía no tienen la ficha
+ * leída: sin ella no entran a oportunidades, así que su ficha se lee primero.
+ */
+export async function loadOpportunityCandidates(): Promise<Set<string>> {
+  const rows = await ComputerCatalogModel.find({ source: "facebook", detailRead: false, "valuation.verdict": { $in: ["por-debajo", "muy-por-debajo"] } })
+    .select({ _id: 0, slug: 1 })
+    .lean<Array<{ slug: string }>>()
+    .exec();
+  return new Set(rows.map((row) => row.slug.replace(/^fb-/, "")));
+}
+
 export async function countPublished(): Promise<number> {
   return ComputerCatalogModel.countDocuments({});
 }

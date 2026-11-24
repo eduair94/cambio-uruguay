@@ -36,9 +36,29 @@ FAMILY: Sólo español, como autos y motos: el canonical es literal, sin prefijo
       </p>
     </header>
 
-    <!-- La tabla de componentes ya va en la barra de la familia, arriba del título: acá no se repite. -->
-    <div v-if="!query.tipo" class="d-flex flex-wrap ga-2 mb-6">
+    <!-- Las dos páginas que salen de este catálogo, a la vista: la barra de la familia también las
+         nombra, pero en el celular es un desplegable cerrado y estas son las dos preguntas que más
+         trae la gente («¿hay alguna barata?», «¿cuánto sale una notebook?»). -->
+    <div class="d-flex flex-wrap ga-2 mb-6" data-testid="pc-ctas">
       <VBtn
+        color="primary"
+        variant="flat"
+        size="small"
+        prepend-icon="mdi-tag-arrow-down-outline"
+        :to="localePath(COMPUTER_OPPORTUNITIES_PATH)"
+      >
+        Oportunidades
+      </VBtn>
+      <VBtn
+        variant="outlined"
+        size="small"
+        prepend-icon="mdi-chart-box-outline"
+        :to="localePath(COMPUTER_NOTEBOOKS_PATH)"
+      >
+        Precios de notebooks
+      </VBtn>
+      <VBtn
+        v-if="!query.tipo"
         variant="outlined"
         size="small"
         prepend-icon="mdi-expansion-card"
@@ -140,6 +160,15 @@ FAMILY: Sólo español, como autos y motos: el canonical es literal, sin prefijo
             Ordenado por lo que pide contra lo que vale: sólo entran los avisos que se pudieron
             comparar (contra sus piezas o contra máquinas iguales, sin fallas declaradas y con la
             moneda escrita).
+          </template>
+          <template v-else-if="query.orden === 'ahorro'">
+            Ordenado por ahorro: sólo entran las oportunidades, los avisos que piden bastante menos
+            que su referencia (ver
+            <NuxtLink :to="localePath(COMPUTER_OPPORTUNITIES_PATH)">cómo se eligen</NuxtLink>).
+          </template>
+          <template v-else-if="query.orden === 'cpu_nuevo'">
+            Ordenado por el año del procesador: sólo entran los avisos que dicen el modelo exacto,
+            que es lo que deja saber de qué año es la serie.
           </template>
         </p>
 
@@ -273,6 +302,8 @@ import type { FaqItem } from '~/utils/faqAnswers'
 import {
   COMPUTADORAS_PATH,
   COMPUTER_COMPONENTS_PATH,
+  COMPUTER_NOTEBOOKS_PATH,
+  COMPUTER_OPPORTUNITIES_PATH,
   COMPUTER_SORT_ITEMS,
   computerEmptyList,
   computerFilterChips,

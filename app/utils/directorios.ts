@@ -249,8 +249,11 @@ export const DIRECTORIOS: readonly DirectorioEntry[] = Object.freeze([
     unidad: 'avisos',
     fuente: 'relevado',
     tambien: Object.freeze([
+      { to: '/oportunidades-computadoras-usadas-uruguay', label: 'Oportunidades' },
       { to: '/precios-componentes-pc-uruguay', label: 'Precios de componentes' },
     ]),
+    // El informe de notebooks se calcula con los avisos de este directorio.
+    analisis: Object.freeze(['/precios-notebooks-usadas-uruguay']),
   },
   {
     id: 'emprendimientos',

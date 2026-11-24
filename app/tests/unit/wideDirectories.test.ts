@@ -20,6 +20,8 @@ const WIDE: Record<string, readonly string[]> = {
   'pages/motos-usadas-uruguay/index.vue': ['components/cars/SidebarLayout.vue'],
   // Computadoras nació con la forma de motos (2026-11-24): la misma columna de filtros + grilla.
   'pages/computadoras-usadas-uruguay/index.vue': ['components/cars/SidebarLayout.vue'],
+  // Y sus oportunidades, con la forma de las de autos (24/11/2026).
+  'pages/oportunidades-computadoras-usadas-uruguay.vue': ['components/cars/SidebarLayout.vue'],
   'pages/equipar-casa-uruguay/productos/index.vue': [
     'components/equipar/Directorio.vue',
     'components/equipar/ListaBar.vue',

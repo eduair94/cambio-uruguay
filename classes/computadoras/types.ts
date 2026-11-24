@@ -97,6 +97,11 @@ export interface ComputerSpecs {
   faults: Fault[];
   condition: Condition | null;
   basis: Partial<Record<"ram" | "storage" | "psu" | "chipset" | "screen", Basis>>;
+  /** Notebook: la línea (`macbook-air`, `thinkpad`), su etiqueta, el modelo que la sigue y, en Mac, el año del título. */
+  line?: string | null;
+  lineLabel?: string | null;
+  model?: string | null;
+  modelYear?: number | null;
 }
 
 /** Lo que una fuente entrega de un aviso, antes de leerlo. Privado (`computerlistings`). */
@@ -213,7 +218,18 @@ export interface Comparables {
   label: string;
   medianUsd: number;
   n: number;
-  basis: "cpu+gpu" | "cpu" | "model" | "part";
+  basis: "cpu+gpu" | "cpu" | "model" | "line" | "part";
+}
+
+/** Un aviso que pide bastante menos que su referencia (classes/computadoras/opportunity.ts). */
+export interface Opportunity {
+  tier: "solida" | "exploratoria";
+  reference: "used" | "comparables" | "part";
+  referenceUsd: number;
+  referenceLabel: string;
+  n: number;
+  savingsUsd: number;
+  savingsPct: number;
 }
 
 /** La fila pública: espejo de `ComputerPublicListing` (`app/utils/computadorasPublic.ts`). */
@@ -255,6 +271,11 @@ export interface ComputerCatalogRow {
   specCount: number;
   valuation: Valuation | null;
   comparables: Comparables | null;
+  line: string | null;
+  lineLabel: string | null;
+  model: string | null;
+  modelYear: number | null;
+  opportunity: Opportunity | null;
   firstSeen: string;
   lastSeen: string;
   publishedAt: string;
@@ -290,6 +311,7 @@ export interface ComputerMeta {
     withValuation: number;
     withNewTotal: number;
     withUsedTotal: number;
+    opportunities?: number;
     detailRead: number;
   };
   sources: SourceRun[];
@@ -300,3 +322,49 @@ export interface ComputerMeta {
 /** Un aviso deja de publicarse si no se lo vio en estos días (la horaria nunca retira por ausencia). */
 export const COMPUTER_FRESH_DAYS = 4;
 export const COMPUTER_META_ID = "uy-computadoras";
+
+// ---------------------------------------------------------------------------------------------
+// El informe de precios de notebooks: espejo de `ComputerPublicNotebookReport`.
+
+export interface ReportCell {
+  id: string;
+  label: string;
+  n: number;
+  medianUsd: number;
+  p25Usd: number;
+  p75Usd: number;
+}
+
+export interface NotebookBudget {
+  id: string;
+  label: string;
+  minUsd: number;
+  maxUsd: number | null;
+  n: number;
+  ramGb: number | null;
+  ramShare: number | null;
+  ssdShare: number | null;
+  dedicatedShare: number;
+  families: Array<{ label: string; n: number }>;
+  lines: Array<{ label: string; n: number }>;
+}
+
+export interface NotebookReport {
+  generatedAt: string;
+  total: number;
+  minSample: number;
+  ladderSample: number;
+  headline: { medianUsd: number; p25Usd: number; p75Usd: number; appleShare: number; dedicatedShare: number; under300Share: number };
+  priceBands: Array<{ id: string; label: string; minUsd: number; maxUsd: number | null; n: number }>;
+  brands: ReportCell[];
+  families: ReportCell[];
+  generations: Array<ReportCell & { family: string; generation: number; year: number | null }>;
+  macLadder: Array<ReportCell & { line: string; step: string; kind: "year" | "chip"; order: number }>;
+  ram: Array<ReportCell & { gb: number }>;
+  gpus: ReportCell[];
+  models: Array<ReportCell & { line: string }>;
+  usedVsNew: Array<{ id: string; label: string; usedUsd: number; usedN: number; newUsd: number; newN: number; share: number }>;
+  budgets: NotebookBudget[];
+}
+
+export const NOTEBOOK_REPORT_ID = "uy-computadoras-notebooks";
