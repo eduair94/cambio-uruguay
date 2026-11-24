@@ -312,6 +312,8 @@ export interface ComputerMeta {
     withNewTotal: number;
     withUsedTotal: number;
     opportunities?: number;
+    /** Máquinas de Facebook con precio dudoso que esperan la lectura de su ficha. */
+    heldForDetail?: number;
     detailRead: number;
   };
   sources: SourceRun[];

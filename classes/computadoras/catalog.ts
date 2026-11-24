@@ -113,11 +113,11 @@ export function hasModernParts(specs: ComputerSpecs): boolean {
   return !!gpu || cpu;
 }
 
-/** 123456, 111111: el precio de relleno de quien no quiere poner precio. Los nueves no: «$ 9.999» y
+/** 123456, 111111, 188888: el precio de relleno de quien no quiere poner precio. Los nueves no: «$ 9.999» y
  * «$ 99.999» son precios de verdad. */
 export function isPlaceholderPrice(price: number): boolean {
   const text = String(Math.round(price));
-  return /^([0-8])\1{4,}$/.test(text) || ["1234", "12345", "123456", "1234567", "12345678"].includes(text);
+  return /([0-8])\1{4,}/.test(text) || ["1234", "12345", "123456", "1234567", "12345678"].includes(text);
 }
 
 const RAM_BUCKET = (gb: number | null): string => (gb ? String(gb <= 4 ? 4 : gb <= 8 ? 8 : gb <= 16 ? 16 : gb <= 32 ? 32 : 64) : "");
@@ -212,6 +212,22 @@ export interface CatalogInput {
   usdUyu: number;
   /** El día de la corrida (`AAAA-MM-DD`): una oportunidad tiene que haberse visto ayer u hoy. */
   day?: string;
+  /** Lo que la corrida no publicó y por qué (lo llena `buildComputerCatalog`). */
+  stats?: { heldForDetail: number };
+}
+
+/**
+ * Un precio dudoso espera su ficha. Facebook nunca informa dólares en la tarjeta (0 de 4.991 el
+ * 24/11/2026) y el vendedor escribe el número como le sale: de 424 máquinas entre $ 628 y $ 3.000,
+ * había dólares evidentes («Macbook Pro 14\" M3 Pro — $ 1.610»), pesos evidentes («Torre de pc retro
+ * Pentium III — $ 1.000») y dudosos («Pc Gamer — $ 1.300»). La descripción lo resuelve casi siempre
+ * (trae las piezas, y de ahí sale la referencia), así que la máquina no se publica hasta leerla.
+ * Con «dólares» escrito, con una falla declarada (un equipo roto sí vale $ 1.000) o con una
+ * referencia que ya permitió deducir la moneda, no espera.
+ */
+export const HOLD_MAX_UYU = 3_000;
+export function waitsForDetail(input: { source: string; price: number; currency: string; inferred: boolean; machine: boolean; faults: readonly unknown[]; detailRead: boolean }): boolean {
+  return input.source === "facebook" && input.currency === "UYU" && !input.inferred && input.machine && input.price <= HOLD_MAX_UYU && !input.faults.length && !input.detailRead;
 }
 
 /**
@@ -225,6 +241,8 @@ export const notebookRefKey = (cpuSlug: string, line: string | null | undefined)
 export const PRICE_FLOOR_USD = 15;
 /** Menos que esta parte de la mediana de sus iguales (≥ 5) no es un precio de ese equipo. */
 export const IMPOSSIBLE_SHARE = 0.15;
+/** Más que estas veces la mediana de sus iguales (≥ 5) tampoco. */
+export const IMPOSSIBLE_MULTIPLE = 5;
 export const PRICE_CEIL_USD = 20_000;
 
 export function buildComputerCatalog(input: CatalogInput): ComputerCatalogRow[] {
@@ -272,11 +290,17 @@ export function buildComputerCatalog(input: CatalogInput): ComputerCatalogRow[] 
     const { raw, specs, detail } = item;
     const kind = specs.kind!;
     const machine = isMachineKind(kind);
+    if (waitsForDetail({ source: raw.source, price: raw.price, currency: raw.currency, inferred, machine, faults: specs.faults, detailRead: !!detail?.found })) {
+      if (input.stats) input.stats.heldForDetail++;
+      continue;
+    }
     const comparables = machine ? comparablesFor(specs, pool) : null;
     // Un precio que no puede ser de ese equipo (la regla de `priceSanity` de autos): menos del 15 % de
     // lo que piden por sus iguales, sin una falla que lo explique. Es un error de moneda o de tipeo, y
     // encabezaría «las más baratas». Se retira el aviso; el precio no se corrige.
     if (comparables && comparables.n >= 5 && !specs.faults.length && priceUsd < comparables.medianUsd * IMPOSSIBLE_SHARE) continue;
+    // …y por arriba: cinco veces lo que piden por sus iguales es un cero de más.
+    if (comparables && comparables.n >= 5 && priceUsd > comparables.medianUsd * IMPOSSIBLE_MULTIPLE) continue;
     // Sin iguales para comparar, una máquina con piezas modernas por menos de US$ 60 tampoco es un
     // precio («Apple Macbook Pro A2338 … $ 899» en Mercado Libre, en pesos declarados).
     if (machine && !specs.faults.length && hasModernParts(specs) && priceUsd < 60) continue;
@@ -289,6 +313,12 @@ export function buildComputerCatalog(input: CatalogInput): ComputerCatalogRow[] 
       const exact = identity[0] ?? null;
       const alt = identity.find((entry) => entry.slug !== exact?.slug && entry.role === exact?.role) ?? null;
       valuation = exact ? valuePart({ slug: exact.slug, altSlug: alt?.slug ?? null, label: exact.label, role: exact.role, priceUsd, table, noVerdict: inferred || specs.faults.length > 0 }) : null;
+      // La misma guarda en una pieza: «GTX 1650 — $ 1.000» es el 12 % de lo que piden por la misma
+      // usada. No es una ganga: es un precio de «consultar» o un error.
+      const used = valuation?.parts[0];
+      if (used?.usedUsd && used.usedN >= 3 && !specs.faults.length && priceUsd < used.usedUsd * IMPOSSIBLE_SHARE) continue;
+      // Una pieza USADA al doble de la misma nueva («RTX 5080 — $ 186.497») tampoco es un precio.
+      if (used?.newUsd && used.newN >= 3 && priceUsd > used.newUsd * 2) continue;
     }
     const { department, city } = locationOf(raw);
     const storageGb = specs.storage.length ? specs.storage.reduce((total, drive) => total + drive.gb, 0) : null;

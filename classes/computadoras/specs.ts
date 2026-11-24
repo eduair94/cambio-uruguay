@@ -47,7 +47,9 @@ const ML_KIND: Record<string, ComputerKind | "reject"> = {
 
 // Sin «portátil»: «PC de torre … por una CONSOLA PORTÁTIL» (Facebook, 23/11/2026).
 const NOTEBOOK = /\b(notebooks?|laptops?|macbook|mac\s*book|mc\s*book|mackbook|ultrabook|chromebook|netbook|thinkpad|ideapad|vivobook|zenbook|elitebook|probook|latitude|surface\s*(?:laptop|pro|book)|zephyrus|rog\s*(?:strix\s*g\d|flow)|tuf\s*(?:gaming\s*)?f[ax]\d|nitro\s*(?:5|v\d*|an\d+)|predator\s*helios|legion\s*(?:5|7|pro|slim)|\bloq\b|katana|thin\s*gf|gf6\d|omen\s*1[567]|victus|galaxy\s*book|matebook|expertbook|travelmate|stream\s*1[14]|aspire\s*[357]\b|swift\s*[gx135]|yoga\s*(?:slim|\d)|xps\s*1[3-7])\b/;
-const AIO = /\b(all\s*-?\s*in\s*-?\s*one|todo\s*en\s*uno|aio|imac)\b/;
+const AIO_WORD = /\b(all\s*-?\s*in\s*-?\s*one|todo\s*en\s*uno|aio|imac)\b/;
+// «Pioneer DJ XDJ-RX All-in-One», «Impresora all in one»: la frase también es de otros rubros.
+const AIO = { test: (text: string): boolean => AIO_WORD.test(text) && !/\b(dj|pioneer|impresora|multifuncion|mixer|controlador|parlante|amplificador|consola)\b/.test(text) };
 const MINI = /\b(mini\s*-?\s*pc|minipc|nuc\d*|mac\s*mini|mac\s*studio|micro\s*pc|thin\s*client|tiny)\b/;
 const DESKTOP = /\b(pc|pcs|computadora|computadoras|computador|ordenador|torre|equipo|desktop|workstation|optiplex|thinkcentre|elitedesk|prodesk|vostro|setup|sobremesa)\b/;
 
@@ -61,12 +63,13 @@ const PSU_WORD = /\b(fuente(?:\s*de\s*(?:poder|alimentacion))?|psu)\b/;
 /** Lo que no es este directorio, aunque Marketplace lo traiga en las mismas búsquedas. */
 const NOT_COMPUTER = /\b(smart\s*tv|televisor|television|tv|tele|playstation|ps[2-5]|play\s*[2-5]|xbox|nintendo|switch|consola|celular|iphone|ipone|ipad|tablet|redmi\s*pad|galaxy\s*tab|impresora|proyector|parlantes?|silla|camara|drone|smartwatch|reloj|router|modem|heladera|lavarropas)\b/;
 /** Un accesorio que nombra la computadora a la que va («Cargador Laptop Toshiba»). */
-const ACCESSORY_LEAD = /^(?:vendo\s+|se\s+vende\s+)?(cargador|cargadores|bateria|baterias|pantalla|display|teclado|teclados|mouse|carcasa|bisagras?|cooler|disipador|ventilador|fan|fans|cables?|adaptador|hub|soporte|base|funda|mochila|bolso|maletin|webcam|auriculares|monitor|monitores|gabinete|gabinetes|joystick|control|pad|alfombrilla|kit\s*de\s*limpieza|lector|grabadora|lectora)\b/;
+const ACCESSORY_LEAD = /^(?:vendo\s+|se\s+vende\s+)?(mesa|escritorio|mueble|silla|sillon|rack|parlantes?|auricular|microfono|impresora|mousepad|caja\s+de|cargador|cargadores|bateria|baterias|pantalla|display|teclado|teclados|mouse|carcasa|bisagras?|cooler|disipador|ventilador|fan|fans|cables?|adaptador|hub|soporte|base|funda|mochila|bolso|maletin|webcam|auriculares|monitor|monitores|gabinete|gabinetes|joystick|control|pad|alfombrilla|kit\s*de\s*limpieza|lector|grabadora|lectora)\b/;
 const ACCESSORY_FOR = /\b(funda|mochila|bolso|maletin|cargador|bateria|pantalla|display|teclado|bisagras?|carcasa|soporte|cooler|protector|repuestos?)\s+(?:de\s+|para\s+)?(?:notebooks?|laptops?|macbook)\b/;
+const PART_LEAD = /^(?:vendo\s+|se\s+vende\s+)?(?:\d+\s+)?(memorias?|ram|discos?|ssd|hdd|nvme|placa\s*de\s*video|tarjeta\s*(?:de\s*)?(?:video|grafica)|grafica|procesador|microprocesador|fuente|mother\w*|placa\s*madre)\b/;
 const MACHINE_LEAD = /^(?:vendo\s+|oferta\s+|kit\s+|combo\s+)?(?:pc|computadora|computador|notebook|laptop|torre|equipo|macbook|imac|mini\s*pc)\b/;
 // «Torre funcionando, 3 notebook y 2 mini PC para repuesto», «Variedad de notebook»: muchos equipos
 // por un precio que no es de ninguno.
-const MULTI = /\bdesde\s*(?:\$|u\$?s|usd|\d)|\bmodelos?\s+disponibles\b|\bvarios\s+modelos\b|\bstock\b|\bpor\s+partes\b|\blote\b|\bcompro\b|\bbusco\b|\bvariedad\b|\b[2-9]\s+(?:notebooks?|laptops?|pcs?|computadoras?|torres?|mini\s*pcs?)\b/;
+const MULTI = /\bdesde\s*(?:\$|u\$?s|usd|\d)|\bmodelos?\s+disponibles\b|\bvarios\s+modelos\b|\bstock\b|\bpor\s+partes\b|\blote\b|\bcompro\b|\bbusco\b|\bvariedad\b|\b(?:[2-9]|dos|tres|cuatro|cinco|varias|varios)\s+(?:notebooks?|laptops?|pcs?|computadoras?|torres?|mini\s*pcs?)\b/;
 
 export function classifyKind(title: string, description: string, mlCategory?: string | null, fbAttributes?: Record<string, string> | null): { kind: ComputerKind | null; reject: string | null } {
   const t = title;
@@ -77,7 +80,8 @@ export function classifyKind(title: string, description: string, mlCategory?: st
   // «Combo … + Funda Notebook 15.6», «Repuestos Notebook Olidata X300c»: el accesorio nombra la
   // máquina a la que va. También en las categorías de ML, donde se publican como notebooks. Un título
   // que además declara procesador o memoria es la máquina con su accesorio.
-  if ((ACCESSORY_FOR.test(t) || /^repuestos?\b/.test(t)) && !/\b\d{1,3}\s*gb\b/.test(t) && !readCpu(t)) return { kind: null, reject: "accesorio" };
+  // «Notebook Acer Aspire 3620 - Carcasa Y Partes»: el despiece de una máquina tampoco es la máquina.
+  if ((ACCESSORY_FOR.test(t) || /^repuestos?\b/.test(t) || /\b(carcasa\s+y\s+partes|despiece|desarme|en\s+partes)\b/.test(t)) && !/\b\d{1,3}\s*gb\b/.test(t) && !readCpu(t)) return { kind: null, reject: "accesorio" };
 
   if (mlCategory) {
     const mapped = ML_KIND[mlCategory];
@@ -104,11 +108,15 @@ export function classifyKind(title: string, description: string, mlCategory?: st
   if (ACCESSORY_LEAD.test(t) && !(/^gabinete/.test(t) && (exactCpu(t) || /\b\d{1,2}\s*gb\b/.test(t)))) {
     return { kind: null, reject: "accesorio" };
   }
-  // «Fuente para computadora», «Memoria para notebook»: una pieza, no un accesorio.
-  const partLead = /^(?:vendo\s+)?(fuente|memoria|ram|placa\s*de\s*video|tarjeta|disco|ssd|procesador|mother|placa\s*madre)\b/.exec(t);
-  if (partLead && /\bpara\s+(?:notebook|laptop|pc|computadora|macbook|mac)\b/.test(t)) {
-    const lead = partLead[1]!;
-    return { kind: /fuente/.test(lead) ? "psu" : /memoria|ram/.test(lead) ? "ram" : /disco|ssd/.test(lead) ? "storage" : /procesador/.test(lead) ? "cpu" : /mother|madre/.test(lead) ? "motherboard" : "gpu", reject: null };
+  // La pieza que ABRE el título es lo que se vende, aunque después nombre la máquina a la que va:
+  // «Memoria notebook 8gb ddr4», «Disco Duro Interno Toshiba 1TB 2.5" SATA (Notebook / PS4 / PC)»,
+  // «motherboard pc y notebook», «Fuente para computadora» (publicadas como notebooks el 24/11/2026).
+  const partLead = PART_LEAD.exec(t)?.[1];
+  if (partLead) {
+    if (readCpu(t) && chipsetOf(t)) return { kind: "combo", reject: null };
+    if (/memoria|ram/.test(partLead)) return /\d\s*(?:gb|g\b)|ddr\s*[345]/.test(t) ? { kind: "ram", reject: null } : { kind: null, reject: "sin-identidad" };
+    if (/disco|ssd|hdd|nvme/.test(partLead)) return /\d\s*(?:gb|tb|tera)|ssd|hdd|nvme|sata/.test(t) ? { kind: "storage", reject: null } : { kind: null, reject: "sin-identidad" };
+    return { kind: /fuente/.test(partLead) ? "psu" : /procesador/.test(partLead) ? "cpu" : /mother|madre/.test(partLead) ? "motherboard" : "gpu", reject: null };
   }
   if (/\bpara\s+(?:notebook|laptop|pc|computadora|macbook|mac)\b/.test(t) && !machineWordsBefore(t)) return { kind: null, reject: "accesorio" };
   if (NOT_COMPUTER.test(t) && !(NOTEBOOK.test(t) || /\b(pc|computadora|torre|cpu)\b/.test(t))) return { kind: null, reject: "otro-producto" };
@@ -380,7 +388,7 @@ function readIncludes(text: string): ComputerSpecs["includes"] {
 const FAULTS: Array<[Fault, RegExp]> = [
   ["no-enciende", /\bno\s*(?:enciende|prende|arranca|bootea|inicia|carga\s*(?:el\s*)?(?:windows|sistema))\b/],
   ["no-da-video", /\bno\s*da\s*(?:video|imagen|senal)\b|\b(?:tira|con)\s*artifacts?\b|\bartefactos\b/],
-  ["para-repuesto", /\bpara\s*(?:repuestos?|piezas|reparar|arreglar|tecnicos?|entendidos)\b|\ba\s*reparar\b|\bno\s*funciona\b/],
+  ["para-repuesto", /\bpara\s*(?:res?puestos?|piezas|reparar|arreglar|tecnicos?|entendidos)\b|\ba\s*reparar\b|\bno\s*funciona\b/],
   ["pantalla", /\bpantalla\s*(?:rota|partida|quebrada|rajada|con\s*(?:rayas?|lineas?|manchas?|pixeles?))\b|\b(?:display|lcd)\s*roto\b/],
   ["teclado", /\b(?:falla|fallas|detalle|detalles|problema)\s*(?:en\s*(?:el\s*)?)?teclado\b|\bteclado\s*(?:no\s*funciona|roto|con\s*fallas?)\b/],
   ["bateria", /\bbateria\s*(?:no\s*(?:funciona|carga|anda|dura|sirve)|muerta|agotada|inflada|hinchada|mala)\b|\bsin\s*bateria\b/],
@@ -451,7 +459,8 @@ const RAM_FROM_CPU = (cpu: ComputerSpecs["cpu"]): RamType | null => cpu?.ramType
 
 /** Todo lo que dice un aviso. */
 export function readComputerSpecs(input: SpecsInput): ComputerSpecs {
-  const title = norm(input.title);
+  // Marketplace a veces entrega el título con `+` por espacios («Computadora+para+respuesto+»).
+  const title = norm(/\s/.test(input.title.trim()) ? input.title : input.title.replace(/\+/g, " "));
   const description = norm(input.description ?? "");
   const { kind, reject } = classifyKind(title, description, input.mlCategory, input.fbAttributes);
   const empty: ComputerSpecs = {

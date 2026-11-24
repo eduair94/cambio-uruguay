@@ -12,7 +12,7 @@ Diseño: `docs/superpowers/specs/2026-11-23-computadoras-usadas-design.md`.
 | fuente | qué aporta | cómo se lee |
 |---|---|---|
 | Facebook Marketplace | PCs, notebooks y muchas piezas sueltas usadas | `readMarketplaceSearches` (Chrome del perfil, candado compartido): 22 palabras + «pc gamer» y «notebook» partidas en 5 bandas de precio + la categoría `computers`, desde Montevideo. La horaria lee 6 palabras rotando, por más nuevas. |
-| Ficha de Facebook | la descripción (las piezas, casi siempre en líneas rotuladas), `attribute_data` (estado, marca, sistema), la fecha de publicación | `readFacebookPageTexts` sobre `/marketplace/item/<id>/`, 45 por diaria y 20 por horaria a 6 s, primero las nunca leídas. Se relee a los 21 días; una que cargó a medias, a los 2. |
+| Ficha de Facebook | la descripción (las piezas, casi siempre en líneas rotuladas), `attribute_data` (estado, marca, sistema), la fecha de publicación | `readFacebookPageTexts` sobre `/marketplace/item/<id>/`, 60 por diaria y 40 por horaria a 6 s: primero los candidatos a oportunidad y las máquinas con precio dudoso, después las nunca leídas. Se relee a los 21 días; una que cargó a medias, a los 2. |
 | Mercado Libre usados | PCs (MLU1649), notebooks (MLU1652), mini PC (MLU407379), iMac/all-in-one (MLU443594) y piezas usadas | puente `:9656`, `condition=used`, 20 por página, secuencial a 1,5 s. |
 | Mercado Libre nuevos | la tabla de precios nuevos | las categorías de pieza (procesador MLU1693, placa MLU1658, RAM MLU1694/MLU3582, discos MLU1672, mother MLU1692, fuente MLU1695, gabinete MLU1696, notebooks MLU1652) + búsquedas puntuales de los procesadores y placas que usa el directorio y la tabla no tiene. |
 | Tiendas | precio nuevo de las piezas | WooCommerce Store API con el adaptador de `classes/retail/`: Thot, Tecsys, Zonic, Digital World, Laaca, Lidertek, Aslan, PC Parts, Obsidian. Todas en dólares; el adaptador lee la moneda dibujada y divide por `currency_minor_unit`. |
@@ -148,6 +148,35 @@ $ 6.000 o menos, sin referencia, con piezas modernas (placa dedicada de 2016 en 
 de 2017 en adelante o un Apple M) y que en pesos valdría menos de US$ 80, no se publica. Uno sin
 piezas que lo contradigan («Laptop dell $ 1000») sí, en pesos. Tampoco entran los precios de relleno
 (123456, 111111, 1234; los nueves sí, «$ 9.999» es un precio).
+
+### Un precio dudoso espera su ficha (24/11/2026)
+
+La primera corrida de producción leyó **4.991 tarjetas** de Marketplace (las pruebas, con Facebook
+frenado, habían leído 550) y mostró lo que la muestra chica no: Facebook **nunca** informa dólares en
+la tarjeta (0 de 4.991) y había 424 máquinas sin falla entre $ 628 y $ 3.000. Mezcladas: dólares
+evidentes («Macbook Pro 14" M3 Pro — $ 1.610»), pesos evidentes («Torre de pc retro Pentium III —
+$ 1.000») y dudosos («Pc Gamer — $ 1.300»). Ordenado por precio, el directorio abría con una
+«Laptop Gamer Dell G5 Ryzen 7 RX5600M» a US$ 16.
+
+La descripción lo resuelve casi siempre (trae las piezas, y de ahí sale la referencia), así que
+`waitsForDetail` no publica una máquina de Facebook de hasta `HOLD_MAX_UYU` ($ 3.000) hasta leer su
+ficha. No espera si el título dice «dólares», si declara una falla (un equipo roto sí vale $ 1.000) o
+si sus piezas ya dieron una referencia. Esas fichas van primero en la cola, junto con las de los
+candidatos a oportunidad, y el presupuesto subió a 40 fichas por hora y 60 en la diaria (como
+`currency-rentals-detail`). Con la ficha leída y sin nada que lo contradiga, el número va en pesos.
+`meta.counts.heldForDetail` dice cuántas esperan (313 en el volcado de esa corrida).
+
+Las otras guardas de precio que salieron de la misma corrida: una pieza a menos del 15 % de la
+mediana usada de su identidad (≥ 3) o a más del doble de la nueva no es un precio («GTX 1650 —
+$ 1.000», «RTX 5080 — $ 186.497»); una máquina a más de 5 veces la mediana de sus iguales tampoco; y
+los rellenos con un dígito repetido en cualquier parte (188888).
+
+Y de clasificación: la pieza que ABRE el título es lo que se vende aunque nombre la máquina a la que
+va («Memoria notebook 8gb ddr4», «Disco Duro Interno … (Notebook / PS4 / PC)»); muebles y audio
+(«Mesa escritorio computadora», «Parlante Gamer … Pc»); la caja vacía («Caja de tarjeta gráfica»);
+el «all in one» de otros rubros («Pioneer DJ … All-in-One»); el despiece («Carcasa Y Partes»);
+varios equipos dichos con palabras («Dos notebook Lenovo»); y el título que llega con `+` por
+espacios («Computadora+para+respuesto+»).
 
 ## Corridas y guardas
 

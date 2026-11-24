@@ -25,8 +25,12 @@ describe("el catálogo público", () => {
     raw("Variedad de notebook. Muy buen estado", 123456, "UYU"),
     raw("Notebook LENOVO", 111111, "UYU"),
     raw("Memoria ram 16gb DDR4 Sodimm 3200Mhz", 2000, "UYU"),
+    raw("Laptop Toshiba buen estado", 1500, "UYU"),
+    raw("Pc Gamer", 1300, "UYU"),
+    raw("Notebook HP 15 Core i3 - Prende - Bloqueada - Sin Cargador", 2000, "UYU"),
   ];
   const details = new Map<string, FacebookComputerDetail>([
+    [listings[12]!.sourceId, { id: listings[12]!.sourceId, readAt: "2026-11-23T00:00:00Z", found: true, description: "Anda bien, la vendo porque me compre otra", attributes: {}, createdAt: null, gone: false }],
     [listings[4]!.sourceId, { id: listings[4]!.sourceId, readAt: "2026-11-23T00:00:00Z", found: true, description: "Procesador i5 10400f\nRTX 3060 12gb\n16gb ram ddr4\nSSD 480gb\nllamame al 099 123 456", attributes: { Condition: "used_good" }, createdAt: "2026-11-20T10:00:00.000Z", gone: false }],
   ]);
   const read = readListings(listings, details);
@@ -48,7 +52,8 @@ describe("el catálogo público", () => {
       usage: usageOf(read),
     }).map((row) => [row.slug, row])
   );
-  const rows = buildComputerCatalog({ read, table, notebookRefs: new Map(), usdUyu: USD_UYU });
+  const stats = { heldForDetail: 0 };
+  const rows = buildComputerCatalog({ read, table, notebookRefs: new Map(), usdUyu: USD_UYU, stats });
   const bySlug = new Map(rows.map((row) => [row.slug, row]));
 
   it("deja afuera lo que no es (un televisor) y lo que no tiene precio", () => {
@@ -89,7 +94,18 @@ describe("el catálogo público", () => {
   it("en pesos chicos sin referencia: una pieza moderna no se publica, un aviso sin piezas sí", () => {
     // «$ 825» por una 3090 serían US$ 20: no se sabe si son pesos o dólares.
     expect(bySlug.has(listings[7]!.slug)).toBe(false);
-    expect(bySlug.get(listings[8]!.slug)).toMatchObject({ kind: "notebook", currency: "UYU", currencyInferred: false });
+    expect(bySlug.has(listings[8]!.slug)).toBe(false);
+  });
+
+  it("un precio dudoso espera su ficha: sin leerla no se publica, leída y sin nada en contra va en pesos", () => {
+    // «Laptop dell — $ 1.000» y «Pc Gamer — $ 1.300» de Facebook: pueden ser pesos o dólares.
+    expect(bySlug.has(listings[8]!.slug)).toBe(false);
+    expect(bySlug.has(listings[13]!.slug)).toBe(false);
+    expect(stats.heldForDetail).toBe(2);
+    // Con la ficha leída y una descripción que no dice dólares ni piezas, el número es en pesos.
+    expect(bySlug.get(listings[12]!.slug)).toMatchObject({ kind: "notebook", currency: "UYU", currencyInferred: false, detailRead: true });
+    // Una falla declarada explica el precio: un equipo roto sí vale $ 2.000 y no espera.
+    expect(bySlug.get(listings[14]!.slug)).toMatchObject({ kind: "notebook", currency: "UYU" });
   });
 
   it("los precios de relleno no entran", () => {
