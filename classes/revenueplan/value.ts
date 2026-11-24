@@ -358,6 +358,7 @@ export const CONTENIDO_PATHS = new Set([
   "/credito-fiscal-por-alquiler-uruguay",
   "/cuando-me-puedo-jubilar-uruguay",
   "/cuando-se-cobra-el-aguinaldo-uruguay",
+  "/cuanto-cuesta-un-empleado-uruguay",
   "/cuanto-me-tienen-que-pagar-uruguay",
   "/cuanto-sale-el-pasaporte-uruguayo",
   "/cuanto-sale-la-cedula-de-identidad-uruguaya",

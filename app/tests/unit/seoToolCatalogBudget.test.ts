@@ -142,25 +142,32 @@ const DEUDA_TITULO_HERRAMIENTA = [
   // deja escrito: `classes/revenueplan/debtFree.ts::parseStringList` corta en el primer `\n]`, y
   // prettier aplasta a una sola línea cualquier array que entre en 100 columnas salvo los que llevan
   // un comentario.
+  //
+  // 5 → 2 el 2026-11-22: las tres libres se pagaron con un `seo-title` en el `<ToolShell>` y NO
+  // tocando `utils/tools.ts`. El catálogo le da el título al `<h1>`, al índice `/herramientas`, a
+  // los chips de «Más herramientas» de las otras diez y a la tarjeta OG, donde el renglón largo
+  // informa y no cuesta nada; lo único que tenía que entrar en 60 era el `<title>`, que es el
+  // renglón sobre el que se hace clic. Quedan las dos reservadas hasta el 2026-11-29.
   '/herramientas/calculadora-plazo-fijo',
   '/herramientas/calculadora-prestamo',
-  '/herramientas/costo-real-de-invertir-afuera',
-  '/herramientas/calculadora-presupuesto-viaje',
-  '/herramientas/calculadora-propinas',
 ]
 
-const TOOL_TITLE_OVER_BUDGET = 5
+const TOOL_TITLE_OVER_BUDGET = 2
 
 /** Lo mismo para las descripciones, contra 155. */
 const DEUDA_DESCRIPCION_HERRAMIENTA = [
   // Nació el 2026-11-20 con su deuda entera, por el mismo motivo. Las dos de impuestos están
   // reservadas hasta el 2026-11-30; `costo-real-de-invertir-afuera` está libre.
+  //
+  // 3 → 2 el 2026-11-22: `costo-real-de-invertir-afuera` pasó de 212 a 153 con un
+  // `seo-description` en su `<ToolShell>`. Los 212 siguen siendo el párrafo de arriba de la
+  // página, que es donde entran enteros; lo que se recortó es el renglón del SERP, que a 212
+  // Google cortaba justo antes de «rendimiento efectivo», que es la cifra por la que se entra.
   '/herramientas/calculadora-impuestos-importacion',
   '/herramientas/calculadora-impuestos-inversiones',
-  '/herramientas/costo-real-de-invertir-afuera',
 ]
 
-const TOOL_DESCRIPTION_OVER_BUDGET = 3
+const TOOL_DESCRIPTION_OVER_BUDGET = 2
 
 // El conteo real del 2026-11-20: una herramienta que pasa a un `:seo-title=` dinámico sale de este
 // pozo, y el número lo delata si nadie la mide en otro lado.

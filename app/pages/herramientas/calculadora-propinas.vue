@@ -1,5 +1,10 @@
 <template>
-  <ToolShell slug="calculadora-propinas" :faq="faq" hide-disclaimer>
+  <ToolShell
+    slug="calculadora-propinas"
+    seo-title="Calculadora de propinas y dividir la cuenta"
+    :faq="faq"
+    hide-disclaimer
+  >
     <VCard class="pa-4 pa-sm-6">
       <VRow class="g-input">
         <VCol cols="12" sm="5">

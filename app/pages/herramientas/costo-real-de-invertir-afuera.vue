@@ -2,6 +2,8 @@
   <ToolShell
     slug="costo-real-de-invertir-afuera"
     content-layout="below"
+    seo-title="Costo real de invertir afuera"
+    seo-description="Dólares en un ETF del exterior, ida y vuelta: giros, corresponsales, comisión del bróker, retención de EE.UU. e IRPF uruguayo, y el rendimiento efectivo."
     :faq="faq"
     :sources="sources"
   >

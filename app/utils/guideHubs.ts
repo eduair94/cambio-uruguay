@@ -1744,6 +1744,11 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/que-empresa-abrir-uruguay',
       },
       {
+        label: 'Cuánto cuesta un empleado',
+        description: 'Los aportes patronales sobre el nominal, con la norma de cada tasa.',
+        to: '/cuanto-cuesta-un-empleado-uruguay',
+      },
+      {
         label: 'Facturar en monotributo',
         description: 'Talonario o e-factura: cuál te obliga la DGI y cuál te sale menos.',
         to: '/facturar-en-monotributo-uruguay',
