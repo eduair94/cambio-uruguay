@@ -71,8 +71,24 @@ const MACHINE_LEAD = /^(?:vendo\s+|oferta\s+|kit\s+|combo\s+)?(?:pc|computadora|
 // por un precio que no es de ninguno.
 const MULTI = /\bdesde\s*(?:\$|u\$?s|usd|\d)|\bmodelos?\s+disponibles\b|\bvarios\s+modelos\b|\bstock\b|\bpor\s+partes\b|\blote\b|\bcompro\b|\bbusco\b|\bvariedad\b|\b(?:[2-9]|dos|tres|cuatro|cinco|varias|varios)\s+(?:notebooks?|laptops?|pcs?|computadoras?|torres?|mini\s*pcs?)\b/;
 
+// «Vital 125 … vendo o permuto x PC gamer», «Kayak … o permuto por notebook gamer», «PC gamer permuto
+// por laptop»: lo que el vendedor QUIERE recibir no es lo que vende. La frase se saca antes de
+// clasificar (24/11/2026: una moto, un kayak y una bicicleta publicados como computadoras, y siete
+// PC de escritorio como notebooks). «Permuto PC gamer por PS5» no cambia: ahí la PC es lo ofrecido.
+const SWAP_CLAUSE = /\b(?:permut\w*|cambio|canjeo?)\s*(?:x|por)\s+([^,.(|/]*)/g;
+/** Lo pedido a cambio ES de computación: toda la frase es lo que se quiere, no lo que se vende. */
+const WANTED_COMPUTER = /^(?:una?\s+|algun[ao]?\s+|otr[ao]\s+)?(?:pcs?|computadoras?|compu|notebooks?|laptops?|macbook|torre|equipo|componentes|partes|piezas|placa|tarjeta|grafica|procesador|mother|memoria|ram|monitor)\b/;
+/** «Permuto por PS5 y plata NOTEBOOK GAMER RTX 4060»: después de lo pedido vuelve lo que se vende. */
+const SOLD_AFTER = /\b(?:pc|computadora|notebook|laptop|macbook|imac|torre)\b/;
+const withoutWanted = (text: string): string =>
+  text.replace(SWAP_CLAUSE, (_match, clause: string) => {
+    if (WANTED_COMPUTER.test(clause)) return " ";
+    const sold = SOLD_AFTER.exec(clause);
+    return sold ? ` ${clause.slice(sold.index)}` : " ";
+  });
+
 export function classifyKind(title: string, description: string, mlCategory?: string | null, fbAttributes?: Record<string, string> | null): { kind: ComputerKind | null; reject: string | null } {
-  const t = title;
+  const t = mlCategory ? title : withoutWanted(title);
   const machineWords = NOTEBOOK.test(t) || AIO.test(t) || MINI.test(t) || DESKTOP.test(t);
 
   if (MULTI.test(t)) return { kind: null, reject: "multi" };
@@ -145,7 +161,7 @@ export function classifyKind(title: string, description: string, mlCategory?: st
 
   // Título sin nada («Vendo», «Pc»): la ficha.
   if (description) {
-    const d = description;
+    const d = withoutWanted(description);
     if (MULTI.test(d.slice(0, 200))) return { kind: null, reject: "multi" };
     if (NOTEBOOK.test(d.slice(0, 160))) return { kind: "notebook", reject: null };
     if (/\b(pc|computadora|torre|equipo)\b/.test(d.slice(0, 160)) && (readCpu(d) || readGpu(d))) return { kind: "desktop", reject: null };
@@ -385,29 +401,64 @@ function readIncludes(text: string): ComputerSpecs["includes"] {
 // ---------------------------------------------------------------------------------------------
 // Fallas declaradas
 
+// «gabinete negro con detalles verdes», «escritorio con detalles en madera»: ahí «detalles» es
+// diseño, no una falla. Medido sobre 6.783 avisos: «detalle(s)» aparece en 56 títulos.
+const DESIGN_DETAIL = String.raw`(?!\s*(?:en\s*|de\s*)?(?:color\s*)?(?:verdes?|rojos?|azul(?:es)?|blancos?|negros?|dorados?|plateados?|rosas?|violetas?|naranjas?|amarillos?|gris(?:es)?|madera|rgb|led|cromados?)\b)`;
+
 const FAULTS: Array<[Fault, RegExp]> = [
   ["no-enciende", /\bno\s*(?:enciende|prende|arranca|bootea|inicia|carga\s*(?:el\s*)?(?:windows|sistema))\b/],
   ["no-da-video", /\bno\s*da\s*(?:video|imagen|senal)\b|\b(?:tira|con)\s*artifacts?\b|\bartefactos\b/],
   ["para-repuesto", /\bpara\s*(?:res?puestos?|piezas|reparar|arreglar|tecnicos?|entendidos)\b|\ba\s*reparar\b|\bno\s*funciona\b/],
   // «(sin Pantalla)», «no funciona pantalla»: salieron como oportunidad el 24/11/2026.
-  ["pantalla", /\bpantalla\s*(?:rota|partida|quebrada|rajada|danada|con\s*(?:rayas?|lineas?|manchas?|pixeles?|detalles?))\b|\b(?:display|lcd)\s*roto\b|\bsin\s*pantalla\b|\bno\s*funciona\s*(?:la\s*)?pantalla\b/],
+  // «detalle: línea vertical en pantalla».
+  [
+    "pantalla",
+    /\bpantalla\s*(?:rota|partida|quebrada|rajada|danada|con\s*(?:rayas?|lineas?|manchas?|pixeles?|detalles?))\b|\b(?:display|lcd)\s*roto\b|\bsin\s*pantalla\b|\bno\s*funciona\s*(?:la\s*)?pantalla\b|\b(?:lineas?|rayas?|manchas?)\s*(?:vertical(?:es)?\s*|horizontal(?:es)?\s*)?en\s*(?:la\s*)?pantalla\b/,
+  ],
   ["teclado", /\b(?:falla|fallas|detalle|detalles|problema)\s*(?:en\s*(?:el\s*)?)?teclado\b|\bteclado\s*(?:no\s*funciona|roto|con\s*fallas?)\b/],
   ["bateria", /\bbateria\s*(?:no\s*(?:funciona|carga|anda|dura|sirve)|muerta|agotada|inflada|hinchada|mala)\b|\bsin\s*bateria\b/],
   ["bloqueada", /\bbloquead[ao]\b|\bicloud\b|\bclave\s*(?:de\s*)?(?:la\s*)?bios\b/],
   ["sin-disco", /\bsin\s*(?:disco|ssd|hdd|almacenamiento)\b/],
   ["sin-cargador", /\bsin\s*cargador\b/],
-  // «con detalles», «(detalles en …)»: el vendedor avisa que algo no está bien, aunque no diga qué.
-  ["falla", /\b(?:con|tiene|presenta)\s*(?:una\s*|algunas?\s*|pequenos?\s*)?(?:fallas?|detalles?)\b|\bdetalles?\s*(?:en|de)\s*(?:la\s*|el\s*)?(?:pantalla|carcasa|teclado|bateria|bisagra|placa)\b|\bcarpeta\s*con\s*signo\b|\bpara\s*revisar\b/],
+  // «con detalles», «c/detalle», «detalles estéticos», «único detalle: …»: el vendedor avisa que
+  // algo no está bien, aunque no diga qué.
+  [
+    "falla",
+    new RegExp(
+      String.raw`(?:\b(?:con|tiene|presenta)|\bc/)\s*(?:una\s*|un\s*|algunas?\s*|algunos?\s*|pequenos?\s*|leves?\s*|minimos?\s*)?(?:fallas?|detalles?)\b${DESIGN_DETAIL}` +
+        String.raw`|\bdetalles?\s*(?:en|de)\s*(?:la\s*|el\s*)?(?:pantalla|carcasa|teclado|bateria|bisagra|placa|tapa)\b` +
+        String.raw`|\bdetalles?\s*estetic[oa]s?\b|\bunico\s*detalle\b` +
+        String.raw`|\bcarpeta\s*con\s*signo\b|\bpara\s*revisar\b`,
+    ),
+  ],
 ];
 
-export function readFaults(text: string): Fault[] {
+/** Sólo en el TÍTULO de un usado: «… (detalles)» al final y «detalles en fotos» avisan que algo no
+ * está bien. En una descripción «más detalles por privado» es otra cosa, así que ahí no se lee. */
+const TITLE_FAULT = /\bdetalles?[\s.,!:-]*$|\bdetalles?\s*en\s*(?:las?\s*)?(?:fotos?|imagenes)\b/;
+const NEGATED = /\b(?:no|sin|nunca|ningun|ninguna|cero)\s*$/;
+const MORE_INFO = /\b(?:mas|ver|leer|consultar|consulte|por|preguntar|pregunte|pedir)\s*$/;
+
+/** `title`: el título ya normalizado, para la regla que sólo vale ahí. */
+export function readFaults(text: string, title = ""): Fault[] {
   const found: Fault[] = [];
   for (const [fault, pattern] of FAULTS) {
-    const match = pattern.exec(text);
-    if (!match) continue;
-    const before = text.slice(Math.max(0, match.index - 8), match.index);
-    if (/\b(no|sin|nunca)\s*$/.test(before)) continue;
-    found.push(fault);
+    // Todas las apariciones: «sin detalles … con fallas en la bisagra» declara una falla aunque la
+    // primera coincidencia esté negada.
+    const all = new RegExp(pattern.source, "g");
+    for (const match of text.matchAll(all)) {
+      const before = text.slice(Math.max(0, match.index - 10), match.index);
+      if (NEGATED.test(before)) continue;
+      found.push(fault);
+      break;
+    }
+  }
+  if (!found.includes("falla")) {
+    const match = TITLE_FAULT.exec(title);
+    if (match) {
+      const before = title.slice(Math.max(0, match.index - 12), match.index);
+      if (!NEGATED.test(before) && !MORE_INFO.test(before)) found.push("falla");
+    }
   }
   return found;
 }
@@ -576,7 +627,7 @@ export function readComputerSpecs(input: SpecsInput): ComputerSpecs {
     }
   }
   if (kind === "desktop") specs.includes = readIncludes(both);
-  specs.faults = uniq(readFaults(both));
+  specs.faults = uniq(readFaults(both, title));
   return specs;
 }
 

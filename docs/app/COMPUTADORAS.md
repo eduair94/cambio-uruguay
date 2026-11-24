@@ -135,6 +135,23 @@ id (`ml:unknown`, 1.778 de 1.784 usados) y no cuentan como un vendedor. Medido s
 - «(sin Pantalla)», «no funciona pantalla» y «con detalles» son fallas declaradas; «sin detalles» y
   «Sin Touch Bar» no.
 
+**Segunda revisión, sobre lo publicado (24/11/2026)**. «Detalle(s)» aparece en 56 títulos de 6.783 y
+la regla sólo leía «con detalles»:
+
+- También declaran una falla «c/detalle» (diez notebooks de un mismo vendedor), «detalles
+  estéticos», «único detalle …» y, **sólo en el título**, «… (detalles)» al final y «detalles en
+  fotos». En una descripción «más detalles por privado» es otra cosa y no se lee. «Sin», «ningún» y
+  «cero» niegan. «Con detalles verdes» o «en madera» es diseño. Sobre 4.977 avisos: 20 ganan la
+  marca, sale una oportunidad («MacBook Pro 2017 … (detalles)») y no entra ninguna.
+- La etiqueta pública de esa marca es «con detalles o fallas»: «tiene una falla» afirmaba más de lo
+  que el vendedor escribió.
+- **Lo pedido a cambio no es lo que se vende**: «Vital 125 … permuto x PC gamer», «Kayak … o permuto
+  por notebook gamer», «Vendo S23 Ultra o permuto por PC gamer» salían como computadoras (14 avisos:
+  una moto, un kayak, una bicicleta, un Xbox…), y «PC gamer permuto por laptop» salía como notebook
+  (7). `withoutWanted` saca la frase «permuto/cambio por …» antes de clasificar: entera si lo pedido
+  es de computación, y hasta donde vuelve lo vendido si no («permuto por PS5 y plata NOTEBOOK GAMER
+  RTX 4060» sigue siendo la notebook). «Permuto PC gamer por PS5» no cambia.
+
 ## Precios de notebooks (`classes/computadoras/report.ts`, `/precios-notebooks-usadas-uruguay`)
 
 Un documento (`computermetas`, `uy-computadoras-notebooks`) armado del catálogo ya publicado:

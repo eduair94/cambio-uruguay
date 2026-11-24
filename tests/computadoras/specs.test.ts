@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readComputerSpecs, readRam, readStorage } from "../../classes/computadoras/specs";
+import { readComputerSpecs, readFaults, readRam, readStorage } from "../../classes/computadoras/specs";
 import { norm } from "../../classes/computadoras/text";
 
 // Títulos y descripciones reales (Mercado Libre y Facebook Marketplace, 23/11/2026).
@@ -168,5 +168,83 @@ describe("fallas que salieron como oportunidad en producción (24/11/2026)", () 
   it("«sin detalles» y «sin Touch Bar» no lo son", () => {
     expect(faultsOf("Macbook Air 2020 Apple M1 8gb Ram 256gb - sin detalles")).toEqual([]);
     expect(faultsOf("Apple Macbook Pro (13-inch, 2017, Sin Touch Bar)")).toEqual([]);
+  });
+});
+
+describe("«detalles» en el título: medido sobre 6.783 avisos, 56 títulos lo dicen (24/11/2026)", () => {
+  const faultsOf = (title: string, description?: string) => readComputerSpecs({ title, description, mlCategory: "MLU1652" }).faults;
+
+  it("«(detalles)» al final del título es una falla declarada: salió como oportunidad", () => {
+    expect(faultsOf("Apple Macbook Pro (13-inch, 2017, Sin Touch Bar) (detalles)")).toContain("falla");
+    expect(faultsOf("Computadora detalles en fotos")).toContain("falla");
+    expect(faultsOf("Acer Aspire 3, detalles en las imágenes.")).toContain("falla");
+  });
+
+  it("«c/detalle», «detalles estéticos» y «único detalle» también", () => {
+    expect(faultsOf("Notebook Dell Latitude 5480 C/DETALLE Core i5 7300U 8GB DDR4 SSD 240GB Win 11")).toContain("falla");
+    expect(faultsOf("Notebook Lenovo c/detalles T460 Core i5 6200U + 8GB RAM + HDD 320GB Win 11")).toContain("falla");
+    expect(faultsOf("Notebook HP 15 – AMD Ryzen 7 – 16GB RAM – SSD 512GB detalles estéticos")).toContain("falla");
+    expect(faultsOf("Apple Macbook Pro 13 2018 i5. Touchbar. Detalle estético")).toContain("falla");
+    expect(faultsOf("Laptop HP 15 usada, único detalle batería,")).toContain("falla");
+    expect(faultsOf("Oferta Notebook Toshiba detalle: línea vertical en pantalla")).toContain("pantalla");
+  });
+
+  it("negado no cuenta, y tampoco «más detalles» ni lo que sólo dice la descripción", () => {
+    expect(faultsOf("Notebook HP como nueva sin detalles")).toEqual([]);
+    expect(faultsOf("Vendo notebook Samsung y Lenovo bien sin detalle")).toEqual([]);
+    expect(faultsOf("Notebook Lenovo ThinkPad T480 impecable, ningún detalle")).toEqual([]);
+    expect(faultsOf("Notebook Asus Vivobook 15 consultar por más detalles")).toEqual([]);
+    expect(faultsOf("Notebook Asus Vivobook 15 i5 8gb", "Excelente estado. Cualquier consulta, más detalles")).toEqual([]);
+    expect(faultsOf("Combo gamer Intel i7 8700 y placa Aorus detalles en la descripción")).toEqual([]);
+  });
+
+  it("«con detalles verdes» es diseño, no una falla", () => {
+    const direct = (title: string) => readFaults(norm(title), norm(title));
+    expect(direct("Gabinete pc gamer negro con detalles verdes Micro-ATX")).toEqual([]);
+    expect(direct("Notebook Acer Nitro 5 negra con detalles en rojo, i5 8gb")).toEqual([]);
+    expect(direct("Gabinete como el de la foto con detalles leer descripcion")).toContain("falla");
+  });
+
+  it("una falla después de una negación se lee igual", () => {
+    expect(faultsOf("Notebook Dell Inspiron 15 i5 8gb", "Sin detalles estéticos, pero tiene una falla en la bisagra")).toContain("falla");
+  });
+});
+
+describe("lo pedido a cambio no es lo que se vende (24/11/2026)", () => {
+  const kindOf = (title: string) => readComputerSpecs({ title }).kind;
+
+  it("una moto, un kayak o un celular que piden una PC no son computadoras", () => {
+    for (const title of [
+      "Vital 125, Detalles estéticos , Luces funcionando, Vendo o permuto x PC Gamer o escucho ofertas",
+      "Kayak Vendo , escucho ofertas, o permuto por Notebook gamer 092995988,",
+      "Bicicleta Scott rodado 29, con horquilla de carbono, vendo o permuto por notebook de igual valor.",
+      "Vendo s23 ultra o permuto por pc gamer completa.",
+      "Xbox one+ 2 mandos mecánicos+ un SSD 500G y 29 juegos valor de 950dolars, permuto por pc pongo plata",
+      "Switch destrabada permuto por componentes de pc",
+      "Permuto por tarjeta de video de 4gb se prueba todo",
+      "PERMUTO POR PC",
+      "Vendo o cambio x Pc",
+    ]) {
+      expect(kindOf(title), title).toBeNull();
+    }
+  });
+
+  it("una PC que pide una notebook es una PC de escritorio", () => {
+    expect(kindOf("vendo Pc gamer o permuto por laptop")).toBe("desktop");
+    expect(kindOf("PC GAMER PERMUTO POR NOTEBOOK Y PONGO DIFERENCIA")).toBe("desktop");
+    expect(kindOf("Pc Blanca - Vendo o Permuto por una notebook buena")).toBe("desktop");
+    expect(kindOf("Laptop Potente con 32GB RAM y SSD de 512B (i5 12va Gen) O permuto por Pc fija")).toBe("notebook");
+  });
+
+  it("lo que se vende puede venir después de lo pedido", () => {
+    expect(kindOf("Vendo o Permuto por PS5 y Plata 🤑 NOTEBOOK GAMER RTX 4060 8gb 16 RAM SSD 512 GB Pantalla de 144 Hz")).toBe("notebook");
+    expect(kindOf("VENDO O PERMUTO por algo de mismo valor Laptop Dell Inspiron 15 TÁCTIL i7 12th Gen 16GB RAM 1TB SSD")).toBe("notebook");
+    expect(kindOf("VENDO O PERMUTO POR IPHONE 💻 Notebook en excelente estado")).toBe("notebook");
+    expect(kindOf("Permuto Por Samsung S24 Ultra PC Gamer")).toBe("desktop");
+  });
+
+  it("«Permuto PC gamer por PS5»: ahí la PC es lo ofrecido", () => {
+    expect(kindOf("Permuto Pc Gamer por PS5")).toBe("desktop");
+    expect(kindOf("Vendo o permuto Notebook gamer nueva gama alta")).toBe("notebook");
   });
 });

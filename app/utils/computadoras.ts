@@ -221,7 +221,7 @@ export const COMPUTER_FAULT_LABEL: Readonly<Record<ComputerPublicFault, string>>
   bloqueada: 'bloqueada',
   'sin-disco': 'sin disco',
   'sin-cargador': 'sin cargador',
-  falla: 'tiene una falla',
+  falla: 'con detalles o fallas',
 })
 
 export function computerFaultsLine(faults: readonly ComputerPublicFault[] | null | undefined) {
