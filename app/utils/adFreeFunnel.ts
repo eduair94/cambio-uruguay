@@ -10,7 +10,13 @@ export const AD_FREE_ITEM_ID = 'sin-anuncios-12-meses'
 export const AD_FREE_PROMOTION = { id: 'sin-anuncios', name: 'Navegá sin anuncios' } as const
 
 /** Where the offer was shown: the `creative_slot` of the promotion events. */
-export type AdFreeSlot = 'content-end' | 'content-end-link' | 'donation-card' | 'account-menu'
+export type AdFreeSlot =
+  | 'content-end'
+  | 'content-end-link'
+  | 'donation-card'
+  | 'donation-section'
+  | 'account-menu'
+  | 'footer'
 
 /** Pages with ads seen in this browser (one per route change), the engagement signal. */
 export const NUDGE_PAGEVIEWS_KEY = 'cu_adfree_pv'
@@ -19,9 +25,9 @@ export const NUDGE_DISMISS_KEY = 'cu_adfree_nudge_dismissed'
 /** The card already appeared in this session (sessionStorage). */
 export const NUDGE_SESSION_KEY = 'cu_adfree_nudge_session'
 
-/** The card waits for a reader who already met ads on a few pages: that reader is the one who
- * buys "without ads"; a first visit from Google is not. */
-export const NUDGE_MIN_PAGEVIEWS = 3
+/** The card waits for a reader who comes back for a second page with ads: that reader is the one
+ * who buys "without ads"; a single visit from Google is not. */
+export const NUDGE_MIN_PAGEVIEWS = 2
 export const NUDGE_DISMISS_DAYS = 30
 
 export function nudgeVariant(opts: {

@@ -66,6 +66,15 @@ aunque el webhook nunca haya llegado.
 Después: `app/scripts/deploy.sh` (o cualquier push que toque `app/`) para que el build hornee las
 variables. Verificar en `/cuenta/sin-publicidad` que aparezcan los medios.
 
+## Cuentas del sitio sin anuncios
+
+Las cuentas de `NUXT_ADMIN_EMAILS` y de `NUXT_AD_FREE_EMAILS` (lista aparte, para dueños que no
+tienen que ver los tableros privados) navegan sin anuncios sin pagar, siempre que el correo esté
+verificado: un alta con contraseña puede escribir cualquier dirección hasta abrir el enlace de
+verificación. No se guarda nada en la base: `GET /api/me/ad-free` lo decide en cada pedido
+(`server/utils/adFreeOwners.ts`), así que sacar la dirección de la lista lo termina. Se hornea en el
+build como el resto del `runtimeConfig`.
+
 ## Devoluciones
 
 Se ofrece la devolución completa dentro de 5 días hábiles (Ley 17.250, art. 16). Se hace desde el

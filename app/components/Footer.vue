@@ -26,6 +26,8 @@
                any page. Kept as its own labelled action above the icon strip so
                it stays discoverable. -->
           <ShareButtons label variant="tonal" color="white" class="cu-footer__share" />
+          <!-- The way to browse without ads, from every page; hidden for a donor. -->
+          <AdFreeLink placement="footer" class="cu-footer__adfree" />
           <ClientOnly><PwaInstallAction /></ClientOnly>
 
           <!-- The suggestion box and the bug report, from every page. Plain links to the form on
@@ -333,6 +335,12 @@ $teal: #4dd0e1;
 
 .cu-footer__share {
   margin-bottom: 14px;
+}
+
+.cu-footer__adfree {
+  display: block;
+  margin: -6px 0 8px;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 // The suggestion box: a quiet two-link block under the share action. Same muted ink as the

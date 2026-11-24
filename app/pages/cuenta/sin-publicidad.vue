@@ -74,8 +74,13 @@
       variant="tonal"
       class="mb-6"
     >
-      Tu cuenta no tiene anuncios hasta el <strong>{{ formatDay(summary.until!) }}</strong
-      >. Si aportás de nuevo, los {{ AD_FREE_MONTHS }} meses nuevos se suman al final.
+      <template v-if="summary.complimentary">
+        Tu cuenta es del equipo del sitio: no tiene anuncios.
+      </template>
+      <template v-else>
+        Tu cuenta no tiene anuncios hasta el <strong>{{ formatDay(summary.until!) }}</strong
+        >. Si aportás de nuevo, los {{ AD_FREE_MONTHS }} meses nuevos se suman al final.
+      </template>
     </VAlert>
 
     <div class="sin-publicidad__grid">
