@@ -4823,6 +4823,38 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        // Las computadoras usadas que piden bastante menos que sus iguales o sus piezas, con la
+        // regla de las oportunidades de autos (24/11/2026).
+        to: '/oportunidades-computadoras-usadas-uruguay',
+        labelKey: 'nav.oportunidadesComputadoras',
+        icon: 'mdi-tag-arrow-down-outline',
+        priority: 0.7,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'notebook usada barata uruguay',
+          'oportunidades computadoras usadas',
+          'pc gamer barata uruguay',
+          'ofertas notebooks usadas montevideo',
+        ],
+      },
+      {
+        // Cuánto se pide por una notebook usada por marca, procesador, generación, RAM y chip de Mac.
+        to: '/precios-notebooks-usadas-uruguay',
+        labelKey: 'nav.preciosNotebooks',
+        icon: 'mdi-chart-box-outline',
+        priority: 0.7,
+        changefreq: 'daily',
+        fresh: true,
+        keywords: [
+          'precio notebook usada uruguay',
+          'cuanto sale una notebook usada',
+          'precio macbook usada uruguay',
+          'precio macbook air m1 uruguay',
+          'notebook i5 usada precio',
+        ],
+      },
+      {
         to: '/monopatines-electricos-uruguay',
         labelKey: 'nav.monopatines',
         icon: 'mdi-scooter-electric',

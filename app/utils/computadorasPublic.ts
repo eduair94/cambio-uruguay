@@ -135,7 +135,24 @@ export interface ComputerPublicComparables {
   label: string
   medianUsd: number
   n: number
-  basis: 'cpu+gpu' | 'cpu' | 'model' | 'part'
+  /** `line`: misma línea de notebook (MacBook Air M1, MacBook Pro 2017, ThinkPad T490 con Core i5). */
+  basis: 'cpu+gpu' | 'cpu' | 'model' | 'line' | 'part'
+}
+
+/** Una oportunidad: cuánto menos pide que su referencia y con qué evidencia. No es una tasación. */
+export interface ComputerPublicOpportunity {
+  /** `solida` (sólida): piezas usadas completas, o >= 6 iguales por procesador/placa/chip, o >= 5 piezas usadas. */
+  tier: 'solida' | 'exploratoria'
+  /** Contra qué: sus piezas usadas, las computadoras iguales, o la misma pieza usada. */
+  reference: 'used' | 'comparables' | 'part'
+  referenceUsd: number
+  /** La frase de la referencia: "Notebooks con Apple M1 y 8 GB", "Sus piezas usadas"... */
+  referenceLabel: string
+  /** Cuántos avisos sostienen la referencia (0 cuando es la suma de sus piezas). */
+  n: number
+  savingsUsd: number
+  /** 0.15-0.55: la parte de la referencia que no pide. */
+  savingsPct: number
 }
 
 export interface ComputerPublicListing {
@@ -183,6 +200,14 @@ export interface ComputerPublicListing {
   specCount: number
   valuation: ComputerPublicValuation | null
   comparables: ComputerPublicComparables | null
+  /** Notebook: la línea (`macbook-air`, `thinkpad`, `ideapad`...), su etiqueta y el modelo que la sigue. */
+  line?: string | null
+  lineLabel?: string | null
+  model?: string | null
+  /** Mac: el año que dice el título (2008-2026). */
+  modelYear?: number | null
+  /** El aviso pide bastante menos que su referencia, con las reglas de classes/computadoras/opportunity.ts. */
+  opportunity?: ComputerPublicOpportunity | null
   firstSeen: string
   lastSeen: string
   /** Fecha de publicación del aviso cuando el origen la da (Facebook), si no la primera vista. */
@@ -254,6 +279,7 @@ export interface ComputerPublicMeta {
     withValuation: number
     withNewTotal: number
     withUsedTotal: number
+    opportunities?: number
     detailRead: number
   }
   sources: ComputerPublicSourceRun[]
@@ -265,4 +291,75 @@ export interface ComputerPublicMetaDoc {
   key: string
   generatedAt: string
   meta: ComputerPublicMeta
+}
+
+// ---------------------------------------------------------------------------------------------
+// El informe de precios de notebooks usadas: `computermetas`, `key: "uy-computadoras-notebooks"`.
+
+/** Una celda del informe: una mediana con su muestra. Nunca se publica con menos de `minSample`. */
+export interface ComputerPublicReportCell {
+  id: string
+  label: string
+  n: number
+  medianUsd: number
+  p25Usd: number
+  p75Usd: number
+}
+
+export interface ComputerPublicNotebookBudget {
+  id: string
+  label: string
+  minUsd: number
+  maxUsd: number | null
+  n: number
+  /** La RAM más común de la franja y qué parte la tiene. */
+  ramGb: number | null
+  ramShare: number | null
+  /** Parte de los avisos que declara SSD / placa dedicada (sobre los que dicen algo). */
+  ssdShare: number | null
+  dedicatedShare: number
+  /** Las familias de procesador y las líneas que más aparecen. */
+  families: Array<{ label: string; n: number }>
+  lines: Array<{ label: string; n: number }>
+}
+
+export interface ComputerPublicNotebookReport {
+  generatedAt: string
+  /** Avisos que entran al informe: notebooks sin falla declarada ni moneda deducida. */
+  total: number
+  minSample: number
+  ladderSample: number
+  headline: {
+    medianUsd: number
+    p25Usd: number
+    p75Usd: number
+    appleShare: number
+    dedicatedShare: number
+    under300Share: number
+  }
+  priceBands: Array<{ id: string; label: string; minUsd: number; maxUsd: number | null; n: number }>
+  brands: ComputerPublicReportCell[]
+  families: ComputerPublicReportCell[]
+  /** Core i5 y Core i7 por generación. `id` como `core-i5-12`. */
+  generations: Array<
+    ComputerPublicReportCell & { family: string; generation: number; year: number | null }
+  >
+  /** MacBook Air y Pro por año (Intel) y por chip. `kind`: 'year' | 'chip'. */
+  macLadder: Array<
+    ComputerPublicReportCell & { line: string; step: string; kind: 'year' | 'chip'; order: number }
+  >
+  ram: Array<ComputerPublicReportCell & { gb: number }>
+  gpus: ComputerPublicReportCell[]
+  models: Array<ComputerPublicReportCell & { line: string }>
+  /** La usada contra la nueva con el mismo procesador (mediana de ML). */
+  usedVsNew: Array<{
+    id: string
+    label: string
+    usedUsd: number
+    usedN: number
+    newUsd: number
+    newN: number
+    share: number
+  }>
+  budgets: ComputerPublicNotebookBudget[]
 }

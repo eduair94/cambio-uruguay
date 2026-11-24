@@ -24,8 +24,9 @@
       <span v-else class="pc-card__nophoto"><VIcon :icon="icon" size="40" /></span>
     </NuxtLink>
     <div class="pc-card__body">
-      <div v-if="verdict || faults" class="pc-card__badges">
-        <ComputadorasVerdictBadge v-if="verdict" :listing="computer" />
+      <!-- Con oportunidad, el veredicto se calla: la línea de la oportunidad dice lo mismo con números. -->
+      <div v-if="(verdict && !deal) || faults" class="pc-card__badges">
+        <ComputadorasVerdictBadge v-if="verdict && !deal" :listing="computer" />
         <span v-if="faults" class="pc-badge pc-badge--flag" data-testid="pc-faults">{{
           faults
         }}</span>
@@ -33,6 +34,7 @@
       <p class="pc-card__kind">
         {{ kindLine }}
       </p>
+      <p v-if="identity" class="pc-card__identity" data-testid="pc-identity">{{ identity }}</p>
       <h3 class="pc-card__title">
         <NuxtLink :to="localePath(computerAvisoPath(computer.slug))">{{ computer.title }}</NuxtLink>
       </h3>
@@ -46,6 +48,10 @@
         title="Facebook lo marca en pesos, pero el monto sólo cierra en dólares"
       >
         {{ price.inferred }}
+      </p>
+      <p v-if="deal" class="pc-card__deal" data-testid="pc-opportunity">
+        {{ deal.text }}
+        <span class="pc-card__deal-tier">· {{ deal.tier }}</span>
       </p>
       <ul v-if="chips.length" class="pc-card__specs" aria-label="Lo que dice el aviso">
         <li v-for="chip in chips" :key="chip">{{ chip }}</li>
@@ -72,6 +78,8 @@ import {
   COMPUTER_SOURCE_LABEL,
   computerAvisoPath,
   computerFaultsLine,
+  computerIdentityLine,
+  computerOpportunityLine,
   computerPlace,
   computerPriceLine,
   computerSpecChips,
@@ -116,6 +124,9 @@ const chips = computed(() =>
 const verdict = computed(() => computerVerdictLabel(props.computer))
 const faults = computed(() => computerFaultsLine(props.computer.faults ?? []))
 const place = computed(() => computerPlace(props.computer))
+// `?? null`: una fila escrita antes del 24/11/2026 no trae ni la línea ni la oportunidad.
+const identity = computed(() => computerIdentityLine(props.computer))
+const deal = computed(() => computerOpportunityLine(props.computer.opportunity ?? null))
 
 /**
  * La valuación en la tarjeta. En una PC de escritorio, los dos totales sólo si existen enteros, y
@@ -212,6 +223,24 @@ const valuationLines = computed(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.pc-card__identity {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.pc-card__deal {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: rgb(var(--v-theme-success));
+}
+.v-theme--light .pc-card__deal {
+  color: #1b5e20;
+}
+.pc-card__deal-tier {
+  font-weight: 400;
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
 }
 .pc-card__title {
   font-size: 0.875rem;

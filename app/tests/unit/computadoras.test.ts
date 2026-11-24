@@ -41,10 +41,23 @@ import {
   computerUsesNewForUsed,
   computerValuationSummary,
   computerVerdictLabel,
+  computerDealFiltered,
+  computerDealNormalizeQuery,
+  computerDealQueryParams,
+  computerDealsInMemory,
+  computerDealSummary,
+  computerDealSummaryText,
+  computerIdentityLine,
+  computerNotebookFindings,
+  computerNotebookLink,
+  computerOpportunityDetail,
+  computerOpportunityLine,
   type ComputerQuery,
 } from '../../utils/computadoras'
 import type {
   ComputerPublicListing,
+  ComputerPublicNotebookReport,
+  ComputerPublicOpportunity,
   ComputerPublicPart,
   ComputerPublicValuation,
   ComputerPublicValuedPart,
@@ -149,7 +162,7 @@ describe('computerNormalizeQuery', () => {
       familia: '<script>',
       placa: 'rtx-3060',
       procesador: 'gpu:rtx-3060',
-      ramMin: '12',
+      ramMin: '13',
       fuente: 'olx',
       dias: '5',
       orden: 'azar',
@@ -675,5 +688,453 @@ describe('ficha y componentes', () => {
     expect(response.roles.map(table => table.role)).toEqual(['cpu', 'gpu'])
     expect(response.roles[1]!.parts.map(item => item.slug)).toEqual(['gpu:b', 'gpu:a'])
     expect(computerComponentsFrom([], null).status).toBe('preparing')
+  })
+})
+
+// ── Ronda 2 (24/11/2026): más filtros, oportunidades e informe de notebooks ────
+
+const opportunity = (
+  overrides: Partial<ComputerPublicOpportunity> = {}
+): ComputerPublicOpportunity => ({
+  tier: 'solida',
+  reference: 'comparables',
+  referenceUsd: 800,
+  referenceLabel: 'MacBook Air con Apple M1',
+  n: 19,
+  savingsUsd: 240,
+  savingsPct: 0.3,
+  ...overrides,
+})
+
+describe('los filtros nuevos del directorio', () => {
+  it('normaliza cada parámetro nuevo y descarta lo que no puede coincidir', () => {
+    const query = q({
+      marcaEquipo: 'Lenovo',
+      linea: 'ThinkPad',
+      cpuAnio: '2020',
+      ramTipo: 'ddr5',
+      discoMin: '512',
+      pantalla: 'chica',
+      vramMin: '8',
+      estado: 'like-new',
+      vendedor: 'tienda',
+      conDatos: '1',
+      monitor: '1',
+      oportunidad: '1',
+      evidencia: 'solida',
+      orden: 'ahorro',
+    })
+    expect(query).toMatchObject({
+      marcaEquipo: 'Lenovo',
+      linea: 'thinkpad',
+      cpuAnio: 2020,
+      ramTipo: 'ddr5',
+      discoMin: 512,
+      pantalla: 'chica',
+      vramMin: 8,
+      estado: 'like-new',
+      vendedor: 'tienda',
+      conDatos: true,
+      monitor: true,
+      oportunidad: true,
+      evidencia: 'solida',
+      orden: 'ahorro',
+    })
+    expect(
+      q({
+        marcaEquipo: '<b>',
+        cpuAnio: '2019',
+        ramTipo: 'ddr2',
+        discoMin: '300',
+        pantalla: 'enorme',
+        vramMin: '5',
+        estado: 'roto',
+        vendedor: 'agencia',
+        evidencia: 'dudosa',
+      })
+    ).toMatchObject({
+      marcaEquipo: '',
+      cpuAnio: null,
+      ramTipo: '',
+      discoMin: null,
+      pantalla: '',
+      vramMin: null,
+      estado: '',
+      vendedor: '',
+      evidencia: '',
+    })
+  })
+
+  it('la RAM del informe (4, 12, 24 GB) también filtra aunque el panel no la ofrezca', () => {
+    expect(q({ ramMin: '12' }).ramMin).toBe(12)
+    expect(q({ ramMin: '24' }).ramMin).toBe(24)
+  })
+
+  it('ida y vuelta por la URL con los filtros nuevos', () => {
+    const raw = {
+      marcaEquipo: 'Apple',
+      linea: 'macbook-air',
+      cpuAnio: '2022',
+      ramTipo: 'ddr4',
+      discoMin: '1000',
+      pantalla: 'grande',
+      vramMin: '12',
+      estado: 'good',
+      vendedor: 'particular',
+      conDatos: '1',
+      monitor: '1',
+      oportunidad: '1',
+      evidencia: 'exploratoria',
+      orden: 'disco',
+    }
+    expect(computerQueryParams(q(raw))).toEqual(raw)
+    expect(computerFiltered(q({ orden: 'cpu_nuevo' }))).toBe(false)
+    expect(computerFiltered(q({ monitor: '1' }))).toBe(true)
+  })
+
+  it('sacar la marca del equipo saca la línea', () => {
+    expect(
+      computerQueryWithout(q({ marcaEquipo: 'Lenovo', linea: 'thinkpad' }), ['marcaEquipo'])
+    ).toMatchObject({ marcaEquipo: '', linea: '' })
+  })
+
+  it('cada filtro nuevo tiene su chip', () => {
+    const chips = computerFilterChips(
+      q({
+        marcaEquipo: 'Lenovo',
+        linea: 'thinkpad',
+        cpuAnio: '2020',
+        ramTipo: 'ddr5',
+        discoMin: '1000',
+        pantalla: 'media',
+        vramMin: '6',
+        estado: 'good',
+        vendedor: 'tienda',
+        conDatos: '1',
+        monitor: '1',
+        oportunidad: '1',
+        evidencia: 'solida',
+      })
+    ).map(chip => chip.label)
+    expect(chips).toEqual(
+      expect.arrayContaining([
+        'Lenovo',
+        'Thinkpad',
+        'Procesador de 2020 o más nuevo',
+        'RAM DDR5',
+        nb('1 TB o más de disco'),
+        'Pantalla de 15″ a 16,5″',
+        'Placa con 6 GB o más',
+        'Buen estado',
+        'Vende: tienda',
+        'Con al menos tres datos',
+        'Incluye monitor',
+        'Sólo oportunidades',
+        'Comparación sólida',
+      ])
+    )
+  })
+
+  const laptop = listing({
+    slug: 'ml-MLU1234567891',
+    source: 'mercadolibre',
+    kind: 'notebook',
+    brand: 'Lenovo',
+    line: 'thinkpad',
+    lineLabel: 'ThinkPad',
+    model: 'T490',
+    cpu: {
+      brand: 'intel',
+      family: 'core-i5',
+      model: '8365U',
+      slug: 'cpu:i5-8365u',
+      label: 'Intel Core i5-8365U',
+      generation: 8,
+      socket: null,
+      ramType: 'ddr4',
+      mobile: true,
+      year: 2019,
+      basis: 'title',
+    },
+    ramType: 'ddr4',
+    storageGb: 512,
+    screenInches: 14,
+    gpu: {
+      brand: 'nvidia',
+      model: 'MX250',
+      slug: null,
+      label: 'NVIDIA MX250',
+      vramGb: 2,
+      integrated: false,
+      year: 2019,
+      basis: 'title',
+    },
+    condition: 'good',
+    sellerType: 'particular',
+    specCount: 5,
+    includes: { monitor: false, monitorInches: null, peripherals: false },
+    opportunity: opportunity({ tier: 'exploratoria', savingsPct: 0.22 }),
+  })
+  const cases: Array<[string, Record<string, unknown>, boolean]> = [
+    ['marca del equipo sin distinguir mayúsculas', { marcaEquipo: 'lenovo' }, true],
+    ['marca del equipo anclada', { marcaEquipo: 'Leno' }, false],
+    ['línea', { linea: 'thinkpad' }, true],
+    ['procesador de 2018 o más nuevo', { cpuAnio: '2018' }, true],
+    ['procesador de 2020 o más nuevo', { cpuAnio: '2020' }, false],
+    ['tipo de RAM', { ramTipo: 'ddr4' }, true],
+    ['disco mínimo', { discoMin: '512' }, true],
+    ['disco mínimo de más', { discoMin: '1000' }, false],
+    ['pantalla chica', { pantalla: 'chica' }, true],
+    ['pantalla media', { pantalla: 'media' }, false],
+    ['VRAM mínima', { vramMin: '4' }, false],
+    ['estado', { estado: 'good' }, true],
+    ['vendedor', { vendedor: 'tienda' }, false],
+    ['con datos', { conDatos: '1' }, true],
+    ['monitor', { monitor: '1' }, false],
+    ['sólo oportunidades', { oportunidad: '1' }, true],
+    ['evidencia exploratoria', { evidencia: 'exploratoria' }, true],
+    ['evidencia sólida', { evidencia: 'solida' }, false],
+    ['orden por ahorro', { orden: 'ahorro' }, true],
+    ['orden por procesador', { orden: 'cpu_nuevo' }, true],
+  ]
+  it.each(cases)('%s', (_name, raw, expected) => {
+    expect(computerFilterMatches(computerMatch(q(raw), TODAY, 4), laptop)).toBe(expected)
+  })
+
+  it('una fila sin oportunidad ni año de procesador no entra a sus órdenes', () => {
+    const plain = listing({ kind: 'notebook' })
+    expect(computerFilterMatches(computerMatch(q({ orden: 'ahorro' }), TODAY, 4), plain)).toBe(
+      false
+    )
+    expect(computerFilterMatches(computerMatch(q({ orden: 'cpu_nuevo' }), TODAY, 4), plain)).toBe(
+      false
+    )
+    expect(computerSortSpec('ahorro')).toMatchObject({ 'opportunity.savingsPct': -1 })
+    expect(computerSortSpec('disco')).toMatchObject({ storageGb: -1 })
+  })
+
+  it('la línea se cuenta sólo con una marca de equipo elegida', () => {
+    const rows = [
+      laptop,
+      listing({
+        slug: 'fb-2',
+        kind: 'notebook',
+        brand: 'Apple',
+        line: 'macbook-air',
+        lineLabel: 'MacBook Air',
+      }),
+    ]
+    expect(computerListInMemory(rows, null, q(), TODAY).facets.lines).toEqual([])
+    expect(
+      computerListInMemory(rows, null, q({ marcaEquipo: 'Apple' }), TODAY).facets.lines
+    ).toEqual([{ value: 'macbook-air', label: 'MacBook Air', count: 1 }])
+    expect(
+      computerListInMemory(rows, null, q({ marcaEquipo: 'Apple' }), TODAY).facets.brands?.map(
+        facet => facet.value
+      )
+    ).toEqual(expect.arrayContaining(['Apple', 'Lenovo']))
+  })
+})
+
+describe('la oportunidad en la tarjeta y en la ficha', () => {
+  it('contra las iguales: la mediana y de cuántos avisos', () => {
+    expect(computerOpportunityLine(opportunity())).toEqual({
+      text: 'Pide 30 % menos que la mediana de MacBook Air con Apple M1 (19 avisos)',
+      tier: 'comparación sólida',
+    })
+  })
+
+  it('contra sus piezas usadas: sin mediana ni avisos', () => {
+    expect(
+      computerOpportunityLine(
+        opportunity({
+          reference: 'used',
+          referenceLabel: 'sus piezas usadas, sin contar mother, fuente ni gabinete',
+          n: 0,
+          tier: 'exploratoria',
+        })
+      )?.text
+    ).toBe('Pide 30 % menos que sus piezas usadas, sin contar mother, fuente ni gabinete')
+  })
+
+  it('sin oportunidad no dice nada', () => {
+    expect(computerOpportunityLine(null)).toBeNull()
+    expect(computerOpportunityDetail(listing())).toBeNull()
+  })
+
+  it('la ficha dice la referencia en números', () => {
+    expect(computerOpportunityDetail(listing({ priceUsd: 560, opportunity: opportunity() }))).toBe(
+      nb(
+        'La mediana de MacBook Air con Apple M1 es US$ 800; este aviso pide US$ 560, US$ 240 menos.'
+      )
+    )
+  })
+
+  it('la línea y el modelo, sin repetir el año', () => {
+    expect(computerIdentityLine({ lineLabel: 'MacBook Air', model: null, modelYear: 2017 })).toBe(
+      'MacBook Air · 2017'
+    )
+    expect(computerIdentityLine({ lineLabel: 'ThinkPad', model: 'T490', modelYear: null })).toBe(
+      'ThinkPad · T490'
+    )
+    expect(computerIdentityLine({ lineLabel: null, model: 'T490', modelYear: null })).toBeNull()
+  })
+})
+
+describe('la página de oportunidades', () => {
+  const deal = (slug: string, overrides: Partial<ComputerPublicListing> = {}) =>
+    listing({ slug, opportunity: opportunity(), ...overrides })
+  const rows = [
+    deal('fb-1000000001', { priceUsd: 300, brand: 'Apple', kind: 'notebook' }),
+    deal('fb-1000000002', {
+      priceUsd: 100,
+      kind: 'gpu',
+      kindGroup: 'part',
+      opportunity: opportunity({ tier: 'exploratoria', savingsPct: 0.45 }),
+    }),
+    deal('fb-1000000003', { priceUsd: 500, lastSeen: '2026-10-01' }),
+    listing({ slug: 'fb-1000000004' }),
+  ]
+
+  it('normaliza su consulta y vuelve a la URL', () => {
+    const query = computerDealNormalizeQuery({
+      tipo: 'piezas',
+      evidencia: 'solida',
+      marcaEquipo: 'Apple',
+      precioMaxUsd: '500',
+      fuente: 'facebook',
+      orden: 'precio',
+      pagina: '2',
+    })
+    expect(computerDealQueryParams(query)).toEqual({
+      tipo: 'piezas',
+      evidencia: 'solida',
+      marcaEquipo: 'Apple',
+      precioMaxUsd: '500',
+      fuente: 'facebook',
+      orden: 'precio',
+      pagina: '2',
+    })
+    expect(computerDealNormalizeQuery({ tipo: 'tostadora', orden: 'azar' })).toMatchObject({
+      tipo: '',
+      orden: 'ahorro',
+    })
+    expect(computerDealFiltered(computerDealNormalizeQuery({ orden: 'precio' }))).toBe(false)
+  })
+
+  it('sólo filas con oportunidad y dentro de la ventana; el resumen es de la lista entera', () => {
+    const response = computerDealsInMemory(
+      rows,
+      null,
+      computerDealNormalizeQuery({ tipo: 'piezas' }),
+      TODAY
+    )
+    expect(response.total).toBe(1)
+    expect(response.summary).toMatchObject({
+      total: 2,
+      solid: 1,
+      exploratory: 1,
+      minUsd: 100,
+      maxUsd: 300,
+      computers: 1,
+      parts: 1,
+    })
+  })
+
+  it('el orden por defecto es el mayor ahorro', () => {
+    const response = computerDealsInMemory(rows, null, computerDealNormalizeQuery({}), TODAY)
+    expect(response.items.map(item => item.slug)).toEqual(['fb-1000000002', 'fb-1000000001'])
+  })
+
+  it('el resumen en palabras, también sin oportunidades', () => {
+    expect(computerDealSummaryText(computerDealSummary([]))).toContain('Hoy no hay')
+    expect(
+      computerDealSummaryText(computerDealSummary(rows.filter(row => row.opportunity)))
+    ).toContain('2 con comparación sólida y 1 exploratoria')
+  })
+})
+
+describe('el informe de notebooks', () => {
+  const cell = (id: string, label: string, medianUsd: number, n = 10) => ({
+    id,
+    label,
+    n,
+    medianUsd,
+    p25Usd: medianUsd - 50,
+    p75Usd: medianUsd + 50,
+  })
+  const report: ComputerPublicNotebookReport = {
+    generatedAt: '2026-11-24T10:00:00Z',
+    total: 1000,
+    minSample: 8,
+    ladderSample: 5,
+    headline: {
+      medianUsd: 430,
+      p25Usd: 250,
+      p75Usd: 800,
+      appleShare: 0.32,
+      dedicatedShare: 0.08,
+      under300Share: 0.34,
+    },
+    priceBands: [],
+    brands: [cell('toshiba', 'Toshiba', 110), cell('apple', 'Apple', 900), cell('hp', 'HP', 400)],
+    families: [],
+    generations: [
+      {
+        ...cell('core-i5-8', 'Core i5 de 8ª generación', 336),
+        family: 'core-i5',
+        generation: 8,
+        year: 2017,
+      },
+      {
+        ...cell('core-i5-12', 'Core i5 de 12ª generación', 546),
+        family: 'core-i5',
+        generation: 12,
+        year: 2021,
+      },
+    ],
+    macLadder: [
+      {
+        ...cell('air-m1', 'MacBook Air M1', 800),
+        line: 'macbook-air',
+        step: 'M1',
+        kind: 'chip',
+        order: 3010,
+      },
+      {
+        ...cell('air-m2', 'MacBook Air M2', 1049),
+        line: 'macbook-air',
+        step: 'M2',
+        kind: 'chip',
+        order: 3020,
+      },
+    ],
+    ram: [],
+    gpus: [],
+    models: [],
+    usedVsNew: [],
+    budgets: [],
+  }
+
+  it('las frases salen de las celdas y citan sus números', () => {
+    const findings = computerNotebookFindings(report)
+    expect(findings[0]).toContain('Toshiba')
+    expect(findings[0]).toContain('Apple')
+    expect(findings.some(text => text.includes(nb('US$ 249')) && text.includes('M2'))).toBe(true)
+    expect(findings.some(text => text.includes('12.ª generación'))).toBe(true)
+  })
+
+  it('una frase sin celdas no se dice', () => {
+    const empty = { ...report, brands: [], macLadder: [], generations: [] }
+    const findings = computerNotebookFindings(empty)
+    expect(findings.some(text => text.includes('marca'))).toBe(false)
+    expect(findings.some(text => text.includes('M2'))).toBe(false)
+  })
+
+  it('cada fila lleva al directorio de notebooks con sus filtros', () => {
+    expect(computerNotebookLink({ marcaEquipo: 'Lenovo', ramMin: 16, q: null })).toEqual({
+      path: '/computadoras-usadas-uruguay',
+      query: { tipo: 'notebook', marcaEquipo: 'Lenovo', ramMin: '16' },
+    })
   })
 })

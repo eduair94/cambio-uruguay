@@ -17,16 +17,17 @@ import { tmpdir } from "os";
 import { dirname, join } from "path";
 import { appConnection, appDbConfigured } from "./classes/appdb";
 import { fetchUsdUyuRate } from "./classes/chairs/catalog";
-import { buildComputerCatalog, readListings, usageOf, usedPartObservations } from "./classes/computadoras/catalog";
+import { buildComputerCatalog, notebookRefKey, readListings, usageOf, usedPartObservations } from "./classes/computadoras/catalog";
 import { isBareCase, buildPartTable, partIdentityOf } from "./classes/computadoras/parts";
 import { buildPresets } from "./classes/computadoras/presets";
+import { buildNotebookReport } from "./classes/computadoras/report";
 import { facebookDetailFromTexts, facebookDetailTargets, facebookRaw, facebookSearches } from "./classes/computadoras/sources/facebook";
 import { ML_NEW_SCANS, ML_USED_SCANS, modelScans, runMlScans } from "./classes/computadoras/sources/mercadolibre";
 import { harvestPartStores } from "./classes/computadoras/sources/stores";
 import { readComputerSpecs } from "./classes/computadoras/specs";
-import { countPublished, loadFacebookDetails, loadMeta, loadParts, loadRawListings, pruneRawListings, publish, saveFacebookDetails, saveMeta, saveRawListings } from "./classes/computadoras/store";
+import { countPublished, loadFacebookDetails, loadMeta, loadOpportunityCandidates, loadParts, loadRawListings, pruneRawListings, publish, saveFacebookDetails, saveMeta, saveRawListings } from "./classes/computadoras/store";
 import { median, round } from "./classes/computadoras/text";
-import { COMPUTER_FRESH_DAYS, COMPUTER_META_ID, isMachineKind, type ComputerCatalogRow, type ComputerMeta, type FacebookComputerDetail, type PartObservation, type PartRow, type Preset, type RawComputerListing, type SourceRun } from "./classes/computadoras/types";
+import { COMPUTER_FRESH_DAYS, COMPUTER_META_ID, isMachineKind, type ComputerCatalogRow, type ComputerMeta, type FacebookComputerDetail, type PartObservation, type PartRow, type Preset, type NotebookReport, type RawComputerListing, type SourceRun, NOTEBOOK_REPORT_ID } from "./classes/computadoras/types";
 import { FB_ITEM_URL, FacebookSessionError, connectFacebookBrowser, facebookSessionOk, readFacebookPageTexts, sleep } from "./classes/facebook/browser";
 import { acquireFacebookProfile } from "./classes/facebook/lock";
 import { readMarketplaceSearches } from "./classes/facebook/search";
@@ -65,9 +66,13 @@ async function takeRunLock(fast: boolean): Promise<(() => void) | null> {
   }
 }
 
+/** La notebook nueva de referencia por procesador (y línea en Mac), con el día en que se leyó. */
 interface Refs {
-  notebooks: Record<string, { label: string; medianUsd: number; n: number }>;
+  notebooks: Record<string, { label: string; medianUsd: number; n: number; day?: string }>;
 }
+
+/** Una referencia nueva vale dos semanas: después se vuelve a buscar. */
+const REF_MAX_AGE_DAYS = 14;
 
 async function readFacebook(fast: boolean, day: string, sources: SourceRun[]): Promise<RawComputerListing[] | null> {
   if (process.env.COMPUTADORAS_FB_ENABLED === "0") return null;
@@ -139,21 +144,21 @@ function newObservationsFrom(rows: ReadonlyArray<{ title: string; priceUsd: numb
 }
 
 /** La notebook nueva con el mismo procesador: mediana de ML con ≥ 3 ofertas de ≥ 2 vendedores. */
-function notebookRefsFrom(rows: readonly RawComputerListing[], usdUyu: number): Refs["notebooks"] {
+function notebookRefsFrom(rows: readonly RawComputerListing[], usdUyu: number, day: string): Refs["notebooks"] {
   const groups = new Map<string, { label: string; prices: number[]; sellers: Set<string> }>();
   for (const row of rows) {
     if (row.category !== "MLU1652" || !/^nuevo$/i.test(row.condition ?? "")) continue;
     const specs = readComputerSpecs({ title: row.title, mlCategory: row.category });
     if (specs.kind !== "notebook" || !specs.cpu?.slug) continue;
-    const key = `notebook:${specs.cpu.slug}`;
-    const group = groups.get(key) ?? { label: `Notebook nueva con ${specs.cpu.label}`, prices: [], sellers: new Set<string>() };
+    const key = notebookRefKey(specs.cpu.slug, specs.line);
+    const group = groups.get(key) ?? { label: `${specs.line && /^macbook-(air|pro)$/.test(specs.line) ? specs.lineLabel : "Notebook"} nueva con ${specs.cpu.label}`, prices: [], sellers: new Set<string>() };
     group.prices.push(row.currency === "USD" ? row.price : row.price / usdUyu);
     group.sellers.add(row.sellerId ?? row.slug);
     groups.set(key, group);
   }
   const out: Refs["notebooks"] = {};
   for (const [key, group] of groups) {
-    if (group.prices.length >= 3 && group.sellers.size >= 2) out[key] = { label: group.label, medianUsd: round(median(group.prices)), n: group.prices.length };
+    if (group.prices.length >= 3 && group.sellers.size >= 2) out[key] = { label: group.label, medianUsd: round(median(group.prices)), n: group.prices.length, day };
   }
   return out;
 }
@@ -213,7 +218,10 @@ async function main(): Promise<void> {
   // 3. Fichas de Facebook.
   const fbIds = raws.filter((row) => row.source === "facebook").map((row) => row.sourceId);
   const details = db ? await loadFacebookDetails(fbIds) : new Map<string, FacebookComputerDetail>();
-  const targets = facebookDetailTargets(fresh, details, now, number(fast ? "COMPUTADORAS_FB_DETAIL_FAST_MAX" : "COMPUTADORAS_FB_DETAIL_MAX", fast ? 20 : 45));
+  // Primero la ficha de los avisos de Facebook que serían oportunidad si la tuvieran: sin ficha no
+  // entran a la lista, y es donde el vendedor dice lo que falla.
+  const priority = db ? await loadOpportunityCandidates() : new Set<string>();
+  const targets = facebookDetailTargets(fresh, details, now, number(fast ? "COMPUTADORAS_FB_DETAIL_FAST_MAX" : "COMPUTADORAS_FB_DETAIL_MAX", fast ? 20 : 45), priority);
   const readDetails = await readFacebookDetails(targets, fast);
   for (const detail of readDetails) details.set(detail.id, detail);
   if (db && !dryRun) await saveFacebookDetails(readDetails);
@@ -227,7 +235,9 @@ async function main(): Promise<void> {
   const previousRefs = db ? await loadMeta<Refs>(REFS_ID) : null;
   let newObservations: PartObservation[] = [];
   let newOk = false;
-  let notebookRefs: Refs["notebooks"] = previousRefs?.notebooks ?? {};
+  // Las referencias guardadas valen mientras sean recientes: una de hace un mes es otro precio.
+  const refCut = daysBefore(now, REF_MAX_AGE_DAYS);
+  let notebookRefs: Refs["notebooks"] = Object.fromEntries(Object.entries(previousRefs?.notebooks ?? {}).filter(([, ref]) => (ref.day ?? "") >= refCut));
   if (!fast) {
     const priced = new Set(previousParts.filter((row) => row.new).map((row) => row.slug));
     const wanted = [...usage.entries()]
@@ -241,7 +251,7 @@ async function main(): Promise<void> {
       if (specs.gpu?.baseSlug) labelOf.set(specs.gpu.baseSlug, specs.gpu.model ?? specs.gpu.label);
     }
     const notebookCpus = [...new Set(readFresh.filter(({ specs }) => specs.kind === "notebook" && specs.cpu?.slug).map(({ specs }) => specs.cpu!.slug!))]
-      .filter((slug) => !notebookRefs[`notebook:${slug}`])
+      .filter((slug) => !Object.keys(notebookRefs).some((key) => key.endsWith(slug)))
       .slice(0, number("COMPUTADORAS_NOTEBOOK_QUERIES", 15));
     const scans = [
       ...ML_NEW_SCANS,
@@ -253,7 +263,7 @@ async function main(): Promise<void> {
     const ml = await runMlScans(scans, day, { deadlineAt: Date.now() + 25 * 60_000 });
     const mlNew = ml.rows.filter((row) => /^nuevo$/i.test(row.condition ?? ""));
     newObservations = newObservationsFrom(mlNew.map((row) => ({ title: row.title, priceUsd: row.currency === "USD" ? row.price : row.price / usdUyu, sellerId: row.sellerId ?? row.slug, url: row.url, image: row.image, category: row.category })));
-    notebookRefs = { ...notebookRefs, ...notebookRefsFrom(mlNew, usdUyu) };
+    notebookRefs = { ...notebookRefs, ...notebookRefsFrom(mlNew, usdUyu, day) };
     console.log(`[computadoras] mercadolibre nuevos: ${mlNew.length} ofertas en ${ml.pages} páginas → ${newObservations.length} piezas identificadas`);
     sources.push({ id: "mercadolibre-nuevos", label: "Mercado Libre (piezas nuevas)", ok: !ml.dead, note: `${newObservations.length} piezas identificadas de ${mlNew.length} ofertas`, lastOkAt: ml.dead ? null : new Date().toISOString() });
 
@@ -277,13 +287,13 @@ async function main(): Promise<void> {
     writeFileSync(dumpFile, JSON.stringify(dump));
     console.log(`[computadoras] lo leído quedó en ${dumpFile} (--replay=${dumpFile} lo rearma sin fuentes)`);
   }
-  const { rows, parts, meta, presets } = assemble({ now, fast, usdUyu, raws, details, newObservations, newOk, notebookRefs, previousParts, sources, previousMeta });
+  const { rows, parts, meta, presets, report } = assemble({ now, fast, usdUyu, raws, details, newObservations, newOk, notebookRefs, previousParts, sources, previousMeta });
   console.log(`[computadoras] ${JSON.stringify(meta.counts)} · piezas con precio ${meta.partsPriced} · dólar ${meta.usdUyu}`);
   for (const preset of presets) console.log(`[computadoras] ${preset.label}: ${preset.totalUsd ? `US$ ${preset.totalUsd}` : `falta ${preset.missing.join(", ")}`}`);
 
   if (jsonOut) {
     mkdirSync(dirname(jsonOut), { recursive: true });
-    writeFileSync(jsonOut, JSON.stringify({ meta, items: rows, parts }, null, 1));
+    writeFileSync(jsonOut, JSON.stringify({ meta, items: rows, parts, notebookReport: report }, null, 1));
     console.log(`[computadoras] vista previa en ${jsonOut}`);
   }
   if (dryRun) process.exit(0);
@@ -297,6 +307,8 @@ async function main(): Promise<void> {
     process.exit(1);
   }
   await publish(rows, parts, meta);
+  // El informe de notebooks sale del mismo catálogo; sin muestra (primeras corridas) se conserva el anterior.
+  if (report) await saveMeta(NOTEBOOK_REPORT_ID, report, now.toISOString());
   if (!fast) {
     await saveMeta(REFS_ID, { notebooks: notebookRefs } satisfies Refs, now.toISOString());
     const pruned = await pruneRawListings(daysBefore(now, 60));
@@ -327,7 +339,7 @@ interface AssembleInput extends Omit<Dump, "at" | "details"> {
 }
 
 /** La tabla, el catálogo, las PCs tipo y la corrida, de lo leído. Sin red ni base. */
-function assemble(input: AssembleInput): { rows: ComputerCatalogRow[]; parts: PartRow[]; meta: ComputerMeta; presets: Preset[] } {
+function assemble(input: AssembleInput): { rows: ComputerCatalogRow[]; parts: PartRow[]; meta: ComputerMeta; presets: Preset[]; report: NotebookReport | null } {
   const { now, usdUyu, sources, previousMeta } = input;
   const freshCut = daysBefore(now, COMPUTER_FRESH_DAYS);
   const readWindow = readListings(input.raws, input.details);
@@ -336,7 +348,9 @@ function assemble(input: AssembleInput): { rows: ComputerCatalogRow[]; parts: Pa
   const usedObservations = usedPartObservations(readWindow, usdUyu);
   const parts = buildPartTable({ newObservations: input.newObservations, usedObservations, previous: input.previousParts, newOk: input.newOk, day: dayOf(now), usage });
   const table = new Map(parts.map((row) => [row.slug, row]));
-  const rows = buildComputerCatalog({ read: readFresh, table, notebookRefs: new Map(Object.entries(input.notebookRefs)), usdUyu });
+  const notebookRefs = new Map(Object.entries(input.notebookRefs));
+  const rows = buildComputerCatalog({ read: readFresh, table, notebookRefs, usdUyu, day: dayOf(now) });
+  const report = buildNotebookReport(rows, notebookRefs, now.toISOString());
   const presets = buildPresets(table);
 
   // Una fuente que no corrió hoy conserva su fecha de la última vez que anduvo.
@@ -357,24 +371,27 @@ function assemble(input: AssembleInput): { rows: ComputerCatalogRow[]; parts: Pa
       withValuation: rows.filter((row) => row.valuation).length,
       withNewTotal: rows.filter((row) => row.valuation?.newTotalUsd).length,
       withUsedTotal: rows.filter((row) => row.valuation?.usedTotalUsd).length,
+      opportunities: rows.filter((row) => row.opportunity).length,
       detailRead: rows.filter((row) => row.detailRead).length,
     },
     sources,
     partsPriced: parts.filter((row) => row.new || row.used).length,
     presets,
   };
-  return { rows, parts, meta, presets };
+  return { rows, parts, meta, presets, report };
 }
 
 /** `--replay=<archivo>`: rearma la vista previa desde un `--dump`, sin leer ninguna fuente ni la base. */
 function replay(file: string, jsonOut: string | undefined): void {
   const dump = JSON.parse(readFileSync(file, "utf8")) as Dump;
-  const { rows, parts, meta, presets } = assemble({ ...dump, now: new Date(dump.at), fast: false, details: new Map(dump.details.map((detail) => [detail.id, detail])) });
+  const { rows, parts, meta, presets, report } = assemble({ ...dump, now: new Date(dump.at), fast: false, details: new Map(dump.details.map((detail) => [detail.id, detail])) });
+  const opportunities = rows.filter((row) => row.opportunity);
+  console.log(`[computadoras] (replay) oportunidades ${opportunities.length} (${opportunities.filter((row) => row.opportunity!.tier === "solida").length} sólidas) · informe de notebooks: ${report ? `${report.total} avisos` : "sin muestra"}`);
   console.log(`[computadoras] (replay) ${JSON.stringify(meta.counts)} · piezas con precio ${meta.partsPriced}`);
   for (const preset of presets) console.log(`[computadoras] ${preset.label}: ${preset.totalUsd ? `US$ ${preset.totalUsd}` : `falta ${preset.missing.join(", ")}`}`);
   if (jsonOut) {
     mkdirSync(dirname(jsonOut), { recursive: true });
-    writeFileSync(jsonOut, JSON.stringify({ meta, items: rows, parts }, null, 1));
+    writeFileSync(jsonOut, JSON.stringify({ meta, items: rows, parts, notebookReport: report }, null, 1));
     console.log(`[computadoras] vista previa en ${jsonOut}`);
   }
 }

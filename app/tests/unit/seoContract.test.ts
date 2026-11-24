@@ -266,6 +266,9 @@ const NOINDEXED = [
   'opiniones-alquileres.vue',
   // Index the used-car opportunity list itself; filter combinations opt out.
   'oportunidades-autos-usados-uruguay.vue',
+  // Las oportunidades de computadoras usadas: la lista entera se indexa; cada filtro y la página
+  // 2 se salen, como las de autos (24/11/2026).
+  'oportunidades-computadoras-usadas-uruguay.vue',
   // Index the opportunity directory itself; query combinations opt out like rental filters.
   'oportunidades-inmobiliarias-uruguay.vue',
   // Los hilos de Reddit para contestar: pública por enlace y noindex (casi todo es texto de Reddit).

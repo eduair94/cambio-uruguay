@@ -85,7 +85,10 @@ const queryKeys: Record<string, Set<string>> = {
   ),
   '/motos-usadas-uruguay/comparar': keys('motos'),
   '/computadoras-usadas-uruguay': keys(
-    'q tipo marca familia procesador placa dedicada ramMin ssd precioMinUsd precioMaxUsd departamento fuente sinFallas debajo dias orden pagina'
+    'q tipo marca familia procesador placa dedicada ramMin ssd precioMinUsd precioMaxUsd departamento fuente sinFallas debajo dias marcaEquipo linea cpuAnio ramTipo discoMin pantalla vramMin estado vendedor conDatos monitor oportunidad evidencia orden pagina'
+  ),
+  '/oportunidades-computadoras-usadas-uruguay': keys(
+    'tipo evidencia marcaEquipo precioMaxUsd fuente orden pagina'
   ),
   '/alquileres-uruguay': rentalFilters,
   '/venta-viviendas-uruguay': propertyFilters,

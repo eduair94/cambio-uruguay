@@ -264,3 +264,138 @@ describe('precios-componentes-pc-uruguay.vue: la tabla de componentes', () => {
     expect(componentsSrc).toContain('computerEmptyComponents(')
   })
 })
+
+// ── Ronda 2 (24/11/2026): las dos páginas nuevas de la familia ─────────────
+
+const dealsSrc = read('pages/oportunidades-computadoras-usadas-uruguay.vue')
+const notebooksSrc = read('pages/precios-notebooks-usadas-uruguay.vue')
+const reportTableSrc = read('components/computadoras/ReportTable.vue')
+
+describe.each([
+  ['oportunidades-computadoras-usadas-uruguay.vue', dealsSrc],
+  ['precios-notebooks-usadas-uruguay.vue', notebooksSrc],
+])('%s: contrato compartido', (_file, src) => {
+  it('arranca en un VContainer, con un solo h1', () => {
+    expect(rootTag(src)).toBe('VContainer')
+    expect(templateOf(src).match(/<h1[\s>]/g) ?? []).toHaveLength(1)
+  })
+
+  it('canonical literal, título y descripción dentro del presupuesto del SERP', () => {
+    expect(src).toMatch(/rel: 'canonical'/)
+    expect(src).toContain('https://cambio-uruguay.com')
+    const title = src.match(/const TITLE = '([^']+)'/)?.[1] ?? ''
+    expect(`${title} | Cambio Uruguay`.length).toBeLessThanOrEqual(60)
+    const description = src.match(/const DESCRIPTION =\s*'([^']+)'/)?.[1] ?? ''
+    expect(description.length).toBeGreaterThan(80)
+    expect(description.length).toBeLessThanOrEqual(155)
+  })
+
+  it('renderiza en el servidor y tiene los estados de «sin datos»', () => {
+    expect(src).toMatch(/await useAsyncData/)
+    expect(src).not.toContain('server: false')
+    expect(src).toContain("payload.status === 'preparing'")
+    expect(src).toContain("payload.status === 'unavailable'")
+  })
+
+  it('dice que son precios pedidos y enlaza a las otras páginas de la familia', () => {
+    expect(src).toMatch(/pedid/)
+    expect(src).toContain('COMPUTADORAS_PATH')
+    expect(src).toContain('COMPUTER_COMPONENTS_PATH')
+  })
+
+  it('no repite el FAQPage: lo emite FaqSection', () => {
+    expect(src).toContain('<FaqSection')
+    expect(src).not.toContain("'@type': 'FAQPage'")
+  })
+})
+
+describe('oportunidades-computadoras-usadas-uruguay.vue', () => {
+  it('tiene la forma de las oportunidades de autos: columna, cajón, barra, chips, grilla', () => {
+    const template = templateOf(dealsSrc)
+    expect(template).toContain('<CarsSidebarLayout')
+    expect(template).toContain('<CarsFilterPanel')
+    expect(template).toContain('<CarsToolbar')
+    expect(template).toContain('<CarsActiveFilters')
+    expect(template).toContain('<ComputadorasListingCard')
+    expect(template).toContain('<FeedAd')
+    expect(dealsSrc).toContain('definePageMeta({ wide: true })')
+    expect(template.indexOf('v-if="payload.status === \'ok\' && smAndDown"')).toBeLessThan(
+      template.indexOf('<CarsSidebarLayout')
+    )
+  })
+
+  it('el resumen describe la lista entera y la URL filtrada no se indexa', () => {
+    expect(dealsSrc).toContain('computerDealSummaryText(payload.summary)')
+    expect(dealsSrc).toContain('computerDealFiltered(query.value)')
+    expect(dealsSrc).toContain("'noindex, follow'")
+  })
+
+  it('explica qué es una oportunidad y advierte que no es una tasación', () => {
+    expect(dealsSrc).toContain('entre el 15 % y el 55 % menos')
+    expect(dealsSrc).toContain('No es una tasación ni una garantía')
+    expect(dealsSrc).toContain('leímos su propia')
+  })
+
+  it('el FAQ no suma otra unidad: la grilla ya lleva la suya', () => {
+    expect(dealsSrc).toMatch(/<FaqSection[\s\S]*?:ad="false"/)
+  })
+})
+
+describe('precios-notebooks-usadas-uruguay.vue', () => {
+  it('las frases de «lo que dicen los datos» salen del informe, no de números escritos', () => {
+    expect(notebooksSrc).toContain('computerNotebookFindings(report.value)')
+    expect(templateOf(notebooksSrc)).not.toMatch(/US\$ \d/)
+  })
+
+  it('cada tabla del informe enlaza al directorio con sus filtros', () => {
+    for (const filter of ['marcaEquipo', 'familia', 'linea', 'ramMin', 'dedicada'])
+      expect(notebooksSrc).toContain(filter)
+    expect(notebooksSrc).toContain('computerNotebookLink(')
+  })
+
+  it('la usada contra la nueva se esconde con menos de dos filas', () => {
+    expect(notebooksSrc).toContain('report.usedVsNew.length >= 2')
+  })
+
+  it('dice el método: muestra mínima, sin fallas, la mitad sin procesador', () => {
+    expect(notebooksSrc).toContain('report.minSample')
+    expect(notebooksSrc).toContain('report.ladderSample')
+    expect(notebooksSrc).toContain('no dice el procesador')
+  })
+
+  it('las tablas scrollean dentro de su propio contenedor', () => {
+    expect(reportTableSrc).toMatch(/\.nb-table-scroll\s*\{[^}]*overflow-x:\s*auto/)
+    expect(notebooksSrc).toMatch(/\.pc-scroll\s*\{[^}]*overflow-x:\s*auto/)
+  })
+})
+
+describe('el directorio después de la ronda 2', () => {
+  it('lleva a las oportunidades y a los precios de notebooks', () => {
+    expect(indexSrc).toContain('COMPUTER_OPPORTUNITIES_PATH')
+    expect(indexSrc).toContain('COMPUTER_NOTEBOOKS_PATH')
+  })
+
+  it('los filtros nuevos están en el panel', () => {
+    for (const field of [
+      'draft.marcaEquipo',
+      'draft.linea',
+      'draft.cpuAnio',
+      'draft.ramTipo',
+      'draft.discoMin',
+      'draft.pantalla',
+      'draft.vramMin',
+      'draft.estado',
+      'draft.vendedor',
+      'draft.conDatos',
+      'draft.monitor',
+      'draft.oportunidad',
+      'draft.evidencia',
+    ])
+      expect(filtersSrc).toContain(`v-model="${field}"`)
+  })
+
+  it('la tarjeta muestra la oportunidad y la línea, con piso para una API vieja', () => {
+    expect(cardSrc).toContain('props.computer.opportunity ?? null')
+    expect(cardSrc).toContain('computerIdentityLine(props.computer)')
+  })
+})

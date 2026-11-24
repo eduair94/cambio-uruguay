@@ -83,6 +83,58 @@ gabinete casi nunca se declaran: van **supuestos**, al cuartil bajo de las nueva
   mismo procesador en ML (≥ 3 ofertas, 2 vendedores).
 - Pieza suelta: contra su misma identidad usada; la nueva se muestra al lado.
 
+## Línea de notebook y cohortes (`classes/computadoras/notebook.ts`, 24/11/2026)
+
+La mitad de los títulos de notebook no dice el procesador (492 de 1.108) pero el 70 % dice la
+línea. `readNotebookLine` lee `line` (`macbook-air`, `thinkpad`, `ideapad`…), `lineLabel`, `model`
+(«T490», «3», «E5530»; también «Lenovo T480» y «Asus X515» sin la palabra de la línea) y, en los
+Mac, `modelYear` (el año del título; la resolución «2560 x 1600» y el «A2179» no son un año).
+
+Una línea SIN procesador ni año no es una cohorte: «IdeaPad 3» va de US$ 119 a US$ 1.100. Las
+cohortes de notebook, de la más estrecha a la más ancha (≥ 4 avisos, sin fallas ni moneda deducida):
+
+1. procesador exacto + RAM, 2. procesador exacto — en un Mac, **dentro de su línea** («Apple M1»
+   junta una Air de US$ 799 con una Pro de US$ 900);
+3. Mac sin chip: línea + año del título («MacBook Air de 2015»);
+4. línea + modelo + familia del procesador («ThinkPad T490 con Intel Core i5»);
+5. familia + generación + RAM.
+
+Las dos primeras son `strict` (sostienen una oportunidad sólida). Cada tipo de máquina con los
+suyos: un Mac mini M1 y un iMac M1 comparten chip y nada más, y juntos hacían del Mac mini una
+«oportunidad».
+
+## Oportunidades (`classes/computadoras/opportunity.ts`, `/oportunidades-computadoras-usadas-uruguay`)
+
+Un aviso lleva `opportunity` si pide entre el **45 % y el 85 %** de su referencia y además: sin
+fallas declaradas, sin moneda deducida, visto ayer u hoy, precio ≥ US$ 40, y — si es de Facebook —
+con la ficha leída (la descripción es donde el vendedor dice lo que falla; la horaria lee primero
+la ficha de los que serían oportunidad si la tuvieran, `loadOpportunityCandidates`). Por debajo del
+45 % queda afuera: a ese precio un error de moneda, una falla callada o una estafa son más
+probables que una ganga.
+
+| referencia | `reference` | sólida si |
+|---|---|---|
+| PC: la suma de sus piezas con precio usado REAL | `used` | siempre (≥ 2 piezas declaradas) |
+| máquina: la mediana de sus iguales | `comparables` | cohorte `strict` y ≥ 6 avisos |
+| pieza suelta: la mediana usada de la misma pieza | `part` | ≥ 5 avisos |
+
+**Por qué la PC no usa el total usado de la valuación**: ese total cuenta mother, fuente y gabinete
+supuestos a precio NUEVO (cota de arriba) y contra él cualquier PC parece barata. La oportunidad
+usa la cota de abajo — sólo las piezas con precio usado real — y la etiqueta lo dice («sin contar
+mother, fuente ni gabinete»). Tope de 3 por vendedor de ML con nombre; los particulares llegan sin
+id (`ml:unknown`, 1.778 de 1.784 usados) y no cuentan como un vendedor. Medido sobre la corrida del
+24/11/2026: 60 oportunidades (20 sólidas) de 2.154 avisos.
+
+## Precios de notebooks (`classes/computadoras/report.ts`, `/precios-notebooks-usadas-uruguay`)
+
+Un documento (`computermetas`, `uy-computadoras-notebooks`) armado del catálogo ya publicado:
+seis números, franjas de precio, marca, familia de procesador, generación (i5/i7), la escalera de
+MacBook (por año del título en los Intel y por chip en los M), RAM, placas dedicadas, modelos con
+más oferta, la usada contra la nueva (misma clave que la referencia nueva: procesador, y línea en
+Mac) y qué se consigue con cada presupuesto. Muestra mínima 8, y 5 en las celdas de escalera y de
+generación. Sin fallas ni moneda deducida; medianas y cuartiles, nunca promedios. Son precios
+PEDIDOS, no ventas. Las referencias de notebook nueva vencen a los 14 días.
+
 ## Moneda de Facebook (`classes/computadoras/currency.ts`)
 
 La tarjeta dice UYU por defecto. Dólares si el texto lo dice («(USD)», «US$ 1.350» con el mismo

@@ -4127,6 +4127,21 @@
         "cuanto sale armar una pc uruguay"
       ],
       "hypothesis": "Paginas nuevas: un directorio de computadoras y piezas usadas de Facebook Marketplace y Mercado Libre, donde cada PC de escritorio se compara contra lo que salen hoy sus mismas piezas nuevas (mediana de Mercado Libre Uruguay y de siete tiendas de informatica uruguayas) y usadas (mediana de las piezas sueltas), y la tabla de precios de componentes contra la que se compara, con cuanto sale armar una PC de oficina o una gamer. Lo arma un job nuevo (currency-computadoras). Nadie en Uruguay junta esas tres cosas: el aviso dice PC gamer i5 mas GTX 1060 y no hay contra que medirlo. Parten de cero: diez clics o mas en los 28 dias archivados entre las dos rutas es mejoro."
+    },
+    {
+      "id": "computadoras-oportunidades-y-notebooks",
+      "shippedOn": "2026-11-24",
+      "routes": [
+        "/oportunidades-computadoras-usadas-uruguay",
+        "/precios-notebooks-usadas-uruguay"
+      ],
+      "queries": [
+        "precio notebook usada uruguay",
+        "precio macbook usada uruguay",
+        "notebook usada barata uruguay",
+        "cuanto sale una notebook usada"
+      ],
+      "hypothesis": "Paginas nuevas sobre el directorio de computadoras usadas: las oportunidades (avisos que piden entre 15 y 55 por ciento menos que su referencia: sus piezas usadas, las maquinas iguales o la misma pieza usada, con evidencia solida o exploratoria, sin fallas declaradas ni moneda deducida) y el informe de precios de notebooks usadas (medianas por marca, procesador, generacion, RAM, placa y la escalera de las MacBook por anio y chip, cada una con su muestra). Nadie publica en Uruguay cuanto se pide por una notebook usada segun lo que tiene adentro. Parten de cero: diez clics o mas en los 28 dias archivados entre las dos rutas es mejoro."
     }
   ]
 }

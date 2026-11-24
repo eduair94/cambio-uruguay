@@ -168,6 +168,21 @@ después el desglose, la comparación y las parecidas).
       <!-- ── Cómo está el precio ──────────────────────────────────────────── -->
       <section class="mt-8" data-testid="pc-price-position">
         <h2 class="text-h6 mb-2">¿Cómo está el precio?</h2>
+        <!-- La oportunidad va primero: es la conclusión más fuerte que la página hace de un aviso,
+             y por eso viene con su referencia en números y con el enlace a cómo se decide. -->
+        <div v-if="deal" class="pc-deal mb-4" data-testid="pc-opportunity-detail">
+          <p class="mb-1">
+            <strong>Oportunidad: {{ deal.text }}</strong>
+            <span class="text-medium-emphasis"> · {{ deal.tier }}</span>
+          </p>
+          <p v-if="dealDetail" class="text-body-2 mb-1">{{ dealDetail }}</p>
+          <p class="text-body-2 mb-0">
+            No es una tasación: probala antes de pagar.
+            <NuxtLink :to="localePath(COMPUTER_OPPORTUNITIES_PATH)">
+              Cómo se eligen las oportunidades
+            </NuxtLink>
+          </p>
+        </div>
         <p v-if="verdict && ratioText" class="text-body-1">
           <strong>{{ verdict }}.</strong> {{ ratioText }}
           {{ verdictNote }}
@@ -231,6 +246,7 @@ después el desglose, la comparación y las parecidas).
 <script setup lang="ts">
 import {
   COMPUTADORAS_PATH,
+  COMPUTER_OPPORTUNITIES_PATH,
   COMPUTER_BASIS_LABEL,
   COMPUTER_CONDITION_LABEL,
   COMPUTER_KIND_LABEL,
@@ -240,6 +256,9 @@ import {
   computerComparablesText,
   computerCpuFamilyLabel,
   computerFaultsLine,
+  computerIdentityLine,
+  computerOpportunityDetail,
+  computerOpportunityLine,
   computerGpuLabel,
   computerIncludesText,
   computerLongDate,
@@ -297,6 +316,11 @@ const price = computed(() =>
 const verdict = computed(() => (computer.value ? computerVerdictLabel(computer.value) : null))
 const ratioText = computed(() => (computer.value ? computerRatioText(computer.value) : null))
 const faults = computed(() => computerFaultsLine(computer.value?.faults ?? []))
+// `?? null`: una fila escrita antes del 24/11/2026 no trae la oportunidad.
+const deal = computed(() => computerOpportunityLine(computer.value?.opportunity ?? null))
+const dealDetail = computed(() =>
+  computer.value ? computerOpportunityDetail(computer.value) : null
+)
 const place = computed(() => (computer.value ? computerPlace(computer.value) : ''))
 const comparablesText = computed(() => computerComparablesText(computer.value?.comparables))
 const sameNewText = computed(() => computerSameNewText(computer.value?.valuation))
@@ -384,6 +408,10 @@ const specRows = computed(() => {
   if (includes) rows.push({ label: 'Qué trae', value: includes })
   if (item.condition)
     rows.push({ label: 'Estado declarado', value: COMPUTER_CONDITION_LABEL[item.condition] })
+  // La línea y el modelo van primero: es lo que se busca («una ThinkPad T490»).
+  const identity = computerIdentityLine(item)
+  if (identity)
+    rows.unshift({ label: 'Línea y modelo', value: identity, detail: 'Según el título' })
   return rows
 })
 
@@ -488,6 +516,13 @@ useHead(() => ({
 }
 .pc-heading {
   overflow-wrap: anywhere;
+}
+.pc-deal {
+  border: 1px solid rgba(var(--v-theme-success), 0.4);
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(var(--v-theme-success), 0.06);
+  max-width: 76ch;
 }
 .pc-flag {
   display: inline-block;

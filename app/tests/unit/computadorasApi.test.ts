@@ -18,6 +18,7 @@ const aggregateResult = vi.fn()
 const catalogFindFilters: unknown[] = []
 const partFindFilters: unknown[] = []
 const countFilters: unknown[] = []
+const metaFindOneFilters: unknown[] = []
 
 const chain = (lean: () => unknown) => {
   const query: Record<string, unknown> = {}
@@ -50,7 +51,12 @@ vi.mock('../../server/models/ComputerCatalog', () => ({
   },
 }))
 vi.mock('../../server/models/ComputerMeta', () => ({
-  ComputerMetaModel: { findOne: () => chain(metaFindOneLean) },
+  ComputerMetaModel: {
+    findOne: (filter: unknown) => {
+      metaFindOneFilters.push(filter)
+      return chain(metaFindOneLean)
+    },
+  },
 }))
 vi.mock('../../server/models/ComputerPart', () => ({
   ComputerPartModel: {
@@ -129,6 +135,7 @@ beforeEach(() => {
   catalogFindFilters.length = 0
   partFindFilters.length = 0
   countFilters.length = 0
+  metaFindOneFilters.length = 0
   connectDb.mockReset().mockResolvedValue(undefined)
   catalogFindLean.mockReset().mockReturnValue([])
   catalogFindOneLean.mockReset().mockReturnValue(null)
@@ -354,5 +361,86 @@ describe('GET /api/computadoras/componentes', () => {
     expect(response.presets).toHaveLength(1)
     expect(response.usdUyu).toBe(40)
     expect(headers.find(([name]) => name === 'cache-control')?.[1]).toContain('max-age=600')
+  })
+})
+
+const dealsHandler = async () =>
+  (await import('../../server/api/computadoras/oportunidades.get')).default
+const notebooksHandler = async () =>
+  (await import('../../server/api/computadoras/notebooks.get')).default
+
+describe('GET /api/computadoras/oportunidades', () => {
+  it('sin corrida contesta 200 y dice que está arrancando', async () => {
+    const response = await (await dealsHandler())({} as never)
+    expect(response.status).toBe('preparing')
+    expect(response.items).toEqual([])
+    expect(response.summary.total).toBe(0)
+  })
+
+  it('un fallo de base no se cachea ni se disfraza de lista vacía', async () => {
+    connectDb.mockRejectedValue(new Error('mongo down'))
+    const response = await (await dealsHandler())({} as never)
+    expect(response.status).toBe('unavailable')
+    expect(headers).toContainEqual(['cache-control', 'no-store'])
+  })
+
+  it('pide sólo filas con oportunidad, con sus filtros, y el resumen sin filtros', async () => {
+    metaFindOneLean.mockReturnValue(META_DOC)
+    getQuery.mockReturnValue({ tipo: 'piezas', evidencia: 'solida', precioMaxUsd: '300' })
+    catalogFindLean.mockReturnValue([
+      {
+        slug: 'fb-1',
+        priceUsd: 200,
+        kind: 'gpu',
+        kindGroup: 'part',
+        opportunity: { tier: 'solida', savingsPct: 0.3 },
+      },
+      {
+        slug: 'fb-2',
+        priceUsd: 600,
+        kind: 'notebook',
+        kindGroup: 'computer',
+        opportunity: { tier: 'exploratoria', savingsPct: 0.2 },
+      },
+    ])
+    const response = await (await dealsHandler())({} as never)
+    expect(catalogFindFilters[0]).toMatchObject({
+      opportunity: { $ne: null },
+      kindGroup: 'part',
+      'opportunity.tier': 'solida',
+      priceUsd: { $lte: 300 },
+    })
+    // El resumen lee la lista entera: sin el tipo, la evidencia ni el precio.
+    expect(catalogFindFilters[1]).toEqual(expect.objectContaining({ opportunity: { $ne: null } }))
+    expect(JSON.stringify(catalogFindFilters[1])).not.toContain('kindGroup')
+    expect(response.status).toBe('ok')
+    expect(response.summary.total).toBe(2)
+    expect(headers.find(([name]) => name === 'cache-control')?.[1]).toContain('max-age=600')
+  })
+})
+
+describe('GET /api/computadoras/notebooks', () => {
+  it('sin informe dice que se está calculando', async () => {
+    const response = await (await notebooksHandler())({} as never)
+    expect(response).toEqual({ status: 'preparing', generatedAt: '', report: null })
+  })
+
+  it('un fallo de base no se cachea', async () => {
+    connectDb.mockRejectedValue(new Error('mongo down'))
+    const response = await (await notebooksHandler())({} as never)
+    expect(response.status).toBe('unavailable')
+    expect(headers).toContainEqual(['cache-control', 'no-store'])
+  })
+
+  it('lee el documento del informe y lo devuelve tal cual', async () => {
+    metaFindOneLean.mockReturnValue({
+      key: 'uy-computadoras-notebooks',
+      generatedAt: '2026-11-24T10:00:00Z',
+      meta: { generatedAt: '2026-11-24T10:00:00Z', total: 1102 },
+    })
+    const response = await (await notebooksHandler())({} as never)
+    expect(response.status).toBe('ok')
+    expect(response.report?.total).toBe(1102)
+    expect(metaFindOneFilters).toContainEqual({ key: 'uy-computadoras-notebooks' })
   })
 })

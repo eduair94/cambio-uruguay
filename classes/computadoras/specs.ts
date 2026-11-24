@@ -11,6 +11,7 @@
 // «ssd 240»).
 import { exactCpu, readCpu } from "./cpu";
 import { integratedFor, readGpu } from "./gpu";
+import { readNotebookLine } from "./notebook";
 import { norm, num, uniq } from "./text";
 import type { Basis, ComputerKind, ComputerSpecs, Condition, Drive, DriveType, Fault, RamType } from "./types";
 
@@ -61,6 +62,7 @@ const PSU_WORD = /\b(fuente(?:\s*de\s*(?:poder|alimentacion))?|psu)\b/;
 const NOT_COMPUTER = /\b(smart\s*tv|televisor|television|tv|tele|playstation|ps[2-5]|play\s*[2-5]|xbox|nintendo|switch|consola|celular|iphone|ipone|ipad|tablet|redmi\s*pad|galaxy\s*tab|impresora|proyector|parlantes?|silla|camara|drone|smartwatch|reloj|router|modem|heladera|lavarropas)\b/;
 /** Un accesorio que nombra la computadora a la que va («Cargador Laptop Toshiba»). */
 const ACCESSORY_LEAD = /^(?:vendo\s+|se\s+vende\s+)?(cargador|cargadores|bateria|baterias|pantalla|display|teclado|teclados|mouse|carcasa|bisagras?|cooler|disipador|ventilador|fan|fans|cables?|adaptador|hub|soporte|base|funda|mochila|bolso|maletin|webcam|auriculares|monitor|monitores|gabinete|gabinetes|joystick|control|pad|alfombrilla|kit\s*de\s*limpieza|lector|grabadora|lectora)\b/;
+const ACCESSORY_FOR = /\b(funda|mochila|bolso|maletin|cargador|bateria|pantalla|display|teclado|bisagras?|carcasa|soporte|cooler|protector|repuestos?)\s+(?:de\s+|para\s+)?(?:notebooks?|laptops?|macbook)\b/;
 const MACHINE_LEAD = /^(?:vendo\s+|oferta\s+|kit\s+|combo\s+)?(?:pc|computadora|computador|notebook|laptop|torre|equipo|macbook|imac|mini\s*pc)\b/;
 // «Torre funcionando, 3 notebook y 2 mini PC para repuesto», «Variedad de notebook»: muchos equipos
 // por un precio que no es de ninguno.
@@ -72,6 +74,10 @@ export function classifyKind(title: string, description: string, mlCategory?: st
 
   if (MULTI.test(t)) return { kind: null, reject: "multi" };
   if (/^(compro|busco)\b/.test(t)) return { kind: null, reject: "compra" };
+  // «Combo … + Funda Notebook 15.6», «Repuestos Notebook Olidata X300c»: el accesorio nombra la
+  // máquina a la que va. También en las categorías de ML, donde se publican como notebooks. Un título
+  // que además declara procesador o memoria es la máquina con su accesorio.
+  if ((ACCESSORY_FOR.test(t) || /^repuestos?\b/.test(t)) && !/\b\d{1,3}\s*gb\b/.test(t) && !readCpu(t)) return { kind: null, reject: "accesorio" };
 
   if (mlCategory) {
     const mapped = ML_KIND[mlCategory];
@@ -472,6 +478,16 @@ export function readComputerSpecs(input: SpecsInput): ComputerSpecs {
   const notebookish = kind === "notebook";
   const both = `${title} | ${description}`;
   const specs: ComputerSpecs = { ...empty, brand: machine ? readBrand(title, input.fbAttributes?.Brand) : null };
+  if (kind === "notebook") {
+    const line = readNotebookLine(title);
+    if (line) {
+      specs.line = line.line;
+      specs.lineLabel = line.lineLabel;
+      specs.model = line.model;
+      specs.modelYear = line.modelYear;
+      if (!specs.brand && line.brand) specs.brand = line.brand;
+    }
+  }
 
   // Procesador: el del título; la descripción completa un título que sólo dice la familia.
   const wantsCpu = machine || kind === "cpu" || kind === "combo";

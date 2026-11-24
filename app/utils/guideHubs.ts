@@ -303,6 +303,16 @@ export const guideHubs: readonly GuideHub[] = [
         to: '/precios-componentes-pc-uruguay',
       },
       {
+        label: 'Oportunidades en computadoras usadas',
+        description: 'Las que piden bastante menos que sus iguales o sus piezas, y por qué.',
+        to: '/oportunidades-computadoras-usadas-uruguay',
+      },
+      {
+        label: 'Precios de notebooks usadas',
+        description: 'Por marca, procesador, generación, RAM y chip de MacBook.',
+        to: '/precios-notebooks-usadas-uruguay',
+      },
+      {
         label: 'Tiendas online',
         description: 'Señales fechadas de cada tienda que vende a Uruguay, antes de comprarle.',
         to: '/tiendas-online-uruguay',
