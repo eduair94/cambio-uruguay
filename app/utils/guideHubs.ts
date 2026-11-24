@@ -72,6 +72,7 @@ export const guideHubs: readonly GuideHub[] = [
       'euros-reales-donde-cambiar',
       'cambiar-pesos-argentinos-uruguay',
       'billetes-y-monedas-de-uruguay',
+      'billete-roto-o-manchado-uruguay',
       'moneda-de-uruguay',
       'pagar-en-dolares-o-pesos-uruguay',
       'documentos-para-cambiar-dolares-uruguay',

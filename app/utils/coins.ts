@@ -244,6 +244,10 @@ const es: CoinsContent = {
   ],
   related: [
     { label: 'Retirar efectivo en Uruguay', to: '/retirar-efectivo-uruguay' },
+    {
+      label: 'Billete roto o manchado: qué se canjea',
+      to: '/guias/billete-roto-o-manchado-uruguay',
+    },
     { label: 'Sucursales de casas de cambio y bancos', to: '/sucursales' },
     { label: 'Casas de cambio en Uruguay', to: '/casas-de-cambio' },
     { label: 'Mapa de sucursales', to: '/mapa' },
@@ -384,6 +388,10 @@ const en: CoinsContent = {
   ],
   related: [
     { label: 'Withdraw cash in Uruguay', to: '/retirar-efectivo-uruguay' },
+    {
+      label: 'Torn or stained banknote: what gets swapped',
+      to: '/guias/billete-roto-o-manchado-uruguay',
+    },
     { label: 'Exchange-house and bank branches', to: '/sucursales' },
     { label: 'Exchange houses in Uruguay', to: '/casas-de-cambio' },
     { label: 'Branch map', to: '/mapa' },
@@ -524,6 +532,10 @@ const pt: CoinsContent = {
   ],
   related: [
     { label: 'Sacar dinheiro no Uruguai', to: '/retirar-efectivo-uruguay' },
+    {
+      label: 'Nota rasgada ou manchada: o que se troca',
+      to: '/guias/billete-roto-o-manchado-uruguay',
+    },
     { label: 'Agências de casas de câmbio e bancos', to: '/sucursales' },
     { label: 'Casas de câmbio no Uruguai', to: '/casas-de-cambio' },
     { label: 'Mapa de agências', to: '/mapa' },

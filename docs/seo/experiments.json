@@ -4142,6 +4142,38 @@
         "cuanto sale una notebook usada"
       ],
       "hypothesis": "Paginas nuevas sobre el directorio de computadoras usadas: las oportunidades (avisos que piden entre 15 y 55 por ciento menos que su referencia: sus piezas usadas, las maquinas iguales o la misma pieza usada, con evidencia solida o exploratoria, sin fallas declaradas ni moneda deducida) y el informe de precios de notebooks usadas (medianas por marca, procesador, generacion, RAM, placa y la escalera de las MacBook por anio y chip, cada una con su muestra). Nadie publica en Uruguay cuanto se pide por una notebook usada segun lo que tiene adentro. Parten de cero: diez clics o mas en los 28 dias archivados entre las dos rutas es mejoro."
+    },
+    {
+      "id": "billete-roto-guia-nueva",
+      "shippedOn": "2026-11-24",
+      "routes": [
+        "/guias/billete-roto-o-manchado-uruguay"
+      ],
+      "queries": [
+        "billete roto uruguay",
+        "se me rompio un billete",
+        "canje de billetes deteriorados",
+        "billete manchado uruguay",
+        "donde cambio un billete roto",
+        "billete entintado"
+      ],
+      "hypothesis": "Pagina nueva (guia): que billete deteriorado se canjea en Uruguay, quien esta obligado a canjearlo y que pasa si no califica. El BCU publica la pregunta en sus propias preguntas frecuentes ('Se me rompio un billete, donde lo puedo cambiar?') y la contesta con una linea y un enlace a un ancla de otra pagina, donde el articulo que decide -el 57.1 del Libro VII de la Recopilacion de Normas de Operaciones- esta pegado entre circulares y antecedentes. La guia pone junto lo que no esta junto en ninguna parte: el umbral de mas del 60 por ciento en UNA sola pieza y su alternativa por reconstruccion (literal b, con numeraciones y firmas, que es la mitad que casi nadie cuenta); que el canje obligatorio del 57.1 esta escrito para los Bancos y que una casa de cambio es, para ese mismo Libro, una institucion financiera no bancaria (art. 56.1), asi que puede aceptarlo y no esta obligada, aunque si debe retener y dar el recibo del art. 58; el contenido minimo de ese recibo y sus tres ejemplares; que el billete entintado no tiene valor circulatorio (57 bis) y presentado por una persona NO se reemplaza (58 bis b); que si lo retienen por dudosa autenticidad y la pericia dice que es autentico se devuelve el importe (59.2); y que la Parte Segunda del Libro VII no preve canje de dolares deteriorados, solo deposito en el BCU y retencion del de dudosa autenticidad. Tres cosas quedan declaradas como NO publicadas en vez de contestadas: el arancel del canje, como termina para el tenedor un billete que no llega al umbral, y los elementos de seguridad de cada billete (el enlace que el propio BCU ofrece para eso devolvia 'File Not Found' el 24/11/2026). Cuatro fuentes del BCU leidas ese dia, citadas con URL en la propia guia. Va como guia y no como pagina raiz por el motivo de historia-laboral-bps (21/11): /guias/* es una familia que el plan de ingreso ya valua como lectura larga, mientras una pagina raiz nueva pediria clasificarla en classes/revenueplan/value.ts, que es backend y se despliega aparte. El enlace de contexto entrante sale de /donde-conseguir-monedas-uruguay (sus tres idiomas), que no tiene ninguna ventana abierta; la guia enlaza a /guias/dolares-deteriorados-billetes-rechazados-uruguay en un solo sentido porque esa guia esta reservada hasta el 30/11. Parte de cero: diez clics o mas en los 28 dias archivados es mejoro. Es el tramo contenido (8x el promedio del sitio)."
+    },
+    {
+      "id": "descripciones-de-catalogo-que-publicaban-el-indice",
+      "shippedOn": "2026-11-24",
+      "routes": [
+        "/economia-uruguay",
+        "/noticias",
+        "/acerca"
+      ],
+      "queries": [
+        "noticias economia uruguay",
+        "noticias del dolar uruguay",
+        "cambio uruguay metodologia",
+        "de donde salen las cotizaciones uruguay"
+      ],
+      "hypothesis": "Las tres descripciones del pozo de catalogo (seoMessageSnippetBudget.test.ts) que estaban libres de toda ventana abierta: /economia-uruguay media 223/183/221 caracteres en es/en/pt, /noticias 166 en espaniol y /acerca 182/182/181, o sea que el SERP cortaba justo la cola, que es donde iba el dato. Y el defecto no era solo el largo: las tres describian el TEMA de la pagina en vez de lo que la pagina tiene ('Ultimas noticias de economia de Uruguay por area' mas la enumeracion de las areas, que es el indice otra vez). Ahora abren por las cifras que el propio codigo fija y que ninguna otra pagina del sitio pone al lado: seis areas por seis titulares (fetchEconomyNews(6) sobre ECONOMY_TOPICS) con el medio y la hora de cada uno y la relectura cada 30 minutos del maxAge de /api/economy-news; los 12 de fetchNews(12) con su medio y su antiguedad, mas el resumen con IA y la cotizacion al lado; y en /acerca, el BCU y mas de 40 casas de cambio cada ~10 minutos y los cuatro tipos de cotizacion que la pagina explica uno por uno. Ninguna cifra es nueva: las tres salen del codigo que sirve esas paginas. Las tres se reescriben en los tres idiomas aunque solo /economia-uruguay y /acerca se pasaban en los tres, porque el defecto era el mismo en el ingles y el portugues de /noticias. Quedan en 149/151/153, 149/145/145 y 152/147/148, y el presupuesto baja con ellas: descripciones de catalogo 9 a 6, hasta la deuda real y no hasta un numero redondo. No se toco titulo, H1, cuerpo, URL, canonical, tema, enlace ni anuncio. Se espera mas clics desde la misma posicion, como midieron las tandas de titulos y descripciones de octubre y noviembre; se mide por cuota de clics del sitio con 28 dias archivados antes y despues, sin el dia del deploy."
     }
   ]
 }

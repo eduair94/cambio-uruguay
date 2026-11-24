@@ -87,7 +87,7 @@ const GUIDE_PAGE = readFileSync(join(__dirname, '..', '..', 'pages', 'guias', '[
  * marca, y descripción de 141— y el título es la consulta tal como se escribe, con la respuesta
  * («no son feriados») en la primera oración de la descripción, donde el SERP no la corta.
  */
-const MEASURED = 161
+const MEASURED = 162
 
 /**
  * 116 → 104 el 2026-10-02: los doce títulos más largos del catálogo, de 104 a 84 caracteres

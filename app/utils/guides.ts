@@ -12,6 +12,7 @@
 
 // The Reddit-mined economy/finance/legal guides live in their own module and
 // are appended to the catalogue below (keeps this file focused on the core set).
+import { billetesGuides } from './guidesBilletes'
 import { consumoGuides } from './guidesConsumo'
 import { deudasGuides } from './guidesDeudas'
 import { importacionGuides } from './guidesImportacion'
@@ -1827,6 +1828,14 @@ export const guides: readonly Guide[] = [
   // hogar ALQUILA. Cuerpo armado con plantillas sobre `utils/povertyLine.ts` por la misma razón
   // que la guía de la TPM; el detalle entero está en la cabecera de `guidesPobreza.ts`.
   ...pobrezaGuides,
+  // El billete roto, manchado o entintado, 2026-11-24: la pregunta que el propio BCU publica en sus
+  // preguntas frecuentes y contesta con una línea y un enlace a un ancla, donde el artículo que
+  // decide está pegado entre circulares. Va como guía y no como página raíz por el motivo de la
+  // guía de la historia laboral: `/guias/*` es una familia que el plan de ingreso ya valúa como
+  // lectura larga, mientras una página raíz nueva pediría clasificarla en
+  // `classes/revenueplan/value.ts`, que es backend y se despliega aparte. El detalle entero, con lo
+  // que la norma NO dice, en la cabecera de `guidesBilletes.ts`.
+  ...billetesGuides,
 ]
 
 /**

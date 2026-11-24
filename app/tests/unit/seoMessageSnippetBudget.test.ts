@@ -374,19 +374,31 @@ const DEUDA_DESCRIPCION_MENSAJE = [
   // nombrar el tema a usar la consulta («Me grabaron sin consentimiento: qué hacer», 58 con la
   // marca), que es el H1 de la página y la consulta que declara su fila del 2026-10-24; no estaba en
   // deuda de largo (56/50/54) y sigue sin estarlo (58/51/59).
-  '/acerca',
+  //
+  // 9 → 6 el 2026-11-24: `/economia-uruguay` (223/183/221), `/noticias` (166 en español; el inglés y
+  // el portugués ya entraban y se reescribieron igual porque el defecto era el mismo) y `/acerca`
+  // (182/182/181). Las tres estaban libres en el libro de cambios —ninguna de las tres tiene una
+  // sola fila— y las tres describían el TEMA de la página en vez de lo que la página tiene:
+  // «Últimas noticias de economía de Uruguay por área» más la enumeración de las áreas, que es el
+  // índice otra vez. Ahora traen las cifras que el propio código fija y que ninguna otra página pone
+  // al lado: seis áreas por seis titulares (`fetchEconomyNews(6)` sobre `ECONOMY_TOPICS`) con el
+  // medio y la hora de cada uno y la relectura cada 30 minutos del `maxAge` de `/api/economy-news`;
+  // los 12 de `fetchNews(12)` con su medio y su antigüedad; y en `/acerca`, los ~10 minutos y los
+  // cuatro tipos de cotización que la página explica uno por uno. Quedan en 149/151/153,
+  // 149/145/145 y 152/147/148.
+  //
+  // De las seis que quedan, `/comparar-plataformas-dolar-uruguay` se libera el 2026-11-26 y
+  // `/tarjetas-de-credito-uruguay` el 2026-11-30; `/conectar` es área de cuenta y no busca a nadie.
   '/autos-usados-uruguay/comparar',
   '/barrios-alquileres-uruguay',
   '/comparar-plataformas-dolar-uruguay',
   '/conectar',
-  '/economia-uruguay',
   '/estadisticas-reddit',
-  '/noticias',
   '/tarjetas-de-credito-uruguay',
 ]
 
 /** Igual a la lista, por el mismo motivo que el de los títulos. Estuvo en 13 sobre una deuda de 11. */
-const MESSAGE_DESCRIPTION_OVER_BUDGET = 9
+const MESSAGE_DESCRIPTION_OVER_BUDGET = 6
 
 // El conteo real del 2026-11-20, por el mismo motivo que `MEASURABLE` en `seoTitleBudget.test.ts`:
 // si el piso fuera más bajo, una página podría dejar de leerse acá sin poner nada en rojo.
