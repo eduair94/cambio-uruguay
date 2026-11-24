@@ -518,7 +518,7 @@ useHead(() => ({
   overflow-wrap: anywhere;
 }
 .pc-deal {
-  border-left: 4px solid rgb(var(--v-theme-success));
+  border: 1px solid rgba(var(--v-theme-success), 0.4);
   padding: 8px 12px;
   border-radius: 8px;
   background: rgba(var(--v-theme-success), 0.06);
