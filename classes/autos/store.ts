@@ -22,7 +22,7 @@ import type { CarPartsRecord } from "./repuestos";
 import type {
   PublicCarAdvisorSnapshot, PublicCarCatalogMeta, PublicCarListing, PublicCarMarketSnapshot, PublicCarOpportunitySnapshot, PublicCarReportSnapshot, PublicCarRiskSnapshot,
 } from "./publicTypes";
-import type { FbCard, FbItem } from "./sources/facebook";
+import type { FbCard, FbItem, FbStoredCard } from "./sources/facebook";
 import type { CarDetail, CarHarvestResult, CarModelVocabulary, CarPricePoint, CarSource, CarSourceResult, RawCarListing, StoredCar } from "./types";
 
 export const CAR_CATALOG_COLLECTION = "carcatalog";
@@ -306,16 +306,30 @@ export async function upsertFbCards(cards: readonly FbCard[], observedAt: string
 export async function saveFbItems(items: readonly FbItem[]): Promise<void> {
   if (!items.length) return;
   await fbCollection().bulkWrite(items.map(item => ({
-    updateOne: { filter: { key: `fb-${item.id}` }, update: { $set: { item } } },
+    updateOne: { filter: { key: `fb-${item.id}` }, update: { $set: { item, itemMissedAt: null } } },
   })), { ordered: false });
 }
 
-export async function loadFbCards(since: string): Promise<Array<FbCard & { lastSeen: string; item: FbItem | null }>> {
+/**
+ * Item pages opened that did not carry the listing. Without a trace the same card would come back at
+ * the head of the queue every run (the Casasweb detail queue jammed that way on 2026-10-09).
+ */
+export async function saveFbItemMisses(ids: readonly string[], at: string): Promise<void> {
+  if (!ids.length) return;
+  await fbCollection().bulkWrite(ids.map(id => ({
+    updateOne: { filter: { key: `fb-${id}` }, update: { $set: { itemMissedAt: at } } },
+  })), { ordered: false });
+}
+
+export async function loadFbCards(since: string): Promise<FbStoredCard[]> {
   const docs = await fbCollection().find(
     { $or: [{ lastSeen: { $gte: since } }, { "item.readAt": { $gte: since } }] },
     { projection: { _id: 0 } },
   ).toArray();
-  return docs.map(doc => ({ ...(doc.card as FbCard), lastSeen: String(doc.lastSeen), item: (doc.item as FbItem | null) ?? null }));
+  return docs.map(doc => ({
+    ...(doc.card as FbCard), lastSeen: String(doc.lastSeen), item: (doc.item as FbItem | null) ?? null,
+    itemMissedAt: typeof doc.itemMissedAt === "string" ? doc.itemMissedAt : null,
+  }));
 }
 
 const FB_WANTED_KEY = "uy-cars-fb-wanted";

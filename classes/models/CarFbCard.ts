@@ -6,6 +6,8 @@ export interface CarFbCardDocument {
   key: string;
   card: FbCard;
   item: FbItem | null;
+  /** Last time the item page was opened and did not carry the listing (the queue waits 3 days). */
+  itemMissedAt?: string | null;
   firstSeen: string;
   lastSeen: string;
 }
@@ -16,6 +18,7 @@ const CarFbCardSchema = new Schema({
   key: { type: String, required: true },
   card: { type: Schema.Types.Mixed, required: true },
   item: { type: Schema.Types.Mixed, default: null },
+  itemMissedAt: { type: String, default: null },
   firstSeen: { type: String, required: true },
   lastSeen: { type: String, required: true },
 }, { autoCreate: false, autoIndex: false });

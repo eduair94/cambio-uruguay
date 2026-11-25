@@ -104,6 +104,8 @@ export interface FacebookListBudget {
 export interface FacebookRead {
   cards: FbCard[];
   items: FbItem[];
+  /** Item pages opened that did not carry the listing: stored, so the queue waits (see fbDetailQueue). */
+  missed: string[];
   pages: number;
   lists: number;
   /** Lists that ran out of listings (or reached back far enough). */
@@ -139,7 +141,7 @@ export async function readFacebookVehicles(options: {
 }): Promise<FacebookRead> {
   const cards = new Map<string, FbCard>();
   const items: FbItem[] = [];
-  const result: FacebookRead = { cards: [], items, pages: 0, lists: 0, exhausted: 0, stalled: 0, skipped: 0, note: null, sessionLost: false, busy: false };
+  const result: FacebookRead = { cards: [], items, missed: [], pages: 0, lists: 0, exhausted: 0, stalled: 0, skipped: 0, note: null, sessionLost: false, busy: false };
   const release = await (options.lock ?? acquireFacebookProfile)("autos", options.lockWaitMs);
   if (!release) {
     result.busy = true;
@@ -244,6 +246,7 @@ export async function readFacebookVehicles(options: {
       result.pages++;
       const item = fbItemFromTexts(id, texts, readAt);
       if (item) items.push(item);
+      else result.missed.push(id);
     }
   } catch (error) {
     if (error instanceof FacebookSessionError) {

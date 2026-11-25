@@ -81,6 +81,28 @@ describe("declaredRisks", () => {
     for (const text of ["Daños por granizo", "Granizo leve en el techo"])
       expect(riskCategories(declaredRisks("", text)), text).toEqual(["siniestro"]);
   });
+  // Reported 2026-11-25 on fb-963318253481029 ("16 mil km andando impecable para armar el frente
+  // ,Airbag rotos"), measured on the stored descriptions: every "airbag(s) roto(s)" (8) and "le
+  // falta(n) el/los airbag(s)" (5) was a car declaring a crash it never named. "Sin airbags" was
+  // already a crash; these are the same disclosure in other words.
+  it("reads broken or missing airbags as the crash they declare", () => {
+    for (const text of [
+      "Yuan pro con 16 mil km andando impecable para armar el frente ,Airbag rotos",
+      "Vendo toyota corolla año 1998 diesel extra full ( airbag rotos) títulos y libreta a mi nombre",
+      "Detalle, tiene los airbags rotos! Cómo se ve en la foto, no afecta su uso",
+      "La unidad presenta algunos detalles estéticos y le faltan los dos airbags",
+      "Le falta airbag delantero despues impecable estado al dia",
+      "Le falta el airbag del tablero",
+      "Particular, se usa a diario, rompió airbag",
+      "Saltaron airbags, paragolpe delantero",
+    ])
+      expect(riskCategories(declaredRisks("", text)), text).toEqual(["siniestro"]);
+    for (const text of [
+      "No le falta airbag ni nada", "Airbags nunca activados, nunca se rompió nada", "Doble airbag, ABS, no le falta nada",
+      "no tocó nada de motor, no rompió los airbags, los títulos están limpios",
+    ])
+      expect(declaredRisks("", text), text).toEqual([]);
+  });
   it("never repeats a category", () => {
     const risks = risksIn("Chocado, siniestrado, accidentado y sin airbags", "title");
     expect(risks).toHaveLength(1);
@@ -108,6 +130,8 @@ describe("risks and the older flag vocabulary", () => {
     const cases: Array<[string, string]> = [
       ["damaged", "El auto está chocado de adelante"],
       ["damaged", "Motor fundido, se vende para repuestos"],
+      ["damaged", "Andando impecable para armar el frente ,Airbag rotos"],
+      ["damaged", "Le faltan los dos airbags"],
       ["recovered", "Recuperado de robo, papeles al día"],
       ["paperwork", "Se vende con matrículas entregadas"],
       ["paperwork", "Tiene una deuda de 40000"],
