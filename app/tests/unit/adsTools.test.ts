@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest'
 import { adsenseLoaderScripts } from '../../composables/useAds'
 import * as ads from '../../utils/ads'
 import * as adFree from '../../utils/adFree'
+import * as landingComparison from '../../utils/landingComparison'
 import {
   adDensityForPath,
   adsAllowed,
@@ -143,7 +144,7 @@ const composableSource = readFileSync(resolve(__dirname, '../../composables/useA
 const PLACEMENTS = ['content-end', 'in-article', 'sidebar', 'after-tool'] as const
 const SLOTS = { contentEnd: 'close', inArticle: 'inside', sidebar: 'rail' }
 
-function useAdsAt(path: string, config: Record<string, unknown> = {}) {
+function useAdsAt(path: string, config: Record<string, unknown> = {}, landing = '') {
   const { outputText } = ts.transpileModule(composableSource, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   })
@@ -152,9 +153,11 @@ function useAdsAt(path: string, config: Record<string, unknown> = {}) {
     require: (name: string) => {
       if (name === '~/utils/ads') return ads
       if (name === '~/utils/adFree') return adFree
+      if (name === '~/utils/landingComparison') return landingComparison
       throw new Error(`Unexpected import: ${name}`)
     },
     computed: vue.computed,
+    useState: <T>(_key: string, init: () => T) => vue.ref(init()),
     useAdFreeViewer: () => vue.ref('unknown'),
     useRoute: () => ({ path, meta: {} }),
     useRuntimeConfig: () => ({
@@ -167,7 +170,10 @@ function useAdsAt(path: string, config: Record<string, unknown> = {}) {
     scriptAllowed: { value: boolean }
     canRender: (placement: string) => boolean
     slotIdFor: (placement: string) => string
+    rememberLanding: (url: unknown) => void
   }
+  // What app.vue does in onNuxtReady, before the loader goes in.
+  if (landing) api.rememberLanding(landing)
   return {
     ...api,
     rendered: PLACEMENTS.filter(placement => api.canRender(placement)),
@@ -339,5 +345,59 @@ describe('el layout no suma una segunda unidad en las calculadoras', () => {
       adsenseSlots: { ...SLOTS, tools: 'tools' },
     })
     for (const placement of placements) expect(state.canRender(placement!), placement).toBe(false)
+  })
+})
+
+// ---------------------------------------------------------------------------------------------
+// La granja del comparador (23–25/11/2026): una pestaña que ARRANCA en un comparador con el aviso
+// ya elegido no carga AdSense mientras siga ahí. Una impresión servida a la granja es tráfico
+// inválido en la cuenta del sitio; una persona llega a esa comparación desde la tarjeta, con la
+// pestaña empezada en otra página, y ve los anuncios como siempre.
+// ---------------------------------------------------------------------------------------------
+
+describe('useAds: la pestaña que arranca en una comparación ya elegida', () => {
+  const FARM = 'https://cambio-uruguay.com/en/autos-usados-uruguay/comparar?autos=ml-MLU703495291'
+
+  it('no carga el loader ni dibuja la unidad mientras siga en el comparador', () => {
+    for (const path of [
+      '/en/autos-usados-uruguay/comparar',
+      '/autos-usados-uruguay/comparar',
+      '/pt/autos-usados-uruguay/comparar',
+    ]) {
+      const state = useAdsAt(path, {}, FARM)
+      expect(state.scriptAllowed.value, path).toBe(false)
+      expect(state.loader, path).toEqual([])
+      expect(state.rendered, path).toEqual([])
+    }
+    const moto = useAdsAt(
+      '/pt/motos-usadas-uruguay/comparar',
+      {},
+      '/pt/motos-usadas-uruguay/comparar?motos=ml-MLU1544194156'
+    )
+    expect(moto.loader).toEqual([])
+  })
+
+  it('vuelve a la tabla de rutas apenas la pestaña sale del comparador', () => {
+    const directory = useAdsAt('/en/autos-usados-uruguay', {}, FARM)
+    expect(directory.loader).toHaveLength(1)
+    expect(directory.rendered).toContain('content-end')
+    // El comparador de motos no es el de autos: la pestaña aterrizó en el de autos.
+    expect(useAdsAt('/motos-usadas-uruguay/comparar', {}, FARM).loader).toHaveLength(1)
+  })
+
+  it('no toca a quien llega al comparador desde otra página, ni al comparador vacío', () => {
+    expect(useAdsAt('/autos-usados-uruguay/comparar').loader).toHaveLength(1)
+    const fromDirectory = useAdsAt(
+      '/autos-usados-uruguay/comparar',
+      {},
+      'https://cambio-uruguay.com/autos-usados-uruguay'
+    )
+    expect(fromDirectory.loader).toHaveLength(1)
+    const empty = useAdsAt(
+      '/autos-usados-uruguay/comparar',
+      {},
+      'https://cambio-uruguay.com/autos-usados-uruguay/comparar'
+    )
+    expect(empty.loader).toHaveLength(1)
   })
 })

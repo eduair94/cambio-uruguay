@@ -39,7 +39,8 @@ describe('AdSense loader', () => {
     const source = readFileSync(resolve(__dirname, '../../app.vue'), 'utf8')
     expect(source).not.toContain('adsbygoogle.js')
     expect(source).toMatch(/const hydrated = ref\(false\)/)
-    expect(source).toMatch(/onNuxtReady\(\(\) => \{\s*hydrated\.value = true\s*\}\)/)
+    // The landing check runs first in the same callback (tests/unit/landingComparison.test.ts).
+    expect(source).toMatch(/onNuxtReady\(\(\) => \{[^}]*hydrated\.value = true\s*\}\)/)
     expect(source).toMatch(
       /adsenseLoaderScripts\(\s*adsensePubId,\s*scriptAllowed\.value && viewerLoadsAdsense\(adFreeViewer\.value\),\s*hydrated\.value\s*\)/
     )
