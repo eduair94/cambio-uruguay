@@ -54,7 +54,7 @@ import { courierImport } from './importTax'
 
 export const comoSaberSiTengoDeudasGuide: Guide = {
   slug: 'como-saber-si-tengo-deudas-uruguay',
-  title: 'Cómo saber si tengo deudas en Uruguay',
+  title: 'Deudas: Central de Riesgos y Clearing',
   description:
     'No hay un registro único: bancos en la Central de Riesgos del BCU, el Clearing gratis cada 6 meses y la patente en el SUCIVE, con matrícula y padrón.',
   tag: 'DEUDAS',

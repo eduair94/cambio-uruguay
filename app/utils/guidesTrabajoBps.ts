@@ -753,7 +753,7 @@ export const trabajoBpsGuides: readonly Guide[] = [
   },
   {
     slug: 'como-pedir-un-aumento-de-sueldo-uruguay',
-    title: 'Cómo pedir un aumento de sueldo en Uruguay',
+    title: 'Aumento de sueldo: primero mirá el laudo',
     description:
       'Primero el laudo: por debajo del mínimo de tu categoría se reclama, no se pide, y el retroactivo corre desde la vigencia del acta. Después, cómo negociar.',
     tag: 'AUMENTO',
