@@ -45,6 +45,12 @@ export interface BpsConsultChannel {
   name: string
   how: string
   availability: string
+  /**
+   * Where tapping the channel's name takes you, when there is a place to go. Clarity
+   * (24/11/2026) measured taps on «SMS al 1997» that did nothing: on a phone, that name is the
+   * message itself. The telephone stays text: iOS does not open a `tel:` link with a `*`.
+   */
+  href?: string
 }
 
 /** Las cuatro vías que el propio BPS lista para consultar fecha y lugar de cobro. */
@@ -54,12 +60,15 @@ export const BPS_CONSULT_CHANNELS: readonly BpsConsultChannel[] = Object.freeze(
     name: 'SMS al 1997',
     how: 'Mandás un mensaje al 1997 con la palabra COBRO y tu número de cédula.',
     availability: 'Sin computadora ni datos: alcanza con la línea del celular.',
+    // cobroSmsHref('') — written out because this list is built before that function runs.
+    href: 'sms:1997?&body=COBRO%20',
   },
   {
     id: 'web',
     name: 'Servicio en línea',
     how: '«Consultar fecha y lugar de cobro de mis prestaciones», en el sitio del BPS.',
     availability: 'En línea, a cualquier hora.',
+    href: 'https://www.bps.gub.uy/23774/como-se-cuando-cobro.html',
   },
   {
     id: 'telefono',
@@ -120,6 +129,16 @@ export function cobroSmsText(cedula: string): string | null {
   const digits = (cedula ?? '').replace(/\D/g, '')
   if (digits.length < 6 || digits.length > 8) return null
   return `COBRO ${digits}`
+}
+
+/**
+ * The SMS to the 1997 ready to send: with the cédula when it is complete, with «COBRO » and the
+ * cursor after it when not. `?&body=` is the form both iOS and Android read. The page opens it
+ * from a click handler and never writes it into an `href`: Clarity records the page's attributes,
+ * and a cédula has no business there.
+ */
+export function cobroSmsHref(cedula: string): string {
+  return `sms:1997?&body=${encodeURIComponent(cobroSmsText(cedula) ?? 'COBRO ')}`
 }
 
 export const BPS_COBRO_FAQ: readonly FaqItem[] = Object.freeze([

@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest'
+import { CAR_COMPARISON_PATH } from '../../utils/carComparison'
+import { MOTO_COMPARE_PATH } from '../../utils/motos'
 import {
   CLARITY_MAX_QUERY_RESTARTS,
+  CLARITY_PRESELECTED_COMPARISONS,
   clarityEventName,
   clarityFamily,
   clarityForgetCookies,
   clarityKeepRecording,
+  clarityLandingAllowed,
   clarityLocale,
   clarityQueryRestarts,
   clarityReferrerAllowed,
@@ -138,6 +142,38 @@ describe('the routes Clarity never records', () => {
     expect(clarityReferrerAllowed('https://www.google.com/')).toBe(true)
     expect(clarityReferrerAllowed('')).toBe(true)
     expect(clarityReferrerAllowed(undefined)).toBe(true)
+  })
+
+  it('leaves out a tab that STARTS on a comparison with a listing already picked', () => {
+    // The farm of 24–25/11/2026: one page, zero taps, in every locale.
+    expect(
+      clarityLandingAllowed(
+        'https://cambio-uruguay.com/en/autos-usados-uruguay/comparar?autos=ml-MLU703495291'
+      )
+    ).toBe(false)
+    expect(
+      clarityLandingAllowed('https://cambio-uruguay.com/autos-usados-uruguay/comparar?autos=fb-1')
+    ).toBe(false)
+    expect(clarityLandingAllowed('/pt/motos-usadas-uruguay/comparar?motos=ml-MLU1544194156')).toBe(
+      false
+    )
+    // The empty comparator, a listing, and everything else are recorded as before.
+    expect(clarityLandingAllowed('https://cambio-uruguay.com/autos-usados-uruguay/comparar')).toBe(
+      true
+    )
+    expect(clarityLandingAllowed('/autos-usados-uruguay/comparar?autos=')).toBe(true)
+    expect(clarityLandingAllowed('/autos-usados-uruguay/ml-MLU703495291')).toBe(true)
+    expect(clarityLandingAllowed('/comparar?autos=ml-MLU1')).toBe(true)
+    expect(clarityLandingAllowed('https://cambio-uruguay.com/')).toBe(true)
+    expect(clarityLandingAllowed('')).toBe(true)
+    expect(clarityLandingAllowed(undefined)).toBe(true)
+  })
+
+  it('names the same comparator paths as the pages', () => {
+    expect(CLARITY_PRESELECTED_COMPARISONS).toEqual([
+      [CAR_COMPARISON_PATH, 'autos'],
+      [MOTO_COMPARE_PATH, 'motos'],
+    ])
   })
 })
 

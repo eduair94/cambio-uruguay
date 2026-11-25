@@ -343,7 +343,17 @@
 
       <!-- Mobile cards -->
       <div v-if="visibleRows.length" class="d-md-none">
-        <div v-for="r in visibleRows" :key="r.code" class="casa-mcard" data-testid="casas-row">
+        <!-- Tocar la tarjeta abre la casa: Clarity (24/11/2026) midió toques repetidos sobre la
+             categoría, «requiere cuenta» y el nombre de la tarjeta que no hacían nada, hasta que la
+             persona encontró «Más info» más abajo. El nombre sigue siendo el enlace (teclado y
+             lector de pantalla); la tarjeta es el atajo del dedo. -->
+        <div
+          v-for="r in visibleRows"
+          :key="r.code"
+          class="casa-mcard"
+          data-testid="casas-row"
+          @click="onCasaCardClick($event, r.code)"
+        >
           <div class="d-flex align-center justify-space-between ga-2 mb-1">
             <NuxtLink
               :to="localePath(`/casa/${r.code}`)"
@@ -544,6 +554,19 @@
                 <VIcon start size="small">mdi-shield-check</VIcon>
                 {{ c.bcuBadge }}
               </VChip>
+              <!-- Clarity (24/11/2026): seis toques seguidos sobre «Cotización online en su web»,
+                   que es un servicio y no un enlace. La web de la casa va acá, a un toque. -->
+              <VBtn
+                v-if="r.website"
+                :href="r.website"
+                target="_blank"
+                rel="noopener noreferrer"
+                size="small"
+                variant="tonal"
+              >
+                {{ c.websiteLink }}
+                <VIcon end size="small">mdi-open-in-new</VIcon>
+              </VBtn>
               <VBtn
                 :to="localePath(`/casa/${r.code}`)"
                 size="small"
@@ -939,6 +962,17 @@ const visibleRows = computed<CasaRow[]>(() => {
   }
   return sorted
 })
+
+/**
+ * A tap anywhere on a phone card opens that casa. Not when the tap is on one of the card's own
+ * links (they keep theirs) nor while text is being selected: a rate on the card is also copied.
+ */
+function onCasaCardClick(event: MouseEvent, code: string) {
+  const target = event.target as Element | null
+  if (target?.closest('a, button')) return
+  if (window.getSelection?.()?.toString()) return
+  router.push(localePath(`/casa/${code}`))
+}
 
 // Rows worth an expandable detail panel (some researched substance to show).
 const detailRows = computed<CasaRow[]>(() =>
@@ -1471,6 +1505,7 @@ useHead(() => ({
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 14px 16px;
+  cursor: pointer;
 }
 
 .casa-mcard + .casa-mcard {
