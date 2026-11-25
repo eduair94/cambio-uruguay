@@ -1,6 +1,7 @@
 import * as bcuHistory from '../../utils/bcuHistory'
 import * as ogCardText from '../../utils/ogCardText'
 import * as adFree from '../../utils/adFree'
+import * as landingComparison from '../../utils/landingComparison'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { runInNewContext } from 'node:vm'
@@ -125,6 +126,7 @@ it('returns HTTP 404 through app.vue and the installed Nuxt SSR runtime after hi
       'vue/server-renderer': serverRenderer,
       '~/utils/ogCardText': ogCardText,
       '~/utils/adFree': adFree,
+      '~/utils/landingComparison': landingComparison,
     },
     {
       defineOgImageComponent: () => {},

@@ -7,6 +7,7 @@ import {
   type AdDensity,
 } from '~/utils/ads'
 import { viewerShowsAds } from '~/utils/adFree'
+import { adsHeldByLanding, landedComparisonPath } from '~/utils/landingComparison'
 
 /**
  * The places an ad is allowed to be.
@@ -92,11 +93,26 @@ export function useAds() {
   const maxSlots = computed(() => maxAdSlots(density.value))
 
   /**
+   * The comparator this tab LANDED on with a listing already picked, or null (utils/
+   * landingComparison.ts). Null on the server and through hydration: app.vue sets it once, in the
+   * same onNuxtReady that lets the loader in and just before it, so a farm landing never loads
+   * AdSense for a single tick. While the tab stays on that comparator there is no loader and no
+   * unit; any other page follows the route table as usual.
+   */
+  const landedComparison = useState<string | null>('ads-landed-comparison', () => null)
+  const heldByLanding = computed(() => adsHeldByLanding(landedComparison.value, route.path))
+  const rememberLanding = (url: unknown) => {
+    landedComparison.value = landedComparisonPath(url)
+  }
+
+  /**
    * Whether the AdSense loader script may run on this route at all. Keeping it
    * off the no-ads routes is the only code-side control over auto ads: once the
    * script is on the page, placement is Google's call, not ours.
    */
-  const scriptAllowed = computed(() => Boolean(pubId) && density.value !== 'none')
+  const scriptAllowed = computed(
+    () => Boolean(pubId) && density.value !== 'none' && !heldByLanding.value
+  )
 
   // The calculators' unit falls back to the closing unit's id: the same responsive format, so a
   // dedicated id only buys a separate line in the per-unit report, not a different ad.
@@ -115,6 +131,7 @@ export function useAds() {
     if (!pubId || !slotIdFor(placement)) return false
     if (!viewerShowsAds(adFreeViewer.value)) return false
     if (density.value === 'none') return false
+    if (heldByLanding.value) return false
     // A calculator's one unit is ToolShell's, right after the result and its explainer. The layout
     // close would be a second unit, below "Más herramientas" and "Seguí leyendo", where a visitor
     // who already has the number never scrolls.
@@ -127,5 +144,5 @@ export function useAds() {
     return true
   }
 
-  return { pubId, density, maxSlots, scriptAllowed, slotIdFor, canRender }
+  return { pubId, density, maxSlots, scriptAllowed, slotIdFor, canRender, rememberLanding }
 }

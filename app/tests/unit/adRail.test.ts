@@ -7,6 +7,7 @@ import * as vue from 'vue'
 import { describe, expect, it } from 'vitest'
 import * as ads from '../../utils/ads'
 import * as adFree from '../../utils/adFree'
+import * as landingComparison from '../../utils/landingComparison'
 import { adDensityForPath, maxAdSlots } from '../../utils/ads'
 
 // El riel de escritorio (DESIGN.md → "The Rail Is Not The Column Rule") y la unidad editorial de
@@ -142,9 +143,11 @@ function useAdsAt(
     require: (name: string) => {
       if (name === '~/utils/ads') return ads
       if (name === '~/utils/adFree') return adFree
+      if (name === '~/utils/landingComparison') return landingComparison
       throw new Error(`Unexpected import: ${name}`)
     },
     computed: vue.computed,
+    useState: <T>(_key: string, init: () => T) => vue.ref(init()),
     useAdFreeViewer: () => vue.ref(viewer),
     useRoute: () => ({ path, meta }),
     useRuntimeConfig: () => ({ public: { adsensePubId: 'ca-pub-test', ...config } }),

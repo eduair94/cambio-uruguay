@@ -19,6 +19,7 @@
 <script setup lang="ts">
 import { OG_IMAGE_ALT_FLOOR } from '~/utils/ogCardText'
 import { viewerLoadsAdsense } from '~/utils/adFree'
+import { tabLandingUrl } from '~/utils/landingComparison'
 
 // Site-wide default branded OG image. Pages override via defineOgImageComponent.
 defineOgImageComponent('Cambio')
@@ -69,7 +70,7 @@ useSeoMeta({
 // promises zero third-party requests, and the account and contact flows are
 // worth more finished than monetised. The account meta stays unconditional so
 // site verification still works from any URL.
-const { pubId: adsensePubId, scriptAllowed } = useAds()
+const { pubId: adsensePubId, scriptAllowed, rememberLanding } = useAds()
 if (adsensePubId) {
   // A donor's account (/cuenta/sin-publicidad) gets no loader at all: plugins/ad-free.client.ts
   // settles `viewer` right after hydration, and the loader waits for it (utils/adFree.ts).
@@ -80,6 +81,9 @@ if (adsensePubId) {
   // container. See `adsenseLoaderScripts`.
   const hydrated = ref(false)
   onNuxtReady(() => {
+    // First, in the same callback: a tab that landed on a comparison with a listing picked (the
+    // farm of 23–25/11/2026) holds the loader while it stays there (utils/landingComparison.ts).
+    rememberLanding(tabLandingUrl())
     hydrated.value = true
   })
   useHead(() => ({

@@ -11,6 +11,7 @@ import { normalizeAdPath } from './ads'
 import { CONSENT_STRICT_REGIONS, type ConsentDecision } from './consent'
 import { LOCALE_PREFIX_RE } from './locales'
 import { CLARITY_PRIVATE_QUERY_PARAMS } from './clarityValues'
+import { PRESELECTED_COMPARISONS, landedComparisonPath } from './landingComparison'
 
 export {
   CLARITY_COOKIES,
@@ -97,15 +98,11 @@ export function clarityReferrerAllowed(referrer: unknown): boolean {
 
 /**
  * The comparators that can open with a listing already picked, and the query parameter that picks
- * it. Mirrors CAR_COMPARISON_PATH (./carComparison) and MOTO_COMPARE_PATH (./motos), kept here so
- * the runtime chunk does not carry those modules; a test holds them equal.
+ * it (./landingComparison, shared with the AdSense gate). Mirrors CAR_COMPARISON_PATH
+ * (./carComparison) and MOTO_COMPARE_PATH (./motos), kept apart so the runtime chunk does not carry
+ * those modules; a test holds them equal.
  */
-export const CLARITY_PRESELECTED_COMPARISONS: ReadonlyArray<
-  readonly [path: string, param: string]
-> = Object.freeze([
-  ['/autos-usados-uruguay/comparar', 'autos'],
-  ['/motos-usadas-uruguay/comparar', 'motos'],
-])
+export const CLARITY_PRESELECTED_COMPARISONS = PRESELECTED_COMPARISONS
 
 /**
  * Whether a tab whose FIRST page was `url` may be recorded at all.
@@ -118,17 +115,7 @@ export const CLARITY_PRESELECTED_COMPARISONS: ReadonlyArray<
  * frustration signals about people.
  */
 export function clarityLandingAllowed(url: unknown): boolean {
-  if (typeof url !== 'string' || !url) return true
-  let parsed: URL
-  try {
-    parsed = new URL(url, 'https://cambio-uruguay.com')
-  } catch {
-    return true
-  }
-  const clean = normalizeAdPath(parsed.pathname)
-  return !CLARITY_PRESELECTED_COMPARISONS.some(
-    ([path, param]) => clean === path && (parsed.searchParams.get(param) ?? '').trim() !== ''
-  )
+  return landedComparisonPath(url) === null
 }
 
 export type ClarityStartDecision = 'skip' | 'wait' | 'load'
