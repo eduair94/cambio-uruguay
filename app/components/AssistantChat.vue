@@ -99,9 +99,9 @@
               <AssistantMark :size="20" />
               Asistente
             </span>
-            <span class="chat-status">
+            <span class="chat-status" :title="connectionLabel">
               <span class="chat-status-dot" aria-hidden="true" />
-              {{ connectionLabel }}
+              <span class="chat-status-text">{{ connectionLabel }}</span>
             </span>
           </div>
           <VSpacer />
@@ -875,10 +875,14 @@ onMounted(async () => {
   color: rgba(var(--v-theme-on-surface), 0.66);
 }
 .chat-status-dot {
+  flex-shrink: 0;
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: rgb(var(--v-theme-success));
+}
+.chat-status-text {
+  min-width: 0;
 }
 
 .welcome {
@@ -1172,6 +1176,38 @@ onMounted(async () => {
 }
 
 @media (max-width: 599.98px) {
+  /* One row on a phone. Wrapping, the bar took three (the title, the status broken over two lines,
+     then the buttons): ~130px of a 700px screen, before the keyboard takes half of the rest. The
+     status keeps one line under the title, cut with an ellipsis; the whole of it is its tooltip. */
+  .chat-bar {
+    flex-wrap: nowrap;
+    gap: 4px;
+  }
+  .chat-bar > .v-btn {
+    flex-shrink: 0;
+  }
+  .chat-heading {
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+    gap: 0;
+  }
+  .chat-status {
+    max-width: 100%;
+    gap: 6px;
+    font-size: 0.75rem;
+  }
+  .chat-status-text {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .is-fullscreen .chat-bar,
+  .is-fullscreen .chat-bar.docked {
+    padding-top: calc(4px + env(safe-area-inset-top, 0px));
+    padding-bottom: 4px;
+  }
   .bubble {
     max-width: 92%;
   }
