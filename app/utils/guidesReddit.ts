@@ -3506,7 +3506,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'jubilacion-y-afap-como-funciona-uruguay',
-    title: 'Jubilación y AFAP en Uruguay: cómo funciona',
+    title: 'Jubilación y AFAP: no a todos les entra',
     description:
       'Si empezaste a trabajar antes de diciembre de 2023, ganás por debajo del tope A y nunca hiciste la opción del art. 8, hoy no te entra nada a una AFAP.',
     tag: 'JUBILACIÓN',

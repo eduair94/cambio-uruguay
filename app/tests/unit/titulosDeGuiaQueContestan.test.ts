@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { getGuide } from '../../utils/guides'
 
 /**
- * Los cinco títulos de guía que NOMBRABAN el tema mientras su propia descripción ya traía la
- * respuesta.
+ * Los títulos de guía que NOMBRABAN el tema mientras su propia descripción ya traía la respuesta.
+ * Cinco el 2026-11-20, tres más el 2026-11-25 (su nota está junto a sus filas).
  *
  * POR QUÉ FALTABA ESTE ARREGLO, Y POR QUÉ NO ERA UN DESCUIDO. Las once tandas de snippet de
  * octubre se eligieron por PRESUPUESTO: `guideSnippetBudget.test.ts` lista las guías pasadas de 60
@@ -50,6 +50,9 @@ const textoDe = (slug: string) => {
 /**
  * Por guía: el título que se publica hoy, el que nombraba el tema y no contestaba, y las marcas
  * que la respuesta del título tiene que seguir teniendo en el cuerpo.
+ *
+ * SÓLO PUEDE CRECER. Sacar una fila de acá es devolverle a una guía el título que anunciaba en vez
+ * de contestar, y además apaga el control que ata su respuesta al cuerpo.
  */
 const TITULOS = [
   {
@@ -94,9 +97,78 @@ const TITULOS = [
     respaldo: [/trámite gratuito/i, /comisión de administración/i],
     fuente: 'https://www.rafap.com.uy/mvdcms/Contenidos/Traspaso-cambio-de-AFAP--uc1022',
   },
+  // ---- Segunda tanda, 2026-11-25 ----
+  //
+  // Las TRES guías que quedaban con el defecto de arriba y la ruta libre de toda ventana de
+  // medición abierta (`npm run seo_debt`: 13 libres de 32 en los quince pozos, y ninguna de esas
+  // trece es una guía; estas tres no salen de un pozo porque, igual que las cinco de arriba,
+  // ningún presupuesto puede verlas: los tres títulos entraban en los 60 caracteres).
+  //
+  // CÓMO SE ENCONTRARON. Mismo método que la primera tanda, mecanizado: de las 70 guías con la
+  // ruta libre hoy, las que devuelven la consulta («Cómo…», «¿…?») o cierran con la etiqueta del
+  // tema («… en Uruguay», «… cómo funciona») Y además tienen tarjeta de Fuentes, porque sin texto
+  // primario que citar el título no se puede mover sin inventarle respaldo a una afirmación
+  // nueva. Dieron ocho; cuatro no tienen `sources` (`plazo-fijo-en-uruguay-conviene`,
+  // `bonos-y-renta-fija-uruguay`, `conviene-ahorrar-en-dolares-uruguay` y
+  // `facturar-como-freelancer-uruguay`, las cuatro evergreen de julio) y quedan pendientes de que
+  // alguien las documente; la quinta, `costos-de-tener-auto-uruguay`, ya contesta
+  // («…: depreciación») y era un falso positivo de la heurística.
+  //
+  // SÓLO EL TÍTULO. Las tres descripciones ya abren por la respuesta y entran en 155, así que no
+  // se tocan: es la misma decisión que `titulos-de-las-guias-respuesta-primero-5` (9/10). Y
+  // ninguna afirmación es nueva: las tres salen del cuerpo de su propia guía, que es la regla que
+  // la nota de arriba dejó escrita.
+  {
+    slug: 'como-saber-si-tengo-deudas-uruguay',
+    // El título devolvía la consulta entera y la página contesta que la respuesta es una lista y
+    // no un lugar. Los dos registros que reúnen a muchos acreedores van al título —nombre propio
+    // adelante, que es la regla medida del sitio— y el «no hay un registro único» se queda en la
+    // descripción, donde ya estaba: repetirlo en los dos renglones gastaría el del título en algo
+    // que el SERP ya publica dos líneas más abajo.
+    titulo: 'Deudas: Central de Riesgos y Clearing',
+    nombrabaElTema: 'Cómo saber si tengo deudas en Uruguay',
+    respaldo: [
+      /Ningún organismo junta todas las deudas de una persona/i,
+      /Central de Riesgos del Banco Central/i,
+      /Clearing de Informes/i,
+    ],
+    fuente: 'https://subsitio.bcu.gub.uy/central-de-riesgos/',
+  },
+  {
+    slug: 'como-pedir-un-aumento-de-sueldo-uruguay',
+    // «Aumento de sueldo» se queda al frente: es la consulta de la guía. Lo que cambia es el
+    // resto del renglón, que repetía «cómo pedir» —o sea el verbo que el lector ya escribió— en
+    // lugar de la respuesta que la guía da en su primera sección: antes de pedir hay un piso que
+    // no se negocia con el jefe, se consulta, y por debajo de él la diferencia se reclama.
+    titulo: 'Aumento de sueldo: primero mirá el laudo',
+    nombrabaElTema: 'Cómo pedir un aumento de sueldo en Uruguay',
+    respaldo: [
+      /fijar el monto mínimo de los salarios por categoría laboral/i,
+      /por debajo del laudo de tu categoría/i,
+      /Consejos de Salarios/,
+    ],
+    fuente: 'https://www.impo.com.uy/bases/leyes/10449-1943/5',
+  },
+  {
+    slug: 'jubilacion-y-afap-como-funciona-uruguay',
+    // «Jubilación y AFAP» se queda; «cómo funciona» era la etiqueta que anunciaba el índice. La
+    // respuesta que publica ahora es la del cuerpo y la del FAQ que encabeza la página («¿Me está
+    // entrando plata a una AFAP?»), y es deliberadamente SIN cantidad: el cuerpo dice «el caso de
+    // la enorme mayoría» como aside y la guía no cita ninguna estadística de cuántos son, así que
+    // un título con «la mayoría» publicaría una cifra sin fuente. La condición entera (antes de
+    // diciembre de 2023, bajo el tope A y sin la opción del art. 8) la completa la descripción.
+    titulo: 'Jubilación y AFAP: no a todos les entra',
+    nombrabaElTema: 'Jubilación y AFAP en Uruguay: cómo funciona',
+    respaldo: [
+      /no significa que a todo el mundo le esté entrando plata a una AFAP/i,
+      /aplicables exclusivamente/i,
+      /tope A/,
+    ],
+    fuente: 'https://www.impo.com.uy/bases/leyes/20130-2023/22',
+  },
 ] as const
 
-describe('los cinco títulos de guía que pasaron a contestar', () => {
+describe('los títulos de guía que pasaron a contestar', () => {
   it.each(TITULOS.map(t => [t.slug, t] as const))(
     '%s publica el título nuevo y no vuelve al que nombraba el tema',
     (_slug, caso) => {
