@@ -30,6 +30,7 @@ import {
   type ClarityQuery,
   clarityFamily,
   clarityKeepRecording,
+  clarityLandingAllowed,
   clarityLocale,
   clarityQueryRestarts,
   clarityReferrerAllowed,
@@ -135,6 +136,20 @@ async function strictRegion(): Promise<boolean | null> {
   }
 }
 
+/**
+ * The URL this document was loaded at, not the current one: the runtime starts after hydration
+ * and an idle moment, when the visitor may already have moved on inside the app.
+ */
+function landingUrl(): string {
+  try {
+    const entry = performance.getEntriesByType('navigation')[0]
+    if (entry && typeof entry.name === 'string' && entry.name) return entry.name
+  } catch {
+    // No Navigation Timing: the current address is the best guess.
+  }
+  return window.location.href
+}
+
 export function startClarityRuntime(options: ClarityRuntimeOptions): void {
   if (typeof window === 'undefined') return
   const { projectId, router, idle } = options
@@ -146,8 +161,9 @@ export function startClarityRuntime(options: ClarityRuntimeOptions): void {
     saveData: signals.connection?.saveData === true,
   }
   let cookie = storedDecision()
-  // The same for every page of this tab (see clarityReferrerAllowed).
+  // The same for every page of this tab (see clarityReferrerAllowed and clarityLandingAllowed).
   const referrerAllowed = clarityReferrerAllowed(document.referrer)
+  const landingAllowed = clarityLandingAllowed(landingUrl())
   let seed: number | null = null
   let region: Promise<boolean | null> | null = null
   let queryChanges = 0
@@ -171,6 +187,7 @@ export function startClarityRuntime(options: ClarityRuntimeOptions): void {
   /** The route rules: the excluded pages, the private query parameters, the filter cap. */
   const routeAllowed = (path: string, query: ClarityQuery) =>
     referrerAllowed &&
+    landingAllowed &&
     clarityRouteAllowed(path, query) &&
     clarityKeepRecording({ path, queryChanges })
 

@@ -1,13 +1,14 @@
 <template>
-  <!-- nofollow: cada tarjeta enlaza a SU comparación (`?motos=<key>`, noindex), una URL por aviso
-       que no le sirve a ningún buscador. La misma regla que el botón de autos. -->
+  <!-- Con un aviso, un botón y no un enlace: la misma regla que el de autos
+       (components/cars/CompareLink.vue). Una URL `?motos=<key>` por aviso y por idioma es lo que
+       recorre la granja que ignora robots.txt y `nofollow`. -->
   <VBtn
-    :to="localePath(motoCompareLocation(motoKey))"
-    :rel="motoKey ? 'nofollow' : undefined"
+    :to="motoKey ? undefined : localePath(motoCompareLocation())"
     variant="outlined"
     size="small"
     prepend-icon="mdi-compare-horizontal"
     class="moto-compare-link"
+    @click="openOwnComparison"
   >
     {{ motoKey ? 'Comparar esta moto' : 'Comparar motos' }}
   </VBtn>
@@ -16,8 +17,13 @@
 <script setup lang="ts">
 import { motoCompareLocation } from '~/utils/motos'
 
-defineProps<{ motoKey?: string }>()
+const props = defineProps<{ motoKey?: string }>()
 const localePath = useLocalePath()
+
+function openOwnComparison() {
+  if (!props.motoKey) return
+  return navigateTo(localePath(motoCompareLocation(props.motoKey)))
+}
 </script>
 
 <style scoped>

@@ -95,6 +95,42 @@ export function clarityReferrerAllowed(referrer: unknown): boolean {
   return !queryNames(referrer).some(name => PRIVATE_PARAMS.has(name.toLowerCase()))
 }
 
+/**
+ * The comparators that can open with a listing already picked, and the query parameter that picks
+ * it. Mirrors CAR_COMPARISON_PATH (./carComparison) and MOTO_COMPARE_PATH (./motos), kept here so
+ * the runtime chunk does not carry those modules; a test holds them equal.
+ */
+export const CLARITY_PRESELECTED_COMPARISONS: ReadonlyArray<
+  readonly [path: string, param: string]
+> = Object.freeze([
+  ['/autos-usados-uruguay/comparar', 'autos'],
+  ['/motos-usadas-uruguay/comparar', 'motos'],
+])
+
+/**
+ * Whether a tab whose FIRST page was `url` may be recorded at all.
+ *
+ * A person reaches a comparison with a listing already picked by tapping "Comparar" on a card,
+ * inside the site: the tab started on another page. A tab that STARTS there is a shared link —
+ * rare — or the farm that walked one such URL per listing and per locale (24–25/11/2026: 137 of
+ * the last 250 recorded sessions, one page, zero taps, each after solving Cloudflare's challenge).
+ * Those recordings are what made the bounce look like a site problem; leaving them out keeps the
+ * frustration signals about people.
+ */
+export function clarityLandingAllowed(url: unknown): boolean {
+  if (typeof url !== 'string' || !url) return true
+  let parsed: URL
+  try {
+    parsed = new URL(url, 'https://cambio-uruguay.com')
+  } catch {
+    return true
+  }
+  const clean = normalizeAdPath(parsed.pathname)
+  return !CLARITY_PRESELECTED_COMPARISONS.some(
+    ([path, param]) => clean === path && (parsed.searchParams.get(param) ?? '').trim() !== ''
+  )
+}
+
 export type ClarityStartDecision = 'skip' | 'wait' | 'load'
 
 export interface ClarityStartInput {

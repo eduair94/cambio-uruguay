@@ -9,8 +9,17 @@ import {
   BPS_NETWORKS_INTERIOR,
   BPS_NETWORKS_MONTEVIDEO,
   BPS_REQUIRED_DOCUMENTS,
+  cobroSmsHref,
   cobroSmsText,
 } from '../../utils/bpsPaymentDates'
+
+describe('cobroSmsHref abre el mensaje al 1997 ya escrito', () => {
+  it('con la cédula completa lleva COBRO y los dígitos; sin ella, COBRO y un espacio', () => {
+    expect(cobroSmsHref('1.234.567-8')).toBe('sms:1997?&body=COBRO%2012345678')
+    expect(cobroSmsHref('')).toBe('sms:1997?&body=COBRO%20')
+    expect(cobroSmsHref('12')).toBe('sms:1997?&body=COBRO%20')
+  })
+})
 
 describe('cobroSmsText arma el mensaje que espera el 1997', () => {
   it('acepta la cédula puntuada, como está impresa', () => {
@@ -47,6 +56,16 @@ describe('el catálogo de cobro del BPS', () => {
       expect(channel.how.length).toBeGreaterThan(20)
       expect(channel.availability.length).toBeGreaterThan(10)
     }
+  })
+
+  it('el SMS abre el mensaje al 1997 con COBRO y la web va al BPS; el teléfono queda en texto', () => {
+    const byId = Object.fromEntries(BPS_CONSULT_CHANNELS.map(c => [c.id, c]))
+    expect(byId.sms?.href).toBe('sms:1997?&body=COBRO%20')
+    expect(byId.sms?.href).toBe(cobroSmsHref(''))
+    expect(byId.web?.href).toMatch(/^https:\/\/www\.bps\.gub\.uy\//)
+    expect(BPS_COBRO_SOURCES.map(s => s.url)).toContain(byId.web?.href)
+    expect(byId.telefono?.href).toBeUndefined()
+    expect(byId.presencial?.href).toBeUndefined()
   })
 
   it('nombra los cuatro instrumentos de dinero electrónico y las redes de cobro', () => {

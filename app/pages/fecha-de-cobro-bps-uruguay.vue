@@ -50,6 +50,18 @@
             <template v-if="smsText">{{ smsText }}</template>
             <template v-else>Escribí tu número de cédula.</template>
           </p>
+          <!-- El texto armado no servía de nada en el celular: había que copiarlo y abrir los
+               mensajes a mano (Clarity, 24/11/2026: toques sobre «SMS al 1997»). -->
+          <VBtn
+            v-if="smsText"
+            color="primary"
+            variant="flat"
+            prepend-icon="mdi-message-text-outline"
+            class="mb-3"
+            @click="openSms"
+          >
+            Abrir el mensaje
+          </VBtn>
           <p class="mb-0 text-medium-emphasis text-body-2">
             El BPS contesta con tu fecha y tu lugar de cobro. El mismo dato está en el servicio en
             línea «Consultar fecha y lugar de cobro de mis prestaciones».
@@ -71,7 +83,20 @@
         </thead>
         <tbody>
           <tr v-for="channel in BPS_CONSULT_CHANNELS" :key="channel.id">
-            <td data-label="Vía" class="font-weight-medium">{{ channel.name }}</td>
+            <td data-label="Vía" class="font-weight-medium">
+              <a
+                v-if="channel.href"
+                :href="channel.href"
+                class="cu-link"
+                v-bind="
+                  channel.href.startsWith('http')
+                    ? { target: '_blank', rel: 'noopener noreferrer' }
+                    : {}
+                "
+                >{{ channel.name }}</a
+              >
+              <template v-else>{{ channel.name }}</template>
+            </td>
             <td data-label="Cómo">{{ channel.how }}</td>
             <td data-label="Cuándo">{{ channel.availability }}</td>
           </tr>
@@ -177,6 +202,7 @@ import {
   BPS_NETWORKS_INTERIOR,
   BPS_NETWORKS_MONTEVIDEO,
   BPS_REQUIRED_DOCUMENTS,
+  cobroSmsHref,
   cobroSmsText,
 } from '~/utils/bpsPaymentDates'
 
@@ -184,6 +210,10 @@ const localePath = useLocalePath()
 
 const cedula = ref('')
 const smsText = computed(() => cobroSmsText(cedula.value))
+/** Opens the phone's messages with the text ready; the cédula never lands in an attribute. */
+function openSms() {
+  window.location.href = cobroSmsHref(cedula.value)
+}
 
 /** El mecanismo, que es lo único de esta página que sigue siendo cierto el mes que viene. */
 const RULES = [
