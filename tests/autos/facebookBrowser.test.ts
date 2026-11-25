@@ -84,6 +84,8 @@ describe("readFacebookVehicles", () => {
     expect(read.note).toContain("dos listas seguidas");
     expect(itemIds).toHaveBeenCalled();
     expect(read.pages).toBe(4);
+    // The page came back without the listing: recorded, so the queue waits before trying it again.
+    expect(read.missed).toEqual(["1000000"]);
   });
 
   it("counts the feed's first page with its suggested items when telling the throttle", async () => {

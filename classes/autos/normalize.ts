@@ -149,7 +149,7 @@ function affirmed(text: string, source: string): boolean {
 const DESCRIPTION_FLAGS: ReadonlyArray<[CarTextFlag, string]> = [
   // 2026-09-17: the largest gaps of the first live run were damaged cars this used to miss —
   // "SIN AIRBAGS POR SINIESTRO. El choque fue de atras", "NO tiene los airbags", "puertas para repararla".
-  ["damaged", "\\b(chocad[oa]s?|choques?|chocamos|siniestros?|accidentad[oa]s?|a reparar\\w*|para reparar\\w*|a arreglar|para repuestos?|por partes|no arranca|siniestrad[oa]s?|incendiad[oa]s?|inundad[oa]s?|para desarme|(?:motor|caja) (?:fundid[oa]|rot[oa]|trancad[oa]|a reparar)|sin (?:los |el |las )?airbags?|no tiene (?:los |el |las )?airbags?|airbags? (?:reventad|activad|disparad|explotad)[oa]s?)\\b"],
+  ["damaged", "\\b(chocad[oa]s?|choques?|chocamos|siniestros?|accidentad[oa]s?|a reparar\\w*|para reparar\\w*|a arreglar|para repuestos?|por partes|no arranca|siniestrad[oa]s?|incendiad[oa]s?|inundad[oa]s?|para desarme|(?:motor|caja) (?:fundid[oa]|rot[oa]|trancad[oa]|a reparar)|sin (?:los |el |las )?airbags?|no tiene (?:los |el |las )?airbags?|airbags? (?:reventad|activad|disparad|explotad)[oa]s?|airbags? rot[oa]s?|faltan? (?:el |los |las |los dos |un |una )?airbags?|(?:rompio|rompieron|saltaron) (?:el |los |las |un |los dos )?airbags?)\\b"],
   ["recovered", "\\b(recuperad[oa]s? (?:de|por|del) (?:robo|hurto|seguro|aseguradora)|de aseguradora|ex seguro)\\b"],
   // "Matrículas entregadas": the plates were surrendered, the car cannot circulate. "Sin chapa" is NOT
   // here on purpose: "sin chapa ni pintura" means original bodywork.

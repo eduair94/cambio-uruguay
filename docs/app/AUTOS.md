@@ -81,8 +81,17 @@ sólo para candidatas a oportunidad.
   seguidas con la primera página llena que no crece (el freno de Facebook) cortan las búsquedas, no
   las fichas. Toma el candado del perfil (`classes/facebook/lock.ts`: 30 min de espera la diaria,
   10 la horaria; si no, Facebook queda fuera de esa corrida). Fichas: hasta 120 por diaria y 15 por horaria,
-  6 s entre una y otra, primero las que el análisis pidió (`uy-cars-fb-wanted`) y después las que no
-  dicen año o km. Un login o checkpoint corta Facebook por el resto de la corrida.
+  6 s entre una y otra, primero las que el análisis pidió (`uy-cars-fb-wanted`), después las **nunca
+  leídas** (antes las que no dicen año o km en el título) y recién al final las re-lecturas de fichas
+  leídas hace más de 3 días, la más vieja primero. Entre las nunca leídas **se turnan la más nueva y
+  la más vieja**: hasta el 25/11/2026 era "la más nueva primero" y cada ficha leída volvía cada 3
+  días, y con ~400 fichas por día contra 150–880 autos nuevos por día el atraso no se leía nunca — en
+  los 3 días medidos, 1.257 fichas y ninguna de una tarjeta de más de 10 días; 9.980 de 20.614 autos
+  de Marketplace publicados sin descripción, o sea sin km ni riesgo declarado
+  (`fb-963318253481029`, visto a diario desde el 30/9: "16 mil km … Airbag rotos"). Una ficha que
+  se abrió y no trajo el aviso guarda `itemMissedAt` y espera 3 días como una leída, para que no
+  encabece el turno de las viejas cada hora. Un login o checkpoint corta Facebook por el resto de la
+  corrida.
 - **Listas profundas (desde 2026-10-11, sólo la diaria):** el feed por más nuevos nunca llega a un
   auto publicado hace un mes. Entre el feed y las marcas, la diaria lee 11 listas más, hasta 40
   rondas cada una (`FB_VEHICLE_LISTS`; reloj de Facebook de 45 a 75 min). Medido antes, 30 rondas
@@ -522,6 +531,12 @@ Reglas, todas en `classes/autos/risk.ts` y `riskAnalyze.ts`:
   es una funda. Sobre las 495 descripciones con prenda, granizo o multa: 89 riesgos falsos menos, 2
   multas reales más. Una prenda cuenta sólo si el auto la TIENE ("prendado", "tiene prenda", "prenda
   vigente").
+- **Un airbag roto o faltante es un choque dicho con otras palabras (2026-11-25).** "Sin airbags" ya
+  era siniestro; "Airbag rotos", "le faltan los dos airbags", "rompió airbag" y "saltaron airbags" no
+  eran nada. Medido sobre todas las descripciones guardadas: 12 coincidencias nuevas, las 12
+  verdaderas, y la única negada ("no rompió los airbags") la descarta la regla de siempre. Lo que se
+  midió y NO entró: "para arreglar" (13 casos, ~5 verdaderos: "sin temas para arreglar", "olvídese
+  de ponerle plata para arreglar cosas, ya está todo hecho") y "armar el frente" (un solo aviso).
 
 ## Las fotos, y qué se hace con la IA
 

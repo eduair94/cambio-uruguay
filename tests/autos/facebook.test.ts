@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { describe, expect, it } from "vitest";
 import { buildCarDictionary } from "../../classes/autos/catalog/dictionary";
+import { mergeFbCards } from "../../classes/autos/facebookRun";
 import {
   fbCardToCar, fbCardsFromText, fbDepartment, fbDetailQueue, fbItemFromTexts, resolveFbCurrency,
 } from "../../classes/autos/sources/facebook";
@@ -106,6 +107,52 @@ describe("fbDetailQueue", () => {
       },
     ];
     expect(fbDetailQueue(cards, DICT, { now: NOW, max: 3, wanted: new Set(["5"]), maxYear: 2027 })).toEqual(["5", "2", "1"]);
-    expect(fbDetailQueue(cards, DICT, { now: NOW, max: 10, wanted: new Set(), maxYear: 2027 })).toEqual(["2", "1", "5"]);
+    // Newest and oldest unread take turns: "5" (a day older) goes second.
+    expect(fbDetailQueue(cards, DICT, { now: NOW, max: 10, wanted: new Set(), maxYear: 2027 })).toEqual(["2", "5", "1"]);
+  });
+
+  // Reported 2026-11-25: fb-963318253481029, seen every day since 2026-09-30, had never had its page
+  // opened — its km and its "Airbag rotos" were in the description. ~400 pages a day against 150–880
+  // new cars a day, newest first, plus a re-read of every page every 3 days: in the 3 days measured,
+  // 1.257 pages read and none of a card older than 10 days; 0 of 3.634 live cards older than August.
+  it("never lets new cards and re-reads starve an old card that was never read", () => {
+    const base = fbCardsFromText(fixture("fb-feed.jsonl"))[0]!;
+    const hour = 3_600_000;
+    const at = (hoursAgo: number) => new Date(NOW.getTime() - hoursAgo * hour).toISOString();
+    const read = (id: string, hoursAgo: number) => ({ id, title: null, description: "", amount: 1, isLive: true, isSold: false, readAt: at(hoursAgo) });
+    const fresh = Array.from({ length: 20 }, (_, i) => ({
+      ...base, id: `n${i}`, title: "Chevrolet Aveo", createdAt: at(i + 1), lastSeen: NOW.toISOString(), item: null,
+    }));
+    const reread = Array.from({ length: 20 }, (_, i) => ({
+      ...base, id: `r${i}`, title: "Chevrolet Aveo", createdAt: at(i + 0.5), lastSeen: NOW.toISOString(), item: read(`r${i}`, 24 * 5 + i),
+    }));
+    const old = { ...base, id: "old", title: "Chevrolet Aveo 2025", createdAt: at(24 * 58), lastSeen: NOW.toISOString(), item: null };
+    const queue = fbDetailQueue([...reread, ...fresh, old], DICT, { now: NOW, max: 15, wanted: new Set(), maxYear: 2027 });
+    expect(queue).toHaveLength(15);
+    expect(queue.slice(0, 2)).toEqual(["n0", "old"]);
+    expect(queue.filter(id => id.startsWith("r"))).toEqual([]);
+    // Only once every unread card is in, the oldest reads come back.
+    const roomy = fbDetailQueue([...reread, ...fresh, old], DICT, { now: NOW, max: 24, wanted: new Set(), maxYear: 2027 });
+    expect(roomy.slice(21)).toEqual(["r19", "r18", "r17"]);
+  });
+
+  // A page that did not parse leaves a trace, or the same card heads the oldest-first turn every hour.
+  it("waits 3 days after a page that could not be read", () => {
+    const base = fbCardsFromText(fixture("fb-feed.jsonl"))[0]!;
+    const card = (id: string, itemMissedAt: string | null) => ({
+      ...base, id, title: "Chevrolet Aveo", createdAt: "2026-09-01T00:00:00Z", lastSeen: NOW.toISOString(), item: null, itemMissedAt,
+    });
+    const cards = [card("missed-yesterday", "2026-09-16T12:00:00Z"), card("missed-last-week", "2026-09-10T12:00:00Z"), card("never", null)];
+    expect(fbDetailQueue(cards, DICT, { now: NOW, max: 10, wanted: new Set(), maxYear: 2027 }).sort()).toEqual(["missed-last-week", "never"]);
+  });
+});
+
+describe("mergeFbCards", () => {
+  it("keeps the trace of a page that could not be read, and a read page clears it", () => {
+    const base = fbCardsFromText(fixture("fb-feed.jsonl"))[0]!;
+    const stored = [{ ...base, lastSeen: "2026-09-16T00:00:00Z", item: null, itemMissedAt: "2026-09-16T00:00:00Z" }];
+    expect(mergeFbCards(stored, [base], [], NOW.toISOString())[0]).toMatchObject({ lastSeen: NOW.toISOString(), itemMissedAt: "2026-09-16T00:00:00Z" });
+    const item = { id: base.id, title: null, description: "x", amount: 1, isLive: true, isSold: false, readAt: NOW.toISOString() };
+    expect(mergeFbCards(stored, [base], [item], NOW.toISOString())[0]).toMatchObject({ item, itemMissedAt: null });
   });
 });

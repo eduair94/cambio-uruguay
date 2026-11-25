@@ -216,25 +216,56 @@ export function fbCardToCar(card: FbCard, item: FbItem | null, context: FbContex
 
 const DAY = 86_400_000;
 
-/** Which item pages to open this run: wanted candidates, then cards still missing year or km, newest first. */
+/** A card as stored: `itemMissedAt` is the last time its page was opened and did not carry the listing. */
+export type FbStoredCard = FbCard & { lastSeen: string; item: FbItem | null; itemMissedAt?: string | null };
+
+/**
+ * Which item pages to open this run, in four groups: the candidates the analysis asked for; cards
+ * never read whose title lacks the year or the km; the other cards never read; and only then pages
+ * read more than 3 days ago, the oldest read first. Inside the two unread groups the newest and the
+ * oldest card take turns.
+ *
+ * Measured 2026-11-25: ~400 pages a day against 150–880 new cars a day. Newest first, with every
+ * read page coming back each 3 days, no card older than 10 days had been opened in the last 3 days
+ * and 9.980 of 20.614 published Marketplace cars had no description — so no km and no declared
+ * crash, like fb-963318253481029 ("16 mil km ... Airbag rotos"), seen daily for 8 weeks. Taking turns
+ * keeps the new cars quick and drains the backlog; a page that could not be read waits 3 days like a
+ * read one, so a card whose page never parses cannot head the oldest-first turn every hour.
+ */
 export function fbDetailQueue(
-  cards: readonly (FbCard & { lastSeen: string; item: FbItem | null })[],
+  cards: readonly FbStoredCard[],
   dictionary: CarDictionary,
   options: { now: Date; max: number; wanted: ReadonlySet<string>; maxYear: number },
 ): string[] {
   const now = options.now.getTime();
-  const ranked: Array<{ id: string; rank: number; created: number }> = [];
+  const recent = (at: string | null | undefined): boolean => !!at && Date.parse(at) >= now - 3 * DAY;
+  type Entry = { id: string; group: number; created: number; readAt: number };
+  const entries: Entry[] = [];
   for (const card of cards) {
     if (!(Date.parse(card.lastSeen) >= now - 4 * DAY) || card.isSold) continue;
-    if (card.item && Date.parse(card.item.readAt) >= now - 3 * DAY) continue;
+    if (recent(card.item?.readAt) || recent(card.itemMissedAt)) continue;
     const match = matchCar(card.title, dictionary, {}, options.maxYear);
     if (!match) continue;
-    const rank = options.wanted.has(card.id) ? 0 : match.year === null || match.km === null ? 1 : 2;
+    const group = options.wanted.has(card.id) ? 0 : card.item ? 3 : match.year === null || match.km === null ? 1 : 2;
     const created = Date.parse(card.createdAt ?? "");
-    ranked.push({ id: card.id, rank, created: Number.isFinite(created) ? created : 0 });
+    entries.push({ id: card.id, group, created: Number.isFinite(created) ? created : 0, readAt: card.item ? Date.parse(card.item.readAt) || 0 : 0 });
   }
-  return ranked
-    .sort((a, b) => a.rank - b.rank || b.created - a.created || a.id.localeCompare(b.id))
-    .slice(0, Math.max(0, options.max))
-    .map(item => item.id);
+  const byId = (a: Entry, b: Entry): number => a.id.localeCompare(b.id);
+  const wanted = entries.filter(entry => entry.group === 0).sort((a, b) => b.created - a.created || byId(a, b));
+  const unread = entries.filter(entry => entry.group === 1 || entry.group === 2);
+  const newest = [...unread].sort((a, b) => a.group - b.group || b.created - a.created || byId(a, b));
+  const oldest = [...unread].sort((a, b) => a.group - b.group || a.created - b.created || byId(a, b));
+  const turns: Entry[] = [];
+  const taken = new Set<string>();
+  const lanes = [{ list: newest, next: 0 }, { list: oldest, next: 0 }];
+  for (let turn = 0; turns.length < unread.length; turn++) {
+    const lane = lanes[turn % 2]!;
+    while (lane.next < lane.list.length && taken.has(lane.list[lane.next]!.id)) lane.next++;
+    const entry = lane.list[lane.next];
+    if (!entry) continue;
+    taken.add(entry.id);
+    turns.push(entry);
+  }
+  const reread = entries.filter(entry => entry.group === 3).sort((a, b) => a.readAt - b.readAt || byId(a, b));
+  return [...wanted, ...turns, ...reread].slice(0, Math.max(0, options.max)).map(entry => entry.id);
 }

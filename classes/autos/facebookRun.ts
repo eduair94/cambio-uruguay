@@ -1,9 +1,9 @@
 // One Facebook pass of the used-car job: read cards (and a capped number of item pages), store
 // them privately, then turn every card of the last 4 days that names a dated car into a listing.
 import type { CarDictionary } from "./catalog/dictionary";
-import { fbCardToCar, fbDetailQueue, type FbCard, type FbItem } from "./sources/facebook";
+import { fbCardToCar, fbDetailQueue, type FbCard, type FbItem, type FbStoredCard } from "./sources/facebook";
 import { FB_MODEL_LISTS, FB_MOTO_QUERIES, FB_VEHICLE_LISTS, facebookSessionOk, readFacebookVehicles } from "./sources/facebookBrowser";
-import { loadFbCards, loadFbWanted, saveFbItems, upsertFbCards } from "./store";
+import { loadFbCards, loadFbWanted, saveFbItemMisses, saveFbItems, upsertFbCards } from "./store";
 import type { CarSourceResult } from "./types";
 
 const DAY = 86_400_000;
@@ -35,15 +35,16 @@ export const FB_BUDGET = {
   itemGapMs: 6_000,
 } as const;
 
-type StoredCard = FbCard & { lastSeen: string; item: FbItem | null };
-
 /** Cards read now, merged over what was stored (dry runs keep everything in memory). */
-export function mergeFbCards(stored: readonly StoredCard[], cards: readonly FbCard[], items: readonly FbItem[], observedAt: string): StoredCard[] {
-  const merged = new Map<string, StoredCard>(stored.map(card => [card.id, card]));
-  for (const card of cards) merged.set(card.id, { ...card, lastSeen: observedAt, item: merged.get(card.id)?.item ?? null });
+export function mergeFbCards(stored: readonly FbStoredCard[], cards: readonly FbCard[], items: readonly FbItem[], observedAt: string): FbStoredCard[] {
+  const merged = new Map<string, FbStoredCard>(stored.map(card => [card.id, card]));
+  for (const card of cards) {
+    const before = merged.get(card.id);
+    merged.set(card.id, { ...card, lastSeen: observedAt, item: before?.item ?? null, itemMissedAt: before?.itemMissedAt ?? null });
+  }
   for (const item of items) {
     const card = merged.get(item.id);
-    if (card) merged.set(item.id, { ...card, item });
+    if (card) merged.set(item.id, { ...card, item, itemMissedAt: null });
   }
   return [...merged.values()];
 }
@@ -99,6 +100,7 @@ export async function runFacebook(options: {
   if (!options.dryRun) {
     await upsertFbCards(read.cards, startedAt);
     await saveFbItems(read.items);
+    await saveFbItemMisses(read.missed, startedAt);
   }
   const cards = options.dryRun ? mergeFbCards([], read.cards, read.items, startedAt) : await loadFbCards(since);
   for (const card of cards) {

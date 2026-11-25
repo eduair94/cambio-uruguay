@@ -51,7 +51,10 @@ export const RISK_RULES: readonly RiskRule[] = [
   {
     category: "siniestro", severity: "alta",
     // "Anti granizo" is a cover the seller includes, not hail damage.
-    source: "\\b(chocad[oa]s?|choques?|chocamos|siniestros?|siniestrad[oa]s?|accidentad[oa]s?|(?<!anti )granizo|inundad[oa]s?|incendiad[oa]s?|volcad[oa]s?|sin (?:los |el |las )?airbags?|no tiene (?:los |el |las )?airbags?|airbags? (?:reventad|activad|disparad|explotad)[oa]s?)\\b",
+    // Broken or missing airbags are a crash in other words (measured 2026-11-25: 8 of 8 "airbag(s)
+    // roto(s)" and 5 of 5 "le falta(n) el/los airbag(s)" in the stored descriptions); "no le falta
+    // airbag" stays negated.
+    source: "\\b(chocad[oa]s?|choques?|chocamos|siniestros?|siniestrad[oa]s?|accidentad[oa]s?|(?<!anti )granizo|inundad[oa]s?|incendiad[oa]s?|volcad[oa]s?|sin (?:los |el |las )?airbags?|no tiene (?:los |el |las )?airbags?|airbags? (?:reventad|activad|disparad|explotad)[oa]s?|airbags? rot[oa]s?|faltan? (?:el |los |las |los dos |un |una )?airbags?|(?:rompio|rompieron|saltaron) (?:el |los |las |un |los dos )?airbags?)\\b",
   },
   {
     category: "recupero", severity: "alta",
