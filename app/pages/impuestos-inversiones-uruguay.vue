@@ -880,6 +880,13 @@
       una tasa: cualquier número que veas por ahí es una interpretación.
     </VAlert>
 
+    <!-- En video: un creador uruguayo que contesta lo mismo (utils/creatorVideos.ts) -->
+    <CreatorVideos
+      page="/impuestos-inversiones-uruguay"
+      title="Los impuestos y los demás costos de invertir, en video"
+      intro="Un creador uruguayo explica todo lo que reduce la rentabilidad además del IRPF: comisiones, transferencias y gastos, con los cambios tributarios de 2026. Si te sirve, suscribite a su canal."
+    />
+
     <!-- 17. Fuentes -->
     <VCard variant="flat" class="imp-section mb-6 pa-5">
       <h2 class="text-subtitle-2 font-weight-bold mb-2">

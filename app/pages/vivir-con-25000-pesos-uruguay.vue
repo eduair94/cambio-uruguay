@@ -836,6 +836,13 @@
       </div>
     </section>
 
+    <!-- En video: un creador uruguayo que contesta lo mismo (utils/creatorVideos.ts) -->
+    <CreatorVideos
+      page="/vivir-con-25000-pesos-uruguay"
+      title="Cuánto cuesta vivir en Uruguay, en video"
+      intro="Un creador uruguayo arma el presupuesto de Montevideo rubro por rubro: vivienda, transporte, comida y el resto. Si te sirve, suscribite a su canal."
+    />
+
     <!-- ── 9. Fuentes ────────────────────────────────────────────────────── -->
     <section>
       <h2 class="text-h6 font-weight-bold mb-3">Fuentes</h2>

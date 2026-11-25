@@ -102,6 +102,115 @@ export const CREATOR_VIDEOS: readonly CreatorVideo[] = Object.freeze([
     summary:
       'Psicología del inversor en primera persona: cómo los recuerdos y las emociones empujan a repetir las mismas decisiones con la plata.',
   },
+  // Segunda tanda (25/11/2026): leídos el título, la fecha y la descripción de cada uno en su
+  // propia página de YouTube. Quedaron afuera los Shorts, los de Virgin Galactic (una acción
+  // puntual), los relatos de viaje y los que ya están dichos por un video más nuevo del mismo tema.
+  {
+    videoId: '9B4SuZrEYoE',
+    title:
+      'El costo oculto de invertir: impuestos, comisiones y gastos que reducen tu rentabilidad',
+    publishedAt: '2026-11-19',
+    creatorId: 'javier-gutierrez-finanzas',
+    pages: [
+      '/herramientas/costo-real-de-invertir-afuera',
+      '/impuestos-inversiones-uruguay',
+      '/herramientas/calculadora-impuestos-inversiones',
+      '/inversiones-uruguay',
+    ],
+    summary:
+      'Lo que se come la rentabilidad sin que se vea: comisiones, transferencias internacionales, impuestos y gastos, con los cambios tributarios de Uruguay en 2026.',
+    mentionsUs: true,
+  },
+  {
+    videoId: '_QWtZ9UM3o0',
+    title: 'Interactive Brokers no es para todos',
+    publishedAt: '2026-07-04',
+    creatorId: 'javier-gutierrez-finanzas',
+    pages: ['/herramientas/costo-real-de-invertir-afuera'],
+    summary:
+      'Interactive Brokers contra Gletir invirtiendo desde Uruguay: comisiones, el costo de la transferencia internacional y a partir de qué capital empieza a tener sentido cada uno.',
+  },
+  {
+    videoId: 'h8rA-F8kx1U',
+    title: 'Prex vs Gletir Global: ¿En Cuál conviene Invertir?',
+    publishedAt: '2026-08-27',
+    creatorId: 'javier-gutierrez-finanzas',
+    pages: ['/inversiones-uruguay'],
+    summary:
+      'Dos maneras de comprar acciones y ETF desde Uruguay, lado a lado: comisiones, variedad de activos, liquidez y para qué perfil sirve cada una.',
+  },
+  {
+    videoId: '9WGUrZCLEBU',
+    title: 'Nueva cuenta remunerada en Uruguay',
+    publishedAt: '2026-08-20',
+    creatorId: 'javier-gutierrez-finanzas',
+    pages: ['/cuenta-remunerada-uruguay', '/letras-de-regulacion-monetaria-uruguay'],
+    summary:
+      'Itaú, Prex, Mercado Pago y Balance: qué es por dentro una cuenta remunerada (un fondo que compra Letras de Regulación Monetaria), quién administra la plata y por qué no paga IRPF.',
+  },
+  {
+    videoId: 'rYnECsAC2IU',
+    title: 'Dónde Invertir Pesos Uruguayos',
+    publishedAt: '2025-04-15',
+    creatorId: 'javier-gutierrez-finanzas',
+    pages: ['/letras-de-regulacion-monetaria-uruguay', '/herramientas/calculadora-plazo-fijo'],
+    summary:
+      'Plazo fijo, unidades indexadas, fondos y Letras de Regulación Monetaria para un perfil conservador o un fondo de emergencia que le gane a la inflación.',
+  },
+  {
+    videoId: 'tLU35_Fed4k',
+    title: 'Cuánto cuesta vivir en Uruguay',
+    publishedAt: '2025-08-14',
+    creatorId: 'javier-gutierrez-finanzas',
+    pages: ['/herramientas/costo-de-vida', '/vivir-con-25000-pesos-uruguay'],
+    summary:
+      'Un presupuesto de Montevideo armado rubro por rubro: vivienda, transporte, alimentación y el resto, con ejemplos.',
+  },
+  {
+    videoId: 'mMQO5Cfwr-s',
+    title: 'Uruguay el país más caro de Latinoamerica',
+    publishedAt: '2026-03-13',
+    creatorId: 'javier-gutierrez-finanzas',
+    pages: ['/herramientas/costo-de-vida'],
+    summary:
+      'Por qué vivir en Uruguay sale tan caro comparado con la región: qué factores empujan los precios y cómo se siente en el día a día.',
+  },
+  {
+    videoId: '3FuhSxEJM5s',
+    title: '¿Comprar o alquilar? ¿Qué es lo que más me conviene?',
+    publishedAt: '2025-06-01',
+    creatorId: 'javier-gutierrez-finanzas',
+    pages: ['/comprar-o-alquilar-uruguay'],
+    summary:
+      'Los pros y los contras de comprar la casa o seguir alquilando, pensados como una decisión financiera y no sólo como un deseo.',
+  },
+  {
+    videoId: 'ti457AmitSs',
+    title: 'Préstamos Hipotecarios en Uruguay',
+    publishedAt: '2025-08-07',
+    creatorId: 'javier-gutierrez-finanzas',
+    pages: ['/prestamo-hipotecario-uruguay'],
+    summary:
+      'Lo que se subestima al pedir una hipoteca para la casa propia: cuánto tiempo se paga de verdad y la letra chica del contrato.',
+  },
+  {
+    videoId: 'etb9qvJ6enY',
+    title: 'La estafa de Prex que casi me hace perder todo (Cuidado).',
+    publishedAt: '2026-05-08',
+    creatorId: 'javier-gutierrez-finanzas',
+    pages: ['/estafas-uruguay'],
+    summary:
+      'Lo llamaron haciéndose pasar por Prex y por un momento todo parecía real: en qué punto empezó a dudar y qué detalle lo salvó.',
+  },
+  {
+    videoId: 'u9lMiLl4uB8',
+    title: 'Si no programas tu año financiero, esto es lo que termina pasando',
+    publishedAt: '2026-02-09',
+    creatorId: 'javier-gutierrez-finanzas',
+    pages: ['/plan-de-vida-uruguay'],
+    summary:
+      'Cómo programar el año financiero paso a paso, sin fórmulas mágicas, para dejar de improvisar con la plata cada enero.',
+  },
 ])
 
 /**
@@ -110,7 +219,9 @@ export const CREATOR_VIDEOS: readonly CreatorVideo[] = Object.freeze([
  */
 export const HOME_CREATOR_FEATURE = Object.freeze({
   creatorId: 'javier-gutierrez-finanzas',
-  videoIds: ['3pr3cvroY6s', 'he3SyAROyxU', 'J_RgnwX6j4A'] as readonly string[],
+  // 9B4SuZrEYoE primero: ahí nos recomienda hablando, en el video mismo (19/11/2026), y no sólo
+  // en la descripción como en el de débito o crédito.
+  videoIds: ['9B4SuZrEYoE', '3pr3cvroY6s', 'h8rA-F8kx1U'] as readonly string[],
 })
 
 export function getCreator(id: string): Creator | undefined {

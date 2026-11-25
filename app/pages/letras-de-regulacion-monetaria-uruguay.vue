@@ -518,6 +518,13 @@
       </p>
     </section>
 
+    <!-- En video: un creador uruguayo que contesta lo mismo (utils/creatorVideos.ts) -->
+    <CreatorVideos
+      page="/letras-de-regulacion-monetaria-uruguay"
+      title="Dónde se usan las Letras, en video"
+      intro="Las cuentas remuneradas y muchos fondos en pesos compran Letras de Regulación Monetaria por dentro. Un creador uruguayo lo explica y las compara con el plazo fijo y la UI. Si te sirve, suscribite a su canal."
+    />
+
     <FaqSection :items="faq" heading="Preguntas frecuentes" expanded />
 
     <section class="mt-8 mb-8">

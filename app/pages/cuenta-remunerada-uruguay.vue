@@ -268,12 +268,12 @@
       </VAlert>
     </section>
 
-    <!-- La otra comparación que se hace mucho —Prex contra un fondo de liquidez—, en video, de un
-         creador uruguayo (utils/creatorVideos.ts) -->
+    <!-- Las cuentas entre sí y contra un fondo de liquidez, en video, de un creador uruguayo
+         (utils/creatorVideos.ts) -->
     <CreatorVideos
       page="/cuenta-remunerada-uruguay"
-      title="¿Y contra un fondo de liquidez? En video"
-      intro="Un creador uruguayo compara la cuenta remunerada de Prex con el Fondo Centenario de Liquidez de Gletir: costos, liquidez y qué mirar antes de elegir. Si te sirve, suscribite a su canal."
+      title="Las cuentas remuneradas, en video"
+      intro="Un creador uruguayo explica qué hay adentro de una cuenta remunerada (Itaú, Prex, Mercado Pago, Balance) y la compara con el Fondo Centenario de Liquidez de Gletir: rendimiento, costos y liquidez. Si te sirve, suscribite a su canal."
     />
 
     <!-- ¿Va a bajar? -->

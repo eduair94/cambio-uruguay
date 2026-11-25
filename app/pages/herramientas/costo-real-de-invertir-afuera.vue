@@ -894,6 +894,14 @@
         >, y la comparación de plataformas disponibles en Uruguay, en
         <NuxtLink :to="localePath('/inversiones-uruguay')">dónde invertir en Uruguay</NuxtLink>.
       </VAlert>
+
+      <!-- En video: un creador uruguayo que contesta lo mismo (utils/creatorVideos.ts) -->
+      <CreatorVideos
+        page="/herramientas/costo-real-de-invertir-afuera"
+        title="Lo mismo, en video"
+        intro="Un creador uruguayo que invierte desde acá repasa las comisiones, las transferencias y los impuestos que se comen la rentabilidad, y cuándo conviene cada bróker. Si te sirve, suscribite a su canal."
+        class="mt-6"
+      />
     </template>
 
     <template #disclaimer>

@@ -890,6 +890,14 @@
         son de <strong>Categoría II</strong> (rentas del trabajo). Esta es la
         <strong>Categoría I</strong>: son dos liquidaciones distintas.
       </VAlert>
+
+      <!-- En video: un creador uruguayo que contesta lo mismo (utils/creatorVideos.ts) -->
+      <CreatorVideos
+        page="/herramientas/calculadora-impuestos-inversiones"
+        title="El costo completo de invertir, en video"
+        intro="El impuesto es una parte: un creador uruguayo suma las comisiones, las transferencias y los gastos que también reducen lo que te queda. Si te sirve, suscribite a su canal."
+        class="mt-6"
+      />
     </template>
 
     <template #disclaimer>

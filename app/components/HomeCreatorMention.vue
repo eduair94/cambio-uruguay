@@ -137,10 +137,12 @@ import {
 } from '~/utils/creatorVideos'
 
 /**
- * Textual, tal como está en la descripción del video (leída el 13/11/2026). Es el título con el
- * que el creador presenta la referencia a Cambio Uruguay y el enlace que la sigue.
+ * Textual, tal como está en la descripción de «El costo oculto de invertir» (leída el 25/11/2026),
+ * que transcribe lo que dice en el video al recomendarnos. Si cambia el primer video de
+ * `HOME_CREATOR_FEATURE`, esta cita tiene que salir de ESE video.
  */
-const MENTION_QUOTE = 'Una referencia para quienes siguen el mundo de las finanzas y la inversión'
+const MENTION_QUOTE =
+  'Es un proyecto independiente que busca facilitarle a la gente el acceso a información económica y financiera.'
 
 const { t, locale } = useI18n({
   useScope: 'local',

@@ -188,6 +188,13 @@
       ingreso se lleva la cuota, que es lo que está acá con su fuente.
     </p>
 
+    <!-- En video: un creador uruguayo que contesta lo mismo (utils/creatorVideos.ts) -->
+    <CreatorVideos
+      page="/prestamo-hipotecario-uruguay"
+      title="La hipoteca, en video"
+      intro="Un creador uruguayo cuenta lo que se subestima al pedir un préstamo para la casa propia: el plazo real y la letra chica del contrato. Si te sirve, suscribite a su canal."
+    />
+
     <!-- `:emit-schema="false"`: el FAQPage de esta página va en su propio `@graph`, abajo.
          Sin esto el componente emite un SEGUNDO nodo FAQPage con las mismas preguntas. -->
     <FaqSection :items="faq" heading="Preguntas frecuentes" :emit-schema="false" expanded />

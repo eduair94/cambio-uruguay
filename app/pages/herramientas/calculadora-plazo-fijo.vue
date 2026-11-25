@@ -469,6 +469,13 @@
             que rindan, un plazo fijo local no es el instrumento.
           </p>
         </section>
+
+        <!-- En video: un creador uruguayo que contesta lo mismo (utils/creatorVideos.ts) -->
+        <CreatorVideos
+          page="/herramientas/calculadora-plazo-fijo"
+          title="Plazo fijo y las otras opciones en pesos, en video"
+          intro="Un creador uruguayo compara el plazo fijo con las unidades indexadas, los fondos y las Letras de Regulación Monetaria para un perfil conservador. Si te sirve, suscribite a su canal."
+        />
       </div>
     </template>
 
