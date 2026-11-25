@@ -586,6 +586,14 @@
         El resultado te dice cuánto podés apartar por mes. La regla de oro: pagate a vos primero
         —automatizá el ahorro apenas cobrás— y viví con lo que queda, no al revés.
       </p>
+
+      <!-- En video: un creador uruguayo que contesta lo mismo (utils/creatorVideos.ts) -->
+      <CreatorVideos
+        page="/herramientas/costo-de-vida"
+        title="Cuánto cuesta vivir en Uruguay, en video"
+        intro="Un creador uruguayo arma un presupuesto de Montevideo rubro por rubro y explica por qué el país es de los más caros de la región. Si te sirve, suscribite a su canal."
+        class="mt-6"
+      />
     </template>
 
     <template #disclaimer>

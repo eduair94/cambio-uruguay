@@ -318,6 +318,13 @@
       </div>
     </section>
 
+    <!-- En video: un creador uruguayo que contesta lo mismo (utils/creatorVideos.ts) -->
+    <CreatorVideos
+      page="/comprar-o-alquilar-uruguay"
+      title="¿Comprar o alquilar? En video"
+      intro="Un creador uruguayo repasa los pros y los contras de cada camino como decisión financiera. La cuenta con tus números es la de arriba. Si te sirve, suscribite a su canal."
+    />
+
     <!-- Method -->
     <section>
       <h2 class="text-h6 font-weight-bold mb-3">Cómo está hecha la cuenta</h2>

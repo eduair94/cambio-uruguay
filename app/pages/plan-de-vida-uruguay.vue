@@ -328,6 +328,13 @@
       </p>
     </section>
 
+    <!-- En video: un creador uruguayo que contesta lo mismo (utils/creatorVideos.ts) -->
+    <CreatorVideos
+      page="/plan-de-vida-uruguay"
+      title="Programar el año con la plata, en video"
+      intro="Un creador uruguayo muestra cómo planificar el año financiero paso a paso para no improvisar. Si te sirve, suscribite a su canal."
+    />
+
     <FaqSection :items="faq" heading="Preguntas frecuentes" :expanded="true" class="mb-8" />
 
     <section class="mb-8">

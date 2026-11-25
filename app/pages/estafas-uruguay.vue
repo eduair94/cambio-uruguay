@@ -262,6 +262,13 @@
       </VRow>
     </section>
 
+    <!-- En video: un creador uruguayo que contesta lo mismo (utils/creatorVideos.ts) -->
+    <CreatorVideos
+      page="/estafas-uruguay"
+      title="Una estafa contada por quien casi cae, en video"
+      intro="Un creador uruguayo recibió una llamada de alguien que se hacía pasar por Prex. Cuenta en qué momento dudó y qué detalle lo salvó: es el mismo libreto que usan con cualquier banco o billetera. Si te sirve, suscribite a su canal."
+    />
+
     <!-- Sources -->
     <VCard variant="flat" class="sources-card pa-5 mb-6">
       <h2 class="text-subtitle-2 font-weight-bold mb-2">

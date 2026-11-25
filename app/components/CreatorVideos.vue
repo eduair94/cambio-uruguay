@@ -265,6 +265,14 @@ function onClick(creatorId: string, linkKind: 'video' | 'channel' | 'subscribe')
   flex: 0 0 auto;
 }
 
+/* Dentro del artículo de una herramienta (`.tool-article :deep(a)` en ToolShell) todo `<a>` se
+   pinta con el color de enlace, y el botón —que es un `<a>`— quedaba azul sobre rojo, ilegible.
+   Tres clases para ganarle a esa regla sin `!important`. */
+.creator-videos .creator-videos__channel .creator-videos__subscribe {
+  color: #fff;
+  text-decoration: none;
+}
+
 .creator-videos__relationship {
   flex: 1 1 100%;
   margin: 0;
