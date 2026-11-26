@@ -2,7 +2,7 @@
 // qué tan de acuerdo está con los demás.
 //
 // El catálogo solo (nombre, URL, qué aporta) es una lista de intenciones. Lo que
-// hace falta para confiar en un tablero armado con veintiuna fuentes es lo otro:
+// hace falta para confiar en un tablero armado con veintidós fuentes es lo otro:
 // cuál respondió, cuánto tardó, qué mercados terminó publicando, en cuáles quedó
 // como corroboración, qué se le descartó y por qué. Todo eso ya existe repartido
 // entre el catálogo y el snapshot; acá se junta en una fila por fuente.

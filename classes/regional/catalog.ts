@@ -21,6 +21,7 @@ import { fetchBoBcb, meta as boBcb } from "./sources/bo_bcb";
 import { fetchBoDolarApi, meta as boDolarApi } from "./sources/bo_dolarapi";
 import { fetchBrAwesome, meta as brAwesome } from "./sources/br_awesomeapi";
 import { fetchBrBcb, meta as brBcb } from "./sources/br_bcb";
+import { fetchBrMesaDoDolar, meta as brMesaDoDolar } from "./sources/br_mesadodolar";
 import { fetchClBoostr, meta as clBoostr } from "./sources/cl_boostr";
 import { fetchClDolarApi, meta as clDolarApi } from "./sources/cl_dolarapi";
 import { fetchClMindicador, meta as clMindicador } from "./sources/cl_mindicador";
@@ -58,9 +59,11 @@ export const LIVE_SOURCES: RegionalSource[] = [
   { meta: arDolarHoy, fetch: fetchArDolarHoy },
   { meta: arCriptoYa, fetch: fetchArCriptoYa },
   { meta: arBcra, fetch: fetchArBcra },
-  // Brasil: el fixing oficial y el mercado.
+  // Brasil: el fixing oficial y el mercado, cada uno con segunda lectura, y el
+  // dólar cripto, que es lo único brasileño que se mueve el fin de semana.
   { meta: brBcb, fetch: fetchBrBcb },
   { meta: brAwesome, fetch: fetchBrAwesome },
+  { meta: brMesaDoDolar, fetch: fetchBrMesaDoDolar },
   // Chile: dos lecturas del observado, más el mostrador.
   { meta: clMindicador, fetch: fetchClMindicador },
   { meta: clBoostr, fetch: fetchClBoostr },

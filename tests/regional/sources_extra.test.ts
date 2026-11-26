@@ -8,6 +8,11 @@ import { describe, expect, it } from "vitest";
 import { parseCriptoYa } from "../../classes/regional/sources/ar_criptoya";
 import { parseBoBcb } from "../../classes/regional/sources/bo_bcb";
 import { parseBoostr } from "../../classes/regional/sources/cl_boostr";
+import {
+  parseMesaCotacao,
+  parseMesaDigital,
+  parseMesaPtax,
+} from "../../classes/regional/sources/br_mesadodolar";
 import { parseDolarPy } from "../../classes/regional/sources/py_dolarpy";
 import { parseUyExternal } from "../../classes/regional/sources/uy_external";
 import {
@@ -15,6 +20,8 @@ import {
   parseCurrencyApi,
   parseFloatRates,
 } from "../../classes/regional/sources/world_feeds";
+import { makeQuote } from "../../classes/regional/quote";
+import { dedupeQuotes } from "../../classes/regional/validate";
 
 describe("CriptoYa (Argentina)", () => {
   const payload = {
@@ -217,5 +224,107 @@ describe("Los cuatro feeds globales", () => {
     expect(parseCurrencyApi(null)).toEqual([]);
     expect(parseFloatRates(null)).toEqual([]);
     expect(parseCoinbase(null)).toEqual([]);
+  });
+});
+
+describe("Mesa do Dólar (Brasil)", () => {
+  // Respuestas reales del 26/11/2026, recortadas a lo que se lee.
+  const envelope = { fonte: "x", atualizado_em: "x", aviso: "x", atribuicao: "Fonte: Mesa do Dólar (https://mesadodolar.com.br)" };
+  const ptax = {
+    ...envelope,
+    dados: { data: "2026-11-26", compra: 5.744, venda: 5.7446, houve_pregao: true, fonte: "Banco Central do Brasil (dados abertos)" },
+  };
+  const cotacao = {
+    ...envelope,
+    dados: {
+      preco: 5.7447,
+      momento: "2026-11-26T20:13:55.000Z",
+      pregao: "fechado",
+      variacao_pct: -1.28,
+      fonte: "B3 (dólar futuro menos o casado)",
+    },
+  };
+  const digital = {
+    ...envelope,
+    dados: {
+      usdt_brl: { preco: 5.6563, compra: 5.6563, venda: 5.6564, variacao_24h_pct: -3.2, consultado_em: "2026-11-26T22:43:14.250Z" },
+      usdc_brl: { preco: 5.6628, variacao_24h_pct: -3.15 },
+    },
+  };
+
+  it("lee la PTAX con sus dos puntas, fechada a la hora del fixing del día que publica", () => {
+    const [quote] = parseMesaPtax(ptax);
+    expect(quote.id).toBe("BR:ptax:USDBRL");
+    expect(quote.kind).toBe("official");
+    expect(quote.buy).toBe(5.744);
+    expect(quote.sell).toBe(5.7446);
+    expect(quote.updatedAt).toBe("2026-11-26T16:00:00.000Z");
+  });
+
+  it("en un día sin rueda usa la fecha de la última PTAX, nunca la pedida", () => {
+    const [quote] = parseMesaPtax({
+      dados: { data_pedida: "2026-11-28", data: "2026-11-27", compra: 5.7, venda: 5.71, houve_pregao: false },
+    });
+    expect(quote.updatedAt).toBe("2026-11-27T16:00:00.000Z");
+  });
+
+  it("lee el contado de B3 como segunda lectura del comercial, con la hora del precio y no la de la consulta", () => {
+    const [quote] = parseMesaCotacao(cotacao);
+    expect(quote.id).toBe("BR:comercial:USDBRL");
+    expect(quote.kind).toBe("wholesale");
+    expect(quote.avg).toBe(5.7447);
+    expect(quote.buy).toBeNull();
+    expect(quote.sell).toBeNull();
+    expect(quote.variationPct).toBe(-1.28);
+    expect(quote.updatedAt).toBe("2026-11-26T20:13:55.000Z");
+  });
+
+  it("sin la hora del precio no publica el contado: un cierre fechado ahora parecería en vivo", () => {
+    expect(parseMesaCotacao({ dados: { preco: 5.7447, pregao: "fechado" } })).toEqual([]);
+  });
+
+  it("suma el dólar cripto brasileño, que opera también el fin de semana", () => {
+    const [quote] = parseMesaDigital(digital);
+    expect(quote.id).toBe("BR:cripto:USDBRL");
+    expect(quote.kind).toBe("financial");
+    expect(quote.buy).toBe(5.6563);
+    expect(quote.sell).toBe(5.6564);
+    expect(quote.variationPct).toBe(-3.2);
+    expect(quote.updatedAt).toBe("2026-11-26T22:43:14.250Z");
+  });
+
+  it("con sólo el precio del USDT publica el medio sin inventar puntas", () => {
+    const [quote] = parseMesaDigital({ dados: { usdt_brl: { preco: 5.65, consultado_em: "2026-11-28T12:00:00.000Z" } } });
+    expect(quote.avg).toBe(5.65);
+    expect(quote.buy).toBeNull();
+    expect(quote.sell).toBeNull();
+  });
+
+  it("no explota con una respuesta vacía o de error", () => {
+    for (const payload of [null, {}, { erro: { mensagem: "Limite de consultas excedido" } }]) {
+      expect(parseMesaPtax(payload)).toEqual([]);
+      expect(parseMesaCotacao(payload)).toEqual([]);
+      expect(parseMesaDigital(payload)).toEqual([]);
+    }
+  });
+
+  it("corrobora al Banco Central sin quitarle la fila", () => {
+    const bcb = makeQuote({
+      country: "BR",
+      market: "ptax",
+      label: "Dólar PTAX (fixing oficial)",
+      kind: "official",
+      base: "USD",
+      quote: "BRL",
+      buy: 5.744,
+      sell: 5.7446,
+      updatedAt: "2026-11-26T16:08:53.000Z",
+      source: "br_bcb",
+      sourceUrl: "https://olinda.bcb.gov.br",
+    })!;
+    const [row] = dedupeQuotes([...parseMesaPtax(ptax), bcb]);
+    expect(row.source).toBe("br_bcb");
+    expect(row.corroboratedBy).toEqual(["br_mesadodolar"]);
+    expect(row.disagreementPct).toBe(0);
   });
 });

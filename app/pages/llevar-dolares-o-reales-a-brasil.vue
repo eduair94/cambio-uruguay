@@ -329,6 +329,16 @@
           >), que publica el precio de mercado con máximo, mínimo y variación del día.
         </li>
         <li>
+          <strong>Segunda lectura del PTAX y del dólar comercial (el contado de B3):</strong> Mesa
+          do Dólar, por su API pública. Contrastamos sus cifras con las de arriba y, si el Banco
+          Central o AwesomeAPI no contestan, el número sale de ahí. Fuente: Mesa do Dólar (<a
+            href="https://mesadodolar.com.br"
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            >mesadodolar.com.br</a
+          >).
+        </li>
+        <li>
           <strong>Real y dólar en casas uruguayas:</strong> el relevamiento propio de este sitio,
           que consulta las casas cada cinco minutos.
         </li>

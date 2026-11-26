@@ -1,7 +1,7 @@
 // El informe de fuentes que sirve `GET /regional/sources`.
 //
 // El catálogo solo es una lista de intenciones. Lo que hace confiable a un
-// tablero de veintiuna fuentes es lo otro: cuál respondió, qué publicó, dónde
+// tablero de veintidós fuentes es lo otro: cuál respondió, qué publicó, dónde
 // quedó corroborando y qué se le descartó.
 import { describe, expect, it } from "vitest";
 import { buildSourcesReport, findSourceReport } from "../../classes/regional/sources_report";

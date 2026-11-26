@@ -587,7 +587,7 @@ const sourceTiles = computed(() => {
     { label: 'Con una sola fuente', value: String(summary.singleSourceMarkets) },
   ]
 })
-const sourceCount = computed(() => catalogue.value.length || 21)
+const sourceCount = computed(() => catalogue.value.length || 22)
 const centralBankCount = computed(
   () => catalogue.value.filter(source => source.publisher === 'central-bank').length || 5
 )
@@ -706,7 +706,7 @@ const FAQ: FaqItem[] = [
     id: 'regional-de-donde',
     question: '¿De dónde salen los datos?',
     answer:
-      'De veintiuna fuentes públicas: cinco bancos centrales (Argentina, Brasil, Paraguay, Chile y Bolivia), proveedores de datos de mercado, dos medios argentinos, casas de cambio paraguayas y cuatro referencias internacionales que se contrastan entre sí. La fila de Uruguay es nuestra —sale de las casas que este sitio releva cada cinco minutos— y también se contrasta contra un tercero. La tabla de fuentes de esta página enlaza a cada original.',
+      'De veintidós fuentes públicas: cinco bancos centrales (Argentina, Brasil, Paraguay, Chile y Bolivia), proveedores de datos de mercado, dos medios argentinos, casas de cambio paraguayas y cuatro referencias internacionales que se contrastan entre sí. La fila de Uruguay es nuestra —sale de las casas que este sitio releva cada cinco minutos— y también se contrasta contra un tercero. La tabla de fuentes de esta página enlaza a cada original.',
   },
   {
     id: 'regional-confiable',

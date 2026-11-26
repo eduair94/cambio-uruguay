@@ -85,7 +85,7 @@ Una `RegionalQuote` es **el precio de una unidad de `base` expresado en `quote`*
 `kind` no es decoración: comparar un `official` con un `parallel` sin decirlo es el error clásico de
 las páginas de cotizaciones.
 
-## Las 23 fuentes (21 en vivo + 2 sólo para historia)
+## Las 24 fuentes (22 en vivo + 2 sólo para historia)
 
 Redundantes a propósito: un país cubierto por UNA fuente no tiene forma de notar que esa fuente se
 rompió. El 21-08-2026 la única referencia internacional publicó el boliviano 39 % abajo y nada en el
@@ -102,6 +102,7 @@ sistema podía distinguirlo de un movimiento real.
 | `ar_argentinadatos` | ArgentinaDatos | AR | API | **Serie diaria desde 2011-01-03** (sólo backfill) |
 | `br_bcb` | Banco Central do Brasil | BR | API | Fixing **PTAX** + serie diaria **desde el Plano Real (julio 1994)** |
 | `br_awesomeapi` | AwesomeAPI | BR | API | **Dólar turismo**, cruce directo ARS/BRL, máximo/mínimo del día |
+| `br_mesadodolar` | Mesa do Dólar | BR | API | Segunda lectura de la **PTAX** y del **comercial** (contado de B3), y el **dólar cripto USDT/BRL**, lo único brasileño que se mueve el fin de semana. Su API pide atribución: "Fuente: Mesa do Dólar", enlazada |
 | `cl_mindicador` | mindicador.cl (BCCh) | CL | API | Dólar observado + serie por año **desde 1984** |
 | `cl_boostr` | Boostr | CL | API | Segunda lectura del observado: cuando coinciden, prueban que **lo leímos bien** |
 | `cl_dolarapi` | DolarAPI Chile | CL | API | Mostrador chileno + peso argentino en pesos chilenos |
@@ -121,6 +122,13 @@ Cobertura por mercado tras el cambio (medido 2026-08-22): el blue y el oficial a
 lecturas**, el MEP/CCL/cripto/tarjeta con 4, el observado chileno con 2 (0 % de diferencia), el
 referencial paraguayo con 2 (0,0085 %), el oficial boliviano con 2 (0,17 %) y cada referencia
 internacional con 4.
+
+Brasil tuvo una sola fuente por mercado hasta el 2026-11-26, cuando entró Mesa do Dólar (nos ofreció su
+API ese día). Medido esa noche contra las otras dos: su PTAX coincide con la del BCB al 0 %; su
+comercial es el contado de B3 y difirió 1,65 % del de AwesomeAPI — con la rueda cerrada B3 da el
+cierre de las 17 h (con esa hora, no la de la consulta) y AwesomeAPI siguió moviéndose, así que en ese
+número hay hora además de precio. Su dólar cripto (USDT/BRL) es un mercado propio: el único brasileño
+que cambia un sábado.
 
 El BCP no tiene API: su servicio REST está detrás de Cloudflare y contesta 403; las dos páginas
 server-rendered sí se leen.
