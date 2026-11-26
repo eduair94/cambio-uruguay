@@ -1,4 +1,5 @@
 import { priceBasisOf } from "./cashPrice";
+import { kmFromText } from "./catalog/match";
 import { buildTrimIndex, matchTrim, trimLabelFor, type TrimIndex } from "./catalog/trims";
 import { engineOf, kmQuality, slugify, titleFlags } from "./normalize";
 import { CAR_SOURCES, carKeyFor } from "./sources/registry";
@@ -31,7 +32,22 @@ export function priceDropOf(listing: Pick<RawCarListing, "price" | "currency">, 
   return { from: previous.price, currency: listing.currency, since: current.observedAt };
 }
 
+/**
+ * The km the advert states, from wherever it states it. A source's own km field wins; when it is
+ * missing or a placeholder ("1", "216" for 216.000, "111111"), the seller's description often says it
+ * ("Kilometros: 216.000", "Km: 219.000"). Measured 2026-11-25 on the stored adverts: 9 of 380 Mercado
+ * Libre adverts with a placeholder and 14 of 75 Clasiautos ones had the real figure only there. The
+ * reader is the same one every source's title goes through (`kmFromText`, 97,5 % agreement with the
+ * Mercado Libre field over 10.489 descriptions), and its figure is used only if it passes `kmQuality`.
+ */
+export function statedKm(raw: Pick<RawCarListing, "km">, description: string | null | undefined): number | null {
+  if (kmQuality(raw.km) === "ok" || !description) return raw.km;
+  const stated = kmFromText(description);
+  return stated !== null && kmQuality(stated) === "ok" ? stated : raw.km;
+}
+
 export function enrichCarListing(raw: RawCarListing, context: EnrichContext): CarListing {
+  const km = statedKm(raw, context.detail?.description);
   // Structured sources carry version/engine words outside the title; the same rules read both.
   const identity = `${raw.title} ${raw.specText ?? ""}`.trim();
   const trim = matchTrim(identity, context.trimIndex ?? buildTrimIndex(context.trims));
@@ -48,6 +64,7 @@ export function enrichCarListing(raw: RawCarListing, context: EnrichContext): Ca
   if (basis.financing) flags.add("financing");
   return {
     ...raw,
+    km,
     key: carKey(raw.id, raw.source),
     sourceName: CAR_SOURCES[raw.source].name,
     brandSlug,
@@ -56,7 +73,7 @@ export function enrichCarListing(raw: RawCarListing, context: EnrichContext): Ca
     engine: raw.fuel === "electrico" ? "EV" : engineOf(identity),
     trim,
     trimLabel: trimLabelFor(trim, context.trims),
-    kmQuality: kmQuality(raw.km),
+    kmQuality: kmQuality(km),
     flags: [...flags].sort(),
     price: basis.price,
     listedPrice: basis.listedPrice,

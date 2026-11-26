@@ -222,6 +222,22 @@ describe("enrichment", () => {
     });
     expect(car).toMatchObject({ price: 12990, listedPrice: 6500, flags: [] });
   });
+  // ml-MLU698009091: the km field said 216, the description "Kilometros: 216.000".
+  it("takes the km from the description when the source's field is missing or a placeholder", () => {
+    const detail = {
+      readAt: raw.observedAt, price: 9000, currency: "USD" as const, active: true, brand: "Volkswagen", model: "Bora", year: 2010,
+      km: 216, version: null, engineText: null, sellerName: null, bodyType: null, color: null, doors: null, flags: [],
+      description: "* Transmision: manual de 5ta * Kilometros: 216.000 * Consumo medio: 10 km/lt",
+    };
+    const context = { usdUyu: 40, trims: [], firstSeen: raw.observedAt, lastSeen: raw.observedAt, priceHistory: [], detail };
+    expect(enrichCarListing({ ...raw, km: 216 }, context)).toMatchObject({ km: 216_000, kmQuality: "ok" });
+    expect(enrichCarListing({ ...raw, km: null }, context)).toMatchObject({ km: 216_000, kmQuality: "ok" });
+    // A real field is never overridden by the text.
+    expect(enrichCarListing({ ...raw, km: 214_500 }, context)).toMatchObject({ km: 214_500, kmQuality: "ok" });
+    // Nothing usable in the text leaves the field as it was.
+    const silent = { ...context, detail: { ...detail, description: "Consumo medio: 10 km/lt" } };
+    expect(enrichCarListing({ ...raw, km: 216 }, silent)).toMatchObject({ km: 216, kmQuality: "placeholder" });
+  });
   it("converts pesos with the cycle rate and marks it", () => {
     const car = enrichCarListing({ ...raw, price: 1115000, currency: "UYU" }, {
       usdUyu: 40, trims: [], firstSeen: raw.observedAt, lastSeen: raw.observedAt, priceHistory: [], detail: null,

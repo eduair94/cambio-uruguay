@@ -81,6 +81,20 @@ describe("fbCardToCar", () => {
     expect(fbCardToCar({ ...aveo!, title: "Chevrolet Aveo 2012", isSold: true }, null, CONTEXT)).toBeNull();
     expect(fbCardToCar({ ...aveo!, title: "Chevrolet Aveo 2012" }, { ...item!, isLive: false }, CONTEXT)).toBeNull();
   });
+  // 286 stored item pages said "0 km" somewhere; about two in three were used cars, and every one of
+  // them was left out of the directory as a new car.
+  it("reads 0 km in a description as history, unless it is a current-year car with no km", () => {
+    const car = { ...aveo!, title: "Chevrolet Aveo 2012" };
+    const said = (description: string) => ({ ...item!, description });
+    expect(fbCardToCar(car, said("Un dueño, ficha oficial desde 0km hasta la fecha comprobable."), CONTEXT)).not.toBeNull();
+    expect(fbCardToCar(car, said("Excelente estado, igual a 0km. Al día."), CONTEXT)).not.toBeNull();
+    expect(fbCardToCar(car, said("Llantas 19 + 4 Kumho 0km, interior de cuero."), CONTEXT)).not.toBeNull();
+    const kwid = { ...aveo!, title: "Chevrolet Aveo 2026" };
+    expect(fbCardToCar(kwid, said("Comprado 0KM. Actualmente con 15400 KM, igual a nuevo."), CONTEXT)!.listing.km).toBe(15_400);
+    // A car of this or last model year, sold as 0 km, with no km of its own: a new car.
+    expect(fbCardToCar(kwid, said("0km listo para retirar en concesionario"), CONTEXT)).toBeNull();
+    expect(fbCardToCar({ ...aveo!, title: "Chevrolet Aveo 0km 2026" }, null, CONTEXT)).toBeNull();
+  });
   it("maps cities to departments", () => {
     expect(fbDepartment("Pando, Canelones, Uruguay")).toBe("Canelones");
     expect(fbDepartment("Montevideo, Uruguay")).toBe("Montevideo");

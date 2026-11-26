@@ -64,7 +64,8 @@ export const EXCLUDING_FLAGS: ReadonlySet<CarTextFlag> = new Set<CarTextFlag>(["
  * opportunity (ml-MLU700970425). A declared ex taxi stays a candidate, as it always was.
  */
 export const EXCLUDING_RISKS: ReadonlySet<CarRiskCategory> = new Set<CarRiskCategory>([
-  "deuda", "papeles", "siniestro", "recupero", "mecanica", "chapa_extranjera",
+  // A declared pending repair explains a low price as much as a crash does: the gap is the bill.
+  "deuda", "papeles", "siniestro", "recupero", "mecanica", "reparaciones", "chapa_extranjera",
 ]);
 const excludingRisk = (title: string, description: string): CarRiskCategory | null =>
   declaredRisks(title, description).find(risk => EXCLUDING_RISKS.has(risk.category))?.category ?? null;

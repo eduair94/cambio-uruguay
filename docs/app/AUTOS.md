@@ -523,7 +523,7 @@ Reglas, todas en `classes/autos/risk.ts` y `riskAnalyze.ts`:
   como oportunidad estricta (−38 %) con "el precio es porque tiene multas impagable" en su propio
   texto (`ml-MLU700970425`; además `impagas?\b` se cortaba en "impaga|ble"). Ahora `analyze.ts` corre
   `declaredRisks` al analizar, sobre el título (`risk_<categoría>`) y la descripción
-  (`detail_risk_<categoría>`); excluyen deuda, papeles, siniestro, recupero, mecánica y chapa
+  (`detail_risk_<categoría>`); excluyen deuda, papeles, siniestro, recupero, mecánica, reparaciones y chapa
   extranjera, y el ex taxi sigue siendo candidato como antes. Medido sobre las 104 oportunidades
   vivas: sale sólo ésa. Al medirlo aparecieron dos falsos positivos del vocabulario que ya se
   publicaban como riesgo: "prenda" suelta es el trámite de una financiación ("Título y prenda", "costo
@@ -537,6 +537,44 @@ Reglas, todas en `classes/autos/risk.ts` y `riskAnalyze.ts`:
   verdaderas, y la única negada ("no rompió los airbags") la descarta la regla de siempre. Lo que se
   midió y NO entró: "para arreglar" (13 casos, ~5 verdaderos: "sin temas para arreglar", "olvídese
   de ponerle plata para arreglar cosas, ya está todo hecho") y "armar el frente" (un solo aviso).
+- **`reparaciones`: un arreglo pendiente en un auto que anda (2026-11-25, severidad media).** `mecanica`
+  es "no anda o se vende por partes"; esta es la otra mitad de lo que el vendedor avisa: "hay que
+  hacerle distribución y embrague", "el aire no funciona", "la marcha atrás de la caja está rota",
+  "necesita alguna reparación", "detalles para hacer", "proyecto a terminar". Medido sobre las 28.380
+  descripciones guardadas: 90 avisos, 89 de 91 leídos a mano eran lo que dicen, y 68 no declaraban
+  ninguna otra cosa (salían limpios). Saca al aviso de las oportunidades, como las de severidad alta:
+  el precio bajo tiene su motivo escrito. NO entran, medidos: "detalles de chapa/pintura", "golpes" y
+  "rayones" (225 avisos: desgaste que el vendedor declara, no un arreglo), "le falta …" (la radio,
+  una taza, "un poco de amor") y "si algo no funciona te devolvemos el dinero".
+
+## El km que dice el aviso (2026-11-25)
+
+Un solo lector, `kmFromText` (`classes/autos/catalog/match.ts`), para títulos y descripciones de todas
+las fuentes. El anterior tomaba el primer "N km" del texto, y en una descripción eso coincidía con el km
+del campo de Mercado Libre el 85 % de las veces: "Año 2015 km 118.000" daba 2015, y antes del km del
+auto venían el consumo ("20 km/l"), la velocidad ("0 a 100 km/h"), la autonomía, la garantía ("hasta
+40.000 km"), el service ("cada 10.000 km") y la dirección de la automotora ("Ruta 8 km 24.500"). Y no
+leía lo que más escribe Marketplace: la etiqueta antes del número ("Km: 219.000", "kms 160.000",
+"Kilometraje: 136901"), "kmts", "145mil", "116k", "152xxx" y el número pegado a una lista con comas
+("2014,139697km").
+
+Ahora cada candidato tiene que sobrevivir a su contexto (unidad después, palabras antes en la misma
+frase, una dirección delante de la etiqueta, un año), y si quedan dos distintos gana el etiquetado,
+después uno que triplique al otro (el del auto contra el de una pieza: "183.000 km | … bujías con apenas
+2.000 km de uso") y después el afirmado como propio ("… reales", "tiene …"); si no, no hay km. Medido
+contra el campo de ML en 10.489 descripciones: 97,5 % coincide, y sólo 0,6 % erra por más de 43 % (el
+resto de los desacuerdos son el campo y el texto diciendo cifras parecidas). En Marketplace, donde el km
+sale sólo del texto, 646 autos ganan km y 81 cambian uno equivocado por el correcto. Debajo de 1.000 no
+es un km de auto usado (`kmQuality`); motos pide desde 2.
+
+Si el campo de una fuente falta o es de relleno ("1", "216" por 216.000, "111111"), `statedKm` en
+`enrich.ts` usa el de la descripción: 9 de 380 avisos de ML y 14 de 75 de Clasiautos lo tenían sólo
+ahí. Un campo bueno nunca se pisa con el texto.
+
+**"0 km" en una descripción de Marketplace casi siempre es historia** ("ficha oficial desde 0km",
+"igual a 0km", "cubiertas 0km"): de 286 fichas que lo decían, unas dos de cada tres eran usados y todas
+quedaban afuera del directorio por "nuevas". `fbIsNew` lo cuenta sólo en un auto de este año o el
+anterior cuyo texto no dice otro km; en el título sigue valiendo siempre.
 
 ## Las fotos, y qué se hace con la IA
 

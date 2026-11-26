@@ -303,7 +303,7 @@ export function fbCardToMoto(
     model: model.model,
     title,
     year,
-    km: kmFromText(text),
+    km: kmFromText(text, { minKm: 2 }),
     price: amount,
     currency: currency.currency as MotoCurrency,
     fuel,

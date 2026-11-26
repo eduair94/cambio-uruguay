@@ -248,6 +248,12 @@ export const MOTO_RISK_GUIDE: Readonly<
     meaning: 'No es una moto usada barata: es una moto que hoy no circula, o repuestos.',
     check: 'Sacá la cuenta del arreglo con un mecánico antes de ofertar.',
   },
+  reparaciones: {
+    label: 'Tiene arreglos pendientes',
+    meaning:
+      'La moto anda, pero quien vende avisa algo roto o por arreglar. El precio ya lo tiene en cuenta y el arreglo lo pagás vos.',
+    check: 'Pedí presupuesto del arreglo en un taller antes de ofertar, y preguntá si es lo único.',
+  },
   chapa_extranjera: {
     label: 'Chapa extranjera',
     meaning:

@@ -152,13 +152,24 @@ export interface FbContext extends WebCarContext {
   referenceUsd: (brandId: string, modelId: string, year: number) => number | null;
 }
 
+/**
+ * A 0 km on Marketplace. "0 km" in a description is mostly history: of the 286 stored item pages that
+ * said it (2026-11-25), about two in three were used cars ("ficha oficial desde 0km", "igual a 0km",
+ * "cubiertas 0km", "comprada 0 km en febrero") and all of them were left out of the directory. In the
+ * description it now counts only for a car of this or last model year whose text states no km.
+ */
+export function fbIsNew(title: string, description: string, match: { year: number | null; km: number | null }, maxYear: number): boolean {
+  if (/\b0 ?km\b/.test(fold(title))) return true;
+  return match.km === null && match.year !== null && match.year >= maxYear - 1 && /\b0 ?km\b/.test(fold(description));
+}
+
 export function fbCardToCar(card: FbCard, item: FbItem | null, context: FbContext): { listing: RawCarListing; detail: CarDetail | null } | null {
   if (card.isSold || item?.isSold || item?.isLive === false) return null;
   // The title only: descriptions say "acepto moto" or "cambio por camión".
   if (NOT_A_CAR.test(fold(card.title))) return null;
   const text = `${card.title} ${item?.description ?? ""}`;
   const match = matchCar(text, context.dictionary, {}, context.maxYear);
-  if (!match || !match.year || match.isNew) return null;
+  if (!match || !match.year || fbIsNew(card.title, item?.description ?? "", match, context.maxYear)) return null;
   const amount = item?.amount ?? card.amount;
   if (!amount) return null;
   const currency = resolveFbCurrency(amount, declaredCurrencyFor(text, amount), context.referenceUsd(match.brandId, match.modelId, match.year), context.usdUyu);

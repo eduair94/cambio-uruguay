@@ -27,6 +27,7 @@ export const CAR_RISK_CATEGORIES: readonly PublicCarRiskCategory[] = [
   'siniestro',
   'recupero',
   'mecanica',
+  'reparaciones',
   'chapa_extranjera',
   'uso_intensivo',
 ]
@@ -77,6 +78,13 @@ export const CAR_RISK_GUIDE: Record<PublicCarRiskCategory, CarRiskGuideEntry> = 
     meaning: 'No es un auto usado barato: es un auto que hoy no circula, o directamente repuestos.',
     check:
       'Sacá la cuenta del arreglo con un mecánico antes de ofertar, y confirmá que se pueda transferir igual.',
+  },
+  reparaciones: {
+    label: 'Tiene arreglos pendientes',
+    meaning:
+      'El auto anda, pero quien vende avisa algo roto o por arreglar: el aire que no enfría, la distribución por hacer, una marcha que no entra. El precio ya lo tiene en cuenta y el arreglo lo pagás vos.',
+    check:
+      'Pedí presupuesto del arreglo en un taller antes de ofertar, y preguntá si es lo único: lo que el aviso nombra no siempre es todo.',
   },
   chapa_extranjera: {
     label: 'Chapa extranjera',

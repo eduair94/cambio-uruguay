@@ -177,7 +177,7 @@ export async function carModelPrices(site: SiteApi, input: { brand: string; mode
   };
 }
 
-export const CAR_RISK_CATEGORIES = ["deuda", "papeles", "siniestro", "recupero", "mecanica", "chapa_extranjera", "uso_intensivo"] as const;
+export const CAR_RISK_CATEGORIES = ["deuda", "papeles", "siniestro", "recupero", "mecanica", "reparaciones", "chapa_extranjera", "uso_intensivo"] as const;
 
 interface RisksResponse {
   generatedAt?: string;

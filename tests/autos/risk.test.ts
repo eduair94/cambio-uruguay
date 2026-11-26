@@ -103,6 +103,40 @@ describe("declaredRisks", () => {
     ])
       expect(declaredRisks("", text), text).toEqual([]);
   });
+  // 2026-11-25: of 28.380 stored descriptions, 91 declared something broken or still to fix in a car
+  // that runs, and 68 of them declared nothing else, so they were listed as clean. 89 of the 91 read
+  // by hand were what they say.
+  it("reads a pending repair in a car that runs", () => {
+    for (const text of [
+      "Precio real 10.500usd, descuento debido a que hay que hacerle distribución y embrague.",
+      "Mecánica: Funciona bien, lo que hay que arreglar es la palanca del freno de mano",
+      "El paragolpes delantero hay que cambiarlo y pintarlo: se vende así.",
+      "Aire acondicionado no funciona",
+      "OPORTUNIDAD UNICO DUEÑO - NO ANDA EL AIRE",
+      "Aire acondicionado funciona pero no enfría.",
+      "No funcionan los levantavidrios del acompañante ni de las puertas traseras.",
+      "La marcha atrás de la caja está rota; todas las marchas hacia adelante andan.",
+      "Caja automática rota! Precio negociable.",
+      "Vendo haima s5 esta rota la caja de cambios",
+      "Andando impecable único detalle arranque roto",
+      "El furgón esta usable pero idealmente necesita alguna reparación",
+      "Requiere arreglos eléctricos",
+      "Tiene algunos detalles para hacer, nada grande solo mantenimiento",
+      "Actualmente tiene problema en la caja CVT, por eso se vende a ese precio",
+      "Proyecto a terminar. Falta poner motor a punto.",
+    ])
+      expect(riskCategories(declaredRisks("", text)), text).toEqual(["reparaciones"]);
+    for (const text of [
+      "Venta de camioneta Jac impecable, único dueño, no hay que hacerle nada",
+      "Si algo no funciona te devolvemos el dinero",
+      "Tiene detalles de chapa y pintura a la vista",
+      "Tiene algunos rayones y un golpe en el paragolpe",
+      "Sin problemas en la caja, todo funciona",
+      "Olvídese de comprar y tener que ponerle plata arriba para arreglar cosas, ya está todo hecho",
+      "El auto no anda mal, consume poco",
+    ])
+      expect(declaredRisks("", text), text).toEqual([]);
+  });
   it("never repeats a category", () => {
     const risks = risksIn("Chocado, siniestrado, accidentado y sin airbags", "title");
     expect(risks).toHaveLength(1);
