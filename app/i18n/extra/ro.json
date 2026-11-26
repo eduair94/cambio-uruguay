@@ -624,6 +624,9 @@
   "intradayApi": {
     "nav": "API intraday"
   },
+  "showcase": {
+    "nav": "Cine folosește datele noastre"
+  },
   "openData": {
     "nav": "Date deschise"
   },

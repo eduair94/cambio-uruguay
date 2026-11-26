@@ -624,6 +624,9 @@
   "intradayApi": {
     "nav": "Napközbeni API"
   },
+  "showcase": {
+    "nav": "Ki használja az adatainkat"
+  },
   "openData": {
     "nav": "Nyílt adatok"
   },

@@ -1,6 +1,6 @@
 <template>
   <div :class="['widget', themeClass]" data-testid="widget">
-    <div class="widget-inner">
+    <div :class="['widget-inner', { 'widget-inner--table': !classic }]">
       <header class="widget-head">
         <span class="widget-brand">cambio-uruguay.com</span>
         <span class="widget-badge">
@@ -9,19 +9,43 @@
         </span>
       </header>
 
-      <div class="widget-body">
+      <!-- El widget de siempre: el dólar solo, mejor precio. Los iframes pegados antes de que
+           hubiera opciones caen acá y se ven igual que siempre. -->
+      <div v-if="classic" class="widget-body">
         <div class="widget-cell">
           <span class="widget-label">{{ t('widget.buy') }}</span>
-          <span class="widget-value" data-testid="widget-buy">{{ buyDisplay }}</span>
+          <span class="widget-value" data-testid="widget-buy">{{ format(rows[0]?.buy) }}</span>
         </div>
         <div class="widget-sep" />
         <div class="widget-cell">
           <span class="widget-label">{{ t('widget.sell') }}</span>
-          <span class="widget-value" data-testid="widget-sell">{{ sellDisplay }}</span>
+          <span class="widget-value" data-testid="widget-sell">{{ format(rows[0]?.sell) }}</span>
         </div>
       </div>
 
+      <!-- Varias monedas, o la pizarra del BROU: una tabla, como el recuadro «Cotización del día»
+           que los diarios arman a mano. -->
+      <table v-else class="widget-table" data-testid="widget-table">
+        <thead>
+          <tr>
+            <th scope="col" class="widget-table__name">
+              <span class="visually-hidden">{{ tl('currency') }}</span>
+            </th>
+            <th scope="col">{{ t('widget.buy') }}</th>
+            <th scope="col">{{ t('widget.sell') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="row in rows" :key="row.key" :data-testid="`widget-row-${row.key}`">
+            <th scope="row" class="widget-table__name">{{ tl(`names.${row.key}`) }}</th>
+            <td>{{ format(row.buy) }}</td>
+            <td>{{ format(row.sell) }}</td>
+          </tr>
+        </tbody>
+      </table>
+
       <footer class="widget-foot">
+        <span v-if="!classic" class="widget-source">{{ tl(`source.${origin}`) }}</span>
         <a
           class="widget-link"
           href="https://cambio-uruguay.com"
@@ -37,46 +61,100 @@
 </template>
 
 <script setup lang="ts">
-// Embeddable, iframe-friendly widget that shows the live best USD compra/venta.
-// Uses the bare `widget` layout (no site nav/footer) and the same cached
-// `/api/og-rate` endpoint as the OG image.
+// Embeddable, iframe-friendly widget with the day's rates. Uses the bare `widget` layout (no site
+// nav/footer). Options come from the embedding site's URL:
+//   ?theme=light|dark
+//   ?monedas=USD,EUR,BRL,ARS   (default USD)
+//   ?origen=mejor|brou         (default mejor: best buy/sell across the market)
+// The data is `/api/widget-rates`: both sources, all four currencies, one 10-minute cache key.
+// Rules in utils/widgetRates.ts.
 //
 // El enlace de acá NO es un backlink: esta página se sirve desde cambio-uruguay.com dentro de un
 // iframe y responde `noindex`, así que el enlace es interno y hacia algo que no se indexa. Lo que
 // aporta es tráfico de referencia cuando alguien lo toca. Ver el encabezado de
 // utils/widgetEmbed.ts, incluida la advertencia de no convertir el snippet en un enlace de texto.
+import {
+  formatWidgetRate,
+  isClassicWidget,
+  parseWidgetCurrencies,
+  parseWidgetOrigin,
+  widgetRows,
+  type WidgetRatesPayload,
+} from '~/utils/widgetRates'
+
 definePageMeta({ layout: 'widget' })
 
-interface OgRate {
-  buy: number | null
-  sell: number | null
-}
-
-const { t } = useI18n()
+const { t, locale } = useI18n()
+const { t: tl } = useI18n({
+  useScope: 'local',
+  messages: {
+    es: {
+      currency: 'Moneda',
+      names: {
+        USD: 'Dólar',
+        EBROU: 'Dólar eBROU',
+        EUR: 'Euro',
+        BRL: 'Real',
+        ARS: 'Peso argentino',
+      },
+      source: {
+        mejor: 'Mejor precio entre más de 40 casas de cambio',
+        brou: 'Pizarra del Banco República (BROU)',
+      },
+    },
+    en: {
+      currency: 'Currency',
+      names: {
+        USD: 'US dollar',
+        EBROU: 'Dollar (eBROU)',
+        EUR: 'Euro',
+        BRL: 'Brazilian real',
+        ARS: 'Argentine peso',
+      },
+      source: {
+        mejor: 'Best price across 40+ exchange houses',
+        brou: 'Banco República (BROU) board',
+      },
+    },
+    pt: {
+      currency: 'Moeda',
+      names: {
+        USD: 'Dólar',
+        EBROU: 'Dólar eBROU',
+        EUR: 'Euro',
+        BRL: 'Real',
+        ARS: 'Peso argentino',
+      },
+      source: {
+        mejor: 'Melhor preço entre mais de 40 casas de câmbio',
+        brou: 'Cotação do Banco República (BROU)',
+      },
+    },
+  },
+})
 const route = useRoute()
 
 // Light/dark theme is chosen by the embedding site via ?theme=light|dark.
 const themeClass = computed(() =>
   route.query.theme === 'light' ? 'widget--light' : 'widget--dark'
 )
+const currencies = computed(() => parseWidgetCurrencies(route.query.monedas))
+const origin = computed(() => parseWidgetOrigin(route.query.origen))
+const classic = computed(() => isClassicWidget(currencies.value, origin.value))
 
-const { data: rate, refresh } = await useFetch<OgRate>('/api/og-rate', {
-  key: 'widget-og-rate',
-  default: (): OgRate => ({ buy: null, sell: null }),
+const { data: rates, refresh } = await useFetch<WidgetRatesPayload | null>('/api/widget-rates', {
+  key: 'widget-rates',
+  default: () => null,
 })
 
-const hasRate = computed(() => rate.value.buy !== null || rate.value.sell !== null)
+const rows = computed(() => widgetRows(rates.value, currencies.value, origin.value))
+const hasRate = computed(() => rows.value.some(r => r.buy !== null || r.sell !== null))
 
-const formatRate = (value: number | null): string => {
-  if (typeof value !== 'number' || Number.isNaN(value)) return '—'
-  return value.toLocaleString('es-UY', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
-}
-
-const buyDisplay = computed(() => formatRate(rate.value.buy))
-const sellDisplay = computed(() => formatRate(rate.value.sell))
+const numberLocale = computed(() =>
+  locale.value === 'en' ? 'en-US' : locale.value === 'pt' ? 'pt-BR' : 'es-UY'
+)
+const format = (value: number | null | undefined): string =>
+  formatWidgetRate(value ?? null, numberLocale.value)
 
 // Auto-refresh the live rate ~every 60s while the iframe is mounted (client only).
 const REFRESH_MS = 60_000
@@ -278,5 +356,88 @@ useSeoMeta({
 
 .widget--light .widget-link {
   color: rgba(0, 0, 0, 0.6);
+}
+
+/* ── Tabla (varias monedas o pizarra del BROU) ─────────────────────────────── */
+.widget-inner--table {
+  max-width: 420px;
+}
+
+.widget-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+.widget-table th,
+.widget-table td {
+  padding: 6px 10px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.widget-table thead th {
+  font-size: 0.66rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.widget-table tbody tr + tr {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.widget-table .widget-table__name {
+  text-align: left;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.widget-table td {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.widget-source {
+  display: block;
+  font-size: 0.66rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.widget--light .widget-table {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.widget--light .widget-table thead th,
+.widget--light .widget-source {
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.widget--light .widget-table tbody tr + tr {
+  border-top-color: rgba(0, 0, 0, 0.08);
+}
+
+.widget--light .widget-table .widget-table__name {
+  color: rgba(0, 0, 0, 0.78);
+}
+
+.widget--light .widget-table td {
+  color: #1a1a1a;
 }
 </style>

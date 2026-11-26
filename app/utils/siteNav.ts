@@ -5023,6 +5023,23 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
         ],
       },
       {
+        to: '/quienes-usan-cambio-uruguay',
+        labelKey: 'showcase.nav',
+        icon: 'mdi-account-group-outline',
+        priority: 0.5,
+        changefreq: 'monthly',
+        keywords: [
+          'quién usa',
+          'casos de uso',
+          'widget cotización',
+          'cotización del día en mi web',
+          'iframe dólar',
+          'api cotizaciones',
+          'diario norte',
+          'el tema de hoy',
+        ],
+      },
+      {
         to: '/api-cotizacion-intradia',
         labelKey: 'intradayApi.nav',
         icon: 'mdi-chart-timeline-variant',

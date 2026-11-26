@@ -624,6 +624,9 @@
   "intradayApi": {
     "nav": "API Dalam Hari"
   },
+  "showcase": {
+    "nav": "Siapa yang menggunakan data kami"
+  },
   "openData": {
     "nav": "Data terbuka"
   },

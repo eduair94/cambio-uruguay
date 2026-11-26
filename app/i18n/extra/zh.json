@@ -624,6 +624,9 @@
   "intradayApi": {
     "nav": "日内 API"
   },
+  "showcase": {
+    "nav": "谁在使用我们的数据"
+  },
   "openData": {
     "nav": "开放数据"
   },

@@ -40,15 +40,35 @@ const isPrice = (n: unknown): n is number => typeof n === 'number' && Number.isF
  * pair agreeing with /pizarra and /casas-de-cambio.
  */
 export function bestUsdPair(rates: readonly UsdQuote[]): OgRatePair {
-  const usd = rates.filter(r => r.code === 'USD' && !r.type && r.origin !== 'bcu')
-  const buyOff = offMarketSide(usd, 'USD', 'buy')
-  const sellOff = offMarketSide(usd, 'USD', 'sell')
+  return bestPair(rates, 'USD')
+}
 
-  const buys = usd
+/**
+ * {@link bestUsdPair} for any currency the site quotes at counters (USD, EUR, BRL, ARS): the same
+ * two drops, with the band of THAT currency's side, so the embeddable widget's euro or real agrees
+ * with what /pizarra calls the best price instead of inventing a second rule.
+ */
+export function bestPair(rates: readonly UsdQuote[], code: string): OgRatePair {
+  // A board that buys at or above what it sells is not a counter price: no house trades without a
+  // spread. It is a rounding artifact — Prex lists the Argentine peso as 0,02 / 0,02 — and next to
+  // a house that buys at 0,0236 it made a "compra 0,024 / venta 0,02" no market can produce. The
+  // sync's plausibility guard rejects buy > sell when writing; equality slips through, so it goes
+  // here too.
+  const quotes = rates.filter(
+    r =>
+      r.code === code &&
+      !r.type &&
+      r.origin !== 'bcu' &&
+      !(isPrice(r.buy) && isPrice(r.sell) && r.buy >= r.sell)
+  )
+  const buyOff = offMarketSide(quotes, code, 'buy')
+  const sellOff = offMarketSide(quotes, code, 'sell')
+
+  const buys = quotes
     .filter(r => !buyOff(r))
     .map(r => r.buy)
     .filter(isPrice)
-  const sells = usd
+  const sells = quotes
     .filter(r => !sellOff(r))
     .map(r => r.sell)
     .filter(isPrice)

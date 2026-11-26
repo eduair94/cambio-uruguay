@@ -143,6 +143,24 @@ npm run dev</code></pre>
         </div>
       </VCard>
 
+      <!-- Casos reales: quién ya muestra estos datos (utils/dataShowcase.ts). -->
+      <VCard variant="tonal" color="indigo" class="pa-4 mt-4">
+        <div class="d-flex flex-column flex-md-row align-md-center ga-3">
+          <div class="flex-grow-1 d-flex align-center ga-2">
+            <VIcon>mdi-account-group-outline</VIcon>
+            <h2 class="text-subtitle-1 font-weight-bold">{{ t('showcase.nav') }}</h2>
+          </div>
+          <VBtn
+            :to="localePath('/quienes-usan-cambio-uruguay')"
+            color="indigo"
+            variant="flat"
+            prepend-icon="mdi-arrow-right"
+          >
+            {{ t('showcase.nav') }}
+          </VBtn>
+        </div>
+      </VCard>
+
       <VCard variant="outlined" class="preferential-api-card pa-4 mt-6">
         <div class="d-flex flex-column flex-md-row align-md-center ga-3">
           <div class="flex-grow-1">
