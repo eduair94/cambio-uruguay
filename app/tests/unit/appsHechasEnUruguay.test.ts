@@ -38,6 +38,8 @@ const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/
 const PUBLISHERS_ALLOWED: Record<string, string> = {
   'your-starry-map': 'YourStarryMap, según sus términos',
   'python-social-auth': 'la organización Python Social Auth, en GitHub',
+  // La página del juego se titula «… | Mateína» y lo llama «Juego original de Mateína».
+  'mapa-en-clave': 'Mateína, según su web',
 }
 
 /**
@@ -48,13 +50,19 @@ const PUBLISHERS_ALLOWED: Record<string, string> = {
  * - Clara: el bloque del desarrollador de su ficha de Google Play dice Punta del Este, Uruguay.
  * - Luce y Kiosko.uy: sus webs buscan en «tiendas de Uruguay» o son para «comercios de Uruguay» y no dicen quién
  *   las hace: eso es `para-uruguay`, nunca `hecha-por-uruguayos`.
+ * - El mapa en clave (25/11/2026): su web dice «Mateína · Noticias y entretenimiento de Uruguay» y no
+ *   dice quién la hace; el propio mensaje con que la mandaron pidió no dar por acreditado de dónde
+ *   son sus desarrolladores. `para-uruguay`.
  * Subir una entrada de escalón exige pasar por esta lista a propósito.
  */
 const ORIGIN_ALLOWED: Record<string, readonly string[]> = {
   'hecha-por-uruguayos': ['carpincho'],
   'domicilio-en-uruguay': ['gymapp', 'clara-bienestar-digital'],
-  'para-uruguay': ['luce', 'kiosko'],
+  'para-uruguay': ['luce', 'kiosko', 'mapa-en-clave'],
 }
+
+/** Por dónde llegó un proyecto que no dice quién lo hace: el hilo o la invitación de la página. */
+const ARRIVED_BY = /r\/CharruaDevs|invitación de esta página/
 
 /** El único GitHub que la página puede enlazar: la organización, nunca un perfil personal. */
 const GITHUB_ALLOWED = ['https://github.com/python-social-auth']
@@ -204,7 +212,7 @@ describe('módulo de apps hechas en Uruguay', () => {
           expect(line, item.id).toMatch(/de Uruguay/)
           expect(line, item.id).toMatch(/no dice quién/)
           expect(line, item.id).not.toMatch(CLAIMS_MADE_HERE)
-          expect(line, item.id).toContain('r/CharruaDevs')
+          expect(line, item.id).toMatch(ARRIVED_BY)
           break
         case 'hilo':
           expect(line, item.id).toMatch(/no dice de dónde es/)
@@ -352,10 +360,10 @@ describe('la página dibuja el módulo', () => {
     }
   })
 
-  it('el "cinco más" de la descripción es lo que queda después de nombrar tres', () => {
+  it('el "seis más" de la descripción es lo que queda después de nombrar tres', () => {
     const description = PAGE_SRC.match(/const description =\s*'([^']+)'/)?.[1] ?? ''
-    expect(description).toContain('y cinco más')
-    expect(HECHAS_EN_UY.length - 3).toBe(5)
+    expect(description).toContain('y seis más')
+    expect(HECHAS_EN_UY.length - 3).toBe(6)
     for (const named of ['Luce', 'Subtitio', 'Kiosko']) {
       expect(description).toContain(named)
       expect(HECHAS_EN_UY.some(item => item.name.startsWith(named))).toBe(true)
