@@ -89,8 +89,73 @@ describe("text helpers", () => {
     expect(kmFromText("250,000km")).toBe(250_000);
     expect(kmFromText("180 mil kilómetros")).toBe(180_000);
     expect(kmFromText("70.000km 2023")).toBe(70_000);
-    expect(kmFromText("0 km")).toBe(0);
-    expect(kmFromText("consumo 14 km por litro")).toBe(14);
+    // A 0 km is a new car, not an odometer reading; matchCar's isNew says so.
+    expect(kmFromText("0 km")).toBeNull();
+    expect(kmFromText("consumo 14 km por litro")).toBeNull();
+  });
+
+  // Every case below is a real phrasing from the stored adverts (2026-11-25).
+  it("reads the label before the number, as Marketplace sellers write it", () => {
+    expect(kmFromText("Volkswagen Bora | 2010 | km: 219.000 | al dia")).toBe(219_000);
+    expect(kmFromText("extra full aire direccion vidrios♨️ kms 160.000💯 nafta 1.6cc")).toBe(160_000);
+    expect(kmFromText("año: 2018 kilometraje: 136901 motor: 1.0")).toBe(136_901);
+    expect(kmFromText("kilometraje : 83.423")).toBe(83_423);
+    expect(kmFromText("Vw Gol G1 año 94 kms:178.000 originales")).toBe(178_000);
+    expect(kmFromText("•año: 2017 •motor: 2.0 •extra full •km 85mil •vidrios")).toBe(85_000);
+    expect(kmFromText("ano: 2019 km aprox: 80.000 combustible: nafta")).toBe(80_000);
+    expect(kmFromText("hyundai hb 20 new full motor 1.0 nafta año 2023 km. 65.000 oportunidad")).toBe(65_000);
+  });
+
+  it("reads the forms the old reader missed", () => {
+    expect(kmFromText("Suzuki Celerio GLX 1.0,único dueño,2014,139697km,u$S6990,tomo")).toBe(139_697);
+    expect(kmFromText("Chevrolet Spark año 2008 con 145mil kmts motor 1.0")).toBe(145_000);
+    expect(kmFromText("138. mil kilometro muy cuidado")).toBe(138_000);
+    expect(kmFromText("tiene 152xxx km no tiene nada para hacerle")).toBe(152_000);
+    expect(kmFromText("kilometros 194.xxx busco vender")).toBe(194_000);
+    expect(kmFromText("-116k km originales -casi unico dueño")).toBe(116_000);
+    expect(kmFromText("vendo+exelente+honda+ridgeline+con+105+mil+kilometros!!!!+reales")).toBe(105_000);
+    expect(kmFromText("Nissan Tiida con deuda, año 2010 se va con transferencia 200milkm")).toBe(200_000);
+    expect(kmFromText("citroen c4 1.6cc año 2014 con 110.000.- km u$s 6.900.-")).toBe(110_000);
+    expect(kmFromText("motor : 1600 km : 120..000 tambien podes llevarlo")).toBe(120_000);
+  });
+
+  it("does not read the year that sits next to a km label", () => {
+    expect(kmFromText("Volkswagen Gol 1.6 trendline año : 2015 km : 118.000 extra full")).toBe(118_000);
+    expect(kmFromText("Peugeot Partner K9 diesel año 2021 km 95.000 motor 1.6")).toBe(95_000);
+    expect(kmFromText("101.689km - 2016 aceptamos permutas")).toBe(101_689);
+    expect(kmFromText("Hyundai Ioniq 122 mil km 2018 hibrido")).toBe(122_000);
+    expect(kmFromText("vendo kia picanto 2017 tiene 94000km 8500 dolares")).toBe(94_000);
+  });
+
+  it("does not read kilometres that are not the car's", () => {
+    expect(kmFromText("consumo medio en ruta: 20 km/l • consumo medio en ciudad: 18 km/l")).toBeNull();
+    expect(kmFromText("rendimiento de 12 a 15 kms x litro")).toBeNull();
+    expect(kmFromText("aceleracion de 0 a 100 km/h en 9.3 segundos")).toBeNull();
+    expect(kmFromText("consumo aprox. 4.3 - 4.8 l/100 km")).toBeNull();
+    expect(kmFromText("tesla dual motor 470 cv 450 km autonomia")).toBeNull();
+    expect(kmFromText("autonomia: hasta 480 km nedc")).toBeNull();
+    expect(kmFromText("garantia extendida de 1 año/ 20.000 km precio contado")).toBeNull();
+    expect(kmFromText("garantía por 3 meses o 10.000.- km lo que se cumpla primero")).toBeNull();
+    expect(kmFromText("servicio basico incluido hasta 29/10/2028 o 40.000 km")).toBeNull();
+    expect(kmFromText("Se hace service cada 10.000 km")).toBeNull();
+    expect(kmFromText("distribucion hecha hace 6.000 km")).toBeNull();
+    expect(kmFromText("ultimo service 110.000 km de fabrica")).toBeNull();
+    expect(kmFromText("2do dueño desde los 11 mil km")).toBeNull();
+    expect(kmFromText("4 cubiertas bridgestone (japonesas) con 15mil km")).toBeNull();
+    expect(kmFromText("Ficha oficial desde 0km. Servicio recien hecho.")).toBeNull();
+    expect(kmFromText("estamos de lun. a vie. altura ruta 8 km 24.500 (barros blancos)")).toBeNull();
+    expect(kmFromText("te esperamos en giannttasio km 22500 solymar")).toBeNull();
+    expect(kmFromText("📍ruta interbalnearia km28.500")).toBeNull();
+    expect(kmFromText("mantenimiento con aproximadamente 38.000 km desde que fue hecho")).toBeNull();
+  });
+
+  it("keeps the car's figure when a description also names others", () => {
+    expect(kmFromText("Kia Picanto 2017 ✅ kilometraje: 64.000 km (reales comprobables) cubiertas kumho (185/65 r14 86t) con solo 3.000 km de uso")).toBe(64_000);
+    expect(kmFromText("vw gol g6 1.6 2014 | 183.000 km | distribucion hecha | cambio de aceite, filtros y bujias con apenas 2.000 km de uso")).toBe(183_000);
+    expect(kmFromText("comprada con 14000km actualmente 119000km sin choques")).toBe(119_000);
+    expect(kmFromText("Nissan Kicks 75000 km. Automatica unico dueño ficha oficial 77.000 km")).toBe(75_000);
+    expect(kmFromText("año 2026 10.800 kilometros 380 kilometros de autonomia")).toBe(10_800);
+    expect(kmFromText("Toyota Corolla 2007 vendo, una con 96.000 km ✅ otra con 107.000 km")).toBeNull();
   });
   it("reads declared currencies", () => {
     expect(declaredCurrencyOf("U$S 15,000")).toBe("USD");

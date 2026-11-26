@@ -190,6 +190,7 @@ const RISK_CATEGORIES = [
   'siniestro',
   'recupero',
   'mecanica',
+  'reparaciones',
   'chapa_extranjera',
   'uso_intensivo',
 ] as const

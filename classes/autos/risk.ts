@@ -10,7 +10,7 @@
 import { affirmedMatches, cleanPublicText, foldOffsets } from "./normalize";
 
 export type CarRiskCategory =
-  | "deuda" | "papeles" | "siniestro" | "recupero" | "mecanica" | "chapa_extranjera" | "uso_intensivo";
+  | "deuda" | "papeles" | "siniestro" | "recupero" | "mecanica" | "reparaciones" | "chapa_extranjera" | "uso_intensivo";
 export type CarRiskSeverity = "alta" | "media";
 export type CarRiskFrom = "title" | "description";
 
@@ -63,6 +63,18 @@ export const RISK_RULES: readonly RiskRule[] = [
   {
     category: "mecanica", severity: "alta",
     source: "\\b(a reparar\\w*|para reparar\\w*|a arreglar|para repuestos?|por partes|para desarme|no arranca|(?:motor|caja) (?:fundid[oa]|rot[oa]|trancad[oa]|a reparar))\\b",
+  },
+  {
+    // Something the seller says is broken or still to be fixed, in a car that runs: "hay que hacerle
+    // distribución y embrague", "el aire no funciona", "la marcha atrás de la caja está rota",
+    // "necesita alguna reparación", "detalles para hacer". `mecanica` is a car that does not run or is
+    // sold for parts; this one runs and has a bill pending.
+    // Not here, on purpose, measured on 28.380 stored descriptions on 2026-11-25: "detalles de chapa
+    // / pintura", "golpes" and "rayones" (225 adverts, wear the seller discloses, not a repair); "le
+    // falta …" (a radio, a hubcap, "un poco de amor"); "para arreglar" (2 of 4 were "olvidate de
+    // ponerle plata para arreglar cosas").
+    category: "reparaciones", severity: "media",
+    source: "\\b(hay que (?:hacerle|arreglar\\w*|reparar\\w*|cambiar(?:le|lo|la|les|los|las)?|pintar\\w*)(?! nada)|(?<!\\bsi )(?<!\\bsi algo )(?:no funcionan?|no andan?|no prenden?|no enciende|no enfria)(?! mal)|(?:necesita|necesitan|precisa|precisan|requiere|requieren) (?:de )?(?:alguna |algunos |algunas |un |una |unos |unas |varios |varias )?(?:arreglos?|reparacion(?:es)?)|(?:arreglos|reparaciones|detalles) (?:pendientes|por hacer|para hacer|a realizar)|(?:caja(?: de cambios| automatica)?|embrague|turbo|escape|alternador|radiador|compresor|bomba(?: de agua| de nafta| de combustible)?|diferencial|metales|marcha atras|(?:la )?(?:primera|segunda|tercera|cuarta|quinta)|cigu?enal|arranque) (?:esta |estan |quedo )?(?:rot[oa]s?|quemad[oa]s?|trancad[oa]s?)|(?:esta|estan|ta) rot[oa]s? (?:el |la |los |las )?(?:caja|embrague|turbo|escape|alternador|radiador|compresor|bomba|diferencial|metales|primera|segunda|tercera|cuarta|quinta)|(?:presenta|tiene) (?:una |un |alguna |algun )?(?:falla|problema) (?:en|de|con) (?:la |el )?(?:caja|motor|embrague|transmision|inyeccion|direccion|frenos|suspension|tren)|(?:para |a )?terminar de armar|(?:proyecto|detalles) a terminar)\\b",
   },
   {
     category: "chapa_extranjera", severity: "media",

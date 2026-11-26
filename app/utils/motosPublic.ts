@@ -84,7 +84,14 @@ export interface MotoPublicSpecs {
 
 /** Lo que el VENDEDOR declara en título o descripción, con su cita (vocabulario de autos). */
 export type MotoPublicRiskCategory =
-  'deuda' | 'papeles' | 'siniestro' | 'recupero' | 'mecanica' | 'chapa_extranjera' | 'uso_intensivo'
+  | 'deuda'
+  | 'papeles'
+  | 'siniestro'
+  | 'recupero'
+  | 'mecanica'
+  | 'reparaciones'
+  | 'chapa_extranjera'
+  | 'uso_intensivo'
 
 export interface MotoPublicRisk {
   category: MotoPublicRiskCategory

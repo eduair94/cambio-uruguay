@@ -46,6 +46,7 @@ export const RISK_LABEL: Record<string, string> = {
   siniestro: "chocado o siniestrado",
   recupero: "recupero (robado recuperado)",
   mecanica: "problema mecánico",
+  reparaciones: "arreglos pendientes",
   uso_intensivo: "uso intensivo (ex taxi, remise, app)",
   chapa_extranjera: "chapa extranjera",
 };

@@ -320,7 +320,7 @@ export interface PublicCarOpportunitySnapshot {
 }
 
 export type PublicCarRiskCategory =
-  | "deuda" | "papeles" | "siniestro" | "recupero" | "mecanica" | "chapa_extranjera" | "uso_intensivo";
+  | "deuda" | "papeles" | "siniestro" | "recupero" | "mecanica" | "reparaciones" | "chapa_extranjera" | "uso_intensivo";
 export type PublicCarRiskSeverity = "alta" | "media";
 
 export interface PublicCarRisk {
