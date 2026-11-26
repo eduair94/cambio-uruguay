@@ -27,8 +27,9 @@ sitio ya tiene.
         tiendas de acá, una app con el dólar y la nafta del día y la caja de un almacén. La lista
         empezó con un
         <a v-bind="threadLink">hilo de {{ HECHAS_EN_UY_THREAD.subreddit }} del {{ threadLabel }}</a>
-        donde la gente compartió apps de acá, varias propias; cada tarjeta la escribimos con lo que
-        dice la web o la ficha de tienda del propio proyecto, abierta el {{ verifiedLabel }}.
+        donde la gente compartió apps de acá, varias propias, y suma las que nos mandan desde esta
+        página. Cada tarjeta la escribimos con lo que dice la web o la ficha de tienda del propio
+        proyecto, y dice el día en que la abrimos; la última revisión fue el {{ verifiedLabel }}.
       </p>
       <div class="ah-stats">
         <StatTile
@@ -41,7 +42,7 @@ sitio ya tiene.
           :value="String(withStore)"
           note="Google Play o App Store"
         />
-        <StatTile label="Revisado" :value="verifiedShort" note="en la web de cada proyecto" />
+        <StatTile label="Última revisión" :value="verifiedShort" note="cada tarjeta dice su día" />
       </div>
       <ContentTaskLinks label="En esta página" :items="taskLinks" />
     </header>
@@ -169,7 +170,7 @@ sitio ya tiene.
           <a v-bind="threadLink">«{{ HECHAS_EN_UY_THREAD.title }}»</a>
           de {{ HECHAS_EN_UY_THREAD.subreddit }}, del {{ threadLabel }}, donde la gente compartió
           apps de acá, muchas hechas por quien las compartía. No nombramos a nadie ni copiamos sus
-          comentarios.
+          comentarios. Las que llegan después por el formulario de esta página se revisan igual.
         </li>
         <li>
           «Revisado» quiere decir que abrimos la web o la ficha de tienda de cada proyecto ese día,
@@ -257,9 +258,9 @@ const taskLinks = [
 // 37 + 17 de « | Cambio Uruguay» = 54: la consulta de cabeza y el ángulo que la separa de apps útiles.
 const title = 'Apps uruguayas de devs independientes'
 // Abre con tres proyectos concretos (cada dato sale de su propia web) y no con Carpincho, que hace
-// lo mismo que este sitio. «cinco más» = HECHAS_EN_UY.length − 3: lo ata el test de la página.
+// lo mismo que este sitio. «seis más» = HECHAS_EN_UY.length − 3: lo ata el test de la página.
 const description =
-  'Luce (ropa de más de 400 tiendas uruguayas), Subtitio (subtítulos con IA), Kiosko.uy (caja para almacenes) y cinco más, hechos por desarrolladores de acá.'
+  'Luce (ropa de más de 400 tiendas uruguayas), Subtitio (subtítulos con IA), Kiosko.uy (caja para almacenes) y seis más, hechos por desarrolladores de acá.'
 
 defineOgImageComponent('Cambio', {
   title: 'Apps hechas en Uruguay',

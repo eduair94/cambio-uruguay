@@ -1,8 +1,10 @@
 // app/utils/appsHechasEnUruguay.ts
 // Las apps, webs y herramientas de /apps-hechas-en-uruguay: lo que hacen desarrolladores uruguayos
 // por su cuenta. La lista arrancó con el hilo «Recopilatorio apps uruguayas» de r/CharruaDevs
-// (17/11/2026), pero NADA de lo que dice una tarjeta sale del hilo: cada frase se leyó en la web o
-// en la ficha de tienda del propio proyecto, abierta el día de `verifiedAt` (la URL de `source`).
+// (17/11/2026) y suma lo que llega por la invitación de la página («¿Hiciste una app o una web?
+// Mandala»), pero NADA de lo que dice una tarjeta sale del hilo ni del mensaje de quien la manda:
+// cada frase se leyó en la web o en la ficha de tienda del propio proyecto, abierta el día de
+// `verifiedAt` (la URL de `source`).
 //
 // Reglas que este archivo cumple y su test vigila (tests/unit/appsHechasEnUruguay.test.ts):
 // - Ningún usuario de Reddit, ningún perfil personal de GitHub, ningún nombre de persona. Si la
@@ -23,7 +25,8 @@
 import type { FaqItem } from './faqAnswers'
 import { usefulAppAppStoreUrl, usefulAppPlayUrl } from './usefulApps'
 
-export type HechaEnUyCategoryId = 'dia-a-dia' | 'herramientas' | 'negocios' | 'codigo-abierto'
+export type HechaEnUyCategoryId =
+  'dia-a-dia' | 'herramientas' | 'juegos' | 'negocios' | 'codigo-abierto'
 
 export type HechaEnUyPlatform = 'web' | 'android' | 'ios' | 'api' | 'biblioteca'
 
@@ -85,8 +88,12 @@ export interface HechaEnUy {
   note?: string
 }
 
-/** El día en que se abrieron todas las webs y fichas de este archivo. */
-export const HECHAS_EN_UY_VERIFIED_AT = '2026-11-20'
+/**
+ * La última revisión: el día más reciente en que se abrió una web o una ficha de este archivo. Cada
+ * tarjeta lleva el suyo (`verifiedAt`): las ocho primeras se abrieron el 20/11/2026 y las que llegan
+ * después por la invitación de la página, el día en que se revisaron.
+ */
+export const HECHAS_EN_UY_VERIFIED_AT = '2026-11-25'
 
 /** La única referencia a Reddit de la página: el hilo, con su fecha. Sin usuarios ni citas. */
 export const HECHAS_EN_UY_THREAD = Object.freeze({
@@ -108,6 +115,12 @@ export const HECHAS_EN_UY_CATEGORIES: readonly HechaEnUyCategory[] = Object.free
     label: 'Herramientas y creatividad',
     blurb: 'Servicios web que resuelven una tarea puntual.',
     icon: 'mdi-star-four-points-outline',
+  },
+  {
+    id: 'juegos',
+    label: 'Para jugar',
+    blurb: 'Juegos que se juegan en el navegador, sin instalar nada.',
+    icon: 'mdi-gamepad-variant-outline',
   },
   {
     id: 'negocios',
@@ -221,6 +234,22 @@ export const HECHAS_EN_UY: readonly HechaEnUy[] = Object.freeze([
     source: 'https://yourstarrymap.com/es/',
     verifiedAt: '2026-11-20',
     note: 'Es un archivo digital: te llega por correo un enlace al PDF y no se imprime ni se manda nada en papel.',
+  },
+  {
+    id: 'mapa-en-clave',
+    name: 'El mapa en clave: 5 pistas para descubrir Uruguay',
+    url: 'https://tina-gateway-app-production.up.railway.app/mateina/pistas',
+    platforms: ['web'],
+    category: 'juegos',
+    what: 'Un juego de cinco pistas: te muestra el código oficial de un departamento, como UYTT, y elegís a cuál corresponde entre tres opciones. Cada respuesta enlaza a la tabla de códigos del Instituto Geográfico Militar.',
+    tagline: 'un juego para adivinar departamentos por su código oficial',
+    publisher: 'Mateína, según su web',
+    uruguayBy: 'para-uruguay',
+    origin:
+      'Su web es de Mateína, que se presenta como noticias y entretenimiento de Uruguay, pero no dice quién la hace; nos la mandaron por la invitación de esta página.',
+    source: 'https://tina-gateway-app-production.up.railway.app/mateina/pistas',
+    verifiedAt: '2026-11-25',
+    note: 'Se juega en el navegador y sin registro; las cinco pistas son siempre las mismas.',
   },
   {
     id: 'kiosko',
@@ -399,7 +428,7 @@ export const HECHAS_EN_UY_FAQ: readonly FaqItem[] = Object.freeze([
     id: 'quien-elige',
     question: '¿Quién elige qué entra?',
     answer:
-      'Es una lista editorial de Cambio Uruguay. Empezó con lo que la gente compartió en un hilo de r/CharruaDevs y cada proyecto se revisó a mano en su propia web o ficha de tienda. Nadie paga por aparecer y los enlaces no son de afiliados.',
+      'Es una lista editorial de Cambio Uruguay. Empezó con lo que la gente compartió en un hilo de r/CharruaDevs, suma lo que llega por el formulario de esta página y cada proyecto se revisa a mano en su propia web o ficha de tienda. Nadie paga por aparecer y los enlaces no son de afiliados.',
   },
 ])
 
