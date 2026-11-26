@@ -78,7 +78,12 @@
       </p>
       <p>
         En Uruguay la propina es voluntaria y suele rondar el 10%. En restaurantes puede aparecer un
-        "cubierto" aparte, que no es propina.
+        "cubierto" aparte, que no es propina: es un cargo fijo por persona que ya es parte del
+        precio de la comida, así que no reemplaza a la propina. Qué se acostumbra fuera del restorán
+        —taxis, maleteros, cuidacoches, delivery y mostrador— está en la guía
+        <NuxtLink :to="localePath('/guias/propinas-en-uruguay')"
+          >Propinas en Uruguay: cuánto dejar</NuxtLink
+        >.
       </p>
     </template>
   </ToolShell>
@@ -89,6 +94,7 @@ import { computed, ref } from 'vue'
 import { round } from '~/utils/calculators'
 import { formatUYU } from '~/utils/format'
 
+const localePath = useLocalePath()
 const bill = ref(2000)
 const tipPct = ref(10)
 const people = ref(2)

@@ -476,6 +476,23 @@ const GUIAS_SIN_TEMA = [
  * (`guideSnippetBudget.test.ts`, 24 → 22). El tema queda pendiente de que exista uno donde entre
  * sin mentirle al lector, o de que alguien mida que uno de los dos de arriba sí la ayuda.
  *
+ * Sigue sin tema el 2026-11-26, por esta misma razón y mirando el hub de nuevo: desde el 15/10
+ * `dolar-y-casas-de-cambio-uruguay` ganó el racimo del viajero con efectivo
+ * (`moneda-de-uruguay`, `pagar-en-dolares-o-pesos-uruguay`, `dolares-para-viajar`,
+ * `billetes-y-monedas-de-uruguay`, `cambiar-dolares-aeropuerto-carrasco`), así que la descripción
+ * de ese día —«es la mecánica de la pizarra»— ya no lo retrata. Y la objeción NO se movió, porque
+ * no era sobre las guías hermanas: el bloque se arma con `hub.resources` y `hub.terms`, nunca con
+ * `hub.guides`, y esos dos registros siguen siendo cotización, spread y casas de cambio. Quien
+ * pregunta cuánto dejar en un restorán recibiría un bloque de precios del dólar, que es el relleno
+ * que esta nota viene rechazando.
+ *
+ * Lo que sí era deuda y nadie había mirado es que la guía no recibía UN SOLO enlace de contexto:
+ * su única mención en `pages/`, `components/` y `utils/` era su propia ficha de `utils/guides.ts`,
+ * o sea que sin tema Y sin enlace su única puerta de entrada interna era la lista de `/guias`.
+ * Ahora la enlaza `/herramientas/calculadora-propinas` desde la frase que ya nombraba el
+ * «cubierto» (fila `propinas-guia-recibe-su-enlace-de-contexto` del libro de cambios, que reserva
+ * la ruta hasta el 2026-12-25; el enlace lo ancla `enlacePropinasGuia.test.ts`).
+ *
  * Sólo puede bajar: subirlo es publicar una guía huérfana.
  */
 /**
