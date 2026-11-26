@@ -624,6 +624,9 @@
   "intradayApi": {
     "nav": "API intraday"
   },
+  "showcase": {
+    "nav": "Qui utilise nos données"
+  },
   "openData": {
     "nav": "Données ouvertes"
   },

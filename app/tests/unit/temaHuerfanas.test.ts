@@ -75,6 +75,7 @@ const FUERA_DE_TEMA_POR_DISENO = [
   '/preguntas-frecuentes', // sobre el propio sitio
   '/privacidad',
   '/publicidad',
+  '/quienes-usan-cambio-uruguay', // sobre el propio sitio: quién usa sus datos
   '/ranking-usuarios-charruadevs', // nombra personas, noindex
   '/terminos',
   '/widget', // para embeber, noindex

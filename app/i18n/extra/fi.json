@@ -624,6 +624,9 @@
   "intradayApi": {
     "nav": "Päivänsisäinen API"
   },
+  "showcase": {
+    "nav": "Kuka käyttää tietojamme"
+  },
   "openData": {
     "nav": "Avoin data"
   },

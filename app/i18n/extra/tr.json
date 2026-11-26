@@ -624,6 +624,9 @@
   "intradayApi": {
     "nav": "Gün içi API"
   },
+  "showcase": {
+    "nav": "Verilerimizi kimler kullanıyor?"
+  },
   "openData": {
     "nav": "Açık veri"
   },

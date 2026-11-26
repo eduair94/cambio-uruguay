@@ -624,6 +624,9 @@
   "intradayApi": {
     "nav": "Päevasisene API"
   },
+  "showcase": {
+    "nav": "Kes meie andmeid kasutab"
+  },
   "openData": {
     "nav": "Avaandmed"
   },

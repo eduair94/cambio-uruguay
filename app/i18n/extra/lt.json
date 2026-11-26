@@ -624,6 +624,9 @@
   "intradayApi": {
     "nav": "Dienos API"
   },
+  "showcase": {
+    "nav": "Kas naudoja mūsų duomenis"
+  },
   "openData": {
     "nav": "Atvirieji duomenys"
   },

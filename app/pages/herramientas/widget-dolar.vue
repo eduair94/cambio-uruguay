@@ -37,12 +37,50 @@
           >
             <VBtn :value="false" size="small">
               <VIcon start size="small">mdi-arrow-collapse-horizontal</VIcon>
-              Fijo (320px)
+              Fijo ({{ previewWidth }}px)
             </VBtn>
             <VBtn :value="true" size="small">
               <VIcon start size="small">mdi-arrow-expand-horizontal</VIcon>
               Adaptable
             </VBtn>
+          </VBtnToggle>
+        </div>
+      </div>
+
+      <div class="d-flex flex-wrap ga-6 mb-2 mt-2">
+        <div>
+          <div class="text-caption text-grey mb-1">Monedas</div>
+          <VChipGroup
+            v-model="currencies"
+            multiple
+            mandatory
+            selected-class="text-primary"
+            aria-label="Monedas del widget"
+          >
+            <VChip
+              v-for="c in CURRENCY_OPTIONS"
+              :key="c.value"
+              :value="c.value"
+              filter
+              variant="outlined"
+              size="small"
+            >
+              {{ c.label }}
+            </VChip>
+          </VChipGroup>
+        </div>
+        <div>
+          <div class="text-caption text-grey mb-1">Precio</div>
+          <VBtnToggle
+            v-model="origin"
+            mandatory
+            density="comfortable"
+            color="primary"
+            variant="outlined"
+            rounded="lg"
+          >
+            <VBtn value="mejor" size="small">Mejor del mercado</VBtn>
+            <VBtn value="brou" size="small">Pizarra del BROU</VBtn>
           </VBtnToggle>
         </div>
       </div>
@@ -53,15 +91,20 @@
         <iframe
           :key="previewSrc"
           :src="previewSrc"
-          :width="responsive ? '100%' : 320"
-          height="170"
-          title="Vista previa del widget de cotización del dólar"
+          :width="responsive ? '100%' : previewWidth"
+          :height="height"
+          title="Vista previa del widget de cotizaciones"
           class="preview-frame"
           loading="lazy"
         />
       </div>
       <p class="text-caption text-grey-lighten-1 mb-4">
-        Se actualiza solo cada 10 minutos con la mejor cotización de compra y venta del dólar.
+        Se actualiza solo cada 10 minutos.
+        {{
+          origin === 'brou'
+            ? 'Muestra la pizarra del Banco República, con el dólar eBROU al lado del dólar.'
+            : 'Muestra la mejor compra y la mejor venta entre más de 40 casas de cambio y bancos.'
+        }}
       </p>
 
       <!-- Embed code -->
@@ -109,36 +152,78 @@
     <template #content>
       <h2 class="text-h6 font-weight-bold mb-3">¿Cómo funciona?</h2>
       <p class="text-body-2 mb-3">
-        El widget es un pequeño recuadro que muestra la cotización del dólar en Uruguay (compra y
-        venta) tomada en vivo de más de 40 casas de cambio. Lo agregás a tu web pegando una línea de
-        código <strong>iframe</strong>, sin instalar nada.
+        El widget es un recuadro con las cotizaciones del día en Uruguay (compra y venta) tomadas en
+        vivo de más de 40 casas de cambio y bancos. Lo agregás a tu web pegando una línea de código
+        <strong>iframe</strong>, sin instalar nada.
       </p>
       <ul class="text-body-2 ps-4 mb-3">
         <li class="mb-1">Gratis y sin registro.</li>
+        <li class="mb-1">Dólar, euro, real y peso argentino: elegís cuáles.</li>
+        <li class="mb-1">
+          El mejor precio del mercado o la pizarra del Banco República, con el dólar eBROU.
+        </li>
         <li class="mb-1">Se actualiza solo cada 10 minutos.</li>
         <li class="mb-1">Funciona en cualquier web, blog, WordPress o CMS.</li>
         <li class="mb-1">Tema claro u oscuro para combinar con tu diseño.</li>
       </ul>
+      <p class="text-body-2 mb-3">
+        Si preferís armar tu propio diseño, los mismos datos están en la
+        <NuxtLink :to="localePath('/desarrolladores')">API pública, sin clave</NuxtLink>.
+      </p>
       <p class="text-body-2 mb-0">
-        Al usarlo ayudás a difundir el comparador y tus lectores acceden siempre al mejor precio.
+        Mirá
+        <NuxtLink :to="localePath('/quienes-usan-cambio-uruguay')"
+          >qué sitios ya muestran nuestras cotizaciones</NuxtLink
+        >
+        y cómo lo hacen.
       </p>
     </template>
   </ToolShell>
 </template>
 
 <script setup lang="ts">
-import { buildWidgetEmbed, widgetSrc, type WidgetTheme } from '~/utils/widgetEmbed'
+import { buildWidgetEmbed, widgetHeight, widgetSrc, type WidgetTheme } from '~/utils/widgetEmbed'
+import { isClassicWidget, type WidgetCurrency, type WidgetOrigin } from '~/utils/widgetRates'
+
+const CURRENCY_OPTIONS: { value: WidgetCurrency; label: string }[] = [
+  { value: 'USD', label: 'Dólar' },
+  { value: 'EUR', label: 'Euro' },
+  { value: 'BRL', label: 'Real' },
+  { value: 'ARS', label: 'Peso argentino' },
+]
 
 const theme = ref<WidgetTheme>('dark')
 const responsive = ref(false)
+const currencies = ref<WidgetCurrency[]>(['USD'])
+const origin = ref<WidgetOrigin>('mejor')
 const copied = ref(false)
+
+// The chip group returns the order of the clicks; the widget always shows its own fixed order.
+const picked = computed(() =>
+  CURRENCY_OPTIONS.map(c => c.value).filter(c => currencies.value.includes(c))
+)
+const height = computed(() => widgetHeight(picked.value, origin.value))
+// La tarjeta del dólar solo entra en 320; la tabla necesita 360 para «Peso argentino» y dos precios.
+const previewWidth = computed(() => (isClassicWidget(picked.value, origin.value) ? 320 : 360))
 
 // Preview uses the current origin (works on localhost + prod); the copyable
 // embed code always points at the production widget (buildWidgetEmbed default).
-const origin = useRequestURL().origin
-const previewSrc = computed(() => widgetSrc({ theme: theme.value, baseUrl: origin }))
+const siteOrigin = useRequestURL().origin
+const previewSrc = computed(() =>
+  widgetSrc({
+    theme: theme.value,
+    baseUrl: siteOrigin,
+    currencies: picked.value,
+    origin: origin.value,
+  })
+)
 const embedCode = computed(() =>
-  buildWidgetEmbed({ theme: theme.value, width: responsive.value ? '100%' : 320, height: 170 })
+  buildWidgetEmbed({
+    theme: theme.value,
+    width: responsive.value ? '100%' : previewWidth.value,
+    currencies: picked.value,
+    origin: origin.value,
+  })
 )
 
 const copy = async (): Promise<void> => {
@@ -157,6 +242,8 @@ const selectAll = (e: FocusEvent): void => {
   el?.select?.()
 }
 
+const localePath = useLocalePath()
+
 const faq = [
   {
     q: '¿El widget es gratis?',
@@ -164,7 +251,11 @@ const faq = [
   },
   {
     q: '¿Cada cuánto se actualiza la cotización?',
-    a: 'Los valores se actualizan automáticamente cada 10 minutos con la mejor cotización de compra y venta del dólar entre más de 40 casas de cambio.',
+    a: 'Los valores se actualizan automáticamente cada 10 minutos: la mejor cotización de compra y venta entre más de 40 casas de cambio, o la pizarra del Banco República si elegís esa opción.',
+  },
+  {
+    q: '¿Puedo mostrar el euro, el real y el peso argentino?',
+    a: 'Sí. Marcá las monedas que quieras y el widget pasa a una tabla con una fila por moneda. Con la pizarra del BROU, el dólar va acompañado del dólar eBROU.',
   },
   {
     q: '¿Cómo lo agrego en WordPress?',

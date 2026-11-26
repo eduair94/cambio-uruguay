@@ -84,6 +84,7 @@ const NO_ES_PAGINA_DE_LECTURA = new Map([
   ['/origen-del-trafico', 'sobre el propio sitio'],
   ['/paginas-mas-visitadas', 'sobre el propio sitio'],
   ['/preguntas-frecuentes', 'sobre el propio sitio'],
+  ['/quienes-usan-cambio-uruguay', 'sobre el propio sitio: quién usa sus datos'],
   ['/privacidad', 'legal'],
   ['/ranking-usuarios-charruadevs', 'nombra personas, noindex'],
   ['/terminos', 'legal'],

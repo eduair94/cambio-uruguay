@@ -15,6 +15,14 @@
 // prohibió en su comunicado de 2016 sobre enlaces en widgets: un enlace que el que incrusta no
 // eligió poner es un enlace no editorial, y la sanción cae sobre quien lo distribuye.
 
+import {
+  isClassicWidget,
+  parseWidgetCurrencies,
+  parseWidgetOrigin,
+  type WidgetCurrency,
+  type WidgetOrigin,
+} from './widgetRates'
+
 export type WidgetTheme = 'dark' | 'light'
 
 const DEFAULT_BASE = 'https://cambio-uruguay.com'
@@ -22,6 +30,9 @@ const MIN_WIDTH = 240
 const MAX_WIDTH = 600
 const MIN_HEIGHT = 120
 const MAX_HEIGHT = 360
+/** Cabecera + encabezado de la tabla + pie con la fuente y el enlace, más los bordes. */
+const TABLE_CHROME_PX = 144
+const TABLE_ROW_PX = 37
 
 /** Normalize a theme to a known value (defaults to dark, matching the widget). */
 export function normalizeTheme(theme: unknown): WidgetTheme {
@@ -32,12 +43,41 @@ export interface WidgetSrcOptions {
   theme?: WidgetTheme
   /** Origin to build the URL against; trailing slash is tolerated. */
   baseUrl?: string
+  /** Monedas a mostrar (por defecto, el dólar solo). */
+  currencies?: readonly WidgetCurrency[]
+  /** `mejor` (mejor precio del mercado, por defecto) o `brou` (pizarra del BROU). */
+  origin?: WidgetOrigin
 }
 
-/** The `/widget` iframe URL for the given theme. */
+/**
+ * The `/widget` iframe URL. The default widget (dollar only, best price) keeps the exact URL it
+ * always had: `monedas` and `origen` only appear when they say something.
+ */
 export function widgetSrc(opts: WidgetSrcOptions = {}): string {
   const base = (opts.baseUrl ?? DEFAULT_BASE).replace(/\/+$/, '')
-  return `${base}/widget?theme=${normalizeTheme(opts.theme)}`
+  const currencies = parseWidgetCurrencies((opts.currencies ?? []).join(','))
+  const origin = parseWidgetOrigin(opts.origin)
+  let url = `${base}/widget?theme=${normalizeTheme(opts.theme)}`
+  if (!(currencies.length === 1 && currencies[0] === 'USD'))
+    url += `&monedas=${currencies.join(',')}`
+  if (origin !== 'mejor') url += `&origen=${origin}`
+  return url
+}
+
+/**
+ * Alto del iframe para que no quede ni cortado ni con aire: la tarjeta del dólar solo mide 170; la
+ * tabla, la cabecera y el pie más una fila por moneda (el dólar del BROU trae además su eBROU).
+ * Medido en el navegador a 320 y 420 px de ancho.
+ */
+export function widgetHeight(
+  currencies: readonly WidgetCurrency[] = ['USD'],
+  origin: WidgetOrigin = 'mejor'
+): number {
+  const picked = parseWidgetCurrencies(currencies.join(','))
+  const where = parseWidgetOrigin(origin)
+  if (isClassicWidget(picked, where)) return 170
+  const rows = picked.length + (where === 'brou' && picked.includes('USD') ? 1 : 0)
+  return clamp(TABLE_CHROME_PX + rows * TABLE_ROW_PX, MIN_HEIGHT, MAX_HEIGHT)
 }
 
 export interface WidgetEmbedOptions extends WidgetSrcOptions {
@@ -61,13 +101,24 @@ export function escapeAttr(value: string): string {
     .replace(/>/g, '&gt;')
 }
 
+function defaultTitle(currencies?: readonly WidgetCurrency[]): string {
+  const picked = parseWidgetCurrencies((currencies ?? []).join(','))
+  return picked.length === 1 && picked[0] === 'USD'
+    ? 'Cotización del dólar en Uruguay — Cambio Uruguay'
+    : 'Cotizaciones del día en Uruguay — Cambio Uruguay'
+}
+
 /** Build a ready-to-paste, responsive-friendly iframe embed snippet. */
 export function buildWidgetEmbed(opts: WidgetEmbedOptions = {}): string {
   const src = widgetSrc(opts)
   const width =
     opts.width === '100%' ? '100%' : clamp(Number(opts.width ?? 320), MIN_WIDTH, MAX_WIDTH)
-  const height = clamp(Number(opts.height ?? 170), MIN_HEIGHT, MAX_HEIGHT)
-  const title = escapeAttr(opts.title ?? 'Cotización del dólar en Uruguay — Cambio Uruguay')
+  const height = clamp(
+    Number(opts.height ?? widgetHeight(opts.currencies, opts.origin)),
+    MIN_HEIGHT,
+    MAX_HEIGHT
+  )
+  const title = escapeAttr(opts.title ?? defaultTitle(opts.currencies))
   const widthStyle = width === '100%' ? 'width:100%;max-width:420px;' : ''
   return (
     `<iframe src="${src}" width="${width}" height="${height}" ` +
