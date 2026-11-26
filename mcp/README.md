@@ -1,6 +1,7 @@
 # cambio-uruguay-mcp
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![cambio-uruguay MCP server on Glama](https://glama.ai/mcp/servers/eduair94/cambio-uruguay/badges/score.svg)](https://glama.ai/mcp/servers/eduair94/cambio-uruguay)
 
 A [Model Context Protocol](https://modelcontextprotocol.io) server that lets any AI assistant (Claude, ChatGPT, Cursor, Cline, …) **search Uruguay**: rentals ranked for a whole household, fair rent and neighbourhoods, property and used-car opportunities, used cars, product prices, and live exchange rates across every casa de cambio.
 

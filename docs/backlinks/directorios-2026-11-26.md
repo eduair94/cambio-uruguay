@@ -99,3 +99,25 @@ servicios al inversor).
 - Abiertos y ahora en conflicto: public-apis #6498 y punkpeye #9525.
 - APIs.guru #3254 sin respuesta; el repo no recibe push desde el 2026-04-20.
 - Smithery cerró las altas; Cursor Directory movió los MCP a plugins.
+
+## Altas hechas el mismo día (con OK del dueño)
+
+| Directorio | Qué se hizo | Estado |
+|---|---|---|
+| Free Public APIs | Su robot leyó el OpenAPI y probó 17 de 17 endpoints | **Publicado**: https://www.freepublicapis.com/cambio-uruguay-api |
+| uruguayo.dev | Formulario (Fintech) | En revisión |
+| mcp.directory | Servidor (`tree/main/mcp`) y skill `buscador-uruguay` | En revisión (prometen 24 h) |
+| mcpservers.org | Plan gratis, remoto, con el nombre del registro | En revisión (~2 semanas) |
+| API Tracker | Dos fichas, API y servidor MCP, verificadas por correo | En revisión editorial |
+| Civic Tech Field Guide | `/datos-abiertos-uruguay`, marcado como proyecto propio | En cola |
+| public-apis #6498 | Rehecho sobre `master`, ahora MERGEABLE | Espera que un mantenedor apruebe el CI |
+| public-apis #9505 | Sección MCP Servers | Abierto, MERGEABLE |
+| punkpeye #9525 | Rebaseado; badge de Glama agregado a `mcp/README.md` porque su CONTRIBUTING exige el backlink | Abierto, MERGEABLE |
+| VoltAgent/awesome-agent-skills #1492 | La skill en Specialized Domains | Abierto |
+| public-apis-es #11 | `data/apis.json` + README regenerado | Abierto |
+
+Quedan para el dueño: Atlas Startup (pide nombres de fundadores), directory.llmstxt.cloud (Turnstile),
+toolsdk (exige que la cuenta le dé estrella al repo; el JSON ya está en el fork), Goose (exige un issue
+escrito por una persona), y todo lo que pide login (Claude Connectors, mcpmarket, AlternativeTo,
+SaaSHub, CazaProducto, AGESIC). apd-core se descartó: su regla 1 rechaza lo que existe para traer
+tráfico a un sitio.
