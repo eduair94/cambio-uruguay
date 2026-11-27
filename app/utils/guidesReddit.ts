@@ -1541,7 +1541,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'hacer-un-testamento-uruguay',
-    title: 'Cómo hacer un testamento en Uruguay',
+    title: 'Testamento: con hijos no podés dejar todo',
     description:
       'Con hijos, la legítima ya reserva la mayor parte y sólo disponés del resto; el honorario notarial no tiene arancel único, así que se pide presupuesto.',
     tag: 'TESTAMENTO',
@@ -1600,6 +1600,14 @@ export const redditGuides: readonly Guide[] = [
       {
         name: 'Revisar tras cambios de vida',
         text: 'Actualizá o revocá el testamento si te casás, te divorciás, nacen hijos o cambia tu patrimonio de forma importante.',
+      },
+    ],
+    sources: [
+      {
+        label:
+          'Código Civil art. 887 — con un hijo "la porción legitimaria será la mitad de los bienes; si hay dos hijos, las dos terceras partes; si hay tres o más hijos, las tres cuartas partes", y sin descendientes "la mitad de la herencia será la legítima de los ascendientes"',
+        url: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/887',
+        publisher: 'IMPO — Código Civil',
       },
     ],
   },
@@ -3129,7 +3137,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'plazo-fijo-en-uruguay-conviene',
-    title: '¿Conviene un plazo fijo en Uruguay?',
+    title: 'Plazo fijo: lo cubre la garantía de COPAB',
     description:
       'COPAB cubre hasta UI 250.000 en pesos y US$ 10.000 en dólares, por persona e institución, y los intereses suelen pagar IRPF. La tasa real y la liquidez.',
     tag: 'PLAZO FIJO',
@@ -3164,6 +3172,20 @@ export const redditGuides: readonly Guide[] = [
       { label: 'Calculadora de plazo fijo', to: '/herramientas/calculadora-plazo-fijo' },
       { label: 'Conversor de Unidad Indexada', to: '/herramientas/conversor-unidad-indexada' },
       { label: 'Bonos y renta fija', to: '/guias/bonos-y-renta-fija-uruguay' },
+    ],
+    sources: [
+      {
+        label:
+          'COPAB, Depósitos cubiertos — qué ampara el Fondo de Garantía de Depósitos Bancarios',
+        url: 'https://www.copab.org.uy/innovaportal/v/311/1/web/depositos-cubiertos.html',
+        publisher: 'COPAB',
+      },
+      {
+        label:
+          'COPAB, Cobertura — los topes vigentes por persona y por institución, que es donde se chequean los montos que publica esta guía',
+        url: 'https://www.copab.org.uy/innovaportal/v/308/1/web/cobertura.html',
+        publisher: 'COPAB',
+      },
     ],
   },
   {
@@ -3229,7 +3251,7 @@ export const redditGuides: readonly Guide[] = [
   },
   {
     slug: 'bonos-y-renta-fija-uruguay',
-    title: 'Bonos y renta fija en Uruguay: guía básica',
+    title: 'Bonos y renta fija: no son un depósito',
     description:
       'El bono se vende antes del vencimiento a precio de mercado y sin la garantía de COPAB que sí cubre al plazo fijo. Soberanos, LRM y los tres riesgos.',
     tag: 'RENTA FIJA',
@@ -3266,6 +3288,20 @@ export const redditGuides: readonly Guide[] = [
       {
         label: 'Invertir en la bolsa de USA',
         to: '/guias/invertir-en-la-bolsa-de-usa-desde-uruguay',
+      },
+    ],
+    sources: [
+      {
+        label:
+          'BROU, Instrumentos Financieros — los títulos que el banco ofrece comprar y vender en el mercado, en su sección de inversiones y no en la de depósitos',
+        url: 'https://www.brou.com.uy/personas/inversiones/instrumentos-financieros',
+        publisher: 'BROU',
+      },
+      {
+        label:
+          'COPAB, Depósitos excluidos — qué queda fuera del Fondo de Garantía de Depósitos Bancarios',
+        url: 'https://www.copab.org.uy/innovaportal/v/312/1/web/depositos-excluidos.html',
+        publisher: 'COPAB',
       },
     ],
   },
