@@ -15,6 +15,22 @@
 #
 # Usage (on the server):  cd /root/cambio-uruguay/app && bash scripts/deploy.sh
 #
+# Since 2026-11-27 CI does NOT call it that way: the `deploy` job of .github/workflows/deploy.yml
+# builds on a GitHub runner and uses the two other modes. The plain call above is still the manual
+# fallback (it builds here, on the server).
+#
+#   bash scripts/deploy.sh --check <fingerprint>
+#       Sync the tree, then only decide. Prints `DEPLOY_DECISION=skip` when the live build already
+#       has that fingerprint and answers 200, `DEPLOY_DECISION=build` otherwise. Builds nothing,
+#       installs nothing.
+#   bash scripts/deploy.sh --artifact <file.tgz> --fingerprint <fingerprint> --sha256 <sum>
+#       Publish an `.output` built elsewhere: the same validation, swap, reload and health checks as
+#       a build made here, with the unpacked tarball in place of `nuxt build`.
+#
+# Why the build left the server: from 2026-11-26 16:30 to 27/11 three builds in a row stalled for
+# hours in the Nitro stage, with the box at 56-57 of 62 GB used by other projects and 13-16 GB in
+# swap. The same build takes under 6 minutes on a runner.
+#
 set -euo pipefail
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # .../app
@@ -43,10 +59,57 @@ fi
 
 # `--force` (lo pasa el input `force` del workflow_dispatch): compilar aunque la huella de abajo
 # coincida con la del build vivo. Viaja en "$@" y el re-exec lo conserva.
+#
+# `--check` y `--artifact` (ver el encabezado) también viajan en "$@". Se parsean en una función
+# para no consumir el "$@" del script, que el re-exec necesita entero. Sin arreglos: en el bash 4.2
+# de CentOS 7, un arreglo vacío con `set -u` aborta.
+#
+# Un deploy.sh VIEJO que recibe `--check` o `--artifact` no los entiende, pero no hace nada con ellos
+# antes del re-exec: toma el lock, sincroniza el árbol (que trae esta versión) y se reejecuta. Por
+# eso el primer deploy que estrena estos modos no compila en el servidor por accidente.
 FORCE_BUILD=0
-for arg in "$@"; do
-  if [ "$arg" = "--force" ]; then FORCE_BUILD=1; fi
-done
+DEPLOY_MODE=build
+GIVEN_FINGERPRINT=""
+ARTIFACT=""
+ARTIFACT_SHA256=""
+parse_args() {
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --force) FORCE_BUILD=1 ;;
+      --check | --artifact | --fingerprint | --sha256)
+        if [ "$#" -lt 2 ]; then
+          printf '[deploy] %s needs a value.\n' "$1" >&2
+          exit 2
+        fi
+        case "$1" in
+          --check) DEPLOY_MODE=check; GIVEN_FINGERPRINT="$2" ;;
+          --artifact) DEPLOY_MODE=artifact; ARTIFACT="$2" ;;
+          --fingerprint) GIVEN_FINGERPRINT="$2" ;;
+          --sha256) ARTIFACT_SHA256="$2" ;;
+        esac
+        shift
+        ;;
+      *)
+        printf '[deploy] unknown argument: %s\n' "$1" >&2
+        exit 2
+        ;;
+    esac
+    shift
+  done
+}
+parse_args "$@"
+
+is_sha256() { [[ "$1" =~ ^[0-9a-f]{64}$ ]]; }
+if [ "$DEPLOY_MODE" != "build" ] && ! is_sha256 "$GIVEN_FINGERPRINT"; then
+  echo "[deploy] --$DEPLOY_MODE needs a 64-hex fingerprint." >&2
+  exit 2
+fi
+if [ "$DEPLOY_MODE" = "artifact" ]; then
+  if [ ! -f "$ARTIFACT" ] || ! is_sha256 "$ARTIFACT_SHA256"; then
+    echo "[deploy] --artifact needs an existing file and --sha256 <64 hex>." >&2
+    exit 2
+  fi
+fi
 
 log() { printf '
 [1;36m[deploy][0m %s
@@ -147,6 +210,13 @@ if [ "$REEXEC" != "1" ] && [ -n "$SELF_SUM" ]; then
   fi
 fi
 
+# El tarball del build de CI lleva app/.env horneado en el servidor de Nitro (claves incluidas): no
+# se deja en el disco, salga bien o mal el deploy. Va después del re-exec porque `exec` no conserva
+# los traps, y la segunda pasada lo vuelve a poner.
+if [ "$DEPLOY_MODE" = "artifact" ]; then
+  trap 'rm -f -- "$ARTIFACT"' EXIT
+fi
+
 # Reinstall only when the dependency set actually changed.
 #
 # Most deploys are a page or a copy change and touch no dependency, but every
@@ -165,16 +235,27 @@ if command -v sha256sum >/dev/null 2>&1; then
   DEPS_HASH="$(cat package.json package-lock.json 2>/dev/null | sha256sum | cut -d' ' -f1)"
 fi
 
-if [ -n "$DEPS_HASH" ] && [ -d node_modules ] && [ -f "$DEPS_STAMP" ] &&
-  [ "$(cat "$DEPS_STAMP")" = "$DEPS_HASH" ]; then
-  log "Deps unchanged — skipping npm install."
-else
+install_deps() {
   timed "Install dependencies" npm install --force --no-audit --no-fund
   # An `if`, not `[ … ] && …`: under `set -e` a trailing `&&` that short-circuits
   # returns 1 and would abort the deploy on the machines with no sha256sum.
   if [ -n "$DEPS_HASH" ]; then
     printf '%s' "$DEPS_HASH" >"$DEPS_STAMP"
   fi
+}
+
+# `--artifact` también instala, y no por el build: el servidor de Nitro NO es autocontenido
+# (`nitro.externals.trace: false` en nuxt.config) e importa vue, mongoose, firebase-admin y unos 40
+# paquetes más desde app/node_modules DE ESTE BOX, por ruta absoluta. Un build hecho en CI corre
+# entonces contra estos node_modules, que tienen que ser los del mismo lockfile (lo confirma
+# scripts/externals-versions.mjs más abajo, antes del swap).
+if [ "$DEPLOY_MODE" = "check" ]; then
+  log "--check: sólo se decide; no se instala nada."
+elif [ -n "$DEPS_HASH" ] && [ -d node_modules ] && [ -f "$DEPS_STAMP" ] &&
+  [ "$(cat "$DEPS_STAMP")" = "$DEPS_HASH" ]; then
+  log "Deps unchanged — skipping npm install."
+else
+  install_deps
 fi
 
 # Huella de todo lo que decide qué sale del build, y salto cuando ya está sirviendo.
@@ -208,41 +289,90 @@ build_fingerprint() {
   printf 'app-tree=%s deps=%s node=%s env=%s\n' "$tree" "$DEPS_HASH" "$node_version" "$env_sum" |
     sha256sum | cut -d' ' -f1
 }
-FINGERPRINT="$(build_fingerprint || true)"
+#
+# Con `--check` y `--artifact` la huella la trae quien compila (el job de CI), calculada con esta
+# misma receta sobre el mismo commit, el mismo lockfile y el mismo app/.env, que baja de acá. Lo
+# único que cambia es la versión de Node, que es la del runner: el primer build de CI nunca coincide
+# con uno hecho acá, y eso está bien (compila una vez de más, nunca saltea de menos).
+if [ -n "${GIVEN_FINGERPRINT:-}" ]; then
+  FINGERPRINT="$GIVEN_FINGERPRINT"
+else
+  FINGERPRINT="$(build_fingerprint || true)"
+fi
 LIVE_FINGERPRINT="$(cat "$APP_DIR/.output/$BUILD_STAMP" 2>/dev/null || true)"
 
 if [ "$FORCE_BUILD" = "1" ]; then
   log "--force: se compila aunque la huella coincida."
+elif [ "${DEPLOY_MODE:-build}" = "artifact" ]; then
+  # CI ya preguntó con `--check` antes de compilar; acá se publica lo que mandó.
+  log "Build hecho en CI (huella ${FINGERPRINT:0:12}): se publica sin compilar en el servidor."
 elif [ -n "$FINGERPRINT" ] && [ "$FINGERPRINT" = "$LIVE_FINGERPRINT" ] &&
   [ -f "$APP_DIR/.output/server/index.mjs" ]; then
   log "app/ sin cambios respecto del build que está sirviendo (huella ${FINGERPRINT:0:12}); si contesta 200, no hay nada que compilar."
   if wait_healthy; then
     # Ni purga de borde ni IndexNow: no cambió nada que servir. (Y no se escribe "Deploy complete":
     # los tests de orden ubican la purga respecto de esa línea, la del final.)
+    # El job de CI lee esta línea para no compilar.
+    log "DEPLOY_DECISION=skip"
     log "Listo sin compilar: el build vivo ya corresponde a $(git -C "$REPO_DIR" rev-parse --short HEAD)."
     exit 0
   fi
   log "Misma huella pero la app no contesta 200 en :$APP_PORT; se compila igual."
 fi
 
-timed "Clear staging and generated build files" rm -rf "$STAGING" "$APP_DIR/.nuxt"
-wait_for_load
-# 12288 heap: 4096 OOM'd after firebase-auth landed, and 8192 stopped fitting with the Nuxt 4.4 upgrade
-# (2026-09-30): the build's peak climbed from ~9.4 GB to ~10.6 GB RSS, most of it retained into the Nitro
-# stage, and a CentOS 7 / Node 22.14 replica of this box ran out of heap at 8192 and built at 10240.
-# 10240 then ran out 3 minutes into the Nitro stage on 2026-11-05 (#241: 35 locales on every route, the
-# i18n route resources ~10x larger) while main's own Nitro stage was finishing right at the limit. The box
-# has 62 GB, ~15 GB available and 27 GB of free swap while serving.
-#
-# Prioridad baja de CPU y disco: el build comparte el box con la app que sirve, la API y ~260 jobs de
-# pm2. Con el box ocioso `nice` no cuesta nada (32 cores); cuando hay competencia, cede el build y no
-# el sitio. `ionice` se usa si existe; `nice` es de coreutils y siempre está (y así el arreglo nunca
-# queda vacío, que en el bash 4.2 de CentOS 7 con `set -u` aborta).
-LOW_PRIORITY=(nice -n 10)
-if command -v ionice >/dev/null 2>&1; then
-  LOW_PRIORITY+=(ionice -c2 -n7)
+if [ "${DEPLOY_MODE:-build}" = "check" ]; then
+  log "DEPLOY_DECISION=build"
+  exit 0
 fi
-timed "Build staging output" "${LOW_PRIORITY[@]}" env NODE_OPTIONS="--max-old-space-size=12288" NITRO_OUTPUT_DIR="$STAGING" npx nuxt build
+
+timed "Clear staging and generated build files" rm -rf "$STAGING" "$APP_DIR/.nuxt"
+
+# Publish a build made in CI: verify it arrived whole, unpack it where `nuxt build` would have
+# written, and confirm that the packages its server imports from app/node_modules are the versions
+# it was built against. Any failure here aborts before the swap, with the live site untouched.
+unpack_artifact() {
+  local sum
+  sum="$(sha256sum "$ARTIFACT" | cut -d' ' -f1)"
+  if [ "$sum" != "$ARTIFACT_SHA256" ]; then
+    echo "[deploy] the artifact's sha256 is not the one CI sent (truncated upload?); aborting, live site untouched." >&2
+    return 1
+  fi
+  mkdir -p "$STAGING"
+  tar -xzf "$ARTIFACT" -C "$STAGING" --no-same-owner
+}
+check_externals() {
+  if node "$APP_DIR/scripts/externals-versions.mjs" check "$STAGING"; then
+    return 0
+  fi
+  # The stamp can say "unchanged" over a tree someone touched by hand. One reinstall from the
+  # lockfile, then the verdict stands.
+  log "app/node_modules no tiene las versiones del build; se reinstala una vez desde el lockfile."
+  install_deps
+  node "$APP_DIR/scripts/externals-versions.mjs" check "$STAGING"
+}
+
+if [ "$DEPLOY_MODE" = "artifact" ]; then
+  timed "Unpack the build made in CI" unpack_artifact
+  timed "Check the server's external packages" check_externals
+else
+  wait_for_load
+  # 12288 heap: 4096 OOM'd after firebase-auth landed, and 8192 stopped fitting with the Nuxt 4.4 upgrade
+  # (2026-09-30): the build's peak climbed from ~9.4 GB to ~10.6 GB RSS, most of it retained into the Nitro
+  # stage, and a CentOS 7 / Node 22.14 replica of this box ran out of heap at 8192 and built at 10240.
+  # 10240 then ran out 3 minutes into the Nitro stage on 2026-11-05 (#241: 35 locales on every route, the
+  # i18n route resources ~10x larger) while main's own Nitro stage was finishing right at the limit. The box
+  # has 62 GB, ~15 GB available and 27 GB of free swap while serving.
+  #
+  # Prioridad baja de CPU y disco: el build comparte el box con la app que sirve, la API y ~260 jobs de
+  # pm2. Con el box ocioso `nice` no cuesta nada (32 cores); cuando hay competencia, cede el build y no
+  # el sitio. `ionice` se usa si existe; `nice` es de coreutils y siempre está (y así el arreglo nunca
+  # queda vacío, que en el bash 4.2 de CentOS 7 con `set -u` aborta).
+  LOW_PRIORITY=(nice -n 10)
+  if command -v ionice >/dev/null 2>&1; then
+    LOW_PRIORITY+=(ionice -c2 -n7)
+  fi
+  timed "Build staging output" "${LOW_PRIORITY[@]}" env NODE_OPTIONS="--max-old-space-size=12288" NITRO_OUTPUT_DIR="$STAGING" npx nuxt build
+fi
 
 # Sanity: the staging build must have a server entry before we swap.
 if [ ! -f "$STAGING/server/index.mjs" ]; then
