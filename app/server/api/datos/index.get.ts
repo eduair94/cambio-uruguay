@@ -3,6 +3,7 @@ import {
   OPEN_DATA_ATTRIBUTION,
   OPEN_DATA_ENDPOINTS,
   OPEN_DATA_LICENSE,
+  OPEN_DATA_LICENSED_SCOPE,
   OPEN_DATA_MCP,
   OPEN_DATA_PAGE,
   OPEN_DATA_SITE,
@@ -18,7 +19,7 @@ export default defineEventHandler(event => {
       documentacion: OPEN_DATA_PAGE,
       openapi: `${OPEN_DATA_SITE}/api/datos/openapi.json`,
       mcp: OPEN_DATA_MCP,
-      licencia: { ...OPEN_DATA_LICENSE, alcance: 'estadísticas de /api/datos/mercado/*' },
+      licencia: { ...OPEN_DATA_LICENSE, alcance: OPEN_DATA_LICENSED_SCOPE },
       avisos: LISTINGS_NOTE,
       comoCitar: { ...OPEN_DATA_ATTRIBUTION },
       rutas: OPEN_DATA_ENDPOINTS.map(endpoint => ({

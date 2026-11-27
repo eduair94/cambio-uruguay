@@ -398,6 +398,67 @@ export async function loadCarMarket(slug: string): Promise<PublicCarMarketSnapsh
   return snapshot
 }
 
+/**
+ * Las bandas de TODOS los modelos, sin la guía de Mercado Libre (no se licencia y es lo más pesado
+ * del documento). Para la API de datos abiertos: ~370 documentos, una consulta por vencimiento
+ * aunque lleguen varios pedidos juntos, y el último bueno si la base falla.
+ */
+export interface CarMarketBands {
+  slug: string
+  brand: string
+  model: string
+  generatedAt: string
+  listings: number
+  years: unknown[]
+  rows: unknown[]
+}
+let marketBandsCache: { expires: number; items: CarMarketBands[] } | null = null
+let marketBandsLoading: Promise<CarMarketBands[]> | null = null
+export async function loadCarMarketBands(): Promise<CarMarketBands[]> {
+  if (marketBandsCache && marketBandsCache.expires > Date.now()) return marketBandsCache.items
+  marketBandsLoading ??= (async () => {
+    try {
+      await connectDb()
+      const docs = await CarMarketSnapshotModel.find({})
+        .select({
+          _id: 0,
+          'snapshot.version': 1,
+          'snapshot.slug': 1,
+          'snapshot.brand': 1,
+          'snapshot.model': 1,
+          'snapshot.generatedAt': 1,
+          'snapshot.listings': 1,
+          'snapshot.years': 1,
+          'snapshot.rows': 1,
+        })
+        .maxTimeMS(10_000)
+        .lean()
+      const items = docs
+        .map(doc => doc.snapshot as unknown as Partial<CarMarketBands> & { version?: number })
+        .filter(snapshot => snapshot?.version === 1 && typeof snapshot.slug === 'string')
+        .map(snapshot => ({
+          slug: String(snapshot.slug),
+          brand: String(snapshot.brand ?? ''),
+          model: String(snapshot.model ?? ''),
+          generatedAt: String(snapshot.generatedAt ?? ''),
+          listings: Number(snapshot.listings) || 0,
+          years: Array.isArray(snapshot.years) ? snapshot.years : [],
+          rows: Array.isArray(snapshot.rows) ? snapshot.rows : [],
+        }))
+        .sort((a, b) => b.listings - a.listings || a.slug.localeCompare(b.slug))
+      if (!items.length && marketBandsCache) return marketBandsCache.items
+      marketBandsCache = { items, expires: Date.now() + 600_000 }
+      return items
+    } catch (error) {
+      if (marketBandsCache) return marketBandsCache.items
+      throw error
+    } finally {
+      marketBandsLoading = null
+    }
+  })()
+  return marketBandsLoading
+}
+
 let advisorCache: { expires: number; snapshot: PublicCarAdvisorSnapshot } | null = null
 let advisorLoading: Promise<PublicCarAdvisorSnapshot | null> | null = null
 /**

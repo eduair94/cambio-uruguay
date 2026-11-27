@@ -251,7 +251,8 @@
       <h2 id="licencia" class="section-heading mb-3">Licencia y cómo citarnos</h2>
       <p class="text-body-1 mb-3">
         Las <strong>estadísticas</strong> (medianas, cuartiles, variaciones y conteos de
-        <code>/api/datos/mercado/*</code>) son elaboración propia y van con licencia
+        <code>/api/datos/mercado/*</code>, y las bandas de autos por modelo, año y versión de
+        <code>/api/datos/autos/precios</code>) son elaboración propia y van con licencia
         <a :href="OPEN_DATA_LICENSE.url" target="_blank" rel="noopener noreferrer">
           Creative Commons Atribución 4.0 </a
         >: podés usarlas, publicarlas y combinarlas, también con fines comerciales, citando la
@@ -272,7 +273,9 @@
         <code>/api/datos/autos</code> no son nuestros: son de sus anunciantes y de los portales
         donde se publicaron. Por eso la API devuelve una ficha mínima con el enlace a la ficha del
         sitio —sin fotos, sin contactos y sin coordenadas— para buscar y enlazar, no para republicar
-        el directorio.
+        el directorio. Tampoco licenciamos la Guía de Precios de Mercado Libre que las páginas de
+        cada modelo muestran al lado de nuestras bandas: es de Mercado Libre, y por eso
+        <code>/api/datos/autos/precios</code> no la trae.
       </p>
     </section>
 
@@ -377,7 +380,13 @@ const FAQ: FaqItem[] = [
     id: 'datos-abiertos-que-mide',
     question: '¿Qué mide exactamente la mediana?',
     answer:
-      'El precio PEDIDO en los avisos vigentes ese día, no el precio al que se cerró el contrato o la venta, que en Uruguay no se publica. Cada cohorte (mercado, moneda, tipo, dormitorios y lugar, o modelo de auto) necesita al menos 8 avisos para tener mediana, y las monedas nunca se convierten: un aviso en dólares no se mezcla con uno en pesos.',
+      'El precio PEDIDO en los avisos vigentes ese día, no el precio al que se cerró el contrato o la venta, que en Uruguay no se publica. Cada cohorte (mercado, moneda, tipo, dormitorios y lugar, o modelo de auto) necesita al menos 8 avisos para tener mediana, y las monedas nunca se convierten: un aviso en dólares no se mezcla con uno en pesos. Las bandas de autos por año y por versión de /api/datos/autos/precios necesitan 5 avisos por fila, y el parámetro minimo sube ese piso.',
+  },
+  {
+    id: 'datos-abiertos-limites',
+    question: '¿Hay un límite de pedidos?',
+    answer:
+      'No hay clave ni cupo. Las respuestas se guardan una hora en el borde porque los datos cambian una vez por día (las bandas de autos, una vez por hora), así que pedir más seguido no trae nada nuevo. Si necesitás todos los modelos de auto, pedí el archivo completo de /api/datos/autos/precios en una sola llamada (también en CSV) en vez de un pedido por modelo, guardalo de tu lado y mostrá el crédito con el enlace.',
   },
   {
     id: 'datos-abiertos-variacion',

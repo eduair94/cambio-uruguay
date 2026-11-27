@@ -5,13 +5,19 @@ import { describe, expect, it } from 'vitest'
 import { isMarketSeriesKey, type MarketSeriesDoc } from '../../utils/marketSeries'
 import {
   CAR_FILTERS,
+  CAR_PRICES_MIN_ROW,
+  carPricesCsv,
+  carPricesQuery,
   internalListingQuery,
   marketKeyFromQuery,
   marketPageUrl,
   marketSnapshotPrefix,
   OPEN_DATA_ENDPOINTS,
+  OPEN_DATA_LICENSED_SCOPE,
   OPEN_LISTINGS_MAX,
   openCar,
+  openCarModelPrices,
+  openCarPriceRow,
   openDataEnvelope,
   openDataOpenApi,
   openMarketRow,
@@ -273,5 +279,192 @@ describe('open data: catalogue and OpenAPI stay in step with the routes', () => 
       if (endpoint.id === 'serie') expect(marketKeyFromQuery(params).ok, endpoint.id).toBe(true)
       if (endpoint.id === 'actual') expect(marketSnapshotPrefix(params).ok, endpoint.id).toBe(true)
     }
+    const prices = OPEN_DATA_ENDPOINTS.find(e => e.id === 'autosPrecios')!
+    const params = Object.fromEntries(new URL(prices.ejemplo, 'https://x').searchParams)
+    expect(carPricesQuery(params).ok).toBe(true)
+  })
+
+  it('the licence scope names every licensed route and no listing route', () => {
+    const covers = (ruta: string) =>
+      OPEN_DATA_LICENSED_SCOPE.split(/ y |, /)
+        .map(part => part.replace(/^estadísticas de /, '').trim())
+        .some(pattern =>
+          // `/x/*` cubre `/x` (el índice de esas rutas) y todo lo que cuelga de `/x/`.
+          pattern.endsWith('/*')
+            ? ruta === pattern.slice(0, -2) || ruta.startsWith(pattern.slice(0, -1))
+            : ruta === pattern
+        )
+    for (const endpoint of OPEN_DATA_ENDPOINTS)
+      expect(covers(endpoint.ruta), endpoint.ruta).toBe(endpoint.licencia)
+  })
+})
+
+describe('open data: car prices by model, year and version', () => {
+  const snapshot = {
+    version: 1,
+    slug: 'toyota-hilux',
+    brand: 'Toyota',
+    model: 'Hilux',
+    generatedAt: '2026-11-27T21:38:53.970Z',
+    listings: 355,
+    years: [
+      {
+        year: 2022,
+        trim: null,
+        engine: null,
+        transmission: null,
+        n: 31,
+        sellers: 28,
+        p25: 50000,
+        median: 54000,
+        p75: 58000,
+        kmMedian: 90000,
+      },
+      {
+        year: 2018,
+        trim: null,
+        engine: null,
+        transmission: null,
+        n: 12,
+        sellers: 12,
+        p25: 30000,
+        median: 32000,
+        p75: 35000,
+        kmMedian: 150000,
+      },
+    ],
+    rows: [
+      {
+        year: 2022,
+        trim: 'Srv',
+        engine: '2.8',
+        transmission: 'automatica',
+        n: 9,
+        sellers: 8,
+        p25: 53500,
+        median: 55900,
+        p75: 59900,
+        kmMedian: 130000,
+      },
+      {
+        year: 2018,
+        trim: 'Dx',
+        engine: '2.4',
+        transmission: 'manual',
+        n: 5,
+        sellers: 5,
+        p25: 29000,
+        median: 30000,
+        p75: 31000,
+        kmMedian: 160000,
+      },
+      // Rota: cuartiles fuera de orden. No se publica.
+      {
+        year: 2017,
+        trim: 'Sr',
+        engine: '2.8',
+        transmission: 'manual',
+        n: 7,
+        sellers: 7,
+        p25: 40000,
+        median: 30000,
+        p75: 31000,
+        kmMedian: 1,
+      },
+    ],
+    guide: [{ year: 2022, averageUsd: 52000, versions: [{ name: 'Guía ML', priceUsd: 52000 }] }],
+    guideUpdatedAt: '2026-11-27',
+  }
+
+  it('parses the query with the measurement floor and rejects junk', () => {
+    expect(carPricesQuery({})).toEqual({
+      ok: true,
+      modelo: null,
+      anio: null,
+      minimo: CAR_PRICES_MIN_ROW,
+      nivel: 'todos',
+      formato: 'json',
+    })
+    expect(
+      carPricesQuery({ modelo: 'Toyota-Hilux', anio: '2018', minimo: '30', formato: 'CSV' })
+    ).toMatchObject({
+      ok: true,
+      modelo: 'toyota-hilux',
+      anio: 2018,
+      minimo: 30,
+      formato: 'csv',
+    })
+    // Debajo del piso se acepta y se aplica el piso: no hay filas de menos de cinco avisos.
+    expect(carPricesQuery({ minimo: '2' })).toMatchObject({ ok: true, minimo: CAR_PRICES_MIN_ROW })
+    for (const bad of [
+      { modelo: 'toyota hilux' },
+      { anio: '18' },
+      { minimo: '0' },
+      { minimo: '2.5' },
+      { minimo: '5000' },
+      { nivel: 'trim' },
+      { formato: 'xml' },
+    ])
+      expect(carPricesQuery(bad).ok, JSON.stringify(bad)).toBe(false)
+  })
+
+  it('maps a row to the documented fields and drops broken ones', () => {
+    expect(openCarPriceRow(snapshot.rows[0]!)).toEqual({
+      anio: 2022,
+      version: 'Srv',
+      motor: '2.8',
+      caja: 'automatica',
+      avisos: 9,
+      vendedores: 8,
+      p25: 53500,
+      mediana: 55900,
+      p75: 59900,
+      kmMediana: 130000,
+    })
+    expect(openCarPriceRow(snapshot.rows[2]!)).toBeNull()
+    expect(openCarPriceRow({ year: 2020, n: 6, p25: 1, median: 2 })).toBeNull()
+    expect(openCarPriceRow({ ...snapshot.rows[0]!, transmission: 'cvt?' })?.caja).toBeNull()
+  })
+
+  it('filters by sample size, year and level, and never carries the Mercado Libre guide', () => {
+    const all = openCarModelPrices(snapshot, { anio: null, minimo: 5, nivel: 'todos' })!
+    expect(all.porAnio).toHaveLength(2)
+    expect(all.porVersion).toHaveLength(2)
+    expect(all.pagina).toBe('https://cambio-uruguay.com/autos-usados-uruguay/precios/toyota-hilux')
+    expect(JSON.stringify(all)).not.toMatch(/gu[ií]a|guide/i)
+
+    const thirty = openCarModelPrices(snapshot, { anio: null, minimo: 30, nivel: 'todos' })!
+    expect(thirty.porAnio.map(row => row.anio)).toEqual([2022])
+    expect(thirty.porVersion).toEqual([])
+
+    const year = openCarModelPrices(snapshot, { anio: 2018, minimo: 5, nivel: 'version' })!
+    expect(year.porAnio).toEqual([])
+    expect(year.porVersion.map(row => row.version)).toEqual(['Dx'])
+
+    expect(
+      openCarModelPrices({ ...snapshot, slug: '../x' }, { anio: null, minimo: 5, nivel: 'todos' })
+    ).toBeNull()
+  })
+
+  it('writes a spreadsheet-safe CSV, one row per band', () => {
+    const model = openCarModelPrices(
+      {
+        ...snapshot,
+        model: 'Hilux, "SRV"',
+        rows: [{ ...snapshot.rows[0]!, trim: '=HYPERLINK("x")' }],
+      },
+      { anio: null, minimo: 5, nivel: 'todos' }
+    )!
+    const lines = carPricesCsv([model]).split('\r\n')
+    expect(lines[0]).toBe(
+      'modelo_slug,marca,modelo,nivel,anio,version,motor,caja,avisos,vendedores,p25_usd,mediana_usd,p75_usd,km_mediana,pagina'
+    )
+    expect(lines).toHaveLength(1 + 2 + 1 + 1) // cabecera, dos años, una versión y el salto final
+    expect(lines[1]).toBe(
+      'toyota-hilux,Toyota,"Hilux, ""SRV""",anio,2022,,,,31,28,50000,54000,58000,90000,https://cambio-uruguay.com/autos-usados-uruguay/precios/toyota-hilux'
+    )
+    // Una celda que empieza con = no se interpreta como fórmula.
+    expect(lines[3]).toContain(`,"'=HYPERLINK(""x"")",`)
+    expect(lines.at(-1)).toBe('')
   })
 })
