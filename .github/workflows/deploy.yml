@@ -97,10 +97,20 @@ jobs:
     #
     # `workflow_dispatch` deliberately bypasses the gate (dorny/paths-filter has
     # no meaningful base to diff against on a manual run). It no longer means
-    # "rebuild": deploy.sh skips the build when the app tree, the deps, Node and
-    # app/.env all match the fingerprint stored in the live `.output`, and the
-    # app still answers 200. The `force` input is the escape hatch for rebuilding
-    # anyway (recovering a bad server state the health check cannot see).
+    # "rebuild": the job asks the server (`deploy.sh --check`) and skips the build
+    # when the app tree, the deps, Node and app/.env all match the fingerprint
+    # stored in the live `.output`, and the app still answers 200. The `force`
+    # input is the escape hatch for rebuilding anyway (recovering a bad server
+    # state the health check cannot see).
+    #
+    # WHERE it builds (since 2026-11-27): on this runner, not on the server. From
+    # 26/11 16:30 to 27/11 three server builds in a row stalled for hours in the
+    # Nitro stage, with the box at 56-57 of 62 GB used by other projects and
+    # 13-16 GB in swap; the first one held this queue for GitHub's 6-hour limit.
+    # The same `nuxt build` takes under 6 minutes here (E2E has built it on this
+    # runner since 2026-09-18). The server only checks, swaps and reloads:
+    # `deploy.sh --artifact`, with the same candidate SSR check and health checks
+    # as before. The manual fallback is still `bash scripts/deploy.sh` on the box.
     #
     # Safe to gate on `app/**` because the Nuxt app is self-contained: no
     # workspaces, no `file:` deps, no alias in nuxt.config pointing outside
@@ -118,18 +128,29 @@ jobs:
       (github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'push' && needs.changes.outputs.app == 'true'))
     runs-on: ubuntu-latest
+    # A stuck build must not hold the `production-deploy` queue for GitHub's default 6 hours, which
+    # is what the first stalled server build did on 2026-11-26. Here the build takes ~6 minutes and
+    # the publish on the server a few more.
+    timeout-minutes: 40
+    env:
+      # Path to the app dir on the server. Override with a repo variable if it ever moves. The build
+      # runs at this SAME path on the runner (see "Mount the checkout at the server's path").
+      APP_DIR: ${{ vars.DEPLOY_APP_DIR || '/root/cambio-uruguay/app' }}
+      FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force && 'true' || 'false' }}
     steps:
-      - name: Run remote deploy over SSH
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Open SSH to the server
         env:
           SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           HOST: ${{ secrets.DEPLOY_HOST }}
           PORT: ${{ secrets.DEPLOY_PORT }}
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-          # Path to the app dir on the server. Override with a repo variable if
-          # it ever moves; defaults to the documented location in deploy.sh.
-          APP_DIR: ${{ vars.DEPLOY_APP_DIR || '/root/cambio-uruguay/app' }}
-          # Sin `--force`, deploy.sh saltea el build si la huella coincide con la del build vivo.
-          FORCE_FLAG: ${{ github.event_name == 'workflow_dispatch' && inputs.force && '--force' || '' }}
         run: |
           set -euo pipefail
           : "${SSH_KEY:?missing repository secret DEPLOY_SSH_KEY}"
@@ -142,12 +163,113 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           # Pin the host key (TOFU on first run) so the SSH session can't be MITM'd.
           ssh-keyscan -p "$PORT" -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          # One alias for the steps below, so none of them repeats host, port, user or key.
+          printf 'Host prod\n  HostName %s\n  Port %s\n  User %s\n  IdentityFile ~/.ssh/deploy_key\n  IdentitiesOnly yes\n  ServerAliveInterval 30\n' \
+            "$HOST" "$PORT" "$DEPLOY_USER" > ~/.ssh/config
+          chmod 600 ~/.ssh/config
 
-          # deploy.sh pulls main, builds into a staging dir, atomically swaps
-          # .output and `pm2 reload`s — the live site never goes down.
-          ssh -i ~/.ssh/deploy_key -p "$PORT" -o IdentitiesOnly=yes \
-            "$DEPLOY_USER@$HOST" \
-            "cd '$APP_DIR' && bash scripts/deploy.sh $FORCE_FLAG"
+      # nitro.externals.trace is false (nuxt.config): the server bundle imports vue, mongoose,
+      # firebase-admin and ~40 more packages by ABSOLUTE path from app/node_modules, and at run time
+      # it resolves them from the SERVER's app/node_modules. Built under the runner's workspace path,
+      # none of those imports would exist on the server. So the checkout is bind-mounted at the
+      # server's path and built there; scripts/externals-versions.mjs then records the versions it
+      # was built against, and the server refuses to swap if its own node_modules differ.
+      # (/root is made traversable only on this throwaway VM.)
+      - name: Mount the checkout at the server's path
+        run: |
+          set -euo pipefail
+          repo="${APP_DIR%/app}"
+          sudo chmod 755 /root
+          sudo mkdir -p "$repo"
+          sudo mount --bind "$GITHUB_WORKSPACE" "$repo"
+          test -f "$APP_DIR/nuxt.config.ts"
+
+      # Nuxt bakes app/.env into the server bundle (runtimeConfig defaults) and the file only exists
+      # on the server. It is never printed, and the last step removes it, the build and the key.
+      # The output that carries it goes straight to the server: never an Actions artifact, which on
+      # a public repository anyone can download.
+      - name: Bring app/.env from the server
+        run: |
+          set -euo pipefail
+          umask 077
+          ssh prod "cat '$APP_DIR/.env'" > "$APP_DIR/.env"
+          test -s "$APP_DIR/.env"
+
+      # The same recipe as build_fingerprint() in scripts/deploy.sh, computed BEFORE npm install,
+      # which may rewrite the lockfile. Node is this runner's.
+      - name: Fingerprint the build
+        id: fp
+        working-directory: ${{ env.APP_DIR }}
+        run: |
+          set -euo pipefail
+          tree="$(git rev-parse --verify -q 'HEAD:app')"
+          deps="$(cat package.json package-lock.json | sha256sum | cut -d' ' -f1)"
+          env_sum="$(sha256sum .env | cut -d' ' -f1)"
+          fp="$(printf 'app-tree=%s deps=%s node=%s env=%s\n' "$tree" "$deps" "$(node --version)" "$env_sum" |
+            sha256sum | cut -d' ' -f1)"
+          echo "fingerprint=$fp" >> "$GITHUB_OUTPUT"
+          echo "Fingerprint ${fp:0:12} (app tree ${tree:0:12}, node $(node --version))"
+
+      # deploy.sh --check syncs the server tree, installs nothing and only answers. On the first run
+      # after this change the server still has the old deploy.sh: it pulls, sees itself changed and
+      # re-executes the new one with the same arguments before doing anything else.
+      - name: Ask the server whether this build is already live
+        id: decide
+        if: env.FORCE != 'true'
+        env:
+          FP: ${{ steps.fp.outputs.fingerprint }}
+        run: |
+          set -euo pipefail
+          ssh prod "cd '$APP_DIR' && bash scripts/deploy.sh --check $FP" | tee "$RUNNER_TEMP/check.log"
+          if grep -q 'DEPLOY_DECISION=skip' "$RUNNER_TEMP/check.log"; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install dependencies
+        if: steps.decide.outputs.skip != 'true'
+        working-directory: ${{ env.APP_DIR }}
+        run: npm install --force --no-audit --no-fund
+
+      # Same flags as the server build had: 12 GB of heap (the build's peak passed 10 GB with the 35
+      # locales, see scripts/deploy.sh). The runner has 16 GB.
+      - name: Build
+        if: steps.decide.outputs.skip != 'true'
+        working-directory: ${{ env.APP_DIR }}
+        env:
+          NODE_OPTIONS: --max-old-space-size=12288
+        run: npx nuxt build
+
+      - name: Package the build
+        id: pack
+        if: steps.decide.outputs.skip != 'true'
+        working-directory: ${{ env.APP_DIR }}
+        run: |
+          set -euo pipefail
+          test -f .output/server/index.mjs
+          node scripts/externals-versions.mjs write .output
+          tar -C .output -czf "$RUNNER_TEMP/app-output.tgz" .
+          echo "sha256=$(sha256sum "$RUNNER_TEMP/app-output.tgz" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          du -h "$RUNNER_TEMP/app-output.tgz"
+
+      # deploy.sh --artifact: checksum, unpack into the staging dir, external package versions,
+      # candidate SSR on a side port, swap, rolling reload, health checks, edge purge. Anything that
+      # fails before the swap leaves the live site untouched, and the tarball is deleted either way.
+      - name: Publish on the server
+        if: steps.decide.outputs.skip != 'true'
+        env:
+          FP: ${{ steps.fp.outputs.fingerprint }}
+          SUM: ${{ steps.pack.outputs.sha256 }}
+        run: |
+          set -euo pipefail
+          remote=".cache/cambio-uruguay-deploy/app-$GITHUB_SHA.tgz"
+          ssh prod "umask 077 && mkdir -p .cache/cambio-uruguay-deploy && cat > '$remote'" < "$RUNNER_TEMP/app-output.tgz"
+          ssh prod "cd '$APP_DIR' && bash scripts/deploy.sh --artifact \"\$HOME/$remote\" --fingerprint $FP --sha256 $SUM"
+
+      - name: Remove the secrets from the runner
+        if: always()
+        run: |
+          rm -f "$GITHUB_WORKSPACE/app/.env" "$RUNNER_TEMP/app-output.tgz" ~/.ssh/deploy_key ~/.ssh/config
+          rm -rf "$GITHUB_WORKSPACE/app/.output"
 
   # --- Root Express backend (index.ts, classes/, sync*.ts, ecosystem.config.js…)
   # This is a SEPARATE deploy surface from app/ above: different repo area,

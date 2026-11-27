@@ -978,9 +978,15 @@ export default defineNuxtConfig({
     // Client assets stay minified by Vite. Minifying the private Node server
     // bundle adds substantial CPU/RAM cost without reducing browser payloads.
     minify: false,
-    // Deploys run from app/ after `npm install`; the output is never shipped as
-    // a standalone artifact. Avoid the expensive dependency trace/copy pass and
-    // let Node resolve production packages from app/node_modules at runtime.
+    // Avoid the expensive dependency trace/copy pass and let Node resolve
+    // production packages from app/node_modules at runtime. The bundle then
+    // names those packages by ABSOLUTE path, so it only runs at the path it was
+    // built at: since 2026-11-27 CI builds at the server's path
+    // (/root/cambio-uruguay, bind-mounted) and scripts/externals-versions.mjs
+    // makes the server refuse a build whose package versions differ from its
+    // own app/node_modules. Turning tracing on would make the output
+    // self-contained, but changes how every server dependency resolves: it needs
+    // its own verified build.
     externals: {
       trace: false,
     },

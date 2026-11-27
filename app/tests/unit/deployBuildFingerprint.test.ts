@@ -112,6 +112,62 @@ describe('deploy.sh: no recompila lo que ya está sirviendo', () => {
     expect(withEnv.fingerprint).not.toBe(base)
   }, 30_000)
 
+  // El job de CI compila en el runner y le pregunta al servidor con `--check <huella>` antes de
+  // compilar; después publica con `--artifact`. La huella la trae CI (misma receta, Node del runner).
+  it('--check contesta skip sólo con la huella viva, el servidor presente y la app sana', () => {
+    const { appDir, runner } = fixture()
+    const live = 'a'.repeat(64)
+    writeFileSync(join(appDir, '.output', '.build-fingerprint'), `${live}\n`)
+    writeFileSync(join(appDir, '.output', 'server', 'index.mjs'), '')
+
+    const same = decide(runner, { DEPLOY_MODE: 'check', GIVEN_FINGERPRINT: live })
+    expect(same.stdout).toContain('DEPLOY_DECISION=skip')
+    expect(same.stdout).not.toContain('DEPLOY_DECISION=build')
+
+    const other = decide(runner, { DEPLOY_MODE: 'check', GIVEN_FINGERPRINT: 'b'.repeat(64) })
+    expect(other.stdout).toContain('DEPLOY_DECISION=build')
+    // `--check` nunca llega a compilar: sale antes del bloque de build.
+    expect(other.stdout).not.toMatch(/^BUILD fp=/m)
+
+    const sick = decide(runner, { DEPLOY_MODE: 'check', GIVEN_FINGERPRINT: live, HEALTHY: '0' })
+    expect(sick.stdout).toContain('DEPLOY_DECISION=build')
+  }, 30_000)
+
+  it('--artifact publica siempre lo que mandó CI, con la huella de CI', () => {
+    const { appDir, runner } = fixture()
+    const live = 'c'.repeat(64)
+    writeFileSync(join(appDir, '.output', '.build-fingerprint'), `${live}\n`)
+    writeFileSync(join(appDir, '.output', 'server', 'index.mjs'), '')
+
+    const published = decide(runner, { DEPLOY_MODE: 'artifact', GIVEN_FINGERPRINT: live })
+    expect(published.skipped).toBe(false)
+    expect(published.fingerprint).toBe(live)
+    expect(published.stdout).not.toContain('DEPLOY_DECISION')
+  }, 30_000)
+
+  it('rechaza argumentos malos antes de tomar el lock o tocar el árbol', () => {
+    const run = (...args: string[]) =>
+      spawnSync(bash, [shellPath(resolve(repoRoot, 'app/scripts/deploy.sh')), ...args], {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        timeout: 20_000,
+      })
+    const hex = 'd'.repeat(64)
+    for (const [args, message] of [
+      [['--check', 'no-es-una-huella'], /64-hex fingerprint/],
+      [['--check'], /needs a value/],
+      [['--artifact', '/no/existe.tgz', '--fingerprint', hex, '--sha256', hex], /existing file/],
+      [['--bogus'], /unknown argument/],
+    ] as const) {
+      const result = run(...args)
+      expect(result.status, `${args.join(' ')}: ${result.stdout}`).toBe(2)
+      expect(result.stderr).toMatch(message)
+      expect(result.stdout, 'no llegó a sincronizar ni a desplegar').not.toMatch(
+        /deploy:source|Deploy complete/
+      )
+    }
+  }, 30_000)
+
   it('escribe la huella en el candidato ya validado y antes del swap', () => {
     const check = script.indexOf('timed "Check candidate SSR before the swap"')
     const stamp = script.indexOf('>"$STAGING/$BUILD_STAMP"')
