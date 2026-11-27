@@ -92,6 +92,10 @@ export function openDataEnvelope<T>(
   }
 }
 
+/** Qué rutas cubre la licencia: todas las de estadísticas propias, ninguna de avisos. */
+export const OPEN_DATA_LICENSED_SCOPE =
+  'estadísticas de /api/datos/mercado/* y /api/datos/autos/precios'
+
 export const LISTINGS_NOTE =
   'Los avisos son de sus anunciantes y de los portales donde se publicaron: no se licencian. Usalos para buscar y enlazar a la ficha (campo url), no para republicar el directorio.'
 
@@ -494,6 +498,231 @@ export function openCar(raw: RawCarListing): OpenCar {
   }
 }
 
+// ── Precios de autos por modelo, año y versión ────────────────────────────────
+//
+// Las bandas que dibuja cada página `/autos-usados-uruguay/precios/<modelo>`: por año y por
+// año + versión + motor + caja. Son elaboración propia (medianas de precios pedidos), así que van
+// con la misma licencia que las series. Lo que NO viaja, a propósito:
+// - La Guía de Precios de Mercado Libre que la página muestra al lado: es de Mercado Libre, no la
+//   podemos licenciar (ver AGENTS.md, currency-autos-guide).
+// - Los avisos y las oportunidades: son de terceros (ver el encabezado).
+// La ruta interna `/api/cars/market/<slug>` trae todo eso mezclado y cambia con la página; ésta es
+// la forma estable.
+
+/** Una fila necesita cinco avisos para existir (classes/autos/market.ts, MIN_ROW). */
+export const CAR_PRICES_MIN_ROW = 5
+export const CAR_PRICES_MAX_MIN = 1000
+export const CAR_PRICES_LEVELS = ['todos', 'anio', 'version'] as const
+export type CarPricesLevel = (typeof CAR_PRICES_LEVELS)[number]
+
+/** Lo que se mide, dicho una vez: viaja en la respuesta y en la página. */
+export const CAR_PRICES_METHOD =
+  'Precio PEDIDO en dólares de los avisos de autos usados vistos en los últimos 4 días en diez fuentes, cada auto una sola vez. No es el precio de venta: en Uruguay las transferencias no se publican por modelo. Quedan fuera los precios convertidos o con moneda deducida, los menores a US$ 1.000 o mayores a US$ 500.000, los kilometrajes ilegibles y los avisos que declaran choque, recupero, deuda o papeles pendientes, chapa extranjera, financiación o un precio que no coincide. Cada fila necesita al menos 5 avisos. Se recalcula cada hora.'
+
+export interface RawCarMarketRow {
+  year?: unknown
+  trim?: unknown
+  engine?: unknown
+  transmission?: unknown
+  n?: unknown
+  sellers?: unknown
+  p25?: unknown
+  median?: unknown
+  p75?: unknown
+  kmMedian?: unknown
+}
+
+export interface RawCarMarketSnapshot {
+  slug?: unknown
+  brand?: unknown
+  model?: unknown
+  generatedAt?: unknown
+  listings?: unknown
+  years?: unknown
+  rows?: unknown
+}
+
+export interface OpenCarPriceRow {
+  anio: number
+  version: string | null
+  motor: string | null
+  caja: string | null
+  avisos: number
+  vendedores: number
+  p25: number
+  mediana: number
+  p75: number
+  kmMediana: number | null
+}
+
+export interface OpenCarModelPrices {
+  slug: string
+  marca: string | null
+  modelo: string | null
+  /** Avisos vigentes del modelo (todos, también los que no entran en ninguna fila). */
+  avisos: number
+  actualizado: string | null
+  pagina: string
+  porAnio: OpenCarPriceRow[]
+  porVersion: OpenCarPriceRow[]
+}
+
+export type CarPricesQuery =
+  | {
+      ok: true
+      modelo: string | null
+      anio: number | null
+      minimo: number
+      nivel: CarPricesLevel
+      formato: 'json' | 'csv'
+    }
+  | { ok: false; error: string }
+
+export function carPricesQuery(query: Record<string, unknown>): CarPricesQuery {
+  const modelo = one(query.modelo)
+  if (modelo && !SLUG.test(modelo)) return { ok: false, error: 'modelo inválido' }
+  const anioRaw = one(query.anio)
+  if (anioRaw && !/^(?:19|20)\d{2}$/.test(anioRaw)) return { ok: false, error: 'anio inválido' }
+  const minimoRaw = one(query.minimo)
+  let minimo = CAR_PRICES_MIN_ROW
+  if (minimoRaw) {
+    const asked = Number(minimoRaw)
+    if (!Number.isInteger(asked) || asked < 1 || asked > CAR_PRICES_MAX_MIN)
+      return { ok: false, error: `minimo debe ser un entero entre 1 y ${CAR_PRICES_MAX_MIN}` }
+    // Debajo de cinco no hay filas: se acepta el número y se aplica el piso de la medición.
+    minimo = Math.max(asked, CAR_PRICES_MIN_ROW)
+  }
+  const nivel = (one(query.nivel) || 'todos') as CarPricesLevel
+  if (!CAR_PRICES_LEVELS.includes(nivel))
+    return { ok: false, error: 'nivel debe ser todos, anio o version' }
+  const formato = one(query.formato) || 'json'
+  if (formato !== 'json' && formato !== 'csv')
+    return { ok: false, error: 'formato debe ser json o csv' }
+  return {
+    ok: true,
+    modelo: modelo || null,
+    anio: anioRaw ? Number(anioRaw) : null,
+    minimo,
+    nivel,
+    formato,
+  }
+}
+
+const positive = (value: unknown): number | null =>
+  typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.round(value) : null
+
+/** Una fila del snapshot → la forma pública. Una fila sin año, conteo o cuartiles no se publica. */
+export function openCarPriceRow(raw: RawCarMarketRow): OpenCarPriceRow | null {
+  const anio = positive(raw.year)
+  const avisos = positive(raw.n)
+  const p25 = positive(raw.p25)
+  const mediana = positive(raw.median)
+  const p75 = positive(raw.p75)
+  if (!anio || !avisos || !p25 || !mediana || !p75) return null
+  if (!(p25 <= mediana && mediana <= p75)) return null
+  const caja = str(raw.transmission)
+  return {
+    anio,
+    version: str(raw.trim),
+    motor: str(raw.engine),
+    caja: caja === 'manual' || caja === 'automatica' ? caja : null,
+    avisos,
+    vendedores: positive(raw.sellers) ?? avisos,
+    p25,
+    mediana,
+    p75,
+    kmMediana: positive(raw.kmMedian),
+  }
+}
+
+export function carModelPricesUrl(slug: string): string {
+  return `${OPEN_DATA_SITE}/autos-usados-uruguay/precios/${slug}`
+}
+
+/**
+ * El snapshot de un modelo → lo que publica la API, ya filtrado. Devuelve el modelo aunque quede
+ * sin filas (el que pidió un modelo puntual tiene que poder ver que existe y cuántos avisos hay).
+ */
+export function openCarModelPrices(
+  raw: RawCarMarketSnapshot,
+  filters: { anio: number | null; minimo: number; nivel: CarPricesLevel }
+): OpenCarModelPrices | null {
+  const slug = str(raw.slug)
+  if (!slug || !SLUG.test(slug)) return null
+  const keep = (row: OpenCarPriceRow | null): row is OpenCarPriceRow =>
+    !!row && row.avisos >= filters.minimo && (filters.anio === null || row.anio === filters.anio)
+  const rows = (value: unknown) =>
+    (Array.isArray(value) ? value : []).map(item => openCarPriceRow(item ?? {})).filter(keep)
+  return {
+    slug,
+    marca: str(raw.brand),
+    modelo: str(raw.model),
+    avisos: positive(raw.listings) ?? 0,
+    actualizado: str(raw.generatedAt),
+    pagina: carModelPricesUrl(slug),
+    porAnio: filters.nivel === 'version' ? [] : rows(raw.years),
+    porVersion: filters.nivel === 'anio' ? [] : rows(raw.rows),
+  }
+}
+
+const CSV_COLUMNS = [
+  'modelo_slug',
+  'marca',
+  'modelo',
+  'nivel',
+  'anio',
+  'version',
+  'motor',
+  'caja',
+  'avisos',
+  'vendedores',
+  'p25_usd',
+  'mediana_usd',
+  'p75_usd',
+  'km_mediana',
+  'pagina',
+] as const
+
+function csvCell(value: string | number | null): string {
+  if (value === null) return ''
+  const text = String(value)
+  // Comillas si hace falta, y una celda que empieza con =, +, - o @ no se interpreta como fórmula.
+  const safe = /^[=+\-@]/.test(text) ? `'${text}` : text
+  return /[",\n\r]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe
+}
+
+/** Una fila por banda (año, o año + versión), lista para abrir en una planilla. */
+export function carPricesCsv(models: readonly OpenCarModelPrices[]): string {
+  const lines: string[] = [CSV_COLUMNS.join(',')]
+  for (const model of models) {
+    const emit = (nivel: 'anio' | 'version', row: OpenCarPriceRow) =>
+      lines.push(
+        [
+          model.slug,
+          model.marca,
+          model.modelo,
+          nivel,
+          row.anio,
+          row.version,
+          row.motor,
+          row.caja,
+          row.avisos,
+          row.vendedores,
+          row.p25,
+          row.mediana,
+          row.p75,
+          row.kmMediana,
+          model.pagina,
+        ]
+          .map(csvCell)
+          .join(',')
+      )
+    for (const row of model.porAnio) emit('anio', row)
+    for (const row of model.porVersion) emit('version', row)
+  }
+  return `${lines.join('\r\n')}\r\n`
+}
+
 // ── Catálogo (lo que dibuja la página y lo que sirve /api/datos) ──────────────
 
 export interface OpenDataParam {
@@ -624,6 +853,34 @@ export const OPEN_DATA_ENDPOINTS: readonly OpenDataEndpoint[] = Object.freeze([
     ],
     ejemplo: '/api/datos/autos?marca=toyota&anioMin=2015&precioMaxUsd=15000&orden=price_asc',
   },
+  {
+    id: 'autosPrecios',
+    ruta: '/api/datos/autos/precios',
+    titulo: 'Precios de autos usados por modelo, año y versión',
+    descripcion:
+      'Las bandas de precio pedido (p25, mediana, p75, kilometraje mediano, avisos y vendedores distintos) de cada modelo de auto usado, por año y por año + versión + motor + caja: lo mismo que muestran las páginas de precios de cada modelo, en dólares y sin la Guía de Mercado Libre. Sin modelo devuelve todos los modelos de una vez (el archivo completo); con formato=csv, en una planilla.',
+    licencia: true,
+    parametros: [
+      {
+        nombre: 'modelo',
+        descripcion: 'Slug marca-modelo (sin él, todos los modelos)',
+        ejemplo: 'toyota-hilux',
+      },
+      { nombre: 'anio', descripcion: 'Sólo las filas de ese año', ejemplo: '2018' },
+      {
+        nombre: 'minimo',
+        descripcion: `Avisos mínimos por fila (piso ${CAR_PRICES_MIN_ROW}, máx. ${CAR_PRICES_MAX_MIN})`,
+        ejemplo: '10',
+      },
+      {
+        nombre: 'nivel',
+        descripcion: 'anio = sólo por año, version = sólo por año + versión + motor + caja',
+        valores: CAR_PRICES_LEVELS,
+      },
+      { nombre: 'formato', descripcion: 'json (por defecto) o csv', valores: ['json', 'csv'] },
+    ],
+    ejemplo: '/api/datos/autos/precios?modelo=toyota-hilux',
+  },
 ])
 
 /** OpenAPI 3.1 de la API de datos abiertos, armado del mismo catálogo que dibuja la página. */
@@ -648,8 +905,15 @@ export function openDataOpenApi(): Record<string, unknown> {
         })),
         responses: {
           '200': {
-            description: 'Sobre con la fuente, la licencia y los datos en `datos`.',
-            content: { 'application/json': { schema: { $ref: '#/components/schemas/Envelope' } } },
+            description: endpoint.parametros.some(param => param.nombre === 'formato')
+              ? 'Sobre con la fuente, la licencia y los datos en `datos`; con formato=csv, una fila por banda (la licencia y la fuente van en la cabecera Link).'
+              : 'Sobre con la fuente, la licencia y los datos en `datos`.',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/Envelope' } },
+              ...(endpoint.parametros.some(param => param.nombre === 'formato')
+                ? { 'text/csv': { schema: { type: 'string' } } }
+                : {}),
+            },
           },
           '400': { description: 'Parámetro inválido; el motivo viene en `statusMessage`.' },
         },
