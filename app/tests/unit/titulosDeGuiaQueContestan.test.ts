@@ -3,7 +3,8 @@ import { getGuide } from '../../utils/guides'
 
 /**
  * Los títulos de guía que NOMBRABAN el tema mientras su propia descripción ya traía la respuesta.
- * Cinco el 2026-11-20, tres más el 2026-11-25 (su nota está junto a sus filas).
+ * Cinco el 2026-11-20, tres más el 2026-11-25 y tres más el 2026-11-27 (su nota está junto a sus
+ * filas).
  *
  * POR QUÉ FALTABA ESTE ARREGLO, Y POR QUÉ NO ERA UN DESCUIDO. Las once tandas de snippet de
  * octubre se eligieron por PRESUPUESTO: `guideSnippetBudget.test.ts` lista las guías pasadas de 60
@@ -165,6 +166,100 @@ const TITULOS = [
       /tope A/,
     ],
     fuente: 'https://www.impo.com.uy/bases/leyes/20130-2023/22',
+  },
+  // ---- Tercera tanda, 2026-11-27 ----
+  //
+  // La nota de la segunda tanda dejó escrito dónde se había trabado la cola: de las ocho guías que
+  // su heurística encontró, CUATRO no tienen tarjeta de Fuentes —«las cuatro evergreen de julio»—
+  // y «quedan pendientes de que alguien las documente», porque sin texto primario que citar un
+  // título nuevo le inventaría respaldo a una afirmación.
+  //
+  // LO QUE DESTRABA LA COLA: el texto primario YA ESTABA CITADO en este repo, palabra por palabra,
+  // por otra página. El art. 887 del Código Civil lo cita `legitima-y-herederos-forzosos-uruguay`
+  // con la escala transcripta; los topes y el alcance del Fondo de Garantía de Depósitos los citan
+  // `utils/investments.ts` y `utils/personalFinanceFaq.ts`; y que un título no es un depósito en el
+  // banco lo cita `utils/investments.ts` desde el BROU. O sea que «documentarlas» no pedía una
+  // verificación nueva: pedía mover a su guía la fuente que otra página del mismo sitio ya había
+  // leído. Ninguna URL de las tres filas de abajo es nueva en el repo y ninguna cifra es nueva en
+  // la guía.
+  //
+  // `hacer-un-testamento-uruguay` no estaba entre esas ocho porque el 25/11 su ruta seguía
+  // reservada: su última fila del libro es del 2026-10-29 (`snippets-respuesta-primero-los-tres-libres`,
+  // que le arregló la descripción y le dejó el título intacto) y la reserva de 29 días vence
+  // justo hoy. Es el mismo par de siempre: la respuesta adelante en el renglón de abajo y la
+  // etiqueta del tema en el de arriba, que es el que se clica.
+  //
+  // LAS DOS QUE SIGUEN AFUERA, Y POR QUÉ NO ES PEREZA.
+  //   - `facturar-como-freelancer-uruguay`: su respuesta mejor documentada —el monotributo está
+  //     exceptuado de la facturación electrónica, uno de los siete exceptuados que enumera la
+  //     página de universalización de la DGI— es el ASUNTO ENTERO de otra página del sitio,
+  //     `/facturar-en-monotributo-uruguay` («talonario o factura electrónica»). Ponerla en el
+  //     título de la guía es la canibalización que la cuarta tanda sacó de `ahorrar-en-dolares-o-pesos`
+  //     y la que la regla del buscador propio evita («scoreDocs puntúa 110 un título que EMPIEZA
+  //     por lo tipeado»). Su otra respuesta —que para facturar hay que estar inscripto en algún
+  //     régimen— es correcta y está en su cuerpo y en su primer FAQ, pero ninguna de las fuentes
+  //     de la DGI que el repo ya leyó la afirma con esas palabras, y un título no se mueve con una
+  //     fuente que dice algo parecido.
+  //   - `conviene-ahorrar-en-dolares-uruguay`: su respuesta es un juicio («conviene si la meta
+  //     está en dólares»), no una norma ni un dato publicado por un operador, así que no hay texto
+  //     primario que citar y una tarjeta de Fuentes ahí vestiría un consejo de dato con fuente. Y
+  //     además su respuesta es casi la que el título de `ahorrar-en-dolares-o-pesos` ya publica
+  //     («Dólares o pesos: la moneda de tu gasto»), que es exactamente el par que la cuarta tanda
+  //     separó el 2026-10-08.
+  //
+  // SÓLO EL TÍTULO Y LAS FUENTES. Las tres descripciones ya abren por la respuesta y entran en
+  // 155, así que no se tocan; tampoco el H1 del cuerpo, el `updatedAt` (las cifras de las tres
+  // guías no se revisaron hoy: lo que se agregó es de dónde se chequean) ni los `related`.
+  {
+    slug: 'hacer-un-testamento-uruguay',
+    // El título abría con «Cómo» y nombraba el trámite. La respuesta que publica ahora es la que
+    // el propio cuerpo llama «el punto que más sorprende»: con hijos, la mayor parte del
+    // patrimonio ya está reservada como legítima y sólo la porción disponible es de libre
+    // disposición. Va sin fracciones a propósito: la escala depende de cuántos hijos haya (1/2,
+    // 2/3 o 3/4) y es el título de `legitima-y-herederos-forzosos-uruguay` el que la publica, así
+    // que repetirla acá sería pelearle su consulta a la guía de al lado. Y los dos renglones no
+    // dicen la misma frase, que es lo que la segunda tanda cuidó en `como-saber-si-tengo-deudas`:
+    // el título publica la CONSECUENCIA con las palabras del lector y la descripción se queda con
+    // el mecanismo (la legítima reserva y sólo se dispone del resto) y con el honorario notarial,
+    // que es el otro dato por el que se entra a esta página.
+    titulo: 'Testamento: con hijos no podés dejar todo',
+    nombrabaElTema: 'Cómo hacer un testamento en Uruguay',
+    respaldo: [
+      /la mayor parte de tu patrimonio ya está reservada como legítima/i,
+      /porción disponible/i,
+      /herederos forzosos/i,
+    ],
+    fuente: 'https://www.impo.com.uy/bases/codigo-civil/16603-1994/887',
+  },
+  {
+    slug: 'plazo-fijo-en-uruguay-conviene',
+    // La pregunta devuelta sin contestar, que es el peor caso: repite la consulta que la persona
+    // acaba de escribir. De las cosas que la guía afirma, la que se puede chequear contra un
+    // operador es la garantía; «la tasa real es lo que ganás» es la otra mitad de su respuesta y
+    // se queda en el cuerpo, donde no necesita fuente porque es una resta. El título dice que hay
+    // garantía y NO cuánto: los topes están en la descripción y el cuerpo mismo advierte que
+    // «pueden actualizarse», así que un título con la cifra sería más firme que su fuente.
+    titulo: 'Plazo fijo: lo cubre la garantía de COPAB',
+    nombrabaElTema: '¿Conviene un plazo fijo en Uruguay?',
+    respaldo: [
+      /Fondo de Garantía de Depósitos que administra COPAB/i,
+      /por persona y por institución/i,
+      /UI 250\.000/,
+    ],
+    fuente: 'https://www.copab.org.uy/innovaportal/v/311/1/web/depositos-cubiertos.html',
+  },
+  {
+    slug: 'bonos-y-renta-fija-uruguay',
+    // «Guía básica» era la etiqueta del índice gastando el renglón del SERP. «Bonos y renta fija»
+    // se queda al frente —son las dos palabras de la consulta— y lo que sigue es la diferencia que
+    // la guía dedica una sección entera a explicar y que su propia descripción ya publica: el bono
+    // se vende antes del vencimiento a precio de mercado y no tiene la garantía de depósitos que
+    // sí cubre al plazo fijo. Es el par de esta tanda con el de arriba, a propósito: las dos
+    // guías se enlazan entre sí y ahora sus títulos dicen en qué se diferencian.
+    titulo: 'Bonos y renta fija: no son un depósito',
+    nombrabaElTema: 'Bonos y renta fija en Uruguay: guía básica',
+    respaldo: [/no tiene la garantía de depósitos/i, /a precio de mercado/i],
+    fuente: 'https://www.brou.com.uy/personas/inversiones/instrumentos-financieros',
   },
 ] as const
 
