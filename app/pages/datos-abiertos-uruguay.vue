@@ -386,7 +386,7 @@ const FAQ: FaqItem[] = [
     id: 'datos-abiertos-limites',
     question: '¿Hay un límite de pedidos?',
     answer:
-      'No hay clave ni cupo. Las respuestas se guardan una hora en el borde porque los datos cambian una vez por día (las bandas de autos, una vez por hora), así que pedir más seguido no trae nada nuevo. Si necesitás todos los modelos de auto, pedí el archivo completo de /api/datos/autos/precios en una sola llamada (también en CSV) en vez de un pedido por modelo, guardalo de tu lado y mostrá el crédito con el enlace.',
+      'No hay clave ni cupo. Los datos cambian una vez por día (las bandas de autos, una vez por hora), así que pedir más seguido no trae nada nuevo. Si necesitás todos los modelos de auto, pedí el archivo completo de /api/datos/autos/precios en una sola llamada (también en CSV) en vez de un pedido por modelo, guardalo de tu lado y mostrá el crédito con el enlace.',
   },
   {
     id: 'datos-abiertos-variacion',
