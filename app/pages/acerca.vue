@@ -127,14 +127,29 @@
         <!-- Desde cuándo funcionamos: la prueba es de un tercero (Internet Archive), no nuestra.
              Datos fijos y fechados en utils/archiveHistory.ts; sólo se calcula el tiempo. -->
         <section id="trayectoria" class="about-section">
-          <h2>{{ t('acerca.archiveTitle') }}</h2>
-          <p class="about-since">
-            <strong class="about-since__figure">{{ timeOnlineLabel }}</strong>
-            <span class="about-since__caption">
-              en línea. Internet Archive guardó la primera copia del sitio el
-              {{ firstCaptureDisplay }}.
-            </span>
-          </p>
+          <!-- El grabado (public/img/grabados/archivo.webp) es el adorno; las capturas son la
+               prueba, y por eso son capturas y nada más (ver utils/archiveHistory.ts). -->
+          <div class="about-track__head">
+            <div class="about-track__intro">
+              <h2>{{ t('acerca.archiveTitle') }}</h2>
+              <p class="about-since">
+                <strong class="about-since__figure">{{ timeOnlineLabel }}</strong>
+                <span class="about-since__caption">
+                  en línea. Internet Archive guardó la primera copia del sitio el
+                  {{ firstCaptureDisplay }}.
+                </span>
+              </p>
+            </div>
+            <img
+              class="about-track__art"
+              src="/img/grabados/archivo.webp"
+              alt=""
+              width="445"
+              height="431"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
           <p class="about-prose">
             No hace falta creernos.
             <a
@@ -145,14 +160,36 @@
               >Internet Archive</a
             >
             es una biblioteca digital sin fines de lucro que guarda copias fechadas de los sitios
-            web, y no la manejamos nosotros. Abrí cualquiera de estas copias y vas a ver el sitio
-            tal como estaba ese día.
+            web, y no la manejamos nosotros. Cada imagen es una captura de esa copia tal como la
+            muestra hoy el archivo; abrila y vas a ver el sitio como estaba ese día.
           </p>
           <ol class="about-archive">
             <li v-for="snap in archiveSnapshots" :key="snap.timestamp" class="about-archive__item">
-              <time class="about-archive__date" :datetime="snap.date">{{ snap.dateLabel }}</time>
+              <!-- Misma copia que el enlace de texto: fuera del orden de tabulación y del árbol de
+                   accesibilidad, para no anunciar dos veces el mismo destino. -->
+              <a
+                class="about-archive__shot"
+                :href="snap.href"
+                target="_blank"
+                rel="noopener noreferrer"
+                tabindex="-1"
+                aria-hidden="true"
+              >
+                <img
+                  :src="snap.src"
+                  :srcset="snap.srcset"
+                  sizes="(max-width: 600px) 100vw, 16rem"
+                  alt=""
+                  width="480"
+                  height="300"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </a>
               <div class="about-archive__body">
+                <time class="about-archive__date" :datetime="snap.date">{{ snap.dateLabel }}</time>
                 <p class="about-archive__note">{{ snap.note }}</p>
+                <p v-if="snap.caveat" class="about-archive__caveat">{{ snap.caveat }}</p>
                 <a
                   class="about-link about-archive__link"
                   :href="snap.href"
@@ -334,7 +371,10 @@ const archiveSnapshots = computed(() =>
       date,
       dateLabel: longDay(date),
       note: snap.note,
+      caveat: snap.caveat,
       href: waybackSnapshotUrl(snap.timestamp, snap.url),
+      src: `${snap.image}-480.webp`,
+      srcset: `${snap.image}-480.webp 480w, ${snap.image}-960.webp 960w`,
     }
   })
 )
@@ -632,12 +672,37 @@ useHead({
   border-radius: 4px;
 }
 
-/* Desde cuándo funcionamos: la cifra arriba, después las copias del archivo, una fila por año
-   con la misma grilla que los tipos de cotización. */
+/* Desde cuándo funcionamos: la cifra arriba con el grabado del fichero al lado, después las
+   copias del archivo, una fila por año con su captura. */
+.about-track__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 9.5rem;
+  align-items: end;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.about-track__intro {
+  min-width: 0;
+}
+
+/* Below the fold, as DESIGN.md's Engravings asks: navy on paper in light, white ink at half
+   opacity in dark. Never behind text: it has its own grid column. */
+.about-track__art {
+  display: block;
+  width: 100%;
+  height: auto;
+  opacity: 0.85;
+}
+
+.v-theme--dark .about-track__art {
+  filter: brightness(0) invert(1);
+  opacity: 0.5;
+}
+
 .about-since {
   display: grid;
   gap: 4px;
-  margin-bottom: 16px;
 }
 
 /* The Stat Step de DESIGN.md: 700, 1.5rem, cifras tabulares. */
@@ -663,10 +728,40 @@ useHead({
 
 .about-archive__item {
   display: grid;
-  grid-template-columns: 12rem minmax(0, 1fr);
-  gap: 4px 24px;
-  padding-block: 16px;
+  grid-template-columns: 16rem minmax(0, 1fr);
+  align-items: start;
+  gap: 16px 24px;
+  padding-block: 24px;
   border-top: 1px solid rgba(var(--v-theme-on-surface), 0.14);
+}
+
+/* The capture as it was taken: a hairline and nothing else (no browser chrome drawn around it,
+   no shadow). Its box is fixed by the image's own 16:10, so nothing moves when it loads. */
+.about-archive__shot {
+  display: block;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.14);
+  border-radius: 8px;
+  background: rgba(var(--v-theme-on-surface), 0.04);
+  transition: border-color 0.24s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.about-archive__shot:hover {
+  border-color: rgba(var(--v-theme-link), 0.6);
+}
+
+.about-archive__shot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.about-archive__caveat {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: rgba(var(--v-theme-on-surface), 0.72);
 }
 
 .about-archive__item:last-child {
@@ -754,6 +849,11 @@ useHead({
   .about-type,
   .about-archive__item {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .about-track__head {
+    grid-template-columns: minmax(0, 1fr) 6rem;
+    gap: 16px;
   }
 }
 </style>

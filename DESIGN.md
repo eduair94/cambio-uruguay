@@ -553,7 +553,13 @@ icon tiles the home had accumulated, all of which this document already banned.
 - **The set** (`app/public/img/grabados/`): `rambla.webp` (the Rambla with the Palacio Salvo, 1534 ×
   400) and `rambla-800.webp` for phones; four step vignettes `paso-monedas`, `paso-monto`,
   `paso-pizarra`, `paso-casa`; `plano-ciudad-vieja.webp` (the peninsula's grid with a compass rose);
-  `farol.webp` (a lamp of the Ciudad Vieja and a lost coin, on the error page).
+  `farol.webp` (a lamp of the Ciudad Vieja and a lost coin, on the error page); `archivo.webp` (a
+  library card-catalogue with one drawer of blank cards open and an hourglass on top, beside the
+  heading of `/acerca#trayectoria`).
+- **Evidence is never drawn.** Where a page proves something with an image — the captures of the
+  site's archived copies in `/acerca#trayectoria` (`public/img/trayectoria/`) — the image is a
+  capture and only a capture, framed by a hairline. The engraving next to it is the ornament; no
+  generated or retouched picture stands in for the evidence.
 - **Ink only.** Every file is navy line work on full transparency (alpha = how dark the line is),
   produced from a generated drawing by stripping its paper. They carry no text, digits, currency
   signs, flags, portraits or denominations: an engraving that looks like a real banknote is a
