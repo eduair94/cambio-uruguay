@@ -1,5 +1,5 @@
 <template>
-  <section v-reveal class="reviews-section py-12">
+  <section v-reveal class="reviews-section py-8 py-sm-12">
     <VContainer>
       <VRow>
         <VCol cols="12" md="10" lg="8" class="mx-auto text-center mb-8">
