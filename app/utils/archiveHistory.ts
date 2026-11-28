@@ -41,7 +41,24 @@ export interface ArchiveSnapshot {
   url: string
   /** Qué se ve en esa copia: lo que el lector puede comprobar al abrirla. */
   note: string
+  /**
+   * La captura de esa copia en `public/`, sin la extensión: existen `<image>-480.webp` y
+   * `<image>-960.webp` (1280 × 800 tomada de la Wayback en modo `if_`, sin su barra).
+   */
+  image: string
+  /** Lo que la copia NO guardó y por eso la imagen no muestra; se dice al lado de la imagen. */
+  caveat?: string
 }
+
+/**
+ * Las capturas se tomaron el 2026-11-28 con un navegador sobre la copia archivada, tal como la
+ * dibuja hoy la Wayback, y se tocaron sólo dos cosas que son del archivo y no del sitio: el aviso
+ * de cookies que se cierra con «Rechazar» cuando la copia responde (en la de 2026 no responde, y
+ * queda), y en 2024-2025 el velo oscuro de un «cargando» que espera para siempre unas
+ * cotizaciones que el archivo no guardó. Nada se generó ni se retocó: la prueba es la imagen.
+ */
+const NO_RATES =
+  'El archivo guardó la página pero no las cotizaciones de ese día: por eso no aparece el conversor, y sacamos de la imagen el velo de «cargando» que quedaba encima.'
 
 /** Una copia de la portada por año, de la más vieja a la más nueva. */
 export const ARCHIVE_SNAPSHOTS: readonly ArchiveSnapshot[] = [
@@ -49,26 +66,33 @@ export const ARCHIVE_SNAPSHOTS: readonly ArchiveSnapshot[] = [
     timestamp: '20221227222132',
     url: 'https://cambio-uruguay.com/',
     note: 'La primera copia guardada. El sitio ya comparaba cotizaciones: «más de 10 casas de cambio».',
+    image: '/img/trayectoria/20221227',
   },
   {
     timestamp: '20230102180118',
     url: 'https://cambio-uruguay.com/',
-    note: 'Una semana después ya decía «más de 40 casas de cambio».',
+    note: 'Una semana después ya decía «más de 40 casas de cambio», con filtro por departamento.',
+    image: '/img/trayectoria/20230102',
   },
   {
     timestamp: '20240619001649',
     url: 'https://cambio-uruguay.com/',
-    note: 'A mitad de año, el mismo comparador de más de 40 casas de cambio.',
+    note: 'A mitad de año, el mismo comparador de más de 40 casas de cambio; el pie dice «© 2024».',
+    image: '/img/trayectoria/20240619',
+    caveat: NO_RATES,
   },
   {
     timestamp: '20250201003829',
     url: 'https://cambio-uruguay.com/',
-    note: 'El comparador, en su tercer año, con dólares, pesos argentinos y reales.',
+    note: 'En su tercer año, el mismo comparador; el pie ya dice «© 2025».',
+    image: '/img/trayectoria/20250201',
+    caveat: NO_RATES,
   },
   {
     timestamp: '20261010233934',
     url: 'https://cambio-uruguay.com/',
     note: 'La portada actual: 43 casas de cambio comparadas, con datos del BCU.',
+    image: '/img/trayectoria/20261010',
   },
 ]
 

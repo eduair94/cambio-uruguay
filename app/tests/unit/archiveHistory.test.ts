@@ -1,7 +1,7 @@
 // La prueba de antigüedad que el sitio le muestra a quien duda: las copias que guardó Internet
 // Archive. Los datos son fijos y fechados (ver app/utils/archiveHistory.ts); lo único que se
 // calcula es cuánto tiempo pasó desde la primera captura, y eso es lo que este archivo vigila.
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
@@ -64,6 +64,18 @@ describe('las capturas publicadas', () => {
       expect(new URL(snap.url).hostname.replace(/^www\./, '')).toBe('cambio-uruguay.com')
       expect(snap.note.length).toBeGreaterThan(10)
     }
+  })
+
+  it('cada copia tiene su captura en los dos anchos que pide el srcset', () => {
+    const publicDir = join(__dirname, '..', '..', 'public')
+    for (const snap of ARCHIVE_SNAPSHOTS) {
+      expect(snap.image.startsWith('/img/trayectoria/')).toBe(true)
+      expect(snap.image).toContain(snap.timestamp.slice(0, 8))
+      for (const width of [480, 960]) {
+        expect(existsSync(join(publicDir, `${snap.image}-${width}.webp`))).toBe(true)
+      }
+    }
+    expect(existsSync(join(publicDir, 'img', 'grabados', 'archivo.webp'))).toBe(true)
   })
 
   it('ninguna captura es posterior a la fecha en que se consultó el archivo', () => {
