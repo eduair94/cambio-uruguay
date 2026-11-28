@@ -2912,21 +2912,4 @@ useSchemaOrg([
     flex: 0 0 auto;
   }
 }
-/* Experimento A/B `alquiler-tarjeta` (utils/abTests.ts, docs/analytics/AB_TESTS.md): en el brazo
-   `b`, la tarjeta del celular sin la comparación de barrios ni el pie (anunciante, «¿ya no está?»,
-   última lectura) y con los portales de a dos por renglón. Las tres cosas siguen en la ficha. El
-   atributo lo marca el script del <head> antes de pintar, así que la tarjeta nace con su alto. */
-@media (max-width: 599px) {
-  :global(html[data-ab-alquiler-tarjeta='b']) .rental-card .zone-bars,
-  :global(html[data-ab-alquiler-tarjeta='b']) .rental-card__footnote {
-    display: none;
-  }
-  :global(html[data-ab-alquiler-tarjeta='b']) .rental-card__offers {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-  :global(html[data-ab-alquiler-tarjeta='b']) .rental-card__offer {
-    flex: 1 1 140px;
-  }
-}
 </style>
