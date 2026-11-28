@@ -267,6 +267,12 @@ const sortItems: Array<{ title: string; value: CarSort; short: string }> = [
 ]
 
 const query = computed(() => normalizeCarsQuery(route.query as Record<string, unknown>))
+// La invitación del final (experimento A/B `seguimiento`) ofrece la alerta de ESTA búsqueda.
+declareFollowUpAlert(() => ({
+  kind: 'car-search',
+  filters: carsQueryParams(query.value),
+  hasHost: true,
+}))
 // El mercado en números sale del MISMO informe que /mercado-de-autos-usados-uruguay, en paralelo
 // con el catálogo y con un tope corto: si tarda o falla, el bloque no se dibuja y la lista sí.
 // `transform` deja en el payload sólo el resumen (unos 3 KB), no el informe entero.

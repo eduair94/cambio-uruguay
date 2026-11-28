@@ -397,6 +397,19 @@ const branches = computed(() =>
       ]
     : []
 )
+// La invitación del final (experimento A/B `seguimiento`): alquileres nuevos en el mismo barrio.
+declareFollowUpAlert(() =>
+  property.value?.department
+    ? {
+        kind: 'rental-search',
+        filters: {
+          department: property.value.department,
+          neighborhood: property.value.neighborhood || undefined,
+        },
+        hasHost: false,
+      }
+    : null
+)
 const nearbyLink = computed(() => ({
   path: localePath('/alquileres-uruguay'),
   query: {

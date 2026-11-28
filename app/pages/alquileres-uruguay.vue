@@ -928,6 +928,8 @@ const query = computed(() =>
   normalizeRentalQuery({ ...route.query, ...rentalReferenceQuery(rentalReference.reference.value) })
 )
 const agencyName = useAgencySelection(() => query.value.agency)
+// La invitación del final (experimento A/B `seguimiento`) ofrece la alerta de ESTA búsqueda.
+declareFollowUpAlert(() => ({ kind: 'rental-search', filters: { ...query.value }, hasHost: true }))
 // The site's own API gets the point's coordinates, to measure and sort by distance, and never its
 // label: the server does not read it, and it can be the address the visitor typed.
 const requestParams = computed(() =>
