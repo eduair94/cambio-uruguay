@@ -36,6 +36,8 @@
       </VCard>
     </header>
 
+    <RelatedInline class="mb-10" />
+
     <!-- Cuánto es -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-2">Cuánto es, en UR</h2>

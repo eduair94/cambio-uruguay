@@ -85,6 +85,13 @@
                 volver a suscribirla sin que lo pidas.
               </li>
               <li>
+                <strong>Avisos de un tema (opcional):</strong> si pedís que te avisemos cuando salga
+                un dato (por ejemplo, el aumento de las jubilaciones), guardamos tu correo, el tema
+                y el idioma. Te pedimos que lo confirmes desde el correo que te mandamos, te
+                escribimos sólo cuando sale ese dato y cada correo trae un enlace para darte de
+                baja. No te suscribe al newsletter.
+              </li>
+              <li>
                 <strong>Alertas de cotización (opcional):</strong> la moneda, la casa, el precio que
                 esperás y los canales que elegís (notificación, correo o Telegram), hasta que borres
                 la alerta. Por correo sólo te escribimos si tu dirección está verificada.
@@ -504,7 +511,7 @@
 const { t, locale } = useI18n()
 const localePath = useLocalePath()
 
-const LAST_UPDATED = '2026-11-23'
+const LAST_UPDATED = '2026-11-28'
 const rentalAlertPrivacy = computed(() => {
   if (locale.value.startsWith('en'))
     return 'Search alerts (rentals, homes for sale, used cars and motorcycles) are optional. We store your chosen filters, frequency, channels, whether you want price drops, your verified email address and delivery records to avoid repeating notifications. To detect price drops we keep the last and lowest price of each public listing, with no data about you. Push uses a device registration identifier. You can pause or delete an alert in your account; deleting it also removes its delivery history. Each email includes a link to unsubscribe from that alert’s emails independently of push notifications.'

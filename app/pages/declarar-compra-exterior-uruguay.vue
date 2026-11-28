@@ -18,6 +18,8 @@
       </VAlert>
     </header>
 
+    <RelatedInline class="mb-8" />
+
     <section class="mb-9" aria-labelledby="quien-declara">
       <h2 id="quien-declara" class="section-heading mb-2">
         Primero: identificá quién trae el paquete

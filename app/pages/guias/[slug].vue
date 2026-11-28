@@ -34,6 +34,15 @@
             </p>
           </header>
 
+          <!-- La herramienta de la guía (hoy sólo la calculadora de jubilaciones). Va en el HTML de
+               todos y critical.css la muestra sólo en el brazo `b` del experimento A/B
+               `jubilaciones` (utils/abTests.ts): mostrarla al hidratar movería la página. -->
+          <GuidesJubilacionesEstimator
+            v-if="guide.widget === 'aumento-jubilaciones'"
+            class="ab-jubilaciones mb-6"
+            :minimum-anchor="minimumAnchor"
+          />
+
           <VDivider class="mb-6" />
 
           <!-- Sections -->
@@ -267,6 +276,11 @@ const guide = computed(() => getGuide(slug.value))
 const hub = computed(() => hubOfGuide(slug.value))
 const adsOn = computed(() => adDensityForPath(route.path) !== 'none')
 const sectionIds = computed(() => guideSectionIds(guide.value?.sections ?? []))
+/** Dónde explica la guía la jubilación mínima: la calculadora enlaza ahí a quien cobra cerca. */
+const minimumAnchor = computed(() => {
+  const index = (guide.value?.sections ?? []).findIndex(s => /m[ií]nima/i.test(s.heading))
+  return index >= 0 ? sectionIds.value[index] : undefined
+})
 const nextSteps = computed(() =>
   guide.value ? guideNextSteps(guide.value, hub.value?.resources) : []
 )

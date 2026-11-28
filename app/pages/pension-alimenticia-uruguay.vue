@@ -34,6 +34,8 @@
       </VCard>
     </header>
 
+    <RelatedInline class="mb-10" />
+
     <!-- El piso del art. 46 -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-2">El único número que la ley escribe</h2>

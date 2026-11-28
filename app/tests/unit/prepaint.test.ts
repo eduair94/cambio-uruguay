@@ -101,7 +101,7 @@ describe('prepaint: el aviso de cookies ya decidido no se pinta', () => {
     expect(() => runInNewContext(SCRIPT, { document: {} })).not.toThrow()
     expect(() => runInNewContext(SCRIPT, {})).not.toThrow()
     expect(CONFIG).toMatch(
-      /script:\s*\[\s*\{\s*innerHTML:\s*PREPAINT_CONSENT_SCRIPT,\s*tagPosition:\s*'head'\s*\}\s*\]/
+      /script:\s*\[\s*\{\s*innerHTML:\s*PREPAINT_CONSENT_SCRIPT,\s*tagPosition:\s*'head'\s*\}\s*,/
     )
     // Sin import nuevo: gtagEnvironment y workerEntryConfig evalúan la config con un conjunto
     // cerrado de imports.

@@ -598,3 +598,16 @@ textarea {
 html[data-cu-consent] .cookie-consent:not(.v-dialog) {
   display: none;
 }
+
+/*
+ * Experimentos A/B (utils/abTests.ts, docs/analytics/AB_TESTS.md). El script del <head>
+ * (PREPAINT_AB_SCRIPT) marca <html data-ab-<id>> antes de pintar; acá se elige el brazo. El HTML
+ * del servidor lleva las dos cosas para todos: nada aparece ni desaparece después de pintar.
+ * Sin marca (servidor, programas, almacenamiento bloqueado, fuera de fecha) = control.
+ */
+.ab-jubilaciones {
+  display: none;
+}
+html[data-ab-jubilaciones='b'] .ab-jubilaciones {
+  display: block;
+}

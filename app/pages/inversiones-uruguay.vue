@@ -80,6 +80,8 @@
       </p>
     </section>
 
+    <RelatedInline class="mb-6" />
+
     <!-- Lo que paga hoy cada opción de riesgo bajo, con su fecha, su IRPF y su salida. -->
     <section id="bajo-riesgo-hoy" class="mb-6">
       <h2 class="text-h6 font-weight-bold mb-3 inversiones-group-title">

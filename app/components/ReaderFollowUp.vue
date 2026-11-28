@@ -7,7 +7,16 @@
       </div>
       <ShareButtons label variant="outlined" color="primary" placement="content_end" />
     </div>
-    <NewsletterCapture v-if="kind === 'newsletter'" />
+    <!-- Experimento A/B `seguimiento` (utils/abTests.ts): en el brazo `b`, donde la página tiene
+         tema (una alerta de avisos declarada por la página, o el aviso de jubilaciones), esa
+         invitación en vez del newsletter del dólar. Todo esto es del navegador (ClientOnly), así
+         que elegir después de montar no mueve nada que ya estuviera pintado. -->
+    <ClientOnly v-if="kind === 'newsletter'">
+      <template v-if="mounted">
+        <TopicFollowUp v-if="topicChoice" :alert="topicChoice.alert" :topic="topicChoice.topic" />
+        <NewsletterCapture v-else />
+      </template>
+    </ClientOnly>
     <ClientOnly v-else>
       <section
         v-if="allowed && auth.ready && configured && !completed && !checkingAlerts"
@@ -41,6 +50,8 @@
 
 <script setup lang="ts">
 import { followUpForPath } from '~/utils/engagement'
+import { followUpTopicForPath } from '~/utils/followUpTopic'
+import { abAssignments } from '~/utils/abTests'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -48,6 +59,30 @@ const localePath = useLocalePath()
 const auth = useAuthStore()
 const configured = Boolean(useRuntimeConfig().public.firebase?.apiKey)
 const kind = computed(() => followUpForPath(route.path))
+const mounted = ref(false)
+const segArm = ref<'a' | 'b' | null>(null)
+onMounted(() => {
+  segArm.value = abAssignments().seguimiento ?? null
+  mounted.value = true
+})
+const followUpAlert = useFollowUpAlert()
+/**
+ * Qué invitación por tema le toca a esta página en el brazo `b` (null = la de siempre). En la guía
+ * del aumento de jubilaciones, quien está en el brazo `b` de `jubilaciones` ya tiene el mismo aviso
+ * arriba: no se repite abajo.
+ */
+const topicChoice = computed(() => {
+  if (segArm.value !== 'b') return null
+  if (followUpAlert.value) return { alert: followUpAlert.value, topic: null }
+  const topic = followUpTopicForPath(route.path)
+  if (!topic) return null
+  if (
+    route.path.endsWith('/guias/aumento-de-jubilaciones-uruguay') &&
+    abAssignments().jubilaciones === 'b'
+  )
+    return null
+  return { alert: null, topic }
+})
 const privatePage = computed(() => {
   const guards = [route.meta.middleware].flat()
   return guards.includes('auth')

@@ -111,6 +111,8 @@
       </VAlert>
     </section>
 
+    <RelatedInline class="mb-10" />
+
     <!-- 2. Los tres dólares de Brasil -->
     <section class="mb-10" aria-labelledby="tres">
       <h2 id="tres" class="section-heading mb-1">

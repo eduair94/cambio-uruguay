@@ -33,6 +33,8 @@
       </VCard>
     </header>
 
+    <RelatedInline class="mb-10" />
+
     <!-- Los topes -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-2">Las únicas puertas para embargar un sueldo</h2>

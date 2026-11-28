@@ -22,12 +22,21 @@ import {
 export const RELATED_INLINE_LIMIT = 3
 
 /**
- * Las páginas que pintan `<RelatedInline />`: las calculadoras de `<ToolShell>` (sus dos diseños) y
- * cada indicador. Un test (`relatedInlineParity.test.ts`) recorre `pages/` y exige que esta lista sea
- * EXACTAMENTE la de las páginas que lo pintan: una de más le sacaría al pie tres tarjetas que nadie
- * mostró arriba, una de menos dejaría el bloque de arriba vacío.
+ * Las páginas que pintan `<RelatedInline />`: las calculadoras de `<ToolShell>` (sus dos diseños),
+ * cada indicador y las guías sueltas que lo ponen debajo de su primera respuesta (en el teléfono su
+ * primer enlace a otra página quedaba 12–27 pantallas abajo y el lector baja 2–7). Un test
+ * (`relatedInlineParity.test.ts`) recorre `pages/` y exige que esta lista sea EXACTAMENTE la de las
+ * páginas que lo pintan: una de más le sacaría al pie tres tarjetas que nadie mostró arriba, una de
+ * menos dejaría el bloque de arriba vacío.
  */
 export const RELATED_INLINE_ROUTES: readonly string[] = Object.freeze([
+  '/alquilar-estando-en-clearing',
+  '/carne-de-salud-uruguay',
+  '/comisiones-de-transferencia-uruguay',
+  '/declarar-compra-exterior-uruguay',
+  '/denunciar-ruidos-molestos-uruguay',
+  '/denunciar-trabajo-en-negro-uruguay',
+  '/embargo-de-sueldo-uruguay',
   '/herramientas/calculadora-aguinaldo',
   '/herramientas/calculadora-impuestos-importacion',
   '/herramientas/calculadora-impuestos-inversiones',
@@ -46,6 +55,19 @@ export const RELATED_INLINE_ROUTES: readonly string[] = Object.freeze([
   '/herramientas/costo-de-vida',
   '/herramientas/costo-real-de-invertir-afuera',
   '/herramientas/widget-dolar',
+  '/impuesto-temu-uruguay',
+  '/inversiones-uruguay',
+  '/letras-de-regulacion-monetaria-uruguay',
+  '/llevar-dolares-o-reales-a-brasil',
+  '/multa-por-no-votar-uruguay',
+  '/multas-de-transito-y-patente-uruguay',
+  '/pension-alimenticia-uruguay',
+  '/prestamo-sin-recibo-de-sueldo-uruguay',
+  '/que-pasa-si-no-pago-antel',
+  '/renunciar-al-trabajo-uruguay',
+  '/sala-vip-aeropuerto-uruguay',
+  '/trabajo-para-menores-de-edad-uruguay',
+  '/valor-catastral-uruguay',
 ])
 
 /** Prefijos de páginas dinámicas que lo pintan (`pages/indicadores/[indicador].vue`). */

@@ -41,6 +41,7 @@ import {
   strictRegionFromTimeZone,
 } from '../utils/clarityPolicy'
 import { tabLandingUrl } from '../utils/landingComparison'
+import { abAssignments, abProperties } from '../utils/abTests'
 import * as clarity from './clarity'
 
 /** Per tab: the country does not change between two pages of one visit. */
@@ -169,6 +170,8 @@ export function startClarityRuntime(options: ClarityRuntimeOptions): void {
     clarity.set('locale', clarityLocale(path))
     clarity.set('ads', adDensityForPath(path, { toolsAds }))
     clarity.set('consent', cookie === 'granted' ? 'explicita' : 'por-defecto')
+    // Los brazos A/B (utils/abTests.ts): filtrar grabaciones por brazo en el tablero.
+    for (const [key, arm] of Object.entries(abProperties(abAssignments()))) clarity.set(key, arm)
   }
 
   /** The route rules: the excluded pages, the private query parameters, the filter cap. */

@@ -50,6 +50,8 @@
             </p>
           </header>
 
+          <RelatedInline class="mb-6" />
+
           <VDivider class="mb-6" />
 
           <!-- 1. Según quién hace el ruido -->

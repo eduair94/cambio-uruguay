@@ -31,6 +31,8 @@
       </p>
     </VAlert>
 
+    <RelatedInline class="mb-6" />
+
     <!-- La regla, que es lo único que no envejece -->
     <h2 class="text-h6 font-weight-bold mb-2">Las tres reglas que deciden todo</h2>
     <VRow class="mb-6">

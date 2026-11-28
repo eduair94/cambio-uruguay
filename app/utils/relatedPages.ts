@@ -333,6 +333,27 @@ export const OPPORTUNITY_RELATED = {
  * `tests/unit/relatedPages.test.ts` fails if any target here stops existing.
  */
 export const CURATED: Readonly<Record<string, readonly string[]>> = Object.freeze({
+  // Las tres páginas sueltas con más entradas (GA4, 28/11/2026) llevan el bloque de arriba
+  // (`RelatedInline`) desde ese día: su siguiente pregunta es la que la propia página nombra al final,
+  // a 12–27 pantallas en el celular. El motor elegía vecinas por palabras («deuda» → gastos comunes,
+  // auto con deuda); acá van las que la página misma recomienda.
+  '/que-pasa-si-no-pago-antel': [
+    '/factura-de-ute-uruguay',
+    '/factura-de-ose-uruguay',
+    '/salir-del-clearing',
+    '/saldar-deudas-uruguay',
+    '/defensa-al-consumidor-uruguay',
+  ],
+  '/denunciar-ruidos-molestos-uruguay': [
+    '/a-quien-le-reclamo-uruguay',
+    '/defensa-al-consumidor-uruguay',
+    '/alquilar-en-uruguay',
+  ],
+  '/trabajo-para-menores-de-edad-uruguay': [
+    '/cuanto-me-tienen-que-pagar-uruguay',
+    '/denunciar-trabajo-en-negro-uruguay',
+    '/salud-financiera',
+  ],
   // Used cars: the buyer's next questions are debts, fines, running costs and the licence.
   '/autos-usados-uruguay': [
     '/oportunidades-autos-usados-uruguay',

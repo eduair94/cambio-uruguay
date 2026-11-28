@@ -928,6 +928,8 @@ const query = computed(() =>
   normalizeRentalQuery({ ...route.query, ...rentalReferenceQuery(rentalReference.reference.value) })
 )
 const agencyName = useAgencySelection(() => query.value.agency)
+// La invitación del final (experimento A/B `seguimiento`) ofrece la alerta de ESTA búsqueda.
+declareFollowUpAlert(() => ({ kind: 'rental-search', filters: { ...query.value }, hasHost: true }))
 // The site's own API gets the point's coordinates, to measure and sort by distance, and never its
 // label: the server does not read it, and it can be the address the visitor typed.
 const requestParams = computed(() =>
@@ -2908,6 +2910,23 @@ useSchemaOrg([
   }
   .rentals-grid--lista .rental-card__offer {
     flex: 0 0 auto;
+  }
+}
+/* Experimento A/B `alquiler-tarjeta` (utils/abTests.ts, docs/analytics/AB_TESTS.md): en el brazo
+   `b`, la tarjeta del celular sin la comparación de barrios ni el pie (anunciante, «¿ya no está?»,
+   última lectura) y con los portales de a dos por renglón. Las tres cosas siguen en la ficha. El
+   atributo lo marca el script del <head> antes de pintar, así que la tarjeta nace con su alto. */
+@media (max-width: 599px) {
+  :global(html[data-ab-alquiler-tarjeta='b']) .rental-card .zone-bars,
+  :global(html[data-ab-alquiler-tarjeta='b']) .rental-card__footnote {
+    display: none;
+  }
+  :global(html[data-ab-alquiler-tarjeta='b']) .rental-card__offers {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  :global(html[data-ab-alquiler-tarjeta='b']) .rental-card__offer {
+    flex: 1 1 140px;
   }
 }
 </style>
