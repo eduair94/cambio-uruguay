@@ -261,8 +261,10 @@ function reset() {
   border: 0;
   background: none;
 }
-.feedback-form :is(p, h2, fieldset, legend) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  .feedback-form :is(p, h2, fieldset, legend) {
+    margin: 0;
+  }
 }
 .feedback-form__form {
   display: grid;

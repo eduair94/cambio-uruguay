@@ -821,8 +821,10 @@ const faq = [
   border-radius: 12px;
 }
 
-.ref-panel :where(h2, h3, p, ul) {
-  margin-top: 0;
+@layer vuetify-overrides.cu-reset {
+  .ref-panel :where(h2, h3, p, ul) {
+    margin-top: 0;
+  }
 }
 
 .ref-title {

@@ -195,8 +195,10 @@ watch(params, () => closeDetail(false))
 onBeforeUnmount(() => controller?.abort())
 </script>
 <style scoped>
-:where(.sale-map) :where(p, h2) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.sale-map) :where(p, h2) {
+    margin: 0;
+  }
 }
 .sale-map__count {
   font-size: 0.95rem;

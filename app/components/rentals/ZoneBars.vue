@@ -200,9 +200,11 @@ const digest = computed(() => {
   padding-top: 4px;
   border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
-:where(.zone-bars) :where(p, ul) {
-  margin: 0;
-  padding: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.zone-bars) :where(p, ul) {
+    margin: 0;
+    padding: 0;
+  }
 }
 .zone-bars__summary {
   display: grid;

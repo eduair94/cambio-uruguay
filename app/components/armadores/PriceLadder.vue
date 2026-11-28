@@ -93,8 +93,10 @@ const expanded = computed(
 </template>
 
 <style scoped>
-:where(.am-ladder) :where(p, h2, ul) {
-  margin-top: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.am-ladder) :where(p, h2, ul) {
+    margin-top: 0;
+  }
 }
 .am-ladder {
   display: grid;

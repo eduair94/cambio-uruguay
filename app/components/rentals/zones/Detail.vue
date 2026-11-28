@@ -424,8 +424,10 @@ const rentalsLink = computed(() => ({
   border-radius: 12px;
   background: rgb(var(--v-theme-surface));
 }
-:where(.zone-detail) :where(h3, p, ul, dl, dd) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.zone-detail) :where(h3, p, ul, dl, dd) {
+    margin: 0;
+  }
 }
 header {
   display: flex;

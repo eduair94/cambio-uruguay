@@ -336,8 +336,10 @@ function sentence(item: RentalZoneImpact['attributes'][number]) {
 .price-impact {
   margin-top: 32px;
 }
-:where(.price-impact) :where(h2, p) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.price-impact) :where(h2, p) {
+    margin: 0;
+  }
 }
 h2 {
   font-size: clamp(1.35rem, 3vw, 1.75rem);

@@ -90,8 +90,10 @@ function dismiss() {
   display: grid;
   gap: 10px;
 }
-.review-ask :is(p) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  .review-ask :is(p) {
+    margin: 0;
+  }
 }
 .review-ask--lead {
   padding: 16px;

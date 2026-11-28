@@ -331,8 +331,10 @@ const faq = computed(() => {
 <style scoped>
 /* El fondo y el borde del panel son los de .tool-info-box (ToolShell). Cada bloque de texto
    declara su propio margen superior (DESIGN.md, The Text Block Owns Its Top Margin Rule). */
-.lenders-panel :where(h2, h3, p, ul) {
-  margin-top: 0;
+@layer vuetify-overrides.cu-reset {
+  .lenders-panel :where(h2, h3, p, ul) {
+    margin-top: 0;
+  }
 }
 
 .lenders-title {

@@ -421,8 +421,10 @@ onBeforeUnmount(() => {
   color: rgb(var(--v-theme-on-surface));
   overflow: hidden;
 }
-:where(.sale-search) :where(h2, p) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.sale-search) :where(h2, p) {
+    margin: 0;
+  }
 }
 .sale-search header,
 .sale-search footer {

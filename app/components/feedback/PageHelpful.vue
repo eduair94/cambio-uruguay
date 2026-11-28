@@ -216,8 +216,10 @@ async function choose(value: HelpfulAnswer) {
   background: rgba(var(--v-theme-on-surface), 0.03);
   color: rgb(var(--v-theme-on-surface));
 }
-.page-helpful :is(p) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  .page-helpful :is(p) {
+    margin: 0;
+  }
 }
 .page-helpful__row {
   display: flex;

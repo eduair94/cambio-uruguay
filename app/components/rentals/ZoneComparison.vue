@@ -311,8 +311,10 @@ const date = (value: string | null) =>
   padding-top: 28px;
   border-top: 1px solid rgba(var(--v-theme-on-surface), 0.18);
 }
-:where(.rental-comparison) :where(h3, h4, p, dl, dd) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.rental-comparison) :where(h3, h4, p, dl, dd) {
+    margin: 0;
+  }
 }
 .rental-comparison h3 {
   font-size: 1.25rem;

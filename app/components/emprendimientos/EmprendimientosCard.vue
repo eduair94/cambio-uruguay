@@ -140,8 +140,10 @@ const followers = computed(() => (props.compact ? null : followersLabel(props.it
   border-color: rgba(var(--v-theme-primary), 0.5);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
-:where(.emp-card) :where(p, h3, ul) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.emp-card) :where(p, h3, ul) {
+    margin: 0;
+  }
 }
 
 /* Fotos: una grande y dos chicas a la derecha; con una sola, cuadrada. */

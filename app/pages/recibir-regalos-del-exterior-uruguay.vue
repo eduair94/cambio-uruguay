@@ -893,8 +893,10 @@ useHead(() => ({
    gap más chico que pidamos: el cabezal de cada bloque terminaba con el título 16px
    por debajo de su icono y el intro a 14px cuando pedía 2. Ver DESIGN.md,
    “The Text Block Owns Its Top Margin Rule”. */
-:where(.page) :where(p, h1, h2, h3, ul, ol, pre) {
-  margin-top: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.page) :where(p, h1, h2, h3, ul, ol, pre) {
+    margin-top: 0;
+  }
 }
 .eyebrow {
   font-size: var(--t-label);

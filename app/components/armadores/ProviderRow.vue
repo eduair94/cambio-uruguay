@@ -373,8 +373,10 @@ async function loadContact() {
 </template>
 
 <style scoped>
-:where(.ar-row) :where(p, h3, h4, dl, dd, ul) {
-  margin-top: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.ar-row) :where(p, h3, h4, dl, dd, ul) {
+    margin-top: 0;
+  }
 }
 .ar-row {
   display: grid;

@@ -334,8 +334,10 @@ useHead({
   display: grid;
   gap: 24px;
 }
-:where(.emp-page) :where(h1, h2, h3, p, ul, dl, dd) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.emp-page) :where(h1, h2, h3, p, ul, dl, dd) {
+    margin: 0;
+  }
 }
 .emp-profile {
   display: grid;

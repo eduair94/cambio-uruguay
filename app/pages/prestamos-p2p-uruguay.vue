@@ -907,8 +907,10 @@ useHead(() => ({
 
 <style scoped>
 /* Esta página declara sus propios márgenes: ver DESIGN.md, "The Text Block Owns Its Top Margin". */
-:where(.p2p-page) :where(p, h1, h2, h3, ul, ol, blockquote) {
-  margin-top: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.p2p-page) :where(p, h1, h2, h3, ul, ol, blockquote) {
+    margin-top: 0;
+  }
 }
 
 .p2p-page {

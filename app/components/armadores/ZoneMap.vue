@@ -155,8 +155,10 @@ const zoneModel = computed({
 </template>
 
 <style scoped>
-:where(.am-map) :where(p, h2, ol) {
-  margin-top: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.am-map) :where(p, h2, ol) {
+    margin-top: 0;
+  }
 }
 .am-map {
   display: grid;

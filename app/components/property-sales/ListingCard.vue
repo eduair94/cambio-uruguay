@@ -148,8 +148,10 @@ const readDate = computed(() =>
   background: rgb(var(--v-theme-surface));
   overflow: hidden;
 }
-:where(.sale-card) :where(p, h3) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.sale-card) :where(p, h3) {
+    margin: 0;
+  }
 }
 .sale-card__visual {
   position: relative;

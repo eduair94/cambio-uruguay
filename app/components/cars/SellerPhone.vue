@@ -191,8 +191,10 @@ const provenanceLink = computed(() =>
   background: rgba(var(--v-theme-on-surface), 0.04);
   overflow-wrap: anywhere;
 }
-:where(.car-phone) :where(p, ul) {
-  margin-top: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.car-phone) :where(p, ul) {
+    margin-top: 0;
+  }
 }
 .car-phone__list {
   list-style: none;
