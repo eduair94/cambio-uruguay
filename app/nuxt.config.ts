@@ -1107,6 +1107,10 @@ export default defineNuxtConfig({
       '*/10 * * * *': ['alerts:check'],
       // Rental subscriptions use a Mongo lease and a per-channel outbox across both workers.
       '2,12,22,32,42,52 * * * *': ['rentals:alerts'],
+      // :25 de cada hora: si el dato de un aviso por tema cambió de estado (el aumento de las
+      // jubilaciones, con un deploy), un correo a cada aviso confirmado. Reclamo atómico por
+      // suscriptor: los dos workers la corren y nadie recibe dos (server/tasks/topics/notify.ts).
+      '25 * * * *': ['topics:notify'],
       // :51 y :56 de cada hora: recalienta el memo de /api/rentals (portada sin filtros, Montevideo,
       // Canelones, Maldonado y página 2) justo después de que el backend escribe la horaria de
       // alquileres (pm2 currency-rentals-hourly, :47 UTC) y lejos de rentals:alerts (:52). Los dos
