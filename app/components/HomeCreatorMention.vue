@@ -15,7 +15,7 @@
   <section
     v-if="creator && videos.length"
     v-reveal
-    class="creator-mention-section py-12"
+    class="creator-mention-section py-8 py-sm-12"
     aria-labelledby="creator-mention-title"
   >
     <VContainer>
