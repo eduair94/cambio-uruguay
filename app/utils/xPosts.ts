@@ -14,11 +14,13 @@
 
 import {
   LINKEDIN_SITE,
+  USD_MAX_AGE_DAYS,
   USD_MIN_GAP_PESOS,
   cdata,
   escapeXml,
   formatPesos,
   formatRate,
+  type LinkedinRateRow,
   type UsdSnapshot,
 } from './linkedinPosts'
 
@@ -40,6 +42,33 @@ export const X_GUIDE_HOUR = 15
 export const X_GUIDE_DAYS: readonly number[] = [1, 3, 5]
 /** Los cinco feriados pagos: las casas no abren y "el dólar de hoy" sería el de ayer. */
 export const X_NO_DOLLAR: readonly string[] = ['01-01', '05-01', '07-18', '08-25', '12-25']
+/**
+ * Hora de Montevideo del cierre (días hábiles). Sale SÓLO si el BROU movió el dólar en el día por
+ * lo menos `X_CLOSE_MIN_MOVE`: un "el dólar sigue igual" todas las tardes es ruido, y lo que la
+ * gente comenta es el día que se mueve.
+ */
+export const X_CLOSE_HOUR = 17
+/** Movimiento mínimo de la venta del BROU en el día, en pesos, para que el cierre se tuitee. */
+export const X_CLOSE_MIN_MOVE = 0.1
+/** Sábado a la mañana, con las casas abiertas: el real para el que viaja a Brasil o a la frontera. */
+export const X_TRAVEL_DAY = 6
+export const X_TRAVEL_HOUR = 10
+/** Domingo: cómo cerró la semana el dólar del BROU. */
+export const X_WEEK_DAY = 0
+export const X_WEEK_HOUR = 11
+/**
+ * Los videos nuevos de canales uruguayos (`videoPosts.ts`) salen por ESTE feed desde esta fecha.
+ * Antes tenían un feed propio (`/feeds/videos.xml`) cuyo applet de IFTTT nunca se creó; sumarlos
+ * acá los publica con el applet que ya existe. El corte evita que el primer deploy tuitee de golpe
+ * los videos de los dos días anteriores.
+ */
+export const X_VIDEOS_SINCE = '2026-11-29T03:00:00Z'
+/**
+ * Techo de la caché del borde. Antes el feed se guardaba hasta el próximo turno (hasta 24 h); con
+ * los videos adentro, uno nuevo puede entrar en cualquier lectura horaria del snapshot y su tuit no
+ * debería esperar más que esto (el mismo techo que tenía `/feeds/videos.xml`).
+ */
+export const X_FEED_MAX_TTL = 900
 
 /** X cuenta cada URL como 23 caracteres, sea cual sea su largo. */
 export const TCO_URL_LENGTH = 23
@@ -247,8 +276,10 @@ export const X_GUIDES: readonly XPost[] = Object.freeze([
 
 // ---- turnos ------------------------------------------------------------------------------------
 
+export type XSlotKind = 'dolar' | 'guia' | 'cierre' | 'viaje' | 'semana'
+
 export interface XSlot {
-  kind: 'dolar' | 'guia'
+  kind: XSlotKind
   /** Día de Montevideo (`AAAA-MM-DD`). */
   date: string
   /** Instante en que sale (UTC). */
@@ -271,11 +302,13 @@ const mvdDate = (now: Date) =>
 export function xSlotsOn(date: string): XSlot[] {
   const d = weekday(date)
   const slots: XSlot[] = []
-  if (d >= 1 && d <= 5 && !X_NO_DOLLAR.includes(date.slice(5))) {
-    slots.push({ kind: 'dolar', date, at: at(date, X_DOLLAR_HOUR) })
-  }
+  const businessDay = d >= 1 && d <= 5 && !X_NO_DOLLAR.includes(date.slice(5))
+  if (businessDay) slots.push({ kind: 'dolar', date, at: at(date, X_DOLLAR_HOUR) })
   if (X_GUIDE_DAYS.includes(d)) slots.push({ kind: 'guia', date, at: at(date, X_GUIDE_HOUR) })
-  return slots
+  if (businessDay) slots.push({ kind: 'cierre', date, at: at(date, X_CLOSE_HOUR) })
+  if (d === X_TRAVEL_DAY) slots.push({ kind: 'viaje', date, at: at(date, X_TRAVEL_HOUR) })
+  if (d === X_WEEK_DAY) slots.push({ kind: 'semana', date, at: at(date, X_WEEK_HOUR) })
+  return slots.sort((a, b) => a.at.getTime() - b.at.getTime())
 }
 
 /** El último turno que ya empezó en `now`. */
@@ -354,6 +387,219 @@ export function dollarTweet(s: UsdSnapshot, date: string): XPost {
   return { id: 'dolar-hoy', path: '/', text }
 }
 
+// ---- el cierre del dólar ----------------------------------------------------------------------
+
+/** Lo que necesita el tuit del cierre: la venta del BROU al empezar el día y ahora, y la más barata. */
+export interface CloseSnapshot {
+  brouOpen: number
+  brouLast: number
+  cheapestSell: number
+  cheapestNames: string[]
+}
+
+const round2 = (n: number) => Math.round(n * 100) / 100
+
+/** `0.3` → `30 centésimos`, `1.05` → `$ 1,05`. */
+export function moveLabel(pesos: number): string {
+  const abs = Math.abs(round2(pesos))
+  if (abs >= 1) return `$ ${formatRate(abs)}`
+  const cents = Math.round(abs * 100)
+  return `${cents} ${cents === 1 ? 'centésimo' : 'centésimos'}`
+}
+
+/**
+ * El tuit de la tarde de un día hábil, o `null` si el BROU no movió el dólar lo suficiente (ver
+ * `X_CLOSE_MIN_MOVE`). Lo que dice es lo que mide `GET /intraday`: la venta con la que el BROU
+ * empezó el día y la de ahora, no un "cierre" oficial.
+ */
+export function closeTweet(c: CloseSnapshot, date: string): XPost | null {
+  const move = round2(c.brouLast - c.brouOpen)
+  if (Math.abs(move) < X_CLOSE_MIN_MOVE) return null
+  const up = move > 0
+  const amount = moveLabel(move)
+  const open = formatRate(c.brouOpen)
+  const last = formatRate(c.brouLast)
+  const sell = formatRate(c.cheapestSell)
+  const where = shortNames(c.cheapestNames)
+  const label = dayLabel(date)
+  const variants = [
+    `El dólar ${up ? 'subió' : 'bajó'} ${amount} hoy en el BROU: empezó el día a $ ${open} y a esta hora está a $ ${last}.\n\nLo más barato para comprar ahora: $ ${sell} (${where}).`,
+    `Cierre del ${label}: el BROU ${up ? 'subió' : 'bajó'} el dólar ${amount}, de $ ${open} a $ ${last}.\n\nSi tenés que comprar, la casa más barata a esta hora lo vende a $ ${sell} (${where}).`,
+    `El dólar ${up ? 'sube' : 'baja'} ${amount} en el día: el BROU lo vende a $ ${last} (arrancó en $ ${open}).\n\nMás barato ahora: $ ${sell} en ${where}.`,
+  ]
+  return {
+    id: 'dolar-cierre',
+    path: '/',
+    text: variants[mod(daysSinceXEpoch(date), variants.length)]!,
+  }
+}
+
+// ---- la semana del dólar -----------------------------------------------------------------------
+
+/** Un punto diario de `GET /evolution/brou/USD`. */
+export interface BrouDayPoint {
+  date: string
+  sell: number
+  type?: string | null
+}
+
+export interface WeekSnapshot {
+  close: number
+  /** Día (Montevideo) del último dato de la semana: el viernes, o antes si fue feriado. */
+  closeDay: string
+  prevClose: number
+  /** Más caro que cualquier día de los seis meses anteriores. */
+  high: boolean
+  /** Más barato que cualquier día de los seis meses anteriores. */
+  low: boolean
+}
+
+/** Días de historia previa que hacen falta para decir "el más alto/bajo en seis meses". */
+export const WEEK_MIN_HISTORY_DAYS = 100
+
+/**
+ * La semana del dólar del BROU al domingo `date`: el último dato de lunes a sábado contra el último
+ * de la semana anterior. `null` si falta alguna de las dos puntas o si se movió más de 10 % (un
+ * dato roto, no una semana).
+ */
+export function summarizeBrouWeek(
+  points: readonly BrouDayPoint[],
+  date: string
+): WeekSnapshot | null {
+  const byDay = new Map<string, number>()
+  for (const p of points) {
+    if (p.type) continue
+    const t = Date.parse(p.date)
+    if (!Number.isFinite(t) || !(p.sell > 0)) continue
+    byDay.set(mvdDate(new Date(t)), p.sell)
+  }
+  const days = [...byDay.keys()].sort()
+  // La serie trae también sábados y domingos (con el precio del viernes arrastrado): la semana se
+  // mide en días hábiles, o el tuit diría "el sábado el BROU lo vendía a".
+  const businessDays = days.filter(d => weekday(d) >= 1 && weekday(d) <= 5)
+  const lastIn = (from: string, to: string) =>
+    businessDays.filter(d => d >= from && d <= to).pop() ?? null
+
+  const weekStart = shiftDays(date, -6)
+  const closeDay = lastIn(weekStart, shiftDays(date, -1))
+  const prevDay = lastIn(shiftDays(date, -13), shiftDays(date, -7))
+  if (!closeDay || !prevDay) return null
+  const close = byDay.get(closeDay)!
+  const prevClose = byDay.get(prevDay)!
+  if (Math.abs(close - prevClose) / prevClose > 0.1) return null
+
+  const before = days.filter(d => d < weekStart).map(d => byDay.get(d)!)
+  const enough = before.length >= WEEK_MIN_HISTORY_DAYS
+  return {
+    close,
+    closeDay,
+    prevClose,
+    high: enough && close > Math.max(...before),
+    low: enough && close < Math.min(...before),
+  }
+}
+
+/** El tuit del domingo. */
+export function weekTweet(w: WeekSnapshot, date: string): XPost {
+  const diff = round2(w.close - w.prevClose)
+  const close = formatRate(w.close)
+  const prev = formatRate(w.prevClose)
+  const dia = DIAS[weekday(w.closeDay)]!
+  const change =
+    diff === 0
+      ? 'igual que una semana antes'
+      : `${moveLabel(diff)} ${diff > 0 ? 'más' : 'menos'} que una semana antes ($ ${prev})`
+  const record = w.high
+    ? '\n\nNo estaba tan caro en los últimos seis meses.'
+    : w.low
+      ? '\n\nNo estaba tan barato en los últimos seis meses.'
+      : ''
+  const variants = [
+    `La semana del dólar: el ${dia} el BROU lo vendía a $ ${close}, ${change}.${record}\n\nEl histórico, día por día:`,
+    `Cómo terminó la semana: dólar a $ ${close} en el BROU el ${dia}, ${change}.${record}\n\nLa serie completa:`,
+  ]
+  return {
+    id: 'dolar-semana',
+    path: '/historico/brou/usd',
+    text: variants[mod(Math.floor(daysSinceXEpoch(date) / 7), variants.length)]!,
+  }
+}
+
+// ---- el real para viajar -----------------------------------------------------------------------
+
+/** La más barata de una moneda en las casas uruguayas, con las mismas guardas que el dólar. */
+export interface CurrencySnapshot {
+  cheapestSell: number
+  cheapestNames: string[]
+  brouSell: number | null
+  sampleSize: number
+}
+
+/** Casas con dato confiable que hacen falta para tuitear una moneda que no es el dólar. */
+export const CURRENCY_MIN_SAMPLE = 8
+
+/**
+ * La venta más barata de `code` (pizarra común, sin el BCU, sin pizarras quietas, de los últimos
+ * días). `null` si hay pocas casas o si la más barata queda lejos de la mediana o por encima del
+ * BROU: en una moneda con poco movimiento, una pizarra rota es justo la que sale primera.
+ */
+export function summarizeCurrency(
+  code: string,
+  rows: readonly LinkedinRateRow[],
+  names: Readonly<Record<string, { name?: string } | undefined>>,
+  frozenKeys: ReadonlySet<string> | null,
+  now: Date
+): CurrencySnapshot | null {
+  if (!frozenKeys) return null
+  const minTime = now.getTime() - USD_MAX_AGE_DAYS * DAY_MS
+  const usable = rows.filter(r => {
+    if (r.code !== code || r.origin === 'bcu' || r.type) return false
+    if (!(r.buy > 0) || !(r.sell > 0) || r.buy >= r.sell) return false
+    if (frozenKeys.has(`${r.origin}|${code}|`)) return false
+    if (r.date) {
+      const t = Date.parse(r.date)
+      if (Number.isFinite(t) && t < minTime) return false
+    }
+    return true
+  })
+  if (usable.length < CURRENCY_MIN_SAMPLE) return null
+  const sells = usable.map(r => r.sell).sort((a, b) => a - b)
+  const median = sells[Math.floor(sells.length / 2)]!
+  const cheapestSell = sells[0]!
+  if (cheapestSell < median * 0.85) return null
+  const brou = usable.find(r => r.origin === 'brou')
+  const brouSell = brou ? brou.sell : null
+  if (brouSell !== null && (cheapestSell > brouSell || cheapestSell < brouSell * 0.85)) return null
+
+  const nameOf = (origin: string) =>
+    names[origin]?.name?.trim() ||
+    origin.replace(/_/g, ' ').replace(/(^|\s)\p{Ll}/gu, c => c.toUpperCase())
+  const cheapestNames = [
+    ...new Set(usable.filter(r => r.sell === cheapestSell).map(r => nameOf(r.origin))),
+  ].sort((a, b) => a.localeCompare(b, 'es'))
+  return { cheapestSell, cheapestNames, brouSell, sampleSize: usable.length }
+}
+
+/** El tuit del sábado: el real más barato, para el que viaja a Brasil o compra en la frontera. */
+export function travelTweet(r: CurrencySnapshot, date: string): XPost {
+  const sell = formatRate(r.cheapestSell)
+  const where = shortNames(r.cheapestNames)
+  const brou =
+    r.brouSell !== null && r.brouSell > r.cheapestSell
+      ? ` En el BROU, $ ${formatRate(r.brouSell)}.`
+      : ''
+  const label = dayLabel(date)
+  const variants = [
+    `¿Viajás a Brasil o vas a la frontera? El real más barato hoy en Uruguay: $ ${sell} (${where}).${brou}\n\n¿Reales o dólares? Los dos precios del día, lado a lado:`,
+    `Real hoy, ${label}: lo más barato para comprar es $ ${sell} (${where}).${brou}\n\nAntes de cambiar, fijate si te conviene más llevar dólares y cambiar allá:`,
+  ]
+  return {
+    id: 'real-viaje',
+    path: '/llevar-dolares-o-reales-a-brasil',
+    text: variants[mod(Math.floor(daysSinceXEpoch(date) / 7), variants.length)]!,
+  }
+}
+
 // ---- el feed -----------------------------------------------------------------------------------
 
 const urlFor = (path: string) => (path === '/' ? `${LINKEDIN_SITE}/` : `${LINKEDIN_SITE}${path}`)
@@ -368,31 +614,58 @@ export function tweetLength(text: string): number {
   return text.replace(/https?:\/\/\S+/g, 'x'.repeat(TCO_URL_LENGTH)).length
 }
 
+/** Un ítem del feed: un turno o un video. IFTTT tuitea cada `guid` una sola vez. */
+export interface XFeedItem {
+  guid: string
+  title: string
+  link: string
+  at: Date
+  message: string
+}
+
+/** El ítem de un turno. El `guid` es el mismo que antes de sumar turnos: nada se vuelve a tuitear. */
+export function slotItem(slot: XSlot, post: XPost): XFeedItem {
+  return {
+    guid: `cambio-uruguay-x-${slot.date}-${slot.kind}`,
+    title: post.text.trim().split('\n')[0]!.slice(0, 140),
+    link: urlFor(post.path),
+    at: slot.at,
+    message: xMessage(post),
+  }
+}
+
 /**
- * Cache-Control del feed (la regla de Cloudflare de `/feeds/*` respeta `s-maxage`). Con ítem, el
- * borde lo guarda hasta el próximo turno: al vencer, Cloudflare va al origen en el acto (medido el
- * 12/11/2026 con el feed de LinkedIn), así que un vencimiento por turno es lo mínimo. Sin ítem (el
- * dólar no tenía datos confiables), cinco minutos: que el próximo intento de IFTTT lo vuelva a pedir.
+ * Cache-Control del feed (la regla de Cloudflare de `/feeds/*` respeta `s-maxage`). Hasta el
+ * próximo turno o el próximo video programado, con techo `X_FEED_MAX_TTL` porque un video nuevo
+ * puede entrar en cualquier lectura del snapshot. Al vencer, Cloudflare va al origen en el acto
+ * (medido el 12/11/2026 con el feed de LinkedIn). Si el turno vigente no tenía datos confiables,
+ * cinco minutos: que el próximo intento de IFTTT lo vuelva a pedir. Un turno que no publica a
+ * propósito (el cierre de un día quieto) SÍ tiene datos: no reintenta.
  */
-export function xFeedCacheControl(now: Date, hasItem: boolean): string {
-  const untilNext = Math.round((nextXSlotAt(now).getTime() - now.getTime()) / 1000)
-  const ttl = hasItem ? Math.min(86_400, Math.max(60, untilNext)) : 300
+export function xFeedCacheControl(
+  now: Date,
+  slotHasData: boolean,
+  nextVideoAt: Date | null = null
+): string {
+  const next = Math.min(nextXSlotAt(now).getTime(), nextVideoAt?.getTime() ?? Infinity)
+  const untilNext = Math.round((next - now.getTime()) / 1000)
+  const ttl = slotHasData ? Math.min(X_FEED_MAX_TTL, Math.max(60, untilNext)) : 300
   return `public, max-age=0, s-maxage=${ttl}, stale-while-revalidate=86400, stale-if-error=86400`
 }
 
-/** RSS 2.0 con el tuit del turno vigente, o sin ítems si no hay nada confiable que publicar. */
-export function renderXFeed(slot: XSlot, post: XPost | null, now: Date): string {
-  const item = post
-    ? [
-        '<item>',
-        `<title>${escapeXml(post.text.trim().split('\n')[0]!.slice(0, 140))}</title>`,
-        `<link>${escapeXml(urlFor(post.path))}</link>`,
-        `<guid isPermaLink="false">cambio-uruguay-x-${slot.date}-${slot.kind}</guid>`,
-        `<pubDate>${slot.at.toUTCString()}</pubDate>`,
-        `<description>${cdata(xMessage(post))}</description>`,
-        '</item>',
-      ]
-    : []
+/** RSS 2.0 con los ítems vigentes (lo más nuevo primero), o sin ítems si no hay nada que publicar. */
+export function renderXFeed(items: readonly XFeedItem[], now: Date): string {
+  const body = [...items]
+    .sort((a, b) => b.at.getTime() - a.at.getTime())
+    .flatMap(item => [
+      '<item>',
+      `<title>${escapeXml(item.title)}</title>`,
+      `<link>${escapeXml(item.link)}</link>`,
+      `<guid isPermaLink="false">${escapeXml(item.guid)}</guid>`,
+      `<pubDate>${item.at.toUTCString()}</pubDate>`,
+      `<description>${cdata(item.message)}</description>`,
+      '</item>',
+    ])
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
@@ -400,11 +673,11 @@ export function renderXFeed(slot: XSlot, post: XPost | null, now: Date): string 
     '<title>Cambio Uruguay en X</title>',
     `<link>${LINKEDIN_SITE}/</link>`,
     `<atom:link href="${LINKEDIN_SITE}/feeds/x.xml" rel="self" type="application/rss+xml"/>`,
-    '<description>Los tuits de cambio-uruguay.com: el dólar de cada día hábil y guías.</description>',
+    '<description>Los tuits de cambio-uruguay.com: el dólar de cada día, guías y videos de economía de canales uruguayos.</description>',
     '<language>es-UY</language>',
     `<lastBuildDate>${now.toUTCString()}</lastBuildDate>`,
     '<ttl>5</ttl>',
-    ...item,
+    ...body,
     '</channel>',
     '</rss>',
     '',
