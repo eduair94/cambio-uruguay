@@ -1110,7 +1110,7 @@
   "platformComparison": {
     "nav": "比较平台",
     "metaTitle": "Cambio Uruguay vs DólarAhora vs Dólar 乌拉圭 (2026)",
-    "metaDescription": "对乌拉圭汇率平台进行经过验证的比较：覆盖范围、更新频率、货币种类、分析、提醒、工具和开发者访问权限。",
+    "metaDescription": "Cambio Uruguay、DólarAhora、Dólar Uruguay 和 cotizacion.uy 在 16 项标准中，每项标准背后都有 18 个公共来源，竞争对手在这些标准中胜出。",
     "eyebrow": "经核实的比较 · 乌拉圭",
     "title": "应该使用哪个汇率平台？",
     "subtitle": "我们利用公开信息对 Cambio Uruguay、DólarAhora.uy、Dólar Uruguay 和 cotizacion.uy 进行了比较。结论显而易见，但我们也指出了其他更优的选择。",
@@ -2419,6 +2419,7 @@
     "eyebrow": "透明度",
     "title": "Reddit 问题解答",
     "subtitle": "我们运营一个账号，专门回答乌拉圭Reddit子版块上的理财问题，并注明每个数字的出处页面。以下是该账号的全部工作内容：回答了哪些问题，没有回答哪些问题，以及每条回复的反馈情况。",
+    "metaDescription": "机器人的完整账簿：它回复了多少帖子，有多少评论被保留了下来，它们的平均得分，以及它为什么跳过了其余的帖子。",
     "account": "帐户",
     "updated": "更新",
     "since": "自从",

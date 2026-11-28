@@ -387,18 +387,33 @@ const DEUDA_DESCRIPCION_MENSAJE = [
   // cuatro tipos de cotización que la página explica uno por uno. Quedan en 149/151/153,
   // 149/145/145 y 152/147/148.
   //
-  // De las seis que quedan, `/comparar-plataformas-dolar-uruguay` se libera el 2026-11-26 y
-  // `/tarjetas-de-credito-uruguay` el 2026-11-30; `/conectar` es área de cuenta y no busca a nadie.
+  // 6 → 3 el 2026-11-28: las tres que `npm run seo_debt` y el cruce contra el libro de cambios dan
+  // libres hoy — `/comparar-plataformas-dolar-uruguay` cumplió su ventana el 11-26 (última fila,
+  // `comparar-plataformas-entra-a-su-tema`, 31 días), `/barrios-alquileres-uruguay` no tiene fila
+  // desde `migas-en-el-renglon-verde` (60 días) y `/estadisticas-reddit` no tiene NINGUNA fila. Las
+  // tres tenían el defecto de siempre: el único renglón que el SERP imprime gastado en el ÍNDICE de
+  // la página. La de plataformas enumeraba las columnas de su propia tabla («cobertura,
+  // actualización, monedas, analítica, alertas, herramientas y acceso para desarrolladores») y no
+  // nombraba a ninguno de los cuatro productos que compara, que es lo que la gente escribe; ahora
+  // los nombra y trae las dos cifras del propio catálogo (16 criterios, 18 fuentes, contadas en
+  // `utils/platformComparison.ts`). La de barrios enumeraba las capas y ahora abre por el alquiler y
+  // los gastos comunes medianos y por los cortes de luz que UTE no archiva, que es el dato que
+  // ninguna otra página de Uruguay pone al lado. Y `/estadisticas-reddit` medía 205/200/211 porque
+  // reusaba su SUBTÍTULO de pantalla como descripción: pasa a tener clave propia
+  // (`redditStats.metaDescription`), el subtítulo queda intacto y la descripción nombra las tres
+  // métricas que la página publica. Ninguna de las tres cifras es nueva ni inventada.
+  //
+  // De las tres que quedan, `/tarjetas-de-credito-uruguay` se libera el 2026-11-30 y `/conectar` es
+  // área de cuenta y no busca a nadie. `/autos-usados-uruguay/comparar` es `noindex, follow` a
+  // propósito (lo declara su propia `useSeoMeta`), así que su descripción no llega a ningún SERP:
+  // es deuda de forma y no un defecto de clic, y por eso no se curó antes que las tres de arriba.
   '/autos-usados-uruguay/comparar',
-  '/barrios-alquileres-uruguay',
-  '/comparar-plataformas-dolar-uruguay',
   '/conectar',
-  '/estadisticas-reddit',
   '/tarjetas-de-credito-uruguay',
 ]
 
 /** Igual a la lista, por el mismo motivo que el de los títulos. Estuvo en 13 sobre una deuda de 11. */
-const MESSAGE_DESCRIPTION_OVER_BUDGET = 6
+const MESSAGE_DESCRIPTION_OVER_BUDGET = 3
 
 // El conteo real del 2026-11-20, por el mismo motivo que `MEASURABLE` en `seoTitleBudget.test.ts`:
 // si el piso fuera más bajo, una página podría dejar de leerse acá sin poner nada en rojo.

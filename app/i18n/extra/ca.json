@@ -1110,7 +1110,7 @@
   "platformComparison": {
     "nav": "Comparar plataformes",
     "metaTitle": "Cambio Uruguay vs DólarAhora vs Dólar Uruguai (2026)",
-    "metaDescription": "Una comparació verificada de les plataformes de tipus de canvi de l'Uruguai: cobertura, freqüència d'actualització, divises, anàlisi, alertes, eines i accés per a desenvolupadors.",
+    "metaDescription": "Cambio Uruguay, DólarAhora, Dólar Uruguay i cotizacion.uy a través de 16 criteris, amb les 18 fonts públiques darrere de cadascun i on guanyen els rivals.",
     "eyebrow": "COMPARACIÓ VERIFICADA · URUGUAI",
     "title": "Quina plataforma de tipus de canvi hauries d'utilitzar?",
     "subtitle": "Hem comparat Cambio Uruguay, DólarAhora.uy, Dólar Uruguay i cotizacion.uy utilitzant informació pública. La conclusió és clara, però també mostrem on una altra opció és millor.",
@@ -2419,6 +2419,7 @@
     "eyebrow": "Transparència",
     "title": "Respostes a les preguntes de Reddit",
     "subtitle": "Tenim un compte que respon preguntes sobre diners en subreddits uruguaians, citant la pàgina d'on prové cada xifra. Això és tot el que va fer: què va respondre, què no va fer i com va arribar cada resposta.",
+    "metaDescription": "El registre complet del bot: quina proporció de fils ha respost, quants comentaris han sobreviscut, la seva puntuació mitjana i per què ha omès la resta.",
     "account": "Compte",
     "updated": "Actualitzat",
     "since": "Des de",

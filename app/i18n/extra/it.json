@@ -1110,7 +1110,7 @@
   "platformComparison": {
     "nav": "Confronta le piattaforme",
     "metaTitle": "Cambio Uruguay vs DólarAhora vs Dólar Uruguay (2026)",
-    "metaDescription": "Un confronto verificato delle piattaforme di tassi di cambio dell'Uruguay: copertura, frequenza di aggiornamento, valute, analisi, avvisi, strumenti e accesso per gli sviluppatori.",
+    "metaDescription": "Cambio Uruguay, DólarAhora, Dólar Uruguay e cotizacion.uy in base a 16 criteri, con le 18 fonti pubbliche a supporto di ciascuno e dove i concorrenti vincono.",
     "eyebrow": "CONFRONTO VERIFICATO · URUGUAY",
     "title": "Quale piattaforma di cambio dovresti utilizzare?",
     "subtitle": "Abbiamo confrontato Cambio Uruguay, DólarAhora.uy, Dólar Uruguay e cotizacion.uy utilizzando informazioni pubbliche. La conclusione è chiara, ma mostriamo anche quando un'altra opzione è migliore.",
@@ -2419,6 +2419,7 @@
     "eyebrow": "Trasparenza",
     "title": "Domande e risposte su Reddit",
     "subtitle": "Gestiamo un account che risponde a domande sul denaro nei subreddit uruguaiani, citando la pagina da cui proviene ogni cifra. Ecco tutto ciò che ha fatto: a cosa ha risposto, a cosa non ha risposto e come ogni risposta è stata accolta.",
+    "metaDescription": "Il registro completo del bot: la percentuale di discussioni a cui ha risposto, quanti commenti sono sopravvissuti, il loro punteggio medio e perché ha saltato gli altri.",
     "account": "Account",
     "updated": "Fatto",
     "since": "Da",

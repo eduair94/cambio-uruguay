@@ -64,7 +64,7 @@ export const rentalZoneMessages = {
       'Una página por barrio con lo que se pide por mes según tipo de vivienda y dormitorios, y los gastos comunes. Entre paréntesis, los avisos medidos.',
     intro:
       'Precios publicados, servicios registrados y denuncias oficiales para conocer mejor cada zona.',
-    seo: 'Compará barrios de Uruguay por alquileres, cortes de luz y de agua, reclamos a la Intendencia, servicios y datos oficiales, con muestras y fechas a la vista.',
+    seo: 'Alquiler y gastos comunes medianos por barrio, más los cortes de luz que UTE no archiva y guardamos cada 10 minutos, con los avisos que miden cada cifra.',
     explore: 'Explorar alquileres',
     planner: 'Planificar mi alquiler',
     choose: 'Elegir y comparar zonas',
@@ -272,7 +272,7 @@ export const rentalZoneMessages = {
     barrioPagesIntro:
       'One page per neighbourhood with monthly asking rents by property type and bedrooms, plus common charges. In brackets, the adverts measured. The pages are in Spanish.',
     intro: 'Asking rents, mapped services and official reports to understand each area.',
-    seo: 'Compare Uruguay’s neighbourhoods by rents, power and water cuts, city complaints, mapped services and official data, with samples and dates in view.',
+    seo: "Median rent and common expenses by neighbourhood, plus the power cuts UTE never archives and we store every 10 minutes, with each figure's sample.",
     explore: 'Explore rentals',
     planner: 'Plan my rental',
     choose: 'Choose and compare areas',
@@ -480,7 +480,7 @@ export const rentalZoneMessages = {
       'Uma página por bairro com o aluguel mensal pedido por tipo de imóvel e quartos, e as despesas de condomínio. Entre parênteses, os anúncios medidos. As páginas estão em espanhol.',
     intro:
       'Aluguéis anunciados, serviços registrados e denúncias oficiais para conhecer cada região.',
-    seo: 'Compare bairros do Uruguai por aluguéis, quedas de energia e cortes de água, reclamações à prefeitura, serviços e dados oficiais, com amostras e datas.',
+    seo: 'Aluguel e despesas comuns medianos por bairro, mais as quedas de energia que a UTE não arquiva e guardamos a cada 10 minutos, com a amostra de cada cifra.',
     explore: 'Explorar aluguéis',
     planner: 'Planejar meu aluguel',
     choose: 'Escolher e comparar regiões',

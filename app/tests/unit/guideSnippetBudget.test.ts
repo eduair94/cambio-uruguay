@@ -86,8 +86,14 @@ const GUIDE_PAGE = readFileSync(join(__dirname, '..', '..', 'pages', 'guias', '[
  * cuarta de esa tanda. Nace dentro de los dos presupuestos —título de 39 caracteres, 56 con la
  * marca, y descripción de 141— y el título es la consulta tal como se escribe, con la respuesta
  * («no son feriados») en la primera oración de la descripción, donde el SERP no la corta.
+ *
+ * 162 → 163 el 2026-11-28, en el commit que publica `acoso-laboral-uruguay`, por lo mismo. Su
+ * título mide 40 caracteres —57 con la marca— y su descripción 145, así que nace dentro de los dos
+ * presupuestos y no toca ninguna de las dos deudas. El título lleva la respuesta que contradice lo
+ * que el lector supone («denunciar no te paga nada») y la descripción trae la única cifra que la
+ * ley escribe para esto (6 mensualidades, Ley 18.561 art. 11).
  */
-const MEASURED = 162
+const MEASURED = 163
 
 /**
  * 116 → 104 el 2026-10-02: los doce títulos más largos del catálogo, de 104 a 84 caracteres

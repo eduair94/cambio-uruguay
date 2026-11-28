@@ -1171,6 +1171,7 @@ export const guideHubs: readonly GuideHub[] = [
       'me-certifique-subsidio-por-enfermedad-uruguay',
       'despido-y-liquidacion-uruguay',
       'trabajo-en-negro-uruguay',
+      'acoso-laboral-uruguay',
       'como-funciona-el-irpf-uruguay',
       'trabajar-para-el-exterior-desde-uruguay',
       'salario-minimo-uruguay-cuanto-es',

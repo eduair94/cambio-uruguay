@@ -1110,7 +1110,7 @@
   "platformComparison": {
     "nav": "플랫폼 비교",
     "metaTitle": "Cambio Uruguay vs DólarAhora vs Dólar 우루과이 (2026)",
-    "metaDescription": "우루과이 환율 플랫폼 비교 분석: 서비스 범위, 업데이트 빈도, 지원 통화, 분석 기능, 알림, 도구 및 개발자 접근성.",
+    "metaDescription": "Cambio Uruguay, DólarAhora, Dólar Uruguay 및 cotizacion.uy를 16개 기준에 따라 비교하고, 각 기준에 대한 18개의 공개 출처와 경쟁 업체들의 순위를 공개합니다.",
     "eyebrow": "검증된 비교 · 우루과이",
     "title": "어떤 환율 플랫폼을 사용해야 할까요?",
     "subtitle": "공개된 정보를 이용하여 Cambio Uruguay, DólarAhora.uy, Dólar Uruguay 및 cotizacion.uy를 비교했습니다. 결론은 명확하지만, 다른 옵션이 더 나은 경우도 보여줍니다.",
@@ -2419,6 +2419,7 @@
     "eyebrow": "투명도",
     "title": "레딧 질문에 대한 답변",
     "subtitle": "저희는 우루과이 관련 서브레딧에서 돈에 관한 질문에 답변하고, 각 수치의 출처를 명시하는 계정을 운영했습니다. 이 계정이 어떤 질문에 답변했는지, 어떤 질문에 답변하지 않았는지, 그리고 각 답변이 어떤 반응을 얻었는지에 대한 모든 내용을 여기에 정리했습니다.",
+    "metaDescription": "봇 활동 내역 전체: 봇이 답변한 게시글의 비율, 남은 댓글 수, 평균 점수, 그리고 나머지 댓글을 건너뛴 이유 등을 확인할 수 있습니다.",
     "account": "계정",
     "updated": "업데이트됨",
     "since": "부터",

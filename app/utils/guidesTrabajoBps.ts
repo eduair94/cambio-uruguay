@@ -2168,4 +2168,221 @@ export const trabajoBpsGuides: readonly Guide[] = [
       publisher: source.url.includes('impo.com.uy') ? 'IMPO' : 'BPS',
     })),
   },
+  {
+    slug: 'acoso-laboral-uruguay',
+    title: 'Acoso laboral: denunciar no te paga nada',
+    description:
+      'El MTSS recibe la denuncia por acoso moral gratis, pero no paga: la plata sale del despido indirecto. Si el acoso es sexual, son 6 mensualidades.',
+    tag: 'ACOSO',
+    // 2026-11-28: «acoso laboral» no aparecía en NINGÚN archivo de `app/`. Lo que el sitio ya tenía
+    // eran los artículos 11 y 12 de la Ley 18.561 citados DENTRO de la guía de despido indirecto
+    // (`guidesReddit.ts`), o sea la cifra sin la pregunta: quien busca «acoso laboral» no busca
+    // despido indirecto. Y el hueco no era sólo de ruta: la distinción que decide todo —el trámite
+    // del MTSS cubre el acoso moral y es gratis, pero NO paga indemnización— no estaba escrita en
+    // ninguna página. Verificado el 2026-11-28 contra IMPO (Ley 18.561, arts. 2, 6, 11 y 12, y su
+    // título propio; Ley 19.849, artículo único) y gub.uy (el trámite «Denuncia de acoso y
+    // violencia en el trabajo» y la página de denuncias de la Inspección General del Trabajo).
+    // Deliberadamente NO se afirma que no exista una ley de acoso moral: se afirma lo que el art. 2
+    // exige («de naturaleza sexual»), que es lo que deja el maltrato no sexual fuera de ESA ley, y
+    // se nombra la norma vigente que sí lo abarca. Un proyecto en trámite no es una norma y no
+    // entra. Tampoco se describen las potestades sancionatorias de la Inspección, que no se
+    // verificaron en una fuente primaria.
+    updatedAt: '2026-11-28',
+    sections: [
+      {
+        heading: 'Para la ley son dos cosas distintas, y una sola tiene ley propia',
+        body: 'La norma que todo el mundo cita se llama, con su propio título, «Ley de acoso sexual. Prevención y sanción en el ámbito laboral y en las relaciones docente alumno»: es la Ley 18.561, del 11 de setiembre de 2009. Su artículo 2 define el acoso sexual como «todo comportamiento de naturaleza sexual» no deseado por la persona a quien va dirigido, cuando rechazarlo le perjudica el trabajo o cuando esa conducta le crea un ambiente intimidatorio, hostil o humillante; vale entre personas de igual o de distinto sexo. Esa exigencia de que la conducta sea de naturaleza sexual es exactamente lo que deja afuera de ESA ley al maltrato que no lo es: los gritos, el aislamiento, la sobrecarga como castigo, el vaciamiento de tareas. La norma vigente que abarca el acoso sin limitarlo a lo sexual es el Convenio 190 de la Organización Internacional del Trabajo, que Uruguay aprobó por la Ley 19.849 del 23 de diciembre de 2019, cuyo artículo único dice «Apruébase el Convenio Internacional del Trabajo sobre la violencia y el acoso, 2019 (núm. 190)». Por eso esta guía separa las dos preguntas: dónde se denuncia cada uno, y cuál de los dos tiene una cifra escrita.',
+      },
+      {
+        heading: 'La denuncia en el Ministerio de Trabajo cubre el acoso moral y no tiene costo',
+        body: 'El trámite se llama «Denuncia de acoso y violencia en el trabajo» y se presenta ante la Inspección General del Trabajo y de la Seguridad Social. Su propia página de gub.uy enumera, entre los casos que recibe, «violencia en el trabajo, acoso sexual, acoso moral, discriminación, represión sindical», con un «etc.» que deja la lista abierta: o sea que para denunciar el maltrato que no es sexual no hace falta esperar ninguna ley nueva, el canal ya lo nombra. Sobre el precio la página es de una línea: «No tiene costo». Se puede hacer en línea con usuario gub.uy o otra identidad electrónica, adjuntando los documentos, o en persona en la Oficina de Asesoramiento y Denuncias del Ministerio, que además asesora; en el interior, en las Oficinas de Trabajo. Dos cosas que conviene saber antes de arrancar: la denuncia por acoso no es anónima —la escrita «debe tener la firma del trabajador o la trabajadora afectada»— y el trámite es «independiente de todo trámite y/o procedimiento que sea necesario iniciar en el Poder Judicial», así que denunciar no consume ni reemplaza el juicio.',
+        table: {
+          headers: ['Qué', 'Dato', 'Fuente'],
+          rows: [
+            [
+              'Qué casos recibe',
+              'Violencia en el trabajo, acoso sexual, acoso moral, discriminación y represión sindical, entre otros',
+              'gub.uy, el trámite',
+            ],
+            ['Cuánto cuesta', 'No tiene costo', 'gub.uy, el trámite'],
+            [
+              'Anónima',
+              'No: la denuncia escrita lleva la firma de la persona afectada',
+              'gub.uy, el trámite',
+            ],
+            [
+              'Relación con el juicio',
+              'Independiente de todo trámite o procedimiento en el Poder Judicial',
+              'gub.uy, el trámite',
+            ],
+          ],
+        },
+      },
+      {
+        heading: 'Lo que la denuncia no hace: pagarte',
+        body: 'Es la confusión que más cuesta y la página del trámite la despeja sola: ese proceso no otorga compensación económica, ni por el daño ni por salarios o indemnizaciones que te deban. La Inspección recibe la denuncia, asesora e investiga; lo que no hace es liquidarte plata. Si lo que buscás es cobrar, la vía es otra y conviene saberlo antes de elegir: cuando el acoso es tan grave que te empuja a irte, la figura se llama despido indirecto, y lo que se cobra es la misma indemnización por despido que cobrarías si te hubieran echado, con una diferencia que no es menor: el incumplimiento lo tenés que probar vos. Las dos cosas pueden ir en paralelo, porque el trámite administrativo es independiente del judicial.',
+        links: [
+          {
+            label: 'Cuánto es la indemnización por despido',
+            to: '/indemnizacion-por-despido-uruguay',
+          },
+          {
+            label: 'Despido y liquidación: qué te corresponde',
+            to: '/guias/despido-y-liquidacion-uruguay',
+          },
+          { label: 'Cuánto me tienen que pagar', to: '/cuanto-me-tienen-que-pagar-uruguay' },
+        ],
+      },
+      {
+        heading: 'Si el acoso es sexual, la ley sí pone una cifra: seis mensualidades',
+        body: 'Acá la Ley 18.561 deja de describir y empieza a tasar. Su artículo 11 le da a la víctima de acoso sexual el derecho a reclamarle al responsable «una indemnización por daño moral mínima equivalente a seis mensualidades, de acuerdo con la última remuneración», y eso sin perjuicio de la denuncia administrativa o de la acción penal. Y le da una segunda puerta, que es una opción y no un acumulable con la primera: puede «optar por la indemnización prevista en el inciso precedente o por considerarse indirectamente despedido/a». Si elige lo segundo, ese despido «revestirá el carácter de abusivo» y habilita «una indemnización especial tarifada de seis mensualidades», que esta vez sí es «acumulable a la indemnización común». Dicho en plata: por el camino del despido indirecto se cobra la indemnización por despido de siempre más seis mensualidades tarifadas encima. La mensualidad se calcula sobre la última remuneración, así que el número no es fijo en pesos: lo fija tu propio recibo.',
+        table: {
+          headers: ['Opción del art. 11', 'Qué se cobra', 'Se suma a la indemnización común'],
+          rows: [
+            [
+              'Indemnización por daño moral',
+              'Mínimo equivalente a seis mensualidades, según la última remuneración',
+              'No: es una de las dos opciones',
+            ],
+            [
+              'Considerarse indirectamente despedido/a',
+              'Indemnización especial tarifada de seis mensualidades, por despido abusivo',
+              'Sí, la ley la declara acumulable',
+            ],
+          ],
+        },
+      },
+      {
+        heading: 'No te pueden despedir por denunciar, y hay un plazo de 180 días que te protege',
+        body: 'El artículo 12 de la Ley 18.561 es la parte que casi nadie conoce y la que más conviene tener a mano antes de denunciar. La persona afectada y quienes declararon como testigos no pueden ser despedidas ni sancionadas disciplinariamente por el empleador o jerarca. Y la ley invierte la carga de la prueba por un tiempo: «se presume —salvo prueba en contrario— que el despido o las sanciones obedecen a motivos de represalia cuando tengan lugar dentro del plazo de ciento ochenta días de interpuesta la denuncia de acoso en sede administrativa o judicial». Un despido así se califica de abusivo y paga la misma indemnización especial tarifada, «con la salvaguarda de la notoria mala conducta», que es el límite que la propia ley deja escrito. Práctico: la fecha en que presentás la denuncia es la que arranca el reloj, así que guardá el comprobante.',
+      },
+      {
+        heading: 'Qué está obligado a hacer tu empleador, esté o no la denuncia',
+        body: 'El artículo 6 pone cuatro obligaciones sobre el empleador o jerarca, y no dependen de que alguien denuncie. La primera es «adoptar las medidas que prevengan, desalienten y sancionen las conductas de acoso sexual». La segunda, «proteger la intimidad de las personas denunciantes o víctimas» y «mantener en reserva las actuaciones que se cumplan», incluida la identidad de quienes son llamados a declarar. La tercera, «instrumentar las medidas que protejan la integridad psico-física» de la víctima, desde la denuncia y también después de que el caso termine. La cuarta es de difusión: comunicarles a supervisores, representantes, trabajadores, clientes y proveedores —y al personal docente, no docente y a los estudiantes, donde corresponda— que existe una política institucional contra el acoso sexual. La ley está reglamentada por el Decreto 256/017, del 11 de setiembre de 2017. Si tu empresa no tiene nada de esto escrito, eso en sí mismo es un incumplimiento del artículo 6 y es parte de lo que se puede denunciar.',
+        table: {
+          headers: ['Obligación del art. 6', 'Qué significa'],
+          rows: [
+            [
+              'A) Prevenir y sancionar',
+              'Medidas que prevengan, desalienten y sancionen el acoso sexual',
+            ],
+            [
+              'B) Reserva',
+              'Proteger la intimidad de denunciantes y víctimas y mantener reservadas las actuaciones',
+            ],
+            [
+              'C) Integridad psico-física',
+              'Medidas que protejan a la víctima durante la investigación y después',
+            ],
+            [
+              'D) Difusión',
+              'Comunicar a su gente, clientes y proveedores que hay una política contra el acoso',
+            ],
+          ],
+        },
+      },
+      {
+        heading: 'La prueba, y un error que sale caro',
+        body: 'La denuncia se presenta con las pruebas que tengas y se puede adjuntar documentación al formulario en línea. Lo que casi siempre falta no es la prueba del hecho sino la del contexto: correos y mensajes donde se vea la orden, el cambio de tareas o el horario; testigos, que el artículo 12 protege expresamente; y la cronología escrita con fechas, que es lo más fácil de armar y lo primero que se pierde con el tiempo. Sobre grabar una conversación para probarlo, la respuesta no es obvia y depende de quién graba y de qué se hace después con el audio: el sitio tiene su propia página para eso y conviene leerla antes de apretar grabar, no después.',
+        links: [
+          {
+            label: 'Me grabaron sin consentimiento: qué hacer',
+            to: '/grabacion-sin-consentimiento-uruguay',
+          },
+          { label: 'Denunciar trabajo en negro', to: '/denunciar-trabajo-en-negro-uruguay' },
+        ],
+      },
+    ],
+    steps: [
+      {
+        name: 'Escribí la cronología y juntá la prueba',
+        text: 'Fechas, qué pasó, quién estaba delante y los mensajes o correos que lo muestren. Al formulario en línea se le adjunta documentación.',
+      },
+      {
+        name: 'Presentá la denuncia en la Inspección General del Trabajo',
+        text: 'En línea con usuario gub.uy o identidad electrónica, o en persona en la Oficina de Asesoramiento y Denuncias. No tiene costo y te identificás: no es anónima.',
+      },
+      {
+        name: 'Guardá el comprobante con su fecha',
+        text: 'Desde esa fecha corren los ciento ochenta días en que la ley presume represalia si te despiden o te sancionan.',
+      },
+      {
+        name: 'Si querés cobrar, abrí la vía laboral',
+        text: 'El trámite administrativo no otorga compensación económica y es independiente del juicio. La indemnización se reclama por la vía judicial, y el incumplimiento lo probás vos.',
+      },
+    ],
+    faqs: [
+      {
+        q: '¿Hay una ley de acoso laboral en Uruguay?',
+        a: 'Hay una ley de acoso SEXUAL en el trabajo, que es la Ley 18.561, y su artículo 2 exige que la conducta sea «de naturaleza sexual»: el maltrato que no lo es queda fuera de esa ley. La norma vigente que abarca el acoso sin limitarlo a lo sexual es el Convenio 190 de la OIT, aprobado por la Ley 19.849. Y en la práctica no te quedás sin canal: el propio trámite del Ministerio de Trabajo nombra el «acoso moral» entre los casos que recibe. Si tu caso es puntual, la Oficina de Asesoramiento y Denuncias asesora antes de que denuncies.',
+      },
+      {
+        q: '¿Cuánto sale denunciar acoso en el Ministerio de Trabajo?',
+        a: 'Nada. La página del trámite «Denuncia de acoso y violencia en el trabajo» dice «No tiene costo». Lo que sí pide es identificarte: en línea con usuario gub.uy o identidad electrónica, en persona con cédula, correo y teléfono, y la denuncia escrita con la firma de la persona afectada.',
+      },
+      {
+        q: '¿La denuncia en el Ministerio me paga la indemnización?',
+        a: 'No. La propia página del trámite aclara que ese proceso no otorga compensación económica por daños ni por salarios o indemnizaciones debidas, y que es independiente de lo que haya que iniciar en el Poder Judicial. Es la distinción más importante de esta guía: el Ministerio puede investigar a la empresa, pero la plata se reclama por la vía laboral.',
+      },
+      {
+        q: '¿Me pueden despedir si denuncio?',
+        a: 'El artículo 12 de la Ley 18.561 dice que la persona afectada y los testigos no pueden ser despedidos ni sancionados, y presume —salvo prueba en contrario— que el despido o la sanción son represalia si caen dentro de los ciento ochenta días de presentada la denuncia en sede administrativa o judicial. Ese despido se califica de abusivo y paga la indemnización especial tarifada, con la salvaguarda de la notoria mala conducta.',
+      },
+      {
+        q: 'Si el acoso fue sexual, ¿cuánto se cobra?',
+        a: 'El artículo 11 da dos opciones y hay que elegir una. Reclamar una indemnización por daño moral de un mínimo de seis mensualidades según la última remuneración, o considerarse indirectamente despedido/a: en ese caso el despido es abusivo y suma una indemnización especial tarifada de seis mensualidades que la ley declara acumulable a la indemnización común. Como se calculan sobre tu última remuneración, el monto en pesos sale de tu recibo.',
+      },
+      {
+        q: '¿Tiene que haber un protocolo en mi trabajo?',
+        a: 'El artículo 6 obliga al empleador o jerarca a adoptar medidas que prevengan, desalienten y sancionen el acoso sexual, a mantener en reserva las actuaciones, a proteger la integridad psico-física de la víctima y a difundir que existe una política institucional contra el acoso. La ley está reglamentada por el Decreto 256/017. Que no exista nada escrito es, en sí mismo, un incumplimiento de ese artículo.',
+      },
+    ],
+    related: [
+      { label: 'Indemnización por despido', to: '/indemnizacion-por-despido-uruguay' },
+      { label: 'Cuánto me tienen que pagar', to: '/cuanto-me-tienen-que-pagar-uruguay' },
+      { label: 'Trabajo no declarado', to: '/denunciar-trabajo-en-negro-uruguay' },
+      { label: 'Accidente de trabajo', to: '/accidente-de-trabajo-uruguay' },
+      { label: 'A quién le reclamo', to: '/a-quien-le-reclamo-uruguay' },
+    ],
+    sources: [
+      {
+        label: 'Ley 18.561, art. 2 — el acoso sexual es un comportamiento «de naturaleza sexual»',
+        url: 'https://www.impo.com.uy/bases/leyes/18561-2009/2',
+        publisher: 'IMPO',
+      },
+      {
+        label: 'Ley 18.561, art. 6 — las cuatro obligaciones del empleador',
+        url: 'https://www.impo.com.uy/bases/leyes/18561-2009/6',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.561, art. 11 — daño moral mínimo de seis mensualidades, o despido indirecto con indemnización especial tarifada acumulable',
+        url: 'https://www.impo.com.uy/bases/leyes/18561-2009/11',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Ley 18.561, art. 12 — se presume represalia dentro de los ciento ochenta días de la denuncia',
+        url: 'https://www.impo.com.uy/bases/leyes/18561-2009/12',
+        publisher: 'IMPO',
+      },
+      {
+        label: 'Ley 19.849 — Uruguay aprueba el Convenio 190 de la OIT sobre violencia y acoso',
+        url: 'https://www.impo.com.uy/bases/leyes/19849-2019',
+        publisher: 'IMPO',
+      },
+      {
+        label:
+          'Denuncia de acoso y violencia en el trabajo — qué casos recibe, «No tiene costo» e independencia del juicio',
+        url: 'https://www.gub.uy/tramites/denuncia-acoso-violencia-trabajo',
+        publisher: 'gub.uy',
+      },
+      {
+        label: 'Denuncias y asesoramiento en la Inspección General del Trabajo',
+        url: 'https://www.gub.uy/ministerio-trabajo-seguridad-social/politicas-y-gestion/denuncias-laborales',
+        publisher: 'MTSS',
+      },
+    ],
+  },
 ]

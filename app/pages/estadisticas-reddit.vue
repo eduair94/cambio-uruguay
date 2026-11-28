@@ -346,9 +346,11 @@ const updatedLabel = computed(() => (stats.value?.asOf ? dateLabel(stats.value.a
 
 // ── SEO ──
 const canonicalUrl = 'https://cambio-uruguay.com/estadisticas-reddit'
+// El renglón del SERP tiene clave propia (`redditStats.metaDescription`): el subtítulo de
+// pantalla son 205 caracteres y Google publica ~155, así que cortaba antes de las métricas.
 useSeoMeta({
   title: () => `${t('redditStats.title')} | Cambio Uruguay`,
-  description: () => t('redditStats.subtitle'),
+  description: () => t('redditStats.metaDescription'),
   ogTitle: () => t('redditStats.title'),
   ogDescription: () => t('redditStats.subtitle'),
   ogType: 'website',

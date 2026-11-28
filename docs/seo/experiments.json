@@ -4202,6 +4202,32 @@
         "/guias/bonos-y-renta-fija-uruguay"
       ],
       "hypothesis": "Tercera tanda de titulos de guia que nombraban el tema mientras su propia descripcion ya traia la respuesta. La nota de la segunda tanda (25/11) dejo la cola trabada con un motivo escrito: de las ocho guias que su heuristica encontro, cuatro no tienen tarjeta de Fuentes y 'quedan pendientes de que alguien las documente', porque sin texto primario que citar un titulo nuevo le inventaria respaldo a una afirmacion. Lo que destraba la cola es que ese texto primario YA ESTABA CITADO en el repo, palabra por palabra, por otra pagina: el art. 887 del Codigo Civil lo cita legitima-y-herederos-forzosos-uruguay con la escala transcripta, el alcance y los topes del Fondo de Garantia de Depositos los citan utils/investments.ts y utils/personalFinanceFaq.ts, y que un titulo no es un deposito en el banco lo cita utils/investments.ts desde el BROU. O sea que documentarlas no pedia una verificacion nueva sino mover a su guia la fuente que otra pagina del mismo sitio ya habia leido: ninguna URL es nueva en el repo y ninguna cifra es nueva en la guia. La de testamento no estaba entre esas ocho porque el 25/11 su ruta seguia reservada por la fila del 29/10 que le arreglo la descripcion y le dejo el titulo intacto, y la reserva de 29 dias vence hoy. 'Como hacer un testamento en Uruguay' pasa a 'Testamento: con hijos no podes dejar todo', que es lo que el cuerpo llama 'el punto que mas sorprende', sin fracciones para no pelearle la consulta a la guia de la legitima; la pregunta devuelta sin contestar '¿Conviene un plazo fijo en Uruguay?' pasa a 'Plazo fijo: lo cubre la garantia de COPAB', que dice que hay garantia y NO cuanto, porque los topes estan en la descripcion y el cuerpo advierte que pueden actualizarse; y 'Bonos y renta fija en Uruguay: guia basica' pasa a 'Bonos y renta fija: no son un deposito', que conserva las dos palabras de la consulta y publica la diferencia a la que la guia le dedica una seccion entera. Los tres renderizados quedan entre 55 y 58 caracteres con la marca, asi que el pozo de guideSnippetBudget sigue en 0. Quedan afuera a proposito las otras dos sin Fuentes: la de facturar como freelancer, porque su respuesta mejor documentada es el asunto entero de /facturar-en-monotributo-uruguay y ponerla en el titulo es la canibalizacion que la cuarta tanda de octubre saco de ahorrar-en-dolares-o-pesos; y la de ahorrar en dolares, porque su respuesta es un juicio y no una norma, asi que no hay texto primario que citar, y ademas casi repite el titulo que la cuarta tanda le dio a su hermana. No se toco descripcion, H1, cuerpo, updatedAt, URL, canonical, tema, enlace ni anuncio. Es el tramo contenido, que rinde 8x el promedio del sitio. Se esperan mas clics desde la misma posicion, como midieron las once tandas de octubre y las dos de noviembre; se mide por cuota de clics del sitio con 28 dias archivados antes y despues, sin el dia del deploy. Las tres rutas estaban libres de toda ventana abierta (npm run seo_debt y el cruce contra las filas de los ultimos 28 dias: 29, 51 y 51 dias desde su ultima fila)."
+    },
+    {
+      "id": "descripciones-de-catalogo-que-publicaban-el-indice-2",
+      "shippedOn": "2026-11-28",
+      "routes": [
+        "/comparar-plataformas-dolar-uruguay",
+        "/barrios-alquileres-uruguay",
+        "/estadisticas-reddit"
+      ],
+      "hypothesis": "Segunda tanda del pozo de descripciones de catalogo fuera de `seo.` (la primera, del 24/11, fueron /economia-uruguay, /noticias y /acerca). Las tres gastaban el unico renglon que el SERP imprime en el INDICE de la propia pagina. La de plataformas enumeraba las columnas de su tabla y no nombraba a ninguno de los cuatro productos que compara, que es lo que la gente escribe: ahora los nombra y trae las dos cifras del catalogo (16 criterios, 18 fuentes, contadas en utils/platformComparison.ts). La de barrios enumeraba las capas y ahora abre por el alquiler y los gastos comunes medianos y por los cortes de luz que UTE no archiva, que es el dato que ninguna otra pagina de Uruguay pone al lado. Y /estadisticas-reddit media 205/200/211 caracteres porque reusaba su subtitulo de pantalla como descripcion: pasa a tener clave propia (redditStats.metaDescription), el subtitulo queda intacto y la descripcion nombra las tres metricas que la pagina publica. Ninguna cifra es nueva. No se toco titulo, H1, cuerpo, URL, canonical, tema, enlace ni anuncio. Se esperan mas clics desde la misma posicion; el ranking no deberia moverse. Se mide por cuota de clics del sitio con 28 dias archivados antes y despues, sin el dia del deploy. Las tres rutas estaban libres de toda ventana abierta (31 y 60 dias desde su ultima fila; /estadisticas-reddit no tiene ninguna)."
+    },
+    {
+      "id": "acoso-laboral-guia-nueva",
+      "shippedOn": "2026-11-28",
+      "routes": [
+        "/guias/acoso-laboral-uruguay"
+      ],
+      "queries": [
+        "acoso laboral uruguay",
+        "acoso laboral",
+        "ley de acoso laboral uruguay",
+        "acoso moral laboral uruguay",
+        "denunciar acoso laboral uruguay",
+        "mobbing uruguay"
+      ],
+      "hypothesis": "Pagina nueva: \"acoso laboral\" no aparecia en NINGUN archivo de app/. Lo que el sitio ya tenia eran los articulos 11 y 12 de la Ley 18.561 citados DENTRO de la guia de despido indirecto (guidesReddit.ts), o sea la cifra sin la pregunta: quien busca \"acoso laboral\" no busca despido indirecto. La apuesta es la distincion que ninguna pagina publicaba y que decide que hace el lector: el tramite del MTSS cubre el acoso moral y no tiene costo, pero no otorga compensacion economica, asi que la plata se reclama por despido indirecto; y si el acoso es sexual la ley si pone una cifra (seis mensualidades, art. 11). El SERP de estas consultas es institucional e ilegible, que es donde este sitio entra. Es el tramo contenido (8x el promedio del sitio), y entra por la familia /guias/* sin tocar classes/revenueplan/value.ts. A proposito NO se afirma que no exista una ley de acoso moral: se afirma lo que el art. 2 exige y se nombra la norma vigente que si lo abarca (Convenio 190, aprobado por la Ley 19.849)."
     }
   ]
 }

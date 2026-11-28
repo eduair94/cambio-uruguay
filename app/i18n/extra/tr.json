@@ -1110,7 +1110,7 @@
   "platformComparison": {
     "nav": "Platformları karşılaştırın",
     "metaTitle": "Cambio Uruguay - DólarAhora - Dólar Uruguay (2026)",
-    "metaDescription": "Uruguay döviz kuru platformlarının doğrulanmış karşılaştırması: kapsam, güncelleme sıklığı, para birimleri, analizler, uyarılar, araçlar ve geliştirici erişimi.",
+    "metaDescription": "Cambio Uruguay, DólarAhora, Dólar Uruguay ve cotizacion.uy, her birinin arkasındaki 18 kamu kaynağı ve rakiplerin kazandığı 16 kriter üzerinden değerlendirildi.",
     "eyebrow": "DOĞRULANMIŞ KARŞILAŞTIRMA · URUGUAY",
     "title": "Hangi döviz kuru platformunu kullanmalısınız?",
     "subtitle": "Cambio Uruguay, DólarAhora.uy, Dólar Uruguay ve cotizacion.uy sitelerini kamuya açık bilgiler kullanarak karşılaştırdık. Sonuç açık, ancak başka bir seçeneğin daha iyi olduğu durumları da gösteriyoruz.",
@@ -2419,6 +2419,7 @@
     "eyebrow": "Şeffaflık",
     "title": "Reddit soruları yanıtlandı",
     "subtitle": "Uruguay subredditlerinde para ile ilgili soruları yanıtlayan ve her rakamın geldiği sayfayı belirten bir hesap işletiyoruz. İşte hesabın yaptığı her şey: neleri yanıtladı, neleri yanıtlamadı ve her yanıt nasıl sonuçlandı.",
+    "metaDescription": "Botun tüm performans kayıtları: yanıtladığı konuların oranı, kaç yorumun dikkate alındığı, ortalama puanları ve geri kalanını neden atladığı.",
     "account": "Hesap",
     "updated": "Güncellendi",
     "since": "O zamandan beri",

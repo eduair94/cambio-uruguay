@@ -1110,7 +1110,7 @@
   "platformComparison": {
     "nav": "Palyginti platformas",
     "metaTitle": "„Cambio Uruguay“ – „DólarAhora“ – „Dólar“ – Urugvajus (2026 m.)",
-    "metaDescription": "Patikrintas Urugvajaus valiutų kursų platformų palyginimas: aprėptis, atnaujinimų dažnumas, valiutos, analizė, įspėjimai, įrankiai ir kūrėjų prieiga.",
+    "metaDescription": "„Cambio Uruguay“, „DólarAhora“, „Dólar Uruguay“ ir „cotizacion.uy“ pagal 16 kriterijų, kiekvienam iš jų priskiriant 18 viešųjų šaltinių ir pagal kuriuos laimi konkurentai.",
     "eyebrow": "PATVIRTINTAS PALYGINIMAS · URUGUAY",
     "title": "Kurią valiutos kurso platformą turėtumėte naudoti?",
     "subtitle": "Palyginome Cambio Uruguay, „DólarAhora.uy“, „Dólar Uruguay“ ir „cotizacion.uy“, naudodami viešą informaciją. Išvada aiški, tačiau taip pat parodome, kur kitas variantas yra geresnis.",
@@ -2419,6 +2419,7 @@
     "eyebrow": "Skaidrumas",
     "title": "Atsakymai į klausimus „Reddit“",
     "subtitle": "Mes valdome paskyrą, kuri atsako į klausimus apie pinigus Urugvajaus subreddituose, nurodant puslapį, iš kurio paimtas kiekvienas skaičius. Čia pateikiama visa informacija: į ką atsakyta, į ką ne ir kaip gautas kiekvienas atsakymas.",
+    "metaDescription": "Visas roboto operacijų sąrašas: į kokią temų dalį jis atsakė, kiek komentarų išliko, jų vidutinis balas ir kodėl praleido likusią dalį.",
     "account": "Paskyra",
     "updated": "Atnaujinta",
     "since": "Nuo tada",

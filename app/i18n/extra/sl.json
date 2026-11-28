@@ -1110,7 +1110,7 @@
   "platformComparison": {
     "nav": "Primerjaj platforme",
     "metaTitle": "Cambio Uruguay proti DólarAhora proti Dólar Uruguay (2026)",
-    "metaDescription": "Preverjena primerjava urugvajskih platform za menjalne tečaje: pokritost, pogostost posodabljanja, valute, analitika, opozorila, orodja in dostop za razvijalce.",
+    "metaDescription": "Cambio Uruguay, DólarAhora, Dólar Uruguay in cotizacion.uy po 16 kriterijih, pri čemer za vsakim od njih stoji 18 javnih virov in kje zmagajo tekmeci.",
     "eyebrow": "PREVERJENA PRIMERJAVA · URUGVAJ",
     "title": "Katero platformo za menjalne tečaje bi morali uporabiti?",
     "subtitle": "Cambio Uruguay, DólarAhora.uy, Dólar Uruguay in cotizacion.uy smo primerjali z uporabo javno dostopnih informacij. Zaključek je jasen, vendar smo pokazali tudi, kje je druga možnost boljša.",
@@ -2419,6 +2419,7 @@
     "eyebrow": "Preglednost",
     "title": "Odgovori na vprašanja o Redditu",
     "subtitle": "Vodimo račun, ki odgovarja na vprašanja o denarju na urugvajskih subredditih, pri čemer navajamo stran, s katere prihaja vsaka številka. Tukaj je vse, kar je storil: na kaj je odgovoril, na kaj ni odgovoril in kako je prišel vsak odgovor.",
+    "metaDescription": "Celoten seznam botov: kolikšen delež niti je odgovoril, koliko komentarjev je preživelo, njihova povprečna ocena in zakaj je ostale preskočil.",
     "account": "Račun",
     "updated": "Posodobljeno",
     "since": "Odkar",

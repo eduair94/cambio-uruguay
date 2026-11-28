@@ -1110,7 +1110,7 @@
   "platformComparison": {
     "nav": "So sánh các nền tảng",
     "metaTitle": "Cambio Uruguay vs DólarAhora vs Dólar Uruguay (2026)",
-    "metaDescription": "Bảng so sánh đã được kiểm chứng về các nền tảng tỷ giá hối đoái Uruguay: phạm vi phủ sóng, tần suất cập nhật, các loại tiền tệ, phân tích, cảnh báo, công cụ và quyền truy cập dành cho nhà phát triển.",
+    "metaDescription": "Cambio Uruguay, DólarAhora, Dólar Uruguay và cotizacion.uy được đánh giá dựa trên 16 tiêu chí, với 18 nguồn thông tin công khai đứng sau mỗi tiêu chí và phân tích lý do các đối thủ cạnh tranh giành chiến thắng.",
     "eyebrow": "SO SÁNH ĐÃ ĐƯỢC KIỂM CHỨNG · URUGUAY",
     "title": "Bạn nên sử dụng nền tảng tỷ giá nào?",
     "subtitle": "Chúng tôi đã so sánh Cambio Uruguay, DólarAhora.uy, Dólar Uruguay và cotizacion.uy bằng cách sử dụng thông tin công khai. Kết luận rất rõ ràng, nhưng chúng tôi cũng chỉ ra những trường hợp mà lựa chọn khác tốt hơn.",
@@ -2419,6 +2419,7 @@
     "eyebrow": "Tính minh bạch",
     "title": "Giải đáp các câu hỏi trên Reddit",
     "subtitle": "Chúng tôi điều hành một tài khoản chuyên trả lời các câu hỏi về tiền bạc trên các diễn đàn Reddit của Uruguay, trích dẫn nguồn gốc của mỗi con số. Dưới đây là tất cả những gì tài khoản đó đã làm: những câu hỏi đã được trả lời, những câu hỏi chưa được trả lời và mức độ phổ biến của mỗi câu trả lời.",
+    "metaDescription": "Toàn bộ nhật ký hoạt động của bot: tỷ lệ các chủ đề nó trả lời, số lượng bình luận còn lại, điểm trung bình của chúng và lý do tại sao nó bỏ qua những bình luận còn lại.",
     "account": "Tài khoản",
     "updated": "Đã cập nhật",
     "since": "Từ",
