@@ -1,6 +1,7 @@
 // Los videos nuevos de la lista de `/videos-de-economia-uruguay`, tuiteados por la cuenta de X del
-// sitio: un feed RSS (`/feeds/videos.xml`) que IFTTT lee cada 5 minutos y publica con el applet
-// "RSS Feed → X (Twitter): Post a tweet". Guía: `docs/app/X_FEED.md`, "Videos nuevos".
+// sitio. Desde el 29/11/2026 salen como ítems de `/feeds/x.xml` (`videoXItem`), con el applet de
+// IFTTT que ya existe; `/feeds/videos.xml` queda sin applet y NO hay que crearle uno (mismo `guid`:
+// tuitearía dos veces). Guía: `docs/app/X_FEED.md`, "Videos nuevos".
 //
 // Mismo camino que `/feeds/x.xml` (sin job, sin credenciales de X, sin modelo de lenguaje). Lo
 // distinto es que acá no hay un turno por día: hay los videos que suben los canales, y el feed
@@ -13,7 +14,7 @@
 // PURO (sin Vue/Nuxt): lo usan la ruta del feed y los tests.
 
 import { LINKEDIN_SITE, cdata, escapeXml } from './linkedinPosts'
-import { TCO_URL_LENGTH, TWEET_LIMIT, tweetLength } from './xPosts'
+import { TCO_URL_LENGTH, TWEET_LIMIT, tweetLength, type XFeedItem } from './xPosts'
 import { getVideoTopicPage } from './videoTopics'
 
 /** Lo que el feed necesita de cada video del snapshot (`VideoItem`). */
@@ -238,6 +239,23 @@ export function videoTweet(v: TweetableVideo): VideoTweet {
 }
 
 // ---- el feed -----------------------------------------------------------------------------------
+
+/**
+ * El video como ítem de `/feeds/x.xml`, que es por donde sale desde el 29/11/2026 (el applet de
+ * `/feeds/videos.xml` nunca se creó). El `guid` es el mismo que en el feed propio: si algún día
+ * alguien crea también ese applet, IFTTT lo vería como el mismo ítem en otro feed y tuitearía dos
+ * veces, así que NO crearlo (ver `docs/app/X_FEED.md`).
+ */
+export function videoXItem({ video, at }: ScheduledVideo): XFeedItem {
+  const tweet = videoTweet(video)
+  return {
+    guid: `cambio-uruguay-video-${video.videoId}`,
+    title: cleanVideoTitle(video.title) || video.title,
+    link: tweet.url,
+    at,
+    message: tweet.message,
+  }
+}
 
 /**
  * Cache-Control del feed (la regla de Cloudflare de `/feeds/*` respeta `s-maxage`): hasta el
