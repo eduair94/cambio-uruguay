@@ -5,6 +5,13 @@ import { OPEN_DATA_PAGE } from '../../utils/openData'
  * Cabeceras de toda respuesta de `/api/datos/*`: CORS abierto (es una API pública, sin cookies ni
  * credenciales), caché de borde y el enlace a la documentación. Las estadísticas cambian una vez
  * por día, así que una hora en el borde no esconde nada.
+ *
+ * La otra mitad vive en Cloudflare (desde 2026-11-27): una Cache Rule sobre `/api/datos` y
+ * `/api/datos/*` en modo "bypass si el origen no manda s-maxage". Hasta ese día ninguna regla
+ * cubría `/api/` y estas cabeceras no hacían nada: toda respuesta salía `DYNAMIC`. La decisión
+ * sigue acá: una ruta nueva bajo `/api/datos` que no llame a esta función no se guarda, y un
+ * error (`openDataError`, `no-store`) tampoco. La clave del borde incluye el query, así que
+ * `?modelo=`, `?formato=csv` y `?minimo=` se guardan por separado.
  */
 export function openDataHeaders(event: H3Event, seconds = 3600): void {
   setResponseHeaders(event, {
