@@ -34,6 +34,12 @@ import { familiaNavRutas } from '../../utils/familiaNav'
  * Se miran sólo las páginas RAÍZ (`pages/*.vue`), con el mismo recorte y por el mismo motivo que
  * `temaHuerfanas.test.ts`: las familias programáticas (`[key].vue`, `[slug].vue`) resuelven su
  * enlazado con la barra y el bloque directorio ↔ análisis.
+ *
+ * Con UNA excepción, medida el 2026-11-28: las guías (`pages/guias/[slug].vue`) son una familia
+ * programática que no tiene ninguna de esas dos cosas —no llevan chip en ninguna barra y no son un
+ * directorio—, así que lo único que les quedaba garantizado era justo lo que este archivo declara
+ * que NO cuenta como enlace de contexto. Las mide su propio trinquete,
+ * `enlacesDeContextoGuias.test.ts`.
  */
 const APP = join(__dirname, '..', '..')
 const PAGES_DIR = join(APP, 'pages')

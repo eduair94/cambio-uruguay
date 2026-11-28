@@ -156,6 +156,29 @@ Primera medición: **22 páginas de lectura sin un solo enlace de contexto**, de
 sólo puede bajar. Se baja con un enlace en el contenido de la página cuyo lector la necesita, o con
 un chip en la barra; un enlace que nadie seguiría pone el test en verde y no arregla nada.
 
+## Y la mitad que ese trinquete no medía: las guías (2026-11-28)
+
+El trinquete de arriba mira sólo las páginas **raíz**, y deja fuera a las familias programáticas
+porque «resuelven su enlazado con la barra y el bloque directorio ↔ análisis». Las guías
+(`pages/guias/[slug].vue`) son una familia programática que **no tiene ninguna de esas dos cosas**:
+no llevan chip en la barra de ninguna familia y no son un directorio. Así que lo único que una guía
+tenía garantizado era justo lo que el trinquete declara que NO cuenta como enlace de contexto —el
+bloque del tema y el «Seguí leyendo» del pie, los dos a 11.341 px—, y una guía podía nacer y vivir
+sin una sola puerta de entrada que un lector cruce.
+
+Se descubrió a mano el 2026-11-26 con `/guias/propinas-en-uruguay` («la única mención en todo el
+árbol era su propia ficha de `utils/guides.ts`»), que es la señal de siempre de que falta el
+trinquete. La cuenta completa, con el criterio exacto del trinquete de arriba y el catálogo real:
+**32 de las 165 guías indexables no recibían ningún enlace de contexto**, y otras 49 recibían uno
+solo. Son páginas de la familia `/guias/*`, que `classes/revenueplan/value.ts` valúa en el tramo
+`contenido` —el que rinde 8× el promedio del sitio—, así que era la deuda de enlazado más cara que
+el repo tenía sin medir, y se leía igual que «acá no hay deuda».
+
+`tests/unit/enlacesDeContextoGuias.test.ts` la declara (`GUIAS_SIN_ENLACE`, exacta, sólo puede
+bajar) y es el **decimosexto pozo** de `npm run seo_debt`, que ya la cruza contra el libro de
+cambios y dice cuál se puede tocar hoy. Las consolidadas quedan fuera: declaran `noindex, follow` y
+no van al sitemap, así que nadie tiene que enlazarlas.
+
 ## Agregar una página
 
 1. Si tiene datos propios: su directorio en `utils/directorios.ts` (`tambien` o `analisis`).

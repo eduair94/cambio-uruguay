@@ -127,7 +127,7 @@ describe("el lector de las listas del app no puede fallar en silencio", () => {
     expect(parseStringList(source, "L")).toEqual(["/uno", "/dos"]);
   });
 
-  // La prueba que importa: las DOCE listas de verdad, como las declara el app hoy. Si alguien
+  // La prueba que importa: las CATORCE listas de verdad, como las declara el app hoy. Si alguien
   // renombra un `const` o le cambia la forma, esto se pone rojo y el informe no miente.
   //
   // La cuarta, la quinta y la sexta entraron el 2026-10-20, cuando `seoContract.test.ts` y
@@ -154,6 +154,9 @@ describe("el lector de las listas del app no puede fallar en silencio", () => {
     ["seoMessageSnippetBudget.test.ts", "DEUDA_DESCRIPCION_MENSAJE", "MESSAGE_DESCRIPTION_OVER_BUDGET", "/"],
     ["seoToolCatalogBudget.test.ts", "DEUDA_TITULO_HERRAMIENTA", "TOOL_TITLE_OVER_BUDGET", "/"],
     ["seoToolCatalogBudget.test.ts", "DEUDA_DESCRIPCION_HERRAMIENTA", "TOOL_DESCRIPTION_OVER_BUDGET", "/"],
+    // El pozo de enlazado de las guías, desde el 2026-11-28. Declara slugs, como los dos pozos de
+    // guías de arriba, porque la ruta la arma el informe.
+    ["enlacesDeContextoGuias.test.ts", "GUIAS_SIN_ENLACE", "GUIAS_DEUDA_MAXIMA", ""],
   ])("lee %s → %s y cabe en su propio trinquete", (file, list, budget, prefix) => {
     const source = read(file);
     const declared = parseStringList(source, list);

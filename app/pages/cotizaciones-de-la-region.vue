@@ -241,12 +241,23 @@
         class="mt-4"
       >
         <p class="alert-title font-weight-bold mb-1">Lo que esta cuenta no incluye</p>
-        <p class="text-body-2 mb-0">
+        <p class="text-body-2 mb-2">
           Ni comisiones fijas por operación, ni el costo de cruzar, ni el riesgo de andar con
           efectivo, ni lo que cambia el precio si operás montos grandes. Compara precios publicados
           de mostrador, que es lo que se puede verificar. Para pesos argentinos, la cuenta larga
           —con el blue, el oficial y lo que cobra cada casa uruguaya— está en
           <NuxtLink :to="localePath('/dolar-blue-hoy')">dólar blue hoy</NuxtLink>.
+        </p>
+        <p class="text-body-2 mb-0">
+          Y hay una tercera ruta que esta cuenta no puede comparar, porque no tiene precio de
+          mostrador: pagar allá con tu tarjeta uruguaya. Ahí el tipo de cambio lo pone la red —Visa
+          o Mastercard—, no la pizarra de ningún banco uruguayo, así que lo que te debitan puede no
+          coincidir con ninguno de los precios de este tablero; y encima va lo que te recarga tu
+          emisor por comprar en el exterior. Está desglosado, con lo que cobra cada tarjeta y qué
+          dice el BCRA sobre los consumos de turistas, en
+          <NuxtLink :to="localePath('/guias/usar-tarjeta-uruguaya-en-argentina')"
+            >usar una tarjeta uruguaya en Argentina</NuxtLink
+          >.
         </p>
       </VAlert>
     </section>
