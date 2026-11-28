@@ -260,7 +260,9 @@
     "regulatedAria": "Tỷ giá dựa trên sổ đăng ký chính thức của Ngân hàng Trung ương Uruguay (BCU).",
     "houses": "Hơn 40 ngôi nhà trao đổi",
     "updated": "Cập nhật mỗi 10 phút",
-    "reviews": "Đánh giá trên Trustpilot"
+    "reviews": "Đánh giá trên Trustpilot",
+    "since": "Trực tuyến từ {year}",
+    "sinceAria": "Các bản sao của trang web được lưu trữ bởi Internet Archive từ năm {date}."
   },
   "a11y": {
     "swap": "Hoán đổi tiền tệ",
@@ -1299,6 +1301,7 @@
     "freqTitle": "Tần suất cập nhật",
     "sourcesTitle": "Nguồn",
     "authorTitle": "Ai đứng sau chuyện này?",
+    "archiveTitle": "Chúng tôi đã hoạt động trực tuyến được bao lâu rồi?",
     "independenceTitle": "Độc lập và quyền tự do tiếp cận",
     "disclaimerTitle": "Đây không phải là lời khuyên tài chính.",
     "disclaimerText": "Thông tin trên Cambio Uruguay chỉ mang tính chất thông tin và giáo dục. Nó không cấu thành tư vấn tài chính, thuế hoặc đầu tư, cũng như không phải là khuyến nghị mua hoặc bán ngoại tệ. Luôn luôn xác minh tỷ giá và điều kiện trực tiếp với nhà đổi tiền trước khi giao dịch.",

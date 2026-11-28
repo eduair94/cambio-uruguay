@@ -257,7 +257,9 @@
     "regulatedAria": "Rates based on the official Central Bank of Uruguay (BCU) registry",
     "houses": "40+ exchange houses",
     "updated": "Updated every 10 min",
-    "reviews": "Trustpilot reviews"
+    "reviews": "Trustpilot reviews",
+    "since": "Online since {year}",
+    "sinceAria": "Copies of the site saved by the Internet Archive since {date}"
   },
   "a11y": {
     "swap": "Swap currencies",
@@ -1289,6 +1291,7 @@
     "freqTitle": "How often it updates",
     "sourcesTitle": "Sources",
     "authorTitle": "Who is behind it",
+    "archiveTitle": "How long we have been online",
     "independenceTitle": "Independence and free access",
     "disclaimerTitle": "This is not financial advice",
     "disclaimerText": "The information on Cambio Uruguay is informational and educational. It does not constitute financial, tax or investment advice, nor a recommendation to buy or sell currency. Always verify the rate and conditions directly with the exchange house before operating.",

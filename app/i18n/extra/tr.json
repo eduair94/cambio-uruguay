@@ -260,7 +260,9 @@
     "regulatedAria": "Oranlar, Uruguay Merkez Bankası'nın (BCU) resmi kayıtlarına dayanmaktadır.",
     "houses": "40'tan fazla değişim evi",
     "updated": "Her 10 dakikada bir güncellenir",
-    "reviews": "Trustpilot yorumları"
+    "reviews": "Trustpilot yorumları",
+    "since": "{year} tarihinden beri çevrimiçi",
+    "sinceAria": "Siteye ait kopyalar {date} tarihinden beri İnternet Arşivi tarafından kaydedilmiştir."
   },
   "a11y": {
     "swap": "Döviz takası",
@@ -1299,6 +1301,7 @@
     "freqTitle": "Ne sıklıkla güncelleniyor?",
     "sourcesTitle": "Kaynaklar",
     "authorTitle": "Bunun arkasında kim var?",
+    "archiveTitle": "Ne kadar süredir çevrimiçiyiz?",
     "independenceTitle": "Bağımsızlık ve serbest erişim",
     "disclaimerTitle": "Bu bir finansal tavsiye değildir.",
     "disclaimerText": "Cambio Uruguay'deki bilgiler bilgilendirme ve eğitim amaçlıdır. Finansal, vergi veya yatırım tavsiyesi veya döviz alım satım önerisi niteliği taşımaz. İşlem yapmadan önce her zaman döviz kuru ve koşullarını doğrudan döviz bürosundan doğrulayın.",

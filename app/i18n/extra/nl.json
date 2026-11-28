@@ -260,7 +260,9 @@
     "regulatedAria": "De tarieven zijn gebaseerd op het officiële register van de Centrale Bank van Uruguay (BCU).",
     "houses": "Meer dan 40 ruilhuizen",
     "updated": "Wordt elke 10 minuten bijgewerkt.",
-    "reviews": "Trustpilot-recensies"
+    "reviews": "Trustpilot-recensies",
+    "since": "Online sinds {year}",
+    "sinceAria": "Kopieën van de site die sinds {date} door het Internet Archive zijn opgeslagen."
   },
   "a11y": {
     "swap": "Wissel valuta's",
@@ -1299,6 +1301,7 @@
     "freqTitle": "Hoe vaak het wordt bijgewerkt",
     "sourcesTitle": "Bronnen",
     "authorTitle": "Wie zit hierachter?",
+    "archiveTitle": "Hoe lang we al online zijn",
     "independenceTitle": "Onafhankelijkheid en vrije toegang",
     "disclaimerTitle": "Dit is geen financieel advies.",
     "disclaimerText": "De informatie op Cambio Uruguay is informatief en educatief. Het vormt geen financieel, fiscaal of beleggingsadvies, noch een aanbeveling om valuta te kopen of te verkopen. Controleer de koers en voorwaarden altijd rechtstreeks bij het wisselkantoor voordat u een transactie uitvoert.",

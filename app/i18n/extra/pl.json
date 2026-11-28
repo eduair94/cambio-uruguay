@@ -260,7 +260,9 @@
     "regulatedAria": "Stawki oparte na oficjalnym rejestrze Banku Centralnego Urugwaju (BCU)",
     "houses": "Ponad 40 domów wymiany",
     "updated": "Aktualizowane co 10 minut",
-    "reviews": "Recenzje Trustpilot"
+    "reviews": "Recenzje Trustpilot",
+    "since": "Online od {year}",
+    "sinceAria": "Kopie witryny zapisane przez Internet Archive od {date}"
   },
   "a11y": {
     "swap": "Wymiana walut",
@@ -1299,6 +1301,7 @@
     "freqTitle": "Jak często się aktualizuje",
     "sourcesTitle": "Źródła",
     "authorTitle": "Kto za tym stoi?",
+    "archiveTitle": "Jak długo jesteśmy online",
     "independenceTitle": "Niezależność i swobodny dostęp",
     "disclaimerTitle": "To nie jest porada finansowa",
     "disclaimerText": "Informacje na temat Cambio Uruguay mają charakter informacyjny i edukacyjny. Nie stanowią porady finansowej, podatkowej ani inwestycyjnej, ani rekomendacji kupna lub sprzedaży waluty. Przed rozpoczęciem operacji zawsze należy sprawdzić kurs i warunki bezpośrednio w kantorze.",

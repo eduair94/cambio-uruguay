@@ -260,7 +260,9 @@
     "regulatedAria": "Kadar berdasarkan pendaftaran rasmi Bank Pusat Uruguay (BCU)",
     "houses": "40+ rumah pertukaran",
     "updated": "Dikemas kini setiap 10 minit",
-    "reviews": "Ulasan Trustpilot"
+    "reviews": "Ulasan Trustpilot",
+    "since": "Dalam talian sejak {year}",
+    "sinceAria": "Salinan laman web yang disimpan oleh Arkib Internet sejak {date}"
   },
   "a11y": {
     "swap": "Mata wang pertukaran",
@@ -1299,6 +1301,7 @@
     "freqTitle": "Kekerapan ia dikemas kini",
     "sourcesTitle": "Sumber",
     "authorTitle": "Siapakah di sebaliknya",
+    "archiveTitle": "Berapa lama kita telah berada dalam talian",
     "independenceTitle": "Kemerdekaan dan akses percuma",
     "disclaimerTitle": "Ini bukan nasihat kewangan",
     "disclaimerText": "Maklumat mengenai Cambio Uruguay adalah bersifat maklumat dan pendidikan. Ia bukan merupakan nasihat kewangan, cukai atau pelaburan, mahupun cadangan untuk membeli atau menjual mata wang. Sentiasa sahkan kadar dan syarat secara langsung dengan rumah pertukaran sebelum beroperasi.",

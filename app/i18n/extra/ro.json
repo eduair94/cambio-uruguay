@@ -260,7 +260,9 @@
     "regulatedAria": "Ratele se bazează pe registrul oficial al Băncii Centrale a Uruguayului (BCU)",
     "houses": "Peste 40 de case de schimb valutar",
     "updated": "Actualizat la fiecare 10 minute",
-    "reviews": "Recenzii Trustpilot"
+    "reviews": "Recenzii Trustpilot",
+    "since": "Online din {year}",
+    "sinceAria": "Copii ale site-ului salvate de Internet Archive de la {date} încoace"
   },
   "a11y": {
     "swap": "Schimbați valutele",
@@ -1299,6 +1301,7 @@
     "freqTitle": "Cât de des se actualizează",
     "sourcesTitle": "Surse",
     "authorTitle": "Cine este în spatele acestui lucru",
+    "archiveTitle": "De cât timp suntem online",
     "independenceTitle": "Independență și acces liber",
     "disclaimerTitle": "Acesta nu este un sfat financiar",
     "disclaimerText": "Informațiile de pe Cambio Uruguay sunt informative și educative. Nu constituie consultanță financiară, fiscală sau de investiții și nici o recomandare de cumpărare sau vânzare de valută. Verificați întotdeauna cursul și condițiile direct cu casa de schimb valutar înainte de a opera.",

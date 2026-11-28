@@ -539,7 +539,9 @@ useSchemaOrg([
     name: 'Cambio Uruguay',
     alternateName: 'Cambio Uruguay - Cotización del Dólar',
     url: 'https://cambio-uruguay.com',
-    foundingDate: '2023',
+    // Decía '2023', pero Internet Archive tiene la portada funcionando el 2022-12-27 (la primera
+    // captura, utils/archiveHistory.ts; tests/unit/archiveHistory.test.ts ata las dos fechas).
+    foundingDate: '2022-12',
     description:
       'Plataforma líder en Uruguay para comparar cotizaciones del dólar y divisas en más de 40 casas de cambio en tiempo real.',
     areaServed: {

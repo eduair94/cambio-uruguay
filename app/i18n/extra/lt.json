@@ -260,7 +260,9 @@
     "regulatedAria": "Kursai pagrįsti oficialiu Urugvajaus centrinio banko (BCU) registru",
     "houses": "40+ mainų namų",
     "updated": "Atnaujinama kas 10 min.",
-    "reviews": "„Trustpilot“ atsiliepimai"
+    "reviews": "„Trustpilot“ atsiliepimai",
+    "since": "Prisijungęs nuo {year}",
+    "sinceAria": "Svetainės kopijos, išsaugotos interneto archyve nuo {date}"
   },
   "a11y": {
     "swap": "Valiutų keitimas",
@@ -1299,6 +1301,7 @@
     "freqTitle": "Kaip dažnai atnaujinama",
     "sourcesTitle": "Šaltiniai",
     "authorTitle": "Kas už to slypi",
+    "archiveTitle": "Kiek laiko esame prisijungę",
     "independenceTitle": "Nepriklausomybė ir laisva prieiga",
     "disclaimerTitle": "Tai nėra finansinė konsultacija",
     "disclaimerText": "Informacija Cambio Uruguay svetainėje yra informacinio ir edukacinio pobūdžio. Ji nėra finansinė, mokesčių ar investavimo konsultacija, taip pat rekomendacija pirkti ar parduoti valiutą. Prieš pradėdami veiklą, visada tiesiogiai pasitikrinkite kursą ir sąlygas su valiutos keitykla.",

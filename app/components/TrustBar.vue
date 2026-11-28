@@ -25,6 +25,19 @@
       <span>{{ $t('trust.updated') }}</span>
     </li>
 
+    <!-- Antigüedad probada por un tercero: la sección de /acerca enlaza cada copia que guardó
+         Internet Archive desde la primera (utils/archiveHistory.ts). -->
+    <li class="trust-pill">
+      <NuxtLink
+        class="trust-pill__link"
+        :to="`${localePath('/acerca')}#trayectoria`"
+        :title="$t('trust.sinceAria', { date: firstCaptureDisplay })"
+      >
+        <VIcon size="18" color="info" class="trust-pill__icon">mdi-archive-clock-outline</VIcon>
+        <span>{{ $t('trust.since', { year: firstCaptureYear }) }}</span>
+      </NuxtLink>
+    </li>
+
     <li class="trust-pill">
       <a
         class="trust-pill__link"
@@ -40,8 +53,23 @@
 </template>
 
 <script setup lang="ts">
+import { ARCHIVE_FIRST_CAPTURE, waybackDate } from '~/utils/archiveHistory'
+
 // BCU = Banco Central del Uruguay (the regulator). Link to its exchange-house registry.
 const bcuUrl = 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/casas_cambio.aspx'
+
+const { locale } = useI18n()
+const localePath = useLocalePath()
+const firstCaptureIso = waybackDate(ARCHIVE_FIRST_CAPTURE)
+const firstCaptureYear = firstCaptureIso.slice(0, 4)
+const firstCaptureDisplay = computed(() =>
+  new Date(firstCaptureIso).toLocaleDateString(dateLocale(locale.value), {
+    timeZone: siteTimeZone(firstCaptureIso),
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+)
 </script>
 
 <style scoped>

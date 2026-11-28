@@ -260,7 +260,9 @@
     "regulatedAria": "Renter basert på det offisielle registeret til Uruguays sentralbank (BCU)",
     "houses": "40+ bytteboliger",
     "updated": "Oppdateres hvert 10. minutt",
-    "reviews": "Trustpilot-anmeldelser"
+    "reviews": "Trustpilot-anmeldelser",
+    "since": "På nett siden {year}",
+    "sinceAria": "Kopier av nettstedet lagret av Internet Archive siden {date}"
   },
   "a11y": {
     "swap": "Bytt valutaer",
@@ -1299,6 +1301,7 @@
     "freqTitle": "Hvor ofte den oppdateres",
     "sourcesTitle": "Kilder",
     "authorTitle": "Hvem står bak det",
+    "archiveTitle": "Hvor lenge har vi vært på nett",
     "independenceTitle": "Uavhengighet og fri tilgang",
     "disclaimerTitle": "Dette er ikke økonomisk rådgivning",
     "disclaimerText": "Informasjonen på Cambio Uruguay er informativ og pedagogisk. Den utgjør ikke økonomisk, skattemessig eller investeringsrådgivning, og heller ikke en anbefaling om å kjøpe eller selge valuta. Bekreft alltid kursen og betingelsene direkte med vekslingshuset før du bruker det.",

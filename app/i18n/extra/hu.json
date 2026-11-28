@@ -260,7 +260,9 @@
     "regulatedAria": "Az árfolyamok az Uruguayi Központi Bank (BCU) hivatalos nyilvántartásán alapulnak.",
     "houses": "40+ csereház",
     "updated": "10 percenként frissül",
-    "reviews": "Trustpilot-vélemények"
+    "reviews": "Trustpilot-vélemények",
+    "since": "Online {year} óta",
+    "sinceAria": "Az oldalnak az Internet Archive által {date} óta mentett másolatai"
   },
   "a11y": {
     "swap": "Valuták cseréje",
@@ -1299,6 +1301,7 @@
     "freqTitle": "Milyen gyakran frissül",
     "sourcesTitle": "Források",
     "authorTitle": "Ki áll mögötte",
+    "archiveTitle": "Mióta vagyunk online",
     "independenceTitle": "Függetlenség és szabad hozzáférés",
     "disclaimerTitle": "Ez nem pénzügyi tanácsadás",
     "disclaimerText": "A Cambio Uruguay-n található információk tájékoztató jellegűek és oktató jellegűek. Nem minősülnek pénzügyi, adózási vagy befektetési tanácsadásnak, illetve nem minősülnek valuta vételére vagy eladására vonatkozó ajánlásnak. A működés megkezdése előtt mindig ellenőrizze az árfolyamot és a feltételeket közvetlenül a tőzsdével.",

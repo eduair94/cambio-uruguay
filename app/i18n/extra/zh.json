@@ -260,7 +260,9 @@
     "regulatedAria": "利率基于乌拉圭中央银行（BCU）官方登记册。",
     "houses": "40多家外汇兑换机构",
     "updated": "每10分钟更新一次",
-    "reviews": "Trustpilot 评论"
+    "reviews": "Trustpilot 评论",
+    "since": "自 {year} 起上线",
+    "sinceAria": "自 {date} 以来，互联网档案馆保存了该网站的副本。"
   },
   "a11y": {
     "swap": "货币互换",
@@ -1299,6 +1301,7 @@
     "freqTitle": "更新频率",
     "sourcesTitle": "来源",
     "authorTitle": "谁是幕后黑手？",
+    "archiveTitle": "我们在线多久了？",
     "independenceTitle": "独立性和自由访问",
     "disclaimerTitle": "这并非财务建议",
     "disclaimerText": "Cambio Uruguay网站上的信息仅供参考和教育之用，不构成任何财务、税务或投资建议，也不构成买卖货币的推荐。操作前，请务必直接与兑换机构核实汇率和相关条款。",

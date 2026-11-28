@@ -260,7 +260,9 @@
     "regulatedAria": "Kurzy vycházejí z oficiálního registru Centrální banky Uruguaye (BCU)",
     "houses": "40+ výměnných domů",
     "updated": "Aktualizováno každých 10 minut",
-    "reviews": "Recenze Trustpilotu"
+    "reviews": "Recenze Trustpilotu",
+    "since": "Online od {year}",
+    "sinceAria": "Kopie webu uložené Internetovým archivem od {date}"
   },
   "a11y": {
     "swap": "Swap měn",
@@ -1299,6 +1301,7 @@
     "freqTitle": "Jak často se aktualizuje",
     "sourcesTitle": "Zdroje",
     "authorTitle": "Kdo za tím stojí",
+    "archiveTitle": "Jak dlouho jsme online",
     "independenceTitle": "Nezávislost a volný přístup",
     "disclaimerTitle": "Toto není finanční poradenství",
     "disclaimerText": "Informace na Cambio Uruguay jsou informativní a vzdělávací. Nepředstavují finanční, daňové ani investiční poradenství, ani doporučení k nákupu či prodeji měn. Před zahájením operace si vždy ověřte kurz a podmínky přímo u směnárny.",

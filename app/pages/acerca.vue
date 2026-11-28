@@ -12,6 +12,7 @@
         <nav class="about-nav" :aria-label="t('acerca.tag')">
           <a href="#fuentes">{{ t('acerca.sourcesTitle') }}</a>
           <a href="#autor">{{ t('acerca.authorTitle') }}</a>
+          <a href="#trayectoria">{{ t('acerca.archiveTitle') }}</a>
           <a href="#widget">{{ t('acerca.embedTitle') }}</a>
         </nav>
       </header>
@@ -123,6 +124,65 @@
           </p>
         </section>
 
+        <!-- Desde cuándo funcionamos: la prueba es de un tercero (Internet Archive), no nuestra.
+             Datos fijos y fechados en utils/archiveHistory.ts; sólo se calcula el tiempo. -->
+        <section id="trayectoria" class="about-section">
+          <h2>{{ t('acerca.archiveTitle') }}</h2>
+          <p class="about-since">
+            <strong class="about-since__figure">{{ timeOnlineLabel }}</strong>
+            <span class="about-since__caption">
+              en línea. Internet Archive guardó la primera copia del sitio el
+              {{ firstCaptureDisplay }}.
+            </span>
+          </p>
+          <p class="about-prose">
+            No hace falta creernos.
+            <a
+              class="about-link"
+              href="https://archive.org/about/"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Internet Archive</a
+            >
+            es una biblioteca digital sin fines de lucro que guarda copias fechadas de los sitios
+            web, y no la manejamos nosotros. Abrí cualquiera de estas copias y vas a ver el sitio
+            tal como estaba ese día.
+          </p>
+          <ol class="about-archive">
+            <li v-for="snap in archiveSnapshots" :key="snap.timestamp" class="about-archive__item">
+              <time class="about-archive__date" :datetime="snap.date">{{ snap.dateLabel }}</time>
+              <div class="about-archive__body">
+                <p class="about-archive__note">{{ snap.note }}</p>
+                <a
+                  class="about-link about-archive__link"
+                  :href="snap.href"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Ver la copia archivada</a
+                >
+              </div>
+            </li>
+          </ol>
+          <p class="about-prose about-archive__more">
+            En total, el archivo guardó {{ archiveCaptureCount }} copias de páginas del sitio
+            (consultado el {{ archiveCheckedDisplay }}). Están todas en
+            <a
+              class="about-link"
+              :href="archiveCalendarUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              >el calendario de la Wayback Machine</a
+            >, y el código es público en GitHub desde el
+            <a
+              class="about-link"
+              href="https://github.com/eduair94/cambio-uruguay/commit/dfa83c22ef2410cf4ea6bc3903ea94124f0061cd"
+              target="_blank"
+              rel="noopener noreferrer"
+              >primer commit</a
+            >, del 30 de diciembre de 2022.
+          </p>
+        </section>
+
         <!-- Independencia y gratuidad -->
         <section class="about-section">
           <h2>{{ t('acerca.independenceTitle') }}</h2>
@@ -219,6 +279,17 @@
 </template>
 
 <script setup lang="ts">
+import {
+  ARCHIVE_CAPTURE_COUNT,
+  ARCHIVE_CHECKED_ON,
+  ARCHIVE_FIRST_CAPTURE,
+  ARCHIVE_SNAPSHOTS,
+  formatTimeOnline,
+  timeOnline,
+  waybackCalendarUrl,
+  waybackDate,
+  waybackSnapshotUrl,
+} from '~/utils/archiveHistory'
 import { ORGANIZATION_ID, authorPersonNode, authorReference } from '~/utils/authorEntity'
 
 const { t, locale } = useI18n()
@@ -226,14 +297,45 @@ const localePath = useLocalePath()
 
 // Date of the last methodology review. Kept in one place so meta + JSON-LD agree.
 // 2026-09-22: la entidad del autor pasó a tener @id, y la política de publicidad se enlaza.
-const LAST_REVIEWED = '2026-09-22'
+// 2026-11-28: la sección «Desde cuándo funcionamos», con las copias de Internet Archive.
+const LAST_REVIEWED = '2026-11-28'
 
-const lastUpdatedDisplay = computed(() =>
-  new Date(LAST_REVIEWED).toLocaleDateString(dateLocale(locale.value), {
-    timeZone: siteTimeZone(LAST_REVIEWED),
+const longDay = (iso: string, lang: string = locale.value): string =>
+  new Date(iso).toLocaleDateString(dateLocale(lang), {
+    timeZone: siteTimeZone(iso),
     year: 'numeric',
     month: 'long',
     day: 'numeric',
+  })
+
+const lastUpdatedDisplay = computed(() => longDay(LAST_REVIEWED))
+
+// Internet Archive. El "ahora" lo fija el servidor y viaja en el payload: si el navegador
+// calculara el suyo, un render cerca del cambio de mes daría otro texto al hidratar.
+const archiveNow = useState('acerca-archive-now', () => Date.now())
+const firstCaptureIso = waybackDate(ARCHIVE_FIRST_CAPTURE)
+// La cifra y las fechas de cada copia van solas en su nodo: se escriben en el idioma de la página.
+const timeOnlineLabel = computed(() =>
+  formatTimeOnline(timeOnline(firstCaptureIso, archiveNow.value), dateLocale(locale.value))
+)
+// Estas dos van DENTRO de una oración en castellano, y la traducción automática del cuerpo
+// (utils/autoTranslate.ts) usa el texto del nodo como clave sin los números pero con las palabras:
+// «el 27 décembre 2022» en una oración castellana no coincide con ninguna traducción y la oración
+// queda mezclada. En castellano siempre, para que la oración entera se traduzca junta.
+const firstCaptureDisplay = longDay(firstCaptureIso, 'es')
+const archiveCheckedDisplay = longDay(ARCHIVE_CHECKED_ON, 'es')
+const archiveCaptureCount = ARCHIVE_CAPTURE_COUNT
+const archiveCalendarUrl = waybackCalendarUrl()
+const archiveSnapshots = computed(() =>
+  ARCHIVE_SNAPSHOTS.map(snap => {
+    const date = waybackDate(snap.timestamp)
+    return {
+      timestamp: snap.timestamp,
+      date,
+      dateLabel: longDay(date),
+      note: snap.note,
+      href: waybackSnapshotUrl(snap.timestamp, snap.url),
+    }
   })
 )
 
@@ -530,6 +632,78 @@ useHead({
   border-radius: 4px;
 }
 
+/* Desde cuándo funcionamos: la cifra arriba, después las copias del archivo, una fila por año
+   con la misma grilla que los tipos de cotización. */
+.about-since {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+/* The Stat Step de DESIGN.md: 700, 1.5rem, cifras tabulares. */
+.about-since__figure {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  text-wrap: balance;
+}
+
+.about-since__caption {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgba(var(--v-theme-on-surface), 0.82);
+}
+
+.about-archive {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+}
+
+.about-archive__item {
+  display: grid;
+  grid-template-columns: 12rem minmax(0, 1fr);
+  gap: 4px 24px;
+  padding-block: 16px;
+  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.14);
+}
+
+.about-archive__item:last-child {
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.14);
+}
+
+.about-archive__date {
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.7;
+  font-variant-numeric: tabular-nums;
+}
+
+.about-archive__body {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.about-archive__note {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgba(var(--v-theme-on-surface), 0.82);
+}
+
+.about-archive__link {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 0.875rem;
+}
+
+.about-archive__more {
+  margin-top: 16px;
+}
+
 .embed-snippet {
   margin-top: 16px;
 }
@@ -577,7 +751,8 @@ useHead({
 }
 
 @container (max-width: 600px) {
-  .about-type {
+  .about-type,
+  .about-archive__item {
     grid-template-columns: minmax(0, 1fr);
   }
 }
