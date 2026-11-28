@@ -640,11 +640,10 @@ useSchemaOrg([
   }
 }
 
-/* App bar: subtle bottom hairline + slight blur for a modern, layered feel */
+/* App bar: a bottom hairline. No backdrop blur: the bar is opaque, so the blur showed nothing and
+   still made the compositor re-blur the page under it on every scrolled frame. */
 .app-bar {
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 /* Navigation Button Styles — compact so the full bar fits from the lg

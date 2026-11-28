@@ -3,7 +3,7 @@
   <section class="ai-insights-section py-12">
     <v-container>
       <v-row justify="center">
-        <v-col cols="12" class="text-center mb-8">
+        <v-col cols="12" md="10" lg="8" class="mb-8">
           <h2 class="text-h4 font-weight-bold mb-4">
             {{ t('ai.title') }}
           </h2>
@@ -310,13 +310,16 @@ defineExpose({ isAvailable })
 </script>
 
 <style scoped>
+/* The home's section band (pages/index.vue → .section-band): a flat tint of the canvas between
+   hairlines, and a solid surface for the card. It was a #1e1e1e grey slab and a blurred glass card,
+   neither from the palette. */
 .ai-insights-section {
-  background: #1e1e1e;
+  background: rgba(var(--v-theme-on-surface), 0.025);
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
 .ai-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
+  background: rgb(var(--v-theme-surface));
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   transition:
@@ -334,11 +337,12 @@ defineExpose({ isAvailable })
   cursor: pointer;
 }
 
+/* Wrapping row, not a fixed 3-column grid: the grid sized each column to its chip's `auto`
+   width inside an 8-column card, and the longer labels ("Resumen del Mercado") were cut. */
 .action-chips-grid {
-  display: grid;
-  grid-template-columns: repeat(3, auto);
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  justify-content: center;
 }
 
 .action-chip:hover {
@@ -505,10 +509,6 @@ defineExpose({ isAvailable })
 
 /* Responsive */
 @media (max-width: 600px) {
-  .action-chips-grid {
-    grid-template-columns: repeat(2, auto);
-  }
-
   .action-chip {
     font-size: 0.75rem;
   }
@@ -521,10 +521,6 @@ defineExpose({ isAvailable })
 /* Light theme: authored dark-first (fixed dark band + white-alpha cards + light
    text/markdown). Re-skin to a light band with white cards so the heading,
    default-variant chips and markdown body read with full contrast. */
-.v-theme--light .ai-insights-section {
-  background: #eef2f8;
-}
-
 .v-theme--light .ai-card {
   background: #ffffff;
   border-color: rgba(15, 23, 42, 0.1);

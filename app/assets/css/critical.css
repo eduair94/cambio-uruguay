@@ -122,9 +122,11 @@ ins.adsbygoogle {
 }
 
 /* Header styles — scoped per theme so the light palette isn't forced dark. */
+/* Opaque in both themes: the dark bar was 82 % navy over a backdrop blur, a glass panel the
+   design system bans and the one thing on every page the compositor re-blurred while scrolling. */
 .v-theme--dark.v-app-bar,
 .v-theme--dark .v-app-bar {
-  background-color: rgba(12, 17, 32, 0.82) !important;
+  background-color: #0c1120 !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
@@ -380,37 +382,76 @@ button:focus-visible,
 }
 
 /* ------------------------------------------------------------------ */
-/* Engagement animations (CSS-only, reduced-motion aware)              */
+/* Motion: soft feedback, reduced-motion aware                         */
 /* ------------------------------------------------------------------ */
 
-/* Scroll-reveal: opted-in elements start hidden and fade/slide up when the
-   `useReveal` IntersectionObserver adds `.is-revealed`. */
-.reveal {
-  opacity: 0;
-  transform: translateY(18px);
-  transition:
-    opacity 0.6s ease,
-    transform 0.6s ease;
-  will-change: opacity, transform;
+/* Scroll reveals and the page arrival are scripted (plugins/reveal.ts,
+   plugins/page-arrive.client.ts, Motion over the Web Animations API) and never
+   hide content from CSS: nothing here may set `opacity: 0` on an element that
+   the server rendered, or a page whose script fails stays blank. */
+
+/* Press: a button gives under the finger. `scale` is its own property, so it
+   composes with any `transform` a page already animates (the swap button
+   rotates) instead of replacing it. */
+.v-btn {
+  transition-property: box-shadow, transform, opacity, background, scale;
 }
 
-.reveal.is-revealed {
-  opacity: 1;
-  transform: none;
+.v-btn:active:not(.v-btn--disabled, .v-btn--loading, .v-btn--readonly) {
+  scale: 0.97;
+  transition-duration: 0.12s;
 }
 
-/* Reusable hover lift for cards / tiles. */
+/* Quiet Lift (DESIGN.md → Elevation): an interactive card rises 3 px. */
 .hover-lift {
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+    transform 0.2s cubic-bezier(0.2, 0, 0, 1),
+    box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
 
-.hover-lift:hover {
-  transform: translateY(-3px);
+@media (hover: hover) {
+  .hover-lift:hover {
+    transform: translateY(-3px);
+  }
 }
 
-/* Respect users who ask for less motion: disable animations + reveal offset. */
+/* Browser surfaces carry the palette too: the selection is Action Blue at low
+   alpha (text keeps its own ink, so contrast never changes), and the caret in
+   every field is the focus colour. */
+::selection {
+  background: rgba(var(--v-theme-primary), 0.22);
+}
+
+input,
+textarea {
+  caret-color: rgb(var(--v-theme-primary));
+}
+
+/* La pizarra (utils/pizarraRoll.ts): the rate's digits roll in over its own
+   text, which is painted transparent for under a second and never replaced. */
+.pizarra-host {
+  position: relative;
+  color: transparent !important;
+}
+
+.pizarra-roll {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  white-space: pre;
+  pointer-events: none;
+}
+
+.pizarra-roll__cell {
+  display: inline-block;
+  overflow: hidden;
+}
+
+.pizarra-roll__strip {
+  display: block;
+}
+
+/* Respect users who ask for less motion. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -421,9 +462,8 @@ button:focus-visible,
     scroll-behavior: auto !important;
   }
 
-  .reveal {
-    opacity: 1 !important;
-    transform: none !important;
+  .v-btn:active {
+    scale: none;
   }
 }
 

@@ -6,7 +6,7 @@
           <div class="text-caption text-grey">
             {{ $t('dolarHoy.buy') }} / {{ $t('dolarHoy.sell') }}
           </div>
-          <div class="text-h6 font-weight-bold">
+          <div ref="rateEl" class="dm-rate text-h6 font-weight-bold">
             {{ buy ? formatUYU(buy) : '-' }} / {{ sell ? formatUYU(sell) : '-' }}
           </div>
         </div>
@@ -47,6 +47,21 @@ const { bestBuy, bestSell } = useExchangeRates()
 const buy = computed(() => bestBuy('USD'))
 const sell = computed(() => bestSell('USD'))
 
+// The rate lands like the board of an exchange house (utils/pizarraRoll.ts): once, when the
+// figures replace the skeleton bars. The element exists only after the trend loads, so the ref
+// itself is the signal; the server never sets template refs, so this never runs there.
+const rateEl = ref<HTMLElement | null>(null)
+let rolled = false
+watch(
+  rateEl,
+  el => {
+    if (!el || rolled) return
+    rolled = true
+    requestAnimationFrame(() => rollPizarra(el))
+  },
+  { flush: 'post' }
+)
+
 const chipColor = computed(() =>
   momentum.value.direction === 'up'
     ? 'success'
@@ -80,5 +95,11 @@ const changeLabel = computed(() => {
 .spark-wrap {
   min-width: 120px;
   max-width: 240px;
+}
+
+/* The Number Breathes Rule: tabular figures, which is also what lets each rolling column of
+   the board sit exactly over the digit it becomes. */
+.dm-rate {
+  font-variant-numeric: tabular-nums;
 }
 </style>

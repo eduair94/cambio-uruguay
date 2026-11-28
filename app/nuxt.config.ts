@@ -1355,9 +1355,10 @@ export default defineNuxtConfig({
         },
       },
     ],
-    // NOT '@vueuse/motion/nuxt': it registered the v-motion directive app-wide, putting
-    // @vueuse/motion + popmotion (~30 KB) in every page's entry chunk for one page. The home
-    // registers the directive itself (pages/index.vue).
+    // No animation module: motion is Motion (motion.dev) imported where it is used —
+    // `motion/mini`'s `animate` over the Web Animations API plus `inView`/`stagger`, a few KB in
+    // the entry for `v-reveal` and the page arrival (plugins/reveal.ts, plugins/page-arrive.client.ts).
+    // '@vueuse/motion/nuxt' put @vueuse/motion + popmotion (~30 KB) in every page's entry chunk.
   ],
 
   // Web Vitals tracking
