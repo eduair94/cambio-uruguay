@@ -85,12 +85,14 @@ function money(value: number): string {
 function pct(value: number): string {
   return `${value.toLocaleString(intlLocale.value, { maximumFractionDigits: 2 })} %`
 }
-const referenceMonth = computed(() =>
-  new Date(`${AUMJUB_IMSN_REFERENCIA.mes}-15T12:00:00Z`).toLocaleDateString(intlLocale.value, {
-    month: 'long',
-    timeZone: 'UTC',
-  })
-)
+// Los meses van en minúscula en español y portugués (algunos motores devuelven «Setiembre» suelto).
+const referenceMonth = computed(() => {
+  const month = new Date(`${AUMJUB_IMSN_REFERENCIA.mes}-15T12:00:00Z`).toLocaleDateString(
+    intlLocale.value,
+    { month: 'long', timeZone: 'UTC' }
+  )
+  return locale.value.startsWith('en') ? month : month.toLocaleLowerCase(intlLocale.value)
+})
 function scenarioLabel(s: EstimatorScenario): string {
   return t(`estimator.${s.kind}`, { pct: pct(s.pct), month: referenceMonth.value })
 }
