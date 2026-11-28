@@ -171,6 +171,20 @@ describe('utils/abTests', () => {
     expect(abProperties(assigned)).toEqual({ ab_jubilaciones: 'b', ab_alquiler_tarjeta: 'a' })
   })
 
+  it('`npm run ab_report` (raíz) lee el registro como texto con esta forma', () => {
+    // scripts/oneoff/ab_report.ts no puede importar el app (ESM): lee este archivo con una
+    // expresión. Si alguien cambia la forma de las entradas, la lectura se queda sin experimentos.
+    const source = readFileSync(join(__dirname, '..', '..', 'utils', 'abTests.ts'), 'utf8')
+    const block =
+      /\{\s*id: '([a-z-]+)',\s*param: '([a-z_]+)',\s*startsOn: '(\d{4}-\d{2}-\d{2})',\s*endsOn: '(\d{4}-\d{2}-\d{2})',\s*what: '([^']+)',?\s*\}/g
+    expect([...source.matchAll(block)].map(m => m[1])).toEqual(AB_TESTS.map(t => t.id))
+    const report = readFileSync(
+      join(__dirname, '..', '..', '..', 'scripts', 'oneoff', 'ab_report.ts'),
+      'utf8'
+    )
+    expect(report).toContain(block.source)
+  })
+
   it('cada propiedad entra en GA4 (≤ 24 caracteres, minúsculas y guion bajo)', () => {
     for (const test of AB_TESTS) expect(test.param).toMatch(/^[a-z][a-z_]{0,23}$/)
   })

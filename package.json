@@ -93,6 +93,7 @@
     "precios_pin_basket": "ts-node scripts/oneoff/precios_pin_basket.ts",
     "cf_traffic": "ts-node scripts/oneoff/cf_traffic_report.ts",
     "seo_debt": "ts-node scripts/oneoff/seo_debt_report.ts",
+    "ab_report": "ts-node scripts/oneoff/ab_report.ts",
     "insights": "ts-node scripts/oneoff/usage_insights_report.ts",
     "photo_facts_label": "ts-node scripts/oneoff/photo_facts_label.ts",
     "photo_facts_eval": "ts-node scripts/oneoff/photo_facts_eval.ts",
