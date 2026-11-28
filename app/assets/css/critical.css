@@ -611,3 +611,24 @@ html[data-cu-consent] .cookie-consent:not(.v-dialog) {
 html[data-ab-jubilaciones='b'] .ab-jubilaciones {
   display: block;
 }
+
+/*
+ * `alquiler-tarjeta`: en el brazo `b`, la tarjeta del directorio de alquileres en el celular sin la
+ * comparación de barrios ni el pie (anunciante, «¿ya no está?», última lectura) y con los portales de
+ * a dos por renglón; las tres cosas siguen en la ficha. GLOBAL a propósito y con selectores comunes:
+ * en el <style scoped> de la página, `:global(html[…]) .rental-card …` compiló a `html[…]` solo y
+ * dejó la página en blanco en el celular (28/11/2026, `abScopedGlobal.test.ts`).
+ */
+@media (max-width: 599px) {
+  html[data-ab-alquiler-tarjeta='b'] .rental-card .zone-bars,
+  html[data-ab-alquiler-tarjeta='b'] .rental-card__footnote {
+    display: none;
+  }
+  html[data-ab-alquiler-tarjeta='b'] .rental-card__offers {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  html[data-ab-alquiler-tarjeta='b'] .rental-card__offer {
+    flex: 1 1 140px;
+  }
+}
