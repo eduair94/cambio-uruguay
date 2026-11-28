@@ -130,6 +130,12 @@ export interface Guide {
    */
   affiliateIds?: string[]
   /**
+   * Una herramienta propia de la guía, debajo del encabezado. Hoy sólo la calculadora del aumento
+   * de jubilaciones (`components/guides/JubilacionesEstimator.vue`), que es el brazo `b` del
+   * experimento A/B `jubilaciones` (utils/abTests.ts): el CSS la muestra sólo en ese brazo.
+   */
+  widget?: 'aumento-jubilaciones'
+  /**
    * La página raíz que se queda con la señal de búsqueda de esta guía, cuando las dos cubren la
    * MISMA intención y el sitio tenía dos URLs compitiendo por la misma consulta.
    *

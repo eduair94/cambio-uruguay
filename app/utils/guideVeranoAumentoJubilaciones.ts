@@ -237,6 +237,7 @@ export function buildAumentoJubilacionesGuide(state: AumJub2027 = AUMJUB_2027): 
     description: aumentoJubilacionesDescription(state),
     tag: 'JUBILADOS',
     updatedAt: '2026-11-22',
+    widget: 'aumento-jubilaciones',
     sections,
     steps: [
       estado === 'definitivo'
