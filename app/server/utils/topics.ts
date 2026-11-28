@@ -65,27 +65,29 @@ const TOPIC_NAME: Record<TopicId, Record<NewsletterLang, string>> = {
   },
 }
 
-const CONFIRM: Record<NewsletterLang, { subject: string; body: string; cta: string; ignore: string }> =
-  {
-    es: {
-      subject: 'Confirmá el aviso — Cambio Uruguay',
-      body: 'Confirmá y te escribimos una sola vez cuando salga {topic}. No te suscribe al newsletter.',
-      cta: 'Confirmar el aviso',
-      ignore: 'Si no fuiste vos, ignorá este correo: sin confirmar no te escribimos.',
-    },
-    en: {
-      subject: 'Confirm your notice — Cambio Uruguay',
-      body: 'Confirm and we will email you once when {topic} is published. This does not subscribe you to the newsletter.',
-      cta: 'Confirm the notice',
-      ignore: "If this wasn't you, ignore this email: without confirmation we won't write.",
-    },
-    pt: {
-      subject: 'Confirme o aviso — Cambio Uruguay',
-      body: 'Confirme e escrevemos uma única vez quando sair {topic}. Não inscreve você na newsletter.',
-      cta: 'Confirmar o aviso',
-      ignore: 'Se não foi você, ignore este e-mail: sem confirmação não escrevemos.',
-    },
-  }
+const CONFIRM: Record<
+  NewsletterLang,
+  { subject: string; body: string; cta: string; ignore: string }
+> = {
+  es: {
+    subject: 'Confirmá el aviso — Cambio Uruguay',
+    body: 'Confirmá y te escribimos una sola vez cuando salga {topic}. No te suscribe al newsletter.',
+    cta: 'Confirmar el aviso',
+    ignore: 'Si no fuiste vos, ignorá este correo: sin confirmar no te escribimos.',
+  },
+  en: {
+    subject: 'Confirm your notice — Cambio Uruguay',
+    body: 'Confirm and we will email you once when {topic} is published. This does not subscribe you to the newsletter.',
+    cta: 'Confirm the notice',
+    ignore: "If this wasn't you, ignore this email: without confirmation we won't write.",
+  },
+  pt: {
+    subject: 'Confirme o aviso — Cambio Uruguay',
+    body: 'Confirme e escrevemos uma única vez quando sair {topic}. Não inscreve você na newsletter.',
+    cta: 'Confirmar o aviso',
+    ignore: 'Se não foi você, ignore este e-mail: sem confirmação não escrevemos.',
+  },
+}
 
 function frame(lang: NewsletterLang, inner: string): string {
   return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"></head>

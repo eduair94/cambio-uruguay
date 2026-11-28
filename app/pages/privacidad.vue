@@ -85,9 +85,9 @@
                 volver a suscribirla sin que lo pidas.
               </li>
               <li>
-                <strong>Avisos de un tema (opcional):</strong> si pedís que te avisemos cuando
-                salga un dato (por ejemplo, el aumento de las jubilaciones), guardamos tu correo, el
-                tema y el idioma. Te pedimos que lo confirmes desde el correo que te mandamos, te
+                <strong>Avisos de un tema (opcional):</strong> si pedís que te avisemos cuando salga
+                un dato (por ejemplo, el aumento de las jubilaciones), guardamos tu correo, el tema
+                y el idioma. Te pedimos que lo confirmes desde el correo que te mandamos, te
                 escribimos sólo cuando sale ese dato y cada correo trae un enlace para darte de
                 baja. No te suscribe al newsletter.
               </li>

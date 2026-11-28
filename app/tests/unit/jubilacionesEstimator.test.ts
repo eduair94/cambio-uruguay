@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  jubilacionScenarios,
-  nearMinimum,
-  parseUyuAmount,
-} from '../../utils/jubilacionesEstimator'
+import { jubilacionScenarios, nearMinimum, parseUyuAmount } from '../../utils/jubilacionesEstimator'
 import { AUMJUB_IMSN_REFERENCIA } from '../../utils/aumentoJubilaciones'
 import { AJUSTE_PASIVIDADES_2026_PCT } from '../../utils/bpsFigures2026'
 

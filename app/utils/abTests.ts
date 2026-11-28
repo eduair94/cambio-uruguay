@@ -94,9 +94,9 @@ export function abAttribute(id: AbTestId): string {
 }
 
 /** Lo que el script del <head> dejó marcado (vacío en el servidor y para los programas). */
-export function abAssignments(root?: { getAttribute(name: string): string | null }): Partial<
-  Record<AbTestId, AbArm>
-> {
+export function abAssignments(root?: {
+  getAttribute(name: string): string | null
+}): Partial<Record<AbTestId, AbArm>> {
   const el = root ?? (typeof document === 'undefined' ? null : document.documentElement)
   const out: Partial<Record<AbTestId, AbArm>> = {}
   if (!el) return out

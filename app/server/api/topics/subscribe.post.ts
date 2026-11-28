@@ -4,7 +4,12 @@
 import { connectDb } from '../../utils/db'
 import { TopicSubscriptionModel } from '../../models/TopicSubscription'
 import { isMailerConfigured, sendMail } from '../../utils/mailer'
-import { isValidEmail, newToken, normalizeEmail, normalizeNewsletterLang } from '../../utils/newsletter'
+import {
+  isValidEmail,
+  newToken,
+  normalizeEmail,
+  normalizeNewsletterLang,
+} from '../../utils/newsletter'
 import { buildTopicConfirmEmail, isTopic, topicState } from '../../utils/topics'
 
 const hits = new Map<string, { count: number; resetAt: number }>()
@@ -23,9 +28,12 @@ function rateOk(ip: string): boolean {
 }
 
 export default defineEventHandler(async event => {
-  const body = await readBody<{ email?: string; topic?: string; locale?: string; website?: string }>(
-    event
-  )
+  const body = await readBody<{
+    email?: string
+    topic?: string
+    locale?: string
+    website?: string
+  }>(event)
   if (body?.website) return { ok: true }
   if (!isTopic(body?.topic)) throw createError({ statusCode: 400, statusMessage: 'Unknown topic' })
   const topic = body.topic

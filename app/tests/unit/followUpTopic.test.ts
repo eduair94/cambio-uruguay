@@ -20,9 +20,7 @@ describe('followUpTopicForPath', () => {
   })
 
   it('con la cifra definitiva publicada ya no hay nada que avisar', () => {
-    expect(
-      followUpTopicForPath('/fecha-de-cobro-bps-uruguay', { ...PENDIENTE, pct: 6 })
-    ).toBeNull()
+    expect(followUpTopicForPath('/fecha-de-cobro-bps-uruguay', { ...PENDIENTE, pct: 6 })).toBeNull()
     expect(
       followUpTopicForPath('/fecha-de-cobro-bps-uruguay', { ...PENDIENTE, provisorioPct: 5.5 })
     ).toBe('aumento-jubilaciones-2027')

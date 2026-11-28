@@ -13,11 +13,7 @@
          que elegir después de montar no mueve nada que ya estuviera pintado. -->
     <ClientOnly v-if="kind === 'newsletter'">
       <template v-if="mounted">
-        <TopicFollowUp
-          v-if="topicChoice"
-          :alert="topicChoice.alert"
-          :topic="topicChoice.topic"
-        />
+        <TopicFollowUp v-if="topicChoice" :alert="topicChoice.alert" :topic="topicChoice.topic" />
         <NewsletterCapture v-else />
       </template>
     </ClientOnly>
