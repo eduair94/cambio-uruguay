@@ -260,7 +260,9 @@
     "regulatedAria": "Tečajevi se temelje na službenom registru Središnje banke Urugvaja (BCU)",
     "houses": "40+ kuća za razmjenu",
     "updated": "Ažurira se svakih 10 minuta",
-    "reviews": "Recenzije Trustpilota"
+    "reviews": "Recenzije Trustpilota",
+    "since": "Online od {year}",
+    "sinceAria": "Kopije stranice koje je Internet Archive spremio od {date}-a"
   },
   "a11y": {
     "swap": "Zamijenite valute",
@@ -1299,6 +1301,7 @@
     "freqTitle": "Koliko često se ažurira",
     "sourcesTitle": "Izvori",
     "authorTitle": "Tko stoji iza toga",
+    "archiveTitle": "Koliko dugo smo online",
     "independenceTitle": "Neovisnost i slobodan pristup",
     "disclaimerTitle": "Ovo nije financijski savjet",
     "disclaimerText": "Informacije na Cambio Uruguay su informativne i edukativne prirode. Ne predstavljaju financijski, porezni ili investicijski savjet, niti preporuku za kupnju ili prodaju valute. Uvijek provjerite tečaj i uvjete izravno s mjenjačnicom prije početka poslovanja.",

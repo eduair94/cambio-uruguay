@@ -260,7 +260,9 @@
     "regulatedAria": "Die Zinssätze basieren auf dem offiziellen Register der Zentralbank von Uruguay (BCU).",
     "houses": "Mehr als 40 Tauschhäuser",
     "updated": "Aktualisierung alle 10 Minuten",
-    "reviews": "Trustpilot-Bewertungen"
+    "reviews": "Trustpilot-Bewertungen",
+    "since": "Online seit {year}",
+    "sinceAria": "Kopien der Website wurden seit {date} vom Internet Archive gespeichert."
   },
   "a11y": {
     "swap": "Währungen tauschen",
@@ -1299,6 +1301,7 @@
     "freqTitle": "Wie oft es aktualisiert wird",
     "sourcesTitle": "Quellen",
     "authorTitle": "Wer steckt dahinter?",
+    "archiveTitle": "Wie lange wir schon online sind",
     "independenceTitle": "Unabhängigkeit und freier Zugang",
     "disclaimerTitle": "Dies ist keine Finanzberatung.",
     "disclaimerText": "Die Informationen zu Cambio Uruguay dienen ausschließlich Informations- und Bildungszwecken. Sie stellen keine Finanz-, Steuer- oder Anlageberatung dar und sind keine Empfehlung zum Kauf oder Verkauf von Währungen. Bitte überprüfen Sie vor jeder Transaktion den Kurs und die Konditionen direkt bei der jeweiligen Wechselstube.",

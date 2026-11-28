@@ -260,7 +260,9 @@
     "regulatedAria": "Taux basés sur le registre officiel de la Banque centrale d'Uruguay (BCU).",
     "houses": "Plus de 40 maisons d'échange",
     "updated": "Mise à jour toutes les 10 minutes",
-    "reviews": "Avis Trustpilot"
+    "reviews": "Avis Trustpilot",
+    "since": "En ligne depuis {year}",
+    "sinceAria": "Copies du site conservées par Internet Archive depuis {date}"
   },
   "a11y": {
     "swap": "Échanger des devises",
@@ -1299,6 +1301,7 @@
     "freqTitle": "Fréquence de mise à jour",
     "sourcesTitle": "Sources",
     "authorTitle": "Qui est derrière tout ça ?",
+    "archiveTitle": "Depuis combien de temps sommes-nous en ligne ?",
     "independenceTitle": "Indépendance et libre accès",
     "disclaimerTitle": "Ceci ne constitue pas un conseil financier",
     "disclaimerText": "Les informations sur le site Cambio Uruguay sont fournies à titre informatif et pédagogique. Elles ne constituent ni un conseil financier, fiscal ou d'investissement, ni une recommandation d'achat ou de vente de devises. Veuillez toujours vérifier le taux et les conditions directement auprès du bureau de change avant toute opération.",

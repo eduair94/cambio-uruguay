@@ -260,7 +260,9 @@
     "regulatedAria": "Kurssit perustuvat Uruguayn keskuspankin (BCU) viralliseen rekisteriin",
     "houses": "Yli 40 vaihtopaikkaa",
     "updated": "Päivitetään 10 minuutin välein",
-    "reviews": "Trustpilot-arvostelut"
+    "reviews": "Trustpilot-arvostelut",
+    "since": "Verkossa {year}:sta lähtien",
+    "sinceAria": "Internet Archiven tallentamat kopiot sivustosta {date}:n jälkeen"
   },
   "a11y": {
     "swap": "Vaihda valuuttoja",
@@ -1299,6 +1301,7 @@
     "freqTitle": "Kuinka usein se päivittyy",
     "sourcesTitle": "Lähteet",
     "authorTitle": "Kuka sen takana on",
+    "archiveTitle": "Kuinka kauan olemme olleet verkossa",
     "independenceTitle": "Itsenäisyys ja vapaa pääsy",
     "disclaimerTitle": "Tämä ei ole taloudellista neuvontaa",
     "disclaimerText": "Cambio Uruguay:n tiedot ovat informatiivisia ja opettavaisia. Ne eivät ole taloudellista, vero- tai sijoitusneuvontaa eivätkä suositusta ostaa tai myydä valuuttaa. Tarkista aina kurssi ja ehdot suoraan valuutanvaihtopisteeltä ennen käyttöä.",

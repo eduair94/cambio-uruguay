@@ -260,7 +260,9 @@
     "regulatedAria": "Cotizaciones basadas en el registro oficial del Banco Central del Uruguay (BCU)",
     "houses": "+40 casas de cambio",
     "updated": "Actualizado cada 10 min",
-    "reviews": "Reseñas en Trustpilot"
+    "reviews": "Reseñas en Trustpilot",
+    "since": "En línea desde {year}",
+    "sinceAria": "Copias del sitio guardadas por Internet Archive desde el {date}"
   },
   "a11y": {
     "swap": "Intercambiar monedas",
@@ -1299,6 +1301,7 @@
     "freqTitle": "Con qué frecuencia se actualiza",
     "sourcesTitle": "Fuentes",
     "authorTitle": "Quién está detrás",
+    "archiveTitle": "Desde cuándo funcionamos",
     "independenceTitle": "Independencia y gratuidad",
     "disclaimerTitle": "Esto no es asesoramiento financiero",
     "disclaimerText": "La información de Cambio Uruguay es de carácter informativo y educativo. No constituye asesoramiento financiero, fiscal ni de inversión, ni una recomendación de compra o venta de divisas. Verificá siempre la cotización y las condiciones directamente con la casa de cambio antes de operar.",

@@ -260,7 +260,9 @@
     "regulatedAria": "Suku bunga berdasarkan data resmi dari Bank Sentral Uruguay (BCU).",
     "houses": "40+ rumah pertukaran",
     "updated": "Diperbarui setiap 10 menit",
-    "reviews": "Ulasan Trustpilot"
+    "reviews": "Ulasan Trustpilot",
+    "since": "Online sejak {year}",
+    "sinceAria": "Salinan situs yang disimpan oleh Internet Archive sejak {date}"
   },
   "a11y": {
     "swap": "Tukar mata uang",
@@ -1299,6 +1301,7 @@
     "freqTitle": "Seberapa sering diperbarui",
     "sourcesTitle": "Sumber",
     "authorTitle": "Siapa yang berada di baliknya?",
+    "archiveTitle": "Sudah berapa lama kita online?",
     "independenceTitle": "Kemerdekaan dan akses bebas",
     "disclaimerTitle": "Ini bukan nasihat keuangan.",
     "disclaimerText": "Informasi di Cambio Uruguay bersifat informatif dan edukatif. Informasi ini bukan merupakan nasihat keuangan, pajak, atau investasi, maupun rekomendasi untuk membeli atau menjual mata uang. Selalu verifikasi kurs dan ketentuan langsung dengan bursa sebelum melakukan transaksi.",

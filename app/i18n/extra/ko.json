@@ -260,7 +260,9 @@
     "regulatedAria": "환율은 우루과이 중앙은행(BCU) 공식 등록 자료를 기준으로 합니다.",
     "houses": "40개 이상의 교환소",
     "updated": "10분마다 업데이트됩니다",
-    "reviews": "트러스트파일럿 리뷰"
+    "reviews": "트러스트파일럿 리뷰",
+    "since": "{year}부터 온라인 상태입니다.",
+    "sinceAria": "인터넷 아카이브가 {date}년 이후 저장해 온 사이트 사본"
   },
   "a11y": {
     "swap": "통화를 교환하세요",
@@ -1299,6 +1301,7 @@
     "freqTitle": "업데이트 빈도",
     "sourcesTitle": "출처",
     "authorTitle": "누가 그 배후에 있는가?",
+    "archiveTitle": "우리가 온라인에 접속한 지 얼마나 되었나요?",
     "independenceTitle": "독립성과 자유로운 접근",
     "disclaimerTitle": "이는 재정 자문이 아닙니다.",
     "disclaimerText": "Cambio Uruguay에 대한 정보는 참고 및 교육 목적으로 제공됩니다. 이는 금융, 세금 또는 투자 자문이나 외환 매매 권유를 구성하지 않습니다. 거래를 진행하기 전에 환율 및 조건을 반드시 해당 환전소에 직접 확인하십시오.",

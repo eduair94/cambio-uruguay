@@ -260,7 +260,9 @@
     "regulatedAria": "Tipus d'interès basats en el registre oficial del Banc Central de l'Uruguai (BCU)",
     "houses": "Més de 40 cases de canvi",
     "updated": "Actualitzat cada 10 minuts",
-    "reviews": "Ressenyes de Trustpilot"
+    "reviews": "Ressenyes de Trustpilot",
+    "since": "En línia des de {year}",
+    "sinceAria": "Còpies del lloc web desades per l'Internet Archive des de {date}"
   },
   "a11y": {
     "swap": "Intercanviar divises",
@@ -1299,6 +1301,7 @@
     "freqTitle": "Amb quina freqüència s'actualitza",
     "sourcesTitle": "Fonts",
     "authorTitle": "Qui hi ha darrere?",
+    "archiveTitle": "Quant de temps fa que som en línia",
     "independenceTitle": "Independència i lliure accés",
     "disclaimerTitle": "Això no és un consell financer",
     "disclaimerText": "La informació sobre Cambio Uruguay és informativa i educativa. No constitueix assessorament financer, fiscal o d'inversió, ni una recomanació per comprar o vendre moneda. Verifiqueu sempre el tipus de canvi i les condicions directament amb la casa de canvi abans d'operar.",

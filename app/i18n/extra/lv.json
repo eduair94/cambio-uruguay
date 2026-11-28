@@ -260,7 +260,9 @@
     "regulatedAria": "Likmes, pamatojoties uz oficiālo Urugvajas Centrālās bankas (BCU) reģistru",
     "houses": "40+ apmaiņas nami",
     "updated": "Atjaunināts ik pēc 10 minūtēm",
-    "reviews": "Trustpilot atsauksmes"
+    "reviews": "Trustpilot atsauksmes",
+    "since": "Tiešsaistē kopš {year}",
+    "sinceAria": "Vietnes kopijas, ko Internet Archive saglabājis kopš {date}"
   },
   "a11y": {
     "swap": "Apmainīt valūtas",
@@ -1299,6 +1301,7 @@
     "freqTitle": "Cik bieži tas tiek atjaunināts",
     "sourcesTitle": "Avoti",
     "authorTitle": "Kas aiz tā stāv",
+    "archiveTitle": "Cik ilgi mēs esam tiešsaistē",
     "independenceTitle": "Neatkarība un brīva piekļuve",
     "disclaimerTitle": "Šis nav finanšu padoms",
     "disclaimerText": "Informācija Cambio Uruguay ir informatīva un izglītojoša. Tā nav uzskatāma par finanšu, nodokļu vai ieguldījumu konsultāciju, kā arī par ieteikumu pirkt vai pārdot valūtu. Pirms darbības uzsākšanas vienmēr pārbaudiet kursu un nosacījumus tieši ar valūtas maiņas punktu.",

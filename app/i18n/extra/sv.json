@@ -260,7 +260,9 @@
     "regulatedAria": "Kurser baserade på Uruguays centralbanks (BCU) officiella register",
     "houses": "40+ byteshus",
     "updated": "Uppdateras var 10:e minut",
-    "reviews": "Trustpilot-recensioner"
+    "reviews": "Trustpilot-recensioner",
+    "since": "Online sedan {year}",
+    "sinceAria": "Kopior av webbplatsen som sparats av Internetarkivet sedan {date}"
   },
   "a11y": {
     "swap": "Växla valutor",
@@ -1299,6 +1301,7 @@
     "freqTitle": "Hur ofta den uppdateras",
     "sourcesTitle": "Källor",
     "authorTitle": "Vem ligger bakom det",
+    "archiveTitle": "Hur länge har vi varit online",
     "independenceTitle": "Oberoende och fri tillgång",
     "disclaimerTitle": "Detta är inte ekonomisk rådgivning",
     "disclaimerText": "Informationen på Cambio Uruguay är informativ och pedagogisk. Den utgör inte finansiell, skattemässig eller investeringsrådgivning, och inte heller en rekommendation att köpa eller sälja valuta. Kontrollera alltid kursen och villkoren direkt med växlingshuset innan du börjar handla.",

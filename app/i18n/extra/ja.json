@@ -260,7 +260,9 @@
     "regulatedAria": "ウルグアイ中央銀行（BCU）の公式登録に基づくレート",
     "houses": "40軒以上の交換所",
     "updated": "10分ごとに更新",
-    "reviews": "Trustpilotのレビュー"
+    "reviews": "Trustpilotのレビュー",
+    "since": "{year}よりオンライン",
+    "sinceAria": "インターネットアーカイブによって{date}以降保存されたサイトのコピー"
   },
   "a11y": {
     "swap": "通貨を交換する",
@@ -1299,6 +1301,7 @@
     "freqTitle": "更新頻度",
     "sourcesTitle": "情報源",
     "authorTitle": "その背後にいるのは誰だ？",
+    "archiveTitle": "オンラインになってからどれくらい経ちますか？",
     "independenceTitle": "独立性と自由なアクセス",
     "disclaimerTitle": "これは金融アドバイスではありません",
     "disclaimerText": "Cambio Uruguayに掲載されている情報は、情報提供および教育目的のみであり、金融、税務、投資に関する助言、または通貨の売買を推奨するものではありません。取引を行う前に、必ず両替業者に直接レートと条件をご確認ください。",
