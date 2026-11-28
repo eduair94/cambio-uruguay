@@ -138,6 +138,29 @@ const PREPAINT_CONSENT_SCRIPT =
   'v=m&&decodeURIComponent(m[1]).match(/^("?)(granted|denied)\\1$/);' +
   "if(v)document.documentElement.setAttribute('data-cu-consent',v[2])}catch(e){}})()"
 
+// The A/B arms (utils/abTests.ts, docs/analytics/AB_TESTS.md). Same reason as the consent script:
+// the edge keeps ONE copy of the HTML per URL, so the server cannot split visitors. Before the
+// <body> is painted this reads (or creates) a random browser id in localStorage `cu_ab` and marks
+// <html data-ab-<test>="a|b"> for each test inside its UTC date window; CSS shows the arm, so no
+// variant ever moves a painted page. FNV-1a of `<id>:<test>` plus Murmur3's final mix (FNV's low
+// bit is only the parity of the characters: without the mix the arms of two tests came out
+// perfectly correlated) — one salt per test, so the arms of two tests are independent. A program-driven browser (navigator.webdriver: e2e, honest bots) gets
+// no mark and sees the control. Blocked storage throws inside the try: no mark, control.
+// A literal, like the consent script; tests/unit/abTests.test.ts runs this exact string and checks
+// the list and the hash against AB_TESTS.
+const PREPAINT_AB_SCRIPT =
+  '(function(){try{if(navigator.webdriver)return;var s=window.localStorage,k="cu_ab",' +
+  'v=s.getItem(k);if(!v||!/^[a-z0-9]{12,40}$/.test(v)){v="";' +
+  'while(v.length<16)v+=Math.random().toString(36).slice(2);v=v.slice(0,16);s.setItem(k,v)}' +
+  'var d=new Date().toISOString().slice(0,10),' +
+  't=[["jubilaciones","2026-11-28","2027-02-15"],["seguimiento","2026-11-28","2027-01-31"],' +
+  '["alquiler-tarjeta","2026-11-28","2027-01-15"]],e=document.documentElement;' +
+  'for(var i=0;i<t.length;i++){if(d<t[i][1]||d>t[i][2])continue;' +
+  'var x=v+":"+t[i][0],h=2166136261;for(var j=0;j<x.length;j++){h^=x.charCodeAt(j);' +
+  'h=Math.imul(h,16777619)>>>0}h^=h>>>16;h=Math.imul(h,2246822507);h^=h>>>13;' +
+  'h=Math.imul(h,3266489909);h^=h>>>16;e.setAttribute("data-ab-"+t[i][0],h&1?"b":"a")}}' +
+  'catch(_){}})()'
+
 export default defineNuxtConfig({
   // Keep opt-in validation/CI builds isolated from a running dev server or another staging build.
   // Normal builds retain Nuxt's default cache directory.
@@ -340,7 +363,12 @@ export default defineNuxtConfig({
       // Marca <html data-cu-consent> antes del primer pintado si el visitante ya decidió sobre
       // las cookies, lo único que el HTML compartido del borde no puede saber; critical.css no
       // pinta el aviso ya decidido. Ver PREPAINT_CONSENT_SCRIPT, arriba.
-      script: [{ innerHTML: PREPAINT_CONSENT_SCRIPT, tagPosition: 'head' }],
+      script: [
+        { innerHTML: PREPAINT_CONSENT_SCRIPT, tagPosition: 'head' },
+        // Reparte los brazos de los experimentos A/B antes del primer pintado. Ver
+        // PREPAINT_AB_SCRIPT, arriba.
+        { innerHTML: PREPAINT_AB_SCRIPT, tagPosition: 'head' },
+      ],
     },
   },
 
