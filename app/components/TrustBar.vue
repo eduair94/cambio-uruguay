@@ -10,18 +10,18 @@
         rel="noopener noreferrer"
         :title="$t('trust.regulatedAria')"
       >
-        <VIcon size="18" color="success" class="trust-pill__icon">mdi-shield-check</VIcon>
+        <VIcon size="16" color="success" class="trust-pill__icon">mdi-shield-check</VIcon>
         <span>{{ $t('trust.regulated') }}</span>
       </a>
     </li>
 
     <li class="trust-pill trust-pill--static">
-      <VIcon size="18" color="info" class="trust-pill__icon">mdi-bank-outline</VIcon>
+      <VIcon size="16" color="info" class="trust-pill__icon">mdi-bank-outline</VIcon>
       <span>{{ $t('trust.houses') }}</span>
     </li>
 
     <li class="trust-pill trust-pill--static">
-      <VIcon size="18" color="success" class="trust-pill__icon">mdi-update</VIcon>
+      <VIcon size="16" color="success" class="trust-pill__icon">mdi-update</VIcon>
       <span>{{ $t('trust.updated') }}</span>
     </li>
 
@@ -32,7 +32,7 @@
         target="_blank"
         rel="noopener noreferrer"
       >
-        <VIcon size="18" color="amber" class="trust-pill__icon">mdi-star</VIcon>
+        <VIcon size="16" color="amber" class="trust-pill__icon">mdi-star</VIcon>
         <span>{{ $t('trust.reviews') }}</span>
       </a>
     </li>
@@ -45,56 +45,64 @@ const bcuUrl = 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/casas_c
 </script>
 
 <style scoped>
+/* A line of provenance under the title, not a row of glass pills: the four facts read as a
+   sentence with hairline separators, in the surface's own ink. The two that are links underline
+   on hover and keep a 44 px tall hit area (the text box is padded, not enlarged). */
 .trust-bar {
   list-style: none;
   padding: 0;
-  margin: 0 auto 2rem;
+  margin: 0 auto 24px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.6rem;
+  align-items: center;
+  column-gap: 0;
+  row-gap: 0;
   max-width: 760px;
 }
 
 .trust-pill {
   display: inline-flex;
+  align-items: center;
 }
 
-.trust-pill,
-.trust-pill__link {
-  align-items: center;
-  gap: 0.45rem;
+.trust-pill + .trust-pill::before {
+  content: '';
+  width: 1px;
+  height: 14px;
+  margin-inline: 12px;
+  background: rgba(var(--v-theme-on-surface), 0.18);
 }
 
 .trust-pill__link,
 .trust-pill--static {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.4rem 0.85rem;
-  border-radius: 999px;
-  font-size: 0.82rem;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 0.875rem;
   font-weight: 600;
-  line-height: 1;
-  color: rgba(255, 255, 255, 0.92);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  line-height: 1.2;
+  color: rgba(var(--v-theme-on-surface), 0.82);
   text-decoration: none;
   white-space: nowrap;
-  transition:
-    background 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.2s ease;
+}
+
+.trust-pill--static {
+  padding: 0;
+}
+
+.trust-pill__link {
+  text-decoration-line: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  transition: text-decoration-color 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
 
 .trust-pill__link:hover,
 .trust-pill__link:focus-visible {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.28);
-  transform: translateY(-2px);
-  outline: none;
+  text-decoration-color: currentColor;
 }
 
 .trust-pill__icon {
@@ -103,30 +111,21 @@ const bcuUrl = 'https://www.bcu.gub.uy/Servicios-Financieros-SSF/Paginas/casas_c
 
 @media (max-width: 600px) {
   .trust-bar {
-    gap: 0.45rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 16px;
   }
 
   .trust-pill__link,
   .trust-pill--static {
-    font-size: 0.75rem;
-    padding: 0.35rem 0.7rem;
+    font-size: 0.8rem;
   }
-}
 
-/* Light theme: pills were authored white-on-glass for the dark hero, which is
-   invisible on the light canvas. Re-skin to dark ink on a faint solid surface
-   with a hairline border (matches the home page light overrides). */
-.v-theme--light .trust-pill__link,
-.v-theme--light .trust-pill--static {
-  color: #16233b;
-  background: rgba(255, 255, 255, 0.72);
-  border-color: rgba(15, 23, 42, 0.12);
-}
+  /* Wrapped lines would start on a separator: on a phone the items just keep their distance. */
+  .trust-bar {
+    column-gap: 16px;
+  }
 
-.v-theme--light .trust-pill__link:hover,
-.v-theme--light .trust-pill__link:focus-visible {
-  background: #ffffff;
-  border-color: rgba(37, 99, 235, 0.4);
+  .trust-pill + .trust-pill::before {
+    display: none;
+  }
 }
 </style>

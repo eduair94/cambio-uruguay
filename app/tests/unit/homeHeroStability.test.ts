@@ -166,19 +166,29 @@ describe('the hero spotlight does not follow the hero height', () => {
     expect(bodiesFor(home.css, '.hero-section::before')).toEqual([])
   })
 
-  it('the same gradient is a background of the section with a size and offset in px', () => {
-    const bodies = bodiesFor(home.css, '.hero-section')
-    const image = declaration(bodies, 'background-image') ?? ''
-    expect(image).toMatch(/radial-gradient\(58% 100% at 50% 0%, rgba\(99, 102, 241, 0\.2\)/)
-    expect(declaration(bodies, 'background-repeat')).toBe('no-repeat')
-    // Width follows the section (it did: 120 % of it), height and offset never do.
-    expect(declaration(bodies, 'background-size')).toMatch(/^120% \d+px$/)
-    expect(declaration(bodies, 'background-position')).toMatch(/^50% -\d+px$/)
+  // 2026-11-28: the indigo spotlight (a section background sized in px, which is what this test
+  // used to pin) gave way to the engraved Rambla. The ornament is its own element now, and the
+  // same rule holds for it: its vertical box is px from the hero's top, never a share of the hero.
+  it('the section paints no ornament of its own', () => {
     for (const body of rules(home.css)
       .filter(r => r.selectors.includes('.hero-section'))
       .map(r => r.body)) {
-      const size = body.match(/background-size\s*:\s*([^;]+)/)?.[1]
-      if (size) expect(size.trim()).toMatch(/^120% \d+px$/)
+      expect(body).not.toMatch(/background(-image)?\s*:/)
+    }
+  })
+
+  it('the engraving is a decorative element whose top and height are px', () => {
+    const engraving = [...elements(hero)].find(el => classes(el).includes('hero-engraving'))!
+    expect(engraving, 'div.hero-engraving').toBeDefined()
+    expect(attr(engraving, 'aria-hidden')).toBe('true')
+    const bodies = bodiesFor(home.css, '.hero-engraving')
+    expect(bodies.length).toBeGreaterThan(1)
+    expect(declaration(bodies, 'position')).toBe('absolute')
+    for (const body of bodies) {
+      for (const property of ['top', 'height']) {
+        const value = body.match(new RegExp(`(?:^|;|\\s)${property}\\s*:\\s*([^;]+)`))?.[1]
+        if (value) expect(value.trim(), `.hero-engraving ${property}`).toMatch(/^\d+px$/)
+      }
     }
   })
 })

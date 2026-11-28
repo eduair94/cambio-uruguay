@@ -2,16 +2,15 @@
   <div class="home-container">
     <!-- Hero Section -->
     <section class="hero-section pt-0 pt-md-5">
+      <!-- La Rambla de Montevideo grabada como la viñeta de un billete (public/img/grabados/,
+           DESIGN.md → Engraving). Decoration only: a CSS mask painted in the theme's link ink, so it
+           follows light and dark, sits behind the copy, and is sized and placed in px from the top
+           of the hero so no change in the hero's height ever moves it. -->
+      <div class="hero-engraving" aria-hidden="true" />
       <VContainer>
         <VRow justify="center" align="center" class="min-height-hero">
           <VCol cols="12" class="hero-col text-center">
             <div class="hero-content">
-              <!-- Eyebrow: live-data badge for instant credibility -->
-              <div class="hero-eyebrow hero-anim">
-                <span class="live-dot" aria-hidden="true" />
-                {{ t('trust.updated') }}
-              </div>
-
               <h1 class="hero-title hero-anim">
                 {{ t('simpleTitle') }}
               </h1>
@@ -500,8 +499,8 @@
                               >
                                 <VCard
                                   class="rate-item pa-3 text-center flex-grow-1"
-                                  :color="getRateCardColor(index)"
-                                  variant="tonal"
+                                  :class="{ 'rate-item--best': index === 0 }"
+                                  variant="flat"
                                 >
                                   <div class="rate-position text-h6 font-weight-bold mb-2">
                                     #{{ index + 1 }}
@@ -568,8 +567,8 @@
                               >
                                 <VCard
                                   class="rate-item pa-3 text-center flex-grow-1"
-                                  :color="getRateCardColor(index)"
-                                  variant="tonal"
+                                  :class="{ 'rate-item--best': index === 0 }"
+                                  variant="flat"
                                 >
                                   <div class="rate-position text-h6 font-weight-bold mb-2">
                                     #{{ index + 1 }}
@@ -654,7 +653,7 @@
     <section class="top-exchanges-section py-12">
       <VContainer>
         <VRow>
-          <VCol cols="12" class="text-center mb-8">
+          <VCol cols="12" class="section-head mb-8">
             <h2 class="section-title">
               {{ t('topExchangeHouses') }}
             </h2>
@@ -664,30 +663,24 @@
           </VCol>
         </VRow>
 
-        <VRow>
+        <VRow v-reveal.children>
           <VCol
             v-for="(exchange, i) in topExchanges"
             :key="exchange.origin"
-            v-motion
             cols="6"
             sm="6"
             md="4"
             lg="3"
-            :initial="revealInitial"
-            :visible-once="revealVisible(i)"
           >
             <nuxt-link
               class="d-flex w-100 h-100 text-decoration-none"
               :to="localePath(canonicalRoutePath(`/historico/${exchange.origin}/${exchange.code}`))"
             >
-              <VCard
-                class="house-card pa-4 h-100 w-100"
-                :style="{
-                  '--rank-accent': ['#ffd54a', '#cfd8e3', '#e8a06a'][i] || 'rgba(120,160,255,0.5)',
-                }"
-              >
+              <VCard class="house-card pa-4 h-100 w-100">
                 <div class="house-card__top">
-                  <span class="house-rank">{{ i + 1 }}</span>
+                  <span class="house-rank" :class="i < 3 ? `house-rank--${i + 1}` : ''">{{
+                    i + 1
+                  }}</span>
                   <VChip
                     :color="exchange.isRegulated ? 'success' : 'warning'"
                     size="small"
@@ -728,15 +721,21 @@
          dedicated smart nearby-finder page. -->
     <section v-reveal class="nearby-finder-banner py-10">
       <VContainer>
-        <VCard class="nearby-finder-card pa-6 pa-md-10" elevation="6">
-          <VRow align="center">
+        <VCard class="nearby-finder-card pa-6 pa-md-10" elevation="0">
+          <img
+            class="nearby-finder-art"
+            src="/img/grabados/plano-ciudad-vieja.webp"
+            alt=""
+            width="720"
+            height="480"
+            loading="lazy"
+            decoding="async"
+          />
+          <VRow align="center" class="nearby-finder-body">
             <VCol cols="12" md="8">
-              <div class="d-flex align-center ga-3 mb-2">
-                <VIcon color="primary" size="40">mdi-map-marker-radius</VIcon>
-                <h2 class="text-h5 text-md-h4 font-weight-bold mb-0">
-                  {{ t('nearbyCasas.homeBannerTitle') }}
-                </h2>
-              </div>
+              <h2 class="nearby-finder-title mb-2">
+                {{ t('nearbyCasas.homeBannerTitle') }}
+              </h2>
               <p class="text-body-1 mb-0">{{ t('nearbyCasas.homeBannerSubtitle') }}</p>
             </VCol>
             <VCol cols="12" md="4" class="text-center text-md-end">
@@ -791,32 +790,31 @@
     </section>
 
     <!-- How It Works Section -->
-    <section v-reveal class="how-it-works-section section-band py-12">
+    <section class="how-it-works-section section-band py-12">
       <VContainer>
         <VRow>
-          <VCol cols="12" class="text-center mb-8">
+          <VCol cols="12" class="section-head mb-8">
             <h2 class="section-title">
               {{ t('howItWorks') }}
             </h2>
           </VCol>
         </VRow>
 
-        <VRow class="steps-grid" justify="center">
-          <VCol
-            v-for="(step, index) in steps"
-            :key="index"
-            v-motion
-            cols="12"
-            sm="6"
-            md="3"
-            :initial="revealInitial"
-            :visible-once="revealVisible(index, 110)"
-          >
-            <div class="step-card text-center">
-              <div class="step-node">
-                <span class="step-index">{{ index + 1 }}</span>
+        <VRow v-reveal.children class="steps-grid">
+          <VCol v-for="(step, index) in steps" :key="index" cols="6" md="3">
+            <div class="step-card">
+              <div class="step-art">
+                <img
+                  :src="step.art"
+                  alt=""
+                  :width="step.artWidth"
+                  :height="step.artHeight"
+                  loading="lazy"
+                  decoding="async"
+                />
               </div>
               <h3 class="step-title">
+                <span class="step-index">{{ index + 1 }}</span>
                 {{ step.title }}
               </h3>
             </div>
@@ -900,21 +898,21 @@
          (`sitetoppages.guides`, ver docs/analytics/PAGE_RANKING.md), así que se actualiza sola.
          Sólo en español: las guías son páginas en español. En el HTML del servidor, para que los
          enlaces cuenten. -->
-    <section v-if="homeGuides.length" v-reveal class="home-guides-section py-12">
+    <section v-if="homeGuides.length" class="home-guides-section py-12">
       <VContainer>
         <VRow>
-          <VCol cols="12" class="text-center mb-8">
+          <VCol cols="12" class="section-head mb-8">
             <h2 class="section-title">Las guías más leídas</h2>
             <p class="section-subtitle">
               Lo que más se consulta en Uruguay además del dólar, según las visitas de esta semana.
             </p>
           </VCol>
         </VRow>
-        <VRow justify="center">
+        <VRow v-reveal.children>
           <VCol v-for="guide in homeGuides" :key="guide.path" cols="12" sm="6" md="4">
             <NuxtLink :to="guide.path" class="text-decoration-none">
-              <VCard class="internal-link-card pa-6 h-100" elevation="3" hover>
-                <h3 class="text-h6 font-weight-bold mb-2">{{ prLabel(guide) }}</h3>
+              <VCard class="internal-link-card pa-5 h-100" elevation="0">
+                <h3 class="link-card__title mb-2">{{ prLabel(guide) }}</h3>
                 <p class="text-body-2 text-grey-lighten-1 mb-0">
                   {{ topicOf(guide.path, t)?.section }}
                 </p>
@@ -933,101 +931,76 @@
     </section>
 
     <!-- Internal Linking Section - Topical Cluster Navigation -->
-    <section v-reveal class="internal-links-section py-12">
+    <section class="internal-links-section py-12">
       <VContainer>
         <VRow>
-          <VCol cols="12" class="text-center mb-8">
+          <VCol cols="12" class="section-head mb-8">
             <h2 class="section-title">
               {{ t('pillar.relatedTitle') }}
             </h2>
           </VCol>
         </VRow>
-        <VRow justify="center">
-          <VCol
-            v-motion
-            cols="12"
-            sm="6"
-            md="3"
-            :initial="revealInitial"
-            :visible-once="revealVisible(0)"
-          >
+        <VRow v-reveal.children>
+          <VCol cols="12" sm="6" md="4" lg>
             <NuxtLink :to="localePath('/historico')" class="text-decoration-none">
-              <VCard class="internal-link-card pa-6 h-100 text-center" elevation="3" hover>
-                <VIcon color="blue" size="48" class="mb-3">mdi-chart-line</VIcon>
-                <h3 class="text-h6 font-weight-bold mb-2">{{ t('historico') }}</h3>
-                <p class="text-body-2 text-grey-lighten-1">
+              <VCard class="internal-link-card pa-5 h-100" elevation="0">
+                <h3 class="link-card__title mb-2">
+                  <VIcon size="20" class="link-card__icon">mdi-chart-line</VIcon>
+                  {{ t('historico') }}
+                </h3>
+                <p class="text-body-2 text-grey-lighten-1 mb-0">
                   {{ t('pillar.historicalLink') }}
                 </p>
               </VCard>
             </NuxtLink>
           </VCol>
-          <VCol
-            v-motion
-            cols="12"
-            sm="6"
-            md="3"
-            :initial="revealInitial"
-            :visible-once="revealVisible(1)"
-          >
+          <VCol cols="12" sm="6" md="4" lg>
             <NuxtLink :to="localePath('/sucursales')" class="text-decoration-none">
-              <VCard class="internal-link-card pa-6 h-100 text-center" elevation="3" hover>
-                <VIcon color="green" size="48" class="mb-3">mdi-map-marker</VIcon>
-                <h3 class="text-h6 font-weight-bold mb-2">{{ t('sucursalesMenu') }}</h3>
-                <p class="text-body-2 text-grey-lighten-1">
+              <VCard class="internal-link-card pa-5 h-100" elevation="0">
+                <h3 class="link-card__title mb-2">
+                  <VIcon size="20" class="link-card__icon">mdi-map-marker</VIcon>
+                  {{ t('sucursalesMenu') }}
+                </h3>
+                <p class="text-body-2 text-grey-lighten-1 mb-0">
                   {{ t('pillar.branchesLink') }}
                 </p>
               </VCard>
             </NuxtLink>
           </VCol>
-          <VCol
-            v-motion
-            cols="12"
-            sm="6"
-            md="3"
-            :initial="revealInitial"
-            :visible-once="revealVisible(2)"
-          >
+          <VCol cols="12" sm="6" md="4" lg>
             <NuxtLink :to="localePath('/avanzado')" class="text-decoration-none">
-              <VCard class="internal-link-card pa-6 h-100 text-center" elevation="3" hover>
-                <VIcon color="orange" size="48" class="mb-3">mdi-cog</VIcon>
-                <h3 class="text-h6 font-weight-bold mb-2">{{ t('avanzado') }}</h3>
-                <p class="text-body-2 text-grey-lighten-1">
+              <VCard class="internal-link-card pa-5 h-100" elevation="0">
+                <h3 class="link-card__title mb-2">
+                  <VIcon size="20" class="link-card__icon">mdi-cog</VIcon>
+                  {{ t('avanzado') }}
+                </h3>
+                <p class="text-body-2 text-grey-lighten-1 mb-0">
                   {{ t('pillar.advancedLink') }}
                 </p>
               </VCard>
             </NuxtLink>
           </VCol>
-          <VCol
-            v-motion
-            cols="12"
-            sm="6"
-            md="3"
-            :initial="revealInitial"
-            :visible-once="revealVisible(3)"
-          >
+          <VCol cols="12" sm="6" md="4" lg>
             <NuxtLink :to="localePath('/cotizacion')" class="text-decoration-none">
-              <VCard class="internal-link-card pa-6 h-100 text-center" elevation="3" hover>
-                <VIcon color="purple" size="48" class="mb-3">mdi-currency-usd</VIcon>
-                <h3 class="text-h6 font-weight-bold mb-2">{{ t('moneda') }}</h3>
-                <p class="text-body-2 text-grey-lighten-1">
+              <VCard class="internal-link-card pa-5 h-100" elevation="0">
+                <h3 class="link-card__title mb-2">
+                  <VIcon size="20" class="link-card__icon">mdi-currency-usd</VIcon>
+                  {{ t('moneda') }}
+                </h3>
+                <p class="text-body-2 text-grey-lighten-1 mb-0">
                   {{ t('pillar.allCurrenciesLink') }}
                 </p>
               </VCard>
             </NuxtLink>
           </VCol>
-          <VCol
-            v-motion
-            cols="12"
-            sm="6"
-            md="3"
-            :initial="revealInitial"
-            :visible-once="revealVisible(4)"
-          >
+          <VCol cols="12" sm="6" md="4" lg>
             <NuxtLink :to="localePath('/indicadores')" class="text-decoration-none">
-              <VCard class="internal-link-card pa-6 h-100 text-center" elevation="3" hover>
-                <VIcon color="deep-purple" size="48" class="mb-3">mdi-finance</VIcon>
-                <h3 class="text-h6 font-weight-bold mb-2">{{ t('pillar.indicatorsTitle') }}</h3>
-                <p class="text-body-2 text-grey-lighten-1">
+              <VCard class="internal-link-card pa-5 h-100" elevation="0">
+                <h3 class="link-card__title mb-2">
+                  <VIcon size="20" class="link-card__icon">mdi-finance</VIcon>
+                  {{ t('pillar.indicatorsTitle') }}
+                </h3>
+                <p class="text-body-2 text-grey-lighten-1 mb-0">
                   {{ t('pillar.indicatorsLink') }}
                 </p>
               </VCard>
@@ -1064,42 +1037,31 @@
     </section>
 
     <!-- Features Section -->
-    <section v-reveal class="features-section section-band py-12">
+    <section class="features-section section-band py-12">
       <VContainer>
         <VRow>
-          <VCol cols="12" class="text-center mb-8">
+          <VCol cols="12" class="section-head mb-8">
             <h2 class="section-title">
               {{ t('whyChooseUs') }}
             </h2>
           </VCol>
         </VRow>
-
-        <VRow>
-          <VCol
-            v-for="(feature, fi) in features"
-            :key="feature.title"
-            v-motion
-            cols="12"
-            sm="6"
-            md="4"
-            lg="3"
-            :initial="revealInitial"
-            :visible-once="revealVisible(fi, 60)"
-          >
+        <VRow v-reveal.children>
+          <VCol v-for="feature in features" :key="feature.title" cols="12" sm="6" md="4">
             <VCard
               v-if="feature.title === t('feature5Title')"
-              class="feature-card pa-6 h-100 cursor-pointer"
-              elevation="2"
+              class="feature-card pa-5 h-100 cursor-pointer"
+              elevation="0"
               href="https://api.cambio-uruguay.com/api-docs"
               target="_blank"
               rel="noopener noreferrer"
               :ripple="true"
             >
-              <div class="text-center">
-                <VIcon :color="feature.color" size="48" class="mb-4">
+              <div>
+                <VIcon size="24" class="feature-card__icon mb-3">
                   {{ feature.icon }}
                 </VIcon>
-                <h3 class="text-h6 font-weight-bold mb-3">
+                <h3 class="link-card__title mb-2">
                   {{ feature.title }}
                 </h3>
                 <p class="text-body-2 text-grey-lighten-1 mb-3">
@@ -1113,18 +1075,18 @@
             </VCard>
             <VCard
               v-else-if="feature.title === t('feature6Title')"
-              class="feature-card pa-6 h-100 cursor-pointer"
-              elevation="2"
+              class="feature-card pa-5 h-100 cursor-pointer"
+              elevation="0"
               href="https://github.com/eduair94/cambio-uruguay"
               target="_blank"
               rel="noopener noreferrer"
               :ripple="true"
             >
-              <div class="text-center">
-                <VIcon :color="feature.color" size="48" class="mb-4">
+              <div>
+                <VIcon size="24" class="feature-card__icon mb-3">
                   {{ feature.icon }}
                 </VIcon>
-                <h3 class="text-h6 font-weight-bold mb-3">
+                <h3 class="link-card__title mb-2">
                   {{ feature.title }}
                 </h3>
                 <p class="text-body-2 text-grey-lighten-1 mb-3">
@@ -1136,12 +1098,12 @@
                 </VBtn>
               </div>
             </VCard>
-            <VCard v-else class="feature-card pa-6 h-100" elevation="2">
-              <div class="text-center">
-                <VIcon :color="feature.color" size="48" class="mb-4">
+            <VCard v-else class="feature-card pa-5 h-100" elevation="0">
+              <div>
+                <VIcon size="24" class="feature-card__icon mb-3">
                   {{ feature.icon }}
                 </VIcon>
-                <h3 class="text-h6 font-weight-bold mb-3">
+                <h3 class="link-card__title mb-2">
                   {{ feature.title }}
                 </h3>
                 <p class="text-body-2 text-grey-lighten-1">
@@ -1159,7 +1121,7 @@
     <EcosystemStrip />
 
     <!-- CTA Section -->
-    <section class="cta-section py-6 py-sm-12 bg-primary">
+    <section class="cta-section on-dark py-6 py-sm-12">
       <VContainer>
         <VRow justify="center" align="center">
           <VCol cols="12" md="8" class="text-center">
@@ -1185,7 +1147,6 @@
 
 <script setup lang="ts">
 import { VAutocomplete } from 'vuetify/components'
-import { MotionDirective } from '@vueuse/motion'
 import { useLocalePath } from '#imports'
 import { prLabel } from '~/utils/pageRanking'
 import { viewerShowsAds } from '~/utils/adFree'
@@ -1222,25 +1183,9 @@ const HOME_GUIDES = 6
 
 const { mobile } = useDisplay()
 
-// Scroll-reveal animations (@vueuse/motion) are applied only AFTER client mount.
-// During SSR and first hydration `revealInitial` is empty, so no motion styles
-// are server-rendered — this avoids a hydration mismatch and never leaves cards
-// stuck hidden if JS is slow/absent. Once mounted, the from-state kicks in and
-// `visibleOnce` springs each card up as it scrolls into view.
-// The directive is registered here, not app-wide: this is the only page that animates, and the
-// global module put @vueuse/motion + popmotion (~30 KB) in every page's entry chunk.
-const vMotion = MotionDirective()
-const motionReady = ref(false)
-onMounted(() => {
-  motionReady.value = true
-})
-const revealInitial = computed(() => (motionReady.value ? { opacity: 0, y: 40, scale: 0.96 } : {}))
-const revealVisible = (index: number, gap = 70) => ({
-  opacity: 1,
-  y: 0,
-  scale: 1,
-  transition: { delay: index * gap, type: 'spring', stiffness: 120, damping: 18 },
-})
+// Scroll reveals use the app-wide `v-reveal` directive (plugins/reveal.ts, on Motion). Until
+// 2026-11-28 this page registered @vueuse/motion + popmotion (~30 KB) for itself, and its cards
+// started hidden at mount, so a card already on screen blinked out and sprang back in.
 
 // Interfaces
 interface ExchangeItem {
@@ -1262,6 +1207,10 @@ interface ExchangeItem {
 interface Step {
   title: string
   description: string
+  /** An engraved vignette (public/img/grabados/), decorative: the title carries the step. */
+  art: string
+  artWidth: number
+  artHeight: number
 }
 
 interface Feature {
@@ -1818,22 +1767,36 @@ const topExchanges = computed(() => {
 })
 
 // Steps for how it works
+// Each step has its engraving: the coins and notes, the ledger, the board of an exchange
+// house, and a casa in the Ciudad Vieja. The intrinsic sizes are the files' own.
 const steps = computed<Step[]>(() => [
   {
     title: t('step1'),
     description: t('step1'),
+    art: '/img/grabados/paso-monedas.webp',
+    artWidth: 375,
+    artHeight: 257,
   },
   {
     title: t('step2'),
     description: t('step2'),
+    art: '/img/grabados/paso-monto.webp',
+    artWidth: 389,
+    artHeight: 266,
   },
   {
     title: t('step3'),
     description: t('step3'),
+    art: '/img/grabados/paso-pizarra.webp',
+    artWidth: 350,
+    artHeight: 317,
   },
   {
     title: t('step4'),
     description: t('step4'),
+    art: '/img/grabados/paso-casa.webp',
+    artWidth: 331,
+    artHeight: 400,
   },
 ])
 
@@ -2174,12 +2137,6 @@ const swapCurrencies = () => {
   const temp = selectedCurrencyInput.value
   selectedCurrencyInput.value = selectedTargetCurrencyInput.value
   selectedTargetCurrencyInput.value = temp
-}
-
-// Get color for rate card based on position
-const getRateCardColor = (index: number): string => {
-  const colors = ['gold', 'silver', 'orange', 'blue']
-  return colors[index] || 'grey'
 }
 
 // Methods
@@ -2753,60 +2710,100 @@ useSeoMeta({
 
 <style scoped>
 /* ============================================================
-   Cambio Uruguay — Home: refined 2026 fintech design system.
-   Cohesive deep-navy canvas + aurora glow, glassmorphism,
-   consistent spacing rhythm. Converter-internal rules (inputs,
-   chips, result, best-rates) are preserved further down.
+   Cambio Uruguay — Home. "La Mesa de Mercado" (DESIGN.md): one calm
+   canvas, the figures in front, and the only ornament an engraving
+   in the manner of a banknote vignette (public/img/grabados/), drawn
+   in the theme's own link ink. No aurora, no glass, no gradient text:
+   the design system bans all three, and the home had all three.
+   Converter-internal rules (inputs, chips, result, best-rates) are
+   preserved further down.
    ============================================================ */
 .home-container {
   position: relative;
   min-height: 100vh;
-  /* Design tokens */
+  /* Design tokens (dark values; the light theme block at the end redefines them) */
   --ink: #f2f5fb;
-  --ink-soft: #aab4c8;
-  --ink-muted: #828da0;
-  --hairline: rgba(255, 255, 255, 0.08);
-  --glass: rgba(255, 255, 255, 0.045);
-  --glass-strong: rgba(255, 255, 255, 0.07);
+  --ink-soft: #b3bdcc;
+  --ink-muted: #818da0;
+  --hairline: rgba(255, 255, 255, 0.1);
+  --surface: #121a2e;
+  --tint: rgba(255, 255, 255, 0.03);
+  --engraving-ink: rgb(100, 181, 246);
   --good: #2bd47d;
-  --radius-lg: 24px;
-  --radius-md: 16px;
+  --radius-lg: 16px;
+  --radius-md: 12px;
   --section-pad: clamp(56px, 8vw, 104px);
 
-  /* Cohesive page canvas: a solid deep-navy base (guarantees no white bleed in
-     any theme) with soft aurora glows layered on top, viewport-anchored. The
-     home is a dark-first premium landing regardless of the light/dark toggle. */
-  background-color: #0a0e1a;
-  background-image:
-    radial-gradient(900px 620px at 12% 0%, rgba(59, 130, 246, 0.22), transparent 60%),
-    radial-gradient(820px 600px at 100% 4%, rgba(99, 102, 241, 0.18), transparent 55%),
-    radial-gradient(900px 700px at 50% 100%, rgba(16, 185, 129, 0.08), transparent 60%);
-  background-attachment: fixed;
-  background-repeat: no-repeat;
+  background-color: rgb(var(--v-theme-background));
 }
 
 /* ---- Hero ---- */
-/* Soft top spotlight just behind the hero content, painted as the section's own background.
-   It was a `::before` at `inset: -25% -10% auto -10%; height: 80%`, i.e. sized in percentages of
-   a hero ~4,500 px tall on a phone: every change of the hero's height moved it, and Chrome
-   counted its whole transparent box as shifted (CLS 0.78 at 390 px, 0.29 at 360 px, 0.24 on
-   desktop, with the ads blocked). A background never produces a layout shift. Same gradient and
-   same geometry, now in px: the box is 120 % of the section's width (-10 % on each side) and
-   the old 80 %/-25 % of a hero 4,500 px tall on a phone and ~2,300 px from md up. */
+/* The hero used to paint an indigo spotlight here (and before that a `::before` sized in percent
+   of the hero, CLS 0.78 on a phone). The only ornament now is `.hero-engraving`, an element of its
+   own whose box is set in px from the hero's top, so a taller or shorter hero never moves it. */
 .hero-section {
   position: relative;
   overflow: hidden;
   padding-top: clamp(20px, 4vw, 48px);
-  background-image: radial-gradient(58% 100% at 50% 0%, rgba(99, 102, 241, 0.2), transparent 70%);
-  background-repeat: no-repeat;
-  background-size: 120% 3600px;
-  background-position: 50% -1125px;
+}
+
+/* La Rambla, engraved. The file is ink-only alpha (navy lines, transparent paper), used as a MASK
+   over the theme's link ink, so one asset serves both themes. On a phone it is a band behind the
+   "Dólar hoy" row, under the trust line; from 600 px it moves right so the Palacio Salvo stands at
+   about 80 % of the width, below the title, and a second, linear mask clears the middle third where
+   the figures sit. Every coordinate is px from the hero's top. */
+.hero-engraving {
+  position: absolute;
+  z-index: 0;
+  left: 0;
+  right: 0;
+  top: 420px;
+  height: 220px;
+  pointer-events: none;
+  background-color: var(--engraving-ink);
+  opacity: 0.14;
+  -webkit-mask-image: url('/img/grabados/rambla-800.webp');
+  mask-image: url('/img/grabados/rambla-800.webp');
+  -webkit-mask-size: auto 100%;
+  mask-size: auto 100%;
+  -webkit-mask-position: calc(50% + 40px) bottom;
+  mask-position: calc(50% + 40px) bottom;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+@media (min-width: 600px) {
+  .hero-engraving {
+    top: 300px;
+    height: 320px;
+    opacity: 0.2;
+    -webkit-mask-image:
+      url('/img/grabados/rambla.webp'),
+      linear-gradient(90deg, #000 0 16%, transparent 32% 66%, #000 76% 100%);
+    mask-image:
+      url('/img/grabados/rambla.webp'),
+      linear-gradient(90deg, #000 0 16%, transparent 32% 66%, #000 76% 100%);
+    -webkit-mask-size:
+      auto 100%,
+      100% 100%;
+    mask-size:
+      auto 100%,
+      100% 100%;
+    -webkit-mask-position:
+      calc(50% + 240px) bottom,
+      0 0;
+    mask-position:
+      calc(50% + 240px) bottom,
+      0 0;
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
 }
 
 @media (min-width: 960px) {
-  .hero-section {
-    background-size: 120% 1840px;
-    background-position: 50% -575px;
+  .hero-engraving {
+    top: 280px;
+    height: 360px;
   }
 }
 
@@ -2816,7 +2813,7 @@ useSeoMeta({
 
 .hero-content {
   position: relative;
-  z-index: 2;
+  z-index: 1;
   max-width: 760px;
   margin: 0 auto;
 }
@@ -2828,9 +2825,6 @@ useSeoMeta({
   animation: fadeInUp 0.6s ease-out both;
 }
 
-.hero-eyebrow.hero-anim {
-  animation-delay: 0.05s;
-}
 /* The H1 and the subtitle are the LCP candidates: they rise but never start transparent, so the
    largest paint is the first paint (it waited for the fade: 1,388 ms against a load of 810). */
 .hero-title.hero-anim {
@@ -2851,76 +2845,14 @@ useSeoMeta({
   animation-delay: 0.44s;
 }
 
-.hero-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0.9rem;
-  margin-bottom: 1.25rem;
-  border-radius: 999px;
-  background: var(--glass-strong);
-  border: 1px solid var(--hairline);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: var(--ink-soft);
-}
-
-.live-dot {
-  position: relative;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--good);
-}
-
-/* The pulse is a disc behind the dot that grows and fades. It used to be an animated
-   box-shadow, which the compositor cannot run: the browser repainted it on the main thread
-   every frame, forever, on the home page (Lighthouse "non-composited animation"). Scale and
-   opacity stay on the compositor. 8px scaled 3.25x = the old 9px spread on each side. */
-.live-dot::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: rgb(43, 212, 125);
-  opacity: 0;
-  animation: livePulse 2.2s infinite;
-}
-
-@keyframes livePulse {
-  0% {
-    transform: scale(1);
-    opacity: 0.5;
-  }
-  70%,
-  100% {
-    transform: scale(3.25);
-    opacity: 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .live-dot::after {
-    animation: none;
-  }
-}
-
 .hero-title {
   font-size: clamp(2rem, 5.2vw, 3.35rem);
-  /* line-height + padding-bottom give descenders (g, y in "Uruguay") room:
-     background-clip:text otherwise clips them against a tight line box. */
-  line-height: 1.18;
-  padding-bottom: 0.12em;
+  line-height: 1.12;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
   margin: 0 auto 1rem;
-  background: linear-gradient(180deg, #ffffff 0%, #c7d3ee 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--ink);
 }
 
 .hero-subtitle {
@@ -2979,11 +2911,10 @@ useSeoMeta({
   font-size: 0.92rem;
   line-height: 1.7;
   text-align: left;
-  background: var(--glass);
+  background: var(--tint);
   border: 1px solid var(--hairline);
-  border-left: 3px solid rgba(120, 160, 255, 0.55);
   border-radius: 12px;
-  padding: 1rem 1.15rem;
+  padding: 16px 20px;
   margin: 0;
 }
 
@@ -3022,20 +2953,17 @@ useSeoMeta({
   }
 }
 
-/* ---- Exchange (converter) card: glass centerpiece ---- */
+/* ---- Exchange (converter) card: the desk itself ---- */
+/* A solid surface over the engraving, Overlay Depth shadow (DESIGN.md → Elevation). */
 .exchange-card {
   position: relative;
   max-width: 720px;
   margin: 0 auto 1.5rem;
   text-align: left;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.03));
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--surface) !important;
+  border: 1px solid var(--hairline);
   border-radius: var(--radius-lg) !important;
-  box-shadow:
-    0 30px 80px -34px rgba(0, 0, 0, 0.75),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.32) !important;
 }
 
 .amount-input {
@@ -3239,13 +3167,25 @@ useSeoMeta({
 .best-rates-card {
   border-radius: 12px;
 
+  /* One quiet record per casa. The first is the answer, so it alone carries the action tint;
+     the rest were a gold/silver/orange/blue tonal palette that read as four unrelated colors. */
   .rate-item {
-    transition: all 0.3s ease;
     border-radius: 8px;
+    background: var(--tint) !important;
+    border: 1px solid var(--hairline);
+    transition:
+      transform 0.2s cubic-bezier(0.2, 0, 0, 1),
+      box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1),
+      border-color 0.2s cubic-bezier(0.2, 0, 0, 1);
 
     &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+    }
+
+    &.rate-item--best {
+      background: rgba(var(--v-theme-primary), 0.1) !important;
+      border-color: rgba(var(--v-theme-primary), 0.45);
     }
 
     .rate-position {
@@ -3287,29 +3227,39 @@ useSeoMeta({
   background: transparent;
 }
 
-/* Alternating sections get a faint elevated band with hairline edges so the
-   page reads as layered depth instead of jarring black/white blocks. */
+/* Alternating sections get a flat tonal band between hairlines. */
 .section-band {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.022), rgba(255, 255, 255, 0.012));
+  background: var(--tint);
   border-top: 1px solid var(--hairline);
   border-bottom: 1px solid var(--hairline);
 }
 
-/* Shared section headings */
+/* Shared section headings. Left-aligned on the column's edge, like the rest of the site: only the
+   hero is centred, so the page stops reading as a stack of centred posters. */
+.section-head {
+  text-align: left;
+}
+
 .section-title {
-  font-size: clamp(1.6rem, 3vw, 2.2rem);
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
   color: var(--ink);
-  margin-bottom: 0.75rem;
+  margin: 0 0 8px;
 }
 
 .section-subtitle {
   color: var(--ink-soft);
-  font-size: 1.02rem;
+  font-size: 1rem;
   line-height: 1.6;
   max-width: 60ch;
-  margin: 0 auto;
+  margin: 0;
+}
+
+.text-center > .section-subtitle {
+  margin-inline: auto;
 }
 
 /* ---- Top Exchange Houses: rate-forward ranked cards ---- */
@@ -3318,29 +3268,21 @@ useSeoMeta({
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.025));
+  background: var(--surface) !important;
   border: 1px solid var(--hairline);
   border-radius: var(--radius-md) !important;
+  box-shadow: none !important;
   transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease,
-    border-color 0.25s ease;
+    transform 0.2s cubic-bezier(0.2, 0, 0, 1),
+    box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1),
+    border-color 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
 
-.house-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--rank-accent);
-}
-
+/* Quiet Lift: interactive cards rise 3 px (DESIGN.md → Elevation). */
 .house-card:hover {
-  transform: translateY(-6px);
-  border-color: rgba(255, 255, 255, 0.18);
-  box-shadow: 0 24px 46px -24px rgba(0, 0, 0, 0.75);
+  transform: translateY(-3px);
+  border-color: rgba(var(--v-theme-primary), 0.45);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35) !important;
 }
 
 .house-card__top {
@@ -3350,17 +3292,40 @@ useSeoMeta({
   margin-bottom: 0.85rem;
 }
 
+/* The rank is a figure, not a badge: tabular, on a quiet tile. Only the podium carries color,
+   and the color is the tier (gold, silver, bronze), never decoration. */
 .house-rank {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: 8px;
   font-weight: 800;
-  font-size: 0.95rem;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  background: var(--tint);
+  border: 1px solid var(--hairline);
+}
+
+.house-rank--1,
+.house-rank--2,
+.house-rank--3 {
   color: #0a0e1a;
-  background: var(--rank-accent);
+  border-color: transparent;
+}
+
+.house-rank--1 {
+  background: #ffd54a;
+}
+
+.house-rank--2 {
+  background: #cfd8e3;
+}
+
+.house-rank--3 {
+  background: #e8a06a;
 }
 
 .house-badge {
@@ -3386,7 +3351,8 @@ useSeoMeta({
   font-weight: 800;
   letter-spacing: -0.01em;
   line-height: 1;
-  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
 }
 
 .house-meta {
@@ -3401,8 +3367,8 @@ useSeoMeta({
   gap: 4px;
   margin-top: auto;
   padding-top: 0.9rem;
-  color: #7fb0ff;
-  font-size: 0.78rem;
+  color: rgb(var(--v-theme-link));
+  font-size: 0.75rem;
   font-weight: 700;
   opacity: 0;
   transform: translateX(-4px);
@@ -3416,41 +3382,50 @@ useSeoMeta({
   transform: none;
 }
 
-/* ---- How It Works: glowing numbered nodes ---- */
+/* ---- How It Works: four engraved vignettes ---- */
+/* The art is navy ink on transparency: as an <img> it reads directly on the light canvas; on the
+   dark one it is turned to light ink (brightness(0) invert(1)) and dimmed. Lazy, decorative. */
 .step-card {
-  position: relative;
-  z-index: 1;
-  padding: 8px 12px;
-  transition: transform 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
-.step-card:hover {
-  transform: translateY(-4px);
+.step-art {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  height: clamp(112px, 16vw, 168px);
+  margin-bottom: 16px;
 }
 
-.step-node {
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 1rem;
-  display: grid;
-  place-items: center;
-  border-radius: 16px;
-  background: linear-gradient(180deg, rgba(59, 130, 246, 0.28), rgba(99, 102, 241, 0.18));
-  border: 1px solid rgba(120, 160, 255, 0.35);
-  box-shadow: 0 14px 32px -14px rgba(59, 130, 246, 0.7);
-}
-
-.step-index {
-  font-size: 1.6rem;
-  font-weight: 800;
-  color: #d6e3ff;
+.step-art img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  filter: brightness(0) invert(1);
+  opacity: 0.55;
 }
 
 .step-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
   font-size: 1rem;
   font-weight: 700;
   color: var(--ink);
   line-height: 1.4;
+  margin: 0;
+}
+
+.step-index {
+  flex: none;
+  font-size: 0.875rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: rgb(var(--v-theme-link));
 }
 
 /* ---- Pillar prose ---- */
@@ -3474,24 +3449,42 @@ useSeoMeta({
   list-style: none;
 }
 
-/* ---- Internal-link + feature tiles ---- */
+/* ---- Internal-link + feature cards ---- */
+/* Left-aligned records with the icon at text size in the link ink. They were centred tiles with
+   a 48 px icon in five unrelated colors: the icon-tile grid DESIGN.md names as a substitute for
+   information. Tonal at rest; only the ones that are links lift. */
 .internal-link-card,
 .feature-card {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  background: var(--surface) !important;
   border: 1px solid var(--hairline);
   border-radius: var(--radius-md) !important;
   transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease,
-    border-color 0.25s ease;
+    transform 0.2s cubic-bezier(0.2, 0, 0, 1),
+    box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1),
+    border-color 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
 
 .internal-link-card:hover,
-.feature-card:hover,
 .feature-card.cursor-pointer:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 24px 46px -24px rgba(0, 0, 0, 0.7);
-  border-color: rgba(120, 160, 255, 0.38);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  border-color: rgba(var(--v-theme-primary), 0.45);
+}
+
+.link-card__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+.link-card__icon,
+.feature-card__icon {
+  flex: none;
+  color: rgb(var(--v-theme-link));
 }
 
 .cursor-pointer {
@@ -3521,20 +3514,37 @@ useSeoMeta({
 
 .casa-hub-link:hover,
 .casa-hub-link:focus-visible {
-  background: rgba(120, 160, 255, 0.08);
-  border-color: rgba(120, 160, 255, 0.38);
+  background: rgba(var(--v-theme-primary), 0.08);
+  border-color: rgba(var(--v-theme-primary), 0.45);
 }
 
-/* ---- CTA: bold gradient slab ---- */
+/* ---- CTA: the closing slab ---- */
+/* Navy Surface in both themes (`.on-dark` keeps its text light), with the Rambla engraved again
+   along its foot in Link Sky: the page closes on the same view it opened with. */
 .cta-section {
+  position: relative;
   overflow: hidden;
+  isolation: isolate;
   text-align: center;
-  background:
-    radial-gradient(120% 140% at 0% 0%, rgba(255, 255, 255, 0.18), transparent 50%),
-    linear-gradient(120deg, #1d3a8a 0%, #2563eb 52%, #6366f1 100%) !important;
-  border-radius: 28px;
+  background: #121a2e;
+  border-radius: 16px;
   margin: 0 16px var(--section-pad);
-  box-shadow: 0 30px 70px -30px rgba(37, 99, 235, 0.6);
+  box-shadow: 16px 24px 48px rgba(0, 0, 0, 0.28);
+}
+
+.cta-section::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: 0;
+  right: 0;
+  bottom: -8px;
+  height: 200px;
+  background-color: #64b5f6;
+  opacity: 0.22;
+  -webkit-mask: url('/img/grabados/rambla.webp') center bottom / auto 100% no-repeat;
+  mask: url('/img/grabados/rambla.webp') center bottom / auto 100% no-repeat;
+  pointer-events: none;
 }
 
 /* ---- Accessibility ---- */
@@ -3554,7 +3564,7 @@ useSeoMeta({
     z-index: 10;
 
     .swap-btn {
-      background: linear-gradient(135deg, #1d3a8a 0%, #4f46e5 100%);
+      background: rgb(var(--v-theme-primary));
       border-color: transparent;
       box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
 
@@ -3592,66 +3602,108 @@ useSeoMeta({
   }
 }
 
+/* The nearby finder carries the engraved plan of the Ciudad Vieja at its right edge, under the
+   button: an <img> so it loads lazily, faded out toward the text by a mask. */
 .nearby-finder-card {
-  border: 2px solid rgba(var(--v-theme-primary), 0.35);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--surface) !important;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg) !important;
+}
+
+.nearby-finder-art {
+  position: absolute;
+  z-index: -1;
+  right: -48px;
+  top: 50%;
+  width: min(560px, 90%);
+  height: auto;
+  transform: translateY(-50%);
+  filter: brightness(0) invert(1);
+  opacity: 0.22;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 45%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 45%);
+  pointer-events: none;
+}
+
+.nearby-finder-title {
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1.2;
+  text-wrap: balance;
+  max-width: 24ch;
+  color: var(--ink);
+}
+
+/* Below md the card stacks: the plan sits under the button row only, fading in from above so
+   it never reaches the copy. */
+@media (max-width: 959.98px) {
+  .nearby-finder-art {
+    top: auto;
+    bottom: -16px;
+    transform: none;
+    width: 280px;
+    opacity: 0.18;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, transparent 35%, #000 75%);
+    mask-image: linear-gradient(180deg, transparent 0%, transparent 35%, #000 75%);
+  }
 }
 
 /* ============================================================
-   LIGHT THEME
-   The home was authored dark-first with hardcoded white-alpha
-   "glass" surfaces and light text. These overrides re-skin it
-   for the light toggle: airy canvas, solid white cards, dark
-   ink and AA-contrast text. Scoped to `.v-theme--light` so the
-   tuned dark design is left completely untouched.
+   LIGHT THEME (the default on a first visit, DESIGN.md)
+   The tokens at the top are the dark values; this block swaps
+   them for paper, navy ink and AA-contrast text, and prints the
+   engravings in navy instead of light ink.
    ============================================================ */
 .v-theme--light .home-container {
   --ink: #16233b;
   --ink-soft: #45556e;
   --ink-muted: #5f6c82;
   --hairline: rgba(15, 23, 42, 0.1);
-  --glass: rgba(255, 255, 255, 0.72);
-  --glass-strong: #ffffff;
-
-  background-color: #eef2f8;
-  background-image:
-    radial-gradient(900px 620px at 12% 0%, rgba(59, 130, 246, 0.1), transparent 60%),
-    radial-gradient(820px 600px at 100% 4%, rgba(99, 102, 241, 0.08), transparent 55%),
-    radial-gradient(900px 700px at 50% 100%, rgba(16, 185, 129, 0.05), transparent 60%);
+  --surface: #ffffff;
+  --tint: rgba(15, 23, 42, 0.025);
+  --engraving-ink: rgb(21, 101, 192);
 }
 
-/* Hero headline: dark gradient instead of white→pale-blue. */
-.v-theme--light .home-container .hero-title {
-  background: linear-gradient(180deg, #16233b 0%, #2456b8 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+/* Light ground: the engravings print in navy directly. */
+.v-theme--light .home-container .hero-engraving {
+  opacity: 0.12;
 }
 
-/* Glass surfaces → solid white cards with hairline border + soft shadow. */
+@media (min-width: 600px) {
+  .v-theme--light .home-container .hero-engraving {
+    opacity: 0.2;
+  }
+}
+
+.v-theme--light .home-container .step-art img {
+  filter: none;
+  opacity: 0.85;
+}
+
+.v-theme--light .home-container .nearby-finder-art {
+  filter: none;
+  opacity: 0.28;
+}
+
+@media (max-width: 959.98px) {
+  .v-theme--light .home-container .nearby-finder-art {
+    opacity: 0.16;
+  }
+}
+
+/* Overlay Depth and Quiet Lift, light variants (DESIGN.md → Elevation). */
 .v-theme--light .home-container .exchange-card {
-  background: #ffffff;
-  border-color: rgba(15, 23, 42, 0.1);
-  box-shadow:
-    0 24px 60px -34px rgba(15, 23, 42, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-
-.v-theme--light .home-container .house-card,
-.v-theme--light .home-container .internal-link-card,
-.v-theme--light .home-container .feature-card {
-  background: #ffffff;
-  border-color: rgba(15, 23, 42, 0.1);
+  box-shadow: 0 16px 40px rgba(20, 25, 40, 0.14) !important;
 }
 
 .v-theme--light .home-container .house-card:hover,
 .v-theme--light .home-container .internal-link-card:hover,
-.v-theme--light .home-container .feature-card:hover {
-  border-color: rgba(37, 99, 235, 0.4);
-  box-shadow: 0 24px 46px -26px rgba(15, 23, 42, 0.3);
-}
-
-.v-theme--light .home-container .section-band {
-  background: rgba(15, 23, 42, 0.025);
+.v-theme--light .home-container .feature-card.cursor-pointer:hover,
+.v-theme--light .home-container .best-rates-card .rate-item:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15) !important;
 }
 
 /* Text/icons hardcoded light for the dark canvas. */
@@ -3659,13 +3711,9 @@ useSeoMeta({
   color: var(--ink);
 }
 
-.v-theme--light .home-container .house-cta {
-  color: #1565c0;
-}
-
-/* Converter result + best-rates cards keep their faint tint, but the text was
-   white/pale-green for the dark glass — flip it to readable ink on the light
-   card. The CTA slab (.cta-section) keeps white text on its colored gradient. */
+/* Converter result + best-rates cards: the text was authored white/pale-green for the dark
+   canvas — flip it to readable ink on the light card. The CTA slab (.cta-section) is `.on-dark`
+   and keeps its white text. */
 .v-theme--light .home-container .conversion-result .text-white,
 .v-theme--light .home-container .best-rates-card .text-white,
 .v-theme--light .home-container .conversion-result .amount-text {

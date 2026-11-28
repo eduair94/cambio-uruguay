@@ -12,6 +12,16 @@
   </section>
   <main v-else class="error-page">
     <a :href="`${prefix}/`" class="error-brand">Cambio Uruguay</a>
+    <!-- A street lamp of the Ciudad Vieja and a coin someone lost under it (public/img/grabados/).
+         A plain static <img>: this page has to render even when the app's modules did not. -->
+    <img
+      class="error-art"
+      src="/img/grabados/farol.webp"
+      alt=""
+      width="397"
+      height="454"
+      decoding="async"
+    />
     <h1>{{ notFound ? text.notFoundTitle : text.genericTitle }}</h1>
     <p>{{ notFound ? text.notFoundBody : text.genericBody }}</p>
     <button type="button" :disabled="reloading" @click="reload">{{ text.reload }}</button>
@@ -174,8 +184,14 @@ input:focus-visible {
   margin: 0 auto;
   padding: 48px 28px;
 }
+.error-art {
+  display: block;
+  width: clamp(140px, 32vw, 200px);
+  height: auto;
+  margin-top: 32px;
+}
 .error-page h1 {
-  margin: 32px 0 16px;
+  margin: 24px 0 16px;
   font-size: clamp(1.75rem, 5vw, 2.5rem);
   line-height: 1.2;
 }

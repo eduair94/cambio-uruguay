@@ -182,7 +182,10 @@ system preference after hydration.
 - Evidence and freshness stay close to every comparison or recommendation.
 - Color carries meaning; hierarchy comes from type, spacing, and tonal layering.
 - Responsive layouts recompose instead of merely shrinking.
-- Motion acknowledges state changes without delaying access to content.
+- Motion acknowledges state changes without delaying access to content; one authored moment (the
+  rate board) and soft, scripted arrivals everywhere else.
+- The only ornament is an engraving in the manner of a banknote vignette, printed in the theme's
+  link ink: never an aurora, a glass panel or a gradient headline.
 - Every token has a light-theme counterpart chosen for contrast, not for symmetry.
 
 ## Colors
@@ -541,6 +544,64 @@ thick colored edge.
 **The No Side Tab Rule.** A card, list item, or callout never carries a colored border above 1px on
 one side. State goes in a labelled chip, not in a stripe.
 
+## Engravings
+
+The site's one illustrative register: fine-line intaglio drawings of Montevideo and of the trade
+itself, in the manner of the vignette on a banknote. They replace the aurora glows, glass panels and
+icon tiles the home had accumulated, all of which this document already banned.
+
+- **The set** (`app/public/img/grabados/`): `rambla.webp` (the Rambla with the Palacio Salvo, 1534 ×
+  400) and `rambla-800.webp` for phones; four step vignettes `paso-monedas`, `paso-monto`,
+  `paso-pizarra`, `paso-casa`; `plano-ciudad-vieja.webp` (the peninsula's grid with a compass rose);
+  `farol.webp` (a lamp of the Ciudad Vieja and a lost coin, on the error page).
+- **Ink only.** Every file is navy line work on full transparency (alpha = how dark the line is),
+  produced from a generated drawing by stripping its paper. They carry no text, digits, currency
+  signs, flags, portraits or denominations: an engraving that looks like a real banknote is a
+  liability, one that looks like the city is not.
+- **Two ways to print one.** Above the fold, as a CSS `mask-image` over `--engraving-ink` (Ink Blue
+  in light, Link Sky in dark) so one file serves both themes and nothing competes for the LCP; below
+  the fold, as a lazy `<img>`, navy on paper in light and `filter: brightness(0) invert(1)` at about
+  half opacity in dark.
+- **Never behind a line of text.** The hero's Rambla is cleared in the middle by a second, radial
+  mask; the plan in the nearby-finder card fades out toward the copy. Opacity stays between 0.14
+  and 0.3: the drawing is felt before it is looked at.
+- **Box in px.** An engraving is its own element whose top and height are pixels, never a share of
+  a section whose height depends on content (`tests/unit/homeHeroStability.test.ts`).
+
+**The Engraving Is The Ornament Rule.** A surface that wants character gets an engraving from this
+set, or a new one made the same way (same style sentence, ink extracted, under 100 KB). It does not
+get a gradient, a glow, a blurred panel, or an icon blown up to 48px.
+
+## Motion
+
+Motion runs on Motion (motion.dev): `animate` from `motion/mini`, which drives the browser's Web
+Animations API (compositor-run, interruptible, released when it ends). It is never in the entry
+chunk: the scroll triggers are the browser's own `IntersectionObserver`, and `motion/mini` is
+imported on demand (when something is primed, or once the app is idle for the page arrival). The vocabulary lives in `app/utils/motionPresets.ts`: two curves (`EASE_ARRIVE`
+`cubic-bezier(0.16, 1, 0.3, 1)` for arrivals, `EASE_FEEDBACK` `cubic-bezier(0.2, 0, 0, 1)` for
+feedback) and four durations (0.14 s feedback, 0.24 s state, 0.56 s arrival, 0.9 s the board).
+
+- **The focal moment, "la pizarra".** When today's dollar lands in the home's hero, its digits roll
+  into place right to left like the board of an exchange house (`utils/pizarraRoll.ts`). It runs
+  once, over the real text (painted transparent for under a second, never replaced), so what is
+  read, copied and announced is always the figure itself.
+- **Arrivals (`v-reveal`).** A block the reader scrolls down to settles 14px and fades in;
+  `v-reveal.children` does the same to a list, one item after another, the whole stagger capped at
+  0.4s. Nothing is hidden by CSS: an element on screen at mount, the server HTML, a failed script
+  and reduced motion all render as written (`plugins/reveal.ts`).
+- **Page arrival.** After a client-side navigation the page column goes from 35% to full opacity in
+  0.24s (`plugins/page-arrive.client.ts`). Opacity only: a transform would re-parent every
+  `position: fixed` child, and a leave animation or a View Transition would hold the old page while
+  slow directories resolve.
+- **Feedback.** A pressed button gives to `scale: 0.97` (its own property, so it composes with any
+  transform a page animates); interactive cards use Quiet Lift. Both live in `critical.css`.
+- **Reduced motion** skips every scripted movement and flattens CSS durations; the press feedback
+  is removed too. Nothing on the site needs to move to be understood.
+
+**The One Board Rule.** The rolling digits are the site's signature and appear once per page, on
+the figure the page exists to answer. A second board on the same screen turns a signature into a
+slot machine.
+
 ## Components
 
 ### Buttons
@@ -623,6 +684,9 @@ the closing call to action rather than floating over the content.
 
 - **Don't** add a second generic stylesheet or import `vuetify/styles`.
 - **Don't** use glass, glow, gradients, or icon tiles as substitutes for authored information.
+  When a surface needs character, it gets an engraving (see Engravings).
+- **Don't** hide server-rendered content with CSS to animate it in; scripted arrivals only prime
+  what is still below the fold.
 - **Don't** make permanently dark sections depend on dark-theme inheritance.
 - **Don't** hide a ranking's sample size or present AI prose as the underlying measurement.
 - **Don't** use `--v-theme-primary` for small blue text, or a raw sentiment hue for any text.

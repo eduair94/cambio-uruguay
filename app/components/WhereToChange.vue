@@ -11,7 +11,7 @@
   <section class="where-to-change-section py-12" data-testid="where-to-change">
     <VContainer>
       <VRow justify="center">
-        <VCol cols="12" class="text-center mb-8">
+        <VCol cols="12" md="10" lg="8" class="mb-8">
           <h2 class="text-h4 font-weight-bold mb-4">
             {{ t('whereToChange.title') }}
           </h2>
@@ -326,13 +326,14 @@ watch([operation, currency], ([op, cur]) => {
 </script>
 
 <style scoped>
+/* Same band and surface as the AI section above it (AIInsights.vue). */
 .where-to-change-section {
-  background: #1a1a1a;
+  background: rgba(var(--v-theme-on-surface), 0.025);
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
 .wtc-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
+  background: rgb(var(--v-theme-surface));
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
 }
@@ -363,10 +364,6 @@ watch([operation, currency], ([op, cur]) => {
 /* Light theme: the card was authored for the dark home canvas (white-alpha
    overlays + light text). Re-skin to a white card on a light band so the
    theme-default dark text reads with full contrast. */
-.v-theme--light .where-to-change-section {
-  background: #eef2f8;
-}
-
 .v-theme--light .wtc-card {
   background: #ffffff;
   border-color: rgba(15, 23, 42, 0.1);
