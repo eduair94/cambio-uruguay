@@ -38,6 +38,8 @@
       </p>
     </header>
 
+    <RelatedInline class="mb-6" />
+
     <section class="mb-8">
       <h2 class="text-h5 font-weight-bold mb-3">
         Tasa de corte de la última licitación, por plazo

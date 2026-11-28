@@ -74,6 +74,8 @@
       </p>
     </section>
 
+    <RelatedInline class="mb-8" />
+
     <!-- Where does the debt sit -->
     <h2 class="section-heading mb-1">Primero: ¿dónde figura tu deuda?</h2>
     <p class="text-body-2 text-medium-emphasis mb-4">

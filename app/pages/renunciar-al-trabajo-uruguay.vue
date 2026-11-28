@@ -34,6 +34,8 @@
       </VCard>
     </header>
 
+    <RelatedInline class="mb-10" />
+
     <!-- Las partidas -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-2">

@@ -30,6 +30,8 @@
       </VCard>
     </header>
 
+    <RelatedInline class="mb-10" />
+
     <!-- Cuánto sale -->
     <section class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-2">Cuánto sale, según dónde lo hagas</h2>

@@ -56,6 +56,8 @@
       </p>
     </VCard>
 
+    <RelatedInline class="mb-8" />
+
     <!-- Calculadora -->
     <section id="calculadora" class="mb-10">
       <h2 class="text-h5 font-weight-bold mb-3">Tu ruta, con las comisiones adentro</h2>

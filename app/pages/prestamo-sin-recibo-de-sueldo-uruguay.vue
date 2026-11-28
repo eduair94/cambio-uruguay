@@ -27,6 +27,8 @@
       </div>
     </VCard>
 
+    <RelatedInline class="mb-5" />
+
     <!-- Las tres puertas -->
     <section class="mb-6" aria-labelledby="puertas-title">
       <h2 id="puertas-title" class="text-h6 font-weight-bold mb-1">

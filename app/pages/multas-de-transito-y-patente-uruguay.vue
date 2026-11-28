@@ -41,6 +41,8 @@
       </VCard>
     </header>
 
+    <RelatedInline class="mb-10" />
+
     <!-- Steps -->
     <section id="pasos" class="mb-12">
       <h2 class="text-h5 font-weight-bold mb-4">El camino, paso a paso</h2>

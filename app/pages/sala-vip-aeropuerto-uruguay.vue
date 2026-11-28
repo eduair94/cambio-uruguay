@@ -96,6 +96,8 @@
       </p>
     </VCard>
 
+    <RelatedInline class="mb-5" />
+
     <!-- ── Calculator ── -->
     <VCard id="calculadora" variant="flat" class="calc-card pa-4 pa-sm-5 mb-5">
       <div class="d-flex align-center ga-2 mb-1">

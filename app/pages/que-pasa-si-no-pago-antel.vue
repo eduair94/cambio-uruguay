@@ -29,6 +29,8 @@
       publica Antel, con el documento al lado, y marcado lo que no publica.
     </p>
 
+    <RelatedInline class="mb-6" />
+
     <!-- La secuencia primero: es la pregunta. -->
     <section aria-labelledby="secuencia-title" class="mb-6">
       <h2 id="secuencia-title" class="text-h6 font-weight-bold mb-2">Qué pasa, y en qué orden</h2>

@@ -27,6 +27,8 @@
             </p>
           </header>
 
+          <RelatedInline class="mb-6" />
+
           <VDivider class="mb-6" />
 
           <!-- 1. Qué es, y qué no es -->
