@@ -522,8 +522,10 @@ async function submitBox() {
   background: rgba(var(--v-theme-on-surface), 0.03);
   color: rgb(var(--v-theme-on-surface));
 }
-.rental-feedback :is(p, h3, fieldset, legend) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  .rental-feedback :is(p, h3, fieldset, legend) {
+    margin: 0;
+  }
 }
 .rental-feedback__head {
   display: flex;

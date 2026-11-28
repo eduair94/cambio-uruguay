@@ -193,8 +193,10 @@ function onSelect(event: MouseEvent, patch: Partial<ProductosVidaState>) {
 </script>
 
 <style scoped>
-:where(.vida-filters) :where(p, ul) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.vida-filters) :where(p, ul) {
+    margin: 0;
+  }
 }
 .vida-filters__group + .vida-filters__group {
   margin-top: 16px;

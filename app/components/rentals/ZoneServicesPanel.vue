@@ -117,8 +117,10 @@ const date = (value: string | null) =>
   padding-top: 16px;
   border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
-:where(.zone-services) :where(h3, p, dl, dd) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.zone-services) :where(h3, p, dl, dd) {
+    margin: 0;
+  }
 }
 h3 {
   font-size: 1.075rem;

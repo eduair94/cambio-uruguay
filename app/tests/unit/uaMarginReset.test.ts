@@ -10,8 +10,10 @@ import { describe, expect, it } from 'vitest'
 // is three lines of CSS in a 300-line file and reads like dead weight to anyone who
 // doesn't know it repaired 194 elements across 20 pages.
 //
-// The zero-specificity :where() wrapper is part of the contract, not decoration — it
-// makes the reset lose to every rule we author, including an `mt-*` utility.
+// The zero-specificity :where() wrapper keeps it losing to our unlayered rules, and the
+// `@layer vuetify-overrides.cu-reset` around it keeps it losing to `mt-*`: Vuetify 4's
+// utilities are layered and not !important, so an unlayered reset beats them whatever
+// its specificity (measured 2026-11-28; see resetsInLayer.test.ts).
 const CRITICAL_CSS = path.resolve(__dirname, '..', '..', 'assets', 'css', 'critical.css')
 
 describe('text-block margin reset', () => {
@@ -48,5 +50,13 @@ describe('text-block margin reset', () => {
     // and silently delete spacing pages had declared for themselves.
     expect(rule![0].startsWith(':where(')).toBe(true)
     expect(rule![0]).not.toMatch(/!important/)
+  })
+
+  it('lives in the reset layer so `mt-*` utilities still win', () => {
+    const before = css.slice(0, rule!.index)
+    const opened = before.lastIndexOf('@layer vuetify-overrides.cu-reset {')
+    expect(opened, 'the first-child reset left @layer vuetify-overrides.cu-reset').toBeGreaterThan(
+      before.lastIndexOf('}')
+    )
   })
 })

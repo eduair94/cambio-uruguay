@@ -459,8 +459,10 @@ useHead(() => ({
 <style scoped>
 /* Reset en :where() también para la raíz (especificidad 0): con :is() el reset le ganaba a los
    márgenes del propio autor (memoria reset-css-is-vs-where, docs/app/CSS_RESET_SPECIFICITY.md). */
-:where(.ua-page) :where(p, h1, h2, h3, ul, ol) {
-  margin-top: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.ua-page) :where(p, h1, h2, h3, ul, ol) {
+    margin-top: 0;
+  }
 }
 .ua-eyebrow {
   margin-bottom: 8px;

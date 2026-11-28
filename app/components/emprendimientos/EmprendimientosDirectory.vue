@@ -311,8 +311,10 @@ async function azar() {
   display: grid;
   gap: 20px;
 }
-:where(.emp-dir) :where(h2, p) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.emp-dir) :where(h2, p) {
+    margin: 0;
+  }
 }
 .emp-dir__search {
   display: flex;

@@ -1402,8 +1402,10 @@ useHead(() => ({
    was silently flattening seventeen blocks to zero — the amenity chips sat flush against their
    own heading. `:where()` scores zero, so the reset still clears the UA margins and every class
    below still wins. Medido en producción antes y después; ver docs/app/CSS_RESET_SPECIFICITY.md. */
-:where(.rental-page) :where(h1, h2, h3, p, ul, ol, dl, dd) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.rental-page) :where(h1, h2, h3, p, ul, ol, dl, dd) {
+    margin: 0;
+  }
 }
 .rental-page h1 {
   font-size: clamp(1.35rem, 3vw, 1.75rem);

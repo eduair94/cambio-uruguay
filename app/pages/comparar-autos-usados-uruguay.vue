@@ -617,11 +617,13 @@ useHead({
 }
 /* Sólo los bloques de la página: un selector descendiente acá se filtraba a los componentes hijos
    y le ganaba al margen de "Lo que resignás". */
-.compare-header > :is(h1, p),
-.compare-section > :is(h2, p, ul),
-.compare-section__bar > h2,
-.bench > p {
-  margin-top: 0;
+@layer vuetify-overrides.cu-reset {
+  .compare-header > :is(h1, p),
+  .compare-section > :is(h2, p, ul),
+  .compare-section__bar > h2,
+  .bench > p {
+    margin-top: 0;
+  }
 }
 .compare-header {
   max-width: 820px;

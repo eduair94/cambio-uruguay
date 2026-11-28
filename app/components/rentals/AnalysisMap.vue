@@ -635,8 +635,10 @@ onBeforeUnmount(() => {
   border-radius: 12px;
   scroll-margin-top: 100px;
 }
-:where(.analysis-map) :where(h2, h3, p, ul, dl, dd) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.analysis-map) :where(h2, h3, p, ul, dl, dd) {
+    margin: 0;
+  }
 }
 .analysis-map h2 {
   font-size: 1.5rem;

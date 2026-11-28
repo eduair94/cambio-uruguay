@@ -247,8 +247,10 @@ function variantLabelOf(id: string): string | null {
 .vida-item[hidden] {
   display: none !important;
 }
-:where(.vida-product) :where(p, h3, h4, ul) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.vida-product) :where(p, h3, h4, ul) {
+    margin: 0;
+  }
 }
 
 /* ---- La capa del hilo ---- */

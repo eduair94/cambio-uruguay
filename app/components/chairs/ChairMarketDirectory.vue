@@ -543,9 +543,13 @@ const ratingAria = (product: ChairCatalogCard): string =>
   font-weight: 700;
   line-height: 1.16;
   letter-spacing: -0.02em;
-  margin: 0;
   max-width: 26ch;
   text-wrap: balance;
+}
+@layer vuetify-overrides.cu-reset {
+  .market-head :is(h1, h2) {
+    margin: 0;
+  }
 }
 
 .market-lead {

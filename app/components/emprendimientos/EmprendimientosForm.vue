@@ -149,8 +149,10 @@ async function submit() {
   gap: 12px;
   max-width: 640px;
 }
-:where(.emp-form) :where(h2, p) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.emp-form) :where(h2, p) {
+    margin: 0;
+  }
 }
 .emp-form__title {
   font-size: clamp(1.35rem, 3vw, 1.75rem);

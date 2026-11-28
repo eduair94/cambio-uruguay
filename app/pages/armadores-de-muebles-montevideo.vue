@@ -619,8 +619,10 @@ useHead(() => ({
 </script>
 
 <style scoped>
-:where(.am-page) :where(p, h1, h2, h3, ul, ol, dl, dd) {
-  margin-top: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.am-page) :where(p, h1, h2, h3, ul, ol, dl, dd) {
+    margin-top: 0;
+  }
 }
 .am-eyebrow {
   margin-bottom: 8px;

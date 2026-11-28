@@ -632,8 +632,10 @@ defineOgImageComponent('Cambio', { title: t('title'), description: t('seoDescrip
   /* Sin tope propio: el ancho lo decide el marco del layout (`wide`, layouts/default.vue). 16px at the sides: the same x=28 edge as every page under the section bar (FamiliaNav). */
   padding: 12px 16px;
 }
-:where(.sales-directory) :where(h1, h2, h3, p) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.sales-directory) :where(h1, h2, h3, p) {
+    margin: 0;
+  }
 }
 .sales-directory__header {
   padding: 12px 0 24px;

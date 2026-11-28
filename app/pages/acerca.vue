@@ -518,8 +518,10 @@ useHead({
   max-width: 78ch;
 }
 
-.about-page :where(h1, h2, h3, p, ul, dl, dd) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  .about-page :where(h1, h2, h3, p, ul, dl, dd) {
+    margin: 0;
+  }
 }
 
 .about-header {

@@ -144,8 +144,10 @@ const distance = (value: number) =>
   border-top: 1px solid rgba(var(--v-theme-on-surface), 0.14);
   scroll-margin-top: 100px;
 }
-:where(.nearby-services) :where(h2, h3, p, ul) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.nearby-services) :where(h2, h3, p, ul) {
+    margin: 0;
+  }
 }
 .nearby-services h2 {
   font-size: 1.25rem;

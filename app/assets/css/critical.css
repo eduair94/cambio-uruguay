@@ -197,12 +197,19 @@ ins.adsbygoogle {
    authored. That defect was live on 20 pages (194 elements).
    Killing the margin only in that position leaves sibling rhythm untouched, so no
    page that leans on the collapsed margin between paragraphs is affected.
-   `:where()` keeps the specificity at 0: this beats the UA sheet and loses to
-   every rule we write, including a `mt-*` utility.
+   It lives in `@layer vuetify-overrides.cu-reset`, and the layer is the part that
+   matters: Vuetify 4 ships `mt-*` and `mb-*` inside `@layer vuetify-utilities`
+   with no `!important`, and ANY rule outside a layer beats a layered one whatever
+   its specificity — `:where()` at 0 included. Unlayered, this rule erased the
+   `mt-*` of every first child on the site. In the layer it still beats the UA
+   sheet and loses to the utilities and to every unlayered rule we write
+   (tests/unit/resetsInLayer.test.ts, docs/app/CSS_RESET_SPECIFICITY.md).
    Verify with `node scripts/ua-margin-audit.mjs` (see DESIGN.md, "The Text Block
    Owns Its Top Margin Rule"). */
-:where(p, h1, h2, h3, h4, h5, h6, ul, ol, dl, blockquote, pre, figure):first-child {
-  margin-block-start: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(p, h1, h2, h3, h4, h5, h6, ul, ol, dl, blockquote, pre, figure):first-child {
+    margin-block-start: 0;
+  }
 }
 
 /* ------------------------------------------------------------------ */

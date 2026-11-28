@@ -395,8 +395,10 @@ defineOgImageComponent('Cambio', {
   max-width: 1280px;
   padding: 12px;
 }
-:where(.sale-detail) :where(h1, h2, p, dl, dd) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.sale-detail) :where(h1, h2, p, dl, dd) {
+    margin: 0;
+  }
 }
 .sale-detail a:not(.v-btn) {
   color: rgb(var(--v-theme-link));

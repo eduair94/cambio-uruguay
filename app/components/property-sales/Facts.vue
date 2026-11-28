@@ -65,8 +65,10 @@ const money = (amount: number, currency: 'USD' | 'UYU') =>
   propertySaleMoney(amount, currency, locale.value)
 </script>
 <style scoped>
-:where(.sale-facts) :where(p, dl, dt, dd) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.sale-facts) :where(p, dl, dt, dd) {
+    margin: 0;
+  }
 }
 .sale-facts__label,
 .sale-facts__muted {

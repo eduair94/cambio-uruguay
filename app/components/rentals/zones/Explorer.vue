@@ -776,8 +776,10 @@ onBeforeUnmount(() => boundaryRequest?.abort())
 .is-standalone .zone-toolbar {
   background: rgb(var(--v-theme-background));
 }
-:where(.zone-explorer) :where(p, ul) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.zone-explorer) :where(p, ul) {
+    margin: 0;
+  }
 }
 .zone-controls {
   display: grid;

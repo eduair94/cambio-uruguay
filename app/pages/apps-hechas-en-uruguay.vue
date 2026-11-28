@@ -327,8 +327,10 @@ useHead(() => ({
 
 <style scoped>
 /* Reset en :where() (especificidad 0), como en apps-utiles-uruguay.vue. */
-:where(.ah-page) :where(p, h1, h2, h3, ul, ol) {
-  margin-top: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.ah-page) :where(p, h1, h2, h3, ul, ol) {
+    margin-top: 0;
+  }
 }
 .ah-eyebrow {
   margin-bottom: 8px;

@@ -280,8 +280,10 @@ async function submit() {
 .opinion__column {
   max-width: 680px;
 }
-.opinion :is(h1, p, fieldset, legend) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  .opinion :is(h1, p, fieldset, legend) {
+    margin: 0;
+  }
 }
 .opinion__title {
   font-size: clamp(1.55rem, 4.4vw, 2.5rem);

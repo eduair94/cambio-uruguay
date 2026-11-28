@@ -425,8 +425,10 @@ useSchemaOrg([
 
 <style scoped>
 /* Reset en :where() (especificidad 0): con :is() le ganaba a los márgenes del propio autor. */
-:where(.vida-page) :where(p, h1, h2, h3, h4, ul, ol) {
-  margin-top: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.vida-page) :where(p, h1, h2, h3, h4, ul, ol) {
+    margin-top: 0;
+  }
 }
 .vida-page {
   max-width: 1120px;

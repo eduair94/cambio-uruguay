@@ -141,8 +141,10 @@ const date = (value: string) =>
   margin-block: 16px;
   overflow-wrap: anywhere;
 }
-:where(.advertiser-contact) :where(p, ul) {
-  margin: 0;
+@layer vuetify-overrides.cu-reset {
+  :where(.advertiser-contact) :where(p, ul) {
+    margin: 0;
+  }
 }
 .advertiser-contact a {
   color: rgb(var(--v-theme-link));
