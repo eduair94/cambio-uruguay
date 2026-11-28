@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
-  <section class="ai-insights-section py-12">
+  <section class="ai-insights-section py-8 py-sm-12">
     <v-container>
       <v-row justify="center">
         <v-col cols="12" md="10" lg="8" class="mb-8">

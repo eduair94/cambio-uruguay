@@ -8,7 +8,7 @@
       /api/where-to-change and rendered as sanitized Markdown inside <ClientOnly>.
 -->
 <template>
-  <section class="where-to-change-section py-12" data-testid="where-to-change">
+  <section class="where-to-change-section py-8 py-sm-12" data-testid="where-to-change">
     <VContainer>
       <VRow justify="center">
         <VCol cols="12" md="10" lg="8" class="mb-8">

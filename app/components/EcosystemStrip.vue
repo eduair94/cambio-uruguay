@@ -1,5 +1,5 @@
 <template>
-  <section v-reveal class="ecosystem-section py-10">
+  <section v-reveal class="ecosystem-section py-8 py-sm-10">
     <VContainer>
       <VRow>
         <VCol cols="12" class="text-center mb-6">

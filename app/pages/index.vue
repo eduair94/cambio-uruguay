@@ -196,7 +196,7 @@
                           variant="elevated"
                           size="large"
                           :loading="loading"
-                          class="w-100 w-md-auto my-5 my-md-0 px-5 convert-btn"
+                          class="w-100 w-md-auto mt-2 mt-md-0 px-5 convert-btn"
                           data-testid="convert-btn"
                           @click.prevent="updateExchange"
                         >
@@ -472,19 +472,20 @@
                       <VCol v-if="primaryRatesForSubject.length" cols="12" lg="6">
                         <!-- First card: current intent (sell or buy) -->
                         <VCard
-                          class="best-rates-card pa-4 mb-4 h-100"
+                          class="best-rates-card pa-0 pa-sm-4 h-100"
                           color="rgba(33, 150, 243, 0.1)"
                           variant="outlined"
                         >
-                          <h3 class="text-h6 font-weight-bold mb-3 mb-md-6 text-center text-white">
+                          <h3
+                            class="best-rates-title text-subtitle-1 text-sm-h6 font-weight-bold mb-2 mb-sm-3 mb-md-6 text-left text-sm-center text-white"
+                          >
                             {{ primaryTitle }}
                           </h3>
-                          <VRow>
+                          <VRow class="rate-grid">
                             <VCol
                               v-for="(rate, index) in primaryRatesForSubject"
                               :key="`${rate.origin}-${index}-primary`"
-                              class="pa-2 pa-sm-3"
-                              cols="6"
+                              cols="12"
                               sm="6"
                               md="3"
                               lg="6"
@@ -502,13 +503,13 @@
                                   :class="{ 'rate-item--best': index === 0 }"
                                   variant="flat"
                                 >
-                                  <div class="rate-position text-h6 font-weight-bold mb-2">
+                                  <div class="rate-position text-h6 font-weight-bold mb-sm-2">
                                     #{{ index + 1 }}
                                   </div>
-                                  <div class="rate-name text-body-2 font-weight-medium mb-1">
+                                  <div class="rate-name text-body-2 font-weight-medium mb-sm-1">
                                     {{ rate.source }}
                                   </div>
-                                  <div class="rate-value text-h6 font-weight-bold mb-1">
+                                  <div class="rate-value text-h6 font-weight-bold mb-sm-1">
                                     ${{ rate.rate.toFixed(2) }}
                                   </div>
                                   <div class="rate-type text-caption">
@@ -540,19 +541,20 @@
                       <!-- Second card: the other intent -->
                       <VCol v-if="secondaryRatesForSubject.length" cols="12" lg="6">
                         <VCard
-                          class="best-rates-card pa-4 mb-4 h-100"
+                          class="best-rates-card pa-0 pa-sm-4 h-100"
                           color="rgba(33, 150, 243, 0.1)"
                           variant="outlined"
                         >
-                          <h3 class="text-h6 font-weight-bold mb-3 mb-md-6 text-center text-white">
+                          <h3
+                            class="best-rates-title text-subtitle-1 text-sm-h6 font-weight-bold mb-2 mb-sm-3 mb-md-6 text-left text-sm-center text-white"
+                          >
                             {{ secondaryTitle }}
                           </h3>
-                          <VRow>
+                          <VRow class="rate-grid">
                             <VCol
                               v-for="(rate, index) in secondaryRatesForSubject"
                               :key="`${rate.origin}-${index}-secondary`"
-                              class="pa-2 pa-sm-3"
-                              cols="6"
+                              cols="12"
                               sm="6"
                               md="3"
                               lg="6"
@@ -570,13 +572,13 @@
                                   :class="{ 'rate-item--best': index === 0 }"
                                   variant="flat"
                                 >
-                                  <div class="rate-position text-h6 font-weight-bold mb-2">
+                                  <div class="rate-position text-h6 font-weight-bold mb-sm-2">
                                     #{{ index + 1 }}
                                   </div>
-                                  <div class="rate-name text-body-2 font-weight-medium mb-1">
+                                  <div class="rate-name text-body-2 font-weight-medium mb-sm-1">
                                     {{ rate.source }}
                                   </div>
-                                  <div class="rate-value text-h6 font-weight-bold mb-1">
+                                  <div class="rate-value text-h6 font-weight-bold mb-sm-1">
                                     ${{ rate.rate.toFixed(2) }}
                                   </div>
                                   <div class="rate-type text-caption">
@@ -650,10 +652,10 @@
     </section>
 
     <!-- Top Exchange Houses Section -->
-    <section class="top-exchanges-section py-12">
+    <section class="top-exchanges-section">
       <VContainer>
         <VRow>
-          <VCol cols="12" class="section-head mb-8">
+          <VCol cols="12" class="section-head mb-4 mb-sm-8">
             <h2 class="section-title">
               {{ t('topExchangeHouses') }}
             </h2>
@@ -719,7 +721,7 @@
 
     <!-- Nearby Casa Finder Banner - flagship tourist tool, links to the
          dedicated smart nearby-finder page. -->
-    <section v-reveal class="nearby-finder-banner py-10">
+    <section v-reveal class="nearby-finder-banner py-8 py-sm-10">
       <VContainer>
         <VCard class="nearby-finder-card pa-6 pa-md-10" elevation="0">
           <img
@@ -767,7 +769,7 @@
     <!-- Promo video: short branded clip, lazy + autoplay-in-view (muted), the
          visitor can tap to unmute. Sits between the rates and the how-it-works
          steps so it reinforces "compare before you change" organically. -->
-    <section v-reveal class="promo-section py-12">
+    <section v-reveal class="promo-section py-8 py-sm-12">
       <VContainer>
         <VRow justify="center">
           <VCol cols="12" md="10" lg="9" class="text-center mb-6">
@@ -790,10 +792,10 @@
     </section>
 
     <!-- How It Works Section -->
-    <section class="how-it-works-section section-band py-12">
+    <section class="how-it-works-section section-band">
       <VContainer>
         <VRow>
-          <VCol cols="12" class="section-head mb-8">
+          <VCol cols="12" class="section-head mb-4 mb-sm-8">
             <h2 class="section-title">
               {{ t('howItWorks') }}
             </h2>
@@ -841,7 +843,7 @@
     <DonationCard />
 
     <!-- Pillar Content Section: SEO-rich content about dólar en Uruguay -->
-    <section class="pillar-content-section section-band py-12">
+    <section class="pillar-content-section section-band">
       <VContainer>
         <VRow>
           <VCol cols="12" md="10" lg="8" class="mx-auto">
@@ -887,7 +889,7 @@
     <!-- FAQ Section - data-grounded FAQ + single FAQPage JSON-LD via FaqBlock -->
     <FaqBlock
       v-if="homeFaqItems.length"
-      class="faq-section section-band py-12"
+      class="faq-section section-band py-8 py-sm-12"
       :items="homeFaqItems"
       :heading="t('faq.title')"
     />
@@ -898,10 +900,10 @@
          (`sitetoppages.guides`, ver docs/analytics/PAGE_RANKING.md), así que se actualiza sola.
          Sólo en español: las guías son páginas en español. En el HTML del servidor, para que los
          enlaces cuenten. -->
-    <section v-if="homeGuides.length" class="home-guides-section py-12">
+    <section v-if="homeGuides.length" class="home-guides-section py-8 py-sm-12">
       <VContainer>
         <VRow>
-          <VCol cols="12" class="section-head mb-8">
+          <VCol cols="12" class="section-head mb-4 mb-sm-8">
             <h2 class="section-title">Las guías más leídas</h2>
             <p class="section-subtitle">
               Lo que más se consulta en Uruguay además del dólar, según las visitas de esta semana.
@@ -931,10 +933,10 @@
     </section>
 
     <!-- Internal Linking Section - Topical Cluster Navigation -->
-    <section class="internal-links-section py-12">
+    <section class="internal-links-section">
       <VContainer>
         <VRow>
-          <VCol cols="12" class="section-head mb-8">
+          <VCol cols="12" class="section-head mb-4 mb-sm-8">
             <h2 class="section-title">
               {{ t('pillar.relatedTitle') }}
             </h2>
@@ -1015,7 +1017,7 @@
          inbound internal links. Rendered from the SSR rate rows, so these links
          are in the server HTML, and every origin comes from live localData, so
          none of them can 404. -->
-    <section v-if="hubCasas.length" v-reveal class="casa-hubs-section py-12">
+    <section v-if="hubCasas.length" v-reveal class="casa-hubs-section py-8 py-sm-12">
       <VContainer>
         <VRow>
           <VCol cols="12" class="text-center mb-6">
@@ -1037,10 +1039,10 @@
     </section>
 
     <!-- Features Section -->
-    <section class="features-section section-band py-12">
+    <section class="features-section section-band">
       <VContainer>
         <VRow>
-          <VCol cols="12" class="section-head mb-8">
+          <VCol cols="12" class="section-head mb-4 mb-sm-8">
             <h2 class="section-title">
               {{ t('whyChooseUs') }}
             </h2>
@@ -1121,7 +1123,7 @@
     <EcosystemStrip />
 
     <!-- CTA Section -->
-    <section class="cta-section on-dark py-6 py-sm-12">
+    <section class="cta-section on-dark">
       <VContainer>
         <VRow justify="center" align="center">
           <VCol cols="12" md="8" class="text-center">
@@ -2732,7 +2734,9 @@ useSeoMeta({
   --good: #2bd47d;
   --radius-lg: 16px;
   --radius-md: 12px;
-  --section-pad: clamp(56px, 8vw, 104px);
+  /* 32 px on a phone: at 56 px two sections stood 112 px apart, more than a screen of a 390 px
+     phone spent on nothing every few sections. 8vw takes over from 400 px and caps at 104. */
+  --section-pad: clamp(32px, 8vw, 104px);
 
   background-color: rgb(var(--v-theme-background));
 }
@@ -3207,6 +3211,94 @@ useSeoMeta({
   }
 }
 
+/* Vuetify 4 spaces a row with `gap` (24 px by default); the columns still carried the Vuetify 3
+   gutter as `pa-2 pa-sm-3`, so two casas stood 40-48 px apart. One gutter, set here. */
+.rate-grid {
+  --v-col-gap-x: 12px;
+  --v-col-gap-y: 12px;
+}
+
+/* On a phone each ranking is a list inside the converter card, one row per casa (the board the
+   hero answers from), instead of a 2×2 of 133 px cards inside a card inside the card: the names
+   wrapped onto three lines and the four casas took 730 px. */
+@media (max-width: 599.98px) {
+  .best-rates-card {
+    background: transparent !important;
+    border-width: 0;
+    border-radius: 0;
+
+    /* Nested like the base rules above so these win on specificity, not on luck. */
+    .rate-item {
+      display: grid;
+      grid-template-columns: 1.75rem minmax(0, 1fr) auto;
+      column-gap: 10px;
+      align-items: center;
+      text-align: left;
+
+      .rate-position {
+        grid-column: 1;
+        grid-row: 1 / 3;
+        font-size: 1rem;
+      }
+
+      .rate-name {
+        grid-column: 2;
+        grid-row: 1;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        line-height: 1.3;
+      }
+
+      .rate-type {
+        grid-column: 2;
+        grid-row: 2;
+      }
+
+      .rate-value {
+        grid-column: 3;
+        grid-row: 1 / 3;
+        font-size: 1.25rem;
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+      }
+
+      /* RateAmountComparison's root: under the name and the price, the amount on one line and
+         how it compares on the next. */
+      .rate-amount {
+        grid-column: 2 / -1;
+        grid-row: 3;
+        flex-flow: row wrap;
+        align-items: baseline;
+        gap: 0 6px;
+        margin-top: 8px;
+        padding-top: 8px;
+      }
+
+      :deep(.rate-amount__difference) {
+        flex-basis: 100%;
+        color: rgba(var(--v-theme-on-surface), 0.72);
+      }
+
+      .stale-rate-chip {
+        grid-column: 2 / -1;
+        grid-row: 4;
+        justify-self: start;
+      }
+    }
+  }
+
+  .rate-grid {
+    --v-col-gap-y: 8px;
+  }
+
+  /* The home's own grids (houses, steps, guides, links, features): 12 px between stacked cards
+     instead of 24, and the head row 16 px above them instead of 56. */
+  .home-container > section:not(.hero-section) .v-row {
+    --v-col-gap-x: 12px;
+    --v-col-gap-y: 12px;
+  }
+}
+
 /* Action Button */
 .convert-btn {
   min-width: 180px;
@@ -3593,12 +3685,6 @@ useSeoMeta({
   .cta-section {
     margin-inline: 8px;
     border-radius: 16px;
-  }
-
-  .best-rates-card {
-    .rate-item {
-      margin-bottom: 8px;
-    }
   }
 }
 
