@@ -68,7 +68,7 @@ export const ARCHIVE_SNAPSHOTS: readonly ArchiveSnapshot[] = [
   {
     timestamp: '20261010233934',
     url: 'https://cambio-uruguay.com/',
-    note: 'La portada de hoy: 43 casas de cambio comparadas, con datos del BCU.',
+    note: 'La portada actual: 43 casas de cambio comparadas, con datos del BCU.',
   },
 ]
 
