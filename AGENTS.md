@@ -172,6 +172,15 @@ Root pm2 entrypoints live at repo root: `index.ts`, `sync.ts`, `sync_aduana*.ts`
   archivo más allá —títulos y descripciones de las claves `seo.*` de i18n, de los dieciséis temas,
   de los mensajes fuera de `seo.` y del catálogo de herramientas—; cuál entró cuándo y por qué lo
   dice el encabezado de cada pozo en `scripts/oneoff/seo_debt_report.ts`.
+  **Y desde el 2026-11-28 son dieciséis**, y el decimosexto no es un snippet sino enlazado: las
+  GUÍAS que ninguna otra página enlaza desde su contenido. `enlacesDeContexto.test.ts` mide eso sólo
+  sobre las páginas raíz y deja fuera a las familias programáticas porque «resuelven su enlazado con
+  la barra y el bloque directorio ↔ análisis» — y las guías son una familia programática que no
+  tiene ninguna de las dos, así que lo único que una guía tenía garantizado era justo lo que ese
+  trinquete declara que NO cuenta (el bloque del tema y el pie, a 11.341 px). Medido el 2026-11-28:
+  32 de las 165 guías indexables sin una sola puerta de entrada, en la familia que `value.ts` valúa
+  8×. Lo declara `app/tests/unit/enlacesDeContextoGuias.test.ts` y lo cruza `npm run seo_debt`; ver
+  `docs/app/INTERCONEXIONES.md`.
 - **Este repositorio es PÚBLICO: cero cifras de ingreso en nada versionado.** Ni en código, ni en
   comentarios, ni en este archivo, ni en un mensaje de commit. La convención ya existía para los
   documentos (`docs/seo/adsense-growth-loop.md` es "público sin cifras"; los montos viven en

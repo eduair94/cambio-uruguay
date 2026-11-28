@@ -5,7 +5,7 @@
 //
 // Por qué existe y cuál es la regla: `classes/revenueplan/debtFree.ts`.
 //
-// QUÉ CUBRE. Los QUINCE pozos de deuda de SEO del app, cada uno declarado como una lista en el
+// QUÉ CUBRE. Los DIECISÉIS pozos de deuda de SEO del app, cada uno declarado como una lista en el
 // trinquete que lo mide. El cuarto y el quinto entraron el 2026-10-20 y eran los que faltaban: las
 // migas de `seoContract.test.ts` y los dos snippets pasados de `guideSnippetBudget.test.ts` declaraban un
 // NÚMERO y nada más, así que este informe no los podía nombrar y la respuesta a «¿cuál puedo tocar
@@ -190,6 +190,22 @@ const POOLS: Array<{
     list: "DEUDA_DESCRIPCION_HERRAMIENTA",
     budget: "TOOL_DESCRIPTION_OVER_BUDGET",
   },
+  // El decimosexto, desde el 2026-11-28, y no es un snippet: es enlazado. `enlacesDeContexto.test.ts`
+  // exige que toda página RAÍZ reciba un enlace desde el contenido de otra, y deja fuera a las
+  // familias programáticas porque «resuelven su enlazado con la barra y el bloque directorio ↔
+  // análisis». Las guías son una familia programática que NO tiene ninguna de esas dos cosas, así
+  // que lo único que una guía tenía garantizado es justo lo que ese trinquete declara que no cuenta
+  // como enlace de contexto: el bloque del tema y el «Seguí leyendo», que `INTERCONEXIONES.md` midió
+  // a 11.341 px de una página de 15.868. Medido el 2026-11-28: 32 de las 165 guías indexables sin
+  // una sola puerta de entrada, en la familia que `value.ts` valúa 8×. Se encontró a mano el
+  // 2026-11-26 (`/guias/propinas-en-uruguay`), que es la señal de siempre de que falta el trinquete.
+  {
+    pool: "guía sin enlace de contexto",
+    file: "enlacesDeContextoGuias.test.ts",
+    list: "GUIAS_SIN_ENLACE",
+    budget: "GUIAS_DEUDA_MAXIMA",
+    toRoute: (slug) => `/guias/${slug}`,
+  },
 ];
 
 /** Hoy en UTC, o el día que pida `--today=YYYY-MM-DD` (para mirar la cola desde otra fecha). */
@@ -239,7 +255,7 @@ function main(): void {
   }
   console.log(
     "\nUna ruta libre acá NO es una mejora: sigue haciendo falta que el cambio le sirva a un lector.\n" +
-      "Los quince pozos con lista están contados; las deudas que no son de ruta (el título y la\n" +
+      "Los dieciséis pozos con lista están contados; las deudas que no son de ruta (el título y la\n" +
       "descripción de una MISMA guía o de un MISMO tema) salen como dos filas, porque se arreglan\n" +
       "por separado."
   );
